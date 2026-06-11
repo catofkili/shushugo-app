@@ -1,0 +1,33 @@
+{
+  "project_name": "日语学习应用",
+  "project_type": "Full-stack Web Application",
+  "created": "2026-06-11",
+  "status": "Production Ready",
+  "tech_stack": {
+    "backend": "Python 3.14.4 + SQLite3",
+    "frontend": "React 19 + TypeScript 5.8 + Vite 7",
+    "styling": "Tailwind CSS 3.4"
+  },
+  "statistics": {
+    "total_size": "204MB",
+    "code_lines": 6012,
+    "python_files": 12,
+    "typescript_files": 18,
+    "git_commits": 8,
+    "vocabulary": 2630,
+    "grammar_points": 31
+  },
+  "scripts": [
+    "start.sh - Production start",
+    "dev.sh - Development mode",
+    "maintenance.sh - Project maintenance",
+    "backup.sh - Database backup"
+  ],
+  "documentation": [
+    "README.md",
+    "SUMMARY.md",
+    "DEVELOPMENT.md",
+    "PROJECT_STATUS.txt",
+    "MAINTENANCE_LOG.md"
+  ]
+}
