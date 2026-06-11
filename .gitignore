@@ -42,3 +42,4 @@ node_modules/
 # Test outputs
 test-*.err
 test-*.log
+backups/
