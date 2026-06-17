@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>导航栏固定测试</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #555858;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    .content {
+      padding: 20px;
+      height: 2000px;
+    }
+
+    /* 测试导航栏 */
+    .test-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      background: #3f4242;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      padding: 10px;
+    }
+
+    .nav-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .nav-button {
+      background: #2a2d2d;
+      border: none;
+      padding: 10px;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .nav-button:hover {
+      background: #3a3d3d;
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>导航栏固定测试页面</h1>
+    <p>这是一个简单的测试页面，验证 position: fixed 是否工作。</p>
+    <p>向下滚动，底部的导航栏应该保持固定。</p>
+
+    <h2>如果这个页面的导航栏是固定的</h2>
+    <p>说明问题在于 React 应用的某些 CSS 设置</p>
+
+    <h2>如果这个页面的导航栏也会滚动</h2>
+    <p>说明可能是 iOS WebView 的问题</p>
+
+    <div style="margin-top: 50px;">
+      <p>继续滚动...</p>
+      <p>继续滚动...</p>
+      <p>继续滚动...</p>
+      <p>继续滚动...</p>
+      <p>继续滚动...</p>
+    </div>
+  </div>
+
+  <!-- 固定导航栏 -->
+  <nav class="test-nav">
+    <div class="nav-buttons">
+      <button class="nav-button">单词</button>
+      <button class="nav-button">语法</button>
+      <button class="nav-button">工具</button>
+      <button class="nav-button">我的</button>
+    </div>
+  </nav>
+
+  <script>
+    console.log('导航栏元素:', document.querySelector('.test-nav'));
+    console.log('computed style:', window.getComputedStyle(document.querySelector('.test-nav')).position);
+  </script>
+</body>
+</html>

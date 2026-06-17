@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+
+    <!-- iOS WebView 优化 Meta 标签 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- iOS 状态栏样式 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- 防止 iOS 自动识别电话号码 -->
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- 主题颜色 -->
+    <meta name="theme-color" content="#474a4a" />
+
+    <title>Master Nihongo</title>
+
+    <style>
+      /* 启动时防止闪屏 */
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        background-color: #555858;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        background-color: #555858;
+
+        /* iOS WebView 性能优化 */
+        -webkit-overflow-scrolling: touch;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+
+        /* 防止双击缩放 */
+        touch-action: pan-x pan-y;
+      }
+
+      #root {
+        height: 100%;
+        width: 100%;
+
+        /* 硬件加速已移除 - 避免影响 position: fixed 定位 */
+        /* transform: translateZ(0); */
+        /* -webkit-transform: translateZ(0); */
+      }
+
+      /* 加载动画 */
+      .loading-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #474a4a;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        z-index: 9999;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 加载提示（React 加载前显示） -->
+    <div id="root">
+      <div class="loading-splash">
+        <div style="text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 16px;">📚</div>
+          <div style="font-size: 18px; font-weight: 500;">Master Nihongo</div>
+          <div style="font-size: 14px; opacity: 0.7; margin-top: 8px;">加载中...</div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

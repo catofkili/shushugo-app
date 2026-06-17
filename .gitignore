@@ -1,0 +1,66 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# package-lock.json is committed on purpose: an app should pin its dependency tree.
+
+# Build
+dist/
+build/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# iOS
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+ios/App/Pods/
+ios/App/Podfile.lock
+
+# Backend
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+backend/sync_data.db
+
+# Database backups
+*.db-journal
+*.sqlite3-journal
+
+# Sensitive
+.env
+.env.local
+*.key
+*.pem
+
+# Stale export / duplicate of frontend (build artifacts only, no source)
+/master-nihongo/
+master-nihongo.zip
+
+# Capacitor / iOS extra
+frontend/ios/App/App/public/
+frontend/ios/App/Pods/

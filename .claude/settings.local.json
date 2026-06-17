@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pkill -f \"vite\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm run *)",
+      "Bash(rm -f /Users/lsc/Documents/master-nihongo-ios/frontend/.claude/launch.json)",
+      "Bash(rmdir /Users/lsc/Documents/master-nihongo-ios/frontend/.claude)"
+    ]
+  }
+}
