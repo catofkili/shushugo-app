@@ -276,7 +276,7 @@ export const Library = ({
   return (
     <>
       <FloatingDoodlePen resetKey={selectedLevel} surfaceSelector='[data-doodle-surface="grammar-page"]' />
-      <div data-doodle-surface="grammar-page" className="relative grid gap-5 xl:grid-cols-[minmax(360px,0.95fr)_minmax(420px,1.05fr)]">
+      <div data-doodle-surface="grammar-page" className="relative grid gap-5 twopane:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <section className="min-w-0 space-y-4">
         <div className="dictionary-card rounded-2xl p-4">
           <div className="space-y-2">
