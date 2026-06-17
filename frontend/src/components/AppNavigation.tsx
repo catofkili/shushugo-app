@@ -77,7 +77,7 @@ export function AppNavigation({
   return (
     <>
       <div
-        className="app-landscape-topbar fixed left-0 right-0 top-0 z-10 bg-white/15 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] backdrop-blur-[30px] lg:hidden"
+        className="app-landscape-topbar fixed left-0 right-0 top-0 z-10 bg-white/15 px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.4rem)] backdrop-blur-[30px] lg:hidden"
         style={{
           touchAction: "none",
           pointerEvents: "auto",
@@ -92,28 +92,20 @@ export function AppNavigation({
           {!isRootMobilePage(page) ? (
             <button
               onClick={onBack}
-              className="focus-ring inline-flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm font-bold text-white/78 hover:bg-[#81D8CF]/15 hover:text-white"
+              className="focus-ring inline-flex items-center gap-2 rounded-xl px-2 py-1 text-sm font-bold text-white/78 hover:bg-[#81D8CF]/15 hover:text-white"
             >
               <ArrowLeft size={18} />
             </button>
           ) : (
-            <div className="w-10" />
+            <div className="w-9" />
           )}
 
           <button
             onClick={() => onNavigate("word")}
-            className="focus-ring flex min-w-0 items-center gap-3 rounded-2xl text-left"
+            className="focus-ring rounded-xl px-1 text-left"
           >
-            <span className="jp-serif grid h-10 w-10 place-items-center rounded-xl border border-white/20 bg-[#81D8CF] text-xl font-bold !text-[#343838] shadow-lg">
-              語
-            </span>
-            <span>
-              <span className="jp-serif block text-lg font-semibold leading-none tracking-normal text-white">
-                Master Nihongo
-              </span>
-              <span className="mt-1 block text-[10px] font-semibold uppercase tracking-[0.16em] text-white/65">
-                Vocabulary · Grammar
-              </span>
+            <span className="jp-serif block text-base font-semibold leading-none tracking-wide text-white">
+              Master
             </span>
           </button>
         </div>

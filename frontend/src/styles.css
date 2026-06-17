@@ -1113,7 +1113,7 @@ select {
 
   /* 底部 tab 栏 → 左侧竖向导航轨（覆盖组件内联定位样式） */
   .app-landscape-rail {
-    top: calc(env(safe-area-inset-top) + 50px) !important;
+    top: calc(env(safe-area-inset-top) + 32px) !important;
     bottom: 0 !important;
     left: 0 !important;
     right: auto !important;
@@ -1140,7 +1140,7 @@ select {
 
   /* 主内容区：让出顶栏高度 + 左轨宽度，回收底部空间 */
   .app-landscape-main {
-    top: calc(env(safe-area-inset-top) + 50px) !important;
+    top: calc(env(safe-area-inset-top) + 32px) !important;
     left: calc(env(safe-area-inset-left) + 72px) !important;
     right: 0 !important;
     bottom: 0 !important;
