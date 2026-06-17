@@ -342,7 +342,7 @@ export default function App() {
           onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
         />
 
-        <main className="fixed inset-0 min-w-0 overflow-y-auto px-4 pb-[6rem] pt-4 sm:px-6 lg:static lg:h-screen lg:overflow-y-auto lg:px-8 lg:py-8" style={{ top: 'calc(env(safe-area-inset-top) + 60px)', left: 0, right: 0, bottom: 'calc(env(safe-area-inset-bottom) + 70px)' }}>
+        <main className="app-landscape-main fixed inset-0 min-w-0 overflow-y-auto px-4 pb-[6rem] pt-4 sm:px-6 lg:static lg:h-screen lg:overflow-y-auto lg:px-8 lg:py-8" style={{ top: 'calc(env(safe-area-inset-top) + 60px)', left: 0, right: 0, bottom: 'calc(env(safe-area-inset-bottom) + 70px)' }}>
           <div className="mx-auto max-w-[1400px]">{renderPage()}</div>
         </main>
       </div>

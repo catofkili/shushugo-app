@@ -77,7 +77,7 @@ export function AppNavigation({
   return (
     <>
       <div
-        className="fixed left-0 right-0 top-0 z-10 bg-white/15 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] backdrop-blur-[30px] lg:hidden"
+        className="app-landscape-topbar fixed left-0 right-0 top-0 z-10 bg-white/15 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] backdrop-blur-[30px] lg:hidden"
         style={{
           touchAction: "none",
           pointerEvents: "auto",
@@ -251,9 +251,9 @@ export function AppNavigation({
           boxShadow: "0 -8px 32px rgba(0, 0, 0, 0.1)"
         }}
         onTouchMove={handleNavTouchMove}
-        className="px-1 pb-[calc(env(safe-area-inset-bottom)*0.5+0.25rem)] pt-1 lg:hidden"
+        className="app-landscape-rail px-1 pb-[calc(env(safe-area-inset-bottom)*0.5+0.25rem)] pt-1 lg:hidden"
       >
-        <div className="grid grid-cols-4 gap-1">
+        <div className="app-landscape-rail-grid grid grid-cols-4 gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.page);

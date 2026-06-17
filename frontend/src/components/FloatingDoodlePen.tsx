@@ -119,6 +119,19 @@ export function FloatingDoodlePen({ resetKey, surfaceSelector }: FloatingDoodleP
     };
   }, [redrawDoodles]);
 
+  // Keep the floating pen inside the viewport when the window resizes or the
+  // device rotates — otherwise a portrait position lingers and overlaps content
+  // in landscape.
+  useEffect(() => {
+    const reclamp = () => setPenPosition((current) => clampPenPosition(current.x, current.y));
+    window.addEventListener("resize", reclamp);
+    window.addEventListener("orientationchange", reclamp);
+    return () => {
+      window.removeEventListener("resize", reclamp);
+      window.removeEventListener("orientationchange", reclamp);
+    };
+  }, []);
+
   useEffect(() => {
     strokesByKeyRef.current[previousSurfaceKeyRef.current] = strokesRef.current;
     strokesRef.current = strokesByKeyRef.current[surfaceKey] ?? [];

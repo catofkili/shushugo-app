@@ -1094,3 +1094,57 @@ select {
     touch-action: auto !important;
   }
 }
+
+/* ============================================================
+   横屏紧凑模式（手机横屏）
+   竖屏布局靠"顶栏 + 底部 tab 栏"，在横屏矮视口下会吃掉约 1/3 高度。
+   这里在 横屏 + 矮高度 + 非桌面宽度 下，把它改造成：
+   - 顶栏压扁（保留返回 + 标识）
+   - 底部 tab 栏 → 左侧竖向导航轨（side rail）
+   - 主内容区让出顶栏高度 + 左轨宽度
+   桌面/平板横屏（≥1024px）继续使用 lg 侧边栏，不受影响。
+   ============================================================ */
+@media (orientation: landscape) and (max-height: 600px) and (max-width: 1023px) {
+  /* 顶栏：压扁高度 */
+  .app-landscape-topbar {
+    padding-top: calc(env(safe-area-inset-top) + 0.3rem) !important;
+    padding-bottom: 0.3rem !important;
+  }
+
+  /* 底部 tab 栏 → 左侧竖向导航轨（覆盖组件内联定位样式） */
+  .app-landscape-rail {
+    top: calc(env(safe-area-inset-top) + 50px) !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    width: calc(env(safe-area-inset-left) + 72px) !important;
+    padding: 0.5rem 0.5rem calc(env(safe-area-inset-bottom) + 0.5rem)
+             calc(env(safe-area-inset-left) + 0.5rem) !important;
+    border-top: none !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.1) !important;
+    overflow-y: auto;
+  }
+
+  /* 导航项由横向四等分 → 纵向堆叠并垂直居中 */
+  .app-landscape-rail-grid {
+    grid-template-columns: 1fr !important;
+    grid-auto-rows: max-content;
+    height: 100%;
+    align-content: center;
+    gap: 0.5rem !important;
+  }
+  .app-landscape-rail-grid > button {
+    height: 52px !important;
+  }
+
+  /* 主内容区：让出顶栏高度 + 左轨宽度，回收底部空间 */
+  .app-landscape-main {
+    top: calc(env(safe-area-inset-top) + 50px) !important;
+    left: calc(env(safe-area-inset-left) + 72px) !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 1.25rem !important;
+  }
+}
