@@ -1,141 +1,21 @@
 <!doctype html>
 <html lang="zh-CN">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>日语背词</title>
-    <link rel="stylesheet" href="styles.css?v=20260611-grammar-pos">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Master Nihongo</title>
+    <script type="module" crossorigin src="/assets/index-CuPzDDqM.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BofIzjQ3.css">
   </head>
   <body>
-    <main class="app-shell">
-      <div class="top-controls">
-        <button class="undo-button" id="undoButton" type="button" disabled>上一个</button>
-        <button class="return-button hidden" id="returnPhaseButton" type="button">返回</button>
-        <div class="daily-progress" aria-label="今日学习进度">
-          <span id="progressText">0/0</span>
-          <div class="progress-track">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-        </div>
-      </div>
-
-      <section class="card review-card" id="card">
-        <div class="meaning-panel" id="meaningPanel">
-          <button class="ghost-eye meaning-eye hidden" id="meaningEyeButton" type="button" aria-label="显示全部释义">◉</button>
-          <p class="pos" id="pos"></p>
-          <p id="meaning">加载中...</p>
-          <div class="all-meanings hidden" id="allMeanings"></div>
-        </div>
-
-        <div class="answer-panel hidden" id="answerPanel">
-          <div class="word-main">
-            <p class="kana" id="kana"></p>
-            <p class="kanji" id="kanji"></p>
-          </div>
-          <div class="answer-meaning-extra hidden" id="answerMeaningExtra">
-            <button class="ghost-eye answer-meaning-eye" id="answerMeaningEyeButton" type="button" aria-label="显示完整释义">◉</button>
-            <div class="answer-all-meanings hidden" id="answerAllMeanings"></div>
-          </div>
-          <button class="edit-meaning-button hidden" id="editMeaningButton" type="button">改释义</button>
-          <div class="forms hidden" id="forms"></div>
-          <div class="example-box hidden" id="exampleBox">
-            <p id="exampleJp"></p>
-            <p id="exampleMeaning"></p>
-          </div>
-          <div class="fold-box hidden" id="confusionFold">
-            <button class="ghost-eye fold-toggle" id="confusionToggle" type="button" aria-label="显示相似词">◉</button>
-            <div class="confusions hidden" id="confusions"></div>
-          </div>
-        </div>
-
-        <div class="actions hidden" id="actions">
-          <button class="forgot" data-answer="forgot">忘记</button>
-          <button class="fuzzy" data-answer="fuzzy">模糊</button>
-          <button class="know" data-answer="know">认识</button>
-          <button class="known" data-answer="known_forever">熟知</button>
-        </div>
-      </section>
-
-      <section class="calendar-panel hidden" id="calendarPanel">
-        <button class="mini-calendar-button" id="openCalendarButton" type="button">打开日历</button>
-        <section class="focus-panel">
-          <div class="focus-header">
-            <h2>当天重点单词</h2>
-            <span id="focusCount">0</span>
-          </div>
-          <div class="focus-list" id="focusList"></div>
+    <div id="root">
+      <main class="fallback-shell">
+        <section class="fallback-card">
+          <p class="fallback-kicker">Master Nihongo</p>
+          <h1>正在加载学习应用...</h1>
+          <p>正在连接本地词库和学习界面。</p>
         </section>
-        <button class="word-table-button" id="openWordTableFromCalendar" type="button">词表校准</button>
-        <button class="continue-button" id="continueKanjiButton" type="button">汉字读音练习</button>
-        <button class="continue-button" id="continueStage2Button" type="button">继续复盘</button>
-        <a class="word-table-button grammar-entry-button" href="http://127.0.0.1:8000/grammar">语法练习</a>
-      </section>
-
-      <section class="calendar-modal hidden" id="calendarModal">
-        <div class="calendar-dialog">
-          <div class="calendar-header">
-            <button class="month-button" id="prevMonthButton" type="button">上月</button>
-            <h1 id="calendarTitle">2026年6月</h1>
-            <button class="month-button" id="nextMonthButton" type="button">下月</button>
-          </div>
-          <div class="week-row">
-            <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
-          </div>
-          <div class="calendar-grid" id="calendarGrid"></div>
-        </div>
-      </section>
-
-      <section class="meaning-editor-modal hidden" id="meaningEditorModal">
-        <div class="meaning-editor-dialog">
-          <h2>修改中文释义</h2>
-          <textarea id="meaningEditorInput" rows="4"></textarea>
-          <div class="meaning-editor-actions">
-            <button class="meaning-editor-cancel" id="meaningEditorCancel" type="button">取消</button>
-            <button class="meaning-editor-save" id="meaningEditorSave" type="button">保存</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="finish-panel hidden" id="finishPanel">
-        <p class="finish-kicker">日语背词 · N5 后段词库</p>
-        <h1>今日任务完成</h1>
-        <div class="finish-stats">
-          <div><span>今日复习</span><strong id="oldToday">0</strong></div>
-          <div><span>今日新学</span><strong id="newLearnedToday">0</strong></div>
-          <div><span>待复习</span><strong id="lowCount">0</strong></div>
-          <div><span>待学词数</span><strong id="unseenCount">0</strong></div>
-          <div><span>永久熟知</span><strong id="knownForever">0</strong></div>
-        </div>
-        <button class="word-table-button finish-word-table-button" id="openWordTableFromFinish" type="button">词表校准</button>
-        <button class="continue-button finish-kanji-button" id="continueKanjiFromFinish" type="button">汉字读音练习</button>
-        <section class="difficult-panel hidden" id="difficultPanel">
-          <div class="difficult-header">
-            <h2>今日易错词</h2>
-            <span id="difficultCount">0</span>
-          </div>
-          <div class="difficult-list" id="difficultList"></div>
-        </section>
-      </section>
-
-      <section class="word-table-panel hidden" id="wordTablePanel">
-        <div class="word-table-header">
-          <button class="word-table-back" id="closeWordTableButton" type="button">返回</button>
-          <div>
-            <p>按记忆程度排序</p>
-            <h1>词表校准</h1>
-          </div>
-          <span id="wordTableCount">0</span>
-        </div>
-        <div class="word-table-sort" id="wordTableSort">
-          <button class="active" data-sort="score_desc" type="button">高分优先</button>
-          <button data-sort="score_asc" type="button">低分优先</button>
-          <button data-sort="mistake_desc" type="button">易错优先</button>
-        </div>
-        <div class="word-table-list" id="wordTableList"></div>
-        <div class="word-table-loading" id="wordTableLoading">加载中...</div>
-      </section>
-    </main>
-
-    <script src="app.js?v=20260611-grammar-pos"></script>
+      </main>
+    </div>
   </body>
 </html>

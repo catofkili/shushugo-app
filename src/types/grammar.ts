@@ -27,12 +27,25 @@ export interface GrammarPoint {
   id: string;
   title: string;
   level: JLPTLevel;
+  bookOrder?: number;
   meaning: string;
   structure: string;
+  connection?: string;
   explanation: string;
   examples: ExampleSentence[];
   comparisons: string[];
+  usageNotes?: string[];
+  studyGroup?: string;
   quizzes: QuizQuestion[];
+}
+
+export interface GrammarStudyGroup {
+  id: string;
+  title: string;
+  level: JLPTLevel;
+  question: string;
+  pointIds: string[];
+  hint: string;
 }
 
 export interface ReviewItem {

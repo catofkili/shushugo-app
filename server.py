@@ -7,25 +7,181 @@ import sqlite3
 import csv
 from datetime import date, datetime, time, timedelta
 from difflib import SequenceMatcher
+from functools import lru_cache
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from seed_words import WORDS
-from seed_grammar import GRAMMAR_POINTS
+from seed_grammar import GRAMMAR_DATASET_VERSION, GRAMMAR_POINTS
 
 try:
     import kanasim  # type: ignore
 except ImportError:
     kanasim = None
 
+# 振假名(注音):用 pykakasi 给汉字段生成读音,输出 ⟪汉字｜よみ⟫ 标记,前端 JapaneseRuby 渲染成 <ruby>。
+# 没装库时优雅降级(原样返回,不报错)。
+try:
+    import pykakasi  # type: ignore
+    _KKS = pykakasi.kakasi()
+except Exception:  # pragma: no cover
+    _KKS = None
+
+_KANJI_RE = re.compile(r"[㐀-䶿一-鿿々〇]")
+_KANA_RE = re.compile(r"[ぁ-んァ-ヶー]")
+# 括号内多为中文释义(如 ～のに（明明……却……）),不能用日文读音注音,整段跳过
+_PAREN_RE = re.compile(r"（[^（）]*）|\([^()]*\)")
+
+
+def _furigana_segment(text: str) -> str:
+    parts: list[str] = []
+    for item in _KKS.convert(text):
+        orig = item.get("orig", "")
+        hira = item.get("hira", "")
+        if orig and hira and orig != hira and _KANJI_RE.search(orig):
+            parts.append(f"⟪{orig}｜{hira}⟫")
+        else:
+            parts.append(orig)
+    return "".join(parts)
+
+
+@lru_cache(maxsize=8192)
+def furigana(text: str | None) -> str:
+    """给括号外的日文片段套上 ⟪原文｜读音⟫ 注音标记;括号内(中文释义)与无库时原样返回。"""
+    if not text or _KKS is None:
+        return text or ""
+    out: list[str] = []
+    last = 0
+    for m in _PAREN_RE.finditer(text):
+        out.append(_furigana_segment(text[last:m.start()]))
+        out.append(m.group(0))  # 括号内原样保留
+        last = m.end()
+    out.append(_furigana_segment(text[last:]))
+    return "".join(out)
+
+
+def _strip_cn_parens(text: str) -> str:
+    """删除"含汉字且无假名"的括号(多为中文释义/等级标记),保留读音/日文括号。"""
+    prev = None
+    while prev != text:
+        prev = text
+        def repl(m: "re.Match[str]") -> str:
+            inner = m.group(0)[1:-1]
+            return "" if (_KANJI_RE.search(inner) and not _KANA_RE.search(inner)) else m.group(0)
+        text = _PAREN_RE.sub(repl, text)
+    return text.strip()
+
+
+def clean_grammar_title(pattern: str | None, prompt: str | None) -> str:
+    """出题显示用:去掉题目里泄露答案的中文释义/等级,只保留干净的日语语法形。"""
+    pattern = pattern or ""
+    prompt = prompt or ""
+    # A 类:prompt 是 pattern 的干净前缀(pattern = prompt +（N?・释义）)→ 用 prompt
+    base = prompt if (prompt and pattern != prompt and pattern.startswith(prompt)) else pattern
+    cleaned = _strip_cn_parens(base)
+    return cleaned or pattern
+
+
+def grammar_question_prompt(meaning: str | None) -> str:
+    """语法练习题目页只给中文线索,不要泄露假名语法形。"""
+    text = meaning or "请回忆对应语法"
+    text = _KANA_RE.sub("", text)
+    text = re.sub(r"[／/・]+", "、", text)
+    text = re.sub(r"「\s*」|『\s*』|（\s*）|\(\s*\)", "", text)
+    text = re.sub(r"\s+", " ", text).strip(" 、，。；:：")
+    return text or "请回忆对应语法"
+
+
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "japanese_words.sqlite3"
 KANJI_VARIANTS_PATH = BASE_DIR / "data" / "kanji_variants.json"
+ENGLISH_ORIGINS_PATH = BASE_DIR / "data" / "english_origins.json"
+VERB_PAIR_HINTS_PATH = BASE_DIR / "data" / "verb_pair_hints.json"
+EGGROLLS_NOTES_PATH = BASE_DIR / "data" / "eggrolls_notes.csv"
 DAY_ROLLOVER = time(hour=4)
 CRITICAL_SCORE = -20
+AUTO_DECAY_FLOOR = -10
 MOJI_MIGRATION_REVIEW_CAP = 30
 KANJI_VARIANTS_CACHE: dict[str, str] | None = None
+ENGLISH_ORIGINS_CACHE: dict[str, str] | None = None
+VERB_PAIR_HINTS_CACHE: dict[str, tuple[str, str, str, str]] | None = None
+
+NOUN_SURU_CORRECTIONS = {
+    ("運動", "うんどう"),
+    ("計画", "けいかく"),
+    ("研究", "けんきゅう"),
+    ("故障", "こしょう"),
+    ("授業", "じゅぎょう"),
+    ("生活", "せいかつ"),
+    ("選択", "せんたく"),
+    ("卒業", "そつぎょう"),
+    ("留学", "りゅうがく"),
+    ("旅行", "りょこう"),
+    ("練習", "れんしゅう"),
+    ("連絡", "れんらく"),
+    ("遅刻", "ちこく"),
+    ("出発", "しゅっぱつ"),
+    ("到着", "とうちゃく"),
+    ("見学", "けんがく"),
+    ("復習", "ふくしゅう"),
+    ("予習", "よしゅう"),
+    ("予約", "よやく"),
+    ("翻訳", "ほんやく"),
+    ("信号", "しんごう"),
+    ("洗濯", "せんたく"),
+    ("勉強", "べんきょう"),
+    ("活動", "かつどう"),
+    ("帰国", "きこく"),
+    ("挨拶", "あいさつ"),
+    ("営業", "えいぎょう"),
+    ("希望", "きぼう"),
+    ("成功", "せいこう"),
+    ("入学", "にゅうがく"),
+    ("約束", "やくそく"),
+    ("利用", "りよう"),
+    ("急行", "きゅうこう"),
+    ("協力", "きょうりょく"),
+    ("教育", "きょういく"),
+    ("緊張", "きんちょう"),
+    ("行動", "こうどう"),
+    ("信用", "しんよう"),
+    ("努力", "どりょく"),
+    ("輸出", "ゆしゅつ"),
+    ("輸入", "ゆにゅう"),
+    ("冷蔵", "れいぞう"),
+    ("朝寝坊", "あさねぼう"),
+    ("誕生", "たんじょう"),
+    ("飲食", "いんしょく"),
+    ("出張", "しゅっちょう"),
+    ("ごちそう", "ごちそう"),
+    ("影響", "えいきょう"),
+    ("遠足", "えんそく"),
+    ("学習", "がくしゅう"),
+    ("観光", "かんこう"),
+    ("競争", "きょうそう"),
+    ("見物", "けんぶつ"),
+    ("合格", "ごうかく"),
+    ("集合", "しゅうごう"),
+    ("体操", "たいそう"),
+    ("暖房", "だんぼう"),
+    ("報告", "ほうこく"),
+    ("放送", "ほうそう"),
+    ("提出", "ていしゅつ"),
+    ("転職", "てんしょく"),
+    ("優勝", "ゆうしょう"),
+    ("外出", "がいしゅつ"),
+    ("研修", "けんしゅう"),
+    ("広告", "こうこく"),
+    ("残業", "ざんぎょう"),
+    ("就職", "しゅうしょく"),
+    ("彫刻", "ちょうこく"),
+    ("流行", "りゅうこう"),
+    ("担当", "たんとう"),
+    ("企画", "きかく"),
+    ("泥棒", "どろぼう"),
+    ("看病", "かんびょう"),
+}
 
 
 def study_date() -> date:
@@ -98,6 +254,77 @@ VERB_PAIR_HINTS = {
     "集まる": ("自动词", "集める", "あつめる", "他动词：收集、召集"),
 }
 
+
+def verb_voice(text: str) -> str | None:
+    if "他動" in text or "他动" in text:
+        return "他动词"
+    if "自動" in text or "自动" in text:
+        return "自动词"
+    return None
+
+
+def kana_from_markup(text: str) -> str:
+    return re.sub(r"([一-龯々〆ヵヶ]+)\[([^\]]+)\]", r"\2", text).strip()
+
+
+def strip_voice_label(text: str) -> str:
+    return re.sub(r"^［[自他]動］", "", text).strip()
+
+
+def load_static_verb_pair_hints() -> dict[str, tuple[str, str, str, str]]:
+    if not VERB_PAIR_HINTS_PATH.exists():
+        return {}
+    try:
+        with VERB_PAIR_HINTS_PATH.open(encoding="utf-8") as f:
+            payload = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    hints: dict[str, tuple[str, str, str, str]] = {}
+    if not isinstance(payload, dict):
+        return hints
+    for key, value in payload.items():
+        if isinstance(key, str) and isinstance(value, list) and len(value) >= 4:
+            hints[key] = (str(value[0]), str(value[1]), str(value[2]), str(value[3]))
+    return hints
+
+
+def eggrolls_verb_pair_hints() -> dict[str, tuple[str, str, str, str]]:
+    global VERB_PAIR_HINTS_CACHE
+    if VERB_PAIR_HINTS_CACHE is not None:
+        return VERB_PAIR_HINTS_CACHE
+
+    hints = load_static_verb_pair_hints()
+    if not EGGROLLS_NOTES_PATH.exists():
+        VERB_PAIR_HINTS_CACHE = hints
+        return hints
+
+    with EGGROLLS_NOTES_PATH.open(encoding="utf-8", newline="") as f:
+        reader = csv.reader(f, delimiter="\t")
+        for row in reader:
+            if len(row) < 9 or row[0].startswith("#"):
+                continue
+            word_kanji = row[3].strip()
+            word_kana = row[6].strip()
+            meaning = row[7].strip()
+            voice = verb_voice(row[5])
+            if not word_kanji or not word_kana or not voice:
+                continue
+            for index, value in enumerate(row):
+                if value.strip() not in {"関", "関連"} or index + 4 >= len(row):
+                    continue
+                pair_kanji = row[index + 1].strip()
+                pair_kana = kana_from_markup(row[index + 2].strip())
+                pair_meaning = row[index + 3].strip()
+                pair_voice = verb_voice(pair_meaning)
+                if not pair_kanji or not pair_kana or not pair_voice or pair_voice == voice:
+                    continue
+                hints.setdefault(word_kanji, (voice, pair_kanji, pair_kana, f"{pair_voice}：{strip_voice_label(pair_meaning)}"))
+                hints.setdefault(pair_kanji, (pair_voice, word_kanji, word_kana, f"{voice}：{meaning}"))
+
+    hints.update(VERB_PAIR_HINTS)
+    VERB_PAIR_HINTS_CACHE = hints
+    return hints
+
 SENSE_GROUPS = [
     {
         "keys": {"食べる", "たべる", "召し上がる", "めしあがる", "頂く", "いただく", "食う", "くう"},
@@ -163,6 +390,47 @@ def has_ascii(text: str) -> bool:
 
 def has_katakana(text: str) -> bool:
     return any("\u30a0" <= char <= "\u30ff" for char in text)
+
+
+def english_origins() -> dict[str, str]:
+    global ENGLISH_ORIGINS_CACHE
+    if ENGLISH_ORIGINS_CACHE is None:
+        try:
+            ENGLISH_ORIGINS_CACHE = json.loads(ENGLISH_ORIGINS_PATH.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            ENGLISH_ORIGINS_CACHE = {}
+    return ENGLISH_ORIGINS_CACHE
+
+
+def english_origin(kanji: str, kana: str, meaning: str) -> str:
+    if not has_katakana(f"{kanji}{kana}"):
+        return ""
+    mapped = english_origins().get(kanji) or english_origins().get(kana)
+    if mapped:
+        return mapped
+    non_english_marker = r"^\s*[（(\[]\s*(?:法|フ|仏|德|独|オ|蘭|葡|ポ|伊|イ|露|ロ)\s*[）)\]]"
+    if has_ascii(kanji):
+        for part in re.split(r"[；;]", kanji):
+            if has_ascii(part) and not re.search(non_english_marker, part):
+                return part.strip()
+        return ""
+    if re.search(non_english_marker, meaning or ""):
+        return ""
+    candidates = re.findall(r"[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*", meaning or "")
+    return candidates[0].strip(" .;,-") if candidates else ""
+
+
+def question_meaning(meaning: str) -> str:
+    """Keep the Chinese definition while hiding English and kana on the prompt."""
+    # Remove long English words (3+ chars), keep short letter+CJK combos like T恤, A型
+    text = re.sub(r"[A-Za-zＡ-Ｚａ-ｚ]{3,}(?:[ ./'-]+[A-Za-zＡ-Ｚａ-ｚ]+)*", "", meaning or "")
+    text = re.sub(r"[A-Za-zＡ-Ｚａ-ｚ]{1,2}(?![一-鿿぀-ヿ])", "", text)
+    text = _KANA_RE.sub("", text)
+    text = re.sub(r"[（(\[]\s*(?:英|美)\s*[）)\]]", "", text)
+    text = re.sub(r"[（(]\s*[）)]", "", text)
+    text = re.sub(r"\s*([；;，,])\s*", r"\1", text)
+    text = re.sub(r"^[\s；;，,、.:：/]+", "", text)
+    return text.strip()
 
 
 def has_kanji(text: str) -> bool:
@@ -268,7 +536,9 @@ def prompt_meaning(meaning: str, word_id: int | None = None, kanji: str = "") ->
     while previous != short:
         previous = short
         short = re.sub(r"^[（(][^）)]{1,40}[）)]", "", short).strip()
-    short = re.sub(r"^[A-Za-z][A-Za-z\s.／/-]*", "", short).strip()
+    # Remove English glosses such as "shirt", but keep short letter+CJK terms like T恤 or A型.
+    short = re.sub(r"^[A-Za-zＡ-Ｚａ-ｚ]{3,}(?:[ .／/'-]+[A-Za-zＡ-Ｚａ-ｚ]+)*", "", short).strip()
+    short = re.sub(r"^[A-Za-zＡ-Ｚａ-ｚ]{1,2}(?![一-鿿぀-ヿ])", "", short).strip()
     short = re.sub(r"^[〈《][^〉》]{1,20}[〉》]", "", short).strip()
     if "。" in short:
         short = short.split("。", 1)[0].strip()
@@ -281,6 +551,35 @@ def prompt_meaning(meaning: str, word_id: int | None = None, kanji: str = "") ->
         if len(prefix) >= 2:
             short = "".join(prefix)
     return short[:8]
+
+
+def honorific_label(meaning: str) -> str:
+    """Tag words that are themselves honorific or humble expressions."""
+    text = meaning or ""
+    if re.search(r"(謙譲語|謙讓語|谦让语|谦让|謙讓)", text):
+        return "谦语"
+    if re.search(r"(谦称|謙称|謙稱)", text):
+        return "谦称"
+    if "自谦" in text:
+        return "自谦"
+    if re.search(r"(敬语|敬語|尊敬表达|尊敬語|敬称|敬意|对外敬语)", text):
+        return "敬语"
+    return ""
+
+
+def correct_noun_suru_words(conn: sqlite3.Connection) -> None:
+    conn.executemany(
+        """
+        UPDATE words
+        SET pos = '名词・する动词',
+            verb_type = 'suru'
+        WHERE kanji = ?
+          AND kana = ?
+          AND pos = '动词'
+          AND verb_type = 'godan'
+        """,
+        sorted(NOUN_SURU_CORRECTIONS),
+    )
 
 
 def init_db() -> None:
@@ -363,8 +662,29 @@ def init_db() -> None:
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS word_notes (
+                word_id INTEGER PRIMARY KEY,
+                note TEXT NOT NULL,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(word_id) REFERENCES words(id)
+            );
+
             CREATE TABLE IF NOT EXISTS checkins (
                 checked_on TEXT PRIMARY KEY
+            );
+
+            CREATE TABLE IF NOT EXISTS word_study_time (
+                studied_on TEXT PRIMARY KEY,
+                seconds INTEGER NOT NULL DEFAULT 0,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS word_auto_known (
+                word_id INTEGER PRIMARY KEY,
+                first_know_streak INTEGER NOT NULL DEFAULT 0,
+                last_first_seen_on TEXT,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(word_id) REFERENCES words(id)
             );
 
             CREATE TABLE IF NOT EXISTS critical_reviews (
@@ -395,6 +715,24 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS grammar_points (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 pattern TEXT NOT NULL UNIQUE,
+                meaning TEXT NOT NULL,
+                prompt TEXT NOT NULL,
+                formation TEXT NOT NULL,
+                example_jp TEXT NOT NULL,
+                example_meaning TEXT NOT NULL,
+                notes TEXT NOT NULL DEFAULT '',
+                confusions TEXT NOT NULL DEFAULT '',
+                level TEXT NOT NULL DEFAULT 'N5',
+                importance INTEGER NOT NULL DEFAULT 3,
+                sort_order INTEGER NOT NULL DEFAULT 0
+            );
+
+            CREATE TABLE IF NOT EXISTS grammar_points_archive (
+                archive_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                archived_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                dataset_version TEXT NOT NULL,
+                id INTEGER,
+                pattern TEXT NOT NULL,
                 meaning TEXT NOT NULL,
                 prompt TEXT NOT NULL,
                 formation TEXT NOT NULL,
@@ -501,6 +839,7 @@ def init_db() -> None:
         )
         conn.execute("UPDATE words SET shuffle_rank = ABS(RANDOM()) / 9223372036854775807.0 WHERE shuffle_rank IS NULL")
         conn.execute("UPDATE progress SET score = 0 WHERE seen_count = 0 AND score < 0")
+        correct_noun_suru_words(conn)
         seed_grammar_points(conn)
         if not get_state(conn, "first_study_day", ""):
             set_state(conn, "first_study_day", TODAY())
@@ -525,7 +864,132 @@ def delete_state(conn: sqlite3.Connection, key: str) -> None:
     conn.execute("DELETE FROM app_state WHERE key = ?", (key,))
 
 
+def auto_known_enabled(conn: sqlite3.Connection) -> bool:
+    return get_state(conn, "auto_known_enabled", "1") != "0"
+
+
+def settings_payload(conn: sqlite3.Connection) -> dict:
+    return {"autoKnownEnabled": auto_known_enabled(conn)}
+
+
+def auto_known_row(conn: sqlite3.Connection, word_id: int) -> sqlite3.Row | None:
+    return conn.execute(
+        "SELECT * FROM word_auto_known WHERE word_id = ?",
+        (word_id,),
+    ).fetchone()
+
+
+def restore_auto_known_row(conn: sqlite3.Connection, snapshot: dict) -> None:
+    row = snapshot.get("auto_known_row")
+    word_id = snapshot.get("word_id")
+    if not word_id:
+        return
+    if row is None:
+        conn.execute("DELETE FROM word_auto_known WHERE word_id = ?", (word_id,))
+        return
+    conn.execute(
+        """
+        INSERT INTO word_auto_known (
+            word_id, first_know_streak, last_first_seen_on, updated_at
+        )
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(word_id) DO UPDATE SET
+            first_know_streak = excluded.first_know_streak,
+            last_first_seen_on = excluded.last_first_seen_on,
+            updated_at = excluded.updated_at
+        """,
+        (
+            word_id,
+            row["first_know_streak"],
+            row["last_first_seen_on"],
+            row["updated_at"],
+        ),
+    )
+
+
+def update_first_seen_streak(
+    conn: sqlite3.Connection,
+    word_id: int,
+    today: str,
+    answer: str,
+    *,
+    enabled: bool,
+    already_known: bool,
+) -> dict | None:
+    row = auto_known_row(conn, word_id)
+    current_streak = int(row["first_know_streak"]) if row else 0
+    new_streak = current_streak + 1 if answer == "know" else 0
+    conn.execute(
+        """
+        INSERT INTO word_auto_known (word_id, first_know_streak, last_first_seen_on, updated_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(word_id) DO UPDATE SET
+            first_know_streak = excluded.first_know_streak,
+            last_first_seen_on = excluded.last_first_seen_on,
+            updated_at = excluded.updated_at
+        """,
+        (word_id, new_streak, today),
+    )
+    if enabled and answer == "know" and new_streak >= 3 and not already_known:
+        return {"wordId": word_id, "streak": new_streak}
+    return None
+
+
+def set_current_card(conn: sqlite3.Connection, card: dict | None) -> None:
+    """Remember which word was just served so /api/answer can reject stale or
+    duplicate submissions (e.g. rapid double-clicks / key-repeat on the answer
+    buttons, which used to inflate a word's score and re-loop the last words)."""
+    if card and card.get("id") is not None:
+        set_state(conn, "current_card", str(card["id"]))
+    else:
+        # Nothing being served (settlement / between phases): lock so a late
+        # duplicate submit for the previous word is ignored rather than replayed.
+        set_state(conn, "current_card", "0")
+
+
+def claim_current_card(conn: sqlite3.Connection, word_id: int) -> bool:
+    """Atomically claim the served card. Returns True if `word_id` is the card we
+    are currently waiting on (and consumes it so it can only be answered once);
+    returns False for a stale or duplicate submit. An empty value means nothing
+    has been served yet (fresh state) -> allow for backwards compatibility.
+
+    The consume is a single UPDATE so it is race-safe under ThreadingHTTPServer:
+    SQLite serializes the writes, so only the first of two concurrent identical
+    submits matches `value = word_id` and wins."""
+    expected = get_state(conn, "current_card", "")
+    if expected == "":
+        return True
+    cursor = conn.execute(
+        "UPDATE app_state SET value = '0' WHERE key = 'current_card' AND value = ?",
+        (str(word_id),),
+    )
+    return cursor.rowcount > 0
+
+
 def seed_grammar_points(conn: sqlite3.Connection) -> None:
+    current_version = get_grammar_state(conn, "dataset_version", "")
+    if current_version != GRAMMAR_DATASET_VERSION:
+        existing_count = conn.execute("SELECT COUNT(*) FROM grammar_points").fetchone()[0]
+        if existing_count:
+            conn.execute(
+                """
+                INSERT INTO grammar_points_archive (
+                    dataset_version, id, pattern, meaning, prompt, formation,
+                    example_jp, example_meaning, notes, confusions, level,
+                    importance, sort_order
+                )
+                SELECT ?, id, pattern, meaning, prompt, formation, example_jp,
+                    example_meaning, notes, confusions, level, importance, sort_order
+                FROM grammar_points
+                """,
+                (current_version or "legacy-before-pdf-n4",),
+            )
+        conn.execute("DELETE FROM grammar_reviews")
+        conn.execute("DELETE FROM grammar_progress")
+        conn.execute("DELETE FROM grammar_points")
+        set_grammar_state(conn, "queue", "[]")
+        set_grammar_state(conn, "dataset_version", GRAMMAR_DATASET_VERSION)
+
     for index, item in enumerate(GRAMMAR_POINTS, start=1):
         conn.execute(
             """
@@ -664,14 +1128,16 @@ def apply_grammar_daily_decay(conn: sqlite3.Connection) -> None:
 
 
 def grammar_card(row: sqlite3.Row) -> dict:
+    question = grammar_question_prompt(row["meaning"])
     return {
         "id": row["id"],
-        "pattern": row["pattern"],
+        "pattern": question,
         "meaning": row["meaning"],
-        "prompt": row["prompt"],
+        # prompt 与题目一致,前端不会再额外显示一行泄露假名语法形。
+        "prompt": question,
         "formation": row["formation"],
         "example": {
-            "jp": row["example_jp"],
+            "jp": furigana(row["example_jp"]),
             "meaning": row["example_meaning"],
         },
         "notes": row["notes"],
@@ -695,8 +1161,15 @@ def grammar_card_by_id(conn: sqlite3.Connection, grammar_id: int) -> dict | None
     return grammar_card(row) if row else None
 
 
-def pick_grammar_next(conn: sqlite3.Connection) -> dict | None:
+def grammar_level_clause(level: str | None) -> tuple[str, tuple[str, ...]]:
+    if not level or level == "All":
+        return "", ()
+    return " AND g.level = ? ", (level,)
+
+
+def pick_grammar_next(conn: sqlite3.Connection, level: str | None = None) -> dict | None:
     today = TODAY()
+    level_clause, level_params = grammar_level_clause(level)
     due_ids = [
         int(item.get("grammar_id", 0))
         for item in get_grammar_queue(conn)
@@ -713,16 +1186,17 @@ def pick_grammar_next(conn: sqlite3.Connection) -> dict | None:
             WHERE g.id IN ({placeholders})
               AND p.known_forever = 0
               AND (p.mastered_on IS NULL OR p.mastered_on != ?)
+              {level_clause}
             ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC
             LIMIT 1
             """,
-            (*due_ids, today),
+            (*due_ids, today, *level_params),
         ).fetchone()
         if row:
             return grammar_card(row)
 
     critical = conn.execute(
-        """
+        f"""
         SELECT g.*, p.score, p.seen_count, p.forgot_count, p.fuzzy_count,
                p.right_count, p.mistake_streak
         FROM grammar_points g
@@ -731,16 +1205,17 @@ def pick_grammar_next(conn: sqlite3.Connection) -> dict | None:
           AND p.seen_count > 0
           AND p.score <= ?
           AND (p.mastered_on IS NULL OR p.mastered_on != ?)
+          {level_clause}
         ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC, g.importance DESC
         LIMIT 1
         """,
-        (CRITICAL_SCORE, today),
+        (CRITICAL_SCORE, today, *level_params),
     ).fetchone()
     if critical:
         return grammar_card(critical)
 
     low = conn.execute(
-        """
+        f"""
         SELECT g.*, p.score, p.seen_count, p.forgot_count, p.fuzzy_count,
                p.right_count, p.mistake_streak
         FROM grammar_points g
@@ -749,35 +1224,97 @@ def pick_grammar_next(conn: sqlite3.Connection) -> dict | None:
           AND p.seen_count > 0
           AND p.score <= 6
           AND (p.mastered_on IS NULL OR p.mastered_on != ?)
+          {level_clause}
         ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC, g.importance DESC
         LIMIT 1
         """,
-        (today,),
+        (today, *level_params),
     ).fetchone()
     if low:
         return grammar_card(low)
 
     unseen = conn.execute(
-        """
+        f"""
         SELECT g.*, p.score, p.seen_count, p.forgot_count, p.fuzzy_count,
                p.right_count, p.mistake_streak
         FROM grammar_points g
         JOIN grammar_progress p ON p.grammar_id = g.id
         WHERE p.known_forever = 0
           AND p.seen_count = 0
-        ORDER BY CASE g.level WHEN 'N5' THEN 1 WHEN 'N4' THEN 2 ELSE 9 END, g.sort_order ASC
+          {level_clause}
+        ORDER BY CASE g.level
+            WHEN 'N5' THEN 1
+            WHEN 'N4' THEN 2
+            WHEN 'N3' THEN 3
+            WHEN 'N2' THEN 4
+            WHEN 'N1' THEN 5
+            ELSE 9
+        END, g.sort_order ASC
         LIMIT 1
-        """
+        """,
+        level_params,
     ).fetchone()
     if unseen:
         return grammar_card(unseen)
     return None
 
 
-def grammar_stats(conn: sqlite3.Connection) -> dict:
-    today = TODAY()
+def pick_grammar_random(conn: sqlite3.Connection, level: str | None = None) -> dict | None:
+    """考题阶段:纯随机抽题(按等级过滤),不走 SRS 推词算法。"""
+    level_clause, level_params = grammar_level_clause(level)
     row = conn.execute(
-        """
+        f"""
+        SELECT g.*, p.score
+        FROM grammar_points g
+        JOIN grammar_progress p ON p.grammar_id = g.id
+        WHERE p.known_forever = 0
+          {level_clause}
+        ORDER BY RANDOM()
+        LIMIT 1
+        """,
+        level_params,
+    ).fetchone()
+    return grammar_card(row) if row else None
+
+
+def grammar_review_list(conn: sqlite3.Connection, level: str | None = None, limit: int = 300) -> list[dict]:
+    """复习板块:按不熟悉程度(分数升序)排列语法点。"""
+    level_clause, level_params = grammar_level_clause(level)
+    rows = conn.execute(
+        f"""
+        SELECT g.id, g.pattern, g.prompt, g.meaning, g.level, g.formation, g.importance,
+               p.score, p.seen_count, p.forgot_count, p.fuzzy_count, p.right_count
+        FROM grammar_points g
+        JOIN grammar_progress p ON p.grammar_id = g.id
+        WHERE p.known_forever = 0
+          {level_clause}
+        ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC, g.importance DESC
+        LIMIT ?
+        """,
+        (*level_params, limit),
+    ).fetchall()
+    return [
+        {
+            "id": r["id"],
+            "pattern": furigana(clean_grammar_title(r["pattern"], r["prompt"])),
+            "meaning": r["meaning"],
+            "level": r["level"],
+            "formation": r["formation"],
+            "score": round(r["score"], 1),
+            "seen": r["seen_count"],
+            "forgot": r["forgot_count"],
+            "fuzzy": r["fuzzy_count"],
+            "right": r["right_count"],
+        }
+        for r in rows
+    ]
+
+
+def grammar_stats(conn: sqlite3.Connection, level: str | None = None) -> dict:
+    today = TODAY()
+    level_clause, level_params = grammar_level_clause(level)
+    row = conn.execute(
+        f"""
         SELECT
             COUNT(*) AS total,
             SUM(CASE WHEN p.known_forever = 1 THEN 1 ELSE 0 END) AS known_forever,
@@ -786,12 +1323,20 @@ def grammar_stats(conn: sqlite3.Connection) -> dict:
             SUM(CASE WHEN p.mastered_on = ? THEN 1 ELSE 0 END) AS mastered_today
         FROM grammar_points g
         JOIN grammar_progress p ON p.grammar_id = g.id
+        WHERE 1 = 1
+        {level_clause}
         """,
-        (today,),
+        (today, *level_params),
     ).fetchone()
     reviewed_today = conn.execute(
-        "SELECT COUNT(DISTINCT grammar_id) FROM grammar_reviews WHERE reviewed_on = ?",
-        (today,),
+        f"""
+        SELECT COUNT(DISTINCT r.grammar_id)
+        FROM grammar_reviews r
+        JOIN grammar_points g ON g.id = r.grammar_id
+        WHERE r.reviewed_on = ?
+        {level_clause}
+        """,
+        (today, *level_params),
     ).fetchone()[0]
     total = row["total"] or 0
     done = (row["known_forever"] or 0) + (total - (row["unseen"] or 0) - (row["low_count"] or 0))
@@ -808,7 +1353,7 @@ def grammar_stats(conn: sqlite3.Connection) -> dict:
     }
 
 
-def answer_grammar(conn: sqlite3.Connection, grammar_id: int, answer: str) -> dict:
+def answer_grammar(conn: sqlite3.Connection, grammar_id: int, answer: str, level: str | None = None) -> dict:
     today = TODAY()
     progress = conn.execute(
         "SELECT * FROM grammar_progress WHERE grammar_id = ?",
@@ -867,7 +1412,7 @@ def answer_grammar(conn: sqlite3.Connection, grammar_id: int, answer: str) -> di
         """,
         (grammar_id, answer, score, today),
     )
-    return {"card": pick_grammar_next(conn), "stats": grammar_stats(conn)}
+    return {"card": pick_grammar_next(conn, level), "stats": grammar_stats(conn, level)}
 
 
 def backfill_examples(conn: sqlite3.Connection) -> None:
@@ -982,6 +1527,59 @@ def checkin_days(conn: sqlite3.Connection) -> list[str]:
     ]
 
 
+def add_word_study_seconds(conn: sqlite3.Connection, seconds: int) -> int:
+    seconds = max(0, min(int(seconds), 300))
+    today = TODAY()
+    if seconds:
+        conn.execute(
+            """
+            INSERT INTO word_study_time (studied_on, seconds, updated_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(studied_on) DO UPDATE SET
+                seconds = word_study_time.seconds + excluded.seconds,
+                updated_at = excluded.updated_at
+            """,
+            (today, seconds),
+        )
+    return word_study_seconds(conn, today)
+
+
+def word_study_seconds(conn: sqlite3.Connection, studied_on: str | None = None) -> int:
+    row = conn.execute(
+        "SELECT seconds FROM word_study_time WHERE studied_on = ?",
+        (studied_on or TODAY(),),
+    ).fetchone()
+    return int(row["seconds"] or 0) if row else 0
+
+
+def daily_study_stats(conn: sqlite3.Connection) -> list[dict]:
+    days: dict[str, dict[str, int | str]] = {}
+    for row in conn.execute(
+        """
+        SELECT studied_on, seconds
+        FROM word_study_time
+        WHERE studied_on BETWEEN '2026-06-01' AND '2027-06-30'
+        """
+    ).fetchall():
+        day = row["studied_on"]
+        days.setdefault(day, {"date": day, "seconds": 0, "wordCount": 0})
+        days[day]["seconds"] = int(row["seconds"] or 0)
+    for row in conn.execute(
+        """
+        SELECT reviewed_on, COUNT(DISTINCT word_id) AS word_count
+        FROM reviews
+        WHERE reviewed_on BETWEEN '2026-06-01' AND '2027-06-30'
+        GROUP BY reviewed_on
+        """
+    ).fetchall():
+        day = row["reviewed_on"]
+        days.setdefault(day, {"date": day, "seconds": 0, "wordCount": 0})
+        days[day]["wordCount"] = int(row["word_count"] or 0)
+    for day in checkin_days(conn):
+        days.setdefault(day, {"date": day, "seconds": 0, "wordCount": 0})
+    return [days[day] for day in sorted(days)]
+
+
 def record_critical_review(conn: sqlite3.Connection, word_id: int) -> None:
     conn.execute(
         "INSERT OR IGNORE INTO critical_reviews (reviewed_on, word_id) VALUES (?, ?)",
@@ -1071,6 +1669,74 @@ def backfill_stage2_from_reviews(conn: sqlite3.Connection) -> None:
             """,
             (today, row["word_id"], index),
         )
+    conn.execute(
+        """
+        WITH rollup AS (
+            SELECT
+                word_id,
+                COUNT(*) AS seen,
+                CASE
+                    WHEN SUM(
+                        CASE answer
+                            WHEN 'forgot' THEN -10
+                            WHEN 'fuzzy' THEN -5
+                            WHEN 'know' THEN 10
+                            ELSE 0
+                        END
+                    ) < -40 THEN -40
+                    ELSE SUM(
+                        CASE answer
+                            WHEN 'forgot' THEN -10
+                            WHEN 'fuzzy' THEN -5
+                            WHEN 'know' THEN 10
+                            ELSE 0
+                        END
+                    )
+                END AS score
+            FROM reviews
+            WHERE reviewed_on = ?
+              AND answer != 'known_forever'
+            GROUP BY word_id
+        )
+        UPDATE stage2_progress
+        SET temp_score = (
+                SELECT score FROM rollup WHERE rollup.word_id = stage2_progress.word_id
+            ),
+            seen_count = (
+                SELECT seen FROM rollup WHERE rollup.word_id = stage2_progress.word_id
+            ),
+            completed = CASE
+                WHEN (
+                    SELECT score FROM rollup WHERE rollup.word_id = stage2_progress.word_id
+                ) >= 10 THEN 1
+                ELSE completed
+            END,
+            due_after = CASE
+                WHEN (
+                    SELECT score FROM rollup WHERE rollup.word_id = stage2_progress.word_id
+                ) >= 10 THEN NULL
+                ELSE due_after
+            END
+        WHERE reviewed_on = ?
+          AND seen_count = 0
+          AND word_id IN (SELECT word_id FROM rollup)
+        """,
+        (today, today),
+    )
+    conn.execute(
+        """
+        UPDATE stage2_progress
+        SET completed = 1,
+            due_after = NULL
+        WHERE reviewed_on = ?
+          AND word_id IN (
+              SELECT word_id
+              FROM progress
+              WHERE known_forever = 1
+          )
+        """,
+        (today,),
+    )
 
 
 def advance_stage2_queue(conn: sqlite3.Connection, answered_word_id: int) -> None:
@@ -1462,12 +2128,12 @@ def apply_daily_decay(conn: sqlite3.Connection) -> None:
         conn.execute(
             """
             UPDATE progress
-            SET score = MAX(score - ?, -40),
+            SET score = MAX(score - ?, ?),
                 mastered_on = NULL,
                 last_decay_amount = ?
             WHERE word_id = ?
             """,
-            (decay / 10, decay, row["word_id"]),
+            (decay / 10, AUTO_DECAY_FLOOR, decay, row["word_id"]),
         )
     backfill_critical_reviews(conn, today)
     reset_previous_critical_reviews(conn, today)
@@ -1530,10 +2196,13 @@ def conjugations(word: sqlite3.Row) -> list[dict[str, str]]:
 
 
 def verb_pair_hint(conn: sqlite3.Connection | None, row: sqlite3.Row) -> dict | None:
-    key = row["kanji"] if row["kanji"] in VERB_PAIR_HINTS else row["kana"]
-    if key not in VERB_PAIR_HINTS:
+    pair_hints = eggrolls_verb_pair_hints()
+    kanji = row["kanji"] or ""
+    kana = row["kana"] or ""
+    key = kanji if kanji in pair_hints else kana if (not kanji or kanji == kana) and kana in pair_hints else ""
+    if key not in pair_hints:
         return None
-    voice, pair_kanji, pair_kana, note = VERB_PAIR_HINTS[key]
+    voice, pair_kanji, pair_kana, note = pair_hints[key]
     pair = None
     if conn:
         pair = conn.execute(
@@ -1666,6 +2335,13 @@ def confusion_candidates(conn: sqlite3.Connection, row: sqlite3.Row) -> list[dic
     return sense_items + phonetic_items
 
 
+def word_note(conn: sqlite3.Connection | None, word_id: int) -> str:
+    if not conn:
+        return ""
+    row = conn.execute("SELECT note FROM word_notes WHERE word_id = ?", (word_id,)).fetchone()
+    return row["note"] if row else ""
+
+
 def row_to_card(row: sqlite3.Row, conn: sqlite3.Connection | None = None) -> dict:
     try:
         personal_mistake_score = mistake_score(row)
@@ -1675,14 +2351,18 @@ def row_to_card(row: sqlite3.Row, conn: sqlite3.Connection | None = None) -> dic
     return {
         "id": row["id"],
         "meaning": row["meaning"],
+        "questionMeaning": question_meaning(row["meaning"]),
         "primaryMeaning": primary_meaning(row["meaning"]),
         "promptMeaning": prompt_meaning(row["meaning"], row["id"], row["kanji"]),
+        "honorificLabel": honorific_label(row["meaning"]),
         "kana": row["kana"],
         "kanji": row["kanji"],
+        "englishOrigin": english_origin(row["kanji"], row["kana"], row["meaning"]),
         "pos": row["pos"],
         "score": round(row["score"], 1),
         "importance": row["importance"],
         "importanceScore": round(importance_score, 1),
+        "note": word_note(conn, row["id"]),
         "example": {
             "jp": row["example_jp"] or "",
             "meaning": row["example_meaning"] or "",
@@ -2122,7 +2802,8 @@ def create_stage1_tasks(conn: sqlite3.Connection, today: str) -> None:
 
 
 def ensure_stage1_tasks(conn: sqlite3.Connection) -> None:
-    create_stage1_tasks(conn, TODAY())
+    today = TODAY()
+    create_stage1_tasks(conn, today)
 
 
 def stage1_progress_counts(conn: sqlite3.Connection) -> tuple[int, int]:
@@ -2131,15 +2812,26 @@ def stage1_progress_counts(conn: sqlite3.Connection) -> tuple[int, int]:
     total = stage1_task_count(conn, today)
     completed = conn.execute(
         """
-        SELECT COUNT(*)
+        SELECT SUM(
+            CASE
+                WHEN p.known_forever = 1 THEN 1
+                WHEN p.score > 6 THEN 1
+                ELSE 0
+            END
+        )
         FROM stage1_tasks t
         JOIN progress p ON p.word_id = t.word_id
+        LEFT JOIN (
+            SELECT word_id, COUNT(*) AS seen_count
+            FROM reviews
+            WHERE reviewed_on = ?
+            GROUP BY word_id
+        ) today_seen ON today_seen.word_id = t.word_id
         WHERE t.reviewed_on = ?
-          AND (p.score > 6 OR p.known_forever = 1)
         """,
-        (today,),
-    ).fetchone()[0]
-    return min(completed, total), total
+        (today, today),
+    ).fetchone()[0] or 0
+    return min(int(completed), total), total
 
 
 def days_since(date_text: str | None) -> int:
@@ -2205,24 +2897,25 @@ def pick_due_critical_pool_row(rows: list[sqlite3.Row], *, score_key: str = "sco
     has_floor_word = any(float(row[score_key]) <= -40 for row in rows)
     if not has_floor_word:
         return None
-    critical_rows = [row for row in rows if float(row[score_key]) <= CRITICAL_SCORE]
-    if not critical_rows:
+    low_rows = list(rows)
+    if not low_rows:
         return None
-    critical_rows.sort(
+    low_rows.sort(
         key=lambda row: (
             float(row[score_key]),
             row["today_seen_count"] if "today_seen_count" in row.keys() else row["seen_count"],
             row["order_index"],
         )
     )
-    pool = critical_rows[:critical_pool_size(len(critical_rows))]
+    pool = low_rows[:critical_pool_size(len(low_rows))]
     due_pool = [
         row for row in pool
         if row["due_after"] is None or int(row["due_after"]) <= 0
     ]
-    selectable = due_pool or pool
+    if not due_pool:
+        return None
     return min(
-        selectable,
+        due_pool,
         key=lambda row: (
             row["today_seen_count"] if "today_seen_count" in row.keys() else row["seen_count"],
             float(row[score_key]),
@@ -2235,18 +2928,19 @@ def pick_stage1_critical_pool_row(rows: list[sqlite3.Row], queue_by_id: dict[int
     has_floor_word = any(float(row["score"]) <= -40 for row in rows)
     if not has_floor_word:
         return None
-    critical_rows = [row for row in rows if float(row["score"]) <= CRITICAL_SCORE]
-    if not critical_rows:
+    low_rows = list(rows)
+    if not low_rows:
         return None
-    critical_rows.sort(key=lambda row: (float(row["score"]), row["today_seen_count"], row["order_index"]))
-    pool = critical_rows[:critical_pool_size(len(critical_rows))]
+    low_rows.sort(key=lambda row: (float(row["score"]), row["today_seen_count"], row["order_index"]))
+    pool = low_rows[:critical_pool_size(len(low_rows))]
     due_pool = [
         row for row in pool
         if queue_by_id.get(row["id"], 0) <= 0
     ]
-    selectable = due_pool or pool
+    if not due_pool:
+        return None
     return min(
-        selectable,
+        due_pool,
         key=lambda row: (
             queue_by_id.get(row["id"], 0),
             row["today_seen_count"],
@@ -2317,7 +3011,10 @@ def pick_stage1_next(conn: sqlite3.Connection) -> dict | None:
         ) today_seen ON today_seen.word_id = t.word_id
         WHERE t.reviewed_on = ?
           AND p.known_forever = 0
-          AND p.score <= 6
+          AND (
+              (t.task_type = 'new' AND p.seen_count = 0)
+              OR p.score <= 6
+          )
         """,
         (today, today),
     ).fetchall()
@@ -2355,6 +3052,12 @@ def pick_stage1_next(conn: sqlite3.Connection) -> dict | None:
 
 
 def next_card(conn: sqlite3.Connection) -> tuple[dict | None, str]:
+    card, phase = _resolve_next_card(conn)
+    set_current_card(conn, card)
+    return card, phase
+
+
+def _resolve_next_card(conn: sqlite3.Connection) -> tuple[dict | None, str]:
     phase = current_phase(conn)
     if phase == "done":
         return None, "done"
@@ -2453,8 +3156,11 @@ def stats(conn: sqlite3.Connection) -> dict:
         "kanjiCompleted": kanji["completed"],
         "studyDate": today,
         "checkins": checkin_days(conn),
+        "dailyStudyStats": daily_study_stats(conn),
+        "wordStudySecondsToday": word_study_seconds(conn, today),
         "taskDone": task_done,
         "difficultWords": difficult_words(conn),
+        "settings": settings_payload(conn),
     }
 
 
@@ -2494,6 +3200,10 @@ class Handler(SimpleHTTPRequestHandler):
                 apply_daily_decay(conn)
                 self.send_json({"stats": stats(conn)})
             return
+        if path == "/api/settings":
+            with connect() as conn:
+                self.send_json({"settings": settings_payload(conn)})
+            return
         if path == "/api/seen-words":
             query = parse_qs(parsed.query)
             offset = int(query.get("offset", ["0"])[0] or 0)
@@ -2504,15 +3214,28 @@ class Handler(SimpleHTTPRequestHandler):
                 self.send_json(seen_words_page(conn, offset, limit, sort))
             return
         if path == "/api/grammar/next":
+            query = parse_qs(parsed.query)
+            level = query.get("level", ["All"])[0] or "All"
+            mode = query.get("mode", [""])[0]
             with connect() as conn:
                 apply_grammar_daily_decay(conn)
-                card = pick_grammar_next(conn)
-                self.send_json({"card": card, "stats": grammar_stats(conn)})
+                # 考题阶段:mode=random 时纯随机抽题,不走 SRS 推词
+                card = pick_grammar_random(conn, level) if mode == "random" else pick_grammar_next(conn, level)
+                self.send_json({"card": card, "stats": grammar_stats(conn, level)})
+            return
+        if path == "/api/grammar/review":
+            query = parse_qs(parsed.query)
+            level = query.get("level", ["All"])[0] or "All"
+            with connect() as conn:
+                apply_grammar_daily_decay(conn)
+                self.send_json({"items": grammar_review_list(conn, level)})
             return
         if path == "/api/grammar/stats":
+            query = parse_qs(parsed.query)
+            level = query.get("level", ["All"])[0] or "All"
             with connect() as conn:
                 apply_grammar_daily_decay(conn)
-                self.send_json({"stats": grammar_stats(conn)})
+                self.send_json({"stats": grammar_stats(conn, level)})
             return
         if path == "/grammar":
             self.path = "/grammar.html"
@@ -2530,6 +3253,50 @@ class Handler(SimpleHTTPRequestHandler):
         except json.JSONDecodeError:
             self.send_json({"error": "Invalid JSON"}, 400)
             return
+        if path == "/api/word-study-time":
+            seconds = int(payload.get("seconds", 0) or 0)
+            with connect() as conn:
+                total = add_word_study_seconds(conn, seconds)
+                self.send_json({"seconds": total, "stats": stats(conn)})
+            return
+
+        if path == "/api/settings":
+            auto_known = payload.get("autoKnownEnabled")
+            if not isinstance(auto_known, bool):
+                self.send_json({"error": "Invalid settings"}, 400)
+                return
+            with connect() as conn:
+                set_state(conn, "auto_known_enabled", "1" if auto_known else "0")
+                self.send_json({"settings": settings_payload(conn), "stats": stats(conn)})
+            return
+
+        if path == "/api/word-note":
+            word_id = int(payload.get("wordId", 0) or 0)
+            note = str(payload.get("note", "")).strip()
+            if word_id <= 0:
+                self.send_json({"error": "Invalid word"}, 400)
+                return
+            with connect() as conn:
+                exists = conn.execute("SELECT 1 FROM words WHERE id = ?", (word_id,)).fetchone()
+                if not exists:
+                    self.send_json({"error": "Word not found"}, 404)
+                    return
+                if note:
+                    conn.execute(
+                        """
+                        INSERT INTO word_notes (word_id, note, updated_at)
+                        VALUES (?, ?, CURRENT_TIMESTAMP)
+                        ON CONFLICT(word_id) DO UPDATE SET
+                            note = excluded.note,
+                            updated_at = excluded.updated_at
+                        """,
+                        (word_id, note),
+                    )
+                else:
+                    conn.execute("DELETE FROM word_notes WHERE word_id = ?", (word_id,))
+                self.send_json({"wordId": word_id, "note": note})
+            return
+
         if path == "/api/undo":
             with connect() as conn:
                 snapshot = get_state(conn, "last_answer", "")
@@ -2556,6 +3323,7 @@ class Handler(SimpleHTTPRequestHandler):
                     )
                     set_phase(conn, "stage2")
                     delete_state(conn, "last_answer")
+                    set_state(conn, "current_card", str(previous["word_id"]))
                     self.send_json(
                         {
                             "card": stage2_card_by_id(conn, previous["word_id"]),
@@ -2613,6 +3381,7 @@ class Handler(SimpleHTTPRequestHandler):
                         conn.execute("DELETE FROM kanji_memory WHERE word_id = ?", (previous["word_id"],))
                     set_phase(conn, "kanji")
                     delete_state(conn, "last_answer")
+                    set_state(conn, "current_card", str(previous["word_id"]))
                     self.send_json(
                         {
                             "card": kanji_card_by_id(conn, previous["word_id"]),
@@ -2647,8 +3416,10 @@ class Handler(SimpleHTTPRequestHandler):
                 )
                 if previous.get("review_id"):
                     conn.execute("DELETE FROM reviews WHERE id = ?", (previous["review_id"],))
+                restore_auto_known_row(conn, previous)
                 set_review_queue(conn, previous.get("review_queue", []))
                 delete_state(conn, "last_answer")
+                set_state(conn, "current_card", str(previous["word_id"]))
                 self.send_json(
                     {
                         "card": card_by_id(conn, previous["word_id"]),
@@ -2757,13 +3528,14 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/grammar/answer":
             answer = payload.get("answer")
             grammar_id = int(payload.get("grammarId", 0))
+            level = str(payload.get("level", "All") or "All")
             if answer not in {"forgot", "fuzzy", "know", "known_forever"} or grammar_id <= 0:
                 self.send_json({"error": "Invalid answer"}, 400)
                 return
             with connect() as conn:
                 apply_grammar_daily_decay(conn)
                 try:
-                    self.send_json(answer_grammar(conn, grammar_id, answer))
+                    self.send_json(answer_grammar(conn, grammar_id, answer, level))
                 except ValueError as error:
                     self.send_json({"error": str(error)}, 404)
             return
@@ -2779,6 +3551,15 @@ class Handler(SimpleHTTPRequestHandler):
 
         with connect() as conn:
             today = TODAY()
+            if not claim_current_card(conn, word_id):
+                # Stale or duplicate submission (e.g. a rapid double-click or
+                # key-repeat that fired before the card advanced). Do NOT score
+                # the word again; just re-sync the client with the current card.
+                card, phase = next_card(conn)
+                self.send_json(
+                    {"card": card, "phase": phase, "stats": stats(conn), "duplicate": True}
+                )
+                return
             phase = current_phase(conn)
             if phase == "stage2":
                 current = conn.execute(
@@ -2910,7 +3691,17 @@ class Handler(SimpleHTTPRequestHandler):
             if not progress:
                 self.send_json({"error": "Word not found"}, 404)
                 return
+            stage1_task = conn.execute(
+                """
+                SELECT task_type
+                FROM stage1_tasks
+                WHERE reviewed_on = ? AND word_id = ?
+                """,
+                (today, word_id),
+            ).fetchone()
+            task_type = stage1_task["task_type"] if stage1_task else "review"
             advance_review_queue(conn, word_id)
+            previous_auto_known = auto_known_row(conn, word_id)
             snapshot = {
                 "phase": "stage1",
                 "word_id": word_id,
@@ -2924,10 +3715,17 @@ class Handler(SimpleHTTPRequestHandler):
                 "fuzzy_count": progress["fuzzy_count"],
                 "forgot_count": progress["forgot_count"],
                 "mistake_streak": progress["mistake_streak"],
+                "task_type": task_type,
                 "review_queue": get_review_queue(conn),
+                "auto_known_row": {key: previous_auto_known[key] for key in previous_auto_known.keys()} if previous_auto_known else None,
             }
             score = progress["score"]
             known_forever = progress["known_forever"]
+            auto_known = None
+            first_seen_today = conn.execute(
+                "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ?",
+                (word_id, today),
+            ).fetchone()[0] == 0
             if answer == "known_forever":
                 known_forever = 1
                 right_count = progress["right_count"]
@@ -2935,12 +3733,30 @@ class Handler(SimpleHTTPRequestHandler):
                 forgot_count = progress["forgot_count"]
                 mistake_streak = 0
             else:
-                delta = {"forgot": -10, "fuzzy": -5, "know": 10}[answer]
+                # First "know" of the day on a word earns a +5 first-impression
+                # bonus (+15 instead of +10). Only the day's first sighting counts;
+                # fuzzy/forgot and later sightings are unchanged.
+                if answer == "know" and first_seen_today:
+                    delta = 15
+                else:
+                    delta = {"forgot": -10, "fuzzy": -5, "know": 10}[answer]
                 score = max(score + delta, -40)
                 right_count = progress["right_count"] + (1 if answer == "know" else 0)
                 fuzzy_count = progress["fuzzy_count"] + (1 if answer == "fuzzy" else 0)
                 forgot_count = progress["forgot_count"] + (1 if answer == "forgot" else 0)
                 mistake_streak = 0 if answer == "know" else progress["mistake_streak"] + 1
+                if first_seen_today:
+                    auto_known = update_first_seen_streak(
+                        conn,
+                        word_id,
+                        today,
+                        answer,
+                        enabled=auto_known_enabled(conn),
+                        already_known=bool(progress["known_forever"]),
+                    )
+                    if auto_known:
+                        known_forever = 1
+                        score = max(score, 10)
             low_history = progress["low_history"] or 0
             if score <= CRITICAL_SCORE:
                 low_history = 1
@@ -2949,7 +3765,7 @@ class Handler(SimpleHTTPRequestHandler):
             mastered_on = today if score >= 10 and not known_forever else None
             if score <= 6 and not known_forever:
                 schedule_delayed_review(conn, word_id)
-            if answer != "known_forever":
+            if answer != "known_forever" and not auto_known:
                 record_stage2_word(conn, word_id)
             conn.execute(
                 """
@@ -2980,7 +3796,7 @@ class Handler(SimpleHTTPRequestHandler):
             snapshot["review_id"] = cursor.lastrowid
             set_state(conn, "last_answer", json.dumps(snapshot, ensure_ascii=False))
             card, response_phase = next_card(conn)
-            self.send_json({"card": card, "phase": response_phase, "stats": stats(conn)})
+            self.send_json({"card": card, "phase": response_phase, "stats": stats(conn), "autoKnown": auto_known})
 
 
 def main() -> None:

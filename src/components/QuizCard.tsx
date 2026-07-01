@@ -7,6 +7,16 @@ interface QuizCardProps {
   onAnswer?: (isCorrect: boolean, userAnswer: string) => void;
 }
 
+const kanaPattern = /[ぁ-んァ-ヶー]/g;
+
+const hideKanaInQuestion = (text: string) =>
+  text
+    .replace(kanaPattern, "")
+    .replace(/[／/・]+/g, "、")
+    .replace(/「\s*」|『\s*』|（\s*）|\(\s*\)/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/^[、，。；:：\s]+|[、，。；:：\s]+$/g, "") || "请根据释义选择";
+
 export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
   const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -23,10 +33,10 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
   };
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Quiz</p>
+    <div className="rounded-lg border border-stone-200 bg-[#81D8CF] p-5 dark:border-zinc-800 dark:bg-zinc-900">
+      <p className="text-sm font-semibold text-[#81D8CF] dark:text-[#81D8CF]">Quiz</p>
       <h3 className="jp mt-2 text-lg font-semibold text-stone-950 dark:text-zinc-50">
-        {question.prompt}
+        {hideKanaInQuestion(question.prompt)}
       </h3>
       <div className="mt-4 space-y-3">
         {question.type === "choice" &&
@@ -35,12 +45,12 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
               key={option}
               className={`focus-ring block w-full rounded-md border px-4 py-3 text-left text-sm ${
                 answer === option
-                  ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
-                  : "border-stone-200 hover:bg-stone-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                  ? "border-[#81D8CF] bg-[#81D8CF]/15 dark:bg-[#81D8CF]/15"
+                  : "border-stone-200 hover:bg-[#81D8CF] dark:border-zinc-700 dark:hover:bg-zinc-800"
               }`}
               onClick={() => setAnswer(option)}
             >
-              {option}
+              {hideKanaInQuestion(option)}
             </button>
           ))}
         {question.type === "boolean" && (
@@ -50,8 +60,8 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
                 key={value}
                 className={`focus-ring rounded-md border px-4 py-3 text-sm ${
                   answer === value
-                    ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
-                    : "border-stone-200 hover:bg-stone-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                    ? "border-[#81D8CF] bg-[#81D8CF]/15 dark:bg-[#81D8CF]/15"
+                    : "border-stone-200 hover:bg-[#81D8CF] dark:border-zinc-700 dark:hover:bg-zinc-800"
                 }`}
                 onClick={() => setAnswer(value)}
               >
@@ -64,7 +74,7 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
           <input
             value={answer}
             onChange={(event) => setAnswer(event.target.value)}
-            className="focus-ring w-full rounded-md border border-stone-300 bg-white px-4 py-3 text-stone-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+            className="focus-ring w-full rounded-md border border-stone-300 bg-[#81D8CF] px-4 py-3 text-stone-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
             placeholder="输入答案"
           />
         )}
@@ -81,8 +91,8 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
         <div
           className={`mt-4 rounded-md p-4 text-sm ${
             isCorrect
-              ? "bg-emerald-50 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
-              : "bg-rose-50 text-rose-900 dark:bg-rose-950 dark:text-rose-200"
+              ? "bg-[#81D8CF]/15 text-[#81D8CF] dark:bg-[#81D8CF]/15 dark:text-[#81D8CF]"
+              : "bg-[#81D8CF]/15 text-[#81D8CF] dark:bg-[#81D8CF]/15 dark:text-[#81D8CF]"
           }`}
         >
           <div className="mb-2 flex items-center gap-2 font-semibold">

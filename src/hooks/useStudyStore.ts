@@ -5,7 +5,6 @@ import { MasteryStatus, MistakeItem, ReviewItem } from "../types/grammar";
 const REVIEW_KEY = "jp-grammar-review";
 const MISTAKE_KEY = "jp-grammar-mistakes";
 const LEARNED_KEY = "jp-grammar-learned";
-const THEME_KEY = "jp-grammar-theme";
 
 const intervals: Record<MasteryStatus, number> = {
   new: 0,
@@ -43,15 +42,10 @@ export const useStudyStore = () => {
   const [reviews, setReviews] = useState<ReviewItem[]>(() => readJson(REVIEW_KEY, []));
   const [mistakes, setMistakes] = useState<MistakeItem[]>(() => readJson(MISTAKE_KEY, []));
   const [learned, setLearned] = useState<string[]>(() => readJson(LEARNED_KEY, []));
-  const [darkMode, setDarkMode] = useState<boolean>(() => readJson(THEME_KEY, true));
 
   useEffect(() => writeJson(REVIEW_KEY, reviews), [reviews]);
   useEffect(() => writeJson(MISTAKE_KEY, mistakes), [mistakes]);
   useEffect(() => writeJson(LEARNED_KEY, learned), [learned]);
-  useEffect(() => {
-    writeJson(THEME_KEY, darkMode);
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
 
   const reviewMap = useMemo(
     () => new Map(reviews.map((item) => [item.grammarId, item])),
@@ -149,10 +143,8 @@ export const useStudyStore = () => {
     dueReviews,
     mistakes,
     learned,
-    darkMode,
     levelProgress,
     getMastery,
-    setDarkMode,
     markLearned,
     addToReview,
     recordReview,

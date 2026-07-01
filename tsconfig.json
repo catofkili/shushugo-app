@@ -10,9 +10,10 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "tsBuildInfoFile": ".build/tsconfig.tsbuildinfo",
     "noEmit": true,
     "jsx": "react-jsx"
   },

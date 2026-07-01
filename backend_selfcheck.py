@@ -74,6 +74,29 @@ def check_critical_backfill_from_reviews() -> None:
         tempdir.cleanup()
 
 
+def check_daily_decay_stops_at_minus_ten() -> None:
+    tempdir = reset_temp_db()
+    try:
+        with server.connect() as conn:
+            conn.execute(
+                """
+                UPDATE progress
+                SET seen_count = 1, score = -9.5
+                WHERE word_id = 1
+                """
+            )
+            server.set_state(conn, "last_decay", "2000-01-01")
+            server.apply_daily_decay(conn)
+            row = conn.execute("SELECT score FROM progress WHERE word_id = 1").fetchone()
+            assert row["score"] == server.AUTO_DECAY_FLOOR
+
+            answer(conn, 1, "fuzzy")
+            row = conn.execute("SELECT score FROM progress WHERE word_id = 1").fetchone()
+            assert row["score"] == server.AUTO_DECAY_FLOOR - 5
+    finally:
+        tempdir.cleanup()
+
+
 def check_done_stays_done() -> None:
     tempdir = reset_temp_db()
     try:
@@ -251,6 +274,7 @@ def check_seen_word_sorting() -> None:
 def main() -> None:
     check_critical_reset_once()
     check_critical_backfill_from_reviews()
+    check_daily_decay_stops_at_minus_ten()
     check_done_stays_done()
     check_stage2_records_stage1_order()
     check_stage1_progress_counts_complete_words_over_six()

@@ -130,4 +130,4 @@ npm install
 
 ---
 *维护完成时间: 2026-06-11*  
-*维护工具: Claude Opus 4.8*
+*维护工具: Codex*

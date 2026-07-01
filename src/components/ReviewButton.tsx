@@ -9,14 +9,14 @@ interface ReviewButtonProps {
 export const ReviewButton = ({ learned, onLearned, onReview }: ReviewButtonProps) => (
   <div className="flex flex-wrap gap-3">
     <button
-      className="focus-ring inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
+      className="focus-ring inline-flex items-center gap-2 rounded-md bg-[#81D8CF] px-4 py-2 text-sm font-semibold text-white hover:bg-[#81D8CF]"
       onClick={onLearned}
     >
       <BookOpenCheck size={16} />
       {learned ? "已学过" : "Mark as learned"}
     </button>
     <button
-      className="focus-ring inline-flex items-center gap-2 rounded-md border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-900"
+      className="focus-ring inline-flex items-center gap-2 rounded-md border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-[#81D8CF] dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-900"
       onClick={onReview}
     >
       <Repeat size={16} />

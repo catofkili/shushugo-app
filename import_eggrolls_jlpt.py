@@ -33,7 +33,7 @@ def level_rank(deck: str) -> int:
 
 
 def infer_verb_type(pos: str, kana: str, kanji: str) -> str | None:
-    if "サ変" in pos or "する" in kanji or "する" in kana:
+    if "サ変" in pos or ("名" in pos and "動3" in pos) or "する" in kanji or "する" in kana:
         return "suru"
     if "動" not in pos and "动" not in pos:
         return None

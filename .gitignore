@@ -11,6 +11,8 @@ ENV/
 # Database backups
 archive_backups/
 *.before_*.sqlite3
+*.bak_*
+*backup*.sqlite3
 
 # Keep main database but ignore if needed
 # japanese_words.sqlite3
@@ -35,6 +37,7 @@ node_modules/
 *.err
 *.err.log
 *.run.log
+server.pid
 
 # Realm backup
 *.realm
