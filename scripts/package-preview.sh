@@ -1,10 +1,37 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+find_project_root() {
+  local dir="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -f "$dir/frontend/package.json" && -f "$dir/cloudflare-sync/wrangler.jsonc" && -d "$dir/frontend/src" ]]; then
+      printf '%s\n' "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+
+  dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -f "$dir/frontend/package.json" && -f "$dir/cloudflare-sync/wrangler.jsonc" && -d "$dir/frontend/src" ]]; then
+      printf '%s\n' "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+
+  return 1
+}
+
+ROOT_DIR="${PROJECT_DIR:-$(find_project_root)}"
 DATE_TAG="$(date +%Y-%m-%d)"
 OUTPUT="${1:-"$HOME/Documents/master-nihongo-ios-preview-$DATE_TAG.zip"}"
 TMP_ZIP="$OUTPUT.tmp"
+
+if [[ -z "$ROOT_DIR" || ! -d "$ROOT_DIR" ]]; then
+  echo "Could not locate project root. Set PROJECT_DIR=/path/to/master-nihongo-ios." >&2
+  exit 1
+fi
 
 cd "$ROOT_DIR"
 rm -f "$TMP_ZIP" "$OUTPUT"
