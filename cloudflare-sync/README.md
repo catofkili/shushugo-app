@@ -15,9 +15,33 @@ npm run kv:create
 Copy the `database_id` printed by `d1:create` into `wrangler.jsonc`, then run:
 
 ```bash
-npm run d1:migrate
+npm run d1:migrate:remote
 npm run deploy
 ```
+
+## Transactional email
+
+Email verification and password reset use Resend's REST API.
+
+1. Add a sending domain in Resend.
+2. Add the DNS records Resend shows for SPF, DKIM, and DMARC.
+3. Create a Resend API key.
+4. Store it as a Worker secret:
+
+```bash
+cd cloudflare-sync
+npx wrangler secret put RESEND_API_KEY
+```
+
+Set the sender address as a Worker variable or secret:
+
+```bash
+npx wrangler secret put EMAIL_FROM
+# Example value:
+# Master Nihongo <noreply@your-domain.com>
+```
+
+For a quick private test, Resend's default `onboarding@resend.dev` sender can be used, but production should use a verified domain sender.
 
 After deployment, set the iOS frontend env var:
 
@@ -33,7 +57,15 @@ npx cap sync ios
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `POST /api/auth/change-password`
+- `POST /api/auth/send-verification-email`
+- `POST /api/auth/verify-email`
+- `POST /api/auth/request-password-reset`
+- `POST /api/auth/reset-password`
 - `GET /api/user/profile`
+- `GET /api/entitlements`
+- `POST /api/purchases/verify`
 - `POST /api/sync/push`
 - `GET /api/sync/pull`
 

@@ -11,6 +11,10 @@ import {
   getCloudSession,
   pullCloudBackup,
   pushCloudBackup,
+  requestCloudPasswordReset,
+  resetCloudPassword,
+  sendCloudVerificationEmail,
+  verifyCloudEmail,
   type CloudSession
 } from "../lib/sync-api";
 import {
@@ -99,6 +103,10 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   const [cloudEmail, setCloudEmail] = useState("");
   const [cloudPassword, setCloudPassword] = useState("");
   const [cloudBusy, setCloudBusy] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [resetPanelOpen, setResetPanelOpen] = useState(false);
+  const [resetCode, setResetCode] = useState("");
+  const [resetNewPassword, setResetNewPassword] = useState("");
   const [dailyGoalInput, setDailyGoalInput] = useState(String(defaultStudyPreferences.dailyGoal));
   const [clearPanelOpen, setClearPanelOpen] = useState(false);
   const [clearRequiresPasscode, setClearRequiresPasscode] = useState(false);
@@ -264,7 +272,39 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
 
   const registerCloud = () => runCloudAction(
     () => cloudRegister(cloudEmail, cloudPassword),
-    "云同步账号已创建并登录。"
+    "云同步账号已创建，验证码已发送到邮箱。"
+  );
+
+  const sendVerification = () => runCloudAction(
+    sendCloudVerificationEmail,
+    "验证码已发送到邮箱。"
+  );
+
+  const verifyEmail = () => runCloudAction(
+    async () => {
+      const session = await verifyCloudEmail(verificationCode);
+      setCloudSession(session);
+      setVerificationCode("");
+      return "邮箱已验证。";
+    },
+    "邮箱已验证。"
+  );
+
+  const requestPasswordReset = () => runCloudAction(
+    () => requestCloudPasswordReset(cloudEmail),
+    "如果该邮箱已注册，验证码会发送到邮箱。"
+  );
+
+  const submitPasswordReset = () => runCloudAction(
+    async () => {
+      const result = await resetCloudPassword(cloudEmail, resetCode, resetNewPassword);
+      setResetCode("");
+      setResetNewPassword("");
+      setResetPanelOpen(false);
+      setCloudPassword("");
+      return result;
+    },
+    "密码已重置，请使用新密码登录。"
   );
 
   const pushCloud = () => runCloudAction(pushCloudBackup, "云端备份已上传。");
@@ -402,7 +442,7 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
               <p className="mt-0.5 text-xs text-white/50">
                 {cloudSession.configured
                   ? cloudSession.token
-                    ? `已登录：${cloudSession.email}`
+                    ? `已登录：${cloudSession.email} · ${cloudSession.emailVerified ? "邮箱已验证" : "邮箱待验证"}`
                     : "可登录后把本机学习数据库备份到云端"
                   : "还没有配置 VITE_SYNC_API_URL，部署 Cloudflare Worker 后即可启用"}
               </p>
@@ -432,6 +472,34 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {cloudSession.token ? (
                 <>
+                  {!cloudSession.emailVerified && (
+                    <div className="grid gap-2 sm:col-span-2 sm:grid-cols-[1fr_auto_auto]">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={verificationCode}
+                        onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                        className="focus-ring rounded-xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
+                        placeholder="输入 6 位邮箱验证码"
+                        disabled={cloudBusy}
+                      />
+                      <button
+                        onClick={sendVerification}
+                        disabled={cloudBusy}
+                        className="focus-ring rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white/78 hover:bg-white/8 disabled:opacity-50"
+                      >
+                        发送验证码
+                      </button>
+                      <button
+                        onClick={verifyEmail}
+                        disabled={cloudBusy || verificationCode.length !== 6}
+                        className="focus-ring rounded-xl bg-[#81D8CF] px-3 py-2 text-sm font-bold text-[#343838] hover:bg-white disabled:opacity-50"
+                      >
+                        验证邮箱
+                      </button>
+                    </div>
+                  )}
                   <button
                     onClick={pushCloud}
                     disabled={cloudBusy}
@@ -470,9 +538,56 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
                   >
                     创建账号
                   </button>
+                  <button
+                    onClick={() => setResetPanelOpen((value) => !value)}
+                    disabled={cloudBusy || !cloudSession.configured || !cloudEmail}
+                    className="focus-ring rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white/60 hover:bg-white/8 disabled:opacity-50 sm:col-span-2"
+                  >
+                    忘记密码 / 重置密码
+                  </button>
                 </>
               )}
             </div>
+
+            {!cloudSession.token && resetPanelOpen && (
+              <div className="mt-3 rounded-2xl border border-white/15 bg-[#3c3f3f] p-3">
+                <p className="text-xs font-bold text-white/65">先输入上方邮箱，点击发送验证码，再输入验证码和新密码。</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <button
+                    onClick={requestPasswordReset}
+                    disabled={cloudBusy || !cloudEmail}
+                    className="focus-ring rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white/78 hover:bg-white/8 disabled:opacity-50"
+                  >
+                    发送重置验证码
+                  </button>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={resetCode}
+                    onChange={(event) => setResetCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                    className="focus-ring rounded-xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
+                    placeholder="6 位验证码"
+                    disabled={cloudBusy}
+                  />
+                  <input
+                    type="password"
+                    value={resetNewPassword}
+                    onChange={(event) => setResetNewPassword(event.target.value)}
+                    className="focus-ring rounded-xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
+                    placeholder="新密码（至少8位）"
+                    disabled={cloudBusy}
+                  />
+                  <button
+                    onClick={submitPasswordReset}
+                    disabled={cloudBusy || resetCode.length !== 6 || resetNewPassword.length < 8}
+                    className="focus-ring rounded-xl bg-[#81D8CF] px-3 py-2 text-sm font-bold text-[#343838] hover:bg-white disabled:opacity-50"
+                  >
+                    确认重置密码
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <button onClick={exportData} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">

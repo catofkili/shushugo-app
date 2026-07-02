@@ -7,11 +7,13 @@ export interface CloudSession {
   configured: boolean;
   email?: string;
   token?: string;
+  emailVerified?: boolean;
 }
 
 interface TokenResponse {
   access_token: string;
   email: string;
+  emailVerified?: boolean;
   entitlements?: CloudEntitlements;
 }
 
@@ -31,6 +33,7 @@ interface CloudEntitlements {
 const API_URL = (import.meta.env.VITE_SYNC_API_URL ?? "").replace(/\/+$/g, "");
 const TOKEN_KEY = "mn_cloud_sync_token";
 const EMAIL_KEY = "mn_cloud_sync_email";
+const EMAIL_VERIFIED_KEY = "mn_cloud_sync_email_verified";
 
 const bytesToBase64 = (data: Uint8Array): string => {
   let binary = "";
@@ -83,11 +86,24 @@ const applyCloudEntitlements = (data?: CloudEntitlements): EntitlementState | un
 };
 
 export async function getCloudSession(): Promise<CloudSession> {
-  const [{ value: token }, { value: email }] = await Promise.all([
+  const [{ value: storedToken }, { value: storedEmail }, { value: emailVerified }] = await Promise.all([
     Preferences.get({ key: TOKEN_KEY }),
-    Preferences.get({ key: EMAIL_KEY })
+    Preferences.get({ key: EMAIL_KEY }),
+    Preferences.get({ key: EMAIL_VERIFIED_KEY })
   ]);
-  return { configured: Boolean(API_URL), token: token ?? undefined, email: email ?? undefined };
+  return {
+    configured: Boolean(API_URL),
+    token: storedToken ?? undefined,
+    email: storedEmail ?? undefined,
+    emailVerified: emailVerified === "true"
+  };
+}
+
+async function saveCloudSession(data: TokenResponse) {
+  await Preferences.set({ key: TOKEN_KEY, value: data.access_token });
+  await Preferences.set({ key: EMAIL_KEY, value: data.email });
+  await Preferences.set({ key: EMAIL_VERIFIED_KEY, value: data.emailVerified ? "true" : "false" });
+  applyCloudEntitlements(data.entitlements);
 }
 
 export async function cloudRegister(email: string, password: string, displayName?: string): Promise<CloudSession> {
@@ -95,9 +111,7 @@ export async function cloudRegister(email: string, password: string, displayName
     method: "POST",
     body: JSON.stringify({ email, password, display_name: displayName })
   });
-  await Preferences.set({ key: TOKEN_KEY, value: data.access_token });
-  await Preferences.set({ key: EMAIL_KEY, value: data.email });
-  applyCloudEntitlements(data.entitlements);
+  await saveCloudSession(data);
   return getCloudSession();
 }
 
@@ -106,9 +120,7 @@ export async function cloudLogin(email: string, password: string): Promise<Cloud
     method: "POST",
     body: JSON.stringify({ email, password })
   });
-  await Preferences.set({ key: TOKEN_KEY, value: data.access_token });
-  await Preferences.set({ key: EMAIL_KEY, value: data.email });
-  applyCloudEntitlements(data.entitlements);
+  await saveCloudSession(data);
   return getCloudSession();
 }
 
@@ -122,7 +134,46 @@ export async function cloudLogout(): Promise<CloudSession> {
   }
   await Preferences.remove({ key: TOKEN_KEY });
   await Preferences.remove({ key: EMAIL_KEY });
+  await Preferences.remove({ key: EMAIL_VERIFIED_KEY });
   return getCloudSession();
+}
+
+export async function sendCloudVerificationEmail(): Promise<string> {
+  const { token } = await getCloudSession();
+  if (!token) throw new Error("请先登录云同步账号。");
+  await requestJson("/api/auth/send-verification-email", {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}` }
+  });
+  return "验证码已发送到你的邮箱。";
+}
+
+export async function verifyCloudEmail(code: string): Promise<CloudSession> {
+  const { token } = await getCloudSession();
+  if (!token) throw new Error("请先登录云同步账号。");
+  await requestJson("/api/auth/verify-email", {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}` },
+    body: JSON.stringify({ code })
+  });
+  await Preferences.set({ key: EMAIL_VERIFIED_KEY, value: "true" });
+  return getCloudSession();
+}
+
+export async function requestCloudPasswordReset(email: string): Promise<string> {
+  await requestJson("/api/auth/request-password-reset", {
+    method: "POST",
+    body: JSON.stringify({ email })
+  });
+  return "如果该邮箱已注册，验证码会发送到邮箱。";
+}
+
+export async function resetCloudPassword(email: string, code: string, newPassword: string): Promise<string> {
+  await requestJson("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ email, code, new_password: newPassword })
+  });
+  return "密码已重置，请使用新密码登录。";
 }
 
 export async function refreshCloudEntitlements(): Promise<EntitlementState | undefined> {

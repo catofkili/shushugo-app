@@ -6,6 +6,8 @@ export interface Env {
   APP_STORE_PRIVATE_KEY?: string;
   APP_BUNDLE_ID?: string;
   APP_STORE_ENVIRONMENT?: "Sandbox" | "Production";
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
 }
 
 interface UserRow {
@@ -14,6 +16,7 @@ interface UserRow {
   password_hash: string;
   password_salt: string;
   display_name: string | null;
+  email_verified_at?: string | null;
 }
 
 interface SessionRow {
@@ -50,6 +53,8 @@ const PRODUCT_IDS = new Set(["master_pro_monthly", "master_pro_yearly", "master_
 
 const TOKEN_TTL_DAYS = 30;
 const PASSWORD_ITERATIONS = 120_000;
+const EMAIL_CODE_TTL_MINUTES = 30;
+const PASSWORD_RESET_TTL_MINUTES = 15;
 const encoder = new TextEncoder();
 
 const json = (body: unknown, status = 200) => (
@@ -122,6 +127,17 @@ const hashPassword = async (password: string, salt: string) => {
 
 const normalizeEmail = (email: unknown) => String(email ?? "").trim().toLowerCase();
 
+const verificationPayload = (user?: Pick<UserRow, "email_verified_at"> | null) => ({
+  emailVerified: Boolean(user?.email_verified_at)
+});
+
+const randomEmailCode = () => {
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  const value = new DataView(bytes.buffer).getUint32(0);
+  return String(value % 1_000_000).padStart(6, "0");
+};
+
 const readJson = async <T>(request: Request): Promise<T> => {
   try {
     return await request.json<T>();
@@ -143,6 +159,96 @@ const createToken = async (env: Env, userId: string) => {
     VALUES (?, ?, ?, ?)
   `).bind(tokenHash, userId, now.toISOString(), expires.toISOString()).run();
   return token;
+};
+
+const emailHtml = (title: string, code: string, minutes: number) => `
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;color:#163f35">
+    <h1 style="font-size:22px;margin:0 0 12px">Master Nihongo</h1>
+    <p style="margin:0 0 12px">${title}</p>
+    <p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#1f7469">${code}</p>
+    <p style="margin:0 0 12px">验证码 ${minutes} 分钟内有效。若不是你本人操作，可以忽略这封邮件。</p>
+  </div>
+`;
+
+const sendEmail = async (env: Env, to: string, subject: string, html: string) => {
+  if (!env.RESEND_API_KEY) {
+    throw json({ detail: "Email service is not configured. Set RESEND_API_KEY first." }, 501);
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      from: env.EMAIL_FROM ?? "Master Nihongo <onboarding@resend.dev>",
+      to,
+      subject,
+      html
+    })
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw json({ detail: `Email send failed: ${response.status}${detail ? ` ${detail}` : ""}` }, 502);
+  }
+};
+
+const createEmailToken = async (
+  env: Env,
+  userId: string,
+  purpose: "verify_email" | "password_reset",
+  minutes: number
+) => {
+  const code = randomEmailCode();
+  const now = new Date();
+  const expires = new Date(now.getTime() + minutes * 60 * 1000);
+
+  await env.DB.prepare(`
+    UPDATE auth_email_tokens
+    SET used_at = ?
+    WHERE user_id = ? AND purpose = ? AND used_at IS NULL
+  `).bind(now.toISOString(), userId, purpose).run();
+
+  await env.DB.prepare(`
+    INSERT INTO auth_email_tokens (id, user_id, purpose, token_hash, created_at, expires_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).bind(
+    crypto.randomUUID(),
+    userId,
+    purpose,
+    await sha256(code),
+    now.toISOString(),
+    expires.toISOString()
+  ).run();
+
+  return code;
+};
+
+const verifyEmailToken = async (
+  env: Env,
+  userId: string,
+  purpose: "verify_email" | "password_reset",
+  code: string
+) => {
+  const tokenHash = await sha256(code.trim());
+  const row = await env.DB.prepare(`
+    SELECT id, expires_at
+    FROM auth_email_tokens
+    WHERE user_id = ? AND purpose = ? AND token_hash = ? AND used_at IS NULL
+    ORDER BY created_at DESC
+    LIMIT 1
+  `).bind(userId, purpose, tokenHash).first<{ id: string; expires_at: string }>();
+
+  if (!row || Date.parse(row.expires_at) <= Date.now()) {
+    return null;
+  }
+
+  await env.DB.prepare("UPDATE auth_email_tokens SET used_at = ? WHERE id = ?")
+    .bind(new Date().toISOString(), row.id)
+    .run();
+  return row.id;
 };
 
 const entitlementPayload = (row?: EntitlementRow | null) => {
@@ -294,8 +400,20 @@ const register = async (request: Request, env: Env) => {
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `).bind(id, email, passwordHash, salt, displayName, now, now).run();
 
+  let emailVerificationSent = false;
+  if (env.RESEND_API_KEY) {
+    const emailCode = await createEmailToken(env, id, "verify_email", EMAIL_CODE_TTL_MINUTES);
+    await sendEmail(
+      env,
+      email,
+      "Master Nihongo 邮箱验证码",
+      emailHtml("请使用下面的验证码完成邮箱验证：", emailCode, EMAIL_CODE_TTL_MINUTES)
+    );
+    emailVerificationSent = true;
+  }
+
   const token = await createToken(env, id);
-  return json({ access_token: token, token_type: "bearer", user_id: id, email });
+  return json({ access_token: token, token_type: "bearer", user_id: id, email, emailVerificationSent, ...verificationPayload(null) });
 };
 
 const login = async (request: Request, env: Env) => {
@@ -303,7 +421,7 @@ const login = async (request: Request, env: Env) => {
   const email = normalizeEmail(body.email);
   const password = String(body.password ?? "");
   const user = await env.DB.prepare(`
-    SELECT id, email, password_hash, password_salt, display_name
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
     FROM users
     WHERE email = ?
   `).bind(email).first<UserRow>();
@@ -319,6 +437,7 @@ const login = async (request: Request, env: Env) => {
     token_type: "bearer",
     user_id: user.id,
     email: user.email,
+    ...verificationPayload(user),
     entitlements: entitlementPayload(await getEntitlementRow(env, user.id))
   });
 };
@@ -326,7 +445,7 @@ const login = async (request: Request, env: Env) => {
 const profile = async (request: Request, env: Env) => {
   const userId = await requireUser(request, env);
   const user = await env.DB.prepare(`
-    SELECT email, display_name, created_at, last_login
+    SELECT email, display_name, created_at, last_login, email_verified_at
     FROM users
     WHERE id = ?
   `).bind(userId).first();
@@ -350,7 +469,7 @@ const changePassword = async (request: Request, env: Env) => {
   if (newPassword.length < 8) return json({ detail: "New password must be at least 8 characters" }, 400);
 
   const user = await env.DB.prepare(`
-    SELECT id, email, password_hash, password_salt, display_name
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
     FROM users
     WHERE id = ?
   `).bind(userId).first<UserRow>();
@@ -363,6 +482,90 @@ const changePassword = async (request: Request, env: Env) => {
   await env.DB.prepare("UPDATE users SET password_hash = ?, password_salt = ? WHERE id = ?")
     .bind(await hashPassword(newPassword, salt), salt, userId)
     .run();
+  return json({ status: "success" });
+};
+
+const sendVerificationEmail = async (request: Request, env: Env) => {
+  const userId = await requireUser(request, env);
+  const user = await env.DB.prepare(`
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+    FROM users
+    WHERE id = ?
+  `).bind(userId).first<UserRow>();
+  if (!user) return json({ detail: "User not found" }, 404);
+  if (user.email_verified_at) return json({ status: "already_verified", ...verificationPayload(user) });
+
+  const code = await createEmailToken(env, user.id, "verify_email", EMAIL_CODE_TTL_MINUTES);
+  await sendEmail(
+    env,
+    user.email,
+    "Master Nihongo 邮箱验证码",
+    emailHtml("请使用下面的验证码完成邮箱验证：", code, EMAIL_CODE_TTL_MINUTES)
+  );
+  return json({ status: "sent", expiresInMinutes: EMAIL_CODE_TTL_MINUTES, ...verificationPayload(user) });
+};
+
+const verifyEmail = async (request: Request, env: Env) => {
+  const userId = await requireUser(request, env);
+  const body = await readJson<{ code?: string }>(request);
+  const code = String(body.code ?? "").trim();
+  if (!/^\d{6}$/.test(code)) return json({ detail: "Verification code must be 6 digits" }, 400);
+
+  const ok = await verifyEmailToken(env, userId, "verify_email", code);
+  if (!ok) return json({ detail: "Verification code is invalid or expired" }, 400);
+
+  await env.DB.prepare("UPDATE users SET email_verified_at = ? WHERE id = ?")
+    .bind(new Date().toISOString(), userId)
+    .run();
+  return json({ status: "success", emailVerified: true });
+};
+
+const requestPasswordReset = async (request: Request, env: Env) => {
+  const body = await readJson<{ email?: string }>(request);
+  const email = normalizeEmail(body.email);
+  const user = await env.DB.prepare(`
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+    FROM users
+    WHERE email = ?
+  `).bind(email).first<UserRow>();
+
+  if (user) {
+    const code = await createEmailToken(env, user.id, "password_reset", PASSWORD_RESET_TTL_MINUTES);
+    await sendEmail(
+      env,
+      user.email,
+      "Master Nihongo 重置密码验证码",
+      emailHtml("请使用下面的验证码重置你的 Master Nihongo 密码：", code, PASSWORD_RESET_TTL_MINUTES)
+    );
+  }
+
+  return json({ status: "sent_if_account_exists", expiresInMinutes: PASSWORD_RESET_TTL_MINUTES });
+};
+
+const resetPassword = async (request: Request, env: Env) => {
+  const body = await readJson<{ email?: string; code?: string; new_password?: string }>(request);
+  const email = normalizeEmail(body.email);
+  const code = String(body.code ?? "").trim();
+  const newPassword = String(body.new_password ?? "");
+
+  if (!/^\d{6}$/.test(code)) return json({ detail: "Verification code must be 6 digits" }, 400);
+  if (newPassword.length < 8) return json({ detail: "New password must be at least 8 characters" }, 400);
+
+  const user = await env.DB.prepare(`
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+    FROM users
+    WHERE email = ?
+  `).bind(email).first<UserRow>();
+  if (!user) return json({ detail: "Verification code is invalid or expired" }, 400);
+
+  const ok = await verifyEmailToken(env, user.id, "password_reset", code);
+  if (!ok) return json({ detail: "Verification code is invalid or expired" }, 400);
+
+  const salt = randomToken(16);
+  await env.DB.prepare("UPDATE users SET password_hash = ?, password_salt = ? WHERE id = ?")
+    .bind(await hashPassword(newPassword, salt), salt, user.id)
+    .run();
+  await env.DB.prepare("DELETE FROM sessions WHERE user_id = ?").bind(user.id).run();
   return json({ status: "success" });
 };
 
@@ -485,6 +688,10 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/auth/login") return login(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/logout") return logout(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/change-password") return changePassword(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/send-verification-email") return sendVerificationEmail(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/verify-email") return verifyEmail(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/request-password-reset") return requestPasswordReset(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/reset-password") return resetPassword(request, env);
   if (request.method === "GET" && url.pathname === "/api/user/profile") return profile(request, env);
   if (request.method === "GET" && url.pathname === "/api/entitlements") return getEntitlements(request, env);
   if (request.method === "POST" && url.pathname === "/api/purchases/verify") return verifyPurchase(request, env);

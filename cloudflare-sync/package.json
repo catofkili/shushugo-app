@@ -8,6 +8,7 @@
     "deploy": "wrangler deploy",
     "d1:create": "wrangler d1 create master_nihongo_sync",
     "d1:migrate": "wrangler d1 migrations apply master_nihongo_sync",
+    "d1:migrate:remote": "wrangler d1 migrations apply master_nihongo_sync --remote",
     "kv:create": "wrangler kv namespace create SYNC_DATA"
   },
   "devDependencies": {
