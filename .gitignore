@@ -52,6 +52,8 @@ backend/sync_data.db
 *.db-journal
 *.sqlite3-journal
 *.db.bak_*
+*.sqlite
+*.sqlite3
 
 # Static learning corpus (kept locally, not versioned)
 frontend/public/nihongo.db

@@ -9,15 +9,16 @@
 ```
 frontend/            主应用（Web 源码 + Capacitor iOS 工程）
   src/               React 源码（pages / components / hooks / lib）
-  public/nihongo.db  打包进 App 的种子词库/语法库（~3 MB）
+  public/nihongo.db  本地种子词库/语法库（不进 Git，打包脚本会从本地加入）
   ios/App/           Xcode 工程（App.xcworkspace）
-backend/             可选的云同步服务（FastAPI，当前未接入 App）
+cloudflare-sync/     正式云端：Cloudflare Worker + D1 + KV
+backend/             Legacy FastAPI 同步原型，当前不作为正式后端
 docs/                指南与文档（见下）
 docs/archive/        历史调试草稿，仅作留档，可忽略
 scripts/             构建/数据处理脚本
 ```
 
-> 数据：约 8,000 单词（N5–N1）、181 个语法点、数千例句，完全离线可用。
+> 数据：约 10,000+ 单词（N5–N1）、语法点与例句，完全离线可用。大词库文件保留在本地，不由 Git 跟踪。
 
 ## 快速开始
 
@@ -37,6 +38,8 @@ npm run ios          # 用 Xcode 打开（App.xcworkspace）
 | 文档 | 用途 |
 |------|------|
 | [docs/APP_STORE_READINESS.md](docs/APP_STORE_READINESS.md) | **上架准备清单（P0/P1/P2 路线图）** |
+| [docs/DATABASES.md](docs/DATABASES.md) | 本地 SQLite、Cloudflare D1、legacy 后端边界 |
+| [docs/PACKAGING.md](docs/PACKAGING.md) | 对外发包白名单与词库打包规则 |
 | [docs/QUICK_START.md](docs/QUICK_START.md) | 本地运行 |
 | [docs/XCODE_GUIDE.md](docs/XCODE_GUIDE.md) | Xcode 构建与真机调试 |
 | [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) / [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | 分发与部署 |
