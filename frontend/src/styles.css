@@ -939,17 +939,48 @@ select {
    这里在 light theme 下统一把这些深色硬编码翻译成浅色卡片、深色文字和柔和边框。 */
 [data-theme="light"] body,
 [data-theme="light"] #root {
-  background:
-    radial-gradient(circle at 12% 0%, rgba(129, 216, 207, 0.28), transparent 32%),
-    linear-gradient(180deg, #f6fcfa 0%, #eaf6f1 100%) !important;
+  background: #eef8f4 !important;
   color: #163f35 !important;
+}
+
+[data-theme="light"] .app-shell {
+  background: linear-gradient(180deg, #f7fcfa 0%, #eef8f4 46%, #e9f4ef 100%) !important;
+  color: #163f35 !important;
+}
+
+[data-theme="light"] .app-mobile-topbar {
+  background: rgba(247, 252, 250, 0.96) !important;
+  border-bottom-color: rgba(95, 201, 190, 0.22) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 8px 20px rgba(36, 89, 73, 0.06) !important;
+  backdrop-filter: blur(14px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(130%) !important;
+}
+
+[data-theme="light"] .app-mobile-tabbar {
+  background: rgba(238, 248, 244, 0.98) !important;
+  border-top-color: rgba(95, 201, 190, 0.26) !important;
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.86) inset, 0 -8px 22px rgba(36, 89, 73, 0.08) !important;
+  backdrop-filter: blur(12px) saturate(125%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(125%) !important;
+}
+
+[data-theme="light"] .app-mobile-tabbar button {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(95, 201, 190, 0.22) !important;
+  color: #2d6b56 !important;
+  box-shadow: 0 2px 8px rgba(36, 89, 73, 0.06) !important;
+}
+
+[data-theme="light"] .app-mobile-tabbar button.bg-\[\#81D8CF\] {
+  background: #d7f4ef !important;
+  border-color: rgba(95, 201, 190, 0.48) !important;
+  color: #185247 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(95, 201, 190, 0.2) !important;
 }
 
 [data-theme="light"] .bg-\[\#555858\],
 [data-theme="light"] .bg-\[\#343838\] {
-  background:
-    radial-gradient(circle at 12% 0%, rgba(129, 216, 207, 0.28), transparent 32%),
-    linear-gradient(180deg, #f6fcfa 0%, #eaf6f1 100%) !important;
+  background: #eef8f4 !important;
 }
 
 [data-theme="light"] .bg-\[\#474a4a\],
@@ -961,8 +992,8 @@ select {
 [data-theme="light"] .bg-\[\#4d5151\],
 [data-theme="light"] .bg-\[\#475252\],
 [data-theme="light"] .bg-\[\#3d4848\] {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.93), rgba(236, 249, 244, 0.9)) !important;
-  box-shadow: var(--jelly-shadow-sm);
+  background: #f8fdfb !important;
+  box-shadow: 0 8px 22px rgba(36, 89, 73, 0.06) !important;
 }
 
 [data-theme="light"] .bg-zinc-900,

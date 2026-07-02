@@ -387,7 +387,7 @@ export default function App() {
   };
 
   return (
-    <div className="relative h-screen overflow-hidden bg-gradient-to-br from-[#6a6d6d] via-[#7a7d7d] to-[#6a6d6d] text-[#fff]">
+    <div className="app-shell relative h-screen overflow-hidden bg-gradient-to-br from-[#6a6d6d] via-[#7a7d7d] to-[#6a6d6d] text-[#fff]">
       <div className={`grid h-full min-w-0 transition-[grid-template-columns] duration-200 ${sidebarCollapsed ? "lg:grid-cols-[78px_1fr]" : "lg:grid-cols-[268px_1fr]"}`}>
         <AppNavigation
           page={page}
