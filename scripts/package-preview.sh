@@ -4,12 +4,14 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 DATE_TAG="$(date +%Y-%m-%d)"
 OUTPUT="${1:-"$HOME/Documents/master-nihongo-ios-preview-$DATE_TAG.zip"}"
+TMP_ZIP="$OUTPUT.tmp"
 
 cd "$ROOT_DIR"
+rm -f "$TMP_ZIP" "$OUTPUT"
 
 git archive \
   --format=zip \
-  --output="$OUTPUT" \
+  --output="$TMP_ZIP" \
   HEAD \
   -- \
   .gitignore \
@@ -36,7 +38,6 @@ git archive \
   frontend/package-lock.json \
   frontend/package.json \
   frontend/postcss.config.js \
-  frontend/public/nihongo.db \
   frontend/scripts/import_jlpt_words.py \
   frontend/src \
   frontend/tailwind.config.js \
@@ -50,4 +51,13 @@ git archive \
   scripts/setup-xcode.sh \
   scripts/sync-content.mjs
 
+for asset in frontend/public/nihongo.db frontend/src/data/jlpt_words_seed.json; do
+  if [[ -f "$asset" ]]; then
+    zip -q "$TMP_ZIP" "$asset"
+  else
+    echo "Warning: missing local corpus asset: $asset" >&2
+  fi
+done
+
+mv "$TMP_ZIP" "$OUTPUT"
 echo "Created $OUTPUT"
