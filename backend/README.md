@@ -1,5 +1,9 @@
 # Master Nihongo 后端 API
 
+> Legacy notice: this FastAPI backend is an old prototype. Production cloud sync, account login, email verification, and purchase entitlement work now lives in `../cloudflare-sync/`.
+>
+> See `LEGACY.md` before changing this folder.
+
 ## 功能
 
 - ✅ 用户注册/登录

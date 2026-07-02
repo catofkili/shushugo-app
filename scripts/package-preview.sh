@@ -23,6 +23,7 @@ git archive \
   cloudflare-sync/src \
   cloudflare-sync/wrangler.jsonc \
   docs/APP_STORE_READINESS.md \
+  docs/DATABASES.md \
   docs/DEPLOYMENT_GUIDE.md \
   docs/DISTRIBUTION.md \
   docs/PACKAGING.md \
