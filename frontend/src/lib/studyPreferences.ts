@@ -18,7 +18,10 @@ export const defaultStudyPreferences: StudyPreferences = {
   dailyGoal: 20
 };
 
-const clampDailyGoal = (value: number) => Math.min(100, Math.max(5, Math.round(value / 5) * 5));
+const clampDailyGoal = (value: number) => {
+  const normalized = Number.isFinite(value) ? Math.floor(value) : defaultStudyPreferences.dailyGoal;
+  return Math.min(999, Math.max(1, normalized));
+};
 
 export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {}): StudyPreferences => ({
   theme: value.theme === "light" || value.theme === "dark" || value.theme === "system" ? value.theme : "system",

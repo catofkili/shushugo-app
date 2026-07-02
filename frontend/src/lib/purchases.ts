@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { grantPro, ProductId } from "./entitlements";
+import { verifyCloudPurchase } from "./sync-api";
 
 export interface StoreProduct {
   id: ProductId;
@@ -72,6 +73,21 @@ const nativeTypeFor = (productId: ProductId) => {
 
 const platform = () => window.CdvPurchase?.Platform?.APPLE_APPSTORE;
 
+const transactionProductId = (receipt: any): ProductId | undefined => {
+  const value = receipt?.id ?? receipt?.transactions?.[0]?.products?.[0]?.id ?? receipt?.transactions?.[0]?.productId;
+  return STORE_PRODUCTS.some((product) => product.id === value) ? value as ProductId : undefined;
+};
+
+const transactionId = (receipt: any): string | undefined => {
+  return String(
+    receipt?.transactionId ??
+    receipt?.id ??
+    receipt?.transactions?.[0]?.transactionId ??
+    receipt?.transactions?.[0]?.id ??
+    ""
+  ) || undefined;
+};
+
 export async function initializePurchases(): Promise<PurchaseRuntime> {
   if (!isStoreAvailable()) {
     runtime = {
@@ -98,9 +114,13 @@ export async function initializePurchases(): Promise<PurchaseRuntime> {
 
       store.when().approved((transaction: any) => transaction.verify());
       store.when().verified((receipt: any) => {
-        const productId = receipt?.id ?? receipt?.transactions?.[0]?.products?.[0]?.id;
+        const productId = transactionProductId(receipt);
         if (productId && STORE_PRODUCTS.some((product) => product.id === productId)) {
           grantPro(productId as ProductId, "storekit");
+          const id = transactionId(receipt);
+          if (id) {
+            verifyCloudPurchase(productId, id).catch(() => undefined);
+          }
         }
         receipt.finish();
       });

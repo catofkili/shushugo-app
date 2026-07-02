@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { grammarPoints } from "../data/grammar";
 import { MasteryStatus, MistakeItem, ReviewItem } from "../types/grammar";
 
 const REVIEW_KEY = "jp-grammar-review";
@@ -129,21 +128,11 @@ export const useStudyStore = () => {
     return reviews.filter((item) => new Date(item.dueAt).getTime() <= now);
   }, [reviews]);
 
-  const levelProgress = useMemo(() => {
-    const levels = ["N5", "N4", "N3", "N2", "N1"] as const;
-    return levels.map((level) => {
-      const points = grammarPoints.filter((point) => point.level === level);
-      const done = points.filter((point) => getMastery(point.id) !== "new").length;
-      return { level, done, total: points.length };
-    });
-  }, [learned, reviews]);
-
   return {
     reviews,
     dueReviews,
     mistakes,
     learned,
-    levelProgress,
     getMastery,
     markLearned,
     addToReview,

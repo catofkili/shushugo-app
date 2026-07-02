@@ -197,7 +197,14 @@ const pickGrammarNext = (level?: string): GrammarStudyCard | null => {
     WHERE p.known_forever = 0
       AND p.seen_count = 0
       ${levelFilter.clause}
-    ORDER BY CASE g.level WHEN 'N5' THEN 1 WHEN 'N4' THEN 2 ELSE 9 END, g.sort_order ASC
+    ORDER BY CASE g.level
+      WHEN 'N5' THEN 1
+      WHEN 'N4' THEN 2
+      WHEN 'N3' THEN 3
+      WHEN 'N2' THEN 4
+      WHEN 'N1' THEN 5
+      ELSE 9
+    END, g.sort_order ASC
     LIMIT 1
   `, levelFilter.params);
   return unseen ? grammarCard(unseen) : null;

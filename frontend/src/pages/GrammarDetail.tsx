@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Dumbbell, StickyNote, X } from "lucide-react";
 import { ExampleSentence } from "../components/ExampleSentence";
+import { GrammarTermHint } from "../components/GrammarTermHint";
+import { JapaneseRuby } from "../components/JapaneseRuby";
 import { QuizCard } from "../components/QuizCard";
 import { ReviewButton } from "../components/ReviewButton";
 import { grammarPoints } from "../data/grammar";
@@ -30,9 +32,8 @@ export const GrammarDetail = ({
   const mastery = getMastery(point.id);
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState(() => getGrammarNote(point.id));
-  const [noteVersion, setNoteVersion] = useState(0);
+  const [, setNoteVersion] = useState(0);
   const note = getGrammarNote(point.id);
-  noteVersion;
 
   useEffect(() => {
     setNoteEditorOpen(false);
@@ -56,9 +57,11 @@ export const GrammarDetail = ({
         <div className="flex flex-col justify-between gap-5 md:flex-row">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#81D8CF]">{point.level} · {mastery}</p>
-            <h1 className="jp-serif mt-3 text-6xl font-semibold leading-none text-[#343838] dark:text-[#f4efe4]">{point.title}</h1>
+            <h1 className="jp-serif mt-3 text-6xl font-semibold leading-none text-[#343838] dark:text-[#f4efe4]"><JapaneseRuby text={point.title} /></h1>
             <p className="mt-4 text-xl text-[#f9faf7] dark:text-zinc-200">{point.meaning}</p>
-            <p className="jp mt-4 inline-block border-l-2 border-[#81D8CF] bg-[#81D8CF] px-3 py-2 text-[#f9faf7] dark:bg-[#171611] dark:text-zinc-200">{point.structure}</p>
+            <p className="jp mt-4 inline-block border-l-2 border-[#81D8CF] bg-[#81D8CF] px-3 py-2 text-[#f9faf7] dark:bg-[#171611] dark:text-zinc-200">
+              <GrammarTermHint text={point.connection ?? point.structure} />
+            </p>
           </div>
           <div className="space-y-3">
             <button
@@ -128,17 +131,6 @@ export const GrammarDetail = ({
         <div className="grid gap-4 lg:grid-cols-2">
           {point.examples.map((example) => (
             <ExampleSentence key={example.jp ?? example.japanese} example={example} />
-          ))}
-        </div>
-      </section>
-
-      <section className="dictionary-card rounded-2xl p-5">
-        <h2 className="jp text-lg font-semibold text-[#343838] dark:text-zinc-50">易混辨析</h2>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {point.comparisons.map((comparison) => (
-            <span key={typeof comparison === "string" ? comparison : comparison.withId} className="rounded-sm border border-[#81D8CF] bg-[#81D8CF] px-3 py-2 text-sm text-[#f9faf7] dark:border-zinc-700 dark:bg-[#171611] dark:text-zinc-300">
-              {typeof comparison === "string" ? comparison : `${comparison.withTitle}：${comparison.note}`}
-            </span>
           ))}
         </div>
       </section>

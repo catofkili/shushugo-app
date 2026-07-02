@@ -4,7 +4,10 @@ import {
   loadUserProfile,
   updateBasicInfo,
   updateAvatar,
+  updateTargetLevel,
   formatStudyTime,
+  normalizeTargetLevel,
+  TARGET_LEVEL_OPTIONS,
   UserProfile
 } from "../lib/userProfile";
 
@@ -27,7 +30,7 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
       setProfile(data);
       setTempNickname(data.nickname);
       setTempBio(data.bio);
-      setTempTargetLevel(data.targetLevel);
+      setTempTargetLevel(normalizeTargetLevel(data.targetLevel));
     });
   }, []);
 
@@ -59,9 +62,9 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
 
     setSaving(true);
     try {
-      const { updateTargetLevel } = await import("../lib/userProfile");
-      await updateTargetLevel(tempTargetLevel);
-      setProfile({ ...profile, targetLevel: tempTargetLevel });
+      const nextTarget = normalizeTargetLevel(tempTargetLevel);
+      await updateTargetLevel(nextTarget);
+      setProfile({ ...profile, targetLevel: nextTarget });
       setIsEditingTarget(false);
     } catch (error) {
       console.error("Failed to save target level:", error);
@@ -243,16 +246,16 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                <label className="block text-xs text-white/60">目标等级</label>
-                <input
-                  type="text"
+                <label className="block text-xs text-white/60">日语学习目标</label>
+                <select
                   value={tempTargetLevel}
                   onChange={(e) => setTempTargetLevel(e.target.value)}
                   className="focus-ring w-full rounded-2xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
-                  placeholder="例如: N5 → N3"
-                  maxLength={30}
-                />
-                <p className="text-xs text-white/40">{tempTargetLevel.length}/30</p>
+                >
+                  {TARGET_LEVEL_OPTIONS.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
                 <div className="flex gap-2">
                   <button
                     onClick={handleSaveTarget}

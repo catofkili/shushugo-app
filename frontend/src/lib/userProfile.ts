@@ -13,10 +13,17 @@ export interface UserProfile {
   achievements: string[]; // 已获得的成就
 }
 
+export const TARGET_LEVEL_OPTIONS = ["N5", "N4", "N3", "N2", "N1", "旅游", "没有目标"] as const;
+export type TargetLevelOption = typeof TARGET_LEVEL_OPTIONS[number];
+
+export const normalizeTargetLevel = (value: string): TargetLevelOption => {
+  return TARGET_LEVEL_OPTIONS.includes(value as TargetLevelOption) ? value as TargetLevelOption : "N5";
+};
+
 const DEFAULT_PROFILE: UserProfile = {
   nickname: 'Master 用户',
   bio: '正在学习日语中...',
-  targetLevel: 'N5 → N3',
+  targetLevel: 'N5',
   studyTimeMinutes: 0,
   studyDays: 0,
   createdAt: new Date().toISOString(),
@@ -50,6 +57,7 @@ export async function loadUserProfile(): Promise<UserProfile> {
     }
 
     const profile = JSON.parse(value) as UserProfile;
+    profile.targetLevel = normalizeTargetLevel(profile.targetLevel);
     console.log('✅ User profile loaded');
     return profile;
   } catch (error) {
@@ -76,7 +84,7 @@ export async function updateAvatar(avatarBase64: string): Promise<void> {
 // 更新目标等级
 export async function updateTargetLevel(targetLevel: string): Promise<void> {
   const profile = await loadUserProfile();
-  profile.targetLevel = targetLevel;
+  profile.targetLevel = normalizeTargetLevel(targetLevel);
   await saveUserProfile(profile);
 }
 

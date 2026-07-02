@@ -1,10 +1,29 @@
 import { getDatabase } from "./database";
 import jlptWordSeedPayload from "../data/jlpt_words_seed.json";
+import grammarSeedPayload from "../data/grammar_seed.json";
 import type { WordAnswer } from "../types/vocabulary";
 import type { FavoriteType, StudyAnswer } from "./study-types";
+import {
+  firstValue,
+  getState,
+  persistSoon,
+  rowsFor,
+  setState
+} from "./database/db-utils";
 
-export type SqlValue = string | number | null;
-export type DbRow = Record<string, SqlValue>;
+export {
+  daysSince,
+  firstRow,
+  firstValue,
+  getState,
+  persistSoon,
+  rowsFor,
+  setState,
+  studyDate,
+  today,
+  type DbRow,
+  type SqlValue
+} from "./database/db-utils";
 
 type JlptWordSeedRow = readonly [
   meaning: string,
@@ -18,41 +37,92 @@ type JlptWordSeedRow = readonly [
   jlptLevel: string
 ];
 
+type GrammarSeedRow = [
+  pattern: string,
+  meaning: string,
+  prompt: string,
+  formation: string,
+  exampleJp: string,
+  exampleMeaning: string,
+  notes: string,
+  confusions: string,
+  level: string,
+  importance: number
+];
+
 export const CRITICAL_SCORE = -20;
-
-export const studyDate = () => {
-  const now = new Date();
-  if (now.getHours() < 4) {
-    now.setDate(now.getDate() - 1);
-  }
-  return now.toISOString().slice(0, 10);
-};
-
-export const today = studyDate;
-
-export const firstValue = <T = SqlValue>(query: string, params: SqlValue[] = [], fallback: T): T => {
-  const result = getDatabase().exec(query, params);
-  if (!result.length || !result[0].values.length) return fallback;
-  return result[0].values[0][0] as T;
-};
-
-export const rowsFor = (query: string, params: SqlValue[] = []): DbRow[] => {
-  const result = getDatabase().exec(query, params);
-  if (!result.length) return [];
-  const { columns, values } = result[0];
-  return values.map((valueRow) => {
-    const row: DbRow = {};
-    columns.forEach((column, index) => {
-      row[column] = valueRow[index] as SqlValue;
-    });
-    return row;
-  });
-};
-
-export const firstRow = (query: string, params: SqlValue[] = []): DbRow | null => rowsFor(query, params)[0] ?? null;
 
 export const ensureUserTables = () => {
   const db = getDatabase();
+  db.run(`
+    CREATE TABLE IF NOT EXISTS grammar_points (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      pattern TEXT NOT NULL UNIQUE,
+      meaning TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      formation TEXT NOT NULL,
+      example_jp TEXT NOT NULL,
+      example_meaning TEXT NOT NULL,
+      notes TEXT NOT NULL DEFAULT '',
+      confusions TEXT NOT NULL DEFAULT '',
+      level TEXT NOT NULL DEFAULT 'N5',
+      importance INTEGER NOT NULL DEFAULT 3,
+      sort_order INTEGER NOT NULL DEFAULT 0
+    )
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS grammar_progress (
+      grammar_id INTEGER PRIMARY KEY,
+      score REAL NOT NULL DEFAULT 0,
+      seen_count INTEGER NOT NULL DEFAULT 0,
+      low_history INTEGER NOT NULL DEFAULT 0,
+      known_forever INTEGER NOT NULL DEFAULT 0,
+      mastered_on TEXT,
+      last_seen_on TEXT,
+      right_count INTEGER NOT NULL DEFAULT 0,
+      fuzzy_count INTEGER NOT NULL DEFAULT 0,
+      forgot_count INTEGER NOT NULL DEFAULT 0,
+      mistake_streak INTEGER NOT NULL DEFAULT 0,
+      last_decay_amount INTEGER NOT NULL DEFAULT 10,
+      FOREIGN KEY(grammar_id) REFERENCES grammar_points(id)
+    )
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS grammar_reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      grammar_id INTEGER NOT NULL,
+      answer TEXT NOT NULL,
+      score_after REAL NOT NULL,
+      reviewed_on TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(grammar_id) REFERENCES grammar_points(id)
+    )
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS grammar_state (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS grammar_points_archive (
+      archive_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      archived_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      dataset_version TEXT NOT NULL,
+      id INTEGER,
+      pattern TEXT NOT NULL,
+      meaning TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      formation TEXT NOT NULL,
+      example_jp TEXT NOT NULL,
+      example_meaning TEXT NOT NULL,
+      notes TEXT NOT NULL DEFAULT '',
+      confusions TEXT NOT NULL DEFAULT '',
+      level TEXT NOT NULL DEFAULT 'N5',
+      importance INTEGER NOT NULL DEFAULT 3,
+      sort_order INTEGER NOT NULL DEFAULT 0
+    )
+  `);
   const wordColumns = rowsFor("PRAGMA table_info(words)").map((row) => String(row.name ?? ""));
   if (!wordColumns.includes("jlpt_level")) {
     db.run("ALTER TABLE words ADD COLUMN jlpt_level TEXT");
@@ -79,10 +149,7 @@ export const ensureUserTables = () => {
       FOREIGN KEY(grammar_id) REFERENCES grammar_points(id)
     )
   `);
-};
-
-export const persistSoon = () => {
-  import("./storage").then(({ scheduleSave }) => scheduleSave());
+  ensureGrammarSeed();
 };
 
 export const isFavorite = (type: FavoriteType, id: string | number) => {
@@ -94,22 +161,184 @@ export const isFavorite = (type: FavoriteType, id: string | number) => {
   ));
 };
 
-export const getState = (key: string, fallback: string) => firstValue<string>(
-  "SELECT value FROM app_state WHERE key = ?",
-  [key],
-  fallback
-);
+const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
+// Keep this aligned with the metadata already baked into public/nihongo.db so
+// a fresh install does not replay all 11k metadata updates on first launch.
+const JLPT_WORD_METADATA_VERSION = "2026-06-24-noun-suru-pos-fix";
+const jlptWordSeed = jlptWordSeedPayload as unknown as JlptWordSeedRow[];
+const grammarSeed = grammarSeedPayload as { version: string; rows: GrammarSeedRow[] };
 
-export const setState = (key: string, value: string) => {
-  getDatabase().run("INSERT OR REPLACE INTO app_state (key, value) VALUES (?, ?)", [key, value]);
+const ensureGrammarSeed = () => {
+  const db = getDatabase();
+  const grammarVersion = firstValue<string>("SELECT value FROM grammar_state WHERE key = ?", ["dataset_version"], "");
+  if (grammarVersion === grammarSeed.version) return;
+
+  const existingGrammarCount = firstValue<number>("SELECT COUNT(*) FROM grammar_points", [], 0);
+  if (existingGrammarCount > 0) {
+    db.run(`
+      INSERT INTO grammar_points_archive (
+        dataset_version, id, pattern, meaning, prompt, formation,
+        example_jp, example_meaning, notes, confusions, level,
+        importance, sort_order
+      )
+      SELECT ?, id, pattern, meaning, prompt, formation, example_jp,
+        example_meaning, notes, confusions, level, importance, sort_order
+      FROM grammar_points
+    `, [grammarVersion || "legacy-before-pdf-n4"]);
+  }
+
+  db.run("DELETE FROM grammar_mistakes");
+  db.run("DELETE FROM grammar_reviews");
+  db.run("DELETE FROM grammar_progress");
+  db.run("DELETE FROM grammar_points");
+  grammarSeed.rows.forEach((row, index) => {
+    db.run(`
+      INSERT INTO grammar_points (
+        pattern, meaning, prompt, formation, example_jp, example_meaning,
+        notes, confusions, level, importance, sort_order
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [...row, index + 1]);
+  });
+  db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["queue", "[]"]);
+  db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["dataset_version", grammarSeed.version]);
 };
 
-const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
-const jlptWordSeed = jlptWordSeedPayload as unknown as JlptWordSeedRow[];
+const nounSuruCorrections: [string, string][] = [
+  ["運動", "うんどう"],
+  ["計画", "けいかく"],
+  ["研究", "けんきゅう"],
+  ["故障", "こしょう"],
+  ["授業", "じゅぎょう"],
+  ["生活", "せいかつ"],
+  ["選択", "せんたく"],
+  ["卒業", "そつぎょう"],
+  ["留学", "りゅうがく"],
+  ["旅行", "りょこう"],
+  ["練習", "れんしゅう"],
+  ["連絡", "れんらく"],
+  ["遅刻", "ちこく"],
+  ["出発", "しゅっぱつ"],
+  ["到着", "とうちゃく"],
+  ["見学", "けんがく"],
+  ["復習", "ふくしゅう"],
+  ["予習", "よしゅう"],
+  ["予約", "よやく"],
+  ["翻訳", "ほんやく"],
+  ["信号", "しんごう"],
+  ["洗濯", "せんたく"],
+  ["勉強", "べんきょう"],
+  ["活動", "かつどう"],
+  ["帰国", "きこく"],
+  ["挨拶", "あいさつ"],
+  ["営業", "えいぎょう"],
+  ["希望", "きぼう"],
+  ["成功", "せいこう"],
+  ["入学", "にゅうがく"],
+  ["約束", "やくそく"],
+  ["利用", "りよう"],
+  ["急行", "きゅうこう"],
+  ["協力", "きょうりょく"],
+  ["教育", "きょういく"],
+  ["緊張", "きんちょう"],
+  ["行動", "こうどう"],
+  ["信用", "しんよう"],
+  ["努力", "どりょく"],
+  ["輸出", "ゆしゅつ"],
+  ["輸入", "ゆにゅう"],
+  ["冷蔵", "れいぞう"],
+  ["朝寝坊", "あさねぼう"],
+  ["誕生", "たんじょう"],
+  ["飲食", "いんしょく"],
+  ["出張", "しゅっちょう"],
+  ["ごちそう", "ごちそう"],
+  ["影響", "えいきょう"],
+  ["遠足", "えんそく"],
+  ["学習", "がくしゅう"],
+  ["観光", "かんこう"],
+  ["競争", "きょうそう"],
+  ["見物", "けんぶつ"],
+  ["合格", "ごうかく"],
+  ["集合", "しゅうごう"],
+  ["体操", "たいそう"],
+  ["暖房", "だんぼう"],
+  ["報告", "ほうこく"],
+  ["放送", "ほうそう"],
+  ["提出", "ていしゅつ"],
+  ["転職", "てんしょく"],
+  ["優勝", "ゆうしょう"],
+  ["外出", "がいしゅつ"],
+  ["研修", "けんしゅう"],
+  ["広告", "こうこく"],
+  ["残業", "ざんぎょう"],
+  ["就職", "しゅうしょく"],
+  ["彫刻", "ちょうこく"],
+  ["流行", "りゅうこう"],
+  ["担当", "たんとう"],
+  ["企画", "きかく"],
+  ["泥棒", "どろぼう"],
+  ["看病", "かんびょう"]
+];
+
+const syncJlptWordMetadata = () => {
+  const db = getDatabase();
+  jlptWordSeed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel]) => {
+    db.run(`
+      UPDATE words
+      SET pos = ?,
+          verb_type = ?,
+          importance = MAX(importance, ?),
+          example_jp = COALESCE(NULLIF(example_jp, ''), ?),
+          example_meaning = COALESCE(NULLIF(example_meaning, ''), ?),
+          jlpt_level = COALESCE(jlpt_level, ?)
+      WHERE kanji = ? AND kana = ?
+    `, [pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, kanji, kana]);
+  });
+  db.run(`
+    UPDATE words
+    SET pos = '名词',
+        verb_type = NULL
+    WHERE pos = '名词・する动词'
+      AND (
+        (kanji = '戦争' AND kana = 'せんそう') OR
+        (kanji = 'チェック' AND kana = 'チェック') OR
+        (kanji = 'コピー' AND kana = 'コピー')
+      )
+  `);
+  nounSuruCorrections.forEach(([kanji, kana]) => {
+    db.run(`
+      UPDATE words
+      SET pos = '名词・する动词',
+          verb_type = 'suru'
+      WHERE kanji = ?
+        AND kana = ?
+        AND pos = '动词'
+        AND verb_type = 'godan'
+    `, [kanji, kana]);
+  });
+  setState("jlpt_word_metadata_version", JLPT_WORD_METADATA_VERSION);
+};
+
+const ensureJlptWordMetadata = () => {
+  if (getState("jlpt_word_metadata_version", "") === JLPT_WORD_METADATA_VERSION) return;
+  const db = getDatabase();
+  db.run("BEGIN TRANSACTION");
+  try {
+    syncJlptWordMetadata();
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+  persistSoon();
+};
 
 export const ensureJlptWordSeed = () => {
   ensureUserTables();
-  if (getState("jlpt_seed_version", "") === JLPT_SEED_VERSION) return;
+  if (getState("jlpt_seed_version", "") === JLPT_SEED_VERSION) {
+    ensureJlptWordMetadata();
+    return;
+  }
   const total = firstValue<number>("SELECT COUNT(*) FROM words", [], 0);
   const hasEnoughLevels = firstValue<number>(
     "SELECT COUNT(*) FROM words WHERE jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')",
@@ -117,6 +346,7 @@ export const ensureJlptWordSeed = () => {
     0
   ) >= 10000;
   if (total >= 10000 && hasEnoughLevels) {
+    ensureJlptWordMetadata();
     setState("jlpt_seed_version", JLPT_SEED_VERSION);
     return;
   }
@@ -152,6 +382,7 @@ export const ensureJlptWordSeed = () => {
       existing.set(key, newId);
     });
     db.run("INSERT OR IGNORE INTO progress (word_id) SELECT id FROM words");
+    syncJlptWordMetadata();
     setState("jlpt_seed_version", JLPT_SEED_VERSION);
     db.run("COMMIT");
   } catch (error) {
@@ -163,14 +394,6 @@ export const ensureJlptWordSeed = () => {
 
 export const randomBetween = (min: number, max: number) => {
   return min + Math.floor(Math.random() * (max - min + 1));
-};
-
-export const daysSince = (dateText: SqlValue) => {
-  if (!dateText) return 0;
-  const parsed = new Date(`${String(dateText)}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return 0;
-  const now = new Date(`${today()}T00:00:00`);
-  return Math.max(0, Math.floor((now.getTime() - parsed.getTime()) / 86400000));
 };
 
 export const answerScore: Record<WordAnswer, number> = {

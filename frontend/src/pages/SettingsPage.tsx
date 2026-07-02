@@ -1,8 +1,18 @@
-import { Check, ChevronRight, Download, Moon, RotateCcw, Smartphone, Sun, Upload, Volume2 } from "lucide-react";
+import { AlertTriangle, Check, ChevronRight, Download, Moon, RotateCcw, Smartphone, Sun, Upload, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { refreshTodayWordPlan } from "../lib/api";
 import { exportDatabase, importDatabase } from "../lib/database";
 import { clearStorage, saveDatabase } from "../lib/storage";
+import { getPasscodeState, verifyPasscode } from "../lib/localPasscode";
+import {
+  cloudLogin,
+  cloudLogout,
+  cloudRegister,
+  getCloudSession,
+  pullCloudBackup,
+  pushCloudBackup,
+  type CloudSession
+} from "../lib/sync-api";
 import {
   applyTheme,
   defaultStudyPreferences,
@@ -74,15 +84,26 @@ interface SettingsPageProps {
 }
 
 const themeOptions: { value: ThemePreference; label: string; icon: typeof Moon }[] = [
-  { value: "light", label: "浅色", icon: Sun },
+  { value: "light", label: "白天浅色", icon: Sun },
   { value: "dark", label: "深色", icon: Moon },
   { value: "system", label: "跟随系统", icon: Smartphone }
 ];
+
+const CLEAR_CONFIRM_TEXT = "清除所有数据";
 
 export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   const [preferences, setPreferences] = useState<StudyPreferences>(defaultStudyPreferences);
   const [storageInfo, setStorageInfo] = useState({ database: 0, local: 0, cache: 0 });
   const [message, setMessage] = useState("");
+  const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
+  const [cloudEmail, setCloudEmail] = useState("");
+  const [cloudPassword, setCloudPassword] = useState("");
+  const [cloudBusy, setCloudBusy] = useState(false);
+  const [dailyGoalInput, setDailyGoalInput] = useState(String(defaultStudyPreferences.dailyGoal));
+  const [clearPanelOpen, setClearPanelOpen] = useState(false);
+  const [clearRequiresPasscode, setClearRequiresPasscode] = useState(false);
+  const [clearCredential, setClearCredential] = useState("");
+  const [clearingData, setClearingData] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const formatBytes = (bytes: number) => {
@@ -105,8 +126,14 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   };
 
   useEffect(() => {
-    setPreferences(getStudyPreferences());
+    const savedPreferences = getStudyPreferences();
+    setPreferences(savedPreferences);
+    setDailyGoalInput(String(savedPreferences.dailyGoal));
     refreshStorageInfo();
+    getCloudSession().then((session) => {
+      setCloudSession(session);
+      setCloudEmail(session.email ?? "");
+    });
   }, []);
 
   const notify = (text: string) => {
@@ -130,6 +157,7 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
 
   const updateDailyGoal = (value: number) => {
     const next = updatePreference({ dailyGoal: value }, "每日目标已保存。");
+    setDailyGoalInput(String(next.dailyGoal));
     try {
       refreshTodayWordPlan();
       notify(`每日目标已改为 ${next.dailyGoal} 个。`);
@@ -168,16 +196,97 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     }
   };
 
-  const clearData = async () => {
-    const confirmed = window.confirm("确定要清除本机保存的学习数据吗？应用会回到内置初始词库。");
-    if (!confirmed) return;
-    await clearStorage();
-    localStorage.removeItem("mn-study-preferences");
-    localStorage.removeItem("mn-word-level");
-    localStorage.removeItem("mn-word-type");
-    notify("本机学习数据和偏好已清除，页面即将刷新。");
-    window.setTimeout(() => window.location.reload(), 900);
+  const updateDailyGoalInput = (value: string) => {
+    const digitsOnly = value.replace(/\D/g, "").slice(0, 3);
+    setDailyGoalInput(digitsOnly);
   };
+
+  const commitDailyGoalInput = () => {
+    if (!dailyGoalInput) {
+      setDailyGoalInput(String(preferences.dailyGoal));
+      return;
+    }
+    updateDailyGoal(Number(dailyGoalInput));
+  };
+
+  const openClearDataPanel = async () => {
+    const state = await getPasscodeState();
+    setClearRequiresPasscode(state.enabled);
+    setClearCredential("");
+    setClearPanelOpen(true);
+  };
+
+  const clearData = async () => {
+    setClearingData(true);
+    try {
+      if (clearRequiresPasscode) {
+        const ok = await verifyPasscode(clearCredential);
+        if (!ok) {
+          notify("本地访问口令不正确。");
+          return;
+        }
+      } else if (clearCredential !== CLEAR_CONFIRM_TEXT) {
+        notify(`请输入「${CLEAR_CONFIRM_TEXT}」后再清除。`);
+        return;
+      }
+
+      await clearStorage();
+      localStorage.removeItem("mn-study-preferences");
+      localStorage.removeItem("mn-word-level");
+      localStorage.removeItem("mn-word-type");
+      notify("本机学习数据和偏好已清除，页面即将刷新。");
+      window.setTimeout(() => window.location.reload(), 900);
+    } finally {
+      setClearingData(false);
+    }
+  };
+
+  const runCloudAction = async (action: () => Promise<string | CloudSession>, fallbackMessage: string) => {
+    setCloudBusy(true);
+    try {
+      const result = await action();
+      const session = await getCloudSession();
+      setCloudSession(session);
+      setCloudEmail(session.email ?? cloudEmail);
+      notify(typeof result === "string" ? result : fallbackMessage);
+      refreshStorageInfo();
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "云同步操作失败。");
+    } finally {
+      setCloudBusy(false);
+    }
+  };
+
+  const loginCloud = () => runCloudAction(
+    () => cloudLogin(cloudEmail, cloudPassword),
+    "云同步账号已登录。"
+  );
+
+  const registerCloud = () => runCloudAction(
+    () => cloudRegister(cloudEmail, cloudPassword),
+    "云同步账号已创建并登录。"
+  );
+
+  const pushCloud = () => runCloudAction(pushCloudBackup, "云端备份已上传。");
+
+  const pullCloud = () => {
+    const confirmed = window.confirm("确定要用云端备份覆盖本机学习数据吗？建议先导出一份本机备份。");
+    if (!confirmed) return;
+    runCloudAction(async () => {
+      const text = await pullCloudBackup();
+      window.setTimeout(() => window.location.reload(), 900);
+      return text;
+    }, "云端备份已恢复。");
+  };
+
+  const logoutCloud = () => runCloudAction(
+    async () => {
+      await cloudLogout();
+      setCloudPassword("");
+      return "已退出云同步账号。";
+    },
+    "已退出云同步账号。"
+  );
 
   const totalStorage = storageInfo.database + storageInfo.local + storageInfo.cache;
 
@@ -208,7 +317,7 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
                 );
               })}
             </div>
-            <p className="mt-3 text-xs text-white/50">主题会立即生效并自动保存</p>
+            <p className="mt-3 text-xs text-white/50">选择「跟随系统」后，会随 iOS 白天/深色外观自动切换。</p>
           </div>
         </div>
       </div>
@@ -258,18 +367,25 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
             </div>
             <div className="flex items-center gap-3">
               <input
-                type="range"
-                min="5"
-                max="100"
-                step="5"
-                value={preferences.dailyGoal}
-                onChange={(event) => updateDailyGoal(Number(event.target.value))}
-                className="flex-1"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={dailyGoalInput}
+                onChange={(event) => updateDailyGoalInput(event.target.value)}
+                onBlur={commitDailyGoalInput}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.currentTarget.blur();
+                  }
+                }}
+                className="focus-ring min-w-0 flex-1 rounded-2xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm font-bold text-white placeholder:text-white/40"
+                placeholder="输入每日数量"
               />
               <span className="min-w-[3.5rem] text-right text-sm font-bold text-[#81D8CF]">
                 {preferences.dailyGoal} 个
               </span>
             </div>
+            <p className="mt-2 text-xs text-white/45">仅限数字，范围 1-999。点键盘完成或离开输入框后保存。</p>
 
             {/* 目标完成时间预测 */}
             <GoalEstimation dailyGoal={preferences.dailyGoal} />
@@ -280,6 +396,85 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
       <div className="mb-4">
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">数据管理</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
+          <div className="border-b border-white/10 p-4">
+            <div className="mb-3">
+              <p className="text-sm font-bold text-white">云同步</p>
+              <p className="mt-0.5 text-xs text-white/50">
+                {cloudSession.configured
+                  ? cloudSession.token
+                    ? `已登录：${cloudSession.email}`
+                    : "可登录后把本机学习数据库备份到云端"
+                  : "还没有配置 VITE_SYNC_API_URL，部署 Cloudflare Worker 后即可启用"}
+              </p>
+            </div>
+
+            {!cloudSession.token && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <input
+                  type="email"
+                  value={cloudEmail}
+                  onChange={(event) => setCloudEmail(event.target.value)}
+                  className="focus-ring rounded-xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
+                  placeholder="邮箱"
+                  disabled={cloudBusy || !cloudSession.configured}
+                />
+                <input
+                  type="password"
+                  value={cloudPassword}
+                  onChange={(event) => setCloudPassword(event.target.value)}
+                  className="focus-ring rounded-xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
+                  placeholder="密码（至少8位）"
+                  disabled={cloudBusy || !cloudSession.configured}
+                />
+              </div>
+            )}
+
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {cloudSession.token ? (
+                <>
+                  <button
+                    onClick={pushCloud}
+                    disabled={cloudBusy}
+                    className="focus-ring rounded-xl bg-[#81D8CF] px-3 py-2 text-sm font-bold text-[#343838] hover:bg-white disabled:opacity-50"
+                  >
+                    上传本机进度
+                  </button>
+                  <button
+                    onClick={pullCloud}
+                    disabled={cloudBusy}
+                    className="focus-ring rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white/78 hover:bg-white/8 disabled:opacity-50"
+                  >
+                    拉取云端进度
+                  </button>
+                  <button
+                    onClick={logoutCloud}
+                    disabled={cloudBusy}
+                    className="focus-ring rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white/60 hover:bg-white/8 disabled:opacity-50 sm:col-span-2"
+                  >
+                    退出云同步账号
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={loginCloud}
+                    disabled={cloudBusy || !cloudSession.configured || !cloudEmail || !cloudPassword}
+                    className="focus-ring rounded-xl bg-[#81D8CF] px-3 py-2 text-sm font-bold text-[#343838] hover:bg-white disabled:opacity-50"
+                  >
+                    登录云同步
+                  </button>
+                  <button
+                    onClick={registerCloud}
+                    disabled={cloudBusy || !cloudSession.configured || !cloudEmail || cloudPassword.length < 8}
+                    className="focus-ring rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white/78 hover:bg-white/8 disabled:opacity-50"
+                  >
+                    创建账号
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
           <button onClick={exportData} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/16 text-[#81D8CF]">
               <Download size={19} />
@@ -309,16 +504,59 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
             onChange={(event) => importData(event.target.files?.[0] ?? null)}
           />
 
-          <button onClick={clearData} className="focus-ring flex w-full items-center gap-3 p-4 text-left text-[#81D8CF] hover:bg-[#81D8CF]/20">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/16 text-[#81D8CF]">
+          <button onClick={openClearDataPanel} className="focus-ring flex w-full items-center gap-3 p-4 text-left text-red-200 hover:bg-red-500/12">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-red-500/16 text-red-200">
               <RotateCcw size={19} />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">清除所有数据</p>
-              <p className="mt-0.5 text-xs text-[#81D8CF]/60">会删除学习进度和本机偏好</p>
+              <p className="mt-0.5 text-xs text-red-100/60">危险操作，会删除学习进度和本机偏好</p>
             </div>
-            <ChevronRight size={17} className="text-[#81D8CF]/40" />
+            <ChevronRight size={17} className="text-red-100/40" />
           </button>
+
+          {clearPanelOpen && (
+            <div className="border-t border-red-300/20 bg-red-950/25 p-4">
+              <div className="flex items-start gap-3 rounded-2xl border border-red-300/25 bg-red-500/12 p-3">
+                <AlertTriangle size={18} className="mt-0.5 shrink-0 text-red-200" />
+                <div>
+                  <p className="text-sm font-bold text-red-100">红色警告：此操作不可撤销</p>
+                  <p className="mt-1 text-xs leading-5 text-red-100/65">
+                    将清除本机学习数据库、每日目标、筛选偏好，并恢复到内置初始词库。建议先导出学习数据。
+                  </p>
+                </div>
+              </div>
+              <label className="mt-3 block text-xs font-bold text-red-100/75">
+                {clearRequiresPasscode ? "输入本地访问口令确认" : `输入「${CLEAR_CONFIRM_TEXT}」确认`}
+              </label>
+              <input
+                type={clearRequiresPasscode ? "password" : "text"}
+                value={clearCredential}
+                onChange={(event) => setClearCredential(event.target.value)}
+                className="focus-ring mt-2 w-full rounded-2xl border border-red-300/30 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/35"
+                placeholder={clearRequiresPasscode ? "本地访问口令" : CLEAR_CONFIRM_TEXT}
+              />
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  onClick={clearData}
+                  disabled={clearingData || !clearCredential}
+                  className="focus-ring rounded-2xl bg-red-400 px-3 py-2 text-sm font-bold text-red-950 hover:bg-red-300 disabled:opacity-50"
+                >
+                  {clearingData ? "清除中" : "确认清除"}
+                </button>
+                <button
+                  onClick={() => {
+                    setClearPanelOpen(false);
+                    setClearCredential("");
+                  }}
+                  disabled={clearingData}
+                  className="focus-ring rounded-2xl border border-white/20 px-3 py-2 text-sm font-bold text-white/78 hover:bg-white/8 disabled:opacity-50"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

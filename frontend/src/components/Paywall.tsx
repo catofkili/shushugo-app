@@ -17,11 +17,11 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
   },
   advancedDashboard: {
     title: "学习总览高级统计是 Pro 功能",
-    body: "用更完整的进度视图观察单词、语法、错题和复习节奏。"
+    body: "用更完整的进度视图观察单词、语法和等级推进。"
   },
   unlimitedMistakes: {
-    title: "高级错题训练是 Pro 功能",
-    body: "保留更多错题复盘入口，之后可以继续接无限训练和专项强化。"
+    title: "高级专项训练是 Pro 功能",
+    body: "之后可以继续接无限训练和专项强化。"
   },
   fullJlptPlan: {
     title: "完整 JLPT 规划是 Pro 功能",
@@ -33,7 +33,7 @@ const benefits = [
   "高级学习总览和等级进度",
   "沉浸式语法学习",
   "完整 JLPT 学习规划入口",
-  "高级错题与复习训练能力",
+  "高级专项训练能力",
   "后续 Pro 功能自动纳入"
 ];
 

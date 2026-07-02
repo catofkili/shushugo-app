@@ -71,7 +71,14 @@ const wordFilterSql = (options: WordSessionOptions = {}, alias = "w") => {
   } else if (type === "noun") {
     clauses.push(`(${alias}.pos LIKE '%名%' OR ${alias}.pos LIKE '%名词%')`);
   } else if (type === "verb") {
-    clauses.push(`(${alias}.pos LIKE '%動%' OR ${alias}.pos LIKE '%动词%' OR ${alias}.verb_type IS NOT NULL)`);
+    clauses.push(`(
+      ${alias}.pos LIKE '%動%' OR
+      ${alias}.pos LIKE '%动词%' OR
+      ${alias}.pos LIKE '%自动%' OR
+      ${alias}.pos LIKE '%他动%' OR
+      ${alias}.pos LIKE '%自動%' OR
+      ${alias}.pos LIKE '%他動%'
+    )`);
   } else if (type === "adjective") {
     clauses.push(`(${alias}.pos LIKE '%形%' OR ${alias}.pos LIKE '%形容词%')`);
   } else if (type === "adverb") {
@@ -496,6 +503,68 @@ const backfillStage2FromReviews = () => {
       VALUES (?, ?, ?)
     `, [day, Number(row.word_id), index + 1]);
   });
+  getDatabase().run(`
+    WITH rollup AS (
+      SELECT
+        word_id,
+        COUNT(*) AS seen,
+        CASE
+          WHEN SUM(
+            CASE answer
+              WHEN 'forgot' THEN -10
+              WHEN 'fuzzy' THEN -5
+              WHEN 'know' THEN 10
+              ELSE 0
+            END
+          ) < -40 THEN -40
+          ELSE SUM(
+            CASE answer
+              WHEN 'forgot' THEN -10
+              WHEN 'fuzzy' THEN -5
+              WHEN 'know' THEN 10
+              ELSE 0
+            END
+          )
+        END AS score
+      FROM reviews
+      WHERE reviewed_on = ?
+        AND answer != 'known_forever'
+      GROUP BY word_id
+    )
+    UPDATE stage2_progress
+    SET temp_score = (
+        SELECT score FROM rollup WHERE rollup.word_id = stage2_progress.word_id
+      ),
+      seen_count = (
+        SELECT seen FROM rollup WHERE rollup.word_id = stage2_progress.word_id
+      ),
+      completed = CASE
+        WHEN (
+          SELECT score FROM rollup WHERE rollup.word_id = stage2_progress.word_id
+        ) >= 10 THEN 1
+        ELSE completed
+      END,
+      due_after = CASE
+        WHEN (
+          SELECT score FROM rollup WHERE rollup.word_id = stage2_progress.word_id
+        ) >= 10 THEN NULL
+        ELSE due_after
+      END
+    WHERE reviewed_on = ?
+      AND seen_count = 0
+      AND word_id IN (SELECT word_id FROM rollup)
+  `, [day, day]);
+  getDatabase().run(`
+    UPDATE stage2_progress
+    SET completed = 1,
+        due_after = NULL
+    WHERE reviewed_on = ?
+      AND word_id IN (
+        SELECT word_id
+        FROM progress
+        WHERE known_forever = 1
+      )
+  `, [day]);
 };
 
 const advanceStage2Queue = (answeredWordId: number) => {
@@ -764,7 +833,72 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
   return review ? rowObjectToCard(review) : null;
 };
 
+const dailyStudyStats = () => {
+  const days = new Map<string, { date: string; seconds: number; wordCount: number }>();
+  rowsFor(`
+    SELECT studied_on, seconds
+    FROM word_study_time
+    WHERE studied_on BETWEEN '2026-06-01' AND '2027-06-30'
+  `).forEach((row) => {
+    const date = String(row.studied_on ?? "");
+    if (!date) return;
+    days.set(date, {
+      date,
+      seconds: Number(row.seconds ?? 0),
+      wordCount: days.get(date)?.wordCount ?? 0
+    });
+  });
+  rowsFor(`
+    SELECT reviewed_on, COUNT(DISTINCT word_id) AS word_count
+    FROM reviews
+    WHERE reviewed_on BETWEEN '2026-06-01' AND '2027-06-30'
+    GROUP BY reviewed_on
+  `).forEach((row) => {
+    const date = String(row.reviewed_on ?? "");
+    if (!date) return;
+    days.set(date, {
+      date,
+      seconds: days.get(date)?.seconds ?? 0,
+      wordCount: Number(row.word_count ?? 0)
+    });
+  });
+  rowsFor("SELECT checked_on FROM checkins ORDER BY checked_on").forEach((row) => {
+    const date = String(row.checked_on ?? "");
+    if (!date) return;
+    days.set(date, days.get(date) ?? { date, seconds: 0, wordCount: 0 });
+  });
+  return Array.from(days.values()).sort((left, right) => left.date.localeCompare(right.date));
+};
+
+// Remember which word was just served so submitWordAnswer can reject stale or
+// duplicate submissions (e.g. a rapid double-tap / touch ghost-click that fires
+// before the card advances, which used to score the same word twice and re-loop
+// the last words instead of reaching the settlement screen).
+const setCurrentCard = (card: WordCard | null): void => {
+  setState("current_card", card && card.id != null ? String(card.id) : "0");
+};
+
+// Claim the served card. Returns true if `wordId` is the card we are currently
+// waiting on (and consumes it so it can only be scored once); false for a stale
+// or duplicate submit. An empty value means nothing has been served yet -> allow.
+// JavaScript is single-threaded, so this read-then-write needs no extra locking.
+const claimCurrentCard = (wordId: number): boolean => {
+  const expected = getState("current_card", "");
+  if (expected === "") return true;
+  if (expected === String(wordId)) {
+    setState("current_card", "0");
+    return true;
+  }
+  return false;
+};
+
 const nextCard = (options: WordSessionOptions = {}): { card: WordCard | null; phase: string } => {
+  const result = resolveNextCard(options);
+  setCurrentCard(result.card);
+  return result;
+};
+
+const resolveNextCard = (options: WordSessionOptions = {}): { card: WordCard | null; phase: string } => {
   if (hasWordFilter(options)) {
     return { card: pickFilteredWordNext(options), phase: "filtered" };
   }
@@ -900,6 +1034,7 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     kanjiCompleted: kanji.completed,
     studyDate,
     checkins,
+    dailyStudyStats: dailyStudyStats(),
     wordStudySecondsToday,
     taskDone: kanji.total > 0
       ? kanji.completed >= kanji.total
@@ -1000,8 +1135,36 @@ export function getWordSession(options: WordSessionOptions = {}): WordSessionRes
   };
 }
 
+export function continueStage2Study(): WordSessionResponse {
+  ensureProgressInitialized();
+  const stage2 = stage2Stats();
+  if (stage2.total > 0 && stage2.completed < stage2.total) {
+    setPhase("stage2");
+    return getWordSession();
+  }
+  setPhase("done");
+  return getWordSession();
+}
+
+export function continueKanjiStudy(): WordSessionResponse {
+  ensureProgressInitialized();
+  buildKanjiProgressFromReviews();
+  const kanji = kanjiStats();
+  if (kanji.total > 0 && kanji.completed < kanji.total) {
+    setPhase("kanji");
+    return getWordSession();
+  }
+  setPhase("done");
+  return getWordSession();
+}
+
 export function submitWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions = {}): WordSessionResponse {
   ensureProgressInitialized();
+  if (!claimCurrentCard(wordId)) {
+    // Stale or duplicate submission (e.g. a rapid double-tap before the card
+    // advanced). Do NOT score the word again; just re-sync with the current card.
+    return getWordSession(options);
+  }
   const db = getDatabase();
   const studyDate = today();
   const phase = currentPhase();
@@ -1125,7 +1288,13 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     knownForever = 1;
     mistakeStreak = 0;
   } else {
-    score = Math.max(score + answerScore[answer], -40);
+    // First "know" of the day on a word earns a +5 first-impression bonus
+    // (+15 instead of +10). Only the day's first sighting counts; fuzzy/forgot
+    // and later sightings are unchanged.
+    const firstSeenToday =
+      firstValue<number>("SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ?", [wordId, studyDate], 0) === 0;
+    const delta = answer === "know" && firstSeenToday ? 15 : answerScore[answer];
+    score = Math.max(score + delta, -40);
     rightCount += answer === "know" ? 1 : 0;
     fuzzyCount += answer === "fuzzy" ? 1 : 0;
     forgotCount += answer === "forgot" ? 1 : 0;

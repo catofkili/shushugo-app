@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "master-nihongo-sync",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-02",
+  "workers_dev": true,
+  "preview_urls": false,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "master_nihongo_sync",
+      "database_id": "eb7ebca5-8026-41c2-8662-1dbc76eef5d7"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SYNC_DATA",
+      "id": "a8a8e2d05d2e4159a26e37e057bd8ebf"
+    }
+  ]
+}

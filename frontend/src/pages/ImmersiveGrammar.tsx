@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Star, StickyNote, X } from "lucide-react";
 import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
+import { GrammarTermHint } from "../components/GrammarTermHint";
+import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarPoints } from "../data/grammar";
 import { getGrammarPointFavorite, toggleFavorite } from "../lib/api";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
@@ -18,17 +20,15 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
     grammarPoints.filter((point) => selectedLevel === "All" || point.level === selectedLevel)
   ), [selectedLevel]);
   const [index, setIndex] = useState(0);
-  const [favoriteVersion, setFavoriteVersion] = useState(0);
+  const [, setFavoriteVersion] = useState(0);
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
-  const [noteVersion, setNoteVersion] = useState(0);
+  const [, setNoteVersion] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const point = points[Math.min(index, Math.max(points.length - 1, 0))];
   const favorite = point ? getGrammarPointFavorite(point.id) : false;
   const note = point ? getGrammarNote(point.id) : "";
-  favoriteVersion;
-  noteVersion;
 
   useEffect(() => {
     setNoteEditorOpen(false);
@@ -89,7 +89,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
         <div className="flex items-start justify-between gap-3 border-b border-white/15 pb-4">
           <div className="min-w-0">
             <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/62">{point.level}</span>
-            <h1 className="jp-serif mt-4 text-5xl font-semibold leading-tight">{point.title}</h1>
+            <h1 className="jp-serif mt-4 text-5xl font-semibold leading-tight"><JapaneseRuby text={point.title} /></h1>
             <p className="mt-3 text-xl leading-8 text-white/82">{point.meaning}</p>
           </div>
           <button
@@ -157,12 +157,14 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
               )}
             </div>
           )}
-          <p className="jp rounded-2xl border border-white/15 bg-[#373b3b] px-4 py-3 text-lg leading-8 text-white/82">{point.structure}</p>
+          <p className="jp rounded-2xl border border-white/15 bg-[#373b3b] px-4 py-3 text-lg leading-8 text-white/82">
+            <GrammarTermHint text={point.connection ?? point.structure} />
+          </p>
           <p className="mt-5 text-[15px] leading-8 text-white/76">{point.explanation}</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {point.examples.slice(0, 4).map((example) => (
               <div key={example.jp ?? example.japanese} className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
-                <p className="jp text-lg leading-8">{example.jp ?? example.japanese}</p>
+                <p className="jp text-lg leading-8"><JapaneseRuby text={example.jp ?? example.japanese} /></p>
                 <p className="mt-2 text-sm leading-6 text-white/62">{example.cn ?? example.chinese}</p>
               </div>
             ))}

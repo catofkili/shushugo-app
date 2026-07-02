@@ -5,8 +5,20 @@ import { DbRow, SqlValue } from "../database/db-utils";
 import { confusionCandidates } from "./confusion";
 import kanjiVariantPayload from "../../data/kanji_variants.json";
 import verbPairHintPayload from "../../data/verb_pair_hints.json";
+import englishOriginPayload from "../../data/english_origins.json";
 
 type VerbPairHint = readonly [voice: string, pairKanji: string, pairKana: string, note: string];
+
+// 把数据库里的英文 verb_type 显示成课本的「一类/二类/三类」标注
+const VERB_TYPE_LABELS: Record<string, string> = {
+  godan: "一类动词（五段）",
+  iku: "一类动词（五段）",
+  ichidan: "二类动词（一段）",
+  suru: "三类动词（サ变）",
+  kuru: "三类动词（カ变）"
+};
+
+const verbTypeLabel = (verbType: string): string => VERB_TYPE_LABELS[verbType] ?? verbType;
 
 const kanjiVariants = (kanjiVariantPayload as { japanese_to_simplified?: Record<string, string> })
   .japanese_to_simplified ?? {};
@@ -17,6 +29,31 @@ const verbPairHints = Object.fromEntries(
     return [[key, [value[0], value[1], value[2], value[3]] as VerbPairHint]];
   })
 ) as Record<string, VerbPairHint>;
+
+const englishOrigins = englishOriginPayload as Record<string, string>;
+
+function englishOrigin(kanji: string, kana: string, meaning: string): string {
+  if (!/[\u30a0-\u30ff]/.test(`${kanji}${kana}`)) return "";
+  const mapped = englishOrigins[kanji] || englishOrigins[kana];
+  if (mapped) return mapped;
+  const nonEnglishMarker = /^\s*[（(\[]\s*(?:法|フ|仏|德|独|オ|蘭|葡|ポ|伊|イ|露|ロ)\s*[）)\]]/;
+  if (/[A-Za-z]/.test(kanji)) {
+    return kanji.split(/[；;]/).find((part) => /[A-Za-z]/.test(part) && !nonEnglishMarker.test(part))?.trim() ?? "";
+  }
+  if (nonEnglishMarker.test(meaning)) return "";
+  return meaning.match(/[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*/)?.[0]?.replace(/[ .;,-]+$/, "") ?? "";
+}
+
+function questionMeaning(meaning: string): string {
+  return meaning
+    .replace(/[A-Za-zＡ-Ｚａ-ｚ]{3,}(?:[ ./'-]+[A-Za-zＡ-Ｚａ-ｚ]+)*/g, "")
+    .replace(/[A-Za-zＡ-Ｚａ-ｚ]{1,2}(?![一-鿿぀-ヿ])/g, "")
+    .replace(/[（(\[]\s*(?:英|美)\s*[）)\]]/g, "")
+    .replace(/[（(]\s*[）)]/g, "")
+    .replace(/\s*([；;，,])\s*/g, "$1")
+    .replace(/^[\s；;，,、.:：/]+/, "")
+    .trim();
+}
 
 const shortMeaningOverrides: Record<number, string> = {
   596: "敬称",
@@ -125,7 +162,7 @@ function findPairWord(db: Database, pairKanji: string, pairKana: string): {
  * 构建自他动词配对信息
  */
 export function buildVerbPair(db: Database, kanji: string, kana: string): WordCard["verbPair"] {
-  const key = kanji in verbPairHints ? kanji : kana;
+  const key = kanji in verbPairHints ? kanji : (!kanji || kanji === kana ? kana : "");
   const hint = verbPairHints[key];
   if (!hint) return null;
 
@@ -168,7 +205,9 @@ export function promptMeaning(meaning: string, wordId: number, kanji: string): s
     previous = short;
     short = short.replace(/^[（(][^）)]{1,40}[）)]/, "").trim();
   }
-  short = short.replace(/^[A-Za-z][A-Za-z\s.／/-]*/, "").trim();
+  // Remove English glosses such as "shirt", but keep short letter+CJK terms like T恤 or A型.
+  short = short.replace(/^[A-Za-zＡ-Ｚａ-ｚ]{3,}(?:[ .／/'-]+[A-Za-zＡ-Ｚａ-ｚ]+)*/, "").trim();
+  short = short.replace(/^[A-Za-zＡ-Ｚａ-ｚ]{1,2}(?![一-鿿぀-ヿ])/, "").trim();
   short = short.replace(/^[〈《][^〉》]{1,20}[〉》]/, "").trim();
   if (short.includes("。")) short = short.split("。", 1)[0].trim();
   if (kanji && kanji.length <= 5 && !/[ぁ-ゟァ-ヿA-Za-z〜～]/.test(kanji)) {
@@ -181,6 +220,14 @@ export function promptMeaning(meaning: string, wordId: number, kanji: string): s
     if (prefix.length >= 2) short = prefix;
   }
   return short.slice(0, 8);
+}
+
+export function honorificLabel(meaning: string): string {
+  if (/(謙譲語|謙讓語|谦让语|谦让|謙讓)/.test(meaning)) return "谦语";
+  if (/(谦称|謙称|謙稱)/.test(meaning)) return "谦称";
+  if (meaning.includes("自谦")) return "自谦";
+  if (/(敬语|敬語|尊敬表达|尊敬語|敬称|敬意|对外敬语)/.test(meaning)) return "敬语";
+  return "";
 }
 
 /**
@@ -219,10 +266,13 @@ export function rowObjectToCard(row: DbRow): WordCard {
   return {
     id,
     meaning,
+    questionMeaning: questionMeaning(meaning),
     primaryMeaning: primaryMeaning(meaning),
     promptMeaning: promptMeaning(meaning, id, label),
+    honorificLabel: honorificLabel(meaning),
     kana,
     kanji: label,
+    englishOrigin: englishOrigin(label, kana, meaning),
     pos: String(row.pos ?? ""),
     jlptLevel: String(row.jlpt_level ?? ""),
     score: Number(row.score ?? 0),
@@ -235,7 +285,7 @@ export function rowObjectToCard(row: DbRow): WordCard {
       meaning: String(row.example_meaning ?? "")
     },
     kanjiComponents: buildKanjiComponents(label),
-    conjugations: row.verb_type ? [{ label: "动词类型", value: String(row.verb_type) }] : [],
+    conjugations: row.verb_type ? [{ label: "动词类型", value: verbTypeLabel(String(row.verb_type)) }] : [],
     verbPair: buildVerbPair(getDatabase(), label, kana),
     confusions: confusionCandidates(row)
   };

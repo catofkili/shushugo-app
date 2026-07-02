@@ -7,8 +7,9 @@ interface HelpPageProps {
 
 export function HelpPage({ onBack }: HelpPageProps) {
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const supportEmail = "2747575640g@gmail.com";
   const openMail = (subject: string) => {
-    window.location.href = `mailto:support@masternihongo.app?subject=${encodeURIComponent(subject)}`;
+    window.location.href = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}`;
   };
 
   const faqs = [
@@ -19,14 +20,6 @@ export function HelpPage({ onBack }: HelpPageProps) {
     {
       q: "学习进度保存在哪里？",
       a: "默认保存在本地设备。开启云端同步后可跨设备同步（需部署后端）。",
-    },
-    {
-      q: "如何复习学过的内容？",
-      a: "在「工具箱」中打开「复习队列」，系统会根据记忆曲线提醒你复习。",
-    },
-    {
-      q: "错题本在哪里？",
-      a: "在「工具箱」中找到「错题本」，可以回顾做错的题目。",
     },
     {
       q: "应用是完全离线的吗？",
@@ -73,8 +66,8 @@ export function HelpPage({ onBack }: HelpPageProps) {
             <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3">
               <ol className="space-y-2 text-sm text-white/68">
                 <li>1. 在「单词学习」选择 JLPT 等级或学习类型，先完成当天词卡。</li>
-                <li>2. 到「语法」用学习/练习切换，把错题自动收进错题本。</li>
-                <li>3. 在「工具箱」查看复习队列、收藏、辨析表和整体进度。</li>
+                <li>2. 到「语法」用学习/练习切换，按等级推进语法卡。</li>
+                <li>3. 在「工具箱」查看收藏和整体进度。</li>
               </ol>
             </div>
           )}
@@ -102,7 +95,7 @@ export function HelpPage({ onBack }: HelpPageProps) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">联系我们</p>
-              <p className="mt-0.5 text-xs text-white/50">support@masternihongo.app</p>
+              <p className="mt-0.5 text-xs text-white/50">{supportEmail}</p>
             </div>
             <ChevronRight size={17} className="text-white/40" />
           </button>

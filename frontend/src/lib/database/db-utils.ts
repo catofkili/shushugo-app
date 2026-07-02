@@ -71,12 +71,19 @@ export function daysSince(dateText: SqlValue): number {
 /**
  * 获取学习日期（考虑凌晨4点之前算前一天）
  */
-export function studyDate(): string {
-  const now = new Date();
+const localDateKey = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+export function studyDate(current = new Date()): string {
+  const now = new Date(current);
   if (now.getHours() < 4) {
     now.setDate(now.getDate() - 1);
   }
-  return now.toISOString().slice(0, 10);
+  return localDateKey(now);
 }
 
 export const today = studyDate;

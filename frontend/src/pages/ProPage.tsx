@@ -11,10 +11,10 @@ interface ProPageProps {
 }
 
 const rows = [
-  { label: "高级学习总览", detail: "整合单词、语法、错题和等级进度" },
+  { label: "高级学习总览", detail: "整合单词、语法和等级进度" },
   { label: "沉浸式语法学习", detail: "低干扰阅读卡片，适合集中推进" },
   { label: "完整 JLPT 规划", detail: "按 N1-N5 组织未来学习路线" },
-  { label: "高级复习能力", detail: "为后续专项训练和 AI 讲解预留权益" }
+  { label: "高级专项能力", detail: "为后续专项训练和 AI 讲解预留权益" }
 ];
 
 export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: ProPageProps) {

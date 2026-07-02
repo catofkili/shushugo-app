@@ -60,9 +60,12 @@ export interface GrammarPoint {
   id: string;
   title: string;
   level: JLPTLevel;
+  bookOrder?: number;
   meaning: string;
   structure: string;
+  connection?: string;
   explanation: string;
+  usageNotes?: string[];
   examples: ExampleSentence[];
   comparisons: (GrammarComparison | string)[];
   quiz: QuizQuestion[];

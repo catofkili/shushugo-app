@@ -1,6 +1,6 @@
 export type ProductId = "master_pro_monthly" | "master_pro_yearly" | "master_pro_lifetime";
 
-export type EntitlementSource = "free" | "storekit" | "development";
+export type EntitlementSource = "free" | "storekit" | "cloud" | "app_store" | "development";
 
 export type FeatureId =
   | "immersiveGrammar"

@@ -8,6 +8,7 @@ yarn-error.log*
 # Build
 dist/
 build/
+static/
 *.log
 
 # IDE
@@ -50,12 +51,15 @@ backend/sync_data.db
 # Database backups
 *.db-journal
 *.sqlite3-journal
+*.db.bak_*
 
 # Sensitive
 .env
 .env.local
 *.key
 *.pem
+.claude/
+.wrangler/
 
 # Stale export / duplicate of frontend (build artifacts only, no source)
 /master-nihongo/
@@ -64,3 +68,5 @@ master-nihongo.zip
 # Capacitor / iOS extra
 frontend/ios/App/App/public/
 frontend/ios/App/Pods/
+frontend/static/
+cloudflare-sync/.wrangler/

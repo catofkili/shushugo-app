@@ -5,10 +5,13 @@ export type WordTypeFilter = "all" | "noun" | "verb" | "adjective" | "adverb" | 
 export interface WordCard {
   id: number;
   meaning: string;
+  questionMeaning?: string;
   primaryMeaning: string;
   promptMeaning: string;
+  honorificLabel?: string;
   kana: string;
   kanji: string;
+  englishOrigin?: string;
   pos: string;
   jlptLevel: string;
   score: number;
@@ -58,6 +61,7 @@ export interface WordStats {
   kanjiCompleted: number;
   studyDate: string;
   checkins: string[];
+  dailyStudyStats: { date: string; seconds: number; wordCount: number }[];
   wordStudySecondsToday: number;
   taskDone: boolean;
 }

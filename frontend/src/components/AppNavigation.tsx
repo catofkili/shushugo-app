@@ -1,4 +1,4 @@
-import { useMemo, useState, type TouchEvent } from "react";
+import { useEffect, useState, type TouchEvent } from "react";
 import {
   ArrowLeft,
   BookOpenText,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
 import type { Page } from "../types/app";
-import { searchContent, type SearchResult } from "../lib/search-api";
+import type { SearchResult } from "../lib/search-api";
 
 const navItems: { page: Page; label: string; icon: LucideIcon }[] = [
   { page: "word", label: "单词学习", icon: BookOpenText },
@@ -22,14 +22,13 @@ const navItems: { page: Page; label: string; icon: LucideIcon }[] = [
 ];
 
 const isGrammarPage = (page: Page) => page === "grammar" || page === "detail";
-const isToolboxPage = (page: Page) => ["toolbox", "favorites", "review", "mistakes", "comparison"].includes(page);
+const isToolboxPage = (page: Page) => ["toolbox", "study-modes", "favorites"].includes(page);
 const isRootMobilePage = (page: Page) => ["word", "grammar", "toolbox", "profile"].includes(page);
 
 interface AppNavigationProps {
   page: Page;
   sidebarCollapsed: boolean;
   selectedGrammarLevel: "All" | JLPTLevel;
-  mistakeCount: number;
   onBack: () => void;
   onNavigate: (page: Page) => void;
   onOpenGrammarTab: () => void;
@@ -41,7 +40,6 @@ export function AppNavigation({
   page,
   sidebarCollapsed,
   selectedGrammarLevel,
-  mistakeCount,
   onBack,
   onNavigate,
   onOpenGrammarTab,
@@ -50,7 +48,28 @@ export function AppNavigation({
 }: AppNavigationProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
-  const searchResults = useMemo(() => searchContent(searchQuery, 8), [searchQuery]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    if (!query) {
+      setSearchResults([]);
+      return;
+    }
+
+    let active = true;
+    import("../lib/search-api")
+      .then(({ searchContent }) => {
+        if (active) setSearchResults(searchContent(query, 8));
+      })
+      .catch(() => {
+        if (active) setSearchResults([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [searchQuery]);
 
   const openNavPage = (target: Page) => {
     if (target === "grammar") {
@@ -77,7 +96,7 @@ export function AppNavigation({
   return (
     <>
       <div
-        className="app-landscape-topbar fixed left-0 right-0 top-0 z-10 bg-white/15 px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.4rem)] backdrop-blur-[30px] lg:hidden"
+        className="app-landscape-topbar fixed left-0 right-0 top-0 z-10 bg-white/15 px-4 pb-2 pt-[calc(max(env(safe-area-inset-top),54px)+0.4rem)] backdrop-blur-[30px] lg:hidden"
         style={{
           touchAction: "none",
           pointerEvents: "auto",
@@ -222,7 +241,6 @@ export function AppNavigation({
           <p className="jp text-base font-semibold text-white">本日の目安</p>
           <p className="mt-2">先做单词，再进语法。</p>
           <p>语法等级：{selectedGrammarLevel === "All" ? "全部" : selectedGrammarLevel}</p>
-          <p>誤答ノート {mistakeCount} 件</p>
           <p>文法は短く、毎日続ける。</p>
         </div>
       </aside>
@@ -243,7 +261,7 @@ export function AppNavigation({
           boxShadow: "0 -8px 32px rgba(0, 0, 0, 0.1)"
         }}
         onTouchMove={handleNavTouchMove}
-        className="app-landscape-rail px-1 pb-[calc(env(safe-area-inset-bottom)*0.5+0.25rem)] pt-1 lg:hidden"
+        className="app-landscape-rail px-1 pb-[calc(max(env(safe-area-inset-bottom),20px)*0.5+0.25rem)] pt-1 lg:hidden"
       >
         <div className="app-landscape-rail-grid grid grid-cols-4 gap-1">
           {navItems.map((item) => {

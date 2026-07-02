@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, ChevronDown, Layers, Search, Star, StickyNote, X, XCircle } from "lucide-react";
+import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
+import { GrammarTermHint } from "../components/GrammarTermHint";
+import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarPoints } from "../data/grammar";
 import { getGrammarPointFavorite, toggleFavorite } from "../lib/api";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
 import { GrammarPoint, JLPTLevel, MasteryStatus } from "../types/grammar";
-import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
 
 interface LibraryProps {
   getMastery: (id: string) => MasteryStatus;
@@ -14,10 +16,17 @@ interface LibraryProps {
   onSelectedLevelChange: (level: "All" | JLPTLevel) => void;
   onOpenFavorites: () => void;
   onOpenImmersive: () => void;
+  onOpenDetail: (id: string) => void;
 }
 
 const levels: ("All" | JLPTLevel)[] = ["All", "N5", "N4", "N3", "N2", "N1"];
 const ORDER_KEY = "jp-grammar-card-order-v2";
+
+// 必须与 tailwind.config.js 的 `twopane` 屏幕断点完全一致：
+// 只有宽到能并排显示「左列表 / 右详情」时才用内联双栏，
+// 否则（手机竖屏等）点卡片改为打开整页详情。
+const TWO_PANE_QUERY =
+  "(min-width: 1024px), (orientation: landscape) and (min-width: 700px) and (max-height: 600px)";
 
 const statusLabel: Record<MasteryStatus, string> = {
   new: "未学",
@@ -91,10 +100,10 @@ const GrammarExplanation = ({
           <StickyNote size={16} />
         </button>
       </div>
-      <h2 className="jp-serif mt-4 text-5xl font-semibold leading-none">{point.title}</h2>
+      <h2 className="jp-serif mt-4 text-5xl font-semibold leading-none"><JapaneseRuby text={point.title} /></h2>
       <p className="mt-4 text-xl leading-8 text-white/86">{point.meaning}</p>
       <p className="jp mt-4 rounded-2xl border border-white/15 bg-[#373b3b] px-3 py-2 text-sm leading-7 text-white/78">
-        {point.structure}
+        <GrammarTermHint text={point.connection ?? point.structure} />
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <button
@@ -154,7 +163,7 @@ const GrammarExplanation = ({
         <div className="mt-3 space-y-3">
           {point.examples.slice(0, 4).map((example) => (
             <article key={example.jp ?? example.japanese} className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
-              <p className="jp text-lg leading-8">{example.jp ?? example.japanese}</p>
+              <p className="jp text-lg leading-8"><JapaneseRuby text={example.jp ?? example.japanese} /></p>
               <p className="mt-1 text-sm leading-6 text-white/60">{example.reading}</p>
               <p className="mt-2 text-sm leading-6 text-white/76">{example.cn ?? example.chinese}</p>
             </article>
@@ -162,18 +171,6 @@ const GrammarExplanation = ({
         </div>
       </section>
 
-      {point.comparisons.length > 0 && (
-        <section>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">Confusions</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {point.comparisons.map((comparison) => (
-              <span key={typeof comparison === "string" ? comparison : comparison.withId} className="rounded-sm border border-white/15 bg-[#81D8CF]/10 px-3 py-2 text-sm text-white/75">
-                {typeof comparison === "string" ? comparison : `${comparison.withTitle}：${comparison.note}`}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   </section>
 );
@@ -185,16 +182,37 @@ export const Library = ({
   selectedLevel,
   onSelectedLevelChange,
   onOpenFavorites,
-  onOpenImmersive
+  onOpenImmersive,
+  onOpenDetail
 }: LibraryProps) => {
   const [query, setQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(grammarPoints[0]?.id ?? "");
+  const [isTwoPane, setIsTwoPane] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(TWO_PANE_QUERY).matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(TWO_PANE_QUERY);
+    const handler = () => setIsTwoPane(mq.matches);
+    handler();
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // 卡片主体点击：宽屏 → 更新右侧内联详情；窄屏 → 打开整页详情。
+  const openCard = (id: string) => {
+    if (isTwoPane) {
+      setSelectedId(id);
+    } else {
+      onOpenDetail(id);
+    }
+  };
   const [cardOrder, setCardOrder] = useState<string[]>(readOrder);
-  const [favoriteVersion, setFavoriteVersion] = useState(0);
+  const [, setFavoriteVersion] = useState(0);
   const [noteEditorId, setNoteEditorId] = useState("");
   const [noteDraft, setNoteDraft] = useState("");
-  const [noteVersion, setNoteVersion] = useState(0);
+  const [, setNoteVersion] = useState(0);
 
   useEffect(() => {
     localStorage.setItem(ORDER_KEY, JSON.stringify(cardOrder));
@@ -245,7 +263,6 @@ export const Library = ({
   };
 
   const isGrammarFavorite = (id: string) => {
-    favoriteVersion;
     return getGrammarPointFavorite(id);
   };
 
@@ -255,7 +272,6 @@ export const Library = ({
   };
 
   const grammarNote = (id: string) => {
-    noteVersion;
     return getGrammarNote(id);
   };
 
@@ -351,17 +367,17 @@ export const Library = ({
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <button onClick={() => setSelectedId(point.id)} className="focus-ring min-w-0 flex-1 text-left">
+                  <button onClick={() => openCard(point.id)} className="focus-ring min-w-0 flex-1 text-left">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{point.level}</span>
                         <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/65">{statusLabel[mastery]}</span>
                       </div>
-                      <h3 className="jp-serif mt-3 text-3xl font-semibold leading-none">{point.title}</h3>
+                      <h3 className="jp-serif mt-3 text-3xl font-semibold leading-none"><JapaneseRuby text={point.title} /></h3>
                       <p className="mt-2 text-sm font-semibold leading-6 text-white/82">{point.meaning}</p>
                     </div>
                     <p className="jp mt-3 rounded-2xl border border-white/10 bg-[#373b3b] px-3 py-2 text-sm leading-6 text-white/65">
-                      {point.structure}
+                      <JapaneseRuby text={point.connection ?? point.structure} />
                     </p>
                   </button>
                   <div className="grid shrink-0 gap-2">
@@ -435,7 +451,7 @@ export const Library = ({
         </div>
         </section>
 
-        {selected && (
+        {isTwoPane && selected && (
           <GrammarExplanation
             point={selected}
             mastery={getMastery(selected.id)}

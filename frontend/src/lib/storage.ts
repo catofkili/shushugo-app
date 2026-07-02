@@ -1,6 +1,11 @@
 import { Preferences } from '@capacitor/preferences';
 import { exportDatabase, importDatabase } from './database';
 
+const DB_KEY = 'nihongo_db';
+const DB_MANIFEST_KEY = 'nihongo_db_manifest';
+const DB_CHUNK_KEY_PREFIX = 'nihongo_db_chunk_';
+const DB_CHUNK_SIZE = 350_000;
+
 const bytesToBase64 = (data: Uint8Array): string => {
   let binary = "";
   const chunkSize = 0x8000;
@@ -19,6 +24,67 @@ const base64ToBytes = (base64: string): Uint8Array => {
   return data;
 };
 
+const chunkKey = (index: number) => `${DB_CHUNK_KEY_PREFIX}${index}`;
+
+const removeChunkedDatabase = async (chunkCount = 80): Promise<void> => {
+  await Preferences.remove({ key: DB_MANIFEST_KEY });
+  for (let index = 0; index < chunkCount; index += 1) {
+    await Preferences.remove({ key: chunkKey(index) });
+  }
+};
+
+const saveChunkedDatabase = async (base64: string): Promise<void> => {
+  const chunkCount = Math.ceil(base64.length / DB_CHUNK_SIZE);
+  const previous = await Preferences.get({ key: DB_MANIFEST_KEY });
+  let previousChunkCount = 0;
+  if (previous.value) {
+    try {
+      previousChunkCount = Number(JSON.parse(previous.value).chunkCount) || 0;
+    } catch {
+      previousChunkCount = 0;
+    }
+  }
+
+  for (let index = 0; index < chunkCount; index += 1) {
+    await Preferences.set({
+      key: chunkKey(index),
+      value: base64.slice(index * DB_CHUNK_SIZE, (index + 1) * DB_CHUNK_SIZE)
+    });
+  }
+
+  for (let index = chunkCount; index < previousChunkCount; index += 1) {
+    await Preferences.remove({ key: chunkKey(index) });
+  }
+
+  await Preferences.set({
+    key: DB_MANIFEST_KEY,
+    value: JSON.stringify({ version: 1, chunkCount, length: base64.length })
+  });
+  await Preferences.remove({ key: DB_KEY });
+};
+
+const loadChunkedDatabase = async (): Promise<string | null> => {
+  const { value } = await Preferences.get({ key: DB_MANIFEST_KEY });
+  if (!value) return null;
+
+  const manifest = JSON.parse(value) as { chunkCount?: number; length?: number };
+  const chunkCount = Number(manifest.chunkCount) || 0;
+  if (chunkCount <= 0) return null;
+
+  const parts: string[] = [];
+  for (let index = 0; index < chunkCount; index += 1) {
+    const part = await Preferences.get({ key: chunkKey(index) });
+    if (!part.value) throw new Error(`Missing database chunk ${index}`);
+    parts.push(part.value);
+  }
+
+  const base64 = parts.join("");
+  if (manifest.length && base64.length !== manifest.length) {
+    throw new Error("Saved database is incomplete");
+  }
+  return base64;
+};
+
 // 保存数据库到本地存储
 export async function saveDatabase(): Promise<void> {
   try {
@@ -28,12 +94,9 @@ export async function saveDatabase(): Promise<void> {
       return;
     }
 
-    // 转换为 Base64 字符串。分块处理可以避免较大的数据库触发调用栈溢出。
+    // 转换为 Base64 字符串。分块写入 Preferences，避免单个值过大导致保存失败。
     const base64 = bytesToBase64(data);
-    await Preferences.set({
-      key: 'nihongo_db',
-      value: base64,
-    });
+    await saveChunkedDatabase(base64);
 
     console.log('✅ Database saved to local storage');
   } catch (error) {
@@ -45,7 +108,12 @@ export async function saveDatabase(): Promise<void> {
 // 从本地存储恢复数据库
 export async function loadDatabase(): Promise<boolean> {
   try {
-    const { value } = await Preferences.get({ key: 'nihongo_db' });
+    let value = await loadChunkedDatabase();
+
+    if (!value) {
+      const legacy = await Preferences.get({ key: DB_KEY });
+      value = legacy.value;
+    }
 
     if (!value) {
       console.log('No saved database found');
@@ -64,7 +132,8 @@ export async function loadDatabase(): Promise<boolean> {
 // 清除本地存储
 export async function clearStorage(): Promise<void> {
   try {
-    await Preferences.remove({ key: 'nihongo_db' });
+    await Preferences.remove({ key: DB_KEY });
+    await removeChunkedDatabase();
     console.log('✅ Local storage cleared');
   } catch (error) {
     console.error('❌ Failed to clear storage:', error);

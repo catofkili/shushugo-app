@@ -1,4 +1,4 @@
-import { BookMarked, CheckCircle2, RotateCcw, Scale, Star } from "lucide-react";
+import { CheckCircle2, Layers3, Star } from "lucide-react";
 import { CheckInCalendar } from "../components/CheckInCalendar";
 import { ProgressOverviewPanel } from "../components/ProgressOverviewPanel";
 import { ProgressOverview } from "../lib/api";
@@ -13,10 +13,8 @@ interface ToolboxPageProps {
 }
 
 const toolItems = [
-  { page: "favorites" as Page, title: "收藏", description: "单词和语法的收藏夹", icon: Star },
-  { page: "review" as Page, title: "复习队列", description: "处理到期语法复习", icon: RotateCcw },
-  { page: "mistakes" as Page, title: "错题本", description: "回看做错的题目", icon: BookMarked },
-  { page: "comparison" as Page, title: "辨析表", description: "比较容易混淆的语法", icon: Scale }
+  { page: "study-modes" as Page, title: "学习模式", description: "选择经典、词汇、反向或汉字学习", icon: Layers3 },
+  { page: "favorites" as Page, title: "收藏", description: "单词和语法的收藏夹", icon: Star }
 ];
 
 export function ToolboxPage({

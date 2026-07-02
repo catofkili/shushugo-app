@@ -1,52 +1,103 @@
-import { ReactNode, useState } from "react";
+import { lazy, ReactNode, Suspense, useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { WordStudy } from "./pages/WordStudy";
-import { Library } from "./pages/Library";
-import { GrammarDetail } from "./pages/GrammarDetail";
-import { QuizPage } from "./pages/QuizPage";
-import { FavoritesPage } from "./pages/FavoritesPage";
-import { ImmersiveGrammar } from "./pages/ImmersiveGrammar";
-import { ReviewPage } from "./pages/ReviewPage";
-import { MistakeBook } from "./pages/MistakeBook";
-import { ComparisonPage } from "./pages/ComparisonPage";
-import { PersonalInfo } from "./pages/PersonalInfo";
-import { AccountSecurity } from "./pages/AccountSecurity";
-import { NotificationSettings } from "./pages/NotificationSettings";
-import { SettingsPage } from "./pages/SettingsPage";
-import { PrivacySettings } from "./pages/PrivacySettings";
-import { PrivacyPolicy } from "./pages/PrivacyPolicy";
-import { HelpPage } from "./pages/HelpPage";
-import { AboutPage } from "./pages/AboutPage";
-import { ProPage } from "./pages/ProPage";
-import { ProfilePage } from "./pages/ProfilePage";
-import { ToolboxPage } from "./pages/ToolboxPage";
 import { AppNavigation } from "./components/AppNavigation";
 import { FillProgressModal } from "./components/FillProgressModal";
 import { Paywall } from "./components/Paywall";
 import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
-import { completeTodayWordPlan, getGrammarMistakes, getProgressOverview, markContentComplete, ProgressOverview } from "./lib/api";
+import { completeTodayWordPlan, getProgressOverview, markContentComplete, ProgressOverview } from "./lib/api";
 import { canUseFeature, FeatureId } from "./lib/entitlements";
+import { defaultStudyMode, getStudyMode, saveStudyMode } from "./lib/studyMode";
 import type { SearchResult } from "./lib/search-api";
-import { GrammarMode, Page } from "./types/app";
+import { GrammarMode, Page, StudyMode } from "./types/app";
 import { JLPTLevel } from "./types/grammar";
 
+const Library = lazy(() => import("./pages/Library").then((module) => ({ default: module.Library })));
+const GrammarDetail = lazy(() => import("./pages/GrammarDetail").then((module) => ({ default: module.GrammarDetail })));
+const QuizPage = lazy(() => import("./pages/QuizPage").then((module) => ({ default: module.QuizPage })));
+const FavoritesPage = lazy(() => import("./pages/FavoritesPage").then((module) => ({ default: module.FavoritesPage })));
+const ImmersiveGrammar = lazy(() => import("./pages/ImmersiveGrammar").then((module) => ({ default: module.ImmersiveGrammar })));
+const PersonalInfo = lazy(() => import("./pages/PersonalInfo").then((module) => ({ default: module.PersonalInfo })));
+const AccountSecurity = lazy(() => import("./pages/AccountSecurity").then((module) => ({ default: module.AccountSecurity })));
+const NotificationSettings = lazy(() => import("./pages/NotificationSettings").then((module) => ({ default: module.NotificationSettings })));
+const SettingsPage = lazy(() => import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage })));
+const PrivacySettings = lazy(() => import("./pages/PrivacySettings").then((module) => ({ default: module.PrivacySettings })));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy").then((module) => ({ default: module.PrivacyPolicy })));
+const HelpPage = lazy(() => import("./pages/HelpPage").then((module) => ({ default: module.HelpPage })));
+const AboutPage = lazy(() => import("./pages/AboutPage").then((module) => ({ default: module.AboutPage })));
+const ProPage = lazy(() => import("./pages/ProPage").then((module) => ({ default: module.ProPage })));
+const ProfilePage = lazy(() => import("./pages/ProfilePage").then((module) => ({ default: module.ProfilePage })));
+const ToolboxPage = lazy(() => import("./pages/ToolboxPage").then((module) => ({ default: module.ToolboxPage })));
+const StudyModesPage = lazy(() => import("./pages/StudyModesPage").then((module) => ({ default: module.StudyModesPage })));
+
+const PageLoading = () => (
+  <div className="grid min-h-48 place-items-center rounded-2xl border border-white/15 bg-[#464949] p-6 text-sm font-semibold text-white/65">
+    正在加载页面...
+  </div>
+);
+
 const toolPageTitles: Partial<Record<Page, string>> = {
-  favorites: "收藏",
-  review: "复习队列",
-  mistakes: "错题本",
-  comparison: "辨析表"
+  "study-modes": "学习模式",
+  favorites: "收藏"
+};
+
+const APP_VIEW_STORAGE_KEY = "master-nihongo:current-view";
+const validPages = new Set<Page>([
+  "word",
+  "grammar",
+  "detail",
+  "toolbox",
+  "study-modes",
+  "favorites",
+  "profile",
+  "pro",
+  "account",
+  "personal-info",
+  "notifications",
+  "settings",
+  "privacy",
+  "privacy-policy",
+  "help",
+  "about"
+]);
+const validGrammarModes = new Set<GrammarMode>(["learn", "practice", "immersive"]);
+const validGrammarLevels = new Set<"All" | JLPTLevel>(["All", "N5", "N4", "N3", "N2", "N1"]);
+
+const readSavedView = () => {
+  try {
+    const raw = localStorage.getItem(APP_VIEW_STORAGE_KEY);
+    if (!raw) return {};
+    const saved = JSON.parse(raw) as Partial<{
+      page: Page;
+      grammarMode: GrammarMode;
+      selectedGrammarId: string;
+      selectedGrammarLevel: "All" | JLPTLevel;
+      sidebarCollapsed: boolean;
+    }>;
+    return {
+      page: saved.page && validPages.has(saved.page) ? saved.page : undefined,
+      grammarMode: saved.grammarMode && validGrammarModes.has(saved.grammarMode) ? saved.grammarMode : undefined,
+      selectedGrammarId: typeof saved.selectedGrammarId === "string" ? saved.selectedGrammarId : undefined,
+      selectedGrammarLevel:
+        saved.selectedGrammarLevel && validGrammarLevels.has(saved.selectedGrammarLevel) ? saved.selectedGrammarLevel : undefined,
+      sidebarCollapsed: typeof saved.sidebarCollapsed === "boolean" ? saved.sidebarCollapsed : undefined
+    };
+  } catch {
+    return {};
+  }
 };
 
 export default function App() {
   const store = useStudyStore();
   const entitlements = useEntitlements();
-  const [page, setPage] = useState<Page>("word");
+  const [initialView] = useState(readSavedView);
+  const [page, setPage] = useState<Page>(initialView.page ?? "word");
   const [pageHistory, setPageHistory] = useState<Page[]>([]); // 页面历史栈
-  const [grammarMode, setGrammarMode] = useState<GrammarMode>("learn");
-  const [selectedGrammarId, setSelectedGrammarId] = useState("wa");
-  const [selectedGrammarLevel, setSelectedGrammarLevel] = useState<"All" | JLPTLevel>("N5");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [grammarMode, setGrammarMode] = useState<GrammarMode>(initialView.grammarMode ?? "learn");
+  const [selectedGrammarId, setSelectedGrammarId] = useState(initialView.selectedGrammarId ?? "wa");
+  const [selectedGrammarLevel, setSelectedGrammarLevel] = useState<"All" | JLPTLevel>(initialView.selectedGrammarLevel ?? "N5");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(initialView.sidebarCollapsed ?? false);
   const [notice, setNotice] = useState("");
   const [overview, setOverview] = useState<ProgressOverview>(() => getProgressOverview());
   const [fillOpen, setFillOpen] = useState(false);
@@ -54,6 +105,15 @@ export default function App() {
   const [fillWordLevels, setFillWordLevels] = useState<JLPTLevel[]>([]);
   const [fillAllWords, setFillAllWords] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState<FeatureId | undefined>();
+  const [selectedStudyMode, setSelectedStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
+  const [launchStudyMode, setLaunchStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
+
+  useEffect(() => {
+    localStorage.setItem(
+      APP_VIEW_STORAGE_KEY,
+      JSON.stringify({ page, grammarMode, selectedGrammarId, selectedGrammarLevel, sidebarCollapsed })
+    );
+  }, [page, grammarMode, selectedGrammarId, selectedGrammarLevel, sidebarCollapsed]);
 
   const showNotice = (message: string, timeout = 1800) => {
     setNotice(message);
@@ -62,6 +122,11 @@ export default function App() {
 
   // 导航到新页面，记录历史
   const navigateToPage = (newPage: Page) => {
+    if (newPage === "word") {
+      const currentMode = getStudyMode() || defaultStudyMode;
+      setSelectedStudyMode(currentMode);
+      setLaunchStudyMode(currentMode);
+    }
     if (newPage !== page) {
       setPageHistory([...pageHistory, page]);
       setPage(newPage);
@@ -123,8 +188,6 @@ export default function App() {
 
   const refreshOverview = () => setOverview(getProgressOverview());
 
-  const mistakeCount = () => getGrammarMistakes(200).length;
-
   const completeSelectedContent = () => {
     const data = markContentComplete({ grammarLevels: fillGrammarLevels, wordLevels: fillWordLevels, allWords: fillAllWords });
     setOverview(data);
@@ -152,6 +215,13 @@ export default function App() {
     }
     navigateToPage("word");
     showNotice(`已找到单词：${result.title}`, 2200);
+  };
+
+  const startStudyMode = (mode: StudyMode) => {
+    const safeMode = saveStudyMode(mode || defaultStudyMode);
+    setSelectedStudyMode(safeMode);
+    setLaunchStudyMode(safeMode);
+    navigateToPage("word");
   };
 
   const toggleFillLevel = (kind: "word" | "grammar", level: JLPTLevel) => {
@@ -207,9 +277,10 @@ export default function App() {
           onSelectedLevelChange={setSelectedGrammarLevel}
           onOpenFavorites={() => navigateToPage("favorites")}
           onOpenImmersive={() => requirePro("immersiveGrammar", () => openGrammarTab("immersive"))}
+          onOpenDetail={openGrammar}
         />
       ) : grammarMode === "practice" ? (
-        <QuizPage onMistake={addMistake} selectedLevel={selectedGrammarLevel} onOpenMistakes={() => navigateToPage("mistakes")} />
+        <QuizPage onMistake={addMistake} selectedLevel={selectedGrammarLevel} />
       ) : (
         <ImmersiveGrammar
           selectedLevel={selectedGrammarLevel}
@@ -239,7 +310,7 @@ export default function App() {
 
   const renderPage = () => {
     if (page === "word") {
-      return <WordStudy />;
+      return <WordStudy initialMode={launchStudyMode} />;
     }
     if (page === "grammar") {
       return renderGrammarPage();
@@ -280,24 +351,12 @@ export default function App() {
     if (page === "favorites") {
       return renderToolSubpage(toolPageTitles.favorites ?? "收藏", <FavoritesPage onOpenGrammar={openGrammar} />);
     }
-    if (page === "review") {
-      return renderToolSubpage(toolPageTitles.review ?? "复习队列", (
-        <ReviewPage
-          dueReviews={store.dueReviews}
-          onReviewResult={store.recordReview}
-          onMistake={addMistake}
-        />
-      ));
+    if (page === "study-modes") {
+      return renderToolSubpage(
+        toolPageTitles["study-modes"] ?? "学习模式",
+        <StudyModesPage selectedMode={selectedStudyMode} onModeChange={setSelectedStudyMode} onStart={startStudyMode} />
+      );
     }
-    if (page === "mistakes") {
-      return renderToolSubpage(toolPageTitles.mistakes ?? "错题本", (
-        <MistakeBook onPractice={() => openGrammarTab("practice")} />
-      ));
-    }
-    if (page === "comparison") {
-      return renderToolSubpage(toolPageTitles.comparison ?? "辨析表", <ComparisonPage />);
-    }
-
     // 个人中心子页面
     if (page === "account") {
       return <AccountSecurity onBack={goBack} />;
@@ -324,7 +383,7 @@ export default function App() {
       return <AboutPage onBack={goBack} />;
     }
 
-    return <WordStudy />;
+    return <WordStudy initialMode={launchStudyMode} />;
   };
 
   return (
@@ -334,7 +393,6 @@ export default function App() {
           page={page}
           sidebarCollapsed={sidebarCollapsed}
           selectedGrammarLevel={selectedGrammarLevel}
-          mistakeCount={mistakeCount()}
           onBack={goBack}
           onNavigate={navigateToPage}
           onOpenGrammarTab={() => openGrammarTab()}
@@ -342,8 +400,10 @@ export default function App() {
           onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
         />
 
-        <main className="app-landscape-main fixed inset-0 min-w-0 overflow-y-auto px-4 pb-[6rem] pt-4 sm:px-6 lg:static lg:h-screen lg:overflow-y-auto lg:px-8 lg:py-8" style={{ top: 'calc(env(safe-area-inset-top) + 36px)', left: 0, right: 0, bottom: 'calc(env(safe-area-inset-bottom) + 70px)' }}>
-          <div className="mx-auto max-w-[1400px]">{renderPage()}</div>
+        <main className="app-landscape-main fixed inset-0 min-w-0 overflow-y-auto px-4 pb-[6rem] pt-4 sm:px-6 lg:static lg:h-screen lg:overflow-y-auto lg:px-8 lg:py-8" style={{ top: 'calc(max(env(safe-area-inset-top), 54px) + 36px)', left: 0, right: 0, bottom: 'calc(max(env(safe-area-inset-bottom), 20px) + 70px)' }}>
+          <div className="mx-auto max-w-[1400px]">
+            <Suspense fallback={<PageLoading />}>{renderPage()}</Suspense>
+          </div>
         </main>
       </div>
       {notice && (

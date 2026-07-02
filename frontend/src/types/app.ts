@@ -3,10 +3,8 @@ export type Page =
   | "grammar"
   | "detail"
   | "toolbox"
+  | "study-modes"
   | "favorites"
-  | "review"
-  | "mistakes"
-  | "comparison"
   | "profile"
   | "pro"
   | "account"
@@ -20,3 +18,4 @@ export type Page =
 
 export type GrammarMode = "learn" | "practice" | "immersive";
 export type ProgressFocus = "both" | "words" | "grammar";
+export type StudyMode = "classic" | "vocabulary" | "reverse" | "kanji";

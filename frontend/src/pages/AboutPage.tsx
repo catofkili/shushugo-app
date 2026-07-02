@@ -36,7 +36,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <h2 className="mb-3 text-sm font-bold text-white">应用介绍</h2>
         <p className="text-sm leading-relaxed text-white/70">
           Master Nihongo 是一款离线日语学习应用，提供 11000+ 个 JLPT 词条和 800+ 个语法点的学习内容。
-          支持背单词、语法学习、错题本、复习队列等功能，帮助你系统学习日语。
+          支持背单词和语法学习，帮助你系统学习日语。
         </p>
       </div>
 
@@ -59,10 +59,6 @@ export function AboutPage({ onBack }: AboutPageProps) {
           <div className="flex items-start gap-2">
             <span className="text-[#81D8CF]">✓</span>
             <p className="text-sm text-white/70">智能复习系统（记忆曲线）</p>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-[#81D8CF]">✓</span>
-            <p className="text-sm text-white/70">错题本自动记录</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-[#81D8CF]">✓</span>

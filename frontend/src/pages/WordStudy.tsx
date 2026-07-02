@@ -1,293 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, BarChart3, CalendarDays, Clock3, Eye, RotateCcw, Star, StickyNote, X } from "lucide-react";
+import { AlertCircle, Eye, RotateCcw, Star, StickyNote, X } from "lucide-react";
 import { WordAnswer, WordCard, WordLevelFilter, WordSessionResponse, WordStats, WordTypeFilter } from "../types/vocabulary";
-import { addWordStudySeconds, getWordSession, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
+import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, getWordSession, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { addStudyTime, checkAchievements } from "../lib/userProfile";
 import { triggerMemoryHaptic } from "../lib/haptics";
-import { AnalyticsDashboard } from "../components/AnalyticsDashboard";
+import { FinishPanel, KanjiAnswer } from "../features/word-study/WordStudyPanels";
+import {
+  answerReadingText,
+  answerOptions,
+  cardLabel,
+  kanaToRomaji,
+  levelOptions,
+  primaryAnswerText,
+  secondaryAnswerText,
+  typeOptions
+} from "../features/word-study/word-study-utils";
+import type { StudyMode } from "../types/app";
 
-const answerOptions: { value: WordAnswer; label: string }[] = [
-  { value: "forgot", label: "忘记" },
-  { value: "fuzzy", label: "模糊" },
-  { value: "know", label: "认识" },
-  { value: "known_forever", label: "熟知" }
-];
+interface WordStudyProps {
+  initialMode?: StudyMode;
+}
 
-const levelOptions: { value: WordLevelFilter; label: string }[] = [
-  { value: "All", label: "全部" },
-  { value: "N5", label: "N5" },
-  { value: "N4", label: "N4" },
-  { value: "N3", label: "N3" },
-  { value: "N2", label: "N2" },
-  { value: "N1", label: "N1" },
-  { value: "Unleveled", label: "未分级" }
-];
-
-const typeOptions: { value: WordTypeFilter; label: string }[] = [
-  { value: "all", label: "全部类型" },
-  { value: "noun", label: "名词" },
-  { value: "verb", label: "动词" },
-  { value: "adjective", label: "形容词" },
-  { value: "adverb", label: "副词" },
-  { value: "favorite", label: "收藏" }
-];
-
-const hasAscii = (text: string) => /[A-Za-z]/.test(text);
-const hasKatakana = (text: string) => /[\u30a0-\u30ff]/.test(text);
-
-const isLoanwordSourceCard = (card: WordCard) => hasAscii(card.kanji) && hasKatakana(card.kana);
-
-const primaryAnswerText = (card: WordCard) => isLoanwordSourceCard(card) ? card.kana : card.kanji;
-
-const secondaryAnswerText = (card: WordCard) => {
-  if (isLoanwordSourceCard(card)) return card.kanji;
-  return card.kana;
-};
-
-const cardLabel = (card: WordCard) => {
-  const primary = primaryAnswerText(card);
-  const secondary = secondaryAnswerText(card);
-  return primary === secondary ? primary : `${primary} / ${secondary}`;
-};
-
-const kanaMap: Record<string, string> = {
-  あ: "a", い: "i", う: "u", え: "e", お: "o",
-  か: "ka", き: "ki", く: "ku", け: "ke", こ: "ko",
-  さ: "sa", し: "shi", す: "su", せ: "se", そ: "so",
-  た: "ta", ち: "chi", つ: "tsu", て: "te", と: "to",
-  な: "na", に: "ni", ぬ: "nu", ね: "ne", の: "no",
-  は: "ha", ひ: "hi", ふ: "fu", へ: "he", ほ: "ho",
-  ま: "ma", み: "mi", む: "mu", め: "me", も: "mo",
-  や: "ya", ゆ: "yu", よ: "yo",
-  ら: "ra", り: "ri", る: "ru", れ: "re", ろ: "ro",
-  わ: "wa", を: "wo", ん: "n",
-  が: "ga", ぎ: "gi", ぐ: "gu", げ: "ge", ご: "go",
-  ざ: "za", じ: "ji", ず: "zu", ぜ: "ze", ぞ: "zo",
-  だ: "da", ぢ: "ji", づ: "zu", で: "de", ど: "do",
-  ば: "ba", び: "bi", ぶ: "bu", べ: "be", ぼ: "bo",
-  ぱ: "pa", ぴ: "pi", ぷ: "pu", ぺ: "pe", ぽ: "po",
-  ぁ: "a", ぃ: "i", ぅ: "u", ぇ: "e", ぉ: "o",
-  ゃ: "ya", ゅ: "yu", ょ: "yo",
-  ア: "a", イ: "i", ウ: "u", エ: "e", オ: "o",
-  カ: "ka", キ: "ki", ク: "ku", ケ: "ke", コ: "ko",
-  サ: "sa", シ: "shi", ス: "su", セ: "se", ソ: "so",
-  タ: "ta", チ: "chi", ツ: "tsu", テ: "te", ト: "to",
-  ナ: "na", ニ: "ni", ヌ: "nu", ネ: "ne", ノ: "no",
-  ハ: "ha", ヒ: "hi", フ: "fu", ヘ: "he", ホ: "ho",
-  マ: "ma", ミ: "mi", ム: "mu", メ: "me", モ: "mo",
-  ヤ: "ya", ユ: "yu", ヨ: "yo",
-  ラ: "ra", リ: "ri", ル: "ru", レ: "re", ロ: "ro",
-  ワ: "wa", ヲ: "wo", ン: "n",
-  ガ: "ga", ギ: "gi", グ: "gu", ゲ: "ge", ゴ: "go",
-  ザ: "za", ジ: "ji", ズ: "zu", ゼ: "ze", ゾ: "zo",
-  ダ: "da", ヂ: "ji", ヅ: "zu", デ: "de", ド: "do",
-  バ: "ba", ビ: "bi", ブ: "bu", ベ: "be", ボ: "bo",
-  パ: "pa", ピ: "pi", プ: "pu", ペ: "pe", ポ: "po"
-};
-
-const yoonMap: Record<string, string> = {
-  kya: "kya", kiya: "kya", kyu: "kyu", kiyu: "kyu", kyo: "kyo", kiyo: "kyo",
-  sha: "sha", shiya: "sha", shu: "shu", shiyu: "shu", sho: "sho", shiyo: "sho",
-  cha: "cha", chiya: "cha", chu: "chu", chiyu: "chu", cho: "cho", chiyo: "cho",
-  nya: "nya", niya: "nya", nyu: "nyu", niyu: "nyu", nyo: "nyo", niyo: "nyo",
-  hya: "hya", hiya: "hya", hyu: "hyu", hiyu: "hyu", hyo: "hyo", hiyo: "hyo",
-  mya: "mya", miya: "mya", myu: "myu", miyu: "myu", myo: "myo", miyo: "myo",
-  rya: "rya", riya: "rya", ryu: "ryu", riyu: "ryu", ryo: "ryo", riyo: "ryo",
-  gya: "gya", giya: "gya", gyu: "gyu", giyu: "gyu", gyo: "gyo", giyo: "gyo",
-  ja: "ja", jiya: "ja", ju: "ju", jiyu: "ju", jo: "jo", jiyo: "jo",
-  bya: "bya", biya: "bya", byu: "byu", biyu: "byu", byo: "byo", biyo: "byo",
-  pya: "pya", piya: "pya", pyu: "pyu", piyu: "pyu", pyo: "pyo", piyo: "pyo"
-};
-
-const kanaToRomaji = (text: string) => {
-  const parts: string[] = [];
-  let doubleNext = false;
-  for (let index = 0; index < text.length; index += 1) {
-    const char = text[index];
-    if (char === "っ" || char === "ッ") {
-      doubleNext = true;
-      continue;
-    }
-    if (char === "ー") {
-      parts[parts.length - 1] = `${parts[parts.length - 1] ?? ""}-`;
-      continue;
-    }
-    const base = kanaMap[char];
-    const next = kanaMap[text[index + 1]];
-    let roman = base ?? char;
-    if (next && ["ゃ", "ゅ", "ょ", "ャ", "ュ", "ョ"].includes(text[index + 1])) {
-      roman = yoonMap[`${roman}${next}`] ?? roman;
-      index += 1;
-    }
-    if (doubleNext && /^[bcdfghjklmnpqrstvwxyz]/.test(roman)) roman = `${roman[0]}${roman}`;
-    doubleNext = false;
-    parts.push(roman);
-  }
-  return parts.join(" ");
-};
-
-const formatDuration = (seconds: number) => {
-  const safeSeconds = Math.max(0, Math.round(seconds));
-  const minutes = Math.floor(safeSeconds / 60);
-  const remainder = safeSeconds % 60;
-  if (minutes >= 60) {
-    const hours = Math.floor(minutes / 60);
-    const restMinutes = minutes % 60;
-    return `${hours}小时${restMinutes.toString().padStart(2, "0")}分`;
-  }
-  if (minutes > 0) return `${minutes}分${remainder.toString().padStart(2, "0")}秒`;
-  return `${remainder}秒`;
-};
-
-const monthDays = (studyDate: string) => {
-  const base = studyDate ? new Date(`${studyDate}T00:00:00`) : new Date();
-  const year = base.getFullYear();
-  const month = base.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const prefix = Array.from({ length: firstDay.getDay() }, () => null);
-  const days = Array.from({ length: daysInMonth }, (_, index) => {
-    const day = index + 1;
-    return {
-      day,
-      date: `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-    };
-  });
-  return {
-    title: `${year}年${month + 1}月`,
-    cells: [...prefix, ...days]
-  };
-};
-
-const KanjiAnswer = ({ card }: { card: WordCard }) => {
-  if (isLoanwordSourceCard(card)) {
-    return <>{card.kana}</>;
-  }
-
-  const components = card.kanjiComponents ?? [];
-  const componentByChar = new Map(components.map((component) => [component.char, component]));
-
-  return (
-    <>
-      {[...card.kanji].map((char, index) => {
-        const component = componentByChar.get(char);
-        const isVariant = Boolean(component?.marked);
-        return (
-          <span
-            key={`${char}-${index}`}
-            className={isVariant ? "kanji-variant-mark" : undefined}
-            title={isVariant && component ? `${component.char} → ${component.simplified}` : undefined}
-          >
-            {char}
-          </span>
-        );
-      })}
-    </>
-  );
-};
-
-const FinishPanel = ({ stats, phase, localSeconds }: { stats: WordStats | null; phase: string; localSeconds: number }) => {
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const studyDate = stats?.studyDate ?? new Date().toISOString().slice(0, 10);
-  const calendar = monthDays(studyDate);
-  const checkins = new Set(stats?.checkins ?? []);
-  const totalSeconds = (stats?.wordStudySecondsToday ?? 0) + localSeconds;
-
-  // 判断是否是 Stage 1 完成（显示分析入口）
-  const isStage1Complete = phase === "stage1" && stats?.stage1Done;
-
-  return (
-    <>
-      <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/15 bg-[#464949] p-4 text-center sm:p-5">
-        <div className="mx-auto w-full max-w-2xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/55">Daily Complete</p>
-          <h2 className="mt-3 text-3xl font-semibold">今日单词完成</h2>
-          <div className="mx-auto mt-4 grid max-w-lg gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/15 bg-[#373b3b] p-3 text-left sm:p-4">
-              <div className="flex items-center gap-2 text-white/65">
-                <Clock3 size={17} />
-                <p className="text-xs font-bold uppercase tracking-[0.16em]">背词用时</p>
-              </div>
-              <p className="mt-3 text-2xl font-semibold">{formatDuration(totalSeconds)}</p>
-              <p className="mt-2 text-xs text-white/55">只统计单词学习页打开期间</p>
-            </div>
-            <div className="rounded-2xl border border-white/15 bg-[#373b3b] p-3 text-left sm:p-4">
-              <div className="flex items-center gap-2 text-white/65">
-                <CalendarDays size={17} />
-                <p className="text-xs font-bold uppercase tracking-[0.16em]">打卡状态</p>
-              </div>
-              <p className="mt-3 text-2xl font-semibold">{checkins.has(studyDate) ? "已打卡" : "待打卡"}</p>
-              <p className="mt-2 text-xs text-white/55">学习日：{studyDate}</p>
-            </div>
-          </div>
-
-          {/* Stage 1 完成后显示分析入口 */}
-          {isStage1Complete && (
-            <div className="mx-auto mt-4 max-w-lg">
-              <button
-                onClick={() => setShowAnalytics(true)}
-                className="focus-ring w-full rounded-2xl border border-[#81D8CF]/30 bg-[#81D8CF]/10 p-4 text-left transition-all hover:bg-[#81D8CF]/20"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20">
-                    <BarChart3 size={22} className="text-[#81D8CF]" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-white">查看学习分析</p>
-                    <p className="mt-0.5 text-xs text-white/60">了解你的学习进度和薄弱点</p>
-                  </div>
-                  <span className="text-2xl">📊</span>
-                </div>
-              </button>
-            </div>
-          )}
-
-          <div className="mx-auto mt-4 max-w-lg rounded-2xl border border-white/15 bg-[#3f4343] p-3 sm:p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="font-semibold">{calendar.title}</p>
-              <p className="text-xs text-white/55">phase: {phase}</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-[#343838] p-3">
-              <div className="grid grid-cols-7 gap-1 text-xs">
-              {["日", "一", "二", "三", "四", "五", "六"].map((label) => (
-                <span key={label} className="grid h-7 place-items-center text-white/45">{label}</span>
-              ))}
-              {calendar.cells.map((cell, index) => {
-                if (!cell) return <span key={`empty-${index}`} className="h-10" />;
-                const checked = checkins.has(cell.date);
-                const isToday = cell.date === studyDate;
-                return (
-                  <span
-                    key={cell.date}
-                    className="grid h-10 place-items-center"
-                    title={cell.date}
-                  >
-                    <span
-                      className={`grid h-8 w-8 place-items-center rounded-full border text-sm font-semibold ${
-                        checked
-                          ? "border-[#81D8CF] bg-[#81D8CF]/18 text-white shadow-[0_0_0_3px_rgba(129,216,207,0.12)]"
-                          : "border-transparent text-white/55"
-                      } ${isToday ? "shadow-[0_0_0_3px_rgba(129,216,207,0.35)]" : ""}`}
-                    >
-                      {cell.day}
-                    </span>
-                  </span>
-                );
-              })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 分析面板弹窗 */}
-      {showAnalytics && <AnalyticsDashboard onClose={() => setShowAnalytics(false)} />}
-    </>
-  );
-};
-
-export const WordStudy = () => {
+export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   const [card, setCard] = useState<WordCard | null>(null);
   const [stats, setStats] = useState<WordStats | null>(null);
   const [phase, setPhase] = useState("loading");
@@ -305,6 +40,7 @@ export const WordStudy = () => {
   const [error, setError] = useState("");
   const lastStudyTickRef = useRef(Date.now());
   const trackingActiveRef = useRef(false);
+  const submittingRef = useRef(false);
 
   const progressText = useMemo(() => {
     if ((selectedLevel !== "All" || selectedType !== "all") && stats?.total) {
@@ -325,11 +61,18 @@ export const WordStudy = () => {
     type: selectedType
   }), [selectedLevel, selectedType]);
 
-  const loadNext = async () => {
+  const loadNext = async (mode: StudyMode = initialMode) => {
     setLoading(true);
     setError("");
     try {
-      const data: WordSessionResponse = getWordSession(sessionOptions);
+      let data: WordSessionResponse;
+      if (mode === "reverse") {
+        data = continueStage2Study();
+      } else if (mode === "kanji") {
+        data = continueKanjiStudy();
+      } else {
+        data = getWordSession(sessionOptions);
+      }
       setCard(data.card);
       setStats(data.stats);
       setPhase(data.phase);
@@ -344,8 +87,8 @@ export const WordStudy = () => {
   useEffect(() => {
     localStorage.setItem("mn-word-level", selectedLevel);
     localStorage.setItem("mn-word-type", selectedType);
-    loadNext();
-  }, [selectedLevel, selectedType]);
+    loadNext(initialMode);
+  }, [selectedLevel, selectedType, initialMode]);
 
   useEffect(() => {
     const handlePreferences = (event: Event) => {
@@ -429,7 +172,11 @@ export const WordStudy = () => {
   }, [card?.id]);
 
   const submitAnswer = async (answer: WordAnswer) => {
-    if (!card || submitting) return;
+    // submittingRef is synchronous, so a second tap is blocked immediately —
+    // before React can re-render the `disabled`/`submitting` state — which is
+    // what the `submitting` state alone could miss on a fast double-tap.
+    if (!card || submittingRef.current || submitting) return;
+    submittingRef.current = true;
     triggerMemoryHaptic(answer);
     setSubmitting(true);
     setError("");
@@ -448,6 +195,7 @@ export const WordStudy = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : "提交失败");
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -496,13 +244,34 @@ export const WordStudy = () => {
     }
   };
 
+  const isReversePhase = phase === "stage2";
+  const isKanjiPhase = phase === "kanji";
+  const pageTitle = isReversePhase ? "反向学习" : isKanjiPhase ? "汉字学习" : initialMode === "classic" ? "经典模式" : "词汇学习";
+  const pageLabel = isReversePhase ? "Reverse" : isKanjiPhase ? "Kanji" : initialMode === "classic" ? "Classic" : "Vocabulary";
+
+  const startExtraPhase = (phaseName: "stage2" | "kanji") => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = phaseName === "stage2" ? continueStage2Study() : continueKanjiStudy();
+      setCard(data.card);
+      setStats(data.stats);
+      setPhase(data.phase);
+      setRevealed(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "无法进入下一阶段");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="mx-auto flex h-[calc(100vh-13rem)] min-h-[520px] max-w-4xl flex-col justify-center lg:h-[calc(100vh-4rem)] lg:min-h-[600px]">
       <section className="dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl p-5 sm:p-8">
         <div className="mb-5 flex shrink-0 items-center justify-between gap-3 border-b border-white/15 pb-4">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/65">Vocabulary</p>
-            <h1 className="mt-1 text-xl font-semibold">单词学习</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/65">{pageLabel}</p>
+            <h1 className="mt-1 text-xl font-semibold">{pageTitle}</h1>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <select
                 value={selectedLevel}
@@ -628,28 +397,62 @@ export const WordStudy = () => {
             <div className="grid min-h-28 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] p-4 text-center">
               <div className="max-h-28 w-full overflow-y-auto px-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">题目</p>
-                <p className="mt-2 break-words text-xl font-semibold leading-snug sm:text-3xl">
-                  {card.promptMeaning || card.primaryMeaning}
-                </p>
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                  {isReversePhase ? (
+                    <>
+                      <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{card.pos}</span>
+                      <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl">{primaryAnswerText(card)}</p>
+                      {answerReadingText(card) && <p className="jp text-xl text-white/72 sm:text-2xl">{answerReadingText(card)}</p>}
+                    </>
+                  ) : (
+                    <>
+                      {card.honorificLabel && (
+                        <span className="rounded-sm border border-[#81D8CF]/45 bg-[#81D8CF]/18 px-2 py-1 text-xs font-black text-[#81D8CF]">
+                          {card.honorificLabel}
+                        </span>
+                      )}
+                      <p className="break-words text-xl font-semibold leading-snug sm:text-3xl">
+                        {card.questionMeaning || card.meaning}
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
             <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-6 text-center">
               {revealed ? (
                 <div className="w-full">
-                  <p className="jp-serif text-7xl font-semibold leading-none sm:text-8xl">
-                    <KanjiAnswer card={card} />
-                  </p>
-                  <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-                    {card.jlptLevel && <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{card.jlptLevel}</span>}
-                    <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/60">{card.pos}</span>
-                  </div>
-                  <p className="jp mt-4 text-4xl text-white/86 sm:text-5xl">{secondaryAnswerText(card)}</p>
+                  {isReversePhase ? (
+                    <>
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">释义</p>
+                      <p className="mx-auto mt-4 max-w-2xl text-2xl font-semibold leading-9 text-white/88">{card.meaning}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="jp-serif text-7xl font-semibold leading-none sm:text-8xl">
+                        <KanjiAnswer card={card} />
+                      </p>
+                      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                        {card.jlptLevel && <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{card.jlptLevel}</span>}
+                        <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/60">{card.pos}</span>
+                      </div>
+                      {answerReadingText(card) && (
+                        <p className="jp mt-4 text-4xl text-white/86 sm:text-5xl">{answerReadingText(card)}</p>
+                      )}
+                      {card.englishOrigin && (
+                        <div className="mx-auto mt-4 w-fit rounded-2xl border border-[#81D8CF]/30 bg-[#81D8CF]/10 px-5 py-3">
+                          <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">英语原词</p>
+                          <p className="mt-1 text-2xl font-semibold text-white/90 sm:text-3xl">{card.englishOrigin}</p>
+                        </div>
+                      )}
+                    </>
+                  )}
                   {preferences.showRomaji && romaji && (
                     <p className="mt-2 text-sm font-semibold tracking-normal text-white/52">{romaji}</p>
                   )}
-                  <p className="mx-auto mt-7 max-w-2xl text-xl leading-9 text-white/82">{card.meaning}</p>
-                  {(markedKanji.length > 0 || card.verbPair || card.confusions.length > 0) && (
+                  {!isReversePhase && <p className="mx-auto mt-7 max-w-2xl text-xl leading-9 text-white/82">{card.meaning}</p>}
+                  {(markedKanji.length > 0 || card.verbPair || card.confusions.length > 0) && !isReversePhase && (
                     <div className="mx-auto mt-7 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
                       {markedKanji.length > 0 && (
                         <div className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
@@ -707,7 +510,7 @@ export const WordStudy = () => {
               ) : (
                 <div>
                   <p className="text-2xl font-semibold text-white/70">答案已隐藏</p>
-                  <p className="mt-3 text-sm text-white/55">先回忆假名和汉字</p>
+                  <p className="mt-3 text-sm text-white/55">{isReversePhase ? "先回忆中文释义" : "先回忆假名和汉字"}</p>
                 </div>
               )}
             </div>
@@ -743,7 +546,13 @@ export const WordStudy = () => {
             </div>
           </div>
         ) : (
-          <FinishPanel stats={stats} phase={phase} localSeconds={localStudySeconds} />
+          <FinishPanel
+            stats={stats}
+            phase={phase}
+            localSeconds={localStudySeconds}
+            onContinueStage2={() => startExtraPhase("stage2")}
+            onContinueKanji={() => startExtraPhase("kanji")}
+          />
         )}
       </section>
     </div>
