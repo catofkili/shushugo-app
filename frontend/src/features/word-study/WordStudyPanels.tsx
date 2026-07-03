@@ -178,7 +178,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
 
   return (
     <>
-      <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/15 bg-[#464949] p-3 text-center sm:p-5">
+      <div className="min-h-0 flex-1 overflow-y-auto p-1 text-center sm:p-2">
         <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-3">
           <div className="flex shrink-0 items-center justify-between gap-3 text-left">
             <div>
@@ -191,21 +191,21 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
           </div>
 
           <div className="grid shrink-0 grid-cols-3 gap-2">
-            <div className="rounded-xl border border-white/12 bg-[#373b3b] px-3 py-2 text-left">
+            <div className="rounded-xl bg-[#373b3b] px-3 py-2 text-left ring-1 ring-white/10">
               <div className="flex items-center gap-1.5 text-white/58">
                 <Clock3 size={14} />
                 <p className="text-[11px] font-bold">用时</p>
               </div>
               <p className="mt-1 truncate text-base font-semibold">{formatDuration(totalSeconds)}</p>
             </div>
-            <div className="rounded-xl border border-white/12 bg-[#373b3b] px-3 py-2 text-left">
+            <div className="rounded-xl bg-[#373b3b] px-3 py-2 text-left ring-1 ring-white/10">
               <div className="flex items-center gap-1.5 text-white/58">
                 <CalendarDays size={14} />
                 <p className="text-[11px] font-bold">单词</p>
               </div>
               <p className="mt-1 truncate text-base font-semibold">{todayWordCount} 个</p>
             </div>
-            <div className="rounded-xl border border-white/12 bg-[#373b3b] px-3 py-2 text-left">
+            <div className="rounded-xl bg-[#373b3b] px-3 py-2 text-left ring-1 ring-white/10">
               <div className="flex items-center gap-1.5 text-white/58">
                 <CheckCircle2 size={14} />
                 <p className="text-[11px] font-bold">累计</p>
@@ -214,7 +214,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-[#3f4343] p-3 sm:p-4">
+          <div className="rounded-2xl bg-[#3f4343] p-3 ring-1 ring-white/10 sm:p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="text-left">
                 <p className="font-semibold">{calendar.title}</p>
@@ -229,13 +229,13 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 {checkedToday ? "已打卡" : "打卡"}
               </button>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-[#343838] p-2.5">
+            <div className="rounded-xl bg-[#343838] p-2 sm:p-2.5">
               <div className="grid grid-cols-7 gap-1 text-xs">
                 {["日", "一", "二", "三", "四", "五", "六"].map((label) => (
                   <span key={label} className="grid h-6 place-items-center text-white/45">{label}</span>
                 ))}
                 {calendar.cells.map((cell, index) => {
-                  if (!cell) return <span key={`empty-${index}`} className="h-8" />;
+                  if (!cell) return <span key={`empty-${index}`} className="h-7 sm:h-8" />;
                   const checked = checkins.has(cell.date);
                   const isToday = cell.date === studyDate;
                   const dayStats = dailyStats.get(cell.date);
@@ -245,17 +245,17 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                   return (
                     <span
                       key={cell.date}
-                      className="group relative grid h-8 place-items-center"
+                      className="group relative grid h-7 place-items-center sm:h-8"
                       tabIndex={0}
                       aria-label={`${cell.date}，学习时间 ${formatDuration(daySeconds)}，单词 ${wordCount} 个`}
                     >
                       <span
-                        className={`grid h-7 w-7 place-items-center rounded-full border text-xs font-semibold ${
+                        className={`grid h-6 w-6 place-items-center rounded-full text-[11px] font-semibold ring-1 sm:h-7 sm:w-7 sm:text-xs ${
                           checked
-                            ? "border-[#81D8CF] bg-[#81D8CF]/18 text-white shadow-[0_0_0_3px_rgba(129,216,207,0.12)]"
+                            ? "bg-[#81D8CF]/18 text-white ring-[#81D8CF] shadow-[0_0_0_3px_rgba(129,216,207,0.12)]"
                             : hasActivity
-                              ? "border-white/10 bg-white/10 text-white/70"
-                              : "border-transparent text-white/55"
+                              ? "bg-white/10 text-white/70 ring-white/10"
+                              : "text-white/55 ring-transparent"
                         } ${isToday ? "shadow-[0_0_0_3px_rgba(129,216,207,0.35)]" : ""}`}
                       >
                         {cell.day}

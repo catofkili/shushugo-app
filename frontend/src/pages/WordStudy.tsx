@@ -277,7 +277,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
 
   return (
     <div className="mx-auto flex h-[calc(100vh-13rem)] min-h-[520px] max-w-4xl flex-col justify-center lg:h-[calc(100vh-4rem)] lg:min-h-[600px]">
-      <section className="dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl p-5 sm:p-8">
+      <section className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "p-5 sm:p-8" : "p-3 sm:p-5"}`}>
         {showStudyToolbar && <div className="mb-5 flex shrink-0 items-center justify-between gap-3 border-b border-white/15 pb-4">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/65">{pageLabel}</p>
