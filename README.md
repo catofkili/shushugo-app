@@ -50,3 +50,4 @@ npm run ios          # 用 Xcode 打开（App.xcworkspace）
 
 - **开发模式默认开启 Pro 权限**（便于测试），上架前需关闭，详见上架清单。
 - 内购、云同步尚未完成合规收尾，详见 [docs/APP_STORE_READINESS.md](docs/APP_STORE_READINESS.md)。
+- 旧版 learning app 已归档到 `legacy-learning-app` 分支，仅作历史参考；正式开发与打包都以 `main` 为准。详见 [docs/LEGACY_ARCHIVE.md](docs/LEGACY_ARCHIVE.md)。
