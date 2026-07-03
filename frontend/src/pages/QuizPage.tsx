@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type TouchEvent, type WheelEvent } from "react";
 import { CheckCircle2, Eye, RotateCcw, Star } from "lucide-react";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { getGrammarSession, GrammarStudyCard, GrammarStudyStats, StudyAnswer, submitGrammarAnswer, toggleFavorite } from "../lib/api";
@@ -17,6 +17,85 @@ const StatPill = ({ label, value }: { label: string; value: string | number }) =
     <p className="mt-1 text-sm font-semibold text-white/85">{value}</p>
   </div>
 );
+
+const StatsDrawer = ({ stats }: { stats: GrammarStudyStats | null }) => {
+  const [open, setOpen] = useState(false);
+  const [motion, setMotion] = useState<"opening" | "closing" | "">("");
+  const touchStartY = useRef<number | null>(null);
+
+  const show = () => {
+    setOpen(true);
+    setMotion("opening");
+  };
+
+  const hide = () => {
+    setOpen(false);
+    setMotion("closing");
+  };
+
+  useEffect(() => {
+    if (!motion) return;
+    const timer = window.setTimeout(() => setMotion(""), 260);
+    return () => window.clearTimeout(timer);
+  }, [motion]);
+
+  const handleWheel = (event: WheelEvent) => {
+    if (Math.abs(event.deltaY) < 32) return;
+    if (event.deltaY > 0) show();
+    if (event.deltaY < 0) hide();
+  };
+
+  const handleTouchEnd = (event: TouchEvent) => {
+    const start = touchStartY.current;
+    touchStartY.current = null;
+    if (start == null) return;
+    const delta = event.changedTouches[0].clientY - start;
+    if (delta > 42) show();
+    if (delta < -42) hide();
+  };
+
+  return (
+    <div
+      className="fixed bottom-3 left-1/2 z-30 w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2"
+      onWheel={handleWheel}
+      onTouchStart={(event) => {
+        touchStartY.current = event.touches[0].clientY;
+      }}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div
+        className={`pointer-events-none absolute inset-x-6 bottom-0 h-16 rounded-2xl bg-[#81D8CF]/12 blur-sm transition-all duration-300 ${
+          motion === "opening" ? "translate-y-2 opacity-70" : motion === "closing" ? "-translate-y-2 opacity-45" : "opacity-0"
+        }`}
+      />
+      <div
+        className={`relative overflow-hidden rounded-2xl border border-white/15 bg-[#343838]/96 shadow-2xl backdrop-blur transition-[max-height,transform,border-color] duration-300 ease-out ${
+          open ? "max-h-48 border-[#81D8CF]/30" : "max-h-8"
+        }`}
+      >
+        <button
+          onClick={() => (open ? hide() : show())}
+          className="focus-ring flex h-8 w-full items-center justify-center"
+          title={open ? "收起统计" : "展开统计"}
+        >
+          <span
+            className={`h-1.5 w-12 rounded-full bg-[#81D8CF]/55 transition-all duration-300 ${
+              open ? "w-16 bg-[#81D8CF]/85" : ""
+            }`}
+          />
+        </button>
+        {stats && (
+          <div className={`grid gap-2 px-3 pb-3 pt-1 transition-all duration-300 sm:grid-cols-4 ${open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"}`}>
+            <StatPill label="进度" value={`${stats.progressDone}/${stats.progressTotal}`} />
+            <StatPill label="生疏" value={stats.lowCount} />
+            <StatPill label="未见" value={stats.unseenCount} />
+            <StatPill label="今日" value={stats.reviewedToday} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export const QuizPage = ({ selectedLevel }: QuizPageProps) => {
   const [card, setCard] = useState<GrammarStudyCard | null>(null);
@@ -79,23 +158,19 @@ export const QuizPage = ({ selectedLevel }: QuizPageProps) => {
 
   if (!card) {
     return (
-      <div className="mx-auto max-w-3xl rounded-2xl border border-white/15 bg-[#464949] p-8 text-center">
-        <CheckCircle2 className="mx-auto text-[#81D8CF]" size={34} />
-        <h1 className="mt-4 text-2xl font-bold">今日语法清空</h1>
-        <p className="mt-2 text-white/62">没有到期语法点了。</p>
-        {stats && (
-          <div className="mx-auto mt-5 grid max-w-lg grid-cols-3 gap-2">
-            <StatPill label="done" value={`${stats.progressDone}/${stats.progressTotal}`} />
-            <StatPill label="low" value={stats.lowCount} />
-            <StatPill label="today" value={stats.reviewedToday} />
-          </div>
-        )}
-      </div>
+      <>
+        <div className="mx-auto max-w-3xl rounded-2xl border border-white/15 bg-[#464949] p-8 text-center">
+          <CheckCircle2 className="mx-auto text-[#81D8CF]" size={34} />
+          <h1 className="mt-4 text-2xl font-bold">今日语法清空</h1>
+          <p className="mt-2 text-white/62">没有到期语法点了。</p>
+        </div>
+        <StatsDrawer stats={stats} />
+      </>
     );
   }
 
   return (
-    <div className="mx-auto flex min-h-[520px] max-w-3xl flex-col gap-4">
+    <div className="mx-auto flex min-h-[520px] max-w-3xl flex-col gap-4 pb-12">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/55">Grammar Review</p>
@@ -105,15 +180,6 @@ export const QuizPage = ({ selectedLevel }: QuizPageProps) => {
           <RotateCcw size={17} />
         </button>
       </div>
-
-      {stats && (
-        <div className="grid gap-2 sm:grid-cols-4">
-          <StatPill label="progress" value={`${stats.progressDone}/${stats.progressTotal}`} />
-          <StatPill label="low" value={stats.lowCount} />
-          <StatPill label="unseen" value={stats.unseenCount} />
-          <StatPill label="today" value={stats.reviewedToday} />
-        </div>
-      )}
 
       <section key={card.id} className="dictionary-card flex min-h-0 flex-1 flex-col rounded-2xl p-5">
         <div className="flex items-center justify-between gap-3 border-b border-white/15 pb-4">
@@ -171,6 +237,7 @@ export const QuizPage = ({ selectedLevel }: QuizPageProps) => {
           </button>
         )}
       </section>
+      <StatsDrawer stats={stats} />
     </div>
   );
 };
