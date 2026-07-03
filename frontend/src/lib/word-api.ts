@@ -273,6 +273,12 @@ const stage1TaskCount = (day: string) => firstValue<number>(
   0
 );
 
+const stage1NewTaskCount = (day: string) => firstValue<number>(
+  "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type = 'new'",
+  [day],
+  0
+);
+
 const backfillStage1TasksFromReviews = (day: string) => {
   const rows = rowsFor(`
     SELECT
@@ -366,7 +372,7 @@ const createStage1Tasks = (day: string) => {
       AND p.seen_count = 0
     ORDER BY w.shuffle_rank DESC, w.importance DESC, p.word_id ASC
     LIMIT ?
-  `, [dailyNewQuota()]);
+  `, [Math.max(dailyNewQuota() - stage1NewTaskCount(day), 0)]);
 
   newRows.forEach((row) => {
     db.run(`
@@ -377,9 +383,43 @@ const createStage1Tasks = (day: string) => {
   });
 };
 
+const reconcileStage1NewQuota = (day: string) => {
+  const completedNewTasks = firstValue<number>(`
+    SELECT COUNT(*)
+    FROM stage1_tasks t
+    JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+      AND t.task_type = 'new'
+      AND (p.seen_count > 0 OR p.known_forever = 1)
+  `, [day], 0);
+  const remainingNewQuota = Math.max(dailyNewQuota() - completedNewTasks, 0);
+
+  getDatabase().run(`
+    DELETE FROM stage1_tasks
+    WHERE reviewed_on = ?
+      AND task_type = 'new'
+      AND word_id IN (
+        SELECT word_id
+        FROM (
+          SELECT
+            t.word_id,
+            ROW_NUMBER() OVER (ORDER BY t.order_index ASC, t.word_id ASC) AS row_number
+          FROM stage1_tasks t
+          JOIN progress p ON p.word_id = t.word_id
+          WHERE t.reviewed_on = ?
+            AND t.task_type = 'new'
+            AND p.seen_count = 0
+            AND p.known_forever = 0
+        )
+        WHERE row_number > ?
+      )
+  `, [day, day, remainingNewQuota]);
+};
+
 const ensureStage1Tasks = () => {
   const day = today();
   createStage1Tasks(day);
+  reconcileStage1NewQuota(day);
 };
 
 const stage1ProgressCounts = () => {
