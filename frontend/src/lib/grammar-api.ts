@@ -1,4 +1,5 @@
 import { getDatabase } from "./database";
+import { notifyProgressUpdated } from "./progress-events";
 import {
   answerLabel,
   answerScore,
@@ -332,6 +333,7 @@ export function submitGrammarAnswer(grammarId: number, answer: StudyAnswer, leve
   );
   recordGrammarMistakeState(grammarId, answer, score);
   persistSoon();
+  notifyProgressUpdated();
   return getGrammarSession(level);
 }
 

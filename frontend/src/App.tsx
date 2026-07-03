@@ -8,6 +8,7 @@ import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
 import { completeTodayWordPlan, getProgressOverview, markContentComplete, ProgressOverview } from "./lib/api";
 import { canUseFeature, FeatureId } from "./lib/entitlements";
+import { PROGRESS_UPDATED_EVENT } from "./lib/progress-events";
 import { defaultStudyMode, getStudyMode, saveStudyMode } from "./lib/studyMode";
 import type { SearchResult } from "./lib/search-api";
 import { GrammarMode, Page, StudyMode } from "./types/app";
@@ -114,6 +115,12 @@ export default function App() {
       JSON.stringify({ page, grammarMode, selectedGrammarId, selectedGrammarLevel, sidebarCollapsed })
     );
   }, [page, grammarMode, selectedGrammarId, selectedGrammarLevel, sidebarCollapsed]);
+
+  useEffect(() => {
+    const refresh = () => setOverview(getProgressOverview());
+    window.addEventListener(PROGRESS_UPDATED_EVENT, refresh);
+    return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
+  }, []);
 
   const showNotice = (message: string, timeout = 1800) => {
     setNotice(message);

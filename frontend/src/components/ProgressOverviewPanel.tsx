@@ -39,9 +39,6 @@ export function ProgressOverviewPanel({ overview, onRefresh, onOpenFill }: Progr
             <p className="text-sm font-bold text-white">{title}</p>
             <p className="mt-1 text-[11px] text-white/48">{summary}</p>
           </div>
-          <span className="rounded-sm border border-white/12 px-2 py-1 text-[11px] font-bold text-white/54">
-            {progressFocus === focus ? "展开" : "轻点"}
-          </span>
         </div>
         <div className="mt-4 grid h-32 grid-cols-5 items-end gap-2">
           {barItems.map((item) => {

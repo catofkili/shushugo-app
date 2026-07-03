@@ -2,6 +2,7 @@ import { getDatabase } from "./database";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
 import { getDailyWordGoal } from "./studyPreferences";
 import { hasKanjiText, rowObjectToCard } from "./models/word-card";
+import { notifyProgressUpdated } from "./progress-events";
 import { pickDueCriticalPoolRow, pickStage1CriticalPoolRow, priorityComponents, priorityScore } from "./scheduler/priority";
 import {
   answerScore,
@@ -325,7 +326,6 @@ const createStage1Tasks = (day: string) => {
   if (stage1TaskCount(day) > 0) return;
   if (firstValue<number>("SELECT 1 FROM reviews WHERE reviewed_on = ? LIMIT 1", [day], 0)) {
     backfillStage1TasksFromReviews(day);
-    return;
   }
 
   activateMojiMigratedReviews(day);
@@ -1048,11 +1048,13 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
 export function refreshTodayWordPlan(): WordStats {
   ensureProgressInitialized();
   const day = today();
-  const reviewedToday = firstValue<number>("SELECT COUNT(*) FROM reviews WHERE reviewed_on = ?", [day], 0);
-  if (reviewedToday === 0) {
+  const phase = currentPhase();
+  const stage1 = stage1ProgressCounts();
+  if (phase === "stage1" && stage1.completed < stage1.total) {
     getDatabase().run("DELETE FROM stage1_tasks WHERE reviewed_on = ?", [day]);
     createStage1Tasks(day);
   }
+  notifyProgressUpdated();
   return getWordStats(currentPhase());
 }
 
@@ -1194,6 +1196,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     `, [tempScore, completed, dueAfter, studyDate, wordId]);
     setState("last_answer", JSON.stringify(snapshot));
     import("./storage").then(({ scheduleSave }) => scheduleSave());
+    notifyProgressUpdated();
     return getWordSession(options);
   }
 
@@ -1256,6 +1259,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     ]);
     setState("last_answer", JSON.stringify(snapshot));
     import("./storage").then(({ scheduleSave }) => scheduleSave());
+    notifyProgressUpdated();
     return getWordSession(options);
   }
 
@@ -1334,6 +1338,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   setState("last_answer", JSON.stringify({ ...snapshot, review_id: reviewId }));
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());
+  notifyProgressUpdated();
   return getWordSession(options);
 }
 
@@ -1451,6 +1456,7 @@ export function undoLastWordAnswer(): WordSessionResponse {
   setState("last_answer", "");
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());
+  notifyProgressUpdated();
   return getWordSession();
 }
 

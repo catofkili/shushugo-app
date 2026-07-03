@@ -168,7 +168,7 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     setDailyGoalInput(String(next.dailyGoal));
     try {
       refreshTodayWordPlan();
-      notify(`每日目标已改为 ${next.dailyGoal} 个。`);
+      notify(`每日目标已改为 ${next.dailyGoal} 个，今日计划已刷新。`);
     } catch {
       notify("每日目标已保存，重启应用后生效。");
     }
