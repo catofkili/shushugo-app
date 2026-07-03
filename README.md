@@ -9,16 +9,15 @@
 ```
 frontend/            主应用（Web 源码 + Capacitor iOS 工程）
   src/               React 源码（pages / components / hooks / lib）
-  public/nihongo.db  本地种子词库/语法库（不进 Git，打包脚本会从本地加入）
+  public/nihongo.db  App 自带初始词库/语法库
   ios/App/           Xcode 工程（App.xcworkspace）
 cloudflare-sync/     正式云端：Cloudflare Worker + D1 + KV
 backend/             Legacy FastAPI 同步原型，当前不作为正式后端
 docs/                指南与文档（见下）
-docs/archive/        历史调试草稿，仅作留档，可忽略
 scripts/             构建/数据处理脚本
 ```
 
-> 数据：约 10,000+ 单词（N5–N1）、语法点与例句，完全离线可用。大词库文件保留在本地，不由 Git 跟踪。
+> 数据：约 10,000+ 单词（N5–N1）、语法点与例句，完全离线可用。正式 App 使用本仓库内的 seed database 和 seed JSON。
 
 ## 快速开始
 

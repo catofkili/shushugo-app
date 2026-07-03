@@ -22,10 +22,10 @@ It intentionally excludes:
 - `node_modules`, `dist`, `.wrangler`
 - `.env.local` and secrets
 - old archive notes
-- unrelated projects such as personal homepage, pilgrimage tools, and older Japanese learning experiments
+- unrelated sibling projects and local experiments
 
-Large static learning corpus files are not tracked by Git. The packaging script adds the local copies of `frontend/public/nihongo.db` and `frontend/src/data/jlpt_words_seed.json` when they exist, so the preview package can still run without putting the corpus in version control.
+Learning corpus files are owned by this repository. The preview package includes `frontend/public/nihongo.db` and the seed JSON files from `frontend/src/data/`; it does not read from old sibling projects.
 
 For database boundaries, see `docs/DATABASES.md`.
 
-Do not zip the whole `Documents` folder or the old `japanese-learning-app` folder for external review.
+Do not zip the whole `Documents` folder for external review.

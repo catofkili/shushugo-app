@@ -33,7 +33,7 @@
 ## P2 — 质量打磨
 
 - [ ] **补自动化测试** — 当前 0 测试。优先覆盖 SRS 调度（`scheduler/priority.ts`、`adaptive.ts`）与内购/权益逻辑。
-- [x] **清理仓库杂物** — 已完成：归档 33 个调试草稿到 `docs/archive/`，删除旧构建拷贝 `master-nihongo/` 与 `master-nihongo.zip`，根目录整理 + 新增 README。
+- [x] **清理仓库杂物** — 已完成：移除历史调试草稿，删除旧构建拷贝 `master-nihongo/` 与 `master-nihongo.zip`，根目录整理 + 新增 README。
 - [ ] **真机适配验证** — `scrollEnabled:false` + `contentInset:'never'`，需在带刘海/灵动岛的真机及各尺寸 + iPad 验证安全区。
 - [ ] **涂鸦笔 canvas 上限** — 画布必须固定一屏视口（绑定整页会超 iOS canvas 上限失效），确保全页面遵守。
 

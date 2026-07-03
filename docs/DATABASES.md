@@ -19,8 +19,9 @@ Purpose:
 
 Git policy:
 
-- `frontend/public/nihongo.db` is intentionally not tracked.
-- Large static corpus files are local assets and are added only by `scripts/package-preview.sh`.
+- `frontend/public/nihongo.db` is the tracked seed database for the app.
+- `frontend/src/data/grammar_seed.json` and `frontend/src/data/jlpt_words_seed.json` are tracked seed JSON assets.
+- Do not regenerate app content from old sibling projects. If content changes, update the seed assets inside this repository.
 
 ## 2. Cloudflare D1
 

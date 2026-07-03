@@ -1,10 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # iOS 应用完全清理和重新构建脚本
 
 echo "🧹 开始清理 iOS 缓存..."
 
-cd /Users/lsc/Documents/master-nihongo-ios/frontend
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR/frontend"
 
 # 1. 清理前端构建
 echo "📦 清理前端构建目录..."

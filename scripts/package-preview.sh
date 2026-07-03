@@ -66,7 +66,7 @@ git archive \
   frontend/package-lock.json \
   frontend/package.json \
   frontend/postcss.config.js \
-  frontend/scripts/import_jlpt_words.py \
+  frontend/public/nihongo.db \
   frontend/src \
   frontend/tailwind.config.js \
   frontend/tsconfig.json \
@@ -76,16 +76,7 @@ git archive \
   scripts/package-preview.sh \
   scripts/quick-reload.sh \
   scripts/quick-start.sh \
-  scripts/setup-xcode.sh \
-  scripts/sync-content.mjs
-
-for asset in frontend/public/nihongo.db frontend/src/data/jlpt_words_seed.json; do
-  if [[ -f "$asset" ]]; then
-    zip -q "$TMP_ZIP" "$asset"
-  else
-    echo "Warning: missing local corpus asset: $asset" >&2
-  fi
-done
+  scripts/setup-xcode.sh
 
 mv "$TMP_ZIP" "$OUTPUT"
 echo "Created $OUTPUT"

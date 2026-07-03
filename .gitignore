@@ -56,9 +56,8 @@ backend/sync_data.db
 *.sqlite
 *.sqlite3
 
-# Static learning corpus (kept locally, not versioned)
-frontend/public/nihongo.db
-frontend/src/data/jlpt_words_seed.json
+# Static learning corpus backups
+frontend/public/*.db.bak_*
 
 # Sensitive
 .env
