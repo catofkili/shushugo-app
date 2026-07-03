@@ -3,6 +3,7 @@ import {
   answerLabel,
   answerScore,
   CRITICAL_SCORE,
+  DAILY_DECAY_FLOOR,
   DbRow,
   ensureUserTables,
   firstRow,
@@ -103,11 +104,11 @@ export const applyGrammarDailyDecay = () => {
     const decay = grammarDecayTenths(row);
     getDatabase().run(`
       UPDATE grammar_progress
-      SET score = MAX(score - ?, -40),
+      SET score = MAX(score - ?, ?),
           mastered_on = NULL,
           last_decay_amount = ?
       WHERE grammar_id = ?
-    `, [decay / 10, decay, Number(row.grammar_id)]);
+    `, [decay / 10, DAILY_DECAY_FLOOR, decay, Number(row.grammar_id)]);
   });
   setGrammarState("last_decay", day);
 };

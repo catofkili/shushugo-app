@@ -52,6 +52,7 @@ type GrammarSeedRow = [
 ];
 
 export const CRITICAL_SCORE = -20;
+export const DAILY_DECAY_FLOOR = -9;
 
 export const ensureUserTables = () => {
   const db = getDatabase();

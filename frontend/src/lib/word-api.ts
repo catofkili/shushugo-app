@@ -6,6 +6,7 @@ import { pickDueCriticalPoolRow, pickStage1CriticalPoolRow, priorityComponents, 
 import {
   answerScore,
   CRITICAL_SCORE,
+  DAILY_DECAY_FLOOR,
   daysSince,
   DbRow,
   ensureJlptWordSeed,
@@ -185,11 +186,11 @@ const applyDailyDecay = () => {
     const decay = weightedDecayTenths(row);
     db.run(`
       UPDATE progress
-      SET score = MAX(score - ?, -40),
+      SET score = MAX(score - ?, ?),
           mastered_on = NULL,
           last_decay_amount = ?
       WHERE word_id = ?
-    `, [decay / 10, decay, Number(row.word_id)]);
+    `, [decay / 10, DAILY_DECAY_FLOOR, decay, Number(row.word_id)]);
   });
 
   backfillCriticalReviews(day);
