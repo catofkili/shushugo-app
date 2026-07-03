@@ -286,7 +286,7 @@ export function FloatingDoodlePen({ resetKey, surfaceSelector }: FloatingDoodleP
         className={`focus-ring fixed z-[9999] grid h-12 w-12 touch-none place-items-center rounded-2xl border shadow-xl backdrop-blur transition ${
           penActive
             ? "border-red-300/70 bg-red-500/28 text-red-50 shadow-red-500/20"
-            : "border-white/20 bg-[#343838]/90 text-white/78 shadow-black/25"
+            : "doodle-pen-idle border-white/20 bg-[#343838]/90 text-white/78 shadow-black/25"
         }`}
         style={{ left: penPosition.x, top: penPosition.y }}
         title={penActive ? "关闭批注笔" : "打开批注笔"}
@@ -300,7 +300,7 @@ export function FloatingDoodlePen({ resetKey, surfaceSelector }: FloatingDoodleP
           type="button"
           onClick={undoLastStroke}
           disabled={!hasStrokes}
-          className="focus-ring fixed z-[9999] grid h-10 w-10 place-items-center rounded-2xl border border-white/20 bg-[#343838]/90 text-white/78 shadow-xl backdrop-blur transition disabled:opacity-35"
+          className="doodle-pen-idle focus-ring fixed z-[9999] grid h-10 w-10 place-items-center rounded-2xl border border-white/20 bg-[#343838]/90 text-white/78 shadow-xl backdrop-blur transition disabled:opacity-35"
           style={{ left: penPosition.x, top: penPosition.y + 54 }}
           title="撤回上一笔"
           aria-label="撤回上一笔"

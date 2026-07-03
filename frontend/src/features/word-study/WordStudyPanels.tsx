@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart3, CalendarDays, CheckCircle2, Clock3, Download, Share2, X } from "lucide-react";
+import { Brain, CalendarDays, CheckCircle2, Clock3, Download, Share2, X } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { studyDate as currentStudyDate } from "../../lib/database/db-utils";
 import type { WordCard, WordStats } from "../../types/vocabulary";
@@ -260,7 +260,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                       >
                         {cell.day}
                       </span>
-                      <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-44 -translate-x-1/2 rounded-2xl border border-white/15 bg-[#202323] p-3 text-left shadow-xl group-hover:block group-focus:block">
+                      <span className="study-calendar-tooltip pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-44 -translate-x-1/2 rounded-2xl border border-white/15 bg-[#202323] p-3 text-left shadow-xl group-hover:block group-focus:block">
                         <span className="block text-xs font-bold text-white/85">{cell.date}</span>
                         <span className="mt-2 block text-xs text-white/65">学习时间：{formatDuration(daySeconds)}</span>
                         <span className="mt-1 block text-xs text-white/65">学习单词：{wordCount} 个</span>
@@ -301,10 +301,10 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
               className="focus-ring rounded-xl border border-[#81D8CF]/30 bg-[#81D8CF]/10 p-3 text-left transition-all hover:bg-[#81D8CF]/20"
             >
               <div className="flex items-center gap-2">
-                <BarChart3 size={17} className="text-[#81D8CF]" />
+                <Brain size={17} className="text-[#81D8CF]" />
                 <span>
-                  <span className="block text-sm font-bold text-white">学习分析</span>
-                  <span className="mt-0.5 block text-xs text-white/60">进度和薄弱点</span>
+                  <span className="block text-sm font-bold text-white">记忆程度</span>
+                  <span className="mt-0.5 block text-xs text-white/60">基于实际复习数据</span>
                 </span>
               </div>
             </button>
