@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, Eye, RotateCcw, Star, StickyNote, X } from "lucide-react";
 import { WordAnswer, WordCard, WordLevelFilter, WordSessionResponse, WordStats, WordTypeFilter } from "../types/vocabulary";
-import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, getWordSession, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
+import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, getWordSession, markTodayWordCheckin, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { addStudyTime, checkAchievements } from "../lib/userProfile";
 import { triggerMemoryHaptic } from "../lib/haptics";
@@ -265,10 +265,20 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
     }
   };
 
+  const checkInToday = () => {
+    try {
+      setStats(markTodayWordCheckin());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "打卡失败");
+    }
+  };
+
+  const showStudyToolbar = loading || Boolean(card);
+
   return (
     <div className="mx-auto flex h-[calc(100vh-13rem)] min-h-[520px] max-w-4xl flex-col justify-center lg:h-[calc(100vh-4rem)] lg:min-h-[600px]">
       <section className="dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl p-5 sm:p-8">
-        <div className="mb-5 flex shrink-0 items-center justify-between gap-3 border-b border-white/15 pb-4">
+        {showStudyToolbar && <div className="mb-5 flex shrink-0 items-center justify-between gap-3 border-b border-white/15 pb-4">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/65">{pageLabel}</p>
             <h1 className="mt-1 text-xl font-semibold">{pageTitle}</h1>
@@ -325,7 +335,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
               <RotateCcw size={17} />
             </button>
           </div>
-        </div>
+        </div>}
 
         {noteMemoryOpen && card?.note && (
           <div className="note-memory-card absolute right-5 top-20 z-20 w-[min(380px,calc(100%-2.5rem))] rounded-2xl p-4 text-left sm:right-8 sm:top-24">
@@ -550,6 +560,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
             stats={stats}
             phase={phase}
             localSeconds={localStudySeconds}
+            onCheckIn={checkInToday}
             onContinueStage2={() => startExtraPhase("stage2")}
             onContinueKanji={() => startExtraPhase("kanji")}
           />

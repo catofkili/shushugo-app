@@ -1,5 +1,4 @@
 import { CheckCircle2, Layers3, Star } from "lucide-react";
-import { CheckInCalendar } from "../components/CheckInCalendar";
 import { ProgressOverviewPanel } from "../components/ProgressOverviewPanel";
 import { ProgressOverview } from "../lib/api";
 import { Page } from "../types/app";
@@ -70,10 +69,6 @@ export function ToolboxPage({
         onRefresh={onRefreshOverview}
         onOpenFill={onOpenFill}
       />
-
-      <div className="mt-5">
-        <CheckInCalendar />
-      </div>
     </section>
   );
 }

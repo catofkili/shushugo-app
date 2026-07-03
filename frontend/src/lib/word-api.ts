@@ -1164,6 +1164,14 @@ export function completeTodayWordPlan(): { stats: WordStats; completedCount: num
   return { stats: getWordStats("done"), completedCount: ids.length };
 }
 
+export function markTodayWordCheckin(): WordStats {
+  ensureProgressInitialized();
+  recordCheckin();
+  persistSoon();
+  notifyProgressUpdated();
+  return getWordStats(currentPhase());
+}
+
 export function getNextWordCard(options: WordSessionOptions = {}): WordCard | null {
   ensureProgressInitialized();
   return nextCard(options).card;
