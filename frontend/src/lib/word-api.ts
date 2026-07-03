@@ -1160,6 +1160,7 @@ export function completeTodayWordPlan(): { stats: WordStats; completedCount: num
   recordCheckin();
   setPhase("done");
   persistSoon();
+  notifyProgressUpdated();
   return { stats: getWordStats("done"), completedCount: ids.length };
 }
 

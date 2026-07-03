@@ -108,6 +108,7 @@ export default function App() {
   const [paywallFeature, setPaywallFeature] = useState<FeatureId | undefined>();
   const [selectedStudyMode, setSelectedStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [launchStudyMode, setLaunchStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
+  const [wordStudyRevision, setWordStudyRevision] = useState(0);
 
   useEffect(() => {
     localStorage.setItem(
@@ -207,6 +208,7 @@ export default function App() {
     if (!confirmed) return;
     try {
       const result = completeTodayWordPlan();
+      setWordStudyRevision((revision) => revision + 1);
       setOverview(getProgressOverview());
       showNotice(result.completedCount ? `已完成今日 ${result.completedCount} 个单词任务。` : "今日单词任务已处于完成状态。", 2200);
       navigateToPage("word");
@@ -317,7 +319,7 @@ export default function App() {
 
   const renderPage = () => {
     if (page === "word") {
-      return <WordStudy initialMode={launchStudyMode} />;
+      return <WordStudy key={wordStudyRevision} initialMode={launchStudyMode} />;
     }
     if (page === "grammar") {
       return renderGrammarPage();
