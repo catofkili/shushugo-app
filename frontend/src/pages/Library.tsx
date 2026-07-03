@@ -359,6 +359,7 @@ export const Library = ({
             const mastery = getMastery(point.id);
             const active = point.id === selected.id;
             const note = grammarNote(point.id);
+            const firstExample = point.examples[0];
             return (
               <article
                 key={point.id}
@@ -376,9 +377,12 @@ export const Library = ({
                       <h3 className="jp-serif mt-3 text-3xl font-semibold leading-none"><JapaneseRuby text={point.title} /></h3>
                       <p className="mt-2 text-sm font-semibold leading-6 text-white/82">{point.meaning}</p>
                     </div>
-                    <p className="jp mt-3 rounded-2xl border border-white/10 bg-[#373b3b] px-3 py-2 text-sm leading-6 text-white/65">
-                      <JapaneseRuby text={point.connection ?? point.structure} />
-                    </p>
+                    {firstExample && (
+                      <div className="mt-3 rounded-2xl border border-white/10 bg-[#373b3b] px-3 py-2 text-sm leading-6 text-white/65">
+                        <p className="jp"><JapaneseRuby text={firstExample.jp ?? firstExample.japanese} /></p>
+                        <p className="mt-1 text-xs leading-5 text-white/55">{firstExample.cn ?? firstExample.chinese}</p>
+                      </div>
+                    )}
                   </button>
                   <div className="grid shrink-0 gap-2">
                     <button

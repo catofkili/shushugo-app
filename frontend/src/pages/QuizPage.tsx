@@ -135,7 +135,6 @@ export const QuizPage = ({ selectedLevel }: QuizPageProps) => {
             <div className="w-full">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/45">Answer</p>
               <p className="mt-4 text-2xl font-semibold leading-9 text-white/88">{card.meaning}</p>
-              <p className="jp mt-5 rounded-2xl border border-white/15 bg-[#373b3b] px-4 py-3 text-lg leading-8 text-white/80"><JapaneseRuby text={card.formation || card.prompt} /></p>
               <div className="mt-5 rounded-2xl border border-white/15 bg-[#373b3b] p-4 text-left">
                 <p className="jp text-lg leading-8"><JapaneseRuby text={card.example.jp} /></p>
                 <p className="mt-2 text-sm leading-6 text-white/65">{card.example.meaning}</p>

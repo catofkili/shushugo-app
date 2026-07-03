@@ -985,10 +985,13 @@ select {
 
 [data-theme="light"] .bg-\[\#474a4a\],
 [data-theme="light"] .bg-\[\#464949\],
+[data-theme="light"] .bg-\[\#424545\],
 [data-theme="light"] .bg-\[\#3f4343\],
 [data-theme="light"] .bg-\[\#3c3f3f\],
 [data-theme="light"] .bg-\[\#3b3f3f\],
+[data-theme="light"] .bg-\[\#373b3b\],
 [data-theme="light"] .bg-\[\#353939\],
+[data-theme="light"] .bg-\[\#2f3333\],
 [data-theme="light"] .bg-\[\#4d5151\],
 [data-theme="light"] .bg-\[\#475252\],
 [data-theme="light"] .bg-\[\#3d4848\] {
@@ -1009,6 +1012,14 @@ select {
 [data-theme="light"] .bg-black\/30,
 [data-theme="light"] .bg-black\/50 {
   background-color: rgba(45, 107, 86, 0.08) !important;
+}
+
+[data-theme="light"] .bg-white\/5,
+[data-theme="light"] .bg-white\/6,
+[data-theme="light"] .bg-white\/8,
+[data-theme="light"] .bg-white\/10,
+[data-theme="light"] .bg-white\/12 {
+  background-color: rgba(255, 255, 255, 0.74) !important;
 }
 
 [data-theme="light"] .hover\:bg-\[\#4d5151\]:hover,
