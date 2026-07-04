@@ -43,62 +43,15 @@ const toolPageTitles: Partial<Record<Page, string>> = {
   favorites: "收藏"
 };
 
-const APP_VIEW_STORAGE_KEY = "master-nihongo:current-view";
-const validPages = new Set<Page>([
-  "word",
-  "grammar",
-  "detail",
-  "toolbox",
-  "study-modes",
-  "favorites",
-  "profile",
-  "pro",
-  "account",
-  "personal-info",
-  "notifications",
-  "settings",
-  "privacy",
-  "privacy-policy",
-  "help",
-  "about"
-]);
-const validGrammarModes = new Set<GrammarMode>(["learn", "practice", "immersive"]);
-const validGrammarLevels = new Set<"All" | JLPTLevel>(["All", "N5", "N4", "N3", "N2", "N1"]);
-
-const readSavedView = () => {
-  try {
-    const raw = localStorage.getItem(APP_VIEW_STORAGE_KEY);
-    if (!raw) return {};
-    const saved = JSON.parse(raw) as Partial<{
-      page: Page;
-      grammarMode: GrammarMode;
-      selectedGrammarId: string;
-      selectedGrammarLevel: "All" | JLPTLevel;
-      sidebarCollapsed: boolean;
-    }>;
-    return {
-      page: saved.page && validPages.has(saved.page) ? saved.page : undefined,
-      grammarMode: saved.grammarMode && validGrammarModes.has(saved.grammarMode) ? saved.grammarMode : undefined,
-      selectedGrammarId: typeof saved.selectedGrammarId === "string" ? saved.selectedGrammarId : undefined,
-      selectedGrammarLevel:
-        saved.selectedGrammarLevel && validGrammarLevels.has(saved.selectedGrammarLevel) ? saved.selectedGrammarLevel : undefined,
-      sidebarCollapsed: typeof saved.sidebarCollapsed === "boolean" ? saved.sidebarCollapsed : undefined
-    };
-  } catch {
-    return {};
-  }
-};
-
 export default function App() {
   const store = useStudyStore();
   const entitlements = useEntitlements();
-  const [initialView] = useState(readSavedView);
-  const [page, setPage] = useState<Page>(initialView.page ?? "word");
+  const [page, setPage] = useState<Page>("word");
   const [pageHistory, setPageHistory] = useState<Page[]>([]); // 页面历史栈
-  const [grammarMode, setGrammarMode] = useState<GrammarMode>(initialView.grammarMode ?? "learn");
-  const [selectedGrammarId, setSelectedGrammarId] = useState(initialView.selectedGrammarId ?? "wa");
-  const [selectedGrammarLevel, setSelectedGrammarLevel] = useState<"All" | JLPTLevel>(initialView.selectedGrammarLevel ?? "N5");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(initialView.sidebarCollapsed ?? false);
+  const [grammarMode, setGrammarMode] = useState<GrammarMode>("learn");
+  const [selectedGrammarId, setSelectedGrammarId] = useState("wa");
+  const [selectedGrammarLevel, setSelectedGrammarLevel] = useState<"All" | JLPTLevel>("N5");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notice, setNotice] = useState("");
   const [overview, setOverview] = useState<ProgressOverview>(() => getProgressOverview());
   const [fillOpen, setFillOpen] = useState(false);
@@ -109,13 +62,6 @@ export default function App() {
   const [selectedStudyMode, setSelectedStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [launchStudyMode, setLaunchStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [wordStudyRevision, setWordStudyRevision] = useState(0);
-
-  useEffect(() => {
-    localStorage.setItem(
-      APP_VIEW_STORAGE_KEY,
-      JSON.stringify({ page, grammarMode, selectedGrammarId, selectedGrammarLevel, sidebarCollapsed })
-    );
-  }, [page, grammarMode, selectedGrammarId, selectedGrammarLevel, sidebarCollapsed]);
 
   useEffect(() => {
     const refresh = () => setOverview(getProgressOverview());
@@ -134,6 +80,10 @@ export default function App() {
       const currentMode = getStudyMode() || defaultStudyMode;
       setSelectedStudyMode(currentMode);
       setLaunchStudyMode(currentMode);
+      setWordStudyRevision((revision) => revision + 1);
+    }
+    if (newPage === "toolbox" || newPage === "profile") {
+      setSelectedGrammarId("wa");
     }
     if (newPage !== page) {
       setPageHistory([...pageHistory, page]);
@@ -165,8 +115,12 @@ export default function App() {
     navigateToPage("detail");
   };
 
-  const openGrammarTab = (mode: GrammarMode = grammarMode) => {
+  const openGrammarTab = (mode: GrammarMode = "learn") => {
     setGrammarMode(mode);
+    if (mode === "learn") {
+      setSelectedGrammarId("wa");
+      setSelectedGrammarLevel("N5");
+    }
     navigateToPage("grammar");
   };
 

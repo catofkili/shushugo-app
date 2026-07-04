@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { AlertCircle, Eye, RotateCcw, Star, StickyNote, X } from "lucide-react";
 import { WordAnswer, WordCard, WordLevelFilter, WordSessionResponse, WordStats, WordTypeFilter } from "../types/vocabulary";
 import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, getWordSession, markTodayWordCheckin, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
@@ -34,13 +34,16 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const [localStudySeconds, setLocalStudySeconds] = useState(0);
-  const [selectedLevel, setSelectedLevel] = useState<WordLevelFilter>(() => (localStorage.getItem("mn-word-level") as WordLevelFilter | null) ?? "All");
-  const [selectedType, setSelectedType] = useState<WordTypeFilter>(() => (localStorage.getItem("mn-word-type") as WordTypeFilter | null) ?? "all");
+  const [selectedLevel, setSelectedLevel] = useState<WordLevelFilter>("All");
+  const [selectedType, setSelectedType] = useState<WordTypeFilter>("all");
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
   const lastStudyTickRef = useRef(Date.now());
   const trackingActiveRef = useRef(false);
   const submittingRef = useRef(false);
+  const dragStartYRef = useRef<number | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
 
   const progressText = useMemo(() => {
     if ((selectedLevel !== "All" || selectedType !== "all") && stats?.total) {
@@ -85,8 +88,6 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   };
 
   useEffect(() => {
-    localStorage.setItem("mn-word-level", selectedLevel);
-    localStorage.setItem("mn-word-type", selectedType);
     loadNext(initialMode);
   }, [selectedLevel, selectedType, initialMode]);
 
@@ -274,9 +275,43 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   };
 
   const showStudyToolbar = loading || Boolean(card);
+  const canDragWordPage = (target: EventTarget | null) => {
+    const element = target instanceof Element ? target : null;
+    return !element?.closest("button, input, select, textarea, a, [data-word-scrollable='true']");
+  };
+
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!canDragWordPage(event.target)) return;
+    dragStartYRef.current = event.touches[0].clientY;
+    setDragging(true);
+  };
+
+  const handleTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (dragStartYRef.current == null || !canDragWordPage(event.target)) return;
+    event.preventDefault();
+    const delta = event.touches[0].clientY - dragStartYRef.current;
+    const resistance = Math.sign(delta) * Math.min(Math.abs(delta) * 0.28, 42);
+    setDragOffset(resistance);
+  };
+
+  const resetDrag = () => {
+    dragStartYRef.current = null;
+    setDragging(false);
+    setDragOffset(0);
+  };
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-13rem)] min-h-[520px] max-w-4xl flex-col justify-center lg:h-[calc(100vh-4rem)] lg:min-h-[600px]">
+    <div
+      className="mx-auto flex h-[calc(100vh-13rem)] min-h-[520px] max-w-4xl flex-col justify-center lg:h-[calc(100vh-4rem)] lg:min-h-[600px]"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={resetDrag}
+      onTouchCancel={resetDrag}
+      style={{
+        transform: `translate3d(0, ${dragOffset}px, 0)`,
+        transition: dragging ? "transform 80ms linear" : "transform 420ms cubic-bezier(0.2, 0.9, 0.2, 1)"
+      }}
+    >
       <section className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "p-5 sm:p-8" : "p-3 sm:p-5"}`}>
         {showStudyToolbar && <div className="mb-5 flex shrink-0 items-center justify-between gap-3 border-b border-white/15 pb-4">
           <div className="min-w-0 flex-1">
@@ -405,7 +440,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
         ) : card ? (
           <div className="flex min-h-0 flex-1 flex-col gap-4">
             <div className="grid min-h-28 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] p-4 text-center">
-              <div className="max-h-28 w-full overflow-y-auto px-1">
+              <div data-word-scrollable="true" className="max-h-28 w-full overflow-y-auto px-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">题目</p>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
                   {isReversePhase ? (
@@ -430,7 +465,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
               </div>
             </div>
 
-            <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-6 text-center">
+            <div data-word-scrollable="true" className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-6 text-center">
               {revealed ? (
                 <div className="w-full">
                   {isReversePhase ? (

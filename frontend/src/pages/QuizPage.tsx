@@ -56,7 +56,7 @@ const StatsDrawer = ({ stats }: { stats: GrammarStudyStats | null }) => {
 
   return (
     <div
-      className="fixed bottom-3 left-1/2 z-30 w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2"
+      className="fixed bottom-[calc(max(env(safe-area-inset-bottom),20px)+4.75rem)] left-1/2 z-30 w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 lg:bottom-4"
       onWheel={handleWheel}
       onTouchStart={(event) => {
         touchStartY.current = event.touches[0].clientY;
@@ -69,20 +69,29 @@ const StatsDrawer = ({ stats }: { stats: GrammarStudyStats | null }) => {
         }`}
       />
       <div
-        className={`relative overflow-hidden rounded-2xl border border-white/15 bg-[#343838]/96 shadow-2xl backdrop-blur transition-[max-height,transform,border-color] duration-300 ease-out ${
-          open ? "max-h-48 border-[#81D8CF]/30" : "max-h-8"
+        className={`grammar-stats-drawer relative overflow-hidden rounded-2xl border border-white/15 bg-[#343838]/96 shadow-2xl backdrop-blur transition-[max-height,transform,border-color] duration-300 ease-out ${
+          open ? "max-h-48 border-[#81D8CF]/30" : "max-h-16"
         }`}
       >
         <button
           onClick={() => (open ? hide() : show())}
-          className="focus-ring flex h-8 w-full items-center justify-center"
+          className="focus-ring flex h-14 w-full items-center justify-between gap-3 px-4 text-left"
           title={open ? "收起统计" : "展开统计"}
         >
-          <span
-            className={`h-1.5 w-12 rounded-full bg-[#81D8CF]/55 transition-all duration-300 ${
-              open ? "w-16 bg-[#81D8CF]/85" : ""
-            }`}
-          />
+          <span className="min-w-0">
+            <span className="block text-xs font-black uppercase tracking-[0.18em] text-[#81D8CF]">统计</span>
+            <span className="mt-0.5 block truncate text-xs font-semibold text-white/62">
+              {stats ? `进度 ${stats.progressDone}/${stats.progressTotal} · 今日 ${stats.reviewedToday}` : "下滑展开，上滑收回"}
+            </span>
+          </span>
+          <span className="grid shrink-0 place-items-center gap-1">
+            <span
+              className={`h-1.5 rounded-full bg-[#81D8CF]/65 transition-all duration-300 ${
+                open ? "w-16 bg-[#81D8CF]/90" : "w-12"
+              }`}
+            />
+            <span className="text-[10px] font-bold text-white/45">{open ? "上滑收回" : "下滑展开"}</span>
+          </span>
         </button>
         {stats && (
           <div className={`grid gap-2 px-3 pb-3 pt-1 transition-all duration-300 sm:grid-cols-4 ${open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"}`}>
@@ -170,7 +179,7 @@ export const QuizPage = ({ selectedLevel }: QuizPageProps) => {
   }
 
   return (
-    <div className="mx-auto flex min-h-[520px] max-w-3xl flex-col gap-4 pb-12">
+    <div className="mx-auto flex min-h-[520px] max-w-3xl flex-col gap-4 pb-28 lg:pb-12">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/55">Grammar Review</p>
