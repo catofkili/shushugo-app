@@ -21,6 +21,7 @@ const SETTINGS_KEY = "mn_notification_settings";
 const STUDY_NOTIFICATION_ID = 9101;
 const REVIEW_NOTIFICATION_ID = 9102;
 const ACHIEVEMENT_NOTIFICATION_BASE_ID = 9200;
+const TEST_STUDY_NOTIFICATION_ID = 9301;
 const REMINDER_IDS = [{ id: STUDY_NOTIFICATION_ID }, { id: REVIEW_NOTIFICATION_ID }];
 
 export const defaultReminderSettings: ReminderSettings = {
@@ -113,6 +114,46 @@ export async function syncReminderNotifications(settings: ReminderSettings, requ
 
   const pending = await LocalNotifications.getPending();
   return { permission: permission.display, native: true, pendingCount: pending.notifications.length };
+}
+
+export async function autoSyncReminderNotifications(): Promise<ReminderSyncResult> {
+  const settings = await loadReminderSettings();
+  const status = await checkReminderPermission();
+  if (!status.native || status.permission !== "granted") return status;
+  return syncReminderNotifications(settings, false);
+}
+
+export async function sendStudyReminderTest(): Promise<ReminderSyncResult> {
+  const settings = await loadReminderSettings();
+
+  if (!isNativeNotificationsAvailable()) {
+    return { permission: "granted", native: false, pendingCount: 0 };
+  }
+
+  let permission = await LocalNotifications.checkPermissions();
+  if (permission.display !== "granted") {
+    permission = await LocalNotifications.requestPermissions();
+  }
+  if (permission.display !== "granted") {
+    const pending = await LocalNotifications.getPending();
+    return { permission: permission.display, native: true, pendingCount: pending.notifications.length };
+  }
+
+  await LocalNotifications.cancel({ notifications: [{ id: TEST_STUDY_NOTIFICATION_ID }] });
+  await LocalNotifications.schedule({
+    notifications: [{
+      id: TEST_STUDY_NOTIFICATION_ID,
+      title: "Master 日语学习提醒",
+      body: "测试通知已接通。之后会按你设置的时间提醒学习。",
+      schedule: { at: new Date(Date.now() + 2000) },
+      sound: settings.soundEnabled ? "" : undefined,
+      threadIdentifier: "daily-study",
+      extra: { target: "word", test: true }
+    }]
+  });
+
+  const synced = await syncReminderNotifications(settings, false);
+  return synced;
 }
 
 export async function notifyAchievement(achievement: string): Promise<ReminderSyncResult | null> {

@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, Clock, Volume2 } from "lucide-react";
+import { ArrowLeft, Bell, BellRing, Clock, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   checkReminderPermission,
@@ -6,6 +6,7 @@ import {
   loadReminderSettings,
   ReminderSettings,
   ReminderSyncResult,
+  sendStudyReminderTest,
   syncReminderNotifications
 } from "../lib/notifications";
 
@@ -17,6 +18,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
   const [settings, setSettings] = useState<ReminderSettings>(defaultReminderSettings);
   const [status, setStatus] = useState<ReminderSyncResult | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [message, setMessage] = useState("正在读取通知设置…");
 
   useEffect(() => {
@@ -69,6 +71,28 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
     }
   };
 
+  const testNotification = async () => {
+    setTesting(true);
+    setMessage("正在请求权限并发送测试通知…");
+    try {
+      const result = await sendStudyReminderTest();
+      setStatus(result);
+      if (!result.native) {
+        setMessage("浏览器预览不会发送系统通知，请在 iOS App 真机里测试。");
+      } else if (result.permission === "granted") {
+        setMessage("测试通知已安排，约 2 秒后会出现在通知栏；同时已同步每日学习提醒。");
+      } else if (result.permission === "denied") {
+        setMessage("系统通知权限被拒绝了，请到 iOS 设置里允许 Master 日语发送通知。");
+      } else {
+        setMessage("还没有拿到通知权限，请允许通知后再试。");
+      }
+    } catch {
+      setMessage("测试通知发送失败，请确认系统权限后再试。");
+    } finally {
+      setTesting(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-3xl pb-4">
       <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
@@ -86,6 +110,23 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
       <div className="mb-4">
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">推送通知</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
+          <div className="flex items-center gap-3 border-b border-white/10 p-4">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
+              <BellRing size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-white">通知栏测试</p>
+              <p className="mt-0.5 text-xs text-white/50">请求权限，并立刻发一条学习提醒测试</p>
+            </div>
+            <button
+              onClick={testNotification}
+              disabled={testing || syncing}
+              className="focus-ring shrink-0 rounded-2xl bg-[#81D8CF] px-3 py-2 text-xs font-black !text-[#2f3333] disabled:opacity-50"
+            >
+              {testing ? "发送中" : "测试"}
+            </button>
+          </div>
+
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
               <Bell size={20} />

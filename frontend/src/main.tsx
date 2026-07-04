@@ -7,6 +7,7 @@ import { loadDatabase } from './lib/storage';
 import { initWebViewOptimizer } from './lib/webview-optimizer';
 import { applyTheme } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { autoSyncReminderNotifications } from './lib/notifications';
 
 // 初始化 WebView 优化
 initWebViewOptimizer();
@@ -54,6 +55,9 @@ root.render(
 initDatabase()
   .then(async () => {
     await loadDatabase();
+    autoSyncReminderNotifications().catch((error) => {
+      console.warn('Notification reminder sync skipped:', error);
+    });
     console.log('✅ Database ready');
     root.render(
       <StrictMode>
