@@ -1,8 +1,10 @@
 import { ArrowLeft, Check, Crown, ReceiptText, Shield, Smartphone, User } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { productLabel } from "../lib/entitlements";
 import { clearLocalPasscode, getPasscodeState, setLocalPasscode, type PasscodeState } from "../lib/localPasscode";
+import { getCloudSession, type CloudSession } from "../lib/sync-api";
 
 interface AccountSecurityProps {
   onBack: () => void;
@@ -19,10 +21,15 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
+
   useEffect(() => {
     let alive = true;
     getPasscodeState().then((state) => {
       if (alive) setPasscodeState(state);
+    });
+    getCloudSession().then((session) => {
+      if (alive) setCloudSession(session);
     });
     return () => {
       alive = false;
@@ -99,8 +106,10 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
               <User size={20} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-white/50">用户 ID</p>
-              <p className="mt-1 text-sm font-bold text-white">local-nihongo-0001</p>
+              <p className="text-xs text-white/50">账号</p>
+              <p className="mt-1 truncate text-sm font-bold text-white">
+                {cloudSession.token && cloudSession.email ? cloudSession.email : "本机模式（无需注册）"}
+              </p>
             </div>
           </div>
         </div>
@@ -235,9 +244,9 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
         </div>
       )}
 
-      {/* 登录设备 */}
+      {/* 当前设备 */}
       <div>
-        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">登录设备</p>
+        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">当前设备</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
           <div className="p-4">
             <div className="flex items-center gap-3">
@@ -245,13 +254,11 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
                 <Smartphone size={20} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-white">iPhone 15 Pro</p>
-                <p className="mt-0.5 text-xs text-white/50">当前设备 · iOS 17.5</p>
-                <p className="mt-1 text-xs text-white/40">最后活动：刚刚</p>
+                <p className="text-sm font-bold text-white">
+                  {Capacitor.getPlatform() === "ios" ? "本机（iOS）" : "本机（浏览器）"}
+                </p>
+                <p className="mt-0.5 text-xs text-white/50">学习数据保存在本机，可在设置中导出备份</p>
               </div>
-              <span className="rounded-full bg-[#81D8CF]/20 px-2 py-1 text-xs font-bold text-[#81D8CF]">
-                活跃
-              </span>
             </div>
           </div>
         </div>

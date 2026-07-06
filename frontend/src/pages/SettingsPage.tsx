@@ -8,6 +8,7 @@ import {
   cloudLogin,
   cloudLogout,
   cloudRegister,
+  deleteCloudAccount,
   getCloudSession,
   pullCloudBackup,
   pushCloudBackup,
@@ -106,6 +107,8 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   const [cloudBusy, setCloudBusy] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [resetPanelOpen, setResetPanelOpen] = useState(false);
+  const [deletePanelOpen, setDeletePanelOpen] = useState(false);
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState("");
   const [resetCode, setResetCode] = useState("");
   const [resetNewPassword, setResetNewPassword] = useState("");
   const [dailyGoalInput, setDailyGoalInput] = useState(String(defaultStudyPreferences.dailyGoal));
@@ -376,6 +379,20 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     "已退出云同步账号。"
   );
 
+  const deleteCloud = () => {
+    const confirmed = window.confirm(
+      "确定要永久删除云同步账号吗？\n云端备份、账号信息会立即删除且无法恢复。本机学习数据保留，App Store 购买可通过“恢复购买”重新激活。"
+    );
+    if (!confirmed) return;
+    runCloudAction(async () => {
+      await deleteCloudAccount(deleteAccountPassword);
+      setDeleteAccountPassword("");
+      setDeletePanelOpen(false);
+      setCloudPassword("");
+      return "云同步账号已删除，本机学习数据不受影响。";
+    }, "云同步账号已删除。");
+  };
+
   const totalStorage = storageInfo.database + storageInfo.local + storageInfo.cache;
 
   return (
@@ -569,6 +586,40 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
                   >
                     退出云同步账号
                   </button>
+                  <button
+                    onClick={() => {
+                      setDeletePanelOpen((value) => !value);
+                      setDeleteAccountPassword("");
+                    }}
+                    disabled={cloudBusy}
+                    className="focus-ring rounded-xl border border-red-400/30 px-3 py-2 text-sm font-bold text-red-300/80 hover:bg-red-400/10 disabled:opacity-50 sm:col-span-2"
+                  >
+                    删除云同步账号
+                  </button>
+                  {deletePanelOpen && (
+                    <div className="rounded-2xl border border-red-400/25 bg-[#3c3f3f] p-3 sm:col-span-2">
+                      <p className="text-xs font-bold text-red-300/85">
+                        删除后云端备份和账号信息立即清除且无法恢复；本机学习数据保留，App Store 购买可通过“恢复购买”重新激活。
+                      </p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                        <input
+                          type="password"
+                          value={deleteAccountPassword}
+                          onChange={(event) => setDeleteAccountPassword(event.target.value)}
+                          className="focus-ring rounded-xl border border-white/20 bg-[#464949] px-3 py-2 text-sm text-white placeholder:text-white/40"
+                          placeholder="输入账号密码确认删除"
+                          disabled={cloudBusy}
+                        />
+                        <button
+                          onClick={deleteCloud}
+                          disabled={cloudBusy || deleteAccountPassword.length < 8}
+                          className="focus-ring rounded-xl bg-red-400/85 px-4 py-2 text-sm font-bold text-[#2b2020] hover:bg-red-300 disabled:opacity-50"
+                        >
+                          永久删除
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>

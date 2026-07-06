@@ -109,7 +109,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold text-white">隐私政策和购买说明</span>
-            <span className="mt-0.5 block text-xs text-white/50">上架前会随商品信息继续补充</span>
+            <span className="mt-0.5 block text-xs text-white/50">数据收集、订阅与退款说明</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
         </button>
@@ -121,6 +121,23 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
           内购状态
         </div>
         {message}
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-white/12 bg-[#464949] p-3 text-xs leading-6 text-white/50">
+        <p>
+          月度 / 年度 Pro 为自动续订订阅：除非在当前订阅期结束前至少 24 小时关闭自动续订，
+          订阅会自动续订并从 Apple 账户扣费。可随时在系统「设置 → Apple 账户 → 订阅」中管理或取消。
+          永久 Pro 为一次性买断。购买适用
+          <a
+            href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+            target="_blank"
+            rel="noreferrer"
+            className="focus-ring mx-1 font-bold text-[#81D8CF] underline underline-offset-2"
+          >
+            Apple 标准 EULA
+          </a>
+          条款。
+        </p>
       </div>
     </div>
   );

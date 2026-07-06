@@ -13,8 +13,8 @@ import { autoSyncReminderNotifications } from './lib/notifications';
 // 初始化 WebView 优化
 initWebViewOptimizer();
 
-// 【诊断】量一下安全区到底有没有生效(打到 Xcode 控制台)
-(() => {
+// 【诊断】量一下安全区到底有没有生效(打到 Xcode 控制台);只在开发构建运行。
+if (import.meta.env.DEV) {
   const probe = document.createElement('div');
   probe.style.cssText =
     'position:fixed;top:0;left:0;height:env(safe-area-inset-top);width:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none';
@@ -27,7 +27,7 @@ initWebViewOptimizer();
     );
     probe.remove();
   });
-})();
+}
 
 // 立即应用主题（在渲染前）
 applyTheme();

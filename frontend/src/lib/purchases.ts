@@ -88,7 +88,7 @@ const transactionId = (receipt: any): string | undefined => {
   ) || undefined;
 };
 
-const transactionExpiry = (receipt: any, productId: ProductId): string | undefined => {
+export const transactionExpiry = (receipt: any, productId: ProductId): string | undefined => {
   const items: any[] = [
     ...(Array.isArray(receipt?.collection) ? receipt.collection : []),
     ...(Array.isArray(receipt?.transactions) ? receipt.transactions : [])

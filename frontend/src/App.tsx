@@ -379,6 +379,10 @@ export default function App() {
           feature={paywallFeature}
           onClose={() => setPaywallFeature(undefined)}
           onUnlocked={() => setPaywallFeature(undefined)}
+          onOpenPrivacy={() => {
+            setPaywallFeature(undefined);
+            navigateToPage("privacy-policy");
+          }}
         />
       )}
 

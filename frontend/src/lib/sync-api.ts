@@ -1,6 +1,6 @@
 import { Preferences } from "@capacitor/preferences";
 import { exportDatabase, importDatabase } from "./database";
-import { ProductId, saveEntitlements, type EntitlementState } from "./entitlements";
+import { clearEntitlements, getEntitlements, ProductId, saveEntitlements, type EntitlementState } from "./entitlements";
 import { saveDatabase } from "./storage";
 import { ensureSeedData } from "./study-core";
 
@@ -136,6 +136,25 @@ export async function cloudLogout(): Promise<CloudSession> {
   await Preferences.remove({ key: TOKEN_KEY });
   await Preferences.remove({ key: EMAIL_KEY });
   await Preferences.remove({ key: EMAIL_VERIFIED_KEY });
+  return getCloudSession();
+}
+
+export async function deleteCloudAccount(password: string): Promise<CloudSession> {
+  const { token } = await getCloudSession();
+  if (!token) throw new Error("请先登录云同步账号。");
+  await requestJson("/api/auth/delete-account", {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}` },
+    body: JSON.stringify({ password })
+  });
+  await Preferences.remove({ key: TOKEN_KEY });
+  await Preferences.remove({ key: EMAIL_KEY });
+  await Preferences.remove({ key: EMAIL_VERIFIED_KEY });
+  // 云端权益随账号一起删除;本地缓存的 cloud 来源权益也要回退,
+  // App Store 购买仍可通过"恢复购买"重新激活。
+  if (getEntitlements().source === "cloud") {
+    clearEntitlements();
+  }
   return getCloudSession();
 }
 

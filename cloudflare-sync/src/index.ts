@@ -1,3 +1,9 @@
+import {
+  PRIVACY_POLICY_EFFECTIVE_DATE,
+  PRIVACY_POLICY_SECTIONS,
+  PRIVACY_POLICY_TITLE
+} from "../../frontend/src/lib/privacy-policy-content";
+
 export interface Env {
   DB: D1Database;
   SYNC_DATA: KVNamespace;
@@ -611,6 +617,42 @@ const resetPassword = async (request: Request, env: Env) => {
   return json({ status: "success" });
 };
 
+// App Store Guideline 5.1.1(v):提供账号创建就必须提供 App 内删除账号。
+// 删除是不可逆的:云备份(KV+D1)、权益、会话、验证码全部清除。
+const deleteAccount = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "delete-account", 5, 900);
+  const userId = await requireUser(request, env);
+  const body = await readJson<{ password?: string }>(request);
+
+  const user = await env.DB.prepare(`
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+    FROM users
+    WHERE id = ?
+  `).bind(userId).first<UserRow>();
+  if (!user) return json({ detail: "User not found" }, 404);
+
+  const passwordHash = await hashPassword(String(body.password ?? ""), user.password_salt);
+  if (passwordHash !== user.password_hash) {
+    return json({ detail: "Password is invalid" }, 401);
+  }
+
+  const objects = await env.DB.prepare("SELECT object_key FROM sync_objects WHERE user_id = ?")
+    .bind(userId)
+    .all<{ object_key: string }>();
+  for (const row of objects.results ?? []) {
+    await env.SYNC_DATA.delete(row.object_key);
+  }
+
+  // 显式逐表删除,不依赖 FK 级联配置。purchase_events 一并删除:
+  // 交易记录以 Apple 侧为准,服务端不保留可关联到用户的副本。
+  for (const table of ["sessions", "auth_email_tokens", "sync_objects", "entitlements", "purchase_events"]) {
+    await env.DB.prepare(`DELETE FROM ${table} WHERE user_id = ?`).bind(userId).run();
+  }
+  await env.DB.prepare("DELETE FROM users WHERE id = ?").bind(userId).run();
+
+  return json({ status: "deleted" });
+};
+
 const getEntitlements = async (request: Request, env: Env) => {
   const userId = await requireUser(request, env);
   return json(entitlementPayload(await getEntitlementRow(env, userId)));
@@ -735,6 +777,45 @@ const pullSync = async (request: Request, env: Env) => {
   return json({ db_data: dbData, last_modified: row.last_modified, byte_length: row.byte_length });
 };
 
+const escapeHtml = (value: string) => value
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;");
+
+// 隐私政策公开页,填入 App Store Connect 的 Privacy Policy URL。
+// 内容与 App 内页面共享同一份 privacy-policy-content.ts。
+const privacyPolicyPage = () => {
+  const sectionsHtml = PRIVACY_POLICY_SECTIONS.map((section) => `
+    <section>
+      <h2>${escapeHtml(section.title)}</h2>
+      ${section.body.map((line) => `<p>${escapeHtml(line)}</p>`).join("\n")}
+    </section>
+  `).join("\n");
+  const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(PRIVACY_POLICY_TITLE)}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.75; color: #1c3a34; max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+    h1 { font-size: 26px; margin-bottom: 4px; }
+    h2 { font-size: 18px; margin: 28px 0 8px; color: #16564d; }
+    p { margin: 8px 0; }
+    .date { color: #1f7469; font-weight: 700; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(PRIVACY_POLICY_TITLE)}</h1>
+  <p class="date">生效日期：${escapeHtml(PRIVACY_POLICY_EFFECTIVE_DATE)}</p>
+  ${sectionsHtml}
+</body>
+</html>`;
+  return new Response(html, {
+    headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=3600" }
+  });
+};
+
 const route = async (request: Request, env: Env) => {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders() });
 
@@ -742,6 +823,7 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "GET" && url.pathname === "/") {
     return json({ message: "Master Nihongo Sync API", version: "0.1.0", status: "running" });
   }
+  if (request.method === "GET" && url.pathname === "/privacy") return privacyPolicyPage();
   if (request.method === "POST" && url.pathname === "/api/auth/register") return register(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/login") return login(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/logout") return logout(request, env);
@@ -750,6 +832,7 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/auth/verify-email") return verifyEmail(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/request-password-reset") return requestPasswordReset(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/reset-password") return resetPassword(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/delete-account") return deleteAccount(request, env);
   if (request.method === "GET" && url.pathname === "/api/user/profile") return profile(request, env);
   if (request.method === "GET" && url.pathname === "/api/entitlements") return getEntitlements(request, env);
   if (request.method === "POST" && url.pathname === "/api/purchases/verify") return verifyPurchase(request, env);

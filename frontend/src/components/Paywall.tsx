@@ -8,7 +8,11 @@ interface PaywallProps {
   feature?: FeatureId;
   onClose: () => void;
   onUnlocked?: () => void;
+  onOpenPrivacy?: () => void;
 }
+
+// Apple 标准 EULA(App Store Connect 未配置自定义 EULA 时即适用此条款)
+const APPLE_STANDARD_EULA_URL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
 const featureCopy: Record<FeatureId, { title: string; body: string }> = {
   immersiveGrammar: {
@@ -37,7 +41,7 @@ const benefits = [
   "后续 Pro 功能自动纳入"
 ];
 
-export function Paywall({ feature, onClose, onUnlocked }: PaywallProps) {
+export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: PaywallProps) {
   const entitlements = useEntitlements();
   const [products, setProducts] = useState<StoreProduct[]>(() => getPurchaseRuntime().products);
   const [status, setStatus] = useState(getPurchaseRuntime().message);
@@ -160,11 +164,31 @@ export function Paywall({ feature, onClose, onUnlocked }: PaywallProps) {
           </button>
         )}
 
-        <div className="mt-4 flex items-start gap-2 rounded-2xl border border-white/12 bg-[#81D8CF]/10 p-3 text-xs leading-6 text-white/52">
-          <ShieldCheck size={16} className="mt-0.5 shrink-0 text-[#81D8CF]" />
-          <p>
-            购买会通过 Apple App Store 处理。订阅将按 App Store 规则续订和管理；永久 Pro 为非消耗型项目。正式上架前需要在 App Store Connect 创建同名商品 ID，并提交内购项目审核。
-          </p>
+        <div className="mt-4 space-y-2 rounded-2xl border border-white/12 bg-[#81D8CF]/10 p-3 text-xs leading-6 text-white/52">
+          <div className="flex items-start gap-2">
+            <ShieldCheck size={16} className="mt-0.5 shrink-0 text-[#81D8CF]" />
+            <p>
+              付款将通过你的 Apple 账户完成。月度 / 年度 Pro 为自动续订订阅：除非在当前订阅期结束前至少
+              24 小时关闭自动续订，订阅会按相同价格和周期自动续订，费用在当期结束前 24
+              小时内从 Apple 账户扣除。你可以随时在系统「设置 → Apple 账户 → 订阅」中管理或取消订阅。
+              永久 Pro 为一次性买断，不会自动扣费。
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pl-6">
+            {onOpenPrivacy && (
+              <button onClick={onOpenPrivacy} className="focus-ring font-bold text-[#81D8CF] underline underline-offset-2">
+                隐私政策
+              </button>
+            )}
+            <a
+              href={APPLE_STANDARD_EULA_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="focus-ring font-bold text-[#81D8CF] underline underline-offset-2"
+            >
+              服务条款（EULA）
+            </a>
+          </div>
         </div>
       </section>
     </div>
