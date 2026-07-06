@@ -1,10 +1,24 @@
+import { Capacitor } from '@capacitor/core';
+import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Preferences } from '@capacitor/preferences';
 import { exportDatabase, importDatabase } from './database';
 
+// 旧方案:数据库 base64 后分块存 Capacitor Preferences(iOS 上是 UserDefaults)。
+// UserDefaults 不适合放大数据(整份 plist 常驻内存、每次写整体重写),
+// 现在原生平台改为 Filesystem 单文件 + 三代轮转,这些键只用于一次性迁移。
 const DB_KEY = 'nihongo_db';
 const DB_MANIFEST_KEY = 'nihongo_db_manifest';
 const DB_CHUNK_KEY_PREFIX = 'nihongo_db_chunk_';
 const DB_CHUNK_SIZE = 350_000;
+
+// 原生平台的数据库文件。写入顺序 tmp → (main→prev) → (tmp→main),
+// 任何一步中断都能从 main / tmp / prev 之一恢复出完整数据库。
+const DB_DIRECTORY = Directory.Library;
+const DB_FILE_MAIN = 'masternihongo/nihongo.db';
+const DB_FILE_TMP = 'masternihongo/nihongo.db.tmp';
+const DB_FILE_PREV = 'masternihongo/nihongo.db.prev';
+
+const useNativeFileStorage = () => Capacitor.isNativePlatform();
 
 const bytesToBase64 = (data: Uint8Array): string => {
   let binary = "";
@@ -85,6 +99,73 @@ const loadChunkedDatabase = async (): Promise<string | null> => {
   return base64;
 };
 
+const loadLegacyBase64 = async (): Promise<string | null> => {
+  const chunked = await loadChunkedDatabase().catch(() => null);
+  if (chunked) return chunked;
+  const legacy = await Preferences.get({ key: DB_KEY });
+  return legacy.value ?? null;
+};
+
+const fileExists = async (path: string): Promise<boolean> => {
+  try {
+    await Filesystem.stat({ path, directory: DB_DIRECTORY });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const deleteFileIfExists = async (path: string): Promise<void> => {
+  try {
+    await Filesystem.deleteFile({ path, directory: DB_DIRECTORY });
+  } catch {
+    // 文件不存在时忽略
+  }
+};
+
+const saveFileDatabase = async (base64: string): Promise<void> => {
+  await Filesystem.writeFile({
+    path: DB_FILE_TMP,
+    data: base64,
+    directory: DB_DIRECTORY,
+    recursive: true
+  });
+  if (await fileExists(DB_FILE_MAIN)) {
+    await deleteFileIfExists(DB_FILE_PREV);
+    await Filesystem.rename({
+      from: DB_FILE_MAIN,
+      to: DB_FILE_PREV,
+      directory: DB_DIRECTORY,
+      toDirectory: DB_DIRECTORY
+    });
+  }
+  await Filesystem.rename({
+    from: DB_FILE_TMP,
+    to: DB_FILE_MAIN,
+    directory: DB_DIRECTORY,
+    toDirectory: DB_DIRECTORY
+  });
+};
+
+const loadFileDatabase = async (): Promise<boolean> => {
+  // main 是最新完整版本;tmp 只在"写完但还没轮转完"被中断时存在,
+  // 内容完整且比 main 新;prev 是上一代备份。
+  for (const path of [DB_FILE_MAIN, DB_FILE_TMP, DB_FILE_PREV]) {
+    try {
+      const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY });
+      if (typeof data !== 'string' || !data) continue;
+      await importDatabase(base64ToBytes(data), { validateBackup: true });
+      if (path !== DB_FILE_MAIN) {
+        console.warn(`[storage] 主数据库文件不可用，已从 ${path} 恢复`);
+      }
+      return true;
+    } catch {
+      continue;
+    }
+  }
+  return false;
+};
+
 // 保存数据库到本地存储
 export async function saveDatabase(): Promise<void> {
   try {
@@ -94,9 +175,14 @@ export async function saveDatabase(): Promise<void> {
       return;
     }
 
-    // 转换为 Base64 字符串。分块写入 Preferences，避免单个值过大导致保存失败。
     const base64 = bytesToBase64(data);
-    await saveChunkedDatabase(base64);
+    if (useNativeFileStorage()) {
+      await saveFileDatabase(base64);
+    } else {
+      // 浏览器环境沿用分块 Preferences(底层是 localStorage)。
+      await saveChunkedDatabase(base64);
+    }
+    pendingSave = false;
 
     console.log('✅ Database saved to local storage');
   } catch (error) {
@@ -108,13 +194,24 @@ export async function saveDatabase(): Promise<void> {
 // 从本地存储恢复数据库
 export async function loadDatabase(): Promise<boolean> {
   try {
-    let value = await loadChunkedDatabase();
+    if (useNativeFileStorage()) {
+      if (await loadFileDatabase()) return true;
 
-    if (!value) {
-      const legacy = await Preferences.get({ key: DB_KEY });
-      value = legacy.value;
+      // 从旧的 Preferences 分块存储迁移到文件存储(一次性)。
+      const legacy = await loadLegacyBase64();
+      if (legacy) {
+        await importDatabase(base64ToBytes(legacy));
+        await saveFileDatabase(legacy);
+        await removeChunkedDatabase();
+        await Preferences.remove({ key: DB_KEY });
+        console.log('✅ Database migrated from Preferences to Filesystem');
+        return true;
+      }
+      console.log('No saved database found');
+      return false;
     }
 
+    const value = await loadLegacyBase64();
     if (!value) {
       console.log('No saved database found');
       return false;
@@ -134,6 +231,11 @@ export async function clearStorage(): Promise<void> {
   try {
     await Preferences.remove({ key: DB_KEY });
     await removeChunkedDatabase();
+    if (useNativeFileStorage()) {
+      await deleteFileIfExists(DB_FILE_MAIN);
+      await deleteFileIfExists(DB_FILE_TMP);
+      await deleteFileIfExists(DB_FILE_PREV);
+    }
     console.log('✅ Local storage cleared');
   } catch (error) {
     console.error('❌ Failed to clear storage:', error);
@@ -143,13 +245,42 @@ export async function clearStorage(): Promise<void> {
 
 // 自动保存功能（每次提交答案后调用）
 let autoSaveTimer: NodeJS.Timeout | null = null;
+let pendingSave = false;
 
 export function scheduleSave(delayMs: number = 2000): void {
   if (autoSaveTimer) {
     clearTimeout(autoSaveTimer);
   }
 
+  pendingSave = true;
   autoSaveTimer = setTimeout(() => {
+    autoSaveTimer = null;
     saveDatabase().catch(console.error);
   }, delayMs);
+}
+
+// 立即写盘(仅当有待保存的改动时),用于 App 退到后台/页面隐藏时兜底,
+// 避免 2 秒 debounce 窗口内被杀掉丢进度。
+export async function flushPendingSave(): Promise<void> {
+  if (!pendingSave) return;
+  if (autoSaveTimer) {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = null;
+  }
+  await saveDatabase().catch(console.error);
+}
+
+let lifecycleRegistered = false;
+
+export function registerPersistenceLifecycle(): void {
+  if (lifecycleRegistered) return;
+  lifecycleRegistered = true;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      void flushPendingSave();
+    }
+  });
+  window.addEventListener('pagehide', () => {
+    void flushPendingSave();
+  });
 }

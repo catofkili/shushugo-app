@@ -88,6 +88,18 @@ const transactionId = (receipt: any): string | undefined => {
   ) || undefined;
 };
 
+const transactionExpiry = (receipt: any, productId: ProductId): string | undefined => {
+  const items: any[] = [
+    ...(Array.isArray(receipt?.collection) ? receipt.collection : []),
+    ...(Array.isArray(receipt?.transactions) ? receipt.transactions : [])
+  ];
+  const matched = items.find((item) => item?.id === productId || item?.productId === productId);
+  const raw = matched?.expiryDate ?? items[0]?.expiryDate ?? receipt?.expiryDate;
+  if (!raw) return undefined;
+  const parsed = raw instanceof Date ? raw : new Date(typeof raw === "number" ? raw : String(raw));
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+};
+
 export async function initializePurchases(): Promise<PurchaseRuntime> {
   if (!isStoreAvailable()) {
     runtime = {
@@ -116,7 +128,12 @@ export async function initializePurchases(): Promise<PurchaseRuntime> {
       store.when().verified((receipt: any) => {
         const productId = transactionProductId(receipt);
         if (productId && STORE_PRODUCTS.some((product) => product.id === productId)) {
-          grantPro(productId as ProductId, "storekit");
+          // 订阅要带上过期时间,否则取消续订后本地 Pro 永不过期;
+          // 买断制(lifetime)没有过期时间。
+          const expiresAt = productId === "master_pro_lifetime"
+            ? undefined
+            : transactionExpiry(receipt, productId as ProductId);
+          grantPro(productId as ProductId, "storekit", expiresAt);
           const id = transactionId(receipt);
           if (id) {
             verifyCloudPurchase(productId, id).catch(() => undefined);

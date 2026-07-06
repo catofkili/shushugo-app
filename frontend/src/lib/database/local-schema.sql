@@ -79,3 +79,14 @@ CREATE TABLE IF NOT EXISTS grammar_mistakes (
   resolved_on TEXT,
   FOREIGN KEY(grammar_id) REFERENCES grammar_points(id)
 );
+
+CREATE TABLE IF NOT EXISTS moji_migrated_reviews (
+  word_id INTEGER PRIMARY KEY,
+  imported_on TEXT NOT NULL,
+  priority REAL NOT NULL DEFAULT 0,
+  activated_on TEXT,
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_moji_migrated_reviews_activation
+  ON moji_migrated_reviews(activated_on, priority);

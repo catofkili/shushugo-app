@@ -2,6 +2,7 @@ import { Preferences } from "@capacitor/preferences";
 import { exportDatabase, importDatabase } from "./database";
 import { ProductId, saveEntitlements, type EntitlementState } from "./entitlements";
 import { saveDatabase } from "./storage";
+import { ensureSeedData } from "./study-core";
 
 export interface CloudSession {
   configured: boolean;
@@ -220,7 +221,10 @@ export async function pullCloudBackup(): Promise<string> {
     method: "GET",
     headers: { authorization: `Bearer ${token}` }
   });
-  await importDatabase(base64ToBytes(data.db_data));
+  // 校验云端 blob 是本 App 的数据库,防止损坏数据覆盖本地进度;
+  // 恢复的备份可能来自旧版本,需要重跑种子迁移。
+  await importDatabase(base64ToBytes(data.db_data), { validateBackup: true });
+  await ensureSeedData();
   await saveDatabase();
   return `已恢复云端备份：${new Date(data.last_modified).toLocaleString()}`;
 }

@@ -10,7 +10,6 @@ import {
   DAILY_DECAY_FLOOR,
   daysSince,
   DbRow,
-  ensureJlptWordSeed,
   ensureUserTables,
   firstRow,
   firstValue,
@@ -99,8 +98,8 @@ const hasWordFilter = (options: WordSessionOptions = {}) => (
 
 export const ensureProgressInitialized = () => {
   const db = getDatabase();
+  // 种子数据迁移已在启动时(main.tsx 的 ensureSeedData)完成。
   ensureUserTables();
-  ensureJlptWordSeed();
   db.run(`
     INSERT OR IGNORE INTO progress (word_id)
     SELECT id FROM words

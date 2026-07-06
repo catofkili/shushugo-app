@@ -4,6 +4,21 @@ import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 let db: Database | null = null;
 let initPromise: Promise<Database> | null = null;
 
+const REQUIRED_BACKUP_TABLES = ["words", "progress", "app_state"];
+
+const validateAppDatabase = (candidate: Database): void => {
+  const placeholders = REQUIRED_BACKUP_TABLES.map(() => "?").join(", ");
+  const result = candidate.exec(
+    `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${placeholders})`,
+    REQUIRED_BACKUP_TABLES
+  );
+  const names = new Set(result[0]?.values.map((row) => String(row[0])) ?? []);
+  const missing = REQUIRED_BACKUP_TABLES.filter((table) => !names.has(table));
+  if (missing.length) {
+    throw new Error(`Invalid Master Nihongo backup. Missing tables: ${missing.join(", ")}`);
+  }
+};
+
 export async function initDatabase(): Promise<Database> {
   if (db) return db;
   if (initPromise) return initPromise;
@@ -49,10 +64,14 @@ export function exportDatabase(): Uint8Array | null {
 }
 
 // 从文件恢复数据库（用于恢复学习进度）
-export async function importDatabase(data: Uint8Array): Promise<void> {
+export async function importDatabase(data: Uint8Array, options: { validateBackup?: boolean } = {}): Promise<void> {
   const SQL = await initSqlJs({
     locateFile: () => wasmUrl,
   });
-  db = new SQL.Database(data);
+  const imported = new SQL.Database(data);
+  if (options.validateBackup) {
+    validateAppDatabase(imported);
+  }
+  db = imported;
   console.log('✅ Database imported');
 }

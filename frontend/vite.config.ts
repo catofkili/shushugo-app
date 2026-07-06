@@ -1,18 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { viteStaticCopy } from "vite-plugin-static-copy";
 
+// sql-wasm.wasm 由 database.ts 的 `?url` import 交给 Vite 打包(带内容哈希),
+// 不需要再静态拷贝一份到 assets/node_modules/。
 export default defineConfig({
   plugins: [
     react(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: "node_modules/sql.js/dist/sql-wasm.wasm",
-          dest: "assets",
-        },
-      ],
-    }),
   ],
   build: {
     outDir: "dist",

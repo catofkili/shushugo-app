@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
 import { initDatabase } from './lib/database';
-import { loadDatabase } from './lib/storage';
+import { loadDatabase, registerPersistenceLifecycle } from './lib/storage';
+import { ensureSeedData } from './lib/study-core';
 import { initWebViewOptimizer } from './lib/webview-optimizer';
 import { applyTheme } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -52,9 +53,15 @@ root.render(
   </StrictMode>
 );
 
-initDatabase()
-  .then(async () => {
-    await loadDatabase();
+(async () => {
+    // 有本地存档就直接用,跳过 6.5MB 出厂词库的 fetch + 解析;
+    // 没有(首次启动/存档损坏)才加载出厂库。
+    const restored = await loadDatabase();
+    if (!restored) {
+      await initDatabase();
+    }
+    await ensureSeedData();
+    registerPersistenceLifecycle();
     autoSyncReminderNotifications().catch((error) => {
       console.warn('Notification reminder sync skipped:', error);
     });
@@ -66,7 +73,7 @@ initDatabase()
         </ErrorBoundary>
       </StrictMode>
     );
-  })
+  })()
   .catch((error) => {
     console.error('❌ Failed to initialize database:', error);
     root.render(

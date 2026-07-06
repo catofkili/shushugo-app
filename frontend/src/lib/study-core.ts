@@ -1,6 +1,4 @@
 import { getDatabase } from "./database";
-import jlptWordSeedPayload from "../data/jlpt_words_seed.json";
-import grammarSeedPayload from "../data/grammar_seed.json";
 import type { WordAnswer } from "../types/vocabulary";
 import type { FavoriteType, StudyAnswer } from "./study-types";
 import { ensureLocalSchema } from "./database/schema";
@@ -54,6 +52,24 @@ type GrammarSeedRow = [
 export const CRITICAL_SCORE = -20;
 export const DAILY_DECAY_FLOOR = -9;
 
+const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
+// Keep this aligned with the metadata already baked into public/nihongo.db so
+// a fresh install does not replay all 11k metadata updates on first launch.
+const JLPT_WORD_METADATA_VERSION = "2026-06-24-noun-suru-pos-fix";
+// 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
+// 不匹配需要迁移时才动态加载,避免打进主 bundle。
+const GRAMMAR_SEED_VERSION = "2026-06-25-pdf-n1-n5-connection-fix";
+
+const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
+  const payload = await import("../data/jlpt_words_seed.json");
+  return payload.default as unknown as JlptWordSeedRow[];
+};
+
+const loadGrammarSeed = async (): Promise<{ version: string; rows: GrammarSeedRow[] }> => {
+  const payload = await import("../data/grammar_seed.json");
+  return payload.default as unknown as { version: string; rows: GrammarSeedRow[] };
+};
+
 export const ensureUserTables = () => {
   const db = getDatabase();
   ensureLocalSchema();
@@ -63,7 +79,14 @@ export const ensureUserTables = () => {
   }
   db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
   db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
-  ensureGrammarSeed();
+};
+
+// 启动时(App 渲染前)调用一次,完成建表与所有种子数据迁移。
+// 之后同步路径里的 ensureUserTables 只做廉价的建表/索引检查。
+export const ensureSeedData = async () => {
+  ensureUserTables();
+  await ensureGrammarSeed();
+  await ensureJlptWordSeed();
 };
 
 export const isFavorite = (type: FavoriteType, id: string | number) => {
@@ -75,47 +98,78 @@ export const isFavorite = (type: FavoriteType, id: string | number) => {
   ));
 };
 
-const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
-// Keep this aligned with the metadata already baked into public/nihongo.db so
-// a fresh install does not replay all 11k metadata updates on first launch.
-const JLPT_WORD_METADATA_VERSION = "2026-06-24-noun-suru-pos-fix";
-const jlptWordSeed = jlptWordSeedPayload as unknown as JlptWordSeedRow[];
-const grammarSeed = grammarSeedPayload as { version: string; rows: GrammarSeedRow[] };
+const GRAMMAR_PROGRESS_TABLES = ["grammar_progress", "grammar_reviews", "grammar_mistakes"] as const;
+// 迁移期间把旧 grammar_id 挪出正常取值范围,避免新旧 id 数值重叠时串数据。
+const GRAMMAR_ID_OFFSET = 1_000_000;
 
-const ensureGrammarSeed = () => {
+const ensureGrammarSeed = async () => {
   const db = getDatabase();
   const grammarVersion = firstValue<string>("SELECT value FROM grammar_state WHERE key = ?", ["dataset_version"], "");
-  if (grammarVersion === grammarSeed.version) return;
+  if (grammarVersion === GRAMMAR_SEED_VERSION) return;
 
-  const existingGrammarCount = firstValue<number>("SELECT COUNT(*) FROM grammar_points", [], 0);
-  if (existingGrammarCount > 0) {
-    db.run(`
-      INSERT INTO grammar_points_archive (
-        dataset_version, id, pattern, meaning, prompt, formation,
-        example_jp, example_meaning, notes, confusions, level,
-        importance, sort_order
-      )
-      SELECT ?, id, pattern, meaning, prompt, formation, example_jp,
-        example_meaning, notes, confusions, level, importance, sort_order
-      FROM grammar_points
-    `, [grammarVersion || "legacy-before-pdf-n4"]);
+  const grammarSeed = await loadGrammarSeed();
+  if (grammarSeed.version === grammarVersion) {
+    console.warn(`GRAMMAR_SEED_VERSION 常量(${GRAMMAR_SEED_VERSION})落后于 grammar_seed.json(${grammarSeed.version}),请更新常量。`);
+    return;
   }
 
-  db.run("DELETE FROM grammar_mistakes");
-  db.run("DELETE FROM grammar_reviews");
-  db.run("DELETE FROM grammar_progress");
-  db.run("DELETE FROM grammar_points");
-  grammarSeed.rows.forEach((row, index) => {
-    db.run(`
-      INSERT INTO grammar_points (
-        pattern, meaning, prompt, formation, example_jp, example_meaning,
-        notes, confusions, level, importance, sort_order
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [...row, index + 1]);
-  });
-  db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["queue", "[]"]);
-  db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["dataset_version", grammarSeed.version]);
+  db.run("BEGIN TRANSACTION");
+  try {
+    const oldIdByPattern = new Map<string, number>();
+    rowsFor("SELECT id, pattern FROM grammar_points").forEach((row) => {
+      oldIdByPattern.set(String(row.pattern ?? ""), Number(row.id));
+    });
+
+    if (oldIdByPattern.size > 0) {
+      db.run(`
+        INSERT INTO grammar_points_archive (
+          dataset_version, id, pattern, meaning, prompt, formation,
+          example_jp, example_meaning, notes, confusions, level,
+          importance, sort_order
+        )
+        SELECT ?, id, pattern, meaning, prompt, formation, example_jp,
+          example_meaning, notes, confusions, level, importance, sort_order
+        FROM grammar_points
+      `, [grammarVersion || "legacy-before-pdf-n4"]);
+    }
+
+    db.run("DELETE FROM grammar_points");
+    const newIdByPattern = new Map<string, number>();
+    grammarSeed.rows.forEach((row, index) => {
+      db.run(`
+        INSERT INTO grammar_points (
+          pattern, meaning, prompt, formation, example_jp, example_meaning,
+          notes, confusions, level, importance, sort_order
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [...row, index + 1]);
+      newIdByPattern.set(row[0], firstValue<number>("SELECT last_insert_rowid()", [], 0));
+    });
+
+    // 按 pattern 把用户的语法进度/复习记录/错题迁移到新 id;只清掉新版本里
+    // 已经不存在的语法点,而不是整体清空。
+    GRAMMAR_PROGRESS_TABLES.forEach((table) => {
+      db.run(`UPDATE ${table} SET grammar_id = grammar_id + ${GRAMMAR_ID_OFFSET}`);
+    });
+    oldIdByPattern.forEach((oldId, pattern) => {
+      const newId = newIdByPattern.get(pattern);
+      if (!newId) return;
+      GRAMMAR_PROGRESS_TABLES.forEach((table) => {
+        db.run(`UPDATE ${table} SET grammar_id = ? WHERE grammar_id = ?`, [newId, oldId + GRAMMAR_ID_OFFSET]);
+      });
+    });
+    GRAMMAR_PROGRESS_TABLES.forEach((table) => {
+      db.run(`DELETE FROM ${table} WHERE grammar_id >= ${GRAMMAR_ID_OFFSET}`);
+    });
+
+    db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["queue", "[]"]);
+    db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["dataset_version", grammarSeed.version]);
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+  persistSoon();
 };
 
 const nounSuruCorrections: [string, string][] = [
@@ -194,7 +248,7 @@ const nounSuruCorrections: [string, string][] = [
   ["看病", "かんびょう"]
 ];
 
-const syncJlptWordMetadata = () => {
+const syncJlptWordMetadata = (jlptWordSeed: JlptWordSeedRow[]) => {
   const db = getDatabase();
   jlptWordSeed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel]) => {
     db.run(`
@@ -233,12 +287,13 @@ const syncJlptWordMetadata = () => {
   setState("jlpt_word_metadata_version", JLPT_WORD_METADATA_VERSION);
 };
 
-const ensureJlptWordMetadata = () => {
+const ensureJlptWordMetadata = async () => {
   if (getState("jlpt_word_metadata_version", "") === JLPT_WORD_METADATA_VERSION) return;
+  const jlptWordSeed = await loadJlptWordSeed();
   const db = getDatabase();
   db.run("BEGIN TRANSACTION");
   try {
-    syncJlptWordMetadata();
+    syncJlptWordMetadata(jlptWordSeed);
     db.run("COMMIT");
   } catch (error) {
     db.run("ROLLBACK");
@@ -247,10 +302,9 @@ const ensureJlptWordMetadata = () => {
   persistSoon();
 };
 
-export const ensureJlptWordSeed = () => {
-  ensureUserTables();
+const ensureJlptWordSeed = async () => {
   if (getState("jlpt_seed_version", "") === JLPT_SEED_VERSION) {
-    ensureJlptWordMetadata();
+    await ensureJlptWordMetadata();
     return;
   }
   const total = firstValue<number>("SELECT COUNT(*) FROM words", [], 0);
@@ -260,11 +314,13 @@ export const ensureJlptWordSeed = () => {
     0
   ) >= 10000;
   if (total >= 10000 && hasEnoughLevels) {
-    ensureJlptWordMetadata();
+    await ensureJlptWordMetadata();
     setState("jlpt_seed_version", JLPT_SEED_VERSION);
+    persistSoon();
     return;
   }
 
+  const jlptWordSeed = await loadJlptWordSeed();
   const db = getDatabase();
   const existing = new Map<string, number>();
   rowsFor("SELECT id, kanji, kana FROM words").forEach((row) => {
@@ -296,7 +352,7 @@ export const ensureJlptWordSeed = () => {
       existing.set(key, newId);
     });
     db.run("INSERT OR IGNORE INTO progress (word_id) SELECT id FROM words");
-    syncJlptWordMetadata();
+    syncJlptWordMetadata(jlptWordSeed);
     setState("jlpt_seed_version", JLPT_SEED_VERSION);
     db.run("COMMIT");
   } catch (error) {
