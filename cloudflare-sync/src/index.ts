@@ -55,6 +55,12 @@ const TOKEN_TTL_DAYS = 30;
 const PASSWORD_ITERATIONS = 120_000;
 const EMAIL_CODE_TTL_MINUTES = 30;
 const PASSWORD_RESET_TTL_MINUTES = 15;
+// 6 位数字验证码,必须限制尝试次数,否则可被暴力枚举。
+const MAX_CODE_ATTEMPTS = 5;
+// KV 单值上限 25MB;base64 后 20M 约对应 15MB 数据库,词库全量也远小于此。
+const SYNC_MAX_BASE64_LENGTH = 20_000_000;
+// 每个用户只保留最近 N 份云备份,旧的连 KV 对象一起清掉。
+const SYNC_KEEP_GENERATIONS = 3;
 const encoder = new TextEncoder();
 
 const json = (body: unknown, status = 200) => (
@@ -136,6 +142,26 @@ const randomEmailCode = () => {
   crypto.getRandomValues(bytes);
   const value = new DataView(bytes.buffer).getUint32(0);
   return String(value % 1_000_000).padStart(6, "0");
+};
+
+const clientIp = (request: Request) => request.headers.get("cf-connecting-ip") ?? "unknown";
+
+// KV 计数不是原子的,只能做粗粒度限速;对登录爆破和验证码枚举已经足够。
+// 复用 SYNC_DATA 命名空间,rl: 前缀不会与 sync 对象键(userId/uuid.base64)冲突。
+const rateLimit = async (
+  env: Env,
+  request: Request,
+  scope: string,
+  limit: number,
+  windowSeconds: number
+) => {
+  const windowIndex = Math.floor(Date.now() / (windowSeconds * 1000));
+  const key = `rl:${scope}:${clientIp(request)}:${windowIndex}`;
+  const count = Number(await env.SYNC_DATA.get(key)) || 0;
+  if (count >= limit) {
+    throw json({ detail: "请求过于频繁，请稍后再试。" }, 429);
+  }
+  await env.SYNC_DATA.put(key, String(count + 1), { expirationTtl: Math.max(60, windowSeconds) });
 };
 
 const readJson = async <T>(request: Request): Promise<T> => {
@@ -232,16 +258,26 @@ const verifyEmailToken = async (
   purpose: "verify_email" | "password_reset",
   code: string
 ) => {
-  const tokenHash = await sha256(code.trim());
   const row = await env.DB.prepare(`
-    SELECT id, expires_at
+    SELECT id, token_hash, expires_at, attempts
     FROM auth_email_tokens
-    WHERE user_id = ? AND purpose = ? AND token_hash = ? AND used_at IS NULL
+    WHERE user_id = ? AND purpose = ? AND used_at IS NULL
     ORDER BY created_at DESC
     LIMIT 1
-  `).bind(userId, purpose, tokenHash).first<{ id: string; expires_at: string }>();
+  `).bind(userId, purpose).first<{ id: string; token_hash: string; expires_at: string; attempts: number }>();
 
   if (!row || Date.parse(row.expires_at) <= Date.now()) {
+    return null;
+  }
+  if (row.attempts >= MAX_CODE_ATTEMPTS) {
+    return null;
+  }
+
+  const tokenHash = await sha256(code.trim());
+  if (tokenHash !== row.token_hash) {
+    await env.DB.prepare("UPDATE auth_email_tokens SET attempts = attempts + 1 WHERE id = ?")
+      .bind(row.id)
+      .run();
     return null;
   }
 
@@ -379,6 +415,7 @@ const requireUser = async (request: Request, env: Env) => {
 };
 
 const register = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "register", 5, 3600);
   const body = await readJson<{ email?: string; password?: string; display_name?: string }>(request);
   const email = normalizeEmail(body.email);
   const password = String(body.password ?? "");
@@ -417,6 +454,7 @@ const register = async (request: Request, env: Env) => {
 };
 
 const login = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "login", 10, 300);
   const body = await readJson<{ email?: string; password?: string }>(request);
   const email = normalizeEmail(body.email);
   const password = String(body.password ?? "");
@@ -486,6 +524,7 @@ const changePassword = async (request: Request, env: Env) => {
 };
 
 const sendVerificationEmail = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "send-code", 5, 900);
   const userId = await requireUser(request, env);
   const user = await env.DB.prepare(`
     SELECT id, email, password_hash, password_salt, display_name, email_verified_at
@@ -506,6 +545,7 @@ const sendVerificationEmail = async (request: Request, env: Env) => {
 };
 
 const verifyEmail = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "verify-email", 10, 900);
   const userId = await requireUser(request, env);
   const body = await readJson<{ code?: string }>(request);
   const code = String(body.code ?? "").trim();
@@ -521,6 +561,7 @@ const verifyEmail = async (request: Request, env: Env) => {
 };
 
 const requestPasswordReset = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "pwreset-request", 5, 900);
   const body = await readJson<{ email?: string }>(request);
   const email = normalizeEmail(body.email);
   const user = await env.DB.prepare(`
@@ -543,6 +584,7 @@ const requestPasswordReset = async (request: Request, env: Env) => {
 };
 
 const resetPassword = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "pwreset-verify", 10, 900);
   const body = await readJson<{ email?: string; code?: string; new_password?: string }>(request);
   const email = normalizeEmail(body.email);
   const code = String(body.code ?? "").trim();
@@ -647,6 +689,9 @@ const pushSync = async (request: Request, env: Env) => {
   const dbData = String(body.db_data ?? "");
   const lastModified = String(body.last_modified ?? new Date().toISOString());
   if (!dbData) return json({ detail: "db_data is required" }, 400);
+  if (dbData.length > SYNC_MAX_BASE64_LENGTH) {
+    return json({ detail: "Backup is too large" }, 413);
+  }
 
   const now = new Date().toISOString();
   const id = crypto.randomUUID();
@@ -657,6 +702,19 @@ const pushSync = async (request: Request, env: Env) => {
     INSERT INTO sync_objects (id, user_id, object_key, last_modified, created_at, byte_length)
     VALUES (?, ?, ?, ?, ?, ?)
   `).bind(id, userId, objectKey, lastModified, now, dbData.length).run();
+
+  // 只保留最近几代备份,旧的连同 KV 对象一起清理,避免存储无限增长。
+  const stale = await env.DB.prepare(`
+    SELECT id, object_key
+    FROM sync_objects
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+    LIMIT -1 OFFSET ?
+  `).bind(userId, SYNC_KEEP_GENERATIONS).all<{ id: string; object_key: string }>();
+  for (const row of stale.results ?? []) {
+    await env.SYNC_DATA.delete(row.object_key);
+    await env.DB.prepare("DELETE FROM sync_objects WHERE id = ?").bind(row.id).run();
+  }
 
   return json({ status: "success", message: "Sync data uploaded", timestamp: now });
 };
