@@ -80,6 +80,13 @@ CREATE TABLE IF NOT EXISTS grammar_mistakes (
   FOREIGN KEY(grammar_id) REFERENCES grammar_points(id)
 );
 
+CREATE TABLE IF NOT EXISTS word_notes (
+  word_id INTEGER PRIMARY KEY,
+  note TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);
+
 CREATE TABLE IF NOT EXISTS moji_migrated_reviews (
   word_id INTEGER PRIMARY KEY,
   imported_on TEXT NOT NULL,

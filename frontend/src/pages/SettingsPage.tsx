@@ -26,6 +26,7 @@ import {
   ThemePreference
 } from "../lib/studyPreferences";
 import { getDatabase } from "../lib/database";
+import { importExternalWordList, previewExternalWordList } from "../lib/word-list-import";
 
 interface GoalEstimationProps {
   dailyGoal: number;
@@ -112,7 +113,8 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   const [clearRequiresPasscode, setClearRequiresPasscode] = useState(false);
   const [clearCredential, setClearCredential] = useState("");
   const [clearingData, setClearingData] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const backupInputRef = useRef<HTMLInputElement | null>(null);
+  const wordListInputRef = useRef<HTMLInputElement | null>(null);
 
   const formatBytes = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -195,12 +197,58 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     if (!file) return;
     try {
       const buffer = await file.arrayBuffer();
-      await importDatabase(new Uint8Array(buffer));
+      await importDatabase(new Uint8Array(buffer), { validateBackup: true });
       await saveDatabase();
       notify("学习数据已恢复，页面即将刷新。");
       window.setTimeout(() => window.location.reload(), 900);
     } catch {
       notify("导入失败，请确认文件是 Master Nihongo 备份。");
+    } finally {
+      if (backupInputRef.current) backupInputRef.current.value = "";
+    }
+  };
+
+  const importWordList = async (file: File | null) => {
+    if (!file) return;
+    try {
+      if (/\.realm$/i.test(file.name)) {
+        notify("已找到词库数据库 FavDB.realm；这个文件证明位置对了，但请在同一目录或最近项目里选择导出的词单文本文件。");
+        return;
+      }
+      const text = await file.text();
+      if (/class_DB_ReciteTestRecord|class_DB_Fav|FavDB\.realm/.test(text.slice(0, 20000))) {
+        notify("已找到词库数据库 FavDB.realm；它不是可直接导入的词单文本，请选择同位置生成的词单文件。");
+        return;
+      }
+      const preview = previewExternalWordList(text);
+      if (preview.validRows === 0) {
+        notify("没有识别到可导入的词条，请确认文件包含日文单词。");
+        return;
+      }
+
+      const sampleText = preview.samples
+        .slice(0, 3)
+        .map((item) => `${item.kanji}${item.kana !== item.kanji ? `（${item.kana}）` : ""}`)
+        .join("、");
+      const confirmed = window.confirm(
+        [
+          `识别到 ${preview.validRows} 个词条。`,
+          preview.duplicateRows ? `文件内重复 ${preview.duplicateRows} 行会自动跳过。` : "",
+          preview.skippedRows ? `另有 ${preview.skippedRows} 行未识别。` : "",
+          sampleText ? `示例：${sampleText}` : "",
+          "导入会追加新词，并把带记忆信息的生词分批放入复习，不会覆盖整份数据库。"
+        ].filter(Boolean).join("\n")
+      );
+      if (!confirmed) return;
+
+      const result = importExternalWordList(text);
+      await saveDatabase();
+      refreshStorageInfo();
+      notify(`词单已导入：新增 ${result.inserted}，更新 ${result.updated}，待复习 ${result.queuedForReview}。`);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "词单导入失败，请换 CSV、TSV、JSON 或文本文件。");
+    } finally {
+      if (wordListInputRef.current) wordListInputRef.current.value = "";
     }
   };
 
@@ -601,18 +649,48 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
             <ChevronRight size={17} className="text-white/40" />
           </button>
 
-          <button onClick={() => fileInputRef.current?.click()} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">
+          <button onClick={() => wordListInputRef.current?.click()} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/16 text-[#81D8CF]">
               <Upload size={19} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">导入学习数据</p>
-              <p className="mt-0.5 text-xs text-white/50">从文件恢复进度</p>
+              <p className="text-sm font-bold text-white">导入词单</p>
+              <p className="mt-0.5 text-xs text-white/50">先生成完整词单，再选择同目录里的导出文件</p>
             </div>
             <ChevronRight size={17} className="text-white/40" />
           </button>
           <input
-            ref={fileInputRef}
+            ref={wordListInputRef}
+            type="file"
+            className="hidden"
+            onChange={(event) => importWordList(event.target.files?.[0] ?? null)}
+          />
+
+          <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3 text-xs leading-5 text-white/58">
+            <p className="font-bold text-white/72">找不到文件时，按这个顺序来：</p>
+            <ol className="mt-2 list-decimal space-y-1 pl-4">
+              <li>先打开原来的词典/背词工具，进入背词复习页，滑到最底部，等完整词单生成。</li>
+              <li>不要关闭那个页面，直接切回本应用，点“导入词单”。</li>
+              <li>在文件选择器里点“浏览”→“我的 iPhone”→“MOJi辞書”（有些系统显示 MOJiDict）。</li>
+              <li>继续进入一串账号文件夹，例如 k515cVWkKq，再进入 zh-CN_ja。</li>
+              <li>看到 FavDB.realm 就说明找对词库目录了；不要选它，改选同目录或“最近项目”里新生成的词单文件。</li>
+              <li>可导入的词单通常是 CSV、JSON、TXT、TSV，或没有明显后缀；.db 是本应用备份，不属于词单导入。</li>
+            </ol>
+            <p className="mt-2 text-white/45">如果关闭原工具后文件消失，需要回去重新滑到底部生成一次。导入会追加词条，不会覆盖本机数据库。</p>
+          </div>
+
+          <button onClick={() => backupInputRef.current?.click()} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/16 text-[#81D8CF]">
+              <Upload size={19} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-white">恢复备份</p>
+              <p className="mt-0.5 text-xs text-white/50">选择本应用导出的 .db 文件，会覆盖本机进度</p>
+            </div>
+            <ChevronRight size={17} className="text-white/40" />
+          </button>
+          <input
+            ref={backupInputRef}
             type="file"
             accept=".db,application/octet-stream"
             className="hidden"
