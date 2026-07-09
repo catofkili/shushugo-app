@@ -31,6 +31,8 @@ const verbPairHints = Object.fromEntries(
 ) as Record<string, VerbPairHint>;
 
 const englishOrigins = englishOriginPayload as Record<string, string>;
+const latinPattern = /[A-Za-zＡ-Ｚａ-ｚ]+/g;
+const cjkPattern = /[\u3400-\u9fff]/;
 
 function englishOrigin(kanji: string, kana: string, meaning: string): string {
   if (!/[\u30a0-\u30ff]/.test(`${kanji}${kana}`)) return "";
@@ -44,14 +46,55 @@ function englishOrigin(kanji: string, kana: string, meaning: string): string {
   return meaning.match(/[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*/)?.[0]?.replace(/[ .;,-]+$/, "") ?? "";
 }
 
-function questionMeaning(meaning: string): string {
-  return meaning
-    .replace(/[A-Za-zＡ-Ｚａ-ｚ]{3,}(?:[ ./'-]+[A-Za-zＡ-Ｚａ-ｚ]+)*/g, "")
-    .replace(/[A-Za-zＡ-Ｚａ-ｚ]{1,2}(?![一-鿿぀-ヿ])/g, "")
+function isUpperAcronym(text: string): boolean {
+  const asciiText = text.replace(/[Ａ-Ｚ]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xfee0));
+  return asciiText.length >= 2 && asciiText.length <= 4 && asciiText === asciiText.toUpperCase();
+}
+
+function hasUpperLatin(text: string): boolean {
+  return /[A-ZＡ-Ｚ]/.test(text);
+}
+
+function stripLatinGlosses(text: string): string {
+  return text.replace(latinPattern, (token, offset, source) => {
+    const prev = offset > 0 ? source[offset - 1] : "";
+    const next = offset + token.length < source.length ? source[offset + token.length] : "";
+    if (token.length <= 4 && hasUpperLatin(token) && cjkPattern.test(`${prev}${next}`)) return token;
+    if (isUpperAcronym(token)) return token;
+    return "";
+  });
+}
+
+// 「ハンカチーフ」的省略 / トイレット的缩略 这类"源词注记":
+// 括号内是假名/英文时,在问题面会漏答案;英文被剥离后还会留下「」的省略 残骸。
+// 整个短语删除;括号内是纯中文(如 "星期一"的省略)时保留,那是释义本身。
+const ABBREV_TAIL = /(?:的|之)\s*(?:省略|縮略|缩略|简称|簡称|略称|略語|略语|縮写|缩写)(?:语|語|词|詞)?/;
+const abbrevBracketPattern = new RegExp(
+  `[「『“”"]([^」』“”"]*)[」』“”"]\\s*${ABBREV_TAIL.source}`,
+  "g"
+);
+const abbrevKanaPattern = new RegExp(`[ぁ-ゟァ-ヿー・]+\\s*${ABBREV_TAIL.source}`, "g");
+const abbrevOrphanPattern = new RegExp(`(^|[。．；;，,、\\s])\\s*${ABBREV_TAIL.source}`, "g");
+
+function stripAbbreviationNotes(text: string): string {
+  return text
+    .replace(abbrevBracketPattern, (match, inner: string) => (
+      // 纯中文内容(不含假名)是有效释义,保留;假名/英文/空内容整体删除
+      /[㐀-鿿]/.test(inner) && !/[ぁ-ゟァ-ヿ]/.test(inner) ? match : ""
+    ))
+    .replace(abbrevKanaPattern, "")
+    .replace(abbrevOrphanPattern, "$1")
+    .replace(/[「『]\s*[」』]/g, "")
+    .replace(/([。．；;，,、])[；;，,、]+/g, "$1");
+}
+
+export function questionMeaning(meaning: string): string {
+  return stripAbbreviationNotes(stripLatinGlosses(meaning))
     .replace(/[（(\[]\s*(?:英|美)\s*[）)\]]/g, "")
     .replace(/[（(]\s*[）)]/g, "")
     .replace(/\s*([；;，,])\s*/g, "$1")
     .replace(/^[\s；;，,、.:：/]+/, "")
+    .replace(/[；;，,、\s]+$/, "")
     .trim();
 }
 
@@ -205,9 +248,7 @@ export function promptMeaning(meaning: string, wordId: number, kanji: string): s
     previous = short;
     short = short.replace(/^[（(][^）)]{1,40}[）)]/, "").trim();
   }
-  // Remove English glosses such as "shirt", but keep short letter+CJK terms like T恤 or A型.
-  short = short.replace(/^[A-Za-zＡ-Ｚａ-ｚ]{3,}(?:[ .／/'-]+[A-Za-zＡ-Ｚａ-ｚ]+)*/, "").trim();
-  short = short.replace(/^[A-Za-zＡ-Ｚａ-ｚ]{1,2}(?![一-鿿぀-ヿ])/, "").trim();
+  short = stripAbbreviationNotes(stripLatinGlosses(short)).trim();
   short = short.replace(/^[〈《][^〉》]{1,20}[〉》]/, "").trim();
   if (short.includes("。")) short = short.split("。", 1)[0].trim();
   if (kanji && kanji.length <= 5 && !/[ぁ-ゟァ-ヿA-Za-z〜～]/.test(kanji)) {

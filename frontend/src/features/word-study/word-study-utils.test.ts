@@ -10,7 +10,7 @@ import {
   primaryAnswerText,
   secondaryAnswerText
 } from "./word-study-utils";
-import { honorificLabel, promptMeaning } from "../../lib/models/word-card";
+import { honorificLabel, promptMeaning, questionMeaning } from "../../lib/models/word-card";
 
 const card = (patch: Partial<WordCard>): WordCard => ({
   id: 1,
@@ -79,7 +79,33 @@ describe("word-study-utils", () => {
 
   it("keeps short letter+CJK prompts such as T恤", () => {
     expect(promptMeaning("T恤", 2276, "Ｔシャツ")).toBe("T恤");
+    expect(promptMeaning("卡拉OK，KTV", 938, "カラオケ")).toBe("卡拉OK");
+    expect(promptMeaning("A型血", 1, "")).toBe("A型血");
+    expect(promptMeaning("SNS账号", 1, "")).toBe("SNS账号");
     expect(promptMeaning("shirt 衬衫", 287, "shirt")).toBe("衬衫");
+    expect(promptMeaning("digitalcamera数码相机", 2050, "デジカメ")).toBe("数码相机");
+    expect(promptMeaning("court球场；coat上衣", 2034, "コート")).toBe("球场");
+  });
+
+  it("keeps normal acronyms but removes English glosses from question meanings", () => {
+    expect(questionMeaning("卡拉OK，KTV")).toBe("卡拉OK，KTV");
+    expect(questionMeaning("T恤")).toBe("T恤");
+    expect(questionMeaning("department store便利店")).toBe("便利店");
+    expect(questionMeaning("court球场；coat上衣")).toBe("球场；上衣");
+  });
+
+  it("removes source-word abbreviation notes instead of leaving 「」的省略 husks", () => {
+    // 新种子库形态:英文 + 片假名源词注记(片假名会漏答案)
+    expect(questionMeaning("手帕。handkerchief「ハンカチーフ」的省略")).toBe("手帕。");
+    // 旧设备库形态:英文在括号内,剥离后只剩空括号
+    expect(questionMeaning("手帕。「handkerchief」的省略")).toBe("手帕。");
+    expect(questionMeaning("超市「スーパーマーケット」的省略语；super超，上，高级，超级")).toBe("超市；超，上，高级，超级");
+    expect(questionMeaning("（宠物用）砂盆；toiletトイレット的缩略，厕所，化妆室")).toBe("（宠物用）砂盆；厕所，化妆室");
+    expect(questionMeaning("钓鱼；「釣り銭」的省略，找回的钱")).toBe("钓鱼；找回的钱");
+    // 括号内是纯中文时是有效释义,保留
+    expect(questionMeaning("月；月，“星期一”的省略")).toBe("月；月，“星期一”的省略");
+    // 正文里的"省略"词义本身不受影响
+    expect(questionMeaning("省略，从简")).toBe("省略，从简");
   });
 
   it("labels honorific and humble words without tagging ordinary respect meanings", () => {

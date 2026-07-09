@@ -1398,3 +1398,21 @@ select {
     padding-bottom: 1.25rem !important;
   }
 }
+
+/* ========== 浅色主题:深色背景专用的强调/警示文字翻译 ==========
+   text-red-100~300 和 text-[#81D8CF] 是为深色卡片配的浅色文字,
+   浅色主题下卡片翻白后对比度只剩 1.1~1.6:1(几乎不可见),统一翻成深色。 */
+[data-theme="light"] [class*="text-red-1"],
+[data-theme="light"] [class*="text-red-2"],
+[data-theme="light"] [class*="text-red-3"],
+[data-theme="light"] .text-red-50 {
+  color: #b91c1c !important;
+}
+
+[data-theme="light"] [class*="text-[#81D8CF]"] {
+  color: #1f7469 !important;
+}
+
+[data-theme="light"] .jp-ruby rt {
+  color: #1f7469 !important;
+}

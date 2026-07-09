@@ -374,7 +374,7 @@ export default function App() {
         </main>
       </div>
       {notice && (
-        <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-50 -translate-x-1/2 rounded-2xl bg-[#81D8CF] px-4 py-3 text-sm font-semibold text-white shadow-lg lg:bottom-5">
+        <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-50 -translate-x-1/2 rounded-2xl bg-[#81D8CF] px-4 py-3 text-sm font-semibold text-[#1f3a36] shadow-lg lg:bottom-5">
           {notice}
         </div>
       )}

@@ -88,6 +88,30 @@ const grammarDecayTenths = (row: DbRow) => {
   return Math.min(Math.max(decay, 8), 12);
 };
 
+const kanjiPattern = /[\u3400-\u9fff々〇]/;
+const kanaPattern = /[\u3040-\u30ffー]/;
+const parenPattern = /（[^（）]*）|\([^()]*\)/g;
+
+const stripChineseParens = (text: string): string => {
+  let current = text;
+  let previous = "";
+  while (previous !== current) {
+    previous = current;
+    current = current.replace(parenPattern, (segment) => {
+      const inner = segment.slice(1, -1);
+      return kanjiPattern.test(inner) && !kanaPattern.test(inner) ? "" : segment;
+    });
+  }
+  return current.trim();
+};
+
+const cleanGrammarTitle = (pattern: string, prompt: string): string => {
+  const base = prompt && pattern !== prompt && pattern.startsWith(prompt) ? prompt : pattern;
+  const cleaned = stripChineseParens(base);
+  if (/^N[1-5]\s*文法\s*\d+$/.test(cleaned)) return "请回忆对应语法";
+  return cleaned || pattern;
+};
+
 export const applyGrammarDailyDecay = () => {
   const day = today();
   const lastDecay = grammarState("last_decay", "");
@@ -117,9 +141,9 @@ export const applyGrammarDailyDecay = () => {
 const grammarCard = (row: DbRow): GrammarStudyCard => ({
   id: Number(row.id ?? row.grammar_id ?? 0),
   key: String(row.pattern ?? row.grammar_id ?? ""),
-  pattern: String(row.pattern ?? "").includes("_") ? String(row.prompt ?? "") : String(row.pattern ?? ""),
+  pattern: cleanGrammarTitle(String(row.pattern ?? ""), String(row.prompt ?? "")),
   meaning: String(row.meaning ?? ""),
-  prompt: String(row.prompt ?? ""),
+  prompt: cleanGrammarTitle(String(row.pattern ?? ""), String(row.prompt ?? "")),
   formation: String(row.formation ?? ""),
   example: {
     jp: String(row.example_jp ?? ""),
