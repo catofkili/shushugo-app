@@ -31,7 +31,10 @@
 - [ ] **最小功能性（Guideline 4.2）** — 纯 WebView 壳是审查重点。功能丰富+离线大概率可过，但需准备截图与说明证明非"套壳网站"。
 - [ ] **Pro 权益与收据链路真机验证** — App 已有 StoreKit 框架、恢复购买和云端权益同步代码，但仍需 TestFlight/真机确认购买、恢复购买、订阅过期和云端同步是否完整走通。
 - [x] **Info.plist 设备能力** — `UIRequiredDeviceCapabilities` 已从 `armv7` 调整为 `arm64`。
-- [ ] **Info.plist 隐私权限复查** — 若涂鸦笔导出涉及相册/相机，需补 `NS...UsageDescription`，否则调用即崩。
+- [x] **Info.plist 隐私权限复查** — 已核实涂鸦笔不调用相册/相机/分享，无需 `NS...UsageDescription`。
+- [x] **隐私清单（PrivacyInfo.xcprivacy）** — 已创建并接入 Xcode 工程（声明 UserDefaults CA92.1、文件时间戳 C617.1，无追踪），模拟器构建确认进入 App bundle。
+- [x] **订阅续订链路** — StoreKit 现在在 App 启动时初始化（不再依赖打开 Paywall），续订/退款经 verified 回调即时更新本地权益；服务端 Apple 校验支持 production→sandbox 回退（TestFlight/审核走沙盒）。
+- [x] **云同步邮箱验证强制** — push/pull 要求邮箱已验证（邮件服务未配置时豁免），防止误拼邮箱账号托管数据。
 - [ ] **App 图标确认** — 当前 appiconset 仅 `AppIcon-512@2x.png`，确认 `Contents.json` 配成 Xcode 单尺寸 1024 模式。
 
 ## P2 — 质量打磨

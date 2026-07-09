@@ -28,7 +28,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         </div>
         <h1 className="jp-serif mt-4 text-2xl font-semibold text-white">Master Nihongo</h1>
         <p className="mt-2 text-sm text-white/60">Vocabulary · Grammar</p>
-        <p className="mt-3 text-xs font-bold text-white/50">版本 1.0.0</p>
+        <p className="mt-3 text-xs font-bold text-white/50">版本 {__APP_VERSION__}</p>
       </div>
 
       {/* 应用介绍 */}

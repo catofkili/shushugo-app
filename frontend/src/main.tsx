@@ -9,6 +9,7 @@ import { initWebViewOptimizer } from './lib/webview-optimizer';
 import { applyTheme } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { autoSyncReminderNotifications } from './lib/notifications';
+import { initializePurchases } from './lib/purchases';
 import { refreshCloudEntitlements } from './lib/sync-api';
 
 // 初始化 WebView 优化
@@ -70,6 +71,11 @@ root.render(
     // 未登录或未配置同步地址时内部直接返回,不产生请求。
     refreshCloudEntitlements().catch((error) => {
       console.warn('Cloud entitlement refresh skipped:', error);
+    });
+    // 启动时就初始化 StoreKit:订阅续订/退款要靠 verified 回调更新本地权益,
+    // 不能等用户打开 Paywall 才生效。非 iOS 环境内部直接返回。
+    initializePurchases().catch((error) => {
+      console.warn('StoreKit init skipped:', error);
     });
     console.log('✅ Database ready');
     root.render(

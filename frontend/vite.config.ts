@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import pkg from "./package.json";
 
 // sql-wasm.wasm 由 database.ts 的 `?url` import 交给 Vite 打包(带内容哈希),
 // 不需要再静态拷贝一份到 assets/node_modules/。
@@ -7,6 +8,9 @@ export default defineConfig(({ command }) => ({
   plugins: [
     react(),
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   build: {
     outDir: "dist",
     assetsDir: "assets",

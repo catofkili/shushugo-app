@@ -377,15 +377,30 @@ const createAppleJwt = async (env: Env) => {
   return `${header}.${payload}.${base64Url(signature)}`;
 };
 
+const APPLE_PRODUCTION_HOST = "https://api.storekit.itunes.apple.com";
+const APPLE_SANDBOX_HOST = "https://api.storekit-sandbox.itunes.apple.com";
+
+const fetchAppleTransaction = async (jwt: string, host: string, transactionId: string) => (
+  fetch(`${host}/inApps/v1/transactions/${encodeURIComponent(transactionId)}`, {
+    headers: { authorization: `Bearer ${jwt}` }
+  })
+);
+
 const getAppleTransaction = async (env: Env, transactionId: string) => {
   const jwt = await createAppleJwt(env);
   if (!jwt) return null;
 
-  const useSandbox = env.APP_STORE_ENVIRONMENT === "Sandbox";
-  const baseUrl = useSandbox ? "https://api.storekit-sandbox.itunes.apple.com" : "https://api.storekit.itunes.apple.com";
-  const response = await fetch(`${baseUrl}/inApps/v1/transactions/${encodeURIComponent(transactionId)}`, {
-    headers: { authorization: `Bearer ${jwt}` }
-  });
+  // Apple 官方建议:先查正式环境,404(交易不存在)再回退沙盒。
+  // TestFlight 和审核用的都是沙盒交易,固定环境会让审核走不通。
+  const preferSandbox = env.APP_STORE_ENVIRONMENT === "Sandbox";
+  const hosts = preferSandbox
+    ? [APPLE_SANDBOX_HOST, APPLE_PRODUCTION_HOST]
+    : [APPLE_PRODUCTION_HOST, APPLE_SANDBOX_HOST];
+
+  let response = await fetchAppleTransaction(jwt, hosts[0], transactionId);
+  if (response.status === 404) {
+    response = await fetchAppleTransaction(jwt, hosts[1], transactionId);
+  }
   if (!response.ok) {
     throw new Error(`Apple verification failed: ${response.status}`);
   }
@@ -416,6 +431,21 @@ const requireUser = async (request: Request, env: Env) => {
   const userId = await currentUser(request, env);
   if (!userId) {
     throw json({ detail: "Invalid or expired token" }, 401);
+  }
+  return userId;
+};
+
+// 云备份上传/下载要求邮箱已验证:防止用拼错/他人邮箱的账号占存储,
+// 也保证找回密码通道可用后才托管用户数据。邮件服务未配置时不强制,
+// 否则用户永远无法通过验证。
+const requireVerifiedUser = async (request: Request, env: Env) => {
+  const userId = await requireUser(request, env);
+  if (!env.RESEND_API_KEY) return userId;
+  const user = await env.DB.prepare("SELECT email_verified_at FROM users WHERE id = ?")
+    .bind(userId)
+    .first<{ email_verified_at: string | null }>();
+  if (!user?.email_verified_at) {
+    throw json({ detail: "请先在设置中完成邮箱验证，再使用云同步。" }, 403);
   }
   return userId;
 };
@@ -726,7 +756,7 @@ const verifyPurchase = async (request: Request, env: Env) => {
 };
 
 const pushSync = async (request: Request, env: Env) => {
-  const userId = await requireUser(request, env);
+  const userId = await requireVerifiedUser(request, env);
   const body = await readJson<{ db_data?: string; last_modified?: string }>(request);
   const dbData = String(body.db_data ?? "");
   const lastModified = String(body.last_modified ?? new Date().toISOString());
@@ -762,7 +792,7 @@ const pushSync = async (request: Request, env: Env) => {
 };
 
 const pullSync = async (request: Request, env: Env) => {
-  const userId = await requireUser(request, env);
+  const userId = await requireVerifiedUser(request, env);
   const row = await env.DB.prepare(`
     SELECT object_key, last_modified, byte_length
     FROM sync_objects
