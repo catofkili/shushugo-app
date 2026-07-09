@@ -48,6 +48,8 @@ npm run ios          # 用 Xcode 打开（App.xcworkspace）
 
 ## 已知状态
 
-- **开发模式默认开启 Pro 权限**（便于测试），上架前需关闭，详见上架清单。
-- 内购、云同步尚未完成合规收尾，详见 [docs/APP_STORE_READINESS.md](docs/APP_STORE_READINESS.md)。
+- **Pro 解锁工具仅在开发构建可用**：DevTools 面板和"本地临时解锁 Pro"都在 `import.meta.env.DEV` 守卫后，生产构建默认免费版，无需上架前手动关闭。
+- 剩余上架收尾集中在**外部配置与真机验证**（App Store Connect 内购商品、部署 Worker 拿公开隐私政策 URL、Privacy Nutrition Label、TestFlight 验证购买/恢复/删除账号/云同步）。详见 [docs/APP_STORE_READINESS.md](docs/APP_STORE_READINESS.md)。
+- 本地进度持久化在原生平台使用 Capacitor Filesystem 三代轮转（`main`/`tmp`/`prev`），从旧的 Preferences 分块存储自动迁移；改动后需 Xcode 重新构建到真机验证升级路径。
+- 云同步 Worker 在 `cloudflare-sync/`；部署前需 `npm run d1:migrate:remote` 应用 `0004_auth_hardening` 迁移。
 - 旧版 learning app 已归档到 `legacy-learning-app` 分支，仅作历史参考；正式开发与打包都以 `main` 为准。详见 [docs/LEGACY_ARCHIVE.md](docs/LEGACY_ARCHIVE.md)。

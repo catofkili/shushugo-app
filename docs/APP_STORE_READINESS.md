@@ -5,7 +5,7 @@
 > 优先级：**P0 = 不解决就上不了 / 会被打回**，**P1 = 审核风险**，**P2 = 质量打磨**。
 > 最近更新：2026-07-06
 
-> 当前代码检查：`npm run check` 通过，`npm test` 通过（7 个测试文件 / 55 个断言），`npm run build` 通过，`npx wrangler deploy --dry-run` 通过。
+> 当前代码检查：`npm run check` 通过，`npm test` 通过（7 个测试文件 / 56 个断言），`npm run build` 通过（生产构建已 tree-shake 掉 `console.log` 与诊断探针），`npx wrangler deploy --dry-run` 通过。
 
 ---
 
@@ -24,7 +24,7 @@
   - [ ] 填写 Privacy Nutrition Label（数据收集类型）。
 - [x] **后端去留决策** — 当前走 Cloudflare Worker 云同步路线，旧 `backend/server.py` 仅作历史/本地参考，不作为生产后端。
 - [x] **账号删除入口（Guideline 5.1.1(v)）** — 已补 App 内删除云同步账号入口和 Worker `POST /api/auth/delete-account`。
-- [ ] **关闭开发模式默认 Pro** — App 当前默认开启 Pro 权限供测试（见 README "已知状态"），上架前必须关闭。
+- [x] **开发模式 Pro 已隔离** — 已核实：`grantPro` / `developmentUnlock` / DevTools 全部在 `import.meta.env.DEV` 守卫后，生产构建里这些入口不渲染且解锁函数直接失败，默认权益为免费版。无需再手动关闭。
 
 ## P1 — 审核风险 / 易被挑刺
 
@@ -36,7 +36,7 @@
 
 ## P2 — 质量打磨
 
-- [x] **补自动化测试** — 已覆盖 SRS 调度（`scheduler/priority.ts`）、自适应记忆（`adaptive.ts`）、权益（`entitlements.ts`）与内购 expiry 逻辑（`purchases.ts`）。当前 `npm test` 为 7 个测试文件 / 55 个断言通过。
+- [x] **补自动化测试** — 已覆盖 SRS 调度（`scheduler/priority.ts`）、自适应记忆（`adaptive.ts`）、权益与过期（`entitlements.ts`）、内购 expiry 解析（`purchases.ts`）、词单导入（`word-list-import.ts`）。当前 `npm test` 为 7 个测试文件 / 56 个断言通过。
 - [x] **清理仓库杂物** — 已完成：移除历史调试草稿，删除旧构建拷贝 `master-nihongo/` 与 `master-nihongo.zip`，根目录整理 + 新增 README。
 - [ ] **真机适配验证** — `scrollEnabled:false` + `contentInset:'never'`，需在带刘海/灵动岛的真机及各尺寸 + iPad 验证安全区。
 - [ ] **涂鸦笔 canvas 上限** — 画布必须固定一屏视口（绑定整页会超 iOS canvas 上限失效），确保全页面遵守。
@@ -50,5 +50,5 @@
 3. ~~补测试与基础合规文案~~ ✅
 4. 部署 Cloudflare Worker，拿到公开隐私政策 URL
 5. App Store Connect 配置内购商品与 Privacy Nutrition Label
-6. TestFlight 真机验证：购买、恢复购买、删除账号、云同步、隐私政策链接
-7. 关闭开发模式默认 Pro，准备上架构建
+6. TestFlight 真机验证：购买、恢复购买、删除账号、云同步、隐私政策链接、Filesystem 持久化的升级迁移
+7. 准备上架构建（开发模式 Pro 已隔离，无需额外关闭）
