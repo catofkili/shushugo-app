@@ -70,8 +70,14 @@ const loadGrammarSeed = async (): Promise<{ version: string; rows: GrammarSeedRo
   return payload.default as unknown as { version: string; rows: GrammarSeedRow[] };
 };
 
+// 建表/索引是幂等的,但每次调用都重跑 10+ 条 DDL + PRAGMA 很浪费——
+// isFavorite 等热路径每渲染一行都会走到这里。按 Database 实例记忆化;
+// importDatabase 换新实例后 WeakSet 查不到,自然会对新库重跑一遍。
+const schemaReadyDbs = new WeakSet<object>();
+
 export const ensureUserTables = () => {
   const db = getDatabase();
+  if (schemaReadyDbs.has(db)) return;
   ensureLocalSchema();
   const wordColumns = rowsFor("PRAGMA table_info(words)").map((row) => String(row.name ?? ""));
   if (!wordColumns.includes("jlpt_level")) {
@@ -79,6 +85,7 @@ export const ensureUserTables = () => {
   }
   db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
   db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
+  schemaReadyDbs.add(db);
 };
 
 // 启动时(App 渲染前)调用一次,完成建表与所有种子数据迁移。

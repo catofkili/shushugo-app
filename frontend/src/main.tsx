@@ -9,6 +9,7 @@ import { initWebViewOptimizer } from './lib/webview-optimizer';
 import { applyTheme } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { autoSyncReminderNotifications } from './lib/notifications';
+import { refreshCloudEntitlements } from './lib/sync-api';
 
 // 初始化 WebView 优化
 initWebViewOptimizer();
@@ -64,6 +65,11 @@ root.render(
     registerPersistenceLifecycle();
     autoSyncReminderNotifications().catch((error) => {
       console.warn('Notification reminder sync skipped:', error);
+    });
+    // 已登录云账号的话,后台静默刷新 Pro 权益(订阅在别的设备续订/取消后保持一致);
+    // 未登录或未配置同步地址时内部直接返回,不产生请求。
+    refreshCloudEntitlements().catch((error) => {
+      console.warn('Cloud entitlement refresh skipped:', error);
     });
     console.log('✅ Database ready');
     root.render(

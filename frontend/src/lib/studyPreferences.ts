@@ -46,10 +46,6 @@ export const saveStudyPreferences = (preferences: StudyPreferences) => {
   return normalized;
 };
 
-export const updateStudyPreferences = (patch: Partial<StudyPreferences>) => {
-  return saveStudyPreferences({ ...getStudyPreferences(), ...patch });
-};
-
 export const getDailyWordGoal = () => getStudyPreferences().dailyGoal;
 
 // 获取实际应用的主题（解析 system）

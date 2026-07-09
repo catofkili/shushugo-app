@@ -1,8 +1,6 @@
 import type { GrammarPoint } from "../types/grammar";
 
-export const grammarDatasetVersion = "2026-06-25-pdf-n1-n5-connection-fix";
-
-export const GRAMMAR_POINTS: GrammarPoint[] = [
+const GRAMMAR_POINTS: GrammarPoint[] = [
   {
     "id": "pdf-n5-001",
     "title": "名詞1＋は＋名詞2＋です／ではありません",
@@ -32086,15 +32084,5 @@ export const GRAMMAR_POINTS: GrammarPoint[] = [
     ]
   }
 ];
-
-export const GRAMMAR_BY_ID = GRAMMAR_POINTS.reduce<Record<string, GrammarPoint>>((acc, point) => {
-  acc[point.id] = point;
-  return acc;
-}, {});
-
-export const GRAMMAR_BY_LEVEL = GRAMMAR_POINTS.reduce<Record<string, GrammarPoint[]>>((acc, point) => {
-  (acc[point.level] ||= []).push(point);
-  return acc;
-}, {});
 
 export const grammarPoints = GRAMMAR_POINTS;

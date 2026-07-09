@@ -1,4 +1,4 @@
-import { lazy, ReactNode, Suspense, useEffect, useState } from "react";
+import { lazy, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { WordStudy } from "./pages/WordStudy";
 import { AppNavigation } from "./components/AppNavigation";
@@ -69,9 +69,13 @@ export default function App() {
     return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
   }, []);
 
+  const noticeTimerRef = useRef<number | undefined>(undefined);
+
   const showNotice = (message: string, timeout = 1800) => {
+    // 清掉上一条通知的计时器,避免旧计时器提前关掉新通知。
+    window.clearTimeout(noticeTimerRef.current);
     setNotice(message);
-    window.setTimeout(() => setNotice(""), timeout);
+    noticeTimerRef.current = window.setTimeout(() => setNotice(""), timeout);
   };
 
   // 导航到新页面，记录历史

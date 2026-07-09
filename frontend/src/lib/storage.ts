@@ -18,7 +18,7 @@ const DB_FILE_MAIN = 'masternihongo/nihongo.db';
 const DB_FILE_TMP = 'masternihongo/nihongo.db.tmp';
 const DB_FILE_PREV = 'masternihongo/nihongo.db.prev';
 
-const useNativeFileStorage = () => Capacitor.isNativePlatform();
+const isNativeFileStorage = () => Capacitor.isNativePlatform();
 
 const bytesToBase64 = (data: Uint8Array): string => {
   let binary = "";
@@ -176,7 +176,7 @@ export async function saveDatabase(): Promise<void> {
     }
 
     const base64 = bytesToBase64(data);
-    if (useNativeFileStorage()) {
+    if (isNativeFileStorage()) {
       await saveFileDatabase(base64);
     } else {
       // 浏览器环境沿用分块 Preferences(底层是 localStorage)。
@@ -194,7 +194,7 @@ export async function saveDatabase(): Promise<void> {
 // 从本地存储恢复数据库
 export async function loadDatabase(): Promise<boolean> {
   try {
-    if (useNativeFileStorage()) {
+    if (isNativeFileStorage()) {
       if (await loadFileDatabase()) return true;
 
       // 从旧的 Preferences 分块存储迁移到文件存储(一次性)。
@@ -231,7 +231,7 @@ export async function clearStorage(): Promise<void> {
   try {
     await Preferences.remove({ key: DB_KEY });
     await removeChunkedDatabase();
-    if (useNativeFileStorage()) {
+    if (isNativeFileStorage()) {
       await deleteFileIfExists(DB_FILE_MAIN);
       await deleteFileIfExists(DB_FILE_TMP);
       await deleteFileIfExists(DB_FILE_PREV);

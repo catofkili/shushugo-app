@@ -1171,11 +1171,6 @@ export function markTodayWordCheckin(): WordStats {
   return getWordStats(currentPhase());
 }
 
-export function getNextWordCard(options: WordSessionOptions = {}): WordCard | null {
-  ensureProgressInitialized();
-  return nextCard(options).card;
-}
-
 export function getWordSession(options: WordSessionOptions = {}): WordSessionResponse {
   ensureProgressInitialized();
   const { card, phase } = nextCard(options);

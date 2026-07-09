@@ -203,6 +203,11 @@ export async function refreshCloudEntitlements(): Promise<EntitlementState | und
     method: "GET",
     headers: { authorization: `Bearer ${token}` }
   });
+  // 云端"非 Pro"不能覆盖本地 StoreKit 权益:买断/订阅可能还没在云端核验过
+  // (比如服务端未配置 Apple 密钥)。本地过期由 getEntitlements 自身处理。
+  if (data && !data.isPro && getEntitlements().source === "storekit") {
+    return undefined;
+  }
   return applyCloudEntitlements(data);
 }
 
