@@ -58,7 +58,7 @@ const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 const JLPT_WORD_METADATA_VERSION = "2026-06-24-noun-suru-pos-fix";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
-const GRAMMAR_SEED_VERSION = "2026-07-10-grammar-rewrite";
+const GRAMMAR_SEED_VERSION = "2026-07-11-grammar-rewrite";
 
 const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
   const payload = await import("../data/jlpt_words_seed.json");
