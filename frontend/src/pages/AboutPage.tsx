@@ -72,8 +72,8 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">数据来源</p>
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <p className="text-sm leading-relaxed text-white/70">
-            词库和语法数据来自开放的日语学习资源，内容遵循 CC BY-NC 4.0 许可协议。
-            仅供个人学习使用，不得用于商业用途。
+            词库、语法说明与例句由本应用团队整理编写；例句语料来自开放许可的公共语料库。
+            具体来源与许可信息会在正式版本中逐项列出。
           </p>
         </div>
       </div>
