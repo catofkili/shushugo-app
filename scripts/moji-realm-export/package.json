@@ -1,0 +1,8 @@
+{
+  "name": "master-nihongo-moji-realm-export",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "realm": "^20.2.0"
+  }
+}

@@ -34,6 +34,14 @@ if [[ -z "$ROOT_DIR" || ! -d "$ROOT_DIR" ]]; then
 fi
 
 cd "$ROOT_DIR"
+
+# git archive 只会打包 HEAD；若工作区有修改，继续执行会悄悄产出旧代码/旧词库，
+# 容易把已经修复的隐私问题重新带进分享包。
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "Refusing to create a stale preview: commit or stash your changes first." >&2
+  exit 1
+fi
+
 rm -f "$TMP_ZIP" "$OUTPUT"
 
 git archive \

@@ -4,7 +4,8 @@ import {
   pickDueCriticalPoolRow,
   pickStage1CriticalPoolRow,
   priorityComponents,
-  priorityScore
+  priorityScore,
+  shouldPickStage1NewWord
 } from "./priority";
 import type { DbRow } from "../database/db-utils";
 
@@ -40,6 +41,7 @@ describe("priorityComponents", () => {
     const components = priorityComponents(row({ score: -10 }), undefined, 0, 0);
     expect(components.score).toBe((10 - -10) * 5);
     expect(components.new).toBe(0);
+    expect(components.review).toBe(35);
   });
 
   it("never lets mastered words earn score priority", () => {
@@ -72,6 +74,20 @@ describe("priorityComponents", () => {
   it("promotes due queue entries and buries not-yet-due ones", () => {
     expect(priorityComponents(row(), 0, 0, 0).queue).toBe(45);
     expect(priorityComponents(row(), 2, 0, 0).queue).toBe(-80 - 2 * 25);
+  });
+});
+
+describe("shouldPickStage1NewWord", () => {
+  it("randomly interleaves new words according to the remaining daily mix", () => {
+    // 第一张必定是旧词；200 个旧词、15 个新词时，新词约占 7%。
+    expect(shouldPickStage1NewWord(200, 15, 0, 0)).toBe(false);
+    expect(shouldPickStage1NewWord(200, 15, 1, 0.01)).toBe(true);
+    expect(shouldPickStage1NewWord(200, 15, 1, 0.1)).toBe(false);
+  });
+
+  it("uses new words when no reviews remain", () => {
+    expect(shouldPickStage1NewWord(0, 15, 0, 0.99)).toBe(true);
+    expect(shouldPickStage1NewWord(200, 0, 3, 0)).toBe(false);
   });
 });
 

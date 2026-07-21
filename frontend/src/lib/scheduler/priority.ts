@@ -7,6 +7,22 @@ import { DbRow, daysSince } from "../database/db-utils";
 const CRITICAL_SCORE = -20;
 
 /**
+ * 新词按当天尚未完成的比例随机穿插进旧词中。首张永远是旧词；
+ * 临界旧词仍由调用方优先处理，避免随机新词抢占需要立即复习的内容。
+ */
+export const shouldPickStage1NewWord = (
+  remainingReviewCount: number,
+  remainingNewCount: number,
+  completedTaskCount: number,
+  randomValue = Math.random()
+): boolean => {
+  if (remainingNewCount <= 0) return false;
+  if (remainingReviewCount <= 0) return true;
+  if (completedTaskCount === 0) return false;
+  return randomValue < remainingNewCount / (remainingReviewCount + remainingNewCount);
+};
+
+/**
  * 计算优先级组件
  */
 export function priorityComponents(
@@ -24,6 +40,7 @@ export function priorityComponents(
     mistake: Number(row.forgot_count ?? 0) * 14 + Number(row.fuzzy_count ?? 0) * 7 + Number(row.mistake_streak ?? 0) * 12 - Number(row.right_count ?? 0) * 3,
     queue: 0,
     age: Math.min(daysSince(row.last_seen_on) * 3, 30),
+    review: isNew ? 0 : 35,
     new: 0,
     jitter: Math.random() * 8
   };

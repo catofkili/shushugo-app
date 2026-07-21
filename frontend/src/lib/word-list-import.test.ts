@@ -55,6 +55,24 @@ describe("external word list import parsing", () => {
     });
   });
 
+  it("parses the portable MOJi review bridge export", () => {
+    const preview = previewExternalWordList(JSON.stringify({
+      format: "master-nihongo-moji-review-export-v1",
+      records: [
+        { spell: "負ける", pron: "まける", briefInfo: "输；失败", score: 75, qCnt: 4, qWrCnt: 1, testTimes: 3 }
+      ]
+    }));
+
+    expect(preview.validRows).toBe(1);
+    expect(preview.samples[0]).toMatchObject({
+      kanji: "負ける",
+      kana: "まける",
+      seenCount: 4,
+      forgotCount: 1
+    });
+    expect(preview.samples[0].memoryScore).toBeGreaterThan(0);
+  });
+
   it("deduplicates repeated word and reading pairs", () => {
     const preview = previewExternalWordList("単語,かな,意味\n勉強,べんきょう,学习\n勉強,べんきょう,学习");
 

@@ -64,6 +64,37 @@ export interface WordStats {
   dailyStudyStats: { date: string; seconds: number; wordCount: number }[];
   wordStudySecondsToday: number;
   taskDone: boolean;
+  /** 回归模式（积压削峰）状态；未激活时为 undefined */
+  comeback?: {
+    active: boolean;
+    dayIndex: number;
+    planDays: number;
+    /** 本轮回归的节奏档:gentle 由轻到重 / pressure 高强度快清 */
+    mode: "gentle" | "pressure";
+    todayTarget: number;
+    estimatedMinutes: number;
+    remainingBacklog: number;
+    initialBacklog: number;
+    announcedToday: boolean;
+  };
+  /** 完成今日计划后的「再来一批」信息 */
+  encore?: {
+    available: boolean;
+    size: number;
+    estimatedMinutes: number;
+    remaining: number;
+    /** 未见新词库存(积压清完后续杯改用新词) */
+    unseenRemaining: number;
+    /** 今日实际节奏(秒/词),供自定义数量时估算用时 */
+    secondsPerWord: number;
+    /** 累计学过的词数(里程碑钩子) */
+    totalLearned: number;
+    /** 本周加餐次数(连击文案) */
+    weekEncoreCount: number;
+    /** 今日已加餐词数(炫耀图徽章) */
+    todayEncoreWords: number;
+    fatigued: boolean;
+  };
 }
 
 export interface WordSessionResponse {

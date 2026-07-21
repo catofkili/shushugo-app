@@ -55,6 +55,8 @@ backend/sync_data.db
 *.db.bak_*
 *.sqlite
 *.sqlite3
+# Personal migration database — keep only on this machine.
+nihongo-import-*.db
 
 # Static learning corpus backups
 frontend/public/*.db.bak_*
@@ -76,3 +78,6 @@ frontend/ios/App/App/public/
 frontend/ios/App/Pods/
 frontend/static/
 cloudflare-sync/.wrangler/
+
+# MOJi 个人复习数据导出(只应临时存在于桌面/设备,严禁入库)
+*moji-review-export*.json

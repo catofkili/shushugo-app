@@ -42,13 +42,26 @@ const nounSuruCorrections = [
 ];
 
 const SQL = await initSqlJs();
-const db = new SQL.Database(new Uint8Array(readFileSync(dbPath)));
+const databaseBytes = readFileSync(dbPath);
+const db = new SQL.Database(new Uint8Array(databaseBytes));
 const seed = JSON.parse(readFileSync(seedPath, "utf8"));
 
 const firstValue = (query, params = []) => {
   const result = db.exec(query, params);
   return result[0]?.values?.[0]?.[0];
 };
+
+const userDataTables = [
+  "progress", "reviews", "checkins", "critical_reviews", "word_notes", "word_study_time",
+  "kanji_progress", "kanji_memory", "kanji_char_overrides", "stage1_tasks", "stage2_progress",
+  "moji_migrated_reviews", "grammar_progress", "grammar_reviews", "grammar_points_archive"
+];
+const populatedUserTables = userDataTables
+  .map((table) => [table, Number(firstValue(`SELECT COUNT(*) FROM ${table}`))])
+  .filter(([, count]) => count > 0);
+if (populatedUserTables.length) {
+  throw new Error(`拒绝更新出厂词库：其中含有用户数据（${populatedUserTables.map(([table, count]) => `${table}=${count}`).join(", ")}）`);
+}
 
 const total = Number(firstValue("SELECT COUNT(*) FROM words"));
 const leveled = Number(firstValue(

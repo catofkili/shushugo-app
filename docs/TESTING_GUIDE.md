@@ -4,7 +4,7 @@
 
 **时间**: 2026-06-14 15:41
 **设备**: iPhone 17 模拟器
-**应用**: Master 日语 (com.lsc.masternihongo)
+**应用**: Master 日语 (com.masternihongo.app)
 **进程 ID**: 84972
 **状态**: ✅ **正在运行**
 **构建**: ✅ **BUILD SUCCEEDED**

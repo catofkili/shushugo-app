@@ -53,6 +53,18 @@ for (const file of batchFiles) {
   }
 }
 
+// grammar_points.pattern 带 UNIQUE 约束(见 study-core.ts ensureGrammarSeed),
+// 重复 pattern 会在全新初始化时被丢弃。曾因 N2/N1 教材收录同一语法点混入 7 组
+// 重复(2026-07-14 已去重),生成阶段必须直接失败,不能带病产出。
+const patternCounts = new Map();
+for (const row of seed.rows) {
+  patternCounts.set(row[F.pattern], (patternCounts.get(row[F.pattern]) ?? 0) + 1);
+}
+const dupPatterns = [...patternCounts].filter(([, count]) => count > 1).map(([p]) => p);
+if (dupPatterns.length) {
+  throw new Error(`覆写后 seed 存在重复 pattern,请先去重再生成: ${dupPatterns.join("、")}`);
+}
+
 // bump 版本(日期戳 + rewrite 标记),供 study-core 触发 re-seed
 const today = new Date().toISOString().slice(0, 10);
 seed.version = `${today}-grammar-rewrite`;

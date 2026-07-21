@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/verify-release-db.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
@@ -16,12 +17,14 @@
     "add:ios": "cap add ios"
   },
   "dependencies": {
+    "@capacitor-community/media": "^6.0.0",
     "@capacitor/core": "^6.0.0",
     "@capacitor/filesystem": "^6.0.4",
     "@capacitor/haptics": "^6.0.3",
     "@capacitor/ios": "^6.0.0",
     "@capacitor/local-notifications": "^6.1.3",
     "@capacitor/preferences": "^6.0.0",
+    "@capacitor/share": "^6.0.4",
     "cordova-plugin-purchase": "^13.16.1",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",

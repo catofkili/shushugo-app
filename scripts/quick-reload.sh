@@ -13,13 +13,13 @@ echo "🔄 同步到 iOS..."
 npx cap sync ios
 
 echo "📱 卸载旧版本..."
-xcrun simctl uninstall booted com.lsc.masternihongo 2>/dev/null || true
+xcrun simctl uninstall booted com.masternihongo.app 2>/dev/null || true
 
 echo "📦 安装新版本..."
 xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/App.app
 
 echo "🚀 启动应用..."
-xcrun simctl launch booted com.lsc.masternihongo
+xcrun simctl launch booted com.masternihongo.app
 
 echo ""
 echo "✅ 完成！"

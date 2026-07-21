@@ -1,8 +1,19 @@
 import { useState } from "react";
-import { Brain, CalendarDays, CheckCircle2, Clock3, Download, Share2, X } from "lucide-react";
+import { Brain, CalendarDays, CheckCircle2, Clock3, ImageDown, Loader2, Minus, Pencil, Plus, Share2, X } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
+import { estimatedMinutesFor } from "../../lib/comeback";
 import { studyDate as currentStudyDate } from "../../lib/database/db-utils";
+import { saveImageToGallery, shareImage } from "../../lib/share-image";
+import {
+  getStudyPreferences,
+  INTENSITY_ANCHORS,
+  INTENSITY_MAX,
+  INTENSITY_MIN,
+  saveStudyPreferences
+} from "../../lib/studyPreferences";
 import type { WordCard, WordStats } from "../../types/vocabulary";
+import { encoreDayColor, MILESTONES, pickEncoreHook } from "./encore-style";
+import { renderShareCard } from "./share-card";
 import { formatDuration, isLoanwordSourceCard, monthDays } from "./word-study-utils";
 
 export const KanjiAnswer = ({ card }: { card: WordCard }) => {
@@ -36,11 +47,14 @@ interface FinishPanelProps {
   onCheckIn?: () => void;
   onContinueStage2?: () => void;
   onContinueKanji?: () => void;
+  onEncore?: (size?: number) => void;
 }
 
-export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji }: FinishPanelProps) => {
+export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji, onEncore }: FinishPanelProps) => {
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [shareImageUrl, setShareImageUrl] = useState("");
+  const [shareCard, setShareCard] = useState<{ url: string; blob: Blob } | null>(null);
+  const [shareBusy, setShareBusy] = useState<"save" | "share" | null>(null);
+  const [shareNotice, setShareNotice] = useState("");
   const studyDate = stats?.studyDate ?? currentStudyDate();
   const calendar = monthDays(studyDate);
   const checkins = new Set(stats?.checkins ?? []);
@@ -52,128 +66,90 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const checkinDays = checkins.size;
   const isStage1Complete = phase === "stage1" && stats?.stage1Done;
   const compactPhaseLabel = phase === "done" ? "全部完成" : phase === "stage1" ? "第一阶段" : phase;
+  const encore = stats?.encore;
+  const showEncore = phase === "done" && Boolean(encore?.available) && Boolean(onEncore);
 
-  const drawRoundRect = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
-    const safeRadius = Math.min(radius, width / 2, height / 2);
-    context.beginPath();
-    context.moveTo(x + safeRadius, y);
-    context.arcTo(x + width, y, x + width, y + height, safeRadius);
-    context.arcTo(x + width, y + height, x, y + height, safeRadius);
-    context.arcTo(x, y + height, x, y, safeRadius);
-    context.arcTo(x, y, x + width, y, safeRadius);
-    context.closePath();
+  // 「继续学习」按钮的每日装扮与数量。数量由算法给:积压递减批或强度的一半;
+  // 铅笔调的是唯一旋钮「学习强度」,不再单独设本次数量。
+  const [showIntensityPanel, setShowIntensityPanel] = useState(false);
+  const [intensity, setIntensity] = useState(() => getStudyPreferences().dailyGoal);
+  const encoreColor = encoreDayColor(studyDate);
+  const encoreInventory = encore ? encore.remaining + encore.unseenRemaining : 0;
+  // 积压未清时数量跟积压走(强度不影响);清空后 = 强度的一半,随滑杆即时变化
+  const recommendedSize = encore
+    ? (encore.remaining > 0 ? encore.size : Math.min(Math.max(Math.round(intensity / 2), 5), encore.unseenRemaining))
+    : 0;
+  const encoreHook = encore
+    ? pickEncoreHook({
+        studyDate,
+        todayWordCount,
+        weekEncoreCount: encore.weekEncoreCount,
+        recommendedSize,
+        totalLearned: encore.totalLearned
+      })
+    : null;
+  const encoreCount = Math.max(1, Math.min(encoreHook?.suggestedSize ?? recommendedSize, encoreInventory));
+  const encoreMinutes = encore ? estimatedMinutesFor(encoreCount, encore.secondsPerWord) : 0;
+
+  const applyIntensity = (value: number) => {
+    const next = Math.min(Math.max(Math.round(value), INTENSITY_MIN), INTENSITY_MAX);
+    setIntensity(next);
+    saveStudyPreferences({ ...getStudyPreferences(), dailyGoal: next });
   };
 
+  const shareFileName = `master-nihongo-${studyDate}.png`;
+
   const generateShareImage = async () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1080;
-    canvas.height = 1440;
-    const context = canvas.getContext("2d");
-    if (!context) return;
-
-    context.fillStyle = "#f7fbfa";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "#d9f5ef";
-    context.fillRect(0, 0, canvas.width, 300);
-
-    context.fillStyle = "#234440";
-    context.font = "700 52px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-    context.fillText("今日单词完成", 84, 145);
-    context.font = "500 30px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-    context.fillStyle = "#4d706b";
-    context.fillText(studyDate, 86, 198);
-
-    const statItems = [
-      { label: "背诵数量", value: `${todayWordCount} 个` },
-      { label: "背词用时", value: formatDuration(totalSeconds) },
-      { label: "累计打卡", value: `${checkinDays} 天` }
-    ];
-    statItems.forEach((item, index) => {
-      const x = 84 + index * 310;
-      drawRoundRect(context, x, 270, 270, 150, 28);
-      context.fillStyle = "#ffffff";
-      context.fill();
-      context.strokeStyle = "#b7e7df";
-      context.lineWidth = 3;
-      context.stroke();
-      context.fillStyle = "#6d8581";
-      context.font = "600 26px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-      context.fillText(item.label, x + 30, 325);
-      context.fillStyle = "#234440";
-      context.font = "800 40px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-      context.fillText(item.value, x + 30, 385);
+    // 今天是否冲破了某个累计里程碑(今天学之前 < 里程碑 ≤ 现在)
+    const totalLearned = encore?.totalLearned ?? 0;
+    const milestoneReached = MILESTONES.find(
+      (m) => totalLearned >= m && totalLearned - todayWordCount < m
+    ) ?? 0;
+    const blob = await renderShareCard({
+      studyDate,
+      todayWordCount,
+      totalSeconds,
+      checkins,
+      encoreWords: encore?.todayEncoreWords ?? 0,
+      milestoneReached
     });
+    if (shareCard) URL.revokeObjectURL(shareCard.url);
+    setShareNotice("");
+    setShareCard({ url: URL.createObjectURL(blob), blob });
+  };
 
-    drawRoundRect(context, 84, 500, 912, 690, 36);
-    context.fillStyle = "#ffffff";
-    context.fill();
-    context.strokeStyle = "#c7ece5";
-    context.lineWidth = 3;
-    context.stroke();
-
-    context.fillStyle = "#234440";
-    context.font = "800 38px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-    context.fillText(calendar.title, 134, 575);
-    context.font = "600 24px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-    context.fillStyle = "#5d7772";
-    context.fillText(checkedToday ? "今日已打卡" : "今日未打卡", 790, 575);
-
-    const labels = ["日", "一", "二", "三", "四", "五", "六"];
-    labels.forEach((label, index) => {
-      context.fillStyle = "#7b918d";
-      context.font = "700 24px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-      context.textAlign = "center";
-      context.fillText(label, 154 + index * 126, 645);
-    });
-
-    calendar.cells.forEach((cell, index) => {
-      if (!cell) return;
-      const column = index % 7;
-      const row = Math.floor(index / 7);
-      const x = 154 + column * 126;
-      const y = 710 + row * 76;
-      const dayChecked = checkins.has(cell.date);
-      const isToday = cell.date === studyDate;
-      context.beginPath();
-      context.arc(x, y, 31, 0, Math.PI * 2);
-      context.fillStyle = dayChecked ? "#81d8cf" : isToday ? "#e3f7f3" : "#f3f6f5";
-      context.fill();
-      if (isToday) {
-        context.strokeStyle = "#234440";
-        context.lineWidth = 4;
-        context.stroke();
-      }
-      context.fillStyle = dayChecked ? "#173d38" : "#5a716d";
-      context.font = "800 25px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-      context.fillText(String(cell.day), x, y + 9);
-    });
-    context.textAlign = "left";
-
-    context.fillStyle = "#4d706b";
-    context.font = "600 28px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-    context.fillText("Master Nihongo", 84, 1300);
-    context.fillStyle = "#234440";
-    context.font = "800 34px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-    context.fillText("今天也把日语往前推了一点。", 84, 1355);
-
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
-    if (!blob) return;
-    const file = new File([blob], `master-nihongo-${studyDate}.png`, { type: "image/png" });
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: "今日单词完成" });
-      return;
+  const handleSaveImage = async () => {
+    if (!shareCard || shareBusy) return;
+    setShareBusy("save");
+    setShareNotice("");
+    try {
+      const result = await saveImageToGallery(shareCard.blob, shareFileName);
+      setShareNotice(result === "gallery" ? "已保存到相册 ✓" : "已开始下载 ✓");
+    } catch {
+      setShareNotice("保存失败,请在 设置 > Master Nihongo 里允许访问相册后重试");
+    } finally {
+      setShareBusy(null);
     }
-    const url = URL.createObjectURL(blob);
-    if (shareImageUrl) URL.revokeObjectURL(shareImageUrl);
-    setShareImageUrl(url);
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: "今日单词完成" }).catch(() => undefined);
+  };
+
+  const handleShareImage = async () => {
+    if (!shareCard || shareBusy) return;
+    setShareBusy("share");
+    setShareNotice("");
+    try {
+      const result = await shareImage(shareCard.blob, shareFileName, "今日单词完成");
+      if (result === "unsupported") setShareNotice("当前浏览器不支持直接分享,请先保存图片");
+    } catch {
+      setShareNotice("分享失败,请重试");
+    } finally {
+      setShareBusy(null);
     }
   };
 
   const closeShareImage = () => {
-    if (shareImageUrl) URL.revokeObjectURL(shareImageUrl);
-    setShareImageUrl("");
+    if (shareCard) URL.revokeObjectURL(shareCard.url);
+    setShareCard(null);
+    setShareNotice("");
   };
 
   return (
@@ -273,6 +249,115 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             </div>
           </div>
 
+          {showEncore && encore && (
+            <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
+              {encore.fatigued ? (
+                <>
+                  <p className="mb-2 text-xs text-white/60">最近的正确率有点下滑——今天已经很棒了，剩下的词明天清效率更高。</p>
+                  <button
+                    onClick={() => onEncore?.(encoreCount)}
+                    className="focus-ring inline-flex h-11 w-full items-center justify-center rounded-2xl border border-white/20 bg-white/8 text-sm font-bold text-white/75"
+                  >
+                    仍要再来 {encoreCount} 个 · 约 {encoreMinutes} 分钟
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="min-w-0 truncate text-xs text-white/60">
+                      {encoreHook?.lead}
+                      {stats?.comeback?.active && ` · 回归计划 第 ${stats.comeback.dayIndex}/${stats.comeback.planDays} 天`}
+                    </p>
+                    <span
+                      className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                      style={{ color: encoreColor.hex, borderColor: `${encoreColor.hex}59` }}
+                    >
+                      {encoreColor.weekdayJp}・{encoreColor.colorName}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onEncore?.(encoreCount)}
+                      className="encore-cta focus-ring relative inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl text-lg font-bold"
+                      style={{ backgroundColor: encoreColor.hex, color: encoreColor.ink }}
+                    >
+                      继续学习 {encoreCount} 个 · 约 {encoreMinutes} 分钟
+                      <span className="encore-shine" aria-hidden="true" />
+                    </button>
+                    <button
+                      onClick={() => setShowIntensityPanel((value) => !value)}
+                      aria-label="调整学习强度"
+                      aria-expanded={showIntensityPanel}
+                      className="focus-ring grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-white/15 bg-white/8 text-white/75"
+                    >
+                      <Pencil size={18} />
+                    </button>
+                  </div>
+                  {showIntensityPanel && (
+                    <div className="mt-2 rounded-xl bg-[#343838] p-3">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <p className="text-xs font-bold text-white/70">学习强度 · 每日新词 {intensity} 个</p>
+                        <span className="inline-flex items-center gap-1.5">
+                          <button
+                            onClick={() => applyIntensity(intensity - 1)}
+                            aria-label="强度减 1"
+                            className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-white/8 text-white/70"
+                          >
+                            <Minus size={13} />
+                          </button>
+                          <button
+                            onClick={() => applyIntensity(intensity + 1)}
+                            aria-label="强度加 1"
+                            className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-white/8 text-white/70"
+                          >
+                            <Plus size={13} />
+                          </button>
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={INTENSITY_MIN}
+                        max={INTENSITY_MAX}
+                        step={1}
+                        value={intensity}
+                        onChange={(event) => applyIntensity(Number(event.target.value))}
+                        aria-label="学习强度"
+                        className="w-full accent-[#81D8CF]"
+                        style={{ accentColor: encoreColor.hex }}
+                      />
+                      <div className="mt-1.5 flex flex-wrap gap-2">
+                        {INTENSITY_ANCHORS.map((anchor) => (
+                          <button
+                            key={anchor.value}
+                            onClick={() => applyIntensity(anchor.value)}
+                            className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
+                              intensity === anchor.value
+                                ? "text-[#2f3333]"
+                                : "border border-white/15 bg-white/8 text-white/70"
+                            }`}
+                            style={intensity === anchor.value ? { backgroundColor: encoreColor.hex } : undefined}
+                          >
+                            {anchor.label} {anchor.value}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-[11px] text-white/45">
+                        明日新词按此配额;{encore.remaining > 0
+                          ? "本次加餐清积压,数量不受强度影响"
+                          : `本次加餐 = 强度一半 ≈ ${recommendedSize} 个`}
+                      </p>
+                    </div>
+                  )}
+                  <p className="mt-2 text-[11px] text-white/40">
+                    {encore.remaining > 0
+                      ? `待清积压还剩 ${encore.remaining} 个,优先复习`
+                      : `积压已清空,这批是新词 · 库存 ${encore.unseenRemaining} 个`}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
           <div className="grid shrink-0 gap-2 sm:grid-cols-3">
             {isStage1Complete && (
               <>
@@ -324,7 +409,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
         </div>
       </div>
 
-      {shareImageUrl && (
+      {shareCard && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 p-4">
           <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-[#2f3333] p-3 shadow-2xl">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -337,15 +422,26 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 <X size={15} />
               </button>
             </div>
-            <img src={shareImageUrl} alt="今日单词完成分享图" className="max-h-[70vh] w-full rounded-xl object-contain" />
-            <a
-              href={shareImageUrl}
-              download={`master-nihongo-${studyDate}.png`}
-              className="focus-ring mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#81D8CF] text-sm font-bold !text-[#2f3333]"
-            >
-              <Download size={16} />
-              保存图片
-            </a>
+            <img src={shareCard.url} alt="今日单词完成分享图" className="max-h-[62vh] w-full rounded-xl object-contain" />
+            {shareNotice && <p className="mt-2 text-center text-xs font-semibold text-[#81D8CF]">{shareNotice}</p>}
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                onClick={() => void handleSaveImage()}
+                disabled={shareBusy !== null}
+                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#81D8CF]/40 bg-[#81D8CF]/14 text-sm font-bold text-[#81D8CF] disabled:opacity-60"
+              >
+                {shareBusy === "save" ? <Loader2 size={16} className="animate-spin" /> : <ImageDown size={16} />}
+                保存到相册
+              </button>
+              <button
+                onClick={() => void handleShareImage()}
+                disabled={shareBusy !== null}
+                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#81D8CF] text-sm font-bold !text-[#2f3333] disabled:opacity-60"
+              >
+                {shareBusy === "share" ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16} />}
+                发给好友
+              </button>
+            </div>
           </div>
         </div>
       )}

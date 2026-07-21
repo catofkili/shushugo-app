@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.lsc.masternihongo',
+  appId: 'com.masternihongo.app',
   appName: 'Master 日语',
   webDir: 'dist',
 

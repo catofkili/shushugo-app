@@ -58,7 +58,7 @@ const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 const JLPT_WORD_METADATA_VERSION = "2026-06-24-noun-suru-pos-fix";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
-const GRAMMAR_SEED_VERSION = "2026-07-11-grammar-rewrite";
+const GRAMMAR_SEED_VERSION = "2026-07-14-grammar-rewrite";
 
 const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
   const payload = await import("../data/jlpt_words_seed.json");
@@ -85,7 +85,47 @@ export const ensureUserTables = () => {
   }
   db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
   db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
+  ensureLadderColumns();
   schemaReadyDbs.add(db);
+};
+
+// 连胜梯子迁移:progress 加 right_streak / auto_retired_on,并从历史复习记录
+// 回填连胜(尾部连续「当天首见即答对」的天数,封顶 5),让熟词立即享受长间隔。
+const ensureLadderColumns = () => {
+  const db = getDatabase();
+  const progressColumns = rowsFor("PRAGMA table_info(progress)").map((row) => String(row.name ?? ""));
+  if (!progressColumns.includes("right_streak")) {
+    db.run("ALTER TABLE progress ADD COLUMN right_streak INTEGER NOT NULL DEFAULT 0");
+  }
+  if (!progressColumns.includes("auto_retired_on")) {
+    db.run("ALTER TABLE progress ADD COLUMN auto_retired_on TEXT");
+  }
+  if (getState("ladder_migrated", "") === "1") return;
+
+  const rows = rowsFor(`
+    SELECT r.word_id, r.answer
+    FROM reviews r
+    JOIN (
+      SELECT word_id, reviewed_on, MIN(id) AS mid
+      FROM reviews
+      WHERE answer != 'known_forever'
+      GROUP BY word_id, reviewed_on
+    ) f ON f.mid = r.id
+    ORDER BY r.word_id ASC, r.reviewed_on ASC
+  `);
+  const trailing = new Map<number, number>();
+  for (const row of rows) {
+    const id = Number(row.word_id);
+    if (String(row.answer) === "know") {
+      trailing.set(id, Math.min((trailing.get(id) ?? 0) + 1, 5));
+    } else {
+      trailing.set(id, 0);
+    }
+  }
+  for (const [wordId, streak] of trailing) {
+    if (streak > 0) db.run("UPDATE progress SET right_streak = ? WHERE word_id = ?", [streak, wordId]);
+  }
+  setState("ladder_migrated", "1");
 };
 
 // 启动时(App 渲染前)调用一次,完成建表与所有种子数据迁移。
@@ -143,6 +183,12 @@ const ensureGrammarSeed = async () => {
     db.run("DELETE FROM grammar_points");
     const newIdByPattern = new Map<string, number>();
     grammarSeed.rows.forEach((row, index) => {
+      // pattern 带 UNIQUE 约束;种子数据里同一 pattern 出现多次时保留第一条,
+      // 否则整个初始化事务回滚,全新安装直接起不来。
+      if (newIdByPattern.has(row[0])) {
+        console.warn(`grammar_seed 存在重复 pattern,已跳过后出现的一条: ${row[0]}`);
+        return;
+      }
       db.run(`
         INSERT INTO grammar_points (
           pattern, meaning, prompt, formation, example_jp, example_meaning,

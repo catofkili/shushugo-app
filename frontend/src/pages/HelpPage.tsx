@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronRight, HelpCircle, Mail, MessageCircle } from "lucide-react";
+import { ArrowLeft, ChevronRight, HelpCircle, MessageCircle } from "lucide-react";
 import { useState } from "react";
 
 interface HelpPageProps {
@@ -7,11 +7,6 @@ interface HelpPageProps {
 
 export function HelpPage({ onBack }: HelpPageProps) {
   const [tutorialOpen, setTutorialOpen] = useState(false);
-  const supportEmail = "2747575640g@gmail.com";
-  const openMail = (subject: string) => {
-    window.location.href = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}`;
-  };
-
   const faqs = [
     {
       q: "如何开始学习？",
@@ -72,33 +67,26 @@ export function HelpPage({ onBack }: HelpPageProps) {
             </div>
           )}
 
-          <button
-            onClick={() => openMail("Master Nihongo 反馈建议")}
-            className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]"
-          >
+          <div className="flex w-full items-center gap-3 border-b border-white/10 p-4 text-left">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
               <MessageCircle size={20} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">反馈建议</p>
-              <p className="mt-0.5 text-xs text-white/50">提交问题或改进建议</p>
+              <p className="mt-0.5 text-xs text-white/50">请通过 App Store 的应用支持入口提交问题或建议</p>
             </div>
             <ChevronRight size={17} className="text-white/40" />
-          </button>
+          </div>
 
-          <button
-            onClick={() => openMail("联系 Master Nihongo 支持")}
-            className="focus-ring flex w-full items-center gap-3 p-4 text-left hover:bg-[#4d5151]"
-          >
+          <div className="flex w-full items-center gap-3 p-4 text-left">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-              <Mail size={20} />
+              <MessageCircle size={20} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">联系我们</p>
-              <p className="mt-0.5 text-xs text-white/50">{supportEmail}</p>
+              <p className="text-sm font-bold text-white">获取支持</p>
+              <p className="mt-0.5 text-xs text-white/50">请通过 App Store 的应用支持入口联系我们</p>
             </div>
-            <ChevronRight size={17} className="text-white/40" />
-          </button>
+          </div>
         </div>
       </div>
 

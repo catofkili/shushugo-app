@@ -1,13 +1,18 @@
 import { getDatabase } from "./database";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
-import { getDailyWordGoal } from "./studyPreferences";
+import { getDailyWordGoal, getReviewCapPreference } from "./studyPreferences";
 import { hasKanjiText, rowObjectToCard } from "./models/word-card";
 import { notifyProgressUpdated } from "./progress-events";
-import { pickDueCriticalPoolRow, pickStage1CriticalPoolRow, priorityComponents, priorityScore } from "./scheduler/priority";
+import {
+  pickDueCriticalPoolRow,
+  pickStage1CriticalPoolRow,
+  priorityComponents,
+  priorityScore,
+  shouldPickStage1NewWord
+} from "./scheduler/priority";
 import {
   answerScore,
   CRITICAL_SCORE,
-  DAILY_DECAY_FLOOR,
   daysSince,
   DbRow,
   ensureUserTables,
@@ -22,7 +27,31 @@ import {
   today
 } from "./study-core";
 import type { WordSessionOptions } from "./study-types";
+import {
+  applyLadderDecay,
+  ladderDecayRate,
+  nextRightStreak,
+  RETIRED_SPOT_CHECKS_PER_DAY,
+  SCORE_CAP,
+  shouldAutoRetire
+} from "./streak-ladder";
 import { applyGrammarDailyDecay, ensureGrammarProgressInitialized } from "./grammar-api";
+import {
+  comebackDailyTarget,
+  currentComeback,
+  dailyReviewCap,
+  encoreChunkSize,
+  estimatedMinutesFor,
+  evaluateComeback,
+  fatigueDetected,
+  markComebackAnnouncedOn,
+  readEncoreLog,
+  recentReviewAverages,
+  recordEncore,
+  retuneComebackMode,
+  reviewBacklogCount
+} from "./comeback";
+import type { ComebackMode } from "./comeback";
 
 // 导出分析统计功能
 export { getStudyAnalytics } from "./analytics/stats";
@@ -115,23 +144,13 @@ export const ensureProgressInitialized = () => {
   applyGrammarDailyDecay();
 };
 
-const mistakeScore = (row: DbRow) => {
-  const wrongish = Number(row.forgot_count ?? 0) * 2 + Number(row.fuzzy_count ?? 0);
-  const total = wrongish + Number(row.right_count ?? 0);
-  if (total === 0) return 0;
-  const streakBonus = Math.min(Number(row.mistake_streak ?? 0) * 0.08, 0.32);
-  return Math.min(wrongish / total + streakBonus, 1);
-};
-
-const weightedDecayTenths = (row: DbRow) => {
-  let decay = 10;
-  decay += Number(row.importance ?? 3) - 3;
-  decay += Math.round(mistakeScore(row) * 2);
-  if (Number(row.right_count ?? 0) >= Number(row.forgot_count ?? 0) + Number(row.fuzzy_count ?? 0) + 3) {
-    decay -= 1;
-  }
-  return Math.min(Math.max(decay, 8), 12);
-};
+const ladderRowOf = (row: DbRow) => ({
+  importance: Number(row.importance ?? 3),
+  right_count: Number(row.right_count ?? 0),
+  fuzzy_count: Number(row.fuzzy_count ?? 0),
+  forgot_count: Number(row.forgot_count ?? 0),
+  right_streak: Number(row.right_streak ?? 0)
+});
 
 const backfillCriticalReviews = (beforeDay: string) => {
   getDatabase().run(`
@@ -173,6 +192,8 @@ const applyDailyDecay = () => {
     return;
   }
   if (lastDecay === day) return;
+  // 隔多天打开也按实际天数补衰减(封顶 60,防异常日期)
+  const steps = Math.min(Math.max(daysSince(lastDecay), 1), 60);
 
   const db = getDatabase();
   const rows = rowsFor(`
@@ -183,14 +204,15 @@ const applyDailyDecay = () => {
   `);
 
   rows.forEach((row) => {
-    const decay = weightedDecayTenths(row);
+    const rate = ladderDecayRate(ladderRowOf(row));
+    const next = applyLadderDecay(Number(row.score ?? 0), rate * steps);
     db.run(`
       UPDATE progress
-      SET score = MAX(score - ?, ?),
+      SET score = ?,
           mastered_on = NULL,
           last_decay_amount = ?
       WHERE word_id = ?
-    `, [decay / 10, DAILY_DECAY_FLOOR, decay, Number(row.word_id)]);
+    `, [next, Math.round(rate * 10), Number(row.word_id)]);
   });
 
   backfillCriticalReviews(day);
@@ -199,6 +221,8 @@ const applyDailyDecay = () => {
 };
 
 const dailyNewQuota = () => {
+  // 回归模式期间暂停引入新词，先清积压
+  if (currentComeback()) return 0;
   return getDailyWordGoal();
 };
 
@@ -335,6 +359,40 @@ const createStage1Tasks = (day: string) => {
 
   activateMojiMigratedReviews(day);
 
+  // 退休抽查:每天临时复活最少见的几个自动退休词(known_forever=0、score=6),
+  // 它们自然流入下方的复习选取;答对会被梯子规则当场重新退休,答错则留在轮换里。
+  // 手动「熟知」的词没有 auto_retired_on 标记,永不抽查。
+  getDatabase().run(`
+    UPDATE progress
+    SET known_forever = 0, score = 6
+    WHERE word_id IN (
+      SELECT word_id FROM progress
+      WHERE known_forever = 1
+        AND auto_retired_on IS NOT NULL
+        AND auto_retired_on < ?
+      ORDER BY COALESCE(last_seen_on, '') ASC, word_id ASC
+      LIMIT ${RETIRED_SPOT_CHECKS_PER_DAY}
+    )
+  `, [day]);
+
+  // 回归模式评估只发生在当日任务创建前：激活后当天复习量被容量截断，
+  // 其余积压自然留给后续天（LIMIT -1 表示不限制）。
+  const comeback = evaluateComeback(day);
+  const existingReviewTasks = firstValue<number>(
+    "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type = 'review'",
+    [day],
+    0
+  );
+  // 复习上限常驻生效;回归模式改用「今日摊还目标」(温和递增/高强度分摊),
+  // 高强度可高于常规上限(就是要快清),温和则明显更低。
+  const cap = dailyReviewCap(getReviewCapPreference(), day);
+  let dailyLimit = cap;
+  if (comeback.active) {
+    const dayIndex = daysSince(comeback.startedOn) + 1;
+    dailyLimit = comebackDailyTarget(comeback, dayIndex, reviewBacklogCount());
+  }
+  const reviewLimit = Math.max(dailyLimit - existingReviewTasks, 0);
+
   let orderIndex = 1;
   const reviewRows = rowsFor(`
     SELECT p.word_id
@@ -353,7 +411,8 @@ const createStage1Tasks = (day: string) => {
       COALESCE(m.priority, 0) DESC,
       p.last_seen_on ASC,
       p.word_id ASC
-  `);
+    LIMIT ?
+  `, [reviewLimit]);
 
   reviewRows.forEach((row) => {
     db.run(`
@@ -415,8 +474,27 @@ const reconcileStage1NewQuota = (day: string) => {
   `, [day, day, remainingNewQuota]);
 };
 
+const STAGE1_PLAN_VERSION = "review-first-random-v3";
+
+const resetUnansweredStage1PlanForVersion = (day: string) => {
+  if (getState("stage1_plan_version", "") === STAGE1_PLAN_VERSION) return;
+  const answeredTaskCount = firstValue<number>(`
+    SELECT COUNT(DISTINCT r.word_id)
+    FROM reviews r
+    JOIN stage1_tasks t ON t.word_id = r.word_id AND t.reviewed_on = r.reviewed_on
+    WHERE t.reviewed_on = ?
+  `, [day], 0);
+  if (answeredTaskCount === 0) {
+    getDatabase().run("DELETE FROM stage1_tasks WHERE reviewed_on = ?", [day]);
+    setReviewQueue([]);
+    setState("current_card", "0");
+  }
+  setState("stage1_plan_version", STAGE1_PLAN_VERSION);
+};
+
 const ensureStage1Tasks = () => {
   const day = today();
+  resetUnansweredStage1PlanForVersion(day);
   createStage1Tasks(day);
   reconcileStage1NewQuota(day);
 };
@@ -443,6 +521,16 @@ const stage1ProgressCounts = () => {
     total
   };
 };
+
+// 今日任务之外仍在积压中的复习词数（回归模式下的「待清余量」）
+const encoreRemainingCount = (day: string) => firstValue<number>(`
+  SELECT COUNT(*)
+  FROM progress p
+  WHERE p.known_forever = 0
+    AND p.seen_count > 0
+    AND p.score <= 6
+    AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
+`, [day], 0);
 
 const pickStage1Next = (): WordCard | null => {
   const day = today();
@@ -493,10 +581,23 @@ const pickStage1Next = (): WordCard | null => {
       AND p.score <= 6
   `, [day]);
 
-  const criticalPoolRow = pickStage1CriticalPoolRow(rows, queueById);
+  const reviewRows = rows.filter((row) => String(row.task_type) === "review");
+  const newRows = rows.filter((row) => String(row.task_type) === "new");
+  const completedTaskCount = firstValue<number>(`
+    SELECT COUNT(DISTINCT r.word_id)
+    FROM reviews r
+    JOIN stage1_tasks t ON t.word_id = r.word_id AND t.reviewed_on = r.reviewed_on
+    WHERE t.reviewed_on = ?
+  `, [day], 0);
+  const criticalPoolRow = pickStage1CriticalPoolRow(reviewRows, queueById);
   if (criticalPoolRow) return rowObjectToCard(criticalPoolRow);
 
-  const candidates = rows.map((row) => {
+  const preferredRows = shouldPickStage1NewWord(
+    reviewRows.length,
+    newRows.length,
+    completedTaskCount
+  ) ? newRows : reviewRows.length ? reviewRows : newRows;
+  const candidates = preferredRows.map((row) => {
     const components = priorityComponents(row, queueById.get(Number(row.id)), criticalCount, newQuotaLeft);
     return {
       score: priorityScore(components),
@@ -1022,7 +1123,49 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     0
   );
 
+  const comebackState = currentComeback(studyDate);
+  const remainingBacklog = encoreRemainingCount(studyDate);
+  const { secondsPerWord: recentSecondsPerWord } = recentReviewAverages(studyDate);
+  // 估算耗时优先用今天的实际节奏（含反向/汉字阶段的开销），没有数据再退回近期均值
+  const secondsPerWord = reviewedToday > 0 && wordStudySecondsToday > 0
+    ? Math.min(Math.max(wordStudySecondsToday / reviewedToday, 6), 60)
+    : recentSecondsPerWord;
+  // 优先清积压(递减批);积压见底后用新词续杯 = 强度的一半(最少 5),
+  // 白天已学一份强度,加餐给半份,防一天吞两倍新词把明天复习堆爆。
+  const backlogChunk = encoreChunkSize(remainingBacklog);
+  const newWordChunk = Math.max(Math.round(getDailyWordGoal() / 2), 5);
+  const encoreSize = backlogChunk > 0 ? backlogChunk : Math.min(newWordChunk, unseenCount);
+  const encoreLog = readEncoreLog(studyDate);
+  const totalLearnedWords = firstValue<number>(
+    "SELECT COUNT(*) FROM progress WHERE seen_count > 0 OR known_forever = 1", [], 0
+  );
+  const comebackDayIndex = comebackState ? daysSince(comebackState.startedOn) + 1 : 0;
+
   return {
+    comeback: comebackState ? {
+      active: true,
+      dayIndex: comebackDayIndex,
+      // 触发时锁定,只减不增;超期(dayIndex 越过计划)显示实际天数,不再逐日 +1 谎报
+      planDays: comebackState.planDays,
+      mode: comebackState.mode,
+      todayTarget: stage1Progress.total,
+      estimatedMinutes: estimatedMinutesFor(stage1Progress.total, secondsPerWord),
+      remainingBacklog,
+      initialBacklog: comebackState.initialBacklog,
+      announcedToday: comebackState.announcedOn === studyDate
+    } : undefined,
+    encore: {
+      available: encoreSize > 0,
+      size: encoreSize,
+      estimatedMinutes: estimatedMinutesFor(encoreSize, secondsPerWord),
+      remaining: remainingBacklog,
+      unseenRemaining: unseenCount,
+      secondsPerWord,
+      totalLearned: totalLearnedWords,
+      weekEncoreCount: encoreLog.weekCount,
+      todayEncoreWords: encoreLog.dayWords,
+      fatigued: fatigueDetected(studyDate)
+    },
     total,
     knownForever,
     masteredToday: firstValue<number>(
@@ -1113,9 +1256,13 @@ export function completeTodayWordPlan(): { stats: WordStats; completedCount: num
 
   if (ids.length) {
     const placeholders = ids.map(() => "?").join(",");
+    // 与 answerWord 的「首见答对」同规则:+15 封顶 20、非深坑词连胜 +1;
+    // 但一键完成是快捷通道,不参与自动退休(退休只能靠真实作答攒出来)。
+    // MAX(…, 10) 保证深坑词也算完成今日任务,维持本函数「清空今日计划」的契约。
     getDatabase().run(`
       UPDATE progress
-      SET score = MAX(score, 10),
+      SET score = MIN(MAX(score + 15, 10), ${SCORE_CAP}),
+          right_streak = CASE WHEN score >= 0 THEN right_streak + 1 ELSE right_streak END,
           seen_count = seen_count + 1,
           mastered_on = COALESCE(mastered_on, ?),
           last_seen_on = ?,
@@ -1170,6 +1317,103 @@ export function markTodayWordCheckin(): WordStats {
   notifyProgressUpdated();
   return getWordStats(currentPhase());
 }
+
+export function markComebackAnnounced(): WordStats {
+  ensureProgressInitialized();
+  markComebackAnnouncedOn(today());
+  persistSoon();
+  return getWordStats(currentPhase());
+}
+
+/**
+ * 回归进行中当场切换节奏（欢迎卡上的 🌱/⚡）：重算 planDays，
+ * 并按新档位重建当天复习任务（未完成时才重建，避免丢已答进度）。
+ */
+export function setComebackModeForToday(mode: ComebackMode): WordStats {
+  ensureProgressInitialized();
+  retuneComebackMode(mode);
+  const stats = refreshTodayWordPlan();
+  persistSoon();
+  return stats;
+}
+
+/**
+ * 续杯：今日计划完成后，从积压里按遗忘风险再取一小批（递减批量）
+ * 加入今日任务并回到 Stage1 继续学。
+ */
+export function startComebackEncore(customSize?: number): WordSessionResponse {
+  ensureProgressInitialized();
+  const day = today();
+  ensureStage1Tasks();
+  const smartSize = encoreChunkSize(encoreRemainingCount(day));
+  const size = customSize && customSize > 0
+    ? Math.min(Math.round(customSize), 100)
+    : (smartSize > 0 ? smartSize : Math.max(Math.round(getDailyWordGoal() / 2), 5));
+  if (size <= 0) return getWordSession();
+
+  const db = getDatabase();
+  const startIndex = firstValue<number>(
+    "SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?",
+    [day],
+    1
+  );
+  const reviewRows = rowsFor(`
+    SELECT p.word_id
+    FROM progress p
+    JOIN words w ON w.id = p.word_id
+    WHERE p.known_forever = 0
+      AND p.seen_count > 0
+      AND p.score <= 6
+      AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
+    ORDER BY
+      p.score ASC,
+      p.low_history DESC,
+      w.importance DESC,
+      p.last_seen_on ASC,
+      p.word_id ASC
+    LIMIT ?
+  `, [day, size]);
+  reviewRows.forEach((row, index) => {
+    db.run(`
+      INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+      VALUES (?, ?, 'review', ?)
+    `, [day, Number(row.word_id), startIndex + index]);
+  });
+
+  // 积压不够就用新词补齐,让「继续学习」在清完积压后依然可用
+  const newFill = size - reviewRows.length;
+  if (newFill > 0) {
+    const newRows = rowsFor(`
+      SELECT p.word_id
+      FROM progress p
+      JOIN words w ON w.id = p.word_id
+      WHERE p.known_forever = 0
+        AND p.seen_count = 0
+        AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
+      ORDER BY w.shuffle_rank DESC, w.importance DESC, p.word_id ASC
+      LIMIT ?
+    `, [day, newFill]);
+    // task_type 用 'encore_new' 而不是 'new':加餐词有意超出每日配额,
+    // 不能被 reconcileStage1NewQuota 的超额裁剪删掉,也不占配额计数。
+    newRows.forEach((row, index) => {
+      db.run(`
+        INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+        VALUES (?, ?, 'encore_new', ?)
+      `, [day, Number(row.word_id), startIndex + reviewRows.length + index]);
+    });
+    if (reviewRows.length + newRows.length > 0) {
+      recordEncore(day, reviewRows.length + newRows.length);
+    }
+  } else if (reviewRows.length > 0) {
+    recordEncore(day, reviewRows.length);
+  }
+
+  setPhase("stage1");
+  persistSoon();
+  notifyProgressUpdated();
+  return getWordSession();
+}
+
 
 export function getWordSession(options: WordSessionOptions = {}): WordSessionResponse {
   ensureProgressInitialized();
@@ -1321,20 +1565,27 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     fuzzy_count: Number(progress.fuzzy_count ?? 0),
     forgot_count: Number(progress.forgot_count ?? 0),
     mistake_streak: Number(progress.mistake_streak ?? 0),
+    right_streak: Number(progress.right_streak ?? 0),
+    auto_retired_on: progress.auto_retired_on ?? null,
     review_queue: getReviewQueue()
   };
 
   advanceReviewQueue(wordId);
-  let score = Number(progress.score ?? 0);
+  const preScore = Number(progress.score ?? 0);
+  let score = preScore;
   let knownForever = Number(progress.known_forever ?? 0);
   let rightCount = Number(progress.right_count ?? 0);
   let fuzzyCount = Number(progress.fuzzy_count ?? 0);
   let forgotCount = Number(progress.forgot_count ?? 0);
   let mistakeStreak = Number(progress.mistake_streak ?? 0);
+  let rightStreak = Number(progress.right_streak ?? 0);
+  let autoRetiredOn = progress.auto_retired_on == null ? null : String(progress.auto_retired_on);
 
   if (answer === "known_forever") {
     knownForever = 1;
     mistakeStreak = 0;
+    // 手动熟知 = 永久退休,不参与抽查
+    autoRetiredOn = null;
   } else {
     // First "know" of the day on a word earns a +5 first-impression bonus
     // (+15 instead of +10). Only the day's first sighting counts; fuzzy/forgot
@@ -1342,17 +1593,23 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     const firstSeenToday =
       firstValue<number>("SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ?", [wordId, studyDate], 0) === 0;
     const delta = answer === "know" && firstSeenToday ? 15 : answerScore[answer];
-    score = Math.max(score + delta, -40);
+    score = Math.min(Math.max(score + delta, -40), SCORE_CAP);
     rightCount += answer === "know" ? 1 : 0;
     fuzzyCount += answer === "fuzzy" ? 1 : 0;
     forgotCount += answer === "forgot" ? 1 : 0;
     mistakeStreak = answer === "know" ? 0 : mistakeStreak + 1;
+    rightStreak = nextRightStreak(rightStreak, answer, firstSeenToday, preScore);
   }
 
   let lowHistory = Number(progress.low_history ?? 0);
   if (score <= CRITICAL_SCORE) lowHistory = 1;
   if (score <= CRITICAL_SCORE && !knownForever) {
     db.run("INSERT OR IGNORE INTO critical_reviews (reviewed_on, word_id) VALUES (?, ?)", [studyDate, wordId]);
+  }
+  // 连胜攒满自动退休,进抽查池(known_forever + auto_retired_on 标记)
+  if (!knownForever && answer === "know" && shouldAutoRetire(rightStreak, score, lowHistory === 1)) {
+    knownForever = 1;
+    autoRetiredOn = studyDate;
   }
   const masteredOn = score >= 10 && !knownForever ? studyDate : null;
   if (score <= 6 && !knownForever) scheduleDelayedReview(wordId);
@@ -1369,9 +1626,11 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
         right_count = ?,
         fuzzy_count = ?,
         forgot_count = ?,
-        mistake_streak = ?
+        mistake_streak = ?,
+        right_streak = ?,
+        auto_retired_on = ?
     WHERE word_id = ?
-  `, [score, lowHistory, knownForever, masteredOn, studyDate, rightCount, fuzzyCount, forgotCount, mistakeStreak, wordId]);
+  `, [score, lowHistory, knownForever, masteredOn, studyDate, rightCount, fuzzyCount, forgotCount, mistakeStreak, rightStreak, autoRetiredOn, wordId]);
 
   db.run(
     "INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (?, ?, ?, ?)",
@@ -1466,7 +1725,9 @@ export function undoLastWordAnswer(): WordSessionResponse {
           right_count = ?,
           fuzzy_count = ?,
           forgot_count = ?,
-          mistake_streak = ?
+          mistake_streak = ?,
+          right_streak = ?,
+          auto_retired_on = ?
       WHERE word_id = ?
     `, [
       Number(snapshot.score ?? 0),
@@ -1479,6 +1740,8 @@ export function undoLastWordAnswer(): WordSessionResponse {
       Number(snapshot.fuzzy_count ?? 0),
       Number(snapshot.forgot_count ?? 0),
       Number(snapshot.mistake_streak ?? 0),
+      Number(snapshot.right_streak ?? 0),
+      snapshot.auto_retired_on == null ? null : String(snapshot.auto_retired_on),
       Number(snapshot.word_id)
     ]);
     if (snapshot.review_id != null) {
@@ -1500,6 +1763,42 @@ export function undoLastWordAnswer(): WordSessionResponse {
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());
   notifyProgressUpdated();
+
+  // 撤销的语义是「回到刚才那张」，而不是在恢复数据后再随机抽下一张。
+  // 重新抽题会让用户看到无关词，也会把 current_card 留在错误的下一题上。
+  const restoredRow = firstRow(`
+    SELECT
+      w.*,
+      p.score,
+      p.seen_count,
+      p.low_history,
+      p.known_forever,
+      p.mastered_on,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      p.last_decay_amount,
+      COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE w.id = ?
+  `, [Number(snapshot.word_id)]);
+  const restoredCard = restoredRow ? rowObjectToCard(restoredRow) : null;
+  if (restoredCard) {
+    const restoredPhase = snapshot.phase === "stage2" || snapshot.phase === "kanji" || snapshot.phase === "stage1"
+      ? snapshot.phase
+      : currentPhase();
+    setCurrentCard(restoredCard);
+    return {
+      card: restoredCard,
+      phase: restoredPhase,
+      stats: getWordStats(restoredPhase)
+    };
+  }
+
   return getWordSession();
 }
 

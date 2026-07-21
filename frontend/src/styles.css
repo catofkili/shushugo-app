@@ -1416,3 +1416,27 @@ select {
 [data-theme="light"] .jp-ruby rt {
   color: #1f7469 !important;
 }
+
+/* ========== 「继续学习」按钮:出现后头几秒扫三道光泽,之后归于平静 ========== */
+.encore-shine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 36%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+  transform: translateX(-150%);
+  animation: encore-sweep 1.9s ease-in-out 0.8s 3;
+  pointer-events: none;
+}
+
+@keyframes encore-sweep {
+  from { transform: translateX(-150%); }
+  to { transform: translateX(360%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .encore-shine {
+    animation: none;
+  }
+}

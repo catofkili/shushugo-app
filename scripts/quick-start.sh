@@ -46,7 +46,7 @@ echo ""
 
 # 5. 卸载旧版本
 echo "🗑️  卸载旧版本..."
-xcrun simctl uninstall booted com.lsc.masternihongo 2>/dev/null || echo "没有旧版本"
+xcrun simctl uninstall booted com.masternihongo.app 2>/dev/null || echo "没有旧版本"
 echo ""
 
 # 6. 构建并安装
@@ -75,7 +75,7 @@ echo ""
 
 # 8. 启动应用
 echo "🎯 启动应用..."
-xcrun simctl launch booted com.lsc.masternihongo
+xcrun simctl launch booted com.masternihongo.app
 echo "✅ 应用已启动"
 echo ""
 

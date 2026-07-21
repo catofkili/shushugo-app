@@ -116,6 +116,20 @@ describe("word-study-utils", () => {
     expect(honorificLabel("谦虚")).toBe("");
   });
 
+  it("labels known honorific word forms whose meanings are plain translations", () => {
+    expect(honorificLabel("吃，喝；得到", "頂く")).toBe("谦语");
+    expect(honorificLabel("来；去；在", "いらっしゃる")).toBe("敬语");
+    expect(honorificLabel("做", "なさる")).toBe("敬语");
+    expect(honorificLabel("给予，赐予", "くださる")).toBe("敬语");
+    expect(honorificLabel("在", "おる")).toBe("谦语");
+    expect(honorificLabel("请教，打听；拜访", "伺う")).toBe("谦语");
+    // 同音普通词不能被误标
+    expect(honorificLabel("折，折断", "折る")).toBe("");
+    expect(honorificLabel("织，编织", "織る")).toBe("");
+    // 释义里已有标注的走原逻辑
+    expect(honorificLabel("吃喝（对外敬语）", "召し上がる")).toBe("敬语");
+  });
+
   it("builds a complete calendar month", () => {
     const calendar = monthDays("2026-06-19");
 

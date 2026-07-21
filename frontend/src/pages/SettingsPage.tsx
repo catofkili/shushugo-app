@@ -22,6 +22,9 @@ import {
   applyTheme,
   defaultStudyPreferences,
   getStudyPreferences,
+  INTENSITY_ANCHORS,
+  INTENSITY_MAX,
+  INTENSITY_MIN,
   saveStudyPreferences,
   StudyPreferences,
   ThemePreference
@@ -111,7 +114,6 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   const [deleteAccountPassword, setDeleteAccountPassword] = useState("");
   const [resetCode, setResetCode] = useState("");
   const [resetNewPassword, setResetNewPassword] = useState("");
-  const [dailyGoalInput, setDailyGoalInput] = useState(String(defaultStudyPreferences.dailyGoal));
   const [clearPanelOpen, setClearPanelOpen] = useState(false);
   const [clearRequiresPasscode, setClearRequiresPasscode] = useState(false);
   const [clearCredential, setClearCredential] = useState("");
@@ -141,7 +143,6 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   useEffect(() => {
     const savedPreferences = getStudyPreferences();
     setPreferences(savedPreferences);
-    setDailyGoalInput(String(savedPreferences.dailyGoal));
     refreshStorageInfo();
     getCloudSession().then((session) => {
       setCloudSession(session);
@@ -169,14 +170,34 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   };
 
   const updateDailyGoal = (value: number) => {
-    const next = updatePreference({ dailyGoal: value }, "每日目标已保存。");
-    setDailyGoalInput(String(next.dailyGoal));
+    const next = updatePreference({ dailyGoal: value }, "学习强度已保存。");
     try {
       refreshTodayWordPlan();
-      notify(`每日目标已改为 ${next.dailyGoal} 个，今日计划已刷新。`);
+      notify(`学习强度已改为每日新词 ${next.dailyGoal} 个，今日计划已刷新。`);
     } catch {
-      notify("每日目标已保存，重启应用后生效。");
+      notify("学习强度已保存，重启应用后生效。");
     }
+  };
+
+  const updateReviewCap = (value: number) => {
+    const next = updatePreference({ reviewCap: value }, "复习上限已保存。");
+    try {
+      refreshTodayWordPlan();
+      notify(next.reviewCap > 0
+        ? `复习上限已改为每日 ${next.reviewCap} 个，超出部分顺延。`
+        : "复习上限已改回自动（按近期节奏 × 1.5）。");
+    } catch {
+      notify("复习上限已保存，重启应用后生效。");
+    }
+  };
+
+  const updateComebackMode = (value: StudyPreferences["comebackMode"]) => {
+    updatePreference(
+      { comebackMode: value },
+      value === "pressure"
+        ? "回归节奏已设为高强度,下次触发 2~3 天快清。"
+        : "回归节奏已设为温和,下次触发按 7 天由轻到重摊还。"
+    );
   };
 
   const exportData = () => {
@@ -215,12 +236,12 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     if (!file) return;
     try {
       if (/\.realm$/i.test(file.name)) {
-        notify("已找到词库数据库 FavDB.realm；这个文件证明位置对了，但请在同一目录或最近项目里选择导出的词单文本文件。");
+        notify("这个数据库文件不能直接导入，请选择导出的词单文本文件。");
         return;
       }
       const text = await file.text();
       if (/class_DB_ReciteTestRecord|class_DB_Fav|FavDB\.realm/.test(text.slice(0, 20000))) {
-        notify("已找到词库数据库 FavDB.realm；它不是可直接导入的词单文本，请选择同位置生成的词单文件。");
+        notify("这个数据库文件不能直接导入，请选择导出的词单文本文件。");
         return;
       }
       const preview = previewExternalWordList(text);
@@ -253,19 +274,6 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     } finally {
       if (wordListInputRef.current) wordListInputRef.current.value = "";
     }
-  };
-
-  const updateDailyGoalInput = (value: string) => {
-    const digitsOnly = value.replace(/\D/g, "").slice(0, 3);
-    setDailyGoalInput(digitsOnly);
-  };
-
-  const commitDailyGoalInput = () => {
-    if (!dailyGoalInput) {
-      setDailyGoalInput(String(preferences.dailyGoal));
-      return;
-    }
-    updateDailyGoal(Number(dailyGoalInput));
   };
 
   const openClearDataPanel = async () => {
@@ -465,35 +473,96 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
             </label>
           </div>
 
-          <div className="p-4">
-            <div className="mb-3">
-              <p className="text-sm font-bold text-white">每日学习目标</p>
-              <p className="mt-0.5 text-xs text-white/50">当天没开始做题时会立即刷新今日计划</p>
+          <div className="border-b border-white/10 p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-white">学习强度</p>
+                <p className="mt-0.5 text-xs text-white/50">每日新词数,唯一需要调的量。复习量由算法安排。</p>
+              </div>
+              <span className="shrink-0 text-sm font-bold text-[#81D8CF]">{preferences.dailyGoal} 个/天</span>
             </div>
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={dailyGoalInput}
-                onChange={(event) => updateDailyGoalInput(event.target.value)}
-                onBlur={commitDailyGoalInput}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.currentTarget.blur();
-                  }
-                }}
-                className="focus-ring min-w-0 flex-1 rounded-2xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm font-bold text-white placeholder:text-white/40"
-                placeholder="输入每日数量"
-              />
-              <span className="min-w-[3.5rem] text-right text-sm font-bold text-[#81D8CF]">
-                {preferences.dailyGoal} 个
-              </span>
+            <input
+              type="range"
+              min={INTENSITY_MIN}
+              max={INTENSITY_MAX}
+              step={1}
+              value={preferences.dailyGoal}
+              onChange={(event) => updateDailyGoal(Number(event.target.value))}
+              aria-label="学习强度"
+              className="w-full accent-[#81D8CF]"
+            />
+            <div className="mt-2 flex flex-wrap gap-2">
+              {INTENSITY_ANCHORS.map((anchor) => (
+                <button
+                  key={anchor.value}
+                  onClick={() => updateDailyGoal(anchor.value)}
+                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
+                    preferences.dailyGoal === anchor.value
+                      ? "bg-[#81D8CF] text-[#2f3333]"
+                      : "border border-white/15 bg-white/8 text-white/70"
+                  }`}
+                >
+                  {anchor.label} {anchor.value}
+                </button>
+              ))}
             </div>
-            <p className="mt-2 text-xs text-white/45">仅限数字，范围 1-999。点键盘完成或离开输入框后保存。</p>
 
             {/* 目标完成时间预测 */}
             <GoalEstimation dailyGoal={preferences.dailyGoal} />
+          </div>
+
+          <div className="p-4">
+            <div className="mb-3">
+              <p className="text-sm font-bold text-white">每日复习上限</p>
+              <p className="mt-0.5 text-xs text-white/50">
+                学不完的顺延到后面几天,按遗忘风险排队,不会丢。自动 = 近期节奏 × 1.5(60-150)。
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[0, 100, 150, 200, 300].map((cap) => (
+                <button
+                  key={cap}
+                  onClick={() => updateReviewCap(cap)}
+                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
+                    preferences.reviewCap === cap
+                      ? "bg-[#81D8CF] text-[#2f3333]"
+                      : "border border-white/15 bg-white/8 text-white/70"
+                  }`}
+                >
+                  {cap === 0 ? "自动(推荐)" : `${cap} 个`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 p-4">
+            <div className="mb-3">
+              <p className="text-sm font-bold text-white">回归节奏</p>
+              <p className="mt-0.5 text-xs text-white/50">
+                长期没打卡、积压堆多了会触发回归模式。选清积压的节奏:温和由轻到重摊 7 天,高强度 2~3 天快清。
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { value: "gentle", label: "🌱 温和(7天)" },
+                { value: "pressure", label: "⚡ 高强度(2-3天)" }
+              ] as const).map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => updateComebackMode(option.value)}
+                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
+                    preferences.comebackMode === option.value
+                      ? "bg-[#81D8CF] text-[#2f3333]"
+                      : "border border-white/15 bg-white/8 text-white/70"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-white/40">
+              改动在下次触发回归时生效,进行中的回归不受影响。
+            </p>
           </div>
         </div>
       </div>
@@ -705,8 +774,8 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
               <Upload size={19} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">导入词单</p>
-              <p className="mt-0.5 text-xs text-white/50">先生成完整词单，再选择同目录里的导出文件</p>
+              <p className="text-sm font-bold text-white">导入词单或 MOJi 复习记录</p>
+              <p className="mt-0.5 text-xs text-white/50">普通词单可直接导入；MOJi 完整复习记录需先用 Mac 导出</p>
             </div>
             <ChevronRight size={17} className="text-white/40" />
           </button>
@@ -718,16 +787,16 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
           />
 
           <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3 text-xs leading-5 text-white/58">
-            <p className="font-bold text-white/72">找不到文件时，按这个顺序来：</p>
+            <p className="font-bold text-white/72">MOJi 复习记录迁移（需要 Mac）：</p>
+            <p className="mt-1">iPhone 不允许应用直接读取另一个应用的内部数据，所以本应用只能在 iPhone 上导入导出文件，不能直接读取 MOJi 的 .realm 或缓存文件。</p>
             <ol className="mt-2 list-decimal space-y-1 pl-4">
-              <li>先打开原来的词典/背词工具，进入背词复习页，滑到最底部，等完整词单生成。</li>
-              <li>不要关闭那个页面，直接切回本应用，点“导入词单”。</li>
-              <li>在文件选择器里点“浏览”→“我的 iPhone”→“MOJi辞書”（有些系统显示 MOJiDict）。</li>
-              <li>继续进入一串账号文件夹，例如 k515cVWkKq，再进入 zh-CN_ja。</li>
-              <li>看到 FavDB.realm 就说明找对词库目录了；不要选它，改选同目录或“最近项目”里新生成的词单文件。</li>
-              <li>可导入的词单通常是 CSV、JSON、TXT、TSV，或没有明显后缀；.db 是本应用备份，不属于词单导入。</li>
+              <li>在 Mac 的 MOJi 中登录，打开“背词/复习”页面并等待内容加载完成，然后退出 MOJi。</li>
+              <li>在 Mac 上打开 Master Nihongo 项目文件夹中的“终端”。首次使用运行 <code>npm install --prefix scripts/moji-realm-export</code>。</li>
+              <li>运行 <code>python3 scripts/export-moji-review-data.py --fetch</code>。脚本只读取你的 MOJi 复习记录，不会修改 MOJi 数据，也不会把登录凭据写入导出文件。</li>
+              <li>桌面会生成 <code>master-nihongo-moji-review-export.json</code>；将它 AirDrop 到 iPhone，或存入“文件”。</li>
+              <li>回到本页点“导入词单或 MOJi 复习记录”，选择该 JSON 并确认。不要选择 .realm、.db 或缓存文件。</li>
             </ol>
-            <p className="mt-2 text-white/45">如果关闭原工具后文件消失，需要回去重新滑到底部生成一次。导入会追加词条，不会覆盖本机数据库。</p>
+            <p className="mt-2 text-white/45">导入会把 Moji 的做题次数、错误次数和分数转换为本应用的复习强度，不会覆盖已有本机学习记录。Windows 或纯 iPhone 目前只能导入已经导出的 JSON，不能生成这份完整记录。</p>
           </div>
 
           <button onClick={() => backupInputRef.current?.click()} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">

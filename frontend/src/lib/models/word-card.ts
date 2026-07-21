@@ -65,31 +65,56 @@ function stripLatinGlosses(text: string): string {
   });
 }
 
-// 「ハンカチーフ」的省略 / トイレット的缩略 这类"源词注记":
-// 括号内是假名/英文时,在问题面会漏答案;英文被剥离后还会留下「」的省略 残骸。
-// 整个短语删除;括号内是纯中文(如 "星期一"的省略)时保留,那是释义本身。
-const ABBREV_TAIL = /(?:的|之)\s*(?:省略|縮略|缩略|简称|簡称|略称|略語|略语|縮写|缩写)(?:语|語|词|詞)?/;
-const abbrevBracketPattern = new RegExp(
-  `[「『“”"]([^」』“”"]*)[」』“”"]\\s*${ABBREV_TAIL.source}`,
-  "g"
-);
-const abbrevKanaPattern = new RegExp(`[ぁ-ゟァ-ヿー・]+\\s*${ABBREV_TAIL.source}`, "g");
-const abbrevOrphanPattern = new RegExp(`(^|[。．；;，,、\\s])\\s*${ABBREV_TAIL.source}`, "g");
+// "源词注记"——「ハンカチーフ」的省略 / トイレット的缩略 / ビルディング（building）
+// 的缩写 / 「携帯電話」の略 / "星期一"的省略 这类"X 是 Y 的缩写/省略/简称"的说明。
+// 题目面只应留中文释义:注记要么泄漏读音/带英文,要么把答案原词写了出来,一律整段
+// 删除(源词 + 括号/引用 + 的/の/之 + 缩写/省略… 尾巴)。答案面(reveal)展示完整
+// card.meaning,删掉不丢信息。带 的/の/之 连接词是判定"注记"的关键——省略/中略/略す
+// 这类"本身就是释义"的词没有连接词,不会被误删。
+const ABBR_SRC =
+  "(?:" +
+  '[「『“"][^「」『』“”"]*[」』”"]' +   // 引用组「…」『…』"…"
+  "|[（(［〔][^（()）［\\]〔〕]*[）)］〕]" + // 括号组（…）［…］〔…〕
+  "|[ぁ-ゖゝゞァ-ヺーヽヾｦ-ﾟ・]+" +       // 假名源词
+  "|[A-Za-zＡ-Ｚａ-ｚ]+" +               // 英文源词
+  "|[·\\s]" +
+  ")*";
+const ABBR_TAIL = "(?:省略|縮略|缩略|简称|簡称|略称|略語|略语|缩写|縮写|略)(?:语|語|词|詞)?";
+const abbreviationNotePattern = new RegExp(`${ABBR_SRC}(?:的|の|之)\\s*${ABBR_TAIL}`, "g");
 
 function stripAbbreviationNotes(text: string): string {
   return text
-    .replace(abbrevBracketPattern, (match, inner: string) => (
-      // 纯中文内容(不含假名)是有效释义,保留;假名/英文/空内容整体删除
-      /[㐀-鿿]/.test(inner) && !/[ぁ-ゟァ-ヿ]/.test(inner) ? match : ""
-    ))
-    .replace(abbrevKanaPattern, "")
-    .replace(abbrevOrphanPattern, "$1")
+    .replace(abbreviationNotePattern, "")
     .replace(/[「『]\s*[」』]/g, "")
     .replace(/([。．；;，,、])[；;，,、]+/g, "$1");
 }
 
+// 题目面展示的是中文释义,不该出现日文假名:出现的假名要么直接泄漏读音
+//（「酒（详见「さけ」）」「（いっぱい）…」这类),要么是「…の形で」「…の略」等
+// 用法注记。答案面(reveal)始终展示完整的 card.meaning,所以题目面删掉这些
+// 带假名的括号/引用和散落假名不会丢失任何信息,却能避免直接把读音剧透。
+const KANA_CHAR = /[ぁ-ゖゝゞァ-ヺーヽヾｦ-ﾟ]/;
+const KANA_RUN = /[ぁ-ゖゝゞァ-ヺーヽヾｦ-ﾟ]+/g;
+
+function stripKanaNotes(text: string): string {
+  return text
+    // 含假名的括号组整体删除:（…）()［…］〔…〕(注记里可能内嵌「」,一并吞掉)
+    .replace(/[（(［〔\[][^（(）)［\]〔〕]*[）)］〕\]]/g, (m) => (KANA_CHAR.test(m) ? "" : m))
+    // 含假名的独立引用组整体删除:「…」『…』"…"
+    .replace(/[「『“][^「」『』“”]*[」』”]/g, (m) => (KANA_CHAR.test(m) ? "" : m))
+    // 删除残留的散落假名
+    .replace(KANA_RUN, "")
+    // 清理删除后留下的空括号与悬挂标点
+    .replace(/[（(［〔\[]\s*[）)］〕\]]/g, "")
+    .replace(/[「『]\s*[」』]/g, "")
+    .replace(/([；;，,、])[；;，,、]+/g, "$1")
+    .replace(/^[\s；;，,、.:：/·]+/, "")
+    .replace(/[；;，,、\s]+$/, "")
+    .trim();
+}
+
 export function questionMeaning(meaning: string): string {
-  return stripAbbreviationNotes(stripLatinGlosses(meaning))
+  return stripKanaNotes(stripAbbreviationNotes(stripLatinGlosses(meaning)))
     .replace(/[（(\[]\s*(?:英|美)\s*[）)\]]/g, "")
     .replace(/[（(]\s*[）)]/g, "")
     .replace(/\s*([；;，,])\s*/g, "$1")
@@ -263,12 +288,44 @@ export function promptMeaning(meaning: string, wordId: number, kanji: string): s
   return short.slice(0, 8);
 }
 
-export function honorificLabel(meaning: string): string {
+// 敬语/谦语动词的词库释义往往只有普通体翻译（頂く→「吃，喝」，和 食べる 在题目栏
+// 无法区分），按词形兜底标注。键是卡片展示用的 label（kanji 列，缺省 kana），必须
+// 精确匹配：おる（居る谦语）不能误伤同音的 折る/織る。
+const HONORIFIC_WORD_LABELS: Record<string, string> = {
+  "いらっしゃる": "敬语",
+  "おっしゃる": "敬语",
+  "なさる": "敬语",
+  "くださる": "敬语",
+  "ご覧になる": "敬语",
+  "おいでになる": "敬语",
+  "お越しになる": "敬语",
+  "お召しになる": "敬语",
+  "召し上がる": "敬语",
+  "伺う": "谦语",
+  "参る": "谦语",
+  "申す": "谦语",
+  "申し上げる": "谦语",
+  "頂く": "谦语",
+  "いただく": "谦语",
+  "差し上げる": "谦语",
+  "致す": "谦语",
+  "おる": "谦语",
+  "存じる": "谦语",
+  "存じ上げる": "谦语",
+  "拝見": "谦语",
+  "頂戴": "谦语",
+  "拝借": "谦语",
+  "お目にかかる": "谦语",
+  "承る": "谦语",
+  "かしこまりました": "谦语"
+};
+
+export function honorificLabel(meaning: string, label = ""): string {
   if (/(謙譲語|謙讓語|谦让语|谦让|謙讓)/.test(meaning)) return "谦语";
   if (/(谦称|謙称|謙稱)/.test(meaning)) return "谦称";
   if (meaning.includes("自谦")) return "自谦";
   if (/(敬语|敬語|尊敬表达|尊敬語|敬称|敬意|对外敬语)/.test(meaning)) return "敬语";
-  return "";
+  return HONORIFIC_WORD_LABELS[label] ?? "";
 }
 
 /**
@@ -310,7 +367,7 @@ export function rowObjectToCard(row: DbRow): WordCard {
     questionMeaning: questionMeaning(meaning),
     primaryMeaning: primaryMeaning(meaning),
     promptMeaning: promptMeaning(meaning, id, label),
-    honorificLabel: honorificLabel(meaning),
+    honorificLabel: honorificLabel(meaning, label),
     kana,
     kanji: label,
     englishOrigin: englishOrigin(label, kana, meaning),
