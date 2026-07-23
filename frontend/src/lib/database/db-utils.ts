@@ -89,6 +89,23 @@ export function studyDate(current = new Date()): string {
 export const today = studyDate;
 
 /**
+ * 本学习日的结束时刻(下一个凌晨 4 点)。FSRS 用它判「今天是否已毕业」:
+ * 学习/重学中的卡 due 只排到几分钟后(< 边界)→ 当天继续刷;
+ * 毕业卡 due 排到明天及以后(> 边界)→ 今天不再出。
+ */
+export function studyDayEnd(current = new Date()): Date {
+  const end = new Date(current);
+  if (end.getHours() < 4) {
+    // 还没过 4 点:属于昨天的学习日,今天 4 点结束
+    end.setHours(4, 0, 0, 0);
+  } else {
+    end.setDate(end.getDate() + 1);
+    end.setHours(4, 0, 0, 0);
+  }
+  return end;
+}
+
+/**
  * 调度保存数据库
  */
 export function persistSoon(): void {

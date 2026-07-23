@@ -14,7 +14,11 @@ const FSRS_COLS = [
   ["fsrs_stability", "REAL"],
   ["fsrs_difficulty", "REAL"],
   ["fsrs_due", "TEXT"],
-  ["fsrs_last_review", "TEXT"]
+  ["fsrs_last_review", "TEXT"],
+  ["fsrs_state", "INTEGER"],   // 0=New 1=Learning 2=Review 3=Relearning
+  ["fsrs_steps", "INTEGER"],   // 学习步索引
+  ["fsrs_reps", "INTEGER"],
+  ["fsrs_lapses", "INTEGER"]   // 累计答错(leech 判据)
 ] as const;
 
 const columnsReady = new WeakSet<object>();
@@ -30,20 +34,27 @@ export function ensureFsrsColumns(): void {
   columnsReady.add(db);
 }
 
+const FSRS_SELECT = "fsrs_stability, fsrs_difficulty, fsrs_due, fsrs_last_review, fsrs_state, fsrs_steps, fsrs_reps, fsrs_lapses";
+
 const rowToState = (r: Record<string, unknown> | null): FsrsState | null => {
   if (!r || r.fsrs_stability == null || !r.fsrs_due) return null;
   return {
     stability: Number(r.fsrs_stability),
     difficulty: Number(r.fsrs_difficulty),
     due: String(r.fsrs_due),
-    lastReview: String(r.fsrs_last_review ?? r.fsrs_due)
+    lastReview: String(r.fsrs_last_review ?? r.fsrs_due),
+    // 旧四列数据(迁移前)缺这些 → 兜底成复习卡,scheduler.toCard 也有同样兜底
+    state: r.fsrs_state == null ? 2 : Number(r.fsrs_state),
+    steps: r.fsrs_steps == null ? 0 : Number(r.fsrs_steps),
+    reps: r.fsrs_reps == null ? 1 : Number(r.fsrs_reps),
+    lapses: r.fsrs_lapses == null ? 0 : Number(r.fsrs_lapses)
   };
 };
 
 export function readFsrsState(wordId: number): FsrsState | null {
   ensureFsrsColumns();
   const rows = rowsFor(
-    "SELECT fsrs_stability, fsrs_difficulty, fsrs_due, fsrs_last_review FROM progress WHERE word_id = ?",
+    `SELECT ${FSRS_SELECT} FROM progress WHERE word_id = ?`,
     [wordId]
   );
   return rowToState(rows[0] ?? null);
@@ -52,8 +63,9 @@ export function readFsrsState(wordId: number): FsrsState | null {
 export function writeFsrsState(wordId: number, s: FsrsState): void {
   ensureFsrsColumns();
   getDatabase().run(
-    `UPDATE progress SET fsrs_stability = ?, fsrs_difficulty = ?, fsrs_due = ?, fsrs_last_review = ? WHERE word_id = ?`,
-    [s.stability, s.difficulty, s.due, s.lastReview, wordId]
+    `UPDATE progress SET fsrs_stability = ?, fsrs_difficulty = ?, fsrs_due = ?, fsrs_last_review = ?,
+       fsrs_state = ?, fsrs_steps = ?, fsrs_reps = ?, fsrs_lapses = ? WHERE word_id = ?`,
+    [s.stability, s.difficulty, s.due, s.lastReview, s.state, s.steps, s.reps, s.lapses, wordId]
   );
 }
 
@@ -61,9 +73,11 @@ export function writeFsrsState(wordId: number, s: FsrsState): void {
  * 影子写:仅在「当日首见」时调用。读旧 FSRS 状态 → 记一次作答 → 写回。
  * 不读不影响现行调度;P0 期间纯旁路。
  */
-export function recordFsrsReview(wordId: number, answer: WordAnswer, now = new Date()): void {
+export function recordFsrsReview(wordId: number, answer: WordAnswer, now = new Date()): FsrsState {
   const prev = readFsrsState(wordId);
-  writeFsrsState(wordId, recordReview(prev, answer, now));
+  const next = recordReview(prev, answer, now);
+  writeFsrsState(wordId, next);
+  return next;
 }
 
 /**
@@ -123,7 +137,7 @@ export function backfillFsrsFromHistory(): { migrated: boolean; words: number } 
 export function fsrsDueCount(now = new Date()): number {
   ensureFsrsColumns();
   const rows = rowsFor(
-    `SELECT fsrs_stability, fsrs_difficulty, fsrs_due, fsrs_last_review
+    `SELECT ${FSRS_SELECT}
      FROM progress WHERE known_forever = 0 AND seen_count > 0 AND fsrs_due IS NOT NULL`
   );
   let due = 0;

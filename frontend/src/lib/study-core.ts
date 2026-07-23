@@ -19,6 +19,7 @@ export {
   rowsFor,
   setState,
   studyDate,
+  studyDayEnd,
   today,
   type DbRow,
   type SqlValue

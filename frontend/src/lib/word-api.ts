@@ -24,6 +24,7 @@ import {
   rowsFor,
   setState,
   SqlValue,
+  studyDayEnd,
   today
 } from "./study-core";
 import type { WordSessionOptions } from "./study-types";
@@ -53,6 +54,7 @@ import {
 } from "./comeback";
 import type { ComebackMode } from "./comeback";
 import { ensureFsrsColumns, backfillFsrsFromHistory, recordFsrsReview, isFsrsActive, fsrsDueWordIds } from "./fsrs-store";
+import { isGraduatedForDay } from "./fsrs-scheduler";
 
 // 导出分析统计功能
 export { getStudyAnalytics } from "./analytics/stats";
@@ -263,7 +265,8 @@ const advanceReviewQueue = (answeredWordId: number) => {
 
 const scheduleDelayedReview = (wordId: number) => {
   const queue = getReviewQueue().filter((item) => item.word_id !== wordId);
-  queue.push({ word_id: wordId, due_after: randomBetween(4, 8) });
+  // 过几张卡后再出(≤10,随机):没记住的词当场反复,直到毕业
+  queue.push({ word_id: wordId, due_after: randomBetween(3, 10) });
   setReviewQueue(queue);
 };
 
@@ -406,7 +409,7 @@ const createStage1Tasks = (day: string) => {
   let orderIndex = 1;
   // 阶段 P1:开关打开时按 FSRS 到期(due 升序)选词,否则走现行分数排序。
   const reviewRows = isFsrsActive()
-    ? fsrsDueWordIds(reviewLimit).map((word_id) => ({ word_id }))
+    ? fsrsDueWordIds(reviewLimit, studyDayEnd()).map((word_id) => ({ word_id }))
     : rowsFor(`
     SELECT p.word_id
     FROM progress p
@@ -516,17 +519,17 @@ const stage1ProgressCounts = () => {
   const day = today();
   ensureStage1Tasks();
   const total = stage1TaskCount(day);
-  // FSRS:一词一天复习一次,「今天答过(有复习记录)或已永久掌握」= 完成。
-  // 旧算法:分数 >6 才算完成(要当天答对才过)。
+  // FSRS:「今天毕业」才算完成 = 下次到期已排到本学习日结束之后(不再当天重刷),或永久掌握。
+  //   学习/重学中的词(答错、新词没走完步骤)due 只排到几分钟后 → 未毕业 → 不计入完成、当天继续出。
+  // 旧算法:分数 >6 才算完成。
   const completed = isFsrsActive()
     ? firstValue<number>(`
         SELECT COUNT(DISTINCT t.word_id)
         FROM stage1_tasks t
         JOIN progress p ON p.word_id = t.word_id
         WHERE t.reviewed_on = ?
-          AND (p.known_forever = 1
-               OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = t.word_id AND r.reviewed_on = ?))
-      `, [day, day], 0)
+          AND (p.known_forever = 1 OR (p.fsrs_due IS NOT NULL AND p.fsrs_due > ?))
+      `, [day, studyDayEnd().toISOString()], 0)
     : firstValue<number>(`
         SELECT SUM(
           CASE
@@ -603,10 +606,11 @@ const pickStage1Next = (): WordCard | null => {
     WHERE t.reviewed_on = ?
       AND p.known_forever = 0
       AND ${isFsrsActive()
-        // FSRS:今天还没答过的都要出(答过一次即今天过了);不再看旧分数。
-        ? "NOT EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = t.word_id AND r.reviewed_on = ?)"
+        // FSRS:凡「本学习日内仍到期」的都要出——包括还没答的、以及答错/新词学习中
+        // (被排到几分钟后、仍 ≤ 今日边界)的。毕业(due 排到明天+)才移出当天。
+        ? "(p.fsrs_due IS NULL OR p.fsrs_due <= ?)"
         : "p.score <= 6"}
-  `, isFsrsActive() ? [day, day] : [day]);
+  `, isFsrsActive() ? [day, studyDayEnd().toISOString()] : [day]);
 
   const reviewRows = rows.filter((row) => String(row.task_type) === "review");
   const newRows = rows.filter((row) => String(row.task_type) === "new");
@@ -1639,7 +1643,22 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     autoRetiredOn = studyDate;
   }
   const masteredOn = score >= 10 && !knownForever ? studyDate : null;
-  if (score <= 6 && !knownForever) scheduleDelayedReview(wordId);
+
+  // FSRS 生效:每次作答都推进学习步骤,再据「是否毕业」决定当天要不要再出。
+  // 未毕业(新词/答错,学习或重学中,due 只排到几分钟后)→ 塞回队列过几张再刷;
+  // 毕业(due 排到明天及以后)→ 今天不再出。旧算法则沿用「分数 ≤6 未过就重排」。
+  let fsrsGraduated = false;
+  if (isFsrsActive() && !knownForever) {
+    try {
+      const next = recordFsrsReview(wordId, answer);
+      fsrsGraduated = isGraduatedForDay(next, studyDayEnd());
+    } catch (err) {
+      console.warn("[fsrs] 记录跳过:", err);
+      fsrsGraduated = answer === "know"; // 兜底:认识当作过了
+    }
+  }
+  const notPassed = isFsrsActive() ? !fsrsGraduated : score <= 6;
+  if (notPassed && !knownForever) scheduleDelayedReview(wordId);
   if (answer !== "known_forever") recordStage2Word(wordId);
 
   db.run(`
@@ -1666,16 +1685,19 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   const reviewId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
   setState("last_answer", JSON.stringify({ ...snapshot, review_id: reviewId }));
 
-  // 阶段 P0(影子写):仅当日首见时把作答喂给 FSRS(只写不读,失败不影响学习)。
-  try {
-    const priorToday = firstValue<number>(
-      "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ? AND id < ?",
-      [wordId, studyDate, reviewId],
-      0
-    );
-    if (priorToday === 0) recordFsrsReview(wordId, answer);
-  } catch (err) {
-    console.warn("[fsrs] 影子写跳过:", err);
+  // FSRS 未启用时:保留「当日首见」影子写,供切换前对比明日到期数。
+  // 已启用时:上面已在每次作答时记录(学习步骤需要每次推进),此处不再重复写。
+  if (!isFsrsActive()) {
+    try {
+      const priorToday = firstValue<number>(
+        "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ? AND id < ?",
+        [wordId, studyDate, reviewId],
+        0
+      );
+      if (priorToday === 0) recordFsrsReview(wordId, answer);
+    } catch (err) {
+      console.warn("[fsrs] 影子写跳过:", err);
+    }
   }
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());

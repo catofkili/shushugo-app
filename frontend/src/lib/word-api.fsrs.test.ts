@@ -22,8 +22,9 @@ vi.mock("./database", () => ({
 vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
 vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
 
-import { ensureProgressInitialized, getWordSession } from "./word-api";
+import { ensureProgressInitialized, getWordSession, submitWordAnswer } from "./word-api";
 import { setFsrsActive } from "./fsrs-store";
+import { studyDayEnd, getState } from "./database/db-utils";
 
 describe("FSRS 切换 · 端到端选词", () => {
   beforeAll(async () => {
@@ -59,6 +60,24 @@ describe("FSRS 切换 · 端到端选词", () => {
     expect(tasks).toContain(500);        // 已过期 → 入选
     expect(tasks).toContain(502);        // 未调度 → 入选
     expect(tasks).not.toContain(501);    // 未到期 → 不入选
+    setFsrsActive(false);
+  });
+
+  it("集成:点服务出的卡『不认识』→ 当天不毕业(会再出),不是消失", () => {
+    setFsrsActive(true);
+    testDb.run("DELETE FROM stage1_tasks");
+    testDb.run("DELETE FROM reviews");
+    testDb.run("UPDATE progress SET seen_count=3, score=12, fsrs_stability=NULL, fsrs_due=NULL, fsrs_state=NULL WHERE word_id BETWEEN 1 AND 20 AND known_forever=0");
+
+    const card = getWordSession().card;        // 服务出当前卡
+    expect(card).not.toBeNull();
+    submitWordAnswer(card!.id, "forgot");
+
+    const due = testDb.exec(`SELECT fsrs_due FROM progress WHERE word_id=${card!.id}`)[0].values[0][0] as string | null;
+    expect(due).toBeTruthy();                                                  // FSRS 记录已写(每次作答都记)
+    expect(new Date(due!).getTime()).toBeLessThanOrEqual(studyDayEnd().getTime()); // due 落在今天 = 没毕业 = 会再出,不是消失
+    const q = JSON.parse(getState("review_queue", "[]")) as any[];
+    expect(q.some((x) => x.word_id === card!.id)).toBe(true);                  // 已排回队列,过几张卡再刷
     setFsrsActive(false);
   });
 
