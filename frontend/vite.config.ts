@@ -30,5 +30,8 @@ export default defineConfig(({ command }) => ({
   },
   server: {
     port: 5173,
+    // 端口固定:被占用时直接报错,绝不"漂移"到 5174/5175…。端口一变,浏览器
+    // 的 IndexedDB(按端口隔离)就换成空库,会导致学习进度看起来"丢失/重来"。
+    strictPort: true,
   },
 }));

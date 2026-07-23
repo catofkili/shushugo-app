@@ -8,6 +8,7 @@
 
 import { firstValue, rowsFor, getState, setState, today, daysSince } from "./database/db-utils";
 import { getComebackModePreference, type ComebackMode } from "./studyPreferences";
+import { isFsrsActive, fsrsDueCount } from "./fsrs-store";
 
 export type { ComebackMode } from "./studyPreferences";
 
@@ -211,12 +212,16 @@ export function recentReviewAverages(day = today()): { avgDailyWords: number; se
   return { avgDailyWords, secondsPerWord };
 }
 
-/** 当前积压量 = 已见、未永久掌握、分数已掉到 ≤6 的词数 */
-export const reviewBacklogCount = () => firstValue<number>(`
-  SELECT COUNT(*)
-  FROM progress
-  WHERE known_forever = 0 AND seen_count > 0 AND score <= 6
-`, [], 0);
+/** 当前积压量 = 已见、未永久掌握、到期待复习的词数。
+ *  FSRS 开关打开时用「FSRS 到期数」,否则用现行「分数 ≤6」。语义等价:都是"此刻该复习多少"。 */
+export const reviewBacklogCount = () => {
+  if (isFsrsActive()) return fsrsDueCount();
+  return firstValue<number>(`
+    SELECT COUNT(*)
+    FROM progress
+    WHERE known_forever = 0 AND seen_count > 0 AND score <= 6
+  `, [], 0);
+};
 
 /**
  * 每日复习上限(常驻,不只回归模式):用户设置优先,0/未设置走自动档

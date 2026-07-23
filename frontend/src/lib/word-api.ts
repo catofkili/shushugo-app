@@ -52,6 +52,7 @@ import {
   reviewBacklogCount
 } from "./comeback";
 import type { ComebackMode } from "./comeback";
+import { ensureFsrsColumns, backfillFsrsFromHistory, recordFsrsReview, isFsrsActive, fsrsDueWordIds } from "./fsrs-store";
 
 // 导出分析统计功能
 export { getStudyAnalytics } from "./analytics/stats";
@@ -142,6 +143,13 @@ export const ensureProgressInitialized = () => {
   backfillStage2FromReviews();
   applyDailyDecay();
   applyGrammarDailyDecay();
+  // 阶段 P0(影子模式):建 FSRS 列并把历史一次性回填。只写不读,零可见变化。
+  try {
+    ensureFsrsColumns();
+    backfillFsrsFromHistory();
+  } catch (err) {
+    console.warn("[fsrs] 回填跳过:", err);
+  }
 };
 
 const ladderRowOf = (row: DbRow) => ({
@@ -185,6 +193,8 @@ const resetPreviousCriticalReviews = (day: string) => {
 };
 
 const applyDailyDecay = () => {
+  // 老算法已关闭:FSRS 生效时不再跑每日分数衰减(score 不再被读,衰减纯属空转且会一夜灌爆积压)。
+  if (isFsrsActive()) return;
   const day = today();
   const lastDecay = getState("last_decay", "");
   if (!lastDecay) {
@@ -394,7 +404,10 @@ const createStage1Tasks = (day: string) => {
   const reviewLimit = Math.max(dailyLimit - existingReviewTasks, 0);
 
   let orderIndex = 1;
-  const reviewRows = rowsFor(`
+  // 阶段 P1:开关打开时按 FSRS 到期(due 升序)选词,否则走现行分数排序。
+  const reviewRows = isFsrsActive()
+    ? fsrsDueWordIds(reviewLimit).map((word_id) => ({ word_id }))
+    : rowsFor(`
     SELECT p.word_id
     FROM progress p
     JOIN words w ON w.id = p.word_id
@@ -503,18 +516,29 @@ const stage1ProgressCounts = () => {
   const day = today();
   ensureStage1Tasks();
   const total = stage1TaskCount(day);
-  const completed = firstValue<number>(`
-    SELECT SUM(
-      CASE
-        WHEN p.known_forever = 1 THEN 1
-        WHEN p.score > 6 THEN 1
-        ELSE 0
-      END
-    )
-    FROM stage1_tasks t
-    JOIN progress p ON p.word_id = t.word_id
-    WHERE t.reviewed_on = ?
-  `, [day], 0);
+  // FSRS:一词一天复习一次,「今天答过(有复习记录)或已永久掌握」= 完成。
+  // 旧算法:分数 >6 才算完成(要当天答对才过)。
+  const completed = isFsrsActive()
+    ? firstValue<number>(`
+        SELECT COUNT(DISTINCT t.word_id)
+        FROM stage1_tasks t
+        JOIN progress p ON p.word_id = t.word_id
+        WHERE t.reviewed_on = ?
+          AND (p.known_forever = 1
+               OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = t.word_id AND r.reviewed_on = ?))
+      `, [day, day], 0)
+    : firstValue<number>(`
+        SELECT SUM(
+          CASE
+            WHEN p.known_forever = 1 THEN 1
+            WHEN p.score > 6 THEN 1
+            ELSE 0
+          END
+        )
+        FROM stage1_tasks t
+        JOIN progress p ON p.word_id = t.word_id
+        WHERE t.reviewed_on = ?
+      `, [day], 0);
 
   return {
     completed: Math.min(Number(completed ?? 0), total),
@@ -578,8 +602,11 @@ const pickStage1Next = (): WordCard | null => {
     LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE t.reviewed_on = ?
       AND p.known_forever = 0
-      AND p.score <= 6
-  `, [day]);
+      AND ${isFsrsActive()
+        // FSRS:今天还没答过的都要出(答过一次即今天过了);不再看旧分数。
+        ? "NOT EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = t.word_id AND r.reviewed_on = ?)"
+        : "p.score <= 6"}
+  `, isFsrsActive() ? [day, day] : [day]);
 
   const reviewRows = rows.filter((row) => String(row.task_type) === "review");
   const newRows = rows.filter((row) => String(row.task_type) === "new");
@@ -1638,6 +1665,18 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   );
   const reviewId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
   setState("last_answer", JSON.stringify({ ...snapshot, review_id: reviewId }));
+
+  // 阶段 P0(影子写):仅当日首见时把作答喂给 FSRS(只写不读,失败不影响学习)。
+  try {
+    const priorToday = firstValue<number>(
+      "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ? AND id < ?",
+      [wordId, studyDate, reviewId],
+      0
+    );
+    if (priorToday === 0) recordFsrsReview(wordId, answer);
+  } catch (err) {
+    console.warn("[fsrs] 影子写跳过:", err);
+  }
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());
   notifyProgressUpdated();

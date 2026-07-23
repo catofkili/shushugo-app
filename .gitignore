@@ -81,3 +81,9 @@ cloudflare-sync/.wrangler/
 
 # MOJi 个人复习数据导出(只应临时存在于桌面/设备,严禁入库)
 *moji-review-export*.json
+
+# 个人学习数据合并库(私有,严禁入库)
+frontend/public/__merged_import.db
+记忆数据合并/
+*merged*.db
+nihongo-port-*.db

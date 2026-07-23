@@ -35,6 +35,7 @@ vi.mock("./progress-events", () => ({
 }));
 
 import { studyDate, getState, setState } from "./database/db-utils";
+import { setFsrsActive } from "./fsrs-store";
 import {
   completeTodayWordPlan,
   ensureProgressInitialized,
@@ -54,6 +55,7 @@ const DAILY_WORDS = 60; // 日均 60 → 容量 = 60 × 1.5 = 90
 
 /** 把库重置到「缺卡回归前」状态：backlog 个积压词 + 一段打卡历史，清掉回归状态与衰减账 */
 const seedBacklog = (backlog: number) => {
+  setFsrsActive(false); // 回归模式的这批用例测的是旧分数积压路径,固定跑旧算法
   prefStore.clear();
   testDb.run("DELETE FROM checkins");
   testDb.run("DELETE FROM word_study_time");

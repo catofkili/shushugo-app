@@ -29,7 +29,8 @@
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sql.js": "^1.10.3"
+    "sql.js": "^1.10.3",
+    "ts-fsrs": "^5.4.1"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.0.0",

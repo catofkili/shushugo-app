@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { clearEntitlements, grantPro } from "../lib/entitlements";
 import { checkMemoryStatus, quickCompleteToday, resetTodayProgress, simulateMemoryData } from "../lib/test-utils";
+import { isFsrsActive, setFsrsActive } from "../lib/fsrs-store";
+import { refreshTodayWordPlan } from "../lib/api";
 
 interface DevToolsProps {
   onNotice: (message: string, timeout?: number) => void;
@@ -8,6 +11,9 @@ interface DevToolsProps {
 
 export function DevTools({ onNotice }: DevToolsProps) {
   const entitlements = useEntitlements();
+  const [fsrsOn, setFsrsOn] = useState(() => {
+    try { return isFsrsActive(); } catch { return false; }
+  });
 
   if (!import.meta.env.DEV) return null;
 
@@ -89,6 +95,26 @@ export function DevTools({ onNotice }: DevToolsProps) {
           <p className="font-bold">查看记忆力状态</p>
           <p className="mt-0.5 text-white/60">在浏览器控制台查看详细信息</p>
         </button>
+
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-[#81D8CF]/30 bg-[#81D8CF]/10 px-3 py-2">
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-white">FSRS 调度内核{fsrsOn ? "（已启用）" : "（关闭·影子模式）"}</p>
+            <p className="mt-0.5 text-xs text-white/60">开=选词/到期用 FSRS;关=现行分数系统(仍在后台影子记录)</p>
+          </div>
+          <label className="relative inline-flex cursor-pointer items-center">
+            <input
+              type="checkbox"
+              checked={fsrsOn}
+              onChange={(event) => {
+                const on = event.target.checked;
+                run(() => { setFsrsActive(on); refreshTodayWordPlan(); }, on ? "已切到 FSRS 调度,今日计划已重排" : "已切回现行分数系统", 3000);
+                setFsrsOn(on);
+              }}
+              className="peer sr-only"
+            />
+            <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5" />
+          </label>
+        </div>
       </div>
     </div>
   );
