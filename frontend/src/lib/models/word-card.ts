@@ -84,7 +84,14 @@ const abbreviationNotePattern = new RegExp(`${ABBR_SRC}(?:的|の|之)\\s*${ABBR
 
 function stripAbbreviationNotes(text: string): string {
   return text
-    .replace(abbreviationNotePattern, "")
+    .replace(abbreviationNotePattern, (note) => {
+      // 只删会泄漏答案的日文/英文源词注记。纯中文说明（如
+      // “星期一”的省略）是有效释义，必须保留。英文会先被
+      // stripLatinGlosses 清空，因此也要识别留下来的空引号。
+      const hasSourceReading = KANA_CHAR.test(note) || /[A-Za-zＡ-Ｚａ-ｚ]/.test(note);
+      const hasStrippedLatinSource = /[「『“"]\s*[」』”"]/.test(note);
+      return hasSourceReading || hasStrippedLatinSource ? "" : note;
+    })
     .replace(/[「『]\s*[」』]/g, "")
     .replace(/([。．；;，,、])[；;，,、]+/g, "$1");
 }
