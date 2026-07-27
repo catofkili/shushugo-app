@@ -5,25 +5,30 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
+  House,
   LucideIcon,
   Search,
-  UserRound,
-  Wrench
+  UserRound
 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
 import type { Page } from "../types/app";
 import type { SearchResult } from "../lib/search-api";
+import { CapybaraMascot } from "./CapybaraMascot";
+import { SquirrelTrail } from "./SquirrelTrail";
 
+// 主页取代了原来的「工具箱」：工具箱的每一项(学习模式/收藏/进度概览/填满/一键完成)都挪到了主页。
 const navItems: { page: Page; label: string; icon: LucideIcon }[] = [
+  { page: "home", label: "主页", icon: House },
   { page: "word", label: "单词学习", icon: BookOpenText },
   { page: "grammar", label: "语法", icon: Brain },
-  { page: "toolbox", label: "工具箱", icon: Wrench },
   { page: "profile", label: "我的", icon: UserRound }
 ];
 
 const isGrammarPage = (page: Page) => page === "grammar" || page === "detail";
-const isToolboxPage = (page: Page) => ["toolbox", "study-modes", "favorites"].includes(page);
-const isRootMobilePage = (page: Page) => ["word", "grammar", "toolbox", "profile"].includes(page);
+// 组队/地图/温泉/学习模式/收藏都是从主页的格子进去的，导航上仍高亮「主页」。
+const isHomePage = (page: Page) =>
+  ["home", "team", "zoo-map", "zoo-dex", "hot-spring", "study-modes", "favorites"].includes(page);
+const isRootMobilePage = (page: Page) => ["home", "word", "grammar", "profile"].includes(page);
 
 interface AppNavigationProps {
   page: Page;
@@ -80,7 +85,9 @@ export function AppNavigation({
   };
 
   const isActive = (target: Page) => (
-    target === "grammar" ? isGrammarPage(page) : target === "toolbox" ? isToolboxPage(page) : page === target
+    target === "grammar" ? isGrammarPage(page)
+      : target === "home" ? isHomePage(page)
+      : page === target
   );
 
   const handleNavTouchMove = (event: TouchEvent) => {
@@ -107,22 +114,26 @@ export function AppNavigation({
         }}
         onTouchMove={(event) => event.preventDefault()}
       >
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-2">
           {!isRootMobilePage(page) ? (
             <button
               onClick={onBack}
-              className="focus-ring inline-flex items-center gap-2 rounded-xl px-2 py-1 text-sm font-bold text-white/78 hover:bg-[#81D8CF]/15 hover:text-white"
+              className="focus-ring inline-flex shrink-0 items-center gap-2 rounded-xl px-2 py-1 text-sm font-bold text-white/78 hover:bg-[#81D8CF]/15 hover:text-white"
             >
               <ArrowLeft size={18} />
             </button>
           ) : (
-            <div className="w-9" />
+            <div className="w-1 shrink-0" />
           )}
 
+          {/* 顶栏中间本来是空的,今天这趟复习的小路放这儿 */}
+          <SquirrelTrail />
+
           <button
-            onClick={() => onNavigate("word")}
-            className="focus-ring rounded-xl px-1 text-left"
+            onClick={() => onNavigate("home")}
+            className="focus-ring flex shrink-0 items-center gap-1.5 rounded-xl px-1 text-left"
           >
+            <CapybaraMascot size={24} mood="happy" />
             <span className="jp-serif block text-base font-semibold leading-none tracking-wide text-white">
               Master
             </span>
@@ -149,11 +160,11 @@ export function AppNavigation({
 
         <div className="flex min-w-0 items-center justify-between gap-4 lg:block">
           <button
-            onClick={() => onNavigate("word")}
+            onClick={() => onNavigate("home")}
             className={`focus-ring flex min-w-0 items-center rounded-2xl text-left ${sidebarCollapsed ? "lg:justify-center lg:gap-0" : "gap-3"}`}
           >
-            <span className="jp-serif grid h-11 w-11 place-items-center rounded-xl border border-white/30 bg-[#81D8CF] text-xl font-bold !text-[#343838] shadow-lg">
-              語
+            <span className="grid h-11 w-11 place-items-center overflow-hidden rounded-xl border border-white/30 bg-[#C08552] shadow-lg">
+              <CapybaraMascot size={34} mood="happy" />
             </span>
             <span className={sidebarCollapsed ? "lg:hidden" : ""}>
               <span className="jp-serif block text-lg font-semibold tracking-normal text-white">
@@ -166,7 +177,12 @@ export function AppNavigation({
           </button>
         </div>
 
-        <div className={`relative mt-4 hidden lg:block ${sidebarCollapsed ? "lg:hidden" : ""}`}>
+        {/* 手机端的小路在顶栏,桌面端顶栏是隐藏的,所以侧栏这儿也放一条,免得大屏看不到今天走到哪 */}
+        <div className={`mt-4 hidden lg:flex ${sidebarCollapsed ? "lg:hidden" : ""}`}>
+          <SquirrelTrail />
+        </div>
+
+        <div className={`relative mt-3 hidden lg:block ${sidebarCollapsed ? "lg:hidden" : ""}`}>
           <label className="focus-ring control-cyan control-cyan-search soft-text-outline flex rounded-2xl border px-3 py-2">
             <Search className="control-cyan-icon shrink-0" size={16} />
             <input
@@ -273,7 +289,7 @@ export function AppNavigation({
                 onClick={() => openNavPage(item.page)}
                 className={`focus-ring flex h-[54px] min-w-0 flex-col items-center justify-center rounded-2xl border px-0.5 transition-all duration-300 ${
                   active
-                    ? "border-white/30 bg-[#81D8CF] text-[#343838] shadow-[0_6px_20px_rgba(129,216,207,0.4),inset_0_1px_0_rgba(255,255,255,0.4)]"
+                    ? "border-white/30 bg-[#81D8CF] text-[#343838] shadow-[0_6px_20px_rgba(143,203,94,0.4),inset_0_1px_0_rgba(255,255,255,0.4)]"
                     : "border-white/18 bg-white/8 text-white/76 shadow-[0_4px_12px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/12"
                 }`}
               >

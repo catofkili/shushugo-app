@@ -100,9 +100,11 @@ export function pickStage1CriticalPoolRow(rows: DbRow[], queueById: Map<number, 
     ));
   if (!criticalRows.length) return null;
   const pool = criticalRows.slice(0, criticalPoolSize(criticalRows.length));
+  // 临界池只在「已经隔够张数」的词里挑。池里没人到位就交还给普通优先级
+  // (那里 critical 组件仍有 +120 加权),不能为了猛刷差词把刚答过的词直接顶回来。
   const duePool = pool.filter((row) => (queueById.get(Number(row.id)) ?? 0) <= 0);
-  const selectable = duePool.length ? duePool : pool;
-  return selectable.sort((left, right) => (
+  if (!duePool.length) return null;
+  return duePool.sort((left, right) => (
     (queueById.get(Number(left.id)) ?? 0) - (queueById.get(Number(right.id)) ?? 0)
     || Number(left.today_seen_count ?? 0) - Number(right.today_seen_count ?? 0)
     || Number(left.score ?? 0) - Number(right.score ?? 0)
@@ -125,9 +127,10 @@ export function pickDueCriticalPoolRow(rows: DbRow[], scoreKey = "score"): DbRow
     ));
   if (!criticalRows.length) return null;
   const pool = criticalRows.slice(0, criticalPoolSize(criticalRows.length));
+  // 同 pickStage1CriticalPoolRow:没到位就交还给普通排序,不越过「隔几张」的闸门
   const duePool = pool.filter((row) => row.due_after == null || Number(row.due_after) <= 0);
-  const selectable = duePool.length ? duePool : pool;
-  return selectable.sort((left, right) => (
+  if (!duePool.length) return null;
+  return duePool.sort((left, right) => (
     Number(left.today_seen_count ?? left.seen_count ?? 0) - Number(right.today_seen_count ?? right.seen_count ?? 0)
     || Number(left[scoreKey] ?? 0) - Number(right[scoreKey] ?? 0)
     || Number(left.order_index ?? 0) - Number(right.order_index ?? 0)

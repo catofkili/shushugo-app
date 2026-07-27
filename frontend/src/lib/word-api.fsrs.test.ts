@@ -24,6 +24,7 @@ vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProg
 
 import { ensureProgressInitialized, getWordSession, submitWordAnswer } from "./word-api";
 import { setFsrsActive } from "./fsrs-store";
+import { STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
 import { studyDayEnd, getState } from "./database/db-utils";
 
 describe("FSRS 切换 · 端到端选词", () => {
@@ -78,6 +79,46 @@ describe("FSRS 切换 · 端到端选词", () => {
     expect(new Date(due!).getTime()).toBeLessThanOrEqual(studyDayEnd().getTime()); // due 落在今天 = 没毕业 = 会再出,不是消失
     const q = JSON.parse(getState("review_queue", "[]")) as any[];
     expect(q.some((x) => x.word_id === card!.id)).toBe(true);                  // 已排回队列,过几张卡再刷
+    setFsrsActive(false);
+  });
+
+  it("集成:点『不认识』后不贴脸重复——下一张必是别的词,且要隔好几张才回来", () => {
+    setFsrsActive(true);
+    testDb.run("DELETE FROM stage1_tasks");
+    testDb.run("DELETE FROM reviews");
+    testDb.run("UPDATE progress SET seen_count=3, score=12, mistake_streak=0, fsrs_stability=NULL, fsrs_due=NULL, fsrs_state=NULL WHERE word_id BETWEEN 1 AND 40 AND known_forever=0");
+
+    const forgotten = getWordSession().card!;
+    submitWordAnswer(forgotten.id, "forgot");
+
+    // 刚看完答案立刻再考 = 抄写,不是回忆:下一张绝不能还是它
+    let gap = 0;
+    let card = getWordSession().card;
+    while (card && card.id !== forgotten.id && gap < 40) {
+      gap += 1;
+      submitWordAnswer(card.id, "know");
+      card = getWordSession().card;
+    }
+    expect(card?.id).toBe(forgotten.id);   // 确实回来了(没毕业,当天还要刷)
+    expect(gap).toBeGreaterThanOrEqual(3); // 但至少隔了 3 张(SHORT_STEP_GAP 下限)
+    setFsrsActive(false);
+  });
+
+  it("集成:顽固词(连着错到阈值)可以连出,当场刷到答对", () => {
+    setFsrsActive(true);
+    testDb.run("DELETE FROM stage1_tasks");
+    testDb.run("DELETE FROM reviews");
+    testDb.run("UPDATE progress SET seen_count=3, score=12, mistake_streak=0, fsrs_stability=NULL, fsrs_due=NULL, fsrs_state=NULL WHERE word_id BETWEEN 1 AND 40 AND known_forever=0");
+    const rand = vi.spyOn(Math, "random").mockReturnValue(0.999); // 固定成「本轮不插新词」,只看旧词
+
+    const card = getWordSession().card!;
+    // 让这一答正好踩到顽固阈值
+    testDb.run(`UPDATE progress SET mistake_streak=${STUBBORN_MISTAKE_STREAK - 1} WHERE word_id=${card.id}`);
+    submitWordAnswer(card.id, "forgot");
+
+    expect(getWordSession().card?.id).toBe(card.id); // 顽固词:下一张就是它,不再拉开
+
+    rand.mockRestore();
     setFsrsActive(false);
   });
 

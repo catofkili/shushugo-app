@@ -1,8 +1,12 @@
 export type Page =
+  | "home"
   | "word"
+  | "team"
+  | "zoo-map"
+  | "zoo-dex"
+  | "hot-spring"
   | "grammar"
   | "detail"
-  | "toolbox"
   | "study-modes"
   | "favorites"
   | "profile"

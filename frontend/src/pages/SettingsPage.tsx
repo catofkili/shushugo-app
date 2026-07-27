@@ -459,6 +459,22 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
 
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-white">动物园音效</p>
+              <p className="mt-0.5 text-xs text-white/50">评分 / 翻卡 / 完成时的木质提示音</p>
+            </div>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                checked={preferences.zooSounds}
+                onChange={(event) => updatePreference({ zooSounds: event.target.checked })}
+                className="peer sr-only"
+              />
+              <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
+            </label>
+          </div>
+
+          <div className="flex items-center gap-3 border-b border-white/10 p-4">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">显示罗马音</p>
               <p className="mt-0.5 text-xs text-white/50">答案假名下方显示 romaji</p>
             </div>
@@ -562,6 +578,37 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
             </div>
             <p className="mt-2 text-xs text-white/40">
               改动在下次触发回归时生效,进行中的回归不受影响。
+            </p>
+          </div>
+
+          <div className="border-t border-white/10 p-4">
+            <div className="mb-3">
+              <p className="text-sm font-bold text-white">动效强度</p>
+              <p className="mt-0.5 text-xs text-white/50">
+                「省电」会关掉水豚呼吸、松鼠待机跳、温泉蒸汽这些一直在动的效果，按钮反馈保留。
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { value: "full", label: "✨ 全开" },
+                { value: "reduced", label: "🔋 省电" },
+                { value: "off", label: "⏸ 关闭" }
+              ] as const).map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => updatePreference({ motionLevel: option.value })}
+                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
+                    preferences.motionLevel === option.value
+                      ? "bg-[#81D8CF] text-[#2f3333]"
+                      : "border border-white/15 bg-white/8 text-white/70"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-white/40">
+              系统里开了「减少动态效果」时，这里选什么都按关闭处理。
             </p>
           </div>
         </div>

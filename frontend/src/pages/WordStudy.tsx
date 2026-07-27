@@ -5,7 +5,8 @@ import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, getWordSe
 import { getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences, StudyPreferences } from "../lib/studyPreferences";
 import { addStudyTime, checkAchievements } from "../lib/userProfile";
 import { triggerMemoryHaptic } from "../lib/haptics";
-import { FinishPanel, KanjiAnswer } from "../features/word-study/WordStudyPanels";
+import { playComplete, playDontKnow, playFlip, playKnow } from "../lib/zoo-sounds";
+import { ExampleBlock, FinishPanel, KanjiAnswer } from "../features/word-study/WordStudyPanels";
 import {
   answerReadingText,
   answerOptions,
@@ -20,6 +21,19 @@ import type { StudyMode } from "../types/app";
 interface WordStudyProps {
   initialMode?: StudyMode;
 }
+
+/* ——— 甩卡评分:左=忘记(Again) / 右=认识(Good) ——— */
+/** 位移超过它才算「甩出去」,低于则弹回 */
+const SWIPE_COMMIT_PX = 96;
+/** 位移多少像素后才锁定手势方向(横甩 or 纵向橡皮筋) */
+const AXIS_LOCK_PX = 8;
+/** 跟手旋转的角度上限。卡片几乎占满整屏,角度必须比 Tinder 那种小卡片小得多,
+ *  超过 4° 整页看着就像要翻掉。 */
+const SWIPE_MAX_ROTATE = 4;
+/** 飞出动画时长,结束后才提交答案 */
+const SWIPE_FLING_MS = 240;
+/** 飞出距离:超过任何手机屏宽即可 */
+const FLING_DISTANCE = 900;
 
 export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   const [card, setCard] = useState<WordCard | null>(null);
@@ -43,13 +57,21 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   const dragStartYRef = useRef<number | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
+  // 甩卡:起点与锁定的方向放 ref(手势过程中不需要触发渲染),位移同时存 ref 供 touchend 读最新值
+  const gestureRef = useRef<{ x: number; y: number; axis: "x" | "y" | null } | null>(null);
+  const swipeXRef = useRef(0);
+  const [swipeX, setSwipeX] = useState(0);
+  const [flingDir, setFlingDir] = useState<0 | 1 | -1>(0);
+  // 被点评分按钮的即时反馈:认识=弹一下发光,不认识=轻轻摇头(不惩罚)
+  const [rateFeedback, setRateFeedback] = useState<{ value: WordAnswer; good: boolean } | null>(null);
 
-  const progressText = useMemo(() => {
+  // 今日计划的进度已经在顶栏的松鼠小路上了,这里只保留「筛选后这批词掌握了多少」——
+  // 那是小路给不了的信息(小路永远是当天的整份计划)。没开筛选时不显示。
+  const filteredMastery = useMemo(() => {
     if ((selectedLevel !== "All" || selectedType !== "all") && stats?.total) {
       return `${stats.knownForever}/${stats.total}`;
     }
-    if (!stats?.stage1ProgressTotal) return "";
-    return `${stats.stage1ProgressDone}/${stats.stage1ProgressTotal}`;
+    return "";
   }, [selectedLevel, selectedType, stats]);
 
   const markedKanji = useMemo(() => {
@@ -180,10 +202,18 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
     if (!card || submittingRef.current || submitting) return;
     submittingRef.current = true;
     triggerMemoryHaptic(answer);
+    // 认识 → 上行两音;不认识 → 柔和下行两音。同时播 0.2s 按钮反馈动画,
+    // 让「按一下」有分量(动画时长与下面的 stall 对齐)。
+    const good = answer === "know" || answer === "known_forever";
+    if (good) playKnow();
+    else playDontKnow();
+    setRateFeedback({ value: answer, good });
     setSubmitting(true);
     setError("");
     try {
+      await new Promise((resolve) => window.setTimeout(resolve, 200));
       const data = submitWordAnswer(card.id, answer, sessionOptions);
+      if (!data.card) playComplete();
       let nextStats = data.stats;
       if (!data.card && trackingActiveRef.current) {
         trackingActiveRef.current = false;
@@ -199,6 +229,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
+      setRateFeedback(null);
     }
   };
 
@@ -249,6 +280,8 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   const isReversePhase = phase === "stage2";
   const isKanjiPhase = phase === "kanji";
   const pageTitle = isReversePhase ? "反向学习" : isKanjiPhase ? "汉字学习" : initialMode === "classic" ? "经典模式" : "词汇学习";
+  // 并进松鼠轨道里的短模式名(轨道那行只有 10.5px,放不下"经典模式"四个字加进度数)
+  const shortMode = isReversePhase ? "反向" : isKanjiPhase ? "汉字" : initialMode === "classic" ? "经典" : "词汇";
   const pageLabel = isReversePhase ? "Reverse" : isKanjiPhase ? "Kanji" : initialMode === "classic" ? "Classic" : "Vocabulary";
 
   const startExtraPhase = (phaseName: "stage2" | "kanji") => {
@@ -320,30 +353,81 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
     const element = target instanceof Element ? target : null;
     return !element?.closest("button, input, select, textarea, a, [data-word-scrollable='true']");
   };
+  // 甩卡比纵向橡皮筋宽松:释义区是纵向滚动容器,横向甩它不冲突,所以不排除 scrollable。
+  const canSwipeCard = (target: EventTarget | null) => {
+    const element = target instanceof Element ? target : null;
+    return !element?.closest("button, input, select, textarea, a");
+  };
+
+  // 甩卡只在「答案已显示」时生效:没看答案就甩等于瞎评分。
+  const swipeEnabled = Boolean(card) && revealed && !submitting;
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    gestureRef.current = { x: touch.clientX, y: touch.clientY, axis: null };
     if (!canDragWordPage(event.target)) return;
-    dragStartYRef.current = event.touches[0].clientY;
+    dragStartYRef.current = touch.clientY;
     setDragging(true);
   };
 
   const handleTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    const gesture = gestureRef.current;
+    if (!gesture) return;
+    const touch = event.touches[0];
+    const dx = touch.clientX - gesture.x;
+    const dy = touch.clientY - gesture.y;
+
+    // 先看清楚是横的还是竖的再锁死方向,免得甩到一半变成上下橡皮筋。
+    if (!gesture.axis) {
+      if (Math.abs(dx) < AXIS_LOCK_PX && Math.abs(dy) < AXIS_LOCK_PX) return;
+      gesture.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? "x" : "y";
+    }
+
+    if (gesture.axis === "x") {
+      if (!swipeEnabled || !canSwipeCard(event.target)) return;
+      event.preventDefault();
+      swipeXRef.current = dx;
+      setSwipeX(dx);
+      return;
+    }
+
     if (dragStartYRef.current == null || !canDragWordPage(event.target)) return;
     event.preventDefault();
-    const delta = event.touches[0].clientY - dragStartYRef.current;
-    const resistance = Math.sign(delta) * Math.min(Math.abs(delta) * 0.28, 42);
+    const resistance = Math.sign(dy) * Math.min(Math.abs(dy) * 0.28, 42);
     setDragOffset(resistance);
   };
 
   const resetDrag = () => {
+    const gesture = gestureRef.current;
+    const swiped = swipeXRef.current;
+    gestureRef.current = null;
     dragStartYRef.current = null;
     setDragging(false);
     setDragOffset(0);
+    swipeXRef.current = 0;
+
+    // 甩过阈值 → 卡片顺着惯性飞出去,飞完再提交(右=认识 / 左=忘记)
+    if (gesture?.axis === "x" && swipeEnabled && Math.abs(swiped) >= SWIPE_COMMIT_PX) {
+      const direction = swiped > 0 ? 1 : -1;
+      setFlingDir(direction);
+      window.setTimeout(() => {
+        setFlingDir(0);
+        setSwipeX(0);
+        submitAnswer(direction > 0 ? "know" : "forgot");
+      }, SWIPE_FLING_MS);
+      return;
+    }
+    setSwipeX(0);
   };
+
+  // 跟手位移 →(飞出时换成整屏宽度)
+  const cardShift = flingDir ? flingDir * FLING_DISTANCE : swipeX;
+  const cardRotate = Math.max(-SWIPE_MAX_ROTATE, Math.min(SWIPE_MAX_ROTATE, cardShift / 40));
+  const swipeProgress = Math.min(Math.abs(swipeX) / SWIPE_COMMIT_PX, 1);
 
   return (
     <div
-      className="mx-auto flex h-[calc(100vh-13rem)] min-h-[520px] max-w-4xl flex-col justify-center lg:h-[calc(100vh-4rem)] lg:min-h-[600px] lg:max-w-[1200px]"
+      className="word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px]"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={resetDrag}
@@ -353,64 +437,100 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
         transition: dragging ? "transform 80ms linear" : "transform 420ms cubic-bezier(0.2, 0.9, 0.2, 1)"
       }}
     >
-      <section className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "p-5 sm:p-8 lg:p-7" : "p-3 sm:p-5"}`}>
-        {showStudyToolbar && <div className="mb-5 flex shrink-0 items-center justify-between gap-3 border-b border-white/15 pb-4 lg:absolute lg:inset-x-7 lg:top-6 lg:z-10 lg:mb-0 lg:border-0 lg:pb-0">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/65">{pageLabel}</p>
-            <h1 className="mt-1 text-xl font-semibold">{pageTitle}</h1>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <select
-                value={selectedLevel}
-                onChange={(event) => setSelectedLevel(event.target.value as WordLevelFilter)}
-                className="focus-ring control-cyan soft-text-outline h-9 min-w-0 rounded-xl border px-2 text-xs font-bold"
-                title="选择 JLPT 等级"
-              >
-                {levelOptions.map((item) => (
-                  <option key={item.value} value={item.value}>{item.label}</option>
-                ))}
-              </select>
-              <select
-                value={selectedType}
-                onChange={(event) => setSelectedType(event.target.value as WordTypeFilter)}
-                className="focus-ring control-cyan soft-text-outline h-9 min-w-0 rounded-xl border px-2 text-xs font-bold"
-                title="选择词性或收藏"
-              >
-                {typeOptions.map((item) => (
-                  <option key={item.value} value={item.value}>{item.label}</option>
-                ))}
-              </select>
-            </div>
+      <section
+        className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "p-3 sm:p-8 lg:p-7" : "p-3 sm:p-5"}`}
+        style={{
+          transform: cardShift ? `translate3d(${cardShift}px,0,0) rotate(${cardRotate}deg)` : undefined,
+          opacity: flingDir ? 0 : undefined,
+          // 跟手时不要过渡(否则会有拖影),飞出与回弹才给过渡
+          transition: flingDir
+            ? `transform ${SWIPE_FLING_MS}ms cubic-bezier(.4,0,1,1), opacity ${SWIPE_FLING_MS}ms ease-in`
+            : swipeX
+              ? "none"
+              : "transform 300ms cubic-bezier(.2,.9,.2,1)"
+        }}
+      >
+        {/* 甩卡印章:右=捡到松子,左=松子空了(不惩罚,只是「再来一遍」) */}
+        {swipeEnabled && swipeX > AXIS_LOCK_PX && (
+          <span className="zoo-stamp good" style={{ opacity: swipeProgress }}>
+            🌰 认识
+          </span>
+        )}
+        {swipeEnabled && swipeX < -AXIS_LOCK_PX && (
+          <span className="zoo-stamp bad" style={{ opacity: swipeProgress }}>
+            ◦ 再来
+          </span>
+        )}
+
+        {/* 标题栏 = 筛选 + 操作一行,模式名和进度并进下面的松鼠轨道。
+            全尺寸都走普通文档流(不再 lg:absolute),桌面端也就不需要给正文留 pt 了。 */}
+        {showStudyToolbar && <div className="mb-2 flex shrink-0 items-center gap-2 lg:mx-auto lg:mb-3 lg:w-[min(900px,100%)]">
+          <div className="hidden min-w-0 shrink-0 lg:block">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">{pageLabel}</p>
+            <h1 className="text-lg font-semibold leading-tight">{pageTitle}</h1>
           </div>
-          <div className="flex items-center gap-2">
-            {progressText && <span className="rounded-sm border border-white/15 px-2 py-1 text-xs text-white/70">{progressText}</span>}
-            <button
-              onClick={toggleCardFavorite}
-              disabled={!card}
-              className={`focus-ring inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 disabled:opacity-50 ${card?.isFavorite ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
-              title={card?.isFavorite ? "取消收藏" : "收藏单词"}
+          {/* 手机端只在非默认模式下标一下:经典模式是常态,标了是噪音;
+              反向/汉字/词汇不标的话用户会不知道自己在哪个模式里。 */}
+          {shortMode !== "经典" && (
+            <span className="shrink-0 rounded-lg bg-[#81D8CF]/20 px-2 py-1 text-xs font-bold lg:hidden">
+              {shortMode}
+            </span>
+          )}
+          {filteredMastery && (
+            <span
+              className="shrink-0 rounded-lg border border-white/15 px-2 py-1 text-xs text-white/70"
+              title="筛选出的这批词已永久掌握 / 总数"
             >
-              <Star size={17} fill={card?.isFavorite ? "currentColor" : "none"} />
-            </button>
-            <button
-              onClick={() => {
-                setNoteMemoryOpen(false);
-                setNoteEditorOpen((open) => !open);
-              }}
-              disabled={!card}
-              className={`focus-ring inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 disabled:opacity-50 ${card?.note ? "bg-[#81D8CF]/20" : "bg-[#81D8CF]/10"}`}
-              title={card?.note ? "编辑便签" : "添加便签"}
-            >
-              <StickyNote size={17} />
-            </button>
-            <button
-              onClick={undo}
-              disabled={submitting}
-              className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-[#81D8CF]/10 hover:bg-[#81D8CF]/15 disabled:opacity-50"
-              title="上一个"
-            >
-              <RotateCcw size={17} />
-            </button>
-          </div>
+              {filteredMastery}
+            </span>
+          )}
+          <select
+            value={selectedLevel}
+            onChange={(event) => setSelectedLevel(event.target.value as WordLevelFilter)}
+            className="focus-ring control-cyan soft-text-outline h-10 min-w-0 flex-1 rounded-xl border px-2 text-xs font-bold lg:max-w-40"
+            title="选择 JLPT 等级"
+          >
+            {levelOptions.map((item) => (
+              <option key={item.value} value={item.value}>{item.label}</option>
+            ))}
+          </select>
+          <select
+            value={selectedType}
+            onChange={(event) => setSelectedType(event.target.value as WordTypeFilter)}
+            className="focus-ring control-cyan soft-text-outline h-10 min-w-0 flex-1 rounded-xl border px-2 text-xs font-bold lg:max-w-40"
+            title="选择词性或收藏"
+          >
+            {typeOptions.map((item) => (
+              <option key={item.value} value={item.value}>{item.label}</option>
+            ))}
+          </select>
+          <button
+            onClick={toggleCardFavorite}
+            disabled={!card}
+            className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 disabled:opacity-50 lg:ml-auto ${card?.isFavorite ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
+            title={card?.isFavorite ? "取消收藏" : "收藏单词"}
+          >
+            <Star size={17} fill={card?.isFavorite ? "currentColor" : "none"} />
+          </button>
+          <button
+            onClick={() => {
+              setNoteMemoryOpen(false);
+              setNoteEditorOpen((open) => !open);
+            }}
+            disabled={!card}
+            className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 disabled:opacity-50 ${card?.note ? "bg-[#81D8CF]/20" : "bg-[#81D8CF]/10"}`}
+            title={card?.note ? "编辑便签" : "添加便签"}
+          >
+            <StickyNote size={17} />
+          </button>
+          <button
+            onClick={undo}
+            disabled={submitting}
+            className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#81D8CF]/10 hover:bg-[#81D8CF]/15 disabled:opacity-50"
+            title="上一个"
+          >
+            <RotateCcw size={17} />
+          </button>
         </div>}
 
         {noteMemoryOpen && card?.note && (
@@ -479,11 +599,16 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
         {loading ? (
           <div className="grid min-h-[360px] place-items-center text-center text-white/75">正在读取下一题...</div>
         ) : card ? (
-          <div className="flex min-h-0 flex-1 flex-col gap-4 lg:pt-20">
-            <div className="grid min-h-28 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] p-4 text-center lg:mx-auto lg:min-h-36 lg:w-[min(900px,100%)] lg:p-6">
+          <div key={card.id} className="zoo-enter flex min-h-0 flex-1 flex-col gap-2.5 sm:gap-4">
+            {/* 松鼠的小路搬到了顶部 Master 栏(components/SquirrelTrail),
+                卡片里不再为进度条留高度,全部让给答案区。 */}
+
+            {/* 手机端题目框尽量压扁:题目通常就几个字,省下的高度让给答案区(长题目仍由内层 max-h 滚动)。
+                「题目」这个标签在手机上省掉 —— 顶上那个框是题目本来就一目了然。 */}
+            <div className="grid min-h-16 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] p-3 text-center sm:min-h-28 sm:p-4 lg:mx-auto lg:min-h-36 lg:w-[min(900px,100%)] lg:p-6">
               <div data-word-scrollable="true" className="max-h-28 w-full overflow-y-auto px-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">题目</p>
-                <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                <p className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-white/50 sm:block">题目</p>
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:mt-2">
                   {isReversePhase ? (
                     <>
                       <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{card.pos}</span>
@@ -538,6 +663,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
                     <p className="mt-2 text-sm font-semibold tracking-normal text-white/52">{romaji}</p>
                   )}
                   {!isReversePhase && <p className="mx-auto mt-7 max-w-3xl text-xl leading-9 text-white/82 lg:text-2xl lg:leading-10">{card.meaning}</p>}
+                  <ExampleBlock card={card} />
                   {(markedKanji.length > 0 || card.verbPair || card.confusions.length > 0) && !isReversePhase && (
                     <div className="mx-auto mt-7 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
                       {markedKanji.length > 0 && (
@@ -601,35 +727,46 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
               )}
             </div>
 
-            <div className="h-16 lg:mx-auto lg:w-[min(900px,100%)]">
+            <div className="relative h-16 lg:mx-auto lg:w-[min(900px,100%)]">
               {!revealed ? (
                 <button
                   onClick={() => {
                     setRevealed(true);
+                    playFlip();
                     setNoteEditorOpen(false);
                     if (card?.note) setNoteMemoryOpen(true);
                     // 用假名读音朗读:外来语的 secondaryAnswerText 是英文源词,交给
                     // 日语语音(ja-JP)会读成乱码,必须念 card.kana(カメラ 而非 camera)。
                     if (card) playPronunciation(card.kana);
                   }}
-                  className="focus-ring inline-flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] px-4 text-base font-bold !text-[#2f3333]"
+                  className="focus-ring zoo-pop zoo-gloss inline-flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] px-4 text-base font-bold !text-[#2f3333]"
                 >
                   <Eye size={18} />
                   显示答案
                 </button>
               ) : (
-                <div className="grid h-16 grid-cols-4 gap-3">
-                  {answerOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => submitAnswer(option.value)}
-                      disabled={submitting}
-                      className="focus-ring h-16 rounded-2xl border border-white/20 bg-[#81D8CF]/10 px-2 text-base font-bold hover:bg-[#81D8CF]/15 disabled:opacity-50"
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
+                <>
+                  <div className="grid h-16 grid-cols-4 gap-3">
+                    {answerOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => submitAnswer(option.value)}
+                        disabled={submitting}
+                        className={`focus-ring zoo-pop h-16 rounded-2xl border border-white/20 bg-[#81D8CF]/10 px-2 text-base font-bold hover:bg-[#81D8CF]/15 disabled:opacity-50${
+                          rateFeedback?.value === option.value
+                            ? rateFeedback.good
+                              ? " zoo-flash-good"
+                              : " zoo-flash-bad"
+                            : ""
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* 甩卡提示只给触屏设备(桌面没这手势,写了反而是噪音) */}
+                  <p className="zoo-swipe-hint">← 左滑「再来」　右滑「认识」→</p>
+                </>
               )}
             </div>
           </div>

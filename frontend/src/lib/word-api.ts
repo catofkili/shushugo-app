@@ -10,6 +10,7 @@ import {
   priorityScore,
   shouldPickStage1NewWord
 } from "./scheduler/priority";
+import { allowsBackToBack, requeueGap, STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
 import {
   answerScore,
   CRITICAL_SCORE,
@@ -20,7 +21,6 @@ import {
   firstValue,
   getState,
   persistSoon,
-  randomBetween,
   rowsFor,
   setState,
   SqlValue,
@@ -263,12 +263,17 @@ const advanceReviewQueue = (answeredWordId: number) => {
   }));
 };
 
-const scheduleDelayedReview = (wordId: number) => {
+const scheduleDelayedReview = (wordId: number, minutesUntilDue = 0, immediate = false) => {
   const queue = getReviewQueue().filter((item) => item.word_id !== wordId);
-  // 过几张卡后再出(≤10,随机):没记住的词当场反复,直到毕业
-  queue.push({ word_id: wordId, due_after: randomBetween(3, 10) });
+  // 过几张卡后再出:张数按 FSRS 学习步骤的时长换算(1m 短步 / 10m 长步),随机化。
+  // 见 requeue.ts——贴脸重复只是抄写,不是回忆。顽固词(连错好几次)例外:排 0,当场接着刷。
+  queue.push({ word_id: wordId, due_after: immediate ? 0 : requeueGap(minutesUntilDue) });
   setReviewQueue(queue);
 };
+
+/** 刚答过的那张(默认下一张不是它,除非顽固词/收尾阶段——见 allowsBackToBack) */
+const setLastAnsweredWord = (wordId: number) => setState("last_answered_word", String(wordId));
+const lastAnsweredWord = (): number => Number(getState("last_answered_word", "0")) || 0;
 
 const currentPhase = () => {
   const day = today();
@@ -612,8 +617,22 @@ const pickStage1Next = (): WordCard | null => {
         : "p.score <= 6"}
   `, isFsrsActive() ? [day, studyDayEnd().toISOString()] : [day]);
 
-  const reviewRows = rows.filter((row) => String(row.task_type) === "review");
-  const newRows = rows.filter((row) => String(row.task_type) === "new");
+  // 默认规则:刚答过的那张不参与本次抽取(全场只剩它时才让步)。
+  // 之前只靠优先级里的 queue 负分压制,末段所有词都在队列里时,刚答错的那张
+  // 反而因为「due_after 最小」被顶回来 → 表现为「点不认识,下一张还是它」。
+  // 例外(allowsBackToBack):顽固词连着刷、收尾阶段池子太小——这两种情况允许连出。
+  const lastId = lastAnsweredWord();
+  const lastRow = rows.find((row) => Number(row.id) === lastId);
+  const repeatAllowed = allowsBackToBack({
+    mistakeStreak: Number(lastRow?.mistake_streak ?? 0),
+    remaining: rows.length,
+    total: stage1TaskCount(day)
+  });
+  const pickable = rows.length > 1 && !repeatAllowed
+    ? rows.filter((row) => Number(row.id) !== lastId)
+    : rows;
+  const reviewRows = pickable.filter((row) => String(row.task_type) === "review");
+  const newRows = pickable.filter((row) => String(row.task_type) === "new");
   const completedTaskCount = firstValue<number>(`
     SELECT COUNT(DISTINCT r.word_id)
     FROM reviews r
@@ -629,14 +648,23 @@ const pickStage1Next = (): WordCard | null => {
     completedTaskCount
   ) ? newRows : reviewRows.length ? reviewRows : newRows;
   const candidates = preferredRows.map((row) => {
+    const dueAfter = queueById.get(Number(row.id)) ?? 0;
     const components = priorityComponents(row, queueById.get(Number(row.id)), criticalCount, newQuotaLeft);
     return {
       score: priorityScore(components),
+      dueAfter,
       row
     };
   });
   if (!candidates.length) return null;
-  candidates.sort((left, right) => right.score - left.score);
+  // 「隔几张再出」是硬闸门,不是优先级里的一项负分:排队中的词一律让位给已到位的词。
+  const ready = candidates.filter((item) => item.dueAfter <= 0);
+  if (ready.length) {
+    ready.sort((left, right) => right.score - left.score);
+    return rowObjectToCard(ready[0].row);
+  }
+  // 全都还没轮到(当天剩余卡片比间隔还少)→ 退化成轮转:等得最久的先出。
+  candidates.sort((left, right) => left.dueAfter - right.dueAfter || right.score - left.score);
   return rowObjectToCard(candidates[0].row);
 };
 
@@ -1505,7 +1533,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     };
     const tempScore = Math.max(Number(current.temp_score ?? 0) + answerScore[answer], -40);
     const completed = tempScore >= 10 ? 1 : 0;
-    const dueAfter = completed ? null : randomBetween(4, 8);
+    const dueAfter = completed ? null : requeueGap(0);
     db.run(`
       UPDATE stage2_progress
       SET temp_score = ?, seen_count = seen_count + 1,
@@ -1545,7 +1573,8 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     const memoryScore = Math.max(Number(memory?.score ?? 0) + delta, -40);
     const completed = tempScore >= 10 ? 1 : 0;
     const lowHistory = memoryScore <= CRITICAL_SCORE || Number(memory?.low_history ?? 0) ? 1 : 0;
-    const dueAfter = completed ? null : tempScore <= CRITICAL_SCORE ? randomBetween(2, 4) : randomBetween(4, 8);
+    // 差词也不贴脸重复:短步间隔(3~8 张)已经够密,再短就是照着刚才的答案抄
+    const dueAfter = completed ? null : requeueGap(0);
     db.run(`
       UPDATE kanji_progress
       SET temp_score = ?, seen_count = seen_count + 1,
@@ -1648,17 +1677,22 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // 未毕业(新词/答错,学习或重学中,due 只排到几分钟后)→ 塞回队列过几张再刷;
   // 毕业(due 排到明天及以后)→ 今天不再出。旧算法则沿用「分数 ≤6 未过就重排」。
   let fsrsGraduated = false;
+  let stepMinutes = 0; // 学习步骤给的「几分钟后再考」,用来换算隔几张卡
   if (isFsrsActive() && !knownForever) {
     try {
       const next = recordFsrsReview(wordId, answer);
       fsrsGraduated = isGraduatedForDay(next, studyDayEnd());
+      stepMinutes = Math.max((new Date(next.due).getTime() - Date.now()) / 60_000, 0);
     } catch (err) {
       console.warn("[fsrs] 记录跳过:", err);
       fsrsGraduated = answer === "know"; // 兜底:认识当作过了
     }
   }
   const notPassed = isFsrsActive() ? !fsrsGraduated : score <= 6;
-  if (notPassed && !knownForever) scheduleDelayedReview(wordId);
+  // 顽固词(连着错到阈值)不排队等,直接排 0 位:当场接着刷到答对为止(答对即清零 streak)
+  const stubborn = mistakeStreak >= STUBBORN_MISTAKE_STREAK;
+  if (notPassed && !knownForever) scheduleDelayedReview(wordId, stepMinutes, stubborn);
+  setLastAnsweredWord(wordId);
   if (answer !== "known_forever") recordStage2Word(wordId);
 
   db.run(`

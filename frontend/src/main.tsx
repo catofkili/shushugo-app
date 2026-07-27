@@ -2,11 +2,12 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
+import './master-home.css';
 import { initDatabase } from './lib/database';
 import { loadDatabase, registerPersistenceLifecycle } from './lib/storage';
 import { ensureSeedData } from './lib/study-core';
 import { initWebViewOptimizer } from './lib/webview-optimizer';
-import { applyTheme } from './lib/studyPreferences';
+import { applyMotionLevel, applyTheme } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { autoSyncReminderNotifications } from './lib/notifications';
 import { initializePurchases } from './lib/purchases';
@@ -31,8 +32,9 @@ if (import.meta.env.DEV) {
   });
 }
 
-// 立即应用主题（在渲染前）
+// 立即应用主题与动效档位（在渲染前，避免首帧闪一下满血动画）
 applyTheme();
+applyMotionLevel();
 
 // 监听系统主题变化
 if (window.matchMedia) {

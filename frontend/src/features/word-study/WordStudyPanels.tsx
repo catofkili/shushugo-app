@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Brain, CalendarDays, CheckCircle2, Clock3, ImageDown, Loader2, Minus, Pencil, Plus, Share2, X } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
+import { ZooConfetti } from "../../components/ZooConfetti";
 import { estimatedMinutesFor } from "../../lib/comeback";
 import { studyDate as currentStudyDate } from "../../lib/database/db-utils";
 import { saveImageToGallery, shareImage } from "../../lib/share-image";
@@ -40,6 +41,40 @@ export const KanjiAnswer = ({ card }: { card: WordCard }) => {
   );
 };
 
+/** 把例句里出现的原词形挑出来高亮,一眼能定位到这次学的词。
+ *  动词/形容词在例句里多半是活用形(通っています ≠ 通う),匹配不上就原样返回,不硬凑。 */
+const highlightHeadword = (sentence: string, card: WordCard) => {
+  // 汉字形单字也高亮(味 → この料理は味が薄い);假名形必须≥2 字,否则 の/は 这类会满句乱标。
+  const candidates = [card.kanji, card.kana.length > 1 ? card.kana : ""];
+  const target = candidates.find((form) => form && sentence.includes(form));
+  if (!target) return sentence;
+
+  return sentence.split(target).flatMap((chunk, index) =>
+    index === 0
+      ? [chunk]
+      : [
+          <span key={`hit-${index}`} className="text-[#81D8CF]">{target}</span>,
+          chunk
+        ]
+  );
+};
+
+/** 翻面后的例句框。词库里每个词都带 example_jp / example_meaning,
+ *  React 重写时漏了这一块,单词卡一直没显示例句。 */
+export const ExampleBlock = ({ card }: { card: WordCard }) => {
+  const jp = card.example?.jp?.trim() ?? "";
+  const meaning = card.example?.meaning?.trim() ?? "";
+  if (!jp && !meaning) return null;
+
+  return (
+    <div className="mx-auto mt-7 max-w-2xl rounded-2xl border border-white/15 bg-[#373b3b] p-4 text-left">
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">例句</p>
+      {jp && <p className="jp mt-3 text-lg leading-8 text-white/88">{highlightHeadword(jp, card)}</p>}
+      {meaning && <p className="mt-2 text-sm leading-6 text-white/65">{meaning}</p>}
+    </div>
+  );
+};
+
 interface FinishPanelProps {
   stats: WordStats | null;
   phase: string;
@@ -68,6 +103,21 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const compactPhaseLabel = phase === "done" ? "全部完成" : phase === "stage1" ? "第一阶段" : phase;
   const encore = stats?.encore;
   const showEncore = phase === "done" && Boolean(encore?.available) && Boolean(onEncore);
+
+  // 主题纸屑每个学习日只放一次:同一天反复回到完成页不再重放,免得变成噪音。
+  // 记在 sessionStorage 而不是数据库 —— 这只是个视觉彩头,丢了也无所谓。
+  const [celebrate, setCelebrate] = useState(false);
+  useEffect(() => {
+    if (phase !== "done" && !isStage1Complete) return;
+    const key = `mn-zoo-celebrated-${studyDate}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // 隐私模式下 sessionStorage 可能不可用,那就每次都放,不影响功能
+    }
+    setCelebrate(true);
+  }, [phase, isStage1Complete, studyDate]);
 
   // 「继续学习」按钮的每日装扮与数量。数量由算法给:积压递减批或强度的一半;
   // 铅笔调的是唯一旋钮「学习强度」,不再单独设本次数量。
@@ -154,6 +204,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
 
   return (
     <>
+      {celebrate && <ZooConfetti />}
       <div className="min-h-0 flex-1 overflow-y-auto p-1 text-center sm:p-2">
         <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-3">
           <div className="flex shrink-0 items-center justify-between gap-3 text-left">

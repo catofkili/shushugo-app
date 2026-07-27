@@ -121,10 +121,11 @@ describe("pickStage1CriticalPoolRow", () => {
     expect(pickStage1CriticalPoolRow(rows, queue)?.id).toBe(2);
   });
 
-  it("falls back to the least-recently-queued word when none is due", () => {
+  it("stands down when no critical word has waited its gap out", () => {
+    // 池里没人到位 → 交还给普通优先级,绝不把刚答过的词直接顶回来
     const rows = [critical(1, -45), critical(2, -30)];
     const queue = new Map<number, number>([[1, 3], [2, 1]]);
-    expect(pickStage1CriticalPoolRow(rows, queue)?.id).toBe(2);
+    expect(pickStage1CriticalPoolRow(rows, queue)).toBeNull();
   });
 
   it("ignores rows above the critical threshold", () => {
@@ -146,6 +147,14 @@ describe("pickDueCriticalPoolRow", () => {
       row({ id: 3, score: -21, today_seen_count: 0, due_after: 2 })
     ];
     expect(pickDueCriticalPoolRow(rows)?.id).toBe(2);
+  });
+
+  it("stands down when every critical word is still waiting its gap out", () => {
+    const rows = [
+      row({ id: 1, score: -45, due_after: 2 }),
+      row({ id: 2, score: -22, due_after: 1 })
+    ];
+    expect(pickDueCriticalPoolRow(rows)).toBeNull();
   });
 
   it("supports alternate score columns", () => {

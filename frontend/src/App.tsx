@@ -2,6 +2,7 @@ import { lazy, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { WordStudy } from "./pages/WordStudy";
 import { AppNavigation } from "./components/AppNavigation";
+import { ZooHome } from "./components/ZooHome";
 import { FillProgressModal } from "./components/FillProgressModal";
 import { Paywall } from "./components/Paywall";
 import { useStudyStore } from "./hooks/useStudyStore";
@@ -29,8 +30,11 @@ const HelpPage = lazy(() => import("./pages/HelpPage").then((module) => ({ defau
 const AboutPage = lazy(() => import("./pages/AboutPage").then((module) => ({ default: module.AboutPage })));
 const ProPage = lazy(() => import("./pages/ProPage").then((module) => ({ default: module.ProPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((module) => ({ default: module.ProfilePage })));
-const ToolboxPage = lazy(() => import("./pages/ToolboxPage").then((module) => ({ default: module.ToolboxPage })));
 const StudyModesPage = lazy(() => import("./pages/StudyModesPage").then((module) => ({ default: module.StudyModesPage })));
+const TeamPage = lazy(() => import("./pages/TeamPage").then((module) => ({ default: module.TeamPage })));
+const ZooMapPage = lazy(() => import("./pages/ZooMapPage").then((module) => ({ default: module.ZooMapPage })));
+const ZooDexPage = lazy(() => import("./pages/ZooDexPage").then((module) => ({ default: module.ZooDexPage })));
+const HotSpringPage = lazy(() => import("./pages/HotSpringPage").then((module) => ({ default: module.HotSpringPage })));
 
 const PageLoading = () => (
   <div className="grid min-h-48 place-items-center rounded-2xl border border-white/15 bg-[#464949] p-6 text-sm font-semibold text-white/65">
@@ -46,7 +50,7 @@ const toolPageTitles: Partial<Record<Page, string>> = {
 export default function App() {
   const store = useStudyStore();
   const entitlements = useEntitlements();
-  const [page, setPage] = useState<Page>("word");
+  const [page, setPage] = useState<Page>("home");
   const [pageHistory, setPageHistory] = useState<Page[]>([]); // 页面历史栈
   const [grammarMode, setGrammarMode] = useState<GrammarMode>("learn");
   const [selectedGrammarId, setSelectedGrammarId] = useState("wa");
@@ -86,7 +90,7 @@ export default function App() {
       setLaunchStudyMode(currentMode);
       setWordStudyRevision((revision) => revision + 1);
     }
-    if (newPage === "toolbox" || newPage === "profile") {
+    if (newPage === "home" || newPage === "profile") {
       setSelectedGrammarId("wa");
     }
     if (newPage !== page) {
@@ -102,7 +106,7 @@ export default function App() {
       setPageHistory(pageHistory.slice(0, -1));
       setPage(previousPage);
     } else {
-      setPage("word");
+      setPage("home");
     }
   };
 
@@ -205,13 +209,13 @@ export default function App() {
       <div className="grid flex-1 grid-cols-2 gap-1">
         <button
           onClick={() => openGrammarTab("learn")}
-          className={`focus-ring soft-text-outline rounded-xl px-3 py-2 text-sm font-bold transition-all duration-300 ${grammarMode === "learn" && page !== "detail" ? "bg-[#81D8CF] !text-[#343838] shadow-[0_4px_16px_rgba(129,216,207,0.4),inset_0_1px_0_rgba(255,255,255,0.4)]" : "text-[#1f514d]/75 hover:bg-[#81D8CF]/20"}`}
+          className={`focus-ring soft-text-outline rounded-xl px-3 py-2 text-sm font-bold transition-all duration-300 ${grammarMode === "learn" && page !== "detail" ? "bg-[#81D8CF] !text-[#343838] shadow-[0_4px_16px_rgba(143,203,94,0.4),inset_0_1px_0_rgba(255,255,255,0.4)]" : "text-[#1f514d]/75 hover:bg-[#81D8CF]/20"}`}
         >
           学习
         </button>
         <button
           onClick={() => openGrammarTab("practice")}
-          className={`focus-ring soft-text-outline rounded-xl px-3 py-2 text-sm font-bold transition-all duration-300 ${grammarMode === "practice" && page !== "detail" ? "bg-[#81D8CF] !text-[#343838] shadow-[0_4px_16px_rgba(129,216,207,0.4),inset_0_1px_0_rgba(255,255,255,0.4)]" : "text-[#1f514d]/75 hover:bg-[#81D8CF]/20"}`}
+          className={`focus-ring soft-text-outline rounded-xl px-3 py-2 text-sm font-bold transition-all duration-300 ${grammarMode === "practice" && page !== "detail" ? "bg-[#81D8CF] !text-[#343838] shadow-[0_4px_16px_rgba(143,203,94,0.4),inset_0_1px_0_rgba(255,255,255,0.4)]" : "text-[#1f514d]/75 hover:bg-[#81D8CF]/20"}`}
         >
           练习
         </button>
@@ -263,11 +267,11 @@ export default function App() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
         <button
-          onClick={() => navigateToPage("toolbox")}
+          onClick={() => navigateToPage("home")}
           className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8 hover:text-white"
         >
           <ArrowLeft size={17} />
-          工具箱
+          主页
         </button>
         <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">{title}</p>
       </div>
@@ -276,8 +280,31 @@ export default function App() {
   );
 
   const renderPage = () => {
+    if (page === "home") {
+      return (
+        <ZooHome
+          overview={overview}
+          onNavigate={navigateToPage}
+          onOpenFill={() => setFillOpen(true)}
+          onRefreshOverview={refreshOverview}
+          onCompleteTodayWords={completeTodayWords}
+        />
+      );
+    }
     if (page === "word") {
       return <WordStudy key={wordStudyRevision} initialMode={launchStudyMode} />;
+    }
+    if (page === "team") {
+      return <TeamPage />;
+    }
+    if (page === "zoo-map") {
+      return <ZooMapPage overview={overview} />;
+    }
+    if (page === "zoo-dex") {
+      return <ZooDexPage overview={overview} />;
+    }
+    if (page === "hot-spring") {
+      return <HotSpringPage onNavigate={navigateToPage} />;
     }
     if (page === "grammar") {
       return renderGrammarPage();
@@ -296,17 +323,6 @@ export default function App() {
             onMistake={addMistake}
           />
         </div>
-      );
-    }
-    if (page === "toolbox") {
-      return (
-        <ToolboxPage
-          overview={overview}
-          onNavigate={navigateToPage}
-          onOpenFill={() => setFillOpen(true)}
-          onRefreshOverview={refreshOverview}
-          onCompleteTodayWords={completeTodayWords}
-        />
       );
     }
     if (page === "profile") {
@@ -354,7 +370,7 @@ export default function App() {
   };
 
   return (
-    <div className="app-shell relative h-screen overflow-hidden bg-gradient-to-br from-[#6a6d6d] via-[#7a7d7d] to-[#6a6d6d] text-[#fff]">
+    <div className="app-shell relative h-screen overflow-hidden bg-gradient-to-br from-[#FFFBF2] via-[#FDF1DC] to-[#F6E9D2] text-[#3A2E22]">
       <div className={`grid h-full min-w-0 transition-[grid-template-columns] duration-200 ${sidebarCollapsed ? "lg:grid-cols-[78px_1fr]" : "lg:grid-cols-[268px_1fr]"}`}>
         <AppNavigation
           page={page}
@@ -367,7 +383,9 @@ export default function App() {
           onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
         />
 
-        <main className="app-landscape-main fixed inset-0 min-w-0 overflow-y-auto px-4 pb-[6rem] pt-4 sm:px-6 lg:static lg:h-screen lg:overflow-y-auto lg:px-8 lg:py-8" style={{ top: 'calc(max(env(safe-area-inset-top), 54px) + 36px)', left: 0, right: 0, bottom: 'calc(max(env(safe-area-inset-bottom), 20px) + 70px)' }}>
+        {/* pb 只留一点呼吸空间:底部导航的位置已经由下面的 bottom 让出来了,
+            以前这里是 pb-[6rem](96px),等于同一块空间预留两次,凭空多出一条死白。 */}
+        <main className="app-landscape-main fixed inset-0 min-w-0 overflow-y-auto px-4 pb-4 pt-4 sm:px-6 lg:static lg:h-screen lg:overflow-y-auto lg:px-8 lg:py-8" style={{ top: 'var(--app-main-top)', left: 0, right: 0, bottom: 'var(--app-main-bottom)' }}>
           <div className="mx-auto max-w-[1400px]">
             <Suspense fallback={<PageLoading />}>{renderPage()}</Suspense>
           </div>

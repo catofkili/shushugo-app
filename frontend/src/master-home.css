@@ -1,0 +1,467 @@
+/* ====================================================================
+   动物园 · 水豚 主题：单词学习首页（在 App 外壳内渲染，仅内容，无侧栏）
+   ==================================================================== */
+.zoo-home{font-family:Inter,"Noto Sans SC","Noto Sans JP",system-ui,sans-serif;color:var(--zoo-ink);display:flex;flex-direction:column;gap:18px;max-width:960px;margin:0 auto}
+
+/* 顶部问候 + 水豚 */
+.zoo-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;overflow:hidden;border:1.5px solid rgba(126,190,79,.30);border-radius:26px;padding:22px 24px;background:linear-gradient(135deg,#FBF5E9 0%,#F3E7CE 55%,#DEEDC6 100%);box-shadow:var(--jelly-shadow-md)}
+.zoo-hero::after{content:"";position:absolute;right:-40px;bottom:-46px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(126,190,79,.16),transparent 70%);pointer-events:none}
+.zoo-eyebrow{color:var(--zoo-primary-deep);font-family:"Noto Sans JP";font-size:11.5px;font-weight:800;letter-spacing:1.3px}
+.zoo-hero-text h1{margin:5px 0 4px;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:27px;font-weight:800;color:var(--zoo-ink)}
+.zoo-hero-sub{color:var(--zoo-brown-deep);font-size:13px;line-height:1.6;max-width:22em}
+.zoo-streak{display:inline-flex;align-items:center;gap:5px;margin-top:12px;border-radius:20px;background:var(--zoo-orange-soft);padding:6px 13px;color:#B4740A;font-size:12.5px;font-weight:800;border:1px solid rgba(245,166,35,.35)}
+.zoo-hero-mascot{position:relative;flex-shrink:0;display:grid;place-items:center;filter:drop-shadow(0 8px 14px rgba(150,110,55,.22))}
+.zoo-hero-pond{position:absolute;bottom:2px;width:96px;height:20px;border-radius:50%;background:radial-gradient(ellipse,rgba(143,203,94,.35),transparent 72%)}
+
+/* 通用卡片 */
+.zoo-card{border:1.5px solid rgba(143,203,94,.28);border-radius:24px;background:var(--zoo-surface);box-shadow:var(--jelly-shadow-sm);padding:20px}
+
+/* 今日单词卡 */
+.zoo-study-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.zoo-kicker{color:var(--zoo-primary-deep);font-size:11.5px;font-weight:800;letter-spacing:1.2px}
+.zoo-study-head h2{margin-top:3px;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:19px;font-weight:800;color:var(--zoo-ink)}
+.zoo-mode{flex-shrink:0;border:1px solid rgba(143,203,94,.45);border-radius:13px;background:var(--zoo-primary-soft);color:var(--zoo-primary-deep);font-size:12.5px;font-weight:800;padding:8px 14px;white-space:nowrap}
+.zoo-mode:hover{background:#C4E2A2}
+.zoo-studybar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.zoo-chips{display:flex;gap:8px}
+.zoo-chips span{border:1px solid rgba(143,203,94,.4);border-radius:11px;background:var(--zoo-primary-soft);color:var(--zoo-primary-deep);font-size:12px;font-weight:700;padding:6px 10px}
+.zoo-tools{display:flex;align-items:center;gap:8px}
+.zoo-tools b{color:var(--zoo-brown);font-size:12.5px;font-weight:800}
+.zoo-tools button{height:38px;width:38px;border:1px solid rgba(192,133,82,.28);border-radius:12px;background:#fff;color:var(--zoo-brown);font-size:15px}
+.zoo-tools button.saved{background:var(--zoo-orange-soft);border-color:rgba(245,166,35,.5);color:#B4740A}
+
+.zoo-card-face{margin-top:16px;border:1px dashed rgba(192,133,82,.3);border-radius:18px;background:linear-gradient(160deg,#FBF5E8,#F3E7CD);padding:40px 22px;text-align:center}
+.zoo-face-label{color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:800;letter-spacing:1.4px}
+.zoo-prompt{margin:12px 0;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:30px;font-weight:800;color:var(--zoo-ink);line-height:1.3}
+.zoo-answer b{display:block;color:var(--zoo-primary-deep);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:36px;font-weight:800}
+.zoo-answer span{display:block;margin-top:4px;color:var(--zoo-brown-deep);font-size:16px}
+.zoo-answer small{display:block;margin-top:10px;color:var(--zoo-brown);font-size:12.5px}
+.zoo-hidden{margin:22px 0;color:#A99A86;font-size:14px;font-weight:600}
+.zoo-hidden small{display:block;margin-top:5px;font-size:12px;font-weight:500}
+.zoo-reveal{margin-top:22px;border:0;border-radius:14px;background:var(--zoo-primary);padding:13px 26px;color:var(--zoo-on-primary);font-size:14.5px;font-weight:800;box-shadow:0 6px 16px rgba(111,168,62,.24)}
+.zoo-reveal:hover{background:#8AC85C}
+.zoo-reveal:active{transform:translateY(1px)}
+
+.zoo-rates{margin-top:18px;border-top:1px solid rgba(192,133,82,.2);padding-top:16px;text-align:center}
+.zoo-rates p{color:var(--zoo-brown-deep);font-size:13px}
+.zoo-rates div{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.zoo-rates button{border:1px solid rgba(192,133,82,.28);border-radius:13px;background:#fff;padding:11px 6px;color:var(--zoo-ink);font-weight:700;font-size:13px}
+.zoo-rates button small{display:block;margin-top:3px;color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:600}
+.zoo-rates button:hover{border-color:rgba(143,203,94,.55);background:#FBFDF4}
+.zoo-rates .strong{border-color:var(--zoo-primary-dark);background:var(--zoo-primary);color:var(--zoo-on-primary)}
+.zoo-rates .strong small{color:#3B5220}
+
+/* 底部两栏 */
+.zoo-bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.zoo-mini h2{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:16px;font-weight:800;color:var(--zoo-ink)}
+.zoo-mini p{min-height:44px;margin-top:8px;color:var(--zoo-brown-deep);font-size:13px;line-height:1.7}
+.zoo-mini p b{color:var(--zoo-primary-deep);font-size:16px}
+.zoo-mini button{margin-top:12px;border:0;background:transparent;color:var(--zoo-primary-deep);font-size:12.5px;font-weight:800}
+.zoo-mini button:hover{color:var(--zoo-primary-dark)}
+
+@media(max-width:640px){
+  .zoo-hero{padding:18px}
+  .zoo-hero-text h1{font-size:23px}
+  .zoo-hero-mascot :where(svg){width:88px;height:88px}
+  .zoo-bottom{grid-template-columns:1fr}
+  .zoo-prompt{font-size:25px}
+  .zoo-rates div{grid-template-columns:1fr 1fr}
+}
+
+/* ====================================================================
+   动物园 · 动效层(从 zoo-lab 原型搬入)
+   全部 zoo- 前缀,不影响旧的深色界面。只用 transform/opacity(GPU 合成)。
+   ==================================================================== */
+
+/* 通用弹性:悬停微抬、按下挤压回弹 */
+.zoo-pop{transition:transform .16s cubic-bezier(.34,1.7,.5,1),box-shadow .22s ease,background-color .2s ease,border-color .2s ease,color .2s ease;will-change:transform;-webkit-tap-highlight-color:transparent}
+.zoo-pop:hover:not(:disabled){transform:translateY(-2px)}
+.zoo-pop:active:not(:disabled){transform:translateY(1px) scale(.94);transition-duration:.07s}
+.zoo-pop:disabled{cursor:default}
+
+/* 主按钮悬停光泽 */
+.zoo-gloss{position:relative;overflow:hidden}
+.zoo-gloss::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);opacity:0;pointer-events:none}
+.zoo-gloss:hover::after{animation:zooGloss .6s ease}
+@keyframes zooGloss{0%{left:-70%;opacity:.85}100%{left:130%;opacity:0}}
+
+/* 认识:弹一下 + 绿光脉冲 */
+.zoo-flash-good{z-index:2;animation:zooFlashGood .42s cubic-bezier(.34,1.6,.5,1)}
+@keyframes zooFlashGood{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(143,203,94,0)}35%{transform:scale(1.08);box-shadow:0 0 0 5px rgba(143,203,94,.45),0 10px 22px rgba(111,168,62,.4)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(143,203,94,0)}}
+/* 不认识:轻轻摇头(不惩罚) */
+.zoo-flash-bad{z-index:2;animation:zooFlashBad .42s ease}
+@keyframes zooFlashBad{0%,100%{transform:translateX(0) rotate(0)}18%{transform:translateX(-5px) rotate(-1.6deg)}40%{transform:translateX(4px) rotate(1.4deg)}62%{transform:translateX(-3px) rotate(-.9deg)}82%{transform:translateX(2px) rotate(.4deg)}}
+
+/* 评分按钮交错弹入 */
+.zoo-rates div button{animation:zooRateIn .3s cubic-bezier(.34,1.56,.64,1) backwards}
+.zoo-rates div button:nth-child(1){animation-delay:.02s}
+.zoo-rates div button:nth-child(2){animation-delay:.07s}
+.zoo-rates div button:nth-child(3){animation-delay:.12s}
+.zoo-rates div button:nth-child(4){animation-delay:.17s}
+@keyframes zooRateIn{0%{opacity:0;transform:translateY(9px) scale(.95)}100%{opacity:1;transform:none}}
+.zoo-rates div button.zoo-flash-good,.zoo-rates div button.zoo-flash-bad{animation-delay:0s}
+
+/* 卡片换词入场 */
+.zoo-enter{animation:zooCardEnter .34s cubic-bezier(.34,1.4,.6,1)}
+@keyframes zooCardEnter{0%{opacity:0;transform:translateY(10px) scale(.985)}100%{opacity:1;transform:none}}
+
+/* 水豚微反应 */
+.zoo-mood-cheer{animation:zooCapyCheer .5s ease}
+.zoo-mood-sleepy{animation:zooCapyTilt .5s ease}
+@keyframes zooCapyCheer{0%{transform:scale(1)}30%{transform:translateY(-6px) scale(1.08)}60%{transform:translateY(0) scale(.97)}100%{transform:scale(1)}}
+@keyframes zooCapyTilt{0%,100%{transform:rotate(0)}30%{transform:rotate(-6deg)}62%{transform:rotate(4deg)}}
+
+/* 呼吸感(常驻,每屏最多 1~2 个) */
+.zoo-breathe{animation:zooBreathe 4s ease-in-out infinite}
+@keyframes zooBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+
+/* ===== 甩卡评分:印章 + 提示 ===== */
+/* 跟手时盖在卡片上的印章,右=捡到松子,左=空壳(措辞不带惩罚) */
+.zoo-stamp{position:absolute;top:22%;z-index:20;pointer-events:none;border:3px solid;border-radius:14px;padding:8px 16px;font-size:20px;font-weight:900;letter-spacing:2px;transform:rotate(-11deg);backdrop-filter:blur(2px)}
+/* 印章贴在卡片「甩过来的那一侧」:右甩时贴左边,卡片往右走印章才留在屏幕里(Tinder 同理) */
+.zoo-stamp.good{left:8%;border-color:var(--zoo-primary-dark);color:var(--zoo-primary-deep);background:rgba(211,233,182,.55)}
+.zoo-stamp.bad{right:8%;border-color:var(--zoo-brown);color:var(--zoo-brown-deep);background:rgba(239,223,194,.55);transform:rotate(11deg)}
+
+/* 手势提示只在触屏(粗指针)设备上出现,桌面没这手势 */
+.zoo-swipe-hint{display:none}
+@media(hover:none) and (pointer:coarse){
+  .zoo-swipe-hint{display:block;position:absolute;left:0;right:0;top:calc(100% + 6px);text-align:center;font-size:11px;font-weight:700;color:var(--zoo-muted);pointer-events:none}
+}
+
+/* ======================================================================
+   单词学习卡片的外壳高度
+   手机端要「刚好占满 main 的可视内容区」:用和 <main> 同一组变量算。
+   以前写死 calc(100vh - 13rem),比容器高出 84px → 卡片溢出滚动 + 底下一条死白。
+   ====================================================================== */
+.word-study-shell{
+  height:calc(100vh - var(--app-main-top) - var(--app-main-bottom) - var(--app-main-pad-y));
+  min-height:440px
+}
+@media(min-width:1024px){
+  .word-study-shell{height:calc(100vh - 4rem);min-height:600px}
+}
+
+/* ===== 松鼠捡松子的小路(顶部 Master 栏) =====
+   放全局顶栏而不是学习卡片里:卡片高度是死的,进度条占的每一像素都是从答案区扣的;
+   顶栏中间本来就空着,白捡。所以这里所有尺寸都按「一条 26px 的细带」设计。 */
+.zoo-trail{
+  --zoo-trail-tail:56px;              /* 右端留给计数的宽度,松鼠不会跑进去和数字糊在一起 */
+  position:relative;flex:1;min-width:0;height:26px;border-radius:9px;
+  background:linear-gradient(180deg,#F3FAE7,#E7F4D4);border:1px solid rgba(143,203,94,.35)
+}
+.zoo-trail-line{position:absolute;left:10px;right:var(--zoo-trail-tail);top:16px;height:2px;border-radius:2px;
+  background:repeating-linear-gradient(90deg,rgba(156,107,63,.35) 0 6px,transparent 6px 12px)}
+.zoo-trail-stations{position:absolute;left:10px;right:var(--zoo-trail-tail);top:10px;display:flex;justify-content:space-between}
+.zoo-trail-node{font-size:9px;line-height:1;transition:transform .2s}
+.zoo-trail-node.got{transform:scale(1.05)}
+.zoo-trail-node.pending{color:rgba(156,107,63,.4)}
+.zoo-trail-node.cur{color:var(--zoo-primary-deep);transform:scale(1.6)}
+.zoo-trail-squirrel{position:absolute;top:1px;transform:translateX(-50%);font-size:15px;z-index:2;
+  transition:left .38s cubic-bezier(.34,1.4,.6,1);animation:zooHopSmall .38s ease}
+.zoo-trail-count{position:absolute;right:7px;top:50%;transform:translateY(-50%);z-index:3;
+  font-size:10px;font-weight:700;color:var(--zoo-brown-deep);white-space:nowrap;line-height:1}
+.zoo-trail-count b{color:var(--zoo-primary-deep);font-weight:800}
+/* 细带上的跳跃幅度要小,不然松鼠会整只跳出顶栏 */
+@keyframes zooHopSmall{
+  0%{transform:translateX(-50%) translateY(0) scaleY(1) scaleX(1)}
+  25%{transform:translateX(-50%) translateY(-6px) scaleY(1.12) scaleX(.9)}
+  55%{transform:translateX(-50%) translateY(0) scaleY(.86) scaleX(1.12)}
+  75%{transform:translateX(-50%) translateY(-1px) scaleY(1.04) scaleX(.98)}
+  100%{transform:translateX(-50%) translateY(0) scaleY(1) scaleX(1)}
+}
+
+/* ====================================================================
+   便当主页 / 组队 / 动物园地图 / 温泉打卡
+   （从 zoo-lab 原型搬入,类名统一 zoo- 前缀,避免与 Tailwind 工具类冲突）
+   ==================================================================== */
+.zoo-page{font-family:Inter,"Noto Sans SC","Noto Sans JP",system-ui,sans-serif;color:var(--zoo-ink);max-width:720px;margin:0 auto;animation:zooPageIn .3s cubic-bezier(.34,1.4,.6,1)}
+@keyframes zooPageIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
+
+/* 面板通用件(组队/地图/温泉共用) */
+.zoo-panel{border:1.5px solid rgba(143,203,94,.28);border-radius:22px;background:var(--zoo-surface);box-shadow:0 8px 22px rgba(160,120,60,.12);padding:18px}
+.zoo-panel-kick{color:var(--zoo-primary-deep);font-size:11px;font-weight:800;letter-spacing:1.3px}
+.zoo-panel-kick-spaced{margin-top:22px}
+.zoo-panel-title{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-weight:800;font-size:18px;margin:3px 0 12px;color:var(--zoo-ink)}
+.zoo-panel-note{color:var(--zoo-muted);font-size:11.5px;line-height:1.7;margin:10px 2px 0}
+.zoo-panel-note-warn{margin:0 0 12px;border:1px solid rgba(232,151,28,.4);border-radius:12px;background:var(--zoo-orange-soft);padding:8px 12px;color:#8A5A08;font-weight:700}
+
+/* ===== 问候条 ===== */
+.zoo-greet{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.zoo-greet-capy{flex:none}
+.zoo-greet-text{flex:1;min-width:0}
+.zoo-greet-hi{margin:0;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:17px;font-weight:800}
+.zoo-greet-sub{margin:2px 0 0;color:var(--zoo-brown-deep);font-size:12px;line-height:1.5}
+.zoo-greet-streak{flex:none;display:flex;flex-direction:column;align-items:center;font-size:13px}
+.zoo-greet-streak b{font-size:17px;color:var(--zoo-orange)}
+
+/* ===== 便当网格 ===== */
+/* 分区小标题:把 9 个入口分成「今天 / 我的动物园 / 学习工具 / 进度」几组,而不是一片格子 */
+.zoo-sec{margin:20px 2px 8px;font-size:12px;font-weight:800;letter-spacing:.6px;color:var(--zoo-brown-deep)}
+.zoo-bento{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.zoo-bento + .zoo-bento{margin-top:10px}
+.zoo-tile{position:relative;overflow:hidden;text-align:left;border:1.5px solid rgba(192,133,82,.22);border-radius:20px;background:var(--zoo-surface);padding:14px;box-shadow:0 6px 18px rgba(160,120,60,.1);color:var(--zoo-ink);display:flex;flex-direction:column;gap:3px;-webkit-tap-highlight-color:transparent;transition:transform .16s cubic-bezier(.34,1.7,.5,1),box-shadow .22s ease;animation:zooRateIn .34s cubic-bezier(.34,1.56,.64,1) backwards}
+.zoo-bento .zoo-tile:nth-child(1){animation-delay:.02s}
+.zoo-bento .zoo-tile:nth-child(2){animation-delay:.06s}
+.zoo-bento .zoo-tile:nth-child(3){animation-delay:.10s}
+.zoo-bento .zoo-tile:nth-child(4){animation-delay:.14s}
+.zoo-bento .zoo-tile:nth-child(5){animation-delay:.18s}
+.zoo-bento .zoo-tile:nth-child(6){animation-delay:.22s}
+.zoo-tile:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(160,120,60,.16)}
+.zoo-tile:active{transform:translateY(1px) scale(.97);transition-duration:.07s}
+.zoo-tile b{font-size:14px;font-weight:800}
+.zoo-tile-kick{font-size:10px;font-weight:800;letter-spacing:1.2px;color:var(--zoo-primary-deep)}
+.zoo-tile-sub{font-size:11px;color:var(--zoo-brown-deep)}
+.zoo-tile-emoji{font-size:26px;line-height:1;margin-bottom:2px}
+.zoo-tile-cta{margin-top:auto;font-size:11.5px;font-weight:800;color:var(--zoo-primary-deep)}
+.zoo-tile-cta.soft{color:var(--zoo-brown-deep)}
+.zoo-tile-sm{min-height:104px}
+.zoo-tile-bar{margin-top:6px;height:6px;border-radius:6px;background:var(--zoo-primary-soft);overflow:hidden}
+.zoo-tile-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary))}
+.zoo-tile-tools{background:var(--zoo-cream-2)}
+
+/* 通栏:今日复习 */
+.zoo-tile-hero{grid-column:1 / -1;flex-direction:row;align-items:center;justify-content:space-between;background:linear-gradient(120deg,#EDF8DE,#DCF0C4);border-color:rgba(111,168,62,.4)}
+.zoo-tile-hero-l{display:flex;flex-direction:column;gap:2px}
+.zoo-tile-hero-num{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:26px;font-weight:800;color:var(--zoo-primary-deep)}
+.zoo-tile-hero-sub{font-size:11.5px;color:var(--zoo-brown-deep)}
+.zoo-tile-hero-r{display:flex;flex-direction:column;align-items:center;gap:4px}
+.zoo-tile-hero-emoji{font-size:36px;animation:zooHopIdle 2.8s ease-in-out infinite}
+@keyframes zooHopIdle{0%,72%,100%{transform:translateY(0)}80%{transform:translateY(-7px)}88%{transform:translateY(0) scaleY(.9) scaleX(1.08)}94%{transform:translateY(0)}}
+
+/* 通栏:组队 */
+.zoo-tile-team{grid-column:1 / -1;background:linear-gradient(120deg,#FFF4E2,#FFE8C6);border-color:rgba(232,151,28,.4)}
+.zoo-tile-team-name{font-size:16px}
+.zoo-tile-team-avatars{display:flex;margin:5px 0 3px}
+.zoo-tile-team-avatars i{width:28px;height:28px;display:grid;place-items:center;font-style:normal;font-size:15px;background:#fff;border:2px solid var(--zoo-surface);border-radius:50%;margin-left:-7px;box-shadow:0 2px 5px rgba(160,120,60,.18)}
+.zoo-tile-team-avatars i:first-child{margin-left:0}
+.zoo-tile-team-status{font-size:11.5px;color:#8A5A08;font-weight:700}
+
+/* 通栏矮条:信息量少的入口(图鉴)用它,不必占一个正方格 */
+.zoo-tile-strip{grid-column:1 / -1;flex-direction:row;align-items:center;gap:12px}
+.zoo-tile-strip .zoo-tile-emoji{margin-bottom:0}
+.zoo-tile-strip-text{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.zoo-tile-strip-num{flex:none;font-size:18px;font-weight:800;color:var(--zoo-primary-deep)}
+
+/* ===== 进度概览(原工具箱的 ProgressOverviewPanel) ===== */
+.zoo-prog{padding:14px}
+.zoo-prog-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-radius:14px;background:var(--zoo-primary-soft);padding:4px;margin-bottom:12px}
+.zoo-prog-tabs button{border:0;border-radius:10px;background:transparent;padding:7px 4px;font-size:12px;font-weight:800;color:var(--zoo-primary-deep)}
+.zoo-prog-tabs button.on{background:var(--zoo-primary);color:var(--zoo-on-primary);box-shadow:0 3px 10px rgba(111,168,62,.3)}
+.zoo-prog-body{display:grid;grid-template-columns:1fr;gap:10px}
+.zoo-prog-body.two{grid-template-columns:1fr 1fr}
+.zoo-prog-col{display:flex;flex-direction:column;gap:10px;min-width:0;border:1.5px solid rgba(192,133,82,.22);border-radius:16px;background:var(--zoo-cream);padding:12px;text-align:left;color:var(--zoo-ink);transition:border-color .2s,background-color .2s}
+.zoo-prog-col.on{border-color:var(--zoo-primary-dark);background:var(--zoo-primary-soft)}
+.zoo-prog-col-head{display:flex;flex-direction:column;gap:3px;min-width:0}
+.zoo-prog-col-head b{font-size:13.5px;font-weight:800}
+.zoo-prog-col-head small{font-size:10.5px;color:var(--zoo-brown-deep);line-height:1.4}
+/* 双栏时「单词」那行摘要会折成两行,给它留两行高度,两侧柱状图才对得齐 */
+.zoo-prog-body.two .zoo-prog-col-head small{min-height:2.8em}
+.zoo-prog-bars{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;align-items:end;height:118px}
+.zoo-prog-bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.zoo-prog-bar-track{display:flex;align-items:flex-end;width:100%;max-width:30px;height:88px;overflow:hidden;border-radius:8px 8px 3px 3px;background:rgba(143,203,94,.2)}
+.zoo-prog-bar-track i{display:block;width:100%;border-radius:8px 8px 0 0;background:linear-gradient(180deg,var(--zoo-primary),var(--zoo-primary-dark));transition:height .45s cubic-bezier(.34,1.4,.6,1)}
+.zoo-prog-bar b{margin-top:5px;font-size:11px;font-weight:800;color:var(--zoo-ink)}
+.zoo-prog-bar small{font-size:9.5px;color:var(--zoo-muted)}
+
+/* ===== 饲养员图鉴 ===== */
+.zoo-dex-head{display:flex;align-items:center;gap:14px;padding:14px 16px}
+.zoo-dex-head b{display:block;font-size:22px;font-weight:800;color:var(--zoo-primary-deep)}
+.zoo-dex-head small{color:var(--zoo-brown-deep);font-size:11.5px}
+.zoo-dex-head-bar{flex:1;height:9px;border-radius:9px;background:var(--zoo-primary-soft);overflow:hidden}
+.zoo-dex-head-bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary));transition:width .5s cubic-bezier(.34,1.4,.6,1)}
+.zoo-dex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:9px}
+.zoo-dex-item{display:flex;flex-direction:column;align-items:center;gap:3px;border:1.5px solid rgba(192,133,82,.2);border-radius:16px;background:var(--zoo-cream);padding:12px 8px;text-align:center}
+/* 未点亮:去色 + 压暗,一眼区分「有」和「还没有」 */
+.zoo-dex-item .zoo-dex-emoji{font-size:28px;line-height:1;filter:grayscale(1);opacity:.35}
+.zoo-dex-item b{font-size:12px;font-weight:800;color:var(--zoo-muted)}
+.zoo-dex-item.on{border-color:var(--zoo-primary-dark);background:var(--zoo-primary-soft);box-shadow:0 4px 12px rgba(111,168,62,.18)}
+.zoo-dex-item.on .zoo-dex-emoji{filter:none;opacity:1}
+.zoo-dex-item.on b{color:var(--zoo-ink)}
+.zoo-dex-got{font-size:10px;font-weight:800;color:var(--zoo-primary-deep)}
+.zoo-dex-req{font-size:9.5px;color:var(--zoo-muted);line-height:1.4}
+.zoo-dex-bar{display:block;width:100%;height:4px;border-radius:4px;background:rgba(192,133,82,.18);overflow:hidden;margin-top:2px}
+.zoo-dex-bar i{display:block;height:100%;border-radius:4px;background:var(--zoo-brown)}
+.zoo-dex-num{font-size:9.5px;color:var(--zoo-brown-deep);font-weight:700}
+
+/* ===== 进度维护(折叠) ===== */
+.zoo-maint{margin-top:14px;border:1.5px dashed rgba(192,133,82,.35);border-radius:18px;background:rgba(251,245,233,.6);overflow:hidden}
+.zoo-maint>summary{display:flex;align-items:baseline;gap:8px;padding:12px 14px;cursor:pointer;font-size:13px;font-weight:800;color:var(--zoo-brown-deep);list-style:none}
+.zoo-maint>summary::-webkit-details-marker{display:none}
+.zoo-maint>summary::after{content:"▾";margin-left:auto;font-size:11px;transition:transform .2s}
+.zoo-maint[open]>summary::after{transform:rotate(180deg)}
+.zoo-maint>summary small{font-weight:600;font-size:11px;color:var(--zoo-muted)}
+.zoo-maint-body{display:grid;gap:8px;padding:0 14px 14px}
+.zoo-maint-btn{display:flex;flex-direction:column;gap:2px;border:1px solid rgba(192,133,82,.25);border-radius:13px;background:var(--zoo-surface);padding:10px 12px;text-align:left;color:var(--zoo-ink)}
+.zoo-maint-btn b{font-size:13px;font-weight:800}
+.zoo-maint-btn small{font-size:11px;color:var(--zoo-brown-deep)}
+/* 会跳过今天的复习,视觉上和另两个分开 */
+.zoo-maint-btn.warn{border-color:rgba(232,151,28,.45);background:var(--zoo-orange-soft)}
+.zoo-maint-btn.warn small{color:#8A5A08}
+
+/* ===== 组队面板 ===== */
+.zoo-tm-card{margin-bottom:12px}
+.zoo-tm-head{display:flex;align-items:center;justify-content:space-between}
+.zoo-tm-head b{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:17px;font-weight:800;display:block}
+.zoo-tm-head small{color:var(--zoo-brown-deep);font-size:12px}
+.zoo-tm-nuts{font-size:12px;color:var(--zoo-brown-deep);text-align:right}
+.zoo-tm-nuts b{display:block;font-size:19px;color:var(--zoo-primary-deep)}
+.zoo-tm-progress{margin:12px 0 4px;height:8px;border-radius:8px;background:var(--zoo-primary-soft);overflow:hidden}
+.zoo-tm-progress i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary));transition:width .5s cubic-bezier(.34,1.4,.6,1)}
+.zoo-tm-members{list-style:none;margin:10px 0 0;padding:0}
+.zoo-tm-members li{display:flex;align-items:center;gap:9px;padding:9px 0;border-top:1px solid rgba(192,133,82,.16)}
+.zoo-tm-members li:first-child{border-top:0}
+.zoo-tm-av{position:relative;width:32px;height:32px;flex:none;display:grid;place-items:center;font-size:17px;background:var(--zoo-cream-2);border-radius:50%}
+.zoo-tm-dot{position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--zoo-primary);border:2px solid var(--zoo-surface)}
+.zoo-tm-name{flex:1;font-weight:700;font-size:13.5px}
+.zoo-tm-npc{margin-left:5px;font-style:normal;font-size:9px;font-weight:800;color:#8A5A08;background:var(--zoo-orange-soft);border-radius:5px;padding:1px 4px;vertical-align:middle}
+.zoo-tm-mnuts{font-size:12px;color:var(--zoo-brown-deep)}
+.zoo-tm-state{font-size:11px;font-weight:800;color:var(--zoo-primary-deep);background:var(--zoo-primary-soft);border-radius:9px;padding:4px 9px}
+.zoo-tm-poke{border:1px solid rgba(232,151,28,.5);background:var(--zoo-orange-soft);color:#8A5A08;border-radius:9px;padding:5px 10px;font-size:11px;font-weight:800}
+.zoo-tm-poke.sent{background:var(--zoo-primary-soft);border-color:var(--zoo-primary-dark);color:var(--zoo-primary-deep)}
+.zoo-tm-invite{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.zoo-tm-invite-label{display:block;font-size:10px;font-weight:800;letter-spacing:1.2px;color:var(--zoo-muted)}
+.zoo-tm-key{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:17px;letter-spacing:1px;color:var(--zoo-brown-deep)}
+.zoo-tm-copy{flex:none;border:0;border-radius:12px;background:var(--zoo-primary);color:var(--zoo-on-primary);padding:10px 15px;font-weight:800;font-size:12.5px;box-shadow:0 5px 14px rgba(111,168,62,.3)}
+.zoo-tm-copy.done{background:var(--zoo-primary-deep);color:#fff}
+.zoo-tm-plaza{display:flex;flex-direction:column;gap:9px}
+.zoo-tm-plaza-item{display:flex;align-items:center;gap:11px;padding:13px 14px}
+.zoo-tm-plaza-emoji{font-size:25px}
+.zoo-tm-plaza-info{flex:1;min-width:0}
+.zoo-tm-plaza-info b{display:block;font-size:14px;font-weight:800}
+.zoo-tm-plaza-info small{color:var(--zoo-brown-deep);font-size:11.5px}
+.zoo-tm-chip{display:inline-block;margin-right:6px;background:var(--zoo-primary-soft);color:var(--zoo-primary-deep);border-radius:6px;padding:1px 6px;font-weight:800;font-size:10px}
+.zoo-tm-join{flex:none;border:1.5px solid var(--zoo-primary-dark);background:var(--zoo-primary);color:var(--zoo-on-primary);border-radius:12px;padding:8px 15px;font-weight:800;font-size:12.5px}
+.zoo-tm-join:disabled{background:var(--zoo-cream-2);border-color:rgba(192,133,82,.24);color:var(--zoo-muted)}
+.zoo-tm-join.done{background:var(--zoo-primary-deep);border-color:var(--zoo-primary-deep);color:#fff}
+
+/* ===== 动物园地图 ===== */
+.zoo-zm-hero{padding:0;overflow:hidden}
+.zoo-zm-scene{position:relative;height:160px;display:grid;place-items:center;background:linear-gradient(180deg,#EAF6FF 0%,#F3FAE7 60%,#E7F4D4 100%)}
+.zoo-zm-scene.stage-0{background:linear-gradient(180deg,#F3ECDF,#E7DCC7)}
+.zoo-zm-scene.stage-1{background:linear-gradient(180deg,#EDF3E2,#E0EAC9)}
+.zoo-zm-scene.stage-3{background:linear-gradient(180deg,#E4F5FF,#D8F0C2)}
+.zoo-zm-bigicon{position:absolute;font-size:74px;opacity:.85;filter:drop-shadow(0 6px 10px rgba(120,90,50,.2))}
+.zoo-zm-animal{position:absolute;bottom:16px;right:22px;font-size:44px;transition:opacity .4s;filter:drop-shadow(0 4px 8px rgba(120,90,50,.25))}
+.zoo-zm-hero-info{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px 4px}
+.zoo-zm-hero-info b{display:block;font-size:16px;font-weight:800}
+.zoo-zm-hero-info small{color:var(--zoo-brown-deep);font-size:12px}
+.zoo-zm-pct{flex:none;font-size:26px;font-weight:800;color:var(--zoo-primary-deep)}
+.zoo-zm-bar{margin:8px 18px 18px;height:9px;border-radius:9px;background:var(--zoo-primary-soft);overflow:hidden}
+.zoo-zm-bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary))}
+.zoo-zm-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
+.zoo-zm-tile{display:flex;flex-direction:column;align-items:center;gap:2px;border:1.5px solid rgba(192,133,82,.24);border-radius:15px;background:var(--zoo-surface);padding:10px 4px;color:var(--zoo-ink)}
+.zoo-zm-tile.on{border-color:var(--zoo-primary-dark);background:var(--zoo-primary-soft);box-shadow:0 4px 12px rgba(111,168,62,.22)}
+.zoo-zm-tile-icon{font-size:22px}
+.zoo-zm-tile b{font-size:12.5px;font-weight:800}
+.zoo-zm-tile small{font-size:9.5px;color:var(--zoo-brown-deep)}
+.zoo-zm-tile em{font-size:10px;font-style:normal;font-weight:800;color:var(--zoo-primary-deep)}
+
+/* ===== 温泉打卡 ===== */
+.zoo-hs-card{text-align:center}
+/* 池子固定宽度:桌面端不跟着面板拉成一条长浴缸 */
+.zoo-hs-pool{position:relative;height:170px;max-width:340px;margin:0 auto 8px}
+.zoo-hs-capy{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);z-index:2}
+.zoo-hs-water{position:absolute;left:8%;right:8%;bottom:16px;height:60px;border-radius:0 0 20px 20px / 0 0 40px 40px;background:linear-gradient(180deg,#BEE7F2,#8FD3E6);border-top:3px solid #E5F7FD;overflow:hidden}
+.zoo-hs-water::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.5),transparent 40%)}
+/* 蒸汽:CSS 画的模糊白团。
+   两个坑:①原来用 "˚" 字符是白底白字,根本看不见;
+          ②原来挂在 .zoo-hs-water 里面,而水面是 overflow:hidden,升上去立刻被裁掉。
+   所以改成挂在池子上、从水面高度往上飘。 */
+.zoo-hs-steam{position:absolute;bottom:70px;width:12px;height:14px;border-radius:50%;background:rgba(255,255,255,.92);filter:blur(3px);animation:zooSteam 2.6s ease-in-out infinite}
+.zoo-hs-steam.s1{left:30%}
+.zoo-hs-steam.s2{left:64%;width:9px;height:11px;animation-delay:1.1s}
+@keyframes zooSteam{0%{transform:translateY(6px) scale(.7);opacity:0}35%{opacity:.9}100%{transform:translateY(-30px) scale(1.6);opacity:0}}
+.zoo-hs-yuzu{position:absolute;left:50%;top:-6px;transform:translateX(-50%);font-size:26px;z-index:3;animation:zooYuzuDrop .5s cubic-bezier(.5,0,.8,1) forwards}
+@keyframes zooYuzuDrop{0%{top:-6px}70%{top:38px}85%{top:30px}100%{top:36px}}
+.zoo-hs-ripple{position:absolute;left:50%;top:6px;width:14px;height:14px;border:2px solid rgba(255,255,255,.85);border-radius:50%;transform:translateX(-50%);animation:zooRipple .8s ease-out forwards}
+@keyframes zooRipple{0%{width:8px;height:8px;opacity:.9}100%{width:120px;height:26px;opacity:0}}
+.zoo-hs-meta b{font-size:17px;font-weight:800}
+.zoo-hs-meta span{display:block;margin-top:4px;color:var(--zoo-brown-deep);font-size:12.5px}
+.zoo-hs-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:16px 0}
+.zoo-hs-day i{display:grid;place-items:center;height:34px;border-radius:11px;background:var(--zoo-cream-2);font-size:16px;font-style:normal;color:#C9B79E}
+.zoo-hs-day i.on{background:var(--zoo-primary-soft)}
+.zoo-hs-day small{display:block;margin-top:4px;font-size:10px;color:var(--zoo-muted)}
+.zoo-hs-btn{width:100%;border:0;border-radius:14px;background:var(--zoo-primary);padding:13px;color:var(--zoo-on-primary);font-weight:800;font-size:14px;box-shadow:0 6px 16px rgba(111,168,62,.3)}
+.zoo-hs-btn.is-done{background:var(--zoo-primary-soft);color:var(--zoo-primary-deep);box-shadow:none;cursor:default}
+.zoo-hs-error{margin-top:10px;color:#B4453C;font-size:12px;font-weight:700}
+
+@media(max-width:420px){
+  .zoo-zm-grid{gap:5px}
+  .zoo-zm-tile{padding:8px 2px}
+  .zoo-tm-plaza-item{gap:8px;padding:11px 12px}
+}
+
+/* 深色模式：动物园新版页面原先写了不少浅色插画底色。
+   这里保留绿色、木头和柚子作为点缀，但把大面积底色换成低亮度森林夜色。 */
+[data-theme="dark"] .zoo-hero{background:linear-gradient(135deg,#353F31 0%,#303A2D 55%,#415038 100%);border-color:rgba(167,215,125,.35)}
+[data-theme="dark"] .zoo-card-face{background:linear-gradient(160deg,#30382E,#293128);border-color:rgba(230,193,155,.3)}
+[data-theme="dark"] .zoo-tools button,
+[data-theme="dark"] .zoo-rates button{background:#3B4338;color:var(--zoo-ink);border-color:rgba(230,193,155,.32)}
+[data-theme="dark"] .zoo-rates button:hover{background:#465140;border-color:rgba(167,215,125,.6)}
+[data-theme="dark"] .zoo-tile-hero{background:linear-gradient(120deg,#3B5132,#35452E);border-color:rgba(167,215,125,.42)}
+[data-theme="dark"] .zoo-tile-team{background:linear-gradient(120deg,#4A3E2A,#3E3426);border-color:rgba(240,179,78,.45)}
+[data-theme="dark"] .zoo-tile-team-avatars i{background:#3B4338;border-color:var(--zoo-surface)}
+[data-theme="dark"] .zoo-zm-scene{background:linear-gradient(180deg,#263842 0%,#2D422F 60%,#3A5035 100%)}
+[data-theme="dark"] .zoo-zm-scene.stage-0{background:linear-gradient(180deg,#38342D,#332F28)}
+[data-theme="dark"] .zoo-zm-scene.stage-1{background:linear-gradient(180deg,#344033,#3C4A36)}
+[data-theme="dark"] .zoo-zm-scene.stage-3{background:linear-gradient(180deg,#29424A,#3A5433)}
+[data-theme="dark"] .zoo-hs-water{background:linear-gradient(180deg,#518A99,#366874);border-top-color:#86BCC7}
+[data-theme="dark"] .zoo-maint{background:rgba(48,55,45,.72);border-color:rgba(230,193,155,.32)}
+
+/* ===== 完成时的主题纸屑(柚子瓣/松子/叶子) ===== */
+.zoo-confetti{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden}
+/* 必须是直接子选择器:列队里的 span 也在 .zoo-confetti 里面,
+   写成后代选择器会把它们一起绝对定位、叠成一坨并套上飘落动画。 */
+.zoo-confetti > span{position:absolute;top:-8%;line-height:1;animation-name:zooFall;animation-timing-function:linear;animation-fill-mode:forwards}
+@keyframes zooFall{
+  0%{transform:translate3d(0,0,0) rotate(0);opacity:0}
+  12%{opacity:1}
+  100%{transform:translate3d(var(--zoo-drift,0),115vh,0) rotate(320deg);opacity:.85}
+}
+
+/* 小概率出现的庆祝动物列队:从左边走到右边,边走边一跳一跳。
+   横移和跳跃拆成父/子两层 —— 一个元素上叠两条 transform 动画后一条会覆盖另一条,
+   拆开才能都只动 transform(不碰 layout)。 */
+.zoo-parade{position:absolute;left:0;right:0;bottom:12%;display:flex;gap:14px}
+.zoo-parade span{display:block;animation:zooWalk 3.6s linear forwards}
+.zoo-parade i{display:block;font-size:30px;line-height:1;font-style:normal;animation:zooWalkHop .42s ease-in-out infinite}
+@keyframes zooWalk{0%{transform:translate3d(-22vw,0,0)}100%{transform:translate3d(112vw,0,0)}}
+@keyframes zooWalkHop{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+/* ======================================================================
+   动效强度三档(设置页) —— <html data-motion="full|reduced|off">
+   full    全开(默认)
+   reduced 只留「按一下就有反馈」的短动画,关掉常驻循环(呼吸/跳/蒸汽)与入场动画,
+           这几个是唯一会持续占用合成器的,关掉最省电
+   off     全关
+   系统「减少动态效果」优先级最高,不管选了什么都按 off。
+   ====================================================================== */
+
+/* —— reduced:掐掉常驻循环 + 入场 —— */
+[data-motion="reduced"] .zoo-breathe,
+[data-motion="reduced"] .zoo-tile-hero-emoji,
+[data-motion="reduced"] .zoo-hs-steam{
+  animation:none!important
+}
+[data-motion="reduced"] .zoo-page,
+[data-motion="reduced"] .zoo-enter,
+[data-motion="reduced"] .zoo-tile,
+[data-motion="reduced"] .zoo-rates div button,
+[data-motion="reduced"] .zoo-parade i{
+  animation:none!important
+}
+/* 纸屑本身是一次性的,省电档保留;只关掉列队里那条无限循环的跳跃 */
+/* 纸屑是一次性的,但同时有十几个元素在动,省电档一并关掉 */
+[data-motion="reduced"] .zoo-confetti{display:none}
+
+/* —— off / 系统减少动态效果:一刀切 —— */
+[data-motion="off"] *,
+[data-motion="off"] *::before,
+[data-motion="off"] *::after{
+  animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important
+  }
+}

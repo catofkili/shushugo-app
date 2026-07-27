@@ -18,7 +18,7 @@
 }
 
 .jp-ruby rt {
-  color: #81D8CF !important;
+  color: #6FA83E !important;
   font-family: "Inter", "Noto Sans JP", system-ui, sans-serif;
   font-size: 0.42em;
   font-weight: 700;
@@ -27,54 +27,82 @@
   text-shadow: none !important;
 }
 
-/* 浅色果冻玻璃风格 - 青色主题 */
+/* ======================================================================
+   明亮「动物园 · 水豚」主题
+   基调：奶油底 + 新绿(主色) + 水豚棕 + 柚子橙。
+   保留原有变量名与 [data-theme="light"] 翻译层机制，只替换配色值。
+   ====================================================================== */
 
 :root,
 [data-theme="light"] {
-  /* 浅色背景色 - 使用 E6F2EB 和 F2FAF7 */
-  --color-bg-primary: #F2FAF7;        /* 最浅的薄荷绿 */
-  --color-bg-secondary: #E6F2EB;      /* 浅薄荷绿 */
-  --color-bg-card: #ffffff;           /* 纯白卡片 */
+  /* —— 动物园调色板（供组件直接引用）—— */
+  --zoo-cream: #F4EAD6;          /* 奶油底(降亮:近白→柔和暖奶油) */
+  --zoo-cream-2: #EFDFC2;        /* 深一点的奶油 */
+  --zoo-surface: #FBF5E9;        /* 暖白卡片面(避开纯白刺眼) */
+  --zoo-primary: #7EBE4F;        /* 新绿主色(保留鲜明,去电子草绿感) */
+  --zoo-primary-dark: #6FA83E;   /* 深绿 */
+  --zoo-primary-deep: #5C8F32;   /* 更深绿(文字/描边) */
+  --zoo-primary-soft: #D3E9B6;   /* 淡绿底 */
+  --zoo-on-primary: #2A3B18;     /* 绿底上的深字 */
+  --zoo-brown: #C08552;          /* 水豚棕 */
+  --zoo-brown-deep: #9C6B3F;     /* 深棕 */
+  --zoo-muted: #9A8A78;          /* 次要文字(说明/注脚) */
 
-  /* 青色主色调 */
-  --color-accent: #81D8CF;            /* 青色 */
-  --color-accent-light: #A3E4DC;      /* 浅青色 */
-  --color-accent-lighter: #C5F0EB;    /* 更浅的青色 */
-  --color-accent-dark: #5FC9BE;       /* 深青色 */
+  /* —— 手机端主内容区的上下让位量(顶栏 / 底部导航)——
+     只在这里定义一次:<main> 用它定位,页面内要「刚好占满一屏」的卡片也用它算高度。
+     以前是 main 用 env() 算、卡片自己写 13rem 猜,两边对不上,卡片比容器高出 84px。 */
+  --app-main-top: calc(max(env(safe-area-inset-top), 54px) + 36px);
+  --app-main-bottom: calc(max(env(safe-area-inset-bottom), 20px) + 70px);
+  /* main 自己的上下内边距之和,卡片算可用高度时要减掉 */
+  --app-main-pad-y: 2rem;
+  --zoo-orange: #E8971C;         /* 柚子橙(加深,退掉神经橙) */
+  --zoo-orange-soft: #F7DCAC;    /* 淡橙底 */
+  --zoo-ink: #3A2E22;            /* 主文字(暖褐炭) */
 
-  /* 文字颜色 */
-  --color-text-primary: #1a4d3e;      /* 深绿色文字 */
-  --color-text-secondary: #2d6b56;    /* 中绿色文字 */
-  --color-text-muted: #6b9884;        /* 浅绿色文字 */
-  --color-text-light: #a3c4b5;        /* 很浅的绿色 */
+  /* 浅色背景色 - 奶油 */
+  --color-bg-primary: #F4EAD6;
+  --color-bg-secondary: #EFDFC2;
+  --color-bg-card: #FBF5E9;
 
-  /* 边框颜色 */
-  --color-border: rgba(129, 216, 207, 0.2);       /* 青色半透明边框 */
-  --color-border-light: rgba(129, 216, 207, 0.1); /* 更浅的边框 */
+  /* 主色调 - 新绿 */
+  --color-accent: #7EBE4F;
+  --color-accent-light: #A6D477;
+  --color-accent-lighter: #D3E9B6;
+  --color-accent-dark: #6FA83E;
 
-  /* 玻璃效果颜色 */
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-bg-hover: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(129, 216, 207, 0.25);
-  --glass-shadow: rgba(129, 216, 207, 0.15);
+  /* 文字颜色 - 暖褐 */
+  --color-text-primary: #3A2E22;
+  --color-text-secondary: #6B5A48;
+  --color-text-muted: #9A8A78;
+  --color-text-light: #BCAE9C;
 
-  /* 果冻效果阴影 */
-  --jelly-shadow-sm: 0 4px 12px rgba(129, 216, 207, 0.08),
-                     0 2px 6px rgba(129, 216, 207, 0.12),
-                     inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  /* 边框颜色 - 温暖棕 */
+  --color-border: rgba(192, 133, 82, 0.22);
+  --color-border-light: rgba(192, 133, 82, 0.12);
 
-  --jelly-shadow-md: 0 8px 24px rgba(129, 216, 207, 0.12),
-                     0 4px 12px rgba(129, 216, 207, 0.15),
+  /* 玻璃效果颜色 - 奶油磨砂 */
+  --glass-bg: rgba(255, 253, 248, 0.72);
+  --glass-bg-hover: rgba(255, 253, 248, 0.86);
+  --glass-border: rgba(143, 203, 94, 0.30);
+  --glass-shadow: rgba(160, 120, 60, 0.14);
+
+  /* 果冻效果阴影 - 暖调 */
+  --jelly-shadow-sm: 0 4px 12px rgba(160, 120, 60, 0.10),
+                     0 2px 6px rgba(160, 120, 60, 0.12),
+                     inset 0 1px 0 rgba(255, 255, 255, 0.85);
+
+  --jelly-shadow-md: 0 8px 24px rgba(160, 120, 60, 0.13),
+                     0 4px 12px rgba(160, 120, 60, 0.15),
                      inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
-  --jelly-shadow-lg: 0 12px 36px rgba(129, 216, 207, 0.15),
-                     0 6px 18px rgba(129, 216, 207, 0.18),
+  --jelly-shadow-lg: 0 14px 38px rgba(160, 120, 60, 0.16),
+                     0 6px 18px rgba(160, 120, 60, 0.18),
                      inset 0 2px 0 rgba(255, 255, 255, 0.95);
 
   /* 强调色 */
-  --color-success: #81D8CF;
-  --color-warning: #FFB759;
-  --color-error: #FF8A80;
+  --color-success: #7EBE4F;
+  --color-warning: #E8971C;
+  --color-error: #F2795B;
 
   /* 移动端安全区域 */
   --safe-area-inset-top: env(safe-area-inset-top);
@@ -85,6 +113,24 @@
 
 /* 深色模式 */
 [data-theme="dark"] {
+  color-scheme: dark;
+
+  /* 动物园页面使用的颜色。新版首页有自己的配色变量，不能只切旧页面变量。 */
+  --zoo-cream: #242922;
+  --zoo-cream-2: #30372D;
+  --zoo-surface: #343B32;
+  --zoo-primary: #91C968;
+  --zoo-primary-dark: #A7D77D;
+  --zoo-primary-deep: #C4E89B;
+  --zoo-primary-soft: #405437;
+  --zoo-on-primary: #182212;
+  --zoo-brown: #D6A979;
+  --zoo-brown-deep: #E6C19B;
+  --zoo-muted: #C2B9A9;
+  --zoo-orange: #F0B34E;
+  --zoo-orange-soft: #594722;
+  --zoo-ink: #F8F4EA;
+
   /* 深色背景 */
   --color-bg-primary: #343838;
   --color-bg-secondary: #3c3f3f;
@@ -131,6 +177,50 @@
   --color-error: #FF8A80;
 }
 
+/* 真正的夜间外壳。App.tsx 和导航里仍有一部分浅色主题时期的固定色及内联背景，
+   因此这里用高优先级覆盖；否则会出现「深色卡片漂在奶油色页面上」的割裂效果。 */
+[data-theme="dark"] body,
+[data-theme="dark"] #root {
+  background: #171C18 !important;
+  color: #F8F4EA !important;
+}
+
+[data-theme="dark"] .app-shell {
+  background: radial-gradient(circle at 82% -12%, #3A5138 0%, transparent 34%),
+    linear-gradient(180deg, #202820 0%, #171C18 58%, #111612 100%) !important;
+  color: #F8F4EA !important;
+}
+
+[data-theme="dark"] .app-mobile-topbar,
+[data-theme="dark"] .app-mobile-tabbar {
+  background-color: rgba(25, 31, 26, 0.94) !important;
+  border-color: rgba(196, 232, 155, 0.18) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32) !important;
+}
+
+[data-theme="dark"] .app-mobile-tabbar {
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.36) !important;
+}
+
+[data-theme="dark"] .app-mobile-tabbar button {
+  background: #30392F !important;
+  border-color: rgba(196, 232, 155, 0.18) !important;
+  color: #EEE9DC !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 3px 10px rgba(0, 0, 0, 0.22) !important;
+}
+
+[data-theme="dark"] .app-mobile-tabbar button.bg-\[\#81D8CF\] {
+  background: #89C95D !important;
+  border-color: #B7E38D !important;
+  color: #172112 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 14px rgba(91, 145, 57, 0.32) !important;
+}
+
+[data-theme="dark"] .app-mobile-topbar .text-white,
+[data-theme="dark"] .app-mobile-topbar .text-white\/78 {
+  color: #F8F4EA !important;
+}
+
 /* 深色模式下的 dictionary-card 背景修复 */
 [data-theme="dark"] .dictionary-card {
   background: linear-gradient(145deg, rgba(70, 73, 73, 0.96), rgba(57, 61, 61, 0.96)) !important;
@@ -141,10 +231,10 @@
 }
 
 [data-theme="light"] .dictionary-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(230, 247, 241, 0.94)) !important;
-  border: 1px solid rgba(95, 201, 190, 0.28) !important;
+  background: linear-gradient(145deg, rgba(251, 245, 233, 0.96), rgba(244, 234, 214, 0.94)) !important;
+  border: 1px solid rgba(111, 168, 62, 0.28) !important;
   box-shadow: var(--jelly-shadow-md) !important;
-  color: #163f35 !important;
+  color: #3A2E22 !important;
 }
 
 .dictionary-card {
@@ -160,7 +250,7 @@
 }
 
 .focus-ring:focus-visible {
-  outline: 3px solid rgba(129, 216, 207, 0.55);
+  outline: 3px solid rgba(143, 203, 94, 0.55);
   outline-offset: 3px;
 }
 
@@ -177,15 +267,15 @@
 
 .grammar-anki-card:hover {
   background: linear-gradient(145deg, #464b4b 0%, #3a3f3f 100%) !important;
-  border-color: rgba(129, 216, 207, 0.42) !important;
+  border-color: rgba(143, 203, 94, 0.42) !important;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .grammar-anki-card-active {
   background: linear-gradient(145deg, #475252 0%, #3d4848 100%) !important;
-  border-color: rgba(129, 216, 207, 0.85) !important;
-  box-shadow: 0 0 0 1px rgba(129, 216, 207, 0.28),
+  border-color: rgba(143, 203, 94, 0.85) !important;
+  box-shadow: 0 0 0 1px rgba(143, 203, 94, 0.28),
               0 16px 34px rgba(0, 0, 0, 0.22),
               inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
@@ -221,7 +311,7 @@ body {
 button,
 a,
 .clickable {
-  -webkit-tap-highlight-color: rgba(129, 216, 207, 0.1);
+  -webkit-tap-highlight-color: rgba(143, 203, 94, 0.1);
   touch-action: manipulation;
   cursor: pointer;
 }
@@ -253,7 +343,7 @@ body.is-scrolling {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(129, 216, 207, 0.25);
+  border: 1px solid rgba(143, 203, 94, 0.25);
   box-shadow: var(--jelly-shadow-md);
 }
 
@@ -264,7 +354,7 @@ body.is-scrolling {
     rgba(255, 255, 255, 0.9) 0%,
     rgba(230, 242, 235, 0.85) 100%
   );
-  border: 1px solid rgba(129, 216, 207, 0.3);
+  border: 1px solid rgba(143, 203, 94, 0.3);
   box-shadow: var(--jelly-shadow-sm);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -288,11 +378,11 @@ body.is-scrolling {
 .glass-jelly-accent {
   background: linear-gradient(
     135deg,
-    rgba(129, 216, 207, 0.15) 0%,
-    rgba(197, 240, 235, 0.2) 100%
+    rgba(143, 203, 94, 0.15) 0%,
+    rgba(212, 236, 190, 0.2) 100%
   );
-  border: 1px solid rgba(129, 216, 207, 0.4);
-  box-shadow: 0 8px 24px rgba(129, 216, 207, 0.15),
+  border: 1px solid rgba(143, 203, 94, 0.4);
+  box-shadow: 0 8px 24px rgba(143, 203, 94, 0.15),
               inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
@@ -301,11 +391,11 @@ body.is-scrolling {
   background: linear-gradient(
     135deg,
     rgba(26, 77, 62, 0.85) 0%,
-    rgba(45, 107, 86, 0.8) 100%
+    rgba(107, 90, 72, 0.8) 100%
   );
-  border: 1px solid rgba(129, 216, 207, 0.5);
+  border: 1px solid rgba(143, 203, 94, 0.5);
   box-shadow: 0 8px 24px rgba(26, 77, 62, 0.2),
-              inset 0 1px 0 rgba(129, 216, 207, 0.3);
+              inset 0 1px 0 rgba(143, 203, 94, 0.3);
 }
 
 /* 大圆角 */
@@ -329,7 +419,7 @@ body.is-scrolling {
     rgba(230, 242, 235, 0.9) 50%,
     rgba(242, 250, 247, 0.85) 100%
   );
-  border: 1.5px solid rgba(129, 216, 207, 0.35);
+  border: 1.5px solid rgba(143, 203, 94, 0.35);
   border-radius: 24px;
   box-shadow: var(--jelly-shadow-md);
   backdrop-filter: blur(10px);
@@ -350,7 +440,7 @@ body.is-scrolling {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(129, 216, 207, 0.5) 50%,
+    rgba(143, 203, 94, 0.5) 50%,
     transparent 100%
   );
   opacity: 0.8;
@@ -365,7 +455,7 @@ body.is-scrolling {
   );
   transform: translateY(-4px) scale(1.01);
   box-shadow: var(--jelly-shadow-lg);
-  border-color: rgba(129, 216, 207, 0.5);
+  border-color: rgba(143, 203, 94, 0.5);
 }
 
 .card-glass:active {
@@ -377,12 +467,12 @@ body.is-scrolling {
 .btn-glass {
   background: linear-gradient(
     135deg,
-    rgba(129, 216, 207, 0.95) 0%,
-    rgba(95, 201, 190, 0.9) 100%
+    rgba(143, 203, 94, 0.95) 0%,
+    rgba(111, 168, 62, 0.9) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 20px;
-  box-shadow: 0 6px 20px rgba(129, 216, 207, 0.25),
+  box-shadow: 0 6px 20px rgba(143, 203, 94, 0.25),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
@@ -411,11 +501,11 @@ body.is-scrolling {
 .btn-glass:hover {
   background: linear-gradient(
     135deg,
-    rgba(129, 216, 207, 1) 0%,
-    rgba(95, 201, 190, 0.95) 100%
+    rgba(143, 203, 94, 1) 0%,
+    rgba(111, 168, 62, 0.95) 100%
   );
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 28px rgba(129, 216, 207, 0.35),
+  box-shadow: 0 8px 28px rgba(143, 203, 94, 0.35),
               inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
@@ -425,7 +515,7 @@ body.is-scrolling {
 
 .btn-glass:active {
   transform: translateY(0) scale(0.98);
-  box-shadow: 0 4px 12px rgba(129, 216, 207, 0.2),
+  box-shadow: 0 4px 12px rgba(143, 203, 94, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
@@ -442,7 +532,7 @@ body.is-scrolling {
     rgba(255, 255, 255, 0.95) 0%,
     rgba(230, 242, 235, 0.9) 100%
   );
-  border: 1px solid rgba(129, 216, 207, 0.3);
+  border: 1px solid rgba(143, 203, 94, 0.3);
   border-radius: 20px;
   padding: 1.5rem;
   box-shadow: var(--jelly-shadow-sm);
@@ -454,7 +544,7 @@ body.is-scrolling {
 .card:hover {
   box-shadow: var(--jelly-shadow-md);
   transform: translateY(-2px);
-  border-color: rgba(129, 216, 207, 0.45);
+  border-color: rgba(143, 203, 94, 0.45);
 }
 
 .card:active {
@@ -465,10 +555,10 @@ body.is-scrolling {
 .dictionary-card .kanji-variant-mark,
 main .kanji-variant-mark {
   color: #FFB759 !important;
-  -webkit-text-stroke: 0.35px rgba(129, 216, 207, 0.3);
+  -webkit-text-stroke: 0.35px rgba(143, 203, 94, 0.3);
   text-shadow:
-    0 0 0.5px rgba(129, 216, 207, 0.5),
-    0 1px 2px rgba(129, 216, 207, 0.3) !important;
+    0 0 0.5px rgba(143, 203, 94, 0.5),
+    0 1px 2px rgba(143, 203, 94, 0.3) !important;
 }
 
 /* 按钮样式 - 移动端优化 + 果冻效果 */
@@ -509,28 +599,28 @@ main .kanji-variant-mark {
 .btn-primary {
   background: linear-gradient(
     135deg,
-    rgba(129, 216, 207, 0.95) 0%,
-    rgba(95, 201, 190, 0.9) 100%
+    rgba(143, 203, 94, 0.95) 0%,
+    rgba(111, 168, 62, 0.9) 100%
   );
   color: white;
-  box-shadow: 0 4px 16px rgba(129, 216, 207, 0.3),
+  box-shadow: 0 4px 16px rgba(143, 203, 94, 0.3),
               inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .btn-primary:hover {
   background: linear-gradient(
     135deg,
-    rgba(129, 216, 207, 1) 0%,
-    rgba(95, 201, 190, 0.95) 100%
+    rgba(143, 203, 94, 1) 0%,
+    rgba(111, 168, 62, 0.95) 100%
   );
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(129, 216, 207, 0.4),
+  box-shadow: 0 6px 20px rgba(143, 203, 94, 0.4),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .btn-primary:active {
   transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 8px rgba(129, 216, 207, 0.25);
+  box-shadow: 0 2px 8px rgba(143, 203, 94, 0.25);
 }
 
 .btn-secondary {
@@ -540,7 +630,7 @@ main .kanji-variant-mark {
     rgba(230, 242, 235, 0.85) 100%
   );
   color: var(--color-text-primary);
-  border: 1px solid rgba(129, 216, 207, 0.3);
+  border: 1px solid rgba(143, 203, 94, 0.3);
   box-shadow: var(--jelly-shadow-sm);
 }
 
@@ -566,7 +656,7 @@ textarea {
   appearance: none;
   font-size: 16px;
   padding: 0.75rem 1rem;
-  border: 1.5px solid rgba(129, 216, 207, 0.3);
+  border: 1.5px solid rgba(143, 203, 94, 0.3);
   border-radius: 16px;
   background: linear-gradient(
     135deg,
@@ -575,7 +665,7 @@ textarea {
   );
   width: 100%;
   color: var(--color-text-primary);
-  box-shadow: inset 0 2px 4px rgba(129, 216, 207, 0.05);
+  box-shadow: inset 0 2px 4px rgba(143, 203, 94, 0.05);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -584,8 +674,8 @@ textarea:focus {
   outline: none;
   border-color: var(--color-accent);
   background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 0 0 4px rgba(129, 216, 207, 0.15),
-              inset 0 2px 4px rgba(129, 216, 207, 0.08);
+  box-shadow: 0 0 0 4px rgba(143, 203, 94, 0.15),
+              inset 0 2px 4px rgba(143, 203, 94, 0.08);
   transform: translateY(-1px);
 }
 
@@ -598,27 +688,27 @@ textarea::placeholder {
 .control-cyan {
   background: linear-gradient(
     135deg,
-    rgba(197, 240, 235, 0.96) 0%,
-    rgba(230, 250, 247, 0.92) 100%
+    rgba(212, 236, 190, 0.96) 0%,
+    rgba(238, 248, 224, 0.92) 100%
   ) !important;
-  border-color: rgba(129, 216, 207, 0.56) !important;
+  border-color: rgba(143, 203, 94, 0.56) !important;
   color: #1f514d !important;
-  box-shadow: 0 5px 16px rgba(129, 216, 207, 0.18),
+  box-shadow: 0 5px 16px rgba(143, 203, 94, 0.18),
               inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
 }
 
 .control-cyan:hover {
   background: linear-gradient(
     135deg,
-    rgba(211, 246, 242, 0.98) 0%,
-    rgba(239, 253, 251, 0.94) 100%
+    rgba(223, 242, 203, 0.98) 0%,
+    rgba(244, 250, 235, 0.94) 100%
   ) !important;
 }
 
 .control-cyan:focus {
-  border-color: rgba(129, 216, 207, 0.9) !important;
-  box-shadow: 0 0 0 4px rgba(129, 216, 207, 0.18),
-              0 6px 18px rgba(129, 216, 207, 0.2),
+  border-color: rgba(143, 203, 94, 0.9) !important;
+  box-shadow: 0 0 0 4px rgba(143, 203, 94, 0.18),
+              0 6px 18px rgba(143, 203, 94, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -629,9 +719,9 @@ textarea::placeholder {
 }
 
 .control-cyan-search:focus-within {
-  border-color: rgba(129, 216, 207, 0.9) !important;
-  box-shadow: 0 0 0 4px rgba(129, 216, 207, 0.18),
-              0 6px 18px rgba(129, 216, 207, 0.2),
+  border-color: rgba(143, 203, 94, 0.9) !important;
+  box-shadow: 0 0 0 4px rgba(143, 203, 94, 0.18),
+              0 6px 18px rgba(143, 203, 94, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -665,9 +755,9 @@ textarea::placeholder {
 
 .soft-text-outline {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75),
-               0 0 1px rgba(129, 216, 207, 0.95),
-               0 0 5px rgba(197, 240, 235, 0.55);
-  -webkit-text-stroke: 0.25px rgba(229, 255, 252, 0.55);
+               0 0 1px rgba(143, 203, 94, 0.95),
+               0 0 5px rgba(212, 236, 190, 0.55);
+  -webkit-text-stroke: 0.25px rgba(240, 250, 224, 0.55);
 }
 
 .control-cyan-icon {
@@ -701,7 +791,7 @@ textarea::placeholder {
   font-weight: 600;
   margin-bottom: 0.5rem;
   color: var(--color-text-primary);
-  text-shadow: 0 2px 8px rgba(129, 216, 207, 0.1);
+  text-shadow: 0 2px 8px rgba(143, 203, 94, 0.1);
 }
 
 .word-kana {
@@ -743,8 +833,8 @@ textarea::placeholder {
   );
   border-radius: 20px;
   overflow: hidden;
-  border: 1px solid rgba(129, 216, 207, 0.2);
-  box-shadow: inset 0 2px 4px rgba(129, 216, 207, 0.1);
+  border: 1px solid rgba(143, 203, 94, 0.2);
+  box-shadow: inset 0 2px 4px rgba(143, 203, 94, 0.1);
   position: relative;
 }
 
@@ -773,7 +863,7 @@ textarea::placeholder {
   );
   transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
-  box-shadow: 0 0 12px rgba(129, 216, 207, 0.4),
+  box-shadow: 0 0 12px rgba(143, 203, 94, 0.4),
               inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
@@ -808,7 +898,7 @@ textarea::placeholder {
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 3px solid rgba(129, 216, 207, 0.2);
+  border: 3px solid rgba(143, 203, 94, 0.2);
   border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -827,14 +917,14 @@ textarea::placeholder {
   background: linear-gradient(
     135deg,
     rgba(26, 77, 62, 0.95) 0%,
-    rgba(45, 107, 86, 0.9) 100%
+    rgba(107, 90, 72, 0.9) 100%
   );
   color: white;
   padding: 1rem 1.5rem;
   border-radius: 16px;
-  border: 1px solid rgba(129, 216, 207, 0.4);
+  border: 1px solid rgba(143, 203, 94, 0.4);
   box-shadow: 0 8px 24px rgba(26, 77, 62, 0.3),
-              inset 0 1px 0 rgba(129, 216, 207, 0.3);
+              inset 0 1px 0 rgba(143, 203, 94, 0.3);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 1000;
@@ -892,8 +982,8 @@ select {
 /* 高对比度模式支持 */
 @media (prefers-contrast: high) {
   :root {
-    --color-border: rgba(129, 216, 207, 0.5);
-    --color-text-muted: #2d6b56;
+    --color-border: rgba(143, 203, 94, 0.5);
+    --color-text-muted: #6B5A48;
   }
 }
 
@@ -927,8 +1017,8 @@ select {
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(
     135deg,
-    rgba(129, 216, 207, 0.6) 0%,
-    rgba(95, 201, 190, 0.7) 100%
+    rgba(143, 203, 94, 0.6) 0%,
+    rgba(111, 168, 62, 0.7) 100%
   );
   border-radius: 10px;
   border: 2px solid rgba(242, 250, 247, 0.5);
@@ -939,48 +1029,48 @@ select {
    这里在 light theme 下统一把这些深色硬编码翻译成浅色卡片、深色文字和柔和边框。 */
 [data-theme="light"] body,
 [data-theme="light"] #root {
-  background: #eef8f4 !important;
-  color: #163f35 !important;
+  background: #FFF7EA !important;
+  color: #3A2E22 !important;
 }
 
 [data-theme="light"] .app-shell {
-  background: linear-gradient(180deg, #f7fcfa 0%, #eef8f4 46%, #e9f4ef 100%) !important;
-  color: #163f35 !important;
+  background: linear-gradient(180deg, #FFFBF2 0%, #FFF7EA 46%, #F6E9D2 100%) !important;
+  color: #3A2E22 !important;
 }
 
 [data-theme="light"] .app-mobile-topbar {
-  background: rgba(247, 252, 250, 0.96) !important;
-  border-bottom-color: rgba(95, 201, 190, 0.22) !important;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 8px 20px rgba(36, 89, 73, 0.06) !important;
+  background: rgba(255, 251, 242, 0.96) !important;
+  border-bottom-color: rgba(111, 168, 62, 0.22) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 8px 20px rgba(150, 110, 55, 0.06) !important;
   backdrop-filter: blur(14px) saturate(130%) !important;
   -webkit-backdrop-filter: blur(14px) saturate(130%) !important;
 }
 
 [data-theme="light"] .app-mobile-tabbar {
-  background: rgba(238, 248, 244, 0.98) !important;
-  border-top-color: rgba(95, 201, 190, 0.26) !important;
-  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.86) inset, 0 -8px 22px rgba(36, 89, 73, 0.08) !important;
+  background: rgba(255, 247, 234, 0.98) !important;
+  border-top-color: rgba(111, 168, 62, 0.26) !important;
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.86) inset, 0 -8px 22px rgba(150, 110, 55, 0.08) !important;
   backdrop-filter: blur(12px) saturate(125%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(125%) !important;
 }
 
 [data-theme="light"] .app-mobile-tabbar button {
   background: rgba(255, 255, 255, 0.72) !important;
-  border-color: rgba(95, 201, 190, 0.22) !important;
-  color: #2d6b56 !important;
-  box-shadow: 0 2px 8px rgba(36, 89, 73, 0.06) !important;
+  border-color: rgba(111, 168, 62, 0.22) !important;
+  color: #6B5A48 !important;
+  box-shadow: 0 2px 8px rgba(150, 110, 55, 0.06) !important;
 }
 
 [data-theme="light"] .app-mobile-tabbar button.bg-\[\#81D8CF\] {
-  background: #d7f4ef !important;
-  border-color: rgba(95, 201, 190, 0.48) !important;
-  color: #185247 !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(95, 201, 190, 0.2) !important;
+  background: #DCF0C4 !important;
+  border-color: rgba(111, 168, 62, 0.48) !important;
+  color: #4E7D2A !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(111, 168, 62, 0.2) !important;
 }
 
 [data-theme="light"] .bg-\[\#555858\],
 [data-theme="light"] .bg-\[\#343838\] {
-  background: #eef8f4 !important;
+  background: #FFF7EA !important;
 }
 
 [data-theme="light"] .bg-\[\#474a4a\],
@@ -995,8 +1085,8 @@ select {
 [data-theme="light"] .bg-\[\#4d5151\],
 [data-theme="light"] .bg-\[\#475252\],
 [data-theme="light"] .bg-\[\#3d4848\] {
-  background: #f8fdfb !important;
-  box-shadow: 0 8px 22px rgba(36, 89, 73, 0.06) !important;
+  background: #FFFDF8 !important;
+  box-shadow: 0 8px 22px rgba(150, 110, 55, 0.06) !important;
 }
 
 [data-theme="light"] .bg-zinc-900,
@@ -1011,7 +1101,7 @@ select {
 [data-theme="light"] .bg-black\/20,
 [data-theme="light"] .bg-black\/30,
 [data-theme="light"] .bg-black\/50 {
-  background-color: rgba(45, 107, 86, 0.08) !important;
+  background-color: rgba(107, 90, 72, 0.08) !important;
 }
 
 [data-theme="light"] .bg-white\/5,
@@ -1026,7 +1116,7 @@ select {
 [data-theme="light"] .hover\:bg-white\/8:hover,
 [data-theme="light"] .hover\:bg-\[\#81D8CF\]\/10:hover,
 [data-theme="light"] .hover\:bg-\[\#81D8CF\]\/20:hover {
-  background-color: rgba(129, 216, 207, 0.18) !important;
+  background-color: rgba(143, 203, 94, 0.18) !important;
 }
 
 [data-theme="light"] .border-white\/5,
@@ -1039,7 +1129,7 @@ select {
 [data-theme="light"] .border-white\/30,
 [data-theme="light"] .dark\:border-zinc-700,
 [data-theme="light"] .dark\:border-zinc-800 {
-  border-color: rgba(95, 201, 190, 0.26) !important;
+  border-color: rgba(111, 168, 62, 0.26) !important;
 }
 
 [data-theme="light"] .text-white,
@@ -1048,7 +1138,7 @@ select {
 [data-theme="light"] .text-zinc-50,
 [data-theme="light"] .text-stone-950,
 [data-theme="light"] .dark\:text-zinc-50 {
-  color: #163f35 !important;
+  color: #3A2E22 !important;
 }
 
 [data-theme="light"] .text-white\/95,
@@ -1081,70 +1171,70 @@ select {
 [data-theme="light"] .dark\:text-zinc-200,
 [data-theme="light"] .dark\:text-zinc-300,
 [data-theme="light"] .dark\:text-zinc-400 {
-  color: #2d6b56 !important;
+  color: #6B5A48 !important;
 }
 
 [data-theme="light"] .placeholder\:text-white\/40::placeholder,
 [data-theme="light"] .placeholder\:text-white\/35::placeholder,
 [data-theme="light"] .placeholder\:text-white\/60::placeholder {
-  color: rgba(45, 107, 86, 0.48) !important;
+  color: rgba(107, 90, 72, 0.48) !important;
 }
 
 [data-theme="light"] input,
 [data-theme="light"] textarea,
 [data-theme="light"] select {
   background: rgba(255, 255, 255, 0.92) !important;
-  border-color: rgba(95, 201, 190, 0.3) !important;
-  color: #163f35 !important;
+  border-color: rgba(111, 168, 62, 0.3) !important;
+  color: #3A2E22 !important;
 }
 
 [data-theme="light"] aside {
-  background: rgba(250, 255, 253, 0.88) !important;
+  background: rgba(255, 251, 242, 0.88) !important;
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
 }
 
 [data-theme="light"] .hairline {
-  box-shadow: inset -1px 0 0 rgba(95, 201, 190, 0.22);
+  box-shadow: inset -1px 0 0 rgba(111, 168, 62, 0.22);
 }
 
 [data-theme="light"] .grammar-anki-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(232, 248, 243, 0.93)) !important;
-  border-color: rgba(95, 201, 190, 0.3) !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 234, 0.93)) !important;
+  border-color: rgba(111, 168, 62, 0.3) !important;
   box-shadow: var(--jelly-shadow-sm) !important;
 }
 
 [data-theme="light"] .grammar-anki-card:hover,
 [data-theme="light"] .grammar-anki-card-active {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(218, 244, 238, 0.95)) !important;
-  border-color: rgba(95, 201, 190, 0.55) !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(246, 233, 210, 0.95)) !important;
+  border-color: rgba(111, 168, 62, 0.55) !important;
   box-shadow: var(--jelly-shadow-md) !important;
 }
 
 [data-theme="light"] .study-calendar-tooltip {
   background: rgba(255, 255, 255, 0.96) !important;
-  border-color: rgba(95, 201, 190, 0.3) !important;
-  color: #163f35 !important;
-  box-shadow: 0 14px 32px rgba(36, 89, 73, 0.14) !important;
+  border-color: rgba(111, 168, 62, 0.3) !important;
+  color: #3A2E22 !important;
+  box-shadow: 0 14px 32px rgba(150, 110, 55, 0.14) !important;
 }
 
 [data-theme="light"] .doodle-pen-idle {
   background: rgba(255, 255, 255, 0.92) !important;
-  border-color: rgba(95, 201, 190, 0.34) !important;
-  color: #1e6a5f !important;
-  box-shadow: 0 10px 24px rgba(36, 89, 73, 0.14) !important;
+  border-color: rgba(111, 168, 62, 0.34) !important;
+  color: #5C8F32 !important;
+  box-shadow: 0 10px 24px rgba(150, 110, 55, 0.14) !important;
 }
 
 [data-theme="light"] .memory-bubble {
-  background: radial-gradient(circle at 22% 14%, rgba(218, 244, 238, 0.96), rgba(255, 255, 255, 0.98) 48%, rgba(244, 252, 249, 0.98)) !important;
-  border-color: rgba(95, 201, 190, 0.34) !important;
-  box-shadow: 0 18px 44px rgba(36, 89, 73, 0.16) !important;
+  background: radial-gradient(circle at 22% 14%, rgba(246, 233, 210, 0.96), rgba(255, 255, 255, 0.98) 48%, rgba(255, 251, 242, 0.98)) !important;
+  border-color: rgba(111, 168, 62, 0.34) !important;
+  box-shadow: 0 18px 44px rgba(150, 110, 55, 0.16) !important;
 }
 
 [data-theme="light"] .grammar-stats-drawer {
   background: rgba(255, 255, 255, 0.96) !important;
-  border-color: rgba(95, 201, 190, 0.32) !important;
-  box-shadow: 0 16px 34px rgba(36, 89, 73, 0.15) !important;
+  border-color: rgba(111, 168, 62, 0.32) !important;
+  box-shadow: 0 16px 34px rgba(150, 110, 55, 0.15) !important;
 }
 
 [data-theme="light"] .shadow-2xl,
@@ -1156,8 +1246,8 @@ select {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     135deg,
-    rgba(129, 216, 207, 0.8) 0%,
-    rgba(95, 201, 190, 0.9) 100%
+    rgba(143, 203, 94, 0.8) 0%,
+    rgba(111, 168, 62, 0.9) 100%
   );
 }
 
@@ -1168,7 +1258,7 @@ select {
     rgba(255, 255, 255, 0.95) 0%,
     rgba(230, 242, 235, 0.9) 100%
   );
-  border: 1.5px solid rgba(129, 216, 207, 0.3);
+  border: 1.5px solid rgba(143, 203, 94, 0.3);
   border-radius: 20px;
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -1199,7 +1289,7 @@ select {
 .grammar-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--jelly-shadow-md);
-  border-color: rgba(129, 216, 207, 0.5);
+  border-color: rgba(143, 203, 94, 0.5);
 }
 
 .grammar-card:active {
@@ -1226,7 +1316,7 @@ select {
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(129, 216, 207, 0.3),
+  box-shadow: 0 2px 8px rgba(143, 203, 94, 0.3),
               inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
@@ -1237,10 +1327,10 @@ select {
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.9) 0%,
-    rgba(197, 240, 235, 0.3) 100%
+    rgba(212, 236, 190, 0.3) 100%
   );
   border-radius: 20px;
-  border: 1.5px solid rgba(129, 216, 207, 0.35);
+  border: 1.5px solid rgba(143, 203, 94, 0.35);
   box-shadow: var(--jelly-shadow-sm);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -1258,7 +1348,7 @@ select {
   height: 200%;
   background: radial-gradient(
     circle,
-    rgba(129, 216, 207, 0.1) 0%,
+    rgba(143, 203, 94, 0.1) 0%,
     transparent 70%
   );
   animation: rotate 10s linear infinite;
@@ -1276,7 +1366,7 @@ select {
 .stat-card:hover {
   transform: translateY(-3px) scale(1.02);
   box-shadow: var(--jelly-shadow-md);
-  border-color: rgba(129, 216, 207, 0.5);
+  border-color: rgba(143, 203, 94, 0.5);
 }
 
 .stat-value {
@@ -1410,11 +1500,11 @@ select {
 }
 
 [data-theme="light"] [class*="text-[#81D8CF]"] {
-  color: #1f7469 !important;
+  color: #5C8F32 !important;
 }
 
 [data-theme="light"] .jp-ruby rt {
-  color: #1f7469 !important;
+  color: #5C8F32 !important;
 }
 
 /* ========== 「继续学习」按钮:出现后头几秒扫三道光泽,之后归于平静 ========== */
@@ -1439,4 +1529,109 @@ select {
   .encore-shine {
     animation: none;
   }
+}
+
+/* ======================================================================
+   动物园主题 · 生青色(#81D8CF)工具类 → 新绿写像
+   页面里大量使用 Tailwind 任意值 bg/border/ring-[#81D8CF]（及透明度变体），
+   它们会直接渲染原始青色。这里在浅色(动物园)主题下按用途把它们统一翻成新绿。
+   text-[#81D8CF] 已由上面的 [class*="text-[#81D8CF]"] 规则处理。
+   ====================================================================== */
+
+/* —— 实心：按钮/激活态 → 新绿实色 —— */
+[data-theme="light"] .bg-\[\#81D8CF\] {
+  background-color: var(--zoo-primary) !important;
+}
+
+/* —— 淡底(/10~/18)：柔和绿薄底 —— */
+[data-theme="light"] .bg-\[\#81D8CF\]\/10,
+[data-theme="light"] .bg-\[\#81D8CF\]\/12,
+[data-theme="light"] .bg-\[\#81D8CF\]\/14,
+[data-theme="light"] .bg-\[\#81D8CF\]\/15,
+[data-theme="light"] .bg-\[\#81D8CF\]\/16,
+[data-theme="light"] .bg-\[\#81D8CF\]\/18 {
+  background-color: rgba(143, 203, 94, 0.16) !important;
+}
+
+/* —— 中底(/20~/25) —— */
+[data-theme="light"] .bg-\[\#81D8CF\]\/20,
+[data-theme="light"] .bg-\[\#81D8CF\]\/25 {
+  background-color: rgba(143, 203, 94, 0.26) !important;
+}
+
+/* —— 近实心(/65~/90) —— */
+[data-theme="light"] .bg-\[\#81D8CF\]\/65,
+[data-theme="light"] .bg-\[\#81D8CF\]\/85,
+[data-theme="light"] .bg-\[\#81D8CF\]\/90 {
+  background-color: rgba(143, 203, 94, 0.9) !important;
+}
+
+/* —— 边框：实心 + 各透明度桶 —— */
+[data-theme="light"] .border-\[\#81D8CF\] {
+  border-color: var(--zoo-primary) !important;
+}
+[data-theme="light"] .border-\[\#81D8CF\]\/20,
+[data-theme="light"] .border-\[\#81D8CF\]\/24,
+[data-theme="light"] .border-\[\#81D8CF\]\/25,
+[data-theme="light"] .border-\[\#81D8CF\]\/30,
+[data-theme="light"] .border-\[\#81D8CF\]\/35 {
+  border-color: rgba(143, 203, 94, 0.34) !important;
+}
+[data-theme="light"] .border-\[\#81D8CF\]\/40,
+[data-theme="light"] .border-\[\#81D8CF\]\/45,
+[data-theme="light"] .border-\[\#81D8CF\]\/50,
+[data-theme="light"] .border-\[\#81D8CF\]\/65 {
+  border-color: rgba(143, 203, 94, 0.55) !important;
+}
+
+/* —— 焦点环 —— */
+[data-theme="light"] .ring-\[\#81D8CF\],
+[data-theme="light"] .ring-\[\#81D8CF\]\/35 {
+  --tw-ring-color: rgba(143, 203, 94, 0.55) !important;
+}
+
+/* —— 开关(peer-checked)选中态：绿色轨道 —— */
+[data-theme="light"] .peer:checked ~ .peer-checked\:bg-\[\#81D8CF\] {
+  background-color: var(--zoo-primary) !important;
+}
+
+/* —— hover 态青色 → 绿色 —— */
+[data-theme="light"] .hover\:bg-\[\#81D8CF\]:hover {
+  background-color: var(--zoo-primary) !important;
+}
+[data-theme="light"] .hover\:bg-\[\#81D8CF\]\/15:hover,
+[data-theme="light"] .hover\:bg-\[\#81D8CF\]\/18:hover {
+  background-color: rgba(143, 203, 94, 0.16) !important;
+}
+[data-theme="light"] .hover\:bg-\[\#81D8CF\]\/20:hover {
+  background-color: rgba(143, 203, 94, 0.26) !important;
+}
+[data-theme="light"] .hover\:bg-\[\#81D8CF\]\/85:hover {
+  background-color: rgba(143, 203, 94, 0.9) !important;
+}
+
+/* —— 底部标签栏激活项：改为实心新绿 + 深字，最醒目 —— */
+[data-theme="light"] .app-mobile-tabbar button.bg-\[\#81D8CF\] {
+  background: var(--zoo-primary) !important;
+  border-color: rgba(111, 168, 62, 0.6) !important;
+  color: var(--zoo-on-primary) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+              0 6px 16px rgba(111, 168, 62, 0.35) !important;
+}
+
+/* —— 页面主体的暖奶油底 —— */
+[data-theme="light"] .app-shell {
+  background: linear-gradient(180deg, #FFFBF2 0%, #FDF1DC 48%, #F6E9D2 100%) !important;
+}
+[data-theme="light"] body,
+[data-theme="light"] #root {
+  background: #FDF1DC !important;
+}
+
+/* —— 一等品牌绿字（jp-serif 语字 tile 等保持棕，见组件）—— */
+[data-theme="light"] .soft-text-outline {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7),
+               0 0 1px rgba(143, 203, 94, 0.8),
+               0 0 5px rgba(220, 240, 196, 0.5);
+  -webkit-text-stroke: 0.25px rgba(240, 250, 224, 0.5);
 }
