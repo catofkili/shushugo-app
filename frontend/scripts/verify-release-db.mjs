@@ -1,13 +1,36 @@
 // 发布前阻止把开发者自己的学习记录、笔记或迁移痕迹带进安装包。
 // `npm run build` 会自动执行本检查；出厂词库只应包含 words 和种子版本信息。
 
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import initSqlJs from "sql.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(here, "../public/nihongo.db");
+const publicDir = path.join(here, "../public");
+const dbPath = path.join(publicDir, "nihongo.db");
+// public/ 下的一切都会被原样复制进 dist/ 并公开可下载,所以出厂词库之外
+// 不允许再出现任何数据库文件——个人学习库放这里会连同网站一起发出去。
+const ALLOWED_PUBLIC_DATABASES = new Set(["nihongo.db"]);
+const DATABASE_EXTENSIONS = new Set([".db", ".sqlite", ".sqlite3"]);
+
+const collectDatabases = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+  const full = path.join(dir, entry.name);
+  if (entry.isDirectory()) return collectDatabases(full);
+  return DATABASE_EXTENSIONS.has(path.extname(entry.name).toLowerCase()) ? [full] : [];
+});
+
+const strayDatabases = collectDatabases(publicDir)
+  .filter((file) => !ALLOWED_PUBLIC_DATABASES.has(path.relative(publicDir, file)));
+
+if (strayDatabases.length) {
+  const list = strayDatabases.map((file) => path.relative(publicDir, file)).join(", ");
+  throw new Error(
+    `拒绝构建：public/ 下存在出厂词库以外的数据库文件（${list}）。` +
+    `这些文件会被公开发布,请移出 public/ 后重新构建。`
+  );
+}
+
 const userDataTables = [
   "progress",
   "reviews",
