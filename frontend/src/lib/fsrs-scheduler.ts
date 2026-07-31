@@ -22,32 +22,67 @@ export const FSRS_MAX_INTERVAL_DAYS = 365;
 /** 学习步骤(新词/首次):走完才毕业。默认 1 分、10 分两步 = 需连续两次「认识」毕业 */
 export const FSRS_LEARNING_STEPS = ["1m", "10m"] as const;
 /** 重学步骤(复习卡答错=lapse 后):默认 10 分一步 */
-export const FSRS_RELEARNING_STEPS = ["10m"] as const;
+// 重学步骤(答错后):**两步**,要连对两次才当天过关。
+//
+// 一次「认识」不能当问题词的免死金牌 —— 答错阶段这个词出现得越来越密,你点认识的
+// 那一刻答案往往刚看过,就那么放走等于白错一场。步长决定「答对后隔几个词再考」:
+// 10 分档 ≈ 10 个词(见 requeue.ts 的 LONG_STEP_GAP)。
+export const FSRS_RELEARNING_STEPS = ["10m", "10m"] as const;
+/**
+ * 顽固词的重学步骤:**三步**,要连对三次才放行。
+ *
+ * 判据是「当天已经错了几次」而不是「连错几次」—— 后者答对一次就清零,那样刚答对
+ * 的瞬间这个词就不算顽固了,加码等于没加。当天错够 STUBBORN_DAILY_MISTAKES 次的词,
+ * 剩下的一整天都按三步要求,中间再错一次退回第一步重来。
+ *
+ * 三步的间隔递增:第一次确认隔 ≈10 个词,第二次隔 ≈20 个词(30 分档),再对才放走。
+ */
+export const FSRS_STUBBORN_RELEARNING_STEPS = ["10m", "10m", "30m"] as const;
+/** 当天错到这个次数 = 顽固词,升级到三步 */
+export const STUBBORN_DAILY_MISTAKES = 3;
+/**
+ * 「早就会了」:新词第一次见到就点「认识」—— 跳过学习步骤,直接毕业。
+ *
+ * 题面只给中文释义,是先回忆、再点「显示答案」、最后才评价。所以新词首见即「认识」
+ * 意味着**在看到答案之前就已经会了**,这个词根本不需要软件帮着记 —— 再当天考一遍
+ * 纯属浪费你的时间。间隔照常从 FSRS 拿(首次 Good = 2 天),之后正常参与复习。
+ */
+export const FSRS_NO_STEPS = [] as const;
 /** leech(顽固词)阈值:累计答错(lapses)达到即标记 */
 export const LEECH_LAPSE_THRESHOLD = 8;
 
 const DAY_MS = 86_400_000;
 
-let cache: { retention: number; maxInterval: number; instance: FSRS } | null = null;
+// 顽固词要用不同的重学步骤,所以实例按 (retention, maxInterval, 是否顽固) 分别缓存。
+const schedulerCache = new Map<string, FSRS>();
+/** normal=常规两步 / stubborn=顽固词三步 / known=早就会了,不走步骤 */
+export type StepMode = "normal" | "stubborn" | "known";
+
 export const getScheduler = (
   retention = FSRS_DEFAULT_RETENTION,
-  maxInterval = FSRS_MAX_INTERVAL_DAYS
+  maxInterval = FSRS_MAX_INTERVAL_DAYS,
+  mode: StepMode = "normal"
 ): FSRS => {
-  if (!cache || cache.retention !== retention || cache.maxInterval !== maxInterval) {
-    cache = {
-      retention,
-      maxInterval,
-      instance: fsrs({
-        request_retention: retention,
-        maximum_interval: maxInterval,
-        enable_fuzz: false,        // 端侧可复现,不加随机抖动
-        enable_short_term: true,   // 开学习步骤:新词/答错当天反复刷到毕业
-        learning_steps: [...FSRS_LEARNING_STEPS],
-        relearning_steps: [...FSRS_RELEARNING_STEPS]
-      })
-    };
+  const key = `${retention}|${maxInterval}|${mode}`;
+  let instance = schedulerCache.get(key);
+  if (!instance) {
+    instance = fsrs({
+      request_retention: retention,
+      maximum_interval: maxInterval,
+      enable_fuzz: false,        // 端侧可复现,不加随机抖动
+      enable_short_term: true,   // 开学习步骤:新词/答错当天反复刷到毕业
+      learning_steps: [...(mode === "known" ? FSRS_NO_STEPS : FSRS_LEARNING_STEPS)],
+      relearning_steps: [
+        ...(mode === "known"
+          ? FSRS_NO_STEPS
+          : mode === "stubborn"
+            ? FSRS_STUBBORN_RELEARNING_STEPS
+            : FSRS_RELEARNING_STEPS)
+      ]
+    });
+    schedulerCache.set(key, instance);
   }
-  return cache.instance;
+  return instance;
 };
 
 /** 三答法 + 永久熟知 → FSRS 四档评分(Grade = 排除 Manual 的可调度档) */
@@ -121,11 +156,11 @@ export function recordReview(
   prev: FsrsState | null | undefined,
   answer: WordAnswer,
   now: Date,
-  opts: { retention?: number; maxInterval?: number } = {}
+  opts: { retention?: number; maxInterval?: number; mode?: StepMode } = {}
 ): FsrsState {
   const retention = opts.retention ?? FSRS_DEFAULT_RETENTION;
   const maxInterval = opts.maxInterval ?? FSRS_MAX_INTERVAL_DAYS;
-  const scheduler = getScheduler(retention, maxInterval);
+  const scheduler = getScheduler(retention, maxInterval, opts.mode ?? "normal");
   const next = scheduler.repeat(toCard(prev, now), now)[ratingFor(answer)].card;
   return cardToState(next, now, maxInterval);
 }

@@ -12,10 +12,14 @@ const defaultRandomBetween = (min: number, max: number) =>
 
 /** 短步(≈1 分钟,答错退回第一步):隔开就行,别拖太远——当天还要刷回来的 */
 export const SHORT_STEP_GAP: readonly [number, number] = [3, 8];
-/** 长步(≈10 分钟,学习步骤进阶):放得远一些,真要从长期记忆里捞一次 */
-export const LONG_STEP_GAP: readonly [number, number] = [9, 18];
+/** 长步(≈10 分钟):答对后的**第一次确认**,隔 10 个词左右 */
+export const LONG_STEP_GAP: readonly [number, number] = [9, 14];
+/** 超长步(≈30 分钟):问题词的**第二次确认**,再隔 20 个词左右 */
+export const EXTRA_LONG_STEP_GAP: readonly [number, number] = [16, 26];
 /** 分界:下次到期超过这么多分钟算长步 */
 export const LONG_STEP_MINUTES = 5;
+/** 分界:超过这么多分钟算超长步 */
+export const EXTRA_LONG_STEP_MINUTES = 20;
 
 /**
  * 把「下次到期还有多少分钟」换算成「隔几张卡再出」。
@@ -25,11 +29,16 @@ export const requeueGap = (
   minutesUntilDue: number,
   randomBetween = defaultRandomBetween
 ): number => {
-  const [min, max] = minutesUntilDue >= LONG_STEP_MINUTES ? LONG_STEP_GAP : SHORT_STEP_GAP;
+  const [min, max] =
+    minutesUntilDue >= EXTRA_LONG_STEP_MINUTES
+      ? EXTRA_LONG_STEP_GAP
+      : minutesUntilDue >= LONG_STEP_MINUTES
+        ? LONG_STEP_GAP
+        : SHORT_STEP_GAP;
   return randomBetween(min, max);
 };
 
-/** 连着错(含模糊)这么多次 = 顽固词:该盯着刷,允许连出 */
+/** 连着错(含模糊)这么多次 = 顽固词:该盯着刷,允许连出。答对即清零,自动退出连出 */
 export const STUBBORN_MISTAKE_STREAK = 3;
 /** 当天任务剩这个比例以内 = 收尾阶段:池子太小,轮转已经没意义,允许连出 */
 export const ENDGAME_REMAINING_RATIO = 0.1;
@@ -37,9 +46,12 @@ export const ENDGAME_REMAINING_RATIO = 0.1;
 /**
  * 是否允许「刚答过的词接着再出」。
  *
- * 默认不允许(贴脸重复只是抄写),但两种情况例外:
- *  - 顽固词:连着错好几次了,隔开反而是放它跑,不如当场刷到会;
+ * 默认不允许,但两种情况例外:
+ *  - 顽固词:连着错好几次了,越出越密才攻得下来 —— 这是有意的,别改成「隔开」;
  *  - 收尾阶段:当天只剩最后十分之一,可选的词本来就没几个,硬要隔开等于空转。
+ *
+ * 注意 mistakeStreak 在答对时归零,所以贴脸重复只发生在**连着答错**的阶段;
+ * 一旦答对,下一次必然被拉开(见 requeueGap 的档位),不会出现「答对了还贴脸」。
  */
 export const allowsBackToBack = (opts: {
   mistakeStreak: number;

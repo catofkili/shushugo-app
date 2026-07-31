@@ -54,7 +54,7 @@ import {
 } from "./comeback";
 import type { ComebackMode } from "./comeback";
 import { ensureFsrsColumns, backfillFsrsFromHistory, recordFsrsReview, isFsrsActive, fsrsDueWordIds } from "./fsrs-store";
-import { isGraduatedForDay } from "./fsrs-scheduler";
+import { isGraduatedForDay, STUBBORN_DAILY_MISTAKES } from "./fsrs-scheduler";
 
 // 导出分析统计功能
 export { getStudyAnalytics } from "./analytics/stats";
@@ -1678,9 +1678,23 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // 毕业(due 排到明天及以后)→ 今天不再出。旧算法则沿用「分数 ≤6 未过就重排」。
   let fsrsGraduated = false;
   let stepMinutes = 0; // 学习步骤给的「几分钟后再考」,用来换算隔几张卡
+  // 顽固词判据用「当天累计答错次数」,不用 mistakeStreak —— 后者答对一次就清零,
+  // 那样刚答对的瞬间这个词就不再算顽固,加码等于没加。次数只增不减,一整天有效。
+  const wrongToday =
+    firstValue<number>(
+      "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ? AND answer IN ('forgot','fuzzy')",
+      [wordId, studyDate],
+      0
+    ) + (answer === "forgot" || answer === "fuzzy" ? 1 : 0); // 本次作答还没入库,手动计上
+  const stubbornWord = wrongToday >= STUBBORN_DAILY_MISTAKES;
+  // 新词第一次见到就点「认识」= 看答案之前就已经会了,这个词不需要软件帮着记。
+  // 跳过学习步骤直接毕业,当天不再出现(间隔照常由 FSRS 给:首次 Good = 2 天)。
+  const alreadyKnown = Number(progress.seen_count ?? 0) === 0 && answer === "know";
+  const stepMode = alreadyKnown ? "known" : stubbornWord ? "stubborn" : "normal";
+
   if (isFsrsActive() && !knownForever) {
     try {
-      const next = recordFsrsReview(wordId, answer);
+      const next = recordFsrsReview(wordId, answer, new Date(), { mode: stepMode });
       fsrsGraduated = isGraduatedForDay(next, studyDayEnd());
       stepMinutes = Math.max((new Date(next.due).getTime() - Date.now()) / 60_000, 0);
     } catch (err) {
@@ -1689,7 +1703,9 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     }
   }
   const notPassed = isFsrsActive() ? !fsrsGraduated : score <= 6;
-  // 顽固词(连着错到阈值)不排队等,直接排 0 位:当场接着刷到答对为止(答对即清零 streak)
+  // 顽固词(连着错到阈值)排 0 位当场接着刷 —— 难词就是要越出越密才攻得下来。
+  // 这里的 mistakeStreak 已经按本次作答更新过:答对即归零,所以贴脸重复只发生在
+  // 连着答错的阶段;一旦答对,下一次由学习步骤拉开(10 分→约 10 个词,30 分→约 20 个)。
   const stubborn = mistakeStreak >= STUBBORN_MISTAKE_STREAK;
   if (notPassed && !knownForever) scheduleDelayedReview(wordId, stepMinutes, stubborn);
   setLastAnsweredWord(wordId);

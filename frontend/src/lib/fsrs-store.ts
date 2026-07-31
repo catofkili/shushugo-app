@@ -8,7 +8,7 @@
 import { getDatabase } from "./database";
 import { rowsFor, firstValue, getState, setState } from "./database/db-utils";
 import type { WordAnswer } from "../types/vocabulary";
-import { recordReview, isDue, type FsrsState } from "./fsrs-scheduler";
+import { recordReview, isDue, type FsrsState, type StepMode } from "./fsrs-scheduler";
 
 const FSRS_COLS = [
   ["fsrs_stability", "REAL"],
@@ -73,9 +73,14 @@ export function writeFsrsState(wordId: number, s: FsrsState): void {
  * 影子写:仅在「当日首见」时调用。读旧 FSRS 状态 → 记一次作答 → 写回。
  * 不读不影响现行调度;P0 期间纯旁路。
  */
-export function recordFsrsReview(wordId: number, answer: WordAnswer, now = new Date()): FsrsState {
+export function recordFsrsReview(
+  wordId: number,
+  answer: WordAnswer,
+  now = new Date(),
+  opts: { mode?: StepMode } = {}
+): FsrsState {
   const prev = readFsrsState(wordId);
-  const next = recordReview(prev, answer, now);
+  const next = recordReview(prev, answer, now, opts);
   writeFsrsState(wordId, next);
   return next;
 }
@@ -172,16 +177,28 @@ export function setFsrsActive(on: boolean): void {
  * 已见但从未进入 FSRS 调度的词(fsrs_due 为空)视同最高优先,排最前。
  * 返回顺序天然逐日轮换,治「每天开头都是同一批」。
  */
+/** 「最近栽过跟头」的时间窗:这么多小时内答错过的词,排在陈年积压前面 */
+export const RECENT_LAPSE_HOURS = 36;
+
 export function fsrsDueWordIds(limit: number, now = new Date()): number[] {
   ensureFsrsColumns();
   if (limit <= 0) return [];
+  // 排序的第一优先级不是「谁最过期」,而是「谁刚栽过跟头」。
+  //
+  // 只按 due 升序的话:积压老词 due 是好几天前、昨天刚答错的词 due 是今天晚些,
+  // 于是昨天错的全排在队尾,被当日限额整批挤掉 —— 实测昨天答错的 223 个词,
+  // 今天的计划里一个都没有。刚忘掉的词隔天不复习,等于白错一场。
+  const lapseSince = new Date(now.getTime() - RECENT_LAPSE_HOURS * 3600_000).toISOString();
   const rows = rowsFor(
     `SELECT word_id FROM progress
      WHERE known_forever = 0 AND seen_count > 0
        AND (fsrs_due IS NULL OR fsrs_due <= ?)
-     ORDER BY (fsrs_due IS NULL) DESC, fsrs_due ASC, word_id ASC
+     ORDER BY (fsrs_due IS NULL) DESC,
+              (fsrs_lapses > 0 AND fsrs_last_review >= ?) DESC,
+              fsrs_due ASC,
+              word_id ASC
      LIMIT ?`,
-    [now.toISOString(), limit]
+    [now.toISOString(), lapseSince, limit]
   );
   return rows.map((r) => Number(r.word_id));
 }

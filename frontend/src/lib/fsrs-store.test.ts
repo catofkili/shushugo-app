@@ -132,6 +132,20 @@ describe("fsrs-store", () => {
       expect(ids.indexOf(202)).toBeLessThan(ids.indexOf(200));
     });
 
+    it("刚栽过跟头的词排在陈年积压前面(否则昨天错的词隔天进不了计划)", () => {
+      // 203 = 昨天刚答错、due 排在今天稍晚;200 = 积压了半个月的老词
+      testDb.run("UPDATE progress SET seen_count = 1, known_forever = 0 WHERE word_id = 203");
+      testDb.run(
+        "UPDATE progress SET fsrs_stability=0.1, fsrs_difficulty=8, fsrs_lapses=2," +
+        " fsrs_last_review='2026-07-22T14:00:00Z', fsrs_due='2026-07-23T03:00:00Z' WHERE word_id=203"
+      );
+      const ids = fsrsDueWordIds(50, now);
+      expect(ids).toContain(203);
+      // 光按 due 升序的话 200(7-10 到期)会排在 203(7-23 到期)前面,导致限额一满
+      // 就把刚错的词挤掉;现在刚错的必须靠前。
+      expect(ids.indexOf(203)).toBeLessThan(ids.indexOf(200));
+    });
+
     it("开关打开后,积压计数改用 FSRS 到期数", async () => {
       const { reviewBacklogCount } = await import("./comeback");
       setFsrsActive(false);

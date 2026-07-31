@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  EXTRA_LONG_STEP_GAP,
+  STUBBORN_MISTAKE_STREAK,
+  EXTRA_LONG_STEP_MINUTES,
   LONG_STEP_GAP,
   LONG_STEP_MINUTES,
   SHORT_STEP_GAP,
-  STUBBORN_MISTAKE_STREAK,
   allowsBackToBack,
   requeueGap
 } from "./requeue";
@@ -25,7 +27,16 @@ describe("requeueGap", () => {
     expect(LONG_STEP_GAP[0]).toBeGreaterThan(SHORT_STEP_GAP[1]);
   });
 
+  it("pushes the relearning confirmation far enough that working memory is empty", () => {
+    // 重学第二步(30m):必须远到工作记忆已经腾空,那次答对才说明真记住了
+    expect(requeueGap(30, lowest)).toBe(EXTRA_LONG_STEP_GAP[0]);
+    expect(requeueGap(30, highest)).toBe(EXTRA_LONG_STEP_GAP[1]);
+    expect(EXTRA_LONG_STEP_GAP[0]).toBeGreaterThan(LONG_STEP_GAP[1]);
+  });
+
   it("switches step length at the minute threshold", () => {
+    expect(requeueGap(EXTRA_LONG_STEP_MINUTES - 0.1, lowest)).toBe(LONG_STEP_GAP[0]);
+    expect(requeueGap(EXTRA_LONG_STEP_MINUTES, lowest)).toBe(EXTRA_LONG_STEP_GAP[0]);
     expect(requeueGap(LONG_STEP_MINUTES - 0.1, lowest)).toBe(SHORT_STEP_GAP[0]);
     expect(requeueGap(LONG_STEP_MINUTES, lowest)).toBe(LONG_STEP_GAP[0]);
   });
@@ -48,9 +59,12 @@ describe("allowsBackToBack", () => {
     expect(allowsBackToBack({ mistakeStreak: STUBBORN_MISTAKE_STREAK - 1, ...plenty })).toBe(false);
   });
 
-  it("drills a stubborn word on the spot", () => {
-    // 连着错到阈值:隔开等于放它跑,不如刷到答对(答对即清零 streak,自动退出连出)
+  it("连着错的难词照旧当场接着刷(越出越密才攻得下来)", () => {
     expect(allowsBackToBack({ mistakeStreak: STUBBORN_MISTAKE_STREAK, ...plenty })).toBe(true);
+  });
+
+  it("答对后立刻退出连出:mistakeStreak 归零,下一次必然被拉开", () => {
+    expect(allowsBackToBack({ mistakeStreak: 0, ...plenty })).toBe(false);
   });
 
   it("stops enforcing the gap in the last tenth of the day", () => {

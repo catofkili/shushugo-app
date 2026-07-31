@@ -70,6 +70,53 @@ describe("学习步骤:新词/答错要当天反复刷到毕业(治『点不认�
     expect(isLearning(lapsed)).toBe(true);
   });
 
+  it("答错后当天要连续两次『认识』才毕业(一次答对多半只是工作记忆)", () => {
+    let m: FsrsState | null = null;
+    let day = at("2026-01-01");
+    for (let i = 0; i < 5; i++) { m = recordReview(m, "know", day); day = new Date(m.due); }
+    const lapsed = recordReview(m, "forgot", new Date(m!.due));
+    const boundary = new Date(new Date(lapsed.due).getTime() + 4 * HR);
+
+    // 隔十几张卡后答对:仍在重学步骤里,当天还要再考一次
+    const first = recordReview(lapsed, "know", new Date(lapsed.due));
+    expect(isGraduatedForDay(first, boundary)).toBe(false);
+    // 第二次答对(隔得更远)才算真记住,当天不再出
+    const second = recordReview(first, "know", new Date(first.due));
+    expect(isGraduatedForDay(second, boundary)).toBe(true);
+  });
+
+  it("顽固词(当天错够 3 次)要连对三次才毕业", () => {
+    let m: FsrsState | null = null;
+    let day = at("2026-01-01");
+    for (let i = 0; i < 5; i++) { m = recordReview(m, "know", day); day = new Date(m.due); }
+    // 当天错三次:第三次起按顽固词的三步走
+    let s = recordReview(m, "forgot", new Date(m!.due));
+    s = recordReview(s, "forgot", new Date(s.due), { mode: "stubborn" });
+    s = recordReview(s, "forgot", new Date(s.due), { mode: "stubborn" });
+    const boundary = new Date(new Date(s.due).getTime() + 6 * HR);
+
+    const first = recordReview(s, "know", new Date(s.due), { mode: "stubborn" });
+    expect(isGraduatedForDay(first, boundary)).toBe(false);
+    const second = recordReview(first, "know", new Date(first.due), { mode: "stubborn" });
+    expect(isGraduatedForDay(second, boundary)).toBe(false);  // 普通词到这里就过了,顽固词还不行
+    const third = recordReview(second, "know", new Date(second.due), { mode: "stubborn" });
+    expect(isGraduatedForDay(third, boundary)).toBe(true);
+  });
+
+  it("顽固词中途再错一次,退回第一步重来", () => {
+    let m: FsrsState | null = null;
+    let day = at("2026-01-01");
+    for (let i = 0; i < 5; i++) { m = recordReview(m, "know", day); day = new Date(m.due); }
+    let s = recordReview(m, "forgot", new Date(m!.due), { mode: "stubborn" });
+    const boundary = new Date(new Date(s.due).getTime() + 6 * HR);
+    s = recordReview(s, "know", new Date(s.due), { mode: "stubborn" });   // 第一关
+    s = recordReview(s, "forgot", new Date(s.due), { mode: "stubborn" }); // 再错 → 退回
+    // 退回后再连对两次仍不够(顽固词要三次)
+    s = recordReview(s, "know", new Date(s.due), { mode: "stubborn" });
+    s = recordReview(s, "know", new Date(s.due), { mode: "stubborn" });
+    expect(isGraduatedForDay(s, boundary)).toBe(false);
+  });
+
   it("成熟卡到期答『认识』:一次就过(不折腾已掌握的词)", () => {
     let m: FsrsState | null = null;
     let day = at("2026-01-01");
