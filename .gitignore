@@ -87,3 +87,7 @@ frontend/public/__merged_import.db
 记忆数据合并/
 *merged*.db
 nihongo-port-*.db
+
+# 预生成的单词读音音频(scripts/build-word-audio.mjs 生成,约 11k 个文件 / 数十 MB)。
+# 属于构建产物,不进版本库;换机器重跑脚本即可,没有它时 App 自动退回系统语音合成。
+frontend/public/audio/

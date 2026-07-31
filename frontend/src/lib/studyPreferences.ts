@@ -26,6 +26,11 @@ export interface StudyPreferences {
   zooSounds: boolean;
   /** 动效强度三档 */
   motionLevel: MotionLevel;
+  /**
+   * 读音用哪个声音。空 = 用音频库的默认声音;"system" = 不用预生成音频,交给设备合成。
+   * 其余是生成脚本产出的声音 id(如 voicevox-3),设置页只列磁盘上真实存在的。
+   */
+  voiceId: string;
 }
 
 export const PREFERENCES_EVENT = "master-nihongo-preferences";
@@ -50,7 +55,8 @@ export const defaultStudyPreferences: StudyPreferences = {
   reviewCap: 0,
   comebackMode: "gentle",
   zooSounds: true,
-  motionLevel: "full"
+  motionLevel: "full",
+  voiceId: ""
 };
 
 const MOTION_LEVELS: MotionLevel[] = ["full", "reduced", "off"];
@@ -75,7 +81,9 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   zooSounds: value.zooSounds ?? defaultStudyPreferences.zooSounds,
   motionLevel: MOTION_LEVELS.includes(value.motionLevel as MotionLevel)
     ? (value.motionLevel as MotionLevel)
-    : defaultStudyPreferences.motionLevel
+    : defaultStudyPreferences.motionLevel,
+  // 不校验具体取值:声音是磁盘上有什么就有什么,选了个已删掉的由播放层自动回退
+  voiceId: typeof value.voiceId === "string" ? value.voiceId : defaultStudyPreferences.voiceId
 });
 
 export const getStudyPreferences = (): StudyPreferences => {

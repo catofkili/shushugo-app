@@ -237,6 +237,20 @@
   color: #3A2E22 !important;
 }
 
+/* 词汇便签浮在筛选工具栏上方，不能继续沿用只适合夜间的深灰底。 */
+.word-note-popover {
+  background: rgba(47, 51, 51, 0.96);
+  border-color: rgba(129, 216, 207, 0.35);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .word-note-popover {
+  background: rgba(255, 253, 248, 0.97) !important;
+  border-color: rgba(111, 168, 62, 0.34) !important;
+  color: #3A2E22 !important;
+  box-shadow: 0 14px 34px rgba(150, 110, 55, 0.18) !important;
+}
+
 .dictionary-card {
   background: linear-gradient(145deg, rgba(70, 73, 73, 0.96), rgba(57, 61, 61, 0.96));
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -765,14 +779,168 @@ textarea::placeholder {
   filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.65));
 }
 
-/* 日语字体优化 */
+/* 单词便签(查看 / 编辑)。以前跟工具栏挤在同一个 grid 单元格里,展开时整行被撑到
+   便签那么高,题目框和答案区被整体顶下去 —— 一开便签答案区就缩水。
+   改成脱离文档流的浮层:贴着底部评分按钮往上长,压在答案区上面,布局一动不动。
+   底边留出按钮那一行的高度,顶上限制高度,保证词本身(题目框)始终露在外面。 */
+.word-note-float {
+  position: absolute;
+  left: 50%;
+  /* 贴着卡片顶部往下长,压在筛选栏和题面上 —— 答案区是最不能挡的,便签放这里
+     等于占用「捡松子」那条进度带下面那片本来就没内容的地方。 */
+  top: 0.25rem;
+  z-index: 30;
+  width: min(380px, calc(100% - 1.5rem));
+  /* 编辑器带输入框,必然高一些;这是主动打开的,挡一会儿可以接受 */
+  max-height: min(17rem, 46%);
+  transform: translateX(-50%);
+}
+
+/* 只读的记忆便签是翻面时自动弹出来的,不能挡住刚翻出来的单词 —— 压到只占
+   筛选栏 + 题面那条,单词和读音始终露在下面。内容长了自己滚。 */
+.note-memory-card.word-note-float {
+  max-height: min(9.5rem, 30%);
+}
+
+@media (min-width: 640px) {
+  .word-note-float {
+    top: 0.5rem;
+  }
+}
+
+/* 原来它在文档流里、身后没东西,96% 的半透明无所谓;现在压在答案上,底下那个
+   八九十号的大汉字会透上来,写字和读便签都受影响。浮层一律不透明。 */
+.word-note-popover.word-note-float {
+  background: #2f3333;
+}
+
+[data-theme="light"] .word-note-popover.word-note-float {
+  background: #FFFDF8 !important;
+}
+
+/* 音高重音线。日语靠音高区分词义(橋 はし↓ / 箸 は↓し),词库原本没有这个字段,
+   数据来自 Kanjium。画法沿用日语词典和 OJAD 的惯例:高音拍上方压一条横线,
+   重音核那一拍的右侧补一条竖线表示"这里降下来"。 */
+.pitch-mora {
+  display: inline-block;
+  border-top: 2px solid transparent;
+  padding-top: 1px;
+}
+
+.pitch-mora.is-high {
+  border-top-color: #81D8CF;
+}
+
+.pitch-mora.is-drop {
+  border-right: 2px solid #81D8CF;
+}
+
+/* 画了音高线时,分组间隙改由拍自身的右内边距撑开:高音线随之延伸过去,
+   整词一条连续的线;降调那一拍例外 —— 竖线必须紧贴该拍,间隙放到线外面。 */
+.reading-has-pitch .kana-group + .kana-group {
+  margin-left: 0;
+}
+
+.pitch-mora.has-gap {
+  padding-right: 0.3em;
+}
+
+.pitch-mora.has-gap.is-drop {
+  padding-right: 0;
+  margin-right: 0.3em;
+}
+
+/* 重音型的数字(⓪①②)。词典就是这么标的,认这套记号的人一眼就懂;
+   不认的人看线也够用。压小压暗,不跟读音抢注意力。 */
+.pitch-badge {
+  margin-left: 0.35em;
+  color: rgba(129, 216, 207, 0.85);
+  font-size: 0.5em;
+  vertical-align: super;
+}
+
+[data-theme="light"] .pitch-mora.is-high {
+  border-top-color: #2B7973;
+}
+
+[data-theme="light"] .pitch-mora.is-drop {
+  border-right-color: #2B7973;
+}
+
+[data-theme="light"] .pitch-badge {
+  color: #2B7973;
+}
+
+/* 自他标注。和 JLPT/词性那排小灰标签并排,但 自/他 那个字要跳出来:放大一档、
+   用品牌绿、加粗;后面的「动词」二字压小压暗,只当注脚。 */
+.voice-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25em;
+  border: 1px solid rgba(129, 216, 207, 0.45);
+  background: rgba(129, 216, 207, 0.14);
+  border-radius: 0.25rem;
+  padding: 0.15rem 0.5rem;
+}
+
+.voice-badge-mark {
+  color: #81D8CF;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.voice-badge-tail {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* 浅色主题下白字看不见,「自/他」也要压深一档才够对比 */
+[data-theme="light"] .voice-badge {
+  border-color: rgba(43, 121, 115, 0.42);
+  background: rgba(129, 216, 207, 0.22);
+}
+
+[data-theme="light"] .voice-badge-mark {
+  color: #1F6B65;
+}
+
+[data-theme="light"] .voice-badge-tail {
+  color: rgba(58, 46, 34, 0.62);
+}
+
+/* 读音分组:按汉字把假名切成组,组间留一点空隙,让「初詣=はつもうで」看得出
+   初=はつ 而不是 初=は。间隙只要够眼睛分辨,大了就不像一个词了(0.34em)。
+   送り仮名/独立假名段压暗一档,和汉字对应的那几个音更跳出来。 */
+.kana-group + .kana-group {
+  margin-left: 0.34em;
+}
+
+.kana-group-kana {
+  opacity: 0.62;
+}
+
+/* 日语字体。
+   直/者/骨/具/令/海/角 这类字日中同一个码位、字形不同(Unicode 统一表意),
+   映射表管不了,只能靠字体压住 —— 拿中文字体渲染日文,学到的就是中文字形。
+   .jp 之前只有断行规则、没有 font-family,30 多处例句/假名行一路继承到
+   -apple-system,iOS 上落进 PingFang SC 出中文字形。三个类共用同一套栈。
+   栈里补了 Android(Noto Sans CJK JP)和 Windows(Yu Gothic/Meiryo)的日文字体,
+   网页版在没装日文字体的机器上才不会掉回中文字形。 */
+.jp-text,
+.jp {
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP',
+    'Noto Sans CJK JP', 'Yu Gothic', 'Meiryo', sans-serif;
+}
+
 .jp-text {
-  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
   line-height: 1.7;
 }
 
 .jp-serif {
-  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', serif;
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP',
+    'Noto Serif CJK JP', 'YuMincho', 'MS Mincho', serif;
 }
 
 /* 单词卡片样式 */

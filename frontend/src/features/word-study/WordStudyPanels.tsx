@@ -4,6 +4,9 @@ import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { ZooConfetti } from "../../components/ZooConfetti";
 import { estimatedMinutesFor } from "../../lib/comeback";
 import { studyDate as currentStudyDate } from "../../lib/database/db-utils";
+import { splitFurigana, useFuriganaReady } from "../../lib/furigana";
+import { lookupAccent, pitchPattern, splitMorae, usePitchAccentReady } from "../../lib/pitch-accent";
+import { lookupTransitivity, useTransitivityReady } from "../../lib/transitivity";
 import { saveImageToGallery, shareImage } from "../../lib/share-image";
 import {
   getStudyPreferences,
@@ -15,7 +18,86 @@ import {
 import type { WordCard, WordStats } from "../../types/vocabulary";
 import { encoreDayColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
-import { formatDuration, isLoanwordSourceCard, monthDays } from "./word-study-utils";
+import {
+  answerReadingText,
+  formatDuration,
+  isLoanwordSourceCard,
+  monthDays,
+  primaryAnswerText
+} from "./word-study-utils";
+
+/** 自他标注。直接挂在词自己身上(不是只在配对面板里提),自/他 那个字放大加色,
+ *  一眼扫得到 —— 中文「开」一个字通吃 開く/開ける,这一栏是最容易翻车的地方。 */
+export const TransitivityBadge = ({ card }: { card: WordCard }) => {
+  const ready = useTransitivityReady();
+  const voice = ready ? lookupTransitivity(card.kanji, card.kana, card.pos) : null;
+  if (!voice) return null;
+
+  return (
+    <span className="voice-badge">
+      <span className="voice-badge-mark">{voice}</span>
+      <span className="voice-badge-tail">动词</span>
+    </span>
+  );
+};
+
+const CIRCLED_DIGITS = ["⓪", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨"];
+
+/** 读音行,同时承担两件事:
+ *  1. 按汉字把假名分组(初詣 → はつ もうで),否则中文母语者会默认按汉字个数对切;
+ *  2. 逐拍画音高线 —— 橋(はし↓)和 箸(は↓し)假名一模一样,只有音高能分。
+ *  两样数据都是异步加载的,没到位就退回朴素显示,不阻塞翻面。 */
+export const ReadingLine = ({ card, className }: { card: WordCard; className?: string }) => {
+  const furiganaReady = useFuriganaReady();
+  const accentReady = usePitchAccentReady();
+  const reading = answerReadingText(card);
+  if (!reading) return null;
+
+  // 切不开的熟字训(明日=あした)当作一整段,音高线照样画。
+  const segments = furiganaReady ? splitFurigana(primaryAnswerText(card), reading) : null;
+  const groups = segments ?? [{ text: reading, reading, isKanji: false }];
+
+  // 重音核按「第几拍」算,所以要按整词的拍序走,不能每段各算各的。
+  const accent = accentReady ? lookupAccent(card.kanji, card.kana) : null;
+  const pattern = accent === null ? null : pitchPattern(splitMorae(reading).length, accent);
+  let moraIndex = 0;
+
+  return (
+    <p className={`${className ?? ""}${pattern ? " reading-has-pitch" : ""}`}>
+      {groups.map((segment, index) => (
+        <span
+          key={`${segment.text}-${index}`}
+          className={segment.isKanji ? "kana-group" : "kana-group kana-group-kana"}
+        >
+          {pattern
+            ? splitMorae(segment.reading).map((mora, moraKey, morae) => {
+                const pitch = pattern[moraIndex++];
+                // 分组间隙由这一拍的右内边距产生,而不是下一组的外边距 —— 高音线
+                // 是画在拍上的,用外边距会把线切断,看着像降调。
+                const bridgesGap = moraKey === morae.length - 1 && index < groups.length - 1;
+                return (
+                  <span
+                    key={`${mora}-${moraKey}`}
+                    className={
+                      `pitch-mora${pitch?.high ? " is-high" : ""}${pitch?.drop ? " is-drop" : ""}` +
+                      (bridgesGap ? " has-gap" : "")
+                    }
+                  >
+                    {mora}
+                  </span>
+                );
+              })
+            : segment.reading}
+        </span>
+      ))}
+      {accent !== null && (
+        <span className="pitch-badge" title={`音高重音 ${accent} 型`}>
+          {CIRCLED_DIGITS[accent] ?? accent}
+        </span>
+      )}
+    </p>
+  );
+};
 
 export const KanjiAnswer = ({ card }: { card: WordCard }) => {
   if (isLoanwordSourceCard(card)) return <>{card.kana}</>;
@@ -67,9 +149,9 @@ export const ExampleBlock = ({ card }: { card: WordCard }) => {
   if (!jp && !meaning) return null;
 
   return (
-    <div className="mx-auto mt-7 max-w-2xl rounded-2xl border border-white/15 bg-[#373b3b] p-4 text-left">
+    <div className="mx-auto mt-4 max-w-2xl rounded-2xl border border-white/15 bg-[#373b3b] p-4 text-left">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">例句</p>
-      {jp && <p className="jp mt-3 text-lg leading-8 text-white/88">{highlightHeadword(jp, card)}</p>}
+      {jp && <p className="jp mt-2 text-lg leading-8 text-white/88">{highlightHeadword(jp, card)}</p>}
       {meaning && <p className="mt-2 text-sm leading-6 text-white/65">{meaning}</p>}
     </div>
   );

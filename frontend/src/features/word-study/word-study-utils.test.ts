@@ -140,3 +140,4 @@ describe("word-study-utils", () => {
     expect(calendar.cells[30]).toEqual({ day: 30, date: "2026-06-30" });
   });
 });
+

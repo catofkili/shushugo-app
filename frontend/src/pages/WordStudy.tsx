@@ -5,10 +5,16 @@ import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, getWordSe
 import { getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences, StudyPreferences } from "../lib/studyPreferences";
 import { addStudyTime, checkAchievements } from "../lib/userProfile";
 import { triggerMemoryHaptic } from "../lib/haptics";
+import { playPronunciation } from "../lib/speech";
 import { playComplete, playDontKnow, playFlip, playKnow } from "../lib/zoo-sounds";
-import { ExampleBlock, FinishPanel, KanjiAnswer } from "../features/word-study/WordStudyPanels";
 import {
-  answerReadingText,
+  ExampleBlock,
+  FinishPanel,
+  KanjiAnswer,
+  ReadingLine,
+  TransitivityBadge
+} from "../features/word-study/WordStudyPanels";
+import {
   answerOptions,
   cardLabel,
   kanaToRomaji,
@@ -122,13 +128,10 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
     return () => window.removeEventListener(PREFERENCES_EVENT, handlePreferences);
   }, []);
 
-  const playPronunciation = (text: string) => {
-    if (!preferences.autoPlay || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ja-JP";
-    utterance.rate = 0.88;
-    window.speechSynthesis.speak(utterance);
+  // 具体读什么、用文件还是用系统语音,都在 lib/speech.ts 里决定;这里只管开关。
+  const speakCard = (target: WordCard) => {
+    if (!preferences.autoPlay) return;
+    void playPronunciation(target.kanji, target.kana, preferences.voiceId);
   };
 
   const sendStudySeconds = async (seconds: number) => {
@@ -438,7 +441,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
       }}
     >
       <section
-        className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "p-3 sm:p-8 lg:p-7" : "p-3 sm:p-5"}`}
+        className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "px-3 pb-2 pt-3 sm:p-8 lg:p-7" : "px-3 pb-2 pt-3 sm:p-5"}`}
         style={{
           transform: cardShift ? `translate3d(${cardShift}px,0,0) rotate(${cardRotate}deg)` : undefined,
           opacity: flingDir ? 0 : undefined,
@@ -464,7 +467,8 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
 
         {/* 标题栏 = 筛选 + 操作一行,模式名和进度并进下面的松鼠轨道。
             全尺寸都走普通文档流(不再 lg:absolute),桌面端也就不需要给正文留 pt 了。 */}
-        {showStudyToolbar && <div className="mb-2 flex shrink-0 items-center gap-2 lg:mx-auto lg:mb-3 lg:w-[min(900px,100%)]">
+        <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
+        {showStudyToolbar && <div className="mb-2 flex min-w-0 items-center gap-2 lg:mb-3">
           <div className="hidden min-w-0 shrink-0 lg:block">
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">{pageLabel}</p>
             <h1 className="text-lg font-semibold leading-tight">{pageTitle}</h1>
@@ -534,7 +538,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
         </div>}
 
         {noteMemoryOpen && card?.note && (
-          <div className="note-memory-card absolute right-5 top-20 z-20 w-[min(380px,calc(100%-2.5rem))] rounded-2xl border border-[#81D8CF]/35 bg-[#2f3333]/95 p-4 text-left shadow-2xl backdrop-blur-md sm:right-8 sm:top-24 lg:right-7 lg:top-28">
+          <div className="word-note-popover note-memory-card word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-2xl backdrop-blur-md">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">Memory Note</p>
@@ -553,7 +557,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
         )}
 
         {noteEditorOpen && card && (
-          <div className="absolute right-5 top-20 z-20 w-[min(380px,calc(100%-2.5rem))] rounded-2xl border border-white/20 bg-[#373b3b] p-4 text-left shadow-lg sm:right-8 sm:top-24">
+          <div className="word-note-popover word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-lg">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">Word Note</p>
@@ -585,6 +589,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
             </div>
           </div>
         )}
+        </div>
 
         {error && (
           <div className="mb-5 flex items-start gap-3 rounded-2xl border border-[#81D8CF]/40 bg-[#81D8CF]/20 p-4 text-sm text-white">
@@ -599,39 +604,48 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
         {loading ? (
           <div className="grid min-h-[360px] place-items-center text-center text-white/75">正在读取下一题...</div>
         ) : card ? (
-          <div key={card.id} className="zoo-enter flex min-h-0 flex-1 flex-col gap-2.5 sm:gap-4">
+          <div key={card.id} className="zoo-enter flex min-h-0 flex-1 flex-col gap-2 sm:gap-3">
             {/* 松鼠的小路搬到了顶部 Master 栏(components/SquirrelTrail),
                 卡片里不再为进度条留高度,全部让给答案区。 */}
 
             {/* 手机端题目框尽量压扁:题目通常就几个字,省下的高度让给答案区(长题目仍由内层 max-h 滚动)。
                 「题目」这个标签在手机上省掉 —— 顶上那个框是题目本来就一目了然。 */}
-            <div className="grid min-h-16 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] p-3 text-center sm:min-h-28 sm:p-4 lg:mx-auto lg:min-h-36 lg:w-[min(900px,100%)] lg:p-6">
-              <div data-word-scrollable="true" className="max-h-28 w-full overflow-y-auto px-1">
-                <p className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-white/50 sm:block">题目</p>
-                <div className="flex flex-wrap items-center justify-center gap-2 sm:mt-2">
+            <div className="grid min-h-0 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] px-3 py-2 text-center sm:min-h-28 sm:p-4 lg:mx-auto lg:min-h-36 lg:w-[min(900px,100%)] lg:p-6">
+              <div className="w-full">
+                {/* 等级/词性挪到题目面,并且放在滚动区外面 —— 释义有长到要滚的
+                    (「…的省略语；super超,上,高级,超级」这种),标签不能跟着滚没。 */}
+                <div className="mb-1.5 flex flex-wrap items-center justify-center gap-1.5">
+                  {card.jlptLevel && (
+                    <span className="rounded-sm border border-white/15 px-1.5 py-0.5 text-[11px] font-bold text-white/60">{card.jlptLevel}</span>
+                  )}
+                  {card.pos && (
+                    <span className="rounded-sm bg-[#81D8CF]/10 px-1.5 py-0.5 text-[11px] font-bold text-white/60">{card.pos}</span>
+                  )}
+                  {/* 正向题(中文→日文)不亮自他:那等于提前告诉你答案是 開く 还是 開ける。
+                      反向题的日文词就在眼前,标了才有意义。 */}
+                  {isReversePhase && <TransitivityBadge card={card} />}
+                  {card.honorificLabel && (
+                    <span className="rounded-sm border border-[#81D8CF]/45 bg-[#81D8CF]/18 px-1.5 py-0.5 text-[11px] font-black text-[#81D8CF]">
+                      {card.honorificLabel}
+                    </span>
+                  )}
+                </div>
+                <div data-word-scrollable="true" className="max-h-24 w-full overflow-y-auto px-1 sm:max-h-28">
                   {isReversePhase ? (
                     <>
-                      <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{card.pos}</span>
                       <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{primaryAnswerText(card)}</p>
-                      {answerReadingText(card) && <p className="jp text-xl text-white/72 sm:text-2xl lg:text-3xl">{answerReadingText(card)}</p>}
+                      <ReadingLine card={card} className="jp mt-1 text-xl text-white/72 sm:text-2xl lg:text-3xl" />
                     </>
                   ) : (
-                    <>
-                      {card.honorificLabel && (
-                        <span className="rounded-sm border border-[#81D8CF]/45 bg-[#81D8CF]/18 px-2 py-1 text-xs font-black text-[#81D8CF]">
-                          {card.honorificLabel}
-                        </span>
-                      )}
-                      <p className="break-words text-xl font-semibold leading-snug sm:text-3xl lg:text-4xl">
-                        {card.questionMeaning || card.meaning}
-                      </p>
-                    </>
+                    <p className="break-words text-xl font-semibold leading-snug sm:text-3xl lg:text-4xl">
+                      {card.questionMeaning || card.meaning}
+                    </p>
                   )}
                 </div>
               </div>
             </div>
 
-            <div data-word-scrollable="true" className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-6 text-center lg:mx-auto lg:w-[min(1040px,100%)] lg:p-10">
+            <div data-word-scrollable="true" className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(1040px,100%)] lg:p-10">
               {revealed ? (
                 <div className="w-full">
                   {isReversePhase ? (
@@ -644,17 +658,19 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
                       <p className="jp-serif text-6xl font-semibold leading-none sm:text-7xl lg:text-8xl xl:text-[9rem]">
                         <KanjiAnswer card={card} />
                       </p>
-                      {answerReadingText(card) && (
-                        <p className="jp mt-3 text-3xl text-white/86 sm:text-4xl lg:text-5xl xl:text-6xl">{answerReadingText(card)}</p>
-                      )}
-                      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                        {card.jlptLevel && <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{card.jlptLevel}</span>}
-                        <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/60">{card.pos}</span>
+                      {/* 自他跟读音同一行:它是这个词的属性,不值得单占一行。
+                          等级/词性已经在题目面常驻,这里不再重复。 */}
+                      <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                        <ReadingLine
+                          card={card}
+                          className="jp text-3xl text-white/86 sm:text-4xl lg:text-5xl xl:text-6xl"
+                        />
+                        <TransitivityBadge card={card} />
                       </div>
                       {card.englishOrigin && (
-                        <div className="mx-auto mt-4 w-fit rounded-2xl border border-[#81D8CF]/30 bg-[#81D8CF]/10 px-5 py-3">
+                        <div className="mx-auto mt-3 w-fit rounded-2xl border border-[#81D8CF]/30 bg-[#81D8CF]/10 px-4 py-2">
                           <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">英语原词</p>
-                          <p className="mt-1 text-2xl font-semibold text-white/90 sm:text-3xl">{card.englishOrigin}</p>
+                          <p className="mt-0.5 text-2xl font-semibold text-white/90 sm:text-3xl">{card.englishOrigin}</p>
                         </div>
                       )}
                     </>
@@ -662,10 +678,17 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
                   {preferences.showRomaji && romaji && (
                     <p className="mt-2 text-sm font-semibold tracking-normal text-white/52">{romaji}</p>
                   )}
-                  {!isReversePhase && <p className="mx-auto mt-7 max-w-3xl text-xl leading-9 text-white/82 lg:text-2xl lg:leading-10">{card.meaning}</p>}
+                  {/* 正向题的释义就是题面本身,答案面再抄一遍纯属占地方。
+                      题面显示的是精简过的 questionMeaning,完整释义补在这里 —— 只在
+                      两者确实不一样时才出现。 */}
+                  {!isReversePhase && card.meaning !== (card.questionMeaning || card.meaning) && (
+                    <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-white/72 lg:text-lg lg:leading-8">
+                      {card.meaning}
+                    </p>
+                  )}
                   <ExampleBlock card={card} />
                   {(markedKanji.length > 0 || card.verbPair || card.confusions.length > 0) && !isReversePhase && (
-                    <div className="mx-auto mt-7 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
+                    <div className="mx-auto mt-4 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
                       {markedKanji.length > 0 && (
                         <div className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
                           <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">和式汉字</p>
@@ -735,9 +758,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
                     playFlip();
                     setNoteEditorOpen(false);
                     if (card?.note) setNoteMemoryOpen(true);
-                    // 用假名读音朗读:外来语的 secondaryAnswerText 是英文源词,交给
-                    // 日语语音(ja-JP)会读成乱码,必须念 card.kana(カメラ 而非 camera)。
-                    if (card) playPronunciation(card.kana);
+                    if (card) speakCard(card);
                   }}
                   className="focus-ring zoo-pop zoo-gloss inline-flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] px-4 text-base font-bold !text-[#2f3333]"
                 >

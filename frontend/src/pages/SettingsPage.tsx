@@ -4,6 +4,7 @@ import { refreshTodayWordPlan } from "../lib/api";
 import { exportDatabase, importDatabase } from "../lib/database";
 import { clearStorage, saveDatabase } from "../lib/storage";
 import { getPasscodeState, verifyPasscode } from "../lib/localPasscode";
+import { loadVoices, SYSTEM_VOICE_ID, type AudioVoice } from "../lib/speech";
 import {
   cloudLogin,
   cloudLogout,
@@ -102,6 +103,8 @@ const CLEAR_CONFIRM_TEXT = "清除所有数据";
 
 export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   const [preferences, setPreferences] = useState<StudyPreferences>(defaultStudyPreferences);
+  // 有哪些声音可选要问磁盘(音频库是构建产物,可能一个都没生成)
+  const [voices, setVoices] = useState<AudioVoice[]>([]);
   const [storageInfo, setStorageInfo] = useState({ database: 0, local: 0, cache: 0 });
   const [message, setMessage] = useState("");
   const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
@@ -148,6 +151,7 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
       setCloudSession(session);
       setCloudEmail(session.email ?? "");
     });
+    loadVoices().then(setVoices);
   }, []);
 
   const notify = (text: string) => {
@@ -457,6 +461,30 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
             </label>
           </div>
 
+          {/* 声音只列磁盘上真实生成过的(scripts/build-word-audio.mjs 产出)。
+              一个都没生成时整块不显示——那时候只有系统语音可用,给个选项也没意义。 */}
+          {voices.length > 0 && (
+            <div className="flex items-center gap-3 border-b border-white/10 p-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-white">发音声音</p>
+                <p className="mt-0.5 text-xs text-white/50">
+                  预生成的声音读音和语调都是校对过的;系统语音不占空间但语调较平
+                </p>
+              </div>
+              <select
+                value={preferences.voiceId}
+                onChange={(event) => updatePreference({ voiceId: event.target.value })}
+                className="focus-ring control-cyan h-10 max-w-40 shrink-0 rounded-xl border px-2 text-xs font-bold"
+              >
+                <option value="">默认</option>
+                {voices.map((voice) => (
+                  <option key={voice.id} value={voice.id}>{voice.label}</option>
+                ))}
+                <option value={SYSTEM_VOICE_ID}>系统语音</option>
+              </select>
+            </div>
+          )}
+
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">动物园音效</p>
@@ -472,6 +500,7 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
               <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
             </label>
           </div>
+
 
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">
