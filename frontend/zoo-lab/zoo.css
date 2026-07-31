@@ -1,0 +1,724 @@
+/* 动物园 · 水豚 原型专用样式（自带调色板，与正式 app 一致的暖调） */
+:root {
+  --zoo-cream: #FFF7EA;
+  --zoo-cream-2: #FDF1DC;
+  --zoo-surface: #FFFDF8;
+  --zoo-primary: #8FCB5E;
+  --zoo-primary-dark: #6FA83E;
+  --zoo-primary-deep: #5C8F32;
+  --zoo-primary-soft: #DCF0C4;
+  --zoo-on-primary: #2A3B18;
+  --zoo-brown: #C08552;
+  --zoo-brown-deep: #9C6B3F;
+  --zoo-orange: #F5A623;
+  --zoo-orange-soft: #FFE6BC;
+  --zoo-ink: #3A2E22;
+  --zoo-muted: #9A8A78;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: linear-gradient(180deg, #FFFBF2 0%, #FDF1DC 55%, #F6E9D2 100%);
+  color: var(--zoo-ink);
+  font-family: Inter, "Noto Sans SC", "Noto Sans JP", -apple-system, system-ui, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.lab-shell { max-width: 460px; margin: 0 auto; padding: 20px 16px 60px; }
+.lab-head { text-align: center; margin-bottom: 6px; }
+.lab-head h1 { font-family: "Hiragino Mincho ProN", "Noto Serif JP", serif; font-size: 22px; margin: 4px 0; }
+.lab-head p { color: var(--zoo-brown-deep); font-size: 12.5px; margin: 0; }
+.lab-note { text-align:center; color: var(--zoo-muted); font-size: 11px; margin: 6px 0 18px; }
+
+.lab-tabs { display: flex; gap: 6px; background: var(--zoo-primary-soft); border-radius: 16px; padding: 4px; margin-bottom: 18px; }
+.lab-tabs button { flex: 1; border: 0; border-radius: 12px; background: transparent; padding: 9px 4px; font-weight: 800; font-size: 12.5px; color: var(--zoo-primary-deep); }
+.lab-tabs button.on { background: var(--zoo-primary); color: var(--zoo-on-primary); box-shadow: 0 3px 10px rgba(111,168,62,.3); }
+
+.lab-card { border: 1.5px solid rgba(143,203,94,.28); border-radius: 22px; background: var(--zoo-surface); box-shadow: 0 8px 22px rgba(160,120,60,.12); padding: 18px; }
+
+.lab-toolbar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom: 14px; }
+.lab-mute { border:1px solid rgba(192,133,82,.3); border-radius:11px; background:#fff; padding:7px 12px; font-weight:700; font-size:12px; color: var(--zoo-brown-deep); }
+.lab-mute.off { background: var(--zoo-orange-soft); border-color: rgba(245,166,35,.5); color:#B4740A; }
+
+.kicker { color: var(--zoo-primary-deep); font-size: 11px; font-weight: 800; letter-spacing: 1.3px; }
+.section-title { font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-weight:800; font-size:18px; margin:3px 0 12px; }
+
+/* ===== 核心循环:松鼠路线 + 卡片 ===== */
+.route { margin-bottom: 16px; }
+.route-head { display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:800; color: var(--zoo-brown-deep); margin-bottom:8px; }
+.route-head b { color: var(--zoo-primary-deep); }
+.route-track { position:relative; height:52px; border-radius:16px; background: linear-gradient(180deg,#F3FAE7,#E7F4D4); border:1px solid rgba(143,203,94,.3); padding:0 14px; }
+.route-line { position:absolute; left:14px; right:14px; top:34px; height:3px; border-radius:3px; background: repeating-linear-gradient(90deg, rgba(156,107,63,.35) 0 8px, transparent 8px 16px); }
+.route-stations { position:absolute; left:14px; right:14px; top:26px; display:flex; justify-content:space-between; }
+.route-node { font-size:15px; line-height:1; filter: grayscale(.1); transition: transform .2s; }
+.route-node.got { transform: translateY(-1px) scale(1.05); }
+.route-node.dropped { color:#C9B79E; opacity:.6; }
+.route-node.pending { color: rgba(156,107,63,.4); }
+.route-node.cur { color: var(--zoo-primary-deep); transform: scale(1.5); }
+.route-squirrel { position:absolute; top:2px; transform: translateX(-50%); font-size:22px; transition: left .38s cubic-bezier(.34,1.4,.6,1); animation: hop .38s ease; z-index:2; }
+@keyframes hop { 0%{ transform: translateX(-50%) translateY(0);} 40%{ transform: translateX(-50%) translateY(-10px);} 100%{ transform: translateX(-50%) translateY(0);} }
+
+.cl-card { text-align:center; position:relative; }
+.cl-capy { display:flex; justify-content:center; margin-bottom:2px; }
+.cl-facelabel { color: var(--zoo-muted); font-size:11px; font-weight:800; letter-spacing:1.3px; margin:2px 0; }
+.cl-again { display:inline-block; margin-bottom:6px; border-radius:20px; background: var(--zoo-orange-soft); color:#B4740A; font-size:11.5px; font-weight:800; padding:3px 11px; }
+.cl-prompt { font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:26px; font-weight:800; margin:8px 0 14px; }
+.cl-answer b { display:block; color: var(--zoo-primary-deep); font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:32px; }
+.cl-answer span { display:block; margin-top:3px; color: var(--zoo-brown-deep); font-size:15px; }
+.cl-answer small { display:block; margin-top:8px; color: var(--zoo-brown); font-size:12px; }
+.cl-hidden { margin:16px 0; color:#A99A86; font-size:14px; font-weight:600; }
+.cl-hidden small { display:block; margin-top:4px; font-size:12px; font-weight:500; }
+.cl-reveal { margin-top:16px; border:0; border-radius:14px; background: var(--zoo-primary); padding:12px 26px; color: var(--zoo-on-primary); font-weight:800; font-size:14px; box-shadow:0 6px 16px rgba(111,168,62,.3); }
+.cl-reveal:active { transform: translateY(1px); }
+.cl-rates { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:16px; border-top:1px solid rgba(192,133,82,.2); padding-top:14px; }
+.cl-rates button { border:1px solid rgba(192,133,82,.28); border-radius:13px; background:#fff; padding:10px 6px; color: var(--zoo-ink); font-weight:700; font-size:13px; }
+.cl-rates button small { display:block; margin-top:3px; color: var(--zoo-muted); font-size:10.5px; font-weight:600; }
+.cl-rates .strong { border-color: var(--zoo-primary-dark); background: var(--zoo-primary); color: var(--zoo-on-primary); }
+.cl-rates .strong small { color:#3B5220; }
+.cl-done { display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px 0; }
+.cl-done b { font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:19px; margin-top:4px; }
+.cl-done span { color: var(--zoo-brown-deep); font-size:13px; line-height:1.6; max-width:24em; }
+.cl-primary { margin-top:10px; border:0; border-radius:14px; background: var(--zoo-primary); padding:12px 28px; color: var(--zoo-on-primary); font-weight:800; box-shadow:0 6px 16px rgba(111,168,62,.3); }
+
+/* ===== 动物园地图 ===== */
+.zm-hero { padding:0; overflow:hidden; }
+.zm-scene { position:relative; height:160px; display:grid; place-items:center; background:linear-gradient(180deg,#EAF6FF 0%,#F3FAE7 60%,#E7F4D4 100%); }
+.zm-scene.stage-0 { background:linear-gradient(180deg,#F3ECDF,#E7DCC7); }
+.zm-scene.stage-1 { background:linear-gradient(180deg,#EDF3E2,#E0EAC9); }
+.zm-scene.stage-3 { background:linear-gradient(180deg,#E4F5FF,#D8F0C2); }
+.zm-bigicon { position:absolute; font-size:74px; opacity:.85; filter:drop-shadow(0 6px 10px rgba(120,90,50,.2)); }
+.zm-animal { position:absolute; bottom:16px; right:22px; font-size:44px; transition:opacity .4s; filter:drop-shadow(0 4px 8px rgba(120,90,50,.25)); }
+.zm-hero-info { display:flex; justify-content:space-between; align-items:center; padding:14px 18px 4px; }
+.zm-hero-info b { display:block; font-size:16px; font-weight:800; }
+.zm-hero-info small { color:var(--zoo-brown-deep); font-size:12px; }
+.zm-pct { font-size:26px; font-weight:800; color:var(--zoo-primary-deep); }
+.zm-bar { margin:8px 18px 18px; height:9px; border-radius:9px; background:var(--zoo-primary-soft); overflow:hidden; }
+.zm-bar i { display:block; height:100%; border-radius:9px; background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary)); }
+.zm-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:14px; }
+.zm-tile { display:flex; flex-direction:column; align-items:center; gap:2px; border:1.5px solid rgba(192,133,82,.24); border-radius:15px; background:var(--zoo-surface); padding:10px 4px; }
+.zm-tile.on { border-color:var(--zoo-primary-dark); background:var(--zoo-primary-soft); box-shadow:0 4px 12px rgba(111,168,62,.22); }
+.zm-tile-icon { font-size:22px; }
+.zm-tile b { font-size:12.5px; font-weight:800; }
+.zm-tile small { font-size:9.5px; color:var(--zoo-brown-deep); }
+.zm-tile em { font-size:10px; font-style:normal; font-weight:800; color:var(--zoo-primary-deep); }
+
+/* ===== 温泉打卡 ===== */
+.hs-card { text-align:center; }
+.hs-pool { position:relative; height:170px; margin-bottom:8px; }
+.hs-capy { position:absolute; left:50%; bottom:44px; transform:translateX(-50%); z-index:2; }
+.hs-water { position:absolute; left:8%; right:8%; bottom:16px; height:60px; border-radius:0 0 20px 20px / 0 0 40px 40px; background:linear-gradient(180deg,#BEE7F2,#8FD3E6); border-top:3px solid #E5F7FD; overflow:hidden; }
+.hs-water::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 30% 20%, rgba(255,255,255,.5), transparent 40%); }
+.hs-steam { position:absolute; top:-10px; color:#fff; font-weight:900; opacity:.7; animation:steam 2.6s ease-in-out infinite; }
+.hs-steam.s1 { left:30%; } .hs-steam.s2 { left:64%; animation-delay:1.1s; }
+@keyframes steam { 0%{ transform:translateY(4px) scale(.8); opacity:0;} 40%{opacity:.7;} 100%{ transform:translateY(-16px) scale(1.3); opacity:0;} }
+/* 柚子下落 / 波纹:原来动的是 top 和 width/height,每帧都要重排。
+   改成只动 transform 后,整段动画走合成器,视觉完全一样。 */
+.hs-yuzu { position:absolute; left:50%; top:-6px; transform:translateX(-50%); font-size:26px; z-index:3; animation:yuzudrop .5s cubic-bezier(.5,0,.8,1) forwards; }
+@keyframes yuzudrop {
+  0%{ transform:translateX(-50%) translateY(0); }
+  70%{ transform:translateX(-50%) translateY(44px); }
+  85%{ transform:translateX(-50%) translateY(36px); }
+  100%{ transform:translateX(-50%) translateY(42px); }
+}
+.hs-ripple { position:absolute; left:50%; top:6px; width:14px; height:14px; border:2px solid rgba(255,255,255,.85); border-radius:50%; transform:translateX(-50%); animation:ripple .8s ease-out forwards; }
+@keyframes ripple {
+  0%{ transform:translateX(-50%) scale(.57,.57); opacity:.9; }
+  100%{ transform:translateX(-50%) scale(8.6,1.9); opacity:0; }
+}
+.hs-meta b { font-size:17px; font-weight:800; }
+.hs-meta span { display:block; margin-top:4px; color:var(--zoo-brown-deep); font-size:12.5px; }
+.hs-week { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin:16px 0; }
+.hs-day i { display:grid; place-items:center; height:34px; border-radius:11px; background:var(--zoo-cream-2); font-size:16px; font-style:normal; color:#C9B79E; }
+.hs-day i.on { background:var(--zoo-primary-soft); }
+.hs-day small { display:block; margin-top:4px; font-size:10px; color:var(--zoo-muted); }
+.hs-btn { width:100%; border:0; border-radius:14px; background:var(--zoo-primary); padding:13px; color:var(--zoo-on-primary); font-weight:800; font-size:14px; box-shadow:0 6px 16px rgba(111,168,62,.3); }
+.hs-btn:active { transform:translateY(1px); }
+
+/* ======================================================================
+   动效细化:让按钮本身「活」起来
+   —— 统一弹性交互 + 认识/不认识差异化反馈 + 卡片/评分入场 + 松鼠 squash
+   ====================================================================== */
+button { -webkit-tap-highlight-color: transparent; }
+
+/* 通用弹性:悬停微抬、按下挤压回弹(spring 曲线) */
+.pop, .lab-tabs button, .zm-tile, .hs-btn, .cl-reveal, .cl-primary,
+.lab-mute, .cl-rates button {
+  transition: transform .16s cubic-bezier(.34,1.7,.5,1),
+              box-shadow .22s ease, background-color .2s ease, border-color .2s ease, color .2s ease;
+  will-change: transform;
+}
+.pop:hover:not(:disabled), .hs-btn:hover, .cl-reveal:hover,
+.cl-primary:hover, .zm-tile:hover { transform: translateY(-2px); }
+.pop:active:not(:disabled), .hs-btn:active, .cl-reveal:active,
+.cl-primary:active, .zm-tile:active, .lab-tabs button:active {
+  transform: translateY(1px) scale(.94);
+  transition-duration: .07s;
+}
+.pop:disabled { cursor: default; opacity: .96; }
+
+/* 主按钮/强按钮:悬停时一道光泽扫过 */
+.cl-reveal, .cl-primary, .hs-btn, .cl-rates .strong { position: relative; overflow: hidden; }
+.cl-reveal::after, .cl-primary::after, .hs-btn::after {
+  content: ""; position: absolute; top: 0; left: 0; width: 45%; height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,.55), transparent);
+  transform: skewX(-18deg); opacity: 0; pointer-events: none;
+}
+.cl-reveal:hover::after, .cl-primary:hover::after, .hs-btn:hover::after { animation: gloss .6s ease; }
+/* 扫光原来动 left(每帧重排)。translateX 的百分比是按自身宽度算的,
+   自身宽 45% 按钮宽,所以 -70%/130% 的按钮宽换算成 -155.6%/288.9% 的自身宽。 */
+@keyframes gloss {
+  0% { transform: translateX(-155.6%) skewX(-18deg); opacity: .85; }
+  100% { transform: translateX(288.9%) skewX(-18deg); opacity: 0; }
+}
+
+/* 认识:被点按钮弹一下 + 绿光脉冲(呼应上行音阶的正反馈) */
+.cl-rates button.flash-good { z-index: 2; animation: flashGood .42s cubic-bezier(.34,1.6,.5,1); }
+@keyframes flashGood {
+  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(143,203,94,0); }
+  35%  { transform: scale(1.08); box-shadow: 0 0 0 5px rgba(143,203,94,.45), 0 10px 22px rgba(111,168,62,.4); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(143,203,94,0); }
+}
+/* 不认识:轻轻摇头(不惩罚,像水豚陪你困惑) */
+.cl-rates button.flash-bad { z-index: 2; animation: flashBad .42s ease; }
+@keyframes flashBad {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  18% { transform: translateX(-5px) rotate(-1.6deg); }
+  40% { transform: translateX(4px) rotate(1.4deg); }
+  62% { transform: translateX(-3px) rotate(-.9deg); }
+  82% { transform: translateX(2px) rotate(.4deg); }
+}
+
+/* 评分区:四个按钮交错弹入 */
+.cl-rates button { animation: rateIn .3s cubic-bezier(.34,1.56,.64,1) backwards; }
+.cl-rates button:nth-child(1) { animation-delay: .02s; }
+.cl-rates button:nth-child(2) { animation-delay: .07s; }
+.cl-rates button:nth-child(3) { animation-delay: .12s; }
+.cl-rates button:nth-child(4) { animation-delay: .17s; }
+@keyframes rateIn { 0% { opacity: 0; transform: translateY(9px) scale(.95); } 100% { opacity: 1; transform: none; } }
+/* flash 规则写在 nth-child 之后,确保被点按钮的反馈动画覆盖入场动画 */
+.cl-rates button.flash-good, .cl-rates button.flash-bad { animation-delay: 0s; }
+
+/* 卡片换词:淡入 + 轻微上移放大 */
+.cl-enter { animation: cardEnter .34s cubic-bezier(.34,1.4,.6,1); }
+@keyframes cardEnter { 0% { opacity: 0; transform: translateY(10px) scale(.985); } 100% { opacity: 1; transform: none; } }
+
+/* 水豚随评分做微反应 */
+.cl-capy.mood-cheer { animation: capyCheer .5s ease; }
+.cl-capy.mood-sleepy { animation: capyTilt .5s ease; }
+@keyframes capyCheer { 0% { transform: scale(1); } 30% { transform: translateY(-6px) scale(1.08); } 60% { transform: translateY(0) scale(.97); } 100% { transform: scale(1); } }
+@keyframes capyTilt { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-6deg); } 62% { transform: rotate(4deg); } }
+
+/* 松鼠跳跃:加入 squash & stretch(起跳拉伸、落地压扁再回弹) */
+@keyframes hop {
+  0%   { transform: translateX(-50%) translateY(0) scaleY(1) scaleX(1); }
+  25%  { transform: translateX(-50%) translateY(-11px) scaleY(1.13) scaleX(.9); }
+  55%  { transform: translateX(-50%) translateY(0) scaleY(.84) scaleX(1.14); }
+  75%  { transform: translateX(-50%) translateY(-2px) scaleY(1.05) scaleX(.97); }
+  100% { transform: translateX(-50%) translateY(0) scaleY(1) scaleX(1); }
+}
+
+/* 注:页面不可见时的暂停不在这里做。
+   曾经用 `body.zoo-paused * { animation-play-state: paused }` 一刀切,结果把
+   入场动画(pageIn 从 opacity:0 起步)也冻在了第 0 帧——页面在后台加载就是一片空白。
+   现在改成在 JS 里只暂停 iterations === Infinity 的那些,见 ZooLab.tsx。 */
+
+/* 尊重「减少动态效果」系统偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ======================================================================
+   主页(便当布局) + 底部导航 + 组队面板
+   ====================================================================== */
+.lab-shell.has-nav { padding-bottom: 86px; }
+.lab-page { animation: pageIn .3s cubic-bezier(.34,1.4,.6,1); }
+@keyframes pageIn { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: none; } }
+
+.lab-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.lab-brand { font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-weight:800; font-size:16px; color:var(--zoo-brown-deep); }
+
+/* 底部导航 */
+.lab-nav {
+  position: fixed; left:50%; bottom:14px; transform:translateX(-50%);
+  display:flex; gap:2px; width: min(432px, calc(100% - 24px));
+  background: var(--zoo-surface); border:1.5px solid rgba(143,203,94,.3);
+  border-radius:20px; padding:6px; box-shadow:0 10px 28px rgba(140,105,55,.2); z-index:50;
+}
+.lab-nav-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+  border:0; background:transparent; border-radius:15px; padding:7px 2px; color:var(--zoo-muted);
+  transition: transform .16s cubic-bezier(.34,1.7,.5,1), background-color .2s, color .2s;
+}
+.lab-nav-btn .lab-nav-icon { font-size:19px; line-height:1; transition: transform .22s cubic-bezier(.34,1.7,.5,1); }
+.lab-nav-btn .lab-nav-label { font-size:10px; font-weight:800; }
+.lab-nav-btn:active { transform: scale(.9); }
+.lab-nav-btn.on { background: var(--zoo-primary-soft); color: var(--zoo-primary-deep); }
+.lab-nav-btn.on .lab-nav-icon { transform: translateY(-2px) scale(1.16); }
+
+/* 问候条 */
+.hm-greet { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.hm-greet-capy { flex:none; animation: breathe 4s ease-in-out infinite; }
+@keyframes breathe { 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.03);} }
+.hm-greet-text { flex:1; min-width:0; }
+.hm-greet-hi { margin:0; font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:17px; font-weight:800; }
+.hm-greet-sub { margin:2px 0 0; color:var(--zoo-brown-deep); font-size:12px; }
+.hm-greet-streak { flex:none; display:flex; flex-direction:column; align-items:center; font-size:13px; }
+.hm-greet-streak b { font-size:17px; color:var(--zoo-orange); }
+
+/* 便当网格 */
+.bento { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.tile {
+  position:relative; overflow:hidden; text-align:left;
+  border:1.5px solid rgba(192,133,82,.22); border-radius:20px; background:var(--zoo-surface);
+  padding:14px; box-shadow:0 6px 18px rgba(160,120,60,.1); color:var(--zoo-ink);
+  display:flex; flex-direction:column; gap:3px;
+  animation: rateIn .34s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+.bento .tile:nth-child(1){animation-delay:.02s} .bento .tile:nth-child(2){animation-delay:.06s}
+.bento .tile:nth-child(3){animation-delay:.10s} .bento .tile:nth-child(4){animation-delay:.14s}
+.bento .tile:nth-child(5){animation-delay:.18s} .bento .tile:nth-child(6){animation-delay:.22s}
+.tile:hover { transform: translateY(-2px); box-shadow:0 10px 24px rgba(160,120,60,.16); }
+.tile:active { transform: translateY(1px) scale(.97); }
+.tile-kick { font-size:10px; font-weight:800; letter-spacing:1.2px; color:var(--zoo-primary-deep); }
+.tile-sub { font-size:11px; color:var(--zoo-brown-deep); }
+.tile b { font-size:14px; font-weight:800; }
+.tile-emoji { font-size:26px; line-height:1; margin-bottom:2px; }
+.tile-cta { margin-top:auto; font-size:11.5px; font-weight:800; color:var(--zoo-primary-deep); }
+.tile-cta.soft { color:var(--zoo-brown-deep); }
+
+/* 通栏:继续学习 */
+.tile-hero {
+  grid-column: 1 / -1; flex-direction:row; align-items:center; justify-content:space-between;
+  background: linear-gradient(120deg, #EDF8DE, #DCF0C4); border-color: rgba(111,168,62,.4);
+}
+.tile-hero-l { display:flex; flex-direction:column; gap:2px; }
+.tile-hero-num { font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:26px; font-weight:800; color:var(--zoo-primary-deep); }
+.tile-hero-sub { font-size:11.5px; color:var(--zoo-brown-deep); }
+.tile-hero-r { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.tile-hero-emoji { font-size:36px; animation: hopIdle 2.8s ease-in-out infinite; }
+@keyframes hopIdle { 0%,72%,100%{ transform:translateY(0);} 80%{ transform:translateY(-7px);} 88%{ transform:translateY(0) scaleY(.9) scaleX(1.08);} 94%{ transform:translateY(0);} }
+
+/* 组队格(跨两行,显眼) */
+.tile-team { grid-column: 1 / -1; background: linear-gradient(120deg, #FFF4E2, #FFE8C6); border-color: rgba(245,166,35,.4); }
+.tile-team-name { font-size:16px; }
+.tile-team-avatars { display:flex; margin:5px 0 3px; }
+.tile-team-avatars i {
+  width:28px; height:28px; display:grid; place-items:center; font-style:normal; font-size:15px;
+  background:#fff; border:2px solid var(--zoo-surface); border-radius:50%; margin-left:-7px; box-shadow:0 2px 5px rgba(160,120,60,.18);
+}
+.tile-team-avatars i:first-child { margin-left:0; }
+.tile-team-avatars i.npc { opacity:.55; }
+.tile-team-status { font-size:11.5px; color:#B4740A; font-weight:700; }
+.tile-sm { min-height:104px; }
+.tile-bar { margin-top:6px; height:6px; border-radius:6px; background:var(--zoo-primary-soft); overflow:hidden; }
+.tile-bar i { display:block; height:100%; border-radius:6px; background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary)); }
+.tile-tools { background: var(--zoo-cream-2); }
+
+/* ======================================================================
+   柚子扭蛋机
+   —— 手感三段:拧(机械咔哒 + 机身抖)→ 落(重量感弹跳)→ 开(光爆 + 稀有度)
+   全部只动 transform/opacity,WKWebView 里不触发重排
+   ====================================================================== */
+.gc-card { text-align: center; }
+
+.gc-wallet { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.gc-wallet-yuzu { font-size:18px; font-weight:800; color:var(--zoo-brown-deep); }
+.gc-wallet-note { flex:1; text-align:left; font-size:11px; color:var(--zoo-muted); }
+.gc-dev { border:1px dashed rgba(192,133,82,.45); background:transparent; border-radius:9px; padding:4px 8px; font-size:10px; font-weight:800; color:var(--zoo-muted); }
+.zoo-cn-toggle { border:1px solid rgba(192,133,82,.3); background:#fff; border-radius:9px; padding:4px 9px; font-size:10px; font-weight:800; color:var(--zoo-muted); }
+.zoo-cn-toggle.on { background:var(--zoo-primary-soft); border-color:rgba(143,203,94,.55); color:var(--zoo-primary-deep); }
+
+.gc-stage { position:relative; min-height:236px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; }
+
+/* --- 机身 --- */
+.gc-machine { position:relative; width:196px; height:230px; }
+.gc-machine.phase-crank { animation: gcShake .62s ease-in-out; }
+.gc-machine.phase-drop { animation: gcShake .3s ease-in-out; }
+@keyframes gcShake {
+  0%,100% { transform: translateX(0) rotate(0); }
+  15% { transform: translateX(-2.5px) rotate(-.5deg); }
+  38% { transform: translateX(2.5px) rotate(.5deg); }
+  62% { transform: translateX(-1.6px) rotate(-.3deg); }
+  84% { transform: translateX(1px) rotate(.2deg); }
+}
+
+.gc-globe {
+  position:relative; width:150px; height:150px; margin:0 auto; border-radius:50%; overflow:hidden;
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255,255,255,.95), rgba(255,255,255,.3) 34%, rgba(190,231,242,.4) 62%, rgba(143,203,94,.22) 100%);
+  border:3px solid rgba(255,255,255,.85);
+  box-shadow: inset 0 -12px 24px rgba(120,90,50,.14), inset 0 8px 16px rgba(255,255,255,.7), 0 10px 24px rgba(160,120,60,.2);
+}
+.gc-ball { position:absolute; width:26px; height:26px; border-radius:50%; box-shadow: 0 2px 5px rgba(120,90,50,.25); animation: gcFloat 4.2s ease-in-out infinite; }
+@keyframes gcFloat { 0%,100%{ transform: translate(0,0) } 33%{ transform: translate(3px,-5px) } 66%{ transform: translate(-4px,3px) } }
+.gc-machine.phase-crank .gc-ball, .gc-machine.phase-drop .gc-ball { animation-duration: .55s; }
+.gc-glare { position:absolute; left:16px; top:8px; width:34px; height:64px; border-radius:50%; background:linear-gradient(160deg, rgba(255,255,255,.9), rgba(255,255,255,0)); transform: rotate(-18deg); pointer-events:none; }
+
+.gc-body {
+  position:relative; width:196px; height:96px; margin-top:-16px;
+  border-radius:14px 14px 20px 20px;
+  background: linear-gradient(180deg,#D19A63 0%, #C08552 42%, #9C6B3F 100%);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 10px 22px rgba(140,105,55,.3);
+}
+.gc-collar { position:absolute; left:50%; top:-7px; transform:translateX(-50%); width:172px; height:16px; border-radius:10px; background:linear-gradient(180deg,#E9C08A,#C08552); box-shadow:0 2px 5px rgba(120,90,50,.25); }
+
+.gc-knob {
+  position:absolute; right:22px; top:26px; width:50px; height:50px; border-radius:50%;
+  border:3px solid #8A5C33;
+  background: radial-gradient(circle at 34% 30%, #FFF3DE, #F0CDA0 55%, #D9A96F);
+  box-shadow: inset 0 -3px 6px rgba(120,80,40,.3), 0 4px 10px rgba(90,60,30,.3);
+  display:grid; place-items:center;
+}
+.gc-knob-mark { width:5px; height:20px; border-radius:5px; background:#8A5C33; transform: translateY(-4px); }
+/* 只有「没柚子」才让旋钮发灰;抽奖过程中虽然也 disabled,但外观保持正常,
+   否则每抽一次机器都像坏了一下 */
+.gc-knob.empty { filter: grayscale(.5) brightness(.95); }
+.gc-machine.phase-crank .gc-knob { animation: gcKnob .62s cubic-bezier(.35,.02,.2,1); }
+@keyframes gcKnob { 0%{ transform: rotate(0) } 100%{ transform: rotate(360deg) } }
+
+.gc-slot {
+  position:absolute; left:24px; bottom:14px; width:66px; height:38px;
+  border-radius:9px 9px 14px 14px;
+  background: linear-gradient(180deg,#4A3423,#6E4C30);
+  box-shadow: inset 0 5px 9px rgba(0,0,0,.5), inset 0 -2px 0 rgba(255,255,255,.12);
+}
+
+/* --- 胶囊:掉落 → 静置 → 掰开 --- */
+.gc-capsule {
+  position:absolute; left:39px; top:180px; width:36px; height:36px; padding:0; border:0;
+  background:transparent; z-index:4;
+  animation: gcDrop .88s linear forwards;
+  filter: drop-shadow(0 3px 6px rgba(90,60,30,.4));
+}
+.gc-cap-half { position:absolute; left:0; width:36px; height:18px; }
+.gc-cap-half.top { top:0; border-radius:18px 18px 2px 2px; background:linear-gradient(180deg,#FFE1A4,#F5A623); box-shadow: inset 3px 4px 6px rgba(255,255,255,.55); }
+.gc-cap-half.bot { top:18px; border-radius:2px 2px 18px 18px; background:linear-gradient(180deg,#FFFDF8,#E4D8C2); box-shadow: inset -3px -4px 6px rgba(150,120,80,.25); }
+.gc-capsule.r-r .gc-cap-half.top { background:linear-gradient(180deg,#BFE4FB,#5AA9E6); }
+.gc-capsule.r-sr .gc-cap-half.top { background:linear-gradient(180deg,#FFF3C4,#FFC43D); }
+/* 传说蛋自带一点金光——经典的「有戏」暗示,值得留 */
+.gc-capsule.r-sr { filter: drop-shadow(0 0 9px rgba(245,166,35,.85)) drop-shadow(0 3px 6px rgba(90,60,30,.4)); }
+
+@keyframes gcDrop {
+  0%   { transform: translate(41px,-123px) scale(.5) rotate(0deg); opacity:0; animation-timing-function: cubic-bezier(.5,0,.85,1); }
+  12%  { opacity:1; }
+  52%  { transform: translate(5px,0) scale(1) rotate(200deg); animation-timing-function: cubic-bezier(.2,.6,.4,1); }
+  56%  { transform: translate(4px,2px) scale(1.1,.86) rotate(206deg); }
+  70%  { transform: translate(0,-20px) scale(1) rotate(238deg); animation-timing-function: cubic-bezier(.5,0,.85,1); }
+  82%  { transform: translate(0,0) scale(1.07,.9) rotate(252deg); }
+  92%  { transform: translate(0,-6px) scale(1) rotate(258deg); }
+  100% { transform: translate(0,0) scale(1) rotate(262deg); }
+}
+.gc-machine.phase-capsule .gc-capsule { animation: gcCapWiggle 1.7s ease-in-out infinite; }
+@keyframes gcCapWiggle {
+  0%,100% { transform: translate(0,0) scale(1) rotate(262deg); }
+  30%     { transform: translate(0,-4px) scale(1) rotate(256deg); }
+  65%     { transform: translate(0,-1px) scale(1) rotate(267deg); }
+}
+.gc-tap-ring { position:absolute; left:50%; top:50%; width:36px; height:36px; margin:-18px 0 0 -18px; border-radius:50%; border:2px solid rgba(245,166,35,.9); animation: gcRing 1.4s ease-out infinite; pointer-events:none; }
+@keyframes gcRing { 0%{ transform:scale(.9); opacity:.9 } 100%{ transform:scale(2.1); opacity:0 } }
+
+.gc-machine.phase-open .gc-cap-half.top { animation: gcCapTop .42s cubic-bezier(.3,1.1,.6,1) forwards; }
+.gc-machine.phase-open .gc-cap-half.bot { animation: gcCapBot .42s cubic-bezier(.3,1.1,.6,1) forwards; }
+@keyframes gcCapTop { to { transform: translate(-16px,-42px) rotate(-62deg); opacity:0; } }
+@keyframes gcCapBot { to { transform: translate(14px,26px) rotate(40deg); opacity:0; } }
+.gc-machine.phase-open .gc-capsule::after {
+  content:""; position:absolute; left:50%; top:50%; width:20px; height:20px; margin:-10px 0 0 -10px;
+  border-radius:50%; background: radial-gradient(circle, #fff 30%, rgba(255,222,150,.75) 60%, transparent 72%);
+  animation: gcFlash .42s ease-out forwards;
+}
+@keyframes gcFlash { 0%{ transform:scale(.3); opacity:1 } 100%{ transform:scale(7); opacity:0 } }
+
+/* --- 漫画式效果音:跟着动作飞出来,不翻译 --- */
+/* z-index 要压过开奖面板(6):开奖那一下的「キラキラ」正是要飘在面板上面 */
+.zoo-fx { position:absolute; inset:0; z-index:7; pointer-events:none; }
+.zoo-fx-word {
+  position:absolute; left:50%; white-space:nowrap;
+  font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
+  font-size:20px; font-weight:900; letter-spacing:1px; color:var(--zoo-ink);
+  /* 描白边:压在机器和玻璃罩上也读得清 */
+  text-shadow: 0 0 3px #FFFDF8, 1px 1px 0 #FFFDF8, -1px 1px 0 #FFFDF8, 1px -1px 0 #FFFDF8, -1px -1px 0 #FFFDF8, 0 3px 6px rgba(140,105,55,.28);
+  animation: gcFx 1s cubic-bezier(.2,.9,.35,1) forwards;
+}
+.zoo-fx-word.t-warm { color:#B4740A; font-size:22px; }
+.zoo-fx-word.t-gold { color:var(--zoo-orange); font-size:26px; }
+@keyframes gcFx {
+  0%   { transform: translate(calc(-50% + var(--fx-x)), 6px) scale(.5) rotate(-9deg); opacity:0; }
+  22%  { transform: translate(calc(-50% + var(--fx-x)), -4px) scale(1.18) rotate(4deg); opacity:1; }
+  38%  { transform: translate(calc(-50% + var(--fx-x)), -6px) scale(1) rotate(-2deg); opacity:1; }
+  72%  { opacity:1; }
+  100% { transform: translate(calc(-50% + var(--fx-x)), -30px) scale(.94) rotate(0deg); opacity:0; }
+}
+
+/* --- 水豚旁白 --- */
+.zoo-say {
+  display:flex; align-items:center; gap:9px; width:100%; margin-top:8px; padding:0;
+  border:0; background:transparent; text-align:left;
+}
+.zoo-say-capy { flex:none; animation: breathe 4s ease-in-out infinite; }
+.zoo-bubble {
+  position:relative; flex:1; min-width:0;
+  border:1.5px solid rgba(143,203,94,.4); border-radius:14px; background:var(--zoo-primary-soft);
+  padding:8px 11px; animation: gcBubbleIn .28s cubic-bezier(.34,1.5,.6,1);
+}
+/* 气泡尖角指向水豚 */
+.zoo-bubble::before, .zoo-bubble::after {
+  content:""; position:absolute; left:-8px; top:50%; margin-top:-6px;
+  border:6px solid transparent; border-right-color:#C3E0A0;
+}
+.zoo-bubble::after { left:-6px; border-right-color: var(--zoo-primary-soft); }
+.zoo-bubble b {
+  display:block; font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
+  font-size:15px; font-weight:800; color:#3D5222;
+}
+.zoo-bubble small { display:block; margin-top:1px; font-size:10.5px; color:rgba(90,110,60,.6); }
+@keyframes gcBubbleIn { 0%{ opacity:0; transform:translateX(-5px) scale(.97) } 100%{ opacity:1; transform:none } }
+
+/* --- 开奖面板 --- */
+.gc-reveal {
+  position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  border-radius:18px; overflow:hidden;
+  background: radial-gradient(circle at 50% 42%, rgba(255,253,248,.98) 52%, rgba(253,241,220,.96));
+  animation: gcRevealIn .3s cubic-bezier(.34,1.4,.6,1);
+}
+@keyframes gcRevealIn { 0%{ opacity:0; transform:scale(.96) } 100%{ opacity:1; transform:none } }
+/* 传说:背后一圈慢慢转的光芒(边缘用遮罩淡出,免得变成海报式放射线) */
+.gc-reveal.r-sr::before {
+  content:""; position:absolute; width:300px; height:300px; left:50%; margin-left:-150px; top:calc(42% - 150px);
+  background: repeating-conic-gradient(rgba(245,166,35,.14) 0 4deg, transparent 4deg 14deg);
+  -webkit-mask-image: radial-gradient(circle, #000 12%, rgba(0,0,0,.55) 42%, transparent 68%);
+  mask-image: radial-gradient(circle, #000 12%, rgba(0,0,0,.55) 42%, transparent 68%);
+  animation: gcRays 14s linear infinite; pointer-events:none;
+}
+@keyframes gcRays { to { transform: rotate(360deg) } }
+
+.gc-burst { position:absolute; inset:0; pointer-events:none; }
+.gc-spark { position:absolute; left:50%; top:42%; width:8px; height:8px; margin:-4px 0 0 -4px; border-radius:50%; background:var(--zoo-orange); animation: gcSpark .66s ease-out forwards; }
+@keyframes gcSpark {
+  0%   { transform: rotate(var(--a)) translateY(-6px) scale(1); opacity:1; }
+  100% { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(.15); opacity:0; }
+}
+.gc-reveal.r-n .gc-spark { background:#D9C7AC; }
+.gc-reveal.r-r .gc-spark { background:#7FC8E8; }
+
+.gc-rar { position:relative; font-family:"Hiragino Maru Gothic ProN","Noto Sans JP",sans-serif; font-size:11.5px; font-weight:800; letter-spacing:2px; }
+.gc-rar i { font-style:normal; margin-left:5px; font-size:10px; opacity:.55; letter-spacing:0; }
+.gc-prize-icon { position:relative; font-size:60px; line-height:1.1; animation: gcPrizeIn .5s cubic-bezier(.34,1.6,.5,1) backwards; filter: drop-shadow(0 6px 12px rgba(140,105,55,.3)); }
+.gc-reveal.r-sr .gc-prize-icon { filter: drop-shadow(0 0 16px rgba(245,166,35,.75)) drop-shadow(0 6px 12px rgba(140,105,55,.3)); }
+@keyframes gcPrizeIn { 0%{ transform: scale(.2) rotate(-24deg); opacity:0 } 60%{ transform: scale(1.16) rotate(6deg); opacity:1 } 100%{ transform:none } }
+
+/* 物品名:日语当主标题(带振り仮名),点一下朗读;中文降为副标题 */
+.gc-prize-ja {
+  position:relative; margin-top:2px; border:0; background:transparent; padding:2px 4px;
+  font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:23px; font-weight:800; color:var(--zoo-ink);
+}
+.gc-prize-ja em { font-style:normal; margin-left:5px; font-size:15px; color:var(--zoo-primary-dark); opacity:.7; vertical-align:super; }
+.gc-prize-ja:active { transform: scale(.96); }
+.gc-prize-cn { position:relative; font-size:12.5px; color:var(--zoo-brown-deep); }
+.gc-prize-sub { position:relative; margin-top:3px; font-family:"Hiragino Maru Gothic ProN","Noto Sans JP",sans-serif; font-size:12px; color:var(--zoo-muted); }
+
+/* 振り仮名:小、淡、不抢正文 */
+ruby rt { font-family:"Hiragino Maru Gothic ProN","Noto Sans JP",sans-serif; font-size:.42em; font-weight:700; color:var(--zoo-brown); letter-spacing:0; transform: translateY(2px); }
+.gc-reveal-btns { position:relative; display:flex; gap:9px; margin-top:14px; }
+.gc-btn { border:0; border-radius:14px; background:var(--zoo-primary); padding:11px 18px; color:var(--zoo-on-primary); font-weight:800; font-size:13px; box-shadow:0 6px 16px rgba(111,168,62,.3); }
+.gc-btn.ghost { background:#fff; border:1.5px solid rgba(192,133,82,.35); color:var(--zoo-brown-deep); box-shadow:none; }
+.gc-btn:disabled { background:var(--zoo-cream-2); color:var(--zoo-muted); box-shadow:none; }
+
+/* --- 保底 + 图鉴 --- */
+.gc-pity { margin-top:6px; font-size:11px; color:var(--zoo-muted); text-align:left; }
+.gc-pity-bar { margin-top:5px; height:6px; border-radius:6px; background:var(--zoo-cream-2); overflow:hidden; }
+.gc-pity-bar i { display:block; height:100%; border-radius:6px; background:linear-gradient(90deg,#FFD98A,var(--zoo-orange)); transition:width .5s cubic-bezier(.34,1.4,.6,1); }
+
+.zoo-dex-head { display:flex; align-items:baseline; justify-content:space-between; margin:16px 0 8px; border-top:1px solid rgba(192,133,82,.2); padding-top:14px; }
+.zoo-dex-head b { font-size:13.5px; font-weight:800; }
+.zoo-dex-head small { font-size:12px; color:var(--zoo-brown-deep); }
+.zoo-dex { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; }
+.zoo-dex-item { position:relative; display:grid; place-items:center; height:46px; padding:0; border-radius:13px; border:1.5px solid rgba(192,133,82,.2); background:var(--zoo-cream-2); transition: transform .16s cubic-bezier(.34,1.7,.5,1), box-shadow .2s; }
+.zoo-dex-item:not(:disabled):active { transform: scale(.92); }
+.zoo-dex-item.peek { box-shadow: 0 0 0 2px rgba(143,203,94,.55); }
+.zoo-dex-item .zoo-dex-icon { font-size:22px; opacity:.3; filter:grayscale(1); }
+.zoo-dex-item.got { background:var(--zoo-surface); border-color:rgba(143,203,94,.45); }
+.zoo-dex-item.got .zoo-dex-icon { opacity:1; filter:none; }
+.zoo-dex-item.got.r-r { border-color:rgba(90,169,230,.55); background:linear-gradient(180deg,#F4FBFF,#E7F4FD); }
+.zoo-dex-item.got.r-sr { border-color:rgba(245,166,35,.65); background:linear-gradient(180deg,#FFF8E7,#FFEFC9); box-shadow:0 3px 10px rgba(245,166,35,.22); }
+.zoo-dex-count { position:absolute; right:3px; bottom:2px; font-style:normal; font-size:9px; font-weight:800; color:var(--zoo-brown-deep); }
+
+/* 图鉴下方那一行:点格子才出现,是「顺手看一眼」不是词表 */
+.zoo-peek { margin:10px 0 0; min-height:22px; text-align:center; font-size:12px; }
+.zoo-peek b { font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:16px; font-weight:800; }
+.zoo-peek span { margin-left:6px; color:var(--zoo-brown-deep); }
+.zoo-peek .zoo-peek-hint { margin:0; color:var(--zoo-muted); font-size:11px; }
+
+/* ======================================================================
+   水豚钓鱼
+   —— 节奏三段:蓄力(力度来回摆)→ 甩竿落水 → 等(夹假动作)→ 咬钩 0.8 秒合わせ
+   舞台固定 300×236,好让钓线的长度/角度按坐标算得准
+   ====================================================================== */
+.fp-card { text-align:center; }
+.fp-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.fp-stat { font-family:"Hiragino Maru Gothic ProN","Noto Sans JP",sans-serif; font-size:11.5px; color:var(--zoo-brown-deep); }
+.fp-stat b { font-size:16px; color:var(--zoo-primary-deep); margin:0 2px; }
+.fp-top .zoo-cn-toggle { margin-left:auto; }
+
+.fp-stage {
+  position:relative; width:300px; height:236px; margin:0 auto; overflow:hidden;
+  border-radius:18px; border:1.5px solid rgba(192,133,82,.24);
+}
+.fp-sky { position:absolute; inset:0 0 98px 0; background:linear-gradient(180deg,#DDF0FF,#EFF9E6); }
+.fp-far { position:absolute; left:0; right:0; top:86px; height:26px; background:linear-gradient(180deg,#CFE6B4,#B9D89A); border-radius:50% 50% 0 0 / 22px 22px 0 0; }
+.fp-water { position:absolute; left:0; right:0; top:112px; bottom:0; background:linear-gradient(180deg,#9FD8EA 0%,#7CC4DD 45%,#5FAFCE 100%); overflow:hidden; }
+.fp-wave { position:absolute; left:-40%; width:180%; height:7px; border-radius:50%; background:rgba(255,255,255,.2); filter:blur(2px); }
+.fp-wave.w1 { top:22px; animation: fpWave 7s linear infinite; }
+.fp-wave.w2 { top:66px; opacity:.55; animation: fpWave 11s linear infinite reverse; }
+@keyframes fpWave { 0%{ transform:translateX(0) } 100%{ transform:translateX(40px) } }
+
+/* 岸边 + 水豚 + 竿 */
+.fp-bank { position:absolute; left:-12px; top:104px; width:112px; height:140px; background:linear-gradient(180deg,#C7E3A6,#9FC978); border-radius:0 30px 0 0; box-shadow:2px -2px 0 rgba(255,255,255,.35); }
+.fp-angler { position:absolute; left:22px; top:70px; }
+.fp-capy { display:inline-block; animation: breathe 4s ease-in-out infinite; }
+.fp-capy.cheer { animation: capyCheer .5s ease; }
+/* 竿:握在水豚身侧 (72,100),竿尖正好落在 (118,40) —— 钓线的起点 */
+.fp-rod {
+  position:absolute; left:50px; top:30px; width:76px; height:3px; border-radius:3px;
+  background:linear-gradient(90deg,#9C6B3F,#D5A56E);
+  transform-origin: left center; transform: rotate(-52deg);
+}
+.fp-stage.phase-charge .fp-rod { transform: rotate(-38deg); transition: transform .18s ease; }
+.fp-stage.phase-cast .fp-rod { animation: fpSwing .5s cubic-bezier(.3,1.3,.5,1); }
+@keyframes fpSwing { 0%{ transform:rotate(-34deg) } 30%{ transform:rotate(-72deg) } 100%{ transform:rotate(-52deg) } }
+.fp-stage.phase-reel .fp-rod { animation: fpBend .6s ease-in-out infinite; }
+@keyframes fpBend { 0%,100%{ transform:rotate(-52deg) } 50%{ transform:rotate(-62deg) } }
+
+/* 钓线:长度和角度由 JS 按坐标算,这里只负责显示 */
+.fp-line {
+  position:absolute; left:118px; top:40px; height:1.5px; background:rgba(60,50,40,.32);
+  transform-origin: left center; opacity:0; transition:opacity .2s;
+}
+.fp-line.on { opacity:1; }
+
+/* 浮标:飞出 → 浮沉 → 假动作抖 → 咬钩下沉 */
+.fp-bobber {
+  position:absolute; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%;
+  background:linear-gradient(180deg,#FF7B6B 0 50%, #FFFDF8 50% 100%);
+  box-shadow:0 2px 5px rgba(40,60,70,.35); z-index:3;
+  transform: translate(0,0);
+}
+.fp-stage.phase-cast .fp-bobber { animation: fpCast .5s cubic-bezier(.35,.05,.5,1); }
+@keyframes fpCast {
+  0%   { transform: translate(var(--dx), var(--dy)) scale(.6); }
+  55%  { transform: translate(calc(var(--dx) * .35), calc(var(--dy) - 30px)) scale(1); }
+  100% { transform: translate(0,0) scale(1); }
+}
+.fp-stage.phase-wait .fp-bobber { animation: fpBob 2.4s ease-in-out infinite; }
+@keyframes fpBob { 0%,100%{ transform:translate(0,0) } 50%{ transform:translate(0,-3px) } }
+.fp-bobber.twitch { animation: fpTwitch .42s ease; }
+@keyframes fpTwitch { 0%,100%{ transform:translate(0,0) } 25%{ transform:translate(0,4px) } 55%{ transform:translate(0,-2px) } }
+.fp-stage.phase-bite .fp-bobber { animation: fpSink .35s cubic-bezier(.4,0,.6,1) infinite alternate; }
+@keyframes fpSink { 0%{ transform:translate(0,0) } 100%{ transform:translate(0,9px) scale(.9) } }
+.fp-stage.phase-reel .fp-bobber { animation: fpReel .5s ease-in-out infinite alternate; }
+@keyframes fpReel { 0%{ transform:translate(0,4px) } 100%{ transform:translate(-8px,-2px) } }
+
+.fp-ripple {
+  position:absolute; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%;
+  border:2px solid rgba(255,255,255,.9); animation: fpRipple .9s ease-out forwards; z-index:2;
+}
+/* 同样从 width/height/margin 改成 scale:一局要放两次(落水 + 咬钩),值得改 */
+@keyframes fpRipple {
+  0%   { transform: scale(.83); opacity:.95; }
+  100% { transform: scale(7.2, 2.2); opacity:0; }
+}
+
+/* 顿帧(ヒットストップ):合わせ命中的那一瞬,画面冻住 110ms + 一记白闪 + 轻微推镜。
+   纯时序技巧,和美术无关——占位 emoji 阶段就该调好,换成画师的图也不用改。
+   白闪自己不能被冻,所以从暂停规则里排除掉。 */
+.fp-stage.hit *:not(.fp-hit-flash) { animation-play-state: paused !important; }
+.fp-stage.hit { animation: fpPunch .24s cubic-bezier(.3,1.5,.5,1); }
+@keyframes fpPunch { 0%{ transform:scale(1) } 35%{ transform:scale(1.035) } 100%{ transform:scale(1) } }
+.fp-hit-flash { position:absolute; inset:0; z-index:9; background:#fff; pointer-events:none; animation: fpFlash .17s ease-out forwards; }
+@keyframes fpFlash { 0%{ opacity:.8 } 100%{ opacity:0 } }
+
+/* 咬钩:水面整片闪一下,别让人错过那 0.8 秒 */
+.fp-alert { position:absolute; left:0; right:0; top:112px; bottom:0; background:rgba(255,215,120,.28); animation: fpAlert .4s ease-in-out infinite alternate; pointer-events:none; }
+@keyframes fpAlert { 0%{ opacity:.25 } 100%{ opacity:.7 } }
+
+/* 结果:直接盖在钓场上,不另开页面 */
+.fp-result {
+  position:absolute; inset:0; z-index:8; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  background: radial-gradient(circle at 50% 44%, rgba(255,253,248,.99) 55%, rgba(253,241,220,.97));
+  animation: gcRevealIn .3s cubic-bezier(.34,1.4,.6,1);
+}
+.fp-result-icon { font-size:54px; line-height:1.1; animation: gcPrizeIn .5s cubic-bezier(.34,1.6,.5,1) backwards; filter:drop-shadow(0 6px 12px rgba(140,105,55,.3)); }
+.fp-result.t-l .fp-result-icon { filter: drop-shadow(0 0 16px rgba(245,166,35,.75)) drop-shadow(0 6px 12px rgba(140,105,55,.3)); }
+.fp-result-tier { font-family:"Hiragino Maru Gothic ProN","Noto Sans JP",sans-serif; font-size:11.5px; font-weight:800; letter-spacing:1.6px; }
+.fp-result-tier i { font-style:normal; margin-left:5px; font-size:10px; opacity:.55; letter-spacing:0; }
+.fp-result-ja { border:0; background:transparent; padding:1px 4px; font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:22px; font-weight:800; color:var(--zoo-ink); }
+.fp-result-ja em { font-style:normal; margin-left:5px; font-size:14px; color:var(--zoo-primary-dark); opacity:.7; vertical-align:super; }
+.fp-result-cm { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:15px; font-weight:800; color:var(--zoo-brown-deep); }
+.fp-result-cn { font-size:12px; color:var(--zoo-brown-deep); max-width:22em; }
+.fp-miss-ja { font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:21px; font-weight:800; }
+.fp-badge { margin-top:5px; border-radius:20px; background:var(--zoo-primary-soft); color:var(--zoo-primary-deep); font-size:11px; font-weight:800; padding:3px 11px; }
+.fp-badge.yuzu { background:var(--zoo-orange-soft); color:#B4740A; }
+
+/* 蓄力条 + 主按钮 */
+.fp-meter { position:relative; height:10px; margin:12px 0 10px; border-radius:10px; background:var(--zoo-cream-2); overflow:hidden; opacity:.5; transition:opacity .2s; }
+.fp-meter.on { opacity:1; }
+/* 蓄力条:铺满后用 scaleX 缩放。原来每帧写 width,等于蓄力那 1~2 秒每帧重排 */
+.fp-meter-fill { display:block; width:100%; height:100%; border-radius:10px; background:linear-gradient(90deg,var(--zoo-primary),var(--zoo-orange)); transform-origin:left center; transform:scaleX(0); }
+.fp-meter-far { position:absolute; right:8px; top:-1px; font-style:normal; font-size:8px; font-weight:800; color:rgba(120,90,50,.5); letter-spacing:1px; }
+.fp-action {
+  width:100%; border:0; border-radius:14px; background:var(--zoo-primary); padding:14px;
+  color:var(--zoo-on-primary); font-family:"Hiragino Maru Gothic ProN","Noto Sans JP",sans-serif;
+  font-weight:800; font-size:15px; box-shadow:0 6px 16px rgba(111,168,62,.3);
+  touch-action:none; user-select:none; -webkit-user-select:none;
+}
+.fp-action:active { transform:translateY(1px) scale(.98); }
+.fp-action.strike { background:var(--zoo-orange); color:#3A2E22; box-shadow:0 6px 18px rgba(245,166,35,.45); animation: fpStrike .5s ease-in-out infinite alternate; }
+@keyframes fpStrike { 0%{ transform:scale(1) } 100%{ transform:scale(1.03) } }
+.fp-action:disabled { background:var(--zoo-cream-2); color:var(--zoo-muted); box-shadow:none; }
+
+.fp-dex { grid-template-columns:repeat(7,1fr); }
+.fp-dex .zoo-dex-item { height:40px; border-radius:11px; }
+.fp-dex .zoo-dex-icon { font-size:19px; }
+
+/* ===== 组队面板 ===== */
+.tm-card { margin-bottom:12px; }
+.tm-head { display:flex; align-items:center; justify-content:space-between; }
+.tm-head b { font-family:"Hiragino Mincho ProN","Noto Serif JP",serif; font-size:17px; font-weight:800; display:block; }
+.tm-head small { color:var(--zoo-brown-deep); font-size:12px; }
+.tm-nuts { font-size:12px; color:var(--zoo-brown-deep); text-align:right; }
+.tm-nuts b { display:block; font-size:19px; color:var(--zoo-primary-deep); }
+.tm-progress { margin:12px 0 4px; height:8px; border-radius:8px; background:var(--zoo-primary-soft); overflow:hidden; }
+.tm-progress i { display:block; height:100%; border-radius:8px; background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary)); transition:width .5s cubic-bezier(.34,1.4,.6,1); }
+.tm-members { list-style:none; margin:10px 0 0; padding:0; }
+.tm-members li { display:flex; align-items:center; gap:9px; padding:9px 0; border-top:1px solid rgba(192,133,82,.16); }
+.tm-members li:first-child { border-top:0; }
+.tm-av { position:relative; width:32px; height:32px; flex:none; display:grid; place-items:center; font-size:17px; background:var(--zoo-cream-2); border-radius:50%; }
+.tm-dot { position:absolute; right:-1px; bottom:-1px; width:10px; height:10px; border-radius:50%; background:var(--zoo-primary); border:2px solid var(--zoo-surface); }
+.tm-name { flex:1; font-weight:700; font-size:13.5px; }
+.tm-npc { margin-left:5px; font-style:normal; font-size:9px; font-weight:800; color:#B4740A; background:var(--zoo-orange-soft); border-radius:5px; padding:1px 4px; vertical-align:middle; }
+.tm-mnuts { font-size:12px; color:var(--zoo-brown-deep); }
+.tm-state.ok { font-size:11px; font-weight:800; color:var(--zoo-primary-deep); background:var(--zoo-primary-soft); border-radius:9px; padding:4px 9px; }
+.tm-poke { border:1px solid rgba(245,166,35,.5); background:var(--zoo-orange-soft); color:#B4740A; border-radius:9px; padding:5px 10px; font-size:11px; font-weight:800; }
+.tm-poke.sent { background:var(--zoo-primary-soft); border-color:var(--zoo-primary-dark); color:var(--zoo-primary-deep); }
+
+.tm-invite { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.tm-invite-label { display:block; font-size:10px; font-weight:800; letter-spacing:1.2px; color:var(--zoo-muted); }
+.tm-key { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:17px; letter-spacing:1px; color:var(--zoo-brown-deep); }
+.tm-copy { flex:none; border:0; border-radius:12px; background:var(--zoo-primary); color:var(--zoo-on-primary); padding:10px 15px; font-weight:800; font-size:12.5px; box-shadow:0 5px 14px rgba(111,168,62,.3); }
+.tm-copy.done { background:var(--zoo-primary-deep); color:#fff; }
+
+.tm-plaza { display:flex; flex-direction:column; gap:9px; }
+.tm-plaza-item { display:flex; align-items:center; gap:11px; padding:13px 14px; }
+.tm-plaza-emoji { font-size:25px; }
+.tm-plaza-info { flex:1; min-width:0; }
+.tm-plaza-info b { display:block; font-size:14px; font-weight:800; }
+.tm-plaza-info small { color:var(--zoo-brown-deep); font-size:11.5px; }
+.tm-chip { display:inline-block; margin-right:6px; background:var(--zoo-primary-soft); color:var(--zoo-primary-deep); border-radius:6px; padding:1px 6px; font-weight:800; font-size:10px; }
+.tm-join { flex:none; border:1.5px solid var(--zoo-primary-dark); background:var(--zoo-primary); color:var(--zoo-on-primary); border-radius:12px; padding:8px 15px; font-weight:800; font-size:12.5px; }
+.tm-join:disabled { background:var(--zoo-cream-2); border-color:rgba(192,133,82,.24); color:var(--zoo-muted); }
+.tm-join.done { background:var(--zoo-primary-deep); border-color:var(--zoo-primary-deep); color:#fff; }

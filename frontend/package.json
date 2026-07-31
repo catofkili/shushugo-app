@@ -6,6 +6,7 @@
   "scripts": {
     "prebuild": "node scripts/verify-release-db.mjs",
     "dev": "vite",
+    "zoo": "vite --config zoo-lab/vite.config.ts --host",
     "build": "vite build",
     "preview": "vite preview",
     "check": "tsc --noEmit",
