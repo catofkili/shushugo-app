@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#6d7070}
+  ::selection{background:rgba(129,216,207,.35)}
+  a{color:#81D8CF;text-decoration:none}
+  a:hover{color:#a3e4dc}
+  button{font-family:inherit}
+  .mn-sc::-webkit-scrollbar{width:9px;height:9px}
+  .mn-sc::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:5px}
+  .jps{font-family:'Noto Serif JP',serif}
+  @keyframes mnUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes mnFlip{from{opacity:0;transform:rotateX(-12deg) translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div class="mn-sc" style="display:flex;min-height:100vh;background:linear-gradient(135deg,#686b6b 0%,#787b7b 50%,#686b6b 100%);font-family:'Inter','Noto Sans SC','Noto Sans JP',system-ui,sans-serif;color:#ffffff">
+
+  <!-- SIDEBAR -->
+  <aside style="width:250px;flex:none;background:rgba(255,255,255,.11);border-right:1px solid rgba(255,255,255,.16);padding:22px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+    <button onClick="{{ goHome }}" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:6px 6px 0">
+      <span class="jps" style="width:42px;height:42px;border-radius:13px;background:#81D8CF;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:700;color:#2f3333;box-shadow:0 5px 14px rgba(0,0,0,.2)">語</span>
+      <span style="display:flex;flex-direction:column;line-height:1.15;text-align:left">
+        <span style="font-weight:800;font-size:16px;letter-spacing:-.3px;color:#fff">Master Nihongo</span>
+        <span style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,.6);font-weight:600">VOCAB · GRAMMAR</span>
+      </span>
+    </button>
+
+    <div style="margin:20px 6px 4px;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:13px;padding:10px 13px">
+      <span style="color:rgba(255,255,255,.5);font-size:14px">⌕</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.5);font-weight:500">語彙・文法を検索</span>
+    </div>
+
+    <nav style="margin-top:16px;display:flex;flex-direction:column;gap:5px">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+        <button onClick="{{ n.onClick }}" style="{{ n.style }}">
+          <span style="{{ n.glyphStyle }}">{{ n.glyph }}</span>
+          <span style="flex:1;text-align:left">{{ n.label }}</span>
+          <sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}"><span style="{{ n.badgeStyle }}">{{ n.badge }}</span></sc-if>
+        </button>
+      </sc-for>
+    </nav>
+
+    <div style="margin-top:auto;padding:16px 12px 4px;border-top:1px solid rgba(255,255,255,.14)">
+      <p class="jps" style="font-size:15px;font-weight:600;color:#fff">本日の目安</p>
+      <p style="font-size:12.5px;color:rgba(255,255,255,.68);line-height:1.7;margin-top:6px">先做单词，再进语法。<br>文法は短く、毎日続ける。</p>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px;background:rgba(255,183,89,.16);border-radius:11px;padding:9px 12px">
+        <span style="width:8px;height:8px;border-radius:2px;background:#FFB759;transform:rotate(45deg)"></span>
+        <span style="font-size:12.5px;color:#FFCB84;font-weight:700">连续 {{ streak }} 天</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="mn-sc" style="flex:1;min-width:0;overflow-y:auto;height:100vh;padding:34px 44px 80px">
+
+    <!-- ================= HOME (综合主页) ================= -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1000px;margin:0 auto;animation:mnUp .35s ease">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+        <div>
+          <p style="font-size:12.5px;letter-spacing:.5px;color:rgba(255,255,255,.55);font-weight:700;font-family:'Noto Sans JP'">2026年 7月 23日 · 木曜日</p>
+          <h1 style="font-size:27px;font-weight:800;letter-spacing:-.4px;margin-top:5px;color:#fff">おかえり、佐藤さん。</h1>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:#81D8CF;background:rgba(129,216,207,.14);padding:7px 14px;border-radius:20px">综合主页 · 可在「我的」切换</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.3fr .85fr;gap:22px">
+        <section style="background:#464949;border:1px solid rgba(129,216,207,.3);border-radius:22px;padding:28px 30px;position:relative;overflow:hidden">
+          <span style="position:absolute;right:-50px;bottom:-50px;width:150px;height:150px;border-radius:50%;background:rgba(129,216,207,.08)"></span>
+          <p style="font-size:12px;font-weight:800;letter-spacing:1.5px;color:#81D8CF;font-family:'Noto Sans JP'">今日の学習 · TODAY</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 24px">
+            <div><div class="jps" style="font-size:32px;font-weight:700;line-height:1;color:#fff">{{ reviewTarget }}</div><div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:5px;white-space:nowrap">待复习</div></div>
+            <div style="border-left:1px solid rgba(255,255,255,.16);padding-left:10px"><div class="jps" style="font-size:32px;font-weight:700;line-height:1;color:#fff">{{ newWords }}</div><div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:5px;white-space:nowrap">新单词</div></div>
+            <div style="border-left:1px solid rgba(255,255,255,.16);padding-left:10px"><div class="jps" style="font-size:32px;font-weight:700;line-height:1;color:#fff">2</div><div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:5px;white-space:nowrap">语法单元</div></div>
+          </div>
+          <p style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:22px">预计约 35 分钟 · 复习优先，然后是新词与语法。</p>
+          <button onClick="{{ goWord }}" style="background:#81D8CF;color:#2f3333;border:none;padding:14px 26px;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .18s" style-hover="transform:translateY(-2px)">开始今日学习 →</button>
+        </section>
+
+        <section style="background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:22px;padding:24px 26px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+            <h2 style="font-size:15px;font-weight:800;color:#fff">连续打卡</h2>
+            <span style="font-size:12px;color:#FFCB84;font-weight:800">{{ streak }} 天</span>
+          </div>
+          <div style="display:flex;gap:7px">
+            <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+              <div style="flex:1;text-align:center">
+                <div style="{{ d.dotStyle }}">{{ d.icon }}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:7px;font-weight:600;font-family:'Noto Sans JP'">{{ d.d }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,.5);margin-top:16px;line-height:1.6">本周已 4 天 · 温和坚持，不必焦虑。</p>
+        </section>
+      </div>
+
+      <section style="background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:22px;padding:24px 28px;margin-top:22px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px">
+          <h2 style="font-size:15px;font-weight:800;color:#fff">进度概览 · 词汇掌握</h2>
+          <button onClick="{{ goToolbox }}" style="background:none;border:none;color:#81D8CF;font-size:12.5px;font-weight:700;cursor:pointer">全部进度 →</button>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:16px;height:120px">
+          <sc-for list="{{ jlptBars }}" as="b" hint-placeholder-count="5">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end">
+              <span style="font-size:11px;color:rgba(255,255,255,.5);font-weight:700;margin-bottom:6px">{{ b.pct }}%</span>
+              <div style="width:100%;max-width:46px;background:rgba(129,216,207,.14);border-radius:9px 9px 4px 4px;height:88px;display:flex;align-items:flex-end;overflow:hidden">
+                <div style="{{ b.barStyle }}"></div>
+              </div>
+              <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:800;margin-top:8px">{{ b.level }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px">
+        <section>
+          <h2 style="font-size:15px;font-weight:800;margin-bottom:14px;color:#fff">快速进入</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <button onClick="{{ goWord }}" style="{{ entryStyle }}" style-hover="border-color:rgba(129,216,207,.5);transform:translateY(-2px)"><span style="{{ entGlyph }}">単</span><span><b style="display:block;font-size:14px;color:#fff">单词学习</b><span style="font-size:12px;color:rgba(255,255,255,.5)">42 待复习</span></span></button>
+            <button onClick="{{ goGrammar }}" style="{{ entryStyle }}" style-hover="border-color:rgba(129,216,207,.5);transform:translateY(-2px)"><span style="{{ entGlyph }}">文</span><span><b style="display:block;font-size:14px;color:#fff">语法</b><span style="font-size:12px;color:rgba(255,255,255,.5)">2 单元待学</span></span></button>
+            <button onClick="{{ goToolbox }}" style="{{ entryStyle }}" style-hover="border-color:rgba(129,216,207,.5);transform:translateY(-2px)"><span style="{{ entGlyph }}">具</span><span><b style="display:block;font-size:14px;color:#fff">工具箱</b><span style="font-size:12px;color:rgba(255,255,255,.5)">进度 · 模式</span></span></button>
+            <button onClick="{{ goProfile }}" style="{{ entryStyle }}" style-hover="border-color:rgba(129,216,207,.5);transform:translateY(-2px)"><span style="{{ entGlyph }}">★</span><span><b style="display:block;font-size:14px;color:#fff">收藏</b><span style="font-size:12px;color:rgba(255,255,255,.5)">36 个词</span></span></button>
+          </div>
+        </section>
+        <section>
+          <h2 style="font-size:15px;font-weight:800;margin-bottom:14px;color:#fff">今日推荐</h2>
+          <button onClick="{{ goSeem }}" style="width:100%;text-align:left;background:#464949;border:1px solid rgba(255,255,255,.14);border-left:3px solid #FFB759;border-radius:16px;padding:20px 22px;cursor:pointer;transition:transform .18s" style-hover="transform:translateY(-2px)">
+            <span style="font-size:11.5px;font-weight:800;letter-spacing:.5px;color:#FFCB84;font-family:'Noto Sans JP'">おすすめ · 基于近期错误</span>
+            <p style="font-size:14.5px;line-height:1.7;font-weight:600;margin-top:8px;color:#fff">最近容易混淆 <span style="font-family:'Noto Sans JP'">ようだ / らしい / そうだ</span>，建议做一次辨析。</p>
+            <span style="font-size:13px;color:#81D8CF;font-weight:700;display:inline-block;margin-top:8px">进入语法辨析 →</span>
+          </button>
+        </section>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ================= WORD STUDY ================= -->
+    <sc-if value="{{ isWord }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width:940px;margin:0 auto;animation:mnUp .3s ease">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+        <div>
+          <p style="font-size:12px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.5);font-family:'Noto Sans JP'">単語学習 · WORD STUDY</p>
+          <h1 style="font-size:22px;font-weight:800;margin-top:3px;color:#fff">今日单词</h1>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <sc-for list="{{ modes }}" as="m" hint-placeholder-count="4">
+            <button onClick="{{ m.onClick }}" style="{{ m.style }}">{{ m.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{ studyActive }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px">
+          <div style="display:flex;gap:8px">
+            <span style="{{ pillStyle }}">{{ levelLabel }}</span>
+            <span style="{{ pillStyle }}">{{ typeLabel }}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12.5px;color:rgba(255,255,255,.55);font-weight:700">{{ progressText }}</span>
+            <button onClick="{{ toggleFav }}" style="{{ favBtnStyle }}" title="收藏">★</button>
+            <button style="width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(129,216,207,.1);color:rgba(255,255,255,.7);cursor:pointer" title="便签">✎</button>
+            <button onClick="{{ prevCard }}" style="width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(129,216,207,.1);color:rgba(255,255,255,.7);cursor:pointer" title="上一个">↺</button>
+          </div>
+        </div>
+
+        <div style="background:#464949;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:24px 28px;text-align:center">
+          <p style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,.45)">题目</p>
+          <p style="font-size:24px;font-weight:700;margin-top:10px;line-height:1.4;color:#fff">{{ promptText }}</p>
+          <p style="font-size:12.5px;color:rgba(255,255,255,.5);margin-top:8px">{{ promptHint }}</p>
+        </div>
+
+        <div style="background:#424545;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:34px 28px;margin-top:14px;min-height:230px;display:flex;align-items:center;justify-content:center;text-align:center">
+          <sc-if value="{{ revealed }}" hint-placeholder-val="{{ false }}">
+            <div style="width:100%;animation:mnFlip .3s ease">
+              <p class="jps" style="font-size:64px;font-weight:600;line-height:1.1;color:#fff">{{ answerMain }}</p>
+              <p style="font-family:'Noto Sans JP';font-size:26px;color:rgba(255,255,255,.82);margin-top:8px">{{ answerReading }}</p>
+              <div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+                <span style="{{ pillStyle }}">{{ curLevel }}</span>
+                <span style="{{ pillStyle }}">{{ curPos }}</span>
+              </div>
+              <p style="font-size:16px;color:rgba(255,255,255,.85);margin-top:18px;font-weight:500">{{ answerMeaning }}</p>
+              <sc-if value="{{ hasSenses }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+                  <sc-for list="{{ senses }}" as="s" hint-placeholder-count="3">
+                    <span style="font-family:'Noto Sans JP';font-size:13.5px;background:rgba(129,216,207,.14);border:1px solid rgba(129,216,207,.3);color:#a3e4dc;padding:7px 13px;border-radius:10px;font-weight:600">{{ s }}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ hasConfuse }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:18px;background:#373b3b;border:1px solid rgba(255,183,89,.35);border-radius:14px;padding:14px 18px;text-align:left;max-width:460px;margin-left:auto;margin-right:auto">
+                  <p style="font-size:11px;font-weight:800;letter-spacing:.5px;color:#FFCB84;font-family:'Noto Sans JP'">易混词</p>
+                  <p style="font-family:'Noto Sans JP';font-size:15px;color:rgba(255,255,255,.85);margin-top:6px;font-weight:600">{{ confuseText }}</p>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{ notRevealed }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <p style="font-size:22px;font-weight:700;color:rgba(255,255,255,.55)">答案已隐藏</p>
+              <p style="font-size:13px;color:rgba(255,255,255,.4);margin-top:8px">{{ hideHint }}</p>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="margin-top:16px">
+          <sc-if value="{{ notRevealed }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ reveal }}" style="width:100%;height:60px;border:none;border-radius:16px;background:#81D8CF;color:#2f3333;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px" style-hover="background:#93e0d8">👁 显示答案 <span style="font-size:12px;font-weight:600;opacity:.7">空格</span></button>
+          </sc-if>
+          <sc-if value="{{ revealed }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+              <sc-for list="{{ rateOptions }}" as="r" hint-placeholder-count="4">
+                <button onClick="{{ r.onClick }}" style="{{ r.style }}"><span style="font-size:15px;font-weight:800">{{ r.label }}</span><span style="font-size:11px;opacity:.7;margin-top:2px">{{ r.hint }}</span></button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <p style="text-align:center;font-size:11.5px;color:rgba(255,255,255,.38);margin-top:14px;font-weight:600">键盘：空格 显示答案 · 1–4 评分</p>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ studyDone }}" hint-placeholder-val="{{ false }}">
+      <div style="text-align:center;padding:20px 0;animation:mnUp .4s ease">
+        <span class="jps" style="display:inline-flex;width:84px;height:84px;border-radius:26px;background:rgba(129,216,207,.16);align-items:center;justify-content:center;font-size:38px;color:#81D8CF;margin-bottom:22px">終</span>
+        <h1 style="font-size:24px;font-weight:800;margin-bottom:8px;color:#fff">今日单词完成 🎉</h1>
+        <p style="font-size:14px;color:rgba(255,255,255,.65);margin-bottom:26px">お疲れさまでした。稳稳地又前进了一点。</p>
+        <div style="display:flex;max-width:460px;margin:0 auto 24px;background:#464949;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:22px 0">
+          <div style="flex:1;border-right:1px solid rgba(255,255,255,.12)"><div class="jps" style="font-size:28px;font-weight:700;color:#81D8CF">{{ studiedCount }}</div><div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">学习卡片</div></div>
+          <div style="flex:1;border-right:1px solid rgba(255,255,255,.12)"><div class="jps" style="font-size:28px;font-weight:700;color:#81D8CF">{{ knownCount }}</div><div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">记得 / 熟练</div></div>
+          <div style="flex:1"><div class="jps" style="font-size:28px;font-weight:700;color:#FFCB84">{{ streak }}</div><div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">连续天数</div></div>
+        </div>
+        <div style="max-width:460px;margin:0 auto 26px;display:flex;gap:7px;justify-content:center">
+          <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+            <div style="text-align:center"><div style="{{ d.dotStyle }}">{{ d.icon }}</div><div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:6px;font-family:'Noto Sans JP'">{{ d.d }}</div></div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <button onClick="{{ restart }}" style="background:#81D8CF;color:#2f3333;border:none;padding:14px 26px;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer" style-hover="background:#93e0d8">今日打卡 · 再来一组</button>
+          <button onClick="{{ goHome }}" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);padding:14px 26px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer">返回首页</button>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ================= GRAMMAR ================= -->
+    <sc-if value="{{ isGrammar }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:940px;margin:0 auto;animation:mnUp .3s ease">
+      <sc-if value="{{ grammarList }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div><p style="font-size:12px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.5);font-family:'Noto Sans JP'">文法 · GRAMMAR</p><h1 style="font-size:22px;font-weight:800;margin-top:3px;color:#fff">语法学习</h1></div>
+          <div style="display:flex;gap:6px;background:rgba(129,216,207,.1);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:4px">
+            <button onClick="{{ grammarLearn }}" style="{{ tabLearnStyle }}">学习</button>
+            <button onClick="{{ grammarPractice }}" style="{{ tabPracticeStyle }}">练习</button>
+          </div>
+        </div>
+
+        <sc-if value="{{ grammarLearnMode }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <sc-for list="{{ grammarItems }}" as="g" hint-placeholder-count="5">
+            <button onClick="{{ g.onClick }}" style="text-align:left;background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:20px 22px;cursor:pointer;transition:transform .18s,border-color .18s" style-hover="transform:translateY(-2px);border-color:rgba(129,216,207,.5)">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:800;color:#81D8CF;background:rgba(129,216,207,.16);padding:3px 10px;border-radius:20px">{{ g.level }}</span>
+                <span style="{{ g.masteryStyle }}">{{ g.mastery }}</span>
+              </div>
+              <p class="jps" style="font-size:20px;font-weight:600;color:#fff">{{ g.form }}</p>
+              <p style="font-size:13px;color:rgba(255,255,255,.6);margin-top:6px;font-weight:500">{{ g.meaning }}</p>
+            </button>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ grammarPracticeMode }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:620px;margin:0 auto">
+          <div style="height:7px;background:rgba(129,216,207,.15);border-radius:5px;overflow:hidden;margin-bottom:26px"><div style="width:35%;height:100%;background:#81D8CF;border-radius:5px"></div></div>
+          <p style="text-align:center;font-size:12px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.45);font-family:'Noto Sans JP'">中文 → 日文 · 选择语法形式</p>
+          <p style="text-align:center;font-size:22px;font-weight:700;margin:14px 0 6px;color:#fff">表示「必须、不得不」的是？</p>
+          <p style="text-align:center;font-family:'Noto Sans JP';font-size:16px;color:rgba(255,255,255,.65);margin-bottom:24px">明日までに出さ___。</p>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <sc-for list="{{ quizOptions }}" as="o" hint-placeholder-count="4">
+              <button onClick="{{ o.onClick }}" style="{{ o.style }}"><span style="{{ o.keyStyle }}">{{ o.key }}</span><span style="flex:1;text-align:left;font-family:'Noto Sans JP'">{{ o.label }}</span><span style="{{ o.markStyle }}">{{ o.mark }}</span></button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ quizAnswered }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:20px;background:#464949;border:2px solid {{ quizBorder }};border-radius:16px;padding:18px 22px;animation:mnUp .3s ease">
+              <p style="font-size:15px;font-weight:800;color:{{ quizColor }};margin-bottom:8px">{{ quizTitle }}</p>
+              <p style="font-size:14px;line-height:1.8;color:rgba(255,255,255,.75)">「〜なければならない」表示义务、必须；接续为「动词ない形去掉い＋ければならない」。てもいい＝许可；たほうがいい＝建议；ことができる＝能力。</p>
+              <button onClick="{{ grammarLearn }}" style="margin-top:14px;background:#81D8CF;color:#2f3333;border:none;padding:11px 22px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer">看语法讲解 →</button>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ grammarDetailMode }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <button onClick="{{ grammarLearn }}" style="background:none;border:none;color:#81D8CF;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:14px">← 语法列表</button>
+        <span style="font-size:12px;font-weight:800;color:#81D8CF;background:rgba(129,216,207,.16);padding:5px 12px;border-radius:20px">{{ dLevel }} · {{ dTag }}</span>
+        <h1 class="jps" style="font-size:38px;font-weight:600;margin:14px 0 4px;color:#fff">{{ dForm }}</h1>
+        <p style="font-size:16px;color:rgba(255,255,255,.72);font-weight:600">{{ dMeaning }}</p>
+
+        <sc-if value="{{ dHasSetsuzoku }}" hint-placeholder-val="{{ false }}">
+        <div style="margin:26px 0;background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:26px 28px">
+          <p style="font-size:11.5px;font-weight:800;letter-spacing:.5px;color:rgba(255,255,255,.45);margin-bottom:20px;font-family:'Noto Sans JP'">接続 · 接续方式</p>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-family:'Noto Sans JP'">
+            <span style="background:rgba(129,216,207,.16);color:#a3e4dc;padding:11px 16px;border-radius:12px;font-size:18px;font-weight:600">行かない</span>
+            <span style="color:#81D8CF;font-size:12px;font-weight:700;font-family:'Noto Sans SC'">动词ない形</span>
+            <span style="color:rgba(255,255,255,.3);font-size:20px">→</span>
+            <span style="background:rgba(255,183,89,.18);color:#FFCB84;padding:11px 16px;border-radius:12px;font-size:18px;font-weight:600">行かな<span style="text-decoration:line-through;opacity:.5">い</span></span>
+            <span style="color:#81D8CF;font-size:12px;font-weight:700;font-family:'Noto Sans SC'">去掉い</span>
+            <span style="color:rgba(255,255,255,.3);font-size:20px">→</span>
+            <span style="background:#81D8CF;color:#2f3333;padding:11px 16px;border-radius:12px;font-size:18px;font-weight:600">行かなければならない</span>
+          </div>
+        </div>
+        </sc-if>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px">
+          <div style="background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:20px 22px"><p style="font-size:11.5px;font-weight:800;color:rgba(255,255,255,.45);margin-bottom:12px;font-family:'Noto Sans JP'">例文</p><div style="font-family:'Noto Sans JP';font-size:17px;line-height:1.9;color:#fff;font-weight:600">{{ dExample }}<br><span style="font-size:13px;color:rgba(255,255,255,.5);font-family:'Noto Sans SC';font-weight:500">{{ dExampleCn }}</span></div></div>
+          <div style="background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:20px 22px"><p style="font-size:11.5px;font-weight:800;color:rgba(255,255,255,.45);margin-bottom:12px;font-family:'Noto Sans JP'">似ている文法</p><p style="font-size:14px;line-height:1.9;color:rgba(255,255,255,.72);font-family:'Noto Sans JP';font-weight:600">{{ dSimilar }}</p></div>
+        </div>
+        <button onClick="{{ grammarPractice }}" style="margin-top:24px;background:#81D8CF;color:#2f3333;border:none;padding:14px 26px;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer" style-hover="background:#93e0d8">练习这个语法 →</button>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ================= TOOLBOX ================= -->
+    <sc-if value="{{ isToolbox }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:860px;margin:0 auto;animation:mnUp .3s ease">
+      <p style="font-size:12px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.5);font-family:'Noto Sans JP'">TOOLS</p>
+      <h1 style="font-size:22px;font-weight:800;margin:3px 0 20px;color:#fff">工具箱</h1>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+        <button style="display:flex;align-items:center;gap:16px;background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:18px 20px;text-align:left;cursor:pointer" style-hover="background:#4d5151"><span style="{{ toolIcon }}">模</span><span><b style="display:block;font-size:16px;color:#fff">学习模式</b><span style="font-size:12.5px;color:rgba(255,255,255,.5)">经典 · 词汇 · 反向 · 汉字</span></span></button>
+        <button onClick="{{ goProfile }}" style="display:flex;align-items:center;gap:16px;background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:18px 20px;text-align:left;cursor:pointer" style-hover="background:#4d5151"><span style="{{ toolIcon }}">★</span><span><b style="display:block;font-size:16px;color:#fff">收藏</b><span style="font-size:12.5px;color:rgba(255,255,255,.5)">单词与语法的收藏夹</span></span></button>
+      </div>
+      <button onClick="{{ goWord }}" style="width:100%;display:flex;align-items:center;gap:16px;background:rgba(129,216,207,.12);border:1px solid rgba(129,216,207,.3);border-radius:18px;padding:18px 20px;text-align:left;cursor:pointer;margin-top:13px" style-hover="background:rgba(129,216,207,.18)"><span style="width:46px;height:46px;flex:none;border-radius:14px;background:#81D8CF;color:#2f3333;display:flex;align-items:center;justify-content:center;font-size:20px">✓</span><span><b style="display:block;font-size:16px;color:#a3e4dc">一键完成今日单词</b><span style="font-size:12.5px;color:rgba(255,255,255,.55)">把当天单词计划标记完成并进入完成页</span></span></button>
+
+      <div style="background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:24px 26px;margin-top:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div><p style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,.45)">PROGRESS</p><h2 style="font-size:17px;font-weight:800;margin-top:2px;color:#fff">进度概览</h2></div>
+          <div style="display:flex;gap:6px;background:rgba(129,216,207,.1);border-radius:12px;padding:4px">
+            <sc-for list="{{ focusTabs }}" as="f" hint-placeholder-count="3">
+              <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="{{ overviewGrid }}">
+          <sc-if value="{{ showWords }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px;background:#3f4343">
+            <p style="font-size:13px;font-weight:800;color:#fff">单词</p>
+            <p style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">1240/1980 · 薄弱 210 · 未学 530</p>
+            <div style="display:flex;align-items:flex-end;gap:10px;height:118px;margin-top:16px">
+              <sc-for list="{{ jlptBars }}" as="b" hint-placeholder-count="5">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end"><div style="width:100%;max-width:38px;background:rgba(129,216,207,.14);border-radius:8px 8px 3px 3px;height:88px;display:flex;align-items:flex-end;overflow:hidden"><div style="{{ b.barStyle }}"></div></div><span style="font-size:11px;color:rgba(255,255,255,.8);font-weight:800;margin-top:7px">{{ b.level }}</span><span style="font-size:10px;color:rgba(255,255,255,.4)">{{ b.pct }}%</span></div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+          <sc-if value="{{ showGrammar }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px;background:#3f4343">
+            <p style="font-size:13px;font-weight:800;color:#fff">语法</p>
+            <p style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">86/168 单元</p>
+            <div style="display:flex;align-items:flex-end;gap:10px;height:118px;margin-top:16px">
+              <sc-for list="{{ grammarBars }}" as="b" hint-placeholder-count="5">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end"><div style="width:100%;max-width:38px;background:rgba(129,216,207,.14);border-radius:8px 8px 3px 3px;height:88px;display:flex;align-items:flex-end;overflow:hidden"><div style="{{ b.barStyle }}"></div></div><span style="font-size:11px;color:rgba(255,255,255,.8);font-weight:800;margin-top:7px">{{ b.level }}</span><span style="font-size:10px;color:rgba(255,255,255,.4)">{{ b.pct }}%</span></div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ================= PROFILE (我的) ================= -->
+    <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:680px;margin:0 auto;animation:mnUp .3s ease">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:26px">
+        <span style="width:64px;height:64px;border-radius:20px;background:rgba(129,216,207,.16);display:flex;align-items:center;justify-content:center;font-family:'Noto Sans JP';font-size:26px;font-weight:700;color:#81D8CF">佐</span>
+        <div><h1 style="font-size:22px;font-weight:800;color:#fff">佐藤さん</h1><p style="font-size:13px;color:rgba(255,255,255,.5);font-weight:500">N3 学习中 · 已坚持 {{ streak }} 天</p></div>
+      </div>
+
+      <div style="background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:22px 24px;margin-bottom:16px">
+        <p style="font-size:15px;font-weight:800;margin-bottom:4px;color:#fff">启动主页</p>
+        <p style="font-size:12.5px;color:rgba(255,255,255,.5);margin-bottom:16px;line-height:1.6">选择打开 app 时默认看到的页面。两种都可随时在侧边栏访问。</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <button onClick="{{ setHomeWord }}" style="{{ hmWordStyle }}">
+            <span style="font-size:22px">単</span>
+            <b style="font-size:15px;margin-top:8px">单词学习</b>
+            <span style="font-size:12px;opacity:.75;margin-top:3px">直接进入闪卡学习</span>
+            <sc-if value="{{ homeIsWord }}" hint-placeholder-val="{{ true }}"><span style="{{ hmCheck }}">✓ 当前</span></sc-if>
+          </button>
+          <button onClick="{{ setHomeDash }}" style="{{ hmDashStyle }}">
+            <span style="font-size:22px">家</span>
+            <b style="font-size:15px;margin-top:8px">综合主页</b>
+            <span style="font-size:12px;opacity:.75;margin-top:3px">任务·进度·打卡总览</span>
+            <sc-if value="{{ homeIsDash }}" hint-placeholder-val="{{ false }}"><span style="{{ hmCheck }}">✓ 当前</span></sc-if>
+          </button>
+        </div>
+      </div>
+
+      <div style="background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:18px;overflow:hidden;margin-bottom:16px">
+        <div style="padding:14px 22px;border-bottom:1px solid rgba(255,255,255,.1)"><p style="font-size:13px;font-weight:800;color:rgba(255,255,255,.55)">学习偏好</p></div>
+        <button onClick="{{ toggleRomaji }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:none;border:none;border-bottom:1px solid rgba(255,255,255,.1);cursor:pointer;text-align:left">
+          <span><b style="font-size:15px;color:#fff">显示罗马音</b><span style="display:block;font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">在答案下方显示 romaji</span></span>
+          <span style="{{ romajiSw }}"><span style="{{ romajiKnob }}"></span></span>
+        </button>
+        <button onClick="{{ toggleAuto }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:none;border:none;cursor:pointer;text-align:left">
+          <span><b style="font-size:15px;color:#fff">自动朗读</b><span style="display:block;font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">显示答案时朗读假名</span></span>
+          <span style="{{ autoSw }}"><span style="{{ autoKnob }}"></span></span>
+        </button>
+      </div>
+
+      <div style="background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:18px;overflow:hidden">
+        <sc-for list="{{ profileLinks }}" as="p" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid rgba(255,255,255,.1)"><span style="font-size:15px;font-weight:600;color:#fff">{{ p.label }}</span><span style="font-size:13px;color:rgba(255,255,255,.4)">{{ p.right }} ›</span></div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:840},&quot;reviewTarget&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:42,&quot;min&quot;:0,&quot;max&quot;:200,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;今日任务&quot;,&quot;unit&quot;:&quot;词&quot;},&quot;newWords&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:20,&quot;min&quot;:0,&quot;max&quot;:100,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;今日任务&quot;,&quot;unit&quot;:&quot;词&quot;},&quot;streakDays&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:23,&quot;min&quot;:0,&quot;max&quot;:999,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;今日任务&quot;,&quot;unit&quot;:&quot;天&quot;},&quot;reduceMotion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;体验&quot;}}">
+class Component extends DCLogic {
+  WORDS = [
+    { meaning:'时间；钟点', kanji:'時間', kana:'じかん', pos:'名词', level:'N5' },
+    { meaning:'挂；戴；打(电话)；花费 —— 多义动词', kanji:'掛ける', kana:'かける', pos:'动词·下一段', level:'N4',
+      senses:['挂 · 絵をかける','打电话 · 電話をかける','花费 · 時間をかける','上锁 · 鍵をかける'] },
+    { meaning:'方便的；便利的', kanji:'便利', kana:'べんり', pos:'な形容词', level:'N5' },
+    { meaning:'约定；约会', kanji:'約束', kana:'やくそく', pos:'名词 / 动词', level:'N4' },
+    { meaning:'经验；经历', kanji:'経験', kana:'けいけん', pos:'名词', level:'N3',
+      confuse:'体験（亲身体验）· 試験（考试）· 実験（实验）' },
+    { meaning:'突然；忽然', kanji:'急に', kana:'きゅうに', pos:'副词', level:'N4' },
+  ];
+  GRAMMAR = [
+    { id:'must', form:'〜なければならない', level:'N4', tag:'义务表达', meaning:'必须、不得不（做某事）', mastery:'学习中',
+      setsuzoku:true, example:'明日までにレポートを出さなければならない。', exampleCn:'明天之前必须交报告。',
+      similar:'〜なくてはいけない · 语气略强\n〜ないといけない · 更口语\n〜べきだ · 应当（道义）' },
+    { id:'better', form:'〜たほうがいい', level:'N4', tag:'建议', meaning:'最好（做某事）', mastery:'已掌握',
+      example:'早く寝たほうがいいよ。', exampleCn:'你最好早点睡。', similar:'〜ほうがいい · 一般建议\n〜べきだ · 更强的应当' },
+    { id:'seem', form:'ようだ / らしい / そうだ', level:'N3', tag:'推测·传闻（易混）', meaning:'样子 / 传闻 / 样态，三者常混淆', mastery:'薄弱',
+      example:'雨が降りそうだ。（样态）／ 雨が降るらしい。（传闻）', exampleCn:'看起来要下雨 ／ 听说要下雨。', similar:'ようだ · 主观推断\nらしい · 客观传闻\nそうだ · 眼见样态 / 听说' },
+    { id:'finish', form:'〜てしまう', level:'N4', tag:'完成·遗憾', meaning:'做完 / 无意中做了（含遗憾）', mastery:'学习中',
+      example:'宿題を全部やってしまった。', exampleCn:'把作业全做完了。', similar:'〜ちゃう · 口语缩略\n〜終わる · 单纯完成' },
+    { id:'if', form:'と / ば / たら / なら', level:'N3', tag:'条件表达（易混）', meaning:'四种条件用法的区别', mastery:'薄弱',
+      example:'春になると花が咲く。（恒常）', exampleCn:'一到春天花就开。', similar:'と · 必然\nば · 假定\nたら · 完成后\nなら · 话题条件' },
+  ];
+  RATES = [
+    { v:0, label:'完全不会', hint:'重来', bg:'rgba(255,138,128,.12)', bd:'rgba(255,138,128,.5)', fg:'#FF8A80' },
+    { v:1, label:'有点模糊', hint:'困难', bg:'rgba(255,183,89,.12)', bd:'rgba(255,183,89,.5)', fg:'#FFB759' },
+    { v:2, label:'记得', hint:'良好', bg:'rgba(129,216,207,.12)', bd:'rgba(129,216,207,.45)', fg:'#81D8CF' },
+    { v:3, label:'很熟练', hint:'简单', bg:'#81D8CF', bd:'#81D8CF', fg:'#2f3333' },
+  ];
+
+  state = { screen:'word', homeMode:'word', mode:'classic', cardIndex:0, revealed:false, studyDone:false, ratings:[], favs:{}, grammarView:'learn', grammarId:null, quizSel:null, quizAnswered:false, focus:'both', romaji:true, autoplay:true };
+
+  componentDidMount(){
+    try{ const hm=localStorage.getItem('mn-home-mode'); if(hm==='dash'||hm==='word'){ this.setState({ homeMode:hm, screen:hm==='dash'?'home':'word' }); } }catch(e){}
+    this._key=(e)=>{ const s=this.state; if(s.screen!=='word'||!this._active()) return;
+      if(!s.revealed && e.key===' '){ e.preventDefault(); this.setState({revealed:true}); }
+      else if(s.revealed && e.key>='1' && e.key<='4'){ this.rate(parseInt(e.key,10)-1); } };
+    window.addEventListener('keydown', this._key);
+  }
+  componentWillUnmount(){ window.removeEventListener('keydown', this._key); }
+  _active(){ return !this.state.studyDone; }
+
+  go(screen){ this.setState({ screen }); if(typeof window!=='undefined') window.scrollTo({top:0}); }
+  setHome(mode){ try{ localStorage.setItem('mn-home-mode', mode); }catch(e){} this.setState({ homeMode:mode, screen:mode==='dash'?'home':'word', cardIndex:0, revealed:false, studyDone:false, ratings:[] }); if(typeof window!=='undefined') window.scrollTo({top:0}); }
+  setMode(m){ this.setState({ mode:m, cardIndex:0, revealed:false, studyDone:false, ratings:[] }); }
+  reveal(){ this.setState({ revealed:true }); }
+  rate(v){ const {cardIndex,ratings}=this.state; const nr=[...ratings]; nr[cardIndex]=v;
+    if(cardIndex>=this.WORDS.length-1){ this.setState({ ratings:nr, studyDone:true }); }
+    else { this.setState({ ratings:nr, cardIndex:cardIndex+1, revealed:false }); } }
+  prevCard(){ this.setState(s=>({ cardIndex:Math.max(0,s.cardIndex-1), revealed:false, studyDone:false })); }
+  restart(){ this.setState({ cardIndex:0, revealed:false, studyDone:false, ratings:[] }); if(typeof window!=='undefined') window.scrollTo({top:0}); }
+  toggleFav(){ this.setState(s=>({ favs:{...s.favs,[s.cardIndex]:!s.favs[s.cardIndex]} })); }
+  openGrammar(id){ this.setState({ grammarView:'detail', grammarId:id }); if(typeof window!=='undefined') window.scrollTo({top:0}); }
+  quizPick(i){ if(this.state.quizAnswered) return; this.setState({ quizSel:i, quizAnswered:true }); }
+
+  renderVals(){
+    const s=this.state, reduce=this.props.reduceMotion, trans=reduce?'none':'all .2s ease';
+    const streak=this.props.streakDays ?? 23;
+    const reviewTarget=this.props.reviewTarget ?? 42, newWords=this.props.newWords ?? 20;
+
+    const navData=[
+      {key:'home',glyph:'家',label:'首页',fn:()=>this.go('home')},
+      {key:'word',glyph:'単',label:'单词学习',fn:()=>this.go('word'),badge:'42'},
+      {key:'grammar',glyph:'文',label:'语法',fn:()=>this.setState({screen:'grammar',grammarView:'learn'})},
+      {key:'toolbox',glyph:'具',label:'工具箱',fn:()=>this.go('toolbox')},
+      {key:'profile',glyph:'我',label:'我的',fn:()=>this.go('profile')},
+    ];
+    const nav=navData.map(n=>{ const on=s.screen===n.key || (n.key==='word'&&s.screen==='word');
+      return { glyph:n.glyph, label:n.label, onClick:n.fn, badge:(n.badge&&!on)?n.badge:'',
+        style:`display:flex;align-items:center;gap:11px;padding:9px 11px;border:none;border-radius:13px;cursor:pointer;font-size:14px;font-weight:${on?'800':'600'};background:${on?'#81D8CF':'none'};color:${on?'#2f3333':'rgba(255,255,255,.82)'};transition:${trans}`,
+        glyphStyle:`width:30px;height:30px;flex:none;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:15px;font-weight:600;background:${on?'rgba(47,51,51,.18)':'rgba(255,255,255,.1)'};color:${on?'#2f3333':'#81D8CF'}`,
+        badgeStyle:`font-size:11px;font-weight:800;color:#FFCB84;background:rgba(255,183,89,.16);padding:2px 8px;border-radius:20px` };
+    });
+
+    const wkColors=[{d:'月',c:'#BBA8E0'},{d:'火',c:'#F39A8C'},{d:'水',c:'#5FC3CE'},{d:'木',c:'#7FD0A0'},{d:'金',c:'#F5C15C'},{d:'土',c:'#9D97DE'},{d:'日',c:'#F0908D'}];
+    const doneDays=[true,true,true,true,false,false,false]; const todayIdx=3;
+    const week=wkColors.map((w,i)=>{ const done=doneDays[i], today=i===todayIdx;
+      return { d:w.d, icon:done?'✓':(today?'·':''),
+        dotStyle:`width:34px;height:34px;margin:0 auto;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;background:${done?w.c:'rgba(255,255,255,.08)'};color:${done?'#2f3333':'rgba(255,255,255,.3)'};border:${today?'2px solid '+w.c:'2px solid transparent'};transition:${trans}` };
+    });
+
+    const jlptData=[{level:'N5',pct:95},{level:'N4',pct:82},{level:'N3',pct:64},{level:'N2',pct:28},{level:'N1',pct:6}];
+    const jlptBars=jlptData.map(b=>({ level:b.level, pct:b.pct, barStyle:`width:100%;height:${b.pct}%;background:#81D8CF;border-radius:8px 8px 3px 3px;box-shadow:0 -6px 18px rgba(129,216,207,.22);transition:${reduce?'none':'height .5s ease'}` }));
+    const grammarData=[{level:'N5',pct:88},{level:'N4',pct:70},{level:'N3',pct:44},{level:'N2',pct:18},{level:'N1',pct:0}];
+    const grammarBars=grammarData.map(b=>({ level:b.level, pct:b.pct, barStyle:`width:100%;height:${Math.max(b.pct,b.pct?6:0)}%;background:#81D8CF;border-radius:8px 8px 3px 3px` }));
+
+    const entryStyle='display:flex;align-items:center;gap:12px;background:#464949;border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:16px 18px;text-align:left;cursor:pointer;transition:'+trans;
+    const entGlyph="width:40px;height:40px;flex:none;border-radius:12px;background:rgba(129,216,207,.16);color:#81D8CF;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:18px;font-weight:600";
+    const pillStyle='font-size:12px;font-weight:700;color:rgba(255,255,255,.75);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:5px 12px;border-radius:20px';
+    const toolIcon="width:46px;height:46px;flex:none;border-radius:14px;background:rgba(129,216,207,.16);color:#81D8CF;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP';font-size:19px;font-weight:600";
+
+    const modeData=[{k:'classic',l:'经典'},{k:'vocabulary',l:'词汇'},{k:'reverse',l:'反向'},{k:'kanji',l:'汉字'}];
+    const modes=modeData.map(m=>{ const on=s.mode===m.k;
+      return { label:m.l, onClick:()=>this.setMode(m.k),
+        style:`padding:7px 14px;border-radius:11px;border:1px solid ${on?'#81D8CF':'rgba(255,255,255,.16)'};background:${on?'#81D8CF':'rgba(255,255,255,.05)'};color:${on?'#2f3333':'rgba(255,255,255,.75)'};font-size:13px;font-weight:700;cursor:pointer;transition:${trans}` };
+    });
+
+    const card=this.WORDS[s.cardIndex]||this.WORDS[0];
+    const isReverse=s.mode==='reverse';
+    const promptText=isReverse?card.kanji:card.meaning;
+    const promptHint=isReverse?'回忆它的中文意思':'回忆假名与汉字写法';
+    const hideHint=isReverse?'先回忆中文释义':'先回忆假名和汉字';
+    const answerMain=isReverse?card.meaning:card.kanji;
+    const answerReading=isReverse?card.kana:card.kana;
+    const answerMeaning=isReverse?'　':card.meaning;
+    const rateOptions=this.RATES.map(r=>({ label:r.label, hint:r.hint, onClick:()=>this.rate(r.v),
+      style:`display:flex;flex-direction:column;align-items:center;justify-content:center;height:66px;border-radius:14px;border:1.5px solid ${r.bd};background:${r.bg};color:${r.fg};cursor:pointer;transition:${trans}` }));
+    const known=s.ratings.filter(x=>x>=2).length;
+    const progressText=`${Math.min(s.cardIndex+1,this.WORDS.length)}/${this.WORDS.length}`;
+    const favOn=s.favs[s.cardIndex];
+    const favBtnStyle=`width:40px;height:40px;border-radius:12px;border:1px solid ${favOn?'#81D8CF':'rgba(255,255,255,.2)'};background:${favOn?'#81D8CF':'rgba(129,216,207,.1)'};color:${favOn?'#2f3333':'rgba(255,255,255,.5)'};cursor:pointer;font-size:16px`;
+
+    const grammarItems=this.GRAMMAR.map(g=>{ const mc=g.mastery==='已掌握'?'#81D8CF':(g.mastery==='薄弱'?'#FF8A80':'#FFB759'); const mbg=g.mastery==='已掌握'?'rgba(129,216,207,.16)':(g.mastery==='薄弱'?'rgba(255,138,128,.16)':'rgba(255,183,89,.16)');
+      return { level:g.level, form:g.form, meaning:g.meaning, mastery:g.mastery, onClick:()=>this.openGrammar(g.id),
+        masteryStyle:`font-size:11px;font-weight:800;color:${mc};background:${mbg};padding:3px 10px;border-radius:20px` };
+    });
+    const gd=this.GRAMMAR.find(g=>g.id===s.grammarId)||this.GRAMMAR[0];
+    const tab=(on)=>`padding:7px 18px;border-radius:10px;border:none;background:${on?'#81D8CF':'none'};color:${on?'#2f3333':'rgba(255,255,255,.65)'};font-size:13px;font-weight:800;cursor:pointer;transition:${trans}`;
+    const quizOptions=['なければならない','てもいい','たほうがいい','ことができる'].map((label,i)=>{
+      let bd='rgba(255,255,255,.18)',bg='rgba(255,255,255,.05)',op=1,mark='',mc='transparent';
+      if(s.quizAnswered){ if(i===0){bd='#81D8CF';bg='rgba(129,216,207,.14)';mark='✓';mc='#81D8CF';} else if(i===s.quizSel){bd='#FF8A80';bg='rgba(255,138,128,.14)';mark='✕';mc='#FF8A80';} else op=.5; }
+      return { key:['1','2','3','4'][i], label, mark, onClick:()=>this.quizPick(i),
+        style:`display:flex;align-items:center;gap:13px;width:100%;padding:15px 18px;border:2px solid ${bd};background:${bg};opacity:${op};border-radius:14px;font-size:16px;font-weight:600;color:#fff;cursor:${s.quizAnswered?'default':'pointer'};transition:${trans}`,
+        keyStyle:`width:26px;height:26px;flex:none;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:rgba(255,255,255,.6)`,
+        markStyle:`font-size:18px;font-weight:800;color:${mc}` };
+    });
+    const quizCorrect=s.quizSel===0;
+
+    const focusData=[{k:'both',l:'双栏'},{k:'words',l:'单词'},{k:'grammar',l:'语法'}];
+    const focusTabs=focusData.map(f=>{ const on=s.focus===f.k; return { label:f.l, onClick:()=>this.setState({focus:f.k}),
+      style:`padding:6px 14px;border-radius:9px;border:none;background:${on?'#81D8CF':'none'};color:${on?'#2f3333':'rgba(255,255,255,.6)'};font-size:12px;font-weight:800;cursor:pointer` }; });
+
+    const homeIsWord=s.homeMode==='word', homeIsDash=s.homeMode==='dash';
+    const hmCard=(on)=>`display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 12px;border-radius:16px;border:2px solid ${on?'#81D8CF':'rgba(255,255,255,.16)'};background:${on?'rgba(129,216,207,.14)':'rgba(255,255,255,.04)'};color:${on?'#a3e4dc':'rgba(255,255,255,.75)'};cursor:pointer;font-family:'Noto Serif JP';transition:${trans}`;
+    const hmCheck='margin-top:10px;font-size:11px;font-weight:800;color:#2f3333;background:#81D8CF;padding:3px 10px;border-radius:20px;font-family:Inter';
+    const sw=(on)=>`width:44px;height:26px;border-radius:20px;background:${on?'#81D8CF':'rgba(255,255,255,.2)'};position:relative;display:inline-block;transition:${trans}`;
+    const knob=(on)=>`position:absolute;top:3px;left:${on?'21px':'3px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:${trans}`;
+    const profileLinks=[{label:'通知提醒',right:'每天 21:00'},{label:'隐私与数据',right:''},{label:'会员 / Pro',right:'免费版'},{label:'帮助与关于',right:'v2.4'}];
+
+    return {
+      isHome:s.screen==='home', isWord:s.screen==='word', isGrammar:s.screen==='grammar', isToolbox:s.screen==='toolbox', isProfile:s.screen==='profile',
+      nav, streak, reviewTarget, newWords, week, jlptBars, grammarBars, entryStyle, entGlyph, pillStyle, toolIcon,
+      goHome:()=>this.go('home'), goWord:()=>this.go('word'), goGrammar:()=>this.setState({screen:'grammar',grammarView:'learn'}),
+      goToolbox:()=>this.go('toolbox'), goProfile:()=>this.go('profile'), goSeem:()=>{this.setState({screen:'grammar'});this.openGrammar('seem');},
+      modes, studyActive:!s.studyDone, studyDone:s.studyDone, revealed:s.revealed, notRevealed:!s.revealed,
+      promptText, promptHint, hideHint, answerMain, answerReading, answerMeaning,
+      curLevel:card.level, curPos:card.pos, levelLabel:'全部等级', typeLabel:'全部词性', progressText, favBtnStyle,
+      hasSenses:!!(card.senses)&&!isReverse, senses:card.senses||[], hasConfuse:!!card.confuse&&!isReverse, confuseText:card.confuse||'',
+      reveal:()=>this.reveal(), rateOptions, prevCard:()=>this.prevCard(), toggleFav:()=>this.toggleFav(), restart:()=>this.restart(),
+      studiedCount:this.WORDS.length, knownCount:known,
+      grammarList:s.grammarView!=='detail', grammarDetailMode:s.grammarView==='detail',
+      grammarLearnMode:s.grammarView==='learn', grammarPracticeMode:s.grammarView==='practice',
+      grammarLearn:()=>this.setState({grammarView:'learn',quizAnswered:false,quizSel:null}), grammarPractice:()=>this.setState({grammarView:'practice'}),
+      tabLearnStyle:tab(s.grammarView==='learn'||s.grammarView==='detail'), tabPracticeStyle:tab(s.grammarView==='practice'),
+      grammarItems, dLevel:gd.level, dTag:gd.tag, dForm:gd.form, dMeaning:gd.meaning, dHasSetsuzoku:!!gd.setsuzoku,
+      dExample:gd.example, dExampleCn:gd.exampleCn, dSimilar:gd.similar,
+      quizOptions, quizAnswered:s.quizAnswered, quizTitle:quizCorrect?'正解！':'再看看', quizColor:quizCorrect?'#81D8CF':'#FF8A80', quizBorder:quizCorrect?'rgba(129,216,207,.5)':'rgba(255,138,128,.5)',
+      focusTabs, showWords:s.focus!=='grammar', showGrammar:s.focus!=='words', overviewGrid:`display:grid;grid-template-columns:${s.focus==='both'?'1fr 1fr':'1fr'};gap:14px`,
+      homeIsWord, homeIsDash, setHomeWord:()=>this.setHome('word'), setHomeDash:()=>this.setHome('dash'),
+      hmWordStyle:hmCard(homeIsWord), hmDashStyle:hmCard(homeIsDash), hmCheck,
+      toggleRomaji:()=>this.setState(st=>({romaji:!st.romaji})), toggleAuto:()=>this.setState(st=>({autoplay:!st.autoplay})),
+      romajiSw:sw(s.romaji), romajiKnob:knob(s.romaji), autoSw:sw(s.autoplay), autoKnob:knob(s.autoplay), profileLinks,
+    };
+  }
+}
+</script>
+</body>
+</html>
