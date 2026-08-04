@@ -104,6 +104,14 @@
   --color-warning: #E8971C;
   --color-error: #F2795B;
 
+  /* 表单控件。统一由主题变量控制，组件仍可用 Tailwind 类覆盖特殊外观。 */
+  --form-control-bg: rgba(255, 253, 248, 0.94);
+  --form-control-bg-focus: #FFFDFA;
+  --form-control-text: #3A2E22;
+  --form-control-placeholder: rgba(107, 90, 72, 0.48);
+  --form-control-border: rgba(111, 168, 62, 0.34);
+  --form-control-shadow: inset 0 1px 2px rgba(128, 91, 48, 0.08);
+
   /* 移动端安全区域 */
   --safe-area-inset-top: env(safe-area-inset-top);
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
@@ -136,11 +144,11 @@
   --color-bg-secondary: #3c3f3f;
   --color-bg-card: #464949;
 
-  /* 青色主色调（保持不变） */
-  --color-accent: #81D8CF;
-  --color-accent-light: #A3E4DC;
-  --color-accent-lighter: #C5F0EB;
-  --color-accent-dark: #5FC9BE;
+  /* 深色模式也沿用动物园新绿，不再使用旧版青色 */
+  --color-accent: #91C968;
+  --color-accent-light: #B7E38D;
+  --color-accent-lighter: #D5F0B5;
+  --color-accent-dark: #6FA83E;
 
   /* 文字颜色 */
   --color-text-primary: rgba(255, 255, 255, 0.95);
@@ -172,9 +180,16 @@
                      inset 0 2px 0 rgba(255, 255, 255, 0.25);
 
   /* 强调色 */
-  --color-success: #81D8CF;
+  --color-success: #91C968;
   --color-warning: #FFB759;
   --color-error: #FF8A80;
+
+  --form-control-bg: #252D26;
+  --form-control-bg-focus: #2D382E;
+  --form-control-text: #F8F4EA;
+  --form-control-placeholder: rgba(248, 244, 234, 0.38);
+  --form-control-border: rgba(196, 232, 155, 0.28);
+  --form-control-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
 /* 真正的夜间外壳。App.tsx 和导航里仍有一部分浅色主题时期的固定色及内联背景，
@@ -240,7 +255,7 @@
 /* 词汇便签浮在筛选工具栏上方，不能继续沿用只适合夜间的深灰底。 */
 .word-note-popover {
   background: rgba(47, 51, 51, 0.96);
-  border-color: rgba(129, 216, 207, 0.35);
+  border-color: rgba(145, 201, 104, 0.35);
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -321,6 +336,14 @@ body {
   position: relative;
 }
 
+/* 词库初始化或登录等待时也保留原生纵向手势,不把等待页变成不可滑动的死屏。 */
+.app-boot-loading {
+  min-height: 100dvh;
+  touch-action: pan-y;
+  overscroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* 移动端触摸反馈优化 */
 button,
 a,
@@ -388,7 +411,7 @@ body.is-scrolling {
   box-shadow: var(--jelly-shadow-sm);
 }
 
-/* 青色果冻效果 */
+/* 新绿果冻效果 */
 .glass-jelly-accent {
   background: linear-gradient(
     135deg,
@@ -663,39 +686,118 @@ main .kanji-variant-mark {
   background: rgba(230, 242, 235, 0.95);
 }
 
-/* 输入框样式 - 浅色果冻 */
-input,
-textarea {
+/* 文本类表单控件。旧规则直接命中所有 input，导致 checkbox/range 也变成
+   100% 宽的白色输入栏；这里明确排除非文本控件。 */
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
+  textarea
+) {
   -webkit-appearance: none;
   appearance: none;
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
+  textarea,
+  select
+) {
   font-size: 16px;
   padding: 0.75rem 1rem;
   border: 1.5px solid rgba(143, 203, 94, 0.3);
   border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(242, 250, 247, 0.9) 100%
-  );
+  background-color: var(--form-control-bg);
+  background-image: none;
   width: 100%;
-  color: var(--color-text-primary);
-  box-shadow: inset 0 2px 4px rgba(143, 203, 94, 0.05);
+  color: var(--form-control-text);
+  caret-color: var(--zoo-primary);
+  border-color: var(--form-control-border);
+  box-shadow: var(--form-control-shadow);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-input:focus,
-textarea:focus {
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
+  textarea,
+  select
+):focus {
   outline: none;
   border-color: var(--color-accent);
-  background: rgba(255, 255, 255, 0.98);
+  background-color: var(--form-control-bg-focus);
+  background-image: none;
   box-shadow: 0 0 0 4px rgba(143, 203, 94, 0.15),
-              inset 0 2px 4px rgba(143, 203, 94, 0.08);
-  transform: translateY(-1px);
+              var(--form-control-shadow);
 }
 
-input::placeholder,
-textarea::placeholder {
-  color: var(--color-text-light);
+:where(input, textarea)::placeholder {
+  color: var(--form-control-placeholder);
+  opacity: 1;
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+  -webkit-appearance: auto;
+  appearance: auto;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  accent-color: var(--zoo-primary);
+  color-scheme: light;
+}
+
+[data-theme="dark"] :where(input[type="checkbox"], input[type="radio"]) {
+  color-scheme: dark;
+}
+
+:where(input[type="range"]) {
+  accent-color: var(--zoo-primary);
+}
+
+:where(input[type="file"]) {
+  color: var(--form-control-text);
+}
+
+:where(input[type="file"])::file-selector-button {
+  border: 1px solid var(--form-control-border);
+  border-radius: 12px;
+  background: var(--form-control-bg);
+  color: var(--form-control-text);
+  padding: 0.55rem 0.8rem;
+}
+
+:where(input, textarea, select):disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+[data-theme="dark"] :where(input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"], input[type="week"])::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.72);
+}
+
+[data-theme="dark"] :where(select, select option) {
+  color-scheme: dark;
+  background-color: #252D26;
+  color: #F8F4EA;
+}
+
+/* WebKit 自动填充会自行刷一层浅蓝/白底，必须用内阴影覆盖。 */
+[data-theme="dark"] :where(input, textarea):-webkit-autofill,
+[data-theme="dark"] :where(input, textarea):-webkit-autofill:hover,
+[data-theme="dark"] :where(input, textarea):-webkit-autofill:focus {
+  -webkit-text-fill-color: #F8F4EA !important;
+  caret-color: #F8F4EA;
+  box-shadow: 0 0 0 1000px #252D26 inset !important;
+  border-color: rgba(196, 232, 155, 0.38) !important;
+}
+
+[data-theme="light"] :where(input, textarea):-webkit-autofill,
+[data-theme="light"] :where(input, textarea):-webkit-autofill:hover,
+[data-theme="light"] :where(input, textarea):-webkit-autofill:focus {
+  -webkit-text-fill-color: #3A2E22 !important;
+  caret-color: #3A2E22;
+  box-shadow: 0 0 0 1000px #FFFDFA inset !important;
 }
 
 /* 淡青输入/选择控件，用于搜索栏和筛选栏 */
@@ -779,6 +881,53 @@ textarea::placeholder {
   filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.65));
 }
 
+/* control-cyan 是历史类名，仍被搜索框和少量 select 使用；夜间必须覆盖其
+   浅色渐变，否则会在深色卡片上出现一整块发亮的旧版控件。 */
+[data-theme="dark"] .control-cyan {
+  background: #2A342B !important;
+  border-color: rgba(183, 227, 141, 0.34) !important;
+  color: #F8F4EA !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3),
+              0 3px 12px rgba(0, 0, 0, 0.18) !important;
+}
+
+[data-theme="dark"] .control-cyan:hover {
+  background: #303D31 !important;
+}
+
+[data-theme="dark"] .control-cyan:focus,
+[data-theme="dark"] .control-cyan-search:focus-within {
+  background: #303D31 !important;
+  border-color: rgba(183, 227, 141, 0.72) !important;
+  box-shadow: 0 0 0 4px rgba(145, 201, 104, 0.16),
+              inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .control-cyan-search-input {
+  color: #F8F4EA !important;
+}
+
+[data-theme="dark"] .control-cyan::placeholder,
+[data-theme="dark"] .control-cyan-search-input::placeholder {
+  color: rgba(248, 244, 234, 0.42) !important;
+}
+
+[data-theme="dark"] .control-cyan option {
+  background: #252D26;
+  color: #F8F4EA;
+}
+
+[data-theme="dark"] .control-cyan-icon {
+  color: #B7E38D !important;
+  filter: none;
+}
+
+[data-theme="dark"] .control-cyan.soft-text-outline,
+[data-theme="dark"] .control-cyan .soft-text-outline {
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
 /* 单词便签(查看 / 编辑)。以前跟工具栏挤在同一个 grid 单元格里,展开时整行被撑到
    便签那么高,题目框和答案区被整体顶下去 —— 一开便签答案区就缩水。
    改成脱离文档流的浮层:贴着底部评分按钮往上长,压在答案区上面,布局一动不动。
@@ -828,11 +977,11 @@ textarea::placeholder {
 }
 
 .pitch-mora.is-high {
-  border-top-color: #81D8CF;
+  border-top-color: #91C968;
 }
 
 .pitch-mora.is-drop {
-  border-right: 2px solid #81D8CF;
+  border-right: 2px solid #91C968;
 }
 
 /* 画了音高线时,分组间隙改由拍自身的右内边距撑开:高音线随之延伸过去,
@@ -854,7 +1003,7 @@ textarea::placeholder {
    不认的人看线也够用。压小压暗,不跟读音抢注意力。 */
 .pitch-badge {
   margin-left: 0.35em;
-  color: rgba(129, 216, 207, 0.85);
+  color: rgba(145, 201, 104, 0.85);
   font-size: 0.5em;
   vertical-align: super;
 }
@@ -877,14 +1026,14 @@ textarea::placeholder {
   display: inline-flex;
   align-items: baseline;
   gap: 0.25em;
-  border: 1px solid rgba(129, 216, 207, 0.45);
-  background: rgba(129, 216, 207, 0.14);
+  border: 1px solid rgba(145, 201, 104, 0.45);
+  background: rgba(145, 201, 104, 0.14);
   border-radius: 0.25rem;
   padding: 0.15rem 0.5rem;
 }
 
 .voice-badge-mark {
-  color: #81D8CF;
+  color: #91C968;
   font-size: 1.05rem;
   font-weight: 900;
   line-height: 1.1;
@@ -899,7 +1048,7 @@ textarea::placeholder {
 /* 浅色主题下白字看不见,「自/他」也要压深一档才够对比 */
 [data-theme="light"] .voice-badge {
   border-color: rgba(43, 121, 115, 0.42);
-  background: rgba(129, 216, 207, 0.22);
+  background: rgba(143, 203, 94, 0.22);
 }
 
 [data-theme="light"] .voice-badge-mark {
@@ -1171,7 +1320,7 @@ select {
   }
 }
 
-/* 自定义滚动条 - 青色主题 */
+/* 自定义滚动条 - 新绿主题 */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -1346,14 +1495,6 @@ select {
 [data-theme="light"] .placeholder\:text-white\/35::placeholder,
 [data-theme="light"] .placeholder\:text-white\/60::placeholder {
   color: rgba(107, 90, 72, 0.48) !important;
-}
-
-[data-theme="light"] input,
-[data-theme="light"] textarea,
-[data-theme="light"] select {
-  background: rgba(255, 255, 255, 0.92) !important;
-  border-color: rgba(111, 168, 62, 0.3) !important;
-  color: #3A2E22 !important;
 }
 
 [data-theme="light"] aside {
@@ -1658,7 +1799,7 @@ select {
 }
 
 /* ========== 浅色主题:深色背景专用的强调/警示文字翻译 ==========
-   text-red-100~300 和 text-[#81D8CF] 是为深色卡片配的浅色文字,
+   text-red-100~300 和旧版青色工具类是为深色卡片配的浅色文字,
    浅色主题下卡片翻白后对比度只剩 1.1~1.6:1(几乎不可见),统一翻成深色。 */
 [data-theme="light"] [class*="text-red-1"],
 [data-theme="light"] [class*="text-red-2"],
@@ -1700,10 +1841,9 @@ select {
 }
 
 /* ======================================================================
-   动物园主题 · 生青色(#81D8CF)工具类 → 新绿写像
-   页面里大量使用 Tailwind 任意值 bg/border/ring-[#81D8CF]（及透明度变体），
-   它们会直接渲染原始青色。这里在浅色(动物园)主题下按用途把它们统一翻成新绿。
-   text-[#81D8CF] 已由上面的 [class*="text-[#81D8CF]"] 规则处理。
+   动物园主题 · 旧版青色工具类 → 新绿写像
+   页面里大量使用旧版 Tailwind 任意值（及透明度变体）。
+   这里统一翻成今天的动物园新绿，兼容深浅两种主题。
    ====================================================================== */
 
 /* —— 实心：按钮/激活态 → 新绿实色 —— */
@@ -1802,4 +1942,91 @@ select {
                0 0 1px rgba(143, 203, 94, 0.8),
                0 0 5px rgba(220, 240, 196, 0.5);
   -webkit-text-stroke: 0.25px rgba(240, 250, 224, 0.5);
+}
+
+/* —— 深色主题：同一批旧版青色工具类也统一改为新绿 —— */
+[data-theme="dark"] [class*="text-[#81D8CF]"] {
+  color: var(--zoo-primary-deep) !important;
+}
+
+[data-theme="dark"] .bg-\[\#81D8CF\] {
+  background-color: var(--zoo-primary) !important;
+}
+
+[data-theme="dark"] .bg-\[\#81D8CF\]\/10,
+[data-theme="dark"] .bg-\[\#81D8CF\]\/12,
+[data-theme="dark"] .bg-\[\#81D8CF\]\/14,
+[data-theme="dark"] .bg-\[\#81D8CF\]\/15,
+[data-theme="dark"] .bg-\[\#81D8CF\]\/16,
+[data-theme="dark"] .bg-\[\#81D8CF\]\/18 {
+  background-color: rgba(145, 201, 104, 0.16) !important;
+}
+
+[data-theme="dark"] .bg-\[\#81D8CF\]\/20,
+[data-theme="dark"] .bg-\[\#81D8CF\]\/25 {
+  background-color: rgba(145, 201, 104, 0.26) !important;
+}
+
+[data-theme="dark"] .bg-\[\#81D8CF\]\/65,
+[data-theme="dark"] .bg-\[\#81D8CF\]\/85,
+[data-theme="dark"] .bg-\[\#81D8CF\]\/90 {
+  background-color: rgba(145, 201, 104, 0.9) !important;
+}
+
+[data-theme="dark"] .border-\[\#81D8CF\] {
+  border-color: var(--zoo-primary) !important;
+}
+
+[data-theme="dark"] .border-\[\#81D8CF\]\/20,
+[data-theme="dark"] .border-\[\#81D8CF\]\/24,
+[data-theme="dark"] .border-\[\#81D8CF\]\/25,
+[data-theme="dark"] .border-\[\#81D8CF\]\/30,
+[data-theme="dark"] .border-\[\#81D8CF\]\/35 {
+  border-color: rgba(145, 201, 104, 0.34) !important;
+}
+
+[data-theme="dark"] .border-\[\#81D8CF\]\/40,
+[data-theme="dark"] .border-\[\#81D8CF\]\/45,
+[data-theme="dark"] .border-\[\#81D8CF\]\/50,
+[data-theme="dark"] .border-\[\#81D8CF\]\/65 {
+  border-color: rgba(145, 201, 104, 0.55) !important;
+}
+
+[data-theme="dark"] .ring-\[\#81D8CF\],
+[data-theme="dark"] .ring-\[\#81D8CF\]\/35 {
+  --tw-ring-color: rgba(145, 201, 104, 0.55) !important;
+}
+
+[data-theme="dark"] .accent-\[\#81D8CF\],
+[data-theme="light"] .accent-\[\#81D8CF\] {
+  accent-color: var(--zoo-primary) !important;
+}
+
+[data-theme="dark"] .peer:checked ~ .peer-checked\:bg-\[\#81D8CF\] {
+  background-color: var(--zoo-primary) !important;
+}
+
+[data-theme="dark"] .hover\:bg-\[\#81D8CF\]:hover {
+  background-color: var(--zoo-primary) !important;
+}
+
+[data-theme="dark"] .hover\:bg-\[\#81D8CF\]\/15:hover,
+[data-theme="dark"] .hover\:bg-\[\#81D8CF\]\/18:hover {
+  background-color: rgba(145, 201, 104, 0.16) !important;
+}
+
+[data-theme="dark"] .hover\:bg-\[\#81D8CF\]\/20:hover {
+  background-color: rgba(145, 201, 104, 0.26) !important;
+}
+
+[data-theme="dark"] .hover\:bg-\[\#81D8CF\]\/85:hover {
+  background-color: rgba(145, 201, 104, 0.9) !important;
+}
+
+[data-theme="dark"] .app-mobile-tabbar button.bg-\[\#81D8CF\] {
+  background: var(--zoo-primary) !important;
+  border-color: var(--zoo-primary-deep) !important;
+  color: var(--zoo-on-primary) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
+              0 4px 14px rgba(91, 145, 57, 0.32) !important;
 }

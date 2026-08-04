@@ -6,15 +6,11 @@ import { clearStorage, saveDatabase } from "../lib/storage";
 import { getPasscodeState, verifyPasscode } from "../lib/localPasscode";
 import { loadVoices, SYSTEM_VOICE_ID, type AudioVoice } from "../lib/speech";
 import {
-  cloudLogin,
+  CLOUD_AUTH_EVENT,
   cloudLogout,
-  cloudRegister,
-  deleteCloudAccount,
   getCloudSession,
   pullCloudBackup,
   pushCloudBackup,
-  requestCloudPasswordReset,
-  resetCloudPassword,
   sendCloudVerificationEmail,
   verifyCloudEmail,
   type CloudSession
@@ -26,6 +22,7 @@ import {
   INTENSITY_ANCHORS,
   INTENSITY_MAX,
   INTENSITY_MIN,
+  REVIEW_CAP_UNLIMITED,
   saveStudyPreferences,
   StudyPreferences,
   ThemePreference
@@ -41,32 +38,42 @@ function GoalEstimation({ dailyGoal }: GoalEstimationProps) {
   const [estimations, setEstimations] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    try {
-      const db = getDatabase();
-      const levels = ['N5', 'N4', 'N3', 'N2', 'N1'];
-      const newEstimations: Record<string, number> = {};
+    let alive = true;
+    const calculate = async () => {
+      // 先让设置页的主体出现,统计卡片稍后补上。
+      await yieldToBrowser();
+      if (!alive) return;
+      try {
+        const db = getDatabase();
+        const levels = ['N5', 'N4', 'N3', 'N2', 'N1'];
+        const newEstimations: Record<string, number> = {};
 
-      levels.forEach(level => {
-        const result = db.exec(`
-          SELECT COUNT(*) as remaining
-          FROM words w
-          JOIN progress p ON p.word_id = w.id
-          WHERE w.jlpt_level = ?
-            AND p.known_forever = 0
-            AND p.seen_count = 0
-        `, [level]);
+        levels.forEach(level => {
+          const result = db.exec(`
+            SELECT COUNT(*) as remaining
+            FROM words w
+            JOIN progress p ON p.word_id = w.id
+            WHERE w.jlpt_level = ?
+              AND p.known_forever = 0
+              AND p.seen_count = 0
+          `, [level]);
 
-        if (result.length && result[0].values.length) {
-          const remaining = Number(result[0].values[0][0]);
-          const days = Math.ceil(remaining / dailyGoal);
-          newEstimations[level] = days;
-        }
-      });
+          if (result.length && result[0].values.length) {
+            const remaining = Number(result[0].values[0][0]);
+            const days = Math.ceil(remaining / dailyGoal);
+            newEstimations[level] = days;
+          }
+        });
 
-      setEstimations(newEstimations);
-    } catch (error) {
-      console.error('Failed to calculate estimations:', error);
-    }
+        if (alive) setEstimations(newEstimations);
+      } catch (error) {
+        console.error('Failed to calculate estimations:', error);
+      }
+    };
+    void calculate();
+    return () => {
+      alive = false;
+    };
   }, [dailyGoal]);
 
   if (Object.keys(estimations).length === 0) return null;
@@ -91,6 +98,7 @@ function GoalEstimation({ dailyGoal }: GoalEstimationProps) {
 
 interface SettingsPageProps {
   onBack: () => void;
+  onRequireAuth: () => void;
 }
 
 const themeOptions: { value: ThemePreference; label: string; icon: typeof Moon }[] = [
@@ -101,22 +109,20 @@ const themeOptions: { value: ThemePreference; label: string; icon: typeof Moon }
 
 const CLEAR_CONFIRM_TEXT = "清除所有数据";
 
-export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
+const yieldToBrowser = () => new Promise<void>((resolve) => {
+  if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(() => resolve());
+  else setTimeout(resolve, 0);
+});
+
+export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPageProps) {
   const [preferences, setPreferences] = useState<StudyPreferences>(defaultStudyPreferences);
   // 有哪些声音可选要问磁盘(音频库是构建产物,可能一个都没生成)
   const [voices, setVoices] = useState<AudioVoice[]>([]);
   const [storageInfo, setStorageInfo] = useState({ database: 0, local: 0, cache: 0 });
   const [message, setMessage] = useState("");
   const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
-  const [cloudEmail, setCloudEmail] = useState("");
-  const [cloudPassword, setCloudPassword] = useState("");
   const [cloudBusy, setCloudBusy] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
-  const [resetPanelOpen, setResetPanelOpen] = useState(false);
-  const [deletePanelOpen, setDeletePanelOpen] = useState(false);
-  const [deleteAccountPassword, setDeleteAccountPassword] = useState("");
-  const [resetCode, setResetCode] = useState("");
-  const [resetNewPassword, setResetNewPassword] = useState("");
   const [clearPanelOpen, setClearPanelOpen] = useState(false);
   const [clearRequiresPasscode, setClearRequiresPasscode] = useState(false);
   const [clearCredential, setClearCredential] = useState("");
@@ -130,7 +136,9 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
   };
 
-  const refreshStorageInfo = () => {
+  const refreshStorageInfo = async () => {
+    // 导出 SQLite 可能需要一段时间,不能在设置页首帧之前同步执行。
+    await yieldToBrowser();
     const data = exportDatabase();
     const localBytes = Array.from({ length: localStorage.length }, (_, index) => {
       const key = localStorage.key(index) ?? "";
@@ -146,12 +154,17 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   useEffect(() => {
     const savedPreferences = getStudyPreferences();
     setPreferences(savedPreferences);
-    refreshStorageInfo();
+    void refreshStorageInfo();
     getCloudSession().then((session) => {
       setCloudSession(session);
-      setCloudEmail(session.email ?? "");
     });
+    const refreshAuth = (event: Event) => {
+      const session = (event as CustomEvent<CloudSession>).detail;
+      if (session) setCloudSession(session);
+    };
+    window.addEventListener(CLOUD_AUTH_EVENT, refreshAuth);
     loadVoices().then(setVoices);
+    return () => window.removeEventListener(CLOUD_AUTH_EVENT, refreshAuth);
   }, []);
 
   const notify = (text: string) => {
@@ -169,7 +182,7 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     }
 
     notify(text);
-    refreshStorageInfo();
+    void refreshStorageInfo();
     return next;
   };
 
@@ -187,21 +200,14 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     const next = updatePreference({ reviewCap: value }, "复习上限已保存。");
     try {
       refreshTodayWordPlan();
-      notify(next.reviewCap > 0
-        ? `复习上限已改为每日 ${next.reviewCap} 个，超出部分顺延。`
-        : "复习上限已改回自动（按近期节奏 × 1.5）。");
+      notify(next.reviewCap === REVIEW_CAP_UNLIMITED
+        ? "复习上限已取消，当天到期的词会全部给你。"
+        : next.reviewCap > 0
+          ? `复习上限已改为每日 ${next.reviewCap} 个，超出部分顺延。`
+          : "复习上限已改回自动（按近期节奏 × 1.5）。");
     } catch {
       notify("复习上限已保存，重启应用后生效。");
     }
-  };
-
-  const updateComebackMode = (value: StudyPreferences["comebackMode"]) => {
-    updatePreference(
-      { comebackMode: value },
-      value === "pressure"
-        ? "回归节奏已设为高强度,下次触发 2~3 天快清。"
-        : "回归节奏已设为温和,下次触发按 7 天由轻到重摊还。"
-    );
   };
 
   const exportData = () => {
@@ -271,7 +277,7 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
 
       const result = importExternalWordList(text);
       await saveDatabase();
-      refreshStorageInfo();
+      await refreshStorageInfo();
       notify(`词单已导入：新增 ${result.inserted}，更新 ${result.updated}，待复习 ${result.queuedForReview}。`);
     } catch (error) {
       notify(error instanceof Error ? error.message : "词单导入失败，请换 CSV、TSV、JSON 或文本文件。");
@@ -318,25 +324,14 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
       const result = await action();
       const session = await getCloudSession();
       setCloudSession(session);
-      setCloudEmail(session.email ?? cloudEmail);
       notify(typeof result === "string" ? result : fallbackMessage);
-      refreshStorageInfo();
+      void refreshStorageInfo();
     } catch (error) {
       notify(error instanceof Error ? error.message : "云同步操作失败。");
     } finally {
       setCloudBusy(false);
     }
   };
-
-  const loginCloud = () => runCloudAction(
-    () => cloudLogin(cloudEmail, cloudPassword),
-    "云同步账号已登录。"
-  );
-
-  const registerCloud = () => runCloudAction(
-    () => cloudRegister(cloudEmail, cloudPassword),
-    "云同步账号已创建，验证码已发送到邮箱。"
-  );
 
   const sendVerification = () => runCloudAction(
     sendCloudVerificationEmail,
@@ -353,24 +348,11 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
     "邮箱已验证。"
   );
 
-  const requestPasswordReset = () => runCloudAction(
-    () => requestCloudPasswordReset(cloudEmail),
-    "如果该邮箱已注册，验证码会发送到邮箱。"
-  );
-
-  const submitPasswordReset = () => runCloudAction(
-    async () => {
-      const result = await resetCloudPassword(cloudEmail, resetCode, resetNewPassword);
-      setResetCode("");
-      setResetNewPassword("");
-      setResetPanelOpen(false);
-      setCloudPassword("");
-      return result;
-    },
-    "密码已重置，请使用新密码登录。"
-  );
-
-  const pushCloud = () => runCloudAction(pushCloudBackup, "云端备份已上传。");
+  const pushCloud = () => {
+    const confirmed = window.confirm("确定要用本机学习数据覆盖云端备份吗？如果这是切换账号后的本机数据，请先确认账号无误。");
+    if (!confirmed) return;
+    runCloudAction(pushCloudBackup, "云端备份已上传。");
+  };
 
   const pullCloud = () => {
     const confirmed = window.confirm("确定要用云端备份覆盖本机学习数据吗？建议先导出一份本机备份。");
@@ -385,25 +367,10 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
   const logoutCloud = () => runCloudAction(
     async () => {
       await cloudLogout();
-      setCloudPassword("");
       return "已退出云同步账号。";
     },
     "已退出云同步账号。"
   );
-
-  const deleteCloud = () => {
-    const confirmed = window.confirm(
-      "确定要永久删除云同步账号吗？\n云端备份、账号信息会立即删除且无法恢复。本机学习数据保留，App Store 购买可通过“恢复购买”重新激活。"
-    );
-    if (!confirmed) return;
-    runCloudAction(async () => {
-      await deleteCloudAccount(deleteAccountPassword);
-      setDeleteAccountPassword("");
-      setDeletePanelOpen(false);
-      setCloudPassword("");
-      return "云同步账号已删除，本机学习数据不受影响。";
-    }, "云同步账号已删除。");
-  };
 
   const totalStorage = storageInfo.database + storageInfo.local + storageInfo.cache;
 
@@ -561,10 +528,11 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
               <p className="text-sm font-bold text-white">每日复习上限</p>
               <p className="mt-0.5 text-xs text-white/50">
                 学不完的顺延到后面几天,按遗忘风险排队,不会丢。自动 = 近期节奏 × 1.5(60-150)。
+                选「全部」则不截断,当天到期多少给多少。
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {[0, 100, 150, 200, 300].map((cap) => (
+              {[REVIEW_CAP_UNLIMITED, 0, 100, 150, 200, 300].map((cap) => (
                 <button
                   key={cap}
                   onClick={() => updateReviewCap(cap)}
@@ -574,41 +542,12 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
                       : "border border-white/15 bg-white/8 text-white/70"
                   }`}
                 >
-                  {cap === 0 ? "自动(推荐)" : `${cap} 个`}
+                  {cap === REVIEW_CAP_UNLIMITED ? "全部" : cap === 0 ? "自动(推荐)" : `${cap} 个`}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="border-t border-white/10 p-4">
-            <div className="mb-3">
-              <p className="text-sm font-bold text-white">回归节奏</p>
-              <p className="mt-0.5 text-xs text-white/50">
-                长期没打卡、积压堆多了会触发回归模式。选清积压的节奏:温和由轻到重摊 7 天,高强度 2~3 天快清。
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {([
-                { value: "gentle", label: "🌱 温和(7天)" },
-                { value: "pressure", label: "⚡ 高强度(2-3天)" }
-              ] as const).map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => updateComebackMode(option.value)}
-                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
-                    preferences.comebackMode === option.value
-                      ? "bg-[#81D8CF] text-[#2f3333]"
-                      : "border border-white/15 bg-white/8 text-white/70"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-2 text-xs text-white/40">
-              改动在下次触发回归时生效,进行中的回归不受影响。
-            </p>
-          </div>
 
           <div className="border-t border-white/10 p-4">
             <div className="mb-3">
@@ -656,28 +595,10 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
                     : "可登录后把本机学习数据库备份到云端"
                   : "还没有配置 VITE_SYNC_API_URL，部署 Cloudflare Worker 后即可启用"}
               </p>
+              <p className="mt-1 text-xs leading-5 text-white/42">
+                登录后会在本机保存学习数据时自动上传，并在启动或回到前台时自动拉取；不同单词会自动合并，同一条记录冲突时按版本处理。切换账号或首次发现本机已有数据时会暂停，需手动选择上传或拉取。
+              </p>
             </div>
-
-            {!cloudSession.token && (
-              <div className="grid gap-2 sm:grid-cols-2">
-                <input
-                  type="email"
-                  value={cloudEmail}
-                  onChange={(event) => setCloudEmail(event.target.value)}
-                  className="focus-ring rounded-xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
-                  placeholder="邮箱"
-                  disabled={cloudBusy || !cloudSession.configured}
-                />
-                <input
-                  type="password"
-                  value={cloudPassword}
-                  onChange={(event) => setCloudPassword(event.target.value)}
-                  className="focus-ring rounded-xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
-                  placeholder="密码（至少8位）"
-                  disabled={cloudBusy || !cloudSession.configured}
-                />
-              </div>
-            )}
 
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {cloudSession.token ? (
@@ -731,107 +652,17 @@ export function SettingsPage({ onBack: _onBack }: SettingsPageProps) {
                   >
                     退出云同步账号
                   </button>
-                  <button
-                    onClick={() => {
-                      setDeletePanelOpen((value) => !value);
-                      setDeleteAccountPassword("");
-                    }}
-                    disabled={cloudBusy}
-                    className="focus-ring rounded-xl border border-red-400/30 px-3 py-2 text-sm font-bold text-red-300/80 hover:bg-red-400/10 disabled:opacity-50 sm:col-span-2"
-                  >
-                    删除云同步账号
-                  </button>
-                  {deletePanelOpen && (
-                    <div className="rounded-2xl border border-red-400/25 bg-[#3c3f3f] p-3 sm:col-span-2">
-                      <p className="text-xs font-bold text-red-300/85">
-                        删除后云端备份和账号信息立即清除且无法恢复；本机学习数据保留，App Store 购买可通过“恢复购买”重新激活。
-                      </p>
-                      <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
-                        <input
-                          type="password"
-                          value={deleteAccountPassword}
-                          onChange={(event) => setDeleteAccountPassword(event.target.value)}
-                          className="focus-ring rounded-xl border border-white/20 bg-[#464949] px-3 py-2 text-sm text-white placeholder:text-white/40"
-                          placeholder="输入账号密码确认删除"
-                          disabled={cloudBusy}
-                        />
-                        <button
-                          onClick={deleteCloud}
-                          disabled={cloudBusy || deleteAccountPassword.length < 8}
-                          className="focus-ring rounded-xl bg-red-400/85 px-4 py-2 text-sm font-bold text-[#2b2020] hover:bg-red-300 disabled:opacity-50"
-                        >
-                          永久删除
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </>
               ) : (
-                <>
-                  <button
-                    onClick={loginCloud}
-                    disabled={cloudBusy || !cloudSession.configured || !cloudEmail || !cloudPassword}
-                    className="focus-ring rounded-xl bg-[#81D8CF] px-3 py-2 text-sm font-bold text-[#343838] hover:bg-white disabled:opacity-50"
-                  >
-                    登录云同步
-                  </button>
-                  <button
-                    onClick={registerCloud}
-                    disabled={cloudBusy || !cloudSession.configured || !cloudEmail || cloudPassword.length < 8}
-                    className="focus-ring rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white/78 hover:bg-white/8 disabled:opacity-50"
-                  >
-                    创建账号
-                  </button>
-                  <button
-                    onClick={() => setResetPanelOpen((value) => !value)}
-                    disabled={cloudBusy || !cloudSession.configured || !cloudEmail}
-                    className="focus-ring rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white/60 hover:bg-white/8 disabled:opacity-50 sm:col-span-2"
-                  >
-                    忘记密码 / 重置密码
-                  </button>
-                </>
+                <button
+                  onClick={onRequireAuth}
+                  disabled={!cloudSession.configured}
+                  className="focus-ring rounded-xl bg-[#91C968] px-3 py-2 text-sm font-bold text-[#172112] hover:bg-[#B7E38D] disabled:opacity-50 sm:col-span-2"
+                >
+                  登录后启用云同步
+                </button>
               )}
             </div>
-
-            {!cloudSession.token && resetPanelOpen && (
-              <div className="mt-3 rounded-2xl border border-white/15 bg-[#3c3f3f] p-3">
-                <p className="text-xs font-bold text-white/65">先输入上方邮箱，点击发送验证码，再输入验证码和新密码。</p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  <button
-                    onClick={requestPasswordReset}
-                    disabled={cloudBusy || !cloudEmail}
-                    className="focus-ring rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white/78 hover:bg-white/8 disabled:opacity-50"
-                  >
-                    发送重置验证码
-                  </button>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={resetCode}
-                    onChange={(event) => setResetCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="focus-ring rounded-xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
-                    placeholder="6 位验证码"
-                    disabled={cloudBusy}
-                  />
-                  <input
-                    type="password"
-                    value={resetNewPassword}
-                    onChange={(event) => setResetNewPassword(event.target.value)}
-                    className="focus-ring rounded-xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
-                    placeholder="新密码（至少8位）"
-                    disabled={cloudBusy}
-                  />
-                  <button
-                    onClick={submitPasswordReset}
-                    disabled={cloudBusy || resetCode.length !== 6 || resetNewPassword.length < 8}
-                    className="focus-ring rounded-xl bg-[#81D8CF] px-3 py-2 text-sm font-bold text-[#343838] hover:bg-white disabled:opacity-50"
-                  >
-                    确认重置密码
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           <button onClick={exportData} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">

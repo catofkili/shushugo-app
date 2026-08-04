@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { encoreWeekKey } from "../../lib/comeback";
+import { encoreWeekKey } from "../../lib/review-budget";
 import {
   ENCORE_DAY_COLORS,
   encoreDayColor,

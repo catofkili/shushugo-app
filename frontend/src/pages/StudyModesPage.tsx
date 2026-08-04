@@ -1,4 +1,4 @@
-import { BookOpenText, CheckCircle2, Layers3, LetterText, Repeat2 } from "lucide-react";
+import { BookOpenText, Brain, CheckCircle2, Layers3, LetterText, Repeat2 } from "lucide-react";
 import { defaultStudyMode, saveStudyMode } from "../lib/studyMode";
 import type { StudyMode } from "../types/app";
 
@@ -28,6 +28,13 @@ const modes: {
     subtitle: "释义 → 日语",
     description: "看中文释义，回忆假名、汉字和词性。",
     icon: BookOpenText
+  },
+  {
+    id: "mistakes",
+    title: "学习错题本",
+    subtitle: "长期薄弱词",
+    description: "根据长期错误率和记忆难度，集中学习算法判断仍不牢固的词。",
+    icon: Brain
   },
   {
     id: "reverse",
@@ -71,7 +78,7 @@ export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyMod
               onClick={() => chooseMode(item.id)}
               className={`focus-ring rounded-2xl border p-4 text-left transition ${
                 active
-                  ? "border-[#81D8CF]/65 bg-[#81D8CF]/18 shadow-[0_0_0_3px_rgba(129,216,207,0.14)]"
+                  ? "border-[#81D8CF]/65 bg-[#81D8CF]/18 shadow-[0_0_0_3px_rgba(145,201,104,0.14)]"
                   : "border-white/15 bg-[#464949] hover:bg-[#4d5151]"
               }`}
               aria-pressed={active}

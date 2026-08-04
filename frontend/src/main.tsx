@@ -11,7 +11,9 @@ import { applyMotionLevel, applyTheme } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { autoSyncReminderNotifications } from './lib/notifications';
 import { initializePurchases } from './lib/purchases';
-import { refreshCloudEntitlements } from './lib/sync-api';
+import { autoSyncCloudDatabase, registerCloudAutoSyncLifecycle, refreshCloudEntitlements } from './lib/sync-api';
+import { ensureSyncSchema } from './lib/sync/schema';
+import { flushPendingUserProfileSync } from './lib/profile-sync';
 
 // 初始化 WebView 优化
 initWebViewOptimizer();
@@ -48,7 +50,7 @@ const root = createRoot(document.getElementById('root')!);
 
 root.render(
   <StrictMode>
-    <div className="grid min-h-screen place-items-center bg-[#555858] px-6 text-center text-[#fff]">
+    <div className="app-boot-loading grid min-h-screen place-items-center overflow-y-auto bg-[#555858] px-6 text-center text-[#fff]">
       <div>
         <p className="jp-serif text-4xl font-semibold">語</p>
         <p className="mt-3 text-sm font-semibold text-white/70">正在读取本地词库...</p>
@@ -65,20 +67,9 @@ root.render(
       await initDatabase();
     }
     await ensureSeedData();
+    ensureSyncSchema();
     registerPersistenceLifecycle();
-    autoSyncReminderNotifications().catch((error) => {
-      console.warn('Notification reminder sync skipped:', error);
-    });
-    // 已登录云账号的话,后台静默刷新 Pro 权益(订阅在别的设备续订/取消后保持一致);
-    // 未登录或未配置同步地址时内部直接返回,不产生请求。
-    refreshCloudEntitlements().catch((error) => {
-      console.warn('Cloud entitlement refresh skipped:', error);
-    });
-    // 启动时就初始化 StoreKit:订阅续订/退款要靠 verified 回调更新本地权益,
-    // 不能等用户打开 Paywall 才生效。非 iOS 环境内部直接返回。
-    initializePurchases().catch((error) => {
-      console.warn('StoreKit init skipped:', error);
-    });
+    registerCloudAutoSyncLifecycle();
     console.log('✅ Database ready');
     root.render(
       <StrictMode>
@@ -87,12 +78,37 @@ root.render(
         </ErrorBoundary>
       </StrictMode>
     );
+
+    // 离线优先:先显示本地数据库,网络同步在后台进行。同步失败不能伪装成
+    // “本地词库读取失败”,同步完成后会通过事件让 App 刷新进度。
+    autoSyncCloudDatabase('startup').catch((error) => {
+      console.warn('Cloud startup sync skipped:', error);
+    });
+    autoSyncReminderNotifications().catch((error) => {
+      console.warn('Notification reminder sync skipped:', error);
+    });
+    // 已登录云账号的话,后台静默刷新 Pro 权益(订阅在别的设备续订/取消后保持一致);
+    // 未登录或未配置同步地址时内部直接返回,不产生请求。
+    refreshCloudEntitlements().catch((error) => {
+      console.warn('Cloud entitlement refresh skipped:', error);
+    });
+    flushPendingUserProfileSync().catch((error) => {
+      console.warn('Profile sync skipped:', error);
+    });
+    window.addEventListener('online', () => {
+      void flushPendingUserProfileSync().catch((error) => console.warn('Profile sync retry skipped:', error));
+    });
+    // 启动时就初始化 StoreKit:订阅续订/退款要靠 verified 回调更新本地权益,
+    // 不能等用户打开 Paywall 才生效。非 iOS 环境内部直接返回。
+    initializePurchases().catch((error) => {
+      console.warn('StoreKit init skipped:', error);
+    });
   })()
   .catch((error) => {
     console.error('❌ Failed to initialize database:', error);
     root.render(
       <StrictMode>
-        <div className="grid min-h-screen place-items-center bg-[#555858] px-6 text-center text-[#fff]">
+        <div className="app-boot-loading grid min-h-screen place-items-center overflow-y-auto bg-[#555858] px-6 text-center text-[#fff]">
           <div>
             <p className="text-xl font-bold">本地词库读取失败</p>
             <p className="mt-3 text-sm text-white/70">请检查应用内是否包含 nihongo.db 和 sql-wasm.wasm。</p>

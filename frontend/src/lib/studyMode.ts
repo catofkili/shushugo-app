@@ -1,7 +1,7 @@
 import type { StudyMode } from "../types/app";
 
 const KEY = "mn-active-study-mode";
-const modes = new Set<StudyMode>(["classic", "vocabulary", "reverse", "kanji"]);
+const modes = new Set<StudyMode>(["classic", "vocabulary", "mistakes", "reverse", "kanji"]);
 
 export const defaultStudyMode: StudyMode = "classic";
 

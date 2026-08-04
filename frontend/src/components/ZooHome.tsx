@@ -7,6 +7,7 @@ import type { WordStats } from "../types/vocabulary";
 import type { Page } from "../types/app";
 import { CapybaraMascot } from "./CapybaraMascot";
 import { ZooProgressPanel } from "./ZooProgressPanel";
+import { QuickStudyPanel } from "./QuickStudyPanel";
 
 /**
  * 主页 —— 取代原来的「工具箱」页,工具箱里的每一项都在这里有入口:
@@ -25,6 +26,7 @@ import { ZooProgressPanel } from "./ZooProgressPanel";
 type Props = {
   overview: ProgressOverview;
   onNavigate: (page: Page) => void;
+  onStartMistakes: () => void;
   onOpenFill: () => void;
   onRefreshOverview: () => void;
   onCompleteTodayWords: () => void;
@@ -45,6 +47,7 @@ const HABITAT_NAMES: Record<string, string> = {
 export function ZooHome({
   overview,
   onNavigate,
+  onStartMistakes,
   onOpenFill,
   onRefreshOverview,
   onCompleteTodayWords
@@ -113,7 +116,7 @@ export function ZooHome({
       </div>
 
       {/* ① 今天 */}
-      <div className="zoo-bento">
+      <div className="zoo-bento zoo-today-grid">
         <button className="zoo-tile zoo-tile-hero" onClick={() => onNavigate("word")}>
           <div className="zoo-tile-hero-l">
             <span className="zoo-tile-kick">今日复习</span>
@@ -126,6 +129,17 @@ export function ZooHome({
             <span className="zoo-tile-hero-emoji">🐿️</span>
             <span className="zoo-tile-cta">{remaining > 0 ? "开始 →" : "再来一批 →"}</span>
           </div>
+        </button>
+
+        <QuickStudyPanel variant="entry" onNavigate={onNavigate} />
+
+        <button className="zoo-tile zoo-tile-mistakes" onClick={onStartMistakes}>
+          <span className="zoo-tile-mistakes-emoji" aria-hidden="true">🧠</span>
+          <span className="zoo-tile-mistakes-copy">
+            <b>学习错题本</b>
+            <small>算法挑选长期薄弱词</small>
+          </span>
+          <span className="zoo-tile-mistakes-arrow" aria-hidden="true">→</span>
         </button>
 
         <button className="zoo-tile zoo-tile-team" onClick={() => onNavigate("team")}>
@@ -183,7 +197,7 @@ export function ZooHome({
         <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("study-modes")}>
           <span className="zoo-tile-emoji">🎛️</span>
           <b>学习模式</b>
-          <span className="zoo-tile-sub">经典 · 词汇 · 反向 · 汉字</span>
+          <span className="zoo-tile-sub">经典 · 词汇 · 错题本 · 反向 · 汉字</span>
         </button>
 
         <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("favorites")}>

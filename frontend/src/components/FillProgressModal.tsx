@@ -22,8 +22,8 @@ export function FillProgressModal({
   onToggleLevel
 }: FillProgressModalProps) {
   return (
-    <div className="fixed inset-0 z-[60] grid place-items-center bg-black/35 px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-white/20 bg-[#3f4343] p-4 shadow-2xl">
+    <div className="fixed inset-0 z-[60] grid overflow-y-auto place-items-center bg-black/35 px-4 py-4">
+      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border border-white/20 bg-[#3f4343] p-4 shadow-2xl">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/48">Fill Progress</p>

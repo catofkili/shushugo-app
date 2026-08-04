@@ -84,7 +84,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/50 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-6">
+    <div className="fixed inset-0 z-[10000] flex items-end justify-center overflow-y-auto bg-black/50 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-6">
       <section className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-white/15 bg-[#3f4343] p-4 shadow-2xl sm:p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <button onClick={onClose} className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/76 hover:bg-white/8">

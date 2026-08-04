@@ -43,7 +43,7 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
               key={option}
               className={`focus-ring block w-full rounded-xl border px-4 py-3 text-left text-sm transition-all shadow-[0_4px_12px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)] ${
                 answer === option
-                  ? "border-[#81D8CF]/50 bg-[#81D8CF]/25 text-white shadow-[0_6px_20px_rgba(129,216,207,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                  ? "border-[#81D8CF]/50 bg-[#81D8CF]/25 text-white shadow-[0_6px_20px_rgba(145,201,104,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
                   : "border-white/15 bg-white/6 text-white/85 hover:bg-[#81D8CF]/15 hover:border-white/25"
               }`}
               onClick={() => setAnswer(option)}
@@ -58,7 +58,7 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
                 key={value}
                 className={`focus-ring rounded-xl border px-4 py-3 text-sm transition-all shadow-[0_4px_12px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)] ${
                   answer === value
-                    ? "border-[#81D8CF]/50 bg-[#81D8CF]/25 text-white shadow-[0_6px_20px_rgba(129,216,207,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                  ? "border-[#81D8CF]/50 bg-[#81D8CF]/25 text-white shadow-[0_6px_20px_rgba(145,201,104,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
                     : "border-white/15 bg-white/6 text-white/85 hover:bg-[#81D8CF]/15 hover:border-white/25"
                 }`}
                 onClick={() => setAnswer(value)}
@@ -78,7 +78,7 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
         )}
         {!submitted && (
           <button
-            className="focus-ring rounded-xl bg-[#81D8CF] px-4 py-2 text-sm font-semibold text-[#343838] hover:bg-[#81D8CF]/85 transition shadow-[0_6px_20px_rgba(129,216,207,0.4),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_8px_24px_rgba(129,216,207,0.5)] hover:-translate-y-0.5"
+            className="focus-ring rounded-xl bg-[#81D8CF] px-4 py-2 text-sm font-semibold text-[#343838] hover:bg-[#81D8CF]/85 transition shadow-[0_6px_20px_rgba(145,201,104,0.4),inset_0_1px_0_rgba(255,255,255,0.3)] hover:shadow-[0_8px_24px_rgba(145,201,104,0.5)] hover:-translate-y-0.5"
             onClick={submit}
           >
             Submit

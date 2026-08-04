@@ -5,12 +5,15 @@ import { AppNavigation } from "./components/AppNavigation";
 import { ZooHome } from "./components/ZooHome";
 import { FillProgressModal } from "./components/FillProgressModal";
 import { Paywall } from "./components/Paywall";
+import { AuthDialog } from "./components/AuthDialog";
 import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
 import { completeTodayWordPlan, getProgressOverview, markContentComplete, ProgressOverview } from "./lib/api";
 import { canUseFeature, FeatureId } from "./lib/entitlements";
 import { PROGRESS_UPDATED_EVENT } from "./lib/progress-events";
 import { defaultStudyMode, getStudyMode, saveStudyMode } from "./lib/studyMode";
+import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
+import { syncUserProfileAfterLogin } from "./lib/profile-sync";
 import type { SearchResult } from "./lib/search-api";
 import { GrammarMode, Page, StudyMode } from "./types/app";
 import { JLPTLevel } from "./types/grammar";
@@ -26,6 +29,7 @@ const NotificationSettings = lazy(() => import("./pages/NotificationSettings").t
 const SettingsPage = lazy(() => import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage })));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings").then((module) => ({ default: module.PrivacySettings })));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy").then((module) => ({ default: module.PrivacyPolicy })));
+const UserAgreement = lazy(() => import("./pages/UserAgreement").then((module) => ({ default: module.UserAgreement })));
 const HelpPage = lazy(() => import("./pages/HelpPage").then((module) => ({ default: module.HelpPage })));
 const AboutPage = lazy(() => import("./pages/AboutPage").then((module) => ({ default: module.AboutPage })));
 const ProPage = lazy(() => import("./pages/ProPage").then((module) => ({ default: module.ProPage })));
@@ -35,17 +39,21 @@ const TeamPage = lazy(() => import("./pages/TeamPage").then((module) => ({ defau
 const ZooMapPage = lazy(() => import("./pages/ZooMapPage").then((module) => ({ default: module.ZooMapPage })));
 const ZooDexPage = lazy(() => import("./pages/ZooDexPage").then((module) => ({ default: module.ZooDexPage })));
 const HotSpringPage = lazy(() => import("./pages/HotSpringPage").then((module) => ({ default: module.HotSpringPage })));
+const QuickStudyPage = lazy(() => import("./pages/QuickStudyPage").then((module) => ({ default: module.QuickStudyPage })));
 
 const PageLoading = () => (
-  <div className="grid min-h-48 place-items-center rounded-2xl border border-white/15 bg-[#464949] p-6 text-sm font-semibold text-white/65">
+  <div className="grid min-h-[40vh] place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#464949] p-6 text-sm font-semibold text-white/65" aria-busy="true">
     正在加载页面...
   </div>
 );
 
 const toolPageTitles: Partial<Record<Page, string>> = {
   "study-modes": "学习模式",
-  favorites: "收藏"
+  favorites: "收藏",
+  "quick-study": "快速学习"
 };
+
+const accountProtectedPages = new Set<Page>(["account", "personal-info"]);
 
 export default function App() {
   const store = useStudyStore();
@@ -66,6 +74,25 @@ export default function App() {
   const [selectedStudyMode, setSelectedStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [launchStudyMode, setLaunchStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [wordStudyRevision, setWordStudyRevision] = useState(0);
+  const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
+  const [authOpen, setAuthOpen] = useState(false);
+  const [pendingAccountPage, setPendingAccountPage] = useState<Page | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void getCloudSession().then((session) => {
+      if (alive) setCloudSession(session);
+    });
+    const refreshAuth = (event: Event) => {
+      const session = (event as CustomEvent<CloudSession>).detail;
+      if (session) setCloudSession(session);
+    };
+    window.addEventListener(CLOUD_AUTH_EVENT, refreshAuth);
+    return () => {
+      alive = false;
+      window.removeEventListener(CLOUD_AUTH_EVENT, refreshAuth);
+    };
+  }, []);
 
   useEffect(() => {
     const refresh = () => setOverview(getProgressOverview());
@@ -74,6 +101,7 @@ export default function App() {
   }, []);
 
   const noticeTimerRef = useRef<number | undefined>(undefined);
+  const syncConflictNoticeRef = useRef("");
 
   const showNotice = (message: string, timeout = 1800) => {
     // 清掉上一条通知的计时器,避免旧计时器提前关掉新通知。
@@ -82,8 +110,40 @@ export default function App() {
     noticeTimerRef.current = window.setTimeout(() => setNotice(""), timeout);
   };
 
+  useEffect(() => {
+    const handleCloudSync = (event: Event) => {
+      const detail = (event as CustomEvent<CloudSyncEventDetail>).detail;
+      if (!detail) return;
+      if (detail.status === "downloaded") {
+        syncConflictNoticeRef.current = "";
+        setOverview(getProgressOverview());
+        // 背单词时不能因为后台同步重挂载 WordStudy,否则当前卡会被重新抽取。
+        // 当前学习会话继续使用本地状态,答完后自然会读到最新数据库。
+      } else if (detail.status === "merged") {
+        syncConflictNoticeRef.current = "";
+        setOverview(getProgressOverview());
+      } else if (detail.status === "uploaded") {
+        syncConflictNoticeRef.current = "";
+      } else if (detail.status === "conflict") {
+        const message = detail.message ?? "两台设备都有新进度，请到设置中手动处理。";
+        if (syncConflictNoticeRef.current === message) return;
+        syncConflictNoticeRef.current = message;
+        window.clearTimeout(noticeTimerRef.current);
+        setNotice(message);
+        noticeTimerRef.current = window.setTimeout(() => setNotice(""), 5000);
+      }
+    };
+    window.addEventListener(CLOUD_SYNC_EVENT, handleCloudSync);
+    return () => window.removeEventListener(CLOUD_SYNC_EVENT, handleCloudSync);
+  }, []);
+
   // 导航到新页面，记录历史
   const navigateToPage = (newPage: Page) => {
+    if (accountProtectedPages.has(newPage) && !cloudSession.token) {
+      setPendingAccountPage(newPage);
+      setAuthOpen(true);
+      return;
+    }
     if (newPage === "word") {
       const currentMode = getStudyMode() || defaultStudyMode;
       setSelectedStudyMode(currentMode);
@@ -96,6 +156,32 @@ export default function App() {
     if (newPage !== page) {
       setPageHistory([...pageHistory, page]);
       setPage(newPage);
+    }
+  };
+
+  const requireAccount = (target?: Page) => {
+    if (cloudSession.token) {
+      if (target) navigateToPage(target);
+      return;
+    }
+    setPendingAccountPage(target ?? null);
+    setAuthOpen(true);
+  };
+
+  const handleAuthenticated = async (session: CloudSession) => {
+    setCloudSession(session);
+    try {
+      await syncUserProfileAfterLogin(session);
+    } catch {
+      showNotice("账号已登录；个人资料将在恢复联网后继续同步。", 3200);
+    }
+    if (pendingAccountPage) {
+      const target = pendingAccountPage;
+      setPendingAccountPage(null);
+      if (target !== page) {
+        setPageHistory((history) => [...history, page]);
+        setPage(target);
+      }
     }
   };
 
@@ -285,6 +371,7 @@ export default function App() {
         <ZooHome
           overview={overview}
           onNavigate={navigateToPage}
+          onStartMistakes={() => startStudyMode("mistakes")}
           onOpenFill={() => setFillOpen(true)}
           onRefreshOverview={refreshOverview}
           onCompleteTodayWords={completeTodayWords}
@@ -306,6 +393,12 @@ export default function App() {
     if (page === "hot-spring") {
       return <HotSpringPage onNavigate={navigateToPage} />;
     }
+    if (page === "quick-study") {
+      return renderToolSubpage(
+        toolPageTitles["quick-study"] ?? "快速学习",
+        <QuickStudyPage onNavigate={navigateToPage} />
+      );
+    }
     if (page === "grammar") {
       return renderGrammarPage();
     }
@@ -326,7 +419,7 @@ export default function App() {
       );
     }
     if (page === "profile") {
-      return <ProfilePage entitlements={entitlements} onNavigate={navigateToPage} onNotice={showNotice} />;
+      return <ProfilePage entitlements={entitlements} cloudSession={cloudSession} onNavigate={navigateToPage} onRequireAuth={() => requireAccount()} onNotice={showNotice} />;
     }
     if (page === "pro") {
       return <ProPage entitlements={entitlements} onBack={goBack} onOpenPaywall={() => setPaywallFeature("fullJlptPlan")} onOpenPrivacy={() => navigateToPage("privacy-policy")} />;
@@ -342,7 +435,7 @@ export default function App() {
     }
     // 个人中心子页面
     if (page === "account") {
-      return <AccountSecurity onBack={goBack} />;
+      return <AccountSecurity onBack={goBack} cloudSession={cloudSession} />;
     }
     if (page === "personal-info") {
       return <PersonalInfo onBack={goBack} />;
@@ -351,13 +444,16 @@ export default function App() {
       return <NotificationSettings onBack={goBack} />;
     }
     if (page === "settings") {
-      return <SettingsPage onBack={goBack} />;
+      return <SettingsPage onBack={goBack} onRequireAuth={() => requireAccount()} />;
     }
     if (page === "privacy") {
-      return <PrivacySettings onBack={goBack} onOpenPolicy={() => navigateToPage("privacy-policy")} />;
+      return <PrivacySettings onBack={goBack} onOpenPolicy={() => navigateToPage("privacy-policy")} onOpenAgreement={() => navigateToPage("user-agreement")} />;
     }
     if (page === "privacy-policy") {
       return <PrivacyPolicy onBack={goBack} />;
+    }
+    if (page === "user-agreement") {
+      return <UserAgreement onBack={goBack} />;
     }
     if (page === "help") {
       return <HelpPage onBack={goBack} />;
@@ -422,6 +518,14 @@ export default function App() {
           onToggleLevel={toggleFillLevel}
         />
       )}
+      <AuthDialog
+        open={authOpen}
+        onClose={() => {
+          setAuthOpen(false);
+          setPendingAccountPage(null);
+        }}
+        onAuthenticated={handleAuthenticated}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Brain, CalendarDays, CheckCircle2, Clock3, ImageDown, Loader2, Minus, Pencil, Plus, Share2, X } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { ZooConfetti } from "../../components/ZooConfetti";
-import { estimatedMinutesFor } from "../../lib/comeback";
+import { estimatedMinutesFor } from "../../lib/review-budget";
 import { studyDate as currentStudyDate } from "../../lib/database/db-utils";
 import { splitFurigana, useFuriganaReady } from "../../lib/furigana";
 import { lookupAccent, pitchPattern, splitMorae, usePitchAccentReady } from "../../lib/pitch-accent";
@@ -361,11 +361,11 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                       <span
                         className={`grid h-6 w-6 place-items-center rounded-full text-[11px] font-semibold ring-1 sm:h-7 sm:w-7 sm:text-xs ${
                           checked
-                            ? "bg-[#81D8CF]/18 text-white ring-[#81D8CF] shadow-[0_0_0_3px_rgba(129,216,207,0.12)]"
+                            ? "bg-[#81D8CF]/18 text-white ring-[#81D8CF] shadow-[0_0_0_3px_rgba(145,201,104,0.12)]"
                             : hasActivity
                               ? "bg-white/10 text-white/70 ring-white/10"
                               : "text-white/55 ring-transparent"
-                        } ${isToday ? "shadow-[0_0_0_3px_rgba(129,216,207,0.35)]" : ""}`}
+                        } ${isToday ? "shadow-[0_0_0_3px_rgba(145,201,104,0.35)]" : ""}`}
                       >
                         {cell.day}
                       </span>
@@ -399,7 +399,6 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <p className="min-w-0 truncate text-xs text-white/60">
                       {encoreHook?.lead}
-                      {stats?.comeback?.active && ` · 回归计划 第 ${stats.comeback.dayIndex}/${stats.comeback.planDays} 天`}
                     </p>
                     <span
                       className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
@@ -543,8 +542,8 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
       </div>
 
       {shareCard && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 p-4">
-          <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-[#2f3333] p-3 shadow-2xl">
+        <div className="fixed inset-0 z-50 grid overflow-y-auto place-items-center bg-black/65 p-4">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border border-white/15 bg-[#2f3333] p-3 shadow-2xl">
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-sm font-bold text-white">今日炫耀图</p>
               <button

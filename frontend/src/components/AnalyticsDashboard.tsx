@@ -52,14 +52,14 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-5 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 grid overflow-y-auto place-items-center bg-black/30 p-5 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
       aria-label="学习记忆程度"
       onClick={onClose}
     >
       <div
-        className="memory-bubble relative w-full max-w-[360px] rounded-[42px] border border-[#81D8CF]/35 bg-[#f8fdfb] p-6 text-left text-[#163f35] shadow-2xl"
+        className="memory-bubble relative max-h-[calc(100dvh-2.5rem)] w-full max-w-[360px] overflow-y-auto rounded-[42px] border border-[#81D8CF]/35 bg-[#f8fdfb] p-6 text-left text-[#163f35] shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <button
@@ -93,7 +93,7 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
             <p className="mt-2 text-xl font-black text-[#1e6a5f]">{memoryStats.label}</p>
             <div className="mt-5 h-3 overflow-hidden rounded-full bg-[#d7eee9]">
               <div
-                className="h-full rounded-full bg-[#81D8CF] shadow-[0_0_18px_rgba(129,216,207,0.5)]"
+                className="h-full rounded-full bg-[#81D8CF] shadow-[0_0_18px_rgba(145,201,104,0.5)]"
                 style={{ width: `${memoryStats.memoryPercent}%` }}
               />
             </div>

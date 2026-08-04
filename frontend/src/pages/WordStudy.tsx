@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
-import { AlertCircle, Eye, RotateCcw, Star, StickyNote, X } from "lucide-react";
-import { WordAnswer, WordCard, WordLevelFilter, WordSessionResponse, WordStats, WordTypeFilter } from "../types/vocabulary";
-import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, getWordSession, markComebackAnnounced, markTodayWordCheckin, setComebackModeForToday, startComebackEncore, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
-import { getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences, StudyPreferences } from "../lib/studyPreferences";
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import { AlertCircle, Eye, GitCompareArrows, RotateCcw, Star, StickyNote, X } from "lucide-react";
+import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
+import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, getWordSession, jumpToSimilarWord, markTodayWordCheckin, startEncore as startEncoreSession, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
+import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { addStudyTime, checkAchievements } from "../lib/userProfile";
 import { triggerMemoryHaptic } from "../lib/haptics";
 import { playPronunciation } from "../lib/speech";
@@ -18,11 +18,10 @@ import {
   answerOptions,
   cardLabel,
   kanaToRomaji,
-  levelOptions,
   primaryAnswerText,
-  typeOptions
 } from "../features/word-study/word-study-utils";
 import type { StudyMode } from "../types/app";
+import type { WordSessionOptions } from "../lib/study-types";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -41,6 +40,56 @@ const SWIPE_FLING_MS = 240;
 /** 飞出距离:超过任何手机屏宽即可 */
 const FLING_DISTANCE = 900;
 
+const answerHotkeys: Record<string, WordAnswer> = {
+  v: "forgot",
+  b: "fuzzy",
+  n: "know",
+  m: "known_forever"
+};
+
+const answerHotkeyLabels: Record<WordAnswer, string> = {
+  forgot: "V",
+  fuzzy: "B",
+  know: "N",
+  known_forever: "M"
+};
+
+const reservedRevealKeys = new Set([
+  "Tab",
+  "Escape",
+  "CapsLock",
+  "Control",
+  "Shift",
+  "Meta",
+  "Enter",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "Home",
+  "End",
+  "PageUp",
+  "PageDown",
+  "Backspace",
+  "Delete",
+  "Insert",
+  "PrintScreen",
+  "Pause",
+  "ContextMenu"
+]);
+
+const isEditableTarget = (target: EventTarget | null) => {
+  const element = target instanceof Element ? target : null;
+  return Boolean(element?.closest("input, textarea, select, [contenteditable='true']"));
+};
+
+const isInteractiveActivationKey = (key: string) => key === "Enter" || key === " ";
+
+const yieldToBrowser = () => new Promise<void>((resolve) => {
+  if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(() => resolve());
+  else setTimeout(resolve, 0);
+});
+
 export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   const [card, setCard] = useState<WordCard | null>(null);
   const [stats, setStats] = useState<WordStats | null>(null);
@@ -50,11 +99,11 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteMemoryOpen, setNoteMemoryOpen] = useState(false);
+  const [similarMeaningOpen, setSimilarMeaningOpen] = useState(false);
+  const [activePopover, setActivePopover] = useState<"note" | "noteMemory" | "similarMeaning" | null>(null);
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const [localStudySeconds, setLocalStudySeconds] = useState(0);
-  const [selectedLevel, setSelectedLevel] = useState<WordLevelFilter>("All");
-  const [selectedType, setSelectedType] = useState<WordTypeFilter>("all");
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
   const lastStudyTickRef = useRef(Date.now());
@@ -70,15 +119,10 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   const [flingDir, setFlingDir] = useState<0 | 1 | -1>(0);
   // 被点评分按钮的即时反馈:认识=弹一下发光,不认识=轻轻摇头(不惩罚)
   const [rateFeedback, setRateFeedback] = useState<{ value: WordAnswer; good: boolean } | null>(null);
-
-  // 今日计划的进度已经在顶栏的松鼠小路上了,这里只保留「筛选后这批词掌握了多少」——
-  // 那是小路给不了的信息(小路永远是当天的整份计划)。没开筛选时不显示。
-  const filteredMastery = useMemo(() => {
-    if ((selectedLevel !== "All" || selectedType !== "all") && stats?.total) {
-      return `${stats.knownForever}/${stats.total}`;
-    }
-    return "";
-  }, [selectedLevel, selectedType, stats]);
+  const sessionOptions = useMemo<WordSessionOptions>(
+    () => initialMode === "mistakes" ? { focus: "mistakes" } : {},
+    [initialMode]
+  );
 
   const markedKanji = useMemo(() => {
     return (card?.kanjiComponents ?? []).filter((component) => component.marked);
@@ -88,15 +132,11 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   //（camera/コーヒー…),传进去会被逐字母拆成 "c a m e r a" 这种乱码。
   const romaji = useMemo(() => card ? kanaToRomaji(card.kana) : "", [card]);
 
-  const sessionOptions = useMemo(() => ({
-    level: selectedLevel,
-    type: selectedType
-  }), [selectedLevel, selectedType]);
-
   const loadNext = async (mode: StudyMode = initialMode) => {
     setLoading(true);
     setError("");
     try {
+      await yieldToBrowser();
       let data: WordSessionResponse;
       if (mode === "reverse") {
         data = continueStage2Study();
@@ -118,7 +158,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
 
   useEffect(() => {
     loadNext(initialMode);
-  }, [selectedLevel, selectedType, initialMode]);
+  }, [initialMode]);
 
   useEffect(() => {
     const handlePreferences = (event: Event) => {
@@ -129,12 +169,12 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   }, []);
 
   // 具体读什么、用文件还是用系统语音,都在 lib/speech.ts 里决定;这里只管开关。
-  const speakCard = (target: WordCard) => {
+  const speakCard = useCallback((target: WordCard) => {
     if (!preferences.autoPlay) return;
     void playPronunciation(target.kanji, target.kana, preferences.voiceId);
-  };
+  }, [preferences.autoPlay, preferences.voiceId]);
 
-  const sendStudySeconds = async (seconds: number) => {
+  const sendStudySeconds = useCallback(async (seconds: number) => {
     if (seconds <= 0) return null;
     setLocalStudySeconds((value) => value + seconds);
     try {
@@ -155,7 +195,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
       // Time tracking should never interrupt review.
       return null;
     }
-  };
+  }, []);
 
   const elapsedStudySeconds = () => {
     const now = Date.now();
@@ -190,15 +230,17 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
       document.removeEventListener("visibilitychange", handleVisibility);
       flushStudyTime();
     };
-  }, []);
+  }, [sendStudySeconds]);
 
   useEffect(() => {
     setNoteText(card?.note ?? "");
     setNoteEditorOpen(false);
     setNoteMemoryOpen(false);
+    setSimilarMeaningOpen(false);
+    setActivePopover(null);
   }, [card?.id]);
 
-  const submitAnswer = async (answer: WordAnswer) => {
+  const submitAnswer = useCallback(async (answer: WordAnswer) => {
     // submittingRef is synchronous, so a second tap is blocked immediately —
     // before React can re-render the `disabled`/`submitting` state — which is
     // what the `submitting` state alone could miss on a fast double-tap.
@@ -234,13 +276,62 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
       setSubmitting(false);
       setRateFeedback(null);
     }
-  };
+  }, [card, sendStudySeconds, sessionOptions, submitting]);
+
+  const revealAnswer = useCallback(() => {
+    if (!card || loading || revealed || submitting) return;
+    setRevealed(true);
+    playFlip();
+    setNoteEditorOpen(false);
+    if (card.note) {
+      setNoteMemoryOpen(true);
+      setActivePopover("noteMemory");
+    } else {
+      setNoteMemoryOpen(false);
+      setActivePopover(similarMeaningOpen ? "similarMeaning" : null);
+    }
+    speakCard(card);
+  }, [card, loading, revealed, similarMeaningOpen, speakCard, submitting]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Keep browser/app shortcuts and text editing untouched.
+      if (
+        event.defaultPrevented
+        || event.repeat
+        || event.ctrlKey
+        || event.metaKey
+        || event.altKey
+        || isEditableTarget(event.target)
+      ) return;
+
+      const key = event.key.toLowerCase();
+      if (revealed) {
+        const answer = answerHotkeys[key];
+        if (!answer || !card || submitting) return;
+        event.preventDefault();
+        void submitAnswer(answer);
+        return;
+      }
+
+      if (!card || loading || submitting || reservedRevealKeys.has(event.key)) return;
+      // A focused button/link should retain its native Enter/Space behavior.
+      const element = event.target instanceof Element ? event.target : null;
+      if (element?.closest("button, a") && isInteractiveActivationKey(event.key)) return;
+
+      event.preventDefault();
+      revealAnswer();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [card, loading, revealed, submitting, submitAnswer, revealAnswer]);
 
   const undo = async () => {
     setSubmitting(true);
     setError("");
     try {
-      const data = undoLastWordAnswer();
+      const data = undoLastWordAnswer(sessionOptions);
       setCard(data.card);
       setStats(data.stats);
       setPhase(data.phase);
@@ -262,6 +353,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
       setNoteText(data.note);
       setNoteEditorOpen(false);
       setNoteMemoryOpen(false);
+      setActivePopover(similarMeaningOpen ? "similarMeaning" : null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "便签保存失败");
     } finally {
@@ -280,17 +372,58 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
     }
   };
 
+  const toggleSimilarMeaning = () => {
+    if (!card?.similarMeaning) return;
+    setSimilarMeaningOpen((open) => {
+      const next = !open;
+      setActivePopover(next ? "similarMeaning" : (noteEditorOpen ? "note" : noteMemoryOpen ? "noteMemory" : null));
+      return next;
+    });
+  };
+
+  const jumpToSimilar = (targetWordId: number) => {
+    if (!card || submittingRef.current || submitting) return;
+    submittingRef.current = true;
+    setSubmitting(true);
+    setError("");
+    try {
+      const data = jumpToSimilarWord(card.id, targetWordId, sessionOptions);
+      setCard(data.card);
+      setStats(data.stats);
+      setPhase(data.phase);
+      setRevealed(false);
+      setNoteEditorOpen(false);
+      setNoteMemoryOpen(false);
+      setSimilarMeaningOpen(false);
+      setActivePopover(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "无法切换到相似词");
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
+  };
+
   const isReversePhase = phase === "stage2";
   const isKanjiPhase = phase === "kanji";
-  const pageTitle = isReversePhase ? "反向学习" : isKanjiPhase ? "汉字学习" : initialMode === "classic" ? "经典模式" : "词汇学习";
+  const pageTitle = isReversePhase
+    ? "反向学习"
+    : isKanjiPhase
+      ? "汉字学习"
+      : initialMode === "classic"
+        ? "经典模式"
+        : initialMode === "mistakes"
+          ? "学习错题本"
+          : "词汇学习";
   // 并进松鼠轨道里的短模式名(轨道那行只有 10.5px,放不下"经典模式"四个字加进度数)
-  const shortMode = isReversePhase ? "反向" : isKanjiPhase ? "汉字" : initialMode === "classic" ? "经典" : "词汇";
-  const pageLabel = isReversePhase ? "Reverse" : isKanjiPhase ? "Kanji" : initialMode === "classic" ? "Classic" : "Vocabulary";
+  const shortMode = isReversePhase ? "反向" : isKanjiPhase ? "汉字" : initialMode === "classic" ? "经典" : initialMode === "mistakes" ? "错题本" : "词汇";
+  const pageLabel = isReversePhase ? "Reverse" : isKanjiPhase ? "Kanji" : initialMode === "classic" ? "Classic" : initialMode === "mistakes" ? "Mistakes" : "Vocabulary";
 
-  const startExtraPhase = (phaseName: "stage2" | "kanji") => {
+  const startExtraPhase = async (phaseName: "stage2" | "kanji") => {
     setLoading(true);
     setError("");
     try {
+      await yieldToBrowser();
       const data = phaseName === "stage2" ? continueStage2Study() : continueKanjiStudy();
       setCard(data.card);
       setStats(data.stats);
@@ -311,30 +444,12 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
     }
   };
 
-  const dismissComebackIntro = () => {
-    try {
-      setStats(markComebackAnnounced());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "操作失败");
-    }
-  };
-
-  const chooseComebackMode = (mode: StudyPreferences["comebackMode"]) => {
-    if (stats?.comeback?.mode === mode) return;
-    try {
-      // 同时写入持久化偏好(下次也默认这个)并当场重排今天的计划
-      saveStudyPreferences({ ...getStudyPreferences(), comebackMode: mode });
-      setStats(setComebackModeForToday(mode));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "操作失败");
-    }
-  };
-
-  const startEncore = (size?: number) => {
+  const startEncore = async (size?: number) => {
     setLoading(true);
     setError("");
     try {
-      const data = startComebackEncore(size);
+      await yieldToBrowser();
+      const data = startEncoreSession(size);
       setCard(data.card);
       setStats(data.stats);
       setPhase(data.phase);
@@ -345,11 +460,6 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
       setLoading(false);
     }
   };
-
-  const comebackInfo = stats?.comeback;
-  const showComebackIntro = Boolean(
-    comebackInfo?.active && !comebackInfo.announcedToday && !loading && card && phase === "stage1"
-  );
 
   const showStudyToolbar = loading || Boolean(card);
   const canDragWordPage = (target: EventTarget | null) => {
@@ -465,7 +575,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
           </span>
         )}
 
-        {/* 标题栏 = 筛选 + 操作一行,模式名和进度并进下面的松鼠轨道。
+        {/* 标题栏 = 操作一行,模式名和进度并进下面的松鼠轨道。
             全尺寸都走普通文档流(不再 lg:absolute),桌面端也就不需要给正文留 pt 了。 */}
         <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
         {showStudyToolbar && <div className="mb-2 flex min-w-0 items-center gap-2 lg:mb-3">
@@ -480,34 +590,6 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
               {shortMode}
             </span>
           )}
-          {filteredMastery && (
-            <span
-              className="shrink-0 rounded-lg border border-white/15 px-2 py-1 text-xs text-white/70"
-              title="筛选出的这批词已永久掌握 / 总数"
-            >
-              {filteredMastery}
-            </span>
-          )}
-          <select
-            value={selectedLevel}
-            onChange={(event) => setSelectedLevel(event.target.value as WordLevelFilter)}
-            className="focus-ring control-cyan soft-text-outline h-10 min-w-0 flex-1 rounded-xl border px-2 text-xs font-bold lg:max-w-40"
-            title="选择 JLPT 等级"
-          >
-            {levelOptions.map((item) => (
-              <option key={item.value} value={item.value}>{item.label}</option>
-            ))}
-          </select>
-          <select
-            value={selectedType}
-            onChange={(event) => setSelectedType(event.target.value as WordTypeFilter)}
-            className="focus-ring control-cyan soft-text-outline h-10 min-w-0 flex-1 rounded-xl border px-2 text-xs font-bold lg:max-w-40"
-            title="选择词性或收藏"
-          >
-            {typeOptions.map((item) => (
-              <option key={item.value} value={item.value}>{item.label}</option>
-            ))}
-          </select>
           <button
             onClick={toggleCardFavorite}
             disabled={!card}
@@ -519,7 +601,11 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
           <button
             onClick={() => {
               setNoteMemoryOpen(false);
-              setNoteEditorOpen((open) => !open);
+              setNoteEditorOpen((open) => {
+                const next = !open;
+                setActivePopover(next ? "note" : (similarMeaningOpen ? "similarMeaning" : null));
+                return next;
+              });
             }}
             disabled={!card}
             className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 disabled:opacity-50 ${card?.note ? "bg-[#81D8CF]/20" : "bg-[#81D8CF]/10"}`}
@@ -535,17 +621,34 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
           >
             <RotateCcw size={17} />
           </button>
+          {card?.similarMeaning && !isReversePhase && !isKanjiPhase && (
+            <button
+              onClick={toggleSimilarMeaning}
+              className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 ${similarMeaningOpen ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
+              title="查看相似释义词"
+              aria-label="查看相似释义词"
+              aria-expanded={similarMeaningOpen}
+            >
+              <GitCompareArrows size={17} />
+            </button>
+          )}
         </div>}
 
         {noteMemoryOpen && card?.note && (
-          <div className="word-note-popover note-memory-card word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-2xl backdrop-blur-md">
+          <div
+            className="word-note-popover note-memory-card word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-2xl backdrop-blur-md"
+            style={{ zIndex: activePopover === "noteMemory" ? 50 : 35 }}
+          >
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">Memory Note</p>
                 <p className="jp mt-1 text-lg font-semibold">{cardLabel(card)}</p>
               </div>
               <button
-                onClick={() => setNoteMemoryOpen(false)}
+                onClick={() => {
+                  setNoteMemoryOpen(false);
+                  setActivePopover(similarMeaningOpen ? "similarMeaning" : null);
+                }}
                 className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-[#81D8CF]/15"
                 title="关闭"
               >
@@ -557,14 +660,20 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
         )}
 
         {noteEditorOpen && card && (
-          <div className="word-note-popover word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-lg">
+          <div
+            className="word-note-popover word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-lg"
+            style={{ zIndex: activePopover === "note" ? 50 : 35 }}
+          >
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">Word Note</p>
                 <p className="jp mt-1 text-lg font-semibold">{cardLabel(card)}</p>
               </div>
               <button
-                onClick={() => setNoteEditorOpen(false)}
+                onClick={() => {
+                  setNoteEditorOpen(false);
+                  setActivePopover(similarMeaningOpen ? "similarMeaning" : null);
+                }}
                 className="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-white/15 bg-white/5"
                 title="关闭"
               >
@@ -586,6 +695,49 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
               >
                 {noteSaving ? "保存中" : "保存"}
               </button>
+            </div>
+          </div>
+        )}
+
+        {similarMeaningOpen && card?.similarMeaning && (
+          <div
+            className="word-note-popover similar-meaning-popover word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-2xl backdrop-blur-md"
+            style={{ zIndex: activePopover === "similarMeaning" ? 50 : 35 }}
+          >
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">相似释义词</p>
+                <p className="mt-1 text-base font-semibold">{card.similarMeaning.title}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setSimilarMeaningOpen(false);
+                  setActivePopover(noteEditorOpen ? "note" : noteMemoryOpen ? "noteMemory" : null);
+                }}
+                className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-[#81D8CF]/15"
+                title="关闭"
+              >
+                <X size={15} />
+              </button>
+            </div>
+            <p className="mb-3 text-sm leading-6 text-white/72">{card.similarMeaning.distinction}</p>
+            <div className="space-y-2">
+              {card.similarMeaning.items.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => jumpToSimilar(item.id)}
+                  disabled={submitting}
+                  className="focus-ring block w-full rounded-xl border border-[#5aa7ff]/30 bg-[#5aa7ff]/10 p-3 text-left transition-colors hover:bg-[#5aa7ff]/20 disabled:opacity-50"
+                  title={`切换到${item.kanji}`}
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="jp-serif text-xl font-semibold leading-none text-[#5aa7ff]">{item.kanji}</p>
+                    <p className="jp text-sm text-[#5aa7ff]/80">{item.kana}</p>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-white/78">{item.meaning}</p>
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -753,17 +905,13 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
             <div className="relative h-16 lg:mx-auto lg:w-[min(900px,100%)]">
               {!revealed ? (
                 <button
-                  onClick={() => {
-                    setRevealed(true);
-                    playFlip();
-                    setNoteEditorOpen(false);
-                    if (card?.note) setNoteMemoryOpen(true);
-                    if (card) speakCard(card);
-                  }}
+                  onClick={revealAnswer}
+                  title="点击或按任意普通键显示答案"
                   className="focus-ring zoo-pop zoo-gloss inline-flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] px-4 text-base font-bold !text-[#2f3333]"
                 >
                   <Eye size={18} />
-                  显示答案
+                  <span>显示答案</span>
+                  <span className="text-xs font-semibold opacity-65">（按任意键）</span>
                 </button>
               ) : (
                 <>
@@ -772,6 +920,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
                       <button
                         key={option.value}
                         onClick={() => submitAnswer(option.value)}
+                        aria-keyshortcuts={answerHotkeyLabels[option.value]}
                         disabled={submitting}
                         className={`focus-ring zoo-pop h-16 rounded-2xl border border-white/20 bg-[#81D8CF]/10 px-2 text-base font-bold hover:bg-[#81D8CF]/15 disabled:opacity-50${
                           rateFeedback?.value === option.value
@@ -781,7 +930,8 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
                             : ""
                         }`}
                       >
-                        {option.label}
+                        <span className="block text-[10px] font-black tracking-[0.18em] text-white/45">{answerHotkeyLabels[option.value]}</span>
+                        <span>{option.label}</span>
                       </button>
                     ))}
                   </div>
@@ -801,54 +951,6 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
             onContinueKanji={() => startExtraPhase("kanji")}
             onEncore={startEncore}
           />
-        )}
-
-        {showComebackIntro && comebackInfo && (
-          <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 p-4">
-            <div className="w-full max-w-sm rounded-2xl border border-[#81D8CF]/30 bg-[#2f3333] p-5 text-left shadow-2xl">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#81D8CF]">Welcome Back</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">
-                {comebackInfo.dayIndex <= 1 ? "欢迎回来！" : `回归计划 · 第 ${comebackInfo.dayIndex}/${comebackInfo.planDays} 天`}
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-white/78">
-                {comebackInfo.dayIndex <= 1
-                  ? `离开的这几天积累了 ${comebackInfo.initialBacklog} 个待复习词，已按${comebackInfo.mode === "pressure" ? "高强度" : "温和"}节奏安排成 ${comebackInfo.planDays} 天的回归计划${comebackInfo.mode === "pressure" ? "，快清快恢复。" : "，由轻到重，不用一天硬啃。"}`
-                  : `继续按计划清积压，还剩 ${comebackInfo.remainingBacklog} 个词排在后面几天。`}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/78">
-                今天只需复习 <span className="font-bold text-[#81D8CF]">{comebackInfo.todayTarget}</span> 个
-                （约 {comebackInfo.estimatedMinutes} 分钟），期间暂停新词，清完自动恢复。
-              </p>
-              <div className="mt-4">
-                <p className="mb-1.5 text-xs text-white/50">选择节奏（也可去设置改默认）</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {([
-                    { value: "gentle", label: "🌱 温和", hint: "摊 7 天" },
-                    { value: "pressure", label: "⚡ 高强度", hint: "2-3 天清" }
-                  ] as const).map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => chooseComebackMode(option.value)}
-                      className={`focus-ring flex flex-col items-center rounded-xl border px-3 py-2 text-sm font-bold transition ${
-                        comebackInfo.mode === option.value
-                          ? "border-[#81D8CF] bg-[#81D8CF]/15 text-[#81D8CF]"
-                          : "border-white/15 bg-white/5 text-white/70"
-                      }`}
-                    >
-                      {option.label}
-                      <span className="mt-0.5 text-[11px] font-normal text-white/45">{option.hint}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <button
-                onClick={dismissComebackIntro}
-                className="focus-ring mt-4 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[#81D8CF] text-base font-bold !text-[#2f3333]"
-              >
-                开始今天的复习
-              </button>
-            </div>
-          </div>
         )}
       </section>
     </div>

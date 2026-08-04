@@ -5,6 +5,7 @@ export type Page =
   | "zoo-map"
   | "zoo-dex"
   | "hot-spring"
+  | "quick-study"
   | "grammar"
   | "detail"
   | "study-modes"
@@ -17,9 +18,10 @@ export type Page =
   | "settings"
   | "privacy"
   | "privacy-policy"
+  | "user-agreement"
   | "help"
   | "about";
 
 export type GrammarMode = "learn" | "practice" | "immersive";
 export type ProgressFocus = "both" | "words" | "grammar";
-export type StudyMode = "classic" | "vocabulary" | "reverse" | "kanji";
+export type StudyMode = "classic" | "vocabulary" | "mistakes" | "reverse" | "kanji";

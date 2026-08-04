@@ -1,6 +1,6 @@
 import { formatDuration, monthDays } from "./word-study-utils";
 
-// 打卡分享图:1080×1500 深色卡片,与 App 内主题(炭黑 + 薄荷绿)一致。
+// 打卡分享图:1080×1500 深色卡片,与 App 内主题(炭黑 + 新绿)一致。
 // 纯 canvas 绘制,不依赖外部资源,离线可用。
 
 export interface ShareCardInput {
@@ -17,7 +17,7 @@ export interface ShareCardInput {
 const WIDTH = 1080;
 const HEIGHT = 1500;
 const MARGIN = 84;
-const MINT = "#81D8CF";
+const MINT = "#91C968";
 const INK = "#17423C";
 
 const FONT_SANS = '-apple-system, "PingFang SC", "Hiragino Sans", system-ui, sans-serif';
@@ -73,14 +73,14 @@ const drawBackground = (ctx: CanvasRenderingContext2D) => {
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
   const glow = ctx.createRadialGradient(920, 120, 0, 920, 120, 560);
-  glow.addColorStop(0, "rgba(129, 216, 207, 0.13)");
-  glow.addColorStop(1, "rgba(129, 216, 207, 0)");
+  glow.addColorStop(0, "rgba(145, 201, 104, 0.13)");
+  glow.addColorStop(1, "rgba(145, 201, 104, 0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, WIDTH, 700);
 
   // 大字水印
   ctx.save();
-  ctx.fillStyle = "rgba(129, 216, 207, 0.05)";
+  ctx.fillStyle = "rgba(145, 201, 104, 0.05)";
   ctx.font = `500 560px ${FONT_SERIF}`;
   ctx.textAlign = "right";
   ctx.fillText("語", WIDTH + 110, 660);
@@ -88,7 +88,7 @@ const drawBackground = (ctx: CanvasRenderingContext2D) => {
 
   // 底部青海波式细弧
   ctx.save();
-  ctx.strokeStyle = "rgba(129, 216, 207, 0.07)";
+  ctx.strokeStyle = "rgba(145, 201, 104, 0.07)";
   ctx.lineWidth = 2;
   for (let ring = 0; ring < 4; ring += 1) {
     ctx.beginPath();
@@ -102,8 +102,8 @@ const drawBrandRow = (ctx: CanvasRenderingContext2D, studyDate: string) => {
   const tileSize = 96;
   const tileY = 92;
   const tile = ctx.createLinearGradient(MARGIN, tileY, MARGIN + tileSize, tileY + tileSize);
-  tile.addColorStop(0, "#9AE2DA");
-  tile.addColorStop(1, "#6CC9BF");
+  tile.addColorStop(0, "#B7E38D");
+  tile.addColorStop(1, "#7EBE4F");
   roundRectPath(ctx, MARGIN, tileY, tileSize, tileSize, 26);
   ctx.fillStyle = tile;
   ctx.fill();
@@ -116,7 +116,7 @@ const drawBrandRow = (ctx: CanvasRenderingContext2D, studyDate: string) => {
   ctx.fillStyle = "#F4FAF9";
   ctx.font = `700 46px ${FONT_SANS}`;
   ctx.fillText("Master Nihongo", MARGIN + tileSize + 34, tileY + 44);
-  ctx.fillStyle = "rgba(129, 216, 207, 0.62)";
+  ctx.fillStyle = "rgba(145, 201, 104, 0.62)";
   ctx.font = `700 22px ${FONT_SANS}`;
   const subtitle = "V O C A B U L A R Y ・ G R A M M A R";
   ctx.fillText(subtitle, MARGIN + tileSize + 34, tileY + 84);

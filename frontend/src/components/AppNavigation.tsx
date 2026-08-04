@@ -27,7 +27,7 @@ const navItems: { page: Page; label: string; icon: LucideIcon }[] = [
 const isGrammarPage = (page: Page) => page === "grammar" || page === "detail";
 // 组队/地图/温泉/学习模式/收藏都是从主页的格子进去的，导航上仍高亮「主页」。
 const isHomePage = (page: Page) =>
-  ["home", "team", "zoo-map", "zoo-dex", "hot-spring", "study-modes", "favorites"].includes(page);
+  ["home", "team", "zoo-map", "zoo-dex", "hot-spring", "quick-study", "study-modes", "favorites"].includes(page);
 const isRootMobilePage = (page: Page) => ["home", "word", "grammar", "profile"].includes(page);
 
 interface AppNavigationProps {
