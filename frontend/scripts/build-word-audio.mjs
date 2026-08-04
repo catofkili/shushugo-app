@@ -391,8 +391,10 @@ console.log(
 let done = 0;
 let failed = 0;
 let accentApplied = 0;
-// VOICEVOX 是本地 CPU 推理,并发开高只会互相抢;Google 是网络请求,6 路合适。
-const CONCURRENCY = engine === "voicevox" ? 2 : 6;
+// 默认值保持保守；全量离线生成时可按机器性能临时提高，断点续跑不会覆盖已完成文件。
+const CONCURRENCY = engine === "voicevox"
+  ? Math.max(1, Number(process.env.VOICEVOX_CONCURRENCY ?? "2"))
+  : 6;
 
 async function worker() {
   while (queue.length) {

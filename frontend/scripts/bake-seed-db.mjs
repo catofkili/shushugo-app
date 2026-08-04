@@ -17,7 +17,7 @@ const seedPath = path.join(here, "../src/data/jlpt_words_seed.json");
 
 // 与 src/lib/study-core.ts 保持一致
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
-const JLPT_WORD_METADATA_VERSION = "2026-06-24-noun-suru-pos-fix";
+const JLPT_WORD_METADATA_VERSION = "2026-08-02-word-examples-rewrite";
 
 const nounSuruCorrections = [
   ["運動", "うんどう"], ["計画", "けいかく"], ["研究", "けんきゅう"], ["故障", "こしょう"],
@@ -75,14 +75,18 @@ console.log(`words: ${total} 条(${leveled} 条有 JLPT 等级)`);
 console.log(`当前 metadata 版本: ${firstValue("SELECT value FROM app_state WHERE key='jlpt_word_metadata_version'") ?? "(无)"}`);
 
 db.run("BEGIN TRANSACTION");
+const syncedKeys = new Set();
 seed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel]) => {
+  const key = `${kanji}\u0000${kana}`;
+  if (syncedKeys.has(key)) return;
+  syncedKeys.add(key);
   db.run(`
     UPDATE words
     SET pos = ?,
         verb_type = ?,
         importance = MAX(importance, ?),
-        example_jp = COALESCE(NULLIF(example_jp, ''), ?),
-        example_meaning = COALESCE(NULLIF(example_meaning, ''), ?),
+        example_jp = ?,
+        example_meaning = ?,
         jlpt_level = COALESCE(jlpt_level, ?)
     WHERE kanji = ? AND kana = ?
   `, [pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, kanji, kana]);
