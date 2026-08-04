@@ -28,6 +28,7 @@ import {
 } from "./fsrs-store";
 import {
   isGraduatedForDay,
+  recordReview,
   LEECH_LAPSE_THRESHOLD,
   STUBBORN_DAILY_MISTAKES,
   type FsrsState
@@ -41,7 +42,7 @@ import {
 } from "./word-api/session-state";
 import { ensureProgressInitialized } from "./word-api/bootstrap";
 import { getWordStats } from "./word-api/stats";
-import { hasWordFilter, wordFilterSql } from "./word-api/filters";
+import { hasWordFilter, isLongTermWeak, wordFilterSql } from "./word-api/filters";
 import { pickMistakeNext } from "./word-api/mistakes";
 import {
   advanceKanjiQueue,
@@ -752,6 +753,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // 未毕业(新词/答错,学习或重学中,due 只排到几分钟后)→ 塞回队列过几张再刷;
   // 毕业(due 排到明天及以后)→ 今天不再出。旧算法则沿用「分数 ≤6 未过就重排」。
   let fsrsGraduated = false;
+  let graduationTest = false;
   let stepMinutes = 0; // 学习步骤给的「几分钟后再考」,用来换算隔几张卡
   // 顽固词判据用「当天累计答错次数」,不用 mistakeStreak —— 后者答对一次就清零,
   // 那样刚答对的瞬间这个词就不再算顽固,加码等于没加。次数只增不减,一整天有效。
@@ -778,6 +780,12 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
       const next = recordFsrsReview(wordId, answer, new Date(), { mode: stepMode });
       fsrsGraduated = isGraduatedForDay(next, studyDayEnd());
       stepMinutes = Math.max((new Date(next.due).getTime() - Date.now()) / 60_000, 0);
+      // 下一次答「认识」是不是就当天出队了?不写死步数 —— 让调度器自己回答,
+      // 以后改学习步参数这里不用跟着改。
+      graduationTest = !fsrsGraduated && isGraduatedForDay(
+        recordReview(next, "know", new Date(), { mode: stubbornWord ? "stubborn" : "normal" }),
+        studyDayEnd()
+      );
     } catch (err) {
       console.warn("[fsrs] 记录跳过:", err);
       fsrsGraduated = answer === "know"; // 兜底:认识当作过了
@@ -788,7 +796,16 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // 这里的 mistakeStreak 已经按本次作答更新过:答对即归零,所以贴脸重复只发生在
   // 连着答错的阶段;一旦答对,下一次由学习步骤拉开(10 分→约 10 个词,30 分→约 20 个)。
   const stubborn = mistakeStreak >= STUBBORN_MISTAKE_STREAK;
-  if (notPassed && !knownForever) scheduleDelayedReview(wordId, stepMinutes, stubborn);
+  // 长期低分词的毕业判定那一次拉到 8~20 张:那次「认识」会真的改写长期间隔,
+  // 靠残留答对的话 FSRS 就收到假信号。中间步骤不受影响(答对也不毕业)。
+  if (notPassed && !knownForever) {
+    scheduleDelayedReview(
+      wordId,
+      stepMinutes,
+      stubborn,
+      graduationTest && isLongTermWeak(progress)
+    );
+  }
   setLastAnsweredWord(wordId);
   if (answer !== "known_forever") recordStage2Word(wordId);
 

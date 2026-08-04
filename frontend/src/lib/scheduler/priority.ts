@@ -12,6 +12,10 @@ const OVERDUE_CAP = 60;
 const RELEARNING_PRIORITY = 55;
 /** 已见过但还没进入 FSRS 调度的词 */
 const UNSCHEDULED_PRIORITY = 50;
+/** 顽固词的加成:够它不沉底,远不足以让它插队 */
+const LEECH_PRIORITY = 12;
+/** 错误史的加成上限:它是次级信号,不该压过「有多过期」(上限 60) */
+const MISTAKE_CAP = 40;
 
 /** 距今过期了多少天(未到期为 0) */
 const overdueDays = (due: unknown, now: number): number => {
@@ -43,7 +47,6 @@ export const shouldPickStage1NewWord = (
 export function priorityComponents(
   row: DbRow,
   dueAfter: number | undefined,
-  criticalCount: number,
   newQuotaLeft: number
 ): Record<string, number> {
   const isNew = Number(row.seen_count ?? 0) === 0;
@@ -54,8 +57,10 @@ export function priorityComponents(
     score: 0,
     critical: 0,
     importance: Number(row.importance ?? 3) * 7,
-    // 错误史统一用 FSRS 的 lapses,不再叠加 forgot/fuzzy/mistake_streak 三个旧计数
-    mistake: lapses * 10,
+    // 错误史统一用 FSRS 的 lapses,不再叠加 forgot/fuzzy/mistake_streak 三个旧计数。
+    // 必须封顶:不封的话错了 20 次的词拿 200 分,把过期程度(上限 60)整个压死 ——
+    // 「顽固词不再置顶」就成了空话,只是把置顶从 critical 挪到了这一项。
+    mistake: Math.min(lapses * 10, MISTAKE_CAP),
     queue: 0,
     age: Math.min(daysSince(row.last_seen_on) * 3, 30),
     review: isNew ? 0 : 35,
@@ -82,11 +87,16 @@ export function priorityComponents(
         : Math.min(overdueDays(row.fsrs_due, now) * OVERDUE_WEIGHT, OVERDUE_CAP);
   }
 
-  // 顽固词(leech)优先,与 Anki 同口径:累计在 Review 态答错 >= 8 次
+  // 顽固词(leech,累计答错 >= 8 次)**不再置顶**。
+  //
+  // 原来是 `120 + (顽固词数 - 3) * 80` —— 顽固词越多加得越狠,结果就是几十个
+  // 攻不下来的词统治整场。而且方向本身就错了:一个失败了八次的词是「卡片坏了」,
+  // 不是「复习不够」,继续加密只会把整场变成受刑。Anki 的处理是直接挂起它。
+  //
+  // 现在:顽固词按正常的过期程度排队,当天引入多少由 stage1 的配额闸门控制,
+  // 集中攻坚交给错题本模式。这里只留一点点加成,保证它不会沉底到永远轮不到。
   if (lapses >= LEECH_LAPSE_THRESHOLD) {
-    components.critical = 120 + Math.max(criticalCount - 3, 0) * 80;
-  } else if (criticalCount > 3) {
-    components.critical = -1000;
+    components.critical = LEECH_PRIORITY;
   }
 
   if (dueAfter !== undefined) {
@@ -108,45 +118,16 @@ export function priorityScore(components: Record<string, number>): number {
 }
 
 /**
- * 临界词池大小
- */
-export function criticalPoolSize(count: number): number {
-  return Math.min(Math.max(count, 3), 5);
-}
-
-/**
- * 从 Stage1 任务中选择临界词池中的一个
- */
-export function pickStage1CriticalPoolRow(rows: DbRow[], queueById: Map<number, number>): DbRow | null {
-  // 顽固词池:成员和开池条件都用 FSRS 的 lapses(和 Anki leech 同口径),
-  // 取代旧的 score <= -20 / 触底 -40 两档。lapses 越多越靠前。
-  const criticalRows = rows
-    .filter((row) => Number(row.fsrs_lapses ?? 0) >= LEECH_LAPSE_THRESHOLD)
-    .sort((left, right) => (
-      Number(right.fsrs_lapses ?? 0) - Number(left.fsrs_lapses ?? 0)
-      || Number(left.today_seen_count ?? 0) - Number(right.today_seen_count ?? 0)
-      || Number(left.order_index ?? 0) - Number(right.order_index ?? 0)
-    ));
-  if (!criticalRows.length) return null;
-  const pool = criticalRows.slice(0, criticalPoolSize(criticalRows.length));
-  // 临界池只在「已经隔够张数」的词里挑。池里没人到位就交还给普通优先级
-  // (那里 critical 组件仍有 +120 加权),不能为了猛刷差词把刚答过的词直接顶回来。
-  const duePool = pool.filter((row) => (queueById.get(Number(row.id)) ?? 0) <= 0);
-  if (!duePool.length) return null;
-  return duePool.sort((left, right) => (
-    (queueById.get(Number(left.id)) ?? 0) - (queueById.get(Number(right.id)) ?? 0)
-    || Number(left.today_seen_count ?? 0) - Number(right.today_seen_count ?? 0)
-    || Number(right.fsrs_lapses ?? 0) - Number(left.fsrs_lapses ?? 0)
-    || Number(left.order_index ?? 0) - Number(right.order_index ?? 0)
-  ))[0] ?? null;
-}
-
-/**
  * 从任意列表中选择临界词池中的一个（用于 Stage2/Kanji）。
  * 注意:这里的 score 是 stage2_progress / kanji_progress 的 temp_score,
  * 即「这一轮答到 10 分算过」的会话计数器,不是长期记忆分数,不随 FSRS 改造改动。
  */
 const TEMP_SCORE_CRITICAL = -20;
+
+/** 临界词池大小 */
+export function criticalPoolSize(count: number): number {
+  return Math.min(Math.max(count, 3), 5);
+}
 
 export function pickDueCriticalPoolRow(rows: DbRow[], scoreKey = "score"): DbRow | null {
   const hasFloorWord = rows.some((row) => Number(row[scoreKey] ?? 0) <= -40);
@@ -160,7 +141,7 @@ export function pickDueCriticalPoolRow(rows: DbRow[], scoreKey = "score"): DbRow
     ));
   if (!criticalRows.length) return null;
   const pool = criticalRows.slice(0, criticalPoolSize(criticalRows.length));
-  // 同 pickStage1CriticalPoolRow:没到位就交还给普通排序,不越过「隔几张」的闸门
+  // 没到位就交还给普通排序,不越过「隔几张」的闸门
   const duePool = pool.filter((row) => row.due_after == null || Number(row.due_after) <= 0);
   if (!duePool.length) return null;
   return duePool.sort((left, right) => (

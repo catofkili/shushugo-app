@@ -2,6 +2,7 @@ import { getDatabase } from "./database";
 import { ensureProgressInitialized } from "./word-api";
 import { firstRow, firstValue, persistSoon, setState, today } from "./study-core";
 import { notifyProgressUpdated } from "./progress-events";
+import { resetConfusionCache } from "./models/confusion";
 import { recordReview, type FsrsState } from "./fsrs-scheduler";
 import { ensureFsrsColumns, writeFsrsState } from "./fsrs-store";
 import type { WordAnswer } from "../types/vocabulary";
@@ -485,6 +486,8 @@ export const importExternalWordList = (text: string): WordListImportResult => {
 
   // 导入可能补齐了某个相似释义组里缺的成员,组解析缓存要作废重建。
   resetSimilarMeaningCache();
+  // 导入改动了 words 表,易混词缓存必须失效
+  resetConfusionCache();
   persistSoon();
   notifyProgressUpdated();
   return { ...preview, inserted, updated, queuedForReview };

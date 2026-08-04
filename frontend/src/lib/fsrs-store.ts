@@ -10,6 +10,7 @@ import { rowsFor, firstValue, getState, setState, studyDate } from "./database/d
 import type { WordAnswer } from "../types/vocabulary";
 import {
   recordReview,
+  retrievability,
   MASTERED_INTERVAL_DAYS,
   LEECH_LAPSE_THRESHOLD,
   type FsrsState,
@@ -99,6 +100,17 @@ const rowToState = (r: Record<string, unknown> | null): FsrsState | null => {
     lapses: r.fsrs_lapses == null ? 0 : Number(r.fsrs_lapses)
   };
 };
+
+/**
+ * 从一行已经带着 fsrs_* 列的查询结果直接算「此刻预测答对的概率」。
+ * 排片器用它区分「容易/难」,不必为每张卡再查一次库。
+ * 没有调度记录的词(新词/未调度)返回 undefined —— 那是「没学过」不是「记不住」,
+ * 由调用方决定当成什么。
+ */
+export function recallFromRow(row: Record<string, unknown>, now = new Date()): number | undefined {
+  const state = rowToState(row);
+  return state ? retrievability(state, now) : undefined;
+}
 
 export function readFsrsState(id: number, entity: FsrsEntity = WORD_FSRS): FsrsState | null {
   ensureFsrsColumns(entity);
@@ -498,10 +510,23 @@ export function setFsrsActive(on: boolean): void {
 /** 「最近栽过跟头」的时间窗:这么多小时内答错过的词,排在陈年积压前面 */
 export const RECENT_LAPSE_HOURS = 36;
 
+/**
+ * 每天最多放这么多顽固词进当日计划,其余顺延。
+ *
+ * 用绝对数量而不是占比:顽固词的成本是**绝对消耗**,一个当天要刷三到五次才毕业,
+ * 十个就是四十次作答、小半场。按占比算的话,复习量越大的日子放进来的顽固词越多,
+ * 恰恰是最不该的时候。
+ *
+ * 被挡在外面的不会消失 —— 它们仍然是到期状态,后面几天照常轮到,
+ * 想集中攻坚就进错题本模式(那里本来就是按 lapses 权重挑词的)。
+ */
+export const LEECH_DAILY_INTAKE = 10;
+
 export function fsrsDueWordIds(
   limit: number,
   now = new Date(),
-  entity: FsrsEntity = WORD_FSRS
+  entity: FsrsEntity = WORD_FSRS,
+  leechIntake = LEECH_DAILY_INTAKE
 ): number[] {
   ensureFsrsColumns(entity);
   if (limit <= 0) return [];
@@ -511,8 +536,9 @@ export function fsrsDueWordIds(
   // 于是昨天错的全排在队尾,被当日限额整批挤掉 —— 实测昨天答错的 223 个词,
   // 今天的计划里一个都没有。刚忘掉的词隔天不复习,等于白错一场。
   const lapseSince = new Date(now.getTime() - RECENT_LAPSE_HOURS * 3600_000).toISOString();
+  // 多取一些:顽固词被挡下来之后,要有非顽固词补上,才不会把当日计划做少了。
   const rows = rowsFor(
-    `SELECT ${entity.idColumn} AS id FROM ${entity.table}
+    `SELECT ${entity.idColumn} AS id, COALESCE(fsrs_lapses, 0) AS lapses FROM ${entity.table}
      WHERE ${entity.eligible}
        AND (fsrs_due IS NULL OR fsrs_due <= ?)
      ORDER BY (fsrs_due IS NULL) DESC,
@@ -520,7 +546,18 @@ export function fsrsDueWordIds(
               fsrs_due ASC,
               ${entity.idColumn} ASC
      LIMIT ?`,
-    [now.toISOString(), lapseSince, limit]
+    [now.toISOString(), lapseSince, limit * 3]
   );
-  return rows.map((r) => Number(r.id));
+
+  const picked: number[] = [];
+  let leeches = 0;
+  for (const row of rows) {
+    if (picked.length >= limit) break;
+    if (Number(row.lapses ?? 0) >= LEECH_LAPSE_THRESHOLD) {
+      if (leeches >= leechIntake) continue;
+      leeches += 1;
+    }
+    picked.push(Number(row.id));
+  }
+  return picked;
 }

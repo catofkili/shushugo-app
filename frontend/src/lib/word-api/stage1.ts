@@ -3,12 +3,13 @@ import type { WordCard } from "../../types/vocabulary";
 import { getReviewCapPreference } from "../studyPreferences";
 import { rowObjectToCard } from "../models/word-card";
 import {
-  pickStage1CriticalPoolRow,
   priorityComponents,
   priorityScore,
   shouldPickStage1NewWord
 } from "../scheduler/priority";
-import { allowsBackToBack } from "../scheduler/requeue";
+import { allowsBackToBack, STUBBORN_MISTAKE_STREAK } from "../scheduler/requeue";
+import { INTERFERENCE_WINDOW, sessionInterference } from "../scheduler/interference";
+import { pickNextInSequence, UNKNOWN_RECALL } from "../scheduler/sequencer";
 import {
   firstValue,
   getState,
@@ -18,9 +19,19 @@ import {
   today
 } from "../study-core";
 import { dailyReviewCap } from "../review-budget";
-import { fsrsDueWordIds } from "../fsrs-store";
+import { fsrsDueWordIds, recallFromRow } from "../fsrs-store";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
-import { dailyNewQuota, getReviewQueue, lastAnsweredWord, setReviewQueue } from "./session-state";
+import {
+  dailyNewQuota,
+  getReviewQueue,
+  lastAnsweredWord,
+  recentAnswersToday,
+  setReviewQueue
+} from "./session-state";
+
+/** 排片器要的「预测答对概率」;没有调度记录的按中性偏易处理 */
+const predictedRecall = (row: Record<string, unknown>): number =>
+  recallFromRow(row) ?? UNKNOWN_RECALL;
 
 /**
  * Stage1(当日词表)的「计划」和「出题」。
@@ -249,15 +260,6 @@ export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard |
       AND p.seen_count = 0
       AND p.known_forever = 0
   `, [day], 0);
-  // 「顽固词」改用 FSRS 原生的 lapses(和 Anki 的 leech 同口径),取代旧的 score <= -20
-  const criticalCount = firstValue<number>(`
-    SELECT COUNT(*)
-    FROM stage1_tasks t
-    JOIN progress p ON p.word_id = t.word_id
-    WHERE t.reviewed_on = ?
-      AND p.known_forever = 0
-      AND COALESCE(p.fsrs_lapses, 0) >= ?
-  `, [day, LEECH_LAPSE_THRESHOLD], 0);
 
   const rows = rowsFor(`
     SELECT
@@ -303,6 +305,13 @@ export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard |
     remaining: availableRows.length,
     total: stage1TaskCount(day)
   });
+  // 顽固词连着错到阈值 → 当场接着刷,这是有意的(越出越密才攻得下来),
+  // 不能进排片:排片会把「刚答错的词」当成难词避开,正好把这个机制废掉。
+  const stubbornDrill = lastRow
+    && Number(lastRow.mistake_streak ?? 0) >= STUBBORN_MISTAKE_STREAK
+    && (queueById.get(lastId) ?? 0) <= 0;
+  if (stubbornDrill) return rowObjectToCard(lastRow);
+
   const pickable = availableRows.length > 1 && !repeatAllowed
     ? availableRows.filter((row) => Number(row.id) !== lastId)
     : availableRows;
@@ -314,9 +323,6 @@ export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard |
     JOIN stage1_tasks t ON t.word_id = r.word_id AND t.reviewed_on = r.reviewed_on
     WHERE t.reviewed_on = ?
   `, [day], 0);
-  const criticalPoolRow = pickStage1CriticalPoolRow(reviewRows, queueById);
-  if (criticalPoolRow) return rowObjectToCard(criticalPoolRow);
-
   const preferredRows = shouldPickStage1NewWord(
     reviewRows.length,
     newRows.length,
@@ -324,7 +330,7 @@ export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard |
   ) ? newRows : reviewRows.length ? reviewRows : newRows;
   const candidates = preferredRows.map((row) => {
     const dueAfter = queueById.get(Number(row.id)) ?? 0;
-    const components = priorityComponents(row, queueById.get(Number(row.id)), criticalCount, newQuotaLeft);
+    const components = priorityComponents(row, queueById.get(Number(row.id)), newQuotaLeft);
     return {
       score: priorityScore(components),
       dueAfter,
@@ -332,13 +338,34 @@ export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard |
     };
   });
   if (!candidates.length) return null;
+
   // 「隔几张再出」是硬闸门,不是优先级里的一项负分:排队中的词一律让位给已到位的词。
+  // 全都还没轮到(当天剩余卡片比间隔还少)→ 退化成轮转:等得最久的先出,
+  // 当天的账当天平掉,不留到明天。
   const ready = candidates.filter((item) => item.dueAfter <= 0);
-  if (ready.length) {
-    ready.sort((left, right) => right.score - left.score);
-    return rowObjectToCard(ready[0].row);
+  if (!ready.length) {
+    candidates.sort((left, right) => left.dueAfter - right.dueAfter || right.score - left.score);
+    return rowObjectToCard(candidates[0].row);
   }
-  // 全都还没轮到(当天剩余卡片比间隔还少)→ 退化成轮转:等得最久的先出。
-  candidates.sort((left, right) => left.dueAfter - right.dueAfter || right.score - left.score);
-  return rowObjectToCard(candidates[0].row);
+
+  // 排片:干扰隔离 / 开场减压 / 连败保护,最后按优先级加权随机。
+  const recent = recentAnswersToday(day, INTERFERENCE_WINDOW);
+  const byId = new Map(ready.map((item) => [item.row, item]));
+  const picked = pickNextInSequence(
+    ready.map((item) => ({
+      id: Number(item.row.id),
+      score: item.score,
+      recall: predictedRecall(item.row),
+      isLeech: Number(item.row.fsrs_lapses ?? 0) >= LEECH_LAPSE_THRESHOLD
+    })),
+    {
+      answeredToday: recent.answeredToday,
+      recentIds: recent.wordIds,
+      wrongStreak: recent.wrongStreak,
+      interference: sessionInterference(day, rows)
+    }
+  );
+  if (!picked) return null;
+  const pickedRow = [...byId.keys()].find((row) => Number(row.id) === picked.id);
+  return pickedRow ? rowObjectToCard(pickedRow) : rowObjectToCard(ready[0].row);
 };

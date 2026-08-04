@@ -37,6 +37,23 @@ export const mistakeCandidateSql = (progressAlias = "p") => `(
   )
 )`;
 
+/**
+ * 上面那段 SQL 的 TS 版:同一套阈值,给拿得到 progress 行的调用方用
+ * (排片器判断「毕业判定要不要拉远」时在热路径上,不适合再查一次库)。
+ * 改口径时**两个都要改**——错题本挑的词和排片认定的长期低分词必须是同一批。
+ */
+export const isLongTermWeak = (row: Record<string, unknown>): boolean => {
+  const num = (key: string) => Number(row[key] ?? 0) || 0;
+  if (num("seen_count") < MISTAKE_MIN_REVIEWS) return false;
+  if (num("fsrs_lapses") >= MISTAKE_MIN_LAPSES) return true;
+  if (num("fsrs_reps") >= MISTAKE_MIN_REVIEWS && num("fsrs_difficulty") >= MISTAKE_MIN_DIFFICULTY) return true;
+  const forgot = num("forgot_count");
+  const fuzzy = num("fuzzy_count");
+  const weightedWrong = forgot * 2 + fuzzy;
+  if (forgot + fuzzy < MISTAKE_MIN_WRONG_ANSWERS) return false;
+  return weightedWrong / Math.max(num("right_count") + weightedWrong, 1) >= MISTAKE_MIN_ERROR_RATE;
+};
+
 export const wordFilterSql = (options: WordSessionOptions = {}, alias = "w", progressAlias = "p") => {
   const clauses: string[] = [];
   const params: SqlValue[] = [];

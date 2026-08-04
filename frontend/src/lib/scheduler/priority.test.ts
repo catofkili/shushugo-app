@@ -1,8 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  criticalPoolSize,
   pickDueCriticalPoolRow,
-  pickStage1CriticalPoolRow,
   priorityComponents,
   priorityScore,
   shouldPickStage1NewWord
@@ -32,7 +30,7 @@ afterEach(() => {
 describe("priorityComponents", () => {
   it("boosts new words by quota and shuffle instead of score gap", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
-    const components = priorityComponents(row({ seen_count: 0, shuffle_rank: 0.5, importance: 4 }), undefined, 0, 8);
+    const components = priorityComponents(row({ seen_count: 0, shuffle_rank: 0.5, importance: 4 }), undefined, 8);
     expect(components.new).toBe(45 + 8);
     expect(components.score).toBe(18);
     expect(components.shuffle).toBe(0.5 * 18);
@@ -40,47 +38,48 @@ describe("priorityComponents", () => {
   });
 
   it("越过期的词优先级越高(封顶 60,防陈年老账压过一切)", () => {
-    const fresh = priorityComponents(row({ fsrs_due: overdue(1) }), undefined, 0, 0);
-    const stale = priorityComponents(row({ fsrs_due: overdue(5) }), undefined, 0, 0);
+    const fresh = priorityComponents(row({ fsrs_due: overdue(1) }), undefined, 0);
+    const stale = priorityComponents(row({ fsrs_due: overdue(5) }), undefined, 0);
     expect(stale.score).toBeGreaterThan(fresh.score);
-    expect(priorityComponents(row({ fsrs_due: overdue(100) }), undefined, 0, 0).score).toBe(60);
+    expect(priorityComponents(row({ fsrs_due: overdue(100) }), undefined, 0).score).toBe(60);
     expect(fresh.new).toBe(0);
     expect(fresh.review).toBe(35);
   });
 
   it("还没到期的复习词拿不到过期加分", () => {
     const future = new Date(Date.now() + 10 * DAY).toISOString();
-    expect(priorityComponents(row({ fsrs_due: future }), undefined, 0, 0).score).toBe(0);
+    expect(priorityComponents(row({ fsrs_due: future }), undefined, 0).score).toBe(0);
   });
 
   it("学习/重学中的词排在「已见但没进过调度」之上——治『点了不认识就再也不回来』", () => {
     const future = new Date(Date.now() + 10 * 60_000).toISOString();  // 十分钟后
-    const relearning = priorityComponents(row({ fsrs_state: 3, fsrs_due: future }), undefined, 0, 0);
-    const unscheduled = priorityComponents(row({ fsrs_due: null }), undefined, 0, 0);
+    const relearning = priorityComponents(row({ fsrs_state: 3, fsrs_due: future }), undefined, 0);
+    const unscheduled = priorityComponents(row({ fsrs_due: null }), undefined, 0);
     expect(relearning.score).toBeGreaterThan(unscheduled.score);
     expect(unscheduled.score).toBeGreaterThan(0);
   });
 
-  it("错误史用 FSRS 的 lapses,不再叠加三个旧计数", () => {
-    expect(priorityComponents(row({ fsrs_lapses: 3 }), undefined, 0, 0).mistake).toBe(30);
-    expect(priorityComponents(row({ fsrs_lapses: 0 }), undefined, 0, 0).mistake).toBe(0);
+  it("错误史用 FSRS 的 lapses,不再叠加三个旧计数,而且封顶", () => {
+    expect(priorityComponents(row({ fsrs_lapses: 3 }), undefined, 0).mistake).toBe(30);
+    expect(priorityComponents(row({ fsrs_lapses: 0 }), undefined, 0).mistake).toBe(0);
+    // 不封顶的话错 20 次拿 200 分,把过期程度(上限 60)整个压死
+    expect(priorityComponents(row({ fsrs_lapses: 20 }), undefined, 0).mistake).toBe(40);
   });
 
-  it("顽固词(lapses >= 8)加权,池子越挤加得越狠", () => {
-    const base = priorityComponents(row({ fsrs_lapses: 8 }), undefined, 0, 0);
-    expect(base.critical).toBe(120);
-    const crowded = priorityComponents(row({ fsrs_lapses: 8 }), undefined, 6, 0);
-    expect(crowded.critical).toBe(120 + 3 * 80);
-  });
-
-  it("顽固词池挤的时候压制普通词", () => {
-    const components = priorityComponents(row({ fsrs_lapses: 0 }), undefined, 4, 0);
-    expect(components.critical).toBe(-1000);
+  it("顽固词只拿一点加成,不再置顶", () => {
+    // 旧行为是 120 分起、池子越挤加得越狠,结果几十个攻不下来的词统治整场。
+    const leech = priorityComponents(row({ fsrs_lapses: 8, fsrs_due: overdue(1) }), undefined, 0);
+    const ordinary = priorityComponents(row({ fsrs_lapses: 0, fsrs_due: overdue(1) }), undefined, 0);
+    expect(leech.critical).toBe(12);
+    expect(ordinary.critical).toBe(0);
+    // 顽固词越多加得越狠的行为已经没有了:同样 lapses 的两个词加成完全一致
+    const another = priorityComponents(row({ fsrs_lapses: 30, fsrs_due: overdue(1) }), undefined, 0);
+    expect(another.critical).toBe(leech.critical);
   });
 
   it("promotes due queue entries and buries not-yet-due ones", () => {
-    expect(priorityComponents(row(), 0, 0, 0).queue).toBe(45);
-    expect(priorityComponents(row(), 2, 0, 0).queue).toBe(-80 - 2 * 25);
+    expect(priorityComponents(row(), 0, 0).queue).toBe(45);
+    expect(priorityComponents(row(), 2, 0).queue).toBe(-80 - 2 * 25);
   });
 });
 
@@ -101,43 +100,6 @@ describe("shouldPickStage1NewWord", () => {
 describe("priorityScore", () => {
   it("sums all component values", () => {
     expect(priorityScore({ a: 10, b: -3, c: 0.5 })).toBeCloseTo(7.5);
-  });
-});
-
-describe("criticalPoolSize", () => {
-  it("clamps the pool between 3 and 5", () => {
-    expect(criticalPoolSize(1)).toBe(3);
-    expect(criticalPoolSize(4)).toBe(4);
-    expect(criticalPoolSize(9)).toBe(5);
-  });
-});
-
-describe("pickStage1CriticalPoolRow", () => {
-  const critical = (id: number, lapses: number, extra: DbRow = {}): DbRow => (
-    row({ id, fsrs_lapses: lapses, today_seen_count: 0, order_index: id, ...extra })
-  );
-
-  it("没有顽固词(lapses < 8)时不开池", () => {
-    const rows = [critical(1, 2), critical(2, 7)];
-    expect(pickStage1CriticalPoolRow(rows, new Map())).toBeNull();
-  });
-
-  it("池里优先挑已经隔够张数的", () => {
-    const rows = [critical(1, 12), critical(2, 9), critical(3, 8)];
-    const queue = new Map<number, number>([[1, 2], [2, 0], [3, 5]]);
-    expect(pickStage1CriticalPoolRow(rows, queue)?.id).toBe(2);
-  });
-
-  it("池里没人到位就交还给普通优先级,不把刚答过的词顶回来", () => {
-    const rows = [critical(1, 12), critical(2, 9)];
-    const queue = new Map<number, number>([[1, 3], [2, 1]]);
-    expect(pickStage1CriticalPoolRow(rows, queue)).toBeNull();
-  });
-
-  it("只收 lapses 达到阈值的行,错得最多的排最前", () => {
-    const rows = [critical(1, 12), critical(2, 1)];
-    const picked = pickStage1CriticalPoolRow(rows, new Map());
-    expect(picked?.id).toBe(1);
   });
 });
 

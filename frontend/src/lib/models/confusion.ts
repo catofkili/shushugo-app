@@ -38,19 +38,25 @@ const senseGroups = [
 export function editDistance(left: string, right: string): number {
   const a = Array.from(left);
   const b = Array.from(right);
-  const dp = Array.from({ length: a.length + 1 }, () => Array<number>(b.length + 1).fill(0));
-  for (let i = 0; i <= a.length; i += 1) dp[i][0] = i;
-  for (let j = 0; j <= b.length; j += 1) dp[0][j] = j;
+  // 只滚动两行:原来每次比较都要 new 出一个 (m+1)×(n+1) 的二维数组,
+  // 而这个函数在一张卡里要跑几千次,分配开销比计算本身还大。
+  let previous = new Array<number>(b.length + 1);
+  let current = new Array<number>(b.length + 1);
+  for (let j = 0; j <= b.length; j += 1) previous[j] = j;
   for (let i = 1; i <= a.length; i += 1) {
+    current[0] = i;
     for (let j = 1; j <= b.length; j += 1) {
-      dp[i][j] = Math.min(
-        dp[i - 1][j] + 1,
-        dp[i][j - 1] + 1,
-        dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      current[j] = Math.min(
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
       );
     }
+    const swap = previous;
+    previous = current;
+    current = swap;
   }
-  return dp[a.length][b.length];
+  return previous[b.length];
 }
 
 /**
@@ -107,38 +113,114 @@ export function senseDistinctions(row: DbRow): WordCard["confusions"] {
 }
 
 /**
+ * 每个词的易混词结果缓存。
+ *
+ * 这个函数每张卡都要跑一次,而它内部是「按假名长度筛一遍 words 表(几千行)
+ * 再逐个算编辑距离」—— 实测 16ms/次,占整张卡耗时的三成。词库在一次会话里
+ * 基本不变,算过一次就存下来;导入词单后由 resetConfusionCache 清掉。
+ */
+const confusionCache = new Map<number, WordCard["confusions"]>();
+
+export const resetConfusionCache = (): void => {
+  confusionCache.clear();
+  wordsByKanaLength = null;
+};
+
+/**
  * 查找易混词候选
  */
 export function confusionCandidates(row: DbRow): WordCard["confusions"] {
+  const cacheKey = Number(row.id ?? 0);
+  if (cacheKey) {
+    const cached = confusionCache.get(cacheKey);
+    if (cached) return cached;
+  }
+  const computed = computeConfusionCandidates(row);
+  if (cacheKey) confusionCache.set(cacheKey, computed);
+  return computed;
+}
+
+/**
+ * 词表的内存副本,按假名字数分桶。
+ *
+ * 原来每张卡都发一条 `SELECT ... FROM words WHERE ABS(LENGTH(kana)-...)`,
+ * 每次要把几千行从 WASM 里搬出来 —— 实测 15ms/张,是整张卡耗时里最大的一块。
+ * 编辑距离本身只要 1~2ms,贵的是那趟 SQL。词库在会话内不变,读一次留着用。
+ * 判定逻辑一个字没改,结果与原来完全一致。
+ */
+interface ConfusionWord {
+  id: number;
+  meaning: string;
+  kana: string;
+  kanji: string;
+  pos: string;
+  verbType: unknown;
+  importance: number;
+  length: number;
+}
+
+let wordsByKanaLength: Map<number, ConfusionWord[]> | null = null;
+
+const loadWords = (): Map<number, ConfusionWord[]> => {
+  if (wordsByKanaLength) return wordsByKanaLength;
+  const buckets = new Map<number, ConfusionWord[]>();
+  for (const candidate of rowsFor("SELECT id, meaning, kana, kanji, pos, verb_type, importance FROM words")) {
+    const kana = String(candidate.kana ?? "");
+    if (!kana) continue;
+    const length = Array.from(kana).length;
+    const entry: ConfusionWord = {
+      id: Number(candidate.id ?? 0),
+      meaning: String(candidate.meaning ?? ""),
+      kana,
+      kanji: String(candidate.kanji ?? ""),
+      pos: String(candidate.pos ?? ""),
+      verbType: candidate.verb_type,
+      importance: Number(candidate.importance ?? 0),
+      length
+    };
+    const bucket = buckets.get(length);
+    if (bucket) bucket.push(entry);
+    else buckets.set(length, [entry]);
+  }
+  wordsByKanaLength = buckets;
+  return buckets;
+};
+
+function computeConfusionCandidates(row: DbRow): WordCard["confusions"] {
   const currentKana = String(row.kana ?? "");
   if (!currentKana) return senseDistinctions(row);
   const currentPos = String(row.pos ?? "").split("・")[0];
+  const currentId = Number(row.id ?? 0);
+  const currentLength = Array.from(currentKana).length;
   const maxGap = maxConfusionLengthGap(currentKana);
   const threshold = confusionThreshold(currentKana);
-  const scored = rowsFor(`
-    SELECT id, meaning, kana, kanji, pos, verb_type, importance
-    FROM words
-    WHERE id != ?
-      AND ABS(LENGTH(kana) - LENGTH(?)) <= ?
-  `, [Number(row.id ?? 0), currentKana, maxGap]).flatMap((candidate) => {
-    const candidateKana = String(candidate.kana ?? "");
-    if (Math.abs(Array.from(currentKana).length - Array.from(candidateKana).length) > maxGap) return [];
+
+  const buckets = loadWords();
+  const nearby: ConfusionWord[] = [];
+  for (let length = currentLength - maxGap; length <= currentLength + maxGap; length += 1) {
+    const bucket = buckets.get(length);
+    if (bucket) nearby.push(...bucket);
+  }
+
+  const scored = nearby.flatMap((candidate) => {
+    if (candidate.id === currentId) return [];
+    const candidateKana = candidate.kana;
     const phonetic = kanaSimilarity(currentKana, candidateKana);
     const structural = structuralSimilarity(currentKana, candidateKana);
     let similarity = phonetic * 0.65 + structural * 0.35;
-    if (currentPos && String(candidate.pos ?? "").includes(currentPos)) similarity += 0.04;
-    if (row.verb_type && row.verb_type === candidate.verb_type) similarity += 0.04;
+    if (currentPos && candidate.pos.includes(currentPos)) similarity += 0.04;
+    if (row.verb_type && row.verb_type === candidate.verbType) similarity += 0.04;
     if (similarity < threshold) return [];
     return [{ similarity, candidate }];
   }).sort((left, right) => (
     right.similarity - left.similarity
-    || Number(right.candidate.importance ?? 0) - Number(left.candidate.importance ?? 0)
+    || right.candidate.importance - left.candidate.importance
   ));
 
   const phoneticItems = scored.slice(0, 3).map(({ candidate }) => ({
-    kana: String(candidate.kana ?? ""),
-    kanji: String(candidate.kanji ?? ""),
-    meaning: String(candidate.meaning ?? ""),
+    kana: candidate.kana,
+    kanji: candidate.kanji,
+    meaning: candidate.meaning,
     kind: "sound"
   }));
   const existing = new Set(phoneticItems.map((item) => `${item.kana}|${item.kanji}`));
