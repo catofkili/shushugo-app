@@ -97,3 +97,7 @@ CREATE TABLE IF NOT EXISTS moji_migrated_reviews (
 
 CREATE INDEX IF NOT EXISTS idx_moji_migrated_reviews_activation
   ON moji_migrated_reviews(activated_on, priority);
+
+-- 按 (kanji, kana) 找词是热路径：相似释义词对照每张卡都要查一次，词单导入
+-- 每条记录也要查一次。没有这个索引就是 11k 行全表扫，一页快速学习能扫掉上百万行。
+CREATE INDEX IF NOT EXISTS idx_words_kanji_kana ON words(kanji, kana);

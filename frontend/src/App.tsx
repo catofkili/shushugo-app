@@ -124,7 +124,7 @@ export default function App() {
         setOverview(getProgressOverview());
       } else if (detail.status === "uploaded") {
         syncConflictNoticeRef.current = "";
-      } else if (detail.status === "conflict") {
+      } else if (detail.status === "conflict" || detail.status === "signed-out") {
         const message = detail.message ?? "两台设备都有新进度，请到设置中手动处理。";
         if (syncConflictNoticeRef.current === message) return;
         syncConflictNoticeRef.current = message;

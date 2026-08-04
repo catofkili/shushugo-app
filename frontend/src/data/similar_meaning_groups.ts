@@ -379,9 +379,24 @@ const rowMatchesMember = (row: DbRow, member: SimilarMeaningMember): boolean => 
   String(row.kanji ?? "") === member[0] && String(row.kana ?? "") === member[1]
 );
 
-export function similarMeaningCandidates(row: DbRow): WordCard["similarMeaning"] {
-  const group = similarMeaningGroups.find((candidate) => candidate.members.some((member) => memberMatches(member, row)));
-  if (!group) return null;
+type ResolvedMember = { id: number; kana: string; kanji: string; meaning: string; note: string };
+
+/**
+ * 组内成员在 words 表里的实际词条。
+ *
+ * 这个函数在每张卡片上都会被调用(rowObjectToCard 的一部分),而组的内容是写死的
+ * 常量、words 表几乎不变 —— 每张卡都去查一次库纯属浪费。按组缓存一次即可;
+ * 导入词单可能新增组内成员,那时由 resetSimilarMeaningCache 清掉。
+ */
+const resolvedByGroup = new Map<string, ResolvedMember[]>();
+
+export const resetSimilarMeaningCache = (): void => {
+  resolvedByGroup.clear();
+};
+
+const resolveGroup = (group: SimilarMeaningGroup): ResolvedMember[] => {
+  const cached = resolvedByGroup.get(group.id);
+  if (cached) return cached;
 
   const params = group.members.flatMap(([kanji, kana]) => [kanji, kana]);
   const clauses = group.members.map(() => "(kanji = ? AND kana = ?)").join(" OR ");
@@ -389,9 +404,9 @@ export function similarMeaningCandidates(row: DbRow): WordCard["similarMeaning"]
     `SELECT id, meaning, kana, kanji FROM words WHERE ${clauses}`,
     params
   );
-  const items = group.members.flatMap((member) => {
+  const resolved = group.members.flatMap((member) => {
     const match = rows.find((candidate) => rowMatchesMember(candidate, member));
-    if (!match || Number(match.id ?? 0) === Number(row.id ?? 0)) return [];
+    if (!match) return [];
     return [{
       id: Number(match.id ?? 0),
       kana: String(match.kana ?? member[1]),
@@ -400,6 +415,15 @@ export function similarMeaningCandidates(row: DbRow): WordCard["similarMeaning"]
       note: member[2]
     }];
   });
+  resolvedByGroup.set(group.id, resolved);
+  return resolved;
+};
 
+export function similarMeaningCandidates(row: DbRow): WordCard["similarMeaning"] {
+  const group = similarMeaningGroups.find((candidate) => candidate.members.some((member) => memberMatches(member, row)));
+  if (!group) return null;
+
+  const currentId = Number(row.id ?? 0);
+  const items = resolveGroup(group).filter((item) => item.id !== currentId);
   return items.length ? { title: group.title, distinction: group.distinction, items } : null;
 }

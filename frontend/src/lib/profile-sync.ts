@@ -34,7 +34,9 @@ const pull = async (local: UserProfile): Promise<UserProfile> => {
   const next: UserProfile = {
     ...local,
     nickname: remote.display_name?.trim() || local.nickname,
-    bio: remote.bio ?? "",
+    // 云端还没写过简介的账号（新注册、或只在别处登录过）会返回 null，
+    // 直接落成 "" 等于一登录就把本机写好的简介抹掉。
+    bio: remote.bio ?? local.bio,
     avatar: remote.avatar || undefined,
     targetLevel: normalizeTargetLevel(remote.target_level || local.targetLevel),
     profileUpdatedAt: remote.profile_updated_at || local.profileUpdatedAt

@@ -34,6 +34,17 @@ const phaseLabel = (phase: string) => {
   return "今日词汇";
 };
 
+/**
+ * 没动过的卡片按「模糊」提交，不能按「认识」。
+ *
+ * 提交走的是正式作答流程，而「当天第一次看到就点认识」会被记成 Easy —— 一整页
+ * 翻过去直接提交，等于把 50 个词一次性推到很远的间隔。默认值必须是保守的那一侧：
+ * 没判断过的词留在轮换里，代价只是多复习一次。
+ */
+const DEFAULT_QUICK_RATING: WordAnswer = "fuzzy";
+const defaultRatingOption = answerOptions.find((option) => option.value === DEFAULT_QUICK_RATING)
+  ?? answerOptions[1];
+
 export function QuickStudyPanel({ onNavigate, variant = "page" }: Props) {
   const [cards, setCards] = useState<WordCard[]>([]);
   const [nextCards, setNextCards] = useState<WordCard[]>([]);
@@ -312,7 +323,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page" }: Props) {
       return result;
     }, {} as Record<WordAnswer, number>);
     cards.forEach((card) => {
-      const answer = ratings[card.id] ?? "know";
+      const answer = ratings[card.id] ?? DEFAULT_QUICK_RATING;
       counts[answer] += 1;
     });
     setSubmitSummary({ total: cards.length, counts });
@@ -325,7 +336,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page" }: Props) {
     setError("");
     try {
       submitQuickStudyBatch(
-        cards.map((card) => ({ wordId: card.id, answer: ratings[card.id] ?? "know" })),
+        cards.map((card) => ({ wordId: card.id, answer: ratings[card.id] ?? DEFAULT_QUICK_RATING })),
         phase
       );
 
@@ -505,8 +516,8 @@ export function QuickStudyPanel({ onNavigate, variant = "page" }: Props) {
       ) : cards.length ? (
         <div className="quick-study-list">
           {cards.map((card, index) => {
-            const rating = ratings[card.id] ?? "know";
-            const selectedOption = answerOptions.find((option) => option.value === rating) ?? answerOptions[2];
+            const rating = ratings[card.id] ?? DEFAULT_QUICK_RATING;
+            const selectedOption = answerOptions.find((option) => option.value === rating) ?? defaultRatingOption;
             const revealed = revealedIds.has(card.id);
             const primary = primaryAnswerText(card) || card.kanji || card.kana;
             const secondary = secondaryAnswerText(card);

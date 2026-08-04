@@ -9,25 +9,28 @@ import initSqlJs from "sql.js";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(here, "../public");
 const dbPath = path.join(publicDir, "nihongo.db");
-// public/ 下的一切都会被原样复制进 dist/ 并公开可下载,所以出厂词库之外
-// 不允许再出现任何数据库文件——个人学习库放这里会连同网站一起发出去。
-const ALLOWED_PUBLIC_DATABASES = new Set(["nihongo.db"]);
-const DATABASE_EXTENSIONS = new Set([".db", ".sqlite", ".sqlite3"]);
 
-const collectDatabases = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-  const full = path.join(dir, entry.name);
-  if (entry.isDirectory()) return collectDatabases(full);
-  return DATABASE_EXTENSIONS.has(path.extname(entry.name).toLowerCase()) ? [full] : [];
-});
+// public/ 下的**一切**都会被原样复制进 dist/ 并公开可下载。
+//
+// 以前这里只拦 .db/.sqlite,结果是「不是数据库的东西」照样能溜出去 ——
+// 网页原型、设计稿、导出的 HTML 放进 public/ 都会随网页版一起公开。
+// 所以改成白名单:只有明确列出的顶层条目允许存在,新增任何东西都必须
+// 先在这里登记,顺便逼着人想一遍「这个真的要对外公开吗」。
+const ALLOWED_PUBLIC_ENTRIES = new Set([
+  "nihongo.db",   // 出厂词库
+  "audio",        // 预生成单词读音
+  ".DS_Store"
+]);
 
-const strayDatabases = collectDatabases(publicDir)
-  .filter((file) => !ALLOWED_PUBLIC_DATABASES.has(path.relative(publicDir, file)));
+const strayEntries = readdirSync(publicDir, { withFileTypes: true })
+  .map((entry) => entry.name)
+  .filter((name) => !ALLOWED_PUBLIC_ENTRIES.has(name));
 
-if (strayDatabases.length) {
-  const list = strayDatabases.map((file) => path.relative(publicDir, file)).join(", ");
+if (strayEntries.length) {
   throw new Error(
-    `拒绝构建：public/ 下存在出厂词库以外的数据库文件（${list}）。` +
-    `这些文件会被公开发布,请移出 public/ 后重新构建。`
+    `拒绝构建：public/ 下存在未登记的条目（${strayEntries.join(", ")}）。\n` +
+    `public/ 的内容会原样发布到网站上。确认可以公开的,加进 verify-release-db.mjs ` +
+    `的 ALLOWED_PUBLIC_ENTRIES；否则请移出 public/（设计稿/原型放 design/）。`
   );
 }
 

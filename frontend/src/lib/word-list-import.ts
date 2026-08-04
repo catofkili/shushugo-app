@@ -5,6 +5,7 @@ import { notifyProgressUpdated } from "./progress-events";
 import { recordReview, type FsrsState } from "./fsrs-scheduler";
 import { ensureFsrsColumns, writeFsrsState } from "./fsrs-store";
 import type { WordAnswer } from "../types/vocabulary";
+import { resetSimilarMeaningCache } from "../data/similar_meaning_groups";
 
 type ImportRecord = Record<string, unknown>;
 
@@ -482,6 +483,8 @@ export const importExternalWordList = (text: string): WordListImportResult => {
     throw error;
   }
 
+  // 导入可能补齐了某个相似释义组里缺的成员,组解析缓存要作废重建。
+  resetSimilarMeaningCache();
   persistSoon();
   notifyProgressUpdated();
   return { ...preview, inserted, updated, queuedForReview };

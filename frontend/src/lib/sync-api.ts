@@ -87,7 +87,7 @@ interface CloudSyncState {
   conflictModified?: string;
 }
 
-export type CloudSyncStatus = "skipped" | "idle" | "uploaded" | "downloaded" | "merged" | "conflict" | "error";
+export type CloudSyncStatus = "skipped" | "idle" | "uploaded" | "downloaded" | "merged" | "conflict" | "signed-out" | "error";
 
 export interface CloudSyncEventDetail {
   status: CloudSyncStatus;
@@ -792,6 +792,20 @@ const mergeCloudDatabase = async (
   return { status: "merged", automatic, message };
 };
 
+/**
+ * 会话已失效（token 过期或在别处被吊销）：清掉本地登录态并提示重新登录。
+ * 学习数据一律保留 —— 本机数据的归属仍然是这个账号，重新登录后按行合并即可。
+ */
+const handleExpiredSession = async (): Promise<CloudSyncEventDetail> => {
+  await removeCloudAccessToken();
+  await Preferences.remove({ key: EMAIL_VERIFIED_KEY });
+  localChangePending = false;
+  emitCloudAuthEvent(await getCloudSession());
+  const message = "云同步登录已过期，请重新登录后继续同步。";
+  emitCloudSyncEvent({ status: "signed-out", automatic: true, message });
+  return { status: "signed-out", automatic: true, message };
+};
+
 export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup"): Promise<CloudSyncEventDetail> {
   if (autoSyncInFlight) return autoSyncInFlight;
 
@@ -901,6 +915,11 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
             ? retryAfterSeconds * 1000
             : AUTO_SYNC_POLL_MS;
           autoSyncBlockedUntil = Date.now() + retryDelay;
+        }
+        // token 有效期 30 天。过期后如果什么都不做，自动同步只会每 5 分钟
+        // 静默失败一次，用户完全不知道自己早就没在同步了。
+        if (error instanceof CloudRequestError && error.status === 401) {
+          return await handleExpiredSession();
         }
         if (!(error instanceof CloudRequestError && error.status === 409)) {
           console.warn(`[cloud-sync] 自动同步失败(${trigger}):`, error);

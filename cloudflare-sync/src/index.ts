@@ -679,12 +679,15 @@ const getAppleTransaction = async (env: Env, transactionId: string) => {
   return { payload: base64UrlToJson<AppleTransactionPayload>(payload), raw: data };
 };
 
-const currentUser = async (request: Request, env: Env) => {
-  const header = request.headers.get("authorization") ?? "";
-  const match = header.match(/^Bearer\s+(.+)$/i);
-  if (!match) return null;
+const bearerTokenHash = async (request: Request) => {
+  const match = (request.headers.get("authorization") ?? "").match(/^Bearer\s+(.+)$/i);
+  return match ? await sha256(match[1]) : null;
+};
 
-  const tokenHash = await sha256(match[1]);
+const currentUser = async (request: Request, env: Env) => {
+  const tokenHash = await bearerTokenHash(request);
+  if (!tokenHash) return null;
+
   const session = await env.DB.prepare(`
     SELECT user_id, expires_at
     FROM sessions
@@ -803,12 +806,10 @@ const login = async (request: Request, env: Env) => {
     WHERE u.email = ?
   `).bind(email).first<UserRow>();
 
-  if (!user) {
-    await recordLoginFailure(env, request, email);
-    return json({ detail: "邮箱或密码不正确。" }, 401);
-  }
-  const passwordHash = await hashPassword(password, user.password_salt);
-  if (passwordHash !== user.password_hash) {
+  // 账号不存在时也要走一遍同样的 PBKDF2:直接返回的话，10 万轮哈希的时间差
+  // 就是一个「这个邮箱注册没注册」的旁路,可以被批量拿来枚举用户。
+  const passwordHash = await hashPassword(password, user?.password_salt ?? "decoy-salt");
+  if (!user || passwordHash !== user.password_hash) {
     await recordLoginFailure(env, request, email);
     return json({ detail: "邮箱或密码不正确。" }, 401);
   }
@@ -943,6 +944,8 @@ const profile = async (request: Request, env: Env) => {
 
 const updateProfile = async (request: Request, env: Env) => {
   const userId = await requireUser(request, env);
+  // 头像最大 3MB 直接写 KV,不限速就能被反复调用刷爆写入配额和账单。
+  await rateLimitSubject(env, "profile-update", `user:${userId}`, 20, 3600);
   const body = await readJson<{
     display_name?: string;
     bio?: string;
@@ -983,10 +986,9 @@ const updateProfile = async (request: Request, env: Env) => {
 };
 
 const logout = async (request: Request, env: Env) => {
-  const header = request.headers.get("authorization") ?? "";
-  const match = header.match(/^Bearer\s+(.+)$/i);
-  if (match) {
-    await env.DB.prepare("DELETE FROM sessions WHERE token_hash = ?").bind(await sha256(match[1])).run();
+  const tokenHash = await bearerTokenHash(request);
+  if (tokenHash) {
+    await env.DB.prepare("DELETE FROM sessions WHERE token_hash = ?").bind(tokenHash).run();
   }
   return json({ status: "success" });
 };
@@ -1015,6 +1017,12 @@ const changePassword = async (request: Request, env: Env) => {
   const salt = randomToken(16);
   await env.DB.prepare("UPDATE users SET password_hash = ?, password_salt = ? WHERE id = ?")
     .bind(await hashPassword(newPassword, salt), salt, userId)
+    .run();
+  // 「我怀疑被盗号 → 改密码」必须真的把别处的登录踢掉，否则攻击者手里那个
+  // 30 天 token 完全不受影响。保留当前这台设备的会话，不然自己也被踢出去。
+  const currentTokenHash = await bearerTokenHash(request);
+  await env.DB.prepare("DELETE FROM sessions WHERE user_id = ? AND token_hash IS NOT ?")
+    .bind(userId, currentTokenHash)
     .run();
   return json({ status: "success" });
 };
@@ -1165,6 +1173,8 @@ const getEntitlements = async (request: Request, env: Env) => {
 
 const verifyPurchase = async (request: Request, env: Env) => {
   const userId = await requireUser(request, env);
+  // 每次校验都会往 Apple 发一次请求,不限速等于把出网调用敞开给任何登录账号。
+  await rateLimitSubject(env, "purchase-verify", `user:${userId}`, 30, 3600);
   const body = await readJson<{ product_id?: string; transaction_id?: string }>(request);
   const productId = String(body.product_id ?? "");
   const transactionId = String(body.transaction_id ?? "");
@@ -1246,7 +1256,10 @@ const pushSync = async (request: Request, env: Env) => {
     return json({ detail: "Backup is too large" }, 413);
   }
   const userId = await requireVerifiedUser(request, env);
-  await enforceSyncRateLimit(env, request, userId, env.SYNC_PUSH_LIMITER, "push", 12);
+  // 客户端自动上传最快每 5 分钟一次 = 12 次/小时，配额必须留出余量：
+  // 手动上传、以及「合并后立刻推送」(一次同步算两次 push) 都会叠在上面。
+  // 配额定在 12 等于让正常使用必然撞 429。
+  await enforceSyncRateLimit(env, request, userId, env.SYNC_PUSH_LIMITER, "push", 30);
 
   const binaryUpload = (request.headers.get("content-type") ?? "").includes("application/octet-stream");
   let snapshotBytes: Uint8Array;
@@ -1677,8 +1690,21 @@ export default {
     }
   },
   async scheduled(_controller, env): Promise<void> {
-    // 限速窗口只用于短期计数；每天清掉两天前的数据，避免 D1 表无限增长。
-    const cutoff = Math.floor(Date.now() / 1000) - 2 * 24 * 60 * 60;
-    await env.DB.prepare("DELETE FROM sync_rate_limits WHERE window_start < ?").bind(cutoff).run();
+    const now = Date.now();
+    const iso = (ms: number) => new Date(ms).toISOString();
+    // 这几张表都是「只进不出」的短期记录，不清就会一直涨到撞上 D1 容量。
+    await env.DB.batch([
+      // 限速窗口只用于短期计数，两天前的没有任何意义。
+      env.DB.prepare("DELETE FROM sync_rate_limits WHERE window_start < ?")
+        .bind(Math.floor(now / 1000) - 2 * 24 * 60 * 60),
+      // 上传幂等记录只服务「同一次上传的重试」，保留一天足够覆盖任何重试窗口。
+      env.DB.prepare("DELETE FROM sync_uploads WHERE created_at < ?")
+        .bind(iso(now - 24 * 60 * 60 * 1000)),
+      // 过期会话已经登不上，留着只是占空间。
+      env.DB.prepare("DELETE FROM sessions WHERE expires_at < ?").bind(iso(now)),
+      // 验证码用过或过期就没用了。
+      env.DB.prepare("DELETE FROM auth_email_tokens WHERE expires_at < ? OR used_at IS NOT NULL")
+        .bind(iso(now - 24 * 60 * 60 * 1000))
+    ]);
   }
 } satisfies ExportedHandler<Env>;

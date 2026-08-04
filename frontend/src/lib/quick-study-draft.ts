@@ -4,6 +4,8 @@ import type { WordAnswer, WordCard } from "../types/vocabulary";
 const STORAGE_KEY = "mn-quick-study-draft";
 const DRAFT_VERSION = 1;
 const VALID_ANSWERS = new Set<WordAnswer>(["forgot", "fuzzy", "know", "known_forever"]);
+/** 与 QuickStudyPanel 一致：没评过的卡片按保守的一侧兜底，不能按「认识」。 */
+const DEFAULT_ANSWER: WordAnswer = "fuzzy";
 
 export interface QuickStudyDraft {
   version: 1;
@@ -82,7 +84,7 @@ const normalizeDraft = (value: unknown): QuickStudyDraft | null => {
   const sourceRatings = candidate.ratings && typeof candidate.ratings === "object" ? candidate.ratings : {};
   const ratings = Object.fromEntries(cards.map((card) => {
     const answer = sourceRatings[card.id];
-    return [card.id, VALID_ANSWERS.has(answer) ? answer : "know"];
+    return [card.id, VALID_ANSWERS.has(answer) ? answer : DEFAULT_ANSWER];
   })) as Record<number, WordAnswer>;
 
   return {
