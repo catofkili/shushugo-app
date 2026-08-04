@@ -5,6 +5,10 @@
   "compatibility_date": "2026-07-02",
   "workers_dev": true,
   "preview_urls": false,
+  "vars": {
+    "APP_BUNDLE_ID": "com.masternihongo.app",
+    "APPLE_SIGN_IN_CLIENT_ID": "com.masternihongo.app"
+  },
   "d1_databases": [
     {
       "binding": "DB",
@@ -17,5 +21,31 @@
       "binding": "SYNC_DATA",
       "id": "a8a8e2d05d2e4159a26e37e057bd8ebf"
     }
-  ]
+  ],
+  "r2_buckets": [
+    {
+      "binding": "SYNC_BUCKET",
+      "bucket_name": "master-nihongo-sync-snapshots"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "SYNC_PUSH_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 2, "period": 60 }
+    },
+    {
+      "name": "SYNC_PULL_LIMITER",
+      "namespace_id": "1002",
+      "simple": { "limit": 4, "period": 60 }
+    },
+    {
+      "name": "SYNC_STATUS_LIMITER",
+      "namespace_id": "1003",
+      "simple": { "limit": 20, "period": 60 }
+    }
+  ],
+  "triggers": {
+    "crons": ["17 3 * * *"]
+  }
 }

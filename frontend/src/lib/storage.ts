@@ -186,8 +186,11 @@ const loadFileDatabase = async (): Promise<boolean> => {
   return false;
 };
 
-// 保存数据库到本地存储
-export async function saveDatabase(): Promise<void> {
+// 保存数据库到本地存储。云同步通知默认打开,从云端恢复时显式关闭,
+// 避免把刚拉下来的云端备份又当成本机新修改推回去。
+export async function saveDatabase(options: { notifyCloud?: boolean } = {}): Promise<void> {
+  const { notifyCloud = true } = options;
+  if (notifyCloud) localDataRevision += 1;
   try {
     const data = exportDatabase();
     if (!data) {
@@ -203,6 +206,11 @@ export async function saveDatabase(): Promise<void> {
     pendingSave = false;
 
     console.log('✅ Database saved to local storage');
+    if (notifyCloud && typeof window !== 'undefined') {
+      void import('./sync-api')
+        .then(({ requestCloudAutoSync }) => requestCloudAutoSync('local-change'))
+        .catch(() => undefined);
+    }
   } catch (error) {
     console.error('❌ Failed to save database:', error);
     throw error;
@@ -278,12 +286,20 @@ export async function clearStorage(): Promise<void> {
 // 自动保存功能（每次提交答案后调用）
 let autoSaveTimer: NodeJS.Timeout | null = null;
 let pendingSave = false;
+// 网络同步可能持续数秒;用运行期版本号判断期间是否又有本地改动,
+// 防止后台拉取覆盖用户刚答完的题。它不需要持久化。
+let localDataRevision = 0;
+
+export function getLocalDataRevision(): number {
+  return localDataRevision;
+}
 
 export function scheduleSave(delayMs: number = 2000): void {
   if (autoSaveTimer) {
     clearTimeout(autoSaveTimer);
   }
 
+  localDataRevision += 1;
   pendingSave = true;
   autoSaveTimer = setTimeout(() => {
     autoSaveTimer = null;

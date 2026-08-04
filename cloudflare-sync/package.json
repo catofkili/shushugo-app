@@ -9,10 +9,13 @@
     "d1:create": "wrangler d1 create master_nihongo_sync",
     "d1:migrate": "wrangler d1 migrations apply master_nihongo_sync",
     "d1:migrate:remote": "wrangler d1 migrations apply master_nihongo_sync --remote",
-    "kv:create": "wrangler kv namespace create SYNC_DATA"
+    "kv:create": "wrangler kv namespace create SYNC_DATA",
+    "r2:create": "wrangler r2 bucket create master-nihongo-sync-snapshots",
+    "check": "tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,WebWorker --types @cloudflare/workers-types src/index.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260702.0",
+    "typescript": "^5.9.3",
     "wrangler": "^4.106.0"
   }
 }

@@ -12,6 +12,7 @@ import { SYNCED_TABLES, STUDY_TIME_TABLE, type SyncedTable } from "./tables";
 
 export const SYNC_UPDATED_COL = "sync_updated_at";
 export const SYNC_UID_COL = "sync_uid";
+export const SYNC_ORIGIN_COL = "sync_origin_device";
 
 /** UTC + 毫秒,字典序即时间序,便于按游标比较。 */
 const NOW_EXPR = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
@@ -35,15 +36,28 @@ export function ensureSyncSchema(): void {
   // 设备标识存表里而不是烤进触发器,否则从别的设备恢复备份后,
   // 触发器会继续用对端的设备号给本机新数据打标。
   db.run("CREATE TABLE IF NOT EXISTS sync_device (id TEXT NOT NULL)");
+  getDeviceId();
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sync_context (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
 
   db.run(`
     CREATE TABLE IF NOT EXISTS sync_tombstones (
       table_name TEXT NOT NULL,
       row_key TEXT NOT NULL,
       deleted_at TEXT NOT NULL,
+      origin_device TEXT NOT NULL DEFAULT '',
       PRIMARY KEY (table_name, row_key)
     )
   `);
+  const tombstoneColumns = columnsOf("sync_tombstones");
+  if (!tombstoneColumns.has("origin_device")) {
+    db.run("ALTER TABLE sync_tombstones ADD COLUMN origin_device TEXT NOT NULL DEFAULT ''");
+  }
 
   // 每天每设备一行,避免两端同日学习时求和重复累加。
   db.run(`
@@ -72,6 +86,9 @@ const ensureTrackingColumns = (entry: SyncedTable): void => {
   if (!columns.has(SYNC_UPDATED_COL)) {
     db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_UPDATED_COL} TEXT`);
   }
+  if (!columns.has(SYNC_ORIGIN_COL)) {
+    db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_ORIGIN_COL} TEXT`);
+  }
 
   if (entry.strategy === "append" && !columns.has(SYNC_UID_COL)) {
     // 两端的自增 id 会撞车(各自都会产生 id=5001),所以事件日志另立
@@ -93,6 +110,10 @@ const ensureTrackingColumns = (entry: SyncedTable): void => {
     `UPDATE ${entry.table} SET ${SYNC_UPDATED_COL} = '1970-01-01T00:00:00.000Z'
      WHERE ${SYNC_UPDATED_COL} IS NULL`
   );
+  db.run(
+    `UPDATE ${entry.table} SET ${SYNC_ORIGIN_COL} = (SELECT id FROM sync_device LIMIT 1)
+     WHERE ${SYNC_ORIGIN_COL} IS NULL OR ${SYNC_ORIGIN_COL} = ''`
+  );
 
   db.run(
     `CREATE INDEX IF NOT EXISTS idx_${entry.table}_sync_updated
@@ -108,10 +129,18 @@ const ensureTriggers = (entry: SyncedTable): void => {
          (SELECT id FROM sync_device LIMIT 1) || ':' || CAST(NEW.id AS TEXT))`
     : "";
 
+  // 触发器定义会随着同步协议升级而变化,不能只依赖 IF NOT EXISTS;
+  // 否则旧版本留下的触发器会继续绕过 remote apply 上下文。
+  db.run(`DROP TRIGGER IF EXISTS trg_${table}_sync_insert`);
+  db.run(`DROP TRIGGER IF EXISTS trg_${table}_sync_update`);
+  db.run(`DROP TRIGGER IF EXISTS trg_${table}_sync_delete`);
+
   db.run(`
     CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_insert AFTER INSERT ON ${table}
+    WHEN NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
     BEGIN
-      UPDATE ${table} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR}${uidAssign}
+      UPDATE ${table} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR},
+        ${SYNC_ORIGIN_COL} = (SELECT id FROM sync_device LIMIT 1)${uidAssign}
       WHERE rowid = NEW.rowid;
       DELETE FROM sync_tombstones
       WHERE table_name = '${table}' AND row_key = ${rowKeyExpr(entry, "NEW")};
@@ -122,21 +151,37 @@ const ensureTriggers = (entry: SyncedTable): void => {
   db.run(`
     CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_update AFTER UPDATE ON ${table}
     WHEN NEW.${SYNC_UPDATED_COL} IS OLD.${SYNC_UPDATED_COL}
+      AND NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
     BEGIN
-      UPDATE ${table} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR} WHERE rowid = NEW.rowid;
+      UPDATE ${table} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR},
+        ${SYNC_ORIGIN_COL} = (SELECT id FROM sync_device LIMIT 1)
+      WHERE rowid = NEW.rowid;
     END
   `);
 
   // 没有墓碑的话,一端删掉的行会被另一端的旧数据原样复活。
   db.run(`
     CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_delete AFTER DELETE ON ${table}
+    WHEN NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
     BEGIN
-      INSERT INTO sync_tombstones (table_name, row_key, deleted_at)
-      VALUES ('${table}', ${rowKeyExpr(entry, "OLD")}, ${NOW_EXPR})
-      ON CONFLICT(table_name, row_key) DO UPDATE SET deleted_at = excluded.deleted_at;
+      INSERT INTO sync_tombstones (table_name, row_key, deleted_at, origin_device)
+      VALUES ('${table}', ${rowKeyExpr(entry, "OLD")}, ${NOW_EXPR},
+        (SELECT id FROM sync_device LIMIT 1))
+      ON CONFLICT(table_name, row_key) DO UPDATE SET
+        deleted_at = excluded.deleted_at,
+        origin_device = excluded.origin_device;
     END
   `);
 };
+
+export function beginSyncApply(): void {
+  ensureSyncSchema();
+  getDatabase().run("INSERT OR REPLACE INTO sync_context (key, value) VALUES ('applying_remote', '1')");
+}
+
+export function endSyncApply(): void {
+  getDatabase().run("DELETE FROM sync_context WHERE key = 'applying_remote'");
+}
 
 /** 本机设备号;首次调用时生成并落库。恢复他人备份后需调用 resetDeviceId。 */
 export function getDeviceId(): string {

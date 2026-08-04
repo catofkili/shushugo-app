@@ -19,6 +19,8 @@ export interface SyncedTable {
 }
 
 // 只列用户数据表。words / grammar_points 这类出厂内容两端一致,不参与同步。
+export const STUDY_TIME_TABLE = "word_study_time_by_device";
+
 export const SYNCED_TABLES: SyncedTable[] = [
   // 每词/每语法点的记忆状态,FSRS 的列也在 progress 上,是同步的核心。
   { table: "progress", keys: ["word_id"], strategy: "lww" },
@@ -44,7 +46,9 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "reviews", keys: ["sync_uid"], strategy: "append" },
   { table: "grammar_reviews", keys: ["sync_uid"], strategy: "append" },
 
-  { table: "checkins", keys: ["checked_on"], strategy: "union" }
+  { table: "checkins", keys: ["checked_on"], strategy: "union" },
+  // 每台设备每天只写自己的一行，因此同一主键可安全使用 LWW；跨设备统计时求和。
+  { table: STUDY_TIME_TABLE, keys: ["studied_on", "device_id"], strategy: "lww" }
 ];
 
 // app_state 里描述「这台设备」而非「这个账号」的键,同步会跳过,
@@ -61,7 +65,5 @@ export const DEVICE_LOCAL_STATE_KEYS = new Set([
  * 改为同步 word_study_time_by_device(studied_on, device_id),
  * 各设备只写自己那行,统计时按天求和。见 sync/study-time.ts。
  */
-export const STUDY_TIME_TABLE = "word_study_time_by_device";
-
 export const isAppendTable = (table: string): boolean =>
   SYNCED_TABLES.find((entry) => entry.table === table)?.strategy === "append";
