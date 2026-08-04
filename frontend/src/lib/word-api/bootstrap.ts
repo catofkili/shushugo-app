@@ -6,7 +6,8 @@ import {
   backfillKanjiFsrs,
   ensureFsrsColumns,
   ensureGrammarFsrs,
-  migrateRecentDailyEasyReviews
+  migrateRecentDailyEasyReviews,
+  migrateFullHistoryDailyEasy
 } from "../fsrs-store";
 import { backfillStage2FromReviews } from "./queues";
 
@@ -38,6 +39,10 @@ export const ensureProgressInitialized = () => {
     ensureFsrsColumns();
     backfillFsrsFromHistory();
     migrateRecentDailyEasyReviews();
+    // 最初的回填把每次「认识」都按 Good 重放,而实际规则是当天首答认识按 Easy。
+    // 几个月的历史累积下来间隔被系统性压短 —— 表现为一次性欠出上千个到期词。
+    // 用同一套重放逻辑跑全量历史修正一次。
+    migrateFullHistoryDailyEasy();
   } catch (err) {
     console.warn("[fsrs] 单词回填跳过:", err);
   }

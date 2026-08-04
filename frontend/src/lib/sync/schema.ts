@@ -8,6 +8,7 @@
 
 import { getDatabase } from "../database";
 import { rowsFor } from "../database/db-utils";
+import { backfillStudyTimeByDevice } from "./study-time";
 import { SYNCED_TABLES, STUDY_TIME_TABLE, type SyncedTable } from "./tables";
 
 export const SYNC_UPDATED_COL = "sync_updated_at";
@@ -45,6 +46,12 @@ export function ensureSyncSchema(): void {
     )
   `);
 
+  // applying_remote 是写在库里的标志,会随数据库一起持久化。合并途中 App 被杀
+  // (或页面刷新)时 endSyncApply 跑不到,这个标志就永远留着 —— 之后所有触发器的
+  // WHEN NOT EXISTS 恒为假,sync_updated_at 不再更新、墓碑不再写,而且完全静默。
+  // 启动时无条件清掉:能走到这里就说明上一次合并已经结束(成功或崩溃)。
+  db.run("DELETE FROM sync_context WHERE key = 'applying_remote'");
+
   db.run(`
     CREATE TABLE IF NOT EXISTS sync_tombstones (
       table_name TEXT NOT NULL,
@@ -77,6 +84,10 @@ export function ensureSyncSchema(): void {
   }
 
   schemaReadyDbs.add(db);
+
+  // by_device 表之前的学习时长只存在 word_study_time 里,补一行记在本设备名下。
+  // 必须放在 schemaReadyDbs 之后:它内部会再进 ensureSyncSchema,不然会死循环。
+  if (tableExists("word_study_time")) backfillStudyTimeByDevice();
 }
 
 const ensureTrackingColumns = (entry: SyncedTable): void => {

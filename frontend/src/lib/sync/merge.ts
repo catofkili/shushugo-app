@@ -9,6 +9,7 @@ import {
 } from "./schema";
 import { DEVICE_LOCAL_STATE_KEYS, SYNCED_TABLES, type SyncedTable } from "./tables";
 import { isUserSyncSnapshot } from "./snapshot";
+import { rebuildStudyTimeAggregate } from "./study-time";
 
 const ROW_SEPARATOR = "\u001f";
 const DEFAULT_ORIGIN = "legacy";
@@ -166,6 +167,23 @@ const deleteRowByKey = (db: Database, entry: SyncedTable, key: string): void => 
   db.run(`DELETE FROM ${quoteIdentifier(entry.table)} WHERE ${where}`, values as never);
 };
 
+/**
+ * 表自身的主键列里,不参与同步身份判定的那些(典型:reviews.id 这种自增 id)。
+ *
+ * 事件日志两端各自自增,一定会撞车:两台设备都会产生 id=5001。如果照抄云端的
+ * id 写下去,INSERT OR REPLACE 会因为主键冲突把本机那条同 id 的复习记录**删掉**,
+ * 而 REPLACE 在 recursive_triggers 关闭时不触发 DELETE 触发器 —— 不写墓碑、
+ * 不报错、下次同步也不会恢复,等于静默永久丢一条复习流水。
+ */
+const foreignKeyedPrimaryColumns = (db: Database, entry: SyncedTable): string[] => {
+  if (!tableExists(db, entry.table)) return [];
+  const info = db.exec(`PRAGMA table_info(${quoteIdentifier(entry.table)})`)[0];
+  const syncKeys = new Set(entry.keys);
+  return (info?.values ?? [])
+    .filter((row) => Number(row[5] ?? 0) > 0 && !syncKeys.has(String(row[1])))
+    .map((row) => String(row[1]));
+};
+
 const applyTable = (
   db: Database,
   entry: SyncedTable,
@@ -176,6 +194,7 @@ const applyTable = (
   const localRows = rowsOf(db, entry.table);
   const localByKey = new Map(localRows.map((row) => [rowKey(entry, row), row]));
   const writableColumns = new Set(columns);
+  const borrowedPrimaryColumns = foreignKeyedPrimaryColumns(db, entry);
   const changes: Array<() => void> = [];
 
   for (const [key, item] of selected) {
@@ -185,6 +204,12 @@ const applyTable = (
     if (!row) {
       if (current) changes.push(() => deleteRowByKey(db, entry, key));
       continue;
+    }
+    // 云端的自增主键在本机没有意义:本机已有这行就沿用本机 id,
+    // 是新行就把 id 拿掉,让 SQLite 重新分配一个不冲突的。
+    for (const column of borrowedPrimaryColumns) {
+      if (current && current[column] != null) row[column] = current[column];
+      else delete row[column];
     }
     if (rowsEqual(current, row, writableColumns)) continue;
     const rowColumns = Object.keys(row).filter((column) => writableColumns.has(column));
@@ -261,6 +286,9 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
       applyTable(localDb, entry, items);
     }
     applyTombstones(localDb, merged);
+    // 对端的学习时长同步下来了,但读取方看的是 word_study_time 的每日合计,
+    // 不重算一次统计页就只显示本机那份。
+    rebuildStudyTimeAggregate();
   } finally {
     endSyncApply();
     remoteDb.close();

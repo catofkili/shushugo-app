@@ -17,6 +17,8 @@ import {
 } from "./study-core";
 import type { WordSessionOptions } from "./study-types";
 import { encoreChunkSize, recordEncore } from "./review-budget";
+import { ensureSyncSchema } from "./sync/schema";
+import { recordStudySeconds } from "./sync/study-time";
 import {
   recordFsrsReview,
   isFsrsActive,
@@ -1007,15 +1009,10 @@ export function updateWordNote(wordId: number, note: string): { wordId: number; 
 }
 
 export function addWordStudySeconds(seconds: number): { seconds: number; stats: WordStats } {
-  const db = getDatabase();
-  const studyDate = today();
-  db.run(`
-    INSERT INTO word_study_time (studied_on, seconds, updated_at)
-    VALUES (?, ?, CURRENT_TIMESTAMP)
-    ON CONFLICT(studied_on) DO UPDATE SET
-      seconds = seconds + excluded.seconds,
-      updated_at = CURRENT_TIMESTAMP
-  `, [studyDate, Math.max(0, Math.round(seconds))]);
+  // 只写 word_study_time 的话学习时长跨设备永远不同步(那张表按天单主键,
+  // 没法合并)。改走 by_device:记本设备那行,再把当天跨设备合计写回原表。
+  ensureSyncSchema();
+  recordStudySeconds(today(), seconds);
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());
   return {

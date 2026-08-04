@@ -2,6 +2,9 @@ import { getDatabase } from "./database";
 import { ensureProgressInitialized } from "./word-api";
 import { firstRow, firstValue, persistSoon, setState, today } from "./study-core";
 import { notifyProgressUpdated } from "./progress-events";
+import { recordReview, type FsrsState } from "./fsrs-scheduler";
+import { ensureFsrsColumns, writeFsrsState } from "./fsrs-store";
+import type { WordAnswer } from "../types/vocabulary";
 
 type ImportRecord = Record<string, unknown>;
 
@@ -319,11 +322,60 @@ const reviewPriority = (draft: ExternalWordDraft) => {
   return Math.max(0, 8 - draft.memoryScore) + draft.forgotCount * 2 + draft.fuzzyCount + Math.min(draft.seenCount, 20) / 10;
 };
 
+/** 一条导入记录最多重放几次同类作答:防止 seen_count=500 的记录把导入拖垮。 */
+const MAX_REPLAY_PER_ANSWER = 6;
+
+/**
+ * 把外部词单(MOJi 等)的熟悉度换算成 FSRS 状态。
+ *
+ * 外部数据只有聚合计数,没有逐条复习日志,没法像本机历史那样精确重放。做法和
+ * 汉字回填(backfillKanjiFsrs)一致:按对/模糊/错的次数近似重放一遍,时间锚在
+ * 「最后一次学习那天」,让「距今多久没复习」和真实情况对得上。
+ *
+ * 顺序有讲究:分数高的词把答对放最后(收在记牢的状态),分数低的把答错放最后
+ * (收在重学状态)—— 否则一个「已掌握」的词会因为序列结尾是 forgot 而被排成明天就考。
+ */
+const seedFsrsFromImport = (wordId: number, draft: ExternalWordDraft): void => {
+  const cap = (value: number) => Math.max(0, Math.min(Math.round(value), MAX_REPLAY_PER_ANSWER));
+  const right = cap(draft.rightCount);
+  const fuzzy = cap(draft.fuzzyCount);
+  const forgot = cap(draft.forgotCount);
+
+  const repeat = (answer: WordAnswer, times: number) => Array<WordAnswer>(times).fill(answer);
+  const remembered = draft.memoryScore >= 4;
+  let answers: WordAnswer[] = remembered
+    ? [...repeat("forgot", forgot), ...repeat("fuzzy", fuzzy), ...repeat("know", right)]
+    : [...repeat("know", right), ...repeat("fuzzy", fuzzy), ...repeat("forgot", forgot)];
+
+  if (!answers.length) {
+    // 没有任何计数时,单凭分数给一次作答:8 分以上按「已掌握」,0 分上下按模糊。
+    answers = [draft.memoryScore >= 4 ? "know" : draft.memoryScore > -8 ? "fuzzy" : "forgot"];
+  }
+
+  const anchor = new Date(`${draft.lastSeenOn ?? ""}T12:00:00`);
+  let when = Number.isNaN(anchor.getTime())
+    ? Date.now() - answers.length * 60_000
+    : anchor.getTime();
+
+  let state: FsrsState | null = null;
+  answers.forEach((answer, index) => {
+    // 分数很高的词,最后一次答对按 Easy 记,间隔才排得开
+    const mode = draft.memoryScore >= 8 && answer === "know" && index === answers.length - 1
+      ? "known"
+      : "normal";
+    state = recordReview(state, answer, new Date(when), { mode });
+    when += 60_000;
+  });
+  if (state) writeFsrsState(wordId, state);
+};
+
 export const importExternalWordList = (text: string): WordListImportResult => {
   ensureProgressInitialized();
   const preview = previewExternalWordList(text);
   const drafts = parseExternalWordListText(text).map(normalizeDraft).filter((draft): draft is ExternalWordDraft => Boolean(draft));
   const db = getDatabase();
+  // seedFsrsFromImport 要写 fsrs_* 列,加列必须在事务外先做完
+  ensureFsrsColumns();
   const importedOn = today();
   let inserted = 0;
   let updated = 0;
@@ -369,31 +421,32 @@ export const importExternalWordList = (text: string): WordListImportResult => {
         updated += 1;
       }
 
-      const current = firstRow("SELECT * FROM progress WHERE word_id = ?", [wordId]);
-      const shouldApplyMemory = !current
-        || Number(current.known_forever ?? 0) === 0
-        && (Number(current.seen_count ?? 0) === 0 || draft.memoryScore < Number(current.score ?? 0));
       db.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [wordId]);
+      const current = firstRow("SELECT * FROM progress WHERE word_id = ?", [wordId]);
+      // 导入数据只在「本机还没有真实记忆」时落地：手动熟知的词不动，
+      // 已经进过 FSRS 调度的词也不动 —— 外部词单的熟悉度是粗粒度快照，
+      // 不该覆盖本机一次次作答攒出来的 stability/difficulty。
+      const shouldApplyMemory = Number(current?.known_forever ?? 0) === 0
+        && (Number(current?.seen_count ?? 0) === 0 || current?.fsrs_due == null);
       if (shouldApplyMemory) {
         db.run(`
           UPDATE progress
-          SET score = ?,
-              seen_count = MAX(seen_count, ?),
-              low_history = MAX(low_history, ?),
+          SET seen_count = MAX(seen_count, ?),
               known_forever = 0,
-              mastered_on = CASE WHEN ? >= 10 THEN ? ELSE NULL END,
               last_seen_on = COALESCE(?, last_seen_on),
               right_count = MAX(right_count, ?),
               fuzzy_count = MAX(fuzzy_count, ?),
-              forgot_count = MAX(forgot_count, ?),
-              mistake_streak = CASE WHEN ? <= -8 THEN MAX(mistake_streak, 1) ELSE mistake_streak END
+              forgot_count = MAX(forgot_count, ?)
           WHERE word_id = ?
         `, [
-          draft.memoryScore, draft.seenCount, draft.lowHistory,
-          draft.memoryScore, importedOn, draft.lastSeenOn ?? importedOn,
+          draft.seenCount, draft.lastSeenOn ?? importedOn,
           draft.rightCount, draft.fuzzyCount, draft.forgotCount,
-          draft.memoryScore, wordId
+          wordId
         ]);
+        // 关键一步：把外部词单的熟悉度换算成 FSRS 状态。
+        // 不做这步的话导入词就是 seen_count>0 且 fsrs_due IS NULL，
+        // 而选词的第一排序键正是「未调度优先」—— 它们会顶掉所有真到期的词。
+        seedFsrsFromImport(wordId, draft);
       }
 
       if (draft.note) {

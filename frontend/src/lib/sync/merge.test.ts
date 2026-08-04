@@ -16,6 +16,7 @@ vi.mock("../database", () => ({
 
 import { mergeDatabaseBytes } from "./merge";
 import { ensureSyncSchema } from "./schema";
+import { recordStudySeconds } from "./study-time";
 import { compressSyncSnapshot, decompressSyncSnapshot, exportSyncSnapshot } from "./snapshot";
 
 const seedPath = fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url));
@@ -115,6 +116,49 @@ describe("database snapshot merge", () => {
 
     await mergeDatabaseBytes(new Uint8Array(remote.export()));
     expect(rows(testDb, "SELECT word_id FROM reviews ORDER BY word_id")).toHaveLength(2);
+  });
+
+  it("两端各自自增的复习 id 撞车时，本机记录不会被顶掉", async () => {
+    // 两台设备从同一份备份分头学习：各自的 reviews.id 一定会撞车。
+    // 曾经的实现照抄云端 id 做 INSERT OR REPLACE，本机那条会被静默删掉
+    // （REPLACE 不触发 DELETE 触发器，所以连墓碑都没有）。
+    const remote = new SQL.Database(new Uint8Array(testDb.export()));
+    remote.run(`
+      INSERT INTO reviews (id, word_id, answer, score_after, reviewed_on, sync_uid)
+      VALUES (9001, 11, 'know', 5, '2026-08-03', 'remote-device:9001')
+    `);
+    testDb.run("INSERT INTO reviews (id, word_id, answer, score_after, reviewed_on) VALUES (9001, 22, 'forgot', 0, '2026-08-03')");
+
+    await mergeDatabaseBytes(new Uint8Array(remote.export()));
+
+    const merged = rows(testDb, "SELECT word_id FROM reviews ORDER BY word_id");
+    expect(merged).toEqual([{ word_id: 11 }, { word_id: 22 }]);
+  });
+
+  it("学习时长记进本设备那行，并按天汇总回 word_study_time", async () => {
+    // 换一份「还没建过同步结构」的库，才能覆盖到首次建表时的存量迁移
+    testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    testDb.run("INSERT INTO word_study_time (studied_on, seconds) VALUES ('2026-08-01', 600)");
+    ensureSyncSchema();
+    // 存量历史要先补进 by_device，否则第一次汇总就把它清零
+    expect(rows(testDb, "SELECT SUM(seconds) AS s FROM word_study_time_by_device WHERE studied_on = '2026-08-01'"))
+      .toEqual([{ s: 600 }]);
+
+    recordStudySeconds("2026-08-03", 120);
+    recordStudySeconds("2026-08-03", 60);
+    expect(rows(testDb, "SELECT seconds FROM word_study_time WHERE studied_on = '2026-08-03'"))
+      .toEqual([{ seconds: 180 }]);
+
+    // 对端同一天也学了：合并后应当是两台设备求和，而不是互相覆盖
+    const remote = new SQL.Database(new Uint8Array(testDb.export()));
+    remote.run(`
+      INSERT INTO word_study_time_by_device (studied_on, device_id, seconds, sync_updated_at)
+      VALUES ('2026-08-03', 'remote-device', 240, '2026-08-03T10:00:00.000Z')
+    `);
+    await mergeDatabaseBytes(new Uint8Array(remote.export()));
+
+    expect(rows(testDb, "SELECT seconds FROM word_study_time WHERE studied_on = '2026-08-03'"))
+      .toEqual([{ seconds: 420 }]);
   });
 
   it("较新的墓碑会阻止旧数据复活", async () => {

@@ -231,6 +231,8 @@ export const encoreRemainingCount = (day: string) => firstValue<number>(`
   WHERE p.known_forever = 0
     AND p.seen_count > 0
     AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+    -- 还没轮到激活的导入词不算积压,否则续杯会把几千个导入词一次性倒出来
+    AND p.word_id NOT IN (SELECT word_id FROM moji_migrated_reviews WHERE activated_on IS NULL)
     AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
 `, [studyDayEnd().toISOString(), day], 0);
 

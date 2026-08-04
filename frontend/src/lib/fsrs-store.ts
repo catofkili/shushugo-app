@@ -1,16 +1,15 @@
 /**
- * FSRS 状态持久化 + 历史回填 + 影子双写(阶段 P0)
+ * FSRS 状态持久化 + 历史回填。
  *
- * P0 目标:零用户可见变化。每次「当日首见」作答时,除现行分数系统外,
- * 额外把 FSRS 状态(S/D/due/lastReview)写进 progress 的四个新列——只写不读,
- * 供切换前对比「明日到期数」。切换(P1)时再把选词/到期判定改读这些列。
+ * 三个学习阶段(单词 progress / 汉字 kanji_memory / 语法 grammar_progress)共用
+ * 同一套 fsrs_* 列和同一个调度内核,这里只负责「读状态 → 记一次作答 → 写回」,
+ * 以及把切换到 FSRS 之前的历史一次性重放成初始的 S/D/due。
  */
 import { getDatabase } from "./database";
 import { rowsFor, firstValue, getState, setState, studyDate } from "./database/db-utils";
 import type { WordAnswer } from "../types/vocabulary";
 import {
   recordReview,
-  isDue,
   MASTERED_INTERVAL_DAYS,
   LEECH_LAPSE_THRESHOLD,
   type FsrsState,
@@ -40,10 +39,20 @@ export interface FsrsEntity {
   eligible: string;
 }
 
+/**
+ * 从外部词单/MOJi 导入的词按每天 30 个滴灌激活(见 stage1 的
+ * activateMojiMigratedReviews),没轮到的不进当日轮换。这个闸门必须写进
+ * eligible 里 —— 否则一次导入几千个词会当天全部涌进到期池,表现为
+ * 「凭空多出上千个债」。moji_migrated_reviews 由 local-schema 保证存在。
+ */
+const MOJI_NOT_ACTIVATED = `word_id NOT IN (
+  SELECT word_id FROM moji_migrated_reviews WHERE activated_on IS NULL
+)`;
+
 export const WORD_FSRS: FsrsEntity = {
   table: "progress",
   idColumn: "word_id",
-  eligible: "known_forever = 0 AND seen_count > 0"
+  eligible: `known_forever = 0 AND seen_count > 0 AND ${MOJI_NOT_ACTIVATED}`
 };
 export const KANJI_FSRS: FsrsEntity = {
   table: "kanji_memory",
@@ -291,9 +300,10 @@ const recentStudyDayRange = (endDay: string, count: number): { startDay: string;
  */
 export function migrateRecentDailyEasyReviews(
   current = new Date(),
-  dayCount = RECENT_DAILY_EASY_DAYS
+  dayCount = RECENT_DAILY_EASY_DAYS,
+  migrationKey = RECENT_DAILY_EASY_MIGRATION_KEY
 ): { migrated: boolean; words: number; reviews: number } {
-  if (getState(RECENT_DAILY_EASY_MIGRATION_KEY, "") === "1") {
+  if (getState(migrationKey, "") === "1") {
     return { migrated: false, words: 0, reviews: 0 };
   }
 
@@ -388,8 +398,26 @@ export function migrateRecentDailyEasyReviews(
     throw error;
   }
 
-  setState(RECENT_DAILY_EASY_MIGRATION_KEY, "1");
+  setState(migrationKey, "1");
   return { migrated: true, words: migratedWords, reviews: affectedReviewCount };
+}
+
+const FULL_DAILY_EASY_MIGRATION_KEY = "fsrs_full_daily_easy_v1";
+/** 够覆盖任何真实使用史的天数(约 27 年),用来把「窗口」放大成全量。 */
+const FULL_HISTORY_DAYS = 10_000;
+
+/**
+ * 把「当天首答认识 = Easy」补到**全部**历史,而不只是最近 8 天。
+ *
+ * backfillFsrsFromHistory 当初把每一次「认识」都按 Good 重放(recordReview 不传
+ * mode),而 App 实际的规则是当天第一次就点认识按 Easy 记。两者的差别在几个月的
+ * 历史上会不断累积:间隔被系统性压短,迁移当天就表现为「凭空欠了一千多个词」。
+ *
+ * migrateRecentDailyEasyReviews 已经实现了正确的重放逻辑,只是窗口被限制在 8 天。
+ * 这里用同一套逻辑跑全量,换一个幂等标记,让它在老库上再跑一次。
+ */
+export function migrateFullHistoryDailyEasy(current = new Date()) {
+  return migrateRecentDailyEasyReviews(current, FULL_HISTORY_DAYS, FULL_DAILY_EASY_MIGRATION_KEY);
 }
 
 /**
@@ -426,19 +454,21 @@ export function fsrsMasteredCount(entity: FsrsEntity = WORD_FSRS): number {
   );
 }
 
-/** FSRS 视角「此刻已到期」的条目数 */
+/**
+ * FSRS 视角「此刻已到期」的条目数。
+ *
+ * 口径必须和 fsrsDueWordIds / pickStage1Next 完全一致 —— 都把「已见过但还没进过
+ * 调度」(fsrs_due 为空)算作到期。以前这里额外要求 fsrs_due IS NOT NULL,于是
+ * 界面上显示的积压数和当天真正会出的词对不上。
+ */
 export function fsrsDueCount(now = new Date(), entity: FsrsEntity = WORD_FSRS): number {
   ensureFsrsColumns(entity);
-  const rows = rowsFor(
-    `SELECT ${FSRS_SELECT}
-     FROM ${entity.table} WHERE ${entity.eligible} AND fsrs_due IS NOT NULL`
+  return firstValue<number>(
+    `SELECT COUNT(*) FROM ${entity.table}
+     WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)`,
+    [now.toISOString()],
+    0
   );
-  let due = 0;
-  for (const r of rows) {
-    const s = rowToState(r);
-    if (s && isDue(s, now)) due++;
-  }
-  return due;
 }
 
 /** 对照组:现行系统「此刻积压」(score ≤ 6) */
