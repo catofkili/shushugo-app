@@ -39,6 +39,12 @@ export interface WordCard {
     note: string;
   } | null;
   confusions: { kana: string; kanji: string; meaning: string; kind: string }[];
+  /** 中文释义相近、需要在同一气泡里对照的词组。 */
+  similarMeaning?: {
+    title: string;
+    distinction: string;
+    items: { id: number; kana: string; kanji: string; meaning: string; note: string }[];
+  } | null;
 }
 
 export interface WordStats {
@@ -64,19 +70,6 @@ export interface WordStats {
   dailyStudyStats: { date: string; seconds: number; wordCount: number }[];
   wordStudySecondsToday: number;
   taskDone: boolean;
-  /** 回归模式（积压削峰）状态；未激活时为 undefined */
-  comeback?: {
-    active: boolean;
-    dayIndex: number;
-    planDays: number;
-    /** 本轮回归的节奏档:gentle 由轻到重 / pressure 高强度快清 */
-    mode: "gentle" | "pressure";
-    todayTarget: number;
-    estimatedMinutes: number;
-    remainingBacklog: number;
-    initialBacklog: number;
-    announcedToday: boolean;
-  };
   /** 完成今日计划后的「再来一批」信息 */
   encore?: {
     available: boolean;

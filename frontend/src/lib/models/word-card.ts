@@ -3,6 +3,7 @@ import { getDatabase } from "../database";
 import { WordCard } from "../../types/vocabulary";
 import { DbRow, SqlValue } from "../database/db-utils";
 import { confusionCandidates } from "./confusion";
+import { similarMeaningCandidates } from "../../data/similar_meaning_groups";
 import kanjiVariantPayload from "../../data/kanji_variants.json";
 import verbPairHintPayload from "../../data/verb_pair_hints.json";
 import englishOriginPayload from "../../data/english_origins.json";
@@ -392,6 +393,7 @@ export function rowObjectToCard(row: DbRow): WordCard {
     kanjiComponents: buildKanjiComponents(label),
     conjugations: row.verb_type ? [{ label: "动词类型", value: verbTypeLabel(String(row.verb_type)) }] : [],
     verbPair: buildVerbPair(getDatabase(), label, kana),
-    confusions: confusionCandidates(row)
+    confusions: confusionCandidates(row),
+    similarMeaning: similarMeaningCandidates(row)
   };
 }
