@@ -39,7 +39,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
           <ArrowLeft size={17} />
           返回
         </button>
-        <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">Master Pro</p>
+        <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">收集日 Pro</p>
       </div>
 
       <section className="rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/14 p-4">
@@ -49,7 +49,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#81D8CF]">Membership</p>
-            <h1 className="mt-1 text-2xl font-bold text-white">{entitlements.isPro ? "Master Pro 已启用" : "升级 Master Pro"}</h1>
+            <h1 className="mt-1 text-2xl font-bold text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</h1>
             <p className="mt-2 text-sm leading-6 text-white/66">
               {entitlements.isPro
                 ? `${productLabel(entitlements.productId)} · ${entitlements.source === "development" ? "本地开发解锁" : "App Store 权益"}`

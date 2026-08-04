@@ -1,4 +1,4 @@
-# Master Nihongo — Claude 工作须知
+# 收集日（ShuShuGo，前身 Master Nihongo）— Claude 工作须知
 
 ## ⚠️ 我的真实学习数据在哪：http://localhost:5173
 
@@ -7,6 +7,7 @@
 - 用户日常在 **自己的 Chrome** 打开 `http://localhost:5173`（`cd frontend && npm run dev`）背单词。
 - 学习记录存在**那个浏览器的 IndexedDB** 里，不在仓库任何文件里：
   - DB 名 `master-nihongo-storage` → store `databases` → key `study-database`
+    （改名到收集日时**故意没改这个字符串**——改了就找不到已有的真实数据，见 `storage.ts` 的 `BROWSER_DB_NAME`）
   - 内容是一整份 SQLite blob（约 7.8 MB）
 - **仓库里的 .db 都不是实时数据**：
   - `frontend/public/nihongo.db` = 干净种子库（reviews 表为空，有白名单守卫）

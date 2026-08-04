@@ -221,7 +221,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `master-nihongo-backup-${new Date().toISOString().slice(0, 10)}.db`;
+    link.download = `shushugo-backup-${new Date().toISOString().slice(0, 10)}.db`;
     link.click();
     URL.revokeObjectURL(url);
     notify("学习数据已导出。");
@@ -236,7 +236,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
       notify("学习数据已恢复，页面即将刷新。");
       window.setTimeout(() => window.location.reload(), 900);
     } catch {
-      notify("导入失败，请确认文件是 Master Nihongo 备份。");
+      notify("导入失败，请确认文件是收集日备份。");
     } finally {
       if (backupInputRef.current) backupInputRef.current.value = "";
     }
@@ -698,9 +698,9 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             <p className="mt-1">iPhone 不允许应用直接读取另一个应用的内部数据，所以本应用只能在 iPhone 上导入导出文件，不能直接读取 MOJi 的 .realm 或缓存文件。</p>
             <ol className="mt-2 list-decimal space-y-1 pl-4">
               <li>在 Mac 的 MOJi 中登录，打开“背词/复习”页面并等待内容加载完成，然后退出 MOJi。</li>
-              <li>在 Mac 上打开 Master Nihongo 项目文件夹中的“终端”。首次使用运行 <code>npm install --prefix scripts/moji-realm-export</code>。</li>
+              <li>在 Mac 上打开收集日项目文件夹中的“终端”。首次使用运行 <code>npm install --prefix scripts/moji-realm-export</code>。</li>
               <li>运行 <code>python3 scripts/export-moji-review-data.py --fetch</code>。脚本只读取你的 MOJi 复习记录，不会修改 MOJi 数据，也不会把登录凭据写入导出文件。</li>
-              <li>桌面会生成 <code>master-nihongo-moji-review-export.json</code>；将它 AirDrop 到 iPhone，或存入“文件”。</li>
+              <li>桌面会生成 <code>shushugo-moji-review-export.json</code>；将它 AirDrop 到 iPhone，或存入“文件”。</li>
               <li>回到本页点“导入词单或 MOJi 复习记录”，选择该 JSON 并确认。不要选择 .realm、.db 或缓存文件。</li>
             </ol>
             <p className="mt-2 text-white/45">导入会把 Moji 的做题次数、错误次数和分数转换为本应用的复习强度，不会覆盖已有本机学习记录。Windows 或纯 iPhone 目前只能导入已经导出的 JSON，不能生成这份完整记录。</p>

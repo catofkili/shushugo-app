@@ -22,7 +22,7 @@ export const normalizeTargetLevel = (value: string): TargetLevelOption => {
 };
 
 const DEFAULT_PROFILE: UserProfile = {
-  nickname: 'Master 用户',
+  nickname: '收集日用户',
   bio: '正在学习日语中...',
   targetLevel: 'N5',
   studyTimeMinutes: 0,

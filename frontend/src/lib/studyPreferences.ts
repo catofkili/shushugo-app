@@ -28,7 +28,7 @@ export interface StudyPreferences {
   voiceId: string;
 }
 
-export const PREFERENCES_EVENT = "master-nihongo-preferences";
+export const PREFERENCES_EVENT = "shushugo-preferences";
 
 const KEY = "mn-study-preferences";
 

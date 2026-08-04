@@ -48,7 +48,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
   const [busyProduct, setBusyProduct] = useState<ProductId | null>(null);
   const [restoring, setRestoring] = useState(false);
   const copy = feature ? featureCopy[feature] : {
-    title: "升级 Master Pro",
+    title: "升级收集日 Pro",
     body: "解锁更完整的学习节奏、统计和训练入口。"
   };
 
@@ -93,7 +93,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
           </button>
           <span className="inline-flex items-center gap-1 rounded-sm border border-[#81D8CF]/30 bg-[#81D8CF]/15 px-2 py-1 text-xs font-bold text-[#81D8CF]">
             <Crown size={13} />
-            Master Pro
+            收集日 Pro
           </span>
         </div>
 

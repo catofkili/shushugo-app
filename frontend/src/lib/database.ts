@@ -16,7 +16,7 @@ const validateAppDatabase = (candidate: Database): void => {
   const names = new Set(result[0]?.values.map((row) => String(row[0])) ?? []);
   const missing = REQUIRED_BACKUP_TABLES.filter((table) => !names.has(table));
   if (missing.length) {
-    throw new Error(`Invalid Master Nihongo backup. Missing tables: ${missing.join(", ")}`);
+    throw new Error(`Invalid ShuShuGo backup. Missing tables: ${missing.join(", ")}`);
   }
 };
 

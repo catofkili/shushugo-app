@@ -25,7 +25,7 @@ find_project_root() {
 
 ROOT_DIR="${PROJECT_DIR:-$(find_project_root)}"
 DATE_TAG="$(date +%Y-%m-%d)"
-OUTPUT="${1:-"$HOME/Documents/master-nihongo-ios-preview-$DATE_TAG.zip"}"
+OUTPUT="${1:-"$HOME/Documents/shushugo-preview-$DATE_TAG.zip"}"
 TMP_ZIP="$OUTPUT.tmp"
 
 if [[ -z "$ROOT_DIR" || ! -d "$ROOT_DIR" ]]; then

@@ -39,7 +39,7 @@ export function DevTools({ onNotice }: DevToolsProps) {
             checked={entitlements.isPro}
             onChange={(event) => {
               if (event.target.checked) {
-                grantPro("master_pro_lifetime", "development");
+                grantPro("shushugo_pro_lifetime", "development");
               } else {
                 clearEntitlements();
               }

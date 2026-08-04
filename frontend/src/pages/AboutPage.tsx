@@ -26,7 +26,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <div className="mx-auto grid h-20 w-20 place-items-center border-2 border-white/20 bg-[#81D8CF] jp-serif text-3xl font-bold !text-[#343838]">
           語
         </div>
-        <h1 className="jp-serif mt-4 text-2xl font-semibold text-white">Master Nihongo</h1>
+        <h1 className="jp-serif mt-4 text-2xl font-semibold text-white">收集日</h1>
         <p className="mt-2 text-sm text-white/60">Vocabulary · Grammar</p>
         <p className="mt-3 text-xs font-bold text-white/50">版本 {__APP_VERSION__}</p>
       </div>
@@ -35,7 +35,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4">
         <h2 className="mb-3 text-sm font-bold text-white">应用介绍</h2>
         <p className="text-sm leading-relaxed text-white/70">
-          Master Nihongo 是一款离线日语学习应用，提供 11000+ 个 JLPT 词条和 800+ 个语法点的学习内容。
+          收集日是一款离线日语学习应用，提供 11000+ 个 JLPT 词条和 800+ 个语法点的学习内容。
           支持背单词和语法学习，帮助你系统学习日语。
         </p>
       </div>
@@ -72,7 +72,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">数据来源</p>
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <p className="text-sm leading-relaxed text-white/70">
-            当前 JLPT 词条、中文释义及原例句来自 eggrolls-JLPT10k-v3.5，并适用 CC BY-NC 4.0；现有数据仅可用于非商业开发，商业发布前必须取得授权或整体替换。
+            当前 JLPT 词条与中文释义可追溯到 eggrolls-JLPT10k-v3.5，并适用 CC BY-NC 4.0；单词例句已按词性和实际语境重新独立生成，但词条与释义仍仅可用于非商业开发，商业发布前必须取得授权或整体替换。
             其他数据的来源、署名和发布条件请以项目 README 的版权合规说明为准。
           </p>
         </div>

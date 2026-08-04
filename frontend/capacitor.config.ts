@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.masternihongo.app',
-  appName: 'Master 日语',
+  appId: 'com.shushugo.app',
+  appName: '收集日',
   webDir: 'dist',
 
   server: {

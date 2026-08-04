@@ -32,23 +32,23 @@ declare global {
 
 export const STORE_PRODUCTS: StoreProduct[] = [
   {
-    id: "master_pro_yearly",
-    title: "Master Pro 年度",
+    id: "shushugo_pro_yearly",
+    title: "收集日 Pro 年度",
     description: "解锁高级学习统计、沉浸式学习和完整训练规划。",
     price: "App Store 定价",
     period: "按年订阅",
     recommended: true
   },
   {
-    id: "master_pro_monthly",
-    title: "Master Pro 月度",
+    id: "shushugo_pro_monthly",
+    title: "收集日 Pro 月度",
     description: "适合短期冲刺，按月获得全部 Pro 功能。",
     price: "App Store 定价",
     period: "按月订阅"
   },
   {
-    id: "master_pro_lifetime",
-    title: "Master Pro 永久",
+    id: "shushugo_pro_lifetime",
+    title: "收集日 Pro 永久",
     description: "一次购买，长期使用当前 Pro 功能。",
     price: "App Store 定价",
     period: "一次购买"
@@ -67,7 +67,7 @@ const isStoreAvailable = () => Capacitor.getPlatform() === "ios" && Boolean(wind
 const nativeTypeFor = (productId: ProductId) => {
   const purchase = window.CdvPurchase;
   if (!purchase?.ProductType) return undefined;
-  if (productId === "master_pro_lifetime") return purchase.ProductType.NON_CONSUMABLE;
+  if (productId === "shushugo_pro_lifetime") return purchase.ProductType.NON_CONSUMABLE;
   return purchase.ProductType.PAID_SUBSCRIPTION;
 };
 
@@ -130,7 +130,7 @@ export async function initializePurchases(): Promise<PurchaseRuntime> {
         if (productId && STORE_PRODUCTS.some((product) => product.id === productId)) {
           // 订阅要带上过期时间,否则取消续订后本地 Pro 永不过期;
           // 买断制(lifetime)没有过期时间。
-          const expiresAt = productId === "master_pro_lifetime"
+          const expiresAt = productId === "shushugo_pro_lifetime"
             ? undefined
             : transactionExpiry(receipt, productId as ProductId);
           grantPro(productId as ProductId, "storekit", expiresAt);
@@ -218,7 +218,7 @@ export async function restorePurchases(): Promise<PurchaseResult> {
   }
 }
 
-export function developmentUnlock(productId: ProductId = "master_pro_yearly"): PurchaseResult {
+export function developmentUnlock(productId: ProductId = "shushugo_pro_yearly"): PurchaseResult {
   if (!import.meta.env.DEV) {
     return { ok: false, message: "开发解锁只在本地开发环境可用。" };
   }

@@ -1,6 +1,6 @@
 # 云服务部署指南
 
-Master Nihongo 后端 API 可以部署到任何支持 Python 的云平台。
+收集日后端 API 可以部署到任何支持 Python 的云平台。
 
 ## 🎯 推荐平台对比
 
@@ -69,7 +69,7 @@ fly auth login
 ```bash
 cd backend
 cat > fly.toml << 'EOF'
-app = "master-nihongo-api"
+app = "shushugo-api"
 
 [build]
   builder = "paketobuildpacks/builder:base"
@@ -135,7 +135,7 @@ git push -u origin main
 4. 连接 GitHub 仓库
 
 ### 4. 配置
-- **Name**: master-nihongo-api
+- **Name**: shushugo-api
 - **Root Directory**: backend
 - **Build Command**: `pip install -r requirements.txt`
 - **Start Command**: `uvicorn server:app --host 0.0.0.0 --port $PORT`

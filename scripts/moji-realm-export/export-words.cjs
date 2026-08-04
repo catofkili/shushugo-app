@@ -10,7 +10,7 @@ if (!source || !fs.existsSync(source)) {
   throw new Error("Usage: node export-words.cjs /path/to/core-mojidict-sc.backup.realm");
 }
 
-const copy = path.join(os.tmpdir(), `master-nihongo-moji-${Date.now()}.realm`);
+const copy = path.join(os.tmpdir(), `shushugo-moji-${Date.now()}.realm`);
 fs.copyFileSync(source, copy);
 try {
   const realm = new Realm({ path: copy });

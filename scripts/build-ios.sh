@@ -1,9 +1,9 @@
 #!/bin/bash
-# Master Nihongo iOS - 一键构建脚本
+# 收集日 iOS - 一键构建脚本
 
 set -e
 
-echo "🚀 Master Nihongo iOS 构建脚本"
+echo "🚀 收集日 iOS 构建脚本"
 echo "================================"
 
 # 颜色

@@ -57,7 +57,7 @@ describe("external word list import parsing", () => {
 
   it("parses the portable MOJi review bridge export", () => {
     const preview = previewExternalWordList(JSON.stringify({
-      format: "master-nihongo-moji-review-export-v1",
+      format: "shushugo-moji-review-export-v1",
       records: [
         { spell: "負ける", pron: "まける", briefInfo: "输；失败", score: 75, qCnt: 4, qWrCnt: 1, testTimes: 3 }
       ]

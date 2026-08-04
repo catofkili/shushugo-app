@@ -115,7 +115,7 @@ const drawBrandRow = (ctx: CanvasRenderingContext2D, studyDate: string) => {
   ctx.textAlign = "left";
   ctx.fillStyle = "#F4FAF9";
   ctx.font = `700 46px ${FONT_SANS}`;
-  ctx.fillText("Master Nihongo", MARGIN + tileSize + 34, tileY + 44);
+  ctx.fillText("收集日", MARGIN + tileSize + 34, tileY + 44);
   ctx.fillStyle = "rgba(145, 201, 104, 0.62)";
   ctx.font = `700 22px ${FONT_SANS}`;
   const subtitle = "V O C A B U L A R Y ・ G R A M M A R";

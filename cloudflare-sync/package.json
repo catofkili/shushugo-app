@@ -1,5 +1,5 @@
 {
-  "name": "master-nihongo-sync-worker",
+  "name": "shushugo-sync-worker",
   "private": true,
   "version": "0.1.0",
   "type": "module",

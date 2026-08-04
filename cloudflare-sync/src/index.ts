@@ -106,7 +106,7 @@ interface AppleTransactionPayload {
   type?: string;
 }
 
-const PRODUCT_IDS = new Set(["master_pro_monthly", "master_pro_yearly", "master_pro_lifetime"]);
+const PRODUCT_IDS = new Set(["shushugo_pro_monthly", "shushugo_pro_yearly", "shushugo_pro_lifetime"]);
 
 const TOKEN_TTL_DAYS = 30;
 // Cloudflare Workers Web Crypto rejects PBKDF2 iteration counts above 100,000.
@@ -463,7 +463,7 @@ const createToken = async (env: Env, userId: string) => {
 
 const emailHtml = (title: string, code: string, minutes: number) => `
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;color:#163f35">
-    <h1 style="font-size:22px;margin:0 0 12px">Master Nihongo</h1>
+    <h1 style="font-size:22px;margin:0 0 12px">收集日</h1>
     <p style="margin:0 0 12px">${title}</p>
     <p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#1f7469">${code}</p>
     <p style="margin:0 0 12px">验证码 ${minutes} 分钟内有效。若不是你本人操作，可以忽略这封邮件。</p>
@@ -482,7 +482,7 @@ const sendEmail = async (env: Env, to: string, subject: string, html: string) =>
       "content-type": "application/json"
     },
     body: JSON.stringify({
-      from: env.EMAIL_FROM ?? "Master Nihongo <onboarding@resend.dev>",
+      from: env.EMAIL_FROM ?? "收集日 <onboarding@resend.dev>",
       to,
       subject,
       html
@@ -774,7 +774,7 @@ const register = async (request: Request, env: Env) => {
       await sendEmail(
         env,
         email,
-        "Master Nihongo 邮箱验证码",
+        "收集日邮箱验证码",
         emailHtml("请使用下面的验证码完成邮箱验证：", emailCode, EMAIL_CODE_TTL_MINUTES)
       );
       emailVerificationSent = true;
@@ -904,7 +904,7 @@ const linkApple = async (request: Request, env: Env) => {
     SELECT user_id FROM auth_identities WHERE provider = 'apple' AND provider_subject = ?
   `).bind(claims.sub).first<{ user_id: string }>();
   if (existingIdentity && existingIdentity.user_id !== userId) {
-    return json({ detail: "这个 Apple 账号已关联其他 Master 账号。" }, 409);
+    return json({ detail: "这个 Apple 账号已关联其他收集日账号。" }, 409);
   }
   const user = await env.DB.prepare("SELECT email FROM users WHERE id = ?")
     .bind(userId)
@@ -921,7 +921,7 @@ const linkApple = async (request: Request, env: Env) => {
     SELECT user_id FROM auth_identities WHERE provider = 'apple' AND provider_subject = ?
   `).bind(claims.sub).first<{ user_id: string }>();
   if (!linkedIdentity || linkedIdentity.user_id !== userId) {
-    return json({ detail: "这个 Apple 账号已关联其他 Master 账号。" }, 409);
+    return json({ detail: "这个 Apple 账号已关联其他收集日账号。" }, 409);
   }
   return json({ status: "linked", authProviders: await identityProviders(env, userId) });
 };
@@ -1042,7 +1042,7 @@ const sendVerificationEmail = async (request: Request, env: Env) => {
   await sendEmail(
     env,
     user.email,
-    "Master Nihongo 邮箱验证码",
+    "收集日邮箱验证码",
     emailHtml("请使用下面的验证码完成邮箱验证：", code, EMAIL_CODE_TTL_MINUTES)
   );
   return json({ status: "sent", expiresInMinutes: EMAIL_CODE_TTL_MINUTES, ...verificationPayload(user) });
@@ -1081,8 +1081,8 @@ const requestPasswordReset = async (request: Request, env: Env) => {
     await sendEmail(
       env,
       user.email,
-      "Master Nihongo 重置密码验证码",
-      emailHtml("请使用下面的验证码重置你的 Master Nihongo 密码：", code, PASSWORD_RESET_TTL_MINUTES)
+      "收集日重置密码验证码",
+      emailHtml("请使用下面的验证码重置你的收集日密码：", code, PASSWORD_RESET_TTL_MINUTES)
     );
   }
 
@@ -1516,7 +1516,7 @@ const pullSync = async (request: Request, env: Env) => {
     // 新用户快照不含词典，绝不能伪装成旧整库返回；明确要求升级最安全。
     if (row.snapshot_format !== "legacy-full-sqlite" || row.compression !== "none") {
       return json({
-        detail: "云同步格式已升级，请更新 Master Nihongo 后继续同步。",
+        detail: "云同步格式已升级，请更新收集日后继续同步。",
         code: "SYNC_CLIENT_UPDATE_REQUIRED"
       }, 426);
     }
@@ -1649,7 +1649,7 @@ const route = async (request: Request, env: Env) => {
 
   const url = new URL(request.url);
   if (request.method === "GET" && url.pathname === "/") {
-    return json({ message: "Master Nihongo Sync API", version: "0.1.0", status: "running" });
+    return json({ message: "ShuShuGo Sync API", version: "0.1.0", status: "running" });
   }
   if (request.method === "GET" && url.pathname === "/privacy") return privacyPolicyPage();
   if (request.method === "GET" && url.pathname === "/terms") return userAgreementPage();

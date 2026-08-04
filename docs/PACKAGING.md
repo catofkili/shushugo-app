@@ -1,11 +1,11 @@
 # Packaging Rules
 
-Use `scripts/package-preview.sh` when sending Master Nihongo to other people for review.
+Use `scripts/package-preview.sh` when sending ShuShuGo to other people for review.
 
-The script locates the project root by looking upward for the Master Nihongo markers (`frontend/package.json`, `cloudflare-sync/wrangler.jsonc`, and `frontend/src`). If needed, override this with:
+The script locates the project root by looking upward for the ShuShuGo markers (`frontend/package.json`, `cloudflare-sync/wrangler.jsonc`, and `frontend/src`). If needed, override this with:
 
 ```bash
-PROJECT_DIR=/path/to/master-nihongo-ios /path/to/package-preview.sh
+PROJECT_DIR=/path/to/shushugo-app /path/to/package-preview.sh
 ```
 
 The preview package is allowlisted. It includes only:

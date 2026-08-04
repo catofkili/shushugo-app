@@ -1,4 +1,4 @@
-export const USER_AGREEMENT_TITLE = "Master 日语用户协议";
+export const USER_AGREEMENT_TITLE = "收集日用户协议";
 export const USER_AGREEMENT_EFFECTIVE_DATE = "2026 年 8 月 3 日";
 export const USER_AGREEMENT_VERSION = "2026-08-03";
 
@@ -25,7 +25,7 @@ export const USER_AGREEMENT_SECTIONS: UserAgreementSection[] = [
   {
     title: "付费功能",
     body: [
-      "Master Pro 的购买、续订、退款和付款由 Apple App Store 处理。具体周期、价格和续订规则以购买页面及 Apple 显示的信息为准。",
+      "收集日 Pro 的购买、续订、退款和付款由 Apple App Store 处理。具体周期、价格和续订规则以购买页面及 Apple 显示的信息为准。",
       "账号被删除后，本机仍可通过 App Store 的恢复购买功能重新核验符合条件的权益。"
     ]
   },

@@ -1,6 +1,6 @@
-# Master Nihongo Cloudflare Sync
+# ShuShuGo Cloudflare Sync
 
-Cloudflare Worker + D1 + R2 backend for Master Nihongo account login and learning-data sync. Workers KV 只保存短期认证/限速数据，并兼容读取升级前的旧备份。
+Cloudflare Worker + D1 + R2 backend for ShuShuGo account login and learning-data sync. Workers KV 只保存短期认证/限速数据，并兼容读取升级前的旧备份。
 
 ## Setup
 
@@ -39,7 +39,7 @@ Apple 返回的邮箱若已属于一个邮箱密码账号，服务端不会静�
 
 注册、找回密码，以及多次密码失败后的登录可以使用 Cloudflare Turnstile。在 Cloudflare 控制台创建生产 widget 时：
 
-- 名称可使用 `Master Nihongo Production`；
+- 名称可使用 `ShuShuGo Production`；
 - 模式选择 `Managed`；
 - Hostname 只添加 `master-nihongo-sync.master-nihongo-lsc.workers.dev`；
 - 不要把 Cloudflare 的测试 sitekey/secret 部署到生产环境。
@@ -73,7 +73,7 @@ Set the sender address as a Worker variable or secret:
 ```bash
 npx wrangler secret put EMAIL_FROM
 # Example value:
-# Master Nihongo <noreply@your-domain.com>
+# ShuShuGo <noreply@your-domain.com>
 ```
 
 For a quick private test, Resend's default `onboarding@resend.dev` sender can be used, but production should use a verified domain sender.

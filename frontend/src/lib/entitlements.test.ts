@@ -39,24 +39,24 @@ describe("getEntitlements", () => {
   });
 
   it("downgrades to free once the subscription expires", () => {
-    grantPro("master_pro_monthly", "storekit", new Date(Date.now() - 60_000).toISOString());
+    grantPro("shushugo_pro_monthly", "storekit", new Date(Date.now() - 60_000).toISOString());
     const state = getEntitlements();
     expect(state.isPro).toBe(false);
     expect(state.source).toBe("free");
   });
 
   it("keeps Pro active before the expiry date", () => {
-    grantPro("master_pro_yearly", "storekit", new Date(Date.now() + 86_400_000).toISOString());
+    grantPro("shushugo_pro_yearly", "storekit", new Date(Date.now() + 86_400_000).toISOString());
     const state = getEntitlements();
     expect(state.isPro).toBe(true);
-    expect(state.productId).toBe("master_pro_yearly");
+    expect(state.productId).toBe("shushugo_pro_yearly");
   });
 });
 
 describe("grantPro", () => {
   it("clears a stale expiry when switching to lifetime", () => {
-    grantPro("master_pro_monthly", "storekit", new Date(Date.now() + 1000).toISOString());
-    grantPro("master_pro_lifetime", "storekit");
+    grantPro("shushugo_pro_monthly", "storekit", new Date(Date.now() + 1000).toISOString());
+    grantPro("shushugo_pro_lifetime", "storekit");
     const state = getEntitlements();
     expect(state.isPro).toBe(true);
     expect(state.expiresAt).toBeUndefined();
@@ -65,7 +65,7 @@ describe("grantPro", () => {
 
 describe("clearEntitlements", () => {
   it("resets to free and drops product info", () => {
-    grantPro("master_pro_yearly", "cloud");
+    grantPro("shushugo_pro_yearly", "cloud");
     const state = clearEntitlements();
     expect(state.isPro).toBe(false);
     expect(state.productId).toBeUndefined();
@@ -80,7 +80,7 @@ describe("canUseFeature", () => {
   });
 
   it("unlocks features for Pro users", () => {
-    grantPro("master_pro_lifetime", "storekit");
+    grantPro("shushugo_pro_lifetime", "storekit");
     expect(canUseFeature("immersiveGrammar")).toBe(true);
     expect(canUseFeature("advancedDashboard")).toBe(true);
   });
@@ -88,19 +88,19 @@ describe("canUseFeature", () => {
 
 describe("saveEntitlements", () => {
   it("merges patches over the stored state", () => {
-    saveEntitlements({ isPro: true, source: "cloud", productId: "master_pro_monthly" });
+    saveEntitlements({ isPro: true, source: "cloud", productId: "shushugo_pro_monthly" });
     const state = saveEntitlements({ source: "app_store" });
     expect(state.isPro).toBe(true);
     expect(state.source).toBe("app_store");
-    expect(state.productId).toBe("master_pro_monthly");
+    expect(state.productId).toBe("shushugo_pro_monthly");
   });
 });
 
 describe("productLabel", () => {
   it("maps product ids to labels", () => {
-    expect(productLabel("master_pro_monthly")).toBe("月度 Pro");
-    expect(productLabel("master_pro_yearly")).toBe("年度 Pro");
-    expect(productLabel("master_pro_lifetime")).toBe("永久 Pro");
+    expect(productLabel("shushugo_pro_monthly")).toBe("月度 Pro");
+    expect(productLabel("shushugo_pro_yearly")).toBe("年度 Pro");
+    expect(productLabel("shushugo_pro_lifetime")).toBe("永久 Pro");
     expect(productLabel(undefined)).toBe("免费版");
   });
 });

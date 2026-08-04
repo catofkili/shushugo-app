@@ -116,7 +116,7 @@ sudo xcode-select --reset
 ### 问题3: "Code Signing Error"
 
 **解决**:
-1. 修改 Bundle ID 为唯一值（如 `com.yourname.masternihongo`）
+1. 修改 Bundle ID 为唯一值（如 `com.yourname.shushugo`）
 2. 确保选择了正确的 Team
 3. 勾选 "Automatically manage signing"
 

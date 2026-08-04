@@ -82,7 +82,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
       } else if (result.permission === "granted") {
         setMessage("测试通知已安排，约 2 秒后会出现在通知栏；同时已同步每日学习提醒。");
       } else if (result.permission === "denied") {
-        setMessage("系统通知权限被拒绝了，请到 iOS 设置里允许 Master 日语发送通知。");
+        setMessage("系统通知权限被拒绝了，请到 iOS 设置里允许收集日发送通知。");
       } else {
         setMessage("还没有拿到通知权限，请允许通知后再试。");
       }

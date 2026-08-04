@@ -55,7 +55,7 @@ export async function saveUserProfileToCloud(profile?: UserProfile): Promise<Use
 export async function syncUserProfileAfterLogin(session: CloudSession): Promise<UserProfile> {
   let local = await loadUserProfile();
   if (session.isNewAccount) {
-    if (session.displayName && local.nickname === "Master 用户") {
+    if (session.displayName && local.nickname === "收集日用户") {
       local = { ...local, nickname: session.displayName, profileUpdatedAt: new Date().toISOString() };
       await saveUserProfile(local);
     }

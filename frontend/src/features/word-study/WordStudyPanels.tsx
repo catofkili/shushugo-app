@@ -258,7 +258,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
       const result = await saveImageToGallery(shareCard.blob, shareFileName);
       setShareNotice(result === "gallery" ? "已保存到相册 ✓" : "已开始下载 ✓");
     } catch {
-      setShareNotice("保存失败,请在 设置 > Master Nihongo 里允许访问相册后重试");
+      setShareNotice("保存失败,请在 设置 > 收集日里允许访问相册后重试");
     } finally {
       setShareBusy(null);
     }

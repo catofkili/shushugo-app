@@ -6,8 +6,8 @@
   "workers_dev": true,
   "preview_urls": false,
   "vars": {
-    "APP_BUNDLE_ID": "com.masternihongo.app",
-    "APPLE_SIGN_IN_CLIENT_ID": "com.masternihongo.app"
+    "APP_BUNDLE_ID": "com.shushugo.app",
+    "APPLE_SIGN_IN_CLIENT_ID": "com.shushugo.app"
   },
   "d1_databases": [
     {

@@ -89,7 +89,7 @@ export async function syncReminderNotifications(settings: ReminderSettings, requ
       const { hour, minute } = parseTime(settings.studyTime);
       notifications.push({
         id: STUDY_NOTIFICATION_ID,
-        title: "Master 日语",
+        title: "收集日",
         body: "今天也来学一点日语吧，几分钟就够。",
         schedule: { on: { hour, minute }, repeats: true },
         sound: settings.soundEnabled ? "" : undefined,
@@ -143,7 +143,7 @@ export async function sendStudyReminderTest(): Promise<ReminderSyncResult> {
   await LocalNotifications.schedule({
     notifications: [{
       id: TEST_STUDY_NOTIFICATION_ID,
-      title: "Master 日语学习提醒",
+      title: "收集日学习提醒",
       body: "测试通知已接通。之后会按你设置的时间提醒学习。",
       schedule: { at: new Date(Date.now() + 2000) },
       sound: settings.soundEnabled ? "" : undefined,

@@ -1,4 +1,4 @@
-# 📱 Master Nihongo - Windows 用户指南
+# 📱 收集日 - Windows 用户指南
 
 ## 🎉 欢迎！
 

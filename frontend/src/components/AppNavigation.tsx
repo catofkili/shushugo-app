@@ -135,7 +135,7 @@ export function AppNavigation({
           >
             <CapybaraMascot size={24} mood="happy" />
             <span className="jp-serif block text-base font-semibold leading-none tracking-wide text-white">
-              Master
+              收集日
             </span>
           </button>
         </div>
@@ -168,7 +168,7 @@ export function AppNavigation({
             </span>
             <span className={sidebarCollapsed ? "lg:hidden" : ""}>
               <span className="jp-serif block text-lg font-semibold tracking-normal text-white">
-                Master Nihongo
+                收集日
               </span>
               <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-white/65">
                 Vocabulary · Grammar

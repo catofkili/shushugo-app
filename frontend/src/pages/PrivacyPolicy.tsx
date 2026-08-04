@@ -27,7 +27,7 @@ export function PrivacyPolicy({ onBack }: PrivacyPolicyProps) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "master-nihongo-privacy-policy.txt";
+    link.download = "shushugo-privacy-policy.txt";
     link.click();
     URL.revokeObjectURL(url);
   };

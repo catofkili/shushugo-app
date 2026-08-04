@@ -2,7 +2,7 @@
 // cloudflare-sync Worker 的 GET /privacy 公开页共用,改这里即两处同步。
 // 内容变更时记得更新生效日期。
 
-export const PRIVACY_POLICY_TITLE = "Master 日语隐私政策";
+export const PRIVACY_POLICY_TITLE = "收集日隐私政策";
 export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 8 月 3 日";
 export const PRIVACY_POLICY_VERSION = "2026-08-03";
 export const PRIVACY_POLICY_CONTACT = "请通过 App Store 的应用支持入口联系开发者";
@@ -16,7 +16,7 @@ export const PRIVACY_POLICY_SECTIONS: PrivacyPolicySection[] = [
   {
     title: "我们收集什么",
     body: [
-      "Master 日语支持未登录和离线学习。你的单词进度、语法进度、收藏、便签、学习设置和通知提醒时间会先保存在本机设备上。",
+      "收集日支持未登录和离线学习。你的单词进度、语法进度、收藏、便签、学习设置和通知提醒时间会先保存在本机设备上。",
       "注册邮箱账号时，我们会处理邮箱地址、加盐哈希后的密码和邮箱验证状态。使用 Apple 登录时，我们会处理 Apple 提供的稳定用户标识、你选择共享或隐藏后的邮箱，以及仅在首次授权时可能提供的姓名。",
       "登录后，你填写的昵称、简介、学习目标和主动选择的头像会保存到账号，用于在你的设备间同步个人资料。应用不会要求手机号、通讯录、定位、健康数据或支付卡信息。"
     ]
@@ -68,7 +68,7 @@ export const PRIVACY_POLICY_SECTIONS: PrivacyPolicySection[] = [
   {
     title: "儿童与敏感信息",
     body: [
-      "Master 日语不面向收集儿童个人信息，也不要求用户输入敏感个人信息。",
+      "收集日不面向收集儿童个人信息，也不要求用户输入敏感个人信息。",
       "请不要在便签中主动填写身份证件、联系方式、住址、密码等敏感内容。便签虽然默认保存在本机，但导出备份或上传云端时会一并包含。"
     ]
   },

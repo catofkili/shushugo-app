@@ -1,4 +1,4 @@
-# Master Nihongo iOS 项目总结
+# 收集日 iOS 项目总结
 
 ## ✅ 已完成的工作
 
@@ -24,8 +24,8 @@
 
 ### 4. iOS 集成
 - ✅ 安装 Capacitor
-- ✅ 配置 Bundle ID: com.masternihongo.app
-- ✅ 配置应用名称: Master 日语
+- ✅ 配置 Bundle ID: com.shushugo.app
+- ✅ 配置应用名称: 收集日
 - ✅ 生成 iOS 原生项目（ios/App/）
 - ✅ 同步前端构建到 iOS
 
@@ -127,7 +127,7 @@ open ios/App/App.xcworkspace
 2. 选择 TARGETS > App
 3. 选择 "Signing & Capabilities" 标签
 4. Team: 选择你的 Apple ID
-5. Bundle Identifier: 使用 `com.masternihongo.app`，或替换为你在 Apple Developer 账号中注册的唯一标识
+5. Bundle Identifier: 使用 `com.shushugo.app`，或替换为你在 Apple Developer 账号中注册的唯一标识
 
 ### 第四步：运行应用
 

@@ -83,8 +83,8 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
   }, [config.turnstileEnabled, mode]);
 
   const title = useMemo(() => ({
-    login: "登录 Master 账号",
-    register: "创建 Master 账号",
+    login: "登录收集日账号",
+    register: "创建收集日账号",
     reset: "重置密码",
     "apple-consent": "完成 Apple 账号创建",
     terms: USER_AGREEMENT_TITLE,
@@ -225,7 +225,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
             </button>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#B7E38D]">Master Nihongo</p>
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#B7E38D]">收集日</p>
             <h2 id="auth-dialog-title" className="mt-0.5 truncate text-lg font-bold text-white">{title}</h2>
           </div>
           <button onClick={onClose} className="focus-ring grid h-10 w-10 place-items-center rounded-2xl text-white/70 hover:bg-white/10" aria-label="关闭登录窗口">

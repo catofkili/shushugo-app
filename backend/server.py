@@ -1,5 +1,5 @@
 """
-Master Nihongo - 云端同步后端服务
+收集日 - 云端同步后端服务
 
 功能：
 - 用户注册/登录
@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-this")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30  # 30 天
 
-app = FastAPI(title="Master Nihongo API", version="1.0.0")
+app = FastAPI(title="ShuShuGo API", version="1.0.0")
 security = HTTPBearer()
 
 # CORS 配置 - 允许所有来源（生产环境需要限制）
@@ -141,7 +141,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 @app.get("/")
 def root():
     return {
-        "message": "Master Nihongo Sync API",
+        "message": "ShuShuGo Sync API",
         "version": "1.0.0",
         "status": "running"
     }

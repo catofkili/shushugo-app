@@ -30,7 +30,7 @@ const profileSections = [
     title: "账号",
     items: [
       { label: "账号和安全", detail: "登录、密码与设备", icon: Shield, page: "account" as Page },
-      { label: "Master Pro", detail: "会员权益、恢复购买", icon: Crown, page: "pro" as Page },
+      { label: "收集日 Pro", detail: "会员权益、恢复购买", icon: Crown, page: "pro" as Page },
       { label: "个人信息", detail: "头像、昵称、学习身份", icon: UserRound, page: "personal-info" as Page },
       { label: "通知提醒", detail: "学习提醒和复习通知", icon: Bell, page: "notifications" as Page }
     ]
@@ -41,7 +41,7 @@ const profileSections = [
       { label: "设置", detail: "显示、声音和学习偏好", icon: Settings, page: "settings" as Page },
       { label: "隐私", detail: "本地数据与同步权限", icon: LockKeyhole, page: "privacy" as Page },
       { label: "关于和帮助", detail: "版本、反馈与常见问题", icon: CircleHelp, page: "help" as Page },
-      { label: "关于 Master Nihongo", detail: "内容来源和应用信息", icon: Info, page: "about" as Page }
+      { label: "关于收集日", detail: "内容来源和应用信息", icon: Info, page: "about" as Page }
     ]
   }
 ];
@@ -75,7 +75,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
           )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-xl font-bold text-white">
-              {cloudSession.token ? profile?.nickname || cloudSession.displayName || "Master 用户" : "尚未登录"}
+              {cloudSession.token ? profile?.nickname || cloudSession.displayName || "收集日用户" : "尚未登录"}
             </p>
             <p className="mt-1 truncate text-sm text-white/58">
               {cloudSession.token ? cloudSession.email : "登录后同步学习进度和个人资料"}
@@ -100,7 +100,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
           <Crown size={23} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-base font-bold text-white">{entitlements.isPro ? "Master Pro 已启用" : "升级 Master Pro"}</span>
+          <span className="block text-base font-bold text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</span>
           <span className="mt-0.5 block text-xs text-white/56">
             {entitlements.isPro ? "管理权益、恢复购买和购买说明" : "解锁高级统计、沉浸学习和完整规划"}
           </span>

@@ -5,12 +5,12 @@ The script reads MOJi's local URL cache only to reuse the user's existing
 signed-in session. It never writes to MOJi's container and it deliberately
 does not copy authentication tokens into the export. Network access happens
 only with --fetch: MOJi is queried for the user's review states and the word
-details required by Master Nihongo's existing word-list importer.
+details required by ShuShuGo's existing word-list importer.
 
 Usage (macOS):
   1. Open MOJi, enter the vocabulary review screen once, then quit MOJi.
   2. python3 scripts/export-moji-review-data.py --fetch
-  3. AirDrop the generated JSON to an iPhone and import it in Master Nihongo.
+  3. AirDrop the generated JSON to an iPhone and import it in ShuShuGo.
 
 This relies on MOJi's current private client API and may need maintenance when
 MOJi changes its cache format or endpoints. It does not bypass login: the user
@@ -42,7 +42,7 @@ MOJI_CACHE_TABLE = "cfurl_cache_blob_data"
 # older caches.
 REVIEW_ENDPOINTS = ("teststates-list", "/test/reviews")
 DETAIL_ENDPOINT = "https://api.mojidict.com/app/mojidict/api/v1/word/detailInfo"
-DEFAULT_OUTPUT = Path.home() / "Desktop" / "master-nihongo-moji-review-export.json"
+DEFAULT_OUTPUT = Path.home() / "Desktop" / "shushugo-moji-review-export.json"
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_REALM_HELPER = SCRIPT_DIR / "moji-realm-export" / "export-words.cjs"
 
@@ -257,7 +257,7 @@ def export_rows(states: list[dict[str, Any]], words_by_id: dict[str, dict[str, A
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="导出 MOJi 背词复习记录为 Master Nihongo 可导入 JSON")
+    parser = argparse.ArgumentParser(description="导出 MOJi 背词复习记录为收集日可导入 JSON")
     parser.add_argument("--cache", type=Path, help="可选：手动指定 MOJi Cache.db")
     parser.add_argument("--realm", type=Path, help="可选：手动指定 MOJi 临时 Realm 词库")
     parser.add_argument("--realm-helper", type=Path, default=DEFAULT_REALM_HELPER, help=argparse.SUPPRESS)
@@ -279,7 +279,7 @@ def main() -> int:
     words_by_id = read_realm_words(realm_path, args.realm_helper)
     rows, failed_ids = export_rows(states, words_by_id)
     output = {
-        "format": "master-nihongo-moji-review-export-v1",
+        "format": "shushugo-moji-review-export-v1",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "records": rows,
         "skippedMojiWordIds": failed_ids

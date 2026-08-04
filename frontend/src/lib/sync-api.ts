@@ -112,9 +112,9 @@ const DISPLAY_NAME_KEY = "mn_cloud_display_name";
 const AUTH_PROVIDERS_KEY = "mn_cloud_auth_providers";
 const SYNC_STATE_KEY_PREFIX = "mn_cloud_sync_state:";
 const LOCAL_SYNC_OWNER_KEY = "mn_cloud_sync_owner_email";
-export const CLOUD_SYNC_EVENT = "master-nihongo-cloud-sync";
-export const CLOUD_SYNC_REQUEST_EVENT = "master-nihongo-cloud-sync-request";
-export const CLOUD_AUTH_EVENT = "master-nihongo-cloud-auth";
+export const CLOUD_SYNC_EVENT = "shushugo-cloud-sync";
+export const CLOUD_SYNC_REQUEST_EVENT = "shushugo-cloud-sync-request";
+export const CLOUD_AUTH_EVENT = "shushugo-cloud-auth";
 // 当前同步传输的是整份 SQLite 快照。先等待用户停止连续操作，再上传；
 // 同一前台会话最多每 5 分钟自动上传一次，避免每答一道题都发送整库。
 const AUTO_SYNC_DEBOUNCE_MS = 30_000;
@@ -132,7 +132,7 @@ let lastAutoSyncCheckAt = 0;
 let autoSyncBlockedUntil = 0;
 
 type CloudSyncLifecycleWindow = Window & {
-  __masterNihongoCloudSyncCleanup?: () => void;
+  __shushugoCloudSyncCleanup?: () => void;
 };
 
 export class CloudRequestError extends Error {
@@ -945,7 +945,7 @@ export function registerCloudAutoSyncLifecycle(): void {
   autoSyncLifecycleRegistered = true;
 
   const lifecycleWindow = window as CloudSyncLifecycleWindow;
-  lifecycleWindow.__masterNihongoCloudSyncCleanup?.();
+  lifecycleWindow.__shushugoCloudSyncCleanup?.();
 
   const scheduleLocalSync = () => {
     if (autoSyncTimer) clearTimeout(autoSyncTimer);
@@ -982,12 +982,12 @@ export function registerCloudAutoSyncLifecycle(): void {
       window.clearTimeout(autoSyncTimer);
       autoSyncTimer = null;
     }
-    if (lifecycleWindow.__masterNihongoCloudSyncCleanup === cleanup) {
-      lifecycleWindow.__masterNihongoCloudSyncCleanup = undefined;
+    if (lifecycleWindow.__shushugoCloudSyncCleanup === cleanup) {
+      lifecycleWindow.__shushugoCloudSyncCleanup = undefined;
     }
     autoSyncLifecycleRegistered = false;
   };
 
-  lifecycleWindow.__masterNihongoCloudSyncCleanup = cleanup;
+  lifecycleWindow.__shushugoCloudSyncCleanup = cleanup;
   import.meta.hot?.dispose(cleanup);
 }

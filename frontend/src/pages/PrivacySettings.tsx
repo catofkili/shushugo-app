@@ -36,7 +36,7 @@ export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: Priva
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `master-nihongo-privacy-export-${new Date().toISOString().slice(0, 10)}.db`;
+    link.download = `shushugo-privacy-export-${new Date().toISOString().slice(0, 10)}.db`;
     link.click();
     URL.revokeObjectURL(url);
     notify("本机学习数据已导出。");

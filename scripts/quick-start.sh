@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Master 日语 iOS 应用 - 快速启动脚本
+# 收集日 iOS 应用 - 快速启动脚本
 # 用于清理缓存并重新启动应用
 
 set -e
 
-echo "🚀 Master 日语 iOS 应用 - 快速启动"
+echo "🚀 收集日 iOS 应用 - 快速启动"
 echo "=================================="
 echo ""
 
@@ -46,7 +46,7 @@ echo ""
 
 # 5. 卸载旧版本
 echo "🗑️  卸载旧版本..."
-xcrun simctl uninstall booted com.masternihongo.app 2>/dev/null || echo "没有旧版本"
+xcrun simctl uninstall booted com.shushugo.app 2>/dev/null || echo "没有旧版本"
 echo ""
 
 # 6. 构建并安装
@@ -75,7 +75,7 @@ echo ""
 
 # 8. 启动应用
 echo "🎯 启动应用..."
-xcrun simctl launch booted com.masternihongo.app
+xcrun simctl launch booted com.shushugo.app
 echo "✅ 应用已启动"
 echo ""
 
