@@ -19,8 +19,19 @@ type SubmitSummary = {
 const QUICK_STUDY_PAGE_SIZE = 50;
 const QUICK_STUDY_PREFETCH_SIZE = QUICK_STUDY_PAGE_SIZE * 2;
 
+/**
+ * 没动过的卡片按「模糊」提交，不能按「认识」。
+ *
+ * 提交走的是正式作答流程，而「当天第一次看到就点认识」会被记成 Easy —— 一整页
+ * 翻过去直接提交，等于把 50 个词一次性推到很远的间隔。默认值必须是保守的那一侧：
+ * 没判断过的词留在轮换里，代价只是多复习一次。
+ */
+const DEFAULT_QUICK_RATING: WordAnswer = "fuzzy";
+const defaultRatingOption = answerOptions.find((option) => option.value === DEFAULT_QUICK_RATING)
+  ?? answerOptions[1];
+
 const initialRatings = (cards: WordCard[]) => Object.fromEntries(
-  cards.map((card) => [card.id, "know" as WordAnswer])
+  cards.map((card) => [card.id, DEFAULT_QUICK_RATING])
 ) as Record<number, WordAnswer>;
 
 const yieldToBrowser = () => new Promise<void>((resolve) => {
@@ -33,17 +44,6 @@ const phaseLabel = (phase: string) => {
   if (phase === "kanji") return "汉字复习";
   return "今日词汇";
 };
-
-/**
- * 没动过的卡片按「模糊」提交，不能按「认识」。
- *
- * 提交走的是正式作答流程，而「当天第一次看到就点认识」会被记成 Easy —— 一整页
- * 翻过去直接提交，等于把 50 个词一次性推到很远的间隔。默认值必须是保守的那一侧：
- * 没判断过的词留在轮换里，代价只是多复习一次。
- */
-const DEFAULT_QUICK_RATING: WordAnswer = "fuzzy";
-const defaultRatingOption = answerOptions.find((option) => option.value === DEFAULT_QUICK_RATING)
-  ?? answerOptions[1];
 
 export function QuickStudyPanel({ onNavigate, variant = "page" }: Props) {
   const [cards, setCards] = useState<WordCard[]>([]);
