@@ -12,11 +12,16 @@ import {
 } from "lucide-react";
 import { DevTools } from "../components/DevTools";
 import { EntitlementState, productLabel } from "../lib/entitlements";
+import { cloudLogout, type CloudSession } from "../lib/sync-api";
+import { loadUserProfile, type UserProfile } from "../lib/userProfile";
 import { Page } from "../types/app";
+import { useEffect, useState } from "react";
 
 interface ProfilePageProps {
   entitlements: EntitlementState;
+  cloudSession: CloudSession;
   onNavigate: (page: Page) => void;
+  onRequireAuth: () => void;
   onNotice: (message: string, timeout?: number) => void;
 }
 
@@ -41,21 +46,49 @@ const profileSections = [
   }
 ];
 
-export function ProfilePage({ entitlements, onNavigate, onNotice }: ProfilePageProps) {
+export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireAuth, onNotice }: ProfilePageProps) {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void loadUserProfile().then((value) => {
+      if (alive) setProfile(value);
+    });
+    return () => { alive = false; };
+  }, [cloudSession.displayName]);
+
+  const logout = async () => {
+    await cloudLogout();
+    onNotice("已退出账号；本机学习数据仍可离线使用。", 2600);
+  };
+
   return (
     <section className="mx-auto max-w-3xl pb-4">
       <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
         <div className="flex items-center gap-4">
-          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full border border-white/20 bg-[#81D8CF] text-[#343838]">
-            <UserRound size={34} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xl font-bold text-white">Master 用户</p>
-            <p className="mt-1 text-sm text-white/58">ID: local-nihongo-0001</p>
+          {profile?.avatar ? (
+            <img src={profile.avatar} alt="账号头像" className="h-16 w-16 shrink-0 rounded-full border border-white/20 object-cover" />
+          ) : (
+            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full border border-white/20 bg-[#91C968] text-[#243019]">
+              <UserRound size={34} />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xl font-bold text-white">
+              {cloudSession.token ? profile?.nickname || cloudSession.displayName || "Master 用户" : "尚未登录"}
+            </p>
+            <p className="mt-1 truncate text-sm text-white/58">
+              {cloudSession.token ? cloudSession.email : "登录后同步学习进度和个人资料"}
+            </p>
             <p className="mt-2 inline-flex rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/62">
-              {entitlements.isPro ? productLabel(entitlements.productId) : "本地学习模式"}
+              {entitlements.isPro ? productLabel(entitlements.productId) : cloudSession.token ? "免费账号" : "离线学习可用"}
             </p>
           </div>
+          {!cloudSession.token && (
+            <button onClick={onRequireAuth} className="focus-ring shrink-0 rounded-2xl bg-[#91C968] px-4 py-2 text-sm font-bold text-[#172112]">
+              登录
+            </button>
+          )}
         </div>
       </div>
 
@@ -106,10 +139,12 @@ export function ProfilePage({ entitlements, onNavigate, onNotice }: ProfilePageP
         ))}
       </div>
 
-      <button className="focus-ring mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/20 px-4 py-3 text-sm font-bold text-[#81D8CF]">
-        <LogOut size={18} />
-        登出账号
-      </button>
+      {cloudSession.token && (
+        <button onClick={() => void logout()} className="focus-ring mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#91C968]/25 bg-[#91C968]/15 px-4 py-3 text-sm font-bold text-[#B7E38D]">
+          <LogOut size={18} />
+          退出账号
+        </button>
+      )}
     </section>
   );
 }

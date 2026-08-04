@@ -10,6 +10,7 @@ import {
   TARGET_LEVEL_OPTIONS,
   UserProfile
 } from "../lib/userProfile";
+import { refreshUserProfileFromCloud, saveUserProfileToCloud } from "../lib/profile-sync";
 
 interface PersonalInfoProps {
   onBack: () => void;
@@ -23,6 +24,7 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
   const [tempBio, setTempBio] = useState("");
   const [tempTargetLevel, setTempTargetLevel] = useState("");
   const [saving, setSaving] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("正在读取账号资料…");
 
   // 加载用户资料
   useEffect(() => {
@@ -31,6 +33,13 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
       setTempNickname(data.nickname);
       setTempBio(data.bio);
       setTempTargetLevel(normalizeTargetLevel(data.targetLevel));
+      void refreshUserProfileFromCloud().then((synced) => {
+        setProfile(synced);
+        setTempNickname(synced.nickname);
+        setTempBio(synced.bio);
+        setTempTargetLevel(normalizeTargetLevel(synced.targetLevel));
+        setSyncMessage("账号资料已同步");
+      }).catch(() => setSyncMessage("当前离线；修改会先保存在本机，联网后继续同步"));
     });
   }, []);
 
@@ -40,7 +49,14 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
     setSaving(true);
     try {
       await updateBasicInfo(tempNickname, tempBio);
-      setProfile({ ...profile, nickname: tempNickname, bio: tempBio });
+      const local = await loadUserProfile();
+      setProfile(local);
+      try {
+        setProfile(await saveUserProfileToCloud(local));
+        setSyncMessage("账号资料已同步");
+      } catch {
+        setSyncMessage("已保存到本机；联网后会继续同步");
+      }
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to save profile:", error);
@@ -64,7 +80,14 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
     try {
       const nextTarget = normalizeTargetLevel(tempTargetLevel);
       await updateTargetLevel(nextTarget);
-      setProfile({ ...profile, targetLevel: nextTarget });
+      const local = await loadUserProfile();
+      setProfile(local);
+      try {
+        setProfile(await saveUserProfileToCloud(local));
+        setSyncMessage("账号资料已同步");
+      } catch {
+        setSyncMessage("已保存到本机；联网后会继续同步");
+      }
       setIsEditingTarget(false);
     } catch (error) {
       console.error("Failed to save target level:", error);
@@ -96,7 +119,14 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
       const base64 = e.target?.result as string;
       try {
         await updateAvatar(base64);
-        setProfile({ ...profile, avatar: base64 });
+        const local = await loadUserProfile();
+        setProfile(local);
+        try {
+          setProfile(await saveUserProfileToCloud(local));
+          setSyncMessage("头像已同步");
+        } catch {
+          setSyncMessage("头像已保存到本机；联网后会继续同步");
+        }
       } catch (error) {
         console.error("Failed to update avatar:", error);
         alert("头像更新失败，请重试");
@@ -117,6 +147,10 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
 
   return (
     <div className="mx-auto max-w-3xl pb-4">
+
+      <div className="mb-4 rounded-2xl border border-[#91C968]/20 bg-[#91C968]/10 px-3 py-2 text-xs font-bold text-[#B7E38D]">
+        {syncMessage}
+      </div>
 
       {/* 头像 */}
       <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4">

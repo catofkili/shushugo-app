@@ -8,9 +8,10 @@ import { clearStorage } from "../lib/storage";
 interface PrivacySettingsProps {
   onBack: () => void;
   onOpenPolicy: () => void;
+  onOpenAgreement: () => void;
 }
 
-export function PrivacySettings({ onBack, onOpenPolicy }: PrivacySettingsProps) {
+export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: PrivacySettingsProps) {
   const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
   const [message, setMessage] = useState("");
   const [clearPanelOpen, setClearPanelOpen] = useState(false);
@@ -111,10 +112,10 @@ export function PrivacySettings({ onBack, onOpenPolicy }: PrivacySettingsProps) 
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">云端同步</p>
-              <p className="mt-0.5 text-xs text-white/50">当前版本仅使用本机数据，跨设备同步暂未开放</p>
+              <p className="mt-0.5 text-xs text-white/50">登录后自动同步；未登录和断网时仍保存在本机</p>
             </div>
             <span className="rounded-full border border-white/15 bg-white/8 px-2 py-1 text-xs font-bold text-white/55">
-              暂未开放
+              可用
             </span>
           </div>
         </div>
@@ -148,6 +149,10 @@ export function PrivacySettings({ onBack, onOpenPolicy }: PrivacySettingsProps) 
               <p className="text-sm font-bold text-white">隐私政策</p>
               <p className="mt-0.5 text-xs text-white/50">查看完整隐私条款</p>
             </div>
+            <ChevronRight size={17} className="text-white/40" />
+          </button>
+          <button onClick={onOpenAgreement} className="focus-ring flex w-full items-center gap-3 border-t border-white/10 p-4 text-left hover:bg-[#4d5151]">
+            <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">用户协议</p><p className="mt-0.5 text-xs text-white/50">查看账号和服务使用规则</p></div>
             <ChevronRight size={17} className="text-white/40" />
           </button>
         </div>

@@ -18,6 +18,8 @@
     "add:ios": "cap add ios"
   },
   "dependencies": {
+    "@aparajita/capacitor-secure-storage": "^6.0.1",
+    "@capacitor-community/apple-sign-in": "^6.0.0",
     "@capacitor-community/media": "^6.0.0",
     "@capacitor/core": "^6.0.0",
     "@capacitor/filesystem": "^6.0.4",

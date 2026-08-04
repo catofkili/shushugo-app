@@ -1,16 +1,18 @@
-import { ArrowLeft, Check, Crown, ReceiptText, Shield, Smartphone, User } from "lucide-react";
+import { Apple, ArrowLeft, Check, Crown, KeyRound, ReceiptText, Shield, Smartphone, Trash2, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { productLabel } from "../lib/entitlements";
 import { clearLocalPasscode, getPasscodeState, setLocalPasscode, type PasscodeState } from "../lib/localPasscode";
-import { getCloudSession, type CloudSession } from "../lib/sync-api";
+import { changeCloudPassword, deleteCloudAccount, getCloudAuthConfig, linkCloudApple, type CloudSession } from "../lib/sync-api";
+import { requestAppleCredential } from "../lib/apple-auth";
 
 interface AccountSecurityProps {
   onBack: () => void;
+  cloudSession: CloudSession;
 }
 
-export function AccountSecurity({ onBack }: AccountSecurityProps) {
+export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) {
   const entitlements = useEntitlements();
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -20,16 +22,17 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
   const [passcodeState, setPasscodeState] = useState<PasscodeState>({ enabled: false });
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-
-  const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
+  const [showAccountPassword, setShowAccountPassword] = useState(false);
+  const [accountCurrentPassword, setAccountCurrentPassword] = useState("");
+  const [accountNewPassword, setAccountNewPassword] = useState("");
+  const [accountConfirmPassword, setAccountConfirmPassword] = useState("");
+  const [deletePanelOpen, setDeletePanelOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
 
   useEffect(() => {
     let alive = true;
     getPasscodeState().then((state) => {
       if (alive) setPasscodeState(state);
-    });
-    getCloudSession().then((session) => {
-      if (alive) setCloudSession(session);
     });
     return () => {
       alive = false;
@@ -40,6 +43,57 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
+  };
+
+  const handleAccountPassword = async () => {
+    if (accountNewPassword !== accountConfirmPassword) return setMessage("两次输入的新密码不一致。");
+    setSaving(true);
+    try {
+      setMessage(await changeCloudPassword(accountCurrentPassword, accountNewPassword));
+      setShowSuccess(true);
+      setShowAccountPassword(false);
+      setAccountCurrentPassword("");
+      setAccountNewPassword("");
+      setAccountConfirmPassword("");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "账号密码修改失败。");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeAccount = async () => {
+    if (!window.confirm("确定永久删除账号吗？云端资料和备份将无法恢复，本机学习数据会保留。")) return;
+    setSaving(true);
+    try {
+      if (cloudSession.authProviders?.includes("email")) {
+        await deleteCloudAccount(deletePassword);
+      } else {
+        const config = await getCloudAuthConfig();
+        const credential = await requestAppleCredential(config);
+        await deleteCloudAccount("", credential);
+      }
+      onBack();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "账号删除失败。");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const connectApple = async () => {
+    setSaving(true);
+    setMessage("");
+    try {
+      const config = await getCloudAuthConfig();
+      const credential = await requestAppleCredential(config);
+      await linkCloudApple(credential);
+      finishSuccess("Apple 登录已关联。");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Apple 登录关联失败。");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const finishSuccess = (text: string) => {
@@ -102,13 +156,16 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
       <div className="mb-4 overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
         <div className="border-b border-white/10 p-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#91C968]/20 text-[#B7E38D]">
               <User size={20} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs text-white/50">账号</p>
               <p className="mt-1 truncate text-sm font-bold text-white">
-                {cloudSession.token && cloudSession.email ? cloudSession.email : "本机模式（无需注册）"}
+                {cloudSession.email}
+              </p>
+              <p className="mt-1 text-xs text-white/45">
+                登录方式：{cloudSession.authProviders?.map((provider) => provider === "apple" ? "Apple" : "邮箱密码").join("、") || "邮箱密码"}
               </p>
             </div>
           </div>
@@ -116,14 +173,14 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
 
         <div className="border-b border-white/10 p-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#91C968]/20 text-[#B7E38D]">
               <Crown size={20} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs text-white/50">会员权益</p>
               <p className="mt-1 text-sm font-bold text-white">{entitlements.isPro ? productLabel(entitlements.productId) : "免费版"}</p>
             </div>
-            <span className="rounded-full bg-[#81D8CF]/20 px-2 py-1 text-xs font-bold text-[#81D8CF]">
+            <span className="rounded-full bg-[#91C968]/20 px-2 py-1 text-xs font-bold text-[#B7E38D]">
               {entitlements.isPro ? "已启用" : "未购买"}
             </span>
           </div>
@@ -131,7 +188,7 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
 
         <div className="p-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#91C968]/20 text-[#B7E38D]">
               <ReceiptText size={20} />
             </div>
             <div className="min-w-0 flex-1">
@@ -146,6 +203,29 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
       <div className="mb-4">
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">密码和安全</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
+          {cloudSession.authProviders?.includes("email") && (
+            <button onClick={() => setShowAccountPassword((value) => !value)} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#91C968]/16 text-[#B7E38D]"><KeyRound size={20} /></div>
+              <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">账号密码</p><p className="mt-0.5 text-xs text-white/50">修改邮箱登录所使用的密码</p></div>
+            </button>
+          )}
+          {cloudSession.authProviders?.includes("apple") && (
+            <div className="flex w-full items-center gap-3 border-b border-white/10 p-4">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white text-black"><Apple size={20} fill="currentColor" /></div>
+              <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">Apple 登录</p><p className="mt-0.5 text-xs text-white/50">已关联，可使用 Face ID 或 Apple 账号登录</p></div>
+              <span className="text-xs font-bold text-[#B7E38D]">已关联</span>
+            </div>
+          )}
+          {!cloudSession.authProviders?.includes("apple") && (
+            <button
+              onClick={() => void connectApple()}
+              disabled={saving}
+              className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151] disabled:opacity-50"
+            >
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white text-black"><Apple size={20} fill="currentColor" /></div>
+              <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">关联 Apple 登录</p><p className="mt-0.5 text-xs text-white/50">关联后可使用 Face ID 或 Apple 账号登录</p></div>
+            </button>
+          )}
           <button
             onClick={() => setShowChangePassword(!showChangePassword)}
             className="focus-ring flex w-full items-center gap-3 p-4 text-left hover:bg-[#4d5151]"
@@ -159,12 +239,22 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
                 {passcodeState.enabled ? "已启用，修改或关闭前需要校验当前口令" : "可为本机资料设置独立访问口令"}
               </p>
             </div>
-            <span className="rounded-full bg-[#81D8CF]/15 px-2 py-1 text-xs font-bold text-[#81D8CF]">
+            <span className="rounded-full bg-[#91C968]/15 px-2 py-1 text-xs font-bold text-[#B7E38D]">
               {passcodeState.enabled ? "已开启" : "未开启"}
             </span>
           </button>
         </div>
       </div>
+
+      {showAccountPassword && (
+        <div className="mb-4 space-y-3 rounded-2xl border border-white/15 bg-[#464949] p-4">
+          <h3 className="text-sm font-bold text-white">修改账号密码</h3>
+          <input type="password" autoComplete="current-password" value={accountCurrentPassword} onChange={(event) => setAccountCurrentPassword(event.target.value)} className="focus-ring w-full rounded-2xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white" placeholder="当前账号密码" />
+          <input type="password" autoComplete="new-password" value={accountNewPassword} onChange={(event) => setAccountNewPassword(event.target.value)} className="focus-ring w-full rounded-2xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white" placeholder="新密码（至少 8 位）" />
+          <input type="password" autoComplete="new-password" value={accountConfirmPassword} onChange={(event) => setAccountConfirmPassword(event.target.value)} className="focus-ring w-full rounded-2xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white" placeholder="再次输入新密码" />
+          <button onClick={() => void handleAccountPassword()} disabled={saving || !accountCurrentPassword || accountNewPassword.length < 8 || !accountConfirmPassword} className="focus-ring w-full rounded-2xl bg-[#91C968] px-4 py-2 text-sm font-bold text-[#172112] disabled:opacity-50">确认修改</button>
+        </div>
+      )}
 
       {/* 修改密码表单 */}
       {showChangePassword && (
@@ -210,7 +300,7 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
             <button
               onClick={handleChangePassword}
               disabled={saving || (passcodeState.enabled && !currentPassword) || !newPassword || !confirmPassword}
-              className="focus-ring flex-1 rounded-2xl bg-[#81D8CF] px-4 py-2 text-sm font-bold text-[#343838] hover:bg-white disabled:opacity-50"
+              className="focus-ring flex-1 rounded-2xl bg-[#91C968] px-4 py-2 text-sm font-bold text-[#172112] hover:bg-[#A6D77F] disabled:opacity-50"
             >
               {saving ? "保存中" : passcodeState.enabled ? "确认修改" : "启用口令"}
             </button>
@@ -235,22 +325,23 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
             </button>
           )}
 
-          {message && (
-            <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-sm ${showSuccess ? "bg-[#81D8CF]/20 text-[#81D8CF]" : "bg-white/8 text-white/70"}`}>
-              {showSuccess && <Check size={16} />}
-              {message}
-            </div>
-          )}
+        </div>
+      )}
+
+      {message && (
+        <div className={`mb-4 flex items-center gap-2 rounded-2xl px-3 py-2 text-sm ${showSuccess ? "bg-[#91C968]/20 text-[#B7E38D]" : "bg-white/8 text-white/70"}`} role="status">
+          {showSuccess && <Check size={16} />}
+          {message}
         </div>
       )}
 
       {/* 当前设备 */}
-      <div>
+      <div className="mb-4">
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">当前设备</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
           <div className="p-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#91C968]/20 text-[#B7E38D]">
                 <Smartphone size={20} />
               </div>
               <div className="min-w-0 flex-1">
@@ -264,11 +355,28 @@ export function AccountSecurity({ onBack }: AccountSecurityProps) {
         </div>
       </div>
 
+      <div className="overflow-hidden rounded-2xl border border-red-300/20 bg-[#464949]">
+        <button onClick={() => setDeletePanelOpen((value) => !value)} className="focus-ring flex w-full items-center gap-3 p-4 text-left text-red-200 hover:bg-red-400/10">
+          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-red-400/12"><Trash2 size={20} /></div>
+          <div className="min-w-0 flex-1"><p className="text-sm font-bold">删除账号</p><p className="mt-0.5 text-xs text-red-100/55">永久删除账号资料和云端备份</p></div>
+        </button>
+        {deletePanelOpen && (
+          <div className="border-t border-red-300/15 p-4">
+            {cloudSession.authProviders?.includes("email") ? (
+              <input type="password" value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} className="focus-ring w-full rounded-2xl border border-red-300/25 bg-[#3c3f3f] px-3 py-2 text-sm text-white" placeholder="输入账号密码确认" />
+            ) : (
+              <p className="text-xs leading-5 text-white/55">继续后会调用 Apple 登录重新验证身份。</p>
+            )}
+            <button onClick={() => void removeAccount()} disabled={saving || (Boolean(cloudSession.authProviders?.includes("email")) && deletePassword.length < 8)} className="focus-ring mt-3 w-full rounded-2xl bg-red-400 px-4 py-2 text-sm font-bold text-red-950 disabled:opacity-50">永久删除账号</button>
+          </div>
+        )}
+      </div>
+
       {/* 提示信息 */}
-      <div className="mt-4 rounded-2xl border border-[#81D8CF]/20 bg-[#81D8CF]/20 p-3 text-xs text-[#81D8CF]">
-        <p className="font-bold">本地账号模式</p>
-        <p className="mt-1 text-[#81D8CF]/70">
-          当前不要求注册邮箱或手机号。付费权益通过 Apple 内购恢复，学习数据继续保存在本机。
+      <div className="mt-4 rounded-2xl border border-[#91C968]/20 bg-[#91C968]/12 p-3 text-xs text-[#B7E38D]">
+        <p className="font-bold">账号与离线学习</p>
+        <p className="mt-1 text-white/55">
+          退出账号后仍可离线学习；重新登录后会继续同步本机产生的新进度。
         </p>
       </div>
     </div>

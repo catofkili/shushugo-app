@@ -10,6 +10,7 @@ export interface UserProfile {
   studyDays: number; // 学习天数
   lastStudyDate?: string; // 最后学习日期 (YYYY-MM-DD)
   createdAt: string; // 创建时间
+  profileUpdatedAt: string; // 昵称、头像、简介或目标最后修改时间
   achievements: string[]; // 已获得的成就
 }
 
@@ -27,6 +28,7 @@ const DEFAULT_PROFILE: UserProfile = {
   studyTimeMinutes: 0,
   studyDays: 0,
   createdAt: new Date().toISOString(),
+  profileUpdatedAt: new Date().toISOString(),
   achievements: ['新手', '学习者'],
 };
 
@@ -58,6 +60,7 @@ export async function loadUserProfile(): Promise<UserProfile> {
 
     const profile = JSON.parse(value) as UserProfile;
     profile.targetLevel = normalizeTargetLevel(profile.targetLevel);
+    profile.profileUpdatedAt = profile.profileUpdatedAt || profile.createdAt || new Date(0).toISOString();
     console.log('✅ User profile loaded');
     return profile;
   } catch (error) {
@@ -71,6 +74,7 @@ export async function updateBasicInfo(nickname: string, bio: string): Promise<vo
   const profile = await loadUserProfile();
   profile.nickname = nickname;
   profile.bio = bio;
+  profile.profileUpdatedAt = new Date().toISOString();
   await saveUserProfile(profile);
 }
 
@@ -78,6 +82,7 @@ export async function updateBasicInfo(nickname: string, bio: string): Promise<vo
 export async function updateAvatar(avatarBase64: string): Promise<void> {
   const profile = await loadUserProfile();
   profile.avatar = avatarBase64;
+  profile.profileUpdatedAt = new Date().toISOString();
   await saveUserProfile(profile);
 }
 
@@ -85,6 +90,7 @@ export async function updateAvatar(avatarBase64: string): Promise<void> {
 export async function updateTargetLevel(targetLevel: string): Promise<void> {
   const profile = await loadUserProfile();
   profile.targetLevel = normalizeTargetLevel(targetLevel);
+  profile.profileUpdatedAt = new Date().toISOString();
   await saveUserProfile(profile);
 }
 
