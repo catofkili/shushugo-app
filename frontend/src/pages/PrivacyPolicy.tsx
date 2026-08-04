@@ -60,7 +60,7 @@ export function PrivacyPolicy({ onBack }: PrivacyPolicyProps) {
           <div>
             <h1 className="text-xl font-bold text-white">{PRIVACY_POLICY_TITLE}</h1>
             <p className="mt-2 text-sm leading-6 text-white/70">
-              以本地学习为核心：学习记录默认保存在设备上，不接入广告追踪；云同步为可选功能，仅在你注册后上传你主动备份的数据。
+              支持未登录与离线学习：数据会先保存在设备上；登录后，账号资料和学习进度用于跨设备同步，不接入广告追踪。
             </p>
             <p className="mt-2 text-xs font-bold text-[#81D8CF]">生效日期：{PRIVACY_POLICY_EFFECTIVE_DATE}</p>
           </div>
