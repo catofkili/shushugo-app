@@ -1,16 +1,15 @@
 import { getDatabase } from "../database";
 import type { WordStats } from "../../types/vocabulary";
 import { getDailyWordGoal } from "../studyPreferences";
-import { daysSince, firstValue, rowsFor, today } from "../study-core";
+import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
 import type { WordSessionOptions } from "../study-types";
 import {
-  currentComeback,
   encoreChunkSize,
   estimatedMinutesFor,
   fatigueDetected,
   readEncoreLog,
   recentReviewAverages
-} from "../comeback";
+} from "../review-budget";
 import { ensureProgressInitialized } from "./bootstrap";
 import { dailyNewQuota } from "./session-state";
 import { encoreRemainingCount, stage1ProgressCounts } from "./stage1";
@@ -70,7 +69,12 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
   ensureProgressInitialized();
   const studyDate = today();
   const filter = wordFilterSql(options, "w");
-  const total = firstValue<number>(`SELECT COUNT(*) FROM words w WHERE 1 = 1 ${filter.clause}`, filter.params, 0);
+  const total = firstValue<number>(`
+    SELECT COUNT(*)
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    WHERE 1 = 1 ${filter.clause}
+  `, filter.params, 0);
   const knownForever = firstValue<number>(`
     SELECT COUNT(*)
     FROM progress p
@@ -78,12 +82,15 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     WHERE p.known_forever = 1 ${filter.clause}
   `, filter.params, 0);
   const reviewedToday = firstValue<number>("SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ?", [studyDate], 0);
+  // 「薄弱」= FSRS 认为本学习日内该复习的。以前用 score <= 6,和真正排给你背的
+  // FSRS 到期集是两套口径(实测能差 300 多个),首页显示的数和实际任务量对不上。
   const lowCount = firstValue<number>(`
     SELECT COUNT(*)
     FROM progress p
     JOIN words w ON w.id = p.word_id
-    WHERE p.known_forever = 0 AND p.seen_count > 0 AND p.score <= 6 ${filter.clause}
-  `, filter.params, 0);
+    WHERE p.known_forever = 0 AND p.seen_count > 0
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) ${filter.clause}
+  `, [studyDayEnd().toISOString(), ...filter.params], 0);
   const unseenCount = firstValue<number>(
     `
     SELECT COUNT(*)
@@ -105,7 +112,6 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     0
   );
 
-  const comebackState = currentComeback(studyDate);
   const remainingBacklog = encoreRemainingCount(studyDate);
   const { secondsPerWord: recentSecondsPerWord } = recentReviewAverages(studyDate);
   // 估算耗时优先用今天的实际节奏（含反向/汉字阶段的开销），没有数据再退回近期均值
@@ -121,21 +127,7 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
   const totalLearnedWords = firstValue<number>(
     "SELECT COUNT(*) FROM progress WHERE seen_count > 0 OR known_forever = 1", [], 0
   );
-  const comebackDayIndex = comebackState ? daysSince(comebackState.startedOn) + 1 : 0;
-
   return {
-    comeback: comebackState ? {
-      active: true,
-      dayIndex: comebackDayIndex,
-      // 触发时锁定,只减不增;超期(dayIndex 越过计划)显示实际天数,不再逐日 +1 谎报
-      planDays: comebackState.planDays,
-      mode: comebackState.mode,
-      todayTarget: stage1Progress.total,
-      estimatedMinutes: estimatedMinutesFor(stage1Progress.total, secondsPerWord),
-      remainingBacklog,
-      initialBacklog: comebackState.initialBacklog,
-      announcedToday: comebackState.announcedOn === studyDate
-    } : undefined,
     encore: {
       available: encoreSize > 0,
       size: encoreSize,
@@ -208,4 +200,3 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
         : stage1Progress.completed >= stage1Progress.total
   };
 }
-

@@ -24,8 +24,9 @@ vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProg
 
 import { ensureProgressInitialized, getWordSession, submitWordAnswer } from "./word-api";
 import { setFsrsActive } from "./fsrs-store";
+import { recordReview, type FsrsState } from "./fsrs-scheduler";
 import { STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
-import { studyDayEnd, getState } from "./database/db-utils";
+import { studyDayEnd, getState, setState } from "./database/db-utils";
 
 describe("FSRS 切换 · 端到端选词", () => {
   beforeAll(async () => {
@@ -122,13 +123,73 @@ describe("FSRS 切换 · 端到端选词", () => {
     setFsrsActive(false);
   });
 
-  it("开关关闭:回到现行分数选词(不受 fsrs_due 影响)", () => {
+  it("当天第一次认识的奖励不看 FSRS 历史,也不看 seen_count", () => {
+    // 「一键完成」等快捷通道可能把 seen_count 加过,但当天第一次真正作答仍应享受奖励。
+    setFsrsActive(true);
     testDb.run("DELETE FROM stage1_tasks");
-    // 501 未到期但分数低 → 关闭时应能入选(证明走的是分数路径)
-    testDb.run("UPDATE progress SET score = 0 WHERE word_id = 501");
+    testDb.run("DELETE FROM reviews");
+    testDb.run("UPDATE progress SET seen_count=0, mistake_streak=0, fsrs_stability=NULL, fsrs_due=NULL, fsrs_state=NULL WHERE known_forever=0");
+
+    // 必须让它真的把卡服务出来,否则 claimCurrentCard 会把这次作答当成过期提交丢掉
+    const card = getWordSession().card!;
+    // 服务出来之后再把 seen_count 顶上去 = 模拟「一键完成」留下的虚增值
+    testDb.run(`UPDATE progress SET seen_count = 2 WHERE word_id = ${card.id}`);
+    submitWordAnswer(card.id, "know");
+
+    const row = testDb.exec(`SELECT fsrs_state, fsrs_due FROM progress WHERE word_id=${card.id}`)[0].values[0];
+    expect(Number(row[0])).toBe(2);                                                      // Review,不是 Learning(1)
+    expect(new Date(String(row[1])).getTime()).toBeGreaterThan(studyDayEnd().getTime()); // 已毕业,当天不再出
     setFsrsActive(false);
-    getWordSession();
-    const tasks = testDb.exec("SELECT word_id FROM stage1_tasks WHERE task_type='review'")[0]?.values.map((v) => Number(v[0])) ?? [];
-    expect(tasks).toContain(501); // 分数路径按 score≤6 选,与 fsrs_due 无关
+  });
+
+  it("已有 FSRS 历史的词,当天第一次点认识也按 Easy 奖励", () => {
+    setFsrsActive(true);
+    testDb.run("DELETE FROM stage1_tasks");
+    testDb.run("DELETE FROM reviews");
+    setState("review_queue", "[]");
+    testDb.run("UPDATE progress SET known_forever=1 WHERE word_id != 1");
+
+    const now = new Date();
+    const previousReview = new Date(now.getTime() - 2 * 86400000);
+    const previousDue = new Date(now.getTime() - 86400000);
+    const previous: FsrsState = {
+      stability: 10,
+      difficulty: 5,
+      due: previousDue.toISOString(),
+      lastReview: previousReview.toISOString(),
+      state: 2,
+      steps: 0,
+      reps: 3,
+      lapses: 0
+    };
+    testDb.run(`
+      UPDATE progress
+      SET known_forever=0, seen_count=3,
+          fsrs_stability=?, fsrs_difficulty=?, fsrs_last_review=?, fsrs_due=?,
+          fsrs_state=?, fsrs_steps=?, fsrs_reps=?, fsrs_lapses=?
+      WHERE word_id=1
+    `, [
+      previous.stability,
+      previous.difficulty,
+      previous.lastReview,
+      previous.due,
+      previous.state,
+      previous.steps,
+      previous.reps,
+      previous.lapses
+    ]);
+
+    const expected = recordReview(previous, "know", now, { mode: "known" });
+    const normal = recordReview(previous, "know", now, { mode: "normal" });
+    const card = getWordSession().card!;
+    expect(card.id).toBe(1);
+    submitWordAnswer(card.id, "know");
+
+    const row = testDb.exec("SELECT fsrs_stability, fsrs_due FROM progress WHERE word_id=1")[0].values[0];
+    expect(Number(row[0])).toBeCloseTo(expected.stability, 5);
+    expect(String(row[1])).toBe(expected.due);
+    expect(new Date(expected.due).getTime()).toBeGreaterThan(new Date(normal.due).getTime());
+    expect(new Date(String(row[1])).getTime()).toBeGreaterThan(studyDayEnd().getTime());
+    setFsrsActive(false);
   });
 });

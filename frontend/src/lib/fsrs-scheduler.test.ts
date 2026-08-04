@@ -29,6 +29,25 @@ describe("三答法映射", () => {
     expect(ratingFor("forgot")).toBe(Rating.Again);
     expect(ratingFor("known_forever")).toBe(Rating.Easy);
   });
+
+  it("当天首答认识(mode=known)按 Easy 记,不是 Good", () => {
+    expect(ratingFor("know", "known")).toBe(Rating.Easy);
+    expect(ratingFor("know", "normal")).toBe(Rating.Good);
+    // 模糊/忘记不受 mode 影响
+    expect(ratingFor("fuzzy", "known")).toBe(Rating.Hard);
+    expect(ratingFor("forgot", "known")).toBe(Rating.Again);
+  });
+
+  it("当天首答认识的记忆强度要远高于普通认识", () => {
+    const now = new Date("2026-08-01T10:00:00Z");
+    const known = recordReview(null, "know", now, { mode: "known" });
+    const normal = recordReview(null, "know", now, { mode: "normal" });
+    // 当天首答认识:跳过学习步骤,直接排到一周开外(实测 8 天)
+    const days = (new Date(known.due).getTime() - now.getTime()) / 86_400_000;
+    expect(days).toBeGreaterThan(5);
+    // 起点强度按 Easy 取,是 Good 的三倍以上(实测 8.30 vs 2.31)
+    expect(known.stability).toBeGreaterThan(normal.stability * 3);
+  });
 });
 
 describe("学习步骤:新词/答错要当天反复刷到毕业(治『点不认识就算过』)", () => {

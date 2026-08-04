@@ -41,11 +41,11 @@ export const FSRS_STUBBORN_RELEARNING_STEPS = ["10m", "10m", "30m"] as const;
 /** 当天错到这个次数 = 顽固词,升级到三步 */
 export const STUBBORN_DAILY_MISTAKES = 3;
 /**
- * 「早就会了」:新词第一次见到就点「认识」—— 跳过学习步骤,直接毕业。
+ * 「当天首答奖励」:当天第一次看到就点「认识」——按 Easy 记,跳过学习步骤,直接毕业。
  *
- * 题面只给中文释义,是先回忆、再点「显示答案」、最后才评价。所以新词首见即「认识」
- * 意味着**在看到答案之前就已经会了**,这个词根本不需要软件帮着记 —— 再当天考一遍
- * 纯属浪费你的时间。间隔照常从 FSRS 拿(首次 Good = 2 天),之后正常参与复习。
+ * 题面只给中文释义,是先回忆、再点「显示答案」、最后才评价。所以当天首答即「认识」
+ * 意味着这次已经成功提取,不需要软件在同一学习日再安排短期确认。间隔由 FSRS 的
+ * Easy 档计算,之后正常参与复习。
  */
 export const FSRS_NO_STEPS = [] as const;
 /** leech(顽固词)阈值:累计答错(lapses)达到即标记 */
@@ -55,7 +55,7 @@ const DAY_MS = 86_400_000;
 
 // 顽固词要用不同的重学步骤,所以实例按 (retention, maxInterval, 是否顽固) 分别缓存。
 const schedulerCache = new Map<string, FSRS>();
-/** normal=常规两步 / stubborn=顽固词三步 / known=早就会了,不走步骤 */
+/** normal=常规两步 / stubborn=顽固词三步 / known=当天首次认识,按 Easy 并跳过短步骤 */
 export type StepMode = "normal" | "stubborn" | "known";
 
 export const getScheduler = (
@@ -85,10 +85,16 @@ export const getScheduler = (
   return instance;
 };
 
-/** 三答法 + 永久熟知 → FSRS 四档评分(Grade = 排除 Manual 的可调度档) */
-export const ratingFor = (answer: WordAnswer): Grade => {
+/**
+ * 三答法 + 永久熟知 → FSRS 四档评分(Grade = 排除 Manual 的可调度档)
+ *
+ * mode === "known"(当天第一次看到就点「认识」)按 Easy 记:题面只给中文释义、
+ * 是先回忆再看答案,这次首答正确说明今天不需要再把它塞回短期学习步骤。
+ * FSRS 初始 stability 取 w[Easy] 而不是 w[Good],同时当天不再重复出题。
+ */
+export const ratingFor = (answer: WordAnswer, mode: StepMode = "normal"): Grade => {
   switch (answer) {
-    case "know": return Rating.Good;
+    case "know": return mode === "known" ? Rating.Easy : Rating.Good;
     case "fuzzy": return Rating.Hard;
     case "forgot": return Rating.Again;
     case "known_forever": return Rating.Easy;
@@ -160,10 +166,26 @@ export function recordReview(
 ): FsrsState {
   const retention = opts.retention ?? FSRS_DEFAULT_RETENTION;
   const maxInterval = opts.maxInterval ?? FSRS_MAX_INTERVAL_DAYS;
-  const scheduler = getScheduler(retention, maxInterval, opts.mode ?? "normal");
-  const next = scheduler.repeat(toCard(prev, now), now)[ratingFor(answer)].card;
+  const mode = opts.mode ?? "normal";
+  const scheduler = getScheduler(retention, maxInterval, mode);
+  const next = scheduler.repeat(toCard(prev, now), now)[ratingFor(answer, mode)].card;
   return cardToState(next, now, maxInterval);
 }
+
+/**
+ * 「已掌握」判定:本次安排的间隔(下次到期 − 上次复习)达到这么多天。
+ *
+ * 取代旧的「3 连胜 + score ≥ 15」。间隔是 FSRS 自己算出来的记忆强度体现,
+ * 排到半年以后就说明算法认为你已经记牢了 —— 不需要额外的计数器,
+ * 也不会出现「连胜攒够但其实记得很勉强」的误判。
+ */
+export const MASTERED_INTERVAL_DAYS = 180;
+
+export const intervalDays = (s: FsrsState): number =>
+  (new Date(s.due).getTime() - new Date(s.lastReview).getTime()) / DAY_MS;
+
+export const isMastered = (s: FsrsState | null | undefined): boolean =>
+  hasState(s) ? intervalDays(s) >= MASTERED_INTERVAL_DAYS : false;
 
 /** 此刻的可提取性 R ∈ [0,1] */
 export function retrievability(s: FsrsState, now: Date): number {

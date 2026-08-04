@@ -5,6 +5,7 @@ export type StudyAnswer = WordAnswer;
 export interface WordSessionOptions {
   level?: WordLevelFilter;
   type?: WordTypeFilter;
+  focus?: "mistakes";
 }
 
 export interface GrammarStudyCard {

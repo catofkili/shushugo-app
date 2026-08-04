@@ -23,7 +23,11 @@ import {
   currentSystemBacklogCount,
   isFsrsActive,
   setFsrsActive,
-  fsrsDueWordIds
+  fsrsDueWordIds,
+  backfillKanjiFsrs,
+  ensureGrammarFsrs,
+  KANJI_FSRS,
+  migrateRecentDailyEasyReviews
 } from "./fsrs-store";
 
 let seq = 0;
@@ -89,6 +93,27 @@ describe("fsrs-store", () => {
     expect(w3.lastReview.slice(0, 10)).toBe("2026-07-05");
   });
 
+  it("迁移最近 8 个学习日的首答认识,保留历史作答时间", () => {
+    testDb.run("DELETE FROM reviews WHERE word_id IN (4, 5)");
+    testDb.run(`UPDATE progress SET known_forever=0, seen_count=0,
+      fsrs_stability=NULL, fsrs_difficulty=NULL, fsrs_last_review=NULL, fsrs_due=NULL,
+      fsrs_state=NULL, fsrs_steps=NULL, fsrs_reps=NULL, fsrs_lapses=NULL
+      WHERE word_id IN (4, 5)`);
+    seedReview(4, "know", "2026-07-28");
+    seedReview(4, "know", "2026-07-30");
+    seedReview(5, "fuzzy", "2026-07-28");
+    seedReview(5, "know", "2026-07-28");
+
+    const result = migrateRecentDailyEasyReviews(new Date("2026-08-02T12:00:00"), 8);
+    expect(result.migrated).toBe(true);
+    expect(result.words).toBe(1); // 词5 当天第一条是 fuzzy,不享受首答奖励
+
+    const repaired = readFsrsState(4)!;
+    expect(repaired.lastReview.slice(0, 10)).toBe("2026-07-30");
+    expect(new Date(repaired.due).getTime()).toBeGreaterThan(new Date("2026-08-02T12:00:00").getTime());
+    expect(migrateRecentDailyEasyReviews(new Date("2026-08-02T12:00:00"), 8).migrated).toBe(false);
+  });
+
   it("FSRS 到期数与现行积压数都能算,且量级合理", () => {
     const now = new Date("2026-07-23T04:00:00Z");
     const fsrsDue = fsrsDueCount(now);
@@ -103,6 +128,51 @@ describe("fsrs-store", () => {
     const after = readFsrsState(1)!;
     expect(after.stability).toBeLessThan(before.stability); // 忘了 → 稳定度下降
     expect(after.stability).toBeGreaterThan(0);             // 但没清零
+  });
+
+  describe("汉字接入 FSRS(一次性迁移)", () => {
+    beforeAll(() => {
+      testDb.run("DELETE FROM kanji_memory");
+      // 全对的:1 次 know。反复错的:1 对 + 2 忘。计数全 0 的:兜底按 1 次 know
+      testDb.run(`INSERT INTO kanji_memory (word_id, score, seen_count, right_count, fuzzy_count, forgot_count, last_seen_on)
+                  VALUES (1, 10, 1, 1, 0, 0, '2026-06-08'),
+                         (2, -5, 3, 1, 0, 2, '2026-06-08'),
+                         (3,  0, 1, 0, 0, 0, '2026-06-08')`);
+      backfillKanjiFsrs();
+    });
+
+    it("给 kanji_memory 建列并写入状态,不碰单词的 progress", () => {
+      const cols = (testDb.exec("PRAGMA table_info(kanji_memory)")[0]?.values ?? []).map((v) => String(v[1]));
+      expect(cols).toContain("fsrs_due");
+      expect(cols).toContain("fsrs_stability");
+      expect(readFsrsState(1, KANJI_FSRS)).not.toBeNull();
+      expect(readFsrsState(3, KANJI_FSRS)).not.toBeNull();
+    });
+
+    it("答错多的汉字稳定度低于全对的", () => {
+      const allRight = readFsrsState(1, KANJI_FSRS)!;
+      const lapsed = readFsrsState(2, KANJI_FSRS)!;
+      expect(lapsed.stability).toBeLessThan(allRight.stability);
+      // 注:重放全发生在同一场次的 learning steps 内,FSRS 只在 Review 态答错才记 lapse,
+      // 所以这里 lapses 为 0 是正确的,不该断言它 > 0。
+      expect(lapsed.difficulty).toBeGreaterThan(allRight.difficulty);
+    });
+
+    it("幂等:再跑一次不重复迁移", () => {
+      const before = readFsrsState(1, KANJI_FSRS)!;
+      expect(backfillKanjiFsrs().migrated).toBe(false);
+      expect(readFsrsState(1, KANJI_FSRS)!.due).toBe(before.due);
+    });
+  });
+
+  describe("语法接入 FSRS", () => {
+    it("只建列,没学过的语法点保持 New(无历史可回填)", () => {
+      ensureGrammarFsrs();
+      const cols = (testDb.exec("PRAGMA table_info(grammar_progress)")[0]?.values ?? []).map((v) => String(v[1]));
+      expect(cols).toContain("fsrs_due");
+      const scheduled = testDb.exec("SELECT COUNT(*) FROM grammar_progress WHERE fsrs_due IS NOT NULL")[0];
+      expect(Number(scheduled?.values[0][0] ?? 0)).toBe(0);
+    });
   });
 
   describe("P1 切换开关 + FSRS 选词", () => {
@@ -147,7 +217,7 @@ describe("fsrs-store", () => {
     });
 
     it("开关打开后,积压计数改用 FSRS 到期数", async () => {
-      const { reviewBacklogCount } = await import("./comeback");
+      const { reviewBacklogCount } = await import("./review-budget");
       setFsrsActive(false);
       const legacy = reviewBacklogCount();
       setFsrsActive(true);

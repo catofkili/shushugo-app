@@ -1,5 +1,4 @@
 import { getDailyWordGoal } from "../studyPreferences";
-import { currentComeback } from "../comeback";
 import { requeueGap } from "../scheduler/requeue";
 import { getState, setState } from "../study-core";
 
@@ -9,11 +8,7 @@ import { getState, setState } from "../study-core";
  * stage1 出题和提交答案都要用它,单独成模块避免两边互相 import 成环。
  */
 
-export const dailyNewQuota = () => {
-  // 回归模式期间暂停引入新词，先清积压
-  if (currentComeback()) return 0;
-  return getDailyWordGoal();
-};
+export const dailyNewQuota = () => getDailyWordGoal();
 
 export const getReviewQueue = (): { word_id: number; due_after: number }[] => {
   try {

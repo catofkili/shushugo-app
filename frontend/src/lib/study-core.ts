@@ -50,13 +50,11 @@ type GrammarSeedRow = [
   importance: number
 ];
 
-export const CRITICAL_SCORE = -20;
-export const DAILY_DECAY_FLOOR = -9;
 
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // Keep this aligned with the metadata already baked into public/nihongo.db so
 // a fresh install does not replay all 11k metadata updates on first launch.
-const JLPT_WORD_METADATA_VERSION = "2026-06-24-noun-suru-pos-fix";
+const JLPT_WORD_METADATA_VERSION = "2026-08-02-word-examples-rewrite";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
 const GRAMMAR_SEED_VERSION = "2026-07-14-grammar-rewrite";
@@ -86,47 +84,7 @@ export const ensureUserTables = () => {
   }
   db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
   db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
-  ensureLadderColumns();
   schemaReadyDbs.add(db);
-};
-
-// 连胜梯子迁移:progress 加 right_streak / auto_retired_on,并从历史复习记录
-// 回填连胜(尾部连续「当天首见即答对」的天数,封顶 5),让熟词立即享受长间隔。
-const ensureLadderColumns = () => {
-  const db = getDatabase();
-  const progressColumns = rowsFor("PRAGMA table_info(progress)").map((row) => String(row.name ?? ""));
-  if (!progressColumns.includes("right_streak")) {
-    db.run("ALTER TABLE progress ADD COLUMN right_streak INTEGER NOT NULL DEFAULT 0");
-  }
-  if (!progressColumns.includes("auto_retired_on")) {
-    db.run("ALTER TABLE progress ADD COLUMN auto_retired_on TEXT");
-  }
-  if (getState("ladder_migrated", "") === "1") return;
-
-  const rows = rowsFor(`
-    SELECT r.word_id, r.answer
-    FROM reviews r
-    JOIN (
-      SELECT word_id, reviewed_on, MIN(id) AS mid
-      FROM reviews
-      WHERE answer != 'known_forever'
-      GROUP BY word_id, reviewed_on
-    ) f ON f.mid = r.id
-    ORDER BY r.word_id ASC, r.reviewed_on ASC
-  `);
-  const trailing = new Map<number, number>();
-  for (const row of rows) {
-    const id = Number(row.word_id);
-    if (String(row.answer) === "know") {
-      trailing.set(id, Math.min((trailing.get(id) ?? 0) + 1, 5));
-    } else {
-      trailing.set(id, 0);
-    }
-  }
-  for (const [wordId, streak] of trailing) {
-    if (streak > 0) db.run("UPDATE progress SET right_streak = ? WHERE word_id = ?", [streak, wordId]);
-  }
-  setState("ladder_migrated", "1");
 };
 
 // 启动时(App 渲染前)调用一次,完成建表与所有种子数据迁移。
@@ -304,14 +262,18 @@ const nounSuruCorrections: [string, string][] = [
 
 const syncJlptWordMetadata = (jlptWordSeed: JlptWordSeedRow[]) => {
   const db = getDatabase();
+  const syncedKeys = new Set<string>();
   jlptWordSeed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel]) => {
+    const key = `${kanji}\u0000${kana}`;
+    if (syncedKeys.has(key)) return;
+    syncedKeys.add(key);
     db.run(`
       UPDATE words
       SET pos = ?,
           verb_type = ?,
           importance = MAX(importance, ?),
-          example_jp = COALESCE(NULLIF(example_jp, ''), ?),
-          example_meaning = COALESCE(NULLIF(example_meaning, ''), ?),
+          example_jp = ?,
+          example_meaning = ?,
           jlpt_level = COALESCE(jlpt_level, ?)
       WHERE kanji = ? AND kana = ?
     `, [pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, kanji, kana]);
@@ -341,6 +303,39 @@ const syncJlptWordMetadata = (jlptWordSeed: JlptWordSeedRow[]) => {
   setState("jlpt_word_metadata_version", JLPT_WORD_METADATA_VERSION);
 };
 
+/**
+ * 片假名词读音修正(2026-07-31)。
+ *
+ * 词库里有 199 条外来语/片假名词的读音被写成了平假名(エスカレーター 的读音写成
+ * えすかれーたー、瑞西(スイス)写成 すいす),卡片上显示的写法是错的。
+ *
+ * 出厂词库已经改好,但**老用户的本地库是安装时拷过去的,不会跟着变** —— 必须靠这个
+ * 迁移逐条更新。按「表记 + 旧读音」定位而不是 word_id:本地库可能来自导入或合并,
+ * id 不一定对得上。
+ *
+ * 读音是音频文件名和音高表的索引键的一部分,所以这一步跑完读音才能对上新音频。
+ */
+const KANA_READING_FIX_VERSION = "2026-07-31-katakana-readings";
+
+const ensureKatakanaReadings = async () => {
+  if (getState("kana_reading_fix_version", "") === KANA_READING_FIX_VERSION) return;
+  const payload = await import("../data/kana_reading_fixes.json");
+  const fixes = ((payload.default as { fixes: string[][] }).fixes ?? []) as string[][];
+  const db = getDatabase();
+  db.run("BEGIN TRANSACTION");
+  try {
+    fixes.forEach(([kanji, from, to]) => {
+      if (kanji && from && to) db.run("UPDATE words SET kana = ? WHERE kanji = ? AND kana = ?", [to, kanji, from]);
+    });
+    setState("kana_reading_fix_version", KANA_READING_FIX_VERSION);
+    db.run("COMMIT");
+    persistSoon(); // 不落盘的话版本号也不会留下,下次启动又跑一遍
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+};
+
 const ensureJlptWordMetadata = async () => {
   if (getState("jlpt_word_metadata_version", "") === JLPT_WORD_METADATA_VERSION) return;
   const jlptWordSeed = await loadJlptWordSeed();
@@ -357,6 +352,7 @@ const ensureJlptWordMetadata = async () => {
 };
 
 const ensureJlptWordSeed = async () => {
+  await ensureKatakanaReadings();
   if (getState("jlpt_seed_version", "") === JLPT_SEED_VERSION) {
     await ensureJlptWordMetadata();
     return;
@@ -420,9 +416,16 @@ export const randomBetween = (min: number, max: number) => {
   return min + Math.floor(Math.random() * (max - min + 1));
 };
 
-export const answerScore: Record<WordAnswer, number> = {
+/**
+ * 会话内计数器的增减量 —— **不是**记忆强度。
+ *
+ * 长期调度已完全交给 FSRS(stability/difficulty/due)。这张表只剩一个用途:
+ * stage2 反向阶段和汉字阶段的 temp_score(「这一轮答到 10 分算过」),
+ * 用来决定当前这一轮里还要不要再考一次,当天结束即失效。
+ */
+export const sessionScoreDelta: Record<WordAnswer, number> = {
   forgot: -10,
-  fuzzy: -5,
+  fuzzy: -2,
   know: 10,
   known_forever: 10
 };

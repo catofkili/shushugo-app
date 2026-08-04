@@ -137,7 +137,7 @@ export const stage2Stats = () => {
   };
 };
 
-export const pickStage2Next = (): WordCard | null => {
+export const pickStage2Next = (excludedIds: Set<number> = new Set()): WordCard | null => {
   const rows = rowsFor(`
     SELECT w.*, s.temp_score AS score, s.temp_score, s.seen_count, s.due_after, s.order_index, COALESCE(n.note, '') AS note
     FROM stage2_progress s
@@ -147,10 +147,11 @@ export const pickStage2Next = (): WordCard | null => {
       AND s.completed = 0
   `, [today()]);
 
-  const criticalPoolRow = pickDueCriticalPoolRow(rows);
+  const availableRows = rows.filter((row) => !excludedIds.has(Number(row.id)));
+  const criticalPoolRow = pickDueCriticalPoolRow(availableRows);
   if (criticalPoolRow) return rowObjectToCard(criticalPoolRow);
 
-  const dueRows = rows.filter((row) => row.due_after == null || Number(row.due_after) <= 0);
+  const dueRows = availableRows.filter((row) => row.due_after == null || Number(row.due_after) <= 0);
   if (dueRows.length) {
     dueRows.sort((left, right) => (
       Number(left.temp_score ?? 0) - Number(right.temp_score ?? 0)
@@ -159,12 +160,12 @@ export const pickStage2Next = (): WordCard | null => {
     ));
     return rowObjectToCard(dueRows[0]);
   }
-  if (!rows.length) return null;
-  rows.sort((left, right) => (
+  if (!availableRows.length) return null;
+  availableRows.sort((left, right) => (
     Number(left.due_after ?? 0) - Number(right.due_after ?? 0)
     || Number(left.order_index ?? 0) - Number(right.order_index ?? 0)
   ));
-  return rowObjectToCard(rows[0]);
+  return rowObjectToCard(availableRows[0]);
 };
 
 const dateGapDays = (lastSeenOn: SqlValue) => {
@@ -254,7 +255,7 @@ export const kanjiStats = () => {
   };
 };
 
-export const pickKanjiNext = (): WordCard | null => {
+export const pickKanjiNext = (excludedIds: Set<number> = new Set()): WordCard | null => {
   const rows = rowsFor(`
     SELECT
       w.*,
@@ -278,18 +279,19 @@ export const pickKanjiNext = (): WordCard | null => {
       AND k.completed = 0
   `, [today()]);
 
-  const criticalPoolRow = pickDueCriticalPoolRow(rows);
+  const availableRows = rows.filter((row) => !excludedIds.has(Number(row.id)));
+  const criticalPoolRow = pickDueCriticalPoolRow(availableRows);
   if (criticalPoolRow) return rowObjectToCard(criticalPoolRow);
 
-  const dueRows = rows.filter((row) => row.due_after == null || Number(row.due_after) <= 0);
+  const dueRows = availableRows.filter((row) => row.due_after == null || Number(row.due_after) <= 0);
   if (dueRows.length) {
     dueRows.sort((left, right) => kanjiPriority(right) - kanjiPriority(left) || Number(left.order_index ?? 0) - Number(right.order_index ?? 0));
     return rowObjectToCard(dueRows[0]);
   }
-  if (!rows.length) return null;
-  rows.sort((left, right) => (
+  if (!availableRows.length) return null;
+  availableRows.sort((left, right) => (
     Number(left.due_after ?? 0) - Number(right.due_after ?? 0)
     || Number(left.order_index ?? 0) - Number(right.order_index ?? 0)
   ));
-  return rowObjectToCard(rows[0]);
+  return rowObjectToCard(availableRows[0]);
 };

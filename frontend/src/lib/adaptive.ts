@@ -4,6 +4,7 @@
  */
 
 import { getDatabase } from './database';
+import { ensureFsrsColumns } from './fsrs-store';
 
 export interface UserMemoryProfile {
   memoryStrength: number;      // 记忆力指数 0.5 - 2.0
@@ -93,9 +94,12 @@ function calculateFirstTimeCorrectRate(): number {
  */
 function calculateRetentionRate7Days(): number {
   const db = getDatabase();
+  ensureFsrsColumns();
+  // 「还记得」= FSRS 给它排的下次到期还在未来(没被判定为该重刷了)。
+  // 旧口径用 score > 0,而 score 系统已随 FSRS 改造删除,分数不再更新。
   const result = db.exec(`
     SELECT
-      COUNT(CASE WHEN p.score > 0 THEN 1 END) AS retained,
+      COUNT(CASE WHEN p.fsrs_due IS NOT NULL AND p.fsrs_due > datetime('now') THEN 1 END) AS retained,
       COUNT(*) AS total
     FROM progress p
     WHERE p.last_seen_on = date('now', '-7 days')
@@ -111,15 +115,20 @@ function calculateRetentionRate7Days(): number {
 }
 
 /**
- * 计算平均需要复习几次才能掌握（score >= 10）
+ * 计算平均需要复习几次才能「掌握」。
+ * 掌握的口径跟 FSRS 走:下次间隔已经排到一周以外(记牢了才排得这么远),
+ * 不再看已废弃的 score >= 10。
  */
 function calculateAvgReviewsToMaster(): number {
   const db = getDatabase();
+  ensureFsrsColumns();
   const result = db.exec(`
     SELECT
       AVG(p.seen_count) AS avg_reviews
     FROM progress p
-    WHERE p.score >= 10
+    WHERE p.fsrs_due IS NOT NULL
+      AND p.fsrs_last_review IS NOT NULL
+      AND julianday(p.fsrs_due) - julianday(p.fsrs_last_review) >= 7
       AND p.seen_count > 0
   `);
 
@@ -217,57 +226,11 @@ export function updateMemoryProfileIfNeeded(): void {
   });
 }
 
-/**
- * 计算自适应衰减量（每天）
- *
- * @param importance 单词重要度 1-5
- * @param mistakeScore 错误率 0-1
- * @returns 衰减量（分数）
+/*
+ * 注:calculateAdaptiveDecay / calculateDefaultDecay 已随每日分数衰减引擎一起删除。
+ * 间隔现在完全由 FSRS 的 stability/difficulty 决定,不存在"每天扣多少分"这回事。
+ * 记忆画像保留下来只用于统计页展示。
  */
-export function calculateAdaptiveDecay(
-  importance: number,
-  mistakeScore: number
-): number {
-  const profile = getUserMemoryProfile();
-  const totalReviews = getTotalReviewCount();
-
-  // 如果复习次数不足100次，使用默认衰减
-  if (totalReviews < MIN_REVIEWS_FOR_ADAPTIVE) {
-    return calculateDefaultDecay(importance, mistakeScore);
-  }
-
-  // 基础衰减 1.0 分/天
-  const baseDecay = 1.0;
-
-  // 重要度调整 -0.2 到 +0.2
-  const importanceAdjust = (importance - 3) * 0.1;
-
-  // 错误率调整 0 到 +0.2
-  const mistakeAdjust = mistakeScore * 0.2;
-
-  // 记忆力调整 0.5 到 2.0
-  // 记忆力强 (2.0) -> 衰减快（需要更多挑战）
-  // 记忆力弱 (0.5) -> 衰减慢（需要更多巩固）
-  const memoryAdjust = profile.memoryStrength;
-
-  // 最终衰减 = 基础 * 记忆力系数 + 重要度 + 错误率
-  const finalDecay = baseDecay * memoryAdjust + importanceAdjust + mistakeAdjust;
-
-  // 限制在 0.5-2.0 范围
-  return Math.max(0.5, Math.min(2.0, finalDecay));
-}
-
-/**
- * 默认衰减算法（用于新用户）
- */
-function calculateDefaultDecay(importance: number, mistakeScore: number): number {
-  const baseDecay = 1.0;
-  const importanceAdjust = (importance - 3) * 0.1;
-  const mistakeAdjust = mistakeScore * 0.2;
-
-  const finalDecay = baseDecay + importanceAdjust + mistakeAdjust;
-  return Math.max(0.8, Math.min(1.2, finalDecay));
-}
 
 /**
  * 获取用户学习能力评级（用于显示）

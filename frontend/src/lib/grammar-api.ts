@@ -1,10 +1,9 @@
 import { getDatabase } from "./database";
 import { notifyProgressUpdated } from "./progress-events";
+import { recordFsrsReview, GRAMMAR_FSRS } from "./fsrs-store";
+import { isGraduatedForDay, LEECH_LAPSE_THRESHOLD } from "./fsrs-scheduler";
 import {
   answerLabel,
-  answerScore,
-  CRITICAL_SCORE,
-  DAILY_DECAY_FLOOR,
   DbRow,
   ensureUserTables,
   firstRow,
@@ -14,6 +13,7 @@ import {
   randomBetween,
   rowsFor,
   SqlValue,
+  studyDayEnd,
   today
 } from "./study-core";
 import type {
@@ -73,21 +73,6 @@ const scheduleGrammarReview = (grammarId: number) => {
   setGrammarQueue(queue);
 };
 
-const grammarMistakeScore = (row: DbRow) => {
-  const wrongish = Number(row.forgot_count ?? 0) * 2 + Number(row.fuzzy_count ?? 0);
-  const total = wrongish + Number(row.right_count ?? 0);
-  if (total === 0) return 0;
-  return Math.min(wrongish / total + Math.min(Number(row.mistake_streak ?? 0) * 0.08, 0.32), 1);
-};
-
-const grammarDecayTenths = (row: DbRow) => {
-  let decay = 10 + Number(row.importance ?? 3) - 3 + Math.round(grammarMistakeScore(row) * 2);
-  if (Number(row.right_count ?? 0) >= Number(row.forgot_count ?? 0) + Number(row.fuzzy_count ?? 0) + 3) {
-    decay -= 1;
-  }
-  return Math.min(Math.max(decay, 8), 12);
-};
-
 const kanjiPattern = /[\u3400-\u9fff々〇]/;
 const kanaPattern = /[\u3040-\u30ffー]/;
 const parenPattern = /（[^（）]*）|\([^()]*\)/g;
@@ -110,32 +95,6 @@ const cleanGrammarTitle = (pattern: string, prompt: string): string => {
   const cleaned = stripChineseParens(base);
   if (/^N[1-5]\s*文法\s*\d+$/.test(cleaned)) return "请回忆对应语法";
   return cleaned || pattern;
-};
-
-export const applyGrammarDailyDecay = () => {
-  const day = today();
-  const lastDecay = grammarState("last_decay", "");
-  if (!lastDecay) {
-    setGrammarState("last_decay", day);
-    return;
-  }
-  if (lastDecay === day) return;
-  rowsFor(`
-    SELECT g.importance, p.*
-    FROM grammar_progress p
-    JOIN grammar_points g ON g.id = p.grammar_id
-    WHERE p.known_forever = 0 AND p.seen_count > 0
-  `).forEach((row) => {
-    const decay = grammarDecayTenths(row);
-    getDatabase().run(`
-      UPDATE grammar_progress
-      SET score = MAX(score - ?, ?),
-          mastered_on = NULL,
-          last_decay_amount = ?
-      WHERE grammar_id = ?
-    `, [decay / 10, DAILY_DECAY_FLOOR, decay, Number(row.grammar_id)]);
-  });
-  setGrammarState("last_decay", day);
 };
 
 const grammarCard = (row: DbRow): GrammarStudyCard => ({
@@ -164,7 +123,6 @@ const grammarLevelClause = (level?: string) => {
 
 const pickGrammarNext = (level?: string): GrammarStudyCard | null => {
   ensureGrammarProgressInitialized();
-  applyGrammarDailyDecay();
   const day = today();
   const levelFilter = grammarLevelClause(level);
   const dueIds = getGrammarQueue().filter((item) => item.due_after <= 0).map((item) => item.grammar_id);
@@ -179,7 +137,7 @@ const pickGrammarNext = (level?: string): GrammarStudyCard | null => {
         AND p.known_forever = 0
         AND (p.mastered_on IS NULL OR p.mastered_on != ?)
         ${levelFilter.clause}
-      ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC
+      ORDER BY p.fsrs_due ASC, p.fsrs_lapses DESC
       LIMIT 1
     `, [...dueIds, day, ...levelFilter.params]);
     if (due) return grammarCard(due);
@@ -192,12 +150,12 @@ const pickGrammarNext = (level?: string): GrammarStudyCard | null => {
     JOIN grammar_progress p ON p.grammar_id = g.id
     WHERE p.known_forever = 0
       AND p.seen_count > 0
-      AND p.score <= ?
+      AND COALESCE(p.fsrs_lapses, 0) >= ?
       AND (p.mastered_on IS NULL OR p.mastered_on != ?)
       ${levelFilter.clause}
-    ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC, g.importance DESC
+    ORDER BY p.fsrs_lapses DESC, p.fsrs_due ASC, g.importance DESC
     LIMIT 1
-  `, [CRITICAL_SCORE, day, ...levelFilter.params]);
+  `, [LEECH_LAPSE_THRESHOLD, day, ...levelFilter.params]);
   if (critical) return grammarCard(critical);
 
   const low = firstRow(`
@@ -207,12 +165,12 @@ const pickGrammarNext = (level?: string): GrammarStudyCard | null => {
     JOIN grammar_progress p ON p.grammar_id = g.id
     WHERE p.known_forever = 0
       AND p.seen_count > 0
-      AND p.score <= 6
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
       AND (p.mastered_on IS NULL OR p.mastered_on != ?)
       ${levelFilter.clause}
-    ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC, g.importance DESC
+    ORDER BY p.fsrs_due ASC, p.fsrs_lapses DESC, g.importance DESC
     LIMIT 1
-  `, [day, ...levelFilter.params]);
+  `, [studyDayEnd().toISOString(), day, ...levelFilter.params]);
   if (low) return grammarCard(low);
 
   const unseen = firstRow(`
@@ -238,18 +196,17 @@ const pickGrammarNext = (level?: string): GrammarStudyCard | null => {
 
 export function getGrammarStats(): GrammarStudyStats {
   ensureGrammarProgressInitialized();
-  applyGrammarDailyDecay();
   const day = today();
   const row = firstRow(`
     SELECT
       COUNT(*) AS total,
       SUM(CASE WHEN p.known_forever = 1 THEN 1 ELSE 0 END) AS known_forever,
       SUM(CASE WHEN p.seen_count = 0 AND p.known_forever = 0 THEN 1 ELSE 0 END) AS unseen,
-      SUM(CASE WHEN p.seen_count > 0 AND p.known_forever = 0 AND p.score <= 6 THEN 1 ELSE 0 END) AS low_count,
+      SUM(CASE WHEN p.seen_count > 0 AND p.known_forever = 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low_count,
       SUM(CASE WHEN p.mastered_on = ? THEN 1 ELSE 0 END) AS mastered_today
     FROM grammar_points g
     JOIN grammar_progress p ON p.grammar_id = g.id
-  `, [day]);
+  `, [studyDayEnd().toISOString(), day]);
   const total = Number(row?.total ?? 0);
   const knownForever = Number(row?.known_forever ?? 0);
   const unseen = Number(row?.unseen ?? 0);
@@ -307,14 +264,13 @@ export function getGrammarSession(level?: string): GrammarStudySession {
 
 export function submitGrammarAnswer(grammarId: number, answer: StudyAnswer, level?: string): GrammarStudySession {
   ensureGrammarProgressInitialized();
-  applyGrammarDailyDecay();
   const db = getDatabase();
   const day = today();
   const progress = firstRow("SELECT * FROM grammar_progress WHERE grammar_id = ?", [grammarId]);
   if (!progress) return getGrammarSession(level);
 
   advanceGrammarQueue(grammarId);
-  let score = Number(progress.score ?? 0);
+  // 间隔全部由 FSRS 决定,这里只留纯统计计数 + 会话内的 mistake_streak
   let knownForever = Number(progress.known_forever ?? 0);
   let rightCount = Number(progress.right_count ?? 0);
   let fuzzyCount = Number(progress.fuzzy_count ?? 0);
@@ -325,37 +281,36 @@ export function submitGrammarAnswer(grammarId: number, answer: StudyAnswer, leve
     knownForever = 1;
     mistakeStreak = 0;
   } else {
-    score = Math.max(score + answerScore[answer], -40);
     rightCount += answer === "know" ? 1 : 0;
     fuzzyCount += answer === "fuzzy" ? 1 : 0;
     forgotCount += answer === "forgot" ? 1 : 0;
     mistakeStreak = answer === "know" ? 0 : mistakeStreak + 1;
   }
-
-  let lowHistory = Number(progress.low_history ?? 0);
-  if (score <= CRITICAL_SCORE) lowHistory = 1;
-  const masteredOn = score >= 10 && !knownForever ? day : null;
-  if (score <= 6 && !knownForever) scheduleGrammarReview(grammarId);
+  // 语法的长期记忆调度交给 FSRS,与单词/汉字同一套算法。
+  // 「今天还要不要再出」= 是否毕业(下次到期排到本学习日结束之后),不再看分数。
+  const nextState = answer === "known_forever"
+    ? null
+    : recordFsrsReview(grammarId, answer, new Date(), {}, GRAMMAR_FSRS);
+  const graduatedToday = knownForever === 1 || (nextState ? isGraduatedForDay(nextState, studyDayEnd()) : false);
+  if (!graduatedToday) scheduleGrammarReview(grammarId);
 
   db.run(`
     UPDATE grammar_progress
-    SET score = ?,
-        seen_count = seen_count + 1,
-        low_history = ?,
+    SET seen_count = seen_count + 1,
         known_forever = ?,
-        mastered_on = ?,
         last_seen_on = ?,
         right_count = ?,
         fuzzy_count = ?,
         forgot_count = ?,
         mistake_streak = ?
     WHERE grammar_id = ?
-  `, [score, lowHistory, knownForever, masteredOn, day, rightCount, fuzzyCount, forgotCount, mistakeStreak, grammarId]);
+  `, [knownForever, day, rightCount, fuzzyCount, forgotCount, mistakeStreak, grammarId]);
+  // score_after 是 score 系统留下的历史列(NOT NULL),写 0 占位
   db.run(
-    "INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on) VALUES (?, ?, ?, ?)",
-    [grammarId, answer, score, day]
+    "INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on) VALUES (?, ?, 0, ?)",
+    [grammarId, answer, day]
   );
-  recordGrammarMistakeState(grammarId, answer, score);
+  recordGrammarMistakeState(grammarId, answer, 0);
   persistSoon();
   notifyProgressUpdated();
   return getGrammarSession(level);

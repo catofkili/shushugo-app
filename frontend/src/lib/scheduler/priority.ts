@@ -3,8 +3,23 @@
  */
 
 import { DbRow, daysSince } from "../database/db-utils";
+import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
 
-const CRITICAL_SCORE = -20;
+/** 过期天数换算成优先级分的系数(封顶,避免陈年老账压过一切) */
+const OVERDUE_WEIGHT = 6;
+const OVERDUE_CAP = 60;
+/** 学习/重学中的词:当天必须刷到毕业,排在「已见但从未调度」之上 */
+const RELEARNING_PRIORITY = 55;
+/** 已见过但还没进入 FSRS 调度的词 */
+const UNSCHEDULED_PRIORITY = 50;
+
+/** 距今过期了多少天(未到期为 0) */
+const overdueDays = (due: unknown, now: number): number => {
+  if (due == null) return 0;
+  const t = new Date(String(due)).getTime();
+  if (!Number.isFinite(t)) return 0;
+  return Math.max((now - t) / 86_400_000, 0);
+};
 
 /**
  * 新词按当天尚未完成的比例随机穿插进旧词中。首张永远是旧词；
@@ -32,12 +47,15 @@ export function priorityComponents(
   newQuotaLeft: number
 ): Record<string, number> {
   const isNew = Number(row.seen_count ?? 0) === 0;
-  const score = Number(row.score ?? 0);
+  const lapses = Number(row.fsrs_lapses ?? 0);
+  const now = Date.now();
   const components: Record<string, number> = {
+    // 「有多该复习」不再看 score,而看 FSRS 排的 due 过期了多久
     score: 0,
     critical: 0,
     importance: Number(row.importance ?? 3) * 7,
-    mistake: Number(row.forgot_count ?? 0) * 14 + Number(row.fuzzy_count ?? 0) * 7 + Number(row.mistake_streak ?? 0) * 12 - Number(row.right_count ?? 0) * 3,
+    // 错误史统一用 FSRS 的 lapses,不再叠加 forgot/fuzzy/mistake_streak 三个旧计数
+    mistake: lapses * 10,
     queue: 0,
     age: Math.min(daysSince(row.last_seen_on) * 3, 30),
     review: isNew ? 0 : 35,
@@ -51,10 +69,21 @@ export function priorityComponents(
     components.shuffle = Number(row.shuffle_rank ?? 0) * 18;
     components.importance = Number(row.importance ?? 3) * 4;
   } else {
-    components.score = Math.max((10 - score) * 5, 0);
+    // 学习/重学中(FSRS state 1/3)= 今天答错过、必须当天刷到毕业。
+    // 它的 due 被排在几分钟后、不算「过期」,若只看过期天数会拿 0 分,
+    // 被一堆 fsrs_due 为空的词压死 —— 表现为「点了不认识,这个词再也不回来了」。
+    // 所以给它一个高于「未调度」的固定档位,具体什么时候回来仍由 queue 组件(隔几张)控制。
+    const state = Number(row.fsrs_state ?? 0);
+    const inLearning = state === 1 || state === 3;
+    components.score = inLearning
+      ? RELEARNING_PRIORITY
+      : row.fsrs_due == null
+        ? UNSCHEDULED_PRIORITY
+        : Math.min(overdueDays(row.fsrs_due, now) * OVERDUE_WEIGHT, OVERDUE_CAP);
   }
 
-  if (score <= CRITICAL_SCORE) {
+  // 顽固词(leech)优先,与 Anki 同口径:累计在 Review 态答错 >= 8 次
+  if (lapses >= LEECH_LAPSE_THRESHOLD) {
     components.critical = 120 + Math.max(criticalCount - 3, 0) * 80;
   } else if (criticalCount > 3) {
     components.critical = -1000;
@@ -89,12 +118,12 @@ export function criticalPoolSize(count: number): number {
  * 从 Stage1 任务中选择临界词池中的一个
  */
 export function pickStage1CriticalPoolRow(rows: DbRow[], queueById: Map<number, number>): DbRow | null {
-  const hasFloorWord = rows.some((row) => Number(row.score ?? 0) <= -40);
-  if (!hasFloorWord) return null;
+  // 顽固词池:成员和开池条件都用 FSRS 的 lapses(和 Anki leech 同口径),
+  // 取代旧的 score <= -20 / 触底 -40 两档。lapses 越多越靠前。
   const criticalRows = rows
-    .filter((row) => Number(row.score ?? 0) <= CRITICAL_SCORE)
+    .filter((row) => Number(row.fsrs_lapses ?? 0) >= LEECH_LAPSE_THRESHOLD)
     .sort((left, right) => (
-      Number(left.score ?? 0) - Number(right.score ?? 0)
+      Number(right.fsrs_lapses ?? 0) - Number(left.fsrs_lapses ?? 0)
       || Number(left.today_seen_count ?? 0) - Number(right.today_seen_count ?? 0)
       || Number(left.order_index ?? 0) - Number(right.order_index ?? 0)
     ));
@@ -107,19 +136,23 @@ export function pickStage1CriticalPoolRow(rows: DbRow[], queueById: Map<number, 
   return duePool.sort((left, right) => (
     (queueById.get(Number(left.id)) ?? 0) - (queueById.get(Number(right.id)) ?? 0)
     || Number(left.today_seen_count ?? 0) - Number(right.today_seen_count ?? 0)
-    || Number(left.score ?? 0) - Number(right.score ?? 0)
+    || Number(right.fsrs_lapses ?? 0) - Number(left.fsrs_lapses ?? 0)
     || Number(left.order_index ?? 0) - Number(right.order_index ?? 0)
   ))[0] ?? null;
 }
 
 /**
- * 从任意列表中选择临界词池中的一个（用于 Stage2/Kanji）
+ * 从任意列表中选择临界词池中的一个（用于 Stage2/Kanji）。
+ * 注意:这里的 score 是 stage2_progress / kanji_progress 的 temp_score,
+ * 即「这一轮答到 10 分算过」的会话计数器,不是长期记忆分数,不随 FSRS 改造改动。
  */
+const TEMP_SCORE_CRITICAL = -20;
+
 export function pickDueCriticalPoolRow(rows: DbRow[], scoreKey = "score"): DbRow | null {
   const hasFloorWord = rows.some((row) => Number(row[scoreKey] ?? 0) <= -40);
   if (!hasFloorWord) return null;
   const criticalRows = rows
-    .filter((row) => Number(row[scoreKey] ?? 0) <= CRITICAL_SCORE)
+    .filter((row) => Number(row[scoreKey] ?? 0) <= TEMP_SCORE_CRITICAL)
     .sort((left, right) => (
       Number(left[scoreKey] ?? 0) - Number(right[scoreKey] ?? 0)
       || Number(left.today_seen_count ?? left.seen_count ?? 0) - Number(right.today_seen_count ?? right.seen_count ?? 0)

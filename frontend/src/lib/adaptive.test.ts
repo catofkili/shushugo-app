@@ -7,7 +7,7 @@ vi.mock("./database", () => ({
   getDatabase: () => db
 }));
 
-const { calculateAdaptiveDecay, getMemoryStrengthLabel, getUserMemoryProfile, updateMemoryProfileIfNeeded } =
+const { getMemoryStrengthLabel, getUserMemoryProfile, updateMemoryProfileIfNeeded } =
   await import("./adaptive");
 
 const insertReviews = (count: number) => {
@@ -32,12 +32,21 @@ beforeEach(() => {
     answer TEXT NOT NULL,
     reviewed_on TEXT NOT NULL
   )`);
+  // 保持率现在读 FSRS 的 fsrs_due,合成表要跟真实 schema 一致
   db.run(`CREATE TABLE progress (
     word_id INTEGER PRIMARY KEY,
     score REAL NOT NULL DEFAULT 0,
     seen_count INTEGER NOT NULL DEFAULT 0,
     known_forever INTEGER NOT NULL DEFAULT 0,
-    last_seen_on TEXT
+    last_seen_on TEXT,
+    fsrs_stability REAL,
+    fsrs_difficulty REAL,
+    fsrs_due TEXT,
+    fsrs_last_review TEXT,
+    fsrs_state INTEGER,
+    fsrs_steps INTEGER,
+    fsrs_reps INTEGER,
+    fsrs_lapses INTEGER
   )`);
 });
 
@@ -54,47 +63,6 @@ describe("getUserMemoryProfile", () => {
   });
 });
 
-describe("calculateAdaptiveDecay", () => {
-  it("uses the conservative default curve before 100 reviews", () => {
-    // 默认曲线:基础 1.0 + 重要度 ±0.1/档 + 错误率 0.2,夹在 0.8-1.2
-    expect(calculateAdaptiveDecay(3, 0)).toBe(1.0);
-    expect(calculateAdaptiveDecay(5, 1)).toBeCloseTo(1.2);
-    expect(calculateAdaptiveDecay(1, 0)).toBeCloseTo(0.8);
-  });
-
-  it("scales decay by memory strength once adaptive kicks in", () => {
-    insertReviews(120);
-    db.run("INSERT INTO app_state (key, value) VALUES ('user_memory_profile', ?)", [
-      JSON.stringify({
-        memoryStrength: 2.0,
-        firstTimeCorrectRate: 0.9,
-        retentionRate7Days: 0.9,
-        avgReviewsToMaster: 4,
-        totalReviews: 120,
-        lastUpdated: new Date().toISOString()
-      })
-    ]);
-    // 2.0 * 1.0 + 0 + 0 = 2.0(上限)
-    expect(calculateAdaptiveDecay(3, 0)).toBe(2.0);
-  });
-
-  it("never leaves the 0.5-2.0 band", () => {
-    insertReviews(120);
-    db.run("INSERT INTO app_state (key, value) VALUES ('user_memory_profile', ?)", [
-      JSON.stringify({
-        memoryStrength: 0.5,
-        firstTimeCorrectRate: 0.1,
-        retentionRate7Days: 0.1,
-        avgReviewsToMaster: 20,
-        totalReviews: 120,
-        lastUpdated: new Date().toISOString()
-      })
-    ]);
-    expect(calculateAdaptiveDecay(1, 0)).toBeGreaterThanOrEqual(0.5);
-    expect(calculateAdaptiveDecay(5, 1)).toBeLessThanOrEqual(2.0);
-  });
-});
-
 describe("updateMemoryProfileIfNeeded", () => {
   it("does nothing below the 100-review threshold", () => {
     insertReviews(50);
@@ -104,7 +72,10 @@ describe("updateMemoryProfileIfNeeded", () => {
 
   it("computes and stores a profile once enough reviews accumulate", () => {
     insertReviews(150);
-    db.run("INSERT INTO progress (word_id, score, seen_count) VALUES (1, 12, 4), (2, 15, 6)");
+    // 「已掌握」= FSRS 排的间隔 >= 7 天(不再看 score)。两个词分别复习了 4 次和 6 次 → 均值 5
+    db.run(`INSERT INTO progress (word_id, seen_count, fsrs_last_review, fsrs_due)
+            VALUES (1, 4, '2026-07-01T00:00:00Z', '2026-07-20T00:00:00Z'),
+                   (2, 6, '2026-07-01T00:00:00Z', '2026-08-01T00:00:00Z')`);
     updateMemoryProfileIfNeeded();
     const profile = getUserMemoryProfile();
     expect(profile.totalReviews).toBe(150);

@@ -5,8 +5,7 @@ import { rowObjectToCard } from "./models/word-card";
 import { notifyProgressUpdated } from "./progress-events";
 import { requeueGap, STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
 import {
-  answerScore,
-  CRITICAL_SCORE,
+  sessionScoreDelta,
   firstRow,
   firstValue,
   getState,
@@ -17,16 +16,20 @@ import {
   today
 } from "./study-core";
 import type { WordSessionOptions } from "./study-types";
-import { nextRightStreak, SCORE_CAP, shouldAutoRetire } from "./streak-ladder";
+import { encoreChunkSize, recordEncore } from "./review-budget";
 import {
-  encoreChunkSize,
-  markComebackAnnouncedOn,
-  recordEncore,
-  retuneComebackMode
-} from "./comeback";
-import type { ComebackMode } from "./comeback";
-import { recordFsrsReview, isFsrsActive } from "./fsrs-store";
-import { isGraduatedForDay, STUBBORN_DAILY_MISTAKES } from "./fsrs-scheduler";
+  recordFsrsReview,
+  isFsrsActive,
+  readFsrsState,
+  restoreFsrsState,
+  KANJI_FSRS
+} from "./fsrs-store";
+import {
+  isGraduatedForDay,
+  LEECH_LAPSE_THRESHOLD,
+  STUBBORN_DAILY_MISTAKES,
+  type FsrsState
+} from "./fsrs-scheduler";
 import {
   advanceReviewQueue,
   getReviewQueue,
@@ -37,6 +40,7 @@ import {
 import { ensureProgressInitialized } from "./word-api/bootstrap";
 import { getWordStats } from "./word-api/stats";
 import { hasWordFilter, wordFilterSql } from "./word-api/filters";
+import { pickMistakeNext } from "./word-api/mistakes";
 import {
   advanceKanjiQueue,
   advanceStage2Queue,
@@ -137,7 +141,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
       WHERE w.id IN (${placeholders})
         AND p.known_forever = 0
         ${filter.clause}
-      ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC, w.importance DESC
+      ORDER BY p.fsrs_due ASC, p.fsrs_lapses DESC, w.importance DESC
       LIMIT 1
     `, [...dueIds, ...filter.params]);
     if (due) return rowObjectToCard(due);
@@ -152,11 +156,11 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
     LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE p.known_forever = 0
       AND p.seen_count > 0
-      AND p.score <= ?
+      AND COALESCE(p.fsrs_lapses, 0) >= ?
       ${filter.clause}
-    ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC, w.importance DESC
+    ORDER BY p.fsrs_lapses DESC, p.fsrs_due ASC, w.importance DESC
     LIMIT 1
-  `, [CRITICAL_SCORE, ...filter.params]);
+  `, [LEECH_LAPSE_THRESHOLD, ...filter.params]);
   if (critical) return rowObjectToCard(critical);
 
   const low = firstRow(`
@@ -168,11 +172,11 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
     LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE p.known_forever = 0
       AND p.seen_count > 0
-      AND p.score <= 6
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
       ${filter.clause}
-    ORDER BY p.score ASC, p.forgot_count DESC, p.fuzzy_count DESC, w.importance DESC
+    ORDER BY p.fsrs_due ASC, p.fsrs_lapses DESC, w.importance DESC
     LIMIT 1
-  `, filter.params);
+  `, [studyDayEnd().toISOString(), ...filter.params]);
   if (low) return rowObjectToCard(low);
 
   const unseen = firstRow(`
@@ -200,14 +204,38 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
     LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE p.known_forever = 0
       ${filter.clause}
-    ORDER BY p.score ASC, p.last_seen_on ASC, w.importance DESC, w.shuffle_rank DESC
+    ORDER BY p.fsrs_due ASC, p.last_seen_on ASC, w.importance DESC, w.shuffle_rank DESC
     LIMIT 1
   `, filter.params);
   return review ? rowObjectToCard(review) : null;
 };
 
-const setCurrentCard = (card: WordCard | null): void => {
+const setCurrentCard = (card: Pick<WordCard, "id"> | null): void => {
   setState("current_card", card && card.id != null ? String(card.id) : "0");
+};
+
+const wordCardById = (wordId: number): WordCard | null => {
+  const row = firstRow(`
+    SELECT
+      w.*,
+      p.score,
+      p.seen_count,
+      p.low_history,
+      p.known_forever,
+      p.mastered_on,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      p.last_decay_amount,
+      COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE w.id = ?
+  `, [wordId]);
+  return row ? rowObjectToCard(row) : null;
 };
 
 // Claim the served card. Returns true if `wordId` is the card we are currently
@@ -231,6 +259,9 @@ const nextCard = (options: WordSessionOptions = {}): { card: WordCard | null; ph
 };
 
 const resolveNextCard = (options: WordSessionOptions = {}): { card: WordCard | null; phase: string } => {
+  if (options.focus === "mistakes") {
+    return { card: pickMistakeNext(), phase: "mistakes" };
+  }
   if (hasWordFilter(options)) {
     return { card: pickFilteredWordNext(options), phase: "filtered" };
   }
@@ -283,6 +314,8 @@ export function refreshTodayWordPlan(): WordStats {
   if (phase === "stage1" && stage1.completed < stage1.total) {
     getDatabase().run("DELETE FROM stage1_tasks WHERE reviewed_on = ?", [day]);
     createStage1Tasks(day);
+    // 重排完必须落盘:否则改完设置直接关掉 app,下次启动又读回旧计划
+    persistSoon();
   }
   notifyProgressUpdated();
   return getWordStats(currentPhase());
@@ -293,36 +326,40 @@ export function completeTodayWordPlan(): { stats: WordStats; completedCount: num
   const day = today();
   ensureStage1Tasks();
   const rows = rowsFor(`
-    SELECT t.word_id, p.score
+    SELECT t.word_id
     FROM stage1_tasks t
     JOIN progress p ON p.word_id = t.word_id
     WHERE t.reviewed_on = ?
       AND p.known_forever = 0
-      AND p.score <= 6
-  `, [day]);
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+  `, [day, studyDayEnd().toISOString()]);
   const ids = rows.map((row) => Number(row.word_id)).filter((id) => Number.isFinite(id));
 
   if (ids.length) {
     const placeholders = ids.map(() => "?").join(",");
-    // 与 answerWord 的「首见答对」同规则:+15 封顶 20、非深坑词连胜 +1;
-    // 但一键完成是快捷通道,不参与自动退休(退休只能靠真实作答攒出来)。
-    // MAX(…, 10) 保证深坑词也算完成今日任务,维持本函数「清空今日计划」的契约。
+    // 一键完成 = 给每个词记一次「认识」,让 FSRS 正常排下一次到期,
+    // 这样今日计划清空后不会留下一批没有 due 的词。
+    const now = new Date();
+    ids.forEach((wordId) => {
+      try {
+        recordFsrsReview(wordId, "know", now);
+      } catch (err) {
+        console.warn("[fsrs] 一键完成记录跳过:", err);
+      }
+    });
     getDatabase().run(`
       UPDATE progress
-      SET score = MIN(MAX(score + 15, 10), ${SCORE_CAP}),
-          right_streak = CASE WHEN score >= 0 THEN right_streak + 1 ELSE right_streak END,
-          seen_count = seen_count + 1,
-          mastered_on = COALESCE(mastered_on, ?),
+      SET seen_count = seen_count + 1,
           last_seen_on = ?,
           right_count = right_count + 1,
           mistake_streak = 0
       WHERE word_id IN (${placeholders})
         AND known_forever = 0
-    `, [day, day, ...ids]);
+    `, [day, ...ids]);
 
     getDatabase().run(`
       INSERT INTO reviews (word_id, answer, score_after, reviewed_on)
-      SELECT t.word_id, 'know', 10, ?
+      SELECT t.word_id, 'know', 0, ?
       FROM stage1_tasks t
       WHERE t.reviewed_on = ?
         AND t.word_id IN (${placeholders})
@@ -366,30 +403,11 @@ export function markTodayWordCheckin(): WordStats {
   return getWordStats(currentPhase());
 }
 
-export function markComebackAnnounced(): WordStats {
-  ensureProgressInitialized();
-  markComebackAnnouncedOn(today());
-  persistSoon();
-  return getWordStats(currentPhase());
-}
-
-/**
- * 回归进行中当场切换节奏（欢迎卡上的 🌱/⚡）：重算 planDays，
- * 并按新档位重建当天复习任务（未完成时才重建，避免丢已答进度）。
- */
-export function setComebackModeForToday(mode: ComebackMode): WordStats {
-  ensureProgressInitialized();
-  retuneComebackMode(mode);
-  const stats = refreshTodayWordPlan();
-  persistSoon();
-  return stats;
-}
-
 /**
  * 续杯：今日计划完成后，从积压里按遗忘风险再取一小批（递减批量）
  * 加入今日任务并回到 Stage1 继续学。
  */
-export function startComebackEncore(customSize?: number): WordSessionResponse {
+export function startEncore(customSize?: number): WordSessionResponse {
   ensureProgressInitialized();
   const day = today();
   ensureStage1Tasks();
@@ -411,16 +429,16 @@ export function startComebackEncore(customSize?: number): WordSessionResponse {
     JOIN words w ON w.id = p.word_id
     WHERE p.known_forever = 0
       AND p.seen_count > 0
-      AND p.score <= 6
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
       AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
     ORDER BY
-      p.score ASC,
-      p.low_history DESC,
+      p.fsrs_due ASC,
+      p.fsrs_lapses DESC,
       w.importance DESC,
       p.last_seen_on ASC,
       p.word_id ASC
     LIMIT ?
-  `, [day, size]);
+  `, [studyDayEnd().toISOString(), day, size]);
   reviewRows.forEach((row, index) => {
     db.run(`
       INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
@@ -473,6 +491,83 @@ export function getWordSession(options: WordSessionOptions = {}): WordSessionRes
   };
 }
 
+/**
+ * 从相似释义气泡传送到另一张词卡。当前词按“模糊”走一次正式调度，
+ * 但 UI 不播放评分反馈；随后把目标词声明为当前卡，下一次作答仍能被防重锁正确接收。
+ */
+export function jumpToSimilarWord(
+  currentWordId: number,
+  targetWordId: number,
+  options: WordSessionOptions = {}
+): WordSessionResponse {
+  ensureProgressInitialized();
+  if (!Number.isFinite(targetWordId) || targetWordId === currentWordId) {
+    throw new Error("相似词目标无效");
+  }
+  const targetCard = wordCardById(targetWordId);
+  if (!targetCard) throw new Error("找不到这个相似词");
+
+  const scored = submitWordAnswer(currentWordId, "fuzzy", options);
+  setCurrentCard(targetCard);
+  return {
+    card: targetCard,
+    phase: scored.phase,
+    stats: scored.stats
+  };
+}
+
+export interface QuickStudySessionResponse {
+  cards: WordCard[];
+  phase: string;
+  stats: WordStats;
+}
+
+/** 首页快速学习用的「只读取、不评分」批次。limit 只是懒加载单位，不是总量上限。 */
+export function getQuickStudySession(limit = 50, excludedWordIds: number[] = []): QuickStudySessionResponse {
+  ensureProgressInitialized();
+  const safeLimit = Math.max(1, Math.round(limit));
+  const phase = currentPhase();
+  const cards: WordCard[] = [];
+  const excludedIds = new Set(excludedWordIds.map((id) => Number(id)).filter((id) => Number.isFinite(id)));
+
+  if (phase === "kanji") buildKanjiProgressFromReviews();
+
+  const pickNext = () => {
+    if (phase === "stage1") return pickStage1Next(excludedIds);
+    if (phase === "stage2") return pickStage2Next(excludedIds);
+    if (phase === "kanji") return pickKanjiNext(excludedIds);
+    return null;
+  };
+
+  while (cards.length < safeLimit) {
+    const card = pickNext();
+    if (!card || excludedIds.has(card.id)) break;
+    cards.push(card);
+    excludedIds.add(card.id);
+  }
+
+  return { cards, phase, stats: getWordStats(phase) };
+}
+
+/** 按列表中的选择逐张走正式提交流程，实际算法仍由 submitWordAnswer 完成。 */
+export function submitQuickStudyBatch(
+  answers: { wordId: number; answer: WordAnswer }[],
+  phase: string
+): WordSessionResponse {
+  ensureProgressInitialized();
+  if (!answers.length) return getWordSession();
+
+  const safePhase = phase === "stage2" || phase === "kanji" ? phase : "stage1";
+  let result: WordSessionResponse | null = null;
+  answers.forEach(({ wordId, answer }, index) => {
+    setPhase(safePhase);
+    setCurrentCard({ id: wordId });
+    result = submitWordAnswer(wordId, answer);
+    if (index < answers.length - 1) setPhase(safePhase);
+  });
+  return result ?? getWordSession();
+}
+
 export function continueStage2Study(): WordSessionResponse {
   ensureProgressInitialized();
   const stage2 = stage2Stats();
@@ -505,7 +600,9 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   }
   const db = getDatabase();
   const studyDate = today();
-  const phase = currentPhase();
+  // 筛选学习和错题本都使用正式的 Stage1/FSRS 作答流程，但不能被常规计划当前正处于
+  // 反向或汉字阶段所劫持。它们只替换选词，不另建一套记忆。
+  const phase = hasWordFilter(options) ? "stage1" : currentPhase();
 
   if (phase === "stage2") {
     const current = firstRow("SELECT * FROM stage2_progress WHERE reviewed_on = ? AND word_id = ?", [studyDate, wordId]);
@@ -520,7 +617,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
       completed: Number(current.completed ?? 0),
       due_after: current.due_after
     };
-    const tempScore = Math.max(Number(current.temp_score ?? 0) + answerScore[answer], -40);
+    const tempScore = Math.max(Number(current.temp_score ?? 0) + sessionScoreDelta[answer], -40);
     const completed = tempScore >= 10 ? 1 : 0;
     const dueAfter = completed ? null : requeueGap(0);
     db.run(`
@@ -555,13 +652,17 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
       memory_fuzzy_count: Number(memory?.fuzzy_count ?? 0),
       memory_forgot_count: Number(memory?.forgot_count ?? 0),
       memory_low_history: Number(memory?.low_history ?? 0),
-      memory_last_seen_on: memory?.last_seen_on ?? null
+      memory_last_seen_on: memory?.last_seen_on ?? null,
+      // 撤销要能把 FSRS 状态原样放回去(null = 这次是它第一次进调度)
+      memory_fsrs: readFsrsState(wordId, KANJI_FSRS)
     };
-    const delta = answerScore[answer];
-    const tempScore = Math.max(Number(current.temp_score ?? 0) + delta, -40);
-    const memoryScore = Math.max(Number(memory?.score ?? 0) + delta, -40);
+    // temp_score 是「这一轮答到 10 分算过」的会话计数器,不是记忆算法,保留。
+    const tempScore = Math.max(Number(current.temp_score ?? 0) + sessionScoreDelta[answer], -40);
     const completed = tempScore >= 10 ? 1 : 0;
-    const lowHistory = memoryScore <= CRITICAL_SCORE || Number(memory?.low_history ?? 0) ? 1 : 0;
+    // kanji_memory 的 score / low_history 是 score 系统的遗留列,调度已交给 FSRS。
+    // 保持原值不动(不再参与任何判定),留着是为了老库导入/回看不炸。
+    const memoryScore = Number(memory?.score ?? 0);
+    const lowHistory = Number(memory?.low_history ?? 0);
     // 差词也不贴脸重复:短步间隔(3~8 张)已经够密,再短就是照着刚才的答案抄
     const dueAfter = completed ? null : requeueGap(0);
     db.run(`
@@ -593,6 +694,9 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
       lowHistory,
       studyDate
     ]);
+    // 必须在上面的 INSERT 之后:首次作答时 kanji_memory 还没有这一行,
+    // 早调用的话 FSRS 的 UPDATE 会落空,状态写不进去。
+    recordFsrsReview(wordId, answer, new Date(), {}, KANJI_FSRS);
     setState("last_answer", JSON.stringify(snapshot));
     import("./storage").then(({ scheduleSave }) => scheduleSave());
     notifyProgressUpdated();
@@ -603,64 +707,44 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   if (!progress) return getWordSession(options);
   const snapshot = {
     phase: "stage1",
+    response_phase: options.focus === "mistakes" ? "mistakes" : hasWordFilter(options) ? "filtered" : "stage1",
     word_id: wordId,
-    score: Number(progress.score ?? 0),
     seen_count: Number(progress.seen_count ?? 0),
-    low_history: Number(progress.low_history ?? 0),
     known_forever: Number(progress.known_forever ?? 0),
-    mastered_on: progress.mastered_on,
     last_seen_on: progress.last_seen_on,
     right_count: Number(progress.right_count ?? 0),
     fuzzy_count: Number(progress.fuzzy_count ?? 0),
     forgot_count: Number(progress.forgot_count ?? 0),
     mistake_streak: Number(progress.mistake_streak ?? 0),
-    right_streak: Number(progress.right_streak ?? 0),
-    auto_retired_on: progress.auto_retired_on ?? null,
+    // 撤销要能把 FSRS 状态原样放回去(null = 这次是它第一次进调度)
+    fsrs: readFsrsState(wordId),
     review_queue: getReviewQueue()
   };
 
   advanceReviewQueue(wordId);
-  const preScore = Number(progress.score ?? 0);
-  let score = preScore;
+  // 间隔和「有多熟」全部由 FSRS 的 stability/difficulty 决定,不再维护分数。
+  // 这里只留下几个纯统计计数(答对/模糊/忘记多少次),不参与任何调度判定。
   let knownForever = Number(progress.known_forever ?? 0);
   let rightCount = Number(progress.right_count ?? 0);
   let fuzzyCount = Number(progress.fuzzy_count ?? 0);
   let forgotCount = Number(progress.forgot_count ?? 0);
+  // mistake_streak 留下来当会话内计数器(连着答错几次 → 允许贴脸重复),
+  // 和 stage2/kanji 的 temp_score 一个性质,不参与任何长期记忆判定。
   let mistakeStreak = Number(progress.mistake_streak ?? 0);
-  let rightStreak = Number(progress.right_streak ?? 0);
-  let autoRetiredOn = progress.auto_retired_on == null ? null : String(progress.auto_retired_on);
 
   if (answer === "known_forever") {
     knownForever = 1;
     mistakeStreak = 0;
-    // 手动熟知 = 永久退休,不参与抽查
-    autoRetiredOn = null;
   } else {
-    // First "know" of the day on a word earns a +5 first-impression bonus
-    // (+15 instead of +10). Only the day's first sighting counts; fuzzy/forgot
-    // and later sightings are unchanged.
-    const firstSeenToday =
-      firstValue<number>("SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ?", [wordId, studyDate], 0) === 0;
-    const delta = answer === "know" && firstSeenToday ? 15 : answerScore[answer];
-    score = Math.min(Math.max(score + delta, -40), SCORE_CAP);
     rightCount += answer === "know" ? 1 : 0;
     fuzzyCount += answer === "fuzzy" ? 1 : 0;
     forgotCount += answer === "forgot" ? 1 : 0;
     mistakeStreak = answer === "know" ? 0 : mistakeStreak + 1;
-    rightStreak = nextRightStreak(rightStreak, answer, firstSeenToday, preScore);
   }
 
-  let lowHistory = Number(progress.low_history ?? 0);
-  if (score <= CRITICAL_SCORE) lowHistory = 1;
-  if (score <= CRITICAL_SCORE && !knownForever) {
-    db.run("INSERT OR IGNORE INTO critical_reviews (reviewed_on, word_id) VALUES (?, ?)", [studyDate, wordId]);
-  }
-  // 连胜攒满自动退休,进抽查池(known_forever + auto_retired_on 标记)
-  if (!knownForever && answer === "know" && shouldAutoRetire(rightStreak, score, lowHistory === 1)) {
-    knownForever = 1;
-    autoRetiredOn = studyDate;
-  }
-  const masteredOn = score >= 10 && !knownForever ? studyDate : null;
+  // 自动退休已由 FSRS 接管:间隔排到 180 天以外即视为掌握(isMastered),
+  // 不再需要「3 连胜 + score ≥ 15」这套计数器,也不再有每日抽查池。
+  // known_forever 只保留手动点「熟知」的语义。
 
   // FSRS 生效:每次作答都推进学习步骤,再据「是否毕业」决定当天要不要再出。
   // 未毕业(新词/答错,学习或重学中,due 只排到几分钟后)→ 塞回队列过几张再刷;
@@ -676,10 +760,16 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
       0
     ) + (answer === "forgot" || answer === "fuzzy" ? 1 : 0); // 本次作答还没入库,手动计上
   const stubbornWord = wrongToday >= STUBBORN_DAILY_MISTAKES;
-  // 新词第一次见到就点「认识」= 看答案之前就已经会了,这个词不需要软件帮着记。
-  // 跳过学习步骤直接毕业,当天不再出现(间隔照常由 FSRS 给:首次 Good = 2 天)。
-  const alreadyKnown = Number(progress.seen_count ?? 0) === 0 && answer === "know";
-  const stepMode = alreadyKnown ? "known" : stubbornWord ? "stubborn" : "normal";
+  // 当天第一次看到就点「认识」= 额外奖励一次:按 Easy 记,跳过短期学习步骤,
+  // 并把下次复习拉远。这个判据只看「今天是否已经答过这张卡」,不看 seen_count
+  // 或它以前是否进入过 FSRS,所以历史词也能享受当天首答奖励。
+  const firstSeenToday = firstValue<number>(
+    "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ?",
+    [wordId, studyDate],
+    0
+  ) === 0;
+  const firstKnowToday = firstSeenToday && answer === "know";
+  const stepMode = firstKnowToday ? "known" : stubbornWord ? "stubborn" : "normal";
 
   if (isFsrsActive() && !knownForever) {
     try {
@@ -691,7 +781,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
       fsrsGraduated = answer === "know"; // 兜底:认识当作过了
     }
   }
-  const notPassed = isFsrsActive() ? !fsrsGraduated : score <= 6;
+  const notPassed = !fsrsGraduated;
   // 顽固词(连着错到阈值)排 0 位当场接着刷 —— 难词就是要越出越密才攻得下来。
   // 这里的 mistakeStreak 已经按本次作答更新过:答对即归零,所以贴脸重复只发生在
   // 连着答错的阶段;一旦答对,下一次由学习步骤拉开(10 分→约 10 个词,30 分→约 20 个)。
@@ -702,24 +792,21 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
 
   db.run(`
     UPDATE progress
-    SET score = ?,
-        seen_count = seen_count + 1,
-        low_history = ?,
+    SET seen_count = seen_count + 1,
         known_forever = ?,
-        mastered_on = ?,
         last_seen_on = ?,
         right_count = ?,
         fuzzy_count = ?,
         forgot_count = ?,
-        mistake_streak = ?,
-        right_streak = ?,
-        auto_retired_on = ?
+        mistake_streak = ?
     WHERE word_id = ?
-  `, [score, lowHistory, knownForever, masteredOn, studyDate, rightCount, fuzzyCount, forgotCount, mistakeStreak, rightStreak, autoRetiredOn, wordId]);
+  `, [knownForever, studyDate, rightCount, fuzzyCount, forgotCount, mistakeStreak, wordId]);
 
+  // score_after 是 score 系统留下的历史列(NOT NULL)。调度已完全交给 FSRS,
+  // 这里写 0 占位;历史行里的旧值保留不动,供回看当初的曲线。
   db.run(
-    "INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (?, ?, ?, ?)",
-    [wordId, answer, score, studyDate]
+    "INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (?, ?, 0, ?)",
+    [wordId, answer, studyDate]
   );
   const reviewId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
   setState("last_answer", JSON.stringify({ ...snapshot, review_id: reviewId }));
@@ -744,7 +831,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   return getWordSession(options);
 }
 
-export function undoLastWordAnswer(): WordSessionResponse {
+export function undoLastWordAnswer(options: WordSessionOptions = {}): WordSessionResponse {
   ensureProgressInitialized();
   const db = getDatabase();
   const rawSnapshot = getState("last_answer", "");
@@ -809,6 +896,11 @@ export function undoLastWordAnswer(): WordSessionResponse {
         Number(snapshot.memory_low_history ?? 0),
         snapshot.memory_last_seen_on == null ? null : String(snapshot.memory_last_seen_on)
       ]);
+      restoreFsrsState(
+        Number(snapshot.word_id),
+        (snapshot.memory_fsrs ?? null) as FsrsState | null,
+        KANJI_FSRS
+      );
     } else {
       db.run("DELETE FROM kanji_memory WHERE word_id = ?", [Number(snapshot.word_id)]);
     }
@@ -816,37 +908,30 @@ export function undoLastWordAnswer(): WordSessionResponse {
   } else if (snapshot.phase === "stage1") {
     db.run(`
       UPDATE progress
-      SET score = ?,
-          seen_count = ?,
-          low_history = ?,
+      SET seen_count = ?,
           known_forever = ?,
-          mastered_on = ?,
           last_seen_on = ?,
           right_count = ?,
           fuzzy_count = ?,
           forgot_count = ?,
-          mistake_streak = ?,
-          right_streak = ?,
-          auto_retired_on = ?
+          mistake_streak = ?
       WHERE word_id = ?
     `, [
-      Number(snapshot.score ?? 0),
       Number(snapshot.seen_count ?? 0),
-      Number(snapshot.low_history ?? 0),
       Number(snapshot.known_forever ?? 0),
-      snapshot.mastered_on == null ? null : String(snapshot.mastered_on),
       snapshot.last_seen_on == null ? null : String(snapshot.last_seen_on),
       Number(snapshot.right_count ?? 0),
       Number(snapshot.fuzzy_count ?? 0),
       Number(snapshot.forgot_count ?? 0),
       Number(snapshot.mistake_streak ?? 0),
-      Number(snapshot.right_streak ?? 0),
-      snapshot.auto_retired_on == null ? null : String(snapshot.auto_retired_on),
       Number(snapshot.word_id)
     ]);
     if (snapshot.review_id != null) {
       db.run("DELETE FROM reviews WHERE id = ?", [Number(snapshot.review_id)]);
     }
+    // FSRS 是唯一调度器,撤销必须把 due/S/D 一起放回作答前,
+    // 否则这个词会带着一个凭空多出来的下次到期时间留在计划里。
+    restoreFsrsState(Number(snapshot.word_id), (snapshot.fsrs ?? null) as FsrsState | null);
     if (Array.isArray(snapshot.review_queue)) {
       setReviewQueue(snapshot.review_queue.flatMap((item) => {
         if (!item || typeof item !== "object") return [];
@@ -856,7 +941,7 @@ export function undoLastWordAnswer(): WordSessionResponse {
         return [{ word_id: wordId, due_after: Math.max(Number(record.due_after ?? 0), 0) }];
       }));
     }
-    setPhase("stage1");
+    if (!hasWordFilter(options)) setPhase("stage1");
   }
 
   setState("last_answer", "");
@@ -888,18 +973,21 @@ export function undoLastWordAnswer(): WordSessionResponse {
   `, [Number(snapshot.word_id)]);
   const restoredCard = restoredRow ? rowObjectToCard(restoredRow) : null;
   if (restoredCard) {
-    const restoredPhase = snapshot.phase === "stage2" || snapshot.phase === "kanji" || snapshot.phase === "stage1"
-      ? snapshot.phase
-      : currentPhase();
+    const responsePhase = String(snapshot.response_phase ?? "");
+    const restoredPhase = responsePhase === "mistakes" || responsePhase === "filtered"
+      ? responsePhase
+      : snapshot.phase === "stage2" || snapshot.phase === "kanji" || snapshot.phase === "stage1"
+        ? snapshot.phase
+        : currentPhase();
     setCurrentCard(restoredCard);
     return {
       card: restoredCard,
       phase: restoredPhase,
-      stats: getWordStats(restoredPhase)
+      stats: getWordStats(restoredPhase, options)
     };
   }
 
-  return getWordSession();
+  return getWordSession(options);
 }
 
 export function updateWordNote(wordId: number, note: string): { wordId: number; note: string } {
