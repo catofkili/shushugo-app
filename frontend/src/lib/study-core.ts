@@ -54,7 +54,7 @@ type GrammarSeedRow = [
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // Keep this aligned with the metadata already baked into public/nihongo.db so
 // a fresh install does not replay all 11k metadata updates on first launch.
-const JLPT_WORD_METADATA_VERSION = "2026-08-05-manual-examples-10609";
+const JLPT_WORD_METADATA_VERSION = "2026-08-10-manual-meanings-5163";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
 const GRAMMAR_SEED_VERSION = "2026-07-14-grammar-rewrite";
@@ -62,6 +62,13 @@ const GRAMMAR_SEED_VERSION = "2026-07-14-grammar-rewrite";
 const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
   const payload = await import("../data/jlpt_words_seed.json");
   return payload.default as unknown as JlptWordSeedRow[];
+};
+
+type JlptMeaningOverride = { kanji: string; kana: string; meaning: string };
+
+const loadJlptMeaningOverrides = async (): Promise<JlptMeaningOverride[]> => {
+  const payload = await import("../data/jlpt_meaning_overrides.json");
+  return payload.default as JlptMeaningOverride[];
 };
 
 const loadGrammarSeed = async (): Promise<{ version: string; rows: GrammarSeedRow[] }> => {
@@ -267,23 +274,38 @@ const nounSuruCorrections: [string, string][] = [
   ["看病", "かんびょう"]
 ];
 
-const syncJlptWordMetadata = (jlptWordSeed: JlptWordSeedRow[]) => {
+const syncJlptWordMetadata = (
+  jlptWordSeed: JlptWordSeedRow[],
+  meaningOverrides: JlptMeaningOverride[] = []
+) => {
   const db = getDatabase();
   const syncedKeys = new Set<string>();
+  const meaningByKey = new Map(
+    meaningOverrides.map(({ kanji, kana, meaning }) => [`${kanji}\u0000${kana}`, meaning])
+  );
   jlptWordSeed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel]) => {
     const key = `${kanji}\u0000${kana}`;
     if (syncedKeys.has(key)) return;
     syncedKeys.add(key);
     db.run(`
       UPDATE words
-      SET pos = ?,
+      SET meaning = COALESCE(?, meaning),
+          pos = ?,
           verb_type = ?,
           importance = MAX(importance, ?),
           example_jp = ?,
           example_meaning = ?,
           jlpt_level = COALESCE(jlpt_level, ?)
       WHERE kanji = ? AND kana = ?
-    `, [pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, kanji, kana]);
+    `, [meaningByKey.get(key) ?? null, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, kanji, kana]);
+  });
+  // 覆盖表还包含不在 JLPT seed 行里的词形（例如异体字），单独回写避免
+  // 老用户迁移时只同步 seed 而漏掉这些释义。
+  meaningByKey.forEach((meaning, key) => {
+    const separator = key.indexOf("\u0000");
+    const kanji = key.slice(0, separator);
+    const kana = key.slice(separator + 1);
+    db.run("UPDATE words SET meaning = ? WHERE kanji = ? AND kana = ?", [meaning, kanji, kana]);
   });
   db.run(`
     UPDATE words
@@ -346,10 +368,11 @@ const ensureKatakanaReadings = async () => {
 const ensureJlptWordMetadata = async () => {
   if (getState("jlpt_word_metadata_version", "") === JLPT_WORD_METADATA_VERSION) return;
   const jlptWordSeed = await loadJlptWordSeed();
+  const meaningOverrides = await loadJlptMeaningOverrides();
   const db = getDatabase();
   db.run("BEGIN TRANSACTION");
   try {
-    syncJlptWordMetadata(jlptWordSeed);
+    syncJlptWordMetadata(jlptWordSeed, meaningOverrides);
     db.run("COMMIT");
   } catch (error) {
     db.run("ROLLBACK");
@@ -378,6 +401,7 @@ const ensureJlptWordSeed = async () => {
   }
 
   const jlptWordSeed = await loadJlptWordSeed();
+  const meaningOverrides = await loadJlptMeaningOverrides();
   const db = getDatabase();
   const existing = new Map<string, number>();
   rowsFor("SELECT id, kanji, kana FROM words").forEach((row) => {
@@ -409,7 +433,7 @@ const ensureJlptWordSeed = async () => {
       existing.set(key, newId);
     });
     db.run("INSERT OR IGNORE INTO progress (word_id) SELECT id FROM words");
-    syncJlptWordMetadata(jlptWordSeed);
+    syncJlptWordMetadata(jlptWordSeed, meaningOverrides);
     setState("jlpt_seed_version", JLPT_SEED_VERSION);
     db.run("COMMIT");
   } catch (error) {

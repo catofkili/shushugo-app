@@ -14,10 +14,11 @@ import initSqlJs from "sql.js";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(here, "../public/nihongo.db");
 const seedPath = path.join(here, "../src/data/jlpt_words_seed.json");
+const meaningOverridesPath = path.join(here, "../src/data/jlpt_meaning_overrides.json");
 
 // 与 src/lib/study-core.ts 保持一致
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
-const JLPT_WORD_METADATA_VERSION = "2026-08-05-manual-examples-10609";
+const JLPT_WORD_METADATA_VERSION = "2026-08-10-manual-meanings-5163";
 
 const nounSuruCorrections = [
   ["運動", "うんどう"], ["計画", "けいかく"], ["研究", "けんきゅう"], ["故障", "こしょう"],
@@ -45,6 +46,10 @@ const SQL = await initSqlJs();
 const databaseBytes = readFileSync(dbPath);
 const db = new SQL.Database(new Uint8Array(databaseBytes));
 const seed = JSON.parse(readFileSync(seedPath, "utf8"));
+const meaningOverrides = new Map(
+  JSON.parse(readFileSync(meaningOverridesPath, "utf8"))
+    .map(({ kanji, kana, meaning }) => [`${kanji}\u0000${kana}`, meaning])
+);
 
 const firstValue = (query, params = []) => {
   const result = db.exec(query, params);
@@ -82,14 +87,23 @@ seed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeani
   syncedKeys.add(key);
   db.run(`
     UPDATE words
-    SET pos = ?,
+    SET meaning = COALESCE(?, meaning),
+        pos = ?,
         verb_type = ?,
         importance = MAX(importance, ?),
         example_jp = ?,
         example_meaning = ?,
         jlpt_level = COALESCE(jlpt_level, ?)
     WHERE kanji = ? AND kana = ?
-  `, [pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, kanji, kana]);
+  `, [meaningOverrides.get(key) ?? null, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, kanji, kana]);
+});
+// 手写释义覆盖表包含词库中不在当前 JLPT seed 行里的词形（例如同读音的
+// 异体字）。单独再按表记+读音回写，确保出厂库和老用户迁移都不会漏掉这些行。
+meaningOverrides.forEach((meaning, key) => {
+  const separator = key.indexOf("\u0000");
+  const kanji = key.slice(0, separator);
+  const kana = key.slice(separator + 1);
+  db.run("UPDATE words SET meaning = ? WHERE kanji = ? AND kana = ?", [meaning, kanji, kana]);
 });
 db.run(`
   UPDATE words
@@ -113,6 +127,35 @@ nounSuruCorrections.forEach(([kanji, kana]) => {
       AND verb_type = 'godan'
   `, [kanji, kana]);
 });
+// 同一个 (kanji, kana) 出现多行 = 数据 bug,不是多义词。整条流水线都拿这一对当
+// 唯一键:ensureJlptWordSeed 按它判断要不要插入,syncJlptWordMetadata 和释义覆盖
+// 表按它 UPDATE(会同时写中所有重复行)。留着重复行的后果是同一个词一天考两遍,
+// 而且答案面的近义词对照卡会把它自己列出来两次。保留 id 最小的那行。
+const duplicateRows = [];
+{
+  const result = db.exec(`
+    SELECT kanji, kana, GROUP_CONCAT(id) AS ids, COUNT(*) AS n
+    FROM words
+    GROUP BY kanji, kana
+    HAVING n > 1
+  `);
+  const rows = result[0]?.values ?? [];
+  rows.forEach(([kanji, kana, ids]) => {
+    const sorted = String(ids).split(",").map(Number).sort((a, b) => a - b);
+    const [keep, ...drop] = sorted;
+    duplicateRows.push({ kanji, kana, keep, drop });
+    drop.forEach((id) => {
+      db.run("DELETE FROM progress WHERE word_id = ?", [id]);
+      db.run("DELETE FROM words WHERE id = ?", [id]);
+    });
+  });
+}
+if (duplicateRows.length) {
+  duplicateRows.forEach(({ kanji, kana, keep, drop }) => {
+    console.log(`   去重 ${kanji}(${kana}): 保留 id=${keep}, 删除 ${drop.join(", ")}`);
+  });
+}
+
 db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
 db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
 db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_word_metadata_version', ?)", [JLPT_WORD_METADATA_VERSION]);
