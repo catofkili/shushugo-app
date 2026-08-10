@@ -100,7 +100,7 @@ let audioIndexLoading: Promise<void> | null = null;
 
 const loadAudioIndex = (): Promise<void> => {
   if (audioIndexLoaded) return Promise.resolve();
-  audioIndexLoading ??= fetch("/audio/words/index.json")
+  audioIndexLoading ??= fetch(`${import.meta.env.BASE_URL}audio/words/index.json`)
     .then((response) => (response.ok ? response.json() : null))
     .then((data) => {
       // 开发服务器对不存在的路径会回 index.html,所以要验一下拿到的确实是索引
@@ -136,7 +136,7 @@ export function pronunciationAudioUrl(kanji: string, kana: string, preferredVoic
   if (preferredVoice === SYSTEM_VOICE_ID) return null;
   const voice = resolveVoice(preferredVoice);
   if (!voice) return null;
-  return `/audio/words/${voice.id}/${pronunciationAudioName(kanji, kana)}${voice.ext}`;
+  return `${import.meta.env.BASE_URL}audio/words/${voice.id}/${pronunciationAudioName(kanji, kana)}${voice.ext}`;
 }
 
 /** 设置里选「系统语音」时用这个 id —— 表示不用预生成音频,直接交给设备合成。 */

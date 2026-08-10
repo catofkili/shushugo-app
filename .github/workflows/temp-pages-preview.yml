@@ -1,0 +1,48 @@
+name: Temporary Pages Preview
+
+on:
+  push:
+    branches: [codex/temp-pages-preview]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: temporary-pages-preview
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Build Zoo Lab
+        run: npx vite build --config zoo-lab/vite.config.ts --base=/shushugo-app/zoo/
+      - name: Build formal app
+        run: npm run build -- --base=/shushugo-app/
+      - name: Assemble temporary preview
+        run: |
+          mkdir -p dist/zoo
+          cp -R zoo-lab/dist/. dist/zoo/
+          printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

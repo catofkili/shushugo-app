@@ -37,7 +37,7 @@ export async function initDatabase(): Promise<Database> {
       const SQL = await loadSqlModule();
 
       // 加载数据库文件
-      const response = await fetch('/nihongo.db');
+      const response = await fetch(`${import.meta.env.BASE_URL}nihongo.db`);
       if (!response.ok) {
         throw new Error('Failed to load database');
       }
