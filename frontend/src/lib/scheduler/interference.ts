@@ -131,14 +131,16 @@ export function buildInterferenceIndex(rows: DbRow[]): InterferenceIndex {
  * 当天候选集的干扰表缓存。候选集随着词毕业而缩小(子集直接复用),
  * 一旦出现索引里没有的词(续杯加了新任务)就整体重建。
  */
-let cached: { index: InterferenceIndex; day: string } | null = null;
+let cached: { index: InterferenceIndex; day: string; scope: string } | null = null;
 
-export function sessionInterference(day: string, rows: DbRow[]): InterferenceIndex {
+export function sessionInterference(day: string, rows: DbRow[], scope = "forward"): InterferenceIndex {
   const ids = rows.map((row) => Number(row.id ?? row.word_id ?? 0));
-  if (cached?.day === day && ids.every((id) => cached!.index.has(id))) {
+  // 缓存键带上 scope:三个方向各有自己的当天候选集,共用一份缓存的话
+  // 后进来的那个方向会因为「id 不在缓存里」把另一个方向的索引整份重建。
+  if (cached?.day === day && cached.scope === scope && ids.every((id) => cached!.index.has(id))) {
     return cached.index;
   }
-  cached = { index: buildInterferenceIndex(rows), day };
+  cached = { index: buildInterferenceIndex(rows), day, scope };
   return cached.index;
 }
 

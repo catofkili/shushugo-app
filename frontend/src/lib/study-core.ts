@@ -82,6 +82,13 @@ export const ensureUserTables = () => {
   if (!wordColumns.includes("jlpt_level")) {
     db.run("ALTER TABLE words ADD COLUMN jlpt_level TEXT");
   }
+  // 复习流水现在记「哪个方向」:正向/反向/汉字是三张卡,顽固判定、连败保护、
+  // 当日进度都要各算各的。老数据没有这一列,补上并一律算正向(以前只有正向记流水)。
+  const reviewColumns = rowsFor("PRAGMA table_info(reviews)").map((row) => String(row.name ?? ""));
+  if (!reviewColumns.includes("direction")) {
+    db.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
+  }
+  db.run("CREATE INDEX IF NOT EXISTS idx_reviews_day_direction ON reviews(reviewed_on, direction)");
   db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
   db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
   schemaReadyDbs.add(db);

@@ -1,5 +1,5 @@
 import { BookOpenText, Brain, CheckCircle2, Layers3, LetterText, Repeat2 } from "lucide-react";
-import { defaultStudyMode, saveStudyMode } from "../lib/studyMode";
+import { defaultStudyMode, saveStudyMode, STUDY_MODES } from "../lib/studyMode";
 import type { StudyMode } from "../types/app";
 
 interface StudyModesPageProps {
@@ -8,49 +8,15 @@ interface StudyModesPageProps {
   onStart: (mode: StudyMode) => void;
 }
 
-const modes: {
-  id: StudyMode;
-  title: string;
-  subtitle: string;
-  description: string;
-  icon: typeof Layers3;
-}[] = [
-  {
-    id: "classic",
-    title: "经典模式",
-    subtitle: "默认",
-    description: "按每日计划自动衔接词汇、反向和汉字阶段。",
-    icon: Layers3
-  },
-  {
-    id: "vocabulary",
-    title: "词汇学习",
-    subtitle: "释义 → 日语",
-    description: "看中文释义，回忆假名、汉字和词性。",
-    icon: BookOpenText
-  },
-  {
-    id: "mistakes",
-    title: "学习错题本",
-    subtitle: "长期薄弱词",
-    description: "根据长期错误率和记忆难度，集中学习算法判断仍不牢固的词。",
-    icon: Brain
-  },
-  {
-    id: "reverse",
-    title: "反向学习",
-    subtitle: "日语 → 释义",
-    description: "出日语，回忆中文释义。需要当天已有反向队列。",
-    icon: Repeat2
-  },
-  {
-    id: "kanji",
-    title: "汉字学习",
-    subtitle: "释义 → 汉字",
-    description: "生成今日汉字队列后，专门回忆和式汉字。",
-    icon: LetterText
-  }
-];
+// 模式的文案在 lib/studyMode 里统一维护(首页的切换器读的是同一份),
+// 这里只补一个图标映射 —— 图标是这一页独有的,不值得让 lib 去依赖 lucide。
+const MODE_ICONS: Record<StudyMode, typeof Layers3> = {
+  classic: Layers3,
+  mistakes: Brain,
+  quick: BookOpenText,
+  reverse: Repeat2,
+  kanji: LetterText
+};
 
 export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyModesPageProps) {
   const currentMode = selectedMode || defaultStudyMode;
@@ -64,12 +30,14 @@ export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyMod
       <div className="mb-5">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/55">Study Modes</p>
         <h1 className="mt-1 text-2xl font-semibold">学习模式</h1>
-        <p className="mt-2 text-sm leading-6 text-white/58">请选择一个学习模式。这里是单选，默认经典模式，不会出现空选。</p>
+        <p className="mt-2 text-sm leading-6 text-white/58">
+          五种方式平级，想练哪种自己挑；主页的大按钮会按你最后一次选的那种开学。
+        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        {modes.map((item) => {
-          const Icon = item.icon;
+        {STUDY_MODES.map((item) => {
+          const Icon = MODE_ICONS[item.id];
           const active = currentMode === item.id;
           return (
             <button

@@ -4,10 +4,10 @@ import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import { computeStreak } from "../lib/zoo-streak";
 import { computeBadges } from "../lib/zoo-badges";
 import type { WordStats } from "../types/vocabulary";
-import type { Page } from "../types/app";
+import type { Page, StudyMode } from "../types/app";
+import { STUDY_MODES, studyModeInfo } from "../lib/studyMode";
 import { CapybaraMascot } from "./CapybaraMascot";
 import { ZooProgressPanel } from "./ZooProgressPanel";
-import { QuickStudyPanel } from "./QuickStudyPanel";
 
 /**
  * 主页 —— 取代原来的「工具箱」页,工具箱里的每一项都在这里有入口:
@@ -26,7 +26,12 @@ import { QuickStudyPanel } from "./QuickStudyPanel";
 type Props = {
   overview: ProgressOverview;
   onNavigate: (page: Page) => void;
-  onStartMistakes: () => void;
+  /** 大按钮:按上次用过的模式直接开学 */
+  onStartStudy: () => void;
+  /** 小入口:换一个模式并立刻开学 */
+  onStartMode: (mode: StudyMode) => void;
+  /** 上次用过的模式(没有记录就是经典) */
+  activeMode: StudyMode;
   onOpenFill: () => void;
   onRefreshOverview: () => void;
   onCompleteTodayWords: () => void;
@@ -47,12 +52,15 @@ const HABITAT_NAMES: Record<string, string> = {
 export function ZooHome({
   overview,
   onNavigate,
-  onStartMistakes,
+  onStartStudy,
+  onStartMode,
+  activeMode,
   onOpenFill,
   onRefreshOverview,
   onCompleteTodayWords
 }: Props) {
   const [stats, setStats] = useState<WordStats | null>(null);
+  const [modeSheetOpen, setModeSheetOpen] = useState(false);
 
   useEffect(() => {
     const refresh = () => {
@@ -97,6 +105,25 @@ export function ZooHome({
         ? "今天的路走完了，松子都捡齐啦 🌰"
         : "今天还没排计划，进去就自动排上";
 
+  // 大按钮说的是「上次那个模式现在有多少题」,而不是永远播报今日计划 ——
+  // 停在错题本却写着「今日复习 985 词」正是上次那个坑的一半成因。
+  const activeInfo = studyModeInfo(activeMode);
+  const activeCount = stats?.modeCounts?.[activeMode] ?? 0;
+  const isPlanMode = activeMode === "classic" || activeMode === "quick";
+  const heroNum = !stats
+    ? "…"
+    : activeCount > 0
+      ? `${activeCount} 词`
+      : isPlanMode ? "已完成" : "暂无题";
+  const heroSub = !stats
+    ? "正在读取"
+    : activeMode === "mistakes"
+      ? `今天攻掉 ${stats.mistakes.answeredToday} 个`
+      : isPlanMode
+        ? (activeCount > 0 ? "走一趟捡松子的小路" : `今天捡了 ${done} 颗松子`)
+        : activeInfo.subtitle;
+  const heroCta = activeCount > 0 ? "开始 →" : isPlanMode ? "再来一批 →" : "去看看 →";
+
   return (
     <div className="zoo-page">
       {/* 问候条 */}
@@ -115,32 +142,60 @@ export function ZooHome({
         )}
       </div>
 
-      {/* ① 今天 */}
+      {/* ① 今天 —— 大入口按上次的模式直接开学,右边的小入口换模式。
+             以前每个模式在这儿各占一个格子(快速复习一格、错题本一格,反向/汉字压根没有入口),
+             既占地方又看不出「我现在按哪种方式在学」。 */}
       <div className="zoo-bento zoo-today-grid">
-        <button className="zoo-tile zoo-tile-hero" onClick={() => onNavigate("word")}>
+        <button className="zoo-tile zoo-tile-hero" onClick={onStartStudy}>
           <div className="zoo-tile-hero-l">
-            <span className="zoo-tile-kick">今日复习</span>
-            <b className="zoo-tile-hero-num">{remaining > 0 ? `${remaining} 词` : "已完成"}</b>
-            <span className="zoo-tile-hero-sub">
-              {remaining > 0 ? "走一趟捡松子的小路" : `今天捡了 ${done} 颗松子`}
-            </span>
+            <span className="zoo-tile-kick">{activeInfo.title}</span>
+            <b className="zoo-tile-hero-num">{heroNum}</b>
+            <span className="zoo-tile-hero-sub">{heroSub}</span>
           </div>
           <div className="zoo-tile-hero-r">
-            <span className="zoo-tile-hero-emoji">🐿️</span>
-            <span className="zoo-tile-cta">{remaining > 0 ? "开始 →" : "再来一批 →"}</span>
+            <span className="zoo-tile-hero-emoji">{activeInfo.emoji}</span>
+            <span className="zoo-tile-cta">{heroCta}</span>
           </div>
         </button>
 
-        <QuickStudyPanel variant="entry" onNavigate={onNavigate} />
-
-        <button className="zoo-tile zoo-tile-mistakes" onClick={onStartMistakes}>
-          <span className="zoo-tile-mistakes-emoji" aria-hidden="true">🧠</span>
-          <span className="zoo-tile-mistakes-copy">
-            <b>学习错题本</b>
-            <small>算法挑选长期薄弱词</small>
+        <button
+          className="zoo-tile zoo-tile-modes"
+          onClick={() => setModeSheetOpen((open) => !open)}
+          aria-expanded={modeSheetOpen}
+        >
+          <span className="zoo-tile-modes-emoji" aria-hidden="true">🎛️</span>
+          <span className="zoo-tile-modes-copy">
+            <small>学习方式</small>
+            <b>{activeInfo.short}</b>
           </span>
-          <span className="zoo-tile-mistakes-arrow" aria-hidden="true">→</span>
+          <span className="zoo-tile-modes-caret" aria-hidden="true">{modeSheetOpen ? "▴" : "▾"}</span>
         </button>
+
+        {modeSheetOpen && (
+          <div className="zoo-modes-sheet" role="menu">
+            {STUDY_MODES.map((mode) => {
+              const count = stats?.modeCounts?.[mode.id] ?? 0;
+              const active = mode.id === activeMode;
+              return (
+                <button
+                  key={mode.id}
+                  role="menuitem"
+                  className={`zoo-modes-item ${active ? "on" : ""}`}
+                  onClick={() => { setModeSheetOpen(false); onStartMode(mode.id); }}
+                >
+                  <span className="zoo-modes-item-emoji" aria-hidden="true">{mode.emoji}</span>
+                  <span className="zoo-modes-item-copy">
+                    <b>{mode.title}</b>
+                    <small>{mode.subtitle} · {mode.description}</small>
+                  </span>
+                  {/* 角标写「现在能练多少」:反向/汉字的队列是进去才建的,
+                      不给数字的话这两项看着永远像空的 */}
+                  <span className="zoo-modes-item-count">{count > 0 ? count : "—"}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         <button className="zoo-tile zoo-tile-team" onClick={() => onNavigate("team")}>
           <span className="zoo-tile-kick">我的队伍</span>
@@ -197,7 +252,7 @@ export function ZooHome({
         <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("study-modes")}>
           <span className="zoo-tile-emoji">🎛️</span>
           <b>学习模式</b>
-          <span className="zoo-tile-sub">经典 · 词汇 · 错题本 · 反向 · 汉字</span>
+          <span className="zoo-tile-sub">经典 · 错题本 · 快速 · 反向 · 汉字</span>
         </button>
 
         <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("favorites")}>

@@ -101,3 +101,22 @@ CREATE INDEX IF NOT EXISTS idx_moji_migrated_reviews_activation
 -- 按 (kanji, kana) 找词是热路径：相似释义词对照每张卡都要查一次，词单导入
 -- 每条记录也要查一次。没有这个索引就是 11k 行全表扫，一页快速学习能扫掉上百万行。
 CREATE INDEX IF NOT EXISTS idx_words_kanji_kana ON words(kanji, kana);
+
+-- 反向学习(日语 → 释义)的长期记忆。
+--
+-- 反向以前只有当天的 stage2_progress，关掉应用什么都不留 —— 它不是一个模式，
+-- 是个用完就扔的临时队列。现在三个方向(正向 progress / 反向 reverse_memory /
+-- 汉字 kanji_memory)各有一份自己的 FSRS 状态，规则完全一样：同一套到期集选词、
+-- 同样的学习步骤和毕业判定、同样的每日上限。fsrs_* 列由 ensureFsrsColumns 补。
+--
+-- 三张卡挂同一个 word_id：词条、笔记、收藏、统计都是共享的，
+-- 但各自的 due 只由各自方向的作答改写 —— 所以背没背反向，不影响常规模式出哪些词。
+CREATE TABLE IF NOT EXISTS reverse_memory (
+  word_id INTEGER PRIMARY KEY,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT,
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);

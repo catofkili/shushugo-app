@@ -3,9 +3,8 @@ import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/v
 import { getDailyWordGoal } from "./studyPreferences";
 import { rowObjectToCard } from "./models/word-card";
 import { notifyProgressUpdated } from "./progress-events";
-import { requeueGap, STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
+import { STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
 import {
-  sessionScoreDelta,
   firstRow,
   firstValue,
   getState,
@@ -23,8 +22,7 @@ import {
   recordFsrsReview,
   isFsrsActive,
   readFsrsState,
-  restoreFsrsState,
-  KANJI_FSRS
+  restoreFsrsState
 } from "./fsrs-store";
 import {
   isGraduatedForDay,
@@ -44,16 +42,13 @@ import { ensureProgressInitialized } from "./word-api/bootstrap";
 import { getWordStats } from "./word-api/stats";
 import { hasWordFilter, isLongTermWeak, wordFilterSql } from "./word-api/filters";
 import { pickMistakeNext } from "./word-api/mistakes";
+import { directionByPhase, KANJI, REVERSE, type StudyDirection } from "./word-api/directions";
 import {
-  advanceKanjiQueue,
-  advanceStage2Queue,
-  buildKanjiProgressFromReviews,
-  kanjiStats,
-  pickKanjiNext,
-  pickStage2Next,
-  recordStage2Word,
-  stage2Stats
-} from "./word-api/queues";
+  directionProgressCounts,
+  ensureDirectionTasks,
+  pickDirectionNext
+} from "./word-api/direction-plan";
+import { applyDirectionAnswer, undoDirectionAnswer } from "./word-api/direction-answer";
 import {
   createStage1Tasks,
   encoreRemainingCount,
@@ -101,16 +96,11 @@ const currentPhase = () => {
     setState("phase", "stage1");
   }
   const phase = getState("phase", "stage1");
-  if (phase === "stage2") {
-    const stage2 = stage2Stats();
-    if (stage2.total > 0 && stage2.completed >= stage2.total) {
-      setState("phase", "kanji");
-      return "kanji";
-    }
-  }
-  if (phase === "kanji") {
-    const kanji = kanjiStats();
-    if (kanji.total > 0 && kanji.completed >= kanji.total) {
+  // 阶段做完就是 done,不再自动串到下一个阶段:反向/汉字是用户自己挑的模式,
+  // 不是今日计划的续集(见 resolveNextCard 里同一条注释)。
+  if (phase === "stage2" || phase === "kanji") {
+    const counts = directionProgressCounts(directionByPhase(phase));
+    if (counts.total > 0 && counts.completed >= counts.total) {
       setState("phase", "done");
       return "done";
     }
@@ -270,17 +260,9 @@ const resolveNextCard = (options: WordSessionOptions = {}): { card: WordCard | n
   }
   const phase = currentPhase();
   if (phase === "done") return { card: null, phase: "done" };
-  if (phase === "stage2") {
-    const card = pickStage2Next();
-    if (card) return { card, phase: "stage2" };
-    setPhase("done");
-    recordCheckin();
-    return { card: null, phase: "done" };
-  }
-  if (phase === "kanji") {
-    buildKanjiProgressFromReviews();
-    const card = pickKanjiNext();
-    if (card) return { card, phase: "kanji" };
+  if (phase === "stage2" || phase === "kanji") {
+    const card = pickDirectionNext(directionByPhase(phase));
+    if (card) return { card, phase };
     setPhase("done");
     recordCheckin();
     return { card: null, phase: "done" };
@@ -289,21 +271,11 @@ const resolveNextCard = (options: WordSessionOptions = {}): { card: WordCard | n
   const stage1Card = pickStage1Next();
   if (stage1Card) return { card: stage1Card, phase: "stage1" };
 
-  const stage2 = stage2Stats();
-  if (stage2.total > 0 && stage2.completed < stage2.total) {
-    setPhase("stage2");
-    const card = pickStage2Next();
-    if (card) return { card, phase: "stage2" };
-  }
-
-  buildKanjiProgressFromReviews();
-  const kanji = kanjiStats();
-  if (kanji.total > 0 && kanji.completed < kanji.total) {
-    setPhase("kanji");
-    const card = pickKanjiNext();
-    if (card) return { card, phase: "kanji" };
-  }
-
+  // 今日计划出完就是出完了 —— **不再自动接反向/汉字**。
+  //
+  // 以前每答一个词就往反向队列插一条(recordStage2Word),所以做完 985 个词的那一刻,
+  // 系统会紧接着把这 985 个词用日语→释义再问一遍,一天变两天的量。反向和汉字现在是
+  // 用户自己选的模式(continueStage2Study / continueKanjiStudy),想练随时进,不再被塞。
   recordCheckin();
   setPhase("done");
   return { card: null, phase: "done" };
@@ -361,8 +333,8 @@ export function completeTodayWordPlan(): { stats: WordStats; completedCount: num
     `, [day, ...ids]);
 
     getDatabase().run(`
-      INSERT INTO reviews (word_id, answer, score_after, reviewed_on)
-      SELECT t.word_id, 'know', 0, ?
+      INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction)
+      SELECT t.word_id, 'know', 0, ?, 'forward'
       FROM stage1_tasks t
       WHERE t.reviewed_on = ?
         AND t.word_id IN (${placeholders})
@@ -376,21 +348,8 @@ export function completeTodayWordPlan(): { stats: WordStats; completedCount: num
     setReviewQueue(getReviewQueue().filter((item) => !ids.includes(item.word_id)));
   }
 
-  getDatabase().run(`
-    UPDATE stage2_progress
-    SET temp_score = MAX(temp_score, 10),
-        completed = 1,
-        due_after = NULL
-    WHERE reviewed_on = ?
-  `, [day]);
-  getDatabase().run(`
-    UPDATE kanji_progress
-    SET temp_score = MAX(temp_score, 10),
-        completed = 1,
-        due_after = NULL
-    WHERE reviewed_on = ?
-  `, [day]);
-
+  // 「一键完成今日单词」只结掉**今日计划(正向)**。反向和汉字各有自己的当日计划,
+  // 由正向的一个按钮顺手判它们过关,又是「某个模式特别」的老毛病。
   recordCheckin();
   setPhase("done");
   persistSoon();
@@ -533,12 +492,11 @@ export function getQuickStudySession(limit = 50, excludedWordIds: number[] = [])
   const cards: WordCard[] = [];
   const excludedIds = new Set(excludedWordIds.map((id) => Number(id)).filter((id) => Number.isFinite(id)));
 
-  if (phase === "kanji") buildKanjiProgressFromReviews();
-
   const pickNext = () => {
     if (phase === "stage1") return pickStage1Next(excludedIds);
-    if (phase === "stage2") return pickStage2Next(excludedIds);
-    if (phase === "kanji") return pickKanjiNext(excludedIds);
+    if (phase === "stage2" || phase === "kanji") {
+      return pickDirectionNext(directionByPhase(phase), excludedIds);
+    }
     return null;
   };
 
@@ -571,27 +529,43 @@ export function submitQuickStudyBatch(
   return result ?? getWordSession();
 }
 
-export function continueStage2Study(): WordSessionResponse {
+/**
+ * 三个「按阶段出题」的模式各有一个入口,共同的规矩:
+ * **进来先把 phase 摆正**。phase 是存在 app_state 里的当天状态,昨天停在反向、
+ * 今天选今日计划的话,不显式重置就会被上一次的 phase 劫持(选 A 出 B)。
+ */
+export function continueTodayPlanStudy(): WordSessionResponse {
   ensureProgressInitialized();
-  const stage2 = stage2Stats();
-  if (stage2.total > 0 && stage2.completed < stage2.total) {
-    setPhase("stage2");
-    return getWordSession();
+  setPhase("stage1");
+  const session = getWordSession();
+  // 顶栏的小路自己也读一份统计,只在进度事件上刷新。切模式会改当天的队列
+  // (反向/汉字进来才建队列),不吱一声的话小路会停在上一个模式的数字上。
+  notifyProgressUpdated();
+  return session;
+}
+
+/** 反向/汉字:进模式先把当日计划排好(三方向同一套规则,见 direction-plan) */
+const continueDirectionStudy = (direction: StudyDirection): WordSessionResponse => {
+  ensureProgressInitialized();
+  // 进模式才引入新卡:光在首页看一眼统计不该给这个方向攒债
+  ensureDirectionTasks(direction, true);
+  const counts = directionProgressCounts(direction);
+  if (counts.total > 0 && counts.completed < counts.total) {
+    setPhase(direction.phase);
+    const session = getWordSession();
+    notifyProgressUpdated();
+    return session;
   }
   setPhase("done");
   return getWordSession();
+};
+
+export function continueStage2Study(): WordSessionResponse {
+  return continueDirectionStudy(REVERSE);
 }
 
 export function continueKanjiStudy(): WordSessionResponse {
-  ensureProgressInitialized();
-  buildKanjiProgressFromReviews();
-  const kanji = kanjiStats();
-  if (kanji.total > 0 && kanji.completed < kanji.total) {
-    setPhase("kanji");
-    return getWordSession();
-  }
-  setPhase("done");
-  return getWordSession();
+  return continueDirectionStudy(KANJI);
 }
 
 export function submitWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions = {}): WordSessionResponse {
@@ -607,100 +581,11 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // 反向或汉字阶段所劫持。它们只替换选词，不另建一套记忆。
   const phase = hasWordFilter(options) ? "stage1" : currentPhase();
 
-  if (phase === "stage2") {
-    const current = firstRow("SELECT * FROM stage2_progress WHERE reviewed_on = ? AND word_id = ?", [studyDate, wordId]);
-    if (!current) return getWordSession(options);
-    advanceStage2Queue(wordId);
-    const snapshot = {
-      phase: "stage2",
-      reviewed_on: studyDate,
-      word_id: wordId,
-      temp_score: Number(current.temp_score ?? 0),
-      seen_count: Number(current.seen_count ?? 0),
-      completed: Number(current.completed ?? 0),
-      due_after: current.due_after
-    };
-    const tempScore = Math.max(Number(current.temp_score ?? 0) + sessionScoreDelta[answer], -40);
-    const completed = tempScore >= 10 ? 1 : 0;
-    const dueAfter = completed ? null : requeueGap(0);
-    db.run(`
-      UPDATE stage2_progress
-      SET temp_score = ?, seen_count = seen_count + 1,
-          completed = ?, due_after = ?
-      WHERE reviewed_on = ? AND word_id = ?
-    `, [tempScore, completed, dueAfter, studyDate, wordId]);
-    setState("last_answer", JSON.stringify(snapshot));
-    import("./storage").then(({ scheduleSave }) => scheduleSave());
-    notifyProgressUpdated();
-    return getWordSession(options);
-  }
-
-  if (phase === "kanji") {
-    const current = firstRow("SELECT * FROM kanji_progress WHERE reviewed_on = ? AND word_id = ?", [studyDate, wordId]);
-    if (!current) return getWordSession(options);
-    const memory = firstRow("SELECT * FROM kanji_memory WHERE word_id = ?", [wordId]);
-    advanceKanjiQueue(wordId);
-    const snapshot = {
-      phase: "kanji",
-      reviewed_on: studyDate,
-      word_id: wordId,
-      temp_score: Number(current.temp_score ?? 0),
-      seen_count: Number(current.seen_count ?? 0),
-      completed: Number(current.completed ?? 0),
-      due_after: current.due_after,
-      memory_exists: Boolean(memory),
-      memory_score: Number(memory?.score ?? 0),
-      memory_seen_count: Number(memory?.seen_count ?? 0),
-      memory_right_count: Number(memory?.right_count ?? 0),
-      memory_fuzzy_count: Number(memory?.fuzzy_count ?? 0),
-      memory_forgot_count: Number(memory?.forgot_count ?? 0),
-      memory_low_history: Number(memory?.low_history ?? 0),
-      memory_last_seen_on: memory?.last_seen_on ?? null,
-      // 撤销要能把 FSRS 状态原样放回去(null = 这次是它第一次进调度)
-      memory_fsrs: readFsrsState(wordId, KANJI_FSRS)
-    };
-    // temp_score 是「这一轮答到 10 分算过」的会话计数器,不是记忆算法,保留。
-    const tempScore = Math.max(Number(current.temp_score ?? 0) + sessionScoreDelta[answer], -40);
-    const completed = tempScore >= 10 ? 1 : 0;
-    // kanji_memory 的 score / low_history 是 score 系统的遗留列,调度已交给 FSRS。
-    // 保持原值不动(不再参与任何判定),留着是为了老库导入/回看不炸。
-    const memoryScore = Number(memory?.score ?? 0);
-    const lowHistory = Number(memory?.low_history ?? 0);
-    // 差词也不贴脸重复:短步间隔(3~8 张)已经够密,再短就是照着刚才的答案抄
-    const dueAfter = completed ? null : requeueGap(0);
-    db.run(`
-      UPDATE kanji_progress
-      SET temp_score = ?, seen_count = seen_count + 1,
-          completed = ?, due_after = ?
-      WHERE reviewed_on = ? AND word_id = ?
-    `, [tempScore, completed, dueAfter, studyDate, wordId]);
-    db.run(`
-      INSERT INTO kanji_memory (
-        word_id, score, seen_count, right_count,
-        fuzzy_count, forgot_count, low_history, last_seen_on
-      )
-      VALUES (?, ?, 1, ?, ?, ?, ?, ?)
-      ON CONFLICT(word_id) DO UPDATE SET
-        score = excluded.score,
-        seen_count = kanji_memory.seen_count + 1,
-        right_count = kanji_memory.right_count + excluded.right_count,
-        fuzzy_count = kanji_memory.fuzzy_count + excluded.fuzzy_count,
-        forgot_count = kanji_memory.forgot_count + excluded.forgot_count,
-        low_history = MAX(kanji_memory.low_history, excluded.low_history),
-        last_seen_on = excluded.last_seen_on
-    `, [
-      wordId,
-      memoryScore,
-      answer === "know" || answer === "known_forever" ? 1 : 0,
-      answer === "fuzzy" ? 1 : 0,
-      answer === "forgot" ? 1 : 0,
-      lowHistory,
-      studyDate
-    ]);
-    // 必须在上面的 INSERT 之后:首次作答时 kanji_memory 还没有这一行,
-    // 早调用的话 FSRS 的 UPDATE 会落空,状态写不进去。
-    recordFsrsReview(wordId, answer, new Date(), {}, KANJI_FSRS);
-    setState("last_answer", JSON.stringify(snapshot));
+  // 反向 / 汉字:和正向同一套规则,只是记忆表换成这个方向自己的那张(见 direction-answer)。
+  // 以前这里是两大段 temp_score 的土办法 —— 答对加 10、≥10 算过关、due_after 数张数,
+  // 只活在当天的队列表里,所以「毕业」「顽固卡」「已掌握」在这两个方向里根本不存在。
+  if (phase === "stage2" || phase === "kanji") {
+    applyDirectionAnswer(directionByPhase(phase), wordId, answer);
     import("./storage").then(({ scheduleSave }) => scheduleSave());
     notifyProgressUpdated();
     return getWordSession(options);
@@ -759,7 +644,9 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // 那样刚答对的瞬间这个词就不再算顽固,加码等于没加。次数只增不减,一整天有效。
   const wrongToday =
     firstValue<number>(
-      "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ? AND answer IN ('forgot','fuzzy')",
+      `SELECT COUNT(*) FROM reviews
+       WHERE word_id = ? AND reviewed_on = ? AND direction = 'forward'
+         AND answer IN ('forgot','fuzzy')`,
       [wordId, studyDate],
       0
     ) + (answer === "forgot" || answer === "fuzzy" ? 1 : 0); // 本次作答还没入库,手动计上
@@ -768,7 +655,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // 并把下次复习拉远。这个判据只看「今天是否已经答过这张卡」,不看 seen_count
   // 或它以前是否进入过 FSRS,所以历史词也能享受当天首答奖励。
   const firstSeenToday = firstValue<number>(
-    "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ?",
+    "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ? AND direction = 'forward'",
     [wordId, studyDate],
     0
   ) === 0;
@@ -807,7 +694,6 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     );
   }
   setLastAnsweredWord(wordId);
-  if (answer !== "known_forever") recordStage2Word(wordId);
 
   db.run(`
     UPDATE progress
@@ -824,7 +710,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // score_after 是 score 系统留下的历史列(NOT NULL)。调度已完全交给 FSRS,
   // 这里写 0 占位;历史行里的旧值保留不动,供回看当初的曲线。
   db.run(
-    "INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (?, ?, 0, ?)",
+    "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, ?, 0, ?, 'forward')",
     [wordId, answer, studyDate]
   );
   const reviewId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
@@ -863,67 +749,10 @@ export function undoLastWordAnswer(options: WordSessionOptions = {}): WordSessio
     return getWordSession();
   }
 
-  if (snapshot.phase === "stage2") {
-    db.run(`
-      UPDATE stage2_progress
-      SET temp_score = ?, seen_count = ?, completed = ?, due_after = ?
-      WHERE reviewed_on = ? AND word_id = ?
-    `, [
-      Number(snapshot.temp_score ?? 0),
-      Number(snapshot.seen_count ?? 0),
-      Number(snapshot.completed ?? 0),
-      snapshot.due_after == null ? null : Number(snapshot.due_after),
-      String(snapshot.reviewed_on ?? today()),
-      Number(snapshot.word_id)
-    ]);
-    setPhase("stage2");
-  } else if (snapshot.phase === "kanji") {
-    db.run(`
-      UPDATE kanji_progress
-      SET temp_score = ?, seen_count = ?, completed = ?, due_after = ?
-      WHERE reviewed_on = ? AND word_id = ?
-    `, [
-      Number(snapshot.temp_score ?? 0),
-      Number(snapshot.seen_count ?? 0),
-      Number(snapshot.completed ?? 0),
-      snapshot.due_after == null ? null : Number(snapshot.due_after),
-      String(snapshot.reviewed_on ?? today()),
-      Number(snapshot.word_id)
-    ]);
-    if (snapshot.memory_exists) {
-      db.run(`
-        INSERT INTO kanji_memory (
-          word_id, score, seen_count, right_count,
-          fuzzy_count, forgot_count, low_history, last_seen_on
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(word_id) DO UPDATE SET
-          score = excluded.score,
-          seen_count = excluded.seen_count,
-          right_count = excluded.right_count,
-          fuzzy_count = excluded.fuzzy_count,
-          forgot_count = excluded.forgot_count,
-          low_history = excluded.low_history,
-          last_seen_on = excluded.last_seen_on
-      `, [
-        Number(snapshot.word_id),
-        Number(snapshot.memory_score ?? 0),
-        Number(snapshot.memory_seen_count ?? 0),
-        Number(snapshot.memory_right_count ?? 0),
-        Number(snapshot.memory_fuzzy_count ?? 0),
-        Number(snapshot.memory_forgot_count ?? 0),
-        Number(snapshot.memory_low_history ?? 0),
-        snapshot.memory_last_seen_on == null ? null : String(snapshot.memory_last_seen_on)
-      ]);
-      restoreFsrsState(
-        Number(snapshot.word_id),
-        (snapshot.memory_fsrs ?? null) as FsrsState | null,
-        KANJI_FSRS
-      );
-    } else {
-      db.run("DELETE FROM kanji_memory WHERE word_id = ?", [Number(snapshot.word_id)]);
-    }
-    setPhase("kanji");
+  if (snapshot.phase === "stage2" || snapshot.phase === "kanji") {
+    // 反向/汉字的撤销和正向同构:把记忆行和 FSRS 状态放回作答前,并删掉那条流水
+    undoDirectionAnswer(directionByPhase(String(snapshot.phase)), snapshot);
+    setPhase(String(snapshot.phase));
   } else if (snapshot.phase === "stage1") {
     db.run(`
       UPDATE progress

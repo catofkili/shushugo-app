@@ -117,36 +117,3 @@ export function priorityScore(components: Record<string, number>): number {
   return Object.values(components).reduce((total, value) => total + value, 0);
 }
 
-/**
- * 从任意列表中选择临界词池中的一个（用于 Stage2/Kanji）。
- * 注意:这里的 score 是 stage2_progress / kanji_progress 的 temp_score,
- * 即「这一轮答到 10 分算过」的会话计数器,不是长期记忆分数,不随 FSRS 改造改动。
- */
-const TEMP_SCORE_CRITICAL = -20;
-
-/** 临界词池大小 */
-export function criticalPoolSize(count: number): number {
-  return Math.min(Math.max(count, 3), 5);
-}
-
-export function pickDueCriticalPoolRow(rows: DbRow[], scoreKey = "score"): DbRow | null {
-  const hasFloorWord = rows.some((row) => Number(row[scoreKey] ?? 0) <= -40);
-  if (!hasFloorWord) return null;
-  const criticalRows = rows
-    .filter((row) => Number(row[scoreKey] ?? 0) <= TEMP_SCORE_CRITICAL)
-    .sort((left, right) => (
-      Number(left[scoreKey] ?? 0) - Number(right[scoreKey] ?? 0)
-      || Number(left.today_seen_count ?? left.seen_count ?? 0) - Number(right.today_seen_count ?? right.seen_count ?? 0)
-      || Number(left.order_index ?? 0) - Number(right.order_index ?? 0)
-    ));
-  if (!criticalRows.length) return null;
-  const pool = criticalRows.slice(0, criticalPoolSize(criticalRows.length));
-  // 没到位就交还给普通排序,不越过「隔几张」的闸门
-  const duePool = pool.filter((row) => row.due_after == null || Number(row.due_after) <= 0);
-  if (!duePool.length) return null;
-  return duePool.sort((left, right) => (
-    Number(left.today_seen_count ?? left.seen_count ?? 0) - Number(right.today_seen_count ?? right.seen_count ?? 0)
-    || Number(left[scoreKey] ?? 0) - Number(right[scoreKey] ?? 0)
-    || Number(left.order_index ?? 0) - Number(right.order_index ?? 0)
-  ))[0] ?? null;
-}

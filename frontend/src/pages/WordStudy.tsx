@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { AlertCircle, Eye, GitCompareArrows, RotateCcw, Star, StickyNote, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
-import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, getWordSession, jumpToSimilarWord, markTodayWordCheckin, startEncore as startEncoreSession, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
+import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getWordSession, jumpToSimilarWord, markTodayWordCheckin, startEncore as startEncoreSession, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { addStudyTime, checkAchievements } from "../lib/userProfile";
 import { triggerMemoryHaptic } from "../lib/haptics";
@@ -21,6 +21,7 @@ import {
   primaryAnswerText,
 } from "../features/word-study/word-study-utils";
 import type { StudyMode } from "../types/app";
+import { studyModeInfo } from "../lib/studyMode";
 import type { WordSessionOptions } from "../lib/study-types";
 
 interface WordStudyProps {
@@ -142,8 +143,12 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
         data = continueStage2Study();
       } else if (mode === "kanji") {
         data = continueKanjiStudy();
-      } else {
+      } else if (mode === "mistakes") {
         data = getWordSession(sessionOptions);
+      } else {
+        // 经典 = 今日计划:进来先把 phase 摆正,否则会被上一次停在反向/汉字的
+        // 当天状态劫持 —— 选了经典却出反向题。
+        data = continueTodayPlanStudy();
       }
       setCard(data.card);
       setStats(data.stats);
@@ -406,18 +411,13 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
 
   const isReversePhase = phase === "stage2";
   const isKanjiPhase = phase === "kanji";
-  const pageTitle = isReversePhase
-    ? "反向学习"
-    : isKanjiPhase
-      ? "汉字学习"
-      : initialMode === "classic"
-        ? "经典模式"
-        : initialMode === "mistakes"
-          ? "学习错题本"
-          : "词汇学习";
+  // 文案统一来自 studyMode 的模式目录,别再在这儿摊三串三元表达式:
+  // 加一个模式要改三处、少改一处就出现「标题写经典、角标写 Vocabulary」。
+  const activeModeInfo = studyModeInfo(isReversePhase ? "reverse" : isKanjiPhase ? "kanji" : initialMode);
+  const pageTitle = activeModeInfo.title;
   // 并进松鼠轨道里的短模式名(轨道那行只有 10.5px,放不下"经典模式"四个字加进度数)
-  const shortMode = isReversePhase ? "反向" : isKanjiPhase ? "汉字" : initialMode === "classic" ? "经典" : initialMode === "mistakes" ? "错题本" : "词汇";
-  const pageLabel = isReversePhase ? "Reverse" : isKanjiPhase ? "Kanji" : initialMode === "classic" ? "Classic" : initialMode === "mistakes" ? "Mistakes" : "Vocabulary";
+  const shortMode = activeModeInfo.short;
+  const pageLabel = activeModeInfo.label;
 
   const startExtraPhase = async (phaseName: "stage2" | "kanji") => {
     setLoading(true);

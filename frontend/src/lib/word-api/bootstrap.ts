@@ -9,11 +9,13 @@ import {
   migrateRecentDailyEasyReviews,
   migrateFullHistoryDailyEasy
 } from "../fsrs-store";
-import { backfillStage2FromReviews } from "./queues";
 
 /**
  * 启动初始化。每次进学习页都会跑一遍(幂等):补 progress 行、补 shuffle_rank、
- * 回填 Stage2、给三个阶段建 FSRS 列并一次性回填历史。
+ * 给三个方向建 FSRS 列并一次性回填历史。
+ *
+ * 以前这里还会「按今天答过的正向词回填反向队列」——那是反向依附正向的年代。
+ * 现在反向有自己的当日计划(direction-plan 的 createDirectionTasks),不需要谁来喂。
  *
  * 旧的「每日分数衰减」(连胜梯子)已随 score 系统整体删除 —— 现在间隔完全由 FSRS 的
  * stability/difficulty 决定,不需要每天把所有词扣一遍分。
@@ -32,7 +34,6 @@ export const ensureProgressInitialized = () => {
     setState("first_study_day", today());
   }
   ensureGrammarProgressInitialized();
-  backfillStage2FromReviews();
   // 三个阶段(单词/汉字/语法)统一由 FSRS 调度:建列 + 一次性回填历史。
   // 各自用 app_state 标记幂等,只跑一次;任一步失败都不能拖垮启动。
   try {

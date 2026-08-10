@@ -24,4 +24,6 @@ export type Page =
 
 export type GrammarMode = "learn" | "practice" | "immersive";
 export type ProgressFocus = "both" | "words" | "grammar";
-export type StudyMode = "classic" | "vocabulary" | "mistakes" | "reverse" | "kanji";
+// 「词汇学习」已删:它和经典模式走的是同一条代码路径(loadNext 只对 reverse/kanji 分支),
+// 两个名字一套行为,选哪个都一样。老数据里存着 "vocabulary" 的,由 getStudyMode 归到经典。
+export type StudyMode = "classic" | "mistakes" | "reverse" | "kanji" | "quick";

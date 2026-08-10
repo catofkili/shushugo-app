@@ -11,7 +11,7 @@ import {
   UserRound
 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
-import type { Page } from "../types/app";
+import type { Page, StudyMode } from "../types/app";
 import type { SearchResult } from "../lib/search-api";
 import { CapybaraMascot } from "./CapybaraMascot";
 import { SquirrelTrail } from "./SquirrelTrail";
@@ -39,6 +39,8 @@ interface AppNavigationProps {
   onOpenGrammarTab: () => void;
   onSearchResult: (result: SearchResult) => void;
   onToggleSidebar: () => void;
+  /** 当前正在哪个模式里学习(不在学习页就是 null)：小路按模式换成对应的进度 */
+  studyMode?: StudyMode | null;
 }
 
 export function AppNavigation({
@@ -49,7 +51,8 @@ export function AppNavigation({
   onNavigate,
   onOpenGrammarTab,
   onSearchResult,
-  onToggleSidebar
+  onToggleSidebar,
+  studyMode = null
 }: AppNavigationProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -127,7 +130,7 @@ export function AppNavigation({
           )}
 
           {/* 顶栏中间本来是空的,今天这趟复习的小路放这儿 */}
-          <SquirrelTrail />
+          <SquirrelTrail mode={studyMode} />
 
           <button
             onClick={() => onNavigate("home")}
@@ -179,7 +182,7 @@ export function AppNavigation({
 
         {/* 手机端的小路在顶栏,桌面端顶栏是隐藏的,所以侧栏这儿也放一条,免得大屏看不到今天走到哪 */}
         <div className={`mt-4 hidden lg:flex ${sidebarCollapsed ? "lg:hidden" : ""}`}>
-          <SquirrelTrail />
+          <SquirrelTrail mode={studyMode} />
         </div>
 
         <div className={`relative mt-3 hidden lg:block ${sidebarCollapsed ? "lg:hidden" : ""}`}>

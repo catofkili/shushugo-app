@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  pickDueCriticalPoolRow,
   priorityComponents,
   priorityScore,
   shouldPickStage1NewWord
@@ -103,34 +102,3 @@ describe("priorityScore", () => {
   });
 });
 
-describe("pickDueCriticalPoolRow", () => {
-  it("returns null without a floor word", () => {
-    expect(pickDueCriticalPoolRow([row({ score: -25 })])).toBeNull();
-  });
-
-  it("picks the least-seen due critical word", () => {
-    const rows = [
-      row({ id: 1, score: -45, today_seen_count: 3, due_after: 0 }),
-      row({ id: 2, score: -22, today_seen_count: 1, due_after: 0 }),
-      row({ id: 3, score: -21, today_seen_count: 0, due_after: 2 })
-    ];
-    expect(pickDueCriticalPoolRow(rows)?.id).toBe(2);
-  });
-
-  it("stands down when every critical word is still waiting its gap out", () => {
-    const rows = [
-      row({ id: 1, score: -45, due_after: 2 }),
-      row({ id: 2, score: -22, due_after: 1 })
-    ];
-    expect(pickDueCriticalPoolRow(rows)).toBeNull();
-  });
-
-  it("supports alternate score columns", () => {
-    const rows = [
-      row({ id: 1, kanji_score: -50, due_after: 0 }),
-      row({ id: 2, kanji_score: -20, due_after: 0, today_seen_count: 0 })
-    ];
-    const picked = pickDueCriticalPoolRow(rows, "kanji_score");
-    expect(picked).not.toBeNull();
-  });
-});

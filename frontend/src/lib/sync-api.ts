@@ -652,7 +652,8 @@ const hasLocalLearningData = (): boolean => {
     ["checkins", "1"],
     ["progress", "seen_count > 0 OR known_forever = 1"],
     ["grammar_progress", "seen_count > 0 OR known_forever = 1"],
-    ["kanji_memory", "seen_count > 0"]
+    ["kanji_memory", "seen_count > 0"],
+    ["reverse_memory", "seen_count > 0"]
   ];
   return checks.some(([table, condition]) => {
     if (!tables.has(table)) return false;

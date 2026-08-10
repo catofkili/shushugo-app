@@ -11,7 +11,7 @@ import { useEntitlements } from "./hooks/useEntitlements";
 import { completeTodayWordPlan, getProgressOverview, markContentComplete, ProgressOverview } from "./lib/api";
 import { canUseFeature, FeatureId } from "./lib/entitlements";
 import { PROGRESS_UPDATED_EVENT } from "./lib/progress-events";
-import { defaultStudyMode, getStudyMode, saveStudyMode } from "./lib/studyMode";
+import { defaultStudyMode, getStudyMode, saveStudyMode, studyModeInfo } from "./lib/studyMode";
 import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
 import { syncUserProfileAfterLogin } from "./lib/profile-sync";
 import type { SearchResult } from "./lib/search-api";
@@ -137,15 +137,17 @@ export default function App() {
     return () => window.removeEventListener(CLOUD_SYNC_EVENT, handleCloudSync);
   }, []);
 
-  // 导航到新页面，记录历史
-  const navigateToPage = (newPage: Page) => {
+  // 导航到新页面，记录历史。
+  // studyModeOverride 只给「显式选了模式」的入口用(学习模式页、主页的错题本格子);
+  // 其余进单词页的路径一律回落到持久化的常规模式 —— 错题本不该粘住首页的「今日复习」。
+  const navigateToPage = (newPage: Page, studyModeOverride?: StudyMode) => {
     if (accountProtectedPages.has(newPage) && !cloudSession.token) {
       setPendingAccountPage(newPage);
       setAuthOpen(true);
       return;
     }
     if (newPage === "word") {
-      const currentMode = getStudyMode() || defaultStudyMode;
+      const currentMode = studyModeOverride ?? getStudyMode() ?? defaultStudyMode;
       setSelectedStudyMode(currentMode);
       setLaunchStudyMode(currentMode);
       setWordStudyRevision((revision) => revision + 1);
@@ -278,7 +280,15 @@ export default function App() {
     const safeMode = saveStudyMode(mode || defaultStudyMode);
     setSelectedStudyMode(safeMode);
     setLaunchStudyMode(safeMode);
-    navigateToPage("word");
+    // 快速复习自己有一页,不走单词学习页
+    const ownPage = studyModeInfo(safeMode).page;
+    if (ownPage) {
+      navigateToPage(ownPage);
+      return;
+    }
+    // 模式必须透传:navigateToPage 进单词页时会用 getStudyMode() 兜底,
+    // 不传的话刚选的模式会被读回来的旧值覆盖(选 A 出 B)。
+    navigateToPage("word", safeMode);
   };
 
   const toggleFillLevel = (kind: "word" | "grammar", level: JLPTLevel) => {
@@ -371,7 +381,9 @@ export default function App() {
         <ZooHome
           overview={overview}
           onNavigate={navigateToPage}
-          onStartMistakes={() => startStudyMode("mistakes")}
+          onStartStudy={() => startStudyMode(getStudyMode())}
+          onStartMode={startStudyMode}
+          activeMode={launchStudyMode}
           onOpenFill={() => setFillOpen(true)}
           onRefreshOverview={refreshOverview}
           onCompleteTodayWords={completeTodayWords}
@@ -477,6 +489,7 @@ export default function App() {
           onOpenGrammarTab={() => openGrammarTab()}
           onSearchResult={handleSearchResult}
           onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
+          studyMode={page === "word" ? launchStudyMode : null}
         />
 
         {/* pb 只留一点呼吸空间:底部导航的位置已经由下面的 bottom 让出来了,

@@ -57,6 +57,21 @@ export interface WordStats {
   newToday: number;
   oldToday: number;
   newQuota: number;
+  /** 错题本不走今日计划，进度得自己算 */
+  mistakes: {
+    /** 长期薄弱词池大小 */
+    poolSize: number;
+    /** 今天已攻掉的薄弱词数（不同词） */
+    answeredToday: number;
+  };
+  /** 模式切换器的角标：每个模式现在还能练多少（队列没建时算「进去之后会有多少」） */
+  modeCounts: {
+    classic: number;
+    mistakes: number;
+    quick: number;
+    reverse: number;
+    kanji: number;
+  };
   stage1ProgressDone: number;
   stage1ProgressTotal: number;
   phase: string;

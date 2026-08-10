@@ -13,8 +13,9 @@ import {
 import { ensureProgressInitialized } from "./bootstrap";
 import { dailyNewQuota } from "./session-state";
 import { encoreRemainingCount, stage1ProgressCounts } from "./stage1";
-import { kanjiStats, stage2Stats } from "./queues";
-import { wordFilterSql } from "./filters";
+import { directionProgressCounts } from "./direction-plan";
+import { KANJI, REVERSE } from "./directions";
+import { mistakeCandidateSql, wordFilterSql } from "./filters";
 
 /**
  * 统计口径:今日学习量 + 首页/学习页要读的那一大坨 WordStats。
@@ -101,9 +102,38 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     filter.params,
     0
   );
+  // 错题本有自己的一套数:池子是「长期薄弱词」,进度是「今天攻掉几个」。
+  // 它不碰今日计划,所以顶上的 stage1 进度在这个模式里是死的 —— 必须给它自己的数字,
+  // 否则界面显示的还是「今日复习 1/985」,答一天也不动(这正是错题本粘住首页时的表象)。
+  const mistakes = {
+    poolSize: firstValue<number>(`
+      SELECT COUNT(*)
+      FROM progress p
+      WHERE p.known_forever = 0 AND ${mistakeCandidateSql("p")}
+    `, [], 0),
+    answeredToday: firstValue<number>(`
+      SELECT COUNT(DISTINCT r.word_id)
+      FROM reviews r
+      JOIN progress p ON p.word_id = r.word_id
+      WHERE r.reviewed_on = ? AND ${mistakeCandidateSql("p")}
+    `, [studyDate], 0)
+  };
   const stage1Progress = stage1ProgressCounts();
-  const stage2 = stage2Stats();
-  const kanji = kanjiStats();
+  // 反向/汉字的当日进度和正向同一个判据(今天毕业才算完成),见 direction-plan
+  const stage2 = directionProgressCounts(REVERSE);
+  const kanji = directionProgressCounts(KANJI);
+  // 模式切换器要显示「每个模式现在能练多少」。三个方向各有自己的当日计划,
+  // directionProgressCounts 会顺手把当天的计划排好,所以这里读到的就是真实剩余量。
+  const planRemaining = Math.max(stage1Progress.total - stage1Progress.completed, 0);
+  const modeCounts = {
+    classic: planRemaining,
+    mistakes: mistakes.poolSize,
+    // 快速复习翻的还是今日计划那批词,只是换了个一页 50 张的形态
+    quick: planRemaining,
+    // 三个方向都各有自己的当日计划,直接读各自的剩余量
+    reverse: Math.max(stage2.total - stage2.completed, 0),
+    kanji: Math.max(kanji.total - kanji.completed, 0)
+  };
   const checkinRows = getDatabase().exec("SELECT checked_on FROM checkins ORDER BY checked_on");
   const checkins = checkinRows.length ? checkinRows[0].values.map((row) => String(row[0])) : [];
   const wordStudySecondsToday = firstValue<number>(
@@ -181,6 +211,8 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
       0
     )),
     newQuota: dailyNewQuota(),
+    mistakes,
+    modeCounts,
     stage1ProgressDone: stage1Progress.completed,
     stage1ProgressTotal: stage1Progress.total,
     phase,

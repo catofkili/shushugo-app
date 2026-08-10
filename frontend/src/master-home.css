@@ -246,6 +246,23 @@
 .zoo-tile-quick-title{min-width:0;flex:1;overflow:hidden;color:var(--zoo-primary-deep);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:17px;font-weight:800;white-space:nowrap}
 .zoo-tile-quick-arrow{flex:none;color:var(--zoo-primary-deep);font-size:18px;font-weight:800;line-height:1}
 .zoo-today-grid .zoo-tile-mistakes{grid-column:1 / -1;min-height:58px;flex-direction:row;align-items:center;gap:10px;background:linear-gradient(120deg,#FFF2D9,#FFE6BC);border-color:rgba(232,151,28,.42)}
+
+/* ===== 学习方式:大入口旁边的小入口 + 展开的模式表 ===== */
+.zoo-today-grid .zoo-tile-modes{justify-content:center;gap:6px;background:linear-gradient(120deg,#FFF2D9,#FFE6BC);border-color:rgba(232,151,28,.42)}
+.zoo-tile-modes-emoji{font-size:22px;line-height:1}
+.zoo-tile-modes-copy{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}
+.zoo-tile-modes-copy small{color:var(--zoo-brown-deep);font-size:10px;font-weight:800;letter-spacing:.06em}
+.zoo-tile-modes-copy b{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:17px;font-weight:800;white-space:nowrap}
+.zoo-tile-modes-caret{color:#B4740A;font-size:12px;font-weight:800;line-height:1}
+.zoo-modes-sheet{grid-column:1 / -1;display:flex;flex-direction:column;gap:6px;border:1.5px solid rgba(232,151,28,.42);border-radius:18px;background:var(--zoo-surface);padding:6px;box-shadow:0 8px 22px rgba(160,120,60,.16)}
+.zoo-modes-item{display:flex;align-items:center;gap:10px;width:100%;border:1.5px solid transparent;border-radius:14px;background:transparent;padding:9px 10px;text-align:left}
+.zoo-modes-item:hover{background:var(--zoo-primary-soft)}
+.zoo-modes-item.on{border-color:rgba(111,168,62,.5);background:var(--zoo-primary-soft)}
+.zoo-modes-item-emoji{flex:none;font-size:21px;line-height:1}
+.zoo-modes-item-copy{display:flex;min-width:0;flex:1;flex-direction:column;gap:2px}
+.zoo-modes-item-copy b{color:var(--zoo-ink);font-size:14.5px;font-weight:800}
+.zoo-modes-item-copy small{color:var(--zoo-muted);font-size:10.5px;font-weight:700;line-height:1.45}
+.zoo-modes-item-count{flex:none;color:var(--zoo-primary-deep);font-size:16px;font-weight:800}
 .zoo-tile-mistakes-emoji{flex:none;font-size:25px;line-height:1}
 .zoo-tile-mistakes-copy{display:flex;min-width:0;flex:1;flex-direction:column;gap:2px;text-align:left}
 .zoo-tile-mistakes-copy b{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:17px;font-weight:800}
@@ -515,6 +532,8 @@
 [data-theme="dark"] .zoo-tile-hero{background:linear-gradient(120deg,#3B5132,#35452E);border-color:rgba(167,215,125,.42)}
 [data-theme="dark"] .zoo-today-grid .zoo-tile-quick{background:linear-gradient(120deg,#344A35,#2F4230);border-color:rgba(167,215,125,.42)}
 [data-theme="dark"] .zoo-today-grid .zoo-tile-mistakes{background:linear-gradient(120deg,#4A3E2A,#423523);border-color:rgba(240,179,78,.45)}
+[data-theme="dark"] .zoo-today-grid .zoo-tile-modes{background:linear-gradient(120deg,#4A3E2A,#423523);border-color:rgba(240,179,78,.45)}
+[data-theme="dark"] .zoo-modes-sheet{border-color:rgba(240,179,78,.45)}
 [data-theme="dark"] .zoo-tile-team{background:linear-gradient(120deg,#4A3E2A,#3E3426);border-color:rgba(240,179,78,.45)}
 [data-theme="dark"] .zoo-tile-team-avatars i{background:#3B4338;border-color:var(--zoo-surface)}
 [data-theme="dark"] .zoo-zm-scene{background:linear-gradient(180deg,#263842 0%,#2D422F 60%,#3A5035 100%)}

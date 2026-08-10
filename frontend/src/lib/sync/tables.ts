@@ -25,6 +25,8 @@ export const SYNCED_TABLES: SyncedTable[] = [
   // 每词/每语法点的记忆状态,FSRS 的列也在 progress 上,是同步的核心。
   { table: "progress", keys: ["word_id"], strategy: "lww" },
   { table: "kanji_memory", keys: ["word_id"], strategy: "lww" },
+  // 反向卡的长期记忆。和 kanji_memory 同构:每个词一行,逐行 LWW。
+  { table: "reverse_memory", keys: ["word_id"], strategy: "lww" },
   { table: "grammar_progress", keys: ["grammar_id"], strategy: "lww" },
   { table: "grammar_mistakes", keys: ["grammar_id"], strategy: "lww" },
   { table: "word_notes", keys: ["word_id"], strategy: "lww" },

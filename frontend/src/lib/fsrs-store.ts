@@ -55,10 +55,27 @@ export const WORD_FSRS: FsrsEntity = {
   idColumn: "word_id",
   eligible: `known_forever = 0 AND seen_count > 0 AND ${MOJI_NOT_ACTIVATED}`
 };
+/**
+ * 汉字卡。eligible 不再要求 seen_count > 0:卡是「按需建出来」的(ensureDirectionCards),
+ * 刚建出来那张 seen_count 就是 0 —— 要求 > 0 等于把新卡全挡在到期集外面,
+ * 汉字模式永远是空的(这正是它历史上 kanji_progress 一行都没有的原因之一)。
+ */
 export const KANJI_FSRS: FsrsEntity = {
   table: "kanji_memory",
   idColumn: "word_id",
-  eligible: "seen_count > 0"
+  eligible: "1 = 1"
+};
+/**
+ * 反向(日语 → 释义)的长期记忆。以前反向没有任何持久状态,只有当天的 stage2_progress,
+ * 关掉应用就没了 —— 现在它和正向、汉字一样是一张真正的卡,有自己的 due/S/D。
+ *
+ * eligible 不要求 seen_count > 0:反向卡是「按需建卡」的(见 ensureDirectionCards),
+ * 建出来的那一刻就带着从正向折算来的状态,当天就该参与调度。
+ */
+export const REVERSE_FSRS: FsrsEntity = {
+  table: "reverse_memory",
+  idColumn: "word_id",
+  eligible: "1 = 1"
 };
 export const GRAMMAR_FSRS: FsrsEntity = {
   table: "grammar_progress",
