@@ -15,10 +15,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(here, "../public/nihongo.db");
 const seedPath = path.join(here, "../src/data/jlpt_words_seed.json");
 const meaningOverridesPath = path.join(here, "../src/data/jlpt_meaning_overrides.json");
+const exampleOverridesPath = path.join(here, "../src/data/jlpt_example_overrides.json");
 
 // 与 src/lib/study-core.ts 保持一致
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
-const JLPT_WORD_METADATA_VERSION = "2026-08-10-manual-meanings-5163";
+const JLPT_WORD_METADATA_VERSION = "2026-08-10-manual-meanings-5163-examples-121";
 
 const nounSuruCorrections = [
   ["運動", "うんどう"], ["計画", "けいかく"], ["研究", "けんきゅう"], ["故障", "こしょう"],
@@ -50,6 +51,7 @@ const meaningOverrides = new Map(
   JSON.parse(readFileSync(meaningOverridesPath, "utf8"))
     .map(({ kanji, kana, meaning }) => [`${kanji}\u0000${kana}`, meaning])
 );
+const exampleOverrides = JSON.parse(readFileSync(exampleOverridesPath, "utf8"));
 
 const firstValue = (query, params = []) => {
   const result = db.exec(query, params);
@@ -104,6 +106,15 @@ meaningOverrides.forEach((meaning, key) => {
   const kanji = key.slice(0, separator);
   const kana = key.slice(separator + 1);
   db.run("UPDATE words SET meaning = ? WHERE kanji = ? AND kana = ?", [meaning, kanji, kana]);
+});
+// 不在种子行里的历史词条的例句。只补空缺，绝不覆盖已有例句。
+exampleOverrides.forEach(({ kanji, kana, exampleJp, exampleMeaning }) => {
+  db.run(`
+    UPDATE words
+    SET example_jp = ?, example_meaning = ?
+    WHERE kanji = ? AND kana = ?
+      AND (example_jp IS NULL OR example_jp = '')
+  `, [exampleJp, exampleMeaning, kanji, kana]);
 });
 db.run(`
   UPDATE words

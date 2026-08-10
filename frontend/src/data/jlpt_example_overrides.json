@@ -1,0 +1,728 @@
+[
+  {
+    "kanji": "〜について",
+    "kana": "~について",
+    "exampleJp": "先生に日本の季節について質問しました。",
+    "exampleMeaning": "向老师询问了关于日本季节的问题。"
+  },
+  {
+    "kanji": "おい",
+    "kana": "おい",
+    "exampleJp": "おい、忘れ物をしているよ。",
+    "exampleMeaning": "喂，你忘了东西。"
+  },
+  {
+    "kanji": "お別れ",
+    "kana": "おわかれ",
+    "exampleJp": "転校する友人のお別れ会を開きました。",
+    "exampleMeaning": "为要转学的朋友举办了欢送会。"
+  },
+  {
+    "kanji": "お土産",
+    "kana": "おみやげ",
+    "exampleJp": "旅行先で買ったお土産を職場に持って行きました。",
+    "exampleMeaning": "我把旅行时买的特产带到了单位。"
+  },
+  {
+    "kanji": "お手洗い",
+    "kana": "おてあらい",
+    "exampleJp": "お手洗いは廊下の突き当たりにあります。",
+    "exampleMeaning": "厕所就在走廊尽头。"
+  },
+  {
+    "kanji": "お正月",
+    "kana": "おしょうがつ",
+    "exampleJp": "お正月は家族みんなで食卓を囲みます。",
+    "exampleMeaning": "新年时全家人一起围桌吃饭。"
+  },
+  {
+    "kanji": "お汁粉",
+    "kana": "おしるこ",
+    "exampleJp": "寒い日に温かいお汁粉を食べました。",
+    "exampleMeaning": "寒冷的日子吃了热红豆年糕汤。"
+  },
+  {
+    "kanji": "お皿",
+    "kana": "おさら",
+    "exampleJp": "洗ったお皿を棚に戻しました。",
+    "exampleMeaning": "把洗好的盘子放回了架子。"
+  },
+  {
+    "kanji": "お粥",
+    "kana": "おかゆ",
+    "exampleJp": "具合が悪いので、朝はお粥を食べました。",
+    "exampleMeaning": "身体不舒服，所以早上吃了粥。"
+  },
+  {
+    "kanji": "お菓子",
+    "kana": "おかし",
+    "exampleJp": "子どもたちにお菓子を一つずつ配りました。",
+    "exampleMeaning": "给孩子们每人分了一块点心。"
+  },
+  {
+    "kanji": "かささぎ",
+    "kana": "かささぎ",
+    "exampleJp": "庭の木にかささぎが一羽とまっていました。",
+    "exampleMeaning": "院子里的树上停着一只喜鹊。"
+  },
+  {
+    "kanji": "ガレージ",
+    "kana": "ガレージ",
+    "exampleJp": "車をガレージに入れてから、玄関を閉めました。",
+    "exampleMeaning": "把车开进车库后关上了门。"
+  },
+  {
+    "kanji": "クーラー",
+    "kana": "クーラー",
+    "exampleJp": "暑かったので、部屋のクーラーをつけました。",
+    "exampleMeaning": "天气很热，所以打开了房间的空调。"
+  },
+  {
+    "kanji": "こちらこそ",
+    "kana": "こちらこそ",
+    "exampleJp": "こちらこそ、今日はありがとうございました。",
+    "exampleMeaning": "我才要感谢您今天的帮助。"
+  },
+  {
+    "kanji": "ご馳走",
+    "kana": "ごちそう",
+    "exampleJp": "友人が手料理をご馳走してくれました。",
+    "exampleMeaning": "朋友请我吃了亲手做的饭菜。"
+  },
+  {
+    "kanji": "サービスセンター",
+    "kana": "サービスセンター",
+    "exampleJp": "故障した機器をサービスセンターに持ち込みました。",
+    "exampleMeaning": "我把故障的设备带到了客服中心。"
+  },
+  {
+    "kanji": "ジャスミン茶",
+    "kana": "ジャスミンちゃ",
+    "exampleJp": "食後に温かいジャスミン茶を飲みました。",
+    "exampleMeaning": "饭后喝了热茉莉花茶。"
+  },
+  {
+    "kanji": "シュート",
+    "kana": "シュート",
+    "exampleJp": "彼は試合の最後に見事なシュートを決めました。",
+    "exampleMeaning": "他在比赛最后漂亮地射进了一球。"
+  },
+  {
+    "kanji": "シルク",
+    "kana": "シルク",
+    "exampleJp": "母への贈り物に、シルクのスカーフを選びました。",
+    "exampleMeaning": "我选了丝绸围巾作为送给母亲的礼物。"
+  },
+  {
+    "kanji": "スイカ",
+    "kana": "スイカ",
+    "exampleJp": "暑い日に冷えたスイカを食べると、元気が出ます。",
+    "exampleMeaning": "炎热的日子吃冰西瓜会恢复精神。"
+  },
+  {
+    "kanji": "つい",
+    "kana": "つい",
+    "exampleJp": "店の前を通ると、つい新しい本を買ってしまいます。",
+    "exampleMeaning": "经过店门口时，总是不由得买新书。"
+  },
+  {
+    "kanji": "デジカメ",
+    "kana": "デジカメ",
+    "exampleJp": "旅行には軽いデジカメを持って行きました。",
+    "exampleMeaning": "旅行时带了一台轻便的数码相机。"
+  },
+  {
+    "kanji": "バーゲン",
+    "kana": "バーゲン",
+    "exampleJp": "バーゲンで冬のコートを安く買いました。",
+    "exampleMeaning": "在大甩卖时便宜买了冬大衣。"
+  },
+  {
+    "kanji": "パイロット",
+    "kana": "パイロット",
+    "exampleJp": "そのパイロットは安全確認をしてから離陸しました。",
+    "exampleMeaning": "那名飞行员确认安全后起飞了。"
+  },
+  {
+    "kanji": "ハンサム",
+    "kana": "ハンサム",
+    "exampleJp": "彼はハンサムですが、話し方はとても穏やかです。",
+    "exampleMeaning": "他很英俊，但说话方式很温和。"
+  },
+  {
+    "kanji": "フリーズ",
+    "kana": "フリーズ",
+    "exampleJp": "作業中にパソコンがフリーズして、データを保存できませんでした。",
+    "exampleMeaning": "工作中电脑死机，没能保存数据。"
+  },
+  {
+    "kanji": "ブローチ",
+    "kana": "ブローチ",
+    "exampleJp": "母は式典で古いブローチを胸につけました。",
+    "exampleMeaning": "母亲在典礼上把旧胸针别在胸前。"
+  },
+  {
+    "kanji": "ボーリング",
+    "kana": "ボーリング",
+    "exampleJp": "会社の仲間とボーリングを楽しみました。",
+    "exampleMeaning": "和公司的伙伴一起打了保龄球。"
+  },
+  {
+    "kanji": "一昨日",
+    "kana": "おととい",
+    "exampleJp": "一昨日は友人と映画を見に行きました。",
+    "exampleMeaning": "前天和朋友去看了电影。"
+  },
+  {
+    "kanji": "丁度",
+    "kana": "ちょうど",
+    "exampleJp": "駅に着いたとき、丁度電車が出発しました。",
+    "exampleMeaning": "到达车站时，电车正好出发了。"
+  },
+  {
+    "kanji": "上級者",
+    "kana": "じょうきゅうしゃ",
+    "exampleJp": "この講座は日本語の上級者を対象にしています。",
+    "exampleMeaning": "这门课程面向日语高级学习者。"
+  },
+  {
+    "kanji": "不味い",
+    "kana": "まずい",
+    "exampleJp": "このスープは少し不味いので、味を直しましょう。",
+    "exampleMeaning": "这汤有点难喝，我们调一下味道吧。"
+  },
+  {
+    "kanji": "交通量",
+    "kana": "こうつうりょう",
+    "exampleJp": "朝は交通量が多いので、早めに家を出ます。",
+    "exampleMeaning": "早上车流量大，所以早点出门。"
+  },
+  {
+    "kanji": "仕舞う",
+    "kana": "しまう",
+    "exampleJp": "使った道具を箱に仕舞ってください。",
+    "exampleMeaning": "请把用过的工具收进箱子。"
+  },
+  {
+    "kanji": "他",
+    "kana": "ほか",
+    "exampleJp": "他に質問があれば、遠慮なく聞いてください。",
+    "exampleMeaning": "如果还有其他问题，请尽管提问。"
+  },
+  {
+    "kanji": "但し",
+    "kana": "ただし",
+    "exampleJp": "入場は無料です。但し、予約が必要です。",
+    "exampleMeaning": "入场免费，但是需要预约。"
+  },
+  {
+    "kanji": "何方",
+    "kana": "どなた",
+    "exampleJp": "受付で、どなたをお訪ねか尋ねられました。",
+    "exampleMeaning": "在前台被询问要找哪位。"
+  },
+  {
+    "kanji": "何歳",
+    "kana": "なんさい",
+    "exampleJp": "お子さんは何歳ですか。",
+    "exampleMeaning": "您的孩子几岁了？"
+  },
+  {
+    "kanji": "側",
+    "kana": "そば",
+    "exampleJp": "駅の側に新しい図書館ができました。",
+    "exampleMeaning": "车站旁边建了一座新图书馆。"
+  },
+  {
+    "kanji": "先ず",
+    "kana": "まず",
+    "exampleJp": "先ず必要な書類をそろえてから、窓口へ行きます。",
+    "exampleMeaning": "首先准备好必要文件后再去窗口。"
+  },
+  {
+    "kanji": "免許証",
+    "kana": "めんきょしょう",
+    "exampleJp": "レンタカーを借りるとき、免許証を見せました。",
+    "exampleMeaning": "租车时出示了驾照。"
+  },
+  {
+    "kanji": "入口",
+    "kana": "いりぐち",
+    "exampleJp": "入口で係員にチケットを見せてください。",
+    "exampleMeaning": "请在入口向工作人员出示票券。"
+  },
+  {
+    "kanji": "入場料",
+    "kana": "にゅうじょうりょう",
+    "exampleJp": "この美術館は入場料が無料です。",
+    "exampleMeaning": "这家美术馆免费入场。"
+  },
+  {
+    "kanji": "写真展",
+    "kana": "しゃしんてん",
+    "exampleJp": "駅のホールで開かれた写真展を見に行きました。",
+    "exampleMeaning": "去看了车站大厅举办的摄影展。"
+  },
+  {
+    "kanji": "出来るだけ",
+    "kana": "できるだけ",
+    "exampleJp": "出来るだけ早く返事をいただけると助かります。",
+    "exampleMeaning": "如果能尽早回复，我会很感激。"
+  },
+  {
+    "kanji": "出来る",
+    "kana": "できる",
+    "exampleJp": "駅前に新しい公園が出来ました。",
+    "exampleMeaning": "车站前建成了一个新公园。"
+  },
+  {
+    "kanji": "出迎え",
+    "kana": "でむかえ",
+    "exampleJp": "空港まで家族の出迎えに行きました。",
+    "exampleMeaning": "我去机场迎接家人。"
+  },
+  {
+    "kanji": "初詣",
+    "kana": "はつもうで",
+    "exampleJp": "家族と神社へ初詣に行きました。",
+    "exampleMeaning": "和家人去神社进行了新年第一次参拜。"
+  },
+  {
+    "kanji": "勿体ない",
+    "kana": "もったいない",
+    "exampleJp": "まだ食べられる料理を捨てるのは勿体ないです。",
+    "exampleMeaning": "把还可以吃的饭菜扔掉很浪费。"
+  },
+  {
+    "kanji": "午前中",
+    "kana": "ごぜんちゅう",
+    "exampleJp": "午前中に銀行へ行って、用事を済ませました。",
+    "exampleMeaning": "上午去了银行办完了事情。"
+  },
+  {
+    "kanji": "卒業式",
+    "kana": "そつぎょうしき",
+    "exampleJp": "卒業式で先生に感謝の言葉を伝えました。",
+    "exampleMeaning": "在毕业典礼上向老师表达了感谢。"
+  },
+  {
+    "kanji": "卵焼き",
+    "kana": "たまごやき",
+    "exampleJp": "弁当に卵焼きを二切れ入れました。",
+    "exampleMeaning": "在便当里放了两块煎蛋。"
+  },
+  {
+    "kanji": "向日葵",
+    "kana": "ひまわり",
+    "exampleJp": "庭に向日葵の種を植えました。",
+    "exampleMeaning": "在院子里种下了向日葵种子。"
+  },
+  {
+    "kanji": "吸殻",
+    "kana": "すいがら",
+    "exampleJp": "灰皿に吸殻を残したままにしないでください。",
+    "exampleMeaning": "请不要把烟头留在烟灰缸里。"
+  },
+  {
+    "kanji": "唐揚げ",
+    "kana": "からあげ",
+    "exampleJp": "夕食に鶏の唐揚げを作りました。",
+    "exampleMeaning": "晚饭做了炸鸡块。"
+  },
+  {
+    "kanji": "喧嘩",
+    "kana": "けんか",
+    "exampleJp": "兄弟喧嘩の後、二人はすぐに仲直りしました。",
+    "exampleMeaning": "兄弟吵架后，两人很快就和好了。"
+  },
+  {
+    "kanji": "国際貿易",
+    "kana": "こくさいぼうえき",
+    "exampleJp": "この港は国際貿易の拠点として発展しました。",
+    "exampleMeaning": "这个港口作为国际贸易据点发展起来。"
+  },
+  {
+    "kanji": "報告書",
+    "kana": "ほうこくしょ",
+    "exampleJp": "調査の結果を報告書にまとめました。",
+    "exampleMeaning": "把调查结果整理成了报告书。"
+  },
+  {
+    "kanji": "変わり者",
+    "kana": "かわりもの",
+    "exampleJp": "彼は少し変わり者ですが、仕事はとても丁寧です。",
+    "exampleMeaning": "他虽然有点古怪，但工作非常认真。"
+  },
+  {
+    "kanji": "大分",
+    "kana": "だいぶ",
+    "exampleJp": "薬を飲んだら、体調が大分よくなりました。",
+    "exampleMeaning": "吃药后身体状况好了很多。"
+  },
+  {
+    "kanji": "宅配便",
+    "kana": "たくはいびん",
+    "exampleJp": "重い荷物は宅配便で先に送りました。",
+    "exampleMeaning": "沉重的行李先用快递寄走了。"
+  },
+  {
+    "kanji": "宇宙飛行士",
+    "kana": "うちゅうひこうし",
+    "exampleJp": "子どもの頃から宇宙飛行士に憧れていました。",
+    "exampleMeaning": "从小就憧憬宇航员。"
+  },
+  {
+    "kanji": "展示場",
+    "kana": "てんじじょう",
+    "exampleJp": "新しい家具を見るために展示場へ行きました。",
+    "exampleMeaning": "为了看新家具去了展览场。"
+  },
+  {
+    "kanji": "建築家",
+    "kana": "けんちくか",
+    "exampleJp": "将来は環境に優しい家を設計する建築家になりたいです。",
+    "exampleMeaning": "将来想成为设计环保住宅的建筑师。"
+  },
+  {
+    "kanji": "怪我",
+    "kana": "けが",
+    "exampleJp": "転んで膝を怪我したので、病院へ行きました。",
+    "exampleMeaning": "摔倒弄伤膝盖后去了医院。"
+  },
+  {
+    "kanji": "戦争",
+    "kana": "せんそう",
+    "exampleJp": "二度と戦争を起こさないために、歴史を学びます。",
+    "exampleMeaning": "为了不再发生战争，我们学习历史。"
+  },
+  {
+    "kanji": "持って来る",
+    "kana": "もってくる",
+    "exampleJp": "明日の発表には、完成した資料を持って来てください。",
+    "exampleMeaning": "明天的发表请把完成的资料带来。"
+  },
+  {
+    "kanji": "持って行く",
+    "kana": "もっていく",
+    "exampleJp": "雨が降りそうなので、折りたたみ傘を持って行きます。",
+    "exampleMeaning": "看起来要下雨，所以我要带折叠伞去。"
+  },
+  {
+    "kanji": "新居",
+    "kana": "しんきょ",
+    "exampleJp": "新居に引っ越した友人を訪ねました。",
+    "exampleMeaning": "去拜访了搬进新家的朋友。"
+  },
+  {
+    "kanji": "旅行会社",
+    "kana": "りょこうがいしゃ",
+    "exampleJp": "旅行会社で北海道へのツアーを予約しました。",
+    "exampleMeaning": "在旅行社预约了去北海道的旅行团。"
+  },
+  {
+    "kanji": "日常会話",
+    "kana": "にちじょうかいわ",
+    "exampleJp": "旅行前に簡単な日常会話を練習しました。",
+    "exampleMeaning": "旅行前练习了简单的日常会话。"
+  },
+  {
+    "kanji": "日本酒",
+    "kana": "にほんしゅ",
+    "exampleJp": "父は小さな杯で日本酒を味わいました。",
+    "exampleMeaning": "父亲用小酒杯品尝了日本酒。"
+  },
+  {
+    "kanji": "旨く",
+    "kana": "うまく",
+    "exampleJp": "交渉が旨く進んだので、予定より早く終わりました。",
+    "exampleMeaning": "谈判进展顺利，所以比预定时间更早结束了。"
+  },
+  {
+    "kanji": "明後日",
+    "kana": "あさって",
+    "exampleJp": "明後日は朝から病院へ行く予定です。",
+    "exampleMeaning": "后天计划一早去医院。"
+  },
+  {
+    "kanji": "暫く",
+    "kana": "しばらく",
+    "exampleJp": "暫く休んでから、作業を再開しましょう。",
+    "exampleMeaning": "休息一会儿后再开始工作吧。"
+  },
+  {
+    "kanji": "曲",
+    "kana": "きょく",
+    "exampleJp": "好きな曲を聞きながら、部屋を掃除しました。",
+    "exampleMeaning": "一边听喜欢的歌曲一边打扫了房间。"
+  },
+  {
+    "kanji": "更に",
+    "kana": "さらに",
+    "exampleJp": "説明を聞いて、更に詳しく調べたくなりました。",
+    "exampleMeaning": "听完说明后，我想进一步详细调查。"
+  },
+  {
+    "kanji": "林",
+    "kana": "はやし",
+    "exampleJp": "林の中から小さな鳥の声が聞こえました。",
+    "exampleMeaning": "从树林里传来了小鸟的叫声。"
+  },
+  {
+    "kanji": "樹",
+    "kana": "き",
+    "exampleJp": "庭の樹に小鳥が巣を作りました。",
+    "exampleMeaning": "小鸟在院子里的树上筑了巢。"
+  },
+  {
+    "kanji": "殆ど",
+    "kana": "ほとんど",
+    "exampleJp": "宿題は殆ど終わりましたが、作文だけ残っています。",
+    "exampleMeaning": "作业几乎完成了，只剩作文。"
+  },
+  {
+    "kanji": "気さく",
+    "kana": "きさく",
+    "exampleJp": "新しい店主は気さくで、すぐに町の人と親しくなりました。",
+    "exampleMeaning": "新店主很随和，很快和镇上的人熟悉起来。"
+  },
+  {
+    "kanji": "気持ち悪い",
+    "kana": "きもちわるい",
+    "exampleJp": "船が揺れると、少し気持ち悪くなります。",
+    "exampleMeaning": "船摇晃时会有点不舒服。"
+  },
+  {
+    "kanji": "火気厳禁",
+    "kana": "かきげんきん",
+    "exampleJp": "この倉庫は火気厳禁なので、たばこを吸えません。",
+    "exampleMeaning": "这座仓库严禁烟火，不能吸烟。"
+  },
+  {
+    "kanji": "灰皿",
+    "kana": "はいざら",
+    "exampleJp": "喫煙室の灰皿を新しいものに交換しました。",
+    "exampleMeaning": "把吸烟室的烟灰缸换成了新的。"
+  },
+  {
+    "kanji": "然し",
+    "kana": "しかし",
+    "exampleJp": "申し込みは簡単です。しかし、期限を過ぎると受け付けられません。",
+    "exampleMeaning": "申请很简单，但是过了期限就不予受理。"
+  },
+  {
+    "kanji": "焼酎",
+    "kana": "しょうちゅう",
+    "exampleJp": "父は夕食のときに焼酎を少し飲みます。",
+    "exampleMeaning": "父亲晚饭时会喝一点烧酒。"
+  },
+  {
+    "kanji": "片づける",
+    "kana": "かたづける",
+    "exampleJp": "食事の後で、みんなで部屋を片づけました。",
+    "exampleMeaning": "吃饭后大家一起收拾了房间。"
+  },
+  {
+    "kanji": "特技",
+    "kana": "とくぎ",
+    "exampleJp": "私の特技は、初対面の人ともすぐ話せることです。",
+    "exampleMeaning": "我的特长是能马上和初次见面的人交谈。"
+  },
+  {
+    "kanji": "独身",
+    "kana": "どくしん",
+    "exampleJp": "彼は独身ですが、週末は家族とよく出かけます。",
+    "exampleMeaning": "他是单身，但周末经常和家人出门。"
+  },
+  {
+    "kanji": "生産コスト",
+    "kana": "せいさんコスト",
+    "exampleJp": "生産コストを下げるために工程を見直しました。",
+    "exampleMeaning": "为了降低生产成本，重新检查了生产流程。"
+  },
+  {
+    "kanji": "申込書",
+    "kana": "もうしこみしょ",
+    "exampleJp": "申込書に住所と電話番号を記入してください。",
+    "exampleMeaning": "请在申请表上填写地址和电话号码。"
+  },
+  {
+    "kanji": "白鳥",
+    "kana": "はくちょう",
+    "exampleJp": "湖に白鳥が二羽浮かんでいます。",
+    "exampleMeaning": "湖面上漂着两只天鹅。"
+  },
+  {
+    "kanji": "直ぐ",
+    "kana": "すぐ",
+    "exampleJp": "用事が終わったら直ぐに連絡します。",
+    "exampleMeaning": "事情办完后马上联系。"
+  },
+  {
+    "kanji": "直ぐに",
+    "kana": "すぐに",
+    "exampleJp": "問題に気づいたら、直ぐに担当者へ知らせてください。",
+    "exampleMeaning": "发现问题后请立即通知负责人。"
+  },
+  {
+    "kanji": "真っ直ぐ",
+    "kana": "まっすぐ",
+    "exampleJp": "この道を真っ直ぐ行くと、駅に着きます。",
+    "exampleMeaning": "沿这条路直走就能到车站。"
+  },
+  {
+    "kanji": "確り",
+    "kana": "しっかり",
+    "exampleJp": "シートベルトを確り締めてください。",
+    "exampleMeaning": "请系紧安全带。"
+  },
+  {
+    "kanji": "立入禁止",
+    "kana": "たちいりきんし",
+    "exampleJp": "工事中の場所は立入禁止です。",
+    "exampleMeaning": "施工中的地方禁止进入。"
+  },
+  {
+    "kanji": "紅葉",
+    "kana": "もみじ",
+    "exampleJp": "秋になると、山の紅葉が赤く染まります。",
+    "exampleMeaning": "到了秋天，山上的红叶染成红色。"
+  },
+  {
+    "kanji": "紙飛行機",
+    "kana": "かみひこうき",
+    "exampleJp": "子どもと一緒に紙飛行機を折りました。",
+    "exampleMeaning": "和孩子一起折了纸飞机。"
+  },
+  {
+    "kanji": "終電",
+    "kana": "しゅうでん",
+    "exampleJp": "終電に間に合うように、少し早めに駅へ向かいました。",
+    "exampleMeaning": "为了赶上末班车，我提前了一点去车站。"
+  },
+  {
+    "kanji": "結婚式",
+    "kana": "けっこんしき",
+    "exampleJp": "友人の結婚式でスピーチを頼まれました。",
+    "exampleMeaning": "朋友请我在婚礼上致辞。"
+  },
+  {
+    "kanji": "繋がる",
+    "kana": "つながる",
+    "exampleJp": "この道は駅の北口に繋がっています。",
+    "exampleMeaning": "这条路连接着车站的北口。"
+  },
+  {
+    "kanji": "翡翠",
+    "kana": "ひすい",
+    "exampleJp": "祖母から翡翠の小さな飾りを譲り受けました。",
+    "exampleMeaning": "我从祖母那里得到了一件小翡翠饰品。"
+  },
+  {
+    "kanji": "肉じゃが",
+    "kana": "にくじゃが",
+    "exampleJp": "母が夕食に肉じゃがを作ってくれました。",
+    "exampleMeaning": "母亲晚饭做了日式土豆炖肉。"
+  },
+  {
+    "kanji": "胡弓",
+    "kana": "こきゅう",
+    "exampleJp": "演奏会で胡弓の静かな音色を楽しみました。",
+    "exampleMeaning": "在演奏会上欣赏了胡琴宁静的音色。"
+  },
+  {
+    "kanji": "航空会社",
+    "kana": "こうくうがいしゃ",
+    "exampleJp": "航空会社から搭乗時間の変更が届きました。",
+    "exampleMeaning": "航空公司发来了登机时间变更通知。"
+  },
+  {
+    "kanji": "船便",
+    "kana": "ふなびん",
+    "exampleJp": "急がない荷物は船便で送りました。",
+    "exampleMeaning": "不急的行李用海运寄走了。"
+  },
+  {
+    "kanji": "行楽地",
+    "kana": "こうらくち",
+    "exampleJp": "連休の行楽地は、家族連れでにぎわっていました。",
+    "exampleMeaning": "长假期间的游览地挤满了带孩子的家庭。"
+  },
+  {
+    "kanji": "被る",
+    "kana": "かぶる",
+    "exampleJp": "日差しが強いので、帽子を被って出かけました。",
+    "exampleMeaning": "阳光很强，所以我戴着帽子出门了。"
+  },
+  {
+    "kanji": "親子丼",
+    "kana": "おやこどん",
+    "exampleJp": "昼休みに食堂で親子丼を食べました。",
+    "exampleMeaning": "午休时在食堂吃了鸡肉鸡蛋盖饭。"
+  },
+  {
+    "kanji": "観光客",
+    "kana": "かんこうきゃく",
+    "exampleJp": "春になると、この町を訪れる観光客が増えます。",
+    "exampleMeaning": "到了春天，来这座城镇的游客会增加。"
+  },
+  {
+    "kanji": "訳す",
+    "kana": "やくす",
+    "exampleJp": "この説明を英語に訳してください。",
+    "exampleMeaning": "请把这段说明翻译成英语。"
+  },
+  {
+    "kanji": "誠",
+    "kana": "まこと",
+    "exampleJp": "彼は誠のある態度で謝りました。",
+    "exampleMeaning": "他以真诚的态度道了歉。"
+  },
+  {
+    "kanji": "貯める",
+    "kana": "ためる",
+    "exampleJp": "毎月少しずつお金を貯めています。",
+    "exampleMeaning": "每月一点点存钱。"
+  },
+  {
+    "kanji": "貰う",
+    "kana": "もらう",
+    "exampleJp": "誕生日に姉から手作りのケーキを貰いました。",
+    "exampleMeaning": "生日时收到姐姐亲手做的蛋糕。"
+  },
+  {
+    "kanji": "賑やか",
+    "kana": "にぎやか",
+    "exampleJp": "祭りの日は商店街がとても賑やかです。",
+    "exampleMeaning": "节日当天商店街非常热闹。"
+  },
+  {
+    "kanji": "遠慮なく",
+    "kana": "えんりょなく",
+    "exampleJp": "遠慮なく、好きな料理を取ってください。",
+    "exampleMeaning": "请不要客气，尽管取喜欢的菜。"
+  },
+  {
+    "kanji": "野球場",
+    "kana": "やきゅうじょう",
+    "exampleJp": "休日に家族で野球場へ試合を見に行きました。",
+    "exampleMeaning": "休息日和家人去棒球场看比赛。"
+  },
+  {
+    "kanji": "風邪を引く",
+    "kana": "かぜをひく",
+    "exampleJp": "風邪を引かないように、外から帰ったら手を洗います。",
+    "exampleMeaning": "为了不感冒，从外面回来后要洗手。"
+  },
+  {
+    "kanji": "駐車禁止",
+    "kana": "ちゅうしゃきんし",
+    "exampleJp": "この道路は駐車禁止なので、車を止めないでください。",
+    "exampleMeaning": "这条路禁止停车，请不要停车。"
+  },
+  {
+    "kanji": "魯迅",
+    "kana": "ろじん",
+    "exampleJp": "大学の授業で魯迅の作品を読みました。",
+    "exampleMeaning": "在大学课堂上读了鲁迅的作品。"
+  }
+]

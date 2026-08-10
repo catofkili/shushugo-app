@@ -54,7 +54,7 @@ type GrammarSeedRow = [
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // Keep this aligned with the metadata already baked into public/nihongo.db so
 // a fresh install does not replay all 11k metadata updates on first launch.
-const JLPT_WORD_METADATA_VERSION = "2026-08-10-manual-meanings-5163";
+const JLPT_WORD_METADATA_VERSION = "2026-08-10-manual-meanings-5163-examples-121";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
 const GRAMMAR_SEED_VERSION = "2026-07-14-grammar-rewrite";
@@ -65,10 +65,19 @@ const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
 };
 
 type JlptMeaningOverride = { kanji: string; kana: string; meaning: string };
+type JlptExampleOverride = { kanji: string; kana: string; exampleJp: string; exampleMeaning: string };
 
 const loadJlptMeaningOverrides = async (): Promise<JlptMeaningOverride[]> => {
   const payload = await import("../data/jlpt_meaning_overrides.json");
   return payload.default as JlptMeaningOverride[];
+};
+
+// 生产库里有一批不在种子行里的历史词条,它们的例句没有任何下发路径 ——
+// 种子迁移是按 seed 逐行 UPDATE 的,压根扫不到这些行。和手写释义一样单独走
+// 一张按 (kanji, kana) 的覆盖表。
+const loadJlptExampleOverrides = async (): Promise<JlptExampleOverride[]> => {
+  const payload = await import("../data/jlpt_example_overrides.json");
+  return payload.default as JlptExampleOverride[];
 };
 
 const loadGrammarSeed = async (): Promise<{ version: string; rows: GrammarSeedRow[] }> => {
@@ -276,7 +285,8 @@ const nounSuruCorrections: [string, string][] = [
 
 const syncJlptWordMetadata = (
   jlptWordSeed: JlptWordSeedRow[],
-  meaningOverrides: JlptMeaningOverride[] = []
+  meaningOverrides: JlptMeaningOverride[] = [],
+  exampleOverrides: JlptExampleOverride[] = []
 ) => {
   const db = getDatabase();
   const syncedKeys = new Set<string>();
@@ -306,6 +316,15 @@ const syncJlptWordMetadata = (
     const kanji = key.slice(0, separator);
     const kana = key.slice(separator + 1);
     db.run("UPDATE words SET meaning = ? WHERE kanji = ? AND kana = ?", [meaning, kanji, kana]);
+  });
+  // 只补空缺,绝不覆盖已有例句。
+  exampleOverrides.forEach(({ kanji, kana, exampleJp, exampleMeaning }) => {
+    db.run(`
+      UPDATE words
+      SET example_jp = ?, example_meaning = ?
+      WHERE kanji = ? AND kana = ?
+        AND (example_jp IS NULL OR example_jp = '')
+    `, [exampleJp, exampleMeaning, kanji, kana]);
   });
   db.run(`
     UPDATE words
@@ -369,10 +388,11 @@ const ensureJlptWordMetadata = async () => {
   if (getState("jlpt_word_metadata_version", "") === JLPT_WORD_METADATA_VERSION) return;
   const jlptWordSeed = await loadJlptWordSeed();
   const meaningOverrides = await loadJlptMeaningOverrides();
+  const exampleOverrides = await loadJlptExampleOverrides();
   const db = getDatabase();
   db.run("BEGIN TRANSACTION");
   try {
-    syncJlptWordMetadata(jlptWordSeed, meaningOverrides);
+    syncJlptWordMetadata(jlptWordSeed, meaningOverrides, exampleOverrides);
     db.run("COMMIT");
   } catch (error) {
     db.run("ROLLBACK");
@@ -402,6 +422,7 @@ const ensureJlptWordSeed = async () => {
 
   const jlptWordSeed = await loadJlptWordSeed();
   const meaningOverrides = await loadJlptMeaningOverrides();
+  const exampleOverrides = await loadJlptExampleOverrides();
   const db = getDatabase();
   const existing = new Map<string, number>();
   rowsFor("SELECT id, kanji, kana FROM words").forEach((row) => {
@@ -433,7 +454,7 @@ const ensureJlptWordSeed = async () => {
       existing.set(key, newId);
     });
     db.run("INSERT OR IGNORE INTO progress (word_id) SELECT id FROM words");
-    syncJlptWordMetadata(jlptWordSeed, meaningOverrides);
+    syncJlptWordMetadata(jlptWordSeed, meaningOverrides, exampleOverrides);
     setState("jlpt_seed_version", JLPT_SEED_VERSION);
     db.run("COMMIT");
   } catch (error) {
