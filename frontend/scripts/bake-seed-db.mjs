@@ -17,7 +17,7 @@ const seedPath = path.join(here, "../src/data/jlpt_words_seed.json");
 
 // 与 src/lib/study-core.ts 保持一致
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
-const JLPT_WORD_METADATA_VERSION = "2026-08-02-word-examples-rewrite";
+const JLPT_WORD_METADATA_VERSION = "2026-08-05-manual-examples-10609";
 
 const nounSuruCorrections = [
   ["運動", "うんどう"], ["計画", "けいかく"], ["研究", "けんきゅう"], ["故障", "こしょう"],

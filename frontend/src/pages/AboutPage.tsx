@@ -72,7 +72,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">数据来源</p>
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <p className="text-sm leading-relaxed text-white/70">
-            当前 JLPT 词条与中文释义可追溯到 eggrolls-JLPT10k-v3.5，并适用 CC BY-NC 4.0；单词例句已按词性和实际语境重新独立生成，但词条与释义仍仅可用于非商业开发，商业发布前必须取得授权或整体替换。
+          当前 JLPT 词条与中文释义可追溯到 eggrolls-JLPT10k-v3.5，并适用 CC BY-NC 4.0；10,609 条种子词条均已有逐词手写例句。例句重写不改变词条与释义的来源许可：词条与释义仍仅可用于非商业开发，商业发布前必须取得授权或整体替换。
             其他数据的来源、署名和发布条件请以项目 README 的版权合规说明为准。
           </p>
         </div>

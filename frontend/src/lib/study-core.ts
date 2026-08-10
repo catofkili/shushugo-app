@@ -54,7 +54,7 @@ type GrammarSeedRow = [
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // Keep this aligned with the metadata already baked into public/nihongo.db so
 // a fresh install does not replay all 11k metadata updates on first launch.
-const JLPT_WORD_METADATA_VERSION = "2026-08-02-word-examples-rewrite";
+const JLPT_WORD_METADATA_VERSION = "2026-08-05-manual-examples-10609";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
 const GRAMMAR_SEED_VERSION = "2026-07-14-grammar-rewrite";
