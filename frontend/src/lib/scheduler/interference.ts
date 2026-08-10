@@ -7,7 +7,8 @@
  *
  * 干扰来源有三类,合并成一张邻接表:
  *  1. 自他动词对(verb_pair_hints,368 对)—— ぶつかる / ぶつける
- *  2. 中文释义相近组(similar_meaning_groups,38 组)—— いらっしゃる / おいでになる
+ *  2. 人工中文释义相近组(similar_meaning_groups)与题面首义相同的撞车组(运行时现算)——
+ *     いらっしゃる / おいでになる、以及同一中文题面首义的词条
  *  3. 音形相近(confusion.ts 的编辑距离口径)—— ずらす / ずれる
  *
  * 第 3 类全词库有 47726 对、覆盖 73% 的词条,**绝不能每张卡现算一次全表**。
@@ -16,6 +17,7 @@
 
 import verbPairHints from "../../data/verb_pair_hints.json";
 import { similarMeaningGroups } from "../../data/similar_meaning_groups";
+import { questionMeaningKeyOf } from "../models/question-meaning-index";
 import {
   confusionThreshold,
   kanaSimilarity,
@@ -65,6 +67,11 @@ const staticTokensOf = (row: DbRow): string[] => {
     )
   ));
   if (group) tokens.push(`sm:${group.id}`);
+
+  // 题面首义相同 = 中文提示一模一样,连着出必然是「上一张的残留」而不是记忆。
+  // 分组由 question-meaning-index 按当前词库现算,导入词单新增的词也会进组。
+  const questionKey = questionMeaningKeyOf(Number(row.id ?? 0));
+  if (questionKey) tokens.push(`qm:${questionKey}`);
 
   return tokens;
 };

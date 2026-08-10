@@ -1,5 +1,6 @@
 import type { WordCard } from "../types/vocabulary";
 import { DbRow, rowsFor } from "../lib/database/db-utils";
+import { questionMeaningKeyOf, questionMeaningPeers, resetQuestionMeaningIndex } from "../lib/models/question-meaning-index";
 
 type SimilarMeaningMember = readonly [kanji: string, kana: string, meaning: string];
 
@@ -11,9 +12,9 @@ export interface SimilarMeaningGroup {
 }
 
 /*
- * 这里只放“中文提示容易给出多个合理答案”的高置信度词组。
- * 同中文释义只是发现候选的入口；真正放进来前按自动/他动、敬语方向、
- * 场景和语感人工确认。没有出现在 words 表里的成员不会显示成幽灵词条。
+ * 这里保留人工确认过、需要专门说明区别的高价值词组。
+ * 全量的题面首义撞车不落盘，由 question-meaning-index 在运行时按当前词库现算；
+ * 没有出现在 words 表里的成员不会显示成幽灵词条。
  */
 export const similarMeaningGroups: readonly SimilarMeaningGroup[] = [
   {
@@ -392,6 +393,7 @@ const resolvedByGroup = new Map<string, ResolvedMember[]>();
 
 export const resetSimilarMeaningCache = (): void => {
   resolvedByGroup.clear();
+  resetQuestionMeaningIndex();
 };
 
 const resolveGroup = (group: SimilarMeaningGroup): ResolvedMember[] => {
@@ -419,11 +421,52 @@ const resolveGroup = (group: SimilarMeaningGroup): ResolvedMember[] => {
   return resolved;
 };
 
+/**
+ * 题面首义和这个词相同的其他词。分组由 question-meaning-index 现算,
+ * 这里只负责把 id 补成展示需要的词形和释义。
+ */
+const autoItemsFor = (row: DbRow): ResolvedMember[] => {
+  const peers = questionMeaningPeers(Number(row.id ?? 0));
+  if (!peers.length) return [];
+  const clauses = peers.map(() => "?").join(", ");
+  return rowsFor(`SELECT id, meaning, kana, kanji FROM words WHERE id IN (${clauses})`, peers)
+    .map((peer) => ({
+      id: Number(peer.id ?? 0),
+      kana: String(peer.kana ?? ""),
+      kanji: String(peer.kanji ?? ""),
+      meaning: String(peer.meaning ?? ""),
+      note: String(peer.meaning ?? "")
+    }));
+};
+
+const autoSimilarMeaningCandidates = (row: DbRow): WordCard["similarMeaning"] => {
+  const key = questionMeaningKeyOf(Number(row.id ?? 0));
+  const items = autoItemsFor(row);
+  if (!key || !items.length) return null;
+  return {
+    title: `题面首义相同：${key}`,
+    distinction: "这些词在题面显示的首义相同，都可能是合理答案；请结合日语词形、语境和词性区分。",
+    items
+  };
+};
+
 export function similarMeaningCandidates(row: DbRow): WordCard["similarMeaning"] {
   const group = similarMeaningGroups.find((candidate) => candidate.members.some((member) => memberMatches(member, row)));
-  if (!group) return null;
+  if (!group) return autoSimilarMeaningCandidates(row);
 
   const currentId = Number(row.id ?? 0);
-  const items = resolveGroup(group).filter((item) => item.id !== currentId);
-  return items.length ? { title: group.title, distinction: group.distinction, items } : null;
+  const manualItems = resolveGroup(group).filter((item) => item.id !== currentId);
+  const autoItems = autoItemsFor(row);
+  const manualIds = new Set(manualItems.map((item) => item.id));
+  const items = [...manualItems, ...autoItems.filter((item) => !manualIds.has(item.id))];
+  if (!items.length) return null;
+
+  const hasAutoExtras = autoItems.some((item) => !manualIds.has(item.id));
+  return {
+    title: group.title,
+    distinction: hasAutoExtras
+      ? `${group.distinction}题面首义相同的其他词也列在后面，请结合词形、语境和词性区分。`
+      : group.distinction,
+    items
+  };
 }
