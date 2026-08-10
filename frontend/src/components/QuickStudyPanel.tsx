@@ -9,6 +9,7 @@ import type { WordAnswer, WordCard } from "../types/vocabulary";
 type Props = {
   onNavigate: (page: Page) => void;
   variant?: "entry" | "page";
+  onDailyModeComplete?: () => void;
 };
 
 type SubmitSummary = {
@@ -45,7 +46,7 @@ const phaseLabel = (phase: string) => {
   return "今日词汇";
 };
 
-export function QuickStudyPanel({ onNavigate, variant = "page" }: Props) {
+export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeComplete }: Props) {
   const [cards, setCards] = useState<WordCard[]>([]);
   const [nextCards, setNextCards] = useState<WordCard[]>([]);
   const [seenWordIds, setSeenWordIds] = useState<Set<number>>(new Set());
@@ -410,6 +411,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page" }: Props) {
         setRevealedIds(new Set());
         setSelectionMode(false);
         setSelectedIds(new Set());
+        onDailyModeComplete?.();
         return;
       }
 

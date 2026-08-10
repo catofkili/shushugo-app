@@ -31,7 +31,7 @@ export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyMod
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/55">Study Modes</p>
         <h1 className="mt-1 text-2xl font-semibold">学习模式</h1>
         <p className="mt-2 text-sm leading-6 text-white/58">
-          五种方式平级，想练哪种自己挑；主页的大按钮会按你最后一次选的那种开学。
+          五种方式平级，想练哪种自己挑；当天任务学完后自动进入错题本，凌晨 4 点刷新时恢复原模式。
         </p>
       </div>
 

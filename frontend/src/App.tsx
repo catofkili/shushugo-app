@@ -11,7 +11,8 @@ import { useEntitlements } from "./hooks/useEntitlements";
 import { completeTodayWordPlan, getProgressOverview, markContentComplete, ProgressOverview } from "./lib/api";
 import { canUseFeature, FeatureId } from "./lib/entitlements";
 import { PROGRESS_UPDATED_EVENT } from "./lib/progress-events";
-import { defaultStudyMode, getStudyMode, saveStudyMode, studyModeInfo } from "./lib/studyMode";
+import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, studyModeInfo } from "./lib/studyMode";
+import { studyDayEnd } from "./lib/database/db-utils";
 import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
 import { syncUserProfileAfterLogin } from "./lib/profile-sync";
 import type { SearchResult } from "./lib/search-api";
@@ -100,6 +101,27 @@ export default function App() {
     return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
   }, []);
 
+  useEffect(() => {
+    // 模式的自动恢复跟单词一样以凌晨 4 点为边界。若正在背一张卡，不在
+    // 半途改 initialMode；离开学习页时 navigateToPage 会读取恢复后的模式。
+    if (page === "word") return;
+    const syncEffectiveMode = () => {
+      const currentMode = getStudyMode();
+      setSelectedStudyMode(currentMode);
+      setLaunchStudyMode(currentMode);
+    };
+    const delay = Math.max(studyDayEnd().getTime() - Date.now() + 250, 250);
+    const timer = window.setTimeout(syncEffectiveMode, delay);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") syncEffectiveMode();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [page]);
+
   const noticeTimerRef = useRef<number | undefined>(undefined);
   const syncConflictNoticeRef = useRef("");
 
@@ -138,8 +160,8 @@ export default function App() {
   }, []);
 
   // 导航到新页面，记录历史。
-  // studyModeOverride 只给「显式选了模式」的入口用(学习模式页、主页的错题本格子);
-  // 其余进单词页的路径一律回落到持久化的常规模式 —— 错题本不该粘住首页的「今日复习」。
+  // studyModeOverride 给明确指定模式的入口用；其余入口读取当前有效模式，
+  // 其中也包括「今日任务完成后、4 点前」的临时错题本。
   const navigateToPage = (newPage: Page, studyModeOverride?: StudyMode) => {
     if (accountProtectedPages.has(newPage) && !cloudSession.token) {
       setPendingAccountPage(newPage);
@@ -151,6 +173,11 @@ export default function App() {
       setSelectedStudyMode(currentMode);
       setLaunchStudyMode(currentMode);
       setWordStudyRevision((revision) => revision + 1);
+    }
+    if (newPage === "home" || newPage === "study-modes") {
+      const currentMode = getStudyMode();
+      setSelectedStudyMode(currentMode);
+      setLaunchStudyMode(currentMode);
     }
     if (newPage === "home" || newPage === "profile") {
       setSelectedGrammarId("wa");
@@ -291,6 +318,22 @@ export default function App() {
     navigateToPage("word", safeMode);
   };
 
+  const startCurrentStudyMode = () => {
+    // 首页大按钮启动的是「当前有效模式」。自动错题本不能走 saveStudyMode，
+    // 否则会被误存成永久选择，第二天 4 点也恢复不回去。
+    const currentMode = getStudyMode();
+    setSelectedStudyMode(currentMode);
+    setLaunchStudyMode(currentMode);
+    const ownPage = studyModeInfo(currentMode).page;
+    navigateToPage(ownPage ?? "word", currentMode);
+  };
+
+  const handleDailyModeComplete = (mode: StudyMode) => {
+    const effectiveMode = activateMistakesForToday(mode);
+    // 只更新选择态，不改变正在显示的 WordStudy initialMode，保留完成页。
+    setSelectedStudyMode(effectiveMode);
+  };
+
   const toggleFillLevel = (kind: "word" | "grammar", level: JLPTLevel) => {
     const update = (current: JLPTLevel[]) => current.includes(level) ? current.filter((item) => item !== level) : [...current, level];
     if (kind === "word") {
@@ -381,7 +424,7 @@ export default function App() {
         <ZooHome
           overview={overview}
           onNavigate={navigateToPage}
-          onStartStudy={() => startStudyMode(getStudyMode())}
+          onStartStudy={startCurrentStudyMode}
           onStartMode={startStudyMode}
           activeMode={launchStudyMode}
           onOpenFill={() => setFillOpen(true)}
@@ -391,7 +434,7 @@ export default function App() {
       );
     }
     if (page === "word") {
-      return <WordStudy key={wordStudyRevision} initialMode={launchStudyMode} />;
+      return <WordStudy key={wordStudyRevision} initialMode={launchStudyMode} onDailyModeComplete={handleDailyModeComplete} />;
     }
     if (page === "team") {
       return <TeamPage />;
@@ -408,7 +451,7 @@ export default function App() {
     if (page === "quick-study") {
       return renderToolSubpage(
         toolPageTitles["quick-study"] ?? "快速学习",
-        <QuickStudyPage onNavigate={navigateToPage} />
+        <QuickStudyPage onNavigate={navigateToPage} onDailyModeComplete={() => handleDailyModeComplete("quick")} />
       );
     }
     if (page === "grammar") {
@@ -474,7 +517,7 @@ export default function App() {
       return <AboutPage onBack={goBack} />;
     }
 
-    return <WordStudy initialMode={launchStudyMode} />;
+    return <WordStudy initialMode={launchStudyMode} onDailyModeComplete={handleDailyModeComplete} />;
   };
 
   return (

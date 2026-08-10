@@ -26,6 +26,7 @@ import type { WordSessionOptions } from "../lib/study-types";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
+  onDailyModeComplete?: (mode: StudyMode) => void;
 }
 
 /* ——— 甩卡评分:左=忘记(Again) / 右=认识(Good) ——— */
@@ -91,7 +92,14 @@ const yieldToBrowser = () => new Promise<void>((resolve) => {
   else setTimeout(resolve, 0);
 });
 
-export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
+const isDailyModeComplete = (mode: StudyMode, stats: WordStats) => {
+  if (mode === "classic") return stats.stage1Done;
+  if (mode === "reverse") return stats.stage2Total > 0 && stats.stage2Completed >= stats.stage2Total;
+  if (mode === "kanji") return stats.kanjiTotal > 0 && stats.kanjiCompleted >= stats.kanjiTotal;
+  return false;
+};
+
+export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: WordStudyProps) => {
   const [card, setCard] = useState<WordCard | null>(null);
   const [stats, setStats] = useState<WordStats | null>(null);
   const [phase, setPhase] = useState("loading");
@@ -110,6 +118,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
   const lastStudyTickRef = useRef(Date.now());
   const trackingActiveRef = useRef(false);
   const submittingRef = useRef(false);
+  const completionReportedRef = useRef(false);
   const dragStartYRef = useRef<number | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -154,6 +163,10 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
       setStats(data.stats);
       setPhase(data.phase);
       setRevealed(false);
+      if (!data.card && !completionReportedRef.current && isDailyModeComplete(mode, data.stats)) {
+        completionReportedRef.current = true;
+        onDailyModeComplete?.(mode);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "无法读取本地词库");
     } finally {
@@ -274,6 +287,18 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
       setStats(nextStats);
       setPhase(data.phase);
       setRevealed(false);
+      // 同一个顽固词可能被立即再次排到。它的 id 没变，下面依赖 card.id 的
+      // effect 不会执行，所以必须在「一次作答已结束」这个轮次边界主动收起
+      // 上次翻面弹出的备注；下一次翻面时仍会照常重新弹出。
+      setNoteText(data.card?.note ?? "");
+      setNoteEditorOpen(false);
+      setNoteMemoryOpen(false);
+      setSimilarMeaningOpen(false);
+      setActivePopover(null);
+      if (!data.card && !completionReportedRef.current && isDailyModeComplete(initialMode, nextStats)) {
+        completionReportedRef.current = true;
+        onDailyModeComplete?.(initialMode);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "提交失败");
     } finally {
@@ -281,7 +306,7 @@ export const WordStudy = ({ initialMode = "classic" }: WordStudyProps) => {
       setSubmitting(false);
       setRateFeedback(null);
     }
-  }, [card, sendStudySeconds, sessionOptions, submitting]);
+  }, [card, initialMode, onDailyModeComplete, sendStudySeconds, sessionOptions, submitting]);
 
   const revealAnswer = useCallback(() => {
     if (!card || loading || revealed || submitting) return;

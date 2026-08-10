@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { defaultStudyMode, getStudyMode, saveStudyMode, STUDY_MODES, studyModeInfo } from "./studyMode";
+import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, STUDY_MODES, studyModeInfo } from "./studyMode";
 
 const store = new Map<string, string>();
 
@@ -36,5 +36,48 @@ describe("学习模式的记忆", () => {
       expect(studyModeInfo(mode.id).short.length).toBeGreaterThan(0);
     }
     expect(STUDY_MODES.filter((mode) => mode.page).map((mode) => mode.id)).toEqual(["quick"]);
+  });
+
+  it("当天完成后临时切到错题本,凌晨四点跨学习日后恢复原模式", () => {
+    const beforeFour = new Date(2026, 7, 10, 3, 59);
+    const afterFour = new Date(2026, 7, 10, 4, 1);
+
+    saveStudyMode("classic");
+    expect(activateMistakesForToday("classic", beforeFour)).toBe("mistakes");
+    expect(getStudyMode(beforeFour)).toBe("mistakes");
+    expect(getStudyMode(afterFour)).toBe("classic");
+    expect(getStudyMode(afterFour)).toBe("classic");
+  });
+
+  it("自动错题本期间手动换模式时尊重用户选择", () => {
+    const now = new Date(2026, 7, 10, 12, 0);
+    activateMistakesForToday("classic", now);
+
+    saveStudyMode("reverse", now);
+
+    expect(getStudyMode(now)).toBe("reverse");
+  });
+
+  it("手动否决之后,当天不会被第二次自动切走", () => {
+    const now = new Date(2026, 7, 10, 12, 0);
+    activateMistakesForToday("classic", now);
+    saveStudyMode("classic", now);
+
+    // 再进一次已完成的经典模式:WordStudy 会再报一次完成,但今天已经切过了。
+    expect(activateMistakesForToday("classic", now)).toBe("classic");
+    expect(getStudyMode(now)).toBe("classic");
+  });
+
+  it("手动否决只管当天,次日完成后照常自动切", () => {
+    const today = new Date(2026, 7, 10, 12, 0);
+    const tomorrow = new Date(2026, 7, 11, 12, 0);
+
+    activateMistakesForToday("classic", today);
+    saveStudyMode("classic", today);
+    expect(getStudyMode(today)).toBe("classic");
+
+    expect(getStudyMode(tomorrow)).toBe("classic");
+    expect(activateMistakesForToday("classic", tomorrow)).toBe("mistakes");
+    expect(getStudyMode(tomorrow)).toBe("mistakes");
   });
 });
