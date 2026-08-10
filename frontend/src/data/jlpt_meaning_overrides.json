@@ -355,6 +355,11 @@
     "meaning": "节奏；速度"
   },
   {
+    "kanji": "(オ) bier",
+    "kana": "ビール",
+    "meaning": "啤酒"
+  },
+  {
     "kanji": "(オ) gom",
     "kana": "ゴム",
     "meaning": "橡胶；口香糖"
@@ -368,6 +373,11 @@
     "kanji": "(オ) kop",
     "kana": "コップ",
     "meaning": "杯子"
+  },
+  {
+    "kanji": "(ド) Arbeit",
+    "kana": "アルバイト",
+    "meaning": "兼职；打工"
   },
   {
     "kanji": "(ド) Bombe",
@@ -430,6 +440,11 @@
     "meaning": "美食；美食家"
   },
   {
+    "kanji": "(フ) jupon",
+    "kana": "ズボン",
+    "meaning": "裤子"
+  },
+  {
     "kanji": "(フ) kilomètre",
     "kana": "キロメートル",
     "meaning": "千米"
@@ -458,6 +473,16 @@
     "kanji": "(フ) restaurant",
     "kana": "レストラン",
     "meaning": "餐厅"
+  },
+  {
+    "kanji": "(ポ) pão",
+    "kana": "パン",
+    "meaning": "面包"
+  },
+  {
+    "kanji": "(ポ) tabaco",
+    "kana": "タバコ",
+    "meaning": "香烟"
   },
   {
     "kanji": "(ロ) norma",
@@ -575,9 +600,34 @@
     "meaning": "徽章"
   },
   {
+    "kanji": "ball pen",
+    "kana": "ボールペン",
+    "meaning": "圆珠笔"
+  },
+  {
+    "kanji": "banana",
+    "kana": "バナナ",
+    "meaning": "香蕉"
+  },
+  {
     "kanji": "band",
     "kana": "バンド",
     "meaning": "乐队；带子"
+  },
+  {
+    "kanji": "barbecue",
+    "kana": "バーベキュー",
+    "meaning": "烧烤"
+  },
+  {
+    "kanji": "basketball",
+    "kana": "バスケットボール",
+    "meaning": "篮球"
+  },
+  {
+    "kanji": "bench",
+    "kana": "ベンチ",
+    "meaning": "长椅；板凳"
   },
   {
     "kanji": "big",
@@ -605,6 +655,11 @@
     "meaning": "女式衬衫"
   },
   {
+    "kanji": "bonus",
+    "kana": "ボーナス",
+    "meaning": "奖金；红利"
+  },
+  {
     "kanji": "boom",
     "kana": "ブーム",
     "meaning": "热潮；繁荣"
@@ -620,6 +675,11 @@
     "meaning": "男朋友"
   },
   {
+    "kanji": "building",
+    "kana": "ビル",
+    "meaning": "大楼"
+  },
+  {
     "kanji": "businessman",
     "kana": "ビジネスマン",
     "meaning": "商务人士"
@@ -630,14 +690,34 @@
     "meaning": "公交车"
   },
   {
+    "kanji": "button",
+    "kana": "ボタン",
+    "meaning": "按钮"
+  },
+  {
     "kanji": "cabinet",
     "kana": "キャビネット",
     "meaning": "柜子；内阁"
   },
   {
+    "kanji": "cake",
+    "kana": "ケーキ",
+    "meaning": "蛋糕"
+  },
+  {
     "kanji": "calorie",
     "kana": "カロリー",
     "meaning": "卡路里"
+  },
+  {
+    "kanji": "camera",
+    "kana": "カメラ",
+    "meaning": "相机"
+  },
+  {
+    "kanji": "camp",
+    "kana": "キャンプ",
+    "meaning": "露营"
   },
   {
     "kanji": "canvas",
@@ -685,6 +765,11 @@
     "meaning": "休闲的；随意的"
   },
   {
+    "kanji": "catalog",
+    "kana": "カタログ",
+    "meaning": "目录"
+  },
+  {
     "kanji": "catchphrase",
     "kana": "キャッチフレーズ",
     "meaning": "宣传语；口号"
@@ -710,14 +795,34 @@
     "meaning": "登记入住"
   },
   {
+    "kanji": "check",
+    "kana": "チェック",
+    "meaning": "检查；核对"
+  },
+  {
+    "kanji": "cheese",
+    "kana": "チーズ",
+    "meaning": "奶酪"
+  },
+  {
     "kanji": "chime",
     "kana": "チャイム",
     "meaning": "门铃；钟声"
   },
   {
+    "kanji": "chocolate",
+    "kana": "チョコレート",
+    "meaning": "巧克力"
+  },
+  {
     "kanji": "chorus",
     "kana": "コーラス",
     "meaning": "合唱；副歌"
+  },
+  {
+    "kanji": "Christmas・Xmas",
+    "kana": "クリスマス",
+    "meaning": "圣诞节"
   },
   {
     "kanji": "circle",
@@ -737,7 +842,12 @@
   {
     "kanji": "classic",
     "kana": "クラシック",
-    "meaning": "古典的"
+    "meaning": "古典；古典的"
+  },
+  {
+    "kanji": "class",
+    "kana": "クラス",
+    "meaning": "班级"
   },
   {
     "kanji": "cleaning",
@@ -758,6 +868,16 @@
     "kanji": "club",
     "kana": "クラブ",
     "meaning": "俱乐部"
+  },
+  {
+    "kanji": "coat",
+    "kana": "コート",
+    "meaning": "外套；球场"
+  },
+  {
+    "kanji": "cola",
+    "kana": "コーラ",
+    "meaning": "可乐"
   },
   {
     "kanji": "collection",
@@ -815,6 +935,11 @@
     "meaning": "音乐会"
   },
   {
+    "kanji": "concrete",
+    "kana": "コンクリート",
+    "meaning": "混凝土"
+  },
+  {
     "kanji": "condition",
     "kana": "コンディション",
     "meaning": "状况；条件"
@@ -838,6 +963,11 @@
     "kanji": "control",
     "kana": "コントロール",
     "meaning": "控制；掌控"
+  },
+  {
+    "kanji": "convenience store",
+    "kana": "コンビニ",
+    "meaning": "便利店"
   },
   {
     "kanji": "copy",
@@ -885,6 +1015,11 @@
     "meaning": "奶油"
   },
   {
+    "kanji": "credit card",
+    "kana": "クレジットカード",
+    "meaning": "信用卡"
+  },
+  {
     "kanji": "cup",
     "kana": "カップ",
     "meaning": "杯子"
@@ -893,6 +1028,21 @@
     "kanji": "curriculum",
     "kana": "カリキュラム",
     "meaning": "课程；课程表"
+  },
+  {
+    "kanji": "curry rice",
+    "kana": "カレーライス",
+    "meaning": "咖喱饭"
+  },
+  {
+    "kanji": "curry",
+    "kana": "カレー",
+    "meaning": "咖喱"
+  },
+  {
+    "kanji": "curtain",
+    "kana": "カーテン",
+    "meaning": "窗帘"
   },
   {
     "kanji": "curve",
@@ -930,6 +1080,21 @@
     "meaning": "民主；民主主义"
   },
   {
+    "kanji": "department store",
+    "kana": "デパート",
+    "meaning": "百货商店"
+  },
+  {
+    "kanji": "designer",
+    "kana": "デザイナー",
+    "meaning": "设计师"
+  },
+  {
+    "kanji": "design",
+    "kana": "デザイン",
+    "meaning": "设计；设计图"
+  },
+  {
     "kanji": "dilemma",
     "kana": "ジレンマ",
     "meaning": "两难；困境"
@@ -962,7 +1127,7 @@
   {
     "kanji": "drama",
     "kana": "ドラマ",
-    "meaning": "剧情；戏剧"
+    "meaning": "电视剧；戏剧"
   },
   {
     "kanji": "dressing",
@@ -977,7 +1142,7 @@
   {
     "kanji": "drive",
     "kana": "ドライブ",
-    "meaning": "兜风；驾驶"
+    "meaning": "兜风；开车"
   },
   {
     "kanji": "dubbing",
@@ -1018,6 +1183,11 @@
     "kanji": "episode",
     "kana": "エピソード",
     "meaning": "插曲；轶事"
+  },
+  {
+    "kanji": "escalator",
+    "kana": "エスカレーター",
+    "meaning": "自动扶梯"
   },
   {
     "kanji": "essence",
@@ -1080,6 +1250,11 @@
     "meaning": "形式；姿势"
   },
   {
+    "kanji": "France",
+    "kana": "フランス",
+    "meaning": "法国"
+  },
+  {
     "kanji": "front",
     "kana": "フロント",
     "meaning": "前台；正面"
@@ -1115,6 +1290,11 @@
     "meaning": "手势；姿态"
   },
   {
+    "kanji": "glass",
+    "kana": "グラス",
+    "meaning": "玻璃杯"
+  },
+  {
     "kanji": "global",
     "kana": "グローバル",
     "meaning": "全球的"
@@ -1123,6 +1303,16 @@
     "kanji": "goal",
     "kana": "ゴール",
     "meaning": "终点；目标"
+  },
+  {
+    "kanji": "golf",
+    "kana": "ゴルフ",
+    "meaning": "高尔夫"
+  },
+  {
+    "kanji": "graph",
+    "kana": "グラフ",
+    "meaning": "图表"
   },
   {
     "kanji": "ground",
@@ -1155,9 +1345,24 @@
     "meaning": "指南；准则"
   },
   {
+    "kanji": "guide",
+    "kana": "ガイド",
+    "meaning": "导游；引导"
+  },
+  {
+    "kanji": "guitar",
+    "kana": "ギター",
+    "meaning": "吉他"
+  },
+  {
     "kanji": "hamburg steak",
     "kana": "ハンバーグ",
     "meaning": "汉堡肉饼"
+  },
+  {
+    "kanji": "handkerchief",
+    "kana": "ハンカチ",
+    "meaning": "手帕"
   },
   {
     "kanji": "handle",
@@ -1182,7 +1387,7 @@
   {
     "kanji": "hiking",
     "kana": "ハイキング",
-    "meaning": "远足；徒步"
+    "meaning": "徒步；远足"
   },
   {
     "kanji": "hit",
@@ -1225,9 +1430,19 @@
     "meaning": "鬣狗"
   },
   {
+    "kanji": "ice cream",
+    "kana": "アイスクリーム",
+    "meaning": "冰淇淋"
+  },
+  {
     "kanji": "incentive",
     "kana": "インセンティブ",
     "meaning": "激励；奖励"
+  },
+  {
+    "kanji": "influenza",
+    "kana": "インフルエンザ",
+    "meaning": "流感"
   },
   {
     "kanji": "input",
@@ -1238,6 +1453,11 @@
     "kanji": "instructor",
     "kana": "インストラクター",
     "meaning": "指导员；教练"
+  },
+  {
+    "kanji": "internet",
+    "kana": "インターネット",
+    "meaning": "互联网"
   },
   {
     "kanji": "intern",
@@ -1258,6 +1478,11 @@
     "kanji": "jelly",
     "kana": "ゼリー",
     "meaning": "果冻"
+  },
+  {
+    "kanji": "juice",
+    "kana": "ジュース",
+    "meaning": "果汁"
   },
   {
     "kanji": "keyboard",
@@ -1355,9 +1580,14 @@
     "meaning": "储物柜"
   },
   {
+    "kanji": "mail address",
+    "kana": "メールアドレス",
+    "meaning": "邮箱地址"
+  },
+  {
     "kanji": "mail",
     "kana": "メール",
-    "meaning": "邮件"
+    "meaning": "邮件；发邮件"
   },
   {
     "kanji": "maintenance",
@@ -1400,6 +1630,11 @@
     "meaning": "说明书；手册"
   },
   {
+    "kanji": "marathon",
+    "kana": "マラソン",
+    "meaning": "马拉松"
+  },
+  {
     "kanji": "market",
     "kana": "マーケット",
     "meaning": "市场"
@@ -1407,7 +1642,7 @@
   {
     "kanji": "mark",
     "kana": "マーク",
-    "meaning": "标记"
+    "meaning": "标记；标志"
   },
   {
     "kanji": "mass communication",
@@ -1458,6 +1693,11 @@
     "kanji": "message",
     "kana": "メッセージ",
     "meaning": "消息；信息"
+  },
+  {
+    "kanji": "metre",
+    "kana": "メートル",
+    "meaning": "米"
   },
   {
     "kanji": "microphone",
@@ -1540,6 +1780,16 @@
     "meaning": "餐巾；卫生巾"
   },
   {
+    "kanji": "necklace",
+    "kana": "ネックレス",
+    "meaning": "项链"
+  },
+  {
+    "kanji": "necktie",
+    "kana": "ネクタイ",
+    "meaning": "领带"
+  },
+  {
     "kanji": "negative",
     "kana": "ネガティブ",
     "meaning": "消极的；负面的"
@@ -1560,6 +1810,11 @@
     "meaning": "纽约"
   },
   {
+    "kanji": "news",
+    "kana": "ニュース",
+    "meaning": "新闻"
+  },
+  {
     "kanji": "niche",
     "kana": "ニッチ",
     "meaning": "利基；狭窄市场"
@@ -1577,7 +1832,7 @@
   {
     "kanji": "note",
     "kana": "ノート",
-    "meaning": "笔记本"
+    "meaning": "笔记；记录"
   },
   {
     "kanji": "nurse",
@@ -1598,6 +1853,11 @@
     "kanji": "oil",
     "kana": "オイル",
     "meaning": "油"
+  },
+  {
+    "kanji": "Olympic",
+    "kana": "オリンピック",
+    "meaning": "奥运会"
   },
   {
     "kanji": "orchestra",
@@ -1632,7 +1892,17 @@
   {
     "kanji": "pack",
     "kana": "パック",
-    "meaning": "包装；一包"
+    "meaning": "包装；打包"
+  },
+  {
+    "kanji": "pamphlet",
+    "kana": "パンフレット",
+    "meaning": "小册子；宣传册"
+  },
+  {
+    "kanji": "panda",
+    "kana": "パンダ",
+    "meaning": "熊猫"
   },
   {
     "kanji": "panel",
@@ -1648,6 +1918,16 @@
     "kanji": "papa",
     "kana": "パパ",
     "meaning": "爸爸"
+  },
+  {
+    "kanji": "party",
+    "kana": "パーティー",
+    "meaning": "聚会"
+  },
+  {
+    "kanji": "passport",
+    "kana": "パスポート",
+    "meaning": "护照"
   },
   {
     "kanji": "pattern",
@@ -1677,7 +1957,12 @@
   {
     "kanji": "personal computer",
     "kana": "パソコン",
-    "meaning": "个人电脑"
+    "meaning": "电脑"
+  },
+  {
+    "kanji": "piano",
+    "kana": "ピアノ",
+    "meaning": "钢琴"
   },
   {
     "kanji": "pierced earrings",
@@ -1720,6 +2005,11 @@
     "meaning": "要点；分数"
   },
   {
+    "kanji": "pool",
+    "kana": "プール",
+    "meaning": "游泳池；游泳"
+  },
+  {
     "kanji": "position",
     "kana": "ポジション",
     "meaning": "位置；职位"
@@ -1743,6 +2033,11 @@
     "kanji": "presentation",
     "kana": "プレゼンテーション",
     "meaning": "演示；发表"
+  },
+  {
+    "kanji": "present",
+    "kana": "プレゼント",
+    "meaning": "礼物；赠送"
   },
   {
     "kanji": "pressure",
@@ -1785,6 +2080,11 @@
     "meaning": "拳；冲击力"
   },
   {
+    "kanji": "puncture",
+    "kana": "パンク",
+    "meaning": "爆胎；爆裂"
+  },
+  {
     "kanji": "puzzle",
     "kana": "パズル",
     "meaning": "谜题；拼图"
@@ -1798,6 +2098,11 @@
     "kanji": "race",
     "kana": "レース",
     "meaning": "比赛；赛跑"
+  },
+  {
+    "kanji": "racket",
+    "kana": "ラケット",
+    "meaning": "球拍"
   },
   {
     "kanji": "radio",
@@ -1862,7 +2167,7 @@
   {
     "kanji": "report",
     "kana": "レポート",
-    "meaning": "报告"
+    "meaning": "报告；撰写报告"
   },
   {
     "kanji": "request",
@@ -1920,6 +2225,11 @@
     "meaning": "销售；推销"
   },
   {
+    "kanji": "sandal",
+    "kana": "サンダル",
+    "meaning": "凉鞋"
+  },
+  {
     "kanji": "sandwich",
     "kana": "サンドイッチ",
     "meaning": "三明治"
@@ -1948,6 +2258,11 @@
     "kanji": "scale",
     "kana": "スケール",
     "meaning": "规模；刻度"
+  },
+  {
+    "kanji": "schedule",
+    "kana": "スケジュール",
+    "meaning": "日程；计划"
   },
   {
     "kanji": "science",
@@ -1997,7 +2312,7 @@
   {
     "kanji": "service",
     "kana": "サービス",
-    "meaning": "服务"
+    "meaning": "服务；提供服务"
   },
   {
     "kanji": "set",
@@ -2025,6 +2340,11 @@
     "meaning": "轮班；变换"
   },
   {
+    "kanji": "shirt",
+    "kana": "シャツ",
+    "meaning": "衬衫"
+  },
+  {
     "kanji": "shock",
     "kana": "ショック",
     "meaning": "震惊的；打击"
@@ -2033,6 +2353,11 @@
     "kanji": "show window",
     "kana": "ショーウインドー",
     "meaning": "橱窗"
+  },
+  {
+    "kanji": "shower",
+    "kana": "シャワー",
+    "meaning": "淋浴"
   },
   {
     "kanji": "shutter",
@@ -2050,6 +2375,11 @@
     "meaning": "签名；标志"
   },
   {
+    "kanji": "simple",
+    "kana": "シンプル",
+    "meaning": "简单的"
+  },
+  {
     "kanji": "skate",
     "kana": "スケート",
     "meaning": "滑冰"
@@ -2057,7 +2387,17 @@
   {
     "kanji": "sketch",
     "kana": "スケッチ",
-    "meaning": "素描；草图"
+    "meaning": "素描；画草图"
+  },
+  {
+    "kanji": "skirt",
+    "kana": "スカート",
+    "meaning": "裙子"
+  },
+  {
+    "kanji": "ski",
+    "kana": "スキー",
+    "meaning": "滑雪"
   },
   {
     "kanji": "slice",
@@ -2095,6 +2435,11 @@
     "meaning": "运动鞋"
   },
   {
+    "kanji": "soccer",
+    "kana": "サッカー",
+    "meaning": "足球"
+  },
+  {
     "kanji": "space",
     "kana": "スペース",
     "meaning": "空间；空位"
@@ -2110,9 +2455,29 @@
     "meaning": "扬声器"
   },
   {
+    "kanji": "speech",
+    "kana": "スピーチ",
+    "meaning": "演讲"
+  },
+  {
+    "kanji": "speed",
+    "kana": "スピード",
+    "meaning": "速度"
+  },
+  {
     "kanji": "spice",
     "kana": "スパイス",
     "meaning": "香料；趣味"
+  },
+  {
+    "kanji": "spoon",
+    "kana": "スプーン",
+    "meaning": "汤匙"
+  },
+  {
+    "kanji": "sport",
+    "kana": "スポーツ",
+    "meaning": "运动；体育"
   },
   {
     "kanji": "spotlight",
@@ -2205,6 +2570,11 @@
     "meaning": "行李箱"
   },
   {
+    "kanji": "suit",
+    "kana": "スーツ",
+    "meaning": "西装"
+  },
+  {
     "kanji": "sunglasses",
     "kana": "サングラス",
     "meaning": "太阳镜"
@@ -2213,6 +2583,16 @@
     "kanji": "super",
     "kana": "スーパー",
     "meaning": "超市"
+  },
+  {
+    "kanji": "sweater",
+    "kana": "セーター",
+    "meaning": "毛衣"
+  },
+  {
+    "kanji": "switch",
+    "kana": "スイッチ",
+    "meaning": "开关；切换"
   },
   {
     "kanji": "symposium",
@@ -2245,9 +2625,24 @@
     "meaning": "出租车"
   },
   {
+    "kanji": "team",
+    "kana": "チーム",
+    "meaning": "队伍"
+  },
+  {
+    "kanji": "television",
+    "kana": "テレビ",
+    "meaning": "电视"
+  },
+  {
     "kanji": "tenant",
     "kana": "テナント",
     "meaning": "租户；店铺"
+  },
+  {
+    "kanji": "tennis",
+    "kana": "テニス",
+    "meaning": "网球"
   },
   {
     "kanji": "terminal",
@@ -2258,6 +2653,11 @@
     "kanji": "text",
     "kana": "テキスト",
     "meaning": "教材；文本"
+  },
+  {
+    "kanji": "ticket",
+    "kana": "チケット",
+    "meaning": "票"
   },
   {
     "kanji": "timer",
@@ -2305,6 +2705,11 @@
     "meaning": "麻烦；故障"
   },
   {
+    "kanji": "unique",
+    "kana": "ユニーク",
+    "meaning": "独特的"
+  },
+  {
     "kanji": "veteran",
     "kana": "ベテラン",
     "meaning": "老手；资深者"
@@ -2312,7 +2717,7 @@
   {
     "kanji": "video",
     "kana": "ビデオ",
-    "meaning": "录像；视频"
+    "meaning": "视频"
   },
   {
     "kanji": "vinyl",
@@ -2358,11 +2763,6 @@
     "kanji": "ああ",
     "kana": "ああ",
     "meaning": "啊"
-  },
-  {
-    "kanji": "アイスクリーム",
-    "kana": "アイスクリーム",
-    "meaning": "冰淇淋"
   },
   {
     "kanji": "あいつ",
@@ -2518,16 +2918,6 @@
     "kanji": "ある",
     "kana": "ある",
     "meaning": "有；存在"
-  },
-  {
-    "kanji": "アルバイト",
-    "kana": "アルバイト",
-    "meaning": "兼职；打工"
-  },
-  {
-    "kanji": "アルバム",
-    "kana": "アルバム",
-    "meaning": "相册"
   },
   {
     "kanji": "あれ",
@@ -2735,16 +3125,6 @@
     "meaning": "可以说；所谓"
   },
   {
-    "kanji": "インターネット",
-    "kana": "インターネット",
-    "meaning": "互联网"
-  },
-  {
-    "kanji": "インフルエンザ",
-    "kana": "インフルエンザ",
-    "meaning": "流感"
-  },
-  {
     "kanji": "うーん",
     "kana": "うーん",
     "meaning": "嗯……"
@@ -2855,19 +3235,9 @@
     "meaning": "嗯……"
   },
   {
-    "kanji": "エスカレーター",
-    "kana": "エスカレーター",
-    "meaning": "自动扶梯"
-  },
-  {
     "kanji": "えっ",
     "kana": "えっ",
     "meaning": "啊？；什么？"
-  },
-  {
-    "kanji": "エレベーター",
-    "kana": "エレベーター",
-    "meaning": "电梯"
   },
   {
     "kanji": "おい",
@@ -2978,11 +3348,6 @@
     "kanji": "およそ",
     "kana": "およそ",
     "meaning": "大约；约莫"
-  },
-  {
-    "kanji": "オリンピック",
-    "kana": "オリンピック",
-    "meaning": "奥运会"
   },
   {
     "kanji": "おろか",
@@ -3105,16 +3470,6 @@
     "meaning": "拜托了；请"
   },
   {
-    "kanji": "カーテン",
-    "kana": "カーテン",
-    "meaning": "窗帘"
-  },
-  {
-    "kanji": "ガイド",
-    "kana": "ガイド",
-    "meaning": "导游；引导"
-  },
-  {
     "kanji": "かき集める",
     "kana": "かきあつめる",
     "meaning": "搜集；凑齐"
@@ -3185,11 +3540,6 @@
     "meaning": "仿造；形成轮廓"
   },
   {
-    "kanji": "カタログ",
-    "kana": "カタログ",
-    "meaning": "目录"
-  },
-  {
     "kanji": "かっこいい",
     "kana": "かっこいい",
     "meaning": "帅的；酷的"
@@ -3250,11 +3600,6 @@
     "meaning": "贪婪的；爱占便宜"
   },
   {
-    "kanji": "カメラ",
-    "kana": "カメラ",
-    "meaning": "相机"
-  },
-  {
     "kanji": "がやがや",
     "kana": "がやがや",
     "meaning": "喧闹；吵嚷"
@@ -3285,19 +3630,9 @@
     "meaning": "突然改变；哗啦"
   },
   {
-    "kanji": "カレー",
-    "kana": "カレー",
-    "meaning": "咖喱"
-  },
-  {
     "kanji": "ガレージ",
     "kana": "ガレージ",
     "meaning": "车库"
-  },
-  {
-    "kanji": "カレーライス",
-    "kana": "カレーライス",
-    "meaning": "咖喱饭"
   },
   {
     "kanji": "カレンダー",
@@ -3318,11 +3653,6 @@
     "kanji": "ぎこちない",
     "kana": "ぎこちない",
     "meaning": "笨拙的；不自然的"
-  },
-  {
-    "kanji": "ギター",
-    "kana": "ギター",
-    "meaning": "吉他"
   },
   {
     "kanji": "きちんと",
@@ -3358,11 +3688,6 @@
     "kanji": "きっぱり",
     "kana": "きっぱり",
     "meaning": "断然地；干脆地"
-  },
-  {
-    "kanji": "キャンプ",
-    "kana": "キャンプ",
-    "meaning": "露营"
   },
   {
     "kanji": "ぎゅうぎゅう",
@@ -3480,39 +3805,9 @@
     "meaning": "忧虑不已"
   },
   {
-    "kanji": "グラウンド",
-    "kana": "グラウンド",
-    "meaning": "运动场"
-  },
-  {
     "kanji": "ぐらぐら",
     "kana": "ぐらぐら",
     "meaning": "摇晃；摇摇晃晃"
-  },
-  {
-    "kanji": "クラシック",
-    "kana": "クラシック",
-    "meaning": "古典；古典的"
-  },
-  {
-    "kanji": "クラス",
-    "kana": "クラス",
-    "meaning": "班级"
-  },
-  {
-    "kanji": "グラス",
-    "kana": "グラス",
-    "meaning": "玻璃杯"
-  },
-  {
-    "kanji": "グラフ",
-    "kana": "グラフ",
-    "meaning": "图表"
-  },
-  {
-    "kanji": "クリスマス",
-    "kana": "クリスマス",
-    "meaning": "圣诞节"
   },
   {
     "kanji": "ぐるぐる",
@@ -3525,11 +3820,6 @@
     "meaning": "务必；千万"
   },
   {
-    "kanji": "クレジットカード",
-    "kana": "クレジットカード",
-    "meaning": "信用卡"
-  },
-  {
     "kanji": "ぐんぐん",
     "kana": "ぐんぐん",
     "meaning": "迅速地；大幅地"
@@ -3540,29 +3830,9 @@
     "meaning": "大幅地；猛地"
   },
   {
-    "kanji": "ケーキ",
-    "kana": "ケーキ",
-    "meaning": "蛋糕"
-  },
-  {
     "kanji": "ゴーカート",
     "kana": "ゴーカート",
     "meaning": "卡丁车"
-  },
-  {
-    "kanji": "コース",
-    "kana": "コース",
-    "meaning": "路线；课程"
-  },
-  {
-    "kanji": "コート",
-    "kana": "コート",
-    "meaning": "外套；球场"
-  },
-  {
-    "kanji": "コーラ",
-    "kana": "コーラ",
-    "meaning": "可乐"
   },
   {
     "kanji": "こいつ",
@@ -3675,11 +3945,6 @@
     "meaning": "最近；这时候"
   },
   {
-    "kanji": "コピー",
-    "kana": "コピー",
-    "meaning": "复印；复制"
-  },
-  {
     "kanji": "こぼす",
     "kana": "こぼす",
     "meaning": "洒出；打翻"
@@ -3703,11 +3968,6 @@
     "kanji": "ごめんなさい",
     "kana": "ごめんなさい",
     "meaning": "对不起"
-  },
-  {
-    "kanji": "ゴルフ",
-    "kana": "ゴルフ",
-    "meaning": "高尔夫"
   },
   {
     "kanji": "これから",
@@ -3735,29 +3995,9 @@
     "meaning": "滚来滚去；闲着"
   },
   {
-    "kanji": "コンクリート",
-    "kana": "コンクリート",
-    "meaning": "混凝土"
-  },
-  {
-    "kanji": "コンサート",
-    "kana": "コンサート",
-    "meaning": "音乐会"
-  },
-  {
     "kanji": "こんなに",
     "kana": "こんなに",
     "meaning": "这么；如此"
-  },
-  {
-    "kanji": "コンビニ",
-    "kana": "コンビニ",
-    "meaning": "便利店"
-  },
-  {
-    "kanji": "コンピューター",
-    "kana": "コンピューター",
-    "meaning": "电脑"
   },
   {
     "kanji": "ご主人",
@@ -3773,11 +4013,6 @@
     "kanji": "ご馳走",
     "kana": "ごちそう",
     "meaning": "请客；美食（敬）"
-  },
-  {
-    "kanji": "サービス",
-    "kana": "サービス",
-    "meaning": "服务；提供服务"
   },
   {
     "kanji": "サービスセンター",
@@ -3828,11 +4063,6 @@
     "kanji": "さぞかし",
     "kana": "さぞかし",
     "meaning": "想必；一定"
-  },
-  {
-    "kanji": "サッカー",
-    "kana": "サッカー",
-    "meaning": "足球"
   },
   {
     "kanji": "サッカーボール",
@@ -3940,16 +4170,6 @@
     "meaning": "～先生；～女士"
   },
   {
-    "kanji": "サンダル",
-    "kana": "サンダル",
-    "meaning": "凉鞋"
-  },
-  {
-    "kanji": "シーズン",
-    "kana": "シーズン",
-    "meaning": "季节"
-  },
-  {
     "kanji": "シーディー",
     "kana": "シーディー",
     "meaning": "CD"
@@ -4055,24 +4275,9 @@
     "meaning": "收起；做完"
   },
   {
-    "kanji": "シャツ",
-    "kana": "シャツ",
-    "meaning": "衬衫"
-  },
-  {
     "kanji": "しゃべる",
     "kana": "しゃべる",
     "meaning": "聊天"
-  },
-  {
-    "kanji": "シャワー",
-    "kana": "シャワー",
-    "meaning": "淋浴"
-  },
-  {
-    "kanji": "ジュース",
-    "kana": "ジュース",
-    "meaning": "果汁"
   },
   {
     "kanji": "シュート",
@@ -4115,49 +4320,14 @@
     "meaning": "寂静无声"
   },
   {
-    "kanji": "シンプル",
-    "kana": "シンプル",
-    "meaning": "简单的"
-  },
-  {
-    "kanji": "スーツケース",
-    "kana": "スーツケース",
-    "meaning": "行李箱"
-  },
-  {
-    "kanji": "スーツ",
-    "kana": "スーツ",
-    "meaning": "西装"
-  },
-  {
-    "kanji": "スーパー",
-    "kana": "スーパー",
-    "meaning": "超市"
-  },
-  {
     "kanji": "すいすい",
     "kana": "すいすい",
     "meaning": "顺利地；轻快地"
   },
   {
-    "kanji": "スイッチ",
-    "kana": "スイッチ",
-    "meaning": "开关；切换"
-  },
-  {
-    "kanji": "スカート",
-    "kana": "スカート",
-    "meaning": "裙子"
-  },
-  {
     "kanji": "すがすがしい",
     "kana": "すがすがしい",
     "meaning": "清爽的；爽朗的"
-  },
-  {
-    "kanji": "スキー",
-    "kana": "スキー",
-    "meaning": "滑雪"
   },
   {
     "kanji": "ずきずき",
@@ -4188,21 +4358,6 @@
     "kanji": "すくすく",
     "kana": "すくすく",
     "meaning": "茁壮地"
-  },
-  {
-    "kanji": "スケート",
-    "kana": "スケート",
-    "meaning": "滑冰"
-  },
-  {
-    "kanji": "スケジュール",
-    "kana": "スケジュール",
-    "meaning": "日程；计划"
-  },
-  {
-    "kanji": "スケッチ",
-    "kana": "スケッチ",
-    "meaning": "素描；画草图"
   },
   {
     "kanji": "すけべ",
@@ -4265,39 +4420,14 @@
     "meaning": "直截了当地"
   },
   {
-    "kanji": "スピーチ",
-    "kana": "スピーチ",
-    "meaning": "演讲"
-  },
-  {
-    "kanji": "スピード",
-    "kana": "スピード",
-    "meaning": "速度"
-  },
-  {
-    "kanji": "スプーン",
-    "kana": "スプーン",
-    "meaning": "汤匙"
-  },
-  {
     "kanji": "スペイン語",
     "kana": "スペインご",
     "meaning": "西班牙语"
   },
   {
-    "kanji": "スポーツ",
-    "kana": "スポーツ",
-    "meaning": "运动；体育"
-  },
-  {
     "kanji": "スポーツセンター",
     "kana": "スポーツセンター",
     "meaning": "体育中心"
-  },
-  {
-    "kanji": "ズボン",
-    "kana": "ズボン",
-    "meaning": "裤子"
   },
   {
     "kanji": "すみません",
@@ -4338,11 +4468,6 @@
     "kanji": "すんなり",
     "kana": "すんなり",
     "meaning": "顺利地；轻松地"
-  },
-  {
-    "kanji": "セーター",
-    "kana": "セーター",
-    "meaning": "毛衣"
   },
   {
     "kanji": "せい",
@@ -4635,11 +4760,6 @@
     "meaning": "很多"
   },
   {
-    "kanji": "タクシー",
-    "kana": "タクシー",
-    "meaning": "出租车"
-  },
-  {
     "kanji": "たくましい",
     "kana": "たくましい",
     "meaning": "健壮的；坚强的"
@@ -4683,11 +4803,6 @@
     "kanji": "たどる",
     "kana": "たどる",
     "meaning": "沿着走；追溯"
-  },
-  {
-    "kanji": "タバコ",
-    "kana": "タバコ",
-    "meaning": "香烟"
   },
   {
     "kanji": "だぶだぶ",
@@ -4740,29 +4855,9 @@
     "meaning": "逐渐"
   },
   {
-    "kanji": "チーズ",
-    "kana": "チーズ",
-    "meaning": "奶酪"
-  },
-  {
-    "kanji": "チーム",
-    "kana": "チーム",
-    "meaning": "队伍"
-  },
-  {
-    "kanji": "チェック",
-    "kana": "チェック",
-    "meaning": "检查；核对"
-  },
-  {
     "kanji": "ちかちか",
     "kana": "ちかちか",
     "meaning": "闪烁；刺眼"
-  },
-  {
-    "kanji": "チケット",
-    "kana": "チケット",
-    "meaning": "票"
   },
   {
     "kanji": "ちっとも",
@@ -4778,11 +4873,6 @@
     "kanji": "ちゃんと",
     "kana": "ちゃんと",
     "meaning": "好好地；整齐地"
-  },
-  {
-    "kanji": "チョコレート",
-    "kana": "チョコレート",
-    "meaning": "巧克力"
   },
   {
     "kanji": "ちょっと",
@@ -4885,11 +4975,6 @@
     "meaning": "难受的；辛苦的"
   },
   {
-    "kanji": "テープ",
-    "kana": "テープ",
-    "meaning": "胶带；磁带"
-  },
-  {
     "kanji": "てきぱき",
     "kana": "てきぱき",
     "meaning": "利落地；麻利地"
@@ -4920,16 +5005,6 @@
     "meaning": "支援；干预"
   },
   {
-    "kanji": "デザイナー",
-    "kana": "デザイナー",
-    "meaning": "设计师"
-  },
-  {
-    "kanji": "デザイン",
-    "kana": "デザイン",
-    "meaning": "设计；设计图"
-  },
-  {
     "kanji": "デジカメ",
     "kana": "デジカメ",
     "meaning": "数码相机"
@@ -4948,16 +5023,6 @@
     "kanji": "で",
     "kana": "で",
     "meaning": "那么；于是"
-  },
-  {
-    "kanji": "テニス",
-    "kana": "テニス",
-    "meaning": "网球"
-  },
-  {
-    "kanji": "デパート",
-    "kana": "デパート",
-    "meaning": "百货商店"
   },
   {
     "kanji": "では",
@@ -4980,24 +5045,9 @@
     "meaning": "电子游戏"
   },
   {
-    "kanji": "テレビ",
-    "kana": "テレビ",
-    "meaning": "电视"
-  },
-  {
     "kanji": "てんてこ舞い",
     "kana": "てんてこまい",
     "meaning": "忙得团团转"
-  },
-  {
-    "kanji": "ドア",
-    "kana": "ドア",
-    "meaning": "门"
-  },
-  {
-    "kanji": "トイレ",
-    "kana": "トイレ",
-    "meaning": "厕所"
   },
   {
     "kanji": "どういう",
@@ -5143,16 +5193,6 @@
     "kanji": "とやかく",
     "kana": "とやかく",
     "meaning": "说三道四"
-  },
-  {
-    "kanji": "ドライブ",
-    "kana": "ドライブ",
-    "meaning": "兜风；开车"
-  },
-  {
-    "kanji": "ドラマ",
-    "kana": "ドラマ",
-    "meaning": "电视剧；戏剧"
   },
   {
     "kanji": "トランク",
@@ -5335,11 +5375,6 @@
     "meaning": "尽管如此"
   },
   {
-    "kanji": "ニュース",
-    "kana": "ニュース",
-    "meaning": "新闻"
-  },
-  {
     "kanji": "にらむ",
     "kana": "にらむ",
     "meaning": "瞪；盯着看"
@@ -5365,11 +5400,6 @@
     "meaning": "喂；对吧"
   },
   {
-    "kanji": "ネクタイ",
-    "kana": "ネクタイ",
-    "meaning": "领带"
-  },
-  {
     "kanji": "ねじ",
     "kana": "ねじ",
     "meaning": "螺丝"
@@ -5385,24 +5415,9 @@
     "meaning": "央求；撒娇要"
   },
   {
-    "kanji": "ネックレス",
-    "kana": "ネックレス",
-    "meaning": "项链"
-  },
-  {
     "kanji": "ねばねば",
     "kana": "ねばねば",
     "meaning": "黏糊糊地"
-  },
-  {
-    "kanji": "ノート",
-    "kana": "ノート",
-    "meaning": "笔记；记录"
-  },
-  {
-    "kanji": "ノートパソコン",
-    "kana": "ノートパソコン",
-    "meaning": "笔记本电脑"
   },
   {
     "kanji": "のけ者",
@@ -5425,34 +5440,14 @@
     "meaning": "打折；特卖"
   },
   {
-    "kanji": "パーティー",
-    "kana": "パーティー",
-    "meaning": "聚会"
-  },
-  {
     "kanji": "ハードスケジュール",
     "kana": "ハードスケジュール",
     "meaning": "紧张的日程"
   },
   {
-    "kanji": "バーベキュー",
-    "kana": "バーベキュー",
-    "meaning": "烧烤"
-  },
-  {
     "kanji": "はあ",
     "kana": "はあ",
     "meaning": "啊；哈"
-  },
-  {
-    "kanji": "ハイキング",
-    "kana": "ハイキング",
-    "meaning": "徒步；远足"
-  },
-  {
-    "kanji": "バイク",
-    "kana": "バイク",
-    "meaning": "摩托车"
   },
   {
     "kanji": "はいはい",
@@ -5515,39 +5510,14 @@
     "meaning": "欢闹；兴奋"
   },
   {
-    "kanji": "バスケットボール",
-    "kana": "バスケットボール",
-    "meaning": "篮球"
-  },
-  {
     "kanji": "はず",
     "kana": "はず",
     "meaning": "应该；理应"
   },
   {
-    "kanji": "バス",
-    "kana": "バス",
-    "meaning": "公交车"
-  },
-  {
-    "kanji": "パスポート",
-    "kana": "パスポート",
-    "meaning": "护照"
-  },
-  {
-    "kanji": "パソコン",
-    "kana": "パソコン",
-    "meaning": "电脑"
-  },
-  {
     "kanji": "はっきり",
     "kana": "はっきり",
     "meaning": "清楚地；明确地"
-  },
-  {
-    "kanji": "パック",
-    "kana": "パック",
-    "meaning": "包装；打包"
   },
   {
     "kanji": "ばっさり",
@@ -5583,11 +5553,6 @@
     "kanji": "バドミントン",
     "kana": "バドミントン",
     "meaning": "羽毛球"
-  },
-  {
-    "kanji": "バナナ",
-    "kana": "バナナ",
-    "meaning": "香蕉"
   },
   {
     "kanji": "ばね",
@@ -5650,44 +5615,9 @@
     "meaning": "遥远的"
   },
   {
-    "kanji": "ハンカチ",
-    "kana": "ハンカチ",
-    "meaning": "手帕"
-  },
-  {
-    "kanji": "パンク",
-    "kana": "パンク",
-    "meaning": "爆胎；爆裂"
-  },
-  {
     "kanji": "ハンサム",
     "kana": "ハンサム",
     "meaning": "英俊的"
-  },
-  {
-    "kanji": "パンダ",
-    "kana": "パンダ",
-    "meaning": "熊猫"
-  },
-  {
-    "kanji": "パン",
-    "kana": "パン",
-    "meaning": "面包"
-  },
-  {
-    "kanji": "パンフレット",
-    "kana": "パンフレット",
-    "meaning": "小册子；宣传册"
-  },
-  {
-    "kanji": "ビール",
-    "kana": "ビール",
-    "meaning": "啤酒"
-  },
-  {
-    "kanji": "ピアノ",
-    "kana": "ピアノ",
-    "meaning": "钢琴"
   },
   {
     "kanji": "ひいては",
@@ -5765,11 +5695,6 @@
     "meaning": "正合适；紧贴"
   },
   {
-    "kanji": "ビデオ",
-    "kana": "ビデオ",
-    "meaning": "视频"
-  },
-  {
     "kanji": "ひどい",
     "kana": "ひどい",
     "meaning": "糟糕的；过分的"
@@ -5810,19 +5735,9 @@
     "meaning": "噼啪作响；麻木"
   },
   {
-    "kanji": "ビル",
-    "kana": "ビル",
-    "meaning": "大楼"
-  },
-  {
     "kanji": "ぴんと",
     "kana": "ぴんと",
     "meaning": "绷紧地；马上领会"
-  },
-  {
-    "kanji": "プール",
-    "kana": "プール",
-    "meaning": "游泳池；游泳"
   },
   {
     "kanji": "フェリー",
@@ -5865,11 +5780,6 @@
     "meaning": "忽然"
   },
   {
-    "kanji": "フライパン",
-    "kana": "フライパン",
-    "meaning": "平底锅"
-  },
-  {
     "kanji": "ふらふら",
     "kana": "ふらふら",
     "meaning": "摇摇晃晃；不稳"
@@ -5878,11 +5788,6 @@
     "kanji": "ぶらぶら",
     "kana": "ぶらぶら",
     "meaning": "闲逛；晃荡"
-  },
-  {
-    "kanji": "フランス",
-    "kana": "フランス",
-    "meaning": "法国"
   },
   {
     "kanji": "ぶら下げる",
@@ -5898,11 +5803,6 @@
     "kanji": "ぷりぷり",
     "kana": "ぷりぷり",
     "meaning": "气鼓鼓地；弹嫩"
-  },
-  {
-    "kanji": "プレゼント",
-    "kana": "プレゼント",
-    "meaning": "礼物；赠送"
   },
   {
     "kanji": "ぶれる",
@@ -5960,29 +5860,14 @@
     "meaning": "流利的；喋喋不休"
   },
   {
-    "kanji": "ベンチ",
-    "kana": "ベンチ",
-    "meaning": "长椅；板凳"
-  },
-  {
     "kanji": "ボート",
     "kana": "ボート",
     "meaning": "船"
   },
   {
-    "kanji": "ボーナス",
-    "kana": "ボーナス",
-    "meaning": "奖金；红利"
-  },
-  {
     "kanji": "ボーリング",
     "kana": "ボーリング",
     "meaning": "保龄球"
-  },
-  {
-    "kanji": "ボールペン",
-    "kana": "ボールペン",
-    "meaning": "圆珠笔"
   },
   {
     "kanji": "ぽい捨て",
@@ -6015,16 +5900,6 @@
     "meaning": "发呆；变模糊"
   },
   {
-    "kanji": "ポスター",
-    "kana": "ポスター",
-    "meaning": "海报"
-  },
-  {
-    "kanji": "ボタン",
-    "kana": "ボタン",
-    "meaning": "按钮"
-  },
-  {
     "kanji": "ほっとく",
     "kana": "ほっとく",
     "meaning": "放着不管"
@@ -6033,11 +5908,6 @@
     "kanji": "ほっと",
     "kana": "ほっと",
     "meaning": "放心；松口气"
-  },
-  {
-    "kanji": "ホテル",
-    "kana": "ホテル",
-    "meaning": "酒店"
   },
   {
     "kanji": "ほどける",
@@ -6093,11 +5963,6 @@
     "kanji": "ぼんやり",
     "kana": "ぼんやり",
     "meaning": "模糊地；发呆"
-  },
-  {
-    "kanji": "マーク",
-    "kana": "マーク",
-    "meaning": "标记；标志"
   },
   {
     "kanji": "まあ",
@@ -6165,19 +6030,9 @@
     "meaning": "刺眼的"
   },
   {
-    "kanji": "マフラー",
-    "kana": "マフラー",
-    "meaning": "围巾；消音器"
-  },
-  {
     "kanji": "まま",
     "kana": "まま",
     "meaning": "原样；状态"
-  },
-  {
-    "kanji": "マラソン",
-    "kana": "マラソン",
-    "meaning": "马拉松"
   },
   {
     "kanji": "まるで",
@@ -6193,11 +6048,6 @@
     "kanji": "まんざら",
     "kana": "まんざら",
     "meaning": "并非完全；未必"
-  },
-  {
-    "kanji": "マンション",
-    "kana": "マンション",
-    "meaning": "公寓楼"
   },
   {
     "kanji": "ミカン",
@@ -6260,21 +6110,6 @@
     "meaning": "当然；不用说"
   },
   {
-    "kanji": "メートル",
-    "kana": "メートル",
-    "meaning": "米"
-  },
-  {
-    "kanji": "メールアドレス",
-    "kana": "メールアドレス",
-    "meaning": "邮箱地址"
-  },
-  {
-    "kanji": "メール",
-    "kana": "メール",
-    "meaning": "邮件；发邮件"
-  },
-  {
     "kanji": "めきめき",
     "kana": "めきめき",
     "meaning": "显著地；迅速地"
@@ -6293,11 +6128,6 @@
     "kanji": "めぼしい",
     "kana": "めぼしい",
     "meaning": "值得注意的；显眼的"
-  },
-  {
-    "kanji": "メモ",
-    "kana": "メモ",
-    "meaning": "备忘录"
   },
   {
     "kanji": "めりはり",
@@ -6560,11 +6390,6 @@
     "meaning": "余裕；宽裕"
   },
   {
-    "kanji": "ユニーク",
-    "kana": "ユニーク",
-    "meaning": "独特的"
-  },
-  {
     "kanji": "よく",
     "kana": "よく",
     "meaning": "常常；好好地"
@@ -6615,29 +6440,9 @@
     "meaning": "请多关照"
   },
   {
-    "kanji": "ラケット",
-    "kana": "ラケット",
-    "meaning": "球拍"
-  },
-  {
-    "kanji": "ラジオ",
-    "kana": "ラジオ",
-    "meaning": "收音机"
-  },
-  {
-    "kanji": "レストラン",
-    "kana": "レストラン",
-    "meaning": "餐厅"
-  },
-  {
     "kanji": "レトルト食品",
     "kana": "レトルトしょくひん",
     "meaning": "即食袋装食品"
-  },
-  {
-    "kanji": "レポート",
-    "kana": "レポート",
-    "meaning": "报告；撰写报告"
   },
   {
     "kanji": "ロープウエー",
@@ -6650,11 +6455,6 @@
     "meaning": "好好地；像样地"
   },
   {
-    "kanji": "ロッカー",
-    "kana": "ロッカー",
-    "meaning": "储物柜"
-  },
-  {
     "kanji": "ロック",
     "kana": "ロック",
     "meaning": "锁；摇滚"
@@ -6663,11 +6463,6 @@
     "kanji": "わあ",
     "kana": "わあ",
     "meaning": "哇"
-  },
-  {
-    "kanji": "ワイン",
-    "kana": "ワイン",
-    "meaning": "葡萄酒"
   },
   {
     "kanji": "わきまえる",

@@ -6,7 +6,7 @@
 // 注意:这里的 SQL 与 src/lib/study-core.ts 的 syncJlptWordMetadata 保持一致,
 // 改动种子逻辑或版本号时两边要同步更新,然后重新跑本脚本。
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import initSqlJs from "sql.js";
@@ -127,6 +127,54 @@ nounSuruCorrections.forEach(([kanji, kana]) => {
       AND verb_type = 'godan'
   `, [kanji, kana]);
 });
+// 外来語词条被录了两遍:同一个假名,一行的 kanji 存片假名(コート),另一行存
+// 英文原词(coat)。因为 kanji 不同,按 (kanji, kana) 去重抓不到。
+//
+// 两行各有各的东西,所以是合并不是删除:
+//  - 英文行有 JLPT 等级和例句(104/104),片假名行一个都没有;
+//    而且 englishOrigin() 靠 kanji 里的拉丁字母产出「英语原词」板块,
+//    isLoanwordSourceCard 已经保证卡面渲染的是假名而不是英文,不会显示错。
+//  - 片假名行带着重写过的释义(97/104),英文行多半还是旧的。
+// 所以保留英文行,把片假名行的释义搬过去,再删掉片假名行。
+//
+// 被删的 id 写进 loanword-merge-map.json:人工释义是按 id 记的,
+// build-manual-meaning-overrides.mjs 要靠这份映射把释义挂到存活的那行上,
+// 否则老用户的英文行永远拿不到重写后的释义。
+const loanwordMergeMap = {};
+const mergeLoanwordRows = () => {
+  const result = db.exec(`
+    SELECT kana, GROUP_CONCAT(id) AS ids
+    FROM words
+    GROUP BY kana
+    HAVING COUNT(*) > 1
+  `);
+  let merged = 0;
+  (result[0]?.values ?? []).forEach(([kana, ids]) => {
+    const members = String(ids).split(",").map(Number).map((id) => {
+      const row = db.exec("SELECT id, kanji, meaning FROM words WHERE id = ?", [id])[0]?.values?.[0];
+      return { id, kanji: String(row?.[1] ?? ""), meaning: String(row?.[2] ?? "") };
+    });
+    const latin = members.filter((m) => /[A-Za-z]/.test(m.kanji));
+    // 「裸行」= kanji 原样重复了假名,这是同一个词被录第二遍的形态特征。
+    // 不能改用「首义相同」当判据:两行里往往一行是旧释义、一行是重写后的
+    // (照相机/相机、派对/聚会),首义本来就不一样。
+    const bare = members.filter((m) => m.kanji === String(kana));
+    if (latin.length !== 1 || bare.length !== 1 || members.length !== 2) return;
+
+    const keep = latin[0];
+    const drop = bare[0];
+    // 释义取重写过的那条:覆盖表里有这个词形就说明它是人工重写的。
+    const dropWasRewritten = meaningOverrides.has(`${drop.kanji}\u0000${kana}`);
+    if (dropWasRewritten) db.run("UPDATE words SET meaning = ? WHERE id = ?", [drop.meaning, keep.id]);
+    db.run("DELETE FROM progress WHERE word_id = ?", [drop.id]);
+    db.run("DELETE FROM words WHERE id = ?", [drop.id]);
+    loanwordMergeMap[drop.id] = keep.id;
+    merged += 1;
+  });
+  return merged;
+};
+
+
 // 同一个 (kanji, kana) 出现多行 = 数据 bug,不是多义词。整条流水线都拿这一对当
 // 唯一键:ensureJlptWordSeed 按它判断要不要插入,syncJlptWordMetadata 和释义覆盖
 // 表按它 UPDATE(会同时写中所有重复行)。留着重复行的后果是同一个词一天考两遍,
@@ -147,13 +195,31 @@ const duplicateRows = [];
     drop.forEach((id) => {
       db.run("DELETE FROM progress WHERE word_id = ?", [id]);
       db.run("DELETE FROM words WHERE id = ?", [id]);
+      // 和外来語合并同理:人工释义按 id 记,删掉的行要能解析到存活行。
+      loanwordMergeMap[id] = keep;
     });
   });
 }
+// 先完全重复去重、再合并外来語:同一个假名下有三行(片假名×2 + 英文)时,
+// 合并那一步会因为「不是恰好两行」跳过,得等去重把第三行清掉。
+const mergedLoanwords = mergeLoanwordRows();
+if (mergedLoanwords) {
+  console.log(`   外来語重复行合并 ${mergedLoanwords} 组(保留英文原词行,搬入重写释义)`);
+}
+
 if (duplicateRows.length) {
   duplicateRows.forEach(({ kanji, kana, keep, drop }) => {
     console.log(`   去重 ${kanji}(${kana}): 保留 id=${keep}, 删除 ${drop.join(", ")}`);
   });
+}
+
+// 两步去重（外来語合并 + 完全重复行）删掉的 id → 存活 id。
+// 人工释义是按 id 记的，build-manual-meaning-overrides.mjs 靠这份映射
+// 把释义改挂到存活行上，否则老用户的库永远拿不到那部分重写释义。
+{
+  const mapPath = path.join(here, "loanword-merge-map.json");
+  const previous = existsSync(mapPath) ? JSON.parse(readFileSync(mapPath, "utf8")) : {};
+  writeFileSync(mapPath, `${JSON.stringify({ ...previous, ...loanwordMergeMap }, null, 2)}\n`);
 }
 
 db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
