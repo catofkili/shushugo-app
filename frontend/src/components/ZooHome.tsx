@@ -256,6 +256,12 @@ export function ZooHome({
           <span className="zoo-tile-sub">经典 · 错题本 · 快速 · 反向 · 汉字</span>
         </button>
 
+        <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("confusion")}>
+          <span className="zoo-tile-emoji">🧩</span>
+          <b>疑难辨析</b>
+          <span className="zoo-tile-sub">同音 · 自他 · 近义词对照</span>
+        </button>
+
         <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("favorites")}>
           <span className="zoo-tile-emoji">⭐</span>
           <b>收藏</b>

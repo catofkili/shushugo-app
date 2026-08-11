@@ -30,6 +30,8 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "grammar_progress", keys: ["grammar_id"], strategy: "lww" },
   { table: "grammar_mistakes", keys: ["grammar_id"], strategy: "lww" },
   { table: "word_notes", keys: ["word_id"], strategy: "lww" },
+  // 疑难辨析里标过「已掌握」的词组。主键是词组标识而不是 word_id。
+  { table: "confusion_mastered", keys: ["group_key"], strategy: "lww" },
   { table: "moji_migrated_reviews", keys: ["word_id"], strategy: "lww" },
 
   // 当天的学习会话状态,换设备继续学时要能接上。

@@ -23,6 +23,7 @@ const Library = lazy(() => import("./pages/Library").then((module) => ({ default
 const GrammarDetail = lazy(() => import("./pages/GrammarDetail").then((module) => ({ default: module.GrammarDetail })));
 const QuizPage = lazy(() => import("./pages/QuizPage").then((module) => ({ default: module.QuizPage })));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage").then((module) => ({ default: module.FavoritesPage })));
+const ConfusionPage = lazy(() => import("./pages/ConfusionPage").then((module) => ({ default: module.ConfusionPage })));
 const ImmersiveGrammar = lazy(() => import("./pages/ImmersiveGrammar").then((module) => ({ default: module.ImmersiveGrammar })));
 const PersonalInfo = lazy(() => import("./pages/PersonalInfo").then((module) => ({ default: module.PersonalInfo })));
 const AccountSecurity = lazy(() => import("./pages/AccountSecurity").then((module) => ({ default: module.AccountSecurity })));
@@ -51,6 +52,7 @@ const PageLoading = () => (
 const toolPageTitles: Partial<Record<Page, string>> = {
   "study-modes": "学习模式",
   favorites: "收藏",
+  confusion: "疑难辨析",
   "quick-study": "快速学习"
 };
 
@@ -481,6 +483,9 @@ export default function App() {
     }
     if (page === "favorites") {
       return renderToolSubpage(toolPageTitles.favorites ?? "收藏", <FavoritesPage onOpenGrammar={openGrammar} />);
+    }
+    if (page === "confusion") {
+      return renderToolSubpage(toolPageTitles.confusion ?? "疑难辨析", <ConfusionPage />);
     }
     if (page === "study-modes") {
       return renderToolSubpage(

@@ -120,3 +120,13 @@ CREATE TABLE IF NOT EXISTS reverse_memory (
   last_seen_on TEXT,
   FOREIGN KEY(word_id) REFERENCES words(id)
 );
+
+-- 「疑难辨析」里标记为已掌握的词组。
+--
+-- 主键是词组的稳定标识（type:锚点，如 homophone:こうえん），刻意不用 word_id：
+-- 去重和外来語合并动过 id（见 bake-seed-db 的 loanword-merge-map），拿 id 组键
+-- 会让用户标过的掌握状态在下次清库后全部失效。
+CREATE TABLE IF NOT EXISTS confusion_mastered (
+  group_key TEXT PRIMARY KEY,
+  mastered_on TEXT NOT NULL
+);

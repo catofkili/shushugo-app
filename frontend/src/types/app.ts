@@ -10,6 +10,7 @@ export type Page =
   | "detail"
   | "study-modes"
   | "favorites"
+  | "confusion"
   | "profile"
   | "pro"
   | "account"
