@@ -8,28 +8,46 @@ export type SqlValue = string | number | null;
 export type DbRow = Record<string, SqlValue>;
 
 /**
+ * 读取查询统一走 prepare/step/free。
+ *
+ * sql.js 的 Database.exec() 会为每次调用分配一份结果对象；在常驻 WebView
+ * 上重复调用几十万次后 WASM 堆会耗尽，即使查询本身只有一行。prepare 的
+ * statement 必须在 finally 中 free，才能让绑定参数和结果缓冲区及时回收。
+ * 这里只接受单条 SQL；建表/迁移等多语句脚本继续使用 db.run/exec。
+ */
+const queryRows = (query: string, params: SqlValue[] = []): DbRow[] => {
+  const statement = getDatabase().prepare(query);
+  try {
+    if (params.length) statement.bind(params);
+    const result: DbRow[] = [];
+    while (statement.step()) {
+      result.push(statement.getAsObject() as DbRow);
+    }
+    return result;
+  } finally {
+    statement.free();
+  }
+};
+
+/**
  * 执行查询并返回第一个值
  */
 export function firstValue<T = SqlValue>(query: string, params: SqlValue[] = [], fallback: T): T {
-  const result = getDatabase().exec(query, params);
-  if (!result.length || !result[0].values.length) return fallback;
-  return result[0].values[0][0] as T;
+  const statement = getDatabase().prepare(query);
+  try {
+    if (params.length) statement.bind(params);
+    if (!statement.step()) return fallback;
+    return statement.get()[0] as T;
+  } finally {
+    statement.free();
+  }
 }
 
 /**
  * 执行查询并返回所有行（作为对象数组）
  */
 export function rowsFor(query: string, params: SqlValue[] = []): DbRow[] {
-  const result = getDatabase().exec(query, params);
-  if (!result.length) return [];
-  const { columns, values } = result[0];
-  return values.map((valueRow) => {
-    const row: DbRow = {};
-    columns.forEach((column, index) => {
-      row[column] = valueRow[index] as SqlValue;
-    });
-    return row;
-  });
+  return queryRows(query, params);
 }
 
 /**

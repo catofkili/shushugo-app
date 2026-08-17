@@ -4,6 +4,8 @@ import { ensureSyncSchema } from "./schema";
 import { DEVICE_LOCAL_STATE_KEYS, SYNCED_TABLES } from "./tables";
 
 export const SYNC_SNAPSHOT_FORMAT = "master-nihongo-user-sqlite-v1";
+/** 同步协议版本独立于 SQLite schema，便于将来切换增量协议而不误读旧快照。 */
+export const SYNC_PROTOCOL_VERSION = 1;
 export type SyncSnapshotCompression = "gzip" | "none";
 const MAX_UNCOMPRESSED_SNAPSHOT_BYTES = 20_000_000;
 
@@ -14,7 +16,15 @@ type SnapshotValue = string | number | null | Uint8Array;
 const quoteIdentifier = (value: string): string => `"${value.replace(/"/g, '""')}"`;
 
 const firstValue = (db: Database, sql: string, params: SnapshotValue[] = []): unknown => (
-  db.exec(sql, params)[0]?.values[0]?.[0]
+  (() => {
+    const statement = db.prepare(sql);
+    try {
+      if (params.length) statement.bind(params);
+      return statement.step() ? statement.get()[0] : undefined;
+    } finally {
+      statement.free();
+    }
+  })()
 );
 
 const tableExists = (db: Database, table: string): boolean => Boolean(
@@ -33,19 +43,28 @@ const copyTable = (source: Database, target: Database, table: string): void => {
 
   const localStateKeys = [...DEVICE_LOCAL_STATE_KEYS];
   const excludeDeviceLocalState = table === "app_state" && localStateKeys.length > 0;
-  const result = source.exec(
-    `SELECT * FROM ${quoteIdentifier(table)}${
-      excludeDeviceLocalState ? ` WHERE key NOT IN (${localStateKeys.map(() => "?").join(", ")})` : ""
-    }`,
-    excludeDeviceLocalState ? localStateKeys : []
-  )[0];
-  if (!result?.values.length) return;
-  const columns = result.columns.map(quoteIdentifier).join(", ");
-  const placeholders = result.columns.map(() => "?").join(", ");
-  const insert = `INSERT INTO ${quoteIdentifier(table)} (${columns}) VALUES (${placeholders})`;
+  const statement = source.prepare(`SELECT * FROM ${quoteIdentifier(table)}${
+    excludeDeviceLocalState ? ` WHERE key NOT IN (${localStateKeys.map(() => "?").join(", ")})` : ""
+  }`);
+  let columns: string[] = [];
+  const values: SnapshotValue[][] = [];
+  try {
+    if (excludeDeviceLocalState) statement.bind(localStateKeys);
+    while (statement.step()) {
+      const row = statement.get();
+      values.push(row as SnapshotValue[]);
+      if (!columns.length) columns = Object.keys(statement.getAsObject());
+    }
+  } finally {
+    statement.free();
+  }
+  if (!values.length) return;
+  const quotedColumns = columns.map(quoteIdentifier).join(", ");
+  const placeholders = columns.map(() => "?").join(", ");
+  const insert = `INSERT INTO ${quoteIdentifier(table)} (${quotedColumns}) VALUES (${placeholders})`;
   target.run("BEGIN");
   try {
-    for (const row of result.values) target.run(insert, row);
+    for (const row of values) target.run(insert, row);
     target.run("COMMIT");
   } catch (error) {
     target.run("ROLLBACK");
@@ -64,12 +83,13 @@ export async function exportSyncSnapshot(): Promise<Uint8Array> {
   try {
     snapshot.run(`
       CREATE TABLE ${META_TABLE} (
-        format TEXT PRIMARY KEY
+        format TEXT PRIMARY KEY,
+        protocol_version INTEGER NOT NULL
       )
     `);
     // 元数据不能放“导出时间”：否则学习数据完全没变时，快照哈希仍然变化，
     // 会破坏服务端对超时重试的内容幂等判断。
-    snapshot.run(`INSERT INTO ${META_TABLE} (format) VALUES (?)`, [SYNC_SNAPSHOT_FORMAT]);
+    snapshot.run(`INSERT INTO ${META_TABLE} (format, protocol_version) VALUES (?, ?)`, [SYNC_SNAPSHOT_FORMAT, SYNC_PROTOCOL_VERSION]);
     const tables = new Set([...SYNCED_TABLES.map((entry) => entry.table), ...EXTRA_TABLES]);
     for (const table of tables) copyTable(source, snapshot, table);
     return new Uint8Array(snapshot.export());
@@ -80,7 +100,11 @@ export async function exportSyncSnapshot(): Promise<Uint8Array> {
 
 export const isUserSyncSnapshot = (db: Database): boolean => {
   if (!tableExists(db, META_TABLE)) return false;
-  return firstValue(db, `SELECT format FROM ${META_TABLE} LIMIT 1`) === SYNC_SNAPSHOT_FORMAT;
+  if (firstValue(db, `SELECT format FROM ${META_TABLE} LIMIT 1`) !== SYNC_SNAPSHOT_FORMAT) return false;
+  // v1 快照早期只有 format 列；同一 format 的旧快照仍然按 v1 兼容读取。
+  const columns = firstValue(db, `SELECT COUNT(*) FROM pragma_table_info('${META_TABLE}') WHERE name = 'protocol_version'`);
+  if (!Number(columns)) return true;
+  return Number(firstValue(db, `SELECT protocol_version FROM ${META_TABLE} LIMIT 1`)) === SYNC_PROTOCOL_VERSION;
 };
 
 const bytesBuffer = (data: Uint8Array): ArrayBuffer => (

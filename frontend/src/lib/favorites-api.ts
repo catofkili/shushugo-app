@@ -45,14 +45,20 @@ export function getFavoriteItems(type: "all" | FavoriteType = "all"): FavoriteIt
       }];
     }
     if (itemType === "grammar") {
-      const row = firstRow("SELECT pattern, prompt, meaning, level FROM grammar_points WHERE pattern = ?", [itemId]);
+      const row = firstRow(`
+        SELECT g.pattern, g.prompt, g.meaning, g.level,
+          (SELECT COUNT(*) FROM grammar_points same_level
+           WHERE same_level.level = g.level AND same_level.sort_order <= g.sort_order) AS level_ordinal
+        FROM grammar_points g
+        WHERE g.pattern = ?
+      `, [itemId]);
       if (!row) return [];
       return [{
         type: itemType,
         id: itemId,
         title: String(row.prompt || row.pattern || ""),
         subtitle: String(row.meaning ?? ""),
-        meta: String(row.level ?? "")
+        meta: `${String(row.level ?? "")} · ${String(Number(row.level_ordinal ?? 0)).padStart(3, "0")}`
       }];
     }
     return [];

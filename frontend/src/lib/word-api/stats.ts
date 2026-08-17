@@ -1,4 +1,3 @@
-import { getDatabase } from "../database";
 import type { WordStats } from "../../types/vocabulary";
 import { getDailyWordGoal } from "../studyPreferences";
 import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
@@ -16,6 +15,9 @@ import { encoreRemainingCount, stage1ProgressCounts } from "./stage1";
 import { directionProgressCounts } from "./direction-plan";
 import { KANJI, REVERSE } from "./directions";
 import { mistakeCandidateSql, wordFilterSql } from "./filters";
+import { ensureDailyRelief, getDailyReliefProgress } from "./daily-relief";
+import { ensureDailyTail, getDailyTailProgress } from "./daily-tail";
+import { MASTERED_SQL } from "../fsrs-store";
 
 /**
  * 统计口径:今日学习量 + 首页/学习页要读的那一大坨 WordStats。
@@ -24,13 +26,13 @@ import { mistakeCandidateSql, wordFilterSql } from "./filters";
  * 从 word-api.ts 原样搬出,逻辑一字未改。
  */
 
-const dailyStudyStats = () => {
+const dailyStudyStats = (day = today()) => {
   const days = new Map<string, { date: string; seconds: number; wordCount: number }>();
   rowsFor(`
     SELECT studied_on, seconds
     FROM word_study_time
-    WHERE studied_on BETWEEN '2026-06-01' AND '2027-06-30'
-  `).forEach((row) => {
+    WHERE studied_on BETWEEN date(?, '-30 day') AND ?
+  `, [day, day]).forEach((row) => {
     const date = String(row.studied_on ?? "");
     if (!date) return;
     days.set(date, {
@@ -42,9 +44,10 @@ const dailyStudyStats = () => {
   rowsFor(`
     SELECT reviewed_on, COUNT(DISTINCT word_id) AS word_count
     FROM reviews
-    WHERE reviewed_on BETWEEN '2026-06-01' AND '2027-06-30'
+    WHERE direction = 'forward'
+      AND reviewed_on BETWEEN date(?, '-30 day') AND ?
     GROUP BY reviewed_on
-  `).forEach((row) => {
+  `, [day, day]).forEach((row) => {
     const date = String(row.reviewed_on ?? "");
     if (!date) return;
     days.set(date, {
@@ -82,7 +85,11 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     JOIN words w ON w.id = p.word_id
     WHERE p.known_forever = 1 ${filter.clause}
   `, filter.params, 0);
-  const reviewedToday = firstValue<number>("SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ?", [studyDate], 0);
+  const reviewedToday = firstValue<number>(
+    "SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ? AND direction = 'forward'",
+    [studyDate],
+    0
+  );
   // 「薄弱」= FSRS 认为本学习日内该复习的。以前用 score <= 6,和真正排给你背的
   // FSRS 到期集是两套口径(实测能差 300 多个),首页显示的数和实际任务量对不上。
   const lowCount = firstValue<number>(`
@@ -115,16 +122,30 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
       SELECT COUNT(DISTINCT r.word_id)
       FROM reviews r
       JOIN progress p ON p.word_id = r.word_id
-      WHERE r.reviewed_on = ? AND ${mistakeCandidateSql("p")}
+      WHERE r.reviewed_on = ? AND r.direction = 'forward' AND ${mistakeCandidateSql("p")}
     `, [studyDate], 0)
   };
+  ensureDailyRelief();
+  const dailyReliefProgress = getDailyReliefProgress();
   const stage1Progress = stage1ProgressCounts();
+  // 压轴在后台单独保存,但前端进度流要把它当成普通的后续词。
+  ensureDailyTail();
+  const dailyTailProgress = getDailyTailProgress();
+  const frontProgress = {
+    // 减负词只是前端演出,不进入真实任务进度;压轴才是前端连续流的一部分。
+    completed: stage1Progress.completed + dailyTailProgress.completed,
+    total: stage1Progress.total + dailyTailProgress.total
+  };
+  const actualStage1Done = stage1Progress.total > 0 && stage1Progress.completed >= stage1Progress.total;
+  const dailyPlanDone = actualStage1Done
+    && dailyReliefProgress.pending === 0
+    && dailyTailProgress.pending === 0;
   // 反向/汉字的当日进度和正向同一个判据(今天毕业才算完成),见 direction-plan
   const stage2 = directionProgressCounts(REVERSE);
   const kanji = directionProgressCounts(KANJI);
   // 模式切换器要显示「每个模式现在能练多少」。三个方向各有自己的当日计划,
   // directionProgressCounts 会顺手把当天的计划排好,所以这里读到的就是真实剩余量。
-  const planRemaining = Math.max(stage1Progress.total - stage1Progress.completed, 0);
+  const planRemaining = Math.max(frontProgress.total - frontProgress.completed, 0);
   const modeCounts = {
     classic: planRemaining,
     mistakes: mistakes.poolSize,
@@ -134,8 +155,8 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     reverse: Math.max(stage2.total - stage2.completed, 0),
     kanji: Math.max(kanji.total - kanji.completed, 0)
   };
-  const checkinRows = getDatabase().exec("SELECT checked_on FROM checkins ORDER BY checked_on");
-  const checkins = checkinRows.length ? checkinRows[0].values.map((row) => String(row[0])) : [];
+  const checkins = rowsFor("SELECT checked_on FROM checkins ORDER BY checked_on")
+    .map((row) => String(row.checked_on ?? ""));
   const wordStudySecondsToday = firstValue<number>(
     "SELECT seconds FROM word_study_time WHERE studied_on = ?",
     [studyDate],
@@ -170,10 +191,16 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
       todayEncoreWords: encoreLog.dayWords,
       fatigued: fatigueDetected(studyDate)
     },
+    dailyRelief: dailyReliefProgress,
     total,
     knownForever,
     masteredToday: firstValue<number>(
-      "SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ? AND score_after >= 10",
+      `SELECT COUNT(DISTINCT r.word_id)
+       FROM reviews r
+       JOIN progress p ON p.word_id = r.word_id
+       WHERE r.reviewed_on = ?
+         AND r.direction = 'forward'
+         AND (p.known_forever = 1 OR ${MASTERED_SQL})`,
       [studyDate],
       0
     ),
@@ -185,10 +212,12 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
       SELECT COUNT(DISTINCT today_reviews.word_id)
       FROM reviews today_reviews
       WHERE today_reviews.reviewed_on = ?
+        AND today_reviews.direction = 'forward'
         AND NOT EXISTS (
           SELECT 1
           FROM reviews earlier_reviews
           WHERE earlier_reviews.word_id = today_reviews.word_id
+            AND earlier_reviews.direction = 'forward'
             AND earlier_reviews.reviewed_on < ?
         )
       `,
@@ -200,10 +229,12 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
       SELECT COUNT(DISTINCT today_reviews.word_id)
       FROM reviews today_reviews
       WHERE today_reviews.reviewed_on = ?
+        AND today_reviews.direction = 'forward'
         AND NOT EXISTS (
           SELECT 1
           FROM reviews earlier_reviews
           WHERE earlier_reviews.word_id = today_reviews.word_id
+            AND earlier_reviews.direction = 'forward'
             AND earlier_reviews.reviewed_on < ?
         )
       `,
@@ -213,22 +244,23 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     newQuota: dailyNewQuota(),
     mistakes,
     modeCounts,
-    stage1ProgressDone: stage1Progress.completed,
-    stage1ProgressTotal: stage1Progress.total,
+    stage1ProgressDone: frontProgress.completed,
+    stage1ProgressTotal: frontProgress.total,
     phase,
-    stage1Done: stage1Progress.total > 0 && stage1Progress.completed >= stage1Progress.total,
+    stage1Done: actualStage1Done,
+    dailyPlanDone,
     stage2Total: stage2.total,
     stage2Completed: stage2.completed,
     kanjiTotal: kanji.total,
     kanjiCompleted: kanji.completed,
     studyDate,
     checkins,
-    dailyStudyStats: dailyStudyStats(),
+    dailyStudyStats: dailyStudyStats(studyDate),
     wordStudySecondsToday,
     taskDone: kanji.total > 0
       ? kanji.completed >= kanji.total
       : stage2.total > 0
         ? stage2.completed >= stage2.total
-        : stage1Progress.completed >= stage1Progress.total
+        : dailyPlanDone
   };
 }

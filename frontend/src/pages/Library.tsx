@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { CheckCircle2, ChevronDown, Layers, Search, Star, StickyNote, X, XCircle } from "lucide-react";
 import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
 import { GrammarTermHint } from "../components/GrammarTermHint";
@@ -6,6 +6,15 @@ import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarPoints } from "../data/grammar";
 import { getGrammarPointFavorite, toggleFavorite } from "../lib/api";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
+import { grammarSequence } from "../lib/grammar-numbering";
+import {
+  getGrammarPosition,
+  getGrammarScrollPosition,
+  saveGrammarPosition,
+  saveGrammarScrollPosition,
+  GRAMMAR_POSITIONS_UPDATED_EVENT
+} from "../lib/grammarProgressPreferences";
+import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { GrammarPoint, JLPTLevel, MasteryStatus } from "../types/grammar";
 
 interface LibraryProps {
@@ -80,10 +89,10 @@ const GrammarExplanation = ({
   onChangeNote: (value: string) => void;
   onSaveNote: () => void;
 }) => (
-  <section className="dictionary-card sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl p-5 relative">
+  <section data-grammar-point-id={point.id} className="dictionary-card sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto rounded-2xl p-5 relative">
     <div className="border-b border-white/15 pb-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/70">{point.level}</span>
+        <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/70">{grammarSequence(point).label}</span>
         <span className="rounded-sm bg-[#81D8CF]/15 px-2 py-1 text-xs font-bold text-white/80">{statusLabel[mastery]}</span>
         <button
           onClick={onToggleFavorite}
@@ -100,9 +109,9 @@ const GrammarExplanation = ({
           <StickyNote size={16} />
         </button>
       </div>
-      <h2 className="jp-serif mt-4 text-5xl font-semibold leading-none"><JapaneseRuby text={point.title} /></h2>
-      <p className="mt-4 text-xl leading-8 text-white/86">{point.meaning}</p>
-      <p className="jp mt-4 rounded-2xl border border-white/15 bg-[#373b3b] px-3 py-2 text-sm leading-7 text-white/78">
+      <h2 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-4 text-5xl font-semibold leading-none"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h2>
+      <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-4 text-xl leading-8 text-white/86">{point.meaning}</p>
+      <p data-grammar-point-id={point.id} data-grammar-highlight-block="formation" className="jp mt-4 rounded-2xl border border-white/15 bg-[#373b3b] px-3 py-2 text-sm leading-7 text-white/78">
         <GrammarTermHint text={point.connection ?? point.structure} />
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
@@ -155,15 +164,15 @@ const GrammarExplanation = ({
     <div className="space-y-5 pt-5">
       <section>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">Explanation</p>
-        <p className="mt-3 text-[15px] leading-8 text-white/78">{point.explanation}</p>
+        <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-3 text-[15px] leading-8 text-white/78">{point.explanation}</p>
       </section>
 
       <section>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">Examples</p>
         <div className="mt-3 space-y-3">
-          {point.examples.slice(0, 4).map((example) => (
-            <article key={example.jp ?? example.japanese} className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
-              <p className="jp text-lg leading-8"><JapaneseRuby text={example.jp ?? example.japanese} /></p>
+          {point.examples.slice(0, 4).map((example, exampleIndex) => (
+            <article key={example.jp ?? example.japanese} data-grammar-point-id={point.id} data-grammar-highlight-block={`library-example-${exampleIndex}`} className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
+              <p className="jp text-lg leading-8"><JapaneseRuby text={example.jp ?? example.japanese} furigana={example.furigana} tokenLengths={example.tokenLengths} tokenLemmas={example.tokenLemmas} grammarPoint={point} /></p>
               <p className="mt-1 text-sm leading-6 text-white/60">{example.reading}</p>
               <p className="mt-2 text-sm leading-6 text-white/76">{example.cn ?? example.chinese}</p>
             </article>
@@ -187,10 +196,54 @@ export const Library = ({
 }: LibraryProps) => {
   const [query, setQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState(grammarPoints[0]?.id ?? "");
+  const [selectedIdsByLevel, setSelectedIdsByLevel] = useState<Record<string, string>>({});
+  const [, setPositionRevision] = useState(0);
   const [isTwoPane, setIsTwoPane] = useState(
     () => typeof window !== "undefined" && window.matchMedia(TWO_PANE_QUERY).matches
   );
+
+  const storedSelectedId = selectedIdsByLevel[selectedLevel] ?? getGrammarPosition("library", selectedLevel);
+  const selectedId = typeof storedSelectedId === "string" ? storedSelectedId : "";
+  const rememberSelection = (id: string) => {
+    setSelectedIdsByLevel((current) => current[selectedLevel] === id ? current : { ...current, [selectedLevel]: id });
+    saveGrammarPosition("library", selectedLevel, id);
+  };
+
+  const mainScrollContainer = () => document.querySelector<HTMLElement>("main.app-landscape-main");
+  const rememberScroll = () => {
+    const container = mainScrollContainer();
+    if (container) saveGrammarScrollPosition("library", selectedLevel, container.scrollTop);
+  };
+
+  // Library 在移动端打开详情后会卸载，详情页较短会把 main 的 scrollTop 压成 0。
+  // 下一次挂载时等列表 DOM 完成，再恢复该等级上一次保存的滚动位置。
+  useLayoutEffect(() => {
+    const container = mainScrollContainer();
+    const saved = getGrammarScrollPosition("library", selectedLevel);
+    if (!container || saved === undefined) return;
+    const restore = () => {
+      container.scrollTop = saved;
+      const selectedCard = [...container.querySelectorAll<HTMLElement>(".grammar-anki-card[data-grammar-point-id]")]
+        .find((card) => card.dataset.grammarPointId === selectedId);
+      if (!selectedCard) return;
+      const containerRect = container.getBoundingClientRect();
+      const cardRect = selectedCard.getBoundingClientRect();
+      if (cardRect.top < containerRect.top || cardRect.bottom > containerRect.bottom) {
+        selectedCard.scrollIntoView({ block: "center", behavior: "auto" });
+      }
+    };
+    restore();
+    const frame = window.requestAnimationFrame(() => {
+      restore();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [selectedId, selectedLevel]);
+
+  useEffect(() => {
+    const refreshPosition = () => setPositionRevision((value) => value + 1);
+    window.addEventListener(GRAMMAR_POSITIONS_UPDATED_EVENT, refreshPosition);
+    return () => window.removeEventListener(GRAMMAR_POSITIONS_UPDATED_EVENT, refreshPosition);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia(TWO_PANE_QUERY);
@@ -202,11 +255,9 @@ export const Library = ({
 
   // 卡片主体点击：宽屏 → 更新右侧内联详情；窄屏 → 打开整页详情。
   const openCard = (id: string) => {
-    if (isTwoPane) {
-      setSelectedId(id);
-    } else {
-      onOpenDetail(id);
-    }
+    rememberSelection(id);
+    rememberScroll();
+    if (!isTwoPane) onOpenDetail(id);
   };
   const [cardOrder, setCardOrder] = useState<string[]>(readOrder);
   const [, setFavoriteVersion] = useState(0);
@@ -236,12 +287,6 @@ export const Library = ({
 
   const selected = filtered.find((point) => point.id === selectedId) ?? filtered[0] ?? grammarPoints[0];
 
-  useEffect(() => {
-    if (selected && !filtered.some((point) => point.id === selectedId)) {
-      setSelectedId(selected.id);
-    }
-  }, [filtered, selected, selectedId]);
-
   const reorder = (id: string, direction: "front" | "back") => {
     setCardOrder((current) => {
       const merged = [...current, ...grammarPoints.map((point) => point.id)].filter((item, index, arr) => arr.indexOf(item) === index);
@@ -253,13 +298,13 @@ export const Library = ({
     onMarkLearned(id);
     reorder(id, "back");
     const next = filtered.find((point) => point.id !== id) ?? selected;
-    setSelectedId(next.id);
+    rememberSelection(next.id);
   };
 
   const forget = (id: string) => {
     onMarkForgot(id);
     reorder(id, "front");
-    setSelectedId(id);
+    rememberSelection(id);
   };
 
   const isGrammarFavorite = (id: string) => {
@@ -276,7 +321,7 @@ export const Library = ({
   };
 
   const openNoteEditor = (id: string) => {
-    setSelectedId(id);
+    rememberSelection(id);
     setNoteEditorId(id);
     setNoteDraft(getGrammarNote(id));
   };
@@ -320,6 +365,7 @@ export const Library = ({
                       <button
                         key={level}
                         onClick={() => {
+                          rememberScroll();
                           onSelectedLevelChange(level);
                           setFilterOpen(false);
                         }}
@@ -363,6 +409,7 @@ export const Library = ({
             return (
               <article
                 key={point.id}
+                data-grammar-point-id={point.id}
                 className={`grammar-anki-card rounded-2xl p-4 transition ${
                   active ? "grammar-anki-card-active" : ""
                 }`}
@@ -371,15 +418,15 @@ export const Library = ({
                   <button onClick={() => openCard(point.id)} className="focus-ring min-w-0 flex-1 text-left">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{point.level}</span>
+                        <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{grammarSequence(point).label}</span>
                         <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/65">{statusLabel[mastery]}</span>
                       </div>
-                      <h3 className="jp-serif mt-3 text-3xl font-semibold leading-none"><JapaneseRuby text={point.title} /></h3>
-                      <p className="mt-2 text-sm font-semibold leading-6 text-white/82">{point.meaning}</p>
+                      <h3 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-3 text-3xl font-semibold leading-none"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h3>
+                      <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-2 text-sm font-semibold leading-6 text-white/82">{point.meaning}</p>
                     </div>
                     {firstExample && (
-                      <div className="mt-3 rounded-2xl border border-white/10 bg-[#373b3b] px-3 py-2 text-sm leading-6 text-white/65">
-                        <p className="jp"><JapaneseRuby text={firstExample.jp ?? firstExample.japanese} /></p>
+                      <div data-grammar-point-id={point.id} data-grammar-highlight-block="card-example-0" className="mt-3 rounded-2xl border border-white/10 bg-[#373b3b] px-3 py-2 text-sm leading-6 text-white/65">
+                        <p className="jp"><JapaneseRuby text={firstExample.jp ?? firstExample.japanese} furigana={firstExample.furigana} tokenLengths={firstExample.tokenLengths} tokenLemmas={firstExample.tokenLemmas} /></p>
                         <p className="mt-1 text-xs leading-5 text-white/55">{firstExample.cn ?? firstExample.chinese}</p>
                       </div>
                     )}

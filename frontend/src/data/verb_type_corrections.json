@@ -1,0 +1,496 @@
+{
+  "version": "2026-08-16-kuromoji-conjugation-vote-v1",
+  "source": "words + grammar_points example sentences; non-basic forms only",
+  "corrections": [
+    {
+      "kanji": "行く",
+      "kana": "いく",
+      "from": "iku",
+      "to": "godan",
+      "votes": "93/93",
+      "distribution": {
+        "godan": 93
+      }
+    },
+    {
+      "kanji": "滑る",
+      "kana": "すべる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "8/8",
+      "distribution": {
+        "godan": 8
+      }
+    },
+    {
+      "kanji": "入る",
+      "kana": "はいる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "74/74",
+      "distribution": {
+        "godan": 74
+      }
+    },
+    {
+      "kanji": "減る",
+      "kana": "へる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "6/6",
+      "distribution": {
+        "godan": 6
+      }
+    },
+    {
+      "kanji": "知る",
+      "kana": "しる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "57/57",
+      "distribution": {
+        "godan": 57
+      }
+    },
+    {
+      "kanji": "恐れ入る",
+      "kana": "おそれいる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "5/5",
+      "distribution": {
+        "godan": 5
+      }
+    },
+    {
+      "kanji": "帰る",
+      "kana": "かえる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "47/47",
+      "distribution": {
+        "godan": 47
+      }
+    },
+    {
+      "kanji": "思い切る",
+      "kana": "おもいきる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "4/4",
+      "distribution": {
+        "godan": 4
+      }
+    },
+    {
+      "kanji": "握る",
+      "kana": "にぎる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "3/3",
+      "distribution": {
+        "godan": 3
+      }
+    },
+    {
+      "kanji": "締め切る",
+      "kana": "しめきる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "3/3",
+      "distribution": {
+        "godan": 3
+      }
+    },
+    {
+      "kanji": "焦る",
+      "kana": "あせる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "3/3",
+      "distribution": {
+        "godan": 3
+      }
+    },
+    {
+      "kanji": "振り返る",
+      "kana": "ふりかえる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "3/3",
+      "distribution": {
+        "godan": 3
+      }
+    },
+    {
+      "kanji": "よみがえる",
+      "kana": "よみがえる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "3/3",
+      "distribution": {
+        "godan": 3
+      }
+    },
+    {
+      "kanji": "陥る",
+      "kana": "おちいる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "3/3",
+      "distribution": {
+        "godan": 3
+      }
+    },
+    {
+      "kanji": "切る",
+      "kana": "きる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "28/28",
+      "distribution": {
+        "godan": 28
+      }
+    },
+    {
+      "kanji": "走る",
+      "kana": "はしる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "27/27",
+      "distribution": {
+        "godan": 27
+      }
+    },
+    {
+      "kanji": "限る",
+      "kana": "かぎる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "21/21",
+      "distribution": {
+        "godan": 21
+      }
+    },
+    {
+      "kanji": "参る",
+      "kana": "まいる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "2/2",
+      "distribution": {
+        "godan": 2
+      }
+    },
+    {
+      "kanji": "かじる",
+      "kana": "かじる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "2/2",
+      "distribution": {
+        "godan": 2
+      }
+    },
+    {
+      "kanji": "返る",
+      "kana": "かえる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "2/2",
+      "distribution": {
+        "godan": 2
+      }
+    },
+    {
+      "kanji": "やってくる",
+      "kana": "やってくる",
+      "from": "godan",
+      "to": "kuru",
+      "votes": "2/2",
+      "distribution": {
+        "kuru": 2
+      }
+    },
+    {
+      "kanji": "混じる",
+      "kana": "まじる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "2/2",
+      "distribution": {
+        "godan": 2
+      }
+    },
+    {
+      "kanji": "ひねる",
+      "kana": "ひねる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "2/2",
+      "distribution": {
+        "godan": 2
+      }
+    },
+    {
+      "kanji": "押し切る",
+      "kana": "おしきる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "2/2",
+      "distribution": {
+        "godan": 2
+      }
+    },
+    {
+      "kanji": "しゃべる",
+      "kana": "しゃべる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "持ち帰る",
+      "kana": "もちかえる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "孵る",
+      "kana": "かえる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "散る",
+      "kana": "ちる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "区切る",
+      "kana": "くぎる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "湿る",
+      "kana": "しめる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "裏切る",
+      "kana": "うらぎる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "張り切る",
+      "kana": "はりきる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "飛び散る",
+      "kana": "とびちる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "練る",
+      "kana": "ねる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "込み入る",
+      "kana": "こみいる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "入り交じる",
+      "kana": "いりまじる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "いじる",
+      "kana": "いじる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "乗り切る",
+      "kana": "のりきる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "踏み切る",
+      "kana": "ふみきる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "しくじる",
+      "kana": "しくじる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "遮る",
+      "kana": "さえぎる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "打ち切る",
+      "kana": "うちきる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "見入る",
+      "kana": "みいる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "先走る",
+      "kana": "さきばしる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "立ち返る",
+      "kana": "たちかえる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "割り切る",
+      "kana": "わりきる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "牛耳る",
+      "kana": "ぎゅうじる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "立ち入る",
+      "kana": "たちいる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    },
+    {
+      "kanji": "見くびる",
+      "kana": "みくびる",
+      "from": "ichidan",
+      "to": "godan",
+      "votes": "1/1",
+      "distribution": {
+        "godan": 1
+      }
+    }
+  ]
+}

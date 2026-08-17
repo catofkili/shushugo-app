@@ -2,6 +2,7 @@ import { getDatabase } from "./database";
 import { DbRow, firstRow, getState, persistSoon, rowsFor, setState, studyDayEnd, today } from "./study-core";
 import { ensureGrammarProgressInitialized, getGrammarQueue, setGrammarQueue } from "./grammar-api";
 import { ensureProgressInitialized, getReviewQueue, setReviewQueue } from "./word-api";
+import { MASTERED_SQL } from "./fsrs-store";
 import type { ProgressOverview } from "./study-types";
 
 export function getProgressOverview(): ProgressOverview {
@@ -12,7 +13,8 @@ export function getProgressOverview(): ProgressOverview {
   const wordRow = firstRow(`
     SELECT
       COUNT(*) AS total,
-      SUM(CASE WHEN p.known_forever = 1 THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 THEN 1 ELSE 0 END) AS seen,
+      SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS completed,
       SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
       SUM(CASE WHEN p.known_forever = 0 AND p.seen_count = 0 THEN 1 ELSE 0 END) AS unseen
     FROM words w
@@ -22,7 +24,8 @@ export function getProgressOverview(): ProgressOverview {
     SELECT
       COALESCE(w.jlpt_level, '未分级') AS level,
       COUNT(*) AS total,
-      SUM(CASE WHEN p.known_forever = 1 THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 THEN 1 ELSE 0 END) AS seen,
+      SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS completed,
       SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
       SUM(CASE WHEN p.known_forever = 0 AND p.seen_count = 0 THEN 1 ELSE 0 END) AS unseen
     FROM words w
@@ -33,6 +36,7 @@ export function getProgressOverview(): ProgressOverview {
   `, [dayEnd]).map((row) => ({
     level: String(row.level ?? ""),
     total: Number(row.total ?? 0),
+    seen: Number(row.seen ?? 0),
     completed: Number(row.completed ?? 0),
     low: Number(row.low ?? 0),
     unseen: Number(row.unseen ?? 0)
@@ -41,7 +45,8 @@ export function getProgressOverview(): ProgressOverview {
     SELECT
       g.level,
       COUNT(*) AS total,
-      SUM(CASE WHEN p.known_forever = 1 THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 THEN 1 ELSE 0 END) AS seen,
+      SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS completed,
       SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
       SUM(CASE WHEN p.known_forever = 0 AND p.seen_count = 0 THEN 1 ELSE 0 END) AS unseen
     FROM grammar_points g
@@ -51,6 +56,7 @@ export function getProgressOverview(): ProgressOverview {
   `, [dayEnd]).map((row) => ({
     level: String(row.level ?? ""),
     total: Number(row.total ?? 0),
+    seen: Number(row.seen ?? 0),
     completed: Number(row.completed ?? 0),
     low: Number(row.low ?? 0),
     unseen: Number(row.unseen ?? 0)
@@ -59,6 +65,7 @@ export function getProgressOverview(): ProgressOverview {
   return {
     words: {
       total: Number(wordRow?.total ?? 0),
+      seen: Number(wordRow?.seen ?? 0),
       completed: Number(wordRow?.completed ?? 0),
       low: Number(wordRow?.low ?? 0),
       unseen: Number(wordRow?.unseen ?? 0)

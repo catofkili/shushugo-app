@@ -29,14 +29,15 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
 
   const memoryStats = useMemo(() => {
     if (!analytics) return null;
-    const reviewedWords = analytics.mastery.byLevel.reduce((sum, level) => sum + level.total, 0);
+    const reviewedWords = analytics.mastery.byLevel.reduce((sum, level) => sum + level.studied, 0);
     const masteredWords = analytics.mastery.byLevel.reduce((sum, level) => sum + level.mastered, 0);
     const reviewActions =
       analytics.errors.errorTypeDistribution.forgot +
       analytics.errors.errorTypeDistribution.fuzzy +
       analytics.errors.errorTypeDistribution.know;
     const memoryStrength = clamp(analytics.efficiency.memoryStrength, 0, 2);
-    const memoryPercent = Math.round((memoryStrength / 2) * 100);
+    const hasMemorySample = analytics.efficiency.memorySampleSize >= 100;
+    const memoryPercent = hasMemorySample ? Math.round((memoryStrength / 2) * 100) : null;
     const masteredPercent = reviewedWords > 0 ? Math.round((masteredWords / reviewedWords) * 100) : 0;
 
     return {
@@ -46,7 +47,8 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
       memoryPercent,
       masteredPercent,
       retentionRate: analytics.efficiency.retentionRate7Days,
-      label: analytics.efficiency.memoryStrengthLabel
+      hasRetentionSample: analytics.efficiency.retentionSampleSize > 0,
+      label: hasMemorySample ? analytics.efficiency.memoryStrengthLabel : "数据积累中"
     };
   }, [analytics]);
 
@@ -87,14 +89,14 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
         {memoryStats && (
           <>
             <div className="mt-6 flex items-end gap-3">
-              <span className="text-6xl font-black leading-none text-[#163f35]">{memoryStats.memoryPercent}</span>
+              <span className="text-6xl font-black leading-none text-[#163f35]">{memoryStats.memoryPercent ?? "—"}</span>
               <span className="pb-2 text-lg font-black text-[#2d6b56]">/ 100</span>
             </div>
             <p className="mt-2 text-xl font-black text-[#1e6a5f]">{memoryStats.label}</p>
             <div className="mt-5 h-3 overflow-hidden rounded-full bg-[#d7eee9]">
               <div
                 className="h-full rounded-full bg-[#81D8CF] shadow-[0_0_18px_rgba(145,201,104,0.5)]"
-                style={{ width: `${memoryStats.memoryPercent}%` }}
+                style={{ width: `${memoryStats.memoryPercent ?? 0}%` }}
               />
             </div>
 
@@ -111,12 +113,14 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
                 </p>
               </div>
               <div className="rounded-3xl border border-[#81D8CF]/24 bg-white/70 p-3">
-                <p className="text-[11px] font-bold text-[#5a837b]">复习记录</p>
+                <p className="text-[11px] font-bold text-[#5a837b]">答题次数</p>
                 <p className="mt-1 text-xl font-black text-[#163f35]">{memoryStats.reviewActions}</p>
               </div>
               <div className="rounded-3xl border border-[#81D8CF]/24 bg-white/70 p-3">
                 <p className="text-[11px] font-bold text-[#5a837b]">7日保持</p>
-                <p className="mt-1 text-xl font-black text-[#163f35]">{memoryStats.retentionRate}%</p>
+                <p className="mt-1 text-xl font-black text-[#163f35]">
+                  {memoryStats.hasRetentionSample ? `${memoryStats.retentionRate}%` : "—"}
+                </p>
               </div>
             </div>
           </>

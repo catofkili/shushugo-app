@@ -10,6 +10,7 @@ import {
 import { DEVICE_LOCAL_STATE_KEYS, SYNCED_TABLES, type SyncedTable } from "./tables";
 import { isUserSyncSnapshot } from "./snapshot";
 import { rebuildStudyTimeAggregate } from "./study-time";
+import { GRAMMAR_HIGHLIGHTS_UPDATED_EVENT, GRAMMAR_POSITIONS_UPDATED_EVENT } from "../grammar-events";
 
 const ROW_SEPARATOR = "\u001f";
 const DEFAULT_ORIGIN = "legacy";
@@ -32,23 +33,37 @@ interface DatabaseState {
 const quoteIdentifier = (value: string): string => `"${value.replace(/"/g, '""')}"`;
 
 const tableExists = (db: Database, table: string): boolean => {
-  const result = db.exec("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1", [table]);
-  return result.length > 0 && result[0].values.length > 0;
+  const statement = db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1");
+  try {
+    statement.bind([table]);
+    return statement.step();
+  } finally {
+    statement.free();
+  }
 };
 
 const columnsOf = (db: Database, table: string): Set<string> => {
   if (!tableExists(db, table)) return new Set();
-  const result = db.exec(`PRAGMA table_info(${quoteIdentifier(table)})`);
-  return new Set(result[0]?.values.map((row) => String(row[1])) ?? []);
+  const statement = db.prepare(`PRAGMA table_info(${quoteIdentifier(table)})`);
+  try {
+    const result = new Set<string>();
+    while (statement.step()) result.add(String(statement.get()[1]));
+    return result;
+  } finally {
+    statement.free();
+  }
 };
 
 const rowsOf = (db: Database, table: string): Row[] => {
   if (!tableExists(db, table)) return [];
-  const result = db.exec(`SELECT * FROM ${quoteIdentifier(table)}`)[0];
-  if (!result) return [];
-  return result.values.map((values) => Object.fromEntries(
-    result.columns.map((column, index) => [column, values[index] as Cell])
-  ));
+  const statement = db.prepare(`SELECT * FROM ${quoteIdentifier(table)}`);
+  try {
+    const result: Row[] = [];
+    while (statement.step()) result.push(statement.getAsObject() as Row);
+    return result;
+  } finally {
+    statement.free();
+  }
 };
 
 const rowKey = (entry: SyncedTable, row: Row): string =>
@@ -129,8 +144,8 @@ const mergeItems = (
       continue;
     }
 
-    // append / union 仍然用版本解决同一键的删除和重复写入;
-    // 不同 review 的 sync_uid 不同,因此会自然保留两端记录。
+    // append / union 仍然用版本解决同一自然键的删除和重复写入;
+    // 不同 review 的 created_at / direction 不同,因此会自然保留两端记录。
     if (entry.strategy === "append" || entry.strategy === "union" || entry.strategy === "lww") {
       merged.set(key, compareVersion(localItem, remoteItem) >= 0 ? localItem : remoteItem);
     }
@@ -177,11 +192,18 @@ const deleteRowByKey = (db: Database, entry: SyncedTable, key: string): void => 
  */
 const foreignKeyedPrimaryColumns = (db: Database, entry: SyncedTable): string[] => {
   if (!tableExists(db, entry.table)) return [];
-  const info = db.exec(`PRAGMA table_info(${quoteIdentifier(entry.table)})`)[0];
   const syncKeys = new Set(entry.keys);
-  return (info?.values ?? [])
-    .filter((row) => Number(row[5] ?? 0) > 0 && !syncKeys.has(String(row[1])))
-    .map((row) => String(row[1]));
+  const statement = db.prepare(`PRAGMA table_info(${quoteIdentifier(entry.table)})`);
+  try {
+    const result: string[] = [];
+    while (statement.step()) {
+      const row = statement.get();
+      if (Number(row[5] ?? 0) > 0 && !syncKeys.has(String(row[1]))) result.push(String(row[1]));
+    }
+    return result;
+  } finally {
+    statement.free();
+  }
 };
 
 const applyTable = (
@@ -289,6 +311,12 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
     // 对端的学习时长同步下来了,但读取方看的是 word_study_time 的每日合计,
     // 不重算一次统计页就只显示本机那份。
     rebuildStudyTimeAggregate();
+    // 语法页使用 SQLite 中的缓存；合并完成后通知已挂载的页面重新读一次，
+    // 不要求用户刷新正在学习的页面。
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event(GRAMMAR_HIGHLIGHTS_UPDATED_EVENT));
+      window.dispatchEvent(new Event(GRAMMAR_POSITIONS_UPDATED_EVENT));
+    }
   } finally {
     endSyncApply();
     remoteDb.close();

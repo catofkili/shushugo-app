@@ -10,6 +10,7 @@ import {
   compressSyncSnapshot,
   decompressSyncSnapshot,
   exportSyncSnapshot,
+  SYNC_PROTOCOL_VERSION,
   SYNC_SNAPSHOT_FORMAT,
   type SyncSnapshotCompression
 } from "./sync/snapshot";
@@ -641,9 +642,13 @@ export async function verifyCloudPurchase(productId: ProductId, transactionId: s
 
 const hasLocalLearningData = (): boolean => {
   const db = getDatabase();
-  const tables = new Set(
-    db.exec("SELECT name FROM sqlite_master WHERE type = 'table'")[0]?.values.map((row) => String(row[0])) ?? []
-  );
+  const tableStatement = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'");
+  const tables = new Set<string>();
+  try {
+    while (tableStatement.step()) tables.add(String(tableStatement.get()[0]));
+  } finally {
+    tableStatement.free();
+  }
   const checks: Array<[string, string]> = [
     ["reviews", "1"],
     ["grammar_reviews", "1"],
@@ -657,8 +662,12 @@ const hasLocalLearningData = (): boolean => {
   ];
   return checks.some(([table, condition]) => {
     if (!tables.has(table)) return false;
-    const result = db.exec(`SELECT COUNT(*) FROM ${table} WHERE ${condition}`);
-    return Number(result[0]?.values[0]?.[0] ?? 0) > 0;
+    const statement = db.prepare(`SELECT COUNT(*) FROM ${table} WHERE ${condition}`);
+    try {
+      return statement.step() && Number(statement.get()[0] ?? 0) > 0;
+    } finally {
+      statement.free();
+    }
   });
 };
 
@@ -679,6 +688,7 @@ const pushCloudDatabase = async (
     authorization: `Bearer ${session.token}`,
     "content-type": "application/octet-stream",
     "x-sync-format": SYNC_SNAPSHOT_FORMAT,
+    "x-sync-protocol-version": String(SYNC_PROTOCOL_VERSION),
     "x-sync-compression": compression,
     "x-sync-operation-id": operationId,
     "x-sync-device-id": getDeviceId()

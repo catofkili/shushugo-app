@@ -1,3 +1,5 @@
+import type { FuriganaAnnotation, TokenBoundary } from "./furigana";
+
 export type WordAnswer = "forgot" | "fuzzy" | "know" | "known_forever";
 export type WordLevelFilter = "All" | "N5" | "N4" | "N3" | "N2" | "N1" | "Unleveled";
 export type WordTypeFilter = "all" | "noun" | "verb" | "adjective" | "adverb" | "favorite";
@@ -14,7 +16,6 @@ export interface WordCard {
   englishOrigin?: string;
   pos: string;
   jlptLevel: string;
-  score: number;
   importance: number;
   importanceScore: number;
   isFavorite: boolean;
@@ -22,6 +23,8 @@ export interface WordCard {
   example: {
     jp: string;
     meaning: string;
+    furigana?: FuriganaAnnotation[];
+    tokens?: TokenBoundary[];
   };
   kanjiComponents: {
     char: string;
@@ -76,6 +79,8 @@ export interface WordStats {
   stage1ProgressTotal: number;
   phase: string;
   stage1Done: boolean;
+  /** 今日正向流(含减负与压轴)是否全部完成。stage1Done只表示前置今日计划完成,供压轴门槛使用。 */
+  dailyPlanDone: boolean;
   stage2Total: number;
   stage2Completed: number;
   kanjiTotal: number;
@@ -103,10 +108,18 @@ export interface WordStats {
     todayEncoreWords: number;
     fatigued: boolean;
   };
+  /** 昨日表现奖励：只用于前端开场演出，不进入真实任务进度或复习流水。 */
+  dailyRelief: {
+    total: number;
+    completed: number;
+    pending: number;
+  };
 }
 
 export interface WordSessionResponse {
   card: WordCard | null;
   phase: string;
   stats: WordStats;
+  /** 「上一个」按钮亮不亮:这一场里还剩几步可撤(最多两步,见 undo-stack) */
+  canUndo?: boolean;
 }

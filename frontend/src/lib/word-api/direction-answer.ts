@@ -1,6 +1,6 @@
 import { getDatabase } from "../database";
 import type { WordAnswer } from "../../types/vocabulary";
-import { firstRow, firstValue, setState, studyDayEnd, today } from "../study-core";
+import { firstRow, firstValue, studyDayEnd, today } from "../study-core";
 import { recordFsrsReview, readFsrsState, restoreFsrsState } from "../fsrs-store";
 import {
   isGraduatedForDay,
@@ -12,10 +12,13 @@ import { STUBBORN_MISTAKE_STREAK } from "../scheduler/requeue";
 import {
   advanceReviewQueue,
   getReviewQueue,
+  lastAnsweredWord,
   scheduleDelayedReview,
-  setLastAnsweredWord
+  setLastAnsweredWord,
+  setReviewQueue
 } from "./session-state";
 import { ensureDirectionColumns, type StudyDirection } from "./directions";
+import { pushUndoSnapshot } from "./undo-stack";
 
 /**
  * 反向/汉字的作答 —— 和正向**同一套规则**,只是记忆表换成这个方向自己的那张。
@@ -43,10 +46,16 @@ export const applyDirectionAnswer = (
 
   const snapshot = {
     phase: direction.phase,
+    // 撤销要认「这是哪一场的快照」:模式对不上就当作没得撤销(见 undo-stack)
+    mode: direction.phase,
     direction: direction.id,
     reviewed_on: studyDate,
     word_id: wordId,
     memory_exists: Boolean(memory),
+    known_forever: Number(
+      firstValue<number>("SELECT known_forever FROM progress WHERE word_id = ?", [wordId], 0) ?? 0
+    ),
+    last_answered_word: lastAnsweredWord(direction.id),
     seen_count: Number(memory?.seen_count ?? 0),
     right_count: Number(memory?.right_count ?? 0),
     fuzzy_count: Number(memory?.fuzzy_count ?? 0),
@@ -138,7 +147,7 @@ export const applyDirectionAnswer = (
     [wordId, answer, studyDate, direction.id]
   );
   const reviewId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
-  setState("last_answer", JSON.stringify({ ...snapshot, review_id: reviewId }));
+  pushUndoSnapshot({ ...snapshot, review_id: reviewId });
 };
 
 /** 撤销:把这个方向的记忆行和 FSRS 状态原样放回作答前 */
@@ -164,6 +173,23 @@ export const undoDirectionAnswer = (
     wordId
   ]);
   restoreFsrsState(wordId, (snapshot.fsrs ?? null) as FsrsState | null, direction.entity);
+  // 「永久熟知」写在 progress 上(三个方向一起退出轮换),不放回去的话撤销等于没撤
+  db.run("UPDATE progress SET known_forever = ? WHERE word_id = ?", [
+    Number(snapshot.known_forever ?? 0),
+    wordId
+  ]);
+  if (Array.isArray(snapshot.review_queue)) {
+    setReviewQueue(snapshot.review_queue.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const record = item as Record<string, unknown>;
+      const queuedId = Number(record.word_id);
+      if (!Number.isFinite(queuedId)) return [];
+      return [{ word_id: queuedId, due_after: Math.max(Number(record.due_after ?? 0), 0) }];
+    }), direction.id);
+  }
+  if (snapshot.last_answered_word != null) {
+    setLastAnsweredWord(Number(snapshot.last_answered_word), direction.id);
+  }
   if (snapshot.review_id != null) {
     db.run("DELETE FROM reviews WHERE id = ?", [Number(snapshot.review_id)]);
   }

@@ -70,12 +70,16 @@ export interface BadgeInput {
 export function computeBadges({ overview, checkins, studyDate }: BadgeInput): Badge[] {
   const streak = computeStreak(checkins, studyDate);
   const checkinDays = new Set(checkins).size;
-  const knownWords = overview.words.completed;
+  // 「松子」数的是学过的词。以前取 completed(当时等于 known_forever),
+  // 于是只有手动点过「熟知」的才算数,学了两千词的人卡在「百粒松子」。
+  const knownWords = overview.words.seen;
 
   const habitat: Badge[] = HABITATS.map((item) => {
     const row = overview.wordsByLevel.find((level) => level.level === item.level);
     const total = row?.total ?? 0;
-    const pct = total > 0 ? Math.round(((row?.completed ?? 0) / total) * 100) : 0;
+    // 认证看学过的覆盖率,和地图/柱状图同一条线。按 180 天掌握口径算的话
+    // 五个园区永远认证不了,徽章系统等于废掉。
+    const pct = total > 0 ? Math.round(((row?.seen ?? 0) / total) * 100) : 0;
     return {
       id: `habitat-${item.level}`,
       group: "habitat" as const,

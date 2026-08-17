@@ -34,7 +34,7 @@ export function ZooProgressPanel({ overview }: { overview: ProgressOverview }) {
   ) => {
     const byLevel = new Map(items.map((item) => [item.level, item]));
     const bars = JLPT_LEVELS.map(
-      (level) => byLevel.get(level) ?? { level, total: 0, completed: 0, low: 0, unseen: 0 }
+      (level) => byLevel.get(level) ?? { level, total: 0, seen: 0, completed: 0, low: 0, unseen: 0 }
     );
     return (
       <button
@@ -47,12 +47,14 @@ export function ZooProgressPanel({ overview }: { overview: ProgressOverview }) {
         </span>
         <span className="zoo-prog-bars">
           {bars.map((item) => {
-            const percent = item.total ? Math.round((item.completed / item.total) * 100) : 0;
+            // 柱子画的是「学过多少」。用 completed(已掌握)画的话,两个月的用户
+            // 五根柱子全是个位数,看着像什么都没学 —— 掌握度另外在概要里给数字。
+            const percent = item.total ? Math.round((item.seen / item.total) * 100) : 0;
             return (
               <span key={item.level} className="zoo-prog-bar">
                 <span className="zoo-prog-bar-track">
                   {/* 已有进度但不足 8% 时给个最小高度,不然柱子看不见 */}
-                  <i style={{ height: `${Math.max(percent, item.completed ? 8 : 0)}%` }} />
+                  <i style={{ height: `${Math.max(percent, item.seen ? 8 : 0)}%` }} />
                 </span>
                 <b>{item.level}</b>
                 <small>{percent}%</small>
@@ -64,7 +66,8 @@ export function ZooProgressPanel({ overview }: { overview: ProgressOverview }) {
     );
   };
 
-  const grammarCompleted = overview.grammar.reduce((sum, item) => sum + item.completed, 0);
+  const grammarSeen = overview.grammar.reduce((sum, item) => sum + item.seen, 0);
+  const grammarMastered = overview.grammar.reduce((sum, item) => sum + item.completed, 0);
   const grammarTotal = overview.grammar.reduce((sum, item) => sum + item.total, 0);
 
   return (
@@ -88,12 +91,17 @@ export function ZooProgressPanel({ overview }: { overview: ProgressOverview }) {
         {(focus === "both" || focus === "words") &&
           renderColumn(
             "单词",
-            `${overview.words.completed}/${overview.words.total} · 薄弱 ${overview.words.low} · 未学 ${overview.words.unseen}`,
+            `学过 ${overview.words.seen}/${overview.words.total} · 掌握 ${overview.words.completed} · 薄弱 ${overview.words.low} · 未学 ${overview.words.unseen}`,
             overview.wordsByLevel,
             "words"
           )}
         {(focus === "both" || focus === "grammar") &&
-          renderColumn("语法", `${grammarCompleted}/${grammarTotal}`, overview.grammar, "grammar")}
+          renderColumn(
+            "语法",
+            `学过 ${grammarSeen}/${grammarTotal} · 掌握 ${grammarMastered}`,
+            overview.grammar,
+            "grammar"
+          )}
       </div>
     </div>
   );

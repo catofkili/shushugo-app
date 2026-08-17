@@ -6,6 +6,9 @@ CREATE TABLE IF NOT EXISTS grammar_points (
   formation TEXT NOT NULL,
   example_jp TEXT NOT NULL,
   example_meaning TEXT NOT NULL,
+  example_furigana TEXT NOT NULL DEFAULT '',
+  example_tokens TEXT NOT NULL DEFAULT '',
+  example_lemmas TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT '',
   confusions TEXT NOT NULL DEFAULT '',
   level TEXT NOT NULL DEFAULT 'N5',
@@ -44,6 +47,62 @@ CREATE TABLE IF NOT EXISTS grammar_state (
   value TEXT NOT NULL
 );
 
+-- 从例句词典主动加入的词。任务表按学习日轮换，这张小表保留发现意图，
+-- 让未开始的词在第二天仍会优先进入新词计划。
+CREATE TABLE IF NOT EXISTS dictionary_discovered_words (
+  word_id INTEGER PRIMARY KEY,
+  discovered_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 独立于 JLPT 学习词库的补充词典。这里的条目只供例句点词查询，
+-- 不使用 words.id，也不会进入 progress、学习计划或 FSRS。
+CREATE TABLE IF NOT EXISTS dictionary_entries (
+  entry_key TEXT PRIMARY KEY,
+  headword TEXT NOT NULL,
+  kana TEXT NOT NULL,
+  meaning TEXT NOT NULL,
+  pos TEXT NOT NULL,
+  verb_type TEXT,
+  category TEXT NOT NULL,
+  usage_note TEXT NOT NULL DEFAULT '',
+  example_jp TEXT NOT NULL DEFAULT '',
+  example_meaning TEXT NOT NULL DEFAULT '',
+  priority INTEGER NOT NULL DEFAULT 3,
+  source_name TEXT NOT NULL,
+  source_url TEXT NOT NULL DEFAULT '',
+  license TEXT NOT NULL,
+  seed_version TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_dictionary_entries_headword
+  ON dictionary_entries(headword);
+
+CREATE INDEX IF NOT EXISTS idx_dictionary_entries_kana
+  ON dictionary_entries(kana);
+
+-- 语法页的划重点。范围用语法点稳定 id + 内容块 + 字符偏移定位，
+-- dataset_version 用来识别 grammar.ts/grammar_seed 改版后已经漂移的旧锚点。
+CREATE TABLE IF NOT EXISTS grammar_highlights (
+  grammar_id TEXT NOT NULL,
+  block TEXT NOT NULL,
+  start INTEGER NOT NULL,
+  end INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  dataset_version TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (grammar_id, block, start, end)
+);
+
+-- Library / 沉浸式阅读位置。存稳定的语法点 id，不存过滤数组下标。
+CREATE TABLE IF NOT EXISTS grammar_reading_positions (
+  kind TEXT NOT NULL,
+  level TEXT NOT NULL,
+  grammar_id TEXT NOT NULL,
+  scroll_top REAL NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (kind, level)
+);
+
 CREATE TABLE IF NOT EXISTS grammar_points_archive (
   archive_id INTEGER PRIMARY KEY AUTOINCREMENT,
   archived_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -55,6 +114,9 @@ CREATE TABLE IF NOT EXISTS grammar_points_archive (
   formation TEXT NOT NULL,
   example_jp TEXT NOT NULL,
   example_meaning TEXT NOT NULL,
+  example_furigana TEXT NOT NULL DEFAULT '',
+  example_tokens TEXT NOT NULL DEFAULT '',
+  example_lemmas TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT '',
   confusions TEXT NOT NULL DEFAULT '',
   level TEXT NOT NULL DEFAULT 'N5',
@@ -130,3 +192,21 @@ CREATE TABLE IF NOT EXISTS confusion_mastered (
   group_key TEXT PRIMARY KEY,
   mastered_on TEXT NOT NULL
 );
+
+-- 「时刻」播报台账:哪个时刻已经播过了。
+--
+-- 每加一种庆祝就配一个 app_state 键的话,很快会有一把彼此不认识的键,
+-- 而且没人知道「今天总共已经蹦了几个」—— 预算就无从谈起。统一记这一张表:
+--   kind = 时刻种类(plan_trend / leech_cleared / ...)
+--   key  = 一次性的粒度,由各自的检测器决定:
+--          每天一次 → 日期,每词一次 → word_id,一辈子一次 → 固定串或阈值
+--   (注意:这个文件是按分号裸切后逐条执行的,注释里也不许出现半角分号)
+--   fired_on = 播报当天的学习日,用来数每日预算
+CREATE TABLE IF NOT EXISTS moments (
+  kind TEXT NOT NULL,
+  key TEXT NOT NULL,
+  fired_on TEXT NOT NULL,
+  PRIMARY KEY (kind, key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_moments_fired_on ON moments(fired_on);

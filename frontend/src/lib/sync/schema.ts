@@ -79,6 +79,11 @@ export function ensureSyncSchema(): void {
 
   for (const entry of SYNCED_TABLES) {
     if (!tableExists(entry.table)) continue;
+    // 老库在 study-core 迁移前可能还没有方向列；同步自然键需要它，
+    // 所以这里也补齐，保证仅调用 ensureSyncSchema 的恢复/测试路径可用。
+    if (entry.table === "reviews" && !columnsOf(entry.table).has("direction")) {
+      db.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
+    }
     ensureTrackingColumns(entry);
     ensureTriggers(entry);
   }
@@ -102,8 +107,8 @@ const ensureTrackingColumns = (entry: SyncedTable): void => {
   }
 
   if (entry.strategy === "append" && !columns.has(SYNC_UID_COL)) {
-    // 两端的自增 id 会撞车(各自都会产生 id=5001),所以事件日志另立
-    // 「设备号:本地 id」作为全局唯一键,合并时按它去重。
+    // 两端的自增 id 会撞车(各自都会产生 id=5001),所以仍保留
+    // 「设备号:本地 id」作为事件追踪号;跨设备合并身份由 tables.ts 的自然键决定。
     db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_UID_COL} TEXT`);
     db.run(
       `UPDATE ${entry.table}

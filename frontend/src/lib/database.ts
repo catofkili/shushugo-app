@@ -9,11 +9,16 @@ const REQUIRED_BACKUP_TABLES = ["words", "progress", "app_state"];
 
 const validateAppDatabase = (candidate: Database): void => {
   const placeholders = REQUIRED_BACKUP_TABLES.map(() => "?").join(", ");
-  const result = candidate.exec(
-    `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${placeholders})`,
-    REQUIRED_BACKUP_TABLES
+  const statement = candidate.prepare(
+    `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${placeholders})`
   );
-  const names = new Set(result[0]?.values.map((row) => String(row[0])) ?? []);
+  const names = new Set<string>();
+  try {
+    statement.bind(REQUIRED_BACKUP_TABLES);
+    while (statement.step()) names.add(String(statement.get()[0]));
+  } finally {
+    statement.free();
+  }
   const missing = REQUIRED_BACKUP_TABLES.filter((table) => !names.has(table));
   if (missing.length) {
     throw new Error(`Invalid ShuShuGo backup. Missing tables: ${missing.join(", ")}`);

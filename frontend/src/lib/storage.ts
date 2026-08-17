@@ -3,6 +3,13 @@ import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Preferences } from '@capacitor/preferences';
 import { exportDatabase, importDatabase } from './database';
 
+// 供当前页面把“数据库写盘失败”显示出来；旧版 localStorage 配额异常曾被静默吞掉。
+export const PERSISTENCE_ERROR_EVENT = 'persistence-error';
+
+const notifyPersistenceError = () => {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(PERSISTENCE_ERROR_EVENT));
+};
+
 // 旧方案:数据库 base64 后分块存 Capacitor Preferences(iOS 上是 UserDefaults)。
 // UserDefaults 不适合放大数据(整份 plist 常驻内存、每次写整体重写),
 // 现在原生平台改为 Filesystem 单文件 + 三代轮转,这些键只用于一次性迁移。
@@ -22,6 +29,7 @@ const DB_FILE_PREV = 'masternihongo/nihongo.db.prev';
 const BROWSER_DB_NAME = 'master-nihongo-storage';
 const BROWSER_DB_STORE = 'databases';
 const BROWSER_DB_KEY = 'study-database';
+const BROWSER_RECOVERY_KEY_PREFIX = 'recovery-';
 
 const isNativeFileStorage = () => Capacitor.isNativePlatform();
 
@@ -47,6 +55,42 @@ const saveBrowserDatabase = async (data: Uint8Array): Promise<void> => {
   });
   browserDb.close();
 };
+
+/**
+ * 数据迁移前的整库恢复点。
+ *
+ * 浏览器端和正式数据库放在同一个 IndexedDB store、不同 key 下；正常启动只读取
+ * study-database，不会把恢复点误当成当前数据。原生端保存为 Library 下的独立文件。
+ * 同名迁移只需要保留最近一次执行前的状态，因此 key/path 固定，不无限堆积。
+ */
+export async function saveRecoverySnapshot(label: string): Promise<string> {
+  const data = exportDatabase();
+  if (!data) throw new Error('Database is not ready for recovery snapshot');
+  const safeLabel = label.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'migration';
+
+  if (isNativeFileStorage()) {
+    const path = `masternihongo/recovery-${safeLabel}.db`;
+    await Filesystem.writeFile({
+      path,
+      data: bytesToBase64(data),
+      directory: DB_DIRECTORY,
+      recursive: true
+    });
+    return path;
+  }
+
+  const key = `${BROWSER_RECOVERY_KEY_PREFIX}${safeLabel}`;
+  const browserDb = await openBrowserDatabase();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = browserDb.transaction(BROWSER_DB_STORE, 'readwrite');
+    transaction.objectStore(BROWSER_DB_STORE).put(data.slice().buffer, key);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error ?? new Error('Unable to save recovery snapshot'));
+    transaction.onabort = () => reject(transaction.error ?? new Error('Recovery snapshot save aborted'));
+  });
+  browserDb.close();
+  return `${BROWSER_DB_NAME}/${BROWSER_DB_STORE}/${key}`;
+}
 
 const loadBrowserDatabase = async (): Promise<Uint8Array | null> => {
   const browserDb = await openBrowserDatabase();
@@ -213,6 +257,7 @@ export async function saveDatabase(options: { notifyCloud?: boolean } = {}): Pro
     }
   } catch (error) {
     console.error('❌ Failed to save database:', error);
+    notifyPersistenceError();
     throw error;
   }
 }

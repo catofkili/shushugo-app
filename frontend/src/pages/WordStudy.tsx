@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { AlertCircle, Eye, GitCompareArrows, RotateCcw, Star, StickyNote, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
-import { addWordStudySeconds, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getWordSession, jumpToSimilarWord, markTodayWordCheckin, startEncore as startEncoreSession, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
+import { addWordStudySeconds, advanceDailyRelief, advanceDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { addStudyTime, checkAchievements } from "../lib/userProfile";
-import { triggerMemoryHaptic } from "../lib/haptics";
+import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic } from "../lib/haptics";
 import { playPronunciation } from "../lib/speech";
-import { playComplete, playDontKnow, playFlip, playKnow } from "../lib/zoo-sounds";
+import { playComplete, playCountdownTick, playDontKnow, playFlip, playKnow, playReliefDeal } from "../lib/zoo-sounds";
 import {
   ExampleBlock,
   FinishPanel,
@@ -56,6 +56,10 @@ const answerHotkeyLabels: Record<WordAnswer, string> = {
   known_forever: "M"
 };
 
+const DAILY_REVIEW_MAX_ATTEMPTS = 25;
+const DAILY_REVIEW_MAX_FAILURES_PER_WORD = 3;
+const DAILY_REVIEW_COOLDOWN_LENGTH = 3;
+
 const reservedRevealKeys = new Set([
   "Tab",
   "Escape",
@@ -93,7 +97,7 @@ const yieldToBrowser = () => new Promise<void>((resolve) => {
 });
 
 const isDailyModeComplete = (mode: StudyMode, stats: WordStats) => {
-  if (mode === "classic") return stats.stage1Done;
+  if (mode === "classic") return stats.dailyPlanDone;
   if (mode === "reverse") return stats.stage2Total > 0 && stats.stage2Completed >= stats.stage2Total;
   if (mode === "kanji") return stats.kanjiTotal > 0 && stats.kanjiCompleted >= stats.kanjiTotal;
   return false;
@@ -103,6 +107,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   const [card, setCard] = useState<WordCard | null>(null);
   const [stats, setStats] = useState<WordStats | null>(null);
   const [phase, setPhase] = useState("loading");
+  // 「上一个」还剩几步可撤(最多两步)。灰掉总比点一下跳到无关的词上强。
+  const [canUndo, setCanUndo] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -129,6 +135,17 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   const [flingDir, setFlingDir] = useState<0 | 1 | -1>(0);
   // 被点评分按钮的即时反馈:认识=弹一下发光,不认识=轻轻摇头(不惩罚)
   const [rateFeedback, setRateFeedback] = useState<{ value: WordAnswer; good: boolean } | null>(null);
+  const [reliefActive, setReliefActive] = useState(false);
+  const [reliefLeaving, setReliefLeaving] = useState(false);
+  const [dailyReviewActive, setDailyReviewActive] = useState(false);
+  const [dailyReviewIntro, setDailyReviewIntro] = useState(false);
+  const [tailActive, setTailActive] = useState(false);
+  const dailyReviewResolvedRef = useRef<Set<number>>(new Set());
+  const dailyReviewAttemptsRef = useRef(0);
+  const dailyReviewFailuresRef = useRef<Map<number, number>>(new Map());
+  const dailyReviewCooldownRef = useRef<number[]>([]);
+  const [dailyReviewTriggeredToday] = useState(() => hasDailyReviewTriggered());
+  const dailyReviewTriggeredRef = useRef(dailyReviewTriggeredToday);
   const sessionOptions = useMemo<WordSessionOptions>(
     () => initialMode === "mistakes" ? { focus: "mistakes" } : {},
     [initialMode]
@@ -142,12 +159,40 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   //（camera/コーヒー…),传进去会被逐字母拆成 "c a m e r a" 这种乱码。
   const romaji = useMemo(() => card ? kanaToRomaji(card.kana) : "", [card]);
 
+  const remainingPlanWords = (target: WordStats | null): number => {
+    if (!target) return 0;
+    return Math.max(target.stage1ProgressTotal - target.stage1ProgressDone, 0);
+  };
+
+  const playCountdownFeedbackIfNeeded = (before: WordStats | null, after: WordStats | null) => {
+    const beforeRemaining = remainingPlanWords(before);
+    const afterRemaining = remainingPlanWords(after);
+    if (afterRemaining < beforeRemaining && afterRemaining > 0 && afterRemaining <= 30) {
+      triggerCountdownHaptic();
+      playCountdownTick();
+    }
+  };
+
   const loadNext = async (mode: StudyMode = initialMode) => {
     setLoading(true);
     setError("");
     try {
       await yieldToBrowser();
       let data: WordSessionResponse;
+      if (mode === "classic") {
+        const reliefCard = getDailyReliefNext();
+        if (reliefCard) {
+          data = continueTodayPlanStudy();
+          setCard(reliefCard);
+          setStats(data.stats);
+          setPhase("relief");
+          setReliefActive(true);
+          setReliefLeaving(false);
+          setTailActive(false);
+          setRevealed(true);
+          return;
+        }
+      }
       if (mode === "reverse") {
         data = continueStage2Study();
       } else if (mode === "kanji") {
@@ -159,9 +204,25 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         // 当天状态劫持 —— 选了经典却出反向题。
         data = continueTodayPlanStudy();
       }
+      if (mode === "classic" && !data.card && data.stats.stage1Done) {
+        const tailCard = getDailyTailNext();
+        if (tailCard) {
+          setCard(tailCard);
+          setStats(data.stats);
+          setPhase("daily-tail");
+          setTailActive(true);
+          setReliefActive(false);
+          setRevealed(false);
+          return;
+        }
+      }
       setCard(data.card);
       setStats(data.stats);
       setPhase(data.phase);
+      setReliefActive(false);
+      setReliefLeaving(false);
+      setTailActive(false);
+      setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
       if (!data.card && !completionReportedRef.current && isDailyModeComplete(mode, data.stats)) {
         completionReportedRef.current = true;
@@ -177,6 +238,40 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   useEffect(() => {
     loadNext(initialMode);
   }, [initialMode]);
+
+  useEffect(() => {
+    if (!reliefActive || !card || reliefLeaving || loading) return;
+    const dealTimer = window.setTimeout(() => {
+      triggerReliefHaptic();
+      playReliefDeal();
+      setReliefLeaving(true);
+      window.setTimeout(() => {
+        const before = stats;
+        advanceDailyRelief();
+        const nextRelief = getDailyReliefNext();
+        if (nextRelief) {
+          const refreshed = continueTodayPlanStudy();
+          playCountdownFeedbackIfNeeded(before, refreshed.stats);
+          setCard(nextRelief);
+          setStats(refreshed.stats);
+          setPhase("relief");
+          setRevealed(true);
+          setReliefLeaving(false);
+          return;
+        }
+        setReliefActive(false);
+        setReliefLeaving(false);
+        void loadNext(initialMode);
+      }, 240);
+    }, 420);
+    return () => window.clearTimeout(dealTimer);
+  }, [card?.id, initialMode, loading, reliefActive, reliefLeaving, stats]);
+
+  useEffect(() => {
+    if (!dailyReviewIntro) return;
+    const timer = window.setTimeout(() => setDailyReviewIntro(false), 1100);
+    return () => window.clearTimeout(timer);
+  }, [dailyReviewIntro]);
 
   useEffect(() => {
     const handlePreferences = (event: Event) => {
@@ -262,7 +357,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     // submittingRef is synchronous, so a second tap is blocked immediately —
     // before React can re-render the `disabled`/`submitting` state — which is
     // what the `submitting` state alone could miss on a fast double-tap.
-    if (!card || submittingRef.current || submitting) return;
+    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewIntro) return;
+    const answeredCardId = card.id;
+    const wasDailyReview = dailyReviewActive;
+    const wasTail = tailActive;
+    const beforeStats = stats;
     submittingRef.current = true;
     triggerMemoryHaptic(answer);
     // 认识 → 上行两音;不认识 → 柔和下行两音。同时播 0.2s 按钮反馈动画,
@@ -275,17 +374,155 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     setError("");
     try {
       await new Promise((resolve) => window.setTimeout(resolve, 200));
-      const data = submitWordAnswer(card.id, answer, sessionOptions);
-      if (!data.card) playComplete();
+      const data = submitWordAnswer(answeredCardId, answer, sessionOptions);
       let nextStats = data.stats;
       if (!data.card && trackingActiveRef.current) {
         trackingActiveRef.current = false;
         const trackedStats = await sendStudySeconds(elapsedStudySeconds());
         if (trackedStats) nextStats = trackedStats;
       }
+
+      playCountdownFeedbackIfNeeded(beforeStats, nextStats);
+
+      // 当日错题回顾只改变这一轮的出牌顺序，答题本身仍然走正式 FSRS。
+      if (wasDailyReview) {
+        dailyReviewAttemptsRef.current += 1;
+        if (good) dailyReviewResolvedRef.current.add(answeredCardId);
+        const failureCount = good
+          ? (dailyReviewFailuresRef.current.get(answeredCardId) ?? 0)
+          : (dailyReviewFailuresRef.current.get(answeredCardId) ?? 0) + 1;
+        if (!good) dailyReviewFailuresRef.current.set(answeredCardId, failureCount);
+        const shouldExitReview = dailyReviewAttemptsRef.current >= DAILY_REVIEW_MAX_ATTEMPTS
+          || (!good && failureCount >= DAILY_REVIEW_MAX_FAILURES_PER_WORD);
+
+        if (!shouldExitReview) {
+          dailyReviewCooldownRef.current = [
+            ...dailyReviewCooldownRef.current.filter((id) => id !== answeredCardId),
+            answeredCardId
+          ].slice(-DAILY_REVIEW_COOLDOWN_LENGTH);
+        }
+        const spacedExcluded = new Set([
+          ...dailyReviewResolvedRef.current,
+          ...dailyReviewCooldownRef.current
+        ]);
+        const nextReviewCard = shouldExitReview
+          ? null
+          : pickDailyReviewNext(spacedExcluded) ?? pickDailyReviewNext(dailyReviewResolvedRef.current);
+        if (nextReviewCard) {
+          setCard(nextReviewCard);
+          setStats(nextStats);
+          setPhase("daily-mistakes");
+          setCanUndo(false);
+          setRevealed(false);
+          return;
+        }
+
+        dailyReviewResolvedRef.current.clear();
+        dailyReviewAttemptsRef.current = 0;
+        dailyReviewFailuresRef.current.clear();
+        dailyReviewCooldownRef.current = [];
+        setDailyReviewActive(false);
+        setDailyReviewIntro(false);
+        const tailCard = !data.card && nextStats.stage1Done ? getDailyTailNext() : null;
+        if (tailCard) {
+          setCard(tailCard);
+          setStats(nextStats);
+          setPhase("daily-tail");
+          setTailActive(true);
+          setCanUndo(false);
+          setRevealed(false);
+          playComplete();
+          return;
+        }
+        setCard(data.card);
+        setStats(nextStats);
+        setPhase(data.phase);
+        setCanUndo(Boolean(data.canUndo));
+        setRevealed(false);
+        if (!data.card) playComplete();
+        if (!data.card && !completionReportedRef.current && isDailyModeComplete(initialMode, nextStats)) {
+          completionReportedRef.current = true;
+          onDailyModeComplete?.(initialMode);
+        }
+        return;
+      }
+
+      // 压轴卡不计入今日任务，但答题依然写入原有 FSRS。只有压轴全部答完，
+      // 才允许进入真正的完成页和自动错题本切换。
+      if (wasTail) {
+        advanceDailyTail();
+        const refreshedStats = getWordStats("stage1");
+        playCountdownFeedbackIfNeeded(beforeStats, refreshedStats);
+        const nextTailCard = getDailyTailNext();
+        if (nextTailCard) {
+          setCard(nextTailCard);
+          setStats(refreshedStats);
+          setPhase("daily-tail");
+          setTailActive(true);
+          setCanUndo(false);
+          setRevealed(false);
+          return;
+        }
+        setTailActive(false);
+        setCard(null);
+        setStats(refreshedStats);
+        setPhase(data.phase);
+        setCanUndo(false);
+        setRevealed(false);
+        playComplete();
+        if (!completionReportedRef.current && isDailyModeComplete(initialMode, refreshedStats)) {
+          completionReportedRef.current = true;
+          onDailyModeComplete?.(initialMode);
+        }
+        return;
+      }
+
+      // 60%~80% 区间内发现四张以上「今天已经看到四次仍没清掉」的词，
+      // 先完成一轮当日错题回顾，再回到原来的今日计划。
+      if (
+        initialMode === "classic"
+        && phase === "stage1"
+        && !dailyReviewTriggeredRef.current
+        && shouldStartDailyReview()
+      ) {
+        const reviewCard = pickDailyReviewNext();
+        if (reviewCard) {
+          dailyReviewTriggeredRef.current = true;
+          markDailyReviewTriggered();
+          dailyReviewResolvedRef.current.clear();
+          dailyReviewAttemptsRef.current = 0;
+          dailyReviewFailuresRef.current.clear();
+          dailyReviewCooldownRef.current = [];
+          setDailyReviewActive(true);
+          setDailyReviewIntro(true);
+          setCard(reviewCard);
+          setStats(nextStats);
+          setPhase("daily-mistakes");
+          setCanUndo(false);
+          setRevealed(false);
+          return;
+        }
+      }
+
+      const tailCard = !data.card && nextStats.stage1Done ? getDailyTailNext() : null;
+      if (tailCard) {
+        setCard(tailCard);
+        setStats(nextStats);
+        setPhase("daily-tail");
+        setTailActive(true);
+        setCanUndo(false);
+        setRevealed(false);
+        playComplete();
+        return;
+      }
+
       setCard(data.card);
       setStats(nextStats);
       setPhase(data.phase);
+      setReliefActive(false);
+      setReliefLeaving(false);
+      setTailActive(false);
+      setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
       // 同一个顽固词可能被立即再次排到。它的 id 没变，下面依赖 card.id 的
       // effect 不会执行，所以必须在「一次作答已结束」这个轮次边界主动收起
@@ -295,6 +532,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setNoteMemoryOpen(false);
       setSimilarMeaningOpen(false);
       setActivePopover(null);
+      if (!data.card) playComplete();
       if (!data.card && !completionReportedRef.current && isDailyModeComplete(initialMode, nextStats)) {
         completionReportedRef.current = true;
         onDailyModeComplete?.(initialMode);
@@ -306,10 +544,10 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setSubmitting(false);
       setRateFeedback(null);
     }
-  }, [card, initialMode, onDailyModeComplete, sendStudySeconds, sessionOptions, submitting]);
+  }, [card, dailyReviewActive, dailyReviewIntro, initialMode, onDailyModeComplete, phase, reliefActive, sendStudySeconds, sessionOptions, stats, submitting, tailActive]);
 
   const revealAnswer = useCallback(() => {
-    if (!card || loading || revealed || submitting) return;
+    if (!card || loading || revealed || submitting || reliefActive || dailyReviewIntro) return;
     setRevealed(true);
     playFlip();
     setNoteEditorOpen(false);
@@ -321,7 +559,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setActivePopover(similarMeaningOpen ? "similarMeaning" : null);
     }
     speakCard(card);
-  }, [card, loading, revealed, similarMeaningOpen, speakCard, submitting]);
+  }, [card, dailyReviewIntro, loading, reliefActive, revealed, similarMeaningOpen, speakCard, submitting]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -365,6 +603,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setCard(data.card);
       setStats(data.stats);
       setPhase(data.phase);
+      setReliefActive(false);
+      setReliefLeaving(false);
+      setDailyReviewActive(false);
+      setDailyReviewIntro(false);
+      setTailActive(false);
+      setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "撤回失败");
@@ -421,6 +665,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setCard(data.card);
       setStats(data.stats);
       setPhase(data.phase);
+      setReliefActive(false);
+      setReliefLeaving(false);
+      setDailyReviewActive(false);
+      setDailyReviewIntro(false);
+      setTailActive(false);
+      setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
       setNoteEditorOpen(false);
       setNoteMemoryOpen(false);
@@ -453,6 +703,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setCard(data.card);
       setStats(data.stats);
       setPhase(data.phase);
+      setReliefActive(false);
+      setReliefLeaving(false);
+      setDailyReviewActive(false);
+      setDailyReviewIntro(false);
+      setTailActive(false);
+      setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "无法进入下一阶段");
@@ -478,6 +734,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setCard(data.card);
       setStats(data.stats);
       setPhase(data.phase);
+      setReliefActive(false);
+      setReliefLeaving(false);
+      setDailyReviewActive(false);
+      setDailyReviewIntro(false);
+      setTailActive(false);
+      setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "无法继续学习");
@@ -498,7 +760,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   };
 
   // 甩卡只在「答案已显示」时生效:没看答案就甩等于瞎评分。
-  const swipeEnabled = Boolean(card) && revealed && !submitting;
+  const swipeEnabled = Boolean(card) && revealed && !submitting && !reliefActive && !dailyReviewIntro;
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     const touch = event.touches[0];
@@ -562,10 +824,16 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   const cardShift = flingDir ? flingDir * FLING_DISTANCE : swipeX;
   const cardRotate = Math.max(-SWIPE_MAX_ROTATE, Math.min(SWIPE_MAX_ROTATE, cardShift / 40));
   const swipeProgress = Math.min(Math.abs(swipeX) / SWIPE_COMMIT_PX, 1);
+  const countdownRemaining = remainingPlanWords(stats);
+  const countdownActive = !loading
+    && !dailyReviewActive
+    && countdownRemaining > 0
+    && countdownRemaining <= 30
+    && initialMode === "classic";
 
   return (
     <div
-      className="word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px]"
+      className={`word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px]${countdownActive ? " word-study-countdown" : ""}${dailyReviewActive ? " word-study-daily-review" : ""}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={resetDrag}
@@ -576,7 +844,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       }}
     >
       <section
-        className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "px-3 pb-2 pt-3 sm:p-8 lg:p-7" : "px-3 pb-2 pt-3 sm:p-5"}`}
+        className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "px-3 pb-2 pt-3 sm:p-8 lg:p-7" : "px-3 pb-2 pt-3 sm:p-5"}${reliefActive ? " daily-relief-card" : ""}${reliefLeaving ? " daily-relief-card-leaving" : ""}${dailyReviewActive ? " daily-review-card" : ""}`}
         style={{
           transform: cardShift ? `translate3d(${cardShift}px,0,0) rotate(${cardRotate}deg)` : undefined,
           opacity: flingDir ? 0 : undefined,
@@ -640,9 +908,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           </button>
           <button
             onClick={undo}
-            disabled={submitting}
+            disabled={submitting || !canUndo}
             className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#81D8CF]/10 hover:bg-[#81D8CF]/15 disabled:opacity-50"
-            title="上一个"
+            title={canUndo ? "上一个" : "没有可撤销的作答"}
           >
             <RotateCcw size={17} />
           </button>
@@ -768,6 +1036,20 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         )}
         </div>
 
+        {reliefActive && stats?.dailyRelief && (
+          <div className="daily-relief-banner" role="status" aria-live="polite">
+            <span className="daily-relief-banner-spark">✦</span>
+            <strong>昨日表现很棒，今日减负（{stats.dailyRelief.total}）个！</strong>
+            <span>这几张只是把已记住的好消息发给你，不增加今日负担</span>
+          </div>
+        )}
+        {dailyReviewActive && (
+          <div className={`daily-review-banner${dailyReviewIntro ? " daily-review-banner-intro" : ""}`} role="status" aria-live="polite">
+            <span>当日错题回顾</span>
+            <strong>记住一张，红色就少一张</strong>
+            <small>模糊会隔开再来，本轮最多回顾25次</small>
+          </div>
+        )}
         {error && (
           <div className="mb-5 flex items-start gap-3 rounded-2xl border border-[#81D8CF]/40 bg-[#81D8CF]/20 p-4 text-sm text-white">
             <AlertCircle size={18} className="mt-0.5 shrink-0" />
@@ -928,7 +1210,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
             </div>
 
             <div className="relative h-16 lg:mx-auto lg:w-[min(900px,100%)]">
-              {!revealed ? (
+              {reliefActive ? (
+                <div className="daily-relief-auto-state" role="status" aria-live="polite">
+                  <span>✓</span>
+                  <strong>认识</strong>
+                  <small>系统已快速收好这张卡</small>
+                </div>
+              ) : !revealed ? (
                 <button
                   onClick={revealAnswer}
                   title="点击或按任意普通键显示答案"

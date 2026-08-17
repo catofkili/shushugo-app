@@ -7,7 +7,7 @@ const overviewWith = (
   words: Partial<ProgressOverview["words"]> = {},
   wordsByLevel: ProgressOverview["wordsByLevel"] = []
 ): ProgressOverview => ({
-  words: { total: 1000, completed: 0, low: 0, unseen: 0, ...words },
+  words: { total: 1000, seen: 0, completed: 0, low: 0, unseen: 0, ...words },
   wordsByLevel,
   grammar: []
 });
@@ -74,24 +74,34 @@ describe("computeBadges", () => {
     expect(badges.every((badge) => !badge.unlocked)).toBe(true);
   });
 
-  it("园区掌握度达到阈值才认证", () => {
+  it("园区认证按学过的覆盖率算,达到阈值才认证", () => {
     const justUnder = computeBadges({
       ...base,
-      overview: overviewWith({}, [{ level: "N5", total: 100, completed: HABITAT_CERTIFY_PCT - 1, low: 0, unseen: 0 }])
+      overview: overviewWith({}, [{ level: "N5", total: 100, seen: HABITAT_CERTIFY_PCT - 1, completed: 0, low: 0, unseen: 0 }])
     }).find((badge) => badge.id === "habitat-N5");
     expect(justUnder?.unlocked).toBe(false);
 
     const justAt = computeBadges({
       ...base,
-      overview: overviewWith({}, [{ level: "N5", total: 100, completed: HABITAT_CERTIFY_PCT, low: 0, unseen: 0 }])
+      overview: overviewWith({}, [{ level: "N5", total: 100, seen: HABITAT_CERTIFY_PCT, completed: 0, low: 0, unseen: 0 }])
     }).find((badge) => badge.id === "habitat-N5");
     expect(justAt?.unlocked).toBe(true);
+  });
+
+  it("已掌握(180 天间隔)少不影响认证:认证看的是学过多少", () => {
+    // 两个月的用户 completed 常年个位数,不该把五个园区全锁死
+    const badge = computeBadges({
+      ...base,
+      overview: overviewWith({}, [{ level: "N5", total: 100, seen: 90, completed: 3, low: 0, unseen: 10 }])
+    }).find((item) => item.id === "habitat-N5");
+    expect(badge?.unlocked).toBe(true);
+    expect(badge?.current).toBe(90);
   });
 
   it("等级里一个词都没有时算 0%,不会除以零变 NaN", () => {
     const badge = computeBadges({
       ...base,
-      overview: overviewWith({}, [{ level: "N5", total: 0, completed: 0, low: 0, unseen: 0 }])
+      overview: overviewWith({}, [{ level: "N5", total: 0, seen: 0, completed: 0, low: 0, unseen: 0 }])
     }).find((item) => item.id === "habitat-N5");
     expect(badge?.current).toBe(0);
     expect(badge?.unlocked).toBe(false);
@@ -107,7 +117,7 @@ describe("computeBadges", () => {
   });
 
   it("进度值不会超过目标值(进度条不会画爆)", () => {
-    const badges = computeBadges({ ...base, overview: overviewWith({ completed: 99999 }) });
+    const badges = computeBadges({ ...base, overview: overviewWith({ seen: 99999 }) });
     badges
       .filter((badge) => badge.group === "words")
       .forEach((badge) => expect(badge.current).toBeLessThanOrEqual(badge.target));

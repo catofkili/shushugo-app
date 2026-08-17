@@ -65,11 +65,18 @@ export function SquirrelTrail({ mode = null }: Props) {
   // 今天还没排计划就不占位置
   if (total <= 0) return null;
 
+  const reliefDone = mode === "reverse" || mode === "kanji"
+    ? 0
+    : Math.max(0, stats?.dailyRelief?.completed ?? 0);
+  // 减负已经真实删掉新词任务,所以奖励卡不能再次伪造「已完成」分子。
+  // 进度只看今日剩余任务,奖励效果由更小的分母和发牌动画体现。
+  const remaining = Math.max(total - done, 0);
+  const countdown = mode !== "reverse" && mode !== "kanji" && remaining > 0 && remaining <= 30;
   const pct = Math.min(100, (done / total) * 100);
   const nodes = total <= TRAIL_MAX_NODES ? Array.from({ length: total }, (_, i) => i) : null;
 
   return (
-    <div className="zoo-trail" title={`${trail.label} ${done} / ${total}`}>
+    <div className="zoo-trail" title={`${trail.label} ${done} / ${total}${reliefDone ? `（昨日减负 ${reliefDone}）` : ""}`}>
       <div className="zoo-trail-line" />
       {nodes && (
         <div className="zoo-trail-stations">
@@ -92,8 +99,12 @@ export function SquirrelTrail({ mode = null }: Props) {
       >
         {trail.emoji}
       </div>
-      <span className="zoo-trail-count">
-        <b>{done}</b>/{total} 🌰
+      <span className={`zoo-trail-count ${countdown ? "zoo-trail-countdown" : ""}`}>
+        {countdown ? (
+          <b key={remaining} className="zoo-countdown-tick">还剩 {remaining}</b>
+        ) : (
+          <><b>{done}</b>/{total} 🌰</>
+        )}
       </span>
     </div>
   );

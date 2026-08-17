@@ -4,7 +4,8 @@
  */
 
 import { getDatabase } from './database';
-import { ensureFsrsColumns } from './fsrs-store';
+import { ensureFsrsColumns, MASTERED_SQL } from './fsrs-store';
+import { firstValue, rowsFor, studyDate } from './database/db-utils';
 
 export interface UserMemoryProfile {
   memoryStrength: number;      // 记忆力指数 0.5 - 2.0
@@ -23,14 +24,10 @@ const UPDATE_INTERVAL_REVIEWS = 50;   // 每50次复习更新一次
  * 获取用户记忆画像
  */
 export function getUserMemoryProfile(): UserMemoryProfile {
-  const db = getDatabase();
-  const result = db.exec(`
-    SELECT value FROM app_state WHERE key = ?
-  `, [MEMORY_PROFILE_KEY]);
-
-  if (result.length && result[0].values.length) {
+  const value = firstValue<string | null>("SELECT value FROM app_state WHERE key = ?", [MEMORY_PROFILE_KEY], null);
+  if (value != null) {
     try {
-      return JSON.parse(String(result[0].values[0][0])) as UserMemoryProfile;
+      return JSON.parse(String(value)) as UserMemoryProfile;
     } catch {
       return getDefaultProfile();
     }
@@ -69,20 +66,25 @@ function saveMemoryProfile(profile: UserMemoryProfile): void {
  * 第一次见到单词就答对的比例
  */
 function calculateFirstTimeCorrectRate(): number {
-  const db = getDatabase();
-  const result = db.exec(`
+  const day = studyDate();
+  const row = rowsFor(`
     SELECT
       COUNT(CASE WHEN r.answer IN ('know', 'known_forever') THEN 1 END) AS correct,
       COUNT(*) AS total
     FROM reviews r
-    JOIN progress p ON p.word_id = r.word_id
-    WHERE p.seen_count = 1
-      AND r.reviewed_on >= date('now', '-30 days')
-  `);
-
-  if (!result.length || !result[0].values.length) return 0.5;
-
-  const [correct, total] = result[0].values[0] as [number, number];
+    WHERE r.direction = 'forward'
+      AND r.reviewed_on BETWEEN date(?, '-30 days') AND ?
+      AND NOT EXISTS (
+        SELECT 1
+        FROM reviews prior
+        WHERE prior.word_id = r.word_id
+          AND prior.direction = 'forward'
+          AND (prior.reviewed_on < r.reviewed_on OR (prior.reviewed_on = r.reviewed_on AND prior.id < r.id))
+      )
+  `, [day, day])[0];
+  if (!row) return 0.5;
+  const correct = Number(row.correct ?? 0);
+  const total = Number(row.total ?? 0);
   if (total === 0) return 0.5;
 
   return correct / total;
@@ -93,22 +95,41 @@ function calculateFirstTimeCorrectRate(): number {
  * 7天前学的词，现在还记得的比例
  */
 function calculateRetentionRate7Days(): number {
-  const db = getDatabase();
   ensureFsrsColumns();
-  // 「还记得」= FSRS 给它排的下次到期还在未来(没被判定为该重刷了)。
-  // 旧口径用 score > 0,而 score 系统已随 FSRS 改造删除,分数不再更新。
-  const result = db.exec(`
+  // 只统计真实发生过「两次正向复习间隔至少7天」的答题,
+  // 用当次答案判断是否保持住,不再取 progress 的某一天快照。
+  const row = rowsFor(`
     SELECT
-      COUNT(CASE WHEN p.fsrs_due IS NOT NULL AND p.fsrs_due > datetime('now') THEN 1 END) AS retained,
+      COUNT(CASE WHEN r.answer IN ('know', 'known_forever') THEN 1 END) AS retained,
       COUNT(*) AS total
-    FROM progress p
-    WHERE p.last_seen_on = date('now', '-7 days')
-      AND p.known_forever = 0
-  `);
-
-  if (!result.length || !result[0].values.length) return 0.5;
-
-  const [retained, total] = result[0].values[0] as [number, number];
+    FROM reviews r
+    WHERE r.direction = 'forward'
+      AND EXISTS (
+        SELECT 1
+        FROM reviews prior
+        WHERE prior.word_id = r.word_id
+          AND prior.direction = 'forward'
+          AND (julianday(r.reviewed_on) - julianday(prior.reviewed_on)) >= 7
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM reviews same_day
+        WHERE same_day.word_id = r.word_id
+          AND same_day.direction = 'forward'
+          AND same_day.reviewed_on = r.reviewed_on
+          AND same_day.id < r.id
+          AND EXISTS (
+            SELECT 1
+            FROM reviews same_day_prior
+            WHERE same_day_prior.word_id = same_day.word_id
+              AND same_day_prior.direction = 'forward'
+              AND (julianday(same_day.reviewed_on) - julianday(same_day_prior.reviewed_on)) >= 7
+          )
+      )
+  `)[0];
+  if (!row) return 0.5;
+  const retained = Number(row.retained ?? 0);
+  const total = Number(row.total ?? 0);
   if (total === 0) return 0.5;
 
   return retained / total;
@@ -120,33 +141,26 @@ function calculateRetentionRate7Days(): number {
  * 不再看已废弃的 score >= 10。
  */
 function calculateAvgReviewsToMaster(): number {
-  const db = getDatabase();
   ensureFsrsColumns();
-  const result = db.exec(`
+  const avgReviews = firstValue<number | null>(`
     SELECT
-      AVG(p.seen_count) AS avg_reviews
-    FROM progress p
-    WHERE p.fsrs_due IS NOT NULL
-      AND p.fsrs_last_review IS NOT NULL
-      AND julianday(p.fsrs_due) - julianday(p.fsrs_last_review) >= 7
-      AND p.seen_count > 0
-  `);
-
-  if (!result.length || !result[0].values.length) return 10;
-
-  const avgReviews = result[0].values[0][0] as number;
-  return avgReviews || 10;
+      AVG(review_count) AS avg_reviews
+    FROM (
+      SELECT p.word_id, COUNT(r.id) AS review_count
+      FROM progress p
+      JOIN reviews r ON r.word_id = p.word_id AND r.direction = 'forward'
+      WHERE p.known_forever = 1 OR ${MASTERED_SQL}
+      GROUP BY p.word_id
+    )
+  `, [], null);
+  return Number(avgReviews) || 10;
 }
 
 /**
  * 获取总复习次数
  */
 function getTotalReviewCount(): number {
-  const db = getDatabase();
-  const result = db.exec(`SELECT COUNT(*) FROM reviews`);
-
-  if (!result.length || !result[0].values.length) return 0;
-  return result[0].values[0][0] as number;
+  return firstValue<number>("SELECT COUNT(*) FROM reviews WHERE direction = 'forward'", [], 0);
 }
 
 /**

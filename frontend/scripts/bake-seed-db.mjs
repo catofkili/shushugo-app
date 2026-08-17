@@ -16,10 +16,14 @@ const dbPath = path.join(here, "../public/nihongo.db");
 const seedPath = path.join(here, "../src/data/jlpt_words_seed.json");
 const meaningOverridesPath = path.join(here, "../src/data/jlpt_meaning_overrides.json");
 const exampleOverridesPath = path.join(here, "../src/data/jlpt_example_overrides.json");
+const dictionarySupplementPath = path.join(here, "../src/data/dictionary_supplement_seed.json");
 
 // 与 src/lib/study-core.ts 保持一致
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
-const JLPT_WORD_METADATA_VERSION = "2026-08-10-manual-meanings-5163-examples-121";
+// 与 scripts/build-furigana.mjs、src/lib/study-core.ts 保持一致。
+const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
+const JLPT_WORD_METADATA_VERSION = `2026-08-11-manual-meanings-5163-polish-1130-corrections-35-examples-121-${FURIGANA_VERSION}`;
+const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
 
 const nounSuruCorrections = [
   ["運動", "うんどう"], ["計画", "けいかく"], ["研究", "けんきゅう"], ["故障", "こしょう"],
@@ -52,6 +56,42 @@ const meaningOverrides = new Map(
     .map(({ kanji, kana, meaning }) => [`${kanji}\u0000${kana}`, meaning])
 );
 const exampleOverrides = JSON.parse(readFileSync(exampleOverridesPath, "utf8"));
+const dictionarySupplement = JSON.parse(readFileSync(dictionarySupplementPath, "utf8"));
+
+if (dictionarySupplement.version !== DICTIONARY_SUPPLEMENT_VERSION) {
+  throw new Error(`补充词典版本不一致: ${dictionarySupplement.version} != ${DICTIONARY_SUPPLEMENT_VERSION}`);
+}
+if (!Array.isArray(dictionarySupplement.entries) || dictionarySupplement.entries.length !== 21) {
+  throw new Error(`补充词典条数异常: ${dictionarySupplement.entries?.length ?? 0} != 21`);
+}
+
+db.run(`
+  CREATE TABLE IF NOT EXISTS dictionary_discovered_words (
+    word_id INTEGER PRIMARY KEY,
+    discovered_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+db.run(`
+  CREATE TABLE IF NOT EXISTS dictionary_entries (
+    entry_key TEXT PRIMARY KEY,
+    headword TEXT NOT NULL,
+    kana TEXT NOT NULL,
+    meaning TEXT NOT NULL,
+    pos TEXT NOT NULL,
+    verb_type TEXT,
+    category TEXT NOT NULL,
+    usage_note TEXT NOT NULL DEFAULT '',
+    example_jp TEXT NOT NULL DEFAULT '',
+    example_meaning TEXT NOT NULL DEFAULT '',
+    priority INTEGER NOT NULL DEFAULT 3,
+    source_name TEXT NOT NULL,
+    source_url TEXT NOT NULL DEFAULT '',
+    license TEXT NOT NULL,
+    seed_version TEXT NOT NULL
+  )
+`);
+db.run("CREATE INDEX IF NOT EXISTS idx_dictionary_entries_headword ON dictionary_entries(headword)");
+db.run("CREATE INDEX IF NOT EXISTS idx_dictionary_entries_kana ON dictionary_entries(kana)");
 
 const firstValue = (query, params = []) => {
   const result = db.exec(query, params);
@@ -61,7 +101,8 @@ const firstValue = (query, params = []) => {
 const userDataTables = [
   "progress", "reviews", "checkins", "critical_reviews", "word_notes", "word_study_time",
   "kanji_progress", "kanji_memory", "kanji_char_overrides", "stage1_tasks", "stage2_progress",
-  "moji_migrated_reviews", "grammar_progress", "grammar_reviews", "grammar_points_archive"
+  "moji_migrated_reviews", "grammar_progress", "grammar_reviews", "grammar_points_archive",
+  "dictionary_discovered_words"
 ];
 const populatedUserTables = userDataTables
   .map((table) => [table, Number(firstValue(`SELECT COUNT(*) FROM ${table}`))])
@@ -78,12 +119,25 @@ if (total < 10000 || leveled < 10000) {
   throw new Error(`words 表不完整(total=${total}, leveled=${leveled}),不应直接烧版本戳`);
 }
 
+const wordColumns = new Set(
+  (db.exec("PRAGMA table_info(words)")[0]?.values ?? []).map((row) => String(row[1]))
+);
+if (!wordColumns.has("example_furigana")) {
+  db.run("ALTER TABLE words ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''");
+}
+if (!wordColumns.has("example_tokens")) {
+  db.run("ALTER TABLE words ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''");
+}
+if (!wordColumns.has("example_lemmas")) {
+  db.run("ALTER TABLE words ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''");
+}
+
 console.log(`words: ${total} 条(${leveled} 条有 JLPT 等级)`);
 console.log(`当前 metadata 版本: ${firstValue("SELECT value FROM app_state WHERE key='jlpt_word_metadata_version'") ?? "(无)"}`);
 
 db.run("BEGIN TRANSACTION");
 const syncedKeys = new Set();
-seed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel]) => {
+seed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, exampleFurigana, exampleTokens, exampleLemmas]) => {
   const key = `${kanji}\u0000${kana}`;
   if (syncedKeys.has(key)) return;
   syncedKeys.add(key);
@@ -95,9 +149,12 @@ seed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeani
         importance = MAX(importance, ?),
         example_jp = ?,
         example_meaning = ?,
+        example_furigana = COALESCE(NULLIF(?, ''), example_furigana),
+        example_tokens = COALESCE(NULLIF(?, ''), example_tokens),
+        example_lemmas = COALESCE(NULLIF(?, ''), example_lemmas),
         jlpt_level = COALESCE(jlpt_level, ?)
     WHERE kanji = ? AND kana = ?
-  `, [meaningOverrides.get(key) ?? null, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, kanji, kana]);
+  `, [meaningOverrides.get(key) ?? null, pos, verbType, importance, exampleJp, exampleMeaning, exampleFurigana ?? "", exampleTokens ?? "", exampleLemmas ?? "", jlptLevel, kanji, kana]);
 });
 // 手写释义覆盖表包含词库中不在当前 JLPT seed 行里的词形（例如同读音的
 // 异体字）。单独再按表记+读音回写，确保出厂库和老用户迁移都不会漏掉这些行。
@@ -108,13 +165,19 @@ meaningOverrides.forEach((meaning, key) => {
   db.run("UPDATE words SET meaning = ? WHERE kanji = ? AND kana = ?", [meaning, kanji, kana]);
 });
 // 不在种子行里的历史词条的例句。只补空缺，绝不覆盖已有例句。
-exampleOverrides.forEach(({ kanji, kana, exampleJp, exampleMeaning }) => {
+exampleOverrides.forEach(({ kanji, kana, exampleJp, exampleMeaning, exampleFurigana, exampleTokens, exampleLemmas }) => {
+  const furigana = typeof exampleFurigana === "string"
+    ? exampleFurigana
+    : JSON.stringify(exampleFurigana ?? []);
   db.run(`
     UPDATE words
-    SET example_jp = ?, example_meaning = ?
+    SET example_jp = ?, example_meaning = ?,
+        example_furigana = COALESCE(NULLIF(?, ''), example_furigana),
+        example_tokens = COALESCE(NULLIF(?, ''), example_tokens),
+        example_lemmas = COALESCE(NULLIF(?, ''), example_lemmas)
     WHERE kanji = ? AND kana = ?
       AND (example_jp IS NULL OR example_jp = '')
-  `, [exampleJp, exampleMeaning, kanji, kana]);
+  `, [exampleJp, exampleMeaning, furigana, typeof exampleTokens === "string" ? exampleTokens : "", typeof exampleLemmas === "string" ? exampleLemmas : "", kanji, kana]);
 });
 db.run(`
   UPDATE words
@@ -224,6 +287,33 @@ if (duplicateRows.length) {
   });
 }
 
+db.run("DELETE FROM dictionary_entries WHERE entry_key LIKE 'builtin:%'");
+dictionarySupplement.entries.forEach((entry) => {
+  db.run(`
+    INSERT INTO dictionary_entries (
+      entry_key, headword, kana, meaning, pos, verb_type, category,
+      usage_note, example_jp, example_meaning, priority,
+      source_name, source_url, license, seed_version
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `, [
+    entry.entryKey,
+    entry.headword,
+    entry.kana,
+    entry.meaning,
+    entry.pos,
+    entry.verbType,
+    entry.category,
+    entry.usageNote,
+    entry.exampleJp,
+    entry.exampleMeaning,
+    entry.priority,
+    dictionarySupplement.source.name,
+    dictionarySupplement.source.url,
+    dictionarySupplement.source.license,
+    dictionarySupplement.version
+  ]);
+});
+
 // 两步去重（外来語合并 + 完全重复行）删掉的 id → 存活 id。
 // 人工释义是按 id 记的，build-manual-meaning-overrides.mjs 靠这份映射
 // 把释义改挂到存活行上，否则老用户的库永远拿不到那部分重写释义。
@@ -237,9 +327,16 @@ db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
 db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
 db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_word_metadata_version', ?)", [JLPT_WORD_METADATA_VERSION]);
 db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_seed_version', ?)", [JLPT_SEED_VERSION]);
+db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('dictionary_supplement_version', ?)", [DICTIONARY_SUPPLEMENT_VERSION]);
 db.run("COMMIT");
 db.run("VACUUM");
 
 writeFileSync(dbPath, Buffer.from(db.export()));
 console.log(`✅ 已烧入版本戳 seed=${JLPT_SEED_VERSION} metadata=${JLPT_WORD_METADATA_VERSION}`);
+console.log(`✅ 已烧入独立补充词典 ${dictionarySupplement.entries.length} 条(${DICTIONARY_SUPPLEMENT_VERSION})`);
 console.log(`✅ 已写回 ${dbPath}`);
+const iosDbPath = path.join(here, "../ios/App/App/public/nihongo.db");
+if (existsSync(iosDbPath)) {
+  writeFileSync(iosDbPath, Buffer.from(db.export()));
+  console.log(`✅ 已同步 ${iosDbPath}`);
+}

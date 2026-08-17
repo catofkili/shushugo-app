@@ -3,7 +3,8 @@
  */
 
 import { firstRow, firstValue, rowsFor, studyDate } from "../database/db-utils";
-import { getUserMemoryProfile, getMemoryStrengthLabel } from "../adaptive";
+import { updateMemoryProfileIfNeeded, getUserMemoryProfile, getMemoryStrengthLabel } from "../adaptive";
+import { ensureFsrsColumns, MASTERED_SQL } from "../fsrs-store";
 
 export interface DailyStudyTime {
   date: string;
@@ -28,6 +29,8 @@ export interface StudyTimeAnalytics {
 export interface LevelMastery {
   level: string;
   total: number;
+  /** 有真实正向学习记录的词数,不是 progress 行数。 */
+  studied: number;
   mastered: number;
   learning: number;
   struggling: number;
@@ -36,7 +39,7 @@ export interface LevelMastery {
 
 export interface PosMastery {
   pos: string;
-  avgScore: number;
+  avgStability: number;
   count: number;
   masteredCount: number;
 }
@@ -54,7 +57,7 @@ export interface DifficultWord {
   meaning: string;
   errorRate: number;
   totalReviews: number;
-  score: number;
+  stability: number;
 }
 
 export interface ErrorAnalytics {
@@ -70,9 +73,11 @@ export interface EfficiencyAnalytics {
   avgReviewsToMaster: number;
   newWordsPerHour: number;
   retentionRate7Days: number;
+  retentionSampleSize: number;
   efficiencyTrend: 'improving' | 'stable' | 'declining';
   memoryStrength: number;
   memoryStrengthLabel: string;
+  memorySampleSize: number;
 }
 
 export interface StudyAnalytics {
@@ -87,6 +92,7 @@ export interface StudyAnalytics {
  * 获取学习时长分析
  */
 export function getStudyTimeAnalytics(): StudyTimeAnalytics {
+  const day = studyDate();
   // 最近30天的学习时长
   const dailyMinutes = rowsFor(`
     SELECT
@@ -94,9 +100,9 @@ export function getStudyTimeAnalytics(): StudyTimeAnalytics {
       CAST(seconds / 60.0 AS INTEGER) AS minutes,
       0 AS wordCount
     FROM word_study_time
-    WHERE studied_on >= date('now', '-30 days')
+    WHERE studied_on BETWEEN date(?, '-30 days') AND ?
     ORDER BY studied_on DESC
-  `).map(row => ({
+  `, [day, day]).map(row => ({
     date: String(row.date),
     minutes: Number(row.minutes ?? 0),
     wordCount: 0 // 暂时不统计，可以后续添加
@@ -149,14 +155,30 @@ export function getStudyTimeAnalytics(): StudyTimeAnalytics {
  * 获取掌握度分析
  */
 export function getMasteryAnalytics(): MasteryAnalytics {
-  // 按 JLPT 等级统计
+  // 按 JLPT 等级统计。total 是词表规模,studied 才是有真实学习记录的词数。
+  // progress 会在启动时为全库补行,所以不能再用 JOIN progress 作为「已学习」判据。
   const byLevel = rowsFor(`
     SELECT
       COALESCE(w.jlpt_level, '未分级') AS level,
       COUNT(*) AS total,
-      SUM(CASE WHEN p.score >= 10 THEN 1 ELSE 0 END) AS mastered,
-      SUM(CASE WHEN p.score > 0 AND p.score < 10 THEN 1 ELSE 0 END) AS learning,
-      SUM(CASE WHEN p.score <= 0 THEN 1 ELSE 0 END) AS struggling
+      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+        SELECT 1 FROM reviews r
+        WHERE r.word_id = w.id AND r.direction = 'forward'
+      ) THEN 1 ELSE 0 END) AS studied,
+      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+        SELECT 1 FROM reviews r
+        WHERE r.word_id = w.id AND r.direction = 'forward'
+      )) AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS mastered,
+      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+        SELECT 1 FROM reviews r
+        WHERE r.word_id = w.id AND r.direction = 'forward'
+      )) AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
+        AND COALESCE(p.fsrs_lapses, 0) = 0 THEN 1 ELSE 0 END) AS learning,
+      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+        SELECT 1 FROM reviews r
+        WHERE r.word_id = w.id AND r.direction = 'forward'
+      )) AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
+        AND COALESCE(p.fsrs_lapses, 0) > 0 THEN 1 ELSE 0 END) AS struggling
     FROM words w
     JOIN progress p ON p.word_id = w.id
     WHERE w.jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')
@@ -170,18 +192,20 @@ export function getMasteryAnalytics(): MasteryAnalytics {
       ELSE 9 END
   `).map(row => {
     const total = Number(row.total ?? 0);
+    const studied = Number(row.studied ?? 0);
     const mastered = Number(row.mastered ?? 0);
     return {
       level: String(row.level),
       total,
+      studied,
       mastered,
       learning: Number(row.learning ?? 0),
       struggling: Number(row.struggling ?? 0),
-      percentage: total > 0 ? Math.round((mastered / total) * 100) : 0
+      percentage: studied > 0 ? Math.round((mastered / studied) * 100) : 0
     };
   });
 
-  // 按词性统计
+  // 按词性统计,只看真实学过的词;稳定度是 FSRS 的长期记忆指标。
   const byPartOfSpeech = rowsFor(`
     SELECT
       CASE
@@ -191,18 +215,21 @@ export function getMasteryAnalytics(): MasteryAnalytics {
         WHEN pos LIKE '%副%' THEN '副词'
         ELSE '其他'
       END AS pos,
-      AVG(p.score) AS avgScore,
+      AVG(p.fsrs_stability) AS avgStability,
       COUNT(*) AS count,
-      SUM(CASE WHEN p.score >= 10 THEN 1 ELSE 0 END) AS masteredCount
+      SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS masteredCount
     FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE p.seen_count > 0
+    WHERE (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+      SELECT 1 FROM reviews r
+      WHERE r.word_id = w.id AND r.direction = 'forward'
+    ))
     GROUP BY pos
     ORDER BY count DESC
     LIMIT 5
   `).map(row => ({
     pos: String(row.pos),
-    avgScore: Math.round(Number(row.avgScore ?? 0) * 10) / 10,
+    avgStability: Math.round(Number(row.avgStability ?? 0) * 10) / 10,
     count: Number(row.count ?? 0),
     masteredCount: Number(row.masteredCount ?? 0)
   }));
@@ -213,10 +240,11 @@ export function getMasteryAnalytics(): MasteryAnalytics {
     `SELECT AVG(daily_new) FROM (
       SELECT COUNT(DISTINCT word_id) AS daily_new
       FROM reviews
-      WHERE reviewed_on >= date('now', '-7 days')
+      WHERE direction = 'forward'
+        AND reviewed_on BETWEEN date(?, '-7 days') AND ?
       GROUP BY reviewed_on
     )`,
-    [],
+    [studyDate(), studyDate()],
     10
   );
 
@@ -244,19 +272,19 @@ export function getErrorAnalytics(): ErrorAnalytics {
       w.kanji,
       w.kana,
       w.meaning,
-      p.score,
-      p.forgot_count,
-      p.fuzzy_count,
-      p.right_count,
-      (p.forgot_count * 2 + p.fuzzy_count) AS wrong_count,
-      p.seen_count AS totalReviews
+      p.fsrs_stability,
+      COUNT(r.id) AS totalReviews,
+      SUM(CASE WHEN r.answer IN ('forgot', 'fuzzy') THEN 1 ELSE 0 END) AS wrong_count
     FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE p.seen_count >= 3
-      AND p.known_forever = 0
+    JOIN reviews r ON r.word_id = w.id AND r.direction = 'forward'
+    WHERE p.known_forever = 0
+    GROUP BY w.id, w.kanji, w.kana, w.meaning, p.fsrs_stability
+    HAVING COUNT(r.id) >= 3
     ORDER BY
-      (p.forgot_count * 2.0 + p.fuzzy_count) / NULLIF(p.seen_count, 0) DESC,
-      p.score ASC
+      SUM(CASE WHEN r.answer = 'forgot' THEN 2.0 WHEN r.answer = 'fuzzy' THEN 1.0 ELSE 0 END)
+        / NULLIF(COUNT(r.id), 0) DESC,
+      COALESCE(p.fsrs_stability, 0) ASC
     LIMIT 20
   `).map(row => {
     const wrongCount = Number(row.wrong_count ?? 0);
@@ -268,18 +296,18 @@ export function getErrorAnalytics(): ErrorAnalytics {
       meaning: String(row.meaning),
       errorRate: Math.round((wrongCount / totalReviews) * 100),
       totalReviews,
-      score: Number(row.score ?? 0)
+      stability: Number(row.fsrs_stability ?? 0)
     };
   });
 
-  // 错误类型分布
+  // 错误类型分布使用真实正向答题流水,不再依赖可能被历史导入污染的聚合列。
   const errorDist = firstRow(`
     SELECT
-      SUM(forgot_count) AS forgot,
-      SUM(fuzzy_count) AS fuzzy,
-      SUM(right_count) AS know
-    FROM progress
-    WHERE seen_count > 0
+      SUM(CASE WHEN answer = 'forgot' THEN 1 ELSE 0 END) AS forgot,
+      SUM(CASE WHEN answer = 'fuzzy' THEN 1 ELSE 0 END) AS fuzzy,
+      SUM(CASE WHEN answer IN ('know', 'known_forever') THEN 1 ELSE 0 END) AS know
+    FROM reviews
+    WHERE direction = 'forward'
   `);
 
   const errorTypeDistribution = {
@@ -298,11 +326,17 @@ export function getErrorAnalytics(): ErrorAnalytics {
  * 获取学习效率分析
  */
 export function getEfficiencyAnalytics(): EfficiencyAnalytics {
-  // 平均需要复习几次才能掌握
-  const avgReviewsToMaster = firstValue<number>(
-    `SELECT AVG(seen_count) FROM progress WHERE score >= 10 AND seen_count > 0`,
+  // 平均需要复习几次才能掌握。掌握判据只认 FSRS 间隔/手动熟知,次数来自真实正向流水。
+  const avgReviewsToMaster = firstValue<number | null>(
+    `SELECT AVG(review_count) FROM (
+      SELECT p.word_id, COUNT(r.id) AS review_count
+      FROM progress p
+      JOIN reviews r ON r.word_id = p.word_id AND r.direction = 'forward'
+      WHERE p.known_forever = 1 OR ${MASTERED_SQL}
+      GROUP BY p.word_id
+    )`,
     [],
-    10
+    null
   );
 
   // 每小时学习多少新词（基于最近7天）
@@ -312,48 +346,85 @@ export function getEfficiencyAnalytics(): EfficiencyAnalytics {
       COUNT(DISTINCT r.word_id) AS new_words
     FROM word_study_time wst
     LEFT JOIN reviews r ON r.reviewed_on = wst.studied_on
-    WHERE wst.studied_on >= date('now', '-7 days')
+      AND r.direction = 'forward'
+    WHERE wst.studied_on BETWEEN date(?, '-7 days') AND ?
       AND NOT EXISTS (
         SELECT 1 FROM reviews r2
-        WHERE r2.word_id = r.word_id AND r2.reviewed_on < r.reviewed_on
+        WHERE r2.word_id = r.word_id
+          AND r2.direction = 'forward'
+          AND (r2.reviewed_on < r.reviewed_on OR (r2.reviewed_on = r.reviewed_on AND r2.id < r.id))
       )
-  `);
+  `, [studyDate(), studyDate()]);
 
   const totalHours = Number(recentStudyData?.total_hours ?? 1);
   const newWords = Number(recentStudyData?.new_words ?? 0);
   const newWordsPerHour = totalHours > 0 ? Math.round(newWords / totalHours) : 0;
 
-  // 7天保持率
-  const retentionRate7Days = firstValue<number>(
-    `SELECT
-      CAST(SUM(CASE WHEN score > 0 THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(*), 0)
-    FROM progress
-    WHERE last_seen_on = date('now', '-7 days')
-      AND known_forever = 0`,
-    [],
-    0.5
-  );
+  // 7日保持率:只统计真实发生过「两次正向复习间隔至少7天」的答题,
+  // 用当次答案判断是否保持住,不再取某一天的 progress 快照,也不看废弃 score。
+  const retention = firstRow(`
+    SELECT
+      SUM(CASE WHEN r.answer IN ('know', 'known_forever') THEN 1 ELSE 0 END) AS retained,
+      COUNT(*) AS sample_size
+    FROM reviews r
+    WHERE r.direction = 'forward'
+      AND EXISTS (
+        SELECT 1
+        FROM reviews prior
+        WHERE prior.word_id = r.word_id
+          AND prior.direction = 'forward'
+          AND (julianday(r.reviewed_on) - julianday(prior.reviewed_on)) >= 7
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM reviews same_day
+        WHERE same_day.word_id = r.word_id
+          AND same_day.direction = 'forward'
+          AND same_day.reviewed_on = r.reviewed_on
+          AND same_day.id < r.id
+          AND EXISTS (
+            SELECT 1
+            FROM reviews same_day_prior
+            WHERE same_day_prior.word_id = same_day.word_id
+              AND same_day_prior.direction = 'forward'
+              AND (julianday(same_day.reviewed_on) - julianday(same_day_prior.reviewed_on)) >= 7
+          )
+      )
+  `);
+  const retentionSampleSize = Number(retention?.sample_size ?? 0);
+  const retentionRate = retentionSampleSize > 0
+    ? Number(retention?.retained ?? 0) / retentionSampleSize
+    : 0;
 
-  // 获取记忆力指数
+  // 每次打开分析页都尝试刷新一次画像;满足阈值时不再停在旧的默认 1.0。
+  updateMemoryProfileIfNeeded();
   const memoryProfile = getUserMemoryProfile();
   const memoryStrength = memoryProfile.memoryStrength;
   const memoryStrengthLabel = getMemoryStrengthLabel(memoryStrength);
 
   // 学习效率趋势（简单判断：基于最近的保持率）
   let efficiencyTrend: 'improving' | 'stable' | 'declining' = 'stable';
-  if (retentionRate7Days > 0.7) {
+  if (retentionSampleSize > 0 && retentionRate > 0.7) {
     efficiencyTrend = 'improving';
-  } else if (retentionRate7Days < 0.4) {
+  } else if (retentionSampleSize > 0 && retentionRate < 0.4) {
     efficiencyTrend = 'declining';
   }
 
+  const memorySampleSize = firstValue<number>(
+    "SELECT COUNT(*) FROM reviews WHERE direction = 'forward'",
+    [],
+    0
+  );
+
   return {
-    avgReviewsToMaster: Math.round(avgReviewsToMaster * 10) / 10,
+    avgReviewsToMaster: avgReviewsToMaster == null ? 0 : Math.round(avgReviewsToMaster * 10) / 10,
     newWordsPerHour,
-    retentionRate7Days: Math.round(retentionRate7Days * 100),
+    retentionRate7Days: Math.round(retentionRate * 100),
+    retentionSampleSize,
     efficiencyTrend,
     memoryStrength: Math.round(memoryStrength * 100) / 100,
-    memoryStrengthLabel
+    memoryStrengthLabel,
+    memorySampleSize
   };
 }
 
@@ -361,6 +432,8 @@ export function getEfficiencyAnalytics(): EfficiencyAnalytics {
  * 获取完整的学习分析数据
  */
 export function getStudyAnalytics(): StudyAnalytics {
+  // 分析页也可能被单独打开,确保读取到 FSRS 列而不是退回旧 score 口径。
+  ensureFsrsColumns();
   return {
     studyTime: getStudyTimeAnalytics(),
     mastery: getMasteryAnalytics(),

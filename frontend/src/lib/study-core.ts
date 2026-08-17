@@ -2,6 +2,8 @@ import { getDatabase } from "./database";
 import type { WordAnswer } from "../types/vocabulary";
 import type { FavoriteType, StudyAnswer } from "./study-types";
 import { ensureLocalSchema } from "./database/schema";
+import { ensureLegacyBiruMigration } from "./legacy-word-migrations";
+import { ensureSyncSchema } from "./sync/schema";
 import {
   firstValue,
   getState,
@@ -34,7 +36,10 @@ type JlptWordSeedRow = readonly [
   importance: number,
   exampleJp: string,
   exampleMeaning: string,
-  jlptLevel: string
+  jlptLevel: string,
+  exampleFurigana: string,
+  exampleTokens: string,
+  exampleLemmas: string
 ];
 
 type GrammarSeedRow = [
@@ -47,17 +52,47 @@ type GrammarSeedRow = [
   notes: string,
   confusions: string,
   level: string,
-  importance: number
+  importance: number,
+  exampleFurigana: string,
+  exampleTokens: string,
+  exampleLemmas: string
 ];
+
+type DictionarySupplementEntry = {
+  entryKey: string;
+  headword: string;
+  kana: string;
+  meaning: string;
+  pos: string;
+  verbType: string | null;
+  category: string;
+  usageNote: string;
+  exampleJp: string;
+  exampleMeaning: string;
+  priority: number;
+};
+
+type DictionarySupplementSeed = {
+  version: string;
+  source: {
+    name: string;
+    url: string;
+    license: string;
+  };
+  entries: DictionarySupplementEntry[];
+};
 
 
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // Keep this aligned with the metadata already baked into public/nihongo.db so
 // a fresh install does not replay all 11k metadata updates on first launch.
-const JLPT_WORD_METADATA_VERSION = "2026-08-10-manual-meanings-5163-examples-121";
+// 与 scripts/build-furigana.mjs、scripts/bake-seed-db.mjs 保持一致。
+export const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
+const JLPT_WORD_METADATA_VERSION = `2026-08-11-manual-meanings-5163-polish-1130-corrections-35-examples-121-${FURIGANA_VERSION}`;
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
-const GRAMMAR_SEED_VERSION = "2026-07-14-grammar-rewrite";
+export const GRAMMAR_SEED_VERSION = "2026-08-15-grammar-rewrite-v2";
+export const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
 
 const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
   const payload = await import("../data/jlpt_words_seed.json");
@@ -65,7 +100,15 @@ const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
 };
 
 type JlptMeaningOverride = { kanji: string; kana: string; meaning: string };
-type JlptExampleOverride = { kanji: string; kana: string; exampleJp: string; exampleMeaning: string };
+type JlptExampleOverride = {
+  kanji: string;
+  kana: string;
+  exampleJp: string;
+  exampleMeaning: string;
+  exampleFurigana?: string | unknown[];
+  exampleTokens?: string;
+  exampleLemmas?: string;
+};
 
 const loadJlptMeaningOverrides = async (): Promise<JlptMeaningOverride[]> => {
   const payload = await import("../data/jlpt_meaning_overrides.json");
@@ -85,6 +128,11 @@ const loadGrammarSeed = async (): Promise<{ version: string; rows: GrammarSeedRo
   return payload.default as unknown as { version: string; rows: GrammarSeedRow[] };
 };
 
+const loadDictionarySupplementSeed = async (): Promise<DictionarySupplementSeed> => {
+  const payload = await import("../data/dictionary_supplement_seed.json");
+  return payload.default as DictionarySupplementSeed;
+};
+
 // 建表/索引是幂等的,但每次调用都重跑 10+ 条 DDL + PRAGMA 很浪费——
 // isFavorite 等热路径每渲染一行都会走到这里。按 Database 实例记忆化;
 // importDatabase 换新实例后 WeakSet 查不到,自然会对新库重跑一遍。
@@ -97,6 +145,39 @@ export const ensureUserTables = () => {
   const wordColumns = rowsFor("PRAGMA table_info(words)").map((row) => String(row.name ?? ""));
   if (!wordColumns.includes("jlpt_level")) {
     db.run("ALTER TABLE words ADD COLUMN jlpt_level TEXT");
+  }
+  if (!wordColumns.includes("example_furigana")) {
+    db.run("ALTER TABLE words ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''");
+  }
+  if (!wordColumns.includes("example_tokens")) {
+    db.run("ALTER TABLE words ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''");
+  }
+  if (!wordColumns.includes("example_lemmas")) {
+    db.run("ALTER TABLE words ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''");
+  }
+  const grammarColumns = rowsFor("PRAGMA table_info(grammar_points)").map((row) => String(row.name ?? ""));
+  if (!grammarColumns.includes("example_furigana")) {
+    db.run("ALTER TABLE grammar_points ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''");
+  }
+  if (!grammarColumns.includes("example_tokens")) {
+    db.run("ALTER TABLE grammar_points ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''");
+  }
+  if (!grammarColumns.includes("example_lemmas")) {
+    db.run("ALTER TABLE grammar_points ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''");
+  }
+  const archiveColumns = rowsFor("PRAGMA table_info(grammar_points_archive)").map((row) => String(row.name ?? ""));
+  if (!archiveColumns.includes("example_furigana")) {
+    db.run("ALTER TABLE grammar_points_archive ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''");
+  }
+  if (!archiveColumns.includes("example_tokens")) {
+    db.run("ALTER TABLE grammar_points_archive ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''");
+  }
+  if (!archiveColumns.includes("example_lemmas")) {
+    db.run("ALTER TABLE grammar_points_archive ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''");
+  }
+  const positionColumns = rowsFor("PRAGMA table_info(grammar_reading_positions)").map((row) => String(row.name ?? ""));
+  if (!positionColumns.includes("scroll_top")) {
+    db.run("ALTER TABLE grammar_reading_positions ADD COLUMN scroll_top REAL NOT NULL DEFAULT 0");
   }
   // 复习流水现在记「哪个方向」:正向/反向/汉字是三张卡,顽固判定、连败保护、
   // 当日进度都要各算各的。老数据没有这一列,补上并一律算正向(以前只有正向记流水)。
@@ -114,8 +195,69 @@ export const ensureUserTables = () => {
 // 之后同步路径里的 ensureUserTables 只做廉价的建表/索引检查。
 export const ensureSeedData = async () => {
   ensureUserTables();
+  // 先建同步触发器：旧 id 的删除必须留下墓碑，否则另一台设备会把重复词复活。
+  ensureSyncSchema();
+  await ensureLegacyBiruMigration();
+  await ensureDictionarySupplementSeed();
   await ensureGrammarSeed();
   await ensureJlptWordSeed();
+  await ensureFuriganaAnnotations();
+};
+
+const ensureDictionarySupplementSeed = async () => {
+  const installedVersion = getState("dictionary_supplement_version", "");
+  const installedCount = firstValue<number>(
+    "SELECT COUNT(*) FROM dictionary_entries WHERE entry_key LIKE 'builtin:%'",
+    [],
+    0
+  );
+  if (installedVersion === DICTIONARY_SUPPLEMENT_VERSION && installedCount === 21) return;
+
+  const seed = await loadDictionarySupplementSeed();
+  if (seed.version !== DICTIONARY_SUPPLEMENT_VERSION) {
+    throw new Error(`补充词典版本不一致: ${seed.version} != ${DICTIONARY_SUPPLEMENT_VERSION}`);
+  }
+  if (seed.entries.length !== 21) {
+    throw new Error(`补充词典条数异常: ${seed.entries.length} != 21`);
+  }
+
+  const db = getDatabase();
+  db.run("BEGIN TRANSACTION");
+  try {
+    // 只替换应用内置行，保留未来可能由用户导入的非 builtin 条目。
+    db.run("DELETE FROM dictionary_entries WHERE entry_key LIKE 'builtin:%'");
+    seed.entries.forEach((entry) => {
+      db.run(`
+        INSERT INTO dictionary_entries (
+          entry_key, headword, kana, meaning, pos, verb_type, category,
+          usage_note, example_jp, example_meaning, priority,
+          source_name, source_url, license, seed_version
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        entry.entryKey,
+        entry.headword,
+        entry.kana,
+        entry.meaning,
+        entry.pos,
+        entry.verbType,
+        entry.category,
+        entry.usageNote,
+        entry.exampleJp,
+        entry.exampleMeaning,
+        entry.priority,
+        seed.source.name,
+        seed.source.url,
+        seed.source.license,
+        seed.version
+      ]);
+    });
+    setState("dictionary_supplement_version", seed.version);
+    db.run("COMMIT");
+    persistSoon();
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
 };
 
 export const isFavorite = (type: FavoriteType, id: string | number) => {
@@ -154,10 +296,10 @@ const ensureGrammarSeed = async () => {
         INSERT INTO grammar_points_archive (
           dataset_version, id, pattern, meaning, prompt, formation,
           example_jp, example_meaning, notes, confusions, level,
-          importance, sort_order
+          importance, example_furigana, example_tokens, example_lemmas, sort_order
         )
         SELECT ?, id, pattern, meaning, prompt, formation, example_jp,
-          example_meaning, notes, confusions, level, importance, sort_order
+          example_meaning, notes, confusions, level, importance, example_furigana, example_tokens, example_lemmas, sort_order
         FROM grammar_points
       `, [grammarVersion || "legacy-before-pdf-n4"]);
     }
@@ -174,9 +316,9 @@ const ensureGrammarSeed = async () => {
       db.run(`
         INSERT INTO grammar_points (
           pattern, meaning, prompt, formation, example_jp, example_meaning,
-          notes, confusions, level, importance, sort_order
+          notes, confusions, level, importance, example_furigana, example_tokens, example_lemmas, sort_order
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [...row, index + 1]);
       newIdByPattern.set(row[0], firstValue<number>("SELECT last_insert_rowid()", [], 0));
     });
@@ -199,6 +341,33 @@ const ensureGrammarSeed = async () => {
 
     db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["queue", "[]"]);
     db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["dataset_version", grammarSeed.version]);
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+  persistSoon();
+};
+
+// 注音是内容元数据，不应触发语法点重排或迁移学习进度。老用户只需在
+// 现有 grammar_points 上按「pattern + 例句」补这一列；新装库则由 grammar_seed
+// 的同一列直接带入。版本单独存放，避免把 furigana 当成语法数据版本。
+const ensureFuriganaAnnotations = async () => {
+  if (getState("furigana_version", "") === FURIGANA_VERSION) return;
+  const grammarSeed = await loadGrammarSeed();
+  const db = getDatabase();
+  db.run("BEGIN TRANSACTION");
+  try {
+    grammarSeed.rows.forEach((row) => {
+      const [pattern, , , , exampleJp, , , , , , exampleFurigana, exampleTokens, exampleLemmas] = row;
+      db.run(`
+        UPDATE grammar_points
+        SET example_furigana = ?, example_tokens = ?, example_lemmas = ?
+        WHERE pattern = ?
+          AND example_jp = ?
+      `, [exampleFurigana ?? "", exampleTokens ?? "", exampleLemmas ?? "", pattern, exampleJp]);
+    });
+    setState("furigana_version", FURIGANA_VERSION);
     db.run("COMMIT");
   } catch (error) {
     db.run("ROLLBACK");
@@ -293,7 +462,7 @@ const syncJlptWordMetadata = (
   const meaningByKey = new Map(
     meaningOverrides.map(({ kanji, kana, meaning }) => [`${kanji}\u0000${kana}`, meaning])
   );
-  jlptWordSeed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel]) => {
+  jlptWordSeed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, exampleFurigana, exampleTokens, exampleLemmas]) => {
     const key = `${kanji}\u0000${kana}`;
     if (syncedKeys.has(key)) return;
     syncedKeys.add(key);
@@ -305,9 +474,12 @@ const syncJlptWordMetadata = (
           importance = MAX(importance, ?),
           example_jp = ?,
           example_meaning = ?,
+          example_furigana = COALESCE(NULLIF(?, ''), example_furigana),
+          example_tokens = COALESCE(NULLIF(?, ''), example_tokens),
+          example_lemmas = COALESCE(NULLIF(?, ''), example_lemmas),
           jlpt_level = COALESCE(jlpt_level, ?)
       WHERE kanji = ? AND kana = ?
-    `, [meaningByKey.get(key) ?? null, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, kanji, kana]);
+    `, [meaningByKey.get(key) ?? null, pos, verbType, importance, exampleJp, exampleMeaning, exampleFurigana ?? "", exampleTokens ?? "", exampleLemmas ?? "", jlptLevel, kanji, kana]);
   });
   // 覆盖表还包含不在 JLPT seed 行里的词形（例如异体字），单独回写避免
   // 老用户迁移时只同步 seed 而漏掉这些释义。
@@ -318,13 +490,19 @@ const syncJlptWordMetadata = (
     db.run("UPDATE words SET meaning = ? WHERE kanji = ? AND kana = ?", [meaning, kanji, kana]);
   });
   // 只补空缺,绝不覆盖已有例句。
-  exampleOverrides.forEach(({ kanji, kana, exampleJp, exampleMeaning }) => {
+  exampleOverrides.forEach(({ kanji, kana, exampleJp, exampleMeaning, exampleFurigana, exampleTokens, exampleLemmas }) => {
+    const furigana = typeof exampleFurigana === "string"
+      ? exampleFurigana
+      : JSON.stringify(exampleFurigana ?? []);
     db.run(`
       UPDATE words
-      SET example_jp = ?, example_meaning = ?
+      SET example_jp = ?, example_meaning = ?,
+          example_furigana = COALESCE(NULLIF(?, ''), example_furigana),
+          example_tokens = COALESCE(NULLIF(?, ''), example_tokens),
+          example_lemmas = COALESCE(NULLIF(?, ''), example_lemmas)
       WHERE kanji = ? AND kana = ?
         AND (example_jp IS NULL OR example_jp = '')
-    `, [exampleJp, exampleMeaning, kanji, kana]);
+    `, [exampleJp, exampleMeaning, furigana, typeof exampleTokens === "string" ? exampleTokens : "", typeof exampleLemmas === "string" ? exampleLemmas : "", kanji, kana]);
   });
   db.run(`
     UPDATE words
@@ -431,7 +609,7 @@ const ensureJlptWordSeed = async () => {
 
   db.run("BEGIN TRANSACTION");
   try {
-    jlptWordSeed.forEach(([meaning, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel]) => {
+    jlptWordSeed.forEach(([meaning, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, exampleFurigana, exampleTokens, exampleLemmas]) => {
       const key = `${kanji}\u0000${kana}`;
       const existingId = existing.get(key);
       if (existingId) {
@@ -446,10 +624,10 @@ const ensureJlptWordSeed = async () => {
       db.run(`
         INSERT INTO words (
           meaning, kana, kanji, pos, verb_type, importance,
-          shuffle_rank, example_jp, example_meaning, jlpt_level
+          shuffle_rank, example_jp, example_meaning, example_furigana, example_tokens, example_lemmas, jlpt_level
         )
-        VALUES (?, ?, ?, ?, ?, ?, ABS(RANDOM()) / 9223372036854775807.0, ?, ?, ?)
-      `, [meaning, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel]);
+        VALUES (?, ?, ?, ?, ?, ?, ABS(RANDOM()) / 9223372036854775807.0, ?, ?, ?, ?, ?, ?)
+      `, [meaning, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, exampleFurigana ?? "", exampleTokens ?? "", exampleLemmas ?? "", jlptLevel]);
       const newId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
       existing.set(key, newId);
     });

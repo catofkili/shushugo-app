@@ -10,6 +10,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(here, "../..");
 const dbPath = path.join(here, "../public/nihongo.db");
 const sourceDir = path.join(repoRoot, "manual-meaning-rewrite");
+const polishDir = path.join(repoRoot, "manual-meaning-polish");
+const correctionPath = path.join(polishDir, "corrections.json");
 const outputPath = path.join(here, "../src/data/jlpt_meaning_overrides.json");
 
 const SQL = await initSqlJs();
@@ -31,6 +33,16 @@ const mergeMap = existsSync(mergeMapPath)
   : {};
 
 const entries = batchFiles.flatMap((file) => JSON.parse(readFileSync(file, "utf8")));
+const polishFiles = existsSync(polishDir)
+  ? readdirSync(polishDir)
+    .filter((name) => /^batch-\d{3}\.json$/.test(name))
+    .sort()
+    .map((name) => path.join(polishDir, name))
+  : [];
+const polishEntries = polishFiles.flatMap((file) => JSON.parse(readFileSync(file, "utf8")));
+const correctionEntries = existsSync(correctionPath)
+  ? JSON.parse(readFileSync(correctionPath, "utf8"))
+  : [];
 const seenIds = new Set();
 const byPair = new Map();
 entries.forEach((entry) => {
@@ -56,6 +68,28 @@ entries.forEach((entry) => {
   if (previous && previous.merged) throw new Error(`同一词形有两条合并来源的释义: ${word.kanji} / ${word.kana}`);
   byPair.set(pair, { kanji: word.kanji, kana: word.kana, meaning: String(entry.meaning_zh).trim(), merged });
 });
+const seenPolishIds = new Set();
+polishEntries.forEach((entry) => {
+  if (seenPolishIds.has(entry.id)) throw new Error(`重复剩余释义 ID: ${entry.id}`);
+  seenPolishIds.add(entry.id);
+  const word = wordById.get(Number(entry.id));
+  if (!word) throw new Error(`剩余释义找不到词条 ID: ${entry.id}`);
+  if (String(entry.word) !== word.kanji || String(entry.reading) !== word.kana) {
+    throw new Error(`剩余释义词形不匹配: id=${entry.id}`);
+  }
+  const pair = `${word.kanji}\u0000${word.kana}`;
+  if (byPair.has(pair)) throw new Error(`剩余释义覆盖了已有释义: ${word.kanji} / ${word.kana}`);
+  byPair.set(pair, { kanji: word.kanji, kana: word.kana, meaning: String(entry.meaning_zh).trim(), merged: false });
+});
+correctionEntries.forEach((entry) => {
+  const word = wordById.get(Number(entry.id));
+  if (!word) throw new Error(`释义修正找不到词条 ID: ${entry.id}`);
+  if (String(entry.word) !== word.kanji || String(entry.reading) !== word.kana) {
+    throw new Error(`释义修正词形不匹配: id=${entry.id}`);
+  }
+  const pair = `${word.kanji}\u0000${word.kana}`;
+  byPair.set(pair, { kanji: word.kanji, kana: word.kana, meaning: String(entry.meaning_zh).trim(), merged: false });
+});
 const overrides = [...byPair.values()]
   .map(({ kanji, kana, meaning }) => ({ kanji, kana, meaning }))
   .sort((left, right) => `${left.kanji}\u0000${left.kana}`.localeCompare(`${right.kanji}\u0000${right.kana}`));
@@ -69,7 +103,8 @@ const resolveId = (id) => {
   return current;
 };
 const expected = new Set(entries.map((entry) => resolveId(entry.id))).size;
-if (overrides.length !== expected) throw new Error(`人工释义数量异常: ${overrides.length}，期望 ${expected}`);
+const expectedTotal = expected + polishEntries.length;
+if (overrides.length !== expectedTotal) throw new Error(`人工释义数量异常: ${overrides.length}，期望 ${expectedTotal}`);
 if (entries.length !== 5163) throw new Error(`人工释义条目数异常: ${entries.length}`);
 writeFileSync(outputPath, `${JSON.stringify(overrides, null, 2)}\n`);
-console.log(`✅ 写入 ${outputPath}: ${overrides.length} 条人工释义覆盖`);
+console.log(`✅ 写入 ${outputPath}: ${overrides.length} 条人工释义覆盖（剩余风格修订 ${polishEntries.length} 条，释义纠错 ${correctionEntries.length} 条）`);

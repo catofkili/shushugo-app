@@ -6,7 +6,7 @@ import { priorityComponents, priorityScore } from "../scheduler/priority";
 import { allowsBackToBack, STUBBORN_MISTAKE_STREAK } from "../scheduler/requeue";
 import { INTERFERENCE_WINDOW, sessionInterference } from "../scheduler/interference";
 import { pickNextInSequence, UNKNOWN_RECALL } from "../scheduler/sequencer";
-import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
+import { firstRow, firstValue, rowsFor, studyDayEnd, today } from "../study-core";
 import { dailyReviewCap } from "../review-budget";
 import { fsrsDueWordIds, recallFromRow } from "../fsrs-store";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
@@ -130,6 +130,40 @@ export const directionProgressCounts = (direction: StudyDirection) => {
       )
   `, [day, studyDayEnd().toISOString()], 0);
   return { total, completed: Math.min(completed, total) };
+};
+
+/** 这个方向的卡长什么样:计数和 FSRS 全取自它自己那张记忆表,只有「永久熟知」看 progress */
+const directionCardColumns = (direction: StudyDirection) => `
+      w.*,
+      m.word_id,
+      m.seen_count,
+      m.right_count,
+      m.fuzzy_count,
+      m.forgot_count,
+      m.mistake_streak,
+      m.last_seen_on,
+      m.fsrs_stability,
+      m.fsrs_difficulty,
+      m.fsrs_due,
+      m.fsrs_last_review,
+      m.fsrs_state,
+      m.fsrs_reps,
+      m.fsrs_lapses,
+      COALESCE(p.known_forever, 0) AS known_forever,
+      COALESCE(n.note, '') AS note
+    FROM ${direction.entity.table} m
+    JOIN words w ON w.id = m.word_id
+    LEFT JOIN progress p ON p.word_id = m.word_id
+    LEFT JOIN word_notes n ON n.word_id = w.id`;
+
+/**
+ * 按 id 取这个方向的一张卡(撤销要把刚答的那张原样交回来)。
+ * 不能拿正向的 progress 拼:那样反向卡上显示的复习次数是正向的。
+ */
+export const directionCardById = (direction: StudyDirection, wordId: number): WordCard | null => {
+  ensureDirectionColumns(direction);
+  const row = firstRow(`SELECT ${directionCardColumns(direction)} WHERE m.word_id = ?`, [wordId]);
+  return row ? rowObjectToCard(row) : null;
 };
 
 /**

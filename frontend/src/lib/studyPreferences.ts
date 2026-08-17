@@ -1,3 +1,5 @@
+import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
+
 export type ThemePreference = "system" | "light" | "dark";
 
 /**
@@ -26,6 +28,15 @@ export interface StudyPreferences {
    * 其余是生成脚本产出的声音 id(如 voicevox-3),设置页只列磁盘上真实存在的。
    */
   voiceId: string;
+  /** 备考计划开着没有。关掉之后首页卡片和考期提醒都不出现,学习本身不受影响。 */
+  jlptPlanEnabled: boolean;
+  /** 备考目标级别 */
+  jlptTarget: JlptTarget;
+  /**
+   * 考试日期,"" = 自动取下一场(7 月/12 月的第一个周日)。
+   * 留手填的口子是因为考期毕竟是外部安排,报名到了别的场次时不该改代码。
+   */
+  jlptExamDate: string;
 }
 
 export const PREFERENCES_EVENT = "shushugo-preferences";
@@ -50,7 +61,10 @@ export const defaultStudyPreferences: StudyPreferences = {
   reviewCap: 0,
   zooSounds: true,
   motionLevel: "full",
-  voiceId: ""
+  voiceId: "",
+  jlptPlanEnabled: true,
+  jlptTarget: "N3",
+  jlptExamDate: ""
 };
 
 const MOTION_LEVELS: MotionLevel[] = ["full", "reduced", "off"];
@@ -81,7 +95,15 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
     ? (value.motionLevel as MotionLevel)
     : defaultStudyPreferences.motionLevel,
   // 不校验具体取值:声音是磁盘上有什么就有什么,选了个已删掉的由播放层自动回退
-  voiceId: typeof value.voiceId === "string" ? value.voiceId : defaultStudyPreferences.voiceId
+  voiceId: typeof value.voiceId === "string" ? value.voiceId : defaultStudyPreferences.voiceId,
+  jlptPlanEnabled: value.jlptPlanEnabled ?? defaultStudyPreferences.jlptPlanEnabled,
+  jlptTarget: JLPT_TARGETS.includes(value.jlptTarget as JlptTarget)
+    ? (value.jlptTarget as JlptTarget)
+    : defaultStudyPreferences.jlptTarget,
+  // 格式不合法就当没填,由 jlpt/status.ts 回落到自动算下一场
+  jlptExamDate: /^\d{4}-\d{2}-\d{2}$/.test(String(value.jlptExamDate ?? ""))
+    ? String(value.jlptExamDate)
+    : defaultStudyPreferences.jlptExamDate
 });
 
 export const getStudyPreferences = (): StudyPreferences => {
@@ -102,6 +124,15 @@ export const saveStudyPreferences = (preferences: StudyPreferences) => {
 
 export const getDailyWordGoal = () => getStudyPreferences().dailyGoal;
 export const getReviewCapPreference = () => getStudyPreferences().reviewCap;
+
+export const getJlptPlanPreferences = () => {
+  const prefs = getStudyPreferences();
+  return {
+    enabled: prefs.jlptPlanEnabled,
+    target: prefs.jlptTarget,
+    examDate: prefs.jlptExamDate
+  };
+};
 
 // 获取实际应用的主题；system 会跟随 iOS / 浏览器的外观设置。
 export const getResolvedTheme = (): "light" | "dark" => {
@@ -129,6 +160,22 @@ export const applyTheme = () => {
  */
 export const applyMotionLevel = (level: MotionLevel = getStudyPreferences().motionLevel) => {
   document.documentElement.setAttribute("data-motion", level);
+};
+
+/**
+ * JS 驱动的动效(rAF 数字滚动这类)能不能跑。
+ *
+ * CSS 那套 `data-motion` 降级管不到它们 —— 属性选择器改不了 requestAnimationFrame,
+ * 所以这类动效必须自己问一次。口径跟着 CSS 走:
+ *   full     → 跑;
+ *   reduced  → 不跑(这一档的定义就是「掐掉入场」,数字滚动正属于入场);
+ *   off / 系统「减少动态效果」→ 不跑。
+ * 不跑不等于不更新:调用方该显示什么数字还是什么数字,只是一步到位不滚。
+ */
+export const jsMotionAllowed = (): boolean => {
+  if (typeof window === "undefined") return false;
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return false;
+  return getStudyPreferences().motionLevel === "full";
 };
 
 // 偏好一变就同步到 DOM,设置页改完立刻生效,不用刷新

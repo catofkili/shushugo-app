@@ -13,7 +13,7 @@ export type MergeStrategy =
 
 export interface SyncedTable {
   table: string;
-  /** 组成一行身份的列;append 表用 sync_uid 代替。 */
+  /** 组成一行身份的列;绝不能使用业务表的自增 id。 */
   keys: string[];
   strategy: MergeStrategy;
 }
@@ -30,6 +30,8 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "grammar_progress", keys: ["grammar_id"], strategy: "lww" },
   { table: "grammar_mistakes", keys: ["grammar_id"], strategy: "lww" },
   { table: "word_notes", keys: ["word_id"], strategy: "lww" },
+  // 例句词典主动发现的词，跨端合并后仍应优先进入新词计划。
+  { table: "dictionary_discovered_words", keys: ["word_id"], strategy: "union" },
   // 疑难辨析里标过「已掌握」的词组。主键是词组标识而不是 word_id。
   { table: "confusion_mastered", keys: ["group_key"], strategy: "lww" },
   { table: "moji_migrated_reviews", keys: ["word_id"], strategy: "lww" },
@@ -44,13 +46,21 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "app_state", keys: ["key"], strategy: "lww" },
   { table: "grammar_state", keys: ["key"], strategy: "lww" },
 
+  // 语法阅读状态不是内容数据，必须跟随用户库跨设备同步。
+  { table: "grammar_highlights", keys: ["grammar_id", "block", "start", "end"], strategy: "lww" },
+  { table: "grammar_reading_positions", keys: ["kind", "level"], strategy: "lww" },
+
   { table: "content_favorites", keys: ["item_type", "item_id"], strategy: "lww" },
 
-  // 复习流水:两端各自追加,合并取并集。
-  { table: "reviews", keys: ["sync_uid"], strategy: "append" },
-  { table: "grammar_reviews", keys: ["sync_uid"], strategy: "append" },
+  // 复习流水:用业务事件的自然键去重,两端各自追加并取并集。
+  // reviews.id / grammar_reviews.id 都是本机自增值,绝不能作为跨设备身份。
+  { table: "reviews", keys: ["word_id", "created_at", "direction"], strategy: "append" },
+  { table: "grammar_reviews", keys: ["grammar_id", "created_at"], strategy: "append" },
 
   { table: "checkins", keys: ["checked_on"], strategy: "union" },
+  // 播报过的时刻。天然幂等的集合,和打卡同构:两端取并集,
+  // 换台设备不会把同一句「比昨天少 48 个」再说一遍。
+  { table: "moments", keys: ["kind", "key"], strategy: "union" },
   // 每台设备每天只写自己的一行，因此同一主键可安全使用 LWW；跨设备统计时求和。
   { table: STUDY_TIME_TABLE, keys: ["studied_on", "device_id"], strategy: "lww" }
 ];

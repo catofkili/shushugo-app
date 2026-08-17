@@ -17,7 +17,8 @@ vi.mock("../database", () => ({
 import { mergeDatabaseBytes } from "./merge";
 import { ensureSyncSchema } from "./schema";
 import { recordStudySeconds } from "./study-time";
-import { compressSyncSnapshot, decompressSyncSnapshot, exportSyncSnapshot } from "./snapshot";
+import { ensureUserTables } from "../study-core";
+import { compressSyncSnapshot, decompressSyncSnapshot, exportSyncSnapshot, isUserSyncSnapshot, SYNC_PROTOCOL_VERSION } from "./snapshot";
 
 const seedPath = fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url));
 
@@ -50,6 +51,10 @@ describe("database snapshot merge", () => {
     const tables = new Set(rows(snapshot, "SELECT name FROM sqlite_master WHERE type = 'table'").map((row) => row.name));
 
     expect(tables.has("sync_snapshot_meta")).toBe(true);
+    expect(rows(snapshot, "SELECT format, protocol_version FROM sync_snapshot_meta")).toEqual([
+      { format: "master-nihongo-user-sqlite-v1", protocol_version: SYNC_PROTOCOL_VERSION }
+    ]);
+    expect(isUserSyncSnapshot(snapshot)).toBe(true);
     expect(tables.has("progress")).toBe(true);
     expect(tables.has("reviews")).toBe(true);
     expect(tables.has("words")).toBe(false);
@@ -57,6 +62,35 @@ describe("database snapshot merge", () => {
     expect(rows(snapshot, "SELECT key FROM app_state WHERE key = 'sync_cursor'")).toHaveLength(0);
     expect(snapshotBytes.byteLength).toBeLessThan(fullBytes.byteLength / 4);
     snapshot.close();
+  });
+
+  it("划重点和语法阅读位置随用户快照跨设备合并", async () => {
+    testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    ensureUserTables();
+    ensureSyncSchema();
+    testDb.run(`
+      INSERT INTO grammar_highlights
+        (grammar_id, block, start, end, text, dataset_version, sync_updated_at, sync_origin_device)
+      VALUES ('pdf-n3-001', 'example-0', 0, 2, '風か', 'grammar-v1', '2030-01-01T00:00:01.000Z', 'source')
+    `);
+    testDb.run(`
+      INSERT INTO grammar_reading_positions
+        (kind, level, grammar_id, updated_at, sync_updated_at, sync_origin_device)
+      VALUES ('immersive', 'N3', 'pdf-n3-041', CURRENT_TIMESTAMP, '2030-01-01T00:00:01.000Z', 'source')
+    `);
+    const snapshotBytes = await exportSyncSnapshot();
+
+    testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    ensureUserTables();
+    ensureSyncSchema();
+    await mergeDatabaseBytes(snapshotBytes);
+
+    expect(rows(testDb, "SELECT grammar_id, block, start, end FROM grammar_highlights")).toEqual([
+      { grammar_id: "pdf-n3-001", block: "example-0", start: 0, end: 2 }
+    ]);
+    expect(rows(testDb, "SELECT kind, level, grammar_id FROM grammar_reading_positions")).toEqual([
+      { kind: "immersive", level: "N3", grammar_id: "pdf-n3-041" }
+    ]);
   });
 
   it("压缩后的用户快照可无损解压并合并到新设备", async () => {

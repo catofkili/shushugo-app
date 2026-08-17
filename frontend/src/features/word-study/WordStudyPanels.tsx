@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Brain, CalendarDays, CheckCircle2, Clock3, ImageDown, Loader2, Minus, Pencil, Plus, Share2, X } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { ZooConfetti } from "../../components/ZooConfetti";
+import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { estimatedMinutesFor } from "../../lib/review-budget";
 import { studyDate as currentStudyDate } from "../../lib/database/db-utils";
 import { splitFurigana, useFuriganaReady } from "../../lib/furigana";
@@ -151,7 +152,13 @@ export const ExampleBlock = ({ card }: { card: WordCard }) => {
   return (
     <div className="mx-auto mt-4 max-w-2xl rounded-2xl border border-white/15 bg-[#373b3b] p-4 text-left">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">例句</p>
-      {jp && <p className="jp mt-2 text-lg leading-8 text-white/88">{highlightHeadword(jp, card)}</p>}
+      {jp && (
+        <p className="jp mt-2 text-lg leading-8 text-white/88">
+          {card.example.furigana ? (
+            <JapaneseRuby text={jp} furigana={card.example.furigana} tokenBoundaries={card.example.tokens} />
+          ) : highlightHeadword(jp, card)}
+        </p>
+      )}
       {meaning && <p className="mt-2 text-sm leading-6 text-white/65">{meaning}</p>}
     </div>
   );
@@ -181,7 +188,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const todayWordCount = todayStats?.wordCount ?? stats?.reviewedToday ?? 0;
   const checkedToday = checkins.has(studyDate);
   const checkinDays = checkins.size;
-  const isStage1Complete = phase === "stage1" && stats?.stage1Done;
+  const isStage1Complete = phase === "stage1" && stats?.dailyPlanDone;
   const compactPhaseLabel = phase === "done" ? "全部完成" : phase === "stage1" ? "第一阶段" : phase;
   const encore = stats?.encore;
   const showEncore = phase === "done" && Boolean(encore?.available) && Boolean(onEncore);

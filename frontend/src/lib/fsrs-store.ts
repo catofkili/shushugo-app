@@ -500,25 +500,6 @@ export function fsrsDueCount(now = new Date(), entity: FsrsEntity = WORD_FSRS): 
   );
 }
 
-/** 对照组:现行系统「此刻积压」(score ≤ 6) */
-export function currentSystemBacklogCount(): number {
-  return firstValue<number>(
-    "SELECT COUNT(*) FROM progress WHERE known_forever = 0 AND seen_count > 0 AND score <= 6",
-    [],
-    0
-  );
-}
-
-/* ── 阶段 P1:切换开关(默认关。开=选词/到期读 FSRS,关=现行分数系统) ── */
-
-export function isFsrsActive(): boolean {
-  // 默认开(老算法已"关闭但保留"):仅当显式设为 "0" 才走旧分数系统,便于回滚。
-  return getState("fsrs_active", "1") !== "0";
-}
-export function setFsrsActive(on: boolean): void {
-  setState("fsrs_active", on ? "1" : "0");
-}
-
 /**
  * FSRS 到期词的 word_id,按「最该复习优先」= due 升序(越过期越靠前)。
  * 已见但从未进入 FSRS 调度的词(fsrs_due 为空)视同最高优先,排最前。

@@ -10,7 +10,7 @@
  */
 
 import { firstValue, rowsFor, getState, setState, today } from "./database/db-utils";
-import { isFsrsActive, fsrsDueCount } from "./fsrs-store";
+import { fsrsDueCount } from "./fsrs-store";
 import { REVIEW_CAP_UNLIMITED } from "./studyPreferences";
 
 const AUTO_CAP_MIN = 60;
@@ -106,16 +106,8 @@ export function recentReviewAverages(day = today()): { avgDailyWords: number; se
   return { avgDailyWords, secondsPerWord };
 }
 
-/** 当前积压量 = 已见、未永久掌握、到期待复习的词数。
- *  FSRS 开关打开时用「FSRS 到期数」,否则用现行「分数 ≤6」。语义等价:都是"此刻该复习多少"。 */
-export const reviewBacklogCount = () => {
-  if (isFsrsActive()) return fsrsDueCount();
-  return firstValue<number>(`
-    SELECT COUNT(*)
-    FROM progress
-    WHERE known_forever = 0 AND seen_count > 0 AND score <= 6
-  `, [], 0);
-};
+/** 当前积压量 = FSRS 认为此刻到期、且仍参与正向调度的词数。 */
+export const reviewBacklogCount = () => fsrsDueCount();
 
 /**
  * 每日复习上限:

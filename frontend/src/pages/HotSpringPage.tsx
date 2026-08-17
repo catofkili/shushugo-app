@@ -40,7 +40,7 @@ export function HotSpringPage({ onNavigate }: { onNavigate: (page: Page) => void
   const checkedInToday = checkins.includes(today);
   const streak = stats ? computeStreak(checkins, today) : 0;
   const week = stats ? weekDays(today) : [];
-  const taskDone = !!stats && stats.stage1ProgressTotal > 0 && stats.stage1Done;
+  const taskDone = !!stats && stats.stage1ProgressTotal > 0 && stats.dailyPlanDone;
 
   const checkIn = () => {
     try {

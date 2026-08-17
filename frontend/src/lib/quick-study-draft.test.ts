@@ -24,7 +24,6 @@ const card = (id: number) => ({
   kanji: `漢字${id}`,
   pos: "动词",
   jlptLevel: "N3",
-  score: 0,
   importance: 1,
   importanceScore: 1,
   isFavorite: false,

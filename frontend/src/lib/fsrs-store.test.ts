@@ -20,9 +20,6 @@ import {
   readFsrsState,
   recordFsrsReview,
   fsrsDueCount,
-  currentSystemBacklogCount,
-  isFsrsActive,
-  setFsrsActive,
   fsrsDueWordIds,
   backfillKanjiFsrs,
   ensureGrammarFsrs,
@@ -114,12 +111,10 @@ describe("fsrs-store", () => {
     expect(migrateRecentDailyEasyReviews(new Date("2026-08-02T12:00:00"), 8).migrated).toBe(false);
   });
 
-  it("FSRS 到期数与现行积压数都能算,且量级合理", () => {
+  it("FSRS 到期数能和当前调度口径一致", () => {
     const now = new Date("2026-07-23T04:00:00Z");
     const fsrsDue = fsrsDueCount(now);
-    const legacyBacklog = currentSystemBacklogCount();
     expect(fsrsDue).toBeGreaterThanOrEqual(1);   // 词2 反复忘,必到期
-    expect(legacyBacklog).toBeGreaterThanOrEqual(1);
   });
 
   it("影子写:单次作答即时更新 FSRS 列", () => {
@@ -185,14 +180,6 @@ describe("fsrs-store", () => {
       testDb.run("UPDATE progress SET fsrs_stability=NULL, fsrs_due=NULL WHERE word_id=202");
     });
 
-    it("开关默认开(老算法已关闭但保留),可持久化切换", () => {
-      expect(isFsrsActive()).toBe(true); // 未设置时默认开
-      setFsrsActive(false);
-      expect(isFsrsActive()).toBe(false);
-      setFsrsActive(true);
-      expect(isFsrsActive()).toBe(true);
-    });
-
     it("fsrsDueWordIds:只取到期词,未调度的排最前,已到期按 due 升序", () => {
       const ids = fsrsDueWordIds(50, now);
       expect(ids).toContain(200);   // 已过期
@@ -216,15 +203,9 @@ describe("fsrs-store", () => {
       expect(ids.indexOf(203)).toBeLessThan(ids.indexOf(200));
     });
 
-    it("开关打开后,积压计数改用 FSRS 到期数", async () => {
+    it("积压计数始终使用 FSRS 到期数", async () => {
       const { reviewBacklogCount } = await import("./review-budget");
-      setFsrsActive(false);
-      const legacy = reviewBacklogCount();
-      setFsrsActive(true);
-      const viaFsrs = reviewBacklogCount();
-      setFsrsActive(false);
-      expect(viaFsrs).toBe(fsrsDueCount(new Date()));
-      expect(legacy).not.toBe(undefined);
+      expect(reviewBacklogCount()).toBe(fsrsDueCount(new Date()));
     });
   });
 });

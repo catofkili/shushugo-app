@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BookOpenText, Brain, Star, Trash2 } from "lucide-react";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { FavoriteItem, getFavoriteItems, toggleFavorite } from "../lib/api";
+import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 
 type FavoriteFilter = "all" | "word" | "grammar";
 
@@ -72,7 +73,7 @@ export const FavoritesPage = ({ onOpenGrammar }: FavoritesPageProps) => {
                       {item.meta && <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/55">{item.meta}</span>}
                     </div>
                     <h2 className="jp-serif mt-3 text-2xl font-semibold leading-tight">
-                      {item.type === "grammar" ? <JapaneseRuby text={item.title} /> : item.title}
+                      {item.type === "grammar" ? <JapaneseRuby text={item.title} furigana={getGrammarTitleFurigana(item.id)} /> : item.title}
                     </h2>
                     <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/68">{item.subtitle}</p>
                   </button>

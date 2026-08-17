@@ -21,7 +21,6 @@ const card = (patch: Partial<WordCard>): WordCard => ({
   kanji: "寿司",
   pos: "名词",
   jlptLevel: "N5",
-  score: 0,
   importance: 3,
   importanceScore: 3,
   isFavorite: false,
@@ -140,4 +139,3 @@ describe("word-study-utils", () => {
     expect(calendar.cells[30]).toEqual({ day: 30, date: "2026-06-30" });
   });
 });
-

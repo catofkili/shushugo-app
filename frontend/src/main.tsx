@@ -10,6 +10,7 @@ import { initWebViewOptimizer } from './lib/webview-optimizer';
 import { applyMotionLevel, applyTheme } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { autoSyncReminderNotifications } from './lib/notifications';
+import { syncJlptPlanReminders } from './lib/jlpt/reminders';
 import { initializePurchases } from './lib/purchases';
 import { autoSyncCloudDatabase, registerCloudAutoSyncLifecycle, refreshCloudEntitlements } from './lib/sync-api';
 import { ensureSyncSchema } from './lib/sync/schema';
@@ -86,6 +87,11 @@ root.render(
     });
     autoSyncReminderNotifications().catch((error) => {
       console.warn('Notification reminder sync skipped:', error);
+    });
+    // 备考提醒的正文每天都不一样(倒计时 + 今天还差多少),没法用一条 repeats 通知糊过去,
+    // 所以每次启动重排未来两周。放在数据库 ready 之后:算最低量要查库。
+    syncJlptPlanReminders().catch((error) => {
+      console.warn('JLPT plan reminder sync skipped:', error);
     });
     // 已登录云账号的话,后台静默刷新 Pro 权益(订阅在别的设备续订/取消后保持一致);
     // 未登录或未配置同步地址时内部直接返回,不产生请求。

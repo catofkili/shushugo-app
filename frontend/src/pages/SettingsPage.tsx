@@ -27,7 +27,7 @@ import {
   StudyPreferences,
   ThemePreference
 } from "../lib/studyPreferences";
-import { getDatabase } from "../lib/database";
+import { firstValue } from "../lib/database/db-utils";
 import { importExternalWordList, previewExternalWordList } from "../lib/word-list-import";
 
 interface GoalEstimationProps {
@@ -44,22 +44,19 @@ function GoalEstimation({ dailyGoal }: GoalEstimationProps) {
       await yieldToBrowser();
       if (!alive) return;
       try {
-        const db = getDatabase();
         const levels = ['N5', 'N4', 'N3', 'N2', 'N1'];
         const newEstimations: Record<string, number> = {};
 
         levels.forEach(level => {
-          const result = db.exec(`
+          const remaining = firstValue<number>(`
             SELECT COUNT(*) as remaining
             FROM words w
             JOIN progress p ON p.word_id = w.id
             WHERE w.jlpt_level = ?
               AND p.known_forever = 0
               AND p.seen_count = 0
-          `, [level]);
-
-          if (result.length && result[0].values.length) {
-            const remaining = Number(result[0].values[0][0]);
+          `, [level], 0);
+          {
             const days = Math.ceil(remaining / dailyGoal);
             newEstimations[level] = days;
           }

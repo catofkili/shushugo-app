@@ -6,7 +6,12 @@ import { computeBadges } from "../lib/zoo-badges";
 import type { WordStats } from "../types/vocabulary";
 import type { Page, StudyMode } from "../types/app";
 import { STUDY_MODES, studyModeInfo } from "../lib/studyMode";
+import { getJlptPlanStatus, type JlptPlanStatus } from "../lib/jlpt/status";
+import { shortfallText } from "../lib/jlpt/plan";
+import { useCountUp } from "../hooks/useCountUp";
+import { useMoments } from "../hooks/useMoments";
 import { CapybaraMascot } from "./CapybaraMascot";
+import { MomentPop } from "./MomentPop";
 import { ZooProgressPanel } from "./ZooProgressPanel";
 
 /**
@@ -60,20 +65,34 @@ export function ZooHome({
   onCompleteTodayWords
 }: Props) {
   const [stats, setStats] = useState<WordStats | null>(null);
+  const [jlpt, setJlpt] = useState<JlptPlanStatus | null>(null);
   const [modeSheetOpen, setModeSheetOpen] = useState(false);
+  const { moment, leaving: momentLeaving, collect: collectMoments } = useMoments();
 
   useEffect(() => {
     const refresh = () => {
       try {
-        setStats(getWordStats());
+        const next = getWordStats();
+        setStats(next);
       } catch {
         // 词库还没加载好时先留空,进度事件会再触发一次
+        return;
       }
+      // 关掉备考计划的人不该在首页看到它,所以 enabled 为假时直接清空
+      try {
+        const plan = getJlptPlanStatus();
+        setJlpt(plan.enabled ? plan : null);
+      } catch {
+        setJlpt(null);
+      }
+      // 必须在 stats 读完之后:当天的计划是在那里面排好的,
+      // 排之前问 plan_trend 会看到「今天 0 个」,报出一句假喜讯。
+      collectMoments();
     };
     refresh();
     window.addEventListener(PROGRESS_UPDATED_EVENT, refresh);
     return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
-  }, []);
+  }, [collectMoments]);
 
   const greet = greetingFor(new Date().getHours());
   const total = stats?.stage1ProgressTotal ?? 0;
@@ -86,7 +105,8 @@ export function ZooHome({
   const levels = overview.wordsByLevel.filter((item) => item.total > 0);
   const withPct = levels.map((item) => ({
     ...item,
-    pct: Math.round((item.completed / item.total) * 100)
+    // 当前园区看的是「走到哪儿了」,所以用学过的比例;掌握度(180 天间隔)是另一条线
+    pct: Math.round((item.seen / item.total) * 100)
   }));
   const current = withPct.find((item) => item.pct < 100) ?? withPct[withPct.length - 1];
 
@@ -96,6 +116,8 @@ export function ZooHome({
     studyDate: stats?.studyDate ?? ""
   });
   const unlockedBadges = badges.filter((badge) => badge.unlocked).length;
+  const badgeCount = useCountUp(unlockedBadges);
+  const streakCount = useCountUp(streak);
 
   const subtitle = !stats
     ? "正在读取今天的计划…"
@@ -111,10 +133,12 @@ export function ZooHome({
   const activeInfo = studyModeInfo(activeMode);
   const activeCount = stats?.modeCounts?.[activeMode] ?? 0;
   const isPlanMode = activeMode === "classic" || activeMode === "quick";
+  // 学完一批回来是 688 → 670,以前直接跳过去,等于没发生。滚下去才看得见自己按下了它。
+  const heroCount = useCountUp(activeCount);
   const heroNum = !stats
     ? "…"
     : activeCount > 0
-      ? `${activeCount} 词`
+      ? `${heroCount} 词`
       : isPlanMode ? "已完成" : "暂无题";
   const heroSub = !stats
     ? "正在读取"
@@ -138,7 +162,7 @@ export function ZooHome({
         </div>
         {streak > 0 && (
           <div className="zoo-greet-streak">
-            🔥<b>{streak}</b>
+            🔥<b>{streakCount}</b>
           </div>
         )}
       </div>
@@ -153,6 +177,8 @@ export function ZooHome({
             <b className="zoo-tile-hero-num">{heroNum}</b>
             <span className="zoo-tile-hero-sub">{heroSub}</span>
           </div>
+          {/* 时刻:蹦一下说一句就走,一次只播一个(见 hooks/useMoments) */}
+          <MomentPop moment={moment} leaving={momentLeaving} />
           <div className="zoo-tile-hero-r">
             <span className="zoo-tile-hero-emoji">{activeInfo.emoji}</span>
             <span className="zoo-tile-cta">{heroCta}</span>
@@ -196,6 +222,19 @@ export function ZooHome({
               );
             })}
           </div>
+        )}
+
+        {/* 备考计划:首页只播报「今天还差多少」和倒计时,详情在 jlpt-plan 页。
+            放在今日区而不是工具区——它说的就是今天要做什么,不是一个可逛可不逛的功能。 */}
+        {jlpt && (
+          <button className="zoo-tile zoo-tile-jlpt" onClick={() => onNavigate("jlpt-plan")}>
+            <span className="zoo-tile-kick">{jlpt.target} 备考</span>
+            <b className="zoo-tile-jlpt-days">
+              {jlpt.plan.daysLeft < 0 ? "已考完" : `还有 ${jlpt.plan.daysLeft} 天`}
+            </b>
+            <span className="zoo-tile-jlpt-gap">{shortfallText(jlpt.shortfall)}</span>
+            <span className="zoo-tile-cta soft">看看计划 →</span>
+          </button>
         )}
 
         <button className="zoo-tile zoo-tile-team" onClick={() => onNavigate("team")}>
@@ -242,7 +281,7 @@ export function ZooHome({
             <span className="zoo-tile-sub">园区认证 · 连击 · 松子收成</span>
           </span>
           <span className="zoo-tile-strip-num">
-            {unlockedBadges} / {badges.length}
+            {badgeCount} / {badges.length}
           </span>
         </button>
       </div>

@@ -1,14 +1,22 @@
 import { ExampleSentence as Example } from "../types/grammar";
+import type { GrammarPoint } from "../types/grammar";
 import { JapaneseRuby } from "./JapaneseRuby";
 
 interface ExampleSentenceProps {
   example: Example;
+  grammarPoint?: Pick<GrammarPoint, "title" | "meaning" | "structure" | "explanation" | "connection">;
 }
 
-export const ExampleSentence = ({ example }: ExampleSentenceProps) => (
+export const ExampleSentence = ({ example, grammarPoint }: ExampleSentenceProps) => (
   <div className="dictionary-card rounded-2xl p-5">
     <p className="jp text-2xl font-semibold leading-relaxed text-[#343838] dark:text-[#f4efe4]">
-      <JapaneseRuby text={example.jp ?? example.japanese} />
+      <JapaneseRuby
+        text={example.jp ?? example.japanese}
+        furigana={example.furigana}
+        tokenLengths={example.tokenLengths}
+        tokenLemmas={example.tokenLemmas}
+        grammarPoint={grammarPoint}
+      />
     </p>
     <p className="jp mt-2 text-sm text-[#81D8CF]">{example.reading}</p>
     <p className="mt-3 text-[#f9faf7] dark:text-zinc-300">{example.cn ?? example.chinese}</p>

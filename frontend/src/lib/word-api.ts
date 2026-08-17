@@ -20,7 +20,6 @@ import { ensureSyncSchema } from "./sync/schema";
 import { recordStudySeconds } from "./sync/study-time";
 import {
   recordFsrsReview,
-  isFsrsActive,
   readFsrsState,
   restoreFsrsState
 } from "./fsrs-store";
@@ -34,16 +33,27 @@ import {
 import {
   advanceReviewQueue,
   getReviewQueue,
+  lastAnsweredWord,
   scheduleDelayedReview,
   setLastAnsweredWord,
   setReviewQueue
 } from "./word-api/session-state";
+import {
+  canUndo as canUndoSnapshot,
+  clearPinnedCard,
+  pinCard,
+  popUndoSnapshot,
+  pushUndoSnapshot,
+  readPinnedCard
+} from "./word-api/undo-stack";
 import { ensureProgressInitialized } from "./word-api/bootstrap";
 import { getWordStats } from "./word-api/stats";
-import { hasWordFilter, isLongTermWeak, wordFilterSql } from "./word-api/filters";
+import { updateMemoryProfileIfNeeded } from "./adaptive";
+import { hasWordFilter, isLongTermWeak, newWordOrderSql, wordFilterSql } from "./word-api/filters";
 import { pickMistakeNext } from "./word-api/mistakes";
 import { directionByPhase, KANJI, REVERSE, type StudyDirection } from "./word-api/directions";
 import {
+  directionCardById,
   directionProgressCounts,
   ensureDirectionTasks,
   pickDirectionNext
@@ -61,30 +71,38 @@ import {
 export { getReviewQueue, setReviewQueue } from "./word-api/session-state";
 export { ensureProgressInitialized } from "./word-api/bootstrap";
 export { getWordStats } from "./word-api/stats";
+export {
+  advanceDailyRelief,
+  ensureDailyRelief,
+  getDailyReliefNext,
+  getDailyReliefProgress
+} from "./word-api/daily-relief";
+export {
+  advanceDailyTail,
+  ensureDailyTail,
+  getDailyTailNext,
+  getDailyTailProgress
+} from "./word-api/daily-tail";
+export {
+  dailyReviewCandidateCount,
+  hasDailyReviewTriggered,
+  markDailyReviewTriggered,
+  pickDailyReviewNext,
+  shouldStartDailyReview
+} from "./word-api/daily-review";
+// 首页看过「比昨天少 N 个」之后回写标记,当天不再重放
 
 // 导出分析统计功能
 export { getStudyAnalytics } from "./analytics/stats";
 export type {
   FavoriteItem,
   FavoriteType,
-  GrammarMistakeItem,
-  GrammarStudyCard,
-  GrammarStudySession,
-  GrammarStudyStats,
   LevelProgressItem,
   ProgressOverview,
   StudyAnswer,
   WordSessionOptions
 } from "./study-types";
-export {
-  getGrammarMistakes,
-  getGrammarPointFavorite,
-  getGrammarSession,
-  getGrammarStats,
-  prioritizeGrammarMistake,
-  resolveGrammarMistake,
-  submitGrammarAnswer
-} from "./grammar-api";
+export { getGrammarPointFavorite } from "./grammar-api";
 export { getFavoriteItems, toggleFavorite } from "./favorites-api";
 
 
@@ -125,7 +143,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
   if (dueIds.length) {
     const placeholders = dueIds.map(() => "?").join(",");
     const due = firstRow(`
-      SELECT w.*, p.score, p.seen_count, p.known_forever, p.mastered_on,
+      SELECT w.*, p.seen_count, p.known_forever,
              p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
              p.mistake_streak, COALESCE(n.note, '') AS note
       FROM words w
@@ -141,7 +159,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
   }
 
   const critical = firstRow(`
-    SELECT w.*, p.score, p.seen_count, p.known_forever, p.mastered_on,
+    SELECT w.*, p.seen_count, p.known_forever,
            p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
            p.mistake_streak, COALESCE(n.note, '') AS note
     FROM words w
@@ -157,7 +175,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
   if (critical) return rowObjectToCard(critical);
 
   const low = firstRow(`
-    SELECT w.*, p.score, p.seen_count, p.known_forever, p.mastered_on,
+    SELECT w.*, p.seen_count, p.known_forever,
            p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
            p.mistake_streak, COALESCE(n.note, '') AS note
     FROM words w
@@ -173,7 +191,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
   if (low) return rowObjectToCard(low);
 
   const unseen = firstRow(`
-    SELECT w.*, p.score, p.seen_count, p.known_forever, p.mastered_on,
+    SELECT w.*, p.seen_count, p.known_forever,
            p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
            p.mistake_streak, COALESCE(n.note, '') AS note
     FROM words w
@@ -182,14 +200,13 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
     WHERE p.known_forever = 0
       AND p.seen_count = 0
       ${filter.clause}
-    ORDER BY CASE w.jlpt_level WHEN 'N5' THEN 1 WHEN 'N4' THEN 2 WHEN 'N3' THEN 3 WHEN 'N2' THEN 4 WHEN 'N1' THEN 5 ELSE 9 END,
-             w.importance DESC, w.shuffle_rank DESC, w.id ASC
+    ORDER BY ${newWordOrderSql("w")}
     LIMIT 1
   `, filter.params);
   if (unseen) return rowObjectToCard(unseen);
 
   const review = firstRow(`
-    SELECT w.*, p.score, p.seen_count, p.known_forever, p.mastered_on,
+    SELECT w.*, p.seen_count, p.known_forever,
            p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
            p.mistake_streak, COALESCE(n.note, '') AS note
     FROM words w
@@ -211,17 +228,13 @@ const wordCardById = (wordId: number): WordCard | null => {
   const row = firstRow(`
     SELECT
       w.*,
-      p.score,
       p.seen_count,
-      p.low_history,
       p.known_forever,
-      p.mastered_on,
       p.last_seen_on,
       p.right_count,
       p.fuzzy_count,
       p.forgot_count,
       p.mistake_streak,
-      p.last_decay_amount,
       COALESCE(n.note, '') AS note
     FROM words w
     JOIN progress p ON p.word_id = w.id
@@ -240,13 +253,41 @@ const claimCurrentCard = (wordId: number): boolean => {
   if (expected === "") return true;
   if (expected === String(wordId)) {
     setState("current_card", "0");
+    // 撤销钉住的那张已经被答掉了,钉子拔掉,不然下一张又把它交回来
+    clearPinnedCard();
     return true;
   }
   return false;
 };
 
+/**
+ * 「这是哪一场」——撤销快照要按它配对:错题本 / 筛选学习 / 正向 / 反向 / 汉字。
+ * 换了场就当作没得撤销,免得在反向里点一下把正向刚答的那张拽过来。
+ */
+const sessionMode = (phase: string, options: WordSessionOptions = {}): string => (
+  options.focus === "mistakes" ? "mistakes" : hasWordFilter(options) ? "filtered" : phase
+);
+
+const currentSessionMode = (options: WordSessionOptions = {}): string =>
+  sessionMode(currentPhase(), options);
+
+/** 撤销后钉住的那张:模式对得上就原样交回来,而不是重新抽 */
+const pinnedCard = (options: WordSessionOptions = {}): { card: WordCard; phase: string } | null => {
+  const mode = currentSessionMode(options);
+  const wordId = readPinnedCard(mode);
+  if (!wordId) return null;
+  const card = mode === "stage2" || mode === "kanji"
+    ? directionCardById(directionByPhase(mode), wordId)
+    : wordCardById(wordId);
+  if (!card) {
+    clearPinnedCard();
+    return null;
+  }
+  return { card, phase: mode === "filtered" ? "filtered" : mode };
+};
+
 const nextCard = (options: WordSessionOptions = {}): { card: WordCard | null; phase: string } => {
-  const result = resolveNextCard(options);
+  const result = pinnedCard(options) ?? resolveNextCard(options);
   setCurrentCard(result.card);
   return result;
 };
@@ -418,7 +459,7 @@ export function startEncore(customSize?: number): WordSessionResponse {
       WHERE p.known_forever = 0
         AND p.seen_count = 0
         AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
-      ORDER BY w.shuffle_rank DESC, w.importance DESC, p.word_id ASC
+      ORDER BY ${newWordOrderSql("w")}
       LIMIT ?
     `, [day, newFill]);
     // task_type 用 'encore_new' 而不是 'new':加餐词有意超出每日配额,
@@ -442,6 +483,46 @@ export function startEncore(customSize?: number): WordSessionResponse {
   return getWordSession();
 }
 
+/** Add one dictionary-discovered word to today's queue without consuming the
+ * normal new-word quota.  The task type is deliberately encore_new so the
+ * daily reconciler will not trim it away. */
+export function addWordToTodayEncore(wordId: number): boolean {
+  ensureProgressInitialized();
+  ensureStage1Tasks();
+  const id = Math.round(Number(wordId));
+  if (!Number.isFinite(id) || id <= 0) return false;
+  const day = today();
+  const exists = firstValue<number>(
+    "SELECT 1 FROM words w JOIN progress p ON p.word_id = w.id WHERE w.id = ? AND p.known_forever = 0 LIMIT 1",
+    [id],
+    0
+  );
+  if (!exists) return false;
+  const alreadyQueued = firstValue<number>(
+    "SELECT 1 FROM stage1_tasks WHERE reviewed_on = ? AND word_id = ? LIMIT 1",
+    [day, id],
+    0
+  );
+  if (alreadyQueued) return false;
+  getDatabase().run(
+    "INSERT OR IGNORE INTO dictionary_discovered_words (word_id) VALUES (?)",
+    [id]
+  );
+  const orderIndex = firstValue<number>(
+    "SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?",
+    [day],
+    1
+  );
+  getDatabase().run(`
+    INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+    VALUES (?, ?, 'encore_new', ?)
+  `, [day, id, orderIndex]);
+  setPhase("stage1");
+  persistSoon();
+  notifyProgressUpdated();
+  return true;
+}
+
 
 export function getWordSession(options: WordSessionOptions = {}): WordSessionResponse {
   ensureProgressInitialized();
@@ -449,7 +530,8 @@ export function getWordSession(options: WordSessionOptions = {}): WordSessionRes
   return {
     card,
     phase,
-    stats: getWordStats(phase, options)
+    stats: getWordStats(phase, options),
+    canUndo: canUndoSnapshot(sessionMode(phase, options))
   };
 }
 
@@ -474,7 +556,8 @@ export function jumpToSimilarWord(
   return {
     card: targetCard,
     phase: scored.phase,
-    stats: scored.stats
+    stats: scored.stats,
+    canUndo: scored.canUndo
   };
 }
 
@@ -595,8 +678,11 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   if (!progress) return getWordSession(options);
   const snapshot = {
     phase: "stage1",
-    response_phase: options.focus === "mistakes" ? "mistakes" : hasWordFilter(options) ? "filtered" : "stage1",
+    // 撤销要认「这是哪一场、哪一天」的快照:对不上就当作没得撤销(见 undo-stack)
+    mode: sessionMode("stage1", options),
+    reviewed_on: studyDate,
     word_id: wordId,
+    last_answered_word: lastAnsweredWord(),
     seen_count: Number(progress.seen_count ?? 0),
     known_forever: Number(progress.known_forever ?? 0),
     last_seen_on: progress.last_seen_on,
@@ -662,7 +748,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   const firstKnowToday = firstSeenToday && answer === "know";
   const stepMode = firstKnowToday ? "known" : stubbornWord ? "stubborn" : "normal";
 
-  if (isFsrsActive() && !knownForever) {
+  if (!knownForever) {
     try {
       const next = recordFsrsReview(wordId, answer, new Date(), { mode: stepMode });
       fsrsGraduated = isGraduatedForDay(next, studyDayEnd());
@@ -714,40 +800,45 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     [wordId, answer, studyDate]
   );
   const reviewId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
-  setState("last_answer", JSON.stringify({ ...snapshot, review_id: reviewId }));
-
-  // FSRS 未启用时:保留「当日首见」影子写,供切换前对比明日到期数。
-  // 已启用时:上面已在每次作答时记录(学习步骤需要每次推进),此处不再重复写。
-  if (!isFsrsActive()) {
-    try {
-      const priorToday = firstValue<number>(
-        "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ? AND id < ?",
-        [wordId, studyDate, reviewId],
-        0
-      );
-      if (priorToday === 0) recordFsrsReview(wordId, answer);
-    } catch (err) {
-      console.warn("[fsrs] 影子写跳过:", err);
-    }
-  }
+  // 记忆画像不是只在测试里手动刷新:每次真实正向答题后按阈值增量更新。
+  // 统计页还会再补一次检查,这样已有历史用户打开页面也能脱离旧的默认 1.0。
+  updateMemoryProfileIfNeeded();
+  pushUndoSnapshot({ ...snapshot, review_id: reviewId });
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());
   notifyProgressUpdated();
   return getWordSession(options);
 }
 
+/**
+ * 「没得撤销」的回答:停在当前这张卡上,一个字都不改。
+ * 手上没有当前卡(比如刚进来还没发牌)才去正常取一张。
+ */
+const stayOnCurrentCard = (options: WordSessionOptions = {}): WordSessionResponse => {
+  const mode = currentSessionMode(options);
+  const wordId = Number(getState("current_card", "0")) || 0;
+  const card = wordId
+    ? (mode === "stage2" || mode === "kanji"
+      ? directionCardById(directionByPhase(mode), wordId)
+      : wordCardById(wordId))
+    : null;
+  if (!card) return getWordSession(options);
+  const phase = mode === "done" ? currentPhase() : mode;
+  return { card, phase, stats: getWordStats(phase, options), canUndo: false };
+};
+
+/**
+ * 「上一个」:把最近一次作答整个放回去,并把那张卡原样交回来。
+ *
+ * 撤不了的时候(这一场还没答过、已经连撤两次、快照是别的模式或昨天的)**原样返回当前卡**,
+ * 绝不重新抽词 —— 以前这里兜底走 getWordSession(),于是点一下就跳到一个无关的词上,
+ * 在错题本里还会连模式一起掉回今日计划。
+ */
 export function undoLastWordAnswer(options: WordSessionOptions = {}): WordSessionResponse {
   ensureProgressInitialized();
   const db = getDatabase();
-  const rawSnapshot = getState("last_answer", "");
-  if (!rawSnapshot) return getWordSession();
-
-  let snapshot: Record<string, unknown>;
-  try {
-    snapshot = JSON.parse(rawSnapshot) as Record<string, unknown>;
-  } catch {
-    return getWordSession();
-  }
+  const snapshot = popUndoSnapshot(currentSessionMode(options));
+  if (!snapshot) return stayOnCurrentCard(options);
 
   if (snapshot.phase === "stage2" || snapshot.phase === "kanji") {
     // 反向/汉字的撤销和正向同构:把记忆行和 FSRS 状态放回作答前,并删掉那条流水
@@ -789,53 +880,33 @@ export function undoLastWordAnswer(options: WordSessionOptions = {}): WordSessio
         return [{ word_id: wordId, due_after: Math.max(Number(record.due_after ?? 0), 0) }];
       }));
     }
+    if (snapshot.last_answered_word != null) {
+      setLastAnsweredWord(Number(snapshot.last_answered_word));
+    }
     if (!hasWordFilter(options)) setPhase("stage1");
   }
-
-  setState("last_answer", "");
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());
   notifyProgressUpdated();
 
-  // 撤销的语义是「回到刚才那张」，而不是在恢复数据后再随机抽下一张。
-  // 重新抽题会让用户看到无关词，也会把 current_card 留在错误的下一题上。
-  const restoredRow = firstRow(`
-    SELECT
-      w.*,
-      p.score,
-      p.seen_count,
-      p.low_history,
-      p.known_forever,
-      p.mastered_on,
-      p.last_seen_on,
-      p.right_count,
-      p.fuzzy_count,
-      p.forgot_count,
-      p.mistake_streak,
-      p.last_decay_amount,
-      COALESCE(n.note, '') AS note
-    FROM words w
-    JOIN progress p ON p.word_id = w.id
-    LEFT JOIN word_notes n ON n.word_id = w.id
-    WHERE w.id = ?
-  `, [Number(snapshot.word_id)]);
-  const restoredCard = restoredRow ? rowObjectToCard(restoredRow) : null;
-  if (restoredCard) {
-    const responsePhase = String(snapshot.response_phase ?? "");
-    const restoredPhase = responsePhase === "mistakes" || responsePhase === "filtered"
-      ? responsePhase
-      : snapshot.phase === "stage2" || snapshot.phase === "kanji" || snapshot.phase === "stage1"
-        ? snapshot.phase
-        : currentPhase();
-    setCurrentCard(restoredCard);
-    return {
-      card: restoredCard,
-      phase: restoredPhase,
-      stats: getWordStats(restoredPhase, options)
-    };
-  }
+  // 撤销的语义是「回到刚才那张」,而不是在恢复数据后再随机抽下一张。
+  // 重新抽题会让用户看到无关词,也会把 current_card 留在错误的下一题上。
+  const mode = String(snapshot.mode ?? snapshot.phase ?? "stage1");
+  const wordId = Number(snapshot.word_id);
+  const restoredCard = mode === "stage2" || mode === "kanji"
+    ? directionCardById(directionByPhase(mode), wordId)
+    : wordCardById(wordId);
+  if (!restoredCard) return getWordSession(options);
 
-  return getWordSession(options);
+  setCurrentCard(restoredCard);
+  // 钉住:刷新、切前后台、任何一次读 session 都得还是这张,直到它被答掉
+  pinCard(restoredCard.id, mode);
+  return {
+    card: restoredCard,
+    phase: mode,
+    stats: getWordStats(mode, options),
+    canUndo: canUndoSnapshot(mode)
+  };
 }
 
 export function updateWordNote(wordId: number, note: string): { wordId: number; note: string } {

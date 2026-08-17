@@ -6,6 +6,9 @@ import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarPoints } from "../data/grammar";
 import { getGrammarPointFavorite, toggleFavorite } from "../lib/api";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
+import { grammarSequence } from "../lib/grammar-numbering";
+import { getGrammarPosition, saveGrammarPosition } from "../lib/grammarProgressPreferences";
+import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { JLPTLevel } from "../types/grammar";
 
 interface ImmersiveGrammarProps {
@@ -19,16 +22,26 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
   const points = useMemo(() => (
     grammarPoints.filter((point) => selectedLevel === "All" || point.level === selectedLevel)
   ), [selectedLevel]);
-  const [index, setIndex] = useState(0);
+  const [pointId, setPointId] = useState(() => {
+    const saved = getGrammarPosition("immersive", selectedLevel);
+    return typeof saved === "string" ? saved : points[0]?.id ?? "";
+  });
   const [, setFavoriteVersion] = useState(0);
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const [, setNoteVersion] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const point = points[Math.min(index, Math.max(points.length - 1, 0))];
+  const savedIndex = points.findIndex((item) => item.id === pointId);
+  const index = savedIndex >= 0 ? savedIndex : 0;
+  const point = points[index];
+  const sequence = point ? grammarSequence(point) : null;
   const favorite = point ? getGrammarPointFavorite(point.id) : false;
   const note = point ? getGrammarNote(point.id) : "";
+
+  useEffect(() => {
+    if (point) saveGrammarPosition("immersive", selectedLevel, point.id);
+  }, [point?.id, selectedLevel]);
 
   useEffect(() => {
     setNoteEditorOpen(false);
@@ -43,7 +56,8 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
   };
 
   const move = (direction: -1 | 1) => {
-    setIndex((value) => Math.min(Math.max(value + direction, 0), Math.max(points.length - 1, 0)));
+    const nextIndex = Math.min(Math.max(index + direction, 0), Math.max(points.length - 1, 0));
+    if (points[nextIndex]) setPointId(points[nextIndex].id);
     scrollToCardTop();
   };
 
@@ -65,7 +79,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
           语法
         </button>
         <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
-          <p className="truncate text-sm font-bold text-white/65">{selectedLevel === "All" ? "全部等级" : selectedLevel} · {index + 1}/{points.length}</p>
+          <p className="truncate text-sm font-bold text-white/65">{sequence?.label} · {sequence?.ordinal}/{sequence?.total}</p>
           <button
             onClick={() => move(1)}
             disabled={index >= points.length - 1}
@@ -85,12 +99,12 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
         <div className="h-full rounded-full bg-[#81D8CF]" style={{ width: `${((index + 1) / points.length) * 100}%` }} />
       </div>
 
-      <article className="dictionary-card flex min-h-0 flex-1 flex-col rounded-2xl p-5 sm:p-7">
+      <article data-grammar-point-id={point.id} className="dictionary-card flex min-h-0 flex-1 flex-col rounded-2xl p-5 sm:p-7">
         <div className="flex items-start justify-between gap-3 border-b border-white/15 pb-4">
           <div className="min-w-0">
-            <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/62">{point.level}</span>
-            <h1 className="jp-serif mt-4 text-5xl font-semibold leading-tight"><JapaneseRuby text={point.title} /></h1>
-            <p className="mt-3 text-xl leading-8 text-white/82">{point.meaning}</p>
+            <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/62">{sequence?.label}</span>
+            <h1 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-4 text-5xl font-semibold leading-tight"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h1>
+            <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-3 text-xl leading-8 text-white/82">{point.meaning}</p>
           </div>
           <button
             onClick={() => {
@@ -157,14 +171,14 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
               )}
             </div>
           )}
-          <p className="jp rounded-2xl border border-white/15 bg-[#373b3b] px-4 py-3 text-lg leading-8 text-white/82">
+          <p data-grammar-point-id={point.id} data-grammar-highlight-block="formation" className="jp rounded-2xl border border-white/15 bg-[#373b3b] px-4 py-3 text-lg leading-8 text-white/82">
             <GrammarTermHint text={point.connection ?? point.structure} />
           </p>
-          <p className="mt-5 text-[15px] leading-8 text-white/76">{point.explanation}</p>
+          <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-5 text-[15px] leading-8 text-white/76">{point.explanation}</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {point.examples.slice(0, 4).map((example) => (
-              <div key={example.jp ?? example.japanese} className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
-                <p className="jp text-lg leading-8"><JapaneseRuby text={example.jp ?? example.japanese} /></p>
+            {point.examples.slice(0, 4).map((example, exampleIndex) => (
+              <div key={example.jp ?? example.japanese} data-grammar-point-id={point.id} data-grammar-highlight-block={`immersive-example-${exampleIndex}`} className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
+                <p className="jp text-lg leading-8"><JapaneseRuby text={example.jp ?? example.japanese} furigana={example.furigana} tokenLengths={example.tokenLengths} tokenLemmas={example.tokenLemmas} grammarPoint={point} /></p>
                 <p className="mt-2 text-sm leading-6 text-white/62">{example.cn ?? example.chinese}</p>
               </div>
             ))}

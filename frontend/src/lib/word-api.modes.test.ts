@@ -36,6 +36,7 @@ import {
   continueKanjiStudy,
   continueStage2Study,
   continueTodayPlanStudy,
+  addWordToTodayEncore,
   ensureProgressInitialized,
   getWordSession,
   getWordStats,
@@ -92,6 +93,13 @@ beforeEach(async () => {
 });
 
 describe("三个方向平级、互不干扰", () => {
+  it("从例句词典加入的词进入今日任务且不重复计入", () => {
+    expect(addWordToTodayEncore(30)).toBe(true);
+    expect(count("SELECT COUNT(*) FROM stage1_tasks WHERE word_id = 30 AND task_type = 'encore_new'")).toBe(1);
+    expect(addWordToTodayEncore(30)).toBe(false);
+    expect(getWordSession().phase).toBe("stage1");
+  });
+
   it("今日计划做完就是 done,不会自动接上反向", () => {
     expect(drainSession()).toBe("done");
   });

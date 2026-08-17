@@ -31,17 +31,13 @@ export const pickMistakeNext = (): WordCard | null => {
   const rows = rowsFor(`
     SELECT
       w.*,
-      p.score,
       p.seen_count,
-      p.low_history,
       p.known_forever,
-      p.mastered_on,
       p.last_seen_on,
       p.right_count,
       p.fuzzy_count,
       p.forgot_count,
       p.mistake_streak,
-      p.last_decay_amount,
       p.fsrs_stability,
       p.fsrs_difficulty,
       p.fsrs_due,

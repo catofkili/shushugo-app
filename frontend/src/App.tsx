@@ -6,6 +6,7 @@ import { ZooHome } from "./components/ZooHome";
 import { FillProgressModal } from "./components/FillProgressModal";
 import { Paywall } from "./components/Paywall";
 import { AuthDialog } from "./components/AuthDialog";
+import { GrammarHighlightProvider } from "./components/GrammarHighlightProvider";
 import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
 import { completeTodayWordPlan, getProgressOverview, markContentComplete, ProgressOverview } from "./lib/api";
@@ -13,6 +14,7 @@ import { canUseFeature, FeatureId } from "./lib/entitlements";
 import { PROGRESS_UPDATED_EVENT } from "./lib/progress-events";
 import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, studyModeInfo } from "./lib/studyMode";
 import { studyDayEnd } from "./lib/database/db-utils";
+import { getGrammarLevelPreference, saveGrammarLevelPreference, type GrammarLevelSelection } from "./lib/grammarPreferences";
 import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
 import { syncUserProfileAfterLogin } from "./lib/profile-sync";
 import type { SearchResult } from "./lib/search-api";
@@ -21,7 +23,6 @@ import { JLPTLevel } from "./types/grammar";
 
 const Library = lazy(() => import("./pages/Library").then((module) => ({ default: module.Library })));
 const GrammarDetail = lazy(() => import("./pages/GrammarDetail").then((module) => ({ default: module.GrammarDetail })));
-const QuizPage = lazy(() => import("./pages/QuizPage").then((module) => ({ default: module.QuizPage })));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage").then((module) => ({ default: module.FavoritesPage })));
 const ConfusionPage = lazy(() => import("./pages/ConfusionPage").then((module) => ({ default: module.ConfusionPage })));
 const ImmersiveGrammar = lazy(() => import("./pages/ImmersiveGrammar").then((module) => ({ default: module.ImmersiveGrammar })));
@@ -29,6 +30,7 @@ const PersonalInfo = lazy(() => import("./pages/PersonalInfo").then((module) => 
 const AccountSecurity = lazy(() => import("./pages/AccountSecurity").then((module) => ({ default: module.AccountSecurity })));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings").then((module) => ({ default: module.NotificationSettings })));
 const SettingsPage = lazy(() => import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage })));
+const JlptPlanPage = lazy(() => import("./pages/JlptPlanPage").then((module) => ({ default: module.JlptPlanPage })));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings").then((module) => ({ default: module.PrivacySettings })));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy").then((module) => ({ default: module.PrivacyPolicy })));
 const UserAgreement = lazy(() => import("./pages/UserAgreement").then((module) => ({ default: module.UserAgreement })));
@@ -65,7 +67,7 @@ export default function App() {
   const [pageHistory, setPageHistory] = useState<Page[]>([]); // 页面历史栈
   const [grammarMode, setGrammarMode] = useState<GrammarMode>("learn");
   const [selectedGrammarId, setSelectedGrammarId] = useState("wa");
-  const [selectedGrammarLevel, setSelectedGrammarLevel] = useState<"All" | JLPTLevel>("N5");
+  const [selectedGrammarLevel, setSelectedGrammarLevelState] = useState<GrammarLevelSelection>(getGrammarLevelPreference);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notice, setNotice] = useState("");
   const [overview, setOverview] = useState<ProgressOverview>(() => getProgressOverview());
@@ -244,21 +246,12 @@ export default function App() {
     setGrammarMode(mode);
     if (mode === "learn") {
       setSelectedGrammarId("wa");
-      setSelectedGrammarLevel("N5");
     }
     navigateToPage("grammar");
   };
 
-  const addMistake = (
-    grammarId: string,
-    questionId: string,
-    prompt: string,
-    userAnswer: string,
-    correctAnswer: string,
-    explanation: string
-  ) => {
-    store.addMistake({ grammarId, questionId, prompt, userAnswer, correctAnswer, explanation });
-    store.addToReview(grammarId);
+  const setSelectedGrammarLevel = (value: GrammarLevelSelection) => {
+    setSelectedGrammarLevelState(saveGrammarLevelPreference(value));
   };
 
   const markLearnedWithNotice = (id: string) => {
@@ -345,63 +338,31 @@ export default function App() {
     setFillGrammarLevels(update);
   };
 
-  const renderGrammarTabs = () => (
-    <div className="control-cyan mb-3 flex items-center justify-between gap-3 rounded-2xl border p-1">
-      <div className="grid flex-1 grid-cols-2 gap-1">
-        <button
-          onClick={() => openGrammarTab("learn")}
-          className={`focus-ring soft-text-outline rounded-xl px-3 py-2 text-sm font-bold transition-all duration-300 ${grammarMode === "learn" && page !== "detail" ? "bg-[#81D8CF] !text-[#343838] shadow-[0_4px_16px_rgba(143,203,94,0.4),inset_0_1px_0_rgba(255,255,255,0.4)]" : "text-[#1f514d]/75 hover:bg-[#81D8CF]/20"}`}
-        >
-          学习
-        </button>
-        <button
-          onClick={() => openGrammarTab("practice")}
-          className={`focus-ring soft-text-outline rounded-xl px-3 py-2 text-sm font-bold transition-all duration-300 ${grammarMode === "practice" && page !== "detail" ? "bg-[#81D8CF] !text-[#343838] shadow-[0_4px_16px_rgba(143,203,94,0.4),inset_0_1px_0_rgba(255,255,255,0.4)]" : "text-[#1f514d]/75 hover:bg-[#81D8CF]/20"}`}
-        >
-          练习
-        </button>
-      </div>
-      <select
-        value={selectedGrammarLevel}
-        onChange={(event) => setSelectedGrammarLevel(event.target.value as "All" | JLPTLevel)}
-        className="focus-ring control-cyan soft-text-outline h-9 w-[74px] rounded-xl border px-1.5 text-xs font-bold"
-        title="选择语法等级"
-      >
-        <option value="All">全部</option>
-        <option value="N5">N5</option>
-        <option value="N4">N4</option>
-        <option value="N3">N3</option>
-        <option value="N2">N2</option>
-        <option value="N1">N1</option>
-      </select>
-    </div>
-  );
-
   const renderGrammarPage = () => (
-    <div>
-      {renderGrammarTabs()}
-      {grammarMode === "learn" ? (
-        <Library
-          getMastery={store.getMastery}
-          onMarkLearned={markLearnedWithNotice}
-          onMarkForgot={markForgotWithNotice}
-          selectedLevel={selectedGrammarLevel}
-          onSelectedLevelChange={setSelectedGrammarLevel}
-          onOpenFavorites={() => navigateToPage("favorites")}
-          onOpenImmersive={() => requirePro("immersiveGrammar", () => openGrammarTab("immersive"))}
-          onOpenDetail={openGrammar}
-        />
-      ) : grammarMode === "practice" ? (
-        <QuizPage onMistake={addMistake} selectedLevel={selectedGrammarLevel} />
-      ) : (
-        <ImmersiveGrammar
-          selectedLevel={selectedGrammarLevel}
-          onBack={() => openGrammarTab("learn")}
-          onOpenFavorites={() => navigateToPage("favorites")}
-          onMarkLearned={markLearnedWithNotice}
-        />
-      )}
-    </div>
+    <GrammarHighlightProvider>
+      <div>
+        {grammarMode === "immersive" ? (
+          <ImmersiveGrammar
+            key={selectedGrammarLevel}
+            selectedLevel={selectedGrammarLevel}
+            onBack={() => openGrammarTab("learn")}
+            onOpenFavorites={() => navigateToPage("favorites")}
+            onMarkLearned={markLearnedWithNotice}
+          />
+        ) : (
+          <Library
+            getMastery={store.getMastery}
+            onMarkLearned={markLearnedWithNotice}
+            onMarkForgot={markForgotWithNotice}
+            selectedLevel={selectedGrammarLevel}
+            onSelectedLevelChange={setSelectedGrammarLevel}
+            onOpenFavorites={() => navigateToPage("favorites")}
+            onOpenImmersive={() => requirePro("immersiveGrammar", () => openGrammarTab("immersive"))}
+            onOpenDetail={openGrammar}
+          />
+        )}
+      </div>
+    </GrammarHighlightProvider>
   );
 
   const renderToolSubpage = (title: string, content: ReactNode) => (
@@ -461,18 +422,17 @@ export default function App() {
     }
     if (page === "detail") {
       return (
-        <div>
-          {renderGrammarTabs()}
-          <GrammarDetail
-            grammarId={selectedGrammarId}
-            getMastery={store.getMastery}
-            onBack={() => openGrammarTab("learn")}
-            onPractice={() => openGrammarTab("practice")}
-            onLearned={markLearnedWithNotice}
-            onReview={store.addToReview}
-            onMistake={addMistake}
-          />
-        </div>
+        <GrammarHighlightProvider>
+          <div>
+            <GrammarDetail
+              grammarId={selectedGrammarId}
+              getMastery={store.getMastery}
+              onBack={() => openGrammarTab("learn")}
+              onLearned={markLearnedWithNotice}
+              onReview={store.addToReview}
+            />
+          </div>
+        </GrammarHighlightProvider>
       );
     }
     if (page === "profile") {
@@ -486,6 +446,15 @@ export default function App() {
     }
     if (page === "confusion") {
       return renderToolSubpage(toolPageTitles.confusion ?? "疑难辨析", <ConfusionPage />);
+    }
+    if (page === "jlpt-plan") {
+      return (
+        <JlptPlanPage
+          onBack={goBack}
+          onStartWords={startCurrentStudyMode}
+          onStartGrammar={() => openGrammarTab("learn")}
+        />
+      );
     }
     if (page === "study-modes") {
       return renderToolSubpage(

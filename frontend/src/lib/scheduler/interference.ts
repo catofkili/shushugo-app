@@ -15,7 +15,7 @@
  * 这里只在「当天候选集」内部算(几百个词),并按当天的任务集合记忆化。
  */
 
-import verbPairHints from "../../data/verb_pair_hints.json";
+import verbPairHints from "../../data/verb_pair_hints.ts";
 import { similarMeaningGroups } from "../../data/similar_meaning_groups";
 import { questionMeaningKeyOf } from "../models/question-meaning-index";
 import {

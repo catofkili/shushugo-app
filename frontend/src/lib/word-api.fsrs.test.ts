@@ -1,5 +1,5 @@
 /**
- * FSRS 切换端到端:开关打开后,getWordSession 的当日复习任务应来自 FSRS 到期集合。
+ * FSRS-only 端到端:getWordSession 的当日复习任务应来自 FSRS 到期集合。
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
@@ -23,12 +23,11 @@ vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
 vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
 
 import { ensureProgressInitialized, getWordSession, submitWordAnswer } from "./word-api";
-import { setFsrsActive } from "./fsrs-store";
 import { recordReview, type FsrsState } from "./fsrs-scheduler";
 import { STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
 import { studyDayEnd, getState, setState } from "./database/db-utils";
 
-describe("FSRS 切换 · 端到端选词", () => {
+describe("FSRS-only · 端到端选词", () => {
   beforeAll(async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     const noon = new Date(); noon.setHours(12, 0, 0, 0); vi.setSystemTime(noon);
@@ -55,18 +54,15 @@ describe("FSRS 切换 · 端到端选词", () => {
 
   afterAll(() => vi.useRealTimers());
 
-  it("开关打开:复习任务只含 FSRS 到期词,未到期词被排除", () => {
-    setFsrsActive(true);
+  it("复习任务只含 FSRS 到期词,未到期词被排除", () => {
     getWordSession();
     const tasks = testDb.exec("SELECT word_id FROM stage1_tasks WHERE task_type='review'")[0]?.values.map((v) => Number(v[0])) ?? [];
     expect(tasks).toContain(500);        // 已过期 → 入选
     expect(tasks).toContain(502);        // 未调度 → 入选
     expect(tasks).not.toContain(501);    // 未到期 → 不入选
-    setFsrsActive(false);
   });
 
   it("集成:点服务出的卡『不认识』→ 当天不毕业(会再出),不是消失", () => {
-    setFsrsActive(true);
     testDb.run("DELETE FROM stage1_tasks");
     testDb.run("DELETE FROM reviews");
     testDb.run("UPDATE progress SET seen_count=3, score=12, fsrs_stability=NULL, fsrs_due=NULL, fsrs_state=NULL WHERE word_id BETWEEN 1 AND 20 AND known_forever=0");
@@ -80,11 +76,9 @@ describe("FSRS 切换 · 端到端选词", () => {
     expect(new Date(due!).getTime()).toBeLessThanOrEqual(studyDayEnd().getTime()); // due 落在今天 = 没毕业 = 会再出,不是消失
     const q = JSON.parse(getState("review_queue", "[]")) as any[];
     expect(q.some((x) => x.word_id === card!.id)).toBe(true);                  // 已排回队列,过几张卡再刷
-    setFsrsActive(false);
   });
 
   it("集成:点『不认识』后不贴脸重复——下一张必是别的词,且要隔好几张才回来", () => {
-    setFsrsActive(true);
     testDb.run("DELETE FROM stage1_tasks");
     testDb.run("DELETE FROM reviews");
     testDb.run("UPDATE progress SET seen_count=3, score=12, mistake_streak=0, fsrs_stability=NULL, fsrs_due=NULL, fsrs_state=NULL WHERE word_id BETWEEN 1 AND 40 AND known_forever=0");
@@ -102,11 +96,9 @@ describe("FSRS 切换 · 端到端选词", () => {
     }
     expect(card?.id).toBe(forgotten.id);   // 确实回来了(没毕业,当天还要刷)
     expect(gap).toBeGreaterThanOrEqual(3); // 但至少隔了 3 张(SHORT_STEP_GAP 下限)
-    setFsrsActive(false);
   });
 
   it("集成:顽固词(连着错到阈值)可以连出,当场刷到答对", () => {
-    setFsrsActive(true);
     testDb.run("DELETE FROM stage1_tasks");
     testDb.run("DELETE FROM reviews");
     testDb.run("UPDATE progress SET seen_count=3, score=12, mistake_streak=0, fsrs_stability=NULL, fsrs_due=NULL, fsrs_state=NULL WHERE word_id BETWEEN 1 AND 40 AND known_forever=0");
@@ -120,12 +112,10 @@ describe("FSRS 切换 · 端到端选词", () => {
     expect(getWordSession().card?.id).toBe(card.id); // 顽固词:下一张就是它,不再拉开
 
     rand.mockRestore();
-    setFsrsActive(false);
   });
 
   it("当天第一次认识的奖励不看 FSRS 历史,也不看 seen_count", () => {
     // 「一键完成」等快捷通道可能把 seen_count 加过,但当天第一次真正作答仍应享受奖励。
-    setFsrsActive(true);
     testDb.run("DELETE FROM stage1_tasks");
     testDb.run("DELETE FROM reviews");
     testDb.run("UPDATE progress SET seen_count=0, mistake_streak=0, fsrs_stability=NULL, fsrs_due=NULL, fsrs_state=NULL WHERE known_forever=0");
@@ -139,11 +129,9 @@ describe("FSRS 切换 · 端到端选词", () => {
     const row = testDb.exec(`SELECT fsrs_state, fsrs_due FROM progress WHERE word_id=${card.id}`)[0].values[0];
     expect(Number(row[0])).toBe(2);                                                      // Review,不是 Learning(1)
     expect(new Date(String(row[1])).getTime()).toBeGreaterThan(studyDayEnd().getTime()); // 已毕业,当天不再出
-    setFsrsActive(false);
   });
 
   it("已有 FSRS 历史的词,当天第一次点认识也按 Easy 奖励", () => {
-    setFsrsActive(true);
     testDb.run("DELETE FROM stage1_tasks");
     testDb.run("DELETE FROM reviews");
     setState("review_queue", "[]");
@@ -190,6 +178,5 @@ describe("FSRS 切换 · 端到端选词", () => {
     expect(String(row[1])).toBe(expected.due);
     expect(new Date(expected.due).getTime()).toBeGreaterThan(new Date(normal.due).getTime());
     expect(new Date(String(row[1])).getTime()).toBeGreaterThan(studyDayEnd().getTime());
-    setFsrsActive(false);
   });
 });

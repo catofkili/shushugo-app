@@ -12,7 +12,7 @@ const { getMemoryStrengthLabel, getUserMemoryProfile, updateMemoryProfileIfNeede
 
 const insertReviews = (count: number) => {
   for (let index = 0; index < count; index += 1) {
-    db.run("INSERT INTO reviews (word_id, answer, reviewed_on) VALUES (?, 'know', date('now'))", [index + 1]);
+    db.run("INSERT INTO reviews (word_id, answer, reviewed_on, direction) VALUES (?, 'know', date('now'), 'forward')", [index + 1]);
   }
 };
 
@@ -30,7 +30,8 @@ beforeEach(() => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     word_id INTEGER NOT NULL,
     answer TEXT NOT NULL,
-    reviewed_on TEXT NOT NULL
+    reviewed_on TEXT NOT NULL,
+    direction TEXT NOT NULL DEFAULT 'forward'
   )`);
   // 保持率现在读 FSRS 的 fsrs_due,合成表要跟真实 schema 一致
   db.run(`CREATE TABLE progress (
@@ -72,13 +73,14 @@ describe("updateMemoryProfileIfNeeded", () => {
 
   it("computes and stores a profile once enough reviews accumulate", () => {
     insertReviews(150);
-    // 「已掌握」= FSRS 排的间隔 >= 7 天(不再看 score)。两个词分别复习了 4 次和 6 次 → 均值 5
+    // 「已掌握」= FSRS 排的间隔 >= 180 天(不再看 score)。两个词分别复习了 4 次和 6 次 → 均值 5
     db.run(`INSERT INTO progress (word_id, seen_count, fsrs_last_review, fsrs_due)
-            VALUES (1, 4, '2026-07-01T00:00:00Z', '2026-07-20T00:00:00Z'),
-                   (2, 6, '2026-07-01T00:00:00Z', '2026-08-01T00:00:00Z')`);
+            VALUES (1, 4, '2026-01-01T00:00:00Z', '2026-07-20T00:00:00Z'),
+                   (2, 6, '2026-01-01T00:00:00Z', '2026-08-01T00:00:00Z')`);
+    db.run("INSERT INTO reviews (word_id, answer, reviewed_on, direction) VALUES (1, 'know', date('now'), 'forward'), (1, 'know', date('now'), 'forward'), (1, 'know', date('now'), 'forward'), (2, 'know', date('now'), 'forward'), (2, 'know', date('now'), 'forward'), (2, 'know', date('now'), 'forward'), (2, 'know', date('now'), 'forward'), (2, 'know', date('now'), 'forward')");
     updateMemoryProfileIfNeeded();
     const profile = getUserMemoryProfile();
-    expect(profile.totalReviews).toBe(150);
+    expect(profile.totalReviews).toBe(158);
     expect(profile.avgReviewsToMaster).toBe(5);
     expect(profile.memoryStrength).toBeGreaterThanOrEqual(0.5);
     expect(profile.memoryStrength).toBeLessThanOrEqual(2.0);

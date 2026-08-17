@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { MasteryStatus, MistakeItem, ReviewItem } from "../types/grammar";
+import { MasteryStatus, ReviewItem } from "../types/grammar";
 
 const REVIEW_KEY = "jp-grammar-review";
-const MISTAKE_KEY = "jp-grammar-mistakes";
 const LEARNED_KEY = "jp-grammar-learned";
 
 const intervals: Record<MasteryStatus, number> = {
@@ -39,11 +38,9 @@ const previousStatus = (status: MasteryStatus): MasteryStatus => {
 
 export const useStudyStore = () => {
   const [reviews, setReviews] = useState<ReviewItem[]>(() => readJson(REVIEW_KEY, []));
-  const [mistakes, setMistakes] = useState<MistakeItem[]>(() => readJson(MISTAKE_KEY, []));
   const [learned, setLearned] = useState<string[]>(() => readJson(LEARNED_KEY, []));
 
   useEffect(() => writeJson(REVIEW_KEY, reviews), [reviews]);
-  useEffect(() => writeJson(MISTAKE_KEY, mistakes), [mistakes]);
   useEffect(() => writeJson(LEARNED_KEY, learned), [learned]);
 
   const reviewMap = useMemo(
@@ -108,21 +105,6 @@ export const useStudyStore = () => {
     }
   };
 
-  const addMistake = (mistake: Omit<MistakeItem, "id" | "createdAt">) => {
-    setMistakes((current) => [
-      {
-        ...mistake,
-        id: `${mistake.questionId}-${Date.now()}`,
-        createdAt: new Date().toISOString()
-      },
-      ...current
-    ]);
-  };
-
-  const removeMistake = (id: string) => {
-    setMistakes((current) => current.filter((item) => item.id !== id));
-  };
-
   const dueReviews = useMemo(() => {
     const now = Date.now();
     return reviews.filter((item) => new Date(item.dueAt).getTime() <= now);
@@ -131,13 +113,10 @@ export const useStudyStore = () => {
   return {
     reviews,
     dueReviews,
-    mistakes,
     learned,
     getMastery,
     markLearned,
     addToReview,
     recordReview,
-    addMistake,
-    removeMistake
   };
 };

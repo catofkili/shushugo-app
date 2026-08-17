@@ -128,6 +128,63 @@
   .zoo-swipe-hint{display:block;position:absolute;left:0;right:0;top:calc(100% + 6px);text-align:center;font-size:11px;font-weight:700;color:var(--zoo-muted);pointer-events:none}
 }
 
+/* ===== 最后三十张：细红线只在收尾阶段出现 ===== */
+.word-study-countdown::before,
+.word-study-countdown::after{
+  content:"";position:fixed;z-index:70;pointer-events:none;border:1px solid rgba(190,68,58,.22);border-radius:14px;
+  inset:7px;animation:zooCountdownEdge 3.2s ease-in-out infinite
+}
+.word-study-countdown::after{inset:13px;border-color:rgba(224,116,90,.12);animation-delay:-1.4s;animation-duration:3.8s}
+@keyframes zooCountdownEdge{
+  0%,100%{opacity:.18;box-shadow:0 0 0 rgba(190,68,58,0)}
+  50%{opacity:.38;box-shadow:0 0 6px rgba(190,68,58,.06)}
+}
+
+/* ===== 昨日减负：纸牌一样一张张飞走 ===== */
+.daily-relief-banner,
+.daily-review-banner,
+.daily-tail-banner{
+  position:relative;z-index:4;display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin:0 auto 9px;width:min(900px,100%);border-radius:16px;padding:10px 14px;text-align:center
+}
+.daily-relief-banner{border:1px solid rgba(143,203,94,.62);background:linear-gradient(120deg,#F4FBE8,#E4F2D0);color:#4F702F;box-shadow:0 7px 18px rgba(111,168,62,.14);animation:dailyReliefBannerIn .55s cubic-bezier(.18,1.45,.42,1)}
+.daily-relief-banner strong{font-size:16px;color:#547A2E}
+.daily-relief-banner span{font-size:11px;color:#78975A}
+.daily-relief-banner-spark{font-size:19px!important;color:#D19A27!important;animation:zooSparkle .8s ease-in-out infinite alternate}
+@keyframes dailyReliefBannerIn{0%{opacity:0;transform:translateY(-12px) scale(.92)}100%{opacity:1;transform:none}}
+@keyframes zooSparkle{from{transform:scale(.8) rotate(-10deg);opacity:.55}to{transform:scale(1.12) rotate(8deg);opacity:1}}
+.daily-relief-card{background:linear-gradient(160deg,#FFFDF4,#F5EFD9)!important;border-color:rgba(143,203,94,.72)!important;box-shadow:0 18px 42px rgba(111,168,62,.2),0 0 0 1px rgba(255,255,255,.5) inset!important;animation:dailyReliefDealIn .4s cubic-bezier(.18,1.5,.42,1)}
+.daily-relief-card-leaving{animation:dailyReliefDealOut .24s cubic-bezier(.58,.04,.78,.25) forwards!important;pointer-events:none}
+@keyframes dailyReliefDealIn{0%{opacity:0;transform:translate3d(80px,-18px,0) rotate(5deg) scale(.91)}65%{opacity:1;transform:translate3d(-8px,2px,0) rotate(-1.2deg) scale(1.015)}100%{opacity:1;transform:none}}
+@keyframes dailyReliefDealOut{0%{opacity:1;transform:translate3d(0,0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate3d(110vw,-14vh,0) rotate(14deg) scale(.88)}}
+.daily-relief-auto-state{display:flex;height:64px;align-items:center;justify-content:center;gap:9px;border:1px solid rgba(143,203,94,.42);border-radius:16px;background:rgba(228,242,208,.72);color:#547A2E;animation:dailyReliefStamp .34s cubic-bezier(.2,1.5,.4,1)}
+.daily-relief-auto-state>span{display:grid;height:27px;width:27px;place-items:center;border-radius:50%;background:#8FCB5E;color:#fff;font-weight:900}
+.daily-relief-auto-state strong{font-size:17px}.daily-relief-auto-state small{font-size:11px;color:#78975A}
+@keyframes dailyReliefStamp{0%{opacity:0;transform:scale(.76) rotate(-5deg)}65%{opacity:1;transform:scale(1.07) rotate(1deg)}100%{transform:none}}
+
+/* ===== 当日错题回顾：奶油感的红 ===== */
+.word-study-daily-review{background:radial-gradient(circle at 50% 4%,rgba(241,181,155,.13),transparent 52%)}
+.daily-review-card{background:linear-gradient(160deg,#FFF8F1,#F8E3D9)!important;border-color:rgba(207,108,91,.62)!important;box-shadow:0 18px 42px rgba(180,75,61,.16),0 0 0 1px rgba(255,255,255,.52) inset!important}
+.daily-review-banner{border:1px solid rgba(207,108,91,.58);background:linear-gradient(120deg,#FFF0E7,#F6D8CB);color:#9B4C40;box-shadow:0 7px 18px rgba(180,75,61,.12)}
+.daily-review-banner span{font-size:13px;font-weight:900;letter-spacing:.08em}.daily-review-banner strong{font-size:15px;color:#A4473C}.daily-review-banner small{font-size:11px;color:#B56C5D}
+.daily-review-banner-intro{animation:dailyReviewIntro .85s cubic-bezier(.17,1.45,.42,1)}
+@keyframes dailyReviewIntro{0%{opacity:0;transform:translateY(-15px) scale(.9)}55%{opacity:1;transform:translateY(2px) scale(1.03)}100%{transform:none}}
+
+/* ===== 真正结尾：轻松的奶油绿压轴 ===== */
+.daily-tail-card{background:linear-gradient(160deg,#FFFDF5,#EEF6DD)!important;border-color:rgba(153,191,104,.58)!important;box-shadow:0 18px 42px rgba(111,168,62,.13),0 0 0 1px rgba(255,255,255,.55) inset!important}
+.daily-tail-banner{border:1px solid rgba(153,191,104,.58);background:linear-gradient(120deg,#F3FBE9,#E4F1D1);color:#5D7B3A}
+.daily-tail-banner span{font-size:12px;font-weight:900;letter-spacing:.12em}.daily-tail-banner strong{font-size:15px;color:#557632}.daily-tail-banner small{font-size:11px;color:#78965A}
+
+[data-theme="dark"] .daily-relief-banner,[data-theme="dark"] .daily-tail-banner{background:linear-gradient(120deg,#3C4D32,#35452D);color:#D4E9B8}
+[data-theme="dark"] .daily-relief-banner strong,[data-theme="dark"] .daily-tail-banner strong{color:#D5E9B8}
+[data-theme="dark"] .daily-relief-banner span,[data-theme="dark"] .daily-tail-banner small{color:#A9C68A}
+[data-theme="dark"] .daily-relief-card{background:linear-gradient(160deg,#3C4535,#303A2E)!important}
+[data-theme="dark"] .daily-review-card{background:linear-gradient(160deg,#4A3B35,#3B302C)!important}
+[data-theme="dark"] .daily-review-banner{background:linear-gradient(120deg,#4D3935,#44302D);color:#FFD2C3}
+[data-theme="dark"] .daily-review-banner strong{color:#FFD2C3}
+[data-theme="dark"] .daily-review-banner small{color:#E6A999}
+[data-motion="reduced"] .word-study-countdown::before,[data-motion="reduced"] .word-study-countdown::after{animation:none}
+[data-motion="reduced"] .daily-relief-banner-spark{animation:none}
+
 /* ======================================================================
    单词学习卡片的外壳高度
    手机端要「刚好占满 main 的可视内容区」:用和 <main> 同一组变量算。
@@ -161,6 +218,14 @@
 .zoo-trail-count{position:absolute;right:7px;top:50%;transform:translateY(-50%);z-index:3;
   font-size:10px;font-weight:700;color:var(--zoo-brown-deep);white-space:nowrap;line-height:1}
 .zoo-trail-count b{color:var(--zoo-primary-deep);font-weight:800}
+.zoo-trail-countdown{color:#B6453D!important;font-size:11px;text-shadow:0 0 10px rgba(190,68,58,.16)}
+.zoo-trail-countdown b{color:#B6453D!important}
+.zoo-countdown-tick{display:inline-block;animation:zooCountdownTick .34s cubic-bezier(.22,1.5,.4,1)}
+@keyframes zooCountdownTick{
+  0%{opacity:.35;transform:translateY(-5px) scale(1.16)}
+  55%{opacity:1;transform:translateY(1px) scale(.96)}
+  100%{opacity:1;transform:none}
+}
 /* 细带上的跳跃幅度要小,不然松鼠会整只跳出顶栏 */
 @keyframes zooHopSmall{
   0%{transform:translateX(-50%) translateY(0) scaleY(1) scaleX(1)}
@@ -216,7 +281,10 @@
 .zoo-tile-cta.soft{color:var(--zoo-brown-deep)}
 .zoo-tile-sm{min-height:104px}
 .zoo-tile-bar{margin-top:6px;height:6px;border-radius:6px;background:var(--zoo-primary-soft);overflow:hidden}
-.zoo-tile-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary))}
+/* 宽度滑过去而不是瞬移:和数字滚动是一件事,让「刚才那一下」看得见。
+   省电档跟着 useCountUp 的口径一起停掉,免得两种反馈一个动一个不动。 */
+.zoo-tile-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary));transition:width .62s cubic-bezier(.22,.9,.3,1)}
+[data-motion="reduced"] .zoo-tile-bar i{transition:none}
 .zoo-tile-tools{background:var(--zoo-cream-2)}
 
 /* 通栏:今日复习 */
@@ -227,6 +295,25 @@
 .zoo-tile-hero-r{display:flex;flex-direction:column;align-items:center;gap:4px}
 .zoo-tile-hero-emoji{font-size:36px;animation:zooHopIdle 2.8s ease-in-out infinite}
 @keyframes zooHopIdle{0%,72%,100%{transform:translateY(0)}80%{transform:translateY(-7px)}88%{transform:translateY(0) scaleY(.9) scaleX(1.08)}94%{transform:translateY(0)}}
+
+/* 「时刻」的小条 —— 蹦一下说一句就走,一次只播一个(见 hooks/useMoments)。
+   绝对定位挂在大数字上沿,不参与 flex 排版,来去都不推动版面。 */
+/* .zoo-tile 全体是 overflow:hidden(裁圆角内的装饰),但时刻条是**故意挂在上沿外面**的,
+   不放开就只能看到下半截 —— 和温泉水面那个坑同一个成因(见本文件 .zoo-hs-water 的注释)。
+   hero 的子元素都在 padding 以内,没有需要裁的东西,放开是安全的。 */
+.zoo-tile-hero{position:relative;overflow:visible}
+.moment-pop{
+  position:absolute;top:-10px;left:14px;z-index:2;
+  padding:3px 10px;border-radius:999px;
+  font-size:11.5px;font-weight:800;line-height:1.5;white-space:nowrap;
+  color:#fff;background:linear-gradient(120deg,var(--zoo-primary-dark),var(--zoo-primary));
+  box-shadow:0 4px 12px rgba(111,168,62,.42);
+  animation:momentPop .52s cubic-bezier(.18,1.5,.42,1) both;
+  transition:opacity .42s ease,transform .42s ease
+}
+.moment-pop.leaving{opacity:0;transform:translateY(-6px)}
+@keyframes momentPop{0%{opacity:0;transform:translateY(6px) scale(.82)}100%{opacity:1;transform:none}}
+[data-theme="dark"] .moment-pop{color:#22301B;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 
 /* 通栏:组队 */
 .zoo-tile-team{grid-column:1 / -1;background:linear-gradient(120deg,#FFF4E2,#FFE8C6);border-color:rgba(232,151,28,.4)}
@@ -269,6 +356,12 @@
 .zoo-tile-mistakes-copy small{color:var(--zoo-brown-deep);font-size:10.5px;font-weight:700}
 .zoo-tile-mistakes-arrow{flex:none;color:#B4740A;font-size:18px;font-weight:800;line-height:1}
 .zoo-today-grid .zoo-tile-team{grid-column:1 / -1}
+
+/* ===== 备考计划卡 =====
+   通栏、冷色,和旁边暖色的队伍/模式卡分开——它报的是倒计时和欠账,不是一个可逛的入口。 */
+.zoo-today-grid .zoo-tile-jlpt{grid-column:1 / -1;background:linear-gradient(120deg,#E2F1F4,#CDE6EC);border-color:rgba(58,140,158,.42)}
+.zoo-tile-jlpt-days{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:22px;font-weight:800;line-height:1.15}
+.zoo-tile-jlpt-gap{margin-top:2px;color:#1F6274;font-size:12px;font-weight:700}
 
 /* ===== 快速学习内容页 ===== */
 .quick-study-page-shell{max-width:960px;margin:0 auto}
@@ -536,6 +629,8 @@
 [data-theme="dark"] .zoo-modes-sheet{border-color:rgba(240,179,78,.45)}
 [data-theme="dark"] .zoo-tile-team{background:linear-gradient(120deg,#4A3E2A,#3E3426);border-color:rgba(240,179,78,.45)}
 [data-theme="dark"] .zoo-tile-team-avatars i{background:#3B4338;border-color:var(--zoo-surface)}
+[data-theme="dark"] .zoo-tile-jlpt{background:linear-gradient(120deg,#2A3E45,#243539);border-color:rgba(129,216,207,.42)}
+[data-theme="dark"] .zoo-tile-jlpt-gap{color:#8FCBD6}
 [data-theme="dark"] .zoo-zm-scene{background:linear-gradient(180deg,#263842 0%,#2D422F 60%,#3A5035 100%)}
 [data-theme="dark"] .zoo-zm-scene.stage-0{background:linear-gradient(180deg,#38342D,#332F28)}
 [data-theme="dark"] .zoo-zm-scene.stage-1{background:linear-gradient(180deg,#344033,#3C4A36)}

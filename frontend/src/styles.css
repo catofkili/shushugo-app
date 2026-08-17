@@ -7,6 +7,152 @@
   ruby-position: over;
 }
 
+/* 烘焙分词的真实词块：不插入空格或划线破坏日语排版，点击词块打开词典小窗；
+   同时通过 data-jp-token 暴露稳定的文本边界供选取交互使用。 */
+.jp-token {
+  border-radius: 0.18em;
+  transition: background-color 120ms ease;
+  -webkit-tap-highlight-color: rgba(129, 216, 207, 0.18);
+}
+
+.jp-token[data-jp-token-clickable="true"] { cursor: pointer; }
+.jp-token[data-jp-token-clickable="false"] { opacity: 0.66; }
+
+.jp-token[data-jp-token-clickable="true"]:hover {
+  background-color: rgba(129, 216, 207, 0.16);
+}
+
+.jp-token[data-jp-token-clickable="true"].jp-token-open {
+  background-color: rgba(129, 216, 207, 0.22);
+}
+
+.grammar-form-target {
+  border-radius: 0.18em;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(129, 216, 207, 0.9);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+  -webkit-tap-highlight-color: rgba(129, 216, 207, 0.18);
+}
+
+.grammar-form-target:hover,
+.grammar-form-target-open {
+  background-color: rgba(129, 216, 207, 0.22);
+}
+
+.token-dictionary-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483645;
+  background: rgba(15, 20, 18, 0.2);
+}
+
+.token-dictionary-sheet {
+  position: fixed;
+  z-index: 2147483647;
+  left: 50%;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  width: min(640px, calc(100vw - 24px));
+  max-height: min(72vh, 520px);
+  transform: translateX(-50%);
+  overflow-y: auto;
+  border: 1px solid rgba(129, 216, 207, 0.38);
+  border-radius: 22px;
+  padding: 12px 16px 16px;
+  background: rgba(47, 51, 51, 0.98);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.3);
+  color: #fff;
+  text-align: left;
+  pointer-events: auto;
+}
+
+.token-dictionary-sheet-grabber {
+  width: 42px;
+  height: 4px;
+  margin: 0 auto 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.token-dictionary-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.token-dictionary-example {
+  background: rgba(129, 216, 207, 0.1);
+}
+
+.token-dictionary-conjugation {
+  border: 1px solid rgba(129, 216, 207, 0.3);
+  background: rgba(129, 216, 207, 0.12);
+}
+
+.token-dictionary-close {
+  display: grid;
+  height: 26px;
+  width: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.token-dictionary-close:hover {
+  background: rgba(129, 216, 207, 0.18);
+  color: #fff;
+}
+
+.token-dictionary-audio,
+.token-dictionary-add {
+  border-radius: 999px;
+  padding: 8px 13px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.token-dictionary-audio {
+  border: 1px solid rgba(129, 216, 207, 0.44);
+  background: rgba(129, 216, 207, 0.12);
+}
+
+.token-dictionary-add {
+  background: #7abd4c;
+  color: #162016;
+}
+
+.token-dictionary-add:disabled { opacity: 0.7; }
+
+[data-theme="light"] .token-dictionary-sheet {
+  border-color: rgba(111, 168, 62, 0.35);
+  background: rgba(255, 253, 248, 0.98);
+  box-shadow: 0 16px 42px rgba(150, 110, 55, 0.22);
+  color: #3A2E22;
+}
+
+[data-theme="light"] .token-dictionary-sheet-grabber { background: rgba(58, 46, 34, 0.22); }
+
+[data-theme="light"] .token-dictionary-example {
+  background: rgba(111, 168, 62, 0.1);
+}
+
+[data-theme="light"] .token-dictionary-conjugation {
+  border-color: rgba(111, 168, 62, 0.28);
+  background: rgba(111, 168, 62, 0.09);
+}
+
+[data-theme="light"] .token-dictionary-close {
+  border-color: rgba(111, 168, 62, 0.28);
+  color: rgba(58, 46, 34, 0.68);
+}
+
 /* iOS WKWebView(WebKit) 不会在相邻的逐字 <span>/<ruby> 行内盒之间
    自动产生 CJK 断行点，导致长日文标题在真机上不换行、溢出屏幕被裁切
    （Chromium 预览里反而正常）。强制按字符断行，CJK 无副作用。 */
@@ -276,6 +422,85 @@
 
 .focus-ring {
   outline: none;
+}
+
+/* 语法页的划重点：使用浏览器 Custom Highlight API，保留原 DOM/选区，
+   因而桌面鼠标选择和手机长按选择都能共用同一套持久化范围。 */
+::highlight(grammar-highlight) {
+  background: rgba(239, 68, 68, 0.42);
+  color: inherit;
+}
+
+.grammar-highlight-bubble {
+  position: fixed;
+  z-index: 2147483647;
+  transform: translateX(-50%);
+  border: 1px solid rgba(185, 28, 28, 0.35);
+  border-radius: 999px;
+  padding: 3px;
+  background: rgba(255, 250, 244, 0.98);
+  box-shadow: 0 8px 24px rgba(127, 29, 29, 0.22);
+  pointer-events: auto;
+}
+
+.grammar-highlight-bubble button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.grammar-highlight-stale-notice,
+.grammar-highlight-feedback {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--safe-area-inset-bottom) + 1rem);
+  z-index: 2147483646;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(92vw, 480px);
+  transform: translateX(-50%);
+  border: 1px solid rgba(185, 28, 28, 0.28);
+  border-radius: 14px;
+  padding: 9px 12px;
+  background: rgba(255, 250, 244, 0.98);
+  box-shadow: 0 8px 24px rgba(127, 29, 29, 0.18);
+  color: #5f2b25;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.grammar-highlight-stale-notice button {
+  border: 0;
+  border-radius: 8px;
+  padding: 4px 7px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .grammar-highlight-bubble {
+  border-color: rgba(248, 113, 113, 0.42);
+  background: rgba(43, 30, 27, 0.98);
+}
+
+[data-theme="dark"] .grammar-highlight-bubble button {
+  background: #ef4444;
+  color: #fff7ed;
+}
+
+[data-theme="dark"] .grammar-highlight-stale-notice,
+[data-theme="dark"] .grammar-highlight-feedback {
+  border-color: rgba(248, 113, 113, 0.42);
+  background: rgba(43, 30, 27, 0.98);
+  color: #ffe4dd;
 }
 
 .focus-ring:focus-visible {
@@ -1452,9 +1677,11 @@ select {
 [data-theme="light"] .text-white,
 [data-theme="light"] .\!text-white,
 [data-theme="light"] .text-\[\#fff\],
+[data-theme="light"] .text-\[\#f9faf7\],
 [data-theme="light"] .text-zinc-50,
 [data-theme="light"] .text-stone-950,
-[data-theme="light"] .dark\:text-zinc-50 {
+[data-theme="light"] .dark\:text-zinc-50,
+[data-theme="light"] .dark\:text-\[\#f4efe4\] {
   color: #3A2E22 !important;
 }
 
@@ -1538,12 +1765,6 @@ select {
   background: radial-gradient(circle at 22% 14%, rgba(246, 233, 210, 0.96), rgba(255, 255, 255, 0.98) 48%, rgba(255, 251, 242, 0.98)) !important;
   border-color: rgba(111, 168, 62, 0.34) !important;
   box-shadow: 0 18px 44px rgba(150, 110, 55, 0.16) !important;
-}
-
-[data-theme="light"] .grammar-stats-drawer {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border-color: rgba(111, 168, 62, 0.32) !important;
-  box-shadow: 0 16px 34px rgba(150, 110, 55, 0.15) !important;
 }
 
 [data-theme="light"] .shadow-2xl,

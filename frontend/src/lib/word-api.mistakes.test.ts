@@ -23,7 +23,6 @@ vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
 vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
 
 import { ensureProgressInitialized, getWordSession, submitWordAnswer } from "./word-api";
-import { setFsrsActive } from "./fsrs-store";
 import { setState, studyDayEnd, today } from "./study-core";
 
 const mistakeOptions = { focus: "mistakes" as const };
@@ -35,7 +34,6 @@ describe("学习错题本", () => {
     const SQL = await initSqlJs();
     testDb = new SQL.Database(new Uint8Array(readFileSync(fileURLToPath(new URL("../../public/nihongo.db", import.meta.url)))));
     ensureProgressInitialized();
-    setFsrsActive(true);
   });
 
   beforeEach(() => {
@@ -66,7 +64,6 @@ describe("学习错题本", () => {
   });
 
   afterAll(() => {
-    setFsrsActive(false);
     vi.useRealTimers();
   });
 

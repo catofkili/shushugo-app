@@ -11,6 +11,7 @@ export type Page =
   | "study-modes"
   | "favorites"
   | "confusion"
+  | "jlpt-plan"
   | "profile"
   | "pro"
   | "account"
@@ -23,7 +24,7 @@ export type Page =
   | "help"
   | "about";
 
-export type GrammarMode = "learn" | "practice" | "immersive";
+export type GrammarMode = "learn" | "immersive";
 export type ProgressFocus = "both" | "words" | "grammar";
 // 「词汇学习」已删:它和经典模式走的是同一条代码路径(loadNext 只对 reverse/kanji 分支),
 // 两个名字一套行为,选哪个都一样。老数据里存着 "vocabulary" 的,由 getStudyMode 归到经典。

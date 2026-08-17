@@ -21,6 +21,7 @@ import {
 import { dailyReviewCap } from "../review-budget";
 import { fsrsDueWordIds, recallFromRow } from "../fsrs-store";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
+import { newWordOrderSql } from "./filters";
 import {
   dailyNewQuota,
   getReviewQueue,
@@ -142,9 +143,10 @@ export const createStage1Tasks = (day: string) => {
     SELECT p.word_id
     FROM progress p
     JOIN words w ON w.id = p.word_id
+    LEFT JOIN dictionary_discovered_words d ON d.word_id = p.word_id
     WHERE p.known_forever = 0
       AND p.seen_count = 0
-    ORDER BY w.shuffle_rank DESC, w.importance DESC, p.word_id ASC
+    ORDER BY CASE WHEN d.word_id IS NOT NULL THEN 0 ELSE 1 END, ${newWordOrderSql("w")}
     LIMIT ?
   `, [Math.max(dailyNewQuota() - stage1NewTaskCount(day), 0)]);
 
@@ -190,7 +192,7 @@ const reconcileStage1NewQuota = (day: string) => {
   `, [day, day, remainingNewQuota]);
 };
 
-const STAGE1_PLAN_VERSION = "review-first-random-v3";
+export const STAGE1_PLAN_VERSION = "review-first-random-v3";
 
 const resetUnansweredStage1PlanForVersion = (day: string) => {
   if (getState("stage1_plan_version", "") === STAGE1_PLAN_VERSION) return;
@@ -269,17 +271,13 @@ export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard |
     SELECT
       w.*,
       p.word_id,
-      p.score,
       p.seen_count,
-      p.low_history,
       p.known_forever,
-      p.mastered_on,
       p.last_seen_on,
       p.right_count,
       p.fuzzy_count,
       p.forgot_count,
       p.mistake_streak,
-      p.last_decay_amount,
       p.fsrs_due,
       p.fsrs_lapses,
       p.fsrs_state,
@@ -320,7 +318,9 @@ export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard |
     ? availableRows.filter((row) => Number(row.id) !== lastId)
     : availableRows;
   const reviewRows = pickable.filter((row) => String(row.task_type) === "review");
-  const newRows = pickable.filter((row) => String(row.task_type) === "new");
+  // encore_new is an explicitly discovered word: it bypasses the daily new
+  // quota, but it must still enter the same new-card lane for sequencing.
+  const newRows = pickable.filter((row) => ["new", "encore_new"].includes(String(row.task_type)));
   const completedTaskCount = firstValue<number>(`
     SELECT COUNT(DISTINCT r.word_id)
     FROM reviews r

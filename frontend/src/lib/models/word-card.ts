@@ -1,11 +1,12 @@
 import type { Database } from "sql.js";
 import { getDatabase } from "../database";
+import { parseFurigana, parseTokenBoundaries } from "../furigana-data";
 import { WordCard } from "../../types/vocabulary";
 import { DbRow, SqlValue } from "../database/db-utils";
 import { confusionCandidates } from "./confusion";
 import { similarMeaningCandidates } from "../../data/similar_meaning_groups";
 import kanjiVariantPayload from "../../data/kanji_variants.json";
-import verbPairHintPayload from "../../data/verb_pair_hints.json";
+import verbPairHintPayload from "../../data/verb_pair_hints.ts";
 import englishOriginPayload from "../../data/english_origins.json";
 
 type VerbPairHint = readonly [voice: string, pairKanji: string, pairKana: string, note: string];
@@ -25,7 +26,7 @@ const kanjiVariants = (kanjiVariantPayload as { japanese_to_simplified?: Record<
   .japanese_to_simplified ?? {};
 
 const verbPairHints = Object.fromEntries(
-  Object.entries(verbPairHintPayload as Record<string, string[]>).flatMap(([key, value]) => {
+  Object.entries(verbPairHintPayload as unknown as Record<string, string[]>).flatMap(([key, value]) => {
     if (value.length < 4) return [];
     return [[key, [value[0], value[1], value[2], value[3]] as VerbPairHint]];
   })
@@ -217,21 +218,26 @@ function findPairWord(db: Database, pairKanji: string, pairKana: string): {
   kanji: string;
   meaning: string;
 } | null {
-  const result = db.exec(`
+  const statement = db.prepare(`
     SELECT kana, kanji, meaning
     FROM words
     WHERE kana = ? OR kanji = ?
     ORDER BY CASE WHEN kanji = ? THEN 0 ELSE 1 END
     LIMIT 1
-  `, [pairKana, pairKanji, pairKanji]);
-
-  if (!result.length || !result[0].values.length) return null;
-  const [kana, kanji, meaning] = result[0].values[0] as SqlValue[];
-  return {
-    kana: String(kana ?? pairKana),
-    kanji: String(kanji ?? pairKanji),
-    meaning: String(meaning ?? "")
-  };
+  `);
+  try {
+    statement.bind([pairKana, pairKanji, pairKanji]);
+    if (!statement.step()) return null;
+    const row = statement.getAsObject() as Record<string, SqlValue>;
+    const { kana, kanji, meaning } = row;
+    return {
+      kana: String(kana ?? pairKana),
+      kanji: String(kanji ?? pairKanji),
+      meaning: String(meaning ?? "")
+    };
+  } finally {
+    statement.free();
+  }
 }
 
 /**
@@ -340,11 +346,15 @@ export function honorificLabel(meaning: string, label = ""): string {
  * 检查是否收藏
  */
 export function isFavorite(type: 'word' | 'grammar', id: string | number): boolean {
-  const result = getDatabase().exec(
-    "SELECT 1 FROM content_favorites WHERE item_type = ? AND item_id = ? LIMIT 1",
-    [type, String(id)]
+  const statement = getDatabase().prepare(
+    "SELECT 1 FROM content_favorites WHERE item_type = ? AND item_id = ? LIMIT 1"
   );
-  return result.length > 0 && result[0].values.length > 0;
+  try {
+    statement.bind([type, String(id)]);
+    return statement.step();
+  } finally {
+    statement.free();
+  }
 }
 
 /**
@@ -381,14 +391,15 @@ export function rowObjectToCard(row: DbRow): WordCard {
     englishOrigin: englishOrigin(label, kana, meaning),
     pos: String(row.pos ?? ""),
     jlptLevel: String(row.jlpt_level ?? ""),
-    score: Number(row.score ?? 0),
     importance,
     importanceScore: Math.round(Math.min(Math.max(importance * 1.4 + personalMistakeScore * 3, 0), 10) * 10) / 10,
     isFavorite: isFavorite("word", id),
     note: String(row.note ?? ""),
     example: {
       jp: String(row.example_jp ?? ""),
-      meaning: String(row.example_meaning ?? "")
+      meaning: String(row.example_meaning ?? ""),
+      furigana: parseFurigana(row.example_furigana),
+      tokens: parseTokenBoundaries(row.example_tokens, String(row.example_jp ?? ""), row.example_lemmas)
     },
     kanjiComponents: buildKanjiComponents(label),
     conjugations: row.verb_type ? [{ label: "动词类型", value: verbTypeLabel(String(row.verb_type)) }] : [],

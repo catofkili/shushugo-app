@@ -8,61 +8,6 @@ export interface WordSessionOptions {
   focus?: "mistakes";
 }
 
-export interface GrammarStudyCard {
-  id: number;
-  key: string;
-  pattern: string;
-  meaning: string;
-  prompt: string;
-  formation: string;
-  example: {
-    jp: string;
-    meaning: string;
-  };
-  notes: string;
-  confusions: string[];
-  level: string;
-  score: number;
-  importance: number;
-  isFavorite: boolean;
-}
-
-export interface GrammarStudyStats {
-  total: number;
-  knownForever: number;
-  unseenCount: number;
-  lowCount: number;
-  masteredToday: number;
-  reviewedToday: number;
-  mistakeCount: number;
-  progressDone: number;
-  progressTotal: number;
-  studyDate: string;
-}
-
-export interface GrammarStudySession {
-  card: GrammarStudyCard | null;
-  stats: GrammarStudyStats;
-}
-
-export interface GrammarMistakeItem {
-  id: number;
-  grammarId: number;
-  key: string;
-  title: string;
-  meaning: string;
-  level: string;
-  answer: StudyAnswer;
-  answerLabel: string;
-  scoreAfter: number;
-  mistakeCount: number;
-  lastSeenOn: string;
-  example: {
-    jp: string;
-    meaning: string;
-  };
-}
-
 export type FavoriteType = "word" | "grammar";
 
 export interface FavoriteItem {
@@ -73,9 +18,18 @@ export interface FavoriteItem {
   meta: string;
 }
 
+/**
+ * 进度口径三件套,别混用:
+ *   seen      学过(答过至少一次)—— 首页柱状图和「学了多少」说的是这个
+ *   completed 已掌握(FSRS 间隔 ≥ 180 天,或手动点了「熟知」)—— 真正的退休线
+ *   low       薄弱(本学习日内到期)
+ * 以前 completed 是 `known_forever = 1`,而 FSRS 接管后正常学会的词永远不会置那一列,
+ * 于是进度条只统计手动标熟知的那几百个,和实际学习量完全脱节。
+ */
 export interface LevelProgressItem {
   level: string;
   total: number;
+  seen: number;
   completed: number;
   low: number;
   unseen: number;
@@ -84,6 +38,7 @@ export interface LevelProgressItem {
 export interface ProgressOverview {
   words: {
     total: number;
+    seen: number;
     completed: number;
     low: number;
     unseen: number;
