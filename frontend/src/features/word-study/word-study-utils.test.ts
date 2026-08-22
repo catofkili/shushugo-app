@@ -93,6 +93,14 @@ describe("word-study-utils", () => {
     expect(questionMeaning("court球场；coat上衣")).toBe("球场；上衣");
   });
 
+  it("uses the reviewed question meaning by Japanese word pair", () => {
+    expect(questionMeaning("订购；要求", "注文", "ちゅうもん")).toBe("点菜；订购");
+    expect(promptMeaning("订购；要求", 3018, "注文", "ちゅうもん")).toBe("点菜；订购");
+    expect(questionMeaning("学校", "学校", "がっこう")).toBe("学校");
+    expect(questionMeaning("一天", "一日", "いちにち")).toBe("一天");
+    expect(questionMeaning("一日", "一日", "ついたち")).toBe("一号；每月一日");
+  });
+
   it("removes source-word abbreviation notes instead of leaving 「」的省略 husks", () => {
     // 新种子库形态:英文 + 片假名源词注记(片假名会漏答案)
     expect(questionMeaning("手帕。handkerchief「ハンカチーフ」的省略")).toBe("手帕。");

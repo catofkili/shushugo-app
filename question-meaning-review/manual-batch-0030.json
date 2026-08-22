@@ -1,0 +1,121 @@
+[
+  {
+    "kanji": "和室",
+    "kana": "わしつ",
+    "questionMeaning": "日式房间",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "話題",
+    "kana": "わだい",
+    "questionMeaning": "话题，谈话材料",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "話半分",
+    "kana": "はなしはんぶん",
+    "questionMeaning": "说的话只有一半可信",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "脇",
+    "kana": "わき",
+    "questionMeaning": "腋下；侧面，旁边；别处",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "脇道",
+    "kana": "わきみち",
+    "questionMeaning": "岔道；歧途",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "惑星",
+    "kana": "わくせい",
+    "questionMeaning": "行星；黑马，明日之星",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "枠",
+    "kana": "わく",
+    "questionMeaning": "框；范围",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "腕前",
+    "kana": "うでまえ",
+    "questionMeaning": "本事，才能",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "丼",
+    "kana": "どんぶり",
+    "questionMeaning": "大碗；盖浇饭",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "傲慢",
+    "kana": "ごうまん",
+    "questionMeaning": "傲慢，骄傲",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "哺乳動物",
+    "kana": "ほにゅうどうぶつ",
+    "questionMeaning": "哺乳动物",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "哺乳類",
+    "kana": "ほにゅうるい",
+    "questionMeaning": "哺乳类",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "曖昧",
+    "kana": "あいまい",
+    "questionMeaning": "含糊不清，模棱两可",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "籠",
+    "kana": "かご",
+    "questionMeaning": "笼子，筐",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "籠城",
+    "kana": "ろうじょう",
+    "questionMeaning": "固守城池；闭门不出",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "緻密",
+    "kana": "ちみつ",
+    "questionMeaning": "（布、纸等）细致，细密；周密，缜密",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "貪欲",
+    "kana": "どんよく",
+    "questionMeaning": "贪婪，贪欲",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  }
+]

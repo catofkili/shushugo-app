@@ -8,6 +8,7 @@ import { similarMeaningCandidates } from "../../data/similar_meaning_groups";
 import kanjiVariantPayload from "../../data/kanji_variants.json";
 import verbPairHintPayload from "../../data/verb_pair_hints.ts";
 import englishOriginPayload from "../../data/english_origins.json";
+import { reviewedQuestionMeaning } from "./question-meaning-overrides";
 
 type VerbPairHint = readonly [voice: string, pairKanji: string, pairKana: string, note: string];
 
@@ -122,7 +123,9 @@ function stripKanaNotes(text: string): string {
     .trim();
 }
 
-export function questionMeaning(meaning: string): string {
+export function questionMeaning(meaning: string, kanji = "", kana = ""): string {
+  const reviewed = reviewedQuestionMeaning(kanji, kana);
+  if (reviewed) return reviewed;
   return stripKanaNotes(stripAbbreviationNotes(stripLatinGlosses(meaning)))
     .replace(/[（(\[]\s*(?:英|美)\s*[）)\]]/g, "")
     .replace(/[（(]\s*[）)]/g, "")
@@ -274,8 +277,10 @@ export function primaryMeaning(meaning: string): string {
 /**
  * 生成提示释义（用于题目）
  */
-export function promptMeaning(meaning: string, wordId: number, kanji: string): string {
+export function promptMeaning(meaning: string, wordId: number, kanji: string, kana = ""): string {
   if (shortMeaningOverrides[wordId]) return shortMeaningOverrides[wordId];
+  const reviewed = reviewedQuestionMeaning(kanji, kana);
+  if (reviewed) return reviewed;
   if (kanjiMeaningOverrides[kanji]) return kanjiMeaningOverrides[kanji];
   const text = meaning.trim();
   if (!text) return "";
@@ -382,9 +387,9 @@ export function rowObjectToCard(row: DbRow): WordCard {
   return {
     id,
     meaning,
-    questionMeaning: questionMeaning(meaning),
+    questionMeaning: questionMeaning(meaning, label, kana),
     primaryMeaning: primaryMeaning(meaning),
-    promptMeaning: promptMeaning(meaning, id, label),
+    promptMeaning: promptMeaning(meaning, id, label, kana),
     honorificLabel: honorificLabel(meaning, label),
     kana,
     kanji: label,

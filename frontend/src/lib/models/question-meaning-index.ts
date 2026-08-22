@@ -4,7 +4,7 @@ import { promptMeaning } from "./word-card";
 /**
  * 「题面显示的那行中文完全相同」的词条索引。
  *
- * 用户看到的题面是 promptMeaning(meaning, id, label) —— 短释义覆盖、词形前缀裁剪、
+ * 用户看到的题面是 promptMeaning(meaning, id, label, kana) —— 人工题面覆盖、首义裁剪和
  * 8 字截断之后的结果。**撞车必须按这个字符串算**：拿 words.meaning 原文分组会把
  * 题面根本不显示的假名注记、英文原词也算进去，分出来的组和用户看到的对不上。
  *
@@ -42,7 +42,7 @@ const buildIndex = (): QuestionMeaningIndex => {
     if (!id) return;
     // 和 rowObjectToCard 里的 label 口径一致：kanji 缺省时退回 kana。
     const label = String(row.kanji || row.kana || "");
-    const key = promptMeaning(String(row.meaning ?? ""), id, label);
+    const key = promptMeaning(String(row.meaning ?? ""), id, label, String(row.kana ?? ""));
     if (!key) return;
     keyByWord.set(id, key);
     const peers = wordsByKey.get(key);

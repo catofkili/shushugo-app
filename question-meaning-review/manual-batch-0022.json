@@ -1,0 +1,1752 @@
+[
+  {
+    "kanji": "多岐",
+    "kana": "たき",
+    "questionMeaning": "涉及多方面",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "多彩",
+    "kana": "たさい",
+    "questionMeaning": "（颜色）美丽多彩，丰富多彩",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "多種多様",
+    "kana": "たしゅたよう",
+    "questionMeaning": "多种多样，形形色色",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "多少",
+    "kana": "たしょう",
+    "questionMeaning": "多少；稍微",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "多数",
+    "kana": "たすう",
+    "questionMeaning": "多数，多数人",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "多大",
+    "kana": "ただい",
+    "questionMeaning": "（数量或程度）巨大",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "多発",
+    "kana": "たはつ",
+    "questionMeaning": "多发",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "多様",
+    "kana": "たよう",
+    "questionMeaning": "多种多样",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "多用",
+    "kana": "たよう",
+    "questionMeaning": "事多，很忙，百忙；经常使用",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "多量",
+    "kana": "たりょう",
+    "questionMeaning": "大量",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "太陽",
+    "kana": "たいよう",
+    "questionMeaning": "太阳",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "唾",
+    "kana": "つば",
+    "questionMeaning": "唾液，口水",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "妥協",
+    "kana": "だきょう",
+    "questionMeaning": "妥协",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "妥当",
+    "kana": "だとう",
+    "questionMeaning": "（判断、处置等符合常理）妥善，稳妥",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "打開",
+    "kana": "だかい",
+    "questionMeaning": "打开，打破",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "打撃",
+    "kana": "だげき",
+    "questionMeaning": "打击；击打",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "打診",
+    "kana": "だしん",
+    "questionMeaning": "叩诊；打探，试探",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "打撲",
+    "kana": "だぼく",
+    "questionMeaning": "磕碰，碰撞",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "体温",
+    "kana": "たいおん",
+    "questionMeaning": "体温",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "体外",
+    "kana": "たいがい",
+    "questionMeaning": "体外",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "体格",
+    "kana": "たいかく",
+    "questionMeaning": "体格",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "体系",
+    "kana": "たいけい",
+    "questionMeaning": "体系，系统",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "体験",
+    "kana": "たいけん",
+    "questionMeaning": "体验，亲身经验",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "体質",
+    "kana": "たいしつ",
+    "questionMeaning": "（个人的）体质；（团体的）性质",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "体重",
+    "kana": "たいじゅう",
+    "questionMeaning": "体重",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "体制",
+    "kana": "たいせい",
+    "questionMeaning": "体制",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "体操",
+    "kana": "たいそう",
+    "questionMeaning": "体操",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "体調",
+    "kana": "たいちょう",
+    "questionMeaning": "身体状况",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "体得",
+    "kana": "たいとく",
+    "questionMeaning": "体会，领会，体验",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "体内",
+    "kana": "たいない",
+    "questionMeaning": "体内",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "体面",
+    "kana": "たいめん",
+    "questionMeaning": "体面，面子",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "体力",
+    "kana": "たいりょく",
+    "questionMeaning": "体力",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "対応",
+    "kana": "たいおう",
+    "questionMeaning": "相对，面对面；对应，应对；相称，相符",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "対価",
+    "kana": "たいか",
+    "questionMeaning": "代价，等价报酬，补偿，对价",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "対極",
+    "kana": "たいきょく",
+    "questionMeaning": "相反的极端",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "対決",
+    "kana": "たいけつ",
+    "questionMeaning": "对决；面对（困难等）",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "対抗",
+    "kana": "たいこう",
+    "questionMeaning": "对抗，抗衡",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "対策",
+    "kana": "たいさく",
+    "questionMeaning": "对策",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "対処",
+    "kana": "たいしょ",
+    "questionMeaning": "应付，对付",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "対照",
+    "kana": "たいしょう",
+    "questionMeaning": "相互对照；对比",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "対照的",
+    "kana": "たいしょうてき",
+    "questionMeaning": "对比鲜明，正相反",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "対称",
+    "kana": "たいしょう",
+    "questionMeaning": "对称",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "対象",
+    "kana": "たいしょう",
+    "questionMeaning": "对象",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "対戦",
+    "kana": "たいせん",
+    "questionMeaning": "对战，交锋",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "対談",
+    "kana": "たいだん",
+    "questionMeaning": "对谈",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "対等",
+    "kana": "たいとう",
+    "questionMeaning": "对等，同等，平等",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "対比",
+    "kana": "たいひ",
+    "questionMeaning": "对照，对比",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "対面",
+    "kana": "たいめん",
+    "questionMeaning": "见面，会面；面对面",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "対立",
+    "kana": "たいりつ",
+    "questionMeaning": "对立，冲突",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "対話",
+    "kana": "たいわ",
+    "questionMeaning": "对话，交谈",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "耐性",
+    "kana": "たいせい",
+    "questionMeaning": "（植物的耐热性、耐寒性等）抗性；（细菌的）抗药性",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "帯",
+    "kana": "おび",
+    "questionMeaning": "（和服的）腰带；带状物",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "帯",
+    "kana": "たい",
+    "questionMeaning": "……区域，……段",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "待機",
+    "kana": "たいき",
+    "questionMeaning": "待命，等待时机",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "待遇",
+    "kana": "たいぐう",
+    "questionMeaning": "对待，服务；待遇",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "待合室",
+    "kana": "まちあいしつ",
+    "questionMeaning": "（车站或医院等的）等候室",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "態勢",
+    "kana": "たいせい",
+    "questionMeaning": "态势，状态，准备",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "態度",
+    "kana": "たいど",
+    "questionMeaning": "态度，举止",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "滞在",
+    "kana": "たいざい",
+    "questionMeaning": "逗留，旅居",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "滞納",
+    "kana": "たいのう",
+    "questionMeaning": "滞纳，拖欠",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "貸与",
+    "kana": "たいよ",
+    "questionMeaning": "借给，出借，贷与",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "退院",
+    "kana": "たいいん",
+    "questionMeaning": "出院",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "退会",
+    "kana": "たいかい",
+    "questionMeaning": "退会",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "退学",
+    "kana": "たいがく",
+    "questionMeaning": "退学",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "退屈",
+    "kana": "たいくつ",
+    "questionMeaning": "无聊；厌倦",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "退治",
+    "kana": "たいじ",
+    "questionMeaning": "扑灭，消灭",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "退社",
+    "kana": "たいしゃ",
+    "questionMeaning": "辞职；下班",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "退出",
+    "kana": "たいしゅつ",
+    "questionMeaning": "退出，退下",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "退場",
+    "kana": "たいじょう",
+    "questionMeaning": "退席，退场",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "退職",
+    "kana": "たいしょく",
+    "questionMeaning": "退职，退休",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "退路",
+    "kana": "たいろ",
+    "questionMeaning": "退路，后路，逃路",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "逮捕",
+    "kana": "たいほ",
+    "questionMeaning": "逮捕，刑事拘留",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "代金",
+    "kana": "だいきん",
+    "questionMeaning": "货款，款",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "代行",
+    "kana": "だいこう",
+    "questionMeaning": "代行，代办",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "代講",
+    "kana": "だいこう",
+    "questionMeaning": "代课",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "代償",
+    "kana": "だいしょう",
+    "questionMeaning": "赔偿，补偿；代价",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "代替",
+    "kana": "だいたい",
+    "questionMeaning": "代替",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "代筆",
+    "kana": "だいひつ",
+    "questionMeaning": "代写，代笔，代书",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "代表",
+    "kana": "だいひょう",
+    "questionMeaning": "代表",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "代役",
+    "kana": "だいやく",
+    "questionMeaning": "代演（者），替角",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "代理",
+    "kana": "だいり",
+    "questionMeaning": "代理（人）",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "台数",
+    "kana": "だいすう",
+    "questionMeaning": "台数，辆数",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "台風",
+    "kana": "たいふう",
+    "questionMeaning": "台风",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大雨",
+    "kana": "おおあめ",
+    "questionMeaning": "大雨",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大家",
+    "kana": "おおや",
+    "questionMeaning": "房东",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大過",
+    "kana": "たいか",
+    "questionMeaning": "大过错，严重错误",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大会",
+    "kana": "たいかい",
+    "questionMeaning": "大会，大赛",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大概",
+    "kana": "たいがい",
+    "questionMeaning": "大部分，大致；大概，概要；适度，适可而止；大致上",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大学院生",
+    "kana": "だいがくいんせい",
+    "questionMeaning": "硕士生",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大気",
+    "kana": "たいき",
+    "questionMeaning": "大气",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大規模",
+    "kana": "だいきぼ",
+    "questionMeaning": "大规模，规模宏大",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大局",
+    "kana": "たいきょく",
+    "questionMeaning": "大局",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大筋",
+    "kana": "おおすじ",
+    "questionMeaning": "梗概，主要内容",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大金",
+    "kana": "たいきん",
+    "questionMeaning": "巨款，巨额的钱",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大空",
+    "kana": "おおぞら",
+    "questionMeaning": "天空",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大型",
+    "kana": "おおがた",
+    "questionMeaning": "大型，巨型",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大口",
+    "kana": "おおぐち",
+    "questionMeaning": "大宗（买卖、订单等）",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大工",
+    "kana": "だいく",
+    "questionMeaning": "木匠，木工",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大国",
+    "kana": "たいこく",
+    "questionMeaning": "大国，强国",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大差",
+    "kana": "たいさ",
+    "questionMeaning": "显著的不同，很大的差别",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大使",
+    "kana": "たいし",
+    "questionMeaning": "大使",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大自然",
+    "kana": "だいしぜん",
+    "questionMeaning": "大自然",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大手",
+    "kana": "おおて",
+    "questionMeaning": "大公司",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大小",
+    "kana": "だいしょう",
+    "questionMeaning": "大与小",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大臣",
+    "kana": "だいじん",
+    "questionMeaning": "大臣",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大正",
+    "kana": "たいしょう",
+    "questionMeaning": "大正年号（1912年—1926年）",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大声",
+    "kana": "おおごえ",
+    "questionMeaning": "大声",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大昔",
+    "kana": "おおむかし",
+    "questionMeaning": "远古，很久以前",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大雪",
+    "kana": "おおゆき",
+    "questionMeaning": "大雪",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大戦",
+    "kana": "たいせん",
+    "questionMeaning": "大战",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大層",
+    "kana": "たいそう",
+    "questionMeaning": "非常；夸张",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大多数",
+    "kana": "だいたすう",
+    "questionMeaning": "大多数，大部分",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大台",
+    "kana": "おおだい",
+    "questionMeaning": "（金额、数量的）大关，整数关口",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大胆",
+    "kana": "だいたん",
+    "questionMeaning": "大胆，勇敢",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大地",
+    "kana": "だいち",
+    "questionMeaning": "大地",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大敵",
+    "kana": "たいてき",
+    "questionMeaning": "大敌，强敌，劲敌",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大都会",
+    "kana": "だいとかい",
+    "questionMeaning": "大城市",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大都市",
+    "kana": "だいとし",
+    "questionMeaning": "大城市",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大豆",
+    "kana": "だいず",
+    "questionMeaning": "大豆，黄豆",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大脳",
+    "kana": "だいのう",
+    "questionMeaning": "大脑",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大波",
+    "kana": "おおなみ",
+    "questionMeaning": "大浪，巨浪",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大半",
+    "kana": "たいはん",
+    "questionMeaning": "大半，大部分",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大部",
+    "kana": "たいぶ",
+    "questionMeaning": "大部头（的书）；大部分",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大部分",
+    "kana": "だいぶぶん",
+    "questionMeaning": "大部分，大致",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大幅",
+    "kana": "おおはば",
+    "questionMeaning": "大幅度",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大別",
+    "kana": "たいべつ",
+    "questionMeaning": "大致区别",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大便",
+    "kana": "だいべん",
+    "questionMeaning": "大便",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大方",
+    "kana": "おおかた",
+    "questionMeaning": "大部分；一般人；大致；大概，或许",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大木",
+    "kana": "たいぼく",
+    "questionMeaning": "大树，巨树",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大役",
+    "kana": "たいやく",
+    "questionMeaning": "重大使命，艰巨任务",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大陸",
+    "kana": "たいりく",
+    "questionMeaning": "大陆",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "大粒",
+    "kana": "おおつぶ",
+    "questionMeaning": "大颗，大粒",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大量",
+    "kana": "たいりょう",
+    "questionMeaning": "大量，多量",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "大輪",
+    "kana": "たいりん",
+    "questionMeaning": "大朵（花）",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "大枠",
+    "kana": "おおわく",
+    "questionMeaning": "大致的框架",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "第一印象",
+    "kana": "だいいちいんしょう",
+    "questionMeaning": "第一印象，最初印象",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "第一人者",
+    "kana": "だいいちにんしゃ",
+    "questionMeaning": "第一人，首屈一指的人",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "第一歩",
+    "kana": "だいいっぽ",
+    "questionMeaning": "第一步，开端",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "第三者",
+    "kana": "だいさんしゃ",
+    "questionMeaning": "第三者，局外人",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "題",
+    "kana": "だい",
+    "questionMeaning": "标题，题目；问题",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "題材",
+    "kana": "だいざい",
+    "questionMeaning": "题材",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "題名",
+    "kana": "だいめい",
+    "questionMeaning": "题目，标题",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "滝",
+    "kana": "たき",
+    "questionMeaning": "瀑布",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "卓越",
+    "kana": "たくえつ",
+    "questionMeaning": "卓越，超群",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "宅配",
+    "kana": "たくはい",
+    "questionMeaning": "配送到家",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "達者",
+    "kana": "たっしゃ",
+    "questionMeaning": "精通，熟练；健康",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "達成",
+    "kana": "たっせい",
+    "questionMeaning": "达到，完成",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "脱",
+    "kana": "だつ",
+    "questionMeaning": "脱离……",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "脱却",
+    "kana": "だっきゃく",
+    "questionMeaning": "摆脱，抛弃（不好的东西）；逃出，脱离（不好的状态）",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "脱出",
+    "kana": "だっしゅつ",
+    "questionMeaning": "逃脱，逃出",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "脱税",
+    "kana": "だつぜい",
+    "questionMeaning": "逃税，偷税，漏税",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "脱退",
+    "kana": "だったい",
+    "questionMeaning": "脱离，退出",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "脱落",
+    "kana": "だつらく",
+    "questionMeaning": "脱落，遗漏；脱离，退出",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "棚",
+    "kana": "たな",
+    "questionMeaning": "棚，架",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "誰一人",
+    "kana": "だれひとり",
+    "questionMeaning": "谁都（不），一个人都（不）",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "丹精",
+    "kana": "たんせい",
+    "questionMeaning": "精心，竭力，心血",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "丹念",
+    "kana": "たんねん",
+    "questionMeaning": "精心，细心",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "単位",
+    "kana": "たんい",
+    "questionMeaning": "（计算中使用的）单位；学分",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "単一",
+    "kana": "たんいつ",
+    "questionMeaning": "单一",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "単語",
+    "kana": "たんご",
+    "questionMeaning": "单词",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "単行本",
+    "kana": "たんこうぼん",
+    "questionMeaning": "单行本",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "単純",
+    "kana": "たんじゅん",
+    "questionMeaning": "单纯，简单；天真",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "単身",
+    "kana": "たんしん",
+    "questionMeaning": "只身，单独行动",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "単調",
+    "kana": "たんちょう",
+    "questionMeaning": "单调，单一",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "単独",
+    "kana": "たんどく",
+    "questionMeaning": "单独，独自",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "担当",
+    "kana": "たんとう",
+    "questionMeaning": "担任，担当",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "担任",
+    "kana": "たんにん",
+    "questionMeaning": "担任，担当",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "探求",
+    "kana": "たんきゅう",
+    "questionMeaning": "探求，寻求",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "探究",
+    "kana": "たんきゅう",
+    "questionMeaning": "探究，探求",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "探検",
+    "kana": "たんけん",
+    "questionMeaning": "探险",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "探索",
+    "kana": "たんさく",
+    "questionMeaning": "探索，搜寻",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "探知",
+    "kana": "たんち",
+    "questionMeaning": "探知，探查",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "探偵",
+    "kana": "たんてい",
+    "questionMeaning": "侦探，侦查",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "炭",
+    "kana": "すみ",
+    "questionMeaning": "炭，木炭",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "短期",
+    "kana": "たんき",
+    "questionMeaning": "短期",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "短期間",
+    "kana": "たんきかん",
+    "questionMeaning": "短期",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "短気",
+    "kana": "たんき",
+    "questionMeaning": "性情急躁",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "短縮",
+    "kana": "たんしゅく",
+    "questionMeaning": "缩短，缩减",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "短所",
+    "kana": "たんしょ",
+    "questionMeaning": "短处，缺点",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "短編",
+    "kana": "たんぺん",
+    "questionMeaning": "（诗歌、小说、电影等）短篇",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "短絡",
+    "kana": "たんらく",
+    "questionMeaning": "武断；短路",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "端的",
+    "kana": "たんてき",
+    "questionMeaning": "直截了当；明显，清楚",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "端末",
+    "kana": "たんまつ",
+    "questionMeaning": "终端；终端装置",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "団結",
+    "kana": "だんけつ",
+    "questionMeaning": "团结",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "団体",
+    "kana": "だんたい",
+    "questionMeaning": "集团，团体",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "団地",
+    "kana": "だんち",
+    "questionMeaning": "住宅区，小区",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "弾力",
+    "kana": "だんりょく",
+    "questionMeaning": "弹力，弹性",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "断言",
+    "kana": "だんげん",
+    "questionMeaning": "断言，断定",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "断水",
+    "kana": "だんすい",
+    "questionMeaning": "停水",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "断然",
+    "kana": "だんぜん",
+    "questionMeaning": "断然；显然",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "断定",
+    "kana": "だんてい",
+    "questionMeaning": "断定，判断",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "断念",
+    "kana": "だんねん",
+    "questionMeaning": "死心，放弃",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "断片",
+    "kana": "だんぺん",
+    "questionMeaning": "片断，部分",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "暖房",
+    "kana": "だんぼう",
+    "questionMeaning": "暖气（设备）",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "段",
+    "kana": "だん",
+    "questionMeaning": "台阶；段落；等级",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "段階",
+    "kana": "だんかい",
+    "questionMeaning": "阶段；等级",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "男子",
+    "kana": "だんし",
+    "questionMeaning": "男孩子；男子",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "男女",
+    "kana": "だんじょ",
+    "questionMeaning": "男女",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "談",
+    "kana": "だん",
+    "questionMeaning": "……之谈，故事",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "値札",
+    "kana": "ねふだ",
+    "questionMeaning": "价签，标价签",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "知覚",
+    "kana": "ちかく",
+    "questionMeaning": "（视觉、听觉、嗅觉、味觉、触觉）知觉；（通过感觉器官的作用）察觉，辨别",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "知恵",
+    "kana": "ちえ",
+    "questionMeaning": "智慧，聪明才智",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "知事",
+    "kana": "ちじ",
+    "questionMeaning": "（日本统辖和代表都、道、府、县的长官）知事",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "知識",
+    "kana": "ちしき",
+    "questionMeaning": "知识",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "知人",
+    "kana": "ちじん",
+    "questionMeaning": "熟人，朋友",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "知的",
+    "kana": "ちてき",
+    "questionMeaning": "理智，知性；智慧，智力",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "知能",
+    "kana": "ちのう",
+    "questionMeaning": "智力，智慧",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "知名",
+    "kana": "ちめい",
+    "questionMeaning": "有名，出名",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "知名度",
+    "kana": "ちめいど",
+    "questionMeaning": "知名度",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "地位",
+    "kana": "ちい",
+    "questionMeaning": "地位，身份",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "地域",
+    "kana": "ちいき",
+    "questionMeaning": "地域，地区",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "地域社会",
+    "kana": "ちいきしゃかい",
+    "questionMeaning": "地区性社会",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "地下",
+    "kana": "ちか",
+    "questionMeaning": "地下；阴间",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "地下水",
+    "kana": "ちかすい",
+    "questionMeaning": "地下水",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "地殻",
+    "kana": "ちかく",
+    "questionMeaning": "地壳",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "地球",
+    "kana": "ちきゅう",
+    "questionMeaning": "地球",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "地区",
+    "kana": "ちく",
+    "questionMeaning": "地区，地域",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "地形",
+    "kana": "ちけい",
+    "questionMeaning": "地形",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "地元",
+    "kana": "じもと",
+    "questionMeaning": "当地，本地",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "地質",
+    "kana": "ちしつ",
+    "questionMeaning": "地质",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "地上",
+    "kana": "ちじょう",
+    "questionMeaning": "地上",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "地震",
+    "kana": "じしん",
+    "questionMeaning": "地震",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "地帯",
+    "kana": "ちたい",
+    "questionMeaning": "地带",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "地道",
+    "kana": "じみち",
+    "questionMeaning": "脚踏实地",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "地盤",
+    "kana": "じばん",
+    "questionMeaning": "地面，地基，基础；地盘",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "地方",
+    "kana": "ちほう",
+    "questionMeaning": "地区；（相对于中央）地方",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "地味",
+    "kana": "じみ",
+    "questionMeaning": "素净；质朴",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "地面",
+    "kana": "じめん",
+    "questionMeaning": "地面；土地",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "地理",
+    "kana": "ちり",
+    "questionMeaning": "地理；地理情况",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "恥",
+    "kana": "はじ",
+    "questionMeaning": "耻辱，羞耻",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "致命的",
+    "kana": "ちめいてき",
+    "questionMeaning": "致命的；重大的",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "畜産",
+    "kana": "ちくさん",
+    "questionMeaning": "畜产",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "蓄積",
+    "kana": "ちくせき",
+    "questionMeaning": "积蓄，积累",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "秩序",
+    "kana": "ちつじょ",
+    "questionMeaning": "秩序，条理",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "着",
+    "kana": "ちゃく",
+    "questionMeaning": "……套、件；到达……",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "着実",
+    "kana": "ちゃくじつ",
+    "questionMeaning": "踏实，稳健",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "着手",
+    "kana": "ちゃくしゅ",
+    "questionMeaning": "着手，开始",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "着色",
+    "kana": "ちゃくしょく",
+    "questionMeaning": "着色，上颜色",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "着想",
+    "kana": "ちゃくそう",
+    "questionMeaning": "立意，构思，主意",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "着目",
+    "kana": "ちゃくもく",
+    "questionMeaning": "着眼，注目",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "着用",
+    "kana": "ちゃくよう",
+    "questionMeaning": "穿（衣服）",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "中央",
+    "kana": "ちゅうおう",
+    "questionMeaning": "中央，中心；中枢；中央，首都",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "中華料理",
+    "kana": "ちゅうかりょうり",
+    "questionMeaning": "中国菜",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "中核",
+    "kana": "ちゅうかく",
+    "questionMeaning": "中心，核心，骨干",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "中間",
+    "kana": "ちゅうかん",
+    "questionMeaning": "中间；中途",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "中級",
+    "kana": "ちゅうきゅう",
+    "questionMeaning": "中级，中等",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "中継",
+    "kana": "ちゅうけい",
+    "questionMeaning": "中继，中转；转播",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  },
+  {
+    "kanji": "中古",
+    "kana": "ちゅうこ",
+    "questionMeaning": "半旧半新，二手",
+    "classification": "manual_translation",
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+  },
+  {
+    "kanji": "中指",
+    "kana": "なかゆび",
+    "questionMeaning": "中指",
+    "classification": "same_meaning",
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+  },
+  {
+    "kanji": "中止",
+    "kana": "ちゅうし",
+    "questionMeaning": "中止，取消",
+    "classification": "partial_overlap",
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+  }
+]
