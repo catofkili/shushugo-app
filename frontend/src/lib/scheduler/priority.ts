@@ -26,8 +26,21 @@ const overdueDays = (due: unknown, now: number): number => {
 };
 
 /**
- * 新词按当天尚未完成的比例随机穿插进旧词中。首张永远是旧词；
- * 临界旧词仍由调用方优先处理，避免随机新词抢占需要立即复习的内容。
+ * 新词最少要占多大比例 —— 每 8 张里至少一张。
+ *
+ * 只按「剩余新词 / 剩余总量」穿插的话，**复习积压会把新词饿死**：实测用户当天
+ * 复习任务 232～688 条、新词配额 15，比例只有 3%，于是一天答四五百张也只碰得到
+ * 三个新词（2026-08-10 ~ 08-13、08-18 ~ 08-22 全是每天 3 个），配额那 15 个
+ * 天天剩十二个没见过。而配额的意思是「今天要学这么多新词」，不是「新词占计划的
+ * 百分之几」—— 积压是复习的事，不该由新词买单。
+ *
+ * 8 张一个的节奏：30 个新词大约 240 张出完，正好在用户一天的作答量之内。
+ */
+const NEW_WORD_MIN_SHARE = 1 / 8;
+
+/**
+ * 新词按当天尚未完成的比例随机穿插进旧词中（不低于 NEW_WORD_MIN_SHARE）。
+ * 首张永远是旧词；临界旧词仍由调用方优先处理，避免随机新词抢占需要立即复习的内容。
  */
 export const shouldPickStage1NewWord = (
   remainingReviewCount: number,
@@ -38,7 +51,8 @@ export const shouldPickStage1NewWord = (
   if (remainingNewCount <= 0) return false;
   if (remainingReviewCount <= 0) return true;
   if (completedTaskCount === 0) return false;
-  return randomValue < remainingNewCount / (remainingReviewCount + remainingNewCount);
+  const share = remainingNewCount / (remainingReviewCount + remainingNewCount);
+  return randomValue < Math.max(share, NEW_WORD_MIN_SHARE);
 };
 
 /**
@@ -47,7 +61,8 @@ export const shouldPickStage1NewWord = (
 export function priorityComponents(
   row: DbRow,
   dueAfter: number | undefined,
-  newQuotaLeft: number
+  newQuotaLeft: number,
+  options: { randomize?: boolean } = {}
 ): Record<string, number> {
   const isNew = Number(row.seen_count ?? 0) === 0;
   const lapses = Number(row.fsrs_lapses ?? 0);
@@ -65,7 +80,9 @@ export function priorityComponents(
     age: Math.min(daysSince(row.last_seen_on) * 3, 30),
     review: isNew ? 0 : 35,
     new: 0,
-    jitter: Math.random() * 8
+    // 普通学习用轻微抖动避免每天撞同一序列；快速模式传 randomize:false，
+    // 因为它是“按优先级浏览”的批次，不能让随机数把低优先级词顶到最上面。
+    jitter: options.randomize === false ? 0 : Math.random() * 8
   };
 
   if (isNew) {
@@ -116,4 +133,3 @@ export function priorityComponents(
 export function priorityScore(components: Record<string, number>): number {
   return Object.values(components).reduce((total, value) => total + value, 0);
 }
-

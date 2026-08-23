@@ -80,14 +80,25 @@ describe("priorityComponents", () => {
     expect(priorityComponents(row(), 0, 0).queue).toBe(45);
     expect(priorityComponents(row(), 2, 0).queue).toBe(-80 - 2 * 25);
   });
+
+  it("快速模式关闭随机抖动", () => {
+    expect(priorityComponents(row(), 0, 0, { randomize: false }).jitter).toBe(0);
+  });
 });
 
 describe("shouldPickStage1NewWord", () => {
   it("randomly interleaves new words according to the remaining daily mix", () => {
-    // 第一张必定是旧词；200 个旧词、15 个新词时，新词约占 7%。
+    // 第一张必定是旧词；剩余里新词占多少就大约按多少穿插。
     expect(shouldPickStage1NewWord(200, 15, 0, 0)).toBe(false);
-    expect(shouldPickStage1NewWord(200, 15, 1, 0.01)).toBe(true);
-    expect(shouldPickStage1NewWord(200, 15, 1, 0.1)).toBe(false);
+    expect(shouldPickStage1NewWord(20, 15, 1, 0.4)).toBe(true);
+    expect(shouldPickStage1NewWord(20, 15, 1, 0.5)).toBe(false);
+  });
+
+  it("复习积压再多，新词也保底每 8 张一个", () => {
+    // 200 个复习 + 15 个新词，按比例只有 7% —— 一天答四五百张也只碰得到三个新词。
+    expect(shouldPickStage1NewWord(200, 15, 1, 0.1)).toBe(true);
+    expect(shouldPickStage1NewWord(600, 30, 1, 0.12)).toBe(true);
+    expect(shouldPickStage1NewWord(600, 30, 1, 0.13)).toBe(false);
   });
 
   it("uses new words when no reviews remain", () => {
@@ -101,4 +112,3 @@ describe("priorityScore", () => {
     expect(priorityScore({ a: 10, b: -3, c: 0.5 })).toBeCloseTo(7.5);
   });
 });
-
