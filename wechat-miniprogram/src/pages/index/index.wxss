@@ -1,0 +1,70 @@
+page { background: #f4f6fb; color: #172033; }
+.page { min-height: 100vh; padding: 48rpx 40rpx 72rpx; box-sizing: border-box; }
+.hero { padding: 20rpx 8rpx 42rpx; }
+.eyebrow { display: block; color: #4c6fff; font-size: 22rpx; letter-spacing: 3rpx; font-weight: 700; }
+.title { display: block; margin-top: 18rpx; font-size: 56rpx; line-height: 1.15; font-weight: 800; }
+.subtitle { display: block; margin-top: 14rpx; color: #667085; font-size: 26rpx; }
+.card { margin-bottom: 24rpx; padding: 30rpx; border-radius: 28rpx; background: #fff; box-shadow: 0 12rpx 32rpx rgba(23, 32, 51, .06); }
+.status-row, .filter-row, .card-meta { display: flex; align-items: center; justify-content: space-between; }
+.label, .filter-label, .result-title { font-size: 25rpx; color: #667085; }
+.status { font-size: 27rpx; font-weight: 700; }
+.status.ready { color: #16835b; }
+.status.idle { color: #a15c00; }
+.detail, .result { display: block; margin-top: 16rpx; color: #344054; font-size: 23rpx; line-height: 1.6; word-break: break-all; }
+button { margin: 16rpx 0; border-radius: 20rpx; font-size: 29rpx; line-height: 92rpx; }
+.primary { color: #fff; background: #4c6fff; }
+.secondary { color: #243b80; background: #e9edff; }
+.ghost, .undo { color: #475467; background: transparent; border: 1rpx solid #d0d5dd; }
+.filter-row { margin: 18rpx 4rpx; }
+.picker { padding: 12rpx 22rpx; color: #344054; background: #fff; border-radius: 16rpx; font-size: 25rpx; box-shadow: 0 4rpx 14rpx rgba(23, 32, 51, .06); }
+.stats { display: flex; justify-content: space-around; padding: 26rpx 14rpx; }
+.stat { flex: 1; text-align: center; border-right: 1rpx solid #eaecf0; }
+.stat:last-child { border-right: 0; }
+.stat-value, .stat-label { display: block; }
+.stat-value { color: #172033; font-size: 38rpx; font-weight: 800; }
+.stat-label { margin-top: 6rpx; color: #98a2b3; font-size: 22rpx; }
+.study-card { padding: 34rpx; }
+.card-meta { color: #98a2b3; font-size: 23rpx; }
+.meaning { display: block; margin-top: 40rpx; color: #172033; font-size: 43rpx; line-height: 1.35; font-weight: 750; }
+.reveal { margin-top: 46rpx; color: #243b80; background: #eef2ff; }
+.answer { margin-top: 36rpx; }
+.kanji, .kana, .pos { display: block; }
+.kanji { color: #172033; font-size: 64rpx; line-height: 1.15; font-weight: 800; }
+/* 汉字读音题的题面：表记照常大字，读音那几拍换成空格子 */
+.kanji-prompt { margin-top: 12rpx; text-align: center; }
+.reading-mask { margin-top: 14rpx; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8rpx; }
+.reading-blank { width: 52rpx; height: 26rpx; border-radius: 8rpx; border: 2rpx solid rgba(76, 111, 255, 0.45); background: rgba(76, 111, 255, 0.14); }
+.reading-kana { color: #4c6fff; font-size: 31rpx; line-height: 1; }
+.reverse-answer { display: block; color: #172033; font-size: 36rpx; line-height: 1.4; font-weight: 750; }
+.kana { margin-top: 8rpx; color: #4c6fff; font-size: 31rpx; }
+.audio-button { display: inline-block; margin: 18rpx 0 0; padding: 0 22rpx; color: #4c6fff; background: #eef2ff; font-size: 23rpx; line-height: 66rpx; }
+.pos { margin-top: 10rpx; color: #667085; font-size: 23rpx; }
+.word-meta { display: block; margin-top: 8rpx; color: #98a2b3; font-size: 21rpx; }
+.pitch-card { margin-top: 20rpx; padding: 16rpx 18rpx; border-radius: 16rpx; background: #f5f7ff; }.pitch-label { display: block; color: #667085; font-size: 21rpx; }.pitch-line { display: flex; align-items: flex-end; gap: 8rpx; margin-top: 16rpx; }.pitch-mora { position: relative; display: inline-block; min-width: 28rpx; padding-top: 12rpx; color: #667085; text-align: center; font-size: 27rpx; }.pitch-mora.high { color: #4c6fff; border-top: 4rpx solid #4c6fff; }.pitch-mora.low { border-top: 4rpx solid #b8c0d6; }.pitch-mora.high::after, .pitch-mora.low::after { content: ''; position: absolute; left: 50%; top: -8rpx; width: 8rpx; height: 8rpx; transform: translateX(-50%); border-radius: 50%; background: currentColor; }
+.example { margin-top: 28rpx; padding: 22rpx; border-radius: 18rpx; background: #f8f9fc; }
+.example-jp, .example-meaning { display: block; line-height: 1.6; }
+.example-jp { color: #344054; font-size: 26rpx; }
+.furigana-line { display: flex; flex-wrap: wrap; margin-top: 8rpx; color: #667085; font-size: 23rpx; }.furigana-token { display: inline-flex; flex-direction: column; align-items: center; min-height: 42rpx; }.furigana-reading { min-height: 22rpx; color: #4c6fff; font-size: 17rpx; line-height: 1; }
+.example-meaning { margin-top: 5rpx; color: #667085; font-size: 23rpx; }
+.dictionary { margin-top: 20rpx; padding: 18rpx; border-radius: 16rpx; background: #fffaf0; }.dictionary-title { display: block; color: #9b6b21; font-size: 21rpx; font-weight: 750; }.dictionary-row { margin-top: 10rpx; }.dictionary-head, .dictionary-meaning, .dictionary-note { display: block; }.dictionary-head { color: #344054; font-size: 22rpx; }.dictionary-meaning { margin-top: 3rpx; color: #475467; font-size: 22rpx; }.dictionary-note { margin-top: 3rpx; color: #98a2b3; font-size: 19rpx; }
+.distinction { margin-top: 20rpx; padding: 18rpx; border-radius: 16rpx; background: #f2f0ff; }.distinction-title, .distinction-type, .distinction-hint { display: block; }.distinction-title { color: #6e55b5; font-size: 21rpx; font-weight: 750; }.distinction-row { margin-top: 10rpx; }.distinction-type { color: #4b3a86; font-size: 22rpx; }.distinction-hint { margin-top: 4rpx; color: #667085; font-size: 20rpx; line-height: 1.45; }.distinction-link { display: block; margin-top: 12rpx; color: #6e55b5; font-size: 21rpx; }
+.answer-actions { display: flex; gap: 12rpx; margin-top: 30rpx; }
+.answer-actions button { flex: 1; margin: 0; }
+.answer.forgot { color: #9c2c38; background: #fff0f1; }
+.answer.fuzzy { color: #8b5e00; background: #fff7df; }
+.answer.know { color: #126341; background: #e6f6ed; }
+.note-editor { display: flex; gap: 12rpx; align-items: center; margin-top: 22rpx; }
+.note-editor input { flex: 1; height: 76rpx; padding: 0 18rpx; box-sizing: border-box; border: 1rpx solid #eaecf0; border-radius: 14rpx; font-size: 23rpx; }
+.note-button { width: 150rpx; margin: 0; color: #475467; background: #f2f4f7; font-size: 22rpx; line-height: 76rpx; }
+.empty-card { padding: 46rpx 30rpx; text-align: center; }
+.empty-title, .empty-text { display: block; }
+.empty-title { color: #172033; font-size: 34rpx; font-weight: 750; }
+.empty-text { margin-top: 14rpx; color: #667085; font-size: 24rpx; }
+.undo { margin: 4rpx 0 24rpx; line-height: 78rpx; font-size: 24rpx; }
+.maintenance { padding-top: 6rpx; }
+.maintenance button { display: inline-block; width: 31%; margin-right: 2%; font-size: 21rpx; line-height: 76rpx; }
+.maintenance button:last-child { margin-right: 0; }
+.library-link { display: block; margin: 24rpx 0 8rpx; color: #4c6fff; text-align: center; font-size: 25rpx; }
+.result-card { margin-top: 24rpx; }
+.result-title { display: block; font-weight: 700; color: #172033; }
+.note { padding: 18rpx 8rpx; color: #98a2b3; font-size: 22rpx; line-height: 1.6; }

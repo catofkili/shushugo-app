@@ -4,11 +4,13 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "prebuild": "node scripts/verify-release-db.mjs",
+    "prebuild": "node scripts/verify-release-db.mjs && node scripts/verify-kanji-reading-unit-index.mjs",
     "dev": "vite",
+    "db": "node --no-warnings scripts/live-db.mjs",
     "zoo": "vite --config zoo-lab/vite.config.ts --host",
     "build": "vite build",
     "build:furigana": "node scripts/build-furigana.mjs",
+    "build:kanji-unit-index": "node scripts/build-kanji-reading-unit-index.mjs",
     "build:grammar-title-furigana": "node scripts/build-furigana.mjs --titles-only",
     "audit:token-tooltips": "node --experimental-strip-types scripts/audit-token-tooltips.mjs --check",
     "preview": "vite preview",
@@ -18,7 +20,8 @@
     "test:watch": "vitest",
     "ios": "cap open ios",
     "sync": "cap sync",
-    "add:ios": "cap add ios"
+    "add:ios": "cap add ios",
+    "build:kanji-reading-usage": "node scripts/build-kanji-reading-usage.mjs"
   },
   "dependencies": {
     "@aparajita/capacitor-secure-storage": "^6.0.1",

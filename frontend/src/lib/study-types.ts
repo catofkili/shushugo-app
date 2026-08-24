@@ -5,7 +5,7 @@ export type StudyAnswer = WordAnswer;
 export interface WordSessionOptions {
   level?: WordLevelFilter;
   type?: WordTypeFilter;
-  focus?: "mistakes";
+  focus?: "mistakes" | "picked";
 }
 
 export type FavoriteType = "word" | "grammar";

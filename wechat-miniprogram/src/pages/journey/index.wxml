@@ -1,0 +1,9 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero"><navigator class="back" open-type="navigateBack">‹ 返回学习</navigator><text class="title">学习旅程</text><text class="subtitle">进度地图、温泉打卡和图鉴都从你的本地学习记录生成</text></view>
+  <view wx:if="{{!summary}}" class="card">{{error || '正在读取旅程…'}}</view>
+  <view wx:else>
+    <view class="card spring"><text class="kicker">STREAK · 温泉</text><text class="spring-title">连续学习 {{summary.streak}} 天</text><text class="spring-detail">每天实际完成一张卡就会留下学习日记录，不靠打开次数凑数。</text><view class="spring-water"><text>{{summary.streak > 0 ? '♨' : '○'}}</text></view></view>
+    <view class="card"><text class="section-title">JLPT 进度地图</text><view wx:for="{{summary.levels}}" wx:key="level" class="map-row"><view class="map-label"><text>{{item.level}}</text><text>{{item.seen}} / {{item.total}}</text></view><view class="map-track"><view class="map-fill" style="width: {{item.seenPercent}}%;"></view></view><text class="map-caption">已掌握 {{item.mastered}}</text></view></view>
+    <view class="card"><view class="row"><text class="section-title">图鉴</text><navigator class="more" url="/pages/achievements/index">全部成就 →</navigator></view><view class="dex-grid"><view wx:for="{{board.items}}" wx:key="id" wx:if="{{item.unlocked}}" class="dex-item"><text>{{item.emoji}}</text><text>{{item.name}}</text></view><view wx:if="{{board.unlocked === 0}}" class="muted">完成第一张卡后，这里会出现你的第一枚徽章。</view></view></view>
+  </view>
+</scroll-view>

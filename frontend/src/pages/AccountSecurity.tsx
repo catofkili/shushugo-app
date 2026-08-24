@@ -165,7 +165,7 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
                 {cloudSession.email}
               </p>
               <p className="mt-1 text-xs text-white/45">
-                登录方式：{cloudSession.authProviders?.map((provider) => provider === "apple" ? "Apple" : "邮箱密码").join("、") || "邮箱密码"}
+                登录方式：{cloudSession.authProviders?.map((provider) => provider === "apple" ? "Apple" : provider === "wechat" ? "微信" : "邮箱密码").join("、") || "邮箱密码"}
               </p>
             </div>
           </div>

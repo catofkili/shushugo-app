@@ -1,0 +1,22 @@
+{
+  "name": "shushugo-wechat-miniprogram",
+  "private": true,
+  "version": "0.1.0",
+  "description": "收集日微信小程序：离线 SQLite、学习核心、同步与权益适配器",
+  "scripts": {
+    "smoke": "node scripts/p0-a-smoke.mjs",
+    "core-smoke": "node scripts/study-core-smoke.mjs",
+    "sync-smoke": "node scripts/sync-smoke.mjs",
+    "sync-snapshot-smoke": "node scripts/sync-snapshot-smoke.mjs",
+    "entitlement-smoke": "node scripts/entitlement-smoke.mjs",
+    "grammar-smoke": "node scripts/grammar-smoke.mjs",
+    "word-library-smoke": "node scripts/word-library-smoke.mjs",
+    "modes-smoke": "node scripts/modes-smoke.mjs",
+    "confusion-smoke": "node scripts/confusion-smoke.mjs",
+    "achievements-smoke": "node scripts/achievements-smoke.mjs",
+    "daily-relief-smoke": "node scripts/daily-relief-smoke.mjs",
+    "runtime-smoke": "node scripts/runtime-sim-smoke.mjs",
+    "budget": "node scripts/package-budget.mjs",
+    "check": "node scripts/check-source.mjs"
+  }
+}

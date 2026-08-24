@@ -1,0 +1,32 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero">
+    <navigator class="back" open-type="navigateBack">‹ 返回学习</navigator>
+    <text class="title">学习统计</text>
+    <text class="subtitle">按本地学习日统计，凌晨 4 点切换日期</text>
+  </view>
+  <view wx:if="{{!summary}}" class="card">{{error || '正在读取统计…'}}</view>
+  <view wx:else>
+    <view class="stats card">
+      <view><text class="big">{{summary.today}}</text><text>今日作答</text></view>
+      <view><text class="big">{{summary.week}}</text><text>近 7 日</text></view>
+      <view><text class="big">{{summary.due}}</text><text>到期</text></view>
+    </view>
+    <view class="card metrics">
+      <view class="row"><text>近 7 日正确率</text><text class="strong">{{summary.accuracy === null ? '—' : summary.accuracy + '%'}}</text></view>
+      <view class="row"><text>近 7 日学习日</text><text class="strong">{{summary.streak}}</text></view>
+    </view>
+    <view class="card">
+      <view class="row"><text class="section-title">学习日历</text><text class="muted">最近 28 天</text></view>
+      <view class="heatmap"><view wx:for="{{summary.recentDays}}" wx:key="day" class="heat heat-{{item.count > 0 ? (item.count > 30 ? '3' : item.count > 10 ? '2' : '1') : '0'}}" title="{{item.day}} {{item.count}} 张"></view></view>
+    </view>
+    <view class="link-row"><navigator url="/pages/achievements/index">查看 47 个成就 →</navigator><navigator url="/pages/confusion/index">复习疑难辨析 →</navigator></view>
+    <navigator class="journey-link" url="/pages/journey/index">打开学习旅程（进度地图／温泉／图鉴） →</navigator>
+    <view class="card">
+      <text class="section-title">JLPT 词库进度</text>
+      <view wx:for="{{summary.levels}}" wx:key="level" class="level-row">
+        <view class="row"><text class="level-name">{{item.level}}</text><text>{{item.mastered}} / {{item.seen}} 已掌握/已见</text></view>
+        <view class="bar"><view class="bar-fill" style="width: {{item.seenPercent}}%;"></view></view>
+      </view>
+    </view>
+  </view>
+</scroll-view>

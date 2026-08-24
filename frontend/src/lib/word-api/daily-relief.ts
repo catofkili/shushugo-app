@@ -1,12 +1,17 @@
 import type { WordCard } from "../../types/vocabulary";
 import { notifyProgressUpdated } from "../progress-events";
 import { rowObjectToCard } from "../models/word-card";
-import { firstRow, persistSoon, rowsFor, setState, getState, today } from "../study-core";
+import { firstRow, firstValue, persistSoon, rowsFor, setState, getState, today } from "../study-core";
 import { ensureStage1Tasks } from "./stage1";
 
-const RELIEF_STATE_KEY = "daily_relief_v1";
+// v2 让已生成的旧版「固定 12 张」状态失效,否则改完规则后当天仍会沿用旧队列。
+const RELIEF_STATE_KEY = "daily_relief_v2";
 const MIN_RELIEF_WORDS = 6;
 const MAX_RELIEF_WORDS = 12;
+// 减负看的是前一天真正学过的去重词数,不是候选查询截出来的 12 张。
+// 百来个词只给小份减负;达到 300 个才允许给满 12 张。
+const MIN_ACTIVITY_WORDS = 100;
+const MAX_ACTIVITY_WORDS_FOR_FULL_RELIEF = 300;
 
 export interface DailyReliefState {
   studyDate: string;
@@ -55,10 +60,14 @@ const writeState = (state: DailyReliefState): DailyReliefState => {
 
 type ReliefCandidate = { wordId: number; rememberedCount: number };
 
-const reliefCandidates = (studyDate: string): ReliefCandidate[] => {
+const previousStudyDate = (studyDate: string): string => {
   const previousDate = new Date(`${studyDate}T12:00:00`);
   previousDate.setDate(previousDate.getDate() - 1);
-  const yesterday = previousDate.toISOString().slice(0, 10);
+  return previousDate.toISOString().slice(0, 10);
+};
+
+const reliefCandidates = (studyDate: string): ReliefCandidate[] => {
+  const yesterday = previousStudyDate(studyDate);
   return rowsFor(`
     SELECT r.word_id, COUNT(*) AS remembered_count, MAX(r.id) AS last_review_id
     FROM reviews r
@@ -79,24 +88,34 @@ const reliefCandidates = (studyDate: string): ReliefCandidate[] => {
   }));
 };
 
+const previousStudyWordCount = (studyDate: string): number => firstValue<number>(
+  `
+    SELECT COUNT(DISTINCT word_id)
+    FROM reviews
+    WHERE reviewed_on = ?
+      AND direction = 'forward'
+  `,
+  [previousStudyDate(studyDate)],
+  0
+);
+
 /**
- * 昨天记忆越省力,今日减负越多;始终在 6-12 张内。
+ * 前一天学得越多,今日减负越多;始终在 6-12 张内。
+ * 这里用前一天所有正向复习的去重词数做硬上限,不能因为候选恰好只有 12 张
+ * 就把小学习量误判成「满负荷」。候选本身仍只取昨天答对且今天不在正式计划的词。
  * 减负词不改今日 stage1_tasks,所以不会让今日新词漏出计划。
  */
-const reliefCountFor = (candidates: ReliefCandidate[]): number => {
-  if (candidates.length < MIN_RELIEF_WORDS) return 0;
-  const averageRememberedCount = candidates.reduce(
-    (sum, candidate) => sum + candidate.rememberedCount,
-    0
-  ) / candidates.length;
-  const performanceBonus = Math.min(
-    MAX_RELIEF_WORDS - MIN_RELIEF_WORDS,
-    Math.max(0, Math.round((3 - averageRememberedCount) * 3))
+const reliefCountFor = (candidates: ReliefCandidate[], studiedWordCount: number): number => {
+  if (candidates.length < MIN_RELIEF_WORDS || studiedWordCount < MIN_ACTIVITY_WORDS) return 0;
+  const activityRatio = Math.min(
+    1,
+    (studiedWordCount - MIN_ACTIVITY_WORDS)
+      / (MAX_ACTIVITY_WORDS_FOR_FULL_RELIEF - MIN_ACTIVITY_WORDS)
   );
-  return Math.min(
-    candidates.length,
-    MIN_RELIEF_WORDS + performanceBonus
+  const activityCount = Math.round(
+    MIN_RELIEF_WORDS + activityRatio * (MAX_RELIEF_WORDS - MIN_RELIEF_WORDS)
   );
+  return Math.min(candidates.length, activityCount);
 };
 
 /**
@@ -120,7 +139,7 @@ export const ensureDailyRelief = (): DailyReliefState => {
   if (existing.wordIds.length > 0 || hasCurrentState) return existing;
 
   const candidates = reliefCandidates(studyDate);
-  const reliefCount = reliefCountFor(candidates);
+  const reliefCount = reliefCountFor(candidates, previousStudyWordCount(studyDate));
   const wordIds = candidates.slice(0, reliefCount).map((candidate) => candidate.wordId);
   // 不足 6 张就不播半套动画，避免「减负」看起来像一个不稳定的奖励。
   return writeState({

@@ -246,6 +246,10 @@ export async function saveDatabase(options: { notifyCloud?: boolean } = {}): Pro
       await saveFileDatabase(bytesToBase64(data));
     } else {
       await saveBrowserDatabase(data);
+      // 顺手把整库镜像到 frontend/.local/live.db,好让命令行查得到今天的真实状态。
+      if (import.meta.env.DEV) {
+        void import('./dev-snapshot').then(({ mirrorLiveSnapshot }) => mirrorLiveSnapshot(data)).catch(() => undefined);
+      }
     }
     pendingSave = false;
 
@@ -286,6 +290,12 @@ export async function loadDatabase(): Promise<boolean> {
     if (browserData) {
       await importDatabase(browserData, { validateBackup: true });
       console.log('✅ Database loaded from IndexedDB');
+      // 开着 dev server 打开页面就先落一份快照,不必等到答完第一题。
+      if (import.meta.env.DEV) {
+        void import('./dev-snapshot')
+          .then(({ mirrorLiveSnapshot }) => mirrorLiveSnapshot(browserData, { force: true }))
+          .catch(() => undefined);
+      }
       return true;
     }
 

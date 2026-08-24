@@ -4,33 +4,8 @@
 
 import { WordCard } from "../../types/vocabulary";
 import { DbRow, rowsFor } from "../database/db-utils";
-
-const senseGroups = [
-  {
-    keys: new Set(["食べる", "たべる", "召し上がる", "めしあがる", "頂く", "いただく", "食う", "くう"]),
-    items: [
-      ["食べる", "たべる", "普通说法：吃。最中性，日常最常用。"],
-      ["召し上がる", "めしあがる", "尊敬语：别人吃/喝。抬高对方。"],
-      ["頂く", "いただく", "谦让语：我吃/喝；也可表示得到。降低自己。"],
-      ["食う", "くう", "粗俗/男性化口语：吃。词库没有也给你作辨析参考。"]
-    ]
-  },
-  {
-    keys: new Set(["見る", "みる", "見える", "みえる", "見せる", "みせる"]),
-    items: [
-      ["見る", "みる", "主动看。"],
-      ["見える", "みえる", "能看见/映入眼帘，偏自动。"],
-      ["見せる", "みせる", "给别人看，偏他动。"]
-    ]
-  },
-  {
-    keys: new Set(["聞く", "きく", "聞こえる", "きこえる"]),
-    items: [
-      ["聞く", "きく", "主动听；也可表示询问。"],
-      ["聞こえる", "きこえる", "听得见，声音自然传入耳中。"]
-    ]
-  }
-];
+import { duplicateWordIds } from "../confusion-groups";
+import { worthComparing } from "./familiarity";
 
 /**
  * 计算编辑距离（Levenshtein Distance）
@@ -100,19 +75,6 @@ export function maxConfusionLengthGap(kana: string): number {
 }
 
 /**
- * 获取语义辨析组（如：食べる vs 召し上がる）
- */
-export function senseDistinctions(row: DbRow): WordCard["confusions"] {
-  const keys = new Set([String(row.kana ?? ""), String(row.kanji ?? "")]);
-  const group = senseGroups.find((item) => Array.from(keys).some((key) => item.keys.has(key)));
-  if (!group) return [];
-  return group.items.flatMap(([kanji, kana, meaning]) => {
-    if (kanji === row.kanji && kana === row.kana) return [];
-    return [{ kanji, kana, meaning, kind: "sense" }];
-  });
-}
-
-/**
  * 每个词的易混词结果缓存。
  *
  * 这个函数每张卡都要跑一次,而它内部是「按假名长度筛一遍 words 表(几千行)
@@ -156,6 +118,7 @@ interface ConfusionWord {
   pos: string;
   verbType: unknown;
   importance: number;
+  jlptLevel: string;
   length: number;
 }
 
@@ -164,7 +127,7 @@ let wordsByKanaLength: Map<number, ConfusionWord[]> | null = null;
 const loadWords = (): Map<number, ConfusionWord[]> => {
   if (wordsByKanaLength) return wordsByKanaLength;
   const buckets = new Map<number, ConfusionWord[]>();
-  for (const candidate of rowsFor("SELECT id, meaning, kana, kanji, pos, verb_type, importance FROM words")) {
+  for (const candidate of rowsFor("SELECT id, meaning, kana, kanji, pos, verb_type, importance, jlpt_level FROM words")) {
     const kana = String(candidate.kana ?? "");
     if (!kana) continue;
     const length = Array.from(kana).length;
@@ -176,6 +139,7 @@ const loadWords = (): Map<number, ConfusionWord[]> => {
       pos: String(candidate.pos ?? ""),
       verbType: candidate.verb_type,
       importance: Number(candidate.importance ?? 0),
+      jlptLevel: String(candidate.jlpt_level ?? ""),
       length
     };
     const bucket = buckets.get(length);
@@ -188,7 +152,7 @@ const loadWords = (): Map<number, ConfusionWord[]> => {
 
 function computeConfusionCandidates(row: DbRow): WordCard["confusions"] {
   const currentKana = String(row.kana ?? "");
-  if (!currentKana) return senseDistinctions(row);
+  if (!currentKana) return [];
   const currentPos = String(row.pos ?? "").split("・")[0];
   const currentId = Number(row.id ?? 0);
   const currentLength = Array.from(currentKana).length;
@@ -196,15 +160,29 @@ function computeConfusionCandidates(row: DbRow): WordCard["confusions"] {
   const threshold = confusionThreshold(currentKana);
 
   const buckets = loadWords();
+  // 老库里同一个词有两行(コピー / copy / コピー)。不滤掉的话音近榜上会同时出现
+  // 同一个词的两行,而且它们互相之间相似度满分,排名还都很靠前。
+  const duplicates = duplicateWordIds();
   const nearby: ConfusionWord[] = [];
   for (let length = currentLength - maxGap; length <= currentLength + maxGap; length += 1) {
     const bucket = buckets.get(length);
     if (bucket) nearby.push(...bucket);
   }
 
+  const currentLevel = String(row.jlpt_level ?? "");
   const scored = nearby.flatMap((candidate) => {
-    if (candidate.id === currentId) return [];
+    if (candidate.id === currentId || duplicates.has(candidate.id)) return [];
+    // 筛在取前三**之前**：放到后面筛等于让没学过的生僻词先把位置占掉再被删空
+    if (!worthComparing(currentLevel, candidate.jlptLevel, candidate.id)) return [];
     const candidateKana = candidate.kana;
+    // 假名一模一样的不是「音形相近」——「形」根本没差。这一条挡掉的三样东西都不该
+    // 挂在音近名下:老库里没合并的外来語重复行(インターネット / internet,272 对)、
+    // 纯异写(繋がる / つながる,120 对)、以及真的同音异义词(公園 / 講演,2256 对)。
+    // 前两样根本不是易混词,最后一样有更准的说法 —— confusion-groups 的 homophone /
+    // kanji-choice 组会把它们收进去,并告诉用户「读音完全一样,只能靠语境选汉字」。
+    // 编辑距离对这三样一视同仁地给满分 1.0,于是它们永远霸占前三名,把真正差一两个
+    // 假名的候选挤没了。
+    if (candidateKana === currentKana) return [];
     const phonetic = kanaSimilarity(currentKana, candidateKana);
     const structural = structuralSimilarity(currentKana, candidateKana);
     let similarity = phonetic * 0.65 + structural * 0.35;
@@ -218,14 +196,11 @@ function computeConfusionCandidates(row: DbRow): WordCard["confusions"] {
   ));
 
   const phoneticItems = scored.slice(0, 3).map(({ candidate }) => ({
+    id: candidate.id,
     kana: candidate.kana,
     kanji: candidate.kanji,
     meaning: candidate.meaning,
     kind: "sound"
   }));
-  const existing = new Set(phoneticItems.map((item) => `${item.kana}|${item.kanji}`));
-  return [
-    ...senseDistinctions(row).filter((item) => !existing.has(`${item.kana}|${item.kanji}`)),
-    ...phoneticItems
-  ];
+  return phoneticItems;
 }

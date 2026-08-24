@@ -85,21 +85,78 @@
 .zoo-gloss:hover::after{animation:zooGloss .6s ease}
 @keyframes zooGloss{0%{left:-70%;opacity:.85}100%{left:130%;opacity:0}}
 
-/* 认识:弹一下 + 绿光脉冲 */
-.zoo-flash-good{z-index:2;animation:zooFlashGood .42s cubic-bezier(.34,1.6,.5,1)}
-@keyframes zooFlashGood{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(143,203,94,0)}35%{transform:scale(1.08);box-shadow:0 0 0 5px rgba(143,203,94,.45),0 10px 22px rgba(111,168,62,.4)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(143,203,94,0)}}
-/* 不认识:轻轻摇头(不惩罚) */
-.zoo-flash-bad{z-index:2;animation:zooFlashBad .42s ease}
-@keyframes zooFlashBad{0%,100%{transform:translateX(0) rotate(0)}18%{transform:translateX(-5px) rotate(-1.6deg)}40%{transform:translateX(4px) rotate(1.4deg)}62%{transform:translateX(-3px) rotate(-.9deg)}82%{transform:translateX(2px) rotate(.4deg)}}
-
-/* 评分按钮交错弹入 */
-.zoo-rates div button{animation:zooRateIn .3s cubic-bezier(.34,1.56,.64,1) backwards}
-.zoo-rates div button:nth-child(1){animation-delay:.02s}
-.zoo-rates div button:nth-child(2){animation-delay:.07s}
-.zoo-rates div button:nth-child(3){animation-delay:.12s}
-.zoo-rates div button:nth-child(4){animation-delay:.17s}
+/* 评分按钮交错弹入。
+   ⚠️ 选择器必须是 .zoo-rate-row —— 学习页的评分按钮走 Tailwind,身上没有
+   .zoo-rates(那一族是老主页原型的遗留,全仓库没有一处 tsx 用到)。
+   挂错选择器的后果是这条动画从上线起一帧都没播过,而且完全不报错。 */
+.zoo-rate-row>button{animation:zooRateIn .26s cubic-bezier(.34,1.56,.64,1) backwards}
+.zoo-rate-row>button:nth-child(1){animation-delay:.01s}
+.zoo-rate-row>button:nth-child(2){animation-delay:.05s}
+.zoo-rate-row>button:nth-child(3){animation-delay:.09s}
+.zoo-rate-row>button:nth-child(4){animation-delay:.13s}
 @keyframes zooRateIn{0%{opacity:0;transform:translateY(9px) scale(.95)}100%{opacity:1;transform:none}}
-.zoo-rates div button.zoo-flash-good,.zoo-rates div button.zoo-flash-bad{animation-delay:0s}
+
+/* ——— 评分的即时反馈 ———
+   这一层**必须活在卡片子树之外**。评分是同步的:submitAnswer 里 setCard 和
+   反馈 state 落在同一个 commit,卡片按 key 整棵换掉 —— 挂在按钮上的动画会被
+   当场卸载,一帧都播不出来(改版前的 .zoo-flash-good 就是这么死的)。
+
+   放在不带 key 的 .dictionary-card 上,它就能一边播完自己的 .46s,一边让
+   下一张卡照常入场。这正是格斗游戏 hitstop 的做法:定住被打的那个东西,
+   世界继续跑 —— 而不是全局压一顿。 */
+.zoo-rate-burst{
+  position:absolute;left:50%;top:24%;z-index:30;pointer-events:none;opacity:0;
+  border:3px solid;border-radius:14px;padding:8px 16px;
+  font-size:20px;font-weight:900;letter-spacing:2px;white-space:nowrap;
+  backdrop-filter:blur(2px);
+  animation:zooRateBurst .46s cubic-bezier(.2,1.4,.4,1) forwards
+}
+.zoo-rate-burst.good{border-color:var(--zoo-primary-dark);color:var(--zoo-primary-deep);background:rgba(211,233,182,.62)}
+.zoo-rate-burst.bad{border-color:var(--zoo-brown);color:var(--zoo-brown-deep);background:rgba(239,223,194,.62)}
+@keyframes zooRateBurst{
+  0%{opacity:0;transform:translate(-50%,4px) scale(.72) rotate(-12deg)}
+  26%{opacity:1;transform:translate(-50%,0) scale(1.06) rotate(-9deg)}
+  62%{opacity:1;transform:translate(-50%,0) scale(1) rotate(-9deg)}
+  100%{opacity:0;transform:translate(-50%,-14px) scale(1.02) rotate(-9deg)}
+}
+
+/* 翻面。这是整个学习循环里最高频的一下(每张卡都要翻一次),
+   改版前它是全页唯一零动效的交互:有声音、没画面。
+   只给 .18s 的托起 —— 再长就挡在「我想看答案」前面了,3D 翻转更是。 */
+/* 翻面后的答案块。它是 place-items-center 那个网格里的唯一项，JSX 上还挂着 min-w-0：
+   不加的话任何一个 nowrap 的后代（辨析入口那串词条就是）都能把网格列撑得比容器宽，
+   于是答案区多出横向滚动条、「言う」按撑宽后的列居中 = 看着整体偏右。见 styles.css 的 .wd-entry。 */
+.zoo-reveal-in{animation:zooRevealIn .18s cubic-bezier(.22,.9,.3,1)}
+@keyframes zooRevealIn{0%{opacity:0;transform:translateY(7px)}100%{opacity:1;transform:none}}
+
+/* ——— 成就解锁 ———
+   成就是判据现算 + 自动补发的,所以「一次解锁好几个」是常态而不是边缘情况。
+   改版前它和「已同步勾选范围」共用同一个青色小 toast,而且 showNotice 每次都
+   clearTimeout + 覆盖 —— 连发三个只看得见最后一个。
+   现在它有自己的形制(从顶上落下的奖牌)和自己的队列,一条一条播。 */
+.zoo-achv-pop{
+  position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 12px);z-index:60;
+  display:flex;align-items:center;gap:11px;
+  max-width:min(88vw,420px);
+  border:1.5px solid rgba(209,154,39,.55);border-radius:18px;
+  background:linear-gradient(135deg,#FFFDF4,#F5E9C8);
+  padding:10px 16px 10px 13px;
+  box-shadow:0 14px 34px rgba(120,90,50,.28);
+  color:#4A3A22;pointer-events:none;
+  animation:zooAchvIn .5s cubic-bezier(.18,1.45,.42,1)
+}
+.zoo-achv-pop.leaving{animation:zooAchvOut .26s cubic-bezier(.5,0,.85,.3) forwards}
+.zoo-achv-emoji{font-size:26px;line-height:1;flex:none}
+.zoo-achv-copy{display:flex;flex-direction:column;gap:1px;min-width:0}
+.zoo-achv-kick{font-size:10px;font-weight:900;letter-spacing:.16em;color:#A98232}
+.zoo-achv-name{font-size:14px;font-weight:800;line-height:1.25}
+/* 队列里还压着几个:让人知道刚才那声不是全部 */
+.zoo-achv-rest{font-size:10px;font-weight:700;color:#A98232;margin-left:4px;flex:none}
+@keyframes zooAchvIn{0%{opacity:0;transform:translate(-50%,-22px) scale(.9)}
+  62%{opacity:1;transform:translate(-50%,3px) scale(1.02)}
+  100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes zooAchvOut{0%{opacity:1;transform:translate(-50%,0) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-16px) scale(.96)}}
 
 /* 卡片换词入场 */
 .zoo-enter{animation:zooCardEnter .34s cubic-bezier(.34,1.4,.6,1)}
@@ -152,11 +209,11 @@
 .daily-relief-banner-spark{font-size:19px!important;color:#D19A27!important;animation:zooSparkle .8s ease-in-out infinite alternate}
 @keyframes dailyReliefBannerIn{0%{opacity:0;transform:translateY(-12px) scale(.92)}100%{opacity:1;transform:none}}
 @keyframes zooSparkle{from{transform:scale(.8) rotate(-10deg);opacity:.55}to{transform:scale(1.12) rotate(8deg);opacity:1}}
-.daily-relief-card{background:linear-gradient(160deg,#FFFDF4,#F5EFD9)!important;border-color:rgba(143,203,94,.72)!important;box-shadow:0 18px 42px rgba(111,168,62,.2),0 0 0 1px rgba(255,255,255,.5) inset!important;animation:dailyReliefDealIn .4s cubic-bezier(.18,1.5,.42,1)}
-.daily-relief-card-leaving{animation:dailyReliefDealOut .24s cubic-bezier(.58,.04,.78,.25) forwards!important;pointer-events:none}
+.daily-relief-card{background:linear-gradient(160deg,#FFFDF4,#F5EFD9)!important;border-color:rgba(143,203,94,.72)!important;box-shadow:0 18px 42px rgba(111,168,62,.2),0 0 0 1px rgba(255,255,255,.5) inset!important;animation:dailyReliefDealIn .2s cubic-bezier(.18,1.5,.42,1)}
+.daily-relief-card-leaving{animation:dailyReliefDealOut .12s cubic-bezier(.58,.04,.78,.25) forwards!important;pointer-events:none}
 @keyframes dailyReliefDealIn{0%{opacity:0;transform:translate3d(80px,-18px,0) rotate(5deg) scale(.91)}65%{opacity:1;transform:translate3d(-8px,2px,0) rotate(-1.2deg) scale(1.015)}100%{opacity:1;transform:none}}
 @keyframes dailyReliefDealOut{0%{opacity:1;transform:translate3d(0,0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate3d(110vw,-14vh,0) rotate(14deg) scale(.88)}}
-.daily-relief-auto-state{display:flex;height:64px;align-items:center;justify-content:center;gap:9px;border:1px solid rgba(143,203,94,.42);border-radius:16px;background:rgba(228,242,208,.72);color:#547A2E;animation:dailyReliefStamp .34s cubic-bezier(.2,1.5,.4,1)}
+.daily-relief-auto-state{display:flex;height:64px;align-items:center;justify-content:center;gap:9px;border:1px solid rgba(143,203,94,.42);border-radius:16px;background:rgba(228,242,208,.72);color:#547A2E;animation:dailyReliefStamp .17s cubic-bezier(.2,1.5,.4,1)}
 .daily-relief-auto-state>span{display:grid;height:27px;width:27px;place-items:center;border-radius:50%;background:#8FCB5E;color:#fff;font-weight:900}
 .daily-relief-auto-state strong{font-size:17px}.daily-relief-auto-state small{font-size:11px;color:#78975A}
 @keyframes dailyReliefStamp{0%{opacity:0;transform:scale(.76) rotate(-5deg)}65%{opacity:1;transform:scale(1.07) rotate(1deg)}100%{transform:none}}
@@ -395,7 +452,7 @@
 .quick-study-error{margin:7px 0;color:#B4453C;font-size:10px;font-weight:700;line-height:1.4}
 .quick-study-list{display:flex;flex-direction:column}
 .quick-study-page-shell .quick-study-list{display:block;column-count:2;column-gap:24px}
-.quick-study-row{display:flex;gap:7px;border-bottom:1px solid rgba(192,133,82,.14);padding:8px 0 7px;min-width:0}
+.quick-study-row{display:flex;gap:7px;border-bottom:1px solid rgba(192,133,82,.14);padding:8px 0 7px;min-width:0;cursor:pointer}
 .quick-study-row-selecting{cursor:pointer;user-select:none;touch-action:pan-y}
 .quick-study-row-selecting:active{background:rgba(143,203,94,.1)}
 .quick-study-page-shell .quick-study-row{break-inside:avoid;padding:13px 0 12px}
@@ -425,6 +482,7 @@
 .quick-study-page-shell .quick-study-answer-button{padding:6px 10px;font-size:11px}
 .quick-study-answer-button:hover,.quick-study-answer-button.on{border-color:rgba(111,168,62,.55);background:var(--zoo-primary-soft);color:var(--zoo-primary-deep)}
 .quick-study-rating-wrap{position:relative}
+.quick-study-rating-wrap-open{z-index:12}
 .quick-study-rating{display:inline-flex;align-items:center;gap:2px;border:1px solid rgba(111,168,62,.5);border-radius:7px;background:var(--zoo-primary-soft);padding:4px 6px;color:var(--zoo-primary-deep);font-size:10px;font-weight:800;line-height:1}
 .quick-study-page-shell .quick-study-rating{padding:6px 10px;font-size:11px}
 .quick-study-rating:hover{filter:brightness(.98)}
@@ -432,6 +490,7 @@
 .quick-study-rating-forgot{border-color:rgba(180,69,60,.4);background:rgba(243,207,201,.7);color:#A33F36}
 .quick-study-rating-known_forever{border-color:rgba(91,126,173,.45);background:rgba(208,222,243,.78);color:#45658D}
 .quick-study-rating-popover{position:absolute;right:0;bottom:calc(100% + 6px);z-index:8;display:grid;min-width:92px;gap:2px;border:1px solid rgba(192,133,82,.3);border-radius:10px;background:var(--zoo-surface);padding:4px;box-shadow:0 8px 22px rgba(96,67,38,.2)}
+.quick-study-rating-popover-down{top:calc(100% + 6px);bottom:auto}
 .quick-study-rating-popover button{display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;border-radius:7px;background:transparent;padding:6px 7px;color:var(--zoo-ink);font-size:10px;font-weight:700;text-align:left}
 .quick-study-rating-popover button:hover,.quick-study-rating-popover button.selected{background:var(--zoo-primary-soft);color:var(--zoo-primary-deep)}
 .quick-study-empty{display:flex;min-height:174px;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--zoo-muted);font-size:11px;text-align:center}
@@ -676,7 +735,7 @@
 [data-motion="reduced"] .zoo-page,
 [data-motion="reduced"] .zoo-enter,
 [data-motion="reduced"] .zoo-tile,
-[data-motion="reduced"] .zoo-rates div button,
+[data-motion="reduced"] .zoo-rate-row>button,
 [data-motion="reduced"] .zoo-parade i{
   animation:none!important
 }
@@ -742,6 +801,9 @@
   border:1px solid rgba(154,138,120,.35);color:var(--zoo-muted,#9A8A78);background:transparent}
 .cf-sheet-hint{border-radius:12px;background:rgba(126,190,79,.13);padding:8px 11px;
   color:#3B5220;font-size:12px;font-weight:600;line-height:1.6}
+.cf-sheet-summary.is-major{background:rgba(196,65,65,.12);color:#A83D3D}
+.cf-sheet-summary b{font-weight:800}
+.cf-sheet-summary:not(.is-major){background:rgba(154,138,120,.12);color:#2F2A25}
 .cf-members{display:flex;flex-direction:column;gap:9px}
 .cf-member{border:1px dashed rgba(192,133,82,.3);border-radius:14px;padding:10px 12px;
   background:rgba(255,255,255,.42)}
@@ -767,5 +829,349 @@
 [data-theme="dark"] .cf-sheet{background:linear-gradient(160deg,#353D31,#2C332A);border-color:rgba(167,215,125,.32)}
 [data-theme="dark"] .cf-member{background:rgba(255,255,255,.05);border-color:rgba(230,193,155,.26)}
 [data-theme="dark"] .cf-sheet-hint{background:rgba(167,215,125,.14);color:#C4E89B}
+[data-theme="dark"] .cf-sheet-summary:not(.is-major){background:rgba(167,215,125,.14);color:#C4E89B}
+[data-theme="dark"] .cf-sheet-summary.is-major{background:rgba(255,105,105,.13);color:#FFAAA9}
 [data-theme="dark"] .cf-master{background:#405437;color:#C4E89B}
 [data-theme="dark"] .cf-master.is-on{background:#3B4338;color:var(--zoo-muted,#C2B9A9)}
+
+/* ——— 词库 / 选词 ——— */
+/* 记忆档的颜色只在这里定义一遍：分布带、图例小方块、每行左侧的色条、详情卡都读同一个 --band。
+   档位说的是「还能记多久」(FSRS stability)，不是「今天该不该复习」—— 到期另有 ⏰ 角标。 */
+[data-band]{--band:#B9AE9C}
+[data-band="mastered"]{--band:#1F8A6D}
+[data-band="d5"]{--band:#2F9E5F}
+[data-band="d4"]{--band:#5FB14E}
+[data-band="d3"]{--band:#A8C437}
+[data-band="d2"]{--band:#E5A428}
+[data-band="d1"]{--band:#EF6A2C}
+[data-band="d0"]{--band:#E0413C}
+[data-band="unseen"]{--band:#B9AE9C}
+[data-theme="dark"] [data-band="unseen"]{--band:#6E675C}
+[data-theme="dark"] [data-band="d3"]{--band:#B6D044}
+[data-theme="dark"] [data-band="mastered"]{--band:#33A98A}
+
+.wl-page{display:flex;flex-direction:column;gap:12px;max-width:720px;margin:0 auto;padding-bottom:96px}
+.wl-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.wl-kick{color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.wl-title{margin-top:2px;color:var(--zoo-ink);font-size:22px;font-weight:800}
+.wl-count{color:var(--zoo-muted,#9A8A78);font-size:12px;font-weight:700;text-align:right}
+.wl-count b{color:var(--zoo-primary-deep);font-size:15px}
+
+.wl-search{display:flex;align-items:center;gap:8px;border:1.5px solid rgba(192,133,82,.28);border-radius:16px;
+  background:var(--zoo-surface,#FBF5E9);padding:10px 12px;color:var(--zoo-muted,#9A8A78)}
+.wl-search input{flex:1;min-width:0;border:0;background:transparent;color:var(--zoo-ink);font-size:14px;font-weight:600;outline:none}
+.wl-search input::placeholder{color:var(--zoo-muted,#9A8A78);font-weight:600}
+.wl-search button{display:grid;place-items:center;width:22px;height:22px;border:0;border-radius:50%;
+  background:rgba(154,138,120,.18);color:var(--zoo-muted,#9A8A78)}
+
+.wl-chips{display:flex;flex-wrap:wrap;gap:6px}
+.wl-chip{border:1px solid rgba(192,133,82,.28);border-radius:12px;background:var(--zoo-surface,#FBF5E9);
+  padding:6px 11px;color:var(--zoo-ink);font-size:12.5px;font-weight:700}
+.wl-chip.on{border-color:var(--zoo-primary-dark);background:var(--zoo-primary-soft);color:var(--zoo-primary-deep)}
+
+/* 分布带：宽度就是条数比例，点一段=只看这一档 */
+.wl-dist-cap{color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:700}
+.wl-dist-cap b{color:var(--zoo-ink)}
+.wl-dist{display:flex;gap:2px;height:14px;overflow:hidden;border-radius:8px;background:rgba(154,138,120,.16)}
+.wl-dist-seg{flex-basis:0;min-width:3px;border:0;background:var(--band);opacity:.9;transition:opacity .16s ease,transform .16s ease}
+.wl-dist-seg.on{opacity:1;transform:scaleY(1.25)}
+.wl-dist-seg:hover{opacity:1}
+
+.wl-legend{display:flex;flex-wrap:wrap;gap:5px}
+.wl-legend-item{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(192,133,82,.22);
+  border-radius:11px;background:transparent;padding:4px 8px;color:var(--zoo-brown-deep,#9C6B3F);font-size:11.5px;font-weight:700}
+.wl-legend-item.on{border-color:var(--zoo-primary-dark);background:var(--zoo-primary-soft);color:var(--zoo-primary-deep)}
+.wl-legend-item i{display:block;width:9px;height:9px;border-radius:3px;background:var(--band);font-style:normal}
+.wl-legend-item i.wl-legend-flag{width:auto;height:auto;background:none;font-size:11px}
+.wl-legend-item b{color:var(--zoo-ink);font-weight:800}
+
+.wl-tools{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wl-select{border:1.5px solid var(--zoo-primary-dark);border-radius:13px;background:var(--zoo-primary-soft);
+  padding:7px 14px;color:var(--zoo-primary-deep);font-size:13px;font-weight:800}
+.wl-more-btn{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(192,133,82,.28);border-radius:13px;
+  background:transparent;padding:7px 12px;color:var(--zoo-brown-deep,#9C6B3F);font-size:12.5px;font-weight:700}
+.wl-flip{transform:rotate(180deg)}
+.wl-panel{display:flex;flex-direction:column;gap:7px;border:1px dashed rgba(192,133,82,.3);border-radius:16px;padding:12px}
+.wl-panel-title{color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:800;letter-spacing:.1em}
+
+.wl-list{display:flex;flex-direction:column;gap:6px;list-style:none;margin:0;padding:0}
+/* 一路懒加载意味着 N1 那 4,000 行最终都会挂在 DOM 上。content-visibility 让浏览器
+   跳过屏幕外那些行的渲染和布局，contain-intrinsic-size 给它们一个占位高度，
+   滚动条不会因此乱跳。不支持的旧 WebView 上就是普通渲染，不影响功能。 */
+.wl-row{content-visibility:auto;contain-intrinsic-size:auto 78px;
+  display:flex;align-items:stretch;gap:8px;width:100%;overflow:hidden;
+  border:1px solid rgba(192,133,82,.2);border-radius:14px;
+  background:var(--zoo-surface,#FBF5E9);padding:9px 10px 9px 8px;transition:border-color .16s ease}
+.wl-row-tick{flex:none;width:5px;min-height:34px;border-radius:3px;background:var(--band)}
+.wl-row-main{flex:1;display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;
+  border:0;background:transparent;padding:0;text-align:left;transition:transform .12s ease}
+.wl-row-main:active{transform:scale(.99)}
+/* 行末那颗「熟知」：一列扫下来点得到，但不能抢主区域的宽度 */
+.wl-row-known{flex:none;align-self:center;display:inline-flex;align-items:center;gap:3px;
+  border:1px solid rgba(192,133,82,.32);border-radius:11px;padding:6px 9px;background:transparent;
+  color:var(--zoo-brown-deep,#9C6B3F);font-size:11.5px;font-weight:800;white-space:nowrap}
+.wl-row-known:active{transform:scale(.94)}
+.wl-row-known.on{border-color:var(--zoo-primary-dark);background:var(--zoo-primary-soft);color:var(--zoo-primary-deep)}
+[data-theme="dark"] .wl-row-known.on{background:#405437;color:#C4E89B}
+.wl-row:active{transform:scale(.99)}
+.wl-row.picked{border-color:var(--zoo-primary-dark);background:var(--zoo-primary-soft)}
+.wl-check{flex:none;display:grid;place-items:center;width:19px;height:19px;border-radius:6px;
+  border:1.5px solid rgba(154,138,120,.5);color:var(--zoo-on-primary)}
+.wl-check.on{border-color:var(--zoo-primary-dark);background:var(--zoo-primary)}
+.wl-row-word{flex:none;display:flex;flex-direction:column;min-width:76px;max-width:38%}
+.wl-row-word b{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:16px;font-weight:800;line-height:1.25;word-break:break-all}
+.wl-row-word small{color:var(--zoo-brown-deep,#9C6B3F);font-size:10.5px;font-weight:700}
+.wl-row-mid{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.wl-row-meaning{color:var(--zoo-ink);font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl-row-tags{color:var(--zoo-muted,#9A8A78);font-size:10.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl-row-mem{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:33%}
+.wl-row-status{color:var(--zoo-ink);font-size:11.5px;font-weight:800;white-space:nowrap}
+.wl-row-band{color:var(--band);font-size:10.5px;font-weight:800;white-space:nowrap}
+
+.wl-empty{padding:26px 0;text-align:center;color:var(--zoo-muted,#9A8A78);font-size:13px;font-weight:700}
+.wl-sentinel{padding:14px 0;text-align:center;color:var(--zoo-muted,#9A8A78);font-size:12px;font-weight:700}
+.wl-sentinel-more{border:0;background:transparent;padding:8px 16px;
+  color:var(--zoo-muted,#9A8A78);font-size:12px;font-weight:700}
+
+/* 选词工具条：底部导航是 z-index:9999,这条要压在它上面才点得到 */
+.wl-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 78px);
+  z-index:10000;display:flex;flex-direction:column;gap:7px;width:calc(100vw - 24px);max-width:560px;
+  border:1.5px solid rgba(126,190,79,.4);border-radius:18px;padding:8px 10px;
+  background:var(--zoo-surface,#FBF5E9);box-shadow:0 10px 30px rgba(40,30,18,.24)}
+/* 上面一排是「怎么选」，下面一排是「选完干什么」 */
+.wl-bar-picks{display:flex;align-items:center;gap:5px;overflow-x:auto}
+.wl-bar-pick{flex:none;border:1px solid rgba(192,133,82,.28);border-radius:10px;background:transparent;
+  padding:4px 9px;color:var(--zoo-brown-deep,#9C6B3F);font-size:11.5px;font-weight:800;white-space:nowrap}
+.wl-bar-pick:disabled{opacity:.4}
+.wl-bar-acts{display:flex;align-items:center;gap:6px;overflow-x:auto}
+.wl-bar-count{flex:none;color:var(--zoo-primary-deep);font-size:12.5px;font-weight:800;white-space:nowrap}
+.wl-bar-btn{flex:none;border:1px solid rgba(192,133,82,.3);border-radius:12px;background:transparent;
+  padding:7px 11px;color:var(--zoo-ink);font-size:12.5px;font-weight:800;white-space:nowrap}
+.wl-bar-btn.primary{border-color:var(--zoo-primary-dark);background:var(--zoo-primary);color:var(--zoo-on-primary)}
+.wl-bar-btn:disabled{opacity:.4}
+.wl-notice{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 140px);
+  z-index:10000;display:flex;align-items:center;gap:12px;max-width:min(92vw,460px);
+  border-radius:14px;background:rgba(58,46,34,.92);padding:9px 10px 9px 15px;color:#FBF5E9;font-size:12.5px;font-weight:700}
+/* 撤销键。做成真按钮而不是一行小字:它得能在 6 秒里被一次够到 */
+.wl-notice-act{flex:none;border:1px solid rgba(251,245,233,.34);border-radius:9px;
+  background:rgba(251,245,233,.1);padding:5px 11px;color:#FBF5E9;font-size:12px;font-weight:800;
+  -webkit-tap-highlight-color:transparent;transition:background-color .16s,transform .16s}
+.wl-notice-act:active{transform:scale(.94);background:rgba(251,245,233,.2)}
+
+/* 详情：只读,和疑难辨析的大卡同一套形制 */
+.wl-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:flex-end;justify-content:center;
+  background:rgba(30,24,16,.45);backdrop-filter:blur(3px);animation:cf-fade .18s ease}
+.wl-sheet{width:min(560px,100%);max-height:78vh;display:flex;flex-direction:column;gap:9px;overflow-y:auto;
+  border:1.5px solid rgba(126,190,79,.3);border-radius:26px 26px 0 0;
+  padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(160deg,var(--zoo-surface,#FBF5E9),#F3E7CE);
+  box-shadow:0 -10px 40px rgba(40,30,18,.28);animation:cf-rise .26s cubic-bezier(.2,.9,.3,1.05)}
+.wl-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.wl-sheet-level{color:var(--zoo-primary-deep);font-size:12px;font-weight:800}
+.wl-sheet-actions{display:flex;align-items:center;gap:7px}
+.wl-fav,.wl-close{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+  border:1px solid rgba(154,138,120,.35);color:var(--zoo-muted,#9A8A78);background:transparent}
+.wl-fav.on{border-color:var(--zoo-orange);background:var(--zoo-orange-soft);color:#B4740A}
+.wl-sheet-word{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:32px;font-weight:800;line-height:1.2}
+.wl-sheet-kana{color:var(--zoo-brown-deep,#9C6B3F);font-size:14px;font-weight:700}
+.wl-sheet-meaning{color:var(--zoo-ink);font-size:15px;font-weight:700;line-height:1.6}
+.wl-sheet-example{border:1px dashed rgba(192,133,82,.3);border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.42)}
+.wl-sheet-example p{color:var(--zoo-ink);font-size:14px;line-height:1.7}
+.wl-sheet-example span{display:block;margin-top:3px;color:var(--zoo-muted,#9A8A78);font-size:12px}
+.wl-sheet-mem{border:1px solid rgba(192,133,82,.24);border-left:5px solid var(--band);border-radius:14px;padding:11px 13px}
+.wl-sheet-mem-band{display:inline-flex;align-items:center;gap:6px;color:var(--zoo-ink);font-size:13.5px;font-weight:800}
+.wl-sheet-mem-band i{display:block;width:10px;height:10px;border-radius:3px;background:var(--band)}
+.wl-sheet-mem-hint{margin-top:3px;color:var(--zoo-muted,#9A8A78);font-size:11.5px;font-weight:600;line-height:1.5}
+.wl-sheet-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:9px}
+.wl-sheet-stats dt{color:var(--zoo-muted,#9A8A78);font-size:10.5px;font-weight:800}
+.wl-sheet-stats dd{color:var(--zoo-ink);font-size:13px;font-weight:800}
+.wl-sheet-queue{display:flex;flex-direction:column;gap:2px;align-items:center;
+  border:1.5px solid var(--zoo-primary-dark);border-radius:16px;padding:10px;
+  background:var(--zoo-primary-soft);color:var(--zoo-primary-deep);font-size:14px;font-weight:800}
+.wl-sheet-queue small{color:var(--zoo-brown-deep,#9C6B3F);font-size:11px;font-weight:600}
+[data-theme="dark"] .wl-sheet-queue{background:#405437;color:#C4E89B}
+.wl-sheet-note{display:flex;flex-direction:column;gap:4px}
+.wl-sheet-note span{color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:800;letter-spacing:.1em}
+.wl-sheet-note textarea{border:1px solid rgba(192,133,82,.3);border-radius:12px;background:rgba(255,255,255,.5);
+  padding:8px 10px;color:var(--zoo-ink);font-size:13px;font-weight:600;resize:vertical;outline:none}
+
+[data-theme="dark"] .wl-row{background:#3A4235;border-color:rgba(167,215,125,.22)}
+[data-theme="dark"] .wl-row.picked{background:#405437}
+[data-theme="dark"] .wl-search{background:#3A4235;border-color:rgba(167,215,125,.26)}
+[data-theme="dark"] .wl-chip{background:#3A4235;border-color:rgba(167,215,125,.24)}
+[data-theme="dark"] .wl-chip.on{background:#405437;color:#C4E89B}
+[data-theme="dark"] .wl-sheet{background:linear-gradient(160deg,#353D31,#2C332A);border-color:rgba(167,215,125,.32)}
+[data-theme="dark"] .wl-sheet-example,[data-theme="dark"] .wl-sheet-note textarea{background:rgba(255,255,255,.05);border-color:rgba(230,193,155,.26)}
+[data-theme="dark"] .wl-bar{background:#353D31;border-color:rgba(167,215,125,.35)}
+[data-theme="dark"] .wl-notice{background:rgba(20,24,18,.94)}
+@media (prefers-reduced-motion:reduce){.wl-overlay,.wl-sheet{animation:none}.wl-row{transition:none}}
+
+/* ================= 主页 v2：保留全部入口，靠层级和收纳分主次 =================
+   原来 11 个入口各自是一张描边+阴影的卡片，尺寸相近、结构相同（emoji+标题+副标题），
+   于是「今天要背的词」和「收藏」视觉重量一样 —— 均匀就是杂乱的来源。
+   这里不删任何入口，改成四层：
+     T1 今日大卡   通栏 · 实心主色 · 数字 40px       ← 全页唯一的实心块
+     T2 备考/队伍  并排 · 描边不填色 · 标题 15px
+     T3 园子一条   三段 · 中性底 · 13px
+     T4 工具四格   一个盘子里 · 无独立描边 · 13px
+     T5 进度概览   折叠，摘要只有一行数
+   收纳：同类装进一个「盘子」(.zoo-tray)，盘子内部的格子不再各自描边，
+   一屏里的边框数从 11 条降到 4 条。 */
+
+.zoo-home-v2{display:flex;flex-direction:column;gap:12px}
+.zoo-home-v2 .zoo-greet{margin-bottom:0}
+.zoo-home-v2 .zoo-greet-hi{font-size:19px}
+
+/* 盘子：装同类的容器。比页面底色浅一层，不投影 —— 它是背景不是卡片。 */
+.zoo-tray{border:1px solid rgba(192,133,82,.16);border-radius:22px;padding:12px;
+  background:color-mix(in srgb, var(--zoo-surface) 62%, transparent)}
+.zoo-tray-title{margin:0 2px 8px;color:var(--zoo-muted,#9A8A78);
+  font-size:10.5px;font-weight:800;letter-spacing:.16em}
+/* 今天那一盘不要标题：它是主角，不需要有人介绍 */
+.zoo-tray-today{padding:10px;border-color:rgba(111,168,62,.28);
+  background:color-mix(in srgb, var(--zoo-primary-soft) 30%, transparent)}
+
+/* —— T1 今日大卡：全页唯一的实心主色块 —— */
+.zoo-now{position:relative;display:grid;grid-template-columns:1fr auto;
+  align-items:center;gap:2px 10px;width:100%;text-align:left;
+  border:0;border-radius:18px;padding:16px 18px;
+  background:linear-gradient(122deg,var(--zoo-primary-dark),var(--zoo-primary));
+  color:var(--zoo-on-primary);box-shadow:0 8px 22px rgba(111,168,62,.28);
+  transition:transform .16s cubic-bezier(.34,1.7,.5,1)}
+.zoo-now:active{transform:scale(.985)}
+.zoo-now-kick{grid-column:1;font-size:11px;font-weight:800;letter-spacing:.1em;opacity:.72}
+.zoo-now-num{grid-column:1;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;
+  font-size:40px;font-weight:800;line-height:1.05}
+.zoo-now-sub{grid-column:1;font-size:12px;font-weight:600;opacity:.8}
+/* 大数的脚注:比 sub 再轻一档,不能和「开始 →」抢。数值加粗,标签不加。 */
+.zoo-now-split{grid-column:1;margin-top:3px;font-size:11.5px;font-weight:600;opacity:.66;
+  font-variant-numeric:tabular-nums}
+.zoo-now-split b{font-weight:800}
+.zoo-now-split i{margin:0 6px;font-style:normal;opacity:.5}
+.zoo-now-emoji{grid-row:1 / 3;grid-column:2;font-size:38px;line-height:1;
+  animation:zooHopIdle 2.8s ease-in-out infinite}
+.zoo-now-go{grid-row:3;grid-column:2;justify-self:end;font-size:13px;font-weight:800}
+
+/* 模式切换：从 119px 的大卡收成一枚 chip。它是「改设置」，不该和「开始学」抢重量。 */
+.zoo-now-foot{display:flex;justify-content:flex-end;margin-top:8px}
+.zoo-mode-chip{border:1px solid rgba(192,133,82,.3);border-radius:999px;background:transparent;
+  padding:5px 12px;color:var(--zoo-brown-deep,#9C6B3F);font-size:11.5px;font-weight:700}
+.zoo-mode-chip b{color:var(--zoo-ink);font-weight:800}
+
+/* —— T2 备考 / 队伍：并排两格，描边不填色 —— */
+.zoo-duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.zoo-duo-cell{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left;
+  border:1px solid rgba(192,133,82,.24);border-radius:16px;padding:10px 12px;
+  background:var(--zoo-surface);color:var(--zoo-ink)}
+.zoo-duo-cell:active{transform:scale(.98)}
+.zoo-duo-cell b{font-size:15px;font-weight:800}
+.zoo-duo-cell small{color:var(--zoo-muted,#9A8A78);font-size:11px;line-height:1.45;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.zoo-duo-kick{color:var(--zoo-primary-deep);font-size:10px;font-weight:800;letter-spacing:.08em}
+.zoo-duo-cell small.zoo-duo-avatars{display:flex;align-items:center;gap:0;-webkit-line-clamp:none}
+.zoo-duo-avatars i{width:19px;height:19px;display:grid;place-items:center;font-style:normal;
+  font-size:11px;background:#fff;border:1.5px solid var(--zoo-surface);border-radius:50%;margin-left:-5px}
+.zoo-duo-avatars i:first-child{margin-left:0}
+.zoo-duo-avatars em{margin-left:6px;font-style:normal;font-size:10.5px}
+
+/* —— T3 园子一条：三段，中性底，只有 emoji 带色 —— */
+.zoo-strip3{display:grid;grid-template-columns:repeat(3,1fr)}
+.zoo-strip3 button{display:flex;flex-direction:column;align-items:center;gap:1px;
+  border:0;background:transparent;padding:4px 2px;color:var(--zoo-ink)}
+.zoo-strip3 button + button{border-left:1px solid rgba(192,133,82,.16)}
+.zoo-strip3 span{font-size:17px;line-height:1.2}
+.zoo-strip3 b{font-size:13px;font-weight:800}
+.zoo-strip3 small{color:var(--zoo-muted,#9A8A78);font-size:10.5px}
+
+/* —— T4 工具四格：一个盘子里，无独立描边、无说明书副标题 —— */
+/* 五格：多了「一字多音」。4 列会把第五个挤到下一行孤零零一个，
+   标签最长四个字（12px ≈ 48px），375px 屏上每格 ~62px 装得下。 */
+.zoo-quad{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.zoo-quad button{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;
+  border:0;border-radius:14px;background:transparent;padding:8px 2px;color:var(--zoo-ink)}
+.zoo-quad button:active{background:rgba(192,133,82,.1)}
+.zoo-quad span{font-size:21px;line-height:1}
+.zoo-quad b{font-size:11.5px;font-weight:700;white-space:nowrap}
+
+/* —— T5 进度概览：折叠，摘要只有一行数 —— */
+.zoo-fold summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  list-style:none;cursor:pointer}
+.zoo-fold summary::-webkit-details-marker{display:none}
+.zoo-fold summary .zoo-tray-title{margin:0}
+.zoo-fold summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:11.5px;font-weight:700;text-align:right}
+.zoo-fold summary::after{content:"▾";color:var(--zoo-muted,#9A8A78);font-size:10px}
+.zoo-fold[open] summary::after{content:"▴"}
+.zoo-fold[open] summary{margin-bottom:10px}
+.zoo-home-v2 .zoo-prog{border:0;padding:0;background:transparent;box-shadow:none}
+
+/* 维护那一折也按盘子来：实线细边、和上面几盘同一个圆角，不再是漂在底部的虚线框。
+   summary 那行要 nowrap —— flex 挤压会把「进度维护」四个字折成「进度维 / 护」。 */
+.zoo-home-v2 .zoo-maint{margin-top:0;border-style:solid;border-width:1px;
+  border-color:rgba(192,133,82,.16);border-radius:22px;
+  background:color-mix(in srgb, var(--zoo-surface) 62%, transparent)}
+.zoo-home-v2 .zoo-maint>summary{gap:10px;padding:12px}
+.zoo-home-v2 .zoo-maint>summary>:first-child,
+.zoo-home-v2 .zoo-maint>summary{white-space:nowrap}
+.zoo-home-v2 .zoo-maint>summary small{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.zoo-home-v2 .zoo-maint-body{padding:0 12px 12px}
+
+[data-theme="dark"] .zoo-tray{border-color:rgba(167,215,125,.16)}
+[data-theme="dark"] .zoo-duo-cell{background:#3A4235;border-color:rgba(167,215,125,.2)}
+[data-theme="dark"] .zoo-now{box-shadow:0 8px 22px rgba(0,0,0,.35)}
+[data-theme="dark"] .zoo-duo-avatars i{background:#2C332A;border-color:#3A4235}
+
+/* ─────────── 一字多音（KanjiReadingUsagePage） ───────────
+   遮罩和大卡直接复用 .cf-overlay/.cf-sheet/.cf-member —— 那套已经踩过
+   「父容器 position:fixed 自成层叠上下文」的坑，没必要再复制一份。
+   页面自己的部分用 .kr-*。 */
+.kr-rule{border:1px solid rgba(192,133,82,.22);border-radius:16px;
+  background:color-mix(in srgb, var(--zoo-surface) 62%, transparent);padding:11px 13px}
+.kr-rule>summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  list-style:none;cursor:pointer}
+.kr-rule>summary::-webkit-details-marker{display:none}
+.kr-rule>summary::after{content:"▾";color:var(--zoo-muted,#9A8A78);font-size:10px}
+.kr-rule[open]>summary::after{content:"▴"}
+.kr-rule>summary b{color:var(--zoo-ink);font-size:13.5px;font-weight:800}
+.kr-rule>summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:11.5px;font-weight:700}
+.kr-rule p{margin-top:9px;color:var(--zoo-ink);font-size:12.5px;font-weight:600;line-height:1.75}
+.kr-rule p b{color:var(--zoo-primary-deep);font-weight:800}
+.kr-rule-more{color:var(--zoo-muted,#9A8A78)!important}
+
+.kr-bar{display:flex;flex-direction:column;gap:8px}
+.kr-search{width:100%;border:1px solid rgba(192,133,82,.28);border-radius:12px;
+  background:var(--zoo-surface);padding:9px 12px;color:var(--zoo-ink);font-size:13.5px;font-weight:700}
+.kr-search::placeholder{color:var(--zoo-muted,#9A8A78);font-weight:600}
+.kr-chips{display:flex;flex-wrap:wrap;gap:6px}
+.kr-chips button{border:1px solid rgba(192,133,82,.28);border-radius:999px;
+  background:transparent;padding:4px 11px;color:var(--zoo-muted,#9A8A78);font-size:12px;font-weight:800}
+.kr-chips button.is-on{border-color:transparent;background:var(--zoo-primary-deep);color:#fff}
+.kr-toggle{display:inline-flex;align-items:center;gap:6px;
+  color:var(--zoo-muted,#9A8A78);font-size:12px;font-weight:700}
+.kr-toggle input{width:15px;height:15px;accent-color:var(--zoo-primary-deep)}
+
+/* 卡片以汉字为主角 —— 这一页的辨识点是那个字，不是说明文字。
+   行高固定，一屏能扫过几十个，查表才快得起来。 */
+.kr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.kr-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
+  border:1px solid rgba(192,133,82,.22);border-radius:16px;
+  background:var(--zoo-surface);padding:10px 6px 8px}
+.kr-card:active{transform:scale(.96)}
+.kr-card-char{color:var(--zoo-ink);font-size:30px;font-weight:800;line-height:1.05}
+.kr-card-readings{color:var(--zoo-brown-deep,#9C6B3F);font-size:11px;font-weight:700;
+  text-align:center;line-height:1.35;word-break:break-all}
+.kr-card-level{color:var(--zoo-muted,#9A8A78);font-size:10px;font-weight:800;letter-spacing:.04em}
+.kr-card-badge{position:absolute;top:5px;right:6px;font-size:10px;line-height:1}
+
+.kr-sheet-char{margin-right:7px;color:var(--zoo-ink);font-size:26px;font-weight:800;vertical-align:-3px}
+/* 人写的那几条是这一页最贵的内容（自动判据说不清才轮到人），实线描边把它们挑出来 */
+.kr-member-manual{border-style:solid;border-color:rgba(126,190,79,.45);
+  background:color-mix(in srgb, var(--zoo-surface) 88%, rgba(126,190,79,.12))}
+
+/* 例词一行一个：词形 / 假名 / 释义。释义那列是「哪个意思」的唯一答案，
+   挤在一行里用「・」连起来的话它就没地方放了。 */
+.kr-examples{display:flex;flex-direction:column;gap:3px;margin-top:6px}
+.kr-examples li{display:flex;align-items:baseline;gap:7px;line-height:1.5}
+.kr-examples b{flex:none;color:var(--zoo-ink);font-size:13.5px;font-weight:800}
+.kr-example-kana{flex:none;color:var(--zoo-brown-deep,#9C6B3F);font-size:11.5px;font-weight:700}
+.kr-example-gloss{min-width:0;flex:1;color:var(--zoo-muted,#9A8A78);font-size:11.5px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}

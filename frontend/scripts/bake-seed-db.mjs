@@ -16,6 +16,7 @@ const dbPath = path.join(here, "../public/nihongo.db");
 const seedPath = path.join(here, "../src/data/jlpt_words_seed.json");
 const meaningOverridesPath = path.join(here, "../src/data/jlpt_meaning_overrides.json");
 const exampleOverridesPath = path.join(here, "../src/data/jlpt_example_overrides.json");
+const jlptLevelOverridesPath = path.join(here, "../src/data/jlpt_level_overrides.json");
 const dictionarySupplementPath = path.join(here, "../src/data/dictionary_supplement_seed.json");
 
 // 与 src/lib/study-core.ts 保持一致
@@ -23,6 +24,7 @@ const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // 与 scripts/build-furigana.mjs、src/lib/study-core.ts 保持一致。
 const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
 const JLPT_WORD_METADATA_VERSION = `2026-08-11-manual-meanings-5163-polish-1130-corrections-35-examples-121-${FURIGANA_VERSION}`;
+const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
 
 const nounSuruCorrections = [
@@ -56,7 +58,20 @@ const meaningOverrides = new Map(
     .map(({ kanji, kana, meaning }) => [`${kanji}\u0000${kana}`, meaning])
 );
 const exampleOverrides = JSON.parse(readFileSync(exampleOverridesPath, "utf8"));
+const jlptLevelOverrides = JSON.parse(readFileSync(jlptLevelOverridesPath, "utf8"));
 const dictionarySupplement = JSON.parse(readFileSync(dictionarySupplementPath, "utf8"));
+
+if (jlptLevelOverrides.version !== JLPT_LEVEL_OVERRIDE_VERSION) {
+  throw new Error(`JLPT 词级别覆盖版本不一致: ${jlptLevelOverrides.version} != ${JLPT_LEVEL_OVERRIDE_VERSION}`);
+}
+if (!Array.isArray(jlptLevelOverrides.rows) || jlptLevelOverrides.rows.length !== 320) {
+  throw new Error(`JLPT 词级别覆盖条数异常: ${jlptLevelOverrides.rows?.length ?? 0} != 320`);
+}
+jlptLevelOverrides.rows.forEach(({ kanji, kana, jlptLevel }) => {
+  if (!kanji || !kana || !/^N[1-5]$/.test(jlptLevel)) {
+    throw new Error(`JLPT 词级别覆盖行无效: ${JSON.stringify({ kanji, kana, jlptLevel })}`);
+  }
+});
 
 if (dictionarySupplement.version !== DICTIONARY_SUPPLEMENT_VERSION) {
   throw new Error(`补充词典版本不一致: ${dictionarySupplement.version} != ${DICTIONARY_SUPPLEMENT_VERSION}`);
@@ -100,12 +115,22 @@ const firstValue = (query, params = []) => {
 
 const userDataTables = [
   "progress", "reviews", "checkins", "critical_reviews", "word_notes", "word_study_time",
+  "word_question_meanings",
   "kanji_progress", "kanji_memory", "kanji_char_overrides", "stage1_tasks", "stage2_progress",
   "moji_migrated_reviews", "grammar_progress", "grammar_reviews", "grammar_points_archive",
   "dictionary_discovered_words"
 ];
+// 表不存在 = 这份种子库还没升到那一版 schema,等价于空,不算用户数据。
+// 但**不能**因此把新表漏出清单：只要它在这里,种子库一旦长出这张表就会被查到。
+const userRowCount = (table) => {
+  try {
+    return Number(firstValue(`SELECT COUNT(*) FROM ${table}`)) || 0;
+  } catch {
+    return 0;
+  }
+};
 const populatedUserTables = userDataTables
-  .map((table) => [table, Number(firstValue(`SELECT COUNT(*) FROM ${table}`))])
+  .map((table) => [table, userRowCount(table)])
   .filter(([, count]) => count > 0);
 if (populatedUserTables.length) {
   throw new Error(`拒绝更新出厂词库：其中含有用户数据（${populatedUserTables.map(([table, count]) => `${table}=${count}`).join(", ")}）`);
@@ -178,6 +203,16 @@ exampleOverrides.forEach(({ kanji, kana, exampleJp, exampleMeaning, exampleFurig
     WHERE kanji = ? AND kana = ?
       AND (example_jp IS NULL OR example_jp = '')
   `, [exampleJp, exampleMeaning, furigana, typeof exampleTokens === "string" ? exampleTokens : "", typeof exampleLemmas === "string" ? exampleLemmas : "", kanji, kana]);
+});
+// 历史词库里不在 JLPT seed 的词。只填没有 N1-N5 的行,不覆盖用户库已有级别。
+jlptLevelOverrides.rows.forEach(({ kanji, kana, jlptLevel }) => {
+  db.run(`
+    UPDATE words
+    SET jlpt_level = ?
+    WHERE kanji = ?
+      AND kana = ?
+      AND (jlpt_level IS NULL OR jlpt_level NOT IN ('N1', 'N2', 'N3', 'N4', 'N5'))
+  `, [jlptLevel, kanji, kana]);
 });
 db.run(`
   UPDATE words
@@ -326,6 +361,7 @@ dictionarySupplement.entries.forEach((entry) => {
 db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
 db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
 db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_word_metadata_version', ?)", [JLPT_WORD_METADATA_VERSION]);
+db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_level_override_version', ?)", [JLPT_LEVEL_OVERRIDE_VERSION]);
 db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_seed_version', ?)", [JLPT_SEED_VERSION]);
 db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('dictionary_supplement_version', ?)", [DICTIONARY_SUPPLEMENT_VERSION]);
 db.run("COMMIT");
@@ -333,6 +369,7 @@ db.run("VACUUM");
 
 writeFileSync(dbPath, Buffer.from(db.export()));
 console.log(`✅ 已烧入版本戳 seed=${JLPT_SEED_VERSION} metadata=${JLPT_WORD_METADATA_VERSION}`);
+console.log(`✅ 已烧入 ${jlptLevelOverrides.rows.length} 条历史词 JLPT 级别(${JLPT_LEVEL_OVERRIDE_VERSION})`);
 console.log(`✅ 已烧入独立补充词典 ${dictionarySupplement.entries.length} 条(${DICTIONARY_SUPPLEMENT_VERSION})`);
 console.log(`✅ 已写回 ${dbPath}`);
 const iosDbPath = path.join(here, "../ios/App/App/public/nihongo.db");

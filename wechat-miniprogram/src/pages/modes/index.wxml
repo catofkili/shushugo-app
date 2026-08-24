@@ -1,0 +1,12 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero">
+    <navigator class="back" open-type="navigateBack">‹ 返回学习</navigator>
+    <text class="title">学习模式</text>
+    <text class="subtitle">每个入口都对应真实的本地队列或独立方向记忆</text>
+  </view>
+  <view wx:for="{{modes}}" wx:key="title" class="mode-card tone-{{item.tone}}">
+    <view class="mode-copy"><text class="mode-title">{{item.title}}</text><text class="mode-detail">{{item.detail}}</text></view>
+    <navigator class="start" url="{{item.url}}">开始 →</navigator>
+  </view>
+  <view class="note">快速学习和错题本不会重排经典模式；自选清单的筛选、批量标记、收藏和笔记都会写入本地 SQLite。</view>
+</scroll-view>

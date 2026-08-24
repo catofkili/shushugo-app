@@ -1,0 +1,53 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero">
+    <navigator class="back" open-type="navigateBack">‹ 返回学习</navigator>
+    <text class="eyebrow">GRAMMAR · 741</text>
+    <text class="title">语法库</text>
+    <text class="subtitle">按等级查找句型，打开详情，标记自己的掌握状态。</text>
+    <button class="immersive-button" bindtap="handleImmersive">{{immersive ? '返回语法库' : '进入沉浸阅读'}}</button>
+  </view>
+
+  <view wx:if="{{immersive}}" class="immersive card">
+    <text class="immersive-kicker">IMMERSIVE · {{level || '全部等级'}}</text>
+    <view wx:if="{{immersiveRows.length}}">
+      <text class="immersive-pattern">{{immersiveRows[immersiveIndex].pattern}}</text>
+      <text class="immersive-jp">{{immersiveRows[immersiveIndex].example_jp}}</text>
+      <text class="immersive-furigana" wx:if="{{immersiveRows[immersiveIndex].example_furigana}}">假名标注可在例句下方展开</text>
+      <text class="immersive-cn">{{immersiveRows[immersiveIndex].example_meaning}}</text>
+      <text class="immersive-meaning">{{immersiveRows[immersiveIndex].meaning}}</text>
+      <button class="next-immersive" bindtap="nextImmersive">下一句（{{immersiveIndex + 1}} / {{immersiveRows.length}}）</button>
+    </view>
+    <text wx:else class="empty">这个等级暂无例句</text>
+  </view>
+
+  <view wx:if="{{!immersive}}" class="summary card">
+    <view wx:for="{{summary}}" wx:key="level" class="summary-item">
+      <text>{{item.level}}</text><text>{{item.learned}}/{{item.total}}</text>
+    </view>
+  </view>
+  <view wx:if="{{!immersive}}" class="filters">
+    <input value="{{query}}" placeholder="搜索句型、含义或例句" bindinput="handleInput" />
+    <picker mode="selector" range="{{levels}}" value="{{levelIndex}}" bindchange="handleLevelChange">
+      <view class="picker">{{level || '全部等级'}} ˅</view>
+    </picker>
+  </view>
+
+  <view wx:if="{{!immersive && selected}}" class="detail card">
+    <view class="detail-head"><text class="level">{{selected.level}}</text><text class="order">{{selected.sort_order}}</text></view>
+    <text class="pattern">{{selected.pattern}}</text>
+    <text class="meaning">{{selected.meaning}}</text>
+    <text wx:if="{{selected.formation}}" class="formation">接续：{{selected.formation}}</text>
+    <view class="example"><text class="jp">{{selected.example_jp}}</text><text class="cn">{{selected.example_meaning}}</text></view>
+    <text wx:if="{{selected.notes}}" class="notes">{{selected.notes}}</text>
+    <view class="actions"><button bindtap="toggleFavorite">{{selected.favorite ? '取消收藏' : '收藏语法'}}</button><button bindtap="markKnown">标记已学</button></view>
+  </view>
+
+  <view wx:if="{{!immersive}}" wx:for="{{rows}}" wx:key="id" class="grammar-row card" data-id="{{item.id}}" bindtap="open">
+    <view class="row-top"><text class="level">{{item.level}}</text><text wx:if="{{item.known_forever}}" class="known">已学</text><text wx:if="{{item.favorite}}" class="favorite">★</text></view>
+    <text class="row-pattern">{{item.pattern}}</text>
+    <text class="row-meaning">{{item.meaning}}</text>
+    <text class="row-example">{{item.example_jp}}</text>
+  </view>
+  <view wx:if="{{!immersive && !rows.length && ready}}" class="empty card">没有找到符合条件的语法。</view>
+  <view wx:if="{{error}}" class="error card">{{error}}</view>
+</scroll-view>

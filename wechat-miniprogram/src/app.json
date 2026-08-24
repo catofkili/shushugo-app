@@ -1,0 +1,22 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/modes/index",
+    "pages/library/index",
+    "pages/settings/index",
+    "pages/progress/index",
+    "pages/grammar/index",
+    "pages/confusion/index",
+    "pages/achievements/index",
+    "pages/journey/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "收集日 · 小程序验证",
+    "navigationBarBackgroundColor": "#101827",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f4f6fb",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

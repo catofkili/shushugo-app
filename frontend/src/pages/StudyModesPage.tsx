@@ -1,5 +1,5 @@
-import { BookOpenText, Brain, CheckCircle2, Layers3, LetterText, Repeat2 } from "lucide-react";
-import { defaultStudyMode, saveStudyMode, STUDY_MODES } from "../lib/studyMode";
+import { BookOpenText, Brain, CheckCircle2, Layers3, LetterText, ListChecks, Repeat2 } from "lucide-react";
+import { defaultStudyMode, saveStudyMode, VISIBLE_STUDY_MODES } from "../lib/studyMode";
 import type { StudyMode } from "../types/app";
 
 interface StudyModesPageProps {
@@ -15,7 +15,9 @@ const MODE_ICONS: Record<StudyMode, typeof Layers3> = {
   mistakes: Brain,
   quick: BookOpenText,
   reverse: Repeat2,
-  kanji: LetterText
+  kanji: LetterText,
+  // 自选清单不摆在这一页（VISIBLE_STUDY_MODES 已经滤掉），图标只为补全类型
+  picked: ListChecks
 };
 
 export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyModesPageProps) {
@@ -36,7 +38,7 @@ export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyMod
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        {STUDY_MODES.map((item) => {
+        {VISIBLE_STUDY_MODES.map((item) => {
           const Icon = MODE_ICONS[item.id];
           const active = currentMode === item.id;
           return (

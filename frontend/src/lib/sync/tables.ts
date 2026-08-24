@@ -24,16 +24,25 @@ export const STUDY_TIME_TABLE = "word_study_time_by_device";
 export const SYNCED_TABLES: SyncedTable[] = [
   // 每词/每语法点的记忆状态,FSRS 的列也在 progress 上,是同步的核心。
   { table: "progress", keys: ["word_id"], strategy: "lww" },
+  // 新汉字读音题不继承旧 kanji_memory；旧表继续同步，作为历史归档保留。
+  { table: "kanji_reading_memory", keys: ["word_id"], strategy: "lww" },
   { table: "kanji_memory", keys: ["word_id"], strategy: "lww" },
+  { table: "kanji_unit_memory", keys: ["unit_key"], strategy: "lww" },
+  { table: "kanji_unit_flags", keys: ["unit_key"], strategy: "lww" },
+  { table: "kanji_unit_tasks", keys: ["reviewed_on", "unit_key"], strategy: "lww" },
   // 反向卡的长期记忆。和 kanji_memory 同构:每个词一行,逐行 LWW。
   { table: "reverse_memory", keys: ["word_id"], strategy: "lww" },
   { table: "grammar_progress", keys: ["grammar_id"], strategy: "lww" },
   { table: "grammar_mistakes", keys: ["grammar_id"], strategy: "lww" },
   { table: "word_notes", keys: ["word_id"], strategy: "lww" },
+  { table: "word_question_meanings", keys: ["word_id"], strategy: "lww" },
   // 例句词典主动发现的词，跨端合并后仍应优先进入新词计划。
   { table: "dictionary_discovered_words", keys: ["word_id"], strategy: "union" },
   // 疑难辨析里标过「已掌握」的词组。主键是词组标识而不是 word_id。
   { table: "confusion_mastered", keys: ["group_key"], strategy: "lww" },
+  // 成就。取并集而不是 LWW：解锁是不可逆的,两端各拿到的都该留下,
+  // 也不该因为对端那行「更新」就把本机的解锁日期改掉。
+  { table: "achievements", keys: ["id"], strategy: "union" },
   { table: "moji_migrated_reviews", keys: ["word_id"], strategy: "lww" },
 
   // 当天的学习会话状态,换设备继续学时要能接上。
@@ -41,6 +50,7 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "stage1_tasks", keys: ["reviewed_on", "word_id"], strategy: "lww" },
   { table: "stage2_progress", keys: ["reviewed_on", "word_id"], strategy: "lww" },
   { table: "kanji_progress", keys: ["reviewed_on", "word_id"], strategy: "lww" },
+  { table: "kanji_reading_progress", keys: ["reviewed_on", "word_id"], strategy: "lww" },
 
   // 键值状态。含设备本地键(见 DEVICE_LOCAL_STATE_KEYS),推送前会过滤。
   { table: "app_state", keys: ["key"], strategy: "lww" },
@@ -52,10 +62,11 @@ export const SYNCED_TABLES: SyncedTable[] = [
 
   { table: "content_favorites", keys: ["item_type", "item_id"], strategy: "lww" },
 
-  // 复习流水:用业务事件的自然键去重,两端各自追加并取并集。
-  // reviews.id / grammar_reviews.id 都是本机自增值,绝不能作为跨设备身份。
-  { table: "reviews", keys: ["word_id", "created_at", "direction"], strategy: "append" },
-  { table: "grammar_reviews", keys: ["grammar_id", "created_at"], strategy: "append" },
+  // 复习流水按触发器分配的设备:本机 id 去重。created_at 只有秒级精度，
+  // 同一秒的两次作答会撞自然键；sync_uid 才是稳定事件身份。
+  { table: "reviews", keys: ["sync_uid"], strategy: "append" },
+  { table: "grammar_reviews", keys: ["sync_uid"], strategy: "append" },
+  { table: "kanji_unit_reviews", keys: ["sync_uid"], strategy: "append" },
 
   { table: "checkins", keys: ["checked_on"], strategy: "union" },
   // 播报过的时刻。天然幂等的集合,和打卡同构:两端取并集,

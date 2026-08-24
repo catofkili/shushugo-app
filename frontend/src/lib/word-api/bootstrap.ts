@@ -3,7 +3,7 @@ import { ensureUserTables, getState, persistSoon, setState, today } from "../stu
 import { ensureGrammarProgressInitialized } from "../grammar-api";
 import {
   backfillFsrsFromHistory,
-  backfillKanjiFsrs,
+  ensureKanjiReadingFsrs,
   ensureFsrsColumns,
   ensureGrammarFsrs,
   migrateRecentDailyEasyReviews,
@@ -48,9 +48,9 @@ export const ensureProgressInitialized = () => {
     console.warn("[fsrs] 单词回填跳过:", err);
   }
   try {
-    backfillKanjiFsrs();
+    ensureKanjiReadingFsrs();
   } catch (err) {
-    console.warn("[fsrs] 汉字回填跳过:", err);
+    console.warn("[fsrs] 汉字读音建表跳过:", err);
   }
   try {
     ensureGrammarFsrs();

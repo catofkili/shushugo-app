@@ -1,0 +1,17 @@
+{
+  "description": "收集日微信小程序",
+  "miniprogramRoot": "src/",
+  "compileType": "miniprogram",
+  "projectname": "shushugo-wechat-miniprogram",
+  "setting": {
+    "es6": true,
+    "minified": true,
+    "urlCheck": false,
+    "coverView": true,
+    "postcss": true,
+    "minifyWXML": true,
+    "minifyWXSS": true,
+    "uploadWithSourceMap": true
+  },
+  "condition": {}
+}

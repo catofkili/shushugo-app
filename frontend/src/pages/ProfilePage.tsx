@@ -8,6 +8,7 @@ import {
   LogOut,
   Settings,
   Shield,
+  Trophy,
   UserRound
 } from "lucide-react";
 import { DevTools } from "../components/DevTools";
@@ -32,6 +33,7 @@ const profileSections = [
       { label: "账号和安全", detail: "登录、密码与设备", icon: Shield, page: "account" as Page },
       { label: "收集日 Pro", detail: "会员权益、恢复购买", icon: Crown, page: "pro" as Page },
       { label: "个人信息", detail: "头像、昵称、学习身份", icon: UserRound, page: "personal-info" as Page },
+      { label: "成就", detail: "47 个成就，含隐藏成就", icon: Trophy, page: "achievements" as Page },
       { label: "通知提醒", detail: "学习提醒和复习通知", icon: Bell, page: "notifications" as Page }
     ]
   },

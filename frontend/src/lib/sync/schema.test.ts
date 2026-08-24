@@ -51,6 +51,35 @@ describe("ensureSyncSchema", () => {
     }).not.toThrow();
   });
 
+  it("从云端合并进来的无 uid 流水,下次启动会被补上 —— 否则删它会掀翻整个事务", () => {
+    // 复现路径:云端合并全程开着 applying_remote,insert 触发器不跑,
+    // 对端快照里没带 uid 的行就永远是 NULL。实测用户库 36,759 条里中了 1 条,
+    // 「合并重复词条」每次都在它上面回滚。
+    testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (1, 'know', 0, '2026-08-02')");
+    testDb.run("UPDATE reviews SET sync_uid = NULL WHERE word_id = 1");
+    expect(rows("SELECT COUNT(*) AS n FROM reviews WHERE sync_uid IS NULL")[0].n).toBe(1);
+
+    // 下一次启动(新的 db 实例才会重跑 ensureSyncSchema)
+    const carried = testDb.export();
+    testDb = new SQL.Database(carried);
+    ensureSyncSchema();
+    expect(rows("SELECT COUNT(*) AS n FROM reviews WHERE sync_uid IS NULL")[0].n).toBe(0);
+
+    // 补上之后删行留得下墓碑
+    testDb.run("DELETE FROM reviews WHERE word_id = 1");
+    expect(tombstones().filter((row) => row.table_name === "reviews")).toHaveLength(1);
+  });
+
+  it("算不出 row_key 的行被删时跳过墓碑,而不是抛错", () => {
+    // 万一还是漏了一条(比如以后新增的 append 表),删它只能不写墓碑,
+    // 绝不能让调用方那一整个批量迁移失败。
+    testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (2, 'know', 0, '2026-08-02')");
+    testDb.run("UPDATE reviews SET sync_uid = NULL WHERE word_id = 2");
+    const before = tombstones().length;
+    expect(() => testDb.run("DELETE FROM reviews WHERE word_id = 2")).not.toThrow();
+    expect(tombstones().length).toBe(before);
+  });
+
   it("给同步表补上 sync_updated_at,给事件日志补上 sync_uid", () => {
     const progressCols = rows("PRAGMA table_info(progress)").map((r) => String(r.name));
     expect(progressCols).toContain(SYNC_UPDATED_COL);

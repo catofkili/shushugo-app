@@ -13,20 +13,41 @@ export const MISTAKE_MIN_LAPSES = 4;
  * 复习 6 次就错 4 次才是真有问题。所以再要求「遗忘占复习的比例」达标。
  */
 export const MISTAKE_MIN_LAPSE_RATE = 0.2;
-export const MISTAKE_MIN_DIFFICULTY = 8.5;
 export const MISTAKE_MIN_WRONG_ANSWERS = 3;
-export const MISTAKE_MIN_ERROR_RATE = 0.5;
-/** 记忆已经这么牢了(天)就不该再算错题:曾经错过是历史,不是现在的问题 */
-export const MISTAKE_MAX_STABILITY = 60;
+/**
+ * 加权错误率阈值。
+ *
+ * ⚠️ **这个数必须踩在用户自己那条分布的尾巴上,不能凭「一半以上答错听着就很差」拍。**
+ * 原值 0.5 看着像「错得比对得多」,但判据把「忘记」按 2 倍权重算,而用户本来就有
+ * 25% 的忘记率 —— 实测他学过的 1,563 个词里加权错误率的**中位数正好是 0.50**
+ * (p25=0.42 / p75=0.55 / p90=0.61)。于是这一条选的是「较差的那一半词」,
+ * 错题本一路涨到 1,262 个,背完一天回首页看到的是「错题 1200」。
+ *
+ * 0.65 落在 p90 以外,选出来的才是真正拖后腿的那一小批。
+ */
+export const MISTAKE_MIN_ERROR_RATE = 0.65;
+/**
+ * 记忆已经这么牢了(天)就不该再算错题:曾经错过是历史,不是现在的问题。
+ *
+ * 60 天太宽 —— 一个每三周复习一次的词(stability≈21)是**健康的成熟卡**,
+ * 不该出现在错题本里。收到 21 天:还没到「三周一次」这个节奏的才算没稳住。
+ */
+export const MISTAKE_MAX_STABILITY = 21;
 
 /**
  * 「长期不会」= **现在还在拖后腿**,不是历史上错过。
  *
  * 判据必须同时满足两个前置:复习够多次了(不然是新词的正常磕绊)、
  * 且当前记忆强度还不牢(stability < MISTAKE_MAX_STABILITY);
- * 在此基础上命中三条信号之一:
- *   1. 遗忘次数多**且占比高**;2. 多次复习后难度仍接近满档;
- *   3. 忘记/模糊的加权占比过半。
+ * 在此基础上命中两条信号之一:
+ *   1. 遗忘次数多**且占比高**;2. 忘记/模糊的加权占比进入分布尾部。
+ *
+ * ⚠️ **曾经有第三条「多次复习后 fsrs_difficulty ≥ 8.5」,已删,别再加回来。**
+ * FSRS 的 difficulty 是 Again +2 / Hard +1 / Good 0 / Easy −1 的累加量,
+ * 均值回归项极弱 —— 只要历史上反复忘过就永久顶在满档,而且再也下不来。
+ * 实测用户库里 1,927 个学过的词有 1,160 个难度落在 9 档、1,023 个顶到 9.5 以上,
+ * 光这一条就放出 1,225 个「错题」。它正是这段注释自己说要避开的
+ * 「只增不减的终身计数器」,只是换了个名字。
  *
  * 为什么不用「最近 N 次作答」这种窗口判据:下面那个 TS 版在排片热路径上,
  * 拿不到 reviews 表(见注释),两版判据必须完全一致,所以只用 progress 的列。
@@ -44,10 +65,6 @@ export const mistakeCandidateSql = (progressAlias = "p") => `(
       COALESCE(${progressAlias}.fsrs_lapses, 0) >= ${MISTAKE_MIN_LAPSES}
       AND COALESCE(${progressAlias}.fsrs_lapses, 0) * 1.0
           / MAX(COALESCE(${progressAlias}.fsrs_reps, 0), 1) >= ${MISTAKE_MIN_LAPSE_RATE}
-    )
-    OR (
-      COALESCE(${progressAlias}.fsrs_reps, 0) >= ${MISTAKE_MIN_REVIEWS}
-      AND COALESCE(${progressAlias}.fsrs_difficulty, 0) >= ${MISTAKE_MIN_DIFFICULTY}
     )
     OR (
       COALESCE(${progressAlias}.forgot_count, 0) + COALESCE(${progressAlias}.fuzzy_count, 0) >= ${MISTAKE_MIN_WRONG_ANSWERS}
@@ -77,7 +94,6 @@ export const isLongTermWeak = (row: Record<string, unknown>): boolean => {
   const lapses = num("fsrs_lapses");
   const reps = num("fsrs_reps");
   if (lapses >= MISTAKE_MIN_LAPSES && lapses / Math.max(reps, 1) >= MISTAKE_MIN_LAPSE_RATE) return true;
-  if (reps >= MISTAKE_MIN_REVIEWS && num("fsrs_difficulty") >= MISTAKE_MIN_DIFFICULTY) return true;
 
   const forgot = num("forgot_count");
   const fuzzy = num("fuzzy_count");

@@ -14,7 +14,7 @@ export function HelpPage({ onBack }: HelpPageProps) {
     },
     {
       q: "学习进度保存在哪里？",
-      a: "默认保存在本地设备。开启云端同步后可跨设备同步（需部署后端）。",
+      a: "保存在本机数据库里，不登录也能一直用。登录后会自动备份到云端并在多台设备之间逐行合并：不同的词各自保留，同一条记录冲突时按版本判定。",
     },
     {
       q: "应用是完全离线的吗？",
@@ -22,7 +22,11 @@ export function HelpPage({ onBack }: HelpPageProps) {
     },
     {
       q: "如何导出学习数据？",
-      a: "进入「我的」>「设置」>「数据管理」>「导出学习数据」。",
+      a: "「我的」>「设置」>「数据管理」>「导出学习数据」，会存成一个 .db 备份文件；同一处的「恢复备份」可以把它读回来。",
+    },
+    {
+      q: "复习是按什么排的？",
+      a: "单词、汉字读音和语法都用 FSRS（Anki 同款记忆算法）。每天只需要调「学习强度」里的新词数，复习量由算法按遗忘风险安排；学不完的会顺延，不会丢。",
     },
   ];
 
@@ -62,7 +66,7 @@ export function HelpPage({ onBack }: HelpPageProps) {
               <ol className="space-y-2 text-sm text-white/68">
                 <li>1. 在「单词学习」选择 JLPT 等级或学习类型，先完成当天词卡。</li>
                 <li>2. 到「语法」用学习/练习切换，按等级推进语法卡。</li>
-                <li>3. 在「工具箱」查看收藏和整体进度。</li>
+                <li>3. 回「主页」看收藏、进度地图和疑难辨析。</li>
               </ol>
             </div>
           )}
@@ -75,7 +79,6 @@ export function HelpPage({ onBack }: HelpPageProps) {
               <p className="text-sm font-bold text-white">反馈建议</p>
               <p className="mt-0.5 text-xs text-white/50">请通过 App Store 的应用支持入口提交问题或建议</p>
             </div>
-            <ChevronRight size={17} className="text-white/40" />
           </div>
 
           <div className="flex w-full items-center gap-3 p-4 text-left">

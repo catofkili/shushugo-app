@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { CheckCircle2, ChevronDown, Layers, Search, Star, StickyNote, X, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Layers, PenLine, Search, Star, StickyNote, X, XCircle } from "lucide-react";
 import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
 import { GrammarTermHint } from "../components/GrammarTermHint";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarPoints } from "../data/grammar";
+import { splitFormationRules } from "../lib/grammar-formation";
 import { getGrammarPointFavorite, toggleFavorite } from "../lib/api";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
 import { grammarSequence } from "../lib/grammar-numbering";
@@ -25,6 +26,7 @@ interface LibraryProps {
   onSelectedLevelChange: (level: "All" | JLPTLevel) => void;
   onOpenFavorites: () => void;
   onOpenImmersive: () => void;
+  onOpenQuiz: () => void;
   onOpenDetail: (id: string) => void;
 }
 
@@ -192,6 +194,7 @@ export const Library = ({
   onSelectedLevelChange,
   onOpenFavorites,
   onOpenImmersive,
+  onOpenQuiz,
   onOpenDetail
 }: LibraryProps) => {
   const [query, setQuery] = useState("");
@@ -381,6 +384,14 @@ export const Library = ({
                   </div>
                 )}
               </div>
+              {/* 考题：题面给句型、答案给接续+中文意。和沉浸学习并排,都是「换一种过法」。 */}
+              <button
+                onClick={onOpenQuiz}
+                className="focus-ring inline-flex h-8 min-w-0 items-center justify-center gap-1 rounded-xl border border-white/20 bg-[#81D8CF]/10 px-2 text-xs font-bold text-white/78 hover:bg-[#81D8CF]/15"
+              >
+                <PenLine size={13} />
+                <span className="truncate">考题</span>
+              </button>
               <button
                 onClick={onOpenImmersive}
                 className="focus-ring inline-flex h-8 min-w-0 items-center justify-center gap-1 rounded-xl border border-white/20 bg-[#81D8CF]/10 px-2 text-xs font-bold text-white/78 hover:bg-[#81D8CF]/15"
@@ -406,6 +417,7 @@ export const Library = ({
             const active = point.id === selected.id;
             const note = grammarNote(point.id);
             const firstExample = point.examples[0];
+            const formationRules = splitFormationRules(point.connection ?? point.structure);
             return (
               <article
                 key={point.id}
@@ -417,12 +429,23 @@ export const Library = ({
                 <div className="flex items-start gap-3">
                   <button onClick={() => openCard(point.id)} className="focus-ring min-w-0 flex-1 text-left">
                     <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
+                      {/* 等级/序号和状态靠右：它们是「这是第几条」，不是这张卡的主语。
+                          左边空出来给接续 —— 接续读起来就在句型前面（「辞书形＋」），
+                          摆在标题正上方才顺，摆右上角就得斜着看。 */}
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{grammarSequence(point).label}</span>
                         <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/65">{statusLabel[mastery]}</span>
                       </div>
-                      <h3 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-3 text-3xl font-semibold leading-none"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h3>
+                      {formationRules[0] && (
+                        <p className="jp mt-2 text-xs font-semibold leading-5 text-white/45">{formationRules[0]}</p>
+                      )}
+                      <h3 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-1 text-3xl font-semibold leading-none"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h3>
                       <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-2 text-sm font-semibold leading-6 text-white/82">{point.meaning}</p>
+                      {/* 第二条接续摆正下方，和上面那条一上一下对着看 ——
+                          只有真的分两条规则的卡才有（55/731），见 splitFormationRules。 */}
+                      {formationRules[1] && (
+                        <p className="jp mt-2 text-xs font-semibold leading-5 text-white/45">{formationRules[1]}</p>
+                      )}
                     </div>
                     {firstExample && (
                       <div data-grammar-point-id={point.id} data-grammar-highlight-block="card-example-0" className="mt-3 rounded-2xl border border-white/10 bg-[#373b3b] px-3 py-2 text-sm leading-6 text-white/65">

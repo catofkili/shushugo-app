@@ -19,6 +19,7 @@ import {
 } from "./session-state";
 import { ensureDirectionColumns, type StudyDirection } from "./directions";
 import { pushUndoSnapshot } from "./undo-stack";
+import { recordReviewEvent } from "../reviews";
 
 /**
  * 反向/汉字的作答 —— 和正向**同一套规则**,只是记忆表换成这个方向自己的那张。
@@ -142,11 +143,13 @@ export const applyDirectionAnswer = (
     WHERE word_id = ?
   `, [studyDate, rightCount, fuzzyCount, forgotCount, mistakeStreak, wordId]);
 
-  db.run(
-    "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, ?, 0, ?, ?)",
-    [wordId, answer, studyDate, direction.id]
-  );
-  const reviewId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
+  const reviewId = recordReviewEvent({
+    wordId,
+    answer,
+    reviewedOn: studyDate,
+    direction: direction.id,
+    schedulerMode: stepMode
+  });
   pushUndoSnapshot({ ...snapshot, review_id: reviewId });
 };
 

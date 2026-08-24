@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Brain, CalendarDays, CheckCircle2, Clock3, ImageDown, Loader2, Minus, Pencil, Plus, Share2, X } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { ZooConfetti } from "../../components/ZooConfetti";
+import { useCountUp } from "../../hooks/useCountUp";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { estimatedMinutesFor } from "../../lib/review-budget";
 import { studyDate as currentStudyDate } from "../../lib/database/db-utils";
@@ -21,11 +22,12 @@ import { encoreDayColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
 import {
   answerReadingText,
+  concealedReadingParts,
   formatDuration,
   isLoanwordSourceCard,
-  monthDays,
-  primaryAnswerText
+  monthDays
 } from "./word-study-utils";
+import { preferredWordSurface } from "../../lib/orthography";
 
 /** 自他标注。直接挂在词自己身上(不是只在配对面板里提),自/他 那个字放大加色,
  *  一眼扫得到 —— 中文「开」一个字通吃 開く/開ける,这一栏是最容易翻车的地方。 */
@@ -48,15 +50,47 @@ const CIRCLED_DIGITS = ["⓪", "①", "②", "③", "④", "⑤", "⑥", "⑦", 
  *  1. 按汉字把假名分组(初詣 → はつ もうで),否则中文母语者会默认按汉字个数对切;
  *  2. 逐拍画音高线 —— 橋(はし↓)和 箸(は↓し)假名一模一样,只有音高能分。
  *  两样数据都是异步加载的,没到位就退回朴素显示,不阻塞翻面。 */
-export const ReadingLine = ({ card, className }: { card: WordCard; className?: string }) => {
+export const ReadingLine = ({
+  card,
+  className,
+  concealKanji = false,
+  surface
+}: {
+  card: WordCard;
+  className?: string;
+  /** 汉字读音题揭晓前，只露出送り仮名/片假名，汉字对应读音不进入 DOM。 */
+  concealKanji?: boolean;
+  /** 汉字模式可传入标准化后的题面；经典模式默认使用自然主表记。 */
+  surface?: string;
+}) => {
   const furiganaReady = useFuriganaReady();
   const accentReady = usePitchAccentReady();
-  const reading = answerReadingText(card);
+  const displaySurface = surface ?? preferredWordSurface(card);
+  const reading = answerReadingText(card, displaySurface);
   if (!reading) return null;
 
   // 切不开的熟字训(明日=あした)当作一整段,音高线照样画。
-  const segments = furiganaReady ? splitFurigana(primaryAnswerText(card), reading) : null;
+  const segments = furiganaReady ? splitFurigana(displaySurface, reading) : null;
   const groups = segments ?? [{ text: reading, reading, isKanji: false }];
+
+  if (concealKanji) {
+    const parts = concealedReadingParts(segments);
+    return (
+      <p className={`${className ?? ""} inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1`}>
+        {parts.map((part, index) => part.hidden ? (
+          <span
+            key={`hidden-${index}`}
+            className="inline-block h-[0.72em] w-[1.45em] rounded-sm border border-[#81D8CF]/45 bg-[#81D8CF]/20 align-middle"
+            aria-label="汉字读音已隐藏"
+          />
+        ) : (
+          <span key={`${part.text}-${index}`} className="kana-group kana-group-kana">
+            {part.text}
+          </span>
+        ))}
+      </p>
+    );
+  }
 
   // 重音核按「第几拍」算,所以要按整词的拍序走,不能每段各算各的。
   const accent = accentReady ? lookupAccent(card.kanji, card.kana) : null;
@@ -100,14 +134,15 @@ export const ReadingLine = ({ card, className }: { card: WordCard; className?: s
   );
 };
 
-export const KanjiAnswer = ({ card }: { card: WordCard }) => {
-  if (isLoanwordSourceCard(card)) return <>{card.kana}</>;
+export const KanjiAnswer = ({ card, surface }: { card: WordCard; surface?: string }) => {
+  const displaySurface = surface ?? preferredWordSurface(card);
+  if (isLoanwordSourceCard(card)) return <>{displaySurface}</>;
 
   const componentByChar = new Map((card.kanjiComponents ?? []).map((component) => [component.char, component]));
 
   return (
     <>
-      {[...card.kanji].map((char, index) => {
+      {[...displaySurface].map((char, index) => {
         const component = componentByChar.get(char);
         const isVariant = Boolean(component?.marked);
         return (
@@ -189,7 +224,11 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const checkedToday = checkins.has(studyDate);
   const checkinDays = checkins.size;
   const isStage1Complete = phase === "stage1" && stats?.dailyPlanDone;
-  const compactPhaseLabel = phase === "done" ? "全部完成" : phase === "stage1" ? "第一阶段" : phase;
+  const compactPhaseLabel = phase === "done" ? "全部完成"
+    : phase === "stage1" ? "第一阶段"
+      : phase === "mistakes" ? "错题本"
+        : phase === "picked" ? "自选清单"
+          : phase;
   const encore = stats?.encore;
   const showEncore = phase === "done" && Boolean(encore?.available) && Boolean(onEncore);
 
@@ -235,6 +274,16 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
     setIntensity(next);
     saveStudyPreferences({ ...getStudyPreferences(), dailyGoal: next });
   };
+
+  /**
+   * 结算数字从 0 滚上来。这一页是**唯一**值得这么做的地方:数字在这里是一次性
+   * 出现的大跳变(0 → 今天的成绩),滚的过程本身就是「我干掉了这些」。
+   *
+   * 刻意不给「用时」:那个数在这一页上还在实时走,delta 恒为 1 —— 滚起来不是动画,
+   * 只是给每一次跳动加 320ms 的延迟。同理没给顶栏的松鼠小路(每答一题只 +1)。
+   */
+  const shownWordCount = useCountUp(todayWordCount);
+  const shownCheckinDays = useCountUp(checkinDays);
 
   const shareFileName = `master-nihongo-${studyDate}.png`;
 
@@ -298,8 +347,13 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
         <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-3">
           <div className="flex shrink-0 items-center justify-between gap-3 text-left">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">Daily Complete</p>
-              <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">今日单词完成</h2>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">
+                {phase === "picked" ? "Picked Done" : "Daily Complete"}
+              </p>
+              {/* 自选清单不是今日计划：它勾的词可能一个都没到期，写「今日单词完成」是假的 */}
+              <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">
+                {phase === "picked" ? "这批词过完了" : "今日单词完成"}
+              </h2>
             </div>
             <span className="shrink-0 rounded-full border border-[#81D8CF]/35 bg-[#81D8CF]/14 px-3 py-1 text-xs font-bold text-[#81D8CF]">
               {compactPhaseLabel}
@@ -319,14 +373,14 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 <CalendarDays size={14} />
                 <p className="text-[11px] font-bold">单词</p>
               </div>
-              <p className="mt-1 truncate text-base font-semibold">{todayWordCount} 个</p>
+              <p className="mt-1 truncate text-base font-semibold">{shownWordCount} 个</p>
             </div>
             <div className="rounded-xl bg-[#373b3b] px-3 py-2 text-left ring-1 ring-white/10">
               <div className="flex items-center gap-1.5 text-white/58">
                 <CheckCircle2 size={14} />
                 <p className="text-[11px] font-bold">累计</p>
               </div>
-              <p className="mt-1 truncate text-base font-semibold">{checkinDays} 天</p>
+              <p className="mt-1 truncate text-base font-semibold">{shownCheckinDays} 天</p>
             </div>
           </div>
 
@@ -513,9 +567,9 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                   disabled={!onContinueKanji || Boolean(stats?.kanjiTotal && stats.kanjiCompleted >= stats.kanjiTotal)}
                   className="focus-ring rounded-xl border border-[#81D8CF]/30 bg-[#81D8CF]/12 p-3 text-left disabled:opacity-45"
                 >
-                  <p className="text-sm font-bold text-white">汉字学习</p>
+                  <p className="text-sm font-bold text-white">汉字读音</p>
                   <p className="mt-1 text-xs text-white/60">
-                    {stats?.kanjiTotal ? `看释义，回忆汉字 ${stats.kanjiCompleted}/${stats.kanjiTotal}` : "生成今日汉字队列后开始"}
+                    {stats?.kanjiTotal ? `看表记，回忆读音 ${stats.kanjiCompleted}/${stats.kanjiTotal}` : "生成今日汉字读音队列后开始"}
                   </p>
                 </button>
               </>

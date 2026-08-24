@@ -1176,6 +1176,12 @@ main .kanji-variant-mark {
   max-height: min(9.5rem, 30%);
 }
 
+/* 改写题面比便签多一块「词库原文」参考区,17rem 会把底下那排按钮挤到折叠线以下 ——
+   打开一个编辑器却看不见「保存」是最糟的那种截断。 */
+.prompt-edit-card.word-note-float {
+  max-height: min(24rem, 70%);
+}
+
 @media (min-width: 640px) {
   .word-note-float {
     top: 0.5rem;
@@ -1646,16 +1652,23 @@ select {
   background-color: rgba(107, 90, 72, 0.08) !important;
 }
 
+[data-theme="light"] .bg-white\/\[0\.03\],
+[data-theme="light"] .bg-white\/\[0\.04\],
+[data-theme="light"] .bg-white\/4,
 [data-theme="light"] .bg-white\/5,
 [data-theme="light"] .bg-white\/6,
 [data-theme="light"] .bg-white\/8,
 [data-theme="light"] .bg-white\/10,
-[data-theme="light"] .bg-white\/12 {
+[data-theme="light"] .bg-white\/12,
+[data-theme="light"] .bg-white\/15,
+[data-theme="light"] .bg-white\/20 {
   background-color: rgba(255, 255, 255, 0.74) !important;
 }
 
 [data-theme="light"] .hover\:bg-\[\#4d5151\]:hover,
 [data-theme="light"] .hover\:bg-white\/8:hover,
+[data-theme="light"] .hover\:bg-white\/\[0\.06\]:hover,
+[data-theme="light"] .hover\:bg-white\/\[0\.08\]:hover,
 [data-theme="light"] .hover\:bg-\[\#81D8CF\]\/10:hover,
 [data-theme="light"] .hover\:bg-\[\#81D8CF\]\/20:hover {
   background-color: rgba(143, 203, 94, 0.18) !important;
@@ -1665,6 +1678,7 @@ select {
 [data-theme="light"] .border-white\/10,
 [data-theme="light"] .border-white\/12,
 [data-theme="light"] .border-white\/15,
+[data-theme="light"] .border-white\/16,
 [data-theme="light"] .border-white\/18,
 [data-theme="light"] .border-white\/20,
 [data-theme="light"] .border-white\/25,
@@ -1672,6 +1686,19 @@ select {
 [data-theme="light"] .dark\:border-zinc-700,
 [data-theme="light"] .dark\:border-zinc-800 {
   border-color: rgba(111, 168, 62, 0.26) !important;
+}
+
+/* 兜底：下面那张明细表每漏一个档位，就是一处「浅色模式下白字白底」的隐形失败
+   （text-white/85 曾让语法考题的中文意整行看不见）。列不全没关系，
+   漏掉的退成可读的褐色即可 —— :where() 让特异度为 0，明细表永远优先。
+   只认独立 token：hover:/placeholder:/dark: 这些前缀变体改的是别的状态，不能被兜底顶掉。 */
+[data-theme="light"] :where([class^="text-white/"], [class*=" text-white/"]) {
+  color: #6B5A48 !important;
+}
+
+/* ring-1 ring-white/10 在浅底上等于没有描边，走和 border-white/* 同一套绿描边。 */
+[data-theme="light"] .ring-white\/10 {
+  --tw-ring-color: rgba(111, 168, 62, 0.26) !important;
 }
 
 [data-theme="light"] .text-white,
@@ -1686,6 +1713,11 @@ select {
 }
 
 [data-theme="light"] .text-white\/95,
+[data-theme="light"] .text-white\/88,
+[data-theme="light"] .text-white\/86,
+[data-theme="light"] .text-white\/85,
+[data-theme="light"] .text-white\/82,
+[data-theme="light"] .text-white\/75,
 [data-theme="light"] .text-white\/90,
 [data-theme="light"] .text-white\/84,
 [data-theme="light"] .text-white\/80,
@@ -1694,6 +1726,10 @@ select {
 [data-theme="light"] .text-white\/72,
 [data-theme="light"] .text-white\/70,
 [data-theme="light"] .text-white\/68,
+[data-theme="light"] .text-white\/66,
+[data-theme="light"] .text-white\/56,
+[data-theme="light"] .text-white\/48,
+[data-theme="light"] .text-white\/42,
 [data-theme="light"] .text-white\/65,
 [data-theme="light"] .text-white\/62,
 [data-theme="light"] .text-white\/60,
@@ -2073,6 +2109,7 @@ select {
 }
 
 /* —— 淡底(/10~/18)：柔和绿薄底 —— */
+[data-theme="light"] .bg-\[\#81D8CF\]\/8,
 [data-theme="light"] .bg-\[\#81D8CF\]\/10,
 [data-theme="light"] .bg-\[\#81D8CF\]\/12,
 [data-theme="light"] .bg-\[\#81D8CF\]\/14,
@@ -2251,3 +2288,354 @@ select {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
               0 4px 14px rgba(91, 145, 57, 0.32) !important;
 }
+
+/* ——— 学习页的辨析气泡（卡中卡） ———
+   形制照抄疑难辨析页的大卡（.cf-sheet：60vh、min(560px)、从下方弹起），
+   换成学习页的深色皮 —— 两处是同一件事，看起来也得是同一件事。
+   底部 tabbar 是 z-index:9999，遮罩必须压过它。 */
+.wd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(12, 16, 16, 0.55);
+  backdrop-filter: blur(3px);
+  animation: wd-fade 0.18s ease;
+}
+
+.wd-sheet {
+  display: flex;
+  width: min(560px, 100%);
+  height: 62vh;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid rgba(129, 216, 207, 0.28);
+  border-radius: 26px 26px 0 0;
+  background: #2f3333;
+  padding: 16px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -12px 44px rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.92);
+  animation: wd-rise 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.05);
+}
+
+@keyframes wd-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes wd-rise {
+  from { transform: translateY(18%) scale(0.96); opacity: 0.4 }
+  to { transform: none; opacity: 1 }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wd-overlay, .wd-sheet { animation: none }
+}
+
+.wd-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px }
+.wd-title { margin-top: 2px; font-size: 22px; font-weight: 700; line-height: 1.15 }
+.wd-close {
+  display: grid;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(129, 216, 207, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.wd-body { display: flex; flex: 1; flex-direction: column; gap: 14px; overflow-y: auto }
+.wd-section { display: flex; flex-direction: column; gap: 7px }
+.wd-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px }
+.wd-type { color: #81D8CF; font-size: 12px; font-weight: 800 }
+.wd-master {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(129, 216, 207, 0.35);
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 700;
+}
+.wd-master.is-on { background: #81D8CF; border-color: #81D8CF; color: #2f3333 }
+.wd-summary {
+  border-radius: 12px;
+  background: rgba(129, 216, 207, 0.12);
+  padding: 8px 11px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.65;
+}
+.wd-summary.is-major {
+  background: rgba(255, 105, 105, 0.13);
+  color: #ffaaa9;
+}
+.wd-summary b { font-weight: 800 }
+
+.wd-members { display: flex; flex-direction: column; gap: 8px }
+.wd-member {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 10px 12px;
+}
+/* 当前这张要一眼认出来 —— 没有参照物的「对照」等于没对照 */
+.wd-member.is-current { border-color: rgba(129, 216, 207, 0.5); background: rgba(129, 216, 207, 0.1) }
+.wd-member-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px }
+.wd-member-word { font-size: 21px; font-weight: 700; line-height: 1.2 }
+.wd-member-kana { color: rgba(129, 216, 207, 0.85); font-size: 13px; font-weight: 600 }
+.wd-member-tag {
+  border-radius: 6px;
+  background: #81D8CF;
+  padding: 1px 6px;
+  color: #2f3333;
+  font-size: 10px;
+  font-weight: 800;
+}
+.wd-member-level {
+  margin-left: auto;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1px 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  font-weight: 800;
+}
+.wd-member-meaning { margin-top: 4px; color: rgba(255, 255, 255, 0.88); font-size: 13.5px; line-height: 1.6 }
+.wd-member-note { margin-top: 4px; color: rgba(255, 255, 255, 0.62); font-size: 12.5px; line-height: 1.7 }
+.wd-member-example { margin-top: 6px; color: rgba(255, 255, 255, 0.8); font-size: 12.5px; line-height: 1.7 }
+.wd-member-example span { display: block; color: rgba(255, 255, 255, 0.5); font-size: 11.5px }
+.wd-jump {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(90, 167, 255, 0.4);
+  border-radius: 10px;
+  background: rgba(90, 167, 255, 0.12);
+  padding: 5px 10px;
+  color: #9ac6ff;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.wd-jump:disabled { opacity: 0.5 }
+/* 学习页在浅色主题下是奶油底，气泡跟着换皮 */
+[data-theme="light"] .wd-overlay { background: rgba(40, 30, 16, 0.42) }
+[data-theme="light"] .wd-sheet {
+  background: linear-gradient(160deg, var(--zoo-surface, #FBF5E9), #F3E7CE);
+  border-color: rgba(126, 190, 79, 0.3);
+  color: var(--zoo-ink, #3A2E22);
+}
+[data-theme="light"] .wd-close { color: var(--zoo-muted, #9A8A78) }
+[data-theme="light"] .wd-close { border-color: rgba(154, 138, 120, 0.35); background: transparent }
+[data-theme="light"] .wd-type { color: var(--zoo-primary-deep, #3B5220) }
+[data-theme="light"] .wd-summary { background: rgba(154, 138, 120, 0.12); color: #2F2A25 }
+[data-theme="light"] .wd-summary.is-major { background: rgba(196, 65, 65, 0.12); color: #A83D3D }
+[data-theme="light"] .wd-master { border-color: rgba(126, 190, 79, 0.45); color: var(--zoo-muted, #9A8A78) }
+[data-theme="light"] .wd-master.is-on { background: var(--zoo-primary, #7EBE4F); border-color: var(--zoo-primary-deep, #5B9139); color: #fff }
+[data-theme="light"] .wd-member {
+  border: 1px dashed rgba(192, 133, 82, 0.3);
+  background: rgba(255, 255, 255, 0.42);
+}
+[data-theme="light"] .wd-member.is-current { border: 1px solid rgba(126, 190, 79, 0.5); background: rgba(126, 190, 79, 0.12) }
+[data-theme="light"] .wd-member-word { color: var(--zoo-ink, #3A2E22) }
+[data-theme="light"] .wd-member-kana { color: var(--zoo-brown-deep, #9C6B3F) }
+[data-theme="light"] .wd-member-tag { background: var(--zoo-primary, #7EBE4F); color: #fff }
+[data-theme="light"] .wd-member-level { background: var(--zoo-cream-2, #EFDFC2); color: var(--zoo-muted, #9A8A78) }
+[data-theme="light"] .wd-member-meaning { color: var(--zoo-ink, #3A2E22) }
+[data-theme="light"] .wd-member-note,
+[data-theme="light"] .wd-member-example span { color: var(--zoo-muted, #9A8A78) }
+[data-theme="light"] .wd-member-example { color: var(--zoo-ink, #3A2E22) }
+[data-theme="light"] .wd-jump {
+  border-color: rgba(126, 190, 79, 0.45);
+  background: rgba(126, 190, 79, 0.14);
+  color: #3B5220;
+}
+
+/* 答案区那一行入口：整块可点，点开就是上面的气泡 */
+.wd-entry {
+  display: flex;
+  width: 100%;
+  /* 它是网格项，默认 min-width:auto = min-content。里面 .wd-entry-words 是
+     nowrap + ellipsis 的（本来就打算截断），但 overflow:hidden 不会把一个**块级**
+     元素的 min-content 贡献清零 —— 于是「言う / 言い出す / 言い訳…」整串 530px
+     顺着 .wd-entry 一路撑到网格列上，把答案区撑出横向滚动条，
+     place-items-center 再按撑宽后的列去居中，「言う」就明显偏右了。
+     .wd-entry-main 上那个 min-width:0 只管 flex 收缩，管不到这一层。 */
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(129, 216, 207, 0.3);
+  border-radius: 16px;
+  background: rgba(129, 216, 207, 0.1);
+  padding: 11px 13px;
+  text-align: left;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.wd-entry:hover { background: rgba(129, 216, 207, 0.18) }
+.wd-entry:active { transform: scale(0.99) }
+/* 里面两行是 span（按钮里不能塞 div），得自己变成块级，不然 margin-top 不生效、
+   两行会挤在同一行上。 */
+.wd-entry-main { display: block; min-width: 0; flex: 1 }
+.wd-entry-types { display: block; color: #81D8CF; font-size: 11px; font-weight: 800 }
+.wd-entry-words {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wd-entry-go { flex: none; color: rgba(255, 255, 255, 0.5); font-size: 11.5px; font-weight: 700 }
+[data-theme="light"] .wd-entry { border-color: rgba(126, 190, 79, 0.35); background: rgba(126, 190, 79, 0.12) }
+[data-theme="light"] .wd-entry-types { color: var(--zoo-primary-deep, #3B5220) }
+[data-theme="light"] .wd-entry-words { color: var(--zoo-ink, #3A2E22) }
+[data-theme="light"] .wd-entry-go { color: var(--zoo-muted, #9A8A78) }
+
+/* ——— 成就页 ——— */
+.ach-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid rgba(129, 216, 207, 0.25);
+  border-radius: 18px;
+  background: rgba(129, 216, 207, 0.12);
+  padding: 14px 16px;
+}
+.ach-summary-kick {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.ach-summary-count { margin-top: 2px; color: rgba(255, 255, 255, 0.6); font-size: 13px; font-weight: 700 }
+.ach-summary-count b { color: #81D8CF; font-size: 26px }
+.ach-summary-bar {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.ach-summary-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #81D8CF, #B7E38D);
+  transition: width 0.4s ease;
+}
+.ach-summary-percent { flex: none; color: #81D8CF; font-size: 15px; font-weight: 800 }
+
+.ach-grid { display: grid; gap: 8px }
+@media (min-width: 720px) { .ach-grid { grid-template-columns: 1fr 1fr } }
+
+.ach-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  background: #464949;
+  padding: 12px 14px;
+}
+.ach-card.is-locked { background: rgba(70, 73, 73, 0.55); border-color: rgba(255, 255, 255, 0.08) }
+.ach-card.is-locked .ach-emoji { opacity: 0.35 }
+.ach-card.is-locked .ach-name { color: rgba(255, 255, 255, 0.55) }
+/* 稀有度只在拿到之后才显形 —— 锁着的时候一片灰，拿到才亮 */
+.ach-tier-common { border-color: rgba(129, 216, 207, 0.3) }
+.ach-tier-rare {
+  border-color: rgba(126, 178, 255, 0.45);
+  background: linear-gradient(135deg, rgba(126, 178, 255, 0.14), #464949 65%);
+}
+.ach-tier-epic {
+  border-color: rgba(214, 154, 255, 0.5);
+  background: linear-gradient(135deg, rgba(214, 154, 255, 0.18), rgba(255, 190, 120, 0.08) 55%, #464949);
+}
+
+.ach-emoji {
+  display: grid;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 22px;
+  line-height: 1;
+}
+.ach-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 800;
+}
+.ach-tag {
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.ach-tag-rare { background: rgba(126, 178, 255, 0.2); color: #9fc6ff }
+.ach-tag-epic { background: rgba(214, 154, 255, 0.22); color: #dcaeff }
+.ach-desc { margin-top: 3px; color: rgba(255, 255, 255, 0.55); font-size: 12px; line-height: 1.6 }
+.ach-date { margin-top: 5px; color: rgba(129, 216, 207, 0.85); font-size: 11px; font-weight: 700 }
+
+.ach-progress {
+  position: relative;
+  margin-top: 7px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 14px;
+}
+.ach-progress span {
+  display: block;
+  height: 5px;
+  flex: 1;
+  border-radius: 999px;
+  background: rgba(129, 216, 207, 0.55);
+  max-width: 100%;
+}
+.ach-progress::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 46px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.ach-progress b { position: relative; flex: none; color: rgba(255, 255, 255, 0.5); font-size: 10.5px; font-weight: 700 }
+
+[data-theme="light"] .ach-summary { border-color: rgba(126, 190, 79, 0.35); background: rgba(126, 190, 79, 0.12) }
+[data-theme="light"] .ach-summary-kick { color: var(--zoo-muted, #9A8A78) }
+[data-theme="light"] .ach-summary-count { color: var(--zoo-muted, #9A8A78) }
+[data-theme="light"] .ach-summary-count b,
+[data-theme="light"] .ach-summary-percent { color: var(--zoo-primary-deep, #3B5220) }
+[data-theme="light"] .ach-summary-bar { background: rgba(154, 138, 120, 0.2) }
+[data-theme="light"] .ach-summary-bar span { background: linear-gradient(90deg, #7EBE4F, #B7E38D) }
+[data-theme="light"] .ach-card { background: var(--zoo-surface, #FBF5E9); border-color: rgba(154, 138, 120, 0.25) }
+[data-theme="light"] .ach-card.is-locked { background: var(--zoo-cream-2, #EFDFC2) }
+[data-theme="light"] .ach-card.is-locked .ach-name { color: var(--zoo-muted, #9A8A78) }
+[data-theme="light"] .ach-name { color: var(--zoo-ink, #3A2E22) }
+[data-theme="light"] .ach-desc { color: var(--zoo-muted, #9A8A78) }
+[data-theme="light"] .ach-date { color: var(--zoo-primary-deep, #3B5220) }
+[data-theme="light"] .ach-emoji { background: rgba(154, 138, 120, 0.15) }
+[data-theme="light"] .ach-progress b { color: var(--zoo-muted, #9A8A78) }
+[data-theme="light"] .ach-progress::before { background: rgba(154, 138, 120, 0.22) }
+[data-theme="light"] .ach-progress span { background: rgba(126, 190, 79, 0.65) }
+[data-theme="light"] .ach-tag-rare { background: rgba(90, 140, 220, 0.18); color: #2f5aa8 }
+[data-theme="light"] .ach-tag-epic { background: rgba(150, 90, 200, 0.18); color: #7038a8 }

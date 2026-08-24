@@ -9,9 +9,10 @@ import { AuthDialog } from "./components/AuthDialog";
 import { GrammarHighlightProvider } from "./components/GrammarHighlightProvider";
 import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
-import { completeTodayWordPlan, getProgressOverview, markContentComplete, ProgressOverview } from "./lib/api";
+import { completeTodayWordPlan, getProgressOverview, markContentComplete, startPickedStudy as startPickedWordStudy, ProgressOverview } from "./lib/api";
 import { canUseFeature, FeatureId } from "./lib/entitlements";
-import { PROGRESS_UPDATED_EVENT } from "./lib/progress-events";
+import { PROGRESS_UPDATED_EVENT, notifyProgressUpdated } from "./lib/progress-events";
+import { loadKanjiUnitIndex } from "./lib/kanji-unit-index";
 import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, studyModeInfo } from "./lib/studyMode";
 import { studyDayEnd } from "./lib/database/db-utils";
 import { getGrammarLevelPreference, saveGrammarLevelPreference, type GrammarLevelSelection } from "./lib/grammarPreferences";
@@ -20,12 +21,19 @@ import { syncUserProfileAfterLogin } from "./lib/profile-sync";
 import type { SearchResult } from "./lib/search-api";
 import { GrammarMode, Page, StudyMode } from "./types/app";
 import { JLPTLevel } from "./types/grammar";
+import type { LibraryLevel } from "./lib/word-library";
+import { AchievementsPage } from "./pages/AchievementsPage";
+import { ACHIEVEMENT_UNLOCKED_EVENT } from "./lib/userProfile";
+import { playStreakChirp } from "./lib/zoo-sounds";
+import { triggerAchievementHaptic } from "./lib/haptics";
 
 const Library = lazy(() => import("./pages/Library").then((module) => ({ default: module.Library })));
 const GrammarDetail = lazy(() => import("./pages/GrammarDetail").then((module) => ({ default: module.GrammarDetail })));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage").then((module) => ({ default: module.FavoritesPage })));
 const ConfusionPage = lazy(() => import("./pages/ConfusionPage").then((module) => ({ default: module.ConfusionPage })));
+const KanjiReadingUsagePage = lazy(() => import("./pages/KanjiReadingUsagePage").then((module) => ({ default: module.KanjiReadingUsagePage })));
 const ImmersiveGrammar = lazy(() => import("./pages/ImmersiveGrammar").then((module) => ({ default: module.ImmersiveGrammar })));
+const GrammarQuiz = lazy(() => import("./pages/GrammarQuiz").then((module) => ({ default: module.GrammarQuiz })));
 const PersonalInfo = lazy(() => import("./pages/PersonalInfo").then((module) => ({ default: module.PersonalInfo })));
 const AccountSecurity = lazy(() => import("./pages/AccountSecurity").then((module) => ({ default: module.AccountSecurity })));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings").then((module) => ({ default: module.NotificationSettings })));
@@ -44,6 +52,7 @@ const ZooMapPage = lazy(() => import("./pages/ZooMapPage").then((module) => ({ d
 const ZooDexPage = lazy(() => import("./pages/ZooDexPage").then((module) => ({ default: module.ZooDexPage })));
 const HotSpringPage = lazy(() => import("./pages/HotSpringPage").then((module) => ({ default: module.HotSpringPage })));
 const QuickStudyPage = lazy(() => import("./pages/QuickStudyPage").then((module) => ({ default: module.QuickStudyPage })));
+const WordLibraryPage = lazy(() => import("./pages/WordLibraryPage").then((module) => ({ default: module.WordLibraryPage })));
 
 const PageLoading = () => (
   <div className="grid min-h-[40vh] place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#464949] p-6 text-sm font-semibold text-white/65" aria-busy="true">
@@ -55,10 +64,17 @@ const toolPageTitles: Partial<Record<Page, string>> = {
   "study-modes": "学习模式",
   favorites: "收藏",
   confusion: "疑难辨析",
+  "kanji-readings": "一字多音",
+  "word-list": "选词",
   "quick-study": "快速学习"
 };
 
 const accountProtectedPages = new Set<Page>(["account", "personal-info"]);
+
+/** 一枚成就在屏幕上停多久。连着补发五六个时,总长度也要还在「一小串」的量级里。 */
+const ACHIEVEMENT_POP_HOLD_MS = 1700;
+/** 退场动画时长,和 .zoo-achv-pop.leaving 对齐 */
+const ACHIEVEMENT_POP_OUT_MS = 260;
 
 export default function App() {
   const store = useStudyStore();
@@ -76,6 +92,8 @@ export default function App() {
   const [fillWordLevels, setFillWordLevels] = useState<JLPTLevel[]>([]);
   const [fillAllWords, setFillAllWords] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState<FeatureId | undefined>();
+  // 词库页的预设等级：进度概览点 N5 那根柱子进来时带着它
+  const [wordListLevel, setWordListLevel] = useState<LibraryLevel>("all");
   const [selectedStudyMode, setSelectedStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [launchStudyMode, setLaunchStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [wordStudyRevision, setWordStudyRevision] = useState(0);
@@ -105,6 +123,22 @@ export default function App() {
     return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
   }, []);
 
+  // 字音单位索引是动态 import 的(399 KB 单独成 chunk)。首页的汉字模式计数要读它,
+  // 所以开机就预热。
+  //
+  // 到位后**必须广播 PROGRESS_UPDATED_EVENT**,不能只 setOverview:ZooHome 有自己
+  // 那份 getWordStats(),只在挂载时读一次、之后只听这个事件。光更新 App 的 state
+  // 的话,首页会永远停在「索引还没加载完」那一刻读到的 0 —— 卡片上写着「暂无题」。
+  useEffect(() => {
+    let alive = true;
+    void loadKanjiUnitIndex().then(() => {
+      if (!alive) return;
+      setOverview(getProgressOverview());
+      notifyProgressUpdated();
+    });
+    return () => { alive = false; };
+  }, []);
+
   useEffect(() => {
     // 模式的自动恢复跟单词一样以凌晨 4 点为边界。若正在背一张卡，不在
     // 半途改 initialMode；离开学习页时 navigateToPage 会读取恢复后的模式。
@@ -128,6 +162,59 @@ export default function App() {
 
   const noticeTimerRef = useRef<number | undefined>(undefined);
   const syncConflictNoticeRef = useRef("");
+
+  /**
+   * 成就解锁。
+   *
+   * 判据是现算的、以前达成过的会自动补发,所以「一次解锁好几个」是常态而不是
+   * 边缘情况 —— 而 checkAchievements 是在一个 forEach 里同步连发事件的。
+   * 改版前每条都走 showNotice,它每次 clearTimeout + 覆盖 message,结果是
+   * **补发三个只看得见最后一个**,而且和「已同步勾选范围」共用同一个青色小条。
+   *
+   * 现在排队一条一条播,有自己的形制(.zoo-achv-pop)、声音和触觉。
+   */
+  const achievementQueueRef = useRef<{ emoji: string; name: string }[]>([]);
+  const [achievementPop, setAchievementPop] = useState<
+    { item: { emoji: string; name: string }; rest: number; leaving: boolean } | null
+  >(null);
+
+  useEffect(() => {
+    let playing = false;
+    let timer: number | undefined;
+
+    const step = () => {
+      const next = achievementQueueRef.current.shift();
+      if (!next) {
+        playing = false;
+        setAchievementPop(null);
+        return;
+      }
+      setAchievementPop({ item: next, rest: achievementQueueRef.current.length, leaving: false });
+      playStreakChirp();
+      triggerAchievementHaptic();
+      timer = window.setTimeout(() => {
+        setAchievementPop((current) => (current ? { ...current, leaving: true } : current));
+        timer = window.setTimeout(step, ACHIEVEMENT_POP_OUT_MS);
+      }, ACHIEVEMENT_POP_HOLD_MS);
+    };
+
+    const onUnlock = (event: Event) => {
+      const achievement = (event as CustomEvent<{ emoji: string; name: string }>).detail;
+      if (!achievement) return;
+      achievementQueueRef.current.push({ emoji: achievement.emoji, name: achievement.name });
+      if (playing) return;
+      playing = true;
+      // 刻意延一拍再开播:同一批解锁是同步连发的,等这一轮 dispatch 全落进队列,
+      // 第一条才数得出「后面还压着几个」。
+      timer = window.setTimeout(step, 0);
+    };
+
+    window.addEventListener(ACHIEVEMENT_UNLOCKED_EVENT, onUnlock);
+    return () => {
+      window.removeEventListener(ACHIEVEMENT_UNLOCKED_EVENT, onUnlock);
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   const showNotice = (message: string, timeout = 1800) => {
     // 清掉上一条通知的计时器,避免旧计时器提前关掉新通知。
@@ -190,6 +277,64 @@ export default function App() {
       setPageHistory([...pageHistory, page]);
       setPage(newPage);
     }
+  };
+
+  /**
+   * 合并老库里重复录入的词条。**不可逆**（删的是词条行），所以先算清楚给用户看，
+   * 确认之后先存整库恢复点再动手 —— 和 ビル 那次迁移一个规矩。
+   */
+  const mergeDuplicates = async () => {
+    const { duplicateMergePlan, mergeDuplicateWords } = await import("./lib/duplicate-merge");
+    const plan = duplicateMergePlan();
+    if (!plan.pairs.length) {
+      showNotice("没有找到重复录入的词条。", 2600);
+      return;
+    }
+    const confirmed = window.confirm(
+      `发现 ${plan.pairs.length} 行重复录入的词条（其中 ${plan.bothStudied} 组你两边都学过）。\n\n`
+      + `合并会把这些行上的 ${plan.reviews} 条作答记录搬到保留的那行上，然后删掉重复行。\n`
+      + "学习记录一条都不会丢，但删行不可逆。合并前会自动存一份整库恢复点。\n\n继续吗？"
+    );
+    if (!confirmed) return;
+    try {
+      const { saveRecoverySnapshot } = await import("./lib/storage");
+      await saveRecoverySnapshot("before-duplicate-merge");
+      const report = mergeDuplicateWords();
+      refreshOverview();
+      showNotice(
+        `已合并 ${report.merged} 行重复词条，搬走 ${report.movedReviews} 条作答；`
+        + `作答总数 ${report.reviewsBefore} → ${report.reviewsAfter}，一条没丢。`,
+        6000
+      );
+    } catch (error) {
+      console.error("[merge] 合并重复词条失败", error);
+      showNotice("合并失败，数据没有改动。", 4000);
+    }
+  };
+
+  const openWordList = (level?: string) => {
+    const known: LibraryLevel[] = ["N5", "N4", "N3", "N2", "N1"];
+    setWordListLevel(known.includes(level as LibraryLevel) ? (level as LibraryLevel) : "all");
+    navigateToPage("word-list");
+  };
+
+  // 词库勾一批词 → 直接开一场只含这些词的学习。不写「上次用的模式」:
+  // 清单是「这一次想突击这些」,不是长期偏好(saveStudyMode 对 transient 模式也会拒绝)。
+  const startPickedStudy = (ids: number[]) => {
+    if (!ids.length) return;
+    const { session } = startPickedWordStudy(ids);
+    // 勾的全是标了熟知的词时一张都出不来 —— 直接进去只会看到一个「过完了」,
+    // 那不是完成,是根本没开始。
+    if (!session.card) {
+      showNotice("这些词都标了熟知，先「放回复习」再学。", 3000);
+      return;
+    }
+    navigateToPage("word", "picked");
+  };
+
+  const openGrammarLevel = (level: JLPTLevel) => {
+    setSelectedGrammarLevel(level);
+    navigateToPage("grammar");
   };
 
   const requireAccount = (target?: Page) => {
@@ -341,7 +486,12 @@ export default function App() {
   const renderGrammarPage = () => (
     <GrammarHighlightProvider>
       <div>
-        {grammarMode === "immersive" ? (
+        {grammarMode === "quiz" ? (
+          <GrammarQuiz
+            initialLevel={selectedGrammarLevel === "All" ? null : selectedGrammarLevel}
+            onBack={() => openGrammarTab("learn")}
+          />
+        ) : grammarMode === "immersive" ? (
           <ImmersiveGrammar
             key={selectedGrammarLevel}
             selectedLevel={selectedGrammarLevel}
@@ -358,6 +508,7 @@ export default function App() {
             onSelectedLevelChange={setSelectedGrammarLevel}
             onOpenFavorites={() => navigateToPage("favorites")}
             onOpenImmersive={() => requirePro("immersiveGrammar", () => openGrammarTab("immersive"))}
+            onOpenQuiz={() => openGrammarTab("quiz")}
             onOpenDetail={openGrammar}
           />
         )}
@@ -387,12 +538,15 @@ export default function App() {
         <ZooHome
           overview={overview}
           onNavigate={navigateToPage}
+          onOpenWordList={openWordList}
+          onOpenGrammarLevel={openGrammarLevel}
           onStartStudy={startCurrentStudyMode}
           onStartMode={startStudyMode}
           activeMode={launchStudyMode}
           onOpenFill={() => setFillOpen(true)}
           onRefreshOverview={refreshOverview}
           onCompleteTodayWords={completeTodayWords}
+          onMergeDuplicates={mergeDuplicates}
         />
       );
     }
@@ -444,6 +598,15 @@ export default function App() {
     if (page === "favorites") {
       return renderToolSubpage(toolPageTitles.favorites ?? "收藏", <FavoritesPage onOpenGrammar={openGrammar} />);
     }
+    if (page === "word-list") {
+      return renderToolSubpage(
+        toolPageTitles["word-list"] ?? "选词",
+        <WordLibraryPage key={wordListLevel} initialLevel={wordListLevel} onStudyPicked={startPickedStudy} />
+      );
+    }
+    if (page === "kanji-readings") {
+      return renderToolSubpage(toolPageTitles["kanji-readings"] ?? "一字多音", <KanjiReadingUsagePage />);
+    }
     if (page === "confusion") {
       return renderToolSubpage(toolPageTitles.confusion ?? "疑难辨析", <ConfusionPage />);
     }
@@ -467,7 +630,7 @@ export default function App() {
       return <AccountSecurity onBack={goBack} cloudSession={cloudSession} />;
     }
     if (page === "personal-info") {
-      return <PersonalInfo onBack={goBack} />;
+      return <PersonalInfo onBack={goBack} onOpenAchievements={() => navigateToPage("achievements")} />;
     }
     if (page === "notifications") {
       return <NotificationSettings onBack={goBack} />;
@@ -487,6 +650,10 @@ export default function App() {
     if (page === "help") {
       return <HelpPage onBack={goBack} />;
     }
+    if (page === "achievements") {
+      return <AchievementsPage onBack={goBack} />;
+    }
+
     if (page === "about") {
       return <AboutPage onBack={goBack} />;
     }
@@ -517,6 +684,22 @@ export default function App() {
           </div>
         </main>
       </div>
+      {achievementPop && (
+        <div
+          className={`zoo-achv-pop${achievementPop.leaving ? " leaving" : ""}`}
+          role="status"
+          aria-live="polite"
+        >
+          <span className="zoo-achv-emoji" aria-hidden="true">{achievementPop.item.emoji}</span>
+          <span className="zoo-achv-copy">
+            <span className="zoo-achv-kick">成就解锁</span>
+            <span className="zoo-achv-name">{achievementPop.item.name}</span>
+          </span>
+          {achievementPop.rest > 0 && (
+            <span className="zoo-achv-rest">还有 {achievementPop.rest} 个</span>
+          )}
+        </div>
+      )}
       {notice && (
         <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-50 -translate-x-1/2 rounded-2xl bg-[#81D8CF] px-4 py-3 text-sm font-semibold text-[#1f3a36] shadow-lg lg:bottom-5">
           {notice}

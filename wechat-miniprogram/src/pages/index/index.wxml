@@ -1,0 +1,113 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero">
+    <text class="eyebrow">收集日 · OFFLINE STUDY</text>
+    <text class="title">今天学一点</text>
+    <text class="subtitle">本地 SQLite · 断网可用 · 答题后自动保存</text>
+  </view>
+
+  <view class="card status-card">
+    <view class="status-row">
+      <text class="label">本地库</text>
+      <text class="status {{status.ready ? 'ready' : 'idle'}}">{{statusText}}</text>
+    </view>
+    <text class="detail">{{detailText}}</text>
+  </view>
+
+  <button class="primary" loading="{{busy}}" disabled="{{busy || status.ready}}" bindtap="handleInit">初始化本地库</button>
+
+  <view wx:if="{{status.ready}}">
+    <view class="filter-row">
+      <text class="filter-label">今日范围</text>
+      <picker mode="selector" range="{{levels}}" value="{{levelIndex}}" bindchange="handleLevelChange">
+        <view class="picker">{{selectedLevel || '全部 JLPT'}} ˅</view>
+      </picker>
+    </view>
+    <view class="filter-row">
+      <text class="filter-label">学习方向</text>
+      <picker mode="selector" range="{{directions}}" value="{{directionIndex}}" bindchange="handleDirectionChange">
+        <view class="picker">{{directions[directionIndex]}} ˅</view>
+      </picker>
+    </view>
+
+    <view class="stats card">
+      <view class="stat"><text class="stat-value">{{stats.completed}}/{{stats.planned}}</text><text class="stat-label">今日完成</text></view>
+      <view class="stat"><text class="stat-value">{{stats.remaining}}</text><text class="stat-label">还剩</text></view>
+      <view class="stat"><text class="stat-value">{{stats.dueTotal}}</text><text class="stat-label">到期</text></view>
+      <view wx:if="{{stats.reliefTotal}}" class="stat"><text class="stat-value">{{stats.reliefCompleted}}/{{stats.reliefTotal}}</text><text class="stat-label">昨日减负</text></view>
+    </view>
+
+    <view wx:if="{{card}}" class="card study-card">
+      <view class="card-meta"><text>{{card.relief ? '昨日减负' : modeLabel + ' · ' + (card.task_type === 'new' ? '新词' : '复习')}}</text><text>{{card.jlpt_level || '未分级'}}</text></view>
+      <text class="meaning">{{card.prompt}}</text>
+
+      <!-- 汉字读音卡：题面就把表记摆出来，只遮汉字对应的那几拍。
+           中文母语者认得字，盲区在读音 —— 把汉字也藏起来等于考错了东西。 -->
+      <view wx:if="{{direction === 'kanji' && !answerVisible}}" class="kanji-prompt">
+        <text class="kanji">{{card.surface}}</text>
+        <view class="reading-mask">
+          <block wx:for="{{card.concealedReading}}" wx:key="index">
+            <view wx:if="{{item.hidden}}" class="reading-blank"></view>
+            <text wx:else class="reading-kana">{{item.text}}</text>
+          </block>
+        </view>
+      </view>
+
+      <button wx:if="{{!answerVisible}}" class="reveal" bindtap="handleReveal">
+        {{direction === 'kanji' ? '显示读音' : '显示答案'}}
+      </button>
+      <view wx:if="{{answerVisible}}" class="answer">
+        <text wx:if="{{direction !== 'reverse'}}" class="kanji">{{card.surface}}</text>
+        <text wx:if="{{direction !== 'reverse'}}" class="kana">{{card.kana}}</text>
+        <text wx:if="{{direction === 'reverse'}}" class="reverse-answer">{{card.answerText}}</text>
+        <button class="audio-button" disabled="{{busy}}" bindtap="handleAudio">▶ 播放读音</button>
+        <text wx:if="{{card.pos}}" class="pos">{{card.pos}}</text>
+        <text wx:if="{{card.verb_type}}" class="word-meta">动词类型：{{card.verb_type}}</text>
+        <text wx:if="{{card.wordOrigin}}" class="word-meta">词源：{{card.wordOrigin}}</text>
+        <view wx:if="{{card.pitch}}" class="pitch-card">
+          <text class="pitch-label">音高重音 {{card.pitch.accent === 0 ? '平板' : '核 ' + card.pitch.accent}}</text>
+          <view class="pitch-line"><block wx:for="{{card.pitch.morae}}" wx:key="index"><text class="pitch-mora {{item.high ? 'high' : 'low'}}">{{item.text}}</text></block></view>
+        </view>
+        <view wx:if="{{card.example_jp}}" class="example">
+          <text class="example-jp">{{card.example_jp}}</text>
+          <view wx:if="{{card.exampleSegments.length}}" class="furigana-line"><block wx:for="{{card.exampleSegments}}" wx:key="index"><view class="furigana-token"><text wx:if="{{item.reading}}" class="furigana-reading">{{item.reading}}</text><text>{{item.text}}</text></view></block></view>
+          <text class="example-meaning">{{card.example_meaning}}</text>
+        </view>
+        <view wx:if="{{card.dictionaryEntries.length}}" class="dictionary"><text class="dictionary-title">例句词典</text><view wx:for="{{card.dictionaryEntries}}" wx:key="entry_key" class="dictionary-row"><text class="dictionary-head">{{item.headword}} {{item.kana}}</text><text class="dictionary-meaning">{{item.meaning}}</text><text wx:if="{{item.usage_note}}" class="dictionary-note">{{item.usage_note}}</text></view></view>
+        <view wx:if="{{card.confusions.length}}" class="distinction"><text class="distinction-title">辨析提示</text><view wx:for="{{card.confusions}}" wx:key="key" class="distinction-row"><text class="distinction-type">{{item.typeName}} · {{item.label}}</text><text class="distinction-hint">{{item.hint}}</text></view><navigator class="distinction-link" url="/pages/confusion/index">打开全部疑难辨析 →</navigator></view>
+        <view class="answer-actions">
+          <button class="answer forgot" data-answer="forgot" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">忘记</button>
+          <button class="answer fuzzy" data-answer="fuzzy" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">模糊</button>
+          <button class="answer know" data-answer="know" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">认识</button>
+        </view>
+        <view class="note-editor">
+          <input value="{{noteDraft}}" placeholder="给这个词留一句笔记" bindinput="handleNoteInput" />
+          <button class="note-button" disabled="{{busy}}" bindtap="handleSaveNote">保存笔记</button>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="card empty-card">
+      <text class="empty-title">今天的计划完成了</text>
+      <text class="empty-text">可以继续查词，或明天再来。</text>
+    </view>
+
+    <button class="undo" loading="{{busy}}" disabled="{{busy}}" bindtap="handleUndo">撤销上一张</button>
+    <navigator class="library-link" url="/pages/library/index">查词库 →</navigator>
+    <navigator class="library-link" url="/pages/modes/index">学习模式：经典／快速／错题／自选 →</navigator>
+    <navigator class="library-link" url="/pages/settings/index">设置与权益 →</navigator>
+    <navigator class="library-link" url="/pages/progress/index">学习统计 →</navigator>
+    <navigator class="library-link" url="/pages/grammar/index">语法库（741 条）→</navigator>
+    <navigator class="library-link" url="/pages/confusion/index">疑难辨析（本地分组）→</navigator>
+    <navigator class="library-link" url="/pages/achievements/index">成就（47 个）→</navigator>
+    <navigator class="library-link" url="/pages/journey/index">学习旅程：地图／温泉／图鉴 →</navigator>
+  </view>
+
+  <view class="card result-card" wx:if="{{result}}">
+    <text class="result-title">最近一次结果</text>
+    <text class="result">{{result}}</text>
+  </view>
+
+  <view class="note">
+    <text>本页只使用小程序自己的用户目录，不读取或改写 iOS/Chrome 学习数据。</text>
+  </view>
+</scroll-view>

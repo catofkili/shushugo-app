@@ -11,6 +11,9 @@ import { DEVICE_LOCAL_STATE_KEYS, SYNCED_TABLES, type SyncedTable } from "./tabl
 import { isUserSyncSnapshot } from "./snapshot";
 import { rebuildStudyTimeAggregate } from "./study-time";
 import { GRAMMAR_HIGHLIGHTS_UPDATED_EVENT, GRAMMAR_POSITIONS_UPDATED_EVENT } from "../grammar-events";
+import { resetFamiliarityCache } from "../models/familiarity";
+import { resetQuestionMeaningIndex } from "../models/question-meaning-index";
+import { resetUserQuestionMeanings } from "../models/user-question-meanings";
 
 const ROW_SEPARATOR = "\u001f";
 const DEFAULT_ORIGIN = "legacy";
@@ -88,7 +91,14 @@ const stateOf = (db: Database, sourceOrigin: string): DatabaseState => {
     if (!tableExists(db, entry.table)) continue;
     const items = new Map<string, VersionedItem>();
     for (const row of rowsOf(db, entry.table)) {
-      const key = rowKey(entry, row);
+      // v1 snapshots may predate sync_uid. Keep each legacy event distinct
+      // instead of collapsing every row onto the empty natural key; current
+      // snapshots still use the trigger-assigned sync_uid path.
+      const key = entry.strategy === "append" && !String(row.sync_uid ?? "")
+        ? `${String(row.sync_origin_device ?? sourceOrigin)}:${String(
+          row.id ?? `${row.word_id ?? row.grammar_id ?? row.unit_key ?? ""}|${row.answer ?? ""}|${row.reviewed_on ?? ""}|${row.created_at ?? ""}`
+        )}`
+        : rowKey(entry, row);
       if (entry.table === "app_state" && DEVICE_LOCAL_STATE_KEYS.has(String(row.key ?? ""))) continue;
       items.set(key, {
         key,
@@ -144,8 +154,8 @@ const mergeItems = (
       continue;
     }
 
-    // append / union 仍然用版本解决同一自然键的删除和重复写入;
-    // 不同 review 的 created_at / direction 不同,因此会自然保留两端记录。
+    // append / union 仍然用版本解决同一自然键的删除和重复写入；reviews
+    // 用 sync_uid 做事件身份，不再把秒级 created_at 当成去重键。
     if (entry.strategy === "append" || entry.strategy === "union" || entry.strategy === "lww") {
       merged.set(key, compareVersion(localItem, remoteItem) >= 0 ? localItem : remoteItem);
     }
@@ -308,9 +318,22 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
       applyTable(localDb, entry, items);
     }
     applyTombstones(localDb, merged);
+    // Unit memory is a checkpoint, not the source of truth. The append-only
+    // unit events from both devices are replayed in timestamp order so a
+    // concurrent review cannot be lost by LWW on kanji_unit_memory.
+    if (tableExists(localDb, "kanji_unit_reviews")) {
+      const { replayKanjiUnitReviews } = await import("../kanji-unit-scheduler");
+      replayKanjiUnitReviews();
+    }
     // 对端的学习时长同步下来了,但读取方看的是 word_study_time 的每日合计,
     // 不重算一次统计页就只显示本机那份。
     rebuildStudyTimeAggregate();
+    // 对端同步下来一批新学的词,「学过没」的名单跟着变 —— 易混词按它筛候选。
+    resetFamiliarityCache();
+    // 对端改过的题面也一起下来了。这两份是内存缓存,不清的话学习页会一直显示
+    // 旧题面、撞车分组也停在合并前的样子,直到用户刷新页面才对上。
+    resetUserQuestionMeanings();
+    resetQuestionMeaningIndex();
     // 语法页使用 SQLite 中的缓存；合并完成后通知已挂载的页面重新读一次，
     // 不要求用户刷新正在学习的页面。
     if (typeof window !== "undefined") {

@@ -1,6 +1,7 @@
 import { Apple, ArrowLeft, Check, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, ShieldCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { requestAppleCredential } from "../lib/apple-auth";
+import { Capacitor } from "@capacitor/core";
 import {
   cloudAppleLogin,
   cloudLogin,
@@ -66,6 +67,10 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
   const [turnstileAction, setTurnstileAction] = useState<TurnstileAction | null>(null);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [pendingApple, setPendingApple] = useState<AppleLoginCredential | null>(null);
+  const appleLoginAvailable = config.appleEnabled && (
+    Capacitor.isNativePlatform()
+    || Boolean(import.meta.env.VITE_APPLE_CLIENT_ID && import.meta.env.VITE_APPLE_REDIRECT_URI)
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -259,11 +264,11 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
                   <p className="text-sm leading-6 text-white/58">登录后可跨设备同步学习进度和个人资料；不登录也能继续离线学习。</p>
                   <button
                     onClick={() => void appleLogin()}
-                    disabled={busy || !config.appleEnabled}
+                    disabled={busy || !appleLoginAvailable}
                     className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-bold text-black hover:bg-white/90 disabled:opacity-45"
                   >
                     <Apple size={20} fill="currentColor" />
-                    {config.appleEnabled ? "使用 Apple 登录" : "Apple 登录待服务端配置"}
+                    {appleLoginAvailable ? "使用 Apple 登录" : "Apple 登录仅在 iOS App 中开放"}
                   </button>
                   <div className="flex items-center gap-3 text-xs text-white/35"><span className="h-px flex-1 bg-white/12" />或使用邮箱<span className="h-px flex-1 bg-white/12" /></div>
                 </>

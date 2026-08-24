@@ -2,9 +2,12 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEv
 import { ChevronDown, Eye, ListChecks, Send } from "lucide-react";
 import { getQuickStudySession, submitQuickStudyBatch } from "../lib/api";
 import { clearQuickStudyDraft, loadQuickStudyDraft, saveQuickStudyDraft } from "../lib/quick-study-draft";
+import { studyDate } from "../lib/database/db-utils";
 import { answerOptions, primaryAnswerText, secondaryAnswerText } from "../features/word-study/word-study-utils";
 import type { Page } from "../types/app";
 import type { WordAnswer, WordCard } from "../types/vocabulary";
+import { yieldToPaint } from "../lib/yield-to-paint";
+import { useRowSelection } from "../hooks/useRowSelection";
 
 type Props = {
   onNavigate: (page: Page) => void;
@@ -19,15 +22,11 @@ type SubmitSummary = {
 
 const QUICK_STUDY_PAGE_SIZE = 50;
 const QUICK_STUDY_PREFETCH_SIZE = QUICK_STUDY_PAGE_SIZE * 2;
+// v1 改为确定性的优先级顺序。恢复旧草稿时只迁移顺序，不丢评级/答案状态。
+const QUICK_STUDY_ORDER_VERSION = 1;
 
-/**
- * 没动过的卡片按「模糊」提交，不能按「认识」。
- *
- * 提交走的是正式作答流程，而「当天第一次看到就点认识」会被记成 Easy —— 一整页
- * 翻过去直接提交，等于把 50 个词一次性推到很远的间隔。默认值必须是保守的那一侧：
- * 没判断过的词留在轮换里，代价只是多复习一次。
- */
-const DEFAULT_QUICK_RATING: WordAnswer = "fuzzy";
+/** 快速学习默认判为「认识」，用户只需要把不认识或模糊的词改掉。 */
+const DEFAULT_QUICK_RATING: WordAnswer = "know";
 const defaultRatingOption = answerOptions.find((option) => option.value === DEFAULT_QUICK_RATING)
   ?? answerOptions[1];
 
@@ -35,14 +34,9 @@ const initialRatings = (cards: WordCard[]) => Object.fromEntries(
   cards.map((card) => [card.id, DEFAULT_QUICK_RATING])
 ) as Record<number, WordAnswer>;
 
-const yieldToBrowser = () => new Promise<void>((resolve) => {
-  if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(() => resolve());
-  else setTimeout(resolve, 0);
-});
-
 const phaseLabel = (phase: string) => {
   if (phase === "stage2") return "反向复习";
-  if (phase === "kanji") return "汉字复习";
+  if (phase === "kanji") return "汉字读音";
   return "今日词汇";
 };
 
@@ -54,55 +48,85 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   const [ratings, setRatings] = useState<Record<number, WordAnswer>>({});
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
   const [ratingOpenId, setRatingOpenId] = useState<number | null>(null);
+  const [ratingPlacement, setRatingPlacement] = useState<"up" | "down">("up");
   const [loading, setLoading] = useState(true);
   const [draftHydrated, setDraftHydrated] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [submitSummary, setSubmitSummary] = useState<SubmitSummary | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  // 长按进选择模式 + 拖动划选：这一套和词库的选词共用 hooks/useRowSelection，
+  // 别在这儿再写一遍（手势那几个阈值每写一遍都要重踩一次坑）。
+  const selection = useRowSelection({
+    rowSelector: ".quick-study-row[data-quick-word-id]",
+    idKey: "quickWordId",
+    onEnter: () => setRatingOpenId(null),
+    onExit: () => setRatingOpenId(null)
+  });
+  const { selectionMode, selectedIds, exit: exitSelection, restore: restoreSelection } = selection;
+
   const submittingRef = useRef(false);
   const panelRef = useRef<HTMLElement | null>(null);
-  const longPressTimerRef = useRef<number | null>(null);
-  const longPressOriginRef = useRef<{ x: number; y: number } | null>(null);
-  const longPressTriggeredRef = useRef(false);
-  const selectionDraggedRef = useRef(false);
-  const selectionGestureRef = useRef<{ pointerId: number; x: number; y: number } | null>(null);
-  const selectionCleanupRef = useRef<(() => void) | null>(null);
   const ratingGesturePointerRef = useRef<number | null>(null);
+  // 打开这一轮时固定学习日。即使页面跨过凌晨 4 点，也不在用户正在评卡时强制换页；
+  // 旧日期草稿在下次进入快速学习时会被丢弃。
+  const draftStudyDateRef = useRef(studyDate());
 
   const load = useCallback(async (restoreDraft = false) => {
     setLoading(true);
     setError("");
     try {
       // 先让页面把标题和首屏容器画出来,再做同步词库查询。
-      await yieldToBrowser();
+      await yieldToPaint();
       if (restoreDraft) {
         const draft = await loadQuickStudyDraft();
         if (draft) {
-          const seenIds = new Set(draft.seenWordIds);
-          let prefetchedNext = draft.nextCards;
+          draftStudyDateRef.current = draft.studyDate;
+          let orderedDraft = draft;
+          if ((draft.orderVersion ?? 0) < QUICK_STUDY_ORDER_VERSION) {
+            try {
+              const draftCardCount = draft.cards.length;
+              const draftCards = [...draft.cards, ...draft.nextCards];
+              const freshOrder = getQuickStudySession(draftCards.length);
+              if (freshOrder.phase === draft.phase && freshOrder.cards.length) {
+                const rank = new Map(freshOrder.cards.map((card, index) => [card.id, index]));
+                const reordered = [...draftCards].sort((left, right) => (
+                  (rank.get(left.id) ?? Number.MAX_SAFE_INTEGER)
+                  - (rank.get(right.id) ?? Number.MAX_SAFE_INTEGER)
+                ));
+                orderedDraft = {
+                  ...draft,
+                  cards: reordered.slice(0, draftCardCount),
+                  nextCards: reordered.slice(draftCardCount),
+                  orderVersion: QUICK_STUDY_ORDER_VERSION
+                };
+              }
+            } catch (migrationError) {
+              console.warn("[quick-study] 旧草稿顺序迁移跳过", migrationError);
+            }
+          }
+          const seenIds = new Set(orderedDraft.seenWordIds);
+          let prefetchedNext = orderedDraft.nextCards;
           if (!prefetchedNext.length) {
             const nextData = getQuickStudySession(QUICK_STUDY_PAGE_SIZE, [...seenIds]);
-            if (nextData.phase === draft.phase) {
+            if (nextData.phase === orderedDraft.phase) {
               prefetchedNext = nextData.cards;
               prefetchedNext.forEach((card) => seenIds.add(card.id));
             }
           }
-          setCards(draft.cards);
+          setCards(orderedDraft.cards);
           setNextCards(prefetchedNext);
           setSeenWordIds(seenIds);
-          setPhase(draft.phase);
-          setRatings(draft.ratings);
-          setRevealedIds(new Set(draft.revealedIds));
+          setPhase(orderedDraft.phase);
+          setRatings(orderedDraft.ratings);
+          setRevealedIds(new Set(orderedDraft.revealedIds));
           setRatingOpenId(null);
-          setPageNumber(draft.pageNumber);
-          setSelectionMode(draft.selectionMode);
-          setSelectedIds(new Set(draft.selectedIds));
+          setPageNumber(orderedDraft.pageNumber);
+          restoreSelection(orderedDraft.selectionMode, orderedDraft.selectedIds);
           return;
         }
       }
+      draftStudyDateRef.current = studyDate();
       const data = getQuickStudySession(QUICK_STUDY_PREFETCH_SIZE);
       const currentPage = data.cards.slice(0, QUICK_STUDY_PAGE_SIZE);
       const nextPage = data.cards.slice(QUICK_STUDY_PAGE_SIZE);
@@ -113,14 +137,13 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
       setRatings(initialRatings(currentPage));
       setRevealedIds(new Set());
       setRatingOpenId(null);
-      setSelectionMode(false);
-      setSelectedIds(new Set());
+      exitSelection();
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "暂时无法读取快速学习内容");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [exitSelection, restoreSelection]);
 
   useEffect(() => {
     if (variant === "entry") return;
@@ -137,6 +160,8 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   useLayoutEffect(() => {
     if (variant === "entry" || !draftHydrated || loading || submitting || !cards.length) return;
     void saveQuickStudyDraft({
+      studyDate: draftStudyDateRef.current,
+      orderVersion: QUICK_STUDY_ORDER_VERSION,
       cards,
       nextCards,
       seenWordIds: [...seenWordIds],
@@ -158,127 +183,24 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
     });
   };
 
-  const clearLongPress = useCallback(() => {
-    if (longPressTimerRef.current !== null) {
-      window.clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    longPressOriginRef.current = null;
-  }, []);
-
-  const selectRowsAlongPath = useCallback((fromX: number, fromY: number, toX: number, toY: number) => {
-    const minX = Math.min(fromX, toX);
-    const maxX = Math.max(fromX, toX);
-    const minY = Math.min(fromY, toY);
-    const maxY = Math.max(fromY, toY);
-    const ids: number[] = [];
-    document.querySelectorAll<HTMLElement>(".quick-study-row[data-quick-word-id]").forEach((row) => {
-      const rect = row.getBoundingClientRect();
-      if (rect.right >= minX && rect.left <= maxX && rect.bottom >= minY && rect.top <= maxY) {
-        const id = Number(row.dataset.quickWordId);
-        if (Number.isFinite(id)) ids.push(id);
-      }
-    });
-    if (!ids.length) return;
-    if (Math.abs(toX - fromX) > 8 || Math.abs(toY - fromY) > 8) selectionDraggedRef.current = true;
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      ids.forEach((id) => next.add(id));
-      return next;
-    });
-  }, []);
-
-  const beginSelectionGesture = useCallback((event: ReactPointerEvent<HTMLDivElement>, wordId: number) => {
-    selectionGestureRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
-    selectionDraggedRef.current = false;
-    setSelectedIds((current) => new Set(current).add(wordId));
-
-    const handleMove = (moveEvent: PointerEvent) => {
-      const gesture = selectionGestureRef.current;
-      if (!gesture || gesture.pointerId !== moveEvent.pointerId) return;
-      selectRowsAlongPath(gesture.x, gesture.y, moveEvent.clientX, moveEvent.clientY);
-      gesture.x = moveEvent.clientX;
-      gesture.y = moveEvent.clientY;
-      if (moveEvent.clientY < 72) window.scrollBy(0, -12);
-      else if (moveEvent.clientY > window.innerHeight - 72) window.scrollBy(0, 12);
-    };
-    const handleEnd = (endEvent: PointerEvent) => {
-      if (selectionGestureRef.current?.pointerId !== endEvent.pointerId) return;
-      selectionCleanupRef.current?.();
-      selectionCleanupRef.current = null;
-      selectionGestureRef.current = null;
-    };
-    const cleanup = () => {
-      window.removeEventListener("pointermove", handleMove);
-      window.removeEventListener("pointerup", handleEnd);
-      window.removeEventListener("pointercancel", handleEnd);
-    };
-    selectionCleanupRef.current?.();
-    selectionCleanupRef.current = cleanup;
-    window.addEventListener("pointermove", handleMove, { passive: true });
-    window.addEventListener("pointerup", handleEnd, { passive: true });
-    window.addEventListener("pointercancel", handleEnd, { passive: true });
-  }, [selectRowsAlongPath]);
-
-  const startLongPress = (event: ReactPointerEvent<HTMLDivElement>, wordId: number) => {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
+  const handleRowClick = (event: ReactMouseEvent<HTMLDivElement>, wordId: number) => {
+    if (selection.consumedByGesture()) return;
+    // 行内已有按钮保留各自行为，不能因为事件冒泡又翻一次答案。
     if ((event.target as HTMLElement).closest("button")) return;
     if (selectionMode) {
-      beginSelectionGesture(event, wordId);
+      selection.toggle(wordId);
       return;
     }
-    clearLongPress();
-    longPressTriggeredRef.current = false;
-    longPressOriginRef.current = { x: event.clientX, y: event.clientY };
-    longPressTimerRef.current = window.setTimeout(() => {
-      longPressTriggeredRef.current = true;
-      longPressTimerRef.current = null;
-      longPressOriginRef.current = null;
-      setSelectionMode(true);
-      setSelectedIds(new Set([wordId]));
-      setRatingOpenId(null);
-      beginSelectionGesture(event, wordId);
-    }, 460);
+    toggleAnswer(wordId);
   };
 
-  const moveLongPress = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const origin = longPressOriginRef.current;
-    if (!origin) return;
-    if (Math.hypot(event.clientX - origin.x, event.clientY - origin.y) > 10) clearLongPress();
-  };
-
-  const finishLongPress = () => clearLongPress();
-
-  const toggleSelected = (wordId: number) => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (next.has(wordId)) next.delete(wordId);
-      else next.add(wordId);
-      return next;
-    });
-  };
-
-  const handleRowClick = (event: ReactMouseEvent<HTMLDivElement>, wordId: number) => {
-    if (longPressTriggeredRef.current || selectionDraggedRef.current) {
-      longPressTriggeredRef.current = false;
-      selectionDraggedRef.current = false;
-      return;
-    }
-    if (!selectionMode || (event.target as HTMLElement).closest("button")) return;
-    toggleSelected(wordId);
-  };
-
-  const exitSelectionMode = () => {
-    setSelectionMode(false);
-    setSelectedIds(new Set());
-    setRatingOpenId(null);
-  };
+  const exitSelectionMode = () => selection.exit();
 
   const applySelectionRating = useCallback((answer: WordAnswer) => {
     if (!selectedIds.size) return;
     setRatings((current) => {
       const next = { ...current };
-      selectedIds.forEach((wordId) => { next[wordId] = answer; });
+      selectedIds.forEach((wordId: number) => { next[wordId] = answer; });
       return next;
     });
     setRatingOpenId(null);
@@ -316,6 +238,21 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
     setRatingOpenId(null);
   };
 
+  const toggleRating = (event: ReactMouseEvent<HTMLButtonElement>, wordId: number) => {
+    if (ratingOpenId === wordId) {
+      setRatingOpenId(null);
+      return;
+    }
+    // 菜单默认向上弹；如果上方会撞到 sticky 标题栏，就改为向下展开，
+    // 保证最上面的词也能点到“忘记/模糊”。预留四项菜单的真实高度余量。
+    const buttonRect = event.currentTarget.getBoundingClientRect();
+    const headerRect = panelRef.current?.querySelector<HTMLElement>(".quick-study-head")?.getBoundingClientRect();
+    const menuHeight = 176;
+    const safeTop = (headerRect?.bottom ?? 0) + 6;
+    setRatingPlacement(buttonRect.top - menuHeight < safeTop ? "down" : "up");
+    setRatingOpenId(wordId);
+  };
+
   const prepareSubmit = () => {
     if (!cards.length || submittingRef.current) return;
     setError("");
@@ -350,6 +287,8 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
         const nextRatings = initialRatings(nextPage);
         const nextSeenIds = new Set(seenWordIds);
         const saveReadyPage = saveQuickStudyDraft({
+          studyDate: draftStudyDateRef.current,
+          orderVersion: QUICK_STUDY_ORDER_VERSION,
           cards: nextPage,
           nextCards: [],
           seenWordIds: [...nextSeenIds],
@@ -367,11 +306,10 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
         setRevealedIds(new Set());
         setRatingOpenId(null);
         setPageNumber(nextPageNumber);
-        setSelectionMode(false);
-        setSelectedIds(new Set());
+        selection.exit();
         panelRef.current?.scrollIntoView({ block: "start" });
 
-        await yieldToBrowser();
+        await yieldToPaint();
         const followingData = getQuickStudySession(QUICK_STUDY_PAGE_SIZE, [...nextSeenIds]);
         if (followingData.phase === phase && followingData.cards.length) {
           const followingPage = followingData.cards;
@@ -379,6 +317,8 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
           setNextCards(followingPage);
           setSeenWordIds(new Set(nextSeenIds));
           await saveQuickStudyDraft({
+            studyDate: draftStudyDateRef.current,
+            orderVersion: QUICK_STUDY_ORDER_VERSION,
             cards: nextPage,
             nextCards: followingPage,
             seenWordIds: [...nextSeenIds],
@@ -409,14 +349,15 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
         setSeenWordIds(new Set());
         setRatings({});
         setRevealedIds(new Set());
-        setSelectionMode(false);
-        setSelectedIds(new Set());
+        selection.exit();
         onDailyModeComplete?.();
         return;
       }
 
       const nextRatings = initialRatings(nextPage);
       const saveNextPage = saveQuickStudyDraft({
+        studyDate: draftStudyDateRef.current,
+        orderVersion: QUICK_STUDY_ORDER_VERSION,
         cards: nextPage,
         nextCards: followingPage,
         seenWordIds: [...nextSeenIds],
@@ -435,8 +376,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
       setRevealedIds(new Set());
       setRatingOpenId(null);
       setPageNumber(nextPageNumber);
-      setSelectionMode(false);
-      setSelectedIds(new Set());
+      selection.exit();
       panelRef.current?.scrollIntoView({ block: "start" });
       await saveNextPage;
     } catch (submitError) {
@@ -528,19 +468,15 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                 className={`quick-study-row${selectionMode ? " quick-study-row-selecting" : ""}`}
                 key={card.id}
                 data-quick-word-id={card.id}
-                onPointerDown={(event) => startLongPress(event, card.id)}
-                onPointerMove={moveLongPress}
-                onPointerUp={finishLongPress}
-                onPointerCancel={finishLongPress}
+                {...selection.rowHandlers(card.id)}
                 onClick={(event) => handleRowClick(event, card.id)}
-                onContextMenu={(event) => event.preventDefault()}
               >
                 {selectionMode ? (
                   <button
                     className={`quick-study-select-circle${selectedIds.has(card.id) ? " selected" : ""}`}
                     aria-label={selectedIds.has(card.id) ? "取消选择" : "选择词条"}
                     aria-pressed={selectedIds.has(card.id)}
-                    onClick={(event) => { event.stopPropagation(); toggleSelected(card.id); }}
+                    onClick={(event) => { event.stopPropagation(); selection.toggle(card.id); }}
                   >
                     {selectedIds.has(card.id) ? "✓" : ""}
                   </button>
@@ -569,10 +505,10 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                     <button className={`quick-study-answer-button${revealed ? " on" : ""}`} onClick={() => toggleAnswer(card.id)}>
                       答
                     </button>
-                    <div className="quick-study-rating-wrap">
+                    <div className={`quick-study-rating-wrap${ratingOpenId === card.id ? " quick-study-rating-wrap-open" : ""}`}>
                       <button
                         className={`quick-study-rating quick-study-rating-${rating}`}
-                        onClick={() => setRatingOpenId((current) => current === card.id ? null : card.id)}
+                        onClick={(event) => toggleRating(event, card.id)}
                         aria-expanded={ratingOpenId === card.id}
                         aria-label={`${selectedOption.label}，打开学习度选项`}
                       >
@@ -580,7 +516,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                         <ChevronDown size={12} />
                       </button>
                       {ratingOpenId === card.id && (
-                        <div className="quick-study-rating-popover" role="menu">
+                        <div className={`quick-study-rating-popover${ratingPlacement === "down" ? " quick-study-rating-popover-down" : ""}`} role="menu">
                           {answerOptions.map((option) => (
                             <button
                               key={option.value}

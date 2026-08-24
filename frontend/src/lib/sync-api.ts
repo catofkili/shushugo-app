@@ -23,8 +23,9 @@ export interface CloudSession {
   email?: string;
   token?: string;
   emailVerified?: boolean;
+  emailVerificationRequired?: boolean;
   displayName?: string;
-  authProviders?: Array<"email" | "apple">;
+  authProviders?: Array<"email" | "apple" | "wechat">;
   isNewAccount?: boolean;
 }
 
@@ -32,8 +33,9 @@ interface TokenResponse {
   access_token: string;
   email: string;
   emailVerified?: boolean;
+  emailVerificationRequired?: boolean;
   displayName?: string;
-  authProviders?: Array<"email" | "apple">;
+  authProviders?: Array<"email" | "apple" | "wechat">;
   isNewAccount?: boolean;
   entitlements?: CloudEntitlements;
 }
@@ -52,7 +54,7 @@ export interface CloudUserProfile {
   avatar?: string | null;
   profile_updated_at?: string | null;
   email_verified_at?: string | null;
-  authProviders?: Array<"email" | "apple">;
+  authProviders?: Array<"email" | "apple" | "wechat">;
 }
 
 interface PullResponse {
@@ -109,6 +111,7 @@ interface CloudEntitlements {
 const API_URL = (import.meta.env.VITE_SYNC_API_URL ?? "").replace(/\/+$/g, "");
 const EMAIL_KEY = "mn_cloud_sync_email";
 const EMAIL_VERIFIED_KEY = "mn_cloud_sync_email_verified";
+const EMAIL_VERIFICATION_REQUIRED_KEY = "mn_cloud_sync_email_verification_required";
 const DISPLAY_NAME_KEY = "mn_cloud_display_name";
 const AUTH_PROVIDERS_KEY = "mn_cloud_auth_providers";
 const SYNC_STATE_KEY_PREFIX = "mn_cloud_sync_state:";
@@ -122,9 +125,26 @@ const AUTO_SYNC_DEBOUNCE_MS = 30_000;
 const AUTO_SYNC_MIN_UPLOAD_INTERVAL_MS = 5 * 60_000;
 const AUTO_SYNC_MIN_CHECK_INTERVAL_MS = 60_000;
 const AUTO_SYNC_POLL_MS = 5 * 60_000;
+/**
+ * 空转轮询的上限。
+ *
+ * 原来是固定 5 分钟一跳、而且页面藏起来也照跳 —— 一台开着不动的设备一天要打
+ * 288 次 /api/sync/status，全部是「没变化」。请求数是这套同步唯一按次计费的东西
+ * （R2 出口免费、快照哈希没变时服务端在写对象之前就返回了），所以空转的那些
+ * 才是账单上真正的部分。
+ *
+ * 现在两条：页面不可见时不发请求（回到前台有 visibilitychange 立刻补一次，
+ * 什么都不会漏），连续空转则 5 → 10 → 20 → 40 分钟退避。任何本地改动、
+ * 回到前台、网络恢复都会把它打回 5 分钟，所以「另一台设备刚学完」这种情况
+ * 该多快还是多快 —— 变慢的只有「App 开着但没人动」的那段。
+ */
+const AUTO_SYNC_POLL_MAX_MS = 40 * 60_000;
 
 let autoSyncInFlight: Promise<CloudSyncEventDetail> | null = null;
 let autoSyncTimer: ReturnType<typeof setTimeout> | null = null;
+let autoSyncPollTimer: ReturnType<typeof setTimeout> | null = null;
+/** 连续几次轮询什么都没发生。只由轮询自己累加，用来算退避倍数。 */
+let idlePollStreak = 0;
 let localChangePending = false;
 let autoSyncLifecycleRegistered = false;
 let syncLock: Promise<void> = Promise.resolve();
@@ -351,19 +371,21 @@ export async function getCloudSession(): Promise<CloudSession> {
     storedToken,
     { value: storedEmail },
     { value: emailVerified },
+    { value: emailVerificationRequired },
     { value: displayName },
     { value: authProviders }
   ] = await Promise.all([
     getCloudAccessToken(),
     Preferences.get({ key: EMAIL_KEY }),
     Preferences.get({ key: EMAIL_VERIFIED_KEY }),
+    Preferences.get({ key: EMAIL_VERIFICATION_REQUIRED_KEY }),
     Preferences.get({ key: DISPLAY_NAME_KEY }),
     Preferences.get({ key: AUTH_PROVIDERS_KEY })
   ]);
-  let parsedProviders: Array<"email" | "apple"> | undefined;
+  let parsedProviders: Array<"email" | "apple" | "wechat"> | undefined;
   try {
     const parsed = authProviders ? JSON.parse(authProviders) : undefined;
-    if (Array.isArray(parsed)) parsedProviders = parsed.filter((item) => item === "email" || item === "apple");
+    if (Array.isArray(parsed)) parsedProviders = parsed.filter((item) => item === "email" || item === "apple" || item === "wechat");
   } catch {
     parsedProviders = undefined;
   }
@@ -372,6 +394,7 @@ export async function getCloudSession(): Promise<CloudSession> {
     token: storedToken,
     email: storedEmail ?? undefined,
     emailVerified: emailVerified === "true",
+    emailVerificationRequired: emailVerificationRequired === "true",
     displayName: displayName ?? undefined,
     authProviders: parsedProviders
   };
@@ -381,6 +404,10 @@ async function saveCloudSession(data: TokenResponse) {
   await setCloudAccessToken(data.access_token);
   await Preferences.set({ key: EMAIL_KEY, value: data.email });
   await Preferences.set({ key: EMAIL_VERIFIED_KEY, value: data.emailVerified ? "true" : "false" });
+  await Preferences.set({
+    key: EMAIL_VERIFICATION_REQUIRED_KEY,
+    value: data.emailVerificationRequired ? "true" : "false"
+  });
   if (data.displayName) await Preferences.set({ key: DISPLAY_NAME_KEY, value: data.displayName });
   else await Preferences.remove({ key: DISPLAY_NAME_KEY });
   await Preferences.set({ key: AUTH_PROVIDERS_KEY, value: JSON.stringify(data.authProviders ?? ["email"]) });
@@ -465,7 +492,7 @@ export async function cloudAppleLogin(credential: AppleLoginCredential): Promise
 export async function linkCloudApple(credential: AppleLoginCredential): Promise<CloudSession> {
   const { token } = await getCloudSession();
   if (!token) throw new Error("请先用邮箱密码登录。");
-  const result = await requestJson<{ authProviders?: Array<"email" | "apple"> }>("/api/auth/link-apple", {
+  const result = await requestJson<{ authProviders?: Array<"email" | "apple" | "wechat"> }>("/api/auth/link-apple", {
     method: "POST",
     headers: { authorization: `Bearer ${token}` },
     body: JSON.stringify({ identity_token: credential.identityToken, nonce: credential.nonce })
@@ -488,6 +515,7 @@ export async function cloudLogout(): Promise<CloudSession> {
     await removeCloudAccessToken();
     await Preferences.remove({ key: EMAIL_KEY });
     await Preferences.remove({ key: EMAIL_VERIFIED_KEY });
+    await Preferences.remove({ key: EMAIL_VERIFICATION_REQUIRED_KEY });
     await Preferences.remove({ key: DISPLAY_NAME_KEY });
     await Preferences.remove({ key: AUTH_PROVIDERS_KEY });
     localChangePending = false;
@@ -657,6 +685,7 @@ const hasLocalLearningData = (): boolean => {
     ["checkins", "1"],
     ["progress", "seen_count > 0 OR known_forever = 1"],
     ["grammar_progress", "seen_count > 0 OR known_forever = 1"],
+    ["kanji_reading_memory", "seen_count > 0"],
     ["kanji_memory", "seen_count > 0"],
     ["reverse_memory", "seen_count > 0"]
   ];
@@ -945,11 +974,12 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
   return autoSyncInFlight;
 }
 
-const runAutoSync = (trigger: CloudSyncTrigger): void => {
-  void autoSyncCloudDatabase(trigger).catch((error) => {
+const runAutoSync = (trigger: CloudSyncTrigger): Promise<CloudSyncEventDetail | undefined> => (
+  autoSyncCloudDatabase(trigger).catch((error) => {
     console.warn(`[cloud-sync] 自动同步未完成(${trigger}):`, error);
-  });
-};
+    return undefined;
+  })
+);
 
 export function registerCloudAutoSyncLifecycle(): void {
   if (autoSyncLifecycleRegistered || typeof window === "undefined") return;
@@ -971,14 +1001,51 @@ export function registerCloudAutoSyncLifecycle(): void {
   };
   const handleRequest = (event: Event) => {
     const trigger = (event as CustomEvent<{ reason?: CloudSyncTrigger }>).detail?.reason ?? "local-change";
+    // 本地一有改动就把退避打回 5 分钟：接下来多半马上要上传。
+    wakePoll();
     if (trigger === "local-change") scheduleLocalSync();
-    else runAutoSync(trigger);
+    else void runAutoSync(trigger);
   };
-  const handleOnline = () => runAutoSync("online");
+  const pollDelay = () => Math.min(
+    AUTO_SYNC_POLL_MS * 2 ** Math.min(idlePollStreak, 3),
+    AUTO_SYNC_POLL_MAX_MS
+  );
+  const schedulePoll = () => {
+    if (autoSyncPollTimer) clearTimeout(autoSyncPollTimer);
+    autoSyncPollTimer = setTimeout(runPoll, pollDelay());
+  };
+  const wakePoll = () => {
+    idlePollStreak = 0;
+    schedulePoll();
+  };
+  const runPoll = () => {
+    // 藏起来的页面不发请求。回到前台由 visibilitychange 立刻补一次，
+    // 所以这里跳过不会漏掉任何一次同步 —— 只是不再对着空气问「变了吗」。
+    if (document.visibilityState !== "visible") {
+      schedulePoll();
+      return;
+    }
+    void runAutoSync("poll").then((detail) => {
+      // idle / skipped = 白跑一趟；error 也算 —— 后端挂着的时候更不该每 5 分钟撞一次。
+      // 只有真的拉到/传出/撞上冲突才说明这条线上有事发生。
+      if (!detail || detail.status === "idle" || detail.status === "skipped" || detail.status === "error") {
+        idlePollStreak += 1;
+      }
+      else idlePollStreak = 0;
+      schedulePoll();
+    });
+  };
+
+  const handleOnline = () => {
+    wakePoll();
+    void runAutoSync("online");
+  };
   const handleVisibility = () => {
-    if (document.visibilityState === "visible") runAutoSync("foreground");
+    if (document.visibilityState !== "visible") return;
+    wakePoll();
+    void runAutoSync("foreground");
   };
-  const interval = window.setInterval(() => runAutoSync("poll"), AUTO_SYNC_POLL_MS);
+  schedulePoll();
 
   window.addEventListener(CLOUD_SYNC_REQUEST_EVENT, handleRequest);
   window.addEventListener("online", handleOnline);
@@ -988,7 +1055,10 @@ export function registerCloudAutoSyncLifecycle(): void {
     window.removeEventListener(CLOUD_SYNC_REQUEST_EVENT, handleRequest);
     window.removeEventListener("online", handleOnline);
     document.removeEventListener("visibilitychange", handleVisibility);
-    window.clearInterval(interval);
+    if (autoSyncPollTimer !== null) {
+      clearTimeout(autoSyncPollTimer);
+      autoSyncPollTimer = null;
+    }
     if (autoSyncTimer !== null) {
       window.clearTimeout(autoSyncTimer);
       autoSyncTimer = null;

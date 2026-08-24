@@ -29,6 +29,8 @@ import {
 } from "../lib/studyPreferences";
 import { firstValue } from "../lib/database/db-utils";
 import { importExternalWordList, previewExternalWordList } from "../lib/word-list-import";
+import { yieldToPaint } from "../lib/yield-to-paint";
+import { KanjiUnitPlanSettings } from "../components/KanjiUnitPlanSettings";
 
 interface GoalEstimationProps {
   dailyGoal: number;
@@ -41,7 +43,7 @@ function GoalEstimation({ dailyGoal }: GoalEstimationProps) {
     let alive = true;
     const calculate = async () => {
       // 先让设置页的主体出现,统计卡片稍后补上。
-      await yieldToBrowser();
+      await yieldToPaint();
       if (!alive) return;
       try {
         const levels = ['N5', 'N4', 'N3', 'N2', 'N1'];
@@ -106,16 +108,12 @@ const themeOptions: { value: ThemePreference; label: string; icon: typeof Moon }
 
 const CLEAR_CONFIRM_TEXT = "清除所有数据";
 
-const yieldToBrowser = () => new Promise<void>((resolve) => {
-  if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(() => resolve());
-  else setTimeout(resolve, 0);
-});
-
 export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPageProps) {
   const [preferences, setPreferences] = useState<StudyPreferences>(defaultStudyPreferences);
   // 有哪些声音可选要问磁盘(音频库是构建产物,可能一个都没生成)
   const [voices, setVoices] = useState<AudioVoice[]>([]);
-  const [storageInfo, setStorageInfo] = useState({ database: 0, local: 0, cache: 0 });
+  // null = 还没量出来。别拿 0 B 冒充答案 —— 用户会以为数据丢了。
+  const [storageInfo, setStorageInfo] = useState<{ database: number; local: number } | null>(null);
   const [message, setMessage] = useState("");
   const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
   const [cloudBusy, setCloudBusy] = useState(false);
@@ -127,7 +125,8 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
   const backupInputRef = useRef<HTMLInputElement | null>(null);
   const wordListInputRef = useRef<HTMLInputElement | null>(null);
 
-  const formatBytes = (bytes: number) => {
+  const formatBytes = (bytes: number | null | undefined) => {
+    if (bytes === null || bytes === undefined) return "计算中…";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
@@ -135,7 +134,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
 
   const refreshStorageInfo = async () => {
     // 导出 SQLite 可能需要一段时间,不能在设置页首帧之前同步执行。
-    await yieldToBrowser();
+    await yieldToPaint();
     const data = exportDatabase();
     const localBytes = Array.from({ length: localStorage.length }, (_, index) => {
       const key = localStorage.key(index) ?? "";
@@ -143,8 +142,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
     }).reduce((sum, size) => sum + size, 0);
     setStorageInfo({
       database: data?.byteLength ?? 0,
-      local: localBytes,
-      cache: 0
+      local: localBytes
     });
   };
 
@@ -369,7 +367,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
     "已退出云同步账号。"
   );
 
-  const totalStorage = storageInfo.database + storageInfo.local + storageInfo.cache;
+  const totalStorage = storageInfo && storageInfo.database + storageInfo.local;
 
   return (
     <div className="mx-auto max-w-3xl pb-4">
@@ -520,6 +518,9 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             <GoalEstimation dailyGoal={preferences.dailyGoal} />
           </div>
 
+          {/* 汉字读音是另一套队列(字音单位),题量和目标级别单独存 */}
+          <KanjiUnitPlanSettings />
+
           <div className="p-4">
             <div className="mb-3">
               <p className="text-sm font-bold text-white">每日复习上限</p>
@@ -588,19 +589,23 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
               <p className="mt-0.5 text-xs text-white/50">
                 {cloudSession.configured
                   ? cloudSession.token
-                    ? `已登录：${cloudSession.email} · ${cloudSession.emailVerified ? "邮箱已验证" : "邮箱待验证"}`
+                    ? `已登录：${cloudSession.email} · ${
+                      cloudSession.emailVerificationRequired
+                        ? cloudSession.emailVerified ? "邮箱已验证" : "邮箱待验证"
+                        : "云同步可用"
+                    }`
                     : "可登录后把本机学习数据库备份到云端"
                   : "还没有配置 VITE_SYNC_API_URL，部署 Cloudflare Worker 后即可启用"}
               </p>
               <p className="mt-1 text-xs leading-5 text-white/42">
-                登录后会在本机保存学习数据时自动上传，并在启动或回到前台时自动拉取；不同单词会自动合并，同一条记录冲突时按版本处理。切换账号或首次发现本机已有数据时会暂停，需手动选择上传或拉取。
+                登录后会在本机保存学习数据时自动上传，并在启动或回到前台时自动拉取；不同单词会自动合并，同一条记录冲突时按版本处理。第一次使用时请先在有正式进度的设备登录并点“上传本机进度”，再在新手机登录；不要先从空白手机上传。
               </p>
             </div>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {cloudSession.token ? (
                 <>
-                  {!cloudSession.emailVerified && (
+                  {cloudSession.emailVerificationRequired && !cloudSession.emailVerified && (
                     <div className="grid gap-2 sm:col-span-2 sm:grid-cols-[1fr_auto_auto]">
                       <input
                         type="text"
@@ -793,15 +798,11 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
         <div className="mt-3 space-y-2 text-xs">
           <div className="flex justify-between">
             <span className="text-white/60">数据库</span>
-            <span className="font-bold text-white">{formatBytes(storageInfo.database)}</span>
+            <span className="font-bold text-white">{formatBytes(storageInfo?.database)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-white/60">偏好与筛选</span>
-            <span className="font-bold text-white">{formatBytes(storageInfo.local)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-white/60">缓存文件</span>
-            <span className="font-bold text-white">{formatBytes(storageInfo.cache)}</span>
+            <span className="font-bold text-white">{formatBytes(storageInfo?.local)}</span>
           </div>
           <div className="mt-3 flex justify-between border-t border-white/10 pt-2">
             <span className="text-white/80">总计</span>

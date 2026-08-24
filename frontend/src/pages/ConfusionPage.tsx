@@ -3,11 +3,15 @@ import { createPortal } from "react-dom";
 import { Check, RotateCcw, X } from "lucide-react";
 import {
   confusionGroups,
+  displayForm,
+  groupWords,
   masteredConfusionKeys,
   setConfusionMastered,
-  type ConfusionGroup,
-  type ConfusionType
+  TYPE_META,
+  type ConfusionGroup
 } from "../lib/confusion-groups";
+import { distinctionReviewFor } from "../data/confusion_distinction_reviews";
+import { JapaneseWordRuby } from "../components/JapaneseWordRuby";
 
 /**
  * 疑难辨析。
@@ -18,67 +22,6 @@ import {
  * 而排片规则是**故意把它们隔开 12 张**（防止「答对的是上一张的残留」污染 FSRS）。
  * 两者方向相反，混在一起只会互相破坏。这里存的只有「掌握与否」一个布尔量。
  */
-
-/** 每类该看哪里 —— 混淆的原因不同，眼睛要放的位置就不同 */
-const TYPE_META: Record<ConfusionType, { name: string; hint: string; emoji: string }> = {
-  pair: {
-    name: "自他动词",
-    hint: "看助词：が 是自动词（自己发生），を 是他动词（有人去做）。",
-    emoji: "🔀"
-  },
-  homophone: {
-    name: "同音异义",
-    hint: "读音完全一样，意思无关。只能靠句子里的语境判断该写哪个汉字。",
-    emoji: "🔊"
-  },
-  "kanji-choice": {
-    name: "汉字用法",
-    hint: "读音相同、汉字不同，用法有别。中文释义看不出区别，要看例句里用在什么东西上。",
-    emoji: "✍️"
-  },
-  "reading-register": {
-    name: "读音语体",
-    hint: "同一个词的两种读法：音读偏书面正式，训读是日常口语。意思一样，场合不同。",
-    emoji: "🎩"
-  },
-  "reading-sense": {
-    name: "一形多读",
-    hint: "同一个汉字写法，读音不同意思也不同。本来就是两个词。",
-    emoji: "🔤"
-  },
-  stem: {
-    name: "同词根",
-    hint: "共用一个汉字词根。看例句里的助词框架：谁在动、动的是什么。",
-    emoji: "🌱"
-  },
-  synonym: {
-    name: "中文提示相同",
-    hint: "中文提示一样，日语里多半可以互换，区别在语体和使用场合 —— 不必硬找区别。",
-    emoji: "🤝"
-  }
-};
-
-/**
- * 卡面显示的词形。外来語行的 kanji 存的是英文原词(camera / apartment house),
- * 直接显示会让卡面变成英文,这里退回假名 —— 和 isLoanwordSourceCard 同一口径。
- */
-const displayForm = (member: { kanji: string; kana: string }): string => {
-  if (!member.kanji || /[A-Za-z]/.test(member.kanji)) return member.kana;
-  // 176 个词条的 kanji 里带方括号注音(飴[あめ]、濡[ぬ]れる),那是给生僻字标读音用的,
-  // 不该出现在卡面 —— 读音这里本来就单独显示一列。口径同 speech.ts 的 clean()。
-  return member.kanji.replace(/\[[^\]]*\]/g, "").trim() || member.kana;
-};
-
-/**
- * 卡面上并排的是哪一列 —— 组的区别在哪一列，就并排哪一列。
- *
- * 同表記異読み(明後日 = あさって / みょうごにち)所有成员的汉字**是同一个**，
- * 并排词形会显示成「明後日 / 明後日」，等于什么都没说；那类要并排读音。
- */
-const cardWords = (group: ConfusionGroup): string =>
-  group.type === "reading-register" || group.type === "reading-sense"
-    ? group.members.map((member) => member.kana).join(" / ")
-    : group.members.map(displayForm).join(" / ");
 
 /**
  * 副标题。
@@ -151,6 +94,7 @@ export const ConfusionPage = () => {
   };
 
   const open = ordered.find((group) => group.key === openKey) ?? null;
+  const openReview = open ? distinctionReviewFor(open.key) : null;
   const remaining = ordered.length - mastered.size;
 
   if (!ready) {
@@ -181,7 +125,7 @@ export const ConfusionPage = () => {
               <span className="cf-card-type">
                 {TYPE_META[group.type].emoji} {TYPE_META[group.type].name}
               </span>
-              <span className="cf-card-words">{cardWords(group)}</span>
+              <span className="cf-card-words">{groupWords(group)}</span>
               <span className="cf-card-gloss">{cardSub(group)}</span>
               {done && <span className="cf-card-badge">已掌握</span>}
             </button>
@@ -204,7 +148,12 @@ export const ConfusionPage = () => {
               </button>
             </div>
 
-            <p className="cf-sheet-hint">{TYPE_META[open.type].hint}</p>
+            {openReview && (
+              <p className={`cf-sheet-hint cf-sheet-summary${openReview.level === "major" ? " is-major" : ""}`}>
+                <b>{openReview.level === "major" ? "不能自由互换：" : "通常可互换："}</b>
+                {openReview.summary}
+              </p>
+            )}
 
             <div className="cf-members">
               {open.members.map((member) => (
@@ -212,7 +161,11 @@ export const ConfusionPage = () => {
                   <div className="cf-member-head">
                     {/* 词形和读音必须并排显示,不能像单词卡那样只给一个 ——
                         这里有整整两类(同表記異読み、同音异义)的区别就在读音上。 */}
-                    <b className="jp-serif cf-member-word">{displayForm(member)}</b>
+                    <JapaneseWordRuby
+                      surface={displayForm(member)}
+                      reading={member.kana}
+                      className="jp-serif cf-member-word"
+                    />
                     <span className="jp cf-member-kana">{member.kana}</span>
                     {member.jlptLevel && <span className="cf-member-level">{member.jlptLevel}</span>}
                   </div>

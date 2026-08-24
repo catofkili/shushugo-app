@@ -26,11 +26,13 @@ npm run deploy
 
 第一版同时支持邮箱密码和 Apple 登录。学习数据始终先保存在本机：未登录、退出登录或暂时离线都不会阻止学习；登录后才启用账号资料与学习进度的跨设备同步。
 
+微信小程序使用同一个 Worker 的 `POST /api/auth/wechat`：小程序只提交一次性 `wx.login` code，Worker 通过 `WECHAT_APP_ID` 与 `WECHAT_APP_SECRET` 向微信换取 openid/unionid，再签发与 iOS 相同的 Bearer session。两个密钥只能配置在 Worker secret/变量中，不能写入小程序代码包；微信身份视为已验证身份，可直接使用云同步。
+
 发布前需要完成以下配置：
 
-1. 在 Apple Developer 后台为 App ID `com.masternihongo.app` 启用 **Sign in with Apple**。
+1. 在 Apple Developer 后台为 App ID `com.shushugo.app` 启用 **Sign in with Apple**。
 2. 在 Xcode 的 Signing & Capabilities 中选择开发团队并确认 **Sign in with Apple** capability。仓库已包含 `App.entitlements`，但开发团队不能由代码仓库代替配置。
-3. Worker 的 `APPLE_SIGN_IN_CLIENT_ID` 必须与原生 App 的 Bundle ID 一致。当前 `wrangler.jsonc` 已使用 `com.masternihongo.app`。
+3. Worker 的 `APPLE_SIGN_IN_CLIENT_ID` 必须与原生 App 的 Bundle ID 一致。当前 `wrangler.jsonc` 已使用 `com.shushugo.app`。
 4. 若以后支持网页 Apple 登录，另建 Apple Services ID 和 HTTPS return URL，并在前端设置 `VITE_APPLE_CLIENT_ID`、`VITE_APPLE_REDIRECT_URI`。第一版 iOS 原生登录不依赖网页回调。
 
 Apple 返回的邮箱若已属于一个邮箱密码账号，服务端不会静默合并账号。用户必须先验证该邮箱账号密码，再由已登录会话关联 Apple 身份。
@@ -111,6 +113,7 @@ npx cap sync ios
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/apple`
+- `POST /api/auth/wechat`
 - `POST /api/auth/link-apple`
 - `POST /api/auth/logout`
 - `POST /api/auth/change-password`
@@ -126,6 +129,14 @@ npx cap sync ios
 - `POST /api/sync/push`
 - `GET /api/sync/status`
 - `GET /api/sync/pull`
+
+微信小程序首次登录请求体还必须带当前 `terms_version` 与 `privacy_version`（当前仓库版本为 `2026-08-03`），服务端会拒绝缺失或过期的协议同意。启用微信登录前配置：
+
+```bash
+cd cloudflare-sync
+npx wrangler secret put WECHAT_APP_ID
+npx wrangler secret put WECHAT_APP_SECRET
+```
 
 前端生成一个只包含用户学习表的临时 SQLite，gzip 后作为二进制上传。`words`、`grammar_points` 等出厂内容由 App 版本统一提供，绝不再随账号重复上传。D1 保存账号、版本和对象元数据，R2 保存最近三代压缩快照。
 

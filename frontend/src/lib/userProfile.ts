@@ -1,17 +1,27 @@
 import { Preferences } from '@capacitor/preferences';
 import { notifyAchievement } from './notifications';
-
+import { evaluateAchievements } from "./achievements";
+import type { Achievement } from "./achievements/catalog";
 export interface UserProfile {
   nickname: string;
   bio: string;
   avatar?: string; // Base64 编码的头像
   targetLevel: string;
-  studyTimeMinutes: number; // 学习总时长（分钟）
-  studyDays: number; // 学习天数
+  /**
+   * @deprecated 学习时长和天数一律以数据库为准，见 study-totals.ts。
+   * 这两个字段留着只是为了不破坏已经存下来的 JSON，谁都不该再读它们。
+   */
+  studyTimeMinutes?: number;
+  /** @deprecated 同上 */
+  studyDays?: number;
   lastStudyDate?: string; // 最后学习日期 (YYYY-MM-DD)
   createdAt: string; // 创建时间
   profileUpdatedAt: string; // 昵称、头像、简介或目标最后修改时间
-  achievements: string[]; // 已获得的成就
+  /**
+   * @deprecated 老的成就名单（默认就白送「新手」「学习者」两个，判据也基本触发不了）。
+   * 现在的成就在数据库 achievements 表里，见 lib/achievements/。留着字段只为兼容旧 JSON。
+   */
+  achievements: string[];
 }
 
 export const TARGET_LEVEL_OPTIONS = ["N5", "N4", "N3", "N2", "N1", "旅游", "没有目标"] as const;
@@ -25,8 +35,6 @@ const DEFAULT_PROFILE: UserProfile = {
   nickname: '收集日用户',
   bio: '正在学习日语中...',
   targetLevel: 'N5',
-  studyTimeMinutes: 0,
-  studyDays: 0,
   createdAt: new Date().toISOString(),
   profileUpdatedAt: new Date().toISOString(),
   achievements: ['新手', '学习者'],
@@ -94,30 +102,8 @@ export async function updateTargetLevel(targetLevel: string): Promise<void> {
   await saveUserProfile(profile);
 }
 
-// 记录学习时间（分钟）
-export async function addStudyTime(minutes: number): Promise<void> {
-  const profile = await loadUserProfile();
-  profile.studyTimeMinutes += minutes;
-
-  // 检查是否是新的一天
-  const today = new Date().toISOString().split('T')[0];
-  if (profile.lastStudyDate !== today) {
-    profile.studyDays += 1;
-    profile.lastStudyDate = today;
-  }
-
-  await saveUserProfile(profile);
-}
-
-// 添加成就
-export async function addAchievement(achievement: string): Promise<void> {
-  const profile = await loadUserProfile();
-  if (!profile.achievements.includes(achievement)) {
-    profile.achievements.push(achievement);
-    await saveUserProfile(profile);
-    notifyAchievement(achievement).catch(() => undefined);
-  }
-}
+/** 成就解锁时广播一下，App 那层接住弹提示 */
+export const ACHIEVEMENT_UNLOCKED_EVENT = "shushugo:achievement-unlocked";
 
 // 格式化学习时长
 export function formatStudyTime(minutes: number): string {
@@ -126,22 +112,14 @@ export function formatStudyTime(minutes: number): string {
   return `${hours} 小时 ${mins} 分钟`;
 }
 
-// 检查并解锁成就
-export async function checkAchievements(): Promise<string[]> {
-  const profile = await loadUserProfile();
-  const newAchievements: string[] = [];
-
-  // 坚持者：连续学习 7 天
-  if (profile.studyDays >= 7 && !profile.achievements.includes('坚持者')) {
-    await addAchievement('坚持者');
-    newAchievements.push('坚持者');
-  }
-
-  // 大师：学习超过 100 小时
-  if (profile.studyTimeMinutes >= 6000 && !profile.achievements.includes('大师')) {
-    await addAchievement('大师');
-    newAchievements.push('大师');
-  }
-
-  return newAchievements;
+// 检查并解锁成就。判据和解锁记录都在 achievements 模块里，这里只负责「广播出去」。
+export async function checkAchievements(options: { force?: boolean } = {}): Promise<Achievement[]> {
+  const earned = evaluateAchievements(options);
+  earned.forEach((achievement) => {
+    notifyAchievement(`${achievement.emoji} ${achievement.name}`).catch(() => undefined);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent(ACHIEVEMENT_UNLOCKED_EVENT, { detail: achievement }));
+    }
+  });
+  return earned;
 }

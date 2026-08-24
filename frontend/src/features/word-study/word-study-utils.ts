@@ -4,12 +4,27 @@ import type {
   WordLevelFilter,
   WordTypeFilter
 } from "../../types/vocabulary";
+import type { FuriganaSegment } from "../../lib/furigana";
+import {
+  cleanWordSurface,
+  isLoanwordSourceSurface,
+  orthographyEntry,
+  preferredWordSurface
+} from "../../lib/orthography";
 
-export const answerOptions: { value: WordAnswer; label: string }[] = [
+/**
+ * 四个评分键。`secondary` 的两个(模糊 / 熟知)在卡面上摆一半宽、去掉填色。
+ *
+ * 宽度就是那句「这两个不是每张卡都要用」——Anki 官方的频率指引是
+ * Good 占 80-95%、Again 占 5-20%,Hard 和 Easy 加起来只剩个位数;
+ * 而实测用户的模糊占到 25-30%,正是四个等宽格子请出来的。
+ * 说明书只在第一次有用,分量要靠尺寸说,那个每张卡都在说。
+ */
+export const answerOptions: { value: WordAnswer; label: string; secondary?: boolean }[] = [
   { value: "forgot", label: "忘记" },
-  { value: "fuzzy", label: "模糊" },
+  { value: "fuzzy", label: "模糊", secondary: true },
   { value: "know", label: "认识" },
-  { value: "known_forever", label: "熟知" }
+  { value: "known_forever", label: "熟知", secondary: true }
 ];
 
 export const levelOptions: { value: WordLevelFilter; label: string }[] = [
@@ -31,14 +46,17 @@ export const typeOptions: { value: WordTypeFilter; label: string }[] = [
   { value: "favorite", label: "收藏" }
 ];
 
-const hasAscii = (text: string) => /[A-Za-z]/.test(text);
-const hasKatakana = (text: string) => /[\u30a0-\u30ff]/.test(text);
+export const isLoanwordSourceCard = (card: WordCard) => isLoanwordSourceSurface(card);
 
-export const isLoanwordSourceCard = (card: WordCard) => hasAscii(card.kanji) && hasKatakana(card.kana);
+export const primaryAnswerText = (card: WordCard) => preferredWordSurface(card);
 
-export const primaryAnswerText = (card: WordCard) => isLoanwordSourceCard(card) ? card.kana : card.kanji;
-
-export const secondaryAnswerText = (card: WordCard) => isLoanwordSourceCard(card) ? card.kanji : card.kana;
+export const secondaryAnswerText = (card: WordCard) => {
+  if (isLoanwordSourceSurface(card)) return card.kanji;
+  const entry = orthographyEntry(card);
+  // 假名优先词仍把原汉字作为小字资料保留，不再把它当主表记教。
+  if (entry?.band === "kana" || entry?.band === "low") return cleanWordSurface(card.kanji);
+  return card.kana;
+};
 
 export const cardLabel = (card: WordCard) => {
   const primary = primaryAnswerText(card);
@@ -46,11 +64,31 @@ export const cardLabel = (card: WordCard) => {
   return primary === secondary ? primary : `${primary} / ${secondary}`;
 };
 
-export const answerReadingText = (card: WordCard) => {
-  const primary = primaryAnswerText(card);
-  const secondary = secondaryAnswerText(card);
-  if (!secondary || secondary === primary || hasAscii(secondary)) return "";
-  return secondary;
+export const answerReadingText = (card: WordCard, surface = primaryAnswerText(card)) => {
+  if (!surface || !/[\u3400-\u9fff]/u.test(surface)) return "";
+  return card.kana;
+};
+
+export interface ConcealedReadingPart {
+  /** 空字符串表示这段读音必须保持隐藏，不能留在 DOM 里泄题。 */
+  text: string;
+  hidden: boolean;
+}
+
+/**
+ * 汉字读音模式的题面：只露出表记里本来就是假名的部分，汉字对应的读音用遮罩代替。
+ *
+ * 对齐失败或读音表尚未加载时必须 fail closed，整条读音隐藏。绝不能先把完整假名
+ * 当 fallback 画出来，再异步换成遮罩——那会在每张卡首帧闪答案。
+ */
+export const concealedReadingParts = (
+  segments: readonly FuriganaSegment[] | null
+): ConcealedReadingPart[] => {
+  if (!segments?.length) return [{ text: "", hidden: true }];
+  return segments.map((segment) => segment.isKanji
+    ? { text: "", hidden: true }
+    // 非汉字段显示表记本身：生産コスト应保留「コスト」，不能退成读音串里的「こすと」。
+    : { text: segment.text, hidden: false });
 };
 
 const kanaMap: Record<string, string> = {
@@ -127,6 +165,33 @@ export const kanaToRomaji = (text: string) => {
     parts.push(roman);
   }
   return parts.join(" ");
+};
+
+/**
+ * 读音有几拍。**这是给正向题(中文 → 日文)消歧用的,不是给记不住的词发拐杖。**
+ *
+ * 题面那行中文常常不止一个词对得上:实测用户库 11,056 个词里 3,935 个(35.6%)
+ * 和别的词共用同一行题面(口径见 models/question-meaning-index.ts)。看到「警察」
+ * 该答 警察 还是 警察官?看到「生活」该答 生活 还是 暮らす?答不出来不是忘了,
+ * 是不知道在问哪个 —— 那次「忘记」喂给 FSRS 才是假数据。
+ * 补一个拍数,撞车组里 47.1% 的词当场变唯一,平均候选 2.74 → 1.68。
+ *
+ * 剩下那一半(準備 / 用意 / 備え 全是 3 拍)拍数分不开,交给题面撞车那一档去说。
+ *
+ * 口径:拗音(小 ゃゅょ、外来語的小 ァィゥェォ)并进前一拍;促音 っ、拨音 ん、
+ * 长音 ー 各算一拍 —— 这是日语的「拍」,不是音节,カード 是 3 拍不是 2 音节。
+ * **只能拿 kana 算**:外来語行的 kanji 存的是词源(camera / gramme)。
+ */
+const NON_MORA_KANA = /[ぁぃぅぇぉゃゅょゎァィゥェォャュョヮ]/;
+
+export const moraCount = (kana: string): number => {
+  // 用户库里 kana 干净(没有方括号注音、空格、拉丁字母),只有 115 条带 ～ 或括号
+  // (「～する」这类),那些不是读音的一部分。
+  let count = 0;
+  for (const char of kana.replace(/[～〜（）()\s・]/g, "")) {
+    if (!NON_MORA_KANA.test(char)) count += 1;
+  }
+  return count;
 };
 
 export const formatDuration = (seconds: number) => {

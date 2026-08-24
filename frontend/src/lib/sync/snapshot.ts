@@ -5,7 +5,9 @@ import { DEVICE_LOCAL_STATE_KEYS, SYNCED_TABLES } from "./tables";
 
 export const SYNC_SNAPSHOT_FORMAT = "master-nihongo-user-sqlite-v1";
 /** 同步协议版本独立于 SQLite schema，便于将来切换增量协议而不误读旧快照。 */
-export const SYNC_PROTOCOL_VERSION = 1;
+export const SYNC_PROTOCOL_VERSION = 2;
+/** v1 snapshots remain readable; new exports are always v2. */
+export const SUPPORTED_SYNC_PROTOCOL_VERSIONS = new Set([1, SYNC_PROTOCOL_VERSION]);
 export type SyncSnapshotCompression = "gzip" | "none";
 const MAX_UNCOMPRESSED_SNAPSHOT_BYTES = 20_000_000;
 
@@ -31,6 +33,31 @@ const tableExists = (db: Database, table: string): boolean => Boolean(
   firstValue(db, "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1", [table])
 );
 
+/**
+ * 当日任务表只往快照里放最近这些天的行。
+ *
+ * stage1_tasks 是「今日计划」的物化，不是源数据 —— 队列的唯一真相是 progress
+ * 里的 FSRS 状态（见 CLAUDE.md）。而它涨得最快：实测用户库 33 天就攒了 25,463 行，
+ * 占整份快照 86,361 行的三成，gzip 后每次上传都要为它多传 0.42 MB（1.59 → 1.17 MB，
+ * 省 26.7%），还要乘以云端保留的 3 代。
+ *
+ * 读它的地方最远只看到昨天（plan-trend 拿昨天的复习数当账，其余全是 reviewed_on = 今天），
+ * 统计和成就一律从 reviews/progress 现算。留 14 天是给「跨时区 + 隔几天才开一次
+ * App」留的余量，不是因为有人需要第 14 天那一行。
+ *
+ * **这样裁是安全的，因为合并是按键取并集**：另一台设备本地已有的历史行不会因为
+ * 这份快照里没有就消失（删除只走 sync_tombstones，见 merge.ts 的 mergeItems）。
+ * 唯一的影响是全新设备恢复备份时只拿到最近 14 天的任务表 —— 而那正是没人会读的部分。
+ */
+const DATED_TABLE_RETENTION_DAYS: Record<string, number> = {
+  stage1_tasks: 14
+};
+
+const retentionCutoff = (days: number): string => {
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  return cutoff.toISOString().slice(0, 10);
+};
+
 const copyTable = (source: Database, target: Database, table: string): void => {
   if (!tableExists(source, table)) return;
   const createSql = String(firstValue(
@@ -43,13 +70,20 @@ const copyTable = (source: Database, target: Database, table: string): void => {
 
   const localStateKeys = [...DEVICE_LOCAL_STATE_KEYS];
   const excludeDeviceLocalState = table === "app_state" && localStateKeys.length > 0;
-  const statement = source.prepare(`SELECT * FROM ${quoteIdentifier(table)}${
-    excludeDeviceLocalState ? ` WHERE key NOT IN (${localStateKeys.map(() => "?").join(", ")})` : ""
-  }`);
+  const retentionDays = DATED_TABLE_RETENTION_DAYS[table];
+  const bindings: SnapshotValue[] = excludeDeviceLocalState ? [...localStateKeys] : [];
+  let where = "";
+  if (excludeDeviceLocalState) {
+    where = ` WHERE key NOT IN (${localStateKeys.map(() => "?").join(", ")})`;
+  } else if (retentionDays) {
+    where = " WHERE reviewed_on >= ?";
+    bindings.push(retentionCutoff(retentionDays));
+  }
+  const statement = source.prepare(`SELECT * FROM ${quoteIdentifier(table)}${where}`);
   let columns: string[] = [];
   const values: SnapshotValue[][] = [];
   try {
-    if (excludeDeviceLocalState) statement.bind(localStateKeys);
+    if (bindings.length) statement.bind(bindings);
     while (statement.step()) {
       const row = statement.get();
       values.push(row as SnapshotValue[]);
@@ -104,7 +138,7 @@ export const isUserSyncSnapshot = (db: Database): boolean => {
   // v1 快照早期只有 format 列；同一 format 的旧快照仍然按 v1 兼容读取。
   const columns = firstValue(db, `SELECT COUNT(*) FROM pragma_table_info('${META_TABLE}') WHERE name = 'protocol_version'`);
   if (!Number(columns)) return true;
-  return Number(firstValue(db, `SELECT protocol_version FROM ${META_TABLE} LIMIT 1`)) === SYNC_PROTOCOL_VERSION;
+  return SUPPORTED_SYNC_PROTOCOL_VERSIONS.has(Number(firstValue(db, `SELECT protocol_version FROM ${META_TABLE} LIMIT 1`)));
 };
 
 const bytesBuffer = (data: Uint8Array): ArrayBuffer => (

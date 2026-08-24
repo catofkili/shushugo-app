@@ -84,6 +84,12 @@ export function ensureSyncSchema(): void {
     if (entry.table === "reviews" && !columnsOf(entry.table).has("direction")) {
       db.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
     }
+    if (entry.table === "reviews") {
+      const columns = columnsOf(entry.table);
+      if (!columns.has("reviewed_at")) db.run("ALTER TABLE reviews ADD COLUMN reviewed_at INTEGER");
+      if (!columns.has("scheduler_mode")) db.run("ALTER TABLE reviews ADD COLUMN scheduler_mode TEXT NOT NULL DEFAULT 'legacy'");
+      if (!columns.has("fsrs_params_version")) db.run("ALTER TABLE reviews ADD COLUMN fsrs_params_version TEXT NOT NULL DEFAULT 'legacy'");
+    }
     ensureTrackingColumns(entry);
     ensureTriggers(entry);
   }
@@ -106,10 +112,20 @@ const ensureTrackingColumns = (entry: SyncedTable): void => {
     db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_ORIGIN_COL} TEXT`);
   }
 
-  if (entry.strategy === "append" && !columns.has(SYNC_UID_COL)) {
-    // 两端的自增 id 会撞车(各自都会产生 id=5001),所以仍保留
-    // 「设备号:本地 id」作为事件追踪号;跨设备合并身份由 tables.ts 的自然键决定。
-    db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_UID_COL} TEXT`);
+  if (entry.strategy === "append") {
+    if (!columns.has(SYNC_UID_COL)) {
+      // 两端的自增 id 会撞车(各自都会产生 id=5001),所以仍保留
+      // 「设备号:本地 id」作为事件追踪号;跨设备合并身份由 tables.ts 的自然键决定。
+      db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_UID_COL} TEXT`);
+    }
+    // ⚠️ 这条回填**必须每次都跑**,不能只在刚加列的那一次跑。
+    //
+    // insert 触发器补 uid 的前提是 `applying_remote` 没开,而云端合并整个过程
+    // 都开着它 —— 从对端合并进来的行如果自己没带 uid,就永远是 NULL,再也没人补。
+    // 然后删这行的时候 delete 触发器算出 row_key = NULL,撞上
+    // sync_tombstones.row_key 的 NOT NULL 约束,**把调用方整个事务掀翻**。
+    // 实测用户库 36,759 条 reviews 里就有 1 条这样的(メールアドレス 2026-08-02),
+    // 「合并重复词条」每次点都在这一行上回滚,所以那个功能从上线起就没成功过一次。
     db.run(
       `UPDATE ${entry.table}
        SET ${SYNC_UID_COL} = (SELECT id FROM sync_device LIMIT 1) || ':' || CAST(id AS TEXT)
@@ -179,6 +195,11 @@ const ensureTriggers = (entry: SyncedTable): void => {
   db.run(`
     CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_delete AFTER DELETE ON ${table}
     WHEN NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
+      -- 算不出 row_key 的行(某列是 NULL)写不了墓碑 —— 但那也不该让调用方的事务
+      -- 整个失败。没有同步身份的行本来就不可能被对端按键复活,跳过是安全的;
+      -- 抛错则会把「合并重复词条」这种一整个批量迁移掀翻。上面的 uid 回填负责
+      -- 让这条守卫平时用不上。
+      AND ${rowKeyExpr(entry, "OLD")} IS NOT NULL
     BEGIN
       INSERT INTO sync_tombstones (table_name, row_key, deleted_at, origin_device)
       VALUES ('${table}', ${rowKeyExpr(entry, "OLD")}, ${NOW_EXPR},

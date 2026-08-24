@@ -12,7 +12,6 @@ interface PrivacySettingsProps {
 }
 
 export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: PrivacySettingsProps) {
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
   const [message, setMessage] = useState("");
   const [clearPanelOpen, setClearPanelOpen] = useState(false);
   const [clearRequiresPasscode, setClearRequiresPasscode] = useState(false);
@@ -125,23 +124,14 @@ export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: Priva
       <div className="mb-4">
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">隐私权限</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
+          {/* 这里原来摆着一个「使用分析」开关。它的状态是个 useState,连存都没存,
+              应用里也没有任何埋点或第三方分析 SDK —— 一个什么都不做、还暗示我们在
+              收集数据的开关,不如直接说清楚没有这回事。 */}
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">使用分析</p>
-              <p className="mt-0.5 text-xs text-white/50">当前未接入第三方分析服务</p>
+              <p className="text-sm font-bold text-white">不收集使用数据</p>
+              <p className="mt-0.5 text-xs text-white/50">应用里没有第三方分析、没有埋点。学习记录只存在你的设备上，登录后才会加密备份到云端</p>
             </div>
-            <label className="relative inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={analyticsEnabled}
-                onChange={(e) => {
-                  setAnalyticsEnabled(e.target.checked);
-                  notify(e.target.checked ? "当前只是本机偏好开关，尚未上传分析数据。" : "已关闭使用分析偏好。");
-                }}
-                className="peer sr-only"
-              />
-              <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
-            </label>
           </div>
 
           <button onClick={onOpenPolicy} className="focus-ring flex w-full items-center gap-3 p-4 text-left hover:bg-[#4d5151]">

@@ -1,7 +1,11 @@
 import { getDatabase } from "./database";
+import { displayedPromptKeyOf, displayedPromptPeers } from "./models/question-meaning-index";
+import { saveUserQuestionMeaning } from "./models/user-question-meanings";
+import { resetSimilarMeaningCache } from "../data/similar_meaning_groups";
+import { resetInterferenceCache } from "./scheduler/interference";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
 import { getDailyWordGoal } from "./studyPreferences";
-import { rowObjectToCard } from "./models/word-card";
+import { promptMeaning, questionMeaning, rowObjectToCard } from "./models/word-card";
 import { notifyProgressUpdated } from "./progress-events";
 import { STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
 import {
@@ -18,6 +22,7 @@ import type { WordSessionOptions } from "./study-types";
 import { encoreChunkSize, recordEncore } from "./review-budget";
 import { ensureSyncSchema } from "./sync/schema";
 import { recordStudySeconds } from "./sync/study-time";
+import { recordReviewEvent } from "./reviews";
 import {
   recordFsrsReview,
   readFsrsState,
@@ -32,6 +37,7 @@ import {
 } from "./fsrs-scheduler";
 import {
   advanceReviewQueue,
+  dailyNewQuota,
   getReviewQueue,
   lastAnsweredWord,
   scheduleDelayedReview,
@@ -51,6 +57,7 @@ import { getWordStats } from "./word-api/stats";
 import { updateMemoryProfileIfNeeded } from "./adaptive";
 import { hasWordFilter, isLongTermWeak, newWordOrderSql, wordFilterSql } from "./word-api/filters";
 import { pickMistakeNext } from "./word-api/mistakes";
+import { pickedProgress, pickPickedNext, setPickedWords } from "./word-api/picked";
 import { directionByPhase, KANJI, REVERSE, type StudyDirection } from "./word-api/directions";
 import {
   directionCardById,
@@ -64,8 +71,19 @@ import {
   encoreRemainingCount,
   ensureStage1Tasks,
   pickStage1Next,
+  stage1NewTaskCount,
   stage1ProgressCounts
 } from "./word-api/stage1";
+import {
+  createKanjiUnitTasks,
+  isKanjiUnitSchedulerEnabled,
+  kanjiUnitCardByKey,
+  pickKanjiUnitNext,
+  recordKanjiUnitReview,
+  setKanjiUnitKnownForever,
+  ensureKanjiUnitTables
+} from "./kanji-unit-scheduler";
+import { kanjiUnitIndexLoaded, loadKanjiUnitIndex } from "./kanji-unit-index";
 
 // 排队接口是 progress-api 在用的公开 API,搬去 session-state 后原样再导出,调用方不用改
 export { getReviewQueue, setReviewQueue } from "./word-api/session-state";
@@ -117,6 +135,7 @@ const currentPhase = () => {
   // 阶段做完就是 done,不再自动串到下一个阶段:反向/汉字是用户自己挑的模式,
   // 不是今日计划的续集(见 resolveNextCard 里同一条注释)。
   if (phase === "stage2" || phase === "kanji") {
+    if (phase === "kanji" && isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded()) return phase;
     const counts = directionProgressCounts(directionByPhase(phase));
     if (counts.total > 0 && counts.completed >= counts.total) {
       setState("phase", "done");
@@ -224,7 +243,7 @@ const setCurrentCard = (card: Pick<WordCard, "id"> | null): void => {
   setState("current_card", card && card.id != null ? String(card.id) : "0");
 };
 
-const wordCardById = (wordId: number): WordCard | null => {
+export const wordCardById = (wordId: number): WordCard | null => {
   const row = firstRow(`
     SELECT
       w.*,
@@ -265,7 +284,9 @@ const claimCurrentCard = (wordId: number): boolean => {
  * 换了场就当作没得撤销,免得在反向里点一下把正向刚答的那张拽过来。
  */
 const sessionMode = (phase: string, options: WordSessionOptions = {}): string => (
-  options.focus === "mistakes" ? "mistakes" : hasWordFilter(options) ? "filtered" : phase
+  options.focus === "mistakes" ? "mistakes"
+    : options.focus === "picked" ? "picked"
+      : hasWordFilter(options) ? "filtered" : phase
 );
 
 const currentSessionMode = (options: WordSessionOptions = {}): string =>
@@ -295,6 +316,9 @@ const nextCard = (options: WordSessionOptions = {}): { card: WordCard | null; ph
 const resolveNextCard = (options: WordSessionOptions = {}): { card: WordCard | null; phase: string } => {
   if (options.focus === "mistakes") {
     return { card: pickMistakeNext(), phase: "mistakes" };
+  }
+  if (options.focus === "picked") {
+    return { card: pickPickedNext(), phase: "picked" };
   }
   if (hasWordFilter(options)) {
     return { card: pickFilteredWordNext(options), phase: "filtered" };
@@ -373,18 +397,13 @@ export function completeTodayWordPlan(): { stats: WordStats; completedCount: num
         AND known_forever = 0
     `, [day, ...ids]);
 
-    getDatabase().run(`
-      INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction)
-      SELECT t.word_id, 'know', 0, ?, 'forward'
-      FROM stage1_tasks t
-      WHERE t.reviewed_on = ?
-        AND t.word_id IN (${placeholders})
-        AND NOT EXISTS (
-          SELECT 1 FROM reviews r
-          WHERE r.word_id = t.word_id
-            AND r.reviewed_on = ?
-        )
-    `, [day, day, ...ids, day]);
+    ids.forEach((wordId) => recordReviewEvent({
+      wordId,
+      answer: "know",
+      reviewedOn: day,
+      direction: "forward",
+      schedulerMode: "normal"
+    }));
 
     setReviewQueue(getReviewQueue().filter((item) => !ids.includes(item.word_id)));
   }
@@ -485,47 +504,327 @@ export function startEncore(customSize?: number): WordSessionResponse {
 
 /** Add one dictionary-discovered word to today's queue without consuming the
  * normal new-word quota.  The task type is deliberately encore_new so the
- * daily reconciler will not trim it away. */
+ * daily reconciler will not trim it away.
+ *
+ * 这条是「我在例句里撞见这个词，现在就想学」——一个词、当场插队，所以可以越过配额。
+ * 从词库勾一批词走的是 addWordsToQueue，那条按配额排，别混。 */
 export function addWordToTodayEncore(wordId: number): boolean {
   ensureProgressInitialized();
   ensureStage1Tasks();
   const id = Math.round(Number(wordId));
   if (!Number.isFinite(id) || id <= 0) return false;
   const day = today();
-  const exists = firstValue<number>(
+  const eligible = firstValue<number>(
     "SELECT 1 FROM words w JOIN progress p ON p.word_id = w.id WHERE w.id = ? AND p.known_forever = 0 LIMIT 1",
     [id],
     0
   );
-  if (!exists) return false;
+  if (!eligible) return false;
+  // 排到明天以后的词插进来是静默无效的：当日任务表的取词条件卡着 fsrs_due <= 今日边界。
+  const showsToday = firstValue<number>(
+    "SELECT 1 FROM progress WHERE word_id = ? AND (fsrs_due IS NULL OR fsrs_due <= ?) LIMIT 1",
+    [id, studyDayEnd().toISOString()],
+    0
+  );
+  if (!showsToday) return false;
   const alreadyQueued = firstValue<number>(
     "SELECT 1 FROM stage1_tasks WHERE reviewed_on = ? AND word_id = ? LIMIT 1",
     [day, id],
     0
   );
   if (alreadyQueued) return false;
-  getDatabase().run(
-    "INSERT OR IGNORE INTO dictionary_discovered_words (word_id) VALUES (?)",
-    [id]
-  );
-  const orderIndex = firstValue<number>(
-    "SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?",
-    [day],
-    1
-  );
-  getDatabase().run(`
+  const db = getDatabase();
+  db.run("INSERT OR IGNORE INTO dictionary_discovered_words (word_id) VALUES (?)", [id]);
+  db.run(`
     INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
     VALUES (?, ?, 'encore_new', ?)
-  `, [day, id, orderIndex]);
+  `, [
+    day,
+    id,
+    firstValue<number>("SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?", [day], 1)
+  ]);
   setPhase("stage1");
   persistSoon();
   notifyProgressUpdated();
   return true;
 }
 
+/**
+ * 从词库勾一批**没学过的**词放进学习队列。
+ *
+ * 队列只有一份，就是 progress 里的 FSRS 状态；「今天」是它在学习日边界（凌晨四点）
+ * 上的一个投影。所以：
+ *   - 学过的词根本不用加 —— 到期自己会出现，加了没有含义
+ *   - 加新词 = 排进队列，并且**今天的新词名额优先给用户挑的这些**
+ *
+ * 名额是「每天学几个新词」，用户挑的是「学哪几个」，两件事不冲突：今天的新词额度
+ * 早在排计划时就被系统自己挑的词占满了，所以这里会把**还没答过的**那些自动新词让出来，
+ * 换成用户挑的（让出来的词只是丢掉当天的计划行，回到新词池，之后照样会排上）。
+ * 一次勾 300 个也不会把今天砸穿：额度之外的排进 dictionary_discovered_words，
+ * 明天排计划时它们在新词排序里最优先。想现在就把这批全刷一遍，那是「只学这些」。
+ */
+export function addWordsToQueue(wordIds: number[]): {
+  /** 真正进了队列的新词 */
+  added: number;
+  /** 其中今天就会出的（受每日新词额度限制） */
+  today: number;
+  /** 学过的词：不用加，到期自己出现 */
+  alreadyLearning: number;
+  /** 标了熟知、已经退出队列的词 */
+  known: number;
+} {
+  ensureProgressInitialized();
+  ensureStage1Tasks();
+  const db = getDatabase();
+  const day = today();
+  const quota = dailyNewQuota();
+  const picked = new Set<number>();
+  const fresh: number[] = [];
+  let alreadyLearning = 0;
+  let known = 0;
+
+  wordIds.forEach((raw) => {
+    const id = Math.round(Number(raw));
+    if (!Number.isFinite(id) || id <= 0 || picked.has(id)) return;
+    const row = firstRow(
+      "SELECT p.seen_count, p.known_forever FROM progress p JOIN words w ON w.id = p.word_id WHERE w.id = ? LIMIT 1",
+      [id]
+    );
+    if (!row) return;
+    picked.add(id);
+    if (Number(row.known_forever ?? 0) === 1) { known += 1; return; }
+    if (Number(row.seen_count ?? 0) > 0) { alreadyLearning += 1; return; }
+    fresh.push(id);
+  });
+
+  if (!fresh.length) return { added: 0, today: 0, alreadyLearning, known };
+
+  /**
+   * 让出一个「系统自己挑的、今天还没答过的」新词名额。让不出来就返回 false。
+   * 候选里必须排掉这次勾中的词 —— 否则刚放进去的那个（order_index 最大）
+   * 会立刻被下一轮当成腾挪对象删掉，最后只剩最后一个进得去。
+   */
+  const freeOneNewSlot = (): boolean => {
+    const placeholders = fresh.map(() => "?").join(",");
+    const victim = firstValue<number>(`
+      SELECT t.word_id
+      FROM stage1_tasks t
+      JOIN progress p ON p.word_id = t.word_id
+      WHERE t.reviewed_on = ?
+        AND t.task_type = 'new'
+        AND p.seen_count = 0
+        AND p.known_forever = 0
+        AND t.word_id NOT IN (${placeholders})
+      ORDER BY t.order_index DESC
+      LIMIT 1
+    `, [day, ...fresh], 0);
+    if (!victim) return false;
+    db.run("DELETE FROM stage1_tasks WHERE reviewed_on = ? AND word_id = ?", [day, victim]);
+    return true;
+  };
+
+  let orderIndex = firstValue<number>(
+    "SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?",
+    [day],
+    1
+  );
+  let queuedToday = 0;
+
+  fresh.forEach((id) => {
+    db.run("INSERT OR IGNORE INTO dictionary_discovered_words (word_id) VALUES (?)", [id]);
+    const alreadyQueued = firstValue<number>(
+      "SELECT 1 FROM stage1_tasks WHERE reviewed_on = ? AND word_id = ? LIMIT 1",
+      [day, id],
+      0
+    );
+    if (alreadyQueued) { queuedToday += 1; return; }
+    if (queuedToday >= quota) return;
+    if (stage1NewTaskCount(day) >= quota && !freeOneNewSlot()) return;
+    db.run(`
+      INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+      VALUES (?, ?, 'new', ?)
+    `, [day, id, orderIndex]);
+    orderIndex += 1;
+    queuedToday += 1;
+  });
+
+  if (queuedToday > 0) setPhase("stage1");
+  persistSoon();
+  notifyProgressUpdated();
+  return { added: fresh.length, today: queuedToday, alreadyLearning, known };
+}
+
+/**
+ * 「熟知」在词库里的唯一实现。
+ *
+ * 一次「熟知」= 这个词进了队列、第一次出现就被答了熟知：算一次学过（seen_count、reviews
+ * 流水都有），然后 known_forever = 1 把它踢出 FSRS 队列，正常复习里几乎不会再出现
+ * （`WORD_FSRS.eligible` 要求 known_forever = 0）。写法和 submitWordAnswer 里
+ * `answer === "known_forever"` 那一支一致：不记 FSRS 状态（熟知的词不需要调度）、
+ * mistake_streak 归零、流水 direction = 'forward'。
+ *
+ * **不往 stage1_tasks 里插任务行。** 当日任务的「完成」判据就是 `known_forever = 1`
+ * （见 stage1ProgressCounts），插进去等于凭空给今天加一条已完成任务 ——
+ * 标 50 个熟知，今日计划会瞬间变成「50/70 已完成」，那是假的。
+ *
+ * 行末那颗按钮和多选工具条上的「标熟知」走的是同一条 —— 别再写第二套。
+ */
+const applyKnownForever = (id: number, studyDate: string): boolean => {
+  const progress = firstRow("SELECT known_forever FROM progress WHERE word_id = ?", [id]);
+  if (!progress || Number(progress.known_forever ?? 0) === 1) return false;
+  const db = getDatabase();
+  db.run(`
+    UPDATE progress
+    SET seen_count = seen_count + 1,
+        known_forever = 1,
+        last_seen_on = ?,
+        mistake_streak = 0
+    WHERE word_id = ?
+  `, [studyDate, id]);
+  // score_after 是 score 系统留下的历史列(NOT NULL),这里写 0 占位
+  recordReviewEvent({
+    wordId: id,
+    answer: "known_forever",
+    reviewedOn: studyDate,
+    direction: "forward",
+    schedulerMode: "known_forever"
+  });
+  return true;
+};
+
+/**
+ * 撤掉「熟知」。
+ *
+ * 当天点的连流水一起撤（和学习页的「上一个」同一个做法：`DELETE FROM reviews WHERE id`），
+ * 否则点错一下就留下一条假的学习记录，还把一个**没学过**的词变成「学过但没进过调度」的到期词。
+ * 更早的那次不动流水，只把标记翻回来 —— 历史是事实，不能因为今天改主意就重写昨天的账。
+ */
+const undoKnownForever = (id: number, studyDate: string): boolean => {
+  const progress = firstRow("SELECT known_forever FROM progress WHERE word_id = ?", [id]);
+  if (!progress || Number(progress.known_forever ?? 0) !== 1) return false;
+  const db = getDatabase();
+  const todayReviewId = firstValue<number>(`
+    SELECT id FROM reviews
+    WHERE word_id = ? AND reviewed_on = ? AND direction = 'forward' AND answer = 'known_forever'
+    ORDER BY id DESC
+    LIMIT 1
+  `, [id, studyDate], 0);
+  if (todayReviewId) {
+    db.run("DELETE FROM reviews WHERE id = ?", [todayReviewId]);
+    db.run("UPDATE progress SET known_forever = 0, seen_count = MAX(seen_count - 1, 0) WHERE word_id = ?", [id]);
+  } else {
+    db.run("UPDATE progress SET known_forever = 0 WHERE word_id = ?", [id]);
+  }
+  return true;
+};
+
+const validWordId = (raw: number): number | null => {
+  const id = Math.round(Number(raw));
+  return Number.isFinite(id) && id > 0 ? id : null;
+};
+
+/**
+ * 一批词标熟知 / 放回复习。返回**真的改动了哪些**词。
+ *
+ * 撤销必须按这个列表回滚,不能拿原始勾选去反着跑一遍:勾中的词里可能本来就有
+ * 已经是熟知的(词库页不隐藏它们),那些词这次压根没动,反跑一遍会把它们
+ * 一并放回复习 —— 撤销撤出了原来没有的改动,比不给撤销还糟。
+ */
+export function setWordsKnownForeverIds(wordIds: number[], known: boolean): number[] {
+  ensureProgressInitialized();
+  const studyDate = today();
+  const changed: number[] = [];
+  wordIds.forEach((raw) => {
+    const id = validWordId(raw);
+    if (id === null) return;
+    if (known ? applyKnownForever(id, studyDate) : undoKnownForever(id, studyDate)) changed.push(id);
+  });
+  if (changed.length > 0) {
+    persistSoon();
+    notifyProgressUpdated();
+  }
+  return changed;
+}
+
+/** 同上,只要个数。 */
+export function setWordsKnownForever(wordIds: number[], known: boolean): number {
+  return setWordsKnownForeverIds(wordIds, known).length;
+}
+
+export const markWordKnownForever = (wordId: number): boolean => setWordsKnownForever([wordId], true) > 0;
+export const unmarkWordKnownForever = (wordId: number): boolean => setWordsKnownForever([wordId], false) > 0;
+
+/** 词库勾一批词 → 开一场只含这些词的学习。不碰今日计划,也不写「上次用的模式」。 */
+export function startPickedStudy(wordIds: number[]): { count: number; session: WordSessionResponse } {
+  ensureProgressInitialized();
+  const ids = setPickedWords(wordIds);
+  notifyProgressUpdated();
+  return { count: ids.length, session: getWordSession({ focus: "picked" }) };
+}
+
+export { pickedProgress };
+
+let activeKanjiUnitKey: string | null = null;
+
+const kanjiUnitTarget = (unitKey: string) => {
+  const unitCard = kanjiUnitCardByKey(unitKey);
+  if (!unitCard) return null;
+  return {
+    text: unitCard.targetSegment.text,
+    start: unitCard.targetSegment.start,
+    length: unitCard.targetSegment.length,
+    reading: unitCard.actualReading,
+    unitType: unitCard.unit.unitType,
+    char: unitCard.unit.char,
+    base: unitCard.unit.base,
+    surface: unitCard.unit.surface
+  } as const;
+};
+
+/**
+ * Feature-flagged adapter for the local unit scheduler. It deliberately
+ * projects an example word into the existing response so the old UI can keep
+ * its notes/favorites and the new target can be introduced incrementally.
+ */
+const getKanjiUnitSession = (): WordSessionResponse => {
+  ensureKanjiUnitTables();
+  createKanjiUnitTasks(today());
+  const unitKey = pickKanjiUnitNext(today());
+  if (!unitKey) {
+    activeKanjiUnitKey = null;
+    setCurrentCard(null);
+    return {
+      card: null,
+      phase: "done",
+      stats: getWordStats("kanji", {}, { kanjiUnits: true }),
+      unitKey: null,
+      unitTarget: null,
+      canUndo: false
+    };
+  }
+  const unitCard = kanjiUnitCardByKey(unitKey);
+  const card = unitCard ? wordCardById(unitCard.exampleWordId) : null;
+  if (!card) {
+    activeKanjiUnitKey = null;
+    return getKanjiUnitSession();
+  }
+  activeKanjiUnitKey = unitKey;
+  setCurrentCard(card);
+  return {
+    card,
+    phase: "kanji",
+    stats: getWordStats("kanji", {}, { kanjiUnits: true }),
+    unitKey,
+    unitTarget: kanjiUnitTarget(unitKey),
+    canUndo: false
+  };
+};
 
 export function getWordSession(options: WordSessionOptions = {}): WordSessionResponse {
   ensureProgressInitialized();
+  if (!options.focus && isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded() && currentPhase() === "kanji") {
+    return getKanjiUnitSession();
+  }
   const { card, phase } = nextCard(options);
   return {
     card,
@@ -576,9 +875,11 @@ export function getQuickStudySession(limit = 50, excludedWordIds: number[] = [])
   const excludedIds = new Set(excludedWordIds.map((id) => Number(id)).filter((id) => Number.isFinite(id)));
 
   const pickNext = () => {
-    if (phase === "stage1") return pickStage1Next(excludedIds);
+    // 快速模式是批次浏览，不是普通答题会话：同一批次必须按稳定优先级输出，
+    // 否则普通排片器的加权随机会把低优先级卡片抽到顶部。
+    if (phase === "stage1") return pickStage1Next(excludedIds, { deterministic: true });
     if (phase === "stage2" || phase === "kanji") {
-      return pickDirectionNext(directionByPhase(phase), excludedIds);
+      return pickDirectionNext(directionByPhase(phase), excludedIds, { deterministic: true });
     }
     return null;
   };
@@ -630,6 +931,20 @@ export function continueTodayPlanStudy(): WordSessionResponse {
 /** 反向/汉字:进模式先把当日计划排好(三方向同一套规则,见 direction-plan) */
 const continueDirectionStudy = (direction: StudyDirection): WordSessionResponse => {
   ensureProgressInitialized();
+  // 运行时索引是动态 import 的。没加载完就走单位路径,会排出一份空计划、
+  // 然后把 phase 判成 "done" —— 用户看到的是「今天没有了」,而不是「还在加载」。
+  // 未就绪时先触发加载、这一次仍走词级旧路径(功能开关本来就是为这个兜底存在的)。
+  if (direction.id === "kanji_reading" && isKanjiUnitSchedulerEnabled() && !kanjiUnitIndexLoaded()) {
+    void loadKanjiUnitIndex();
+  }
+  if (direction.id === "kanji_reading" && isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded()) {
+    ensureKanjiUnitTables();
+    createKanjiUnitTasks(today());
+    setPhase("kanji");
+    const session = getKanjiUnitSession();
+    notifyProgressUpdated();
+    return session;
+  }
   // 进模式才引入新卡:光在首页看一眼统计不该给这个方向攒债
   ensureDirectionTasks(direction, true);
   const counts = directionProgressCounts(direction);
@@ -649,6 +964,24 @@ export function continueStage2Study(): WordSessionResponse {
 
 export function continueKanjiStudy(): WordSessionResponse {
   return continueDirectionStudy(KANJI);
+}
+
+export function submitKanjiUnitAnswer(unitKey: string, answer: WordAnswer): WordSessionResponse {
+  ensureProgressInitialized();
+  if (!isKanjiUnitSchedulerEnabled() || !kanjiUnitIndexLoaded() || activeKanjiUnitKey !== unitKey) {
+    return getWordSession();
+  }
+  if (answer === "known_forever") {
+    setKanjiUnitKnownForever(unitKey, true);
+  } else {
+    // 学习步骤档位由 kanjiUnitStepMode 从流水现算,和词级路径同口径
+    recordKanjiUnitReview(unitKey, answer);
+  }
+  activeKanjiUnitKey = null;
+  setCurrentCard(null);
+  persistSoon();
+  notifyProgressUpdated();
+  return getWordSession();
 }
 
 export function submitWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions = {}): WordSessionResponse {
@@ -795,11 +1128,13 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
 
   // score_after 是 score 系统留下的历史列(NOT NULL)。调度已完全交给 FSRS,
   // 这里写 0 占位;历史行里的旧值保留不动,供回看当初的曲线。
-  db.run(
-    "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, ?, 0, ?, 'forward')",
-    [wordId, answer, studyDate]
-  );
-  const reviewId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
+  const reviewId = recordReviewEvent({
+    wordId,
+    answer,
+    reviewedOn: studyDate,
+    direction: "forward",
+    schedulerMode: stepMode
+  });
   // 记忆画像不是只在测试里手动刷新:每次真实正向答题后按阈值增量更新。
   // 统计页还会再补一次检查,这样已有历史用户打开页面也能脱离旧的默认 1.0。
   updateMemoryProfileIfNeeded();
@@ -842,7 +1177,11 @@ export function undoLastWordAnswer(options: WordSessionOptions = {}): WordSessio
 
   if (snapshot.phase === "stage2" || snapshot.phase === "kanji") {
     // 反向/汉字的撤销和正向同构:把记忆行和 FSRS 状态放回作答前,并删掉那条流水
-    undoDirectionAnswer(directionByPhase(String(snapshot.phase)), snapshot);
+    const direction = directionByPhase(String(snapshot.phase));
+    // 发布前的旧汉字题也使用 phase=kanji，但 direction=kanji。新题型改成
+    // kanji_reading 后不能拿旧撤销快照去覆盖新表；旧快照只失去撤销资格，历史不删。
+    if (snapshot.direction && snapshot.direction !== direction.id) return stayOnCurrentCard(options);
+    undoDirectionAnswer(direction, snapshot);
     setPhase(String(snapshot.phase));
   } else if (snapshot.phase === "stage1") {
     db.run(`
@@ -923,6 +1262,78 @@ export function updateWordNote(wordId: number, note: string): { wordId: number; 
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());
   return { wordId, note: cleaned };
+}
+
+/**
+ * 和这个词**一字不差**共用同一行题面的其他词。
+ *
+ * 走 displayedPromptPeers 而不是 questionMeaningPeers：后者按首义 8 字分组，
+ * 会把 経済「经济」和 economy「经济；经济舱」算成一组 —— 面板上写着
+ * 「2 个词共用「经济」」，用户看着两行不一样的字，那是假话。
+ * 两份口径为什么都要留，见 question-meaning-index 顶上的注释。
+ *
+ * 只回答「谁和它撞了」，**不判断拍数是否也撞** —— 拍数口径在
+ * features/word-study/word-study-utils 的 moraCount 里，是卡面那个「4拍」标签
+ * 同一份实现，由调用方去标。这里再写一份就是第二套口径。
+ */
+export function questionMeaningRivals(wordId: number): Array<{
+  id: number;
+  label: string;
+  kana: string;
+  meaning: string;
+}> {
+  const peers = displayedPromptPeers(wordId);
+  if (!peers.length) return [];
+  const placeholders = peers.map(() => "?").join(", ");
+  return rowsFor(
+    `SELECT id, kanji, kana, meaning FROM words WHERE id IN (${placeholders})`,
+    peers
+  ).map((row) => ({
+    id: Number(row.id ?? 0),
+    label: String(row.kanji || row.kana || ""),
+    kana: String(row.kana ?? ""),
+    meaning: String(row.meaning ?? "")
+  }));
+}
+
+/**
+ * 改写这个词的题面首义。传空串 = 恢复原文。
+ *
+ * 改一行题面会连带改变三处：撞车分组（question-meaning-index，全表扫描后缓存）、
+ * 释义相近候选、以及**排片的干扰隔离表**（interference 把「同题面」当一组，见
+ * interference.ts:73）。所以三份缓存都要作废。
+ *
+ * 重建是百毫秒级的全表扫描，而这个函数是在学习页点「保存」时调用的 —— 同步重建
+ * 会当场卡一下。照 warmConfusionGroups 的做法丢进 setTimeout(0)，让保存先返回。
+ *
+ * **不触发云同步**：一场里改五个题面就是五次全库快照上传。只落本地盘，
+ * 攒到正常同步节奏一起走（和便签一致）。
+ */
+export function updateWordQuestionMeaning(wordId: number, text: string): {
+  wordId: number;
+  questionMeaning: string;
+  promptMeaning: string;
+  isOverridden: boolean;
+} {
+  const saved = saveUserQuestionMeaning(wordId, text);
+  resetSimilarMeaningCache();  // 内部会连带 resetQuestionMeaningIndex
+  resetInterferenceCache();
+  setTimeout(() => displayedPromptKeyOf(wordId), 0);
+
+  import("./storage").then(({ scheduleSave }) => scheduleSave());
+  // 回读生效后的题面：清空时要还原成算出来的原文，光靠调用方猜不出来。
+  const row = rowsFor("SELECT id, kanji, kana, meaning FROM words WHERE id = ?", [wordId])[0];
+  const label = String(row?.kanji || row?.kana || "");
+  const kana = String(row?.kana ?? "");
+  const source = String(row?.meaning ?? "");
+  return {
+    wordId,
+    // 题面上显示的那行（学习页渲染 questionMeaning）
+    questionMeaning: row ? questionMeaning(source, label, kana, wordId) : saved,
+    // 撞车分组用的短首义
+    promptMeaning: row ? promptMeaning(source, wordId, label, kana) : saved,
+    isOverridden: Boolean(saved)
+  };
 }
 
 export function addWordStudySeconds(seconds: number): { seconds: number; stats: WordStats } {

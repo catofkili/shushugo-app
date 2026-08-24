@@ -31,3 +31,25 @@ export function triggerCountdownHaptic(): void {
 export function triggerReliefHaptic(): void {
   Haptics.impact({ style: ImpactStyle.Heavy }).catch(ignoreHapticError);
 }
+
+/**
+ * 翻面。整个循环里最高频的一下(每张卡都要做一次),在此之前它只有声音没有触觉。
+ * 必须是 Light —— 翻面不是结算,给重了会和评分的 Heavy 抢层次。
+ */
+export function triggerRevealHaptic(): void {
+  Haptics.impact({ style: ImpactStyle.Light }).catch(ignoreHapticError);
+}
+
+/**
+ * 甩卡越过/退回提交阈值的那一帧。
+ * 在此之前「甩够了没」只有印章的透明度在说,必须盯着屏幕看才知道；
+ * 阈值类手势在 iOS 上一律给触觉,这样不看屏幕也知道松手会发生什么。
+ */
+export function triggerSwipeArmHaptic(): void {
+  Haptics.impact({ style: ImpactStyle.Light }).catch(ignoreHapticError);
+}
+
+/** 成就解锁。比评分重一档:一天里最多响几次,是真正该有仪式感的那一下。 */
+export function triggerAchievementHaptic(): void {
+  Haptics.impact({ style: ImpactStyle.Medium }).catch(ignoreHapticError);
+}

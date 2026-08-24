@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import initSqlJs from '../../frontend/node_modules/sql.js/dist/sql-wasm.js';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const core = require('../src/core/study-core.js');
+const root = path.resolve(import.meta.dirname, '..');
+const SQL = await initSqlJs({ locateFile: (name) => path.resolve(root, '../frontend/node_modules/sql.js/dist', name) });
+const db = new SQL.Database(new Uint8Array(fs.readFileSync(path.resolve(root, '../frontend/public/nihongo.db'))));
+const now = new Date('2026-08-22T10:00:00.000Z');
+const quick = { mode: 'quick', modeLimit: 3, now };
+const plan = core.createModePlan(db, 'quick', quick);
+assert.equal(plan.count, 3);
+const card = core.nextCard(db, quick);
+assert.ok(card?.id);
+const answered = core.recordAnswer(db, card.id, 'know', quick);
+assert.equal(answered.stats.mode, 'quick');
+assert.equal(Number(db.exec("SELECT COUNT(*) FROM reviews WHERE direction = 'forward'")[0].values[0][0]), 1);
+const undone = core.undoLastAnswer(db, quick);
+assert.equal(undone.undone, true);
+assert.equal(db.exec("SELECT value FROM app_state WHERE key = 'current_card_quick'")[0].values[0][0], String(card.id));
+db.close();
+console.log(JSON.stringify({ ok: true, mode: 'quick', card: card.id }, null, 2));

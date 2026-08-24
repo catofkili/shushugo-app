@@ -380,7 +380,7 @@ const rowMatchesMember = (row: DbRow, member: SimilarMeaningMember): boolean => 
   String(row.kanji ?? "") === member[0] && String(row.kana ?? "") === member[1]
 );
 
-type ResolvedMember = { id: number; kana: string; kanji: string; meaning: string; note: string };
+type ResolvedMember = { id: number; kana: string; kanji: string; meaning: string; note: string; manual: boolean };
 
 /**
  * 组内成员在 words 表里的实际词条。
@@ -414,7 +414,8 @@ const resolveGroup = (group: SimilarMeaningGroup): ResolvedMember[] => {
       kana: String(match.kana ?? member[1]),
       kanji: String(match.kanji ?? member[0]),
       meaning: String(match.meaning ?? member[2]),
-      note: member[2]
+      note: member[2],
+      manual: true
     }];
   });
   resolvedByGroup.set(group.id, resolved);
@@ -435,7 +436,8 @@ const autoItemsFor = (row: DbRow): ResolvedMember[] => {
       kana: String(peer.kana ?? ""),
       kanji: String(peer.kanji ?? ""),
       meaning: String(peer.meaning ?? ""),
-      note: String(peer.meaning ?? "")
+      note: String(peer.meaning ?? ""),
+      manual: false
     }));
 };
 
@@ -446,6 +448,7 @@ const autoSimilarMeaningCandidates = (row: DbRow): WordCard["similarMeaning"] =>
   return {
     title: `题面首义相同：${key}`,
     distinction: "这些词在题面显示的首义相同，都可能是合理答案；请结合日语词形、语境和词性区分。",
+    source: "auto",
     items
   };
 };
@@ -464,6 +467,7 @@ export function similarMeaningCandidates(row: DbRow): WordCard["similarMeaning"]
   const hasAutoExtras = autoItems.some((item) => !manualIds.has(item.id));
   return {
     title: group.title,
+    source: "manual",
     distinction: hasAutoExtras
       ? `${group.distinction}题面首义相同的其他词也列在后面，请结合词形、语境和词性区分。`
       : group.distinction,

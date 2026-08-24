@@ -1,0 +1,32 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero">
+    <navigator class="back" open-type="navigateBack">‹ 返回学习</navigator>
+    <text class="title">设置与权益</text>
+    <text class="subtitle">离线学习始终可用，付费结果以服务端权益为准</text>
+  </view>
+  <view class="card">
+    <view class="row"><text class="label">当前状态</text><text class="value {{entitlement.active ? 'active' : ''}}">{{entitlement.active ? 'Pro' : '免费版'}}</text></view>
+    <text wx:if="{{entitlement.expiresAt}}" class="detail">到期：{{entitlement.expiresAt}}</text>
+    <text class="detail">来源：{{entitlement.source}}</text>
+  </view>
+  <view class="card">
+    <view class="row"><text class="label">账号</text><text class="value">{{auth.signedIn ? '已绑定' : '未绑定'}}</text></view>
+    <text wx:if="{{auth.userId}}" class="detail">用户：{{auth.userId}}</text>
+    <button class="secondary small" loading="{{busy}}" disabled="{{busy}}" bindtap="signIn">{{auth.signedIn ? '重新绑定微信账号' : '绑定微信账号'}}</button>
+  </view>
+  <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="refreshEntitlement">刷新权益</button>
+  <button class="secondary" loading="{{busy}}" disabled="{{busy}}" bindtap="buyPro">购买 Pro</button>
+  <view class="card maintenance-card">
+    <text class="section-title">数据与内容</text>
+    <text class="detail">学习页面只负责学习；更新、同步、备份和恢复集中在这里。</text>
+    <button class="secondary small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleContentUpdate">检查内容更新</button>
+    <button class="secondary small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleSync">同步进度</button>
+    <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleExportBackup">导出学习备份</button>
+    <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleImportBackup">合并学习备份</button>
+    <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleSave">原子写盘</button>
+    <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleRestore">冷启动恢复</button>
+    <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleDue">查看到期数量</button>
+  </view>
+  <view wx:if="{{result}}" class="card result">{{result}}</view>
+  <view class="notice">支付不会打开站外网页；客户端只接受服务端生成的微信支付订单，支付结果还要经过权益接口确认。</view>
+</scroll-view>

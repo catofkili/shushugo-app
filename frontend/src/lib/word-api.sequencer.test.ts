@@ -111,6 +111,7 @@ describe("真实词库上的整场序列", () => {
     expect(Number(planned[0]?.n ?? 0)).toBeLessThanOrEqual(LEECH_DAILY_INTAKE);
   });
 
+  // 跑 80 张真卡本来就要四秒多,贴着 5 秒的默认上限;并行跑整套时抢 CPU 会挂。
   it("整场里同一混淆组的词不会挨着出", () => {
     const order = runSession(80);
     expect(order.length).toBe(80);
@@ -129,7 +130,7 @@ describe("真实词库上的整场序列", () => {
       }
     }
     expect(violations).toEqual([]);
-  });
+  }, 20_000);
 
   it("同一场里不会反复出同一个词(答对即毕业)", () => {
     const order = runSession(80);

@@ -12,7 +12,18 @@ vi.mock("./database", () => ({
   importDatabase: async () => undefined
 }));
 
-import { confusionGroups, resetConfusionGroups, type ConfusionGroup } from "./confusion-groups";
+import {
+  confusionGroups,
+  duplicateMergeTargets,
+  groupWords,
+  resetConfusionGroups,
+  type ConfusionGroup
+} from "./confusion-groups";
+import {
+  EXCLUDED_SYNONYM_GROUPS,
+  MANUAL_VARIANT_GROUPS,
+  RETAINED_SURFACE_COLLISIONS
+} from "../data/confusion_manual_review";
 
 const findGroup = (groups: ConfusionGroup[], key: string) => groups.find((group) => group.key === key);
 
@@ -105,6 +116,27 @@ describe("疑难辨析分组", () => {
     resetConfusionGroups();
   });
 
+  it("没有一组是自己跟自己辨析 —— 摆出来的两列不能是同一个词形", () => {
+    // 三种来源都会造出这种组:老库同一个词录了两遍(貴方/あなた + あなた/あなた)、
+    // 同一个词的异体写法(片づける + 片付ける)、方括号注音摘掉后重名(蕎麦[そば] + 蕎麦)。
+    // duplicateWordIds 只挡得住释义首义也一样的那批,剩下的靠 add() 按显示形态收口。
+    const collapsed = confusionGroups().filter((group) => {
+      const shown = groupWords(group).split(" / ");
+      return new Set(shown).size < shown.length;
+    });
+    expect(collapsed.map((group) => `${group.key} → ${groupWords(group)}`)).toEqual([]);
+  });
+
+  it("同表記異読み不能被显示形态去重误删 —— 那类摆的本来就是读音", () => {
+    // 開く = あく / ひらく:两个成员的汉字是同一个,去重要按 kana 算,不然整组会被删掉
+    const readingGroups = confusionGroups().filter((group) =>
+      group.type === "reading-sense" || group.type === "reading-register");
+    expect(readingGroups.length).toBeGreaterThan(10);
+    readingGroups.forEach((group) => {
+      expect(group.members.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
   it("真正的同音外来語要留着 —— 两行都是英文原词,不是同一个词录两遍", () => {
     testDb.run(`
       INSERT INTO words (id, kanji, kana, meaning, pos, jlpt_level) VALUES
@@ -117,5 +149,49 @@ describe("疑难辨析分组", () => {
 
     testDb.run("DELETE FROM words WHERE id IN (900002, 900003)");
     resetConfusionGroups();
+  });
+
+  it("人工审校的同词异写都进入合并计划,而不是伪装成辨析", () => {
+    const targets = duplicateMergeTargets();
+    MANUAL_VARIANT_GROUPS.forEach((review) => {
+      const members = review.members
+        .map(([kanji, kana]) => testDb.exec(
+          "SELECT id FROM words WHERE kanji = ? AND kana = ?",
+          [kanji, kana]
+        )[0]?.values?.[0]?.[0])
+        .filter((id): id is number => id !== undefined)
+        .map(Number);
+      if (members.length < 2) return;
+      const [left, right] = members;
+      expect(
+        targets.get(left) === right || targets.get(right) === left,
+        `${review.id} 没有进入重复词条合并计划`
+      ).toBe(true);
+    });
+  });
+
+  it("人工保留的同形碰撞不被误判成重复词条", () => {
+    const targets = duplicateMergeTargets();
+    RETAINED_SURFACE_COLLISIONS.forEach((review) => {
+      review.members.forEach(([kanji, kana]) => {
+        const id = testDb.exec(
+          "SELECT id FROM words WHERE kanji = ? AND kana = ?",
+          [kanji, kana]
+        )[0]?.values?.[0]?.[0];
+        if (id === undefined) return;
+        expect(targets.has(Number(id)), `${review.id} 被错误加入重复词条合并计划`).toBe(false);
+      });
+    });
+  });
+
+  it("人工排除的中文同形组不再作为中文提示相同辨析", () => {
+    const synonymGroups = confusionGroups().filter((group) => group.type === "synonym");
+    EXCLUDED_SYNONYM_GROUPS.forEach((review) => {
+      const expected = new Set(review.members.map(([kanji, kana]) => `${kanji}\u0000${kana}`));
+      expect(synonymGroups.some((group) => {
+        const actual = new Set(group.members.map((member) => `${member.kanji}\u0000${member.kana}`));
+        return actual.size === expected.size && [...expected].every((key) => actual.has(key));
+      }), `${review.id} 仍然出现在 synonym 分组`).toBe(false);
+    });
   });
 });

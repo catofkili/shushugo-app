@@ -1,14 +1,20 @@
 import { Preferences } from "@capacitor/preferences";
 import type { WordAnswer, WordCard } from "../types/vocabulary";
+import { studyDate as currentStudyDate } from "./database/db-utils";
 
 const STORAGE_KEY = "mn-quick-study-draft";
-const DRAFT_VERSION = 1;
+// v3 把快速学习默认值从「模糊」改为「认识」。v2 会为整页显式保存 fuzzy，
+// 仅修改代码默认值无法覆盖它，因此必须让旧草稿失效并按当天队列重建一次。
+const DRAFT_VERSION = 3;
 const VALID_ANSWERS = new Set<WordAnswer>(["forgot", "fuzzy", "know", "known_forever"]);
-/** 与 QuickStudyPanel 一致：没评过的卡片按保守的一侧兜底，不能按「认识」。 */
-const DEFAULT_ANSWER: WordAnswer = "fuzzy";
+/** 与 QuickStudyPanel 一致：快速学习打开后默认按「认识」准备，用户可逐项改判。 */
+const DEFAULT_ANSWER: WordAnswer = "know";
 
 export interface QuickStudyDraft {
-  version: 1;
+  version: 3;
+  studyDate: string;
+  /** 快速模式排片规则版本；缺失表示旧的随机顺序草稿。 */
+  orderVersion?: number;
   cards: WordCard[];
   nextCards: WordCard[];
   seenWordIds: number[];
@@ -22,7 +28,7 @@ export interface QuickStudyDraft {
 }
 
 type ClearedDraft = {
-  version: 1;
+  version: 1 | 2 | 3;
   cleared: true;
 };
 
@@ -47,7 +53,11 @@ const writeBrowserCopy = (value: string) => {
 const isClearedDraft = (value: unknown): value is ClearedDraft => {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Partial<ClearedDraft>;
-  return candidate.version === DRAFT_VERSION && candidate.cleared === true;
+  return (
+    candidate.version === 1
+    || candidate.version === 2
+    || candidate.version === DRAFT_VERSION
+  ) && candidate.cleared === true;
 };
 
 const normalizeIds = (value: unknown, validIds: Set<number>) => {
@@ -68,7 +78,12 @@ const normalizeFiniteIds = (value: unknown) => {
 const normalizeDraft = (value: unknown): QuickStudyDraft | null => {
   if (!value || typeof value !== "object" || isClearedDraft(value)) return null;
   const candidate = value as Partial<QuickStudyDraft>;
-  if (candidate.version !== DRAFT_VERSION || !Array.isArray(candidate.cards) || !candidate.cards.length) return null;
+  if (
+    candidate.version !== DRAFT_VERSION
+    || candidate.studyDate !== currentStudyDate()
+    || !Array.isArray(candidate.cards)
+    || !candidate.cards.length
+  ) return null;
 
   const cards = candidate.cards
     .filter((card): card is WordCard => Boolean(card) && Number.isFinite(Number(card.id)))
@@ -89,6 +104,8 @@ const normalizeDraft = (value: unknown): QuickStudyDraft | null => {
 
   return {
     version: DRAFT_VERSION,
+    studyDate: candidate.studyDate,
+    orderVersion: Number.isFinite(Number(candidate.orderVersion)) ? Number(candidate.orderVersion) : 0,
     cards,
     nextCards,
     seenWordIds: [...new Set([
@@ -125,7 +142,8 @@ const queuePreferenceWrite = (operation: () => Promise<void>) => {
 };
 
 export async function loadQuickStudyDraft(): Promise<QuickStudyDraft | null> {
-  const browserCopy = parseStoredDraft(readBrowserCopy());
+  const browserRaw = readBrowserCopy();
+  const browserCopy = parseStoredDraft(browserRaw);
   if (browserCopy.cleared) {
     void queuePreferenceWrite(() => Preferences.remove({ key: STORAGE_KEY }));
     return null;
@@ -135,9 +153,13 @@ export async function loadQuickStudyDraft(): Promise<QuickStudyDraft | null> {
   try {
     const { value } = await Preferences.get({ key: STORAGE_KEY });
     const nativeCopy = parseStoredDraft(value);
-    if (!nativeCopy.draft) return null;
-    writeBrowserCopy(JSON.stringify(nativeCopy.draft));
-    return nativeCopy.draft;
+    if (nativeCopy.draft) {
+      writeBrowserCopy(JSON.stringify(nativeCopy.draft));
+      return nativeCopy.draft;
+    }
+    // 旧版本、旧学习日或损坏的副本不能留在另一套存储里等待下次复活。
+    if (browserRaw || value) await clearQuickStudyDraft();
+    return null;
   } catch (error) {
     console.warn("[quick-study] 无法读取原生草稿", error);
     return null;

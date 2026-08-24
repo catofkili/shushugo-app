@@ -222,6 +222,7 @@ export function markContentComplete(options: { grammarLevels: string[]; wordLeve
     db.run(`DELETE FROM stage1_tasks WHERE word_id IN (${placeholders})`, ids);
     db.run(`DELETE FROM stage2_progress WHERE word_id IN (${placeholders})`, ids);
     db.run(`DELETE FROM kanji_progress WHERE word_id IN (${placeholders})`, ids);
+    db.run(`DELETE FROM kanji_reading_progress WHERE word_id IN (${placeholders})`, ids);
     setReviewQueue(getReviewQueue().filter((item) => !completedWordIds.has(item.word_id)));
   }
 

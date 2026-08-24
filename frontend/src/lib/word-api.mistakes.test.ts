@@ -75,24 +75,44 @@ describe("学习错题本", () => {
       UPDATE progress
       SET known_forever = 0,
           seen_count = 8,
-          right_count = 4,
-          fuzzy_count = 2,
-          forgot_count = 2,
+          right_count = 2,
+          fuzzy_count = 1,
+          forgot_count = 5,
           last_seen_on = ?,
-          fsrs_stability = 18,
+          fsrs_stability = 8,
           fsrs_difficulty = 8,
           fsrs_due = ?,
           fsrs_last_review = ?,
           fsrs_state = 2,
           fsrs_steps = 0,
           fsrs_reps = 8,
-          fsrs_lapses = 2
+          fsrs_lapses = 5
       WHERE word_id = 1
     `, [yesterday, futureDue, lastReview]);
 
     const session = getWordSession(mistakeOptions);
     expect(session.phase).toBe("mistakes");
     expect(session.card?.id).toBe(1);
+  });
+
+  it("表现普通的词不进错题本 —— 否则错题本就是「学过的词的一半」", () => {
+    const yesterday = "2026-08-02";
+    const lastReview = new Date("2026-08-02T04:00:00.000Z").toISOString();
+    const futureDue = new Date("2026-08-20T04:00:00.000Z").toISOString();
+    // 这正是改口径前的样本：加权错误率 (2*2+2)/(4+2*2+2)=0.60。
+    // 看着像「错得比对得多」，其实用户全库的中位数就是 0.50（忘记按 2 倍权重算），
+    // 0.60 只到 p75。按旧阈值 0.5 收的话错题本会涨到 1,262 个。
+    testDb.run(`
+      UPDATE progress
+      SET known_forever = 0, seen_count = 8, right_count = 4, fuzzy_count = 2, forgot_count = 2,
+          last_seen_on = ?, fsrs_stability = 18, fsrs_difficulty = 10,
+          fsrs_due = ?, fsrs_last_review = ?, fsrs_state = 2, fsrs_steps = 0,
+          fsrs_reps = 8, fsrs_lapses = 2
+      WHERE word_id = 1
+    `, [yesterday, futureDue, lastReview]);
+
+    // 难度顶到满档 10 也不算 —— FSRS 的 difficulty 只增不减，是历史不是现状
+    expect(getWordSession(mistakeOptions).card?.id).not.toBe(1);
   });
 
   it("答题写回原 reviews/progress/FSRS，答稳后退出当天错题轮次", () => {

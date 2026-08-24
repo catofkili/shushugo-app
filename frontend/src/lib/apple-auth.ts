@@ -11,9 +11,13 @@ const appleRedirectUri = () => {
 };
 
 export const requestAppleCredential = async (config: CloudAuthConfig): Promise<AppleLoginCredential> => {
-  const clientId = config.appleClientId || import.meta.env.VITE_APPLE_CLIENT_ID;
+  const native = Capacitor.isNativePlatform();
+  // 原生端用 Bundle ID，网页端必须用 Apple Services ID；两者不能混用。
+  const clientId = native
+    ? config.appleClientId || import.meta.env.VITE_APPLE_CLIENT_ID
+    : import.meta.env.VITE_APPLE_CLIENT_ID;
   if (!clientId) throw new Error("Apple 登录尚未配置 Client ID。");
-  if (!Capacitor.isNativePlatform() && !import.meta.env.VITE_APPLE_REDIRECT_URI) {
+  if (!native && !import.meta.env.VITE_APPLE_REDIRECT_URI) {
     throw new Error("网页预览尚未配置 Apple 回调地址，请在 iOS 真机中测试 Apple 登录。");
   }
 

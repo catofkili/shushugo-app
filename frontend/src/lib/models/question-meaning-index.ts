@@ -1,5 +1,5 @@
 import { rowsFor } from "../database/db-utils";
-import { promptMeaning } from "./word-card";
+import { promptMeaning, questionMeaning } from "./word-card";
 
 /**
  * 「题面显示的那行中文完全相同」的词条索引。
@@ -20,6 +20,23 @@ import { promptMeaning } from "./word-card";
  * resetQuestionMeaningIndex 作废。
  */
 
+/**
+ * ⚠️ 这个文件里有**两份**分组，它们回答的不是同一个问题，别合并：
+ *
+ *  1. `questionMeaningKeyOf` / `questionMeaningPeers` —— 按 **promptMeaning**
+ *     （首义 + 8 字截断）分组。回答的是「这两个词的意思近到会互相干扰吗」，
+ *     排片的干扰隔离用它（interference.ts）。宽是故意的：準備「准备」和
+ *     備える「准备；具备」显示的不是同一行，但连着出仍然会打架。
+ *
+ *  2. `displayedPromptKeyOf` / `displayedPromptPeers` —— 按 **questionMeaning**
+ *     （学习页真正渲染的那一行）分组。回答的是「题面这行字在问哪个词」，
+ *     只有一字不差才算。给拍数消歧、撞车面板、改写题面入口用。
+ *
+ * 实测用户库 11,056 个词：口径 1 有 2,264 个词（20.5%）撞车，口径 2 只有
+ * 745 个（6.7%），交集 721。差出来的 1,543 个是 経済「经济」/ economy
+ * 「经济；经济舱」这种 —— 会干扰，但用户一眼能看出题面不一样。
+ * **对着这批词说「你们共用同一行题面」是假话**，所以面板必须走口径 2。
+ */
 interface QuestionMeaningIndex {
   /** wordId → 题面首义 */
   keyByWord: Map<number, string>;
@@ -31,6 +48,7 @@ let cached: QuestionMeaningIndex | null = null;
 
 export const resetQuestionMeaningIndex = (): void => {
   cached = null;
+  displayedCached = null;
 };
 
 const buildIndex = (): QuestionMeaningIndex => {
@@ -77,4 +95,53 @@ export const questionMeaningPeers = (wordId: number): number[] => {
   const key = index().keyByWord.get(wordId);
   if (!key) return [];
   return (index().wordsByKey.get(key) ?? []).filter((id) => id !== wordId);
+};
+
+// ---- 口径 2：题面上一字不差的那一行 ----
+
+let displayedCached: QuestionMeaningIndex | null = null;
+
+const buildDisplayedIndex = (): QuestionMeaningIndex => {
+  const keyByWord = new Map<number, string>();
+  const wordsByKey = new Map<string, number[]>();
+
+  rowsFor("SELECT id, kanji, kana, meaning FROM words").forEach((row) => {
+    const id = Number(row.id ?? 0);
+    if (!id) return;
+    const label = String(row.kanji || row.kana || "");
+    // 学习页渲染的是 `card.questionMeaning || card.meaning`，所以空串要退回原文，
+    // 否则两个释义都被清洗成空的词会被算成「共用空题面」。
+    const key = questionMeaning(String(row.meaning ?? ""), label, String(row.kana ?? ""), id)
+      || String(row.meaning ?? "").trim();
+    if (!key) return;
+    keyByWord.set(id, key);
+    const peers = wordsByKey.get(key);
+    if (peers) peers.push(id);
+    else wordsByKey.set(key, [id]);
+  });
+
+  wordsByKey.forEach((ids, key) => {
+    if (ids.length < 2) {
+      wordsByKey.delete(key);
+      keyByWord.delete(ids[0]);
+    }
+  });
+
+  return { keyByWord, wordsByKey };
+};
+
+const displayedIndex = (): QuestionMeaningIndex => {
+  displayedCached ??= buildDisplayedIndex();
+  return displayedCached;
+};
+
+/** 题面上和别的词一字不差的那一行。独一份返回 undefined。 */
+export const displayedPromptKeyOf = (wordId: number): string | undefined =>
+  displayedIndex().keyByWord.get(wordId);
+
+/** 题面一字不差的其他词（不含自己）。 */
+export const displayedPromptPeers = (wordId: number): number[] => {
+  const key = displayedIndex().keyByWord.get(wordId);
+  if (!key) return [];
+  return (displayedIndex().wordsByKey.get(key) ?? []).filter((id) => id !== wordId);
 };

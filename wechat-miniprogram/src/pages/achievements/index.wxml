@@ -1,0 +1,9 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero"><navigator class="back" open-type="navigateBack">‹ 返回学习</navigator><text class="title">成就</text><text class="subtitle">从本地学习历史现算，已有记录会自动追认</text></view>
+  <view wx:if="{{!board}}" class="card">{{error || '正在结算成就…'}}</view>
+  <view wx:else>
+    <view class="score card"><text class="score-number">{{board.unlocked}} / {{board.total}}</text><text> 已解锁</text></view>
+    <picker mode="selector" range="{{categories}}" value="{{categoryIndex}}" bindchange="handleCategoryChange"><view class="picker">{{categories[categoryIndex]}} ˅</view></picker>
+    <view wx:for="{{rows}}" wx:key="id" class="card achievement {{item.unlocked ? 'unlocked' : ''}}"><text class="emoji">{{item.emoji}}</text><view class="achievement-copy"><view class="achievement-title"><text>{{item.name}}</text><text class="category">{{item.category}}</text></view><text class="description">{{item.description}}</text><view class="progress"><view class="progress-fill" style="width: {{item.goal ? item.progress / item.goal * 100 : 0}}%;"></view></view><text class="progress-text">{{item.progress}} / {{item.goal}}{{item.unlocked ? ' · 已解锁' : ''}}</text></view></view>
+  </view>
+</scroll-view>

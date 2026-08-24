@@ -39,7 +39,7 @@ const yesterday = "2026-08-02";
 const clearFlowState = () => {
   testDb.run("DELETE FROM reviews");
   testDb.run("DELETE FROM stage1_tasks");
-  testDb.run("DELETE FROM app_state WHERE key IN ('daily_relief_v1', 'daily_tail_v1')");
+  testDb.run("DELETE FROM app_state WHERE key IN ('daily_relief_v1', 'daily_relief_v2', 'daily_tail_v1')");
   testDb.run(`
     UPDATE progress
     SET known_forever = 1,
@@ -112,15 +112,72 @@ describe("昨日减负、当日错题与真正结尾", () => {
         [day, wordId, wordId]
       );
     }
+    // 额外的模糊词只用于证明「昨天确实学了 100 个去重词」,不能成为减负候选。
+    for (let wordId = 14; wordId <= 106; wordId += 1) {
+      testDb.run(
+        "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, 'fuzzy', 0, ?, 'forward')",
+        [wordId, yesterday]
+      );
+    }
 
     const state = ensureDailyRelief();
     expect(state.wordIds).toEqual([2, 3, 4, 5, 6, 7]);
     expect(getDailyReliefNext()?.id).toBe(2);
+    const progressBefore = testDb.exec(
+      "SELECT seen_count, known_forever, fsrs_stability, fsrs_difficulty, fsrs_due, fsrs_state, fsrs_steps, fsrs_reps, fsrs_lapses FROM progress WHERE word_id = 2"
+    )[0].values[0];
+    const before = getWordStats();
+    expect(before.stage1ProgressTotal).toBe(7 + state.wordIds.length);
+    expect(before.stage1ProgressDone).toBe(7);
     advanceDailyRelief();
     expect(getDailyReliefNext()?.id).toBe(3);
-    expect(Number(testDb.exec("SELECT COUNT(*) FROM reviews")[0].values[0][0])).toBe(22);
+    const after = getWordStats();
+    expect(after.stage1ProgressTotal).toBe(7 + state.wordIds.length);
+    expect(after.stage1ProgressDone).toBe(8);
+    expect(Number(testDb.exec("SELECT COUNT(*) FROM reviews")[0].values[0][0])).toBe(115);
+    expect(testDb.exec(
+      "SELECT seen_count, known_forever, fsrs_stability, fsrs_difficulty, fsrs_due, fsrs_state, fsrs_steps, fsrs_reps, fsrs_lapses FROM progress WHERE word_id = 2"
+    )[0].values[0]).toEqual(progressBefore);
     // 减负只清后台奖励卡,今日计划(包括新词)一张都不能被删。
     expect(Number(testDb.exec("SELECT COUNT(*) FROM stage1_tasks")[0].values[0][0])).toBe(7);
+  });
+
+  it("前一天学得越多才逐步增加减负,100个不是12个,300个才到12个", () => {
+    for (let wordId = 1; wordId <= 12; wordId += 1) {
+      makeFutureWord(wordId);
+      testDb.run(
+        "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, 'know', 0, ?, 'forward')",
+        [wordId, yesterday]
+      );
+    }
+    for (let wordId = 13; wordId <= 100; wordId += 1) {
+      testDb.run(
+        "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, 'fuzzy', 0, ?, 'forward')",
+        [wordId, yesterday]
+      );
+    }
+    expect(ensureDailyRelief().wordIds).toHaveLength(6);
+
+    testDb.run("DELETE FROM app_state WHERE key = 'daily_relief_v2'");
+    for (let wordId = 101; wordId <= 300; wordId += 1) {
+      testDb.run(
+        "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, 'fuzzy', 0, ?, 'forward')",
+        [wordId, yesterday]
+      );
+    }
+    expect(ensureDailyRelief().wordIds).toHaveLength(12);
+  });
+
+  it("前一天没有学习时不生成减负,更早日期的记录也不能冒充昨天", () => {
+    for (let wordId = 1; wordId <= 12; wordId += 1) {
+      makeFutureWord(wordId);
+      testDb.run(
+        "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, 'know', 0, ?, 'forward')",
+        [wordId, "2026-08-01"]
+      );
+    }
+    expect(ensureDailyRelief().wordIds).toEqual([]);
+    expect(getDailyReliefNext()).toBeNull();
   });
 
   it("只在60%-80%且四张以上今日四次未清词时触发当日错题回顾", () => {

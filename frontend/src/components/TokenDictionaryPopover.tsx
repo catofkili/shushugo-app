@@ -5,6 +5,7 @@ import { describeConjugation, type ConjugationExplanation } from "../lib/conjuga
 import { addWordToTodayEncore } from "../lib/word-api";
 import { playPronunciation } from "../lib/speech";
 import type { TokenBoundary } from "../types/furigana";
+import { displayForm } from "../lib/confusion-groups";
 
 interface TokenDictionaryPopoverProps {
   boundary: TokenBoundary;
@@ -26,8 +27,10 @@ const EntryDetails = ({
   <>
     <div className="token-dictionary-heading">
       <div className="min-w-0">
-        <p className="jp text-xl font-bold leading-7">{entry.kanji || entry.kana}</p>
-        {entry.kana && entry.kana !== entry.kanji && <p className="jp text-sm font-semibold text-[#6FA83E] dark:text-[#81D8CF]">{entry.kana}</p>}
+        {/* 外来語行的 kanji 存的是词源(camera / apartment house)，摆在标题位等于把
+            日语词典写成英语词典 —— 假名永远是主词形。口径同 confusion-groups 的 displayForm。 */}
+        <p className="jp text-xl font-bold leading-7">{displayForm(entry)}</p>
+        {entry.kana && entry.kana !== displayForm(entry) && <p className="jp text-sm font-semibold text-[#6FA83E] dark:text-[#81D8CF]">{entry.kana}</p>}
       </div>
       <div className="flex shrink-0 flex-wrap justify-end gap-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#6b756f] dark:text-white/55">
         {entry.source === "supplement" && <span>补充词典</span>}

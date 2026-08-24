@@ -50,7 +50,7 @@ export function DevTools({ onNotice }: DevToolsProps) {
           className="w-full rounded-xl border border-white/15 bg-[#3c3f3f] px-3 py-2 text-left text-xs text-white hover:bg-[#4a4f4f]"
         >
           <p className="font-bold">快速完成今日任务</p>
-          <p className="mt-0.5 text-white/60">开发测试用，正式入口在工具箱</p>
+          <p className="mt-0.5 text-white/60">开发测试用，正式入口在主页</p>
         </button>
 
         <button

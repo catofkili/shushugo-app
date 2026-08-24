@@ -3,10 +3,12 @@ import type { WordCard } from "../../types/vocabulary";
 import {
   answerReadingText,
   cardLabel,
+  concealedReadingParts,
   formatDuration,
   isLoanwordSourceCard,
   kanaToRomaji,
   monthDays,
+  moraCount,
   primaryAnswerText,
   secondaryAnswerText
 } from "./word-study-utils";
@@ -50,6 +52,26 @@ describe("word-study-utils", () => {
     expect(secondaryAnswerText(japaneseCard)).toBe("がっこう");
   });
 
+  it("uses the reviewed natural spelling on classic cards", () => {
+    const kanaPreferred = card({ kanji: "殆ど", kana: "ほとんど" });
+    expect(primaryAnswerText(kanaPreferred)).toBe("ほとんど");
+    expect(secondaryAnswerText(kanaPreferred)).toBe("殆ど");
+    expect(answerReadingText(kanaPreferred)).toBe("");
+
+    // 标准表记修正只用于「同一个词的异体写法」：剝→剥、片づける→片付ける 这类
+    const corrected = card({ kanji: "剝がす", kana: "はがす" });
+    expect(primaryAnswerText(corrected)).toBe("剥がす");
+    expect(secondaryAnswerText(corrected)).toBe("はがす");
+    expect(answerReadingText(corrected)).toBe("はがす");
+
+    // 但**不能改写成另一个词**：趣旨(#8325) 和 主旨(#9071) 是词库里两个独立词条，
+    // 改写会让两行显示成同一个词形，等于把 主旨 这个词改名。木/樹 同理。
+    const distinct = card({ kanji: "主旨", kana: "しゅし" });
+    expect(primaryAnswerText(distinct)).toBe("主旨");
+    const tree = card({ kanji: "樹", kana: "き" });
+    expect(primaryAnswerText(tree)).toBe("樹");
+  });
+
   it("shows the Japanese reading for mixed kanji and loanword cards", () => {
     const mixedCard = card({
       kanji: "生産コスト",
@@ -64,6 +86,30 @@ describe("word-study-utils", () => {
     const loanword = card({ kanji: "coffee", kana: "コーヒー", englishOrigin: "coffee" });
 
     expect(answerReadingText(loanword)).toBe("");
+  });
+
+  it("汉字读音题只露出表记中原本的假名", () => {
+    expect(concealedReadingParts([
+      { text: "食", reading: "た", isKanji: true },
+      { text: "べる", reading: "べる", isKanji: false }
+    ])).toEqual([
+      { text: "", hidden: true },
+      { text: "べる", hidden: false }
+    ]);
+
+    expect(concealedReadingParts([
+      { text: "生", reading: "せい", isKanji: true },
+      { text: "産", reading: "さん", isKanji: true },
+      { text: "コスト", reading: "こすと", isKanji: false }
+    ])).toEqual([
+      { text: "", hidden: true },
+      { text: "", hidden: true },
+      { text: "コスト", hidden: false }
+    ]);
+  });
+
+  it("读音切分未就绪或熟字训无法对齐时整条隐藏，不闪完整答案", () => {
+    expect(concealedReadingParts(null)).toEqual([{ text: "", hidden: true }]);
   });
 
   it("romanizes small kana and doubled consonants", () => {
@@ -145,5 +191,25 @@ describe("word-study-utils", () => {
     expect(calendar.cells[0]).toBeNull();
     expect(calendar.cells[1]).toEqual({ day: 1, date: "2026-06-01" });
     expect(calendar.cells[30]).toEqual({ day: 30, date: "2026-06-30" });
+  });
+});
+
+describe("拍数提示", () => {
+  it("拗音并进前一拍，促音/拨音/长音各算一拍", () => {
+    expect(moraCount("しゅくだい")).toBe(4);   // しゅ・く・だ・い
+    expect(moraCount("コーヒー")).toBe(4);     // コ・ー・ヒ・ー
+    expect(moraCount("きっぷ")).toBe(3);       // き・っ・ぷ
+    expect(moraCount("しんぶん")).toBe(4);
+    expect(moraCount("フェア")).toBe(2);       // フェ・ア
+  });
+
+  it("题面撞车的词靠拍数分开", () => {
+    // 「警察」这行中文下面挂着三个词，拍数把 警察官 摘出去
+    expect(moraCount("けいさつ")).toBe(4);
+    expect(moraCount("けいさつかん")).toBe(6);
+  });
+
+  it("～ 和括号不是读音的一部分", () => {
+    expect(moraCount("～する")).toBe(2);
   });
 });

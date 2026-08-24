@@ -28,6 +28,8 @@ export interface Env {
   APPLE_SIGN_IN_CLIENT_ID?: string;
   TURNSTILE_SITE_KEY?: string;
   TURNSTILE_SECRET_KEY?: string;
+  WECHAT_APP_ID?: string;
+  WECHAT_APP_SECRET?: string;
 }
 
 interface UserRow {
@@ -56,7 +58,7 @@ interface AppleIdentityClaims {
 }
 
 interface AuthIdentityRow {
-  provider: "email" | "apple";
+  provider: "email" | "apple" | "wechat";
   provider_subject: string;
   user_id: string;
   email: string | null;
@@ -138,7 +140,7 @@ const json = (body: unknown, status = 200) => (
 const corsHeaders = () => ({
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET,POST,DELETE,OPTIONS",
-  "access-control-allow-headers": "authorization,content-type,x-sync-format,x-sync-compression,x-sync-operation-id,x-sync-device-id,x-sync-base-generation,x-sync-base-modified",
+  "access-control-allow-headers": "authorization,content-type,x-sync-format,x-sync-protocol-version,x-sync-compression,x-sync-operation-id,x-sync-device-id,x-sync-base-generation,x-sync-base-modified",
   "access-control-expose-headers": "x-sync-format,x-sync-compression,x-sync-generation,x-sync-last-modified,x-sync-byte-length",
   "access-control-max-age": "86400"
 });
@@ -220,8 +222,10 @@ const hashPassword = async (password: string, salt: string) => {
 
 const normalizeEmail = (email: unknown) => String(email ?? "").trim().toLowerCase();
 
-const verificationPayload = (user?: Pick<UserRow, "email_verified_at"> | null) => ({
-  emailVerified: Boolean(user?.email_verified_at)
+const verificationPayload = (env: Env, user?: Pick<UserRow, "email_verified_at"> | null) => ({
+  emailVerified: Boolean(user?.email_verified_at),
+  // 没有邮件服务时云同步仍可用；客户端据此隐藏无效的验证码入口。
+  emailVerificationRequired: Boolean(env.RESEND_API_KEY)
 });
 
 const randomEmailCode = () => {
@@ -434,7 +438,7 @@ const verifyAppleIdentityToken = async (identityToken: string, env: Env, expecte
 const identityProviders = async (env: Env, userId: string) => {
   const rows = await env.DB.prepare("SELECT provider FROM auth_identities WHERE user_id = ? ORDER BY provider")
     .bind(userId)
-    .all<{ provider: "email" | "apple" }>();
+    .all<{ provider: "email" | "apple" | "wechat" }>();
   return (rows.results ?? []).map((row) => row.provider);
 };
 
@@ -445,7 +449,7 @@ const sessionPayload = async (env: Env, user: UserRow, token: string) => ({
   email: user.email,
   displayName: user.display_name ?? undefined,
   authProviders: await identityProviders(env, user.id),
-  ...verificationPayload(user),
+  ...verificationPayload(env, user),
   entitlements: entitlementPayload(await getEntitlementRow(env, user.id))
 });
 
@@ -715,7 +719,10 @@ const requireVerifiedUser = async (request: Request, env: Env) => {
   const user = await env.DB.prepare("SELECT email_verified_at FROM users WHERE id = ?")
     .bind(userId)
     .first<{ email_verified_at: string | null }>();
-  if (!user?.email_verified_at) {
+  const wechatIdentity = await env.DB.prepare(
+    "SELECT 1 FROM auth_identities WHERE user_id = ? AND provider = 'wechat' LIMIT 1"
+  ).bind(userId).first();
+  if (!user?.email_verified_at && !wechatIdentity) {
     throw json({ detail: "请先在设置中完成邮箱验证，再使用云同步。" }, 403);
   }
   return userId;
@@ -895,6 +902,79 @@ const appleLogin = async (request: Request, env: Env) => {
   return json({ ...(await sessionPayload(env, user!, await createToken(env, id))), isNewAccount: true });
 };
 
+// 微信小程序登录：code 只在服务端向微信换取 openid/unionid，永不把 app
+// secret 放进小程序代码包。没有配置凭据时明确返回 501，而不是签发一个
+// 看似成功但无法续期的本地 token。
+const wechatLogin = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "wechat-login", 10, 300);
+  if (!env.WECHAT_APP_ID || !env.WECHAT_APP_SECRET) {
+    return json({ detail: "微信登录尚未在服务端配置。", code: "WECHAT_LOGIN_NOT_CONFIGURED" }, 501);
+  }
+  const body = await readJson<{
+    code?: string;
+    display_name?: string;
+    terms_version?: string;
+    privacy_version?: string;
+  }>(request);
+  const code = String(body.code ?? "").trim();
+  if (!code) return json({ detail: "微信登录 code 缺失。" }, 400);
+  const response = await fetch(
+    `https://api.weixin.qq.com/sns/jscode2session?appid=${encodeURIComponent(env.WECHAT_APP_ID)}&secret=${encodeURIComponent(env.WECHAT_APP_SECRET)}&js_code=${encodeURIComponent(code)}&grant_type=authorization_code`
+  );
+  if (!response.ok) return json({ detail: "微信登录服务暂时不可用。" }, 502);
+  const result = await response.json<{ openid?: string; unionid?: string; errcode?: number; errmsg?: string }>();
+  if (result.errcode || !result.openid) {
+    console.warn("WeChat code2session failed", result.errcode, result.errmsg);
+    return json({ detail: "微信登录凭证无效或已过期。", code: "WECHAT_CODE_INVALID" }, 401);
+  }
+  const subject = result.unionid ? `unionid:${result.unionid}` : `openid:${result.openid}`;
+  const identity = await env.DB.prepare(`
+    SELECT provider, provider_subject, user_id, email
+    FROM auth_identities
+    WHERE provider = 'wechat' AND provider_subject = ?
+  `).bind(subject).first<AuthIdentityRow>();
+  if (identity) {
+    const user = await env.DB.prepare(`
+      SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+      FROM users WHERE id = ?
+    `).bind(identity.user_id).first<UserRow>();
+    if (!user) return json({ detail: "微信账号关联的用户不存在。" }, 404);
+    await env.DB.prepare("UPDATE users SET last_login = ? WHERE id = ?")
+      .bind(new Date().toISOString(), user.id).run();
+    return json({ ...(await sessionPayload(env, user, await createToken(env, user.id))), isNewAccount: false });
+  }
+
+  if (body.terms_version !== USER_AGREEMENT_VERSION || body.privacy_version !== PRIVACY_POLICY_VERSION) {
+    return json({ detail: "请阅读并同意当前版本的用户协议和隐私政策。", code: "CONSENT_REQUIRED" }, 400);
+  }
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const salt = randomToken(16);
+  const inaccessiblePasswordHash = await hashPassword(randomToken(32), salt);
+  const email = `wechat-${(await sha256(subject)).slice(0, 32)}@wechat.invalid`;
+  const displayName = String(body.display_name ?? "").trim() || null;
+  await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO users (
+        id, email, password_hash, password_salt, display_name, email_verified_at,
+        created_at, last_login, profile_updated_at, terms_version, privacy_version, consented_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id, email, inaccessiblePasswordHash, salt, displayName, now,
+      now, now, now, USER_AGREEMENT_VERSION, PRIVACY_POLICY_VERSION, now
+    ),
+    env.DB.prepare(`
+      INSERT INTO auth_identities (provider, provider_subject, user_id, email, created_at)
+      VALUES ('wechat', ?, ?, ?, ?)
+    `).bind(subject, id, email, now)
+  ]);
+  const user = await env.DB.prepare(`
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+    FROM users WHERE id = ?
+  `).bind(id).first<UserRow>();
+  return json({ ...(await sessionPayload(env, user!, await createToken(env, id))), isNewAccount: true });
+};
+
 const linkApple = async (request: Request, env: Env) => {
   await rateLimit(env, request, "link-apple", 10, 300);
   const userId = await requireUser(request, env);
@@ -1036,7 +1116,7 @@ const sendVerificationEmail = async (request: Request, env: Env) => {
     WHERE id = ?
   `).bind(userId).first<UserRow>();
   if (!user) return json({ detail: "User not found" }, 404);
-  if (user.email_verified_at) return json({ status: "already_verified", ...verificationPayload(user) });
+  if (user.email_verified_at) return json({ status: "already_verified", ...verificationPayload(env, user) });
 
   const code = await createEmailToken(env, user.id, "verify_email", EMAIL_CODE_TTL_MINUTES);
   await sendEmail(
@@ -1045,7 +1125,7 @@ const sendVerificationEmail = async (request: Request, env: Env) => {
     "收集日邮箱验证码",
     emailHtml("请使用下面的验证码完成邮箱验证：", code, EMAIL_CODE_TTL_MINUTES)
   );
-  return json({ status: "sent", expiresInMinutes: EMAIL_CODE_TTL_MINUTES, ...verificationPayload(user) });
+  return json({ status: "sent", expiresInMinutes: EMAIL_CODE_TTL_MINUTES, ...verificationPayload(env, user) });
 };
 
 const verifyEmail = async (request: Request, env: Env) => {
@@ -1144,6 +1224,9 @@ const deleteAccount = async (request: Request, env: Env) => {
     if (passwordHash !== user.password_hash) {
       return json({ detail: "账号密码不正确。" }, 401);
     }
+  } else if (providers.includes("wechat")) {
+    // 当前请求已经通过该微信会话认证；微信身份本身没有可再次输入的密码。
+    // 账号删除仍要求有效 Bearer 会话，且后端会清理该身份的全部云数据。
   } else {
     return json({ detail: "请使用 Apple 重新验证身份后再删除账号。", code: "APPLE_REAUTH_REQUIRED" }, 401);
   }
@@ -1662,6 +1745,7 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/auth/register") return register(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/login") return login(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/apple") return appleLogin(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/wechat") return wechatLogin(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/link-apple") return linkApple(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/logout") return logout(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/change-password") return changePassword(request, env);

@@ -1,0 +1,17 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero"><navigator class="back" open-type="navigateBack">‹ 返回学习</navigator><text class="title">疑难辨析</text><text class="subtitle">从本地词库现算的 {{summary.total}} 组；标记掌握不改词卡 FSRS</text></view>
+  <view wx:if="{{!ready}}" class="card">{{busy ? '正在初始化本地库…' : error}}</view>
+  <view wx:else>
+    <view class="search-row"><input class="search" value="{{query}}" placeholder="搜词形、读音或中文" bindinput="handleInput" bindconfirm="handleSearch" /><button bindtap="handleSearch">查找</button></view>
+    <picker mode="selector" range="{{typeOptions}}" range-key="label" value="{{typeIndex}}" bindchange="handleTypeChange"><view class="picker">{{typeOptions[typeIndex].label}} ˅</view></picker>
+    <view class="summary card"><text class="summary-number">{{summary.total}}</text><text> 组辨析 · 已掌握 {{summary.mastered}}</text></view>
+    <view wx:if="{{rows.length === 0}}" class="card empty">没有匹配的辨析组</view>
+    <view wx:for="{{rows}}" wx:key="key" class="card group">
+      <view class="group-head"><view><text class="type">{{item.typeName}}</text><text class="group-title">{{item.label}}</text></view><button class="mastered {{item.mastered ? 'on' : ''}}" data-key="{{item.key}}" data-mastered="{{item.mastered}}" bindtap="handleMastered">{{item.mastered ? '✓ 已掌握' : '标记掌握'}}</button></view>
+      <text class="hint">{{item.hint}}</text>
+      <view wx:for="{{item.members}}" wx:key="id" class="member"><view class="member-main"><text class="member-kanji">{{item.kanji}}</text><text class="member-kana">{{item.kana}}</text><text class="member-level">{{item.level || '未分级'}}</text></view><text class="member-meaning">{{item.meaning}}</text><text wx:if="{{item.exampleJp}}" class="member-example">{{item.exampleJp}}</text></view>
+    </view>
+    <button wx:if="{{hasMore}}" class="load-more" bindtap="handleLoadMore">加载更多</button>
+  </view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+</scroll-view>

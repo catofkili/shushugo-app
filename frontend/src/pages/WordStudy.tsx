@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
-import { AlertCircle, Eye, GitCompareArrows, RotateCcw, Star, StickyNote, X } from "lucide-react";
+import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Star, StickyNote, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
-import { addWordStudySeconds, advanceDailyRelief, advanceDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitWordAnswer, toggleFavorite, undoLastWordAnswer, updateWordNote } from "../lib/api";
+import { addWordStudySeconds, advanceDailyRelief, advanceDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
-import { addStudyTime, checkAchievements } from "../lib/userProfile";
-import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic } from "../lib/haptics";
+import { checkAchievements } from "../lib/userProfile";
+import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic, triggerRevealHaptic, triggerSwipeArmHaptic } from "../lib/haptics";
 import { playPronunciation } from "../lib/speech";
 import { playComplete, playCountdownTick, playDontKnow, playFlip, playKnow, playReliefDeal } from "../lib/zoo-sounds";
 import {
@@ -18,11 +18,18 @@ import {
   answerOptions,
   cardLabel,
   kanaToRomaji,
+  moraCount,
   primaryAnswerText,
 } from "../features/word-study/word-study-utils";
+import { kanjiReadingSurface } from "../lib/orthography";
 import type { StudyMode } from "../types/app";
 import { studyModeInfo } from "../lib/studyMode";
 import type { WordSessionOptions } from "../lib/study-types";
+import { DistinctionSheet } from "../components/DistinctionSheet";
+import { wordDistinctions } from "../lib/models/word-distinctions";
+import { warmConfusionGroups } from "../lib/confusion-groups";
+import { yieldToPaint } from "../lib/yield-to-paint";
+import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction } from "../lib/study-clock";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -41,6 +48,24 @@ const SWIPE_MAX_ROTATE = 4;
 const SWIPE_FLING_MS = 240;
 /** 飞出距离:超过任何手机屏宽即可 */
 const FLING_DISTANCE = 900;
+/**
+ * 翻面之后多久内不收评分。
+ * 「显示答案」和四颗评分键占的是同一行同一个位置(都是 h-16),翻面的那一下
+ * 手指还在往下走的话会当场命中一颗 —— 而那一下是**真的写进 FSRS 的**。
+ * 120ms 短到感知不到,长到能吃掉这种连击。按钮不变灰:变灰是噪音,
+ * 而且会让人以为按不了。
+ */
+const REVEAL_INPUT_LOCK_MS = 120;
+/** 评分反馈印章播多久(和 .zoo-rate-burst 的动画时长对齐,略留余量) */
+const RATE_BURST_MS = 500;
+
+/** 评分印章的字面。沿用甩卡印章的说法:🌰 = 收下了,◦ = 再来一遍(不惩罚) */
+const rateBurstLabels: Record<WordAnswer, string> = {
+  forgot: "◦ 再来",
+  fuzzy: "◦ 模糊",
+  know: "🌰 认识",
+  known_forever: "🌰 熟知"
+};
 
 const answerHotkeys: Record<string, WordAnswer> = {
   v: "forgot",
@@ -91,11 +116,6 @@ const isEditableTarget = (target: EventTarget | null) => {
 
 const isInteractiveActivationKey = (key: string) => key === "Enter" || key === " ";
 
-const yieldToBrowser = () => new Promise<void>((resolve) => {
-  if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(() => resolve());
-  else setTimeout(resolve, 0);
-});
-
 const isDailyModeComplete = (mode: StudyMode, stats: WordStats) => {
   if (mode === "classic") return stats.dailyPlanDone;
   if (mode === "reverse") return stats.stage2Total > 0 && stats.stage2Completed >= stats.stage2Total;
@@ -103,8 +123,22 @@ const isDailyModeComplete = (mode: StudyMode, stats: WordStats) => {
   return false;
 };
 
+/**
+ * 开场「减负」自动发牌的节奏。原来是 420ms 停留 + 240ms 飞出 = 每张 660ms，
+ * 一次发十来张要拖到七八秒 —— 它是个「昨天这些你都记得」的确认动画，不是内容，
+ * 磨蹭比不做还糟。整体减半到每张 330ms。
+ *
+ * ⚠️ 这两个数必须和 master-home.css 里的动画时长对着改：
+ *   RELIEF_LEAVE_MS ↔ .daily-relief-card-leaving 的 dailyReliefDealOut
+ *   飞入动画 dailyReliefDealIn 要短于 RELIEF_DWELL_MS，否则卡片还没落定就开始飞走。
+ */
+const RELIEF_DWELL_MS = 210;
+const RELIEF_LEAVE_MS = 120;
+
 export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: WordStudyProps) => {
   const [card, setCard] = useState<WordCard | null>(null);
+  const [unitKey, setUnitKey] = useState<string | null>(null);
+  const [unitTarget, setUnitTarget] = useState<WordSessionResponse["unitTarget"]>(null);
   const [stats, setStats] = useState<WordStats | null>(null);
   const [phase, setPhase] = useState("loading");
   // 「上一个」还剩几步可撤(最多两步)。灰掉总比点一下跳到无关的词上强。
@@ -114,14 +148,19 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   const [submitting, setSubmitting] = useState(false);
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteMemoryOpen, setNoteMemoryOpen] = useState(false);
-  const [similarMeaningOpen, setSimilarMeaningOpen] = useState(false);
-  const [activePopover, setActivePopover] = useState<"note" | "noteMemory" | "similarMeaning" | null>(null);
+  const [distinctionOpen, setDistinctionOpen] = useState(false);
+  // 辨析索引建好没。没建好就先不算 —— 详见 warmConfusionGroups
+  const [distinctionsReady, setDistinctionsReady] = useState(false);
+  const [activePopover, setActivePopover] = useState<"note" | "noteMemory" | "prompt" | null>(null);
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
+  const [promptEditorOpen, setPromptEditorOpen] = useState(false);
+  const [promptText, setPromptText] = useState("");
+  const [promptSaving, setPromptSaving] = useState(false);
   const [localStudySeconds, setLocalStudySeconds] = useState(0);
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
-  const lastStudyTickRef = useRef(Date.now());
+  const studyClockRef = useRef(createStudyClock(Date.now()));
   const trackingActiveRef = useRef(false);
   const submittingRef = useRef(false);
   const completionReportedRef = useRef(false);
@@ -133,8 +172,26 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   const swipeXRef = useRef(0);
   const [swipeX, setSwipeX] = useState(0);
   const [flingDir, setFlingDir] = useState<0 | 1 | -1>(0);
-  // 被点评分按钮的即时反馈:认识=弹一下发光,不认识=轻轻摇头(不惩罚)
-  const [rateFeedback, setRateFeedback] = useState<{ value: WordAnswer; good: boolean } | null>(null);
+  /**
+   * 评分的即时反馈印章。
+   *
+   * ⚠️ 它**不能**挂在评分按钮上。submitAnswer 里 setCard 和这个 state 落在同一个
+   * commit,卡片按 key={card.id} 整棵换掉 —— 挂在按钮上的动画连元素带动画一起被
+   * 卸载,一帧都播不出来(改版前的 rateFeedback + .zoo-flash-good 就是这么死的,
+   * 而且完全不报错)。所以它渲染在不带 key 的 .dictionary-card 上,自己播完 .46s,
+   * 下一张卡在它底下照常入场。
+   *
+   * seq 是给 React 换 key 用的:连着评两张时要重新播,而不是接着上一次的进度。
+   */
+  const [rateBurst, setRateBurst] = useState<{ good: boolean; label: string; seq: number } | null>(null);
+  const rateBurstSeqRef = useRef(0);
+  const rateBurstTimerRef = useRef<number | undefined>(undefined);
+  /** 翻面的时刻,给 REVEAL_INPUT_LOCK_MS 那道闸用 */
+  const revealedAtRef = useRef(0);
+  /** 甩卡当前在阈值哪一侧(-1/0/1),只在**跨越**的那一帧给触觉,不是每帧都震 */
+  const swipeArmedRef = useRef<0 | 1 | -1>(0);
+  /** 连对了几个。只喂给音高台阶(playKnow),不进任何调度 —— 连胜梯子已经整体删掉了 */
+  const correctStreakRef = useRef(0);
   const [reliefActive, setReliefActive] = useState(false);
   const [reliefLeaving, setReliefLeaving] = useState(false);
   const [dailyReviewActive, setDailyReviewActive] = useState(false);
@@ -147,7 +204,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   const [dailyReviewTriggeredToday] = useState(() => hasDailyReviewTriggered());
   const dailyReviewTriggeredRef = useRef(dailyReviewTriggeredToday);
   const sessionOptions = useMemo<WordSessionOptions>(
-    () => initialMode === "mistakes" ? { focus: "mistakes" } : {},
+    () => initialMode === "mistakes" ? { focus: "mistakes" }
+      : initialMode === "picked" ? { focus: "picked" }
+        : {},
     [initialMode]
   );
 
@@ -157,7 +216,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
 
   // 罗马音必须基于假名读音 card.kana:外来语卡片的 secondaryAnswerText 是英文源词
   //（camera/コーヒー…),传进去会被逐字母拆成 "c a m e r a" 这种乱码。
-  const romaji = useMemo(() => card ? kanaToRomaji(card.kana) : "", [card]);
+  // 罗马字跟着答案走:字音单位卡的答案是这一段的读音,给整词罗马字(miru)
+  // 和念整词是同一个错 —— 答案区写着「み」,底下标着 miru。
+  const romaji = useMemo(() => {
+    if (unitTarget?.reading) return kanaToRomaji(unitTarget.reading);
+    return card ? kanaToRomaji(card.kana) : "";
+  }, [card, unitTarget]);
 
   const remainingPlanWords = (target: WordStats | null): number => {
     if (!target) return 0;
@@ -177,13 +241,15 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     setLoading(true);
     setError("");
     try {
-      await yieldToBrowser();
+      await yieldToPaint();
       let data: WordSessionResponse;
       if (mode === "classic") {
         const reliefCard = getDailyReliefNext();
         if (reliefCard) {
           data = continueTodayPlanStudy();
           setCard(reliefCard);
+          setUnitKey(null);
+          setUnitTarget(null);
           setStats(data.stats);
           setPhase("relief");
           setReliefActive(true);
@@ -197,7 +263,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         data = continueStage2Study();
       } else if (mode === "kanji") {
         data = continueKanjiStudy();
-      } else if (mode === "mistakes") {
+      } else if (mode === "mistakes" || mode === "picked") {
         data = getWordSession(sessionOptions);
       } else {
         // 经典 = 今日计划:进来先把 phase 摆正,否则会被上一次停在反向/汉字的
@@ -208,6 +274,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         const tailCard = getDailyTailNext();
         if (tailCard) {
           setCard(tailCard);
+          setUnitKey(null);
+          setUnitTarget(null);
           setStats(data.stats);
           setPhase("daily-tail");
           setTailActive(true);
@@ -217,6 +285,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         }
       }
       setCard(data.card);
+      setUnitKey(data.unitKey ?? null);
+      setUnitTarget(data.unitTarget ?? null);
       setStats(data.stats);
       setPhase(data.phase);
       setReliefActive(false);
@@ -253,6 +323,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           const refreshed = continueTodayPlanStudy();
           playCountdownFeedbackIfNeeded(before, refreshed.stats);
           setCard(nextRelief);
+          setUnitKey(null);
+          setUnitTarget(null);
           setStats(refreshed.stats);
           setPhase("relief");
           setRevealed(true);
@@ -262,8 +334,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         setReliefActive(false);
         setReliefLeaving(false);
         void loadNext(initialMode);
-      }, 240);
-    }, 420);
+      }, RELIEF_LEAVE_MS);
+    }, RELIEF_DWELL_MS);
     return () => window.clearTimeout(dealTimer);
   }, [card?.id, initialMode, loading, reliefActive, reliefLeaving, stats]);
 
@@ -282,10 +354,18 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   }, []);
 
   // 具体读什么、用文件还是用系统语音,都在 lib/speech.ts 里决定;这里只管开关。
+  //
+  // 字音单位卡念的是**这一段的读音**,不是整个例词:卡片问「見る 里的 見 读什么」,
+  // 答案是 み,念成「みる」等于答非所问。例词只有音频文件,单段没有,会自动落到
+  // 合成语音念那几个假名 —— 这正是要的。
   const speakCard = useCallback((target: WordCard) => {
     if (!preferences.autoPlay) return;
+    if (unitTarget?.reading) {
+      void playPronunciation(unitTarget.text ?? "", unitTarget.reading, preferences.voiceId);
+      return;
+    }
     void playPronunciation(target.kanji, target.kana, preferences.voiceId);
-  }, [preferences.autoPlay, preferences.voiceId]);
+  }, [preferences.autoPlay, preferences.voiceId, unitTarget]);
 
   const sendStudySeconds = useCallback(async (seconds: number) => {
     if (seconds <= 0) return null;
@@ -295,13 +375,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setStats(data.stats);
       setLocalStudySeconds(0);
 
-      // 同步到用户资料（分钟）
-      const minutes = Math.floor(seconds / 60);
-      if (minutes > 0) {
-        await addStudyTime(minutes);
-        // 检查是否解锁新成就
-        await checkAchievements();
-      }
+      // 学习时长写在数据库里(addWordStudySeconds),那才是跨设备合并的那份账本。
+      // 这里只顺手看一眼成就 —— 它读的也是同一份账本。
+      //
+      // 原来这里还往 userProfile 里攒一份分钟数:`Math.floor(seconds / 60)`,
+      // 而 flush 是每 15 秒一次,这个式子恒等于 0,所以那份计数器一次都没涨过,
+      // 个人信息页常年「累计 0 小时 0 分钟」。整段删掉,不再攒第二份。
+      await checkAchievements();
 
       return data.stats;
     } catch {
@@ -310,18 +390,21 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     }
   }, []);
 
+  const pageVisible = () => document.visibilityState === "visible";
+
+  /** 结上一段的账，把攒够的整秒取出来落库(零头留着，见 study-clock.ts) */
   const elapsedStudySeconds = () => {
-    const now = Date.now();
-    const elapsed = Math.floor((now - lastStudyTickRef.current) / 1000);
-    lastStudyTickRef.current = now;
-    if (document.visibilityState !== "visible" || elapsed <= 0) return 0;
-    return Math.min(elapsed, 60);
+    const accrued = accrueStudyTime(studyClockRef.current, Date.now(), { visible: pageVisible() });
+    const { seconds, state } = drainStudySeconds(accrued);
+    studyClockRef.current = state;
+    return seconds;
   };
 
   useEffect(() => {
     trackingActiveRef.current = Boolean(card);
-    lastStudyTickRef.current = Date.now();
-  }, [card?.id]);
+    // 换卡本身就是一次交互(刚点过评分)，顺手把上一段结掉。
+    studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible() });
+  }, [card?.id, unitKey]);
 
   useEffect(() => {
     const flushStudyTime = async () => {
@@ -329,17 +412,32 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       await sendStudySeconds(elapsedStudySeconds());
     };
 
+    // 「有没有在操作」的口径:点、按键、滚、划都算,**鼠标移动不算** ——
+    // 鼠标扫过、页面轻微抖一下都会误判成还在学。
+    const handleInteraction = () => {
+      studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible() });
+    };
+    const interactionEvents = ["pointerdown", "keydown", "wheel", "scroll", "touchmove"] as const;
+    interactionEvents.forEach((name) => {
+      // scroll 只在实际滚动的那个容器上冒不上来，得用捕获;全部 passive,不挡手势。
+      document.addEventListener(name, handleInteraction, { capture: true, passive: true });
+    });
+
     const interval = window.setInterval(flushStudyTime, 15000);
     const handleVisibility = () => {
       if (document.visibilityState === "hidden") {
         flushStudyTime();
       } else {
-        lastStudyTickRef.current = Date.now();
+        // 切回来的那一刻算一次交互:人刚回到这张卡上。
+        handleInteraction();
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {
       window.clearInterval(interval);
+      interactionEvents.forEach((name) => {
+        document.removeEventListener(name, handleInteraction, { capture: true });
+      });
       document.removeEventListener("visibilitychange", handleVisibility);
       flushStudyTime();
     };
@@ -349,32 +447,55 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     setNoteText(card?.note ?? "");
     setNoteEditorOpen(false);
     setNoteMemoryOpen(false);
-    setSimilarMeaningOpen(false);
+    setPromptEditorOpen(false);
+    setDistinctionOpen(false);
     setActivePopover(null);
   }, [card?.id]);
 
-  const submitAnswer = useCallback(async (answer: WordAnswer) => {
+  const submitAnswer = useCallback(async (answer: WordAnswer, source: "pointer" | "key" | "swipe" = "pointer") => {
     // submittingRef is synchronous, so a second tap is blocked immediately —
     // before React can re-render the `disabled`/`submitting` state — which is
     // what the `submitting` state alone could miss on a fast double-tap.
     if (!card || submittingRef.current || submitting || reliefActive || dailyReviewIntro) return;
+    // 刚翻面的那几十毫秒不收**手指**评分 —— 见 REVEAL_INPUT_LOCK_MS。
+    // 键盘不受这道闸:那条路上「显示答案」和评分是不同的键,不存在同一个位置连击的问题,
+    // 拦一下只会吃掉快手用户的合法输入。甩卡也不受:它自己要先飞 240ms,早就过去了。
+    if (source === "pointer" && performance.now() - revealedAtRef.current < REVEAL_INPUT_LOCK_MS) return;
     const answeredCardId = card.id;
+    const answeredUnitKey = unitKey;
     const wasDailyReview = dailyReviewActive;
     const wasTail = tailActive;
     const beforeStats = stats;
     submittingRef.current = true;
     triggerMemoryHaptic(answer);
-    // 认识 → 上行两音;不认识 → 柔和下行两音。同时播 0.2s 按钮反馈动画,
-    // 让「按一下」有分量(动画时长与下面的 stall 对齐)。
+    // 认识 → 上行两音;不认识 → 柔和下行两音。同时播按钮反馈动画。
+    //
+    // 这里**不要**再为了「让按一下有分量」压一帧 200ms 的 stall:动画是 CSS 的,
+    // 本来就能和下一张卡的计算并行播完,而那 200ms 是每次评分都实打实的一顿。
     const good = answer === "know" || answer === "known_forever";
-    if (good) playKnow();
-    else playDontKnow();
-    setRateFeedback({ value: answer, good });
+    // 连对时音高顺着五声音阶往上爬。断掉时的**重置本身就是反馈** ——
+    // 所以不需要任何「连击中断」的文案,答错音(柔和下行)后面接一个复位的起点,
+    // 语义已经是通的。这个计数只喂声音,不进 FSRS、不进任何调度。
+    if (good) {
+      playKnow(correctStreakRef.current);
+      correctStreakRef.current += 1;
+    } else {
+      correctStreakRef.current = 0;
+      playDontKnow();
+    }
+    // 甩卡不补印章:跟手时的印章 + 飞出去那一下已经把话说完了,再来一个是重复。
+    if (source !== "swipe") {
+      rateBurstSeqRef.current += 1;
+      setRateBurst({ good, label: rateBurstLabels[answer], seq: rateBurstSeqRef.current });
+      window.clearTimeout(rateBurstTimerRef.current);
+      rateBurstTimerRef.current = window.setTimeout(() => setRateBurst(null), RATE_BURST_MS);
+    }
     setSubmitting(true);
     setError("");
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, 200));
-      const data = submitWordAnswer(answeredCardId, answer, sessionOptions);
+      const data = answeredUnitKey && phase === "kanji"
+        ? submitKanjiUnitAnswer(answeredUnitKey, answer)
+        : submitWordAnswer(answeredCardId, answer, sessionOptions);
       let nextStats = data.stats;
       if (!data.card && trackingActiveRef.current) {
         trackingActiveRef.current = false;
@@ -410,6 +531,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           : pickDailyReviewNext(spacedExcluded) ?? pickDailyReviewNext(dailyReviewResolvedRef.current);
         if (nextReviewCard) {
           setCard(nextReviewCard);
+          setUnitKey(null);
+          setUnitTarget(null);
           setStats(nextStats);
           setPhase("daily-mistakes");
           setCanUndo(false);
@@ -426,6 +549,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         const tailCard = !data.card && nextStats.stage1Done ? getDailyTailNext() : null;
         if (tailCard) {
           setCard(tailCard);
+          setUnitKey(null);
+          setUnitTarget(null);
           setStats(nextStats);
           setPhase("daily-tail");
           setTailActive(true);
@@ -435,6 +560,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           return;
         }
         setCard(data.card);
+        setUnitKey(data.unitKey ?? null);
+        setUnitTarget(data.unitTarget ?? null);
         setStats(nextStats);
         setPhase(data.phase);
         setCanUndo(Boolean(data.canUndo));
@@ -456,6 +583,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         const nextTailCard = getDailyTailNext();
         if (nextTailCard) {
           setCard(nextTailCard);
+          setUnitKey(null);
+          setUnitTarget(null);
           setStats(refreshedStats);
           setPhase("daily-tail");
           setTailActive(true);
@@ -465,6 +594,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         }
         setTailActive(false);
         setCard(null);
+        setUnitKey(null);
+        setUnitTarget(null);
         setStats(refreshedStats);
         setPhase(data.phase);
         setCanUndo(false);
@@ -496,6 +627,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           setDailyReviewActive(true);
           setDailyReviewIntro(true);
           setCard(reviewCard);
+          setUnitKey(null);
+          setUnitTarget(null);
           setStats(nextStats);
           setPhase("daily-mistakes");
           setCanUndo(false);
@@ -507,6 +640,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       const tailCard = !data.card && nextStats.stage1Done ? getDailyTailNext() : null;
       if (tailCard) {
         setCard(tailCard);
+        setUnitKey(null);
+        setUnitTarget(null);
         setStats(nextStats);
         setPhase("daily-tail");
         setTailActive(true);
@@ -517,6 +652,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       }
 
       setCard(data.card);
+      setUnitKey(data.unitKey ?? null);
+      setUnitTarget(data.unitTarget ?? null);
       setStats(nextStats);
       setPhase(data.phase);
       setReliefActive(false);
@@ -530,7 +667,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setNoteText(data.card?.note ?? "");
       setNoteEditorOpen(false);
       setNoteMemoryOpen(false);
-      setSimilarMeaningOpen(false);
+      setDistinctionOpen(false);
       setActivePopover(null);
       if (!data.card) playComplete();
       if (!data.card && !completionReportedRef.current && isDailyModeComplete(initialMode, nextStats)) {
@@ -542,24 +679,31 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
-      setRateFeedback(null);
+      // 这里**不要**清印章。改版前是 setRateFeedback(null),而它和上面那次 set
+      // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
+      // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
   }, [card, dailyReviewActive, dailyReviewIntro, initialMode, onDailyModeComplete, phase, reliefActive, sendStudySeconds, sessionOptions, stats, submitting, tailActive]);
 
+  useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
+
   const revealAnswer = useCallback(() => {
     if (!card || loading || revealed || submitting || reliefActive || dailyReviewIntro) return;
+    revealedAtRef.current = performance.now();
     setRevealed(true);
     playFlip();
+    // 翻面在此之前只有声音没有触觉,而它是整个循环里最高频的一下。
+    triggerRevealHaptic();
     setNoteEditorOpen(false);
     if (card.note) {
       setNoteMemoryOpen(true);
       setActivePopover("noteMemory");
     } else {
       setNoteMemoryOpen(false);
-      setActivePopover(similarMeaningOpen ? "similarMeaning" : null);
+      setActivePopover(null);
     }
     speakCard(card);
-  }, [card, dailyReviewIntro, loading, reliefActive, revealed, similarMeaningOpen, speakCard, submitting]);
+  }, [card, dailyReviewIntro, loading, reliefActive, revealed, speakCard, submitting]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -570,6 +714,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         || event.ctrlKey
         || event.metaKey
         || event.altKey
+        || distinctionOpen
         || isEditableTarget(event.target)
       ) return;
 
@@ -578,7 +723,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         const answer = answerHotkeys[key];
         if (!answer || !card || submitting) return;
         event.preventDefault();
-        void submitAnswer(answer);
+        void submitAnswer(answer, "key");
         return;
       }
 
@@ -593,14 +738,19 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [card, loading, revealed, submitting, submitAnswer, revealAnswer]);
+  }, [card, distinctionOpen, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
     setSubmitting(true);
     setError("");
     try {
       const data = undoLastWordAnswer(sessionOptions);
+      // 撤销了刚才那次作答,音高台阶也该跟着退回起点(不做精确回退:撤销很少用,
+      // 而多爬一级和少爬一级都比「撤销了但还在高音上」说不通)
+      correctStreakRef.current = 0;
       setCard(data.card);
+      setUnitKey(data.unitKey ?? null);
+      setUnitTarget(data.unitTarget ?? null);
       setStats(data.stats);
       setPhase(data.phase);
       setReliefActive(false);
@@ -627,12 +777,47 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setNoteText(data.note);
       setNoteEditorOpen(false);
       setNoteMemoryOpen(false);
-      setActivePopover(similarMeaningOpen ? "similarMeaning" : null);
+      setActivePopover(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "便签保存失败");
     } finally {
       setNoteSaving(false);
     }
+  };
+
+  /**
+   * 保存改写后的题面。清空 = 恢复原文。
+   *
+   * **不顺手评分**：这时答案已经全露着，替用户按一个「记得」等于给 FSRS 灌假数据。
+   * 底下那个「保存并记模糊」是用户自己点的，含义是「这次题面没分清，别算我忘了」。
+   */
+  const savePromptMeaning = async (thenAnswer?: WordAnswer) => {
+    if (!card || promptSaving) return;
+    setPromptSaving(true);
+    setError("");
+    try {
+      const data = updateWordQuestionMeaning(card.id, promptText);
+      setCard((current) => current && current.id === data.wordId
+        ? { ...current, questionMeaning: data.questionMeaning, promptMeaning: data.promptMeaning }
+        : current);
+      setPromptText(data.isOverridden ? data.questionMeaning : "");
+      setPromptEditorOpen(false);
+      setActivePopover(null);
+      if (thenAnswer) await submitAnswer(thenAnswer);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "题面保存失败");
+    } finally {
+      setPromptSaving(false);
+    }
+  };
+
+  const openPromptEditor = () => {
+    if (!card) return;
+    setPromptText(card.questionMeaning || card.promptMeaning || "");
+    setNoteEditorOpen(false);
+    setNoteMemoryOpen(false);
+    setPromptEditorOpen(true);
+    setActivePopover("prompt");
   };
 
   const toggleCardFavorite = () => {
@@ -646,15 +831,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     }
   };
 
-  const toggleSimilarMeaning = () => {
-    if (!card?.similarMeaning) return;
-    setSimilarMeaningOpen((open) => {
-      const next = !open;
-      setActivePopover(next ? "similarMeaning" : (noteEditorOpen ? "note" : noteMemoryOpen ? "noteMemory" : null));
-      return next;
-    });
-  };
-
   const jumpToSimilar = (targetWordId: number) => {
     if (!card || submittingRef.current || submitting) return;
     submittingRef.current = true;
@@ -663,6 +839,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     try {
       const data = jumpToSimilarWord(card.id, targetWordId, sessionOptions);
       setCard(data.card);
+      setUnitKey(data.unitKey ?? null);
+      setUnitTarget(data.unitTarget ?? null);
       setStats(data.stats);
       setPhase(data.phase);
       setReliefActive(false);
@@ -674,7 +852,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setRevealed(false);
       setNoteEditorOpen(false);
       setNoteMemoryOpen(false);
-      setSimilarMeaningOpen(false);
+      setDistinctionOpen(false);
       setActivePopover(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "无法切换到相似词");
@@ -686,6 +864,37 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
 
   const isReversePhase = phase === "stage2";
   const isKanjiPhase = phase === "kanji";
+  const isUnitKanji = isKanjiPhase && Boolean(unitTarget);
+  // 顶栏按钮和答案区那一行入口共用这一份 —— 两处从来就该是同一件事。
+  // 反向/汉字模式不给：那两个模式的题面本身就是中文或汉字，摆出同义词等于送答案。
+  const distinctions = useMemo(
+    () => (distinctionsReady && card && !isReversePhase && !isKanjiPhase ? wordDistinctions(card) : []),
+    [card, distinctionsReady, isReversePhase, isKanjiPhase]
+  );
+
+  /**
+   * 和这张卡共用同一行题面的其他词。
+   *
+   * 只在正向题算：反向题日文就在眼前，汉字读音题考的是读音，两者都不存在
+   * 「题面在问哪个词」这回事。sameMora 标的是拍数提示也分不开的那些 ——
+   * 实测残余 1,967 个词里 78.5% 只剩 2 个候选，摆出来一眼就知道自己想的是不是它。
+   */
+  const questionRivals = useMemo(() => {
+    if (!card || isReversePhase || isKanjiPhase) return [];
+    const mine = moraCount(card.kana);
+    return questionMeaningRivals(card.id)
+      .map((peer) => ({ ...peer, sameMora: moraCount(peer.kana) === mine }))
+      .sort((a, b) => Number(b.sameMora) - Number(a.sameMora));
+  }, [card, isReversePhase, isKanjiPhase]);
+
+  useEffect(() => {
+    // 让第一张卡先画出来,索引在下一个 tick 里建 —— 建完辨析入口自己会出现
+    const timer = window.setTimeout(() => {
+      warmConfusionGroups();
+      setDistinctionsReady(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   // 文案统一来自 studyMode 的模式目录,别再在这儿摊三串三元表达式:
   // 加一个模式要改三处、少改一处就出现「标题写经典、角标写 Vocabulary」。
   const activeModeInfo = studyModeInfo(isReversePhase ? "reverse" : isKanjiPhase ? "kanji" : initialMode);
@@ -698,9 +907,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     setLoading(true);
     setError("");
     try {
-      await yieldToBrowser();
+      await yieldToPaint();
       const data = phaseName === "stage2" ? continueStage2Study() : continueKanjiStudy();
       setCard(data.card);
+      setUnitKey(data.unitKey ?? null);
+      setUnitTarget(data.unitTarget ?? null);
       setStats(data.stats);
       setPhase(data.phase);
       setReliefActive(false);
@@ -729,9 +940,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     setLoading(true);
     setError("");
     try {
-      await yieldToBrowser();
+      await yieldToPaint();
       const data = startEncoreSession(size);
       setCard(data.card);
+      setUnitKey(data.unitKey ?? null);
+      setUnitTarget(data.unitTarget ?? null);
       setStats(data.stats);
       setPhase(data.phase);
       setReliefActive(false);
@@ -765,6 +978,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     const touch = event.touches[0];
     gestureRef.current = { x: touch.clientX, y: touch.clientY, axis: null };
+    swipeArmedRef.current = 0;
     if (!canDragWordPage(event.target)) return;
     dragStartYRef.current = touch.clientY;
     setDragging(true);
@@ -788,6 +1002,14 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       event.preventDefault();
       swipeXRef.current = dx;
       setSwipeX(dx);
+      // 越过/退回提交阈值的那一帧给一次触觉。改版前「甩够了没」只有印章的
+      // 透明度在说,必须盯着屏幕看 —— 而甩卡本来就是不用看也能做的动作。
+      // 只在**跨越**时触发,不是每帧都震(那会变成手机在抽搐)。
+      const armed: 0 | 1 | -1 = Math.abs(dx) >= SWIPE_COMMIT_PX ? (dx > 0 ? 1 : -1) : 0;
+      if (armed !== swipeArmedRef.current) {
+        swipeArmedRef.current = armed;
+        triggerSwipeArmHaptic();
+      }
       return;
     }
 
@@ -805,6 +1027,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     setDragging(false);
     setDragOffset(0);
     swipeXRef.current = 0;
+    swipeArmedRef.current = 0;
 
     // 甩过阈值 → 卡片顺着惯性飞出去,飞完再提交(右=认识 / 左=忘记)
     if (gesture?.axis === "x" && swipeEnabled && Math.abs(swiped) >= SWIPE_COMMIT_PX) {
@@ -813,7 +1036,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       window.setTimeout(() => {
         setFlingDir(0);
         setSwipeX(0);
-        submitAnswer(direction > 0 ? "know" : "forgot");
+        submitAnswer(direction > 0 ? "know" : "forgot", "swipe");
       }, SWIPE_FLING_MS);
       return;
     }
@@ -856,6 +1079,17 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
               : "transform 300ms cubic-bezier(.2,.9,.2,1)"
         }}
       >
+        {/* 点评分的印章。活在卡片子树**之外**,所以能一边播完自己的动画,
+            一边让下一张卡照常入场 —— 见 rateBurst 上的注释。 */}
+        {rateBurst && (
+          <span
+            key={rateBurst.seq}
+            className={`zoo-rate-burst ${rateBurst.good ? "good" : "bad"}`}
+            aria-hidden="true"
+          >
+            {rateBurst.label}
+          </span>
+        )}
         {/* 甩卡印章:右=捡到松子,左=松子空了(不惩罚,只是「再来一遍」) */}
         {swipeEnabled && swipeX > AXIS_LOCK_PX && (
           <span className="zoo-stamp good" style={{ opacity: swipeProgress }}>
@@ -896,7 +1130,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
               setNoteMemoryOpen(false);
               setNoteEditorOpen((open) => {
                 const next = !open;
-                setActivePopover(next ? "note" : (similarMeaningOpen ? "similarMeaning" : null));
+                setActivePopover(next ? "note" : null);
                 return next;
               });
             }}
@@ -914,13 +1148,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           >
             <RotateCcw size={17} />
           </button>
-          {card?.similarMeaning && !isReversePhase && !isKanjiPhase && (
+          {distinctions.length > 0 && (
             <button
-              onClick={toggleSimilarMeaning}
-              className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 ${similarMeaningOpen ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
-              title="查看相似释义词"
-              aria-label="查看相似释义词"
-              aria-expanded={similarMeaningOpen}
+              onClick={() => setDistinctionOpen(true)}
+              className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 ${distinctionOpen ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
+              title="查看辨析"
+              aria-label="查看辨析"
+              aria-expanded={distinctionOpen}
             >
               <GitCompareArrows size={17} />
             </button>
@@ -940,7 +1174,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
               <button
                 onClick={() => {
                   setNoteMemoryOpen(false);
-                  setActivePopover(similarMeaningOpen ? "similarMeaning" : null);
+                  setActivePopover(null);
                 }}
                 className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-[#81D8CF]/15"
                 title="关闭"
@@ -965,7 +1199,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
               <button
                 onClick={() => {
                   setNoteEditorOpen(false);
-                  setActivePopover(similarMeaningOpen ? "similarMeaning" : null);
+                  setActivePopover(null);
                 }}
                 className="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-white/15 bg-white/5"
                 title="关闭"
@@ -992,49 +1226,79 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           </div>
         )}
 
-        {similarMeaningOpen && card?.similarMeaning && (
+        {promptEditorOpen && card && (
           <div
-            className="word-note-popover similar-meaning-popover word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-2xl backdrop-blur-md"
-            style={{ zIndex: activePopover === "similarMeaning" ? 50 : 35 }}
+            className="word-note-popover word-note-float prompt-edit-card overflow-y-auto rounded-2xl border p-4 text-left shadow-lg"
+            style={{ zIndex: activePopover === "prompt" ? 50 : 35 }}
           >
-            <div className="mb-3 flex items-start justify-between gap-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">相似释义词</p>
-                <p className="mt-1 text-base font-semibold">{card.similarMeaning.title}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">改写题面</p>
+                <p className="jp mt-1 text-lg font-semibold">{cardLabel(card)}</p>
               </div>
               <button
                 onClick={() => {
-                  setSimilarMeaningOpen(false);
-                  setActivePopover(noteEditorOpen ? "note" : noteMemoryOpen ? "noteMemory" : null);
+                  setPromptEditorOpen(false);
+                  setActivePopover(null);
                 }}
-                className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-[#81D8CF]/15"
+                className="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-white/15 bg-white/5"
                 title="关闭"
               >
-                <X size={15} />
+                <X size={16} />
               </button>
             </div>
-            <p className="mb-3 text-sm leading-6 text-white/72">{card.similarMeaning.distinction}</p>
-            <div className="space-y-2">
-              {card.similarMeaning.items.map((item) => (
+            {/* 词库原文摆在上面：题面只是它的首义，你多半想从后面几个义项里挑个词。 */}
+            <div className="rounded-2xl border border-white/12 bg-white/5 p-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">词库原文</p>
+              <p className="mt-1 text-sm leading-6 text-white/75">{card.meaning}</p>
+            </div>
+            <input
+              value={promptText}
+              onChange={(event) => setPromptText(event.target.value)}
+              className="mt-3 w-full rounded-2xl border border-white/20 bg-[#2f3333] p-3 text-base leading-6 text-white placeholder:text-white/45"
+              placeholder="下次这道题的题面写什么"
+            />
+            {/* 题面框在手机上大约放得下十几个字，超了会自己滚 —— 不设硬上限，
+                但得让人看得见自己写多长了。 */}
+            <p className="mt-2 text-[11px] text-white/40">
+              {promptText.trim().length} 字 · 留空并保存 = 恢复成词库原文
+            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+              {/* 这次的作答是在旧题面上做的，不该算数。「记模糊」是用户自己点的，
+                  不做成保存后自动评分 —— 那等于替他给 FSRS 写结论。 */}
+              {revealed && !submitting && (
                 <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => jumpToSimilar(item.id)}
-                  disabled={submitting}
-                  className="focus-ring block w-full rounded-xl border border-[#5aa7ff]/30 bg-[#5aa7ff]/10 p-3 text-left transition-colors hover:bg-[#5aa7ff]/20 disabled:opacity-50"
-                  title={`切换到${item.kanji}`}
+                  onClick={() => savePromptMeaning("fuzzy")}
+                  disabled={promptSaving}
+                  className="focus-ring rounded-2xl border border-white/20 bg-white/5 px-3 py-2 text-sm font-semibold disabled:opacity-50"
                 >
-                  <div className="flex items-baseline justify-between gap-3">
-                    <p className="jp-serif text-xl font-semibold leading-none text-[#5aa7ff]">{item.kanji}</p>
-                    <p className="jp text-sm text-[#5aa7ff]/80">{item.kana}</p>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-white/78">{item.meaning}</p>
+                  保存并记模糊
                 </button>
-              ))}
+              )}
+              <button
+                onClick={() => savePromptMeaning()}
+                disabled={promptSaving}
+                className="focus-ring rounded-2xl bg-[#81D8CF] px-4 py-2 text-sm font-bold !text-[#2f3333] disabled:opacity-50"
+              >
+                {promptSaving ? "保存中" : "保存"}
+              </button>
             </div>
           </div>
         )}
+
         </div>
+
+        {distinctionOpen && card && (
+          <DistinctionSheet
+            // 翻面前标题只能写题面那行中文 —— 写 cardLabel 等于把答案印在气泡顶上
+            title={revealed ? cardLabel(card) : (card.questionMeaning || card.promptMeaning || "辨析")}
+            sections={distinctions}
+            revealed={revealed}
+            onClose={() => setDistinctionOpen(false)}
+            onJump={jumpToSimilar}
+            jumpDisabled={submitting}
+          />
+        )}
 
         {reliefActive && stats?.dailyRelief && (
           <div className="daily-relief-banner" role="status" aria-live="polite">
@@ -1063,7 +1327,16 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         {loading ? (
           <div className="grid min-h-[360px] place-items-center text-center text-white/75">正在读取下一题...</div>
         ) : card ? (
-          <div key={card.id} className="zoo-enter flex min-h-0 flex-1 flex-col gap-2 sm:gap-3">
+          <div
+            key={`${card.id}:${unitKey ?? "word"}`}
+            className={`zoo-enter flex min-h-0 flex-1 flex-col gap-2 sm:gap-3${isKanjiPhase && !revealed ? " cursor-pointer" : ""}`}
+            onClick={(event) => {
+              if (!isKanjiPhase || revealed) return;
+              const element = event.target instanceof Element ? event.target : null;
+              if (element?.closest("button, a, input, textarea, select, [contenteditable='true']")) return;
+              revealAnswer();
+            }}
+          >
             {/* 松鼠的小路搬到了顶部 Master 栏(components/SquirrelTrail),
                 卡片里不再为进度条留高度,全部让给答案区。 */}
 
@@ -1088,9 +1361,22 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
                       {card.honorificLabel}
                     </span>
                   )}
+                  {/* 拍数只给正向题:题面是一行中文,常常好几个词都对得上(警察 / 警察官 /
+                      警官)。反向题日文就在眼前,汉字读音题的读音是要考的那个,都不给。
+                      口径和为什么是拍不是音节,见 word-study-utils 的 moraCount。 */}
+                  {!isReversePhase && !isKanjiPhase && moraCount(card.kana) > 0 && (
+                    <span
+                      className="rounded-sm border border-white/15 px-1.5 py-0.5 text-[11px] font-bold text-white/60"
+                      title="读音有几拍（拗音算一拍，っ・ん・ー 各算一拍）"
+                    >
+                      {moraCount(card.kana)}拍
+                    </span>
+                  )}
                 </div>
                 <div data-word-scrollable="true" className="max-h-24 w-full overflow-y-auto px-1 sm:max-h-28">
-                  {isReversePhase ? (
+                  {isUnitKanji ? (
+                    <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{unitTarget?.text}</p>
+                  ) : isReversePhase ? (
                     <>
                       <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{primaryAnswerText(card)}</p>
                       <ReadingLine card={card} className="jp mt-1 text-xl text-white/72 sm:text-2xl lg:text-3xl" />
@@ -1106,22 +1392,29 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
 
             <div data-word-scrollable="true" className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(1040px,100%)] lg:p-10">
               {revealed ? (
-                <div className="w-full">
+                <div className="zoo-reveal-in w-full min-w-0">
                   {isReversePhase ? (
                     <>
                       <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">释义</p>
                       <p className="mx-auto mt-4 max-w-2xl text-2xl font-semibold leading-9 text-white/88">{card.meaning}</p>
                     </>
+                  ) : isUnitKanji ? (
+                    <>
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">读音</p>
+                      <p className="jp-serif mt-4 text-6xl font-semibold leading-none sm:text-7xl lg:text-8xl">{unitTarget?.reading}</p>
+                      <p className="mt-4 text-sm text-white/55">来自 {card.kanji} · {card.meaning}</p>
+                    </>
                   ) : (
                     <>
                       <p className="jp-serif text-6xl font-semibold leading-none sm:text-7xl lg:text-8xl xl:text-[9rem]">
-                        <KanjiAnswer card={card} />
+                        <KanjiAnswer card={card} surface={isKanjiPhase ? kanjiReadingSurface(card) : undefined} />
                       </p>
                       {/* 自他跟读音同一行:它是这个词的属性,不值得单占一行。
                           等级/词性已经在题目面常驻,这里不再重复。 */}
                       <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
                         <ReadingLine
                           card={card}
+                          surface={isKanjiPhase ? kanjiReadingSurface(card) : undefined}
                           className="jp text-3xl text-white/86 sm:text-4xl lg:text-5xl xl:text-6xl"
                         />
                         <TransitivityBadge card={card} />
@@ -1137,16 +1430,17 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
                   {preferences.showRomaji && romaji && (
                     <p className="mt-2 text-sm font-semibold tracking-normal text-white/52">{romaji}</p>
                   )}
-                  {/* 正向题的释义就是题面本身,答案面再抄一遍纯属占地方。
-                      题面显示的是精简过的 questionMeaning,完整释义补在这里 —— 只在
-                      两者确实不一样时才出现。 */}
-                  {!isReversePhase && card.meaning !== (card.questionMeaning || card.meaning) && (
-                    <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-white/72 lg:text-lg lg:leading-8">
-                      {card.meaning}
-                    </p>
-                  )}
+                  {/* 这里曾经补一行 words.meaning 原文,条件是「和题面不一样就显示」。
+                      在 5,853 条人工题面落地之前那还说得通;之后**题面才是更完整的那个**,
+                      这行剩下的是老词库原文,而且 25.1%(2,777 个词)都会触发:
+                        安全  题面「安全」        这行「安全的」
+                        空港  题面「机场」        这行「空港」   ← 根本不是中文翻译
+                        経験  题面「经验；经历」   这行「经验」   ← 信息更少
+                        柄    题面「体格；人品；身份；花样」  这行「花样；性质」 ← 换了一组义项
+                      「有的词有有的词没有」也是这个条件造出来的。已删。
+                      想看词库原文的话,「改写题面」的编辑框里一直摆着。 */}
                   <ExampleBlock card={card} />
-                  {(markedKanji.length > 0 || card.verbPair || card.confusions.length > 0) && !isReversePhase && (
+                  {(markedKanji.length > 0 || card.verbPair || distinctions.length > 0) && !isReversePhase && (
                     <div className="mx-auto mt-4 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
                       {markedKanji.length > 0 && (
                         <div className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
@@ -1181,25 +1475,99 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
                         </div>
                       )}
 
-                      {card.confusions.length > 0 && (
-                        <div className="rounded-2xl border border-white/15 bg-[#373b3b] p-4 sm:col-span-2">
-                          <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">易混词</p>
-                          <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                            {card.confusions.slice(0, 3).map((item) => (
-                              <div key={`${item.kind}-${item.kanji}-${item.kana}`} className="rounded-xl border border-white/10 bg-[#81D8CF]/10 p-3">
-                                <div className="flex items-baseline justify-between gap-2">
-                                  <p className="jp-serif text-xl font-semibold leading-none">{item.kanji}</p>
-                                  <span className="rounded-sm border border-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white/45">{item.kind}</span>
-                                </div>
-                                <p className="jp mt-1 text-sm text-white/58">{item.kana}</p>
-                                <p className="mt-2 text-xs leading-5 text-white/70">{item.meaning}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                      {distinctions.length > 0 && (
+                        <button
+                          type="button"
+                          className="wd-entry sm:col-span-2"
+                          onClick={() => setDistinctionOpen(true)}
+                        >
+                          <span className="wd-entry-main">
+                            <span className="wd-entry-types">
+                              {distinctions.slice(0, 2).map((section) => `${section.emoji} ${section.name}`).join("  ·  ")}
+                              {distinctions.length > 2 ? `  +${distinctions.length - 2}` : ""}
+                            </span>
+                            <span className="jp-serif wd-entry-words">
+                              {distinctions[0].members.map((member) => member.word).join(" / ")}
+                            </span>
+                          </span>
+                          <span className="wd-entry-go">点开对照</span>
+                          <ChevronRight size={16} className="wd-entry-go" />
+                        </button>
                       )}
                     </div>
                   )}
+                  {/* 摆在答案区**最下面**：改写题面是个一年用不了几次的功能，
+                      忘了它存在也不影响背词，不该在每张卡的答案上方占位置。
+                      撞车面板跟着一起下来 —— 它是那个按钮的上下文（「这几个词和它共用同一行题面」），
+                      拆开摆会变成两个都要解释的东西。实测只有 6.7% 的词会摆出整张卡，
+                      其余只留一行灰字入口。 */}
+                  {!isReversePhase && !isKanjiPhase && (
+                    questionRivals.length > 0 ? (
+                    <div className="mx-auto mt-4 max-w-2xl rounded-2xl border border-white/15 bg-[#373b3b] p-4 text-left">
+                      {(
+                        <>
+                          <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">
+                            题面撞车 · {questionRivals.length + 1} 个词共用「{card.questionMeaning || card.promptMeaning}」
+                          </p>
+                          {/* 摆出来是为了让你当场判断「我想的那个是不是也在里面」——
+                              翻面之前不摆，那会变成给答案。 */}
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {questionRivals.map((peer) => (
+                              <span
+                                key={peer.id}
+                                title={peer.meaning}
+                                className={`jp inline-flex items-baseline gap-1.5 rounded-sm border px-2 py-1 text-sm ${
+                                  peer.sameMora
+                                    ? "border-[#81D8CF]/40 bg-[#81D8CF]/15 font-semibold text-white/90"
+                                    : "border-white/15 text-white/60"
+                                }`}
+                              >
+                                {peer.label}
+                                <span className="text-[11px] font-normal text-white/45">{moraCount(peer.kana)}拍</span>
+                              </span>
+                            ))}
+                          </div>
+                          <p className="mt-2 text-[11px] leading-5 text-white/45">
+                            高亮的是拍数也一样、题面分不出来的。改写题面只影响你自己这台设备上的这份库。
+                          </p>
+                        </>
+                      )}
+                      <button
+                        onClick={openPromptEditor}
+                        className="focus-ring mt-3 inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-[#81D8CF]/10 px-3 py-2 text-sm font-semibold hover:bg-[#81D8CF]/15"
+                      >
+                        <Pencil size={14} />
+                        改写题面
+                      </button>
+                    </div>
+                    ) : (
+                      <button
+                        onClick={openPromptEditor}
+                        className="focus-ring mx-auto mt-3 inline-flex items-center gap-1.5 rounded-2xl px-2 py-1 text-xs text-white/40 hover:text-white/70"
+                      >
+                        <Pencil size={12} />
+                        改写题面
+                      </button>
+                    )
+                  )}
+                </div>
+              ) : isUnitKanji ? (
+                <div className="w-full">
+                  <p className="jp-serif text-6xl font-semibold leading-none sm:text-7xl lg:text-8xl xl:text-[9rem]">{unitTarget?.text}</p>
+                  <p className="mt-5 text-sm font-semibold text-white/52">点一下，显示这个汉字单元的读音</p>
+                </div>
+              ) : isKanjiPhase ? (
+                <div className="w-full">
+                  <p className="jp-serif text-6xl font-semibold leading-none sm:text-7xl lg:text-8xl xl:text-[9rem]">
+                    <KanjiAnswer card={card} surface={kanjiReadingSurface(card)} />
+                  </p>
+                  <ReadingLine
+                    card={card}
+                    concealKanji
+                    surface={kanjiReadingSurface(card)}
+                    className="jp mt-3 text-3xl text-white/78 sm:text-4xl lg:text-5xl xl:text-6xl"
+                  />
+                  <p className="mt-5 text-sm font-semibold text-white/52">点一下，显示汉字读音</p>
                 </div>
               ) : (
                 <div>
@@ -1219,31 +1587,36 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
               ) : !revealed ? (
                 <button
                   onClick={revealAnswer}
-                  title="点击或按任意普通键显示答案"
+                  title={isKanjiPhase ? "点击或按任意普通键显示汉字读音" : "点击或按任意普通键显示答案"}
                   className="focus-ring zoo-pop zoo-gloss inline-flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] px-4 text-base font-bold !text-[#2f3333]"
                 >
                   <Eye size={18} />
-                  <span>显示答案</span>
+                  <span>{isKanjiPhase ? "显示读音" : "显示答案"}</span>
                   <span className="text-xs font-semibold opacity-65">（按任意键）</span>
                 </button>
               ) : (
                 <>
-                  <div className="grid h-16 grid-cols-4 gap-3">
+                  {/* 忘记/认识 是主键,模糊/熟知 摆一半宽、不填色 —— 见 answerOptions 上的注释 */}
+                  <div className="zoo-rate-row grid h-16 grid-cols-[1.35fr_0.65fr_1.35fr_0.65fr] gap-2 sm:gap-3">
                     {answerOptions.map((option) => (
                       <button
                         key={option.value}
                         onClick={() => submitAnswer(option.value)}
                         aria-keyshortcuts={answerHotkeyLabels[option.value]}
                         disabled={submitting}
-                        className={`focus-ring zoo-pop h-16 rounded-2xl border border-white/20 bg-[#81D8CF]/10 px-2 text-base font-bold hover:bg-[#81D8CF]/15 disabled:opacity-50${
-                          rateFeedback?.value === option.value
-                            ? rateFeedback.good
-                              ? " zoo-flash-good"
-                              : " zoo-flash-bad"
-                            : ""
+                        className={`focus-ring zoo-pop h-16 min-w-0 rounded-2xl border disabled:opacity-50 ${
+                          option.secondary
+                            ? "border-white/12 px-1 text-sm font-semibold text-white/60 hover:bg-white/[0.06]"
+                            : "border-white/20 bg-[#81D8CF]/10 px-2 text-base font-bold hover:bg-[#81D8CF]/15"
                         }`}
                       >
-                        <span className="block text-[10px] font-black tracking-[0.18em] text-white/45">{answerHotkeyLabels[option.value]}</span>
+                        <span
+                          className={`block text-[10px] font-black text-white/45 ${
+                            option.secondary ? "tracking-normal" : "tracking-[0.18em]"
+                          }`}
+                        >
+                          {answerHotkeyLabels[option.value]}
+                        </span>
                         <span>{option.label}</span>
                       </button>
                     ))}

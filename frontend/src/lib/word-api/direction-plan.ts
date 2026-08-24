@@ -10,11 +10,14 @@ import { firstRow, firstValue, rowsFor, studyDayEnd, today } from "../study-core
 import { dailyReviewCap } from "../review-budget";
 import { fsrsDueWordIds, recallFromRow } from "../fsrs-store";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
+import { kanjiReadingPriorityAdjustment } from "../orthography";
 import { dailyNewQuota, getReviewQueue, lastAnsweredWord, recentAnswersToday } from "./session-state";
 import {
   directionTaskCount,
-  ensureDirectionCards,
+  directionAllowsWord,
+  ensureDirectionCardIds,
   ensureDirectionColumns,
+  filterDirectionWordIds,
   type StudyDirection
 } from "./directions";
 
@@ -44,6 +47,39 @@ const newTaskCount = (direction: StudyDirection, day: string) => firstValue<numb
   0
 );
 
+/** 元数据更新后只清理今天不再适用的任务，不碰长期记忆、作答流水或 FSRS。 */
+const pruneIneligibleDirectionTasks = (direction: StudyDirection, day: string) => {
+  if (direction.id !== "kanji_reading") return;
+  const stale = rowsFor(`
+    SELECT t.word_id, w.kanji, w.kana
+    FROM ${direction.taskTable} t
+    JOIN words w ON w.id = t.word_id
+    WHERE t.reviewed_on = ?
+  `, [day]).filter((row) => !directionAllowsWord(direction, row));
+  stale.forEach((row) => getDatabase().run(
+    `DELETE FROM ${direction.taskTable} WHERE reviewed_on = ? AND word_id = ?`,
+    [day, Number(row.word_id)]
+  ));
+};
+
+const eligibleDueWordIds = (
+  direction: StudyDirection,
+  limit: number,
+  end: Date
+): number[] => {
+  if (limit <= 0) return [];
+  // Kanji metadata is a deliberately bounded second filter. Fetch a small
+  // adaptive cushion so invalid spellings do not underfill the plan; the old
+  // fixed +512 made every small plan scan hundreds of unrelated cards.
+  const candidateLimit = direction.id === "kanji_reading"
+    ? Math.max(limit * 2, 32)
+    : limit;
+  return filterDirectionWordIds(
+    direction,
+    fsrsDueWordIds(candidateLimit, end, direction.entity)
+  ).slice(0, limit);
+};
+
 /**
  * 生成这个方向的当日计划:到期集(受各自的复习上限约束)+ 新卡配额。
  *
@@ -58,6 +94,7 @@ export const createDirectionTasks = (
 ) => {
   ensureDirectionColumns(direction);
   const db = getDatabase();
+  pruneIneligibleDirectionTasks(direction, day);
   if (directionTaskCount(direction, day) > 0) return;
 
   // 今天已经答过的先回填进任务表,否则刷新页面后当日进度会归零
@@ -67,7 +104,7 @@ export const createDirectionTasks = (
   const reviewLimit = Math.max(cap - directionTaskCount(direction, day), 0);
   let orderIndex = directionTaskCount(direction, day) + 1;
 
-  fsrsDueWordIds(reviewLimit, studyDayEnd(), direction.entity).forEach((wordId) => {
+  eligibleDueWordIds(direction, reviewLimit, studyDayEnd()).forEach((wordId) => {
     db.run(`
       INSERT OR IGNORE INTO ${direction.taskTable} (reviewed_on, word_id, order_index)
       VALUES (?, ?, ?)
@@ -78,8 +115,10 @@ export const createDirectionTasks = (
   // 新卡:按需建卡(从正向状态播种),建出来的当天就参与
   const newQuota = introduceNew ? Math.max(dailyNewQuota() - newTaskCount(direction, day), 0) : 0;
   if (newQuota > 0) {
-    ensureDirectionCards(direction, newQuota);
-    fsrsDueWordIds(newQuota, studyDayEnd(), direction.entity).forEach((wordId) => {
+    // Insert exactly the cards created for this quota. Re-querying the whole
+    // due set here used to select old reviews again and silently drop the new
+    // cards from today's task table.
+    ensureDirectionCardIds(direction, newQuota).forEach((wordId) => {
       db.run(`
         INSERT OR IGNORE INTO ${direction.taskTable} (reviewed_on, word_id, order_index)
         VALUES (?, ?, ?)
@@ -92,12 +131,13 @@ export const createDirectionTasks = (
 /** 今天答过但不在任务表里的,补回来(刷新/换设备后接得上) */
 const backfillDirectionTasksFromToday = (direction: StudyDirection, day: string) => {
   const rows = rowsFor(`
-    SELECT word_id, MIN(id) AS first_review_id
-    FROM reviews
-    WHERE reviewed_on = ? AND direction = ? AND answer != 'known_forever'
-    GROUP BY word_id
+    SELECT r.word_id, MIN(r.id) AS first_review_id, w.kanji, w.kana
+    FROM reviews r
+    JOIN words w ON w.id = r.word_id
+    WHERE r.reviewed_on = ? AND r.direction = ? AND r.answer != 'known_forever'
+    GROUP BY r.word_id
     ORDER BY first_review_id ASC
-  `, [day, direction.id]);
+  `, [day, direction.id]).filter((row) => directionAllowsWord(direction, row));
   rows.forEach((row, index) => {
     getDatabase().run(`
       INSERT OR IGNORE INTO ${direction.taskTable} (reviewed_on, word_id, order_index)
@@ -163,7 +203,7 @@ const directionCardColumns = (direction: StudyDirection) => `
 export const directionCardById = (direction: StudyDirection, wordId: number): WordCard | null => {
   ensureDirectionColumns(direction);
   const row = firstRow(`SELECT ${directionCardColumns(direction)} WHERE m.word_id = ?`, [wordId]);
-  return row ? rowObjectToCard(row) : null;
+  return row && directionAllowsWord(direction, row) ? rowObjectToCard(row) : null;
 };
 
 /**
@@ -172,8 +212,10 @@ export const directionCardById = (direction: StudyDirection, wordId: number): Wo
  */
 export const pickDirectionNext = (
   direction: StudyDirection,
-  excludedIds: Set<number> = new Set()
+  excludedIds: Set<number> = new Set(),
+  options: { deterministic?: boolean } = {}
 ): WordCard | null => {
+  const deterministic = options.deterministic === true;
   const day = today();
   ensureDirectionTasks(direction);
   const queueById = new Map(getReviewQueue(direction.id).map((item) => [item.word_id, item.due_after]));
@@ -210,7 +252,9 @@ export const pickDirectionNext = (
       AND (m.fsrs_due IS NULL OR m.fsrs_due <= ?)
   `, [day, studyDayEnd().toISOString()]);
 
-  const availableRows = rows.filter((row) => !excludedIds.has(Number(row.id)));
+  const availableRows = rows.filter((row) =>
+    !excludedIds.has(Number(row.id)) && directionAllowsWord(direction, row)
+  );
   if (!availableRows.length) return null;
 
   const lastId = lastAnsweredWord(direction.id);
@@ -230,11 +274,21 @@ export const pickDirectionNext = (
     ? availableRows.filter((row) => Number(row.id) !== lastId)
     : availableRows;
 
-  const candidates = pickable.map((row) => ({
-    score: priorityScore(priorityComponents(row, queueById.get(Number(row.id)), 0)),
-    dueAfter: queueById.get(Number(row.id)) ?? 0,
-    row
-  }));
+  const candidates = pickable.map((row) => {
+    const components = priorityComponents(row, queueById.get(Number(row.id)), 0, {
+      randomize: !deterministic
+    });
+    if (direction.id === "kanji_reading") {
+      components.orthography = kanjiReadingPriorityAdjustment({
+        kanji: String(row.kanji ?? ""), kana: String(row.kana ?? "")
+      });
+    }
+    return {
+      score: priorityScore(components),
+      dueAfter: queueById.get(Number(row.id)) ?? 0,
+      row
+    };
+  });
   if (!candidates.length) return null;
 
   const ready = candidates.filter((item) => item.dueAfter <= 0);
@@ -255,7 +309,8 @@ export const pickDirectionNext = (
       answeredToday: recent.answeredToday,
       recentIds: recent.wordIds,
       wrongStreak: recent.wrongStreak,
-      interference: sessionInterference(day, rows, direction.id)
+      interference: sessionInterference(day, rows, direction.id),
+      ...(deterministic ? { random: () => 0 } : {})
     }
   );
   if (!picked) return null;

@@ -8,6 +8,7 @@ import { similarMeaningCandidates } from "../../data/similar_meaning_groups";
 import kanjiVariantPayload from "../../data/kanji_variants.json";
 import verbPairHintPayload from "../../data/verb_pair_hints.ts";
 import englishOriginPayload from "../../data/english_origins.json";
+import { userQuestionMeaning } from "./user-question-meanings";
 import { reviewedQuestionMeaning } from "./question-meaning-overrides";
 
 type VerbPairHint = readonly [voice: string, pairKanji: string, pairKana: string, note: string];
@@ -123,7 +124,15 @@ function stripKanaNotes(text: string): string {
     .trim();
 }
 
-export function questionMeaning(meaning: string, kanji = "", kana = ""): string {
+/**
+ * 题面上真正显示的那行中文（学习页渲染的是这个，不是 promptMeaning）。
+ *
+ * wordId 只为查用户自己改写的题面 —— 它必须和 promptMeaning 挂在同一层，
+ * 否则用户改完之后题面纹丝不动，只有底下的撞车分组悄悄变了。
+ */
+export function questionMeaning(meaning: string, kanji = "", kana = "", wordId = 0): string {
+  const mine = wordId ? userQuestionMeaning(wordId) : undefined;
+  if (mine) return mine;
   const reviewed = reviewedQuestionMeaning(kanji, kana);
   if (reviewed) return reviewed;
   return stripKanaNotes(stripAbbreviationNotes(stripLatinGlosses(meaning)))
@@ -278,6 +287,9 @@ export function primaryMeaning(meaning: string): string {
  * 生成提示释义（用于题目）
  */
 export function promptMeaning(meaning: string, wordId: number, kanji: string, kana = ""): string {
+  // 用户自己改的排在最前，而且**跳过下面全部清洗** —— 他写的就是最终形态。
+  const mine = userQuestionMeaning(wordId);
+  if (mine) return mine;
   if (shortMeaningOverrides[wordId]) return shortMeaningOverrides[wordId];
   const reviewed = reviewedQuestionMeaning(kanji, kana);
   if (reviewed) return reviewed;
@@ -387,7 +399,7 @@ export function rowObjectToCard(row: DbRow): WordCard {
   return {
     id,
     meaning,
-    questionMeaning: questionMeaning(meaning, label, kana),
+    questionMeaning: questionMeaning(meaning, label, kana, id),
     primaryMeaning: primaryMeaning(meaning),
     promptMeaning: promptMeaning(meaning, id, label, kana),
     honorificLabel: honorificLabel(meaning, label),

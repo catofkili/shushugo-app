@@ -1,4 +1,4 @@
-import { Camera, Edit2, User } from "lucide-react";
+import { Camera, ChevronRight, Edit2, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
   loadUserProfile,
@@ -11,12 +11,15 @@ import {
   UserProfile
 } from "../lib/userProfile";
 import { refreshUserProfileFromCloud, saveUserProfileToCloud } from "../lib/profile-sync";
+import { studyTotals, type StudyTotals } from "../lib/study-totals";
+import { achievementSummary, type Achievement } from "../lib/achievements";
 
 interface PersonalInfoProps {
   onBack: () => void;
+  onOpenAchievements: () => void;
 }
 
-export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
+export function PersonalInfo({ onBack: _onBack, onOpenAchievements }: PersonalInfoProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingTarget, setIsEditingTarget] = useState(false);
@@ -25,9 +28,16 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
   const [tempTargetLevel, setTempTargetLevel] = useState("");
   const [saving, setSaving] = useState(false);
   const [syncMessage, setSyncMessage] = useState("正在读取账号资料…");
+  // 学习时长和天数问数据库要，不看 profile 里那两个遗留字段（见 study-totals.ts）
+  const [totals, setTotals] = useState<StudyTotals>({ minutes: 0, days: 0 });
+  const [board, setBoard] = useState<{ unlocked: number; total: number; recent: Achievement[] }>(
+    { unlocked: 0, total: 0, recent: [] }
+  );
 
   // 加载用户资料
   useEffect(() => {
+    setTotals(studyTotals());
+    setBoard(achievementSummary());
     loadUserProfile().then((data) => {
       setProfile(data);
       setTempNickname(data.nickname);
@@ -313,53 +323,39 @@ export function PersonalInfo({ onBack: _onBack }: PersonalInfoProps) {
           <div className="flex w-full items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">学习时长</p>
-              <p className="mt-0.5 text-xs text-white/50">累计 {formatStudyTime(profile.studyTimeMinutes)}</p>
+              <p className="mt-0.5 text-xs text-white/50">累计 {formatStudyTime(totals.minutes)}</p>
             </div>
           </div>
 
           <div className="flex w-full items-center gap-3 p-4">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">学习天数</p>
-              <p className="mt-0.5 text-xs text-white/50">已坚持 {profile.studyDays} 天</p>
+              <p className="mt-0.5 text-xs text-white/50">已学习 {totals.days} 天</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 成就徽章 */}
+      {/* 成就 —— 详情在成就页，这里只摆最近拿到的几个 */}
       <div>
-        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">成就徽章</p>
-        <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
-          <div className="grid grid-cols-4 gap-3">
-            <div className={`text-center ${profile.achievements.includes('新手') ? '' : 'opacity-40'}`}>
-              <div className={`mx-auto grid h-12 w-12 place-items-center rounded-full text-2xl ${profile.achievements.includes('新手') ? 'bg-[#81D8CF]/20' : 'bg-white/10'}`}>
-                🏆
-              </div>
-              <p className="mt-2 text-xs text-white/60">新手</p>
-            </div>
-            <div className={`text-center ${profile.achievements.includes('学习者') ? '' : 'opacity-40'}`}>
-              <div className={`mx-auto grid h-12 w-12 place-items-center rounded-full text-2xl ${profile.achievements.includes('学习者') ? 'bg-[#81D8CF]/20' : 'bg-white/10'}`}>
-                📚
-              </div>
-              <p className="mt-2 text-xs text-white/60">学习者</p>
-            </div>
-            <div className={`text-center ${profile.achievements.includes('坚持者') ? '' : 'opacity-40'}`}>
-              <div className={`mx-auto grid h-12 w-12 place-items-center rounded-full text-2xl ${profile.achievements.includes('坚持者') ? 'bg-[#81D8CF]/20' : 'bg-white/10'}`}>
-                🔥
-              </div>
-              <p className="mt-2 text-xs text-white/60">坚持者</p>
-            </div>
-            <div className={`text-center ${profile.achievements.includes('大师') ? '' : 'opacity-40'}`}>
-              <div className={`mx-auto grid h-12 w-12 place-items-center rounded-full text-2xl ${profile.achievements.includes('大师') ? 'bg-[#81D8CF]/20' : 'bg-white/10'}`}>
-                ⭐
-              </div>
-              <p className="mt-2 text-xs text-white/60">大师</p>
-            </div>
+        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">成就</p>
+        <button
+          onClick={onOpenAchievements}
+          className="focus-ring w-full rounded-2xl border border-white/15 bg-[#464949] p-4 text-left hover:bg-[#4d5151]"
+        >
+          <div className="flex items-center gap-3">
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold text-white">已解锁 {board.unlocked} / {board.total}</span>
+              <span className="mt-0.5 block text-xs text-white/50">
+                {board.recent.length ? `最近：${board.recent.map((item) => `${item.emoji} ${item.name}`).join(" · ")}` : "还没有解锁的成就，去学两个词"}
+              </span>
+            </span>
+            <ChevronRight size={17} className="text-white/40" />
           </div>
-          <p className="mt-4 text-center text-xs text-white/40">
-            已解锁 {profile.achievements.length} / 4 个成就
-          </p>
-        </div>
+          <div className="ach-summary-bar mt-3">
+            <span style={{ width: `${board.total ? Math.round(board.unlocked / board.total * 100) : 0}%` }} />
+          </div>
+        </button>
       </div>
     </div>
   );

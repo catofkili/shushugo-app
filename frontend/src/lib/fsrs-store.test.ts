@@ -21,7 +21,7 @@ import {
   recordFsrsReview,
   fsrsDueCount,
   fsrsDueWordIds,
-  backfillKanjiFsrs,
+  ensureKanjiReadingFsrs,
   ensureGrammarFsrs,
   KANJI_FSRS,
   migrateRecentDailyEasyReviews
@@ -125,38 +125,35 @@ describe("fsrs-store", () => {
     expect(after.stability).toBeGreaterThan(0);             // 但没清零
   });
 
-  describe("汉字接入 FSRS(一次性迁移)", () => {
+  describe("汉字读音使用独立的干净 FSRS 状态", () => {
     beforeAll(() => {
       testDb.run("DELETE FROM kanji_memory");
-      // 全对的:1 次 know。反复错的:1 对 + 2 忘。计数全 0 的:兜底按 1 次 know
+      // 旧题型里已经答过的记录必须保留，但不能回填到新读音题。
       testDb.run(`INSERT INTO kanji_memory (word_id, score, seen_count, right_count, fuzzy_count, forgot_count, last_seen_on)
-                  VALUES (1, 10, 1, 1, 0, 0, '2026-06-08'),
-                         (2, -5, 3, 1, 0, 2, '2026-06-08'),
-                         (3,  0, 1, 0, 0, 0, '2026-06-08')`);
-      backfillKanjiFsrs();
+                  VALUES (1, 10, 1, 1, 0, 0, '2026-06-08')`);
+      testDb.run(`CREATE TABLE IF NOT EXISTS kanji_reading_memory (
+        word_id INTEGER PRIMARY KEY,
+        seen_count INTEGER NOT NULL DEFAULT 0,
+        right_count INTEGER NOT NULL DEFAULT 0,
+        fuzzy_count INTEGER NOT NULL DEFAULT 0,
+        forgot_count INTEGER NOT NULL DEFAULT 0,
+        mistake_streak INTEGER NOT NULL DEFAULT 0,
+        last_seen_on TEXT
+      )`);
+      ensureKanjiReadingFsrs();
     });
 
-    it("给 kanji_memory 建列并写入状态,不碰单词的 progress", () => {
-      const cols = (testDb.exec("PRAGMA table_info(kanji_memory)")[0]?.values ?? []).map((v) => String(v[1]));
+    it("只给新表建 FSRS 列，不复制旧 kanji_memory", () => {
+      const cols = (testDb.exec("PRAGMA table_info(kanji_reading_memory)")[0]?.values ?? []).map((v) => String(v[1]));
       expect(cols).toContain("fsrs_due");
       expect(cols).toContain("fsrs_stability");
-      expect(readFsrsState(1, KANJI_FSRS)).not.toBeNull();
-      expect(readFsrsState(3, KANJI_FSRS)).not.toBeNull();
+      expect(readFsrsState(1, KANJI_FSRS)).toBeNull();
+      expect(testDb.exec("SELECT COUNT(*) FROM kanji_memory WHERE seen_count > 0")[0].values[0][0]).toBe(1);
     });
 
-    it("答错多的汉字稳定度低于全对的", () => {
-      const allRight = readFsrsState(1, KANJI_FSRS)!;
-      const lapsed = readFsrsState(2, KANJI_FSRS)!;
-      expect(lapsed.stability).toBeLessThan(allRight.stability);
-      // 注:重放全发生在同一场次的 learning steps 内,FSRS 只在 Review 态答错才记 lapse,
-      // 所以这里 lapses 为 0 是正确的,不该断言它 > 0。
-      expect(lapsed.difficulty).toBeGreaterThan(allRight.difficulty);
-    });
-
-    it("幂等:再跑一次不重复迁移", () => {
-      const before = readFsrsState(1, KANJI_FSRS)!;
-      expect(backfillKanjiFsrs().migrated).toBe(false);
-      expect(readFsrsState(1, KANJI_FSRS)!.due).toBe(before.due);
+    it("幂等：重复建列仍保持新题型为空", () => {
+      ensureKanjiReadingFsrs();
+      expect(readFsrsState(1, KANJI_FSRS)).toBeNull();
     });
   });
 

@@ -3,6 +3,8 @@ import { ensureProgressInitialized } from "./word-api";
 import { firstRow, firstValue, persistSoon, setState, today } from "./study-core";
 import { notifyProgressUpdated } from "./progress-events";
 import { resetConfusionCache } from "./models/confusion";
+import { resetConfusionGroups } from "./confusion-groups";
+import { resetFamiliarityCache } from "./models/familiarity";
 import { recordReview, type FsrsState } from "./fsrs-scheduler";
 import { ensureFsrsColumns, writeFsrsState } from "./fsrs-store";
 import type { WordAnswer } from "../types/vocabulary";
@@ -488,6 +490,11 @@ export const importExternalWordList = (text: string): WordListImportResult => {
   resetSimilarMeaningCache();
   // 导入改动了 words 表,易混词缓存必须失效
   resetConfusionCache();
+  // 分组和重复行判定也是从 words 表算出来的 —— 漏了这一句,导入的词永远进不了
+  // 疑难辨析,新带进来的重复行也不会被识别出来。
+  resetConfusionGroups();
+  // 导入会把词排进复习计划,「学过没」的名单跟着变
+  resetFamiliarityCache();
   persistSoon();
   notifyProgressUpdated();
   return { ...preview, inserted, updated, queuedForReview };

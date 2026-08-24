@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, STUDY_MODES, studyModeInfo } from "./studyMode";
+import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, STUDY_MODES, studyModeInfo, VISIBLE_STUDY_MODES } from "./studyMode";
 
 const store = new Map<string, string>();
 
@@ -14,10 +14,16 @@ beforeEach(() => {
 
 describe("学习模式的记忆", () => {
   it("每个模式都记得住 —— 大按钮要按上次那种开学", () => {
-    for (const mode of STUDY_MODES) {
+    for (const mode of VISIBLE_STUDY_MODES) {
       expect(saveStudyMode(mode.id)).toBe(mode.id);
       expect(getStudyMode()).toBe(mode.id);
     }
+  });
+
+  it("自选清单只启动、不记账 —— 下次开应用不该停在一份旧清单上", () => {
+    saveStudyMode("kanji");
+    expect(saveStudyMode("picked")).toBe("picked");
+    expect(getStudyMode()).toBe("kanji");
   });
 
   it("已删的 vocabulary 读出来归到经典(它和经典本来就是同一条路径)", () => {
@@ -28,6 +34,11 @@ describe("学习模式的记忆", () => {
   it("非法值回落到默认模式", () => {
     store.set("mn-active-study-mode", "wat");
     expect(getStudyMode()).toBe(defaultStudyMode);
+  });
+
+  it("模式列表里摆的是那五个,自选清单藏起来(它得先从词库带一批词进来)", () => {
+    expect(VISIBLE_STUDY_MODES.map((mode) => mode.id)).toEqual(["classic", "mistakes", "quick", "reverse", "kanji"]);
+    expect(STUDY_MODES.filter((mode) => mode.hidden).map((mode) => mode.id)).toEqual(["picked"]);
   });
 
   it("每个模式都有文案,只有快速复习自己有一页", () => {

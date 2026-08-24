@@ -89,6 +89,9 @@ const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // 与 scripts/build-furigana.mjs、scripts/bake-seed-db.mjs 保持一致。
 export const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
 const JLPT_WORD_METADATA_VERSION = `2026-08-11-manual-meanings-5163-polish-1130-corrections-35-examples-121-${FURIGANA_VERSION}`;
+// 这张表只给历史词库里没有 N1-N5 的词补级别。和 metadata 版本分开,
+// 这样既有用户不用重放整套释义/例句迁移,又能让老库收到这次分类。
+const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
 export const GRAMMAR_SEED_VERSION = "2026-08-15-grammar-rewrite-v2";
@@ -110,6 +113,25 @@ type JlptExampleOverride = {
   exampleLemmas?: string;
 };
 
+type JlptLevelOverride = {
+  kanji: string;
+  kana: string;
+  jlptLevel: "N1" | "N2" | "N3" | "N4" | "N5";
+  basis: string;
+};
+
+type JlptLevelOverrideSeed = {
+  version: string;
+  official: false;
+  source: {
+    name: string;
+    url: string;
+    mirror: string;
+    note: string;
+  };
+  rows: JlptLevelOverride[];
+};
+
 const loadJlptMeaningOverrides = async (): Promise<JlptMeaningOverride[]> => {
   const payload = await import("../data/jlpt_meaning_overrides.json");
   return payload.default as JlptMeaningOverride[];
@@ -121,6 +143,11 @@ const loadJlptMeaningOverrides = async (): Promise<JlptMeaningOverride[]> => {
 const loadJlptExampleOverrides = async (): Promise<JlptExampleOverride[]> => {
   const payload = await import("../data/jlpt_example_overrides.json");
   return payload.default as JlptExampleOverride[];
+};
+
+const loadJlptLevelOverrides = async (): Promise<JlptLevelOverrideSeed> => {
+  const payload = await import("../data/jlpt_level_overrides.json");
+  return payload.default as JlptLevelOverrideSeed;
 };
 
 const loadGrammarSeed = async (): Promise<{ version: string; rows: GrammarSeedRow[] }> => {
@@ -201,6 +228,7 @@ export const ensureSeedData = async () => {
   await ensureDictionarySupplementSeed();
   await ensureGrammarSeed();
   await ensureJlptWordSeed();
+  await ensureJlptLevelOverrides();
   await ensureFuriganaAnnotations();
 };
 
@@ -318,7 +346,12 @@ const ensureGrammarSeed = async () => {
           pattern, meaning, prompt, formation, example_jp, example_meaning,
           notes, confusions, level, importance, example_furigana, example_tokens, example_lemmas, sort_order
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        -- ⚠️ 14 个列名就要 14 个占位符。这里曾经只有 13 个,而种子行是 13 个字段
+        -- 加上 sort_order 正好 14 个值 —— 少一个 ? 就是 "13 values for 14 columns",
+        -- 而且这段只在**语法种子升版本**时才跑,所以从写下来到 2026-08-23 一次都没执行过。
+        -- 真升一次版本的话,每个已安装用户启动时都会崩在 initDatabase(界面显示
+        -- 「本地词库读取失败」),等于一次内容更新把所有人的 App 变砖。
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [...row, index + 1]);
       newIdByPattern.set(row[0], firstValue<number>("SELECT last_insert_rowid()", [], 0));
     });
@@ -571,6 +604,39 @@ const ensureJlptWordMetadata = async () => {
   db.run("BEGIN TRANSACTION");
   try {
     syncJlptWordMetadata(jlptWordSeed, meaningOverrides, exampleOverrides);
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+  persistSoon();
+};
+
+const ensureJlptLevelOverrides = async () => {
+  if (getState("jlpt_level_override_version", "") === JLPT_LEVEL_OVERRIDE_VERSION) return;
+
+  const seed = await loadJlptLevelOverrides();
+  if (seed.version !== JLPT_LEVEL_OVERRIDE_VERSION) {
+    throw new Error(`JLPT 词级别覆盖版本不一致: ${seed.version} != ${JLPT_LEVEL_OVERRIDE_VERSION}`);
+  }
+  if (seed.rows.length !== 320) {
+    throw new Error(`JLPT 词级别覆盖条数异常: ${seed.rows.length} != 320`);
+  }
+
+  const db = getDatabase();
+  db.run("BEGIN TRANSACTION");
+  try {
+    seed.rows.forEach(({ kanji, kana, jlptLevel }) => {
+      // 只补空缺,不覆盖用户库里已经存在的级别。
+      db.run(`
+        UPDATE words
+        SET jlpt_level = ?
+        WHERE kanji = ?
+          AND kana = ?
+          AND (jlpt_level IS NULL OR jlpt_level NOT IN ('N1', 'N2', 'N3', 'N4', 'N5'))
+      `, [jlptLevel, kanji, kana]);
+    });
+    setState("jlpt_level_override_version", JLPT_LEVEL_OVERRIDE_VERSION);
     db.run("COMMIT");
   } catch (error) {
     db.run("ROLLBACK");

@@ -12,13 +12,16 @@ const AUTO_MISTAKES_KEY = "mn-auto-mistakes-mode";
  * - 错题本 换选词通道:长期薄弱词池,不碰今日计划
  * - 快速   还是今日计划的词,换成一页 50 张的翻页形态(自己有一页)
  * - 反向   日语 → 释义,自己一份 FSRS 记忆(reverse_memory)
- * - 汉字   释义 → 汉字,自己一份 FSRS 记忆(kanji_memory),只收含汉字的词
+ * - 汉字读音 看日文表记,只遮汉字对应读音,自己一份 FSRS 记忆,只收含汉字的词
  *
  * 反向和汉字以前是「今日计划做完后自动接上的第二、第三阶段」——做完 985 个词的当下
  * 又被塞 985 道反向题。现在自动衔接已经拆掉(见 word-api 的 resolveNextCard),
  * 它们和经典、错题本一样,想练的时候自己进。
  *
  * 「词汇学习」不在列:它和经典是同一条代码路径,只是标题不同。
+ *
+ * 「自选清单」是第六个,但 hidden —— 它没有固定的词池,得先去词库勾一批词,
+ * 所以入口只在词库页,不摆进模式列表(那五个仍然是平级的五个)。
  */
 export const STUDY_MODES: {
   id: StudyMode;
@@ -33,6 +36,10 @@ export const STUDY_MODES: {
   emoji: string;
   /** 不进单词学习页、而是自己有一页的模式(快速复习) */
   page?: Extract<Page, "quick-study">;
+  /** 不摆进模式列表:没有固定词池,得从别处带着一批词进来 */
+  hidden?: boolean;
+  /** 不写进「上次用的模式」:下次开应用不该莫名其妙停在一份旧清单上 */
+  transient?: boolean;
 }[] = [
   {
     id: "classic",
@@ -73,14 +80,28 @@ export const STUDY_MODES: {
   },
   {
     id: "kanji",
-    title: "汉字学习",
+    title: "汉字读音",
     short: "汉字",
     label: "Kanji",
-    subtitle: "释义 → 汉字",
-    description: "专门回忆和式汉字。规则同经典，只收含汉字的词，新卡从正向的熟练度折算。",
+    subtitle: "看表记 → 回忆读音",
+    description: "显示日文表记和释义，只遮住汉字对应的假名；点卡片揭晓读音。只收含汉字的词。",
     emoji: "🈶"
+  },
+  {
+    id: "picked",
+    title: "自选清单",
+    short: "自选",
+    label: "Picked",
+    subtitle: "你在词库里勾的词",
+    description: "只出勾中的那批词，不看到期与否，也不占今日计划。考前突击用。",
+    emoji: "🎯",
+    hidden: true,
+    transient: true
   }
 ];
+
+/** 摆进模式列表的那五个。自选清单要先有清单，入口在词库页。 */
+export const VISIBLE_STUDY_MODES = STUDY_MODES.filter((mode) => !mode.hidden);
 
 const modes = new Set<StudyMode>(STUDY_MODES.map((mode) => mode.id));
 
@@ -151,7 +172,9 @@ export function getStudyMode(current = new Date()): StudyMode {
 
 export function saveStudyMode(mode: StudyMode, current = new Date()): StudyMode {
   const savedMode = safeMode(mode);
-  localStorage.setItem(KEY, savedMode);
+  // 临时模式(自选清单)只启动、不记账:记下去的话下次开应用会停在一份旧清单上,
+  // 而清单是「这一次想突击这些」,不是一个长期偏好。
+  if (!studyModeInfo(savedMode).transient) localStorage.setItem(KEY, savedMode);
 
   // 手动选择永远优先。但不能直接删掉记录 —— 删了就等于「今天还没自动切过」,
   // 下次再进已完成的模式又会被切走一次。保留日期、只标记失效。

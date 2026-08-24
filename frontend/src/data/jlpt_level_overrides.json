@@ -1,0 +1,1932 @@
+{
+  "version": "2026-08-21-unleveled-v1",
+  "official": false,
+  "source": {
+    "name": "Jonathan Waller / Tanos community JLPT vocabulary lists (via jkindrix japanese-language-data)",
+    "url": "https://www.tanos.co.uk/jlpt/",
+    "mirror": "https://github.com/jkindrix/japanese-language-data/blob/main/data/enrichment/jlpt-classifications.json",
+    "note": "JLPT does not publish an official vocabulary list. Community levels are reference data; same-kana and manual rows are app-specific judgments."
+  },
+  "rows": [
+    {
+      "kanji": "入口",
+      "kana": "いりぐち",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "戦争",
+      "kana": "せんそう",
+      "jlptLevel": "N4",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "持って行く",
+      "kana": "もっていく",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "持って来る",
+      "kana": "もってくる",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "被る",
+      "kana": "かぶる",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "繋がる",
+      "kana": "つながる",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "独身",
+      "kana": "どくしん",
+      "jlptLevel": "N3",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "お土産",
+      "kana": "おみやげ",
+      "jlptLevel": "N4",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "おい",
+      "kana": "おい",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お手洗い",
+      "kana": "おてあらい",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "風邪を引く",
+      "kana": "かぜをひく",
+    "jlptLevel": "N5",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "変わり者",
+      "kana": "かわりもの",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "樹",
+      "kana": "き",
+      "jlptLevel": "N2",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "気持ち悪い",
+      "kana": "きもちわるい",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "行楽地",
+      "kana": "こうらくち",
+    "jlptLevel": "N2",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "サービスセンター",
+      "kana": "サービスセンター",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "然し",
+      "kana": "しかし",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "終電",
+      "kana": "しゅうでん",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "シュート",
+      "kana": "シュート",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "シルク",
+      "kana": "シルク",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "スイカ",
+      "kana": "スイカ",
+    "jlptLevel": "N5",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "吸殻",
+      "kana": "すいがら",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "側",
+      "kana": "そば",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "宅配便",
+      "kana": "たくはいびん",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "但し",
+      "kana": "ただし",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "デジカメ",
+      "kana": "デジカメ",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "出迎え",
+      "kana": "でむかえ",
+      "jlptLevel": "N2",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "何方",
+      "kana": "どなた",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "何歳",
+      "kana": "なんさい",
+    "jlptLevel": "N5",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "灰皿",
+      "kana": "はいざら",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "白鳥",
+      "kana": "はくちょう",
+    "jlptLevel": "N2",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "林",
+      "kana": "はやし",
+      "jlptLevel": "N4",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "翡翠",
+      "kana": "ひすい",
+      "jlptLevel": "N2",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "フリーズ",
+      "kana": "フリーズ",
+    "jlptLevel": "N2",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ブローチ",
+      "kana": "ブローチ",
+      "jlptLevel": "N2",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "報告書",
+      "kana": "ほうこくしょ",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "誠",
+      "kana": "まこと",
+      "jlptLevel": "N1",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "魯迅",
+      "kana": "ろじん",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "〜について",
+      "kana": "~について",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "唐揚げ",
+      "kana": "からあげ",
+    "jlptLevel": "N3",
+    "basis": "manual-judgment"
+    },
+    {
+      "kanji": "片づける",
+      "kana": "かたづける",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "殆ど",
+      "kana": "ほとんど",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ガレージ",
+      "kana": "ガレージ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お別れ",
+      "kana": "おわかれ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "明後日",
+      "kana": "あさって",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "免許証",
+      "kana": "めんきょしょう",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "勿体ない",
+      "kana": "もったいない",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "貰う",
+      "kana": "もらう",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "野球場",
+      "kana": "やきゅうじょう",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "訳す",
+      "kana": "やくす",
+      "jlptLevel": "N2",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "卵焼き",
+      "kana": "たまごやき",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "クーラー",
+      "kana": "クーラー",
+      "jlptLevel": "N2",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "立入禁止",
+      "kana": "たちいりきんし",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "旅行会社",
+      "kana": "りょこうがいしゃ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ジャスミン茶",
+      "kana": "ジャスミンちゃ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "こちらこそ",
+      "kana": "こちらこそ",
+      "jlptLevel": "N2",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "あいさつ回り",
+      "kana": "あいさつまわり",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ご馳走",
+      "kana": "ごちそう",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ハンサム",
+      "kana": "ハンサム",
+      "jlptLevel": "N3",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "バーゲン",
+      "kana": "バーゲン",
+      "jlptLevel": "N2",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "パイロット",
+      "kana": "パイロット",
+      "jlptLevel": "N3",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "向日葵",
+      "kana": "ひまわり",
+      "jlptLevel": "N2",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ボーリング",
+      "kana": "ボーリング",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "不味い",
+      "kana": "まずい",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "一昨日",
+      "kana": "おととい",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "宇宙飛行士",
+      "kana": "うちゅうひこうし",
+      "jlptLevel": "N2",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "つい",
+      "kana": "つい",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "遠慮なく",
+      "kana": "えんりょなく",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "火気厳禁",
+      "kana": "かきげんきん",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "怪我",
+      "kana": "けが",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "確り",
+      "kana": "しっかり",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "観光客",
+      "kana": "かんこうきゃく",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "気さく",
+      "kana": "きさく",
+      "jlptLevel": "N2",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "曲",
+      "kana": "きょく",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "結婚式",
+      "kana": "けっこんしき",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "喧嘩",
+      "kana": "けんか",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "建築家",
+      "kana": "けんちくか",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "胡弓",
+      "kana": "こきゅう",
+      "jlptLevel": "N1",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "午前中",
+      "kana": "ごぜんちゅう",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "交通量",
+      "kana": "こうつうりょう",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "更に",
+      "kana": "さらに",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "紅葉",
+      "kana": "もみじ",
+      "jlptLevel": "N2",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "航空会社",
+      "kana": "こうくうがいしゃ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "国際貿易",
+      "kana": "こくさいぼうえき",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "暫く",
+      "kana": "しばらく",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "仕舞う",
+      "kana": "しまう",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "旨く",
+      "kana": "うまく",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "紙飛行機",
+      "kana": "かみひこうき",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "写真展",
+      "kana": "しゃしんてん",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "出来る",
+      "kana": "できる",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "出来るだけ",
+      "kana": "できるだけ",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "初詣",
+      "kana": "はつもうで",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "焼酎",
+      "kana": "しょうちゅう",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "上級者",
+      "kana": "じょうきゅうしゃ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "新居",
+      "kana": "しんきょ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "申込書",
+      "kana": "もうしこみしょ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "真っ直ぐ",
+      "kana": "まっすぐ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "親子丼",
+      "kana": "おやこどん",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "生産コスト",
+      "kana": "せいさんコスト",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "先ず",
+      "kana": "まず",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "船便",
+      "kana": "ふなびん",
+      "jlptLevel": "N2",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "お菓子",
+      "kana": "おかし",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "お粥",
+      "kana": "おかゆ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "卒業式",
+      "kana": "そつぎょうしき",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "他",
+      "kana": "ほか",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "大分",
+      "kana": "だいぶ",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "駐車禁止",
+      "kana": "ちゅうしゃきんし",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "貯める",
+      "kana": "ためる",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "丁度",
+      "kana": "ちょうど",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "直ぐ",
+      "kana": "すぐ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "直ぐに",
+      "kana": "すぐに",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お皿",
+      "kana": "おさら",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "展示場",
+      "kana": "てんじじょう",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お汁粉",
+      "kana": "おしるこ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "特技",
+      "kana": "とくぎ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "賑やか",
+      "kana": "にぎやか",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "肉じゃが",
+      "kana": "にくじゃが",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "日常会話",
+      "kana": "にちじょうかいわ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "日本酒",
+      "kana": "にほんしゅ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "入場料",
+      "kana": "にゅうじょうりょう",
+      "jlptLevel": "N2",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お正月",
+      "kana": "おしょうがつ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "かささぎ",
+      "kana": "かささぎ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "晩御飯",
+      "kana": "ばんごはん",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "非常に",
+      "kana": "ひじょうに",
+      "jlptLevel": "N4",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "お大事に",
+      "kana": "おだいじに",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "不動産屋",
+      "kana": "ふどうさんや",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お店",
+      "kana": "おみせ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "支社長",
+      "kana": "ししゃちょう",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "中華街",
+      "kana": "ちゅうかがい",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "如何",
+      "kana": "いかが",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "お風呂",
+      "kana": "おふろ",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "Ｔシャツ",
+      "kana": "てぃーシャツ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "餃子",
+      "kana": "ぎょうざ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "トランク",
+      "kana": "トランク",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "噂",
+      "kana": "うわさ",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "発表会",
+      "kana": "はっぴょうかい",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お祖母さん",
+      "kana": "おばあさん",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "富士山",
+      "kana": "ふじさん",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "分かり",
+      "kana": "わかり",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お湯",
+      "kana": "おゆ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "宝くじ",
+      "kana": "たからくじ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "北京ダック",
+      "kana": "ぺきんダック",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "又",
+      "kana": "また",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "お腹",
+      "kana": "おなか",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "万里の長城",
+      "kana": "ばんりのちょうじょう",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お弁当",
+      "kana": "おべんとう",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "お爺さん",
+      "kana": "おじいさん",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "矢っ張り",
+      "kana": "やっぱり",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "矢張り",
+      "kana": "やはり",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "余り",
+      "kana": "あまり",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "良く",
+      "kana": "よく",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "ジェーアール",
+      "kana": "ジェーアール",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "皆",
+      "kana": "みんな",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "ゴーカート",
+      "kana": "ゴーカート",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ゴールデンウィーク",
+      "kana": "ゴールデンウィーク",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ゴミ",
+      "kana": "ゴミ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "サッカーボール",
+      "kana": "サッカーボール",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "スペイン語",
+      "kana": "スペインご",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "スポーツセンター",
+      "kana": "スポーツセンター",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "タイムサービス",
+      "kana": "タイムサービス",
+      "jlptLevel": "N2",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "凧",
+      "kana": "たこ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "達",
+      "kana": "たち",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "駄目",
+      "kana": "だめ",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "月",
+      "kana": "げつ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "テレビゲーム",
+      "kana": "テレビゲーム",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "デュポン",
+      "kana": "デュポン",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "斯う",
+      "kana": "こう",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "こどもの日",
+      "kana": "こどものひ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "こんなに",
+      "kana": "こんなに",
+      "jlptLevel": "N3",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "ハサミ",
+      "kana": "ハサミ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ご主人",
+      "kana": "ごしゅじん",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "バドミントン",
+      "kana": "バドミントン",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "バラ",
+      "kana": "バラ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "あっ",
+      "kana": "あっ",
+      "jlptLevel": "N3",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "広島",
+      "kana": "ひろしま",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "さん",
+      "kana": "さん",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "ビタミン剤",
+      "kana": "ビタミンざい",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ファックス",
+      "kana": "ファックス",
+      "jlptLevel": "N4",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "フェリー",
+      "kana": "フェリー",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "藤",
+      "kana": "ふじ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "フランス語",
+      "kana": "フランスご",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ベートーベン",
+      "kana": "ベートーベン",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ホームパーティー",
+      "kana": "ホームパーティー",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ホンコン",
+      "kana": "ホンコン",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "本当に",
+      "kana": "ほんとうに",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ボート",
+      "kana": "ボート",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "じゃあ",
+      "kana": "じゃあ",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "あの人",
+      "kana": "あのひと",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "未だ",
+      "kana": "まだ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "ミカン",
+      "kana": "ミカン",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "モーツァルト",
+      "kana": "モーツァルト",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "シーディー",
+      "kana": "シーディー",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "リンゴ",
+      "kana": "リンゴ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ロック",
+      "kana": "ロック",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "そば屋",
+      "kana": "そばや",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "そんなに",
+      "kana": "そんなに",
+      "jlptLevel": "N4",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "たった今",
+      "kana": "たったいま",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "太郎",
+      "kana": "たろう",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "段段",
+      "kana": "だんだん",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "一緒に",
+      "kana": "いっしょに",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ちゃん",
+      "kana": "ちゃん",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "陳",
+      "kana": "ちん",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "営業部",
+      "kana": "えいぎょうぶ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "英会話",
+      "kana": "えいかいわ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "良い",
+      "kana": "いい",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "何時",
+      "kana": "いつ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "何時も",
+      "kana": "いつも",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "何処",
+      "kana": "どこ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "何方",
+      "kana": "どちら",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "可愛い",
+      "kana": "かわいい",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "可笑しい",
+      "kana": "おかしい",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "花屋",
+      "kana": "はなや",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "如何",
+      "kana": "どう",
+      "jlptLevel": "N1",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "間もなく",
+      "kana": "まもなく",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "関西弁",
+      "kana": "かんさいべん",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "韓国語",
+      "kana": "かんこくご",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "韓国人",
+      "kana": "かんこくじん",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "企画書",
+      "kana": "きかくしょ",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "嬉しい",
+      "kana": "うれしい",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "幾ら",
+      "kana": "いくら",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "気をつける",
+      "kana": "きをつける",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "貴方",
+      "kana": "あなた",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "詰まらない",
+      "kana": "つまらない",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "脚",
+      "kana": "あし",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "休憩時間",
+      "kana": "きゅうけいじかん",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "京劇",
+      "kana": "きょうげき",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "京都",
+      "kana": "きょうと",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "蕎麦",
+      "kana": "そば",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "うーん",
+      "kana": "うーん",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "空く",
+      "kana": "すく",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "偶に",
+      "kana": "たまに",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "研修生",
+      "kana": "けんしゅうせい",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "後で",
+      "kana": "あとで",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "もう一度",
+      "kana": "もういちど",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "御免",
+      "kana": "ごめん",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "若し",
+      "kana": "もし",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "航空便",
+      "kana": "こうくうびん",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "行ってらっしゃい",
+      "kana": "いってらっしゃい",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "よろしくお願いします",
+      "kana": "よろしくおねがいします",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "此の儘",
+      "kana": "このまま",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "此れから",
+      "kana": "これから",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "昨夜",
+      "kana": "ゆうべ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "四川料理",
+      "kana": "しせんりょうり",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "市街",
+      "kana": "しがい",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "止める",
+      "kana": "やめる",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "獅子舞",
+      "kana": "ししまい",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "写真集",
+      "kana": "しゃしんしゅう",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "若しかしたら",
+      "kana": "もしかしたら",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "取り敢えず",
+      "kana": "とりあえず",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "寿司",
+      "kana": "すし",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "修学旅行",
+      "kana": "しゅうがくりょこう",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "春節",
+      "kana": "しゅんせつ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "アメリカ人",
+      "kana": "アメリカじん",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "小野",
+      "kana": "おの",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "シャンハイ",
+      "kana": "シャンハイ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "色々",
+      "kana": "いろいろ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "神戸",
+      "kana": "こうべ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "行き",
+      "kana": "いき",
+      "jlptLevel": "N1",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "イチゴ",
+      "kana": "イチゴ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "瑞西",
+      "kana": "スイス",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "是非",
+      "kana": "ぜひ",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "凄い",
+      "kana": "すごい",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "清水",
+      "kana": "しみず",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "生ビール",
+      "kana": "なまビール",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "絶対に",
+      "kana": "ぜったいに",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ウーロン茶",
+      "kana": "ウーロンちゃ",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "前に",
+      "kana": "まえに",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "ウイスキー",
+      "kana": "ウイスキー",
+      "jlptLevel": "N3",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "素晴らしい",
+      "kana": "すばらしい",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "早く",
+      "kana": "はやく",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お帰りなさい",
+      "kana": "おかえりなさい",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お客さん",
+      "kana": "おきゃくさん",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "送別会",
+      "kana": "そうべつかい",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お客様",
+      "kana": "おきゃくさま",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お金",
+      "kana": "おかね",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "其方",
+      "kana": "そちら",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "饂飩",
+      "kana": "うどん",
+      "jlptLevel": "N2",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "太極拳",
+      "kana": "たいきょくけん",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "煩い",
+      "kana": "うるさい",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "大統領",
+      "kana": "だいとうりょう",
+      "jlptLevel": "N3",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "只今",
+      "kana": "ただいま",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "叩く",
+      "kana": "たたく",
+      "jlptLevel": "N3",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "中国人",
+      "kana": "ちゅうごくじん",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "中々",
+      "kana": "なかなか",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "オーストラリア人",
+      "kana": "オーストラリアじん",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "美味しい",
+      "kana": "おいしい",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "東京",
+      "kana": "とうきょう",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "頭がいい",
+      "kana": "あたまがいい",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お酒",
+      "kana": "おさけ",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "玩具",
+      "kana": "おもちゃ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "お嬢さん",
+      "kana": "おじょうさん",
+      "jlptLevel": "N4",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "日本料理",
+      "kana": "にほんりょうり",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "如何して",
+      "kana": "どうして",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "お早う",
+      "kana": "おはよう",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "彼処",
+      "kana": "あそこ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "彼方",
+      "kana": "あちら",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "〜によって",
+      "kana": "〜によって",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "～子",
+      "kana": "～こ",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "何れ",
+      "kana": "どれ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "～君",
+      "kana": "～くん",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "～中",
+      "kana": "～じゅう",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "いただきます",
+      "kana": "いただきます",
+      "jlptLevel": "N3",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "ディズニーランド",
+      "kana": "ディズニーランド",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お先に失礼します",
+      "kana": "おさきにしつれいします",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "綺麗",
+      "kana": "きれい",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "いけない",
+      "kana": "いけない",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "いってきます",
+      "kana": "いってきます",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "いえ",
+      "kana": "いえ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "どのぐらい",
+      "kana": "どのぐらい",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "名産品",
+      "kana": "めいさんひん",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "お願いします",
+      "kana": "おねがいします",
+      "jlptLevel": "N5",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "カレンダー",
+      "kana": "カレンダー",
+      "jlptLevel": "N5",
+      "basis": "community-list"
+    },
+    {
+      "kanji": "ハードスケジュール",
+      "kana": "ハードスケジュール",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "海外旅行",
+      "kana": "かいがいりょこう",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "社交ダンス",
+      "kana": "しゃこうダンス",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "叔父",
+      "kana": "おじ",
+      "jlptLevel": "N5",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "出発時刻",
+      "kana": "しゅっぱつじこく",
+      "jlptLevel": "N3",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "色んな",
+      "kana": "いろんな",
+      "jlptLevel": "N4",
+      "basis": "same-kana-variant"
+    },
+    {
+      "kanji": "お邪魔します",
+      "kana": "おじゃまします",
+      "jlptLevel": "N4",
+      "basis": "manual-judgment"
+    },
+    {
+      "kanji": "かしこまりました",
+      "kana": "かしこまりました",
+      "jlptLevel": "N2",
+      "basis": "community-list"
+    }
+  ]
+}

@@ -44,6 +44,8 @@ const seedSmallPlan = () => {
   testDb.run("DELETE FROM stage1_tasks");
   testDb.run("DELETE FROM stage2_progress");
   testDb.run("DELETE FROM kanji_progress");
+  testDb.run("DELETE FROM kanji_reading_progress");
+  testDb.run("DELETE FROM kanji_reading_memory");
   testDb.run("DELETE FROM reviews");
   testDb.run(`
     UPDATE progress SET

@@ -82,6 +82,10 @@ cloudflare-sync/.wrangler/
 # MOJi 个人复习数据导出(只应临时存在于桌面/设备,严禁入库)
 *moji-review-export*.json
 
+# dev server 写下的实时学习库快照(个人数据,严禁入库)。
+# 由 vite.config.ts 的 live-db-snapshot 插件生成,供 `npm run db` 查询。
+frontend/.local/
+
 # 个人学习数据合并库(私有,严禁入库)
 frontend/public/__merged_import.db
 记忆数据合并/
@@ -91,3 +95,9 @@ nihongo-port-*.db
 # 预生成的单词读音音频(scripts/build-word-audio.mjs 生成,约 11k 个文件 / 数十 MB)。
 # 属于构建产物,不进版本库;换机器重跑脚本即可,没有它时 App 自动退回系统语音合成。
 frontend/public/audio/
+
+# 表记审计脚本的中间产物(scripts/audit-kanji-orthography.mjs 跑出来的分档草稿)。
+# 真正的产物是 src/data/kanji_orthography.json 和 scripts/kanji-orthography-manual-review.json,
+# 这两个要入库;_ 开头的都是过程文件,换台机器重跑就有。
+frontend/scripts/_*
+tmp/

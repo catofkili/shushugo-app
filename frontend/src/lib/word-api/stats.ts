@@ -14,10 +14,18 @@ import { dailyNewQuota } from "./session-state";
 import { encoreRemainingCount, stage1ProgressCounts } from "./stage1";
 import { directionProgressCounts } from "./direction-plan";
 import { KANJI, REVERSE } from "./directions";
+import { pickedProgress } from "./picked";
 import { mistakeCandidateSql, wordFilterSql } from "./filters";
 import { ensureDailyRelief, getDailyReliefProgress } from "./daily-relief";
 import { ensureDailyTail, getDailyTailProgress } from "./daily-tail";
 import { MASTERED_SQL } from "../fsrs-store";
+import { isKanjiUnitSchedulerEnabled, kanjiUnitProgress } from "../kanji-unit-scheduler";
+import { kanjiUnitIndexLoaded } from "../kanji-unit-index";
+
+export interface WordStatsOptions {
+  /** Read the isolated local kanji-unit queue instead of creating legacy word tasks. */
+  kanjiUnits?: boolean;
+}
 
 /**
  * 统计口径:今日学习量 + 首页/学习页要读的那一大坨 WordStats。
@@ -69,7 +77,11 @@ const dailyStudyStats = (day = today()) => {
 // before the card advances, which used to score the same word twice and re-loop
 // the last words instead of reaching the settlement screen).
 
-export function getWordStats(phase = "stage1", options: WordSessionOptions = {}): WordStats {
+export function getWordStats(
+  phase = "stage1",
+  options: WordSessionOptions = {},
+  statsOptions: WordStatsOptions = {}
+): WordStats {
   ensureProgressInitialized();
   const studyDate = today();
   const filter = wordFilterSql(options, "w");
@@ -132,9 +144,11 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
   ensureDailyTail();
   const dailyTailProgress = getDailyTailProgress();
   const frontProgress = {
-    // 减负词只是前端演出,不进入真实任务进度;压轴才是前端连续流的一部分。
-    completed: stage1Progress.completed + dailyTailProgress.completed,
-    total: stage1Progress.total + dailyTailProgress.total
+    // 顶部计数板数的是用户今天实际看过的完整正向流。减负卡虽然不写 reviews/FSRS，
+    // 但每张都真实发到学习页并被收走，必须和正式计划、压轴一样进入分子和分母；
+    // 否则开场连续清掉几张，松鼠和计数会一直不动。
+    completed: dailyReliefProgress.completed + stage1Progress.completed + dailyTailProgress.completed,
+    total: dailyReliefProgress.total + stage1Progress.total + dailyTailProgress.total
   };
   const actualStage1Done = stage1Progress.total > 0 && stage1Progress.completed >= stage1Progress.total;
   const dailyPlanDone = actualStage1Done
@@ -142,7 +156,11 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     && dailyTailProgress.pending === 0;
   // 反向/汉字的当日进度和正向同一个判据(今天毕业才算完成),见 direction-plan
   const stage2 = directionProgressCounts(REVERSE);
-  const kanji = directionProgressCounts(KANJI);
+  // 走单位队列还是旧的词级队列,默认由功能开关决定 —— 以前要调用方显式传
+  // statsOptions.kanjiUnits,而**没有任何调用方传过**,于是首页永远读旧路径,
+  // 显示的是「今天到期几张」而不是「今天能练多少」。牌堆小的时候那个数就是 0。
+  const useKanjiUnits = statsOptions.kanjiUnits ?? (isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded());
+  const kanji = useKanjiUnits ? kanjiUnitProgress() : directionProgressCounts(KANJI);
   // 模式切换器要显示「每个模式现在能练多少」。三个方向各有自己的当日计划,
   // directionProgressCounts 会顺手把当天的计划排好,所以这里读到的就是真实剩余量。
   const planRemaining = Math.max(frontProgress.total - frontProgress.completed, 0);
@@ -153,7 +171,9 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     quick: planRemaining,
     // 三个方向都各有自己的当日计划,直接读各自的剩余量
     reverse: Math.max(stage2.total - stage2.completed, 0),
-    kanji: Math.max(kanji.total - kanji.completed, 0)
+    kanji: Math.max(kanji.total - kanji.completed, 0),
+    // 自选清单不是个常驻词池，没勾过就是 0
+    picked: pickedProgress().remaining
   };
   const checkins = rowsFor("SELECT checked_on FROM checkins ORDER BY checked_on")
     .map((row) => String(row.checked_on ?? ""));
@@ -246,6 +266,12 @@ export function getWordStats(phase = "stage1", options: WordSessionOptions = {})
     modeCounts,
     stage1ProgressDone: frontProgress.completed,
     stage1ProgressTotal: frontProgress.total,
+    stage1NewDone: stage1Progress.newLane.done,
+    stage1NewTotal: stage1Progress.newLane.total,
+    // 减负卡和压轴对用户来说就是复习,并进这一栏 —— 否则「新词 + 复习」
+    // 加起来对不上大卡上那个合计数,两个数字打架比不显示还糟。
+    stage1ReviewDone: stage1Progress.reviewLane.done + dailyReliefProgress.completed + dailyTailProgress.completed,
+    stage1ReviewTotal: stage1Progress.reviewLane.total + dailyReliefProgress.total + dailyTailProgress.total,
     phase,
     stage1Done: actualStage1Done,
     dailyPlanDone,

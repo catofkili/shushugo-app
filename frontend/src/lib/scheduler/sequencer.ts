@@ -101,7 +101,7 @@ const weightedPick = (
   random: () => number
 ): SequencerCandidate | null => {
   if (!candidates.length) return null;
-  const ranked = [...candidates].sort((left, right) => right.score - left.score)
+  const ranked = [...candidates].sort((left, right) => right.score - left.score || left.id - right.id)
     .slice(0, WEIGHTED_POOL_SIZE);
   const weights = ranked.map((_, index) => WEIGHT_DECAY ** index);
   const total = weights.reduce((sum, weight) => sum + weight, 0);

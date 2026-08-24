@@ -1,0 +1,823 @@
+{
+  "source": "JMdict © EDRDG, CC BY-SA 4.0",
+  "sourceUrl": "http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz",
+  "generatedBy": "frontend/scripts/audit-kanji-orthography.mjs",
+  "manualReview": "frontend/scripts/kanji-orthography-manual-review.json",
+  "entries": {
+    "無くす|なくす": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "なくす"
+    },
+    "無くなる|なくなる": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "なくなる"
+    },
+    "繋がる|つながる": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "つながる"
+    },
+    "ただ今|ただいま": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "ただいま"
+    },
+    "掛かる|かかる": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "かかる"
+    },
+    "掛ける|かける": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "かける"
+    },
+    "平仮名|ひらがな": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ひらがな"
+    },
+    "片仮名|かたかな": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "カタカナ"
+    },
+    "葉書|はがき": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "はがき"
+    },
+    "頂く|いただく": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "いただく"
+    },
+    "何で|なんで": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "なんで"
+    },
+    "下さい|ください": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ください"
+    },
+    "初めまして|はじめまして": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "はじめまして"
+    },
+    "〜達|〜たち": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "〜たち"
+    },
+    "事|こと": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "こと"
+    },
+    "全て|すべて": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "すべて"
+    },
+    "大人しい|おとなしい": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "おとなしい"
+    },
+    "大体|だいたい": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "だいたい"
+    },
+    "全く|まったく": {
+      "band": "low",
+      "score": 34,
+      "preferredSurface": "まったく"
+    },
+    "嚙[か]む|かむ": {
+      "band": "alternate",
+      "score": 0,
+      "preferredSurface": "噛む"
+    },
+    "随分|ずいぶん": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ずいぶん"
+    },
+    "致す|いたす": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "いたす"
+    },
+    "然し|しかし": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "しかし"
+    },
+    "吸殻|すいがら": {
+      "band": "alternate",
+      "score": 34,
+      "preferredSurface": "吸い殻"
+    },
+    "側|そば": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "そば"
+    },
+    "但し|ただし": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ただし"
+    },
+    "何方|どなた": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "どなた"
+    },
+    "片づける|かたづける": {
+      "band": "alternate",
+      "score": 34,
+      "preferredSurface": "片付ける"
+    },
+    "殆ど|ほとんど": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ほとんど"
+    },
+    "勿体ない|もったいない": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "もったいない"
+    },
+    "貰う|もらう": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "もらう"
+    },
+    "向日葵|ひまわり": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "ひまわり"
+    },
+    "不味い|まずい": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "まずい"
+    },
+    "確り|しっかり": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "しっかり"
+    },
+    "更に|さらに": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "さらに"
+    },
+    "暫く|しばらく": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "しばらく"
+    },
+    "仕舞う|しまう": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "しまう"
+    },
+    "旨く|うまく": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "うまく"
+    },
+    "出来る|できる": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "できる"
+    },
+    "出来るだけ|できるだけ": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "できるだけ"
+    },
+    "先ず|まず": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "まず"
+    },
+    "大分|だいぶ": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "だいぶ"
+    },
+    "丁度|ちょうど": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ちょうど"
+    },
+    "直ぐ|すぐ": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "すぐ"
+    },
+    "直ぐに|すぐに": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "すぐに"
+    },
+    "お汁粉|おしるこ": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "おしるこ"
+    },
+    "如何|いかが": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "いかが"
+    },
+    "お祖母さん|おばあさん": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "おばあさん"
+    },
+    "又|また": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "また"
+    },
+    "お爺さん|おじいさん": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "おじいさん"
+    },
+    "矢っ張り|やっぱり": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "やっぱり"
+    },
+    "矢張り|やはり": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "やはり"
+    },
+    "余り|あまり": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "あまり"
+    },
+    "良く|よく": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "よく"
+    },
+    "皆|みんな": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "みんな"
+    },
+    "達|たち": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "たち"
+    },
+    "駄目|だめ": {
+      "band": "low",
+      "score": 34,
+      "preferredSurface": "だめ"
+    },
+    "斯う|こう": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "こう"
+    },
+    "未だ|まだ": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "まだ"
+    },
+    "そう言えば|そういえば": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "そういえば"
+    },
+    "段段|だんだん": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "だんだん"
+    },
+    "何時|いつ": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "いつ"
+    },
+    "何時も|いつも": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "いつも"
+    },
+    "何処|どこ": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "どこ"
+    },
+    "何方|どちら": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "どちら"
+    },
+    "可笑しい|おかしい": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "おかしい"
+    },
+    "如何|どう": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "どう"
+    },
+    "成る|なる": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "なる"
+    },
+    "幾ら|いくら": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "いくら"
+    },
+    "貴方|あなた": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "あなた"
+    },
+    "詰まらない|つまらない": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "つまらない"
+    },
+    "偶に|たまに": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "たまに"
+    },
+    "御免|ごめん": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ごめん"
+    },
+    "若し|もし": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "もし"
+    },
+    "行ってらっしゃい|いってらっしゃい": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "いってらっしゃい"
+    },
+    "此の儘|このまま": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "このまま"
+    },
+    "此れから|これから": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "これから"
+    },
+    "止める|やめる": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "やめる"
+    },
+    "若しかしたら|もしかしたら": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "もしかしたら"
+    },
+    "取り敢えず|とりあえず": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "とりあえず"
+    },
+    "瑞西|スイス": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "スイス"
+    },
+    "其方|そちら": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "そちら"
+    },
+    "饂飩|うどん": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "うどん"
+    },
+    "煩い|うるさい": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "うるさい"
+    },
+    "只今|ただいま": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ただいま"
+    },
+    "中々|なかなか": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "なかなか"
+    },
+    "玩具|おもちゃ": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "おもちゃ"
+    },
+    "如何して|どうして": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "どうして"
+    },
+    "お早う|おはよう": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "おはよう"
+    },
+    "彼処|あそこ": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "あそこ"
+    },
+    "彼方|あちら": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "あちら"
+    },
+    "何れ|どれ": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "どれ"
+    },
+    "色んな|いろんな": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "いろんな"
+    },
+    "御覧|ごらん": {
+      "band": "alternate",
+      "score": 23,
+      "preferredSurface": "ご覧"
+    },
+    "剝[む]く|むく": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "むく"
+    },
+    "罹[かか]る|かかる": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "かかる"
+    },
+    "搔[か]く|かく": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "かく"
+    },
+    "染み|しみ": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "しみ"
+    },
+    "程|ほど": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ほど"
+    },
+    "判子|はんこ": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "はんこ"
+    },
+    "来す|きたす": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "きたす"
+    },
+    "訊[たず]ねる|たずねる": {
+      "band": "alternate",
+      "score": 34,
+      "preferredSurface": "尋ねる"
+    },
+    "何となく|なんとなく": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "なんとなく"
+    },
+    "正に|まさに": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "まさに"
+    },
+    "踏み切り|ふみきり": {
+      "band": "alternate",
+      "score": 34,
+      "preferredSurface": "踏切"
+    },
+    "無し|なし": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "なし"
+    },
+    "有り難い|ありがたい": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ありがたい"
+    },
+    "仕様がない|しようがない": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "しようがない"
+    },
+    "何だか|なんだか": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "なんだか"
+    },
+    "度々|たびたび": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "たびたび"
+    },
+    "恐らく|おそらく": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "おそらく"
+    },
+    "極[ごく]|ごく": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ごく"
+    },
+    "台詞[せりふ]|せりふ": {
+      "band": "low",
+      "score": 20,
+      "preferredSurface": "せりふ"
+    },
+    "籠|かご": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "かご"
+    },
+    "〜避け|〜よけ": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "〜よけ"
+    },
+    "蟻[あり]|あり": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "アリ"
+    },
+    "くみ取る|くみとる": {
+      "band": "alternate",
+      "score": 0,
+      "preferredSurface": "汲み取る"
+    },
+    "掬[すく]う|すくう": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "すくう"
+    },
+    "剝[む]ける|むける": {
+      "band": "alternate",
+      "score": 34,
+      "preferredSurface": "剥ける"
+    },
+    "自[おの]ずから|おのずから": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "おのずから"
+    },
+    "見なす|みなす": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "みなす"
+    },
+    "持て成す|もてなす": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "もてなす"
+    },
+    "貼り紙|はりがみ": {
+      "band": "alternate",
+      "score": 34,
+      "preferredSurface": "張り紙"
+    },
+    "嚙[か]み合う|かみあう": {
+      "band": "alternate",
+      "score": 20,
+      "preferredSurface": "噛み合う"
+    },
+    "迂闊[うかつ]|うかつ": {
+      "band": "low",
+      "score": 16,
+      "preferredSurface": "うかつ"
+    },
+    "付き物|つきもの": {
+      "band": "low",
+      "score": 16,
+      "preferredSurface": "つきもの"
+    },
+    "梟[ふくろう]|ふくろう": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "フクロウ"
+    },
+    "海豚[いるか]|いるか": {
+      "band": "kana",
+      "score": 0,
+      "preferredSurface": "イルカ"
+    },
+    "今一つ|いまひとつ": {
+      "band": "low",
+      "score": 34,
+      "preferredSurface": "いまひとつ"
+    },
+    "出来たて|できたて": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "できたて"
+    },
+    "髭[ひげ]|ひげ": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "ひげ"
+    },
+    "癌[がん]|がん": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "がん"
+    },
+    "面倒臭い|めんどうくさい": {
+      "band": "alternate",
+      "score": 24,
+      "preferredSurface": "面倒くさい"
+    },
+    "解かす|とかす": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "とかす"
+    },
+    "為[な]す|なす": {
+      "band": "alternate",
+      "score": 24,
+      "preferredSurface": "成す"
+    },
+    "大層|たいそう": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "たいそう"
+    },
+    "剝がす|はがす": {
+      "band": "alternate",
+      "score": 0,
+      "preferredSurface": "剥がす"
+    },
+    "千切れる|ちぎれる": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "ちぎれる"
+    },
+    "剝がれる|はがれる": {
+      "band": "alternate",
+      "score": 34,
+      "preferredSurface": "剥がれる"
+    },
+    "雄|おす": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "オス"
+    },
+    "嵩張[かさば]る|かさばる": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "かさばる"
+    },
+    "何げない|なにげない": {
+      "band": "alternate",
+      "score": 0,
+      "preferredSurface": "何気ない"
+    },
+    "懐く|なつく": {
+      "band": "low",
+      "score": 16,
+      "preferredSurface": "なつく"
+    },
+    "雌|めす": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "メス"
+    },
+    "無闇|むやみ": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "むやみ"
+    },
+    "殊更|ことさら": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "ことさら"
+    },
+    "大がかり|おおがかり": {
+      "band": "alternate",
+      "score": 34,
+      "preferredSurface": "大掛かり"
+    },
+    "蟹[かに]|かに": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "カニ"
+    },
+    "檜[ひのき]|ひのき": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "ヒノキ"
+    },
+    "狸[たぬき]|たぬき": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "タヌキ"
+    },
+    "一まとめ|ひとまとめ": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "ひとまとめ"
+    },
+    "物真似|ものまね": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "ものまね"
+    },
+    "出しゃばる|でしゃばる": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "でしゃばる"
+    },
+    "蛙[かえる]|かえる": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "カエル"
+    },
+    "燕[つばめ]|つばめ": {
+      "band": "low",
+      "score": 34,
+      "preferredSurface": "ツバメ"
+    },
+    "謳[うた]う|うたう": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "うたう"
+    },
+    "嚙[か]み付く|かみつく": {
+      "band": "alternate",
+      "score": 0,
+      "preferredSurface": "噛み付く"
+    },
+    "珊瑚[さんご]|さんご": {
+      "band": "low",
+      "score": 24,
+      "preferredSurface": "サンゴ"
+    },
+    "銀杏[いちょう]|いちょう": {
+      "band": "kana",
+      "score": 8,
+      "preferredSurface": "イチョウ"
+    },
+    "鶯[うぐいす]|うぐいす": {
+      "band": "low",
+      "score": 34,
+      "preferredSurface": "ウグイス"
+    },
+    "補塡|ほてん": {
+      "band": "alternate",
+      "score": 2,
+      "preferredSurface": "補填"
+    },
+    "伸び伸び|のびのび": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "のびのび"
+    },
+    "擦り抜ける|すりぬける": {
+      "band": "kana",
+      "score": 15,
+      "preferredSurface": "すり抜ける"
+    }
+  }
+}

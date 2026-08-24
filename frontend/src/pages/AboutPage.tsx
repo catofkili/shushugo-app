@@ -1,13 +1,10 @@
-import { ArrowLeft, ExternalLink, Github, Heart } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Heart } from "lucide-react";
 
 interface AboutPageProps {
   onBack: () => void;
 }
 
 export function AboutPage({ onBack }: AboutPageProps) {
-  const [message, setMessage] = useState("");
-
   return (
     <div className="mx-auto max-w-3xl pb-4">
       <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
@@ -35,8 +32,8 @@ export function AboutPage({ onBack }: AboutPageProps) {
       <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4">
         <h2 className="mb-3 text-sm font-bold text-white">应用介绍</h2>
         <p className="text-sm leading-relaxed text-white/70">
-          收集日是一款离线日语学习应用，提供 11000+ 个 JLPT 词条和 800+ 个语法点的学习内容。
-          支持背单词和语法学习，帮助你系统学习日语。
+          收集日是一款离线日语学习应用，内置 10,919 个 JLPT 词条和 741 个语法点。
+          单词、汉字读音和语法三条线都由同一套 FSRS 记忆算法排复习。
         </p>
       </div>
 
@@ -50,15 +47,15 @@ export function AboutPage({ onBack }: AboutPageProps) {
           </div>
           <div className="flex items-start gap-2">
             <span className="text-[#81D8CF]">✓</span>
-            <p className="text-sm text-white/70">11000+ 个 N5-N1 JLPT 词条</p>
+            <p className="text-sm text-white/70">10,919 个 N5-N1 JLPT 词条，条条带例句</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-[#81D8CF]">✓</span>
-            <p className="text-sm text-white/70">800+ 个语法点详解</p>
+            <p className="text-sm text-white/70">741 个语法点详解（N5 120 · N4 130 · N3 140 · N2 150 · N1 201）</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-[#81D8CF]">✓</span>
-            <p className="text-sm text-white/70">智能复习系统（记忆曲线）</p>
+            <p className="text-sm text-white/70">FSRS 记忆算法排复习（Anki 同款）</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-[#81D8CF]">✓</span>
@@ -73,6 +70,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <p className="text-sm leading-relaxed text-white/70">
           当前 JLPT 词条与中文释义可追溯到 eggrolls-JLPT10k-v3.5，并适用 CC BY-NC 4.0；10,609 条种子词条均已有逐词手写例句。例句重写不改变词条与释义的来源许可：词条与释义仍仅可用于非商业开发，商业发布前必须取得授权或整体替换。
+            汉字表记优先级与部分动词自他标注使用 JMdict（Electronic Dictionary Research and Development Group），适用 CC BY-SA 4.0。
             其他数据的来源、署名和发布条件请以项目 README 的版权合规说明为准。
           </p>
         </div>
@@ -85,27 +83,6 @@ export function AboutPage({ onBack }: AboutPageProps) {
             预生成单词音频使用 VOICEVOX:春日部つむぎ、VOICEVOX:雨晴はう 与 VOICEVOX:玄野武宏。请保留准确署名：VOICEVOX:春日部つむぎ、VOICEVOX:雨晴はう、VOICEVOX:玄野武宏(CV:ガロ)。
           </p>
         </div>
-      </div>
-
-      {/* 开源信息 */}
-      <div className="mb-4">
-        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">开源</p>
-        <button
-          onClick={() => setMessage("公开仓库地址还没有绑定到 App；确定发布地址后这里会直接打开。")}
-          className="focus-ring flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-[#464949] p-4 text-left hover:bg-[#4d5151]"
-        >
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#3b3f3f] text-white/76">
-            <Github size={20} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-white">GitHub 仓库</p>
-            <p className="mt-0.5 text-xs text-white/50">查看源代码和贡献</p>
-          </div>
-          <ExternalLink size={17} className="text-white/40" />
-        </button>
-        {message && (
-          <p className="mt-2 rounded-2xl border border-white/15 bg-white/8 px-3 py-2 text-xs text-white/60">{message}</p>
-        )}
       </div>
 
       {/* 技术栈 */}

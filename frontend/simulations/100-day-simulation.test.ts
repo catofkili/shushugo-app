@@ -339,7 +339,7 @@ const shrinkToWordSubset = () => {
   currentDb.run("CREATE TEMP TABLE sim_subset_ids (id INTEGER PRIMARY KEY)");
   for (const id of selected) currentDb.run("INSERT INTO sim_subset_ids (id) VALUES (?)", [id]);
   // 仅删除模拟副本中的词条及其用户行；正式应用数据库不会被打开或写入。
-  ["reviews", "stage1_tasks", "reverse_memory", "kanji_memory", "word_notes", "moji_migrated_reviews"].forEach((table) => {
+  ["reviews", "stage1_tasks", "reverse_memory", "kanji_memory", "kanji_reading_memory", "word_notes", "moji_migrated_reviews"].forEach((table) => {
     const exists = Number(one("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", [table]) ?? 0);
     if (exists) currentDb.run(`DELETE FROM ${table} WHERE word_id NOT IN (SELECT id FROM sim_subset_ids)`);
   });
@@ -357,6 +357,7 @@ const configureUser = (scenario: Scenario) => {
   currentDb.run("DELETE FROM stage1_tasks");
   currentDb.run("DELETE FROM stage2_progress");
   currentDb.run("DELETE FROM kanji_progress");
+  currentDb.run("DELETE FROM kanji_reading_progress");
   currentDb.run("DELETE FROM reviews");
   currentDb.run("DELETE FROM checkins");
   currentDb.run("DELETE FROM word_study_time");
@@ -369,6 +370,7 @@ const configureUser = (scenario: Scenario) => {
     fsrs_reps=NULL, fsrs_lapses=NULL`);
   currentDb.run("DELETE FROM reverse_memory");
   currentDb.run("DELETE FROM kanji_memory");
+  currentDb.run("DELETE FROM kanji_reading_memory");
   setFsrsActive(true);
   resetInterferenceCache();
   seedBacklog(scenario);
@@ -419,20 +421,23 @@ const checkInvariants = (user: string, day: number, mode: Mode | null, findings:
   const duplicateTasks = rows(`SELECT word_id, COUNT(*) AS n FROM stage1_tasks WHERE reviewed_on = ? GROUP BY word_id HAVING n > 1`, [studyDate]);
   if (duplicateTasks.length) push("invariant", "同一学习日出现重复 stage1 task", duplicateTasks.slice(0, 5));
 
-  for (const [table, label] of [["stage2_progress", "反向"], ["kanji_progress", "汉字"]] as const) {
+  for (const [table, label] of [["stage2_progress", "反向"], ["kanji_reading_progress", "汉字读音"]] as const) {
     const duplicate = rows(`SELECT word_id, COUNT(*) AS n FROM ${table} WHERE reviewed_on = ? GROUP BY word_id HAVING n > 1`, [studyDate]);
     if (duplicate.length) push("invariant", `${label}计划出现重复任务`, duplicate.slice(0, 5));
     const orphan = Number(one(`SELECT COUNT(*) FROM ${table} t LEFT JOIN words w ON w.id=t.word_id WHERE w.id IS NULL`) ?? 0);
     if (orphan) push("invariant", `${label}计划存在孤儿词条`, orphan);
-    const badCompletion = Number(one(`SELECT COUNT(*) FROM ${table} WHERE completed NOT IN (0, 1)`) ?? 0);
-    if (badCompletion) push("invariant", `${label}计划 completed 非 0/1`, badCompletion);
+    const hasCompleted = Number(one(`SELECT COUNT(*) FROM pragma_table_info('${table}') WHERE name='completed'`) ?? 0);
+    if (hasCompleted) {
+      const badCompletion = Number(one(`SELECT COUNT(*) FROM ${table} WHERE completed NOT IN (0, 1)`) ?? 0);
+      if (badCompletion) push("invariant", `${label}计划 completed 非 0/1`, badCompletion);
+    }
   }
 
   const badDue = rows(`SELECT word_id, fsrs_due, fsrs_last_review FROM progress
     WHERE fsrs_due IS NOT NULL AND (julianday(fsrs_due) IS NULL OR julianday(fsrs_last_review) IS NULL OR fsrs_due < fsrs_last_review)`);
   if (badDue.length) push("invariant", "FSRS due 无效或早于 last_review", badDue.slice(0, 5));
 
-  const badDirection = Number(one("SELECT COUNT(*) FROM reviews WHERE direction IS NULL OR direction NOT IN ('forward','reverse','kanji')") ?? 0);
+  const badDirection = Number(one("SELECT COUNT(*) FROM reviews WHERE direction IS NULL OR direction NOT IN ('forward','reverse','kanji','kanji_reading')") ?? 0);
   if (badDirection) push("invariant", "reviews 出现无效 direction", badDirection);
 
   const badNew = Number(one(`SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type='new'`, [studyDate]) ?? 0);
@@ -458,7 +463,7 @@ const checkInvariants = (user: string, day: number, mode: Mode | null, findings:
 
   const todayDirections = rows("SELECT direction, COUNT(*) AS n FROM reviews WHERE reviewed_on = ? GROUP BY direction", [studyDate]);
   for (const row of todayDirections) {
-    if (!(["forward", "reverse", "kanji"] as string[]).includes(String(row.direction))) {
+    if (!(["forward", "reverse", "kanji", "kanji_reading"] as string[]).includes(String(row.direction))) {
       push("invariant", "今日复习方向不在三种正式方向内", row);
     }
   }
@@ -479,7 +484,7 @@ const runClassicLike = (
   else if (mode === "kanji") response = continueKanjiStudy();
   else response = mode === "mistakes" ? getWordSession({ focus: "mistakes" }) : continueTodayPlanStudy();
 
-  const taskTable = mode === "reverse" ? "stage2_progress" : mode === "kanji" ? "kanji_progress" : "stage1_tasks";
+  const taskTable = mode === "reverse" ? "stage2_progress" : mode === "kanji" ? "kanji_reading_progress" : "stage1_tasks";
   const derivedTasks = Number(one(`SELECT COUNT(*) FROM ${taskTable} WHERE reviewed_on = ?`, [today()]) ?? 0);
   const attemptBudget = maxAttempts > 0 ? maxAttempts : Math.max(30, derivedTasks * 8);
   let attempts = 0;

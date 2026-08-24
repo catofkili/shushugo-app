@@ -1,7 +1,7 @@
 /**
  * FSRS 状态持久化 + 历史回填。
  *
- * 三个学习阶段(单词 progress / 汉字 kanji_memory / 语法 grammar_progress)共用
+ * 三个学习阶段(单词 progress / 汉字读音 kanji_reading_memory / 语法 grammar_progress)共用
  * 同一套 fsrs_* 列和同一个调度内核,这里只负责「读状态 → 记一次作答 → 写回」,
  * 以及把切换到 FSRS 之前的历史一次性重放成初始的 S/D/due。
  */
@@ -30,7 +30,7 @@ const FSRS_COLS = [
 
 /**
  * 一个「可被 FSRS 调度的实体表」。三个学习阶段各挂一张:
- * 单词 progress、汉字 kanji_memory、语法 grammar_progress。
+ * 单词 progress、汉字读音 kanji_reading_memory、语法 grammar_progress。
  * 调度算法(fsrs-scheduler)本身与实体无关,这里只负责把状态存到对应的表。
  */
 export interface FsrsEntity {
@@ -39,6 +39,7 @@ export interface FsrsEntity {
   /** 「够格参与调度」的过滤条件(不含到期判定)。汉字表没有 known_forever 列。 */
   eligible: string;
 }
+export type FsrsId = number | string;
 
 /**
  * 从外部词单/MOJi 导入的词按每天 30 个滴灌激活(见 stage1 的
@@ -56,12 +57,12 @@ export const WORD_FSRS: FsrsEntity = {
   eligible: `known_forever = 0 AND seen_count > 0 AND ${MOJI_NOT_ACTIVATED}`
 };
 /**
- * 汉字卡。eligible 不再要求 seen_count > 0:卡是「按需建出来」的(ensureDirectionCards),
+ * 汉字读音卡。eligible 不再要求 seen_count > 0:卡是「按需建出来」的(ensureDirectionCards),
  * 刚建出来那张 seen_count 就是 0 —— 要求 > 0 等于把新卡全挡在到期集外面,
- * 汉字模式永远是空的(这正是它历史上 kanji_progress 一行都没有的原因之一)。
+ * 汉字模式永远是空的。
  */
 export const KANJI_FSRS: FsrsEntity = {
-  table: "kanji_memory",
+  table: "kanji_reading_memory",
   idColumn: "word_id",
   eligible: "1 = 1"
 };
@@ -129,7 +130,7 @@ export function recallFromRow(row: Record<string, unknown>, now = new Date()): n
   return state ? retrievability(state, now) : undefined;
 }
 
-export function readFsrsState(id: number, entity: FsrsEntity = WORD_FSRS): FsrsState | null {
+export function readFsrsState(id: FsrsId, entity: FsrsEntity = WORD_FSRS): FsrsState | null {
   ensureFsrsColumns(entity);
   const rows = rowsFor(
     `SELECT ${FSRS_SELECT} FROM ${entity.table} WHERE ${entity.idColumn} = ?`,
@@ -138,7 +139,7 @@ export function readFsrsState(id: number, entity: FsrsEntity = WORD_FSRS): FsrsS
   return rowToState(rows[0] ?? null);
 }
 
-export function writeFsrsState(id: number, s: FsrsState, entity: FsrsEntity = WORD_FSRS): void {
+export function writeFsrsState(id: FsrsId, s: FsrsState, entity: FsrsEntity = WORD_FSRS): void {
   ensureFsrsColumns(entity);
   getDatabase().run(
     `UPDATE ${entity.table} SET fsrs_stability = ?, fsrs_difficulty = ?, fsrs_due = ?, fsrs_last_review = ?,
@@ -148,51 +149,11 @@ export function writeFsrsState(id: number, s: FsrsState, entity: FsrsEntity = WO
 }
 
 /**
- * 汉字接入 FSRS 的一次性迁移。
- *
- * 汉字没有逐条复习日志(只有 kanji_memory 的聚合计数),所以无法像单词那样精确重放。
- * 但实际数据量极小且形态单一——按 right/fuzzy/forgot 计数把当初的作答**近似重放**
- * 一遍(先对后错的顺序无从得知,按「对→模糊→忘」的稳妥顺序),时间锚在 last_seen_on。
- * 重放不出来的(seen_count>0 但三个计数全 0)按一次 know 处理。
+ * 汉字读音是新题型，只建 FSRS 列，不回填旧 kanji_memory。
+ * 旧表训练的是「释义 → 汉字」，把它的作答近似重放到读音题会制造虚假的熟练度。
  */
-export function backfillKanjiFsrs(): { migrated: boolean; items: number } {
-  if (getState("fsrs_backfilled_kanji", "") === "1") return { migrated: false, items: 0 };
+export function ensureKanjiReadingFsrs(): void {
   ensureFsrsColumns(KANJI_FSRS);
-
-  const rows = rowsFor(`
-    SELECT word_id, right_count, fuzzy_count, forgot_count, last_seen_on
-    FROM kanji_memory
-    WHERE seen_count > 0
-  `);
-
-  const db = getDatabase();
-  let count = 0;
-  db.run("BEGIN TRANSACTION");
-  try {
-    for (const r of rows) {
-      const answers: WordAnswer[] = [
-        ...Array(Math.max(Number(r.right_count ?? 0), 0)).fill("know" as const),
-        ...Array(Math.max(Number(r.fuzzy_count ?? 0), 0)).fill("fuzzy" as const),
-        ...Array(Math.max(Number(r.forgot_count ?? 0), 0)).fill("forgot" as const)
-      ];
-      if (!answers.length) answers.push("know");
-      // 锚在最后一次学习那天,让「距今多久没复习」跟真实情况对得上
-      const anchor = new Date(`${String(r.last_seen_on ?? "")}T12:00:00`);
-      let when = Number.isNaN(anchor.getTime()) ? Date.now() - answers.length * 60_000 : anchor.getTime();
-      let state: FsrsState | null = null;
-      for (const answer of answers) {
-        state = recordReview(state, answer, new Date(when));
-        when += 60_000; // 同一场次内依次推进,保证时间单调
-      }
-      if (state) { writeFsrsState(Number(r.word_id), state, KANJI_FSRS); count++; }
-    }
-    db.run("COMMIT");
-  } catch (e) {
-    db.run("ROLLBACK");
-    throw e;
-  }
-  setState("fsrs_backfilled_kanji", "1");
-  return { migrated: true, items: count };
 }
 
 /**
@@ -208,7 +169,7 @@ export function ensureGrammarFsrs(): void {
  * 撤销作答时用:如果这次作答是该条目的第一次,撤销后必须回到无状态,
  * 否则它会带着一个凭空出现的 due 留在调度里。
  */
-export function clearFsrsState(id: number, entity: FsrsEntity = WORD_FSRS): void {
+export function clearFsrsState(id: FsrsId, entity: FsrsEntity = WORD_FSRS): void {
   ensureFsrsColumns(entity);
   getDatabase().run(
     `UPDATE ${entity.table} SET ${FSRS_COLS.map(([c]) => `${c} = NULL`).join(", ")}
@@ -219,7 +180,7 @@ export function clearFsrsState(id: number, entity: FsrsEntity = WORD_FSRS): void
 
 /** 撤销用:恢复到作答前的状态(prev 为 null 表示当时还没进过调度) */
 export function restoreFsrsState(
-  id: number,
+  id: FsrsId,
   prev: FsrsState | null,
   entity: FsrsEntity = WORD_FSRS
 ): void {
@@ -229,7 +190,7 @@ export function restoreFsrsState(
 
 /** 读旧状态 → 记一次作答 → 写回。三个阶段的作答路径都走这里。 */
 export function recordFsrsReview(
-  id: number,
+  id: FsrsId,
   answer: WordAnswer,
   now = new Date(),
   opts: { mode?: StepMode } = {},

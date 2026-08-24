@@ -51,7 +51,7 @@ const stage1TaskCount = (day: string) => firstValue<number>(
   0
 );
 
-const stage1NewTaskCount = (day: string) => firstValue<number>(
+export const stage1NewTaskCount = (day: string) => firstValue<number>(
   "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type = 'new'",
   [day],
   0
@@ -139,16 +139,38 @@ export const createStage1Tasks = (day: string) => {
     orderIndex += 1;
   });
 
+  // 新词名额三档优先，档内才轮到 newWordOrderSql 的随机：
+  //
+  //  0. 例句词典里主动加进来的 —— 用户点名要的词，永远最优先。
+  //  1. **以前排进过计划却没背到的**。名额是 30，但一天只答了 10 张的话另外 20 个
+  //     从没露过面；不给它们优先级的话，明天它们会被重新丢回八千词的随机池里，
+  //     回来的概率和任何一个陌生词一样 —— 等于「今天没背完」这件事没有任何后果，
+  //     排给你的词就这么蒸发了。按第一次排进计划的日期升序，等最久的先回来，
+  //     免得同一批词天天互相插队。
+  //  2. 剩下的全新词。
+  //
+  // ⚠️ 这里**不放大名额**：LIMIT 始终是当天配额，欠的账只改「先给谁」不改「给几个」。
+  // 三天没背也还是 30 个，不会变成 90 —— 那种补作业式的堆积只会让人再也不想打开。
   const newRows = rowsFor(`
     SELECT p.word_id
     FROM progress p
     JOIN words w ON w.id = p.word_id
     LEFT JOIN dictionary_discovered_words d ON d.word_id = p.word_id
+    LEFT JOIN (
+      SELECT word_id, MIN(reviewed_on) AS first_planned_on
+      FROM stage1_tasks
+      WHERE task_type = 'new' AND reviewed_on < ?
+      GROUP BY word_id
+    ) carried ON carried.word_id = p.word_id
     WHERE p.known_forever = 0
       AND p.seen_count = 0
-    ORDER BY CASE WHEN d.word_id IS NOT NULL THEN 0 ELSE 1 END, ${newWordOrderSql("w")}
+    ORDER BY
+      CASE WHEN d.word_id IS NOT NULL THEN 0 ELSE 1 END,
+      CASE WHEN carried.word_id IS NOT NULL THEN 0 ELSE 1 END,
+      carried.first_planned_on ASC,
+      ${newWordOrderSql("w")}
     LIMIT ?
-  `, [Math.max(dailyNewQuota() - stage1NewTaskCount(day), 0)]);
+  `, [day, Math.max(dailyNewQuota() - stage1NewTaskCount(day), 0)]);
 
   newRows.forEach((row) => {
     db.run(`
@@ -235,9 +257,29 @@ export const stage1ProgressCounts = () => {
       AND (p.known_forever = 1 OR (p.fsrs_due IS NOT NULL AND p.fsrs_due > ?))
   `, [day, studyDayEnd().toISOString()], 0);
 
+  // 主页今日大卡要把「新词」和「复习」分开说 —— 合计那一个数看不出今天到底
+  // 有没有碰到新词。encore_new(加餐词)并进新词那一栏:对用户来说它就是新词,
+  // 「超出配额、不占名额」是排程内部的事。
+  const lanes = rowsFor(`
+    SELECT
+      CASE WHEN t.task_type = 'review' THEN 'review' ELSE 'new' END AS lane,
+      COUNT(*) AS total,
+      COUNT(CASE WHEN p.known_forever = 1 OR (p.fsrs_due IS NOT NULL AND p.fsrs_due > ?) THEN 1 END) AS done
+    FROM stage1_tasks t
+    LEFT JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+    GROUP BY lane
+  `, [studyDayEnd().toISOString(), day]);
+  const lane = (name: "new" | "review") => {
+    const row = lanes.find((item) => String(item.lane) === name);
+    return { total: Number(row?.total ?? 0), done: Number(row?.done ?? 0) };
+  };
+
   return {
     completed: Math.min(Number(completed ?? 0), total),
-    total
+    total,
+    newLane: lane("new"),
+    reviewLane: lane("review")
   };
 };
 
@@ -253,7 +295,11 @@ export const encoreRemainingCount = (day: string) => firstValue<number>(`
     AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
 `, [studyDayEnd().toISOString(), day], 0);
 
-export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard | null => {
+export const pickStage1Next = (
+  excludedIds: Set<number> = new Set(),
+  options: { deterministic?: boolean } = {}
+): WordCard | null => {
+  const deterministic = options.deterministic === true;
   const day = today();
   ensureStage1Tasks();
   const queueById = new Map(getReviewQueue().map((item) => [item.word_id, item.due_after]));
@@ -330,11 +376,14 @@ export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard |
   const preferredRows = shouldPickStage1NewWord(
     reviewRows.length,
     newRows.length,
-    completedTaskCount
+    completedTaskCount,
+    deterministic ? 1 : undefined
   ) ? newRows : reviewRows.length ? reviewRows : newRows;
   const candidates = preferredRows.map((row) => {
     const dueAfter = queueById.get(Number(row.id)) ?? 0;
-    const components = priorityComponents(row, queueById.get(Number(row.id)), newQuotaLeft);
+    const components = priorityComponents(row, queueById.get(Number(row.id)), newQuotaLeft, {
+      randomize: !deterministic
+    });
     return {
       score: priorityScore(components),
       dueAfter,
@@ -366,7 +415,8 @@ export const pickStage1Next = (excludedIds: Set<number> = new Set()): WordCard |
       answeredToday: recent.answeredToday,
       recentIds: recent.wordIds,
       wrongStreak: recent.wrongStreak,
-      interference: sessionInterference(day, rows)
+      interference: sessionInterference(day, rows),
+      ...(deterministic ? { random: () => 0 } : {})
     }
   );
   if (!picked) return null;

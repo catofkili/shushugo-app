@@ -17,7 +17,7 @@ export const dailyNewQuota = () => getDailyWordGoal();
  * 也不该让正向的重刷队列跟着往前走。key 带上方向,正向沿用原来的键名 ——
  * 换了键名就等于把用户当前那一场的队列丢掉。
  */
-export type DirectionKey = "forward" | "reverse" | "kanji";
+export type DirectionKey = "forward" | "reverse" | "kanji" | "kanji_reading";
 
 const queueKey = (direction: DirectionKey) =>
   direction === "forward" ? "review_queue" : `review_queue_${direction}`;

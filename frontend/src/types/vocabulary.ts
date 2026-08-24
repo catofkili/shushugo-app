@@ -41,12 +41,15 @@ export interface WordCard {
     meaning: string;
     note: string;
   } | null;
-  confusions: { kana: string; kanji: string; meaning: string; kind: string }[];
+  /** id 为 0 表示词库里没有对应词条（硬编码的辨析项），不能跳转过去。 */
+  confusions: { id: number; kana: string; kanji: string; meaning: string; kind: string }[];
   /** 中文释义相近、需要在同一气泡里对照的词组。 */
   similarMeaning?: {
     title: string;
     distinction: string;
-    items: { id: number; kana: string; kanji: string; meaning: string; note: string }[];
+    /** manual = 手写的 38 组；auto = 题面首义撞车，仅供排片和题面索引使用。 */
+    source: "manual" | "auto";
+    items: { id: number; kana: string; kanji: string; meaning: string; note: string; manual?: boolean }[];
   } | null;
 }
 
@@ -74,8 +77,15 @@ export interface WordStats {
     quick: number;
     reverse: number;
     kanji: number;
+    /** 自选清单还剩几个（没勾过就是 0） */
+    picked: number;
   };
   stage1ProgressDone: number;
+  /** 今日计划里「新词」和「复习」两栏各自的完成/总数(主页今日大卡那一行小字) */
+  stage1NewDone: number;
+  stage1NewTotal: number;
+  stage1ReviewDone: number;
+  stage1ReviewTotal: number;
   stage1ProgressTotal: number;
   phase: string;
   stage1Done: boolean;
@@ -108,7 +118,7 @@ export interface WordStats {
     todayEncoreWords: number;
     fatigued: boolean;
   };
-  /** 昨日表现奖励：只用于前端开场演出，不进入真实任务进度或复习流水。 */
+  /** 昨日表现奖励：进入前台计数板，但不伪造成正式复习流水或 FSRS 作答。 */
   dailyRelief: {
     total: number;
     completed: number;
@@ -120,6 +130,18 @@ export interface WordSessionResponse {
   card: WordCard | null;
   phase: string;
   stats: WordStats;
+  /** Present only when the feature-flagged local kanji unit scheduler is active. */
+  unitKey?: string | null;
+  unitTarget?: {
+    text: string;
+    start: number;
+    length: number;
+    reading: string;
+    unitType: "char" | "jukujikun";
+    char: string;
+    base: string;
+    surface: string;
+  } | null;
   /** 「上一个」按钮亮不亮:这一场里还剩几步可撤(最多两步,见 undo-stack) */
   canUndo?: boolean;
 }

@@ -5,7 +5,8 @@ import { computeStreak } from "../lib/zoo-streak";
 import { computeBadges } from "../lib/zoo-badges";
 import type { WordStats } from "../types/vocabulary";
 import type { Page, StudyMode } from "../types/app";
-import { STUDY_MODES, studyModeInfo } from "../lib/studyMode";
+import type { JLPTLevel } from "../types/grammar";
+import { VISIBLE_STUDY_MODES, studyModeInfo } from "../lib/studyMode";
 import { getJlptPlanStatus, type JlptPlanStatus } from "../lib/jlpt/status";
 import { shortfallText } from "../lib/jlpt/plan";
 import { useCountUp } from "../hooks/useCountUp";
@@ -31,6 +32,10 @@ import { ZooProgressPanel } from "./ZooProgressPanel";
 type Props = {
   overview: ProgressOverview;
   onNavigate: (page: Page) => void;
+  /** 打开词库/选词页，可以预设一个等级（进度概览的柱子就是这么下钻的） */
+  onOpenWordList: (level?: string) => void;
+  /** 语法柱下钻：打开语法库并预设等级 */
+  onOpenGrammarLevel: (level: JLPTLevel) => void;
   /** 大按钮:按上次用过的模式直接开学 */
   onStartStudy: () => void;
   /** 小入口:换一个模式并立刻开学 */
@@ -40,6 +45,8 @@ type Props = {
   onOpenFill: () => void;
   onRefreshOverview: () => void;
   onCompleteTodayWords: () => void;
+  /** 合并老库里重复录入的词条（同一个词两行） */
+  onMergeDuplicates: () => void;
 };
 
 const greetingFor = (hour: number) =>
@@ -57,12 +64,15 @@ const HABITAT_NAMES: Record<string, string> = {
 export function ZooHome({
   overview,
   onNavigate,
+  onOpenWordList,
+  onOpenGrammarLevel,
   onStartStudy,
   onStartMode,
   activeMode,
   onOpenFill,
   onRefreshOverview,
-  onCompleteTodayWords
+  onCompleteTodayWords,
+  onMergeDuplicates
 }: Props) {
   const [stats, setStats] = useState<WordStats | null>(null);
   const [jlpt, setJlpt] = useState<JlptPlanStatus | null>(null);
@@ -119,13 +129,17 @@ export function ZooHome({
   const badgeCount = useCountUp(unlockedBadges);
   const streakCount = useCountUp(streak);
 
-  const subtitle = !stats
+  // 问候语只说**别处没说过的**：剩余量顶栏的松鼠条和大卡已经各写了一遍。
+  // 这里给的是当天的状态和连击 —— 同一屏里同一个数字出现三次，是这页显吵的主因之一。
+  const greetLine = !stats
     ? "正在读取今天的计划…"
-    : remaining > 0
-      ? `今天还有 ${remaining} 个词等你，松鼠已经在路口了`
-      : total > 0
+    : total === 0
+      ? "今天还没排计划，进去就自动排上"
+      : remaining === 0
         ? "今天的路走完了，松子都捡齐啦 🌰"
-        : "今天还没排计划，进去就自动排上";
+        : streak > 0
+          ? `连着 ${streak} 天没断，松鼠在路口等你`
+          : "松鼠已经在路口了";
 
   // 大按钮说的是「当前有效模式现在有多少题」,而不是永远播报今日计划 ——
   // 正常模式完成后,当前有效模式会在当天临时变成错题本。
@@ -150,15 +164,16 @@ export function ZooHome({
   const heroCta = activeCount > 0 ? "开始 →" : isPlanMode ? "再来一批 →" : "去看看 →";
 
   return (
-    <div className="zoo-page">
-      {/* 问候条 */}
+    <div className="zoo-page zoo-home-v2">
+      {/* 问候条。**不再重复「今天还有 N 个词」** —— 顶栏的松鼠条和下面的大卡各说了一遍，
+          第一屏说三遍是这一页显得吵的主要原因之一。这里只说别处没有的：连击和今天的状态。 */}
       <div className="zoo-greet">
         <div className="zoo-greet-capy zoo-breathe">
-          <CapybaraMascot size={64} mood={remaining === 0 && total > 0 ? "cheer" : "happy"} />
+          <CapybaraMascot size={56} mood={remaining === 0 && total > 0 ? "cheer" : "happy"} />
         </div>
         <div className="zoo-greet-text">
-          <p className="zoo-greet-hi">{greet}，继续加油 🌿</p>
-          <p className="zoo-greet-sub">{subtitle}</p>
+          <p className="zoo-greet-hi">{greet}</p>
+          <p className="zoo-greet-sub">{greetLine}</p>
         </div>
         {streak > 0 && (
           <div className="zoo-greet-streak">
@@ -167,40 +182,43 @@ export function ZooHome({
         )}
       </div>
 
-      {/* ① 今天 —— 大入口按当前有效模式直接开学,右边的小入口换模式。
-             以前每个模式在这儿各占一个格子(快速复习一格、错题本一格,反向/汉字压根没有入口),
-             既占地方又看不出「我现在按哪种方式在学」。 */}
-      <div className="zoo-bento zoo-today-grid">
-        <button className="zoo-tile zoo-tile-hero" onClick={onStartStudy}>
-          <div className="zoo-tile-hero-l">
-            <span className="zoo-tile-kick">{activeInfo.title}</span>
-            <b className="zoo-tile-hero-num">{heroNum}</b>
-            <span className="zoo-tile-hero-sub">{heroSub}</span>
-          </div>
-          {/* 时刻:蹦一下说一句就走,一次只播一个(见 hooks/useMoments) */}
+      {/* ① 今天 —— 全页唯一的实心主色块。层级靠三件事拉开：最大、最亮、字最重。
+             模式切换从旁边那张 119px 的大卡收进大卡右下角的一枚 chip：
+             它是「改设置」，不该和「开始学」抢同一个视觉重量。 */}
+      <section className="zoo-tray zoo-tray-today">
+        <button className="zoo-now" onClick={onStartStudy}>
+          <span className="zoo-now-kick">{activeInfo.title}</span>
+          <b className="zoo-now-num">{heroNum}</b>
+          <span className="zoo-now-sub">{heroSub}</span>
+          {/* 大卡上那个 40px 的数是今天的合计,看不出里面有没有新词 —— 而「今天学几个新词」
+              是全 App 唯一需要用户自己调的量(设置里的学习强度),之前只在改设置那一刻
+              弹个 toast 说一遍，之后再也找不到。这行是那个大数的脚注:同一个总量的拆分,
+              不是第二个数字,所以两栏加起来必须等于大卡的合计(减负卡和压轴并进复习栏)。 */}
+          {isPlanMode && stats && stats.stage1NewTotal + stats.stage1ReviewTotal > 0 && (
+            <span className="zoo-now-split">
+              新词 <b>{stats.stage1NewDone}</b>/{stats.stage1NewTotal}
+              <i aria-hidden="true">·</i>
+              复习 <b>{stats.stage1ReviewDone}</b>/{stats.stage1ReviewTotal}
+            </span>
+          )}
           <MomentPop moment={moment} leaving={momentLeaving} />
-          <div className="zoo-tile-hero-r">
-            <span className="zoo-tile-hero-emoji">{activeInfo.emoji}</span>
-            <span className="zoo-tile-cta">{heroCta}</span>
-          </div>
+          <span className="zoo-now-emoji" aria-hidden="true">{activeInfo.emoji}</span>
+          <span className="zoo-now-go">{heroCta}</span>
         </button>
 
-        <button
-          className="zoo-tile zoo-tile-modes"
-          onClick={() => setModeSheetOpen((open) => !open)}
-          aria-expanded={modeSheetOpen}
-        >
-          <span className="zoo-tile-modes-emoji" aria-hidden="true">🎛️</span>
-          <span className="zoo-tile-modes-copy">
-            <small>学习方式</small>
-            <b>{activeInfo.short}</b>
-          </span>
-          <span className="zoo-tile-modes-caret" aria-hidden="true">{modeSheetOpen ? "▴" : "▾"}</span>
-        </button>
+        <div className="zoo-now-foot">
+          <button
+            className="zoo-mode-chip"
+            onClick={() => setModeSheetOpen((open) => !open)}
+            aria-expanded={modeSheetOpen}
+          >
+            🎛️ 学习方式 · <b>{activeInfo.short}</b> {modeSheetOpen ? "▴" : "▾"}
+          </button>
+        </div>
 
         {modeSheetOpen && (
           <div className="zoo-modes-sheet" role="menu">
-            {STUDY_MODES.map((mode) => {
+            {VISIBLE_STUDY_MODES.map((mode) => {
               const count = stats?.modeCounts?.[mode.id] ?? 0;
               const active = mode.id === activeMode;
               return (
@@ -224,99 +242,97 @@ export function ZooHome({
           </div>
         )}
 
-        {/* 备考计划:首页只播报「今天还差多少」和倒计时,详情在 jlpt-plan 页。
-            放在今日区而不是工具区——它说的就是今天要做什么,不是一个可逛可不逛的功能。 */}
-        {jlpt && (
-          <button className="zoo-tile zoo-tile-jlpt" onClick={() => onNavigate("jlpt-plan")}>
-            <span className="zoo-tile-kick">{jlpt.target} 备考</span>
-            <b className="zoo-tile-jlpt-days">
-              {jlpt.plan.daysLeft < 0 ? "已考完" : `还有 ${jlpt.plan.daysLeft} 天`}
-            </b>
-            <span className="zoo-tile-jlpt-gap">{shortfallText(jlpt.shortfall)}</span>
-            <span className="zoo-tile-cta soft">看看计划 →</span>
+        {/* 今天还要知道的两件事。它们是 T2：描边不填色、字号比大卡小一档，
+            并排放在同一个盘子里 —— 各自独立成卡时，视觉重量和大卡是一个量级。 */}
+        <div className="zoo-duo">
+          {jlpt && (
+            <button className="zoo-duo-cell" onClick={() => onNavigate("jlpt-plan")}>
+              <span className="zoo-duo-kick">{jlpt.target} 备考</span>
+              <b>{jlpt.plan.daysLeft < 0 ? "已考完" : `还有 ${jlpt.plan.daysLeft} 天`}</b>
+              <small>{shortfallText(jlpt.shortfall)}</small>
+            </button>
+          )}
+          <button className="zoo-duo-cell" onClick={() => onNavigate("team")}>
+            <span className="zoo-duo-kick">我的队伍</span>
+            <b>N3 冲刺组</b>
+            <small className="zoo-duo-avatars">
+              <i>🦫</i><i>🐰</i><i>🦊</i><i>🐿️</i>
+              <em>看看今天谁下水了</em>
+            </small>
           </button>
-        )}
+        </div>
+      </section>
 
-        <button className="zoo-tile zoo-tile-team" onClick={() => onNavigate("team")}>
-          <span className="zoo-tile-kick">我的队伍</span>
-          <b className="zoo-tile-team-name">N3 冲刺组</b>
-          <div className="zoo-tile-team-avatars">
-            <i>🦫</i>
-            <i>🐰</i>
-            <i>🦊</i>
-            <i>🐿️</i>
-          </div>
-          <span className="zoo-tile-team-status">看看今天谁下水了</span>
-          <span className="zoo-tile-cta soft">看看队友 →</span>
-        </button>
-      </div>
+      {/* ② 我的动物园 —— 三件事合成一条。它们是「看一眼的状态」不是「每天要点的功能」，
+             各占一个正方格是给了过高的待遇。 */}
+      <section className="zoo-tray">
+        <p className="zoo-tray-title">我的动物园</p>
+        <div className="zoo-strip3">
+          <button onClick={() => onNavigate("zoo-map")}>
+            <span aria-hidden="true">🗺️</span>
+            <b>{current ? `${current.level} ${current.pct}%` : "未开园"}</b>
+            <small>{current ? HABITAT_NAMES[current.level] ?? "进度地图" : "进度地图"}</small>
+          </button>
+          <button onClick={() => onNavigate("hot-spring")}>
+            <span aria-hidden="true">♨️</span>
+            <b>{streak > 0 ? `连续 ${streak} 天` : "还没连击"}</b>
+            <small>{checkedInToday ? "今天已泡" : "今天还没下水"}</small>
+          </button>
+          <button onClick={() => onNavigate("zoo-dex")}>
+            <span aria-hidden="true">🐾</span>
+            <b>{badgeCount} / {badges.length}</b>
+            <small>饲养员图鉴</small>
+          </button>
+        </div>
+      </section>
 
-      {/* ② 我的动物园 */}
-      <p className="zoo-sec">我的动物园</p>
-      <div className="zoo-bento">
-        <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("zoo-map")}>
-          <span className="zoo-tile-emoji">🗺️</span>
-          <b>进度地图</b>
-          <span className="zoo-tile-sub">
-            {current ? `${current.level} ${HABITAT_NAMES[current.level] ?? ""} · ${current.pct}%` : "还没有进度"}
-          </span>
-          <div className="zoo-tile-bar">
-            <i style={{ width: `${current?.pct ?? 0}%` }} />
-          </div>
-        </button>
+      {/* ③ 学习工具 —— 一个盘子里的四格。去掉各自的描边和说明书副标题：
+             「同音 · 自他 · 近义词对照」第一次有用，第一百次是噪音。 */}
+      <section className="zoo-tray">
+        <p className="zoo-tray-title">学习工具</p>
+        <div className="zoo-quad">
+          <button onClick={() => onNavigate("study-modes")}>
+            <span aria-hidden="true">🎛️</span>
+            <b>学习模式</b>
+          </button>
+          <button onClick={() => onOpenWordList()}>
+            <span aria-hidden="true">📚</span>
+            <b>选词</b>
+          </button>
+          <button onClick={() => onNavigate("confusion")}>
+            <span aria-hidden="true">🧩</span>
+            <b>疑难辨析</b>
+          </button>
+          <button onClick={() => onNavigate("kanji-readings")}>
+            <span aria-hidden="true">🗣️</span>
+            <b>一字多音</b>
+          </button>
+          <button onClick={() => onNavigate("favorites")}>
+            <span aria-hidden="true">⭐</span>
+            <b>收藏</b>
+          </button>
+        </div>
+      </section>
 
-        <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("hot-spring")}>
-          <span className="zoo-tile-emoji">♨️</span>
-          <b>温泉打卡</b>
-          <span className="zoo-tile-sub">
-            {streak > 0 ? `连续 ${streak} 天` : "还没开始连击"} · {checkedInToday ? "今天已泡" : "今天还没下水"}
-          </span>
-        </button>
-
-        {/* 图鉴信息量少,做成通栏矮条,不占一个正方格 */}
-        <button className="zoo-tile zoo-tile-strip" onClick={() => onNavigate("zoo-dex")}>
-          <span className="zoo-tile-emoji">🐾</span>
-          <span className="zoo-tile-strip-text">
-            <b>饲养员图鉴</b>
-            <span className="zoo-tile-sub">园区认证 · 连击 · 松子收成</span>
-          </span>
-          <span className="zoo-tile-strip-num">
-            {badgeCount} / {badges.length}
-          </span>
-        </button>
-      </div>
-
-      {/* ③ 学习工具(原工具箱) */}
-      <p className="zoo-sec">学习工具</p>
-      <div className="zoo-bento">
-        <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("study-modes")}>
-          <span className="zoo-tile-emoji">🎛️</span>
-          <b>学习模式</b>
-          <span className="zoo-tile-sub">经典 · 错题本 · 快速 · 反向 · 汉字</span>
-        </button>
-
-        <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("confusion")}>
-          <span className="zoo-tile-emoji">🧩</span>
-          <b>疑难辨析</b>
-          <span className="zoo-tile-sub">同音 · 自他 · 近义词对照</span>
-        </button>
-
-        <button className="zoo-tile zoo-tile-sm" onClick={() => onNavigate("favorites")}>
-          <span className="zoo-tile-emoji">⭐</span>
-          <b>收藏</b>
-          <span className="zoo-tile-sub">单词和语法的收藏夹</span>
-        </button>
-      </div>
-
-      {/* ④ 进度概览 */}
-      <p className="zoo-sec">进度概览</p>
-      <ZooProgressPanel overview={overview} />
+      {/* ④ 进度概览 —— 默认只给一行数，柱状图收进折叠里。
+             十根柱子里七根是 0%，常驻 291px 去展示这个不划算。 */}
+      <section className="zoo-tray">
+        <details className="zoo-fold">
+          <summary>
+            <span className="zoo-tray-title">进度概览</span>
+            <small>
+              单词 {overview.words.seen}/{overview.words.total} · 掌握 {overview.words.completed} · 薄弱 {overview.words.low}
+            </small>
+          </summary>
+          <ZooProgressPanel overview={overview} onOpenWordList={onOpenWordList} onOpenGrammar={onOpenGrammarLevel} />
+        </details>
+      </section>
 
       {/* ⑤ 进度维护:低频 + 有副作用,默认收起来 */}
       <details className="zoo-maint">
         <summary>
           进度维护
-          <small>刷新 · 一键填满 · 一键完成今日单词</small>
+          <small>刷新 · 一键填满 · 合并重复词条 · 一键完成今日单词</small>
         </summary>
         <div className="zoo-maint-body">
           <button className="zoo-pop zoo-maint-btn" onClick={onRefreshOverview}>
@@ -326,6 +342,10 @@ export function ZooHome({
           <button className="zoo-pop zoo-maint-btn" onClick={onOpenFill}>
             <b>✅ 一键填满</b>
             <small>把选定等级的单词/语法标记为已掌握</small>
+          </button>
+          <button className="zoo-pop zoo-maint-btn" onClick={onMergeDuplicates}>
+            <b>🧬 合并重复词条</b>
+            <small>老库里同一个词录了两遍的，把记录并到一行（会先存恢复点）</small>
           </button>
           <button className="zoo-pop zoo-maint-btn warn" onClick={onCompleteTodayWords}>
             <b>⏭️ 一键完成今日单词</b>

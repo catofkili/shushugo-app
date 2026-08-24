@@ -1,0 +1,77 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero">
+    <navigator class="back" open-type="navigateBack">‹ 返回学习</navigator>
+    <text class="title">词库 · 选词</text>
+    <text class="subtitle">筛选、查看记忆色阶；翻词典不会改变 FSRS</text>
+  </view>
+
+  <view wx:if="{{!ready}}" class="card">{{busy ? '正在初始化本地库…' : error}}</view>
+  <view wx:else>
+    <view class="search-row">
+      <input class="search" value="{{query}}" confirm-type="search" placeholder="汉字、读音或中文释义" bindinput="handleInput" bindconfirm="handleSearch" />
+      <button class="search-button" bindtap="handleSearch">查找</button>
+    </view>
+
+    <view class="filter-grid">
+      <picker mode="selector" range="{{levelOptions}}" range-key="label" value="{{levelIndex}}" bindchange="handleLevelChange">
+        <view class="picker">{{levelOptions[levelIndex].label}} ˅</view>
+      </picker>
+      <picker mode="selector" range="{{bandOptions}}" range-key="label" value="{{bandIndex}}" bindchange="handleBandChange">
+        <view class="picker">{{bandOptions[bandIndex].label}} ˅</view>
+      </picker>
+      <picker mode="selector" range="{{posOptions}}" range-key="label" value="{{posIndex}}" bindchange="handlePosChange">
+        <view class="picker">{{posOptions[posIndex].label}} ˅</view>
+      </picker>
+      <picker mode="selector" range="{{sortOptions}}" range-key="label" value="{{sortIndex}}" bindchange="handleSortChange">
+        <view class="picker">{{sortOptions[sortIndex].label}} ˅</view>
+      </picker>
+    </view>
+
+    <view class="summary card">
+      <view class="summary-main"><text class="summary-count">{{summary.total}}</text><text> 条词</text></view>
+      <view class="summary-sub">到期 {{summary.due}} · 顽固 {{summary.leech}} · 点击一行查看详情</view>
+      <view class="band-line">
+        <block wx:for="{{bandOptions}}" wx:key="id" wx:if="{{item.id !== 'all' && item.id !== 'due' && item.id !== 'leech'}}">
+          <text class="band-dot band-{{item.id}}" wx:if="{{summary.bands[item.id]}}">{{item.label}} {{summary.bands[item.id]}}</text>
+        </block>
+      </view>
+    </view>
+
+    <view class="selection-toolbar">
+      <button class="tool" bindtap="handleSelectVisible">选当前页</button>
+      <button class="tool" bindtap="handleSelectAllFiltered">选筛选结果（最多300）</button>
+      <button wx:if="{{selectionMode}}" class="tool muted" bindtap="handleClearSelection">清除 {{selectedIds.length}} 项</button>
+    </view>
+    <view wx:if="{{selectionMode}}" class="batch-bar">
+      <text>已选 {{selectedIds.length}} 条</text>
+      <button class="batch-known" loading="{{busy}}" disabled="{{busy}}" bindtap="handleBatchKnown">标记熟知</button>
+      <button class="batch-unmark" loading="{{busy}}" disabled="{{busy}}" bindtap="handleBatchUnmark">取消熟知</button>
+    </view>
+
+    <view wx:if="{{rows.length === 0}}" class="card empty">没有匹配词条</view>
+    <view wx:for="{{rows}}" wx:key="id" class="card word-row {{item.selected ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="handleRowTap" bindlongpress="handleLongPress">
+      <view class="word-head">
+        <view class="word-title"><text class="check" data-id="{{item.id}}" catchtap="handleSelect">{{item.selected ? '☑' : '□'}}</text><text class="kanji">{{item.kanji}}</text></view>
+        <view class="badges"><text class="level">{{item.level}}</text><text class="memory memory-{{item.band}}">{{item.isDue && item.band !== 'unseen' && item.band !== 'mastered' ? '该复习' : item.bandLabel}}</text></view>
+      </view>
+      <text class="kana">{{item.kana}}</text>
+      <text class="meaning">{{item.meaning}}</text>
+      <view class="row-foot"><text>{{item.pos || '词性未标'}}</text><text wx:if="{{item.favorite}}">★ 收藏</text><text wx:if="{{item.isLeech}}" class="leech">顽固</text></view>
+    </view>
+    <button wx:if="{{hasMore}}" class="load-more" bindtap="handleLoadMore">加载更多</button>
+
+    <view wx:if="{{detail}}" class="detail-mask" catchtap="closeDetail">
+      <view class="detail-sheet" catchtap="noop">
+        <view class="detail-head"><text class="detail-title">{{detail.kanji}}</text><button class="close" bindtap="closeDetail">×</button></view>
+        <text class="detail-kana">{{detail.kana}}</text>
+        <view class="detail-tags"><text>{{detail.level}}</text><text>{{detail.pos || '词性未标'}}</text><text>{{detail.isDue ? '该复习' : detail.band === 'unseen' ? '未学' : detail.band === 'mastered' ? '已掌握' : detail.band}}</text></view>
+        <text class="detail-meaning">{{detail.meaning}}</text>
+        <view wx:if="{{detail.example.jp}}" class="example"><text class="example-jp">{{detail.example.jp}}</text><text wx:if="{{detail.exampleFurigana}}" class="example-furigana">读音标注已在学习卡显示</text><text class="example-meaning">{{detail.example.meaning}}</text></view>
+        <view class="detail-actions"><button bindtap="handleFavorite">{{detail.isFavorite ? '★ 已收藏' : '☆ 收藏'}}</button><button wx:if="{{!detail.isKnownForever}}" bindtap="handleDetailKnown">标记熟知</button></view>
+        <textarea class="note" value="{{noteDraft}}" maxlength="500" placeholder="给这个词留一句笔记" bindinput="handleNoteInput"></textarea>
+        <button class="save-note" loading="{{busy}}" disabled="{{busy}}" bindtap="handleSaveNote">保存笔记</button>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+</scroll-view>

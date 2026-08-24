@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Preferences } from "@capacitor/preferences";
 import type { WordCard } from "../types/vocabulary";
 import { clearQuickStudyDraft, loadQuickStudyDraft, saveQuickStudyDraft } from "./quick-study-draft";
+import { studyDate } from "./database/db-utils";
 
 const preferenceStore = vi.hoisted(() => new Map<string, string>());
 
@@ -44,9 +45,14 @@ beforeEach(() => {
   });
 });
 
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 describe("quick study draft", () => {
   it("restores the exact unfinished page and its choices", async () => {
     await saveQuickStudyDraft({
+      studyDate: studyDate(),
       cards: [card(11), card(12)],
       nextCards: [card(13)],
       seenWordIds: [9, 10, 11, 12, 13],
@@ -71,8 +77,49 @@ describe("quick study draft", () => {
     expect(restored?.selectedIds).toEqual([11]);
   });
 
+  it("defaults an unrated quick-study card to know", async () => {
+    await saveQuickStudyDraft({
+      studyDate: studyDate(),
+      cards: [card(14)],
+      nextCards: [],
+      seenWordIds: [14],
+      phase: "stage1",
+      ratings: {},
+      revealedIds: [],
+      pageNumber: 1,
+      selectionMode: false,
+      selectedIds: []
+    });
+
+    expect((await loadQuickStudyDraft())?.ratings).toEqual({ 14: "know" });
+  });
+
+  it("discards a v2 page whose fuzzy ratings came from the old default", async () => {
+    const staleDraft = JSON.stringify({
+      version: 2,
+      studyDate: studyDate(),
+      cards: [card(15)],
+      nextCards: [],
+      seenWordIds: [15],
+      phase: "stage1",
+      ratings: { 15: "fuzzy" },
+      revealedIds: [],
+      pageNumber: 1,
+      selectionMode: false,
+      selectedIds: [],
+      updatedAt: new Date().toISOString()
+    });
+    browserStore.set("mn-quick-study-draft", staleDraft);
+    preferenceStore.set("mn-quick-study-draft", staleDraft);
+
+    expect(await loadQuickStudyDraft()).toBeNull();
+    expect(browserStore.get("mn-quick-study-draft")).toContain('"cleared":true');
+    expect(preferenceStore.has("mn-quick-study-draft")).toBe(false);
+  });
+
   it("does not resurrect a stale native copy after the page was submitted", async () => {
     await saveQuickStudyDraft({
+      studyDate: studyDate(),
       cards: [card(21)],
       nextCards: [],
       seenWordIds: [21],
@@ -89,5 +136,31 @@ describe("quick study draft", () => {
     await Preferences.set({ key: "mn-quick-study-draft", value: staleNativeCopy });
 
     expect(await loadQuickStudyDraft()).toBeNull();
+  });
+
+  it("keeps an unfinished page within the same study day and expires it at 4am", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-08-18T03:30:00+08:00"));
+    const draftDate = studyDate();
+    await saveQuickStudyDraft({
+      studyDate: draftDate,
+      cards: [card(31)],
+      nextCards: [card(32)],
+      seenWordIds: [31, 32],
+      phase: "stage1",
+      ratings: { 31: "forgot" },
+      revealedIds: [31],
+      pageNumber: 2,
+      selectionMode: false,
+      selectedIds: []
+    });
+
+    vi.setSystemTime(new Date("2026-08-18T03:59:59+08:00"));
+    expect((await loadQuickStudyDraft())?.cards.map(({ id }) => id)).toEqual([31]);
+
+    vi.setSystemTime(new Date("2026-08-18T04:00:00+08:00"));
+    expect(await loadQuickStudyDraft()).toBeNull();
+    expect(browserStore.get("mn-quick-study-draft")).toContain('"cleared":true');
+    expect(preferenceStore.has("mn-quick-study-draft")).toBe(false);
   });
 });
