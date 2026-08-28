@@ -531,20 +531,56 @@
 .zoo-prog-tabs button{border:0;border-radius:10px;background:transparent;padding:7px 4px;font-size:12px;font-weight:800;color:var(--zoo-primary-deep)}
 .zoo-prog-tabs button.on{background:var(--zoo-primary);color:var(--zoo-on-primary);box-shadow:0 3px 10px rgba(111,168,62,.3)}
 .zoo-prog-body{display:grid;grid-template-columns:1fr;gap:10px}
-.zoo-prog-body.two{grid-template-columns:1fr 1fr}
 .zoo-prog-col{display:flex;flex-direction:column;gap:10px;min-width:0;border:1.5px solid rgba(192,133,82,.22);border-radius:16px;background:var(--zoo-cream);padding:12px;text-align:left;color:var(--zoo-ink);transition:border-color .2s,background-color .2s}
 .zoo-prog-col.on{border-color:var(--zoo-primary-dark);background:var(--zoo-primary-soft)}
 .zoo-prog-col-head{display:flex;flex-direction:column;gap:3px;min-width:0}
 .zoo-prog-col-head b{font-size:13.5px;font-weight:800}
 .zoo-prog-col-head small{font-size:10.5px;color:var(--zoo-brown-deep);line-height:1.4}
-/* 双栏时「单词」那行摘要会折成两行,给它留两行高度,两侧柱状图才对得齐 */
-.zoo-prog-body.two .zoo-prog-col-head small{min-height:2.8em}
 .zoo-prog-bars{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;align-items:end;height:118px}
 .zoo-prog-bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
 .zoo-prog-bar-track{display:flex;align-items:flex-end;width:100%;max-width:30px;height:88px;overflow:hidden;border-radius:8px 8px 3px 3px;background:rgba(143,203,94,.2)}
 .zoo-prog-bar-track i{display:block;width:100%;border-radius:8px 8px 0 0;background:linear-gradient(180deg,var(--zoo-primary),var(--zoo-primary-dark));transition:height .45s cubic-bezier(.34,1.4,.6,1)}
 .zoo-prog-bar b{margin-top:5px;font-size:11px;font-weight:800;color:var(--zoo-ink)}
 .zoo-prog-bar small{font-size:9.5px;color:var(--zoo-muted)}
+
+/* ===== 每日学习数量 =====
+   左半是发生过的事(实心)、右半是排出来的账(斜纹)，中间那根「今天」两截都有：
+   实心是已经做了的，斜纹是还欠的。
+   ⚠️ 两种纹理**必须长得不一样**：都画成实心的话，这张图就成了在承诺未来。 */
+.zoo-load{display:flex;flex-direction:column;gap:9px;border:1.5px solid rgba(192,133,82,.22);border-radius:16px;background:var(--zoo-cream);padding:12px}
+.zoo-load-head{display:flex;flex-direction:column;gap:3px}
+.zoo-load-head b{font-size:13.5px;font-weight:800;color:var(--zoo-ink)}
+.zoo-load-head small{font-size:10.5px;color:var(--zoo-brown-deep);line-height:1.4}
+/* 底下那条基线代替每根柱子的浅色背板:满高的背板会让整张图变成一排方盒子,
+   柱子的高矮反而看不出来 */
+.zoo-load-chart{display:flex;align-items:flex-end;gap:2px;height:104px;padding:0 8px 15px;border-bottom:1.5px solid rgba(192,133,82,.28)}
+.zoo-load-bar{position:relative;display:flex;flex:1;min-width:0;height:100%;flex-direction:column;justify-content:flex-end;padding:0;border:0;background:transparent}
+.zoo-load-stack{display:flex;flex-direction:column;justify-content:flex-end;width:100%;height:100%;border-radius:4px 4px 0 0;overflow:hidden}
+/* flex:none —— 三截高度加起来贴着 100%，让它们可收缩的话舍入误差会把整根压扁 */
+.zoo-load-stack i{display:block;flex:none;width:100%;transition:height .4s cubic-bezier(.34,1.4,.6,1)}
+.zoo-load-stack i.rv{background:var(--zoo-primary-dark)}
+.zoo-load-stack i.fr{background:var(--zoo-orange)}
+.zoo-load-stack i.pd{background:repeating-linear-gradient(135deg,rgba(111,168,62,.5) 0 3px,rgba(111,168,62,.13) 3px 6px)}
+/* 预计:整根都是斜纹,隔着一米也能看出右半边是估的 */
+.zoo-load-bar.fc .zoo-load-stack i.rv{background:repeating-linear-gradient(135deg,rgba(111,168,62,.5) 0 3px,rgba(111,168,62,.13) 3px 6px)}
+.zoo-load-bar.fc .zoo-load-stack i.fr{background:repeating-linear-gradient(135deg,rgba(232,151,28,.55) 0 3px,rgba(232,151,28,.14) 3px 6px)}
+/* 今天 = 实际与预计的分界 */
+.zoo-load-bar.now::after{content:"";position:absolute;top:-6px;bottom:-15px;right:-2px;border-right:1.5px dashed rgba(192,133,82,.7)}
+.zoo-load-bar.on .zoo-load-stack{outline:1.5px solid var(--zoo-primary-deep);outline-offset:1px}
+/* 刻度长在柱子上,所以「今天」一定在今天那根底下 */
+.zoo-load-bar em{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font-size:9.5px;font-style:normal;font-weight:700;white-space:nowrap;color:var(--zoo-muted)}
+.zoo-load-bar.now em{color:var(--zoo-brown-deep);font-weight:800}
+.zoo-load-detail{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:0;font-size:11px;color:var(--zoo-ink)}
+.zoo-load-detail b{font-size:12px;font-weight:800}
+.zoo-load-tag{border-radius:5px;background:rgba(192,133,82,.16);padding:1px 5px;font-size:9.5px;font-weight:800;color:var(--zoo-brown-deep)}
+.zoo-load-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:10px;font-weight:700;color:var(--zoo-brown-deep)}
+.zoo-load-legend span{display:flex;align-items:center;gap:4px}
+.zoo-load-legend i{display:block;width:9px;height:9px;border-radius:2px}
+.zoo-load-legend i.fr{background:var(--zoo-orange)}
+.zoo-load-legend i.rv{background:var(--zoo-primary-dark)}
+.zoo-load-legend i.fc{background:repeating-linear-gradient(135deg,rgba(111,168,62,.5) 0 3px,rgba(111,168,62,.13) 3px 6px)}
+.zoo-load-note{margin:0;font-size:9.5px;line-height:1.5;color:var(--zoo-muted)}
+.zoo-load-note b{font-weight:800;color:var(--zoo-brown-deep)}
 
 /* ===== 饲养员图鉴 ===== */
 .zoo-dex-head{display:flex;align-items:center;gap:14px;padding:14px 16px}

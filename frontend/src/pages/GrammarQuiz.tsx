@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Eye, ListOrdered, RotateCcw } from "lucide-react";
+import { ArrowLeft, Eye, ListOrdered, Plus, Undo2 } from "lucide-react";
+import { JapaneseRuby } from "../components/JapaneseRuby";
 import type { JLPTLevel } from "../types/grammar";
+import { answerHotkeyLabels, answerOptions } from "../features/word-study/word-study-utils";
+import { patternPieces } from "../lib/grammar-formation";
 import {
+  extendGrammarQuizPlan,
   getGrammarQuizSession,
   grammarQuizRanking,
-  startGrammarQuizRound,
   submitGrammarQuizAnswer,
+  undoLastGrammarQuizAnswer,
+  GRAMMAR_ENCORE_SIZE,
   type GrammarQuizAnswer,
+  type GrammarQuizCard,
   type GrammarQuizSession
 } from "../lib/grammar-quiz";
 
@@ -21,23 +27,36 @@ const LEVELS: JLPTLevel[] = ["N5", "N4", "N3", "N2", "N1"];
 /**
  * 语法考题：题面给句型，翻面给接续 + 中文意。
  *
- * 和单词学习共用同一副骨架（同样的卡、同样 h-16 的「显示答案」占位、翻面后原地
- * 换成评分行），但**内核完全不同**：没有 FSRS、没有当日计划、没有排片。
- * 一个等级一百来条，一轮洗一次牌走完为止，理由见 lib/grammar-quiz.ts 顶上的注释。
+ * 和单词学习共用同一副骨架**和同一套内核**：FSRS 到期集选题、四档评分、
+ * 没毕业就当天隔几张重刷、每日新条目配额。所以评分是四颗不是三颗 ——
+ * 「模糊」以前不摆是因为没有调度器接 Hard 档，现在有了。
  *
- * 评分只有三颗，没有「模糊」——「模糊」在单词那边的意义是喂给 FSRS 的 Hard 档，
- * 这里没有调度器接它，摆上去就是一个不知道会发生什么的按钮。
+ * 题面上还多一件单词卡没有的事：翻面后把接续标在每个 `～` 的头上。
+ * `～` 是这张卡真正的坑，标在坑边上比写在下面省掉「对号入座」那一步。
+ * 标不准的（判据见 lib/grammar-formation.ts）就不标，只留下面那行完整接续。
  */
-const ANSWERS: { value: GrammarQuizAnswer; label: string; hint: string; secondary?: boolean }[] = [
-  { value: "forgot", label: "没记住", hint: "V" },
-  { value: "know", label: "记得", hint: "N" },
-  { value: "known_forever", label: "熟知", hint: "M", secondary: true }
-];
+const PatternLine = ({ card, revealed }: { card: GrammarQuizCard; revealed: boolean }) => {
+  const annotated = revealed && Boolean(card.attachment);
+  if (!annotated) return <>{card.pattern}</>;
+  return (
+    <>
+      {patternPieces(card.pattern).map((piece, index) => (
+        piece.slot ? (
+          <span key={index} className="grammar-slot">
+            <span className="grammar-slot__rt">{card.attachment}</span>
+            {piece.text}
+          </span>
+        ) : (
+          <span key={index}>{piece.text}</span>
+        )
+      ))}
+    </>
+  );
+};
 
 export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
-  // 考题一次只能考一个等级 —— 「一轮把这个等级过一遍」是这个模式的定义，
-  // 五个等级混在一起就没有「一轮」可言了。所以等级选择器长在这里，
-  // 而不是沿用列表页那个可以选「全部」的筛选。
+  // 考题一次只考一个等级：备考是按等级来的，五个等级混在一起就没有「今天这一档
+  // 还剩多少」可言了。所以等级选择器长在这里，而不是沿用列表页那个可以选「全部」的筛选。
   const [level, setLevel] = useState<JLPTLevel>(initialLevel ?? "N5");
   const [session, setSession] = useState<GrammarQuizSession | null>(null);
   const [revealed, setRevealed] = useState(false);
@@ -57,13 +76,21 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
     setRankingRevision((v) => v + 1);
   }, [level, session]);
 
-  const restart = useCallback(() => {
-    setSession(startGrammarQuizRound(level));
+  const encore = useCallback(() => {
+    setSession(extendGrammarQuizPlan(level));
     setRevealed(false);
     setShowRanking(false);
   }, [level]);
 
-  // 键盘：任意普通键翻面，翻面后 V/N/M 评分。和单词学习一致。
+  const undo = useCallback(() => {
+    if (!session?.canUndo) return;
+    setSession(undoLastGrammarQuizAnswer(level));
+    setRevealed(false);
+    setShowRanking(false);
+    setRankingRevision((v) => v + 1);
+  }, [level, session?.canUndo]);
+
+  // 键盘：任意普通键翻面，翻面后 V/B/N/M 评分。和单词学习一致。
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
@@ -77,7 +104,9 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
         }
         return;
       }
-      const hit = ANSWERS.find((option) => option.hint.toLowerCase() === event.key.toLowerCase());
+      const hit = answerOptions.find(
+        (option) => answerHotkeyLabels[option.value].toLowerCase() === event.key.toLowerCase()
+      );
       if (hit) {
         event.preventDefault();
         answer(hit.value);
@@ -110,7 +139,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
         <div className="min-w-0">
           <p className="whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">GRAMMAR QUIZ</p>
           <h1 className="truncate text-lg font-semibold leading-tight">
-            {level} 语法考题 · 第 {session?.seq ?? 1} 轮
+            {level} 语法考题
           </h1>
         </div>
         <button
@@ -124,15 +153,17 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
           <span className="hidden sm:inline">错得最多</span>
         </button>
         <button
-          onClick={restart}
-          title="重新洗牌，开新一轮"
-          className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#81D8CF]/10 hover:bg-[#81D8CF]/15"
+          onClick={undo}
+          disabled={!session?.canUndo}
+          title={session?.canUndo ? "回到刚答的那条并撤销那次作答" : "今天还没有可撤销的作答"}
+          aria-label="上一个"
+          className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#81D8CF]/10 hover:bg-[#81D8CF]/15 disabled:opacity-35"
         >
-          <RotateCcw size={16} />
+          <Undo2 size={16} />
         </button>
       </div>
 
-      {/* 等级选择器。每个等级各自记一轮进度（roundKey 带等级），切回来接着上次那张。 */}
+      {/* 等级选择器。每个等级各算各的当日计划，切回来接着到期的那批。 */}
       <div className="mb-2 flex flex-wrap gap-1.5 lg:mx-auto lg:w-[min(900px,100%)]">
         {LEVELS.map((item) => (
           <button
@@ -149,11 +180,11 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
         ))}
       </div>
 
-      {/* 本轮进度：一轮就是把这个等级过一遍，所以进度条在这里是有意义的 */}
+      {/* 今日进度：过关 = 下次到期排到了明天以后（和单词那边同一个判据） */}
       <div className="mb-2 lg:mx-auto lg:w-[min(900px,100%)]">
         <div className="flex items-center justify-between text-xs font-semibold text-white/55">
-          <span>本轮 {done} / {total}</span>
-          <span>{percent}%</span>
+          <span>今天 {done} / {total}</span>
+          <span>新学 {session?.newDone ?? 0} / {session?.newQuota ?? 0}</span>
         </div>
         <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
           <div className="h-full rounded-full bg-[#81D8CF] transition-[width] duration-300" style={{ width: `${percent}%` }} />
@@ -166,7 +197,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
             按答错次数排序 · {level}
           </p>
           <p className="mt-1 text-xs text-white/45">
-            这个模式里唯一的「算法」就是这一条：错得最多的排最前，没答过的排最后。
+            错得最多的排最前，没答过的排最后。想集中攻坚就照这份从头往下点。
           </p>
           <div data-word-scrollable="true" className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto">
             {ranking.map((row) => (
@@ -205,8 +236,17 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
               <span className="rounded-sm border border-white/15 px-1.5 py-0.5 text-[11px] font-bold text-white/60">
                 {card.level}
               </span>
-              <p className="jp-serif mt-2 break-words text-3xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-                {card.pattern}
+              {card.isNew && (
+                <span className="ml-1.5 rounded-sm border border-[#81D8CF]/45 px-1.5 py-0.5 text-[11px] font-bold text-[#81D8CF]">
+                  新
+                </span>
+              )}
+              <p
+                className={`jp-serif mt-2 break-words text-3xl font-semibold leading-tight sm:text-5xl lg:text-6xl ${
+                  revealed && card.attachment ? "grammar-pattern--annotated" : ""
+                }`}
+              >
+                <PatternLine card={card} revealed={revealed} />
               </p>
             </div>
           </div>
@@ -217,7 +257,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
           >
             {revealed ? (
               <div className="zoo-reveal-in w-full min-w-0">
-                {/* 答案上半：接续 */}
+                {/* 答案上半：接续（题面 `～` 上标的只是它的头一段） */}
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">接续</p>
                 <p className="jp mx-auto mt-2 max-w-2xl break-words text-xl font-semibold leading-8 sm:text-2xl">
                   {card.formation || "—"}
@@ -227,6 +267,20 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
                 <p className="mx-auto mt-2 max-w-2xl break-words text-lg leading-7 text-white/85 sm:text-xl">
                   {card.meaning || "—"}
                 </p>
+                <div className="mx-auto mt-5 max-w-2xl rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 sm:px-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">例句</p>
+                  <p className="jp mt-2 break-words text-lg font-semibold leading-8 text-white/90 sm:text-xl">
+                    <JapaneseRuby
+                      text={card.exampleJp || "—"}
+                      furigana={card.exampleFurigana}
+                      tokenLengths={card.exampleTokens}
+                      tokenLemmas={card.exampleLemmas}
+                    />
+                  </p>
+                  {card.exampleMeaning && (
+                    <p className="mt-1 break-words text-sm leading-6 text-white/60">{card.exampleMeaning}</p>
+                  )}
+                </div>
                 {card.forgotCount > 0 && (
                   <p className="mt-4 text-xs text-white/40">这条你答错过 {card.forgotCount} 次</p>
                 )}
@@ -250,19 +304,26 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
                 <span className="text-xs font-semibold opacity-65">（按任意键）</span>
               </button>
             ) : (
-              <div className="zoo-rate-row grid h-16 grid-cols-[1.35fr_1.35fr_0.65fr] gap-2 sm:gap-3">
-                {ANSWERS.map((option) => (
+              // 忘记/认识 是主键，模糊/熟知 摆一半宽、不填色 —— 和单词学习同一副骨架
+              <div className="zoo-rate-row grid h-16 grid-cols-[1.35fr_0.65fr_1.35fr_0.65fr] gap-2 sm:gap-3">
+                {answerOptions.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => answer(option.value)}
-                    aria-keyshortcuts={option.hint}
+                    aria-keyshortcuts={answerHotkeyLabels[option.value]}
                     className={`focus-ring zoo-pop h-16 min-w-0 rounded-2xl border ${
                       option.secondary
                         ? "border-white/12 px-1 text-sm font-semibold text-white/60 hover:bg-white/[0.06]"
                         : "border-white/20 bg-[#81D8CF]/10 px-2 text-base font-bold hover:bg-[#81D8CF]/15"
                     }`}
                   >
-                    <span className="block text-[10px] font-black tracking-[0.18em] text-white/45">{option.hint}</span>
+                    <span
+                      className={`block text-[10px] font-black text-white/45 ${
+                        option.secondary ? "tracking-normal" : "tracking-[0.18em]"
+                      }`}
+                    >
+                      {answerHotkeyLabels[option.value]}
+                    </span>
                     <span>{option.label}</span>
                   </button>
                 ))}
@@ -271,17 +332,20 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
           </div>
         </div>
       ) : (
-        // 一轮走完。不自动续下一轮 —— 「过完一遍」本身是个终点，值得停一下。
+        // 今天的都过关了。不自动往后借明天的账 —— 想继续得自己点，和单词的续杯同理。
         <div className="dictionary-card grid min-h-[320px] place-items-center rounded-2xl p-6 text-center">
           <div>
-            <p className="text-2xl font-bold">第 {session?.seq ?? 1} 轮过完了</p>
-            <p className="mt-2 text-sm text-white/60">{level} 的 {total} 条都过了一遍</p>
+            <p className="text-2xl font-bold">{level} 今天过完了</p>
+            <p className="mt-2 text-sm text-white/60">
+              到期的 {total} 条都过关了，剩下的 FSRS 排在后面几天
+            </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <button
-                onClick={restart}
-                className="focus-ring zoo-pop rounded-2xl bg-[#81D8CF] px-5 py-3 text-sm font-bold !text-[#2f3333]"
+                onClick={encore}
+                className="focus-ring zoo-pop inline-flex items-center gap-1 rounded-2xl bg-[#81D8CF] px-5 py-3 text-sm font-bold !text-[#2f3333]"
               >
-                重新洗牌，再来一轮
+                <Plus size={16} />
+                再学 {GRAMMAR_ENCORE_SIZE} 条新的
               </button>
               <button
                 onClick={() => setShowRanking(true)}

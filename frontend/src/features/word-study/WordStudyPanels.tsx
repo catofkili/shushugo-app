@@ -10,13 +10,7 @@ import { splitFurigana, useFuriganaReady } from "../../lib/furigana";
 import { lookupAccent, pitchPattern, splitMorae, usePitchAccentReady } from "../../lib/pitch-accent";
 import { lookupTransitivity, useTransitivityReady } from "../../lib/transitivity";
 import { saveImageToGallery, shareImage } from "../../lib/share-image";
-import {
-  getStudyPreferences,
-  INTENSITY_ANCHORS,
-  INTENSITY_MAX,
-  INTENSITY_MIN,
-  saveStudyPreferences
-} from "../../lib/studyPreferences";
+import { getStudyPreferences } from "../../lib/studyPreferences";
 import type { WordCard, WordStats } from "../../types/vocabulary";
 import { encoreDayColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
@@ -247,15 +241,17 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
     setCelebrate(true);
   }, [phase, isStage1Complete, studyDate]);
 
-  // 「继续学习」按钮的每日装扮与数量。数量由算法给:积压递减批或强度的一半;
-  // 铅笔调的是唯一旋钮「学习强度」,不再单独设本次数量。
-  const [showIntensityPanel, setShowIntensityPanel] = useState(false);
-  const [intensity, setIntensity] = useState(() => getStudyPreferences().dailyGoal);
+  // 「继续学习」按钮的每日装扮与数量。默认数量由算法给:积压递减批或强度的一半。
+  // 铅笔改的是**这一次加餐要学几个**,不是每日新词配额 —— 那个旋钮在设置页,
+  // 而且积压未清时它对本次加餐根本不起作用,摆在这里就是个按了没反应的按钮。
+  const [showSizePanel, setShowSizePanel] = useState(false);
+  const [sizeOverride, setSizeOverride] = useState<number | null>(null);
   const encoreColor = encoreDayColor(studyDate);
   const encoreInventory = encore ? encore.remaining + encore.unseenRemaining : 0;
-  // 积压未清时数量跟积压走(强度不影响);清空后 = 强度的一半,随滑杆即时变化
+  // 积压未清时数量跟积压走;清空后 = 每日新词配额的一半
+  const dailyGoal = getStudyPreferences().dailyGoal;
   const recommendedSize = encore
-    ? (encore.remaining > 0 ? encore.size : Math.min(Math.max(Math.round(intensity / 2), 5), encore.unseenRemaining))
+    ? (encore.remaining > 0 ? encore.size : Math.min(Math.max(Math.round(dailyGoal / 2), 5), encore.unseenRemaining))
     : 0;
   const encoreHook = encore
     ? pickEncoreHook({
@@ -266,13 +262,18 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
         totalLearned: encore.totalLearned
       })
     : null;
-  const encoreCount = Math.max(1, Math.min(encoreHook?.suggestedSize ?? recommendedSize, encoreInventory));
+  // 上限 100 和 startEncore 里的钳制同一个数,别让滑杆能选出一个后端会悄悄改小的量。
+  const encoreMax = Math.max(1, Math.min(encoreInventory, 100));
+  const suggestedCount = Math.max(1, Math.min(encoreHook?.suggestedSize ?? recommendedSize, encoreMax));
+  // override 存 null 表示「跟着推荐走」:库存/推荐随结算刷新时不会卡住一个过期的数。
+  const encoreCount = Math.max(1, Math.min(sizeOverride ?? suggestedCount, encoreMax));
   const encoreMinutes = encore ? estimatedMinutesFor(encoreCount, encore.secondsPerWord) : 0;
+  const sizePresets = Array.from(
+    new Set([5, 10, 20].filter((value) => value < encoreMax).concat(encoreMax))
+  );
 
-  const applyIntensity = (value: number) => {
-    const next = Math.min(Math.max(Math.round(value), INTENSITY_MIN), INTENSITY_MAX);
-    setIntensity(next);
-    saveStudyPreferences({ ...getStudyPreferences(), dailyGoal: next });
+  const applyEncoreSize = (value: number) => {
+    setSizeOverride(Math.min(Math.max(Math.round(value), 1), encoreMax));
   };
 
   /**
@@ -478,29 +479,29 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                       <span className="encore-shine" aria-hidden="true" />
                     </button>
                     <button
-                      onClick={() => setShowIntensityPanel((value) => !value)}
-                      aria-label="调整学习强度"
-                      aria-expanded={showIntensityPanel}
+                      onClick={() => setShowSizePanel((value) => !value)}
+                      aria-label="调整本次加餐数量"
+                      aria-expanded={showSizePanel}
                       className="focus-ring grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-white/15 bg-white/8 text-white/75"
                     >
                       <Pencil size={18} />
                     </button>
                   </div>
-                  {showIntensityPanel && (
+                  {showSizePanel && (
                     <div className="mt-2 rounded-xl bg-[#343838] p-3">
                       <div className="mb-2 flex items-center justify-between gap-2">
-                        <p className="text-xs font-bold text-white/70">学习强度 · 每日新词 {intensity} 个</p>
+                        <p className="text-xs font-bold text-white/70">本次加餐 · {encoreCount} 个</p>
                         <span className="inline-flex items-center gap-1.5">
                           <button
-                            onClick={() => applyIntensity(intensity - 1)}
-                            aria-label="强度减 1"
+                            onClick={() => applyEncoreSize(encoreCount - 1)}
+                            aria-label="本次减 1 个"
                             className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-white/8 text-white/70"
                           >
                             <Minus size={13} />
                           </button>
                           <button
-                            onClick={() => applyIntensity(intensity + 1)}
-                            aria-label="强度加 1"
+                            onClick={() => applyEncoreSize(encoreCount + 1)}
+                            aria-label="本次加 1 个"
                             className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-white/8 text-white/70"
                           >
                             <Plus size={13} />
@@ -509,35 +510,45 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                       </div>
                       <input
                         type="range"
-                        min={INTENSITY_MIN}
-                        max={INTENSITY_MAX}
+                        min={1}
+                        max={encoreMax}
                         step={1}
-                        value={intensity}
-                        onChange={(event) => applyIntensity(Number(event.target.value))}
-                        aria-label="学习强度"
+                        value={encoreCount}
+                        onChange={(event) => applyEncoreSize(Number(event.target.value))}
+                        aria-label="本次加餐数量"
                         className="w-full accent-[#81D8CF]"
                         style={{ accentColor: encoreColor.hex }}
                       />
                       <div className="mt-1.5 flex flex-wrap gap-2">
-                        {INTENSITY_ANCHORS.map((anchor) => (
+                        <button
+                          onClick={() => setSizeOverride(null)}
+                          className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
+                            sizeOverride === null
+                              ? "text-[#2f3333]"
+                              : "border border-white/15 bg-white/8 text-white/70"
+                          }`}
+                          style={sizeOverride === null ? { backgroundColor: encoreColor.hex } : undefined}
+                        >
+                          推荐 {suggestedCount}
+                        </button>
+                        {sizePresets.map((value) => (
                           <button
-                            key={anchor.value}
-                            onClick={() => applyIntensity(anchor.value)}
+                            key={value}
+                            onClick={() => applyEncoreSize(value)}
                             className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
-                              intensity === anchor.value
+                              sizeOverride === value
                                 ? "text-[#2f3333]"
                                 : "border border-white/15 bg-white/8 text-white/70"
                             }`}
-                            style={intensity === anchor.value ? { backgroundColor: encoreColor.hex } : undefined}
+                            style={sizeOverride === value ? { backgroundColor: encoreColor.hex } : undefined}
                           >
-                            {anchor.label} {anchor.value}
+                            {value}
                           </button>
                         ))}
                       </div>
+                      {/* 「这批是积压还是新词」下面那行已经说了,这里不重复,只说本面板独有的两件事 */}
                       <p className="mt-2 text-[11px] text-white/45">
-                        明日新词按此配额;{encore.remaining > 0
-                          ? "本次加餐清积压,数量不受强度影响"
-                          : `本次加餐 = 强度一半 ≈ ${recommendedSize} 个`}
+                        加餐不占明日的新词配额;每日新词数在设置里改。
                       </p>
                     </div>
                   )}

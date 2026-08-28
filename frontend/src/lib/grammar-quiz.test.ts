@@ -22,138 +22,186 @@ vi.mock("./database", () => ({
 vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
 
 import {
+  extendGrammarQuizPlan,
   getGrammarQuizSession,
+  grammarNewQuota,
   grammarQuizRanking,
-  shuffle,
-  startGrammarQuizRound,
-  submitGrammarQuizAnswer
+  submitGrammarQuizAnswer,
+  undoLastGrammarQuizAnswer,
+  type GrammarQuizAnswer
 } from "./grammar-quiz";
+import { today } from "./study-core";
 
 const SQL = await initSqlJs();
 const seedPath = fileURLToPath(new URL("../../public/nihongo.db", import.meta.url));
 const LEVEL = "N5";
 
-/** 确定性随机源，让洗牌可复现 */
-const seeded = (seed: number) => () => {
-  seed = (seed * 1664525 + 1013904223) % 4294967296;
-  return seed / 4294967296;
-};
+const progressOf = (id: number, columns: string) =>
+  testDb.exec(`SELECT ${columns} FROM grammar_progress WHERE grammar_id = ?`, [id])[0].values[0];
 
-const runWholeRound = (answer: (i: number) => "forgot" | "know") => {
+/** 一直答到今天没有卡为止 */
+const drain = (answer: (index: number) => GrammarQuizAnswer) => {
   let session = getGrammarQuizSession(LEVEL);
   const seen: number[] = [];
   let guard = 0;
-  while (session.card && guard++ < 500) {
+  while (session.card && guard++ < 600) {
     seen.push(session.card.id);
     session = submitGrammarQuizAnswer(LEVEL, session.card.id, answer(seen.length - 1));
   }
   return { seen, session };
 };
 
-describe("语法考题（无 FSRS，一轮乱序不重复）", () => {
+describe("语法考题（和单词同一套 FSRS）", () => {
   beforeEach(() => {
     testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
-    testDb.run("DELETE FROM grammar_state WHERE key LIKE 'quiz_round:%'");
+    prefStore.clear();
   });
 
-  it("题面是句型，答案是接续 + 中文意", () => {
-    const { card } = startGrammarQuizRound(LEVEL, seeded(7));
+  it("题面是句型，答案是接续 + 中文意 + 例句", () => {
+    const { card } = getGrammarQuizSession(LEVEL);
     expect(card).not.toBeNull();
     expect(card!.pattern).not.toBe("");
     expect(card!.formation).not.toBe("");
     expect(card!.meaning).not.toBe("");
+    expect(card!.exampleJp).not.toBe("");
     expect(card!.level).toBe(LEVEL);
+    // 全新库里第一批全是没学过的
+    expect(card!.isNew).toBe(true);
   });
 
-  it("一轮之内每条只出现一次，走完正好是该等级的条数", () => {
-    const total = startGrammarQuizRound(LEVEL, seeded(1)).total;
-    expect(total).toBe(120); // N5
-
-    const { seen, session } = runWholeRound(() => "know");
-    expect(seen).toHaveLength(total);
-    expect(new Set(seen).size).toBe(total); // 不重复
-    expect(session.card).toBeNull();        // 走完了
-    expect(session.done).toBe(total);
+  it("⚠️ 一天只放新语法配额那么多条，不再是「把整个等级洗一遍」", () => {
+    const quota = grammarNewQuota(LEVEL);
+    expect(quota).toBeGreaterThan(0);
+    expect(quota).toBeLessThan(120); // N5 一共 120 条
+    // 首答就点认识 = Easy，当天直接毕业，所以一场正好走完配额
+    const { seen } = drain(() => "know");
+    expect(new Set(seen).size).toBe(quota);
   });
 
-  it("答错也不会在本轮里再出现一次 —— 一轮不重复是这个模式的定义", () => {
-    startGrammarQuizRound(LEVEL, seeded(3));
-    const { seen } = runWholeRound(() => "forgot");
-    expect(new Set(seen).size).toBe(seen.length);
+  it("当天首答点认识就毕业；答错的当天还要再出", () => {
+    const first = getGrammarQuizSession(LEVEL).card!;
+    submitGrammarQuizAnswer(LEVEL, first.id, "know");
+    const due = String(progressOf(first.id, "fsrs_due")[0]);
+    expect(new Date(due).getTime()).toBeGreaterThan(Date.now() + 3600_000);
+
+    const second = getGrammarQuizSession(LEVEL).card!;
+    expect(second.id).not.toBe(first.id);
+    submitGrammarQuizAnswer(LEVEL, second.id, "forgot");
+    // 忘记 → 学习步骤里，下次到期就在几分钟后（当天还得再刷）
+    const retryDue = new Date(String(progressOf(second.id, "fsrs_due")[0])).getTime();
+    expect(retryDue).toBeLessThan(Date.now() + 3600_000);
+    const { seen } = drain(() => "know");
+    expect(seen).toContain(second.id);
   });
 
-  it("是乱序的，而且换一轮顺序会变", () => {
-    const first = startGrammarQuizRound(LEVEL, seeded(11));
-    const orderA: number[] = [];
-    let s = first;
-    while (s.card && orderA.length < 12) {
-      orderA.push(s.card.id);
-      s = submitGrammarQuizAnswer(LEVEL, s.card.id, "know");
-    }
-    // 和按 sort_order 的自然顺序不同
-    const natural = testDb.exec("SELECT id FROM grammar_points WHERE level='N5' ORDER BY sort_order LIMIT 12")[0]
-      .values.map((v) => Number(v[0]));
-    expect(orderA).not.toEqual(natural);
-
-    testDb.run("DELETE FROM grammar_state WHERE key LIKE 'quiz_round:%'");
-    const second = startGrammarQuizRound(LEVEL, seeded(99));
-    const orderB: number[] = [];
-    let t = second;
-    while (t.card && orderB.length < 12) {
-      orderB.push(t.card.id);
-      t = submitGrammarQuizAnswer(LEVEL, t.card.id, "know");
-    }
-    expect(orderB).not.toEqual(orderA);
+  it("四档评分都记账：模糊有自己的一栏（以前没有调度器接 Hard 档）", () => {
+    const ids = drain(() => "know").seen;
+    testDb.run("DELETE FROM grammar_reviews");
+    const [a, b, c] = ids;
+    testDb.run("UPDATE grammar_progress SET seen_count = 0, right_count = 0, fsrs_due = NULL");
+    submitGrammarQuizAnswer(LEVEL, a, "fuzzy");
+    submitGrammarQuizAnswer(LEVEL, b, "forgot");
+    submitGrammarQuizAnswer(LEVEL, c, "know");
+    expect(progressOf(a, "fuzzy_count, right_count, forgot_count")).toEqual([1, 0, 0]);
+    expect(progressOf(b, "fuzzy_count, right_count, forgot_count")).toEqual([0, 0, 1]);
+    expect(progressOf(c, "fuzzy_count, right_count, forgot_count")).toEqual([0, 1, 0]);
   });
 
-  it("重开一轮轮次号会往上加", () => {
-    expect(startGrammarQuizRound(LEVEL, seeded(1)).seq).toBe(1);
-    expect(startGrammarQuizRound(LEVEL, seeded(2)).seq).toBe(2);
-    expect(startGrammarQuizRound(LEVEL, seeded(3)).seq).toBe(3);
-  });
-
-  it("答错累加 forgot_count，答对累加 right_count", () => {
-    const session = startGrammarQuizRound(LEVEL, seeded(5));
-    const id = session.card!.id;
-    submitGrammarQuizAnswer(LEVEL, id, "forgot");
-    const after = testDb.exec(
-      "SELECT forgot_count, right_count, seen_count FROM grammar_progress WHERE grammar_id = ?", [id]
+  it("每次作答都记一条 grammar_reviews 流水 —— 备考页的「今天做了多少」读的是它", () => {
+    const card = getGrammarQuizSession(LEVEL).card!;
+    submitGrammarQuizAnswer(LEVEL, card.id, "know");
+    const row = testDb.exec(
+      "SELECT grammar_id, answer, reviewed_on FROM grammar_reviews"
     )[0].values[0];
-    expect(after).toEqual([1, 0, 1]);
-
-    startGrammarQuizRound(LEVEL, seeded(5));
-    submitGrammarQuizAnswer(LEVEL, id, "know");
-    const later = testDb.exec(
-      "SELECT forgot_count, right_count FROM grammar_progress WHERE grammar_id = ?", [id]
-    )[0].values[0];
-    expect(later).toEqual([1, 1]);
+    expect(row).toEqual([card.id, "know", today()]);
   });
 
-  it("标了熟知就退出题库，下一轮不再出现", () => {
-    const session = startGrammarQuizRound(LEVEL, seeded(13));
-    const retired = session.card!.id;
+  it("标了熟知就退出题库，不再出现", () => {
+    const retired = getGrammarQuizSession(LEVEL).card!.id;
     submitGrammarQuizAnswer(LEVEL, retired, "known_forever");
-
-    const next = startGrammarQuizRound(LEVEL, seeded(13));
-    expect(next.total).toBe(119);
-    const { seen } = runWholeRound(() => "know");
+    expect(progressOf(retired, "known_forever")).toEqual([1]);
+    const { seen } = drain(() => "know");
     expect(seen).not.toContain(retired);
   });
 
-  it("刷新之后接着上次那张，不会从头再来", () => {
-    startGrammarQuizRound(LEVEL, seeded(21));
-    let s = getGrammarQuizSession(LEVEL);
-    s = submitGrammarQuizAnswer(LEVEL, s.card!.id, "know");
-    s = submitGrammarQuizAnswer(LEVEL, s.card!.id, "know");
-    const expected = s.card!.id;
-    expect(getGrammarQuizSession(LEVEL).card!.id).toBe(expected);
-    expect(getGrammarQuizSession(LEVEL).done).toBe(2);
+  it("答错的不会当场再问一遍 —— 贴脸重复只是抄写，不是回忆", () => {
+    const first = getGrammarQuizSession(LEVEL).card!.id;
+    expect(submitGrammarQuizAnswer(LEVEL, first, "forgot").card!.id).not.toBe(first);
+  });
+
+  it("但连着错到阈值就当场接着刷 —— 顽固卡越出越密才攻得下来", () => {
+    const id = getGrammarQuizSession(LEVEL).card!.id;
+    submitGrammarQuizAnswer(LEVEL, id, "forgot");
+    submitGrammarQuizAnswer(LEVEL, id, "forgot");
+    const session = submitGrammarQuizAnswer(LEVEL, id, "forgot");
+    expect(session.card!.id).toBe(id);
+  });
+
+  it("刷新之后接着到期的那批，不会从头再来", () => {
+    const first = getGrammarQuizSession(LEVEL).card!.id;
+    submitGrammarQuizAnswer(LEVEL, first, "know");
+    const next = getGrammarQuizSession(LEVEL).card!.id;
+    expect(getGrammarQuizSession(LEVEL).card!.id).toBe(next);
+    expect(next).not.toBe(first);
+  });
+
+  it("上一个会回到刚答的那条，FSRS 状态和流水一起回滚", () => {
+    const first = getGrammarQuizSession(LEVEL).card!.id;
+    submitGrammarQuizAnswer(LEVEL, first, "forgot");
+    expect(progressOf(first, "seen_count, forgot_count")).toEqual([1, 0 + 1]);
+
+    const restored = undoLastGrammarQuizAnswer(LEVEL);
+    expect(restored.card!.id).toBe(first);
+    expect(restored.canUndo).toBe(false);
+    expect(progressOf(first, "seen_count, forgot_count, mistake_streak")).toEqual([0, 0, 0]);
+    // 撤销必须连 FSRS 一起回滚：只回滚计数的话，这条会带着一个凭空出现的 due 留在调度里
+    expect(progressOf(first, "fsrs_due")).toEqual([null]);
+    expect(testDb.exec("SELECT COUNT(*) FROM grammar_reviews")[0].values[0]).toEqual([0]);
+  });
+
+  it("撤销熟知会恢复原卡，不会被题库过滤后跳到别处", () => {
+    const id = getGrammarQuizSession(LEVEL).card!.id;
+    const next = submitGrammarQuizAnswer(LEVEL, id, "known_forever");
+    expect(next.card?.id).not.toBe(id);
+
+    const restored = undoLastGrammarQuizAnswer(LEVEL);
+    expect(restored.card!.id).toBe(id);
+    expect(progressOf(id, "known_forever, seen_count")).toEqual([0, 0]);
+  });
+
+  it("没有可撤销历史时，上一个原样停在当前卡，不重新抽题", () => {
+    const card = getGrammarQuizSession(LEVEL).card!;
+    const same = undoLastGrammarQuizAnswer(LEVEL);
+    expect(same.card!.id).toBe(card.id);
+    expect(same.canUndo).toBe(false);
+  });
+
+  it("今天的过完了就没卡了；加餐才会再放新的进来", () => {
+    const { session } = drain(() => "know");
+    expect(session.card).toBeNull();
+    expect(session.remaining).toBe(0);
+
+    const extended = extendGrammarQuizPlan(LEVEL, 5);
+    expect(extended.card).not.toBeNull();
+    expect(extended.card!.isNew).toBe(true);
+    expect(extended.remaining).toBe(5);
+  });
+
+  it("卡上带着「接续标在 `～` 头上」那一段（判据在 grammar-formation）", () => {
+    const annotated = (["N5", "N4", "N3", "N2", "N1"] as const)
+      .flatMap((level) => grammarQuizRanking(level))
+      .filter((row) => row.attachment);
+    // 出厂库 741 条里 554 条标得出来，其余的判不准，宁可不标
+    expect(annotated.length).toBeGreaterThan(500);
+    annotated.forEach((row) => {
+      expect(row.pattern).toMatch(/[～〜~]/);
+      // 标的每一段都必须是接续原文里真有的字，不能是拼出来的
+      row.attachment!.split("／").forEach((part) => expect(row.formation).toContain(part));
+    });
   });
 
   it("外部排序：错得最多的排最前，没答过的排最后", () => {
-    // 出厂库里 grammar_progress 是空的（它在 bake-seed-db 的 userDataTables 里，
-    // 非空就拒绝烧库），所以得先让它把每条建一行，否则下面的 UPDATE 全打空。
-    startGrammarQuizRound(LEVEL, seeded(1));
+    getGrammarQuizSession(LEVEL); // 建 grammar_progress 行
     const ids = testDb.exec("SELECT id FROM grammar_points WHERE level='N5' ORDER BY sort_order LIMIT 3")[0]
       .values.map((v) => Number(v[0]));
     testDb.run("UPDATE grammar_progress SET forgot_count = 5, seen_count = 6 WHERE grammar_id = ?", [ids[2]]);
@@ -164,13 +212,5 @@ describe("语法考题（无 FSRS，一轮乱序不重复）", () => {
     expect(ranked[1].id).toBe(ids[0]);
     expect(ranked[ranked.length - 1].seenCount).toBe(0);
     expect(ranked).toHaveLength(120);
-  });
-
-  it("shuffle 不丢元素也不重复", () => {
-    const input = Array.from({ length: 50 }, (_, i) => i);
-    const out = shuffle(input, seeded(4));
-    expect(out).toHaveLength(50);
-    expect(new Set(out).size).toBe(50);
-    expect(out).not.toEqual(input);
   });
 });

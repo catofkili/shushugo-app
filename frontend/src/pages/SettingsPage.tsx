@@ -2,6 +2,7 @@ import { AlertTriangle, Check, ChevronRight, Download, Moon, RotateCcw, Smartpho
 import { useEffect, useRef, useState } from "react";
 import { refreshTodayWordPlan } from "../lib/api";
 import { exportDatabase, importDatabase } from "../lib/database";
+import { clearLocalAppData } from "../lib/clear-local-data";
 import { clearStorage, saveDatabase } from "../lib/storage";
 import { getPasscodeState, verifyPasscode } from "../lib/localPasscode";
 import { loadVoices, SYSTEM_VOICE_ID, type AudioVoice } from "../lib/speech";
@@ -303,9 +304,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
       }
 
       await clearStorage();
-      localStorage.removeItem("mn-study-preferences");
-      localStorage.removeItem("mn-word-level");
-      localStorage.removeItem("mn-word-type");
+      clearLocalAppData();
       notify("本机学习数据和偏好已清除，页面即将刷新。");
       window.setTimeout(() => window.location.reload(), 900);
     } finally {
@@ -744,7 +743,8 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                 <div>
                   <p className="text-sm font-bold text-red-100">红色警告：此操作不可撤销</p>
                   <p className="mt-1 text-xs leading-5 text-red-100/65">
-                    将清除本机学习数据库、每日目标、筛选偏好，并恢复到内置初始词库。建议先导出学习数据。
+                    将清除本机学习数据库、学习偏好、学习模式、语法笔记和标记，并恢复到内置初始词库。
+                    账号登录状态、通知提醒和已购权益保留。建议先导出学习数据。
                   </p>
                 </div>
               </div>

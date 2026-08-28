@@ -10,6 +10,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import initSqlJs from "sql.js";
+import { findPopulatedUserTables } from "./user-data-tables.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(here, "../public/nihongo.db");
@@ -113,25 +114,7 @@ const firstValue = (query, params = []) => {
   return result[0]?.values?.[0]?.[0];
 };
 
-const userDataTables = [
-  "progress", "reviews", "checkins", "critical_reviews", "word_notes", "word_study_time",
-  "word_question_meanings",
-  "kanji_progress", "kanji_memory", "kanji_char_overrides", "stage1_tasks", "stage2_progress",
-  "moji_migrated_reviews", "grammar_progress", "grammar_reviews", "grammar_points_archive",
-  "dictionary_discovered_words"
-];
-// 表不存在 = 这份种子库还没升到那一版 schema,等价于空,不算用户数据。
-// 但**不能**因此把新表漏出清单：只要它在这里,种子库一旦长出这张表就会被查到。
-const userRowCount = (table) => {
-  try {
-    return Number(firstValue(`SELECT COUNT(*) FROM ${table}`)) || 0;
-  } catch {
-    return 0;
-  }
-};
-const populatedUserTables = userDataTables
-  .map((table) => [table, userRowCount(table)])
-  .filter(([, count]) => count > 0);
+const populatedUserTables = findPopulatedUserTables((sql) => firstValue(sql));
 if (populatedUserTables.length) {
   throw new Error(`拒绝更新出厂词库：其中含有用户数据（${populatedUserTables.map(([table, count]) => `${table}=${count}`).join(", ")}）`);
 }

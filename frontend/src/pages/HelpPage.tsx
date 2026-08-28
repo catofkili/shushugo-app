@@ -63,31 +63,25 @@ export function HelpPage({ onBack }: HelpPageProps) {
 
           {tutorialOpen && (
             <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3">
+              {/* 这三步要对着现在的界面写。上一版说的「在单词学习选 JLPT 等级或学习类型」
+                  「到语法用学习/练习切换」都是早就没有的控件 —— 教程写错比没有教程更糟。 */}
               <ol className="space-y-2 text-sm text-white/68">
-                <li>1. 在「单词学习」选择 JLPT 等级或学习类型，先完成当天词卡。</li>
-                <li>2. 到「语法」用学习/练习切换，按等级推进语法卡。</li>
-                <li>3. 回「主页」看收藏、进度地图和疑难辨析。</li>
+                <li>1. 点「单词学习」直接就是今天的计划：看题、翻面、按记得的程度评分。一天学几个新词在「设置 · 学习强度」里调。</li>
+                <li>2. 点「语法」按等级翻卡；工具条上的「考题」把一个等级洗一遍牌过完，「沉浸学习」连着读。</li>
+                <li>3. 主页的「学习工具」里有选词、疑难辨析、一字多音和收藏；进度概览里点任意一根柱子，直接进那个等级的词库。</li>
               </ol>
             </div>
           )}
 
-          <div className="flex w-full items-center gap-3 border-b border-white/10 p-4 text-left">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-              <MessageCircle size={20} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">反馈建议</p>
-              <p className="mt-0.5 text-xs text-white/50">请通过 App Store 的应用支持入口提交问题或建议</p>
-            </div>
-          </div>
-
+          {/* 原来这里是「反馈建议」和「获取支持」两行:同一个图标、同一句话、都不可点。
+              两条并排只会让人以为它们通向不同的地方,合成一条。 */}
           <div className="flex w-full items-center gap-3 p-4 text-left">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
               <MessageCircle size={20} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">获取支持</p>
-              <p className="mt-0.5 text-xs text-white/50">请通过 App Store 的应用支持入口联系我们</p>
+              <p className="text-sm font-bold text-white">反馈和支持</p>
+              <p className="mt-0.5 text-xs text-white/50">请通过 App Store 的应用支持入口提交问题或建议</p>
             </div>
           </div>
         </div>

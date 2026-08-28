@@ -17,6 +17,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import vm from "node:vm";
 import initSqlJs from "sql.js";
+import { findPopulatedUserTables } from "./user-data-tables.mjs";
 import { buildTokenMetadata } from "./token-bunsetsu.mjs";
 
 const require = createRequire(import.meta.url);
@@ -524,15 +525,7 @@ const ensureFuriganaColumns = (db) => {
 const scalar = (db, query, params = []) => Number(db.exec(query, params)[0]?.values?.[0]?.[0] ?? 0);
 
 const assertCleanDatabase = (db, dbPath) => {
-  const userTables = [
-    "progress", "reviews", "checkins", "critical_reviews", "word_notes", "word_study_time",
-    "kanji_progress", "kanji_memory", "kanji_char_overrides", "stage1_tasks", "stage2_progress",
-    "moji_migrated_reviews", "grammar_progress", "grammar_reviews", "grammar_points_archive",
-    "dictionary_discovered_words"
-  ];
-  const populated = userTables
-    .map((table) => [table, scalar(db, `SELECT COUNT(*) FROM ${table}`)])
-    .filter(([, count]) => count > 0);
+  const populated = findPopulatedUserTables((sql) => scalar(db, sql));
   if (populated.length) {
     throw new Error(`${dbPath} 含有用户数据(${populated.map(([table, count]) => `${table}=${count}`).join(", ")}),拒绝烘焙`);
   }

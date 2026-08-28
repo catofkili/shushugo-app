@@ -1,2 +1,2 @@
 export * from "./word-api";
-export { getProgressOverview, markContentComplete } from "./progress-api";
+export { getProgressOverview } from "./progress-api";

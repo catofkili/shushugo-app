@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, ChevronRight, Crown, ReceiptText, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, Crown, ReceiptText, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { EntitlementState, productLabel } from "../lib/entitlements";
 import { initializePurchases, restorePurchases } from "../lib/purchases";
 
@@ -10,11 +10,20 @@ interface ProPageProps {
   onOpenPrivacy: () => void;
 }
 
+/**
+ * ⚠️ 这几条里**现在真正锁着的只有「沉浸式语法学习」**。
+ * `FeatureId` 定义了 advancedDashboard / unlimitedMistakes / fullJlptPlan 三个,
+ * Paywall 也给它们写了文案,但全库只有一处 `requirePro()` 调用,就是沉浸式语法 ——
+ * 学习总览、JLPT 规划免费用户本来就在用。
+ *
+ * 所以这里如实标注,把没上锁的写成「开发中」。**没有顺手去给它们上锁** ——
+ * 那等于把现在能用的东西收走,是产品决定,不该由一次文案修订带出来。
+ */
 const rows = [
-  { label: "高级学习总览", detail: "整合单词、语法和等级进度" },
-  { label: "沉浸式语法学习", detail: "低干扰阅读卡片，适合集中推进" },
-  { label: "完整 JLPT 规划", detail: "按 N1-N5 组织未来学习路线" },
-  { label: "高级专项能力", detail: "为后续专项训练和 AI 讲解预留权益" }
+  { label: "沉浸式语法学习", detail: "低干扰阅读卡片，适合集中推进", live: true },
+  { label: "高级学习总览", detail: "整合单词、语法和等级进度", live: false },
+  { label: "完整 JLPT 规划", detail: "按 N1-N5 组织未来学习路线", live: false },
+  { label: "高级专项能力", detail: "专项训练和 AI 讲解", live: false }
 ];
 
 export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: ProPageProps) {
@@ -53,16 +62,28 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
             <p className="mt-2 text-sm leading-6 text-white/66">
               {entitlements.isPro
                 ? `${productLabel(entitlements.productId)} · ${entitlements.source === "development" ? "本地开发解锁" : "App Store 权益"}`
-                : "当前为免费版。升级后可解锁高级统计、沉浸式学习和完整训练规划。"}
+                : "当前为免费版。现在解锁的是沉浸式语法学习，其余权益还在开发中。"}
             </p>
           </div>
         </div>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           {rows.map((row) => (
-            <div key={row.label} className="rounded-2xl border border-white/12 bg-[#81D8CF]/10 p-3">
+            <div
+              key={row.label}
+              className={`rounded-2xl border p-3 ${
+                row.live ? "border-white/12 bg-[#81D8CF]/10" : "border-white/10 bg-white/5"
+              }`}
+            >
               <div className="flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-[#81D8CF]" />
-                <p className="text-sm font-bold text-white">{row.label}</p>
+                {row.live
+                  ? <CheckCircle2 size={16} className="shrink-0 text-[#81D8CF]" />
+                  : <Clock3 size={16} className="shrink-0 text-white/40" />}
+                <p className={`text-sm font-bold ${row.live ? "text-white" : "text-white/70"}`}>{row.label}</p>
+                {!row.live && (
+                  <span className="ml-auto shrink-0 rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-bold text-white/45">
+                    开发中
+                  </span>
+                )}
               </div>
               <p className="mt-1 text-xs leading-5 text-white/50">{row.detail}</p>
             </div>

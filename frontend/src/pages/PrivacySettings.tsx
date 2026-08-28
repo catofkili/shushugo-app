@@ -1,9 +1,11 @@
 import { AlertTriangle, ArrowLeft, ChevronRight, Database, Cloud, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { exportDatabase } from "../lib/database";
+import { clearLocalAppData } from "../lib/clear-local-data";
 import { clearEntitlements } from "../lib/entitlements";
 import { getPasscodeState, verifyPasscode } from "../lib/localPasscode";
 import { clearStorage } from "../lib/storage";
+import { getCloudSession } from "../lib/sync-api";
 
 interface PrivacySettingsProps {
   onBack: () => void;
@@ -18,6 +20,25 @@ export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: Priva
   const [clearCredential, setClearCredential] = useState("");
   const [clearingData, setClearingData] = useState(false);
   const clearConfirmText = "删除所有数据";
+  // 这一行原来写死成「可用」,不管有没有登录、有没有配后端都是同一个字。
+  // 隐私页说的是「你的数据现在在哪」,那这行就必须是真的状态,不能是装饰。
+  const [syncState, setSyncState] = useState<"loading" | "off" | "signed-out" | "on">("loading");
+
+  useEffect(() => {
+    let alive = true;
+    void getCloudSession().then((session) => {
+      if (!alive) return;
+      setSyncState(!session.configured ? "off" : session.token ? "on" : "signed-out");
+    }).catch(() => {
+      if (alive) setSyncState("off");
+    });
+    return () => { alive = false; };
+  }, []);
+
+  const syncBadge = syncState === "loading" ? "读取中"
+    : syncState === "on" ? "已登录"
+      : syncState === "signed-out" ? "未登录"
+        : "未配置";
 
   const notify = (text: string) => {
     setMessage(text);
@@ -63,10 +84,9 @@ export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: Priva
       }
 
       await clearStorage();
-      localStorage.removeItem("mn-study-preferences");
-      localStorage.removeItem("mn-word-level");
-      localStorage.removeItem("mn-word-type");
-      localStorage.removeItem("jp-grammar-card-order-v2");
+      clearLocalAppData();
+      // 这一颗按钮的说法是「删除所有数据」,已购权益也在内(可用「恢复购买」找回);
+      // 设置页那颗只说「清除学习数据」,所以不碰 —— 两处的差别是有意的。
       clearEntitlements();
       notify("本机数据已删除，页面即将刷新。");
       window.setTimeout(() => window.location.reload(), 900);
@@ -113,8 +133,14 @@ export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: Priva
               <p className="text-sm font-bold text-white">云端同步</p>
               <p className="mt-0.5 text-xs text-white/50">登录后自动同步；未登录和断网时仍保存在本机</p>
             </div>
-            <span className="rounded-full border border-white/15 bg-white/8 px-2 py-1 text-xs font-bold text-white/55">
-              可用
+            <span
+              className={`rounded-full px-2 py-1 text-xs font-bold ${
+                syncState === "on"
+                  ? "bg-[#81D8CF]/20 text-[#81D8CF]"
+                  : "border border-white/15 bg-white/8 text-white/55"
+              }`}
+            >
+              {syncBadge}
             </span>
           </div>
         </div>

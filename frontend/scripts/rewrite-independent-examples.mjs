@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import initSqlJs from "sql.js";
+import { findPopulatedUserTables } from "./user-data-tables.mjs";
 
 // 这个脚本故意不读取任何旧 example_jp/example_meaning 字段。
 // 例句只根据词条、读音、词性和词义重新生成，避免把旧例句带入新数据。
@@ -1359,14 +1360,7 @@ const rewrittenSeed = seed.map((row, index) => {
 
 const SQL = await initSqlJs();
 const db = new SQL.Database(new Uint8Array(readFileSync(dbPath)));
-const userDataTables = [
-  "progress", "reviews", "checkins", "critical_reviews", "word_notes", "word_study_time",
-  "kanji_progress", "kanji_memory", "kanji_char_overrides", "stage1_tasks", "stage2_progress",
-  "moji_migrated_reviews", "grammar_progress", "grammar_reviews", "grammar_points_archive",
-];
-const populated = userDataTables
-  .map((table) => [table, Number(db.exec(`SELECT COUNT(*) FROM ${table}`)[0]?.values?.[0]?.[0] ?? 0)])
-  .filter(([, count]) => count > 0);
+const populated = findPopulatedUserTables((sql) => Number(db.exec(sql)[0]?.values?.[0]?.[0] ?? 0));
 if (populated.length) {
   throw new Error(`拒绝覆盖含有用户数据的数据库：${populated.map(([table, count]) => `${table}=${count}`).join(", ")}`);
 }

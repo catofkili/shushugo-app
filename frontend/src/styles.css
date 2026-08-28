@@ -173,6 +173,49 @@
   text-shadow: none !important;
 }
 
+/* ==========================================================
+   语法考题：翻面后把接续标在题面每个 `～` 的头上。
+
+   ⚠️ 标注是**绝对定位**的，不占行内空间 —— 句型自己的排版、换行一个字都不变，
+   只是头顶上浮一行。真拿 <ruby> 做的话，`名词／用言普通形` 会把那个 `～` 的
+   基字撑到一百多像素宽，四个 `～` 的叠用句型在手机上直接散架。
+   代价是要给容器留出上方的空间和行距，见 .grammar-pattern--annotated。
+   ========================================================== */
+.grammar-slot {
+  position: relative;
+}
+
+.grammar-slot__rt {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 0.08em);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 11em;           /* em 是标注自己的字号：八九个字一行放得下，长的折两三行 */
+  text-align: center;
+  font-family: "Inter", "Noto Sans JP", system-ui, sans-serif;
+  font-size: clamp(9px, 0.24em, 14px);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: 0.01em;
+  color: var(--zoo-orange, #E8971C);
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  text-shadow: none;
+}
+
+/* 奶油底上 #E8971C 只有 2.2:1，11px 的小字读不动 —— 沉一档到深琥珀（4.6:1），
+   仍然是橙色系，和振假名的绿、正文的褐都分得开。 */
+[data-theme="light"] .grammar-slot__rt {
+  color: #A8630B;
+}
+
+/* 标注浮在行的上方，所以行距和上边距都得让出来，否则会压到上一行/标签上 */
+.grammar-pattern--annotated {
+  padding-top: 2.75rem;
+  line-height: 1.75;
+}
+
 /* ======================================================================
    明亮「动物园 · 水豚」主题
    基调：奶油底 + 新绿(主色) + 水豚棕 + 柚子橙。
@@ -2639,3 +2682,27 @@ select {
 [data-theme="light"] .ach-progress span { background: rgba(126, 190, 79, 0.65) }
 [data-theme="light"] .ach-tag-rare { background: rgba(90, 140, 220, 0.18); color: #2f5aa8 }
 [data-theme="light"] .ach-tag-epic { background: rgba(150, 90, 200, 0.18); color: #7038a8 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   词汇量测验
+   ⚠️ 这一页原来整页写死深色（`bg-[#3f4343]/90`、`bg-black/10`、`text-yellow-100`），
+   浅色模式下是「浅底上盖一张深灰卡」+「白字白底」。卡面改走 .dictionary-card，
+   剩下三个反馈态在这里各给一套 —— **黄色系在上面那张翻译表里一个档位都没有**，
+   靠 text-yellow-100 在浅底上等于隐形。
+   ───────────────────────────────────────────────────────────────────── */
+.vocab-prompt-panel {
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+[data-theme="light"] .vocab-prompt-panel {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(111, 168, 62, 0.24) !important;
+}
+
+.vocab-fb-correct { border-color: rgba(129, 216, 207, 0.55); background: rgba(129, 216, 207, 0.14); color: #BFF4EE; }
+.vocab-fb-wrong   { border-color: rgba(252, 165, 165, 0.55); background: rgba(252, 165, 165, 0.1); color: #FEE2E2; }
+.vocab-fb-unknown { border-color: rgba(253, 224, 71, 0.55); background: rgba(253, 224, 71, 0.1); color: #FEF9C3; }
+
+[data-theme="light"] .vocab-fb-correct { border-color: rgba(92, 143, 50, 0.42) !important; background: rgba(143, 203, 94, 0.16) !important; color: #3F6B22 !important; }
+[data-theme="light"] .vocab-fb-wrong   { border-color: rgba(185, 28, 28, 0.34) !important; background: rgba(185, 28, 28, 0.08) !important; color: #b91c1c !important; }
+[data-theme="light"] .vocab-fb-unknown { border-color: rgba(161, 98, 7, 0.34) !important; background: rgba(202, 138, 4, 0.1) !important; color: #854d0e !important; }

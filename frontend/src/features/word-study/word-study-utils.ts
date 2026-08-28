@@ -27,6 +27,14 @@ export const answerOptions: { value: WordAnswer; label: string; secondary?: bool
   { value: "known_forever", label: "熟知", secondary: true }
 ];
 
+/** 四个评分键的键盘快捷键。学习页和语法考题共用，别各写一份。 */
+export const answerHotkeyLabels: Record<WordAnswer, string> = {
+  forgot: "V",
+  fuzzy: "B",
+  know: "N",
+  known_forever: "M"
+};
+
 export const levelOptions: { value: WordLevelFilter; label: string }[] = [
   { value: "All", label: "全部" },
   { value: "N5", label: "N5" },

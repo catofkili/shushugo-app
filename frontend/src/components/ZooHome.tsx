@@ -17,14 +17,14 @@ import { ZooProgressPanel } from "./ZooProgressPanel";
 
 /**
  * 主页 —— 取代原来的「工具箱」页,工具箱里的每一项都在这里有入口:
- *   学习模式 / 收藏 / 进度概览 / 一键填满 / 刷新进度 / 一键完成今日单词。
+ *   学习模式 / 收藏 / 进度概览 / 刷新进度 / 一键完成今日单词。
  *
  * 布局用便当式(bento)网格 + 分区标题,而不是把功能竖着一条条堆:
  *   ① 今天要做什么(今日复习 + 组队,通栏,最显眼)
  *   ② 我的动物园(进度地图 / 温泉 / 图鉴)
  *   ③ 学习工具(学习模式 / 收藏)
  *   ④ 进度概览(柱状图)
- *   ⑤ 进度维护(折叠起来:刷新 / 填满 / 一键完成,都是低频且有副作用的操作)
+ *   ⑤ 进度维护(折叠起来:刷新 / 一键完成,都是低频且有副作用的操作)
  *
  * 数字全部来自本地真实进度(getWordStats / ProgressOverview),没有占位。
  */
@@ -42,7 +42,6 @@ type Props = {
   onStartMode: (mode: StudyMode) => void;
   /** 上次用过的模式(没有记录就是经典) */
   activeMode: StudyMode;
-  onOpenFill: () => void;
   onRefreshOverview: () => void;
   onCompleteTodayWords: () => void;
   /** 合并老库里重复录入的词条（同一个词两行） */
@@ -69,7 +68,6 @@ export function ZooHome({
   onStartStudy,
   onStartMode,
   activeMode,
-  onOpenFill,
   onRefreshOverview,
   onCompleteTodayWords,
   onMergeDuplicates
@@ -252,12 +250,15 @@ export function ZooHome({
               <small>{shortfallText(jlpt.shortfall)}</small>
             </button>
           )}
+          {/* 组队还没接后端(TeamPage 顶上写着这句)。首页原来写的是「我的队伍 · N3 冲刺组 ·
+              看看今天谁下水了」—— 那是把一支不存在的队伍当成用户自己的队伍在播报,
+              进去才被告知是示例。入口留着(接了后端就改回来),但首页这行必须说实话。 */}
           <button className="zoo-duo-cell" onClick={() => onNavigate("team")}>
-            <span className="zoo-duo-kick">我的队伍</span>
-            <b>N3 冲刺组</b>
+            <span className="zoo-duo-kick">组队</span>
+            <b>还没开放</b>
             <small className="zoo-duo-avatars">
               <i>🦫</i><i>🐰</i><i>🦊</i><i>🐿️</i>
-              <em>看看今天谁下水了</em>
+              <em>界面预览 · 队友是示例</em>
             </small>
           </button>
         </div>
@@ -311,6 +312,10 @@ export function ZooHome({
             <span aria-hidden="true">⭐</span>
             <b>收藏</b>
           </button>
+          <button onClick={() => onNavigate("vocab-test")}>
+            <span aria-hidden="true">📏</span>
+            <b>查词汇量</b>
+          </button>
         </div>
       </section>
 
@@ -332,16 +337,12 @@ export function ZooHome({
       <details className="zoo-maint">
         <summary>
           进度维护
-          <small>刷新 · 一键填满 · 合并重复词条 · 一键完成今日单词</small>
+          <small>刷新 · 合并重复词条 · 一键完成今日单词</small>
         </summary>
         <div className="zoo-maint-body">
           <button className="zoo-pop zoo-maint-btn" onClick={onRefreshOverview}>
             <b>🔄 刷新进度</b>
             <small>重新从本地数据库读一遍统计</small>
-          </button>
-          <button className="zoo-pop zoo-maint-btn" onClick={onOpenFill}>
-            <b>✅ 一键填满</b>
-            <small>把选定等级的单词/语法标记为已掌握</small>
           </button>
           <button className="zoo-pop zoo-maint-btn" onClick={onMergeDuplicates}>
             <b>🧬 合并重复词条</b>

@@ -3,13 +3,12 @@ import { ArrowLeft } from "lucide-react";
 import { WordStudy } from "./pages/WordStudy";
 import { AppNavigation } from "./components/AppNavigation";
 import { ZooHome } from "./components/ZooHome";
-import { FillProgressModal } from "./components/FillProgressModal";
 import { Paywall } from "./components/Paywall";
 import { AuthDialog } from "./components/AuthDialog";
 import { GrammarHighlightProvider } from "./components/GrammarHighlightProvider";
 import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
-import { completeTodayWordPlan, getProgressOverview, markContentComplete, startPickedStudy as startPickedWordStudy, ProgressOverview } from "./lib/api";
+import { completeTodayWordPlan, getProgressOverview, startPickedStudy as startPickedWordStudy, ProgressOverview } from "./lib/api";
 import { canUseFeature, FeatureId } from "./lib/entitlements";
 import { PROGRESS_UPDATED_EVENT, notifyProgressUpdated } from "./lib/progress-events";
 import { loadKanjiUnitIndex } from "./lib/kanji-unit-index";
@@ -52,6 +51,7 @@ const ZooMapPage = lazy(() => import("./pages/ZooMapPage").then((module) => ({ d
 const ZooDexPage = lazy(() => import("./pages/ZooDexPage").then((module) => ({ default: module.ZooDexPage })));
 const HotSpringPage = lazy(() => import("./pages/HotSpringPage").then((module) => ({ default: module.HotSpringPage })));
 const QuickStudyPage = lazy(() => import("./pages/QuickStudyPage").then((module) => ({ default: module.QuickStudyPage })));
+const VocabTestPage = lazy(() => import("./pages/VocabTestPage").then((module) => ({ default: module.VocabTestPage })));
 const WordLibraryPage = lazy(() => import("./pages/WordLibraryPage").then((module) => ({ default: module.WordLibraryPage })));
 
 const PageLoading = () => (
@@ -66,7 +66,8 @@ const toolPageTitles: Partial<Record<Page, string>> = {
   confusion: "疑难辨析",
   "kanji-readings": "一字多音",
   "word-list": "选词",
-  "quick-study": "快速学习"
+  "quick-study": "快速学习",
+  "vocab-test": "查词汇量"
 };
 
 const accountProtectedPages = new Set<Page>(["account", "personal-info"]);
@@ -87,11 +88,11 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notice, setNotice] = useState("");
   const [overview, setOverview] = useState<ProgressOverview>(() => getProgressOverview());
-  const [fillOpen, setFillOpen] = useState(false);
-  const [fillGrammarLevels, setFillGrammarLevels] = useState<JLPTLevel[]>([]);
-  const [fillWordLevels, setFillWordLevels] = useState<JLPTLevel[]>([]);
-  const [fillAllWords, setFillAllWords] = useState(false);
-  const [paywallFeature, setPaywallFeature] = useState<FeatureId | undefined>();
+  // "general" = 用户主动来买(Pro 页的「选择方案」),不是撞上某个被锁的功能。
+  // Paywall 里本来就写了一份不指名功能的通用文案,但入口一直是 `{paywallFeature && …}`,
+  // 不给 feature 就干脆不渲染 —— 那份文案从写下来起没有一条路走得到,
+  // 于是 Pro 页只能借一个「完整 JLPT 规划」的名头把弹层叫出来,而那功能根本没上锁。
+  const [paywallTarget, setPaywallTarget] = useState<FeatureId | "general" | undefined>();
   // 词库页的预设等级：进度概览点 N5 那根柱子进来时带着它
   const [wordListLevel, setWordListLevel] = useState<LibraryLevel>("all");
   const [selectedStudyMode, setSelectedStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
@@ -379,7 +380,7 @@ export default function App() {
       action();
       return;
     }
-    setPaywallFeature(feature);
+    setPaywallTarget(feature);
   };
 
   const openGrammar = (id: string) => {
@@ -412,13 +413,6 @@ export default function App() {
   };
 
   const refreshOverview = () => setOverview(getProgressOverview());
-
-  const completeSelectedContent = () => {
-    const data = markContentComplete({ grammarLevels: fillGrammarLevels, wordLevels: fillWordLevels, allWords: fillAllWords });
-    setOverview(data);
-    setFillOpen(false);
-    showNotice(fillAllWords || fillWordLevels.length || fillGrammarLevels.length ? "已同步勾选范围。" : "已清空一键填满状态。");
-  };
 
   const completeTodayWords = () => {
     const confirmed = window.confirm("确定要把今天的单词任务直接标记为完成吗？这会记录为今日已完成并进入完成页。");
@@ -472,15 +466,6 @@ export default function App() {
     const effectiveMode = activateMistakesForToday(mode);
     // 只更新选择态，不改变正在显示的 WordStudy initialMode，保留完成页。
     setSelectedStudyMode(effectiveMode);
-  };
-
-  const toggleFillLevel = (kind: "word" | "grammar", level: JLPTLevel) => {
-    const update = (current: JLPTLevel[]) => current.includes(level) ? current.filter((item) => item !== level) : [...current, level];
-    if (kind === "word") {
-      setFillWordLevels(update);
-      return;
-    }
-    setFillGrammarLevels(update);
   };
 
   const renderGrammarPage = () => (
@@ -543,7 +528,6 @@ export default function App() {
           onStartStudy={startCurrentStudyMode}
           onStartMode={startStudyMode}
           activeMode={launchStudyMode}
-          onOpenFill={() => setFillOpen(true)}
           onRefreshOverview={refreshOverview}
           onCompleteTodayWords={completeTodayWords}
           onMergeDuplicates={mergeDuplicates}
@@ -571,6 +555,9 @@ export default function App() {
         <QuickStudyPage onNavigate={navigateToPage} onDailyModeComplete={() => handleDailyModeComplete("quick")} />
       );
     }
+    if (page === "vocab-test") {
+      return renderToolSubpage(toolPageTitles["vocab-test"] ?? "查词汇量", <VocabTestPage />);
+    }
     if (page === "grammar") {
       return renderGrammarPage();
     }
@@ -593,7 +580,7 @@ export default function App() {
       return <ProfilePage entitlements={entitlements} cloudSession={cloudSession} onNavigate={navigateToPage} onRequireAuth={() => requireAccount()} onNotice={showNotice} />;
     }
     if (page === "pro") {
-      return <ProPage entitlements={entitlements} onBack={goBack} onOpenPaywall={() => setPaywallFeature("fullJlptPlan")} onOpenPrivacy={() => navigateToPage("privacy-policy")} />;
+      return <ProPage entitlements={entitlements} onBack={goBack} onOpenPaywall={() => setPaywallTarget("general")} onOpenPrivacy={() => navigateToPage("privacy-policy")} />;
     }
     if (page === "favorites") {
       return renderToolSubpage(toolPageTitles.favorites ?? "收藏", <FavoritesPage onOpenGrammar={openGrammar} />);
@@ -705,32 +692,18 @@ export default function App() {
           {notice}
         </div>
       )}
-      {paywallFeature && (
+      {paywallTarget && (
         <Paywall
-          feature={paywallFeature}
-          onClose={() => setPaywallFeature(undefined)}
-          onUnlocked={() => setPaywallFeature(undefined)}
+          feature={paywallTarget === "general" ? undefined : paywallTarget}
+          onClose={() => setPaywallTarget(undefined)}
+          onUnlocked={() => setPaywallTarget(undefined)}
           onOpenPrivacy={() => {
-            setPaywallFeature(undefined);
+            setPaywallTarget(undefined);
             navigateToPage("privacy-policy");
           }}
         />
       )}
 
-      {fillOpen && (
-        <FillProgressModal
-          fillAllWords={fillAllWords}
-          fillWordLevels={fillWordLevels}
-          fillGrammarLevels={fillGrammarLevels}
-          onClose={() => setFillOpen(false)}
-          onConfirm={completeSelectedContent}
-          onToggleAllWords={() => {
-            setFillAllWords((value) => !value);
-            setFillWordLevels([]);
-          }}
-          onToggleLevel={toggleFillLevel}
-        />
-      )}
       <AuthDialog
         open={authOpen}
         onClose={() => {

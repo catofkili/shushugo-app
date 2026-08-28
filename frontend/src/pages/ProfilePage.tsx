@@ -31,7 +31,8 @@ const profileSections = [
     title: "账号",
     items: [
       { label: "账号和安全", detail: "登录、密码与设备", icon: Shield, page: "account" as Page },
-      { label: "收集日 Pro", detail: "会员权益、恢复购买", icon: Crown, page: "pro" as Page },
+      // 「收集日 Pro」不在这张表里:上面那张会随已购状态换文案的横幅指的是同一个页面,
+      // 同一屏里把同一个入口摆两遍,只会让人以为它们通向不同的地方。
       { label: "个人信息", detail: "头像、昵称、学习身份", icon: UserRound, page: "personal-info" as Page },
       { label: "成就", detail: "47 个成就，含隐藏成就", icon: Trophy, page: "achievements" as Page },
       { label: "通知提醒", detail: "学习提醒和复习通知", icon: Bell, page: "notifications" as Page }
@@ -104,7 +105,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
         <span className="min-w-0 flex-1">
           <span className="block text-base font-bold text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</span>
           <span className="mt-0.5 block text-xs text-white/56">
-            {entitlements.isPro ? "管理权益、恢复购买和购买说明" : "解锁高级统计、沉浸学习和完整规划"}
+            {entitlements.isPro ? "管理权益、恢复购买和购买说明" : "解锁沉浸式语法学习，更多权益开发中"}
           </span>
         </span>
         <ChevronRight size={18} className="text-white/45" />

@@ -19,6 +19,8 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
     title: "沉浸式语法学习是 Pro 功能",
     body: "适合集中扫语法、快速推进等级和减少页面切换。"
   },
+  // ⚠️ 下面三条现在**没有任何调用方**:只有 immersiveGrammar 走 requirePro()。
+  // 留着是因为它们迟早要接上;真接上那天,先确认这句「是 Pro 功能」当时是真的。
   advancedDashboard: {
     title: "学习总览高级统计是 Pro 功能",
     body: "用更完整的进度视图观察单词、语法和等级推进。"
@@ -33,12 +35,12 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
   }
 };
 
+// 买之前看到的这几条必须和真实解锁的对得上:现在真正锁着的只有沉浸式语法学习
+// (全库唯一一处 requirePro),其余三个 FeatureId 定义了但没有任何地方去问权益。
+// 所以只把它写成已解锁,其余归到「后续纳入」那一条里,不逐条当成现成卖点列出来。
 const benefits = [
-  "高级学习总览和等级进度",
   "沉浸式语法学习",
-  "完整 JLPT 学习规划入口",
-  "高级专项训练能力",
-  "后续 Pro 功能自动纳入"
+  "后续 Pro 功能自动纳入（高级总览、JLPT 规划、专项训练开发中）"
 ];
 
 export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: PaywallProps) {

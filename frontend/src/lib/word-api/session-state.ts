@@ -16,8 +16,12 @@ export const dailyNewQuota = () => getDailyWordGoal();
  * 三个方向是三套卡:在反向里刚答过某个词,不该影响正向的「别连着出同一张」判断,
  * 也不该让正向的重刷队列跟着往前走。key 带上方向,正向沿用原来的键名 ——
  * 换了键名就等于把用户当前那一场的队列丢掉。
+ *
+ * `grammar` 是语法考题(见 lib/grammar-quiz.ts)。它排的是 grammar_id 不是 word_id,
+ * 但「隔几张再出」「刚答过的别连出」这两件事和方向完全一样,所以共用这一份实现 ——
+ * 队列项里的 `word_id` 在那条通道上装的是 grammar_id。
  */
-export type DirectionKey = "forward" | "reverse" | "kanji" | "kanji_reading";
+export type DirectionKey = "forward" | "reverse" | "kanji" | "kanji_reading" | "grammar";
 
 const queueKey = (direction: DirectionKey) =>
   direction === "forward" ? "review_queue" : `review_queue_${direction}`;

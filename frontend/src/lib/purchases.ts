@@ -34,7 +34,10 @@ export const STORE_PRODUCTS: StoreProduct[] = [
   {
     id: "shushugo_pro_yearly",
     title: "收集日 Pro 年度",
-    description: "解锁高级学习统计、沉浸式学习和完整训练规划。",
+    // 三个档位的区别只有计费方式,权益完全一样 —— 描述就该只说计费方式。
+    // 原来这句在年度卡上单独列了一串「高级学习统计、完整训练规划」,那些现在都没上锁,
+    // 而且写在这里还会让人以为年度比月度多给东西。
+    description: "按年计费，权益与月度、永久相同。",
     price: "App Store 定价",
     period: "按年订阅",
     recommended: true
@@ -42,7 +45,7 @@ export const STORE_PRODUCTS: StoreProduct[] = [
   {
     id: "shushugo_pro_monthly",
     title: "收集日 Pro 月度",
-    description: "适合短期冲刺，按月获得全部 Pro 功能。",
+    description: "适合短期冲刺，随时取消。",
     price: "App Store 定价",
     period: "按月订阅"
   },

@@ -15,6 +15,7 @@ import {
   TransitivityBadge
 } from "../features/word-study/WordStudyPanels";
 import {
+  answerHotkeyLabels,
   answerOptions,
   cardLabel,
   kanaToRomaji,
@@ -72,13 +73,6 @@ const answerHotkeys: Record<string, WordAnswer> = {
   b: "fuzzy",
   n: "know",
   m: "known_forever"
-};
-
-const answerHotkeyLabels: Record<WordAnswer, string> = {
-  forgot: "V",
-  fuzzy: "B",
-  know: "N",
-  known_forever: "M"
 };
 
 const DAILY_REVIEW_MAX_ATTEMPTS = 25;

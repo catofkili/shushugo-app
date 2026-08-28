@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import vm from "node:vm";
 import initSqlJs from "sql.js";
+import { findPopulatedUserTables, unregisteredTables } from "./user-data-tables.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(here, "../public");
@@ -35,24 +36,6 @@ if (strayEntries.length) {
   );
 }
 
-const userDataTables = [
-  "progress",
-  "reviews",
-  "checkins",
-  "critical_reviews",
-  "word_notes",
-  "word_study_time",
-  "kanji_progress",
-  "kanji_memory",
-  "kanji_char_overrides",
-  "stage1_tasks",
-  "stage2_progress",
-  "moji_migrated_reviews",
-  "grammar_progress",
-  "grammar_reviews",
-  "grammar_points_archive",
-  "dictionary_discovered_words"
-];
 
 const SQL = await initSqlJs();
 const bytes = readFileSync(dbPath);
@@ -189,16 +172,19 @@ if (existsSync(iosDbPath)) {
   iosDb.close();
 }
 
-const populated = userDataTables
-  .map((table) => [table, scalar(`SELECT COUNT(*) FROM ${table}`)])
-  .filter(([, count]) => count > 0);
+const populated = findPopulatedUserTables((sql) => scalar(sql));
+// 出厂库里有谁也没登记过的表 = 下一个泄漏。宁可拒绝构建,也不要默默发出去。
+const unregistered = unregisteredTables(() =>
+  (db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0]?.values ?? []).map((row) => String(row[0]))
+);
 const personalMarkers = ["project1", "personal_data_migrated", "/Users/"];
 const databaseText = new TextDecoder().decode(bytes);
 const foundMarkers = personalMarkers.filter((marker) => databaseText.includes(marker));
 
-if (populated.length || foundMarkers.length || grammarMismatches.length || dictionaryMismatches.length) {
+if (populated.length || unregistered.length || foundMarkers.length || grammarMismatches.length || dictionaryMismatches.length) {
   const details = [
     populated.length && `含有用户记录: ${populated.map(([table, count]) => `${table}=${count}`).join(", ")}`,
+    unregistered.length && `含有未登记的表(既不是出厂内容、也没进用户数据清单): ${unregistered.join(", ")}`,
     foundMarkers.length && `含有个人迁移标记: ${foundMarkers.join(", ")}`,
     grammarMismatches.length && `语法正文不一致: ${grammarMismatches.slice(0, 5).join("；")}${grammarMismatches.length > 5 ? "；…" : ""}`,
     dictionaryMismatches.length && `补充词典不一致: ${dictionaryMismatches.join("；")}`
