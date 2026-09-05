@@ -1,5 +1,6 @@
 import type { WordStats } from "../../types/vocabulary";
-import { getDailyWordGoal } from "../studyPreferences";
+import { getDailyWordGoal, getJlptPlanPreferences } from "../studyPreferences";
+import { grammarPlanRemaining } from "../grammar-quiz";
 import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
 import type { WordSessionOptions } from "../study-types";
 import {
@@ -164,8 +165,13 @@ export function getWordStats(
   // 模式切换器要显示「每个模式现在能练多少」。三个方向各有自己的当日计划,
   // directionProgressCounts 会顺手把当天的计划排好,所以这里读到的就是真实剩余量。
   const planRemaining = Math.max(frontProgress.total - frontProgress.completed, 0);
+  // 混合模式今天还欠几条语法(备考目标那一级)。语法是**加在**今日计划之上的活,
+  // 不摊进词数里 —— 摊进去的话混合和经典写着同一个数,多出来的那部分在主页上就不存在。
+  const grammarRemaining = grammarPlanRemaining(getJlptPlanPreferences().target);
   const modeCounts = {
     classic: planRemaining,
+    // 混合 = 同一份今日计划 + 插播的语法,所以角标是两者的合计(主页拆成两栏说明)。
+    mixed: planRemaining + grammarRemaining,
     mistakes: mistakes.poolSize,
     // 快速复习翻的还是今日计划那批词,只是换了个一页 50 张的形态
     quick: planRemaining,
@@ -264,6 +270,7 @@ export function getWordStats(
     newQuota: dailyNewQuota(),
     mistakes,
     modeCounts,
+    grammarRemaining,
     stage1ProgressDone: frontProgress.completed,
     stage1ProgressTotal: frontProgress.total,
     stage1NewDone: stage1Progress.newLane.done,

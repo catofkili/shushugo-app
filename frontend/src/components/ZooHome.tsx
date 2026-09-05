@@ -1,4 +1,11 @@
 import { useEffect, useState } from "react";
+// 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
+// ⚠️ **只换「图标」，不换「角色」**：松鼠🐿️、松子🌰、队友头像、纸屑是内容不是图标，
+// lucide 里也根本没有松鼠和温泉 —— 换掉等于把这个 App 的性格删了。
+import {
+  Bath, Flame, Library, Map, Merge, PawPrint, Puzzle, RefreshCw, Ruler,
+  SkipForward, SlidersHorizontal, Speech, Star
+} from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import { computeStreak } from "../lib/zoo-streak";
@@ -144,13 +151,15 @@ export function ZooHome({
   // 停在错题本却写着「今日复习 985 词」正是上次那个坑的一半成因。
   const activeInfo = studyModeInfo(activeMode);
   const activeCount = stats?.modeCounts?.[activeMode] ?? 0;
-  const isPlanMode = activeMode === "classic" || activeMode === "quick";
+  const isPlanMode = activeMode === "classic" || activeMode === "quick" || activeMode === "mixed";
   // 学完一批回来是 688 → 670,以前直接跳过去,等于没发生。滚下去才看得见自己按下了它。
   const heroCount = useCountUp(activeCount);
+  // 混合模式的合计里有语法条数，写「词」就是假的 —— 单位跟着口径走。
+  const heroUnit = activeMode === "mixed" ? "项" : "词";
   const heroNum = !stats
     ? "…"
     : activeCount > 0
-      ? `${heroCount} 词`
+      ? `${heroCount} ${heroUnit}`
       : isPlanMode ? "已完成" : "暂无题";
   const heroSub = !stats
     ? "正在读取"
@@ -175,7 +184,7 @@ export function ZooHome({
         </div>
         {streak > 0 && (
           <div className="zoo-greet-streak">
-            🔥<b>{streakCount}</b>
+            <Flame size={14} aria-hidden="true" /><b>{streakCount}</b>
           </div>
         )}
       </div>
@@ -192,7 +201,15 @@ export function ZooHome({
               是全 App 唯一需要用户自己调的量(设置里的学习强度),之前只在改设置那一刻
               弹个 toast 说一遍，之后再也找不到。这行是那个大数的脚注:同一个总量的拆分,
               不是第二个数字,所以两栏加起来必须等于大卡的合计(减负卡和压轴并进复习栏)。 */}
-          {isPlanMode && stats && stats.stage1NewTotal + stats.stage1ReviewTotal > 0 && (
+          {/* 混合模式的脚注换成「单词 · 语法」：那个大数是两件事的合计，
+              而「今天还欠几条语法」在别处一个字都没有。两栏照样加起来等于大卡的数。 */}
+          {activeMode === "mixed" && stats ? (
+            <span className="zoo-now-split">
+              单词 <b>{Math.max(stats.modeCounts.mixed - stats.grammarRemaining, 0)}</b>
+              <i aria-hidden="true">·</i>
+              语法 <b>{stats.grammarRemaining}</b>
+            </span>
+          ) : isPlanMode && stats && stats.stage1NewTotal + stats.stage1ReviewTotal > 0 && (
             <span className="zoo-now-split">
               新词 <b>{stats.stage1NewDone}</b>/{stats.stage1NewTotal}
               <i aria-hidden="true">·</i>
@@ -200,7 +217,7 @@ export function ZooHome({
             </span>
           )}
           <MomentPop moment={moment} leaving={momentLeaving} />
-          <span className="zoo-now-emoji" aria-hidden="true">{activeInfo.emoji}</span>
+          <span className="zoo-now-emoji" aria-hidden="true"><activeInfo.Icon size={38} strokeWidth={1.5} /></span>
           <span className="zoo-now-go">{heroCta}</span>
         </button>
 
@@ -210,7 +227,7 @@ export function ZooHome({
             onClick={() => setModeSheetOpen((open) => !open)}
             aria-expanded={modeSheetOpen}
           >
-            🎛️ 学习方式 · <b>{activeInfo.short}</b> {modeSheetOpen ? "▴" : "▾"}
+            <SlidersHorizontal size={12} aria-hidden="true" /> 学习方式 · <b>{activeInfo.short}</b> {modeSheetOpen ? "▴" : "▾"}
           </button>
         </div>
 
@@ -226,7 +243,7 @@ export function ZooHome({
                   className={`zoo-modes-item ${active ? "on" : ""}`}
                   onClick={() => { setModeSheetOpen(false); onStartMode(mode.id); }}
                 >
-                  <span className="zoo-modes-item-emoji" aria-hidden="true">{mode.emoji}</span>
+                  <span className="zoo-modes-item-emoji" aria-hidden="true"><mode.Icon size={20} /></span>
                   <span className="zoo-modes-item-copy">
                     <b>{mode.title}</b>
                     <small>{mode.subtitle} · {mode.description}</small>
@@ -270,17 +287,17 @@ export function ZooHome({
         <p className="zoo-tray-title">我的动物园</p>
         <div className="zoo-strip3">
           <button onClick={() => onNavigate("zoo-map")}>
-            <span aria-hidden="true">🗺️</span>
+            <span aria-hidden="true"><Map size={17} /></span>
             <b>{current ? `${current.level} ${current.pct}%` : "未开园"}</b>
             <small>{current ? HABITAT_NAMES[current.level] ?? "进度地图" : "进度地图"}</small>
           </button>
           <button onClick={() => onNavigate("hot-spring")}>
-            <span aria-hidden="true">♨️</span>
+            <span aria-hidden="true"><Bath size={17} /></span>
             <b>{streak > 0 ? `连续 ${streak} 天` : "还没连击"}</b>
             <small>{checkedInToday ? "今天已泡" : "今天还没下水"}</small>
           </button>
           <button onClick={() => onNavigate("zoo-dex")}>
-            <span aria-hidden="true">🐾</span>
+            <span aria-hidden="true"><PawPrint size={17} /></span>
             <b>{badgeCount} / {badges.length}</b>
             <small>饲养员图鉴</small>
           </button>
@@ -293,27 +310,27 @@ export function ZooHome({
         <p className="zoo-tray-title">学习工具</p>
         <div className="zoo-quad">
           <button onClick={() => onNavigate("study-modes")}>
-            <span aria-hidden="true">🎛️</span>
+            <span aria-hidden="true"><SlidersHorizontal size={21} /></span>
             <b>学习模式</b>
           </button>
           <button onClick={() => onOpenWordList()}>
-            <span aria-hidden="true">📚</span>
+            <span aria-hidden="true"><Library size={21} /></span>
             <b>选词</b>
           </button>
           <button onClick={() => onNavigate("confusion")}>
-            <span aria-hidden="true">🧩</span>
+            <span aria-hidden="true"><Puzzle size={21} /></span>
             <b>疑难辨析</b>
           </button>
           <button onClick={() => onNavigate("kanji-readings")}>
-            <span aria-hidden="true">🗣️</span>
+            <span aria-hidden="true"><Speech size={21} /></span>
             <b>一字多音</b>
           </button>
           <button onClick={() => onNavigate("favorites")}>
-            <span aria-hidden="true">⭐</span>
+            <span aria-hidden="true"><Star size={21} /></span>
             <b>收藏</b>
           </button>
           <button onClick={() => onNavigate("vocab-test")}>
-            <span aria-hidden="true">📏</span>
+            <span aria-hidden="true"><Ruler size={21} /></span>
             <b>查词汇量</b>
           </button>
         </div>
@@ -341,15 +358,15 @@ export function ZooHome({
         </summary>
         <div className="zoo-maint-body">
           <button className="zoo-pop zoo-maint-btn" onClick={onRefreshOverview}>
-            <b>🔄 刷新进度</b>
+            <b><RefreshCw size={13} aria-hidden="true" /> 刷新进度</b>
             <small>重新从本地数据库读一遍统计</small>
           </button>
           <button className="zoo-pop zoo-maint-btn" onClick={onMergeDuplicates}>
-            <b>🧬 合并重复词条</b>
+            <b><Merge size={13} aria-hidden="true" /> 合并重复词条</b>
             <small>老库里同一个词录了两遍的，把记录并到一行（会先存恢复点）</small>
           </button>
           <button className="zoo-pop zoo-maint-btn warn" onClick={onCompleteTodayWords}>
-            <b>⏭️ 一键完成今日单词</b>
+            <b><SkipForward size={13} aria-hidden="true" /> 一键完成今日单词</b>
             <small>跳过今天的复习，直接进完成页</small>
           </button>
         </div>

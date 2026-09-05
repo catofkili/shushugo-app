@@ -1,4 +1,4 @@
-import { BookOpenText, Brain, CheckCircle2, Layers3, LetterText, ListChecks, Repeat2 } from "lucide-react";
+import { BookOpenText, Brain, CheckCircle2, Layers3, LetterText, ListChecks, Repeat2, Shuffle } from "lucide-react";
 import { defaultStudyMode, saveStudyMode, VISIBLE_STUDY_MODES } from "../lib/studyMode";
 import type { StudyMode } from "../types/app";
 
@@ -12,6 +12,7 @@ interface StudyModesPageProps {
 // 这里只补一个图标映射 —— 图标是这一页独有的,不值得让 lib 去依赖 lucide。
 const MODE_ICONS: Record<StudyMode, typeof Layers3> = {
   classic: Layers3,
+  mixed: Shuffle,
   mistakes: Brain,
   quick: BookOpenText,
   reverse: Repeat2,

@@ -1,3 +1,4 @@
+import { Flame } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getWordStats, markTodayWordCheckin } from "../lib/api";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
@@ -77,7 +78,7 @@ export function HotSpringPage({ onNavigate }: { onNavigate: (page: Page) => void
         </div>
 
         <div className="zoo-hs-meta">
-          <b>🔥 连续 {streak} 天</b>
+          <b><Flame size={14} aria-hidden="true" /> 连续 {streak} 天</b>
           <span>
             {checkedInToday
               ? "今天泡好啦，柚子也落下来了 🍊"

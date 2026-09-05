@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, ChevronDown, Search, Star, X } from "lucide-react";
+import { AlarmClock, Check, ChevronDown, Mountain, Search, Star, X } from "lucide-react";
 import {
   DEFAULT_LIBRARY_FILTERS,
   MEMORY_BANDS,
@@ -18,11 +18,13 @@ import {
   type WordLibraryRow
 } from "../lib/word-library";
 import { useRowSelection } from "../hooks/useRowSelection";
+import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { displayForm } from "../lib/confusion-groups";
 import {
   addWordsToQueue,
   markWordKnownForever,
   setWordsKnownForeverIds,
+  addFavorite,
   toggleFavorite,
   unmarkWordKnownForever,
   updateWordNote
@@ -451,7 +453,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
           className={`wl-legend-item${filters.band === "due" ? " on" : ""}`}
           onClick={() => toggleBand("due")}
         >
-          <i className="wl-legend-flag">⏰</i>
+          <i className="wl-legend-flag"><AlarmClock size={13} /></i>
           该复习
           <b>{tally.due}</b>
         </button>
@@ -459,7 +461,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
           className={`wl-legend-item${filters.band === "leech" ? " on" : ""}`}
           onClick={() => toggleBand("leech")}
         >
-          <i className="wl-legend-flag">🪨</i>
+          <i className="wl-legend-flag"><Mountain size={13} /></i>
           顽固词
           <b>{tally.leech}</b>
         </button>
@@ -691,6 +693,7 @@ const WordDetailSheet = ({
   /** 只有没学过的词给这个按钮：学过的到期自己会出现，不需要「加入」 */
   onQueue: (wordId: number) => void;
 }) => {
+  const { pickFolder, picker } = useFavoriteFolderPicker();
   const [detail, setDetail] = useState<WordLibraryDetail | null>(null);
   const [note, setNote] = useState("");
 
@@ -719,8 +722,18 @@ const WordDetailSheet = ({
             <button
               className={`wl-fav${detail.isFavorite ? " on" : ""}`}
               onClick={() => {
-                const { isFavorite } = toggleFavorite("word", detail.id);
-                setDetail({ ...detail, isFavorite });
+                if (detail.isFavorite) {
+                  toggleFavorite("word", detail.id);
+                  setDetail({ ...detail, isFavorite: false });
+                  return;
+                }
+                pickFolder({
+                  title: `收藏「${forms.primary}」到`,
+                  onPick: (folder) => {
+                    addFavorite("word", detail.id, folder);
+                    setDetail({ ...detail, isFavorite: true });
+                  }
+                });
               }}
               aria-label="收藏"
             >
@@ -787,6 +800,9 @@ const WordDetailSheet = ({
             rows={2}
           />
         </label>
+        {/* 放在 wl-sheet 里面：portal 的事件仍按 React 树冒泡，
+            挂在外面的话点收藏夹会撞上 wl-overlay 的 onClose 把详情关掉。 */}
+        {picker}
       </div>
     </div>,
     document.body

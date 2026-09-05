@@ -61,6 +61,10 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "grammar_reading_positions", keys: ["kind", "level"], strategy: "lww" },
 
   { table: "content_favorites", keys: ["item_type", "item_id"], strategy: "lww" },
+  // 收藏夹名字就是行身份(不是自增 id),所以两端各建一个同名夹子天然是同一个。
+  { table: "favorite_folders", keys: ["name"], strategy: "union" },
+  // 查词汇量的历史成绩。每次测完追加一行、之后不再改，取并集即可。
+  { table: "vocab_test_history", keys: ["run_id"], strategy: "union" },
 
   // 复习流水按触发器分配的设备:本机 id 去重。created_at 只有秒级精度，
   // 同一秒的两次作答会撞自然键；sync_uid 才是稳定事件身份。

@@ -282,9 +282,7 @@
     [2418120, 2417240],
     [2863193, 2192560],
     [1636860, 2866131],
-    [2239080, 2826185],
-    [2056330, 2755470],
-    [2834646, 1471580]
+    [2239080, 2826185]
   ],
   "source_flag_review": {
     "slang_colloquial_sensitive_ent_seq": [
@@ -331,6 +329,69 @@
     ],
     "dialect_ent_seq": [2451420],
     "surface_form_warning_ent_seq": [1530680, 2418420]
+  },
+  "second_round_905": {
+    "verdict": "fail",
+    "audited_entries": 905,
+    "positive_checks": {
+      "old_remove_leaks": 0,
+      "old_duplicate_family_leaks": 0,
+      "internal_exact_surface_duplicates": 0,
+      "internal_exact_kana_duplicates": 0,
+      "internal_duplicate_ent_seq": 0,
+      "exact_kana_matches_in_current_seed": 0,
+      "generated_entries_identical_to_accepted": true
+    },
+    "blocking_reason_evidence": {
+      "reported_unique_reasons": 905,
+      "effective_templates_after_replacing_surface_level_and_quoted_payload": 11,
+      "largest_template_counts": [361, 225, 115, 60, 58, 31, 22, 15, 8, 7, 3],
+      "action": "Do not use reason_unique as a completion gate. Require a structured, entry-specific decision with modernity or frequency evidence, compositionality decision, level basis, and duplicate-family decision.",
+      "constraint_signature_false_parses": [2033700, 1860720],
+      "constraint_signature_examples": {
+        "2033700": "言うことを聞く was split as 言うこ＋と＋を聞く",
+        "1860720": "得るところがある was split as 得る＋と＋ころがある"
+      }
+    },
+    "remove_or_replace": {
+      "ordinary_compound_or_free_metaphor": [1634690, 1381600, 2838148],
+      "grammar_fragment_or_incomplete_surface": [2845132, 2260770, 2179070],
+      "rough_command_not_core_routine": [2555520, 2542470, 2835713],
+      "dated_cold_or_non_mainline": [2562160, 2835766, 1872110, 1275770, 1884330, 2853598, 2559420, 2751020, 2127580],
+      "noncanonical_surface_repairs": {
+        "1896020": "手を携える",
+        "1535240": "目を丸くする",
+        "2260770": "夫婦喧嘩は犬も食わない"
+      }
+    },
+    "reclassify": {
+      "routine_expression_to_idiom_or_construction": [2866028, 2683310, 2827556, 2126140, 2403660],
+      "routine_expression_to_collocation": [2260020],
+      "proverb_to_idiom": [2063940, 2868684, 2417650, 2785800, 2774300, 2641140],
+      "yojijukugo_to_idiom_or_ordinary_metaphorical_term": [1813450, 2798870, 1740090],
+      "collocation_to_idiom": [1634690, 1381600, 2839899, 2233720, 2570120, 2834014, 2402610, 2210450, 2746880, 1436920, 2159030, 2126780, 2838502, 1968170]
+    },
+    "relevel": {
+      "to_N3": [1001860],
+      "to_N2": [2102340, 1860720, 2158500, 2402740, 1853380, 2836244, 1897210, 1535190, 1161670, 1163690, 1163610, 1164870, 1171050, 1223800, 1219430, 1264450, 1307150, 1310320, 1793810, 1318670, 1342400, 1437400, 1393580, 1417770, 1479460, 1603640, 1488420, 1495030, 1531020, 1539260, 1546230],
+      "to_N1_if_retained": [2853598, 2559420, 1904500, 2751020]
+    },
+    "new_candidate_duplicate_or_overlap_families": [
+      [2599320, 2013140],
+      [1639980, 2572000]
+    ],
+    "semantic_or_register_overlap_with_seed": [
+      {"candidate_ent_seq": 2172760, "seed_word_id": 2590},
+      {"candidate_ent_seq": 1001730, "seed_word_id": 2595},
+      {"candidate_ent_seq": 2133760, "seed_word_id": 2495},
+      {"candidate_ent_seq": 2872109, "seed_word_id": 2543}
+    ],
+    "source_flags_remaining": {
+      "without_any_jmdict_priority_marker": 831,
+      "slang_colloquial_or_sensitive": [1002600, 2088790, 2555520, 2727860, 2835959, 2837559, 2840810],
+      "field_tagged": [1155130, 1307150, 1968170, 2670990, 2798870],
+      "dialect_tagged": []
+    }
   },
   "existing_seed_baseline": {
     "phrase_like_rows": 93,

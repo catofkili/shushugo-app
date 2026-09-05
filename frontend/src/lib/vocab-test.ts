@@ -1,5 +1,5 @@
-import { ensureUserTables } from "./study-core";
-import { firstValue, persistSoon, rowsFor, setState, getState, type DbRow } from "./study-core";
+import { ensureUserTables, firstValue, persistSoon, rowsFor, setState, getState, type DbRow } from "./study-core";
+import { getDatabase } from "./database";
 import { classifyPos, type PosBucket } from "./word-library";
 import { confusionGroupsForWord } from "./confusion-groups";
 import { questionMeaningKeyOf } from "./models/question-meaning-index";
@@ -18,6 +18,8 @@ export interface VocabTestQuestion {
   level: string;
   kind: VocabTestQuestionKind;
   prompt: string;
+  /** 读音题拆掉送假名时，这里是被问的那几个汉字（培う → 培）。整词读音题为空。 */
+  readingScope?: string;
   options: string[];
   answerIndex: number;
   answer: string;
@@ -38,9 +40,12 @@ export interface VocabTestSession {
   startedAt: number;
   finishedAt: number | null;
   currentIndex: number;
+  /** 已经出好的题。摸底阶段只有 20 道，答完之后按实测水平补齐到 plannedTotal。 */
   questions: VocabTestQuestion[];
   responses: VocabTestResponse[];
   populationByLevel: Record<string, number>;
+  /** 这一场原本打算出几题（进度条的分母；补题前后都是它） */
+  plannedTotal: number;
 }
 
 export interface VocabTestLevelResult {
@@ -117,19 +122,74 @@ export const shuffle = <T,>(items: readonly T[], random: () => number = Math.ran
   return out;
 };
 
+const KANA_RUN = "[\\u3040-\\u309F\\u30A0-\\u30FF\\u30FC]+";
+const LEADING_KANA = new RegExp(`^${KANA_RUN}`);
+const TRAILING_KANA = new RegExp(`${KANA_RUN}$`);
+
+/**
+ * ⚠️ **送假名明摆在题面上，就不能再让它出现在选项里。**
+ *
+ * `培う` 的四个选项曾经是 つちかう / つきあたる / つかう / さいばい —— 题面末尾那个
+ * 「う」等于告诉所有人「不以 う 结尾的都是错的」，一眼排掉两个，剩下二选一靠蒙。
+ * 用户原话：「有个 u 不是告诉别人这题 2 和 4 肯定是错的吗」。
+ *
+ * 所以读音题只问**汉字那几拍**：题面还是 培う，答案变成 つちか。这和汉字读音模式
+ * 「只遮住汉字对应的那几拍假名」是同一个口径。
+ *
+ * 只拆得动**前后缀**（お金 → 金/かね、培う → 培/つちか、食べる → 食/た）；
+ * 汉字中间夹假名的（打ち合わせ）拆完是好几段，问「这几段合起来读什么」反而更怪，
+ * 那类返回 null，照旧问整词读音。
+ */
+export const kanjiCoreReading = (surface: string, kana: string): { core: string; reading: string } | null => {
+  let core = surface.trim();
+  let reading = kana.trim();
+  if (!core || !reading) return null;
+  const head = core.match(LEADING_KANA)?.[0] ?? "";
+  if (head) {
+    if (!reading.startsWith(head)) return null;
+    core = core.slice(head.length);
+    reading = reading.slice(head.length);
+  }
+  const tail = core.match(TRAILING_KANA)?.[0] ?? "";
+  if (tail) {
+    if (!reading.endsWith(tail)) return null;
+    core = core.slice(0, -tail.length);
+    reading = reading.slice(0, -tail.length);
+  }
+  if (!core || !reading) return null;
+  // 汉字中间还夹着假名 → 不是「一段汉字」，交给整词读音
+  if (new RegExp(KANA_RUN).test(core)) return null;
+  if (core === surface.trim()) return null; // 本来就没有送假名
+  return { core, reading };
+};
+
 /** 干扰项的三条硬约束（见 docs/VOCAB_TEST_BUILD.md §2.2）在这里算一次，别在循环里重算。 */
 type WordRow = VocabTestWordRow & {
   posBucket: PosBucket;
   morae: number;
   loan: boolean;
+  /** 读音题的题面（正字法口径），以及它拆出来的汉字部分 */
+  readingSurface: string;
+  core: { core: string; reading: string } | null;
+  /** 读音题里这一行当选项时用的值：有送假名就只给汉字那几拍 */
+  readingValue: string;
 };
 
-const enrichRow = (row: VocabTestWordRow): WordRow => ({
-  ...row,
-  posBucket: classifyPos(row.pos ?? ""),
-  morae: moraCount(row.kana),
-  loan: isLoanwordSourceSurface({ kanji: row.kanji, kana: row.kana })
-});
+const enrichRow = (row: VocabTestWordRow): WordRow => {
+  const readingSurface = kanjiReadingSurface(row);
+  const core = kanjiCoreReading(readingSurface, row.kana);
+  const readingValue = (core?.reading ?? row.kana).trim();
+  return {
+    ...row,
+    posBucket: classifyPos(row.pos ?? ""),
+    // 拍数是给读音题挑「长得像」的干扰项用的，所以要按**选项实际显示的那串**算
+    morae: moraCount(readingValue),
+    loan: isLoanwordSourceSurface({ kanji: row.kanji, kana: row.kana }),
+    readingSurface,
+    core,
+    readingValue
+  };
+};
 
 const wordRows = (): VocabTestWordRow[] => rowsFor(`
   SELECT id, kanji, kana, meaning, pos, jlpt_level AS level
@@ -154,7 +214,39 @@ const wordRows = (): VocabTestWordRow[] => rowsFor(`
  * 把 `alternate` 档换成标准表记；`shouldStudyKanjiReading` 会挡掉强假名词和外来語。
  * CLAUDE.md 那条「卡面词形全应用只有一份口径」说的就是这个，别再写第五套。
  */
-const isReadingQuestion = (row: WordRow): boolean => shouldStudyKanjiReading(row);
+const KANA_ANYWHERE = new RegExp(KANA_RUN);
+
+/** 汉字那几拍至少要占整词读音的一半，且不少于两拍。 */
+const READING_MIN_CORE_MORAE = 2;
+
+/**
+ * ⚠️ **一道读音题只有在「看不见的那部分就是难点」时才成立。**
+ *
+ * 三种一眼就能蒙对的题，都是这条判据挡下来的（全是用户实测报上来的）：
+ *
+ * | 题面 | 曾经的选项 | 为什么白送 |
+ * |---|---|---|
+ * | 培う | つちかう / つきあたる / つかう / さいばい | 题面那个 `う` 排掉两个（已改成只问汉字那几拍 → つちか） |
+ * | 手が離せない | てにつかない / てがはなせない / てがはなれる / あいてをする | 题面上 手・が・せない 全露着，不认识「離」也选得对 |
+ * | 手にかける | てをかえる / てにかける / てをかける / てをあげる | 那个 `に` 一出来，三个 `を` 全废 |
+ *
+ * 判据（纯粹从数据算，不用人工名单）：
+ *  - **纯汉字词**（自然、経済）→ 出，整词读音就是隐藏部分；
+ *  - **一段汉字 + 送假名**（培う、お金）→ 汉字那几拍 ≥ 2 拍**且** ≥ 整词的一半才出。
+ *    手にかける 的汉字部分只有 て（1/6 拍），考的是「手读て」不是这个词；
+ *  - **汉字中间夹假名 / 带助词的词组**（手が離せない、引き起こす）→ 不出。
+ *
+ * 挡下来的词**不是丢掉**，它们照旧出**中文释义题** —— 释义题的选项是中文，
+ * 题面上的假名给不了任何线索，正是这类词该用的问法。
+ */
+const isReadingQuestion = (row: WordRow): boolean => {
+  if (!shouldStudyKanjiReading(row)) return false;
+  if (row.core) {
+    const coreMorae = moraCount(row.core.reading);
+    return coreMorae >= READING_MIN_CORE_MORAE && coreMorae * 2 >= moraCount(row.kana);
+  }
+  return !KANA_ANYWHERE.test(row.readingSurface);
+};
 
 const promptFor = (row: WordRow, kind: VocabTestQuestionKind): string =>
   kind === "reading" ? kanjiReadingSurface(row) : preferredWordSurface(row);
@@ -184,8 +276,11 @@ const answerIndexBySurface = (rows: WordRow[]): {
     map.set(key, bucket);
   };
   rows.forEach((row) => {
-    [preferredWordSurface(row), kanjiReadingSurface(row)].forEach((surface) => {
+    [preferredWordSurface(row), row.readingSurface].forEach((surface) => {
+      // 整词读音和汉字那几拍**都算这个题面的正确答案**：无论出的是哪种问法，
+      // 另一种都不能被别的词拿去当干扰项。
       push(readings, surface, row.kana.trim());
+      push(readings, surface, row.readingValue);
       push(meanings, surface, row.meaning.trim());
     });
   });
@@ -214,7 +309,7 @@ const meaningKeyOf = (wordId: number): string | undefined => {
 };
 
 const optionValue = (row: WordRow, kind: VocabTestQuestionKind): string =>
-  (kind === "reading" ? row.kana : row.meaning).trim();
+  (kind === "reading" ? row.readingValue : row.meaning).trim();
 
 /**
  * ⚠️ 读音题：干扰项不能是答案的一部分，反过来也不行。
@@ -306,8 +401,8 @@ const readingSlots = (
   const half = Math.max(1, Math.ceil(morae.length / 2));
   const prefix = (n: number) => morae.slice(0, n).join("");
   const suffix = (n: number) => morae.slice(-n).join("");
-  const startsWith = (n: number) => (row: WordRow) => row.kana !== answer && row.kana.startsWith(prefix(n));
-  const endsWith = (n: number) => (row: WordRow) => row.kana !== answer && row.kana.endsWith(suffix(n));
+  const startsWith = (n: number) => (row: WordRow) => row.readingValue !== answer && row.readingValue.startsWith(prefix(n));
+  const endsWith = (n: number) => (row: WordRow) => row.readingValue !== answer && row.readingValue.endsWith(suffix(n));
   const supplied = (test: (row: WordRow) => boolean) => pool.some(test);
   // 长的共享段更狠，但供给可能不够，逐级退到 1 拍
   const head = supplied(startsWith(half)) ? startsWith(half) : startsWith(1);
@@ -357,10 +452,10 @@ const makeQuestion = (
     readingSlots(row, answer, pool).forEach((slot) => {
       if (chosen.length >= DISTRACTOR_COUNT) return;
       const candidate = shuffle(pool.filter(slot), random).sort(preferred)
-        .find((item) => !seen.has(item.kana) && !nestedReading(answer, item.kana));
+        .find((item) => !seen.has(item.readingValue) && !nestedReading(answer, item.readingValue));
       if (!candidate) return;
-      seen.add(candidate.kana);
-      chosen.push(candidate.kana);
+      seen.add(candidate.readingValue);
+      chosen.push(candidate.readingValue);
     });
   }
 
@@ -385,6 +480,8 @@ const makeQuestion = (
     level: row.level,
     kind,
     prompt: promptFor(row, kind),
+    // 拆过送假名的题要告诉用户现在问的是哪几个字，否则「培う 选 つちか」看着像少打了一个字
+    readingScope: kind === "reading" ? row.core?.core : undefined,
     options,
     answerIndex: options.indexOf(answer),
     answer
@@ -426,9 +523,55 @@ const levelTargets = (total: number = VOCAB_TEST_QUESTION_COUNT): Record<string,
   return out;
 };
 
+/** 摸底阶段每级几题。5×4=20 题，占 60 题的三分之一。 */
+export const VOCAB_TEST_PROBE_PER_LEVEL = 4;
+
+/**
+ * 摸底之后的分配：**按实测的 p̂ 重算 Neyman 权重**，把剩下的题投到「说不准」的那一带。
+ *
+ * `LEVEL_WEIGHT` 那份是拿参考水平 p=.9/.8/.6/.35/.15 预先算好的 —— 对水平正好落在
+ * 参考线上的人是对的，对别人就是把题浪费在早已判明的带上：一个 N1 全会的人，
+ * 前 4 题就说明白了，再给他 10 道 N1 只是把 N2/N3 的精度让出去。
+ *
+ * p̂ 夹在 [0.15, 0.85]：一带四题全对/全错很容易是运气，权重不能直接归零 ——
+ * 归零就再也没机会纠正那次运气了。
+ */
+const adaptiveTargets = (
+  scoreByLevel: Record<string, number | null>,
+  populationByLevel: Record<string, number>,
+  remaining: number
+): Record<string, number> => {
+  const out: Record<string, number> = {};
+  VOCAB_TEST_LEVELS.forEach((level) => { out[level] = 0; });
+  if (remaining <= 0) return out;
+  const weights = VOCAB_TEST_LEVELS.map((level) => {
+    const score = clamp(scoreByLevel[level] ?? 0.5, 0.15, 0.85);
+    return { level, weight: (populationByLevel[level] ?? 0) * Math.sqrt(score * (1 - score)) };
+  });
+  const sum = weights.reduce((total, item) => total + item.weight, 0);
+  if (sum <= 0) {
+    VOCAB_TEST_LEVELS.forEach((level, index) => {
+      out[level] = Math.floor(remaining / VOCAB_TEST_LEVELS.length) + (index < remaining % VOCAB_TEST_LEVELS.length ? 1 : 0);
+    });
+    return out;
+  }
+  let left = remaining;
+  const shares = weights.map((item) => {
+    const want = remaining * item.weight / sum;
+    return { level: item.level, whole: Math.floor(want), fraction: want - Math.floor(want) };
+  });
+  shares.forEach((share) => { out[share.level] += share.whole; left -= share.whole; });
+  shares.sort((a, b) => b.fraction - a.fraction);
+  for (let index = 0; left > 0; index = (index + 1) % shares.length, left -= 1) {
+    out[shares[index].level] += 1;
+  }
+  return out;
+};
+
 export const buildVocabTestQuestions = (
   rawRows: VocabTestWordRow[],
-  random: () => number = Math.random
+  random: () => number = Math.random,
+  options: { targets?: Record<string, number>; total?: number; excludeIds?: Iterable<number> } = {}
 ): { questions: VocabTestQuestion[]; populationByLevel: Record<string, number> } => {
   const allRows = rawRows.map(enrichRow);
   const index = answerIndexBySurface(allRows);
@@ -436,13 +579,14 @@ export const buildVocabTestQuestions = (
     level,
     allRows.filter((row) => row.level === level).length
   ]));
-  const targets = levelTargets();
+  const targets = options.targets ?? levelTargets();
+  const total = options.total ?? VOCAB_TEST_QUESTION_COUNT;
   const questions: VocabTestQuestion[] = [];
-  const used = new Set<number>();
+  const used = new Set<number>(options.excludeIds ?? []);
 
   const addFrom = (rows: WordRow[], target: number) => {
     for (const row of shuffle(rows, random)) {
-      if (questions.length >= VOCAB_TEST_QUESTION_COUNT || questions.filter((item) => item.level === row.level).length >= target) break;
+      if (questions.length >= total || questions.filter((item) => item.level === row.level).length >= target) break;
       if (used.has(row.id)) continue;
       const question = makeQuestion(row, allRows, random, index);
       if (!question) continue;
@@ -451,9 +595,9 @@ export const buildVocabTestQuestions = (
     }
   };
 
-  VOCAB_TEST_LEVELS.forEach((level) => addFrom(allRows.filter((row) => row.level === level), targets[level]));
-  if (questions.length < VOCAB_TEST_QUESTION_COUNT) {
-    addFrom(allRows, VOCAB_TEST_QUESTION_COUNT);
+  VOCAB_TEST_LEVELS.forEach((level) => addFrom(allRows.filter((row) => row.level === level), targets[level] ?? 0));
+  if (questions.length < total) {
+    addFrom(allRows, total);
   }
   return { questions: shuffle(questions, random), populationByLevel };
 };
@@ -463,6 +607,7 @@ const parseSession = (raw: string): VocabTestSession | null => {
   try {
     const parsed = JSON.parse(raw) as Partial<VocabTestSession>;
     if (parsed.version !== 1 || !Array.isArray(parsed.questions) || !Array.isArray(parsed.responses)) return null;
+    // 老会话没有 plannedTotal：它那时候一次就把题全出完了，题数即总数
     const questions = parsed.questions.filter((item): item is VocabTestQuestion => Boolean(
       item && Number.isFinite(Number(item.id)) && typeof item.prompt === "string"
       // ⚠️ 用常数不用字面量：这是选项数的**第二个**落点，写死过一次 5，
@@ -488,7 +633,8 @@ const parseSession = (raw: string): VocabTestSession | null => {
         responseMs: item.responseMs == null ? null : Number(item.responseMs),
         answeredAt: Number(item.answeredAt) || Date.now()
       })),
-      populationByLevel: Object.fromEntries(Object.entries(parsed.populationByLevel ?? {}).map(([key, value]) => [key, Number(value) || 0]))
+      populationByLevel: Object.fromEntries(Object.entries(parsed.populationByLevel ?? {}).map(([key, value]) => [key, Number(value) || 0])),
+      plannedTotal: Math.max(Number(parsed.plannedTotal) || 0, questions.length)
     };
   } catch {
     return null;
@@ -506,10 +652,22 @@ export const getVocabTestSession = (): VocabTestSession | null => {
   return parseSession(getState(SESSION_KEY, ""));
 };
 
+/**
+ * 开一场测验：**先只出摸底那 20 道**（每级 4 题）。
+ *
+ * 剩下 40 道等摸底答完再按实测水平分配（`extendVocabTestPlan`）—— 这就是
+ * 「先大概估出水平，再在那个区间多出题」，只不过每一带都仍有实测数据，
+ * 因为最终估计是 Σ(该级词数 × 该级答对率)，某一带没题就只能靠假设填，那不是测出来的。
+ */
 export const startVocabTest = (random: () => number = Math.random): VocabTestSession => {
   ensureUserTables();
   const rows = wordRows();
-  const { questions, populationByLevel } = buildVocabTestQuestions(rows, random);
+  const probeTargets = Object.fromEntries(VOCAB_TEST_LEVELS.map((level) => [level, VOCAB_TEST_PROBE_PER_LEVEL]));
+  const probeTotal = VOCAB_TEST_PROBE_PER_LEVEL * VOCAB_TEST_LEVELS.length;
+  const { questions, populationByLevel } = buildVocabTestQuestions(rows, random, {
+    targets: probeTargets,
+    total: probeTotal
+  });
   if (questions.length < 10) throw new Error("当前词库可用于测验的词太少，无法开始测量。");
   return saveSession({
     version: 1,
@@ -519,7 +677,42 @@ export const startVocabTest = (random: () => number = Math.random): VocabTestSes
     currentIndex: 0,
     questions,
     responses: [],
-    populationByLevel
+    populationByLevel,
+    plannedTotal: VOCAB_TEST_QUESTION_COUNT
+  });
+};
+
+/**
+ * 摸底答完之后补齐剩下的题：按**实测**的各级答对率重算 Neyman 权重。
+ *
+ * 已经出过的词排掉（`excludeIds`），免得同一个词问两遍。补不出那么多题也不报错，
+ * 有多少算多少 —— 词库小的用户仍然测得完。
+ */
+export const extendVocabTestPlan = (
+  session: VocabTestSession,
+  random: () => number = Math.random
+): VocabTestSession => {
+  const remaining = session.plannedTotal - session.questions.length;
+  if (remaining <= 0) return session;
+  const scoreByLevel = Object.fromEntries(VOCAB_TEST_LEVELS.map((level) => {
+    const result = levelResult(level, session);
+    return [level, result.rate];
+  }));
+  const targets = adaptiveTargets(scoreByLevel, session.populationByLevel, remaining);
+  const { questions } = buildVocabTestQuestions(wordRows(), random, {
+    targets,
+    total: remaining,
+    excludeIds: session.questions.map((question) => question.id)
+  });
+  if (!questions.length) return session;
+  const merged = [...session.questions, ...questions];
+  return saveSession({
+    ...session,
+    questions: merged,
+    // ⚠️ 词库出不满 60 道时，总数就降到实际能出的题数。
+    // 分母是「这一场一共出了几题」，不是「我们本来想出几题」——
+    // 否则小词库的用户答完了所有题，可信度还要因为「没答满」被扣一截。
+    plannedTotal: Math.min(session.plannedTotal, merged.length)
   });
 };
 
@@ -540,12 +733,24 @@ export const submitVocabTestAnswer = (
     answeredAt: Date.now()
   };
   const nextIndex = session.currentIndex + 1;
-  return saveSession({
+  const answered = saveSession({
     ...session,
     currentIndex: nextIndex,
     responses: [...session.responses, response],
-    finishedAt: nextIndex >= session.questions.length ? Date.now() : null
+    finishedAt: nextIndex >= session.questions.length && nextIndex >= session.plannedTotal ? Date.now() : null
   });
+  // 摸底那 20 道答完 → 按实测水平把剩下的题补出来（见 extendVocabTestPlan）
+  if (nextIndex >= answered.questions.length && answered.questions.length < answered.plannedTotal) {
+    const extended = extendVocabTestPlan(answered);
+    // 补不出题（词库太小）就当场收尾，别把用户卡在一个出不来下一题的界面上
+    if (extended.questions.length > answered.questions.length) return extended;
+    return saveSession({
+      ...answered,
+      plannedTotal: answered.questions.length,
+      finishedAt: answered.finishedAt ?? Date.now()
+    });
+  }
+  return answered;
 };
 
 export const finishVocabTest = (): VocabTestSession | null => {
@@ -615,7 +820,9 @@ export const getVocabTestResult = (session: VocabTestSession | null): VocabTestR
   // ⚠️ 题太少的等级不拿来定位：12 题里答对 7 个就是 0.58，会把 N5 推荐给一个 N2 水平的人
   const recommendation = levels.find((level) => level.rate != null && level.answered >= 5 && level.rate < 0.6)?.level ?? "N1+";
   const answered = session.responses.length;
-  const coverage = answered / Math.max(1, session.questions.length);
+  // 分母是「这一场原本要出几题」：摸底阶段只出了 20 道，拿它当分母会让
+  // 答完摸底就退出的人看到一个虚高的可信度。
+  const coverage = answered / Math.max(1, session.plannedTotal);
 
   const totals = levels.reduce((acc, level) => ({
     wrong: acc.wrong + level.wrong,
@@ -660,7 +867,7 @@ export const getVocabTestResult = (session: VocabTestSession | null): VocabTestR
     upper: clamp(roundedEstimate + margin, 0, population),
     population,
     answered,
-    totalQuestions: session.questions.length,
+    totalQuestions: session.plannedTotal,
     confidence,
     gamma: Math.round(gamma * 100) / 100,
     guessedShare: Math.round(guessedShare * 100) / 100,
@@ -668,6 +875,110 @@ export const getVocabTestResult = (session: VocabTestSession | null): VocabTestR
     recommendation,
     levels
   };
+};
+
+export interface VocabTestHistoryRow {
+  runId: string;
+  startedAt: number;
+  finishedAt: number;
+  durationSeconds: number;
+  answered: number;
+  totalQuestions: number;
+  estimated: number;
+  lower: number;
+  upper: number;
+  confidence: number;
+  recommendation: string;
+  /** 各级答对率，给分享图画横条用 */
+  levels: { level: string; rate: number | null; answered: number }[];
+}
+
+/**
+ * 一次测验真正花在答题上的秒数。
+ *
+ * ⚠️ **不能用 `finishedAt − startedAt`。** 那是墙上时间：中途切走、关掉 App、
+ * 第二天回来接着答，全都算进去 —— 实测出过一条「2 题 · 用时 4160 分 36 秒」。
+ *
+ * 用每题的 `responseMs` 求和，并且**每题按它自己的时限封顶**：超过时限的部分
+ * 一定是「人不在」（页面切走时计时器停了，但 questionStartedAt 还停在原地），
+ * 不是他在思考。
+ */
+const activeSeconds = (session: VocabTestSession): number => {
+  const total = session.responses.reduce((sum, response) => {
+    const question = session.questions[response.questionIndex];
+    const limit = secondsForQuestion(question ?? { kind: "reading" }) * 1000;
+    return sum + clamp(Number(response.responseMs ?? 0), 0, limit);
+  }, 0);
+  return Math.max(0, Math.round(total / 1000));
+};
+
+/**
+ * 把一次测完的结果追加进历史。
+ *
+ * **按 run_id 幂等**：结果页可以来回进出、刷新，写的还是同一行。
+ * 一题没答的会话不记 —— 那不是一次测验，是打开看了一眼。
+ */
+export const recordVocabTestRun = (session: VocabTestSession | null): void => {
+  if (!session || session.responses.length === 0) return;
+  const result = getVocabTestResult(session);
+  if (!result) return;
+  ensureUserTables();
+  const finishedAt = session.finishedAt ?? Date.now();
+  getDatabase().run(`
+    INSERT OR IGNORE INTO vocab_test_history (
+      run_id, started_at, finished_at, duration_seconds,
+      answered, total_questions, estimated, lower_bound, upper_bound, confidence, recommendation, levels_json
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `, [
+    session.runId,
+    new Date(session.startedAt).toISOString(),
+    new Date(finishedAt).toISOString(),
+    activeSeconds(session),
+    result.answered,
+    result.totalQuestions,
+    result.estimated,
+    result.lower,
+    result.upper,
+    result.confidence,
+    result.recommendation,
+    JSON.stringify(result.levels.map((level) => [level.level, level.rate, level.answered]))
+  ]);
+  persistSoon();
+};
+
+const parseLevels = (raw: string): VocabTestHistoryRow["levels"] => {
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((item) => ({
+      level: String(item?.[0] ?? ""),
+      rate: item?.[1] == null ? null : Number(item[1]),
+      answered: Number(item?.[2] ?? 0)
+    })).filter((item) => item.level);
+  } catch {
+    return [];
+  }
+};
+
+export const getVocabTestHistory = (limit = 20): VocabTestHistoryRow[] => {
+  ensureUserTables();
+  return rowsFor(`
+    SELECT * FROM vocab_test_history ORDER BY finished_at DESC LIMIT ?
+  `, [limit]).map((row) => ({
+    runId: String(row.run_id ?? ""),
+    startedAt: Date.parse(String(row.started_at ?? "")) || 0,
+    finishedAt: Date.parse(String(row.finished_at ?? "")) || 0,
+    // 早一版按墙上时间记过（切走、隔夜回来都算进去），按「每题最长 20 秒」封顶
+    durationSeconds: Math.min(Number(row.duration_seconds ?? 0), Number(row.answered ?? 0) * 20),
+    answered: Number(row.answered ?? 0),
+    totalQuestions: Number(row.total_questions ?? 0),
+    estimated: Number(row.estimated ?? 0),
+    lower: Number(row.lower_bound ?? 0),
+    upper: Number(row.upper_bound ?? 0),
+    confidence: Number(row.confidence ?? 0),
+    recommendation: String(row.recommendation ?? ""),
+    levels: parseLevels(String(row.levels_json ?? ""))
+  }));
 };
 
 /** 测试只读查询是否真的没有碰学习流水。 */

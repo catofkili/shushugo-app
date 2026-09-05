@@ -1,14 +1,16 @@
 import type { Page, StudyMode } from "../types/app";
 import { studyDate } from "./database/db-utils";
+import { Brain, CalendarCheck, Languages, NotebookPen, Repeat, Shuffle, Target, type LucideIcon } from "lucide-react";
 
 const KEY = "mn-active-study-mode";
 const AUTO_MISTAKES_KEY = "mn-auto-mistakes-mode";
 
 /**
- * 散在各处的入口收敛成五个**平级**模式。用户平时自己挑；正常模式的
+ * 散在各处的入口收敛成六个**平级**模式。用户平时自己挑；正常模式的
  * 当日任务完成后，会在本学习日余下时间临时切到错题本，次日 4 点恢复:
  *
  * - 经典   今日计划(FSRS 排的当日到期集)
+ * - 混合   还是那份今日计划,每答几个单词插一条语法(语法用琥珀色,一眼分得开)
  * - 错题本 换选词通道:长期薄弱词池,不碰今日计划
  * - 快速   还是今日计划的词,换成一页 50 张的翻页形态(自己有一页)
  * - 反向   日语 → 释义,自己一份 FSRS 记忆(reverse_memory)
@@ -20,8 +22,8 @@ const AUTO_MISTAKES_KEY = "mn-auto-mistakes-mode";
  *
  * 「词汇学习」不在列:它和经典是同一条代码路径,只是标题不同。
  *
- * 「自选清单」是第六个,但 hidden —— 它没有固定的词池,得先去词库勾一批词,
- * 所以入口只在词库页,不摆进模式列表(那五个仍然是平级的五个)。
+ * 「自选清单」是第七个,但 hidden —— 它没有固定的词池,得先去词库勾一批词,
+ * 所以入口只在词库页,不摆进模式列表(那六个仍然是平级的六个)。
  */
 export const STUDY_MODES: {
   id: StudyMode;
@@ -33,7 +35,8 @@ export const STUDY_MODES: {
   label: string;
   subtitle: string;
   description: string;
-  emoji: string;
+  /** 模式图标。和全 App 一样走 lucide 线性图标，不再用 emoji（见 CLAUDE.md「图标」那节）。 */
+  Icon: LucideIcon;
   /** 不进单词学习页、而是自己有一页的模式(快速复习) */
   page?: Extract<Page, "quick-study">;
   /** 不摆进模式列表:没有固定词池,得从别处带着一批词进来 */
@@ -48,7 +51,16 @@ export const STUDY_MODES: {
     label: "Classic",
     subtitle: "今日计划",
     description: "按 FSRS 排的当日到期集出题，释义 → 日语。",
-    emoji: "🐿️"
+    Icon: CalendarCheck
+  },
+  {
+    id: "mixed",
+    title: "单词 + 语法",
+    short: "混合",
+    label: "Mixed",
+    subtitle: "背词时插播语法",
+    description: "今日计划照旧，每答几个单词插一条语法考题。语法卡换成琥珀色，和单词一眼分得开。",
+    Icon: Shuffle
   },
   {
     id: "mistakes",
@@ -57,7 +69,7 @@ export const STUDY_MODES: {
     label: "Mistakes",
     subtitle: "长期薄弱词",
     description: "从长期错误率和记忆难度挑仍不牢固的词，集中攻坚，不占今日计划。",
-    emoji: "🧠"
+    Icon: Brain
   },
   {
     id: "quick",
@@ -66,7 +78,7 @@ export const STUDY_MODES: {
     label: "Quick",
     subtitle: "一页 50 张",
     description: "同样是今日计划的词，但一页铺 50 张翻着看，适合零碎时间扫一遍。",
-    emoji: "📝",
+    Icon: NotebookPen,
     page: "quick-study"
   },
   {
@@ -76,7 +88,7 @@ export const STUDY_MODES: {
     label: "Reverse",
     subtitle: "日语 → 释义",
     description: "出日语，回忆中文释义。和经典一样有自己的到期集和毕业判定，新卡从正向的熟练度折算。",
-    emoji: "🔁"
+    Icon: Repeat
   },
   {
     id: "kanji",
@@ -85,7 +97,7 @@ export const STUDY_MODES: {
     label: "Kanji",
     subtitle: "看表记 → 回忆读音",
     description: "显示日文表记和释义，只遮住汉字对应的假名；点卡片揭晓读音。只收含汉字的词。",
-    emoji: "🈶"
+    Icon: Languages
   },
   {
     id: "picked",
@@ -94,13 +106,13 @@ export const STUDY_MODES: {
     label: "Picked",
     subtitle: "你在词库里勾的词",
     description: "只出勾中的那批词，不看到期与否，也不占今日计划。考前突击用。",
-    emoji: "🎯",
+    Icon: Target,
     hidden: true,
     transient: true
   }
 ];
 
-/** 摆进模式列表的那五个。自选清单要先有清单，入口在词库页。 */
+/** 摆进模式列表的那六个。自选清单要先有清单，入口在词库页。 */
 export const VISIBLE_STUDY_MODES = STUDY_MODES.filter((mode) => !mode.hidden);
 
 const modes = new Set<StudyMode>(STUDY_MODES.map((mode) => mode.id));

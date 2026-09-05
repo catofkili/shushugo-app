@@ -101,3 +101,4 @@ frontend/public/audio/
 # 这两个要入库;_ 开头的都是过程文件,换台机器重跑就有。
 frontend/scripts/_*
 tmp/
+__pycache__/

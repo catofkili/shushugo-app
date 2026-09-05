@@ -1,6 +1,8 @@
 import type { WordCard } from "../../types/vocabulary";
 import { confusionGroupsForWord, displayForm, TYPE_META } from "../confusion-groups";
-import { distinctionReviewFor, type DistinctionLevel } from "../../data/confusion_distinction_reviews";
+import { sameStemForms } from "./confusion";
+import { distinctionNotesFor, distinctionReviewFor, type DistinctionLevel } from "../../data/confusion_distinction_reviews";
+import { Eye, NotebookPen, type LucideIcon } from "lucide-react";
 
 /**
  * 一张词卡上「和它容易混的东西」的统一模型。
@@ -11,7 +13,7 @@ import { distinctionReviewFor, type DistinctionLevel } from "../../data/confusio
  * 题面首义撞车继续只服务排片，不伪装成词义辨析。
  *
  * 这里把需要展示的人工辨析和七类分组合成一串 section，顺序 = 说法从具体到笼统：
- * 手写辨析 → 七类分组 → 音形相近。读音相似只展示事实，不额外编造区别。
+ * 手写辨析 → 七类分组 → 同词根派生 → 音形相近。读音相似只展示事实，不额外编造区别。
  *
  * **刻意不接 FSRS。** 气泡里答案是全露着的，此时给评分等于告诉 FSRS「这词记住了」，
  * 正是排片规则把同组词隔开 12 张要防的那件事（见 CLAUDE.md）。能留下的状态只有
@@ -37,7 +39,7 @@ export interface DistinctionSection {
   /** 「已掌握」按它记；非 confusion-groups 来源的 key 只用来做 React key */
   key: string;
   name: string;
-  emoji: string;
+  Icon: LucideIcon;
   /** 人工写的区别；同音、同表记异读等只展示成员时为空。 */
   summary: string;
   /** 黑色 = 通常可互换；红色 = 不能自由互换；纯读音/事实组为空。 */
@@ -116,7 +118,7 @@ export function wordDistinctions(card: WordCard): DistinctionSection[] {
     push({
       key: `manual:${similar.title}`,
       name: "释义辨析",
-      emoji: "📝",
+      Icon: NotebookPen,
       summary: similar.distinction,
       level: "major",
       members: [currentMember(card), ...manualItems.map((item) => plainMember({ ...item, note: "" }))],
@@ -127,10 +129,16 @@ export function wordDistinctions(card: WordCard): DistinctionSection[] {
   confusionGroupsForWord(card.id).forEach((group) => {
     const meta = TYPE_META[group.type];
     const review = distinctionReviewFor(group.key);
+    const notes = review?.level === "major"
+      ? distinctionNotesFor(review.summary, group.members.map((member) => ({
+          key: String(member.id),
+          forms: [displayForm(member), member.kanji, member.kana]
+        })))
+      : new Map<string, string>();
     push({
       key: group.key,
       name: meta.name,
-      emoji: meta.emoji,
+      Icon: meta.Icon,
       summary: review?.summary ?? "",
       level: review?.level ?? null,
       // 不按「学没学过」筛。分组里的成员是语言事实，仍要完整展示；只过滤当前卡
@@ -143,20 +151,37 @@ export function wordDistinctions(card: WordCard): DistinctionSection[] {
           exampleJp: member.exampleJp,
           exampleMeaning: member.exampleMeaning,
           jlptLevel: member.jlptLevel,
-          note: "",
+          note: notes.get(String(member.id)) ?? "",
           isCurrent: member.id === card.id
         })),
       masterable: true
     });
   });
 
+  const nearItems = card.confusions.filter((item) => item.kind === "sound" && !listedIds.has(item.id));
+
+  // 同词干的派生形（手伝う / 手伝い）先分出来：它们不是「音形相近」，见 confusion.sameStemForms。
+  // 名字和图标借 confusion-groups 那七类里的 stem，全应用「同词根」只有一个说法。
+  const stemItems = nearItems.filter((item) => sameStemForms(card, item));
+  if (stemItems.length) {
+    push({
+      key: `derived:${card.id}`,
+      name: TYPE_META.stem.name,
+      Icon: TYPE_META.stem.Icon,
+      summary: "",
+      level: null,
+      members: [currentMember(card), ...stemItems.map(plainMember)],
+      masterable: false
+    });
+  }
+
   // 音形相近是最后一档、也是最弱的一档：只列事实，不写一段泛泛的区别。
-  const soundItems = card.confusions.filter((item) => item.kind === "sound" && !listedIds.has(item.id));
+  const soundItems = nearItems.filter((item) => !sameStemForms(card, item));
   if (soundItems.length) {
     push({
       key: `sound:${card.id}`,
       name: "音形相近",
-      emoji: "👀",
+      Icon: Eye,
       summary: "",
       level: null,
       members: [currentMember(card), ...soundItems.map(plainMember)],

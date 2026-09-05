@@ -4,7 +4,8 @@ import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
 import { GrammarTermHint } from "../components/GrammarTermHint";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarPoints } from "../data/grammar";
-import { getGrammarPointFavorite, toggleFavorite } from "../lib/api";
+import { addFavorite, getGrammarPointFavorite, toggleFavorite } from "../lib/api";
+import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
 import { grammarSequence } from "../lib/grammar-numbering";
 import { getGrammarPosition, saveGrammarPosition } from "../lib/grammarProgressPreferences";
@@ -27,6 +28,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
     return typeof saved === "string" ? saved : points[0]?.id ?? "";
   });
   const [, setFavoriteVersion] = useState(0);
+  const { pickFolder, picker } = useFavoriteFolderPicker();
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const [, setNoteVersion] = useState(0);
@@ -108,8 +110,18 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
           </div>
           <button
             onClick={() => {
-              toggleFavorite("grammar", point.id);
-              setFavoriteVersion((value) => value + 1);
+              if (favorite) {
+                toggleFavorite("grammar", point.id);
+                setFavoriteVersion((value) => value + 1);
+                return;
+              }
+              pickFolder({
+                title: `收藏「${point.title}」到`,
+                onPick: (folder) => {
+                  addFavorite("grammar", point.id, folder);
+                  setFavoriteVersion((value) => value + 1);
+                }
+              });
             }}
             className={`focus-ring grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-white/20 ${favorite ? "bg-[#81D8CF] !text-[#343838]" : "bg-[#81D8CF]/10 text-white/72"}`}
             title={favorite ? "取消收藏" : "收藏语法"}
@@ -198,6 +210,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
           </button>
         </div>
       </article>
+      {picker}
     </section>
   );
 };

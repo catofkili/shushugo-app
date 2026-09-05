@@ -14,10 +14,11 @@ vi.mock("./database", () => ({
 
 import {
   confusionGroups,
+  displayForm,
   resetConfusionGroups,
   type ConfusionType
 } from "./confusion-groups";
-import { distinctionReviewFor, distinctionReviewMap } from "../data/confusion_distinction_reviews";
+import { distinctionNotesFor, distinctionReviewFor, distinctionReviewMap } from "../data/confusion_distinction_reviews";
 
 const HANDWRITTEN_TYPES: readonly ConfusionType[] = [
   "pair",
@@ -59,5 +60,39 @@ describe("辨析人工稿覆盖率", () => {
     expect([...distinctionReviewMap.keys()].some((key) =>
       forbiddenPrefixes.some((prefix) => key.startsWith(prefix))
     )).toBe(false);
+  });
+
+  it("把同一句里的多个词条差异拆回各自卡片", () => {
+    const review = distinctionReviewFor("stem:押");
+    expect(review).not.toBeNull();
+    const notes = distinctionNotesFor(review!.summary, [
+      { key: "push", forms: ["押す"] },
+      { key: "hold", forms: ["押さえる"] },
+      { key: "insert", forms: ["押し込む"] },
+      { key: "out", forms: ["押し出す"] },
+      { key: "through", forms: ["押し切る"] },
+      { key: "away", forms: ["押しやる"] },
+      { key: "confine", forms: ["押し込める"] }
+    ]);
+
+    expect(notes.get("push")).toBe("按、推");
+    expect(notes.get("hold")).toBe("按住或控制");
+    expect(notes.get("insert")).toBe("塞入");
+  });
+
+  it("每个不能互换的词都有自己的卡内说明", () => {
+    const missing = confusionGroups().flatMap((group) => {
+      const review = distinctionReviewFor(group.key);
+      if (review?.level !== "major") return [];
+      const notes = distinctionNotesFor(review.summary, group.members.map((member) => ({
+        key: String(member.id),
+        forms: [displayForm(member), member.kanji, member.kana]
+      })));
+      return group.members
+        .filter((member) => !notes.has(String(member.id)))
+        .map((member) => `${group.key} -> ${displayForm(member)}`);
+    });
+
+    expect(missing).toEqual([]);
   });
 });

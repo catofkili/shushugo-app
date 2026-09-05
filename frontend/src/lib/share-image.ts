@@ -49,6 +49,8 @@ export const saveImageToGallery = async (blob: Blob, fileName: string): Promise<
 };
 
 export type ShareImageResult = "shared" | "canceled" | "unsupported";
+/** 纯文字分享的结果多一种「已复制」：Web 上没有分享面板时退回剪贴板。 */
+export type ShareTextResult = ShareImageResult | "copied";
 
 const isShareCanceled = (error: unknown) =>
   error instanceof Error && /cancel|abort/i.test(error.message || error.name);
@@ -75,4 +77,37 @@ export const shareImage = async (blob: Blob, fileName: string, title: string): P
     }
   }
   return "unsupported";
+};
+
+/**
+ * 分享一段文字（词汇量结果这类没有图的场景）。
+ *
+ * 原生走系统分享面板，Web 优先 navigator.share，都没有就退回剪贴板 ——
+ * 「没反应」比「复制好了」难受得多。
+ */
+export const shareText = async (text: string, title: string): Promise<ShareTextResult> => {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await Share.share({ title, text });
+      return "shared";
+    } catch (error) {
+      if (isShareCanceled(error)) return "canceled";
+      throw error;
+    }
+  }
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text });
+      return "shared";
+    } catch (error) {
+      if (isShareCanceled(error)) return "canceled";
+      // 分享失败仍然可以退回剪贴板，别让用户白点一下
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    return "copied";
+  } catch {
+    return "unsupported";
+  }
 };

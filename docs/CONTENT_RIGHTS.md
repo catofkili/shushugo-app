@@ -1,6 +1,6 @@
 # 内容来源与商业发布权利清单
 
-> 更新时间：2026-08-05
+> 更新时间：2026-08-28
 >
 > 这是一份工程审计清单，不是法律意见，也不是“全量内容已经获准商用”的声明。没有许可证、授权邮件或可核验的上游条款，就不要把对应内容当作已清权内容发布。
 
@@ -19,6 +19,7 @@ Apple 的 App Review Guidelines 要求开发者只提交自己创建或已获许
 | 内容 | 仓库位置 | 当前记录 | 发布前动作 |
 |---|---|---|---|
 | JLPT 词条、中文释义 | `frontend/src/data/jlpt_words_seed.json`、`frontend/public/nihongo.db` | 种子 JSON 有 10,609 条；生产 DB 有 11,057 个词条，其中 458 条无法与已确认的 eggrolls 来源逐条匹配；已匹配的中文释义来自 CC BY-NC 4.0 上游记录 | 取得商业授权，或整体替换所有未清权/来源不明的数据 |
+| JLPT 固定搭配、中文释义 | `frontend/src/data/jlpt_collocation_candidates.json`、`frontend/src/data/jlpt_collocation_content.json` | 882 条由 JMdict（表记、读音、`ent_seq`）与 Tomoshi `zh_defs` 衍生中文释义组成；两者按 CC BY-SA 4.0 发布，内容层记录了版本、署名与修改说明；首次启动迁移写入 `pos=固定搭配` | 发布时保留 EDRDG、Tomoshi（Y1Z）署名、CC BY-SA 4.0 链接与修改声明；运行 `verify-jlpt-collocation-content.mjs`，并确认整体发行包仍满足 ShareAlike 条件 |
 | JLPT 例句 | `frontend/src/data/jlpt_words_seed.json`、`frontend/public/nihongo.db` | 2026-08-05 已清空此前批量生成的旧例句；第十批完成后，seed 的 10,609 条记录均有逐词手写例句，生产 DB 中对应词条也已同步。例句由人工批次文件记录，未运行旧的全量公式生成器；同一日语词形和假名的重复 seed 行复用对应例句 | 继续逐条审校并保留手写批次、备份、版本记录和人工审校记录。例句是否独立不改变词条/中文释义的 CC BY-NC 来源限制 |
 | 语法说明 | `frontend/src/data/grammar_seed.json` | N1/N2 有从头改写的提交记录 | 保留作者、版本和来源记录，并确认没有复制第三方解释或例句 |
 | 英文词源 | `frontend/src/data/english_origins.json` | 当前文件没有逐项来源和许可证元数据 | 逐项补来源/授权，或移除无权利证明的条目 |

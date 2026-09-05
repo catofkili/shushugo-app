@@ -4,6 +4,7 @@ import { rowsFor } from "./database/db-utils";
 import { ensureUserTables, persistSoon } from "./study-core";
 import verbPairHints from "../data/verb_pair_hints.json";
 import { EXCLUDED_SYNONYM_GROUPS, MANUAL_VARIANT_GROUPS } from "../data/confusion_manual_review";
+import { ArrowLeftRight, Crown, Handshake, PenLine, Sprout, Type, Volume2, type LucideIcon } from "lucide-react";
 
 /**
  * 疑难辨析的词组。
@@ -417,34 +418,39 @@ export const setConfusionMastered = (key: string, mastered: boolean): void => {
  * 放在这里而不是页面组件里：疑难辨析页和单词卡的辨析气泡是同一份说法，
  * 各留一份的话改了一处另一处会悄悄说另一套话。
  */
-export const TYPE_META: Record<ConfusionType, { name: string; emoji: string }> = {
+/** 七类的顺序：从「机制清楚」到「说法笼统」，和 word-distinctions 里的排法同向。 */
+export const CONFUSION_TYPES: ConfusionType[] = [
+  "pair", "homophone", "kanji-choice", "reading-sense", "reading-register", "stem", "synonym"
+];
+
+export const TYPE_META: Record<ConfusionType, { name: string; Icon: LucideIcon }> = {
   pair: {
     name: "自他动词",
-    emoji: "🔀"
+    Icon: ArrowLeftRight
   },
   homophone: {
     name: "同音异义",
-    emoji: "🔊"
+    Icon: Volume2
   },
   "kanji-choice": {
     name: "汉字用法",
-    emoji: "✍️"
+    Icon: PenLine
   },
   "reading-register": {
     name: "读音语体",
-    emoji: "🎩"
+    Icon: Crown
   },
   "reading-sense": {
     name: "一形多读",
-    emoji: "🔤"
+    Icon: Type
   },
   stem: {
     name: "同词根",
-    emoji: "🌱"
+    Icon: Sprout
   },
   synonym: {
     name: "中文提示相同",
-    emoji: "🤝"
+    Icon: Handshake
   }
 };
 
@@ -468,19 +474,35 @@ export const displayForm = (member: { kanji: string; kana: string }): string =>
  * 同表記異読み(明後日 = あさって / みょうごにち)所有成员的汉字**是同一个**，
  * 并排词形会显示成「明後日 / 明後日」，等于什么都没说；那类要并排读音。
  */
-export const groupWords = (group: ConfusionGroup): string => {
+/**
+ * 一组并排显示的那几段，**连各自的读音一起给**（卡面要在汉字上标假名）。
+ *
+ * `reading` 为空 = 这一段不该标注音：并排的本来就是假名（同表記異読み那两类），
+ * 或者摆的是外来語词源（lock / rock，拉丁字母标不了假名）。
+ *
+ * ⚠️ 和 `groupWords` 必须是同一份判据 —— 所以那个函数直接由这里派生，
+ * 别再各写一遍「哪一列该并排」。
+ */
+export const groupWordParts = (group: ConfusionGroup): { text: string; reading: string }[] => {
   if (group.type === "reading-register" || group.type === "reading-sense") {
-    return group.members.map((member) => member.kana).join(" / ");
+    return group.members.map((member) => ({ text: member.kana, reading: "" }));
   }
   const forms = group.members.map(displayForm);
   // 同音外来語(lock / rock 都读ロック)的卡面写法是同一串片假名，照直摆就是
   // 「ロック / ロック」——一组里两边看着一样，等于没说。这一类改摆词源，
   // 副标题那句「读作 ロック」已经把共同的读音讲清楚了。
-  if (new Set(forms).size === forms.length) return forms.join(" / ");
-  return group.members
-    .map((member, index) => (LATIN.test(member.kanji) ? member.kanji : forms[index]))
-    .join(" / ");
+  const collides = new Set(forms).size !== forms.length;
+  return group.members.map((member, index) => {
+    const useSource = collides && LATIN.test(member.kanji);
+    return {
+      text: useSource ? member.kanji : forms[index],
+      reading: useSource ? "" : member.kana
+    };
+  });
 };
+
+export const groupWords = (group: ConfusionGroup): string =>
+  groupWordParts(group).map((part) => part.text).join(" / ");
 
 let groupsByWord: Map<number, ConfusionGroup[]> | null = null;
 

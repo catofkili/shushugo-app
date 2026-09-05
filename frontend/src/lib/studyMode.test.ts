@@ -36,8 +36,8 @@ describe("学习模式的记忆", () => {
     expect(getStudyMode()).toBe(defaultStudyMode);
   });
 
-  it("模式列表里摆的是那五个,自选清单藏起来(它得先从词库带一批词进来)", () => {
-    expect(VISIBLE_STUDY_MODES.map((mode) => mode.id)).toEqual(["classic", "mistakes", "quick", "reverse", "kanji"]);
+  it("模式列表里摆的是那六个,自选清单藏起来(它得先从词库带一批词进来)", () => {
+    expect(VISIBLE_STUDY_MODES.map((mode) => mode.id)).toEqual(["classic", "mixed", "mistakes", "quick", "reverse", "kanji"]);
     expect(STUDY_MODES.filter((mode) => mode.hidden).map((mode) => mode.id)).toEqual(["picked"]);
   });
 

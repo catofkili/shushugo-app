@@ -28,7 +28,7 @@ export const USER_DATA_TABLES = [
   "grammar_progress", "grammar_reviews", "grammar_mistakes",
   "grammar_points_archive", "grammar_highlights", "grammar_reading_positions",
   // 其它
-  "achievements", "content_favorites", "moments"
+  "achievements", "content_favorites", "favorite_folders", "moments", "vocab_test_history"
 ];
 
 /**

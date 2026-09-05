@@ -71,7 +71,7 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
           {sections.map((section) => (
             <section key={section.key} className="wd-section">
               <div className="wd-section-head">
-                <span className="wd-type">{section.emoji} {section.name}</span>
+                <span className="wd-type"><section.Icon size={13} aria-hidden="true" /> {section.name}</span>
                 {section.masterable && (
                   <button
                     className={`wd-master${mastered.has(section.key) ? " is-on" : ""}`}
@@ -85,8 +85,8 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
               </div>
               {section.summary && (
                 <p className={`wd-summary${section.level === "major" ? " is-major" : ""}`}>
-                  <b>{section.level === "major" ? "不能自由互换：" : "通常可互换："}</b>
-                  {section.summary}
+                  <b>{section.level === "major" ? "不能自由互换" : "通常可互换："}</b>
+                  {section.level !== "major" && section.summary}
                 </p>
               )}
 
@@ -108,7 +108,11 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
                       {member.jlptLevel && <span className="wd-member-level">{member.jlptLevel}</span>}
                     </div>
                     <p className="wd-member-meaning">{member.meaning}</p>
-                    {member.note && <p className="wd-member-note">{member.note}</p>}
+                    {member.note && (
+                      <p className={`wd-member-note${section.level === "major" ? " is-major" : ""}`}>
+                        {member.note}
+                      </p>
+                    )}
                     {member.exampleJp && (
                       <p className="jp wd-member-example">
                         {member.exampleJp}

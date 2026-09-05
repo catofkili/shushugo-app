@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { ChevronDown, Eye, ListChecks, Send } from "lucide-react";
-import { getQuickStudySession, submitQuickStudyBatch } from "../lib/api";
+import { ChevronDown, Eye, ListChecks, NotebookPen, Send } from "lucide-react";
+import { getQuickStudySession, getQuickStudySessionForWords, submitQuickStudyBatch } from "../lib/api";
 import { clearQuickStudyDraft, loadQuickStudyDraft, saveQuickStudyDraft } from "../lib/quick-study-draft";
 import { studyDate } from "../lib/database/db-utils";
 import { answerOptions, primaryAnswerText, secondaryAnswerText } from "../features/word-study/word-study-utils";
@@ -13,6 +13,13 @@ type Props = {
   onNavigate: (page: Page) => void;
   variant?: "entry" | "page";
   onDailyModeComplete?: () => void;
+  /**
+   * 指定一批词过一遍（完成页的「快速复习今天的顽固词」）。
+   * 这一趟**不碰草稿**：草稿是「今天那份快速学习做到哪了」，
+   * 拿一次性的名单去覆盖它，用户回到快速学习会发现自己排了一半的那页没了。
+   */
+  wordIds?: number[];
+  heading?: string;
 };
 
 type SubmitSummary = {
@@ -40,7 +47,8 @@ const phaseLabel = (phase: string) => {
   return "今日词汇";
 };
 
-export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeComplete }: Props) {
+export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeComplete, wordIds, heading }: Props) {
+  const batchMode = Boolean(wordIds?.length);
   const [cards, setCards] = useState<WordCard[]>([]);
   const [nextCards, setNextCards] = useState<WordCard[]>([]);
   const [seenWordIds, setSeenWordIds] = useState<Set<number>>(new Set());
@@ -71,6 +79,8 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   // 打开这一轮时固定学习日。即使页面跨过凌晨 4 点，也不在用户正在评卡时强制换页；
   // 旧日期草稿在下次进入快速学习时会被丢弃。
   const draftStudyDateRef = useRef(studyDate());
+  const batchWordIdsRef = useRef<number[]>(wordIds ?? []);
+  batchWordIdsRef.current = wordIds ?? [];
 
   const load = useCallback(async (restoreDraft = false) => {
     setLoading(true);
@@ -78,6 +88,18 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
     try {
       // 先让页面把标题和首屏容器画出来,再做同步词库查询。
       await yieldToPaint();
+      if (batchWordIdsRef.current.length) {
+        const data = getQuickStudySessionForWords(batchWordIdsRef.current);
+        setCards(data.cards.slice(0, QUICK_STUDY_PAGE_SIZE));
+        setNextCards(data.cards.slice(QUICK_STUDY_PAGE_SIZE));
+        setSeenWordIds(new Set(data.cards.map((card) => card.id)));
+        setPhase(data.phase);
+        setRatings(initialRatings(data.cards.slice(0, QUICK_STUDY_PAGE_SIZE)));
+        setRevealedIds(new Set());
+        setRatingOpenId(null);
+        exitSelection();
+        return;
+      }
       if (restoreDraft) {
         const draft = await loadQuickStudyDraft();
         if (draft) {
@@ -158,7 +180,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   }, [load, variant]);
 
   useLayoutEffect(() => {
-    if (variant === "entry" || !draftHydrated || loading || submitting || !cards.length) return;
+    if (variant === "entry" || batchMode || !draftHydrated || loading || submitting || !cards.length) return;
     void saveQuickStudyDraft({
       studyDate: draftStudyDateRef.current,
       orderVersion: QUICK_STUDY_ORDER_VERSION,
@@ -172,7 +194,12 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
       selectionMode,
       selectedIds: [...selectedIds]
     });
-  }, [cards, draftHydrated, loading, nextCards, pageNumber, phase, ratings, revealedIds, seenWordIds, selectedIds, selectionMode, submitting, variant]);
+  }, [batchMode, cards, draftHydrated, loading, nextCards, pageNumber, phase, ratings, revealedIds, seenWordIds, selectedIds, selectionMode, submitting, variant]);
+
+  /** batch 模式（指定名单）不写草稿：那份草稿属于「今天的快速学习」。 */
+  const persistDraft = (payload: Parameters<typeof saveQuickStudyDraft>[0]) => (
+    batchMode ? Promise.resolve() : saveQuickStudyDraft(payload)
+  );
 
   const toggleAnswer = (wordId: number) => {
     setRevealedIds((current) => {
@@ -286,7 +313,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
         const nextPage = nextCards;
         const nextRatings = initialRatings(nextPage);
         const nextSeenIds = new Set(seenWordIds);
-        const saveReadyPage = saveQuickStudyDraft({
+        const saveReadyPage = persistDraft({
           studyDate: draftStudyDateRef.current,
           orderVersion: QUICK_STUDY_ORDER_VERSION,
           cards: nextPage,
@@ -310,13 +337,15 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
         panelRef.current?.scrollIntoView({ block: "start" });
 
         await yieldToPaint();
-        const followingData = getQuickStudySession(QUICK_STUDY_PAGE_SIZE, [...nextSeenIds]);
+        const followingData = batchMode
+          ? { cards: [] as WordCard[], phase }
+          : getQuickStudySession(QUICK_STUDY_PAGE_SIZE, [...nextSeenIds]);
         if (followingData.phase === phase && followingData.cards.length) {
           const followingPage = followingData.cards;
           followingPage.forEach((card) => nextSeenIds.add(card.id));
           setNextCards(followingPage);
           setSeenWordIds(new Set(nextSeenIds));
-          await saveQuickStudyDraft({
+          await persistDraft({
             studyDate: draftStudyDateRef.current,
             orderVersion: QUICK_STUDY_ORDER_VERSION,
             cards: nextPage,
@@ -336,14 +365,18 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
       }
 
       // 本轮所有不同词都已出现过。当前末页提交后才开启错误词/下一阶段的新一轮。
-      const nextPass = getQuickStudySession(QUICK_STUDY_PREFETCH_SIZE);
+      // 指定名单过完就结束，不接着把今天剩下的词拉进来 —— 用户点的是
+      // 「快速复习今天的顽固词」，不是「开始一轮快速学习」。
+      const nextPass = batchMode
+        ? { cards: [] as WordCard[], phase }
+        : getQuickStudySession(QUICK_STUDY_PREFETCH_SIZE);
       const nextPage = nextPass.cards.slice(0, QUICK_STUDY_PAGE_SIZE);
       const followingPage = nextPass.cards.slice(QUICK_STUDY_PAGE_SIZE);
       const nextPhase = nextPass.phase;
       const nextSeenIds = new Set(nextPass.cards.map((card) => card.id));
 
       if (!nextPage.length) {
-        await clearQuickStudyDraft();
+        if (!batchMode) await clearQuickStudyDraft();
         setCards([]);
         setNextCards([]);
         setSeenWordIds(new Set());
@@ -355,7 +388,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
       }
 
       const nextRatings = initialRatings(nextPage);
-      const saveNextPage = saveQuickStudyDraft({
+      const saveNextPage = persistDraft({
         studyDate: draftStudyDateRef.current,
         orderVersion: QUICK_STUDY_ORDER_VERSION,
         cards: nextPage,
@@ -392,7 +425,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   if (variant === "entry") {
     return (
       <button className="zoo-tile zoo-tile-hero zoo-tile-quick" onClick={() => onNavigate("quick-study")}>
-        <span className="zoo-tile-quick-emoji" aria-hidden="true">📝</span>
+        <span className="zoo-tile-quick-emoji" aria-hidden="true"><NotebookPen size={20} /></span>
         <b className="zoo-tile-quick-title">快速复习</b>
         <span className="zoo-tile-quick-arrow" aria-hidden="true">→</span>
       </button>
@@ -429,8 +462,12 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
         ) : (
           <>
             <div className="quick-study-title">
-              <span className="quick-study-kick"><ListChecks size={13} /> 快速学习</span>
-              <b>{loading ? "正在准备词卡…" : cards.length ? `${phaseLabel(phase)} · 第 ${pageNumber} 页 · ${cards.length} 条` : "这一轮完成了"}</b>
+              <span className="quick-study-kick"><ListChecks size={13} /> {heading ?? "快速学习"}</span>
+              <b>{loading
+                ? "正在准备词卡…"
+                : cards.length
+                  ? `${batchMode ? "今天的顽固词" : phaseLabel(phase)} · 第 ${pageNumber} 页 · ${cards.length} 条`
+                  : "这一轮完成了"}</b>
             </div>
             <div className="quick-study-actions">
               <button

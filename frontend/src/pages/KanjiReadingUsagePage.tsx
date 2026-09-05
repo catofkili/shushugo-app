@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { X, PenLine } from "lucide-react";
 import {
   allKanjiReadingUsage,
   clauseText,
@@ -131,7 +131,7 @@ export const KanjiReadingUsagePage = () => {
               <b className="jp-serif kr-card-char">{entry.char}</b>
               <span className="jp kr-card-readings">{readingLine(entry)}</span>
               <span className="kr-card-level">{LEVEL_NAMES[entry.levelRank] ?? ""}</span>
-              {entry.hasManual && <span className="kr-card-badge" title="人工说明">✍️</span>}
+              {entry.hasManual && <span className="kr-card-badge" title="人工说明"><PenLine size={11} /></span>}
             </button>
           ))}
         </div>

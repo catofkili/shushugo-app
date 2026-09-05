@@ -394,6 +394,18 @@ const sessionFor = (level: string, card: GrammarQuizCard | null): GrammarQuizSes
   };
 };
 
+/**
+ * 今天这个等级还欠几条（到期的 + 配额之内的新条目）。
+ *
+ * 给首页的混合模式角标用：那个数得是「单词 + 语法」的合计，否则混合和经典写着
+ * 同一个数，多出来的那部分工作量在主页上根本不存在。**不走 getGrammarQuizSession** ——
+ * 那还会顺手抽一张卡（rowsByIds + 队列），而这里只要一个数。
+ */
+export const grammarPlanRemaining = (level: string, day = today()) => {
+  const { reviewIds, newIds } = planIds(level, day);
+  return reviewIds.length + newIds.length;
+};
+
 /** 取当前这一条。今天的都过关了就返回 card=null，由界面问要不要加餐。 */
 export const getGrammarQuizSession = (level: string): GrammarQuizSession => {
   const day = today();

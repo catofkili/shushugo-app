@@ -128,7 +128,36 @@ CREATE TABLE IF NOT EXISTS content_favorites (
   item_type TEXT NOT NULL,
   item_id TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  -- 收藏夹名字直接存在这里,不建 id 外键:同步的行身份不许用自增 id
+  -- (见 sync/tables.ts 开头那条),名字本身就是天然键。代价是重命名要连带
+  -- 更新这一列 —— renameFavoriteFolder 一个 UPDATE 就做完了。
+  folder TEXT NOT NULL DEFAULT '',
   PRIMARY KEY (item_type, item_id)
+);
+
+-- 收藏夹本体。只为了让「建好但还没往里放东西」的夹子活得下来;
+-- 有内容的夹子光靠 content_favorites.folder 也推得出来。
+-- 查词汇量的历史成绩。每次测完追加一行，run_id 就是那一次的身份（同步取并集）。
+-- 只存结果，不存题目：题是每次现抽的，存下来既没用也白占快照体积。
+CREATE TABLE IF NOT EXISTS vocab_test_history (
+  run_id TEXT PRIMARY KEY,
+  started_at TEXT NOT NULL,
+  finished_at TEXT NOT NULL,
+  duration_seconds INTEGER NOT NULL DEFAULT 0,
+  answered INTEGER NOT NULL DEFAULT 0,
+  total_questions INTEGER NOT NULL DEFAULT 0,
+  estimated INTEGER NOT NULL DEFAULT 0,
+  lower_bound INTEGER NOT NULL DEFAULT 0,
+  upper_bound INTEGER NOT NULL DEFAULT 0,
+  confidence INTEGER NOT NULL DEFAULT 0,
+  recommendation TEXT NOT NULL DEFAULT '',
+  -- 各级答对率，分享图上那张横条图要用：[["N5",0.9,12],...]
+  levels_json TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS favorite_folders (
+  name TEXT PRIMARY KEY,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS grammar_mistakes (

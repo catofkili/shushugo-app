@@ -82,6 +82,22 @@ type DictionarySupplementSeed = {
   entries: DictionarySupplementEntry[];
 };
 
+type JlptCollocationContentEntry = {
+  surface: string;
+  kana: string;
+  level: "N1" | "N2" | "N3" | "N4" | "N5";
+  kind: string;
+  meaning: string;
+  jmdict_ent_seq: number;
+};
+
+type JlptCollocationContent = {
+  schema_version: number;
+  status: string;
+  reviewed_at: string;
+  entries: JlptCollocationContentEntry[];
+};
+
 
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // Keep this aligned with the metadata already baked into public/nihongo.db so
@@ -96,6 +112,7 @@ const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
 export const GRAMMAR_SEED_VERSION = "2026-08-15-grammar-rewrite-v2";
 export const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
+export const JLPT_COLLOCATION_CONTENT_VERSION = "2026-08-28-jlpt-collocations-zh-v1";
 
 const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
   const payload = await import("../data/jlpt_words_seed.json");
@@ -160,6 +177,11 @@ const loadDictionarySupplementSeed = async (): Promise<DictionarySupplementSeed>
   return payload.default as DictionarySupplementSeed;
 };
 
+const loadJlptCollocationContent = async (): Promise<JlptCollocationContent> => {
+  const payload = await import("../data/jlpt_collocation_content.json");
+  return payload.default as JlptCollocationContent;
+};
+
 // 建表/索引是幂等的,但每次调用都重跑 10+ 条 DDL + PRAGMA 很浪费——
 // isFavorite 等热路径每渲染一行都会走到这里。按 Database 实例记忆化;
 // importDatabase 换新实例后 WeakSet 查不到,自然会对新库重跑一遍。
@@ -208,6 +230,16 @@ export const ensureUserTables = () => {
   }
   // 复习流水现在记「哪个方向」:正向/反向/汉字是三张卡,顽固判定、连败保护、
   // 当日进度都要各算各的。老数据没有这一列,补上并一律算正向(以前只有正向记流水)。
+  // 老库的收藏没有收藏夹这一列;'' = 未分类,和新建库的默认值一致。
+  const favoriteColumns = rowsFor("PRAGMA table_info(content_favorites)").map((row) => String(row.name ?? ""));
+  if (!favoriteColumns.includes("folder")) {
+    db.run("ALTER TABLE content_favorites ADD COLUMN folder TEXT NOT NULL DEFAULT ''");
+  }
+  // 历史成绩表是这一版才加的，早一版建过表的库缺 levels_json 这一列
+  const vocabColumns = rowsFor("PRAGMA table_info(vocab_test_history)").map((row) => String(row.name ?? ""));
+  if (vocabColumns.length && !vocabColumns.includes("levels_json")) {
+    db.run("ALTER TABLE vocab_test_history ADD COLUMN levels_json TEXT NOT NULL DEFAULT ''");
+  }
   const reviewColumns = rowsFor("PRAGMA table_info(reviews)").map((row) => String(row.name ?? ""));
   if (!reviewColumns.includes("direction")) {
     db.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
@@ -226,10 +258,57 @@ export const ensureSeedData = async () => {
   ensureSyncSchema();
   await ensureLegacyBiruMigration();
   await ensureDictionarySupplementSeed();
+  await ensureJlptCollocationContent();
   await ensureGrammarSeed();
   await ensureJlptWordSeed();
   await ensureJlptLevelOverrides();
   await ensureFuriganaAnnotations();
+};
+
+// 固定搭配是 JLPT 主词库之后的第二层种子。它独立于 10k JLPT seed 版本，
+// 这样已有用户不会因为基础词库版本已满足而永远收不到新增表达；只按表记＋读音
+// 插入缺失行，不覆盖用户可能自行导入或改写的同形词条。
+const ensureJlptCollocationContent = async () => {
+  if (getState("jlpt_collocation_content_version", "") === JLPT_COLLOCATION_CONTENT_VERSION) return;
+
+  const content = await loadJlptCollocationContent();
+  if (content.status !== "content_ready_runtime_migration" || content.entries.length !== 882) {
+    throw new Error(`固定搭配内容版本无效: status=${content.status} entries=${content.entries.length}`);
+  }
+  if (content.entries.some((entry) => !entry.surface || !entry.kana || !entry.meaning || !/^N[1-5]$/.test(entry.level))) {
+    throw new Error("固定搭配内容存在缺少表记、读音、释义或等级的条目");
+  }
+
+  const db = getDatabase();
+  const existing = new Set(
+    rowsFor("SELECT kanji, kana FROM words")
+      .map((row) => `${String(row.kanji ?? "")}\u0000${String(row.kana ?? "")}`)
+  );
+  const insertedIds: number[] = [];
+  db.run("BEGIN TRANSACTION");
+  try {
+    content.entries.forEach((entry) => {
+      const key = `${entry.surface}\u0000${entry.kana}`;
+      if (existing.has(key)) return;
+      db.run(`
+        INSERT INTO words (
+          meaning, kana, kanji, pos, verb_type, importance,
+          shuffle_rank, example_jp, example_meaning, example_furigana, example_tokens, example_lemmas, jlpt_level
+        )
+        VALUES (?, ?, ?, ?, NULL, ?, ABS(RANDOM()) / 9223372036854775807.0, '', '', '', '', '', ?)
+      `, [entry.meaning, entry.kana, entry.surface, "固定搭配", 3, entry.level]);
+      const newId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
+      if (newId > 0) insertedIds.push(newId);
+      existing.add(key);
+    });
+    insertedIds.forEach((wordId) => db.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [wordId]));
+    setState("jlpt_collocation_content_version", JLPT_COLLOCATION_CONTENT_VERSION);
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+  persistSoon();
 };
 
 const ensureDictionarySupplementSeed = async () => {

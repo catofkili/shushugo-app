@@ -85,7 +85,7 @@ export function computeBadges({ overview, checkins, studyDate }: BadgeInput): Ba
       group: "habitat" as const,
       emoji: item.emoji,
       title: `${item.name}饲养员`,
-      requirement: `${item.level} 掌握度 ${HABITAT_CERTIFY_PCT}%`,
+      requirement: `${item.level} 学过 ${HABITAT_CERTIFY_PCT}%`,
       unlocked: pct >= HABITAT_CERTIFY_PCT,
       current: pct,
       target: HABITAT_CERTIFY_PCT
@@ -108,7 +108,7 @@ export function computeBadges({ overview, checkins, studyDate }: BadgeInput): Ba
     group: "words" as const,
     emoji: tier.emoji,
     title: tier.title,
-    requirement: `永久掌握 ${tier.count} 个词`,
+    requirement: `学过 ${tier.count} 个词`,
     unlocked: knownWords >= tier.count,
     current: Math.min(knownWords, tier.count),
     target: tier.count

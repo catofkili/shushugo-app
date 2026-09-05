@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, RotateCcw, X } from "lucide-react";
+import { Check, Search, X } from "lucide-react";
 import {
   confusionGroups,
+  CONFUSION_TYPES,
   displayForm,
-  groupWords,
+  groupWordParts,
   masteredConfusionKeys,
   setConfusionMastered,
   TYPE_META,
-  type ConfusionGroup
+  type ConfusionGroup,
+  type ConfusionType
 } from "../lib/confusion-groups";
-import { distinctionReviewFor } from "../data/confusion_distinction_reviews";
+import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
 import { JapaneseWordRuby } from "../components/JapaneseWordRuby";
 
 /**
@@ -41,6 +43,26 @@ const cardSub = (group: ConfusionGroup): string => {
   return senses.join(" / ");
 };
 
+/**
+ * 一组的可搜文本 = 词形 + 假名 + 释义 + 组标签。
+ *
+ * 缓存在 WeakMap 里：1,933 组、上万个成员，每敲一个键都重拼一遍是白烧 CPU
+ * （实测拼一次 ~25ms，敲十个字就是四分之一秒的卡顿）。组对象在一次会话里不变，
+ * 用它自己当键最省事，不用维护失效。
+ */
+const searchTextCache = new WeakMap<ConfusionGroup, string>();
+
+const searchTextOf = (group: ConfusionGroup): string => {
+  const cached = searchTextCache.get(group);
+  if (cached !== undefined) return cached;
+  const text = [
+    group.label,
+    ...group.members.flatMap((member) => [displayForm(member), member.kanji, member.kana, member.meaning])
+  ].join(" ").toLowerCase();
+  searchTextCache.set(group, text);
+  return text;
+};
+
 /** 洗牌。种子固定成当天，同一天进来顺序稳定，隔天换一批新鲜感。 */
 const shuffled = <T,>(items: T[], seedText: string): T[] => {
   let seed = [...seedText].reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 2147483647, 7);
@@ -59,6 +81,8 @@ const shuffled = <T,>(items: T[], seedText: string): T[] => {
 export const ConfusionPage = () => {
   const [mastered, setMastered] = useState<Set<string>>(() => new Set());
   const [openKey, setOpenKey] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [activeType, setActiveType] = useState<ConfusionType | "all">("all");
   const [ready, setReady] = useState(false);
   const groupsRef = useRef<ConfusionGroup[]>([]);
 
@@ -93,8 +117,38 @@ export const ConfusionPage = () => {
     });
   };
 
+  /** 搜索：词形 / 假名 / 释义 / 组标签，任意一处命中即可。空查询直接返回原表。 */
+  const matched = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return ordered;
+    return ordered.filter((group) => searchTextOf(group).includes(needle));
+  }, [ordered, query]);
+
+  /** 每一类还剩多少（跟着搜索走：搜完之后角标要说的是「这一类里搜到几个」）。 */
+  const countsByType = useMemo(() => {
+    const counts = new Map<ConfusionType, number>();
+    matched.forEach((group) => counts.set(group.type, (counts.get(group.type) ?? 0) + 1));
+    return counts;
+  }, [matched]);
+
+  /**
+   * 分节：七类各自一节。选中某一类时只留那一节 —— 用同一份数据同一段渲染，
+   * 不为「筛选」和「分组」各写一套。
+   */
+  const sections = useMemo(() => CONFUSION_TYPES
+    .filter((type) => activeType === "all" || type === activeType)
+    .map((type) => ({ type, groups: matched.filter((group) => group.type === type) }))
+    .filter((section) => section.groups.length > 0),
+  [matched, activeType]);
+
   const open = ordered.find((group) => group.key === openKey) ?? null;
   const openReview = open ? distinctionReviewFor(open.key) : null;
+  const openNotes = open && openReview?.level === "major"
+    ? distinctionNotesFor(openReview.summary, open.members.map((member) => ({
+        key: String(member.id),
+        forms: [displayForm(member), member.kanji, member.kana]
+      })))
+    : new Map<string, string>();
   const remaining = ordered.length - mastered.size;
 
   if (!ready) {
@@ -113,25 +167,91 @@ export const ConfusionPage = () => {
         </p>
       </header>
 
-      <div className="cf-grid">
-        {ordered.map((group) => {
-          const done = mastered.has(group.key);
+      <label className="cf-search">
+        <Search size={15} aria-hidden="true" />
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="搜词形、假名或释义"
+          aria-label="搜索词组"
+        />
+        {query && (
+          <button type="button" onClick={() => setQuery("")} aria-label="清空搜索">
+            <X size={14} />
+          </button>
+        )}
+      </label>
+
+      <div className="cf-types">
+        <button
+          className={`cf-type-chip${activeType === "all" ? " on" : ""}`}
+          onClick={() => setActiveType("all")}
+        >
+          全部 {matched.length}
+        </button>
+        {CONFUSION_TYPES.map((type) => {
+          const meta = TYPE_META[type];
+          const count = countsByType.get(type) ?? 0;
           return (
             <button
-              key={group.key}
-              className={`cf-card${done ? " is-mastered" : ""}${openKey === group.key ? " is-open" : ""}`}
-              onClick={() => setOpenKey(group.key)}
+              key={type}
+              className={`cf-type-chip${activeType === type ? " on" : ""}`}
+              onClick={() => setActiveType(activeType === type ? "all" : type)}
+              disabled={count === 0}
             >
-              <span className="cf-card-type">
-                {TYPE_META[group.type].emoji} {TYPE_META[group.type].name}
-              </span>
-              <span className="cf-card-words">{groupWords(group)}</span>
-              <span className="cf-card-gloss">{cardSub(group)}</span>
-              {done && <span className="cf-card-badge">已掌握</span>}
+              <meta.Icon size={13} aria-hidden="true" />
+              {meta.name} {count}
             </button>
           );
         })}
       </div>
+
+      {sections.length === 0 && (
+        <p className="cf-loading">没有匹配的词组</p>
+      )}
+
+      {sections.map((section) => {
+        const meta = TYPE_META[section.type];
+        return (
+          <section key={section.type} className="cf-section">
+            {/* 一类一节。选中某一类时这里只剩一节，标题照旧留着 ——
+                没有标题的话「现在看的是哪一类」只能靠 chip 的高亮去猜。 */}
+            <p className="cf-section-head">
+              <meta.Icon size={14} aria-hidden="true" />
+              <b>{meta.name}</b>
+              <small>{section.groups.length} 组</small>
+            </p>
+            <div className="cf-grid">
+              {section.groups.map((group) => {
+                const done = mastered.has(group.key);
+                return (
+                  <button
+                    key={group.key}
+                    className={`cf-card${done ? " is-mastered" : ""}${openKey === group.key ? " is-open" : ""}`}
+                    onClick={() => setOpenKey(group.key)}
+                  >
+                    <span className="cf-card-words">
+                      {/* 卡面上的和式汉字要标注音：这一页并排的就是「长得像/读得像」的词，
+                          读音本身常常就是区别所在（明後日 あさって / みょうごにち），
+                          光摆汉字等于把区别藏起来。假名并排的那两类不标（它本来就是读音）。 */}
+                      {groupWordParts(group).map((part, index) => (
+                        <span key={`${part.text}-${index}`}>
+                          {index > 0 && <i className="cf-card-sep"> / </i>}
+                          {part.reading
+                            ? <JapaneseWordRuby surface={part.text} reading={part.reading} />
+                            : part.text}
+                        </span>
+                      ))}
+                    </span>
+                    <span className="cf-card-gloss">{cardSub(group)}</span>
+                    {done && <span className="cf-card-badge">已掌握</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
 
       {/* 必须 portal 到 body。大卡的父容器 app-landscape-main 是 position:fixed,
           自成一个层叠上下文,遮罩的 z-index 只在那一层内部比较 —— 留在原地的话
@@ -141,7 +261,8 @@ export const ConfusionPage = () => {
           <div className="cf-sheet" onClick={(event) => event.stopPropagation()}>
             <div className="cf-sheet-head">
               <span className="cf-sheet-type">
-                {TYPE_META[open.type].emoji} {TYPE_META[open.type].name}
+                {(() => { const SheetIcon = TYPE_META[open.type].Icon; return <SheetIcon size={13} aria-hidden="true" />; })()}
+                {TYPE_META[open.type].name}
               </span>
               <button className="cf-close" onClick={() => setOpenKey(null)} aria-label="关闭">
                 <X size={18} />
@@ -150,8 +271,8 @@ export const ConfusionPage = () => {
 
             {openReview && (
               <p className={`cf-sheet-hint cf-sheet-summary${openReview.level === "major" ? " is-major" : ""}`}>
-                <b>{openReview.level === "major" ? "不能自由互换：" : "通常可互换："}</b>
-                {openReview.summary}
+                <b>{openReview.level === "major" ? "不能自由互换" : "通常可互换："}</b>
+                {openReview.level !== "major" && openReview.summary}
               </p>
             )}
 
@@ -170,6 +291,9 @@ export const ConfusionPage = () => {
                     {member.jlptLevel && <span className="cf-member-level">{member.jlptLevel}</span>}
                   </div>
                   <p className="cf-member-meaning">{member.meaning}</p>
+                  {openNotes.get(String(member.id)) && (
+                    <p className="cf-member-distinction">{openNotes.get(String(member.id))}</p>
+                  )}
                   {member.exampleJp && (
                     <p className="cf-member-example jp">
                       {member.exampleJp}
@@ -183,10 +307,11 @@ export const ConfusionPage = () => {
             <button
               className={`cf-master${mastered.has(open.key) ? " is-on" : ""}`}
               onClick={() => toggleMastered(open.key)}
+              aria-pressed={mastered.has(open.key)}
             >
               {mastered.has(open.key)
-                ? <><RotateCcw size={16} /> 取消已掌握</>
-                : <><Check size={16} /> 已掌握</>}
+                ? <><Check size={16} /> 已掌握</>
+                : "？掌握"}
             </button>
           </div>
         </div>,

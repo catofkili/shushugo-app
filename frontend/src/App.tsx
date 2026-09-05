@@ -8,7 +8,7 @@ import { AuthDialog } from "./components/AuthDialog";
 import { GrammarHighlightProvider } from "./components/GrammarHighlightProvider";
 import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
-import { completeTodayWordPlan, getProgressOverview, startPickedStudy as startPickedWordStudy, ProgressOverview } from "./lib/api";
+import { completeTodayWordPlan, getProgressOverview, recordStubbornQuickStudy, startPickedStudy as startPickedWordStudy, ProgressOverview } from "./lib/api";
 import { canUseFeature, FeatureId } from "./lib/entitlements";
 import { PROGRESS_UPDATED_EVENT, notifyProgressUpdated } from "./lib/progress-events";
 import { loadKanjiUnitIndex } from "./lib/kanji-unit-index";
@@ -95,6 +95,8 @@ export default function App() {
   const [paywallTarget, setPaywallTarget] = useState<FeatureId | "general" | undefined>();
   // 词库页的预设等级：进度概览点 N5 那根柱子进来时带着它
   const [wordListLevel, setWordListLevel] = useState<LibraryLevel>("all");
+  /** 完成页交给快速学习的那批顽固词；null = 正常的今日快速学习。 */
+  const [stubbornQuickIds, setStubbornQuickIds] = useState<number[] | null>(null);
   const [selectedStudyMode, setSelectedStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [launchStudyMode, setLaunchStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [wordStudyRevision, setWordStudyRevision] = useState(0);
@@ -255,6 +257,9 @@ export default function App() {
   // studyModeOverride 给明确指定模式的入口用；其余入口读取当前有效模式，
   // 其中也包括「今日任务完成后、4 点前」的临时错题本。
   const navigateToPage = (newPage: Page, studyModeOverride?: StudyMode) => {
+    // 「快速复习今天的顽固词」是一次性名单：从别处进快速学习就得回到今天那份，
+    // 否则点一次顽固复习之后，首页的快速学习入口会一直停在那批词上。
+    if (newPage === "quick-study") setStubbornQuickIds(null);
     if (accountProtectedPages.has(newPage) && !cloudSession.token) {
       setPendingAccountPage(newPage);
       setAuthOpen(true);
@@ -381,6 +386,15 @@ export default function App() {
       return;
     }
     setPaywallTarget(feature);
+  };
+
+  /** 完成页：今天顽固词太多时不给加餐，改成把这批词丢进快速学习过一遍。 */
+  const startStubbornQuickStudy = (wordIds: number[]) => {
+    if (!wordIds.length) return;
+    // 和加餐记同一笔账：见 recordStubbornQuickStudy 的注释。
+    recordStubbornQuickStudy(wordIds.length);
+    setStubbornQuickIds(wordIds);
+    setPage("quick-study");
   };
 
   const openGrammar = (id: string) => {
@@ -535,7 +549,14 @@ export default function App() {
       );
     }
     if (page === "word") {
-      return <WordStudy key={wordStudyRevision} initialMode={launchStudyMode} onDailyModeComplete={handleDailyModeComplete} />;
+      return (
+        <WordStudy
+          key={wordStudyRevision}
+          initialMode={launchStudyMode}
+          onDailyModeComplete={handleDailyModeComplete}
+          onStubbornQuickStudy={startStubbornQuickStudy}
+        />
+      );
     }
     if (page === "team") {
       return <TeamPage />;
@@ -552,7 +573,12 @@ export default function App() {
     if (page === "quick-study") {
       return renderToolSubpage(
         toolPageTitles["quick-study"] ?? "快速学习",
-        <QuickStudyPage onNavigate={navigateToPage} onDailyModeComplete={() => handleDailyModeComplete("quick")} />
+        <QuickStudyPage
+          onNavigate={navigateToPage}
+          onDailyModeComplete={() => handleDailyModeComplete("quick")}
+          wordIds={stubbornQuickIds ?? undefined}
+          heading={stubbornQuickIds ? "顽固词复习" : undefined}
+        />
       );
     }
     if (page === "vocab-test") {
@@ -583,7 +609,7 @@ export default function App() {
       return <ProPage entitlements={entitlements} onBack={goBack} onOpenPaywall={() => setPaywallTarget("general")} onOpenPrivacy={() => navigateToPage("privacy-policy")} />;
     }
     if (page === "favorites") {
-      return renderToolSubpage(toolPageTitles.favorites ?? "收藏", <FavoritesPage onOpenGrammar={openGrammar} />);
+      return renderToolSubpage(toolPageTitles.favorites ?? "收藏", <FavoritesPage onOpenGrammar={openGrammar} onStudyPicked={startPickedStudy} />);
     }
     if (page === "word-list") {
       return renderToolSubpage(
@@ -645,7 +671,13 @@ export default function App() {
       return <AboutPage onBack={goBack} />;
     }
 
-    return <WordStudy initialMode={launchStudyMode} onDailyModeComplete={handleDailyModeComplete} />;
+    return (
+      <WordStudy
+        initialMode={launchStudyMode}
+        onDailyModeComplete={handleDailyModeComplete}
+        onStubbornQuickStudy={startStubbornQuickStudy}
+      />
+    );
   };
 
   return (

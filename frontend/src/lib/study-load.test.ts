@@ -81,12 +81,24 @@ describe("每日学习数量", () => {
     expect(bar.fresh + bar.review).toBe(1);
   });
 
-  it("⚠️ 同一个词的不同方向是两张卡，不去重成一个词", () => {
+  it("⚠️ 只数正向：同一个词的反向 / 汉字读音流水不进这张图", () => {
     const [word] = wordIds(1);
     addReview(word, "forward", shift(-2));
     addReview(word, "reverse", shift(-2));
+    addReview(word, "kanji_reading", shift(-2));
+    // 老库里还有 direction='kanji' 的历史流水（已废掉的写法题），同样不算
+    addReview(word, "kanji", shift(-2));
     const bar = barFor(dailyStudyLoad({ now: NOW }), shift(-2));
-    expect(bar.fresh + bar.review).toBe(2);
+    expect(bar.fresh + bar.review).toBe(1);
+  });
+
+  it("⚠️ 方向过滤在子查询里：先背过反向，不能把正向首答说成「不是第一次」", () => {
+    const [word] = wordIds(1);
+    addReview(word, "reverse", shift(-5));   // 更早，但不是正向
+    addReview(word, "forward", shift(-2));   // 正向第一次露面就是这天
+    const load = dailyStudyLoad({ now: NOW });
+    expect(barFor(load, shift(-5))).toMatchObject({ fresh: 0, review: 0 });
+    expect(barFor(load, shift(-2))).toMatchObject({ fresh: 1, review: 0 });
   });
 
   it("第一次露面算新学，以后算复习", () => {
@@ -98,13 +110,27 @@ describe("每日学习数量", () => {
     expect(barFor(load, shift(-1))).toMatchObject({ fresh: 0, review: 1 });
   });
 
-  it("语法流水也算进来 —— 那天学的东西不分单词还是语法", () => {
+  it("⚠️ 语法流水不算进来 —— 这张图只说经典模式，语法有自己的入口", () => {
     const grammarId = Number(testDb.exec("SELECT id FROM grammar_points LIMIT 1")[0].values[0][0]);
     testDb.run(
       "INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on) VALUES (?, 'know', 0, ?)",
       [grammarId, shift(-4)]
     );
-    expect(barFor(dailyStudyLoad({ now: NOW }), shift(-4))).toMatchObject({ fresh: 1, review: 0 });
+    expect(barFor(dailyStudyLoad({ now: NOW }), shift(-4))).toMatchObject({ fresh: 0, review: 0 });
+  });
+
+  it("⚠️ 今天欠的账也只数正向：反向 / 汉字 / 语法的到期卡不进 pending", () => {
+    // 全部学过（unlearned = 0 → 今天不再发新词额度），且都排到明年，只留 a/b 到期
+    testDb.run("UPDATE progress SET seen_count = 1, fsrs_due = '2027-01-01T00:00:00.000Z'");
+    const [a, b] = wordIds(2);
+    testDb.run("UPDATE progress SET fsrs_due = NULL WHERE word_id IN (?, ?)", [a, b]);
+    // 反向和汉字读音各挂一张「到期」卡（这两张表的 eligible 是 1=1，due 为空即视同到期）
+    testDb.run("INSERT OR REPLACE INTO reverse_memory (word_id, seen_count) VALUES (?, 1)", [a]);
+    testDb.run("INSERT OR REPLACE INTO kanji_reading_memory (word_id, seen_count) VALUES (?, 1)", [a]);
+
+    const load = dailyStudyLoad({ now: NOW, futureDays: 0 });
+    // 只有 progress 那两张，反向 / 汉字那两张不算
+    expect(load.bars.find((bar) => bar.today)!.pending).toBe(2);
   });
 
   it("没学的那些天是 0，不是缺一根柱子", () => {

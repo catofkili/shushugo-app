@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { Brain, CalendarDays, CheckCircle2, Clock3, ImageDown, Loader2, Minus, Pencil, Plus, Share2, X } from "lucide-react";
+import { Brain, CalendarDays, CheckCircle2, Clock3, Flame, ImageDown, ListChecks, Loader2, Minus, Pencil, Plus, Share2, Star, X } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
+import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
+import { addFavorite, addFavorites, getStubbornWordsToday, type StubbornWordToday } from "../../lib/api";
 import { ZooConfetti } from "../../components/ZooConfetti";
 import { useCountUp } from "../../hooks/useCountUp";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { estimatedMinutesFor } from "../../lib/review-budget";
+import { STUBBORN_DAILY_MISTAKES } from "../../lib/fsrs-scheduler";
 import { studyDate as currentStudyDate } from "../../lib/database/db-utils";
 import { splitFurigana, useFuriganaReady } from "../../lib/furigana";
 import { lookupAccent, pitchPattern, splitMorae, usePitchAccentReady } from "../../lib/pitch-accent";
@@ -193,6 +196,14 @@ export const ExampleBlock = ({ card }: { card: WordCard }) => {
   );
 };
 
+/**
+ * 今天的顽固词多到这个数，就不给加餐了。
+ *
+ * 加餐是「今天状态不错，再来一批」；而今天有三十个词跟你打了一架的时候，
+ * 再塞新词进来只是把明天的账提前记上。这时候该做的是把这批词过一遍。
+ */
+const STUBBORN_ENCORE_BLOCK = 30;
+
 interface FinishPanelProps {
   stats: WordStats | null;
   phase: string;
@@ -201,9 +212,12 @@ interface FinishPanelProps {
   onContinueStage2?: () => void;
   onContinueKanji?: () => void;
   onEncore?: (size?: number) => void;
+  onStubbornQuickStudy?: (wordIds: number[]) => void;
 }
 
-export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji, onEncore }: FinishPanelProps) => {
+export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji, onEncore, onStubbornQuickStudy }: FinishPanelProps) => {
+  const { pickFolder, picker } = useFavoriteFolderPicker();
+  const [stubborn, setStubborn] = useState<StubbornWordToday[]>([]);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [shareCard, setShareCard] = useState<{ url: string; blob: Blob } | null>(null);
   const [shareBusy, setShareBusy] = useState<"save" | "share" | null>(null);
@@ -224,7 +238,6 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
         : phase === "picked" ? "自选清单"
           : phase;
   const encore = stats?.encore;
-  const showEncore = phase === "done" && Boolean(encore?.available) && Boolean(onEncore);
 
   // 主题纸屑每个学习日只放一次:同一天反复回到完成页不再重放,免得变成噪音。
   // 记在 sessionStorage 而不是数据库 —— 这只是个视觉彩头,丢了也无所谓。
@@ -285,6 +298,41 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
    */
   const shownWordCount = useCountUp(todayWordCount);
   const shownCheckinDays = useCountUp(checkinDays);
+
+  // 今天真正打过架的那几个词。进这一页才查一次:判据要数今天的流水,
+  // 而这一页是今天最后一次结算,查早了数还没记全。
+  useEffect(() => {
+    setStubborn(getStubbornWordsToday());
+  }, [studyDate, todayWordCount]);
+
+  const unfavoritedStubborn = stubborn.filter((word) => !word.isFavorite);
+  // 顽固词多到一定程度就不给加餐，改成「把这批词过一遍」。
+  const stubbornOverload = stubborn.length >= STUBBORN_ENCORE_BLOCK && Boolean(onStubbornQuickStudy);
+  const showEncore = phase === "done" && Boolean(encore?.available) && Boolean(onEncore) && !stubbornOverload;
+  const favoriteStubborn = (words: StubbornWordToday[], title: string) => {
+    if (!words.length) return;
+    pickFolder({
+      title,
+      onPick: (folder) => {
+        addFavorites("word", words.map((word) => word.id), folder);
+        setStubborn((current) => current.map((word) => (
+          words.some((picked) => picked.id === word.id) ? { ...word, isFavorite: true } : word
+        )));
+      }
+    });
+  };
+  const toggleStubbornFavorite = (word: StubbornWordToday) => {
+    if (word.isFavorite) return;
+    pickFolder({
+      title: `收藏「${preferredWordSurface(word)}」到`,
+      onPick: (folder) => {
+        addFavorite("word", word.id, folder);
+        setStubborn((current) => current.map((item) => (
+          item.id === word.id ? { ...item, isFavorite: true } : item
+        )));
+      }
+    });
+  };
 
   const shareFileName = `master-nihongo-${studyDate}.png`;
 
@@ -444,6 +492,24 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             </div>
           </div>
 
+          {stubbornOverload && (
+            <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
+              <p className="mb-2 text-xs text-white/60">
+                今天有 {stubborn.length} 个词跟你打了一架。这种时候再加一批新词，只是把明天的账提前记上。
+              </p>
+              <button
+                onClick={() => onStubbornQuickStudy?.(stubborn.map((word) => word.id))}
+                className="focus-ring inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] text-lg font-bold !text-[#2f3333]"
+              >
+                <Flame size={18} />
+                快速复习这 {stubborn.length} 个顽固词
+              </button>
+              <p className="mt-2 text-[11px] text-white/40">
+                在快速学习里一页一页过：默认「认识」，只把还没记住的挑出来。评分照常进 FSRS。
+              </p>
+            </div>
+          )}
+
           {showEncore && encore && (
             <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
               {encore.fatigued ? (
@@ -562,6 +628,63 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             </div>
           )}
 
+          {stubborn.length > 0 && (
+            <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Flame size={16} className="shrink-0 text-[#E8971C]" />
+                  <p className="min-w-0 truncate text-sm font-bold text-white">今天的顽固词 {stubborn.length} 个</p>
+                </div>
+                <span className="flex shrink-0 items-center gap-2">
+                  {/* 快速复习不等到「顽固词多到换掉加餐」才给入口：列表就在眼前，
+                      想现在过一遍是最自然的下一步。超过阈值时上面那块会把加餐整个换掉。 */}
+                  {!stubbornOverload && onStubbornQuickStudy && (
+                    <button
+                      onClick={() => onStubbornQuickStudy(stubborn.map((word) => word.id))}
+                      className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 text-xs font-bold text-white/75"
+                    >
+                      <ListChecks size={13} />
+                      快速复习
+                    </button>
+                  )}
+                  {unfavoritedStubborn.length > 0 && (
+                    <button
+                      onClick={() => favoriteStubborn(unfavoritedStubborn, `把今天 ${unfavoritedStubborn.length} 个顽固词收进`)}
+                      className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-[#81D8CF]/35 bg-[#81D8CF]/14 px-3 text-xs font-bold text-[#81D8CF]"
+                    >
+                      <Star size={13} />
+                      全部收藏
+                    </button>
+                  )}
+                </span>
+              </div>
+              <div className="max-h-56 overflow-y-auto">
+                {stubborn.map((word) => (
+                  <div key={word.id} className="flex items-center gap-3 border-t border-white/8 py-2 first:border-t-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="jp-serif truncate text-base font-semibold text-white">{preferredWordSurface(word)}</p>
+                      <p className="truncate text-xs text-white/55">{word.kana} · {word.meaning}</p>
+                    </div>
+                    <span className="shrink-0 text-[11px] text-white/45">
+                      {word.wrongToday > 0 ? `今天错 ${word.wrongToday} 次` : `累计忘 ${word.lapses} 次`}
+                    </span>
+                    <button
+                      onClick={() => toggleStubbornFavorite(word)}
+                      disabled={word.isFavorite}
+                      className={`focus-ring grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/15 ${word.isFavorite ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-white/6 text-white/62"}`}
+                      title={word.isFavorite ? "已收藏" : "收藏这个词"}
+                    >
+                      <Star size={14} fill={word.isFavorite ? "currentColor" : "none"} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-[11px] text-white/40">
+                一共忘过 8 次以上、今天又错了 {STUBBORN_DAILY_MISTAKES} 次的词。集中攻坚走错题本模式。
+              </p>
+            </div>
+          )}
+
           <div className="grid shrink-0 gap-2 sm:grid-cols-3">
             {isStage1Complete && (
               <>
@@ -651,6 +774,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
       )}
 
       {showAnalytics && <AnalyticsDashboard onClose={() => setShowAnalytics(false)} />}
+      {picker}
     </>
   );
 };

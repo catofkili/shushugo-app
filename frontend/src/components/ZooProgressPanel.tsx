@@ -46,7 +46,8 @@ interface Props {
 }
 
 /**
- * 每日学习数量：左边是发生过的事，右边是排出来的账。
+ * 每日学习数量：左边是发生过的事，右边是排出来的账。**只说经典模式（正向）** ——
+ * 单位因此是「词」不是「张」，和主页大卡的「320 词」是同一把尺子。
  *
  * 口径和 ⚠️ 都在 lib/study-load.ts 上；这里只负责画。预计那几根用虚边 + 淡色，
  * **一定要和实际那几根长得不一样** —— 同样实心的话，这张图就成了在承诺未来。
@@ -76,7 +77,7 @@ const DailyLoadChart = () => {
       <div className="zoo-load-head">
         <b>每日学习数量</b>
         <small>
-          过去 {PAST_DAYS} 天日均 {load.pastAverage} 张 · 往后 {FUTURE_DAYS} 天预计日均 {load.forecastAverage} 张
+          经典模式 · 过去 {PAST_DAYS} 天日均 {load.pastAverage} 词 · 往后 {FUTURE_DAYS} 天预计日均 {load.forecastAverage} 词
         </small>
       </div>
 
@@ -118,7 +119,7 @@ const DailyLoadChart = () => {
           {current.forecast ? <span className="zoo-load-tag">预计</span> : null}
           {current.today ? <span className="zoo-load-tag">今天</span> : null}
           新学 {current.fresh} · 复习 {current.review}
-          {current.pending > 0 ? ` · 还剩 ${current.pending}` : ""} · 共 {total(current)} 张
+          {current.pending > 0 ? ` · 还剩 ${current.pending}` : ""} · 共 {total(current)} 词
         </p>
       )}
 

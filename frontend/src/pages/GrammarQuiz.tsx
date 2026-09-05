@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Eye, ListOrdered, Plus, Undo2 } from "lucide-react";
-import { JapaneseRuby } from "../components/JapaneseRuby";
+import { ArrowLeft, ListOrdered, Plus, Undo2 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
-import { answerHotkeyLabels, answerOptions } from "../features/word-study/word-study-utils";
-import { patternPieces } from "../lib/grammar-formation";
+import { GrammarCard } from "../features/grammar-quiz/GrammarCard";
 import {
   extendGrammarQuizPlan,
   getGrammarQuizSession,
@@ -12,7 +10,6 @@ import {
   undoLastGrammarQuizAnswer,
   GRAMMAR_ENCORE_SIZE,
   type GrammarQuizAnswer,
-  type GrammarQuizCard,
   type GrammarQuizSession
 } from "../lib/grammar-quiz";
 
@@ -28,32 +25,9 @@ const LEVELS: JLPTLevel[] = ["N5", "N4", "N3", "N2", "N1"];
  * 语法考题：题面给句型，翻面给接续 + 中文意。
  *
  * 和单词学习共用同一副骨架**和同一套内核**：FSRS 到期集选题、四档评分、
- * 没毕业就当天隔几张重刷、每日新条目配额。所以评分是四颗不是三颗 ——
- * 「模糊」以前不摆是因为没有调度器接 Hard 档，现在有了。
- *
- * 题面上还多一件单词卡没有的事：翻面后把接续标在每个 `～` 的头上。
- * `～` 是这张卡真正的坑，标在坑边上比写在下面省掉「对号入座」那一步。
- * 标不准的（判据见 lib/grammar-formation.ts）就不标，只留下面那行完整接续。
+ * 没毕业就当天隔几张重刷、每日新条目配额。卡片本身在 features/grammar-quiz/GrammarCard，
+ * 混合模式（单词里插播语法）出的是同一张卡、同一套键位，只是换个颜色。
  */
-const PatternLine = ({ card, revealed }: { card: GrammarQuizCard; revealed: boolean }) => {
-  const annotated = revealed && Boolean(card.attachment);
-  if (!annotated) return <>{card.pattern}</>;
-  return (
-    <>
-      {patternPieces(card.pattern).map((piece, index) => (
-        piece.slot ? (
-          <span key={index} className="grammar-slot">
-            <span className="grammar-slot__rt">{card.attachment}</span>
-            {piece.text}
-          </span>
-        ) : (
-          <span key={index}>{piece.text}</span>
-        )
-      ))}
-    </>
-  );
-};
-
 export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
   // 考题一次只考一个等级：备考是按等级来的，五个等级混在一起就没有「今天这一档
   // 还剩多少」可言了。所以等级选择器长在这里，而不是沿用列表页那个可以选「全部」的筛选。
@@ -89,32 +63,6 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
     setShowRanking(false);
     setRankingRevision((v) => v + 1);
   }, [level, session?.canUndo]);
-
-  // 键盘：任意普通键翻面，翻面后 V/B/N/M 评分。和单词学习一致。
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
-      const target = event.target as HTMLElement | null;
-      if (target && /^(INPUT|TEXTAREA)$/.test(target.tagName)) return;
-      if (!session?.card) return;
-      if (!revealed) {
-        if (event.key.length === 1 || event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          setRevealed(true);
-        }
-        return;
-      }
-      const hit = answerOptions.find(
-        (option) => answerHotkeyLabels[option.value].toLowerCase() === event.key.toLowerCase()
-      );
-      if (hit) {
-        event.preventDefault();
-        answer(hit.value);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [answer, revealed, session]);
 
   const ranking = useMemo(
     () => (showRanking ? grammarQuizRanking(level) : []),
@@ -224,113 +172,12 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
           </div>
         </div>
       ) : card ? (
-        <div key={card.id} className="zoo-enter dictionary-card flex h-full min-h-0 flex-col gap-2 rounded-2xl px-3 pb-2 pt-3 sm:gap-3 sm:p-6">
-          {/* 题面：句型本身。点一下翻面，和单词学习一样。 */}
-          <div
-            onClick={() => !revealed && setRevealed(true)}
-            className={`grid min-h-0 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] px-3 py-4 text-center sm:min-h-32 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)] ${
-              revealed ? "" : "cursor-pointer"
-            }`}
-          >
-            <div className="w-full min-w-0">
-              <span className="rounded-sm border border-white/15 px-1.5 py-0.5 text-[11px] font-bold text-white/60">
-                {card.level}
-              </span>
-              {card.isNew && (
-                <span className="ml-1.5 rounded-sm border border-[#81D8CF]/45 px-1.5 py-0.5 text-[11px] font-bold text-[#81D8CF]">
-                  新
-                </span>
-              )}
-              <p
-                className={`jp-serif mt-2 break-words text-3xl font-semibold leading-tight sm:text-5xl lg:text-6xl ${
-                  revealed && card.attachment ? "grammar-pattern--annotated" : ""
-                }`}
-              >
-                <PatternLine card={card} revealed={revealed} />
-              </p>
-            </div>
-          </div>
-
-          <div
-            data-word-scrollable="true"
-            className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]"
-          >
-            {revealed ? (
-              <div className="zoo-reveal-in w-full min-w-0">
-                {/* 答案上半：接续（题面 `～` 上标的只是它的头一段） */}
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">接续</p>
-                <p className="jp mx-auto mt-2 max-w-2xl break-words text-xl font-semibold leading-8 sm:text-2xl">
-                  {card.formation || "—"}
-                </p>
-                {/* 答案下半：中文意 */}
-                <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-white/55">中文意</p>
-                <p className="mx-auto mt-2 max-w-2xl break-words text-lg leading-7 text-white/85 sm:text-xl">
-                  {card.meaning || "—"}
-                </p>
-                <div className="mx-auto mt-5 max-w-2xl rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 sm:px-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">例句</p>
-                  <p className="jp mt-2 break-words text-lg font-semibold leading-8 text-white/90 sm:text-xl">
-                    <JapaneseRuby
-                      text={card.exampleJp || "—"}
-                      furigana={card.exampleFurigana}
-                      tokenLengths={card.exampleTokens}
-                      tokenLemmas={card.exampleLemmas}
-                    />
-                  </p>
-                  {card.exampleMeaning && (
-                    <p className="mt-1 break-words text-sm leading-6 text-white/60">{card.exampleMeaning}</p>
-                  )}
-                </div>
-                {card.forgotCount > 0 && (
-                  <p className="mt-4 text-xs text-white/40">这条你答错过 {card.forgotCount} 次</p>
-                )}
-              </div>
-            ) : (
-              <div className="text-center">
-                <p className="text-base font-bold text-white/72">答案已隐藏</p>
-                <p className="mt-1 text-xs text-white/45">先回忆接续和意思</p>
-              </div>
-            )}
-          </div>
-
-          <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
-            {!revealed ? (
-              <button
-                onClick={() => setRevealed(true)}
-                className="focus-ring zoo-pop zoo-gloss inline-flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] px-4 text-base font-bold !text-[#2f3333]"
-              >
-                <Eye size={18} />
-                <span>显示答案</span>
-                <span className="text-xs font-semibold opacity-65">（按任意键）</span>
-              </button>
-            ) : (
-              // 忘记/认识 是主键，模糊/熟知 摆一半宽、不填色 —— 和单词学习同一副骨架
-              <div className="zoo-rate-row grid h-16 grid-cols-[1.35fr_0.65fr_1.35fr_0.65fr] gap-2 sm:gap-3">
-                {answerOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => answer(option.value)}
-                    aria-keyshortcuts={answerHotkeyLabels[option.value]}
-                    className={`focus-ring zoo-pop h-16 min-w-0 rounded-2xl border ${
-                      option.secondary
-                        ? "border-white/12 px-1 text-sm font-semibold text-white/60 hover:bg-white/[0.06]"
-                        : "border-white/20 bg-[#81D8CF]/10 px-2 text-base font-bold hover:bg-[#81D8CF]/15"
-                    }`}
-                  >
-                    <span
-                      className={`block text-[10px] font-black text-white/45 ${
-                        option.secondary ? "tracking-normal" : "tracking-[0.18em]"
-                      }`}
-                    >
-                      {answerHotkeyLabels[option.value]}
-                    </span>
-                    <span>{option.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <GrammarCard
+          card={card}
+          revealed={revealed}
+          onReveal={() => setRevealed(true)}
+          onAnswer={answer}
+        />
       ) : (
         // 今天的都过关了。不自动往后借明天的账 —— 想继续得自己点，和单词的续杯同理。
         <div className="dictionary-card grid min-h-[320px] place-items-center rounded-2xl p-6 text-center">

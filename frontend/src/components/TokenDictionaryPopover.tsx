@@ -1,3 +1,4 @@
+import { Volume2 } from "lucide-react";
 import { useEffect, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { lookupTokenEntries, type TokenDictionaryEntry } from "../lib/token-dictionary";
@@ -172,7 +173,7 @@ export const TokenDictionaryPopover = ({ boundary, reading, children }: TokenDic
         {entry && (
           <div className="mt-4 flex flex-wrap gap-2">
             <button type="button" className="token-dictionary-audio" onClick={() => void playPronunciation(entry.kanji || entry.kana, entry.kana)}>
-              🔊 播放读音
+              <Volume2 size={14} aria-hidden="true" /> 播放读音
             </button>
             {entry.studyWordId !== null && (
               <button

@@ -1,4 +1,4 @@
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft, Heart, Check } from "lucide-react";
 
 interface AboutPageProps {
   onBack: () => void;
@@ -32,7 +32,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4">
         <h2 className="mb-3 text-sm font-bold text-white">应用介绍</h2>
         <p className="text-sm leading-relaxed text-white/70">
-          收集日是一款离线日语学习应用，内置 10,919 个 JLPT 词条和 741 个语法点。
+          收集日是一款离线日语学习应用，内置 10,919 个 JLPT 词条、882 个固定搭配与固定表达，以及 741 个语法点。
           单词、汉字读音和语法三条线都由同一套 FSRS 记忆算法排复习。
         </p>
       </div>
@@ -42,23 +42,27 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">功能特性</p>
         <div className="space-y-2 rounded-2xl border border-white/15 bg-[#464949] p-4">
           <div className="flex items-start gap-2">
-            <span className="text-[#81D8CF]">✓</span>
+            <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
             <p className="text-sm text-white/70">完全离线使用，无需网络连接</p>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-[#81D8CF]">✓</span>
+            <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
             <p className="text-sm text-white/70">10,919 个 N5-N1 JLPT 词条，条条带例句</p>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-[#81D8CF]">✓</span>
+            <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
+            <p className="text-sm text-white/70">882 个 N5-N1 固定搭配与固定表达，附简体中文释义</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
             <p className="text-sm text-white/70">741 个语法点详解（N5 120 · N4 130 · N3 140 · N2 150 · N1 201）</p>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-[#81D8CF]">✓</span>
+            <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
             <p className="text-sm text-white/70">FSRS 记忆算法排复习（Anki 同款）</p>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-[#81D8CF]">✓</span>
+            <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
             <p className="text-sm text-white/70">本地保存学习进度</p>
           </div>
         </div>
@@ -70,7 +74,8 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <p className="text-sm leading-relaxed text-white/70">
           当前 JLPT 词条与中文释义可追溯到 eggrolls-JLPT10k-v3.5，并适用 CC BY-NC 4.0；10,609 条种子词条均已有逐词手写例句。例句重写不改变词条与释义的来源许可：词条与释义仍仅可用于非商业开发，商业发布前必须取得授权或整体替换。
-            汉字表记优先级与部分动词自他标注使用 JMdict（Electronic Dictionary Research and Development Group），适用 CC BY-SA 4.0。
+            固定搭配与固定表达的日文表记、读音和 `ent_seq` 取自 JMdict（Electronic Dictionary Research and Development Group），其中文释义层使用 Tomoshi 开放数据的 `zh_defs` 衍生数据；两者均适用 CC BY-SA 4.0，具体版本、修改说明和署名链接见项目版权合规文档。
+            汉字表记优先级与部分动词自他标注也使用 JMdict。
             其他数据的来源、署名和发布条件请以项目 README 的版权合规说明为准。
           </p>
         </div>

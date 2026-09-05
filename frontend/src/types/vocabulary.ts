@@ -70,9 +70,13 @@ export interface WordStats {
     /** 今天已攻掉的薄弱词数（不同词） */
     answeredToday: number;
   };
+  /** 备考目标那一级今天还欠几条语法（混合模式把它加在今日计划之上） */
+  grammarRemaining: number;
   /** 模式切换器的角标：每个模式现在还能练多少（队列没建时算「进去之后会有多少」） */
   modeCounts: {
     classic: number;
+    /** 混合模式 = 今日计划的词数 + 今天还欠的语法条数 */
+    mixed: number;
     mistakes: number;
     quick: number;
     reverse: number;

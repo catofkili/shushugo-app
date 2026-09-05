@@ -5,22 +5,36 @@ import { rowObjectToCard } from "../models/word-card";
 
 const DAILY_REVIEW_STATE_KEY = "daily_review_v1";
 
-const reviewWasTriggeredToday = (): boolean => {
+interface DailyReviewState {
+  studyDate?: string;
+  /** 今天已经开过一次回顾区(一天只开一次) */
+  triggered?: boolean;
+  /** 今天的完成度进过 60%~80% 的窗口 = 已上膛,等下一次「忘记」开火 */
+  armed?: boolean;
+}
+
+const readReviewState = (): DailyReviewState => {
   const raw = getState(DAILY_REVIEW_STATE_KEY, "");
-  if (!raw) return false;
+  if (!raw) return {};
   try {
-    const parsed = JSON.parse(raw) as { studyDate?: string; triggered?: boolean };
-    return parsed.studyDate === today() && parsed.triggered === true;
+    const parsed = JSON.parse(raw) as DailyReviewState;
+    return parsed.studyDate === today() ? parsed : {};
   } catch {
-    return false;
+    return {};
   }
 };
+
+const writeReviewState = (next: DailyReviewState): void => {
+  setState(DAILY_REVIEW_STATE_KEY, JSON.stringify({ ...next, studyDate: today() }));
+  persistSoon();
+};
+
+const reviewWasTriggeredToday = (): boolean => readReviewState().triggered === true;
 
 export const hasDailyReviewTriggered = (): boolean => reviewWasTriggeredToday();
 
 export const markDailyReviewTriggered = (): void => {
-  setState(DAILY_REVIEW_STATE_KEY, JSON.stringify({ studyDate: today(), triggered: true }));
-  persistSoon();
+  writeReviewState({ ...readReviewState(), triggered: true });
 };
 
 const currentReviewCountSql = `(
@@ -70,11 +84,14 @@ const candidateRows = (excludedIds: Set<number> = new Set()) => {
 export const dailyReviewCandidateCount = (excludedIds: Set<number> = new Set()): number =>
   candidateRows(excludedIds).length;
 
-export const shouldStartDailyReview = (): boolean => {
-  if (reviewWasTriggeredToday()) return false;
-  const day = today();
-  // 疲劳时不要再打开一个高强度的回顾循环,让普通学习流自然收尾。
-  if (fatigueDetected(day)) return false;
+/**
+ * 今日任务完成度落在 60%~80%：太早还没积够反复卡住的词，太晚该收尾了。
+ *
+ * ⚠️ 这个比例**只可能在答对的那一下往上跳** —— completed 的判据是「毕业」，
+ * 而忘记/模糊会把 due 留在今天，一个都不加。所以它只用来「上膛」，不直接开火：
+ * 直接开火的话，红色横幅永远紧跟着一次「认识」弹出来，而它说的是错题。
+ */
+const completionInTriggerWindow = (day: string): boolean => {
   const total = firstValue<number>(
     "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ?",
     [day],
@@ -89,7 +106,29 @@ export const shouldStartDailyReview = (): boolean => {
       AND (p.known_forever = 1 OR (p.fsrs_due IS NOT NULL AND p.fsrs_due > ?))
   `, [day, studyDayEnd().toISOString()], 0);
   const progress = Number(completed) / Number(total);
-  return progress >= 0.6 && progress <= 0.8 && dailyReviewCandidateCount() >= 4;
+  return progress >= 0.6 && progress <= 0.8;
+};
+
+/**
+ * 每答完一题问一次：现在该开当日错题回顾了吗。
+ *
+ * 两段式：完成度进过 60%~80% 的窗口先**上膛**（写进 app_state，熬得过刷新），
+ * 之后**下一次「忘记」**才开火。上膛这一下本身就是忘记的话，当场开火。
+ * 上了膛就一直算数 —— 后面被一串「认识」推过 80% 也不撤销，
+ * 不然「今天卡住的词」正好在最该回顾的时候被答对推没了。
+ */
+export const shouldStartDailyReview = (justForgot: boolean): boolean => {
+  if (reviewWasTriggeredToday()) return false;
+  const day = today();
+  // 疲劳时不要再打开一个高强度的回顾循环,让普通学习流自然收尾。
+  if (fatigueDetected(day)) return false;
+  const state = readReviewState();
+  if (!state.armed) {
+    if (!completionInTriggerWindow(day)) return false;
+    writeReviewState({ ...state, armed: true });
+  }
+  if (!justForgot) return false;
+  return dailyReviewCandidateCount() >= 4;
 };
 
 export const pickDailyReviewNext = (excludedIds: Set<number> = new Set()): WordCard | null => {

@@ -555,8 +555,8 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             </div>
             <div className="flex flex-wrap gap-2">
               {([
-                { value: "full", label: "✨ 全开" },
-                { value: "reduced", label: "🔋 省电" },
+                { value: "full", label: "全开" },
+                { value: "reduced", label: "省电" },
                 { value: "off", label: "⏸ 关闭" }
               ] as const).map((option) => (
                 <button

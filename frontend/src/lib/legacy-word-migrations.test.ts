@@ -54,6 +54,7 @@ describe("旧版重复 ビル 迁移", () => {
     )`);
     testDb.run(`CREATE TABLE IF NOT EXISTS content_favorites (
       item_type TEXT NOT NULL, item_id TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      folder TEXT NOT NULL DEFAULT '',
       PRIMARY KEY (item_type, item_id)
     )`);
     testDb.run("DELETE FROM reviews");

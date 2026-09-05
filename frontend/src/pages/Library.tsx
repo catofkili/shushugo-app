@@ -5,7 +5,8 @@ import { GrammarTermHint } from "../components/GrammarTermHint";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarPoints } from "../data/grammar";
 import { splitFormationRules } from "../lib/grammar-formation";
-import { getGrammarPointFavorite, toggleFavorite } from "../lib/api";
+import { addFavorite, getGrammarPointFavorite, toggleFavorite } from "../lib/api";
+import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
 import { grammarSequence } from "../lib/grammar-numbering";
 import {
@@ -197,6 +198,7 @@ export const Library = ({
   onOpenQuiz,
   onOpenDetail
 }: LibraryProps) => {
+  const { pickFolder, picker } = useFavoriteFolderPicker();
   const [query, setQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedIdsByLevel, setSelectedIdsByLevel] = useState<Record<string, string>>({});
@@ -314,9 +316,19 @@ export const Library = ({
     return getGrammarPointFavorite(id);
   };
 
-  const toggleGrammarFavorite = (id: string) => {
-    toggleFavorite("grammar", id);
-    setFavoriteVersion((value) => value + 1);
+  const toggleGrammarFavorite = (id: string, label: string) => {
+    if (getGrammarPointFavorite(id)) {
+      toggleFavorite("grammar", id);
+      setFavoriteVersion((value) => value + 1);
+      return;
+    }
+    pickFolder({
+      title: `收藏「${label}」到`,
+      onPick: (folder) => {
+        addFavorite("grammar", id, folder);
+        setFavoriteVersion((value) => value + 1);
+      }
+    });
   };
 
   const grammarNote = (id: string) => {
@@ -456,7 +468,7 @@ export const Library = ({
                   </button>
                   <div className="grid shrink-0 gap-2">
                     <button
-                      onClick={() => toggleGrammarFavorite(point.id)}
+                      onClick={() => toggleGrammarFavorite(point.id, point.title)}
                       className={`focus-ring grid h-8 w-8 place-items-center rounded-2xl border border-white/20 ${isGrammarFavorite(point.id) ? "bg-[#81D8CF] !text-[#343838]" : "bg-[#81D8CF]/10 text-white/65"}`}
                       title={isGrammarFavorite(point.id) ? "取消收藏" : "收藏语法"}
                     >
@@ -535,7 +547,7 @@ export const Library = ({
             noteEditorOpen={noteEditorId === selected.id}
             onRemember={() => remember(selected.id)}
             onForget={() => forget(selected.id)}
-            onToggleFavorite={() => toggleGrammarFavorite(selected.id)}
+            onToggleFavorite={() => toggleGrammarFavorite(selected.id, selected.title)}
             onOpenNote={() => openNoteEditor(selected.id)}
             onCancelNote={() => {
               setNoteEditorId("");
@@ -546,6 +558,7 @@ export const Library = ({
           />
         )}
       </div>
+      {picker}
     </>
   );
 };

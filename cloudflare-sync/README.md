@@ -108,6 +108,48 @@ npm run build
 npx cap sync ios
 ```
 
+## 开发试用号
+
+权益只有一条写入路径 —— `POST /api/purchases/verify`，而那条路要一张真的 App Store
+收据。所以「注册一个号来试 Pro」在正常流程里做不到：注册完它就是个免费号。
+`scripts/dev-account.mjs` 补的就是这一段。
+
+```bash
+cd cloudflare-sync
+
+# 先自检：确认脚本算的 PBKDF2 和 Worker 的 hashPassword 是同一个算法
+node scripts/dev-account.mjs selfcheck
+
+# 路线 A：已经在 App 里注册过了，只补 30 天 Pro 试用
+node scripts/dev-account.mjs grant dev2@example.com --days 30 --apply
+
+# 路线 B：直接建号（密码在提示后手输，不要写进命令行）
+node scripts/dev-account.mjs create dev2@example.com --days 30 --name "开发试用 2" --apply
+```
+
+**能不用 B 就不用 B。** 路线 A 走的是 App 自己的注册流程，协议同意、身份行、
+Turnstile、验证邮件都由 Worker 生成，不会和以后的改动走散；脚本只补一条 entitlements。
+路线 B 是在旁边手写 users + auth_identities，register() 以后加了字段这里就得跟着改。
+
+几条口径：
+
+- **密码只从 stdin 读，不接受命令行参数**：argv 会进 shell 历史，也会在 `ps` 里
+  对同机器的其他进程可见。脚本不生成、不保存、不打印密码，落到 SQL 里的只有哈希。
+- **默认只打印 SQL 不执行**，确认无误再加 `--apply`。
+- 权益写 `source='development'` + `expires_at`。`entitlementPayload` 把过期的当免费，
+  所以试用到期会自己失效，不用回来清理。将来批量清试用号也按这个 source 筛。
+- `create` 会直接给 `email_verified_at` 盖章：`requireVerifiedUser` 拦着没验证的账号
+  用云同步，而试用号多半用的是收不到信的地址。
+- ⚠️ 客户端 `applyCloudEntitlements` 把 source 一律改写成 `cloud`，所以 Pro 页上
+  这个试用号会显示成「App Store 权益」。要区分得让前端透传服务端的 source。
+
+清理：
+
+```bash
+npx wrangler d1 execute master_nihongo_sync --remote \
+  --command "SELECT u.email, e.expires_at FROM entitlements e JOIN users u ON u.id = e.user_id WHERE e.source = 'development'"
+```
+
 ## API
 
 - `POST /api/auth/register`

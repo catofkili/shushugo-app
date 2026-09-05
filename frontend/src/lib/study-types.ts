@@ -13,9 +13,16 @@ export type FavoriteType = "word" | "grammar";
 export interface FavoriteItem {
   type: FavoriteType;
   id: string;
+  /** 收藏夹名字；'' = 未分类。 */
+  folder: string;
   title: string;
   subtitle: string;
   meta: string;
+}
+
+export interface FavoriteFolder {
+  name: string;
+  count: number;
 }
 
 /**

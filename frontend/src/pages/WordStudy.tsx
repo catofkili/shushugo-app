@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
-import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Star, StickyNote, X } from "lucide-react";
+import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Star, StickyNote, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
-import { addWordStudySeconds, advanceDailyRelief, advanceDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning } from "../lib/api";
+import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { checkAchievements } from "../lib/userProfile";
 import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic, triggerRevealHaptic, triggerSwipeArmHaptic } from "../lib/haptics";
@@ -25,8 +25,12 @@ import {
 import { kanjiReadingSurface } from "../lib/orthography";
 import type { StudyMode } from "../types/app";
 import { studyModeInfo } from "../lib/studyMode";
+import { UNDO_LIMIT } from "../lib/word-api/undo-stack";
 import type { WordSessionOptions } from "../lib/study-types";
 import { DistinctionSheet } from "../components/DistinctionSheet";
+import { GrammarCard, QUIZ_ACCENT_AMBER } from "../features/grammar-quiz/GrammarCard";
+import { getGrammarQuizSession, submitGrammarQuizAnswer, type GrammarQuizCard } from "../lib/grammar-quiz";
+import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { wordDistinctions } from "../lib/models/word-distinctions";
 import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
@@ -35,6 +39,8 @@ import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteract
 interface WordStudyProps {
   initialMode?: StudyMode;
   onDailyModeComplete?: (mode: StudyMode) => void;
+  /** 完成页：今天顽固词太多时，把这批词交给快速学习过一遍（代替加餐）。 */
+  onStubbornQuickStudy?: (wordIds: number[]) => void;
 }
 
 /* ——— 甩卡评分:左=忘记(Again) / 右=认识(Good) ——— */
@@ -76,7 +82,6 @@ const answerHotkeys: Record<string, WordAnswer> = {
 };
 
 const DAILY_REVIEW_MAX_ATTEMPTS = 25;
-const DAILY_REVIEW_MAX_FAILURES_PER_WORD = 3;
 const DAILY_REVIEW_COOLDOWN_LENGTH = 3;
 
 const reservedRevealKeys = new Set([
@@ -110,8 +115,20 @@ const isEditableTarget = (target: EventTarget | null) => {
 
 const isInteractiveActivationKey = (key: string) => key === "Enter" || key === " ";
 
+/**
+ * 混合模式里每答几个单词插一条语法。
+ *
+ * 语法一个等级只有一百来条、每天到期十几条，而单词一天几百张 —— 比例再密一点，
+ * 语法当天就发完了，之后整场又退回纯单词；再稀一点它就成了偶尔冒一下的彩蛋。
+ * 5 是「一屏之内一定见得到一条」和「不打断背词的节奏」之间的一档。
+ */
+const MIXED_GRAMMAR_EVERY = 5;
+
+/** 经典和混合是同一份今日计划（同一条取词路径、同样的减负/压轴/回顾），只是混合会插播语法。 */
+const isPlanMode = (mode: StudyMode) => mode === "classic" || mode === "mixed";
+
 const isDailyModeComplete = (mode: StudyMode, stats: WordStats) => {
-  if (mode === "classic") return stats.dailyPlanDone;
+  if (isPlanMode(mode)) return stats.dailyPlanDone;
   if (mode === "reverse") return stats.stage2Total > 0 && stats.stage2Completed >= stats.stage2Total;
   if (mode === "kanji") return stats.kanjiTotal > 0 && stats.kanjiCompleted >= stats.kanjiTotal;
   return false;
@@ -129,7 +146,8 @@ const isDailyModeComplete = (mode: StudyMode, stats: WordStats) => {
 const RELIEF_DWELL_MS = 210;
 const RELIEF_LEAVE_MS = 120;
 
-export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: WordStudyProps) => {
+export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStubbornQuickStudy }: WordStudyProps) => {
+  const { pickFolder, picker } = useFavoriteFolderPicker();
   const [card, setCard] = useState<WordCard | null>(null);
   const [unitKey, setUnitKey] = useState<string | null>(null);
   const [unitTarget, setUnitTarget] = useState<WordSessionResponse["unitTarget"]>(null);
@@ -143,6 +161,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteMemoryOpen, setNoteMemoryOpen] = useState(false);
   const [distinctionOpen, setDistinctionOpen] = useState(false);
+  /**
+   * 混合模式插播的语法卡。它**盖在**单词卡上面：下一张单词卡照常排好摆在底下，
+   * 答完这条清掉就接着背词，所以插播不需要动单词那边的任何状态。
+   */
+  const [grammarCard, setGrammarCard] = useState<GrammarQuizCard | null>(null);
+  const [grammarRevealed, setGrammarRevealed] = useState(false);
+  const wordsSinceGrammarRef = useRef(0);
   // 辨析索引建好没。没建好就先不算 —— 详见 warmConfusionGroups
   const [distinctionsReady, setDistinctionsReady] = useState(false);
   const [activePopover, setActivePopover] = useState<"note" | "noteMemory" | "prompt" | null>(null);
@@ -191,9 +216,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
   const [dailyReviewActive, setDailyReviewActive] = useState(false);
   const [dailyReviewIntro, setDailyReviewIntro] = useState(false);
   const [tailActive, setTailActive] = useState(false);
+  // 刚答过的压轴卡（最多两张，和 UNDO_LIMIT 同步）：点「上一个」时要知道
+  // 撤回去的是不是压轴卡，好把压轴队列一起退一格、并留在压轴模式里。
+  const tailUndoIdsRef = useRef<number[]>([]);
   const dailyReviewResolvedRef = useRef<Set<number>>(new Set());
   const dailyReviewAttemptsRef = useRef(0);
-  const dailyReviewFailuresRef = useRef<Map<number, number>>(new Map());
   const dailyReviewCooldownRef = useRef<number[]>([]);
   const [dailyReviewTriggeredToday] = useState(() => hasDailyReviewTriggered());
   const dailyReviewTriggeredRef = useRef(dailyReviewTriggeredToday);
@@ -203,6 +230,10 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         : {},
     [initialMode]
   );
+
+  // 语法用哪一级：跟着备考目标走。混合模式**不再给一个等级选择器** ——
+  // 多一个旋钮就多一处口径，而「我在考哪一级」设置页里已经答过了。
+  const grammarLevel = preferences.jlptTarget;
 
   const markedKanji = useMemo(() => {
     return (card?.kanjiComponents ?? []).filter((component) => component.marked);
@@ -237,7 +268,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     try {
       await yieldToPaint();
       let data: WordSessionResponse;
-      if (mode === "classic") {
+      if (isPlanMode(mode)) {
         const reliefCard = getDailyReliefNext();
         if (reliefCard) {
           data = continueTodayPlanStudy();
@@ -264,7 +295,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         // 当天状态劫持 —— 选了经典却出反向题。
         data = continueTodayPlanStudy();
       }
-      if (mode === "classic" && !data.card && data.stats.stage1Done) {
+      if (isPlanMode(mode) && !data.card && data.stats.stage1Done) {
         const tailCard = getDailyTailNext();
         if (tailCard) {
           setCard(tailCard);
@@ -278,6 +309,14 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           return;
         }
       }
+      // 混合模式：今天的词背完了，剩下的语法接着上 —— 两边都空了才算今天完成。
+      const grammarTail = mode === "mixed" && !data.card
+        ? getGrammarQuizSession(grammarLevel).card
+        : null;
+      if (grammarTail) {
+        setGrammarCard(grammarTail);
+        setGrammarRevealed(false);
+      }
       setCard(data.card);
       setUnitKey(data.unitKey ?? null);
       setUnitTarget(data.unitTarget ?? null);
@@ -288,7 +327,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       setTailActive(false);
       setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
-      if (!data.card && !completionReportedRef.current && isDailyModeComplete(mode, data.stats)) {
+      if (!data.card && !grammarTail && !completionReportedRef.current && isDailyModeComplete(mode, data.stats)) {
         completionReportedRef.current = true;
         onDailyModeComplete?.(mode);
       }
@@ -297,6 +336,45 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * 混合模式：每答 MIXED_GRAMMAR_EVERY 个单词插一条语法。
+   *
+   * 出的是**语法考题页那同一副牌** —— 同一份 grammar_progress、同一个当日计划和新条目
+   * 配额、同一套 FSRS。所以两处的进度天然是一份账，在哪边答的都算数。今天这一级的语法
+   * 过完了就不插，也不借明天的账（和考题页的续杯同理，想多学得自己去点）。
+   *
+   * ⚠️ 语法过完了也要把计数清零：不清的话之后每答一个单词都会去查一次当日计划，
+   * 而那是好几条 SQL。
+   */
+  const maybeGrammarTurn = () => {
+    if (initialMode !== "mixed") return;
+    wordsSinceGrammarRef.current += 1;
+    if (wordsSinceGrammarRef.current < MIXED_GRAMMAR_EVERY) return;
+    wordsSinceGrammarRef.current = 0;
+    const next = getGrammarQuizSession(grammarLevel).card;
+    if (!next) return;
+    setGrammarCard(next);
+    setGrammarRevealed(false);
+  };
+
+  /** 语法卡的评分。声音、触觉沿用单词那一套（连对的音高台阶也接着爬）。 */
+  const answerGrammarCard = (value: WordAnswer) => {
+    if (!grammarCard) return;
+    triggerMemoryHaptic(value);
+    if (value === "know" || value === "known_forever") {
+      playKnow(correctStreakRef.current);
+      correctStreakRef.current += 1;
+    } else {
+      correctStreakRef.current = 0;
+      playDontKnow();
+    }
+    submitGrammarQuizAnswer(grammarLevel, grammarCard.id, value);
+    setGrammarCard(null);
+    setGrammarRevealed(false);
+    // 单词那边已经空了（今天的词背完了）：回去重排一次 —— 要么再来一条语法，要么进完成页。
+    if (!card) void loadNext(initialMode);
   };
 
   useEffect(() => {
@@ -490,6 +568,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       const data = answeredUnitKey && phase === "kanji"
         ? submitKanjiUnitAnswer(answeredUnitKey, answer)
         : submitWordAnswer(answeredCardId, answer, sessionOptions);
+      // 这一下算数了才谈得上插播；下面各条分支照常把下一张单词卡排好摆在语法卡底下。
+      maybeGrammarTurn();
       let nextStats = data.stats;
       if (!data.card && trackingActiveRef.current) {
         trackingActiveRef.current = false;
@@ -503,12 +583,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       if (wasDailyReview) {
         dailyReviewAttemptsRef.current += 1;
         if (good) dailyReviewResolvedRef.current.add(answeredCardId);
-        const failureCount = good
-          ? (dailyReviewFailuresRef.current.get(answeredCardId) ?? 0)
-          : (dailyReviewFailuresRef.current.get(answeredCardId) ?? 0) + 1;
-        if (!good) dailyReviewFailuresRef.current.set(answeredCardId, failureCount);
-        const shouldExitReview = dailyReviewAttemptsRef.current >= DAILY_REVIEW_MAX_ATTEMPTS
-          || (!good && failureCount >= DAILY_REVIEW_MAX_FAILURES_PER_WORD);
+        // 退出只看「回顾完了」和「够久了」两件事。**答错不是出口** ——
+        // 这里正是为答错的词开的,再拿答错当结束条件,就成了「越错越早被赶出去」。
+        const shouldExitReview = dailyReviewAttemptsRef.current >= DAILY_REVIEW_MAX_ATTEMPTS;
 
         if (!shouldExitReview) {
           dailyReviewCooldownRef.current = [
@@ -536,7 +613,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
 
         dailyReviewResolvedRef.current.clear();
         dailyReviewAttemptsRef.current = 0;
-        dailyReviewFailuresRef.current.clear();
         dailyReviewCooldownRef.current = [];
         setDailyReviewActive(false);
         setDailyReviewIntro(false);
@@ -570,8 +646,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
 
       // 压轴卡不计入今日任务，但答题依然写入原有 FSRS。只有压轴全部答完，
       // 才允许进入真正的完成页和自动错题本切换。
+      if (!wasTail) tailUndoIdsRef.current = [];
       if (wasTail) {
-        advanceDailyTail();
+        // 忘记/模糊的压轴卡挪到队尾再来一次:答错的那一下已经写进 FSRS 了,
+        // 界面上却让这个词当场消失、直接进完成页,等于说好再确认一次却没确认。
+        advanceDailyTail({ requeue: !good });
+        tailUndoIdsRef.current = [...tailUndoIdsRef.current, answeredCardId].slice(-UNDO_LIMIT);
         const refreshedStats = getWordStats("stage1");
         playCountdownFeedbackIfNeeded(beforeStats, refreshedStats);
         const nextTailCard = getDailyTailNext();
@@ -582,7 +662,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           setStats(refreshedStats);
           setPhase("daily-tail");
           setTailActive(true);
-          setCanUndo(false);
+          setCanUndo(Boolean(data.canUndo));
           setRevealed(false);
           return;
         }
@@ -602,13 +682,14 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         return;
       }
 
-      // 60%~80% 区间内发现四张以上「今天已经看到四次仍没清掉」的词，
-      // 先完成一轮当日错题回顾，再回到原来的今日计划。
+      // 今日任务完成到 60%~80% 时先上膛，之后**这一次「忘记」**才把回顾区打开
+      // （完成度只会被「认识」推高，拿它直接开火的话红色横幅永远跟在答对后面）。
+      // 条件仍要有四张以上「今天已经看到四次仍没清掉」的词。
       if (
-        initialMode === "classic"
+        isPlanMode(initialMode)
         && phase === "stage1"
         && !dailyReviewTriggeredRef.current
-        && shouldStartDailyReview()
+        && shouldStartDailyReview(answer === "forgot")
       ) {
         const reviewCard = pickDailyReviewNext();
         if (reviewCard) {
@@ -616,7 +697,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
           markDailyReviewTriggered();
           dailyReviewResolvedRef.current.clear();
           dailyReviewAttemptsRef.current = 0;
-          dailyReviewFailuresRef.current.clear();
           dailyReviewCooldownRef.current = [];
           setDailyReviewActive(true);
           setDailyReviewIntro(true);
@@ -709,6 +789,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
         || event.metaKey
         || event.altKey
         || distinctionOpen
+        // 语法卡盖在上面时键位归它（GrammarCard 自己挂了一套一模一样的）
+        || grammarCard
         || isEditableTarget(event.target)
       ) return;
 
@@ -732,7 +814,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [card, distinctionOpen, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
+  }, [card, distinctionOpen, grammarCard, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
     setSubmitting(true);
@@ -742,16 +824,24 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
       // 撤销了刚才那次作答,音高台阶也该跟着退回起点(不做精确回退:撤销很少用,
       // 而多爬一级和少爬一级都比「撤销了但还在高音上」说不通)
       correctStreakRef.current = 0;
+      // 撤回的是压轴卡的话,压轴队列也要退一格(否则下一张会跳过一个词),
+      // 而且要留在压轴模式里 —— 否则撤销一下就掉出压轴、直接看到完成页。
+      const undoneTailId = tailUndoIdsRef.current[tailUndoIdsRef.current.length - 1];
+      const undidTail = undoneTailId != null && data.card?.id === undoneTailId;
+      if (undidTail) {
+        rewindDailyTail(undoneTailId);
+        tailUndoIdsRef.current = tailUndoIdsRef.current.slice(0, -1);
+      }
       setCard(data.card);
       setUnitKey(data.unitKey ?? null);
       setUnitTarget(data.unitTarget ?? null);
       setStats(data.stats);
-      setPhase(data.phase);
+      setPhase(undidTail ? "daily-tail" : data.phase);
       setReliefActive(false);
       setReliefLeaving(false);
       setDailyReviewActive(false);
       setDailyReviewIntro(false);
-      setTailActive(false);
+      setTailActive(undidTail);
       setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
     } catch (err) {
@@ -818,8 +908,18 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     if (!card) return;
     setError("");
     try {
-      const result = toggleFavorite("word", card.id);
-      setCard({ ...card, isFavorite: result.isFavorite });
+      if (card.isFavorite) {
+        toggleFavorite("word", card.id);
+        setCard({ ...card, isFavorite: false });
+        return;
+      }
+      pickFolder({
+        title: `收藏「${card.questionMeaning || card.meaning}」到`,
+        onPick: (folder) => {
+          addFavorite("word", card.id, folder);
+          setCard((current) => (current && current.id === card.id ? { ...current, isFavorite: true } : current));
+        }
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "收藏失败");
     }
@@ -1046,7 +1146,36 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
     && !dailyReviewActive
     && countdownRemaining > 0
     && countdownRemaining <= 30
-    && initialMode === "classic";
+    && isPlanMode(initialMode);
+
+  // 混合模式的语法插播。整页换色是这里唯一要说的话：正在答的不是单词。
+  // 卡片、键位、评分都和语法考题页共用一份（GrammarCard），只有配色不同。
+  if (grammarCard) {
+    return (
+      <div
+        style={QUIZ_ACCENT_AMBER}
+        className="word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px]"
+      >
+        <div className="mb-2 flex items-center gap-2 lg:mx-auto lg:w-[min(900px,100%)]">
+          <span
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold !text-[#2f3333]"
+            style={{ background: "var(--quiz-accent)" }}
+          >
+            <Shuffle size={13} />
+            语法 · {grammarCard.level}
+          </span>
+          <span className="text-xs text-white/45">和语法考题是同一份进度</span>
+        </div>
+        <GrammarCard
+          card={grammarCard}
+          revealed={grammarRevealed}
+          onReveal={() => setGrammarRevealed(true)}
+          onAnswer={answerGrammarCard}
+          accent={QUIZ_ACCENT_AMBER}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -1477,7 +1606,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
                         >
                           <span className="wd-entry-main">
                             <span className="wd-entry-types">
-                              {distinctions.slice(0, 2).map((section) => `${section.emoji} ${section.name}`).join("  ·  ")}
+                              {/* 这里是一行摘要文本，图标塞不进字符串 —— 只列类别名 */}
+                              {distinctions.slice(0, 2).map((section) => section.name).join("  ·  ")}
                               {distinctions.length > 2 ? `  +${distinctions.length - 2}` : ""}
                             </span>
                             <span className="jp-serif wd-entry-words">
@@ -1521,9 +1651,18 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
                               </span>
                             ))}
                           </div>
-                          <p className="mt-2 text-[11px] leading-5 text-white/45">
-                            高亮的是拍数也一样、题面分不出来的。改写题面只影响你自己这台设备上的这份库。
-                          </p>
+                          {/* ⚠️ 这行字**只在真的有话说的时候才出现**。
+                              「高亮的是拍数也一样的」只有在高亮和不高亮**同时存在**时才是信息：
+                              撞车的就一个词、而且拍数也一样时（截图里的「包 → かばん 3拍」），
+                              它解释的是一个看不见的区别，纯噪音。
+                              「只影响这台设备」那半句已经删掉 —— 改写题面这件事一年用不了几次，
+                              真要说也该在编辑框里说，不该每张撞车卡都念一遍。 */}
+                          {questionRivals.some((peer) => peer.sameMora)
+                            && questionRivals.some((peer) => !peer.sameMora) && (
+                            <p className="mt-2 text-[11px] leading-5 text-white/45">
+                              高亮的是拍数也一样、题面分不出来的。
+                            </p>
+                          )}
                         </>
                       )}
                       <button
@@ -1630,9 +1769,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete }: Word
             onContinueStage2={() => startExtraPhase("stage2")}
             onContinueKanji={() => startExtraPhase("kanji")}
             onEncore={startEncore}
+            onStubbornQuickStudy={onStubbornQuickStudy}
           />
         )}
       </section>
+      {picker}
     </div>
   );
 };

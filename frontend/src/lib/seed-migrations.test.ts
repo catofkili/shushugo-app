@@ -59,6 +59,9 @@ describe("冷启动：所有版本门控的迁移都要能真的跑一遍", () =
     // 跑完之后词库和语法都还在（迁移炸掉时事务回滚，这两个数会塌）
     expect(one("SELECT COUNT(*) FROM words")).toBeGreaterThanOrEqual(10000);
     expect(one("SELECT COUNT(*) FROM grammar_points")).toBeGreaterThan(700);
+    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配'")).toBe(882);
+    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配' AND TRIM(meaning) <> ''")).toBe(882);
+    expect(one("SELECT COUNT(*) FROM progress p JOIN words w ON w.id = p.word_id WHERE w.pos = '固定搭配'")).toBe(882);
     // 版本戳被重新写回去了 = 迁移确实执行到了收尾，不是提前 return
     expect(one("SELECT COUNT(*) FROM app_state")).toBeGreaterThan(0);
   });
@@ -70,5 +73,6 @@ describe("冷启动：所有版本门控的迁移都要能真的跑一遍", () =
     const after = one("SELECT COUNT(*) FROM grammar_points");
     await expect(ensureSeedData()).resolves.not.toThrow();
     expect(one("SELECT COUNT(*) FROM grammar_points")).toBe(after);
+    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配'")).toBe(882);
   });
 });

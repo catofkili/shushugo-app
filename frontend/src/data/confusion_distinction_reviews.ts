@@ -2044,7 +2044,7 @@ const SYNONYM_REVIEW_ROWS: readonly SynonymReviewRow[] = [
   ["synonym:司机", "major", "運転手专指驾驶车辆的人；ドライバー还可指驱动程序、工具或某类驾驶员，范围更宽。"],
   ["synonym:坏掉", "major", "壊れる是损坏、破裂而不能正常使用；潰れる是被压扁、破产或店铺倒闭，结果类型不同。"],
   ["synonym:外表", "major", "格好是外形、姿态或样子，也可指体面；見た目专指看上去的外观，不能替换体面等引申义。"],
-  ["synonym:错误", "major", "間違い、ミス、誤り都是错误但语体不同；錯誤偏书面或专业的偏差；過ちは过失、错误行为，责任色彩更强。"],
+  ["synonym:错误", "major", "間違い、ミス、誤り都是错误但语体不同；錯誤偏书面或专业的偏差；過ちは过失、错误行为，责任色彩更强；誤謬是书面语的谬误，常指逻辑或认识上的错误。"],
   ["synonym:关系", "major", "関係是关系或关联；仲强调人与人的交情；関わり是牵涉、关联；間柄是双方身份关系，不能全换。"],
   ["synonym:情绪", "major", "気分是当下心情或身体状态；情緒是情感、情绪状态或情趣，偏书面且范围不同。"],
   ["synonym:技术", "major", "技術是技术、工艺或技能体系；テクニック是技巧、手法；技法是艺术、专业制作技法，不能全换。"],
@@ -2699,3 +2699,54 @@ export const distinctionReviewMap = new Map(
 
 export const distinctionReviewFor = (groupKey: string): DistinctionReview | null =>
   distinctionReviewMap.get(groupKey) ?? null;
+
+interface DistinctionNoteTarget {
+  key: string;
+  forms: readonly string[];
+}
+
+const plainForm = (text: string): string => text.replace(/\[[^\]]+\]/g, "").replace(/\s+/g, "").trim();
+const plainReviewText = (text: string): string => text.replace(/\[[^\]]+\]/g, "").trim();
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** 把人工摘要中的每个词条说明拆回它自己的卡片。 */
+export const distinctionNotesFor = (
+  summary: string,
+  targets: readonly DistinctionNoteTarget[]
+): Map<string, string> => {
+  const cleanSummary = plainReviewText(summary);
+  const targetForms = targets.map((target) => ({
+    key: target.key,
+    forms: [...new Set(target.forms.map(plainForm).filter(Boolean))].sort((a, b) => b.length - a.length)
+  }));
+  const allForms = [...new Set(targetForms.flatMap((target) => target.forms))].sort((a, b) => b.length - a.length);
+  if (!cleanSummary || !allForms.length) return new Map();
+
+  const splitBeforeWord = new RegExp(`[，,](?=\\s*(?:${allForms.map(escapeRegExp).join("|")}))`, "u");
+  const notes = new Map<string, string[]>();
+  let previousKeys: string[] = [];
+
+  cleanSummary.split("；").flatMap((clause) => clause.split(splitBeforeWord)).forEach((rawClause) => {
+    const clause = rawClause.replace(/^[，,]/, "").replace(/[。；]+$/, "").trim();
+    let matched = targetForms.filter((target) => target.forms.some((form) => clause.includes(form)));
+    const pronoun = clause.match(/^(前者|后者)/)?.[1];
+    if (!matched.length && pronoun && previousKeys.length) {
+      const key = pronoun === "前者" ? previousKeys[0] : previousKeys[previousKeys.length - 1];
+      matched = targetForms.filter((target) => target.key === key);
+    }
+    if (!matched.length) return;
+    previousKeys = matched.map((target) => target.key);
+
+    matched.forEach((target) => {
+      let note = clause;
+      if (matched.length === 1) {
+        const prefixes = [...target.forms, "前者", "后者"].map(escapeRegExp).join("|");
+        note = note.replace(new RegExp(`^(?:${prefixes})(?:（[^）]+）)?(?:是|表示)?`, "u"), "");
+      }
+      if (!note) return;
+      notes.set(target.key, [...(notes.get(target.key) ?? []), note]);
+    });
+  });
+
+  return new Map([...notes].map(([key, parts]) => [key, [...new Set(parts)].join("；")]));
+};

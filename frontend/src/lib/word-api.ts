@@ -99,7 +99,8 @@ export {
   advanceDailyTail,
   ensureDailyTail,
   getDailyTailNext,
-  getDailyTailProgress
+  getDailyTailProgress,
+  rewindDailyTail
 } from "./word-api/daily-tail";
 export {
   dailyReviewCandidateCount,
@@ -121,7 +122,22 @@ export type {
   WordSessionOptions
 } from "./study-types";
 export { getGrammarPointFavorite } from "./grammar-api";
-export { getFavoriteItems, toggleFavorite } from "./favorites-api";
+export {
+  addFavorite,
+  addFavorites,
+  createFavoriteFolder,
+  deleteFavoriteFolder,
+  getFavoriteItems,
+  lastFavoriteFolder,
+  listFavoriteFolders,
+  renameFavoriteFolder,
+  setFavoriteFolder,
+  toggleFavorite,
+  unfiledFavoriteCount,
+  UNFILED_FOLDER
+} from "./favorites-api";
+export { getStubbornWordsToday, type StubbornWordToday } from "./word-api/stubborn-today";
+export type { FavoriteFolder } from "./study-types";
 
 
 
@@ -892,6 +908,35 @@ export function getQuickStudySession(limit = 50, excludedWordIds: number[] = [])
   }
 
   return { cards, phase, stats: getWordStats(phase) };
+}
+
+/**
+ * 顽固词快速复习 = 另一种加餐，所以记的是同一笔账。
+ *
+ * ⚠️ **这条不是锦上添花。** 积压长期很大的人根本见不到加餐按钮（完成页在顽固词
+ * 超过阈值时会把它换成这个），如果加餐记一笔、这个不记，那么「越吃力的人越拿不到
+ * 加餐那一层的东西」——本周加餐次数、炫耀图上的加餐徽章、以后任何按加餐算的成就。
+ * 两者对用户是同一件事：今天的量做完之后又多做了一批，所以在账面上就得是同一件事。
+ */
+export function recordStubbornQuickStudy(wordCount: number): void {
+  if (wordCount <= 0) return;
+  recordEncore(today(), wordCount);
+  persistSoon();
+  notifyProgressUpdated();
+}
+
+/**
+ * 指定一批词的快速学习批次（完成页的「快速复习今天的顽固词」走这条）。
+ *
+ * 和上面那个的区别只有选词：那个问调度器「接下来该出什么」，这个直接给一份名单。
+ * 评分仍然走 submitQuickStudyBatch → submitWordAnswer，FSRS 一视同仁。
+ */
+export function getQuickStudySessionForWords(wordIds: number[]): QuickStudySessionResponse {
+  ensureProgressInitialized();
+  const cards = wordIds
+    .map((id) => wordCardById(Number(id)))
+    .filter((card): card is WordCard => Boolean(card));
+  return { cards, phase: "stage1", stats: getWordStats("stage1") };
 }
 
 /** 按列表中的选择逐张走正式提交流程，实际算法仍由 submitWordAnswer 完成。 */

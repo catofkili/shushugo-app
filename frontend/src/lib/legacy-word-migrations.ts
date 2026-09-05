@@ -209,8 +209,8 @@ export const mergeWordInto = (db: Database, fromId: number, intoId: number): num
 
   if (tableExists("content_favorites")) {
     db.run(`
-      INSERT OR IGNORE INTO content_favorites (item_type, item_id)
-      SELECT item_type, ? FROM content_favorites
+      INSERT OR IGNORE INTO content_favorites (item_type, item_id, folder)
+      SELECT item_type, ?, folder FROM content_favorites
       WHERE item_type = 'word' AND item_id = ?
     `, [String(intoId), String(fromId)]);
     db.run("DELETE FROM content_favorites WHERE item_type = 'word' AND item_id = ?", [String(fromId)]);

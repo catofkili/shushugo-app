@@ -1,0 +1,4425 @@
+{
+  "schema_version": 1,
+  "status": "in_progress",
+  "reviewed_at": "2026-08-28",
+  "source": {
+    "name": "Tatoeba examples",
+    "url": "https://tatoeba.org/",
+    "api_url": "https://tatoeba.org/en/api_v0/search",
+    "license": "CC BY 2.0 FR",
+    "note": "Only exact Japanese surface matches with a Simplified Chinese translation are accepted; sentence and translation IDs are retained for attribution."
+  },
+  "entries": [],
+  "pending": [
+    {
+      "jmdict_ent_seq": 1001540,
+      "surface": "おめでとうございます",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1001750,
+      "surface": "お気の毒",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1001860,
+      "surface": "お見えになる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1001900,
+      "surface": "お構いなく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1002260,
+      "surface": "お世話になる",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1002280,
+      "surface": "お先に",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1002410,
+      "surface": "お誕生日おめでとうございます",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1002600,
+      "surface": "お風呂に入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1005070,
+      "surface": "ご心配なく",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1005080,
+      "surface": "ごちそうさまでした",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1005100,
+      "surface": "ごらんください",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1007460,
+      "surface": "駄目になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1012380,
+      "surface": "無駄にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1012670,
+      "surface": "ものにする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1051790,
+      "surface": "コロンブスの卵",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1133190,
+      "surface": "メスを入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1155130,
+      "surface": "以心伝心",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1161670,
+      "surface": "一喜一憂",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1161700,
+      "surface": "一期一会",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1163550,
+      "surface": "一触即発",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1163610,
+      "surface": "一心不乱",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1163690,
+      "surface": "一進一退",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1164850,
+      "surface": "一朝一夕",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1164870,
+      "surface": "一長一短",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1165200,
+      "surface": "一刀両断",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1165630,
+      "surface": "一念発起",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1166190,
+      "surface": "一部始終",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1166920,
+      "surface": "一網打尽",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1171050,
+      "surface": "右往左往",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1172000,
+      "surface": "雨降って地固まる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1172580,
+      "surface": "瓜二つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1173240,
+      "surface": "雲泥の差",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1177410,
+      "surface": "猿も木から落ちる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1183110,
+      "surface": "恩を仇で返す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1184590,
+      "surface": "下火になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1185790,
+      "surface": "下駄を預ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1194270,
+      "surface": "火遊び",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1194530,
+      "surface": "花より団子",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1196590,
+      "surface": "にわか仕込み",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1196890,
+      "surface": "我田引水",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1202280,
+      "surface": "絵に描いた餅",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1204760,
+      "surface": "蛙の子は蛙",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1207260,
+      "surface": "楽しみにする",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1208940,
+      "surface": "株が上がる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1217740,
+      "surface": "顔から火が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1217770,
+      "surface": "顔を潰す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1219430,
+      "surface": "奇想天外",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1221530,
+      "surface": "気がある",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1221540,
+      "surface": "気がする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1221570,
+      "surface": "気が合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1221590,
+      "surface": "気が重い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1221600,
+      "surface": "気が小さい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1221610,
+      "surface": "気が大きい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1221620,
+      "surface": "気が短い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1221630,
+      "surface": "気が変わる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1221820,
+      "surface": "気を悪くする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1223800,
+      "surface": "起死回生",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1225600,
+      "surface": "疑心暗鬼",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1228590,
+      "surface": "急がば回れ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1238480,
+      "surface": "郷に入っては郷に従え",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1238880,
+      "surface": "おっしゃる通り",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1243700,
+      "surface": "九死一生",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1245710,
+      "surface": "空前絶後",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1255090,
+      "surface": "血も涙もない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1255440,
+      "surface": "月とスッポン",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1258340,
+      "surface": "犬猿の仲",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1258980,
+      "surface": "肩を持つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1264450,
+      "surface": "言語道断",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1268670,
+      "surface": "五里霧中",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1269390,
+      "surface": "遅れを取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1270220,
+      "surface": "おかげさまで",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1270690,
+      "surface": "ごめんください",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1270770,
+      "surface": "ごらんなさい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1274860,
+      "surface": "公明正大",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1275670,
+      "surface": "口が悪い",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1275750,
+      "surface": "口にする",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1275760,
+      "surface": "口を出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1280920,
+      "surface": "綱渡り",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1301380,
+      "surface": "三日坊主",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1307150,
+      "surface": "四苦八苦",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1307390,
+      "surface": "四面楚歌",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1307720,
+      "surface": "姿を消す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1310320,
+      "surface": "支離滅裂",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1313020,
+      "surface": "歯が浮く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1313030,
+      "surface": "歯が立たない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1317570,
+      "surface": "自業自得",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1318670,
+      "surface": "自暴自棄",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1319410,
+      "surface": "七転び八起き",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1320150,
+      "surface": "失敗は成功のもと",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1320240,
+      "surface": "失礼しました",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1327220,
+      "surface": "手に入る",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1327280,
+      "surface": "手を切る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1329210,
+      "surface": "くびにする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1329240,
+      "surface": "首を切る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1334050,
+      "surface": "住めば都",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1337980,
+      "surface": "出しにする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1342400,
+      "surface": "順風満帆",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1362520,
+      "surface": "森羅万象",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1364700,
+      "surface": "神出鬼没",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1365530,
+      "surface": "身から出た錆",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1371290,
+      "surface": "水を差す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1373570,
+      "surface": "雀の涙",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1374320,
+      "surface": "世話を焼く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1382260,
+      "surface": "席に着く",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1385250,
+      "surface": "切磋琢磨",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1388870,
+      "surface": "千載一遇",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1393580,
+      "surface": "前代未聞",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1394290,
+      "surface": "善は急げ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1401020,
+      "surface": "相手をする",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1401920,
+      "surface": "草の根",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1404640,
+      "surface": "足が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1407110,
+      "surface": "他山の石",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1413320,
+      "surface": "大器晩成",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1414690,
+      "surface": "大同小異",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1417770,
+      "surface": "単刀直入",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1419210,
+      "surface": "どんぐりの背比べ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1420740,
+      "surface": "地が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1426740,
+      "surface": "虫の知らせ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1436910,
+      "surface": "泥のように寝る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1436920,
+      "surface": "泥をかぶる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1437400,
+      "surface": "適材適所",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1437690,
+      "surface": "徹頭徹尾",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1440150,
+      "surface": "天秤にかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1443270,
+      "surface": "電光石火",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1445230,
+      "surface": "度肝を抜く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1445460,
+      "surface": "土壇場",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1448740,
+      "surface": "灯台下暗し",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1450700,
+      "surface": "頭がおかしい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1450720,
+      "surface": "頭にくる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1450760,
+      "surface": "頭隠して尻隠さず",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1457250,
+      "surface": "鳶が鷹を生む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1462990,
+      "surface": "二番煎じ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1463200,
+      "surface": "二枚舌",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1467650,
+      "surface": "猫に小判",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1470130,
+      "surface": "能ある鷹は爪を隠す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1471110,
+      "surface": "波瀾万丈",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1471580,
+      "surface": "馬の耳に念仏",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1471650,
+      "surface": "馬鹿にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1471700,
+      "surface": "馬鹿を見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1472660,
+      "surface": "背が高い",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1479460,
+      "surface": "半信半疑",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1484360,
+      "surface": "被害を受ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1484880,
+      "surface": "非行に走る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1486730,
+      "surface": "鼻が高い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1488420,
+      "surface": "百発百中",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1492260,
+      "surface": "不言実行",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1495030,
+      "surface": "不眠不休",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1495450,
+      "surface": "不老不死",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1498050,
+      "surface": "おんぶに抱っこ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1501510,
+      "surface": "覆水盆に返らず",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1501770,
+      "surface": "仏の顔も三度",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1504790,
+      "surface": "粉骨砕身",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1514860,
+      "surface": "墓穴を掘る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1517520,
+      "surface": "泡を食う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1518880,
+      "surface": "傍若無人",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1531020,
+      "surface": "無理難題",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1532270,
+      "surface": "あけましておめでとうございます",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1535070,
+      "surface": "目から火が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1535110,
+      "surface": "目が点になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1535190,
+      "surface": "目をやる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1535250,
+      "surface": "目を通す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1538600,
+      "surface": "油を絞る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1538610,
+      "surface": "油を売る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1539260,
+      "surface": "優柔不断",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1541040,
+      "surface": "ありがとうございます",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1541640,
+      "surface": "有名無実",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1546230,
+      "surface": "用意周到",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1553040,
+      "surface": "竜頭蛇尾",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1553670,
+      "surface": "両手に花",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1554860,
+      "surface": "力を入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1570550,
+      "surface": "よりを戻す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1587400,
+      "surface": "一攫千金",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1591980,
+      "surface": "気を使う",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1593080,
+      "surface": "声をかける",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1599870,
+      "surface": "二束三文",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1603640,
+      "surface": "本末転倒",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1608590,
+      "surface": "口がうまい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1621720,
+      "surface": "嵐の前の静けさ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1621770,
+      "surface": "頭が痛い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1622010,
+      "surface": "棒に振る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1623950,
+      "surface": "度が過ぎる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1624380,
+      "surface": "縁の下の力持ち",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1626690,
+      "surface": "火がつく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1627350,
+      "surface": "骨が折れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1627700,
+      "surface": "一から十まで",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1627710,
+      "surface": "一目置く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1628180,
+      "surface": "腹を据える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1633050,
+      "surface": "気を取られる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1636580,
+      "surface": "型にはめる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1639460,
+      "surface": "気が強い",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1639560,
+      "surface": "気にかかる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1639990,
+      "surface": "心が動く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1640290,
+      "surface": "異にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1640380,
+      "surface": "口が滑る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1641090,
+      "surface": "股にかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1678830,
+      "surface": "後の祭り",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1734760,
+      "surface": "さじ加減",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1740090,
+      "surface": "不完全燃焼",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1776900,
+      "surface": "釘付け",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1781110,
+      "surface": "温室育ち",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1781130,
+      "surface": "温故知新",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1786190,
+      "surface": "大胆不敵",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1793810,
+      "surface": "心機一転",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1795530,
+      "surface": "起承転結",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1809660,
+      "surface": "高嶺の花",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1810950,
+      "surface": "漁夫の利",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1813450,
+      "surface": "集中砲火",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1832260,
+      "surface": "奈落の底",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1845590,
+      "surface": "猫の子一匹いない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1845600,
+      "surface": "猫の手も借りたい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1845690,
+      "surface": "猫の額",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1852260,
+      "surface": "カマをかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1853380,
+      "surface": "質に入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1854290,
+      "surface": "台風の目",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1854430,
+      "surface": "手が上がる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1854840,
+      "surface": "ウマが合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1855390,
+      "surface": "図に乗る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1855750,
+      "surface": "身を守る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1856360,
+      "surface": "足を洗う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1856530,
+      "surface": "頭が悪い",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1856540,
+      "surface": "頭に入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1857040,
+      "surface": "甘い汁を吸う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1857600,
+      "surface": "いい線を行く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1858410,
+      "surface": "板につく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1859340,
+      "surface": "意味を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1860380,
+      "surface": "腕を振るう",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1860660,
+      "surface": "裏をかく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1860720,
+      "surface": "得るところがある",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1860950,
+      "surface": "運を天に任せる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1861510,
+      "surface": "襟を正す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1864210,
+      "surface": "顔に泥を塗る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1865300,
+      "surface": "霞を食う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1871830,
+      "surface": "釘を刺す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1872080,
+      "surface": "くだを巻く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1872140,
+      "surface": "口に合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1874550,
+      "surface": "元気をつける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1881690,
+      "surface": "写真を撮る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1884240,
+      "surface": "心配をかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1884400,
+      "surface": "時間がかかる",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1888070,
+      "surface": "生を受ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1888240,
+      "surface": "責任を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1893320,
+      "surface": "血の通った",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1894670,
+      "surface": "ツケを払う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1895840,
+      "surface": "手に取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1895890,
+      "surface": "手の込んだ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1895950,
+      "surface": "手を変え品を変え",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1895960,
+      "surface": "手を変える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1896010,
+      "surface": "手を染める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1896030,
+      "surface": "手を出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1896610,
+      "surface": "電話をかける",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 1896840,
+      "surface": "峠を越える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1897210,
+      "surface": "当を得る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1897980,
+      "surface": "虎を野に放つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1899310,
+      "surface": "涙をのむ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1900610,
+      "surface": "熱を上げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1902290,
+      "surface": "花を持たせる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1902580,
+      "surface": "腹を痛める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1904290,
+      "surface": "恨みを買う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1904380,
+      "surface": "手に落ちる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1904500,
+      "surface": "人を得る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1905290,
+      "surface": "病気にかかる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1908230,
+      "surface": "法を守る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1908300,
+      "surface": "保険をかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1908580,
+      "surface": "骨のある",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1908590,
+      "surface": "骨を埋める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1908600,
+      "surface": "骨を折る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1908670,
+      "surface": "本腰を入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1909920,
+      "surface": "満足が行く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1909970,
+      "surface": "見得を切る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1910970,
+      "surface": "身を入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1911830,
+      "surface": "目が悪い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1912650,
+      "surface": "ものになる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1916810,
+      "surface": "連絡を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1919400,
+      "surface": "へそを曲げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1919510,
+      "surface": "虫も殺さぬ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1919520,
+      "surface": "虫唾が走る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1928820,
+      "surface": "後釜に座る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1962360,
+      "surface": "オブラートに包む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1963960,
+      "surface": "コップの中の嵐",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1967830,
+      "surface": "ブレーキをかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1968170,
+      "surface": "ベンチを温める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1970680,
+      "surface": "アメとムチ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1972160,
+      "surface": "茨の道",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1975230,
+      "surface": "花も実も有る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1977140,
+      "surface": "海老で鯛を釣る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1978010,
+      "surface": "蛙の面に水",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1982010,
+      "surface": "幅が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1982130,
+      "surface": "ああ言えばこう言う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1983000,
+      "surface": "心に描く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1983470,
+      "surface": "まな板の鯉",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1984390,
+      "surface": "胸にくる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1985200,
+      "surface": "棚から牡丹餅",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 1985430,
+      "surface": "出る杭は打たれる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2006850,
+      "surface": "思う壺にはまる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2013650,
+      "surface": "踏んだり蹴ったり",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2019390,
+      "surface": "あてにする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2021520,
+      "surface": "お腹が空く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2025190,
+      "surface": "ケリがつく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2028370,
+      "surface": "目に入れても痛くない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2028410,
+      "surface": "白い目で見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2028430,
+      "surface": "大きな顔をする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2028440,
+      "surface": "顔が利く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2028670,
+      "surface": "手を焼く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2028680,
+      "surface": "喉から手が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2028770,
+      "surface": "足元を見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2033700,
+      "surface": "言うことを聞く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2034480,
+      "surface": "身につく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2037790,
+      "surface": "心を砕く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2039170,
+      "surface": "頭が変になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2055740,
+      "surface": "しのぎを削る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2056330,
+      "surface": "耳にタコができる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2056570,
+      "surface": "気が長い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2056590,
+      "surface": "気が荒い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2056600,
+      "surface": "気が早い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2056610,
+      "surface": "気が若い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2056660,
+      "surface": "気が散る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2056670,
+      "surface": "気が気でない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2057110,
+      "surface": "気を入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2059550,
+      "surface": "耳にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2061840,
+      "surface": "水をあける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2063940,
+      "surface": "清水の舞台から飛び降りる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2065100,
+      "surface": "目から鱗が落ちる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2065920,
+      "surface": "目をつける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2066630,
+      "surface": "音を上げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2067580,
+      "surface": "羽目を外す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2068130,
+      "surface": "敷居が高い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2068190,
+      "surface": "勝手にしろ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2068310,
+      "surface": "蚊帳の外",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2068440,
+      "surface": "手のひらを返す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2069080,
+      "surface": "大事を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2069560,
+      "surface": "耳を傾ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2077530,
+      "surface": "類は友を呼ぶ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2078140,
+      "surface": "木を見て森を見ず",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2078990,
+      "surface": "元も子もない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2079010,
+      "surface": "気が多い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2079560,
+      "surface": "腕が鳴る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2082110,
+      "surface": "ミイラ取りがミイラになる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2082890,
+      "surface": "手に乗る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2086150,
+      "surface": "口をきく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2086340,
+      "surface": "説明がつく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2086780,
+      "surface": "棚に上げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2087220,
+      "surface": "波に乗る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2087970,
+      "surface": "身に覚えがある",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2088790,
+      "surface": "あごで使う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2089050,
+      "surface": "逆鱗に触れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2089710,
+      "surface": "手がかかる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2089780,
+      "surface": "手が早い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2093080,
+      "surface": "手が空く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2093310,
+      "surface": "釈迦に説法",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2096350,
+      "surface": "対岸の火事",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2098360,
+      "surface": "いらっしゃってください",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2100680,
+      "surface": "約束を守る",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2100690,
+      "surface": "約束を破る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2100950,
+      "surface": "波風が立つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2101410,
+      "surface": "元気を出す",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2101420,
+      "surface": "顔を出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102010,
+      "surface": "味を占める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102020,
+      "surface": "足を運ぶ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102060,
+      "surface": "危ない橋を渡る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102140,
+      "surface": "芋を洗うよう",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102340,
+      "surface": "裏を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102550,
+      "surface": "同じ釜の飯を食う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102700,
+      "surface": "飼い犬に手をかまれる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102750,
+      "surface": "顔を売る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102840,
+      "surface": "舵を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102890,
+      "surface": "肩で風を切る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2102980,
+      "surface": "仮面をかぶる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2103060,
+      "surface": "看板を下ろす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2103140,
+      "surface": "肝をつぶす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2103180,
+      "surface": "休止符を打つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2104260,
+      "surface": "間を置く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2104360,
+      "surface": "責任を持つ",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2104540,
+      "surface": "なんとかなる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2105770,
+      "surface": "種をまく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2108270,
+      "surface": "腕が立つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2109080,
+      "surface": "角が立つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2110790,
+      "surface": "痛くも痒くもない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2112280,
+      "surface": "面の皮が厚い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2112680,
+      "surface": "ウドの大木",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2116140,
+      "surface": "水を向ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2117150,
+      "surface": "気を持たせる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2117880,
+      "surface": "その気になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2118090,
+      "surface": "声を呑む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2118330,
+      "surface": "尻尾を巻く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2118930,
+      "surface": "年貢の納め時",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2118970,
+      "surface": "目に物見せる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2119060,
+      "surface": "水と油",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2119230,
+      "surface": "人のことを言う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2119420,
+      "surface": "肩の荷が下りる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2119580,
+      "surface": "足が地に着かない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2119600,
+      "surface": "足が途絶える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2119830,
+      "surface": "足を引っ張る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2119890,
+      "surface": "割に合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2119940,
+      "surface": "息がかかる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2120210,
+      "surface": "身も蓋もない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2122430,
+      "surface": "噛んで含める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2122570,
+      "surface": "まったくもう",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2125800,
+      "surface": "つぶしが利く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2125830,
+      "surface": "手の施しようがない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2125840,
+      "surface": "手が離せない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2126130,
+      "surface": "出る所に出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2126140,
+      "surface": "出る幕ではない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2126780,
+      "surface": "二股をかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2126990,
+      "surface": "手を貸す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2127610,
+      "surface": "足るを知る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2128560,
+      "surface": "口に出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2129390,
+      "surface": "目に角を立てる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2129770,
+      "surface": "目を皿にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2129780,
+      "surface": "目から鼻へ抜ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2130890,
+      "surface": "世を渡る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2131030,
+      "surface": "轍を踏む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2131080,
+      "surface": "箸にも棒にもかからない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2131510,
+      "surface": "根を張る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2132030,
+      "surface": "道に迷う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2134390,
+      "surface": "面倒を見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2134400,
+      "surface": "口が過ぎる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2134530,
+      "surface": "力になる",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2138600,
+      "surface": "百聞は一見に如かず",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2139470,
+      "surface": "肌が合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2139580,
+      "surface": "煙幕を張る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2139640,
+      "surface": "必要とする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2139970,
+      "surface": "顔が広い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2140170,
+      "surface": "二階から目薬",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2140180,
+      "surface": "かゆいところに手が届く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2140200,
+      "surface": "煙に巻く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2140260,
+      "surface": "鶴の一声",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2140350,
+      "surface": "時は金なり",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2140470,
+      "surface": "つまらないものですが",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2141280,
+      "surface": "石の上にも三年",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2141290,
+      "surface": "石橋を叩いて渡る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2143090,
+      "surface": "目が覚める",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2144580,
+      "surface": "目を白黒させる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2145230,
+      "surface": "火に油を注ぐ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2146910,
+      "surface": "終止符を打つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2149180,
+      "surface": "行ってまいります",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2149640,
+      "surface": "お待たせしました",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2151370,
+      "surface": "話題になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2151890,
+      "surface": "頭を使う",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2152700,
+      "surface": "笑う門には福来る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2152720,
+      "surface": "渡りに船",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2153080,
+      "surface": "元の鞘に収まる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2153140,
+      "surface": "目の上のこぶ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2158500,
+      "surface": "公にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2159030,
+      "surface": "梯子を外される",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2168410,
+      "surface": "鬼のいぬまに洗濯",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2172200,
+      "surface": "大船に乗る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2177890,
+      "surface": "首が飛ぶ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2179320,
+      "surface": "籠の鳥",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2182550,
+      "surface": "頭が上がらない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2182570,
+      "surface": "記録をつける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2182640,
+      "surface": "ヤマが当たる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2185540,
+      "surface": "頭痛の種",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2186550,
+      "surface": "不幸中の幸い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2188670,
+      "surface": "一枚噛む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2195000,
+      "surface": "取るに足らない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2197800,
+      "surface": "尻をたたく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2198680,
+      "surface": "お手数をおかけいたします",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2200440,
+      "surface": "手を打つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2201510,
+      "surface": "借りてきた猫",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2202160,
+      "surface": "火をつける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2202170,
+      "surface": "ご覧の通り",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2202570,
+      "surface": "ツケが回る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2202960,
+      "surface": "手につかない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2203620,
+      "surface": "納得がいく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2208120,
+      "surface": "期待をかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2210450,
+      "surface": "ドブに捨てる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2210610,
+      "surface": "手を挙げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2211080,
+      "surface": "連絡がつく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2211360,
+      "surface": "言葉をかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2211580,
+      "surface": "胸を打つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2221000,
+      "surface": "本気を出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2221720,
+      "surface": "お願いできますか",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2222160,
+      "surface": "手をつける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2222180,
+      "surface": "お久しぶり",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2225110,
+      "surface": "絵になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2226240,
+      "surface": "足を棒にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2227030,
+      "surface": "目を盗む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2227910,
+      "surface": "水に流す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2229770,
+      "surface": "電話に出る",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2232900,
+      "surface": "ご連絡申し上げます",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2233720,
+      "surface": "自腹を切る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2235460,
+      "surface": "やきもちを焼く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2237310,
+      "surface": "頭が下がる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2237320,
+      "surface": "腕に覚えがある",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2238160,
+      "surface": "腕が悪い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2239930,
+      "surface": "頭の痛い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2242050,
+      "surface": "年がいもなく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2246950,
+      "surface": "タオルを投げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2247100,
+      "surface": "腹を割る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2255400,
+      "surface": "熱が入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2256700,
+      "surface": "花を咲かせる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2257240,
+      "surface": "お変わりありませんか",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2259790,
+      "surface": "歯に衣着せない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2260020,
+      "surface": "お見舞い申し上げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2260240,
+      "surface": "神も仏もない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2261090,
+      "surface": "飛ぶ鳥を落とす勢い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2261220,
+      "surface": "身が入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2261800,
+      "surface": "それはそれは",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2264740,
+      "surface": "都合のいい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2264760,
+      "surface": "都合が悪い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2266810,
+      "surface": "手にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2267200,
+      "surface": "お目にかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2269750,
+      "surface": "暑中お見舞い申し上げます",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2270850,
+      "surface": "天に唾する",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2272410,
+      "surface": "一を聞いて十を知る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2273800,
+      "surface": "口がかかる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2274510,
+      "surface": "舌を巻く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2274550,
+      "surface": "足が早い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2275680,
+      "surface": "猫をかぶる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2276200,
+      "surface": "失礼します",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2396170,
+      "surface": "目に入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2399540,
+      "surface": "目にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2399890,
+      "surface": "耳に入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2400050,
+      "surface": "手が届く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2401770,
+      "surface": "バトンを渡す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2401990,
+      "surface": "水を得た魚",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2402180,
+      "surface": "泥を塗る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2402310,
+      "surface": "烙印を押される",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2402580,
+      "surface": "レッテルを貼る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2402610,
+      "surface": "蓋を開ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2402700,
+      "surface": "泣きを見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2402730,
+      "surface": "故郷へ錦を飾る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2402740,
+      "surface": "形を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2402970,
+      "surface": "手を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2403560,
+      "surface": "鵜の目鷹の目",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2403660,
+      "surface": "泣いても笑っても",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2403990,
+      "surface": "口をついて出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2404250,
+      "surface": "足が棒になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2404360,
+      "surface": "長い目で見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2404390,
+      "surface": "転ばぬ先の杖",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2405970,
+      "surface": "息が合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2408570,
+      "surface": "見る影もない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2408590,
+      "surface": "見るに忍びない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2411170,
+      "surface": "頭が切れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2416710,
+      "surface": "嘘から出たまこと",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2416810,
+      "surface": "火の用心",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2416870,
+      "surface": "気は持ちよう",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2417260,
+      "surface": "後が無い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2417350,
+      "surface": "口は災いの元",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2417570,
+      "surface": "山が見える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2417650,
+      "surface": "死なばもろとも",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2418220,
+      "surface": "人の口に戸は立てられず",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2418420,
+      "surface": "塵も積もれば山となる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2418780,
+      "surface": "足の踏み場もない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2418800,
+      "surface": "その時はその時",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2419140,
+      "surface": "刀折れ矢尽きる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2419240,
+      "surface": "毒にも薬にもならない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2419270,
+      "surface": "二度あることは三度ある",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2419360,
+      "surface": "念には念を入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2419510,
+      "surface": "膝が笑う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2419530,
+      "surface": "夫婦喧嘩は犬も食わない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2419870,
+      "surface": "目が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2420040,
+      "surface": "裏がある",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2420390,
+      "surface": "はじめとする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2433630,
+      "surface": "爪の垢を煎じて飲む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2451240,
+      "surface": "想像がつく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2452770,
+      "surface": "目が高い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2453600,
+      "surface": "時間を守る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2516420,
+      "surface": "気をよくする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2516430,
+      "surface": "気を楽にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2526230,
+      "surface": "下に見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2526430,
+      "surface": "山をかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2527660,
+      "surface": "舌が回る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2528250,
+      "surface": "手をかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2532410,
+      "surface": "舵を切る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2537520,
+      "surface": "羽を伸ばす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2540650,
+      "surface": "腕のいい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2542300,
+      "surface": "ここに来て",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2545650,
+      "surface": "過去の物になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2546050,
+      "surface": "いかがお過ごしですか",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2556600,
+      "surface": "花も恥らう",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2556750,
+      "surface": "耳の痛い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2557390,
+      "surface": "感情に走る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2557760,
+      "surface": "鼻を鳴らす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2558000,
+      "surface": "陸に上がった河童",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2564820,
+      "surface": "心が躍る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2570120,
+      "surface": "自分の首を絞める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2570610,
+      "surface": "鍵を握る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2572000,
+      "surface": "心が通じる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2573910,
+      "surface": "とんでもありません",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2574960,
+      "surface": "いい気になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2578130,
+      "surface": "耳が痛い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2588310,
+      "surface": "穴の開くほど",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2592530,
+      "surface": "竹を割ったよう",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2595960,
+      "surface": "顔を揃える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2596000,
+      "surface": "天狗になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2599320,
+      "surface": "胸が悪い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2599850,
+      "surface": "一分の隙もない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2603750,
+      "surface": "手が出ない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2603950,
+      "surface": "型にはまる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2609990,
+      "surface": "毒をもって毒を制す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2610460,
+      "surface": "つばをつける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2611320,
+      "surface": "鼻の下が長い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2611610,
+      "surface": "目を丸くする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2612840,
+      "surface": "甘い顔をする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2613810,
+      "surface": "寝た子を起こす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2614770,
+      "surface": "手が利く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2615270,
+      "surface": "無理を言う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2620360,
+      "surface": "風の便り",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2620780,
+      "surface": "子供の使い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2620820,
+      "surface": "手が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2620870,
+      "surface": "調子がいい",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2624590,
+      "surface": "勉強になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2630160,
+      "surface": "拍車がかかる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2630300,
+      "surface": "関係を持つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2641140,
+      "surface": "火を見るより明らか",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2654170,
+      "surface": "共にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2654960,
+      "surface": "答えを出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2655400,
+      "surface": "心臓に毛が生えている",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2662390,
+      "surface": "目の色を変える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2663290,
+      "surface": "声を殺す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2665850,
+      "surface": "束になってかかる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2667650,
+      "surface": "皮を被る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2668990,
+      "surface": "心に残る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2669020,
+      "surface": "心を決める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2670370,
+      "surface": "眉に唾をつける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2670680,
+      "surface": "合間を縫う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2670990,
+      "surface": "力が入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2671000,
+      "surface": "力をつける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2671440,
+      "surface": "屁でもない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2683310,
+      "surface": "死んでも死に切れない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2684210,
+      "surface": "味が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2690550,
+      "surface": "災い転じて福となす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2691410,
+      "surface": "間に立つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2720070,
+      "surface": "頭が古い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2721980,
+      "surface": "手が離れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2723970,
+      "surface": "お慶び申し上げます",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2724320,
+      "surface": "どの口が言う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2724370,
+      "surface": "口ほどにも無い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2727580,
+      "surface": "暖簾に腕押し",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2727860,
+      "surface": "ツボにはまる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2730850,
+      "surface": "ドツボにはまる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2731040,
+      "surface": "元を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2732350,
+      "surface": "血で血を洗う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2735510,
+      "surface": "首の皮一枚",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2736730,
+      "surface": "目の黒いうち",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2740660,
+      "surface": "度を超える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2741970,
+      "surface": "殻を破る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2746880,
+      "surface": "外堀を埋める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2750430,
+      "surface": "目をかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2750980,
+      "surface": "十字架を背負う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2751030,
+      "surface": "目で物を言う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2758570,
+      "surface": "本気にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2759410,
+      "surface": "手を借りる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2760050,
+      "surface": "地に足がつく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2760600,
+      "surface": "親のすねかじり",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2762530,
+      "surface": "時間を無駄にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2763450,
+      "surface": "毒を吐く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2763920,
+      "surface": "記憶に新しい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2764170,
+      "surface": "足が向く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2764310,
+      "surface": "肴にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2766770,
+      "surface": "手がつけられない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2767920,
+      "surface": "手がない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2770500,
+      "surface": "箸が進む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2772330,
+      "surface": "血が騒ぐ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2772620,
+      "surface": "ご親切に",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2774300,
+      "surface": "泣く子も黙る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2776830,
+      "surface": "雷が落ちる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2777440,
+      "surface": "メリハリをつける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2779510,
+      "surface": "尻尾を掴む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2779520,
+      "surface": "行動をとる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2779990,
+      "surface": "台所事情",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2780210,
+      "surface": "首を洗って待つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2782970,
+      "surface": "匂いがする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2785170,
+      "surface": "目が行く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2785400,
+      "surface": "難しい顔をする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2785800,
+      "surface": "虎に翼",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2788200,
+      "surface": "人のふんどしで相撲を取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2788310,
+      "surface": "調子が悪い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2788810,
+      "surface": "元気が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2789820,
+      "surface": "天の声",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2791280,
+      "surface": "尻に火がつく",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2791610,
+      "surface": "気が進む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2792180,
+      "surface": "火花を散らす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2796260,
+      "surface": "無駄になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2798690,
+      "surface": "手を入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2798870,
+      "surface": "場外乱闘",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2801720,
+      "surface": "鬼が笑う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2803280,
+      "surface": "手にかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2805710,
+      "surface": "嫌になる",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2817710,
+      "surface": "飯の種",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2818950,
+      "surface": "話が合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2824380,
+      "surface": "赤い糸で結ばれる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2826185,
+      "surface": "重い腰を上げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2826391,
+      "surface": "石にしがみついても",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2826438,
+      "surface": "星になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2826774,
+      "surface": "音がする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2826802,
+      "surface": "形から入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2826891,
+      "surface": "年食う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2827251,
+      "surface": "詰めが甘い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2827556,
+      "surface": "だけが能ではない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2827617,
+      "surface": "尻尾を振る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2827765,
+      "surface": "山あり谷あり",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2829952,
+      "surface": "トカゲの尻尾切り",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2830225,
+      "surface": "なかったことにする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2831521,
+      "surface": "この時とばかり",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2831852,
+      "surface": "点を稼ぐ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2832146,
+      "surface": "裸の王様",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2832221,
+      "surface": "人気を呼ぶ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2832226,
+      "surface": "ハードルを上げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2832229,
+      "surface": "話題を呼ぶ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2832654,
+      "surface": "鵜呑みにする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2832829,
+      "surface": "お含みおきください",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2833581,
+      "surface": "桁が違う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2833819,
+      "surface": "一線を越える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2833834,
+      "surface": "犬の遠吠え",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2833898,
+      "surface": "王手をかける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2833934,
+      "surface": "臭い物に蓋をする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2833935,
+      "surface": "五本の指に入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2833941,
+      "surface": "ねじを巻く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2834014,
+      "surface": "言葉を失う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2834545,
+      "surface": "肉を切らせて骨を切る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2834571,
+      "surface": "骨に刻む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2834644,
+      "surface": "足元から鳥が立つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2834648,
+      "surface": "海のものとも山のものともつかない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2835353,
+      "surface": "手を合わせる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2835508,
+      "surface": "のれんを分ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2835652,
+      "surface": "言葉を挟む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2835842,
+      "surface": "心を読む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2835959,
+      "surface": "裸の付き合い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2836044,
+      "surface": "警鐘を鳴らす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2836058,
+      "surface": "痛いところを突く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2836088,
+      "surface": "反感を買う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2836237,
+      "surface": "自分を持つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2836244,
+      "surface": "地獄を見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2836367,
+      "surface": "声がする",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2836833,
+      "surface": "人間ができている",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2836884,
+      "surface": "下駄を履かせる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2836937,
+      "surface": "睡魔に襲われる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2837133,
+      "surface": "右に出るものはない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2837171,
+      "surface": "止めに入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2837425,
+      "surface": "またお越しくださいませ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2837559,
+      "surface": "ヤマを踏む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2837575,
+      "surface": "虫が騒ぐ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2837762,
+      "surface": "錦の御旗",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2837822,
+      "surface": "大事にする",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2838067,
+      "surface": "救いの手",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2838153,
+      "surface": "贅沢を言う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2838250,
+      "surface": "心を病む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2838265,
+      "surface": "気の抜けた",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2838502,
+      "surface": "耳を揃える",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2838589,
+      "surface": "無理をする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2838671,
+      "surface": "反響を呼ぶ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2838833,
+      "surface": "周りの目",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2838980,
+      "surface": "誠にありがとうございます",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839094,
+      "surface": "ハードルを下げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839170,
+      "surface": "勝手が違う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839228,
+      "surface": "嫌な思いをする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839264,
+      "surface": "黄信号",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839755,
+      "surface": "首が回らない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839767,
+      "surface": "心に刺さる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839771,
+      "surface": "心に響く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839772,
+      "surface": "重きを置く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839821,
+      "surface": "いい思いをする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839852,
+      "surface": "気が乗る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839877,
+      "surface": "顔が売れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839899,
+      "surface": "地雷を踏む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839960,
+      "surface": "ほんの気持ち",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839994,
+      "surface": "スポットを当てる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2839995,
+      "surface": "スポットが当たる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2840172,
+      "surface": "フットワークが軽い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2840180,
+      "surface": "目が合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2840298,
+      "surface": "よろしくお付き合いください",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2840488,
+      "surface": "当てになる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2840708,
+      "surface": "体が空く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2840810,
+      "surface": "神がかる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2840821,
+      "surface": "言葉を選ぶ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2840859,
+      "surface": "売りにする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2841226,
+      "surface": "草の根を分けて探す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2841233,
+      "surface": "あごを出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2841392,
+      "surface": "手に汗握る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2841584,
+      "surface": "借りを返す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2841698,
+      "surface": "金の卵",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2841725,
+      "surface": "理解を得る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2841940,
+      "surface": "気の知れた",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2842212,
+      "surface": "人気が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2842653,
+      "surface": "地に落ちる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2843206,
+      "surface": "話に乗る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2843527,
+      "surface": "背中を押す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2843602,
+      "surface": "パンドラの箱を開ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2843725,
+      "surface": "勝ち馬に乗る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2843773,
+      "surface": "背中を追う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2843787,
+      "surface": "鼻が利く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2843846,
+      "surface": "お釣りがくる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2844131,
+      "surface": "苦境に立つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2844485,
+      "surface": "スイッチが入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2844875,
+      "surface": "闇に鉄砲",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2845203,
+      "surface": "返り血を浴びる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2845217,
+      "surface": "心を開く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2845280,
+      "surface": "ババを引く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2845282,
+      "surface": "結果を出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2845646,
+      "surface": "天と地の差",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2845822,
+      "surface": "連絡を入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2845823,
+      "surface": "電話を入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2846054,
+      "surface": "得をする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2846159,
+      "surface": "幕が切って落とされる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2846250,
+      "surface": "一端を担う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2846690,
+      "surface": "馬鹿を言う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2846871,
+      "surface": "頭がいっぱい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2847195,
+      "surface": "お言葉ですが",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2847213,
+      "surface": "引けを取らない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2847376,
+      "surface": "人気がある",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2847464,
+      "surface": "心の壁",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2848132,
+      "surface": "筋がいい",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2848742,
+      "surface": "手を伸ばす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2848809,
+      "surface": "腕を買われる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2848859,
+      "surface": "影のある",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2848978,
+      "surface": "歯車が狂う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2849043,
+      "surface": "相場が決まっている",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2849101,
+      "surface": "許可が出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2849244,
+      "surface": "雲をつかむよう",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2849931,
+      "surface": "あさっての方を向く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2850091,
+      "surface": "ノミの心臓",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2850523,
+      "surface": "気を確かに持つ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2850623,
+      "surface": "よくできました",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2851176,
+      "surface": "波紋を呼ぶ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2851473,
+      "surface": "顔に出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2853000,
+      "surface": "歯止めがかからない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2853389,
+      "surface": "様子を見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2854176,
+      "surface": "そりが合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2854575,
+      "surface": "天にも昇る心地",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2855599,
+      "surface": "いい目を見る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2855733,
+      "surface": "言葉にする",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2855845,
+      "surface": "火を吐く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2856008,
+      "surface": "力を出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2856308,
+      "surface": "道が開ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2856432,
+      "surface": "時を得る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2857239,
+      "surface": "疲れを取る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2857556,
+      "surface": "藁をも掴む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2857694,
+      "surface": "水が合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2857810,
+      "surface": "鬼になる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2857842,
+      "surface": "お先にどうぞ",
+      "reason": "HTTP 429"
+    },
+    {
+      "jmdict_ent_seq": 2858218,
+      "surface": "枕を濡らす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2858785,
+      "surface": "下に出る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859082,
+      "surface": "角を立てる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859099,
+      "surface": "背中で語る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859413,
+      "surface": "目頭が熱くなる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859604,
+      "surface": "予約を入れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859753,
+      "surface": "裸足で逃げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859779,
+      "surface": "上手を行く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859780,
+      "surface": "浮き彫りにする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859782,
+      "surface": "先陣を切る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859790,
+      "surface": "膿を出す",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859861,
+      "surface": "手足となる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859899,
+      "surface": "足の引っ張り合い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2859985,
+      "surface": "ご迷惑をおかけいたします",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2860016,
+      "surface": "つかえが取れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2860657,
+      "surface": "地獄に仏",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2860737,
+      "surface": "ご了承ください",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2861379,
+      "surface": "口が回る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2861868,
+      "surface": "枕を高くして寝る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2862105,
+      "surface": "引きが強い",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2862782,
+      "surface": "酒に飲まれる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2863193,
+      "surface": "恐れ入ります",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2863251,
+      "surface": "狼煙を上げる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2863316,
+      "surface": "一線を退く",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2864078,
+      "surface": "サバ読む",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2864523,
+      "surface": "頭に入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2864550,
+      "surface": "失礼ですが",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2864843,
+      "surface": "ご存知の通り",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2864984,
+      "surface": "目にも止まらぬ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2865218,
+      "surface": "我が身可愛さ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2866028,
+      "surface": "体がいくつあっても足りない",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2866131,
+      "surface": "背筋が凍る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2867233,
+      "surface": "目が泳ぐ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2867441,
+      "surface": "その辺にする",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2868684,
+      "surface": "兜の緒を締める",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2868966,
+      "surface": "触手を伸ばす",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2869228,
+      "surface": "元が取れる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2869436,
+      "surface": "仏作って魂入れず",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2869554,
+      "surface": "お初にお目にかかります",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2869762,
+      "surface": "膝を折る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2869763,
+      "surface": "膝を屈する",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2869875,
+      "surface": "冬の時代",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2870424,
+      "surface": "身の丈に合う",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2871104,
+      "surface": "飛んで火に入る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2871146,
+      "surface": "頭ひとつ抜ける",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2871196,
+      "surface": "天を仰ぐ",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2872006,
+      "surface": "お言葉を返すようですが",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2872028,
+      "surface": "袖にすがる",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2872311,
+      "surface": "網を張る",
+      "reason": "results is not iterable"
+    },
+    {
+      "jmdict_ent_seq": 2872717,
+      "surface": "ご贔屓に",
+      "reason": "results is not iterable"
+    }
+  ]
+}

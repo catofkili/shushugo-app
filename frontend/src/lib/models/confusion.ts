@@ -150,6 +150,26 @@ const loadWords = (): Map<number, ConfusionWord[]> => {
   return buckets;
 };
 
+/**
+ * 同一个词干的派生形：手伝う / 手伝い、楽しい / 楽しむ、茶色 / 茶色い。
+ *
+ * **这类词不是「音形相近」。** 它们像不是因为长得像，是因为本来就是一个词 ——
+ * 区别在词性和用法，不在长相；而「音形相近」那一档说的是「看到题面你可能会写出那个词」。
+ * 把它们摆在音近名下，用户会去找一个根本不存在的「读音差别」。实测用户学过的 2,395 个词里
+ * 音近条目 1,949 条，这样的有 67 条(3.4%)。
+ *
+ * 判据只有一条：**摘掉送假名之后汉字词干相同**。不再要求假名前缀也对上 —— 走到这一步的
+ * 候选已经过了相似度那道闸（何 / 何かしら、中 / 中々 这种「同头复合词」根本进不来），
+ * 再加一条只是把 大きい / 大きな 这种真派生误伤掉。
+ */
+const OKURIGANA_TAIL = /[^\u3400-\u9fff]+$/;
+
+export const sameStemForms = (left: { kanji?: string }, right: { kanji?: string }): boolean => {
+  const stem = (kanji: string): string => kanji.replace(OKURIGANA_TAIL, "");
+  const a = stem(String(left.kanji ?? ""));
+  return Boolean(a) && a === stem(String(right.kanji ?? ""));
+};
+
 function computeConfusionCandidates(row: DbRow): WordCard["confusions"] {
   const currentKana = String(row.kana ?? "");
   if (!currentKana) return [];

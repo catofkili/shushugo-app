@@ -3,8 +3,13 @@ import type { ProgressOverview } from "../lib/api";
 
 /**
  * 进度总览 = 动物园地图。
- * 五个 JLPT 等级 = 五个栖息地;掌握度决定栖息地处于哪个「成长阶段」:
+ * 五个 JLPT 等级 = 五个栖息地;**学过的比例**决定栖息地处于哪个「成长阶段」:
  *   荒地 → 围栏 → 入住 → 丰容。
+ *
+ * ⚠️ **这一页画的是「学过多少」,不是「掌握度」(间隔≥180天)。** 原来用 completed:
+ * 首页那格写「N5 92%」,点进来同一个 N5 写 30%、还标着「围栏搭起」—— 同一个按钮
+ * 两个口径。而掌握度按月才动一格(全库到 180 天间隔的只有几十个词),
+ * 画出来五个园区常年荒地。徽章(zoo-badges)、进度柱状图早就都按 seen 算,这里是最后一处。
  * 现在用 emoji 占位;日后每个园区由画师出一张分层大图,代码只按阶段换层。
  */
 
@@ -35,9 +40,9 @@ export function ZooMapPage({ overview }: { overview: ProgressOverview }) {
   const parks = HABITATS.map((habitat) => {
     const row = overview.wordsByLevel.find((item) => item.level === habitat.level);
     const total = row?.total ?? 0;
-    // 掌握度 = 「永久掌握」的词占该等级的比例;没有词库数据时按 0 算(荒地)
-    const pct = total > 0 ? Math.round(((row?.completed ?? 0) / total) * 100) : 0;
-    return { ...habitat, total, completed: row?.completed ?? 0, pct };
+    // 学过 = seen_count > 0 或标了熟知;没有词库数据时按 0 算(荒地)
+    const pct = total > 0 ? Math.round(((row?.seen ?? 0) / total) * 100) : 0;
+    return { ...habitat, total, seen: row?.seen ?? 0, pct };
   });
 
   const current = parks.find((park) => park.level === selected) ?? parks[0];
@@ -62,7 +67,7 @@ export function ZooMapPage({ overview }: { overview: ProgressOverview }) {
             </b>
             <small>
               {stage.label} · {stage.note}
-              {current.total > 0 && `　${current.completed} / ${current.total} 词`}
+              {current.total > 0 && `　学过 ${current.seen} / ${current.total} 词`}
             </small>
           </div>
           <div className="zoo-zm-pct">{current.pct}%</div>
@@ -91,7 +96,7 @@ export function ZooMapPage({ overview }: { overview: ProgressOverview }) {
       </div>
 
       <p className="zoo-panel-note">
-        清空一个等级 → 该园区「饲养员认证」徽章。画师主战场：每个园区一张分层大图（荒地 / 围栏 / 入住 / 丰容），代码只做按掌握度换层。
+        清空一个等级 → 该园区「饲养员认证」徽章。画师主战场：每个园区一张分层大图（荒地 / 围栏 / 入住 / 丰容），代码只做按学过比例换层。
       </p>
     </div>
   );

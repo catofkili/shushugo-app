@@ -18,7 +18,7 @@ let testDb: Database;
 vi.mock("./database", () => ({ getDatabase: () => testDb, initDatabase: async () => testDb, exportDatabase: () => null, importDatabase: async () => undefined }));
 vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
 
-import { buildVocabTestQuestions, type VocabTestWordRow } from "./vocab-test";
+import { buildVocabTestQuestions, kanjiCoreReading, type VocabTestWordRow } from "./vocab-test";
 import { classifyPos } from "./word-library";
 import { moraCount } from "../features/word-study/word-study-utils";
 import { isLoanwordSourceSurface, kanjiReadingSurface, preferredWordSurface } from "./orthography";
@@ -37,8 +37,18 @@ describe("词汇量测验的干扰项", () => {
       meaning: String(value[3] ?? ""), pos: String(value[4] ?? ""), level: String(value[5] ?? "")
     }));
     const byId = new Map(rows.map((row) => [row.id, row]));
+    /**
+     * ⚠️ 选项上显示的**不一定**是整词读音：有送假名的词只问汉字那几拍
+     * （培う → つちか，见 vocab-test 的 kanjiCoreReading）。所以这里要按
+     * **选项实际显示的那串**建索引、算拍数，否则量的是另一个东西。
+     */
+    const readingValueOf = (row: VocabTestWordRow) =>
+      (kanjiCoreReading(kanjiReadingSurface(row), row.kana)?.reading ?? row.kana).trim();
     const byKana = new Map<string, VocabTestWordRow>();
-    rows.forEach((row) => { if (!byKana.has(row.kana)) byKana.set(row.kana, row); });
+    rows.forEach((row) => {
+      const value = readingValueOf(row);
+      if (!byKana.has(value)) byKana.set(value, row);
+    });
 
     const firstMora = (kana: string) => (kana.match(/^.[ゃゅょぁぃぅぇぉ]?/) ?? [kana.slice(0, 1)])[0];
     let samePos = 0, sameLoan = 0, moraOk = 0, total = 0;
@@ -52,8 +62,17 @@ describe("词汇量测验的干扰项", () => {
         perLevel[question.level] = (perLevel[question.level] ?? 0) + 1;
         if (question.kind !== "reading") return;
         const target = byId.get(question.id)!;
-        questions += 1;
         const others = question.options.filter((option) => option !== question.answer);
+        /**
+         * ⚠️ 一拍的答案（止まる → と、知る → し）**不适用**下面这条。
+         *
+         * 拆掉送假名之后，这类题的四个选项各自就是一个假名。「另有选项和答案首拍相同」
+         * 在这里等价于「有两个选项一模一样」—— 结构上不可能满足，也没必要满足：
+         * 答案本身就只有一个汉字的一拍，不存在「认识半个词就能选对」。
+         * 实测这类题 40 道，四个单假名选项之间没有任何可排除的线索。
+         */
+        if ([...question.answer.replace(/[ゃゅょぁぃぅぇぉ]/g, "")].length <= 1) return;
+        questions += 1;
         if (!others.some((option) => firstMora(option) === firstMora(question.answer))) uniqueFirst += 1;
         if (!others.some((option) => option.slice(-1) === question.answer.slice(-1))) uniqueLast += 1;
         others.forEach((option) => {
@@ -62,7 +81,7 @@ describe("词汇量测验的干扰项", () => {
           total += 1;
           if (classifyPos(distractor.pos ?? "") === classifyPos(target.pos ?? "")) samePos += 1;
           if (isLoanwordSourceSurface(distractor) === isLoanwordSourceSurface(target)) sameLoan += 1;
-          if (Math.abs(moraCount(distractor.kana) - moraCount(target.kana)) <= 1) moraOk += 1;
+          if (Math.abs(moraCount(readingValueOf(distractor)) - moraCount(readingValueOf(target))) <= 1) moraOk += 1;
         });
       });
     }

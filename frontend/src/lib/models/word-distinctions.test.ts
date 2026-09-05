@@ -110,4 +110,21 @@ describe("单词卡的辨析 section", () => {
     expect(sound.summary).toBe("");
     expect(sound.level).toBeNull();
   });
+
+  it("同词干的派生形不算音形相近:手伝い / 手伝う 走「同词根」那一档", () => {
+    const sections = wordDistinctions(cardOf({
+      kanji: "手伝い",
+      kana: "てつだい",
+      confusions: [
+        { id: 99998, kanji: "手伝う", kana: "てつだう", meaning: "帮忙", kind: "sound" },
+        { id: 99999, kanji: "架空語B", kana: "てつだえ", meaning: "测试音形相近", kind: "sound" }
+      ]
+    }));
+    const stem = sections.find((section) => section.key.startsWith("derived:"));
+    const sound = sections.find((section) => section.key.startsWith("sound:"));
+    expect(stem?.members.map((member) => member.word)).toContain("手伝う");
+    expect(sound?.members.map((member) => member.word)).not.toContain("手伝う");
+    // 说法从具体到笼统:同词根排在音形相近前面
+    expect(sections.indexOf(stem!)).toBeLessThan(sections.indexOf(sound!));
+  });
 });
