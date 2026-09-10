@@ -19,7 +19,7 @@ const prefStore = new Map<string, string>();
 vi.mock("../database", () => ({
   getDatabase: () => testDb, initDatabase: async () => testDb, exportDatabase: () => null, importDatabase: async () => undefined
 }));
-vi.mock("../storage", () => ({ scheduleSave: () => undefined }));
+vi.mock("../storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined }));
 
 import { collectMoments } from "./index";
 import { markMomentFired, momentFired, momentsFiredOn, resetLegacyMigrationForTests } from "./store";

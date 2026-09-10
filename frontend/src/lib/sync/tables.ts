@@ -36,6 +36,10 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "grammar_mistakes", keys: ["grammar_id"], strategy: "lww" },
   { table: "word_notes", keys: ["word_id"], strategy: "lww" },
   { table: "word_question_meanings", keys: ["word_id"], strategy: "lww" },
+  // 用户自己导入的词条内容。出厂词典不同步,但自定义词必须跟着走 ——
+  // 否则新设备收到的是一堆指向不存在词条的学习记录(见 custom_words 的建表注释)。
+  // union:导入之后内容不再改,也不该被对端那份「更新」覆盖掉本机的编辑。
+  { table: "custom_words", keys: ["word_id"], strategy: "union" },
   // 例句词典主动发现的词，跨端合并后仍应优先进入新词计划。
   { table: "dictionary_discovered_words", keys: ["word_id"], strategy: "union" },
   // 疑难辨析里标过「已掌握」的词组。主键是词组标识而不是 word_id。
@@ -80,13 +84,55 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: STUDY_TIME_TABLE, keys: ["studied_on", "device_id"], strategy: "lww" }
 ];
 
+/**
+ * 「本机这份出厂词典/语法内容迁移到哪一版了」的标记。
+ *
+ * ⚠️ 这些描述的是**本地内容**,而 words / grammar_points 本身根本不进快照。
+ * 同步它们等于把对端的「已完成」写到一台还没跑过迁移的设备上,而迁移的入口
+ * 判断是「版本号相等就直接返回」——结果是版本标记新、词典还是旧的,
+ * 而且这个偏差不会自己好:每次启动都在同一个相等判断上早退。
+ *
+ * 语法那条更贵:`ensureGrammarSeed` 是按 pattern 把用户进度迁到新 id 的,
+ * 被跳过一次就意味着这台设备的 grammar_id 和别人错位(见 CLAUDE.md)。
+ *
+ * ⚠️ **不能粗暴过滤所有带 version 的键**:`stage1_plan_version` 说的是
+ * 「今天的计划按哪一版算法排的」,那是用户调度状态,该同步。
+ */
+export const CONTENT_MIGRATION_STATE_KEYS = [
+  "jlpt_seed_version",
+  "jlpt_word_metadata_version",
+  "jlpt_level_override_version",
+  "jlpt_collocation_content_version",
+  "dictionary_supplement_version",
+  "furigana_version",
+  "kana_reading_fix_version",
+  // 老库重复词条的合并:它删的是 words 行(不同步),所以每台设备得自己跑一遍。
+  "legacy_biru_merge_version"
+] as const;
+
 // app_state 里描述「这台设备」而非「这个账号」的键,同步会跳过,
 // 否则设备标识本身会被对端覆盖,同步就乱套了。
 export const DEVICE_LOCAL_STATE_KEYS = new Set([
   "sync_device_id",
   "sync_cursor",
-  "sync_last_pushed_at"
+  "sync_last_pushed_at",
+  // 本机快照的水位线(见 local-delta.ts)。**绝不能跨设备同步**:
+  // 它是「本机磁盘上那份快照停在哪一刻」,拿对端的值当基准去收集增量,
+  // 收出来的行会对不上本机的快照,重启后就是一份两边拼起来的库。
+  "local_snapshot_mark",
+  ...CONTENT_MIGRATION_STATE_KEYS
 ]);
+
+
+/** grammar_state 里的本地内容标记。语法种子版本同理,而且错位代价更大。 */
+export const DEVICE_LOCAL_GRAMMAR_STATE_KEYS = new Set(["dataset_version"]);
+
+/** 某张键值表里的这个键是否「只属于这台设备」。导出和导入两边共用这一份。 */
+export const isDeviceLocalStateKey = (table: string, key: string): boolean => (
+  table === "app_state" ? DEVICE_LOCAL_STATE_KEYS.has(key)
+    : table === "grammar_state" ? DEVICE_LOCAL_GRAMMAR_STATE_KEYS.has(key)
+      : false
+);
 
 /**
  * word_study_time 不在上表里:它按 studied_on 单主键记录每天学习秒数,

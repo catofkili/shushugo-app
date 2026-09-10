@@ -16,7 +16,7 @@ import fs from "node:fs";
  */
 let testDb: Database;
 vi.mock("./database", () => ({ getDatabase: () => testDb, initDatabase: async () => testDb, exportDatabase: () => null, importDatabase: async () => undefined }));
-vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
+vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined }));
 
 import { buildVocabTestQuestions, kanjiCoreReading, type VocabTestWordRow } from "./vocab-test";
 import { classifyPos } from "./word-library";

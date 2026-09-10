@@ -1,24 +1,10 @@
 import { useEntitlements } from "../hooks/useEntitlements";
 import { clearEntitlements, grantPro } from "../lib/entitlements";
-import { checkMemoryStatus, quickCompleteToday, resetTodayProgress, simulateMemoryData } from "../lib/test-utils";
 
-interface DevToolsProps {
-  onNotice: (message: string, timeout?: number) => void;
-}
-
-export function DevTools({ onNotice }: DevToolsProps) {
+export function DevTools() {
   const entitlements = useEntitlements();
 
   if (!import.meta.env.DEV) return null;
-
-  const run = (action: () => void, success: string, timeout = 2000) => {
-    try {
-      action();
-      onNotice(success, timeout);
-    } catch (error) {
-      onNotice("操作失败: " + (error as Error).message, 3000);
-    }
-  };
 
   return (
     <div className="mt-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4">
@@ -44,53 +30,13 @@ export function DevTools({ onNotice }: DevToolsProps) {
         </label>
       </div>
 
-      <div className="mt-4 space-y-2">
-        <button
-          onClick={() => run(quickCompleteToday, '测试：今日任务已接近完成，去单词学习点"认识"即可进入完成页面', 3000)}
-          className="w-full rounded-xl border border-white/15 bg-[#3c3f3f] px-3 py-2 text-left text-xs text-white hover:bg-[#4a4f4f]"
-        >
-          <p className="font-bold">快速完成今日任务</p>
-          <p className="mt-0.5 text-white/60">开发测试用，正式入口在主页</p>
-        </button>
-
-        <button
-          onClick={() => run(resetTodayProgress, "测试：今日进度已重置")}
-          className="w-full rounded-xl border border-white/15 bg-[#3c3f3f] px-3 py-2 text-left text-xs text-white hover:bg-[#4a4f4f]"
-        >
-          <p className="font-bold">重置今日进度</p>
-          <p className="mt-0.5 text-white/60">清除今日任务、复习记录和打卡</p>
-        </button>
-
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            onClick={() => run(() => simulateMemoryData("strong"), "已模拟强记忆力数据")}
-            className="rounded-xl border border-green-500/30 bg-green-500/10 px-2 py-2 text-xs font-bold text-white hover:bg-green-500/20"
-          >
-            模拟强记忆
-          </button>
-          <button
-            onClick={() => run(() => simulateMemoryData("normal"), "已模拟正常记忆力")}
-            className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-2 py-2 text-xs font-bold text-white hover:bg-blue-500/20"
-          >
-            模拟正常
-          </button>
-          <button
-            onClick={() => run(() => simulateMemoryData("weak"), "已模拟弱记忆力")}
-            className="rounded-xl border border-red-500/30 bg-red-500/10 px-2 py-2 text-xs font-bold text-white hover:bg-red-500/20"
-          >
-            模拟弱记忆
-          </button>
-        </div>
-
-        <button
-          onClick={() => run(checkMemoryStatus, "已输出到控制台，按 F12 查看")}
-          className="w-full rounded-xl border border-white/15 bg-[#3c3f3f] px-3 py-2 text-left text-xs text-white hover:bg-[#4a4f4f]"
-        >
-          <p className="font-bold">查看记忆力状态</p>
-          <p className="mt-0.5 text-white/60">在浏览器控制台查看详细信息</p>
-        </button>
-
-      </div>
+      <p className="mt-3 text-xs leading-5 text-white/50">
+        ⚠️ 这里以前还有「快速完成今日任务 / 重置今日进度 / 模拟记忆力」四个按钮，
+        已于 2026-09-09 删除：它们按 <code>score = 9</code> 写进度、直接往
+        <code>reviews</code> 里灌模拟流水，而 score 在 FSRS 上线后就不再读写了 ——
+        判据对不上，写进去的东西也没法当诊断依据。而且作者本人日常就在 DEV 网页背词，
+        这几个按钮改的是他真实的学习库。要造数据请另开一份隔离的库。
+      </p>
     </div>
   );
 }

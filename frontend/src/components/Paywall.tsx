@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, Crown, LockKeyhole, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { FeatureId, ProductId } from "../lib/entitlements";
 import { developmentUnlock, getPurchaseRuntime, initializePurchases, purchaseProduct, restorePurchases, StoreProduct } from "../lib/purchases";
@@ -19,6 +19,10 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
     title: "沉浸式语法学习是 Pro 功能",
     body: "适合集中扫语法、快速推进等级和减少页面切换。"
   },
+  stubbornHistory: {
+    title: "往日顽固词是 Pro 功能",
+    body: "翻回过去任何一天，看那天跟你打过架的词，一键收藏或整批复习。"
+  },
   // ⚠️ 下面三条现在**没有任何调用方**:只有 immersiveGrammar 走 requirePro()。
   // 留着是因为它们迟早要接上;真接上那天,先确认这句「是 Pro 功能」当时是真的。
   advancedDashboard: {
@@ -35,16 +39,18 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
   }
 };
 
-// 买之前看到的这几条必须和真实解锁的对得上:现在真正锁着的只有沉浸式语法学习
-// (全库唯一一处 requirePro),其余三个 FeatureId 定义了但没有任何地方去问权益。
-// 所以只把它写成已解锁,其余归到「后续纳入」那一条里,不逐条当成现成卖点列出来。
+// 买之前看到的这几条必须和真实解锁的对得上:现在真正锁着的是沉浸式语法学习
+// (requirePro)和完成页的往日顽固词(FinishPanel 自己弹这张 Paywall),
+// 其余三个 FeatureId 定义了但没有任何地方去问权益 —— 归到「后续纳入」那一条里。
 const benefits = [
   "沉浸式语法学习",
+  "往日顽固词：翻回任意一天，整批复习或收藏",
   "后续 Pro 功能自动纳入（高级总览、JLPT 规划、专项训练开发中）"
 ];
 
 export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: PaywallProps) {
   const entitlements = useEntitlements();
+  const dialogRef = useRef<HTMLElement>(null);
   const [products, setProducts] = useState<StoreProduct[]>(() => getPurchaseRuntime().products);
   const [status, setStatus] = useState(getPurchaseRuntime().message);
   const [busyProduct, setBusyProduct] = useState<ProductId | null>(null);
@@ -64,6 +70,42 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
   useEffect(() => {
     if (entitlements.isPro) onUnlocked?.();
   }, [entitlements.isPro, onUnlocked]);
+
+  // 模态语义:Esc 关闭、焦点进来、Tab 在卡片里循环、关掉之后还回原处。
+  // ⚠️ 缺了这几样,键盘和 VoiceOver 用户会在背后那一页里乱走 —— 而背后那一页
+  // 正是刚刚被拦下来的付费功能。用原生 <dialog> 能白捡这些,但它要 Safari 15.4,
+  // 而工程的部署目标还写着 iOS 15.0(见 Podfile),所以这里自己做。
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    dialogRef.current?.querySelector<HTMLElement>('button, [href], input, select, textarea')?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        onClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input, select, textarea') ?? []
+      ).filter((element) => element.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !dialogRef.current?.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown, true);
+      opener?.focus?.();
+    };
+  }, [onClose]);
 
   const buy = async (productId: ProductId) => {
     setBusyProduct(productId);
@@ -87,7 +129,13 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-end justify-center overflow-y-auto bg-black/50 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-6">
-      <section className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-white/15 bg-[#3f4343] p-4 shadow-2xl sm:p-5">
+      <section
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={copy.title}
+        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-white/15 bg-[#3f4343] p-4 shadow-2xl sm:p-5"
+      >
         <div className="mb-4 flex items-center justify-between gap-3">
           <button onClick={onClose} className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/76 hover:bg-white/8">
             <ArrowLeft size={17} />

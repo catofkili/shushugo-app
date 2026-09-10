@@ -4,10 +4,11 @@ import type { FavoriteType, StudyAnswer } from "./study-types";
 import { ensureLocalSchema } from "./database/schema";
 import { ensureLegacyBiruMigration } from "./legacy-word-migrations";
 import { ensureSyncSchema } from "./sync/schema";
+import { CONTENT_MIGRATION_STATE_KEYS } from "./sync/tables";
 import {
   firstValue,
   getState,
-  persistSoon,
+  persistContentSoon,
   rowsFor,
   setState
 } from "./database/db-utils";
@@ -110,7 +111,20 @@ const JLPT_WORD_METADATA_VERSION = `2026-08-11-manual-meanings-5163-polish-1130-
 const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
-export const GRAMMAR_SEED_VERSION = "2026-08-15-grammar-rewrite-v2";
+export const GRAMMAR_SEED_VERSION = "2026-09-08-grammar-explanation-rewrite-v1";
+/**
+ * 种子里有多少条语法点。⚠️ 它不是装饰,是**版本戳撒谎时的唯一兜底**。
+ *
+ * `grammar_state` 走云同步,而 `dataset_version` 说的是「本机这份语法内容迁到哪一版」——
+ * 对端写下的「已完成」落到一台还没跑过迁移的设备上,之后每次启动都在
+ * 「版本号相等就返回」上早退,版本标记新、内容是旧的(比如仍是 731 条),而且永远不会自愈。
+ * 现在导出/导入两侧都过滤掉这个键了,但已经被写坏的库还得能自己爬回来。
+ *
+ * 用行数当兜底而不是无条件重跑:重建那条路会 DELETE + 重排 id、清空
+ * `grammar_state.queue`、再往 archive 里写一份 —— 只有真的对不上才值得付这个代价。
+ * `verify-release-db.mjs` 会钉住这个常数 == 出厂库 == seed。
+ */
+export const GRAMMAR_SEED_ROW_COUNT = 741;
 export const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
 export const JLPT_COLLOCATION_CONTENT_VERSION = "2026-08-28-jlpt-collocations-zh-v1";
 
@@ -252,10 +266,35 @@ export const ensureUserTables = () => {
 
 // 启动时(App 渲染前)调用一次,完成建表与所有种子数据迁移。
 // 之后同步路径里的 ensureUserTables 只做廉价的建表/索引检查。
+/**
+ * 一次性重检：把「本机内容迁到哪一版」的标记清掉，让下面的迁移重跑一遍。
+ *
+ * 这些标记以前会随用户快照跨设备同步（见 sync/tables.ts 的
+ * CONTENT_MIGRATION_STATE_KEYS）。对端写下的「已完成」落到一台还没跑过迁移的
+ * 设备上，之后每次启动都在同一个相等判断上早退 —— 版本标记是新的、词典是旧的，
+ * 而且不会自己好。现在导出/导入两侧都过滤掉了，但已经写进去的值得清一次。
+ *
+ * 这里清的**只有 app_state 里那几个词典侧的标记**：它们对应的迁移都是"补行 / 补列"，
+ * 幂等且只增不删，重跑一遍的代价只是一次启动慢一点。
+ *
+ * ⚠️ **`grammar_state.dataset_version` 不在这里清。** 语法那条重建会
+ * `DELETE FROM grammar_points` + 重排 id + 清空 `grammar_state.queue` + 往 archive
+ * 写一整份 —— 对没被写坏的库来说全是白付的代价和风险。那条改成自愈判据，
+ * 见 `ensureGrammarSeed` 里的 `GRAMMAR_SEED_ROW_COUNT` 检查。
+ */
+const CONTENT_MARKER_REPAIR_VERSION = "2026-09-09-unsynced-content-markers-v1";
+
+const repairSyncedContentMarkers = () => {
+  if (getState("content_marker_repair", "") === CONTENT_MARKER_REPAIR_VERSION) return;
+  for (const key of CONTENT_MIGRATION_STATE_KEYS) setState(key, "");
+  setState("content_marker_repair", CONTENT_MARKER_REPAIR_VERSION);
+};
+
 export const ensureSeedData = async () => {
   ensureUserTables();
   // 先建同步触发器：旧 id 的删除必须留下墓碑，否则另一台设备会把重复词复活。
   ensureSyncSchema();
+  repairSyncedContentMarkers();
   await ensureLegacyBiruMigration();
   await ensureDictionarySupplementSeed();
   await ensureJlptCollocationContent();
@@ -308,7 +347,7 @@ const ensureJlptCollocationContent = async () => {
     db.run("ROLLBACK");
     throw error;
   }
-  persistSoon();
+  persistContentSoon();
 };
 
 const ensureDictionarySupplementSeed = async () => {
@@ -360,7 +399,7 @@ const ensureDictionarySupplementSeed = async () => {
     });
     setState("dictionary_supplement_version", seed.version);
     db.run("COMMIT");
-    persistSoon();
+    persistContentSoon();
   } catch (error) {
     db.run("ROLLBACK");
     throw error;
@@ -383,10 +422,16 @@ const GRAMMAR_ID_OFFSET = 1_000_000;
 const ensureGrammarSeed = async () => {
   const db = getDatabase();
   const grammarVersion = firstValue<string>("SELECT value FROM grammar_state WHERE key = ?", ["dataset_version"], "");
-  if (grammarVersion === GRAMMAR_SEED_VERSION) return;
+  // 版本戳对上还不够,内容也得真在(见 GRAMMAR_SEED_ROW_COUNT)。COUNT 很便宜,
+  // 而且这样是自愈的 —— 不需要一次性的修复代码,以后再被写坏也能自己爬回来。
+  if (grammarVersion === GRAMMAR_SEED_VERSION
+    && firstValue<number>("SELECT COUNT(*) FROM grammar_points", [], 0) === GRAMMAR_SEED_ROW_COUNT) return;
 
   const grammarSeed = await loadGrammarSeed();
-  if (grammarSeed.version === grammarVersion) {
+  // ⚠️ 这条只挡「常量落后于 JSON」这一种情况(库版本 == JSON 版本 != 常量)。
+  // 不带后半个条件的话,上面那条按条数的自愈判据永远走不到重建 —— 版本三者相等、
+  // 条数少了 10 条的库,会在这里原地 return 并打一句误导的「常量落后」。
+  if (grammarSeed.version === grammarVersion && grammarVersion !== GRAMMAR_SEED_VERSION) {
     console.warn(`GRAMMAR_SEED_VERSION 常量(${GRAMMAR_SEED_VERSION})落后于 grammar_seed.json(${grammarSeed.version}),请更新常量。`);
     return;
   }
@@ -458,7 +503,7 @@ const ensureGrammarSeed = async () => {
     db.run("ROLLBACK");
     throw error;
   }
-  persistSoon();
+  persistContentSoon();
 };
 
 // 注音是内容元数据，不应触发语法点重排或迁移学习进度。老用户只需在
@@ -485,7 +530,7 @@ const ensureFuriganaAnnotations = async () => {
     db.run("ROLLBACK");
     throw error;
   }
-  persistSoon();
+  persistContentSoon();
 };
 
 const nounSuruCorrections: [string, string][] = [
@@ -667,7 +712,7 @@ const ensureKatakanaReadings = async () => {
     });
     setState("kana_reading_fix_version", KANA_READING_FIX_VERSION);
     db.run("COMMIT");
-    persistSoon(); // 不落盘的话版本号也不会留下,下次启动又跑一遍
+    persistContentSoon(); // 不落盘的话版本号也不会留下,下次启动又跑一遍
   } catch (error) {
     db.run("ROLLBACK");
     throw error;
@@ -688,7 +733,7 @@ const ensureJlptWordMetadata = async () => {
     db.run("ROLLBACK");
     throw error;
   }
-  persistSoon();
+  persistContentSoon();
 };
 
 const ensureJlptLevelOverrides = async () => {
@@ -721,7 +766,7 @@ const ensureJlptLevelOverrides = async () => {
     db.run("ROLLBACK");
     throw error;
   }
-  persistSoon();
+  persistContentSoon();
 };
 
 const ensureJlptWordSeed = async () => {
@@ -739,7 +784,7 @@ const ensureJlptWordSeed = async () => {
   if (total >= 10000 && hasEnoughLevels) {
     await ensureJlptWordMetadata();
     setState("jlpt_seed_version", JLPT_SEED_VERSION);
-    persistSoon();
+    persistContentSoon();
     return;
   }
 
@@ -784,7 +829,7 @@ const ensureJlptWordSeed = async () => {
     db.run("ROLLBACK");
     throw error;
   }
-  persistSoon();
+  persistContentSoon();
 };
 
 export const randomBetween = (min: number, max: number) => {

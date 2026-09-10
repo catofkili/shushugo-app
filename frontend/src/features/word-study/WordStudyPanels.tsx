@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Brain, CalendarDays, CheckCircle2, Clock3, Flame, ImageDown, ListChecks, Loader2, Minus, Pencil, Plus, Share2, Star, X } from "lucide-react";
+import { Brain, CalendarDays, CheckCircle2, Clock3, Flame, History, ImageDown, ListChecks, Loader2, Minus, Pencil, Plus, Share2, Star, X } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
-import { addFavorite, addFavorites, getStubbornWordsToday, type StubbornWordToday } from "../../lib/api";
+import { addFavorite, addFavorites, getStubbornGrammarToday, getStubbornWordsToday, type StubbornGrammarToday, type StubbornWordToday } from "../../lib/api";
 import { ZooConfetti } from "../../components/ZooConfetti";
 import { useCountUp } from "../../hooks/useCountUp";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
@@ -25,6 +25,10 @@ import {
   monthDays
 } from "./word-study-utils";
 import { preferredWordSurface } from "../../lib/orthography";
+import { StubbornGrammarRow, StubbornHistorySheet, StubbornWordRow } from "./stubborn-history";
+import { Paywall } from "../../components/Paywall";
+import { canUseFeature } from "../../lib/entitlements";
+import { useEntitlements } from "../../hooks/useEntitlements";
 
 /** 自他标注。直接挂在词自己身上(不是只在配对面板里提),自/他 那个字放大加色,
  *  一眼扫得到 —— 中文「开」一个字通吃 開く/開ける,这一栏是最容易翻车的地方。 */
@@ -217,7 +221,13 @@ interface FinishPanelProps {
 
 export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji, onEncore, onStubbornQuickStudy }: FinishPanelProps) => {
   const { pickFolder, picker } = useFavoriteFolderPicker();
+  const entitlements = useEntitlements();
+  // 往日顽固词是 Pro：这一张 Paywall 由完成页自己弹，不用把 requirePro 从 App
+  // 一路穿过 WordStudy 传进来（只为一个按钮加两层 props 不值当）。
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyPaywall, setHistoryPaywall] = useState(false);
   const [stubborn, setStubborn] = useState<StubbornWordToday[]>([]);
+  const [stubbornGrammar, setStubbornGrammar] = useState<StubbornGrammarToday[]>([]);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [shareCard, setShareCard] = useState<{ url: string; blob: Blob } | null>(null);
   const [shareBusy, setShareBusy] = useState<"save" | "share" | null>(null);
@@ -303,9 +313,15 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   // 而这一页是今天最后一次结算,查早了数还没记全。
   useEffect(() => {
     setStubborn(getStubbornWordsToday());
+    // 混合模式里语法和单词是同一场，只列单词等于说了一半。没答过语法的日子这里是空的，
+    // 所以经典模式下这一段自己就不出现，不用按模式加闸。
+    setStubbornGrammar(getStubbornGrammarToday());
   }, [studyDate, todayWordCount]);
 
   const unfavoritedStubborn = stubborn.filter((word) => !word.isFavorite);
+  const stubbornTitle = stubborn.length
+    ? `今天的顽固词 ${stubborn.length} 个${stubbornGrammar.length ? ` · 语法 ${stubbornGrammar.length} 条` : ""}`
+    : `今天的顽固语法 ${stubbornGrammar.length} 条`;
   // 顽固词多到一定程度就不给加餐，改成「把这批词过一遍」。
   const stubbornOverload = stubborn.length >= STUBBORN_ENCORE_BLOCK && Boolean(onStubbornQuickStudy);
   const showEncore = phase === "done" && Boolean(encore?.available) && Boolean(onEncore) && !stubbornOverload;
@@ -612,10 +628,6 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                           </button>
                         ))}
                       </div>
-                      {/* 「这批是积压还是新词」下面那行已经说了,这里不重复,只说本面板独有的两件事 */}
-                      <p className="mt-2 text-[11px] text-white/45">
-                        加餐不占明日的新词配额;每日新词数在设置里改。
-                      </p>
                     </div>
                   )}
                   <p className="mt-2 text-[11px] text-white/40">
@@ -628,14 +640,30 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             </div>
           )}
 
-          {stubborn.length > 0 && (
+          {stubborn.length === 0 && stubbornGrammar.length === 0 && (
+            <button
+              onClick={() => (canUseFeature("stubbornHistory", entitlements) ? setHistoryOpen(true) : setHistoryPaywall(true))}
+              className="focus-ring flex shrink-0 items-center gap-2 rounded-2xl bg-[#3f4343] p-3 text-left text-xs font-bold text-white/60 ring-1 ring-white/10 sm:p-4"
+            >
+              <History size={14} className="shrink-0 text-[#E8971C]" />
+              今天没有顽固词 · 翻翻往日跟你打过架的词
+            </button>
+          )}
+          {(stubborn.length > 0 || stubbornGrammar.length > 0) && (
             <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
                   <Flame size={16} className="shrink-0 text-[#E8971C]" />
-                  <p className="min-w-0 truncate text-sm font-bold text-white">今天的顽固词 {stubborn.length} 个</p>
+                  <p className="min-w-0 truncate text-sm font-bold text-white">{stubbornTitle}</p>
                 </div>
                 <span className="flex shrink-0 items-center gap-2">
+                  <button
+                    onClick={() => (canUseFeature("stubbornHistory", entitlements) ? setHistoryOpen(true) : setHistoryPaywall(true))}
+                    className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 text-xs font-bold text-white/75"
+                  >
+                    <History size={13} />
+                    往日
+                  </button>
                   {/* 快速复习不等到「顽固词多到换掉加餐」才给入口：列表就在眼前，
                       想现在过一遍是最自然的下一步。超过阈值时上面那块会把加餐整个换掉。 */}
                   {!stubbornOverload && onStubbornQuickStudy && (
@@ -660,27 +688,19 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
               </div>
               <div className="max-h-56 overflow-y-auto">
                 {stubborn.map((word) => (
-                  <div key={word.id} className="flex items-center gap-3 border-t border-white/8 py-2 first:border-t-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="jp-serif truncate text-base font-semibold text-white">{preferredWordSurface(word)}</p>
-                      <p className="truncate text-xs text-white/55">{word.kana} · {word.meaning}</p>
-                    </div>
-                    <span className="shrink-0 text-[11px] text-white/45">
-                      {word.wrongToday > 0 ? `今天错 ${word.wrongToday} 次` : `累计忘 ${word.lapses} 次`}
-                    </span>
-                    <button
-                      onClick={() => toggleStubbornFavorite(word)}
-                      disabled={word.isFavorite}
-                      className={`focus-ring grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/15 ${word.isFavorite ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-white/6 text-white/62"}`}
-                      title={word.isFavorite ? "已收藏" : "收藏这个词"}
-                    >
-                      <Star size={14} fill={word.isFavorite ? "currentColor" : "none"} />
-                    </button>
-                  </div>
+                  <StubbornWordRow key={word.id} word={word} onFavorite={toggleStubbornFavorite} />
+                ))}
+                {/* 语法用的是同一条判据（累计忘 > 8 次且今天错 ≥ 3 次）。
+                    ⚠️ 没有收藏按钮：语法收藏存的是 grammar.ts 的字符串 id，这里只有
+                    grammar_points 的数字 id，桥接得按 pattern 去翻那份 1.2MB 的语法数据。
+                    想收藏去语法列表页点，那里本来就有一颗星。 */}
+                {stubbornGrammar.map((point) => (
+                  <StubbornGrammarRow key={`g-${point.id}`} point={point} />
                 ))}
               </div>
               <p className="mt-2 text-[11px] text-white/40">
-                一共忘过 8 次以上、今天又错了 {STUBBORN_DAILY_MISTAKES} 次的词。集中攻坚走错题本模式。
+                一共忘过 8 次以上、今天又错了 {STUBBORN_DAILY_MISTAKES} 次的词。集中攻坚走错题本模式；
+                语法同一条判据，收藏和攻坚在语法列表页。
               </p>
             </div>
           )}
@@ -774,6 +794,19 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
       )}
 
       {showAnalytics && <AnalyticsDashboard onClose={() => setShowAnalytics(false)} />}
+      {historyOpen && (
+        <StubbornHistorySheet
+          onQuickStudy={onStubbornQuickStudy && ((ids) => { setHistoryOpen(false); onStubbornQuickStudy(ids); })}
+          onClose={() => setHistoryOpen(false)}
+        />
+      )}
+      {historyPaywall && (
+        <Paywall
+          feature="stubbornHistory"
+          onClose={() => setHistoryPaywall(false)}
+          onUnlocked={() => { setHistoryPaywall(false); setHistoryOpen(true); }}
+        />
+      )}
       {picker}
     </>
   );

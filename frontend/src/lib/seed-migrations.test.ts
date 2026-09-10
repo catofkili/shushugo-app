@@ -20,6 +20,14 @@ vi.mock("./database", () => ({
   importDatabase: async () => undefined
 }));
 
+const requestFullSnapshot = vi.fn();
+const scheduleSave = vi.fn();
+vi.mock("./storage", () => ({
+  requestFullSnapshot: () => requestFullSnapshot(),
+  scheduleSave: () => scheduleSave(),
+  saveRecoverySnapshot: async () => "test"
+}));
+
 import { ensureSeedData } from "./study-core";
 
 const SQL = await initSqlJs();
@@ -74,5 +82,18 @@ describe("冷启动：所有版本门控的迁移都要能真的跑一遍", () =
     await expect(ensureSeedData()).resolves.not.toThrow();
     expect(one("SELECT COUNT(*) FROM grammar_points")).toBe(after);
     expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配'")).toBe(882);
+  });
+
+  it("内容迁移必须要求整库落盘 —— 版本号进增量,内容不进", async () => {
+    testDb.run("DELETE FROM app_state");
+    testDb.run("DELETE FROM grammar_state WHERE key = 'dataset_version'");
+    requestFullSnapshot.mockClear();
+
+    await ensureSeedData();
+    // ⚠️ 迁移改的是 words / grammar_points 这些**不带 sync_updated_at、因而不进
+    // 增量**的表,而它写下的版本号在 app_state,那张表是进增量的。只调
+    // scheduleSave 的话,离下一次整库还有几分钟时重启 = 旧内容 + 新版本号,
+    // 而版本门控会让迁移再也不重跑。见 db-utils 的 persistContentSoon。
+    expect(requestFullSnapshot).toHaveBeenCalled();
   });
 });

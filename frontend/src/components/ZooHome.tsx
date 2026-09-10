@@ -6,8 +6,15 @@ import {
   Bath, Flame, Library, Map, Merge, PawPrint, Puzzle, RefreshCw, Ruler,
   SkipForward, SlidersHorizontal, Speech, Star
 } from "lucide-react";
-import { getWordStats, type ProgressOverview } from "../lib/api";
-import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
+import { getWordStats, refreshTodayWordPlan, type ProgressOverview } from "../lib/api";
+import { notifyProgressUpdated, PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
+import {
+  GRAMMAR_INTENSITY_ANCHORS,
+  getStudyPreferences,
+  INTENSITY_ANCHORS,
+  PREFERENCES_EVENT,
+  saveStudyPreferences
+} from "../lib/studyPreferences";
 import { computeStreak } from "../lib/zoo-streak";
 import { computeBadges } from "../lib/zoo-badges";
 import type { WordStats } from "../types/vocabulary";
@@ -82,6 +89,9 @@ export function ZooHome({
   const [stats, setStats] = useState<WordStats | null>(null);
   const [jlpt, setJlpt] = useState<JlptPlanStatus | null>(null);
   const [modeSheetOpen, setModeSheetOpen] = useState(false);
+  const [goalSheetOpen, setGoalSheetOpen] = useState(false);
+  // 每日量在设置页也能改，所以跟着 PREFERENCES_EVENT 走，别只在挂载时读一次
+  const [goals, setGoals] = useState(() => getStudyPreferences());
   const { moment, leaving: momentLeaving, collect: collectMoments } = useMoments();
 
   useEffect(() => {
@@ -108,6 +118,30 @@ export function ZooHome({
     window.addEventListener(PROGRESS_UPDATED_EVENT, refresh);
     return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
   }, [collectMoments]);
+
+  useEffect(() => {
+    const sync = () => setGoals(getStudyPreferences());
+    window.addEventListener(PREFERENCES_EVENT, sync);
+    return () => window.removeEventListener(PREFERENCES_EVENT, sync);
+  }, []);
+
+  /**
+   * 改每日量。**存的地方和设置页是同一处**（`studyPreferences`），
+   * 这里只是第二个入口，不是第二份状态 —— 改完发一次 PREFERENCES_EVENT，
+   * 设置页那两根滑杆同一秒就跟着动。
+   *
+   * ⚠️ 改完必须重排今日计划：新词名额是排计划那一刻定的，
+   * 不排的话大卡上的数要等到明天才认这个新值。
+   */
+  const applyGoals = (patch: { dailyGoal?: number; grammarDailyGoal?: number }) => {
+    setGoals(saveStudyPreferences({ ...getStudyPreferences(), ...patch }));
+    try {
+      refreshTodayWordPlan();
+    } catch {
+      // 词库还没就绪时排不了，下次进页面自然会排
+    }
+    notifyProgressUpdated();
+  };
 
   const greet = greetingFor(new Date().getHours());
   const total = stats?.stage1ProgressTotal ?? 0;
@@ -278,6 +312,70 @@ export function ZooHome({
               <em>界面预览 · 队友是示例</em>
             </small>
           </button>
+        </div>
+
+        {/* 每日量 —— 摆在备考格底下，因为上面那行「还差 新词 50 · 新语法 6」正是按考期
+            算出来的应学量，而这两个旋钮是它的另一半：计划说要 50，你设的是 15。
+            ⚠️ 存的地方和设置页是同一处，这里只是第二个入口，不是第二份口径。
+            只给档位 chip，不放滑杆 —— 主页要的是「随手改一下」，精调去设置页。 */}
+        <div className="zoo-goal">
+          <button
+            className="zoo-mode-chip zoo-goal-chip"
+            onClick={() => setGoalSheetOpen((open) => !open)}
+            aria-expanded={goalSheetOpen}
+          >
+            <Ruler size={12} aria-hidden="true" /> 每日新的 · 单词 <b>{goals.dailyGoal}</b>
+            <i aria-hidden="true">·</i> 语法 <b>{goals.grammarDailyGoal}</b> {goalSheetOpen ? "▴" : "▾"}
+          </button>
+
+          {goalSheetOpen && (
+            <div className="zoo-goal-sheet">
+              <p className="zoo-goal-row-title">单词 · 每日新词</p>
+              <div className="zoo-goal-chips">
+                {INTENSITY_ANCHORS.map((anchor) => (
+                  <button
+                    key={anchor.value}
+                    className={goals.dailyGoal === anchor.value ? "on" : ""}
+                    onClick={() => applyGoals({ dailyGoal: anchor.value })}
+                  >
+                    {anchor.label} {anchor.value}
+                  </button>
+                ))}
+              </div>
+
+              <p className="zoo-goal-row-title">语法 · 每日新条目</p>
+              <div className="zoo-goal-chips">
+                {GRAMMAR_INTENSITY_ANCHORS.map((anchor) => (
+                  <button
+                    key={anchor.value}
+                    className={goals.grammarDailyGoal === anchor.value ? "on" : ""}
+                    onClick={() => applyGoals({ grammarDailyGoal: anchor.value })}
+                  >
+                    {anchor.label} {anchor.value}
+                  </button>
+                ))}
+              </div>
+
+              {/* 备考计划算出来的量比现在设的高时才提这一句。低了不提 ——
+                  那说明现在的强度已经够，没必要劝人往下调。
+                  收尾期（考前 21 天不再进新内容）计划值是 0，条件天然不成立。 */}
+              {jlpt && (jlpt.plan.newWords > goals.dailyGoal || jlpt.plan.newGrammar > goals.grammarDailyGoal) && (
+                <button
+                  className="zoo-goal-plan"
+                  onClick={() => applyGoals({
+                    dailyGoal: Math.max(jlpt.plan.newWords, goals.dailyGoal),
+                    grammarDailyGoal: Math.max(jlpt.plan.newGrammar, goals.grammarDailyGoal)
+                  })}
+                >
+                  按 {jlpt.target} 备考计划：单词 {jlpt.plan.newWords} · 语法 {jlpt.plan.newGrammar} →
+                </button>
+              )}
+
+              <button className="zoo-goal-more" onClick={() => onNavigate("settings")}>
+                精调、复习上限、汉字读音题量 → 设置
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

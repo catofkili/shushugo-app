@@ -128,6 +128,10 @@ export function mergeDuplicateWords(): DuplicateMergeReport {
   // 缓存不清的话题面还挂在已经不存在的 word_id 上。
   resetUserQuestionMeanings();
   resetQuestionMeaningIndex();
+  // 合并会 DELETE FROM words,而增量落盘只覆盖带 sync_updated_at 的用户表 ——
+  // words 不在里面(见 local-delta.ts 顶上那段)。不整库的话重启后被删的词条行
+  // 会原样回来,而它的 progress/流水已经搬走了。
+  void import("./storage").then(({ requestFullSnapshot }) => requestFullSnapshot());
   persistSoon();
   notifyProgressUpdated();
 

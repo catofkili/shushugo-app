@@ -1,5 +1,5 @@
 import { lazy, ReactNode, Suspense, useEffect, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { WordStudy } from "./pages/WordStudy";
 import { AppNavigation } from "./components/AppNavigation";
 import { ZooHome } from "./components/ZooHome";
@@ -17,6 +17,7 @@ import { studyDayEnd } from "./lib/database/db-utils";
 import { getGrammarLevelPreference, saveGrammarLevelPreference, type GrammarLevelSelection } from "./lib/grammarPreferences";
 import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
 import { syncUserProfileAfterLogin } from "./lib/profile-sync";
+import { PERSISTENCE_ERROR_EVENT, PERSISTENCE_OK_EVENT, saveDatabase } from "./lib/storage";
 import type { SearchResult } from "./lib/search-api";
 import { GrammarMode, Page, StudyMode } from "./types/app";
 import { JLPTLevel } from "./types/grammar";
@@ -120,11 +121,25 @@ export default function App() {
     };
   }, []);
 
+  // 这份总览只有首页/动物园地图/图鉴三处在读,而它是两条全库 words⋈progress 扫描
+  // (实测 35ms)。以前它挂在 PROGRESS_UPDATED 上无条件重算 —— 于是**在学习页里
+  // 每答一张卡都要重算一次谁也看不见的东西**。
+  // 现在看不见就只记一个脏标记,等真回到要用它的页面再补算。
+  const overviewVisible = page === "home" || page === "zoo-map" || page === "zoo-dex";
+  const overviewDirtyRef = useRef(false);
   useEffect(() => {
-    const refresh = () => setOverview(getProgressOverview());
+    const refresh = () => {
+      if (!overviewVisible) {
+        overviewDirtyRef.current = true;
+        return;
+      }
+      overviewDirtyRef.current = false;
+      setOverview(getProgressOverview());
+    };
+    if (overviewVisible && overviewDirtyRef.current) refresh();
     window.addEventListener(PROGRESS_UPDATED_EVENT, refresh);
     return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
-  }, []);
+  }, [overviewVisible]);
 
   // 字音单位索引是动态 import 的(399 KB 单独成 chunk)。首页的汉字模式计数要读它,
   // 所以开机就预热。
@@ -724,6 +739,7 @@ export default function App() {
           {notice}
         </div>
       )}
+      <PersistenceBanner />
       {paywallTarget && (
         <Paywall
           feature={paywallTarget === "general" ? undefined : paywallTarget}
@@ -744,6 +760,57 @@ export default function App() {
         }}
         onAuthenticated={handleAuthenticated}
       />
+    </div>
+  );
+}
+
+/**
+ * 「刚才那次没存下去」的常驻提示。
+ *
+ * ⚠️ 以前 PERSISTENCE_ERROR_EVENT 只有 GrammarHighlightProvider 在听,而那个
+ * Provider 只包着语法页 —— 在单词学习页写盘失败时,除了控制台一行 error 之外
+ * 什么都不会发生,用户会接着答几十张卡,以为都记下了。所以它挂在常驻层。
+ *
+ * 不做「正在保存」那一档:正常节奏下每 2 秒就有一次写入,一个每两秒闪一下的
+ * 指示器只是噪音。要说的只有「没存下去」和「又好了」。
+ */
+function PersistenceBanner() {
+  const [failed, setFailed] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+
+  useEffect(() => {
+    const onError = () => setFailed(true);
+    const onOk = () => setFailed(false);
+    window.addEventListener(PERSISTENCE_ERROR_EVENT, onError);
+    window.addEventListener(PERSISTENCE_OK_EVENT, onOk);
+    return () => {
+      window.removeEventListener(PERSISTENCE_ERROR_EVENT, onError);
+      window.removeEventListener(PERSISTENCE_OK_EVENT, onOk);
+    };
+  }, []);
+
+  if (!failed) return null;
+  const retry = () => {
+    setRetrying(true);
+    void saveDatabase()
+      .then(() => setFailed(false))
+      .catch(() => undefined)
+      .finally(() => setRetrying(false));
+  };
+  return (
+    <div
+      role="alert"
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-[60] flex w-[min(92vw,30rem)] -translate-x-1/2 items-center gap-3 rounded-2xl bg-[#B3402F] px-4 py-3 text-sm font-semibold text-white shadow-lg lg:bottom-5"
+    >
+      <AlertTriangle size={18} className="shrink-0" />
+      <span className="flex-1 leading-5">学习记录没能保存到本机，请检查存储空间。这期间答的题可能丢失。</span>
+      <button
+        onClick={retry}
+        disabled={retrying}
+        className="focus-ring shrink-0 rounded-2xl bg-white/15 px-3 py-1.5 text-xs font-bold disabled:opacity-60"
+      >
+        {retrying ? "重试中" : "重试"}
+      </button>
     </div>
   );
 }

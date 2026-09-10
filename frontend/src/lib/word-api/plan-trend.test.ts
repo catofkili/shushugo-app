@@ -16,7 +16,7 @@ const prefStore = new Map<string, string>();
 vi.mock("../database", () => ({
   getDatabase: () => testDb, initDatabase: async () => testDb, exportDatabase: () => null, importDatabase: async () => undefined
 }));
-vi.mock("../storage", () => ({ scheduleSave: () => undefined }));
+vi.mock("../storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined }));
 
 import { dailyPlanTrend } from "./plan-trend";
 import { REVIEW_CAP_UNLIMITED } from "../studyPreferences";

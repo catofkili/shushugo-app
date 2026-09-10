@@ -136,9 +136,6 @@ export function KanjiUnitPlanSettings() {
 
       <div className="mt-4">
         <p className="text-sm font-bold text-white">目标级别</p>
-        <p className="mt-0.5 text-xs text-white/50">
-          只影响排序权重，<b className="text-white/70">不排除</b>更高级的字音——真会撞上的高频读音照样会教。
-        </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {LEVEL_LABELS.map((label, rank) => (
             <button

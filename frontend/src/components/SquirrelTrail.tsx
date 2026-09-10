@@ -55,11 +55,22 @@ export function SquirrelTrail({ mode = null }: Props) {
     );
   }
 
+  // 混合模式：语法也要算进松子里。它和单词是**同一场**（首页角标、大卡脚注早就按
+  // 「单词 + 语法」的合计在说话），小路只数单词的话，插播那几条语法答完顶上纹丝不动，
+  // 而分母也比大卡上的数小一截 —— 两个数字当面打架。
+  const grammarPlanned = (stats?.grammarDone ?? 0) + (stats?.grammarRemaining ?? 0);
   const trail = mode === "reverse"
     ? { total: stats?.stage2Total ?? 0, done: stats?.stage2Completed ?? 0, emoji: "🔁", label: "反向" }
     : mode === "kanji"
       ? { total: stats?.kanjiTotal ?? 0, done: stats?.kanjiCompleted ?? 0, emoji: "🈶", label: "汉字" }
-      : { total: stats?.stage1ProgressTotal ?? 0, done: stats?.stage1ProgressDone ?? 0, emoji: "🐿️", label: "今日复习" };
+      : mode === "mixed"
+        ? {
+            total: (stats?.stage1ProgressTotal ?? 0) + grammarPlanned,
+            done: (stats?.stage1ProgressDone ?? 0) + (stats?.grammarDone ?? 0),
+            emoji: "🐿️",
+            label: "单词 + 语法"
+          }
+        : { total: stats?.stage1ProgressTotal ?? 0, done: stats?.stage1ProgressDone ?? 0, emoji: "🐿️", label: "今日复习" };
 
   const { total, done } = trail;
   // 今天还没排计划就不占位置

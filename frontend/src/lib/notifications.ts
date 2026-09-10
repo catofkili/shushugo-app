@@ -23,7 +23,11 @@ export interface ReminderSyncResult {
 const SETTINGS_KEY = "mn_notification_settings";
 const STUDY_NOTIFICATION_ID = 9101;
 const REVIEW_NOTIFICATION_ID = 9102;
+// ⚠️ 成就通知的 id 是 base + Date.now() % 100,占 9200–9299 这一段,**不许再放宽**:
+// 原来是 % 1000,范围 9200–10199,把测试通知(9301)和备考提醒(9400–9413)整段吃掉了 ——
+// 一次成就解锁就可能顶掉当天的备考提醒,或者反过来被它取消。
 const ACHIEVEMENT_NOTIFICATION_BASE_ID = 9200;
+const ACHIEVEMENT_NOTIFICATION_SLOTS = 100;
 const TEST_STUDY_NOTIFICATION_ID = 9301;
 const REMINDER_IDS = [{ id: STUDY_NOTIFICATION_ID }, { id: REVIEW_NOTIFICATION_ID }];
 
@@ -282,7 +286,7 @@ export async function notifyAchievement(achievement: string): Promise<ReminderSy
 
   await LocalNotifications.schedule({
     notifications: [{
-      id: ACHIEVEMENT_NOTIFICATION_BASE_ID + Math.floor(Date.now() % 1000),
+      id: ACHIEVEMENT_NOTIFICATION_BASE_ID + Math.floor(Date.now() % ACHIEVEMENT_NOTIFICATION_SLOTS),
       title: "获得成就",
       body: `${achievement} 已解锁。`,
       schedule: { at: new Date(Date.now() + 1000) },

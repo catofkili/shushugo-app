@@ -199,11 +199,19 @@ export function isDue(s: FsrsState | null | undefined, now: Date): boolean {
 }
 
 /**
- * 是否「今天已毕业」= 下次到期排到了本学习日结束之后(不再当天重刷)。
+ * 是否「今天已毕业」= 走完了短期学习步骤,不再当天重刷。
  * 学习/重学中的卡 due 只排到几分钟后(仍 ≤ 边界)→ 未毕业,当天继续刷。
+ *
+ * ⚠️ **光比 due 和学习日边界不够。** 学习日边界是凌晨四点:03:55 答「忘记」,
+ * 重学步骤把 due 排到 04:05 —— 越过了边界,于是它被当成「今天已毕业」,
+ * 这一场里再也不会出现。用户点了忘记却没等来那次确认,而 FSRS 那边这张卡
+ * 明明还停在 Relearning 的第一步。所以 Learning/Relearning 一律不算毕业:
+ * 那两个状态下 due 永远是下一个短期步骤,不是真正的复习间隔。
  */
 export function isGraduatedForDay(s: FsrsState | null | undefined, studyDayEnd: Date): boolean {
-  return hasState(s) && new Date(s.due).getTime() > studyDayEnd.getTime();
+  if (!hasState(s)) return false;
+  if (s.state === State.Learning || s.state === State.Relearning) return false;
+  return new Date(s.due).getTime() > studyDayEnd.getTime();
 }
 
 /** 是否处于学习/重学中(当天还要再出) */

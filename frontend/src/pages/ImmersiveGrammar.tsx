@@ -3,6 +3,7 @@ import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Star, StickyNote, X
 import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
 import { GrammarTermHint } from "../components/GrammarTermHint";
 import { JapaneseRuby } from "../components/JapaneseRuby";
+import { grammarKeyPointFor } from "../lib/grammar-key-points";
 import { grammarPoints } from "../data/grammar";
 import { addFavorite, getGrammarPointFavorite, toggleFavorite } from "../lib/api";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
@@ -186,6 +187,9 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
           <p data-grammar-point-id={point.id} data-grammar-highlight-block="formation" className="jp rounded-2xl border border-white/15 bg-[#373b3b] px-4 py-3 text-lg leading-8 text-white/82">
             <GrammarTermHint text={point.connection ?? point.structure} />
           </p>
+          {grammarKeyPointFor(point) && (
+            <p className="grammar-key-point">{grammarKeyPointFor(point)}</p>
+          )}
           <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-5 text-[15px] leading-8 text-white/76">{point.explanation}</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {point.examples.slice(0, 4).map((example, exampleIndex) => (

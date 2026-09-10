@@ -21,6 +21,7 @@ import { ensureUserTables } from "../study-core";
 import { compressSyncSnapshot, decompressSyncSnapshot, exportSyncSnapshot, isUserSyncSnapshot, SYNC_PROTOCOL_VERSION } from "./snapshot";
 import { createKanjiUnitTasks, materializeKanjiUnitIndex, recordKanjiUnitReview } from "../kanji-unit-scheduler";
 import { loadKanjiUnitIndex } from "../kanji-unit-index";
+import { customWordId, importExternalWordList } from "../word-list-import";
 
 const seedPath = fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url));
 
@@ -33,6 +34,12 @@ const rows = (db: Database, sql: string) => {
 };
 
 beforeAll(async () => {
+  // 词单导入会广播 PROGRESS_UPDATED;这套测试跑在纯 Node 环境里,先挂个最小桩。
+  (globalThis as unknown as { window?: unknown }).window ??= {
+    dispatchEvent: () => true,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined
+  };
   await loadKanjiUnitIndex();
   SQL = await initSqlJs();
 });
@@ -122,6 +129,48 @@ describe("database snapshot merge", () => {
     bootDevice(deviceA);
     await mergeDatabaseBytes(fromB);
     expect(rows(deviceA, "SELECT prompt_meaning FROM word_question_meanings")).toHaveLength(0);
+  });
+
+  it("用户导入的自定义词条跨设备落地：id 由内容算、内容随快照走", async () => {
+    const bootDevice = (db: Database) => {
+      testDb = db;
+      ensureUserTables();
+      ensureSyncSchema();
+    };
+
+    const deviceA = testDb;
+    bootDevice(deviceA);
+    const result = importExternalWordList("单词,假名,释义\n蜃気楼,しんきろう,海市蜃楼");
+    expect(result.inserted).toBe(1);
+    const wordId = Number(rows(deviceA, "SELECT id FROM words WHERE kana = 'しんきろう'")[0].id);
+    // ⚠️ 不能是自增 id：出厂词典最大 id 才一万出头,自增分配出来的身份两台设备会撞。
+    expect(wordId).toBe(customWordId("蜃気楼", "しんきろう"));
+    expect(wordId).toBeGreaterThan(1_000_000_000_000);
+    deviceA.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (?, 'know', 0, '2026-09-09')", [wordId]);
+    const fromA = await exportSyncSnapshot();
+
+    // 出厂词典本身仍然不进快照,进去的只有 custom_words 这一行内容。
+    const snapshot = new SQL.Database(fromA);
+    expect(rows(snapshot, "SELECT name FROM sqlite_master WHERE type='table' AND name='words'")).toHaveLength(0);
+    expect(rows(snapshot, "SELECT kanji, kana FROM custom_words"))
+      .toEqual([{ kanji: "蜃気楼", kana: "しんきろう" }]);
+    snapshot.close();
+
+    // 全新设备：没有这个自定义词,合并之后必须把词行补出来 ——
+    // 否则收到的只是一条指向不存在词条的学习记录。
+    const deviceB = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    bootDevice(deviceB);
+    expect(rows(deviceB, "SELECT id FROM words WHERE kana = 'しんきろう'")).toHaveLength(0);
+    await mergeDatabaseBytes(fromA);
+    expect(rows(deviceB, "SELECT id, kanji, meaning FROM words WHERE kana = 'しんきろう'"))
+      .toEqual([{ id: wordId, kanji: "蜃気楼", meaning: "海市蜃楼" }]);
+    // 学习记录挂得上,而且这个词进得了调度队列(progress 有行)。
+    expect(rows(deviceB, "SELECT COUNT(*) AS n FROM reviews WHERE word_id = ?".replace("?", String(wordId)))[0].n).toBe(1);
+    expect(rows(deviceB, `SELECT COUNT(*) AS n FROM progress WHERE word_id = ${wordId}`)[0].n).toBe(1);
+
+    // 再合并一次不能长出第二行。
+    await mergeDatabaseBytes(fromA);
+    expect(rows(deviceB, "SELECT id FROM words WHERE kana = 'しんきろう'")).toHaveLength(1);
   });
 
   it("划重点和语法阅读位置随用户快照跨设备合并", async () => {

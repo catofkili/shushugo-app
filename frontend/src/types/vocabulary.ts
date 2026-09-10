@@ -72,6 +72,8 @@ export interface WordStats {
   };
   /** 备考目标那一级今天还欠几条语法（混合模式把它加在今日计划之上） */
   grammarRemaining: number;
+  /** 同一级今天已经过关的语法条数（混合模式的松鼠小路把它算进松子里） */
+  grammarDone: number;
   /** 模式切换器的角标：每个模式现在还能练多少（队列没建时算「进去之后会有多少」） */
   modeCounts: {
     classic: number;

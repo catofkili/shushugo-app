@@ -19,7 +19,7 @@ vi.mock("./database", () => ({
   exportDatabase: () => null,
   importDatabase: async () => undefined
 }));
-vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
+vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined }));
 vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
 
 import { ensureProgressInitialized, getWordSession, submitWordAnswer } from "./word-api";

@@ -19,7 +19,7 @@ vi.mock("./database", () => ({
   exportDatabase: () => null,
   importDatabase: async () => undefined
 }));
-vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
+vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined }));
 
 import { dailyStudyLoad } from "./study-load";
 import { ensureUserTables, studyDate } from "./study-core";

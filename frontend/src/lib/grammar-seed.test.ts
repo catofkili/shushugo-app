@@ -61,4 +61,20 @@ describe("语法种子升版本", () => {
     const kept = testDb.exec("SELECT seen_count FROM grammar_progress WHERE grammar_id = ?", [newId])[0];
     expect(kept?.values?.[0]?.[0]).toBe(5);
   });
+
+  it("条数对不上时自愈重建 —— 版本号三者相等也要修", async () => {
+    // 语法条数曾经被写坏过(seed 和出厂库两套重名消歧写法,老用户重建成 731)。
+    // 自愈判据是「版本戳相等**且**条数等于常量」才早退,但下一层还有一条
+    // 「JSON 版本 == 库版本就 return」—— 不带「常量落后」这个前提的话,
+    // 它会把刚判出来的修复原地挡回去,还打一句误导的「常量落后」。
+    testDb.run("DELETE FROM grammar_points WHERE id = (SELECT MAX(id) FROM grammar_points)");
+    const broken = Number(one("SELECT COUNT(*) FROM grammar_points"));
+    expect(broken).toBe(grammarSeed.rows.length - 1);
+    // 版本戳保持「已是最新」——被写坏的库正是这个样子
+    testDb.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('dataset_version', ?)", [GRAMMAR_SEED_VERSION]);
+
+    await ensureSeedData();
+
+    expect(Number(one("SELECT COUNT(*) FROM grammar_points"))).toBe(grammarSeed.rows.length);
+  });
 });

@@ -3,7 +3,7 @@ import { parseFurigana } from "./furigana-data";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
 import { dailyReviewCap } from "./review-budget";
-import { getDailyWordGoal, getReviewCapPreference } from "./studyPreferences";
+import { getDailyGrammarGoal, getReviewCapPreference } from "./studyPreferences";
 import {
   ensureFsrsColumns,
   fsrsDueWordIds,
@@ -32,6 +32,7 @@ import {
 import { patternAttachment } from "./grammar-formation";
 import type { FuriganaAnnotation } from "../types/furigana";
 import type { WordAnswer } from "../types/vocabulary";
+import { grammarQuizQuestion } from "../data/grammar-quiz-questions";
 
 /**
  * 语法考题：题面是日语句型，答案是它的接续 + 中文意。
@@ -66,7 +67,9 @@ const QUEUE_KEY = "grammar" as const;
 
 export interface GrammarQuizCard {
   id: number;
-  /** 题面：句型本身 */
+  /** 题面：逐条人工审过的句型；答案面的完整 pattern 不在这里提前显示。 */
+  question: string;
+  /** 答案里的句型原文 */
   pattern: string;
   /** 答案上半：接续 */
   formation: string;
@@ -190,11 +193,12 @@ const encoreQuota = (level: string, day: string) => {
 /**
  * 今天这个等级的新语法名额（还剩几条能学）。
  *
- * 和反向 / 汉字读音一样，各按同一个「每日新词目标」排自己那一份，互不挤占 ——
- * 语法条数本来就少，配额通常一天就吃满，剩下的全是复习。
+ * ⚠️ **走自己的旋钮 `grammarDailyGoal`，不再蹭单词的 `dailyGoal`**（2026-09-06 改）。
+ * 一个等级只有一百来条，按每日新词 15 排等于八天过完一级，而一条语法要记的是
+ * 接续 + 用法，不是一个词形。设置页「每日学习量」里两根滑杆，各排各的一份、互不挤占。
  */
 export const grammarNewQuota = (level: string, day = today()) =>
-  Math.max(getDailyWordGoal() + encoreQuota(level, day) - newDoneTodayCount(level, day), 0);
+  Math.max(getDailyGrammarGoal() + encoreQuota(level, day) - newDoneTodayCount(level, day), 0);
 
 /**
  * 「一轮洗一遍牌」时代留下的 `quiz_round:<等级>` 键。grammar_state 是同步表，
@@ -246,15 +250,18 @@ const CARD_COLUMNS = `
 const rowToCard = (row: Record<string, unknown>): GrammarQuizCard => {
   const pattern = String(row.pattern ?? "");
   const formation = String(row.formation ?? "");
+  const exampleJp = String(row.example_jp ?? "");
+  const exampleFurigana = parseFurigana(row.example_furigana);
   return {
     id: Number(row.id),
+    question: grammarQuizQuestion(pattern),
     pattern,
     formation,
     attachment: patternAttachment(pattern, formation),
     meaning: String(row.meaning ?? ""),
-    exampleJp: String(row.example_jp ?? ""),
+    exampleJp,
     exampleMeaning: String(row.example_meaning ?? ""),
-    exampleFurigana: parseFurigana(row.example_furigana),
+    exampleFurigana,
     exampleTokens: String(row.example_tokens ?? ""),
     exampleLemmas: String(row.example_lemmas ?? ""),
     level: String(row.level ?? ""),
@@ -388,7 +395,7 @@ const sessionFor = (level: string, card: GrammarQuizCard | null): GrammarQuizSes
     remaining,
     newDone: newDoneTodayCount(level, day),
     // 分母是「今天总共能学几条新的」= 每日目标 + 加餐，所以由「已学 + 还能学」倒推，
-    // 直接写 getDailyWordGoal() 的话加餐之后会出现 12 / 10。
+    // 直接写 getDailyGrammarGoal() 的话加餐之后会出现 12 / 10。
     newQuota: newDoneTodayCount(level, day) + grammarNewQuota(level, day),
     canUndo: readUndoStack(level).length > 0
   };
@@ -405,6 +412,12 @@ export const grammarPlanRemaining = (level: string, day = today()) => {
   const { reviewIds, newIds } = planIds(level, day);
   return reviewIds.length + newIds.length;
 };
+
+/**
+ * 今天这一级已经过关的条数。给混合模式的松鼠小路用：那条路上的松子 = 单词 + 语法，
+ * 所以分子分母都要把语法算进去（`grammarPlanRemaining` 出的是分母的另一半）。
+ */
+export const grammarPlanDone = (level: string, day = today()) => graduatedTodayCount(level, day);
 
 /** 取当前这一条。今天的都过关了就返回 card=null，由界面问要不要加餐。 */
 export const getGrammarQuizSession = (level: string): GrammarQuizSession => {

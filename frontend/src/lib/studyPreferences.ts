@@ -15,8 +15,14 @@ export interface StudyPreferences {
   theme: ThemePreference;
   autoPlay: boolean;
   showRomaji: boolean;
-  /** 学习强度 = 每日新词数,唯一的词汇量旋钮(复习量由算法定) */
+  /** 学习强度 = 每日新词数(复习量由算法定) */
   dailyGoal: number;
+  /**
+   * 每日新语法条数。**和 dailyGoal 分开存**:一个等级只有一百来条,
+   * 按每日新词数(15)排等于八天过完一级,而语法一条要记接续 + 用法。
+   * 0 = 今天不学新语法,只复习已经学过的。
+   */
+  grammarDailyGoal: number;
   /** 每日复习上限,0 = 自动(近期节奏 × 1.5 夹 [60, 150]),REVIEW_CAP_UNLIMITED = 不限(全部到期词) */
   reviewCap: number;
   /** 动物园音效(评分/翻卡/完成的木质提示音) */
@@ -53,11 +59,22 @@ export const INTENSITY_ANCHORS = [
 export const INTENSITY_MIN = 5;
 export const INTENSITY_MAX = 50;
 
+/** 语法强度档位,滑杆范围 [0, 30];0 = 只复习不进新条目 */
+export const GRAMMAR_INTENSITY_ANCHORS = [
+  { value: 0, label: "只复习" },
+  { value: 3, label: "轻松" },
+  { value: 5, label: "日常" },
+  { value: 10, label: "认真" }
+] as const;
+export const GRAMMAR_INTENSITY_MIN = 0;
+export const GRAMMAR_INTENSITY_MAX = 30;
+
 export const defaultStudyPreferences: StudyPreferences = {
   theme: "system",
   autoPlay: true,
   showRomaji: false,
   dailyGoal: 15,
+  grammarDailyGoal: 5,
   reviewCap: 0,
   zooSounds: true,
   motionLevel: "full",
@@ -72,6 +89,11 @@ const MOTION_LEVELS: MotionLevel[] = ["full", "reduced", "off"];
 const clampDailyGoal = (value: number) => {
   const normalized = Number.isFinite(value) ? Math.floor(value) : defaultStudyPreferences.dailyGoal;
   return Math.min(INTENSITY_MAX, Math.max(INTENSITY_MIN, normalized));
+};
+
+const clampGrammarGoal = (value: number) => {
+  const normalized = Number.isFinite(value) ? Math.floor(value) : defaultStudyPreferences.grammarDailyGoal;
+  return Math.min(GRAMMAR_INTENSITY_MAX, Math.max(GRAMMAR_INTENSITY_MIN, normalized));
 };
 
 /** 复习上限「不限」：当天所有到期的词一次全给，不截断、不顺延 */
@@ -89,6 +111,7 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   autoPlay: value.autoPlay ?? defaultStudyPreferences.autoPlay,
   showRomaji: value.showRomaji ?? defaultStudyPreferences.showRomaji,
   dailyGoal: clampDailyGoal(Number(value.dailyGoal ?? defaultStudyPreferences.dailyGoal)),
+  grammarDailyGoal: clampGrammarGoal(Number(value.grammarDailyGoal ?? defaultStudyPreferences.grammarDailyGoal)),
   reviewCap: clampReviewCap(Number(value.reviewCap ?? defaultStudyPreferences.reviewCap)),
   zooSounds: value.zooSounds ?? defaultStudyPreferences.zooSounds,
   motionLevel: MOTION_LEVELS.includes(value.motionLevel as MotionLevel)
@@ -123,6 +146,7 @@ export const saveStudyPreferences = (preferences: StudyPreferences) => {
 };
 
 export const getDailyWordGoal = () => getStudyPreferences().dailyGoal;
+export const getDailyGrammarGoal = () => getStudyPreferences().grammarDailyGoal;
 export const getReviewCapPreference = () => getStudyPreferences().reviewCap;
 
 export const getJlptPlanPreferences = () => {

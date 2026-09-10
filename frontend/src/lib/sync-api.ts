@@ -14,6 +14,7 @@ import {
   SYNC_SNAPSHOT_FORMAT,
   type SyncSnapshotCompression
 } from "./sync/snapshot";
+export { exportSyncSnapshot, getSnapshotCapacity } from "./sync/snapshot";
 import { PRIVACY_POLICY_VERSION } from "./privacy-policy-content";
 import { USER_AGREEMENT_VERSION } from "./user-agreement-content";
 import { getCloudAccessToken, removeCloudAccessToken, setCloudAccessToken } from "./secure-token";

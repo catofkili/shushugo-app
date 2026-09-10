@@ -3,8 +3,8 @@
 // 内容变更时记得更新生效日期。
 
 export const PRIVACY_POLICY_TITLE = "收集日隐私政策";
-export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 8 月 3 日";
-export const PRIVACY_POLICY_VERSION = "2026-08-03";
+export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 9 月 9 日";
+export const PRIVACY_POLICY_VERSION = "2026-09-09";
 export const PRIVACY_POLICY_CONTACT = "请通过 App Store 的应用支持入口联系开发者";
 
 export interface PrivacyPolicySection {
@@ -53,7 +53,8 @@ export const PRIVACY_POLICY_SECTIONS: PrivacyPolicySection[] = [
   {
     title: "第三方组件",
     body: [
-      "应用使用 Capacitor、sql.js 等技术组件运行本地数据库和 iOS 容器；账号及同步服务部署在 Cloudflare Workers、D1 和 KV 上，验证邮件通过 Resend 发送。",
+      "应用使用 Capacitor、sql.js 等技术组件运行本地数据库和 iOS 容器；账号及同步服务部署在 Cloudflare Workers、D1、KV 和 R2 上（学习数据快照存放在 R2，账号信息、版本记录和限速计数存放在 D1 和 KV），验证邮件通过 Resend 发送。",
+      "学习数据快照是压缩后的数据，没有做客户端端到端加密：服务端在技术上能读到你的学习记录和便签。请按这个前提理解上面的隐私边界。",
       "Apple 登录由 Apple Authentication Services 提供；注册、找回密码和异常登录可能使用 Cloudflare Turnstile 检测自动化请求。当前版本没有广告 SDK、第三方统计 SDK 或跨应用追踪。"
     ]
   },

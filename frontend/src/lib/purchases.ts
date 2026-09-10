@@ -76,32 +76,149 @@ const nativeTypeFor = (productId: ProductId) => {
 
 const platform = () => window.CdvPurchase?.Platform?.APPLE_APPSTORE;
 
-const transactionProductId = (receipt: any): ProductId | undefined => {
-  const value = receipt?.id ?? receipt?.transactions?.[0]?.products?.[0]?.id ?? receipt?.transactions?.[0]?.productId;
-  return STORE_PRODUCTS.some((product) => product.id === value) ? value as ProductId : undefined;
-};
+/**
+ * 从一份 VerifiedReceipt 里读出「买了哪个商品、哪笔交易、什么时候到期」。
+ *
+ * ⚠️ 收据有两种结构,少认一种就等于收了钱不发货:
+ * - **配了 `store.validator`**:商品在 `receipt.collection`(VerifiedPurchase[]),
+ *   到期时间是 `expiryDate`(毫秒时间戳)。
+ * - **没配 validator(本应用当前就是这种)**:插件走 `validator.ts` 里
+ *   `if (!this.controller.validator)` 那个「为了向后兼容,视为已验证」分支,
+ *   于是 `collection` 是空的、**`receipt.id` 是首笔交易 ID 而不是商品 ID**,
+ *   真正的商品在 `receipt.sourceReceipt.transactions[].products[].id`,
+ *   到期时间在 `transaction.expirationDate`(Date)。
+ *
+ * 老代码优先把 `receipt.id` 当商品 ID,又去查一个不存在的顶层 `receipt.transactions`,
+ * 于是合法收据进来后:授权 0 次、云校验 0 次、`finish()` 1 次 ——
+ * 钱付了、交易被完成、用户什么都没拿到。
+ */
+export interface ReceiptPurchase {
+  productId: ProductId;
+  transactionId?: string;
+  expiresAt?: string;
+}
 
-const transactionId = (receipt: any): string | undefined => {
-  return String(
-    receipt?.transactionId ??
-    receipt?.id ??
-    receipt?.transactions?.[0]?.transactionId ??
-    receipt?.transactions?.[0]?.id ??
-    ""
-  ) || undefined;
-};
+const KNOWN_PRODUCT_IDS = new Set<string>(STORE_PRODUCTS.map((product) => product.id));
 
-export const transactionExpiry = (receipt: any, productId: ProductId): string | undefined => {
-  const items: any[] = [
-    ...(Array.isArray(receipt?.collection) ? receipt.collection : []),
-    ...(Array.isArray(receipt?.transactions) ? receipt.transactions : [])
-  ];
-  const matched = items.find((item) => item?.id === productId || item?.productId === productId);
-  const raw = matched?.expiryDate ?? items[0]?.expiryDate ?? receipt?.expiryDate;
-  if (!raw) return undefined;
+const asIsoDate = (raw: unknown): string | undefined => {
+  if (raw == null || raw === "") return undefined;
   const parsed = raw instanceof Date ? raw : new Date(typeof raw === "number" ? raw : String(raw));
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
 };
+
+const asId = (raw: unknown): string | undefined => {
+  const value = raw == null ? "" : String(raw);
+  return value || undefined;
+};
+
+export const receiptPurchases = (receipt: any): ReceiptPurchase[] => {
+  const found = new Map<ProductId, ReceiptPurchase>();
+  const put = (productId: unknown, transactionId: unknown, expiry: unknown) => {
+    if (typeof productId !== "string" || !KNOWN_PRODUCT_IDS.has(productId)) return;
+    const id = productId as ProductId;
+    const current = found.get(id);
+    found.set(id, {
+      productId: id,
+      transactionId: current?.transactionId ?? asId(transactionId),
+      expiresAt: current?.expiresAt ?? asIsoDate(expiry)
+    });
+  };
+
+  // validator 校验过的结果最权威,先放它;缺的字段再由本地收据补。
+  const collection: any[] = Array.isArray(receipt?.collection) ? receipt.collection : [];
+  for (const item of collection) put(item?.id, item?.transactionId ?? item?.purchaseId, item?.expiryDate);
+
+  const transactions: any[] = Array.isArray(receipt?.sourceReceipt?.transactions)
+    ? receipt.sourceReceipt.transactions
+    : Array.isArray(receipt?.transactions) ? receipt.transactions : [];
+  for (const transaction of transactions) {
+    const products: any[] = Array.isArray(transaction?.products) ? transaction.products : [];
+    for (const product of products) {
+      put(product?.id, transaction?.transactionId ?? transaction?.purchaseId, transaction?.expirationDate);
+    }
+  }
+  return [...found.values()];
+};
+
+/** 这份收据里某个商品的到期时间。 */
+export const transactionExpiry = (receipt: any, productId: ProductId): string | undefined => (
+  receiptPurchases(receipt).find((item) => item.productId === productId)?.expiresAt
+  ?? asIsoDate(receipt?.expiryDate)
+);
+
+/**
+ * 云端校验失败(离线、服务端故障、买的时候还没登录)不能把这笔交易丢掉:
+ * 钱已经付了。排进队列,下次启动或登录后重试。
+ */
+const PENDING_KEY = "mn-pending-purchase-verifications";
+
+const readPending = (): ReceiptPurchase[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PENDING_KEY) ?? "[]");
+    return Array.isArray(parsed)
+      ? parsed.filter((item: any) => item && KNOWN_PRODUCT_IDS.has(item.productId) && item.transactionId)
+      : [];
+  } catch {
+    return [];
+  }
+};
+
+const writePending = (items: ReceiptPurchase[]): void => {
+  try {
+    localStorage.setItem(PENDING_KEY, JSON.stringify(items.slice(-20)));
+  } catch {
+    /* 存储被禁用时不值得让购买流程失败 */
+  }
+};
+
+const rememberPending = (purchase: ReceiptPurchase): void => {
+  writePending([...readPending().filter((item) => item.transactionId !== purchase.transactionId), purchase]);
+};
+
+const forgetPending = (transactionId?: string): void => {
+  if (!transactionId) return;
+  writePending(readPending().filter((item) => item.transactionId !== transactionId));
+};
+
+/**
+ * 订阅收据没带到期时间时给的离线宽限期。
+ *
+ * ⚠️ 不能不给:`grantPro(id, source, undefined)` 的语义是「永不过期」,
+ * 用在订阅上等于取消续订之后本地 Pro 永远留着。给一小段宽限期,
+ * 下次联网时云端权益会覆盖它。
+ */
+const OFFLINE_SUBSCRIPTION_GRACE_MS = 3 * 24 * 60 * 60 * 1000;
+
+const applyReceiptPurchase = async (purchase: ReceiptPurchase): Promise<void> => {
+  const isLifetime = purchase.productId === "shushugo_pro_lifetime";
+  if (purchase.transactionId) {
+    try {
+      // 云端是权威:校验通过时 applyCloudEntitlements 已经把权益写好了。
+      if (await verifyCloudPurchase(purchase.productId, purchase.transactionId)) {
+        forgetPending(purchase.transactionId);
+        return;
+      }
+      rememberPending(purchase); // 还没登录:先本地放行,登录后补校验
+    } catch {
+      rememberPending(purchase);
+    }
+  }
+  const expiresAt = isLifetime
+    ? undefined
+    : purchase.expiresAt ?? new Date(Date.now() + OFFLINE_SUBSCRIPTION_GRACE_MS).toISOString();
+  grantPro(purchase.productId, "storekit", expiresAt);
+};
+
+/** 启动和登录成功后各调一次。云端仍然不通就原样留在队列里。 */
+export async function retryPendingPurchaseVerifications(): Promise<void> {
+  for (const purchase of readPending()) {
+    try {
+      if (await verifyCloudPurchase(purchase.productId, purchase.transactionId!)) forgetPending(purchase.transactionId);
+    } catch {
+      return; // 一笔失败说明云端整体不通,不用把剩下的挨个撞一遍
+    }
+  }
+}
 
 export async function initializePurchases(): Promise<PurchaseRuntime> {
   if (!isStoreAvailable()) {
@@ -128,21 +245,13 @@ export async function initializePurchases(): Promise<PurchaseRuntime> {
       });
 
       store.when().approved((transaction: any) => transaction.verify());
-      store.when().verified((receipt: any) => {
-        const productId = transactionProductId(receipt);
-        if (productId && STORE_PRODUCTS.some((product) => product.id === productId)) {
-          // 订阅要带上过期时间,否则取消续订后本地 Pro 永不过期;
-          // 买断制(lifetime)没有过期时间。
-          const expiresAt = productId === "shushugo_pro_lifetime"
-            ? undefined
-            : transactionExpiry(receipt, productId as ProductId);
-          grantPro(productId as ProductId, "storekit", expiresAt);
-          const id = transactionId(receipt);
-          if (id) {
-            verifyCloudPurchase(productId, id).catch(() => undefined);
-          }
+      store.when().verified(async (receipt: any) => {
+        try {
+          for (const item of receiptPurchases(receipt)) await applyReceiptPurchase(item);
+        } finally {
+          // finish() 之后 Apple 认为货已发出,所以权益必须先落地。
+          receipt.finish();
         }
-        receipt.finish();
       });
 
       initialized = true;
@@ -150,6 +259,7 @@ export async function initializePurchases(): Promise<PurchaseRuntime> {
 
     await store.initialize([platform()]);
     await store.update();
+    await retryPendingPurchaseVerifications();
 
     runtime = {
       status: "ready",

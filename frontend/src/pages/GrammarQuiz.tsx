@@ -22,7 +22,7 @@ interface GrammarQuizProps {
 const LEVELS: JLPTLevel[] = ["N5", "N4", "N3", "N2", "N1"];
 
 /**
- * 语法考题：题面给句型，翻面给接续 + 中文意。
+ * 语法考题：题面给逐条人工审过的句型，翻面给完整句型 + 接续 + 中文意。
  *
  * 和单词学习共用同一副骨架**和同一套内核**：FSRS 到期集选题、四档评分、
  * 没毕业就当天隔几张重刷、每日新条目配额。卡片本身在 features/grammar-quiz/GrammarCard，
@@ -145,7 +145,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
             按答错次数排序 · {level}
           </p>
           <p className="mt-1 text-xs text-white/45">
-            错得最多的排最前，没答过的排最后。想集中攻坚就照这份从头往下点。
+            错得最多的排最前，没答过的排最后。
           </p>
           <div data-word-scrollable="true" className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto">
             {ranking.map((row) => (
@@ -156,7 +156,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
                 }`}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="jp truncate text-base font-semibold">{row.pattern}</p>
+                  <p className="jp truncate text-base font-semibold">{row.question}</p>
                   <p className="truncate text-xs text-white/55">{row.meaning}</p>
                 </div>
                 <div className="shrink-0 text-right">

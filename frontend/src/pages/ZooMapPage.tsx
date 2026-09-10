@@ -96,7 +96,7 @@ export function ZooMapPage({ overview }: { overview: ProgressOverview }) {
       </div>
 
       <p className="zoo-panel-note">
-        清空一个等级 → 该园区「饲养员认证」徽章。画师主战场：每个园区一张分层大图（荒地 / 围栏 / 入住 / 丰容），代码只做按学过比例换层。
+        清空一个等级 → 该园区「饲养员认证」徽章。
       </p>
     </div>
   );

@@ -7,7 +7,7 @@ vi.mock("./database", () => ({
   getDatabase: () => testDb,
   initDatabase: async () => testDb
 }));
-vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
+vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined }));
 
 import { ensureUserTables } from "./study-core";
 import { ensureSyncSchema } from "./sync/schema";

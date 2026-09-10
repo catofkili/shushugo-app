@@ -1,4 +1,5 @@
 import { getDatabase } from "./database";
+import { oncePerDatabase } from "./database/db-utils";
 import {
   ensureUserTables,
   firstValue,
@@ -11,11 +12,15 @@ import {
  * need one row per grammar point.
  */
 export function ensureGrammarProgressInitialized() {
-  ensureUserTables();
-  getDatabase().run(`
-    INSERT OR IGNORE INTO grammar_progress (grammar_id)
-    SELECT id FROM grammar_points
-  `);
+  // 一个库只跑一次:grammar_points 只在种子升版本时变,而那发生在启动阶段。
+  // 不加闸门的话每答一次卡要跑 10 遍全表 INSERT OR IGNORE(实测 12ms/次作答)。
+  oncePerDatabase("grammar-progress", () => {
+    ensureUserTables();
+    getDatabase().run(`
+      INSERT OR IGNORE INTO grammar_progress (grammar_id)
+      SELECT id FROM grammar_points
+    `);
+  });
 }
 
 const grammarState = (key: string, fallback: string) => firstValue<string>(

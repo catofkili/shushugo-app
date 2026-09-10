@@ -94,8 +94,18 @@ export function exportDatabase(): Uint8Array | null {
 export async function importDatabase(data: Uint8Array, options: { validateBackup?: boolean } = {}): Promise<void> {
   const imported = await openDatabase(data);
   if (options.validateBackup) {
-    validateAppDatabase(imported);
+    try {
+      validateAppDatabase(imported);
+    } catch (error) {
+      // 校验不过的这份也得关掉:它已经占了一份 WASM 堆。反复试坏文件会一直堆着。
+      imported.close();
+      throw error;
+    }
   }
+  const previous = db;
   db = imported;
+  // 换库之后旧实例不可能再从 getDatabase() 拿到,不关掉的话它的 sql.js/WASM
+  // 内存会一直留着 —— 一个整库就是几十 MB,恢复几次备份就叠几份。
+  if (previous && previous !== imported) previous.close();
   console.log('✅ Database imported');
 }

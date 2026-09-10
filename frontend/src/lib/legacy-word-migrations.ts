@@ -1,6 +1,6 @@
 import type { Database } from "sql.js";
 import { getDatabase } from "./database";
-import { firstRow, firstValue, getState, persistSoon, rowsFor, setState } from "./database/db-utils";
+import { firstRow, firstValue, getState, persistContentSoon, rowsFor, setState } from "./database/db-utils";
 
 const LEGACY_BIRU_ID = 2480;
 const CANONICAL_BIRU_ID = 775;
@@ -216,6 +216,9 @@ export const mergeWordInto = (db: Database, fromId: number, intoId: number): num
     db.run("DELETE FROM content_favorites WHERE item_type = 'word' AND item_id = ?", [String(fromId)]);
   }
 
+  // 自定义词条的内容行跟着词行一起消失,否则同步下去会把刚合并掉的那行复活。
+  if (tableExists("custom_words")) db.run("DELETE FROM custom_words WHERE word_id = ?", [fromId]);
+
   db.run("DELETE FROM words WHERE id = ?", [fromId]);
   return movedReviews;
 };
@@ -262,7 +265,8 @@ export function migrateLegacyBiruDuplicate(): LegacyBiruMigrationReport {
     throw error;
   }
 
-  persistSoon();
+  // 这条迁移删 words 行,而 words 不进增量 —— 必须整库落盘。
+  persistContentSoon();
   return { migrated: true, winnerId, canonicalSeenCount, legacySeenCount, movedReviews };
 }
 

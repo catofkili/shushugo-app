@@ -54,7 +54,6 @@ import {
 } from "./word-api/undo-stack";
 import { ensureProgressInitialized } from "./word-api/bootstrap";
 import { getWordStats } from "./word-api/stats";
-import { updateMemoryProfileIfNeeded } from "./adaptive";
 import { hasWordFilter, isLongTermWeak, newWordOrderSql, wordFilterSql } from "./word-api/filters";
 import { pickMistakeNext } from "./word-api/mistakes";
 import { pickedProgress, pickPickedNext, setPickedWords } from "./word-api/picked";
@@ -136,7 +135,7 @@ export {
   unfiledFavoriteCount,
   UNFILED_FOLDER
 } from "./favorites-api";
-export { getStubbornWordsToday, type StubbornWordToday } from "./word-api/stubborn-today";
+export { getStubbornWordsToday, getStubbornGrammarToday, getStubbornHistoryDays, type StubbornWordToday, type StubbornGrammarToday, type StubbornDay } from "./word-api/stubborn-today";
 export type { FavoriteFolder } from "./study-types";
 
 
@@ -1180,9 +1179,11 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     direction: "forward",
     schedulerMode: stepMode
   });
-  // 记忆画像不是只在测试里手动刷新:每次真实正向答题后按阈值增量更新。
-  // 统计页还会再补一次检查,这样已有历史用户打开页面也能脱离旧的默认 1.0。
-  updateMemoryProfileIfNeeded();
+  // ⚠️ 这里**不再**更新记忆画像(原来是每答一次就 updateMemoryProfileIfNeeded())。
+  // 它每 50 次作答触发一次全量历史聚合,实测在评分的同步栈里冻 **4~6 秒** ——
+  // 而这份画像按 adaptive.ts 自己的注释「只用于统计页展示」,不参与任何调度。
+  // 现在只由 analytics/stats.ts 在打开统计页时按同一个阈值补算。
+  // 代价:从不打开统计页的人,画像会一直停在上次打开时的值。它不影响出题。
   pushUndoSnapshot({ ...snapshot, review_id: reviewId });
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());

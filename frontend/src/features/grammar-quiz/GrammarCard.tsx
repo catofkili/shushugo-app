@@ -3,6 +3,7 @@ import { Eye } from "lucide-react";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
 import { patternPieces } from "../../lib/grammar-formation";
+import { grammarKeyPoint } from "../../lib/grammar-key-points";
 import type { GrammarQuizAnswer, GrammarQuizCard } from "../../lib/grammar-quiz";
 
 /**
@@ -30,12 +31,20 @@ export const QUIZ_ACCENT_AMBER: CSSProperties = {
 } as CSSProperties;
 
 /**
- * 题面：句型本身。翻面后把接续标在每个 `～` 的头上 ——
- * `～` 是这张卡真正的坑，标在坑边上比写在下面省掉「对号入座」那一步。
- * 标不准的（判据见 lib/grammar-formation.ts）就不标，只留下面那行完整接续。
+ * 题面：逐条人工审过的句型，只保留不会直接送出中文答案的字词。
+ * 翻面后显示完整句型；短接续提示才浮到 `～` 的头上，长接续统一留在下面的
+ * 「接续」区。标注是绝对定位，不参加标题的排版高度，翻面不会把卡片撑变形。
  */
+const MAX_INLINE_ATTACHMENT_CHARS = 20;
+
+const hasInlineAttachment = (attachment: string | null): attachment is string => {
+  if (!attachment) return false;
+  return [...attachment].length <= MAX_INLINE_ATTACHMENT_CHARS;
+};
+
 const PatternLine = ({ card, revealed }: { card: GrammarQuizCard; revealed: boolean }) => {
-  if (!revealed || !card.attachment) return <>{card.pattern}</>;
+  if (!revealed) return <>{card.question}</>;
+  if (!hasInlineAttachment(card.attachment)) return <>{card.pattern}</>;
   return (
     <>
       {patternPieces(card.pattern).map((piece, index) => (
@@ -111,9 +120,7 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
             </span>
           )}
           <p
-            className={`jp-serif mt-2 break-words text-3xl font-semibold leading-tight sm:text-5xl lg:text-6xl ${
-              revealed && card.attachment ? "grammar-pattern--annotated" : ""
-            }`}
+            className="jp-serif mt-2 break-words text-3xl font-semibold leading-tight sm:text-5xl lg:text-6xl"
           >
             <PatternLine card={card} revealed={revealed} />
           </p>
@@ -136,6 +143,16 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
             <p className="mx-auto mt-2 max-w-2xl break-words text-lg leading-7 text-white/85 sm:text-xl">
               {card.meaning || "—"}
             </p>
+            {/* 抓手：这条最容易错的那一点。摆在答案之后、例句之前 ——
+                翻面那两秒真正该带走的是它，不是再读一遍 49 字的说明。 */}
+            {grammarKeyPoint(card.pattern) && (
+              <p
+                className="mx-auto mt-5 max-w-2xl break-words rounded-2xl px-3 py-2 text-base font-bold leading-7 sm:text-lg"
+                style={{ background: "var(--quiz-accent-soft)", color: "var(--quiz-accent)" }}
+              >
+                {grammarKeyPoint(card.pattern)}
+              </p>
+            )}
             <div className="mx-auto mt-5 max-w-2xl rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 sm:px-4">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">例句</p>
               <p className="jp mt-2 break-words text-lg font-semibold leading-8 text-white/90 sm:text-xl">

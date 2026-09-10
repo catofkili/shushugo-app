@@ -29,7 +29,7 @@ import { UNDO_LIMIT } from "../lib/word-api/undo-stack";
 import type { WordSessionOptions } from "../lib/study-types";
 import { DistinctionSheet } from "../components/DistinctionSheet";
 import { GrammarCard, QUIZ_ACCENT_AMBER } from "../features/grammar-quiz/GrammarCard";
-import { getGrammarQuizSession, submitGrammarQuizAnswer, type GrammarQuizCard } from "../lib/grammar-quiz";
+import { getGrammarQuizSession, submitGrammarQuizAnswer, undoLastGrammarQuizAnswer, type GrammarQuizCard } from "../lib/grammar-quiz";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { wordDistinctions } from "../lib/models/word-distinctions";
 import { warmConfusionGroups } from "../lib/confusion-groups";
@@ -81,7 +81,6 @@ const answerHotkeys: Record<string, WordAnswer> = {
   m: "known_forever"
 };
 
-const DAILY_REVIEW_MAX_ATTEMPTS = 25;
 const DAILY_REVIEW_COOLDOWN_LENGTH = 3;
 
 const reservedRevealKeys = new Set([
@@ -168,6 +167,24 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [grammarCard, setGrammarCard] = useState<GrammarQuizCard | null>(null);
   const [grammarRevealed, setGrammarRevealed] = useState(false);
   const wordsSinceGrammarRef = useRef(0);
+  /** 语法那一侧还有没有今天的作答可撤（读 grammar-quiz 自己那份 quiz_undo 栈） */
+  const [canUndoGrammar, setCanUndoGrammar] = useState(false);
+  /**
+   * 混合模式下「上一个」该撤哪一边。
+   *
+   * ⚠️ 单词和语法各有一份独立的撤销栈（`last_answer` / `quiz_undo:<等级>`），
+   * 谁都不知道对方存在。不记这个的话，答完一条语法再点「上一个」会去撤**语法之前
+   * 那个单词** —— 一次误操作造两笔假数据：语法留下一次不该留的作答，单词丢掉一次
+   * 该留的。所以按作答顺序记一小段类型，撤销时按栈顶分派。
+   *
+   * 长度和 UNDO_LIMIT 对齐就够：两侧各自也只存这么多条，栈顶两条一定在各自的栈里。
+   * 用 state 不用 ref：它决定按钮亮不亮，是**参与渲染**的值。
+   */
+  const [undoKinds, setUndoKinds] = useState<("word" | "grammar")[]>([]);
+  const pushUndoKind = (kind: "word" | "grammar") => {
+    setUndoKinds((kinds) => [...kinds, kind].slice(-UNDO_LIMIT));
+  };
+  const popUndoKind = () => setUndoKinds((kinds) => kinds.slice(0, -1));
   // 辨析索引建好没。没建好就先不算 —— 详见 warmConfusionGroups
   const [distinctionsReady, setDistinctionsReady] = useState(false);
   const [activePopover, setActivePopover] = useState<"note" | "noteMemory" | "prompt" | null>(null);
@@ -220,7 +237,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   // 撤回去的是不是压轴卡，好把压轴队列一起退一格、并留在压轴模式里。
   const tailUndoIdsRef = useRef<number[]>([]);
   const dailyReviewResolvedRef = useRef<Set<number>>(new Set());
-  const dailyReviewAttemptsRef = useRef(0);
   const dailyReviewCooldownRef = useRef<number[]>([]);
   const [dailyReviewTriggeredToday] = useState(() => hasDailyReviewTriggered());
   const dailyReviewTriggeredRef = useRef(dailyReviewTriggeredToday);
@@ -310,9 +326,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         }
       }
       // 混合模式：今天的词背完了，剩下的语法接着上 —— 两边都空了才算今天完成。
-      const grammarTail = mode === "mixed" && !data.card
-        ? getGrammarQuizSession(grammarLevel).card
+      const grammarSession = mode === "mixed" && !data.card
+        ? getGrammarQuizSession(grammarLevel)
         : null;
+      const grammarTail = grammarSession?.card ?? null;
+      if (grammarSession) setCanUndoGrammar(grammarSession.canUndo);
       if (grammarTail) {
         setGrammarCard(grammarTail);
         setGrammarRevealed(false);
@@ -370,7 +388,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       correctStreakRef.current = 0;
       playDontKnow();
     }
-    submitGrammarQuizAnswer(grammarLevel, grammarCard.id, value);
+    const next = submitGrammarQuizAnswer(grammarLevel, grammarCard.id, value);
+    pushUndoKind("grammar");
+    setCanUndoGrammar(next.canUndo);
     setGrammarCard(null);
     setGrammarRevealed(false);
     // 单词那边已经空了（今天的词背完了）：回去重排一次 —— 要么再来一条语法，要么进完成页。
@@ -568,6 +588,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       const data = answeredUnitKey && phase === "kanji"
         ? submitKanjiUnitAnswer(answeredUnitKey, answer)
         : submitWordAnswer(answeredCardId, answer, sessionOptions);
+      pushUndoKind("word");
       // 这一下算数了才谈得上插播；下面各条分支照常把下一张单词卡排好摆在语法卡底下。
       maybeGrammarTurn();
       let nextStats = data.stats;
@@ -581,25 +602,24 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
       // 当日错题回顾只改变这一轮的出牌顺序，答题本身仍然走正式 FSRS。
       if (wasDailyReview) {
-        dailyReviewAttemptsRef.current += 1;
         if (good) dailyReviewResolvedRef.current.add(answeredCardId);
-        // 退出只看「回顾完了」和「够久了」两件事。**答错不是出口** ——
-        // 这里正是为答错的词开的,再拿答错当结束条件,就成了「越错越早被赶出去」。
-        const shouldExitReview = dailyReviewAttemptsRef.current >= DAILY_REVIEW_MAX_ATTEMPTS;
-
-        if (!shouldExitReview) {
-          dailyReviewCooldownRef.current = [
-            ...dailyReviewCooldownRef.current.filter((id) => id !== answeredCardId),
-            answeredCardId
-          ].slice(-DAILY_REVIEW_COOLDOWN_LENGTH);
-        }
+        // **出口只有一个:这一批全答对。** 忘记/模糊都不是出口 —— 这里正是为答错的词
+        // 开的,拿答错当结束条件就成了「越错越早被赶出去」。原来还有一条 25 次上限,
+        // 已删:它是唯一一条「一个词都没记住也能走人」的路,而红色横幅说的是
+        // 「记住一张,红色就少一张」,有次数上限那句话就是假的。
+        //
+        // 不会卡死:候选集在本轮内只减不增(进候选要求「今天已经看过 ≥4 次」,
+        // 而这一轮只会答到已经在候选里的词),每答对一个就少一个,答对到空为止。
+        dailyReviewCooldownRef.current = [
+          ...dailyReviewCooldownRef.current.filter((id) => id !== answeredCardId),
+          answeredCardId
+        ].slice(-DAILY_REVIEW_COOLDOWN_LENGTH);
         const spacedExcluded = new Set([
           ...dailyReviewResolvedRef.current,
           ...dailyReviewCooldownRef.current
         ]);
-        const nextReviewCard = shouldExitReview
-          ? null
-          : pickDailyReviewNext(spacedExcluded) ?? pickDailyReviewNext(dailyReviewResolvedRef.current);
+        const nextReviewCard = pickDailyReviewNext(spacedExcluded)
+          ?? pickDailyReviewNext(dailyReviewResolvedRef.current);
         if (nextReviewCard) {
           setCard(nextReviewCard);
           setUnitKey(null);
@@ -612,7 +632,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         }
 
         dailyReviewResolvedRef.current.clear();
-        dailyReviewAttemptsRef.current = 0;
         dailyReviewCooldownRef.current = [];
         setDailyReviewActive(false);
         setDailyReviewIntro(false);
@@ -696,7 +715,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           dailyReviewTriggeredRef.current = true;
           markDailyReviewTriggered();
           dailyReviewResolvedRef.current.clear();
-          dailyReviewAttemptsRef.current = 0;
           dailyReviewCooldownRef.current = [];
           setDailyReviewActive(true);
           setDailyReviewIntro(true);
@@ -817,10 +835,33 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [card, distinctionOpen, grammarCard, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
+    // 混合模式：栈顶那一笔是语法的话走 grammar-quiz 自己那份回滚
+    // （FSRS + grammar_reviews + 重刷队列一起退）。两侧是各自独立的栈，
+    // 拿单词那条去撤语法只会撤错东西 —— 见 undoKinds 上的注释。
+    if (undoKinds[undoKinds.length - 1] === "grammar") {
+      if (!canUndoGrammar) return;
+      const session = undoLastGrammarQuizAnswer(grammarLevel);
+      popUndoKind();
+      correctStreakRef.current = 0;
+      setCanUndoGrammar(session.canUndo);
+      setGrammarCard(session.card);
+      setGrammarRevealed(false);
+      return;
+    }
     setSubmitting(true);
     setError("");
     try {
       const data = undoLastWordAnswer(sessionOptions);
+      popUndoKind();
+      // ⚠️ 语法插播是「刚才那个单词」带出来的（submitAnswer 里先压栈再 maybeGrammarTurn），
+      // 所以语法卡摆在屏幕上时，栈顶那一笔一定是单词。不把插播收回去的话，撤销撤的是
+      // 语法卡**底下**那张单词卡，屏幕纹丝不动 —— 看着就是「上一个不能用」。
+      // 计数退回一格：那次作答不算数了，插播也不该提前用掉。
+      if (grammarCard) {
+        setGrammarCard(null);
+        setGrammarRevealed(false);
+        wordsSinceGrammarRef.current = MIXED_GRAMMAR_EVERY - 1;
+      }
       // 撤销了刚才那次作答,音高台阶也该跟着退回起点(不做精确回退:撤销很少用,
       // 而多爬一级和少爬一级都比「撤销了但还在高音上」说不通)
       correctStreakRef.current = 0;
@@ -1142,6 +1183,20 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const cardRotate = Math.max(-SWIPE_MAX_ROTATE, Math.min(SWIPE_MAX_ROTATE, cardShift / 40));
   const swipeProgress = Math.min(Math.abs(swipeX) / SWIPE_COMMIT_PX, 1);
   const countdownRemaining = remainingPlanWords(stats);
+  // 「上一个」撤哪一边、亮不亮：按作答顺序的栈顶走。
+  const undoKind = undoKinds[undoKinds.length - 1] ?? "word";
+  /**
+   * ⚠️ 混合模式下**只撤这一次进页面之后答的**。
+   *
+   * 作答顺序只记在内存里（undoKinds），退出学习页就没了；而单词那份撤销栈是落库的。
+   * 不加这道闸的话：答一条语法 → 退出 → 再进来 → 点「上一个」，栈顶信息已经丢了，
+   * 会按「word」去撤**语法之前那个单词** —— 正是这次要修的那个 bug 换个入口复现。
+   * 经典模式没有语法插播，顺序永远是对的，照旧用落库的那份。
+   */
+  const undoEnabled = initialMode === "mixed" && undoKinds.length === 0
+    ? false
+    : undoKind === "grammar" ? canUndoGrammar : canUndo;
+
   const countdownActive = !loading
     && !dailyReviewActive
     && countdownRemaining > 0
@@ -1165,6 +1220,17 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             语法 · {grammarCard.level}
           </span>
           <span className="text-xs text-white/45">和语法考题是同一份进度</span>
+          {/* 语法卡把整页顶掉了，工具栏跟着不在 —— 撤销得在这儿自带一颗，
+              否则手滑点错一条语法当场就没救。 */}
+          <button
+            onClick={undo}
+            disabled={!undoEnabled}
+            className="focus-ring ml-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 disabled:opacity-40"
+            title={undoEnabled ? "上一个" : "没有可撤销的作答"}
+            aria-label="上一个"
+          >
+            <RotateCcw size={15} />
+          </button>
         </div>
         <GrammarCard
           card={grammarCard}
@@ -1265,9 +1331,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           </button>
           <button
             onClick={undo}
-            disabled={submitting || !canUndo}
+            disabled={submitting || !undoEnabled}
             className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#81D8CF]/10 hover:bg-[#81D8CF]/15 disabled:opacity-50"
-            title={canUndo ? "上一个" : "没有可撤销的作答"}
+            title={undoEnabled ? (undoKind === "grammar" ? "上一个（刚答的那条语法）" : "上一个") : "没有可撤销的作答"}
           >
             <RotateCcw size={17} />
           </button>
@@ -1434,7 +1500,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           <div className={`daily-review-banner${dailyReviewIntro ? " daily-review-banner-intro" : ""}`} role="status" aria-live="polite">
             <span>当日错题回顾</span>
             <strong>记住一张，红色就少一张</strong>
-            <small>模糊会隔开再来，本轮最多回顾25次</small>
+            <small>忘记 / 模糊都会隔开再来，全部答对才结束</small>
           </div>
         )}
         {error && (

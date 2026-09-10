@@ -111,7 +111,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
         <ChevronRight size={18} className="text-white/45" />
       </button>
 
-      <DevTools onNotice={onNotice} />
+      <DevTools />
 
       <div className="mt-4 space-y-4">
         {profileSections.map((section) => (

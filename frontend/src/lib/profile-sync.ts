@@ -12,14 +12,35 @@ const markPending = (email: string, pending: boolean) => (
     : Preferences.remove({ key: pendingKey(email) })
 );
 
+const AVATAR_SIGNATURE_KEY_PREFIX = "mn_profile_avatar_sig:";
+
+const avatarSignatureKey = (email: string) => `${AVATAR_SIGNATURE_KEY_PREFIX}${encodeURIComponent(email.toLowerCase())}`;
+
+/**
+ * 头像是一整串 base64(上限 300 万字符)。改个昵称就把它重发一遍,
+ * 服务端还要重写一次 KV —— 纯浪费。记下上次推上去的那份的指纹,
+ * 没变就整个不带这个字段(服务端已支持:字段缺席 = 不动)。
+ */
+const avatarSignature = (avatar?: string | null): string => {
+  if (!avatar) return "none";
+  let hash = 0;
+  for (let index = 0; index < avatar.length; index += 1) {
+    hash = (Math.imul(hash, 31) + avatar.charCodeAt(index)) | 0;
+  }
+  return `${avatar.length}:${hash}`;
+};
+
 const push = async (profile: UserProfile, email: string): Promise<UserProfile> => {
   await markPending(email, true);
+  const signature = avatarSignature(profile.avatar);
+  const { value: lastSignature } = await Preferences.get({ key: avatarSignatureKey(email) });
   const remote = await updateCloudUserProfile({
     displayName: profile.nickname,
     bio: profile.bio,
     targetLevel: profile.targetLevel,
-    avatar: profile.avatar ?? null
+    avatar: signature === lastSignature ? undefined : profile.avatar ?? null
   });
+  await Preferences.set({ key: avatarSignatureKey(email), value: signature });
   const next: UserProfile = {
     ...profile,
     profileUpdatedAt: remote.profile_updated_at || new Date().toISOString()
@@ -42,6 +63,10 @@ const pull = async (local: UserProfile): Promise<UserProfile> => {
     profileUpdatedAt: remote.profile_updated_at || local.profileUpdatedAt
   };
   await saveUserProfile(next);
+  const session = await getCloudSession();
+  if (session.email) {
+    await Preferences.set({ key: avatarSignatureKey(session.email), value: avatarSignature(next.avatar) });
+  }
   return next;
 };
 

@@ -72,6 +72,14 @@ export default defineConfig(({ command }) => ({
   build: {
     outDir: "dist",
     assetsDir: "assets",
+    // ⚠️ **最低支持系统是 iOS 16.4,三处必须一起说同一个数**:这里、
+    // ios/App/Podfile 的 platform、Xcode 的 IPHONEOS_DEPLOYMENT_TARGET。
+    // 不写这一行的话 Vite 7 默认按 baseline(Safari 16)编译,而工程当时写着
+    // 允许 iOS 15 —— 那种设备连 JS 都解析不了,却仍然装得上。
+    // 16.4 而不是 16.0 是因为云备份的 gzip 解压直接用 DecompressionStream
+    // (Compression Streams,Safari/iOS 16.4 才有):低于它的设备本地能学,
+    // 但恢复不了云备份,而那正是换设备时唯一要它工作的一刻。
+    target: "safari16.4",
     rollupOptions: {
       output: {
         manualChunks: {

@@ -14,7 +14,12 @@ vi.mock("./database", () => ({
   getDatabase: () => testDb, initDatabase: async () => testDb,
   exportDatabase: () => null, importDatabase: async () => undefined
 }));
-vi.mock("./storage", () => ({ scheduleSave: () => undefined, persistSoon: () => undefined }));
+vi.mock("./storage", () => ({
+  scheduleSave: () => undefined,
+  persistSoon: () => undefined,
+  // 导入会往 words 插行,那条路要求下一次落盘走整库(见 local-delta.ts)
+  requestFullSnapshot: () => undefined
+}));
 vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
 
 import { importExternalWordList } from "./word-list-import";

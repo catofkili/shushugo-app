@@ -387,7 +387,6 @@ const VocabTestHome = ({
           <li>· <b className="text-white/85">可信度</b> = 答题量（60）+ 没在赶进度（40），再<b className="text-white/85">乘以</b>「有多少作答其实是蒙的」的补数；越难的级别反而答得越好，每处再扣 8 分。所以全靠蒙的话，题答得再多可信度也接近 0。</li>
           <li>· <b className="text-white/85">超时按不认识记</b>，超时太多同样降可信度。切到别的页面会自动暂停，不算你超时。</li>
           <li>· 少于 15 题不给估计值：一个等级一题没答，区间会撑到整份词表那么宽，那个数是没意义的。</li>
-          <li>· 测验<b className="text-white/85">完全独立</b>：不写复习流水、不改 FSRS、不影响今日计划。</li>
         </ul>
       </div>
     </div>

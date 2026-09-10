@@ -10,7 +10,7 @@ vi.mock("./database", () => ({
   exportDatabase: () => null,
   importDatabase: async () => undefined
 }));
-vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
+vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined }));
 
 import {
   buildVocabTestQuestions,

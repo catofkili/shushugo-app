@@ -1141,6 +1141,26 @@
 .zoo-duo-avatars i:first-child{margin-left:0}
 .zoo-duo-avatars em{margin-left:6px;font-style:normal;font-size:10.5px}
 
+/* —— 每日量：备考格底下的一枚 chip + 展开的档位盘 ——
+   形制沿用模式切换那一枚（同一层级的「改设置」动作），只是靠左摆，
+   因为它解释的是上面那格备考卡的「还差 N」。 */
+.zoo-goal{margin-top:8px}
+.zoo-goal-chip{max-width:100%}
+.zoo-goal-chip i{margin:0 2px;font-style:normal;opacity:.5}
+.zoo-goal-sheet{margin-top:8px;display:flex;flex-direction:column;gap:6px;
+  border:1px solid rgba(192,133,82,.28);border-radius:16px;
+  background:var(--zoo-surface);padding:10px}
+.zoo-goal-row-title{color:var(--zoo-muted,#9A8A78);font-size:10.5px;font-weight:800;letter-spacing:.06em}
+.zoo-goal-chips{display:flex;flex-wrap:wrap;gap:6px}
+.zoo-goal-chips button{border:1px solid rgba(192,133,82,.3);border-radius:999px;
+  background:transparent;padding:5px 11px;color:var(--zoo-ink);font-size:11.5px;font-weight:700}
+.zoo-goal-chips button.on{border-color:transparent;background:var(--zoo-primary,#6FA83E);color:#fff}
+.zoo-goal-plan{margin-top:2px;border:1px solid rgba(111,168,62,.5);border-radius:12px;
+  background:var(--zoo-primary-soft);padding:7px 10px;text-align:left;
+  color:var(--zoo-primary-deep);font-size:11.5px;font-weight:800}
+.zoo-goal-more{border:0;background:transparent;padding:2px;text-align:left;
+  color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:700}
+
 /* —— T3 园子一条：三段，中性底，只有 emoji 带色 —— */
 .zoo-strip3{display:grid;grid-template-columns:repeat(3,1fr)}
 .zoo-strip3 button{display:flex;flex-direction:column;align-items:center;gap:1px;
@@ -1189,6 +1209,8 @@
 
 [data-theme="dark"] .zoo-tray{border-color:rgba(167,215,125,.16)}
 [data-theme="dark"] .zoo-duo-cell{background:#3A4235;border-color:rgba(167,215,125,.2)}
+[data-theme="dark"] .zoo-goal-sheet{background:#3A4235;border-color:rgba(167,215,125,.2)}
+[data-theme="dark"] .zoo-goal-chips button{border-color:rgba(167,215,125,.24)}
 [data-theme="dark"] .zoo-now{box-shadow:0 8px 22px rgba(0,0,0,.35)}
 [data-theme="dark"] .zoo-duo-avatars i{background:#2C332A;border-color:#3A4235}
 

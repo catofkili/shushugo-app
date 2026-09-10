@@ -19,7 +19,7 @@ vi.mock("./database", () => ({
   exportDatabase: () => null,
   importDatabase: async () => undefined
 }));
-vi.mock("./storage", () => ({ scheduleSave: () => undefined }));
+vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined }));
 
 import {
   extendGrammarQuizPlan,
@@ -30,6 +30,8 @@ import {
   undoLastGrammarQuizAnswer,
   type GrammarQuizAnswer
 } from "./grammar-quiz";
+import { getStubbornGrammarToday } from "./word-api/stubborn-today";
+import { MANUAL_GRAMMAR_QUESTIONS } from "../data/grammar-quiz-questions";
 import { today } from "./study-core";
 
 const SQL = await initSqlJs();
@@ -57,9 +59,11 @@ describe("语法考题（和单词同一套 FSRS）", () => {
     prefStore.clear();
   });
 
-  it("题面是句型，答案是接续 + 中文意 + 例句", () => {
+  it("题面仍是句型，答案是接续 + 中文意 + 例句", () => {
     const { card } = getGrammarQuizSession(LEVEL);
     expect(card).not.toBeNull();
+    expect(card!.question).not.toBe("");
+    expect(card!.question).toContain("名詞");
     expect(card!.pattern).not.toBe("");
     expect(card!.formation).not.toBe("");
     expect(card!.meaning).not.toBe("");
@@ -69,6 +73,30 @@ describe("语法考题（和单词同一套 FSRS）", () => {
     expect(card!.isNew).toBe(true);
   });
 
+  it("741 道题使用逐条人工题面，不靠统一删字规则", () => {
+    const rows = (["N5", "N4", "N3", "N2", "N1"] as const)
+      .flatMap((level) => grammarQuizRanking(level));
+    expect(rows).toHaveLength(741);
+    const patterns = new Set(rows.map((row) => row.pattern));
+    expect(Object.keys(MANUAL_GRAMMAR_QUESTIONS)).toHaveLength(21);
+    Object.keys(MANUAL_GRAMMAR_QUESTIONS).forEach((pattern) => {
+      expect(patterns.has(pattern)).toBe(true);
+      expect(MANUAL_GRAMMAR_QUESTIONS[pattern]).not.toBe("");
+    });
+    expect(rows.filter((row) => row.question !== row.pattern)).toHaveLength(21);
+
+    const spontaneous = rows.find((row) => row.pattern.includes("自発"));
+    expect(spontaneous?.question).toBe("～（ら）れる");
+    expect(rows.find((row) => row.pattern.startsWith("可能助动词"))?.question).toBe("れる／られる");
+    // 自然的日语词形不是“泄题标签”：卷面怎么写，这里就怎么提示。
+    expect(rows.find((row) => row.pattern.includes("～間（あいだ）"))?.question).toBe("～間（あいだ）");
+    expect(rows.find((row) => row.pattern === "ぜんぜん（全然）")?.question).toBe("ぜんぜん（全然）");
+    expect(rows.find((row) => row.pattern === "～て以来（いらい）")?.question).toBe("～て以来（いらい）");
+    expect(rows.find((row) => row.pattern === "基数詞（基数词）")?.question).toBe("基数詞");
+    // 结构提示也保留汉字，避免把题面粗暴改成全假名。
+    expect(rows.find((row) => row.pattern.startsWith("名詞1＋"))?.question).toContain("名詞");
+  });
+
   it("⚠️ 一天只放新语法配额那么多条，不再是「把整个等级洗一遍」", () => {
     const quota = grammarNewQuota(LEVEL);
     expect(quota).toBeGreaterThan(0);
@@ -76,6 +104,19 @@ describe("语法考题（和单词同一套 FSRS）", () => {
     // 首答就点认识 = Easy，当天直接毕业，所以一场正好走完配额
     const { seen } = drain(() => "know");
     expect(new Set(seen).size).toBe(quota);
+  });
+
+  it("⚠️ 新条目名额走自己的旋钮 grammarDailyGoal，改单词的每日新词数不动它", () => {
+    prefStore.set("mn-study-preferences", JSON.stringify({ dailyGoal: 50, grammarDailyGoal: 3 }));
+    expect(grammarNewQuota(LEVEL)).toBe(3);
+    expect(new Set(drain(() => "know").seen).size).toBe(3);
+  });
+
+  it("语法强度设成 0 = 今天只复习，不进新条目", () => {
+    prefStore.set("mn-study-preferences", JSON.stringify({ grammarDailyGoal: 0 }));
+    expect(grammarNewQuota(LEVEL)).toBe(0);
+    // 全新库里没有学过的条目，所以没有复习，今天就是空的
+    expect(getGrammarQuizSession(LEVEL).card).toBeNull();
   });
 
   it("当天首答点认识就毕业；答错的当天还要再出", () => {
@@ -198,6 +239,33 @@ describe("语法考题（和单词同一套 FSRS）", () => {
       // 标的每一段都必须是接续原文里真有的字，不能是拼出来的
       row.attachment!.split("／").forEach((part) => expect(row.formation).toContain(part));
     });
+  });
+
+  // 完成页那张「今天的顽固」表：语法用的是和单词一模一样的两条判据
+  // （累计忘 > 8 次 **且** 今天错 ≥ 3 次）。只看累计的话，忘过 20 次但今天一次就答对的
+  // 条目也会上榜；只看当天的话，新条目第一天磕三次是正常学习过程。
+  it("顽固语法：累计忘 > 8 次且今天错 ≥ 3 次才上榜", () => {
+    getGrammarQuizSession(LEVEL); // 建 grammar_progress 行
+    const day = today();
+    const ids = testDb.exec("SELECT id FROM grammar_points WHERE level='N5' ORDER BY sort_order LIMIT 3")[0]
+      .values.map((v) => Number(v[0]));
+    const [stubborn, onlyHistory, onlyToday] = ids;
+    testDb.run("UPDATE grammar_progress SET forgot_count = 9 WHERE grammar_id IN (?, ?)", [stubborn, onlyHistory]);
+    testDb.run("UPDATE grammar_progress SET forgot_count = 2 WHERE grammar_id = ?", [onlyToday]);
+    const wrong = (id: number, times: number) => {
+      for (let i = 0; i < times; i += 1) {
+        testDb.run(
+          "INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on) VALUES (?, 'forgot', 0, ?)",
+          [id, day]
+        );
+      }
+    };
+    wrong(stubborn, 3);
+    wrong(onlyHistory, 2);   // 今天只错两次 —— 今天并不顽固
+    wrong(onlyToday, 4);     // 今天错得多，但历史上不难
+
+    expect(getStubbornGrammarToday().map((row) => row.id)).toEqual([stubborn]);
+    expect(getStubbornGrammarToday()[0].wrongToday).toBe(3);
   });
 
   it("外部排序：错得最多的排最前，没答过的排最后", () => {

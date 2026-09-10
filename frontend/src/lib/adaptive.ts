@@ -67,20 +67,24 @@ function saveMemoryProfile(profile: UserMemoryProfile): void {
  */
 function calculateFirstTimeCorrectRate(): number {
   const day = studyDate();
+  // 「这一条是不是这个词的第一次正向作答」用窗口函数一遍排名算完。
+  // 原来是 NOT EXISTS 相关子查询,等于对每条流水再扫一遍全表 —— 见下面
+  // calculateRetentionRate7Days 上那段。结果与旧写法逐字段一致(adaptive.test.ts 钉住)。
   const row = rowsFor(`
+    WITH ranked AS (
+      SELECT
+        r.reviewed_on,
+        r.answer,
+        ROW_NUMBER() OVER (PARTITION BY r.word_id ORDER BY r.reviewed_on, r.id) AS rn
+      FROM reviews r
+      WHERE r.direction = 'forward'
+    )
     SELECT
-      COUNT(CASE WHEN r.answer IN ('know', 'known_forever') THEN 1 END) AS correct,
+      COUNT(CASE WHEN answer IN ('know', 'known_forever') THEN 1 END) AS correct,
       COUNT(*) AS total
-    FROM reviews r
-    WHERE r.direction = 'forward'
-      AND r.reviewed_on BETWEEN date(?, '-30 days') AND ?
-      AND NOT EXISTS (
-        SELECT 1
-        FROM reviews prior
-        WHERE prior.word_id = r.word_id
-          AND prior.direction = 'forward'
-          AND (prior.reviewed_on < r.reviewed_on OR (prior.reviewed_on = r.reviewed_on AND prior.id < r.id))
-      )
+    FROM ranked
+    WHERE rn = 1
+      AND reviewed_on BETWEEN date(?, '-30 days') AND ?
   `, [day, day])[0];
   if (!row) return 0.5;
   const correct = Number(row.correct ?? 0);
@@ -98,34 +102,39 @@ function calculateRetentionRate7Days(): number {
   ensureFsrsColumns();
   // 只统计真实发生过「两次正向复习间隔至少7天」的答题,
   // 用当次答案判断是否保持住,不再取 progress 的某一天快照。
+  // ⚠️ 这条曾经是整个应用最长的一次卡顿:三层相关子查询 + julianday(),在 46,618 条
+  // reviews 上单次 **3.8 秒**(sql.js 实测),而它每 50 次作答就在评分的同步栈里跑一次。
+  //
+  // 等价改写成两个聚合:
+  //   ① 「存在一条至少早 7 天的同词流水」⟺「这个词最早那条流水早了 7 天以上」——
+  //      所以 EXISTS 折叠成 MIN(reviewed_on)。
+  //   ② 那层 NOT EXISTS 的意思只是「同一天同一个词只算第一条」,因为是否合格
+  //      只取决于 (word_id, reviewed_on),同一天的几条要么全合格要么全不合格 ——
+  //      所以折叠成按 (word_id, reviewed_on) 的 ROW_NUMBER() = 1。
+  // 在真实库上与旧写法结果完全相同(retained 6525 / total 14242),native sqlite
+  // 448ms → 47ms。adaptive.test.ts 里用旧 SQL 对拍钉住这条等价性。
   const row = rowsFor(`
+    WITH first_day AS (
+      SELECT word_id, MIN(reviewed_on) AS d0
+      FROM reviews
+      WHERE direction = 'forward'
+      GROUP BY word_id
+    ), day_firsts AS (
+      SELECT
+        r.word_id,
+        r.reviewed_on,
+        r.answer,
+        ROW_NUMBER() OVER (PARTITION BY r.word_id, r.reviewed_on ORDER BY r.id) AS rn
+      FROM reviews r
+      WHERE r.direction = 'forward'
+    )
     SELECT
-      COUNT(CASE WHEN r.answer IN ('know', 'known_forever') THEN 1 END) AS retained,
+      COUNT(CASE WHEN f.answer IN ('know', 'known_forever') THEN 1 END) AS retained,
       COUNT(*) AS total
-    FROM reviews r
-    WHERE r.direction = 'forward'
-      AND EXISTS (
-        SELECT 1
-        FROM reviews prior
-        WHERE prior.word_id = r.word_id
-          AND prior.direction = 'forward'
-          AND (julianday(r.reviewed_on) - julianday(prior.reviewed_on)) >= 7
-      )
-      AND NOT EXISTS (
-        SELECT 1
-        FROM reviews same_day
-        WHERE same_day.word_id = r.word_id
-          AND same_day.direction = 'forward'
-          AND same_day.reviewed_on = r.reviewed_on
-          AND same_day.id < r.id
-          AND EXISTS (
-            SELECT 1
-            FROM reviews same_day_prior
-            WHERE same_day_prior.word_id = same_day.word_id
-              AND same_day_prior.direction = 'forward'
-              AND (julianday(same_day.reviewed_on) - julianday(same_day_prior.reviewed_on)) >= 7
-          )
-      )
+    FROM day_firsts f
+    JOIN first_day fd ON fd.word_id = f.word_id
+    WHERE f.rn = 1
+      AND julianday(f.reviewed_on) - julianday(fd.d0) >= 7
   `)[0];
   if (!row) return 0.5;
   const retained = Number(row.retained ?? 0);

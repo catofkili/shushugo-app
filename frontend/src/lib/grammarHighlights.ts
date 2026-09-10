@@ -16,7 +16,7 @@ export { GRAMMAR_HIGHLIGHTS_UPDATED_EVENT } from "./grammar-events";
  */
 // grammar.ts / grammar_seed.json 重写时必须同步 bump 这里。单独的小常量避免把
 // 1.3 MB 的语法正文提前拉进首屏 bundle；旧范围会因此进入失效提示而非静默消失。
-export const GRAMMAR_HIGHLIGHT_DATASET_VERSION = `${GRAMMAR_SEED_VERSION}:${FURIGANA_VERSION}:2026-08-15-v3`;
+export const GRAMMAR_HIGHLIGHT_DATASET_VERSION = `${GRAMMAR_SEED_VERSION}:${FURIGANA_VERSION}:2026-09-08-v1`;
 export const MAX_GRAMMAR_HIGHLIGHTS = 500;
 export const MAX_HIGHLIGHT_TEXT_LENGTH = 1000;
 

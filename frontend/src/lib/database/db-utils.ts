@@ -30,6 +30,31 @@ const queryRows = (query: string, params: SqlValue[] = []): DbRow[] => {
 };
 
 /**
+ * 「这个库只跑一次」的幂等闸门。
+ *
+ * ⚠️ 键是 **Database 实例本身**,不是模块级 boolean —— 云同步合并、恢复快照、
+ * 导入备份都会整个换掉 db 实例,那时候这些初始化必须重跑一遍;用 boolean 的话
+ * 换库之后 progress 行就永远补不上了。实例被丢掉时 WeakMap 自己会放手。
+ *
+ * ⚠️ 它挡的是「每次调用都重跑一遍全表扫描」,不是「这件事只需要做一次」。
+ * 库里的行在同一个实例上变了(比如导入词单新增 words),得由那条路自己补上
+ * 对应的 progress 行 —— 见 word-list-import 里那句 INSERT OR IGNORE。
+ */
+const oncePerDb = new WeakMap<object, Set<string>>();
+export function oncePerDatabase(key: string, run: () => void): void {
+  const db = getDatabase() as unknown as object;
+  let done = oncePerDb.get(db);
+  if (!done) {
+    done = new Set<string>();
+    oncePerDb.set(db, done);
+  }
+  if (done.has(key)) return;
+  // 先跑再记:抛异常时不留标记,下次调用还会重试。
+  run();
+  done.add(key);
+}
+
+/**
  * 执行查询并返回第一个值
  */
 export function firstValue<T = SqlValue>(query: string, params: SqlValue[] = [], fallback: T): T {
@@ -128,4 +153,21 @@ export function studyDayEnd(current = new Date()): Date {
  */
 export function persistSoon(): void {
   import("../storage").then(({ scheduleSave }) => scheduleSave());
+}
+
+/**
+ * 内容迁移之后的落盘:**强制整库**。
+ *
+ * ⚠️ 内容迁移改的是 `words` / `grammar_points` / `dictionary_entries` 这些
+ * **不带 sync_updated_at、因而不进增量**的表,而它写下的版本号在 `app_state`,
+ * 那张表是进增量的。用普通 persistSoon 的话,离下一次整库还有几分钟时重启,
+ * 拿到的就是**旧内容 + 新版本号** —— 而迁移的入口判断是「版本号相等就返回」,
+ * 于是这台设备的内容永远停在旧版,每次启动都在同一个相等判断上早退。
+ * 「反正每次启动幂等重跑」在这里不成立,版本门控把重跑挡住了。
+ */
+export function persistContentSoon(): void {
+  import("../storage").then(({ requestFullSnapshot, scheduleSave }) => {
+    requestFullSnapshot();
+    scheduleSave();
+  });
 }

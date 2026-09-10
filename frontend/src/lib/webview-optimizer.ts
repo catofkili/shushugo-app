@@ -23,7 +23,6 @@ export class WebViewOptimizer {
       if (Capacitor.isNativePlatform()) {
         await this.setupStatusBar();
         await this.setupKeyboard();
-        this.setupViewportFixes();
         this.setupPerformanceOptimizations();
         this.setupScrollOptimizations();
       } else {
@@ -63,42 +62,6 @@ export class WebViewOptimizer {
     } catch (error) {
       console.warn('[WebView] 键盘配置失败:', error);
     }
-  }
-
-  /**
-   * 修复 iOS WebView 的 viewport 问题
-   */
-  private static setupViewportFixes(): void {
-    // 防止双击缩放
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', (event) => {
-      const now = Date.now();
-      if (now - lastTouchEnd <= 300) {
-        event.preventDefault();
-      }
-      lastTouchEnd = now;
-    }, false);
-
-    // 防止意外的文字选择
-    document.addEventListener('selectstart', (event) => {
-      const target = event.target as HTMLElement;
-      if (!target.matches('input, textarea')) {
-        // event.preventDefault(); // 根据需要取消注释
-      }
-    });
-
-    // 修复 iOS 滚动问题
-    document.addEventListener('touchmove', (event) => {
-      const target = event.target as HTMLElement;
-
-      // 允许可滚动元素滚动
-      if (target.scrollHeight > target.clientHeight) {
-        // 不阻止默认行为
-        return;
-      }
-    }, { passive: true });
-
-    console.log('[WebView] ✅ Viewport 修复完成');
   }
 
   /**

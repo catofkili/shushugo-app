@@ -373,6 +373,79 @@ const seedFsrsFromImport = (wordId: number, draft: ExternalWordDraft): void => {
   if (state) writeFsrsState(wordId, state);
 };
 
+/**
+ * 自定义词条的 id 由内容算出来，不用 SQLite 自增。
+ *
+ * ⚠️ `words` 不进云快照，而 progress / word_notes / reviews / 收藏全按 word_id 同步。
+ * 自增 id 分配身份的后果是两条：两台设备各导入一个新词会拿到**同一个 id**
+ * （相同数字不代表同一个词），而一台没有这个词的新设备只会收到悬空的学习记录。
+ *
+ * 内容哈希让两端天生对上，配合同步表 `custom_words` 把内容也带过去
+ * （见 local-schema.sql 与 materializeCustomWords）。
+ *
+ * ponytail: 1e12 的空间 + 本机探测。真撞上（万级自定义词约 5e-5 概率）时，
+ * 探测出来的那个 id 只在本机成立，那一个词跨端对不上；要根治得给自定义词
+ * 一个独立的字符串身份并在合并时做引用重映射。
+ */
+const CUSTOM_WORD_ID_BASE = 1_000_000_000_000;
+const CUSTOM_WORD_ID_SPACE = 1_000_000_000_000;
+
+export const customWordId = (kanji: string, kana: string): number => {
+  const source = `${kanji}\u0000${kana}`;
+  // FNV-1a 的 32 位两轮（不同偏移），拼成一个 ~62 位的正整数再取模。
+  let high = 0x811c9dc5;
+  let low = 0x01000193;
+  for (let index = 0; index < source.length; index += 1) {
+    const code = source.charCodeAt(index);
+    high = Math.imul(high ^ code, 0x01000193) >>> 0;
+    low = Math.imul(low ^ (code + index), 0x85ebca6b) >>> 0;
+  }
+  return CUSTOM_WORD_ID_BASE + ((high * 4294967296 + low) % CUSTOM_WORD_ID_SPACE);
+};
+
+const allocateCustomWordId = (kanji: string, kana: string): number => {
+  const db = getDatabase();
+  let id = customWordId(kanji, kana);
+  // 撞上别的词才往后挪一格（同一个词自己不算撞）。
+  while (firstValue<number>("SELECT 1 FROM words WHERE id = ? LIMIT 1", [id], 0) === 1) {
+    const row = firstRow("SELECT kanji, kana FROM words WHERE id = ?", [id]);
+    if (String(row?.kanji ?? "") === kanji && String(row?.kana ?? "") === kana) break;
+    id += 1;
+  }
+  void db;
+  return id;
+};
+
+/**
+ * 云端合并之后把 `custom_words` 里本机还没有的词条补成真正的 words 行。
+ *
+ * 不做这一步，新设备恢复出来的是一批指向不存在词条的 progress / reviews。
+ */
+export const materializeCustomWords = (): number => {
+  const db = getDatabase();
+  const missing = firstValue<number>(
+    "SELECT COUNT(*) FROM custom_words c WHERE NOT EXISTS (SELECT 1 FROM words w WHERE w.id = c.word_id)",
+    [],
+    0
+  );
+  if (!missing) return 0;
+  db.run(`
+    INSERT INTO words (
+      id, meaning, kana, kanji, pos, verb_type, importance,
+      shuffle_rank, example_jp, example_meaning, jlpt_level
+    )
+    SELECT
+      c.word_id, c.meaning, c.kana, c.kanji, c.pos, c.verb_type, c.importance,
+      ABS(RANDOM()) / 9223372036854775807.0, c.example_jp, c.example_meaning, c.jlpt_level
+    FROM custom_words c
+    WHERE NOT EXISTS (SELECT 1 FROM words w WHERE w.id = c.word_id)
+  `);
+  db.run("INSERT OR IGNORE INTO progress (word_id) SELECT word_id FROM custom_words");
+  resetConfusionGroups();
+  resetFamiliarityCache();
+  return missing;
+};
+
 export const importExternalWordList = (text: string): WordListImportResult => {
   ensureProgressInitialized();
   const preview = previewExternalWordList(text);
@@ -395,17 +468,27 @@ export const importExternalWordList = (text: string): WordListImportResult => {
 
       let wordId = findWordId(draft.kanji, draft.kana);
       if (!wordId) {
+        // id 显式给,不用自增 —— 见 customWordId 的注释。
+        wordId = allocateCustomWordId(draft.kanji, draft.kana);
         db.run(`
           INSERT INTO words (
-            meaning, kana, kanji, pos, verb_type, importance,
+            id, meaning, kana, kanji, pos, verb_type, importance,
             shuffle_rank, example_jp, example_meaning, jlpt_level
           )
-          VALUES (?, ?, ?, ?, ?, ?, ABS(RANDOM()) / 9223372036854775807.0, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ABS(RANDOM()) / 9223372036854775807.0, ?, ?, ?)
         `, [
-          draft.meaning, draft.kana, draft.kanji, draft.pos, draft.verbType,
+          wordId, draft.meaning, draft.kana, draft.kanji, draft.pos, draft.verbType,
           draft.importance, draft.exampleJp, draft.exampleMeaning, draft.jlptLevel
         ]);
-        wordId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
+        db.run(`
+          INSERT OR REPLACE INTO custom_words (
+            word_id, kanji, kana, meaning, pos, verb_type, importance,
+            example_jp, example_meaning, jlpt_level
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          wordId, draft.kanji, draft.kana, draft.meaning, draft.pos, draft.verbType,
+          draft.importance, draft.exampleJp, draft.exampleMeaning, draft.jlptLevel
+        ]);
         inserted += 1;
       } else {
         db.run(`
@@ -495,6 +578,10 @@ export const importExternalWordList = (text: string): WordListImportResult => {
   resetConfusionGroups();
   // 导入会把词排进复习计划,「学过没」的名单跟着变
   resetFamiliarityCache();
+  // 词单导入会往 words 表插行,而增量落盘只覆盖带 sync_updated_at 的用户表 ——
+  // words 不在里面(见 local-delta.ts 顶上那段)。这次必须整库,否则重启后
+  // 新词的 progress 行在、words 行不在。
+  void import("./storage").then(({ requestFullSnapshot }) => requestFullSnapshot());
   persistSoon();
   notifyProgressUpdated();
   return { ...preview, inserted, updated, queuedForReview };

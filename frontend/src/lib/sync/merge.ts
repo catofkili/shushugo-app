@@ -7,7 +7,7 @@ import {
   SYNC_ORIGIN_COL,
   SYNC_UPDATED_COL
 } from "./schema";
-import { DEVICE_LOCAL_STATE_KEYS, SYNCED_TABLES, type SyncedTable } from "./tables";
+import { isDeviceLocalStateKey, SYNCED_TABLES, type SyncedTable } from "./tables";
 import { isUserSyncSnapshot } from "./snapshot";
 import { rebuildStudyTimeAggregate } from "./study-time";
 import { GRAMMAR_HIGHLIGHTS_UPDATED_EVENT, GRAMMAR_POSITIONS_UPDATED_EVENT } from "../grammar-events";
@@ -99,7 +99,7 @@ const stateOf = (db: Database, sourceOrigin: string): DatabaseState => {
           row.id ?? `${row.word_id ?? row.grammar_id ?? row.unit_key ?? ""}|${row.answer ?? ""}|${row.reviewed_on ?? ""}|${row.created_at ?? ""}`
         )}`
         : rowKey(entry, row);
-      if (entry.table === "app_state" && DEVICE_LOCAL_STATE_KEYS.has(String(row.key ?? ""))) continue;
+      if (isDeviceLocalStateKey(entry.table, String(row.key ?? ""))) continue;
       items.set(key, {
         key,
         row,
@@ -117,7 +117,7 @@ const stateOf = (db: Database, sourceOrigin: string): DatabaseState => {
       const key = String(tombstone.row_key ?? "");
       const entry = SYNCED_TABLES.find((candidate) => candidate.table === table);
       if (!entry || !rows.has(table)) continue;
-      if (table === "app_state" && DEVICE_LOCAL_STATE_KEYS.has(key)) continue;
+      if (isDeviceLocalStateKey(table, key)) continue;
       const item: VersionedItem = {
         key,
         deleted: true,
@@ -230,7 +230,7 @@ const applyTable = (
   const changes: Array<() => void> = [];
 
   for (const [key, item] of selected) {
-    if (entry.table === "app_state" && DEVICE_LOCAL_STATE_KEYS.has(key)) continue;
+    if (isDeviceLocalStateKey(entry.table, key)) continue;
     const current = localByKey.get(key);
     const row = mergedRow(item, current);
     if (!row) {
@@ -328,6 +328,12 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
     // 对端的学习时长同步下来了,但读取方看的是 word_study_time 的每日合计,
     // 不重算一次统计页就只显示本机那份。
     rebuildStudyTimeAggregate();
+    // 用户自己导入的词条:内容在 custom_words 里同步过来了,这里补出 words 行。
+    // 不补的话,新设备恢复出来的是一批指向不存在词条的 progress / reviews。
+    if (tableExists(localDb, "custom_words")) {
+      const { materializeCustomWords } = await import("../word-list-import");
+      materializeCustomWords();
+    }
     // 对端同步下来一批新学的词,「学过没」的名单跟着变 —— 易混词按它筛候选。
     resetFamiliarityCache();
     // 对端改过的题面也一起下来了。这两份是内存缓存,不清的话学习页会一直显示

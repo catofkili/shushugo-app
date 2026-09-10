@@ -1,4 +1,5 @@
 import { getDatabase } from "../database";
+import { oncePerDatabase } from "../database/db-utils";
 import { ensureUserTables, getState, persistSoon, setState, today } from "../study-core";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
 import {
@@ -11,8 +12,14 @@ import {
 } from "../fsrs-store";
 
 /**
- * 启动初始化。每次进学习页都会跑一遍(幂等):补 progress 行、补 shuffle_rank、
- * 给三个方向建 FSRS 列并一次性回填历史。
+ * 启动初始化:补 progress 行、补 shuffle_rank、给三个方向建 FSRS 列并一次性回填历史。
+ *
+ * ⚠️ **一个库只跑一次**(oncePerDatabase)。以前这里是「每次调用都跑一遍,反正幂等」,
+ * 而 word-api 的每个入口都在开头调它 —— 实测每答一次卡跑 **6 遍**,每遍是
+ * 11,740 行的全表 INSERT OR IGNORE + 全表 UPDATE words,合计 115ms/次作答,
+ * 占当时整个答题阻塞(549ms)的两成。幂等不等于免费。
+ *
+ * 换库(同步合并 / 恢复快照 / 导入备份)会自动重跑,因为闸门是按 db 实例记的。
  *
  * 以前这里还会「按今天答过的正向词回填反向队列」——那是反向依附正向的年代。
  * 现在反向有自己的当日计划(direction-plan 的 createDirectionTasks),不需要谁来喂。
@@ -21,7 +28,9 @@ import {
  * stability/difficulty 决定,不需要每天把所有词扣一遍分。
  */
 
-export const ensureProgressInitialized = () => {
+export const ensureProgressInitialized = () => oncePerDatabase("word-progress", initProgress);
+
+const initProgress = () => {
   const db = getDatabase();
   // 种子数据迁移已在启动时(main.tsx 的 ensureSeedData)完成。
   ensureUserTables();

@@ -4,15 +4,15 @@ import App from './App';
 import './styles.css';
 import './master-home.css';
 import { initDatabase } from './lib/database';
-import { loadDatabase, registerPersistenceLifecycle } from './lib/storage';
+import { LocalArchiveUnreadableError, loadDatabase, registerPersistenceLifecycle } from './lib/storage';
 import { ensureSeedData } from './lib/study-core';
 import { initWebViewOptimizer } from './lib/webview-optimizer';
 import { applyMotionLevel, applyTheme } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { autoSyncReminderNotifications } from './lib/notifications';
 import { syncJlptPlanReminders } from './lib/jlpt/reminders';
-import { initializePurchases } from './lib/purchases';
-import { autoSyncCloudDatabase, registerCloudAutoSyncLifecycle, refreshCloudEntitlements } from './lib/sync-api';
+import { initializePurchases, retryPendingPurchaseVerifications } from './lib/purchases';
+import { autoSyncCloudDatabase, CLOUD_AUTH_EVENT, registerCloudAutoSyncLifecycle, refreshCloudEntitlements } from './lib/sync-api';
 import { ensureSyncSchema } from './lib/sync/schema';
 import { flushPendingUserProfileSync } from './lib/profile-sync';
 
@@ -60,13 +60,66 @@ root.render(
   </StrictMode>
 );
 
-(async () => {
-    // 有本地存档就直接用,跳过 6.5MB 出厂词库的 fetch + 解析;
-    // 没有(首次启动/存档损坏)才加载出厂库。
-    const restored = await loadDatabase();
-    if (!restored) {
-      await initDatabase();
-    }
+/**
+ * 存档打不开时的启动画面。
+ *
+ * ⚠️ 这一档不许自动往下走。以前「没有存档」和「有存档但打不开」都是 false,
+ * 于是后者会静默加载出厂库 —— 用户看到一份崭新的空库,而下一次落盘就把那份
+ * 可能只是暂时读不出来的存档盖掉了。重建必须是用户自己点的。
+ */
+const renderArchiveRecovery = (error: LocalArchiveUnreadableError) => {
+  const downloadArchive = () => {
+    if (!error.archive) return;
+    const url = URL.createObjectURL(new Blob([error.archive.slice().buffer as ArrayBuffer]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `shushugo-unreadable-${new Date().toISOString().slice(0, 10)}.db`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  const rebuild = () => {
+    if (!window.confirm('重建之后这台设备会从出厂词库重新开始，本机存档已另存一份但不会自动装回来。确定吗？')) return;
+    void initDatabase().then(bootWithDatabase).catch((cause) => renderBootFailure(cause));
+  };
+  const button = 'focus-ring rounded-2xl border border-white/20 px-4 py-2 text-sm font-bold text-white/85';
+  root.render(
+    <StrictMode>
+      <div className="app-boot-loading grid min-h-screen place-items-center overflow-y-auto bg-[#555858] px-6 py-10 text-center text-[#fff]">
+        <div className="max-w-md">
+          <p className="text-xl font-bold">本地学习存档打不开</p>
+          <p className="mt-3 text-sm leading-6 text-white/70">
+            这份存档已原样保留，没有被覆盖。可能只是这次读取失败，先重试一下；
+            仍然不行的话把它导出来再重建。
+          </p>
+          <p className="mt-2 text-xs text-white/45">{String((error.reason as Error)?.message ?? error.reason ?? '')}</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button className={button} onClick={() => window.location.reload()}>重试</button>
+            {error.archive
+              ? <button className={button} onClick={downloadArchive}>导出这份存档</button>
+              : <span className="self-center text-xs text-white/45">存档在 Library/masternihongo/ 下，可用「文件」App 取出</span>}
+            <button className={button} onClick={rebuild}>重建为出厂库</button>
+          </div>
+        </div>
+      </div>
+    </StrictMode>
+  );
+};
+
+const renderBootFailure = (error: unknown) => {
+  console.error('❌ Failed to initialize database:', error);
+  root.render(
+    <StrictMode>
+      <div className="app-boot-loading grid min-h-screen place-items-center overflow-y-auto bg-[#555858] px-6 text-center text-[#fff]">
+        <div>
+          <p className="text-xl font-bold">本地词库读取失败</p>
+          <p className="mt-3 text-sm text-white/70">请检查应用内是否包含 nihongo.db 和 sql-wasm.wasm。</p>
+        </div>
+      </div>
+    </StrictMode>
+  );
+};
+
+async function bootWithDatabase() {
     await ensureSeedData();
     ensureSyncSchema();
     registerPersistenceLifecycle();
@@ -109,17 +162,27 @@ root.render(
     initializePurchases().catch((error) => {
       console.warn('StoreKit init skipped:', error);
     });
-  })()
-  .catch((error) => {
-    console.error('❌ Failed to initialize database:', error);
-    root.render(
-      <StrictMode>
-        <div className="app-boot-loading grid min-h-screen place-items-center overflow-y-auto bg-[#555858] px-6 text-center text-[#fff]">
-          <div>
-            <p className="text-xl font-bold">本地词库读取失败</p>
-            <p className="mt-3 text-sm text-white/70">请检查应用内是否包含 nihongo.db 和 sql-wasm.wasm。</p>
-          </div>
-        </div>
-      </StrictMode>
-    );
-  });
+    // 登录之前买过、或者买的时候云端不通的交易,登录成功后补一次校验。
+    window.addEventListener(CLOUD_AUTH_EVENT, () => {
+      void retryPendingPurchaseVerifications().catch((error) => {
+        console.warn('Pending purchase verification retry skipped:', error);
+      });
+    });
+}
+
+(async () => {
+  // 有本地存档就直接用,跳过 6.5MB 出厂词库的 fetch + 解析;
+  // 只有「确实没有存档」(首次启动)才加载出厂库 —— 「打不开」走恢复画面。
+  let restored = false;
+  try {
+    restored = await loadDatabase();
+  } catch (error) {
+    if (error instanceof LocalArchiveUnreadableError) {
+      renderArchiveRecovery(error);
+      return;
+    }
+    throw error;
+  }
+  if (!restored) await initDatabase();
+  await bootWithDatabase();
+})().catch(renderBootFailure);

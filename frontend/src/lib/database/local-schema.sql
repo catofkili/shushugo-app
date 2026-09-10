@@ -188,6 +188,29 @@ CREATE TABLE IF NOT EXISTS word_question_meanings (
   FOREIGN KEY(word_id) REFERENCES words(id)
 );
 
+-- 用户自己导入的词条。
+--
+-- ⚠️ words 表本身**不进云快照**（出厂词典两端一致，没必要为每个账号重复上传），
+-- 但 progress / word_notes / reviews 全是按 word_id 同步的。自增 id 分配身份时：
+-- 两台设备各导入一个新词都会拿到同一个 id（相同数字不是同一个词），而一台
+-- 没有这个自定义词的新设备只会收到一堆悬空的学习记录。
+--
+-- 所以自定义词的 id 改成**由内容算出来**（见 word-list-import 的 customWordId），
+-- 并把内容本身放进这张同步表：id 两端天生一致，合并之后再把缺的词行补出来。
+CREATE TABLE IF NOT EXISTS custom_words (
+  word_id INTEGER PRIMARY KEY,
+  kanji TEXT NOT NULL DEFAULT '',
+  kana TEXT NOT NULL DEFAULT '',
+  meaning TEXT NOT NULL DEFAULT '',
+  pos TEXT NOT NULL DEFAULT '',
+  verb_type TEXT,
+  importance INTEGER NOT NULL DEFAULT 0,
+  example_jp TEXT,
+  example_meaning TEXT,
+  jlpt_level TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS moji_migrated_reviews (
   word_id INTEGER PRIMARY KEY,
   imported_on TEXT NOT NULL,

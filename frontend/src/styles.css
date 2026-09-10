@@ -182,7 +182,7 @@
    ⚠️ 标注是**绝对定位**的，不占行内空间 —— 句型自己的排版、换行一个字都不变，
    只是头顶上浮一行。真拿 <ruby> 做的话，`名词／用言普通形` 会把那个 `～` 的
    基字撑到一百多像素宽，四个 `～` 的叠用句型在手机上直接散架。
-   代价是要给容器留出上方的空间和行距，见 .grammar-pattern--annotated。
+   长接续不浮标，统一使用答案区的完整接续，避免翻面时把卡片撑高。
    ========================================================== */
 .grammar-slot {
   position: relative;
@@ -194,7 +194,7 @@
   bottom: calc(100% - 0.08em);
   transform: translateX(-50%);
   width: max-content;
-  max-width: 11em;           /* em 是标注自己的字号：八九个字一行放得下，长的折两三行 */
+  max-width: min(24em, calc(100vw - 2rem)); /* 短提示完整显示，不能把「名詞」拆成「名／詞」 */
   text-align: center;
   font-family: "Inter", "Noto Sans JP", system-ui, sans-serif;
   font-size: clamp(9px, 0.24em, 14px);
@@ -202,7 +202,9 @@
   line-height: 1.18;
   letter-spacing: 0.01em;
   color: var(--zoo-orange, #E8971C);
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
   pointer-events: none;
   text-shadow: none;
 }
@@ -213,10 +215,27 @@
   color: #A8630B;
 }
 
-/* 标注浮在行的上方，所以行距和上边距都得让出来，否则会压到上一行/标签上 */
-.grammar-pattern--annotated {
-  padding-top: 2.75rem;
-  line-height: 1.75;
+/* 语法「抓手」：一句「这条最容易错在哪」，摆在长说明前面。
+   ⚠️ 全应用一份样式（辞典 / 语法库 / 沉浸阅读三处共用；语法考题卡另有一份，
+   因为那张卡的颜色由调用方通过 --quiz-accent 传进来）。
+   浅色主题下 #81D8CF 在奶油底上对比度不够，和振假名标注一样单独沉一档。 */
+.grammar-key-point {
+  display: block;
+  margin-top: 1.25rem;
+  border-left: 3px solid #81D8CF;
+  border-radius: 0.75rem;
+  background: rgba(129, 216, 207, 0.12);
+  padding: 0.5rem 0.75rem;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #81D8CF;
+}
+
+[data-theme="light"] .grammar-key-point {
+  border-left-color: #2F8F84;
+  background: rgba(47, 143, 132, 0.10);
+  color: #21665E;
 }
 
 /* ======================================================================

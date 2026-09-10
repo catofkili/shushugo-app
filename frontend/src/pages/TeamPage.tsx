@@ -159,10 +159,6 @@ export function TeamPage() {
           </div>
         ))}
       </div>
-
-      <p className="zoo-panel-note">
-        传播路径：复制密钥 → 发给朋友 → 对方粘贴加入。广场用于没有朋友的用户直接找队伍。
-      </p>
     </div>
   );
 }

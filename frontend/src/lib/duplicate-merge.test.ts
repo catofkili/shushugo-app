@@ -31,7 +31,12 @@ vi.mock("./database", () => ({
   getDatabase: () => testDb, initDatabase: async () => testDb,
   exportDatabase: () => null, importDatabase: async () => undefined
 }));
-vi.mock("./storage", () => ({ scheduleSave: () => undefined, persistSoon: () => undefined }));
+vi.mock("./storage", () => ({
+  scheduleSave: () => undefined,
+  persistSoon: () => undefined,
+  // 合并会删 words 行,那条路要求下一次落盘走整库(见 local-delta.ts)
+  requestFullSnapshot: () => undefined
+}));
 vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
 
 import { duplicateMergePlan, mergeDuplicateWords } from "./duplicate-merge";

@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
 
     <!-- iOS WebView 优化 Meta 标签 -->
+    <!-- ⚠️ 防双击缩放只靠这里的 user-scalable=no(WKWebView 认它,移动版 Safari 不认)。
+         webview-optimizer 里那条「300ms 内的第二次 touchend 一律 preventDefault」已删:
+         它不看是不是同一个元素,快速点两个不同按钮时会把第二下的 click 吃掉,
+         而连着点评分正是答题的动作。别再加回来。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
     <!-- iOS 状态栏样式 -->

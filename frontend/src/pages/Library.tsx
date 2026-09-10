@@ -3,6 +3,7 @@ import { CheckCircle2, ChevronDown, Layers, PenLine, Search, Star, StickyNote, X
 import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
 import { GrammarTermHint } from "../components/GrammarTermHint";
 import { JapaneseRuby } from "../components/JapaneseRuby";
+import { grammarKeyPointFor } from "../lib/grammar-key-points";
 import { grammarPoints } from "../data/grammar";
 import { splitFormationRules } from "../lib/grammar-formation";
 import { addFavorite, getGrammarPointFavorite, toggleFavorite } from "../lib/api";
@@ -167,6 +168,9 @@ const GrammarExplanation = ({
     <div className="space-y-5 pt-5">
       <section>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">Explanation</p>
+        {grammarKeyPointFor(point) && (
+          <p className="grammar-key-point">{grammarKeyPointFor(point)}</p>
+        )}
         <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-3 text-[15px] leading-8 text-white/78">{point.explanation}</p>
       </section>
 

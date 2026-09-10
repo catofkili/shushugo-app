@@ -1,9 +1,9 @@
 import { AlertTriangle, Check, ChevronRight, Download, Moon, RotateCcw, Smartphone, Sun, Upload, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { refreshTodayWordPlan } from "../lib/api";
-import { exportDatabase, importDatabase } from "../lib/database";
+import { exportDatabase } from "../lib/database";
 import { clearLocalAppData } from "../lib/clear-local-data";
-import { clearStorage, saveDatabase } from "../lib/storage";
+import { clearStorage, restoreDatabaseBackup, saveDatabase } from "../lib/storage";
 import { getPasscodeState, verifyPasscode } from "../lib/localPasscode";
 import { loadVoices, SYSTEM_VOICE_ID, type AudioVoice } from "../lib/speech";
 import {
@@ -12,6 +12,8 @@ import {
   getCloudSession,
   pullCloudBackup,
   pushCloudBackup,
+  exportSyncSnapshot,
+  getSnapshotCapacity,
   sendCloudVerificationEmail,
   verifyCloudEmail,
   type CloudSession
@@ -20,6 +22,9 @@ import {
   applyTheme,
   defaultStudyPreferences,
   getStudyPreferences,
+  GRAMMAR_INTENSITY_ANCHORS,
+  GRAMMAR_INTENSITY_MAX,
+  GRAMMAR_INTENSITY_MIN,
   INTENSITY_ANCHORS,
   INTENSITY_MAX,
   INTENSITY_MIN,
@@ -32,6 +37,7 @@ import { firstValue } from "../lib/database/db-utils";
 import { importExternalWordList, previewExternalWordList } from "../lib/word-list-import";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { KanjiUnitPlanSettings } from "../components/KanjiUnitPlanSettings";
+import { notifyProgressUpdated } from "../lib/progress-events";
 
 interface GoalEstimationProps {
   dailyGoal: number;
@@ -115,6 +121,9 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
   const [voices, setVoices] = useState<AudioVoice[]>([]);
   // null = 还没量出来。别拿 0 B 冒充答案 —— 用户会以为数据丢了。
   const [storageInfo, setStorageInfo] = useState<{ database: number; local: number } | null>(null);
+  // 云备份的容量水位。上限卡的是**压缩前**的字节数,gzip 后再小也不算数,
+  // 所以必须把这个数摆出来 —— 撞上限之后同步会直接停。
+  const [snapshotCapacity, setSnapshotCapacity] = useState<{ bytes: number; limit: number; ratio: number } | null>(null);
   const [message, setMessage] = useState("");
   const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
   const [cloudBusy, setCloudBusy] = useState(false);
@@ -136,6 +145,16 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
   const refreshStorageInfo = async () => {
     // 导出 SQLite 可能需要一段时间,不能在设置页首帧之前同步执行。
     await yieldToPaint();
+    // 现导一次:没同步过的会话里那个数还是 0,摆一个 0 出来比不摆更误导。
+    // 只在真的配了云同步时做 —— 这一步实测半秒左右,不该给用不上的人白花。
+    if ((await getCloudSession()).configured) {
+      try {
+        await exportSyncSnapshot();
+        setSnapshotCapacity(getSnapshotCapacity());
+      } catch {
+        setSnapshotCapacity(null);
+      }
+    }
     const data = exportDatabase();
     const localBytes = Array.from({ length: localStorage.length }, (_, index) => {
       const key = localStorage.key(index) ?? "";
@@ -192,6 +211,14 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
     }
   };
 
+  const updateGrammarGoal = (value: number) => {
+    const next = updatePreference({ grammarDailyGoal: value }, "语法强度已保存。");
+    notifyProgressUpdated();
+    notify(next.grammarDailyGoal === 0
+      ? "今天起只复习学过的语法，不再进新条目。"
+      : `语法已改为每日新条目 ${next.grammarDailyGoal} 条。`);
+  };
+
   const updateReviewCap = (value: number) => {
     const next = updatePreference({ reviewCap: value }, "复习上限已保存。");
     try {
@@ -227,8 +254,8 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
     if (!file) return;
     try {
       const buffer = await file.arrayBuffer();
-      await importDatabase(new Uint8Array(buffer), { validateBackup: true });
-      await saveDatabase();
+      // 换库 + 换设备号 + 落盘只有一份实现(见 storage.restoreDatabaseBackup)。
+      await restoreDatabaseBackup(new Uint8Array(buffer));
       notify("学习数据已恢复，页面即将刷新。");
       window.setTimeout(() => window.location.reload(), 900);
     } catch {
@@ -401,6 +428,117 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
       </div>
 
       <div className="mb-4">
+        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">每日学习量</p>
+        <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
+          <div className="border-b border-white/10 p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-white">单词 · 每日新词</p>
+                <p className="mt-0.5 text-xs text-white/50">经典 / 反向 / 混合模式共用这个数。复习量由算法安排。</p>
+              </div>
+              <span className="shrink-0 text-sm font-bold text-[#81D8CF]">{preferences.dailyGoal} 个/天</span>
+            </div>
+            <input
+              type="range"
+              min={INTENSITY_MIN}
+              max={INTENSITY_MAX}
+              step={1}
+              value={preferences.dailyGoal}
+              onChange={(event) => updateDailyGoal(Number(event.target.value))}
+              aria-label="学习强度"
+              className="w-full accent-[#81D8CF]"
+            />
+            <div className="mt-2 flex flex-wrap gap-2">
+              {INTENSITY_ANCHORS.map((anchor) => (
+                <button
+                  key={anchor.value}
+                  onClick={() => updateDailyGoal(anchor.value)}
+                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
+                    preferences.dailyGoal === anchor.value
+                      ? "bg-[#81D8CF] text-[#2f3333]"
+                      : "border border-white/15 bg-white/8 text-white/70"
+                  }`}
+                >
+                  {anchor.label} {anchor.value}
+                </button>
+              ))}
+            </div>
+
+            {/* 目标完成时间预测 */}
+            <GoalEstimation dailyGoal={preferences.dailyGoal} />
+          </div>
+
+          {/* 语法走自己的旋钮：一个等级只有一百来条，按每日新词 15 排等于八天过完一级 */}
+          <div className="border-b border-white/10 p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-white">语法 · 每日新条目</p>
+                <p className="mt-0.5 text-xs text-white/50">
+                  考题模式和混合模式共用这个数,和单词各排各的、互不挤占。0 = 今天只复习学过的。
+                </p>
+              </div>
+              <span className="shrink-0 text-sm font-bold text-[#81D8CF]">
+                {preferences.grammarDailyGoal === 0 ? "只复习" : `${preferences.grammarDailyGoal} 条/天`}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={GRAMMAR_INTENSITY_MIN}
+              max={GRAMMAR_INTENSITY_MAX}
+              step={1}
+              value={preferences.grammarDailyGoal}
+              onChange={(event) => updateGrammarGoal(Number(event.target.value))}
+              aria-label="语法每日新条目"
+              className="w-full accent-[#81D8CF]"
+            />
+            <div className="mt-2 flex flex-wrap gap-2">
+              {GRAMMAR_INTENSITY_ANCHORS.map((anchor) => (
+                <button
+                  key={anchor.value}
+                  onClick={() => updateGrammarGoal(anchor.value)}
+                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
+                    preferences.grammarDailyGoal === anchor.value
+                      ? "bg-[#81D8CF] text-[#2f3333]"
+                      : "border border-white/15 bg-white/8 text-white/70"
+                  }`}
+                >
+                  {anchor.label} {anchor.value}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 汉字读音是另一套队列(字音单位),题量和目标级别单独存 */}
+          <KanjiUnitPlanSettings />
+
+          <div className="p-4">
+            <div className="mb-3">
+              <p className="text-sm font-bold text-white">每日复习上限</p>
+              <p className="mt-0.5 text-xs text-white/50">
+                学不完的顺延到后面几天,按遗忘风险排队,不会丢。自动 = 近期节奏 × 1.5(60-150)。
+                选「全部」则不截断,当天到期多少给多少。
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[REVIEW_CAP_UNLIMITED, 0, 100, 150, 200, 300].map((cap) => (
+                <button
+                  key={cap}
+                  onClick={() => updateReviewCap(cap)}
+                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
+                    preferences.reviewCap === cap
+                      ? "bg-[#81D8CF] text-[#2f3333]"
+                      : "border border-white/15 bg-white/8 text-white/70"
+                  }`}
+                >
+                  {cap === REVIEW_CAP_UNLIMITED ? "全部" : cap === 0 ? "自动(推荐)" : `${cap} 个`}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-4">
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">学习偏好</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
@@ -463,7 +601,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
           </div>
 
 
-          <div className="flex items-center gap-3 border-b border-white/10 p-4">
+          <div className="flex items-center gap-3 p-4">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">显示罗马音</p>
               <p className="mt-0.5 text-xs text-white/50">答案假名下方显示 romaji</p>
@@ -478,73 +616,6 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
               <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
             </label>
           </div>
-
-          <div className="border-b border-white/10 p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-bold text-white">学习强度</p>
-                <p className="mt-0.5 text-xs text-white/50">每日新词数,唯一需要调的量。复习量由算法安排。</p>
-              </div>
-              <span className="shrink-0 text-sm font-bold text-[#81D8CF]">{preferences.dailyGoal} 个/天</span>
-            </div>
-            <input
-              type="range"
-              min={INTENSITY_MIN}
-              max={INTENSITY_MAX}
-              step={1}
-              value={preferences.dailyGoal}
-              onChange={(event) => updateDailyGoal(Number(event.target.value))}
-              aria-label="学习强度"
-              className="w-full accent-[#81D8CF]"
-            />
-            <div className="mt-2 flex flex-wrap gap-2">
-              {INTENSITY_ANCHORS.map((anchor) => (
-                <button
-                  key={anchor.value}
-                  onClick={() => updateDailyGoal(anchor.value)}
-                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
-                    preferences.dailyGoal === anchor.value
-                      ? "bg-[#81D8CF] text-[#2f3333]"
-                      : "border border-white/15 bg-white/8 text-white/70"
-                  }`}
-                >
-                  {anchor.label} {anchor.value}
-                </button>
-              ))}
-            </div>
-
-            {/* 目标完成时间预测 */}
-            <GoalEstimation dailyGoal={preferences.dailyGoal} />
-          </div>
-
-          {/* 汉字读音是另一套队列(字音单位),题量和目标级别单独存 */}
-          <KanjiUnitPlanSettings />
-
-          <div className="p-4">
-            <div className="mb-3">
-              <p className="text-sm font-bold text-white">每日复习上限</p>
-              <p className="mt-0.5 text-xs text-white/50">
-                学不完的顺延到后面几天,按遗忘风险排队,不会丢。自动 = 近期节奏 × 1.5(60-150)。
-                选「全部」则不截断,当天到期多少给多少。
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {[REVIEW_CAP_UNLIMITED, 0, 100, 150, 200, 300].map((cap) => (
-                <button
-                  key={cap}
-                  onClick={() => updateReviewCap(cap)}
-                  className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
-                    preferences.reviewCap === cap
-                      ? "bg-[#81D8CF] text-[#2f3333]"
-                      : "border border-white/15 bg-white/8 text-white/70"
-                  }`}
-                >
-                  {cap === REVIEW_CAP_UNLIMITED ? "全部" : cap === 0 ? "自动(推荐)" : `${cap} 个`}
-                </button>
-              ))}
-            </div>
-          </div>
-
 
           <div className="border-t border-white/10 p-4">
             <div className="mb-3">
@@ -572,9 +643,6 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-xs text-white/40">
-              系统里开了「减少动态效果」时，这里选什么都按关闭处理。
-            </p>
           </div>
         </div>
       </div>
@@ -597,8 +665,15 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                   : "还没有配置 VITE_SYNC_API_URL，部署 Cloudflare Worker 后即可启用"}
               </p>
               <p className="mt-1 text-xs leading-5 text-white/42">
-                登录后会在本机保存学习数据时自动上传，并在启动或回到前台时自动拉取；不同单词会自动合并，同一条记录冲突时按版本处理。第一次使用时请先在有正式进度的设备登录并点“上传本机进度”，再在新手机登录；不要先从空白手机上传。
+                第一次使用请先在有进度的设备登录并点“上传本机进度”，再在新手机登录——不要先从空白手机上传。
               </p>
+              {snapshotCapacity && snapshotCapacity.bytes > 0 && (
+                <p className={`mt-1 text-xs leading-5 ${snapshotCapacity.ratio >= 0.85 ? "text-[#E8971C]" : "text-white/42"}`}>
+                  云备份体积 {formatBytes(snapshotCapacity.bytes)} / {formatBytes(snapshotCapacity.limit)}
+                  （{Math.round(snapshotCapacity.ratio * 100)}%）
+                  {snapshotCapacity.ratio >= 0.85 && "　接近上限，超过后云备份会停止，请先导出本地备份。"}
+                </p>
+              )}
             </div>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -694,9 +769,10 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             onChange={(event) => importWordList(event.target.files?.[0] ?? null)}
           />
 
-          <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3 text-xs leading-5 text-white/58">
-            <p className="font-bold text-white/72">MOJi 复习记录迁移（需要 Mac）：</p>
-            <p className="mt-1">iPhone 不允许应用直接读取另一个应用的内部数据，所以本应用只能在 iPhone 上导入导出文件，不能直接读取 MOJi 的 .realm 或缓存文件。</p>
+          {/* 需要 Mac + 跑一次 python 脚本,能用的人极少,别让它常驻这一页 */}
+          <details className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3 text-xs leading-5 text-white/58">
+            <summary className="cursor-pointer font-bold text-white/72">MOJi 复习记录迁移（需要 Mac）</summary>
+            <p className="mt-2">iPhone 不允许应用直接读取另一个应用的内部数据，所以本应用只能在 iPhone 上导入导出文件，不能直接读取 MOJi 的 .realm 或缓存文件。</p>
             <ol className="mt-2 list-decimal space-y-1 pl-4">
               <li>在 Mac 的 MOJi 中登录，打开“背词/复习”页面并等待内容加载完成，然后退出 MOJi。</li>
               <li>在 Mac 上打开收集日项目文件夹中的“终端”。首次使用运行 <code>npm install --prefix scripts/moji-realm-export</code>。</li>
@@ -705,7 +781,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
               <li>回到本页点“导入词单或 MOJi 复习记录”，选择该 JSON 并确认。不要选择 .realm、.db 或缓存文件。</li>
             </ol>
             <p className="mt-2 text-white/45">导入会把 Moji 的做题次数、错误次数和分数转换为本应用的复习强度，不会覆盖已有本机学习记录。Windows 或纯 iPhone 目前只能导入已经导出的 JSON，不能生成这份完整记录。</p>
-          </div>
+          </details>
 
           <button onClick={() => backupInputRef.current?.click()} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/16 text-[#81D8CF]">

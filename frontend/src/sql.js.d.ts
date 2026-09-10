@@ -9,6 +9,8 @@ declare module 'sql.js' {
 
   export interface Statement {
     bind(values?: any[] | Record<string, any>): void;
+    /** 绑定 + step + reset。复用同一份已编译的 SQL,批量插入时别用 Database.run。 */
+    run(values?: any[] | Record<string, any>): void;
     step(): boolean;
     get(): any[];
     getAsObject(): Record<string, any>;

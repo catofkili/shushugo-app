@@ -4,6 +4,7 @@ import { ExampleSentence } from "../components/ExampleSentence";
 import { GrammarTermHint } from "../components/GrammarTermHint";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { ReviewButton } from "../components/ReviewButton";
+import { grammarKeyPointFor } from "../lib/grammar-key-points";
 import { grammarPoints } from "../data/grammar";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
 import { grammarSequence } from "../lib/grammar-numbering";
@@ -48,7 +49,7 @@ export const GrammarDetail = ({
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#81D8CF]">{grammarSequence(point).label} · {mastery}</p>
             <h1 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-3 text-6xl font-semibold leading-none text-[#343838] dark:text-[#f4efe4]"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h1>
             <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-4 text-xl text-[#f9faf7] dark:text-zinc-200">{point.meaning}</p>
-            <p data-grammar-point-id={point.id} data-grammar-highlight-block="formation" className="jp mt-4 inline-block border-l-2 border-[#81D8CF] bg-[#81D8CF] px-3 py-2 text-[#f9faf7] dark:bg-[#171611] dark:text-zinc-200">
+            <p data-grammar-point-id={point.id} data-grammar-highlight-block="formation" className="jp mt-4 inline-block rounded-2xl border-l-2 border-[#81D8CF] bg-[#81D8CF] px-3 py-2 text-[#f9faf7] dark:bg-[#171611] dark:text-zinc-200">
               <GrammarTermHint text={point.connection ?? point.structure} />
             </p>
           </div>
@@ -108,7 +109,13 @@ export const GrammarDetail = ({
             )}
           </div>
         )}
-        <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-6 max-w-3xl border-t border-[#81D8CF] pt-5 text-[15px] leading-8 text-[#f9faf7] dark:border-zinc-800 dark:text-zinc-300">{point.explanation}</p>
+        {/* 抓手在分隔线之内、说明之上：先看一句「这条错在哪」，再读整段说明。 */}
+        <div className="mt-6 max-w-3xl border-t border-[#81D8CF] pt-5 dark:border-zinc-800">
+          {grammarKeyPointFor(point) && (
+            <p className="grammar-key-point !mt-0">{grammarKeyPointFor(point)}</p>
+          )}
+          <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-4 text-[15px] leading-8 text-[#f9faf7] dark:text-zinc-300">{point.explanation}</p>
+        </div>
       </section>
 
       <section>

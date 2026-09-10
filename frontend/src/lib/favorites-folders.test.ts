@@ -7,7 +7,7 @@ let testDb: Database;
 
 vi.mock("./database", () => ({ getDatabase: () => testDb }));
 vi.mock("./storage", () => ({
-  scheduleSave: () => undefined,
+  scheduleSave: () => undefined, requestFullSnapshot: () => undefined,
   saveRecoverySnapshot: async () => "test-recovery"
 }));
 
@@ -22,7 +22,7 @@ import {
   toggleFavorite,
   unfiledFavoriteCount
 } from "./favorites-api";
-import { getStubbornWordsToday } from "./word-api/stubborn-today";
+import { getStubbornHistoryDays, getStubbornWordsToday } from "./word-api/stubborn-today";
 import { STUBBORN_DAILY_MISTAKES } from "./fsrs-scheduler";
 
 /** 和 stubborn-today 里的 STUBBORN_TOTAL_FORGOTS 同一个数（那边没导出，钉在这里）。 */
@@ -106,12 +106,13 @@ describe("收藏夹", () => {
 });
 
 describe("当天顽固词", () => {
-  const seedReviews = (wordId: number, answers: string[]) => {
+  const seedReviewsOn = (wordId: number, answers: string[], day: string) => {
     answers.forEach((answer) => testDb.run(
       "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, ?, 0, ?, 'forward')",
-      [wordId, answer, studyDate()]
+      [wordId, answer, day]
     ));
   };
+  const seedReviews = (wordId: number, answers: string[]) => seedReviewsOn(wordId, answers, studyDate());
 
   beforeEach(() => {
     testDb.run("DELETE FROM reviews");
@@ -175,5 +176,17 @@ describe("当天顽固词", () => {
     testDb.run("UPDATE progress SET forgot_count = ? WHERE word_id = 1", [TOTAL_FORGOTS + 1]);
     addFavorite("word", 1, createFavoriteFolder("顽固"));
     expect(getStubbornWordsToday()[0]?.isFavorite).toBe(true);
+  });
+
+  // 往日顽固词（Pro）：同一条判据换个日期，历史列表只列今天之前的日子。
+  it("历史按天列，今天不进历史，取某天用的是同一条判据", () => {
+    const past = "2020-01-02";
+    seedReviewsOn(1, Array(STUBBORN_DAILY_MISTAKES).fill("forgot"), past);
+    seedReviewsOn(2, ["forgot"], past);              // 那天只错一次，不算
+    seedReviews(3, Array(STUBBORN_DAILY_MISTAKES).fill("forgot"));  // 今天的不进历史
+    testDb.run("UPDATE progress SET forgot_count = ? WHERE word_id IN (1, 2, 3)", [TOTAL_FORGOTS + 1]);
+
+    expect(getStubbornHistoryDays()).toEqual([{ date: past, words: 1, grammar: 0 }]);
+    expect(getStubbornWordsToday(past).map((word) => word.id)).toEqual([1]);
   });
 });

@@ -28,7 +28,7 @@ vi.mock("./database", () => ({
   getDatabase: () => testDb, initDatabase: async () => testDb,
   exportDatabase: () => null, importDatabase: async () => undefined
 }));
-vi.mock("./storage", () => ({ scheduleSave: () => undefined, persistSoon: () => undefined }));
+vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined, persistSoon: () => undefined }));
 vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
 
 import {

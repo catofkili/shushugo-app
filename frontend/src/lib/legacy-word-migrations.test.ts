@@ -7,7 +7,7 @@ let testDb: Database;
 
 vi.mock("./database", () => ({ getDatabase: () => testDb }));
 vi.mock("./storage", () => ({
-  scheduleSave: () => undefined,
+  scheduleSave: () => undefined, requestFullSnapshot: () => undefined,
   saveRecoverySnapshot: async () => "test-recovery"
 }));
 

@@ -77,6 +77,25 @@ describe("学习步骤:新词/答错要当天反复刷到毕业(治『点不认�
     expect(isGraduatedForDay(g1, boundary)).toBe(false);
   });
 
+  it("⚠️ 跨过凌晨四点的短期重学不算毕业(03:55 点忘记,重学步骤排到 04:05)", () => {
+    // 学习日边界是凌晨四点。只比 due 和边界的话,03:55 答「忘记」排出来的
+    // 04:05 越过了边界 = 「今天已毕业」—— 这一场里这张卡再也不出现,
+    // 用户点了忘记却等不来那次确认,而 FSRS 那边它明明还停在重学第一步。
+    let mature: FsrsState | null = null;
+    let day = at("2026-01-01");
+    for (let i = 0; i < 5; i++) { mature = recordReview(mature, "know", day); day = new Date(mature.due); }
+    // 到期之后的某天凌晨 03:55 打开 App(本学习日的边界就在五分钟后)
+    const lateNight = new Date(new Date(mature!.due).getTime() + 24 * HR);
+    lateNight.setHours(3, 55, 0, 0);
+    const nextBoundary = new Date(lateNight);
+    nextBoundary.setHours(4, 0, 0, 0);
+    const relearning = recordReview(mature, "forgot", lateNight);
+
+    expect(new Date(relearning.due).getTime()).toBeGreaterThan(nextBoundary.getTime());
+    expect(isLearning(relearning)).toBe(true);
+    expect(isGraduatedForDay(relearning, nextBoundary)).toBe(false);
+  });
+
   it("成熟复习卡答错=lapse:转重学、当天重刷,lapses+1", () => {
     // 先养一张成熟卡(连对毕业几次)
     let m: FsrsState | null = null;
