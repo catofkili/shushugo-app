@@ -43,6 +43,24 @@ describe("自动题面撞车组", () => {
     expect(card?.distinction).toContain("题面首义相同的其他词");
   });
 
+  it("回り与周り有独立例句和汉字选择说明", () => {
+    const rows = rowsFor(
+      "SELECT id, kanji, kana, meaning, example_jp FROM words WHERE kana = ? AND kanji IN (?, ?)",
+      ["まわり", "回り", "周り"]
+    );
+    const turning = rows.find((row) => row.kanji === "回り");
+    const surroundings = rows.find((row) => row.kanji === "周り");
+
+    expect(turning?.example_jp).toContain("回りが速く");
+    expect(turning?.example_jp).not.toContain("駅の周り");
+    expect(surroundings?.example_jp).toContain("周り");
+
+    const card = similarMeaningCandidates(turning!);
+    expect(card?.title).toBe("まわり：回り／周り");
+    expect(card?.distinction).toContain("旋转、运转或轮次");
+    expect(card?.distinction).toContain("周围、附近");
+  });
+
   it("自动撞车组进入排片干扰索引", () => {
     const rows = rowsFor(
       "SELECT id, kanji, kana, pos, verb_type FROM words WHERE id IN (?, ?)",

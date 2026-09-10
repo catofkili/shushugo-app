@@ -105,7 +105,7 @@ const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // a fresh install does not replay all 11k metadata updates on first launch.
 // 与 scripts/build-furigana.mjs、scripts/bake-seed-db.mjs 保持一致。
 export const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
-const JLPT_WORD_METADATA_VERSION = `2026-08-11-manual-meanings-5163-polish-1130-corrections-35-examples-121-${FURIGANA_VERSION}`;
+const JLPT_WORD_METADATA_VERSION = `2026-08-11-manual-meanings-5163-polish-1130-corrections-35-examples-122-${FURIGANA_VERSION}`;
 // 这张表只给历史词库里没有 N1-N5 的词补级别。和 metadata 版本分开,
 // 这样既有用户不用重放整套释义/例句迁移,又能让老库收到这次分类。
 const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";

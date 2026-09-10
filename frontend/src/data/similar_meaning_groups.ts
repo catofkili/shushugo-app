@@ -18,6 +18,15 @@ export interface SimilarMeaningGroup {
  */
 export const similarMeaningGroups: readonly SimilarMeaningGroup[] = [
   {
+    id: "mawari-kanji-choice",
+    title: "まわり：回り／周り",
+    distinction: "回り是旋转、运转或轮次；周り是周围、附近的人或事物。駅のまわり（车站周围）写作「駅の周り」。",
+    members: [
+      ["回り", "まわり", "旋转"],
+      ["周り", "まわり", "周围；附近"]
+    ]
+  },
+  {
     id: "honorific-come-go-be",
     title: "来／去／在（尊敬语）",
     distinction: "很多普通“来／去／在”的提示都能对应这些尊敬表达；お見えになる更偏“来到、到场”。",
