@@ -44,6 +44,13 @@ fi
 
 rm -f "$TMP_ZIP" "$OUTPUT"
 
+# ⚠️ 清单里少一个目录 = 收到包的人按 README 跑 npm run build 就失败。
+# 已经踩过的:
+#   frontend/scripts —— prebuild 要跑里面的 verify-release-db.mjs 和
+#     verify-kanji-reading-unit-index.mjs;user-data-tables 的测试也直接读它。
+#   frontend/eslint.config.js —— 没有它 npm run lint 起不来。
+#   cloudflare-sync/scripts —— Worker 的 npm test 跑的是这里的规则测试。
+# 打完包之后下面会解压到临时目录真跑一遍 check/lint/test/build,别把那一步删了。
 git archive \
   --format=zip \
   --output="$TMP_ZIP" \
@@ -55,6 +62,7 @@ git archive \
   cloudflare-sync/migrations \
   cloudflare-sync/package-lock.json \
   cloudflare-sync/package.json \
+  cloudflare-sync/scripts \
   cloudflare-sync/src \
   cloudflare-sync/wrangler.jsonc \
   docs/APP_STORE_READINESS.md \
@@ -73,8 +81,10 @@ git archive \
   frontend/ios \
   frontend/package-lock.json \
   frontend/package.json \
+  frontend/eslint.config.js \
   frontend/postcss.config.js \
   frontend/public/nihongo.db \
+  frontend/scripts \
   frontend/src \
   frontend/tailwind.config.js \
   frontend/tsconfig.json \
@@ -85,6 +95,29 @@ git archive \
   scripts/quick-reload.sh \
   scripts/quick-start.sh \
   scripts/setup-xcode.sh
+
+# 解压到临时目录真跑一遍质量门禁。清单漏文件是**静默**的 —— zip 照样产出,
+# 只有接收者会撞上。除非显式 SKIP_PREVIEW_VERIFY=1(离线时)。
+if [[ "${SKIP_PREVIEW_VERIFY:-0}" != "1" ]]; then
+  VERIFY_DIR="$(mktemp -d)"
+  trap 'rm -rf "$VERIFY_DIR"' EXIT
+  unzip -q "$TMP_ZIP" -d "$VERIFY_DIR"
+  (
+    cd "$VERIFY_DIR/frontend"
+    npm ci
+    npm run check
+    npm run lint
+    npm test
+    npm run build
+  )
+  (
+    cd "$VERIFY_DIR/cloudflare-sync"
+    npm ci
+    npm run check
+    npm test
+  )
+  echo "Verified the packaged sources build from a clean checkout."
+fi
 
 mv "$TMP_ZIP" "$OUTPUT"
 echo "Created $OUTPUT"

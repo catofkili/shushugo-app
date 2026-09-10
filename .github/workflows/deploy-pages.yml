@@ -33,6 +33,33 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      # 门禁写在这里而不是靠 CI:ci.yml 的 push 触发只有 main,往发布分支直推时
+      # 它根本不跑,发布就成了「能 build 就能上」。三行重复换一个真的挡得住的闸门。
+      - run: npm run check
+      - run: npm run lint
+      - run: npm test
+      # ⚠️ 预生成的读音音频(约 11k 个文件 / 137 MB)不在版本库里(见 .gitignore),
+      # 干净 runner 上 checkout 完根本没有它 —— 于是网页版**静默**退回系统 TTS,
+      # 和本机三种 VOICEVOX 声音完全不是一回事,而构建全绿、没有任何提示。
+      #
+      # 现在:配了 AUDIO_ARTIFACT_URL(仓库变量)就下载并核对 sha256 再解开;
+      # 没配就在日志里明说这次发布没有音频。两种情况都不会再「以为带上了」。
+      - name: Fetch pre-generated audio
+        env:
+          AUDIO_ARTIFACT_URL: ${{ vars.AUDIO_ARTIFACT_URL }}
+          AUDIO_ARTIFACT_SHA256: ${{ vars.AUDIO_ARTIFACT_SHA256 }}
+        run: |
+          if [ -z "$AUDIO_ARTIFACT_URL" ]; then
+            echo "::warning::未配置 AUDIO_ARTIFACT_URL，本次发布不带预生成读音音频，网页版将退回系统语音合成。"
+            exit 0
+          fi
+          curl -fsSL "$AUDIO_ARTIFACT_URL" -o /tmp/audio.tar.gz
+          echo "$AUDIO_ARTIFACT_SHA256  /tmp/audio.tar.gz" | sha256sum -c -
+          mkdir -p public/audio
+          tar -xzf /tmp/audio.tar.gz -C public/audio
+          test -f public/audio/words/index.json
+          echo "音频文件数: $(find public/audio -type f | wc -l)"
+
       - name: Build Zoo Lab
         run: npx vite build --config zoo-lab/vite.config.ts --base=/shushugo-app/zoo/
       - name: Build app
@@ -42,6 +69,12 @@ jobs:
           mkdir -p dist/zoo
           cp -R zoo-lab/dist/. dist/zoo/
           printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
+          # 发布前把「这一版到底带没带音频」写进日志,别等用户报「没声音」。
+          if [ -f dist/audio/words/index.json ]; then
+            echo "读音音频: $(find dist/audio -type f | wc -l) 个文件"
+          else
+            echo "::warning::dist 里没有 audio/words/index.json，本次发布使用系统语音合成。"
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

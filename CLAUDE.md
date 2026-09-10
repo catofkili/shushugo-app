@@ -60,6 +60,362 @@ db.exec("SELECT reviewed_on, COUNT(DISTINCT word_id) FROM reviews GROUP BY revie
 - 云同步：`cloudflare-sync/`（Worker + D1 + R2；快照进 R2，版本/幂等记录进 D1，限速用 KV）。
   客户端按行合并，不是整库覆盖（`lib/sync/merge.ts`）
 
+## 内购：收据长什么样、权益归谁、退款怎么回来（2026-09-09 修）
+
+`frontend/src/lib/purchases.ts` + `cloudflare-sync/src/index.ts` 的 `applyAppleTransaction`。
+这一整节都是 2026-09-09 那次审计里**可复现**的付费错误，别照着老代码改回去。
+
+### ⚠️ 收据有两种结构，只认一种就等于收了钱不发货
+
+应用**没有配 `store.validator`**。`cordova-plugin-purchase` 在
+`validator.ts` 的 `if (!this.controller.validator)` 分支里会「为了向后兼容，视为已验证」，
+于是交出来的 `VerifiedReceipt` 长这样：
+
+| | 配了 validator | **没配（当前就是这种）** |
+|---|---|---|
+| 商品在哪 | `receipt.collection[].id` | `receipt.sourceReceipt.transactions[].products[].id` |
+| `receipt.id` 是什么 | 商品 id | **首笔交易 ID** |
+| 到期时间 | `expiryDate`（毫秒数） | `transaction.expirationDate`（Date） |
+
+老代码优先把 `receipt.id` 当商品 ID，又去查一个根本不存在的顶层 `receipt.transactions`。
+隔离复现（用插件真实的 `VerifiedReceipt` 类 + 应用真实的回调）：合法收据进来后
+**授权 0 次、云校验 0 次、`finish()` 1 次** —— 钱付了、交易被完成、用户什么都没拿到。
+
+现在两种都读（`receiptPurchases`，collection 优先、缺的字段由本地收据补），
+判据钉在 `purchases.test.ts`。⚠️ **别再写「没匹配上就拿第一条」的兜底** ——
+那是把另一个商品的到期时间当成本商品的，正是同一类错误。
+
+### 权益落地的顺序：先校验、再授权、最后 finish()
+
+`finish()` 之后 Apple 认为货已发出，所以它必须在最后。云端校验通过时
+`applyCloudEntitlements` 已经把权益写好了；校验失败（离线、服务端故障、
+**买的时候还没登录**）不能把这笔交易丢掉 —— 排进 `mn-pending-purchase-verifications`，
+启动时和 `CLOUD_AUTH_EVENT`（登录成功）各重试一次。
+
+⚠️ **订阅缺到期时间时不许 `grantPro(id, source, undefined)`** —— 那个签名的语义是
+「永不过期」，用在订阅上等于取消续订之后本地 Pro 永远留着。没有到期时间就给
+3 天离线宽限期，下次联网由云端权益覆盖。同理，`storekit` 这一档（没经过云端校验的
+本地授权）有 30 天离线上限：每次启动 StoreKit 都会重新校验本地收据并刷新
+`updatedAt`，正常使用碰不到；它挡的是「一台长期不联网的设备上退款永远传不进来」。
+
+**localStorage 从来不是授权边界**（网页用户能改）。联网时云端说了算。
+
+### ⚠️ 一笔 Apple 交易只能给一个应用账号（`apple_transaction_owners`）
+
+`purchase_events.transaction_id` 上确实有唯一索引，但它是在 `saveEntitlement`
+**之后**用 `INSERT OR IGNORE` 写的：第二个账号提交同一笔交易时权益早就写进去了。
+实测 A、B 两账号提交同一交易，**都返回 200 / isPro=true**，权益两行、事件一行。
+
+归属现在由 `apple_transaction_owners`（`original_transaction_id` 主键）在**写权益之前**
+用一条原子的 `INSERT OR IGNORE` + 读回决定，不是本人就 409。
+迁移 `0009` 会把已有权益行的归属回填，否则老用户续费会被自己挡住。
+
+### ⚠️ 权益不许被更弱的交易覆盖（`entitlement-rules.ts`）
+
+每个账号只有一行权益，老代码是任意一笔验证通过的交易直接覆盖它。
+实测：先拿到永久 Pro，再校验一笔**已过期的月度订单**，最终响应变成 `isPro=false`。
+恢复历史订单、或者响应到达顺序变一下就会触发，不需要伪造订单。
+
+判据是 `entitlementStrength`：永久（无到期时间）> 有效订阅 > 过期订单 > 没有权益，
+而**没有到期时间的订阅是最弱的一档**（不能顺手解释成永久）。
+只有更强才准覆盖；例外是**同一笔原始交易**的新消息（续费、到期、退款）——
+它永远可以改写自己那一行，包括往下改。钉在 `scripts/entitlement-rules.test.mjs`。
+
+### 退款/撤销的闭环有三条路，缺一条都会「退了款还是 Pro」
+
+`/api/entitlements` 只读 D1，缓存自己发现不了退款（实测：写入永久权益后模拟退款，
+再查权益仍返回 Pro，Apple 重查次数 **0**）。而**永久购买永远不会过期**，
+没有任何别的路径会去看它一眼。三条：
+
+1. **App Store Server Notifications V2**（`/api/purchases/apple-notifications`）。
+   ⚠️ **一个字都不信 `signedPayload`**：只从里面取交易号，然后照常用带鉴权的
+   App Store Server API 把这笔交易查一遍，用查回来的结果做决定。这样不必在 Worker 里
+   实现 x5c 证书链校验，也天然免疫重复投递和乱序 —— 每次都是「现在 Apple 怎么说」。
+2. **`/api/entitlements` 上的每日重查**：`app_store` 来源的权益超过 24 小时没核对过就查一次。
+3. **定时任务重查最旧的 25 行**（超过 7 天的），覆盖根本不打开 App 的账号。
+
+⚠️ **Apple 查不通时必须把下次重查往后推一小时**，不能只 `catch` 就算了：
+`updated_at` 兼作「上次核对时间」，不动的话它一直是陈的，于是 Apple 挂着的时候
+这个账号的**每一次** GET 都会再去撞一次 —— 而客户端每次启动都会调这个接口。
+
+被撤销的交易不只是拒绝这次请求，还要 `revokeEntitlementForTransaction` 把那份权益撤掉。
+
+⚠️ **`updated_at` 兼作「上次向 Apple 核对是什么时候」**，所以「候选更弱、不覆盖」
+那条路径也要盖一下时间戳，否则每日重查会认为这行永远是陈的，每次请求都打一次 Apple。
+
+⚠️ **`purchase_events` 的唯一索引是 (transaction_id, user_id, status)**（迁移 `0011`）。
+原来只有 transaction_id，退款回来时那条 `revoked` 事件会被 `INSERT OR IGNORE` 丢掉 ——
+审计线索正好断在最需要它的地方。
+
+### 沙盒交易有 30 天上限
+
+TestFlight 和 App 审核用的都是沙盒交易，不能直接拒；但实测一笔**沙盒的永久购买**
+会变成正式账号上永不过期的 Pro。所以沙盒来源的权益到期时间一律夹到 30 天以内。
+
+## ⚠️ Apple 登录：算法要跟着 Apple 的公钥走，写死 ES256 是登不上的（2026-09-09 修）
+
+`verifyAppleIdentityToken`。老代码只接受 `alg === "ES256"` 并按 ECDSA P-256 导入公钥。
+直接读 <https://appleid.apple.com/auth/keys>，返回的三把 key **全是 `kty=RSA / alg=RS256`**。
+构造一个合法的 RS256 身份 token 交进去，代码在取公钥之前就 401 —— 关联 Apple、
+删号后重新认证走的也是这个函数。
+
+现在按 JWK 的 `kty` 选算法（严格白名单 RS256/ES256，且必须和 `jwk.alg` 对上），
+issuer / audience / expiry 校验原样保留。
+
+⚠️ **App Store Server API 的开发者签名 JWT 确实是 ES256**（`createAppleJwt`），
+那是另一件事，别一起改错。
+
+**重放防护不靠 nonce**：nonce 由客户端给、还能整个省略，挡不住「把同一份 identity token
+再发一次」。现在记下 token 哈希放进 KV（TTL 到它自己的 exp），有效期内第二次直接拒。
+
+## 小程序不是「能收 v2」就等于双向无损（2026-09-09 修）
+
+⚠️ **Worker 不做按表合并**：它把每次上传当成这个账号新的**完整备份**。
+所以任何一端少导出一张表，云端最新那一代就缺那张表；攒够三代之后，
+最后一份完整的快照退出保留范围，全新设备再也恢复不出来。
+**「老设备本地还有一份」不是云备份完整。**
+
+两处已修：
+
+1. **作答流水的身份是 `sync_uid`，不是 `(word_id, created_at, direction)`。**
+   `created_at` 只到秒，前端同一秒答两次会产生两条自然键完全相同的作答；
+   把前端**实际导出器**产生的这两条交给小程序**实际合并器**，2 条只进来 **1 条**。
+   小程序的 `reviews` 现在也有 `sync_uid` 列（`ensureStudySchema` 里加列 + 回填
+   `设备号:本机行号`，格式和 iOS 一致），导出协议版本随之抬到 **2**。
+   ⚠️ **抬版本号和补那一列必须一起做** —— 写着 v2 却没有那一列比拒绝导入更难查。
+2. **小程序看不懂的表原样存下来、原样回传**（`sync_passthrough`）。
+   收快照时把不在 `SNAPSHOT_TABLES` 里的表（`grammar_progress`、语法流水、收藏、
+   汉字单元……）连建表 SQL 和行一起存进本地一张表，导出时重放。
+   每次收到新快照整个换掉那一份 —— 和前端本地增量同一个道理：
+   后一条完整覆盖前一条，不需要序号也不会有「回放了一半」。
+   小程序后来真的认识了某张表，本地那份才是真相，透传里那条会被删掉。
+
+判据在 `wechat-miniprogram/scripts/sync-snapshot-smoke.mjs` 末尾那段**真实往返**
+（前端形态的快照 → 小程序合并 → 小程序导出），CI 里跑。
+
+### ⚠️ 透传只保护「小程序不写的表」（2026-09-10 修）
+
+上面第 2 条对**小程序只读的表**成立，对**小程序自己会写的表**是假的：
+透传送回去的是「上次收到的远端副本」，本机新写的一个字都出不去。
+
+`grammar_progress` / `grammar_state` 正是这种：`markGrammar` 和
+`toggleGrammarFavorite` 会写它们，而它们当时不在 `SNAPSHOT_TABLES` 里 ——
+**小程序上背的语法进度、点的语法收藏，一次都没同步出去过**。
+现在两张表都进了正式协议，各自有合并规则（`mergeGrammarProgress` 和 progress
+同一套口径：计数取大、FSRS 看谁的 `fsrs_last_review` 新）。
+
+⚠️ **进了 `SNAPSHOT_TABLES` 就等于退出了透传的保护**，于是多出两条硬约束：
+
+1. **表必须无条件建出来**（`ensureStudySchema` 里调 `ensureGrammarSchema`），
+   不能等语法页第一次打开。表不存在时导出和合并都会静默跳过 ——
+   对端的语法进度会在小程序推上去的那一代快照里凭空消失。
+2. **列必须和 iOS 的 `grammar_progress` 逐列对齐**（`GRAMMAR_PROGRESS_COLUMNS`）。
+   导出只写本机有的列、合并只收两边都有的列，**少一列就等于每次推快照都把
+   iOS 那一列从云端最新那一代里抹掉**。smoke 里逐列断言。
+
+⚠️ **`grammar_state.dataset_version` 不进快照**（`LOCAL_GRAMMAR_STATE_KEYS`）：
+和 iOS 端 `isDeviceLocalStateKey` 是同一条判据，理由见下面「本机内容迁到哪一版」那节。
+
+### ⚠️ 语法收藏的读和写曾经不在同一张表（2026-09-10 修）
+
+`toggleGrammarFavorite` 用 `core.setState` 写 **app_state**，而 `grammarRows` 的
+JOIN 读的是 **grammar_state** —— **点了收藏永远显示不出来**，一次都没成功过。
+现在读写都走 `grammar_state`，并把已经误写进 app_state 的
+`favorite:*` 迁过来（`migrateFavoritesFromAppState`）。
+
+## ⚠️ 自定义词条的 id 由内容算，不用自增（2026-09-09 修）
+
+`words` 表**不进云快照**（出厂词典两端一致），但 `progress` / `word_notes` /
+`reviews` / 收藏全是按 `word_id` 同步的。用自增 id 给用户导入的新词分配身份，
+后果是两条：两台设备各导入一个新词会拿到**同一个 id**（相同数字不代表同一个词），
+而一台没有这个自定义词的新设备只会收到一堆悬空的学习记录。
+
+现在：
+
+- id = `customWordId(kanji, kana)` —— 内容哈希，落在 `1e12` 起的一段里
+  （出厂词典最大 id 才一万出头，永不重叠），两端天生对上；
+- 内容本身进同步表 **`custom_words`**（`union`，导入后不再改）；
+- 合并之后 `materializeCustomWords()` 把本机还没有的词行补出来，并补 `progress` 行。
+  这一步挂在 `mergeDatabaseBytes` 里 —— 所有合并路径都走那儿。
+
+⚠️ 照例三处登记：`sync/tables.ts`、`scripts/user-data-tables.mjs`（出厂库泄漏守卫）、
+`legacy-word-migrations` 的合并搬迁（合并重复词条时要把 `custom_words` 那行一起删掉，
+否则同步下去会把刚合并掉的词复活）。
+
+ponytail: 哈希空间 1e12 + 本机探测。真撞上（万级自定义词约 5e-5 概率）时，探测出来的
+那个 id 只在本机成立，那**一个**词跨端对不上；要根治得给自定义词一个独立的字符串身份
+并在合并时做引用重映射。
+
+## ⚠️ 「本机内容迁到哪一版」的标记绝不能跨设备同步（2026-09-09 修）
+
+`jlpt_seed_version`、`furigana_version`、`jlpt_word_metadata_version`、
+`jlpt_collocation_content_version`、`dictionary_supplement_version`、
+`jlpt_level_override_version`、`kana_reading_fix_version`、`legacy_biru_merge_version`
+（在 `app_state`），以及 `grammar_state` 的 `dataset_version`。
+
+这些描述的是**本地内容**，而 `words` / `grammar_points` 根本不进快照。
+同步它们等于把对端的「已完成」写到一台还没跑过迁移的设备上，而迁移的入口判断是
+「版本号相等就直接返回」—— 结果是版本标记新、词典是旧的，而且不会自己好：
+每次启动都在同一个相等判断上早退。语法那条更贵：`ensureGrammarSeed` 是按 pattern
+把用户进度迁到新 id 的，被跳过一次就意味着这台设备的 grammar_id 和别人错位。
+
+现在导出（`snapshot.ts`）和导入（`merge.ts`）**两侧都过滤**，共用
+`tables.ts` 的 `isDeviceLocalStateKey(table, key)` 一份判据。
+
+已经被写坏的库分两种修法，**不能用同一种**：
+
+- **app_state 那几个词典侧的标记**：`repairSyncedContentMarkers()` 一次性清掉重跑。
+  它们对应的迁移都是「补行 / 补列」，幂等且只增不删，代价只是一次启动慢一点。
+- ⚠️ **`grammar_state.dataset_version` 绝不能这样清。** 语法那条重建会
+  `DELETE FROM grammar_points` + 重排 id + 清空 `grammar_state.queue` + 往 archive
+  写一整份 741 行 —— 对没被写坏的库全是白付的代价和风险，而且它正是 CLAUDE.md
+  里那条「从没跑过的代码路径」。改成**自愈判据**：`ensureGrammarSeed` 的早退条件
+  从「版本戳相等」变成「版本戳相等**且** `COUNT(*) == GRAMMAR_SEED_ROW_COUNT`」。
+  一次 COUNT 很便宜，只有真的对不上（比如被写坏后还停在 731 条）才付重建的代价，
+  而且以后再被写坏也能自己爬回来，不需要再写一次性修复代码。
+  常数由 `verify-release-db.mjs` 和出厂库、seed 一起钉住 —— 写错就等于那道兜底
+  常年误触发或者常年不触发。
+
+⚠️ **不能粗暴过滤所有带 `version` 的键**：`stage1_plan_version` 说的是
+「今天的计划按哪一版算法排的」，那是用户调度状态，该同步。
+
+## ⚠️ 快照容量有一个具体的死线：2026-11-03（2026-09-09 实测）
+
+**这不是"长期会增长"，是八周。** 实测（真实库 49,696 条 reviews）：
+
+| | |
+|---|---:|
+| 快照未压缩 | **13.48 MB（占 20 MB 上限 67.4%）** |
+| gzip 后 | 1.64 MB |
+| reviews 占 | 9.24 MB / 49,696 行 = **186 B/行** |
+| 用户每天作答 | 636 条 ≈ 每天涨 **118 KB** |
+| 按此速度撞 20 MB | **约 55 天，2026-11-03** |
+
+⚠️ **gzip 后只有 1.64 MB 会让人以为还早得很** —— 闸门卡的是压缩**前**的字节数。
+
+**已做：上限 20 → 48 MB**，买到约 292 天。理由是那个 20 MB 本来就是拍的，
+而且**比 App 自己的内存基线还紧**：本机整库 39.28 MB 一直常驻在 sql.js 的 WASM 堆里，
+「解压出 20 MB 会撑爆内存」这个担心在一个已经常驻 39 MB 的进程里不成立。
+Worker 侧不受影响 —— 它只把 gzip blob 原样存进 R2，**从不解压**（查过了）。
+
+⚠️⚠️ **这是买时间，不是修好了。** 48 MB 也会到。真正的问题是每次小改动仍然上传
+全部历史。顺带一条实测：9.24 MB 的 reviews 里约 **3.6 MB 是同一个 36 字节设备 UUID**
+在 `sync_origin_device` 和 `sync_uid` 两列里重复了五万遍（`distinct = 1`）——
+这部分是纯冗余，但压掉它要动快照格式，前端和小程序两边的合并器都得跟着升，
+属于协议 v3，不是顺手能做的。**云端增量协议必须在 48 MB 撞上之前落地**
+（远端游标、删除、断线重试、离线设备重返、兼容窗口一起设计；
+本地的 `local-delta.ts` **不是**那个东西）。
+
+## 快照容量：上限卡的是压缩前的字节数（2026-09-09）
+
+实测（2026-09-09 的 `live.db`）：本地整库 39.17 MB，**仅用户表快照未压缩 13.98 MB**，
+gzip 后 1.73 MB。看着离 20 MB 还很远，实际已经用掉 **69.9%** —— 因为
+`compressSyncSnapshot` 的上限卡在压缩**前**。reviews 只增不减，这个数只会往上走，
+撞上限之后同步会直接停。
+
+- 设置页的云同步卡里常驻一行「云备份体积 x / 20 MB（n%）」，≥85% 变橙并说明后果。
+  这个数由**现导一次**得到 —— 没同步过的会话里摆一个 0 出来比不摆更误导。
+- `copyTable` 改成**边读边写**：一条 prepare 好的 INSERT 复用到底，
+  不再先把整张表装进 `values[]`（reviews 一张表四万多行，先攒后写等于在导出那一刻
+  把整份用户数据在 JS 堆上再复制一份）。
+- 导出保留窗口从 `stage1_tasks` 扩到 `stage2_progress` / `kanji_progress` /
+  `kanji_reading_progress` / `kanji_unit_tasks`（各 14 天）。
+  ⚠️ 这是**逐个查过消费者**的结论：这几张表的每一条读取都是 `reviewed_on = 今天`，
+  `critical_reviews` 运行时干脆没有读取方。「stage1 裁了」不等于别的表自动享受同一条策略。
+
+**不做的事**：不为了省几十 KB 删墓碑或历史 reviews（墓碑关系到旧设备会不会复活已删记录，
+流水关系到统计和恢复）；也不把 20 MB 改成一个大数字了事（解压内存和新设备恢复仍然是约束）。
+真要上云端增量协议，得连远端游标、删除、断线重试、离线设备重返和兼容窗口一起设计——
+本地的 `local-delta.ts` **不是**已经实现了云端增量协议。
+
+## 部署自检：`GET /api/health`（2026-09-09）
+
+**只返回布尔量**，不吐密钥、计数或用户信息。它回答三个在仓库里看不出来的问题：
+
+```bash
+curl -s https://<worker>/api/health | jq
+```
+
+- `migrations` / `migrationsApplied` —— 远端 D1 有没有应用 0009–0012。
+  少一张表就是**静默失效**：内购归属（0009）、认证限速（0010）、
+  通知留痕（0012）、事件状态索引（0011）会在没人发现的情况下不起作用。
+- `authHardening` / `turnstileConfigured` / `emailConfigured` ——
+  `REQUIRE_AUTH_HARDENING` 有没有真的打开，Turnstile 和邮件配没配。
+- `appStoreConfigured` / `appStoreEnvironment` —— Apple 的 Server API 凭据齐不齐。
+- `productionReady` —— 上面全部成立才是 true。
+
+⚠️ **加这个接口的理由是：这些全都是静默失效。** 接口一切正常、返回 200，
+直到某天有人用同一笔交易开了两个账号，或者线上认证在裸奔了三个月才被发现。
+
+**`apple_notifications` 表（迁移 0012）同理**：Apple 的
+「Request a Test Notification」打进来之后，如果服务端不留痕（未认领的交易直接
+return），「通知地址到底配对了没有」就没法确认，只能等真实退款发生时才发现没配。
+现在**每一次投递都记一行**，包括看不懂的（`ignored`）、查不到交易的
+（`apple_lookup_failed`）、无人认领的（`unclaimed`）和真正生效的（`applied`）。
+
+## 构建与发布：三条闸门和一个最低系统版本（2026-09-10）
+
+### ⚠️ 最低支持系统是 iOS 16.4，三处必须一起说同一个数
+
+`ios/App/Podfile` 的 `platform`、Xcode 的 `IPHONEOS_DEPLOYMENT_TARGET`、
+`frontend/vite.config.ts` 的 `build.target`。
+
+原来前两处写着 15.0，而 **Vite 7 默认按 baseline（Safari 16）编译** ——
+iOS 15 的设备装得上、连 JS 都解析不了，而工程还对外声称支持它。
+
+取 16.4 而不是 16.0：云备份的 gzip 解压直接用 `DecompressionStream`
+（Compression Streams，Safari/iOS **16.4** 才有）。低于它的设备本地能学，
+**恢复不了云备份** —— 而那正是换设备时唯一要它工作的一刻。
+16.0 能跑的机器都能免费升到 16.4，所以这一档几乎不花成本。
+
+### ⚠️ `scripts/package-preview.sh`：清单漏文件是静默的
+
+`git archive` 照样产出 zip，只有收到包的人会撞上。已经漏过的：
+`frontend/scripts`（`prebuild` 要跑里面的 `verify-release-db.mjs` 和
+`verify-kanji-reading-unit-index.mjs`）、`frontend/eslint.config.js`、
+`cloudflare-sync/scripts`（Worker 的 `npm test` 跑的是那里的规则测试）。
+现在打完包会**解压到临时目录真跑一遍** `npm ci / check / lint / test / build`，
+除非显式 `SKIP_PREVIEW_VERIFY=1`。别把那一步删了 —— 它是唯一能发现清单漏项的东西。
+
+### ⚠️ `scripts/build-ios.sh` 是发版那条路，不许绕过门禁
+
+原来是「看见 `node_modules` 就跳过安装，否则 `npm install --legacy-peer-deps`」，
+而且只 build 不跑 check/lint/test。一份几个月前的 `node_modules` 会和
+`package-lock.json` 悄悄对不上。现在一律 `npm ci --legacy-peer-deps` +
+check / lint / test，应急才用 `SKIP_RELEASE_GATES=1`。
+
+### ⚠️ 网页版默认没有预生成读音音频
+
+那 137 MB 不在版本库里（见 `.gitignore`），干净 runner 上 checkout 完根本没有，
+于是网页版**静默**退回系统 TTS，而构建全绿、没有任何提示。
+`deploy-pages.yml` 现在支持 `AUDIO_ARTIFACT_URL` + `AUDIO_ARTIFACT_SHA256`
+两个仓库变量（下载 → 核对 sha256 → 解开），没配就在日志里 `::warning::` 说明白。
+**制品本身还没发布**，要发一版带声音的网页版得先把它传上去。
+
+### ⚠️ 小程序的 CI 入口只有 `npm test`，别在 workflow 里抄脚本名单
+
+抄名单的那一版漏掉了 grammar / runtime / entitlement / modes / budget 五个，
+它们从此没在任何一次提交上跑过。`npm test` 走 `scripts/run-all.mjs`，
+**枚举 package.json 里的全部脚本** —— 新加 smoke 不用改 CI。
+
+## 请求体、限速与配置降级（2026-09-09）
+
+- **边读边数，超了当场断开**（`readBodyBytes`）。⚠️ 不能只看 `content-length`：
+  那个头是可选的，分块传输的请求根本没有它，于是「先 `arrayBuffer()` 读完、
+  再检查实际长度」在真正超大的请求上已经把内存占掉了才发现。
+  JSON 路由默认 64 KB，个人资料 4 MB（要带 base64 头像），同步推送走原有上限。
+- **认证限速改用 D1 的原子 UPSERT**（`auth_rate_limits`，迁移 `0010`）。
+  原来是 KV 的 `get → put`：两个节点同时读到 4、同时写回 5，实际放过了两次。
+  对同步接口那种「别刷爆账单」够用，对登录爆破和验证码枚举不够。
+  改密码这类**认证之后**的昂贵路由也补上了按账号限速。
+- **改昵称不再重发头像**：客户端记下上次推上去那份头像的指纹，没变就整个不带
+  `avatar` 字段（服务端早就支持「字段缺席 = 不动」），响应也不再把 3 MB 头像原样送回。
+- **`REQUIRE_AUTH_HARDENING=1`**：Turnstile 或邮件服务没配好时，注册/登录/找回密码
+  直接 503。配置缺一半就整个关掉是给本地开发用的；部署时打错一个变量名会变成
+  **静默降级** —— 人机验证没了、邮箱验证没了，而接口一切正常、没有任何告警。
+  ⚠️ 这个开关**默认关着**，生产部署时要自己打开（打开之前先确认两样都配好了，
+  否则线上会立刻 503）。
+
 ## 云同步：花钱的是请求次数和快照体积，不是表的数量
 
 同步是**整份用户表快照**（`master-nihongo-user-sqlite-v1`，gzip 后进 R2），不是按表增量。
@@ -88,6 +444,164 @@ db.exec("SELECT reviewed_on, COUNT(DISTINCT word_id) FROM reviews GROUP BY revie
 ⚠️ **本地 `stage1_tasks` 没裁**（只裁了快照）。删本地行会给每一行写墓碑 ——
 两万五千条墓碑比省下来的那点空间贵得多。要裁得先想清楚怎么绕开触发器。
 
+## 答一次题该做多少事（2026-09-06 大修）
+
+实测起点：真实库（46,618 条 reviews / 2,522 个学过的词）上**点一次评分，主线程同步
+阻塞中位 549ms**，每 50 次作答里有一次冻 **4~6 秒**，再加上 2 秒后一次 100~510ms 的落盘。
+改完是**中位 73~79ms、80 次里最大 153ms**，落盘那一下从 35.9MB 变成几 KB。
+
+根因只有一条：**「记一次账」被绑成了「重算全应用状态 + 重写整个数据库」，还全挤在
+keydown 的同一个同步 task 里**（`submitWordAnswer` 是同步的，后面那串 `await` 等的都是
+已 resolve 的 promise，微任务在同一个 task 里跑完）。四条改动，每条都对应一个「全量」习惯：
+
+| 改的 | 之前 | 现在 |
+|---|---|---|
+| `ensureProgressInitialized` | 每答一次跑 **6 遍**（每遍 11,740 行的全表 INSERT OR IGNORE + 全表 UPDATE words），115ms | `oncePerDatabase("word-progress")`，一个库一次 |
+| `getWordStats` | 30 个统计字段全算好再返回，每答一次算 **2 遍** | 首页才看的字段改成惰性 getter，读到才算 |
+| `getProgressOverview`（App.tsx） | 挂在 PROGRESS_UPDATED 上无条件重算，学习页里也算 | 看不见就记脏标记，回到首页再补 |
+| `updateMemoryProfileIfNeeded` | 在答题路径上，每 50 次触发一次全量历史聚合 | 整个摘掉，只由统计页算；SQL 本身改写成窗口函数 |
+
+合计：**每次作答的 SQL 从 318 条 / 536ms 降到 102 条 / 69ms**。
+
+⚠️ **「幂等」不等于「免费」。** 那 6 遍 `ensureProgressInitialized` 是十几个 API 入口
+各自「反正它幂等，调一下保险」调出来的。闸门用 `oncePerDatabase`（`database/db-utils.ts`）
+按 **db 实例**记，不是模块级 boolean —— 同步合并、恢复快照、导入备份都会换掉 db 实例，
+那时候必须重跑。同一个实例上新增了 words 行（词单导入）要由那条路自己补 progress 行。
+
+⚠️ **`getWordStats` 别改回「先全算好再返回」。** 学习页每张卡只读
+stage1Progress / dailyRelief / stage1Done / dailyPlanDone 这几项；30 天曲线、打卡表、
+全库 COUNT、反向和汉字的当日计划都是首页才看的。惰性字段算完就记住，所以首页拿到的
+仍然是同一时刻的一致快照。**减负和压轴（`ensureDailyRelief` / `ensureDailyTail`）
+必须留在立即算那一档** —— 它们带写，是「今天该给你什么」的一部分，不是展示用的统计。
+
+⚠️ **记忆画像（adaptive.ts）不参与任何调度，别再挂回答题路径。** 它自己的注释就写着
+「只用于统计页展示」。代价是从不打开统计页的人，画像停在上次打开时的值 —— 不影响出题。
+里面两条相关子查询已换成窗口函数（保持率 3.8s → 约 0.4s），
+`adaptive.test.ts` 里**抄了一份旧 SQL 当基准对拍**，改口径必须两边一起动。
+
+## 落盘：整库最多 5 分钟一次，中间只写改过的行（2026-09-06）
+
+`local-delta.ts` + `storage.ts`。以前 `scheduleSave` 是 2 秒 debounce 后**整库** export
+再写下去 —— 真人节奏下等于每答一张卡就重写 35.9MB：浏览器端占住主线程 100~510ms，
+原生端还要先 base64（36MB → 48MB 字符串）再走三代文件轮转。
+
+现在：中间只写「上次整库快照之后改过的行」（实测 **每张卡约 0.9 KB**），
+整库最多 5 分钟一次（`FULL_SNAPSHOT_INTERVAL_MS`）。
+
+- **增量是白捡的**：云同步早就给每张用户表加了 `sync_updated_at`（触发器盖章）和
+  `sync_tombstones`。这里没有第二套变更追踪，只是换个地方用同一份；回放也用同一套
+  `beginSyncApply` 把触发器压住（回放不是新的本地改动，不该重新盖时间戳）。
+- **只有一份增量**：每条增量都是「快照之后改过的所有行」，后一条整个盖住前一条 ——
+  不需要序号、不需要排序，也不会出现「回放了一半」。
+- **水位线写在库里**（`app_state.local_snapshot_mark`，导出前写），所以快照自带
+  「我是哪一刻的」，不用另存 mark 文件，也就没有「mark 写成功快照没写成功」的中间态。
+
+⚠️ **一个看着最诱人的方案是错的：把出厂词典拆出去并不解决问题。** 实测 35.95 MB 里
+出厂数据（words / grammar_points / archive / kanji_units + 索引）只有 **8.8 MB**，
+用户数据 26 MB —— 光 reviews 加它的四个索引就 15.9 MB，stage1_tasks 5.6 MB。
+拆完还剩 26 MB，而且只增不减，代价是每个 `words ⋈ progress` 都要跨库。
+
+⚠️ **`words` 表的改动不在增量里**（它没有 `sync_updated_at`）。词单导入（插行）和
+「合并重复词条」（删行）**必须自己喊 `requestFullSnapshot()`**，两处都已经喊了；
+再加动 words 的路要记得跟上。启动时的种子迁移和 shuffle_rank 回填也写 words，
+但它们每次启动都会幂等地再跑一遍，自愈，不用管。
+
+⚠️ **`local_snapshot_mark` 已加进 `DEVICE_LOCAL_STATE_KEYS`，绝不能跨设备同步。**
+它说的是「本机磁盘上那份快照停在哪一刻」，拿对端的值当基准去收增量，收出来的行
+对不上本机快照，重启后是一份两边拼起来的库。
+
+⚠️ **换库之后第一次落盘一律整库**（`needsFullSnapshot` 里那条 `snapshotDb !== 当前 db`）。
+恢复备份、导入、云同步合并都会换掉 db 实例，而磁盘上那份快照还是换之前的。
+
+⚠️ **`clearStorage` 要把增量一起清掉**，否则「清除数据」之后下次启动会把旧增量
+回放到刚重建的出厂库上。
+
+- `flushPendingSave`（退到后台 / 页面隐藏）走的也是增量：那一刻页面随时会被杀，
+  写几百行比写 36MB 靠谱得多。硬崩溃最多丢到上一次增量为止（2 秒）。
+- DEV 下往 `.local/live.db` 镜像整库改成自己带一道 20 秒的闸（`mirrorForDev`）——
+  不挡的话每写一次增量都要为了镜像 export 一遍整库。`npm run db` 的数据新鲜度不变。
+- 判据在 `local-delta.test.ts`：拿两份真实的库对着比（改 / 删 / 删了又插回来 /
+  回放不改时间戳 / 回放幂等 / **中途写不下去要整条回滚**），不看中间结构。
+
+## ⚠️ 落盘的四条不变量（2026-09-10 审查后补齐）
+
+上面那一节讲的是「什么时候写、写多少」。这一节是「写的过程中不许发生什么」。
+四条都曾经真的会发生，而且**全部是静默的** —— 没有报错、没有日志，
+只有第二天少一段进度。判据在 `storage-durability.test.ts` 和 `local-delta.test.ts`。
+
+### ① 所有落盘走同一条串行队列（`enqueueWrite`）
+
+定时保存、页面隐藏兜底、显式 `saveDatabase()` 三条路都能同时进到写盘流程，
+而它们共用 tmp 文件、`pendingSave` 和快照基准。**让旧的那次晚一点完成，
+主文件就从新版本退回旧版本。**
+
+⚠️ `persistNow` 里只能调 `saveDatabaseNow`，不能调 `saveDatabase` ——
+后者会在自己那格队列里再排一次队，直接死锁。
+
+⚠️ **写盘期间又有改动的话 `pendingSave` 不许清掉**（拿 `localDataRevision` 前后对比）。
+清掉的话退到后台时 `flushPendingSave` 会以为没东西要写，那几百毫秒里答的题就没了。
+
+### ② 增量回放是一个事务
+
+`beginSyncApply()` 只是把同步触发器压住，**它不是 BEGIN TRANSACTION**。
+没有事务时，中途某一行写不下去会留下一份「放了一半」的库，而启动代码只在
+控制台说一句「已按快照那一刻启动」。回放失败的增量会被**原样另存**
+（`stashFailedDelta`），不然下一次落盘就把它盖掉，连查都没得查。
+
+### ③ 「有存档但打不开」≠「没有存档」
+
+`loadDatabase` 现在**抛 `LocalArchiveUnreadableError`**，不再返回 false。
+返回 false 的那条路是静默毁数据的：`main.tsx` 拿到 false 就加载出厂库，
+下一次落盘用的还是同一个 key/文件名 —— 那份可能只是这次读不出来的存档就没了。
+现在停在启动画面上问人：**重试 / 导出这份存档 / 明确同意重建**。
+原生端三代文件全读不出来时同理（文件原样留在磁盘上）。
+
+⚠️ `storage-unreadable-archive.test.ts` 钉的就是「必须抛，不许返回 false」。
+
+### ④ 原生端启动要读 `nihongo.delta.json.tmp`
+
+写增量的顺序是 write tmp → delete delta → rename tmp→delta。
+**在 delete 之后、rename 之前被杀掉，完整的新增量只剩 tmp 那一份**。
+只认 delta 等于把它扔了。半份 tmp（writeFile 途中被杀）解析不出 JSON，
+由 `replayDeltaRecord` 的 catch 丢掉，所以多读这一个候选是安全的。
+
+### ⚠️ 内容迁移必须喊 `persistContentSoon()`，不是 `persistSoon()`
+
+内容迁移改的是 `words` / `grammar_points` / `dictionary_entries` 这些
+**不带 `sync_updated_at`、因而不进增量**的表，而它写下的版本号在 `app_state`，
+那张表是进增量的。用普通 `persistSoon` 的话，离下一次整库还有几分钟时重启，
+拿到的就是**旧内容 + 新版本号** —— 而迁移的入口判断是「版本号相等就返回」，
+于是这台设备的内容永远停在旧版，每次启动都在同一个相等判断上早退。
+**「反正每次启动幂等重跑」在这里不成立，版本门控把重跑挡住了。**
+判据在 `seed-migrations.test.ts`（清空版本戳跑一遍，断言 `requestFullSnapshot` 被调用）。
+
+### ⚠️ 导入整库备份必须换设备号（`restoreDatabaseBackup`）
+
+作答流水的跨端身份 `sync_uid` = `设备号 : 本机自增 id`。备份里带着导出那台设备的
+设备号，不换掉的话，两台设备从同一份备份出发、各自答一道**不同**的题，
+会生成一模一样的 uid —— 云端按 uid 合并时把两次不同的作答当成同一件事，
+后到的那条直接丢掉。`resetDeviceId()` 早就写好了，只是**从来没有调用方**。
+
+⚠️ 只有「用户主动导入整库备份」这一条路换号。普通启动恢复每次换号的话，
+每次重启都是一台新设备，墓碑和 append 表的来源全乱。
+
+### ⚠️ `importDatabase` 换库之后要关掉旧实例
+
+一个整库就是几十 MB 的 WASM 堆，恢复几次备份就叠几份；校验不过的那份也要关。
+关的只有「已经不可能再从 `getDatabase()` 拿到」的那一个。
+
+## ⚠️ 写盘失败的提示挂在常驻层（`App.tsx` 的 `PersistenceBanner`，2026-09-10）
+
+`PERSISTENCE_ERROR_EVENT` 以前只有 `GrammarHighlightProvider` 在听，而那个 Provider
+只包着语法页和详情页 —— **在单词学习页写盘失败时，除了控制台一行 error 之外
+什么都不会发生**，用户会接着答几十张卡，以为都记下了。
+
+配套加了 `PERSISTENCE_OK_EVENT`（只有真出过错才派，平时每 2 秒一次的成功不广播），
+所以自动重试成功之后横幅会自己消失。
+
+**故意不做「正在保存」那一档**：正常节奏下每 2 秒就有一次写入，
+一个每两秒闪一下的指示器只是噪音。要说的只有「没存下去」和「又好了」。
+
 ## 复习算法：只有 FSRS（2026-08-01 起）
 
 **单词、汉字、语法三个阶段统一由 `ts-fsrs`（Anki 同款 FSRS）调度。自研的 score / 连胜梯子 / 回归模式已整体删除，别再往回加分数。**
@@ -96,6 +610,13 @@ db.exec("SELECT reviewed_on, COUNT(DISTINCT word_id) FROM reviews GROUP BY revie
 - `fsrs-store.ts` — 状态持久化，泛化成可挂任意表：`WORD_FSRS`(progress) / `KANJI_FSRS`(kanji_memory) / `GRAMMAR_FSRS`(grammar_progress)
 - `word-api/stage1.ts` — 当日任务表生成；`scheduler/priority.ts` — 出题优先级
 - `review-budget.ts` — 每日复习上限、续杯批量、疲劳检测
+
+⚠️ **`isGraduatedForDay` 不能只比 due 和学习日边界**（2026-09-10 修）。
+学习日边界是凌晨四点：03:55 答「忘记」，重学步骤把 due 排到 04:05 —— 越过了边界，
+于是它被当成「今天已毕业」，这一场里再也不出现。用户点了忘记却等不来那次确认，
+而 FSRS 那边这张卡明明还停在 Relearning 的第一步。
+现在 **Learning / Relearning 一律不算毕业**：那两个状态下 due 永远是下一个短期步骤，
+不是真正的复习间隔。判据在 `fsrs-scheduler.test.ts`。
 
 ## 认识音：Shepard 音阶，听感一直升但频率原地转圈
 
@@ -134,6 +655,41 @@ Shepard 音把这个约束整个拿掉：同一个音级在**九个八度上同�
   —— 这次只换「音高怎么走」。
 - 答错时连击归零 = 音高掉回去，这仍是反馈。但 step 12/24/36 上断掉的话掉回 0 是**同一个音**，
   那 1/12 的情况下靠 `playDontKnow`（柔和下行小三度）说话，本来它才是主要的那句。
+
+## 读音音频：长音该压，语素边界不该（2026-09-07）
+
+预生成的读音音频走 VOICEVOX（`scripts/build-word-audio.mjs`，三个声音，出厂库每个词一份）。
+它会把**同一个元音连着两拍**里的第二拍压到 40~90ms（正常一拍 120~220ms）。
+
+对长音这是对的（優勝 ユウ 的 ウ 只有 48ms）；对**语素边界**是错的：
+湖（水 + 海）听成 ミズーミ、薄々（うす + うす）听成 ウスース —— 少了一拍。
+用户报的就是「湖 みずうみ 把 u 读成长音了」。
+
+⚠️ **声学上两类分不开**：大=おお 75~89ms、氷=こおり 82ms 都是长音，湖 78ms 是边界，
+分布完全重叠。按时长自动判会把 優勝 一起撑开。只能按语素边界判，判据两条：
+
+| | 例 | 处理 |
+|---|---|---|
+| 两个实词拼起来 | 水+海、地+域、うろ+覚え、うす+うす、せかい+いさん | 两拍，撑开 |
+| 一个语素内部 / 活用音便 | 椎=シイ（椎茸）、引きて→引いて（ひいては）、大=おお、氷=こおり、言い方 | 长音，原样 |
+
+- 识别 / 分组 / 撑开逻辑在 `scripts/vowel-sequences.mjs`，**审计脚本和合成脚本共用这一份**
+  （「怎么算一个连接点」漂移了，判定表就对不上号）。判定表是
+  `scripts/vowel-sequence-manual-review.json` 的 `decisions`。
+- 体检：`node scripts/audit-vowel-sequences.mjs`（要 VOICEVOX 开着）。新词进库后跑一次，
+  没判过的落在 `pending` 里。
+- ⚠️ **只有引擎真的压扁了的连接点才进人工表。** 全库 520 个连接点里，引擎已经给足两拍的
+  有 307 个（新しい 的 しい 是 228+138ms），判它们没有意义。
+- ⚠️ **判定按「读音单位」分组，不按词**：`通=つう` 一次管 25 个词。盖不住的（纯假名边界）
+  才退回按词判 —— 按假名两拍分组太粗，`いい` 里既有 言い方（长音）又有 世界遺産
+  （せかい|いさん，两拍）。剩下要人判的只有 58 组。
+- 撑开只设下限（第二拍 0.12s、前一拍 0.10s），不缩短：引擎给够了的别动。
+  实测 湖 的发声段 500ms → 610ms。
+- ⚠️ **撑开必须放在 `accent_phrases(明确假名)` 之后**：那一步会按记法重算整份拍表，
+  先撑就被覆盖掉了。
+- ⚠️ **重跑合成脚本不带 `--label`** 曾会把 index.json 里的显示名冲成 id
+  （春日部つむぎ(女声) → voicevox-8），汇总表的 `default` 还会按 id 排序静默换成另一个声音。
+  已改成不给就沿用旧值。
 
 ## 成就：判据现算，不攒计数器
 
@@ -353,6 +909,26 @@ reading-register 说的是**词**（月(つき) 和 月(げつ) 是词库里两�
   每次都 `Math.floor` 取秒的话每笔都是 0，一场能记成 0 分钟。
 - 改这个口径会连带 `achievements/stats.ts` 的 maxMinutesInDay / minutesTotal 和
   `review-budget.ts` 的疲劳检测 —— 历史那段是老口径，曲线上会有台阶。
+
+## 交互上的三条（2026-09-10 审查）
+
+⚠️ **别再往 document 上挂「300ms 内的第二次 touchend 一律 preventDefault」。**
+`webview-optimizer.ts` 里那条防双击缩放不看是不是同一个元素，所以
+**快速点两个不同的按钮时，第二下的 click 会被吃掉** —— 而连着点评分正是答题的动作。
+双击缩放本来就已经被 `index.html` 的 `user-scalable=no` 挡住了（WKWebView 认这个
+属性，移动版 Safari 不认），那条监听器是重复的一道闸，只剩副作用。已删。
+（一起删掉的还有两条空监听：`selectstart` 里那句 `preventDefault` 一直注释着，
+`touchmove` 那条只有一个 `return`。）
+
+⚠️ **通知 id 分段不许重叠。** 成就通知是 `9200 + Date.now() % 100`，占 9200–9299。
+原来是 `% 1000`（9200–10199），把测试通知(9301)和备考提醒(9400–9413)整段吃掉 ——
+一次成就解锁就可能顶掉当天的备考提醒，或者反过来被它取消。
+
+⚠️ **`Paywall` 自带模态语义**（`role="dialog"` / `aria-modal` / Esc 关闭 / 焦点进来、
+Tab 在卡片里循环、关掉还回原处）。缺了这几样，键盘和 VoiceOver 用户会在背后
+那一页里乱走 —— 而背后那一页正是刚被拦下来的付费功能。
+用原生 `<dialog>` 能白捡这些，但它要 Safari 15.4；现在最低是 16.4 了，
+以后想换成 `<dialog>` 是可以的，换之前先确认 `showModal()` 在 WKWebView 里的行为。
 
 ## 图标：功能位一律 lucide，角色位一律留 emoji（2026-09-01）
 
@@ -703,7 +1279,12 @@ FSRS 到期集 → 当日复习上限 → 新语法配额 → 学习步骤（没
   `jlpt/status.ts` 和 `progress-api.ts` 早就在按 `p.fsrs_due` 查语法了 —— 改完它们才有数。
 - **刻意没建当日任务表。** stage1_tasks 是给八千词做物化的；语法一个等级一百来条，
   「今天该做什么」现算一次几毫秒，「今天做过什么」由 `grammar_reviews` 说了算。
-- 新语法配额 = `dailyGoal`（和反向/汉字一样，各排各的一份互不挤占）。今天的过完了
+- **新语法配额走自己的旋钮 `preferences.grammarDailyGoal`（默认 5 条/天，2026-09-06 改）。**
+  原来蹭的是单词的 `dailyGoal`，那是错的：一个等级只有一百来条，按每日新词 15 排
+  等于八天过完一级，而一条语法要记的是接续 + 用法，不是一个词形。范围 [0, 30]，
+  **0 = 今天只复习学过的，不进新条目**（单词那根滑杆下限是 5，语法允许停）。
+  和单词各排各的一份、互不挤占；复习上限仍然共用 `reviewCap`（那是「一天最多复习多少」
+  的唯一旋钮）。判据钉在 `grammar-quiz.test.ts`。今天的过完了
   想继续走「再学 10 条」（`extendGrammarQuizPlan`，把当天配额抬高，记在
   `grammar_state` 的 `quiz_encore:<等级>:<日期>`），不自动往后借明天的账。
 - 评分四颗：忘记 / 模糊 / 认识 / 熟知，V/B/N/M，和单词学习共用
@@ -714,6 +1295,36 @@ FSRS 到期集 → 当日复习上限 → 新语法配额 → 学习步骤（没
 - 没有排片器：干扰隔离靠「同混淆组」，而语法点没有那份数据。
 - 「错得最多」那份列表还在（按 `forgot_count` 倒序），现在只是攻坚入口，不再是唯一的算法。
 - 等级选择器长在考题页自己身上，不沿用列表页那个可以选「全部」的筛选：备考是按等级来的。
+
+### 语法「抓手」：一句 ≤20 字，说这条最容易错在哪（2026-09-08）
+
+`src/data/grammar_key_points.json`（741 条，人工逐条写）+ `lib/grammar-key-points.ts`。
+显示在语法考题卡（翻面后，接续和中文意之下、例句之上）、语法辞典、语法库、沉浸阅读四处。
+
+⚠️ **它不是「把解释缩短」，是「说解释里没说的那一点」。** 重写之后的 `explanation`
+本来就短（**中位 49 字、p90 59 字、最长 72 字**），在 49 个字里再划三个字收益接近零。
+真正累的是**四个字段 × 741 条在同一屏上等重摆开**，没有主次。所以抓手写的是
+「这条最容易错在哪」——`ではない` 不是 `ではありません`、`ことにする` 是自己决定而
+`ことになる` 是别人定的、`しか` 后面必须接否定。判据是「删掉它，这张卡还剩什么」。
+
+- **键是 `grammar_points` 的 `pattern`，不是 grammar.ts 的字符串 id。** 语法考题卡
+  （`GrammarCard`）拿到的只有 DB 那一行，学习页拿到的是 grammar.ts 的 point ——
+  用 pattern 当键两边共用同一份，考题卡也就不用为了查一句抓手把 1.5 MB 的
+  grammar.ts 拉进自己的包。重名的 14 条在 `aliases` 里存 id → 带后缀的 pattern。
+- ⚠️ **故意不进数据库、不进 `grammar_seed`。** 它是内容不是用户状态；加一列就要动
+  `ensureGrammarSeed` 那条会掉条目、会删用户进度的迁移路径（见下一节），
+  而这份 JSON 换一版只是换个文件，没有迁移、不用升种子版本。
+- ⚠️ **也绝不要写进 `grammar_highlights`。** 那张表是**用户自己划的重点**：走云同步、
+  按 block + start/end 存、带 `GRAMMAR_HIGHLIGHT_DATASET_VERSION` 失效检测、上限 500 条。
+  混进去的后果是「用户清空自己的重点会把系统的一起清掉」，以及每次内容改版给每个人
+  糊几百条「此重点已失效」。
+- 样式一份：`.grammar-key-point`（辞典 / 语法库 / 沉浸阅读三处共用）。
+  **浅色主题单独沉一档**（#81D8CF 在奶油底上读不动，同振假名标注那条）。
+  考题卡不用这个类 —— 那张卡的颜色由调用方通过 `--quiz-accent` 传进来
+  （考题页青绿 / 混合模式琥珀），写死就破了那条口径。
+- 体检在 `grammar-key-points.test.ts`：741 条一条不缺、都在 20 字以内、
+  **重名的两条不许串成同一句**（やる 在 N5 是「做，比する随便」、在 N4 是「给晚辈」，
+  按 title 查会并成一条）。
 
 ### 接续标在题面每个 `～` 的头上（翻面后）
 
@@ -744,8 +1355,9 @@ FSRS 到期集 → 当日复习上限 → 新语法配额 → 学习步骤（没
 ⚠️ **语法有两份进度，别混用。** 列表页的「熟悉/没记住」在 `hooks/useStudyStore` 的
 **localStorage** 里，按 grammar.ts 的**字符串 id**（pdf-n3-010）存，**不同步**；
 考题这份在 `grammar_progress`，**数字 id**，同步。两边桥接要靠 pattern 匹配，而
-grammar.ts(741) 和 grammar_seed.json(731) 还差 10 条，所以现在**没有合并**，
-考题是自成一套的。要合并得先解决 741/731（见下一节）。
+两份 id 体系不同，所以现在**没有合并**，考题是自成一套的。
+（seed 和出厂库的 741/731 那条已于 2026-09-08 修掉，见下一节；
+但列表页那份 localStorage 进度和 `grammar_progress` 仍然是两本账。）
 
 ### 混合模式（单词 + 语法，2026-09-05）
 
@@ -771,8 +1383,28 @@ grammar.ts(741) 和 grammar_seed.json(731) 还差 10 条，所以现在**没有�
   走 `grammarPlanRemaining`，不抽卡只数数）。第一版只报词数，结果是混合和经典在主页上
   写着同一个数 —— 多出来的那部分工作量在界面里根本不存在。单位因此从「词」换成「项」，
   大卡脚注那一行也从「新词 · 复习」换成「单词 · 语法」（两栏加起来仍等于大卡的合计）。
-- **学习页里的松鼠轨道仍然只数单词**：那条进度是 `stage1_tasks` 的物化，而语法刻意没有
-  当日任务表（见上一节）。插播的语法算加量、不算进度。
+- ⚠️ **「上一个」必须按作答顺序分派（2026-09-05 修）。** 单词和语法各有一份互相不知道
+  对方存在的撤销栈（`last_answer` / `quiz_undo:<等级>`），而学习页的撤销一直只调
+  `undoLastWordAnswer`。于是答完一条语法再点「上一个」，撤掉的是**语法之前那个单词**：
+  语法留下一次不该留的作答（FSRS 已推进、流水已写），单词丢掉一次该留的 ——
+  **一次误操作造两笔假数据**，而按钮还亮着，看着像正常工作。语法卡显示时整页被顶掉、
+  工具栏跟着不在，所以那会儿连撤都撤不了。现在 `WordStudy` 记一小段 `undoKinds`
+  （只在内存里，长度同 `UNDO_LIMIT`）按栈顶分派，语法卡自带一颗撤销按钮。
+  ⚠️ **混合模式下只撤这一次进页面之后答的**：顺序不落库，退出再进来就没了，
+  这时按「word」去撤等于把同一个 bug 换个入口复现。判据在 `mixed-undo.test.ts`
+  （⚠️ 它跑的是被调用的那两个函数；分派本身在组件里，仓库没有 testing-library，覆盖不到）。
+  ⚠️⚠️ **语法卡还摆在屏幕上时，栈顶那一笔一定是单词**（`submitAnswer` 先压栈、再
+  `maybeGrammarTurn`）—— 所以点语法卡右上那颗撤销走的是单词分支，撤掉的是语法卡**底下**
+  那张单词卡：库里退了、屏幕纹丝不动，看着就是「上一个不能用」（2026-09-06 报）。
+  现在单词分支里顺手把插播收回去（`setGrammarCard(null)` + 计数退回
+  `MIXED_GRAMMAR_EVERY - 1`）：那次作答不算数了，插播也不该被它提前用掉。
+- **松鼠轨道在混合模式里数「单词 + 语法」**（2026-09-06 改，原来只数单词）。
+  原因和首页角标那条一样：角标、大卡脚注早就按合计在说话，小路只数单词的话，插播那几条
+  语法答完顶上纹丝不动，而分母还比大卡小一截 —— 两个数字当面打架。分子分母各自加上
+  `stats.grammarDone` / `+ grammarRemaining`（`SquirrelTrail` 的 `mode === "mixed"` 分支）。
+  ⚠️ **只有混合模式这么算**：经典模式那条路仍然是 `stage1_tasks` 的物化，语法不掺进去。
+  ⚠️ 代价是学习页每答一次多两条语法当日计划的 SQL（`grammarPlanDone` / `grammarPlanRemaining`
+  都是惰性字段，但小路每次 `PROGRESS_UPDATED` 都会读到它们）。
 
 ## ⚠️ 语法种子升版本会走一条从没跑过的代码路径（2026-08-23 踩到）
 
@@ -782,11 +1414,49 @@ grammar.ts(741) 和 grammar_seed.json(731) 还差 10 条，所以现在**没有�
 界面显示「本地词库读取失败」—— 一次内容更新把所有人的 App 变砖。已修，
 回归测试在 `grammar-seed.test.ts`（强行写入一个假版本号，跑完整条重建路径）。
 
-⚠️ **`grammar_seed.json`(731 条) 比 `grammar.ts`(741 条) 少 10 条**，而出厂库
-`public/nihongo.db` 是按 grammar.ts 烧的（741）。所以**现在还不能升语法种子版本**：
-一升，新装用户的语法点会从 741 掉到 731，并且那 10 条的进度会被
-`ensureGrammarSeed` 末尾那句「删掉新版本里已不存在的语法点」清掉。
-要升版本得先把 seed json 按 grammar.ts 重新生成。
+### ⚠️ seed 和出厂库曾经用两套重名消歧写法（2026-09-08 修）
+
+**`grammar_seed.json` 一度只有 731 行，而出厂库 `public/nihongo.db` 是 741 行。**
+根因不是「少了 10 条」，是**两边各用一套 pattern 重名消歧**（`pattern` 有 UNIQUE 约束，
+而 grammar.ts 里有 14 组同名语法点分布在不同等级）：
+
+| | 重名的第二条写成 |
+|---|---|
+| 出厂库（`syncGrammarDbContent`） | `やる（N4-2）`、`～をよそに（N1-2）` |
+| 旧 seed | `やる（N5・做（比「する」语气更随便））` |
+
+`ensureGrammarSeed` 是**按 pattern 字符串**把用户进度迁到新 id 的，两套写法谁也对不上谁。
+真升一次版本的后果：**16 个语法点从老用户库里消失**，它们上面的
+`grammar_progress` / `grammar_reviews` / `grammar_mistakes` 被末尾那句
+`DELETE ... WHERE grammar_id >= OFFSET` 一并删掉（archive 只存 grammar_points 内容，
+不存进度，删了回不来）；而且出厂库自己的 `dataset_version` 已经是新值，
+**新装用户走 early return 保留 741 条、老用户重建成 731 条，两边 grammar_id 从此错位** ——
+`sync/tables.ts` 里 `grammar_progress` 正是按数字 `grammar_id` 同步的，
+那行「words / grammar_points 这类出厂内容两端一致」的注释就是这个前提。
+
+现在 seed 改成**和出厂库逐行同构**（741 行、bookOrder 顺序、同一套 `（N4-2）` 后缀，
+生成代码在 `build-furigana.mjs` 写 `grammarRows` 那一段），升版本对老用户是无损重建。
+闸门在 `verify-release-db.mjs`：**逐行比对 seed 和 grammar_points 的 13 个字段**，
+差一行就拒绝构建。
+
+⚠️ **自愈判据后面还有一道闸，别让它把修复挡回去**（2026-09-10 修）。
+第一层是「版本戳相等**且** `COUNT(*) == GRAMMAR_SEED_ROW_COUNT`」才早退；
+但下一层还有一条 `if (grammarSeed.version === grammarVersion) return`，
+它本意是提示「常量落后于 JSON」。**不带「常量确实落后」这个前提的话**，
+三个版本号相等、只有条数少了的库会在这里原地 return，还打一句误导的
+「GRAMMAR_SEED_VERSION 常量落后」—— 自愈那一层等于白写。
+现在的条件是 `JSON 版本 == 库版本 && 库版本 != 常量`。判据在 `grammar-seed.test.ts`。
+
+### ⚠️ 发布校验比对的是 12 个字段,不是 7 个（2026-09-10 补）
+
+`verify-release-db.mjs` 原来只逐行比 pattern / meaning / 首条例句 /
+等级 / 排序 / 分词。**语法的文字层(用法说明 `notes`、中文译文 `example_meaning`、
+接续 `formation`、辨析 `confusions`)一个都没在比** —— 而那正是 2026-09 为了版权
+逐条重写的东西:出厂库和 grammar.ts 在这几列上悄悄分家,谁都不会知道,
+因为界面读的是库,而重写记录对的是 grammar.ts。
+
+⚠️ **出厂库和 iOS 那份必须用同一条 SELECT**（`GRAMMAR_TEXT_SQL`）。
+两处各写一份列清单的话,加一列就会让「两份库正文不一致」永远成立(列数都对不上)。
 
 （2026-08-23 改 `～うちは／ないうちに` 的释义时就撞上这条：最后**没有升版本**，
 改成直接把新释义写进 `public/nihongo.db` 和 `ios/App/App/public/nihongo.db`
@@ -880,11 +1550,44 @@ id 是全应用的语法身份（详情页、furigana 表、进度都按它走�
 2026-08-26~09-01 每天只有 **0,1,1,2,1,0,1** 个 —— 那张表几乎永远是空的，用户当天就报
 「快速复习当天顽固没出来」。换成 forgot_count 后同期是 **6,9,11,14,23,16,15**（均 13 个）。
 
-- **只数 `direction='forward'`**：完成页说的是经典模式这一场，和主页「每日学习量」
-  同一把尺子（见「只数正向」那条）。
+- **单词那张表只数 `direction='forward'`**：和主页「每日学习量」同一把尺子
+  （见「只数正向」那条）。
+- **语法另算一段，判据一模一样**（`getStubbornGrammarToday`，2026-09-06 加）：
+  `grammar_progress.forgot_count > 8` 且今天 `grammar_reviews` 里错 ≥ 3 次。
+  混合模式里语法和单词是同一场，完成页只列单词等于说了一半。没答过语法的日子这段自己
+  就是空的，所以不用按模式加闸。实测用户库 2026-09-06（当天答了 290 条语法）出 8 行，
+  和单词那张表一个量级 —— 阈值不用为语法另调。
+  ⚠️ **语法行没有收藏按钮**：语法收藏存的是 grammar.ts 的字符串 id，而这里只有
+  `grammar_points` 的数字 id，桥接得按 pattern 去翻那份 1.2MB 的语法数据
+  （见「语法有两份进度」）。为一颗星把它拉进完成页不划算，收藏和攻坚都在语法列表页。
+  「快速复习」按钮同理只带单词（`QuickStudyPanel` 是词的批次模式）。
 - **只在完成页现算一次**：判据要数今天的流水，而这一页是今天最后一次结算，查早了数还没记全。
 - 它是**出口不是攻坚入口**：一览 + 一键收藏，没有评分按钮（答案全露着时评分等于给 FSRS
   灌「记住了」，和辨析气泡、词库详情同一个道理）。集中攻坚仍然走错题本模式。
+
+### 往日顽固词：同一条判据换个日期，这一档是 Pro（2026-09-09）
+
+完成页顽固词卡的头部多一颗「往日」，点开是一张按天倒序的清单（日推历史那种翻法），
+点某一天看那天跟你打过架的词。`getStubbornHistoryDays()` + 给两个 getter 加了个
+`day` 参数 —— **没有第二条判据**：历史用的就是今天那张表的同一段 SQL，只是换了日期。
+
+- ⚠️ **判据里的「累计忘过几次」是 `forgot_count` 的当前值，不是那天的值。**
+  所以历史是「以今天的眼光回看那天」：一个词上个月只忘过 3 次、这个月忘到 12 次，
+  它会补进上个月那天的名单里。要按当天的累计算，就得对每个 (天, 词) 数一遍截止那天的
+  流水；而今天那张表本来就是拿 forgot_count 说话的，**两处口径分家比这点偏差贵**。
+- **日期列表不在 SQL 里 LIMIT**：单词和语法各查一次再取并集，先截断会让两边的日子对不上。
+  实测用户库 83 天、单词那条查询 30ms 上下，进这张浮层时查一次。
+- ⚠️ **今天没有顽固词的日子，那张卡整个不出现** —— 所以那时候要单独摆一行
+  「今天没有顽固词 · 翻翻往日」的入口，否则这个付费功能在状态好的日子里凭空消失。
+- **没有评分按钮**（答案全露着时评分等于给 FSRS 灌「记住了」，同辨析气泡、词库详情），
+  能做的只有一键收藏和「快速复习这 N 个」（走 `QuickStudyPanel` 的 wordIds 批次模式）。
+- **Pro 门是 `FeatureId` 的 `stubbornHistory`，`FinishPanel` 自己弹 `Paywall`** ——
+  不为一个按钮把 `requirePro` 从 App 一路穿过 WordStudy 传进来。
+  ⚠️ **`Paywall` 的 `benefits` 列表要跟着改**：那几行是买之前看到的承诺，
+  必须和真正锁着的功能对得上（现在锁着两样：沉浸式语法学习、往日顽固词）。
+- 行样式抽到 `features/word-study/stubborn-history.tsx` 的 `StubbornWordRow` /
+  `StubbornGrammarRow`，今日卡和历史浮层共用（**新文件导出、WordStudyPanels 引用**，
+  反过来会成环）。
 
 ### 顽固词太多就不给加餐，改成「快速复习今天的顽固词」
 
@@ -984,7 +1687,28 @@ id 是全应用的语法身份（详情页、furigana 表、进度都按它走�
 复习积压会把新词饿死：实测用户当天复习任务 232～688 条、新词配额 15，比例只有 3%，
 于是一天答四五百张也只碰得到三个新词，配额那 15 个天天剩十二个没见过。
 配额的意思是「今天要学这么多新词」，不是「新词占计划的百分之几」——积压是复习的事，
-不该由新词买单。（配额本身 = 设置页的「学习强度」，`dailyGoal`，存在 localStorage。）
+不该由新词买单。（配额本身 = 设置页「每日学习量」里的第一根滑杆，`dailyGoal`，存在 localStorage。）
+
+**主页备考格底下也有一个入口**（`.zoo-goal`，2026-09-06）：一枚 chip
+「每日新的 · 单词 15 · 语法 5」，点开是两行档位 chip（档位说法直接用
+`INTENSITY_ANCHORS` / `GRAMMAR_INTENSITY_ANCHORS`，不另抄一份）。
+
+- **摆在备考格底下是因为上面那行「还差 新词 50 · 新语法 6」正是按考期算出来的应学量**，
+  而旋钮是它的另一半：计划说要 50，你设的是 15。所以盘子里多一颗
+  「按 N3 备考计划：单词 50 · 语法 6」，一键把两个数抬到计划值
+  （`Math.max`，只往上不往下）。**计划值低于当前设定时整行不出现** ——
+  那说明强度已经够，没必要劝人往下调；考前 21 天的收尾期计划值是 0，条件天然不成立。
+- ⚠️ **它不是第二份状态**：存的还是 `studyPreferences`，改完发 `PREFERENCES_EVENT`，
+  设置页那两根滑杆同一秒跟着动（主页也监听这个事件，所以反过来也成立）。
+  **主页只给档位 chip，不放滑杆**：随手改一下用 chip，精调去设置页（盘子最后一行是入口）。
+- ⚠️ **改完必须 `refreshTodayWordPlan()`**：新词名额是排计划那一刻定的，
+  不重排的话大卡上的数要等到明天才认这个新值。
+
+**设置页的「每日学习量」是独立一节，排在「学习偏好」前面**（2026-09-06 拆出来）。
+四个量在一张卡里：单词新词 / 语法新条目 / 汉字读音总题量 / 每日复习上限。
+原来它们埋在「学习偏好」里，前面还压着自动播放、动物园音效、显示罗马音三个开关 ——
+用户（作者本人）找不到自己在哪调每天背多少词。**别再把新的开关插进这一节**，
+它只装「今天给我多少题」这一类的量。
 
 **名额这个数只由用户说了算，三条口径都有测试钉着**（`word-api/new-word-quota.test.ts`）：
 

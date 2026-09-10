@@ -1,0 +1,33 @@
+{
+  "source": "frontend/.local/live.db",
+  "sourceMode": "read-only copy loaded into an isolated Node/sql.js process",
+  "measuredAt": "2026-09-09T11:56:49.126Z",
+  "localBytes": 39276544,
+  "snapshotBytes": 13475840,
+  "gzipBytes": 1641009,
+  "snapshotLimitBytes": 20000000,
+  "exportMs": 245.775958,
+  "compressionMs": 82.663916,
+  "largestTables": [
+    {
+      "table": "reviews",
+      "rows": 49660,
+      "approxGzipBytesSavedWhenRemoved": 1112041
+    },
+    {
+      "table": "progress",
+      "rows": 11740,
+      "approxGzipBytesSavedWhenRemoved": 173861
+    },
+    {
+      "table": "sync_tombstones",
+      "rows": 6220,
+      "approxGzipBytesSavedWhenRemoved": 113485
+    },
+    {
+      "table": "stage1_tasks",
+      "rows": 5162,
+      "approxGzipBytesSavedWhenRemoved": 107028
+    }
+  ]
+}

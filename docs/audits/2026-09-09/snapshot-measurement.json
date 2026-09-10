@@ -1,0 +1,161 @@
+{
+  "source": "/Users/lsc/Documents/master-nihongo-ios/frontend/.local/live.db",
+  "mtime": "2026-09-09T10:58:37.540Z",
+  "measuredAt": "2026-09-09T10:58:44.034Z",
+  "localBytes": 39170048,
+  "snapshotBytes": 13979648,
+  "gzipBytes": 1732724,
+  "exportMs": 557.63,
+  "compressionMs": 86.86362499999996,
+  "snapshotLimitBytes": 20000000,
+  "reviewRange": [
+    {
+      "firstDay": "2026-06-06",
+      "lastDay": "2026-09-09",
+      "n": 49559
+    }
+  ],
+  "tableCounts": [
+    {
+      "table": "reviews",
+      "rows": 49559
+    },
+    {
+      "table": "progress",
+      "rows": 11740
+    },
+    {
+      "table": "stage1_tasks",
+      "rows": 5162
+    },
+    {
+      "table": "sync_tombstones",
+      "rows": 4951
+    },
+    {
+      "table": "stage2_progress",
+      "rows": 5082
+    },
+    {
+      "table": "kanji_unit_memory",
+      "rows": 3278
+    },
+    {
+      "table": "critical_reviews",
+      "rows": 1295
+    },
+    {
+      "table": "kanji_progress",
+      "rows": 810
+    },
+    {
+      "table": "grammar_progress",
+      "rows": 1462
+    },
+    {
+      "table": "kanji_unit_tasks",
+      "rows": 570
+    },
+    {
+      "table": "moji_migrated_reviews",
+      "rows": 1371
+    },
+    {
+      "table": "grammar_reviews",
+      "rows": 572
+    },
+    {
+      "table": "app_state",
+      "rows": 43
+    },
+    {
+      "table": "kanji_reading_progress",
+      "rows": 256
+    },
+    {
+      "table": "word_study_time_by_device",
+      "rows": 85
+    },
+    {
+      "table": "kanji_memory",
+      "rows": 55
+    },
+    {
+      "table": "dictionary_discovered_words",
+      "rows": 195
+    },
+    {
+      "table": "kanji_reading_memory",
+      "rows": 15
+    },
+    {
+      "table": "vocab_test_history",
+      "rows": 2
+    },
+    {
+      "table": "reverse_memory",
+      "rows": 15
+    },
+    {
+      "table": "checkins",
+      "rows": 50
+    },
+    {
+      "table": "word_notes",
+      "rows": 13
+    },
+    {
+      "table": "achievements",
+      "rows": 25
+    },
+    {
+      "table": "grammar_state",
+      "rows": 4
+    },
+    {
+      "table": "moments",
+      "rows": 11
+    },
+    {
+      "table": "grammar_reading_positions",
+      "rows": 4
+    },
+    {
+      "table": "sync_snapshot_meta",
+      "rows": 1
+    },
+    {
+      "table": "kanji_unit_reviews",
+      "rows": 3
+    },
+    {
+      "table": "content_favorites",
+      "rows": 4
+    },
+    {
+      "table": "confusion_mastered",
+      "rows": 0
+    },
+    {
+      "table": "kanji_unit_flags",
+      "rows": 0
+    },
+    {
+      "table": "word_question_meanings",
+      "rows": 0
+    },
+    {
+      "table": "grammar_mistakes",
+      "rows": 0
+    },
+    {
+      "table": "grammar_highlights",
+      "rows": 0
+    },
+    {
+      "table": "favorite_folders",
+      "rows": 0
+    }
+  ],
+  "method": "Read local dev mirror once into an independent in-memory sql.js database; run current exportSyncSnapshot and compressSyncSnapshot. Schema setup is stubbed because the mirror already has sync schema. No writes to the source, browser, or cloud. Node timing is not iPhone timing."
+}

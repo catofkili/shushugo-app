@@ -39,5 +39,26 @@ jobs:
           cache: npm
           cache-dependency-path: cloudflare-sync/package-lock.json
       - run: npm ci
+      - run: npm run check
+      - run: npm test
       # dry-run 只做本地打包(esbuild),不需要 Cloudflare 凭据
       - run: npx wrangler deploy --dry-run --outdir /tmp/worker-build
+
+  miniprogram:
+    name: WeChat mini program (all checks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # 小程序的 smoke 直接跑 frontend 里的 sql.js 和出厂库
+      - run: npm ci
+        working-directory: frontend
+      # ⚠️ 统一入口,别在这里抄脚本名单:抄名单的那一版漏掉了 grammar / runtime /
+      # entitlement / modes / budget 五个,它们从此没在任何一次提交上跑过。
+      # npm test 会枚举 package.json 里的全部脚本(见 scripts/run-all.mjs)。
+      - run: npm test
+        working-directory: wechat-miniprogram

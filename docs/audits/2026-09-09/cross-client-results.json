@@ -1,0 +1,23 @@
+{
+  "inputReviews": 2,
+  "inputGrammarProgress": 1,
+  "merged": {
+    "insertedReviews": 1,
+    "mergedMemory": 0,
+    "mergedNotes": 0
+  },
+  "returnedReviewCount": 1,
+  "returnedHasGrammarProgress": false,
+  "returnedReviewColumns": [
+    "id",
+    "word_id",
+    "answer",
+    "score_after",
+    "reviewed_on",
+    "created_at",
+    "direction",
+    "sync_updated_at",
+    "sync_origin_device"
+  ],
+  "returnedBytes": 929792
+}

@@ -1,0 +1,94 @@
+{
+  "sameTransactionTwoUsers": {
+    "a": {
+      "status": 200,
+      "body": {
+        "isPro": true,
+        "source": "app_store",
+        "productId": "shushugo_pro_lifetime",
+        "updatedAt": "2026-09-09T10:56:52.124Z"
+      }
+    },
+    "b": {
+      "status": 200,
+      "body": {
+        "isPro": true,
+        "source": "app_store",
+        "productId": "shushugo_pro_lifetime",
+        "updatedAt": "2026-09-09T10:56:52.125Z"
+      }
+    },
+    "entitlementRows": {
+      "columns": [
+        "user_id",
+        "product_id",
+        "environment"
+      ],
+      "values": [
+        [
+          "user-a",
+          "shushugo_pro_lifetime",
+          "Sandbox"
+        ],
+        [
+          "user-b",
+          "shushugo_pro_lifetime",
+          "Sandbox"
+        ]
+      ]
+    },
+    "eventRows": {
+      "columns": [
+        "user_id",
+        "transaction_id"
+      ],
+      "values": [
+        [
+          "user-a",
+          "test-transaction"
+        ]
+      ]
+    }
+  },
+  "refundCache": {
+    "response": {
+      "status": 200,
+      "body": {
+        "isPro": true,
+        "source": "app_store",
+        "productId": "shushugo_pro_lifetime",
+        "updatedAt": "2026-09-09T10:56:52.124Z"
+      }
+    },
+    "appleRechecks": 0
+  },
+  "oldSubscriptionOverwritesLifetime": {
+    "status": 200,
+    "body": {
+      "isPro": false,
+      "source": "free",
+      "updatedAt": "2026-09-09T10:56:52.126Z"
+    }
+  },
+  "appleRs256": {
+    "response": {
+      "status": 401,
+      "body": {
+        "detail": "Apple 登录凭据无效。"
+      }
+    },
+    "keyFetches": 0
+  },
+  "installedPluginReceipt": {
+    "receiptId": "200000-test",
+    "collection": [],
+    "sourceProducts": [
+      {
+        "id": "shushugo_pro_yearly"
+      }
+    ],
+    "grants": 0,
+    "cloudCalls": 0,
+    "finished": 1
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "scope": "isolated current-source acceptance harness with fake users and fake Apple responses",
+  "sameTransactionTwoUsers": {
+    "firstStatus": 200,
+    "secondStatus": 409,
+    "entitlementOwners": ["user-a"]
+  },
+  "oldSubscriptionOverwritesLifetime": {
+    "status": 200,
+    "resultProductId": "shushugo_pro_lifetime",
+    "resultIsPro": true
+  },
+  "missedRenewalFallback": {
+    "appleRechecks": 1,
+    "queriedTransaction": "renewal-t1",
+    "resultIsPro": false,
+    "reason": "the fallback queried the stored expired transaction and could not discover the later renewal"
+  },
+  "appleRs256": {
+    "jwksFetches": 1,
+    "signatureAccepted": true,
+    "nextResponseCode": "CONSENT_REQUIRED"
+  },
+  "installedPluginReceipt": {
+    "collectionWasEmpty": true,
+    "sourceReceiptProductId": "shushugo_pro_yearly",
+    "localGrants": 1,
+    "cloudCalls": 1,
+    "finishCalls": 1
+  },
+  "finishAfterEntitlementWriteFailure": {
+    "callbackRejected": true,
+    "finishStillCalled": true
+  }
+}

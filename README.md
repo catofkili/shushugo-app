@@ -28,8 +28,8 @@ scripts/             构建/数据处理脚本
 - 2026-08-05 已先清空此前批量生成的旧例句；截至第十批完成，`frontend/src/data/jlpt_words_seed.json` 的 10,609 条种子行均已有逐词手写例句。前两批分别记录在 `frontend/scripts/pilot_examples_100.json`、`frontend/scripts/pilot_examples_100_additional.json`，第三至第十批记录在 `frontend/src/data/manual_examples_batch_003.json`、`frontend/src/data/manual_examples_batch_004.json`、`frontend/src/data/manual_examples_batch_005.json`、`frontend/src/data/manual_examples_batch_006.json`、`frontend/src/data/manual_examples_batch_007.json`、`frontend/src/data/manual_examples_batch_008.json`、`frontend/src/data/manual_examples_batch_009.json`、`frontend/src/data/manual_examples_batch_010.json`。第十批包含 5,807 条按日语词形和假名去重的手写例句；种子表中表示同一词形的重复行复用对应例句。
 - 例句由人工逐词写成，再使用项目已有的数据库同步流程写入数据库；没有运行旧的全量公式生成器。`rewrite-independent-examples.mjs` 仅作为历史审计材料，不能把它当作生产生成器。
 - 例句仍需逐条审核自然度、词义对应和商业发布资格；例句已经全部覆盖，不代表整个项目已经完成版权清权，也不保证“零版权风险”。
-- Git 历史中的导入脚本与旧项目 `DATA_SOURCE.md` 已确认：种子数据中的 10,609 条 JLPT 词条、中文释义和旧例句来自 [eggrolls-JLPT10k-v3.5](https://github.com/5mdld/anki-jlpt-decks) 的 `deck-source/notes.csv`；生产数据库还包含未在该来源中逐条匹配的历史词条。**例句重写不会改变词条和中文释义的来源许可**：上游采用 **CC BY-NC 4.0**，明确禁止把内容整合进付费产品或服务。当前词条/释义数据仍不能直接用于商业发行；必须取得上游商业授权，或整体替换这些数据。
-- 语法数据虽有从头改写的提交记录，但仍应在发布档案中保留作者、来源和版本记录。
+- ⚠️ **词条、中文释义、选词表已全部自建**（2026-09-06 确认）。此前记录的 eggrolls-JLPT10k / CC BY-NC 4.0 结论**已作废**，不再是上架阻塞；**不要再从 git 历史里把它翻出来重提**。溯源归档见 [docs/CONTENT_RIGHTS.md](docs/CONTENT_RIGHTS.md)。
+- 🔴 **语法说明是目前唯一的内容版权阻塞**：源头是《蓝宝书》PDF 的 OCR（条目 id 前缀 `pdf-n*-`）。N1(201)、N2(150) 已从头重写；**N3(140)、N4(130)、N5(120) 共 390 条未重写**，不能随 App 商业发行。
 
 ### 已识别的第三方内容与发布条件
 
@@ -41,7 +41,7 @@ scripts/             构建/数据处理脚本
 
 ### 上架前必须完成
 
-- [ ] 取得 eggrolls-JLPT10k 作者的商业授权，或整体替换仍来自该来源的词条和中文释义，并另行核查数据库中 458 条未能与该来源匹配的历史词条；例句已重写不等于词条/释义许可问题自动消失。
+- [ ] **重写 N3/N4/N5 共 390 条语法说明**（源头是蓝宝书 PDF 的 OCR），或整体替换。方法沿用释义那次：创作输入只有句型、接续和等级，不读原书解释与例句，逐批留记录。⚠️ 改完要升 `GRAMMAR_SEED_VERSION`，而升版本前必须先把 `grammar_seed.json`(731) 与 `grammar.ts`(741) 对齐，否则新装用户会掉条目。
 - [ ] 在 About 页面和对外发布页面保留准确的三个 VOICEVOX 署名：`VOICEVOX:春日部つむぎ`、`VOICEVOX:雨晴はう`、`VOICEVOX:玄野武宏(CV:ガロ)`；确认没有把原始 AAC 作为可下载素材包或音声模型再分发。
 - [ ] 保留 KANJIDIC2、OpenCC、Unihan 及所有第三方依赖的许可和 NOTICE，并确认是否触发署名、相同方式共享或再分发义务。
 - [ ] 检查生产包和 App Store 截图/预览/宣传材料，不要放入没有授权的第三方内容或商标表达。

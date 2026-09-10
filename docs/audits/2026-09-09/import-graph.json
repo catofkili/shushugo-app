@@ -1,0 +1,26 @@
+{
+  "unused": [
+    {
+      "file": "src/lib/kanji-reading-units.ts",
+      "lines": 115
+    }
+  ],
+  "external": [
+    "@aparajita/capacitor-secure-storage",
+    "@capacitor-community/apple-sign-in",
+    "@capacitor-community/media",
+    "@capacitor/core",
+    "@capacitor/filesystem",
+    "@capacitor/haptics",
+    "@capacitor/local-notifications",
+    "@capacitor/preferences",
+    "@capacitor/share",
+    "lucide-react",
+    "react",
+    "react-dom",
+    "react-dom/client",
+    "sql.js",
+    "sql.js/dist/sql-wasm.wasm?url",
+    "ts-fsrs"
+  ]
+}
