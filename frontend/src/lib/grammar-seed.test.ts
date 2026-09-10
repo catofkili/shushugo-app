@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import initSqlJs, { type Database } from "sql.js";
@@ -20,6 +20,11 @@ vi.mock("./database", () => ({
   importDatabase: async () => undefined
 }));
 
+// 本测试验证种子迁移与保存请求，不启动真实存储模块及其异步落盘计时器。
+// 等待动态 import 回调完成，防止它跨越测试结束或模块清理。
+vi.mock("./storage", () => ({ requestFullSnapshot: vi.fn(), scheduleSave: vi.fn() }));
+import { requestFullSnapshot, scheduleSave } from "./storage";
+
 import { ensureSeedData, GRAMMAR_SEED_VERSION } from "./study-core";
 import grammarSeed from "../data/grammar_seed.json";
 
@@ -28,7 +33,13 @@ const seedPath = fileURLToPath(new URL("../../public/nihongo.db", import.meta.ur
 const one = (sql: string) => testDb.exec(sql)[0]?.values?.[0]?.[0];
 
 describe("语法种子升版本", () => {
+  afterEach(async () => {
+    await vi.dynamicImportSettled();
+    testDb.close();
+  });
+
   beforeEach(() => {
+    vi.clearAllMocks();
     testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
   });
 
@@ -40,6 +51,11 @@ describe("语法种子升版本", () => {
   it("从旧版本升级不会炸，语法点全部重建", async () => {
     testDb.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('dataset_version', 'stale-version')");
     await expect(ensureSeedData()).resolves.not.toThrow();
+    await vi.dynamicImportSettled();
+    expect(requestFullSnapshot).toHaveBeenCalled();
+    expect(scheduleSave).toHaveBeenCalled();
+    expect(vi.mocked(requestFullSnapshot).mock.invocationCallOrder[0])
+      .toBeLessThan(vi.mocked(scheduleSave).mock.invocationCallOrder[0]);
 
     expect(String(one("SELECT value FROM grammar_state WHERE key='dataset_version'"))).toBe(GRAMMAR_SEED_VERSION);
     // 重建后条数 = 种子 JSON 的行数，而且每一列都真的写进去了

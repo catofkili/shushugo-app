@@ -140,7 +140,8 @@ describe("quick study draft", () => {
 
   it("keeps an unfinished page within the same study day and expires it at 4am", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date("2026-08-18T03:30:00+08:00"));
+    // 学习日按设备本地时间切换；固定 +08:00 会让 UTC CI 测到前一天晚上。
+    vi.setSystemTime(new Date(2026, 7, 18, 3, 30, 0));
     const draftDate = studyDate();
     await saveQuickStudyDraft({
       studyDate: draftDate,
@@ -155,10 +156,10 @@ describe("quick study draft", () => {
       selectedIds: []
     });
 
-    vi.setSystemTime(new Date("2026-08-18T03:59:59+08:00"));
+    vi.setSystemTime(new Date(2026, 7, 18, 3, 59, 59));
     expect((await loadQuickStudyDraft())?.cards.map(({ id }) => id)).toEqual([31]);
 
-    vi.setSystemTime(new Date("2026-08-18T04:00:00+08:00"));
+    vi.setSystemTime(new Date(2026, 7, 18, 4, 0, 0));
     expect(await loadQuickStudyDraft()).toBeNull();
     expect(browserStore.get("mn-quick-study-draft")).toContain('"cleared":true');
     expect(preferenceStore.has("mn-quick-study-draft")).toBe(false);
