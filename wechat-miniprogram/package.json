@@ -17,6 +17,7 @@
     "daily-relief-smoke": "node scripts/daily-relief-smoke.mjs",
     "runtime-smoke": "node scripts/runtime-sim-smoke.mjs",
     "budget": "node scripts/package-budget.mjs",
-    "check": "node scripts/check-source.mjs"
+    "check": "node scripts/check-source.mjs",
+    "test": "node scripts/run-all.mjs"
   }
 }

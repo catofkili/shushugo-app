@@ -9,7 +9,15 @@ const core = require('../core/study-core');
 const { getDeviceId } = require('../core/sync-protocol');
 
 const SYNC_SNAPSHOT_FORMAT = 'master-nihongo-user-sqlite-v1';
-const SYNC_PROTOCOL_VERSION = 1;
+const SYNC_PROTOCOL_VERSION = 2;
+/*
+ * 「收」比「发」宽：v1 是小程序自己的老快照，仍然读得进来。
+ *
+ * 导出已经抬到 v2：reviews 现在真的带 sync_uid 了（见 study-core 的
+ * ensureStudySchema）。⚠️ 抬版本号和补那一列必须一起做 —— 写着 v2 却没有那一列
+ * 比拒绝导入更难查。
+ */
+const SUPPORTED_SYNC_PROTOCOL_VERSIONS = new Set([1, 2]);
 const META_TABLE = 'sync_snapshot_meta';
 const SNAPSHOT_TABLES = [
   'progress',
@@ -21,6 +29,10 @@ const SNAPSHOT_TABLES = [
   'reviews',
   'checkins',
   'app_state',
+  // ⚠️ 语法这两张表是小程序**自己会写**的(markGrammar / toggleGrammarFavorite),
+  // 所以它们不能靠透传:透传只会把远端旧副本原样送回去,本机新改的一个字都传不出去。
+  'grammar_progress',
+  'grammar_state',
   'confusion_mastered',
   'achievement_unlocked',
   'sync_tombstones'
@@ -35,7 +47,33 @@ const LOCAL_STATE_KEYS = new Set([
   'auth_user_id',
   'entitlement_cache'
 ]);
+/*
+ * grammar_state 里的本地内容标记。⚠️ `dataset_version` 说的是「本机语法内容迁到哪一版」,
+ * 而 grammar_points 根本不进快照 —— 把它同步给一台还没跑过迁移的设备,那台的入口判断
+ * (版本号相等就早退)会永远跳过迁移,grammar_id 从此和别人错位。和 iOS 端
+ * sync/tables.ts 的 isDeviceLocalStateKey 是同一条判据。
+ */
+const LOCAL_GRAMMAR_STATE_KEYS = new Set(['dataset_version']);
+
+function localKeysFor(table) {
+  return table === 'app_state' ? LOCAL_STATE_KEYS
+    : table === 'grammar_state' ? LOCAL_GRAMMAR_STATE_KEYS
+      : null;
+}
+
 const TOMBSTONE_COLUMNS = ['table_name', 'row_key', 'deleted_at', 'origin_device', 'entity', 'natural_key'];
+
+/*
+ * 小程序看不懂的表原样存下来，导出时原样送回去。
+ *
+ * ⚠️ 这不是「以后可能有用」的脚手架，是数据丢失的止血带：Worker 不做按表合并，
+ * 它把每次上传当成这个账号新的**完整备份**。小程序只导出自己认识的十几张表，
+ * 于是它一推，云端最新那一代就没有 grammar_progress、语法流水、收藏、汉字单元……
+ * 攒够三代之后，最后一份完整快照退出保留范围 —— 全新设备再也恢复不出来。
+ * 「老设备本地还有一份」不是云备份完整。
+ */
+const PASSTHROUGH_TABLE = 'sync_passthrough';
+const SNAPSHOT_INTERNAL_TABLES = new Set([META_TABLE, PASSTHROUGH_TABLE, 'sync_tombstones']);
 
 function quoteIdentifier(value) {
   return `"${String(value).replace(/"/g, '""')}"`;
@@ -91,7 +129,8 @@ function copyTable(source, target, table, originDevice) {
     target.run(`ALTER TABLE ${quoteIdentifier(table)} ADD COLUMN sync_origin_device TEXT`);
     snapshotColumns.push('sync_origin_device');
   }
-  const excludes = table === 'app_state' ? [...LOCAL_STATE_KEYS] : [];
+  const localKeys = localKeysFor(table);
+  const excludes = localKeys ? [...localKeys] : [];
   const where = excludes.length
     ? ` WHERE key NOT IN (${excludes.map(() => '?').join(', ')})`
     : '';
@@ -161,7 +200,103 @@ function copyTombstones(source, target) {
   }
 }
 
+function ensurePassthroughTable(db) {
+  db.run(`CREATE TABLE IF NOT EXISTS ${PASSTHROUGH_TABLE} (
+    table_name TEXT PRIMARY KEY,
+    create_sql TEXT NOT NULL,
+    columns_json TEXT NOT NULL,
+    rows_json TEXT NOT NULL,
+    received_at TEXT NOT NULL
+  )`);
+}
+
+// sql.js 的 BLOB 读出来是 Uint8Array，JSON 存不下；标记一下原样带回去。
+function encodeCell(value) {
+  if (value instanceof Uint8Array) {
+    let binary = '';
+    for (const byte of value) binary += String.fromCharCode(byte);
+    return { $b64: typeof btoa === 'function' ? btoa(binary) : Buffer.from(value).toString('base64') };
+  }
+  return value === undefined ? null : value;
+}
+
+function decodeCell(value) {
+  if (value && typeof value === 'object' && typeof value.$b64 === 'string') {
+    const binary = typeof atob === 'function' ? atob(value.$b64) : Buffer.from(value.$b64, 'base64').toString('binary');
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    return bytes;
+  }
+  return value;
+}
+
+function knownTables() {
+  return new Set([...SNAPSHOT_TABLES, ...SNAPSHOT_INTERNAL_TABLES]);
+}
+
+/** 把远端快照里小程序不认识的表整张存下来。每次收到新快照就整个换掉那一份。 */
+function capturePassthroughTables(db, remote) {
+  ensurePassthroughTable(db);
+  const known = knownTables();
+  const tables = core.rowsFor(
+    remote,
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+  ).map((row) => String(row.name)).filter((name) => !known.has(name));
+  const now = new Date().toISOString();
+  for (const table of tables) {
+    const createSql = core.firstValue(
+      remote,
+      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
+      [table],
+      ''
+    );
+    if (!createSql) continue;
+    const columns = columnsOf(remote, table);
+    const rows = sourceRows(remote, table, columns).map((row) => row.map(encodeCell));
+    db.run(
+      `INSERT OR REPLACE INTO ${PASSTHROUGH_TABLE} (table_name, create_sql, columns_json, rows_json, received_at) VALUES (?, ?, ?, ?, ?)`,
+      [table, String(createSql), JSON.stringify(columns), JSON.stringify(rows), now]
+    );
+  }
+  // 小程序后来认识了的表，本地那份才是真相，别再从透传里覆盖回去。
+  for (const table of SNAPSHOT_TABLES) {
+    db.run(`DELETE FROM ${PASSTHROUGH_TABLE} WHERE table_name = ?`, [table]);
+  }
+}
+
+/** 导出时把存下来的那些表原样写回快照。 */
+function replayPassthroughTables(db, snapshot) {
+  if (!tableExists(db, PASSTHROUGH_TABLE)) return;
+  const known = knownTables();
+  for (const row of core.rowsFor(db, `SELECT table_name, create_sql, columns_json, rows_json FROM ${PASSTHROUGH_TABLE}`)) {
+    const table = String(row.table_name);
+    if (known.has(table)) continue;
+    let columns = [];
+    let rows = [];
+    try {
+      columns = JSON.parse(String(row.columns_json));
+      rows = JSON.parse(String(row.rows_json));
+    } catch (error) {
+      continue;
+    }
+    if (!columns.length) continue;
+    snapshot.run(String(row.create_sql));
+    const insert = `INSERT INTO ${quoteIdentifier(table)} (${columns.map(quoteIdentifier).join(', ')}) `
+      + `VALUES (${columns.map(() => '?').join(', ')})`;
+    snapshot.run('BEGIN');
+    try {
+      for (const values of rows) snapshot.run(insert, values.map(decodeCell));
+      snapshot.run('COMMIT');
+    } catch (error) {
+      snapshot.run('ROLLBACK');
+      throw error;
+    }
+  }
+}
+
 async function exportSyncSnapshot(db) {
+  // 设备号要先有,ensureStudySchema 才补得上 reviews.sync_uid。
+  getDeviceId(db);
   core.ensureStudySchema(db);
   // 使用同一个 sql.js Database 构造器，导出逻辑不依赖 wx/WASM 加载器，
   // 因此可以在 Node 回归测试中直接跑真实种子库。
@@ -177,6 +312,7 @@ async function exportSyncSnapshot(db) {
       if (table === 'sync_tombstones') copyTombstones(db, snapshot);
       else copyTable(db, snapshot, table, originDevice);
     }
+    replayPassthroughTables(db, snapshot);
     return new Uint8Array(snapshot.export());
   } finally {
     snapshot.close();
@@ -186,7 +322,7 @@ async function exportSyncSnapshot(db) {
 function validateSnapshot(db) {
   const format = core.firstValue(db, `SELECT format FROM ${META_TABLE} LIMIT 1`, [], null);
   const version = core.firstValue(db, `SELECT protocol_version FROM ${META_TABLE} LIMIT 1`, [], null);
-  if (format !== SYNC_SNAPSHOT_FORMAT || Number(version) !== SYNC_PROTOCOL_VERSION) {
+  if (format !== SYNC_SNAPSHOT_FORMAT || !SUPPORTED_SYNC_PROTOCOL_VERSIONS.has(Number(version))) {
     throw new Error('云端学习数据版本不兼容，已保留本机数据');
   }
 }
@@ -333,12 +469,47 @@ function mergeMemory(db, table, row) {
   db.run(`UPDATE ${quoteIdentifier(table)} SET ${set.join(', ')} WHERE word_id = ?`, values);
 }
 
+/* 语法进度按 grammar_id 合并。和 mergeMemory 一样:计数只增不减,FSRS 全字段
+   跟着更新的那一侧走(半份 FSRS 状态是没有意义的)。 */
+function mergeGrammarProgress(db, row) {
+  const grammarId = Number(row.grammar_id);
+  if (!Number.isInteger(grammarId)) return;
+  db.run('INSERT OR IGNORE INTO grammar_progress (grammar_id) VALUES (?)', [grammarId]);
+  const local = rowBy(db, 'grammar_progress', ['grammar_id'], [grammarId]) || {};
+  const localLast = local.fsrs_last_review ? new Date(local.fsrs_last_review).getTime() : 0;
+  const remoteLast = row.fsrs_last_review ? new Date(row.fsrs_last_review).getTime() : 0;
+  const set = [
+    'seen_count = MAX(seen_count, ?)',
+    'right_count = MAX(right_count, ?)',
+    'fuzzy_count = MAX(fuzzy_count, ?)',
+    'forgot_count = MAX(forgot_count, ?)',
+    'known_forever = MAX(known_forever, ?)',
+    'last_seen_on = CASE WHEN COALESCE(last_seen_on, "") >= COALESCE(?, "") THEN last_seen_on ELSE ? END'
+  ];
+  const values = [
+    Number(row.seen_count || 0), Number(row.right_count || 0), Number(row.fuzzy_count || 0),
+    Number(row.forgot_count || 0), Number(row.known_forever || 0),
+    row.last_seen_on || null, row.last_seen_on || null
+  ];
+  // 本机这行从来没排过期(localLast 为 0)而对端排过 → 直接收下。只比
+  // `remoteLast > localLast` 的话,对端那份 fsrs_due 会被静默丢掉。
+  if (remoteLast > localLast || (localLast === 0 && row.fsrs_due)) {
+    for (const column of ['fsrs_stability', 'fsrs_difficulty', 'fsrs_due', 'fsrs_last_review', 'fsrs_state', 'fsrs_steps', 'fsrs_reps', 'fsrs_lapses']) {
+      set.push(`${quoteIdentifier(column)} = ?`);
+      values.push(row[column] ?? null);
+    }
+  }
+  values.push(grammarId);
+  db.run(`UPDATE grammar_progress SET ${set.join(', ')} WHERE grammar_id = ?`, values);
+}
+
 function mergeSnapshot(db, bytes, options = {}) {
   const remote = new (db.constructor)(bytes);
   try {
     const hasMeta = tableExists(remote, META_TABLE);
     if (hasMeta) validateSnapshot(remote);
     else if (!options.allowLegacy) throw new Error('云端学习数据缺少同步元数据，已保留本机数据');
+    getDeviceId(db);
     core.ensureStudySchema(db);
     let insertedReviews = 0;
     let mergedMemory = 0;
@@ -357,12 +528,16 @@ function mergeSnapshot(db, bytes, options = {}) {
         const columns = targetColumns(db, 'reviews', remote);
         for (const row of sourceRows(remote, 'reviews', columns)) {
           const mapped = Object.fromEntries(columns.map((column, index) => [column, row[index]]));
-          const exists = core.firstValue(db,
-            'SELECT 1 FROM reviews WHERE word_id = ? AND created_at = ? AND direction = ? LIMIT 1',
-            [mapped.word_id, mapped.created_at, mapped.direction || 'forward'], 0
-          );
+          // ⚠️ 有 sync_uid 就只认 sync_uid。created_at 只到秒，前端同一秒答两次
+          // 会产生两条自然键完全相同、uid 不同的作答；按自然键去重只会进来一条。
+          const exists = mapped.sync_uid
+            ? core.firstValue(db, 'SELECT 1 FROM reviews WHERE sync_uid = ? LIMIT 1', [mapped.sync_uid], 0)
+            : core.firstValue(db,
+              'SELECT 1 FROM reviews WHERE word_id = ? AND created_at = ? AND direction = ? AND sync_uid IS NULL LIMIT 1',
+              [mapped.word_id, mapped.created_at, mapped.direction || 'forward'], 0
+            );
           if (!exists) {
-            upsertRaw(db, 'reviews', columns, row, ['word_id', 'created_at', 'direction']);
+            upsertRaw(db, 'reviews', columns, row, mapped.sync_uid ? ['sync_uid'] : ['word_id', 'created_at', 'direction']);
             insertedReviews += 1;
           }
         }
@@ -392,7 +567,24 @@ function mergeSnapshot(db, bytes, options = {}) {
                 : ['id'];
         for (const row of sourceRows(remote, table, columns)) upsertRaw(db, table, columns, row, keys);
       }
+      // 语法进度:和 progress 同一套口径(计数取大、FSRS 看谁的 last_review 新),
+      // 只是键换成 grammar_id。
+      if (tableExists(remote, 'grammar_progress') && tableExists(db, 'grammar_progress')) {
+        const columns = targetColumns(db, 'grammar_progress', remote);
+        for (const row of sourceRows(remote, 'grammar_progress', columns)) {
+          const mapped = Object.fromEntries(columns.map((column, index) => [column, row[index]]));
+          mergeGrammarProgress(db, mapped);
+        }
+      }
+      if (tableExists(remote, 'grammar_state') && tableExists(db, 'grammar_state')) {
+        const columns = targetColumns(db, 'grammar_state', remote);
+        for (const row of sourceRows(remote, 'grammar_state', columns)) {
+          const mapped = Object.fromEntries(columns.map((column, index) => [column, row[index]]));
+          if (!LOCAL_GRAMMAR_STATE_KEYS.has(String(mapped.key))) upsertRaw(db, 'grammar_state', columns, row, ['key']);
+        }
+      }
       mergeTombstones(db, remote);
+      capturePassthroughTables(db, remote);
       if (tableExists(remote, 'app_state')) {
         const columns = targetColumns(db, 'app_state', remote);
         for (const row of sourceRows(remote, 'app_state', columns)) {
@@ -425,7 +617,9 @@ async function decompressGzip(bytes) {
 
 module.exports = {
   LOCAL_STATE_KEYS,
+  PASSTHROUGH_TABLE,
   SNAPSHOT_TABLES,
+  SUPPORTED_SYNC_PROTOCOL_VERSIONS,
   SYNC_PROTOCOL_VERSION,
   SYNC_SNAPSHOT_FORMAT,
   decompressGzip,

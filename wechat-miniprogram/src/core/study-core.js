@@ -150,6 +150,36 @@ function ensureDirectionTable(db, table) {
   db.run(`CREATE INDEX IF NOT EXISTS idx_${table}_fsrs_due ON ${table}(fsrs_due)`);
 }
 
+/*
+ * 语法两张表。⚠️ 列必须和 iOS 端 local-schema.sql 的 grammar_progress 逐列对齐:
+ * 快照导出只写本机有的列(copyTable)、合并只收两边都有的列(targetColumns),
+ * 少一列就等于每次小程序推快照时把 iOS 那一列**从云端最新那一代里抹掉**。
+ * 判据钉在 sync-snapshot-smoke.mjs。
+ */
+const GRAMMAR_PROGRESS_COLUMNS = [
+  ['score', 'REAL NOT NULL DEFAULT 0'],
+  ['seen_count', 'INTEGER NOT NULL DEFAULT 0'],
+  ['low_history', 'INTEGER NOT NULL DEFAULT 0'],
+  ['known_forever', 'INTEGER NOT NULL DEFAULT 0'],
+  ['mastered_on', 'TEXT'],
+  ['last_seen_on', 'TEXT'],
+  ['right_count', 'INTEGER NOT NULL DEFAULT 0'],
+  ['fuzzy_count', 'INTEGER NOT NULL DEFAULT 0'],
+  ['forgot_count', 'INTEGER NOT NULL DEFAULT 0'],
+  ['mistake_streak', 'INTEGER NOT NULL DEFAULT 0'],
+  ['last_decay_amount', 'INTEGER NOT NULL DEFAULT 10'],
+  ...FSRS_COLUMNS
+];
+
+function ensureGrammarSchema(db) {
+  db.run('CREATE TABLE IF NOT EXISTS grammar_progress (grammar_id INTEGER PRIMARY KEY)');
+  db.run('CREATE TABLE IF NOT EXISTS grammar_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+  const existing = tableColumns(db, 'grammar_progress');
+  for (const [name, type] of GRAMMAR_PROGRESS_COLUMNS) {
+    if (!existing.has(name)) db.run(`ALTER TABLE grammar_progress ADD COLUMN ${name} ${type}`);
+  }
+}
+
 function ensureStudySchema(db) {
   const progressColumns = tableColumns(db, 'progress');
   for (const [name, type] of FSRS_COLUMNS) {
@@ -160,6 +190,16 @@ function ensureStudySchema(db) {
   if (!reviewColumns.has('direction')) {
     db.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
   }
+  // ⚠️ 作答流水的跨端身份是 sync_uid，不是 (word_id, created_at, direction)。
+  // created_at 只到秒，同一秒答两次（前端实测就有）自然键会撞在一起 ——
+  // 按自然键去重的话，两条真实作答只会进来一条，而且丢掉的那条再也补不回来。
+  // uid 的格式必须和 iOS 端一致：`设备号:本机行号`（见 frontend sync/schema.ts）。
+  if (!reviewColumns.has('sync_uid')) db.run('ALTER TABLE reviews ADD COLUMN sync_uid TEXT');
+  db.run(
+    "UPDATE reviews SET sync_uid = (SELECT value FROM app_state WHERE key = 'sync_device_id') || ':' || CAST(id AS TEXT) "
+    + "WHERE sync_uid IS NULL AND EXISTS (SELECT 1 FROM app_state WHERE key = 'sync_device_id')"
+  );
+  db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_sync_uid ON reviews(sync_uid)');
 
   db.run(`
     CREATE TABLE IF NOT EXISTS stage1_tasks (
@@ -211,6 +251,10 @@ function ensureStudySchema(db) {
     )
   `);
   db.run('CREATE TABLE IF NOT EXISTS confusion_mastered (group_key TEXT PRIMARY KEY, mastered_on TEXT NOT NULL)');
+  // ⚠️ 语法表必须无条件建出来,不能等语法页第一次打开。它们现在是正式同步表
+  // (不再走透传),表不存在的话导出和合并都会静默跳过 —— 对端的语法进度会在
+  // 小程序推上去的那一代快照里凭空消失。
+  ensureGrammarSchema(db);
   db.run('CREATE TABLE IF NOT EXISTS achievement_unlocked (id TEXT PRIMARY KEY, unlocked_on TEXT NOT NULL)');
   db.run('CREATE INDEX IF NOT EXISTS idx_progress_fsrs_due ON progress(fsrs_due)');
   db.run('CREATE INDEX IF NOT EXISTS idx_reviews_day_direction ON reviews(reviewed_on, direction)');
@@ -907,6 +951,8 @@ module.exports = {
   DEFAULT_NEW_LIMIT,
   DEFAULT_REVIEW_LIMIT,
   ensureStudySchema,
+  ensureGrammarSchema,
+  GRAMMAR_PROGRESS_COLUMNS,
   localStudyDay,
   studyDayEnd,
   createTodayPlan,
