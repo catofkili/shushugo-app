@@ -10,6 +10,7 @@ import {
   USER_AGREEMENT_TITLE,
   USER_AGREEMENT_VERSION
 } from "../../frontend/src/lib/user-agreement-content";
+import { entitlementStrength } from "./entitlement-rules";
 
 export interface Env {
   DB: D1Database;
@@ -30,6 +31,8 @@ export interface Env {
   TURNSTILE_SECRET_KEY?: string;
   WECHAT_APP_ID?: string;
   WECHAT_APP_SECRET?: string;
+  /** "1" = 生产模式:Turnstile 和邮件服务必须配好,否则认证路由直接 503。 */
+  REQUIRE_AUTH_HARDENING?: string;
 }
 
 interface UserRow {
@@ -93,6 +96,9 @@ interface EntitlementRow {
   is_pro: number;
   product_id: string | null;
   source: string;
+  original_transaction_id: string | null;
+  transaction_id: string | null;
+  environment: string | null;
   expires_at: string | null;
   updated_at: string;
 }
@@ -250,8 +256,14 @@ const rateLimitExceeded = (retryAfterSeconds: number) => new Response(JSON.strin
   }
 });
 
-// KV 计数不是原子的,只能做粗粒度限速;对登录爆破和验证码枚举已经足够。
-// 复用 SYNC_DATA 命名空间,rl: 前缀不会与 sync 对象键(userId/uuid.base64)冲突。
+/**
+ * 认证类限速。**必须是原子的**。
+ *
+ * ⚠️ 原来走 KV 的 `get → put`:两个节点同时读到 4、同时写回 5,实际放过了两次。
+ * 对同步接口那种"别刷爆账单"的场景够用,但登录爆破和验证码枚举要的是真上限。
+ * 改成和 enforceAccountQuota 同一条 D1 UPSERT —— 计数和上限判断在一条语句里,
+ * 跨节点并发也不可能突破。
+ */
 const rateLimitSubject = async (
   env: Env,
   scope: string,
@@ -259,20 +271,18 @@ const rateLimitSubject = async (
   limit: number,
   windowSeconds: number
 ) => {
-  const windowIndex = Math.floor(Date.now() / (windowSeconds * 1000));
-  const key = `rl:${scope}:${subject}:${windowIndex}`;
-  const count = Number(await env.SYNC_DATA.get(key)) || 0;
-  if (count >= limit) {
-    const elapsedSeconds = Math.floor(Date.now() / 1000) % windowSeconds;
-    throw rateLimitExceeded(Math.max(1, windowSeconds - elapsedSeconds));
-  }
-  try {
-    await env.SYNC_DATA.put(key, String(count + 1), { expirationTtl: Math.max(60, windowSeconds) });
-  } catch {
-    // KV 同一个 key 每秒最多写一次。并发请求撞到该限制时按限速处理，
-    // 不继续执行昂贵的数据库或整库传输操作。
-    throw rateLimitExceeded(1);
-  }
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const windowStart = Math.floor(nowSeconds / windowSeconds) * windowSeconds;
+  const accepted = await env.DB.prepare(`
+    INSERT INTO auth_rate_limits (subject, scope, window_start, request_count, updated_at)
+    VALUES (?, ?, ?, 1, ?)
+    ON CONFLICT(subject, scope, window_start) DO UPDATE SET
+      request_count = auth_rate_limits.request_count + 1,
+      updated_at = excluded.updated_at
+    WHERE auth_rate_limits.request_count < ?
+    RETURNING request_count
+  `).bind(subject, scope, windowStart, new Date().toISOString(), limit).first<{ request_count: number }>();
+  if (!accepted) throw rateLimitExceeded(Math.max(1, windowStart + windowSeconds - nowSeconds));
 };
 
 const rateLimit = async (
@@ -328,9 +338,47 @@ const enforceSyncRateLimit = async (
   await enforceAccountQuota(env, userId, scope, hourlyLimit, 3600);
 };
 
-const readJson = async <T>(request: Request): Promise<T> => {
+/**
+ * 边读边数，超了当场断开。
+ *
+ * ⚠️ 不能只看 `content-length`：那个头是可选的,分块传输的请求根本没有它,
+ * 于是「先 arrayBuffer() 读完、再检查实际长度」这种写法在真正超大的请求上
+ * 已经把内存占掉了才发现。
+ */
+const readBodyBytes = async (request: Request, limit: number): Promise<Uint8Array> => {
+  const declared = Number(request.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > limit) throw json({ detail: "Request body is too large" }, 413);
+  const reader = request.body?.getReader();
+  if (!reader) return new Uint8Array();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limit) {
+      await reader.cancel();
+      throw json({ detail: "Request body is too large" }, 413);
+    }
+    chunks.push(value);
+  }
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return result;
+};
+
+/** 认证这类路由的 JSON 上限。个人资料要带 3MB base64 头像,所以单独放宽。 */
+const JSON_BODY_LIMIT = 64 * 1024;
+const PROFILE_BODY_LIMIT = 4 * 1024 * 1024;
+
+const readJson = async <T>(request: Request, limit = JSON_BODY_LIMIT): Promise<T> => {
+  const bytes = await readBodyBytes(request, limit);
   try {
-    return await request.json<T>();
+    return JSON.parse(new TextDecoder().decode(bytes)) as T;
   } catch {
     throw new Response(JSON.stringify({ detail: "Invalid JSON body" }), {
       status: 400,
@@ -340,6 +388,24 @@ const readJson = async <T>(request: Request): Promise<T> => {
 };
 
 const turnstileEnabled = (env: Env) => Boolean(env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET_KEY);
+
+/**
+ * 配置缺一半就整个关掉,是给本地开发用的;部署时打错一个变量名就变成
+ * **静默降级**:人机验证没了、邮箱验证没了,而接口一切正常、没有任何告警。
+ *
+ * 生产把 `REQUIRE_AUTH_HARDENING` 设成 "1":该开的没开就直接 503,
+ * 让部署当场失败,而不是安静地少一道防线。
+ */
+const assertAuthHardening = (env: Env) => {
+  if (env.REQUIRE_AUTH_HARDENING !== "1") return;
+  const missing = [
+    turnstileEnabled(env) ? "" : "TURNSTILE_SITE_KEY/TURNSTILE_SECRET_KEY",
+    env.RESEND_API_KEY ? "" : "RESEND_API_KEY"
+  ].filter(Boolean);
+  if (missing.length) {
+    throw json({ detail: `服务端认证配置不完整：${missing.join("、")}`, code: "AUTH_CONFIG_INCOMPLETE" }, 503);
+  }
+};
 
 const verifyTurnstile = async (
   env: Env,
@@ -392,12 +458,30 @@ const clearLoginFailures = async (env: Env, request: Request, email: string) => 
   await env.SYNC_DATA.delete(await loginFailureKey(request, email));
 };
 
+/** 允许用于 Apple 身份 token 的算法。严格白名单:不接受 none,也不接受 JWK 没声明的算法。 */
+const ALLOWED_APPLE_JWT_ALGORITHMS: Record<string, {
+  kty: string;
+  importParams: RsaHashedImportParams | EcKeyImportParams;
+  verifyParams: AlgorithmIdentifier | EcdsaParams;
+}> = {
+  RS256: {
+    kty: "RSA",
+    importParams: { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    verifyParams: { name: "RSASSA-PKCS1-v1_5" }
+  },
+  ES256: {
+    kty: "EC",
+    importParams: { name: "ECDSA", namedCurve: "P-256" },
+    verifyParams: { name: "ECDSA", hash: "SHA-256" }
+  }
+};
+
 const verifyAppleIdentityToken = async (identityToken: string, env: Env, expectedNonce?: string) => {
   const parts = identityToken.split(".");
   if (parts.length !== 3) throw json({ detail: "Apple 登录凭据格式无效。" }, 401);
   const header = base64UrlToJson<{ alg?: string; kid?: string }>(parts[0]);
   const claims = base64UrlToJson<AppleIdentityClaims>(parts[1]);
-  if (header.alg !== "ES256" || !header.kid || !claims.sub) {
+  if (!header.alg || !header.kid || !claims.sub) {
     throw json({ detail: "Apple 登录凭据无效。" }, 401);
   }
   const clientId = env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID;
@@ -415,23 +499,34 @@ const verifyAppleIdentityToken = async (identityToken: string, env: Env, expecte
 
   const keysResponse = await fetch("https://appleid.apple.com/auth/keys");
   if (!keysResponse.ok) throw json({ detail: "暂时无法连接 Apple 登录服务。" }, 502);
-  const keys = await keysResponse.json<{ keys?: Array<JsonWebKey & { kid?: string }> }>();
+  const keys = await keysResponse.json<{ keys?: Array<JsonWebKey & { kid?: string; alg?: string }> }>();
   const jwk = keys.keys?.find((item) => item.kid === header.kid);
   if (!jwk) throw json({ detail: "无法验证 Apple 登录凭据。" }, 401);
-  const key = await crypto.subtle.importKey(
-    "jwk",
-    jwk,
-    { name: "ECDSA", namedCurve: "P-256" },
-    false,
-    ["verify"]
-  );
+
+  // ⚠️ 算法必须跟着 Apple 的公钥走,不能写死。
+  // https://appleid.apple.com/auth/keys 当前返回的三把 key 全是 kty=RSA / alg=RS256;
+  // 老代码只认 ES256 并按 ECDSA P-256 导入,于是每一次 Apple 登录都在 importKey
+  // 之前就 401 —— 关联 Apple、删号后重新认证走的也是这个函数。
+  // (App Store Server API 的**开发者签名 JWT** 才是 ES256,那是另一件事,见 createAppleJwt。)
+  const algorithm = jwk.alg && jwk.alg !== header.alg ? undefined : ALLOWED_APPLE_JWT_ALGORITHMS[header.alg];
+  if (!algorithm || algorithm.kty !== jwk.kty) throw json({ detail: "Apple 登录凭据算法不受支持。" }, 401);
+  const key = await crypto.subtle.importKey("jwk", jwk, algorithm.importParams, false, ["verify"]);
   const valid = await crypto.subtle.verify(
-    { name: "ECDSA", hash: "SHA-256" },
+    algorithm.verifyParams,
     key,
     base64UrlToBytes(parts[2]),
     encoder.encode(`${parts[0]}.${parts[1]}`)
   );
   if (!valid) throw json({ detail: "Apple 登录签名无效。" }, 401);
+
+  // 重放防护:nonce 是客户端自己给的、还能整个省略,所以它挡不住「把同一份
+  // identity token 再发一次」。这里改成让 token 本身一次性 —— 记下它的哈希,
+  // 有效期内再来第二次就拒。过了 exp 之后上面的过期检查已经会拦。
+  const replayKey = `apple-id-token:${await sha256(identityToken)}`;
+  if (await env.SYNC_DATA.get(replayKey)) throw json({ detail: "Apple 登录凭据已被使用，请重试。" }, 401);
+  await env.SYNC_DATA.put(replayKey, "1", {
+    expirationTtl: Math.max(60, Math.ceil(claims.exp! - Date.now() / 1000) + 60)
+  });
   return claims;
 };
 
@@ -579,11 +674,30 @@ const entitlementPayload = (row?: EntitlementRow | null) => {
 
 const getEntitlementRow = async (env: Env, userId: string) => (
   env.DB.prepare(`
-    SELECT is_pro, product_id, source, expires_at, updated_at
+    SELECT is_pro, product_id, source, original_transaction_id, transaction_id, environment, expires_at, updated_at
     FROM entitlements
     WHERE user_id = ?
   `).bind(userId).first<EntitlementRow>()
 );
+
+/**
+ * 沙盒交易能给的最长权益。
+ *
+ * TestFlight 和 App 审核用的都是沙盒交易，所以不能直接拒；但一笔沙盒的
+ * **永久**购买不该变成正式账号上永不过期的 Pro（实测确实会）。给一个短上限：
+ * 审核期够用，泄漏出去也会自己过期。
+ */
+const SANDBOX_ENTITLEMENT_MAX_MS = 30 * 24 * 60 * 60 * 1000;
+
+/** 这笔交易被撤销/退款时，如果账号当前的权益正是它给的，就一并撤掉。 */
+const revokeEntitlementForTransaction = async (env: Env, userId: string, originalTransactionId?: string) => {
+  if (!originalTransactionId) return;
+  await env.DB.prepare(`
+    UPDATE entitlements
+    SET is_pro = 0, product_id = NULL, source = 'free', expires_at = NULL, updated_at = ?
+    WHERE user_id = ? AND original_transaction_id = ?
+  `).bind(new Date().toISOString(), userId, originalTransactionId).run();
+};
 
 const saveEntitlement = async (
   env: Env,
@@ -598,6 +712,21 @@ const saveEntitlement = async (
   }
 ) => {
   const now = new Date().toISOString();
+  const current = await getEntitlementRow(env, userId);
+  const candidate = { is_pro: 1, product_id: data.productId, expires_at: data.expiresAt ?? null };
+  // 同一笔原始交易的新消息（续费、到期、退款）永远可以改写自己那一行，
+  // 包括往下改；别的交易只有更强时才准覆盖。
+  const sameTransaction = Boolean(
+    data.originalTransactionId
+    && current?.original_transaction_id
+    && data.originalTransactionId === current.original_transaction_id
+  );
+  if (!sameTransaction && entitlementStrength(candidate) < entitlementStrength(current)) {
+    // 还是要盖一下时间戳:updated_at 兼作「上次向 Apple 核对是什么时候」,
+    // 不动的话 /api/entitlements 的每日重查会认为这行永远是陈的,每次请求都打一次 Apple。
+    await env.DB.prepare("UPDATE entitlements SET updated_at = ? WHERE user_id = ?").bind(now, userId).run();
+    return entitlementPayload(await getEntitlementRow(env, userId));
+  }
   await env.DB.prepare(`
     INSERT INTO entitlements (
       user_id, is_pro, product_id, source, original_transaction_id, transaction_id, environment, expires_at, updated_at
@@ -729,6 +858,7 @@ const requireVerifiedUser = async (request: Request, env: Env) => {
 };
 
 const register = async (request: Request, env: Env) => {
+  assertAuthHardening(env);
   await rateLimit(env, request, "register", 5, 3600);
   const body = await readJson<{
     email?: string;
@@ -799,6 +929,7 @@ const register = async (request: Request, env: Env) => {
 };
 
 const login = async (request: Request, env: Env) => {
+  assertAuthHardening(env);
   await rateLimit(env, request, "login", 10, 300);
   const body = await readJson<{ email?: string; password?: string; turnstile_token?: string }>(request);
   const email = normalizeEmail(body.email);
@@ -1031,7 +1162,7 @@ const updateProfile = async (request: Request, env: Env) => {
     bio?: string;
     target_level?: string;
     avatar?: string | null;
-  }>(request);
+  }>(request, PROFILE_BODY_LIMIT);
   const displayName = String(body.display_name ?? "").trim();
   const bio = String(body.bio ?? "").trim();
   const targetLevel = String(body.target_level ?? "N5").trim();
@@ -1059,9 +1190,9 @@ const updateProfile = async (request: Request, env: Env) => {
     bio,
     target_level: targetLevel,
     profile_updated_at: now,
-    avatar: typeof body.avatar === "undefined"
-      ? await env.SYNC_DATA.get(`${PROFILE_AVATAR_PREFIX}${userId}`)
-      : body.avatar
+    // 只有这次真的动过头像才把它放进响应。没动的话客户端本来就有,
+    // 为了改个昵称从 KV 读一遍 3MB 再原样发回去是纯浪费。
+    ...(typeof body.avatar === "undefined" ? {} : { avatar: body.avatar })
   });
 };
 
@@ -1075,6 +1206,9 @@ const logout = async (request: Request, env: Env) => {
 
 const changePassword = async (request: Request, env: Env) => {
   const userId = await requireUser(request, env);
+  // 改密要跑一次加盐哈希(故意很贵),而且是拿旧密码在线试错的入口。
+  // 认证之后的路由同样需要按账号限速,不能只挡未登录那半边。
+  await rateLimitSubject(env, "change-password", `user:${userId}`, 10, 900);
   const body = await readJson<{ current_password?: string; new_password?: string }>(request);
   const currentPassword = String(body.current_password ?? "");
   const newPassword = String(body.new_password ?? "");
@@ -1145,6 +1279,7 @@ const verifyEmail = async (request: Request, env: Env) => {
 };
 
 const requestPasswordReset = async (request: Request, env: Env) => {
+  assertAuthHardening(env);
   await rateLimit(env, request, "pwreset-request", 5, 900);
   const body = await readJson<{ email?: string; turnstile_token?: string }>(request);
   await verifyTurnstile(env, request, body.turnstile_token, "password_reset");
@@ -1249,9 +1384,105 @@ const deleteAccount = async (request: Request, env: Env) => {
   return json({ status: "deleted" });
 };
 
-const getEntitlements = async (request: Request, env: Env) => {
-  const userId = await requireUser(request, env);
-  return json(entitlementPayload(await getEntitlementRow(env, userId)));
+type PurchaseOutcome =
+  | { ok: true; entitlement: ReturnType<typeof entitlementPayload> }
+  | { ok: false; status: number; detail: string };
+
+const recordPurchaseEvent = async (
+  env: Env,
+  userId: string,
+  productId: string,
+  transactionId: string,
+  status: string,
+  payload: unknown,
+  originalTransactionId?: string | null,
+  environment?: string | null
+) => {
+  await env.DB.prepare(`
+    INSERT OR IGNORE INTO purchase_events (id, user_id, product_id, transaction_id, original_transaction_id, environment, status, raw_payload, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    crypto.randomUUID(), userId, productId, transactionId,
+    originalTransactionId ?? null, environment ?? null, status,
+    JSON.stringify(payload), new Date().toISOString()
+  ).run();
+};
+
+/**
+ * 用 Apple 的 App Store Server API 重新确认一笔交易，然后把权益落到某个账号上。
+ *
+ * 购买校验、退款/续费通知、以及权益接口上的定期重查全部走这一条路 ——
+ * 「这笔交易现在到底算不算数」只能有一份判断。
+ */
+const applyAppleTransaction = async (
+  env: Env,
+  userId: string,
+  transactionId: string,
+  expectedProductId?: string
+): Promise<PurchaseOutcome> => {
+  const apple = await getAppleTransaction(env, transactionId);
+  if (!apple) {
+    await recordPurchaseEvent(env, userId, expectedProductId ?? "", transactionId, "missing_apple_config", {
+      reason: "App Store Server API config is missing"
+    });
+    return { ok: false, status: 501, detail: "Apple verification is not configured on the server yet." };
+  }
+
+  const tx = apple.payload;
+  const productId = tx.productId ?? expectedProductId ?? "";
+  const originalTransactionId = tx.originalTransactionId ?? tx.transactionId ?? transactionId;
+  const bundleMatches = !env.APP_BUNDLE_ID || tx.bundleId === env.APP_BUNDLE_ID;
+  const productMatches = PRODUCT_IDS.has(productId) && (!expectedProductId || productId === expectedProductId);
+  const transactionMatches = tx.transactionId === transactionId || tx.originalTransactionId === transactionId;
+
+  // ⚠️ 被撤销的交易不只是「拒绝这次请求」：账号上那份靠它拿到的权益也必须撤掉，
+  // 否则退款之后 Pro 一直留着（永久购买尤其明显，它根本不会自己过期）。
+  if (tx.revocationDate) {
+    await revokeEntitlementForTransaction(env, userId, originalTransactionId);
+    await recordPurchaseEvent(env, userId, productId, transactionId, "revoked", apple.raw, originalTransactionId, tx.environment);
+    return { ok: false, status: 400, detail: "Apple transaction has been revoked." };
+  }
+  if (!bundleMatches || !productMatches || !transactionMatches) {
+    await recordPurchaseEvent(env, userId, productId, transactionId, "rejected", apple.raw, originalTransactionId, tx.environment);
+    return { ok: false, status: 400, detail: "Apple transaction did not match this app or product." };
+  }
+
+  // 归属先定下来，再谈权益。INSERT OR IGNORE 是一条原子语句，并发的第二个账号
+  // 读回来的一定是先到的那个 user_id。
+  const claimedAt = new Date().toISOString();
+  await env.DB.prepare(`
+    INSERT OR IGNORE INTO apple_transaction_owners (original_transaction_id, user_id, claimed_at)
+    VALUES (?, ?, ?)
+  `).bind(originalTransactionId, userId, claimedAt).run();
+  const owner = await env.DB.prepare(
+    "SELECT user_id FROM apple_transaction_owners WHERE original_transaction_id = ?"
+  ).bind(originalTransactionId).first<{ user_id: string }>();
+  if (owner && owner.user_id !== userId) {
+    await recordPurchaseEvent(env, userId, productId, transactionId, "owned_by_other_account", apple.raw, originalTransactionId, tx.environment);
+    return {
+      ok: false,
+      status: 409,
+      detail: "这笔购买已经绑定到另一个收集日账号。请用那个账号登录，或联系支持转移。"
+    };
+  }
+
+  let expiresAt = tx.expiresDate ? new Date(tx.expiresDate).toISOString() : null;
+  const isSandbox = (tx.environment ?? "").toLowerCase() === "sandbox";
+  if (isSandbox) {
+    const cap = Date.now() + SANDBOX_ENTITLEMENT_MAX_MS;
+    expiresAt = new Date(Math.min(expiresAt ? Date.parse(expiresAt) : cap, cap)).toISOString();
+  }
+
+  const entitlement = await saveEntitlement(env, userId, {
+    productId,
+    source: "app_store",
+    transactionId: tx.transactionId ?? transactionId,
+    originalTransactionId,
+    environment: tx.environment,
+    expiresAt
+  });
+  await recordPurchaseEvent(env, userId, productId, tx.transactionId ?? transactionId, "verified", apple.raw, originalTransactionId, tx.environment);
+  return { ok: true, entitlement };
 };
 
 const verifyPurchase = async (request: Request, env: Env) => {
@@ -1264,63 +1495,137 @@ const verifyPurchase = async (request: Request, env: Env) => {
   if (!PRODUCT_IDS.has(productId)) return json({ detail: "Unknown product_id" }, 400);
   if (!transactionId) return json({ detail: "transaction_id is required" }, 400);
 
-  const now = new Date().toISOString();
-  const apple = await getAppleTransaction(env, transactionId);
-  if (!apple) {
-    await env.DB.prepare(`
-      INSERT INTO purchase_events (id, user_id, product_id, transaction_id, status, raw_payload, created_at)
-      VALUES (?, ?, ?, ?, 'missing_apple_config', ?, ?)
-    `).bind(crypto.randomUUID(), userId, productId, transactionId, JSON.stringify({ reason: "App Store Server API config is missing" }), now).run();
-    return json({ detail: "Apple verification is not configured on the server yet." }, 501);
-  }
+  const result = await applyAppleTransaction(env, userId, transactionId, productId);
+  return result.ok ? json(result.entitlement) : json({ detail: result.detail }, result.status);
+};
 
-  const tx = apple.payload;
-  const bundleMatches = !env.APP_BUNDLE_ID || tx.bundleId === env.APP_BUNDLE_ID;
-  const productMatches = tx.productId === productId;
-  const transactionMatches = tx.transactionId === transactionId || tx.originalTransactionId === transactionId;
-  const notRevoked = !tx.revocationDate;
-  if (!bundleMatches || !productMatches || !transactionMatches || !notRevoked) {
+/**
+ * App Store Server Notifications V2。
+ *
+ * ⚠️ **这里一个字都不信 signedPayload**：只从里面取出交易号，然后照常用带鉴权的
+ * App Store Server API 把这笔交易查一遍，用查回来的结果做决定。这样就不用在
+ * Worker 里实现 x5c 证书链校验，也天然免疫重复投递和乱序 —— 每次都是「现在
+ * Apple 怎么说」，不是「这条通知怎么说」。
+ */
+const appleNotification = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "apple-notification", 120, 300);
+  const body = await readJson<{ signedPayload?: string }>(request);
+  const signedPayload = String(body.signedPayload ?? "");
+  const payloadPart = signedPayload.split(".")[1];
+
+  // ⚠️ 每一次投递都留痕,包括看不懂的和无人认领的。
+  // 没有这一步,Apple 的「Request a Test Notification」打进来就是零痕迹 ——
+  // 「通知地址到底配对了没有」只能等真实退款发生时才发现,那时已经晚了。
+  const record = async (fields: {
+    outcome: string;
+    notificationType?: string;
+    subtype?: string;
+    transactionId?: string;
+    originalTransactionId?: string;
+    environment?: string;
+    userId?: string;
+  }) => {
     await env.DB.prepare(`
-      INSERT INTO purchase_events (id, user_id, product_id, transaction_id, original_transaction_id, environment, status, raw_payload, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'rejected', ?, ?)
+      INSERT INTO apple_notifications (
+        id, notification_type, subtype, transaction_id, original_transaction_id,
+        environment, outcome, user_id, received_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      crypto.randomUUID(),
-      userId,
-      productId,
-      transactionId,
-      tx.originalTransactionId ?? null,
-      tx.environment ?? null,
-      JSON.stringify(apple.raw),
-      now
-    ).run();
-    return json({ detail: "Apple transaction did not match this app or product." }, 400);
+      crypto.randomUUID(), fields.notificationType ?? null, fields.subtype ?? null,
+      fields.transactionId ?? null, fields.originalTransactionId ?? null,
+      fields.environment ?? null, fields.outcome, fields.userId ?? null,
+      new Date().toISOString()
+    ).run().catch(() => undefined);
+  };
+
+  if (!payloadPart) {
+    await record({ outcome: "ignored" });
+    return json({ detail: "signedPayload is required" }, 400);
   }
 
-  const expiresAt = tx.expiresDate ? new Date(tx.expiresDate).toISOString() : null;
-  const entitlement = await saveEntitlement(env, userId, {
-    productId,
-    source: "app_store",
-    transactionId: tx.transactionId ?? transactionId,
-    originalTransactionId: tx.originalTransactionId,
-    environment: tx.environment,
-    expiresAt
+  let transactionId = "";
+  let notificationType: string | undefined;
+  let subtype: string | undefined;
+  try {
+    const payload = base64UrlToJson<{
+      notificationType?: string;
+      subtype?: string;
+      data?: { signedTransactionInfo?: string };
+    }>(payloadPart);
+    notificationType = payload.notificationType;
+    subtype = payload.subtype;
+    const info = payload.data?.signedTransactionInfo?.split(".")[1];
+    if (info) transactionId = String(base64UrlToJson<AppleTransactionPayload>(info).transactionId ?? "");
+  } catch {
+    transactionId = "";
+  }
+
+  // TEST 通知没有交易信息 —— 它唯一的作用就是证明这条链路是通的,所以到这儿就够了。
+  if (!transactionId) {
+    await record({ outcome: "ignored", notificationType, subtype });
+    return json({ status: "ignored", notificationType: notificationType ?? null });
+  }
+
+  // 通知只是「去看看这笔交易」的提示;真假由下面的 Apple 查询决定。
+  const apple = await getAppleTransaction(env, transactionId).catch(() => null);
+  if (!apple) {
+    await record({ outcome: "apple_lookup_failed", notificationType, subtype, transactionId });
+    return json({ status: "apple_lookup_failed" });
+  }
+  const originalTransactionId = apple.payload.originalTransactionId ?? apple.payload.transactionId ?? transactionId;
+  const owner = await env.DB.prepare(
+    "SELECT user_id FROM apple_transaction_owners WHERE original_transaction_id = ?"
+  ).bind(originalTransactionId).first<{ user_id: string }>();
+  // 没人认领过这笔交易(还没登录就买的)——客户端登录后会自己补报。
+  if (!owner) {
+    await record({
+      outcome: "unclaimed", notificationType, subtype, transactionId,
+      originalTransactionId, environment: apple.payload.environment
+    });
+    return json({ status: "unclaimed" });
+  }
+
+  await applyAppleTransaction(env, owner.user_id, transactionId);
+  await record({
+    outcome: "applied", notificationType, subtype, transactionId,
+    originalTransactionId, environment: apple.payload.environment, userId: owner.user_id
   });
+  return json({ status: "ok" });
+};
 
-  await env.DB.prepare(`
-    INSERT OR IGNORE INTO purchase_events (id, user_id, product_id, transaction_id, original_transaction_id, environment, status, raw_payload, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, 'verified', ?, ?)
-  `).bind(
-    crypto.randomUUID(),
-    userId,
-    productId,
-    tx.transactionId ?? transactionId,
-    tx.originalTransactionId ?? null,
-    tx.environment ?? null,
-    JSON.stringify(apple.raw),
-    now
-  ).run();
+/**
+ * 权益接口上的兜底重查。
+ *
+ * 通知可能没配、可能投递失败，而缓存自己发现不了退款(实测:写入永久权益后
+ * 模拟退款，再查权益仍然返回 Pro，Apple 重查次数 0)。所以每个账号每天
+ * 最多向 Apple 重查一次自己那笔交易。
+ */
+const ENTITLEMENT_RECHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
+/** Apple 查不通时把下次重查推后这么久,而不是留在「陈的」状态被每次请求重试。 */
+const RECHECK_BACKOFF_MS = 60 * 60 * 1000;
 
-  return json(entitlement);
+const getEntitlements = async (request: Request, env: Env) => {
+  const userId = await requireUser(request, env);
+  const row = await getEntitlementRow(env, userId);
+  const stale = row?.is_pro
+    && row.source === "app_store"
+    && row.transaction_id
+    && Date.parse(row.updated_at) + ENTITLEMENT_RECHECK_INTERVAL_MS < Date.now();
+  if (stale) {
+    try {
+      const result = await applyAppleTransaction(env, userId, row!.transaction_id!);
+      if (result.ok) return json(result.entitlement);
+    } catch {
+      // ⚠️ Apple 不通时按现有缓存回答,但**必须把下次重查往后推**。
+      // 只 catch 不推的话 updated_at 一直是陈的,于是 Apple 挂着的时候
+      // 这个账号的每一次 GET 都会再去撞一次 —— 客户端每次启动都调它。
+      await env.DB.prepare("UPDATE entitlements SET updated_at = ? WHERE user_id = ?")
+        .bind(new Date(Date.now() - ENTITLEMENT_RECHECK_INTERVAL_MS + RECHECK_BACKOFF_MS).toISOString(), userId)
+        .run();
+    }
+    return json(entitlementPayload(await getEntitlementRow(env, userId)));
+  }
+  return json(entitlementPayload(row));
 };
 
 const deleteSyncObject = async (
@@ -1362,7 +1667,7 @@ const pushSync = async (request: Request, env: Env) => {
       return json({ detail: "Unsupported sync compression" }, 400);
     }
     compression = compressionHeader;
-    snapshotBytes = new Uint8Array(await request.arrayBuffer());
+    snapshotBytes = await readBodyBytes(request, SYNC_MAX_REQUEST_BODY_LENGTH);
     operationId = String(request.headers.get("x-sync-operation-id") ?? crypto.randomUUID()).trim();
     baseModified = String(request.headers.get("x-sync-base-modified") ?? "").trim();
     const generationHeader = request.headers.get("x-sync-base-generation");
@@ -1375,7 +1680,7 @@ const pushSync = async (request: Request, env: Env) => {
       base_modified?: string;
       base_generation?: number;
       operation_id?: string;
-    }>(request);
+    }>(request, SYNC_MAX_REQUEST_BODY_LENGTH);
     const dbData = String(body.db_data ?? "");
     if (!dbData) return json({ detail: "db_data is required" }, 400);
     if (dbData.length > SYNC_MAX_BASE64_LENGTH) return json({ detail: "Backup is too large" }, 413);
@@ -1727,6 +2032,56 @@ const turnstileChallengePage = (request: Request, env: Env) => {
   });
 };
 
+/**
+ * 部署自检。**只返回布尔量**，不吐任何密钥、计数或用户信息。
+ *
+ * 它回答的是三个「本地仓库里看不出来」的问题：
+ *   - 远端到底有没有把 `REQUIRE_AUTH_HARDENING` 打开、Turnstile / 邮件配没配；
+ *   - 远端 D1 到底有没有应用 0009–0012（少一张表 = 内购归属、限速、通知留痕静默失效）；
+ *   - Apple 的 App Store Server API 凭据齐不齐。
+ *
+ * 没有这个接口，上面这些只能靠"应该配了吧"，而它们全都是**静默失效**：
+ * 接口一切正常、返回 200，直到某天有人用同一笔交易开了两个账号。
+ */
+const health = async (env: Env) => {
+  const required = [
+    "apple_transaction_owners", // 0009
+    "auth_rate_limits",         // 0010
+    "apple_notifications"       // 0012
+  ];
+  const found = await env.DB.prepare(
+    `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${required.map(() => "?").join(", ")})`
+  ).bind(...required).all<{ name: string }>();
+  const present = new Set((found.results ?? []).map((row) => row.name));
+  // 0011 换的是索引不是表，单独看。
+  const purchaseIndex = await env.DB.prepare(
+    "SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_purchase_events_transaction_status'"
+  ).first<{ name: string }>();
+
+  const migrations = Object.fromEntries(required.map((table) => [table, present.has(table)]));
+  migrations.idx_purchase_events_transaction_status = Boolean(purchaseIndex);
+  const migrationsApplied = Object.values(migrations).every(Boolean);
+  const authHardening = env.REQUIRE_AUTH_HARDENING === "1";
+  const turnstile = turnstileEnabled(env);
+  const email = Boolean(env.RESEND_API_KEY);
+
+  return json({
+    ok: migrationsApplied && (!authHardening || (turnstile && email)),
+    migrationsApplied,
+    migrations,
+    authHardening,
+    turnstileConfigured: turnstile,
+    emailConfigured: email,
+    appStoreConfigured: Boolean(
+      env.APP_STORE_ISSUER_ID && env.APP_STORE_KEY_ID && env.APP_STORE_PRIVATE_KEY && env.APP_BUNDLE_ID
+    ),
+    appStoreEnvironment: env.APP_STORE_ENVIRONMENT ?? "Production",
+    // ⚠️ 这里为 false 就是"生产在裸奔"：注册/登录/找回密码没有人机验证或邮箱验证兜底，
+    // 而接口不会报任何错。打开 REQUIRE_AUTH_HARDENING=1 会让这种情况直接 503。
+    productionReady: migrationsApplied && turnstile && email && authHardening
+  });
+};
+
 const route = async (request: Request, env: Env) => {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders() });
 
@@ -1737,6 +2092,7 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "GET" && url.pathname === "/privacy") return privacyPolicyPage();
   if (request.method === "GET" && url.pathname === "/terms") return userAgreementPage();
   if (request.method === "GET" && url.pathname === "/auth/challenge") return turnstileChallengePage(request, env);
+  if (request.method === "GET" && url.pathname === "/api/health") return health(env);
   if (request.method === "GET" && url.pathname === "/api/auth/config") return json({
     appleEnabled: Boolean(env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID),
     appleClientId: env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID ?? null,
@@ -1758,6 +2114,7 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/user/profile") return updateProfile(request, env);
   if (request.method === "GET" && url.pathname === "/api/entitlements") return getEntitlements(request, env);
   if (request.method === "POST" && url.pathname === "/api/purchases/verify") return verifyPurchase(request, env);
+  if (request.method === "POST" && url.pathname === "/api/purchases/apple-notifications") return appleNotification(request, env);
   if (request.method === "POST" && url.pathname === "/api/sync/push") return pushSync(request, env);
   if (request.method === "GET" && url.pathname === "/api/sync/status") return syncStatus(request, env);
   if (request.method === "GET" && url.pathname === "/api/sync/pull") return pullSync(request, env);
@@ -1781,6 +2138,8 @@ export default {
       // 限速窗口只用于短期计数，两天前的没有任何意义。
       env.DB.prepare("DELETE FROM sync_rate_limits WHERE window_start < ?")
         .bind(Math.floor(now / 1000) - 2 * 24 * 60 * 60),
+      env.DB.prepare("DELETE FROM auth_rate_limits WHERE window_start < ?")
+        .bind(Math.floor(now / 1000) - 2 * 24 * 60 * 60),
       // 上传幂等记录只服务「同一次上传的重试」，保留一天足够覆盖任何重试窗口。
       env.DB.prepare("DELETE FROM sync_uploads WHERE created_at < ?")
         .bind(iso(now - 24 * 60 * 60 * 1000)),
@@ -1790,5 +2149,20 @@ export default {
       env.DB.prepare("DELETE FROM auth_email_tokens WHERE expires_at < ? OR used_at IS NOT NULL")
         .bind(iso(now - 24 * 60 * 60 * 1000))
     ]);
+
+    // 退款不会自己找上门:通知可能没配、可能投递失败,而**永久购买永远不会过期**,
+    // 所以没有任何别的路径会去看它一眼。每次定时任务重查最旧的一小批,
+    // 不打开 App 的账号也能在一周内跟上 Apple 的实际状态。批量有上限,
+    // 这条不会随用户数把 Apple 请求撑爆。
+    const stale = await env.DB.prepare(`
+      SELECT user_id, transaction_id
+      FROM entitlements
+      WHERE is_pro = 1 AND source = 'app_store' AND transaction_id IS NOT NULL AND updated_at < ?
+      ORDER BY updated_at ASC
+      LIMIT 25
+    `).bind(iso(now - 7 * 24 * 60 * 60 * 1000)).all<{ user_id: string; transaction_id: string }>();
+    for (const row of stale.results ?? []) {
+      await applyAppleTransaction(env, row.user_id, row.transaction_id).catch(() => undefined);
+    }
   }
 } satisfies ExportedHandler<Env>;
