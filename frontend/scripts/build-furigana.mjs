@@ -42,7 +42,7 @@ const dbPaths = [
 // 这里、scripts/bake-seed-db.mjs、src/lib/study-core.ts,外加
 // src/data/furigana_overrides.json 的 version(对不上会直接抛错,是有意的)。
 export const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
-const GRAMMAR_DATASET_VERSION = "2026-08-15-grammar-rewrite-v2";
+const GRAMMAR_DATASET_VERSION = "2026-09-08-grammar-explanation-rewrite-v1";
 
 const hasKanji = (text) => /[\u3400-\u9fff々〇]/u.test(String(text ?? ""));
 // 语法标题里有少量为中文解释的括号（例如「基数詞（基数词）」）。
@@ -400,16 +400,15 @@ const writeGrammarTitleFurigana = (entries) => {
   })}\n`, "utf8");
 };
 
-const normalizePattern = (pattern) => String(pattern ?? "")
-  .replace(/（N[1-5]・.*）$/u, "")
-  .replace(/\s+/gu, "")
-  .trim();
-
 const updateGrammarSource = (grammarPoints, sentenceResults) => {
   let source = readFileSync(grammarTsPath, "utf8");
   // 无差别删掉所有 furigana 行再整体重写——**手工改在 grammar.ts 里的注音会被洗掉**。
   // 要固化人工结果，写进 furigana_overrides.json，那是重跑之后仍然活着的唯一位置。
-  source = source.replace(/^\s*"furigana": \[.*\],\n/gm, "");
+  // The generated source may contain either compact one-line annotations or
+  // the pretty-printed multiline form from an earlier build. Remove both
+  // forms before inserting exactly one fresh field per example.
+  source = source.replace(/^\s*"furigana": \[[^\n]*\],\n/gm, "");
+  source = source.replace(/^\s*"furigana": \[\n(?:[^\n]*\n)*?^\s*\],\n/gm, "");
   source = source.replace(/^\s*"tokenLengths": "(?:\\.|[^"\\])*",\n/gm, "");
   source = source.replace(/^\s*"tokenLemmas": "(?:\\.|[^"\\])*",\n/gm, "");
   const examples = grammarPoints.flatMap((point) => point.examples ?? []);
@@ -536,7 +535,6 @@ const main = async () => {
   const titlesOnly = process.argv.includes("--titles-only");
   mkdirSync(path.dirname(reportPath), { recursive: true });
   const grammarPoints = loadGrammarPoints();
-  const grammarSeed = JSON.parse(readFileSync(grammarSeedPath, "utf8"));
   const wordSeed = JSON.parse(readFileSync(wordSeedPath, "utf8"));
   const overrides = loadOverrides();
   loadReadingFixes(overrides.readings);
@@ -680,23 +678,29 @@ const main = async () => {
 
   writeGrammarTitleFurigana(grammarTitleEntries);
 
-  // grammar_seed intentionally keeps one unique row for patterns that appear
-  // in more than one level. Match those 731 canonical rows to grammar.ts by
-  // level + normalized pattern; the static source still gets annotations for
-  // all 741 points/examples, including the ten duplicate-title points.
-  const staticResultsByKey = new Map();
-  grammarPoints.forEach((point) => {
-    const key = `${point.level}\u0000${normalizePattern(point.title)}`;
-    const queue = staticResultsByKey.get(key) ?? [];
-    queue.push(firstGrammarResultById.get(point.id));
-    staticResultsByKey.set(key, queue);
-  });
-  const grammarRows = grammarSeed.rows.map((row, index) => {
-    const key = `${row[8]}\u0000${normalizePattern(row[0])}`;
-    const firstResult = staticResultsByKey.get(key)?.shift();
-    if (!firstResult) throw new Error(`grammar_seed 第 ${index + 1} 条找不到 grammar.ts 对应例句: ${row[0]}`);
-    return [...row.slice(0, 10), jsonAnnotations(firstResult.annotations), firstResult.tokenLengths ?? "", firstResult.tokenLemmas ?? ""];
-  });
+  // ⚠️ grammar_seed 必须和出厂库 grammar_points 逐行同构：741 行、bookOrder 顺序、
+  // 同一套重名后缀（`（N4-2）`，见 syncGrammarDbContent）。种子曾经是「每个 pattern
+  // 只留一行」的 731 行老口径，两边用了不同的消歧写法 —— 一旦升 GRAMMAR_SEED_VERSION，
+  // ensureGrammarSeed 按 pattern 字符串迁移进度就对不上号：16 个语法点连同用户在它们
+  // 上面的 grammar_progress / grammar_reviews / grammar_mistakes 被删掉，而且新装用户
+  // （741 条，id 1~741）和老用户（731 条，id 1~731）的 grammar_id 从此错位 ——
+  // grammar_progress 正是按数字 grammar_id 跨设备同步的。
+  const seedSeenPatterns = new Map();
+  const grammarRows = [...grammarPoints]
+    .sort((left, right) => Number(left.bookOrder) - Number(right.bookOrder))
+    .map((point) => {
+      const firstResult = firstGrammarResultById.get(point.id);
+      if (!firstResult) throw new Error(`grammar.ts ${point.id} 找不到首条例句注音结果`);
+      const content = grammarDbContent(point, firstResult.annotations, firstResult.tokenLengths, firstResult.tokenLemmas);
+      const duplicateIndex = seedSeenPatterns.get(point.title) ?? 0;
+      seedSeenPatterns.set(point.title, duplicateIndex + 1);
+      if (duplicateIndex > 0) {
+        content[0] = `${String(point.title ?? "")}（${String(point.level ?? "")}-${duplicateIndex + 1}）`;
+      }
+      // importance 出厂库里就是按等级定的：N1/N2 = 4，其余 3。
+      const importance = point.level === "N1" || point.level === "N2" ? 4 : 3;
+      return [...content.slice(0, 9), importance, ...content.slice(9)];
+    });
   const nextGrammarSeed = { version: GRAMMAR_DATASET_VERSION, rows: grammarRows };
   const nextWordSeed = wordSeed.map((row) => {
     const key = sourceKey(row[2], row[1]);

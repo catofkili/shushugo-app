@@ -50,25 +50,53 @@ const grammarSandbox = {};
 vm.createContext(grammarSandbox);
 vm.runInContext(grammarSource, grammarSandbox, { filename: "grammar.ts" });
 const grammarPoints = Array.isArray(grammarSandbox.GRAMMAR_POINTS) ? grammarSandbox.GRAMMAR_POINTS : [];
-const grammarRows = db.exec(`
-  SELECT pattern, meaning, example_jp, level, sort_order, example_tokens, example_lemmas
+// ⚠️ 逐字段比对的范围就是「发布时真的被看住了的范围」。语法的**文字层**
+// (解释、用法说明、中文译文、辨析)是 2026-09 为了版权逐条重写的东西 ——
+// 不比对的话,出厂库和 grammar.ts 在这几列上悄悄分家,谁都不会知道:
+// 界面读的是库,而重写记录对的是 grammar.ts。
+// 出厂库和 iOS 那份必须用**同一条** SELECT 比 —— 两处各写一份列清单的话,
+// 加一列就会让「两份库正文不一致」永远成立(列数都对不上)。
+const GRAMMAR_TEXT_SQL = `
+  SELECT pattern, meaning, example_jp, level, sort_order, example_tokens, example_lemmas,
+         prompt, formation, example_meaning, notes, confusions
   FROM grammar_points ORDER BY sort_order
-`)[0]?.values ?? [];
+`;
+const grammarRows = db.exec(GRAMMAR_TEXT_SQL)[0]?.values ?? [];
 const grammarMismatches = [];
 const orderedPoints = [...grammarPoints].sort((left, right) => Number(left.bookOrder) - Number(right.bookOrder));
 if (grammarRows.length !== orderedPoints.length) {
   grammarMismatches.push(`条数 ${grammarRows.length} != grammar.ts ${orderedPoints.length}`);
 } else {
-  grammarRows.forEach(([pattern, meaning, exampleJp, level, sortOrder, exampleTokens, exampleLemmas], index) => {
+  const FIELDS = [
+    "meaning", "example_jp", "level", "sort_order", "example_tokens", "example_lemmas",
+    "prompt", "formation", "example_meaning", "notes", "confusions"
+  ];
+  grammarRows.forEach((row, index) => {
+    const [pattern, ...values] = row;
+    const sortOrder = row[4];
     const point = orderedPoints[index];
     const example = point.examples?.[0] ?? {};
     const patternMatches = String(pattern ?? "") === String(point.title ?? "")
       || String(pattern ?? "").startsWith(`${String(point.title ?? "")}（`);
-    const expected = [point.meaning, example.jp ?? example.japanese ?? "", point.level, point.bookOrder, example.tokenLengths ?? "", example.tokenLemmas ?? ""];
-    const actual = [meaning, exampleJp, level, sortOrder, exampleTokens, exampleLemmas];
-    if (!patternMatches || expected.some((value, field) => String(value ?? "") !== String(actual[field] ?? ""))) {
-      grammarMismatches.push(`sort_order=${sortOrder} (${point.id}) 正文与 grammar.ts 不一致`);
+    const comparisons = (point.comparisons ?? []).map((item) => (
+      typeof item === "string" ? item : [item.withTitle, item.note].filter(Boolean).join("：")
+    )).filter(Boolean).join("；");
+    const expected = [
+      point.meaning, example.jp ?? example.japanese ?? "", point.level, point.bookOrder,
+      example.tokenLengths ?? "", example.tokenLemmas ?? "",
+      point.title, point.connection ?? point.structure ?? "",
+      example.cn ?? example.chinese ?? "",
+      Array.isArray(point.usageNotes) ? point.usageNotes.join("\n") : "",
+      comparisons
+    ];
+    if (!patternMatches) {
+      grammarMismatches.push(`sort_order=${sortOrder} (${point.id}) pattern 与 grammar.ts 不一致`);
     }
+    expected.forEach((value, field) => {
+      if (String(value ?? "") !== String(values[field] ?? "")) {
+        grammarMismatches.push(`sort_order=${sortOrder} (${point.id}) ${FIELDS[field]} 与 grammar.ts 不一致`);
+      }
+    });
   });
 }
 
@@ -134,16 +162,48 @@ if (String(shippedGrammarVersion) !== String(grammarSeed.version)) {
   grammarMismatches.push(`grammar_state=${shippedGrammarVersion} != grammar_seed=${grammarSeed.version}`);
 }
 
+// ⚠️ grammar_seed 必须和出厂库 grammar_points 逐行同构（同样的行数、sort_order 顺序、
+// 重名后缀）。两边曾经各用一套消歧写法（seed 731 行 `（N5・释义）` / DB 741 行 `（N4-2）`），
+// 一旦升 GRAMMAR_SEED_VERSION，ensureGrammarSeed 按 pattern 迁移进度就对不上号：
+// 16 个语法点连同用户在它们上面的 grammar_progress / grammar_reviews / grammar_mistakes
+// 被删掉，新装(741)与老用户(731)的 grammar_id 还会永久错位，而 grammar_progress
+// 正是按数字 grammar_id 跨设备同步的。这条闸门就是防止那次漂移再发生。
+const seedShapedDbRows = db.exec(`
+  SELECT pattern, meaning, prompt, formation, example_jp, example_meaning,
+    notes, confusions, level, importance, example_furigana, example_tokens, example_lemmas
+  FROM grammar_points ORDER BY sort_order
+`)[0]?.values ?? [];
+// GRAMMAR_SEED_ROW_COUNT 是运行时「版本戳撒谎了」的唯一兜底（见 study-core 里
+// ensureGrammarSeed 的早退判据）。它写错就等于那道兜底常年误触发或者常年不触发，
+// 所以在这里和出厂库、seed 一起钉住。
+const declaredRowCount = Number(
+  /GRAMMAR_SEED_ROW_COUNT\s*=\s*(\d+)/.exec(
+    readFileSync(new URL('../src/lib/study-core.ts', import.meta.url), 'utf8')
+  )?.[1]
+);
+if (declaredRowCount !== seedShapedDbRows.length) {
+  grammarMismatches.push(
+    `study-core 的 GRAMMAR_SEED_ROW_COUNT ${declaredRowCount} != grammar_points ${seedShapedDbRows.length}`
+  );
+}
+if (seedShapedDbRows.length !== grammarSeed.rows.length) {
+  grammarMismatches.push(`grammar_seed 行数 ${grammarSeed.rows.length} != grammar_points ${seedShapedDbRows.length}`);
+} else {
+  const drift = seedShapedDbRows.findIndex(
+    (row, index) => JSON.stringify(row) !== JSON.stringify(grammarSeed.rows[index])
+  );
+  if (drift >= 0) {
+    grammarMismatches.push(`grammar_seed 第 ${drift + 1} 行与出厂库不一致: ${seedShapedDbRows[drift][0]}`);
+  }
+}
+
 // iOS embeds a second copy which is ignored by git but ships in the native
 // bundle. Verify it too so a web-only bake can never leave the app with stale
 // grammar text.
 const iosDbPath = path.join(here, "../ios/App/App/public/nihongo.db");
 if (existsSync(iosDbPath)) {
   const iosDb = new SQL.Database(new Uint8Array(readFileSync(iosDbPath)));
-  const iosRows = iosDb.exec(`
-    SELECT pattern, meaning, example_jp, level, sort_order, example_tokens, example_lemmas
-    FROM grammar_points ORDER BY sort_order
-  `)[0]?.values ?? [];
+  const iosRows = iosDb.exec(GRAMMAR_TEXT_SQL)[0]?.values ?? [];
   if (JSON.stringify(iosRows) !== JSON.stringify(grammarRows)) {
     grammarMismatches.push("iOS nihongo.db 与 public/nihongo.db 的语法正文不一致");
   }

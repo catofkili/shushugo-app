@@ -40,6 +40,9 @@ import {
   speechText
 } from "../src/lib/speech.ts";
 import { splitMorae } from "../src/lib/pitch-accent.ts";
+// 同元音连着两拍时,引擎会把第二拍压到 40~90ms。长音该压,语素边界(湖 = 水+海)不该。
+// 判定表和撑开逻辑在这里,审计脚本 audit-vowel-sequences.mjs 读同一份。
+import { separatedMoraIndices, stretchMoras, loadDecisions } from "./vowel-sequences.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dbPath = join(here, "..", "public", "nihongo.db");
@@ -83,6 +86,11 @@ const voiceId = engine === "google" ? `google-${googleVoice}` : `voicevox-${voic
 // 显示名从引擎问,拿不到就退回 id(--dry-run 时不联网,也走这条)
 const voiceLabel = value("--label", "");
 const outputDir = join(audioRoot, voiceId);
+// ⚠️ 不带 --label 重跑(补几个词、改合成参数)时要保留已有的显示名和默认声音,
+// 否则「春日部つむぎ(女声)」被冲成 voicevox-8,默认声音也会按 id 排序静默换人。
+const readJson = (path) => { try { return JSON.parse(readFileSync(path, "utf8")); } catch { return null; } };
+const previousLabel = readJson(join(outputDir, "index.json"))?.label ?? "";
+const previousDefault = readJson(join(audioRoot, "index.json"))?.default ?? null;
 
 if (!dryRun && engine === "google" && !googleKey && !googleToken) {
   console.error("Google 引擎需要 GOOGLE_TTS_API_KEY 或 GOOGLE_TTS_ACCESS_TOKEN。");
@@ -94,6 +102,7 @@ const SQL = await initSqlJs();
 const db = new SQL.Database(new Uint8Array(readFileSync(dbPath)));
 const rows = db.exec("SELECT kanji, kana FROM words")[0].values;
 const accentTable = JSON.parse(readFileSync(accentPath, "utf8")).accents ?? {};
+const vowelDecisions = loadDecisions();
 
 // 按「词」建条目,不按读音去重 —— 箸 和 橋 读音都是 ハシ,但重音 1 型 vs 2 型,
 // 合成出来不是一回事,共用一个文件会教错音。文件名由 表记|假名 哈希而来,
@@ -280,9 +289,12 @@ async function voicevoxSynthesize(item) {
   query.kana = notation;
   mismatch = pronunciationMismatch(query, intendedText);
   if (mismatch) throw new Error(`VOICEVOX 明确假名校验失败:${mismatch}`);
+  // 撑开必须放在最后:上面那次 accent_phrases 会按记法重算整份拍表,先撑就被覆盖掉了。
+  const stretched = stretchMoras(query, separatedMoraIndices(kanji, item.kana, vowelDecisions));
   query.outputSamplingRate = 24000;
   query.outputStereo = false;
   const applied = useAccent && accent !== null && query.accent_phrases?.length === 1;
+  if (stretched) stretchedCount += 1;
 
   const response = await fetch(`${voicevoxHost}/synthesis?speaker=${voicevoxSpeaker}`, {
     method: "POST",
@@ -390,6 +402,7 @@ console.log(
 
 let done = 0;
 let failed = 0;
+let stretchedCount = 0;
 let accentApplied = 0;
 // 默认值保持保守；全量离线生成时可按机器性能临时提高，断点续跑不会覆盖已完成文件。
 const CONCURRENCY = engine === "voicevox"
@@ -437,7 +450,7 @@ writeFileSync(
   join(outputDir, "index.json"),
   JSON.stringify({
     id: voiceId,
-    label: voiceLabel || voiceId,
+    label: voiceLabel || previousLabel || voiceId,
     ext: extension,
     engine,
     voice: engine === "voicevox" ? `voicevox:${voicevoxSpeaker}` : googleVoice,
@@ -464,7 +477,7 @@ writeFileSync(
   join(audioRoot, "index.json"),
   JSON.stringify({
     voices: voices.map(({ id, label, ext, engine: eng, count }) => ({ id, label, ext, engine: eng, count })),
-    default: voices[0]?.id ?? null
+    default: voices.some((voice) => voice.id === previousDefault) ? previousDefault : voices[0]?.id ?? null
   })
 );
 // 文件名是哈希,肉眼认不出是哪个词;留一份对照表纯粹为了排查,运行时不读。
@@ -480,6 +493,7 @@ writeFileSync(
 console.log(`\n✅ 完成 ${done} 个,失败 ${failed} 个;${voiceId} 目录里共 ${generated.length} 个`);
 console.log(`   现有声音:${voices.map((v) => `${v.label}(${v.count})`).join("、") || "无"}`);
 if (accentApplied) console.log(`   其中 ${accentApplied} 个按词典重音做了校正`);
+if (stretchedCount) console.log(`   其中 ${stretchedCount} 个把语素边界的连元音撑开了两拍`);
 if (failed) console.log("再跑一遍脚本会只补失败的那些。");
 if (onlyWords || Number.isFinite(limit)) {
   console.log("\n试听(macOS):");
