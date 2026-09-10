@@ -4,7 +4,7 @@
 
 set -e
 
-cd ~/Documents/master-nihongo-ios/frontend
+cd ~/Documents/shushugo/frontend
 
 echo "🔨 构建前端..."
 npm run build

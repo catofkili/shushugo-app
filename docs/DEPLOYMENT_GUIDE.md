@@ -120,11 +120,11 @@ fly open
 
 ### 2. 推送到 GitHub
 ```bash
-cd ~/Documents/master-nihongo-ios
+cd ~/Documents/shushugo
 git init
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/yourusername/master-nihongo.git
+git remote add origin https://github.com/catofkili/shushugo-app.git
 git push -u origin main
 ```
 

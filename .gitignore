@@ -70,8 +70,8 @@ frontend/public/*.db.bak_*
 .wrangler/
 
 # Stale export / duplicate of frontend (build artifacts only, no source)
-/master-nihongo/
-master-nihongo.zip
+/shushugo/
+shushugo.zip
 
 # Capacitor / iOS extra
 frontend/ios/App/App/public/

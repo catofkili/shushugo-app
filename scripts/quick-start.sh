@@ -10,7 +10,7 @@ echo "=================================="
 echo ""
 
 # 项目目录
-PROJECT_DIR="$HOME/Documents/master-nihongo-ios/frontend"
+PROJECT_DIR="$HOME/Documents/shushugo/frontend"
 cd "$PROJECT_DIR"
 
 # 1. 清理缓存

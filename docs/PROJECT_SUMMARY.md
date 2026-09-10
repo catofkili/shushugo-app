@@ -3,7 +3,7 @@
 ## ✅ 已完成的工作
 
 ### 1. 项目结构搭建
-- ✅ 创建独立项目目录 `master-nihongo-ios/`
+- ✅ 创建独立项目目录 `shushugo/`
 - ✅ 分离前端、后端、文档、脚本目录
 - ✅ 配置所有必需的配置文件
 
@@ -46,7 +46,7 @@
 ## 📁 项目结构
 
 ```
-master-nihongo-ios/
+shushugo/
 ├── frontend/
 │   ├── src/                      # React 源码
 │   │   ├── lib/
@@ -85,7 +85,7 @@ master-nihongo-ios/
 ### 第一步：配置 Xcode 环境
 
 ```bash
-cd ~/Documents/master-nihongo-ios
+cd ~/Documents/shushugo
 ./scripts/setup-xcode.sh
 ```
 
@@ -114,7 +114,7 @@ pod install
 ### 第二步：在 Xcode 中打开项目
 
 ```bash
-cd ~/Documents/master-nihongo-ios/frontend
+cd ~/Documents/shushugo/frontend
 open ios/App/App.xcworkspace
 ```
 

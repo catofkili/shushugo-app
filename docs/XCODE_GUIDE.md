@@ -4,7 +4,7 @@
 
 ### 1. 配置环境
 ```bash
-cd ~/Documents/master-nihongo-ios
+cd ~/Documents/shushugo
 ./scripts/setup-xcode.sh
 ```
 

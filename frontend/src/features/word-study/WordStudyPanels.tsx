@@ -350,7 +350,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
     });
   };
 
-  const shareFileName = `master-nihongo-${studyDate}.png`;
+  const shareFileName = `shushugo-${studyDate}.png`;
 
   const generateShareImage = async () => {
     // 今天是否冲破了某个累计里程碑(今天学之前 < 里程碑 ≤ 现在)

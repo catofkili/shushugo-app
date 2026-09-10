@@ -10,7 +10,7 @@
 
 ### 1.1 [P1，已复现] 内购回调不认识已安装插件的收据结构
 
-- 位置：[purchases.ts:79](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/purchases.ts:79)、[purchases.ts:130](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/purchases.ts:130)。
+- 位置：[purchases.ts:79](/Users/lsc/Documents/shushugo/frontend/src/lib/purchases.ts:79)、[purchases.ts:130](/Users/lsc/Documents/shushugo/frontend/src/lib/purchases.ts:130)。
 - 应用没有配置 `store.validator`。已安装 `cordova-plugin-purchase` 的默认分支会生成 `VerifiedReceipt`，其中 `id` 是首笔交易 ID，商品在 `sourceReceipt.transactions[].products[]`，默认 `collection` 为空。
 - 应用却优先把 `receipt.id` 当商品 ID，并查不存在的顶层 `transactions`。实际商品因此无法匹配白名单。
 - 隔离复现使用**插件实际的 VerifiedReceipt 类**和应用实际的 `initializePurchases` 回调：合法结构进入后，授权次数 **0**，云验证次数 **0**，`finish()` 次数 **1**。不是一次真实扣款测试，但已经证明当前代码与插件对象不匹配。
@@ -19,7 +19,7 @@
 
 ### 1.2 [P1，已复现] 一笔 Apple 交易可给多个应用账号开通 Pro
 
-- 位置：[Worker:1277](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:1277)、[Worker:1299](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:1299)、[权益迁移](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/migrations/0002_entitlements.sql:1)。
+- 位置：[Worker:1277](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:1277)、[Worker:1299](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:1299)、[权益迁移](/Users/lsc/Documents/shushugo/cloudflare-sync/migrations/0002_entitlements.sql:1)。
 - 校验检查 bundle、product、transaction、revocation，但没有检查该交易属于哪个应用账号，没有使用 `appAccountToken`，也没有在授权前原子约束原始交易的归属。
 - `purchase_events.transaction_id` 有唯一索引，但它在 `saveEntitlement` **之后**通过 `INSERT OR IGNORE` 写入，挡不住第二个账号获得权益。
 - 复现：真实 Worker 代码、真实迁移、内存 SQLite 模拟 D1，Apple 响应被替换成固定的测试交易；A、B 两账号提交同一交易，均返回 **200 / isPro=true**；权益两行，事件只有 A 的一行。
@@ -27,14 +27,14 @@
 
 ### 1.3 [P1，已复现] 旧订阅交易会覆盖永久权益
 
-- 位置：[Worker:588](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:588)、[Worker:1299](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:1299)。
+- 位置：[Worker:588](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:588)、[Worker:1299](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:1299)。
 - 每个账号仅保留一行权益，任意验证通过的交易直接覆盖该行，没有比较永久购买、当前有效订阅和历史过期订阅。
 - 复现：先获得永久 Pro，再验证一笔已过期的月度交易，最终响应变成 **isPro=false**。恢复历史订单或响应到达顺序变化即可触发，不需要伪造订单。
 - 修复方向：从仍有效且未撤销的交易推导权益。当前永久购买未撤销时，旧的月/年订单不能把它降级；订阅到期时间缺失也不能自动解释成永久。
 
 ### 1.4 [P1，代码确认及缓存复现] 缺少完整的续费、退款与撤销闭环
 
-- 位置：[Worker:1252](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:1252)、[Worker:1776](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:1776)、[purchases.ts:142](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/purchases.ts:142)。
+- 位置：[Worker:1252](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:1252)、[Worker:1776](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:1776)、[purchases.ts:142](/Users/lsc/Documents/shushugo/frontend/src/lib/purchases.ts:142)。
 - `/api/entitlements` 只读取 D1；定时任务只清理过期记录。路由没有 App Store Server Notifications 接收入口，也没有按交易重新计算订阅状态的后台任务。
 - 本地云核验失败直接被忽略，没有可靠的待验证交易重试队列。已经登录前买过的交易也不能仅靠登录时读取云端权益补齐。
 - 复现：永久权益写入后，模拟 Apple 侧退款，再查询权益，仍返回 Pro，Apple 重查次数为 0。这证明缓存不会自行发现退款，不代表测试了 Apple 的实际通知投递。
@@ -43,7 +43,7 @@
 
 ### 1.5 [P1，已复现] Apple 登录算法与 Apple 当前公钥不匹配
 
-- 位置：[Worker:395](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:395)。
+- 位置：[Worker:395](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:395)。
 - 代码只接受 `ES256`，按 ECDSA P-256 导入 Apple 公钥。
 - 本次直接读取 [Apple 公钥接口](https://appleid.apple.com/auth/keys)，返回的三个 key 均为 `kty=RSA, alg=RS256`。Apple 部分说明页存在容易混淆的 E256 表述，本结论以其实际公钥接口和代码行为为证据，不依赖该表述。
 - 隔离构造 RS256 签名身份 token 后，代码在获取公钥之前直接 **401**。同一个函数也用于关联 Apple 和 Apple 删除账号再认证。
@@ -52,7 +52,7 @@
 
 ### 1.6 [P1，已复现] 小程序接收 v2 不等于双向无损同步
 
-- 位置：[小程序导出表清单](/Users/lsc/Documents/master-nihongo-ios/wechat-miniprogram/src/runtime/sync-snapshot.js:24)、[小程序合并](/Users/lsc/Documents/master-nihongo-ios/wechat-miniprogram/src/runtime/sync-snapshot.js:346)、[小程序同步上传](/Users/lsc/Documents/master-nihongo-ios/wechat-miniprogram/src/runtime/sync-client.js:128)。
+- 位置：[小程序导出表清单](/Users/lsc/Documents/shushugo/wechat-miniprogram/src/runtime/sync-snapshot.js:24)、[小程序合并](/Users/lsc/Documents/shushugo/wechat-miniprogram/src/runtime/sync-snapshot.js:346)、[小程序同步上传](/Users/lsc/Documents/shushugo/wechat-miniprogram/src/runtime/sync-client.js:128)。
 - 当前小程序已接受协议 v2，因此旧的“v2 一律拒绝”结论已经不适用。但接收时丢弃 `sync_uid`，仍按 `word_id + created_at + direction` 去重。
 - 本次将前端**实际导出器**产生的两条同词、同秒、同方向、不同 `sync_uid` 作答交给小程序实际合并器：2 条只插入 **1 条**。
 - 同一输入还包含一条语法进度。小程序再导出的快照**没有 grammar_progress 表**。其清单也没有前端完整的语法流水、收藏、汉字单元等用户表。
@@ -62,7 +62,7 @@
 
 ### 1.7 [P1，代码确认] 自定义词条与学习记录的身份不能跨设备稳定对应
 
-- 位置：[word-list-import.ts:396](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/word-list-import.ts:396)、[同步身份清单](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/sync/tables.ts:24)。
+- 位置：[word-list-import.ts:396](/Users/lsc/Documents/shushugo/frontend/src/lib/word-list-import.ts:396)、[同步身份清单](/Users/lsc/Documents/shushugo/frontend/src/lib/sync/tables.ts:24)。
 - 导入新词通过 SQLite 自增 ID 分配身份，`words` 不进云快照，进度和便签却仍按 `word_id` 同步。
 - 两台设备导入不同的新词可能得到相同 ID；没有该自定义词的新设备也只能收到悬空的学习记录。相同数字不代表相同词条。
 - 修复方向：出厂词典继续不传；用户新增词条需要单独的同步身份和内容，并在合并时映射引用。暂不支持时应明确阻止此类数据被承诺为可完整跨端恢复。
@@ -70,7 +70,7 @@
 
 ### 1.8 [P2，传输已确认，失配触发路径待验证] 出厂内容迁移标记被当成用户状态同步
 
-- 位置：[DEVICE_LOCAL_STATE_KEYS](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/sync/tables.ts:85)、[元数据迁移早退](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/study-core.ts:677)、[云合并后补种子](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/sync-api.ts:829)。
+- 位置：[DEVICE_LOCAL_STATE_KEYS](/Users/lsc/Documents/shushugo/frontend/src/lib/sync/tables.ts:85)、[元数据迁移早退](/Users/lsc/Documents/shushugo/frontend/src/lib/study-core.ts:677)、[云合并后补种子](/Users/lsc/Documents/shushugo/frontend/src/lib/sync-api.ts:829)。
 - 用户快照包含 `jlpt_word_metadata_version`、`furigana_version`、`jlpt_collocation_content_version` 等“这份本地词典已完成迁移”的标记；对应 `words` 内容并不随快照同步。
 - 若旧内容数据库合并进新设备写下的“已完成”标记，随后运行迁移的相等判断可能直接跳过，造成版本标记新、实际词典旧。正常启动也会先跑种子迁移，可能先消除这个前提；本次没有复现一条完整用户操作序列，因此只确认这类标记被不必要地同步，失配后果仍需按实际升级/恢复顺序验证。
 - 修复方向：逐一识别描述本地内容状态的标记，将其与账号学习状态分开；导出和导入两边都过滤，并为已经错误同步的标记提供一次安全重检。不能粗暴过滤所有名字含 `version` 的键，有些确实参与用户调度。
@@ -79,7 +79,7 @@
 
 ### 2.1 当前体积实测
 
-数据来源是开发服务镜像 `/Users/lsc/Documents/master-nihongo-ios/frontend/.local/live.db`，**不是读取 Chrome 当前内存，也不是线上 R2 数据**。源文件修改时间为 2026-09-09 18:58:37（UTC+8）。读取一次后在独立 sql.js 内存副本执行当前导出/压缩器；已有同步表结构，测量不运行启动迁移。不写源文件，不上传快照。
+数据来源是开发服务镜像 `/Users/lsc/Documents/shushugo/frontend/.local/live.db`，**不是读取 Chrome 当前内存，也不是线上 R2 数据**。源文件修改时间为 2026-09-09 18:58:37（UTC+8）。读取一次后在独立 sql.js 内存副本执行当前导出/压缩器；已有同步表结构，测量不运行启动迁移。不写源文件，不上传快照。
 
 | 项目 | 实测 |
 |---|---:|
@@ -90,7 +90,7 @@
 | 导出耗时，单次 Node 测量 | 558 ms |
 | gzip 耗时，单次 Node 测量 | 87 ms |
 
-MB 使用十进制。Node 测量不能作为 iPhone 或浏览器卡顿时长承诺。测量详情见 [snapshot-measurement.json](/Users/lsc/Documents/master-nihongo-ios/docs/audits/2026-09-09/snapshot-measurement.json)。
+MB 使用十进制。Node 测量不能作为 iPhone 或浏览器卡顿时长承诺。测量详情见 [snapshot-measurement.json](/Users/lsc/Documents/shushugo/docs/audits/2026-09-09/snapshot-measurement.json)。
 
 快照包含 49,559 条 reviews、11,740 行 progress、最近窗口内 5,162 行 stage1_tasks、4,951 条墓碑、5,082 行 stage2_progress 等。流水范围包含导入的历史记录，因此不能把首尾日期跨度直接拿来推算每天实际作答量。
 
@@ -98,7 +98,7 @@ MB 使用十进制。Node 测量不能作为 iPhone 或浏览器卡顿时长承�
 
 ### 2.2 [P2] 每次小改动仍上传完整历史，且有可预见的容量边界
 
-位置：[快照复制](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/sync/snapshot.ts:61)、[压缩前上限](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/sync/snapshot.ts:151)、[上传](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/sync-api.ts:703)。
+位置：[快照复制](/Users/lsc/Documents/shushugo/frontend/src/lib/sync/snapshot.ts:61)、[压缩前上限](/Users/lsc/Documents/shushugo/frontend/src/lib/sync/snapshot.ts:151)、[上传](/Users/lsc/Documents/shushugo/frontend/src/lib/sync-api.ts:703)。
 
 增加一条作答之后，下一次上传仍带全部用户快照；服务端哈希只能省掉相同内容的重复存储，无法退还已上传的数据。reviews 会持续增长，**即使 gzip 后远小于 20 MB，压缩前超过 20 MB 也会停止同步**，目前约还有 6.02 MB 余量。本次没有据此预测具体哪一天达到限制。
 
@@ -113,7 +113,7 @@ MB 使用十进制。Node 测量不能作为 iPhone 或浏览器卡顿时长承�
 
 ### 2.3 [P2] 修改昵称/简介时重复发送头像
 
-位置：[profile-sync.ts:15](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/profile-sync.ts:15)、[Worker:1025](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:1025)。
+位置：[profile-sync.ts:15](/Users/lsc/Documents/shushugo/frontend/src/lib/profile-sync.ts:15)、[Worker:1025](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:1025)。
 
 每次保存个人资料都包含整个 base64 头像，Worker 重新写 KV，再把头像放进响应。GET profile 也总是读取并返回它；头像字段允许约 300 万字符。
 
@@ -133,7 +133,7 @@ Worker Paid 账号基础费目前最低每月 5 美元；D1 按读写行数计�
 
 ### 3.1 [P2] 请求体大小在部分路径上检查得太晚
 
-位置：[Worker readJson](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:331)、[Worker 二进制读取](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:1365)。
+位置：[Worker readJson](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:331)、[Worker 二进制读取](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:1365)。
 
 二进制上传先检查可选 Content-Length，随后完整 `arrayBuffer()`，最后才再次检查实际长度。未知长度请求仍可能先占内存；普通 JSON 路由没有按路由控制读取上限，头像也是完整解析后才检查。应在流式读取时计数并提前终止，认证/个人资料路由使用较小限制。没有对生产服务发送大请求，本项是代码路径确认。
 
@@ -145,9 +145,9 @@ Worker Paid 账号基础费目前最低每月 5 美元；D1 按读写行数计�
 
 ### 3.3 付费缓存与沙盒不能作为生产授权边界
 
-- [entitlements.ts](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/entitlements.ts:34) 信任可修改的 localStorage 中 `isPro`、`source`、`expiresAt`。网页用户能够修改本机权限；离线客户端无法完全防篡改，但联网权益至少应来自可信校验，并设置合理离线有效期。
+- [entitlements.ts](/Users/lsc/Documents/shushugo/frontend/src/lib/entitlements.ts:34) 信任可修改的 localStorage 中 `isPro`、`source`、`expiresAt`。网页用户能够修改本机权限；离线客户端无法完全防篡改，但联网权益至少应来自可信校验，并设置合理离线有效期。
 - 订阅缺少有效到期时间时，本地 `grantPro` 可以得到没有期限的状态。修复收据字段后也必须修这条兜底，不能只让回调开始工作。
-- [Worker 查询交易](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:661) 允许 Production 404 后回退 Sandbox；[授权逻辑](/Users/lsc/Documents/master-nihongo-ios/cloudflare-sync/src/index.ts:1277) 没有环境隔离。复现中的 Sandbox 永久交易进入正常账号权益表，并由普通权益接口返回。TestFlight/审核需要沙盒，但不应把测试交易无条件变成可跨正式账号使用的无限期生产权益。
+- [Worker 查询交易](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:661) 允许 Production 404 后回退 Sandbox；[授权逻辑](/Users/lsc/Documents/shushugo/cloudflare-sync/src/index.ts:1277) 没有环境隔离。复现中的 Sandbox 永久交易进入正常账号权益表，并由普通权益接口返回。TestFlight/审核需要沙盒，但不应把测试交易无条件变成可跨正式账号使用的无限期生产权益。
 - 当前实际付费入口仍只有沉浸式语法，其他 FeatureId 没有实际访问拦截。现有 Pro 页面已对此作了说明，本次没有重复把旧版宣传不一致当成新发现。
 
 ### 3.4 已具备的保护，以及没有证明的部分
@@ -166,10 +166,10 @@ Web token 经 Preferences 落入浏览器存储，比 iOS Keychain 更依赖同�
 
 1. **shrink：头像重复传输与写入。** 只传变化字段，缩小更新响应。具体代码证据见 2.3。
 2. **shrink：用户快照导出中间数组和逐行重复 SQL 准备。** 流式复制、复用 statement；保持回滚与 free。具体证据见 2.2。
-3. **delete/隔离：遗留 FastAPI 生产实现。** [backend/server.py](/Users/lsc/Documents/master-nihongo-ios/backend/server.py:1) 295 行，项目已明确为 legacy，生产 CI 和前端走 Worker。若确实不再用于本地实验，可删除其实现及仅供它使用的依赖文件；保留说明其历史定位的文档和 Git 历史。它目前不会增加云端运行账单。
-4. **delete：失效的旧原型入口。** [master-nihongo-prototype.html](/Users/lsc/Documents/master-nihongo-ios/frontend/master-nihongo-prototype.html:1) 13 行仍引用旧资源路径，当前 Vite 默认入口不使用它。归档价值由用户决定；没有证据表明它影响生产包。
-5. **delete/重做：旧 score 测试按钮。** [test-utils.ts](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/test-utils.ts:15) 仍用 score=9“完成任务”，与 FSRS 语义不符，也直接制造模拟流水。这些入口在 [DevTools](/Users/lsc/Documents/master-nihongo-ios/frontend/src/components/DevTools.tsx:12) 受 DEV 条件保护，不是线上付费后门；但用户实际就在 DEV 网页学习，不适合继续把它当可信诊断工具。可删过时模拟功能，保留仍需要的开发解锁，并明确只在隔离数据上使用。
-6. **shrink：空的免费功能数组及尚无调用的权益类型。** [entitlements.ts:79](/Users/lsc/Documents/master-nihongo-ios/frontend/src/lib/entitlements.ts:79) 每次创建空数组再 `includes`，当前结果始终等于 `isPro`。这是小清理，不能优先于支付错误。
+3. **delete/隔离：遗留 FastAPI 生产实现。** [backend/server.py](/Users/lsc/Documents/shushugo/backend/server.py:1) 295 行，项目已明确为 legacy，生产 CI 和前端走 Worker。若确实不再用于本地实验，可删除其实现及仅供它使用的依赖文件；保留说明其历史定位的文档和 Git 历史。它目前不会增加云端运行账单。
+4. **delete：失效的旧原型入口。** [shushugo-prototype.html](/Users/lsc/Documents/shushugo/frontend/shushugo-prototype.html:1) 13 行仍引用旧资源路径，当前 Vite 默认入口不使用它。归档价值由用户决定；没有证据表明它影响生产包。
+5. **delete/重做：旧 score 测试按钮。** [test-utils.ts](/Users/lsc/Documents/shushugo/frontend/src/lib/test-utils.ts:15) 仍用 score=9“完成任务”，与 FSRS 语义不符，也直接制造模拟流水。这些入口在 [DevTools](/Users/lsc/Documents/shushugo/frontend/src/components/DevTools.tsx:12) 受 DEV 条件保护，不是线上付费后门；但用户实际就在 DEV 网页学习，不适合继续把它当可信诊断工具。可删过时模拟功能，保留仍需要的开发解锁，并明确只在隔离数据上使用。
+6. **shrink：空的免费功能数组及尚无调用的权益类型。** [entitlements.ts:79](/Users/lsc/Documents/shushugo/frontend/src/lib/entitlements.ts:79) 每次创建空数组再 `includes`，当前结果始终等于 `isPro`。这是小清理，不能优先于支付错误。
 
 可明确量出的遗留实现候选为 295 + 13 = **308 行**，此外旧测试功能可以进一步缩小。已确认可直接移除的主应用运行时依赖为 **0 个**。本次没有执行删除，也没有为了凑数字把文档、测试、数据内容或原生插件算成垃圾代码。
 
@@ -194,12 +194,12 @@ Web token 经 Preferences 落入浏览器存储，比 iOS Keychain 更依赖同�
 
 汇总证据：
 
-- [Worker/购买回调隔离复现结果](/Users/lsc/Documents/master-nihongo-ios/docs/audits/2026-09-09/reproduction-results.json)
-- [前端→小程序实际导出/合并结果](/Users/lsc/Documents/master-nihongo-ios/docs/audits/2026-09-09/cross-client-results.json)
-- [同步体积与行数](/Users/lsc/Documents/master-nihongo-ios/docs/audits/2026-09-09/snapshot-measurement.json)
-- [主入口依赖图候选](/Users/lsc/Documents/master-nihongo-ios/docs/audits/2026-09-09/import-graph.json)
-- [前端依赖告警，含原公告地址](/Users/lsc/Documents/master-nihongo-ios/docs/audits/2026-09-09/frontend-dependency-audit.json)
-- [Worker 依赖告警，含原公告地址](/Users/lsc/Documents/master-nihongo-ios/docs/audits/2026-09-09/worker-dependency-audit.json)
+- [Worker/购买回调隔离复现结果](/Users/lsc/Documents/shushugo/docs/audits/2026-09-09/reproduction-results.json)
+- [前端→小程序实际导出/合并结果](/Users/lsc/Documents/shushugo/docs/audits/2026-09-09/cross-client-results.json)
+- [同步体积与行数](/Users/lsc/Documents/shushugo/docs/audits/2026-09-09/snapshot-measurement.json)
+- [主入口依赖图候选](/Users/lsc/Documents/shushugo/docs/audits/2026-09-09/import-graph.json)
+- [前端依赖告警，含原公告地址](/Users/lsc/Documents/shushugo/docs/audits/2026-09-09/frontend-dependency-audit.json)
+- [Worker 依赖告警，含原公告地址](/Users/lsc/Documents/shushugo/docs/audits/2026-09-09/worker-dependency-audit.json)
 
 这些证据不含真实 token、密码或个人学习记录正文。隔离复现脚本与构建暂存在 `/tmp/shushugo-audit-20260909`；其中 Apple 响应和 D1 运行环境是模拟边界，业务路由、SQL 迁移和购买回调来自当前源代码。没有实际发起扣款、退款、账号创建或生产数据写入。
 
@@ -226,7 +226,7 @@ Web token 经 Preferences 落入浏览器存储，比 iOS Keychain 更依赖同�
 | 3.2 限速与配置降级 | 迁移 `0010` + `assertAuthHardening` | 认证限速改 D1 原子 UPSERT；改密码补按账号限速；`REQUIRE_AUTH_HARDENING=1` 时配置不全直接 503 |
 | 3.3 付费边界 | `entitlements.ts` + Worker | 订阅缺到期时间给 3 天离线宽限而非永久；`storekit` 本地授权 30 天离线上限；沙盒权益夹到 30 天 |
 | 3.4 隐私说明 | `privacy-policy-content.ts` | 补 R2 与「快照未做端到端加密」；版本 2026-08-03 → 2026-09-09 |
-| 4.3/4.4/4.5/4.6 冗余 | 删除 `backend/server.py`、`backend/requirements.txt`、`frontend/master-nihongo-prototype.html`、`frontend/src/lib/test-utils.ts` 及 DevTools 里的四个模拟按钮；`canUseFeature` 去掉空数组 | `backend/LEGACY.md` 保留并说明实现已删 |
+| 4.3/4.4/4.5/4.6 冗余 | 删除 `backend/server.py`、`backend/requirements.txt`、`frontend/shushugo-prototype.html`、`frontend/src/lib/test-utils.ts` 及 DevTools 里的四个模拟按钮；`canUseFeature` 去掉空数组 | `backend/LEGACY.md` 保留并说明实现已删 |
 
 ## 7. 上线前门槛清单（2026-09-09 第二轮）
 

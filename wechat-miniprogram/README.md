@@ -13,9 +13,9 @@
    ```js
    module.exports = {
      seedDatabaseUrl: 'https://cdn.example.com/shushugo/nihongo.db',
-     syncUrl: 'https://master-nihongo-sync.example.workers.dev',
-     authUrl: 'https://master-nihongo-sync.example.workers.dev',
-     entitlementUrl: 'https://master-nihongo-sync.example.workers.dev/api/entitlements',
+     syncUrl: 'https://shushugo-sync.example.workers.dev',
+     authUrl: 'https://shushugo-sync.example.workers.dev',
+     entitlementUrl: 'https://shushugo-sync.example.workers.dev/api/entitlements',
      paymentUrl: 'https://pay.example.com'
    };
    ```

@@ -25,7 +25,7 @@
 **检查方法:**
 ```bash
 # 检查所有页面文件是否存在
-ls ~/Documents/master-nihongo-ios/frontend/src/pages/*.tsx
+ls ~/Documents/shushugo/frontend/src/pages/*.tsx
 
 # 应该看到:
 # - PersonalInfo.tsx
@@ -53,7 +53,7 @@ ls ~/Documents/master-nihongo-ios/frontend/src/pages/*.tsx
 如果需要完全重新开始：
 
 ```bash
-cd ~/Documents/master-nihongo-ios/frontend
+cd ~/Documents/shushugo/frontend
 
 # 清理所有缓存
 rm -rf node_modules/.vite
@@ -77,7 +77,7 @@ npx cap sync ios
 最简单的调试方法：
 
 ```bash
-cd ~/Documents/master-nihongo-ios/frontend
+cd ~/Documents/shushugo/frontend
 npm run dev
 ```
 

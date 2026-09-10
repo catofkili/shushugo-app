@@ -8,14 +8,14 @@
 
 ## 📦 压缩包说明
 
-### 1️⃣ master-nihongo-demo.zip (6.0M) ⭐ 推荐
+### 1️⃣ shushugo-demo.zip (6.0M) ⭐ 推荐
 **完整版 - 包含所有内容**
 - ✅ Web 应用（可浏览器打开）
 - ✅ iOS 项目文件（需要 Mac 电脑 + Xcode）
 - ✅ 后端 API 代码
 - ✅ 完整说明文档
 
-### 2️⃣ master-nihongo-web-only.zip (2.8M)
+### 2️⃣ shushugo-web-only.zip (2.8M)
 **轻量版 - 只有 Web 应用**
 - ✅ 可直接在浏览器运行
 - ✅ 更小的文件体积
@@ -43,7 +43,7 @@
 
 3. **进入解压目录**
    ```cmd
-   cd master-nihongo-demo\frontend\dist
+   cd shushugo-demo\frontend\dist
    ```
 
 4. **启动本地服务器**
@@ -71,7 +71,7 @@
 
 2. **打开 CMD，进入目录**
    ```cmd
-   cd master-nihongo-demo\frontend\dist
+   cd shushugo-demo\frontend\dist
    ```
 
 3. **安装简易服务器**
@@ -100,7 +100,7 @@
 
 3. **打开项目**
    ```
-   文件 → 打开文件夹 → 选择 master-nihongo-demo\frontend\dist
+   文件 → 打开文件夹 → 选择 shushugo-demo\frontend\dist
    ```
 
 4. **启动服务**

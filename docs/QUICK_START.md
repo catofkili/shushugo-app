@@ -5,7 +5,7 @@
 ### 1️⃣ 配置环境（只需一次）
 
 ```bash
-cd ~/Documents/master-nihongo-ios
+cd ~/Documents/shushugo
 ./scripts/setup-xcode.sh
 ```
 
@@ -95,7 +95,7 @@ cd ios/App && pod install
 ## 🔄 更新代码后重新构建
 
 ```bash
-cd ~/Documents/master-nihongo-ios/frontend
+cd ~/Documents/shushugo/frontend
 npm run build
 npx cap sync ios
 ```

@@ -29,7 +29,7 @@ OUTPUT="${1:-"$HOME/Documents/shushugo-preview-$DATE_TAG.zip"}"
 TMP_ZIP="$OUTPUT.tmp"
 
 if [[ -z "$ROOT_DIR" || ! -d "$ROOT_DIR" ]]; then
-  echo "Could not locate project root. Set PROJECT_DIR=/path/to/master-nihongo-ios." >&2
+  echo "Could not locate project root. Set PROJECT_DIR=/path/to/shushugo." >&2
   exit 1
 fi
 

@@ -1,4 +1,4 @@
-# 收集日（ShuShuGo，前身 Master Nihongo）— Claude 工作须知
+# 收集日（ShuShuGo）— Claude 工作须知
 
 ## ⚠️ 查我的真实学习数据：`cd frontend && npm run db -- <词>`
 
@@ -1748,3 +1748,17 @@ FSRS 就收到假的「记住了」，把复习排到几天后，然后必然再
 **保留的不是分数**：stage2/汉字的 `temp_score`、`mistake_streak` 是会话内计数器（这一轮过没过、要不要贴脸重复），`sessionScoreDelta` 只服务它们。`progress.score`、`low_history`、`mastered_on`、`reviews.score_after` 是遗留列，**不再读写**。
 
 坑：SQL 模板字符串里注释用 `--` 不能用 `//`；`ensureFsrsColumns` 按 (db, 表名) 记忆化，测试里 DROP/CREATE 同名表要自带 `fsrs_*` 列。
+
+
+## ShuShuGo 命名与兼容边界（2026-09-10）
+
+项目展示名称统一为 ShuShuGo，本地目标目录为 `~/Documents/shushugo`，GitHub 仓库为 `catofkili/shushugo-app`。旧设计稿与导出图片文件名也使用新名称。
+
+以下旧字符串是已有数据或服务的标识，不能当作展示文案直接替换：
+
+- `master-nihongo-storage`、原生 `masternihongo/` 路径：现有学习数据库及故障恢复文件。
+- `master_nihongo_`：系统安全存储中的登录密钥前缀。
+- `master-nihongo-user-sqlite-v1`：前端、小程序与 Worker 共同使用的同步格式。
+- Cloudflare Worker 域名、D1 数据库名、R2 桶名：实际线上资源，改配置字符串不等于迁移资源。
+
+迁移这些标识必须另行设计旧数据读取与恢复、跨版本同步及线上切换流程。历史审计 JSON 的 source 保留当时实测路径。正在学习时不可移动服务根目录、修改其页面源码触发热更新或刷新学习标签页；改名先在独立工作目录完成。
