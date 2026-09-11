@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BookOpenText, Brain, FolderPlus, Pencil, Star, Trash2 } from "lucide-react";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import {
@@ -52,7 +52,7 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
   // 读失败必须说出来。三个 setState 里任何一个抛异常，页面就会停在初始状态
   // ——「还没有收藏」——，那是一句关于用户数据的假话，而收藏页的全部职责就是把
   // 存下来的东西如实摆出来。
-  const load = () => {
+  const load = useCallback(() => {
     try {
       setItems(getFavoriteItems(filter, folder === ALL_FOLDERS ? undefined : folder));
       setFolders(listFavoriteFolders());
@@ -62,11 +62,11 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
       console.error("[favorites] 读取收藏失败", err);
       setError(err instanceof Error ? err.message : "读取收藏失败");
     }
-  };
+  }, [filter, folder]);
 
   useEffect(() => {
     load();
-  }, [filter, folder]);
+  }, [load]);
 
   useEffect(() => {
     if (!items.some((item) => item.type === "grammar" && !item.title)) return;

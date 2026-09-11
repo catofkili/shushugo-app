@@ -167,3 +167,18 @@ grammarDb.close();
 left.close();
 right.close();
 console.log(JSON.stringify({ ok: true, bytes: snapshot.byteLength, merged }, null, 2));
+
+// 语法业务字段必须完整往返，更新时允许降分、清空日期和归零错题连续次数。
+const grammarRemote = new SQL.Database(bytes);
+const grammarLocal = new SQL.Database(bytes);
+for (const db of [grammarRemote, grammarLocal]) core.ensureStudySchema(db);
+grammarRemote.run("INSERT OR REPLACE INTO grammar_progress(grammar_id, seen_count, score, low_history, mistake_streak, last_decay_amount, mastered_on, last_seen_on) VALUES(1,7,42,3,2,15,'2026-09-09','2026-09-09')");
+mergeSnapshot(grammarLocal, await exportSyncSnapshot(grammarRemote));
+const readGrammar = db => core.rowsFor(db, 'SELECT score, low_history, mistake_streak, last_decay_amount, mastered_on FROM grammar_progress WHERE grammar_id=1')[0];
+assert.deepEqual(readGrammar(grammarLocal), readGrammar(grammarRemote));
+grammarRemote.run("UPDATE grammar_progress SET score=0, low_history=0, mistake_streak=0, last_decay_amount=10, mastered_on=NULL, last_seen_on='2026-09-10' WHERE grammar_id=1");
+mergeSnapshot(grammarLocal, await exportSyncSnapshot(grammarRemote));
+assert.deepEqual(readGrammar(grammarLocal), readGrammar(grammarRemote));
+const grammarRoundTrip = new SQL.Database(await exportSyncSnapshot(grammarLocal));
+assert.deepEqual(readGrammar(grammarRoundTrip), readGrammar(grammarRemote));
+for (const db of [grammarRemote, grammarLocal, grammarRoundTrip]) db.close();

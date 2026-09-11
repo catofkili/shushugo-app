@@ -80,7 +80,9 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   // 旧日期草稿在下次进入快速学习时会被丢弃。
   const draftStudyDateRef = useRef(studyDate());
   const batchWordIdsRef = useRef<number[]>(wordIds ?? []);
-  batchWordIdsRef.current = wordIds ?? [];
+  useEffect(() => {
+    batchWordIdsRef.current = wordIds ?? [];
+  }, [wordIds]);
 
   const load = useCallback(async (restoreDraft = false) => {
     setLoading(true);

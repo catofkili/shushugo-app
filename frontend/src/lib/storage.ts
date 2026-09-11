@@ -19,6 +19,9 @@ export const PERSISTENCE_ERROR_EVENT = 'persistence-error';
 export const PERSISTENCE_OK_EVENT = 'persistence-ok';
 
 let persistenceFailed = false;
+let recoveryFailed = false;
+export const getPersistenceFailure = (): 'recovery' | 'save' | null =>
+  recoveryFailed ? 'recovery' : persistenceFailed ? 'save' : null;
 
 const notifyPersistenceError = () => {
   persistenceFailed = true;
@@ -26,7 +29,7 @@ const notifyPersistenceError = () => {
 };
 
 const notifyPersistenceOk = () => {
-  if (!persistenceFailed) return;
+  if (!persistenceFailed || recoveryFailed) return;
   persistenceFailed = false;
   if (typeof window !== 'undefined') window.dispatchEvent(new Event(PERSISTENCE_OK_EVENT));
 };
@@ -285,6 +288,7 @@ const replayDeltaRecord = async (): Promise<void> => {
     // 会把 delta 覆盖掉,不另存的话它连查都没得查。
     await stashFailedDelta().catch(() => undefined);
     console.error('[storage] 本机增量回放失败,已按快照那一刻启动(增量已另存):', error);
+    recoveryFailed = true;
     notifyPersistenceError();
   }
 };
@@ -342,7 +346,7 @@ const loadChunkedDatabase = async (): Promise<string | null> => {
 
   const manifest = JSON.parse(value) as { chunkCount?: number; length?: number };
   const chunkCount = Number(manifest.chunkCount) || 0;
-  if (chunkCount <= 0) return null;
+  if (!Number.isInteger(chunkCount) || chunkCount <= 0) throw new Error('Invalid database manifest');
 
   const parts: string[] = [];
   for (let index = 0; index < chunkCount; index += 1) {
@@ -359,7 +363,7 @@ const loadChunkedDatabase = async (): Promise<string | null> => {
 };
 
 const loadLegacyBase64 = async (): Promise<string | null> => {
-  const chunked = await loadChunkedDatabase().catch(() => null);
+  const chunked = await loadChunkedDatabase();
   if (chunked) return chunked;
   const legacy = await Preferences.get({ key: DB_KEY });
   return legacy.value ?? null;
@@ -409,13 +413,19 @@ const saveFileDatabase = async (base64: string): Promise<void> => {
 const loadFileDatabase = async (): Promise<boolean> => {
   // main 是最新完整版本;tmp 只在"写完但还没轮转完"被中断时存在,
   // 内容完整且比 main 新;prev 是上一代备份。
+  // 用成功的目录枚举证明不存在，不依赖平台本地化的 readFile 错误文字。
+  const root = await Filesystem.readdir({ path: '', directory: DB_DIRECTORY });
+  if (!root.files.some(file => file.name === 'masternihongo')) return false;
+  const directory = await Filesystem.readdir({ path: 'masternihongo', directory: DB_DIRECTORY });
+  const names = new Set(directory.files.map(file => file.name));
   let sawArchive = false;
   let lastError: unknown = null;
   for (const path of [DB_FILE_MAIN, DB_FILE_TMP, DB_FILE_PREV]) {
+    if (!names.has(path.split('/').pop()!)) continue;
+    sawArchive = true;
     try {
       const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY });
-      if (typeof data !== 'string' || !data) continue;
-      sawArchive = true;
+      if (typeof data !== 'string' || !data) throw new Error('Empty database archive');
       await importDatabase(base64ToBytes(data), { validateBackup: true });
       if (path !== DB_FILE_MAIN) {
         console.warn(`[storage] 主数据库文件不可用，已从 ${path} 恢复`);
@@ -455,6 +465,8 @@ async function saveDatabaseNow(options: { notifyCloud?: boolean } = {}): Promise
   const { notifyCloud = true } = options;
   if (notifyCloud) localDataRevision += 1;
   const revisionAtStart = localDataRevision;
+  const snapshotGenerationAtStart = snapshotGeneration;
+  const exportedDb = safeDatabase();
   try {
     // 水位线写进库里再导出 —— 这样快照自带「我是哪一刻的」,不用另存一个 mark 文件,
     // 也就不会出现「mark 写成功了快照没写成功」这种对不上的中间态。
@@ -483,7 +495,8 @@ async function saveDatabaseNow(options: { notifyCloud?: boolean } = {}): Promise
     if (localDataRevision === revisionAtStart) pendingSave = false;
     // ⚠️ 顺序不能反:快照写成功了才删增量。反过来的话,中间被杀掉就两头空。
     await removeDeltaRecord().catch(() => undefined);
-    snapshotDb = safeDatabase();
+    // 写盘期间的新内容快照请求不能被旧导出确认；换库也必须重新完整保存。
+    if (snapshotGeneration === snapshotGenerationAtStart) snapshotDb = exportedDb;
     snapshotAt = Date.now();
 
     console.log('✅ Database saved to local storage');
@@ -494,6 +507,9 @@ async function saveDatabaseNow(options: { notifyCloud?: boolean } = {}): Promise
         .catch(() => undefined);
     }
   } catch (error) {
+    // 内存水位已推进但磁盘未成功：在完整保存成功之前禁止再写增量。
+    requestFullSnapshot();
+    pendingSave = true;
     console.error('❌ Failed to save database:', error);
     notifyPersistenceError();
     throw error;
@@ -563,7 +579,7 @@ export async function loadDatabase(): Promise<boolean> {
     console.error('❌ Failed to load database:', error);
     // ⚠️ 「打不开」不能退化成「没有」—— 那条路会静默拿出厂库盖掉用户的存档。
     if (error instanceof LocalArchiveUnreadableError) throw error;
-    return false;
+    throw new LocalArchiveUnreadableError(null, error);
   }
 }
 
@@ -668,7 +684,9 @@ const markSnapshotLoaded = (): void => {
 };
 
 /** 下一次落盘强制整库(词单导入、合并重复词条这类会动 words 表的路要自己喊)。 */
+let snapshotGeneration = 0;
 export function requestFullSnapshot(): void {
+  snapshotGeneration += 1;
   snapshotDb = null;
 }
 

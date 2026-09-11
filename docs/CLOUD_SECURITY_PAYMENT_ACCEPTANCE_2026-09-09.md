@@ -1,18 +1,18 @@
-# 云同步、安全与付费修复验收（2026-09-09）
+# 云同步、安全与付费修复验收（2026-09-09；2026-09-11 复查补记）
 
 ## 结论
 
-**当前代码不能按“生产可发布”验收通过。** 已修复的大多数问题在类型检查、单元测试、
-隔离路由复现和跨端往返测试中通过，但还存在两条会影响付费权益正确性的代码缺口，
-并且生产配置、远端迁移、App Store Connect 通知和真机沙盒均未验收。
+**两条付费代码阻断已在 2026-09-11 修复并加入本地回归，但当前仍不能按“生产可发布”
+验收通过。** 生产配置、远端迁移、App Store Connect 通知和真机/TestFlight 购买仍未验收；
+本地测试不能代替这些外部链路。
 
-本次没有刷新或操作正在学习的网页，没有启动开发网页，没有读取浏览器实时数据库，
-没有调用真实同步、支付、账号或部署接口。同步体积测量只读加载
+两次检查均没有刷新或操作正在学习的网页，没有启动开发网页，没有读取浏览器实时数据库，
+没有调用真实同步、支付、账号或部署接口。2026-09-09 的同步体积测量只读加载
 `frontend/.local/live.db` 到独立 Node/sql.js 内存数据库，输出与构建都在 `/tmp`。
 
-## 阻断项
+## 原阻断项及 2026-09-11 修复
 
-### P1：漏掉续订通知后，定期重查仍发现不了新续订
+### P1（已修复，待外部验收）：漏掉续订通知后，定期重查仍发现不了新续订
 
 - `cloudflare-sync/src/index.ts:785` 固定调用
   `GET /inApps/v1/transactions/{transactionId}`。
@@ -29,13 +29,23 @@ T2、但通知漏掉。`GET /api/entitlements` 确实向 Apple 重查一次，�
 验收判据：订阅重查使用订阅状态或交易历史接口，并有一条路由级测试证明
 “T1 已过期、T2 有效、T2 通知漏掉”时，访问权益接口或 cron 能恢复到 T2 的有效期限。
 
+2026-09-11 修复：订阅的一日重查和 cron 重查改用
+`GET /inApps/v1/subscriptions/{transactionId}`，以已保存的 T1 查询当前订阅组状态，从返回的
+最新交易中恢复 T2；永久购买仍使用单笔交易接口。新增 `apple-subscription.test.mjs` 覆盖
+T1→T2、月订阅升级年订阅、宽限期和不同原始交易隔离。Apple API 请求也切换到
+2026-05-05 起推荐的 `api.storekit.apple.com` 域名。随后补入
+`worker-purchase-route.test.mjs`：Wrangler 先打包真实 Worker，再以隔离的模拟 D1 和 Apple
+响应调用实际 `GET /api/entitlements` 与 `scheduled()`，两条路径均证明旧 T1 可恢复为有效
+T2；定时任务 SELECT 漏取 `user_id`、导致后台重查把 `undefined` 当账号的问题也由该测试
+复现并修正。测试没有调用真实 Apple API，因此本项仍是“代码阻断关闭”，不是生产闭环验收。
+
 Apple 官方资料：
 
 - https://developer.apple.com/documentation/appstoreserverapi/get-transaction-info
 - https://developer.apple.com/documentation/appstoreserverapi/get-all-subscription-statuses
 - https://developer.apple.com/documentation/appstoreservernotifications/responding-to-app-store-server-notifications
 
-### P1：权益写入失败时仍在 `finally` 中完成交易
+### P1（已修复，待真机验收）：权益写入失败时仍在 `finally` 中完成交易
 
 `frontend/src/lib/purchases.ts:248-254` 在异步 verified 回调的 `finally` 中无条件执行
 `receipt.finish()`。这与同处注释“权益必须先落地”相反：
@@ -51,6 +61,11 @@ finish 1；随后模拟本地权益写入抛错，回调抛出异常但 finish �
 验收判据：只有解析出受支持商品且每一项已成功落到云端或本地后才 `await finish()`；
 解析为空或落地失败时保留交易、记录可诊断错误，不完成交易。新增回调级测试覆盖
 正常、空收据、云端失败后本地成功、本地写入失败和 finish 自身失败。
+
+2026-09-11 修复：新增 `fulfillVerifiedReceipt()`，先确认存在受支持商品，再逐项完成云端或
+本地权益落地，全部成功后才 `await receipt.finish()`；空收据或权益持久化失败会抛错并保留
+交易供插件后续重试。测试覆盖空收据不 finish、权益先于 finish 持久化以及本地写入失败不
+finish。真实 StoreKit 的恢复、Ask to Buy 和 finish 失败重试仍必须在真机/TestFlight 验收。
 
 ## 生产发布门槛
 
@@ -69,11 +84,11 @@ finish 1；随后模拟本地权益写入抛错，回调抛出异常但 finish �
 | 检查 | 结果 |
 |---|---|
 | 前端 TypeScript | 通过 |
-| 前端完整 Vitest | 85 个文件通过、1 个跳过；610 通过、23 跳过 |
+| 前端完整 Vitest | 2026-09-11：88 个文件通过、1 个跳过；632 通过、23 跳过 |
 | 付费/权益/同步相关测试连续运行 5 次 | 每次 6 个文件、42 个测试通过 |
-| ESLint | 0 error、44 warning |
+| ESLint | 0 error、24 warning；剩余均为既有同步加载型 `set-state-in-effect`，没有依赖/ref/纯度警告 |
 | 前端生产构建与出厂 DB/汉字索引守卫 | 通过；存在既有大 chunk 警告 |
-| Worker TypeScript、权益规则测试、Wrangler dry-run | 通过 |
+| Worker TypeScript、权益规则、订阅状态选择与真实路由入口回归 | 2026-09-11 通过；路由回归本身先执行 Wrangler dry-run 打包 |
 | 新建数据库顺序应用全部 D1 迁移 | 通过 |
 | 同一交易绑定两个账号 | 第一个 200，第二个 409，只有第一个获得权益 |
 | 旧过期订阅覆盖永久权益 | 未覆盖，永久权益保留 |
@@ -89,18 +104,24 @@ finish 1；随后模拟本地权益写入抛错，回调抛出异常但 finish �
 
 ### 自动化覆盖不足
 
-Worker 的 `npm test` 目前只运行 `entitlement-rules.test.mjs`，没有覆盖交易归属、Apple
-登录算法与重放、通知、定期重查、请求体限制、认证限流和 D1 迁移。上述通过项中的大部分
-来自 `/tmp` 隔离复现，CI 不会防止它们回归。小程序 CI 也没有执行已经存在的
-`entitlement-smoke` 和 `runtime-smoke`。
+Worker 的 `npm test` 现在运行 `entitlement-rules.test.mjs`、
+`apple-subscription.test.mjs` 和 `worker-purchase-route.test.mjs`。前两条覆盖权益强度与 Apple
+订阅状态选择；第三条用 Wrangler 打包出的真实 Worker 入口覆盖权益 GET 和 cron 的
+T1→T2 恢复、D1 写入，以及 cron 必须携带正确 `user_id`。仍没有自动覆盖交易归属竞争、
+Apple 登录算法与重放、通知路由、请求体限制、认证限流和完整迁移。上述通过项中的一部分
+仍来自 `/tmp` 隔离复现，CI 不会防止它们全部回归。2026-09-11 已检查
+`.github/workflows/ci.yml`：小程序 job 直接运行 `npm test`，而
+`wechat-miniprogram/scripts/run-all.mjs` 会枚举全部 14 个脚本，因此
+`entitlement-smoke` 和 `runtime-smoke` 已进入 CI，不再是待确认项。
 
 ### 依赖告警
 
-当前 `npm audit`：前端 11 项（1 critical、6 high、3 moderate、1 low），Worker 4 项 high。
-命中的主要是 Capacitor CLI、Vitest/PostCSS 和 Wrangler/Miniflare 的开发构建依赖，不能
-直接称为已部署 Worker 的 15 个线上漏洞，但会影响本地安装、构建和 CI 的安全边界。
-Worker 的 Wrangler 有同主版本修复可用；前端 `tar` 的自动建议涉及 Capacitor 主版本升级，
-应单独升级并做 iOS 集成验证，不能直接运行 `npm audit fix --force`。
+2026-09-11 重跑完整 `npm audit`：前端 3 项（1 critical、1 high、1 low），Worker 3 项 high；
+两边的 `npm audit --omit=dev` 都是 0。剩余项都在本地开发/构建工具链：前端是
+Capacitor CLI 的 `tar` 链，Worker 是 Wrangler/Miniflare 的 `sharp` 链，不能直接称为已部署
+应用或 Worker 的线上漏洞，但仍影响本地安装、构建和 CI 的安全边界。前端自动修复需要
+Capacitor 跨大版本升级并验证 iOS 存储迁移；Worker 当前报告可用普通 `npm audit fix`
+刷新传递依赖，本轮按“机械依赖维护先不做”的范围保留。没有运行 `npm audit fix --force`。
 
 ### 云同步体积和费用
 

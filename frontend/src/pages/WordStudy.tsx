@@ -133,6 +133,22 @@ const isDailyModeComplete = (mode: StudyMode, stats: WordStats) => {
   return false;
 };
 
+const remainingPlanWords = (target: WordStats | null): number => {
+  if (!target) return 0;
+  return Math.max(target.stage1ProgressTotal - target.stage1ProgressDone, 0);
+};
+
+const playCountdownFeedbackIfNeeded = (before: WordStats | null, after: WordStats | null) => {
+  const beforeRemaining = remainingPlanWords(before);
+  const afterRemaining = remainingPlanWords(after);
+  if (afterRemaining < beforeRemaining && afterRemaining > 0 && afterRemaining <= 30) {
+    triggerCountdownHaptic();
+    playCountdownTick();
+  }
+};
+
+const pageVisible = () => document.visibilityState === "visible";
+
 /**
  * 开场「减负」自动发牌的节奏。原来是 420ms 停留 + 240ms 飞出 = 每张 660ms，
  * 一次发十来张要拖到七八秒 —— 它是个「昨天这些你都记得」的确认动画，不是内容，
@@ -196,10 +212,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [localStudySeconds, setLocalStudySeconds] = useState(0);
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
-  const studyClockRef = useRef(createStudyClock(Date.now()));
+  const [initialStudyClock] = useState(() => createStudyClock(Date.now()));
+  const studyClockRef = useRef(initialStudyClock);
   const trackingActiveRef = useRef(false);
   const submittingRef = useRef(false);
   const completionReportedRef = useRef(false);
+  const loadedModeRef = useRef<StudyMode | null>(null);
   const dragStartYRef = useRef<number | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -264,21 +282,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     return card ? kanaToRomaji(card.kana) : "";
   }, [card, unitTarget]);
 
-  const remainingPlanWords = (target: WordStats | null): number => {
-    if (!target) return 0;
-    return Math.max(target.stage1ProgressTotal - target.stage1ProgressDone, 0);
-  };
-
-  const playCountdownFeedbackIfNeeded = (before: WordStats | null, after: WordStats | null) => {
-    const beforeRemaining = remainingPlanWords(before);
-    const afterRemaining = remainingPlanWords(after);
-    if (afterRemaining < beforeRemaining && afterRemaining > 0 && afterRemaining <= 30) {
-      triggerCountdownHaptic();
-      playCountdownTick();
-    }
-  };
-
-  const loadNext = async (mode: StudyMode = initialMode) => {
+  const loadNext = useCallback(async (mode: StudyMode = initialMode) => {
     setLoading(true);
     setError("");
     try {
@@ -354,7 +358,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     } finally {
       setLoading(false);
     }
-  };
+  }, [grammarLevel, initialMode, onDailyModeComplete, sessionOptions]);
 
   /**
    * 混合模式：每答 MIXED_GRAMMAR_EVERY 个单词插一条语法。
@@ -366,7 +370,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
    * ⚠️ 语法过完了也要把计数清零：不清的话之后每答一个单词都会去查一次当日计划，
    * 而那是好几条 SQL。
    */
-  const maybeGrammarTurn = () => {
+  const maybeGrammarTurn = useCallback(() => {
     if (initialMode !== "mixed") return;
     wordsSinceGrammarRef.current += 1;
     if (wordsSinceGrammarRef.current < MIXED_GRAMMAR_EVERY) return;
@@ -375,7 +379,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     if (!next) return;
     setGrammarCard(next);
     setGrammarRevealed(false);
-  };
+  }, [grammarLevel, initialMode]);
 
   /** 语法卡的评分。声音、触觉沿用单词那一套（连对的音高台阶也接着爬）。 */
   const answerGrammarCard = (value: WordAnswer) => {
@@ -398,11 +402,15 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   };
 
   useEffect(() => {
-    loadNext(initialMode);
-  }, [initialMode]);
+    // loadNext 还会随偏好设置和父回调更新；这些变化不能把正在看的单词重新发一遍。
+    // 真正需要重新开局的边界只有学习模式改变。
+    if (loadedModeRef.current === initialMode) return;
+    loadedModeRef.current = initialMode;
+    void loadNext(initialMode);
+  }, [initialMode, loadNext]);
 
   useEffect(() => {
-    if (!reliefActive || !card || reliefLeaving || loading) return;
+    if (!reliefActive || !card?.id || reliefLeaving || loading) return;
     const dealTimer = window.setTimeout(() => {
       triggerReliefHaptic();
       playReliefDeal();
@@ -429,7 +437,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       }, RELIEF_LEAVE_MS);
     }, RELIEF_DWELL_MS);
     return () => window.clearTimeout(dealTimer);
-  }, [card?.id, initialMode, loading, reliefActive, reliefLeaving, stats]);
+  }, [card?.id, initialMode, loadNext, loading, reliefActive, reliefLeaving, stats]);
 
   useEffect(() => {
     if (!dailyReviewIntro) return;
@@ -482,18 +490,16 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     }
   }, []);
 
-  const pageVisible = () => document.visibilityState === "visible";
-
   /** 结上一段的账，把攒够的整秒取出来落库(零头留着，见 study-clock.ts) */
-  const elapsedStudySeconds = () => {
+  const elapsedStudySeconds = useCallback(() => {
     const accrued = accrueStudyTime(studyClockRef.current, Date.now(), { visible: pageVisible() });
     const { seconds, state } = drainStudySeconds(accrued);
     studyClockRef.current = state;
     return seconds;
-  };
+  }, []);
 
   useEffect(() => {
-    trackingActiveRef.current = Boolean(card);
+    trackingActiveRef.current = Boolean(card?.id);
     // 换卡本身就是一次交互(刚点过评分)，顺手把上一段结掉。
     studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible() });
   }, [card?.id, unitKey]);
@@ -533,7 +539,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       document.removeEventListener("visibilitychange", handleVisibility);
       flushStudyTime();
     };
-  }, [sendStudySeconds]);
+  }, [elapsedStudySeconds, sendStudySeconds]);
 
   useEffect(() => {
     setNoteText(card?.note ?? "");
@@ -542,7 +548,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setPromptEditorOpen(false);
     setDistinctionOpen(false);
     setActivePopover(null);
-  }, [card?.id]);
+    // 这段只响应「换卡」。同一张卡保存备注时若把 card.note 加进依赖，会立刻关掉
+    // 用户正在编辑的面板；submitAnswer/loadNext 已在真正换卡时显式同步下一张备注。
+  }, [card?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submitAnswer = useCallback(async (answer: WordAnswer, source: "pointer" | "key" | "swipe" = "pointer") => {
     // submittingRef is synchronous, so a second tap is blocked immediately —
@@ -775,7 +783,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
       // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
-  }, [card, dailyReviewActive, dailyReviewIntro, initialMode, onDailyModeComplete, phase, reliefActive, sendStudySeconds, sessionOptions, stats, submitting, tailActive]);
+  }, [card, dailyReviewActive, dailyReviewIntro, elapsedStudySeconds, initialMode, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sendStudySeconds, sessionOptions, stats, submitting, tailActive, unitKey]);
 
   useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
 

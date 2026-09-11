@@ -11,6 +11,12 @@ import {
   USER_AGREEMENT_VERSION
 } from "../../frontend/src/lib/user-agreement-content";
 import { entitlementStrength } from "./entitlement-rules";
+import {
+  currentSubscriptionFromStatus,
+  type AppleTransactionPayload,
+  type CurrentAppleSubscription,
+  type SubscriptionStatusResponse
+} from "./apple-subscription";
 
 export interface Env {
   DB: D1Database;
@@ -103,18 +109,8 @@ interface EntitlementRow {
   updated_at: string;
 }
 
-interface AppleTransactionPayload {
-  bundleId?: string;
-  productId?: string;
-  transactionId?: string;
-  originalTransactionId?: string;
-  environment?: "Sandbox" | "Production";
-  expiresDate?: number;
-  revocationDate?: number;
-  type?: string;
-}
-
 const PRODUCT_IDS = new Set(["shushugo_pro_monthly", "shushugo_pro_yearly", "shushugo_pro_lifetime"]);
+const SUBSCRIPTION_PRODUCT_IDS = new Set(["shushugo_pro_monthly", "shushugo_pro_yearly"]);
 
 const TOKEN_TTL_DAYS = 30;
 // Cloudflare Workers Web Crypto rejects PBKDF2 iteration counts above 100,000.
@@ -778,8 +774,14 @@ const createAppleJwt = async (env: Env) => {
   return `${header}.${payload}.${base64Url(signature)}`;
 };
 
-const APPLE_PRODUCTION_HOST = "https://api.storekit.itunes.apple.com";
-const APPLE_SANDBOX_HOST = "https://api.storekit-sandbox.itunes.apple.com";
+// Apple 从 2026-05-05 起推荐不带 `itunes` 的域名；旧域名仍兼容，
+// 但新部署直接使用推荐地址，避免以后在 Apple 停止兼容时才被动迁移。
+const APPLE_PRODUCTION_HOST = "https://api.storekit.apple.com";
+const APPLE_SANDBOX_HOST = "https://api.storekit-sandbox.apple.com";
+
+const appleHosts = (env: Env) => env.APP_STORE_ENVIRONMENT === "Sandbox"
+  ? [APPLE_SANDBOX_HOST, APPLE_PRODUCTION_HOST]
+  : [APPLE_PRODUCTION_HOST, APPLE_SANDBOX_HOST];
 
 const fetchAppleTransaction = async (jwt: string, host: string, transactionId: string) => (
   fetch(`${host}/inApps/v1/transactions/${encodeURIComponent(transactionId)}`, {
@@ -793,10 +795,7 @@ const getAppleTransaction = async (env: Env, transactionId: string) => {
 
   // Apple 官方建议:先查正式环境,404(交易不存在)再回退沙盒。
   // TestFlight 和审核用的都是沙盒交易,固定环境会让审核走不通。
-  const preferSandbox = env.APP_STORE_ENVIRONMENT === "Sandbox";
-  const hosts = preferSandbox
-    ? [APPLE_SANDBOX_HOST, APPLE_PRODUCTION_HOST]
-    : [APPLE_PRODUCTION_HOST, APPLE_SANDBOX_HOST];
+  const hosts = appleHosts(env);
 
   let response = await fetchAppleTransaction(jwt, hosts[0], transactionId);
   if (response.status === 404) {
@@ -810,6 +809,31 @@ const getAppleTransaction = async (env: Env, transactionId: string) => {
   const [, payload] = data.signedTransactionInfo.split(".");
   if (!payload) throw new Error("Apple signed transaction is malformed");
   return { payload: base64UrlToJson<AppleTransactionPayload>(payload), raw: data };
+};
+
+/**
+ * 单笔交易接口只会把那一笔原样查回来，漏掉续费通知时永远看不到后续 T2/T3。
+ * 订阅重查改用 Apple 的当前状态接口；它接受任意旧交易号并返回每个订阅的最新交易。
+ */
+const getCurrentAppleSubscription = async (
+  env: Env,
+  transactionId: string,
+  originalTransactionId: string
+): Promise<CurrentAppleSubscription | null> => {
+  const jwt = await createAppleJwt(env);
+  if (!jwt) return null;
+  const hosts = appleHosts(env);
+  const request = (host: string) => fetch(
+    `${host}/inApps/v1/subscriptions/${encodeURIComponent(transactionId)}`,
+    { headers: { authorization: `Bearer ${jwt}` } }
+  );
+  let response = await request(hosts[0]);
+  if (response.status === 404) response = await request(hosts[1]);
+  if (!response.ok) throw new Error(`Apple subscription status failed: ${response.status}`);
+  const raw = await response.json<SubscriptionStatusResponse>();
+  const current = currentSubscriptionFromStatus(raw, originalTransactionId, SUBSCRIPTION_PRODUCT_IDS);
+  if (!current) throw new Error("Apple subscription status did not contain the owned subscription");
+  return current;
 };
 
 const bearerTokenHash = async (request: Request) => {
@@ -1418,9 +1442,10 @@ const applyAppleTransaction = async (
   env: Env,
   userId: string,
   transactionId: string,
-  expectedProductId?: string
+  expectedProductId?: string,
+  currentSubscription?: CurrentAppleSubscription
 ): Promise<PurchaseOutcome> => {
-  const apple = await getAppleTransaction(env, transactionId);
+  const apple = currentSubscription ?? await getAppleTransaction(env, transactionId);
   if (!apple) {
     await recordPurchaseEvent(env, userId, expectedProductId ?? "", transactionId, "missing_apple_config", {
       reason: "App Store Server API config is missing"
@@ -1435,6 +1460,25 @@ const applyAppleTransaction = async (
   const productMatches = PRODUCT_IDS.has(productId) && (!expectedProductId || productId === expectedProductId);
   const transactionMatches = tx.transactionId === transactionId || tx.originalTransactionId === transactionId;
 
+  // 撤权也属于写操作；先确认这确实是本应用、目标商品和同一条交易链，不能因为
+  // 一个不相干或畸形响应就清掉账号已有权益。
+  if (!bundleMatches || !productMatches || !transactionMatches) {
+    await recordPurchaseEvent(env, userId, productId, transactionId, "rejected", apple.raw, originalTransactionId, tx.environment);
+    return { ok: false, status: 400, detail: "Apple transaction did not match this app or product." };
+  }
+
+  // 订阅状态 2=过期、3=账单重试且无宽限、5=撤销。只看旧交易的 expiresDate
+  // 无法区分这些状态；当前状态接口已经替 Apple 做了这个判断。
+  if (currentSubscription && ![1, 4].includes(currentSubscription.status)) {
+    await revokeEntitlementForTransaction(env, userId, originalTransactionId);
+    await recordPurchaseEvent(
+      env, userId, productId, tx.transactionId ?? transactionId,
+      `subscription_status_${currentSubscription.status}`, apple.raw,
+      originalTransactionId, tx.environment
+    );
+    return { ok: false, status: 400, detail: "Apple subscription is no longer active." };
+  }
+
   // ⚠️ 被撤销的交易不只是「拒绝这次请求」：账号上那份靠它拿到的权益也必须撤掉，
   // 否则退款之后 Pro 一直留着（永久购买尤其明显，它根本不会自己过期）。
   if (tx.revocationDate) {
@@ -1442,11 +1486,6 @@ const applyAppleTransaction = async (
     await recordPurchaseEvent(env, userId, productId, transactionId, "revoked", apple.raw, originalTransactionId, tx.environment);
     return { ok: false, status: 400, detail: "Apple transaction has been revoked." };
   }
-  if (!bundleMatches || !productMatches || !transactionMatches) {
-    await recordPurchaseEvent(env, userId, productId, transactionId, "rejected", apple.raw, originalTransactionId, tx.environment);
-    return { ok: false, status: 400, detail: "Apple transaction did not match this app or product." };
-  }
-
   // 归属先定下来，再谈权益。INSERT OR IGNORE 是一条原子语句，并发的第二个账号
   // 读回来的一定是先到的那个 user_id。
   const claimedAt = new Date().toISOString();
@@ -1483,6 +1522,16 @@ const applyAppleTransaction = async (
   });
   await recordPurchaseEvent(env, userId, productId, tx.transactionId ?? transactionId, "verified", apple.raw, originalTransactionId, tx.environment);
   return { ok: true, entitlement };
+};
+
+const recheckAppleEntitlement = async (env: Env, userId: string, row: EntitlementRow) => {
+  const transactionId = row.original_transaction_id ?? row.transaction_id;
+  if (!transactionId) return null;
+  if (row.original_transaction_id && row.product_id && SUBSCRIPTION_PRODUCT_IDS.has(row.product_id)) {
+    const current = await getCurrentAppleSubscription(env, transactionId, row.original_transaction_id);
+    if (current) return applyAppleTransaction(env, userId, transactionId, undefined, current);
+  }
+  return applyAppleTransaction(env, userId, transactionId);
 };
 
 const verifyPurchase = async (request: Request, env: Env) => {
@@ -1613,8 +1662,8 @@ const getEntitlements = async (request: Request, env: Env) => {
     && Date.parse(row.updated_at) + ENTITLEMENT_RECHECK_INTERVAL_MS < Date.now();
   if (stale) {
     try {
-      const result = await applyAppleTransaction(env, userId, row!.transaction_id!);
-      if (result.ok) return json(result.entitlement);
+      const result = await recheckAppleEntitlement(env, userId, row!);
+      if (result?.ok) return json(result.entitlement);
     } catch {
       // ⚠️ Apple 不通时按现有缓存回答,但**必须把下次重查往后推**。
       // 只 catch 不推的话 updated_at 一直是陈的,于是 Apple 挂着的时候
@@ -2155,14 +2204,14 @@ export default {
     // 不打开 App 的账号也能在一周内跟上 Apple 的实际状态。批量有上限,
     // 这条不会随用户数把 Apple 请求撑爆。
     const stale = await env.DB.prepare(`
-      SELECT user_id, transaction_id
+      SELECT user_id, is_pro, product_id, source, original_transaction_id, transaction_id, environment, expires_at, updated_at
       FROM entitlements
       WHERE is_pro = 1 AND source = 'app_store' AND transaction_id IS NOT NULL AND updated_at < ?
       ORDER BY updated_at ASC
       LIMIT 25
-    `).bind(iso(now - 7 * 24 * 60 * 60 * 1000)).all<{ user_id: string; transaction_id: string }>();
+    `).bind(iso(now - 7 * 24 * 60 * 60 * 1000)).all<EntitlementRow & { user_id: string }>();
     for (const row of stale.results ?? []) {
-      await applyAppleTransaction(env, row.user_id, row.transaction_id).catch(() => undefined);
+      await recheckAppleEntitlement(env, row.user_id, row).catch(() => undefined);
     }
   }
 } satisfies ExportedHandler<Env>;

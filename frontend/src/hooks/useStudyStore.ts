@@ -105,10 +105,10 @@ export const useStudyStore = () => {
     }
   };
 
+  const [now] = useState(Date.now);
   const dueReviews = useMemo(() => {
-    const now = Date.now();
     return reviews.filter((item) => new Date(item.dueAt).getTime() <= now);
-  }, [reviews]);
+  }, [now, reviews]);
 
   return {
     reviews,

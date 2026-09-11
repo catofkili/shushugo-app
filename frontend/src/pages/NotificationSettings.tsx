@@ -14,6 +14,13 @@ interface NotificationSettingsProps {
   onBack: () => void;
 }
 
+const buildStatusText = (result: ReminderSyncResult) => {
+  if (!result.native) return "浏览器预览不会发送系统通知，iOS App 内会生效。";
+  if (result.permission === "granted") return `iOS 通知已接通，当前有 ${result.pendingCount} 个提醒计划。`;
+  if (result.permission === "denied") return "系统通知权限已关闭，请到 iOS 设置里允许通知。";
+  return "开启学习或复习提醒时，会向 iOS 请求通知权限。";
+};
+
 export function NotificationSettings({ onBack }: NotificationSettingsProps) {
   const [settings, setSettings] = useState<ReminderSettings>(defaultReminderSettings);
   const [status, setStatus] = useState<ReminderSyncResult | null>(null);
@@ -47,13 +54,6 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
       alive = false;
     };
   }, []);
-
-  const buildStatusText = (result: ReminderSyncResult) => {
-    if (!result.native) return "浏览器预览不会发送系统通知，iOS App 内会生效。";
-    if (result.permission === "granted") return `iOS 通知已接通，当前有 ${result.pendingCount} 个提醒计划。`;
-    if (result.permission === "denied") return "系统通知权限已关闭，请到 iOS 设置里允许通知。";
-    return "开启学习或复习提醒时，会向 iOS 请求通知权限。";
-  };
 
   const updateSettings = async (patch: Partial<ReminderSettings>, requestPermission = false) => {
     const next = { ...settings, ...patch };

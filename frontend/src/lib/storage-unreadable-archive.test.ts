@@ -74,3 +74,15 @@ describe("浏览器端存档打不开时", () => {
     expect(store.get("recovery-unreadable-archive")).toBe(first);
   });
 });
+
+it('IndexedDB open errors must not initialize a factory database', async () => {
+  Object.defineProperty(globalThis, 'indexedDB', { configurable: true, value: {
+    open: () => {
+      const request: Record<string, unknown> = { error: new Error('Access denied') };
+      queueMicrotask(() => (request.onerror as () => void)());
+      return request;
+    }
+  } });
+  const { loadDatabase, LocalArchiveUnreadableError } = await import('./storage');
+  await expect(loadDatabase()).rejects.toBeInstanceOf(LocalArchiveUnreadableError);
+});

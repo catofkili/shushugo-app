@@ -1,4 +1,8 @@
-# 收集日后端 API
+# 收集日后端 API（退役原型档案）
+
+> **以下命令和接口仅用于理解早期 FastAPI 原型，不可执行，也不是当前部署说明。**
+> `server.py` 与 `requirements.txt` 已于 2026-09-09 删除；当前账号、同步、邮件和内购后端
+> 全部在 `cloudflare-sync/`。实际发布只看 `../docs/DEPLOYMENT_GUIDE.md`。
 
 > Legacy notice: this FastAPI backend is an old prototype. Production cloud sync, account login, email verification, and purchase entitlement work now lives in `../cloudflare-sync/`.
 >

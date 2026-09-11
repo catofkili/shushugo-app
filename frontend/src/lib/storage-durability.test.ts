@@ -17,6 +17,9 @@ vi.mock("@capacitor/filesystem", () => ({
   Directory: { Library: "LIBRARY" },
   Encoding: { UTF8: "utf8" },
   Filesystem: {
+    readdir: async ({ path }: { path: string }) => ({ files: path === ''
+      ? (files.size ? [{ name: 'masternihongo' }] : [])
+      : [...files.keys()].map(key => ({ name: key.split('/').pop() })) }),
     readFile: async ({ path }: { path: string }) => {
       if (!files.has(path)) throw new Error(`ENOENT ${path}`);
       return { data: files.get(path) };

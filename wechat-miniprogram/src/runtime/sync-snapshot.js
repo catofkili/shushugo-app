@@ -474,6 +474,7 @@ function mergeMemory(db, table, row) {
 function mergeGrammarProgress(db, row) {
   const grammarId = Number(row.grammar_id);
   if (!Number.isInteger(grammarId)) return;
+  const existed = rowBy(db, 'grammar_progress', ['grammar_id'], [grammarId]);
   db.run('INSERT OR IGNORE INTO grammar_progress (grammar_id) VALUES (?)', [grammarId]);
   const local = rowBy(db, 'grammar_progress', ['grammar_id'], [grammarId]) || {};
   const localLast = local.fsrs_last_review ? new Date(local.fsrs_last_review).getTime() : 0;
@@ -491,6 +492,19 @@ function mergeGrammarProgress(db, row) {
     Number(row.forgot_count || 0), Number(row.known_forever || 0),
     row.last_seen_on || null, row.last_seen_on || null
   ];
+  // 这些值会下降或清空，不能取 MAX；跟随最近学习的一侧，旧版无日期时比较次数。
+  const localActivity = Math.max(localLast || 0, Date.parse(local.last_seen_on || '') || 0);
+  const remoteActivity = Math.max(remoteLast || 0, Date.parse(row.last_seen_on || '') || 0);
+  if (!existed || remoteActivity > localActivity
+      || (remoteActivity === localActivity && Number(row.seen_count || 0) > Number(local.seen_count || 0))) {
+    for (const column of ['score', 'low_history', 'mistake_streak', 'last_decay_amount', 'mastered_on']) {
+      // 老版本缺列不能把现有值清掉；显式 null 则仍然传递。
+      if (Object.prototype.hasOwnProperty.call(row, column)) {
+        set.push(`${quoteIdentifier(column)} = ?`);
+        values.push(row[column]);
+      }
+    }
+  }
   // 本机这行从来没排过期(localLast 为 0)而对端排过 → 直接收下。只比
   // `remoteLast > localLast` 的话,对端那份 fsrs_due 会被静默丢掉。
   if (remoteLast > localLast || (localLast === 0 && row.fsrs_due)) {

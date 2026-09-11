@@ -166,9 +166,9 @@ Web token 经 Preferences 落入浏览器存储，比 iOS Keychain 更依赖同�
 
 1. **shrink：头像重复传输与写入。** 只传变化字段，缩小更新响应。具体代码证据见 2.3。
 2. **shrink：用户快照导出中间数组和逐行重复 SQL 准备。** 流式复制、复用 statement；保持回滚与 free。具体证据见 2.2。
-3. **delete/隔离：遗留 FastAPI 生产实现。** [backend/server.py](/Users/lsc/Documents/shushugo/backend/server.py:1) 295 行，项目已明确为 legacy，生产 CI 和前端走 Worker。若确实不再用于本地实验，可删除其实现及仅供它使用的依赖文件；保留说明其历史定位的文档和 Git 历史。它目前不会增加云端运行账单。
-4. **delete：失效的旧原型入口。** [shushugo-prototype.html](/Users/lsc/Documents/shushugo/frontend/shushugo-prototype.html:1) 13 行仍引用旧资源路径，当前 Vite 默认入口不使用它。归档价值由用户决定；没有证据表明它影响生产包。
-5. **delete/重做：旧 score 测试按钮。** [test-utils.ts](/Users/lsc/Documents/shushugo/frontend/src/lib/test-utils.ts:15) 仍用 score=9“完成任务”，与 FSRS 语义不符，也直接制造模拟流水。这些入口在 [DevTools](/Users/lsc/Documents/shushugo/frontend/src/components/DevTools.tsx:12) 受 DEV 条件保护，不是线上付费后门；但用户实际就在 DEV 网页学习，不适合继续把它当可信诊断工具。可删过时模拟功能，保留仍需要的开发解锁，并明确只在隔离数据上使用。
+3. **delete/隔离：遗留 FastAPI 生产实现。** `backend/server.py`（历史文件，当前工作区已删除，见 Git 历史）295 行，项目已明确为 legacy，生产 CI 和前端走 Worker。若确实不再用于本地实验，可删除其实现及仅供它使用的依赖文件；保留说明其历史定位的文档和 Git 历史。它目前不会增加云端运行账单。
+4. **delete：失效的旧原型入口。** `frontend/shushugo-prototype.html`（历史文件，当前工作区已删除，见 Git 历史）13 行仍引用旧资源路径，当前 Vite 默认入口不使用它。归档价值由用户决定；没有证据表明它影响生产包。
+5. **delete/重做：旧 score 测试按钮。** `frontend/src/lib/test-utils.ts`（历史文件，当前工作区已删除，见 Git 历史）仍用 score=9“完成任务”，与 FSRS 语义不符，也直接制造模拟流水。这些入口在 [DevTools](/Users/lsc/Documents/shushugo/frontend/src/components/DevTools.tsx:12) 受 DEV 条件保护，不是线上付费后门；但用户实际就在 DEV 网页学习，不适合继续把它当可信诊断工具。可删过时模拟功能，保留仍需要的开发解锁，并明确只在隔离数据上使用。
 6. **shrink：空的免费功能数组及尚无调用的权益类型。** [entitlements.ts:79](/Users/lsc/Documents/shushugo/frontend/src/lib/entitlements.ts:79) 每次创建空数组再 `includes`，当前结果始终等于 `isPro`。这是小清理，不能优先于支付错误。
 
 可明确量出的遗留实现候选为 295 + 13 = **308 行**，此外旧测试功能可以进一步缩小。已确认可直接移除的主应用运行时依赖为 **0 个**。本次没有执行删除，也没有为了凑数字把文档、测试、数据内容或原生插件算成垃圾代码。
@@ -212,10 +212,10 @@ Web token 经 Preferences 落入浏览器存储，比 iOS Keychain 更依赖同�
 
 | 条目 | 落点 | 备注 |
 |---|---|---|
-| 1.1 内购回调收据结构 | `frontend/src/lib/purchases.ts` | 两种收据形态都读；校验→授权→`finish()` 接通；失败进重试队列（启动 + 登录后重试）。测试 `purchases.test.ts` 新增 `receiptPurchases` 三例 |
+| 1.1 内购回调收据结构 | `frontend/src/lib/purchases.ts` | 两种收据形态都读；2026-09-11 再修正为只有受支持商品全部完成权益持久化后才 `await finish()`，空收据或写入失败保持未完成。测试覆盖顺序和失败边界 |
 | 1.2 一笔交易多个账号 | 迁移 `0009` + `applyAppleTransaction` | 写权益前用 `apple_transaction_owners` 主键原子认领，非本人 409；回填已有权益的归属 |
 | 1.3 旧订阅覆盖永久权益 | `cloudflare-sync/src/entitlement-rules.ts` | 只有更强才准覆盖；同一笔原始交易可改写自己那一行。测试 `scripts/entitlement-rules.test.mjs` |
-| 1.4 续费/退款/撤销闭环 | `/api/purchases/apple-notifications` + 权益接口每日重查 + 定时任务批量重查 | 通知只当提示，一律回查 Apple；撤销时清除对应权益；`purchase_events` 唯一索引改成 (交易, 用户, 状态)（迁移 `0011`） |
+| 1.4 续费/退款/撤销闭环 | `/api/purchases/apple-notifications` + 权益接口每日重查 + 定时任务批量重查 | 通知只当提示，一律回查 Apple；2026-09-11 将订阅重查由旧单笔交易改为当前订阅状态接口，可由 T1 找到漏通知的 T2；撤销时清除对应权益；`purchase_events` 唯一索引改成 (交易, 用户, 状态)（迁移 `0011`） |
 | 1.5 Apple 登录算法 | `verifyAppleIdentityToken` | 按 JWK 的 `kty` 选算法（RS256/ES256 白名单）；identity token 一次性（KV 记哈希）防重放 |
 | 1.6 小程序双向无损 | `wechat-miniprogram/src/{core/study-core,runtime/sync-snapshot}.js` | reviews 补 `sync_uid` 并按它去重、导出协议抬到 v2；未知表走 `sync_passthrough` 原样回传。往返判据进 `sync-snapshot-smoke.mjs` 与 CI |
 | 1.7 自定义词条身份 | `custom_words` 表 + `customWordId` + `materializeCustomWords` | id 由内容算，内容随快照同步，合并后补出 words/progress 行 |
@@ -227,6 +227,12 @@ Web token 经 Preferences 落入浏览器存储，比 iOS Keychain 更依赖同�
 | 3.3 付费边界 | `entitlements.ts` + Worker | 订阅缺到期时间给 3 天离线宽限而非永久；`storekit` 本地授权 30 天离线上限；沙盒权益夹到 30 天 |
 | 3.4 隐私说明 | `privacy-policy-content.ts` | 补 R2 与「快照未做端到端加密」；版本 2026-08-03 → 2026-09-09 |
 | 4.3/4.4/4.5/4.6 冗余 | 删除 `backend/server.py`、`backend/requirements.txt`、`frontend/shushugo-prototype.html`、`frontend/src/lib/test-utils.ts` 及 DevTools 里的四个模拟按钮；`canUseFeature` 去掉空数组 | `backend/LEGACY.md` 保留并说明实现已删 |
+
+### 2026-09-11 付费复查补记
+
+第二轮验收后来发现两处残留错误：订阅定期重查仍拿旧交易号调用单笔交易接口，无法发现漏通知的续费；前端又在 `finally` 中无条件完成收据，使权益持久化失败的交易失去插件重试机会。两项现已按上表修正，并补入 Worker 订阅状态选择、Worker 实际路由入口与前端收据完成顺序测试。
+
+订阅状态请求使用 Apple 的 Get All Subscription Statuses，由任意旧交易号取得各订阅组的最新交易；状态 1 视为有效，状态 4 使用宽限期截止时间，其余状态撤销对应权益。API 域名使用 Apple 自 2026-05-05 起推荐的 `api.storekit.apple.com` 与沙盒对应域名。`worker-purchase-route.test.mjs` 会让 Wrangler 打包真实 Worker，再以模拟 D1/Apple 响应调用实际权益 GET 与 cron；它还锁住了 cron SQL 必须选出 `user_id` 的回归。真实 Apple 响应、通知投递、远端 D1 和真机购买仍按第 7 节验收，不能改称已经生产通过。
 
 ## 7. 上线前门槛清单（2026-09-09 第二轮）
 
@@ -248,7 +254,7 @@ curl -s https://<worker>/api/health | jq
 | | 审计时 | 现在 | 剩下的是什么 |
 |---|---|---|---|
 | 前端 | 1 critical / 6 high / 3 moderate / 1 low | **1 critical / 1 high / 1 low** | `tar` + `@capacitor/cli` 要跨 Capacitor 大版本（8.5.1），审计明确说别在这次动；`esbuild` 是 dev server 的读文件问题，不进产物 |
-| Worker | 4 high | **3 high** | 升到 `wrangler@4.130` + `@cloudflare/workers-types@5`（typecheck / test / dry-run 全过）。剩下三条同一个根：miniflare 拉进来的 `sharp`→libheif，上游还没修；我们只跑 `--dry-run`，不跑 `wrangler dev` |
+| Worker | 4 high | **3 high** | 升到 `wrangler@4.130` + `@cloudflare/workers-types@5`（typecheck / test / dry-run 全过）。剩下三条同一个根：miniflare 拉进来的 `sharp`→libheif；2026-09-11 审计已报告可用普通 `npm audit fix` 刷新传递依赖，本轮按机械依赖维护暂缓 |
 
 ⚠️ **`@cloudflare/workers-types` 是 4 → 5 的大版本**，但它只是类型，`npm run check`、
 `npm test` 和 `wrangler deploy --dry-run` 全过；miniflare 被带成了 `5.x-alpha`，

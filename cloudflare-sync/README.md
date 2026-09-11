@@ -98,6 +98,16 @@ npx wrangler secret put APP_STORE_PRIVATE_KEY
 
 `APP_STORE_PRIVATE_KEY` 需要粘贴包含 `BEGIN PRIVATE KEY` 与 `END PRIVATE KEY` 的完整 `.p8` 内容。服务端默认先查询 Production，交易不存在时再回退 Sandbox，以兼容 TestFlight 和 App Store 审核交易。
 
+订阅不能只反复查询账号最初保存的那一笔交易：如果续费通知 T2 漏达，旧交易 T1 不会自己变成 T2。当前一日重查和定时任务使用 App Store Server API 的 Get All Subscription Statuses，以任意旧交易号取得当前订阅组的最新交易；永久购买仍使用 Get Transaction Info。请求域名使用 Apple 自 2026-05-05 起推荐的 `api.storekit.apple.com` 与 `api.storekit-sandbox.apple.com`。
+
+App Store Connect 的 Server Notifications V2 地址配置为：
+
+```text
+POST https://<worker-host>/api/purchases/apple-notifications
+```
+
+通知只作为重查提示，服务端不会直接相信通知体并发放权益。配置后使用 Request a Test Notification，并确认 D1 的 `apple_notifications` 表收到 `notification_type='TEST'` 的记录；本地测试不能代替这一步。
+
 After deployment, set the iOS frontend env var:
 
 ```bash

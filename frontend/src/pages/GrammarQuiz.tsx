@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ListOrdered, Plus, Undo2 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
 import { GrammarCard } from "../features/grammar-quiz/GrammarCard";
@@ -35,7 +35,6 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
   const [session, setSession] = useState<GrammarQuizSession | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [showRanking, setShowRanking] = useState(false);
-  const [rankingRevision, setRankingRevision] = useState(0);
 
   useEffect(() => {
     setSession(getGrammarQuizSession(level));
@@ -47,7 +46,6 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
     if (!session?.card) return;
     setSession(submitGrammarQuizAnswer(level, session.card.id, value));
     setRevealed(false);
-    setRankingRevision((v) => v + 1);
   }, [level, session]);
 
   const encore = useCallback(() => {
@@ -61,13 +59,9 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
     setSession(undoLastGrammarQuizAnswer(level));
     setRevealed(false);
     setShowRanking(false);
-    setRankingRevision((v) => v + 1);
   }, [level, session?.canUndo]);
 
-  const ranking = useMemo(
-    () => (showRanking ? grammarQuizRanking(level) : []),
-    [level, showRanking, rankingRevision]
-  );
+  const ranking = showRanking ? grammarQuizRanking(level) : [];
 
   const card = session?.card ?? null;
   const done = session?.done ?? 0;

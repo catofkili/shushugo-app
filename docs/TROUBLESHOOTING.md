@@ -1,5 +1,9 @@
 # 问题排查指南
 
+> 日语学习主页面可能正在保存真实进度。**不要刷新、接管或复用正在学习的 5173 页面。**
+> 浏览器复现必须使用隔离数据并另开端口，例如 `npm run dev -- --port 5174`；只需要判断
+> 类型、算法或数据转换时，优先直接运行测试，不启动页面。
+
 ## 如果"我的"页面按钮不能点击
 
 ### 现象 1: 按钮完全没反应
@@ -10,7 +14,7 @@
 - TypeScript 编译错误
 
 **解决方法:**
-1. 在浏览器中打开 http://localhost:5173
+1. 用隔离数据启动 `npm run dev -- --port 5174`，只打开新输出的地址
 2. 打开开发者工具（F12）
 3. 查看 Console 是否有错误
 4. 点击"我的"页面的按钮
@@ -48,29 +52,22 @@ ls ~/Documents/shushugo/frontend/src/pages/*.tsx
 2. 查看对应的页面文件
 3. 检查是否有语法错误
 
-## 缓存清理命令
+## 缓存清理
 
-如果需要完全重新开始：
+先只清理可再生成的 Web 构建缓存：
 
 ```bash
-cd ~/Documents/shushugo/frontend
+cd /Users/lsc/Documents/shushugo/frontend
 
-# 清理所有缓存
 rm -rf node_modules/.vite
 rm -rf dist
-rm -rf build
-rm -rf ios/App/App/public
-rm -rf ios/App/Pods
-rm -rf ios/App/Podfile.lock
-
-# 重新构建
 npm run build
 npx cap sync ios
-
-# 在 Xcode 中
-# Product > Clean Build Folder (Shift+Cmd+K)
-# 然后重新运行
 ```
+
+不要删除 `frontend/ios`、Pods 或 Podfile.lock 作为通用排错步骤，更不要重新运行
+`npx cap add ios`。原生工程含签名、capability、最低系统版本和插件配置；若 CocoaPods
+确实报错，先保留完整错误并在 `frontend/ios/App` 单独运行 `pod install`。
 
 ## 在浏览器中调试
 
@@ -78,10 +75,10 @@ npx cap sync ios
 
 ```bash
 cd ~/Documents/shushugo/frontend
-npm run dev
+npm run dev -- --port 5174
 ```
 
-然后访问 http://localhost:5173
+然后只访问新输出的 5174 地址。不要打开或刷新正在学习的 5173 页面。
 
 在浏览器中：
 1. 打开开发者工具（F12）

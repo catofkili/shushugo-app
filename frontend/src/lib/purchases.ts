@@ -209,6 +209,20 @@ const applyReceiptPurchase = async (purchase: ReceiptPurchase): Promise<void> =>
   grantPro(purchase.productId, "storekit", expiresAt);
 };
 
+/**
+ * 发货成功后才结束交易。VerifiedReceipt 回调本身不等待 Promise，所以这个函数
+ * 必须把“识别商品 → 落权 → finish”串成一个可测试的 Promise；任一步失败都让
+ * StoreKit 保留交易，等待下次启动重新投递。
+ */
+export async function fulfillVerifiedReceipt(receipt: any): Promise<void> {
+  const purchases = receiptPurchases(receipt);
+  if (purchases.length === 0) {
+    throw new Error("已验证的 App Store 收据里没有可识别的收集日商品，交易暂不结束。");
+  }
+  for (const item of purchases) await applyReceiptPurchase(item);
+  await receipt.finish();
+}
+
 /** 启动和登录成功后各调一次。云端仍然不通就原样留在队列里。 */
 export async function retryPendingPurchaseVerifications(): Promise<void> {
   for (const purchase of readPending()) {
@@ -245,13 +259,12 @@ export async function initializePurchases(): Promise<PurchaseRuntime> {
       });
 
       store.when().approved((transaction: any) => transaction.verify());
-      store.when().verified(async (receipt: any) => {
-        try {
-          for (const item of receiptPurchases(receipt)) await applyReceiptPurchase(item);
-        } finally {
-          // finish() 之后 Apple 认为货已发出,所以权益必须先落地。
-          receipt.finish();
-        }
+      store.when().verified((receipt: any) => {
+        void fulfillVerifiedReceipt(receipt).catch((error) => {
+          const message = error instanceof Error ? error.message : "App Store 权益写入失败，交易暂未结束。";
+          runtime = { ...runtime, status: "error", message };
+          console.error("[purchases] verified receipt was not finished", error);
+        });
       });
 
       initialized = true;

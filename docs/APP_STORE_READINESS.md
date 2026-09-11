@@ -1,6 +1,6 @@
 # 上架准备清单 (App Store Readiness)
 
-> 最近更新：**2026-09-10**（上一版停在 2026-08-10，测试数、包体、语法条数三处都已失效）
+> 最近更新：**2026-09-11**（测试数与付费代码状态按当前工作区复查；远端与真机状态未推断）
 >
 > ⚠️ **这一页只记「当天真跑出来的数」和「明确的是/否」。**
 > 以前那句「可上架约 75%」已删：它没有可核验的口径，一个月后没人说得清
@@ -9,21 +9,21 @@
 >
 > 优先级：**P0 = 不解决就上不了 / 会被打回**，**P1 = 审核风险**，**P2 = 质量打磨**。
 
-## 当前代码检查（2026-09-10 实测）
+## 当前代码检查（2026-09-11 实测）
 
 | 项 | 结果 |
 |---|---|
 | `npm run check`（tsc --noEmit） | ✅ 通过 |
-| `npm run lint` | ✅ 0 error / 45 warning |
-| `npm test` | ✅ 86 个测试文件 / 619 个用例（另有 1 文件 23 用例跳过） |
+| `npm run lint` | ✅ 0 error / 24 warning；剩余均为既有同步加载型 `set-state-in-effect`，依赖/ref/纯度警告已清理 |
+| `npm test` | ✅ 88 个测试文件、632 个用例通过（另有 1 文件、23 个用例跳过） |
 | `npm run build` | ✅ 通过，入口 JS 1,590 kB（gzip 496 kB）；语法块 1,177 kB、JLPT 种子块 11,235 kB 都是懒加载，不进首屏 |
 | 出厂词库 `public/nihongo.db` | 10,919 词条，10,720 条有例句，741 条语法，用户数据表全空（白名单守卫生效） |
 | 小程序 `npm test`（14 个脚本） | ✅ 全部通过 |
 | Worker `npm run check` / `npm test` | ✅ 通过 |
 | 最低支持系统 | **iOS 16.4**（2026-09-10 定；Podfile / Xcode / vite `build.target` 三处一致，理由见下） |
 
-> 注意：跑测试要在 `frontend/` 目录下。在仓库根目录跑 `vitest` 会把
-> `.claude/worktrees/` 里的旧副本一起扫进去，出现一堆假失败。
+> 注意：跑前端测试要在 `frontend/` 目录下；仓库根目录没有前端 `package.json`。
+> 2026-09-11 已移除两个旧附加 worktree，不能再把旧 worktree 的测试结果算进当前项目。
 >
 > ⚠️ **上面这些没有一条能代替真机验收**：Xcode 编译、TestFlight、内购、
 > 通知、文件系统生命周期都还没在真机上走过。
@@ -56,8 +56,9 @@
 
 - [x] 订阅页有自动续订说明、订阅周期、隐私政策链接、服务条款链接
 - [x] `restorePurchases()` 已实现
-- [ ] **Paywall 显示真实本地化价格** — `purchases.ts` 的 `STORE_PRODUCTS` 三个商品
-      价格仍写死为字符串 `"App Store 定价"`，必须改成从 Store 拉
+- [x] **Paywall 读取 Store 的本地化价格** — 初始化后从商品 offer 的 pricing phase 读取，
+      `"App Store 定价"` 只是在 Store 尚不可用时的非数字占位，不会伪造价格；仍需随下条
+      App Store Connect 商品一起做真机显示验收
 - [ ] App Store Connect 配置并过审三个商品：
       `shushugo_pro_yearly` / `shushugo_pro_monthly` / `shushugo_pro_lifetime`
 
@@ -73,7 +74,7 @@
 ### 其他
 
 - [x] 纳入 git 版本控制，`.gitignore` 排除 node_modules/dist/Pods/音频目录
-- [x] 后端去留：走 Cloudflare Worker，旧 `backend/server.py` 仅作历史参考
+- [x] 后端去留：走 Cloudflare Worker，旧 `backend/server.py` 实现已删除，只保留 `backend/LEGACY.md` 说明
 - [x] 开发模式 Pro 已隔离在 `import.meta.env.DEV` 守卫后（生产构建不渲染这些入口）
 
 ---
@@ -95,8 +96,8 @@
       `frontend/vite.config.ts` 的 `build.target`
 - [x] `UIRequiredDeviceCapabilities` 已从 `armv7` 调整为 `arm64`
 - [x] 隐私清单 `PrivacyInfo.xcprivacy` 已创建并接入 Xcode 工程
-- [x] 订阅续订链路：StoreKit 在 App 启动时初始化，服务端 Apple 校验支持
-      production→sandbox 回退（TestFlight/审核走沙盒）
+- [x] 订阅续订链路：StoreKit 在 App 启动时初始化；服务端支持 production→sandbox 回退，
+      一日重查和 cron 使用当前订阅状态接口，可由旧交易 T1 找到漏通知的续费 T2
 - [x] 云同步要求邮箱已验证才能 push/pull（邮件服务未配置时豁免）
 - [ ] **App 图标** — appiconset 只有 `AppIcon-512@2x.png`，`Contents.json` 已配成
       Xcode 单尺寸 1024 模式，需真机确认渲染正常
@@ -109,7 +110,7 @@
 
 ## P2 — 质量打磨
 
-- [x] 自动化测试：86 文件 / 619 用例，覆盖 FSRS 调度、优先级、排片序列、干扰隔离、
+- [x] 自动化测试：88 文件 / 632 用例，覆盖 FSRS 调度、优先级、排片序列、干扰隔离、
       学习模式、词单导入、权益与内购解析、**落盘并发与增量回滚、内容迁移的整库落盘、
       备份恢复换设备号**（后三项是 2026-09-10 审查补的回归）
 - [x] 仓库整理：设计稿与原型移出 `frontend/public/`，加了 public 数据库白名单守卫
@@ -124,14 +125,16 @@
 - [ ] `data/grammar.ts` 1.2 MB 语法数据硬写在 .ts 里，应进 SQLite
       （已切成懒加载块，不进主包，所以不影响启动，但仍是包体积负担）
 - [ ] `english_origins.json` 没有逐项来源和许可证元数据
-- [ ] **依赖告警只在开发工具链上**（2026-09-10 实测）：`npm audit --omit=dev` 在
-      frontend 和 cloudflare-sync **两边都是 0**。剩下的三条来自
+- [ ] **依赖告警只在开发工具链上**（2026-09-11 实测）：`npm audit --omit=dev` 在
+      frontend 和 cloudflare-sync **两边都是 0**。完整审计为前端 3 条
+      （1 critical / 1 high / 1 low）、Worker 3 条 high，来自
       `@capacitor/cli → tar@6.2.1`（前端）和 `wrangler → miniflare → sharp`（Worker），
       都只在本机构建时跑。
-      ⚠️ **故意没有执行 `npm audit fix --force`**：它给的方案是 Capacitor 6 → 8
-      跨大版本和 wrangler 倒退版本。Capacitor 的大版本迁移会动到原生存储路径
+      ⚠️ 前端不能执行 `npm audit fix --force`：它给的方案是 Capacitor 6 → 8
+      跨大版本。Capacitor 的大版本迁移会动到原生存储路径
       （`Directory.Library` —— 那正是学习库所在的地方），拿它当「顺手修个告警」来做，
-      风险远大于收益。要升就单独立一次，升完必须真机验证一遍持久化和升级迁移
+      风险远大于收益。Worker 当前可用普通 `npm audit fix` 更新传递依赖，本轮按机械依赖
+      维护暂缓；要升前端就单独立一次，升完必须真机验证一遍持久化和升级迁移
 
 ---
 
@@ -158,11 +161,13 @@
 
 ## 遗留的工程债
 
-- 当前分支 `feat/fsrs-sync-accounts` **领先 main 30 个提交，且全部未推送**（2026-09-10）
+- 按 2026-09-11 的本地 refs，当前分支 `feat/fsrs-sync-accounts` 领先 `main` 37 个提交、
+  落后其远端跟踪分支 1 个提交，另有本轮未提交改动。推送前应先处理远端分歧并逐项暂存，
+  不能把工作区整体 `git add .`
 - **网页版（GitHub Pages）默认没有预生成读音音频**：那 137 MB 不在版本库里，
   干净 runner 上 checkout 完就没有，网页版会退回系统 TTS。
   workflow 现在支持 `AUDIO_ARTIFACT_URL` + `AUDIO_ARTIFACT_SHA256` 两个仓库变量
   （下载并核对校验和后解开），**制品本身还没有发布** —— 没配就在构建日志里告警，
   不再静默发一版没声音的
-- Cloudflare Worker 名字仍是 `master-nihongo-sync`（项目已改名收集日），
-  改名会换 URL，建议在拿隐私政策 URL **之前**决定
+- Cloudflare Worker / D1 / R2 仍使用 `master-nihongo-sync` 等旧资源名，这是现有 URL、数据和
+  配置的兼容标识，不属于漏改品牌。只有准备好 URL、远端数据和客户端配置迁移方案时才改

@@ -78,7 +78,7 @@ const renderArchiveRecovery = (error: LocalArchiveUnreadableError) => {
     URL.revokeObjectURL(url);
   };
   const rebuild = () => {
-    if (!window.confirm('重建之后这台设备会从出厂词库重新开始，本机存档已另存一份但不会自动装回来。确定吗？')) return;
+    if (!error.archive || !window.confirm('请先导出并保管这份存档。重建后这台设备会从出厂词库重新开始，旧进度不会自动恢复。确定吗？')) return;
     void initDatabase().then(bootWithDatabase).catch((cause) => renderBootFailure(cause));
   };
   const button = 'focus-ring rounded-2xl border border-white/20 px-4 py-2 text-sm font-bold text-white/85';
@@ -96,8 +96,8 @@ const renderArchiveRecovery = (error: LocalArchiveUnreadableError) => {
             <button className={button} onClick={() => window.location.reload()}>重试</button>
             {error.archive
               ? <button className={button} onClick={downloadArchive}>导出这份存档</button>
-              : <span className="self-center text-xs text-white/45">存档在 Library/masternihongo/ 下，可用「文件」App 取出</span>}
-            <button className={button} onClick={rebuild}>重建为出厂库</button>
+              : <span className="self-center text-xs text-white/45">未能取得可导出的存档，请先重试或联系支持，保留本机数据。</span>}
+            {error.archive && <button className={button} onClick={rebuild}>重建为出厂库</button>}
           </div>
         </div>
       </div>

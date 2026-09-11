@@ -10,5 +10,6 @@ cloudflare-sync/
 ```
 
 ⚠️ 删的是**实现**不是这份说明：留着它是为了让下一个人知道
-`docs/DEPLOYMENT_GUIDE.md` 和 `docs/PROJECT_SUMMARY.md` 里那些 `cd backend` 的段落
-说的是这个已经退役的原型，别照着去部署一份和 Worker 打架的后端。
+`docs/PROJECT_SUMMARY.md` 是早期快照，其中的 `cd backend` 段落说的是这个已经退役的
+原型；当前部署说明已经改为 Cloudflare Worker。别从 Git 历史恢复并部署一份和 Worker
+打架的后端。

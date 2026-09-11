@@ -227,11 +227,10 @@ const resetUnansweredStage1PlanForVersion = (day: string) => {
   if (answeredTaskCount === 0) {
     getDatabase().run("DELETE FROM stage1_tasks WHERE reviewed_on = ?", [day]);
     setReviewQueue([]);
-    // 只有当前正在正向模式里才清「当前卡」——current_card 是全局的防重复提交锁,
-    // 而任何模式读一次统计都会走到这儿(getWordStats 顺手算正向进度)。
-    // 不加这个判断的话,在反向模式里翻开第一张卡的瞬间锁就被清成 0,
-    // 接着那次作答会被当成过期提交丢掉(实测:反向答一整场,一条流水都没记下)。
-    if (getState("phase", "stage1") === "stage1") setState("current_card", "0");
+    // 这里只能重排尚未作答的计划，不能清 current_card。筛选学习仍沿用
+    // phase=stage1；它先发牌写锁，再从统计路径走到这里。清锁会让刚发出的卡
+    // 在提交时被当成过期请求，静默丢掉 reviews/FSRS。正常正向发牌会覆盖旧锁，
+    // 重复提交则继续由 claimCurrentCard() 挡住，不需要计划重排代劳。
   }
   setState("stage1_plan_version", STAGE1_PLAN_VERSION);
 };

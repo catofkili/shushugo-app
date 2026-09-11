@@ -82,3 +82,11 @@ describe("用户自己改写的题面", () => {
     expect(userQuestionMeaning(900001)).toBeUndefined();
   });
 });
+
+describe("题面里的缩写说明", () => {
+  it("保留中文释义，删除会泄漏答案的日文源词", () => {
+    expect(questionMeaning("月，“星期一”的省略")).toBe("月，“星期一”的省略");
+    expect(questionMeaning("移动电话；「携帯電話」の略")).toBe("移动电话");
+    expect(questionMeaning("手帕；「ハンカチーフ」的省略")).toBe("手帕");
+  });
+});

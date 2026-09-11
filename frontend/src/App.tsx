@@ -17,7 +17,7 @@ import { studyDayEnd } from "./lib/database/db-utils";
 import { getGrammarLevelPreference, saveGrammarLevelPreference, type GrammarLevelSelection } from "./lib/grammarPreferences";
 import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
 import { syncUserProfileAfterLogin } from "./lib/profile-sync";
-import { PERSISTENCE_ERROR_EVENT, PERSISTENCE_OK_EVENT, saveDatabase } from "./lib/storage";
+import { getPersistenceFailure, PERSISTENCE_ERROR_EVENT, PERSISTENCE_OK_EVENT, saveDatabase } from "./lib/storage";
 import type { SearchResult } from "./lib/search-api";
 import { GrammarMode, Page, StudyMode } from "./types/app";
 import { JLPTLevel } from "./types/grammar";
@@ -775,14 +775,15 @@ export default function App() {
  * 指示器只是噪音。要说的只有「没存下去」和「又好了」。
  */
 function PersistenceBanner() {
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState(getPersistenceFailure);
   const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
-    const onError = () => setFailed(true);
-    const onOk = () => setFailed(false);
+    const onError = () => setFailed(getPersistenceFailure());
+    const onOk = onError;
     window.addEventListener(PERSISTENCE_ERROR_EVENT, onError);
     window.addEventListener(PERSISTENCE_OK_EVENT, onOk);
+    onError();
     return () => {
       window.removeEventListener(PERSISTENCE_ERROR_EVENT, onError);
       window.removeEventListener(PERSISTENCE_OK_EVENT, onOk);
@@ -793,7 +794,7 @@ function PersistenceBanner() {
   const retry = () => {
     setRetrying(true);
     void saveDatabase()
-      .then(() => setFailed(false))
+      .then(() => setFailed(getPersistenceFailure()))
       .catch(() => undefined)
       .finally(() => setRetrying(false));
   };
@@ -803,14 +804,16 @@ function PersistenceBanner() {
       className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-[60] flex w-[min(92vw,30rem)] -translate-x-1/2 items-center gap-3 rounded-2xl bg-[#B3402F] px-4 py-3 text-sm font-semibold text-white shadow-lg lg:bottom-5"
     >
       <AlertTriangle size={18} className="shrink-0" />
-      <span className="flex-1 leading-5">学习记录没能保存到本机，请检查存储空间。这期间答的题可能丢失。</span>
-      <button
+      <span className="flex-1 leading-5">{failed === 'recovery'
+        ? '部分学习记录未能恢复，当前显示较早的存档。请保留本机数据并联系支持；重新保存不能找回缺失的记录。'
+        : '学习记录没能保存到本机，请检查存储空间。这期间答的题可能丢失。'}</span>
+      {failed === 'save' && <button
         onClick={retry}
         disabled={retrying}
         className="focus-ring shrink-0 rounded-2xl bg-white/15 px-3 py-1.5 text-xs font-bold disabled:opacity-60"
       >
         {retrying ? "重试中" : "重试"}
-      </button>
+      </button>}
     </div>
   );
 }

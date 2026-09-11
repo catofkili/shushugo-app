@@ -131,7 +131,7 @@ export class WebViewOptimizer {
       };
       window.addEventListener('test', null as any, options);
       window.removeEventListener('test', null as any, options);
-    } catch (err) {
+    } catch {
       passiveSupported = false;
     }
     return passiveSupported;

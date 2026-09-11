@@ -1,397 +1,176 @@
 # 云服务部署指南
 
-收集日后端 API 可以部署到任何支持 Python 的云平台。
+收集日当前唯一的生产后端是 `cloudflare-sync/`：Cloudflare Worker 负责 API，D1 保存账号与同步元数据，R2 保存压缩学习快照，KV 保存短期认证数据和兼容旧备份。
 
-## 🎯 推荐平台对比
+`backend/` 只保留历史说明，原 FastAPI 实现已经删除。不要再按 Railway、Fly.io、Render、Heroku 或 `backend/server.py` 部署，也不要把旧的 Base64 整库示例接回前端。
 
-| 平台 | 免费额度 | 优点 | 缺点 |
-|------|---------|------|------|
-| **Railway** | $5/月免费 | ✅ 简单易用<br>✅ 自动部署<br>✅ 内置数据库 | 需要信用卡 |
-| **Fly.io** | 3个免费应用 | ✅ 全球边缘网络<br>✅ PostgreSQL 支持 | 配置稍复杂 |
-| **Render** | 完全免费 | ✅ 零配置<br>✅ GitHub 集成 | 冷启动慢 |
-| **Heroku** | 免费(限制多) | ✅ 老牌平台 | 需要休眠管理 |
+本文只说明发布顺序和验收边界。执行远端迁移、写入密钥、发布 Worker、操作 App Store Connect 或真机购买都会改变外部状态，必须在明确准备上线时人工执行。
 
-## 📦 方案一：Railway (推荐)
+## 1. 发布前本地检查
 
-### 1. 安装 Railway CLI
+需要 Node.js、npm、Cloudflare 账号与 Wrangler 登录状态。依赖必须按锁文件安装：
+
 ```bash
-npm i -g @railway/cli
+cd /Users/lsc/Documents/shushugo/cloudflare-sync
+npm ci
+npm run check
+npm test
 ```
 
-### 2. 登录
+前端也必须独立通过质量门禁：
+
 ```bash
-railway login
+cd /Users/lsc/Documents/shushugo/frontend
+npm ci --legacy-peer-deps
+npm run check
+npm run lint
+npm test
 ```
 
-### 3. 初始化项目
+这些检查只证明当前源码和本地测试通过，不证明远端配置、D1 数据、Apple 凭据或真机购买通过。
+
+## 2. Cloudflare 资源
+
+现有生产项目的资源 ID 已绑定在 `cloudflare-sync/wrangler.jsonc`。升级现有环境时不要重复创建 D1、KV 或 R2，也不要把新建资源的 ID 随意覆盖进去。
+
+只有在建立全新、相互隔离的环境时才运行：
+
 ```bash
-cd backend
-railway init
+cd /Users/lsc/Documents/shushugo/cloudflare-sync
+npx wrangler login
+npm run d1:create
+npm run kv:create
+npm run r2:create
 ```
 
-选择 "Create a new project"
+然后把命令返回的 D1 `database_id`、KV namespace `id` 和 R2 bucket 名称写入该环境自己的 Wrangler 配置。三个绑定名必须继续是：
 
-### 4. 部署
+- `DB`
+- `SYNC_DATA`
+- `SYNC_BUCKET`
+
+不要把生产资源和测试资源混用。同步限流器、每日 cron、Bundle ID 和 Apple Client ID 也在 `wrangler.jsonc` 中声明，复制配置时需要逐项核对。
+
+## 3. 远端密钥与生产开关
+
+敏感值只能写入 Worker secret，不得提交到 `.env.local`、源码、README 或 Git 历史。
+
+邮件与人机验证：
+
 ```bash
-railway up
+cd /Users/lsc/Documents/shushugo/cloudflare-sync
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put EMAIL_FROM
+npx wrangler secret put TURNSTILE_SITE_KEY
+npx wrangler secret put TURNSTILE_SECRET_KEY
 ```
 
-### 5. 设置环境变量
+App Store Server API：
+
 ```bash
-railway variables set JWT_SECRET_KEY="your-super-secret-key-change-this"
+npx wrangler secret put APP_STORE_ISSUER_ID
+npx wrangler secret put APP_STORE_KEY_ID
+npx wrangler secret put APP_STORE_PRIVATE_KEY
 ```
 
-### 6. 获取 URL
+微信小程序登录（启用时）：
+
 ```bash
-railway domain
+npx wrangler secret put WECHAT_APP_ID
+npx wrangler secret put WECHAT_APP_SECRET
 ```
 
-记录下显示的 URL，如 `https://your-app.railway.app`
+生产认证加固开关必须在 Turnstile 与 Resend 均配置成功之后打开：
 
-### 7. 添加数据库（可选，升级到 PostgreSQL）
 ```bash
-railway add postgresql
+npx wrangler secret put REQUIRE_AUTH_HARDENING
+# 输入 1
 ```
 
-## 📦 方案二：Fly.io
+不要先把开关写成 `1` 再慢慢补配置：代码会刻意让注册、登录和找回密码返回 503，以免生产环境静默降级。也不要因为测试环境暂时关闭该开关，就把测试环境的状态当成生产验收结果。
 
-### 1. 安装 Fly CLI
+`APP_BUNDLE_ID` 与 `APPLE_SIGN_IN_CLIENT_ID` 当前在 Wrangler 配置中均为 `com.shushugo.app`。`APP_STORE_ENVIRONMENT` 默认是 `Production`；服务端遇到交易不存在时会回退查询 Sandbox，以兼容 TestFlight 和审核，不需要为了 TestFlight 把正式 Worker 永久改成 Sandbox。
+
+## 4. D1 迁移与 Worker 发布
+
+先迁移，后发布：新 Worker 可能立即查询新表或新索引，颠倒顺序会把结构缺失暴露给真实请求。
+
 ```bash
-curl -L https://fly.io/install.sh | sh
+cd /Users/lsc/Documents/shushugo/cloudflare-sync
+npm run d1:migrate:remote
+npm run deploy
 ```
 
-### 2. 登录
+不要在不清楚目标账号和数据库时执行 `--remote`。迁移命令完成后仍要查看输出，不能只以退出码推断每个迁移都落到了预期环境。
+
+发布后进行只读健康检查：
+
 ```bash
-fly auth login
+curl -s https://<worker-host>/api/health | jq
 ```
 
-### 3. 创建 fly.toml
+生产放行前至少确认：
+
+- `migrationsApplied` 为 `true`，其中购买归属、认证限流、购买事件索引和 Apple 通知表全部存在；
+- `authHardening`、`turnstileConfigured`、`emailConfigured` 均为 `true`；
+- `appStoreConfigured` 为 `true`，环境与预期一致；
+- `productionReady` 为 `true`。
+
+健康接口只返回布尔配置状态，不验证密钥确实有权限，也不证明通知、邮件或购买能端到端成功。
+
+## 5. App Store Connect
+
+内购服务端校验使用 App Store Connect 的 In-App Purchase API key；它不是 Sign in with Apple key。`.p8` 私钥只能下载一次，完整内容写入 `APP_STORE_PRIVATE_KEY` secret。
+
+订阅定期重查使用 Apple 的 Get All Subscription Statuses 接口，以账号保存的旧交易号查找最新续费交易；一次性购买仍使用 Get Transaction Info。服务端使用 Apple 自 2026-05-05 起推荐的 `api.storekit.apple.com` 与 `api.storekit-sandbox.apple.com` 域名。
+
+在 App Store Connect 配置 App Store Server Notifications V2：
+
+```text
+POST https://<worker-host>/api/purchases/apple-notifications
+```
+
+配置后使用 Request a Test Notification，并在 D1 中确认收到 `notification_type='TEST'` 的记录。通知只触发服务端回查，不能直接把通知体当作授权依据。
+
+## 6. 前端与 iOS 构建
+
+复制示例环境文件并填写刚发布的 Worker 地址：
+
 ```bash
-cd backend
-cat > fly.toml << 'EOF'
-app = "shushugo-api"
-
-[build]
-  builder = "paketobuildpacks/builder:base"
-
-[env]
-  PORT = "8080"
-
-[[services]]
-  http_checks = []
-  internal_port = 8080
-  processes = ["app"]
-  protocol = "tcp"
-  script_checks = []
-
-  [[services.ports]]
-    force_https = true
-    handlers = ["http"]
-    port = 80
-
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
-EOF
+cd /Users/lsc/Documents/shushugo/frontend
+cp .env.example .env.local
+# 设置 VITE_SYNC_API_URL=https://<worker-host>
 ```
 
-### 4. 部署
+`.env.local` 不得提交。正式 iOS 构建使用仓库脚本，它会按锁文件安装依赖、执行类型检查/lint/测试、构建 Web 资源并同步 Capacitor：
+
 ```bash
-fly launch
-fly deploy
+cd /Users/lsc/Documents/shushugo
+./scripts/build-ios.sh
 ```
 
-### 5. 设置密钥
+对外预览包只使用：
+
 ```bash
-fly secrets set JWT_SECRET_KEY="your-super-secret-key"
+./scripts/package-preview.sh
 ```
 
-### 6. 查看应用
-```bash
-fly open
-```
+不要压缩整个仓库，不要手工删除再重建 `frontend/ios`，也不要重复运行 `npx cap add ios`。现有 iOS 工程包含签名、capability、deployment target 和插件配置，重建会丢失这些人工配置。
 
-## 📦 方案三：Render
+## 7. 上线验收
 
-### 1. 准备代码
-确保 backend 目录包含：
-- `server.py`
-- `requirements.txt`
+以下事项不能由本地测试代替：
 
-### 2. 推送到 GitHub
-```bash
-cd ~/Documents/shushugo
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/catofkili/shushugo-app.git
-git push -u origin main
-```
+1. 生产 Worker 健康检查与远端 D1 迁移状态。
+2. 注册、登录、验证邮件、找回密码和 Turnstile 的真实投递/拦截。
+3. App Store Server Notifications V2 的测试通知。
+4. 真机或 TestFlight 的首次购买、恢复购买、未登录购买后登录补报、离线购买后联网、重启、Ask to Buy、续费和退款撤销。
+5. 隔离测试账号的云同步上传、另一台设备拉取、冲突处理和账号删除。
 
-### 3. 在 Render 创建服务
-1. 访问 https://render.com
-2. 注册/登录
-3. 点击 "New +" > "Web Service"
-4. 连接 GitHub 仓库
+测试账号与测试学习数据必须和正在使用的真实学习数据分开。不要为验证部署刷新正在学习的网页，也不要拿主账号执行覆盖上传、覆盖拉取或删除账号。
 
-### 4. 配置
-- **Name**: shushugo-api
-- **Root Directory**: backend
-- **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `uvicorn server:app --host 0.0.0.0 --port $PORT`
+## 8. 回滚判断
 
-### 5. 环境变量
-添加：
-- Key: `JWT_SECRET_KEY`
-- Value: `your-super-secret-key-change-this`
+Worker 发布失败时先看 Wrangler 日志和 `/api/health`，确认是代码、配置还是迁移问题。D1 迁移不是通过重新部署旧 Worker就能自动撤销的；涉及表结构或数据回滚时必须先备份并逐条设计逆向迁移。
 
-### 6. 部署
-点击 "Create Web Service"，等待构建完成。
-
-## 🔗 前端集成
-
-### 创建同步 API 模块
-
-```typescript
-// frontend/src/lib/sync-api.ts
-const API_URL = 'https://your-api-url.com'; // 替换为你的 API URL
-
-interface AuthResponse {
-  access_token: string;
-  user_id: number;
-  email: string;
-}
-
-interface SyncResponse {
-  db_data: string;
-  last_modified: string;
-}
-
-// 注册
-export async function register(email: string, password: string): Promise<AuthResponse> {
-  const response = await fetch(`${API_URL}/api/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-
-  if (!response.ok) {
-    throw new Error('Registration failed');
-  }
-
-  return response.json();
-}
-
-// 登录
-export async function login(email: string, password: string): Promise<AuthResponse> {
-  const response = await fetch(`${API_URL}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-
-  if (!response.ok) {
-    throw new Error('Login failed');
-  }
-
-  return response.json();
-}
-
-// 拉取同步数据
-export async function pullSyncData(token: string): Promise<SyncResponse> {
-  const response = await fetch(`${API_URL}/api/sync/pull`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error('Pull failed');
-  }
-
-  return response.json();
-}
-
-// 推送同步数据
-export async function pushSyncData(token: string, dbData: string): Promise<void> {
-  const response = await fetch(`${API_URL}/api/sync/push`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      db_data: dbData,
-      last_modified: new Date().toISOString()
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error('Push failed');
-  }
-}
-```
-
-### 使用示例
-
-```typescript
-import { login, pushSyncData, pullSyncData } from './lib/sync-api';
-import { exportDatabase, importDatabase } from './lib/database';
-import { Preferences } from '@capacitor/preferences';
-
-// 登录
-async function handleLogin(email: string, password: string) {
-  try {
-    const auth = await login(email, password);
-    
-    // 保存 token
-    await Preferences.set({
-      key: 'auth_token',
-      value: auth.access_token
-    });
-
-    console.log('Logged in:', auth.email);
-  } catch (error) {
-    console.error('Login failed:', error);
-  }
-}
-
-// 同步到云端
-async function syncToCloud() {
-  try {
-    const { value: token } = await Preferences.get({ key: 'auth_token' });
-    if (!token) {
-      throw new Error('Not logged in');
-    }
-
-    // 导出数据库
-    const dbData = exportDatabase();
-    if (!dbData) {
-      throw new Error('No database to sync');
-    }
-
-    // 转换为 Base64
-    const base64 = btoa(String.fromCharCode(...dbData));
-
-    // 推送到云端
-    await pushSyncData(token, base64);
-
-    console.log('✅ Synced to cloud');
-  } catch (error) {
-    console.error('Sync failed:', error);
-  }
-}
-
-// 从云端恢复
-async function restoreFromCloud() {
-  try {
-    const { value: token } = await Preferences.get({ key: 'auth_token' });
-    if (!token) {
-      throw new Error('Not logged in');
-    }
-
-    // 拉取数据
-    const syncData = await pullSyncData(token);
-
-    // 解码 Base64
-    const binary = atob(syncData.db_data);
-    const data = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      data[i] = binary.charCodeAt(i);
-    }
-
-    // 导入数据库
-    await importDatabase(data);
-
-    console.log('✅ Restored from cloud');
-  } catch (error) {
-    console.error('Restore failed:', error);
-  }
-}
-```
-
-## 🔐 安全配置
-
-### 1. 生成强密钥
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-### 2. 限制 CORS（生产环境）
-在 `server.py` 中修改：
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://your-frontend-domain.com"],  # 只允许你的前端
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
-
-### 3. 添加速率限制
-```bash
-pip install slowapi
-```
-
-```python
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-
-@app.post("/api/auth/login")
-@limiter.limit("5/minute")
-def login(...):
-    ...
-```
-
-## 📊 监控
-
-### Railway
-```bash
-railway logs
-```
-
-### Fly.io
-```bash
-fly logs
-```
-
-### Render
-访问 Dashboard > Logs 标签
-
-## 🧪 测试 API
-
-### 使用 curl
-```bash
-# 注册
-curl -X POST https://your-api.com/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"test123"}'
-
-# 登录
-curl -X POST https://your-api.com/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"test123"}'
-```
-
-### 访问文档
-浏览器打开: `https://your-api.com/docs`
-
-## 💰 成本估算
-
-- **Railway**: $5/月免费额度，超出按使用量计费
-- **Fly.io**: 3个免费应用，足够个人使用
-- **Render**: 完全免费，但有性能限制
-- **数据库**: SQLite 足够个人使用，PostgreSQL 需要额外费用
-
-## 🎓 下一步
-
-1. 部署后端到云平台
-2. 记录 API URL
-3. 在前端代码中替换 `API_URL`
-4. 实现登录/注册界面
-5. 添加同步按钮
-6. 测试完整流程
+不要使用 `git add .`、强制推送、删除生产 D1/R2/KV 或覆盖本地学习数据库作为“快速回滚”。源码回退、Worker 版本回退、数据库迁移和客户端版本回退是四个不同层次，需要分别确认影响。

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, Search, X } from "lucide-react";
 import {
@@ -83,29 +83,27 @@ export const ConfusionPage = () => {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [activeType, setActiveType] = useState<ConfusionType | "all">("all");
-  const [ready, setReady] = useState(false);
-  const groupsRef = useRef<ConfusionGroup[]>([]);
+  const [groups, setGroups] = useState<ConfusionGroup[] | null>(null);
 
   useEffect(() => {
     // 建索引要扫全表跑正则（约 30ms），别卡住入场动画
     const timer = window.setTimeout(() => {
-      groupsRef.current = confusionGroups();
+      setGroups(confusionGroups());
       setMastered(masteredConfusionKeys());
-      setReady(true);
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
 
   const ordered = useMemo(() => {
-    if (!ready) return [];
+    if (!groups) return [];
     const today = new Date().toISOString().slice(0, 10);
-    const list = shuffled(groupsRef.current, today);
+    const list = shuffled(groups, today);
     // 已掌握的沉底：不参与随机，永远排在最后，免得每次进来都要翻过它们
     return [
       ...list.filter((group) => !mastered.has(group.key)),
       ...list.filter((group) => mastered.has(group.key))
     ];
-  }, [ready, mastered]);
+  }, [groups, mastered]);
 
   const toggleMastered = (key: string) => {
     const next = !mastered.has(key);
@@ -151,7 +149,7 @@ export const ConfusionPage = () => {
     : new Map<string, string>();
   const remaining = ordered.length - mastered.size;
 
-  if (!ready) {
+  if (!groups) {
     return <p className="cf-loading">正在整理词组…</p>;
   }
 

@@ -476,6 +476,7 @@ export function VocabTestPage() {
   const [paused, setPaused] = useState(false);
   const [error, setError] = useState("");
   const [history, setHistory] = useState<VocabTestHistoryRow[]>([]);
+  const [openedAt] = useState(Date.now);
   const questionStartedAt = useRef(0);
   const hiddenAt = useRef(0);
 
@@ -638,7 +639,7 @@ export function VocabTestPage() {
         resumable={resumable}
         resumeProgress={session ? `${session.responses.length} / ${session.plannedTotal}` : ""}
         resumeStartedAt={session?.startedAt ?? 0}
-        resumeIdleMs={session ? Date.now() - (session.responses[session.responses.length - 1]?.answeredAt ?? session.startedAt) : 0}
+        resumeIdleMs={session ? openedAt - (session.responses[session.responses.length - 1]?.answeredAt ?? session.startedAt) : 0}
         error={error}
         onResume={() => { setView("quiz"); setFeedback(null); }}
         onStart={() => begin(resumable)}

@@ -90,10 +90,7 @@ git archive \
   frontend/tsconfig.json \
   frontend/vite.config.ts \
   scripts/build-ios.sh \
-  scripts/install-webview-plugins.sh \
   scripts/package-preview.sh \
-  scripts/quick-reload.sh \
-  scripts/quick-start.sh \
   scripts/setup-xcode.sh
 
 # 解压到临时目录真跑一遍质量门禁。清单漏文件是**静默**的 —— zip 照样产出,

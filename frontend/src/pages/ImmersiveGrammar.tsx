@@ -44,12 +44,12 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
 
   useEffect(() => {
     if (point) saveGrammarPosition("immersive", selectedLevel, point.id);
-  }, [point?.id, selectedLevel]);
+  }, [point, selectedLevel]);
 
   useEffect(() => {
     setNoteEditorOpen(false);
     setNoteDraft(point ? getGrammarNote(point.id) : "");
-  }, [point?.id]);
+  }, [point]);
 
   const scrollToCardTop = () => {
     requestAnimationFrame(() => {

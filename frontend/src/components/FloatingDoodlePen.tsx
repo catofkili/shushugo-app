@@ -13,7 +13,7 @@ interface FloatingDoodlePenProps {
 export function FloatingDoodlePen({ resetKey, surfaceSelector }: FloatingDoodlePenProps) {
   const [penActive, setPenActive] = useState(false);
   const [penPosition, setPenPosition] = useState({ x: 20, y: 112 });
-  const [strokeVersion, setStrokeVersion] = useState(0);
+  const [hasStrokes, setHasStrokes] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const strokesRef = useRef<DrawPoint[][]>([]);
   const strokesByKeyRef = useRef<Record<string, DrawPoint[][]>>({});
@@ -39,7 +39,6 @@ export function FloatingDoodlePen({ resetKey, surfaceSelector }: FloatingDoodleP
   };
 
   const surfaceKey = String(resetKey ?? "default");
-  const hasStrokes = strokeVersion >= 0 && strokesRef.current.length > 0;
 
   // Strokes are stored in "surface-local" document coordinates (relative to the
   // top-left of the doodle surface, independent of scroll). The canvas itself is
@@ -137,7 +136,7 @@ export function FloatingDoodlePen({ resetKey, surfaceSelector }: FloatingDoodleP
     strokesRef.current = strokesByKeyRef.current[surfaceKey] ?? [];
     previousSurfaceKeyRef.current = surfaceKey;
     currentStrokeRef.current = null;
-    setStrokeVersion((value) => value + 1);
+    setHasStrokes(strokesRef.current.length > 0);
     setPenActive(false);
     requestAnimationFrame(redrawDoodles);
   }, [redrawDoodles, surfaceKey]);
@@ -173,7 +172,7 @@ export function FloatingDoodlePen({ resetKey, surfaceSelector }: FloatingDoodleP
     currentStrokeRef.current = [point];
     strokesRef.current.push(currentStrokeRef.current);
     strokesByKeyRef.current[surfaceKey] = strokesRef.current;
-    setStrokeVersion((value) => value + 1);
+    setHasStrokes(true);
   };
 
   const handleCanvasPointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
@@ -234,7 +233,7 @@ export function FloatingDoodlePen({ resetKey, surfaceSelector }: FloatingDoodleP
     strokesRef.current = strokesRef.current.slice(0, -1);
     strokesByKeyRef.current[surfaceKey] = strokesRef.current;
     currentStrokeRef.current = null;
-    setStrokeVersion((value) => value + 1);
+    setHasStrokes(strokesRef.current.length > 0);
     redrawDoodles();
   };
 

@@ -1,5 +1,10 @@
 # 收集日 iOS 项目总结
 
+> **历史快照，不是当前操作手册。** 本文记录项目最初搭建时的 2,630 词、31 条语法和
+> FastAPI 原型状态，其中数量、目录树、最低系统、在线功能和后端部署描述均已过时。
+> 当前结构看根目录 `README.md`，iOS 构建看 `docs/QUICK_START.md`，云端部署只看
+> `docs/DEPLOYMENT_GUIDE.md`；生产后端是 `cloudflare-sync/`，`backend/` 的实现已删除。
+
 ## ✅ 已完成的工作
 
 ### 1. 项目结构搭建
@@ -174,7 +179,7 @@ pod install
 **A**: 编辑 `frontend/capacitor.config.ts`，然后运行 `npm run build && npx cap sync`
 
 ### Q4: 如何部署后端实现同步？
-**A**: 参考 `docs/DEPLOYMENT_GUIDE.md`，推荐使用 Railway（免费额度足够个人使用）
+**A**: 参考 `docs/DEPLOYMENT_GUIDE.md`。当前只部署 Cloudflare Worker，不使用早期的 Railway/FastAPI 原型。
 
 ## 📊 技术栈总结
 
@@ -217,7 +222,7 @@ pod install
 - **主文档**: `README.md`
 - **Xcode 指南**: `docs/XCODE_GUIDE.md`
 - **部署指南**: `docs/DEPLOYMENT_GUIDE.md`
-- **后端 API**: `backend/README.md`
+- **退役后端说明**: `backend/LEGACY.md`
 
 ---
 

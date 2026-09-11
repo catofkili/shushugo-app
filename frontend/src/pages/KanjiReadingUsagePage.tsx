@@ -45,7 +45,7 @@ export const KanjiReadingUsagePage = () => {
     };
   }, []);
 
-  const all = ready ? allKanjiReadingUsage() : [];
+  const all = useMemo(() => ready ? allKanjiReadingUsage() : [], [ready]);
 
   const shown = useMemo(() => {
     if (!ready) return [] as KanjiCharUsage[];

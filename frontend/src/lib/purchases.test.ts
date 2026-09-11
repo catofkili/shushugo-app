@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("./sync-api", () => ({ verifyCloudPurchase: vi.fn(async () => false) }));
 
 // purchases.ts 间接依赖 entitlements(localStorage)与 window 事件,
 // 在纯 Node 环境里先挂最小桩再导入。
@@ -16,7 +18,12 @@ const store = new Map<string, string>();
   CdvPurchase: undefined
 };
 
-const { receiptPurchases, transactionExpiry } = await import("./purchases");
+const { fulfillVerifiedReceipt, receiptPurchases, transactionExpiry } = await import("./purchases");
+
+beforeEach(() => {
+  store.clear();
+  vi.restoreAllMocks();
+});
 
 describe("transactionExpiry", () => {
   it("reads the expiry of the matching product from the verified collection", () => {
@@ -89,5 +96,36 @@ describe("receiptPurchases", () => {
   it("ignores products that are not ours", () => {
     expect(receiptPurchases({ sourceReceipt: { transactions: [{ products: [{ id: "someone_else_pro" }] }] } })).toEqual([]);
     expect(receiptPurchases(null)).toEqual([]);
+  });
+});
+
+describe("fulfillVerifiedReceipt", () => {
+  it("does not finish a receipt without a supported product", async () => {
+    const finish = vi.fn(async () => undefined);
+    await expect(fulfillVerifiedReceipt({ collection: [], finish })).rejects.toThrow("没有可识别");
+    expect(finish).not.toHaveBeenCalled();
+  });
+
+  it("persists the entitlement before awaiting finish", async () => {
+    let finishSawEntitlement = false;
+    const finish = vi.fn(async () => {
+      finishSawEntitlement = store.has("mn-entitlements");
+    });
+    await fulfillVerifiedReceipt({
+      collection: [{ id: "shushugo_pro_lifetime" }],
+      finish
+    });
+    expect(finishSawEntitlement).toBe(true);
+    expect(finish).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the transaction unfinished when local entitlement persistence fails", async () => {
+    const finish = vi.fn(async () => undefined);
+    vi.spyOn(localStorage, "setItem").mockImplementation(() => { throw new Error("disk full"); });
+    await expect(fulfillVerifiedReceipt({
+      collection: [{ id: "shushugo_pro_lifetime" }],
+      finish
+    })).rejects.toThrow("disk full");
+    expect(finish).not.toHaveBeenCalled();
   });
 });
