@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
-// ⚠️ **只换「图标」，不换「角色」**：松鼠🐿️、松子🌰、队友头像、纸屑是内容不是图标，
-// lucide 里也根本没有松鼠和温泉 —— 换掉等于把这个 App 的性格删了。
+// 2026-09-16 动物园主题退场：只剩一只吉祥物（CapybaraMascot，换成 AI 生成的定妆图时只改那一个文件）。
 import {
-  Bath, Flame, Library, Map, Merge, PawPrint, Puzzle, RefreshCw, Ruler,
+  BookOpenCheck, Flame, Library, Merge, Puzzle, RefreshCw, Ruler,
   SkipForward, SlidersHorizontal, Speech, Star
 } from "lucide-react";
 import { getWordStats, refreshTodayWordPlan, type ProgressOverview } from "../lib/api";
@@ -16,17 +15,18 @@ import {
   saveStudyPreferences
 } from "../lib/studyPreferences";
 import { computeStreak } from "../lib/zoo-streak";
-import { computeBadges } from "../lib/zoo-badges";
 import type { WordStats } from "../types/vocabulary";
 import type { Page, StudyMode } from "../types/app";
 import type { JLPTLevel } from "../types/grammar";
 import { VISIBLE_STUDY_MODES, studyModeInfo } from "../lib/studyMode";
 import { getJlptPlanStatus, type JlptPlanStatus } from "../lib/jlpt/status";
+import { getWeeklyReportNotice, WEEKLY_REPORT_UPDATED_EVENT } from "../lib/analytics/weekly-reports";
 import { shortfallText } from "../lib/jlpt/plan";
 import { useCountUp } from "../hooks/useCountUp";
 import { useMoments } from "../hooks/useMoments";
 import { CapybaraMascot } from "./CapybaraMascot";
 import { MomentPop } from "./MomentPop";
+import { WeeklyReportEntrance } from "./WeeklyReportEntrance";
 import { ZooProgressPanel } from "./ZooProgressPanel";
 
 /**
@@ -35,7 +35,6 @@ import { ZooProgressPanel } from "./ZooProgressPanel";
  *
  * 布局用便当式(bento)网格 + 分区标题,而不是把功能竖着一条条堆:
  *   ① 今天要做什么(今日复习 + 组队,通栏,最显眼)
- *   ② 我的动物园(进度地图 / 温泉 / 图鉴)
  *   ③ 学习工具(学习模式 / 收藏)
  *   ④ 进度概览(柱状图)
  *   ⑤ 进度维护(折叠起来:刷新 / 一键完成,都是低频且有副作用的操作)
@@ -60,19 +59,12 @@ type Props = {
   onCompleteTodayWords: () => void;
   /** 合并老库里重复录入的词条（同一个词两行） */
   onMergeDuplicates: () => void;
+  /** 打开二楼学习回顾；entry 只用于本地观测，区分按钮还是下拉 */
+  onOpenWeeklyReport: (entry: "button" | "pull") => void;
 };
 
 const greetingFor = (hour: number) =>
   hour < 5 ? "夜深了" : hour < 11 ? "早上好" : hour < 14 ? "中午好" : hour < 18 ? "下午好" : "晚上好";
-
-/** 五个等级 = 五个园区 */
-const HABITAT_NAMES: Record<string, string> = {
-  N5: "水豚温泉",
-  N4: "松鼠林",
-  N3: "鸟舍",
-  N2: "熊猫馆",
-  N1: "夜行馆"
-};
 
 export function ZooHome({
   overview,
@@ -84,7 +76,8 @@ export function ZooHome({
   activeMode,
   onRefreshOverview,
   onCompleteTodayWords,
-  onMergeDuplicates
+  onMergeDuplicates,
+  onOpenWeeklyReport
 }: Props) {
   const [stats, setStats] = useState<WordStats | null>(null);
   const [jlpt, setJlpt] = useState<JlptPlanStatus | null>(null);
@@ -92,10 +85,20 @@ export function ZooHome({
   const [goalSheetOpen, setGoalSheetOpen] = useState(false);
   // 每日量在设置页也能改，所以跟着 PREFERENCES_EVENT 走，别只在挂载时读一次
   const [goals, setGoals] = useState(() => getStudyPreferences());
+  // 更新日的新报告提示。只在这一份报告未读、且还在发布窗口内时为真。
+  const [weeklyNotice, setWeeklyNotice] = useState<"new" | "read" | "expired" | "none">("none");
   const { moment, leaving: momentLeaving, collect: collectMoments } = useMoments();
 
   useEffect(() => {
+    const refreshWeeklyNotice = () => {
+      try {
+        setWeeklyNotice(getWeeklyReportNotice().state);
+      } catch {
+        setWeeklyNotice("none");
+      }
+    };
     const refresh = () => {
+      refreshWeeklyNotice();
       try {
         const next = getWordStats();
         setStats(next);
@@ -115,8 +118,14 @@ export function ZooHome({
       collectMoments();
     };
     refresh();
+    const timer = window.setInterval(refreshWeeklyNotice, 60_000);
     window.addEventListener(PROGRESS_UPDATED_EVENT, refresh);
-    return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
+    window.addEventListener(WEEKLY_REPORT_UPDATED_EVENT, refresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
+      window.removeEventListener(WEEKLY_REPORT_UPDATED_EVENT, refresh);
+    };
   }, [collectMoments]);
 
   useEffect(() => {
@@ -148,37 +157,19 @@ export function ZooHome({
   const done = stats?.stage1ProgressDone ?? 0;
   const remaining = Math.max(0, total - done);
   const streak = stats ? computeStreak(stats.checkins, stats.studyDate) : 0;
-  const checkedInToday = !!stats && stats.checkins.includes(stats.studyDate);
-
-  // 当前园区 = 第一个掌握度未满的等级(都满了就停在 N1)
-  const levels = overview.wordsByLevel.filter((item) => item.total > 0);
-  const withPct = levels.map((item) => ({
-    ...item,
-    // 当前园区看的是「走到哪儿了」,所以用学过的比例;掌握度(180 天间隔)是另一条线
-    pct: Math.round((item.seen / item.total) * 100)
-  }));
-  const current = withPct.find((item) => item.pct < 100) ?? withPct[withPct.length - 1];
-
-  const badges = computeBadges({
-    overview,
-    checkins: stats?.checkins ?? [],
-    studyDate: stats?.studyDate ?? ""
-  });
-  const unlockedBadges = badges.filter((badge) => badge.unlocked).length;
-  const badgeCount = useCountUp(unlockedBadges);
   const streakCount = useCountUp(streak);
 
-  // 问候语只说**别处没说过的**：剩余量顶栏的松鼠条和大卡已经各写了一遍。
+  // 问候语只说**别处没说过的**：剩余量顶栏的进度条和大卡已经各写了一遍。
   // 这里给的是当天的状态和连击 —— 同一屏里同一个数字出现三次，是这页显吵的主因之一。
   const greetLine = !stats
     ? "正在读取今天的计划…"
     : total === 0
       ? "今天还没排计划，进去就自动排上"
       : remaining === 0
-        ? "今天的路走完了，松子都捡齐啦 🌰"
+        ? "今天的路走完了 🎉"
         : streak > 0
-          ? `连着 ${streak} 天没断，松鼠在路口等你`
-          : "松鼠已经在路口了";
+          ? `连着 ${streak} 天没断，今天接着走`
+          : "今天的路已经排好了";
 
   // 大按钮说的是「当前有效模式现在有多少题」,而不是永远播报今日计划 ——
   // 正常模式完成后,当前有效模式会在当天临时变成错题本。
@@ -200,13 +191,16 @@ export function ZooHome({
     : activeMode === "mistakes"
       ? `今天攻掉 ${stats.mistakes.answeredToday} 个`
       : isPlanMode
-        ? (activeCount > 0 ? "走一趟捡松子的小路" : `今天捡了 ${done} 颗松子`)
+        ? (activeCount > 0 ? "走一趟今天的路" : `今天走了 ${done} 站`)
         : activeInfo.subtitle;
   const heroCta = activeCount > 0 ? "开始 →" : isPlanMode ? "再来一批 →" : "去看看 →";
 
+  const weeklyEntryEnabled = goals.weeklyReportEnabled;
+
   return (
-    <div className="zoo-page zoo-home-v2">
-      {/* 问候条。**不再重复「今天还有 N 个词」** —— 顶栏的松鼠条和下面的大卡各说了一遍，
+    <div className={`zoo-page zoo-home-v2${weeklyEntryEnabled ? " has-weekly-cord" : ""}`}>
+      {weeklyEntryEnabled && <WeeklyReportEntrance unread={weeklyNotice === "new"} onOpen={onOpenWeeklyReport} />}
+      {/* 问候条。**不再重复「今天还有 N 个词」** —— 顶栏的进度条和下面的大卡各说了一遍，
           第一屏说三遍是这一页显得吵的主要原因之一。这里只说别处没有的：连击和今天的状态。 */}
       <div className="zoo-greet">
         <div className="zoo-greet-capy zoo-breathe">
@@ -302,13 +296,13 @@ export function ZooHome({
             </button>
           )}
           {/* 组队还没接后端(TeamPage 顶上写着这句)。首页原来写的是「我的队伍 · N3 冲刺组 ·
-              看看今天谁下水了」—— 那是把一支不存在的队伍当成用户自己的队伍在播报,
+              看看今天谁学了」—— 那是把一支不存在的队伍当成用户自己的队伍在播报,
               进去才被告知是示例。入口留着(接了后端就改回来),但首页这行必须说实话。 */}
           <button className="zoo-duo-cell" onClick={() => onNavigate("team")}>
             <span className="zoo-duo-kick">组队</span>
             <b>还没开放</b>
             <small className="zoo-duo-avatars">
-              <i>🦫</i><i>🐰</i><i>🦊</i><i>🐿️</i>
+              <i>🙂</i><i>😎</i><i>🧑‍🎓</i><i>🥱</i>
               <em>界面预览 · 队友是示例</em>
             </small>
           </button>
@@ -379,29 +373,6 @@ export function ZooHome({
         </div>
       </section>
 
-      {/* ② 我的动物园 —— 三件事合成一条。它们是「看一眼的状态」不是「每天要点的功能」，
-             各占一个正方格是给了过高的待遇。 */}
-      <section className="zoo-tray">
-        <p className="zoo-tray-title">我的动物园</p>
-        <div className="zoo-strip3">
-          <button onClick={() => onNavigate("zoo-map")}>
-            <span aria-hidden="true"><Map size={17} /></span>
-            <b>{current ? `${current.level} ${current.pct}%` : "未开园"}</b>
-            <small>{current ? HABITAT_NAMES[current.level] ?? "进度地图" : "进度地图"}</small>
-          </button>
-          <button onClick={() => onNavigate("hot-spring")}>
-            <span aria-hidden="true"><Bath size={17} /></span>
-            <b>{streak > 0 ? `连续 ${streak} 天` : "还没连击"}</b>
-            <small>{checkedInToday ? "今天已泡" : "今天还没下水"}</small>
-          </button>
-          <button onClick={() => onNavigate("zoo-dex")}>
-            <span aria-hidden="true"><PawPrint size={17} /></span>
-            <b>{badgeCount} / {badges.length}</b>
-            <small>饲养员图鉴</small>
-          </button>
-        </div>
-      </section>
-
       {/* ③ 学习工具 —— 一个盘子里的四格。去掉各自的描边和说明书副标题：
              「同音 · 自他 · 近义词对照」第一次有用，第一百次是噪音。 */}
       <section className="zoo-tray">
@@ -410,6 +381,10 @@ export function ZooHome({
           <button onClick={() => onNavigate("study-modes")}>
             <span aria-hidden="true"><SlidersHorizontal size={21} /></span>
             <b>学习模式</b>
+          </button>
+          <button onClick={() => onNavigate("grammar-foundation")}>
+            <span aria-hidden="true"><BookOpenCheck size={21} /></span>
+            <b>基础语法</b>
           </button>
           <button onClick={() => onOpenWordList()}>
             <span aria-hidden="true"><Library size={21} /></span>

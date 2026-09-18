@@ -1,5 +1,6 @@
 /**
- * 动物园音效引擎 —— 纯 WebAudio 合成,零采样、零依赖、体积为 0。
+ * 答题音效引擎(设置里叫「答题音效」,偏好键仍是 zooSounds —— 改键会把用户存的开关丢掉)。
+ * 纯 WebAudio 合成,零采样、零依赖、体积为 0。
  * 设计原则:同一"木质温暖(卡林巴/马林巴)"调性,永不互相打架;
  * 答错不是惩罚,用柔和小三度下行 + 更低音量,表达"哦～"而非"错!"。
  * 采样版替换时接口不变。开关跟随 studyPreferences.zooSounds。
@@ -234,11 +235,4 @@ export const playStreakChirp = () =>
     osc.connect(g).connect(c.destination);
     osc.start(t);
     osc.stop(t + 0.24);
-  });
-
-/** 柚子落头(温泉打卡完成):闷闷一声"噗"+水花 */
-export const playYuzuPlop = () =>
-  guard(() => {
-    pluck(N.F4, 0, 0.12, 0.16);
-    pluck(N.C5, 0.06, 0.1, 0.08);
   });

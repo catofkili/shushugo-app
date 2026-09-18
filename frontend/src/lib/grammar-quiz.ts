@@ -414,7 +414,7 @@ export const grammarPlanRemaining = (level: string, day = today()) => {
 };
 
 /**
- * 今天这一级已经过关的条数。给混合模式的松鼠小路用：那条路上的松子 = 单词 + 语法，
+ * 今天这一级已经过关的条数。给混合模式顶栏的进度条用：那条路上的站点 = 单词 + 语法，
  * 所以分子分母都要把语法算进去（`grammarPlanRemaining` 出的是分母的另一半）。
  */
 export const grammarPlanDone = (level: string, day = today()) => graduatedTodayCount(level, day);

@@ -3,10 +3,12 @@ import { getWordStats } from "../lib/api";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import type { WordStats } from "../types/vocabulary";
 import type { StudyMode } from "../types/app";
+import { CapybaraMascot } from "./CapybaraMascot";
 
 /**
- * 松鼠捡松子的小路 —— 放在顶部 Master 栏中间那块本来空着的地方。
- * 一场复习 = 一条小路:答对捡起松子往前跳一步,答错松子变空壳、队尾多一站(和 FSRS 重排同构)。
+ * 今日进度的小路 —— 放在首页顶部栏中间那块本来空着的地方。
+ * 一场复习 = 一条小路:答对往前跳一步,答错队尾多一站(和 FSRS 重排同构)。
+ * 2026-09-16 动物园主题退场:走路的是吉祥物,站点是点,不再是松鼠和松子。
  *
  * 放全局顶栏而不是学习页卡片里:卡片高度是死的,进度条占的每一像素都是从答案区扣的;
  * 而顶栏中间本来就是空的,白捡。副作用是在任何页面都能看到今天走到哪了。
@@ -67,10 +69,10 @@ export function SquirrelTrail({ mode = null }: Props) {
         ? {
             total: (stats?.stage1ProgressTotal ?? 0) + grammarPlanned,
             done: (stats?.stage1ProgressDone ?? 0) + (stats?.grammarDone ?? 0),
-            emoji: "🐿️",
+            emoji: null,
             label: "单词 + 语法"
           }
-        : { total: stats?.stage1ProgressTotal ?? 0, done: stats?.stage1ProgressDone ?? 0, emoji: "🐿️", label: "今日复习" };
+        : { total: stats?.stage1ProgressTotal ?? 0, done: stats?.stage1ProgressDone ?? 0, emoji: null, label: "今日复习" };
 
   const { total, done } = trail;
   // 今天还没排计划就不占位置
@@ -91,7 +93,7 @@ export function SquirrelTrail({ mode = null }: Props) {
               key={i}
               className={`zoo-trail-node ${i < done ? "got" : i === done ? "cur" : "pending"}`}
             >
-              {i < done ? "🌰" : "•"}
+              {i < done ? "●" : "•"}
             </span>
           ))}
         </div>
@@ -103,13 +105,13 @@ export function SquirrelTrail({ mode = null }: Props) {
         // 松鼠的活动范围要避开右边的计数,否则走到终点会和数字糊在一起
         style={{ left: `calc(10px + (100% - 10px - var(--zoo-trail-tail)) * ${pct / 100})` }}
       >
-        {trail.emoji}
+        {trail.emoji ?? <CapybaraMascot size={18} mood="happy" />}
       </div>
       <span className={`zoo-trail-count ${countdown ? "zoo-trail-countdown" : ""}`}>
         {countdown ? (
           <b key={remaining} className="zoo-countdown-tick">还剩 {remaining}</b>
         ) : (
-          <><b>{done}</b>/{total} 🌰</>
+          <><b>{done}</b>/{total}</>
         )}
       </span>
     </div>

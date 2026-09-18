@@ -6,7 +6,7 @@ import { playKnow, playSave, playStreakChirp } from "../lib/zoo-sounds";
  * 所以下面是示例数据,页面顶部有明确说明,不会让用户以为这些队友是真的。
  *
  * 三块:
- *   1) 我的队伍 —— 今天谁下水了、今日进度条、队伍松子总数
+ *   1) 我的队伍 —— 今天谁学了、今日进度条、队伍今日词数
  *   2) 邀请密钥 —— 复制传播
  *   3) 组队广场 —— 没有朋友的用户直接找队伍
  *
@@ -26,17 +26,17 @@ const SAMPLE_TEAM = {
   name: "N3 冲刺组",
   key: "CAPY-7K2M-9XQ4",
   members: [
-    { name: "你", avatar: "🦫", done: true, nuts: 24 },
-    { name: "小兔", avatar: "🐰", done: true, nuts: 31 },
-    { name: "阿狐", avatar: "🦊", done: true, nuts: 18 },
-    { name: "松松", avatar: "🐿️", done: false, nuts: 12 },
-    { name: "豚豚", avatar: "🦦", done: false, nuts: 9, npc: true }
+    { name: "你", avatar: "🙂", done: true, nuts: 24 },
+    { name: "小周", avatar: "😎", done: true, nuts: 31 },
+    { name: "阿宁", avatar: "🧑‍🎓", done: true, nuts: 18 },
+    { name: "松松", avatar: "🥱", done: false, nuts: 12 },
+    { name: "陪练", avatar: "🤖", done: false, nuts: 9, npc: true }
   ] as Member[]
 };
 
 const SAMPLE_PLAZA = [
   { name: "早鸟 6 点党", tag: "N2", members: 4, cap: 6, streak: 41, emoji: "🐦" },
-  { name: "水豚养老院", tag: "N5", members: 5, cap: 6, streak: 12, emoji: "🦫" },
+  { name: "慢慢来小组", tag: "N5", members: 5, cap: 6, streak: 12, emoji: "🌱" },
   { name: "通勤 15 分钟", tag: "N3", members: 3, cap: 5, streak: 27, emoji: "🚃" },
   { name: "深夜背单词", tag: "N1", members: 6, cap: 6, streak: 63, emoji: "🦉" }
 ];
@@ -85,10 +85,10 @@ export function TeamPage() {
         <div className="zoo-tm-head">
           <div>
             <b>{SAMPLE_TEAM.name}</b>
-            <small>今天 {doneCount} / {SAMPLE_TEAM.members.length} 已下水</small>
+            <small>今天 {doneCount} / {SAMPLE_TEAM.members.length} 已学习</small>
           </div>
           <div className="zoo-tm-nuts">
-            🌰<b>{totalNuts}</b>
+            <b>{totalNuts}</b> 词
           </div>
         </div>
 
@@ -107,9 +107,9 @@ export function TeamPage() {
                 {member.name}
                 {member.npc && <em className="zoo-tm-npc">NPC</em>}
               </span>
-              <span className="zoo-tm-mnuts">🌰 {member.nuts}</span>
+              <span className="zoo-tm-mnuts">{member.nuts} 词</span>
               {member.done ? (
-                <span className="zoo-tm-state">已泡汤</span>
+                <span className="zoo-tm-state">已完成</span>
               ) : (
                 <button
                   className={`zoo-pop zoo-tm-poke${cheered.includes(member.name) ? " sent" : ""}`}

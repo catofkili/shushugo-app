@@ -1,4 +1,4 @@
-import { lazy, ReactNode, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, ReactNode, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { WordStudy } from "./pages/WordStudy";
 import { AppNavigation } from "./components/AppNavigation";
@@ -15,9 +15,9 @@ import { loadKanjiUnitIndex } from "./lib/kanji-unit-index";
 import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, studyModeInfo } from "./lib/studyMode";
 import { studyDayEnd } from "./lib/database/db-utils";
 import { getGrammarLevelPreference, saveGrammarLevelPreference, type GrammarLevelSelection } from "./lib/grammarPreferences";
-import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
+import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, putCloudWeeklyReport, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
 import { syncUserProfileAfterLogin } from "./lib/profile-sync";
-import { getPersistenceFailure, PERSISTENCE_ERROR_EVENT, PERSISTENCE_OK_EVENT, saveDatabase } from "./lib/storage";
+import { getPersistenceFailure, PERSISTENCE_ERROR_EVENT, PERSISTENCE_OK_EVENT, requestFullSnapshot, saveDatabase } from "./lib/storage";
 import type { SearchResult } from "./lib/search-api";
 import { GrammarMode, Page, StudyMode } from "./types/app";
 import { JLPTLevel } from "./types/grammar";
@@ -26,11 +26,19 @@ import { AchievementsPage } from "./pages/AchievementsPage";
 import { ACHIEVEMENT_UNLOCKED_EVENT } from "./lib/userProfile";
 import { playStreakChirp } from "./lib/zoo-sounds";
 import { triggerAchievementHaptic } from "./lib/haptics";
+import { generateLatestWeeklyReport } from "./lib/analytics/weekly-reports";
+import { recordWeeklyReportEvent, type WeeklyReportEntry } from "./lib/analytics/weekly-report-events";
+import { getStudyPreferences, PREFERENCES_EVENT } from "./lib/studyPreferences";
+import { consumePendingWeeklyReportWeekStart, loadReminderSettings, syncWeeklyReportNotification, WEEKLY_REPORT_NOTIFICATION_EVENT } from "./lib/notifications";
+import { OPEN_GRAMMAR_FOUNDATION_EVENT } from "./lib/grammar-foundation-navigation";
+import type { QuizScope } from "./lib/distinction-quiz";
 
 const Library = lazy(() => import("./pages/Library").then((module) => ({ default: module.Library })));
+const GrammarFoundationPage = lazy(() => import("./pages/GrammarFoundationPage").then((module) => ({ default: module.GrammarFoundationPage })));
 const GrammarDetail = lazy(() => import("./pages/GrammarDetail").then((module) => ({ default: module.GrammarDetail })));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage").then((module) => ({ default: module.FavoritesPage })));
 const ConfusionPage = lazy(() => import("./pages/ConfusionPage").then((module) => ({ default: module.ConfusionPage })));
+const DistinctionQuizPage = lazy(() => import("./pages/DistinctionQuizPage").then((module) => ({ default: module.DistinctionQuizPage })));
 const KanjiReadingUsagePage = lazy(() => import("./pages/KanjiReadingUsagePage").then((module) => ({ default: module.KanjiReadingUsagePage })));
 const ImmersiveGrammar = lazy(() => import("./pages/ImmersiveGrammar").then((module) => ({ default: module.ImmersiveGrammar })));
 const GrammarQuiz = lazy(() => import("./pages/GrammarQuiz").then((module) => ({ default: module.GrammarQuiz })));
@@ -48,12 +56,10 @@ const ProPage = lazy(() => import("./pages/ProPage").then((module) => ({ default
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((module) => ({ default: module.ProfilePage })));
 const StudyModesPage = lazy(() => import("./pages/StudyModesPage").then((module) => ({ default: module.StudyModesPage })));
 const TeamPage = lazy(() => import("./pages/TeamPage").then((module) => ({ default: module.TeamPage })));
-const ZooMapPage = lazy(() => import("./pages/ZooMapPage").then((module) => ({ default: module.ZooMapPage })));
-const ZooDexPage = lazy(() => import("./pages/ZooDexPage").then((module) => ({ default: module.ZooDexPage })));
-const HotSpringPage = lazy(() => import("./pages/HotSpringPage").then((module) => ({ default: module.HotSpringPage })));
 const QuickStudyPage = lazy(() => import("./pages/QuickStudyPage").then((module) => ({ default: module.QuickStudyPage })));
 const VocabTestPage = lazy(() => import("./pages/VocabTestPage").then((module) => ({ default: module.VocabTestPage })));
 const WordLibraryPage = lazy(() => import("./pages/WordLibraryPage").then((module) => ({ default: module.WordLibraryPage })));
+const WeeklyReportPage = lazy(() => import("./pages/WeeklyReportPage").then((module) => ({ default: module.WeeklyReportPage })));
 
 const PageLoading = () => (
   <div className="grid min-h-[40vh] place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#464949] p-6 text-sm font-semibold text-white/65" aria-busy="true">
@@ -63,8 +69,10 @@ const PageLoading = () => (
 
 const toolPageTitles: Partial<Record<Page, string>> = {
   "study-modes": "学习模式",
+  "grammar-foundation": "基础语法",
   favorites: "收藏",
   confusion: "疑难辨析",
+  "distinction-quiz": "辨析练习",
   "kanji-readings": "一字多音",
   "word-list": "选词",
   "quick-study": "快速学习",
@@ -85,6 +93,7 @@ export default function App() {
   const [pageHistory, setPageHistory] = useState<Page[]>([]); // 页面历史栈
   const [grammarMode, setGrammarMode] = useState<GrammarMode>("learn");
   const [selectedGrammarId, setSelectedGrammarId] = useState("wa");
+  const [selectedFoundationRuleId, setSelectedFoundationRuleId] = useState<string | null>(null);
   const [selectedGrammarLevel, setSelectedGrammarLevelState] = useState<GrammarLevelSelection>(getGrammarLevelPreference);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notice, setNotice] = useState("");
@@ -98,12 +107,22 @@ export default function App() {
   const [wordListLevel, setWordListLevel] = useState<LibraryLevel>("all");
   /** 完成页交给快速学习的那批顽固词；null = 正常的今日快速学习。 */
   const [stubbornQuickIds, setStubbornQuickIds] = useState<number[] | null>(null);
+  const [distinctionQuizScope, setDistinctionQuizScope] = useState<QuizScope>({ kind: "learned" });
   const [selectedStudyMode, setSelectedStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [launchStudyMode, setLaunchStudyMode] = useState<StudyMode>(() => getStudyMode() || defaultStudyMode);
   const [wordStudyRevision, setWordStudyRevision] = useState(0);
   const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
   const [authOpen, setAuthOpen] = useState(false);
   const [pendingAccountPage, setPendingAccountPage] = useState<Page | null>(null);
+  const [weeklyReportStart, setWeeklyReportStart] = useState<string | null>(null);
+  const [weeklyReportEntry, setWeeklyReportEntry] = useState<WeeklyReportEntry>("button");
+  // 发布期开关：关掉之后入口、提醒、通知和云归档一起停，历史照旧可读。
+  const [weeklyReportEnabled, setWeeklyReportEnabled] = useState(
+    () => getStudyPreferences().weeklyReportEnabled
+  );
+  const savedWeeklyReportStartRef = useRef<string | null>(null);
+  const uploadedWeeklyReportStartRef = useRef<string | null>(null);
+  const weeklyNotificationKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -112,7 +131,10 @@ export default function App() {
     });
     const refreshAuth = (event: Event) => {
       const session = (event as CustomEvent<CloudSession>).detail;
-      if (session) setCloudSession(session);
+      if (session) {
+        uploadedWeeklyReportStartRef.current = null;
+        setCloudSession(session);
+      }
     };
     window.addEventListener(CLOUD_AUTH_EVENT, refreshAuth);
     return () => {
@@ -121,11 +143,72 @@ export default function App() {
     };
   }, []);
 
-  // 这份总览只有首页/动物园地图/图鉴三处在读,而它是两条全库 words⋈progress 扫描
+  useEffect(() => {
+    const sync = () => {
+      const enabled = getStudyPreferences().weeklyReportEnabled;
+      setWeeklyReportEnabled((current) => {
+        // 现场关掉时把已排期的周报通知一起撤掉，别让用户关了还收到提醒。
+        if (current && !enabled) {
+          void loadReminderSettings()
+            .then((settings) => syncWeeklyReportNotification({ ...settings, weeklyReportReminder: false }))
+            .catch(() => undefined);
+        }
+        return enabled;
+      });
+    };
+    window.addEventListener(PREFERENCES_EVENT, sync);
+    return () => window.removeEventListener(PREFERENCES_EVENT, sync);
+  }, []);
+
+  // 周日 14:00 之后第一次进入 App 时生成最近完整周期。生成是幂等的，
+  // 不会在重渲染或切页时重新抽关键词；没有任何学习内容就保持安静。
+  useEffect(() => {
+    if (!weeklyReportEnabled) return undefined;
+    const syncLatestReport = () => {
+      try {
+        const snapshot = generateLatestWeeklyReport("local");
+        if (snapshot && savedWeeklyReportStartRef.current !== snapshot.report.window.start) {
+          savedWeeklyReportStartRef.current = snapshot.report.window.start;
+          recordWeeklyReportEvent({
+            kind: "available",
+            weekStart: snapshot.report.window.start,
+            at: Date.now()
+          });
+          // 生成后立即请求一次完整本地快照，避免仍在内存中的周报因退出而丢失；
+          // 后续普通保存和账号云同步也会按 weekly_reports 的行级时间戳增量处理。
+          requestFullSnapshot();
+          void saveDatabase().catch((error) => console.warn("Weekly report save skipped:", error));
+        }
+        if (snapshot && entitlements.isPro && uploadedWeeklyReportStartRef.current !== snapshot.report.window.start) {
+          void putCloudWeeklyReport(snapshot.report.window.start, snapshot.report)
+            .then(() => { uploadedWeeklyReportStartRef.current = snapshot.report.window.start; })
+            .catch((error) => console.warn("Weekly report cloud archive skipped:", error));
+        }
+        const now = new Date();
+        const notificationKey = `${now.toISOString().slice(0, 10)}:${snapshot?.report.window.start ?? "none"}`;
+        if (typeof loadReminderSettings === "function" && weeklyNotificationKeyRef.current !== notificationKey) {
+          void loadReminderSettings()
+            .then((settings) => syncWeeklyReportNotification(settings, false, now))
+            .then((result) => {
+              if (!result.retryWeeklyReportSoon) weeklyNotificationKeyRef.current = notificationKey;
+            })
+            .catch((error) => console.warn("Weekly report notification skipped:", error));
+        }
+      } catch (error) {
+        console.warn("Weekly report generation skipped:", error);
+      }
+    };
+    syncLatestReport();
+    // App 一直开着时也要在周日 14:00 后生成，不要求用户重启 App。
+    const timer = window.setInterval(syncLatestReport, 60_000);
+    return () => window.clearInterval(timer);
+  }, [entitlements.isPro, cloudSession.email, weeklyReportEnabled]);
+
+  // 这份总览只有首页在读(动物园地图/图鉴 2026-09-16 删了),而它是两条全库 words⋈progress 扫描
   // (实测 35ms)。以前它挂在 PROGRESS_UPDATED 上无条件重算 —— 于是**在学习页里
   // 每答一张卡都要重算一次谁也看不见的东西**。
   // 现在看不见就只记一个脏标记,等真回到要用它的页面再补算。
-  const overviewVisible = page === "home" || page === "zoo-map" || page === "zoo-dex";
+  const overviewVisible = page === "home";
   const overviewDirtyRef = useRef(false);
   useEffect(() => {
     const refresh = () => {
@@ -247,12 +330,16 @@ export default function App() {
       if (!detail) return;
       if (detail.status === "downloaded") {
         syncConflictNoticeRef.current = "";
+        uploadedWeeklyReportStartRef.current = null;
         setOverview(getProgressOverview());
+        try { generateLatestWeeklyReport("local", new Date(), true); requestFullSnapshot(); void saveDatabase().catch(() => undefined); } catch { /* 周报刷新不阻断同步 */ }
         // 背单词时不能因为后台同步重挂载 WordStudy,否则当前卡会被重新抽取。
         // 当前学习会话继续使用本地状态,答完后自然会读到最新数据库。
       } else if (detail.status === "merged") {
         syncConflictNoticeRef.current = "";
+        uploadedWeeklyReportStartRef.current = null;
         setOverview(getProgressOverview());
+        try { generateLatestWeeklyReport("local", new Date(), true); requestFullSnapshot(); void saveDatabase().catch(() => undefined); } catch { /* 周报刷新不阻断同步 */ }
       } else if (detail.status === "uploaded") {
         syncConflictNoticeRef.current = "";
       } else if (detail.status === "conflict" || detail.status === "signed-out") {
@@ -271,7 +358,7 @@ export default function App() {
   // 导航到新页面，记录历史。
   // studyModeOverride 给明确指定模式的入口用；其余入口读取当前有效模式，
   // 其中也包括「今日任务完成后、4 点前」的临时错题本。
-  const navigateToPage = (newPage: Page, studyModeOverride?: StudyMode) => {
+  const navigateToPage = useCallback((newPage: Page, studyModeOverride?: StudyMode) => {
     // 「快速复习今天的顽固词」是一次性名单：从别处进快速学习就得回到今天那份，
     // 否则点一次顽固复习之后，首页的快速学习入口会一直停在那批词上。
     if (newPage === "quick-study") setStubbornQuickIds(null);
@@ -294,11 +381,45 @@ export default function App() {
     if (newPage === "home" || newPage === "profile") {
       setSelectedGrammarId("wa");
     }
+    if (newPage === "grammar-foundation") setSelectedFoundationRuleId(null);
     if (newPage !== page) {
-      setPageHistory([...pageHistory, page]);
+      setPageHistory((history) => [...history, page]);
       setPage(newPage);
     }
+  }, [cloudSession.token, page]);
+
+  useEffect(() => {
+    const openFoundationRule = (event: Event) => {
+      const ruleId = (event as CustomEvent<{ ruleId?: string }>).detail?.ruleId;
+      navigateToPage("grammar-foundation");
+      setSelectedFoundationRuleId(ruleId ?? null);
+    };
+    window.addEventListener(OPEN_GRAMMAR_FOUNDATION_EVENT, openFoundationRule);
+    return () => window.removeEventListener(OPEN_GRAMMAR_FOUNDATION_EVENT, openFoundationRule);
+  }, [navigateToPage]);
+
+  /** 主页入口：按钮和顶部下拉都走这里，只为了区分观测里的来源。 */
+  const openWeeklyReportFrom = (entry: WeeklyReportEntry) => {
+    setWeeklyReportEntry(entry);
+    setWeeklyReportStart(null);
+    navigateToPage("weekly-report");
   };
+
+  useEffect(() => {
+    const openWeeklyReport = (weekStart: string | null) => {
+      setWeeklyReportStart(weekStart);
+      setWeeklyReportEntry("notification");
+      navigateToPage("weekly-report");
+    };
+    const handleNotification = (event: Event) => {
+      const detail = (event as CustomEvent<{ weekStart?: string | null }>).detail;
+      openWeeklyReport(detail?.weekStart ?? null);
+    };
+    window.addEventListener(WEEKLY_REPORT_NOTIFICATION_EVENT, handleNotification);
+    const pending = consumePendingWeeklyReportWeekStart();
+    if (pending) openWeeklyReport(pending);
+    return () => window.removeEventListener(WEEKLY_REPORT_NOTIFICATION_EVENT, handleNotification);
+  }, [navigateToPage]);
 
   /**
    * 合并老库里重复录入的词条。**不可逆**（删的是词条行），所以先算清楚给用户看，
@@ -412,6 +533,18 @@ export default function App() {
     setPage("quick-study");
   };
 
+  const startDistinctionQuiz = (scope: QuizScope) => {
+    setDistinctionQuizScope(scope);
+    navigateToPage("distinction-quiz");
+  };
+
+  const startWeeklyReview = (wordIds: number[]) => {
+    if (!wordIds.length) return;
+    setStubbornQuickIds(wordIds);
+    setPageHistory((history) => [...history, page]);
+    setPage("quick-study");
+  };
+
   const openGrammar = (id: string) => {
     setSelectedGrammarId(id);
     navigateToPage("detail");
@@ -437,7 +570,6 @@ export default function App() {
 
   const markForgotWithNotice = (id: string) => {
     store.recordReview(id, false);
-    store.addToReview(id);
     showNotice("已固定到前面，稍后继续看。");
   };
 
@@ -560,6 +692,7 @@ export default function App() {
           onRefreshOverview={refreshOverview}
           onCompleteTodayWords={completeTodayWords}
           onMergeDuplicates={mergeDuplicates}
+          onOpenWeeklyReport={openWeeklyReportFrom}
         />
       );
     }
@@ -570,20 +703,12 @@ export default function App() {
           initialMode={launchStudyMode}
           onDailyModeComplete={handleDailyModeComplete}
           onStubbornQuickStudy={startStubbornQuickStudy}
+          onOpenDistinctionQuiz={() => startDistinctionQuiz({ kind: "today" })}
         />
       );
     }
     if (page === "team") {
       return <TeamPage />;
-    }
-    if (page === "zoo-map") {
-      return <ZooMapPage overview={overview} />;
-    }
-    if (page === "zoo-dex") {
-      return <ZooDexPage overview={overview} />;
-    }
-    if (page === "hot-spring") {
-      return <HotSpringPage onNavigate={navigateToPage} />;
     }
     if (page === "quick-study") {
       return renderToolSubpage(
@@ -599,8 +724,26 @@ export default function App() {
     if (page === "vocab-test") {
       return renderToolSubpage(toolPageTitles["vocab-test"] ?? "查词汇量", <VocabTestPage />);
     }
+    if (page === "weekly-report") {
+      return (
+        <WeeklyReportPage
+          key={weeklyReportStart ?? "latest"}
+          initialWeekStart={weeklyReportStart}
+          onBack={() => navigateToPage("home")}
+          onRequirePro={(feature) => setPaywallTarget(feature)}
+          onReviewWords={startWeeklyReview}
+          entry={weeklyReportEntry}
+        />
+      );
+    }
     if (page === "grammar") {
       return renderGrammarPage();
+    }
+    if (page === "grammar-foundation") {
+      return renderToolSubpage(
+        toolPageTitles["grammar-foundation"] ?? "基础语法",
+        <GrammarFoundationPage onOpenGrammar={openGrammar} focusRuleId={selectedFoundationRuleId} />
+      );
     }
     if (page === "detail") {
       return (
@@ -636,7 +779,13 @@ export default function App() {
       return renderToolSubpage(toolPageTitles["kanji-readings"] ?? "一字多音", <KanjiReadingUsagePage />);
     }
     if (page === "confusion") {
-      return renderToolSubpage(toolPageTitles.confusion ?? "疑难辨析", <ConfusionPage />);
+      return renderToolSubpage(toolPageTitles.confusion ?? "疑难辨析", <ConfusionPage onQuiz={startDistinctionQuiz} />);
+    }
+    if (page === "distinction-quiz") {
+      return renderToolSubpage(
+        toolPageTitles["distinction-quiz"] ?? "辨析练习",
+        <DistinctionQuizPage scope={distinctionQuizScope} onBackToConfusion={() => navigateToPage("confusion")} />
+      );
     }
     if (page === "jlpt-plan") {
       return (
@@ -696,9 +845,10 @@ export default function App() {
   };
 
   return (
-    <div className="app-shell relative h-screen overflow-hidden bg-gradient-to-br from-[#FFFBF2] via-[#FDF1DC] to-[#F6E9D2] text-[#3A2E22]">
-      <div className={`grid h-full min-w-0 transition-[grid-template-columns] duration-200 ${sidebarCollapsed ? "lg:grid-cols-[78px_1fr]" : "lg:grid-cols-[268px_1fr]"}`}>
-        <AppNavigation
+    <div className={`app-shell ${page === "weekly-report" ? "is-weekly-report" : ""} relative h-screen overflow-hidden bg-gradient-to-br from-[#FFFBF2] via-[#FDF1DC] to-[#F6E9D2] text-[#3A2E22]`}>
+      <div className={`grid h-full min-w-0 transition-[grid-template-columns] duration-200 ${page === "weekly-report" ? "lg:grid-cols-1" : sidebarCollapsed ? "lg:grid-cols-[78px_1fr]" : "lg:grid-cols-[268px_1fr]"}`}>
+        {/* 二楼自带返回与章节导航；收起学习工具栏，把手机的阅读高度还给手记。 */}
+        {page !== "weekly-report" && <AppNavigation
           page={page}
           sidebarCollapsed={sidebarCollapsed}
           selectedGrammarLevel={selectedGrammarLevel}
@@ -708,7 +858,7 @@ export default function App() {
           onSearchResult={handleSearchResult}
           onToggleSidebar={() => setSidebarCollapsed((value) => !value)}
           studyMode={page === "word" ? launchStudyMode : null}
-        />
+        />}
 
         {/* pb 只留一点呼吸空间:底部导航的位置已经由下面的 bottom 让出来了,
             以前这里是 pb-[6rem](96px),等于同一块空间预留两次,凭空多出一条死白。 */}

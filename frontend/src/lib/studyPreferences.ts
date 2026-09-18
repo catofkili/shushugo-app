@@ -7,7 +7,7 @@ export type ThemePreference = "system" | "light" | "dark";
  *   full    全开
  *   reduced 只留「按一下的即时反馈」,关掉常驻循环动画(呼吸/跳/蒸汽) —— 也最省电
  *   off     全关
- * 系统开了「减少动态效果」时不管这里选什么都按 off 处理(见 master-home.css 的媒体查询)。
+ * 系统开了「减少动态效果」时不管这里选什么都按 off 处理(见 app.css 的媒体查询)。
  */
 export type MotionLevel = "full" | "reduced" | "off";
 
@@ -25,8 +25,14 @@ export interface StudyPreferences {
   grammarDailyGoal: number;
   /** 每日复习上限,0 = 自动(近期节奏 × 1.5 夹 [60, 150]),REVIEW_CAP_UNLIMITED = 不限(全部到期词) */
   reviewCap: number;
-  /** 动物园音效(评分/翻卡/完成的木质提示音) */
+  /** 答题音效(评分/翻卡/完成的木质提示音)。键名沿用 zooSounds,改了用户存的开关就丢了 */
   zooSounds: boolean;
+  /**
+   * 每周学习回顾（二楼）总开关。关掉之后主页入口、站内提醒、通知排期和
+   * 云归档都停下；**已保存的历史不删除、不锁回**，重新打开还能读。
+   * 这是发布期的回滚手段，不是用户内容管理功能。
+   */
+  weeklyReportEnabled: boolean;
   /** 动效强度三档 */
   motionLevel: MotionLevel;
   /**
@@ -77,6 +83,7 @@ export const defaultStudyPreferences: StudyPreferences = {
   grammarDailyGoal: 5,
   reviewCap: 0,
   zooSounds: true,
+  weeklyReportEnabled: true,
   motionLevel: "full",
   voiceId: "",
   jlptPlanEnabled: true,
@@ -114,6 +121,7 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   grammarDailyGoal: clampGrammarGoal(Number(value.grammarDailyGoal ?? defaultStudyPreferences.grammarDailyGoal)),
   reviewCap: clampReviewCap(Number(value.reviewCap ?? defaultStudyPreferences.reviewCap)),
   zooSounds: value.zooSounds ?? defaultStudyPreferences.zooSounds,
+  weeklyReportEnabled: value.weeklyReportEnabled ?? defaultStudyPreferences.weeklyReportEnabled,
   motionLevel: MOTION_LEVELS.includes(value.motionLevel as MotionLevel)
     ? (value.motionLevel as MotionLevel)
     : defaultStudyPreferences.motionLevel,

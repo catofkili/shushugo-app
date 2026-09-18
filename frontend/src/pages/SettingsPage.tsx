@@ -586,7 +586,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
 
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">动物园音效</p>
+              <p className="text-sm font-bold text-white">答题音效</p>
               <p className="mt-0.5 text-xs text-white/50">评分 / 翻卡 / 完成时的木质提示音</p>
             </div>
             <label className="relative inline-flex cursor-pointer items-center">
@@ -600,6 +600,22 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             </label>
           </div>
 
+
+          <div className="flex items-center gap-3 border-b border-white/10 p-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-white">每周学习回顾</p>
+              <p className="mt-0.5 text-xs text-white/50">主页的「二楼」入口与周日提醒；关掉后已保存的历史仍可阅读</p>
+            </div>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                checked={preferences.weeklyReportEnabled}
+                onChange={(event) => updatePreference({ weeklyReportEnabled: event.target.checked })}
+                className="peer sr-only"
+              />
+              <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
+            </label>
+          </div>
 
           <div className="flex items-center gap-3 p-4">
             <div className="min-w-0 flex-1">
@@ -621,7 +637,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             <div className="mb-3">
               <p className="text-sm font-bold text-white">动效强度</p>
               <p className="mt-0.5 text-xs text-white/50">
-                「省电」会关掉水豚呼吸、松鼠待机跳、温泉蒸汽这些一直在动的效果，按钮反馈保留。
+                「省电」会关掉吉祥物呼吸、进度条待机跳这些一直在动的效果，按钮反馈保留。
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

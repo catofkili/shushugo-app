@@ -41,6 +41,7 @@ interface WordStudyProps {
   onDailyModeComplete?: (mode: StudyMode) => void;
   /** 完成页：今天顽固词太多时，把这批词交给快速学习过一遍（代替加餐）。 */
   onStubbornQuickStudy?: (wordIds: number[]) => void;
+  onOpenDistinctionQuiz?: () => void;
 }
 
 /* ——— 甩卡评分:左=忘记(Again) / 右=认识(Good) ——— */
@@ -66,12 +67,12 @@ const REVEAL_INPUT_LOCK_MS = 120;
 /** 评分反馈印章播多久(和 .zoo-rate-burst 的动画时长对齐,略留余量) */
 const RATE_BURST_MS = 500;
 
-/** 评分印章的字面。沿用甩卡印章的说法:🌰 = 收下了,◦ = 再来一遍(不惩罚) */
+/** 评分印章的字面。沿用甩卡印章的说法:● = 收下了,◦ = 再来一遍(不惩罚) */
 const rateBurstLabels: Record<WordAnswer, string> = {
   forgot: "◦ 再来",
   fuzzy: "◦ 模糊",
-  know: "🌰 认识",
-  known_forever: "🌰 熟知"
+  know: "● 认识",
+  known_forever: "● 熟知"
 };
 
 const answerHotkeys: Record<string, WordAnswer> = {
@@ -154,14 +155,14 @@ const pageVisible = () => document.visibilityState === "visible";
  * 一次发十来张要拖到七八秒 —— 它是个「昨天这些你都记得」的确认动画，不是内容，
  * 磨蹭比不做还糟。整体减半到每张 330ms。
  *
- * ⚠️ 这两个数必须和 master-home.css 里的动画时长对着改：
+ * ⚠️ 这两个数必须和 app.css 里的动画时长对着改：
  *   RELIEF_LEAVE_MS ↔ .daily-relief-card-leaving 的 dailyReliefDealOut
  *   飞入动画 dailyReliefDealIn 要短于 RELIEF_DWELL_MS，否则卡片还没落定就开始飞走。
  */
 const RELIEF_DWELL_MS = 210;
 const RELIEF_LEAVE_MS = 120;
 
-export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStubbornQuickStudy }: WordStudyProps) => {
+export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStubbornQuickStudy, onOpenDistinctionQuiz }: WordStudyProps) => {
   const { pickFolder, picker } = useFavoriteFolderPicker();
   const [card, setCard] = useState<WordCard | null>(null);
   const [unitKey, setUnitKey] = useState<string | null>(null);
@@ -210,6 +211,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [promptText, setPromptText] = useState("");
   const [promptSaving, setPromptSaving] = useState(false);
   const [localStudySeconds, setLocalStudySeconds] = useState(0);
+  const pendingStudySecondsRef = useRef(0);
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
   const [initialStudyClock] = useState(() => createStudyClock(Date.now()));
@@ -467,11 +469,14 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     void playPronunciation(target.kanji, target.kana, preferences.voiceId);
   }, [preferences.autoPlay, preferences.voiceId, unitTarget]);
 
-  const sendStudySeconds = useCallback(async (seconds: number) => {
-    if (seconds <= 0) return null;
-    setLocalStudySeconds((value) => value + seconds);
+  const sendStudySeconds = useCallback(async (seconds: number, atMs = Date.now()) => {
+    const total = Math.max(0, Math.round(seconds)) + pendingStudySecondsRef.current;
+    if (total <= 0) return null;
+    setLocalStudySeconds(total);
+    let data;
     try {
-      const data = addWordStudySeconds(seconds);
+      data = addWordStudySeconds(total, atMs);
+      pendingStudySecondsRef.current = 0;
       setStats(data.stats);
       setLocalStudySeconds(0);
 
@@ -481,18 +486,18 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 原来这里还往 userProfile 里攒一份分钟数:`Math.floor(seconds / 60)`,
       // 而 flush 是每 15 秒一次,这个式子恒等于 0,所以那份计数器一次都没涨过,
       // 个人信息页常年「累计 0 小时 0 分钟」。整段删掉,不再攒第二份。
-      await checkAchievements();
-
+      void checkAchievements().catch(() => undefined);
       return data.stats;
     } catch {
       // Time tracking should never interrupt review.
+      pendingStudySecondsRef.current = total;
       return null;
     }
   }, []);
 
   /** 结上一段的账，把攒够的整秒取出来落库(零头留着，见 study-clock.ts) */
-  const elapsedStudySeconds = useCallback(() => {
-    const accrued = accrueStudyTime(studyClockRef.current, Date.now(), { visible: pageVisible() });
+  const elapsedStudySeconds = useCallback((visibleOverride?: boolean) => {
+    const accrued = accrueStudyTime(studyClockRef.current, Date.now(), { visible: visibleOverride ?? pageVisible() });
     const { seconds, state } = drainStudySeconds(accrued);
     studyClockRef.current = state;
     return seconds;
@@ -524,7 +529,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     const interval = window.setInterval(flushStudyTime, 15000);
     const handleVisibility = () => {
       if (document.visibilityState === "hidden") {
-        flushStudyTime();
+        void sendStudySeconds(elapsedStudySeconds(true));
       } else {
         // 切回来的那一刻算一次交互:人刚回到这张卡上。
         handleInteraction();
@@ -1287,10 +1292,10 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             {rateBurst.label}
           </span>
         )}
-        {/* 甩卡印章:右=捡到松子,左=松子空了(不惩罚,只是「再来一遍」) */}
+        {/* 甩卡印章:右=收下了,左=再来一遍(不惩罚) */}
         {swipeEnabled && swipeX > AXIS_LOCK_PX && (
           <span className="zoo-stamp good" style={{ opacity: swipeProgress }}>
-            🌰 认识
+            ● 认识
           </span>
         )}
         {swipeEnabled && swipeX < -AXIS_LOCK_PX && (
@@ -1534,7 +1539,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               revealAnswer();
             }}
           >
-            {/* 松鼠的小路搬到了顶部 Master 栏(components/SquirrelTrail),
+            {/* 松鼠的小路搬到了首页顶部栏(components/SquirrelTrail),
                 卡片里不再为进度条留高度,全部让给答案区。 */}
 
             {/* 手机端题目框尽量压扁:题目通常就几个字,省下的高度让给答案区(长题目仍由内层 max-h 滚动)。
@@ -1550,9 +1555,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                   {card.pos && (
                     <span className="rounded-sm bg-[#81D8CF]/10 px-1.5 py-0.5 text-[11px] font-bold text-white/60">{card.pos}</span>
                   )}
-                  {/* 正向题(中文→日文)不亮自他:那等于提前告诉你答案是 開く 还是 開ける。
-                      反向题的日文词就在眼前,标了才有意义。 */}
-                  {isReversePhase && <TransitivityBadge card={card} />}
+                  {/* 自/他动词是高频易错属性，统一放在题目面，翻面前就能看到。 */}
+                  <TransitivityBadge card={card} />
                   {card.honorificLabel && (
                     <span className="rounded-sm border border-[#81D8CF]/45 bg-[#81D8CF]/18 px-1.5 py-0.5 text-[11px] font-black text-[#81D8CF]">
                       {card.honorificLabel}
@@ -1606,15 +1610,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                       <p className="jp-serif text-6xl font-semibold leading-none sm:text-7xl lg:text-8xl xl:text-[9rem]">
                         <KanjiAnswer card={card} surface={isKanjiPhase ? kanjiReadingSurface(card) : undefined} />
                       </p>
-                      {/* 自他跟读音同一行:它是这个词的属性,不值得单占一行。
-                          等级/词性已经在题目面常驻,这里不再重复。 */}
+                      {/* 自他标注已经移到题目面，答案区只保留读音。 */}
                       <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
                         <ReadingLine
                           card={card}
                           surface={isKanjiPhase ? kanjiReadingSurface(card) : undefined}
                           className="jp text-3xl text-white/86 sm:text-4xl lg:text-5xl xl:text-6xl"
                         />
-                        <TransitivityBadge card={card} />
                       </div>
                       {card.englishOrigin && (
                         <div className="mx-auto mt-3 w-fit rounded-2xl border border-[#81D8CF]/30 bg-[#81D8CF]/10 px-4 py-2">
@@ -1668,7 +1670,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                             </div>
                           </div>
                           {card.verbPair.meaning && <p className="mt-3 text-sm leading-6 text-white/75">{card.verbPair.meaning}</p>}
-                          {card.verbPair.note && <p className="mt-2 text-xs leading-5 text-white/55">{card.verbPair.note}</p>}
                         </div>
                       )}
 
@@ -1844,6 +1845,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             onContinueKanji={() => startExtraPhase("kanji")}
             onEncore={startEncore}
             onStubbornQuickStudy={onStubbornQuickStudy}
+            onOpenDistinctionQuiz={onOpenDistinctionQuiz}
           />
         )}
       </section>

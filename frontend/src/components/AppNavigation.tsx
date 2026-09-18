@@ -13,7 +13,9 @@ import {
 import type { JLPTLevel } from "../types/grammar";
 import type { Page, StudyMode } from "../types/app";
 import type { SearchResult } from "../lib/search-api";
+import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { CapybaraMascot } from "./CapybaraMascot";
+import { JapaneseRuby } from "./JapaneseRuby";
 import { SquirrelTrail } from "./SquirrelTrail";
 
 // 主页取代了原来的「工具箱」：工具箱的学习模式、收藏、进度概览等入口都挪到了主页。
@@ -25,9 +27,9 @@ const navItems: { page: Page; label: string; icon: LucideIcon }[] = [
 ];
 
 const isGrammarPage = (page: Page) => page === "grammar" || page === "detail";
-// 组队/地图/温泉/学习模式/收藏都是从主页的格子进去的，导航上仍高亮「主页」。
+// 组队/学习模式/收藏都是从主页的格子进去的，导航上仍高亮「主页」。
 const isHomePage = (page: Page) =>
-  ["home", "team", "zoo-map", "zoo-dex", "hot-spring", "quick-study", "vocab-test", "study-modes", "favorites"].includes(page);
+  ["home", "team", "quick-study", "vocab-test", "study-modes", "grammar-foundation", "favorites", "distinction-quiz"].includes(page);
 const isRootMobilePage = (page: Page) => ["home", "word", "grammar", "profile"].includes(page);
 
 interface AppNavigationProps {
@@ -219,7 +221,11 @@ export function AppNavigation({
                       {result.type === "word" ? "词" : "文"}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-bold text-white">{result.title}</span>
+                      <span className="block truncate text-sm font-bold text-white">
+                        {result.type === "grammar"
+                          ? <JapaneseRuby text={result.title} furigana={getGrammarTitleFurigana(result.id)} />
+                          : result.title}
+                      </span>
                       <span className="mt-0.5 block truncate text-xs text-white/58">{result.subtitle}</span>
                       <span className="mt-0.5 block truncate text-[10px] font-bold uppercase text-white/40">{result.meta}</span>
                     </span>
