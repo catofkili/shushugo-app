@@ -39,6 +39,11 @@ export interface Env {
   WECHAT_APP_SECRET?: string;
   /** "1" = 生产模式:Turnstile 和邮件服务必须配好,否则认证路由直接 503。 */
   REQUIRE_AUTH_HARDENING?: string;
+  /**
+   * 云端周报的保存期限（天）。**不配 = 永不清理**，见 cleanupExpiredWeeklyReports。
+   * 产品未确认期限前不要打开：先承诺再清理是计划明确禁止的做法。
+   */
+  WEEKLY_REPORT_RETENTION_DAYS?: string;
 }
 
 interface UserRow {
@@ -118,6 +123,34 @@ const PASSWORD_ITERATIONS = 100_000;
 const EMAIL_CODE_TTL_MINUTES = 30;
 const PASSWORD_RESET_TTL_MINUTES = 15;
 const PROFILE_AVATAR_PREFIX = "profile-avatar:";
+const WEEKLY_REPORT_PREFIX = "weekly/";
+const WEEKLY_REPORT_MAX_BYTES = 128 * 1024;
+
+/**
+ * 云端周报的保存期限（天）。**未配置时不做任何删除。**
+ *
+ * 计划明确要求：期限未定不得售卖「云端历史」这项能力，也禁止先承诺永久、
+ * 以后再决定清理。所以这里默认是「不清理」，由部署方按已确认的期限显式打开；
+ * `/api/health` 会回报它有没有配好，上线检查时能直接看到。
+ */
+const weeklyReportRetentionDays = (env: Env): number => {
+  const parsed = Number(env.WEEKLY_REPORT_RETENTION_DAYS ?? "");
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 0;
+};
+
+/** 单次定时任务最多清多少个对象，避免一次列出/删除过多。 */
+const WEEKLY_REPORT_CLEANUP_LIMIT = 500;
+
+const cleanupExpiredWeeklyReports = async (env: Env, now: number): Promise<void> => {
+  const days = weeklyReportRetentionDays(env);
+  if (!days) return;
+  const cutoff = now - days * 24 * 60 * 60 * 1000;
+  const listed = await env.SYNC_BUCKET.list({ prefix: WEEKLY_REPORT_PREFIX, limit: WEEKLY_REPORT_CLEANUP_LIMIT });
+  const expired = (listed.objects ?? [])
+    .filter((object) => object.uploaded.getTime() < cutoff)
+    .map((object) => object.key);
+  if (expired.length) await env.SYNC_BUCKET.delete(expired);
+};
 const TURNSTILE_ACTIONS = new Set(["register", "login", "password_reset"]);
 // 6 位数字验证码,必须限制尝试次数,否则可被暴力枚举。
 const MAX_CODE_ATTEMPTS = 5;
@@ -141,7 +174,7 @@ const json = (body: unknown, status = 200) => (
 
 const corsHeaders = () => ({
   "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET,POST,DELETE,OPTIONS",
+  "access-control-allow-methods": "GET,POST,PUT,DELETE,OPTIONS",
   "access-control-allow-headers": "authorization,content-type,x-sync-format,x-sync-protocol-version,x-sync-compression,x-sync-operation-id,x-sync-device-id,x-sync-base-generation,x-sync-base-modified",
   "access-control-expose-headers": "x-sync-format,x-sync-compression,x-sync-generation,x-sync-last-modified,x-sync-byte-length",
   "access-control-max-age": "86400"
@@ -881,6 +914,15 @@ const requireVerifiedUser = async (request: Request, env: Env) => {
   return userId;
 };
 
+const requireProUser = async (request: Request, env: Env): Promise<string> => {
+  const userId = await requireVerifiedUser(request, env);
+  const entitlement = await getEntitlementRow(env, userId);
+  const active = entitlement?.is_pro === 1
+    && (!entitlement.expires_at || new Date(entitlement.expires_at).getTime() > Date.now());
+  if (!active) throw json({ detail: "云端历史需要有效的 Pro 权益。", code: "PRO_REQUIRED" }, 403);
+  return userId;
+};
+
 const register = async (request: Request, env: Env) => {
   assertAuthHardening(env);
   await rateLimit(env, request, "register", 5, 3600);
@@ -1395,6 +1437,12 @@ const deleteAccount = async (request: Request, env: Env) => {
     .all<{ object_key: string; storage_backend: "kv" | "r2" }>();
   for (const row of objects.results ?? []) {
     await deleteSyncObject(env, row.object_key, row.storage_backend);
+  }
+  // 周报对象不进 sync_objects，删号时按用户前缀清理，避免云端历史成为孤儿。
+  const weeklyObjects = await listAllWeeklyObjects(env, userId);
+  for (let index = 0; index < weeklyObjects.length; index += 1000) {
+    const keys = weeklyObjects.slice(index, index + 1000).map((object) => object.key);
+    if (keys.length) await env.SYNC_BUCKET.delete(keys);
   }
 
   // 显式逐表删除,不依赖 FK 级联配置。purchase_events 一并删除:
@@ -2000,6 +2048,117 @@ const pullSync = async (request: Request, env: Env) => {
   }
 };
 
+const validateWeekStart = (value: unknown): string => {
+  const weekStart = String(value ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(weekStart)) throw json({ detail: "week_start is invalid" }, 400);
+  const parsed = new Date(`${weekStart}T00:00:00.000Z`);
+  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== weekStart || parsed.getUTCDay() !== 0) {
+    throw json({ detail: "week_start is invalid" }, 400);
+  }
+  return weekStart;
+};
+
+const weeklyReportKey = (userId: string, weekStart: string) => `${WEEKLY_REPORT_PREFIX}${userId}/${weekStart}.json`;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value);
+
+const validWeeklyReport = (value: unknown, weekStart: string): boolean => {
+  if (!isRecord(value) || !isRecord(value.window) || !isRecord(value.metrics)) return false;
+  const window = value.window;
+  const metrics = value.metrics;
+  if (window.start !== weekStart || typeof window.end !== "string" || !isFiniteNumber(window.startAt) || !isFiniteNumber(window.endAt)) return false;
+  const numericMetrics = [
+    "days", "minutes", "totalSeconds", "totalReviews", "wordReviews", "grammarReviews",
+    "kanjiReviews", "newWords", "reviewCount", "streak", "cumulativeDays", "cumulativeWords"
+  ];
+  if (numericMetrics.some((key) => !isFiniteNumber(metrics[key]) || Number(metrics[key]) < 0)) return false;
+  if (!Array.isArray(metrics.daily) || !metrics.daily.every((item) =>
+    isRecord(item) && typeof item.date === "string" && isFiniteNumber(item.reviews) && isFiniteNumber(item.newWords)
+  )) return false;
+  return Array.isArray(value.keywordCandidates) && Array.isArray(value.references);
+};
+
+const listAllWeeklyObjects = async (env: Env, userId: string): Promise<R2Object[]> => {
+  const objects: R2Object[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await env.SYNC_BUCKET.list({ prefix: `${WEEKLY_REPORT_PREFIX}${userId}/`, limit: 1000, ...(cursor ? { cursor } : {}) });
+    objects.push(...(page.objects ?? []));
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
+  return objects;
+};
+
+const listWeeklyReports = async (request: Request, env: Env) => {
+  const userId = await requireProUser(request, env);
+  const listed = await listAllWeeklyObjects(env, userId);
+  const reports = listed.map((object) => ({
+    week_start: object.key.split("/").pop()?.replace(/\.json$/, "") ?? "",
+    uploaded_at: object.uploaded.toISOString(),
+    byte_length: object.size
+  })).filter((item) => /^\d{4}-\d{2}-\d{2}$/.test(item.week_start));
+  reports.sort((a, b) => b.week_start.localeCompare(a.week_start));
+  return json({ reports });
+};
+
+const getWeeklyReportCloud = async (request: Request, env: Env) => {
+  const userId = await requireProUser(request, env);
+  const weekStart = validateWeekStart(new URL(request.url).searchParams.get("week_start"));
+  const object = await env.SYNC_BUCKET.get(weeklyReportKey(userId, weekStart));
+  if (!object) return json({ detail: "Weekly report not found" }, 404);
+  return new Response(object.body, {
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...corsHeaders() }
+  });
+};
+
+const putWeeklyReportCloud = async (request: Request, env: Env) => {
+  const userId = await requireProUser(request, env);
+  const body = await readJson<{ week_start?: string; report?: unknown }>(request, WEEKLY_REPORT_MAX_BYTES);
+  const weekStart = validateWeekStart(body.week_start);
+  if (!body.report || typeof body.report !== "object" || Array.isArray(body.report)) throw json({ detail: "report is required" }, 400);
+  if (!validWeeklyReport(body.report, weekStart)) {
+    throw json({ detail: "report shape is invalid" }, 400);
+  }
+  const content = JSON.stringify({ schemaVersion: 2, weekStart, report: body.report });
+  const bytes = new TextEncoder().encode(content);
+  if (bytes.byteLength > WEEKLY_REPORT_MAX_BYTES) throw json({ detail: "Weekly report is too large" }, 413);
+  const key = weeklyReportKey(userId, weekStart);
+  const existing = await env.SYNC_BUCKET.get(key);
+  if (existing) {
+    const old = new Uint8Array(await existing.arrayBuffer());
+    const same = old.byteLength === bytes.byteLength && old.every((value, index) => value === bytes[index]);
+    if (same) return json({ status: "success", week_start: weekStart, byte_length: bytes.byteLength });
+    throw json({ detail: "Weekly report already exists with different content", code: "WEEKLY_REPORT_CONFLICT" }, 409);
+  }
+  const created = await env.SYNC_BUCKET.put(key, bytes, {
+    onlyIf: { etagDoesNotMatch: "*" },
+    httpMetadata: { contentType: "application/json; charset=utf-8", cacheControl: "no-store" },
+    customMetadata: { userId, weekStart, kind: "weekly-report" }
+  });
+  if (!created) {
+    const raced = await env.SYNC_BUCKET.get(key);
+    if (raced) {
+      const old = new Uint8Array(await raced.arrayBuffer());
+      if (old.byteLength === bytes.byteLength && old.every((value, index) => value === bytes[index])) {
+        return json({ status: "success", week_start: weekStart, byte_length: bytes.byteLength });
+      }
+    }
+    throw json({ detail: "Weekly report already exists with different content", code: "WEEKLY_REPORT_CONFLICT" }, 409);
+  }
+  return json({ status: "success", week_start: weekStart, byte_length: bytes.byteLength });
+};
+
+const deleteWeeklyReportCloud = async (request: Request, env: Env) => {
+  const userId = await requireProUser(request, env);
+  const weekStart = validateWeekStart(new URL(request.url).searchParams.get("week_start"));
+  await env.SYNC_BUCKET.delete(weeklyReportKey(userId, weekStart));
+  return json({ status: "success", week_start: weekStart });
+};
+
 const escapeHtml = (value: string) => value
   .replaceAll("&", "&amp;")
   .replaceAll("<", "&lt;")
@@ -2125,6 +2284,9 @@ const health = async (env: Env) => {
       env.APP_STORE_ISSUER_ID && env.APP_STORE_KEY_ID && env.APP_STORE_PRIVATE_KEY && env.APP_BUNDLE_ID
     ),
     appStoreEnvironment: env.APP_STORE_ENVIRONMENT ?? "Production",
+    // 云端周报的保存期限。为 0 表示「未配置 = 不清理」：可以继续本地使用，
+    // 但按计划不该在期限未定前售卖云端历史。
+    weeklyReportRetentionDays: weeklyReportRetentionDays(env),
     // ⚠️ 这里为 false 就是"生产在裸奔"：注册/登录/找回密码没有人机验证或邮箱验证兜底，
     // 而接口不会报任何错。打开 REQUIRE_AUTH_HARDENING=1 会让这种情况直接 503。
     productionReady: migrationsApplied && turnstile && email && authHardening
@@ -2167,6 +2329,10 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/sync/push") return pushSync(request, env);
   if (request.method === "GET" && url.pathname === "/api/sync/status") return syncStatus(request, env);
   if (request.method === "GET" && url.pathname === "/api/sync/pull") return pullSync(request, env);
+  if (request.method === "GET" && url.pathname === "/api/weekly-reports") return listWeeklyReports(request, env);
+  if (request.method === "GET" && url.pathname === "/api/weekly-report") return getWeeklyReportCloud(request, env);
+  if (request.method === "PUT" && url.pathname === "/api/weekly-report") return putWeeklyReportCloud(request, env);
+  if (request.method === "DELETE" && url.pathname === "/api/weekly-report") return deleteWeeklyReportCloud(request, env);
   return json({ detail: "Not found" }, 404);
 };
 
@@ -2213,5 +2379,7 @@ export default {
     for (const row of stale.results ?? []) {
       await recheckAppleEntitlement(env, row.user_id, row).catch(() => undefined);
     }
+
+    await cleanupExpiredWeeklyReports(env, now);
   }
 } satisfies ExportedHandler<Env>;

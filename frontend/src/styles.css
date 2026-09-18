@@ -1316,43 +1316,43 @@ main .kanji-variant-mark {
   color: #2B7973;
 }
 
-/* 自他标注。和 JLPT/词性那排小灰标签并排,但 自/他 那个字要跳出来:放大一档、
-   用品牌绿、加粗;后面的「动词」二字压小压暗,只当注脚。 */
+/* 自他标注在题目面承担关键提示：用实心高对比色，明显高于旁边的等级/词性标签。 */
 .voice-badge {
   display: inline-flex;
   align-items: baseline;
   gap: 0.25em;
-  border: 1px solid rgba(145, 201, 104, 0.45);
-  background: rgba(145, 201, 104, 0.14);
-  border-radius: 0.25rem;
-  padding: 0.15rem 0.5rem;
+  border: 1px solid #91C968;
+  background: #91C968;
+  border-radius: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  box-shadow: 0 0 0 2px rgba(145, 201, 104, 0.18), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .voice-badge-mark {
-  color: #91C968;
-  font-size: 1.05rem;
+  color: #20311D;
+  font-size: 1.15rem;
   font-weight: 900;
   line-height: 1.1;
 }
 
 .voice-badge-tail {
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 0.7rem;
-  font-weight: 700;
+  color: rgba(32, 49, 29, 0.78);
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
-/* 浅色主题下白字看不见,「自/他」也要压深一档才够对比 */
 [data-theme="light"] .voice-badge {
-  border-color: rgba(43, 121, 115, 0.42);
-  background: rgba(143, 203, 94, 0.22);
+  border-color: #2B7973;
+  background: #2B7973;
+  box-shadow: 0 0 0 2px rgba(43, 121, 115, 0.14), 0 2px 8px rgba(58, 46, 34, 0.16);
 }
 
 [data-theme="light"] .voice-badge-mark {
-  color: #1F6B65;
+  color: #FFFFFF;
 }
 
 [data-theme="light"] .voice-badge-tail {
-  color: rgba(58, 46, 34, 0.62);
+  color: rgba(255, 255, 255, 0.82);
 }
 
 /* 读音分组:按汉字把假名切成组,组间留一点空隙,让「初詣=はつもうで」看得出

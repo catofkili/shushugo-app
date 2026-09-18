@@ -20,6 +20,7 @@ import {
 import { useRowSelection } from "../hooks/useRowSelection";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { displayForm } from "../lib/confusion-groups";
+import { kanaToRomaji } from "../features/word-study/word-study-utils";
 import {
   addWordsToQueue,
   markWordKnownForever,
@@ -397,7 +398,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
         <input
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="搜汉字、假名或释义"
+          placeholder="搜汉字、假名、罗马音或释义"
           inputMode="search"
         />
         {searchInput && (
@@ -522,6 +523,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
         {rows.map((row) => {
           const checked = selected.has(row.id);
           const forms = wordForms(row);
+          const romaji = kanaToRomaji(row.kana);
           return (
             /* 行本身不能再是 button 了：里面还要放「熟知」那颗，button 套 button 不合法 */
             <li
@@ -550,6 +552,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
                 <span className="wl-row-word">
                   <b>{forms.primary}</b>
                   {forms.secondary && <small>{forms.secondary}</small>}
+                  {romaji && <small className="wl-row-romaji">{romaji}</small>}
                 </span>
                 <span className="wl-row-mid">
                   <span className="wl-row-meaning">{row.meaning}</span>

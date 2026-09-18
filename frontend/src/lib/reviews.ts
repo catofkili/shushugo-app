@@ -12,6 +12,7 @@ export interface ReviewEventInput {
   direction: string;
   schedulerMode?: string;
   reviewedAt?: number;
+  eventSource?: "study" | "bulk_complete" | "known_forever" | "import";
 }
 
 /**
@@ -25,15 +26,16 @@ export const recordReviewEvent = ({
   reviewedOn,
   direction,
   schedulerMode = "normal",
-  reviewedAt = Date.now()
+  reviewedAt = Date.now(),
+  eventSource = "study"
 }: ReviewEventInput): number => {
   ensureSyncSchema();
   const db = getDatabase();
   db.run(`
     INSERT INTO reviews (
       word_id, answer, score_after, reviewed_on, direction,
-      reviewed_at, scheduler_mode, fsrs_params_version
-    ) VALUES (?, ?, 0, ?, ?, ?, ?, ?)
-  `, [wordId, answer, reviewedOn, direction, reviewedAt, schedulerMode, FSRS_PARAMS_VERSION]);
+      reviewed_at, scheduler_mode, fsrs_params_version, event_source
+    ) VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?)
+  `, [wordId, answer, reviewedOn, direction, reviewedAt, schedulerMode, FSRS_PARAMS_VERSION, eventSource]);
   return firstValue<number>("SELECT last_insert_rowid()", [], 0);
 };

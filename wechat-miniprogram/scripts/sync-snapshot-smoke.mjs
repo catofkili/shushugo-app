@@ -30,6 +30,8 @@ assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM pragma_table_info
 assert.ok(core.firstValue(snapshotDb, 'SELECT sync_updated_at FROM progress WHERE word_id = ?', [leftCard.id]));
 assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM pragma_table_info(\'sync_tombstones\') WHERE name = \'table_name\''), 1);
 assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM pragma_table_info(\'sync_tombstones\') WHERE name = \'entity\''), 1);
+assert.equal(core.firstValue(snapshotDb, 'SELECT reviewed_at FROM reviews LIMIT 1'), now.getTime());
+assert.equal(core.firstValue(snapshotDb, 'SELECT event_source FROM reviews LIMIT 1'), 'study');
 snapshotDb.close();
 
 const merged = mergeSnapshot(right, snapshot);
@@ -70,10 +72,10 @@ core.ensureStudySchema(roundTripDb);
 const sameSecond = new SQL.Database();
 sameSecond.run('CREATE TABLE sync_snapshot_meta (format TEXT PRIMARY KEY, protocol_version INTEGER NOT NULL)');
 sameSecond.run('INSERT INTO sync_snapshot_meta VALUES (?, ?)', [SYNC_SNAPSHOT_FORMAT, 2]);
-sameSecond.run('CREATE TABLE reviews (id INTEGER PRIMARY KEY, word_id INTEGER, answer TEXT, score_after INTEGER, reviewed_on TEXT, created_at TEXT, direction TEXT, sync_uid TEXT)');
+sameSecond.run('CREATE TABLE reviews (id INTEGER PRIMARY KEY, word_id INTEGER, answer TEXT, score_after INTEGER, reviewed_on TEXT, created_at TEXT, direction TEXT, sync_uid TEXT, reviewed_at INTEGER, event_source TEXT)');
 for (const uid of ['ios-A:1', 'ios-A:2']) {
-  sameSecond.run('INSERT INTO reviews (word_id, answer, score_after, reviewed_on, created_at, direction, sync_uid) VALUES (?, ?, ?, ?, ?, ?, ?)', [
-    leftCard.id, 'know', 0, '2026-08-22', '2026-08-22T06:00:00.000Z', 'forward', uid
+  sameSecond.run('INSERT INTO reviews (word_id, answer, score_after, reviewed_on, created_at, direction, sync_uid, reviewed_at, event_source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+    leftCard.id, 'know', 0, '2026-08-22', '2026-08-22T06:00:00.000Z', 'forward', uid, now.getTime(), 'study'
   ]);
 }
 sameSecond.run('CREATE TABLE grammar_progress (grammar_id INTEGER PRIMARY KEY, seen_count INTEGER, forgot_count INTEGER, fsrs_due TEXT)');
@@ -89,6 +91,8 @@ assert.equal(
   2,
   '回传的快照里也必须还是两条'
 );
+assert.equal(core.firstValue(roundTripSnapshot, 'SELECT reviewed_at FROM reviews WHERE sync_uid = ?', ['ios-A:1']), now.getTime());
+assert.equal(core.firstValue(roundTripSnapshot, 'SELECT event_source FROM reviews WHERE sync_uid = ?', ['ios-A:1']), 'study');
 assert.equal(
   core.firstValue(roundTripSnapshot, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'grammar_progress'"),
   1,

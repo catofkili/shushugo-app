@@ -417,7 +417,8 @@ export function completeTodayWordPlan(): { stats: WordStats; completedCount: num
       answer: "know",
       reviewedOn: day,
       direction: "forward",
-      schedulerMode: "normal"
+      schedulerMode: "normal",
+      eventSource: "bulk_complete"
     }));
 
     setReviewQueue(getReviewQueue().filter((item) => !ids.includes(item.word_id)));
@@ -702,7 +703,8 @@ const applyKnownForever = (id: number, studyDate: string): boolean => {
     answer: "known_forever",
     reviewedOn: studyDate,
     direction: "forward",
-    schedulerMode: "known_forever"
+    schedulerMode: "known_forever",
+    eventSource: "known_forever"
   });
   return true;
 };
@@ -1382,11 +1384,11 @@ export function updateWordQuestionMeaning(wordId: number, text: string): {
   };
 }
 
-export function addWordStudySeconds(seconds: number): { seconds: number; stats: WordStats } {
-  // 只写 word_study_time 的话学习时长跨设备永远不同步(那张表按天单主键,
-  // 没法合并)。改走 by_device:记本设备那行,再把当天跨设备合计写回原表。
+export function addWordStudySeconds(seconds: number, atMs = Date.now()): { seconds: number; stats: WordStats } {
+  // 旧的按学习日汇总继续保留；周报另外按 14:00 周期记一份账，避免
+  // 周日 14:00 的边界被「凌晨 4 点学习日」口径吞掉。
   ensureSyncSchema();
-  recordStudySeconds(today(), seconds);
+  recordStudySeconds(today(), seconds, atMs);
 
   import("./storage").then(({ scheduleSave }) => scheduleSave());
   return {

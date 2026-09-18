@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { MasteryStatus, ReviewItem } from "../types/grammar";
+import { recordGrammarActivity } from "../lib/analytics/grammar-activity";
 
 const REVIEW_KEY = "jp-grammar-review";
 const LEARNED_KEY = "jp-grammar-learned";
@@ -55,6 +56,7 @@ export const useStudyStore = () => {
   };
 
   const markLearned = (grammarId: string) => {
+    recordGrammarActivity(grammarId, "know");
     setLearned((current) => (current.includes(grammarId) ? current : [...current, grammarId]));
     setReviews((current) => {
       const existing = current.find((item) => item.grammarId === grammarId);
@@ -71,6 +73,7 @@ export const useStudyStore = () => {
   };
 
   const addToReview = (grammarId: string) => {
+    recordGrammarActivity(grammarId, "read");
     setReviews((current) => {
       if (current.some((item) => item.grammarId === grammarId)) return current;
       return [
@@ -81,6 +84,7 @@ export const useStudyStore = () => {
   };
 
   const recordReview = (grammarId: string, isCorrect: boolean) => {
+    recordGrammarActivity(grammarId, isCorrect ? "know" : "forgot");
     setReviews((current) => {
       const existing = current.find((item) => item.grammarId === grammarId) ?? {
         grammarId,

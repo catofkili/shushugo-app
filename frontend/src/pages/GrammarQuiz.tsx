@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ListOrdered, Plus, Undo2 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
 import { GrammarCard } from "../features/grammar-quiz/GrammarCard";
+import { useStudyTimer } from "../lib/useStudyTimer";
 import {
   extendGrammarQuizPlan,
   getGrammarQuizSession,
@@ -64,6 +65,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
   const ranking = showRanking ? grammarQuizRanking(level) : [];
 
   const card = session?.card ?? null;
+  useStudyTimer(Boolean(card));
   const done = session?.done ?? 0;
   const total = session?.total ?? 0;
   const percent = total > 0 ? Math.round((done / total) * 100) : 0;

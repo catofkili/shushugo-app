@@ -36,6 +36,10 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
   fullJlptPlan: {
     title: "完整 JLPT 规划是 Pro 功能",
     body: "把 N1-N5 的单词、语法和复习节奏作为一整套计划管理。"
+  },
+  weeklyReportCloudHistory: {
+    title: "云端历史回顾是 Pro 功能",
+    body: "在登录后的其他设备恢复已经保存的学习回顾；本机已有历史和最新回顾仍可免费阅读。"
   }
 };
 

@@ -32,6 +32,7 @@ Apple 的 App Review Guidelines 要求开发者只提交自己创建或已获许
 | 汉字读音 | `frontend/src/data/kanji_readings.json` | 元数据记录 KANJIDIC2，CC BY-SA 4.0 | 保留 KANJIDIC2 署名、许可链接及适用义务；核对衍生数据是否需要相同方式共享 |
 | 汉字变体 | `frontend/src/data/kanji_variants.json` | 使用 OpenCC 字典、Unicode Unihan 等上游资料 | 保存各上游许可证和 NOTICE，并按其要求署名/分发 |
 | 单词音频 | `frontend/public/audio/words/` | 当前包含 VOICEVOX 春日部つむぎ、雨晴はう、玄野武宏的预生成 AAC，各 11,051 条 | 保留准确署名 `VOICEVOX:春日部つむぎ`、`VOICEVOX:雨晴はう`、`VOICEVOX:玄野武宏(CV:ガロ)`；不要把原始 AAC 作为独立素材包或用于训练/制作音声模型 |
+| 例句音频 | `frontend/public/audio/examples/`（不入库；计划放 R2） | 2026-09-18 生成，VOICEVOX 春日部つむぎ 11,655 条 AAC。⚠️ 生成时用 macOS 自带 Kyoko 念一遍当**语调参考**（只提取音高曲线写进 VOICEVOX 查询，Kyoko 的音频一个字节都不发布，见 `scripts/prosody-transfer.mjs`）。macOS SLA 对系统语音的**输出**限定个人非商用；音高曲线是否算「输出」没有先例，风险低但是灰的 | 署名同单词音频。要彻底去掉灰区就把参考引擎换成 AivisSpeech（ACML 1.0，商用允许、署名自愿），只改 `referenceWav` 一个函数，重跑约 6 小时 |
 | 第三方依赖 | `frontend/package-lock.json`、`frontend/node_modules/`、`frontend/ios/App/Pods/` | 依赖自身带有许可证文件，但尚未形成发行版 NOTICE 汇总 | 发布前生成并检查第三方许可证/NOTICE 清单 |
 | 图片、图标、字体、宣传素材 | `frontend/ios/`、`frontend/public/`、App Store 素材 | 本清单未证明全部拥有权利 | 逐项登记来源和许可；删除无法证明的素材 |
 
@@ -109,7 +110,11 @@ Apple 的 App Review Guidelines 要求开发者只提交自己创建或已获许
   `frontend/scripts/grammar-example-rewrites/`（n1~n5），
   对照表在 `docs/GRAMMAR_EXPLANATION_REWRITE_COMPARISON.md` 和
   `docs/GRAMMAR_EXAMPLE_REWRITE_COMPARISON.md`。**这些都是独立创作的证据链，不要删。**
-- **未处理（选目层）**：条目集合、切分方式、分级归属、排序，741 条全部沿用原书。
+- **选目层已动过一处（2026-09-18）**：26 条「A／B」标题按「两个写法能不能互相推出来」拆成 54 条
+  （741 → 769），新条目的解释、例句、抓手全部是独立写的，记录在
+  `frontend/scripts/grammar-variant-splits.json`（判据见 CLAUDE.md「语法考题：一张卡两个写法」）。
+  这是按学习需要做的切分，不是照抄任何一本书的目录；其余仍沿用原书。
+- **未处理（选目层，其余部分）**：条目集合、分级归属、排序仍沿用原书。
   最扎眼的一条是 `bookOrder`：值是 **1~741 的全书连续序**，字段名就叫 bookOrder ——
   它不是「某种排序」，是逐条记下的那本书的目录序，而且是全应用的显示排序键
   （`grammar-numbering.ts` 的编号、`build-furigana.mjs` 与 `verify-release-db.mjs`

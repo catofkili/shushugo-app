@@ -12,7 +12,9 @@ import {
   type StubbornWordToday
 } from "../../lib/api";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
+import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { preferredWordSurface } from "../../lib/orthography";
+import { getGrammarTitleFuriganaByPattern } from "../../lib/grammar-title-furigana";
 
 /** 顽固词那一行。完成页的今日清单和历史清单共用这一份，别再写第二套行样式。 */
 export const StubbornWordRow = ({
@@ -48,7 +50,7 @@ export const StubbornGrammarRow = ({ point }: { point: StubbornGrammarToday }) =
       {point.level}
     </span>
     <div className="min-w-0 flex-1">
-      <p className="jp-serif truncate text-base font-semibold text-white">{point.pattern}</p>
+      <p className="jp-serif truncate text-base font-semibold text-white"><JapaneseRuby text={point.pattern} furigana={getGrammarTitleFuriganaByPattern(point.pattern)} /></p>
       <p className="truncate text-xs text-white/55">{point.meaning}</p>
     </div>
     <span className="shrink-0 text-[11px] text-white/45">

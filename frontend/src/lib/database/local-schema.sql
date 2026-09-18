@@ -42,6 +42,16 @@ CREATE TABLE IF NOT EXISTS grammar_reviews (
   FOREIGN KEY(grammar_id) REFERENCES grammar_points(id)
 );
 
+-- 语法辞典/沉浸式阅读的轻量学习事件。它们不改变 FSRS，只让周报知道用户确实学习过。
+CREATE TABLE IF NOT EXISTS grammar_activity_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  grammar_id TEXT NOT NULL,
+  answer TEXT NOT NULL DEFAULT 'read',
+  activity_at INTEGER NOT NULL,
+  activity_on TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS grammar_state (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
@@ -303,6 +313,31 @@ CREATE TABLE IF NOT EXISTS moments (
 );
 
 CREATE INDEX IF NOT EXISTS idx_moments_fired_on ON moments(fired_on);
+
+-- 周报按 14:00 周期记账。每台设备一行，避免跨设备合并时重复累加。
+-- period_start 是本地时间的周日 14:00，格式 YYYY-MM-DD HH:MM。
+CREATE TABLE IF NOT EXISTS study_time_by_period (
+  period_start TEXT NOT NULL,
+  device_id TEXT NOT NULL,
+  seconds INTEGER NOT NULL DEFAULT 0,
+  sync_updated_at TEXT,
+  sync_origin_device TEXT,
+  PRIMARY KEY (period_start, device_id)
+);
+
+-- 一周一份展示快照。报告正文放 JSON，便于规则升级后保留历史原貌；
+-- 阅读状态和快照一起进入本地增量持久化，云端归档仍由 Pro 周报接口单独处理。
+CREATE TABLE IF NOT EXISTS weekly_reports (
+  week_start TEXT PRIMARY KEY,
+  week_end TEXT NOT NULL,
+  generated_at INTEGER NOT NULL,
+  schema_version INTEGER NOT NULL DEFAULT 3,
+  content_json TEXT NOT NULL,
+  read_at INTEGER,
+  source_revision TEXT,
+  sync_updated_at TEXT,
+  sync_origin_device TEXT
+);
 
 -- 汉字单元调度的本地内容、长期记忆和学习日检查点。
 -- 内容来自随 App 发布的 kanji_reading_unit_index.json，不属于用户同步数据；

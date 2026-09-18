@@ -37,6 +37,7 @@ import {
   MEMORY_BANDS,
   classifyPos,
   queryWordLibrary,
+  romajiToKana,
   tallyWordLibrary,
   wordLibraryDetail,
   wordLibraryIds,
@@ -96,10 +97,18 @@ describe("词库取数", () => {
     expect(rows.some((row) => row.isDue)).toBe(false);
   });
 
-  it("搜索命中汉字、假名或释义", () => {
+  it("搜索命中汉字、假名、输入法式罗马音或释义", () => {
     const rows = queryWordLibrary(filters({ search: "食" }), 0, 20);
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.every((row) => `${row.kanji}${row.kana}${row.meaning}`.includes("食"))).toBe(true);
+
+    expect(romajiToKana("shatsu")).toBe("しゃつ");
+    expect(romajiToKana("syatu")).toBe("しゃつ");
+    expect(romajiToKana("gakkou")).toBe("がっこう");
+    expect(romajiToKana("konnichiha")).toBe("こんにちは");
+    expect(romajiToKana("kan'i")).toBe("かんい");
+    expect(queryWordLibrary(filters({ search: "shatsu" }), 0, 20).some((row) => row.kana === "シャツ")).toBe(true);
+    expect(queryWordLibrary(filters({ search: "gakkou" }), 0, 20).some((row) => row.kanji.includes("学校"))).toBe(true);
   });
 
   it("词性桶把 48 种写法收敛成七类", () => {

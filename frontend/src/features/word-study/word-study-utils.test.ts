@@ -114,6 +114,7 @@ describe("word-study-utils", () => {
 
   it("romanizes small kana and doubled consonants", () => {
     expect(kanaToRomaji("きゃっこう")).toBe("kya kko u");
+    expect(kanaToRomaji("シャツ")).toBe("sha tsu");
   });
 
   it("formats short and long study durations", () => {

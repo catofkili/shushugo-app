@@ -214,7 +214,7 @@ const reconcileStage1NewQuota = (day: string) => {
   `, [day, day, remainingNewQuota]);
 };
 
-export const STAGE1_PLAN_VERSION = "review-first-random-v3";
+export const STAGE1_PLAN_VERSION = "capped-random-v4";
 
 const resetUnansweredStage1PlanForVersion = (day: string) => {
   if (getState("stage1_plan_version", "") === STAGE1_PLAN_VERSION) return;
@@ -323,6 +323,12 @@ export const pickStage1Next = (
       p.fuzzy_count,
       p.forgot_count,
       p.mistake_streak,
+      -- stability / difficulty / last_review 一起带上:优先级按 stability 排,排片器的
+      -- recall 也从这几列算。少了它们 recallFromRow 返回 undefined → 每张卡都是 0.7,
+      -- 开场减压和连败保护在正向这条路上从来没生效过(2026-09-17 查明)。
+      p.fsrs_stability,
+      p.fsrs_difficulty,
+      p.fsrs_last_review,
       p.fsrs_due,
       p.fsrs_lapses,
       p.fsrs_state,
@@ -372,12 +378,22 @@ export const pickStage1Next = (
     JOIN stage1_tasks t ON t.word_id = r.word_id AND t.reviewed_on = r.reviewed_on
     WHERE t.reviewed_on = ?
   `, [day], 0);
-  const preferredRows = shouldPickStage1NewWord(
+  const recent = recentAnswersToday(day, INTERFERENCE_WINDOW);
+  const interference = sessionInterference(day, rows);
+  const wantNew = shouldPickStage1NewWord(
     reviewRows.length,
     newRows.length,
     completedTaskCount,
     deterministic ? 1 : undefined
-  ) ? newRows : reviewRows.length ? reviewRows : newRows;
+  );
+  // 新词道常常只有一两个候选(配额小 / 快背完了)。排片器的干扰隔离是「过滤空了就当没这条」,
+  // 一个候选自己撞上刚出过的同组词时它必然放行 —— 見る 刚答完就出 ご覧になる。
+  // 所以这一轮新词全部撞车、复习道还有词时,把这一轮让给复习道,新词下一轮再来。
+  const conflictsRecent = (row: Record<string, unknown>) =>
+    recent.wordIds.some((id) => interference.conflicts(Number(row.id), id));
+  const preferredRows = wantNew && !(reviewRows.length && newRows.every(conflictsRecent))
+    ? newRows
+    : reviewRows.length ? reviewRows : newRows;
   const candidates = preferredRows.map((row) => {
     const dueAfter = queueById.get(Number(row.id)) ?? 0;
     const components = priorityComponents(row, queueById.get(Number(row.id)), newQuotaLeft, {
@@ -401,7 +417,6 @@ export const pickStage1Next = (
   }
 
   // 排片:干扰隔离 / 开场减压 / 连败保护,最后按优先级加权随机。
-  const recent = recentAnswersToday(day, INTERFERENCE_WINDOW);
   const byId = new Map(ready.map((item) => [item.row, item]));
   const picked = pickNextInSequence(
     ready.map((item) => ({
@@ -414,7 +429,7 @@ export const pickStage1Next = (
       answeredToday: recent.answeredToday,
       recentIds: recent.wordIds,
       wrongStreak: recent.wrongStreak,
-      interference: sessionInterference(day, rows),
+      interference,
       ...(deterministic ? { random: () => 0 } : {})
     }
   );

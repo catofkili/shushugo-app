@@ -17,7 +17,7 @@
 export const USER_DATA_TABLES = [
   // 词
   "progress", "reviews", "checkins", "critical_reviews", "word_notes",
-  "word_study_time", "word_study_time_by_device", "word_question_meanings",
+  "word_study_time", "word_study_time_by_device", "study_time_by_period", "weekly_reports", "word_question_meanings",
   "stage1_tasks", "stage2_progress", "reverse_memory", "confusion_mastered",
   "dictionary_discovered_words", "moji_migrated_reviews", "custom_words",
   // 汉字
@@ -25,7 +25,7 @@ export const USER_DATA_TABLES = [
   "kanji_reading_memory", "kanji_reading_progress",
   "kanji_unit_memory", "kanji_unit_flags", "kanji_unit_tasks", "kanji_unit_reviews",
   // 语法
-  "grammar_progress", "grammar_reviews", "grammar_mistakes",
+  "grammar_progress", "grammar_reviews", "grammar_activity_events", "grammar_mistakes",
   "grammar_points_archive", "grammar_highlights", "grammar_reading_positions",
   // 其它
   "achievements", "content_favorites", "favorite_folders", "moments", "vocab_test_history"

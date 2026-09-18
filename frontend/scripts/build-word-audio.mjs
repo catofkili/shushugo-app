@@ -43,6 +43,8 @@ import { splitMorae } from "../src/lib/pitch-accent.ts";
 // 同元音连着两拍时,引擎会把第二拍压到 40~90ms。长音该压,语素边界(湖 = 水+海)不该。
 // 判定表和撑开逻辑在这里,审计脚本 audit-vowel-sequences.mjs 读同一份。
 import { separatedMoraIndices, stretchMoras, loadDecisions } from "./vowel-sequences.mjs";
+// 读音校验、明确假名记法和例句脚本共用一份。
+import { queryMoras, pronunciationMismatch, explicitKanaNotation } from "./voicevox-reading.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dbPath = join(here, "..", "public", "nihongo.db");
@@ -180,86 +182,20 @@ async function voicevoxAccentPhrases(kanaNotation) {
   return response.json();
 }
 
-const queryMoras = (query) => query.accent_phrases?.flatMap((phrase) => phrase.moras ?? []) ?? [];
-
-// VOICEVOX 会把正字法的 オウ/エイ 规范成实际长音,这不是误读;真正危险的是拍数变化、
-// ツ→ッ,以及把词里的 は/へ 当成助词读成 ワ/エ(花芽→ワナメ、へま→エマ)。
-//
-// 注意:这里**绝不能**放行 ワ↔ハ 或 エ↔ヘ。真·助词的 は/へ 在 speechText 里已经改写成
-// ワ/エ 写进 intended 了(こんにちは→コンニチワ),所以 intended 里剩下的 ハ/ヘ 一定是
-// 必须照读的音。曾经放行过这两条,结果 10 个词被合成成了错音。
-function equivalentMora(actual, intended, previousActual) {
-  if (actual.text === intended) return true;
-  if (actual.text === "オ" && intended === "ヲ") return true; // を 现代日语一律读 o
-  if ((actual.text === "ジ" && intended === "ヂ") || (actual.text === "ズ" && intended === "ヅ")) return true;
-  const previousVowel = previousActual?.vowel?.toLowerCase();
-  if (intended === "ー" && actual.vowel?.toLowerCase() === previousVowel) return true;
-  if (actual.text === "オ" && intended === "ウ" && previousVowel === "o") return true;
-  if (actual.text === "エ" && intended === "イ" && previousVowel === "e") return true;
-  return false;
-}
-
-function pronunciationMismatch(query, intendedText) {
-  const actual = queryMoras(query);
-  const intended = splitMorae(intendedText);
-  if (actual.length !== intended.length) {
-    return `拍数 ${actual.length} != ${intended.length}(${actual.map((mora) => mora.text).join("")} != ${intended.join("")})`;
-  }
-  for (let index = 0; index < intended.length; index += 1) {
-    if (!equivalentMora(actual[index], intended[index], actual[index - 1])) {
-      return `第 ${index + 1} 拍 ${actual[index].text} != ${intended[index]}`;
-    }
-  }
-  return null;
-}
-
-/** 把结构化查询重新写成官方 AquesTalk 风格明确假名。之后 synthesis 不再猜分词。 */
-function explicitKanaNotation(query, accent, intendedText) {
-  const phrases = query.accent_phrases ?? [];
-  const actual = queryMoras(query);
-  const intended = splitMorae(intendedText);
-  if (actual.length !== intended.length) {
-    throw new Error(
-      `VOICEVOX 读音校验失败:拍数 ${actual.length} != ${intended.length}` +
-      `(${actual.map((mora) => mora.text).join("")} != ${intended.join("")})`
-    );
-  }
-  let flatIndex = 0;
-  return phrases.map((phrase) => {
-    const morae = phrase.moras ?? [];
-    const chosenAccent =
-      phrases.length === 1 && accent !== null
-        ? accent === 0
-          ? morae.length
-          : Math.min(Math.max(accent, 1), morae.length)
-        : Math.min(Math.max(phrase.accent ?? morae.length, 1), morae.length);
-    return morae.map((mora, index) => {
-      const target = intended[flatIndex];
-      const previous = actual[flatIndex - 1];
-      // 保留正常的长音/助词规范化；其余差异(こういう→こうゆう、ツ→ッ 等)
-      // 直接锁回词库指定的这一拍。
-      const lockedText = equivalentMora(mora, target, previous) ? mora.text : target;
-      flatIndex += 1;
-      const devoiced = mora.vowel === "I" || mora.vowel === "U" ? "_" : "";
-      return `${devoiced}${lockedText}${index + 1 === chosenAccent ? "'" : ""}`;
-    }).join("");
-  }).join("/");
-}
-
 const cleanSurface = (text) => text.replace(/\[[^\]]*\]/g, "").replace(/[〜～~\s]/g, "");
 
 /** 走完除合成外的全部流程,返回最终交给引擎的明确假名记法。--verify 用它复核已生成的音频。 */
 async function voicevoxNotationFor(item) {
   const { reading, text: intendedText, accent, kanji } = item;
   let query = await voicevoxQuery(reading);
-  if (pronunciationMismatch(query, intendedText)) {
+  if (pronunciationMismatch(query, splitMorae(intendedText))) {
     const surface = cleanSurface(kanji);
     if (surface && surface !== reading) {
       const surfaceQuery = await voicevoxQuery(surface);
-      if (!pronunciationMismatch(surfaceQuery, intendedText)) query = surfaceQuery;
+      if (!pronunciationMismatch(surfaceQuery, splitMorae(intendedText))) query = surfaceQuery;
     }
   }
-  return explicitKanaNotation(query, useAccent ? accent : null, intendedText);
+  return explicitKanaNotation(query, useAccent ? accent : null, splitMorae(intendedText));
 }
 
 async function voicevoxSynthesize(item) {
@@ -271,12 +207,12 @@ async function voicevoxSynthesize(item) {
   // 纯假名偶尔会被误分词(はは→ワワ、つかう→ツカア)。这时让表记参与第二次判断:
   // 母/木の葉/流派/使う 会恢复正确音素；若汉字存在多读(角、開く),只有与卡片
   // 指定读音完全相符时才采用，绝不让引擎替卡片挑读音。
-  let mismatch = pronunciationMismatch(query, intendedText);
+  let mismatch = pronunciationMismatch(query, splitMorae(intendedText));
   if (mismatch) {
     const surface = cleanSurface(kanji);
     if (surface && surface !== reading) {
       const surfaceQuery = await voicevoxQuery(surface);
-      if (!pronunciationMismatch(surfaceQuery, intendedText)) {
+      if (!pronunciationMismatch(surfaceQuery, splitMorae(intendedText))) {
         query = surfaceQuery;
         mismatch = null;
       }
@@ -284,10 +220,10 @@ async function voicevoxSynthesize(item) {
   }
 
   // 拍数一致时用明确假名把剩余差异锁回词库读音；拍数改变则宁可失败也不猜。
-  const notation = explicitKanaNotation(query, useAccent ? accent : null, intendedText);
+  const notation = explicitKanaNotation(query, useAccent ? accent : null, splitMorae(intendedText));
   query.accent_phrases = await voicevoxAccentPhrases(notation);
   query.kana = notation;
-  mismatch = pronunciationMismatch(query, intendedText);
+  mismatch = pronunciationMismatch(query, splitMorae(intendedText));
   if (mismatch) throw new Error(`VOICEVOX 明确假名校验失败:${mismatch}`);
   // 撑开必须放在最后:上面那次 accent_phrases 会按记法重算整份拍表,先撑就被覆盖掉了。
   const stretched = stretchMoras(query, separatedMoraIndices(kanji, item.kana, vowelDecisions));
@@ -381,7 +317,7 @@ if (flag("--verify")) {
       // 走完整流程拿到最终交给引擎的明确假名,再用管线自己的判定规则核对音素。
       // 长音、ヅ/ヂ、を→オ 这些等价写法由 equivalentMora 放行,不算错。
       const notation = await voicevoxNotationFor(item);
-      const check = pronunciationMismatch({ accent_phrases: await voicevoxAccentPhrases(notation) }, item.text);
+      const check = pronunciationMismatch({ accent_phrases: await voicevoxAccentPhrases(notation) }, splitMorae(item.text));
       if (check) bad.push({ item, detail: `${check}(记法 ${notation})` });
     } catch (error) {
       bad.push({ item, detail: `流程报错:${error.message}` });

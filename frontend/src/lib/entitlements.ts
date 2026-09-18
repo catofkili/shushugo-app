@@ -7,7 +7,8 @@ export type FeatureId =
   | "advancedDashboard"
   | "unlimitedMistakes"
   | "fullJlptPlan"
-  | "stubbornHistory";
+  | "stubbornHistory"
+  | "weeklyReportCloudHistory";
 
 export interface EntitlementState {
   isPro: boolean;

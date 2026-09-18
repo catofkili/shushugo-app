@@ -1,7 +1,8 @@
 import type { Database } from "sql.js";
 import { createDatabase, getDatabase } from "../database";
 import { ensureSyncSchema } from "./schema";
-import { DEVICE_LOCAL_GRAMMAR_STATE_KEYS, DEVICE_LOCAL_STATE_KEYS, SYNCED_TABLES } from "./tables";
+import { DEVICE_LOCAL_GRAMMAR_STATE_KEYS, DEVICE_LOCAL_STATE_KEYS, syncedTablesForCloud } from "./tables";
+import { canUseFeature, getEntitlements } from "../entitlements";
 
 export const SYNC_SNAPSHOT_FORMAT = "master-nihongo-user-sqlite-v1";
 /** 同步协议版本独立于 SQLite schema，便于将来切换增量协议而不误读旧快照。 */
@@ -114,7 +115,7 @@ const columnsOf = (db: Database, table: string): string[] => {
   return names;
 };
 
-const copyTable = (source: Database, target: Database, table: string): void => {
+const copyTable = (source: Database, target: Database, table: string, extraWhere = ""): void => {
   if (!tableExists(source, table)) return;
   const createSql = String(firstValue(
     source,
@@ -139,6 +140,7 @@ const copyTable = (source: Database, target: Database, table: string): void => {
     where = " WHERE reviewed_on >= ?";
     bindings.push(retentionCutoff(retentionDays));
   }
+  if (extraWhere) where = where ? `${where} AND (${extraWhere})` : ` WHERE ${extraWhere}`;
 
   // ⚠️ 边读边写,不要先把整张表装进 values[] 再逐行 run()。
   // reviews 一张表就有四万多行,先攒后写等于在导出的那一刻把整份用户数据
@@ -181,8 +183,15 @@ export async function exportSyncSnapshot(): Promise<Uint8Array> {
     // 元数据不能放“导出时间”：否则学习数据完全没变时，快照哈希仍然变化，
     // 会破坏服务端对超时重试的内容幂等判断。
     snapshot.run(`INSERT INTO ${META_TABLE} (format, protocol_version) VALUES (?, ?)`, [SYNC_SNAPSHOT_FORMAT, SYNC_PROTOCOL_VERSION]);
-    const tables = new Set([...SYNCED_TABLES.map((entry) => entry.table), ...EXTRA_TABLES]);
-    for (const table of tables) copyTable(source, snapshot, table);
+    const includeWeeklyReports = canUseFeature("weeklyReportCloudHistory", getEntitlements());
+    const tables = new Set([...syncedTablesForCloud(includeWeeklyReports).map((entry) => entry.table), ...EXTRA_TABLES]);
+    for (const table of tables) {
+      // 删除墓碑里也可能带有旧周报键；免费快照连这类历史索引都不带走。
+      const extraWhere = table === "sync_tombstones" && !includeWeeklyReports
+        ? "table_name <> 'weekly_reports'"
+        : "";
+      copyTable(source, snapshot, table, extraWhere);
+    }
     const bytes = new Uint8Array(snapshot.export());
     lastSnapshotBytes = bytes.byteLength;
     return bytes;

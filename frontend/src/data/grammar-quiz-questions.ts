@@ -33,6 +33,10 @@ export const MANUAL_GRAMMAR_QUESTIONS: Readonly<Record<string, string>> = {
   "敬語の特殊形（特殊敬语动词）": "敬語の特殊形"
 };
 
-/** 翻面前的题面：没有人工改稿的句型保留原文。 */
+/**
+ * 翻面前的题面：没有人工改稿的句型保留原文。
+ * 重名消歧后缀「（N1-2）」只是数据库的 UNIQUE 约束需要它，题面上摘掉 ——
+ * 「～とは」在 N3（下定义）和 N1（吃惊）各一条，后缀会提前把「这是哪一条」说出去。
+ */
 export const grammarQuizQuestion = (pattern: string): string =>
-  MANUAL_GRAMMAR_QUESTIONS[pattern] ?? pattern;
+  MANUAL_GRAMMAR_QUESTIONS[pattern] ?? pattern.replace(/（N[1-5]-\d+）$/, "");

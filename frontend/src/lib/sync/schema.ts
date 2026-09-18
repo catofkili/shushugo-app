@@ -77,6 +77,22 @@ export function ensureSyncSchema(): void {
     )
   `);
 
+  // 周报表由懒加载页面首次打开时创建；先在同步地基里建空表，
+  // 才能让下面的追踪列和触发器覆盖首次生成周报的数据库实例。
+  db.run(`
+    CREATE TABLE IF NOT EXISTS weekly_reports (
+      week_start TEXT PRIMARY KEY,
+      week_end TEXT NOT NULL,
+      generated_at INTEGER NOT NULL,
+      schema_version INTEGER NOT NULL DEFAULT 3,
+      content_json TEXT NOT NULL,
+      read_at INTEGER,
+      source_revision TEXT,
+      sync_updated_at TEXT,
+      sync_origin_device TEXT
+    )
+  `);
+
   for (const entry of SYNCED_TABLES) {
     if (!tableExists(entry.table)) continue;
     // 老库在 study-core 迁移前可能还没有方向列；同步自然键需要它，
@@ -89,6 +105,7 @@ export function ensureSyncSchema(): void {
       if (!columns.has("reviewed_at")) db.run("ALTER TABLE reviews ADD COLUMN reviewed_at INTEGER");
       if (!columns.has("scheduler_mode")) db.run("ALTER TABLE reviews ADD COLUMN scheduler_mode TEXT NOT NULL DEFAULT 'legacy'");
       if (!columns.has("fsrs_params_version")) db.run("ALTER TABLE reviews ADD COLUMN fsrs_params_version TEXT NOT NULL DEFAULT 'legacy'");
+      if (!columns.has("event_source")) db.run("ALTER TABLE reviews ADD COLUMN event_source TEXT NOT NULL DEFAULT 'legacy'");
     }
     ensureTrackingColumns(entry);
     ensureTriggers(entry);

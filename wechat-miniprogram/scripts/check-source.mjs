@@ -79,7 +79,7 @@ const checks = [
   ,['kanji cards filter by orthography', studyCore.includes('shouldStudyKanjiReading') && orthography.includes('band === \'kana\'')]
   ,['kanji prompt conceals the reading', indexPage.includes('reading-blank') && studyCore.includes('concealedReading')]
   ,['orthography data matches frontend', orthographyInSync === true || orthographyInSync === 'skipped']
-  ,['grammar library is wired to local table', grammar.includes('FROM grammar_points') && grammarSmoke.includes('741')]
+  ,['grammar library is wired to local table', grammar.includes('FROM grammar_points') && grammarSmoke.includes('769')]
   ,['word library has local filters and memory bands', wordLibrary.includes('BAND_SQL') && wordLibrary.includes('setWordsKnownForever') && wordLibrarySmoke.includes('入口')]
   ,['quick and mistake queues are independent', modes.includes('mode_tasks') && modes.includes('createModePlan') && modesSmoke.includes("mode: 'quick'")]
   ,['confusion groups are computed from local words', confusion.includes('buildGroups') && confusion.includes('confusion_mastered') && confusionSmoke.includes('1912')]

@@ -186,6 +186,12 @@ if (declaredRowCount !== seedShapedDbRows.length) {
     `study-core 的 GRAMMAR_SEED_ROW_COUNT ${declaredRowCount} != grammar_points ${seedShapedDbRows.length}`
   );
 }
+// id 必须等于种子行号：ensureGrammarSeed 重建时会重置 sqlite_sequence 再按种子顺序插入，
+// 老用户重建出来的 id 就是 1..N；出厂库不一样的话两边 grammar_progress 同步会串号。
+const misnumbered = (db.exec("SELECT COUNT(*) FROM grammar_points WHERE id != sort_order")[0]?.values?.[0]?.[0]) ?? 0;
+if (Number(misnumbered) || (db.exec("SELECT MAX(id) FROM grammar_points")[0]?.values?.[0]?.[0]) !== seedShapedDbRows.length) {
+  grammarMismatches.push(`grammar_points 的 id 必须等于 sort_order 且从 1 连续到 ${seedShapedDbRows.length}`);
+}
 if (seedShapedDbRows.length !== grammarSeed.rows.length) {
   grammarMismatches.push(`grammar_seed 行数 ${grammarSeed.rows.length} != grammar_points ${seedShapedDbRows.length}`);
 } else {

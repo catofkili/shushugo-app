@@ -65,14 +65,32 @@ export function speechText(kanji: string, kana: string): string {
  * 用 NFD(ダ = タ+゛)、Linux 服务器按 NFC 查找,同一个名字两边对不上就白白 404。
  * 纯 ASCII 哈希绕开整个归一化问题。64 位在一万条量级上碰撞概率约 3e-12。
  */
-export function pronunciationAudioName(kanji: string, kana: string): string {
+const fnv64 = (text: string): string => {
   let hash = 0xcbf29ce484222325n;
-  for (const char of `${kanji}|${kana}`) {
+  for (const char of text) {
     hash ^= BigInt(char.codePointAt(0) ?? 0);
     hash = (hash * 0x100000001b3n) & 0xffffffffffffffffn;
   }
   return hash.toString(16).padStart(16, "0");
+};
+
+export function pronunciationAudioName(kanji: string, kana: string): string {
+  return fnv64(`${kanji}|${kana}`);
 }
+
+/** 例句音频的文件名 = 句子原文的哈希。改一句只换一个文件,旧的当孤儿清掉。 */
+export function exampleAudioName(sentence: string): string {
+  return fnv64(sentence.trim());
+}
+
+/**
+ * 音频放在哪:默认跟着页面走(public/audio/,打进包里);设了 VITE_AUDIO_BASE_URL
+ * 就从那里拉(R2 公开域名),包里一个字节不带,用户磁盘上只有他听过的。
+ * ⚠️ 跨域时 index.json 是 fetch 出来的,R2 桶要开 CORS(GET, *);<audio> 本身不需要。
+ */
+// 函数而不是常量:生成脚本在 Node 里 import 这个文件取哈希函数,那里没有 import.meta.env。
+const audioBase = (): string =>
+  ((import.meta.env.VITE_AUDIO_BASE_URL as string | undefined) || `${import.meta.env.BASE_URL}audio/`).replace(/\/*$/, "/");
 
 /**
  * 音频库的索引(由 scripts/build-word-audio.mjs 写出)。没跑过生成脚本时它不存在,
@@ -94,49 +112,54 @@ interface AudioIndex {
   default: string | null;
 }
 
-let audioIndex: AudioIndex | null = null;
-let audioIndexLoaded = false;
-let audioIndexLoading: Promise<void> | null = null;
+type AudioKind = "words" | "examples";
+const audioIndex: Record<AudioKind, AudioIndex | null> = { words: null, examples: null };
+const audioIndexLoading: Partial<Record<AudioKind, Promise<void>>> = {};
 
-const loadAudioIndex = (): Promise<void> => {
-  if (audioIndexLoaded) return Promise.resolve();
-  audioIndexLoading ??= fetch(`${import.meta.env.BASE_URL}audio/words/index.json`)
+const loadAudioIndex = (kind: AudioKind): Promise<void> => {
+  audioIndexLoading[kind] ??= fetch(`${audioBase()}${kind}/index.json`)
     .then((response) => (response.ok ? response.json() : null))
     .then((data) => {
       // 开发服务器对不存在的路径会回 index.html,所以要验一下拿到的确实是索引
-      audioIndex = Array.isArray(data?.voices) && data.voices.length ? (data as AudioIndex) : null;
+      audioIndex[kind] = Array.isArray(data?.voices) && data.voices.length ? (data as AudioIndex) : null;
     })
     .catch(() => {
-      audioIndex = null;
-    })
-    .finally(() => {
-      audioIndexLoaded = true;
+      audioIndex[kind] = null;
     });
-  return audioIndexLoading;
+  return audioIndexLoading[kind];
 };
 
 /** 已生成的声音列表(设置页据此列选项);没有音频库时为空数组。 */
-export const availableVoices = (): AudioVoice[] => audioIndex?.voices ?? [];
+export const availableVoices = (): AudioVoice[] => audioIndex.words?.voices ?? [];
 
 /** 预热索引,好让设置页能立刻列出可选声音。 */
 export const loadVoices = async (): Promise<AudioVoice[]> => {
-  await loadAudioIndex();
+  await loadAudioIndex("words");
   return availableVoices();
 };
 
-/** 选哪个声音:用户选过就用他选的(且确实存在),否则用默认。 */
-function resolveVoice(preferred?: string | null): AudioVoice | null {
-  const voices = availableVoices();
+/** 选哪个声音:用户选过就用他选的(且确实存在),否则用默认。
+ *  例句库可能只做了一个声音,用户选的那个没有就退到例句库自己的默认。 */
+function resolveVoice(kind: AudioKind, preferred?: string | null): AudioVoice | null {
+  const index = audioIndex[kind];
+  const voices = index?.voices ?? [];
   if (!voices.length) return null;
-  return voices.find((voice) => voice.id === preferred) ?? voices.find((voice) => voice.id === audioIndex?.default) ?? voices[0];
+  return voices.find((voice) => voice.id === preferred) ?? voices.find((voice) => voice.id === index?.default) ?? voices[0];
 }
 
 /** 预生成音频的地址。索引没加载、音频库不存在、或选了系统语音时返回 null。 */
 export function pronunciationAudioUrl(kanji: string, kana: string, preferredVoice?: string | null): string | null {
   if (preferredVoice === SYSTEM_VOICE_ID) return null;
-  const voice = resolveVoice(preferredVoice);
+  const voice = resolveVoice("words", preferredVoice);
   if (!voice) return null;
-  return `${import.meta.env.BASE_URL}audio/words/${voice.id}/${pronunciationAudioName(kanji, kana)}${voice.ext}`;
+  return `${audioBase()}words/${voice.id}/${pronunciationAudioName(kanji, kana)}${voice.ext}`;
+}
+
+export function exampleAudioUrl(sentence: string, preferredVoice?: string | null): string | null {
+  if (preferredVoice === SYSTEM_VOICE_ID) return null;
+  const voice = resolveVoice("examples", preferredVoice);
+  if (!voice) return null;
+  return `${audioBase()}examples/${voice.id}/${exampleAudioName(sentence)}${voice.ext}`;
 }
 
 /** 设置里选「系统语音」时用这个 id —— 表示不用预生成音频,直接交给设备合成。 */
@@ -156,6 +179,24 @@ function speakWithSynthesis(text: string): void {
   window.speechSynthesis.speak(utterance);
 }
 
+/** 有文件播文件,没有(或播不了)退回系统语音。文件 404 时 play() 以 NotSupportedError 拒绝,
+ *  正好当作"这条没音频"的信号记下来,别每次点都再撞一次。 */
+async function playFileOrSpeak(url: string | null, fallbackText: string): Promise<void> {
+  if (!url || missingAudio.has(url)) {
+    speakWithSynthesis(fallbackText);
+    return;
+  }
+  try {
+    window.speechSynthesis?.cancel();
+    audioElement ??= new Audio();
+    audioElement.src = url;
+    await audioElement.play();
+  } catch {
+    missingAudio.add(url);
+    speakWithSynthesis(fallbackText);
+  }
+}
+
 /**
  * 播放读音:有预生成音频就播文件(读音和语调都确定),没有就退回系统语音合成。
  * 没跑过生成脚本时全部走退路,行为和以前一致。
@@ -167,22 +208,23 @@ export async function playPronunciation(
 ): Promise<void> {
   const text = speechText(kanji, kana);
   if (!text) return;
+  if (preferredVoice !== SYSTEM_VOICE_ID) await loadAudioIndex("words");
+  await playFileOrSpeak(pronunciationAudioUrl(kanji, kana, preferredVoice), text);
+}
 
-  if (preferredVoice !== SYSTEM_VOICE_ID) await loadAudioIndex();
-  const url = pronunciationAudioUrl(kanji, kana, preferredVoice);
-  if (!url || missingAudio.has(url)) {
-    speakWithSynthesis(text);
-    return;
-  }
+/** 播例句。退路直接喂原文(汉字混排):整句有上下文,系统引擎读句子比读孤立词靠谱。 */
+export async function playExample(sentence: string, preferredVoice?: string | null): Promise<void> {
+  const text = sentence.trim();
+  if (!text) return;
+  if (preferredVoice !== SYSTEM_VOICE_ID) await loadAudioIndex("examples");
+  await playFileOrSpeak(exampleAudioUrl(text, preferredVoice), text);
+}
 
-  try {
-    window.speechSynthesis?.cancel();
-    audioElement ??= new Audio();
-    audioElement.src = url;
-    // 文件不存在时 play() 会以 NotSupportedError 拒绝,正好当作"这个词没音频"的信号
-    await audioElement.play();
-  } catch {
-    missingAudio.add(url);
-    speakWithSynthesis(text);
-  }
+/** 例句框一出现就把文件拉进 HTTP 缓存,点播放时不用等网络。no-cors:R2 上没配 CORS 也能缓存。 */
+export async function prefetchExample(sentence: string, preferredVoice?: string | null): Promise<void> {
+  if (preferredVoice === SYSTEM_VOICE_ID) return;
+  await loadAudioIndex("examples");
+  const url = exampleAudioUrl(sentence.trim(), preferredVoice);
+  if (!url || missingAudio.has(url)) return;
+  await fetch(url, { mode: "no-cors" }).then((response) => response.arrayBuffer()).catch(() => undefined);
 }

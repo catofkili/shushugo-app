@@ -25,8 +25,66 @@ const aggregateDay = (day: string): void => {
   `, [day, day]);
 };
 
-/** 记一段学习时长:写进本设备那行,再把当天的跨设备合计写回 word_study_time。 */
-export function recordStudySeconds(day: string, seconds: number): void {
+const localDateKey = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+/** 把一个时间点归入最近的周日 14:00 周期。 */
+export const reportPeriodStart = (atMs: number): string => {
+  const date = new Date(atMs);
+  date.setHours(14, 0, 0, 0);
+  date.setDate(date.getDate() - date.getDay());
+  if (atMs < date.getTime()) date.setDate(date.getDate() - 7);
+  return `${localDateKey(date)} 14:00`;
+};
+
+/** 新版周报时长账本：每台设备每个 14:00 周期一行，跨设备读取时求和。 */
+const addPeriodSeconds = (period: string, seconds: number): void => {
+  if (seconds <= 0) return;
+  getDatabase().run(`
+    INSERT INTO study_time_by_period (period_start, device_id, seconds)
+    VALUES (?, ?, ?)
+    ON CONFLICT(period_start, device_id) DO UPDATE SET
+      seconds = seconds + excluded.seconds
+  `, [period, getDeviceId(), seconds]);
+};
+
+export function recordReportStudySeconds(atMs: number, seconds: number): void {
+  const amount = Math.max(0, Math.round(seconds));
+  if (!amount) return;
+  const hasTable = rowsFor(
+    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'study_time_by_period' LIMIT 1"
+  ).length > 0;
+  if (!hasTable) return;
+  // The duration is treated as the contiguous interval ending at the
+  // settlement time. Split it at each Sunday 14:00 boundary instead of
+  // assigning the whole flush to whichever period contains its end.
+  let cursor = atMs - amount * 1000;
+  const end = atMs;
+  let remaining = amount;
+  while (cursor < end) {
+    const period = reportPeriodStart(cursor);
+    const boundary = new Date(`${period.replace(" ", "T")}:00`);
+    boundary.setDate(boundary.getDate() + 7);
+    const chunkEnd = Math.min(end, boundary.getTime());
+    // Millisecond-level settlement times can put half a second on each side of
+    // the boundary. Round intermediate chunks, then give the final chunk the
+    // remainder so splitting can never create or lose a second.
+    const chunkSeconds = chunkEnd === end
+      ? remaining
+      : Math.min(remaining, Math.max(0, Math.round((chunkEnd - cursor) / 1000)));
+    addPeriodSeconds(period, chunkSeconds);
+    remaining -= chunkSeconds;
+    cursor = chunkEnd;
+    if (chunkSeconds === 0) cursor += 1000;
+  }
+}
+
+/** 记一段学习时长：保留旧的日汇总，同时写入周报 14:00 周期账本。 */
+export function recordStudySeconds(day: string, seconds: number, atMs = Date.now()): void {
   const amount = Math.max(0, Math.round(seconds));
   if (!amount) return;
   getDatabase().run(`
@@ -36,6 +94,7 @@ export function recordStudySeconds(day: string, seconds: number): void {
       seconds = seconds + excluded.seconds
   `, [day, getDeviceId(), amount]);
   aggregateDay(day);
+  recordReportStudySeconds(atMs, amount);
 }
 
 /**

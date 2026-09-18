@@ -120,6 +120,98 @@ export const DEFAULT_LIBRARY_FILTERS: WordLibraryFilters = {
   sort: "level"
 };
 
+/** 搜索框里的罗马字按日语输入法规则转成平假名；词库查询再同时匹配片假名。 */
+const ROMAJI_KANA: Record<string, string> = {
+  a: "あ", i: "い", u: "う", e: "え", o: "お",
+  ka: "か", ki: "き", ku: "く", ke: "け", ko: "こ",
+  ga: "が", gi: "ぎ", gu: "ぐ", ge: "げ", go: "ご",
+  sa: "さ", si: "し", shi: "し", su: "す", se: "せ", so: "そ",
+  za: "ざ", zi: "じ", ji: "じ", zu: "ず", ze: "ぜ", zo: "ぞ",
+  ta: "た", ti: "ち", chi: "ち", tu: "つ", tsu: "つ", te: "て", to: "と",
+  da: "だ", di: "ぢ", du: "づ", de: "で", do: "ど",
+  na: "な", ni: "に", nu: "ぬ", ne: "ね", no: "の",
+  ha: "は", hi: "ひ", hu: "ふ", fu: "ふ", he: "へ", ho: "ほ",
+  ba: "ば", bi: "び", bu: "ぶ", be: "べ", bo: "ぼ",
+  pa: "ぱ", pi: "ぴ", pu: "ぷ", pe: "ぺ", po: "ぽ",
+  ma: "ま", mi: "み", mu: "む", me: "め", mo: "も",
+  ya: "や", yu: "ゆ", yo: "よ",
+  ra: "ら", ri: "り", ru: "る", re: "れ", ro: "ろ",
+  wa: "わ", wi: "うぃ", we: "うぇ", wo: "を",
+  kya: "きゃ", kyu: "きゅ", kyo: "きょ", gya: "ぎゃ", gyu: "ぎゅ", gyo: "ぎょ",
+  sya: "しゃ", syu: "しゅ", syo: "しょ", sha: "しゃ", shu: "しゅ", sho: "しょ",
+  zya: "じゃ", zyu: "じゅ", zyo: "じょ", jya: "じゃ", jyu: "じゅ", jyo: "じょ",
+  ja: "じゃ", ju: "じゅ", jo: "じょ", je: "じぇ",
+  tya: "ちゃ", tyu: "ちゅ", tyo: "ちょ", cya: "ちゃ", cyu: "ちゅ", cyo: "ちょ",
+  cha: "ちゃ", chu: "ちゅ", cho: "ちょ", che: "ちぇ",
+  dya: "ぢゃ", dyu: "ぢゅ", dyo: "ぢょ",
+  nya: "にゃ", nyu: "にゅ", nyo: "にょ", hya: "ひゃ", hyu: "ひゅ", hyo: "ひょ",
+  bya: "びゃ", byu: "びゅ", byo: "びょ", pya: "ぴゃ", pyu: "ぴゅ", pyo: "ぴょ",
+  mya: "みゃ", myu: "みゅ", myo: "みょ", rya: "りゃ", ryu: "りゅ", ryo: "りょ",
+  fa: "ふぁ", fi: "ふぃ", fe: "ふぇ", fo: "ふぉ", fya: "ふゃ", fyu: "ふゅ", fyo: "ふょ",
+  va: "ゔぁ", vi: "ゔぃ", vu: "ゔ", ve: "ゔぇ", vo: "ゔぉ",
+  tsa: "つぁ", tsi: "つぃ", tse: "つぇ", tso: "つぉ", she: "しぇ",
+  thi: "てぃ", thu: "てゅ", dhi: "でぃ", dhu: "でゅ",
+  twa: "とぁ", twi: "とぃ", twu: "とぅ", twe: "とぇ", two: "とぉ",
+  dwa: "どぁ", dwi: "どぃ", dwu: "どぅ", dwe: "どぇ", dwo: "どぉ",
+  kwa: "くぁ", kwi: "くぃ", kwe: "くぇ", kwo: "くぉ",
+  gwa: "ぐぁ", gwi: "ぐぃ", gwe: "ぐぇ", gwo: "ぐぉ",
+  wha: "うぁ", whi: "うぃ", whe: "うぇ", who: "うぉ", ye: "いぇ",
+  ca: "か", ci: "し", cu: "く", ce: "せ", co: "こ",
+  xa: "ぁ", xi: "ぃ", xu: "ぅ", xe: "ぇ", xo: "ぉ",
+  la: "ぁ", li: "ぃ", lu: "ぅ", le: "ぇ", lo: "ぉ",
+  xya: "ゃ", xyu: "ゅ", xyo: "ょ", lya: "ゃ", lyu: "ゅ", lyo: "ょ",
+  xtu: "っ", xtsu: "っ", ltu: "っ", ltsu: "っ", xwa: "ゎ", lwa: "ゎ"
+};
+
+const ROMAJI_KEYS = Object.keys(ROMAJI_KANA).sort((left, right) => right.length - left.length);
+
+export const romajiToKana = (input: string): string => {
+  const text = input.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
+  let result = "";
+  for (let index = 0; index < text.length;) {
+    const rest = text.slice(index);
+    if (rest.startsWith("n'")) {
+      result += "ん";
+      index += 2;
+      continue;
+    }
+    if (rest.startsWith("nn")) {
+      result += "ん";
+      index += index + 2 < text.length && /[aiueoy]/.test(text[index + 2]) ? 1 : 2;
+      continue;
+    }
+    const current = text[index];
+    const next = text[index + 1];
+    if (current === "n" && (!next || !/[aiueoyn]/.test(next))) {
+      result += "ん";
+      index += 1;
+      continue;
+    }
+    if ((current === "t" && rest.startsWith("tch")) || (current === next && /[bcdfghjklmpqrstvwxyz]/.test(current))) {
+      result += "っ";
+      index += 1;
+      continue;
+    }
+    if (current === "-") {
+      result += "ー";
+      index += 1;
+      continue;
+    }
+    const key = ROMAJI_KEYS.find((candidate) => rest.startsWith(candidate));
+    if (key) {
+      result += ROMAJI_KANA[key];
+      index += key.length;
+    } else {
+      result += current;
+      index += 1;
+    }
+  }
+  return result;
+};
+
+const toKatakana = (text: string) => text.replace(/[ぁ-ゖ]/g, (char) =>
+  String.fromCharCode(char.charCodeAt(0) + 0x60));
+
 export interface WordLibraryRow {
   id: number;
   kanji: string;
@@ -191,8 +283,14 @@ const baseWhere = (filters: WordLibraryFilters): Where => {
   const text = filters.search.trim();
   if (text) {
     const like = `%${text}%`;
-    clauses.push("(w.kanji LIKE ? OR w.kana LIKE ? OR w.meaning LIKE ?)");
-    params.push(like, like, like);
+    const reading = /^[A-Za-z'\s-]+$/.test(text) ? romajiToKana(text) : "";
+    if (reading && !/[a-z]/i.test(reading)) {
+      clauses.push("(w.kanji LIKE ? OR w.kana LIKE ? OR w.meaning LIKE ? OR w.kana LIKE ? OR w.kana LIKE ?)");
+      params.push(like, like, like, `%${reading}%`, `%${toKatakana(reading)}%`);
+    } else {
+      clauses.push("(w.kanji LIKE ? OR w.kana LIKE ? OR w.meaning LIKE ?)");
+      params.push(like, like, like);
+    }
   }
 
   return { sql: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "", params };

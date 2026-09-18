@@ -25,6 +25,9 @@ jobs:
         working-directory: frontend
     env:
       VITE_SYNC_API_URL: https://master-nihongo-sync.master-nihongo-lsc.workers.dev
+      # 音频放 R2 时填这个仓库变量(如 https://audio.example.com/),包里就不带 audio/,
+      # 下面那步 tar 也不用配。两个都没配 = 网页版退回系统语音。
+      VITE_AUDIO_BASE_URL: ${{ vars.AUDIO_BASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,8 +52,12 @@ jobs:
           AUDIO_ARTIFACT_URL: ${{ vars.AUDIO_ARTIFACT_URL }}
           AUDIO_ARTIFACT_SHA256: ${{ vars.AUDIO_ARTIFACT_SHA256 }}
         run: |
+          if [ -n "$VITE_AUDIO_BASE_URL" ]; then
+            echo "音频从 $VITE_AUDIO_BASE_URL 按需拉取,不打进包里。"
+            exit 0
+          fi
           if [ -z "$AUDIO_ARTIFACT_URL" ]; then
-            echo "::warning::未配置 AUDIO_ARTIFACT_URL，本次发布不带预生成读音音频，网页版将退回系统语音合成。"
+            echo "::warning::未配置 AUDIO_BASE_URL 也未配置 AUDIO_ARTIFACT_URL，本次发布不带预生成读音音频，网页版将退回系统语音合成。"
             exit 0
           fi
           curl -fsSL "$AUDIO_ARTIFACT_URL" -o /tmp/audio.tar.gz

@@ -1,10 +1,13 @@
 import { useEffect, type CSSProperties } from "react";
 import { Eye } from "lucide-react";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
+import { GrammarTermHint } from "../../components/GrammarTermHint";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
 import { patternPieces } from "../../lib/grammar-formation";
 import { grammarKeyPoint } from "../../lib/grammar-key-points";
+import { getGrammarTitleFuriganaByPattern, projectFurigana } from "../../lib/grammar-title-furigana";
 import type { GrammarQuizAnswer, GrammarQuizCard } from "../../lib/grammar-quiz";
+import { ExamplePlayButton } from "../word-study/WordStudyPanels";
 
 /**
  * 一张语法卡的正反面 + 四档评分。**语法考题页和混合模式共用这一份** ——
@@ -43,20 +46,31 @@ const hasInlineAttachment = (attachment: string | null): attachment is string =>
 };
 
 const PatternLine = ({ card, revealed }: { card: GrammarQuizCard; revealed: boolean }) => {
-  if (!revealed) return <>{card.question}</>;
-  if (!hasInlineAttachment(card.attachment)) return <>{card.pattern}</>;
+  const furigana = getGrammarTitleFuriganaByPattern(card.pattern);
+  if (!revealed) {
+    return <JapaneseRuby text={card.question} furigana={projectFurigana(card.pattern, card.question, furigana)} />;
+  }
+  if (!hasInlineAttachment(card.attachment)) return <JapaneseRuby text={card.pattern} furigana={furigana} />;
+  const pieces = patternPieces(card.pattern);
   return (
     <>
-      {patternPieces(card.pattern).map((piece, index) => (
-        piece.slot ? (
+      {pieces.map((piece, index) => {
+        const start = pieces.slice(0, index).reduce((total, current) => total + current.text.length, 0);
+        return piece.slot ? (
           <span key={index} className="grammar-slot">
             <span className="grammar-slot__rt">{card.attachment}</span>
             {piece.text}
           </span>
         ) : (
-          <span key={index}>{piece.text}</span>
-        )
-      ))}
+          <JapaneseRuby
+            key={index}
+            text={piece.text}
+            furigana={furigana
+              ?.filter((annotation) => annotation.start >= start && annotation.start + annotation.length <= start + piece.text.length)
+              .map((annotation) => ({ ...annotation, start: annotation.start - start }))}
+          />
+        );
+      })}
     </>
   );
 };
@@ -136,7 +150,7 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
             {/* 答案上半：接续（题面 `～` 上标的只是它的头一段） */}
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">接续</p>
             <p className="jp mx-auto mt-2 max-w-2xl break-words text-xl font-semibold leading-8 sm:text-2xl">
-              {card.formation || "—"}
+              {card.formation ? <GrammarTermHint text={card.formation} /> : "—"}
             </p>
             {/* 答案下半：中文意 */}
             <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-white/55">中文意</p>
@@ -154,7 +168,10 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
               </p>
             )}
             <div className="mx-auto mt-5 max-w-2xl rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 sm:px-4">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">例句</p>
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/55">
+                例句
+                {card.exampleJp && <ExamplePlayButton sentence={card.exampleJp} />}
+              </p>
               <p className="jp mt-2 break-words text-lg font-semibold leading-8 text-white/90 sm:text-xl">
                 <JapaneseRuby
                   text={card.exampleJp || "—"}

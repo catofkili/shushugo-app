@@ -117,6 +117,8 @@ const kanaMap: Record<string, string> = {
   ぱ: "pa", ぴ: "pi", ぷ: "pu", ぺ: "pe", ぽ: "po",
   ぁ: "a", ぃ: "i", ぅ: "u", ぇ: "e", ぉ: "o",
   ゃ: "ya", ゅ: "yu", ょ: "yo",
+  ァ: "a", ィ: "i", ゥ: "u", ェ: "e", ォ: "o",
+  ャ: "ya", ュ: "yu", ョ: "yo",
   ア: "a", イ: "i", ウ: "u", エ: "e", オ: "o",
   カ: "ka", キ: "ki", ク: "ku", ケ: "ke", コ: "ko",
   サ: "sa", シ: "shi", ス: "su", セ: "se", ソ: "so",

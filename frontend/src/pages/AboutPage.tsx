@@ -85,7 +85,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">音频鸣谢</p>
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <p className="text-sm leading-relaxed text-white/70">
-            预生成单词音频使用 VOICEVOX:春日部つむぎ、VOICEVOX:雨晴はう 与 VOICEVOX:玄野武宏。请保留准确署名：VOICEVOX:春日部つむぎ、VOICEVOX:雨晴はう、VOICEVOX:玄野武宏(CV:ガロ)。
+            预生成单词音频使用 VOICEVOX:春日部つむぎ、VOICEVOX:雨晴はう 与 VOICEVOX:玄野武宏，例句音频使用 VOICEVOX:春日部つむぎ。请保留准确署名：VOICEVOX:春日部つむぎ、VOICEVOX:雨晴はう、VOICEVOX:玄野武宏(CV:ガロ)。
           </p>
         </div>
       </div>

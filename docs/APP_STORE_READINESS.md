@@ -161,9 +161,10 @@
 
 ## 遗留的工程债
 
-- 按 2026-09-11 的本地 refs，当前分支 `feat/fsrs-sync-accounts` 领先 `main` 37 个提交、
-  落后其远端跟踪分支 1 个提交，另有本轮未提交改动。推送前应先处理远端分歧并逐项暂存，
-  不能把工作区整体 `git add .`
+- 按 2026-09-11 的当前 refs，`feat/fsrs-sync-accounts` 包含 `main` 之后的 39 个提交；
+  本地当前分支比同名远端领先 1 个保护性 checkpoint。`main` 仍是 7 月 31 日的旧基线，
+  在审查并整合这些提交之前不能用于开发、构建或发布。推送或整合前必须检查分支分歧并逐项暂存，
+  不能把工作区整体 `git add .`。
 - **网页版（GitHub Pages）默认没有预生成读音音频**：那 137 MB 不在版本库里，
   干净 runner 上 checkout 完就没有，网页版会退回系统 TTS。
   workflow 现在支持 `AUDIO_ARTIFACT_URL` + `AUDIO_ARTIFACT_SHA256` 两个仓库变量

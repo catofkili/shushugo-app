@@ -1,6 +1,8 @@
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications, type PermissionStatus } from "@capacitor/local-notifications";
 import { Preferences } from "@capacitor/preferences";
+import { generateLatestWeeklyReport } from "./analytics/weekly-reports";
+import { getWeekWindow, getWeeklyMetrics, passesThreshold } from "./analytics/weekly";
 
 export interface ReminderSettings {
   studyReminder: boolean;
@@ -9,6 +11,8 @@ export interface ReminderSettings {
   soundEnabled: boolean;
   studyTime: string;
   reviewTime: string;
+  /** 每周学习回顾通知：只在生成成功且处于周日 14:00–14:30 时排期 */
+  weeklyReportReminder: boolean;
   /** 备考计划提醒:每天播报「今天最少还要做多少」才不掉队 */
   jlptReminder: boolean;
   jlptTime: string;
@@ -18,6 +22,8 @@ export interface ReminderSyncResult {
   permission: PermissionStatus["display"];
   native: boolean;
   pendingCount: number;
+  /** 当前周期还没有学习记录时，前台轮询需要稍后再检查。 */
+  retryWeeklyReportSoon?: boolean;
 }
 
 const SETTINGS_KEY = "mn_notification_settings";
@@ -46,6 +52,12 @@ const JLPT_NOTIFICATION_IDS = Array.from(
   (_, index) => ({ id: JLPT_NOTIFICATION_BASE_ID + index })
 );
 
+// 周报通知单独占一个 ID，不与每日提醒、成就和备考提醒重叠。
+const WEEKLY_REPORT_NOTIFICATION_ID = 9501;
+export const WEEKLY_REPORT_NOTIFICATION_EVENT = "weekly-report-notification";
+let pendingWeeklyReportWeekStart: string | null = null;
+let notificationActionListenerRegistered = false;
+
 export const defaultReminderSettings: ReminderSettings = {
   studyReminder: true,
   reviewReminder: true,
@@ -53,6 +65,7 @@ export const defaultReminderSettings: ReminderSettings = {
   soundEnabled: true,
   studyTime: "09:00",
   reviewTime: "20:00",
+  weeklyReportReminder: true,
   jlptReminder: true,
   // 放在晚上:这条说的是「今天还差多少」,得留得下当晚补的时间,早上报没有意义
   jlptTime: "20:30"
@@ -101,6 +114,7 @@ export async function syncReminderNotifications(settings: ReminderSettings, requ
   }
 
   let permission = await LocalNotifications.checkPermissions();
+  // 周报通知有独立的一次性排期，不能让它把空数组传给每日提醒的 schedule。
   const needsNotification = settings.studyReminder || settings.reviewReminder;
   if (needsNotification && permission.display !== "granted" && requestPermission) {
     permission = await LocalNotifications.requestPermissions();
@@ -139,6 +153,125 @@ export async function syncReminderNotifications(settings: ReminderSettings, requ
 
   const pending = await LocalNotifications.getPending();
   return { permission: permission.display, native: true, pendingCount: pending.notifications.length };
+}
+
+/**
+ * 周日 14:30 的一次性周报通知。
+ *
+ * 本地通知不能在 App 完全未启动时读取 SQLite；有本周期记录时会提前排好
+ * 14:30 的一次性通知，点击冷启动后再生成最终快照。14:30 之后不补发，避免
+ * 周一打开时突然打扰用户。
+ */
+export async function syncWeeklyReportNotification(
+  settings: ReminderSettings,
+  requestPermission = false,
+  now = new Date()
+): Promise<ReminderSyncResult> {
+  if (!isNativeNotificationsAvailable()) {
+    return { permission: "granted", native: false, pendingCount: 0 };
+  }
+
+  let permission = await LocalNotifications.checkPermissions();
+  if (settings.weeklyReportReminder && permission.display !== "granted" && requestPermission) {
+    permission = await LocalNotifications.requestPermissions();
+  }
+
+  await LocalNotifications.cancel({ notifications: [{ id: WEEKLY_REPORT_NOTIFICATION_ID }] });
+  const current = new Date(now);
+  const isSunday = current.getDay() === 0;
+  const fourteen = new Date(current);
+  fourteen.setHours(14, 0, 0, 0);
+  const fourteenThirty = new Date(current);
+  fourteenThirty.setHours(14, 30, 0, 0);
+  const withinWindow = current.getTime() >= fourteen.getTime() && current.getTime() < fourteenThirty.getTime();
+
+  let retryWeeklyReportSoon = false;
+  if (settings.weeklyReportReminder && permission.display === "granted" && isSunday && withinWindow) {
+    const snapshot = generateLatestWeeklyReport("local", current);
+    const weekStart = snapshot?.report.window.start;
+    // 用户可能已经从主页打开并读完这份周报；这种情况下不应因为下一次
+    // 前台同步又把同一条 14:30 提醒排回来。
+    if (snapshot && weekStart && snapshot.readAt == null) {
+      const { requestFullSnapshot, saveDatabase } = await import("./storage");
+      requestFullSnapshot();
+      await saveDatabase();
+      await LocalNotifications.schedule({
+        notifications: [{
+          id: WEEKLY_REPORT_NOTIFICATION_ID,
+          title: "这一周的学习回顾到了",
+          body: "打开看看，这段时间你和日语见过面。",
+          schedule: { at: fourteenThirty },
+          sound: settings.soundEnabled ? "" : undefined,
+          threadIdentifier: "weekly-report",
+          extra: { target: "weekly-report", weekStart }
+        }]
+      });
+    } else {
+      retryWeeklyReportSoon = true;
+    }
+  } else if (settings.weeklyReportReminder && permission.display === "granted") {
+    // App 可能在周日 14:00 后被系统挂起，无法在后台执行 JS。只要当前周期
+    // 已有学习记录，先排好 14:30 的通知；点击时冷启动会再生成最终快照。
+    const delivery = new Date(current);
+    const daysUntilSunday = (7 - delivery.getDay()) % 7;
+    delivery.setDate(delivery.getDate() + daysUntilSunday);
+    delivery.setHours(14, 30, 0, 0);
+    if (delivery.getTime() <= current.getTime()) delivery.setDate(delivery.getDate() + 7);
+    const upcomingWindow = getWeekWindow(delivery);
+    if (passesThreshold(getWeeklyMetrics(upcomingWindow))) {
+      await LocalNotifications.schedule({
+        notifications: [{
+          id: WEEKLY_REPORT_NOTIFICATION_ID,
+          title: "这一周的学习回顾到了",
+          body: "打开看看，这段时间你和日语见过面。",
+          schedule: { at: delivery },
+          sound: settings.soundEnabled ? "" : undefined,
+          threadIdentifier: "weekly-report",
+          extra: { target: "weekly-report", weekStart: upcomingWindow.start }
+        }]
+      });
+    } else {
+      retryWeeklyReportSoon = true;
+    }
+  }
+
+  const pending = await LocalNotifications.getPending();
+  return { permission: permission.display, native: true, pendingCount: pending.notifications.length, retryWeeklyReportSoon };
+}
+
+/** 读完最新周报后撤掉尚未送达的那一条通知。 */
+export async function cancelWeeklyReportNotification(): Promise<void> {
+  if (!isNativeNotificationsAvailable()) return;
+  await LocalNotifications.cancel({ notifications: [{ id: WEEKLY_REPORT_NOTIFICATION_ID }] });
+}
+
+export async function autoSyncWeeklyReportNotification(now = new Date()): Promise<ReminderSyncResult> {
+  const settings = await loadReminderSettings();
+  const permission = await checkReminderPermission();
+  if (!permission.native || permission.permission !== "granted") return permission;
+  return syncWeeklyReportNotification(settings, false, now);
+}
+
+/** 注册通知点击监听。pending 值让冷启动时 App 尚未挂载也不会丢失跳转。 */
+export async function registerNotificationActionListener(): Promise<void> {
+  if (!isNativeNotificationsAvailable() || notificationActionListenerRegistered) return;
+  notificationActionListenerRegistered = true;
+  await LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
+    const extra = action.notification.extra as { target?: string; weekStart?: string } | undefined;
+    if (extra?.target !== "weekly-report") return;
+    pendingWeeklyReportWeekStart = typeof extra.weekStart === "string" ? extra.weekStart : null;
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent(WEEKLY_REPORT_NOTIFICATION_EVENT, {
+        detail: { weekStart: pendingWeeklyReportWeekStart }
+      }));
+    }
+  });
+}
+
+export function consumePendingWeeklyReportWeekStart(): string | null {
+  const value = pendingWeeklyReportWeekStart;
+  pendingWeeklyReportWeekStart = null;
+  return value;
 }
 
 /**

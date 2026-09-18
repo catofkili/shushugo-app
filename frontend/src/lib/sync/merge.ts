@@ -7,8 +7,9 @@ import {
   SYNC_ORIGIN_COL,
   SYNC_UPDATED_COL
 } from "./schema";
-import { isDeviceLocalStateKey, SYNCED_TABLES, type SyncedTable } from "./tables";
+import { isDeviceLocalStateKey, syncedTablesForCloud, type SyncedTable } from "./tables";
 import { isUserSyncSnapshot } from "./snapshot";
+import { canUseFeature, getEntitlements } from "../entitlements";
 import { rebuildStudyTimeAggregate } from "./study-time";
 import { GRAMMAR_HIGHLIGHTS_UPDATED_EVENT, GRAMMAR_POSITIONS_UPDATED_EVENT } from "../grammar-events";
 import { resetFamiliarityCache } from "../models/familiarity";
@@ -84,10 +85,10 @@ const compareVersion = (left: VersionedItem, right: VersionedItem): number => {
   return left.originDevice > right.originDevice ? 1 : -1;
 };
 
-const stateOf = (db: Database, sourceOrigin: string): DatabaseState => {
+const stateOf = (db: Database, sourceOrigin: string, entries: SyncedTable[]): DatabaseState => {
   const rows = new Map<string, Map<string, VersionedItem>>();
 
-  for (const entry of SYNCED_TABLES) {
+  for (const entry of entries) {
     if (!tableExists(db, entry.table)) continue;
     const items = new Map<string, VersionedItem>();
     for (const row of rowsOf(db, entry.table)) {
@@ -115,7 +116,7 @@ const stateOf = (db: Database, sourceOrigin: string): DatabaseState => {
     for (const tombstone of rowsOf(db, "sync_tombstones")) {
       const table = String(tombstone.table_name ?? "");
       const key = String(tombstone.row_key ?? "");
-      const entry = SYNCED_TABLES.find((candidate) => candidate.table === table);
+      const entry = entries.find((candidate) => candidate.table === table);
       if (!entry || !rows.has(table)) continue;
       if (isDeviceLocalStateKey(table, key)) continue;
       const item: VersionedItem = {
@@ -306,13 +307,14 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
     remoteDb.close();
     throw new Error("云端学习数据格式无效，已保留本机数据。");
   }
-  const localState = stateOf(localDb, "local");
-  const remoteState = stateOf(remoteDb, "remote");
+  const syncedTables = syncedTablesForCloud(canUseFeature("weeklyReportCloudHistory", getEntitlements()));
+  const localState = stateOf(localDb, "local", syncedTables);
+  const remoteState = stateOf(remoteDb, "remote", syncedTables);
   const merged = new Map<string, Map<string, VersionedItem>>();
 
   beginSyncApply();
   try {
-    for (const entry of SYNCED_TABLES) {
+    for (const entry of syncedTables) {
       const items = mergeItems(entry, localState, remoteState);
       merged.set(entry.table, items);
       applyTable(localDb, entry, items);

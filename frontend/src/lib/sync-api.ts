@@ -99,6 +99,12 @@ export interface CloudSyncEventDetail {
   message?: string;
 }
 
+export interface CloudWeeklyReportIndexItem {
+  week_start: string;
+  uploaded_at: string;
+  byte_length: number;
+}
+
 export type CloudSyncTrigger = "startup" | "login" | "foreground" | "online" | "poll" | "local-change";
 
 interface CloudEntitlements {
@@ -306,6 +312,9 @@ const getLocalSyncOwner = async (): Promise<string | undefined> => {
   return value || undefined;
 };
 
+/** 当前本地学习库绑定的账号；周报页面用它避免账号切换后串看本地快照。 */
+export const getLocalSyncOwnerEmail = async (): Promise<string | undefined> => getLocalSyncOwner();
+
 const setLocalSyncOwner = async (email: string): Promise<void> => {
   await Preferences.set({ key: LOCAL_SYNC_OWNER_KEY, value: email });
 };
@@ -421,6 +430,44 @@ const emitCloudAuthEvent = (session: CloudSession): void => {
     window.dispatchEvent(new CustomEvent<CloudSession>(CLOUD_AUTH_EVENT, { detail: session }));
   }
 };
+
+export async function listCloudWeeklyReports(): Promise<CloudWeeklyReportIndexItem[]> {
+  const session = await getCloudSession();
+  if (!session.token) throw new Error("请先登录云同步账号。");
+  const data = await requestJson<{ reports: CloudWeeklyReportIndexItem[] }>("/api/weekly-reports", {
+    method: "GET",
+    headers: { authorization: `Bearer ${session.token}` }
+  });
+  return data.reports ?? [];
+}
+
+export async function getCloudWeeklyReport(weekStart: string): Promise<unknown> {
+  const session = await getCloudSession();
+  if (!session.token) throw new Error("请先登录云同步账号。");
+  return requestJson<unknown>(`/api/weekly-report?week_start=${encodeURIComponent(weekStart)}`, {
+    method: "GET",
+    headers: { authorization: `Bearer ${session.token}` }
+  });
+}
+
+export async function putCloudWeeklyReport(weekStart: string, report: unknown): Promise<void> {
+  const session = await getCloudSession();
+  if (!session.token) throw new Error("请先登录云同步账号。");
+  await requestJson("/api/weekly-report", {
+    method: "PUT",
+    headers: { authorization: `Bearer ${session.token}` },
+    body: JSON.stringify({ week_start: weekStart, report })
+  });
+}
+
+export async function deleteCloudWeeklyReport(weekStart: string): Promise<void> {
+  const session = await getCloudSession();
+  if (!session.token) throw new Error("请先登录云同步账号。");
+  await requestJson(`/api/weekly-report?week_start=${encodeURIComponent(weekStart)}`, {
+    method: "DELETE",
+    headers: { authorization: `Bearer ${session.token}` }
+  });
+}
 
 export async function getCloudAuthConfig(): Promise<CloudAuthConfig> {
   if (!API_URL) return { appleEnabled: false, turnstileEnabled: false };

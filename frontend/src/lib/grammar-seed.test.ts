@@ -78,6 +78,31 @@ describe("语法种子升版本", () => {
     expect(kept?.values?.[0]?.[0]).toBe(5);
   });
 
+  it("重建出来的 id 和出厂库一样是 1..N —— AUTOINCREMENT 不重置的话是 742..", async () => {
+    // 实测一台设备重建九次后 id 落在 6600+，而新装用户是 1..741：grammar_progress
+    // 按数字 grammar_id 跨设备同步，两边不一样就串号。
+    testDb.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('dataset_version', 'stale-version')");
+    await ensureSeedData();
+    expect(Number(one("SELECT COUNT(*) FROM grammar_points WHERE id != sort_order"))).toBe(0);
+    expect(Number(one("SELECT MAX(id) FROM grammar_points"))).toBe(grammarSeed.rows.length);
+  });
+
+  it("改过标题的条目按旧名 → 新名迁移进度，拆出来的第二条从零开始", async () => {
+    // 老库里是「～てしかた（が）ない／てしようがない」一条；新版拆成两条。
+    // 旧进度归第一个写法，第二个写法不该继承 —— 拆的理由正是「看到 A 就点了认识，B 其实不会」。
+    const oldId = Number(one("SELECT id FROM grammar_points WHERE pattern = '～てしかた（が）ない'"));
+    testDb.run("UPDATE grammar_points SET pattern = '～てしかた（が）ない／てしようがない' WHERE id = ?", [oldId]);
+    testDb.run("INSERT OR REPLACE INTO grammar_progress (grammar_id, score, seen_count) VALUES (?, 0, 9)", [oldId]);
+    testDb.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('dataset_version', 'stale-version')");
+
+    await ensureSeedData();
+
+    const keptId = Number(one("SELECT id FROM grammar_points WHERE pattern = '～てしかた（が）ない'"));
+    const newId = Number(one("SELECT id FROM grammar_points WHERE pattern = '～てしようがない'"));
+    expect(Number(one(`SELECT seen_count FROM grammar_progress WHERE grammar_id = ${keptId}`))).toBe(9);
+    expect(one(`SELECT seen_count FROM grammar_progress WHERE grammar_id = ${newId}`)).toBeUndefined();
+  });
+
   it("条数对不上时自愈重建 —— 版本号三者相等也要修", async () => {
     // 语法条数曾经被写坏过(seed 和出厂库两套重名消歧写法,老用户重建成 731)。
     // 自愈判据是「版本戳相等**且**条数等于常量」才早退,但下一层还有一条

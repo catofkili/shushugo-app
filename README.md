@@ -69,6 +69,9 @@ npm run ios          # 用 Xcode 打开（App.xcworkspace）
 |------|------|
 | [docs/APP_STORE_READINESS.md](docs/APP_STORE_READINESS.md) | **上架准备清单（P0/P1/P2 路线图）** |
 | [docs/CONTENT_RIGHTS.md](docs/CONTENT_RIGHTS.md) | **内容来源、许可证与商业发布审计清单** |
+| [docs/GRAMMAR_FOUNDATION.md](docs/GRAMMAR_FOUNDATION.md) | **日语底层语法框架、与语法辞典的边界及来源审计** |
+| [docs/WEEKLY_REPORT_PLAN.md](docs/WEEKLY_REPORT_PLAN.md) | **每周复习周报（二楼）开发规划** |
+| [docs/WEEKLY_REPORT_DESIGN.md](docs/WEEKLY_REPORT_DESIGN.md) | 周报完整设计规格 |
 | [docs/DATABASES.md](docs/DATABASES.md) | 本地 SQLite、Cloudflare D1、legacy 后端边界 |
 | [docs/PACKAGING.md](docs/PACKAGING.md) | 对外发包白名单与词库打包规则 |
 | [docs/QUICK_START.md](docs/QUICK_START.md) | 本地运行 |
@@ -83,5 +86,5 @@ npm run ios          # 用 Xcode 打开（App.xcworkspace）
 - **Pro 解锁工具仅在开发构建可用**：DevTools 面板和"本地临时解锁 Pro"都在 `import.meta.env.DEV` 守卫后，生产构建默认免费版，无需上架前手动关闭。
 - 剩余上架收尾集中在**外部配置与真机验证**（App Store Connect 内购商品、部署 Worker 拿公开隐私政策 URL、Privacy Nutrition Label、TestFlight 验证购买/恢复/删除账号/云同步）。详见 [docs/APP_STORE_READINESS.md](docs/APP_STORE_READINESS.md)。
 - 本地进度持久化在原生平台使用 Capacitor Filesystem 三代轮转（`main`/`tmp`/`prev`），从旧的 Preferences 分块存储自动迁移；改动后需 Xcode 重新构建到真机验证升级路径。
-- 云同步 Worker 在 `cloudflare-sync/`；部署前需 `npm run d1:migrate:remote` 应用 `0004_auth_hardening` 迁移。
-- 旧版 learning app 已归档到 `legacy-learning-app` 分支，仅作历史参考；正式开发与打包都以 `main` 为准。详见 [docs/LEGACY_ARCHIVE.md](docs/LEGACY_ARCHIVE.md)。
+- 云同步 Worker 在 `cloudflare-sync/`；部署前需 `npm run d1:migrate:remote` 应用迁移目录中的全部正式迁移（当前到 `0012_apple_notifications`）。
+- 旧版 learning app 已归档到 `legacy-learning-app` 分支，仅作历史参考。当前完整产品线在 `feat/fsrs-sync-accounts`；截至 2026-09-11，`main` 仍停在 7 月 31 日的旧基线，缺少其后的 39 个提交，不能用于开发、构建或发布。恢复 `main` 前必须先审查并整合当前分支，不能仅因它是默认分支就切过去。详见 [docs/LEGACY_ARCHIVE.md](docs/LEGACY_ARCHIVE.md)。

@@ -87,6 +87,15 @@ describe("ensureSyncSchema", () => {
     const reviewCols = rows("PRAGMA table_info(reviews)").map((r) => String(r.name));
     expect(reviewCols).toContain("sync_uid");
   });
+
+  it("同步先初始化时也会为懒加载周报建好追踪", () => {
+    const weeklyCols = rows("PRAGMA table_info(weekly_reports)").map((r) => String(r.name));
+    expect(weeklyCols).toContain("sync_updated_at");
+    expect(weeklyCols).toContain("sync_origin_device");
+
+    testDb.run("INSERT INTO weekly_reports (week_start, week_end, generated_at, content_json) VALUES ('2026-09-06', '2026-09-12', 1, '{}')");
+    expect(stampOf("weekly_reports", "week_start = '2026-09-06'")).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
 });
 
 describe("变更追踪触发器", () => {

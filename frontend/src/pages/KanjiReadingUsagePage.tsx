@@ -9,6 +9,7 @@ import {
   readingLine,
   type KanjiCharUsage
 } from "../lib/kanji-reading-usage";
+import { useStudyTimer } from "../lib/useStudyTimer";
 
 /**
  * 一字多音 —— 一个汉字的几个读音各自什么时候用。
@@ -29,6 +30,7 @@ import {
 const LEVEL_NAMES = ["N5", "N4", "N3", "N2", "N1", "无级"];
 
 export const KanjiReadingUsagePage = () => {
+  useStudyTimer(true);
   const [ready, setReady] = useState(false);
   const [level, setLevel] = useState<number | null>(null);
   const [onlySpecific, setOnlySpecific] = useState(true);

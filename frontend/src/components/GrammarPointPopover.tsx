@@ -1,6 +1,9 @@
 import { useEffect, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { GrammarPoint } from "../types/grammar";
+import { JapaneseRuby } from "./JapaneseRuby";
+import { GrammarTermHint } from "./GrammarTermHint";
+import { getGrammarTitleFuriganaByPattern } from "../lib/grammar-title-furigana";
 
 export const GrammarPointPopover = ({ point, targetText, children }: {
   point: Pick<GrammarPoint, "title" | "meaning" | "structure" | "explanation">;
@@ -45,14 +48,14 @@ export const GrammarPointPopover = ({ point, targetText, children }: {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="jp text-xl font-bold leading-7">{targetText}</p>
-            <p className="mt-1 text-xs font-bold tracking-wide text-[#6FA83E] dark:text-[#81D8CF]">{point.title}</p>
+            <p className="mt-1 text-xs font-bold tracking-wide text-[#6FA83E] dark:text-[#81D8CF]"><JapaneseRuby text={point.title} furigana={getGrammarTitleFuriganaByPattern(point.title)} /></p>
           </div>
           <button type="button" className="token-dictionary-close" onClick={close} aria-label="关闭语法解释">×</button>
         </div>
         <p className="mt-3 text-sm font-semibold leading-6">{point.meaning}</p>
         <div className="token-dictionary-conjugation mt-3 rounded-xl p-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] opacity-65">接续</p>
-          <p className="jp mt-1 text-sm font-semibold">{point.structure}</p>
+          <p className="jp mt-1 text-sm font-semibold"><GrammarTermHint text={point.structure} /></p>
           <p className="mt-2 text-xs leading-5 opacity-80">{point.explanation}</p>
         </div>
       </div>

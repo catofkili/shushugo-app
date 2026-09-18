@@ -2,14 +2,14 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
-import './master-home.css';
+import './app.css';
 import { initDatabase } from './lib/database';
 import { LocalArchiveUnreadableError, loadDatabase, registerPersistenceLifecycle } from './lib/storage';
 import { ensureSeedData } from './lib/study-core';
 import { initWebViewOptimizer } from './lib/webview-optimizer';
-import { applyMotionLevel, applyTheme } from './lib/studyPreferences';
+import { applyMotionLevel, applyTheme, getStudyPreferences } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { autoSyncReminderNotifications } from './lib/notifications';
+import { autoSyncReminderNotifications, autoSyncWeeklyReportNotification, loadReminderSettings, registerNotificationActionListener, syncWeeklyReportNotification } from './lib/notifications';
 import { syncJlptPlanReminders } from './lib/jlpt/reminders';
 import { initializePurchases, retryPendingPurchaseVerifications } from './lib/purchases';
 import { autoSyncCloudDatabase, CLOUD_AUTH_EVENT, registerCloudAutoSyncLifecycle, refreshCloudEntitlements } from './lib/sync-api';
@@ -125,6 +125,9 @@ async function bootWithDatabase() {
     registerPersistenceLifecycle();
     registerCloudAutoSyncLifecycle();
     console.log('✅ Database ready');
+    void registerNotificationActionListener().catch((error) => {
+      console.warn('Notification action listener skipped:', error);
+    });
     root.render(
       <StrictMode>
         <ErrorBoundary>
@@ -141,6 +144,16 @@ async function bootWithDatabase() {
     autoSyncReminderNotifications().catch((error) => {
       console.warn('Notification reminder sync skipped:', error);
     });
+    // 关掉「每周学习回顾」时不再排期，同时也把上一次留下的待发通知清掉。
+    if (getStudyPreferences().weeklyReportEnabled) {
+      autoSyncWeeklyReportNotification().catch((error) => {
+        console.warn('Weekly report notification sync skipped:', error);
+      });
+    } else {
+      void loadReminderSettings()
+        .then((settings) => syncWeeklyReportNotification({ ...settings, weeklyReportReminder: false }))
+        .catch((error) => console.warn('Weekly report notification cancel skipped:', error));
+    }
     // 备考提醒的正文每天都不一样(倒计时 + 今天还差多少),没法用一条 repeats 通知糊过去,
     // 所以每次启动重排未来两周。放在数据库 ready 之后:算最低量要查库。
     syncJlptPlanReminders().catch((error) => {

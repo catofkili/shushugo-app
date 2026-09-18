@@ -10,6 +10,7 @@ import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
 import { grammarSequence } from "../lib/grammar-numbering";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { MasteryStatus } from "../types/grammar";
+import { useStudyTimer } from "../lib/useStudyTimer";
 
 interface GrammarDetailProps {
   grammarId: string;
@@ -32,6 +33,7 @@ export const GrammarDetail = ({
   const [noteDraft, setNoteDraft] = useState(() => getGrammarNote(point.id));
   const [, setNoteVersion] = useState(0);
   const note = getGrammarNote(point.id);
+  useStudyTimer(Boolean(point));
 
   useEffect(() => {
     setNoteEditorOpen(false);

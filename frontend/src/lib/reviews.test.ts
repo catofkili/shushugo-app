@@ -28,9 +28,9 @@ describe("review event identity", () => {
     const first = recordReviewEvent({ wordId: 1, answer: "know", reviewedOn: "2026-08-22", direction: "forward", reviewedAt: 1000 });
     const second = recordReviewEvent({ wordId: 1, answer: "fuzzy", reviewedOn: "2026-08-22", direction: "forward", reviewedAt: 1001 });
     expect(first).not.toBe(second);
-    expect(rows("SELECT reviewed_at, scheduler_mode, fsrs_params_version, sync_uid FROM reviews ORDER BY id")).toEqual([
-      { reviewed_at: 1000, scheduler_mode: "normal", fsrs_params_version: FSRS_PARAMS_VERSION, sync_uid: expect.stringMatching(/:.+/) },
-      { reviewed_at: 1001, scheduler_mode: "normal", fsrs_params_version: FSRS_PARAMS_VERSION, sync_uid: expect.stringMatching(/:.+/) }
+    expect(rows("SELECT reviewed_at, scheduler_mode, fsrs_params_version, event_source, sync_uid FROM reviews ORDER BY id")).toEqual([
+      { reviewed_at: 1000, scheduler_mode: "normal", fsrs_params_version: FSRS_PARAMS_VERSION, event_source: "study", sync_uid: expect.stringMatching(/:.+/) },
+      { reviewed_at: 1001, scheduler_mode: "normal", fsrs_params_version: FSRS_PARAMS_VERSION, event_source: "study", sync_uid: expect.stringMatching(/:.+/) }
     ]);
   });
 });

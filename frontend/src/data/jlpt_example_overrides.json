@@ -30,6 +30,421 @@
     "exampleLemmas": "{\"7\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "〜によって",
+    "kana": "〜によって",
+    "exampleJp": "人によって考え方が違います。",
+    "exampleMeaning": "因人而异，想法不同。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "ひと"
+      ],
+      [
+        5,
+        1,
+        "かんが"
+      ],
+      [
+        7,
+        1,
+        "かた"
+      ],
+      [
+        9,
+        1,
+        "ちが"
+      ]
+    ],
+    "exampleTokens": "1,-4,3,-1,4,-1",
+    "exampleLemmas": "{\"4\":\"違う\"}"
+  },
+  {
+    "kanji": "～中",
+    "kana": "～じゅう",
+    "exampleJp": "一日中雨が降っていました。",
+    "exampleMeaning": "一整天都在下雨。",
+    "exampleFurigana": [
+      [
+        0,
+        3,
+        "いちにちじゅう"
+      ],
+      [
+        3,
+        1,
+        "う"
+      ],
+      [
+        5,
+        1,
+        "ふ"
+      ]
+    ],
+    "exampleTokens": "4,-1,7,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"一日中\",\"morphs\":[{\"surface\":\"一日中\",\"lemma\":\"一日中\",\"reading\":\"イチニチジュウ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"雨\",\"lemma\":\"雨\",\"reading\":\"ウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"2\":{\"lemma\":\"降る\",\"morphs\":[{\"surface\":\"降っ\",\"lemma\":\"降る\",\"reading\":\"フッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "～君",
+    "kana": "～くん",
+    "exampleJp": "田中君はサッカーが上手です。",
+    "exampleMeaning": "田中踢足球很厉害。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "たなか"
+      ],
+      [
+        2,
+        1,
+        "くん"
+      ],
+      [
+        9,
+        2,
+        "じょうず"
+      ]
+    ],
+    "exampleTokens": "3,-1,4,-1,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"田中\",\"morphs\":[{\"surface\":\"田中\",\"lemma\":\"田中\",\"reading\":\"タナカ\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"君\",\"lemma\":\"君\",\"reading\":\"クン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":\"上手\"}"
+  },
+  {
+    "kanji": "～子",
+    "kana": "～こ",
+    "exampleJp": "彼女の名前は花子です。",
+    "exampleMeaning": "她叫花子。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "かのじょ"
+      ],
+      [
+        3,
+        2,
+        "なまえ"
+      ],
+      [
+        6,
+        2,
+        "はなこ"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,4,-1",
+    "exampleLemmas": "{\"4\":\"花子\"}"
+  },
+  {
+    "kanji": "Ｔシャツ",
+    "kana": "てぃーシャツ",
+    "exampleJp": "白いＴシャツを一枚買いました。",
+    "exampleMeaning": "买了一件白T恤。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "しろ"
+      ],
+      [
+        7,
+        1,
+        "いち"
+      ],
+      [
+        8,
+        1,
+        "まい"
+      ],
+      [
+        9,
+        1,
+        "か"
+      ]
+    ],
+    "exampleTokens": "2,4,-1,2,5,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"一\",\"morphs\":[{\"surface\":\"一\",\"lemma\":\"一\",\"reading\":\"イチ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"枚\",\"lemma\":\"枚\",\"reading\":\"マイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"買う\",\"morphs\":[{\"surface\":\"買い\",\"lemma\":\"買う\",\"reading\":\"カイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "あいさつ回り",
+    "kana": "あいさつまわり",
+    "exampleJp": "年末は取引先へのあいさつ回りで忙しいです。",
+    "exampleMeaning": "年底忙着去客户那里拜访问候。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ねんまつ"
+      ],
+      [
+        3,
+        2,
+        "とりひき"
+      ],
+      [
+        5,
+        1,
+        "さき"
+      ],
+      [
+        12,
+        1,
+        "まわ"
+      ],
+      [
+        15,
+        1,
+        "いそが"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,-1,-1,6,-1,5,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"取引\",\"morphs\":[{\"surface\":\"取引\",\"lemma\":\"取引\",\"reading\":\"トリヒキ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"先\",\"lemma\":\"先\",\"reading\":\"サキ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"7\":\"忙しい\"}"
+  },
+  {
+    "kanji": "あっ",
+    "kana": "あっ",
+    "exampleJp": "あっ、忘れ物をしました。",
+    "exampleMeaning": "啊，我忘东西了。",
+    "exampleFurigana": [
+      [
+        3,
+        1,
+        "わす"
+      ],
+      [
+        5,
+        1,
+        "もの"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "あの人",
+    "kana": "あのひと",
+    "exampleJp": "あの人は誰ですか。",
+    "exampleMeaning": "那个人是谁？",
+    "exampleFurigana": [
+      [
+        2,
+        1,
+        "ひと"
+      ],
+      [
+        4,
+        1,
+        "だれ"
+      ]
+    ],
+    "exampleTokens": "2,1,-1,3,-1,-1",
+    "exampleLemmas": "{\"3\":\"誰\"}"
+  },
+  {
+    "kanji": "アメリカ人",
+    "kana": "アメリカじん",
+    "exampleJp": "アメリカ人の先生に英語を習いました。",
+    "exampleMeaning": "跟美国老师学了英语。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "じん"
+      ],
+      [
+        6,
+        2,
+        "せんせい"
+      ],
+      [
+        9,
+        2,
+        "えいご"
+      ],
+      [
+        12,
+        1,
+        "なら"
+      ]
+    ],
+    "exampleTokens": "5,-1,2,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"アメリカ\",\"morphs\":[{\"surface\":\"アメリカ\",\"lemma\":\"アメリカ\",\"reading\":\"アメリカ\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"人\",\"lemma\":\"人\",\"reading\":\"ジン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":{\"lemma\":\"習う\",\"morphs\":[{\"surface\":\"習い\",\"lemma\":\"習う\",\"reading\":\"ナライ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "いえ",
+    "kana": "いえ",
+    "exampleJp": "いえ、私は大丈夫です。",
+    "exampleMeaning": "不，我不用了。",
+    "exampleFurigana": [
+      [
+        3,
+        1,
+        "わたし"
+      ],
+      [
+        5,
+        3,
+        "だいじょうぶ"
+      ]
+    ],
+    "exampleTokens": "-2,-1,1,-1,5,-1",
+    "exampleLemmas": "{\"4\":\"大丈夫\"}"
+  },
+  {
+    "kanji": "いけない",
+    "kana": "いけない",
+    "exampleJp": "ここで遊んではいけない。",
+    "exampleMeaning": "不能在这里玩。",
+    "exampleFurigana": [
+      [
+        3,
+        1,
+        "あそ"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"2\":\"遊ぶ\",\"4\":\"いける\"}"
+  },
+  {
+    "kanji": "いただきます",
+    "kana": "いただきます",
+    "exampleJp": "料理ができたので、いただきます。",
+    "exampleMeaning": "菜做好了，我开动了。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "りょうり"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,-2,-1,6,-1",
+    "exampleLemmas": "{\"2\":\"できる\",\"5\":\"いただく\"}"
+  },
+  {
+    "kanji": "イチゴ",
+    "kana": "イチゴ",
+    "exampleJp": "ケーキの上にイチゴが載っています。",
+    "exampleMeaning": "蛋糕上放着草莓。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "うえ"
+      ],
+      [
+        10,
+        1,
+        "の"
+      ]
+    ],
+    "exampleTokens": "3,-1,-1,-1,3,-1,6,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"載る\",\"morphs\":[{\"surface\":\"載っ\",\"lemma\":\"載る\",\"reading\":\"ノッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "いってきます",
+    "kana": "いってきます",
+    "exampleJp": "いってきます。夕方には帰ります。",
+    "exampleMeaning": "我出门了。傍晚回来。",
+    "exampleFurigana": [
+      [
+        7,
+        2,
+        "ゆうがた"
+      ],
+      [
+        11,
+        1,
+        "かえ"
+      ]
+    ],
+    "exampleTokens": "6,-1,2,-1,-1,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"いう\",\"morphs\":[{\"surface\":\"いっ\",\"lemma\":\"いう\",\"reading\":\"イッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"き\",\"lemma\":\"くる\",\"reading\":\"キ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"カ変・クル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]},\"5\":\"帰る\"}"
+  },
+  {
+    "kanji": "ウーロン茶",
+    "kana": "ウーロンちゃ",
+    "exampleJp": "食事のときにウーロン茶を飲みます。",
+    "exampleMeaning": "吃饭的时候喝乌龙茶。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "しょくじ"
+      ],
+      [
+        10,
+        1,
+        "ちゃ"
+      ],
+      [
+        12,
+        1,
+        "の"
+      ]
+    ],
+    "exampleTokens": "2,-1,-2,-1,5,-1,4,-1",
+    "exampleLemmas": "{\"6\":\"飲む\"}"
+  },
+  {
+    "kanji": "うーん",
+    "kana": "うーん",
+    "exampleJp": "うーん、ちょっと難しいですね。",
+    "exampleMeaning": "嗯……有点难啊。",
+    "exampleFurigana": [
+      [
+        8,
+        1,
+        "むずか"
+      ]
+    ],
+    "exampleTokens": "3,-1,4,5,-1,-1",
+    "exampleLemmas": "{\"3\":\"難しい\"}"
+  },
+  {
+    "kanji": "ウイスキー",
+    "kana": "ウイスキー",
+    "exampleJp": "父はウイスキーが好きです。",
+    "exampleMeaning": "父亲喜欢威士忌。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "ちち"
+      ],
+      [
+        8,
+        1,
+        "す"
+      ]
+    ],
+    "exampleTokens": "1,-1,5,-1,4,-1",
+    "exampleLemmas": "{\"4\":\"好き\"}"
+  },
+  {
+    "kanji": "オーストラリア人",
+    "kana": "オーストラリアじん",
+    "exampleJp": "オーストラリア人の友達はサーフィンが好きです。",
+    "exampleMeaning": "我的澳大利亚朋友喜欢冲浪。",
+    "exampleFurigana": [
+      [
+        7,
+        1,
+        "じん"
+      ],
+      [
+        9,
+        2,
+        "ともだち"
+      ],
+      [
+        18,
+        1,
+        "す"
+      ]
+    ],
+    "exampleTokens": "8,-1,2,-1,5,-1,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"オーストラリア\",\"morphs\":[{\"surface\":\"オーストラリア\",\"lemma\":\"オーストラリア\",\"reading\":\"オーストラリア\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"人\",\"lemma\":\"人\",\"reading\":\"ジン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":\"好き\"}"
+  },
+  {
     "kanji": "おい",
     "kana": "おい",
     "exampleJp": "おい、忘れ物をしているよ。",
@@ -48,6 +463,31 @@
     ],
     "exampleTokens": "2,-1,3,-1,4,-1,-1",
     "exampleLemmas": "{\"4\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"いる\",\"lemma\":\"いる\",\"reading\":\"イル\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "お先に失礼します",
+    "kana": "おさきにしつれいします",
+    "exampleJp": "お先に失礼します。また明日。",
+    "exampleMeaning": "我先走了。明天见。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "さき"
+      ],
+      [
+        3,
+        2,
+        "しつれい"
+      ],
+      [
+        11,
+        2,
+        "あした"
+      ]
+    ],
+    "exampleTokens": "3,2,3,-1,-2,2,-1",
+    "exampleLemmas": "{\"2\":\"する\"}"
   },
   {
     "kanji": "お別れ",
@@ -130,6 +570,186 @@
     "exampleLemmas": "{\"0\":{\"lemma\":\"旅行\",\"morphs\":[{\"surface\":\"旅行\",\"lemma\":\"旅行\",\"reading\":\"リョコウ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"先\",\"lemma\":\"先\",\"reading\":\"サキ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"2\":\"買う\",\"8\":{\"lemma\":\"持つ\",\"morphs\":[{\"surface\":\"持っ\",\"lemma\":\"持つ\",\"reading\":\"モッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・タ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "お大事に",
+    "kana": "おだいじに",
+    "exampleJp": "風邪ですか。お大事に。",
+    "exampleMeaning": "感冒了吗？请多保重。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "かぜ"
+      ],
+      [
+        7,
+        2,
+        "だいじ"
+      ]
+    ],
+    "exampleTokens": "4,-1,-1,-1,2,-1,-1",
+    "exampleLemmas": "{\"0\":\"風邪\"}"
+  },
+  {
+    "kanji": "お嬢さん",
+    "kana": "おじょうさん",
+    "exampleJp": "お嬢さんは今年大学生になりました。",
+    "exampleMeaning": "您女儿今年上大学了。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "じょう"
+      ],
+      [
+        5,
+        2,
+        "ことし"
+      ],
+      [
+        7,
+        3,
+        "だいがくせい"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,3,-1,5,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"なる\",\"morphs\":[{\"surface\":\"なり\",\"lemma\":\"なる\",\"reading\":\"ナリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "お客さん",
+    "kana": "おきゃくさん",
+    "exampleJp": "お客さんが三時に来ます。",
+    "exampleMeaning": "客人三点来。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "きゃく"
+      ],
+      [
+        5,
+        1,
+        "さん"
+      ],
+      [
+        6,
+        1,
+        "じ"
+      ],
+      [
+        8,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,-1,3,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"お客\",\"morphs\":[{\"surface\":\"お客\",\"lemma\":\"お客\",\"reading\":\"オキャク\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"さん\",\"lemma\":\"さん\",\"reading\":\"サン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"2\":{\"lemma\":\"三\",\"morphs\":[{\"surface\":\"三\",\"lemma\":\"三\",\"reading\":\"サン\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"時\",\"lemma\":\"時\",\"reading\":\"ジ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":\"来る\"}"
+  },
+  {
+    "kanji": "お客様",
+    "kana": "おきゃくさま",
+    "exampleJp": "お客様、何をお探しですか。",
+    "exampleMeaning": "客人，您在找什么？",
+    "exampleFurigana": [
+      [
+        1,
+        2,
+        "きゃくさま"
+      ],
+      [
+        4,
+        1,
+        "なに"
+      ],
+      [
+        7,
+        1,
+        "さが"
+      ]
+    ],
+    "exampleTokens": "3,-1,1,-1,-1,4,-1,-1",
+    "exampleLemmas": "{\"5\":\"探す\"}"
+  },
+  {
+    "kanji": "お帰りなさい",
+    "kana": "おかえりなさい",
+    "exampleJp": "お帰りなさい。ご飯ができていますよ。",
+    "exampleMeaning": "你回来啦。饭已经做好了。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "かえ"
+      ],
+      [
+        8,
+        1,
+        "はん"
+      ]
+    ],
+    "exampleTokens": "-1,5,-1,2,-1,6,-1,-1",
+    "exampleLemmas": "{\"1\":{\"lemma\":\"帰る\",\"morphs\":[{\"surface\":\"帰り\",\"lemma\":\"帰る\",\"reading\":\"カエリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"なさい\",\"lemma\":\"なさる\",\"reading\":\"ナサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]},\"5\":{\"lemma\":\"できる\",\"morphs\":[{\"surface\":\"でき\",\"lemma\":\"できる\",\"reading\":\"デキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "お店",
+    "kana": "おみせ",
+    "exampleJp": "駅の前に新しいお店ができました。",
+    "exampleMeaning": "车站前面开了一家新店。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "えき"
+      ],
+      [
+        2,
+        1,
+        "まえ"
+      ],
+      [
+        4,
+        1,
+        "あたら"
+      ],
+      [
+        8,
+        1,
+        "みせ"
+      ]
+    ],
+    "exampleTokens": "1,-1,1,-1,3,-1,1,-1,5,-1",
+    "exampleLemmas": "{\"8\":{\"lemma\":\"できる\",\"morphs\":[{\"surface\":\"でき\",\"lemma\":\"できる\",\"reading\":\"デキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "お弁当",
+    "kana": "おべんとう",
+    "exampleJp": "母が毎朝お弁当を作ってくれます。",
+    "exampleMeaning": "妈妈每天早上给我做便当。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "はは"
+      ],
+      [
+        2,
+        2,
+        "まいあさ"
+      ],
+      [
+        5,
+        2,
+        "べんとう"
+      ],
+      [
+        8,
+        1,
+        "つく"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,-1,2,-1,7,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"作る\",\"morphs\":[{\"surface\":\"作っ\",\"lemma\":\"作る\",\"reading\":\"ツクッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"くれ\",\"lemma\":\"くれる\",\"reading\":\"クレ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段・クレル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "お手洗い",
     "kana": "おてあらい",
     "exampleJp": "お手洗いは廊下の突き当たりにあります。",
@@ -158,6 +778,26 @@
     ],
     "exampleTokens": "-1,3,-1,2,-1,2,3,-1,4,-1",
     "exampleLemmas": "{\"8\":\"ある\"}"
+  },
+  {
+    "kanji": "お早う",
+    "kana": "おはよう",
+    "exampleJp": "おはよう、今日もいい天気だね。",
+    "exampleMeaning": "早上好，今天天气也不错呢。",
+    "exampleFurigana": [
+      [
+        5,
+        2,
+        "きょう"
+      ],
+      [
+        10,
+        2,
+        "てんき"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,-1,2,3,-1,-1",
+    "exampleLemmas": "{\"5\":\"天気\"}"
   },
   {
     "kanji": "お正月",
@@ -225,6 +865,61 @@
     "exampleLemmas": "{\"7\":{\"lemma\":\"食べる\",\"morphs\":[{\"surface\":\"食べ\",\"lemma\":\"食べる\",\"reading\":\"タベ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "お湯",
+    "kana": "おゆ",
+    "exampleJp": "お湯が沸いたらお茶を入れます。",
+    "exampleMeaning": "水烧开后就泡茶。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "ゆ"
+      ],
+      [
+        3,
+        1,
+        "わ"
+      ],
+      [
+        8,
+        1,
+        "ちゃ"
+      ],
+      [
+        10,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "2,-1,4,2,-1,4,-1",
+    "exampleLemmas": "{\"2\":\"沸く\",\"5\":\"入れる\"}"
+  },
+  {
+    "kanji": "お爺さん",
+    "kana": "おじいさん",
+    "exampleJp": "お爺さんは公園を散歩しています。",
+    "exampleMeaning": "爷爷正在公园散步。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "じい"
+      ],
+      [
+        5,
+        2,
+        "こうえん"
+      ],
+      [
+        8,
+        2,
+        "さんぽ"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,-1,2,5,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "お皿",
     "kana": "おさら",
     "exampleJp": "洗ったお皿を棚に戻しました。",
@@ -253,6 +948,41 @@
     ],
     "exampleTokens": "3,-1,1,-1,1,-1,5,-1",
     "exampleLemmas": "{\"0\":\"洗う\",\"6\":{\"lemma\":\"戻す\",\"morphs\":[{\"surface\":\"戻し\",\"lemma\":\"戻す\",\"reading\":\"モドシ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・サ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "お祖母さん",
+    "kana": "おばあさん",
+    "exampleJp": "お祖母さんは八十歳でも元気です。",
+    "exampleMeaning": "奶奶八十岁了还很健康。",
+    "exampleFurigana": [
+      [
+        1,
+        2,
+        "ばあ"
+      ],
+      [
+        6,
+        1,
+        "はち"
+      ],
+      [
+        7,
+        1,
+        "じゅう"
+      ],
+      [
+        8,
+        1,
+        "さい"
+      ],
+      [
+        11,
+        2,
+        "げんき"
+      ]
+    ],
+    "exampleTokens": "5,-1,1,2,-2,4,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"十\",\"morphs\":[{\"surface\":\"十\",\"lemma\":\"十\",\"reading\":\"ジュウ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"歳\",\"lemma\":\"歳\",\"reading\":\"サイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":\"元気\"}"
   },
   {
     "kanji": "お粥",
@@ -290,6 +1020,31 @@
     "exampleLemmas": "{\"10\":{\"lemma\":\"食べる\",\"morphs\":[{\"surface\":\"食べ\",\"lemma\":\"食べる\",\"reading\":\"タベ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "お腹",
+    "kana": "おなか",
+    "exampleJp": "朝からお腹が痛いです。",
+    "exampleMeaning": "从早上开始肚子就疼。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "あさ"
+      ],
+      [
+        4,
+        1,
+        "なか"
+      ],
+      [
+        6,
+        1,
+        "いた"
+      ]
+    ],
+    "exampleTokens": "1,-2,2,-1,4,-1",
+    "exampleLemmas": "{\"4\":\"痛い\"}"
+  },
+  {
     "kanji": "お菓子",
     "kana": "おかし",
     "exampleJp": "子どもたちにお菓子を一つずつ配りました。",
@@ -318,6 +1073,126 @@
     ],
     "exampleTokens": "5,-1,3,-1,2,-2,5,-1",
     "exampleLemmas": "{\"0\":{\"lemma\":\"子ども\",\"morphs\":[{\"surface\":\"子ども\",\"lemma\":\"子ども\",\"reading\":\"コドモ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"たち\",\"lemma\":\"たち\",\"reading\":\"タチ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":{\"lemma\":\"配る\",\"morphs\":[{\"surface\":\"配り\",\"lemma\":\"配る\",\"reading\":\"クバリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "お邪魔します",
+    "kana": "おじゃまします",
+    "exampleJp": "では、お邪魔します。",
+    "exampleMeaning": "那么，打扰了。",
+    "exampleFurigana": [
+      [
+        4,
+        2,
+        "じゃま"
+      ]
+    ],
+    "exampleTokens": "-2,-1,-1,2,3,-1",
+    "exampleLemmas": "{\"4\":\"する\"}"
+  },
+  {
+    "kanji": "お酒",
+    "kana": "おさけ",
+    "exampleJp": "お酒を飲むと顔が赤くなります。",
+    "exampleMeaning": "一喝酒脸就会红。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "さけ"
+      ],
+      [
+        3,
+        1,
+        "の"
+      ],
+      [
+        6,
+        1,
+        "かお"
+      ],
+      [
+        8,
+        1,
+        "あか"
+      ]
+    ],
+    "exampleTokens": "-1,1,-1,2,-1,1,-1,2,4,-1",
+    "exampleLemmas": "{\"7\":\"赤い\",\"8\":\"なる\"}"
+  },
+  {
+    "kanji": "お金",
+    "kana": "おかね",
+    "exampleJp": "お金を銀行に預けました。",
+    "exampleMeaning": "把钱存进了银行。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "かね"
+      ],
+      [
+        3,
+        2,
+        "ぎんこう"
+      ],
+      [
+        6,
+        1,
+        "あづ"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"預ける\",\"morphs\":[{\"surface\":\"預け\",\"lemma\":\"預ける\",\"reading\":\"アヅケ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "お願いします",
+    "kana": "おねがいします",
+    "exampleJp": "コーヒーを一つお願いします。",
+    "exampleMeaning": "请给我一杯咖啡。",
+    "exampleFurigana": [
+      [
+        5,
+        1,
+        "ひと"
+      ],
+      [
+        8,
+        1,
+        "ねが"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,3,3,-1",
+    "exampleLemmas": "{\"4\":\"する\"}"
+  },
+  {
+    "kanji": "お風呂",
+    "kana": "おふろ",
+    "exampleJp": "毎晩お風呂に入ってから寝ます。",
+    "exampleMeaning": "每天晚上洗完澡再睡觉。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "まいばん"
+      ],
+      [
+        3,
+        2,
+        "ふろ"
+      ],
+      [
+        6,
+        1,
+        "はい"
+      ],
+      [
+        11,
+        1,
+        "ね"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,3,-2,3,-1",
+    "exampleLemmas": "{\"4\":\"入る\",\"6\":\"寝る\"}"
   },
   {
     "kanji": "かささぎ",
@@ -350,6 +1225,21 @@
     "exampleLemmas": "{\"4\":{\"lemma\":\"かさ\",\"morphs\":[{\"surface\":\"かさ\",\"lemma\":\"かさ\",\"reading\":\"カサ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"さ\",\"lemma\":\"さ\",\"reading\":\"サ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":{\"lemma\":\"一\",\"morphs\":[{\"surface\":\"一\",\"lemma\":\"一\",\"reading\":\"イチ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"羽\",\"lemma\":\"羽\",\"reading\":\"ワ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"7\":{\"lemma\":\"とまる\",\"morphs\":[{\"surface\":\"とまっ\",\"lemma\":\"とまる\",\"reading\":\"トマッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "かしこまりました",
+    "kana": "かしこまりました",
+    "exampleJp": "かしこまりました。すぐにご用意いたします。",
+    "exampleMeaning": "明白了，马上为您准备。",
+    "exampleFurigana": [
+      [
+        13,
+        2,
+        "ようい"
+      ]
+    ],
+    "exampleTokens": "8,-1,2,-1,-1,7,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"かしこまる\",\"morphs\":[{\"surface\":\"かしこまり\",\"lemma\":\"かしこまる\",\"reading\":\"カシコマリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]},\"5\":{\"lemma\":\"用意\",\"morphs\":[{\"surface\":\"用意\",\"lemma\":\"用意\",\"reading\":\"ヨウイ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"いたし\",\"lemma\":\"いたす\",\"reading\":\"イタシ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・サ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "ガレージ",
     "kana": "ガレージ",
     "exampleJp": "車をガレージに入れてから、玄関を閉めました。",
@@ -380,6 +1270,31 @@
     "exampleLemmas": "{\"4\":\"入れる\",\"9\":{\"lemma\":\"閉める\",\"morphs\":[{\"surface\":\"閉め\",\"lemma\":\"閉める\",\"reading\":\"シメ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "カレンダー",
+    "kana": "カレンダー",
+    "exampleJp": "壁に新しいカレンダーを掛けました。",
+    "exampleMeaning": "在墙上挂了一本新日历。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "かべ"
+      ],
+      [
+        2,
+        1,
+        "あたら"
+      ],
+      [
+        11,
+        1,
+        "か"
+      ]
+    ],
+    "exampleTokens": "1,-1,3,5,-1,5,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"掛ける\",\"morphs\":[{\"surface\":\"掛け\",\"lemma\":\"掛ける\",\"reading\":\"カケ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "クーラー",
     "kana": "クーラー",
     "exampleJp": "暑かったので、部屋のクーラーをつけました。",
@@ -400,6 +1315,51 @@
     "exampleLemmas": "{\"0\":\"暑い\",\"7\":{\"lemma\":\"つける\",\"morphs\":[{\"surface\":\"つけ\",\"lemma\":\"つける\",\"reading\":\"ツケ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "ゴーカート",
+    "kana": "ゴーカート",
+    "exampleJp": "遊園地でゴーカートに乗りました。",
+    "exampleMeaning": "在游乐园开了卡丁车。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ゆうえん"
+      ],
+      [
+        2,
+        1,
+        "ち"
+      ],
+      [
+        10,
+        1,
+        "の"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,3,-1,5,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"遊園\",\"morphs\":[{\"surface\":\"遊園\",\"lemma\":\"遊園\",\"reading\":\"ユウエン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"地\",\"lemma\":\"地\",\"reading\":\"チ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":{\"lemma\":\"乗る\",\"morphs\":[{\"surface\":\"乗り\",\"lemma\":\"乗る\",\"reading\":\"ノリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "ゴールデンウィーク",
+    "kana": "ゴールデンウィーク",
+    "exampleJp": "ゴールデンウィークに旅行する予定です。",
+    "exampleMeaning": "打算黄金周去旅行。",
+    "exampleFurigana": [
+      [
+        10,
+        2,
+        "りょこう"
+      ],
+      [
+        14,
+        2,
+        "よてい"
+      ]
+    ],
+    "exampleTokens": "9,-1,2,2,4,-1",
+    "exampleLemmas": "{\"4\":\"予定\"}"
+  },
+  {
     "kanji": "こちらこそ",
     "kana": "こちらこそ",
     "exampleJp": "こちらこそ、今日はありがとうございました。",
@@ -413,6 +1373,96 @@
     ],
     "exampleTokens": "3,-2,-1,2,-1,11,-1",
     "exampleLemmas": "{\"5\":{\"lemma\":\"ありがとう\",\"morphs\":[{\"surface\":\"ありがとう\",\"lemma\":\"ありがとう\",\"reading\":\"アリガトウ\",\"pos\":\"感動詞\",\"detail\":\"*\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ござい\",\"lemma\":\"ござる\",\"reading\":\"ゴザイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "こどもの日",
+    "kana": "こどものひ",
+    "exampleJp": "こどもの日には鯉のぼりを飾ります。",
+    "exampleMeaning": "儿童节会挂鲤鱼旗。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "ひ"
+      ],
+      [
+        7,
+        1,
+        "こい"
+      ],
+      [
+        12,
+        1,
+        "かざ"
+      ]
+    ],
+    "exampleTokens": "3,-1,-1,-1,-1,4,-1,4,-1",
+    "exampleLemmas": "{\"7\":\"飾る\"}"
+  },
+  {
+    "kanji": "ゴミ",
+    "kana": "ゴミ",
+    "exampleJp": "ゴミは月曜日に出してください。",
+    "exampleMeaning": "请在周一扔垃圾。",
+    "exampleFurigana": [
+      [
+        3,
+        3,
+        "げつようび"
+      ],
+      [
+        7,
+        1,
+        "だ"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,-1,7,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"出す\",\"morphs\":[{\"surface\":\"出し\",\"lemma\":\"出す\",\"reading\":\"ダシ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・サ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
+    "kanji": "こんなに",
+    "kana": "こんなに",
+    "exampleJp": "こんなに美味しい料理は初めてです。",
+    "exampleMeaning": "这么好吃的菜还是第一次吃到。",
+    "exampleFurigana": [
+      [
+        4,
+        2,
+        "おい"
+      ],
+      [
+        8,
+        2,
+        "りょうり"
+      ],
+      [
+        11,
+        1,
+        "はじ"
+      ]
+    ],
+    "exampleTokens": "4,4,2,-1,5,-1",
+    "exampleLemmas": "{\"4\":\"初めて\"}"
+  },
+  {
+    "kanji": "ご主人",
+    "kana": "ごしゅじん",
+    "exampleJp": "ご主人はお元気ですか。",
+    "exampleMeaning": "您丈夫身体好吗？",
+    "exampleFurigana": [
+      [
+        1,
+        2,
+        "しゅじん"
+      ],
+      [
+        5,
+        2,
+        "げんき"
+      ]
+    ],
+    "exampleTokens": "-1,2,-1,-1,4,-1,-1",
+    "exampleLemmas": "{\"4\":\"元気\"}"
   },
   {
     "kanji": "ご馳走",
@@ -470,6 +1520,111 @@
     "exampleLemmas": "{\"1\":\"する\",\"7\":{\"lemma\":\"持ち込む\",\"morphs\":[{\"surface\":\"持ち込み\",\"lemma\":\"持ち込む\",\"reading\":\"モチコミ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・マ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "サッカーボール",
+    "kana": "サッカーボール",
+    "exampleJp": "サッカーボールを庭で蹴りました。",
+    "exampleMeaning": "在院子里踢了足球。",
+    "exampleFurigana": [
+      [
+        8,
+        1,
+        "にわ"
+      ],
+      [
+        10,
+        1,
+        "け"
+      ]
+    ],
+    "exampleTokens": "4,3,-1,1,-1,5,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"蹴る\",\"morphs\":[{\"surface\":\"蹴り\",\"lemma\":\"蹴る\",\"reading\":\"ケリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "さん",
+    "kana": "さん",
+    "exampleJp": "田中さんは日本語の先生です。",
+    "exampleMeaning": "田中先生是日语老师。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "たなか"
+      ],
+      [
+        5,
+        3,
+        "にほんご"
+      ],
+      [
+        9,
+        2,
+        "せんせい"
+      ]
+    ],
+    "exampleTokens": "4,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"田中\",\"morphs\":[{\"surface\":\"田中\",\"lemma\":\"田中\",\"reading\":\"タナカ\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"さん\",\"lemma\":\"さん\",\"reading\":\"サン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":\"先生\"}"
+  },
+  {
+    "kanji": "シーディー",
+    "kana": "シーディー",
+    "exampleJp": "好きな歌手のシーディーを買いました。",
+    "exampleMeaning": "买了喜欢的歌手的CD。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "す"
+      ],
+      [
+        3,
+        2,
+        "かしゅ"
+      ],
+      [
+        12,
+        1,
+        "か"
+      ]
+    ],
+    "exampleTokens": "3,2,-1,5,-1,5,-1",
+    "exampleLemmas": "{\"0\":\"好き\",\"5\":{\"lemma\":\"買う\",\"morphs\":[{\"surface\":\"買い\",\"lemma\":\"買う\",\"reading\":\"カイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "ジェーアール",
+    "kana": "ジェーアール",
+    "exampleJp": "ジェーアールで京都まで行きました。",
+    "exampleMeaning": "坐JR去了京都。",
+    "exampleFurigana": [
+      [
+        7,
+        2,
+        "きょうと"
+      ],
+      [
+        11,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "6,-1,2,-2,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"行く\",\"morphs\":[{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "じゃあ",
+    "kana": "じゃあ",
+    "exampleJp": "じゃあ、また明日ね。",
+    "exampleMeaning": "那么，明天见。",
+    "exampleFurigana": [
+      [
+        6,
+        2,
+        "あした"
+      ]
+    ],
+    "exampleTokens": "-3,-1,-2,2,-1,-1",
+    "exampleLemmas": "{}"
+  },
+  {
     "kanji": "ジャスミン茶",
     "kana": "ジャスミンちゃ",
     "exampleJp": "食後に温かいジャスミン茶を飲みました。",
@@ -498,6 +1653,26 @@
     ],
     "exampleTokens": "2,-1,3,5,1,-1,5,-1",
     "exampleLemmas": "{\"6\":{\"lemma\":\"飲む\",\"morphs\":[{\"surface\":\"飲み\",\"lemma\":\"飲む\",\"reading\":\"ノミ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・マ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "シャンハイ",
+    "kana": "シャンハイ",
+    "exampleJp": "シャンハイはとても大きな町です。",
+    "exampleMeaning": "上海是一座非常大的城市。",
+    "exampleFurigana": [
+      [
+        9,
+        1,
+        "おお"
+      ],
+      [
+        12,
+        1,
+        "まち"
+      ]
+    ],
+    "exampleTokens": "5,-1,3,3,3,-1",
+    "exampleLemmas": "{\"4\":\"町\"}"
   },
   {
     "kanji": "シュート",
@@ -605,6 +1780,161 @@
     "exampleLemmas": "{\"3\":\"冷える\",\"11\":\"出る\"}"
   },
   {
+    "kanji": "スペイン語",
+    "kana": "スペインご",
+    "exampleJp": "スペイン語は大学で習いました。",
+    "exampleMeaning": "西班牙语是大学时学的。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "ご"
+      ],
+      [
+        6,
+        2,
+        "だいがく"
+      ],
+      [
+        9,
+        1,
+        "なら"
+      ]
+    ],
+    "exampleTokens": "5,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"スペイン\",\"morphs\":[{\"surface\":\"スペイン\",\"lemma\":\"スペイン\",\"reading\":\"スペイン\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"語\",\"lemma\":\"語\",\"reading\":\"ゴ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"習う\",\"morphs\":[{\"surface\":\"習い\",\"lemma\":\"習う\",\"reading\":\"ナライ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "スポーツセンター",
+    "kana": "スポーツセンター",
+    "exampleJp": "毎週スポーツセンターで泳いでいます。",
+    "exampleMeaning": "每周在体育中心游泳。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "まいしゅう"
+      ],
+      [
+        11,
+        1,
+        "およ"
+      ]
+    ],
+    "exampleTokens": "2,4,4,-1,6,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"泳ぐ\",\"morphs\":[{\"surface\":\"泳い\",\"lemma\":\"泳ぐ\",\"reading\":\"オヨイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ガ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"で\",\"lemma\":\"で\",\"reading\":\"デ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "そば屋",
+    "kana": "そばや",
+    "exampleJp": "駅の近くのそば屋に入りました。",
+    "exampleMeaning": "进了车站附近的一家荞麦面馆。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "えき"
+      ],
+      [
+        2,
+        1,
+        "ちか"
+      ],
+      [
+        7,
+        1,
+        "や"
+      ],
+      [
+        9,
+        1,
+        "はい"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,-1,3,-1,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"そば\",\"morphs\":[{\"surface\":\"そば\",\"lemma\":\"そば\",\"reading\":\"ソバ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"屋\",\"lemma\":\"屋\",\"reading\":\"ヤ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":{\"lemma\":\"入る\",\"morphs\":[{\"surface\":\"入り\",\"lemma\":\"入る\",\"reading\":\"ハイリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "そんなに",
+    "kana": "そんなに",
+    "exampleJp": "そんなに心配しないでください。",
+    "exampleMeaning": "请不要那么担心。",
+    "exampleFurigana": [
+      [
+        4,
+        2,
+        "しんぱい"
+      ]
+    ],
+    "exampleTokens": "4,2,8,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ない\",\"lemma\":\"ない\",\"reading\":\"ナイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ナイ\",\"conjugatedForm\":\"連用デ接続\"},{\"surface\":\"で\",\"lemma\":\"で\",\"reading\":\"デ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
+    "kanji": "タイムサービス",
+    "kana": "タイムサービス",
+    "exampleJp": "スーパーのタイムサービスで安く買いました。",
+    "exampleMeaning": "趁超市限时特价便宜买了。",
+    "exampleFurigana": [
+      [
+        13,
+        1,
+        "やす"
+      ],
+      [
+        15,
+        1,
+        "か"
+      ]
+    ],
+    "exampleTokens": "4,-1,3,4,-1,2,5,-1",
+    "exampleLemmas": "{\"5\":\"安い\",\"6\":{\"lemma\":\"買う\",\"morphs\":[{\"surface\":\"買い\",\"lemma\":\"買う\",\"reading\":\"カイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "たった今",
+    "kana": "たったいま",
+    "exampleJp": "たった今、彼が帰りました。",
+    "exampleMeaning": "他刚刚回去了。",
+    "exampleFurigana": [
+      [
+        3,
+        1,
+        "いま"
+      ],
+      [
+        5,
+        1,
+        "かれ"
+      ],
+      [
+        7,
+        1,
+        "かえ"
+      ]
+    ],
+    "exampleTokens": "4,-1,1,-1,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"帰る\",\"morphs\":[{\"surface\":\"帰り\",\"lemma\":\"帰る\",\"reading\":\"カエリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "ちゃん",
+    "kana": "ちゃん",
+    "exampleJp": "花子ちゃんはとても元気です。",
+    "exampleMeaning": "花子很精神。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "はなこ"
+      ],
+      [
+        9,
+        2,
+        "げんき"
+      ]
+    ],
+    "exampleTokens": "5,-1,3,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"花子\",\"morphs\":[{\"surface\":\"花子\",\"lemma\":\"花子\",\"reading\":\"ハナコ\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ちゃん\",\"lemma\":\"ちゃん\",\"reading\":\"チャン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"3\":\"元気\"}"
+  },
+  {
     "kanji": "つい",
     "kana": "つい",
     "exampleJp": "店の前を通ると、つい新しい本を買ってしまいます。",
@@ -645,6 +1975,26 @@
     "exampleLemmas": "{\"11\":{\"lemma\":\"買う\",\"morphs\":[{\"surface\":\"買っ\",\"lemma\":\"買う\",\"reading\":\"カッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"しまい\",\"lemma\":\"しまう\",\"reading\":\"シマイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "ディズニーランド",
+    "kana": "ディズニーランド",
+    "exampleJp": "家族とディズニーランドへ行きました。",
+    "exampleMeaning": "和家人一起去了迪士尼乐园。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "かぞく"
+      ],
+      [
+        12,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "2,-1,8,-1,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"行く\",\"morphs\":[{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "デジカメ",
     "kana": "デジカメ",
     "exampleJp": "旅行には軽いデジカメを持って行きました。",
@@ -675,6 +2025,96 @@
     "exampleLemmas": "{\"6\":{\"lemma\":\"持つ\",\"morphs\":[{\"surface\":\"持っ\",\"lemma\":\"持つ\",\"reading\":\"モッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・タ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "デュポン",
+    "kana": "デュポン",
+    "exampleJp": "デュポンはアメリカの会社の名前です。",
+    "exampleMeaning": "杜邦是一家美国公司的名字。",
+    "exampleFurigana": [
+      [
+        10,
+        2,
+        "かいしゃ"
+      ],
+      [
+        13,
+        2,
+        "なまえ"
+      ]
+    ],
+    "exampleTokens": "4,-1,4,-1,2,-1,4,-1",
+    "exampleLemmas": "{\"6\":\"名前\"}"
+  },
+  {
+    "kanji": "テレビゲーム",
+    "kana": "テレビゲーム",
+    "exampleJp": "弟は一日中テレビゲームをしています。",
+    "exampleMeaning": "弟弟一整天都在打电子游戏。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "おとうと"
+      ],
+      [
+        2,
+        1,
+        "いち"
+      ],
+      [
+        3,
+        1,
+        "にち"
+      ],
+      [
+        4,
+        1,
+        "ちゅう"
+      ]
+    ],
+    "exampleTokens": "1,-1,3,3,3,-1,5,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"一\",\"morphs\":[{\"surface\":\"一\",\"lemma\":\"一\",\"reading\":\"イチ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"日\",\"lemma\":\"日\",\"reading\":\"ニチ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"中\",\"lemma\":\"中\",\"reading\":\"チュウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "どのぐらい",
+    "kana": "どのぐらい",
+    "exampleJp": "日本語をどのぐらい勉強しましたか。",
+    "exampleMeaning": "你学日语学了多久？",
+    "exampleFurigana": [
+      [
+        0,
+        3,
+        "にほんご"
+      ],
+      [
+        9,
+        2,
+        "べんきょう"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-3,2,4,-1,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "トランク",
+    "kana": "トランク",
+    "exampleJp": "トランクに服を詰めました。",
+    "exampleMeaning": "把衣服装进了行李箱。",
+    "exampleFurigana": [
+      [
+        5,
+        1,
+        "ふく"
+      ],
+      [
+        7,
+        1,
+        "つ"
+      ]
+    ],
+    "exampleTokens": "4,-1,1,-1,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"詰める\",\"morphs\":[{\"surface\":\"詰め\",\"lemma\":\"詰める\",\"reading\":\"ツメ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "バーゲン",
     "kana": "バーゲン",
     "exampleJp": "バーゲンで冬のコートを安く買いました。",
@@ -700,6 +2140,26 @@
     "exampleLemmas": "{\"6\":\"安い\",\"7\":{\"lemma\":\"買う\",\"morphs\":[{\"surface\":\"買い\",\"lemma\":\"買う\",\"reading\":\"カイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "ハードスケジュール",
+    "kana": "ハードスケジュール",
+    "exampleJp": "今週はハードスケジュールで疲れました。",
+    "exampleMeaning": "这周日程很紧，累坏了。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "こんしゅう"
+      ],
+      [
+        13,
+        1,
+        "つか"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,6,-1,5,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"疲れる\",\"morphs\":[{\"surface\":\"疲れ\",\"lemma\":\"疲れる\",\"reading\":\"ツカレ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "パイロット",
     "kana": "パイロット",
     "exampleJp": "そのパイロットは安全確認をしてから離陸しました。",
@@ -723,6 +2183,71 @@
     ],
     "exampleTokens": "2,5,-1,2,2,-1,2,-2,2,4,-1",
     "exampleLemmas": "{\"6\":\"する\",\"9\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "ハサミ",
+    "kana": "ハサミ",
+    "exampleJp": "ハサミで紙を切りました。",
+    "exampleMeaning": "用剪刀剪了纸。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "かみ"
+      ],
+      [
+        6,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "3,-1,1,-1,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"切る\",\"morphs\":[{\"surface\":\"切り\",\"lemma\":\"切る\",\"reading\":\"キリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "バドミントン",
+    "kana": "バドミントン",
+    "exampleJp": "放課後、友達とバドミントンをしました。",
+    "exampleMeaning": "放学后和朋友打了羽毛球。",
+    "exampleFurigana": [
+      [
+        0,
+        3,
+        "ほうかご"
+      ],
+      [
+        4,
+        2,
+        "ともだち"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-1,6,-1,4,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "バラ",
+    "kana": "バラ",
+    "exampleJp": "庭にバラの花が咲いています。",
+    "exampleMeaning": "院子里玫瑰花开着。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "にわ"
+      ],
+      [
+        5,
+        1,
+        "はな"
+      ],
+      [
+        7,
+        1,
+        "さ"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,-1,1,-1,6,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"咲く\",\"morphs\":[{\"surface\":\"咲い\",\"lemma\":\"咲く\",\"reading\":\"サイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
     "kanji": "ハンサム",
@@ -753,6 +2278,101 @@
     ],
     "exampleTokens": "1,-1,6,-1,-1,3,-1,3,5,-1",
     "exampleLemmas": "{\"2\":\"ハンサム\",\"8\":\"穏やか\"}"
+  },
+  {
+    "kanji": "ビタミン剤",
+    "kana": "ビタミンざい",
+    "exampleJp": "毎朝ビタミン剤を飲んでいます。",
+    "exampleMeaning": "每天早上吃维生素片。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "まいあさ"
+      ],
+      [
+        6,
+        1,
+        "ざい"
+      ],
+      [
+        8,
+        1,
+        "の"
+      ]
+    ],
+    "exampleTokens": "2,5,-1,6,-1",
+    "exampleLemmas": "{\"1\":{\"lemma\":\"ビタミン\",\"morphs\":[{\"surface\":\"ビタミン\",\"lemma\":\"ビタミン\",\"reading\":\"ビタミン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"剤\",\"lemma\":\"剤\",\"reading\":\"ザイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"3\":{\"lemma\":\"飲む\",\"morphs\":[{\"surface\":\"飲ん\",\"lemma\":\"飲む\",\"reading\":\"ノン\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・マ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"で\",\"lemma\":\"で\",\"reading\":\"デ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "ファックス",
+    "kana": "ファックス",
+    "exampleJp": "この書類をファックスで送ってください。",
+    "exampleMeaning": "请把这份文件用传真发过去。",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "しょるい"
+      ],
+      [
+        11,
+        1,
+        "おく"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,5,-1,7,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"送る\",\"morphs\":[{\"surface\":\"送っ\",\"lemma\":\"送る\",\"reading\":\"オクッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
+    "kanji": "フェリー",
+    "kana": "フェリー",
+    "exampleJp": "島までフェリーで行きます。",
+    "exampleMeaning": "坐渡轮去岛上。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "しま"
+      ],
+      [
+        8,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "1,-2,4,-1,4,-1",
+    "exampleLemmas": "{\"4\":\"行く\"}"
+  },
+  {
+    "kanji": "フランス語",
+    "kana": "フランスご",
+    "exampleJp": "フランス語の歌を聞くのが好きです。",
+    "exampleMeaning": "我喜欢听法语歌。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "ご"
+      ],
+      [
+        6,
+        1,
+        "うた"
+      ],
+      [
+        8,
+        1,
+        "き"
+      ],
+      [
+        12,
+        1,
+        "す"
+      ]
+    ],
+    "exampleTokens": "5,-1,1,-1,2,-1,-1,4,-1",
+    "exampleLemmas": "{\"7\":\"好き\"}"
   },
   {
     "kanji": "フリーズ",
@@ -810,6 +2430,71 @@
     "exampleLemmas": "{\"9\":{\"lemma\":\"つける\",\"morphs\":[{\"surface\":\"つけ\",\"lemma\":\"つける\",\"reading\":\"ツケ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "ベートーベン",
+    "kana": "ベートーベン",
+    "exampleJp": "ベートーベンは有名な音楽家です。",
+    "exampleMeaning": "贝多芬是著名的音乐家。",
+    "exampleFurigana": [
+      [
+        7,
+        2,
+        "ゆうめい"
+      ],
+      [
+        10,
+        3,
+        "おんがくか"
+      ]
+    ],
+    "exampleTokens": "6,-1,3,5,-1",
+    "exampleLemmas": "{\"2\":\"有名\",\"3\":\"音楽家\"}"
+  },
+  {
+    "kanji": "ボート",
+    "kana": "ボート",
+    "exampleJp": "湖でボートを漕ぎました。",
+    "exampleMeaning": "在湖上划了船。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "みずうみ"
+      ],
+      [
+        6,
+        1,
+        "こ"
+      ]
+    ],
+    "exampleTokens": "1,-1,3,-1,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"漕ぐ\",\"morphs\":[{\"surface\":\"漕ぎ\",\"lemma\":\"漕ぐ\",\"reading\":\"コギ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ガ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "ホームパーティー",
+    "kana": "ホームパーティー",
+    "exampleJp": "土曜日に家でホームパーティーを開きます。",
+    "exampleMeaning": "周六在家里办家庭聚会。",
+    "exampleFurigana": [
+      [
+        0,
+        3,
+        "どようび"
+      ],
+      [
+        4,
+        1,
+        "いえ"
+      ],
+      [
+        15,
+        1,
+        "ひら"
+      ]
+    ],
+    "exampleTokens": "3,-1,1,-1,3,5,-1,4,-1",
+    "exampleLemmas": "{\"7\":\"開く\"}"
+  },
+  {
     "kanji": "ボーリング",
     "kana": "ボーリング",
     "exampleJp": "会社の仲間とボーリングを楽しみました。",
@@ -833,6 +2518,151 @@
     ],
     "exampleTokens": "2,-1,2,-1,5,-1,6,-1",
     "exampleLemmas": "{\"6\":{\"lemma\":\"楽しむ\",\"morphs\":[{\"surface\":\"楽しみ\",\"lemma\":\"楽しむ\",\"reading\":\"タノシミ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・マ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "ホンコン",
+    "kana": "ホンコン",
+    "exampleJp": "友達がホンコンに住んでいます。",
+    "exampleMeaning": "朋友住在香港。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ともだち"
+      ],
+      [
+        8,
+        1,
+        "す"
+      ]
+    ],
+    "exampleTokens": "2,-1,4,-1,6,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"住む\",\"morphs\":[{\"surface\":\"住ん\",\"lemma\":\"住む\",\"reading\":\"スン\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・マ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"で\",\"lemma\":\"で\",\"reading\":\"デ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "ミカン",
+    "kana": "ミカン",
+    "exampleJp": "冬になるとミカンをよく食べます。",
+    "exampleMeaning": "一到冬天就经常吃橘子。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "ふゆ"
+      ],
+      [
+        11,
+        1,
+        "た"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,-1,3,-1,2,4,-1",
+    "exampleLemmas": "{\"7\":\"食べる\"}"
+  },
+  {
+    "kanji": "モーツァルト",
+    "kana": "モーツァルト",
+    "exampleJp": "モーツァルトの曲をよく聞きます。",
+    "exampleMeaning": "经常听莫扎特的曲子。",
+    "exampleFurigana": [
+      [
+        7,
+        1,
+        "きょく"
+      ],
+      [
+        11,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "6,-1,1,-1,2,4,-1",
+    "exampleLemmas": "{\"5\":\"聞く\"}"
+  },
+  {
+    "kanji": "もう一度",
+    "kana": "もういちど",
+    "exampleJp": "すみません、もう一度言ってください。",
+    "exampleMeaning": "不好意思，请再说一遍。",
+    "exampleFurigana": [
+      [
+        8,
+        2,
+        "いちど"
+      ],
+      [
+        10,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "5,-1,4,7,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"言う\",\"morphs\":[{\"surface\":\"言っ\",\"lemma\":\"言う\",\"reading\":\"イッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
+    "kanji": "よろしくお願いします",
+    "kana": "よろしくおねがいします",
+    "exampleJp": "明日の会議、よろしくお願いします。",
+    "exampleMeaning": "明天的会议，请多关照。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "あした"
+      ],
+      [
+        3,
+        2,
+        "かいぎ"
+      ],
+      [
+        11,
+        1,
+        "ねが"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,4,3,3,-1",
+    "exampleLemmas": "{\"6\":\"する\"}"
+  },
+  {
+    "kanji": "リンゴ",
+    "kana": "リンゴ",
+    "exampleJp": "リンゴを一つ食べました。",
+    "exampleMeaning": "吃了一个苹果。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "ひと"
+      ],
+      [
+        6,
+        1,
+        "た"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,5,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"食べる\",\"morphs\":[{\"surface\":\"食べ\",\"lemma\":\"食べる\",\"reading\":\"タベ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "ロック",
+    "kana": "ロック",
+    "exampleJp": "彼はロックバンドでギターを弾いています。",
+    "exampleMeaning": "他在摇滚乐队里弹吉他。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "かれ"
+      ],
+      [
+        13,
+        1,
+        "ひ"
+      ]
+    ],
+    "exampleTokens": "1,-1,6,-1,3,-1,6,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"弾く\",\"morphs\":[{\"surface\":\"弾い\",\"lemma\":\"弾く\",\"reading\":\"ヒイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
     "kanji": "一昨日",
@@ -870,6 +2700,36 @@
     "exampleLemmas": "{\"6\":\"見る\",\"8\":{\"lemma\":\"行く\",\"morphs\":[{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "一緒に",
+    "kana": "いっしょに",
+    "exampleJp": "一緒に昼ご飯を食べませんか。",
+    "exampleMeaning": "要不要一起吃午饭？",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "いっしょ"
+      ],
+      [
+        3,
+        1,
+        "ひる"
+      ],
+      [
+        5,
+        1,
+        "はん"
+      ],
+      [
+        7,
+        1,
+        "た"
+      ]
+    ],
+    "exampleTokens": "2,-1,1,2,-1,5,-1,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"食べる\",\"morphs\":[{\"surface\":\"食べ\",\"lemma\":\"食べる\",\"reading\":\"タベ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "丁度",
     "kana": "ちょうど",
     "exampleJp": "駅に着いたとき、丁度電車が出発しました。",
@@ -903,6 +2763,31 @@
     ],
     "exampleTokens": "1,-1,3,-2,-1,2,2,-1,2,4,-1",
     "exampleLemmas": "{\"2\":\"着く\",\"9\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "万里の長城",
+    "kana": "ばんりのちょうじょう",
+    "exampleJp": "万里の長城はとても長いです。",
+    "exampleMeaning": "万里长城非常长。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ばんり"
+      ],
+      [
+        3,
+        2,
+        "ちょうじょう"
+      ],
+      [
+        9,
+        1,
+        "なが"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,3,4,-1",
+    "exampleLemmas": "{\"5\":\"長い\"}"
   },
   {
     "kanji": "上級者",
@@ -940,6 +2825,41 @@
     "exampleLemmas": "{\"5\":{\"lemma\":\"上級\",\"morphs\":[{\"surface\":\"上級\",\"lemma\":\"上級\",\"reading\":\"ジョウキュウ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"者\",\"lemma\":\"者\",\"reading\":\"シャ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"9\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "不動産屋",
+    "kana": "ふどうさんや",
+    "exampleJp": "不動産屋で新しい部屋を探しています。",
+    "exampleMeaning": "正在房产中介找新房子。",
+    "exampleFurigana": [
+      [
+        0,
+        3,
+        "ふどうさん"
+      ],
+      [
+        3,
+        1,
+        "や"
+      ],
+      [
+        5,
+        1,
+        "あたら"
+      ],
+      [
+        8,
+        2,
+        "へや"
+      ],
+      [
+        11,
+        1,
+        "さが"
+      ]
+    ],
+    "exampleTokens": "4,-1,3,2,-1,6,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"不動産\",\"morphs\":[{\"surface\":\"不動産\",\"lemma\":\"不動産\",\"reading\":\"フドウサン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"屋\",\"lemma\":\"屋\",\"reading\":\"ヤ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":{\"lemma\":\"探す\",\"morphs\":[{\"surface\":\"探し\",\"lemma\":\"探す\",\"reading\":\"サガシ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・サ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "不味い",
     "kana": "まずい",
     "exampleJp": "このスープは少し不味いので、味を直しましょう。",
@@ -968,6 +2888,101 @@
     ],
     "exampleTokens": "2,3,-1,2,3,-2,-1,1,-1,6,-1",
     "exampleLemmas": "{\"9\":{\"lemma\":\"直す\",\"morphs\":[{\"surface\":\"直し\",\"lemma\":\"直す\",\"reading\":\"ナオシ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・サ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ましょ\",\"lemma\":\"ます\",\"reading\":\"マショ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然ウ接続\"},{\"surface\":\"う\",\"lemma\":\"う\",\"reading\":\"ウ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "中々",
+    "kana": "なかなか",
+    "exampleJp": "この問題は中々難しいです。",
+    "exampleMeaning": "这个问题相当难。",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "もんだい"
+      ],
+      [
+        5,
+        1,
+        "なか"
+      ],
+      [
+        6,
+        1,
+        "々"
+      ],
+      [
+        7,
+        1,
+        "むずか"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,1,-1,5,-1",
+    "exampleLemmas": "{\"5\":\"難しい\"}"
+  },
+  {
+    "kanji": "中国人",
+    "kana": "ちゅうごくじん",
+    "exampleJp": "クラスに中国人の学生が三人います。",
+    "exampleMeaning": "班里有三个中国学生。",
+    "exampleFurigana": [
+      [
+        4,
+        3,
+        "ちゅうごくじん"
+      ],
+      [
+        8,
+        2,
+        "がくせい"
+      ],
+      [
+        11,
+        1,
+        "さん"
+      ],
+      [
+        12,
+        1,
+        "にん"
+      ]
+    ],
+    "exampleTokens": "3,-1,3,-1,2,-1,2,3,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"三\",\"morphs\":[{\"surface\":\"三\",\"lemma\":\"三\",\"reading\":\"サン\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"人\",\"lemma\":\"人\",\"reading\":\"ニン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"7\":\"いる\"}"
+  },
+  {
+    "kanji": "中華街",
+    "kana": "ちゅうかがい",
+    "exampleJp": "横浜の中華街にはおいしい店が多いです。",
+    "exampleMeaning": "横滨的中华街有很多好吃的店。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "よこはま"
+      ],
+      [
+        3,
+        2,
+        "ちゅうか"
+      ],
+      [
+        5,
+        1,
+        "がい"
+      ],
+      [
+        12,
+        1,
+        "みせ"
+      ],
+      [
+        14,
+        1,
+        "おお"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,-1,-1,4,1,-1,4,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"中華\",\"morphs\":[{\"surface\":\"中華\",\"lemma\":\"中華\",\"reading\":\"チュウカ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"街\",\"lemma\":\"街\",\"reading\":\"ガイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"8\":\"多い\"}"
   },
   {
     "kanji": "交通量",
@@ -1013,6 +3028,66 @@
     ],
     "exampleTokens": "1,-1,3,-1,2,-2,-1,2,-1,1,-1,3,-1",
     "exampleLemmas": "{\"2\":{\"lemma\":\"交通\",\"morphs\":[{\"surface\":\"交通\",\"lemma\":\"交通\",\"reading\":\"コウツウ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"量\",\"lemma\":\"量\",\"reading\":\"リョウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"11\":\"出る\"}"
+  },
+  {
+    "kanji": "京劇",
+    "kana": "きょうげき",
+    "exampleJp": "京劇は中国の伝統的な芝居です。",
+    "exampleMeaning": "京剧是中国的传统戏剧。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "きょうげき"
+      ],
+      [
+        3,
+        2,
+        "ちゅうごく"
+      ],
+      [
+        6,
+        2,
+        "でんとう"
+      ],
+      [
+        8,
+        1,
+        "てき"
+      ],
+      [
+        10,
+        2,
+        "しばい"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,4,4,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"伝統\",\"morphs\":[{\"surface\":\"伝統\",\"lemma\":\"伝統\",\"reading\":\"デントウ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"的\",\"lemma\":\"的\",\"reading\":\"テキ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"な\",\"lemma\":\"だ\",\"reading\":\"ナ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ダ\",\"conjugatedForm\":\"体言接続\"}]},\"5\":\"芝居\"}"
+  },
+  {
+    "kanji": "京都",
+    "kana": "きょうと",
+    "exampleJp": "京都には古いお寺がたくさんあります。",
+    "exampleMeaning": "京都有很多古老的寺庙。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "きょうと"
+      ],
+      [
+        4,
+        1,
+        "ふる"
+      ],
+      [
+        7,
+        1,
+        "てら"
+      ]
+    ],
+    "exampleTokens": "2,-1,-1,2,2,-1,4,4,-1",
+    "exampleLemmas": "{\"7\":\"ある\"}"
   },
   {
     "kanji": "仕舞う",
@@ -1075,6 +3150,66 @@
     "exampleLemmas": "{\"4\":\"ある\",\"6\":\"遠慮ない\",\"7\":{\"lemma\":\"聞く\",\"morphs\":[{\"surface\":\"聞い\",\"lemma\":\"聞く\",\"reading\":\"キイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
   },
   {
+    "kanji": "企画書",
+    "kana": "きかくしょ",
+    "exampleJp": "来週までに企画書を書きます。",
+    "exampleMeaning": "下周之前写完企划书。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "らいしゅう"
+      ],
+      [
+        5,
+        2,
+        "きかく"
+      ],
+      [
+        7,
+        1,
+        "しょ"
+      ],
+      [
+        9,
+        1,
+        "か"
+      ]
+    ],
+    "exampleTokens": "2,-2,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"企画\",\"morphs\":[{\"surface\":\"企画\",\"lemma\":\"企画\",\"reading\":\"キカク\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"書\",\"lemma\":\"書\",\"reading\":\"ショ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":\"書く\"}"
+  },
+  {
+    "kanji": "休憩時間",
+    "kana": "きゅうけいじかん",
+    "exampleJp": "休憩時間にお茶を飲みます。",
+    "exampleMeaning": "休息时间喝茶。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "きゅうけい"
+      ],
+      [
+        2,
+        2,
+        "じかん"
+      ],
+      [
+        6,
+        1,
+        "ちゃ"
+      ],
+      [
+        8,
+        1,
+        "の"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,2,-1,4,-1",
+    "exampleLemmas": "{\"5\":\"飲む\"}"
+  },
+  {
     "kanji": "但し",
     "kana": "ただし",
     "exampleJp": "入場は無料です。但し、予約が必要です。",
@@ -1110,6 +3245,51 @@
     "exampleLemmas": "{\"2\":\"無料\",\"8\":\"必要\"}"
   },
   {
+    "kanji": "何れ",
+    "kana": "どれ",
+    "exampleJp": "どれがあなたの傘ですか。",
+    "exampleMeaning": "哪个是你的伞？",
+    "exampleFurigana": [
+      [
+        7,
+        1,
+        "かさ"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,-1,3,-1,-1",
+    "exampleLemmas": "{\"4\":\"傘\"}"
+  },
+  {
+    "kanji": "何処",
+    "kana": "どこ",
+    "exampleJp": "駅はどこですか。",
+    "exampleMeaning": "车站在哪里？",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "えき"
+      ]
+    ],
+    "exampleTokens": "1,-1,4,-1,-1",
+    "exampleLemmas": "{\"2\":\"どこ\"}"
+  },
+  {
+    "kanji": "何方",
+    "kana": "どちら",
+    "exampleJp": "お国はどちらですか。",
+    "exampleMeaning": "您是哪国人？",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "くに"
+      ]
+    ],
+    "exampleTokens": "-1,1,-1,5,-1,-1",
+    "exampleLemmas": "{\"3\":\"どちら\"}"
+  },
+  {
     "kanji": "何方",
     "kana": "どなた",
     "exampleJp": "受付で、どなたをお訪ねか尋ねられました。",
@@ -1135,6 +3315,51 @@
     "exampleLemmas": "{\"6\":\"訪ねる\",\"8\":{\"lemma\":\"尋ねる\",\"morphs\":[{\"surface\":\"尋ね\",\"lemma\":\"尋ねる\",\"reading\":\"タズネ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"られ\",\"lemma\":\"られる\",\"reading\":\"ラレ\",\"pos\":\"動詞\",\"detail\":\"接尾\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "何時",
+    "kana": "いつ",
+    "exampleJp": "いつ日本へ来ましたか。",
+    "exampleMeaning": "你什么时候来日本的？",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "にっぽん"
+      ],
+      [
+        5,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,4,-1,-1",
+    "exampleLemmas": "{\"0\":\"いる\",\"3\":{\"lemma\":\"来る\",\"morphs\":[{\"surface\":\"来\",\"lemma\":\"来る\",\"reading\":\"キ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"カ変・来ル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "何時も",
+    "kana": "いつも",
+    "exampleJp": "彼はいつも早く来ます。",
+    "exampleMeaning": "他总是来得很早。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "かれ"
+      ],
+      [
+        5,
+        1,
+        "はや"
+      ],
+      [
+        7,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "1,-1,3,2,3,-1",
+    "exampleLemmas": "{\"3\":\"早い\",\"4\":\"来る\"}"
+  },
+  {
     "kanji": "何歳",
     "kana": "なんさい",
     "exampleJp": "お子さんは何歳ですか。",
@@ -1158,6 +3383,51 @@
     ],
     "exampleTokens": "4,-1,4,-1,-1",
     "exampleLemmas": "{\"2\":{\"lemma\":\"何\",\"morphs\":[{\"surface\":\"何\",\"lemma\":\"何\",\"reading\":\"ナン\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"歳\",\"lemma\":\"歳\",\"reading\":\"サイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"です\",\"lemma\":\"です\",\"reading\":\"デス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "余り",
+    "kana": "あまり",
+    "exampleJp": "この料理はあまり辛くありません。",
+    "exampleMeaning": "这道菜不太辣。",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "りょうり"
+      ],
+      [
+        8,
+        1,
+        "つら"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,3,2,5,-1",
+    "exampleLemmas": "{\"4\":\"辛い\",\"5\":{\"lemma\":\"ある\",\"morphs\":[{\"surface\":\"あり\",\"lemma\":\"ある\",\"reading\":\"アリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "修学旅行",
+    "kana": "しゅうがくりょこう",
+    "exampleJp": "修学旅行で京都へ行きました。",
+    "exampleMeaning": "修学旅行去了京都。",
+    "exampleFurigana": [
+      [
+        0,
+        4,
+        "しゅうがくりょこう"
+      ],
+      [
+        5,
+        2,
+        "きょうと"
+      ],
+      [
+        8,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"行く\",\"morphs\":[{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
     "kanji": "側",
@@ -1188,6 +3458,31 @@
     ],
     "exampleTokens": "1,-1,1,-1,3,3,-1,5,-1",
     "exampleLemmas": "{\"7\":{\"lemma\":\"できる\",\"morphs\":[{\"surface\":\"でき\",\"lemma\":\"できる\",\"reading\":\"デキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "偶に",
+    "kana": "たまに",
+    "exampleJp": "たまに映画を見に行きます。",
+    "exampleMeaning": "偶尔会去看电影。",
+    "exampleFurigana": [
+      [
+        3,
+        2,
+        "えいが"
+      ],
+      [
+        6,
+        1,
+        "み"
+      ],
+      [
+        8,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "3,2,-1,1,-1,4,-1",
+    "exampleLemmas": "{\"3\":\"見る\",\"5\":\"行く\"}"
   },
   {
     "kanji": "先ず",
@@ -1310,6 +3605,21 @@
     "exampleLemmas": "{\"3\":{\"lemma\":\"入場\",\"morphs\":[{\"surface\":\"入場\",\"lemma\":\"入場\",\"reading\":\"ニュウジョウ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"料\",\"lemma\":\"料\",\"reading\":\"リョウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":\"無料\"}"
   },
   {
+    "kanji": "其方",
+    "kana": "そちら",
+    "exampleJp": "そちらの天気はどうですか。",
+    "exampleMeaning": "你那边天气怎么样？",
+    "exampleFurigana": [
+      [
+        4,
+        2,
+        "てんき"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-1,4,-1,-1",
+    "exampleLemmas": "{\"4\":\"どう\"}"
+  },
+  {
     "kanji": "写真展",
     "kana": "しゃしんてん",
     "exampleJp": "駅のホールで開かれた写真展を見に行きました。",
@@ -1348,6 +3658,96 @@
     ],
     "exampleTokens": "1,-1,3,-1,4,3,-1,1,-1,5,-1",
     "exampleLemmas": "{\"4\":{\"lemma\":\"開く\",\"morphs\":[{\"surface\":\"開か\",\"lemma\":\"開く\",\"reading\":\"ヒラカ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"れ\",\"lemma\":\"れる\",\"reading\":\"レ\",\"pos\":\"動詞\",\"detail\":\"接尾\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]},\"5\":{\"lemma\":\"写真\",\"morphs\":[{\"surface\":\"写真\",\"lemma\":\"写真\",\"reading\":\"シャシン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"展\",\"lemma\":\"展\",\"reading\":\"テン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"7\":\"見る\",\"9\":{\"lemma\":\"行く\",\"morphs\":[{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "写真集",
+    "kana": "しゃしんしゅう",
+    "exampleJp": "好きな写真家の写真集を買いました。",
+    "exampleMeaning": "买了喜欢的摄影家的摄影集。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "す"
+      ],
+      [
+        3,
+        2,
+        "しゃしん"
+      ],
+      [
+        5,
+        1,
+        "か"
+      ],
+      [
+        7,
+        2,
+        "しゃしん"
+      ],
+      [
+        9,
+        1,
+        "しゅう"
+      ],
+      [
+        11,
+        1,
+        "か"
+      ]
+    ],
+    "exampleTokens": "3,3,-1,3,-1,5,-1",
+    "exampleLemmas": "{\"0\":\"好き\",\"1\":{\"lemma\":\"写真\",\"morphs\":[{\"surface\":\"写真\",\"lemma\":\"写真\",\"reading\":\"シャシン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"家\",\"lemma\":\"家\",\"reading\":\"カ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"3\":{\"lemma\":\"写真\",\"morphs\":[{\"surface\":\"写真\",\"lemma\":\"写真\",\"reading\":\"シャシン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"集\",\"lemma\":\"集\",\"reading\":\"シュウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":{\"lemma\":\"買う\",\"morphs\":[{\"surface\":\"買い\",\"lemma\":\"買う\",\"reading\":\"カイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "凄い",
+    "kana": "すごい",
+    "exampleJp": "すごい、満点を取りましたね。",
+    "exampleMeaning": "真厉害，你考了满分呢。",
+    "exampleFurigana": [
+      [
+        4,
+        2,
+        "まんてん"
+      ],
+      [
+        7,
+        1,
+        "と"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-1,5,-1,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"取る\",\"morphs\":[{\"surface\":\"取り\",\"lemma\":\"取る\",\"reading\":\"トリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "凧",
+    "kana": "たこ",
+    "exampleJp": "子供たちが公園で凧を揚げています。",
+    "exampleMeaning": "孩子们在公园里放风筝。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "こども"
+      ],
+      [
+        5,
+        2,
+        "こうえん"
+      ],
+      [
+        8,
+        1,
+        "たこ"
+      ],
+      [
+        10,
+        1,
+        "あ"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,-1,1,-1,6,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"子供\",\"morphs\":[{\"surface\":\"子供\",\"lemma\":\"子供\",\"reading\":\"コドモ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"たち\",\"lemma\":\"たち\",\"reading\":\"タチ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":{\"lemma\":\"揚げる\",\"morphs\":[{\"surface\":\"揚げ\",\"lemma\":\"揚げる\",\"reading\":\"アゲ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
     "kanji": "出来るだけ",
@@ -1410,6 +3810,31 @@
     "exampleLemmas": "{\"5\":{\"lemma\":\"出来る\",\"morphs\":[{\"surface\":\"出来\",\"lemma\":\"出来る\",\"reading\":\"デキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "出発時刻",
+    "kana": "しゅっぱつじこく",
+    "exampleJp": "バスの出発時刻を確認してください。",
+    "exampleMeaning": "请确认公交车的出发时间。",
+    "exampleFurigana": [
+      [
+        3,
+        2,
+        "しゅっぱつ"
+      ],
+      [
+        5,
+        2,
+        "じこく"
+      ],
+      [
+        8,
+        2,
+        "かくにん"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,2,-1,2,6,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
     "kanji": "出迎え",
     "kana": "でむかえ",
     "exampleJp": "空港まで家族の出迎えに行きました。",
@@ -1438,6 +3863,26 @@
     ],
     "exampleTokens": "2,-2,2,-1,3,-1,5,-1",
     "exampleLemmas": "{\"6\":{\"lemma\":\"行く\",\"morphs\":[{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "分かり",
+    "kana": "わかり",
+    "exampleJp": "この説明は分かりやすいです。",
+    "exampleMeaning": "这个说明很容易懂。",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "せつめい"
+      ],
+      [
+        5,
+        1,
+        "わ"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,8,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"分かる\",\"morphs\":[{\"surface\":\"分かり\",\"lemma\":\"分かる\",\"reading\":\"ワカリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"やすい\",\"lemma\":\"やすい\",\"reading\":\"ヤスイ\",\"pos\":\"形容詞\",\"detail\":\"非自立\",\"conjugatedType\":\"形容詞・アウオ段\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"です\",\"lemma\":\"です\",\"reading\":\"デス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
     "kanji": "初詣",
@@ -1470,6 +3915,36 @@
     "exampleLemmas": "{\"6\":{\"lemma\":\"行く\",\"morphs\":[{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "前に",
+    "kana": "まえに",
+    "exampleJp": "食事の前に手を洗います。",
+    "exampleMeaning": "吃饭前洗手。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "しょくじ"
+      ],
+      [
+        3,
+        1,
+        "まえ"
+      ],
+      [
+        5,
+        1,
+        "て"
+      ],
+      [
+        7,
+        1,
+        "あら"
+      ]
+    ],
+    "exampleTokens": "2,-1,1,-1,1,-1,4,-1",
+    "exampleLemmas": "{\"6\":\"洗う\"}"
+  },
+  {
     "kanji": "勿体ない",
     "kana": "もったいない",
     "exampleJp": "まだ食べられる料理を捨てるのは勿体ないです。",
@@ -1498,6 +3973,36 @@
     ],
     "exampleTokens": "2,5,2,-1,3,-1,-1,6,-1",
     "exampleLemmas": "{\"1\":{\"lemma\":\"食べる\",\"morphs\":[{\"surface\":\"食べ\",\"lemma\":\"食べる\",\"reading\":\"タベ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"られる\",\"lemma\":\"られる\",\"reading\":\"ラレル\",\"pos\":\"動詞\",\"detail\":\"接尾\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"基本形\"}]},\"7\":\"勿体ない\"}"
+  },
+  {
+    "kanji": "北京ダック",
+    "kana": "ぺきんダック",
+    "exampleJp": "北京ダックは中国で有名な料理です。",
+    "exampleMeaning": "北京烤鸭是中国有名的菜。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ぺきん"
+      ],
+      [
+        6,
+        2,
+        "ちゅうごく"
+      ],
+      [
+        9,
+        2,
+        "ゆうめい"
+      ],
+      [
+        12,
+        2,
+        "りょうり"
+      ]
+    ],
+    "exampleTokens": "2,3,-1,2,-1,3,4,-1",
+    "exampleLemmas": "{\"5\":\"有名\",\"6\":\"料理\"}"
   },
   {
     "kanji": "午前中",
@@ -1613,6 +4118,181 @@
     ],
     "exampleTokens": "2,-1,3,-1,3,5,-1",
     "exampleLemmas": "{\"4\":{\"lemma\":\"二\",\"morphs\":[{\"surface\":\"二\",\"lemma\":\"二\",\"reading\":\"ニ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"切れ\",\"lemma\":\"切れ\",\"reading\":\"キレ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":{\"lemma\":\"入れる\",\"morphs\":[{\"surface\":\"入れ\",\"lemma\":\"入れる\",\"reading\":\"イレ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "又",
+    "kana": "また",
+    "exampleJp": "また明日会いましょう。",
+    "exampleMeaning": "明天再见吧。",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "あした"
+      ],
+      [
+        4,
+        1,
+        "あ"
+      ]
+    ],
+    "exampleTokens": "-2,2,6,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"会う\",\"morphs\":[{\"surface\":\"会い\",\"lemma\":\"会う\",\"reading\":\"アイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ましょ\",\"lemma\":\"ます\",\"reading\":\"マショ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然ウ接続\"},{\"surface\":\"う\",\"lemma\":\"う\",\"reading\":\"ウ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "叔父",
+    "kana": "おじ",
+    "exampleJp": "叔父は北海道に住んでいます。",
+    "exampleMeaning": "叔叔住在北海道。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "おじ"
+      ],
+      [
+        3,
+        3,
+        "ほっかいどう"
+      ],
+      [
+        7,
+        1,
+        "す"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,-1,6,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"住む\",\"morphs\":[{\"surface\":\"住ん\",\"lemma\":\"住む\",\"reading\":\"スン\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・マ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"で\",\"lemma\":\"で\",\"reading\":\"デ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "取り敢えず",
+    "kana": "とりあえず",
+    "exampleJp": "とりあえず生ビールをください。",
+    "exampleMeaning": "先来杯生啤吧。",
+    "exampleFurigana": [
+      [
+        5,
+        1,
+        "なま"
+      ]
+    ],
+    "exampleTokens": "5,4,-1,-4,-1",
+    "exampleLemmas": "{}"
+  },
+  {
+    "kanji": "叩く",
+    "kana": "たたく",
+    "exampleJp": "ドアを叩く音が聞こえました。",
+    "exampleMeaning": "听到了敲门的声音。",
+    "exampleFurigana": [
+      [
+        3,
+        1,
+        "たた"
+      ],
+      [
+        5,
+        1,
+        "おと"
+      ],
+      [
+        7,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,1,-1,6,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"聞こえる\",\"morphs\":[{\"surface\":\"聞こえ\",\"lemma\":\"聞こえる\",\"reading\":\"キコエ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "只今",
+    "kana": "ただいま",
+    "exampleJp": "ただいま帰りました。",
+    "exampleMeaning": "我回来了。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "かえ"
+      ]
+    ],
+    "exampleTokens": "4,5,-1",
+    "exampleLemmas": "{\"1\":{\"lemma\":\"帰る\",\"morphs\":[{\"surface\":\"帰り\",\"lemma\":\"帰る\",\"reading\":\"カエリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "可愛い",
+    "kana": "かわいい",
+    "exampleJp": "この猫はとてもかわいいです。",
+    "exampleMeaning": "这只猫非常可爱。",
+    "exampleFurigana": [
+      [
+        2,
+        1,
+        "ねこ"
+      ]
+    ],
+    "exampleTokens": "2,1,-1,3,6,-1",
+    "exampleLemmas": "{\"4\":\"かわいい\"}"
+  },
+  {
+    "kanji": "可笑しい",
+    "kana": "おかしい",
+    "exampleJp": "彼の話は可笑しくて笑いました。",
+    "exampleMeaning": "他的话很可笑，我笑了。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "かれ"
+      ],
+      [
+        2,
+        1,
+        "はなし"
+      ],
+      [
+        4,
+        2,
+        "おか"
+      ],
+      [
+        9,
+        1,
+        "わら"
+      ]
+    ],
+    "exampleTokens": "1,-1,1,-1,5,5,-1",
+    "exampleLemmas": "{\"4\":\"可笑しい\",\"5\":{\"lemma\":\"笑う\",\"morphs\":[{\"surface\":\"笑い\",\"lemma\":\"笑う\",\"reading\":\"ワライ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "名産品",
+    "kana": "めいさんひん",
+    "exampleJp": "この町の名産品はお茶です。",
+    "exampleMeaning": "这个镇的名产是茶。",
+    "exampleFurigana": [
+      [
+        2,
+        1,
+        "まち"
+      ],
+      [
+        4,
+        2,
+        "めいさん"
+      ],
+      [
+        6,
+        1,
+        "ひん"
+      ],
+      [
+        9,
+        1,
+        "ちゃ"
+      ]
+    ],
+    "exampleTokens": "2,1,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"名産\",\"morphs\":[{\"surface\":\"名産\",\"lemma\":\"名産\",\"reading\":\"メイサン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"品\",\"lemma\":\"品\",\"reading\":\"ヒン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":\"お茶\"}"
   },
   {
     "kanji": "向日葵",
@@ -1743,6 +4423,96 @@
     ],
     "exampleTokens": "2,2,-1,-1,-1,2,-1,2,-1,3,4,-1",
     "exampleLemmas": "{\"5\":{\"lemma\":\"二\",\"morphs\":[{\"surface\":\"二\",\"lemma\":\"二\",\"reading\":\"ニ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"人\",\"lemma\":\"人\",\"reading\":\"ニン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"10\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "営業部",
+    "kana": "えいぎょうぶ",
+    "exampleJp": "彼は営業部で働いています。",
+    "exampleMeaning": "他在销售部工作。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "かれ"
+      ],
+      [
+        2,
+        2,
+        "えいぎょう"
+      ],
+      [
+        4,
+        1,
+        "ぶ"
+      ],
+      [
+        6,
+        1,
+        "はたら"
+      ]
+    ],
+    "exampleTokens": "1,-1,3,-1,6,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"営業\",\"morphs\":[{\"surface\":\"営業\",\"lemma\":\"営業\",\"reading\":\"エイギョウ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"部\",\"lemma\":\"部\",\"reading\":\"ブ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"働く\",\"morphs\":[{\"surface\":\"働い\",\"lemma\":\"働く\",\"reading\":\"ハタライ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "噂",
+    "kana": "うわさ",
+    "exampleJp": "彼が結婚するという噂を聞きました。",
+    "exampleMeaning": "听说了他要结婚的传闻。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "かれ"
+      ],
+      [
+        2,
+        2,
+        "けっこん"
+      ],
+      [
+        9,
+        1,
+        "うわさ"
+      ],
+      [
+        11,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,2,-3,1,-1,5,-1",
+    "exampleLemmas": "{\"7\":{\"lemma\":\"聞く\",\"morphs\":[{\"surface\":\"聞き\",\"lemma\":\"聞く\",\"reading\":\"キキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "四川料理",
+    "kana": "しせんりょうり",
+    "exampleJp": "四川料理は辛いことで有名です。",
+    "exampleMeaning": "四川菜以辣闻名。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "しせん"
+      ],
+      [
+        2,
+        2,
+        "りょうり"
+      ],
+      [
+        5,
+        1,
+        "つら"
+      ],
+      [
+        10,
+        2,
+        "ゆうめい"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,2,-2,-1,4,-1",
+    "exampleLemmas": "{\"6\":\"有名\"}"
   },
   {
     "kanji": "国際貿易",
@@ -1880,6 +4650,166 @@
     "exampleLemmas": "{\"2\":\"飲む\",\"8\":{\"lemma\":\"なる\",\"morphs\":[{\"surface\":\"なり\",\"lemma\":\"なる\",\"reading\":\"ナリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "大統領",
+    "kana": "だいとうりょう",
+    "exampleJp": "その国では新しい大統領が選ばれました。",
+    "exampleMeaning": "那个国家选出了新总统。",
+    "exampleFurigana": [
+      [
+        2,
+        1,
+        "くに"
+      ],
+      [
+        5,
+        1,
+        "あたら"
+      ],
+      [
+        8,
+        3,
+        "だいとうりょう"
+      ],
+      [
+        12,
+        1,
+        "えら"
+      ]
+    ],
+    "exampleTokens": "2,1,-1,-1,3,3,-1,6,-1",
+    "exampleLemmas": "{\"7\":{\"lemma\":\"選ぶ\",\"morphs\":[{\"surface\":\"選ば\",\"lemma\":\"選ぶ\",\"reading\":\"エラバ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・バ行\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"れ\",\"lemma\":\"れる\",\"reading\":\"レ\",\"pos\":\"動詞\",\"detail\":\"接尾\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "太極拳",
+    "kana": "たいきょくけん",
+    "exampleJp": "毎朝公園で太極拳をしています。",
+    "exampleMeaning": "每天早上在公园打太极拳。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "まいあさ"
+      ],
+      [
+        2,
+        2,
+        "こうえん"
+      ],
+      [
+        5,
+        3,
+        "たいきょくけん"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,3,-1,5,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "太郎",
+    "kana": "たろう",
+    "exampleJp": "太郎は毎朝六時に起きます。",
+    "exampleMeaning": "太郎每天早上六点起床。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "たろう"
+      ],
+      [
+        3,
+        2,
+        "まいあさ"
+      ],
+      [
+        5,
+        1,
+        "ろく"
+      ],
+      [
+        6,
+        1,
+        "じ"
+      ],
+      [
+        8,
+        1,
+        "お"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,2,-1,4,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"六\",\"morphs\":[{\"surface\":\"六\",\"lemma\":\"六\",\"reading\":\"ロク\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"時\",\"lemma\":\"時\",\"reading\":\"ジ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":\"起きる\"}"
+  },
+  {
+    "kanji": "如何",
+    "kana": "いかが",
+    "exampleJp": "紅茶はいかがですか。",
+    "exampleMeaning": "来杯红茶怎么样？",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "こうちゃ"
+      ]
+    ],
+    "exampleTokens": "2,-1,5,-1,-1",
+    "exampleLemmas": "{\"2\":\"いかが\"}"
+  },
+  {
+    "kanji": "如何して",
+    "kana": "どうして",
+    "exampleJp": "どうして遅刻したのですか。",
+    "exampleMeaning": "你为什么迟到了？",
+    "exampleFurigana": [
+      [
+        4,
+        2,
+        "ちこく"
+      ]
+    ],
+    "exampleTokens": "4,2,2,-1,-2,-1,-1",
+    "exampleLemmas": "{\"2\":\"する\"}"
+  },
+  {
+    "kanji": "如何",
+    "kana": "どう",
+    "exampleJp": "この漢字はどう読みますか。",
+    "exampleMeaning": "这个汉字怎么读？",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "かんじ"
+      ],
+      [
+        7,
+        1,
+        "よ"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,2,4,-1,-1",
+    "exampleLemmas": "{\"4\":\"読む\"}"
+  },
+  {
+    "kanji": "嬉しい",
+    "kana": "うれしい",
+    "exampleJp": "合格して本当にうれしいです。",
+    "exampleMeaning": "考上了真的很开心。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ごうかく"
+      ],
+      [
+        4,
+        2,
+        "ほんとう"
+      ]
+    ],
+    "exampleTokens": "2,2,3,6,-1",
+    "exampleLemmas": "{\"1\":\"する\",\"3\":\"うれしい\"}"
+  },
+  {
     "kanji": "宅配便",
     "kana": "たくはいびん",
     "exampleJp": "重い荷物は宅配便で先に送りました。",
@@ -1960,6 +4890,136 @@
     "exampleLemmas": "{\"5\":{\"lemma\":\"飛行\",\"morphs\":[{\"surface\":\"飛行\",\"lemma\":\"飛行\",\"reading\":\"ヒコウ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"士\",\"lemma\":\"士\",\"reading\":\"シ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"7\":{\"lemma\":\"憧れる\",\"morphs\":[{\"surface\":\"憧れ\",\"lemma\":\"憧れる\",\"reading\":\"アコガレ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "宝くじ",
+    "kana": "たからくじ",
+    "exampleJp": "宝くじを一枚買ってみました。",
+    "exampleMeaning": "试着买了一张彩票。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "たから"
+      ],
+      [
+        4,
+        1,
+        "いち"
+      ],
+      [
+        5,
+        1,
+        "まい"
+      ],
+      [
+        6,
+        1,
+        "か"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,7,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"一\",\"morphs\":[{\"surface\":\"一\",\"lemma\":\"一\",\"reading\":\"イチ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"枚\",\"lemma\":\"枚\",\"reading\":\"マイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"3\":{\"lemma\":\"買う\",\"morphs\":[{\"surface\":\"買っ\",\"lemma\":\"買う\",\"reading\":\"カッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"み\",\"lemma\":\"みる\",\"reading\":\"ミ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "富士山",
+    "kana": "ふじさん",
+    "exampleJp": "富士山は日本で一番高い山です。",
+    "exampleMeaning": "富士山是日本最高的山。",
+    "exampleFurigana": [
+      [
+        0,
+        3,
+        "ふじさん"
+      ],
+      [
+        4,
+        2,
+        "にっぽん"
+      ],
+      [
+        7,
+        2,
+        "いちばん"
+      ],
+      [
+        9,
+        1,
+        "たか"
+      ],
+      [
+        11,
+        1,
+        "やま"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-1,2,2,3,-1",
+    "exampleLemmas": "{\"6\":\"山\"}"
+  },
+  {
+    "kanji": "寿司",
+    "kana": "すし",
+    "exampleJp": "誕生日に寿司を食べました。",
+    "exampleMeaning": "生日那天吃了寿司。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "たんじょう"
+      ],
+      [
+        2,
+        1,
+        "び"
+      ],
+      [
+        4,
+        2,
+        "すし"
+      ],
+      [
+        7,
+        1,
+        "た"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"誕生\",\"morphs\":[{\"surface\":\"誕生\",\"lemma\":\"誕生\",\"reading\":\"タンジョウ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"日\",\"lemma\":\"日\",\"reading\":\"ビ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"食べる\",\"morphs\":[{\"surface\":\"食べ\",\"lemma\":\"食べる\",\"reading\":\"タベ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "小野",
+    "kana": "おの",
+    "exampleJp": "小野さんは毎日電車で会社へ行きます。",
+    "exampleMeaning": "小野先生每天坐电车去公司。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "おの"
+      ],
+      [
+        5,
+        2,
+        "まいにち"
+      ],
+      [
+        7,
+        2,
+        "でんしゃ"
+      ],
+      [
+        10,
+        2,
+        "かいしゃ"
+      ],
+      [
+        13,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,2,-1,2,-1,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"小野\",\"morphs\":[{\"surface\":\"小野\",\"lemma\":\"小野\",\"reading\":\"オノ\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"さん\",\"lemma\":\"さん\",\"reading\":\"サン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"7\":\"行く\"}"
+  },
+  {
     "kanji": "展示場",
     "kana": "てんじじょう",
     "exampleJp": "新しい家具を見るために展示場へ行きました。",
@@ -1998,6 +5058,71 @@
     ],
     "exampleTokens": "3,2,-1,2,-2,-1,3,-1,5,-1",
     "exampleLemmas": "{\"6\":{\"lemma\":\"展示\",\"morphs\":[{\"surface\":\"展示\",\"lemma\":\"展示\",\"reading\":\"テンジ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"場\",\"lemma\":\"場\",\"reading\":\"ジョウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"8\":{\"lemma\":\"行く\",\"morphs\":[{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "市街",
+    "kana": "しがい",
+    "exampleJp": "市街を歩いて観光しました。",
+    "exampleMeaning": "在市区步行观光了。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "しがい"
+      ],
+      [
+        3,
+        1,
+        "ある"
+      ],
+      [
+        6,
+        2,
+        "かんこう"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,2,4,-1",
+    "exampleLemmas": "{\"2\":\"歩く\",\"4\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "幾ら",
+    "kana": "いくら",
+    "exampleJp": "この時計はいくらですか。",
+    "exampleMeaning": "这块表多少钱？",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "とけい"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,5,-1,-1",
+    "exampleLemmas": "{\"3\":\"いくら\"}"
+  },
+  {
+    "kanji": "広島",
+    "kana": "ひろしま",
+    "exampleJp": "広島には海と山があります。",
+    "exampleMeaning": "广岛有海也有山。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ひろしま"
+      ],
+      [
+        4,
+        1,
+        "うみ"
+      ],
+      [
+        6,
+        1,
+        "やま"
+      ]
+    ],
+    "exampleTokens": "2,-1,-1,1,-1,1,-1,4,-1",
+    "exampleLemmas": "{\"7\":\"ある\"}"
   },
   {
     "kanji": "建築家",
@@ -2043,6 +5168,71 @@
     ],
     "exampleTokens": "2,-1,2,-1,3,1,-1,2,2,3,-1,6,-1",
     "exampleLemmas": "{\"9\":{\"lemma\":\"建築\",\"morphs\":[{\"surface\":\"建築\",\"lemma\":\"建築\",\"reading\":\"ケンチク\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"家\",\"lemma\":\"家\",\"reading\":\"カ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"11\":{\"lemma\":\"なる\",\"morphs\":[{\"surface\":\"なり\",\"lemma\":\"なる\",\"reading\":\"ナリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"たい\",\"lemma\":\"たい\",\"reading\":\"タイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タイ\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"です\",\"lemma\":\"です\",\"reading\":\"デス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "彼処",
+    "kana": "あそこ",
+    "exampleJp": "駅はあそこにあります。",
+    "exampleMeaning": "车站在那边。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "えき"
+      ]
+    ],
+    "exampleTokens": "1,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"4\":\"ある\"}"
+  },
+  {
+    "kanji": "彼方",
+    "kana": "あちら",
+    "exampleJp": "出口はあちらです。",
+    "exampleMeaning": "出口在那边。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "でぐち"
+      ]
+    ],
+    "exampleTokens": "2,-1,5,-1",
+    "exampleLemmas": "{\"2\":\"あちら\"}"
+  },
+  {
+    "kanji": "後で",
+    "kana": "あとで",
+    "exampleJp": "後で電話します。",
+    "exampleMeaning": "我之后给你打电话。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "あと"
+      ],
+      [
+        2,
+        2,
+        "でんわ"
+      ]
+    ],
+    "exampleTokens": "2,2,3,-1",
+    "exampleLemmas": "{\"2\":\"する\"}"
+  },
+  {
+    "kanji": "御免",
+    "kana": "ごめん",
+    "exampleJp": "遅れてごめんね。",
+    "exampleMeaning": "对不起，我迟到了。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "おく"
+      ]
+    ],
+    "exampleTokens": "3,3,-1,-1",
+    "exampleLemmas": "{\"0\":\"遅れる\"}"
   },
   {
     "kanji": "怪我",
@@ -2195,6 +5385,61 @@
     "exampleLemmas": "{\"2\":{\"lemma\":\"降りる\",\"morphs\":[{\"surface\":\"降り\",\"lemma\":\"降りる\",\"reading\":\"オリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"そう\",\"lemma\":\"そう\",\"reading\":\"ソウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"な\",\"lemma\":\"だ\",\"reading\":\"ナ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ダ\",\"conjugatedForm\":\"体言接続\"}]},\"8\":{\"lemma\":\"持つ\",\"morphs\":[{\"surface\":\"持っ\",\"lemma\":\"持つ\",\"reading\":\"モッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・タ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "支社長",
+    "kana": "ししゃちょう",
+    "exampleJp": "支社長が大阪から東京へ来ました。",
+    "exampleMeaning": "分公司社长从大阪来到了东京。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ししゃ"
+      ],
+      [
+        2,
+        1,
+        "ちょう"
+      ],
+      [
+        4,
+        2,
+        "おおさか"
+      ],
+      [
+        8,
+        2,
+        "とうきょう"
+      ],
+      [
+        11,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-2,2,-1,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"支社\",\"morphs\":[{\"surface\":\"支社\",\"lemma\":\"支社\",\"reading\":\"シシャ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"長\",\"lemma\":\"長\",\"reading\":\"チョウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":{\"lemma\":\"来る\",\"morphs\":[{\"surface\":\"来\",\"lemma\":\"来る\",\"reading\":\"キ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"カ変・来ル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "斯う",
+    "kana": "こう",
+    "exampleJp": "こう書けば分かりやすいです。",
+    "exampleMeaning": "这样写就容易懂了。",
+    "exampleFurigana": [
+      [
+        2,
+        1,
+        "か"
+      ],
+      [
+        5,
+        1,
+        "わ"
+      ]
+    ],
+    "exampleTokens": "2,3,8,-1",
+    "exampleLemmas": "{\"1\":\"書く\",\"2\":{\"lemma\":\"分かる\",\"morphs\":[{\"surface\":\"分かり\",\"lemma\":\"分かる\",\"reading\":\"ワカリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"やすい\",\"lemma\":\"やすい\",\"reading\":\"ヤスイ\",\"pos\":\"形容詞\",\"detail\":\"非自立\",\"conjugatedType\":\"形容詞・アウオ段\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"です\",\"lemma\":\"です\",\"reading\":\"デス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "新居",
     "kana": "しんきょ",
     "exampleJp": "新居に引っ越した友人を訪ねました。",
@@ -2300,6 +5545,46 @@
     "exampleLemmas": "{\"3\":\"簡単\",\"8\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "日本料理",
+    "kana": "にほんりょうり",
+    "exampleJp": "日本料理の中で寿司が一番好きです。",
+    "exampleMeaning": "日本料理里我最喜欢寿司。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "にっぽん"
+      ],
+      [
+        2,
+        2,
+        "りょうり"
+      ],
+      [
+        5,
+        1,
+        "なか"
+      ],
+      [
+        7,
+        2,
+        "すし"
+      ],
+      [
+        10,
+        2,
+        "いちばん"
+      ],
+      [
+        12,
+        1,
+        "す"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,-1,-1,2,-1,2,4,-1",
+    "exampleLemmas": "{\"8\":\"好き\"}"
+  },
+  {
     "kanji": "日本酒",
     "kana": "にほんしゅ",
     "exampleJp": "父は小さな杯で日本酒を味わいました。",
@@ -2380,6 +5665,31 @@
     "exampleLemmas": "{\"2\":\"旨い\",\"3\":\"進む\",\"8\":\"早い\",\"9\":{\"lemma\":\"終わる\",\"morphs\":[{\"surface\":\"終わり\",\"lemma\":\"終わる\",\"reading\":\"オワリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "早く",
+    "kana": "はやく",
+    "exampleJp": "明日は早く起きてください。",
+    "exampleMeaning": "明天请早点起床。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "あした"
+      ],
+      [
+        3,
+        1,
+        "はや"
+      ],
+      [
+        5,
+        1,
+        "お"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,7,-1",
+    "exampleLemmas": "{\"2\":\"早い\",\"3\":{\"lemma\":\"起きる\",\"morphs\":[{\"surface\":\"起き\",\"lemma\":\"起きる\",\"reading\":\"オキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
     "kanji": "明後日",
     "kana": "あさって",
     "exampleJp": "明後日は朝から病院へ行く予定です。",
@@ -2413,6 +5723,116 @@
     ],
     "exampleTokens": "3,-1,1,-2,2,-1,2,4,-1",
     "exampleLemmas": "{\"7\":\"予定\"}"
+  },
+  {
+    "kanji": "春節",
+    "kana": "しゅんせつ",
+    "exampleJp": "春節には家族が集まってご飯を食べます。",
+    "exampleMeaning": "春节时家人聚在一起吃饭。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "しゅんせつ"
+      ],
+      [
+        4,
+        2,
+        "かぞく"
+      ],
+      [
+        7,
+        1,
+        "あつ"
+      ],
+      [
+        12,
+        1,
+        "はん"
+      ],
+      [
+        14,
+        1,
+        "た"
+      ]
+    ],
+    "exampleTokens": "2,-1,-1,2,-1,4,2,-1,4,-1",
+    "exampleLemmas": "{\"5\":\"集まる\",\"8\":\"食べる\"}"
+  },
+  {
+    "kanji": "昨夜",
+    "kana": "ゆうべ",
+    "exampleJp": "ゆうべはよく眠れませんでした。",
+    "exampleMeaning": "昨晚没睡好。",
+    "exampleFurigana": [
+      [
+        6,
+        1,
+        "ねむ"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,8,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"眠れる\",\"morphs\":[{\"surface\":\"眠れ\",\"lemma\":\"眠れる\",\"reading\":\"ネムレ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"でし\",\"lemma\":\"です\",\"reading\":\"デシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "是非",
+    "kana": "ぜひ",
+    "exampleJp": "是非一度遊びに来てください。",
+    "exampleMeaning": "请务必来玩一次。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ぜひ"
+      ],
+      [
+        2,
+        1,
+        "いち"
+      ],
+      [
+        3,
+        1,
+        "ど"
+      ],
+      [
+        4,
+        1,
+        "あそ"
+      ],
+      [
+        7,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "2,2,2,-1,6,-1",
+    "exampleLemmas": "{\"1\":{\"lemma\":\"一\",\"morphs\":[{\"surface\":\"一\",\"lemma\":\"一\",\"reading\":\"イチ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"度\",\"lemma\":\"度\",\"reading\":\"ド\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"来る\",\"morphs\":[{\"surface\":\"来\",\"lemma\":\"来る\",\"reading\":\"キ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"カ変・来ル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
+    "kanji": "晩御飯",
+    "kana": "ばんごはん",
+    "exampleJp": "今日の晩御飯はカレーライスです。",
+    "exampleMeaning": "今天的晚饭是咖喱饭。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "きょう"
+      ],
+      [
+        3,
+        1,
+        "ばん"
+      ],
+      [
+        4,
+        2,
+        "ごはん"
+      ]
+    ],
+    "exampleTokens": "2,-1,1,2,-1,8,-1",
+    "exampleLemmas": "{\"5\":\"カレーライス\"}"
   },
   {
     "kanji": "暫く",
@@ -2515,6 +5935,96 @@
     "exampleLemmas": "{\"2\":\"聞く\",\"5\":\"詳しい\",\"6\":\"調べる\",\"7\":{\"lemma\":\"なる\",\"morphs\":[{\"surface\":\"なり\",\"lemma\":\"なる\",\"reading\":\"ナリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "月",
+    "kana": "げつ",
+    "exampleJp": "毎月、映画を見に行きます。",
+    "exampleMeaning": "每个月都去看电影。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "まいつき"
+      ],
+      [
+        3,
+        2,
+        "えいが"
+      ],
+      [
+        6,
+        1,
+        "み"
+      ],
+      [
+        8,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,1,-1,4,-1",
+    "exampleLemmas": "{\"4\":\"見る\",\"6\":\"行く\"}"
+  },
+  {
+    "kanji": "未だ",
+    "kana": "まだ",
+    "exampleJp": "まだ宿題が終わっていません。",
+    "exampleMeaning": "作业还没做完。",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "しゅくだい"
+      ],
+      [
+        5,
+        1,
+        "お"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,8,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"終わる\",\"morphs\":[{\"surface\":\"終わっ\",\"lemma\":\"終わる\",\"reading\":\"オワッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "本当に",
+    "kana": "ほんとうに",
+    "exampleJp": "本当にありがとうございました。",
+    "exampleMeaning": "真的太感谢您了。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ほんとう"
+      ]
+    ],
+    "exampleTokens": "3,11,-1",
+    "exampleLemmas": "{\"1\":{\"lemma\":\"ありがとう\",\"morphs\":[{\"surface\":\"ありがとう\",\"lemma\":\"ありがとう\",\"reading\":\"アリガトウ\",\"pos\":\"感動詞\",\"detail\":\"*\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ござい\",\"lemma\":\"ござる\",\"reading\":\"ゴザイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "東京",
+    "kana": "とうきょう",
+    "exampleJp": "東京は日本の首都です。",
+    "exampleMeaning": "东京是日本的首都。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "とうきょう"
+      ],
+      [
+        3,
+        2,
+        "にっぽん"
+      ],
+      [
+        6,
+        2,
+        "しゅと"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,4,-1",
+    "exampleLemmas": "{\"4\":\"首都\"}"
+  },
+  {
     "kanji": "林",
     "kana": "はやし",
     "exampleJp": "林の中から小さな鳥の声が聞こえました。",
@@ -2590,6 +6100,66 @@
     "exampleLemmas": "{\"8\":{\"lemma\":\"作る\",\"morphs\":[{\"surface\":\"作り\",\"lemma\":\"作る\",\"reading\":\"ツクリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "止める",
+    "kana": "やめる",
+    "exampleJp": "タバコを止めることにしました。",
+    "exampleMeaning": "我决定戒烟了。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "や"
+      ]
+    ],
+    "exampleTokens": "3,-1,3,-2,-1,4,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "此の儘",
+    "kana": "このまま",
+    "exampleJp": "このまま少し待っていてください。",
+    "exampleMeaning": "请就这样等一会儿。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "すこ"
+      ],
+      [
+        6,
+        1,
+        "ま"
+      ]
+    ],
+    "exampleTokens": "2,-2,2,9,-1",
+    "exampleLemmas": "{\"3\":{\"lemma\":\"待つ\",\"morphs\":[{\"surface\":\"待っ\",\"lemma\":\"待つ\",\"reading\":\"マッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・タ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
+    "kanji": "此れから",
+    "kana": "これから",
+    "exampleJp": "これから買い物に行きます。",
+    "exampleMeaning": "接下来去买东西。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "か"
+      ],
+      [
+        6,
+        1,
+        "もの"
+      ],
+      [
+        8,
+        1,
+        "い"
+      ]
+    ],
+    "exampleTokens": "4,3,-1,4,-1",
+    "exampleLemmas": "{\"3\":\"行く\"}"
+  },
+  {
     "kanji": "殆ど",
     "kana": "ほとんど",
     "exampleJp": "宿題は殆ど終わりましたが、作文だけ残っています。",
@@ -2623,6 +6193,21 @@
     ],
     "exampleTokens": "2,-1,2,6,-1,-1,2,-2,6,-1",
     "exampleLemmas": "{\"3\":{\"lemma\":\"終わる\",\"morphs\":[{\"surface\":\"終わり\",\"lemma\":\"終わる\",\"reading\":\"オワリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]},\"8\":{\"lemma\":\"残る\",\"morphs\":[{\"surface\":\"残っ\",\"lemma\":\"残る\",\"reading\":\"ノコッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "段段",
+    "kana": "だんだん",
+    "exampleJp": "だんだん暖かくなってきました。",
+    "exampleMeaning": "天气渐渐暖和起来了。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "あたた"
+      ]
+    ],
+    "exampleTokens": "4,3,7,-1",
+    "exampleLemmas": "{\"1\":\"暖かい\",\"2\":{\"lemma\":\"なる\",\"morphs\":[{\"surface\":\"なっ\",\"lemma\":\"なる\",\"reading\":\"ナッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"き\",\"lemma\":\"くる\",\"reading\":\"キ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"カ変・クル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
     "kanji": "気さく",
@@ -2665,6 +6250,26 @@
     "exampleLemmas": "{\"3\":\"気さく\",\"11\":\"親しい\",\"12\":{\"lemma\":\"なる\",\"morphs\":[{\"surface\":\"なり\",\"lemma\":\"なる\",\"reading\":\"ナリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "気をつける",
+    "kana": "きをつける",
+    "exampleJp": "車に気をつけてください。",
+    "exampleMeaning": "请小心车辆。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "くるま"
+      ],
+      [
+        2,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "1,-1,1,-1,7,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"つける\",\"morphs\":[{\"surface\":\"つけ\",\"lemma\":\"つける\",\"reading\":\"ツケ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
     "kanji": "気持ち悪い",
     "kana": "きもちわるい",
     "exampleJp": "船が揺れると、少し気持ち悪くなります。",
@@ -2698,6 +6303,51 @@
     ],
     "exampleTokens": "1,-1,3,-1,-1,2,3,2,4,-1",
     "exampleLemmas": "{\"7\":\"悪い\",\"8\":\"なる\"}"
+  },
+  {
+    "kanji": "海外旅行",
+    "kana": "かいがいりょこう",
+    "exampleJp": "夏休みに海外旅行をしたいです。",
+    "exampleMeaning": "暑假想去海外旅行。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "なつやす"
+      ],
+      [
+        4,
+        2,
+        "かいがい"
+      ],
+      [
+        6,
+        2,
+        "りょこう"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,2,-1,5,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"たい\",\"lemma\":\"たい\",\"reading\":\"タイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タイ\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"です\",\"lemma\":\"です\",\"reading\":\"デス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "清水",
+    "kana": "しみず",
+    "exampleJp": "清水さんは私のクラスメートです。",
+    "exampleMeaning": "清水是我的同班同学。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "しみず"
+      ],
+      [
+        5,
+        1,
+        "わたし"
+      ]
+    ],
+    "exampleTokens": "4,-1,1,-1,8,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"清水\",\"morphs\":[{\"surface\":\"清水\",\"lemma\":\"清水\",\"reading\":\"シミズ\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"さん\",\"lemma\":\"さん\",\"reading\":\"サン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":\"クラスメート\"}"
   },
   {
     "kanji": "火気厳禁",
@@ -2845,6 +6495,26 @@
     "exampleLemmas": "{\"9\":\"飲む\"}"
   },
   {
+    "kanji": "煩い",
+    "kana": "うるさい",
+    "exampleJp": "外がうるさくて眠れません。",
+    "exampleMeaning": "外面太吵了，睡不着。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "そと"
+      ],
+      [
+        7,
+        1,
+        "ねむ"
+      ]
+    ],
+    "exampleTokens": "1,-1,5,5,-1",
+    "exampleLemmas": "{\"2\":\"うるさい\",\"3\":{\"lemma\":\"眠れる\",\"morphs\":[{\"surface\":\"眠れ\",\"lemma\":\"眠れる\",\"reading\":\"ネムレ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "片づける",
     "kana": "かたづける",
     "exampleJp": "食事の後で、みんなで部屋を片づけました。",
@@ -2945,6 +6615,121 @@
     "exampleLemmas": "{\"2\":\"独身\",\"10\":\"出かける\"}"
   },
   {
+    "kanji": "獅子舞",
+    "kana": "ししまい",
+    "exampleJp": "お祭りで獅子舞を見ました。",
+    "exampleMeaning": "在庙会上看了狮子舞。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "まつ"
+      ],
+      [
+        4,
+        3,
+        "ししまい"
+      ],
+      [
+        8,
+        1,
+        "み"
+      ]
+    ],
+    "exampleTokens": "-1,2,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"見る\",\"morphs\":[{\"surface\":\"見\",\"lemma\":\"見る\",\"reading\":\"ミ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "玩具",
+    "kana": "おもちゃ",
+    "exampleJp": "子供のおもちゃが床に散らばっています。",
+    "exampleMeaning": "孩子的玩具散落在地板上。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "こども"
+      ],
+      [
+        8,
+        1,
+        "ゆか"
+      ],
+      [
+        10,
+        1,
+        "ち"
+      ]
+    ],
+    "exampleTokens": "2,-1,4,-1,1,-1,8,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"散らばる\",\"morphs\":[{\"surface\":\"散らばっ\",\"lemma\":\"散らばる\",\"reading\":\"チラバッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "瑞西",
+    "kana": "スイス",
+    "exampleJp": "瑞西は山が美しい国です。",
+    "exampleMeaning": "瑞士是一个山很美的国家。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "みず"
+      ],
+      [
+        1,
+        1,
+        "にし"
+      ],
+      [
+        3,
+        1,
+        "やま"
+      ],
+      [
+        5,
+        1,
+        "うつく"
+      ],
+      [
+        8,
+        1,
+        "くに"
+      ]
+    ],
+    "exampleTokens": "1,1,-1,1,-1,3,3,-1",
+    "exampleLemmas": "{\"6\":\"国\"}"
+  },
+  {
+    "kanji": "生ビール",
+    "kana": "なまビール",
+    "exampleJp": "仕事の後で生ビールを飲みました。",
+    "exampleMeaning": "下班后喝了生啤。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "しごと"
+      ],
+      [
+        3,
+        1,
+        "あと"
+      ],
+      [
+        5,
+        1,
+        "なま"
+      ],
+      [
+        10,
+        1,
+        "の"
+      ]
+    ],
+    "exampleTokens": "2,-1,-1,-1,4,-1,5,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"飲む\",\"morphs\":[{\"surface\":\"飲み\",\"lemma\":\"飲む\",\"reading\":\"ノミ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・マ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "生産コスト",
     "kana": "せいさんコスト",
     "exampleJp": "生産コストを下げるために工程を見直しました。",
@@ -3015,6 +6800,31 @@
     "exampleLemmas": "{\"0\":{\"lemma\":\"申込\",\"morphs\":[{\"surface\":\"申込\",\"lemma\":\"申込\",\"reading\":\"モウシコミ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"書\",\"lemma\":\"書\",\"reading\":\"ショ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"8\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
   },
   {
+    "kanji": "発表会",
+    "kana": "はっぴょうかい",
+    "exampleJp": "ピアノの発表会で演奏しました。",
+    "exampleMeaning": "在钢琴发表会上演奏了。",
+    "exampleFurigana": [
+      [
+        4,
+        2,
+        "はっぴょう"
+      ],
+      [
+        6,
+        1,
+        "かい"
+      ],
+      [
+        8,
+        2,
+        "えんそう"
+      ]
+    ],
+    "exampleTokens": "3,-1,3,-1,2,4,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"発表\",\"morphs\":[{\"surface\":\"発表\",\"lemma\":\"発表\",\"reading\":\"ハッピョウ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"会\",\"lemma\":\"会\",\"reading\":\"カイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "白鳥",
     "kana": "はくちょう",
     "exampleJp": "湖に白鳥が二羽浮かんでいます。",
@@ -3048,6 +6858,31 @@
     ],
     "exampleTokens": "1,-1,2,-1,2,7,-1",
     "exampleLemmas": "{\"4\":{\"lemma\":\"二\",\"morphs\":[{\"surface\":\"二\",\"lemma\":\"二\",\"reading\":\"ニ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"羽\",\"lemma\":\"羽\",\"reading\":\"ワ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":{\"lemma\":\"浮かぶ\",\"morphs\":[{\"surface\":\"浮かん\",\"lemma\":\"浮かぶ\",\"reading\":\"ウカン\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・バ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"で\",\"lemma\":\"で\",\"reading\":\"デ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "皆",
+    "kana": "みんな",
+    "exampleJp": "皆で写真を撮りましょう。",
+    "exampleMeaning": "大家一起拍张照吧。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "みんな"
+      ],
+      [
+        2,
+        2,
+        "しゃしん"
+      ],
+      [
+        5,
+        1,
+        "と"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,-1,6,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"撮る\",\"morphs\":[{\"surface\":\"撮り\",\"lemma\":\"撮る\",\"reading\":\"トリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ましょ\",\"lemma\":\"ます\",\"reading\":\"マショ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然ウ接続\"},{\"surface\":\"う\",\"lemma\":\"う\",\"reading\":\"ウ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
     "kanji": "直ぐ",
@@ -3160,6 +6995,86 @@
     "exampleLemmas": "{\"9\":\"着く\"}"
   },
   {
+    "kanji": "矢っ張り",
+    "kana": "やっぱり",
+    "exampleJp": "やっぱり彼が一番速いですね。",
+    "exampleMeaning": "果然还是他跑得最快。",
+    "exampleFurigana": [
+      [
+        4,
+        1,
+        "かれ"
+      ],
+      [
+        6,
+        2,
+        "いちばん"
+      ],
+      [
+        8,
+        1,
+        "はや"
+      ]
+    ],
+    "exampleTokens": "4,1,-1,2,4,-1,-1",
+    "exampleLemmas": "{\"4\":\"速い\"}"
+  },
+  {
+    "kanji": "矢張り",
+    "kana": "やはり",
+    "exampleJp": "やはり日本料理が一番好きです。",
+    "exampleMeaning": "果然还是最喜欢日本料理。",
+    "exampleFurigana": [
+      [
+        3,
+        2,
+        "にっぽん"
+      ],
+      [
+        5,
+        2,
+        "りょうり"
+      ],
+      [
+        8,
+        2,
+        "いちばん"
+      ],
+      [
+        10,
+        1,
+        "す"
+      ]
+    ],
+    "exampleTokens": "3,2,2,-1,2,4,-1",
+    "exampleLemmas": "{\"5\":\"好き\"}"
+  },
+  {
+    "kanji": "研修生",
+    "kana": "けんしゅうせい",
+    "exampleJp": "この工場では研修生が働いています。",
+    "exampleMeaning": "这家工厂里有研修生在干活。",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "こうじょう"
+      ],
+      [
+        6,
+        3,
+        "けんしゅうせい"
+      ],
+      [
+        10,
+        1,
+        "はたら"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,-1,3,-1,6,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"働く\",\"morphs\":[{\"surface\":\"働い\",\"lemma\":\"働く\",\"reading\":\"ハタライ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "確り",
     "kana": "しっかり",
     "exampleJp": "シートベルトを確り締めてください。",
@@ -3178,6 +7093,76 @@
     ],
     "exampleTokens": "6,-1,2,7,-1",
     "exampleLemmas": "{\"3\":{\"lemma\":\"締める\",\"morphs\":[{\"surface\":\"締め\",\"lemma\":\"締める\",\"reading\":\"シメ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
+  },
+  {
+    "kanji": "社交ダンス",
+    "kana": "しゃこうダンス",
+    "exampleJp": "母は社交ダンスを習っています。",
+    "exampleMeaning": "妈妈在学交际舞。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "はは"
+      ],
+      [
+        2,
+        2,
+        "しゃこう"
+      ],
+      [
+        8,
+        1,
+        "なら"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,3,-1,6,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"習う\",\"morphs\":[{\"surface\":\"習っ\",\"lemma\":\"習う\",\"reading\":\"ナラッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "神戸",
+    "kana": "こうべ",
+    "exampleJp": "神戸の港はとてもきれいです。",
+    "exampleMeaning": "神户的港口非常漂亮。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "こうべ"
+      ],
+      [
+        3,
+        1,
+        "みなと"
+      ]
+    ],
+    "exampleTokens": "2,-1,1,-1,3,5,-1",
+    "exampleLemmas": "{\"5\":\"きれい\"}"
+  },
+  {
+    "kanji": "空く",
+    "kana": "すく",
+    "exampleJp": "昼を過ぎると店がすいてきます。",
+    "exampleMeaning": "过了中午店里就空下来了。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "ひる"
+      ],
+      [
+        2,
+        1,
+        "す"
+      ],
+      [
+        6,
+        1,
+        "みせ"
+      ]
+    ],
+    "exampleTokens": "1,-1,3,-1,1,-1,6,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"すく\",\"morphs\":[{\"surface\":\"すい\",\"lemma\":\"すく\",\"reading\":\"スイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"き\",\"lemma\":\"くる\",\"reading\":\"キ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"カ変・クル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
     "kanji": "立入禁止",
@@ -3280,6 +7265,31 @@
     "exampleLemmas": "{\"7\":{\"lemma\":\"折る\",\"morphs\":[{\"surface\":\"折り\",\"lemma\":\"折る\",\"reading\":\"オリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "素晴らしい",
+    "kana": "すばらしい",
+    "exampleJp": "彼の発表は素晴らしかったです。",
+    "exampleMeaning": "他的发表非常精彩。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "かれ"
+      ],
+      [
+        2,
+        2,
+        "はっぴょう"
+      ],
+      [
+        5,
+        2,
+        "すば"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,-1,9,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"素晴らしい\",\"morphs\":[{\"surface\":\"素晴らしかっ\",\"lemma\":\"素晴らしい\",\"reading\":\"スバラシカッ\",\"pos\":\"形容詞\",\"detail\":\"自立\",\"conjugatedType\":\"形容詞・イ段\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"です\",\"lemma\":\"です\",\"reading\":\"デス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "終電",
     "kana": "しゅうでん",
     "exampleJp": "終電に間に合うように、少し早めに駅へ向かいました。",
@@ -3350,6 +7360,51 @@
     "exampleLemmas": "{\"6\":{\"lemma\":\"頼む\",\"morphs\":[{\"surface\":\"頼ま\",\"lemma\":\"頼む\",\"reading\":\"タノマ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・マ行\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"れ\",\"lemma\":\"れる\",\"reading\":\"レ\",\"pos\":\"動詞\",\"detail\":\"接尾\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "絶対に",
+    "kana": "ぜったいに",
+    "exampleJp": "絶対に諦めません。",
+    "exampleMeaning": "绝对不会放弃。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "ぜったい"
+      ],
+      [
+        3,
+        1,
+        "あきら"
+      ]
+    ],
+    "exampleTokens": "2,-1,5,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"諦める\",\"morphs\":[{\"surface\":\"諦め\",\"lemma\":\"諦める\",\"reading\":\"アキラメ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "綺麗",
+    "kana": "きれい",
+    "exampleJp": "部屋を綺麗に掃除しました。",
+    "exampleMeaning": "把房间打扫得很干净。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "へや"
+      ],
+      [
+        3,
+        2,
+        "きれい"
+      ],
+      [
+        6,
+        2,
+        "そうじ"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,2,4,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "繋がる",
     "kana": "つながる",
     "exampleJp": "この道は駅の北口に繋がっています。",
@@ -3378,6 +7433,21 @@
     ],
     "exampleTokens": "2,1,-1,1,-1,2,-1,7,-1",
     "exampleLemmas": "{\"7\":{\"lemma\":\"繋がる\",\"morphs\":[{\"surface\":\"繋がっ\",\"lemma\":\"繋がる\",\"reading\":\"ツナガッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "美味しい",
+    "kana": "おいしい",
+    "exampleJp": "この店のケーキはおいしいです。",
+    "exampleMeaning": "这家店的蛋糕很好吃。",
+    "exampleFurigana": [
+      [
+        2,
+        1,
+        "みせ"
+      ]
+    ],
+    "exampleTokens": "2,1,-1,3,-1,6,-1",
+    "exampleLemmas": "{\"5\":\"おいしい\"}"
   },
   {
     "kanji": "翡翠",
@@ -3490,6 +7560,31 @@
     "exampleLemmas": "{\"0\":{\"lemma\":\"演奏\",\"morphs\":[{\"surface\":\"演奏\",\"lemma\":\"演奏\",\"reading\":\"エンソウ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"会\",\"lemma\":\"会\",\"reading\":\"カイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":\"静か\",\"7\":{\"lemma\":\"楽しむ\",\"morphs\":[{\"surface\":\"楽しみ\",\"lemma\":\"楽しむ\",\"reading\":\"タノシミ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・マ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "脚",
+    "kana": "あし",
+    "exampleJp": "走りすぎて脚が痛いです。",
+    "exampleMeaning": "跑太多了，腿疼。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "はし"
+      ],
+      [
+        5,
+        1,
+        "あし"
+      ],
+      [
+        7,
+        1,
+        "いた"
+      ]
+    ],
+    "exampleTokens": "5,1,-1,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"走る\",\"morphs\":[{\"surface\":\"走り\",\"lemma\":\"走る\",\"reading\":\"ハシリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"すぎ\",\"lemma\":\"すぎる\",\"reading\":\"スギ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"3\":\"痛い\"}"
+  },
+  {
     "kanji": "航空会社",
     "kana": "こうくうがいしゃ",
     "exampleJp": "航空会社から搭乗時間の変更が届きました。",
@@ -3530,6 +7625,36 @@
     "exampleLemmas": "{\"8\":{\"lemma\":\"届く\",\"morphs\":[{\"surface\":\"届き\",\"lemma\":\"届く\",\"reading\":\"トドキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "航空便",
+    "kana": "こうくうびん",
+    "exampleJp": "航空便で荷物を送りました。",
+    "exampleMeaning": "用航空邮件寄了包裹。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "こうくう"
+      ],
+      [
+        2,
+        1,
+        "びん"
+      ],
+      [
+        4,
+        2,
+        "にもつ"
+      ],
+      [
+        7,
+        1,
+        "おく"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"航空\",\"morphs\":[{\"surface\":\"航空\",\"lemma\":\"航空\",\"reading\":\"コウクウ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"便\",\"lemma\":\"便\",\"reading\":\"ビン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"送る\",\"morphs\":[{\"surface\":\"送り\",\"lemma\":\"送る\",\"reading\":\"オクリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
     "kanji": "船便",
     "kana": "ふなびん",
     "exampleJp": "急がない荷物は船便で送りました。",
@@ -3558,6 +7683,326 @@
     ],
     "exampleTokens": "4,2,-1,2,-1,5,-1",
     "exampleLemmas": "{\"0\":\"急ぐ\",\"5\":{\"lemma\":\"送る\",\"morphs\":[{\"surface\":\"送り\",\"lemma\":\"送る\",\"reading\":\"オクリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "良い",
+    "kana": "いい",
+    "exampleJp": "今日はいい天気ですね。",
+    "exampleMeaning": "今天天气真好啊。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "きょう"
+      ],
+      [
+        5,
+        2,
+        "てんき"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,4,-1,-1",
+    "exampleLemmas": "{\"3\":\"天気\"}"
+  },
+  {
+    "kanji": "良く",
+    "kana": "よく",
+    "exampleJp": "彼はよく図書館で勉強します。",
+    "exampleMeaning": "他经常在图书馆学习。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "かれ"
+      ],
+      [
+        4,
+        3,
+        "としょかん"
+      ],
+      [
+        8,
+        2,
+        "べんきょう"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,3,-1,2,3,-1",
+    "exampleLemmas": "{\"6\":\"する\"}"
+  },
+  {
+    "kanji": "色々",
+    "kana": "いろいろ",
+    "exampleJp": "店には色々な商品があります。",
+    "exampleMeaning": "店里有各种各样的商品。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "みせ"
+      ],
+      [
+        3,
+        2,
+        "いろいろ"
+      ],
+      [
+        6,
+        2,
+        "しょうひん"
+      ]
+    ],
+    "exampleTokens": "1,-1,-1,3,2,-1,4,-1",
+    "exampleLemmas": "{\"3\":\"色々\",\"6\":\"ある\"}"
+  },
+  {
+    "kanji": "色んな",
+    "kana": "いろんな",
+    "exampleJp": "旅行で色んな人に会いました。",
+    "exampleMeaning": "旅行中遇到了各种各样的人。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "りょこう"
+      ],
+      [
+        3,
+        1,
+        "いろ"
+      ],
+      [
+        6,
+        1,
+        "ひと"
+      ],
+      [
+        8,
+        1,
+        "あ"
+      ]
+    ],
+    "exampleTokens": "2,-1,3,1,-1,5,-1",
+    "exampleLemmas": "{\"5\":{\"lemma\":\"会う\",\"morphs\":[{\"surface\":\"会い\",\"lemma\":\"会う\",\"reading\":\"アイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "花屋",
+    "kana": "はなや",
+    "exampleJp": "花屋で母の日の花を買いました。",
+    "exampleMeaning": "在花店买了母亲节的花。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "はなや"
+      ],
+      [
+        3,
+        1,
+        "はは"
+      ],
+      [
+        5,
+        1,
+        "ひ"
+      ],
+      [
+        7,
+        1,
+        "はな"
+      ],
+      [
+        9,
+        1,
+        "か"
+      ]
+    ],
+    "exampleTokens": "2,-1,1,-1,-1,-1,1,-1,5,-1",
+    "exampleLemmas": "{\"8\":{\"lemma\":\"買う\",\"morphs\":[{\"surface\":\"買い\",\"lemma\":\"買う\",\"reading\":\"カイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "若しかしたら",
+    "kana": "もしかしたら",
+    "exampleJp": "もしかしたら明日は雪かもしれません。",
+    "exampleMeaning": "明天或许会下雪。",
+    "exampleFurigana": [
+      [
+        6,
+        2,
+        "あした"
+      ],
+      [
+        9,
+        1,
+        "ゆき"
+      ]
+    ],
+    "exampleTokens": "3,3,2,-1,1,-2,5,-1",
+    "exampleLemmas": "{\"1\":\"する\",\"6\":{\"lemma\":\"しれる\",\"morphs\":[{\"surface\":\"しれ\",\"lemma\":\"しれる\",\"reading\":\"シレ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "若し",
+    "kana": "もし",
+    "exampleJp": "もし雨が降ったら、家にいます。",
+    "exampleMeaning": "如果下雨，我就待在家里。",
+    "exampleFurigana": [
+      [
+        2,
+        1,
+        "あめ"
+      ],
+      [
+        4,
+        1,
+        "ふ"
+      ],
+      [
+        9,
+        1,
+        "いえ"
+      ]
+    ],
+    "exampleTokens": "2,1,-1,4,-1,1,-1,3,-1",
+    "exampleLemmas": "{\"3\":\"降る\",\"7\":\"いる\"}"
+  },
+  {
+    "kanji": "英会話",
+    "kana": "えいかいわ",
+    "exampleJp": "週に一度、英会話の教室に通っています。",
+    "exampleMeaning": "每周去上一次英语会话课。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "しゅう"
+      ],
+      [
+        2,
+        1,
+        "いち"
+      ],
+      [
+        3,
+        1,
+        "ど"
+      ],
+      [
+        5,
+        3,
+        "えいかいわ"
+      ],
+      [
+        9,
+        2,
+        "きょうしつ"
+      ],
+      [
+        12,
+        1,
+        "かよ"
+      ]
+    ],
+    "exampleTokens": "1,-1,2,-1,3,-1,2,-1,6,-1",
+    "exampleLemmas": "{\"2\":{\"lemma\":\"一\",\"morphs\":[{\"surface\":\"一\",\"lemma\":\"一\",\"reading\":\"イチ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"度\",\"lemma\":\"度\",\"reading\":\"ド\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"8\":{\"lemma\":\"通う\",\"morphs\":[{\"surface\":\"通っ\",\"lemma\":\"通う\",\"reading\":\"カヨッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "蕎麦",
+    "kana": "そば",
+    "exampleJp": "お昼に蕎麦を食べました。",
+    "exampleMeaning": "中午吃了荞麦面。",
+    "exampleFurigana": [
+      [
+        1,
+        1,
+        "ひる"
+      ],
+      [
+        3,
+        2,
+        "そば"
+      ],
+      [
+        6,
+        1,
+        "た"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"食べる\",\"morphs\":[{\"surface\":\"食べ\",\"lemma\":\"食べる\",\"reading\":\"タベ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "藤",
+    "kana": "ふじ",
+    "exampleJp": "公園の藤の花がきれいに咲いています。",
+    "exampleMeaning": "公园里的紫藤花开得很美。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "こうえん"
+      ],
+      [
+        3,
+        1,
+        "ふじ"
+      ],
+      [
+        5,
+        1,
+        "はな"
+      ],
+      [
+        11,
+        1,
+        "さ"
+      ]
+    ],
+    "exampleTokens": "2,-1,1,-1,1,-1,3,-1,6,-1",
+    "exampleLemmas": "{\"8\":{\"lemma\":\"咲く\",\"morphs\":[{\"surface\":\"咲い\",\"lemma\":\"咲く\",\"reading\":\"サイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行イ音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "行き",
+    "kana": "いき",
+    "exampleJp": "東京行きの電車に乗りました。",
+    "exampleMeaning": "坐上了开往东京的电车。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "とうきょう"
+      ],
+      [
+        2,
+        1,
+        "い"
+      ],
+      [
+        5,
+        2,
+        "でんしゃ"
+      ],
+      [
+        8,
+        1,
+        "の"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"東京\",\"morphs\":[{\"surface\":\"東京\",\"lemma\":\"東京\",\"reading\":\"トウキョウ\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"行き\",\"lemma\":\"行き\",\"reading\":\"イキ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"乗る\",\"morphs\":[{\"surface\":\"乗り\",\"lemma\":\"乗る\",\"reading\":\"ノリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "行ってらっしゃい",
+    "kana": "いってらっしゃい",
+    "exampleJp": "いってらっしゃい。気をつけてね。",
+    "exampleMeaning": "路上小心，注意安全。",
+    "exampleFurigana": [
+      [
+        9,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "8,-1,1,-1,3,-1,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"いう\",\"morphs\":[{\"surface\":\"いっ\",\"lemma\":\"いう\",\"reading\":\"イッ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"らっしゃい\",\"lemma\":\"らっしゃる\",\"reading\":\"ラッシャイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]},\"4\":\"つける\"}"
   },
   {
     "kanji": "行楽地",
@@ -3730,6 +8175,21 @@
     "exampleLemmas": "{\"5\":{\"lemma\":\"訳す\",\"morphs\":[{\"surface\":\"訳し\",\"lemma\":\"訳す\",\"reading\":\"ヤクシ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・サ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}"
   },
   {
+    "kanji": "詰まらない",
+    "kana": "つまらない",
+    "exampleJp": "この映画はつまらないです。",
+    "exampleMeaning": "这部电影很无聊。",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "えいが"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,7,-1",
+    "exampleLemmas": "{\"3\":\"つまらない\"}"
+  },
+  {
     "kanji": "誠",
     "kana": "まこと",
     "exampleJp": "彼は誠のある態度で謝りました。",
@@ -3825,6 +8285,26 @@
     "exampleLemmas": "{\"0\":{\"lemma\":\"誕生\",\"morphs\":[{\"surface\":\"誕生\",\"lemma\":\"誕生\",\"reading\":\"タンジョウ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"日\",\"lemma\":\"日\",\"reading\":\"ビ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"8\":{\"lemma\":\"貰う\",\"morphs\":[{\"surface\":\"貰い\",\"lemma\":\"貰う\",\"reading\":\"モライ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "貴方",
+    "kana": "あなた",
+    "exampleJp": "あなたの名前は何ですか。",
+    "exampleMeaning": "你叫什么名字？",
+    "exampleFurigana": [
+      [
+        4,
+        2,
+        "なまえ"
+      ],
+      [
+        7,
+        1,
+        "なに"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-1,3,-1,-1",
+    "exampleLemmas": "{\"4\":\"何\"}"
+  },
+  {
     "kanji": "賑やか",
     "kana": "にぎやか",
     "exampleJp": "祭りの日は商店街がとても賑やかです。",
@@ -3858,6 +8338,61 @@
     ],
     "exampleTokens": "2,-1,-1,-1,3,-1,3,5,-1",
     "exampleLemmas": "{\"4\":{\"lemma\":\"商店\",\"morphs\":[{\"surface\":\"商店\",\"lemma\":\"商店\",\"reading\":\"ショウテン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"街\",\"lemma\":\"街\",\"reading\":\"ガイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"7\":\"賑やか\"}"
+  },
+  {
+    "kanji": "送別会",
+    "kana": "そうべつかい",
+    "exampleJp": "来週、同僚の送別会があります。",
+    "exampleMeaning": "下周有同事的送别会。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "らいしゅう"
+      ],
+      [
+        3,
+        2,
+        "どうりょう"
+      ],
+      [
+        6,
+        2,
+        "そうべつ"
+      ],
+      [
+        8,
+        1,
+        "かい"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"送別\",\"morphs\":[{\"surface\":\"送別\",\"lemma\":\"送別\",\"reading\":\"ソウベツ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"会\",\"lemma\":\"会\",\"reading\":\"カイ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":\"ある\"}"
+  },
+  {
+    "kanji": "達",
+    "kana": "たち",
+    "exampleJp": "子供たちが公園で遊んでいます。",
+    "exampleMeaning": "孩子们在公园里玩。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "こども"
+      ],
+      [
+        5,
+        2,
+        "こうえん"
+      ],
+      [
+        8,
+        1,
+        "あそ"
+      ]
+    ],
+    "exampleTokens": "4,-1,2,-1,6,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"子供\",\"morphs\":[{\"surface\":\"子供\",\"lemma\":\"子供\",\"reading\":\"コドモ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"たち\",\"lemma\":\"たち\",\"reading\":\"タチ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"遊ぶ\",\"morphs\":[{\"surface\":\"遊ん\",\"lemma\":\"遊ぶ\",\"reading\":\"アソン\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・バ行\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"で\",\"lemma\":\"で\",\"reading\":\"デ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
     "kanji": "遠慮なく",
@@ -3935,6 +8470,196 @@
     "exampleLemmas": "{\"4\":{\"lemma\":\"野球\",\"morphs\":[{\"surface\":\"野球\",\"lemma\":\"野球\",\"reading\":\"ヤキュウ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"場\",\"lemma\":\"場\",\"reading\":\"ジョウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"8\":\"見る\",\"10\":{\"lemma\":\"行く\",\"morphs\":[{\"surface\":\"行き\",\"lemma\":\"行く\",\"reading\":\"イキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
   },
   {
+    "kanji": "間もなく",
+    "kana": "まもなく",
+    "exampleJp": "電車は間もなく参ります。",
+    "exampleMeaning": "电车马上就要来了。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "でんしゃ"
+      ],
+      [
+        3,
+        1,
+        "ま"
+      ],
+      [
+        7,
+        1,
+        "まい"
+      ]
+    ],
+    "exampleTokens": "2,-1,4,4,-1",
+    "exampleLemmas": "{\"3\":\"参る\"}"
+  },
+  {
+    "kanji": "関西弁",
+    "kana": "かんさいべん",
+    "exampleJp": "大阪の友達は関西弁で話します。",
+    "exampleMeaning": "大阪的朋友说关西方言。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "おおさか"
+      ],
+      [
+        3,
+        2,
+        "ともだち"
+      ],
+      [
+        6,
+        2,
+        "かんさい"
+      ],
+      [
+        8,
+        1,
+        "べん"
+      ],
+      [
+        10,
+        1,
+        "はな"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"4\":{\"lemma\":\"関西\",\"morphs\":[{\"surface\":\"関西\",\"lemma\":\"関西\",\"reading\":\"カンサイ\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"弁\",\"lemma\":\"弁\",\"reading\":\"ベン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":\"話す\"}"
+  },
+  {
+    "kanji": "陳",
+    "kana": "ちん",
+    "exampleJp": "陳さんは中国から来ました。",
+    "exampleMeaning": "陈先生来自中国。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "ちん"
+      ],
+      [
+        4,
+        2,
+        "ちゅうごく"
+      ],
+      [
+        8,
+        1,
+        "き"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-2,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"陳\",\"morphs\":[{\"surface\":\"陳\",\"lemma\":\"陳\",\"reading\":\"チン\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"さん\",\"lemma\":\"さん\",\"reading\":\"サン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"来る\",\"morphs\":[{\"surface\":\"来\",\"lemma\":\"来る\",\"reading\":\"キ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"カ変・来ル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "非常に",
+    "kana": "ひじょうに",
+    "exampleJp": "この問題は非常に難しいです。",
+    "exampleMeaning": "这个问题非常难。",
+    "exampleFurigana": [
+      [
+        2,
+        2,
+        "もんだい"
+      ],
+      [
+        5,
+        2,
+        "ひじょう"
+      ],
+      [
+        8,
+        1,
+        "むずか"
+      ]
+    ],
+    "exampleTokens": "2,2,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"5\":\"難しい\"}"
+  },
+  {
+    "kanji": "韓国人",
+    "kana": "かんこくじん",
+    "exampleJp": "韓国人の友達ができました。",
+    "exampleMeaning": "交到了韩国朋友。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "かんこく"
+      ],
+      [
+        2,
+        1,
+        "じん"
+      ],
+      [
+        4,
+        2,
+        "ともだち"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,-1,5,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"韓国\",\"morphs\":[{\"surface\":\"韓国\",\"lemma\":\"韓国\",\"reading\":\"カンコク\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"人\",\"lemma\":\"人\",\"reading\":\"ジン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":{\"lemma\":\"できる\",\"morphs\":[{\"surface\":\"でき\",\"lemma\":\"できる\",\"reading\":\"デキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "韓国語",
+    "kana": "かんこくご",
+    "exampleJp": "韓国語を勉強して二年になります。",
+    "exampleMeaning": "学韩语已经两年了。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "かんこく"
+      ],
+      [
+        2,
+        1,
+        "ご"
+      ],
+      [
+        4,
+        2,
+        "べんきょう"
+      ],
+      [
+        8,
+        1,
+        "に"
+      ],
+      [
+        9,
+        1,
+        "ねん"
+      ]
+    ],
+    "exampleTokens": "3,-1,2,2,2,-1,4,-1",
+    "exampleLemmas": "{\"0\":{\"lemma\":\"韓国\",\"morphs\":[{\"surface\":\"韓国\",\"lemma\":\"韓国\",\"reading\":\"カンコク\",\"pos\":\"名詞\",\"detail\":\"固有名詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"語\",\"lemma\":\"語\",\"reading\":\"ゴ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"3\":\"する\",\"4\":{\"lemma\":\"二\",\"morphs\":[{\"surface\":\"二\",\"lemma\":\"二\",\"reading\":\"ニ\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"年\",\"lemma\":\"年\",\"reading\":\"ネン\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":\"なる\"}"
+  },
+  {
+    "kanji": "頭がいい",
+    "kana": "あたまがいい",
+    "exampleJp": "彼はとても頭がいいです。",
+    "exampleMeaning": "他非常聪明。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "かれ"
+      ],
+      [
+        5,
+        1,
+        "あたま"
+      ]
+    ],
+    "exampleTokens": "1,-1,3,1,-1,4,-1",
+    "exampleLemmas": "{\"5\":\"いい\"}"
+  },
+  {
     "kanji": "風邪を引く",
     "kana": "かぜをひく",
     "exampleJp": "風邪を引かないように、外から帰ったら手を洗います。",
@@ -3973,6 +8698,91 @@
     ],
     "exampleTokens": "2,-1,4,-2,-1,-1,1,-2,4,1,-1,4,-1",
     "exampleLemmas": "{\"2\":\"引く\",\"8\":\"帰る\",\"11\":\"洗う\"}"
+  },
+  {
+    "kanji": "餃子",
+    "kana": "ぎょうざ",
+    "exampleJp": "今夜は家族で餃子を作ります。",
+    "exampleMeaning": "今晚全家一起包饺子。",
+    "exampleFurigana": [
+      [
+        0,
+        2,
+        "こんや"
+      ],
+      [
+        3,
+        2,
+        "かぞく"
+      ],
+      [
+        6,
+        2,
+        "ぎょうざ"
+      ],
+      [
+        9,
+        1,
+        "つく"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,2,-1,4,-1",
+    "exampleLemmas": "{\"6\":\"作る\"}"
+  },
+  {
+    "kanji": "饂飩",
+    "kana": "うどん",
+    "exampleJp": "寒い日は温かいうどんが食べたいです。",
+    "exampleMeaning": "冷天想吃热乌冬面。",
+    "exampleFurigana": [
+      [
+        0,
+        1,
+        "さむ"
+      ],
+      [
+        2,
+        1,
+        "ひ"
+      ],
+      [
+        4,
+        1,
+        "あたた"
+      ],
+      [
+        11,
+        1,
+        "た"
+      ]
+    ],
+    "exampleTokens": "2,-1,-1,3,3,-1,6,-1",
+    "exampleLemmas": "{\"6\":{\"lemma\":\"食べる\",\"morphs\":[{\"surface\":\"食べ\",\"lemma\":\"食べる\",\"reading\":\"タベ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"たい\",\"lemma\":\"たい\",\"reading\":\"タイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タイ\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"です\",\"lemma\":\"です\",\"reading\":\"デス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"基本形\"}]}}"
+  },
+  {
+    "kanji": "駄目",
+    "kana": "だめ",
+    "exampleJp": "ここで写真を撮っては駄目です。",
+    "exampleMeaning": "这里不能拍照。",
+    "exampleFurigana": [
+      [
+        3,
+        2,
+        "しゃしん"
+      ],
+      [
+        6,
+        1,
+        "と"
+      ],
+      [
+        10,
+        2,
+        "だめ"
+      ]
+    ],
+    "exampleTokens": "2,-1,2,-1,3,-1,4,-1",
+    "exampleLemmas": "{\"4\":\"撮る\",\"6\":\"駄目\"}"
   },
   {
     "kanji": "駐車禁止",

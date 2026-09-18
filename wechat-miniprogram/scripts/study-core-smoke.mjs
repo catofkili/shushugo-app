@@ -30,6 +30,8 @@ const answer = core.recordAnswer(db, first.id, 'know', { now });
 assert.equal(answer.stats.answered, 1);
 assert.ok(answer.fsrs?.due, '作答后必须写入 FSRS due');
 assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'forward'"), 1);
+assert.equal(core.firstValue(db, "SELECT event_source FROM reviews WHERE direction = 'forward'"), 'study');
+assert.equal(core.firstValue(db, "SELECT reviewed_at FROM reviews WHERE direction = 'forward'"), now.getTime());
 
 core.saveNote(db, first.id, 'smoke note', now);
 assert.equal(core.firstValue(db, 'SELECT note FROM word_notes WHERE word_id = ?', [first.id]), 'smoke note');

@@ -5,25 +5,35 @@
 import { DbRow, daysSince } from "../database/db-utils";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
 
-/** 过期天数换算成优先级分的系数(封顶,避免陈年老账压过一切) */
-const OVERDUE_WEIGHT = 6;
-const OVERDUE_CAP = 60;
+/**
+ * 「有多陌生」换算成优先级分:stability 越低分越高,按对数铺开,到 FAMILIAR_DAYS 归零。
+ *
+ * 2026-09-17 之前这一项是「过期天数 × 6」(Anki 默认的 due date 顺序,2026-08-04 删自研
+ * 分数时顺手抄的)。它成立的前提是每天清完队列;清不完的话陈年尾巴永远排最前,
+ * 而昨天刚学、stability 不到一天的词永远垫底 —— 实测昨天的新词 100% 落在当天最后 1/4,
+ * 末段答错率 40% vs 前面 30%。用户原话:「欠得久的都是老朋友怎么都有印象,真正陌生的
+ * 是这几天新学的」。过期 14 天的卡再拖 8 小时不会更忘,stability 0.3 天的会。
+ */
+const UNFAMILIAR_CAP = 50;
+const FAMILIAR_DAYS = 30;
+/**
+ * 随机抖动的幅度。原来是 8,对着 0–50 的陌生度等于按分死排,一天的顺序几乎是确定的。
+ * 用户要的是「整体偏陌生的先出,但局部乱序」:60 分的均匀抖动下,差 21 分(昨天新学 vs
+ * 14 天没见的老朋友)仍有约 76% 排在前面,差 6 分的两张卡接近对半 —— 规则还在,序列不再可预测。
+ */
+const JITTER = 60;
 /** 学习/重学中的词:当天必须刷到毕业,排在「已见但从未调度」之上 */
 const RELEARNING_PRIORITY = 55;
-/** 已见过但还没进入 FSRS 调度的词 */
+/** 已见过但还没进入 FSRS 调度(或缺 stability 的旧四列数据)的词 */
 const UNSCHEDULED_PRIORITY = 50;
 /** 顽固词的加成:够它不沉底,远不足以让它插队 */
 const LEECH_PRIORITY = 12;
-/** 错误史的加成上限:它是次级信号,不该压过「有多过期」(上限 60) */
+/** 错误史的加成上限:它是次级信号,不该压过「有多陌生」(上限 50) */
 const MISTAKE_CAP = 40;
 
-/** 距今过期了多少天(未到期为 0) */
-const overdueDays = (due: unknown, now: number): number => {
-  if (due == null) return 0;
-  const t = new Date(String(due)).getTime();
-  if (!Number.isFinite(t)) return 0;
-  return Math.max((now - t) / 86_400_000, 0);
-};
+/** stability(天)→ 陌生度分,∈ [0, UNFAMILIAR_CAP] */
+const unfamiliarity = (stability: number): number =>
+  UNFAMILIAR_CAP * Math.max(0, 1 - Math.log2(1 + Math.max(stability, 0)) / Math.log2(1 + FAMILIAR_DAYS));
 
 /**
  * 新词最少要占多大比例 —— 每 8 张里至少一张。
@@ -66,23 +76,21 @@ export function priorityComponents(
 ): Record<string, number> {
   const isNew = Number(row.seen_count ?? 0) === 0;
   const lapses = Number(row.fsrs_lapses ?? 0);
-  const now = Date.now();
   const components: Record<string, number> = {
-    // 「有多该复习」不再看 score,而看 FSRS 排的 due 过期了多久
+    // 「有多该复习」= 有多陌生(FSRS stability),不是欠了多久
     score: 0,
     critical: 0,
     importance: Number(row.importance ?? 3) * 7,
     // 错误史统一用 FSRS 的 lapses,不再叠加 forgot/fuzzy/mistake_streak 三个旧计数。
-    // 必须封顶:不封的话错了 20 次的词拿 200 分,把过期程度(上限 60)整个压死 ——
+    // 必须封顶:不封的话错了 20 次的词拿 200 分,把陌生度(上限 50)整个压死 ——
     // 「顽固词不再置顶」就成了空话,只是把置顶从 critical 挪到了这一项。
     mistake: Math.min(lapses * 10, MISTAKE_CAP),
     queue: 0,
     age: Math.min(daysSince(row.last_seen_on) * 3, 30),
     review: isNew ? 0 : 35,
     new: 0,
-    // 普通学习用轻微抖动避免每天撞同一序列；快速模式传 randomize:false，
-    // 因为它是“按优先级浏览”的批次，不能让随机数把低优先级词顶到最上面。
-    jitter: options.randomize === false ? 0 : Math.random() * 8
+    // 快速模式传 randomize:false:它是「按优先级浏览」的批次,不能让随机数把低优先级词顶到最上面。
+    jitter: options.randomize === false ? 0 : Math.random() * JITTER
   };
 
   if (isNew) {
@@ -99,9 +107,9 @@ export function priorityComponents(
     const inLearning = state === 1 || state === 3;
     components.score = inLearning
       ? RELEARNING_PRIORITY
-      : row.fsrs_due == null
+      : row.fsrs_due == null || row.fsrs_stability == null
         ? UNSCHEDULED_PRIORITY
-        : Math.min(overdueDays(row.fsrs_due, now) * OVERDUE_WEIGHT, OVERDUE_CAP);
+        : unfamiliarity(Number(row.fsrs_stability));
   }
 
   // 顽固词(leech,累计答错 >= 8 次)**不再置顶**。

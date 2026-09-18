@@ -102,3 +102,4 @@ frontend/public/audio/
 frontend/scripts/_*
 tmp/
 __pycache__/
+.workbuddy-ai/

@@ -12,6 +12,7 @@ import { grammarSequence } from "../lib/grammar-numbering";
 import { getGrammarPosition, saveGrammarPosition } from "../lib/grammarProgressPreferences";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { JLPTLevel } from "../types/grammar";
+import { useStudyTimer } from "../lib/useStudyTimer";
 
 interface ImmersiveGrammarProps {
   selectedLevel: "All" | JLPTLevel;
@@ -41,6 +42,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
   const sequence = point ? grammarSequence(point) : null;
   const favorite = point ? getGrammarPointFavorite(point.id) : false;
   const note = point ? getGrammarNote(point.id) : "";
+  useStudyTimer(Boolean(point));
 
   useEffect(() => {
     if (point) saveGrammarPosition("immersive", selectedLevel, point.id);

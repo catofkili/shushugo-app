@@ -74,6 +74,7 @@ export const SYNCED_TABLES: SyncedTable[] = [
   // 同一秒的两次作答会撞自然键；sync_uid 才是稳定事件身份。
   { table: "reviews", keys: ["sync_uid"], strategy: "append" },
   { table: "grammar_reviews", keys: ["sync_uid"], strategy: "append" },
+  { table: "grammar_activity_events", keys: ["sync_uid"], strategy: "append" },
   { table: "kanji_unit_reviews", keys: ["sync_uid"], strategy: "append" },
 
   { table: "checkins", keys: ["checked_on"], strategy: "union" },
@@ -81,8 +82,18 @@ export const SYNCED_TABLES: SyncedTable[] = [
   // 换台设备不会把同一句「比昨天少 48 个」再说一遍。
   { table: "moments", keys: ["kind", "key"], strategy: "union" },
   // 每台设备每天只写自己的一行，因此同一主键可安全使用 LWW；跨设备统计时求和。
-  { table: STUDY_TIME_TABLE, keys: ["studied_on", "device_id"], strategy: "lww" }
+  { table: STUDY_TIME_TABLE, keys: ["studied_on", "device_id"], strategy: "lww" },
+  // 周报计时按 14:00 周期归档；每台设备一行，读取时求和。
+  { table: "study_time_by_period", keys: ["period_start", "device_id"], strategy: "lww" },
+  { table: "weekly_reports", keys: ["week_start"], strategy: "lww" }
 ];
+
+/** 通用云同步的表清单。免费账号保留本机周报，但不把快照正文上传到云端。 */
+export const syncedTablesForCloud = (includeWeeklyReports: boolean): SyncedTable[] => (
+  includeWeeklyReports
+    ? SYNCED_TABLES
+    : SYNCED_TABLES.filter((entry) => entry.table !== "weekly_reports")
+);
 
 /**
  * 「本机这份出厂词典/语法内容迁移到哪一版了」的标记。
@@ -120,6 +131,10 @@ export const DEVICE_LOCAL_STATE_KEYS = new Set([
   // 它是「本机磁盘上那份快照停在哪一刻」,拿对端的值当基准去收集增量,
   // 收出来的行会对不上本机的快照,重启后就是一份两边拼起来的库。
   "local_snapshot_mark",
+  // 周报的本地观测台账（见 analytics/weekly-report-events.ts）。它是「这台设备
+  // 上发生过什么」的诊断记录，不是账号数据：同步过去只会让对端的计数被顶掉，
+  // 而且计划明确要求这类采集先只留本地、不默认上传。
+  "weekly_report_events",
   ...CONTENT_MIGRATION_STATE_KEYS
 ]);
 

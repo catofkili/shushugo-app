@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, BellRing, Clock, Volume2 } from "lucide-react";
+import { ArrowLeft, Bell, BellRing, Clock, FileText, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   checkReminderPermission,
@@ -7,7 +7,8 @@ import {
   ReminderSettings,
   ReminderSyncResult,
   sendStudyReminderTest,
-  syncReminderNotifications
+  syncReminderNotifications,
+  syncWeeklyReportNotification
 } from "../lib/notifications";
 
 interface NotificationSettingsProps {
@@ -62,7 +63,8 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
     setMessage("正在同步到 iOS 通知…");
     try {
       const result = await syncReminderNotifications(next, requestPermission);
-      setStatus(result);
+      const weekly = await syncWeeklyReportNotification(next, requestPermission);
+      setStatus({ ...result, pendingCount: Math.max(result.pendingCount, weekly.pendingCount) });
       setMessage(buildStatusText(result));
     } catch {
       setMessage("通知同步失败，请确认系统权限后再试。");
@@ -194,6 +196,25 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
               </label>
             </div>
           )}
+
+          <div className="flex items-center gap-3 border-b border-white/10 p-4">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
+              <FileText size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-white">学习回顾通知</p>
+              <p className="mt-0.5 text-xs text-white/50">周日下午 14:30，提醒你查看这一周的回顾</p>
+            </div>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                checked={settings.weeklyReportReminder}
+                onChange={(e) => updateSettings({ weeklyReportReminder: e.target.checked }, e.target.checked)}
+                className="peer sr-only"
+              />
+              <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
+            </label>
+          </div>
 
           <div className="flex items-center gap-3 p-4">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">

@@ -8,6 +8,7 @@ import type { Page } from "../types/app";
 import type { WordAnswer, WordCard } from "../types/vocabulary";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { useRowSelection } from "../hooks/useRowSelection";
+import { useStudyTimer } from "../lib/useStudyTimer";
 
 type Props = {
   onNavigate: (page: Page) => void;
@@ -72,6 +73,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
     onExit: () => setRatingOpenId(null)
   });
   const { selectionMode, selectedIds, exit: exitSelection, restore: restoreSelection } = selection;
+  useStudyTimer(variant === "page" && !loading && cards.length > 0);
 
   const submittingRef = useRef(false);
   const panelRef = useRef<HTMLElement | null>(null);

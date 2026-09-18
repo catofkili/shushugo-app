@@ -10,7 +10,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const SQL = await initSqlJs({ locateFile: (name) => path.resolve(root, '../frontend/node_modules/sql.js/dist', name) });
 const db = new SQL.Database(new Uint8Array(fs.readFileSync(path.resolve(root, '../frontend/public/nihongo.db'))));
 ensureGrammarSchema(db);
-assert.equal(Number(db.exec('SELECT COUNT(*) FROM grammar_points')[0].values[0][0]), 741);
+assert.equal(Number(db.exec('SELECT COUNT(*) FROM grammar_points')[0].values[0][0]), 769);
 const n5 = grammarRows(db, '', 'N5', 200);
 assert.ok(n5.length > 0 && n5.every((row) => row.level === 'N5'));
 const search = grammarRows(db, '名詞1', '', 20);

@@ -103,29 +103,30 @@ beforeEach(async () => {
 });
 
 describe("三个方向平级、互不干扰", () => {
-  it("快速学习按到期优先级稳定输出，不使用普通会话的随机首屏", () => {
+  it("快速学习按陌生度(stability 低者先)稳定输出，不使用普通会话的随机首屏", () => {
     const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
+    // 欠得最久的 #1 是老朋友(stability 30),昨天到期的 #10000 才刚学会(0.5):陌生的先出
     testDb.run(`
       UPDATE progress
-      SET fsrs_due = ?, fsrs_last_review = ?, fsrs_state = 2, fsrs_reps = 5, fsrs_lapses = 0
+      SET fsrs_due = ?, fsrs_last_review = ?, fsrs_stability = 30, fsrs_state = 2, fsrs_reps = 5, fsrs_lapses = 0
       WHERE word_id = 1
     `, [daysAgo(30), daysAgo(40)]);
     testDb.run(`
       UPDATE progress
-      SET fsrs_due = ?, fsrs_last_review = ?, fsrs_state = 2, fsrs_reps = 5, fsrs_lapses = 0
+      SET fsrs_due = ?, fsrs_last_review = ?, fsrs_stability = 3, fsrs_state = 2, fsrs_reps = 5, fsrs_lapses = 0
           , seen_count = 5, known_forever = 0
       WHERE word_id = 5000
     `, [daysAgo(5), daysAgo(15)]);
     testDb.run(`
       UPDATE progress
-      SET fsrs_due = ?, fsrs_last_review = ?, fsrs_state = 2, fsrs_reps = 5, fsrs_lapses = 0
+      SET fsrs_due = ?, fsrs_last_review = ?, fsrs_stability = 0.5, fsrs_state = 2, fsrs_reps = 5, fsrs_lapses = 0
           , seen_count = 5, known_forever = 0
       WHERE word_id = 10000
     `, [daysAgo(1), daysAgo(11)]);
     testDb.run("UPDATE progress SET known_forever = 1 WHERE word_id BETWEEN 2 AND 20");
 
     const cards = getQuickStudySession(3).cards;
-    expect(cards.map((card) => card.id)).toEqual([1, 5000, 10000]);
+    expect(cards.map((card) => card.id)).toEqual([10000, 5000, 1]);
   });
 
   it("从例句词典加入的词进入今日任务且不重复计入", () => {

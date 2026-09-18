@@ -19,6 +19,7 @@ const MASTERED_INTERVAL_DAYS = 180;
 const DEFAULT_REVIEW_LIMIT = 30;
 const DEFAULT_NEW_LIMIT = 12;
 const PLAN_VERSION = 'review-first-v1';
+const FSRS_PARAMS_VERSION = 'fsrs-v1';
 const STUDY_MODES = Object.freeze({
   quick: { label: '快速学习', limit: 12 },
   mistakes: { label: '错题本', limit: 30 }
@@ -195,6 +196,10 @@ function ensureStudySchema(db) {
   // 按自然键去重的话，两条真实作答只会进来一条，而且丢掉的那条再也补不回来。
   // uid 的格式必须和 iOS 端一致：`设备号:本机行号`（见 frontend sync/schema.ts）。
   if (!reviewColumns.has('sync_uid')) db.run('ALTER TABLE reviews ADD COLUMN sync_uid TEXT');
+  if (!reviewColumns.has('reviewed_at')) db.run('ALTER TABLE reviews ADD COLUMN reviewed_at INTEGER');
+  if (!reviewColumns.has('scheduler_mode')) db.run("ALTER TABLE reviews ADD COLUMN scheduler_mode TEXT NOT NULL DEFAULT 'legacy'");
+  if (!reviewColumns.has('fsrs_params_version')) db.run("ALTER TABLE reviews ADD COLUMN fsrs_params_version TEXT NOT NULL DEFAULT 'legacy'");
+  if (!reviewColumns.has('event_source')) db.run("ALTER TABLE reviews ADD COLUMN event_source TEXT NOT NULL DEFAULT 'legacy'");
   db.run(
     "UPDATE reviews SET sync_uid = (SELECT value FROM app_state WHERE key = 'sync_device_id') || ':' || CAST(id AS TEXT) "
     + "WHERE sync_uid IS NULL AND EXISTS (SELECT 1 FROM app_state WHERE key = 'sync_device_id')"
@@ -783,9 +788,11 @@ function recordDirectionalAnswer(db, wordId, answer, direction, options = {}) {
       nextFsrs.state, nextFsrs.steps, nextFsrs.reps, nextFsrs.lapses, wordId
     ]);
     db.run(`
-      INSERT INTO reviews (word_id, answer, score_after, reviewed_on, created_at, direction)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [wordId, answer, nextScore, day, reviewCreatedAt, reviewDirection(direction)]);
+      INSERT INTO reviews (
+        word_id, answer, score_after, reviewed_on, created_at, direction,
+        reviewed_at, scheduler_mode, fsrs_params_version, event_source
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'normal', ?, 'study')
+    `, [wordId, answer, nextScore, day, reviewCreatedAt, reviewDirection(direction), now.getTime(), FSRS_PARAMS_VERSION]);
     db.run('INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)', [day]);
     setState(db, 'undo_snapshot', JSON.stringify({
       wordId: Number(wordId), direction, entityTable: table, previous, previousCurrentCard,
@@ -863,9 +870,11 @@ function recordForwardAnswer(db, wordId, answer, options = {}, currentStateKey =
       wordId
     ]);
     db.run(`
-      INSERT INTO reviews (word_id, answer, score_after, reviewed_on, created_at, direction)
-      VALUES (?, ?, ?, ?, ?, 'forward')
-    `, [wordId, answer, nextScore, day, reviewCreatedAt]);
+      INSERT INTO reviews (
+        word_id, answer, score_after, reviewed_on, created_at, direction,
+        reviewed_at, scheduler_mode, fsrs_params_version, event_source
+      ) VALUES (?, ?, ?, ?, ?, 'forward', ?, 'normal', ?, 'study')
+    `, [wordId, answer, nextScore, day, reviewCreatedAt, now.getTime(), FSRS_PARAMS_VERSION]);
     db.run('INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)', [day]);
     setState(db, 'undo_snapshot', JSON.stringify({
       wordId: Number(wordId), direction: 'forward', entityTable: 'progress',

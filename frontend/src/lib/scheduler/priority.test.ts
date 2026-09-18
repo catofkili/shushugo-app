@@ -15,6 +15,7 @@ const row = (overrides: DbRow = {}): DbRow => ({
   seen_count: 1,
   importance: 3,
   fsrs_due: overdue(0),
+  fsrs_stability: 5,
   fsrs_lapses: 0,
   fsrs_state: 2,        // Review
   last_seen_on: null,
@@ -36,18 +37,29 @@ describe("priorityComponents", () => {
     expect(components.importance).toBe(4 * 4);
   });
 
-  it("越过期的词优先级越高(封顶 60,防陈年老账压过一切)", () => {
-    const fresh = priorityComponents(row({ fsrs_due: overdue(1) }), undefined, 0);
-    const stale = priorityComponents(row({ fsrs_due: overdue(5) }), undefined, 0);
-    expect(stale.score).toBeGreaterThan(fresh.score);
-    expect(priorityComponents(row({ fsrs_due: overdue(100) }), undefined, 0).score).toBe(60);
-    expect(fresh.new).toBe(0);
-    expect(fresh.review).toBe(35);
+  it("越陌生(stability 越低)优先级越高,老朋友(≥30 天)归零", () => {
+    const yesterday = priorityComponents(row({ fsrs_stability: 0.3, fsrs_due: overdue(0) }), undefined, 0);
+    const shaky = priorityComponents(row({ fsrs_stability: 3 }), undefined, 0);
+    const friend = priorityComponents(row({ fsrs_stability: 30, fsrs_due: overdue(14) }), undefined, 0);
+    expect(yesterday.score).toBeGreaterThan(shaky.score);
+    expect(shaky.score).toBeGreaterThan(friend.score);
+    expect(friend.score).toBe(0);
+    expect(yesterday.score).toBeLessThanOrEqual(50);
+    // 昨天新学的 + 昨天见过(age 3)必须压过 14 天没见的老朋友(age 30):
+    // 后者再拖 8 小时不会更忘,前者会
+    const yesterdayTotal = priorityScore(priorityComponents(
+      row({ fsrs_stability: 0.3, last_seen_on: new Date(Date.now() - DAY).toISOString().slice(0, 10) }), undefined, 0, { randomize: false }));
+    const friendTotal = priorityScore(priorityComponents(
+      row({ fsrs_stability: 30, last_seen_on: new Date(Date.now() - 14 * DAY).toISOString().slice(0, 10) }), undefined, 0, { randomize: false }));
+    expect(yesterdayTotal).toBeGreaterThan(friendTotal);
+    expect(yesterday.new).toBe(0);
+    expect(yesterday.review).toBe(35);
   });
 
-  it("还没到期的复习词拿不到过期加分", () => {
-    const future = new Date(Date.now() + 10 * DAY).toISOString();
-    expect(priorityComponents(row({ fsrs_due: future }), undefined, 0).score).toBe(0);
+  it("欠了多久不再影响优先级", () => {
+    const fresh = priorityComponents(row({ fsrs_stability: 5, fsrs_due: overdue(0) }), undefined, 0);
+    const stale = priorityComponents(row({ fsrs_stability: 5, fsrs_due: overdue(20) }), undefined, 0);
+    expect(stale.score).toBe(fresh.score);
   });
 
   it("学习/重学中的词排在「已见但没进过调度」之上——治『点了不认识就再也不回来』", () => {
@@ -81,8 +93,10 @@ describe("priorityComponents", () => {
     expect(priorityComponents(row(), 2, 0).queue).toBe(-80 - 2 * 25);
   });
 
-  it("快速模式关闭随机抖动", () => {
+  it("快速模式关闭随机抖动;普通模式抖动和陌生度同量级(整体偏规则、局部乱序)", () => {
     expect(priorityComponents(row(), 0, 0, { randomize: false }).jitter).toBe(0);
+    vi.spyOn(Math, "random").mockReturnValue(1);
+    expect(priorityComponents(row(), 0, 0).jitter).toBe(60);
   });
 });
 
