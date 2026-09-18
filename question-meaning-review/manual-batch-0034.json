@@ -1,0 +1,1332 @@
+[
+  {
+    "kanji": "組み込む",
+    "kana": "くみこむ",
+    "questionMeaning": "嵌入；纳入结构或系统",
+    "classification": "distinction",
+    "reason": "stem:組 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "組み入れる",
+    "kana": "くみいれる",
+    "questionMeaning": "编入；加入整体",
+    "classification": "distinction",
+    "reason": "stem:組 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "断つ",
+    "kana": "たつ",
+    "questionMeaning": "切断；戒",
+    "classification": "distinction",
+    "reason": "stem:断 — 切断、断绝；保留原文义项「切断；戒」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "断ち切る",
+    "kana": "たちきる",
+    "questionMeaning": "彻底切断（联系、习惯）；断绝",
+    "classification": "distinction",
+    "reason": "stem:断 — 强调彻底切断联系、习惯或来源；保留原文义项「切断；断绝」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "咲く",
+    "kana": "さく",
+    "questionMeaning": "开花",
+    "classification": "distinction",
+    "reason": "stem:咲 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "咲き乱れる",
+    "kana": "さきみだれる",
+    "questionMeaning": "繁花盛开",
+    "classification": "distinction",
+    "reason": "stem:咲 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "咲き誇る",
+    "kana": "さきほこる",
+    "questionMeaning": "盛开",
+    "classification": "distinction",
+    "reason": "stem:咲 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "張る",
+    "kana": "はる",
+    "questionMeaning": "拉紧；挺起、膨胀；覆盖、肌肉发酸",
+    "classification": "distinction",
+    "reason": "stem:張 — 张开、拉紧或坚持；保留原文义项「拉；挺；膨胀；覆盖；（肌肉）发酸」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "張り詰める",
+    "kana": "はりつめる",
+    "questionMeaning": "绷紧；（冰等）覆盖了一整片区域；紧张",
+    "classification": "distinction",
+    "reason": "stem:張 — 强调拉到紧绷状态，也可形容气氛紧张；保留原文义项「（冰等）覆盖了一整片区域；紧张」"
+  },
+  {
+    "kanji": "嚙[か]み合う",
+    "kana": "かみあう",
+    "questionMeaning": "咬合；吻合",
+    "classification": "distinction",
+    "reason": "stem:嚙 — 双方咬合、配合或意见吻合；保留原文义项「咬合；吻合」"
+  },
+  {
+    "kanji": "嚙[か]み付く",
+    "kana": "かみつく",
+    "questionMeaning": "咬住；猛烈地反驳",
+    "classification": "distinction",
+    "reason": "stem:嚙 — 咬住、扑咬或强烈反驳；保留原文义项「咬住；猛烈地反驳」"
+  },
+  {
+    "kanji": "割り引く",
+    "kana": "わりびく",
+    "questionMeaning": "打折；低估，打折扣",
+    "classification": "distinction",
+    "reason": "stem:割 — 打折；保留原文义项「打折；低估，打折扣」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "割り当てる",
+    "kana": "わりあてる",
+    "questionMeaning": "分配",
+    "classification": "distinction",
+    "reason": "stem:割 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "割り振る",
+    "kana": "わりふる",
+    "questionMeaning": "分派",
+    "classification": "distinction",
+    "reason": "stem:割 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "割り切る",
+    "kana": "わりきる",
+    "questionMeaning": "想开；（除法）除尽",
+    "classification": "distinction",
+    "reason": "stem:割 — 彻底分清或想开；保留原文义项「（除法）除尽；想开，看开」"
+  },
+  {
+    "kanji": "向かう",
+    "kana": "むかう",
+    "questionMeaning": "面向；朝，前往；迎来",
+    "classification": "distinction",
+    "reason": "stem:向 — 朝向、前往；保留原文义项「面向；朝，前往；迎来」"
+  },
+  {
+    "kanji": "向かい合う",
+    "kana": "むかいあう",
+    "questionMeaning": "面对面；彼此正面相对",
+    "classification": "distinction",
+    "reason": "stem:向 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "向き合う",
+    "kana": "むきあう",
+    "questionMeaning": "正面面对；认真应对",
+    "classification": "distinction",
+    "reason": "stem:向 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "済ませる",
+    "kana": "すませる",
+    "questionMeaning": "使办妥；让对象完成",
+    "classification": "distinction",
+    "reason": "stem:済 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "植える",
+    "kana": "うえる",
+    "questionMeaning": "种植",
+    "classification": "distinction",
+    "reason": "stem:植 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "植え付ける",
+    "kana": "うえつける",
+    "questionMeaning": "栽种；种植，插秧；灌输",
+    "classification": "distinction",
+    "reason": "stem:植 — 强调栽种、定植；保留原文义项「种植，插秧；灌输」"
+  },
+  {
+    "kanji": "植え替える",
+    "kana": "うえかえる",
+    "questionMeaning": "移植",
+    "classification": "distinction",
+    "reason": "stem:植 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "折り畳む",
+    "kana": "おりたたむ",
+    "questionMeaning": "折叠（专指）",
+    "classification": "distinction",
+    "reason": "synonym:折叠 — 折り畳む专指折叠成较小形状，不能替换收店等引申义；保留原文义项「折叠」"
+  },
+  {
+    "kanji": "痩せる",
+    "kana": "やせる",
+    "questionMeaning": "变瘦",
+    "classification": "distinction",
+    "reason": "stem:痩 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "痩せ衰える",
+    "kana": "やせおとろえる",
+    "questionMeaning": "瘦弱下去",
+    "classification": "distinction",
+    "reason": "stem:痩 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "塗る",
+    "kana": "ぬる",
+    "questionMeaning": "涂抹",
+    "classification": "distinction",
+    "reason": "stem:塗 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "塗り替える",
+    "kana": "ぬりかえる",
+    "questionMeaning": "重新涂",
+    "classification": "distinction",
+    "reason": "stem:塗 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "踏み込む",
+    "kana": "ふみこむ",
+    "questionMeaning": "踏入（渗入）；陷入、闯进；深入",
+    "classification": "distinction",
+    "reason": "stem:踏 — 踏入、深入；保留原文义项「踏入；陷入；突然闯进；深入」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "踏み入れる",
+    "kana": "ふみいれる",
+    "questionMeaning": "踏入（主动）",
+    "classification": "distinction",
+    "reason": "stem:踏 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "褒める",
+    "kana": "ほめる",
+    "questionMeaning": "称赞",
+    "classification": "distinction",
+    "reason": "stem:褒 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "褒めたたえる",
+    "kana": "ほめたたえる",
+    "questionMeaning": "极力称赞",
+    "classification": "distinction",
+    "reason": "stem:褒 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "冷え込む",
+    "kana": "ひえこむ",
+    "questionMeaning": "骤冷；气温明显下降",
+    "classification": "distinction",
+    "reason": "stem:冷 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "破る",
+    "kana": "やぶる",
+    "questionMeaning": "撕破（主动）；损坏、违规；破纪录",
+    "classification": "distinction",
+    "reason": "stem:破 — 主动撕破，也可表示违反规则、约定；保留原文义项「撕裂，弄破；损坏；违规；破（纪录）」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "破れる",
+    "kana": "やぶれる",
+    "questionMeaning": "撕破（自行）；打破；决裂",
+    "classification": "distinction",
+    "reason": "stem:破 — 纸、布等自己破裂；保留原文义项「撕破；打破；决裂」"
+  },
+  {
+    "kanji": "結びつく",
+    "kana": "むすびつく",
+    "questionMeaning": "联系起来",
+    "classification": "distinction",
+    "reason": "stem:結 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "結びつける",
+    "kana": "むすびつける",
+    "questionMeaning": "联系；系上；结合，联结",
+    "classification": "distinction",
+    "reason": "stem:結 — 主动把双方联系起来；保留原文义项「系上；结合，联结」"
+  },
+  {
+    "kanji": "成る",
+    "kana": "なる",
+    "questionMeaning": "变成；完成、实现；能够做到、由…构成",
+    "classification": "distinction",
+    "reason": "stem:成 — 变成、组成；保留原文义项「完成；实现；能够做到；由……构成」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "成し遂げる",
+    "kana": "なしとげる",
+    "questionMeaning": "完成",
+    "classification": "distinction",
+    "reason": "stem:成 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "成り立つ",
+    "kana": "なりたつ",
+    "questionMeaning": "成立；谈妥；构成",
+    "classification": "distinction",
+    "reason": "stem:成 — 成立、构成或说得通；保留原文义项「成立；谈妥；构成」"
+  },
+  {
+    "kanji": "囲む",
+    "kana": "かこむ",
+    "questionMeaning": "包围",
+    "classification": "distinction",
+    "reason": "stem:囲 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "囲う",
+    "kana": "かこう",
+    "questionMeaning": "围住；围起来；贮藏",
+    "classification": "distinction",
+    "reason": "stem:囲 — 围起来保护、圈养或遮挡，常有设置围栏的意味；保留原文义项「围起来；贮藏；隐匿」"
+  },
+  {
+    "kanji": "干す",
+    "kana": "ほす",
+    "questionMeaning": "晾干",
+    "classification": "distinction",
+    "reason": "stem:干 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "干からびる",
+    "kana": "ひからびる",
+    "questionMeaning": "干枯",
+    "classification": "distinction",
+    "reason": "stem:干 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "掘る",
+    "kana": "ほる",
+    "questionMeaning": "挖掘",
+    "classification": "distinction",
+    "reason": "stem:掘 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "掘り下げる",
+    "kana": "ほりさげる",
+    "questionMeaning": "深入挖掘；往下深挖；深入思考，挖掘（思想）",
+    "classification": "distinction",
+    "reason": "stem:掘 — 向深处挖，也可深入探讨；保留原文义项「往下深挖；深入思考，挖掘（思想）」"
+  },
+  {
+    "kanji": "掘り起こす",
+    "kana": "ほりおこす",
+    "questionMeaning": "挖出；掘出；开垦土地",
+    "classification": "distinction",
+    "reason": "stem:掘 — 挖出、重新发掘；保留原文义项「掘出；开垦土地；挖掘出来」"
+  },
+  {
+    "kanji": "経つ",
+    "kana": "たつ",
+    "questionMeaning": "经过",
+    "classification": "distinction",
+    "reason": "stem:経 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "経る",
+    "kana": "へる",
+    "questionMeaning": "经过（场所）；经历",
+    "classification": "distinction",
+    "reason": "stem:経 — 经过某个地点、阶段或过程；保留原文义项「经过；经历」"
+  },
+  {
+    "kanji": "語る",
+    "kana": "かたる",
+    "questionMeaning": "讲述",
+    "classification": "distinction",
+    "reason": "stem:語 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "語り継ぐ",
+    "kana": "かたりつぐ",
+    "questionMeaning": "代代传述",
+    "classification": "distinction",
+    "reason": "stem:語 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "支払う",
+    "kana": "しはらう",
+    "questionMeaning": "支付",
+    "classification": "distinction",
+    "reason": "stem:支 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "支える",
+    "kana": "ささえる",
+    "questionMeaning": "支撑；维持",
+    "classification": "distinction",
+    "reason": "stem:支 — 支撑物体、维持生活或支持某人；保留原文义项「支撑；维持」"
+  },
+  {
+    "kanji": "煮る",
+    "kana": "にる",
+    "questionMeaning": "煮",
+    "classification": "distinction",
+    "reason": "stem:煮 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "煮詰める",
+    "kana": "につめる",
+    "questionMeaning": "煮浓；问题接近解决；讨论计划成熟",
+    "classification": "distinction",
+    "reason": "stem:煮 — 把液体煮浓，也可引申为把方案讨论到具体、成熟；保留原文义项「把……煮得没有水分；使（问题）接近解决，使（讨论、计划等）进入最后阶段」"
+  },
+  {
+    "kanji": "畳む",
+    "kana": "たたむ",
+    "questionMeaning": "折叠；合上、关闭；藏在心里",
+    "classification": "distinction",
+    "reason": "stem:畳 — 折叠、收起；保留原文义项「叠；合上；关闭；藏在心里」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "畳み込む",
+    "kana": "たたみこむ",
+    "questionMeaning": "折叠收进；折叠起来；放在心里",
+    "classification": "distinction",
+    "reason": "stem:畳 — 强调把折叠后的东西收进内部，或把多个因素纳入；保留原文义项「折叠起来；放在心里；连珠炮」"
+  },
+  {
+    "kanji": "拭く",
+    "kana": "ふく",
+    "questionMeaning": "擦拭",
+    "classification": "distinction",
+    "reason": "stem:拭 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "拭き取る",
+    "kana": "ふきとる",
+    "questionMeaning": "擦掉",
+    "classification": "distinction",
+    "reason": "stem:拭 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "伸び悩む",
+    "kana": "のびなやむ",
+    "questionMeaning": "增长乏力",
+    "classification": "distinction",
+    "reason": "stem:伸 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "伸べる",
+    "kana": "のべる",
+    "questionMeaning": "伸展（书面）",
+    "classification": "distinction",
+    "reason": "synonym:伸出 — 差し伸べる是伸出手并施以援助；书面伸展，不能全换；保留原文义项「伸出」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "振る",
+    "kana": "ふる",
+    "questionMeaning": "挥动；撒",
+    "classification": "distinction",
+    "reason": "stem:振 — 挥动、摇摆；振る舞う是表现、行动；振るう是发挥、施展；保留原文义项「挥；撒」；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "振る舞う",
+    "kana": "ふるまう",
+    "questionMeaning": "行动；招待",
+    "classification": "distinction",
+    "reason": "stem:振 — 振る舞う是表现、行动；保留原文义项「行动，动作；招待」"
+  },
+  {
+    "kanji": "振り返る",
+    "kana": "ふりかえる",
+    "questionMeaning": "回头看；回顾",
+    "classification": "distinction",
+    "reason": "stem:振 — 回头看或回顾；保留原文义项「回头看；回顾」"
+  },
+  {
+    "kanji": "振り回す",
+    "kana": "ふりまわす",
+    "questionMeaning": "挥舞；滥用、显摆；任意摆布",
+    "classification": "distinction",
+    "reason": "stem:振 — 挥舞或任意支使；保留原文义项「挥舞；滥用；显摆；（「振り回される」の形で）（被）任意摆布」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "振るう",
+    "kana": "ふるう",
+    "questionMeaning": "挥动（是发挥施）；充分发挥；兴旺",
+    "classification": "distinction",
+    "reason": "stem:振 — 振るう是发挥、施展；保留原文义项「挥动；充分发挥；兴旺」"
+  },
+  {
+    "kanji": "締めつける",
+    "kana": "しめつける",
+    "questionMeaning": "勒紧；严加管教",
+    "classification": "distinction",
+    "reason": "stem:締 — 强调勒紧、压迫或严格限制；保留原文义项「用力勒紧；严加管教」"
+  },
+  {
+    "kanji": "吐く",
+    "kana": "はく",
+    "questionMeaning": "吐；呕吐、冒出；吐露",
+    "classification": "distinction",
+    "reason": "stem:吐 — 吐出、呕吐或说出；保留原文义项「吐；呕吐；冒出；吐露」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "吐き出す",
+    "kana": "はきだす",
+    "questionMeaning": "吐出；倾吐",
+    "classification": "distinction",
+    "reason": "stem:吐 — 强调从内部用力吐出、倾诉出来；保留原文义项「吐出；倾吐」"
+  },
+  {
+    "kanji": "剝[む]く",
+    "kana": "むく",
+    "questionMeaning": "剥开",
+    "classification": "distinction",
+    "reason": "stem:剝 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "剝[む]ける",
+    "kana": "むける",
+    "questionMeaning": "剥落",
+    "classification": "distinction",
+    "reason": "stem:剝 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "剝がす",
+    "kana": "はがす",
+    "questionMeaning": "剥下",
+    "classification": "distinction",
+    "reason": "stem:剝 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "剝がれる",
+    "kana": "はがれる",
+    "questionMeaning": "脱落",
+    "classification": "distinction",
+    "reason": "stem:剝 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "抜け落ちる",
+    "kana": "ぬけおちる",
+    "questionMeaning": "脱落（掉落遗漏）；（头发、羽毛等）掉落；欠缺",
+    "classification": "distinction",
+    "reason": "stem:抜 — 强调掉落遗漏；保留原文义项「（头发、羽毛等）掉落；欠缺」"
+  },
+  {
+    "kanji": "抜き出す",
+    "kana": "ぬきだす",
+    "questionMeaning": "抽出；选出，选拔",
+    "classification": "distinction",
+    "reason": "stem:抜 — 抽出；保留原文义项「拔出，抽出；选出，选拔」"
+  },
+  {
+    "kanji": "抜きん出る",
+    "kana": "ぬきんでる",
+    "questionMeaning": "出类拔萃",
+    "classification": "distinction",
+    "reason": "stem:抜 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "抱く",
+    "kana": "だく",
+    "questionMeaning": "抱住",
+    "classification": "distinction",
+    "reason": "stem:抱 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "抱える",
+    "kana": "かかえる",
+    "questionMeaning": "抱着；负担",
+    "classification": "distinction",
+    "reason": "stem:抱 — 抱着、承担问题；保留原文义项「抱着，夹（在腋下）；负担」"
+  },
+  {
+    "kanji": "抱え込む",
+    "kana": "かかえこむ",
+    "questionMeaning": "抱住（主动）；双手抱，夹；承担（负担等）",
+    "classification": "distinction",
+    "reason": "stem:抱 — 强调把问题、责任等独自揽在身上；保留原文义项「双手抱，夹；承担（负担等）」"
+  },
+  {
+    "kanji": "放る",
+    "kana": "ほうる",
+    "questionMeaning": "扔；抛；丢开，放弃",
+    "classification": "distinction",
+    "reason": "stem:放 — 随手扔；保留原文义项「抛；丢开，放弃」"
+  },
+  {
+    "kanji": "放す",
+    "kana": "はなす",
+    "questionMeaning": "释放；放走",
+    "classification": "distinction",
+    "reason": "synonym:放开 — 释放、放走或松手，动作结果不同；保留原文义项「放开；释放」"
+  },
+  {
+    "kanji": "放っておく",
+    "kana": "ほうっておく",
+    "questionMeaning": "放着不管",
+    "classification": "distinction",
+    "reason": "stem:放 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "放り出す",
+    "kana": "ほうりだす",
+    "questionMeaning": "扔出去；中途放弃，丢下不管；赶走",
+    "classification": "distinction",
+    "reason": "stem:放 — 扔出去或把人赶出去；保留原文义项「扔出去；中途放弃，丢下不管；赶走」"
+  },
+  {
+    "kanji": "埋め込む",
+    "kana": "うめこむ",
+    "questionMeaning": "埋入",
+    "classification": "distinction",
+    "reason": "stem:埋 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "混じり合う",
+    "kana": "まじりあう",
+    "questionMeaning": "混合；交融",
+    "classification": "distinction",
+    "reason": "stem:混 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "奪う",
+    "kana": "うばう",
+    "questionMeaning": "夺走；抢夺；剥夺",
+    "classification": "distinction",
+    "reason": "stem:奪 — 夺走；保留原文义项「抢夺；剥夺；强烈地吸引」"
+  },
+  {
+    "kanji": "奪い取る",
+    "kana": "うばいとる",
+    "questionMeaning": "抢夺",
+    "classification": "distinction",
+    "reason": "stem:奪 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "縛る",
+    "kana": "しばる",
+    "questionMeaning": "捆（绳子、行李）；束缚",
+    "classification": "distinction",
+    "reason": "stem:縛 — 捆绑、束缚；保留原文义项「捆；束缚」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "縛り付ける",
+    "kana": "しばりつける",
+    "questionMeaning": "捆绑（主动）；捆绑到某物上；束缚",
+    "classification": "distinction",
+    "reason": "stem:縛 — 强调把对象牢牢捆在某处，或强行束缚；保留原文义项「捆绑到某物上；束缚」"
+  },
+  {
+    "kanji": "溶け込む",
+    "kana": "とけこむ",
+    "questionMeaning": "融入；融洽；融化，溶解",
+    "classification": "distinction",
+    "reason": "stem:溶 — 融入环境、群体或液体内部；保留原文义项「融洽；融化，溶解」"
+  },
+  {
+    "kanji": "詰め込む",
+    "kana": "つめこむ",
+    "questionMeaning": "塞进",
+    "classification": "distinction",
+    "reason": "stem:詰 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "浮かび上がる",
+    "kana": "うかびあがる",
+    "questionMeaning": "显现；清楚浮出表面",
+    "classification": "distinction",
+    "reason": "stem:浮 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "揺れる",
+    "kana": "ゆれる",
+    "questionMeaning": "摇晃；动摇",
+    "classification": "distinction",
+    "reason": "stem:揺 — 来回摇晃；保留原文义项「摇晃；动摇」；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "揺さぶる",
+    "kana": "ゆさぶる",
+    "questionMeaning": "摇晃（用力）；大幅摇动，摇晃；震惊，使……动摇",
+    "classification": "distinction",
+    "reason": "stem:揺 — 用力摇动或震撼；保留原文义项「大幅摇动，摇晃；震惊，使……动摇」"
+  },
+  {
+    "kanji": "揺れ動く",
+    "kana": "ゆれうごく",
+    "questionMeaning": "摇晃（物理）；动摇（心情）",
+    "classification": "distinction",
+    "reason": "synonym:摇摆 — 物理摇晃或心情、立场动摇，过程感更强；保留原文义项「摇摆；动摇」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "跳ぶ",
+    "kana": "とぶ",
+    "questionMeaning": "跳跃",
+    "classification": "distinction",
+    "reason": "stem:跳 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "跳ねる",
+    "kana": "はねる",
+    "questionMeaning": "弹跳；飞溅",
+    "classification": "distinction",
+    "reason": "stem:跳 — 跳起、弹跳；保留原文义项「跳起；飞溅」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "跳ね上がる",
+    "kana": "はねあがる",
+    "questionMeaning": "猛地跳起；（物价）暴涨；行动过激",
+    "classification": "distinction",
+    "reason": "stem:跳 — 强调突然向上跳起或猛涨；保留原文义项「飞溅；（物价等）暴涨；行动过激」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "駆ける",
+    "kana": "かける",
+    "questionMeaning": "奔跑",
+    "classification": "distinction",
+    "reason": "stem:駆 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "駆け込む",
+    "kana": "かけこむ",
+    "questionMeaning": "跑进去",
+    "classification": "distinction",
+    "reason": "stem:駆 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "駆け抜ける",
+    "kana": "かけぬける",
+    "questionMeaning": "飞奔而过",
+    "classification": "distinction",
+    "reason": "stem:駆 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "駆け上がる",
+    "kana": "かけあがる",
+    "questionMeaning": "跑上去",
+    "classification": "distinction",
+    "reason": "stem:駆 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "駆けつける",
+    "kana": "かけつける",
+    "questionMeaning": "赶到",
+    "classification": "distinction",
+    "reason": "stem:駆 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "駆け寄る",
+    "kana": "かけよる",
+    "questionMeaning": "跑到跟前",
+    "classification": "distinction",
+    "reason": "stem:駆 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "駆け巡る",
+    "kana": "かけめぐる",
+    "questionMeaning": "到处奔跑",
+    "classification": "distinction",
+    "reason": "stem:駆 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "指す",
+    "kana": "さす",
+    "questionMeaning": "指向；（用手等）指；指名",
+    "classification": "distinction",
+    "reason": "stem:指 — 指向、指示；保留原文义项「（用手等）指；指名；朝向」"
+  },
+  {
+    "kanji": "指差す",
+    "kana": "ゆびさす",
+    "questionMeaning": "用手指",
+    "classification": "distinction",
+    "reason": "stem:指 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "指し示す",
+    "kana": "さししめす",
+    "questionMeaning": "指示",
+    "classification": "distinction",
+    "reason": "stem:指 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "悔やむ",
+    "kana": "くやむ",
+    "questionMeaning": "后悔；哀悼",
+    "classification": "distinction",
+    "reason": "stem:悔 — 悔やむ和悔いる都表示后悔；保留原文义项「懊悔，后悔；哀悼」"
+  },
+  {
+    "kanji": "悔いる",
+    "kana": "くいる",
+    "questionMeaning": "后悔",
+    "classification": "distinction",
+    "reason": "stem:悔 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "巻く",
+    "kana": "まく",
+    "questionMeaning": "卷；缠绕；包围",
+    "classification": "distinction",
+    "reason": "stem:巻 — 卷、缠绕；保留原文义项「卷，卷起；缠绕；包围」"
+  },
+  {
+    "kanji": "巻き込む",
+    "kana": "まきこむ",
+    "questionMeaning": "卷入；牵连",
+    "classification": "distinction",
+    "reason": "stem:巻 — 把对象卷进去，也可表示使人卷入事件；保留原文义项「卷入；牵连」"
+  },
+  {
+    "kanji": "含む",
+    "kana": "ふくむ",
+    "questionMeaning": "包含；怀（恨）",
+    "classification": "distinction",
+    "reason": "stem:含 — 包含、含有；保留原文义项「含有，包含；怀（恨）」"
+  },
+  {
+    "kanji": "含める",
+    "kana": "ふくめる",
+    "questionMeaning": "包含（主动）",
+    "classification": "distinction",
+    "reason": "stem:含 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "寄せる",
+    "kana": "よせる",
+    "questionMeaning": "使…靠近（椅子、身体）；聚集",
+    "classification": "distinction",
+    "reason": "stem:寄 — 使靠近、寄托或聚集；保留原文义项「使靠近；聚集；寄送」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "寄り掛かる",
+    "kana": "よりかかる",
+    "questionMeaning": "倚靠（靠着或依赖）；依靠",
+    "classification": "distinction",
+    "reason": "synonym:倚靠 — 靠着或依赖某人、某物，依赖意味更强；保留原文义项「倚靠；依赖」"
+  },
+  {
+    "kanji": "寄り添う",
+    "kana": "よりそう",
+    "questionMeaning": "靠近（贴近陪伴）",
+    "classification": "distinction",
+    "reason": "stem:寄 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "近づく",
+    "kana": "ちかづく",
+    "questionMeaning": "靠近（自行）；临近；亲近",
+    "classification": "distinction",
+    "reason": "stem:近 — 自己靠近；保留原文义项「靠近；临近；亲近」"
+  },
+  {
+    "kanji": "近づける",
+    "kana": "ちかづける",
+    "questionMeaning": "使靠近；使亲近",
+    "classification": "distinction",
+    "reason": "stem:近 — 使对象靠近；保留原文义项「使靠近；使亲近」"
+  },
+  {
+    "kanji": "近寄る",
+    "kana": "ちかよる",
+    "questionMeaning": "靠近（主动）；亲近",
+    "classification": "distinction",
+    "reason": "stem:近 — 强调人或物主动向近处靠拢；保留原文义项「靠近；亲近」"
+  },
+  {
+    "kanji": "刻む",
+    "kana": "きざむ",
+    "questionMeaning": "刻；切细；牢记",
+    "classification": "distinction",
+    "reason": "stem:刻 — 刻、切碎或铭记；保留原文义项「切细；雕刻；牢记」"
+  },
+  {
+    "kanji": "刻み込む",
+    "kana": "きざみこむ",
+    "questionMeaning": "刻入；刻上；铭刻（于心）",
+    "classification": "distinction",
+    "reason": "stem:刻 — 强调深深刻入表面、记忆或心中；保留原文义项「刻上；铭刻（于心）」"
+  },
+  {
+    "kanji": "失う",
+    "kana": "うしなう",
+    "questionMeaning": "失去；错过；迷失",
+    "classification": "distinction",
+    "reason": "stem:失 — 失去、丧失；保留原文义项「失去；错过；迷失」"
+  },
+  {
+    "kanji": "失[う]せる",
+    "kana": "うせる",
+    "questionMeaning": "消失（彻底）；离去",
+    "classification": "distinction",
+    "reason": "synonym:消失 — 消え去る、失せる更强调彻底离去，语气和搭配不同；保留原文义项「消失」"
+  },
+  {
+    "kanji": "省く",
+    "kana": "はぶく",
+    "questionMeaning": "省略；节省",
+    "classification": "distinction",
+    "reason": "stem:省 — 省略、节省；保留原文义项「省略；节省」"
+  },
+  {
+    "kanji": "省みる",
+    "kana": "かえりみる",
+    "questionMeaning": "反省",
+    "classification": "distinction",
+    "reason": "stem:省 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "譲る",
+    "kana": "ゆずる",
+    "questionMeaning": "让给；转让；谦让",
+    "classification": "distinction",
+    "reason": "stem:譲 — 让给、转让；保留原文义项「转让；谦让；出让」"
+  },
+  {
+    "kanji": "譲り合う",
+    "kana": "ゆずりあう",
+    "questionMeaning": "互相礼让",
+    "classification": "distinction",
+    "reason": "stem:譲 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "積み立てる",
+    "kana": "つみたてる",
+    "questionMeaning": "按期存（钱）；积累",
+    "classification": "distinction",
+    "reason": "synonym:积攒 — 按期积存资金等，句法和对象不同；保留原文义项「积攒」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "染みる",
+    "kana": "しみる",
+    "questionMeaning": "渗入；味道或刺激进入",
+    "classification": "distinction",
+    "reason": "stem:染 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "染み込む",
+    "kana": "しみこむ",
+    "questionMeaning": "深入（充分进入内部）；渗透到内部",
+    "classification": "distinction",
+    "reason": "stem:染 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "染み付く",
+    "kana": "しみつく",
+    "questionMeaning": "沾染；沾上",
+    "classification": "distinction",
+    "reason": "stem:染 — 牢牢沾上、留下习惯；保留原文义项「沾上；沾染上」"
+  },
+  {
+    "kanji": "問い合わせる",
+    "kana": "といあわせる",
+    "questionMeaning": "询问（办事）",
+    "classification": "distinction",
+    "reason": "stem:問 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "問う",
+    "kana": "とう",
+    "questionMeaning": "询问（正式）；追究责任、问罪；不当作问题",
+    "classification": "distinction",
+    "reason": "stem:問 — 正式追问或问责；保留原文义项「询问；追究责任，问罪；（不）当作问题」"
+  },
+  {
+    "kanji": "問いかける",
+    "kana": "といかける",
+    "questionMeaning": "询问（向对方提）；提问；开始问",
+    "classification": "distinction",
+    "reason": "stem:問 — 向对方提出问题；保留原文义项「提问；开始问」"
+  },
+  {
+    "kanji": "問い詰める",
+    "kana": "といつめる",
+    "questionMeaning": "追问",
+    "classification": "distinction",
+    "reason": "stem:問 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "擦れ違う",
+    "kana": "すれちがう",
+    "questionMeaning": "擦肩而过；产生分歧",
+    "classification": "distinction",
+    "reason": "stem:擦 — 擦肩而过或意见错开；保留原文义项「错过，擦肩而过；产生分歧」"
+  },
+  {
+    "kanji": "擦り抜ける",
+    "kana": "すりぬける",
+    "questionMeaning": "擦身而过；穿过，钻过；躲过，混过",
+    "classification": "distinction",
+    "reason": "stem:擦 — 擦身穿过、设法逃脱；保留原文义项「穿过，钻过；躲过，混过」"
+  },
+  {
+    "kanji": "占う",
+    "kana": "うらなう",
+    "questionMeaning": "占卜；预测",
+    "classification": "distinction",
+    "reason": "stem:占 — 占卜、预测；保留原文义项「占卜，算卦；预测」"
+  },
+  {
+    "kanji": "占める",
+    "kana": "しめる",
+    "questionMeaning": "占据；占有",
+    "classification": "distinction",
+    "reason": "stem:占 — 占据位置、比例或地位；保留原文义项「占据；占有」"
+  },
+  {
+    "kanji": "突っ込む",
+    "kana": "つっこむ",
+    "questionMeaning": "冲入；插入、深入；深究、追问",
+    "classification": "distinction",
+    "reason": "stem:突 — 冲入、插入或深入追问；保留原文义项「闯入；插入；深入；深究，追问」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "突っ走る",
+    "kana": "つっぱしる",
+    "questionMeaning": "猛冲；飞跑；（向着某个目标）冲刺",
+    "classification": "distinction",
+    "reason": "stem:突 — 猛冲、鲁莽推进；保留原文义项「飞跑；（向着某个目标）冲刺」"
+  },
+  {
+    "kanji": "突き刺す",
+    "kana": "つきさす",
+    "questionMeaning": "刺入（主动用力刺）；扎，刺；刺痛",
+    "classification": "distinction",
+    "reason": "synonym:刺入 — 主动用力刺入或刺痛，自动他动不同；保留原文义项「刺入；刺痛」"
+  },
+  {
+    "kanji": "薄れる",
+    "kana": "うすれる",
+    "questionMeaning": "变淡；淡薄；模糊",
+    "classification": "distinction",
+    "reason": "stem:薄 — 薄れる和薄まる都可表示颜色、印象等变淡；偏影响、记忆和感觉逐渐减弱；保留原文义项「淡薄；模糊」"
+  },
+  {
+    "kanji": "膨れ上がる",
+    "kana": "ふくれあがる",
+    "questionMeaning": "（费用、人数）暴增；肿胀",
+    "classification": "distinction",
+    "reason": "stem:膨 — 强调大幅膨胀；保留原文义项「超出；肿胀」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "湧く",
+    "kana": "わく",
+    "questionMeaning": "涌出（情绪）；冒出，涌现；产生",
+    "classification": "distinction",
+    "reason": "stem:湧 — 水、感情等涌出；保留原文义项「冒出，涌现；产生」"
+  },
+  {
+    "kanji": "湧き出る",
+    "kana": "わきでる",
+    "questionMeaning": "涌出（从内部大）；喷出，涌出；涌现",
+    "classification": "distinction",
+    "reason": "stem:湧 — 强调从内部大量涌到外面；保留原文义项「喷出，涌出；涌现」"
+  },
+  {
+    "kanji": "応える",
+    "kana": "こたえる",
+    "questionMeaning": "回应；响应，反应；强烈地感受到",
+    "classification": "distinction",
+    "reason": "stem:応 — 回应期待、要求或感情；保留原文义项「响应，反应；强烈地感受到」"
+  },
+  {
+    "kanji": "応じる",
+    "kana": "おうじる",
+    "questionMeaning": "响应；回答，同意；适应，按照",
+    "classification": "distinction",
+    "reason": "stem:応 — 根据请求、条件作出应对或接受；保留原文义项「回答，同意；接受，响应；适应，按照」"
+  },
+  {
+    "kanji": "強いる",
+    "kana": "しいる",
+    "questionMeaning": "强迫",
+    "classification": "distinction",
+    "reason": "stem:強 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "試す",
+    "kana": "ためす",
+    "questionMeaning": "试验",
+    "classification": "distinction",
+    "reason": "stem:試 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "試みる",
+    "kana": "こころみる",
+    "questionMeaning": "尝试",
+    "classification": "distinction",
+    "reason": "stem:試 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "襲う",
+    "kana": "おそう",
+    "questionMeaning": "袭击",
+    "classification": "distinction",
+    "reason": "stem:襲 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "襲いかかる",
+    "kana": "おそいかかる",
+    "questionMeaning": "猛扑过去袭击；扑来",
+    "classification": "distinction",
+    "reason": "stem:襲 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "傷つける",
+    "kana": "きずつける",
+    "questionMeaning": "弄伤；使……负伤；损坏",
+    "classification": "distinction",
+    "reason": "stem:傷 — 弄伤或伤害别人、感情；保留原文义项「使……负伤；损坏；伤害」"
+  },
+  {
+    "kanji": "傷つく",
+    "kana": "きずつく",
+    "questionMeaning": "受伤；负伤；损坏",
+    "classification": "distinction",
+    "reason": "stem:傷 — 自己受伤；保留原文义项「负伤；损坏；受创伤」"
+  },
+  {
+    "kanji": "先立つ",
+    "kana": "さきだつ",
+    "questionMeaning": "先于；带头、领先；死在前、钱",
+    "classification": "distinction",
+    "reason": "stem:先 — 先于、领先；保留原文义项「带头；在……之前；死在……之前；（「先立つ物」の形で）钱」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "先走る",
+    "kana": "さきばしる",
+    "questionMeaning": "抢先",
+    "classification": "distinction",
+    "reason": "stem:先 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "先んじる",
+    "kana": "さきんじる",
+    "questionMeaning": "抢先（正式）",
+    "classification": "distinction",
+    "reason": "stem:先 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "力む",
+    "kana": "りきむ",
+    "questionMeaning": "用力；虚张声势，逞强",
+    "classification": "distinction",
+    "reason": "stem:力 — 用力、紧张使劲；保留原文义项「使劲，用力；虚张声势，逞强」"
+  },
+  {
+    "kanji": "力尽きる",
+    "kana": "ちからつきる",
+    "questionMeaning": "力竭",
+    "classification": "distinction",
+    "reason": "stem:力 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "弱る",
+    "kana": "よわる",
+    "questionMeaning": "变弱（身体衰弱）；软弱，衰弱；为难，尴尬",
+    "classification": "distinction",
+    "reason": "stem:弱 — 身体衰弱或因困难而无力；保留原文义项「软弱，衰弱；为难，尴尬」"
+  },
+  {
+    "kanji": "推し進める",
+    "kana": "おしすすめる",
+    "questionMeaning": "推进",
+    "classification": "distinction",
+    "reason": "stem:推 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "推し量る",
+    "kana": "おしはかる",
+    "questionMeaning": "推测",
+    "classification": "distinction",
+    "reason": "stem:推 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "耐える",
+    "kana": "たえる",
+    "questionMeaning": "忍耐；忍受；经得起",
+    "classification": "distinction",
+    "reason": "stem:耐 — 忍受、承受；保留原文义项「忍受；经得起」"
+  },
+  {
+    "kanji": "耐え抜く",
+    "kana": "たえぬく",
+    "questionMeaning": "忍耐到底",
+    "classification": "distinction",
+    "reason": "stem:耐 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "絡む",
+    "kana": "からむ",
+    "questionMeaning": "缠绕；缠在……上；牵涉",
+    "classification": "distinction",
+    "reason": "stem:絡 — 缠绕、纠缠或牵涉；保留原文义项「缠在……上；牵涉；胡搅蛮缠」；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "絡まる",
+    "kana": "からまる",
+    "questionMeaning": "缠绕（自行）；缠绕，缠；纠纷，纠葛，纠缠",
+    "classification": "distinction",
+    "reason": "stem:絡 — 自己缠在一起；保留原文义项「缠绕，缠；纠纷，纠葛，纠缠」"
+  },
+  {
+    "kanji": "絡み合う",
+    "kana": "からみあう",
+    "questionMeaning": "互相缠绕；互相纠缠，彼此牵扯",
+    "classification": "distinction",
+    "reason": "stem:絡 — 强调双方或多方互相缠绕、交织；保留原文义项「互相缠绕，搅在一起；互相纠缠，彼此牵扯」"
+  },
+  {
+    "kanji": "練る",
+    "kana": "ねる",
+    "questionMeaning": "推敲；揉合；锻炼",
+    "classification": "distinction",
+    "reason": "stem:練 — 推敲、锻炼或揉制；保留原文义项「揉合；锻炼；仔细推敲，研究」"
+  },
+  {
+    "kanji": "練り上げる",
+    "kana": "ねりあげる",
+    "questionMeaning": "推敲完成；搅拌好；精炼，推敲",
+    "classification": "distinction",
+    "reason": "stem:練 — 反复推敲完成；保留原文义项「搅拌好；精炼，推敲」"
+  },
+  {
+    "kanji": "練り直す",
+    "kana": "ねりなおす",
+    "questionMeaning": "重新推敲；再揉和；重新思考，推敲",
+    "classification": "distinction",
+    "reason": "stem:練 — 重新推敲、修改方案；保留原文义项「再揉和；重新思考，推敲」"
+  },
+  {
+    "kanji": "適[かな]う",
+    "kana": "かなう",
+    "questionMeaning": "符合",
+    "classification": "distinction",
+    "reason": "stem:適 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "適[かな]える",
+    "kana": "かなえる",
+    "questionMeaning": "使合适",
+    "classification": "distinction",
+    "reason": "stem:適 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "潜る",
+    "kana": "もぐる",
+    "questionMeaning": "潜入；潜水；躲入，钻进",
+    "classification": "distinction",
+    "reason": "stem:潜 — 潜入水中、地下或某处；保留原文义项「潜水；躲入，钻进；隐匿，潜伏」"
+  },
+  {
+    "kanji": "潜む",
+    "kana": "ひそむ",
+    "questionMeaning": "潜藏；躲藏；藏在（心里）",
+    "classification": "distinction",
+    "reason": "stem:潜 — 隐藏、潜伏在内部，重点是‘藏着’而非‘进入’；保留原文义项「躲藏；藏在（心里）」"
+  },
+  {
+    "kanji": "織り込む",
+    "kana": "おりこむ",
+    "questionMeaning": "织入；穿插，编入",
+    "classification": "distinction",
+    "reason": "stem:織 — 把内容编入、纳入；保留原文义项「织入；穿插，编入」"
+  },
+  {
+    "kanji": "織る",
+    "kana": "おる",
+    "questionMeaning": "织",
+    "classification": "distinction",
+    "reason": "stem:織 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "織り成す",
+    "kana": "おりなす",
+    "questionMeaning": "编织成；织成，织出；穿插成，组成",
+    "classification": "distinction",
+    "reason": "stem:織 — 交织形成复杂的景象或关系；保留原文义项「织成，织出；穿插成，组成」"
+  },
+  {
+    "kanji": "根付く",
+    "kana": "ねづく",
+    "questionMeaning": "扎根（习惯文化）",
+    "classification": "distinction",
+    "reason": "stem:根 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "根差す",
+    "kana": "ねざす",
+    "questionMeaning": "扎根（以某事为）；生根；起因，由来",
+    "classification": "distinction",
+    "reason": "stem:根 — 以某事为基础、根源在于某处；保留原文义项「生根；扎根；起因，由来」"
+  },
+  {
+    "kanji": "存じる",
+    "kana": "ぞんじる",
+    "questionMeaning": "知道；想，打算，认为",
+    "classification": "distinction",
+    "reason": "stem:存 — 存じる和存じ上げる都是‘知道’的谦让语；保留原文义项「想，打算，认为；知道，认识」"
+  },
+  {
+    "kanji": "存じ上げる",
+    "kana": "ぞんじあげる",
+    "questionMeaning": "知道（谦让语）",
+    "classification": "distinction",
+    "reason": "stem:存 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "呆[あき]れる",
+    "kana": "あきれる",
+    "questionMeaning": "惊呆",
+    "classification": "distinction",
+    "reason": "stem:呆 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "呆[あき]れ果てる",
+    "kana": "あきれはてる",
+    "questionMeaning": "惊愕不已",
+    "classification": "distinction",
+    "reason": "stem:呆 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "やり遂げる",
+    "kana": "やりとげる",
+    "questionMeaning": "完成",
+    "classification": "distinction",
+    "reason": "stem:遂 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "遂げる",
+    "kana": "とげる",
+    "questionMeaning": "完成；得到某种（非预期的）结果",
+    "classification": "distinction",
+    "reason": "stem:遂 — 完成、实现；やり遂げる强调克服困难后坚持完成，语气更有‘做到底’的感觉；保留原文义项「完成，达到；得到某种（非预期的）结果」"
+  },
+  {
+    "kanji": "脅す",
+    "kana": "おどす",
+    "questionMeaning": "威胁（主动）",
+    "classification": "distinction",
+    "reason": "stem:脅 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "報じる",
+    "kana": "ほうじる",
+    "questionMeaning": "报道；报答",
+    "classification": "distinction",
+    "reason": "stem:報 — 报道、公布消息；保留原文义项「报答；报道」"
+  },
+  {
+    "kanji": "報う",
+    "kana": "むくう",
+    "questionMeaning": "报答；报复",
+    "classification": "distinction",
+    "reason": "stem:報 — 报答或报应，意义方向完全不同；保留原文义项「报偿，报答；报复」"
+  },
+  {
+    "kanji": "和む",
+    "kana": "なごむ",
+    "questionMeaning": "变温和",
+    "classification": "distinction",
+    "reason": "stem:和 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  }
+]

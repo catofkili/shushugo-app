@@ -177,4 +177,28 @@ describe("⚠️ 干扰项不能其实是对的", () => {
     expect(alsoCorrect).toBe(0);
     expect(nested).toBe(0);
   }, 120000);
+
+  it("辨析题面覆盖也用于释义题选项", async () => {
+    const SQL = await initSqlJs();
+    testDb = new SQL.Database(new Uint8Array(fs.readFileSync("public/nihongo.db")));
+    const result = testDb.exec(`
+      SELECT id, kanji, kana, meaning, pos, jlpt_level FROM words
+      WHERE jlpt_level IN ('N5','N4','N3','N2','N1')
+        AND TRIM(COALESCE(meaning,'')) <> '' AND TRIM(COALESCE(kana,'')) <> ''
+    `)[0];
+    const rows: VocabTestWordRow[] = result.values.map((value) => ({
+      id: Number(value[0]), kanji: String(value[1] ?? ""), kana: String(value[2] ?? ""),
+      meaning: String(value[3] ?? ""), pos: String(value[4] ?? ""), level: String(value[5] ?? "")
+    }));
+    const target = rows.find((row) => row.kanji === "冷やす" && row.kana === "ひやす");
+    expect(target).toBeDefined();
+    const firstSense = (text: string) => text.split(/[；;]/)[0].trim();
+    const orderedRows = [target!, ...rows.filter((row) => row.id !== target!.id)];
+    const question = buildVocabTestQuestions(orderedRows, () => 0.999999999, {
+      targets: { N5: 0, N4: 0, N3: 1, N2: 0, N1: 0 },
+      total: 1
+    }).questions.find((item) => item.id === target!.id && item.kind === "meaning");
+    expect(question).toBeDefined();
+    expect(new Set(question!.options.map(firstSense)).size).toBe(question!.options.length);
+  }, 120000);
 });

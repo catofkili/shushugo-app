@@ -39,7 +39,6 @@ export interface WordCard {
     kana: string;
     kanji: string;
     meaning: string;
-    note: string;
   } | null;
   /** id 为 0 表示词库里没有对应词条（硬编码的辨析项），不能跳转过去。 */
   confusions: { id: number; kana: string; kanji: string; meaning: string; kind: string }[];
@@ -72,7 +71,7 @@ export interface WordStats {
   };
   /** 备考目标那一级今天还欠几条语法（混合模式把它加在今日计划之上） */
   grammarRemaining: number;
-  /** 同一级今天已经过关的语法条数（混合模式的松鼠小路把它算进松子里） */
+  /** 同一级今天已经过关的语法条数（混合模式顶栏的进度条把它算进今日总量里） */
   grammarDone: number;
   /** 模式切换器的角标：每个模式现在还能练多少（队列没建时算「进去之后会有多少」） */
   modeCounts: {

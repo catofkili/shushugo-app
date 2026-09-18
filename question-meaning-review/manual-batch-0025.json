@@ -65,16 +65,16 @@
   {
     "kanji": "年月",
     "kana": "としつき",
-    "questionMeaning": "年和月；岁月，光阴",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "岁月；经历年月",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "年月",
     "kana": "ねんげつ",
-    "questionMeaning": "年月，岁月",
-    "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "questionMeaning": "年月（书面）",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "年上",
@@ -331,9 +331,9 @@
   {
     "kanji": "農場",
     "kana": "のうじょう",
-    "questionMeaning": "农场",
+    "questionMeaning": "农场（农业生产场）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:农场 — 农业生产场、农场，范围可包括畜牧等，不能全换；保留原文义项「农场」"
   },
   {
     "kanji": "農村",
@@ -457,9 +457,9 @@
   {
     "kanji": "破片",
     "kana": "はへん",
-    "questionMeaning": "碎片",
+    "questionMeaning": "碎片（破碎后的片）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:碎片 — 破碎后的片；保留原文义项「碎片」"
   },
   {
     "kanji": "破裂",
@@ -485,9 +485,9 @@
   {
     "kanji": "俳優",
     "kana": "はいゆう",
-    "questionMeaning": "演员（有时特指男演员）",
+    "questionMeaning": "演员（影视、戏剧）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "廃棄",
@@ -632,9 +632,9 @@
   {
     "kanji": "背丈",
     "kana": "せたけ",
-    "questionMeaning": "身高；衣长",
+    "questionMeaning": "身高（人或物）；物体高度",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:身高 — 背丈是身高或物体高度，不能全换；保留原文义项「身高；衣长」"
   },
   {
     "kanji": "背中",
@@ -674,7 +674,7 @@
   {
     "kanji": "配送",
     "kana": "はいそう",
-    "questionMeaning": "配送，分发",
+    "questionMeaning": "配送，分发（物流分发过程）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -688,7 +688,7 @@
   {
     "kanji": "配達",
     "kana": "はいたつ",
-    "questionMeaning": "配送，投递",
+    "questionMeaning": "配送，投递（送到收件人）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -702,16 +702,16 @@
   {
     "kanji": "配付",
     "kana": "はいふ",
-    "questionMeaning": "分配，分发（给某个固定群体）",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "逐人发放；正式交付",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "配布",
     "kana": "はいふ",
-    "questionMeaning": "散发，广为分发",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "广泛分发；散发给多人",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "配分",
@@ -1185,9 +1185,9 @@
   {
     "kanji": "罰",
     "kana": "ばち",
-    "questionMeaning": "报应",
+    "questionMeaning": "报应（强调）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:报应 — 惩罚、报应或遭罚，强调处罚性更强；保留原文义项「报应」"
   },
   {
     "kanji": "罰",
@@ -1437,9 +1437,9 @@
   {
     "kanji": "班",
     "kana": "はん",
-    "questionMeaning": "组",
+    "questionMeaning": "班；轮班",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:组 — 組是编成的组、班或一套；小组、班次或轮班，组织方式和搭配不同；保留原文义项「组」"
   },
   {
     "kanji": "繁栄",
@@ -1479,9 +1479,9 @@
   {
     "kanji": "販路",
     "kana": "はんろ",
-    "questionMeaning": "销路",
+    "questionMeaning": "销路（销售渠道）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:销路 — 销售渠道、市场路线，不能替换销量表现；保留原文义项「销路」"
   },
   {
     "kanji": "範囲",
@@ -1577,9 +1577,9 @@
   {
     "kanji": "扉",
     "kana": "とびら",
-    "questionMeaning": "门；扉页",
+    "questionMeaning": "门（书面）；扉页",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:门 — 可指门扇、书页等较书面或文学的开合物，不能完全互换；保留原文义项「门；扉页」"
   },
   {
     "kanji": "批判",
@@ -1654,9 +1654,9 @@
   {
     "kanji": "皮膚",
     "kana": "ひふ",
-    "questionMeaning": "皮肤",
+    "questionMeaning": "皮肤（医学）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:皮肤 — 医学、正式的皮肤，不能替换美容和触感等全部用法；保留原文义项「皮肤」"
   },
   {
     "kanji": "秘書",

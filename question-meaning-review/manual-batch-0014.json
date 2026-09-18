@@ -156,9 +156,9 @@
   {
     "kanji": "教材",
     "kana": "きょうざい",
-    "questionMeaning": "教材",
+    "questionMeaning": "教材（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:教材 — テキスト可指教材，也可指一般文本、课本；专指教学材料，范围更窄、更正式；保留原文义项「教材」"
   },
   {
     "kanji": "教授",
@@ -205,14 +205,14 @@
   {
     "kanji": "郷土",
     "kana": "きょうど",
-    "questionMeaning": "乡土，故乡；乡间",
+    "questionMeaning": "乡土，故乡（地方乡土）；乡间",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "郷里",
     "kana": "きょうり",
-    "questionMeaning": "故乡，老家",
+    "questionMeaning": "故乡，老家（出身老家）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -555,7 +555,7 @@
   {
     "kanji": "区域",
     "kana": "くいき",
-    "questionMeaning": "区域，范围",
+    "questionMeaning": "区域，范围（划定地理范围）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -737,9 +737,9 @@
   {
     "kanji": "隅",
     "kana": "すみ",
-    "questionMeaning": "角落",
+    "questionMeaning": "角落（强调）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:角落 — 隅、片隅强调边角的偏僻位置，不能全换；保留原文义项「角落」"
   },
   {
     "kanji": "屈従",
@@ -842,9 +842,9 @@
   {
     "kanji": "形状",
     "kana": "けいじょう",
-    "questionMeaning": "形状",
+    "questionMeaning": "客观形状（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:形状 — 形状是客观形状、状态的正式说法，不能替换形式等抽象用法；保留原文义项「形状」"
   },
   {
     "kanji": "形成",
@@ -914,7 +914,7 @@
     "kana": "けいひん",
     "questionMeaning": "赠品；纪念品",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "渓谷",
@@ -1003,9 +1003,9 @@
   {
     "kanji": "警官",
     "kana": "けいかん",
-    "questionMeaning": "警察，警官",
+    "questionMeaning": "警察官（口语称呼）",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:警察 — 偏向正式称呼；保留原文义项「警察」"
   },
   {
     "kanji": "警告",
@@ -1038,7 +1038,7 @@
   {
     "kanji": "軽快",
     "kana": "けいかい",
-    "questionMeaning": "轻快；轻松愉快",
+    "questionMeaning": "轻快（动作文章明快、病情好转）；轻松愉快",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1164,7 +1164,7 @@
   {
     "kanji": "隙",
     "kana": "すき",
-    "questionMeaning": "空隙；闲暇；漏洞",
+    "questionMeaning": "空隙（缝隙、破绽）；闲暇；漏洞",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1577,9 +1577,9 @@
   {
     "kanji": "見当",
     "kana": "けんとう",
-    "questionMeaning": "估计，推测；大致的方向；（接在数词后）左右",
+    "questionMeaning": "估计；方向、头绪；大约",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:估计 — 估计、方向或头绪；保留原文义项「估计；头绪」"
   },
   {
     "kanji": "見聞",

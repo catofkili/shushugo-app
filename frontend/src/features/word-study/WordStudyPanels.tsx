@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Brain, CalendarDays, CheckCircle2, Clock3, Flame, History, ImageDown, ListChecks, Loader2, Minus, Pencil, Plus, Share2, Star, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Brain, CalendarDays, CheckCircle2, Clock3, Flame, History, ImageDown, ListChecks, Loader2, Minus, Pencil, Plus, Share2, Star, Volume2, X } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
 import { addFavorite, addFavorites, getStubbornGrammarToday, getStubbornWordsToday, type StubbornGrammarToday, type StubbornWordToday } from "../../lib/api";
@@ -14,6 +14,7 @@ import { lookupAccent, pitchPattern, splitMorae, usePitchAccentReady } from "../
 import { lookupTransitivity, useTransitivityReady } from "../../lib/transitivity";
 import { saveImageToGallery, shareImage } from "../../lib/share-image";
 import { getStudyPreferences } from "../../lib/studyPreferences";
+import { playExample, prefetchExample } from "../../lib/speech";
 import type { WordCard, WordStats } from "../../types/vocabulary";
 import { encoreDayColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
@@ -29,6 +30,7 @@ import { StubbornGrammarRow, StubbornHistorySheet, StubbornWordRow } from "./stu
 import { Paywall } from "../../components/Paywall";
 import { canUseFeature } from "../../lib/entitlements";
 import { useEntitlements } from "../../hooks/useEntitlements";
+import { quizGroups } from "../../lib/distinction-quiz";
 
 /** 自他标注。直接挂在词自己身上(不是只在配对面板里提),自/他 那个字放大加色,
  *  一眼扫得到 —— 中文「开」一个字通吃 開く/開ける,这一栏是最容易翻车的地方。 */
@@ -178,16 +180,38 @@ const highlightHeadword = (sentence: string, card: WordCard) => {
   );
 };
 
+/** 例句播放键:有预生成音频播文件,没有走系统语音。单词卡和语法卡共用。 */
+export const ExamplePlayButton = ({ sentence }: { sentence: string }) => (
+  <button
+    type="button"
+    aria-label="播放例句"
+    className="rounded-full p-1 text-white/60 transition hover:bg-white/10 hover:text-white"
+    onClick={(event) => {
+      event.stopPropagation();
+      void playExample(sentence, getStudyPreferences().voiceId);
+    }}
+  >
+    <Volume2 size={16} aria-hidden="true" />
+  </button>
+);
+
 /** 翻面后的例句框。词库里每个词都带 example_jp / example_meaning,
  *  React 重写时漏了这一块,单词卡一直没显示例句。 */
 export const ExampleBlock = ({ card }: { card: WordCard }) => {
   const jp = card.example?.jp?.trim() ?? "";
   const meaning = card.example?.meaning?.trim() ?? "";
+  // 翻面就预取:12 KB 一句,点播放时已经在缓存里
+  useEffect(() => {
+    if (jp) void prefetchExample(jp, getStudyPreferences().voiceId);
+  }, [jp]);
   if (!jp && !meaning) return null;
 
   return (
     <div className="mx-auto mt-4 max-w-2xl rounded-2xl border border-white/15 bg-[#373b3b] p-4 text-left">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">例句</p>
+      <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/55">
+        例句
+        {jp && <ExamplePlayButton sentence={jp} />}
+      </p>
       {jp && (
         <p className="jp mt-2 text-lg leading-8 text-white/88">
           {card.example.furigana ? (
@@ -217,9 +241,10 @@ interface FinishPanelProps {
   onContinueKanji?: () => void;
   onEncore?: (size?: number) => void;
   onStubbornQuickStudy?: (wordIds: number[]) => void;
+  onOpenDistinctionQuiz?: () => void;
 }
 
-export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji, onEncore, onStubbornQuickStudy }: FinishPanelProps) => {
+export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji, onEncore, onStubbornQuickStudy, onOpenDistinctionQuiz }: FinishPanelProps) => {
   const { pickFolder, picker } = useFavoriteFolderPicker();
   const entitlements = useEntitlements();
   // 往日顽固词是 Pro：这一张 Paywall 由完成页自己弹，不用把 requirePro 从 App
@@ -239,6 +264,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const totalSeconds = (stats?.wordStudySecondsToday ?? 0) + localSeconds;
   const todayStats = dailyStats.get(studyDate);
   const todayWordCount = todayStats?.wordCount ?? stats?.reviewedToday ?? 0;
+  const distinctionGroupCount = useMemo(() => quizGroups({ kind: "today" }).length, []);
   const checkedToday = checkins.has(studyDate);
   const checkinDays = checkins.size;
   const isStage1Complete = phase === "stage1" && stats?.dailyPlanDone;
@@ -702,6 +728,24 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 一共忘过 8 次以上、今天又错了 {STUBBORN_DAILY_MISTAKES} 次的词。集中攻坚走错题本模式；
                 语法同一条判据，收藏和攻坚在语法列表页。
               </p>
+            </div>
+          )}
+
+          {distinctionGroupCount > 0 && onOpenDistinctionQuiz && (
+            <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold text-white">今天碰到的易混组 {distinctionGroupCount} 组</p>
+                  <p className="mt-1 text-xs text-white/55">把今天见过的相似词放在一起分清</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenDistinctionQuiz}
+                  className="focus-ring shrink-0 rounded-xl bg-[#81D8CF] px-3 py-2 text-sm font-bold !text-[#2f3333]"
+                >
+                  练一练
+                </button>
+              </div>
             </div>
           )}
 

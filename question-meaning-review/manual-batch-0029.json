@@ -107,7 +107,7 @@
   {
     "kanji": "洋",
     "kana": "よう",
-    "questionMeaning": "西洋……，西式……",
+    "questionMeaning": "西洋……，西式……（西洋、西式）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -142,9 +142,9 @@
   {
     "kanji": "洋式",
     "kana": "ようしき",
-    "questionMeaning": "西式",
+    "questionMeaning": "西式样式（西式结构）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:西式 — 洋式是西式的样式、结构；保留原文义项「西式」"
   },
   {
     "kanji": "洋食",
@@ -156,9 +156,9 @@
   {
     "kanji": "洋風",
     "kana": "ようふう",
-    "questionMeaning": "西式",
+    "questionMeaning": "西式风格（西式外观风格）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:西式 — 洋風强调外观风格像西式，不能全换；保留原文义项「西式」"
   },
   {
     "kanji": "用具",
@@ -177,7 +177,7 @@
   {
     "kanji": "用語",
     "kana": "ようご",
-    "questionMeaning": "用语，术语",
+    "questionMeaning": "用语，术语（领域术语）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -198,9 +198,9 @@
   {
     "kanji": "用途",
     "kana": "ようと",
-    "questionMeaning": "用途",
+    "questionMeaning": "用途（目的）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:用途 — 用是用途、事情或作用的简略词；用途明确指使用目的，正式且不能替换用的其他义项；保留原文义项「用途」"
   },
   {
     "kanji": "用品",
@@ -254,9 +254,9 @@
   {
     "kanji": "要所",
     "kana": "ようしょ",
-    "questionMeaning": "要点；重要地点",
+    "questionMeaning": "要点（关键地点）；重要地点",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:要点 — 关键地点、关键环节，不能全换；保留原文义项「要点；关键处」"
   },
   {
     "kanji": "要請",
@@ -303,7 +303,7 @@
   {
     "kanji": "要領",
     "kana": "ようりょう",
-    "questionMeaning": "要点，要领；窍门，诀窍",
+    "questionMeaning": "要点，要领（要点、方法）；窍门，诀窍",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -317,7 +317,7 @@
   {
     "kanji": "陽光",
     "kana": "ようこう",
-    "questionMeaning": "阳光，日光",
+    "questionMeaning": "阳光，日光（书面明亮阳光）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -394,9 +394,9 @@
   {
     "kanji": "欲望",
     "kana": "よくぼう",
-    "questionMeaning": "欲望",
+    "questionMeaning": "欲望（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:欲望 — 欲是欲望、贪欲或想要的简略词；欲望是欲望这一正式、抽象概念，范围和语体不同；保留原文义项「欲望」"
   },
   {
     "kanji": "浴衣",
@@ -590,9 +590,9 @@
   {
     "kanji": "利点",
     "kana": "りてん",
-    "questionMeaning": "长处，优点",
+    "questionMeaning": "好处（有利之处）；有利之处",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:长处 — 有利之处、好处，不能全换；保留原文义项「长处，优点」"
   },
   {
     "kanji": "履修",
@@ -625,9 +625,9 @@
   {
     "kanji": "理科",
     "kana": "りか",
-    "questionMeaning": "理科",
+    "questionMeaning": "理科课程",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:理科 — 学校课程中的理科；理系是理科、工科等理工科方向或理科系学生，范围更宽；保留原文义项「理科」"
   },
   {
     "kanji": "理解",
@@ -646,9 +646,9 @@
   {
     "kanji": "理系",
     "kana": "りけい",
-    "questionMeaning": "理科",
+    "questionMeaning": "理工科方向",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:理科 — 理系是理科、工科等理工科方向或理科系学生，范围更宽；保留原文义项「理科」"
   },
   {
     "kanji": "理性",
@@ -709,23 +709,23 @@
   {
     "kanji": "裏腹",
     "kana": "うらはら",
-    "questionMeaning": "正相反，表里不一",
+    "questionMeaning": "正相反，表里不一（表里不一）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
   {
     "kanji": "裏面",
     "kana": "りめん",
-    "questionMeaning": "里面；背地里",
+    "questionMeaning": "里面（正式）；背地里",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:背面 — 裏面偏正式的背面或内部情况，不能全换；保留原文义项「背面；内情」"
   },
   {
     "kanji": "裏目",
     "kana": "うらめ",
-    "questionMeaning": "骰子的背面；针织品翻过来看的针眼；事与愿违",
+    "questionMeaning": "反效果；不利结果",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:反效果 — 原本打算有利却导致不利结果，常用于具体行动判断；保留原文义项「反效果；不利结果」"
   },
   {
     "kanji": "裏話",
@@ -1054,7 +1054,7 @@
     "kana": "りょういき",
     "questionMeaning": "领域",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "領収書",
@@ -1066,7 +1066,7 @@
   {
     "kanji": "領分",
     "kana": "りょうぶん",
-    "questionMeaning": "领土，领地；范围，领域",
+    "questionMeaning": "领土，领地（分内本职范围）；范围，领域",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1094,9 +1094,9 @@
   {
     "kanji": "力量",
     "kana": "りきりょう",
-    "questionMeaning": "能力；本领",
+    "questionMeaning": "能力（实力或本领）；本领",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:能力 — 力量、实力或本领，不能替换抽象资格和体力等所有用法；保留原文义项「能力；本领」"
   },
   {
     "kanji": "緑陰",
@@ -1185,9 +1185,9 @@
   {
     "kanji": "類型",
     "kana": "るいけい",
-    "questionMeaning": "类型",
+    "questionMeaning": "类型（书面）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:类型 — 分类学、抽象的类型，偏书面，不能全换；保留原文义项「类型」"
   },
   {
     "kanji": "類似",
@@ -1283,9 +1283,9 @@
   {
     "kanji": "零",
     "kana": "れい",
-    "questionMeaning": "零",
+    "questionMeaning": "零（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:零 — ゼロ和零都表示数字零；ゼロ还可表示没有、起点或归零；更常用于正式读数和汉字表记；保留原文义项「零」"
   },
   {
     "kanji": "零細",
@@ -1388,9 +1388,9 @@
   {
     "kanji": "連携",
     "kana": "れんけい",
-    "questionMeaning": "合作",
+    "questionMeaning": "合作（正式）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:合作 — 机构、系统或人员之间联动协作，正式且范围不同；保留原文义项「合作」"
   },
   {
     "kanji": "連結",
@@ -1563,7 +1563,7 @@
   {
     "kanji": "浪費",
     "kana": "ろうひ",
-    "questionMeaning": "浪费，糟蹋",
+    "questionMeaning": "浪费，糟蹋（正式浪费资源）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },

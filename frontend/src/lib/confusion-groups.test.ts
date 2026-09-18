@@ -68,11 +68,12 @@ describe("疑难辨析分组", () => {
     // 判据必须是「同假名 + 同首义 + 有一方没汉字」三条同时成立。只看「有一方没
     // 汉字」会误伤 文化/カルチャー、牛乳/ミルク 这种和語 vs 外来語的对子 ——
     // 那是真的语种差异,正是要教的东西。
-    const firstSense = (text: string) => text.split(/[；;，,、]/)[0].trim();
+    // 「同首义」按分组用的冻结词典首义(senseKey)判,和算法同一把尺子。按当前释义判的话,
+    // 释义审校把 もっとも(な形,当然)改写成「最」之后,它和 最も 这对真同音词会被误报成异写。
     const variants = groups.filter((group) => group.members.some((left) =>
       group.members.some((right) => right.id !== left.id
         && right.kana === left.kana
-        && firstSense(right.meaning) === firstSense(left.meaning)
+        && right.senseKey === left.senseKey
         && !/[㐀-鿿]/.test(right.kanji))));
     expect(variants).toHaveLength(0);
   });

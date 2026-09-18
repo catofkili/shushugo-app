@@ -1,0 +1,1402 @@
+[
+  {
+    "kanji": "たまる",
+    "kana": "たまる",
+    "questionMeaning": "（钱、工作）积攒起来；积存",
+    "classification": "distinction",
+    "reason": "synonym:积攒 — 不及物的积存、积累；保留原文义项「积攒；积存」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "ためる",
+    "kana": "ためる",
+    "questionMeaning": "攒（钱）；积压",
+    "classification": "distinction",
+    "reason": "synonym:积攒 — 主动积攒、积压；保留原文义项「积攒；积压」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "expert",
+    "kana": "エキスパート",
+    "questionMeaning": "专家；行家",
+    "classification": "distinction",
+    "reason": "synonym:专家 — 専門家和エキスパート都可指专家；更强调某领域的熟练行家；保留原文义项「专家；行家」"
+  },
+  {
+    "kanji": "繰り上げる",
+    "kana": "くりあげる",
+    "questionMeaning": "提前；提上去",
+    "classification": "distinction",
+    "reason": "synonym:提前 — 把日期、顺序或款项提前，不能全换；保留原文义项「提前；提上去」"
+  },
+  {
+    "kanji": "くくる",
+    "kana": "くくる",
+    "questionMeaning": "捆绑；概括",
+    "classification": "distinction",
+    "reason": "synonym:捆绑 — 捆扎、归纳，动作和引申义不同；保留原文义项「捆绑；概括」"
+  },
+  {
+    "kanji": "なりふり",
+    "kana": "なりふり",
+    "questionMeaning": "服装，仪容（外表装束、仪态）",
+    "classification": "distinction",
+    "reason": "synonym:服装 — 外表装束和仪态，不能全换；保留原文义项「服装，仪容」"
+  },
+  {
+    "kanji": "story",
+    "kana": "ストーリー",
+    "questionMeaning": "故事（外来语）；小说；情节、结构",
+    "classification": "distinction",
+    "reason": "synonym:故事 — 物語和ストーリー都可表示故事、情节；也常指剧情结构；保留原文义项「故事」"
+  },
+  {
+    "kanji": "bubble",
+    "kana": "バブル",
+    "questionMeaning": "泡沫",
+    "classification": "distinction",
+    "reason": "synonym:泡沫 — バブル是泡沫经济、泡沫状物或流行泡沫，不能替换普通泡沫的全部用法；保留原文义项「泡沫」"
+  },
+  {
+    "kanji": "切れ",
+    "kana": "きれ",
+    "questionMeaning": "碎片；切口",
+    "classification": "distinction",
+    "reason": "synonym:碎片 — 切下的一片、碎片或切口；細切れ是细碎的小块、零散片段，形态侧重不同；保留原文义项「碎片；切口」"
+  },
+  {
+    "kanji": "細切れ",
+    "kana": "こまぎれ",
+    "questionMeaning": "碎片，碎块",
+    "classification": "distinction",
+    "reason": "synonym:碎片 — 細切れ是细碎的小块、零散片段，形态侧重不同；保留原文义项「碎片，碎块」"
+  },
+  {
+    "kanji": "どっと",
+    "kana": "どっと",
+    "questionMeaning": "一下子；哗地",
+    "classification": "distinction",
+    "reason": "synonym:一下子 — 人群、情绪等哗地一涌而出；保留原文义项「一下子；哗地」"
+  },
+  {
+    "kanji": "ぱっと",
+    "kana": "ぱっと",
+    "questionMeaning": "一下子（动作）；突然",
+    "classification": "distinction",
+    "reason": "synonym:一下子 — 动作、光线等一下子迅速发生，不能全换；保留原文义项「一下子；突然」"
+  },
+  {
+    "kanji": "training",
+    "kana": "トレーニング",
+    "questionMeaning": "训练，锻炼",
+    "classification": "distinction",
+    "reason": "synonym:训练 — 訓練和トレーニング都可表示训练；也常指健身锻炼；保留原文义项「训练，锻炼」"
+  },
+  {
+    "kanji": "あらゆる",
+    "kana": "あらゆる",
+    "questionMeaning": "所有的；一切",
+    "classification": "distinction",
+    "reason": "synonym:所有的 — あらゆる和ありとあらゆる都表示所有、一切；保留原文义项「所有的；一切」"
+  },
+  {
+    "kanji": "ありとあらゆる",
+    "kana": "ありとあらゆる",
+    "questionMeaning": "所有的",
+    "classification": "distinction",
+    "reason": "synonym:所有的 — あらゆる和ありとあらゆる都表示所有、一切；加强语气的固定表达，强调毫无遗漏；保留原文义项「所有的」"
+  },
+  {
+    "kanji": "hiking",
+    "kana": "ハイキング",
+    "questionMeaning": "徒步；远足",
+    "classification": "distinction",
+    "reason": "synonym:徒步 — 以休闲、观光为目的的远足；保留原文义项「徒步；远足」"
+  },
+  {
+    "kanji": "覚める",
+    "kana": "さめる",
+    "questionMeaning": "醒来；清醒（酒醒）",
+    "classification": "distinction",
+    "reason": "synonym:醒来 — 从睡眠、梦或醉酒状态醒来；目覚める是醒来，也可指意识、兴趣或能力觉醒，范围更宽；保留原文义项「醒来」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "目覚める",
+    "kana": "めざめる",
+    "questionMeaning": "睡醒；觉醒；醒悟",
+    "classification": "distinction",
+    "reason": "synonym:醒来 — 目覚める是醒来，也可指意识、兴趣或能力觉醒，范围更宽；保留原文义项「醒来；觉醒」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "構え",
+    "kana": "かまえ",
+    "questionMeaning": "姿势（摆出的架势）；架势",
+    "classification": "distinction",
+    "reason": "synonym:姿势 — 摆出的架势、准备姿势或防备态势，不能全换；保留原文义项「姿势；架势」"
+  },
+  {
+    "kanji": "生まれ育つ",
+    "kana": "うまれそだつ",
+    "questionMeaning": "生长（出生并成长）；长大",
+    "classification": "distinction",
+    "reason": "synonym:生长 — 出生并成长，主语和过程不同；保留原文义项「生长；长大」"
+  },
+  {
+    "kanji": "もとより",
+    "kana": "もとより",
+    "questionMeaning": "本来（起初、更不用说）；更不用说",
+    "classification": "distinction",
+    "reason": "synonym:本来 — もとより是本来就、从一开始，也可表示更不用说，书面色彩更强；保留原文义项「本来；更不用说」"
+  },
+  {
+    "kanji": "入れ物",
+    "kana": "いれもの",
+    "questionMeaning": "容器，器具",
+    "classification": "distinction",
+    "reason": "synonym:容器 — 容器和入れ物都可指容器；更日常且强调装东西的器具；保留原文义项「容器，器具」"
+  },
+  {
+    "kanji": "朗らか",
+    "kana": "ほがらか",
+    "questionMeaning": "开朗的；爽朗的",
+    "classification": "distinction",
+    "reason": "synonym:开朗的 — 主要描述人爽朗、明快，不能全换；保留原文义项「开朗的；爽朗的」"
+  },
+  {
+    "kanji": "series",
+    "kana": "シリーズ",
+    "questionMeaning": "系列；（体育）联赛",
+    "classification": "distinction",
+    "reason": "synonym:系列 — シリーズ是连续作品、商品或节目系列，使用范围和语感不同；保留原文义项「系列」"
+  },
+  {
+    "kanji": "title",
+    "kana": "タイトル",
+    "questionMeaning": "标题",
+    "classification": "distinction",
+    "reason": "synonym:标题 — 作品、文章、节目等标题；保留原文义项「标题」"
+  },
+  {
+    "kanji": "見出し",
+    "kana": "みだし",
+    "questionMeaning": "标题（文章的小标）；小标题",
+    "classification": "distinction",
+    "reason": "synonym:标题 — 文章的小标题、版面标题或引导语，不能全换；保留原文义项「标题；小标题」"
+  },
+  {
+    "kanji": "なんと",
+    "kana": "なんと",
+    "questionMeaning": "多么；竟然",
+    "classification": "distinction",
+    "reason": "synonym:多么 — 多么、竟然并带感叹或惊讶；保留原文义项「多么；竟然」"
+  },
+  {
+    "kanji": "どれほど",
+    "kana": "どれほど",
+    "questionMeaning": "多么（程度）；多少",
+    "classification": "distinction",
+    "reason": "synonym:多么 — 达到什么程度、多少，疑问和感叹功能不同；保留原文义项「多么；多少」"
+  },
+  {
+    "kanji": "まして",
+    "kana": "まして",
+    "questionMeaning": "何况，况且",
+    "classification": "distinction",
+    "reason": "synonym:何况 — 何况、况且的连接副词；保留原文义项「何况，况且」"
+  },
+  {
+    "kanji": "いわんや",
+    "kana": "いわんや",
+    "questionMeaning": "何况，况且（书面）",
+    "classification": "distinction",
+    "reason": "synonym:何况 — 更书面的‘何况’，常用于固定的递进论证，不能在所有口语替换；保留原文义项「何况，况且」"
+  },
+  {
+    "kanji": "leader",
+    "kana": "リーダー",
+    "questionMeaning": "领导；领队",
+    "classification": "distinction",
+    "reason": "synonym:领导 — 领导者、带队者；保留原文义项「领导；领队」"
+  },
+  {
+    "kanji": "lead",
+    "kana": "リード",
+    "questionMeaning": "领导（领先）；领先",
+    "classification": "distinction",
+    "reason": "synonym:领导 — 领先、引领或带领这一动作，不能替换具体领导人；保留原文义项「领导；领先」"
+  },
+  {
+    "kanji": "重ねて",
+    "kana": "かさねて",
+    "questionMeaning": "再三，反复",
+    "classification": "distinction",
+    "reason": "synonym:再三 — 重ねて和再三都可表示再三、反复；常用于正式再次请求，较强调重复做同一动作；保留原文义项「再三，反复」"
+  },
+  {
+    "kanji": "進み",
+    "kana": "すすみ",
+    "questionMeaning": "进展；前进",
+    "classification": "distinction",
+    "reason": "synonym:进展 — 进度、前进状态；保留原文义项「进展；前进」"
+  },
+  {
+    "kanji": "躍る",
+    "kana": "おどる",
+    "questionMeaning": "跳跃（跳动）；激动",
+    "classification": "distinction",
+    "reason": "synonym:跳跃 — 跳动、舞动或心情激动，不能替换实际跳跃动作；保留原文义项「跳跃；激动」"
+  },
+  {
+    "kanji": "行い",
+    "kana": "おこない",
+    "questionMeaning": "行为；品行",
+    "classification": "distinction",
+    "reason": "synonym:行为 — 行为、品行，常带道德评价；保留原文义项「行为；品行」"
+  },
+  {
+    "kanji": "合わせ",
+    "kana": "あわせ",
+    "questionMeaning": "搭配；组合",
+    "classification": "distinction",
+    "reason": "synonym:搭配 — 组合、配合或调和；組み合わせ是具体组合方式；保留原文义项「搭配；组合」"
+  },
+  {
+    "kanji": "組み合わせ",
+    "kana": "くみあわせ",
+    "questionMeaning": "搭配，组合",
+    "classification": "distinction",
+    "reason": "synonym:搭配 — 組み合わせ是具体组合方式；保留原文义项「搭配，组合」"
+  },
+  {
+    "kanji": "coordinate",
+    "kana": "コーディネート",
+    "questionMeaning": "搭配，组合（服饰）",
+    "classification": "distinction",
+    "reason": "synonym:搭配 — 服饰、色彩或整体搭配，不能全换；保留原文义项「搭配，组合」"
+  },
+  {
+    "kanji": "host",
+    "kana": "ホスト",
+    "questionMeaning": "主人；东道主",
+    "classification": "distinction",
+    "reason": "synonym:主人 — ホスト是招待客人的主人、主持人或主机；保留原文义项「主人；东道主」"
+  },
+  {
+    "kanji": "察し",
+    "kana": "さっし",
+    "questionMeaning": "体察；推测",
+    "classification": "distinction",
+    "reason": "synonym:察觉 — 察觉力、推测或体谅；保留原文义项「察觉；推测」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "いとも",
+    "kana": "いとも",
+    "questionMeaning": "非常；很",
+    "classification": "distinction",
+    "reason": "synonym:非常 — 非常、极其的书面副词；保留原文义项「非常；很」"
+  },
+  {
+    "kanji": "誠に",
+    "kana": "まことに",
+    "questionMeaning": "非常，十分",
+    "classification": "distinction",
+    "reason": "synonym:非常 — 确实、非常郑重；保留原文义项「非常，十分」"
+  },
+  {
+    "kanji": "何とも",
+    "kana": "なんとも",
+    "questionMeaning": "无论如何；难以形容地",
+    "classification": "distinction",
+    "reason": "synonym:非常 — 无论如何或非常难以形容，不能全换；保留原文义项「非常；无论如何」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "artist",
+    "kana": "アーティスト",
+    "questionMeaning": "艺术家（可指流行艺）；艺人",
+    "classification": "distinction",
+    "reason": "synonym:艺术家 — 还可指流行艺人、歌手或表演者，范围更宽；保留原文义项「艺术家；艺人」"
+  },
+  {
+    "kanji": "言い方",
+    "kana": "いいかた",
+    "questionMeaning": "说法",
+    "classification": "distinction",
+    "reason": "synonym:说法 — 表达方式、措辞；保留原文义项「说法」"
+  },
+  {
+    "kanji": "物言い",
+    "kana": "ものいい",
+    "questionMeaning": "说法（说话方式也）；异议",
+    "classification": "distinction",
+    "reason": "synonym:说法 — 说话方式也可指异议，不能全换；保留原文义项「说法；异议」"
+  },
+  {
+    "kanji": "前向き",
+    "kana": "まえむき",
+    "questionMeaning": "积极的（面向未来）；向前的",
+    "classification": "distinction",
+    "reason": "synonym:积极的 — 面向未来、乐观地考虑，不能替换主动性等所有语境；保留原文义项「积极的；向前的」"
+  },
+  {
+    "kanji": "急ぎ",
+    "kana": "いそぎ",
+    "questionMeaning": "急事；赶忙",
+    "classification": "distinction",
+    "reason": "synonym:急事 — 急着处理、急事或赶忙；保留原文义项「急事；赶忙」"
+  },
+  {
+    "kanji": "top",
+    "kana": "トップ",
+    "questionMeaning": "首位，最高",
+    "classification": "distinction",
+    "reason": "synonym:首位 — 顶端、最高位、领头人或顶部，范围更宽；保留原文义项「首位，最高」"
+  },
+  {
+    "kanji": "かき混ぜる",
+    "kana": "かきまぜる",
+    "questionMeaning": "搅拌",
+    "classification": "distinction",
+    "reason": "synonym:搅拌 — 把内容物搅拌均匀；保留原文义项「搅拌」"
+  },
+  {
+    "kanji": "かき回す",
+    "kana": "かきまわす",
+    "questionMeaning": "搅拌（搅动）；搅乱",
+    "classification": "distinction",
+    "reason": "synonym:搅拌 — 搅动、搅乱，也可指扰乱局面，不能全换；保留原文义项「搅拌；搅乱」"
+  },
+  {
+    "kanji": "わがまま",
+    "kana": "わがまま",
+    "questionMeaning": "任性的",
+    "classification": "distinction",
+    "reason": "synonym:任性的 — 只顾自己要求；保留原文义项「任性的」"
+  },
+  {
+    "kanji": "気まま",
+    "kana": "きまま",
+    "questionMeaning": "任性的（随心）；随意的",
+    "classification": "distinction",
+    "reason": "synonym:任性的 — 随心所欲；保留原文义项「任性的；随意的」"
+  },
+  {
+    "kanji": "気まぐれ",
+    "kana": "きまぐれ",
+    "questionMeaning": "任性的（多变）；反复无常",
+    "classification": "distinction",
+    "reason": "synonym:任性的 — 反复无常；保留原文义项「任性的；反复无常」"
+  },
+  {
+    "kanji": "space",
+    "kana": "スペース",
+    "questionMeaning": "空间（可指空位）；空位",
+    "classification": "distinction",
+    "reason": "synonym:空间 — 还可指空位、篇幅、场地或计算机空间，不能全换；保留原文义项「空间；空位」"
+  },
+  {
+    "kanji": "staff",
+    "kana": "スタッフ",
+    "questionMeaning": "工作人员",
+    "classification": "distinction",
+    "reason": "synonym:工作人员 — 团队工作人员、职员总称，范围更宽；保留原文义项「工作人员」"
+  },
+  {
+    "kanji": "言葉遣い",
+    "kana": "ことばづかい",
+    "questionMeaning": "用语，措辞（说话措辞）",
+    "classification": "distinction",
+    "reason": "synonym:用语 — 说话用词、措辞方式；保留原文义项「用语，措辞」"
+  },
+  {
+    "kanji": "少なくとも",
+    "kana": "すくなくとも",
+    "questionMeaning": "至少",
+    "classification": "distinction",
+    "reason": "synonym:至少 — 数量、程度上的至少；保留原文义项「至少」"
+  },
+  {
+    "kanji": "せめて",
+    "kana": "せめて",
+    "questionMeaning": "至少（退一步的最）；哪怕",
+    "classification": "distinction",
+    "reason": "synonym:至少 — 退一步的最低希望、哪怕，含愿望和妥协语气；保留原文义项「至少；哪怕」"
+  },
+  {
+    "kanji": "世の中",
+    "kana": "よのなか",
+    "questionMeaning": "世间，社会",
+    "classification": "distinction",
+    "reason": "synonym:世间 — 世の中和世間都可表示社会、世间；较中性地指社会世界；保留原文义项「世间，社会」"
+  },
+  {
+    "kanji": "言い伝え",
+    "kana": "いいつたえ",
+    "questionMeaning": "传说（口头传下来）",
+    "classification": "distinction",
+    "reason": "synonym:传说 — 口头传下来的说法，不能全换；保留原文义项「传说」"
+  },
+  {
+    "kanji": "任せる",
+    "kana": "まかせる",
+    "questionMeaning": "托付；任由",
+    "classification": "distinction",
+    "reason": "synonym:托付 — 把事情交给对方或任其处理；保留原文义项「托付；任由」"
+  },
+  {
+    "kanji": "託す",
+    "kana": "たくす",
+    "questionMeaning": "托付（书面）；寄托",
+    "classification": "distinction",
+    "reason": "synonym:托付 — 郑重地托付、寄托愿望或遗志，书面和情感更强；保留原文义项「托付；寄托」"
+  },
+  {
+    "kanji": "去る",
+    "kana": "さる",
+    "questionMeaning": "离去；过去",
+    "classification": "distinction",
+    "reason": "synonym:离开 — 离去、过去或离开某时期；立ち去る强调起身离开现场；保留原文义项「离开；过去」；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "およそ",
+    "kana": "およそ",
+    "questionMeaning": "大约；约莫",
+    "classification": "distinction",
+    "reason": "synonym:大约 — およそ和おおよそ都表示大约、大致；也可表示大体、根本不，语体较书面；保留原文义项「大约；约莫」"
+  },
+  {
+    "kanji": "おおよそ",
+    "kana": "おおよそ",
+    "questionMeaning": "大约；大致",
+    "classification": "distinction",
+    "reason": "synonym:大约 — およそ和おおよそ都表示大约、大致；保留原文义项「大约；大致」"
+  },
+  {
+    "kanji": "きっかけ",
+    "kana": "きっかけ",
+    "questionMeaning": "契机；机会",
+    "classification": "distinction",
+    "reason": "synonym:契机 — 引发事情的契机、机会，日常常用；保留原文义项「契机；机会」"
+  },
+  {
+    "kanji": "(イ) tempo",
+    "kana": "テンポ",
+    "questionMeaning": "节奏；速度",
+    "classification": "distinction",
+    "reason": "synonym:节奏 — 速度、进展快慢或音乐节拍速度；保留原文义项「节奏；速度」"
+  },
+  {
+    "kanji": "rhythm",
+    "kana": "リズム",
+    "questionMeaning": "节奏（拍子）；韵律",
+    "classification": "distinction",
+    "reason": "synonym:节奏 — 规律节拍、节奏感，不能全换；保留原文义项「节奏」"
+  },
+  {
+    "kanji": "net",
+    "kana": "ネット",
+    "questionMeaning": "网；网络；球网",
+    "classification": "distinction",
+    "reason": "synonym:网络 — 网络、互联网，也可指网状物或网络简写；ネットワーク是网络系统、关系网或连接结构，范围和正式度不同；保留原文义项「网络」"
+  },
+  {
+    "kanji": "Network",
+    "kana": "ネットワーク",
+    "questionMeaning": "网络（正式）；关系网",
+    "classification": "distinction",
+    "reason": "synonym:网络 — ネットワーク是网络系统、关系网或连接结构，范围和正式度不同；保留原文义项「网络；关系网」"
+  },
+  {
+    "kanji": "pot",
+    "kana": "ポット",
+    "questionMeaning": "壶；热水瓶",
+    "classification": "distinction",
+    "reason": "synonym:壶 — 壶、热水壶或保温壶；保留原文义项「壶；热水瓶」"
+  },
+  {
+    "kanji": "つぼ",
+    "kana": "つぼ",
+    "questionMeaning": "壶（穴位或要点）；穴位；要点",
+    "classification": "distinction",
+    "reason": "synonym:壶 — 罐、穴位或要点，物品形状和引申义完全不同；保留原文义项「壶；穴位；要点」"
+  },
+  {
+    "kanji": "media",
+    "kana": "メディア",
+    "questionMeaning": "媒介；媒体",
+    "classification": "distinction",
+    "reason": "synonym:媒体 — メディア和媒体都可表示媒体、媒介；メディア更常用于大众传媒和数字媒体；保留原文义项「媒体」"
+  },
+  {
+    "kanji": "model",
+    "kana": "モデル",
+    "questionMeaning": "模型；模特",
+    "classification": "distinction",
+    "reason": "synonym:模型 — モデル是模型、模特、范例或型号；保留原文义项「模型；模特」"
+  },
+  {
+    "kanji": "light",
+    "kana": "ライト",
+    "questionMeaning": "灯，灯光；轻的；淡的",
+    "classification": "distinction",
+    "reason": "synonym:灯 — 灯、照明，也可表示轻、右侧等；保留原文义项「灯；轻的」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "lamp",
+    "kana": "ランプ",
+    "questionMeaning": "灯具（台灯、油灯）；信号灯",
+    "classification": "distinction",
+    "reason": "synonym:灯 — 灯具、信号灯或台灯，不能全换；保留原文义项「灯；信号灯」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "constant",
+    "kana": "コンスタント",
+    "questionMeaning": "稳定的（持续一定水平）；持续的",
+    "classification": "distinction",
+    "reason": "synonym:稳定的 — 持续、稳定地保持一定水平，常描述频率和产出；保留原文义项「稳定的；持续的」"
+  },
+  {
+    "kanji": "angle",
+    "kana": "アングル",
+    "questionMeaning": "角度（拍摄、视角）；切入点",
+    "classification": "distinction",
+    "reason": "synonym:角度 — アングル是拍摄角度、视角或切入点，不能替换数学角度等用法；保留原文义项「角度；视角」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "reporter",
+    "kana": "レポーター",
+    "questionMeaning": "报告人；记者（现场）",
+    "classification": "distinction",
+    "reason": "synonym:记者 — 现场报道员、采访者，也可指报告人，不能全换；保留原文义项「记者」"
+  },
+  {
+    "kanji": "居眠り",
+    "kana": "いねむり",
+    "questionMeaning": "打瞌睡",
+    "classification": "distinction",
+    "reason": "synonym:打瞌睡 — 居眠り和うとうと都表示打瞌睡；实际睡着；保留原文义项「打瞌睡」"
+  },
+  {
+    "kanji": "うとうと",
+    "kana": "うとうと",
+    "questionMeaning": "打瞌睡",
+    "classification": "distinction",
+    "reason": "synonym:打瞌睡 — 居眠り和うとうと都表示打瞌睡；强调迷迷糊糊的状态和过程；保留原文义项「打瞌睡」"
+  },
+  {
+    "kanji": "莫[ばく]大",
+    "kana": "ばくだい",
+    "questionMeaning": "巨大的；莫大的",
+    "classification": "distinction",
+    "reason": "synonym:巨大的 — 数量、恩惠、损失等极大；保留原文义项「巨大的；莫大的」"
+  },
+  {
+    "kanji": "form",
+    "kana": "フォーム",
+    "questionMeaning": "形式（表格）；姿势",
+    "classification": "distinction",
+    "reason": "synonym:形式 — フォーム是表格、姿势或固定样式，不能替换抽象形式和仪式形式；保留原文义项「形式；姿势」"
+  },
+  {
+    "kanji": "見下ろす",
+    "kana": "みおろす",
+    "questionMeaning": "俯视；小看",
+    "classification": "distinction",
+    "reason": "synonym:俯视 — 从高处向下看，也可轻视；保留原文义项「俯视；小看」"
+  },
+  {
+    "kanji": "見下す",
+    "kana": "みくだす",
+    "questionMeaning": "俯视（专指）；蔑视",
+    "classification": "distinction",
+    "reason": "synonym:俯视 — 专指蔑视、小看，不能替换普通俯视；保留原文义项「俯视；蔑视」"
+  },
+  {
+    "kanji": "限り",
+    "kana": "かぎり",
+    "questionMeaning": "限度；只要",
+    "classification": "distinction",
+    "reason": "synonym:限度 — 限り是限度、范围，也可表示只要、尽可能；保留原文义项「限度；只要」"
+  },
+  {
+    "kanji": "好き嫌い",
+    "kana": "すききらい",
+    "questionMeaning": "好恶，挑剔（日常好恶、挑食）",
+    "classification": "distinction",
+    "reason": "synonym:好恶 — 喜欢和讨厌、挑食等日常表达；保留原文义项「好恶，挑剔」"
+  },
+  {
+    "kanji": "幸い",
+    "kana": "さいわい",
+    "questionMeaning": "幸运（也作幸好）；幸亏",
+    "classification": "distinction",
+    "reason": "synonym:幸运的 — 幸运、幸亏，也可作副词表示幸好；保留原文义项「幸运的」"
+  },
+  {
+    "kanji": "積み込む",
+    "kana": "つみこむ",
+    "questionMeaning": "装入（把货物）；装载",
+    "classification": "distinction",
+    "reason": "synonym:装入 — 把货物、行李装上车或堆进去，不能全换；保留原文义项「装入；装载」"
+  },
+  {
+    "kanji": "集まり",
+    "kana": "あつまり",
+    "questionMeaning": "集会；集合",
+    "classification": "distinction",
+    "reason": "synonym:集会 — 聚集的人群或集合；保留原文义项「集会；集合」"
+  },
+  {
+    "kanji": "smooth",
+    "kana": "スムーズ",
+    "questionMeaning": "顺利的（流程动作流畅）；流畅的",
+    "classification": "distinction",
+    "reason": "synonym:顺利的 — 动作、流程流畅；保留原文义项「顺利的；流畅的」"
+  },
+  {
+    "kanji": "争う",
+    "kana": "あらそう",
+    "questionMeaning": "争夺；争论",
+    "classification": "distinction",
+    "reason": "synonym:争夺 — 争夺也可争论、竞争；保留原文义项「争夺；争论」"
+  },
+  {
+    "kanji": "取り合う",
+    "kana": "とりあう",
+    "questionMeaning": "互相争抢；理睬",
+    "classification": "distinction",
+    "reason": "synonym:争夺 — 互相争抢某物，也可表示在意、理睬，不能全换；保留原文义项「争夺；理睬」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "noise",
+    "kana": "ノイズ",
+    "questionMeaning": "杂音，噪音",
+    "classification": "distinction",
+    "reason": "synonym:杂音 — 騒音和ノイズ都可表示噪声、杂音；也可指电子、数据中的干扰；保留原文义项「杂音，噪音」"
+  },
+  {
+    "kanji": "強み",
+    "kana": "つよみ",
+    "questionMeaning": "长处，强项（竞争优势）",
+    "classification": "distinction",
+    "reason": "synonym:长处 — 竞争优势、强项；保留原文义项「长处，强项」"
+  },
+  {
+    "kanji": "unique",
+    "kana": "ユニーク",
+    "questionMeaning": "独特的",
+    "classification": "distinction",
+    "reason": "synonym:独特的 — 独特和ユニーク都可表示独特；还带有有趣、奇特、与众不同的语感；保留原文义项「独特的」"
+  },
+  {
+    "kanji": "talent",
+    "kana": "タレント",
+    "questionMeaning": "艺人（电视）",
+    "classification": "distinction",
+    "reason": "synonym:演员 — 艺人、电视名人；保留原文义项「演员，艺人」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "背負う",
+    "kana": "せおう",
+    "questionMeaning": "背负；承担",
+    "classification": "distinction",
+    "reason": "synonym:背负 — 背着、承担责任；保留原文义项「背负；承担」"
+  },
+  {
+    "kanji": "しょい込む",
+    "kana": "しょいこむ",
+    "questionMeaning": "背负（口语）；承担",
+    "classification": "distinction",
+    "reason": "synonym:背负 — 把麻烦、责任等全揽到自己身上，口语且带负担感；保留原文义项「背负；承担」"
+  },
+  {
+    "kanji": "売れ行き",
+    "kana": "うれゆき",
+    "questionMeaning": "销路；销售情况",
+    "classification": "distinction",
+    "reason": "synonym:销路 — 商品卖得如何、销售情况；保留原文义项「销路；销售情况」"
+  },
+  {
+    "kanji": "引き抜く",
+    "kana": "ひきぬく",
+    "questionMeaning": "拔出；挖走（人才）",
+    "classification": "distinction",
+    "reason": "synonym:拔出 — 引き抜く是从中拔出或挖走人才，动作和引申义不同；保留原文义项「拔出；挖走人才」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "stage",
+    "kana": "ステージ",
+    "questionMeaning": "舞台（外来语）；阶段",
+    "classification": "distinction",
+    "reason": "synonym:舞台 — ステージ是舞台、阶段或等级，外来语引申范围更宽；保留原文义项「舞台；阶段」"
+  },
+  {
+    "kanji": "save",
+    "kana": "セーブ",
+    "questionMeaning": "保存（正式）；节省",
+    "classification": "distinction",
+    "reason": "synonym:保存 — セーブ是保存数据、节省或守住，不能替换食物和资料的正式保存；保留原文义项「保存；节省」"
+  },
+  {
+    "kanji": "暮れ",
+    "kana": "くれ",
+    "questionMeaning": "黄昏；年末",
+    "classification": "distinction",
+    "reason": "synonym:黄昏 — 日暮、年末或结束时；夕暮れ专指傍晚日落时分，不能替换年末等用法；保留原文义项「黄昏；年末」"
+  },
+  {
+    "kanji": "夕暮れ",
+    "kana": "ゆうぐれ",
+    "questionMeaning": "黄昏，傍晚",
+    "classification": "distinction",
+    "reason": "synonym:黄昏 — 夕暮れ专指傍晚日落时分，不能替换年末等用法；保留原文义项「黄昏，傍晚」"
+  },
+  {
+    "kanji": "明らか",
+    "kana": "あきらか",
+    "questionMeaning": "明显的",
+    "classification": "distinction",
+    "reason": "synonym:明显的 — 清楚、明显或显然；保留原文义项「明显的」"
+  },
+  {
+    "kanji": "あからさま",
+    "kana": "あからさま",
+    "questionMeaning": "明显的（露骨）；露骨的",
+    "classification": "distinction",
+    "reason": "synonym:明显的 — 露骨、不加掩饰，不能全换；保留原文义项「明显的；露骨的」"
+  },
+  {
+    "kanji": "目立つ",
+    "kana": "めだつ",
+    "questionMeaning": "显眼；引人注目",
+    "classification": "distinction",
+    "reason": "synonym:显眼 — 突出、引人注意；保留原文义项「显眼；引人注目」"
+  },
+  {
+    "kanji": "映える",
+    "kana": "はえる",
+    "questionMeaning": "映衬得好看；显眼",
+    "classification": "distinction",
+    "reason": "synonym:显眼 — 映衬得好看、在画面中显得亮眼，不能替换单纯引人注意；保留原文义项「显眼；映衬」"
+  },
+  {
+    "kanji": "stance",
+    "kana": "スタンス",
+    "questionMeaning": "立场；姿态",
+    "classification": "distinction",
+    "reason": "synonym:立场 — 态度、姿态或对问题的立场，外来语语感更主动；保留原文义项「立场；姿态」"
+  },
+  {
+    "kanji": "topic",
+    "kana": "トピック",
+    "questionMeaning": "话题，主题",
+    "classification": "distinction",
+    "reason": "synonym:话题 — 话题、主题或专题，常用于媒体、会议和标题，语体范围不同；保留原文义项「话题，主题」"
+  },
+  {
+    "kanji": "やる気",
+    "kana": "やるき",
+    "questionMeaning": "干劲",
+    "classification": "distinction",
+    "reason": "synonym:干劲 — 想做事的干劲、动力；保留原文义项「干劲」"
+  },
+  {
+    "kanji": "意気込み",
+    "kana": "いきごみ",
+    "questionMeaning": "干劲，热情",
+    "classification": "distinction",
+    "reason": "synonym:干劲 — 开始前的热情、决心和气势，不能替换长期动力；保留原文义项「干劲，热情」"
+  },
+  {
+    "kanji": "stamp",
+    "kana": "スタンプ",
+    "questionMeaning": "图章，戳子（盖章、橡皮图章）",
+    "classification": "distinction",
+    "reason": "synonym:图章 — 盖章、印花或橡皮图章，法律正式性不同；保留原文义项「图章，戳子」"
+  },
+  {
+    "kanji": "scale",
+    "kana": "スケール",
+    "questionMeaning": "尺度；比例尺；气度",
+    "classification": "distinction",
+    "reason": "synonym:规模 — 规模、尺度或比例尺，也可表示气势，不能全换；保留原文义项「规模；刻度」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "character",
+    "kana": "キャラクター",
+    "questionMeaning": "个性（人物角色）；人物",
+    "classification": "distinction",
+    "reason": "synonym:个性 — 人物角色、人物形象或个性，也可指角色本身，范围更宽；保留原文义项「个性；人物」"
+  },
+  {
+    "kanji": "fair",
+    "kana": "フェア",
+    "questionMeaning": "公平的（不偏袒、展会）；展会",
+    "classification": "distinction",
+    "reason": "synonym:公平的 — フェア是公平、不偏袒，也可指展览会或 fair 的外来语用法；保留原文义项「公平的；展会」"
+  },
+  {
+    "kanji": "順に",
+    "kana": "じゅんに",
+    "questionMeaning": "依次；按顺序",
+    "classification": "distinction",
+    "reason": "synonym:依次 — 按顺序地；保留原文义项「依次；按顺序」"
+  },
+  {
+    "kanji": "順々",
+    "kana": "じゅんじゅん",
+    "questionMeaning": "依次（一个接一个）；逐步",
+    "classification": "distinction",
+    "reason": "synonym:依次 — 一个接一个、逐步地，常带过程推进感，不能全换；保留原文义项「依次；逐步」"
+  },
+  {
+    "kanji": "生き方",
+    "kana": "いきかた",
+    "questionMeaning": "生活方式",
+    "classification": "distinction",
+    "reason": "synonym:生活方式 — 生き方和ライフスタイル都可表示生活方式；更强调人生选择和活法；保留原文义项「生活方式」"
+  },
+  {
+    "kanji": "lifestyle",
+    "kana": "ライフスタイル",
+    "questionMeaning": "生活方式",
+    "classification": "distinction",
+    "reason": "synonym:生活方式 — 生き方和ライフスタイル都可表示生活方式；偏生活模式；保留原文义项「生活方式」"
+  },
+  {
+    "kanji": "日差し",
+    "kana": "ひざし",
+    "questionMeaning": "阳光",
+    "classification": "distinction",
+    "reason": "synonym:阳光 — 照射过来的阳光、日晒感；保留原文义项「阳光」；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "hairstyle",
+    "kana": "ヘアスタイル",
+    "questionMeaning": "发型",
+    "classification": "distinction",
+    "reason": "synonym:发型 — 髪型和ヘアスタイル都表示发型；更时尚、商品化，核心指称相同；保留原文义项「发型」"
+  },
+  {
+    "kanji": "飛び上がる",
+    "kana": "とびあがる",
+    "questionMeaning": "跳起来；飞向天空；跳级",
+    "classification": "distinction",
+    "reason": "synonym:跳起 — 跳起、飞跃或惊跳；保留原文义项「跳起；飞跃」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "鳴き声",
+    "kana": "なきごえ",
+    "questionMeaning": "叫声；鸣声",
+    "classification": "distinction",
+    "reason": "synonym:叫声 — 动物的叫声、鸣声；保留原文义项「叫声；鸣声」"
+  },
+  {
+    "kanji": "叫び声",
+    "kana": "さけびごえ",
+    "questionMeaning": "叫声（人的喊叫）；呼喊声",
+    "classification": "distinction",
+    "reason": "synonym:叫声 — 人的喊叫、呼喊声，不能替换；保留原文义项「叫声；呼喊声」"
+  },
+  {
+    "kanji": "務め",
+    "kana": "つとめ",
+    "questionMeaning": "职责，义务（应尽职责义务）",
+    "classification": "distinction",
+    "reason": "synonym:职责 — 应履行的职责、义务，也可指任职，责任感更强；保留原文义项「职责，义务」"
+  },
+  {
+    "kanji": "process",
+    "kana": "プロセス",
+    "questionMeaning": "过程；流程",
+    "classification": "distinction",
+    "reason": "synonym:过程 — 過程和プロセス都可表示过程、流程；更常用于工作流程、处理步骤和抽象机制；保留原文义项「过程；流程」"
+  },
+  {
+    "kanji": "point",
+    "kana": "ポイント",
+    "questionMeaning": "要点；分数",
+    "classification": "distinction",
+    "reason": "synonym:要点 — ポイント是要点也可指得分、积分或地点；保留原文义项「要点；分数」"
+  },
+  {
+    "kanji": "弱み",
+    "kana": "よわみ",
+    "questionMeaning": "弱点，缺点（弱点）",
+    "classification": "distinction",
+    "reason": "synonym:弱点 — 弱み是弱点、弱处，也可指可被利用的软肋，主观和策略色彩更强；保留原文义项「弱点，缺点」"
+  },
+  {
+    "kanji": "厚かましい",
+    "kana": "あつかましい",
+    "questionMeaning": "厚脸皮的",
+    "classification": "distinction",
+    "reason": "synonym:厚脸皮的 — 厚かましい和ずうずうしい都表示厚脸皮、冒昧；保留原文义项「厚脸皮的」"
+  },
+  {
+    "kanji": "ずうずうしい",
+    "kana": "ずうずうしい",
+    "questionMeaning": "厚脸皮的",
+    "classification": "distinction",
+    "reason": "synonym:厚脸皮的 — 厚かましい和ずうずうしい都表示厚脸皮、冒昧；更口语、更强烈地指不知羞耻；保留原文义项「厚脸皮的」"
+  },
+  {
+    "kanji": "でたらめ",
+    "kana": "でたらめ",
+    "questionMeaning": "胡乱的（无根据胡说）；胡说",
+    "classification": "distinction",
+    "reason": "synonym:胡乱的 — 胡说八道、胡乱无根据；保留原文义项「胡乱的；胡说」"
+  },
+  {
+    "kanji": "やや",
+    "kana": "やや",
+    "questionMeaning": "稍微，一点（程度略微）",
+    "classification": "distinction",
+    "reason": "synonym:稍微 — 稍微、略微；保留原文义项「稍微，一点」"
+  },
+  {
+    "kanji": "何らか",
+    "kana": "なんらか",
+    "questionMeaning": "稍微，一些（某种某些）",
+    "classification": "distinction",
+    "reason": "synonym:稍微 — 某种、某些，未必表示程度；保留原文义项「稍微，一些」"
+  },
+  {
+    "kanji": "いささか",
+    "kana": "いささか",
+    "questionMeaning": "稍微；有点",
+    "classification": "distinction",
+    "reason": "synonym:稍微 — 稍微且常带不足、谦逊或书面语气；保留原文义项「稍微；有点」；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "置き換える",
+    "kana": "おきかえる",
+    "questionMeaning": "替换（用另一物替）；置换",
+    "classification": "distinction",
+    "reason": "synonym:替换 — 用另一物替代；保留原文义项「替换；置换」"
+  },
+  {
+    "kanji": "差し替える",
+    "kana": "さしかえる",
+    "questionMeaning": "替换（把文件）",
+    "classification": "distinction",
+    "reason": "synonym:替换 — 把文件、零件等换成新版，不能全换；保留原文义项「替换」"
+  },
+  {
+    "kanji": "もたれる",
+    "kana": "もたれる",
+    "questionMeaning": "倚靠；不消化",
+    "classification": "distinction",
+    "reason": "synonym:倚靠 — 身体靠着，也可表示消化不良；保留原文义项「倚靠；不消化」"
+  },
+  {
+    "kanji": "clear",
+    "kana": "クリア",
+    "questionMeaning": "清楚的（清晰、通过、清除）；通过",
+    "classification": "distinction",
+    "reason": "synonym:清楚的 — 清晰、通过或清除；保留原文义项「清楚的；通过」"
+  },
+  {
+    "kanji": "ぐんぐん",
+    "kana": "ぐんぐん",
+    "questionMeaning": "迅速地；大幅地",
+    "classification": "distinction",
+    "reason": "synonym:迅速地 — 快速、大幅持续增长；保留原文义项「迅速地；大幅地」"
+  },
+  {
+    "kanji": "さっと",
+    "kana": "さっと",
+    "questionMeaning": "迅速地（迅速）；轻快地",
+    "classification": "distinction",
+    "reason": "synonym:迅速地 — 迅速、轻快地完成一次动作，过程感不同；保留原文义项「迅速地；轻快地」"
+  },
+  {
+    "kanji": "(オ) kok",
+    "kana": "コック",
+    "questionMeaning": "厨师",
+    "classification": "distinction",
+    "reason": "synonym:厨师 — 厨师的日常或旧式称呼；保留原文义项「厨师」"
+  },
+  {
+    "kanji": "(フ) chef",
+    "kana": "シェフ",
+    "questionMeaning": "厨师（指餐厅主厨）；主厨",
+    "classification": "distinction",
+    "reason": "synonym:厨师 — 通常指餐厅主厨、负责菜单和厨房的高级厨师；保留原文义项「厨师；主厨」"
+  },
+  {
+    "kanji": "seal",
+    "kana": "シール",
+    "questionMeaning": "贴纸；封条",
+    "classification": "distinction",
+    "reason": "synonym:贴纸 — 贴纸、封条或贴膜；保留原文义项「贴纸；封条」"
+  },
+  {
+    "kanji": "貼り紙",
+    "kana": "はりがみ",
+    "questionMeaning": "贴纸（纸张）；告示",
+    "classification": "distinction",
+    "reason": "synonym:贴纸 — 贴在墙、门等处的纸张告示，也可指张贴物，不能全换；保留原文义项「贴纸；告示」"
+  },
+  {
+    "kanji": "system",
+    "kana": "システム",
+    "questionMeaning": "体系，系统",
+    "classification": "distinction",
+    "reason": "synonym:体系 — システム和体系都可表示系统、体系；更强调运行机制和功能；保留原文义项「体系，系统」"
+  },
+  {
+    "kanji": "どける",
+    "kana": "どける",
+    "questionMeaning": "挪开；让开",
+    "classification": "distinction",
+    "reason": "synonym:挪开 — 把挡路物挪走、让开道路，结果和对象不同；保留原文义项「挪开；让开」"
+  },
+  {
+    "kanji": "たっぷり",
+    "kana": "たっぷり",
+    "questionMeaning": "充分地；足足",
+    "classification": "distinction",
+    "reason": "synonym:充分地 — 足量、充足地；保留原文义项「充分地；足足」"
+  },
+  {
+    "kanji": "みっちり",
+    "kana": "みっちり",
+    "questionMeaning": "充分地（强调）；严实地",
+    "classification": "distinction",
+    "reason": "synonym:充分地 — 满满地、密集地或严实地，强调密度和训练量，不能全换；保留原文义项「充分地；严实地」"
+  },
+  {
+    "kanji": "はきはき",
+    "kana": "はきはき",
+    "questionMeaning": "爽快地；利落地",
+    "classification": "distinction",
+    "reason": "synonym:爽快地 — 说话、动作爽利清楚；保留原文义项「爽快地；利落地」"
+  },
+  {
+    "kanji": "すっと",
+    "kana": "すっと",
+    "questionMeaning": "爽快地（顺畅）；笔直地",
+    "classification": "distinction",
+    "reason": "synonym:爽快地 — 顺畅、笔直或突然轻松地，不能替换人的表达风格；保留原文义项「爽快地；笔直地」"
+  },
+  {
+    "kanji": "recreation",
+    "kana": "レクリエーション",
+    "questionMeaning": "娱乐，消遣",
+    "classification": "distinction",
+    "reason": "synonym:娱乐 — レクリエーション和娯楽都可表示娱乐、消遣；常指集体活动、休闲项目；保留原文义项「娱乐，消遣」"
+  },
+  {
+    "kanji": "status",
+    "kana": "ステータス",
+    "questionMeaning": "地位（状态资格、游戏属性）；状态",
+    "classification": "distinction",
+    "reason": "synonym:地位 — 还可指状态、资格或游戏属性，不能全换；保留原文义项「地位；状态」"
+  },
+  {
+    "kanji": "恵み",
+    "kana": "めぐみ",
+    "questionMeaning": "恩惠（自然神灵恩泽）",
+    "classification": "distinction",
+    "reason": "synonym:恩惠 — 自然、神或他人给予的恩泽；保留原文义项「恩惠」"
+  },
+  {
+    "kanji": "ありがたみ",
+    "kana": "ありがたみ",
+    "questionMeaning": "恩惠，价值（感受到的可贵）",
+    "classification": "distinction",
+    "reason": "synonym:恩惠 — 感受到的价值和可贵，不能全换；保留原文义项「恩惠，价值」"
+  },
+  {
+    "kanji": "勘違い",
+    "kana": "かんちがい",
+    "questionMeaning": "误会",
+    "classification": "distinction",
+    "reason": "synonym:误会 — 勘違い和思い違い都可表示误会、想错；更日常；保留原文义项「误会」"
+  },
+  {
+    "kanji": "思い違い",
+    "kana": "おもいちがい",
+    "questionMeaning": "误会；误解",
+    "classification": "distinction",
+    "reason": "synonym:误会 — 勘違い和思い違い都可表示误会、想错；强调记忆或理解上的错误；保留原文义项「误会；误解」"
+  },
+  {
+    "kanji": "極[ごく]",
+    "kana": "ごく",
+    "questionMeaning": "极其；非常",
+    "classification": "distinction",
+    "reason": "synonym:极其 — 極、極めて和至って都可表示极其；極めて最正式中性；保留原文义项「极其；非常」"
+  },
+  {
+    "kanji": "極めて",
+    "kana": "きわめて",
+    "questionMeaning": "极其，非常",
+    "classification": "distinction",
+    "reason": "synonym:极其 — 極、極めて和至って都可表示极其；極めて最正式中性；保留原文义项「极其，非常」"
+  },
+  {
+    "kanji": "至って",
+    "kana": "いたって",
+    "questionMeaning": "极其（书面语）",
+    "classification": "distinction",
+    "reason": "synonym:极其 — 極、極めて和至って都可表示极其；常表示非常地或极其平常，不能全换；保留原文义项「极其」"
+  },
+  {
+    "kanji": "効き目",
+    "kana": "ききめ",
+    "questionMeaning": "效力，效用（药物措施效果）",
+    "classification": "distinction",
+    "reason": "synonym:效力 — 药物、措施的效果，不能替换法律效力；保留原文义项「效力，效用」"
+  },
+  {
+    "kanji": "突き出す",
+    "kana": "つきだす",
+    "questionMeaning": "伸出，探出；推出；扭送",
+    "classification": "distinction",
+    "reason": "synonym:伸出 — 向前推出；保留原文义项「伸出；推出」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "思い込む",
+    "kana": "おもいこむ",
+    "questionMeaning": "深信；认定",
+    "classification": "distinction",
+    "reason": "synonym:深信 — 未经充分依据却认定、坚信；保留原文义项「深信；认定」"
+  },
+  {
+    "kanji": "思い切り",
+    "kana": "おもいきり",
+    "questionMeaning": "尽情地；狠狠地",
+    "classification": "distinction",
+    "reason": "synonym:尽情地 — 思い切り和思う存分都表示尽情、尽最大限度；更口语有力度；保留原文义项「尽情地；狠狠地」"
+  },
+  {
+    "kanji": "思う存分",
+    "kana": "おもうぞんぶん",
+    "questionMeaning": "尽情地",
+    "classification": "distinction",
+    "reason": "synonym:尽情地 — 思い切り和思う存分都表示尽情、尽最大限度；更书面；保留原文义项「尽情地」"
+  },
+  {
+    "kanji": "心当たり",
+    "kana": "こころあたり",
+    "questionMeaning": "线索，头绪（自己想到线索）",
+    "classification": "distinction",
+    "reason": "synonym:线索 — 自己想到的相关线索、印象；保留原文义项「线索，头绪」"
+  },
+  {
+    "kanji": "手がかり",
+    "kana": "てがかり",
+    "questionMeaning": "线索（可依靠依据）；头绪",
+    "classification": "distinction",
+    "reason": "synonym:线索 — 可依靠的线索、依据，不能全换；保留原文义项「线索；头绪」"
+  },
+  {
+    "kanji": "とっさ",
+    "kana": "とっさ",
+    "questionMeaning": "瞬间，猛然",
+    "classification": "distinction",
+    "reason": "synonym:瞬间 — 面对突发情况的当下、猛然；保留原文义项「瞬间，猛然」"
+  },
+  {
+    "kanji": "assistant",
+    "kana": "アシスタント",
+    "questionMeaning": "助手，助理",
+    "classification": "distinction",
+    "reason": "synonym:助手 — 助手和アシスタント都可表示助手、助理；更常用于职场、节目和服务岗位；保留原文义项「助手，助理」"
+  },
+  {
+    "kanji": "仕掛け",
+    "kana": "しかけ",
+    "questionMeaning": "机关（设计好的）；手段；做到一半",
+    "classification": "distinction",
+    "reason": "synonym:装置 — 仕掛け是装置、机关或设计好的手段、圈套，不能全换；保留原文义项「装置；手段」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "迫る",
+    "kana": "せまる",
+    "questionMeaning": "迫近；逼迫",
+    "classification": "distinction",
+    "reason": "synonym:迫近 — 迫る和差し迫る都可表示迫近、逼近；差し迫る更强调紧迫、已近在眼前；保留原文义项「迫近；逼迫」"
+  },
+  {
+    "kanji": "差し迫る",
+    "kana": "さしせまる",
+    "questionMeaning": "迫近",
+    "classification": "distinction",
+    "reason": "synonym:迫近 — 迫る和差し迫る都可表示迫近、逼近；差し迫る更强调紧迫、已近在眼前；保留原文义项「迫近」"
+  },
+  {
+    "kanji": "暴れる",
+    "kana": "あばれる",
+    "questionMeaning": "胡闹；乱闹",
+    "classification": "distinction",
+    "reason": "synonym:胡闹 — 乱闹、暴动或猛烈挣扎；保留原文义项「胡闹；乱闹」"
+  },
+  {
+    "kanji": "ふざける",
+    "kana": "ふざける",
+    "questionMeaning": "胡闹（程度）；开玩笑",
+    "classification": "distinction",
+    "reason": "synonym:胡闹 — 开玩笑、胡闹或戏弄，暴力程度和语气不同；保留原文义项「胡闹；开玩笑」"
+  },
+  {
+    "kanji": "democracy",
+    "kana": "デモクラシー",
+    "questionMeaning": "民主；民主主义",
+    "classification": "distinction",
+    "reason": "synonym:民主 — 民主和デモクラシー都与民主、民主主义有关；保留原文义项「民主；民主主义」"
+  },
+  {
+    "kanji": "あふれ出す",
+    "kana": "あふれだす",
+    "questionMeaning": "涌出；溢出",
+    "classification": "distinction",
+    "reason": "synonym:涌出 — 溢出、喷涌而出，常含超过容量；保留原文义项「涌出；溢出」"
+  },
+  {
+    "kanji": "element",
+    "kana": "エレメント",
+    "questionMeaning": "要素；元素",
+    "classification": "distinction",
+    "reason": "synonym:要素 — 还可指化学元素、基本单元或网页元素，范围更宽；保留原文义项「要素；元素」"
+  },
+  {
+    "kanji": "きょろきょろ",
+    "kana": "きょろきょろ",
+    "questionMeaning": "东张西望",
+    "classification": "distinction",
+    "reason": "synonym:东张西望 — 眼睛不安定地四处张望；保留原文义项「东张西望」"
+  },
+  {
+    "kanji": "よそ見",
+    "kana": "よそみ",
+    "questionMeaning": "东张西望（把视线移向）；看向别处",
+    "classification": "distinction",
+    "reason": "synonym:东张西望 — 把视线移向别处、分心，不能全换；保留原文义项「东张西望；看向别处」"
+  },
+  {
+    "kanji": "くじ引き",
+    "kana": "くじびき",
+    "questionMeaning": "抽签",
+    "classification": "distinction",
+    "reason": "synonym:抽签 — くじ引き和抽選都可表示抽签、抽选；更日常也可指抽奖；保留原文义项「抽签」"
+  },
+  {
+    "kanji": "くみ取る",
+    "kana": "くみとる",
+    "questionMeaning": "领会；汲取",
+    "classification": "distinction",
+    "reason": "synonym:领会 — 领会、揣摩并汲取含义；保留原文义项「领会；汲取」"
+  },
+  {
+    "kanji": "心得る",
+    "kana": "こころえる",
+    "questionMeaning": "领会（理解）；懂得",
+    "classification": "distinction",
+    "reason": "synonym:领会 — 理解、牢记并掌握，常含应知会做的语气；保留原文义项「领会；懂得」"
+  },
+  {
+    "kanji": "コツ",
+    "kana": "コツ",
+    "questionMeaning": "要领，要害（办事窍门）",
+    "classification": "distinction",
+    "reason": "synonym:要领 — 窍门、诀窍；保留原文义项「要领，要害」"
+  },
+  {
+    "kanji": "じっくり",
+    "kana": "じっくり",
+    "questionMeaning": "仔细地；慢慢地",
+    "classification": "distinction",
+    "reason": "synonym:仔细地 — 花时间慢慢仔细做；保留原文义项「仔细地；慢慢地」"
+  },
+  {
+    "kanji": "よくよく",
+    "kana": "よくよく",
+    "questionMeaning": "仔细地（反复）；深思熟虑地",
+    "classification": "distinction",
+    "reason": "synonym:仔细地 — 反复、充分地思考或仔细确认，不能全换；保留原文义项「仔细地；深思熟虑地」"
+  },
+  {
+    "kanji": "trouble",
+    "kana": "トラブル",
+    "questionMeaning": "麻烦；故障",
+    "classification": "distinction",
+    "reason": "synonym:麻烦 — 故障、纠纷等麻烦事件；保留原文义项「麻烦；故障」"
+  },
+  {
+    "kanji": "わざわざ",
+    "kana": "わざわざ",
+    "questionMeaning": "特意；故意",
+    "classification": "distinction",
+    "reason": "synonym:特意 — 特意花力气去做，也可含不必如此；保留原文义项「特意；故意」"
+  },
+  {
+    "kanji": "あえて",
+    "kana": "あえて",
+    "questionMeaning": "特意（明知困难仍）；敢于",
+    "classification": "distinction",
+    "reason": "synonym:特意 — 明知困难仍敢于、特意选择，主动挑战意味更强；保留原文义项「特意；敢于」"
+  },
+  {
+    "kanji": "見かけ",
+    "kana": "みかけ",
+    "questionMeaning": "外观，外貌（看起来的样子）",
+    "classification": "distinction",
+    "reason": "synonym:外观 — 看起来的样子；保留原文义项「外观，外貌」"
+  },
+  {
+    "kanji": "見栄え",
+    "kana": "みばえ",
+    "questionMeaning": "外观（视觉好看卖相）；卖相",
+    "classification": "distinction",
+    "reason": "synonym:外观 — 视觉上好不好看，不能全换；保留原文义项「外观；卖相」"
+  },
+  {
+    "kanji": "かたくな",
+    "kana": "かたくな",
+    "questionMeaning": "顽固的（拒绝坚持态度）",
+    "classification": "distinction",
+    "reason": "synonym:顽固的 — 顽固地拒绝或坚持，书面且常带心理态度；保留原文义项「顽固的」"
+  },
+  {
+    "kanji": "pinch",
+    "kana": "ピンチ",
+    "questionMeaning": "危机（口语）；困境",
+    "classification": "distinction",
+    "reason": "synonym:危机 — 陷入困境、眼前难关，口语且未必是宏观危机；保留原文义项「危机；困境」"
+  },
+  {
+    "kanji": "見抜く",
+    "kana": "みぬく",
+    "questionMeaning": "看穿（真相、本质）",
+    "classification": "distinction",
+    "reason": "synonym:看穿 — 看穿真相或本质；保留原文义项「看穿」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "見通す",
+    "kana": "みとおす",
+    "questionMeaning": "看透（全局）；预见；眺望",
+    "classification": "distinction",
+    "reason": "synonym:看穿 — 看透全局、预见未来；保留原文义项「看穿；预见」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "見透かす",
+    "kana": "みすかす",
+    "questionMeaning": "识破（隐瞒、内心）",
+    "classification": "distinction",
+    "reason": "synonym:看穿 — 看穿隐瞒和内心，不能全换；保留原文义项「看穿」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "言い訳",
+    "kana": "いいわけ",
+    "questionMeaning": "辩解，辩白（推卸责任借口）",
+    "classification": "distinction",
+    "reason": "synonym:辩解 — 借口、辩解，常带推卸责任的负面意味；保留原文义项「辩解，辩白」"
+  },
+  {
+    "kanji": "行く先",
+    "kana": "ゆくさき",
+    "questionMeaning": "目的地；去向",
+    "classification": "distinction",
+    "reason": "synonym:目的地 — 要去的地方或去向；保留原文义项「目的地；去向」"
+  }
+]

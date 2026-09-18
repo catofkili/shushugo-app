@@ -51,9 +51,9 @@
   {
     "kanji": "感知",
     "kana": "かんち",
-    "questionMeaning": "察觉，感知",
+    "questionMeaning": "感知，感觉到",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "感銘",
@@ -149,7 +149,7 @@
   {
     "kanji": "簡素",
     "kana": "かんそ",
-    "questionMeaning": "简单，简朴",
+    "questionMeaning": "简单，简朴（结构装饰简单）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -198,9 +198,9 @@
   {
     "kanji": "肝要",
     "kana": "かんよう",
-    "questionMeaning": "重要，关键",
+    "questionMeaning": "关键；要紧",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:重要的 — 书面语的关键、要紧；保留原文义项「重要的；关键的」"
   },
   {
     "kanji": "観",
@@ -212,7 +212,7 @@
   {
     "kanji": "観賞",
     "kana": "かんしょう",
-    "questionMeaning": "观赏",
+    "questionMeaning": "观赏（主动欣赏）",
     "classification": "same_meaning",
     "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
   },
@@ -312,7 +312,7 @@
     "kana": "かんせつ",
     "questionMeaning": "关节",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "関連",
@@ -352,7 +352,7 @@
   {
     "kanji": "頑固",
     "kana": "がんこ",
-    "questionMeaning": "倔强，顽固",
+    "questionMeaning": "倔强，顽固（不改变性格）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -366,7 +366,7 @@
   {
     "kanji": "頑迷",
     "kana": "がんめい",
-    "questionMeaning": "冥顽，顽固",
+    "questionMeaning": "冥顽，顽固（顽固愚昧）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -443,9 +443,9 @@
   {
     "kanji": "器材",
     "kana": "きざい",
-    "questionMeaning": "器材，器件",
-    "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "questionMeaning": "器材；器具设备",
+    "classification": "distinction",
+    "reason": "kanji-choice:きざい — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
   },
   {
     "kanji": "器用",
@@ -464,7 +464,7 @@
   {
     "kanji": "基地",
     "kana": "きち",
-    "questionMeaning": "基地，根据地",
+    "questionMeaning": "基地，根据地（固定基地设施）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -534,9 +534,9 @@
   {
     "kanji": "寄与",
     "kana": "きよ",
-    "questionMeaning": "贡献",
+    "questionMeaning": "贡献（书面）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:贡献 — 正式、书面的贡献、促成作用，使用场合更正式；保留原文义项「贡献」"
   },
   {
     "kanji": "岐路",
@@ -639,9 +639,9 @@
   {
     "kanji": "機材",
     "kana": "きざい",
-    "questionMeaning": "机械材料，机器和材料",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "机器设备；配套器材",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "機種",
@@ -772,9 +772,9 @@
   {
     "kanji": "気体",
     "kana": "きたい",
-    "questionMeaning": "气体",
+    "questionMeaning": "气体（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:气体 — 物质状态的科学、正式概念，范围不完全相同；保留原文义项「气体」"
   },
   {
     "kanji": "気配",
@@ -849,7 +849,7 @@
   {
     "kanji": "規制",
     "kana": "きせい",
-    "questionMeaning": "限制，规定",
+    "questionMeaning": "限制，规定（法律规则管制）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -905,7 +905,7 @@
   {
     "kanji": "記号",
     "kana": "きごう",
-    "questionMeaning": "记号，符号",
+    "questionMeaning": "记号，符号（正式符号）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1087,21 +1087,21 @@
   {
     "kanji": "技能",
     "kana": "ぎのう",
-    "questionMeaning": "技能，本领",
+    "questionMeaning": "技能，本领（习得技术）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "技法",
     "kana": "ぎほう",
-    "questionMeaning": "技术，技巧",
+    "questionMeaning": "技术，技巧（艺术）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:技术 — 艺术、专业制作技法，不能全换；保留原文义项「技术，技巧」"
   },
   {
     "kanji": "技量",
     "kana": "ぎりょう",
-    "questionMeaning": "本事，本领，技能",
+    "questionMeaning": "本事，本领，技能（实际本领水平）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1206,9 +1206,9 @@
   {
     "kanji": "客室",
     "kana": "きゃくしつ",
-    "questionMeaning": "客厅；客房",
+    "questionMeaning": "客房；接待室",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:客厅 — 客房或接待室，不能替换；保留原文义项「客厅；客房」；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "客席",
@@ -1388,9 +1388,9 @@
   {
     "kanji": "急用",
     "kana": "きゅうよう",
-    "questionMeaning": "急事",
+    "questionMeaning": "急用（急需的钱、物）；急事",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:急事 — 紧急需要使用的钱、物品或事情，使用对象不同；保留原文义项「急事」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "救命",
@@ -1486,7 +1486,7 @@
   {
     "kanji": "居場所",
     "kana": "いばしょ",
-    "questionMeaning": "住处，行踪",
+    "questionMeaning": "住处，行踪（当前所在位置）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1542,7 +1542,7 @@
   {
     "kanji": "拠点",
     "kana": "きょてん",
-    "questionMeaning": "基地，据点",
+    "questionMeaning": "基地，据点（活动据点）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1598,7 +1598,7 @@
   {
     "kanji": "漁民",
     "kana": "ぎょみん",
-    "questionMeaning": "渔民",
+    "questionMeaning": "渔民（渔业群体、正式）",
     "classification": "same_meaning",
     "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
   },

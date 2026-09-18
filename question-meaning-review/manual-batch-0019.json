@@ -72,9 +72,9 @@
   {
     "kanji": "小銭",
     "kana": "こぜに",
-    "questionMeaning": "零钱；少量资金",
+    "questionMeaning": "零钱（小面额硬币）；少量资金",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:零钱 — 小面额硬币、零钱本身，不能替换找零动作；保留原文义项「零钱」"
   },
   {
     "kanji": "小鳥",
@@ -410,7 +410,7 @@
     "kana": "しょうひん",
     "questionMeaning": "奖品",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "賞味",
@@ -443,9 +443,9 @@
   {
     "kanji": "上",
     "kana": "かみ",
-    "questionMeaning": "上游；前半个……",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "上游；上级或前半",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "上位",
@@ -590,7 +590,7 @@
   {
     "kanji": "上辺",
     "kana": "うわべ",
-    "questionMeaning": "表面，外表，外观",
+    "questionMeaning": "表面，外表，外观（表面现象、不真实）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -863,9 +863,9 @@
   {
     "kanji": "職",
     "kana": "しょく",
-    "questionMeaning": "职业；职务；手艺",
+    "questionMeaning": "职业简称（职位职务、简称）；职务；手艺",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:职业 — 職業是职业、行业；职位、职务或职业的简略词，不能替换所有职业名称和职位场景；保留原文义项「职业；职位」"
   },
   {
     "kanji": "職員",
@@ -879,7 +879,7 @@
     "kana": "しょくぎょう",
     "questionMeaning": "职业",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "職種",
@@ -905,9 +905,9 @@
   {
     "kanji": "色",
     "kana": "しょく",
-    "questionMeaning": "颜色；样子",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "色（复合词用）；样子",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "色鉛筆",
@@ -982,7 +982,7 @@
   {
     "kanji": "食材",
     "kana": "しょくざい",
-    "questionMeaning": "食材",
+    "questionMeaning": "食材（烹饪原料）",
     "classification": "same_meaning",
     "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
   },
@@ -1010,9 +1010,9 @@
   {
     "kanji": "食品",
     "kana": "しょくひん",
-    "questionMeaning": "食品",
+    "questionMeaning": "食品（分类）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:食品 — 食料品是作为食料出售的食品、杂货；食品这一正式分类概念，不能替换所有食料和商品语境；保留原文义项「食品」"
   },
   {
     "kanji": "食物",
@@ -1143,9 +1143,9 @@
   {
     "kanji": "心外",
     "kana": "しんがい",
-    "questionMeaning": "（对方的行为或事情的结果出乎意料而感到）遗憾，意外",
+    "questionMeaning": "意外且遗憾；出乎预料",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:意外 — 出乎意料且感到遗憾、失望；保留原文义项「意外；遗憾」"
   },
   {
     "kanji": "心境",
@@ -1346,9 +1346,9 @@
   {
     "kanji": "新聞紙",
     "kana": "しんぶんし",
-    "questionMeaning": "报纸；旧报纸",
+    "questionMeaning": "报纸（纸张）；纸面",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:报纸 — 新聞紙特指报纸这种纸张或纸面，不能在所有新闻语境替换；保留原文义项「报纸」"
   },
   {
     "kanji": "新緑",
@@ -1360,9 +1360,9 @@
   {
     "kanji": "森林",
     "kana": "しんりん",
-    "questionMeaning": "森林",
+    "questionMeaning": "森林（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:森林 — 森是日常的森林、树林；森林是面积较大的森林或正式分类概念，范围和语体不同；保留原文义项「森林」"
   },
   {
     "kanji": "浸水",
@@ -1451,7 +1451,7 @@
   {
     "kanji": "真剣",
     "kana": "しんけん",
-    "questionMeaning": "真刀，真剑；做事认真，一丝不苟",
+    "questionMeaning": "认真（严肃、专注）；真刀，真剑",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1465,7 +1465,7 @@
   {
     "kanji": "真実",
     "kana": "しんじつ",
-    "questionMeaning": "真实情况；真的",
+    "questionMeaning": "真实情况（事实真相）；真的",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1479,7 +1479,7 @@
   {
     "kanji": "真心",
     "kana": "まごころ",
-    "questionMeaning": "真心，诚意",
+    "questionMeaning": "真心，诚意（诚意心意）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1521,9 +1521,9 @@
   {
     "kanji": "神",
     "kana": "かみ",
-    "questionMeaning": "神，上帝",
+    "questionMeaning": "神；上帝",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:神 — 神、神明的通称；神様是礼貌、敬畏或故事中的神明称呼，不能忽略语气和使用对象；保留原文义项「神，上帝」"
   },
   {
     "kanji": "神経",
@@ -1549,9 +1549,9 @@
   {
     "kanji": "神様",
     "kana": "かみさま",
-    "questionMeaning": "神，上帝；专家，……之神",
+    "questionMeaning": "神明（尊称）；专家",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:神 — 神様是礼貌、敬畏或故事中的神明称呼，不能忽略语气和使用对象；保留原文义项「神；神明」"
   },
   {
     "kanji": "神話",
@@ -1584,9 +1584,9 @@
   {
     "kanji": "親近感",
     "kana": "しんきんかん",
-    "questionMeaning": "亲切感",
+    "questionMeaning": "亲切感（对人）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:亲切感 — 对人、场所感到亲近熟悉，不能全换；保留原文义项「亲切感」"
   },
   {
     "kanji": "親元",
@@ -1626,9 +1626,9 @@
   {
     "kanji": "親父",
     "kana": "おやじ",
-    "questionMeaning": "父亲；老头子；老板；头目",
+    "questionMeaning": "父亲（口语）；老爸、老头子；老板、头目",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:父亲 — 对父亲或中年男性的口语称呼，粗犷和亲密语气更强；保留原文义项「父亲；老爸」"
   },
   {
     "kanji": "親方",
@@ -1696,9 +1696,9 @@
   {
     "kanji": "身長",
     "kana": "しんちょう",
-    "questionMeaning": "身高",
+    "questionMeaning": "身高（正式）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:身高 — 正式身高；保留原文义项「身高」"
   },
   {
     "kanji": "身分",

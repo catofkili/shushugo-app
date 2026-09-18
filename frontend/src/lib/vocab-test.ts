@@ -3,6 +3,7 @@ import { getDatabase } from "./database";
 import { classifyPos, type PosBucket } from "./word-library";
 import { confusionGroupsForWord } from "./confusion-groups";
 import { questionMeaningKeyOf } from "./models/question-meaning-index";
+import { reviewedQuestionMeaning } from "./models/question-meaning-overrides";
 import { isLoanwordSourceSurface, kanjiReadingSurface, preferredWordSurface, shouldStudyKanjiReading } from "./orthography";
 import { moraCount } from "../features/word-study/word-study-utils";
 
@@ -201,7 +202,7 @@ const wordRows = (): VocabTestWordRow[] => rowsFor(`
   id: Number(row.id ?? 0),
   kanji: asText(row.kanji),
   kana: asText(row.kana),
-  meaning: asText(row.meaning),
+  meaning: reviewedQuestionMeaning(asText(row.kanji), asText(row.kana)) ?? asText(row.meaning),
   pos: asText(row.pos),
   level: asText(row.level)
 })).filter((row) => row.id > 0 && VOCAB_TEST_LEVELS.includes(row.level as typeof VOCAB_TEST_LEVELS[number]));
@@ -573,7 +574,10 @@ export const buildVocabTestQuestions = (
   random: () => number = Math.random,
   options: { targets?: Record<string, number>; total?: number; excludeIds?: Iterable<number> } = {}
 ): { questions: VocabTestQuestion[]; populationByLevel: Record<string, number> } => {
-  const allRows = rawRows.map(enrichRow);
+  const allRows = rawRows.map((row) => ({
+    ...row,
+    meaning: reviewedQuestionMeaning(row.kanji, row.kana) ?? row.meaning
+  })).map(enrichRow);
   const index = answerIndexBySurface(allRows);
   const populationByLevel = Object.fromEntries(VOCAB_TEST_LEVELS.map((level) => [
     level,

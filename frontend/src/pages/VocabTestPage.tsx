@@ -19,6 +19,7 @@ import {
 } from "../lib/vocab-test";
 import { saveImageToGallery, shareImage } from "../lib/share-image";
 import { renderVocabShareCard } from "../features/vocab-test/share-card";
+import { useStudyTimer } from "../lib/useStudyTimer";
 
 type View = "intro" | "quiz" | "result";
 
@@ -497,6 +498,7 @@ export function VocabTestPage() {
    * 底下那行还写着上一题的答案。三个现象是同一个 bug。
    */
   const shownQuestion = feedback ? feedback.question : question;
+  useStudyTimer(view === "quiz" && Boolean(question));
 
   const choose = useCallback((selected: number | null) => {
     if (!question || feedback || paused) return;

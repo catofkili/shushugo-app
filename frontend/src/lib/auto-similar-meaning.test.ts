@@ -15,6 +15,7 @@ vi.mock("./database", () => ({
 import { rowsFor } from "./database/db-utils";
 import { similarMeaningCandidates } from "../data/similar_meaning_groups";
 import { buildInterferenceIndex } from "./scheduler/interference";
+import { questionMeaningPeers } from "./models/question-meaning-index";
 
 describe("自动题面撞车组", () => {
   beforeAll(async () => {
@@ -35,12 +36,24 @@ describe("自动题面撞车组", () => {
   });
 
   it("已有人工组会保留细分说明并补上自动撞车成员", () => {
-    const row = rowsFor("SELECT id, kanji, kana, meaning FROM words WHERE id = ?", [760])[0];
-    const card = similarMeaningCandidates(row);
-
-    expect(card?.title).toContain("来／去／在");
-    expect(card?.items.map((item) => item.id)).toContain(124); // 来る
-    expect(card?.distinction).toContain("题面首义相同的其他词");
+    // 原来钉的是 いらっしゃる(760) 的卡里要有 来る(124)。2026-09-16 辨析题面审校之后
+    // 来る 的题面是「来；普通用法」，和 いらっしゃる 不再共用一行，于是它按设计退出了撞车组
+    // （CLAUDE.md「改完这个词自动退出撞车组」）。所以这里不再钉具体词，改钉性质：
+    // 任何一个人工组成员，只要还有题面撞车的组外词，卡上就得列出来并加那句说明。
+    const rows = rowsFor("SELECT id, kanji, kana, meaning FROM words");
+    const sample = rows.find((row) => {
+      const id = Number(row.id ?? 0);
+      const card = similarMeaningCandidates(row);
+      if (!card || card.source === "auto") return false;
+      const peers = questionMeaningPeers(id);
+      return peers.length > 0 && peers.some((peer) => card.items.some((item) => item.id === peer && !item.manual));
+    });
+    expect(sample).toBeDefined();
+    const card = similarMeaningCandidates(sample!)!;
+    questionMeaningPeers(Number(sample!.id)).forEach((peer) => {
+      expect(card.items.map((item) => item.id)).toContain(peer);
+    });
+    expect(card.distinction).toContain("题面首义相同的其他词");
   });
 
   it("回り与周り有独立例句和汉字选择说明", () => {

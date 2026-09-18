@@ -1,0 +1,1332 @@
+[
+  {
+    "kanji": "紅葉",
+    "kana": "もみじ",
+    "questionMeaning": "红叶",
+    "classification": "distinction",
+    "reason": "reading-register:紅葉 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "描く",
+    "kana": "えがく",
+    "questionMeaning": "描绘；画；描写",
+    "classification": "distinction",
+    "reason": "reading-register:描く — 较强调描绘形象、场景或心中的画面，书面感更强；保留原文义项「画；描写；想象」"
+  },
+  {
+    "kanji": "描く",
+    "kana": "かく",
+    "questionMeaning": "描绘",
+    "classification": "distinction",
+    "reason": "reading-register:描く — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "脅かす",
+    "kana": "おびやかす",
+    "questionMeaning": "威胁（占据）",
+    "classification": "distinction",
+    "reason": "reading-register:脅かす；stem:脅 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "脅かす",
+    "kana": "おどかす",
+    "questionMeaning": "威胁（主动）；威胁，威吓；恐吓",
+    "classification": "distinction",
+    "reason": "reading-register:脅かす — 吓唬、使人吃惊；保留原文义项「威胁，威吓；恐吓」"
+  },
+  {
+    "kanji": "閉じ込める",
+    "kana": "とじこめる",
+    "questionMeaning": "关进",
+    "classification": "distinction",
+    "reason": "stem:閉 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "入り込む",
+    "kana": "はいりこむ",
+    "questionMeaning": "深入；进入内部",
+    "classification": "distinction",
+    "reason": "stem:入 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "入れ替わる",
+    "kana": "いれかわる",
+    "questionMeaning": "互相替换",
+    "classification": "distinction",
+    "reason": "stem:入 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "入れ替える",
+    "kana": "いれかえる",
+    "questionMeaning": "替换",
+    "classification": "distinction",
+    "reason": "stem:入 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "入り交じる",
+    "kana": "いりまじる",
+    "questionMeaning": "混杂",
+    "classification": "distinction",
+    "reason": "stem:入 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "入り組む",
+    "kana": "いりくむ",
+    "questionMeaning": "错综复杂",
+    "classification": "distinction",
+    "reason": "stem:入 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "貸す",
+    "kana": "かす",
+    "questionMeaning": "借给；借出；提供",
+    "classification": "distinction",
+    "reason": "stem:貸 — 借给别人；保留原文义项「借出；提供」"
+  },
+  {
+    "kanji": "貸し出す",
+    "kana": "かしだす",
+    "questionMeaning": "借出；出借；放贷",
+    "classification": "distinction",
+    "reason": "stem:貸 — 强调把物品正式借出、出借；保留原文义项「出借；放贷」"
+  },
+  {
+    "kanji": "手渡す",
+    "kana": "てわたす",
+    "questionMeaning": "亲手交给",
+    "classification": "distinction",
+    "reason": "stem:手 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "手放す",
+    "kana": "てばなす",
+    "questionMeaning": "放手；卖掉，转让；放下",
+    "classification": "distinction",
+    "reason": "stem:手 — 放手、出售或不再持有；保留原文义项「放手；卖掉，转让；放下」"
+  },
+  {
+    "kanji": "手がける",
+    "kana": "てがける",
+    "questionMeaning": "亲手做",
+    "classification": "distinction",
+    "reason": "stem:手 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "教える",
+    "kana": "おしえる",
+    "questionMeaning": "教；告诉",
+    "classification": "distinction",
+    "reason": "stem:教 — 教别人知识或方法；保留原文义项「教，传授；告诉」"
+  },
+  {
+    "kanji": "教わる",
+    "kana": "おそわる",
+    "questionMeaning": "受教",
+    "classification": "distinction",
+    "reason": "stem:教 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "考える",
+    "kana": "かんがえる",
+    "questionMeaning": "思考",
+    "classification": "distinction",
+    "reason": "stem:考 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "考え直す",
+    "kana": "かんがえなおす",
+    "questionMeaning": "重新考虑",
+    "classification": "distinction",
+    "reason": "stem:考 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "考え込む",
+    "kana": "かんがえこむ",
+    "questionMeaning": "陷入沉思",
+    "classification": "distinction",
+    "reason": "stem:考 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "決めつける",
+    "kana": "きめつける",
+    "questionMeaning": "擅自断定",
+    "classification": "distinction",
+    "reason": "stem:決 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "受け取る",
+    "kana": "うけとる",
+    "questionMeaning": "接收；理解",
+    "classification": "distinction",
+    "reason": "stem:受 — 收到并拿到手；保留原文义项「接收；理解」"
+  },
+  {
+    "kanji": "受け入れる",
+    "kana": "うけいれる",
+    "questionMeaning": "接受（接纳）；采纳；收进",
+    "classification": "distinction",
+    "reason": "stem:受 — 接纳；保留原文义项「采纳；收进」"
+  },
+  {
+    "kanji": "受け付ける",
+    "kana": "うけつける",
+    "questionMeaning": "受理；接受、不吸收；吸收（营养）",
+    "classification": "distinction",
+    "reason": "stem:受 — 受理；保留原文义项「受理（申请）；（不）接受（意见等）；（不）吸收（营养、水分等）」"
+  },
+  {
+    "kanji": "受け止める",
+    "kana": "うけとめる",
+    "questionMeaning": "接住；阻止；理解",
+    "classification": "distinction",
+    "reason": "stem:受 — 接住或正面理解；保留原文义项「接住；阻止；理解」"
+  },
+  {
+    "kanji": "使う",
+    "kana": "つかう",
+    "questionMeaning": "使用；花费",
+    "classification": "distinction",
+    "reason": "stem:使 — 使用；保留原文义项「使用；花费」"
+  },
+  {
+    "kanji": "使い分ける",
+    "kana": "つかいわける",
+    "questionMeaning": "区别使用",
+    "classification": "distinction",
+    "reason": "stem:使 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "使い果たす",
+    "kana": "つかいはたす",
+    "questionMeaning": "用尽",
+    "classification": "distinction",
+    "reason": "stem:使 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "使いこなす",
+    "kana": "つかいこなす",
+    "questionMeaning": "熟练使用",
+    "classification": "distinction",
+    "reason": "stem:使 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "使い込む",
+    "kana": "つかいこむ",
+    "questionMeaning": "用旧；挪用（公款）；超支",
+    "classification": "distinction",
+    "reason": "stem:使 — 长期使用到熟透或用旧；保留原文义项「挪用（公款）；超支；用熟」"
+  },
+  {
+    "kanji": "作る",
+    "kana": "つくる",
+    "questionMeaning": "制作；做",
+    "classification": "distinction",
+    "reason": "stem:作 — 制作、创造；保留原文义项「制作；做」"
+  },
+  {
+    "kanji": "作り直す",
+    "kana": "つくりなおす",
+    "questionMeaning": "重新制作",
+    "classification": "distinction",
+    "reason": "stem:作 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "買う",
+    "kana": "かう",
+    "questionMeaning": "购买",
+    "classification": "distinction",
+    "reason": "stem:買 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "買い求める",
+    "kana": "かいもとめる",
+    "questionMeaning": "购买（正式）",
+    "classification": "distinction",
+    "reason": "stem:買 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "買い取る",
+    "kana": "かいとる",
+    "questionMeaning": "买下",
+    "classification": "distinction",
+    "reason": "stem:買 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "買い与える",
+    "kana": "かいあたえる",
+    "questionMeaning": "买给",
+    "classification": "distinction",
+    "reason": "stem:買 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "買い占める",
+    "kana": "かいしめる",
+    "questionMeaning": "买断",
+    "classification": "distinction",
+    "reason": "stem:買 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "売り切れる",
+    "kana": "うりきれる",
+    "questionMeaning": "售罄",
+    "classification": "distinction",
+    "reason": "stem:売 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "売れ残る",
+    "kana": "うれのこる",
+    "questionMeaning": "卖剩",
+    "classification": "distinction",
+    "reason": "stem:売 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "売り出す",
+    "kana": "うりだす",
+    "questionMeaning": "开始销售；大量销售；出名、崭露头角",
+    "classification": "distinction",
+    "reason": "stem:売 — 开始销售或推出；保留原文义项「开售，新发售；（广为宣传，或是打折促销，附赠奖品）大量销售；出名，崭露头角」"
+  },
+  {
+    "kanji": "待つ",
+    "kana": "まつ",
+    "questionMeaning": "等待",
+    "classification": "distinction",
+    "reason": "stem:待 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "待ち受ける",
+    "kana": "まちうける",
+    "questionMeaning": "等待（主动）",
+    "classification": "distinction",
+    "reason": "stem:待 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "持つ",
+    "kana": "もつ",
+    "questionMeaning": "拿着；带着；拥有，持有",
+    "classification": "distinction",
+    "reason": "stem:持 — 拿、拥有；保留原文义项「拿；带着；拥有，持有」"
+  },
+  {
+    "kanji": "持ち帰る",
+    "kana": "もちかえる",
+    "questionMeaning": "带回",
+    "classification": "distinction",
+    "reason": "stem:持 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "持ち歩く",
+    "kana": "もちあるく",
+    "questionMeaning": "随身携带",
+    "classification": "distinction",
+    "reason": "stem:持 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "持ち込む",
+    "kana": "もちこむ",
+    "questionMeaning": "带入；带进，携入；提出（意见、问题等）",
+    "classification": "distinction",
+    "reason": "stem:持 — 带入；保留原文义项「带进，携入；提出（意见、问题等）」"
+  },
+  {
+    "kanji": "持ち出す",
+    "kana": "もちだす",
+    "questionMeaning": "带出；提出",
+    "classification": "distinction",
+    "reason": "synonym:拿出 — 持ち出す强调从某处带出，或把话题、主张提出来；保留原文义项「拿出；提出」；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "立ち並ぶ",
+    "kana": "たちならぶ",
+    "questionMeaning": "并排林立；（建筑物等）林立；匹敌",
+    "classification": "distinction",
+    "reason": "stem:立 — 并排；保留原文义项「（建筑物等）林立；匹敌」"
+  },
+  {
+    "kanji": "立ち去る",
+    "kana": "たちさる",
+    "questionMeaning": "离开现场（现场离开）",
+    "classification": "distinction",
+    "reason": "synonym:离开 — 立ち去る强调起身离开现场；保留原文义项「离开」"
+  },
+  {
+    "kanji": "立ち退く",
+    "kana": "たちのく",
+    "questionMeaning": "搬离；离开；搬出",
+    "classification": "distinction",
+    "reason": "stem:立 — 搬离；保留原文义项「离开；搬出」"
+  },
+  {
+    "kanji": "立ち返る",
+    "kana": "たちかえる",
+    "questionMeaning": "返回原点；回到起点或原状",
+    "classification": "distinction",
+    "reason": "stem:立 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "立ち戻る",
+    "kana": "たちもどる",
+    "questionMeaning": "返回原处；回到先前地点或状态",
+    "classification": "distinction",
+    "reason": "stem:立 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "走る",
+    "kana": "はしる",
+    "questionMeaning": "跑；行驶",
+    "classification": "distinction",
+    "reason": "stem:走 — 跑或行驶；保留原文义项「奔跑；行驶」"
+  },
+  {
+    "kanji": "走り回る",
+    "kana": "はしりまわる",
+    "questionMeaning": "跑来跑去；到处跑；（忙得）四处奔走",
+    "classification": "distinction",
+    "reason": "stem:走 — 强调到处跑、来回奔走；保留原文义项「到处跑；（忙得）四处奔走」"
+  },
+  {
+    "kanji": "歩く",
+    "kana": "あるく",
+    "questionMeaning": "走路",
+    "classification": "distinction",
+    "reason": "stem:歩 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "歩き回る",
+    "kana": "あるきまわる",
+    "questionMeaning": "到处走",
+    "classification": "distinction",
+    "reason": "stem:歩 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "読む",
+    "kana": "よむ",
+    "questionMeaning": "阅读；看",
+    "classification": "distinction",
+    "reason": "stem:読 — 阅读；保留原文义项「读；看」"
+  },
+  {
+    "kanji": "読み取る",
+    "kana": "よみとる",
+    "questionMeaning": "读懂；看透；（电脑）读取",
+    "classification": "distinction",
+    "reason": "stem:読 — 读懂、读取信息；保留原文义项「读懂，领会；看透；（电脑）读取」"
+  },
+  {
+    "kanji": "読み上げる",
+    "kana": "よみあげる",
+    "questionMeaning": "朗读；读完",
+    "classification": "distinction",
+    "reason": "stem:読 — 朗读；保留原文义项「大声朗读；读完」"
+  },
+  {
+    "kanji": "読み返す",
+    "kana": "よみかえす",
+    "questionMeaning": "重读",
+    "classification": "distinction",
+    "reason": "stem:読 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "読み込む",
+    "kana": "よみこむ",
+    "questionMeaning": "读入；彻底读懂；（电脑）导入数据",
+    "classification": "distinction",
+    "reason": "stem:読 — 读入或深入理解；保留原文义项「彻底读懂；（电脑）导入数据」"
+  },
+  {
+    "kanji": "話す",
+    "kana": "はなす",
+    "questionMeaning": "说话",
+    "classification": "distinction",
+    "reason": "stem:話 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "話しかける",
+    "kana": "はなしかける",
+    "questionMeaning": "搭话；打招呼；开始说",
+    "classification": "distinction",
+    "reason": "stem:話 — 主动搭话、向某人开口；保留原文义项「打招呼；开始说」"
+  },
+  {
+    "kanji": "聞かせる",
+    "kana": "きかせる",
+    "questionMeaning": "讲给……听；中听，动听",
+    "classification": "distinction",
+    "reason": "stem:聞 — 讲给别人听；保留原文义项「给……听；中听，动听」"
+  },
+  {
+    "kanji": "聞き取る",
+    "kana": "ききとる",
+    "questionMeaning": "听懂；听取",
+    "classification": "distinction",
+    "reason": "stem:聞 — 听懂；保留原文义项「听懂；听取」"
+  },
+  {
+    "kanji": "聞き直す",
+    "kana": "ききなおす",
+    "questionMeaning": "再问；重新问；重新听",
+    "classification": "distinction",
+    "reason": "stem:聞 — 再问；保留原文义项「重新问；重新听」"
+  },
+  {
+    "kanji": "聞き出す",
+    "kana": "ききだす",
+    "questionMeaning": "问出；开始听",
+    "classification": "distinction",
+    "reason": "stem:聞 — 问出信息；保留原文义项「问出；开始听」"
+  },
+  {
+    "kanji": "聞きつける",
+    "kana": "ききつける",
+    "questionMeaning": "听到；听惯",
+    "classification": "distinction",
+    "reason": "stem:聞 — 听到消息；保留原文义项「偶然听到；听惯」"
+  },
+  {
+    "kanji": "行き着く",
+    "kana": "いきつく",
+    "questionMeaning": "到达；事物达到最终状态",
+    "classification": "distinction",
+    "reason": "stem:行 — 最终到达某处或结论；保留原文义项「到达（目的地）；事物达到最终状态」"
+  },
+  {
+    "kanji": "行き届く",
+    "kana": "いきとどく",
+    "questionMeaning": "周到",
+    "classification": "distinction",
+    "reason": "stem:行 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "止む",
+    "kana": "やむ",
+    "questionMeaning": "停止（雨、风等停下）",
+    "classification": "distinction",
+    "reason": "stem:止 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "止める",
+    "kana": "やめる",
+    "questionMeaning": "停止（做某事）；戒掉",
+    "classification": "distinction",
+    "reason": "stem:止 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "知る",
+    "kana": "しる",
+    "questionMeaning": "知道；了解",
+    "classification": "distinction",
+    "reason": "stem:知 — 得知、知道；保留原文义项「知道；了解」"
+  },
+  {
+    "kanji": "知らせる",
+    "kana": "しらせる",
+    "questionMeaning": "通知",
+    "classification": "distinction",
+    "reason": "stem:知 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "探し出す",
+    "kana": "さがしだす",
+    "questionMeaning": "找出",
+    "classification": "distinction",
+    "reason": "stem:探 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "探し回る",
+    "kana": "さがしまわる",
+    "questionMeaning": "四处寻找",
+    "classification": "distinction",
+    "reason": "stem:探 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "選ぶ",
+    "kana": "えらぶ",
+    "questionMeaning": "选择",
+    "classification": "distinction",
+    "reason": "stem:選 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "選び取る",
+    "kana": "えらびとる",
+    "questionMeaning": "选出",
+    "classification": "distinction",
+    "reason": "stem:選 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "着る",
+    "kana": "きる",
+    "questionMeaning": "穿上衣",
+    "classification": "distinction",
+    "reason": "stem:着 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "着く",
+    "kana": "つく",
+    "questionMeaning": "到达",
+    "classification": "distinction",
+    "reason": "stem:着 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "たどり着く",
+    "kana": "たどりつく",
+    "questionMeaning": "到达（经过过程）",
+    "classification": "distinction",
+    "reason": "stem:着 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "着替える",
+    "kana": "きがえる",
+    "questionMeaning": "换衣服",
+    "classification": "distinction",
+    "reason": "stem:着 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "並べ立てる",
+    "kana": "ならべたてる",
+    "questionMeaning": "列举；摆出",
+    "classification": "distinction",
+    "reason": "stem:並 — 强调把多个事例或理由接连列举出来；保留原文义项「摆出；列举，罗列」"
+  },
+  {
+    "kanji": "降る",
+    "kana": "ふる",
+    "questionMeaning": "下（雨、雪）",
+    "classification": "distinction",
+    "reason": "stem:降 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "降り出す",
+    "kana": "ふりだす",
+    "questionMeaning": "开始下（雨、雪）",
+    "classification": "distinction",
+    "reason": "stem:降 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "降り続く",
+    "kana": "ふりつづく",
+    "questionMeaning": "持续下（雨、雪）",
+    "classification": "distinction",
+    "reason": "stem:降 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "降り注ぐ",
+    "kana": "ふりそそぐ",
+    "questionMeaning": "倾泻而下",
+    "classification": "distinction",
+    "reason": "stem:降 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "乗り換える",
+    "kana": "のりかえる",
+    "questionMeaning": "换乘",
+    "classification": "distinction",
+    "reason": "stem:乗 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "乗り継ぐ",
+    "kana": "のりつぐ",
+    "questionMeaning": "转乘（衔接下一程）",
+    "classification": "distinction",
+    "reason": "stem:乗 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "乗り越える",
+    "kana": "のりこえる",
+    "questionMeaning": "克服；越过；超越",
+    "classification": "distinction",
+    "reason": "stem:乗 — 克服；保留原文义项「越过；克服；超越」"
+  },
+  {
+    "kanji": "乗り切る",
+    "kana": "のりきる",
+    "questionMeaning": "挺过去（难关）；乘…越过",
+    "classification": "distinction",
+    "reason": "stem:乗 — 坚持度过、完成；保留原文义项「乘……越过；克服，度过」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "起き上がる",
+    "kana": "おきあがる",
+    "questionMeaning": "起身",
+    "classification": "distinction",
+    "reason": "stem:起 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "言う",
+    "kana": "いう",
+    "questionMeaning": "说；叫作",
+    "classification": "distinction",
+    "reason": "stem:言 — 说；保留原文义项「说话，告诉；叫作」"
+  },
+  {
+    "kanji": "言い出す",
+    "kana": "いいだす",
+    "questionMeaning": "说出；最先说",
+    "classification": "distinction",
+    "reason": "stem:言 — 说出口；保留原文义项「说出口；最先说」"
+  },
+  {
+    "kanji": "言い切る",
+    "kana": "いいきる",
+    "questionMeaning": "断言；说完；断言，说死",
+    "classification": "distinction",
+    "reason": "stem:言 — 断言或说完；保留原文义项「说完；断言，说死」；验收改：去掉重复首义的空括号"
+  },
+  {
+    "kanji": "言い聞かせる",
+    "kana": "いいきかせる",
+    "questionMeaning": "劝说",
+    "classification": "distinction",
+    "reason": "stem:言 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "言い換える",
+    "kana": "いいかえる",
+    "questionMeaning": "换句话说；重新说",
+    "classification": "distinction",
+    "reason": "stem:言 — 换说法；保留原文义项「换句话说，换种说法；重新说」"
+  },
+  {
+    "kanji": "言い残す",
+    "kana": "いいのこす",
+    "questionMeaning": "留下话；未说完；留话，遗言",
+    "classification": "distinction",
+    "reason": "stem:言 — 留下话；保留原文义项「未说完；留话，遗言」"
+  },
+  {
+    "kanji": "言い放つ",
+    "kana": "いいはなつ",
+    "questionMeaning": "断言（直截了当）",
+    "classification": "distinction",
+    "reason": "stem:言 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "呼ぶ",
+    "kana": "よぶ",
+    "questionMeaning": "叫；呼唤、叫来；叫作、邀请",
+    "classification": "distinction",
+    "reason": "stem:呼 — 叫、邀请；保留原文义项「呼唤；叫来；叫作；邀请」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "呼び止める",
+    "kana": "よびとめる",
+    "questionMeaning": "叫住",
+    "classification": "distinction",
+    "reason": "stem:呼 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "呼び込む",
+    "kana": "よびこむ",
+    "questionMeaning": "招来",
+    "classification": "distinction",
+    "reason": "stem:呼 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "呼び寄せる",
+    "kana": "よびよせる",
+    "questionMeaning": "叫来",
+    "classification": "distinction",
+    "reason": "stem:呼 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "住む",
+    "kana": "すむ",
+    "questionMeaning": "居住",
+    "classification": "distinction",
+    "reason": "stem:住 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "住み着く",
+    "kana": "すみつく",
+    "questionMeaning": "定居",
+    "classification": "distinction",
+    "reason": "stem:住 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "消え去る",
+    "kana": "きえさる",
+    "questionMeaning": "彻底消失；远去",
+    "classification": "distinction",
+    "reason": "synonym:消失 — 消え去る、失せる更强调彻底离去，语气和搭配不同；保留原文义项「消失」"
+  },
+  {
+    "kanji": "笑う",
+    "kana": "わらう",
+    "questionMeaning": "笑；嘲笑",
+    "classification": "distinction",
+    "reason": "stem:笑 — 自己笑；保留原文义项「笑；嘲笑」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "笑わせる",
+    "kana": "わらわせる",
+    "questionMeaning": "逗笑；使发笑；令人看不起",
+    "classification": "distinction",
+    "reason": "stem:笑 — 逗得别人笑、使别人发笑；保留原文义项「使发笑；令人看不起」"
+  },
+  {
+    "kanji": "上る",
+    "kana": "のぼる",
+    "questionMeaning": "攀升；向高处移动",
+    "classification": "distinction",
+    "reason": "stem:上 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "くみ上げる",
+    "kana": "くみあげる",
+    "questionMeaning": "抽上来；舀，抽（液体）；采纳（下属或群众的要求、建议等）",
+    "classification": "distinction",
+    "reason": "stem:上 — 把液体、数据等抽取上来；保留原文义项「舀，抽（液体）；采纳（下属或群众的要求、建议等）」"
+  },
+  {
+    "kanji": "食べる",
+    "kana": "たべる",
+    "questionMeaning": "吃（普通中性）",
+    "classification": "distinction",
+    "reason": "stem:食 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "食う",
+    "kana": "くう",
+    "questionMeaning": "吃（正式）；（男性用语）吃；生活",
+    "classification": "distinction",
+    "reason": "stem:食 — 粗俗或男性化的口语，正式场合不要替换；保留原文义项「（男性用语）吃；生活；（くう）花费」"
+  },
+  {
+    "kanji": "寝転がる",
+    "kana": "ねころがる",
+    "questionMeaning": "躺下",
+    "classification": "distinction",
+    "reason": "stem:寝 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "寝かせる",
+    "kana": "ねかせる",
+    "questionMeaning": "使躺下；哄睡；放平",
+    "classification": "distinction",
+    "reason": "stem:寝 — 让人或物躺下，也可让婴儿入睡；保留原文义项「哄睡；放平；闲置」"
+  },
+  {
+    "kanji": "晴れ渡る",
+    "kana": "はれわたる",
+    "questionMeaning": "完全放晴",
+    "classification": "distinction",
+    "reason": "stem:晴 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "切り替える",
+    "kana": "きりかえる",
+    "questionMeaning": "切换",
+    "classification": "distinction",
+    "reason": "stem:切 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "切り捨てる",
+    "kana": "きりすてる",
+    "questionMeaning": "切掉（舍弃）；舍去尾数",
+    "classification": "distinction",
+    "reason": "stem:切 — 舍弃；保留原文义项「切掉；舍去（计算中所求位数之后的尾数）」"
+  },
+  {
+    "kanji": "切り取る",
+    "kana": "きりとる",
+    "questionMeaning": "切下",
+    "classification": "distinction",
+    "reason": "stem:切 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "切り開く",
+    "kana": "きりひらく",
+    "questionMeaning": "开拓；杀开；开辟，开创",
+    "classification": "distinction",
+    "reason": "stem:切 — 开拓；保留原文义项「开垦，开拓；杀开；开辟，开创」"
+  },
+  {
+    "kanji": "切り出す",
+    "kana": "きりだす",
+    "questionMeaning": "开始说；将木材或石头切割后运出",
+    "classification": "distinction",
+    "reason": "stem:切 — 开始提出；保留原文义项「将木材或石头切割后运出；开始说重要的事情」"
+  },
+  {
+    "kanji": "切り離す",
+    "kana": "きりはなす",
+    "questionMeaning": "分开",
+    "classification": "distinction",
+    "reason": "stem:切 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "切り落とす",
+    "kana": "きりおとす",
+    "questionMeaning": "切掉；剪掉，砍掉；掘开堤坝",
+    "classification": "distinction",
+    "reason": "stem:切 — 切掉；保留原文义项「剪掉，砍掉；掘开堤坝」"
+  },
+  {
+    "kanji": "分け与える",
+    "kana": "わけあたえる",
+    "questionMeaning": "分给",
+    "classification": "distinction",
+    "reason": "stem:分 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "間違える",
+    "kana": "まちがえる",
+    "questionMeaning": "弄错",
+    "classification": "distinction",
+    "reason": "stem:間 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "間違う",
+    "kana": "まちがう",
+    "questionMeaning": "弄错（口语）",
+    "classification": "distinction",
+    "reason": "stem:間 — 也可表示弄错但较口语或固定；保留原文义项「错；弄错」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "通りかかる",
+    "kana": "とおりかかる",
+    "questionMeaning": "路过",
+    "classification": "distinction",
+    "reason": "stem:通 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "通り過ぎる",
+    "kana": "とおりすぎる",
+    "questionMeaning": "走过",
+    "classification": "distinction",
+    "reason": "stem:通 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "通じる",
+    "kana": "つうじる",
+    "questionMeaning": "通晓；理解、弄通；通过、经过",
+    "classification": "distinction",
+    "reason": "stem:通 — 相通、通晓或有效；保留原文义项「通；理解；弄通；通过，经过」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "押す",
+    "kana": "おす",
+    "questionMeaning": "按；推",
+    "classification": "distinction",
+    "reason": "stem:押 — 按、推；保留原文义项「压，按；推」"
+  },
+  {
+    "kanji": "押さえる",
+    "kana": "おさえる",
+    "questionMeaning": "按住；捂住；抓住",
+    "classification": "distinction",
+    "reason": "stem:押 — 按住或控制；保留原文义项「按住；捂住；抓住」"
+  },
+  {
+    "kanji": "押し込む",
+    "kana": "おしこむ",
+    "questionMeaning": "用力塞入；挤进",
+    "classification": "distinction",
+    "reason": "synonym:塞入 — 用力推进、挤进，常强调外力和狭窄空间；保留原文义项「塞入；挤进」"
+  },
+  {
+    "kanji": "押し出す",
+    "kana": "おしだす",
+    "questionMeaning": "推出；突出；全体出动",
+    "classification": "distinction",
+    "reason": "stem:押 — 推出；保留原文义项「推出去；突出；全体出动」"
+  },
+  {
+    "kanji": "押し切る",
+    "kana": "おしきる",
+    "questionMeaning": "顶住；压着切断；不顾困难而行，坚持到底",
+    "classification": "distinction",
+    "reason": "stem:押 — 顶住坚持；保留原文义项「压着切断；不顾困难而行，坚持到底」"
+  },
+  {
+    "kanji": "押しやる",
+    "kana": "おしやる",
+    "questionMeaning": "推开（推到一边）",
+    "classification": "distinction",
+    "reason": "synonym:推开 — 推到一边、排挤，不能全换情感拒绝；保留原文义项「推开；排挤」"
+  },
+  {
+    "kanji": "押し込める",
+    "kana": "おしこめる",
+    "questionMeaning": "塞进（把东西推进）；关在里面，监禁",
+    "classification": "distinction",
+    "reason": "synonym:塞进 — 把东西推进去或关押、压抑，结果和引申义不同；保留原文义项「塞进；关押」"
+  },
+  {
+    "kanji": "吸う",
+    "kana": "すう",
+    "questionMeaning": "吸（烟、气）；吮吸；吸收",
+    "classification": "distinction",
+    "reason": "stem:吸 — 吸；保留原文义项「吸；吮吸；吸收」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "吸い込む",
+    "kana": "すいこむ",
+    "questionMeaning": "吸入；卷入，消失，吞噬",
+    "classification": "distinction",
+    "reason": "stem:吸 — 吸入或吸进去；保留原文义项「吸入，吸进，抽；卷入，消失，吞噬」"
+  },
+  {
+    "kanji": "吸い取る",
+    "kana": "すいとる",
+    "questionMeaning": "吸取；吸出；剥削，压榨",
+    "classification": "distinction",
+    "reason": "stem:吸 — 吸取液体、利益等；保留原文义项「吸出；剥削，压榨」"
+  },
+  {
+    "kanji": "吸い上げる",
+    "kana": "すいあげる",
+    "questionMeaning": "抽吸上来；榨取利益；听取意见",
+    "classification": "distinction",
+    "reason": "stem:吸 — 抽吸上来；保留原文义项「抽上来；榨取（他人利益）；听取（一般民众的）意见」"
+  },
+  {
+    "kanji": "込み合う",
+    "kana": "こみあう",
+    "questionMeaning": "拥堵；人或交通挤在一起",
+    "classification": "distinction",
+    "reason": "stem:込 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "差し伸べる",
+    "kana": "さしのべる",
+    "questionMeaning": "伸出（援手）；帮助",
+    "classification": "distinction",
+    "reason": "stem:差 — 伸出手帮助；保留原文义项「伸出；帮助」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "差し出す",
+    "kana": "さしだす",
+    "questionMeaning": "递出；寄出，派出；提交",
+    "classification": "distinction",
+    "reason": "stem:差 — 伸出、递出或提交，重点是把对象交到对方面前；保留原文义项「伸出，递出；寄出，派出；提交」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "信じる",
+    "kana": "しんじる",
+    "questionMeaning": "相信；信仰",
+    "classification": "distinction",
+    "reason": "stem:信 — 相信；保留原文义项「相信，信赖；信仰」"
+  },
+  {
+    "kanji": "信じ込む",
+    "kana": "しんじこむ",
+    "questionMeaning": "深信（强调）",
+    "classification": "distinction",
+    "reason": "synonym:深信 — 深信不疑，强调信念本身，不能全换；保留原文义项「深信；坚信」"
+  },
+  {
+    "kanji": "弾く",
+    "kana": "ひく",
+    "questionMeaning": "弹奏",
+    "classification": "distinction",
+    "reason": "stem:弾 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "弾む",
+    "kana": "はずむ",
+    "questionMeaning": "弹起；跳，弹；起劲，激动",
+    "classification": "distinction",
+    "reason": "stem:弾 — 弹起、跳动，也可表示气氛活跃或心情兴奋；保留原文义项「跳，弹；起劲，激动」"
+  },
+  {
+    "kanji": "頼む",
+    "kana": "たのむ",
+    "questionMeaning": "请求；依靠",
+    "classification": "distinction",
+    "reason": "stem:頼 — 请求、拜托；保留原文义项「请求，托付；依靠」"
+  },
+  {
+    "kanji": "頼み込む",
+    "kana": "たのみこむ",
+    "questionMeaning": "恳求",
+    "classification": "distinction",
+    "reason": "stem:頼 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "育む",
+    "kana": "はぐくむ",
+    "questionMeaning": "培育；孵蛋；养育",
+    "classification": "distinction",
+    "reason": "stem:育 — 偏长期培育感情、能力；保留原文义项「孵蛋；养育；培养」"
+  },
+  {
+    "kanji": "育て上げる",
+    "kana": "そだてあげる",
+    "questionMeaning": "养育成人",
+    "classification": "distinction",
+    "reason": "stem:育 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "下回る",
+    "kana": "したまわる",
+    "questionMeaning": "低于",
+    "classification": "distinction",
+    "reason": "stem:下 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "過ぎ去る",
+    "kana": "すぎさる",
+    "questionMeaning": "过去；通过",
+    "classification": "distinction",
+    "reason": "stem:過 — 强调离去；保留原文义项「通过；过去，消逝」"
+  },
+  {
+    "kanji": "やり過ごす",
+    "kana": "やりすごす",
+    "questionMeaning": "应付过去；让后来的人先走；做得过头",
+    "classification": "distinction",
+    "reason": "stem:過 — やり過ごす是设法熬过、应付过去；保留原文义项「让后来的人先走；做得过头」"
+  },
+  {
+    "kanji": "感じる",
+    "kana": "かんじる",
+    "questionMeaning": "感到；觉得",
+    "classification": "distinction",
+    "reason": "stem:感 — 感到、感觉；保留原文义项「感到；觉得」"
+  },
+  {
+    "kanji": "感じ取る",
+    "kana": "かんじとる",
+    "questionMeaning": "感受到",
+    "classification": "distinction",
+    "reason": "stem:感 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "建て直す",
+    "kana": "たてなおす",
+    "questionMeaning": "重建",
+    "classification": "distinction",
+    "reason": "stem:建 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "似合う",
+    "kana": "にあう",
+    "questionMeaning": "相称",
+    "classification": "distinction",
+    "reason": "stem:似 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "似通う",
+    "kana": "にかよう",
+    "questionMeaning": "相似",
+    "classification": "distinction",
+    "reason": "stem:似 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "かき集める",
+    "kana": "かきあつめる",
+    "questionMeaning": "搜集；扒，搂",
+    "classification": "distinction",
+    "reason": "stem:集 — かき集める强调费力、到处搜集；保留原文义项「扒，搂；搜罗，搜集」"
+  },
+  {
+    "kanji": "集う",
+    "kana": "つどう",
+    "questionMeaning": "会聚（共同目的、群体）；人们正式聚集",
+    "classification": "distinction",
+    "reason": "stem:集 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "助け合う",
+    "kana": "たすけあう",
+    "questionMeaning": "互相帮助",
+    "classification": "distinction",
+    "reason": "stem:助 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "勝つ",
+    "kana": "かつ",
+    "questionMeaning": "获胜",
+    "classification": "distinction",
+    "reason": "stem:勝 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "勝ち抜く",
+    "kana": "かちぬく",
+    "questionMeaning": "取胜晋级",
+    "classification": "distinction",
+    "reason": "stem:勝 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "増す",
+    "kana": "ます",
+    "questionMeaning": "增加（正式）",
+    "classification": "distinction",
+    "reason": "stem:増 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "打つ",
+    "kana": "うつ",
+    "questionMeaning": "打；碰，撞；感动",
+    "classification": "distinction",
+    "reason": "stem:打 — 打、敲或输入；保留原文义项「碰，撞；拍，打；感动」"
+  },
+  {
+    "kanji": "打ち直す",
+    "kana": "うちなおす",
+    "questionMeaning": "重打；重新打；重新弹（棉花）",
+    "classification": "distinction",
+    "reason": "stem:打 — 重新打、重做；保留原文义项「重新打；重新弹（棉花）」"
+  },
+  {
+    "kanji": "打ち込む",
+    "kana": "うちこむ",
+    "questionMeaning": "打入；打进，射进；埋头，专心致志",
+    "classification": "distinction",
+    "reason": "stem:打 — 打入、投入或专心投入；保留原文义项「打进，射进；埋头，专心致志」"
+  },
+  {
+    "kanji": "投げる",
+    "kana": "なげる",
+    "questionMeaning": "投；提出；放弃",
+    "classification": "distinction",
+    "reason": "stem:投 — 投掷；保留原文义项「扔，投；提出；放弃」"
+  },
+  {
+    "kanji": "投げ捨てる",
+    "kana": "なげすてる",
+    "questionMeaning": "扔掉；（把做了一半的工作等）丢在一边",
+    "classification": "distinction",
+    "reason": "stem:投 — 扔掉；保留原文义项「扔掉，丢弃；（把做了一半的工作等）丢在一边」"
+  },
+  {
+    "kanji": "投じる",
+    "kana": "とうじる",
+    "questionMeaning": "投入；献身",
+    "classification": "distinction",
+    "reason": "stem:投 — 投入资金、力量或投票；保留原文义项「投；献身；投入」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "投げ出す",
+    "kana": "なげだす",
+    "questionMeaning": "扔出；扔，抛出；中途放弃",
+    "classification": "distinction",
+    "reason": "stem:投 — 扔出或半途放弃；保留原文义项「扔，抛出；中途放弃；豁出去」"
+  },
+  {
+    "kanji": "投げかける",
+    "kana": "なげかける",
+    "questionMeaning": "投向；搭上、披上；提出、倚靠",
+    "classification": "distinction",
+    "reason": "stem:投 — 向对方提出、投向；保留原文义项「随手搭上，披上；（视线、话语等）投向；提出；倚靠」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "動じる",
+    "kana": "どうじる",
+    "questionMeaning": "动摇",
+    "classification": "distinction",
+    "reason": "stem:動 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "包む",
+    "kana": "つつむ",
+    "questionMeaning": "包裹；包围，笼罩",
+    "classification": "distinction",
+    "reason": "stem:包 — 包裹；保留原文义项「包；包围，笼罩」"
+  },
+  {
+    "kanji": "包み込む",
+    "kana": "つつみこむ",
+    "questionMeaning": "包住",
+    "classification": "distinction",
+    "reason": "stem:包 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "訪ねる",
+    "kana": "たずねる",
+    "questionMeaning": "拜访",
+    "classification": "distinction",
+    "reason": "stem:訪 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "訪れる",
+    "kana": "おとずれる",
+    "questionMeaning": "访问；来临，到来",
+    "classification": "distinction",
+    "reason": "stem:訪 — 访问、到来，常用于季节、机会等抽象事物；保留原文义项「拜访，访问；来临，到来」"
+  },
+  {
+    "kanji": "落ち込む",
+    "kana": "おちこむ",
+    "questionMeaning": "情绪低落；掉进、下陷；跌落、下降",
+    "classification": "distinction",
+    "reason": "stem:落 — 陷入低落、凹陷或深入其中；保留原文义项「掉进；下陷；跌落，下降；（情绪）低落」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "流行[はや]る",
+    "kana": "はやる",
+    "questionMeaning": "流行；（疾病等）蔓延；繁荣，兴旺",
+    "classification": "distinction",
+    "reason": "stem:流 — 流行；保留原文义项「流行；（疾病等）蔓延；繁荣，兴旺」"
+  },
+  {
+    "kanji": "流れ着く",
+    "kana": "ながれつく",
+    "questionMeaning": "漂流到达",
+    "classification": "distinction",
+    "reason": "stem:流 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "流し込む",
+    "kana": "ながしこむ",
+    "questionMeaning": "灌入",
+    "classification": "distinction",
+    "reason": "stem:流 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "流れ込む",
+    "kana": "ながれこむ",
+    "questionMeaning": "流入",
+    "classification": "distinction",
+    "reason": "stem:流 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "映し出す",
+    "kana": "うつしだす",
+    "questionMeaning": "映出；绘画文字表现；反映出",
+    "classification": "distinction",
+    "reason": "stem:映 — 强调清楚呈现、投射出某种形象或内容；保留原文义项「（映）映出；（写）以绘画、文章等来表现；（映）反映出」"
+  },
+  {
+    "kanji": "触る",
+    "kana": "さわる",
+    "questionMeaning": "触碰（触摸）",
+    "classification": "distinction",
+    "reason": "stem:触 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "触れる",
+    "kana": "ふれる",
+    "questionMeaning": "触碰（接触提及）；碰触；涉及",
+    "classification": "distinction",
+    "reason": "stem:触 — 接触、提及或触犯；保留原文义项「碰触；涉及」"
+  },
+  {
+    "kanji": "触れ合う",
+    "kana": "ふれあう",
+    "questionMeaning": "接触；（心灵的）碰撞",
+    "classification": "distinction",
+    "reason": "stem:触 — 双方互相接触、交流；保留原文义项「接触；（心灵的）碰撞」"
+  },
+  {
+    "kanji": "組む",
+    "kana": "くむ",
+    "questionMeaning": "组合；构成整体",
+    "classification": "distinction",
+    "reason": "stem:組 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "組み立てる",
+    "kana": "くみたてる",
+    "questionMeaning": "组装；组织；装配",
+    "classification": "distinction",
+    "reason": "stem:組 — 组装；保留原文义项「组织；装配；安装」"
+  },
+  {
+    "kanji": "組み合わせる",
+    "kana": "くみあわせる",
+    "questionMeaning": "搭配；组合对象",
+    "classification": "distinction",
+    "reason": "stem:組 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  }
+]

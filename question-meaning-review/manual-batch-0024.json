@@ -457,9 +457,9 @@
   {
     "kanji": "当分",
     "kana": "とうぶん",
-    "questionMeaning": "暂时，目前",
+    "questionMeaning": "目前一段时间；暂且",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "当面",
@@ -898,9 +898,9 @@
   {
     "kanji": "道順",
     "kana": "みちじゅん",
-    "questionMeaning": "路线",
+    "questionMeaning": "走法（怎么走）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:路线 — 行走路线；保留原文义项「路线」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "道草",
@@ -975,9 +975,9 @@
   {
     "kanji": "得手",
     "kana": "えて",
-    "questionMeaning": "擅长",
+    "questionMeaning": "擅长（书面）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:擅长的 — 擅长某项且偏书面，语感不同；保留原文义项「擅长的」"
   },
   {
     "kanji": "得点",
@@ -1017,7 +1017,7 @@
   {
     "kanji": "特産",
     "kana": "とくさん",
-    "questionMeaning": "特产",
+    "questionMeaning": "特产（地方特有产品）",
     "classification": "same_meaning",
     "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
   },
@@ -1500,14 +1500,14 @@
   {
     "kanji": "日光",
     "kana": "にっこう",
-    "questionMeaning": "日光，太阳光",
+    "questionMeaning": "日光，太阳光（太阳光、正式）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "日頃",
     "kana": "ひごろ",
-    "questionMeaning": "平常，平素",
+    "questionMeaning": "平常，平素（平日习惯）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1556,16 +1556,16 @@
   {
     "kanji": "日和",
     "kana": "ひより",
-    "questionMeaning": "天气；晴天；形势",
+    "questionMeaning": "好天气（适合出门的）；形势",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:天气 — 还可指适合某事的天气、形势，不能全换；保留原文义项「天气；形势」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "乳児",
     "kana": "にゅうじ",
-    "questionMeaning": "婴儿",
+    "questionMeaning": "婴儿（正式）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:婴儿 — 医学、行政或年龄分类的正式词；保留原文义项「婴儿」"
   },
   {
     "kanji": "乳製品",
@@ -1689,7 +1689,7 @@
   {
     "kanji": "任務",
     "kana": "にんむ",
-    "questionMeaning": "任务，职责",
+    "questionMeaning": "任务，职责（被赋予职责）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1738,7 +1738,7 @@
   {
     "kanji": "熱意",
     "kana": "ねつい",
-    "questionMeaning": "热情，干劲",
+    "questionMeaning": "热情，干劲（投入热情诚意）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },

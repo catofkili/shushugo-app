@@ -1,0 +1,2569 @@
+[
+  {
+    "groupKey": "synonym:警察",
+    "summary": "警察是警察这一机构或警察人员的统称；警察官明确指警察官，警官偏向正式称呼。",
+    "members": [
+      {
+        "kanji": "警察",
+        "kana": "けいさつ",
+        "surface": "警察",
+        "questionMeaning": "警察机构；警察人员",
+        "meaning": "警察"
+      },
+      {
+        "kanji": "警察官",
+        "kana": "けいさつかん",
+        "surface": "警察官",
+        "questionMeaning": "警察人员；警察官",
+        "meaning": "警察，警官"
+      },
+      {
+        "kanji": "警官",
+        "kana": "けいかん",
+        "surface": "警官",
+        "questionMeaning": "警察官称呼",
+        "meaning": "警察"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:健康的",
+    "summary": "健康是健康、身体状况良好；健やか带有身心健全、成长平稳的书面或温和语气。",
+    "members": [
+      {
+        "kanji": "健康",
+        "kana": "けんこう",
+        "surface": "健康",
+        "questionMeaning": "健康",
+        "meaning": "健康的"
+      },
+      {
+        "kanji": "健やか",
+        "kana": "すこやか",
+        "surface": "健やか",
+        "questionMeaning": "健康的；健全的",
+        "meaning": "健康的；健全的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:普通的",
+    "summary": "普通是一般、通常；ありきたり常带老套、缺乏新意的贬义，不能随意替换。",
+    "members": [
+      {
+        "kanji": "普通",
+        "kana": "ふつう",
+        "surface": "普通",
+        "questionMeaning": "普通；一般",
+        "meaning": "普通的"
+      },
+      {
+        "kanji": "ありきたり",
+        "kana": "ありきたり",
+        "surface": "ありきたり",
+        "questionMeaning": "普通的；老套的",
+        "meaning": "普通的；老套的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:拿出",
+    "summary": "出す泛指拿出、提出、提交；持ち出す强调从某处带出，或把话题、主张提出来。",
+    "members": [
+      {
+        "kanji": "出す",
+        "kana": "だす",
+        "surface": "出す",
+        "questionMeaning": "拿出；提交、发出",
+        "meaning": "拿出；提交"
+      },
+      {
+        "kanji": "持ち出す",
+        "kana": "もちだす",
+        "surface": "持ち出す",
+        "questionMeaning": "带出；提出",
+        "meaning": "拿出；提出"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:票",
+    "summary": "チケット和切符主要是乘车、入场等票券；票是选票、票数或票据等，不能统称所有票券。",
+    "members": [
+      {
+        "kanji": "ticket",
+        "kana": "チケット",
+        "surface": "チケット",
+        "questionMeaning": "票",
+        "meaning": "票"
+      },
+      {
+        "kanji": "切符",
+        "kana": "きっぷ",
+        "surface": "切符",
+        "questionMeaning": "车票；票",
+        "meaning": "票"
+      },
+      {
+        "kanji": "票",
+        "kana": "ひょう",
+        "surface": "票",
+        "questionMeaning": "票，选票",
+        "meaning": "票，选票"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:后面",
+    "summary": "後是后、以后或之后；後ろ是空间上的后面、背后，时间和空间用法不能互换。",
+    "members": [
+      {
+        "kanji": "後",
+        "kana": "あと",
+        "surface": "後",
+        "questionMeaning": "之后；后面",
+        "meaning": "后面；之后"
+      },
+      {
+        "kanji": "後ろ",
+        "kana": "うしろ",
+        "surface": "後ろ",
+        "questionMeaning": "后面；背后",
+        "meaning": "后面；背后"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:国家",
+    "summary": "国可指国家、国土或故乡；国家是政治意义上的国家，偏正式且不能替代国的故乡等用法。",
+    "members": [
+      {
+        "kanji": "国",
+        "kana": "くに",
+        "surface": "国",
+        "questionMeaning": "国家；国土、故乡",
+        "meaning": "国家；家乡"
+      },
+      {
+        "kanji": "国家",
+        "kana": "こっか",
+        "surface": "国家",
+        "questionMeaning": "政治国家",
+        "meaning": "国家"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:问题",
+    "summary": "質問是向人提出的问题、疑问；問題是需要解决的难题、题目或问题本身，不能互换。",
+    "members": [
+      {
+        "kanji": "質問",
+        "kana": "しつもん",
+        "surface": "質問",
+        "questionMeaning": "提问；问题",
+        "meaning": "问题，提问"
+      },
+      {
+        "kanji": "問題",
+        "kana": "もんだい",
+        "surface": "問題",
+        "questionMeaning": "问题",
+        "meaning": "问题；题目"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:场所",
+    "summary": "所、場所是地点；場还指场合、氛围或活动现场；スポット常指特定景点、地点，范围和语感不同。",
+    "members": [
+      {
+        "kanji": "所",
+        "kana": "ところ",
+        "surface": "所",
+        "questionMeaning": "地方；场所",
+        "meaning": "场所，地方"
+      },
+      {
+        "kanji": "場所",
+        "kana": "ばしょ",
+        "surface": "場所",
+        "questionMeaning": "地点；场所",
+        "meaning": "场所，地方"
+      },
+      {
+        "kanji": "場",
+        "kana": "ば",
+        "surface": "場",
+        "questionMeaning": "场合；场所",
+        "meaning": "场所；场面"
+      },
+      {
+        "kanji": "spot",
+        "kana": "スポット",
+        "surface": "スポット",
+        "questionMeaning": "场所，地点",
+        "meaning": "场所，地点"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:女性",
+    "summary": "女是日常的女人、女性且语气依上下文变化；女性是中性正式分类词，不能在称呼等场景替换。",
+    "members": [
+      {
+        "kanji": "女",
+        "kana": "おんな",
+        "surface": "女",
+        "questionMeaning": "女人；女性",
+        "meaning": "女性，女人"
+      },
+      {
+        "kanji": "女性",
+        "kana": "じょせい",
+        "surface": "女性",
+        "questionMeaning": "女性",
+        "meaning": "女性，女人"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:前面",
+    "summary": "前是空间前面也可指以前；先是前方、先前或目的地一带；前方、前面更专指空间前侧。",
+    "members": [
+      {
+        "kanji": "前",
+        "kana": "まえ",
+        "surface": "前",
+        "questionMeaning": "前面；以前",
+        "meaning": "前面；以前"
+      },
+      {
+        "kanji": "先",
+        "kana": "さき",
+        "surface": "先",
+        "questionMeaning": "前方；先前",
+        "meaning": "前面；之前"
+      },
+      {
+        "kanji": "前方",
+        "kana": "ぜんぽう",
+        "surface": "前方",
+        "questionMeaning": "前面，前方",
+        "meaning": "前面，前方"
+      },
+      {
+        "kanji": "前面",
+        "kana": "ぜんめん",
+        "surface": "前面",
+        "questionMeaning": "前面，前头",
+        "meaning": "前面，前头"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:男性",
+    "summary": "男是日常的男人、男性；男性是中性正式的性别分类词，称呼和统计语境不同。",
+    "members": [
+      {
+        "kanji": "男",
+        "kana": "おとこ",
+        "surface": "男",
+        "questionMeaning": "男人；男性",
+        "meaning": "男性，男人"
+      },
+      {
+        "kanji": "男性",
+        "kana": "だんせい",
+        "surface": "男性",
+        "questionMeaning": "男性",
+        "meaning": "男性"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:里面",
+    "summary": "中是里面、内部或中间；奥是深处、里面靠里的位置，不能替换所有内部关系。",
+    "members": [
+      {
+        "kanji": "中",
+        "kana": "なか",
+        "surface": "中",
+        "questionMeaning": "里面；中间",
+        "meaning": "里面；内部"
+      },
+      {
+        "kanji": "奥",
+        "kana": "おく",
+        "surface": "奥",
+        "questionMeaning": "里面深处",
+        "meaning": "里面；深处"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:早晨",
+    "summary": "朝是早晨、早上并可泛指上午；早朝专指很早的清晨，语体也更正式。",
+    "members": [
+      {
+        "kanji": "朝",
+        "kana": "あさ",
+        "surface": "朝",
+        "questionMeaning": "早上；早晨",
+        "meaning": "早晨，早上"
+      },
+      {
+        "kanji": "早朝",
+        "kana": "そうちょう",
+        "surface": "早朝",
+        "questionMeaning": "早晨",
+        "meaning": "早晨"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:北方",
+    "summary": "北是方向北、北方；北側是某物的北侧，必须有参照物，不能替换泛指北方。",
+    "members": [
+      {
+        "kanji": "北",
+        "kana": "きた",
+        "surface": "北",
+        "questionMeaning": "北；北边",
+        "meaning": "北方，北面"
+      },
+      {
+        "kanji": "北側",
+        "kana": "きたがわ",
+        "surface": "北側",
+        "questionMeaning": "北侧",
+        "meaning": "北方，北侧"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:树木",
+    "summary": "木可指树、木材或单棵树；樹木专指树木整体，偏书面、客观，不能替换木材等用法。",
+    "members": [
+      {
+        "kanji": "木",
+        "kana": "き",
+        "surface": "木",
+        "questionMeaning": "树；木头",
+        "meaning": "树木；木材"
+      },
+      {
+        "kanji": "樹木",
+        "kana": "じゅもく",
+        "surface": "樹木",
+        "questionMeaning": "树木",
+        "meaning": "树木"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:想法",
+    "summary": "考え是想法、意见或思考；アイデア偏具体创意、主意；考え方是思考方式或观点体系，不能全换。",
+    "members": [
+      {
+        "kanji": "考え",
+        "kana": "かんがえ",
+        "surface": "考え",
+        "questionMeaning": "想法，思想",
+        "meaning": "想法，思想"
+      },
+      {
+        "kanji": "idea",
+        "kana": "アイデア",
+        "surface": "アイデア",
+        "questionMeaning": "想法，主意",
+        "meaning": "想法，主意"
+      },
+      {
+        "kanji": "考え方",
+        "kana": "かんがえかた",
+        "surface": "考え方",
+        "questionMeaning": "想法",
+        "meaning": "想法"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:声音",
+    "summary": "音是物体发出的声音、声响；声是人的声音或嗓音，也可指动物叫声，不能随意互换。",
+    "members": [
+      {
+        "kanji": "音",
+        "kana": "おと",
+        "surface": "音",
+        "questionMeaning": "声音；声响",
+        "meaning": "声音"
+      },
+      {
+        "kanji": "声",
+        "kana": "こえ",
+        "surface": "声",
+        "questionMeaning": "人声；嗓音",
+        "meaning": "声音"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:大街",
+    "summary": "街是街道、街区或城市；大通り特指宽阔的主要大道，不能替换所有街道。",
+    "members": [
+      {
+        "kanji": "街",
+        "kana": "まち",
+        "surface": "街",
+        "questionMeaning": "街道；街区",
+        "meaning": "大街"
+      },
+      {
+        "kanji": "大通り",
+        "kana": "おおどおり",
+        "surface": "大通り",
+        "questionMeaning": "大街；大道",
+        "meaning": "大街；大道"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:讨厌的",
+    "summary": "嫌表示讨厌、不愿意的心情或拒绝；嫌い是讨厌、厌恶的性质或对象，词性和句法不同。",
+    "members": [
+      {
+        "kanji": "嫌",
+        "kana": "いや",
+        "surface": "嫌",
+        "questionMeaning": "讨厌；不喜欢",
+        "meaning": "讨厌的；不愿意"
+      },
+      {
+        "kanji": "嫌い",
+        "kana": "きらい",
+        "surface": "嫌い",
+        "questionMeaning": "讨厌的；不良倾向",
+        "meaning": "讨厌的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:认真的",
+    "summary": "真面目是认真、规矩或老实的性格；真剣是严肃、全神贯注；本気是当真、不是开玩笑，不能全换。",
+    "members": [
+      {
+        "kanji": "真面目",
+        "kana": "まじめ",
+        "surface": "真面目",
+        "questionMeaning": "认真；正经",
+        "meaning": "认真的；老实的"
+      },
+      {
+        "kanji": "真剣",
+        "kana": "しんけん",
+        "surface": "真剣",
+        "questionMeaning": "真刀，真剑；做事认真，一丝不苟",
+        "meaning": "认真的；严肃的"
+      },
+      {
+        "kanji": "本気",
+        "kana": "ほんき",
+        "surface": "本気",
+        "questionMeaning": "真的；认真",
+        "meaning": "认真的；当真的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:座位",
+    "summary": "席是座位、席位或参加名额；座席明确指座位；シート偏具体座椅、座席或车内座位，不能全换。",
+    "members": [
+      {
+        "kanji": "席",
+        "kana": "せき",
+        "surface": "席",
+        "questionMeaning": "座位；席位",
+        "meaning": "座位，席位"
+      },
+      {
+        "kanji": "座席",
+        "kana": "ざせき",
+        "surface": "座席",
+        "questionMeaning": "具体座位",
+        "meaning": "座位"
+      },
+      {
+        "kanji": "seat",
+        "kana": "シート",
+        "surface": "シート",
+        "questionMeaning": "座位，席位",
+        "meaning": "座位，席位"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:而且",
+    "summary": "それに是补充而且；そのうえ强调在前项之上再增加；しかも带出超出预期或加强语气，不能全换。",
+    "members": [
+      {
+        "kanji": "それに",
+        "kana": "それに",
+        "surface": "それに",
+        "questionMeaning": "而且，还有",
+        "meaning": "而且，还有"
+      },
+      {
+        "kanji": "そのうえ",
+        "kana": "そのうえ",
+        "surface": "そのうえ",
+        "questionMeaning": "而且，并且",
+        "meaning": "而且，并且"
+      },
+      {
+        "kanji": "しかも",
+        "kana": "しかも",
+        "surface": "しかも",
+        "questionMeaning": "而且；不仅如此",
+        "meaning": "而且；不仅如此"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:做法",
+    "summary": "やり方、仕方是做事方法；作り是制作方式或构造；仕様是规格、做法或系统设定，不能全换。",
+    "members": [
+      {
+        "kanji": "やり方",
+        "kana": "やりかた",
+        "surface": "やり方",
+        "questionMeaning": "做法，方法",
+        "meaning": "做法，方法"
+      },
+      {
+        "kanji": "仕方",
+        "kana": "しかた",
+        "surface": "仕方",
+        "questionMeaning": "办法；做法",
+        "meaning": "做法，方法"
+      },
+      {
+        "kanji": "作り",
+        "kana": "つくり",
+        "surface": "作り",
+        "questionMeaning": "做法；构造",
+        "meaning": "做法；构造"
+      },
+      {
+        "kanji": "仕様",
+        "kana": "しよう",
+        "surface": "仕様",
+        "questionMeaning": "规格；做法",
+        "meaning": "做法；使用方法"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:以下",
+    "summary": "以下是以下、不超过某数或下文；下記是下列、如下文，通常用于引出后面的列举，不能全换。",
+    "members": [
+      {
+        "kanji": "以下",
+        "kana": "いか",
+        "surface": "以下",
+        "questionMeaning": "以下",
+        "meaning": "以下；下面"
+      },
+      {
+        "kanji": "下記",
+        "kana": "かき",
+        "surface": "下記",
+        "questionMeaning": "下述；如下",
+        "meaning": "以下，如下"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:相反的",
+    "summary": "逆是相反、倒过来或逆向；反対是相反或反对；裏腹是表面与实际相反，常带表里不一，不能互换。",
+    "members": [
+      {
+        "kanji": "逆",
+        "kana": "ぎゃく",
+        "surface": "逆",
+        "questionMeaning": "相反；逆向",
+        "meaning": "相反的"
+      },
+      {
+        "kanji": "反対",
+        "kana": "はんたい",
+        "surface": "反対",
+        "questionMeaning": "反对；相反",
+        "meaning": "相反的；反对的"
+      },
+      {
+        "kanji": "裏腹",
+        "kana": "うらはら",
+        "surface": "裏腹",
+        "questionMeaning": "正相反，表里不一",
+        "meaning": "相反的；表里不一"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:负责人",
+    "summary": "係是负责某项事务的人或岗位；責任者是承担最终责任的负责人，权限和责任范围更强。",
+    "members": [
+      {
+        "kanji": "係",
+        "kana": "かかり",
+        "surface": "係",
+        "questionMeaning": "负责人；经办人",
+        "meaning": "负责人"
+      },
+      {
+        "kanji": "責任者",
+        "kana": "せきにんしゃ",
+        "surface": "責任者",
+        "questionMeaning": "最终负责人",
+        "meaning": "负责人"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:聚集",
+    "summary": "集まる是人或物聚集的自动词；集う强调人们为共同目的聚集，较书面且常带群体感。",
+    "members": [
+      {
+        "kanji": "集まる",
+        "kana": "あつまる",
+        "surface": "集まる",
+        "questionMeaning": "聚集；人或物汇合",
+        "meaning": "聚集"
+      },
+      {
+        "kanji": "集う",
+        "kana": "つどう",
+        "surface": "集う",
+        "questionMeaning": "会聚；人们正式聚集",
+        "meaning": "聚集"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:大致",
+    "summary": "大体是大致、基本上或大部分；一通り是从头到尾粗略完成一遍，不能替换基本上等副词用法。",
+    "members": [
+      {
+        "kanji": "大体",
+        "kana": "だいたい",
+        "surface": "だいたい",
+        "questionMeaning": "大概；大体上",
+        "meaning": "大致；基本上"
+      },
+      {
+        "kanji": "一通り",
+        "kana": "ひととおり",
+        "surface": "一通り",
+        "questionMeaning": "大致；一番",
+        "meaning": "大致；一番"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:地面",
+    "summary": "地可指土地、地面或地域；地面明确指地表，不能替换土地、地盘等抽象用法。",
+    "members": [
+      {
+        "kanji": "地",
+        "kana": "ち",
+        "surface": "地",
+        "questionMeaning": "土地；地域",
+        "meaning": "地面；土地"
+      },
+      {
+        "kanji": "地面",
+        "kana": "じめん",
+        "surface": "地面",
+        "questionMeaning": "地面；地表",
+        "meaning": "地面；土地"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:特产",
+    "summary": "土産通常指旅行带回的礼物、土产；特産是某地特有的产品，不能替换赠送给人的礼物。",
+    "members": [
+      {
+        "kanji": "土産",
+        "kana": "みやげ",
+        "surface": "土産",
+        "questionMeaning": "土特产；伴手礼",
+        "meaning": "特产；礼物"
+      },
+      {
+        "kanji": "特産",
+        "kana": "とくさん",
+        "surface": "特産",
+        "questionMeaning": "特产",
+        "meaning": "特产"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:表面",
+    "summary": "表是外面、正面，也可指公开一面；表面是物体表层；上辺是外表、表面现象，常暗示不真实，不能全换。",
+    "members": [
+      {
+        "kanji": "表",
+        "kana": "おもて",
+        "surface": "表",
+        "questionMeaning": "正面；表面",
+        "meaning": "表面，正面"
+      },
+      {
+        "kanji": "表面",
+        "kana": "ひょうめん",
+        "surface": "表面",
+        "questionMeaning": "表面；外表",
+        "meaning": "表面；外表"
+      },
+      {
+        "kanji": "上辺",
+        "kana": "うわべ",
+        "surface": "上辺",
+        "questionMeaning": "表面，外表，外观",
+        "meaning": "表面；外表"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:方法",
+    "summary": "方法是一般方法；方策是为解决问题采取的策略、措施；メソッド是体系化方法或程序，不能全换。",
+    "members": [
+      {
+        "kanji": "方法",
+        "kana": "ほうほう",
+        "surface": "方法",
+        "questionMeaning": "方法",
+        "meaning": "方法"
+      },
+      {
+        "kanji": "方策",
+        "kana": "ほうさく",
+        "surface": "方策",
+        "questionMeaning": "方法，策略",
+        "meaning": "方法，策略"
+      },
+      {
+        "kanji": "method",
+        "kana": "メソッド",
+        "surface": "メソッド",
+        "questionMeaning": "方法，方式",
+        "meaning": "方法，方式"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:自由的",
+    "summary": "自由是自由、不受限制；フリー还可表示免费、空闲或自由职业，不能全换。",
+    "members": [
+      {
+        "kanji": "自由",
+        "kana": "じゆう",
+        "surface": "自由",
+        "questionMeaning": "自由；随意",
+        "meaning": "自由的"
+      },
+      {
+        "kanji": "free",
+        "kana": "フリー",
+        "surface": "フリー",
+        "questionMeaning": "自由的；免费的",
+        "meaning": "自由的；免费的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:食材",
+    "summary": "食料是食物、粮食或供给；食材是用于烹饪的原材料，不能替换粮食储备等用法。",
+    "members": [
+      {
+        "kanji": "食料",
+        "kana": "しょくりょう",
+        "surface": "食料",
+        "questionMeaning": "食物；粮食",
+        "meaning": "食材；食物"
+      },
+      {
+        "kanji": "食材",
+        "kana": "しょくざい",
+        "surface": "食材",
+        "questionMeaning": "食材",
+        "meaning": "食材"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:对手",
+    "summary": "相手是对方、对象，也可指对手；ライバル明确是竞争对手，不能替换普通交往对象。",
+    "members": [
+      {
+        "kanji": "相手",
+        "kana": "あいて",
+        "surface": "相手",
+        "questionMeaning": "对方；对象",
+        "meaning": "对手"
+      },
+      {
+        "kanji": "rival",
+        "kana": "ライバル",
+        "surface": "ライバル",
+        "questionMeaning": "对手；竞争者",
+        "meaning": "对手；竞争者"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:秘密的",
+    "summary": "秘密是秘密、不公开的事；ひそか是暗中、私下或悄悄进行的状态，常修饰行为，不能全换。",
+    "members": [
+      {
+        "kanji": "秘密",
+        "kana": "ひみつ",
+        "surface": "秘密",
+        "questionMeaning": "秘密",
+        "meaning": "秘密的"
+      },
+      {
+        "kanji": "ひそか",
+        "kana": "ひそか",
+        "surface": "ひそか",
+        "questionMeaning": "秘密的；暗中的",
+        "meaning": "秘密的；暗中的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:确实的",
+    "summary": "確か是可靠、确实或记忆中的大概；確実是确定无误、稳妥可保证，确定程度和用法不同。",
+    "members": [
+      {
+        "kanji": "確か",
+        "kana": "たしか",
+        "surface": "確か",
+        "questionMeaning": "确实的；可靠的",
+        "meaning": "确实的；可靠的"
+      },
+      {
+        "kanji": "確実",
+        "kana": "かくじつ",
+        "surface": "確実",
+        "questionMeaning": "确实；可靠",
+        "meaning": "确实的；可靠的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:大门",
+    "summary": "門是门、门类或专业领域；ゲート特指入口闸门、检票口或通道，不能全换。",
+    "members": [
+      {
+        "kanji": "門",
+        "kana": "もん",
+        "surface": "門",
+        "questionMeaning": "门；门类",
+        "meaning": "大门"
+      },
+      {
+        "kanji": "gate",
+        "kana": "ゲート",
+        "surface": "ゲート",
+        "questionMeaning": "大门",
+        "meaning": "大门"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:故乡",
+    "summary": "ふるさと带有感情和故乡意象；故郷是中性、书面故乡；郷土强调地方乡土；郷里多指出身地，不能全换。",
+    "members": [
+      {
+        "kanji": "ふるさと",
+        "kana": "ふるさと",
+        "surface": "ふるさと",
+        "questionMeaning": "故乡，家乡",
+        "meaning": "故乡，家乡"
+      },
+      {
+        "kanji": "故郷",
+        "kana": "こきょう",
+        "surface": "故郷",
+        "questionMeaning": "故乡；家乡",
+        "meaning": "故乡"
+      },
+      {
+        "kanji": "郷土",
+        "kana": "きょうど",
+        "surface": "郷土",
+        "questionMeaning": "乡土，故乡；乡间",
+        "meaning": "故乡；乡土"
+      },
+      {
+        "kanji": "郷里",
+        "kana": "きょうり",
+        "surface": "郷里",
+        "questionMeaning": "故乡，老家",
+        "meaning": "故乡，老家"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:观赏",
+    "summary": "見物是观看、游览或看热闹；観賞是欣赏艺术、自然等对象，主动欣赏意味更强。",
+    "members": [
+      {
+        "kanji": "見物",
+        "kana": "けんぶつ",
+        "surface": "見物",
+        "questionMeaning": "参观；游览",
+        "meaning": "观赏，游览"
+      },
+      {
+        "kanji": "観賞",
+        "kana": "かんしょう",
+        "surface": "観賞",
+        "questionMeaning": "观赏",
+        "meaning": "观赏"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:熟人",
+    "summary": "知り合い是认识的人、熟人；知人是书面或正式的相识者，也可指知己、朋友，不能全换。",
+    "members": [
+      {
+        "kanji": "知り合い",
+        "kana": "しりあい",
+        "surface": "知り合い",
+        "questionMeaning": "熟人，熟识",
+        "meaning": "熟人，熟识"
+      },
+      {
+        "kanji": "知人",
+        "kana": "ちじん",
+        "surface": "知人",
+        "questionMeaning": "熟人，朋友",
+        "meaning": "熟人，朋友"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:停车",
+    "summary": "駐車是车辆停放；停車是车辆停止、停车站停靠或列车停车，不能替换所有停车场景。",
+    "members": [
+      {
+        "kanji": "駐車",
+        "kana": "ちゅうしゃ",
+        "surface": "駐車",
+        "questionMeaning": "车辆停车",
+        "meaning": "停车"
+      },
+      {
+        "kanji": "停車",
+        "kana": "ていしゃ",
+        "surface": "停車",
+        "questionMeaning": "车辆停靠",
+        "meaning": "停车"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:客厅",
+    "summary": "居間是家庭客厅；リビング是现代住宅的客厅、起居室；客室是客房或接待室，不能替换。",
+    "members": [
+      {
+        "kanji": "居間",
+        "kana": "いま",
+        "surface": "居間",
+        "questionMeaning": "客厅；起居室",
+        "meaning": "客厅"
+      },
+      {
+        "kanji": "living",
+        "kana": "リビング",
+        "surface": "リビング",
+        "questionMeaning": "生活；客厅",
+        "meaning": "客厅"
+      },
+      {
+        "kanji": "客室",
+        "kana": "きゃくしつ",
+        "surface": "客室",
+        "questionMeaning": "客房；接待室",
+        "meaning": "客厅；客房"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:布料",
+    "summary": "布是布料或布块；生地是布料，也可指面团、底子；布地专指织物布料，不能全换。",
+    "members": [
+      {
+        "kanji": "布",
+        "kana": "ぬの",
+        "surface": "布",
+        "questionMeaning": "布",
+        "meaning": "布料；布"
+      },
+      {
+        "kanji": "生地",
+        "kana": "きじ",
+        "surface": "生地",
+        "questionMeaning": "布料；本来面目，本色",
+        "meaning": "布料；生面团"
+      },
+      {
+        "kanji": "布地",
+        "kana": "ぬのじ",
+        "surface": "布地",
+        "questionMeaning": "布料，衣料",
+        "meaning": "布料，衣料"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:朴素的",
+    "summary": "地味是朴素、不显眼，有时带不起眼的负面感；素朴是质朴、单纯、不矫饰，语感不同。",
+    "members": [
+      {
+        "kanji": "地味",
+        "kana": "じみ",
+        "surface": "地味",
+        "questionMeaning": "素净；质朴",
+        "meaning": "朴素的；不起眼的"
+      },
+      {
+        "kanji": "素朴",
+        "kana": "そぼく",
+        "surface": "素朴",
+        "questionMeaning": "朴素；单纯",
+        "meaning": "朴素的；单纯的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:终点",
+    "summary": "ゴール是比赛终点或要达成的目标；終点是线路、过程的终点，不能替换抽象目标等用法。",
+    "members": [
+      {
+        "kanji": "goal",
+        "kana": "ゴール",
+        "surface": "ゴール",
+        "questionMeaning": "终点；目标",
+        "meaning": "终点；目标"
+      },
+      {
+        "kanji": "終点",
+        "kana": "しゅうてん",
+        "surface": "終点",
+        "questionMeaning": "终点站；终点",
+        "meaning": "终点"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:成员",
+    "summary": "メンバー是团队成员，也可泛指参加者；部員是某社团、部门成员；成員是组织成员的正式书面说法。",
+    "members": [
+      {
+        "kanji": "member",
+        "kana": "メンバー",
+        "surface": "メンバー",
+        "questionMeaning": "成员，分子",
+        "meaning": "成员，分子"
+      },
+      {
+        "kanji": "部員",
+        "kana": "ぶいん",
+        "surface": "部員",
+        "questionMeaning": "成员，队员",
+        "meaning": "成员，队员"
+      },
+      {
+        "kanji": "成員",
+        "kana": "せいいん",
+        "surface": "成員",
+        "questionMeaning": "成员",
+        "meaning": "成员"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:空隙",
+    "summary": "間是空间间隔、时间间隙或空档；隙是缝隙、空当或破绽，常指可被利用的漏洞。",
+    "members": [
+      {
+        "kanji": "間",
+        "kana": "ま",
+        "surface": "間",
+        "questionMeaning": "间隙；空当",
+        "meaning": "空隙；时间"
+      },
+      {
+        "kanji": "隙",
+        "kana": "すき",
+        "surface": "隙",
+        "questionMeaning": "空隙；闲暇；漏洞",
+        "meaning": "空隙；破绽"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:铁路",
+    "summary": "鉄道是铁路系统、铁路交通；線路是轨道线路，也可指电路、线路，范围和对象不同。",
+    "members": [
+      {
+        "kanji": "鉄道",
+        "kana": "てつどう",
+        "surface": "鉄道",
+        "questionMeaning": "铁路，铁道",
+        "meaning": "铁路，铁道"
+      },
+      {
+        "kanji": "線路",
+        "kana": "せんろ",
+        "surface": "線路",
+        "questionMeaning": "铁路，轨道",
+        "meaning": "铁路，轨道"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:部分",
+    "summary": "部分是整体中的部分；部位是身体、结构或物体的特定位置、部位，不能替换一般部分。",
+    "members": [
+      {
+        "kanji": "部分",
+        "kana": "ぶぶん",
+        "surface": "部分",
+        "questionMeaning": "部分，一部分",
+        "meaning": "部分"
+      },
+      {
+        "kanji": "部位",
+        "kana": "ぶい",
+        "surface": "部位",
+        "questionMeaning": "部分，部位",
+        "meaning": "部分，部位"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:平等的",
+    "summary": "平等是无差别、平等的原则；対等是双方地位、力量或条件相等，适用关系不同。",
+    "members": [
+      {
+        "kanji": "平等",
+        "kana": "びょうどう",
+        "surface": "平等",
+        "questionMeaning": "平等，同等",
+        "meaning": "平等的"
+      },
+      {
+        "kanji": "対等",
+        "kana": "たいとう",
+        "surface": "対等",
+        "questionMeaning": "对等，同等，平等",
+        "meaning": "平等的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:暗示",
+    "summary": "ヒント是提示、线索或启发；示唆是暗示、启示某种可能，偏书面，不能替换具体提示物。",
+    "members": [
+      {
+        "kanji": "hint",
+        "kana": "ヒント",
+        "surface": "ヒント",
+        "questionMeaning": "暗示，启发",
+        "meaning": "暗示，启发"
+      },
+      {
+        "kanji": "示唆",
+        "kana": "しさ",
+        "surface": "示唆",
+        "questionMeaning": "暗示，启示",
+        "meaning": "暗示，启示"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:限制",
+    "summary": "制限是限制、限额或自我节制；規制是通过规则、法律进行管制，制度性更强。",
+    "members": [
+      {
+        "kanji": "制限",
+        "kana": "せいげん",
+        "surface": "制限",
+        "questionMeaning": "限制，节制",
+        "meaning": "限制，节制"
+      },
+      {
+        "kanji": "規制",
+        "kana": "きせい",
+        "surface": "規制",
+        "questionMeaning": "限制，规定",
+        "meaning": "限制，规定"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:服装",
+    "summary": "服装是穿着、服饰的正式总称；衣装常指特定场合、表演或戏剧服装；なりふり是外表装束和仪态，不能全换。",
+    "members": [
+      {
+        "kanji": "服装",
+        "kana": "ふくそう",
+        "surface": "服装",
+        "questionMeaning": "服装，穿着",
+        "meaning": "服装，穿着"
+      },
+      {
+        "kanji": "衣装",
+        "kana": "いしょう",
+        "surface": "衣装",
+        "questionMeaning": "服装；剧装，戏装",
+        "meaning": "服装；戏服"
+      },
+      {
+        "kanji": "なりふり",
+        "kana": "なりふり",
+        "surface": "なりふり",
+        "questionMeaning": "服装，仪容",
+        "meaning": "服装，仪容"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:西式",
+    "summary": "洋式是西式的样式、结构；洋可指西洋、外国或西式；洋風强调外观风格像西式，不能全换。",
+    "members": [
+      {
+        "kanji": "洋式",
+        "kana": "ようしき",
+        "surface": "洋式",
+        "questionMeaning": "西式样式",
+        "meaning": "西式"
+      },
+      {
+        "kanji": "洋",
+        "kana": "よう",
+        "surface": "洋",
+        "questionMeaning": "西洋……，西式……",
+        "meaning": "西式；外国"
+      },
+      {
+        "kanji": "洋風",
+        "kana": "ようふう",
+        "surface": "洋風",
+        "questionMeaning": "西式风格",
+        "meaning": "西式"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:浮起",
+    "summary": "浮く是浮在表面、变得悬空或显得突出；浮かぶ是浮现、浮上水面或想法出现，视对象和自动词搭配不同。",
+    "members": [
+      {
+        "kanji": "浮く",
+        "kana": "うく",
+        "surface": "浮く",
+        "questionMeaning": "浮起；物体脱离表面",
+        "meaning": "浮起"
+      },
+      {
+        "kanji": "浮かぶ",
+        "kana": "うかぶ",
+        "surface": "浮かぶ",
+        "questionMeaning": "浮现；想法进入脑中",
+        "meaning": "浮起；想起"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:渔民",
+    "summary": "漁師是以捕鱼为职业的渔夫；漁民是渔业从业者这一群体或正式分类，范围和语体不同。",
+    "members": [
+      {
+        "kanji": "漁師",
+        "kana": "りょうし",
+        "surface": "漁師",
+        "questionMeaning": "渔夫；渔民",
+        "meaning": "渔民，渔夫"
+      },
+      {
+        "kanji": "漁民",
+        "kana": "ぎょみん",
+        "surface": "漁民",
+        "questionMeaning": "渔民",
+        "meaning": "渔民"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:配送",
+    "summary": "配達是把邮件、包裹送到收件人处；配送是物流中的分发、配送过程，范围和主体不同。",
+    "members": [
+      {
+        "kanji": "配達",
+        "kana": "はいたつ",
+        "surface": "配達",
+        "questionMeaning": "配送，投递",
+        "meaning": "配送，投递"
+      },
+      {
+        "kanji": "配送",
+        "kana": "はいそう",
+        "surface": "配送",
+        "questionMeaning": "配送，分发",
+        "meaning": "配送，分发"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:本来",
+    "summary": "本来是原本、按本质应该；もとより是本来就、从一开始，也可表示更不用说，书面色彩更强。",
+    "members": [
+      {
+        "kanji": "本来",
+        "kana": "ほんらい",
+        "surface": "本来",
+        "questionMeaning": "原本；普通，平常",
+        "meaning": "本来；原来"
+      },
+      {
+        "kanji": "もとより",
+        "kana": "もとより",
+        "surface": "もとより",
+        "questionMeaning": "本来；更不用说",
+        "meaning": "本来；更不用说"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:用语",
+    "summary": "言葉遣い是说话用词、措辞方式；用語是某领域的术语、用语本身，不能替换表达礼貌等用法。",
+    "members": [
+      {
+        "kanji": "言葉遣い",
+        "kana": "ことばづかい",
+        "surface": "言葉遣い",
+        "questionMeaning": "用语，措辞",
+        "meaning": "用语，措辞"
+      },
+      {
+        "kanji": "用語",
+        "kana": "ようご",
+        "surface": "用語",
+        "questionMeaning": "用语，术语",
+        "meaning": "用语，术语"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:离开",
+    "summary": "離れる是离开、相距或脱离关系；去る是离去、过去或离开某时期；立ち去る强调起身离开现场。",
+    "members": [
+      {
+        "kanji": "離れる",
+        "kana": "はなれる",
+        "surface": "離れる",
+        "questionMeaning": "离开；相距",
+        "meaning": "离开；相距"
+      },
+      {
+        "kanji": "去る",
+        "kana": "さる",
+        "surface": "去る",
+        "questionMeaning": "离去；过去",
+        "meaning": "离开；过去"
+      },
+      {
+        "kanji": "立ち去る",
+        "kana": "たちさる",
+        "surface": "立ち去る",
+        "questionMeaning": "离开现场",
+        "meaning": "离开"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:稳定的",
+    "summary": "安定是稳定、不变或安定状态；コンスタント是持续、稳定地保持一定水平，常描述频率和产出。",
+    "members": [
+      {
+        "kanji": "安定",
+        "kana": "あんてい",
+        "surface": "安定",
+        "questionMeaning": "稳定；安稳",
+        "meaning": "稳定的"
+      },
+      {
+        "kanji": "constant",
+        "kana": "コンスタント",
+        "surface": "コンスタント",
+        "questionMeaning": "稳定的；持续的",
+        "meaning": "稳定的；持续的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:记号",
+    "summary": "印是印记、标志或象征；目印是用来辨认的标记、地标；記号是符号、记号的正式总称，不能全换。",
+    "members": [
+      {
+        "kanji": "印",
+        "kana": "しるし",
+        "surface": "印",
+        "questionMeaning": "记号；象征",
+        "meaning": "记号；象征"
+      },
+      {
+        "kanji": "目印",
+        "kana": "めじるし",
+        "surface": "目印",
+        "questionMeaning": "记号，标记",
+        "meaning": "记号，标记"
+      },
+      {
+        "kanji": "記号",
+        "kana": "きごう",
+        "surface": "記号",
+        "questionMeaning": "记号，符号",
+        "meaning": "记号，符号"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:好恶",
+    "summary": "好き嫌い是喜欢和讨厌、挑食等日常表达；好悪是好恶、爱憎的书面概念，不能全换。",
+    "members": [
+      {
+        "kanji": "好き嫌い",
+        "kana": "すききらい",
+        "surface": "好き嫌い",
+        "questionMeaning": "好恶，挑剔",
+        "meaning": "好恶，挑剔"
+      },
+      {
+        "kanji": "好悪",
+        "kana": "こうお",
+        "surface": "好悪",
+        "questionMeaning": "好恶，爱憎",
+        "meaning": "好恶，爱憎"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:顺利的",
+    "summary": "順調是进展顺利；スムーズ是动作、流程流畅；円滑是关系、协商等圆满顺畅；好調是状态、业绩良好，不能全换。",
+    "members": [
+      {
+        "kanji": "順調",
+        "kana": "じゅんちょう",
+        "surface": "順調",
+        "questionMeaning": "顺利，顺畅",
+        "meaning": "顺利的"
+      },
+      {
+        "kanji": "smooth",
+        "kana": "スムーズ",
+        "surface": "スムーズ",
+        "questionMeaning": "顺利的；流畅的",
+        "meaning": "顺利的；流畅的"
+      },
+      {
+        "kanji": "円滑",
+        "kana": "えんかつ",
+        "surface": "円滑",
+        "questionMeaning": "圆滑，顺利",
+        "meaning": "顺利的"
+      },
+      {
+        "kanji": "好調",
+        "kana": "こうちょう",
+        "surface": "好調",
+        "questionMeaning": "势头好，情况好",
+        "meaning": "顺利的；状态好"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:职业",
+    "summary": "職業是职业、行业；職是职位、职务或职业的简略词，不能替换所有职业名称和职位场景。",
+    "members": [
+      {
+        "kanji": "職業",
+        "kana": "しょくぎょう",
+        "surface": "職業",
+        "questionMeaning": "职业",
+        "meaning": "职业"
+      },
+      {
+        "kanji": "職",
+        "kana": "しょく",
+        "surface": "職",
+        "questionMeaning": "职业简称；职务；手艺",
+        "meaning": "职业；职位"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:长处",
+    "summary": "長所是优点、长处；強み是竞争优势、强项；利点是有利之处、好处，不能全换。",
+    "members": [
+      {
+        "kanji": "長所",
+        "kana": "ちょうしょ",
+        "surface": "長所",
+        "questionMeaning": "长处；优点",
+        "meaning": "长处，优点"
+      },
+      {
+        "kanji": "強み",
+        "kana": "つよみ",
+        "surface": "強み",
+        "questionMeaning": "长处，强项",
+        "meaning": "长处，强项"
+      },
+      {
+        "kanji": "利点",
+        "kana": "りてん",
+        "surface": "利点",
+        "questionMeaning": "好处；有利之处",
+        "meaning": "长处，优点"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:风景",
+    "summary": "風景是风景、景色；風物是某地具有代表性的自然、人文风物和景致，范围更综合书面。",
+    "members": [
+      {
+        "kanji": "風景",
+        "kana": "ふうけい",
+        "surface": "風景",
+        "questionMeaning": "风景，景色；情景，状况",
+        "meaning": "风景"
+      },
+      {
+        "kanji": "風物",
+        "kana": "ふうぶつ",
+        "surface": "風物",
+        "questionMeaning": "风景，风物",
+        "meaning": "风景，风物"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:任务",
+    "summary": "役割是角色、作用或分工；任務是被赋予的任务、职责，正式且责任性更强。",
+    "members": [
+      {
+        "kanji": "役割",
+        "kana": "やくわり",
+        "surface": "役割",
+        "questionMeaning": "任务，作用",
+        "meaning": "任务，作用"
+      },
+      {
+        "kanji": "任務",
+        "kana": "にんむ",
+        "surface": "任務",
+        "questionMeaning": "任务，职责",
+        "meaning": "任务，职责"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:图章",
+    "summary": "印鑑是用于登记、证明的正式印章；スタンプ是盖章、印花或橡皮图章，法律正式性不同。",
+    "members": [
+      {
+        "kanji": "印鑑",
+        "kana": "いんかん",
+        "surface": "印鑑",
+        "questionMeaning": "图章，印章",
+        "meaning": "图章，印章"
+      },
+      {
+        "kanji": "stamp",
+        "kana": "スタンプ",
+        "surface": "スタンプ",
+        "questionMeaning": "图章，戳子",
+        "meaning": "图章，戳子"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:公平的",
+    "summary": "公平是公平、公正的原则；フェア是公平、不偏袒，也可指展览会或 fair 的外来语用法。",
+    "members": [
+      {
+        "kanji": "公平",
+        "kana": "こうへい",
+        "surface": "公平",
+        "questionMeaning": "公平",
+        "meaning": "公平的"
+      },
+      {
+        "kanji": "fair",
+        "kana": "フェア",
+        "surface": "フェア",
+        "questionMeaning": "公平的；展会",
+        "meaning": "公平的；展会"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:阳光",
+    "summary": "日差し是照射过来的阳光、日晒感；日光是太阳光或日光的正式词；陽光是书面、明亮的阳光，语体不同。",
+    "members": [
+      {
+        "kanji": "日差し",
+        "kana": "ひざし",
+        "surface": "日差し",
+        "questionMeaning": "阳光",
+        "meaning": "阳光"
+      },
+      {
+        "kanji": "日光",
+        "kana": "にっこう",
+        "surface": "日光",
+        "questionMeaning": "日光，太阳光",
+        "meaning": "阳光"
+      },
+      {
+        "kanji": "陽光",
+        "kana": "ようこう",
+        "surface": "陽光",
+        "questionMeaning": "阳光，日光",
+        "meaning": "阳光，日光"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:职责",
+    "summary": "役目是角色、职责或作用；務め是应履行的职责、义务，也可指任职，责任感更强。",
+    "members": [
+      {
+        "kanji": "役目",
+        "kana": "やくめ",
+        "surface": "役目",
+        "questionMeaning": "任务，职责；功能，作用",
+        "meaning": "职责；作用"
+      },
+      {
+        "kanji": "務め",
+        "kana": "つとめ",
+        "surface": "務め",
+        "questionMeaning": "职责，义务",
+        "meaning": "职责，义务"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:简朴的",
+    "summary": "質素是生活、服饰等朴素简朴；簡素是构造、装饰等简单朴素，侧重点分别在生活质朴和结构简洁。",
+    "members": [
+      {
+        "kanji": "質素",
+        "kana": "しっそ",
+        "surface": "質素",
+        "questionMeaning": "简单，朴素",
+        "meaning": "简朴的"
+      },
+      {
+        "kanji": "簡素",
+        "kana": "かんそ",
+        "surface": "簡素",
+        "questionMeaning": "简单，简朴",
+        "meaning": "简朴的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:胡乱的",
+    "summary": "でたらめ是胡说八道、胡乱无根据；無闇是盲目、过度、无节制，不能替换虚假说法。",
+    "members": [
+      {
+        "kanji": "でたらめ",
+        "kana": "でたらめ",
+        "surface": "でたらめ",
+        "questionMeaning": "胡乱的；胡说",
+        "meaning": "胡乱的；胡说"
+      },
+      {
+        "kanji": "無闇",
+        "kana": "むやみ",
+        "surface": "むやみ",
+        "questionMeaning": "胡乱；过分",
+        "meaning": "胡乱的；过度的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:稍微",
+    "summary": "やや是稍微、略微；何らか是某种、某些，未必表示程度；いささか是稍微且常带不足、谦逊或书面语气。",
+    "members": [
+      {
+        "kanji": "やや",
+        "kana": "やや",
+        "surface": "やや",
+        "questionMeaning": "稍微，一点",
+        "meaning": "稍微，一点"
+      },
+      {
+        "kanji": "何らか",
+        "kana": "なんらか",
+        "surface": "何らか",
+        "questionMeaning": "稍微，一些",
+        "meaning": "稍微，一些"
+      },
+      {
+        "kanji": "いささか",
+        "kana": "いささか",
+        "surface": "いささか",
+        "questionMeaning": "稍微；有点",
+        "meaning": "稍微；有点"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:清楚的",
+    "summary": "クリア是清晰、通过或清除；明瞭是清楚明白；分明是清楚分明，偏书面，不能全换。",
+    "members": [
+      {
+        "kanji": "clear",
+        "kana": "クリア",
+        "surface": "クリア",
+        "questionMeaning": "清楚的；通过",
+        "meaning": "清楚的；通过"
+      },
+      {
+        "kanji": "明瞭",
+        "kana": "めいりょう",
+        "surface": "明瞭",
+        "questionMeaning": "清楚，明了",
+        "meaning": "清楚的"
+      },
+      {
+        "kanji": "分明",
+        "kana": "ぶんめい",
+        "surface": "分明",
+        "questionMeaning": "清楚，分明",
+        "meaning": "清楚的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:地位",
+    "summary": "位是等级、地位或位置的简略词；地位是社会身份、地位；ステータス还可指状态、资格或游戏属性，不能全换。",
+    "members": [
+      {
+        "kanji": "位",
+        "kana": "くらい",
+        "surface": "位",
+        "questionMeaning": "身份，地位；等级，品味；位数",
+        "meaning": "地位；等级"
+      },
+      {
+        "kanji": "地位",
+        "kana": "ちい",
+        "surface": "地位",
+        "questionMeaning": "地位，身份",
+        "meaning": "地位，身份"
+      },
+      {
+        "kanji": "status",
+        "kana": "ステータス",
+        "surface": "ステータス",
+        "questionMeaning": "地位；状态",
+        "meaning": "地位；状态"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:恩惠",
+    "summary": "恩恵是受到的恩惠、利益；恵み是自然、神或他人给予的恩泽；ありがたみ是感受到的价值和可贵，不能全换。",
+    "members": [
+      {
+        "kanji": "恩恵",
+        "kana": "おんけい",
+        "surface": "恩恵",
+        "questionMeaning": "恩惠，恩情",
+        "meaning": "恩惠，恩情"
+      },
+      {
+        "kanji": "恵み",
+        "kana": "めぐみ",
+        "surface": "恵み",
+        "questionMeaning": "恩惠",
+        "meaning": "恩惠"
+      },
+      {
+        "kanji": "ありがたみ",
+        "kana": "ありがたみ",
+        "surface": "ありがたみ",
+        "questionMeaning": "恩惠，价值",
+        "meaning": "恩惠，价值"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:直觉",
+    "summary": "勘是凭经验的猜测、直觉；直感是瞬间直接感受到的判断，不能替换所有推测。",
+    "members": [
+      {
+        "kanji": "勘",
+        "kana": "かん",
+        "surface": "勘",
+        "questionMeaning": "直觉，第六感",
+        "meaning": "直觉；推测"
+      },
+      {
+        "kanji": "直感",
+        "kana": "ちょっかん",
+        "surface": "直感",
+        "questionMeaning": "直觉，凭直觉感到",
+        "meaning": "直觉"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:效力",
+    "summary": "効力是法律、规则等的效力或有效性；効き目是药物、措施的效果，不能替换法律效力。",
+    "members": [
+      {
+        "kanji": "効力",
+        "kana": "こうりょく",
+        "surface": "効力",
+        "questionMeaning": "效力，效果",
+        "meaning": "效力，效果"
+      },
+      {
+        "kanji": "効き目",
+        "kana": "ききめ",
+        "surface": "効き目",
+        "questionMeaning": "效力，效用",
+        "meaning": "效力，效用"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:线索",
+    "summary": "糸口是突破口、着手线索；心当たり是自己想到的相关线索、印象；手がかり是可依靠的线索、依据，不能全换。",
+    "members": [
+      {
+        "kanji": "糸口",
+        "kana": "いとぐち",
+        "surface": "糸口",
+        "questionMeaning": "线头；线索，头绪",
+        "meaning": "线索；突破口"
+      },
+      {
+        "kanji": "心当たり",
+        "kana": "こころあたり",
+        "surface": "心当たり",
+        "questionMeaning": "线索，头绪",
+        "meaning": "线索，头绪"
+      },
+      {
+        "kanji": "手がかり",
+        "kana": "てがかり",
+        "surface": "手がかり",
+        "questionMeaning": "线索；头绪",
+        "meaning": "线索；头绪"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:事态",
+    "summary": "事態是事态、局势，常带问题发展意味；事象是现象、事件，偏客观或科学，不能全换。",
+    "members": [
+      {
+        "kanji": "事態",
+        "kana": "じたい",
+        "surface": "事態",
+        "questionMeaning": "事态，局势",
+        "meaning": "事态，局势"
+      },
+      {
+        "kanji": "事象",
+        "kana": "じしょう",
+        "surface": "事象",
+        "questionMeaning": "事态，现象",
+        "meaning": "事态，现象"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:关节",
+    "summary": "節可指关节、段落、节气或关键处；関節专指身体关节，不能替换节的抽象用法。",
+    "members": [
+      {
+        "kanji": "節",
+        "kana": "ふし",
+        "surface": "節",
+        "questionMeaning": "竹节；关节、关键处；点、曲调",
+        "meaning": "关节；段落"
+      },
+      {
+        "kanji": "関節",
+        "kana": "かんせつ",
+        "surface": "関節",
+        "questionMeaning": "关节",
+        "meaning": "关节"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:资质",
+    "summary": "素質是天分、潜在素质；資質是资质、品质和资格条件，正式且不只限于天分。",
+    "members": [
+      {
+        "kanji": "素質",
+        "kana": "そしつ",
+        "surface": "素質",
+        "questionMeaning": "资质，天分",
+        "meaning": "资质，天分"
+      },
+      {
+        "kanji": "資質",
+        "kana": "ししつ",
+        "surface": "資質",
+        "questionMeaning": "资质，秉性，天资",
+        "meaning": "资质；素质"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:区域",
+    "summary": "分野是领域、范围；区域是划定的区域、地理范围，不能按中文‘区域’完全互换。",
+    "members": [
+      {
+        "kanji": "分野",
+        "kana": "ぶんや",
+        "surface": "分野",
+        "questionMeaning": "区域，领域",
+        "meaning": "区域，领域"
+      },
+      {
+        "kanji": "区域",
+        "kana": "くいき",
+        "surface": "区域",
+        "questionMeaning": "区域，范围",
+        "meaning": "区域，范围"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:要领",
+    "summary": "コツ是窍门、诀窍；要領是要领、办事方法或概括要点，范围更宽、更正式。",
+    "members": [
+      {
+        "kanji": "コツ",
+        "kana": "コツ",
+        "surface": "コツ",
+        "questionMeaning": "要领，要害",
+        "meaning": "要领，要害"
+      },
+      {
+        "kanji": "要領",
+        "kana": "ようりょう",
+        "surface": "要領",
+        "questionMeaning": "要点，要领；窍门，诀窍",
+        "meaning": "要领；窍门"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:外观",
+    "summary": "外見是外表、外貌；外観是建筑、物体等外观的正式词；見かけ是看起来的样子；見栄え是视觉上好不好看，不能全换。",
+    "members": [
+      {
+        "kanji": "外見",
+        "kana": "がいけん",
+        "surface": "外見",
+        "questionMeaning": "外观，外形",
+        "meaning": "外观，外形"
+      },
+      {
+        "kanji": "外観",
+        "kana": "がいかん",
+        "surface": "外観",
+        "questionMeaning": "外观，外表",
+        "meaning": "外观，外表"
+      },
+      {
+        "kanji": "見かけ",
+        "kana": "みかけ",
+        "surface": "見かけ",
+        "questionMeaning": "外观，外貌",
+        "meaning": "外观，外貌"
+      },
+      {
+        "kanji": "見栄え",
+        "kana": "みばえ",
+        "surface": "見栄え",
+        "questionMeaning": "外观；卖相",
+        "meaning": "外观；卖相"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:顽固的",
+    "summary": "頑固是固执、不改变；かたくな是顽固地拒绝或坚持，书面且常带心理态度；頑迷强调顽固愚昧，不能全换。",
+    "members": [
+      {
+        "kanji": "頑固",
+        "kana": "がんこ",
+        "surface": "頑固",
+        "questionMeaning": "倔强，顽固",
+        "meaning": "顽固的"
+      },
+      {
+        "kanji": "かたくな",
+        "kana": "かたくな",
+        "surface": "かたくな",
+        "questionMeaning": "顽固的",
+        "meaning": "顽固的"
+      },
+      {
+        "kanji": "頑迷",
+        "kana": "がんめい",
+        "surface": "頑迷",
+        "questionMeaning": "冥顽，顽固",
+        "meaning": "顽固的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:当地",
+    "summary": "現地是事件、旅行等所处的现场或当地；地元是本人所属、出生或生活的本地，参照视点不同。",
+    "members": [
+      {
+        "kanji": "現地",
+        "kana": "げんち",
+        "surface": "現地",
+        "questionMeaning": "现场，当地；现居住地",
+        "meaning": "当地；现场"
+      },
+      {
+        "kanji": "地元",
+        "kana": "じもと",
+        "surface": "地元",
+        "questionMeaning": "当地，本地",
+        "meaning": "当地，本地"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:辩解",
+    "summary": "言い訳是借口、辩解，常带推卸责任的负面意味；弁解是正式解释、申辩，未必不合理。",
+    "members": [
+      {
+        "kanji": "言い訳",
+        "kana": "いいわけ",
+        "surface": "言い訳",
+        "questionMeaning": "辩解，辩白",
+        "meaning": "辩解，辩白"
+      },
+      {
+        "kanji": "弁解",
+        "kana": "べんかい",
+        "surface": "弁解",
+        "questionMeaning": "辩解，申辩，辩白",
+        "meaning": "辩解；解释"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:渗入",
+    "summary": "染みる是液体渗入、味道沁入，也可刺痛；染み込む强调充分渗进内部，程度更深。",
+    "members": [
+      {
+        "kanji": "染みる",
+        "kana": "しみる",
+        "surface": "染みる",
+        "questionMeaning": "渗入；味道或刺激进入",
+        "meaning": "渗入；刺痛"
+      },
+      {
+        "kanji": "染み込む",
+        "kana": "しみこむ",
+        "surface": "染み込む",
+        "questionMeaning": "深入；渗透到内部",
+        "meaning": "渗入；深入"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:平常",
+    "summary": "日頃是平日、平时的习惯状态；平常是平常、普通或不异常，不能全换。",
+    "members": [
+      {
+        "kanji": "日頃",
+        "kana": "ひごろ",
+        "surface": "日頃",
+        "questionMeaning": "平常，平素",
+        "meaning": "平常，平素"
+      },
+      {
+        "kanji": "平常",
+        "kana": "へいじょう",
+        "surface": "平常",
+        "questionMeaning": "平常，平时",
+        "meaning": "平常，平时"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:格外的",
+    "summary": "格別是格外、特别不同，常含特别好或特别待遇；格段是程度、差距显著，常用于比较，不能全换。",
+    "members": [
+      {
+        "kanji": "格別",
+        "kana": "かくべつ",
+        "surface": "格別",
+        "questionMeaning": "特别，格外",
+        "meaning": "格外的"
+      },
+      {
+        "kanji": "格段",
+        "kana": "かくだん",
+        "surface": "格段",
+        "questionMeaning": "格外，特别",
+        "meaning": "格外的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:奖品",
+    "summary": "景品是购买、促销或活动赠送的奖品、赠品；賞品是比赛、竞赛获胜者得到的奖品。",
+    "members": [
+      {
+        "kanji": "景品",
+        "kana": "けいひん",
+        "surface": "景品",
+        "questionMeaning": "赠品；纪念品",
+        "meaning": "奖品；赠品"
+      },
+      {
+        "kanji": "賞品",
+        "kana": "しょうひん",
+        "surface": "賞品",
+        "questionMeaning": "奖品",
+        "meaning": "奖品"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:根本",
+    "summary": "根本是根本、根源或基础；根底是隐藏在深处的基础、底层原因，书面且强调深层。",
+    "members": [
+      {
+        "kanji": "根本",
+        "kana": "こんぽん",
+        "surface": "根本",
+        "questionMeaning": "根本，根源",
+        "meaning": "根本，根源"
+      },
+      {
+        "kanji": "根底",
+        "kana": "こんてい",
+        "surface": "根底",
+        "questionMeaning": "根本，基础",
+        "meaning": "根本，基础"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:适合",
+    "summary": "適応是适应环境、情况或使自身适应；適合是符合条件、适合对象，不能替换适应过程。",
+    "members": [
+      {
+        "kanji": "適応",
+        "kana": "てきおう",
+        "surface": "適応",
+        "questionMeaning": "适合，适应",
+        "meaning": "适合，适应"
+      },
+      {
+        "kanji": "適合",
+        "kana": "てきごう",
+        "surface": "適合",
+        "questionMeaning": "适合，适应，符合",
+        "meaning": "适合；符合"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:必然的",
+    "summary": "必然是必然这一结果或概念；必然的是必然的形容词形式，区别在词性和句法。",
+    "members": [
+      {
+        "kanji": "必然",
+        "kana": "ひつぜん",
+        "surface": "必然",
+        "questionMeaning": "必然",
+        "meaning": "必然的"
+      },
+      {
+        "kanji": "必然的",
+        "kana": "ひつぜんてき",
+        "surface": "必然的",
+        "questionMeaning": "必然的",
+        "meaning": "必然的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:领域",
+    "summary": "領域是领域、范围；域是领域、区域的书面或专业简略；領分是分内领域、本职范围，不能全换。",
+    "members": [
+      {
+        "kanji": "領域",
+        "kana": "りょういき",
+        "surface": "領域",
+        "questionMeaning": "领域",
+        "meaning": "领域"
+      },
+      {
+        "kanji": "域",
+        "kana": "いき",
+        "surface": "域",
+        "questionMeaning": "域；阶段，领域",
+        "meaning": "领域；范围"
+      },
+      {
+        "kanji": "領分",
+        "kana": "りょうぶん",
+        "surface": "領分",
+        "questionMeaning": "领土，领地；范围，领域",
+        "meaning": "领域；本分"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:真心",
+    "summary": "本心是内心真实想法、本意；真心是诚实真挚的心意、诚意，不能全换。",
+    "members": [
+      {
+        "kanji": "本心",
+        "kana": "ほんしん",
+        "surface": "本心",
+        "questionMeaning": "本心，真心；良心",
+        "meaning": "真心；本意"
+      },
+      {
+        "kanji": "真心",
+        "kana": "まごころ",
+        "surface": "真心",
+        "questionMeaning": "真心，诚意",
+        "meaning": "真心，诚意"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:热情",
+    "summary": "モチベーション是行动动力、动机；熱意是对某事投入的热情、诚意，不能全换。",
+    "members": [
+      {
+        "kanji": "motivation",
+        "kana": "モチベーション",
+        "surface": "モチベーション",
+        "questionMeaning": "热情，动力",
+        "meaning": "热情，动力"
+      },
+      {
+        "kanji": "熱意",
+        "kana": "ねつい",
+        "surface": "熱意",
+        "questionMeaning": "热情，干劲",
+        "meaning": "热情，干劲"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:真实的",
+    "summary": "リアル是现实感强、逼真或实际的；真実是事实真相、真实本身，不能替换现实体验。",
+    "members": [
+      {
+        "kanji": "real",
+        "kana": "リアル",
+        "surface": "リアル",
+        "questionMeaning": "真实的；现实感",
+        "meaning": "真实的；现实感"
+      },
+      {
+        "kanji": "真実",
+        "kana": "しんじつ",
+        "surface": "真実",
+        "questionMeaning": "真实情况；真的",
+        "meaning": "真实的；真相"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:住处",
+    "summary": "居場所是人当前所在、可以待着的位置；住処是居住处、栖身地，不能替换临时所在地点。",
+    "members": [
+      {
+        "kanji": "居場所",
+        "kana": "いばしょ",
+        "surface": "居場所",
+        "questionMeaning": "住处，行踪",
+        "meaning": "住处，行踪"
+      },
+      {
+        "kanji": "住処",
+        "kana": "すみか",
+        "surface": "住処",
+        "questionMeaning": "住处，家；巢穴，坏人聚集的地方",
+        "meaning": "住处；栖身处"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:听讲",
+    "summary": "受講是参加课程、接受授课；聴講是听课、旁听，强调听而不一定正式注册，不能全换。",
+    "members": [
+      {
+        "kanji": "受講",
+        "kana": "じゅこう",
+        "surface": "受講",
+        "questionMeaning": "听讲，听课",
+        "meaning": "听讲，听课"
+      },
+      {
+        "kanji": "聴講",
+        "kana": "ちょうこう",
+        "surface": "聴講",
+        "questionMeaning": "听讲，旁听",
+        "meaning": "听讲，旁听"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:因素",
+    "summary": "ファクター是影响因素、要素的外来语；因子是因素、变量或生物遗传因子，专业性更强。",
+    "members": [
+      {
+        "kanji": "factor",
+        "kana": "ファクター",
+        "surface": "ファクター",
+        "questionMeaning": "因素，要素",
+        "meaning": "因素，要素"
+      },
+      {
+        "kanji": "因子",
+        "kana": "いんし",
+        "surface": "因子",
+        "questionMeaning": "因素，因子",
+        "meaning": "因素，因子"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:核心",
+    "summary": "核是核心、核子或核部分的简略词；核心是核心要点；中核是中心核心、骨干，不能全换。",
+    "members": [
+      {
+        "kanji": "核",
+        "kana": "かく",
+        "surface": "核",
+        "questionMeaning": "核，核心；核武器",
+        "meaning": "核心；核"
+      },
+      {
+        "kanji": "核心",
+        "kana": "かくしん",
+        "surface": "核心",
+        "questionMeaning": "核心，关键",
+        "meaning": "核心，关键"
+      },
+      {
+        "kanji": "中核",
+        "kana": "ちゅうかく",
+        "surface": "中核",
+        "questionMeaning": "中心，核心，骨干",
+        "meaning": "核心"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:浪费",
+    "summary": "無駄遣い是乱花钱、浪费使用；浪費是浪费资源、时间或机会的正式总称；ロス是损耗、损失或未利用部分，不能全换。",
+    "members": [
+      {
+        "kanji": "無駄遣い",
+        "kana": "むだづかい",
+        "surface": "無駄遣い",
+        "questionMeaning": "浪费；乱花钱",
+        "meaning": "浪费；乱花钱"
+      },
+      {
+        "kanji": "浪費",
+        "kana": "ろうひ",
+        "surface": "浪費",
+        "questionMeaning": "浪费，糟蹋",
+        "meaning": "浪费，糟蹋"
+      },
+      {
+        "kanji": "loss",
+        "kana": "ロス",
+        "surface": "ロス",
+        "questionMeaning": "浪费，损耗",
+        "meaning": "浪费，损耗"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:基地",
+    "summary": "基地是军事、生产等基地；拠点是活动据点、根据地或中心地点，未必是固定基地设施。",
+    "members": [
+      {
+        "kanji": "基地",
+        "kana": "きち",
+        "surface": "基地",
+        "questionMeaning": "基地，根据地",
+        "meaning": "基地"
+      },
+      {
+        "kanji": "拠点",
+        "kana": "きょてん",
+        "surface": "拠点",
+        "questionMeaning": "基地，据点",
+        "meaning": "基地，据点"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:轻快的",
+    "summary": "軽やか是动作、声音、心情轻盈；軽快是动作轻快、文章明快或病情好转，语体和搭配不同。",
+    "members": [
+      {
+        "kanji": "軽やか",
+        "kana": "かろやか",
+        "surface": "軽やか",
+        "questionMeaning": "轻快的",
+        "meaning": "轻快的"
+      },
+      {
+        "kanji": "軽快",
+        "kana": "けいかい",
+        "surface": "軽快",
+        "questionMeaning": "轻快；轻松愉快",
+        "meaning": "轻快的；轻松的"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:技能",
+    "summary": "技能是习得的技术、技能；技量是实际本领、水平和技巧高低，评价能力意味更强。",
+    "members": [
+      {
+        "kanji": "技能",
+        "kana": "ぎのう",
+        "surface": "技能",
+        "questionMeaning": "技能，本领",
+        "meaning": "技能，本领"
+      },
+      {
+        "kanji": "技量",
+        "kana": "ぎりょう",
+        "surface": "技量",
+        "questionMeaning": "本事，本领，技能",
+        "meaning": "技能；本领"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:指南",
+    "summary": "ガイドライン是指导方针、准则或操作指南；指針是指针、方针、指导原则的正式词，不能全换具体说明书。",
+    "members": [
+      {
+        "kanji": "guideline",
+        "kana": "ガイドライン",
+        "surface": "ガイドライン",
+        "questionMeaning": "指南；准则",
+        "meaning": "指南；准则"
+      },
+      {
+        "kanji": "指針",
+        "kana": "ししん",
+        "surface": "指針",
+        "questionMeaning": "指针；方针，准则",
+        "meaning": "指南；方针"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:妖怪",
+    "summary": "魔物是魔物、邪恶怪物或恶灵；化け物是怪物、妖怪，也可骂人；物の怪是古典、文学的鬼怪，不能全换。",
+    "members": [
+      {
+        "kanji": "魔物",
+        "kana": "まもの",
+        "surface": "魔物",
+        "questionMeaning": "妖怪，魔鬼",
+        "meaning": "妖怪，魔鬼"
+      },
+      {
+        "kanji": "化け物",
+        "kana": "ばけもの",
+        "surface": "化け物",
+        "questionMeaning": "妖怪；怪物",
+        "meaning": "妖怪；怪物"
+      },
+      {
+        "kanji": "物の 怪[け]",
+        "kana": "もののけ",
+        "surface": "物の怪",
+        "questionMeaning": "妖怪，鬼怪",
+        "meaning": "妖怪，鬼怪"
+      }
+    ]
+  },
+  {
+    "groupKey": "synonym:傲慢的",
+    "summary": "傲慢是态度骄傲自大；尊大是摆架子、妄自尊大；高慢是高傲自负，语体和侧重点不同。",
+    "members": [
+      {
+        "kanji": "傲慢",
+        "kana": "ごうまん",
+        "surface": "傲慢",
+        "questionMeaning": "傲慢，骄傲",
+        "meaning": "傲慢的"
+      },
+      {
+        "kanji": "尊大",
+        "kana": "そんだい",
+        "surface": "尊大",
+        "questionMeaning": "自大，骄傲自大",
+        "meaning": "傲慢的"
+      },
+      {
+        "kanji": "高慢",
+        "kana": "こうまん",
+        "surface": "高慢",
+        "questionMeaning": "傲慢，高傲",
+        "meaning": "傲慢的"
+      }
+    ]
+  }
+]

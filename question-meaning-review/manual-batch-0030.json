@@ -65,7 +65,7 @@
   {
     "kanji": "傲慢",
     "kana": "ごうまん",
-    "questionMeaning": "傲慢，骄傲",
+    "questionMeaning": "傲慢，骄傲（态度骄傲）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },

@@ -240,9 +240,9 @@
   {
     "kanji": "果実",
     "kana": "かじつ",
-    "questionMeaning": "果实",
+    "questionMeaning": "果实（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:果实 — 果実是正式的果实或成果概念；保留原文义项「果实」"
   },
   {
     "kanji": "架空",
@@ -989,14 +989,14 @@
   {
     "kanji": "外観",
     "kana": "がいかん",
-    "questionMeaning": "外观，外表",
+    "questionMeaning": "外观，外表（建筑物外观）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "外見",
     "kana": "がいけん",
-    "questionMeaning": "外观，外形",
+    "questionMeaning": "外观，外形（人的外貌）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1234,28 +1234,28 @@
   {
     "kanji": "格段",
     "kana": "かくだん",
-    "questionMeaning": "格外，特别",
+    "questionMeaning": "格外，特别（比较差距显著）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
   {
     "kanji": "格別",
     "kana": "かくべつ",
-    "questionMeaning": "特别，格外",
+    "questionMeaning": "特别，格外（特别待遇、特别好）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
   {
     "kanji": "核",
     "kana": "かく",
-    "questionMeaning": "核，核心；核武器",
+    "questionMeaning": "核，核心（核心或核部分）；核武器",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "核心",
     "kana": "かくしん",
-    "questionMeaning": "核心，关键",
+    "questionMeaning": "核心，关键（关键要点）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1486,9 +1486,9 @@
   {
     "kanji": "楽天的",
     "kana": "らくてんてき",
-    "questionMeaning": "乐观的",
+    "questionMeaning": "乐观的（天性乐观）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:乐观的 — 天性乐观、无忧无虑，有时带不切实际的语气；保留原文义项「乐观的」"
   },
   {
     "kanji": "楽譜",
@@ -1633,7 +1633,7 @@
   {
     "kanji": "勘",
     "kana": "かん",
-    "questionMeaning": "直觉，第六感",
+    "questionMeaning": "直觉，第六感（经验猜测）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },

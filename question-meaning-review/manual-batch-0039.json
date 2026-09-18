@@ -1,0 +1,1402 @@
+[
+  {
+    "kanji": "こしょう",
+    "kana": "こしょう",
+    "questionMeaning": "胡椒",
+    "classification": "manual_translation",
+    "reason": "homophone:こしょう — 同音异义，按该表记的原文义项直译；保留原文义项「胡椒」"
+  },
+  {
+    "kanji": "応え",
+    "kana": "こたえ",
+    "questionMeaning": "回应，反应",
+    "classification": "manual_translation",
+    "reason": "homophone:こたえ — 同音异义，按该表记的原文义项直译；保留原文义项「回应，反应」"
+  },
+  {
+    "kanji": "明ける",
+    "kana": "あける",
+    "questionMeaning": "天亮；结束",
+    "classification": "manual_translation",
+    "reason": "homophone:あける — 同音异义，按该表记的原文义项直译；保留原文义项「天亮；结束」"
+  },
+  {
+    "kanji": "湿る",
+    "kana": "しめる",
+    "questionMeaning": "潮湿；变湿",
+    "classification": "manual_translation",
+    "reason": "homophone:しめる — 同音异义，按该表记的原文义项直译；保留原文义项「潮湿；变湿」"
+  },
+  {
+    "kanji": "帰る",
+    "kana": "かえる",
+    "questionMeaning": "回去",
+    "classification": "manual_translation",
+    "reason": "homophone:かえる — 同音异义，按该表记的原文义项直译；保留原文义项「回去」"
+  },
+  {
+    "kanji": "蛙[かえる]",
+    "kana": "かえる",
+    "questionMeaning": "青蛙，蛤蟆",
+    "classification": "manual_translation",
+    "reason": "homophone:かえる — 同音异义，按该表记的原文义项直译；保留原文义项「青蛙，蛤蟆」"
+  },
+  {
+    "kanji": "代わる",
+    "kana": "かわる",
+    "questionMeaning": "代替；替换",
+    "classification": "manual_translation",
+    "reason": "homophone:かわる — 同音异义，按该表记的原文义项直译；保留原文义项「代替；替换」"
+  },
+  {
+    "kanji": "かす",
+    "kana": "かす",
+    "questionMeaning": "渣滓；废物",
+    "classification": "manual_translation",
+    "reason": "homophone:かす — 同音异义，按该表记的原文义项直译；保留原文义项「渣滓；废物」"
+  },
+  {
+    "kanji": "送る",
+    "kana": "おくる",
+    "questionMeaning": "寄送；送给",
+    "classification": "manual_translation",
+    "reason": "homophone:おくる — 同音异义，按该表记的原文义项直译；保留原文义项「寄送；送给」"
+  },
+  {
+    "kanji": "贈る",
+    "kana": "おくる",
+    "questionMeaning": "赠送",
+    "classification": "manual_translation",
+    "reason": "homophone:おくる — 同音异义，按该表记的原文义项直译；保留原文义项「赠送」"
+  },
+  {
+    "kanji": "造る",
+    "kana": "つくる",
+    "questionMeaning": "制造；建造",
+    "classification": "manual_translation",
+    "reason": "homophone:つくる — 同音异义，按该表记的原文义项直译；保留原文义项「制造；建造」"
+  },
+  {
+    "kanji": "飼う",
+    "kana": "かう",
+    "questionMeaning": "饲养",
+    "classification": "manual_translation",
+    "reason": "homophone:かう — 同音异义，按该表记的原文义项直译；保留原文义项「饲养」"
+  },
+  {
+    "kanji": "書く",
+    "kana": "かく",
+    "questionMeaning": "写",
+    "classification": "manual_translation",
+    "reason": "homophone:かく — 同音异义，按该表记的原文义项直译；保留原文义项「写」"
+  },
+  {
+    "kanji": "搔[か]く",
+    "kana": "かく",
+    "questionMeaning": "挠；抓",
+    "classification": "manual_translation",
+    "reason": "homophone:かく — 同音异义，按该表记的原文义项直译；保留原文义项「挠；抓」"
+  },
+  {
+    "kanji": "亡くなる",
+    "kana": "なくなる",
+    "questionMeaning": "去世",
+    "classification": "manual_translation",
+    "reason": "homophone:なくなる — 同音异义，按该表记的原文义项直译；保留原文义项「去世」"
+  },
+  {
+    "kanji": "きる",
+    "kana": "きる",
+    "questionMeaning": "……完",
+    "classification": "manual_translation",
+    "reason": "homophone:きる — 同音异义，按该表记的原文义项直译；保留原文义项「……完」"
+  },
+  {
+    "kanji": "履く",
+    "kana": "はく",
+    "questionMeaning": "穿鞋；穿裤子",
+    "classification": "manual_translation",
+    "reason": "homophone:はく — 同音异义，按该表记的原文义项直译；保留原文义项「穿鞋；穿裤子」"
+  },
+  {
+    "kanji": "掃く",
+    "kana": "はく",
+    "questionMeaning": "扫",
+    "classification": "manual_translation",
+    "reason": "homophone:はく — 同音异义，按该表记的原文义项直译；保留原文义项「扫」"
+  },
+  {
+    "kanji": "置く",
+    "kana": "おく",
+    "questionMeaning": "放置",
+    "classification": "manual_translation",
+    "reason": "homophone:おく — 同音异义，按该表记的原文义项直译；保留原文义项「放置」"
+  },
+  {
+    "kanji": "漬ける",
+    "kana": "つける",
+    "questionMeaning": "腌；浸泡",
+    "classification": "manual_translation",
+    "reason": "homophone:つける — 同音异义，按该表记的原文义项直译；保留原文义项「腌；浸泡」"
+  },
+  {
+    "kanji": "〜回",
+    "kana": "〜かい",
+    "questionMeaning": "……回，次",
+    "classification": "manual_translation",
+    "reason": "homophone:〜かい — 同音异义，按该表记的原文义项直译；保留原文义项「……回，次」"
+  },
+  {
+    "kanji": "〜階",
+    "kana": "〜かい",
+    "questionMeaning": "～楼",
+    "classification": "manual_translation",
+    "reason": "homophone:〜かい — 同音异义，按该表记的原文义项直译；保留原文义项「～楼」"
+  },
+  {
+    "kanji": "〜界",
+    "kana": "〜かい",
+    "questionMeaning": "……界",
+    "classification": "manual_translation",
+    "reason": "homophone:〜かい — 同音异义，按该表记的原文义项直译；保留原文义项「……界」"
+  },
+  {
+    "kanji": "いる",
+    "kana": "いる",
+    "questionMeaning": "在；有（生物）",
+    "classification": "manual_translation",
+    "reason": "homophone:いる — 同音异义，按该表记的原文义项直译；保留原文义项「在；有（生物）」"
+  },
+  {
+    "kanji": "要る",
+    "kana": "いる",
+    "questionMeaning": "需要",
+    "classification": "manual_translation",
+    "reason": "homophone:いる — 同音异义，按该表记的原文义项直译；保留原文义项「需要」"
+  },
+  {
+    "kanji": "うん",
+    "kana": "うん",
+    "questionMeaning": "是，是的",
+    "classification": "manual_translation",
+    "reason": "homophone:うん — 同音异义，按该表记的原文义项直译；保留原文义项「是，是的」"
+  },
+  {
+    "kanji": "ここ",
+    "kana": "ここ",
+    "questionMeaning": "这里",
+    "classification": "manual_translation",
+    "reason": "homophone:ここ — 同音异义，按该表记的原文义项直译；保留原文义项「这里」"
+  },
+  {
+    "kanji": "個々",
+    "kana": "ここ",
+    "questionMeaning": "各个，各自",
+    "classification": "manual_translation",
+    "reason": "homophone:ここ — 同音异义，按该表记的原文义项直译；保留原文义项「各个，各自」"
+  },
+  {
+    "kanji": "そう",
+    "kana": "そう",
+    "questionMeaning": "那样；对",
+    "classification": "manual_translation",
+    "reason": "homophone:そう — 同音异义，按该表记的原文义项直译；保留原文义项「那样；对」"
+  },
+  {
+    "kanji": "沿う",
+    "kana": "そう",
+    "questionMeaning": "沿着；遵照",
+    "classification": "manual_translation",
+    "reason": "homophone:そう — 同音异义，按该表记的原文义项直译；保留原文义项「沿着；遵照」"
+  },
+  {
+    "kanji": "そこ",
+    "kana": "そこ",
+    "questionMeaning": "那里",
+    "classification": "manual_translation",
+    "reason": "homophone:そこ — 同音异义，按该表记的原文义项直译；保留原文义项「那里」"
+  },
+  {
+    "kanji": "どう",
+    "kana": "どう",
+    "questionMeaning": "怎么样",
+    "classification": "manual_translation",
+    "reason": "homophone:どう — 同音异义，按该表记的原文义项直译；保留原文义项「怎么样」"
+  },
+  {
+    "kanji": "はい",
+    "kana": "はい",
+    "questionMeaning": "是的，对的",
+    "classification": "manual_translation",
+    "reason": "homophone:はい — 同音异义，按该表记的原文义项直译；保留原文义项「是的，对的」"
+  },
+  {
+    "kanji": "暗い",
+    "kana": "くらい",
+    "questionMeaning": "暗的；阴沉的",
+    "classification": "manual_translation",
+    "reason": "homophone:くらい — 同音异义，按该表记的原文义项直译；保留原文义项「暗的；阴沉的」"
+  },
+  {
+    "kanji": "飴[あめ]",
+    "kana": "あめ",
+    "questionMeaning": "糖果",
+    "classification": "manual_translation",
+    "reason": "homophone:あめ — 同音异义，按该表记的原文义项直译；保留原文义项「糖果」"
+  },
+  {
+    "kanji": "いえ",
+    "kana": "いえ",
+    "questionMeaning": "不；不是",
+    "classification": "manual_translation",
+    "reason": "homophone:いえ — 同音异义，按该表记的原文义项直译；保留原文义项「不；不是」"
+  },
+  {
+    "kanji": "歌う",
+    "kana": "うたう",
+    "questionMeaning": "唱歌",
+    "classification": "manual_translation",
+    "reason": "homophone:うたう — 同音异义，按该表记的原文义项直译；保留原文义项「唱歌」"
+  },
+  {
+    "kanji": "謳[うた]う",
+    "kana": "うたう",
+    "questionMeaning": "歌颂；宣称",
+    "classification": "manual_translation",
+    "reason": "homophone:うたう — 同音异义，按该表记的原文义项直译；保留原文义项「歌颂；宣称」"
+  },
+  {
+    "kanji": "会う",
+    "kana": "あう",
+    "questionMeaning": "见面；碰见",
+    "classification": "manual_translation",
+    "reason": "homophone:あう — 同音异义，按该表记的原文义项直译；保留原文义项「见面；碰见」"
+  },
+  {
+    "kanji": "合う",
+    "kana": "あう",
+    "questionMeaning": "合适；相配",
+    "classification": "manual_translation",
+    "reason": "homophone:あう — 同音异义，按该表记的原文义项直译；保留原文义项「合适；相配」"
+  },
+  {
+    "kanji": "遭う",
+    "kana": "あう",
+    "questionMeaning": "遭遇；碰上",
+    "classification": "manual_translation",
+    "reason": "homophone:あう — 同音异义，按该表记的原文义项直译；保留原文义项「遭遇；碰上」"
+  },
+  {
+    "kanji": "近く",
+    "kana": "ちかく",
+    "questionMeaning": "附近",
+    "classification": "manual_translation",
+    "reason": "homophone:ちかく — 同音异义，按该表记的原文义项直译；保留原文义项「附近」"
+  },
+  {
+    "kanji": "診る",
+    "kana": "みる",
+    "questionMeaning": "诊察",
+    "classification": "manual_translation",
+    "reason": "homophone:みる — 同音异义，按该表记的原文义项直译；保留原文义项「诊察」"
+  },
+  {
+    "kanji": "いつか",
+    "kana": "いつか",
+    "questionMeaning": "总有一天；曾经",
+    "classification": "manual_translation",
+    "reason": "homophone:いつか — 同音异义，按该表记的原文义项直译；保留原文义项「总有一天；曾经」"
+  },
+  {
+    "kanji": "あと",
+    "kana": "あと",
+    "questionMeaning": "还有，另外",
+    "classification": "manual_translation",
+    "reason": "homophone:あと — 同音异义，按该表记的原文义项直译；保留原文义项「还有，另外」"
+  },
+  {
+    "kanji": "厚い",
+    "kana": "あつい",
+    "questionMeaning": "厚的",
+    "classification": "manual_translation",
+    "reason": "homophone:あつい — 同音异义，按该表记的原文义项直译；保留原文义项「厚的」"
+  },
+  {
+    "kanji": "暑い",
+    "kana": "あつい",
+    "questionMeaning": "热的（天气）",
+    "classification": "manual_translation",
+    "reason": "homophone:あつい — 同音异义，按该表记的原文义项直译；保留原文义项「热的（天气）」"
+  },
+  {
+    "kanji": "熱い",
+    "kana": "あつい",
+    "questionMeaning": "热的；烫的",
+    "classification": "manual_translation",
+    "reason": "homophone:あつい — 同音异义，按该表记的原文义项直译；保留原文义项「热的；烫的」"
+  },
+  {
+    "kanji": "好き",
+    "kana": "すき",
+    "questionMeaning": "喜欢的",
+    "classification": "manual_translation",
+    "reason": "homophone:すき — 同音异义，按该表记的原文义项直译；保留原文义项「喜欢的」"
+  },
+  {
+    "kanji": "継ぎ",
+    "kana": "つぎ",
+    "questionMeaning": "缝补，补丁",
+    "classification": "manual_translation",
+    "reason": "homophone:つぎ — 同音异义，按该表记的原文义项直译；保留原文义项「缝补，补丁」"
+  },
+  {
+    "kanji": "撮る",
+    "kana": "とる",
+    "questionMeaning": "拍摄",
+    "classification": "manual_translation",
+    "reason": "homophone:とる — 同音异义，按该表记的原文义项直译；保留原文义项「拍摄」"
+  },
+  {
+    "kanji": "採る",
+    "kana": "とる",
+    "questionMeaning": "采集；录用",
+    "classification": "manual_translation",
+    "reason": "homophone:とる — 同音异义，按该表记的原文义项直译；保留原文义项「采集；录用」"
+  },
+  {
+    "kanji": "空き",
+    "kana": "あき",
+    "questionMeaning": "空缺；空闲",
+    "classification": "manual_translation",
+    "reason": "homophone:あき — 同音异义，按该表记的原文义项直译；保留原文义项「空缺；空闲」"
+  },
+  {
+    "kanji": "貼る",
+    "kana": "はる",
+    "questionMeaning": "贴上",
+    "classification": "manual_translation",
+    "reason": "homophone:はる — 同音异义，按该表记的原文义项直译；保留原文义项「贴上」"
+  },
+  {
+    "kanji": "あげる",
+    "kana": "あげる",
+    "questionMeaning": "给；赠送",
+    "classification": "manual_translation",
+    "reason": "homophone:あげる — 同音异义，按该表记的原文义项直译；保留原文义项「给；赠送」"
+  },
+  {
+    "kanji": "揚げる",
+    "kana": "あげる",
+    "questionMeaning": "炸；举起",
+    "classification": "manual_translation",
+    "reason": "homophone:あげる — 同音异义，按该表记的原文义项直译；保留原文义项「炸；举起」"
+  },
+  {
+    "kanji": "寝る",
+    "kana": "ねる",
+    "questionMeaning": "睡觉；躺下",
+    "classification": "manual_translation",
+    "reason": "homophone:ねる — 同音异义，按该表记的原文义项直译；保留原文义项「睡觉；躺下」"
+  },
+  {
+    "kanji": "腫れる",
+    "kana": "はれる",
+    "questionMeaning": "肿起来",
+    "classification": "manual_translation",
+    "reason": "homophone:はれる — 同音异义，按该表记的原文义项直译；保留原文义项「肿起来」"
+  },
+  {
+    "kanji": "早い",
+    "kana": "はやい",
+    "questionMeaning": "早的；快的",
+    "classification": "manual_translation",
+    "reason": "homophone:はやい — 同音异义，按该表记的原文义项直译；保留原文义项「早的；快的」"
+  },
+  {
+    "kanji": "速い",
+    "kana": "はやい",
+    "questionMeaning": "快的",
+    "classification": "manual_translation",
+    "reason": "homophone:はやい — 同音异义，按该表记的原文义项直译；保留原文义项「快的」"
+  },
+  {
+    "kanji": "多い",
+    "kana": "おおい",
+    "questionMeaning": "多的",
+    "classification": "manual_translation",
+    "reason": "homophone:おおい — 同音异义，按该表记的原文义项直译；保留原文义项「多的」"
+  },
+  {
+    "kanji": "覆い",
+    "kana": "おおい",
+    "questionMeaning": "覆盖物；罩子",
+    "classification": "manual_translation",
+    "reason": "homophone:おおい — 同音异义，按该表记的原文义项直译；保留原文义项「覆盖物；罩子」"
+  },
+  {
+    "kanji": "答える",
+    "kana": "こたえる",
+    "questionMeaning": "回答",
+    "classification": "manual_translation",
+    "reason": "homophone:こたえる — 同音异义，按该表记的原文义项直译；保留原文义项「回答」"
+  },
+  {
+    "kanji": "吹く",
+    "kana": "ふく",
+    "questionMeaning": "吹；刮风",
+    "classification": "manual_translation",
+    "reason": "homophone:ふく — 同音异义，按该表记的原文义项直译；保留原文义项「吹；刮风」"
+  },
+  {
+    "kanji": "樹",
+    "kana": "き",
+    "questionMeaning": "树",
+    "classification": "manual_translation",
+    "reason": "homophone:き — 同音异义，按该表记的原文义项直译；保留原文义项「树」"
+  },
+  {
+    "kanji": "よる",
+    "kana": "よる",
+    "questionMeaning": "靠近；顺道拜访",
+    "classification": "manual_translation",
+    "reason": "homophone:よる — 同音异义，按该表记的原文义项直译；保留原文义项「靠近；顺道拜访」"
+  },
+  {
+    "kanji": "蝶[ちょう]",
+    "kana": "ちょう",
+    "questionMeaning": "蝴蝶，蝶类",
+    "classification": "manual_translation",
+    "reason": "homophone:ちょう — 同音异义，按该表记的原文义项直译；保留原文义项「蝴蝶，蝶类」"
+  },
+  {
+    "kanji": "くれる",
+    "kana": "くれる",
+    "questionMeaning": "给我",
+    "classification": "manual_translation",
+    "reason": "homophone:くれる — 同音异义，按该表记的原文义项直译；保留原文义项「给我」"
+  },
+  {
+    "kanji": "付き",
+    "kana": "つき",
+    "questionMeaning": "附带；随附",
+    "classification": "manual_translation",
+    "reason": "homophone:つき — 同音异义，按该表记的原文义项直译；保留原文义项「附带；随附」"
+  },
+  {
+    "kanji": "堅い",
+    "kana": "かたい",
+    "questionMeaning": "坚硬的；严肃的",
+    "classification": "manual_translation",
+    "reason": "homophone:かたい — 同音异义，按该表记的原文义项直译；保留原文义项「坚硬的；严肃的」"
+  },
+  {
+    "kanji": "初め",
+    "kana": "はじめ",
+    "questionMeaning": "初次，当初",
+    "classification": "manual_translation",
+    "reason": "homophone:はじめ — 同音异义，按该表记的原文义项直译；保留原文义项「初次，当初」"
+  },
+  {
+    "kanji": "脚",
+    "kana": "あし",
+    "questionMeaning": "脚腿",
+    "classification": "manual_translation",
+    "reason": "homophone:あし — 同音异义，按该表记的原文义项直译；保留原文义项「脚腿」"
+  },
+  {
+    "kanji": "通う",
+    "kana": "かよう",
+    "questionMeaning": "往返；通勤",
+    "classification": "manual_translation",
+    "reason": "homophone:かよう — 同音异义，按该表记的原文义项直译；保留原文义项「往返；通勤」"
+  },
+  {
+    "kanji": "優しい",
+    "kana": "やさしい",
+    "questionMeaning": "温柔的；简单的",
+    "classification": "manual_translation",
+    "reason": "homophone:やさしい — 同音异义，按该表记的原文义项直译；保留原文义项「温柔的；简单的」"
+  },
+  {
+    "kanji": "易しい",
+    "kana": "やさしい",
+    "questionMeaning": "容易的",
+    "classification": "manual_translation",
+    "reason": "homophone:やさしい — 同音异义，按该表记的原文义项直译；保留原文义项「容易的」"
+  },
+  {
+    "kanji": "せい",
+    "kana": "せい",
+    "questionMeaning": "缘故；责任",
+    "classification": "manual_translation",
+    "reason": "homophone:せい — 同音异义，按该表记的原文义项直译；保留原文义项「缘故；责任」"
+  },
+  {
+    "kanji": "最も",
+    "kana": "もっとも",
+    "questionMeaning": "最，第一",
+    "classification": "manual_translation",
+    "reason": "homophone:もっとも — 同音异义，按该表记的原文义项直译；保留原文义项「最，第一」"
+  },
+  {
+    "kanji": "もっとも",
+    "kana": "もっとも",
+    "questionMeaning": "最好；当然",
+    "classification": "manual_translation",
+    "reason": "homophone:もっとも — 同音异义，按该表记的原文义项直译；保留原文义项「最好；当然」"
+  },
+  {
+    "kanji": "借り",
+    "kana": "かり",
+    "questionMeaning": "借来的东西；借用",
+    "classification": "manual_translation",
+    "reason": "homophone:かり — 同音异义，按该表记的原文义项直译；保留原文义项「借来的东西；借用」"
+  },
+  {
+    "kanji": "狩り",
+    "kana": "かり",
+    "questionMeaning": "狩猎；捕捉",
+    "classification": "manual_translation",
+    "reason": "homophone:かり — 同音异义，按该表记的原文义项直译；保留原文义项「狩猎；捕捉」"
+  },
+  {
+    "kanji": "より",
+    "kana": "より",
+    "questionMeaning": "与……相比",
+    "classification": "manual_translation",
+    "reason": "homophone:より — 同音异义，按该表记的原文义项直译；保留原文义项「与……相比」"
+  },
+  {
+    "kanji": "寄り",
+    "kana": "より",
+    "questionMeaning": "靠近；偏向",
+    "classification": "manual_translation",
+    "reason": "homophone:より — 同音异义，按该表记的原文义项直译；保留原文义项「靠近；偏向」"
+  },
+  {
+    "kanji": "いや",
+    "kana": "いや",
+    "questionMeaning": "不，不是",
+    "classification": "manual_translation",
+    "reason": "homophone:いや — 同音异义，按该表记的原文义项直译；保留原文义项「不，不是」"
+  },
+  {
+    "kanji": "蕎麦[そば]",
+    "kana": "そば",
+    "questionMeaning": "荞麦面",
+    "classification": "manual_translation",
+    "reason": "homophone:そば — 同音异义，按该表记的原文义项直译；保留原文义项「荞麦面」"
+  },
+  {
+    "kanji": "側",
+    "kana": "そば",
+    "questionMeaning": "旁边；附近",
+    "classification": "distinction",
+    "reason": "reading-sense:側 — 与同表记的另一读法按义项区分；保留原文义项「旁边；附近」"
+  },
+  {
+    "kanji": "嗅ぐ",
+    "kana": "かぐ",
+    "questionMeaning": "闻气味",
+    "classification": "manual_translation",
+    "reason": "homophone:かぐ — 同音异义，按该表记的原文义项直译；保留原文义项「闻气味」"
+  },
+  {
+    "kanji": "泣く",
+    "kana": "なく",
+    "questionMeaning": "哭",
+    "classification": "manual_translation",
+    "reason": "homophone:なく — 同音异义，按该表记的原文义项直译；保留原文义项「哭」"
+  },
+  {
+    "kanji": "鳴く",
+    "kana": "なく",
+    "questionMeaning": "鸣叫",
+    "classification": "manual_translation",
+    "reason": "homophone:なく — 同音异义，按该表记的原文义项直译；保留原文义项「鸣叫」"
+  },
+  {
+    "kanji": "差す",
+    "kana": "さす",
+    "questionMeaning": "撑（伞）；照射",
+    "classification": "manual_translation",
+    "reason": "homophone:さす — 同音异义，按该表记的原文义项直译；保留原文义项「撑（伞）；照射」"
+  },
+  {
+    "kanji": "弱い",
+    "kana": "よわい",
+    "questionMeaning": "弱的",
+    "classification": "manual_translation",
+    "reason": "homophone:よわい — 同音异义，按该表记的原文义项直译；保留原文义项「弱的」"
+  },
+  {
+    "kanji": "鮭[さけ]",
+    "kana": "さけ",
+    "questionMeaning": "鲑鱼；三文鱼",
+    "classification": "manual_translation",
+    "reason": "homophone:さけ — 同音异义，按该表记的原文义项直译；保留原文义项「鲑鱼；三文鱼」"
+  },
+  {
+    "kanji": "咳[せき]",
+    "kana": "せき",
+    "questionMeaning": "咳嗽",
+    "classification": "manual_translation",
+    "reason": "homophone:せき — 同音异义，按该表记的原文义项直译；保留原文义项「咳嗽」"
+  },
+  {
+    "kanji": "堰[せき]",
+    "kana": "せき",
+    "questionMeaning": "堤坝；水闸",
+    "classification": "manual_translation",
+    "reason": "homophone:せき — 同音异义，按该表记的原文义项直译；保留原文义项「堤坝；水闸」"
+  },
+  {
+    "kanji": "登る",
+    "kana": "のぼる",
+    "questionMeaning": "登上",
+    "classification": "manual_translation",
+    "reason": "homophone:のぼる — 同音异义，按该表记的原文义项直译；保留原文义项「登上」"
+  },
+  {
+    "kanji": "昇る",
+    "kana": "のぼる",
+    "questionMeaning": "升起；晋升",
+    "classification": "manual_translation",
+    "reason": "homophone:のぼる — 同音异义，按该表记的原文义项直译；保留原文义项「升起；晋升」"
+  },
+  {
+    "kanji": "濃い",
+    "kana": "こい",
+    "questionMeaning": "浓的；深的",
+    "classification": "manual_translation",
+    "reason": "homophone:こい — 同音异义，按该表记的原文义项直译；保留原文义项「浓的；深的」"
+  },
+  {
+    "kanji": "おる",
+    "kana": "おる",
+    "questionMeaning": "在（谦让语）",
+    "classification": "manual_translation",
+    "reason": "homophone:おる — 同音异义，按该表记的原文义项直译；保留原文义项「在（谦让语）」"
+  },
+  {
+    "kanji": "興す",
+    "kana": "おこす",
+    "questionMeaning": "兴办；振兴",
+    "classification": "manual_translation",
+    "reason": "homophone:おこす — 同音异义，按该表记的原文义项直译；保留原文义项「兴办；振兴」"
+  },
+  {
+    "kanji": "怒る",
+    "kana": "おこる",
+    "questionMeaning": "生气",
+    "classification": "manual_translation",
+    "reason": "homophone:おこる — 同音异义，按该表记的原文义项直译；保留原文义项「生气」"
+  },
+  {
+    "kanji": "やめる",
+    "kana": "やめる",
+    "questionMeaning": "辞掉；停止",
+    "classification": "manual_translation",
+    "reason": "homophone:やめる — 同音异义，按该表记的原文义项直译；保留原文义项「辞掉；停止」"
+  },
+  {
+    "kanji": "辞める",
+    "kana": "やめる",
+    "questionMeaning": "辞职；停止",
+    "classification": "manual_translation",
+    "reason": "homophone:やめる — 同音异义，按该表记的原文义项直译；保留原文义项「辞职；停止」"
+  },
+  {
+    "kanji": "回り",
+    "kana": "まわり",
+    "questionMeaning": "旋转",
+    "classification": "manual_translation",
+    "reason": "homophone:まわり — 同音异义，按该表记的原文义项直译；保留原文义项「旋转」"
+  },
+  {
+    "kanji": "拾う",
+    "kana": "ひろう",
+    "questionMeaning": "捡起",
+    "classification": "manual_translation",
+    "reason": "homophone:ひろう — 同音异义，按该表记的原文义项直译；保留原文义项「捡起」"
+  },
+  {
+    "kanji": "深い",
+    "kana": "ふかい",
+    "questionMeaning": "深的",
+    "classification": "manual_translation",
+    "reason": "homophone:ふかい — 同音异义，按该表记的原文义项直译；保留原文义项「深的」"
+  },
+  {
+    "kanji": "尋ねる",
+    "kana": "たずねる",
+    "questionMeaning": "询问；访问",
+    "classification": "manual_translation",
+    "reason": "homophone:たずねる — 同音异义，按该表记的原文义项直译；保留原文义项「询问；访问」"
+  },
+  {
+    "kanji": "縞[しま]",
+    "kana": "しま",
+    "questionMeaning": "条纹",
+    "classification": "manual_translation",
+    "reason": "homophone:しま — 同音异义，按该表记的原文义项直译；保留原文义项「条纹」"
+  },
+  {
+    "kanji": "充てる",
+    "kana": "あてる",
+    "questionMeaning": "充当；用于",
+    "classification": "manual_translation",
+    "reason": "homophone:あてる — 同音异义，按该表记的原文义项直译；保留原文义项「充当；用于」"
+  },
+  {
+    "kanji": "別れる",
+    "kana": "わかれる",
+    "questionMeaning": "分别；分手",
+    "classification": "manual_translation",
+    "reason": "homophone:わかれる — 同音异义，按该表记的原文义项直译；保留原文义项「分别；分手」"
+  },
+  {
+    "kanji": "辺り",
+    "kana": "あたり",
+    "questionMeaning": "附近；周围",
+    "classification": "manual_translation",
+    "reason": "homophone:あたり — 同音异义，按该表记的原文义项直译；保留原文义项「附近；周围」"
+  },
+  {
+    "kanji": "当たり",
+    "kana": "あたり",
+    "questionMeaning": "命中；正中",
+    "classification": "manual_translation",
+    "reason": "homophone:あたり — 同音异义，按该表记的原文义项直译；保留原文义项「命中；正中」"
+  },
+  {
+    "kanji": "酔う",
+    "kana": "よう",
+    "questionMeaning": "醉；喝醉",
+    "classification": "manual_translation",
+    "reason": "homophone:よう — 同音异义，按该表记的原文义项直译；保留原文义项「醉；喝醉」"
+  },
+  {
+    "kanji": "home",
+    "kana": "ホーム",
+    "questionMeaning": "月台；家",
+    "classification": "manual_translation",
+    "reason": "homophone:ホーム — 同音异义，按该表记的原文义项直译；保留原文义项「月台；家」"
+  },
+  {
+    "kanji": "platform",
+    "kana": "ホーム",
+    "questionMeaning": "站台，月台",
+    "classification": "manual_translation",
+    "reason": "homophone:ホーム — 同音异义，按该表记的原文义项直译；保留原文义项「站台，月台」"
+  },
+  {
+    "kanji": "謝る",
+    "kana": "あやまる",
+    "questionMeaning": "道歉",
+    "classification": "manual_translation",
+    "reason": "homophone:あやまる — 同音异义，按该表记的原文义项直译；保留原文义项「道歉」"
+  },
+  {
+    "kanji": "障る",
+    "kana": "さわる",
+    "questionMeaning": "妨碍；有害",
+    "classification": "manual_translation",
+    "reason": "homophone:さわる — 同音异义，按该表记的原文义项直译；保留原文义项「妨碍；有害」"
+  },
+  {
+    "kanji": "痛み",
+    "kana": "いたみ",
+    "questionMeaning": "疼痛",
+    "classification": "manual_translation",
+    "reason": "homophone:いたみ — 同音异义，按该表记的原文义项直译；保留原文义项「疼痛」"
+  },
+  {
+    "kanji": "傷み",
+    "kana": "いたみ",
+    "questionMeaning": "腐烂；损坏",
+    "classification": "manual_translation",
+    "reason": "homophone:いたみ — 同音异义，按该表记的原文义项直译；保留原文义项「腐烂；损坏」"
+  },
+  {
+    "kanji": "しまい",
+    "kana": "しまい",
+    "questionMeaning": "结束",
+    "classification": "manual_translation",
+    "reason": "homophone:しまい — 同音异义，按该表记的原文义项直译；保留原文义项「结束」"
+  },
+  {
+    "kanji": "勧める",
+    "kana": "すすめる",
+    "questionMeaning": "劝告；推荐",
+    "classification": "manual_translation",
+    "reason": "homophone:すすめる — 同音异义，按该表记的原文义项直译；保留原文义项「劝告；推荐」"
+  },
+  {
+    "kanji": "薦める",
+    "kana": "すすめる",
+    "questionMeaning": "推荐",
+    "classification": "manual_translation",
+    "reason": "homophone:すすめる — 同音异义，按该表记的原文义项直译；保留原文义项「推荐」"
+  },
+  {
+    "kanji": "全〜",
+    "kana": "ぜん〜",
+    "questionMeaning": "全～；整个～",
+    "classification": "manual_translation",
+    "reason": "homophone:ぜん〜 — 同音异义，按该表记的原文义项直译；保留原文义项「全～；整个～」"
+  },
+  {
+    "kanji": "前〜",
+    "kana": "ぜん〜",
+    "questionMeaning": "前～；上～",
+    "classification": "manual_translation",
+    "reason": "homophone:ぜん〜 — 同音异义，按该表记的原文义项直译；保留原文义项「前～；上～」"
+  },
+  {
+    "kanji": "姪[めい]",
+    "kana": "めい",
+    "questionMeaning": "外甥女；侄女",
+    "classification": "manual_translation",
+    "reason": "homophone:めい — 同音异义，按该表记的原文义项直译；保留原文义项「外甥女；侄女」"
+  },
+  {
+    "kanji": "負う",
+    "kana": "おう",
+    "questionMeaning": "承担；背负",
+    "classification": "manual_translation",
+    "reason": "homophone:おう — 同音异义，按该表记的原文义项直译；保留原文义项「承担；背负」"
+  },
+  {
+    "kanji": "のり",
+    "kana": "のり",
+    "questionMeaning": "胶水；海苔",
+    "classification": "manual_translation",
+    "reason": "homophone:のり — 同音异义，按该表记的原文义项直译；保留原文义项「胶水；海苔」"
+  },
+  {
+    "kanji": "海苔[のり]",
+    "kana": "のり",
+    "questionMeaning": "海苔；紫菜",
+    "classification": "manual_translation",
+    "reason": "homophone:のり — 同音异义，按该表记的原文义项直译；保留原文义项「海苔；紫菜」"
+  },
+  {
+    "kanji": "ごちそう",
+    "kana": "ごちそう",
+    "questionMeaning": "美食；请客",
+    "classification": "manual_translation",
+    "reason": "homophone:ごちそう — 同音异义，按该表记的原文义项直译；保留原文义项「美食；请客」"
+  },
+  {
+    "kanji": "ご馳走",
+    "kana": "ごちそう",
+    "questionMeaning": "请客；美食（敬）",
+    "classification": "manual_translation",
+    "reason": "homophone:ごちそう — 同音异义，按该表记的原文义项直译；保留原文义项「请客；美食（敬）」"
+  },
+  {
+    "kanji": "渇く",
+    "kana": "かわく",
+    "questionMeaning": "口渴",
+    "classification": "manual_translation",
+    "reason": "homophone:かわく — 同音异义，按该表记的原文义项直译；保留原文义项「口渴」"
+  },
+  {
+    "kanji": "努める",
+    "kana": "つとめる",
+    "questionMeaning": "尽力",
+    "classification": "manual_translation",
+    "reason": "homophone:つとめる — 同音异义，按该表记的原文义项直译；保留原文义项「尽力」"
+  },
+  {
+    "kanji": "務める",
+    "kana": "つとめる",
+    "questionMeaning": "担任",
+    "classification": "manual_translation",
+    "reason": "homophone:つとめる — 同音异义，按该表记的原文义项直译；保留原文义项「担任」"
+  },
+  {
+    "kanji": "飢える",
+    "kana": "うえる",
+    "questionMeaning": "饥饿；渴望",
+    "classification": "manual_translation",
+    "reason": "homophone:うえる — 同音异义，按该表记的原文义项直译；保留原文义项「饥饿；渴望」"
+  },
+  {
+    "kanji": "肥える",
+    "kana": "こえる",
+    "questionMeaning": "肥胖；变肥沃",
+    "classification": "manual_translation",
+    "reason": "homophone:こえる — 同音异义，按该表记的原文义项直译；保留原文义项「肥胖；变肥沃」"
+  },
+  {
+    "kanji": "踊る",
+    "kana": "おどる",
+    "questionMeaning": "跳舞",
+    "classification": "manual_translation",
+    "reason": "homophone:おどる — 同音异义，按该表记的原文义项直译；保留原文义项「跳舞」"
+  },
+  {
+    "kanji": "憩う",
+    "kana": "いこう",
+    "questionMeaning": "休息",
+    "classification": "manual_translation",
+    "reason": "homophone:いこう — 同音异义，按该表记的原文义项直译；保留原文义项「休息」"
+  },
+  {
+    "kanji": "おい",
+    "kana": "おい",
+    "questionMeaning": "喂；嘿",
+    "classification": "manual_translation",
+    "reason": "homophone:おい — 同音异义，按该表记的原文义项直译；保留原文义项「喂；嘿」"
+  },
+  {
+    "kanji": "甥[おい]",
+    "kana": "おい",
+    "questionMeaning": "外甥，侄子",
+    "classification": "manual_translation",
+    "reason": "homophone:おい — 同音异义，按该表记的原文义项直译；保留原文义项「外甥，侄子」"
+  },
+  {
+    "kanji": "老い",
+    "kana": "おい",
+    "questionMeaning": "衰老；老年",
+    "classification": "manual_translation",
+    "reason": "homophone:おい — 同音异义，按该表记的原文义项直译；保留原文义项「衰老；老年」"
+  },
+  {
+    "kanji": "胡弓",
+    "kana": "こきゅう",
+    "questionMeaning": "胡琴",
+    "classification": "manual_translation",
+    "reason": "homophone:こきゅう — 同音异义，按该表记的原文义项直译；保留原文义项「胡琴」"
+  },
+  {
+    "kanji": "貯める",
+    "kana": "ためる",
+    "questionMeaning": "积累，储蓄",
+    "classification": "manual_translation",
+    "reason": "homophone:ためる — 同音异义，按该表记的原文义项直译；保留原文义项「积累，储蓄」"
+  },
+  {
+    "kanji": "良く",
+    "kana": "よく",
+    "questionMeaning": "常常；好好地",
+    "classification": "manual_translation",
+    "reason": "homophone:よく — 同音异义，按该表记的原文义项直译；保留原文义项「常常；好好地」"
+  },
+  {
+    "kanji": "空く",
+    "kana": "すく",
+    "questionMeaning": "空闲；空出来",
+    "classification": "distinction",
+    "reason": "reading-sense:空く — 与同表记的另一读法按义项区分；保留原文义项「空闲；空出来」"
+  },
+  {
+    "kanji": "牡蠣[かき]",
+    "kana": "かき",
+    "questionMeaning": "牡蛎，生蚝",
+    "classification": "manual_translation",
+    "reason": "homophone:かき — 同音异义，按该表记的原文义项直译；保留原文义项「牡蛎，生蚝」"
+  },
+  {
+    "kanji": "ようやく",
+    "kana": "ようやく",
+    "questionMeaning": "总算",
+    "classification": "manual_translation",
+    "reason": "homophone:ようやく — 同音异义，按该表记的原文义项直译；保留原文义项「总算」"
+  },
+  {
+    "kanji": "抑える",
+    "kana": "おさえる",
+    "questionMeaning": "压住；抑制",
+    "classification": "manual_translation",
+    "reason": "homophone:おさえる — 同音异义，按该表记的原文义项直译；保留原文义项「压住；抑制」"
+  },
+  {
+    "kanji": "勝ち",
+    "kana": "かち",
+    "questionMeaning": "赢，胜利",
+    "classification": "manual_translation",
+    "reason": "homophone:かち — 同音异义，按该表记的原文义项直译；保留原文义项「赢，胜利」"
+  },
+  {
+    "kanji": "くわえる",
+    "kana": "くわえる",
+    "questionMeaning": "叼住；添加",
+    "classification": "manual_translation",
+    "reason": "homophone:くわえる — 同音异义，按该表记的原文义项直译；保留原文义项「叼住；添加」"
+  },
+  {
+    "kanji": "説く",
+    "kana": "とく",
+    "questionMeaning": "说明；劝说",
+    "classification": "manual_translation",
+    "reason": "homophone:とく — 同音异义，按该表记的原文义项直译；保留原文义项「说明；劝说」"
+  },
+  {
+    "kanji": "彫る",
+    "kana": "ほる",
+    "questionMeaning": "雕刻",
+    "classification": "manual_translation",
+    "reason": "homophone:ほる — 同音异义，按该表记的原文义项直译；保留原文义项「雕刻」"
+  },
+  {
+    "kanji": "並み",
+    "kana": "なみ",
+    "questionMeaning": "普通；同等",
+    "classification": "manual_translation",
+    "reason": "homophone:なみ — 同音异义，按该表记的原文义项直译；保留原文义项「普通；同等」"
+  },
+  {
+    "kanji": "敗れる",
+    "kana": "やぶれる",
+    "questionMeaning": "败北",
+    "classification": "manual_translation",
+    "reason": "homophone:やぶれる — 同音异义，按该表记的原文义项直译；保留原文义项「败北」"
+  },
+  {
+    "kanji": "〜所",
+    "kana": "〜しょ",
+    "questionMeaning": "……所",
+    "classification": "manual_translation",
+    "reason": "homophone:〜しょ — 同音异义，按该表记的原文义项直译；保留原文义项「……所」"
+  },
+  {
+    "kanji": "〜書",
+    "kana": "〜しょ",
+    "questionMeaning": "～书（文件）",
+    "classification": "manual_translation",
+    "reason": "homophone:〜しょ — 同音异义，按该表记的原文义项直译；保留原文义项「～书；书面」"
+  },
+  {
+    "kanji": "速める",
+    "kana": "はやめる",
+    "questionMeaning": "加快",
+    "classification": "manual_translation",
+    "reason": "homophone:はやめる — 同音异义，按该表记的原文义项直译；保留原文义项「加快」"
+  },
+  {
+    "kanji": "測る",
+    "kana": "はかる",
+    "questionMeaning": "测量",
+    "classification": "manual_translation",
+    "reason": "homophone:はかる — 同音异义，按该表记的原文义项直译；保留原文义项「测量」"
+  },
+  {
+    "kanji": "計る",
+    "kana": "はかる",
+    "questionMeaning": "测量；计算",
+    "classification": "manual_translation",
+    "reason": "homophone:はかる — 同音异义，按该表记的原文义项直译；保留原文义项「测量；计算」"
+  },
+  {
+    "kanji": "図る",
+    "kana": "はかる",
+    "questionMeaning": "谋求；企图",
+    "classification": "manual_translation",
+    "reason": "homophone:はかる — 同音异义，按该表记的原文义项直译；保留原文义项「谋求；企图」"
+  },
+  {
+    "kanji": "登り",
+    "kana": "のぼり",
+    "questionMeaning": "攀登，登上",
+    "classification": "manual_translation",
+    "reason": "homophone:のぼり — 同音异义，按该表记的原文义项直译；保留原文义项「攀登，登上」"
+  },
+  {
+    "kanji": "上り",
+    "kana": "のぼり",
+    "questionMeaning": "上行；上升",
+    "classification": "manual_translation",
+    "reason": "homophone:のぼり — 同音异义，按该表记的原文义项直译；保留原文义项「上行；上升」"
+  },
+  {
+    "kanji": "濾[こ]す",
+    "kana": "こす",
+    "questionMeaning": "过滤",
+    "classification": "manual_translation",
+    "reason": "homophone:こす — 同音异义，按该表记的原文义项直译；保留原文义项「过滤」"
+  },
+  {
+    "kanji": "勤め",
+    "kana": "つとめ",
+    "questionMeaning": "工作，干活",
+    "classification": "manual_translation",
+    "reason": "homophone:つとめ — 同音异义，按该表记的原文义项直译；保留原文义项「工作，干活」"
+  },
+  {
+    "kanji": "持ち",
+    "kana": "もち",
+    "questionMeaning": "携带；持有",
+    "classification": "manual_translation",
+    "reason": "homophone:もち — 同音异义，按该表记的原文义项直译；保留原文义项「携带；持有」"
+  },
+  {
+    "kanji": "炒[いた]める",
+    "kana": "いためる",
+    "questionMeaning": "炒",
+    "classification": "manual_translation",
+    "reason": "homophone:いためる — 同音异义，按该表记的原文义项直译；保留原文义项「炒」"
+  },
+  {
+    "kanji": "好み",
+    "kana": "このみ",
+    "questionMeaning": "喜好；偏爱",
+    "classification": "manual_translation",
+    "reason": "homophone:このみ — 同音异义，按该表记的原文义项直译；保留原文义项「喜好；偏爱」"
+  },
+  {
+    "kanji": "lock",
+    "kana": "ロック",
+    "questionMeaning": "锁",
+    "classification": "manual_translation",
+    "reason": "homophone:ロック — 同音异义，按该表记的原文义项直译；保留原文义项「锁」"
+  },
+  {
+    "kanji": "rock",
+    "kana": "ロック",
+    "questionMeaning": "摇滚；岩石",
+    "classification": "manual_translation",
+    "reason": "homophone:ロック — 同音异义，按该表记的原文义项直译；保留原文义项「摇滚；岩石」"
+  },
+  {
+    "kanji": "釣る",
+    "kana": "つる",
+    "questionMeaning": "钓",
+    "classification": "manual_translation",
+    "reason": "homophone:つる — 同音异义，按该表记的原文义项直译；保留原文义项「钓」"
+  },
+  {
+    "kanji": "注[つ]ぐ",
+    "kana": "つぐ",
+    "questionMeaning": "倒入；注入",
+    "classification": "manual_translation",
+    "reason": "homophone:つぐ — 同音异义，按该表记的原文义项直译；保留原文义项「倒入；注入」"
+  },
+  {
+    "kanji": "次ぐ",
+    "kana": "つぐ",
+    "questionMeaning": "接着；仅次于",
+    "classification": "manual_translation",
+    "reason": "homophone:つぐ — 同音异义，按该表记的原文义项直译；保留原文义项「接着；仅次于」"
+  },
+  {
+    "kanji": "継ぐ",
+    "kana": "つぐ",
+    "questionMeaning": "继承；接上",
+    "classification": "manual_translation",
+    "reason": "homophone:つぐ — 同音异义，按该表记的原文义项直译；保留原文义项「继承；接上」"
+  },
+  {
+    "kanji": "まく",
+    "kana": "まく",
+    "questionMeaning": "播种",
+    "classification": "manual_translation",
+    "reason": "homophone:まく — 同音异义，按该表记的原文义项直译；保留原文义项「播种」"
+  },
+  {
+    "kanji": "Miss",
+    "kana": "ミス",
+    "questionMeaning": "失误；错误",
+    "classification": "manual_translation",
+    "reason": "homophone:ミス — 同音异义，按该表记的原文义项直译；保留原文义项「失误；错误」"
+  },
+  {
+    "kanji": "嬉々",
+    "kana": "きき",
+    "questionMeaning": "欣喜的；兴高采烈",
+    "classification": "manual_translation",
+    "reason": "homophone:きき — 同音异义，按该表记的原文义项直译；保留原文义项「欣喜的；兴高采烈」"
+  },
+  {
+    "kanji": "雇う",
+    "kana": "やとう",
+    "questionMeaning": "雇用",
+    "classification": "manual_translation",
+    "reason": "homophone:やとう — 同音异义，按该表记的原文义项直译；保留原文义项「雇用」"
+  },
+  {
+    "kanji": "述べる",
+    "kana": "のべる",
+    "questionMeaning": "陈述；说明",
+    "classification": "manual_translation",
+    "reason": "homophone:のべる — 同音异义，按该表记的原文义项直译；保留原文义项「陈述；说明」"
+  },
+  {
+    "kanji": "望む",
+    "kana": "のぞむ",
+    "questionMeaning": "眺望；希望",
+    "classification": "manual_translation",
+    "reason": "homophone:のぞむ — 同音异义，按该表记的原文义项直译；保留原文义项「眺望；希望」"
+  },
+  {
+    "kanji": "臨む",
+    "kana": "のぞむ",
+    "questionMeaning": "面对；临近",
+    "classification": "manual_translation",
+    "reason": "homophone:のぞむ — 同音异义，按该表记的原文义项直译；保留原文义项「面对；临近」"
+  },
+  {
+    "kanji": "解かす",
+    "kana": "とかす",
+    "questionMeaning": "梳理",
+    "classification": "manual_translation",
+    "reason": "homophone:とかす — 同音异义，按该表记的原文义项直译；保留原文义项「梳理」"
+  },
+  {
+    "kanji": "埃[ほこり]",
+    "kana": "ほこり",
+    "questionMeaning": "尘埃，灰尘",
+    "classification": "manual_translation",
+    "reason": "homophone:ほこり — 同音异义，按该表记的原文义项直译；保留原文义项「尘埃，灰尘」"
+  },
+  {
+    "kanji": "誇り",
+    "kana": "ほこり",
+    "questionMeaning": "自豪；骄傲",
+    "classification": "manual_translation",
+    "reason": "homophone:ほこり — 同音异义，按该表记的原文义项直译；保留原文义项「自豪；骄傲」"
+  },
+  {
+    "kanji": "攻める",
+    "kana": "せめる",
+    "questionMeaning": "进攻",
+    "classification": "manual_translation",
+    "reason": "homophone:せめる — 同音异义，按该表记的原文义项直译；保留原文义项「进攻」"
+  },
+  {
+    "kanji": "責める",
+    "kana": "せめる",
+    "questionMeaning": "责备；逼问",
+    "classification": "manual_translation",
+    "reason": "homophone:せめる — 同音异义，按该表记的原文义项直译；保留原文义项「责备；逼问」"
+  },
+  {
+    "kanji": "ほうき",
+    "kana": "ほうき",
+    "questionMeaning": "扫帚",
+    "classification": "manual_translation",
+    "reason": "homophone:ほうき — 同音异义，按该表记的原文义项直译；保留原文义项「扫帚」"
+  },
+  {
+    "kanji": "救う",
+    "kana": "すくう",
+    "questionMeaning": "救；拯救",
+    "classification": "manual_translation",
+    "reason": "homophone:すくう — 同音异义，按该表记的原文义项直译；保留原文义项「救；拯救」"
+  },
+  {
+    "kanji": "掬[すく]う",
+    "kana": "すくう",
+    "questionMeaning": "舀；捞",
+    "classification": "manual_translation",
+    "reason": "homophone:すくう — 同音异义，按该表记的原文义项直译；保留原文义项「舀；捞」"
+  },
+  {
+    "kanji": "修める",
+    "kana": "おさめる",
+    "questionMeaning": "修得；完成学业",
+    "classification": "manual_translation",
+    "reason": "homophone:おさめる — 同音异义，按该表记的原文义项直译；保留原文义项「修得；完成学业」"
+  },
+  {
+    "kanji": "供える",
+    "kana": "そなえる",
+    "questionMeaning": "供奉",
+    "classification": "manual_translation",
+    "reason": "homophone:そなえる — 同音异义，按该表记的原文义项直译；保留原文义项「供奉」"
+  },
+  {
+    "kanji": "敵[かな]う",
+    "kana": "かなう",
+    "questionMeaning": "匹敌",
+    "classification": "manual_translation",
+    "reason": "homophone:かなう — 同音异义，按该表记的原文义项直译；保留原文义项「匹敌」"
+  },
+  {
+    "kanji": "甲斐[かい]性",
+    "kana": "かいしょう",
+    "questionMeaning": "能干；本领",
+    "classification": "manual_translation",
+    "reason": "homophone:かいしょう — 同音异义，按该表记的原文义项直译；保留原文义项「能干；本领」"
+  },
+  {
+    "kanji": "任す",
+    "kana": "まかす",
+    "questionMeaning": "任凭；委托",
+    "classification": "manual_translation",
+    "reason": "homophone:まかす — 同音异义，按该表记的原文义项直译；保留原文义项「任凭；委托」"
+  },
+  {
+    "kanji": "銀杏[いちょう]",
+    "kana": "いちょう",
+    "questionMeaning": "银杏",
+    "classification": "manual_translation",
+    "reason": "homophone:いちょう — 同音异义，按该表记的原文义项直译；保留原文义项「银杏」"
+  },
+  {
+    "kanji": "嗜[し]好",
+    "kana": "しこう",
+    "questionMeaning": "嗜好，爱好",
+    "classification": "manual_translation",
+    "reason": "homophone:しこう — 同音异义，按该表记的原文义项直译；保留原文义项「嗜好，爱好」"
+  },
+  {
+    "kanji": "対 峙[じ]",
+    "kana": "たいじ",
+    "questionMeaning": "对峙，相持",
+    "classification": "manual_translation",
+    "reason": "homophone:たいじ — 同音异义，按该表记的原文义项直译；保留原文义项「对峙，相持」"
+  },
+  {
+    "kanji": "済み",
+    "kana": "すみ",
+    "questionMeaning": "完了",
+    "classification": "manual_translation",
+    "reason": "homophone:すみ — 同音异义，按该表记的原文义项直译；保留原文义项「完了」"
+  },
+  {
+    "kanji": "延び延び",
+    "kana": "のびのび",
+    "questionMeaning": "一再拖延的",
+    "classification": "manual_translation",
+    "reason": "homophone:のびのび — 同音异义，按该表记的原文义项直译；保留原文义项「一再拖延的」"
+  },
+  {
+    "kanji": "伸び伸び",
+    "kana": "のびのび",
+    "questionMeaning": "自由自在地",
+    "classification": "manual_translation",
+    "reason": "homophone:のびのび — 同音异义，按该表记的原文义项直译；保留原文义项「自由自在地」"
+  },
+  {
+    "kanji": "塵[ちり]",
+    "kana": "ちり",
+    "questionMeaning": "尘土；微小之物",
+    "classification": "manual_translation",
+    "reason": "homophone:ちり — 同音异义，按该表记的原文义项直译；保留原文义项「尘土；微小之物」"
+  },
+  {
+    "kanji": "犯す",
+    "kana": "おかす",
+    "questionMeaning": "违反；犯下",
+    "classification": "manual_translation",
+    "reason": "homophone:おかす — 同音异义，按该表记的原文义项直译；保留原文义项「违反；犯下」"
+  },
+  {
+    "kanji": "侵す",
+    "kana": "おかす",
+    "questionMeaning": "侵犯；侵蚀",
+    "classification": "manual_translation",
+    "reason": "homophone:おかす — 同音异义，按该表记的原文义项直译；保留原文义项「侵犯；侵蚀」"
+  },
+  {
+    "kanji": "癌[がん]",
+    "kana": "がん",
+    "questionMeaning": "癌症；祸害",
+    "classification": "manual_translation",
+    "reason": "homophone:がん — 同音异义，按该表记的原文义项直译；保留原文义项「癌症；祸害」"
+  }
+]

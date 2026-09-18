@@ -170,7 +170,7 @@
   {
     "kanji": "無闇",
     "kana": "むやみ",
-    "questionMeaning": "胡乱；过分",
+    "questionMeaning": "胡乱（盲目过度）；过分",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -611,9 +611,9 @@
   {
     "kanji": "明後日",
     "kana": "みょうごにち",
-    "questionMeaning": "后天",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "后天（正式）",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "明治",
@@ -632,9 +632,9 @@
   {
     "kanji": "明日",
     "kana": "あす",
-    "questionMeaning": "明天；（近的）将来，以后",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "明天（正式）；（近的）将来，以后",
+    "classification": "distinction",
+    "reason": "reading-register:明日 — 较简洁、正式，新闻和通知中更常见；保留原文义项「明天；（近的）将来，以后」"
   },
   {
     "kanji": "明白",
@@ -646,7 +646,7 @@
   {
     "kanji": "明瞭",
     "kana": "めいりょう",
-    "questionMeaning": "清楚，明了",
+    "questionMeaning": "清楚，明了（清楚明白）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -730,9 +730,9 @@
   {
     "kanji": "面積",
     "kana": "めんせき",
-    "questionMeaning": "面积",
+    "questionMeaning": "面积（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:面积 — 几何或土地的面积，范围更具体正式；保留原文义项「面积」"
   },
   {
     "kanji": "面接",
@@ -772,9 +772,9 @@
   {
     "kanji": "模型",
     "kana": "もけい",
-    "questionMeaning": "模型",
+    "questionMeaning": "模型（模特）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:模型 — モデル是模型、模特、范例或型号；实体模型、模具或模型概念，不能全换；保留原文义项「模型」"
   },
   {
     "kanji": "模索",
@@ -933,7 +933,7 @@
   {
     "kanji": "目印",
     "kana": "めじるし",
-    "questionMeaning": "记号，标记",
+    "questionMeaning": "记号，标记（辨认标记、地标）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -968,9 +968,9 @@
   {
     "kanji": "目次",
     "kana": "もくじ",
-    "questionMeaning": "目录",
+    "questionMeaning": "目录（文章）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:目录 — 书、文章、节目等的章节目录，不能全换；保留原文义项「目录」"
   },
   {
     "kanji": "目上",
@@ -982,30 +982,30 @@
   {
     "kanji": "目先",
     "kana": "めさき",
-    "questionMeaning": "眼前；当前；预见",
+    "questionMeaning": "眼前利益；短期",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:眼前 — 眼前利益或短期，不能全换；保留原文义项「眼前；当前利益」"
   },
   {
     "kanji": "目線",
     "kana": "めせん",
-    "questionMeaning": "视线；观点",
+    "questionMeaning": "目光；视角（站在…立场）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:视线 — 视线，也可指观察立场、站在某人角度，不能全换；保留原文义项「视线；观点」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "目前",
     "kana": "もくぜん",
-    "questionMeaning": "眼前",
+    "questionMeaning": "眼前（当前）；当前",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:眼前 — 就在面前或当前；保留原文义项「眼前」"
   },
   {
     "kanji": "目的地",
     "kana": "もくてきち",
-    "questionMeaning": "目的地",
+    "questionMeaning": "目的地（目的）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:目的地 — 明确的目的地点，正式且不能替换‘未来去向’等用法；保留原文义项「目的地」"
   },
   {
     "kanji": "目標",
@@ -1143,16 +1143,16 @@
   {
     "kanji": "役割",
     "kana": "やくわり",
-    "questionMeaning": "任务，作用",
+    "questionMeaning": "任务，作用（分工作用）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
   {
     "kanji": "役者",
     "kana": "やくしゃ",
-    "questionMeaning": "演员；（深谙世故、善于交涉等有手腕的）人才",
+    "questionMeaning": "演员（戏子）；有手腕的人",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "役所",
@@ -1164,9 +1164,9 @@
   {
     "kanji": "役職",
     "kana": "やくしょく",
-    "questionMeaning": "管理职，要职；（泛指）职责，职务",
+    "questionMeaning": "管理职，要职；职责，职务",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "役柄",
@@ -1178,7 +1178,7 @@
   {
     "kanji": "役目",
     "kana": "やくめ",
-    "questionMeaning": "任务，职责；功能，作用",
+    "questionMeaning": "任务，职责（角色功能）；功能，作用",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1619,9 +1619,9 @@
   {
     "kanji": "夕飯",
     "kana": "ゆうはん",
-    "questionMeaning": "晚饭",
+    "questionMeaning": "晚饭（口语）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:晚饭 — 晩ご飯和夕飯是日常的晚饭；保留原文义项「晚饭」"
   },
   {
     "kanji": "夕立",

@@ -205,7 +205,7 @@
   {
     "kanji": "平常",
     "kana": "へいじょう",
-    "questionMeaning": "平常，平时",
+    "questionMeaning": "平常，平时（不异常、普通）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -247,7 +247,7 @@
   {
     "kanji": "平等",
     "kana": "びょうどう",
-    "questionMeaning": "平等，同等",
+    "questionMeaning": "平等，同等（原则无差别）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -653,7 +653,7 @@
   {
     "kanji": "弁解",
     "kana": "べんかい",
-    "questionMeaning": "辩解，申辩，辩白",
+    "questionMeaning": "辩解，申辩，辩白（正式解释申辩）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1094,7 +1094,7 @@
   {
     "kanji": "方策",
     "kana": "ほうさく",
-    "questionMeaning": "方法，策略",
+    "questionMeaning": "方法，策略（解决问题策略）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1416,7 +1416,7 @@
   {
     "kanji": "本気",
     "kana": "ほんき",
-    "questionMeaning": "真的；认真",
+    "questionMeaning": "真的（当真、非玩笑）；认真",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1472,7 +1472,7 @@
   {
     "kanji": "本心",
     "kana": "ほんしん",
-    "questionMeaning": "本心，真心；良心",
+    "questionMeaning": "本心，真心（真实想法本意）；良心",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1528,7 +1528,7 @@
   {
     "kanji": "本来",
     "kana": "ほんらい",
-    "questionMeaning": "原本；普通，平常",
+    "questionMeaning": "原本（本质、应该）；普通，平常",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1556,7 +1556,7 @@
   {
     "kanji": "魔物",
     "kana": "まもの",
-    "questionMeaning": "妖怪，魔鬼",
+    "questionMeaning": "妖怪，魔鬼（邪恶怪物恶灵）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },

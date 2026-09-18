@@ -37,9 +37,9 @@
   {
     "kanji": "尾",
     "kana": "お",
-    "questionMeaning": "尾巴；尾部",
+    "questionMeaning": "尾巴（书面）；尾部",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:尾巴 — 尻尾是动物尾巴，也可指末端、尾巴；尾部、尾巴的书面或专业词，不能替换所有口语引申义；保留原文义项「尾巴；尾部」"
   },
   {
     "kanji": "微細",
@@ -165,7 +165,7 @@
     "kana": "ひつぜん",
     "questionMeaning": "必然",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "必然性",
@@ -177,7 +177,7 @@
   {
     "kanji": "必然的",
     "kana": "ひつぜんてき",
-    "questionMeaning": "必然的",
+    "questionMeaning": "必然的（形容词形式）",
     "classification": "same_meaning",
     "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
   },
@@ -247,7 +247,7 @@
   {
     "kanji": "票",
     "kana": "ひょう",
-    "questionMeaning": "票，选票",
+    "questionMeaning": "票，选票（选举、票据）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -317,7 +317,7 @@
   {
     "kanji": "表面",
     "kana": "ひょうめん",
-    "questionMeaning": "表面；外表",
+    "questionMeaning": "表面（物体表层）；外表",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -387,9 +387,9 @@
   {
     "kanji": "品",
     "kana": "しな",
-    "questionMeaning": "物品；商品；质量",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "物品；货品",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "品位",
@@ -779,16 +779,16 @@
   {
     "kanji": "不得意",
     "kana": "ふとくい",
-    "questionMeaning": "不擅长",
+    "questionMeaning": "不拿手；不擅长",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:不擅长的 — 强调不擅长，语感和对象不同；保留原文义项「不擅长的」"
   },
   {
     "kanji": "不得手",
     "kana": "ふえて",
-    "questionMeaning": "不擅长；不习惯",
+    "questionMeaning": "不擅长（书面）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:不擅长的 — 偏书面；保留原文义项「不擅长的」"
   },
   {
     "kanji": "不能",
@@ -863,9 +863,9 @@
   {
     "kanji": "不用",
     "kana": "ふよう",
-    "questionMeaning": "不需要，没用",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "不用；不必",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "不用意",
@@ -877,9 +877,9 @@
   {
     "kanji": "不要",
     "kana": "ふよう",
-    "questionMeaning": "不需要；没用",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "不需要；无必要",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "不利",
@@ -977,7 +977,7 @@
     "kana": "ぬの",
     "questionMeaning": "布",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "布団",
@@ -989,7 +989,7 @@
   {
     "kanji": "布地",
     "kana": "ぬのじ",
-    "questionMeaning": "布料，衣料",
+    "questionMeaning": "布料，衣料（织物面料）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1045,9 +1045,9 @@
   {
     "kanji": "父母",
     "kana": "ふぼ",
-    "questionMeaning": "父母",
+    "questionMeaning": "父母（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:父母 — 親是父母、双亲也可泛指亲属或养育者；明确指父亲和母亲，正式且范围更窄；保留原文义项「父母」"
   },
   {
     "kanji": "符合",
@@ -1150,14 +1150,14 @@
   {
     "kanji": "部位",
     "kana": "ぶい",
-    "questionMeaning": "部分，部位",
+    "questionMeaning": "部分，部位（特定位置）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "部員",
     "kana": "ぶいん",
-    "questionMeaning": "成员，队员",
+    "questionMeaning": "成员，队员（社团成员）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1206,7 +1206,7 @@
   {
     "kanji": "部分",
     "kana": "ぶぶん",
-    "questionMeaning": "部分，一部分",
+    "questionMeaning": "部分，一部分（整体一部分）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1248,7 +1248,7 @@
   {
     "kanji": "風景",
     "kana": "ふうけい",
-    "questionMeaning": "风景，景色；情景，状况",
+    "questionMeaning": "风景，景色（景色情景）；情景，状况",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1290,7 +1290,7 @@
   {
     "kanji": "風物",
     "kana": "ふうぶつ",
-    "questionMeaning": "风景，风物",
+    "questionMeaning": "风景，风物（地方人文景致）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1388,7 +1388,7 @@
   {
     "kanji": "服装",
     "kana": "ふくそう",
-    "questionMeaning": "服装，穿着",
+    "questionMeaning": "服装，穿着（穿着总称）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1668,14 +1668,14 @@
   {
     "kanji": "分明",
     "kana": "ぶんめい",
-    "questionMeaning": "清楚，分明",
+    "questionMeaning": "清楚，分明（书面清楚分明）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "分野",
     "kana": "ぶんや",
-    "questionMeaning": "区域，领域",
+    "questionMeaning": "区域，领域（学科领域）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },

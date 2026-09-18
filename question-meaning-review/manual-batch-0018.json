@@ -128,9 +128,9 @@
   {
     "kanji": "殊更",
     "kana": "ことさら",
-    "questionMeaning": "特别；故意",
+    "questionMeaning": "特别（带故意）；故意",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:特别 — 带故意、格外之意，不能全换；保留原文义项「特别；故意」"
   },
   {
     "kanji": "狩猟",
@@ -142,16 +142,16 @@
   {
     "kanji": "種",
     "kana": "たね",
-    "questionMeaning": "种子；原因；素材",
+    "questionMeaning": "种子；原因、素材",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:种子 — 种子，也可指种类、原因和根源；種子是种子的正式、生物学称呼，不能替换种类等义；保留原文义项「种子；种类」"
   },
   {
     "kanji": "種子",
     "kana": "しゅし",
-    "questionMeaning": "种子",
+    "questionMeaning": "种子（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:种子 — 種子是种子的正式、生物学称呼，不能替换种类等义；保留原文义项「种子」"
   },
   {
     "kanji": "種苗",
@@ -219,7 +219,7 @@
   {
     "kanji": "受講",
     "kana": "じゅこう",
-    "questionMeaning": "听讲，听课",
+    "questionMeaning": "听讲，听课（正式参加课程）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -284,7 +284,7 @@
     "kana": "じゅもく",
     "questionMeaning": "树木",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "樹立",
@@ -366,9 +366,9 @@
   {
     "kanji": "周囲",
     "kana": "しゅうい",
-    "questionMeaning": "周围；环境",
+    "questionMeaning": "周围（正式）；环境",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:周围 — 包围范围、周边环境，偏正式且不能替换轮流等用法；保留原文义项「周围；环境」"
   },
   {
     "kanji": "周到",
@@ -443,16 +443,16 @@
   {
     "kanji": "修業",
     "kana": "しゅぎょう",
-    "questionMeaning": "学习（技能），钻研",
-    "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "questionMeaning": "修业；完成学业或训练",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "修行",
     "kana": "しゅぎょう",
-    "questionMeaning": "修行，修炼",
-    "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "questionMeaning": "修行；技艺或精神修炼",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "修士",
@@ -541,7 +541,7 @@
   {
     "kanji": "終点",
     "kana": "しゅうてん",
-    "questionMeaning": "终点站；终点",
+    "questionMeaning": "终点站（路线终点）；终点",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -625,9 +625,9 @@
   {
     "kanji": "集会",
     "kana": "しゅうかい",
-    "questionMeaning": "集会",
+    "questionMeaning": "集会（目的）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:集会 — 有目的、有组织的集会活动，正式性更强；保留原文义项「集会」"
   },
   {
     "kanji": "集客",
@@ -702,16 +702,16 @@
   {
     "kanji": "住処",
     "kana": "すみか",
-    "questionMeaning": "住处，家；巢穴，坏人聚集的地方",
+    "questionMeaning": "住处，家（居住地）；巢穴、坏人窝",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "住人",
     "kana": "じゅうにん",
-    "questionMeaning": "居民",
+    "questionMeaning": "居住者",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:居民 — 住在某处的人，日常且强调居住者，不能全换；保留原文义项「居民」"
   },
   {
     "kanji": "住宅",
@@ -723,9 +723,9 @@
   {
     "kanji": "住民",
     "kana": "じゅうみん",
-    "questionMeaning": "居民",
+    "questionMeaning": "居民（正式）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:居民 — 某地居民的正式、中性称呼；保留原文义项「居民」"
   },
   {
     "kanji": "充実",
@@ -926,9 +926,9 @@
   {
     "kanji": "重要",
     "kana": "じゅうよう",
-    "questionMeaning": "重要，要紧",
+    "questionMeaning": "重要（客观）；要紧",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:重要的 — 大切偏重珍惜和重要；较客观正式；保留原文义项「重要的」"
   },
   {
     "kanji": "重要視",
@@ -961,9 +961,9 @@
   {
     "kanji": "祝日",
     "kana": "しゅくじつ",
-    "questionMeaning": "节日",
+    "questionMeaning": "节日（法律）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:节日 — 法律规定的公休日，不能互换；保留原文义项「节日」"
   },
   {
     "kanji": "縮小",
@@ -1143,9 +1143,9 @@
   {
     "kanji": "出店",
     "kana": "しゅってん",
-    "questionMeaning": "开店",
+    "questionMeaning": "开分店；出摊",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:开店 — 开设分店、出摊或参展设店，动作范围不同；保留原文义项「开店」"
   },
   {
     "kanji": "出土",
@@ -1227,9 +1227,9 @@
   {
     "kanji": "瞬時",
     "kana": "しゅんじ",
-    "questionMeaning": "瞬间",
+    "questionMeaning": "瞬间（书面）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:瞬间 — 极短时间的书面词，不能全换；保留原文义项「瞬间」"
   },
   {
     "kanji": "循環",
@@ -1283,9 +1283,9 @@
   {
     "kanji": "順",
     "kana": "じゅん",
-    "questionMeaning": "顺序",
+    "questionMeaning": "次序；轮到（顺着来）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:顺序 — 順番是轮到的次序；順序是次序流程；顺序或顺从；保留原文义项「顺序」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "順位",
@@ -1311,14 +1311,14 @@
   {
     "kanji": "順序",
     "kana": "じゅんじょ",
-    "questionMeaning": "顺序；流程",
+    "questionMeaning": "顺序（次序流程）；流程",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:顺序 — 順序是次序流程；保留原文义项「顺序；流程」"
   },
   {
     "kanji": "順調",
     "kana": "じゅんちょう",
-    "questionMeaning": "顺利，顺畅",
+    "questionMeaning": "顺利，顺畅（进展顺利）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1626,9 +1626,9 @@
   {
     "kanji": "女房",
     "kana": "にょうぼう",
-    "questionMeaning": "（自己的）妻子，老婆",
+    "questionMeaning": "妻子（口语）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:妻子 — 较口语或旧式，语气和使用对象不同；保留原文义项「妻子；老婆」"
   },
   {
     "kanji": "女優",
@@ -1640,9 +1640,9 @@
   {
     "kanji": "序列",
     "kana": "じょれつ",
-    "questionMeaning": "顺序",
+    "questionMeaning": "顺序（书面）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:顺序 — 偏书面排列，不能全换；保留原文义项「顺序」"
   },
   {
     "kanji": "除去",

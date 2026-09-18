@@ -163,9 +163,9 @@
   {
     "kanji": "圧力",
     "kana": "あつりょく",
-    "questionMeaning": "压力",
+    "questionMeaning": "压力（物理）；施压",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:压力 — 物理压力或施压，不能全换；保留原文义项「压力」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "宛名",
@@ -226,7 +226,7 @@
   {
     "kanji": "安定",
     "kana": "あんてい",
-    "questionMeaning": "稳定；安稳",
+    "questionMeaning": "稳定（状态不变）；安稳",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -303,7 +303,7 @@
   {
     "kanji": "位",
     "kana": "くらい",
-    "questionMeaning": "身份，地位；等级，品味；位数",
+    "questionMeaning": "身份，地位（等级位置）；等级，品味；位数",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -541,9 +541,9 @@
   {
     "kanji": "衣",
     "kana": "ころも",
-    "questionMeaning": "衣服；（食物外面的）糖衣或面衣",
+    "questionMeaning": "外层衣物；衣服",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:衣服 — 衣服是正式的衣物称呼；衣類是分类总称；偏书面且可指外层衣物，不能完全互换；保留原文义项「衣服；外层」"
   },
   {
     "kanji": "衣食住",
@@ -555,7 +555,7 @@
   {
     "kanji": "衣装",
     "kana": "いしょう",
-    "questionMeaning": "服装；剧装，戏装",
+    "questionMeaning": "服装（场合、表演服）；剧装，戏装",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -583,9 +583,9 @@
   {
     "kanji": "遺憾",
     "kana": "いかん",
-    "questionMeaning": "遗憾",
+    "questionMeaning": "遗憾（书面）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:遗憾的 — 偏正式书面语，不能按语气随意替换；保留原文义项「遗憾的」"
   },
   {
     "kanji": "遺産",
@@ -641,7 +641,7 @@
     "kana": "いき",
     "questionMeaning": "域；阶段，领域",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "育児",
@@ -1115,21 +1115,21 @@
   {
     "kanji": "印",
     "kana": "しるし",
-    "questionMeaning": "记号；象征",
+    "questionMeaning": "记号（印记、象征）；象征",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
   {
     "kanji": "印鑑",
     "kana": "いんかん",
-    "questionMeaning": "图章，印章",
+    "questionMeaning": "图章，印章（登记证明印章）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
   {
     "kanji": "因子",
     "kana": "いんし",
-    "questionMeaning": "因素，因子",
+    "questionMeaning": "因素，因子（变量遗传因素）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1185,9 +1185,9 @@
   {
     "kanji": "羽",
     "kana": "はね",
-    "questionMeaning": "羽毛；翅膀；（羽根）机翼；（羽根）扇叶",
+    "questionMeaning": "羽毛；翅膀；机翼、扇叶",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:羽毛 — 羽是羽毛也可指翅膀、羽；羽毛是羽毛、绒毛的正式总称，不能替换翅膀等用法；保留原文义项「羽毛；翅膀」"
   },
   {
     "kanji": "羽毛",
@@ -1374,7 +1374,7 @@
   {
     "kanji": "円滑",
     "kana": "えんかつ",
-    "questionMeaning": "圆滑，顺利",
+    "questionMeaning": "圆滑，顺利（关系协商顺畅）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1528,9 +1528,9 @@
   {
     "kanji": "奥底",
     "kana": "おくそこ",
-    "questionMeaning": "深处；内心",
+    "questionMeaning": "深处（程度）；内心",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:深处 — 最深处、内心底层，位置和抽象程度不同；保留原文义项「深处；内心」"
   },
   {
     "kanji": "往年",
@@ -1647,7 +1647,7 @@
   {
     "kanji": "恩恵",
     "kana": "おんけい",
-    "questionMeaning": "恩惠，恩情",
+    "questionMeaning": "恩惠，恩情（获得利益）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },

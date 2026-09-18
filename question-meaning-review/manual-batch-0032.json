@@ -1,0 +1,1339 @@
+[
+  {
+    "kanji": "現れる",
+    "kana": "あらわれる",
+    "questionMeaning": "（成果、症状）出现；显现",
+    "classification": "distinction",
+    "reason": "pair:現す / 現れる — 人、现象自己出现；保留原文义项「显现；出现」"
+  },
+  {
+    "kanji": "現す",
+    "kana": "あらわす",
+    "questionMeaning": "显示（力量、态度）；出现，显露；发挥",
+    "classification": "distinction",
+    "reason": "pair:現す / 現れる — 使隐藏的东西显现，或表现出来；保留原文义项「出现，显露；发挥」"
+  },
+  {
+    "kanji": "固まる",
+    "kana": "かたまる",
+    "questionMeaning": "（液体、人群）凝固；聚集到一起；稳固",
+    "classification": "distinction",
+    "reason": "pair:固まる / 固める — 物质、想法或队伍自己固定成形；保留原文义项「凝固；聚集到一起；稳固」"
+  },
+  {
+    "kanji": "固める",
+    "kana": "かためる",
+    "questionMeaning": "巩固；使坚硬，使凝固；堆集一处",
+    "classification": "distinction",
+    "reason": "pair:固まる / 固める — 使其凝固、巩固或确定；保留原文义项「使坚硬，使凝固；堆集一处；坚定，巩固」"
+  },
+  {
+    "kanji": "向く",
+    "kana": "むく",
+    "questionMeaning": "（方向、工作）朝向；适合",
+    "classification": "distinction",
+    "reason": "stem:向 — 方向朝向或适合；保留原文义项「朝；适合」"
+  },
+  {
+    "kanji": "向ける",
+    "kana": "むける",
+    "questionMeaning": "朝向（目光、方向）；派遣",
+    "classification": "distinction",
+    "reason": "stem:向 — 把方向转向；保留原文义项「向，对；派遣」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "広がる",
+    "kana": "ひろがる",
+    "questionMeaning": "（香味）扩散；（面积）扩大；扩大、蔓延",
+    "classification": "distinction",
+    "reason": "stem:広 — 范围、影响自己扩大；保留原文义项「（面积）扩大；（范围）扩大，蔓延」"
+  },
+  {
+    "kanji": "広げる",
+    "kana": "ひろげる",
+    "questionMeaning": "展开；扩大（物理上的面积）；扩大（范围）",
+    "classification": "distinction",
+    "reason": "pair:広がる / 広げる — 主动展开、扩大或传播；保留原文义项「扩大（物理上的面积）；扩大（范围）」"
+  },
+  {
+    "kanji": "載せる",
+    "kana": "のせる",
+    "questionMeaning": "放上（盘子、桌面）；刊载",
+    "classification": "distinction",
+    "reason": "pair:載せる / 載る — 把东西放上、刊登或登载；保留原文义项「放上；刊载」"
+  },
+  {
+    "kanji": "載る",
+    "kana": "のる",
+    "questionMeaning": "（文章、商品）被刊登；放在……上；登载",
+    "classification": "distinction",
+    "reason": "pair:載せる / 載る — 东西被放上去或内容被刊登；保留原文义项「放在……上；登载」"
+  },
+  {
+    "kanji": "重なる",
+    "kana": "かさなる",
+    "questionMeaning": "（物品、日程）重叠；赶在一起",
+    "classification": "distinction",
+    "reason": "pair:重なる / 重ねる — 多个对象自己重叠或时间重合；保留原文义项「重叠；赶在一起」"
+  },
+  {
+    "kanji": "重ねる",
+    "kana": "かさねる",
+    "questionMeaning": "叠放（书、箱子）；重叠地堆放；反复",
+    "classification": "distinction",
+    "reason": "pair:重なる / 重ねる — 把对象一层层叠放，或反复进行；保留原文义项「重叠地堆放；反复」"
+  },
+  {
+    "kanji": "伸ばす",
+    "kana": "のばす",
+    "questionMeaning": "伸长（手、头发）；发挥",
+    "classification": "distinction",
+    "reason": "stem:伸 — 拉长、延伸；保留原文义项「伸长；发挥」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "伸びる",
+    "kana": "のびる",
+    "questionMeaning": "（身高、头发）伸长；发展；（能力）增强",
+    "classification": "distinction",
+    "reason": "stem:伸 — 自己伸长、增长；保留原文义项「伸长；发展；（能力）增强」"
+  },
+  {
+    "kanji": "痛む",
+    "kana": "いたむ",
+    "questionMeaning": "（身体、伤口）疼痛；痛苦",
+    "classification": "distinction",
+    "reason": "pair:痛む / 痛める — 身体自己疼痛或物品损坏；保留原文义项「疼痛；痛苦」"
+  },
+  {
+    "kanji": "痛める",
+    "kana": "いためる",
+    "questionMeaning": "弄伤（使身体部位）；使痛苦",
+    "classification": "distinction",
+    "reason": "synonym:弄伤 — 使身体部位疼痛、损伤，也可炒菜，不能全换；保留原文义项「弄伤；炒」"
+  },
+  {
+    "kanji": "締める",
+    "kana": "しめる",
+    "questionMeaning": "系紧（鞋带、腰带）；节约",
+    "classification": "distinction",
+    "reason": "stem:締 — 系紧、拧紧；保留原文义项「系紧，勒紧；节约」"
+  },
+  {
+    "kanji": "締まる",
+    "kana": "しまる",
+    "questionMeaning": "（门、螺丝）关紧；紧，紧绷；紧张",
+    "classification": "distinction",
+    "reason": "stem:締 — 自己收紧、关紧；保留原文义项「紧，紧绷；紧张」"
+  },
+  {
+    "kanji": "点[つ]く",
+    "kana": "つく",
+    "questionMeaning": "点着；（灯）开着",
+    "classification": "distinction",
+    "reason": "pair:点[つ]く / 点[つ]ける — 灯、火等自己点着；保留原文义项「点着；（灯）开着」"
+  },
+  {
+    "kanji": "点[つ]ける",
+    "kana": "つける",
+    "questionMeaning": "点燃（火、蜡烛）；开灯",
+    "classification": "distinction",
+    "reason": "synonym:点燃 — 点燃、打开灯或开启设备；保留原文义项「点燃；开灯」"
+  },
+  {
+    "kanji": "悩む",
+    "kana": "なやむ",
+    "questionMeaning": "（人、病人）烦恼；（因疾病）感到痛苦",
+    "classification": "distinction",
+    "reason": "pair:悩ます / 悩む — 自己烦恼、苦恼；保留原文义项「烦恼，苦恼；（因疾病）感到痛苦」"
+  },
+  {
+    "kanji": "悩ます",
+    "kana": "なやます",
+    "questionMeaning": "使烦恼",
+    "classification": "distinction",
+    "reason": "pair:悩ます / 悩む — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "抜ける",
+    "kana": "ぬける",
+    "questionMeaning": "（头发、牙齿）脱落；漏掉",
+    "classification": "distinction",
+    "reason": "stem:抜 — 脱落、遗漏或穿过；保留原文义项「漏掉；脱落」"
+  },
+  {
+    "kanji": "抜く",
+    "kana": "ぬく",
+    "questionMeaning": "拔出（钉子、刀）；放掉、排除；省略、超过",
+    "classification": "distinction",
+    "reason": "stem:抜 — 拔出、抽取；保留原文义项「拔出；放掉，排除；省略；超过」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "埋める",
+    "kana": "うめる",
+    "questionMeaning": "埋（种子、管道）；填；填满",
+    "classification": "distinction",
+    "reason": "stem:埋 — 填埋；保留原文义项「填；填满；弥补」"
+  },
+  {
+    "kanji": "埋まる",
+    "kana": "うまる",
+    "questionMeaning": "（坑、座位）埋上；埋没；占满",
+    "classification": "distinction",
+    "reason": "stem:埋 — 被填满、埋上；保留原文义项「埋没；占满；填补」"
+  },
+  {
+    "kanji": "離す",
+    "kana": "はなす",
+    "questionMeaning": "拉开距离（两人、物体）；放开手",
+    "classification": "distinction",
+    "reason": "synonym:放开 — 使距离拉开、分开或放开手；保留原文义项「放开；分开」"
+  },
+  {
+    "kanji": "離れる",
+    "kana": "はなれる",
+    "questionMeaning": "（人、车）离开；相距",
+    "classification": "distinction",
+    "reason": "synonym:离开 — 离开、相距或脱离关系；保留原文义项「离开；相距」"
+  },
+  {
+    "kanji": "冷ます",
+    "kana": "さます",
+    "questionMeaning": "晾凉；使热物降温",
+    "classification": "distinction",
+    "reason": "pair:冷ます / 冷める；stem:冷 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "冷める",
+    "kana": "さめる",
+    "questionMeaning": "变凉；热度自然下降",
+    "classification": "distinction",
+    "reason": "pair:冷ます / 冷める；stem:冷 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "こぼす",
+    "kana": "こぼす",
+    "questionMeaning": "洒出（水、汤）；抱怨",
+    "classification": "distinction",
+    "reason": "pair:こぼす / こぼれる — 把它洒出，或无意中说出；保留原文义项「洒，泼；抱怨」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "こぼれる",
+    "kana": "こぼれる",
+    "questionMeaning": "（水、眼泪）洒出；洋溢",
+    "classification": "distinction",
+    "reason": "pair:こぼす / こぼれる — 液体、物品自己洒出或掉出；保留原文义项「洒；洋溢」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "越える",
+    "kana": "こえる",
+    "questionMeaning": "（人、山）越过",
+    "classification": "distinction",
+    "reason": "pair:越える / 越す — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "越す",
+    "kana": "こす",
+    "questionMeaning": "越过（山、关口）；翻过；超过",
+    "classification": "distinction",
+    "reason": "pair:越える / 越す — 也常用于越过时间、山或数量；保留原文义项「越过；翻过；超过」"
+  },
+  {
+    "kanji": "混ぜる",
+    "kana": "まぜる",
+    "questionMeaning": "混合（材料）；掺和",
+    "classification": "distinction",
+    "reason": "stem:混 — 主动混合；保留原文义项「掺和；混合」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "混ざる",
+    "kana": "まざる",
+    "questionMeaning": "（水、颜色）混在一起",
+    "classification": "distinction",
+    "reason": "pair:混ざる / 混ぜる；stem:混 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "早める",
+    "kana": "はやめる",
+    "questionMeaning": "提前（时间、日程）",
+    "classification": "distinction",
+    "reason": "pair:早まる / 早める — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "早まる",
+    "kana": "はやまる",
+    "questionMeaning": "（决定、行动）提前；轻率",
+    "classification": "distinction",
+    "reason": "pair:早まる / 早める — 时间或行动自己提前，或判断失误而过早；保留原文义项「提前；轻率」"
+  },
+  {
+    "kanji": "溶ける",
+    "kana": "とける",
+    "questionMeaning": "（冰、雪）融化；溶化；熔化",
+    "classification": "distinction",
+    "reason": "stem:溶 — 融化、溶解；保留原文义项「溶化；融化；熔化」"
+  },
+  {
+    "kanji": "溶かす",
+    "kana": "とかす",
+    "questionMeaning": "溶化（冰、巧克力）；熔化",
+    "classification": "distinction",
+    "reason": "stem:溶 — 使其融化；保留原文义项「溶化；熔化」"
+  },
+  {
+    "kanji": "詰める",
+    "kana": "つめる",
+    "questionMeaning": "填满（箱子、袋子）；塞入、缩短",
+    "classification": "distinction",
+    "reason": "synonym:塞入 — 填满、塞入或缩短间隔；保留原文义项「塞入；填满」"
+  },
+  {
+    "kanji": "詰まる",
+    "kana": "つまる",
+    "questionMeaning": "（管道、喉咙）堵塞；塞满；窘迫",
+    "classification": "distinction",
+    "reason": "stem:詰 — 堵塞、挤满；保留原文义项「堵塞；塞满；窘迫」"
+  },
+  {
+    "kanji": "浮く",
+    "kana": "うく",
+    "questionMeaning": "（船、叶子）浮起；脱离表面",
+    "classification": "distinction",
+    "reason": "pair:浮かべる / 浮く；stem:浮 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "浮かべる",
+    "kana": "うかべる",
+    "questionMeaning": "使浮起；使……浮起；使……出现",
+    "classification": "distinction",
+    "reason": "stem:浮 — 使浮起或浮现表情；保留原文义项「使……浮起；使……出现；想起」"
+  },
+  {
+    "kanji": "生える",
+    "kana": "はえる",
+    "questionMeaning": "（草、牙齿）生长",
+    "classification": "distinction",
+    "reason": "pair:生える / 生やす — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "生やす",
+    "kana": "はやす",
+    "questionMeaning": "使生长；使（植物）生长；留（胡子）",
+    "classification": "distinction",
+    "reason": "pair:生える / 生やす — 让其生长，或蓄出胡子等；保留原文义项「使（植物）生长；留（胡子）」"
+  },
+  {
+    "kanji": "沸く",
+    "kana": "わく",
+    "questionMeaning": "（水、汤）沸腾；烧开；激动，兴奋",
+    "classification": "distinction",
+    "reason": "pair:沸かす / 沸く — 液体自己沸腾；保留原文义项「烧开；激动，兴奋」"
+  },
+  {
+    "kanji": "沸かす",
+    "kana": "わかす",
+    "questionMeaning": "烧开；使……沸腾",
+    "classification": "distinction",
+    "reason": "pair:沸かす / 沸く — 把液体烧开；保留原文义项「烧开；使……沸腾」"
+  },
+  {
+    "kanji": "孵[かえ]る",
+    "kana": "かえる",
+    "questionMeaning": "（小鸟、鸡蛋）孵化",
+    "classification": "distinction",
+    "reason": "pair:孵[かえ]す / 孵[かえ]る — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "孵[かえ]す",
+    "kana": "かえす",
+    "questionMeaning": "孵化（蛋）",
+    "classification": "distinction",
+    "reason": "pair:孵[かえ]す / 孵[かえ]る — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "挟まる",
+    "kana": "はさまる",
+    "questionMeaning": "（纸、手指）夹住；夹在双方中间",
+    "classification": "distinction",
+    "reason": "pair:挟まる / 挟む — 东西自己夹在中间；保留原文义项「夹住；夹在双方中间」"
+  },
+  {
+    "kanji": "挟む",
+    "kana": "はさむ",
+    "questionMeaning": "夹（面包、书页）；插嘴；隔",
+    "classification": "distinction",
+    "reason": "pair:挟まる / 挟む — 把东西夹住、夹入或插话；保留原文义项「夹；插嘴；隔」"
+  },
+  {
+    "kanji": "欠ける",
+    "kana": "かける",
+    "questionMeaning": "（盘子、月亮）缺",
+    "classification": "distinction",
+    "reason": "pair:欠かす / 欠ける — 物体缺损或条件不完整；保留原文义项「缺口；缺少，欠缺」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "欠く",
+    "kana": "かく",
+    "questionMeaning": "缺少；弄坏（坚硬物体的一部分）",
+    "classification": "distinction",
+    "reason": "pair:欠く / 欠ける — 缺少某物或缺乏某种必要条件；保留原文义项「缺少，缺乏；弄坏（坚硬物体的一部分）」"
+  },
+  {
+    "kanji": "広まる",
+    "kana": "ひろまる",
+    "questionMeaning": "（消息、习俗）传播",
+    "classification": "distinction",
+    "reason": "pair:広まる / 広める — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "広める",
+    "kana": "ひろめる",
+    "questionMeaning": "扩大（范围）；普及，推广",
+    "classification": "distinction",
+    "reason": "stem:広 — 主动传播、推广或扩大范围；保留原文义项「扩大（抽象的范围）；普及，推广」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "高める",
+    "kana": "たかめる",
+    "questionMeaning": "提高（能力、质量）",
+    "classification": "distinction",
+    "reason": "pair:高まる / 高める — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "高まる",
+    "kana": "たかまる",
+    "questionMeaning": "（意识、气氛）高涨；提高",
+    "classification": "distinction",
+    "reason": "pair:高まる / 高める — 程度、气氛或意识自己高涨；保留原文义项「高涨；提高」"
+  },
+  {
+    "kanji": "刺す",
+    "kana": "さす",
+    "questionMeaning": "刺（针、刀）",
+    "classification": "distinction",
+    "reason": "pair:刺さる / 刺す — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "刺さる",
+    "kana": "ささる",
+    "questionMeaning": "（针、刺）刺入；扎进；带来冲击和感动",
+    "classification": "distinction",
+    "reason": "pair:刺さる / 刺す — 尖物自己刺入、扎在某处；保留原文义项「刺，扎进；带来强烈的冲击和感动」"
+  },
+  {
+    "kanji": "就く",
+    "kana": "つく",
+    "questionMeaning": "（人、毕业生）就任",
+    "classification": "distinction",
+    "reason": "pair:就く / 就ける — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "就ける",
+    "kana": "つける",
+    "questionMeaning": "使就任",
+    "classification": "distinction",
+    "reason": "pair:就く / 就ける — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "縮む",
+    "kana": "ちぢむ",
+    "questionMeaning": "（衣物）缩小；因恐惧、紧张畏缩",
+    "classification": "distinction",
+    "reason": "stem:縮 — 自己缩小；保留原文义项「（长度、面积、体积、时间、间隔等）缩短，缩小；（因为恐怖、紧张等）畏缩」"
+  },
+  {
+    "kanji": "縮める",
+    "kana": "ちぢめる",
+    "questionMeaning": "缩短（时间、距离）；缩小；蜷曲",
+    "classification": "distinction",
+    "reason": "stem:縮 — 主动缩短；保留原文义项「缩短，缩小；蜷曲」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "縮まる",
+    "kana": "ちぢまる",
+    "questionMeaning": "（距离、差距）缩短",
+    "classification": "distinction",
+    "reason": "pair:縮まる / 縮める；stem:縮 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "深まる",
+    "kana": "ふかまる",
+    "questionMeaning": "（理解、感情）加深",
+    "classification": "distinction",
+    "reason": "pair:深まる / 深める — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "深める",
+    "kana": "ふかめる",
+    "questionMeaning": "加深（理解、关系）",
+    "classification": "distinction",
+    "reason": "pair:深まる / 深める — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "積む",
+    "kana": "つむ",
+    "questionMeaning": "堆积（货物、行李）；装载；积累（经验）",
+    "classification": "distinction",
+    "reason": "stem:積 — 堆放或积累；保留原文义项「装载；堆积；积累」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "積もる",
+    "kana": "つもる",
+    "questionMeaning": "（雪、灰尘）堆积；累积；估算",
+    "classification": "distinction",
+    "reason": "stem:積 — 自然堆积；保留原文义项「堆积；累积；估算」"
+  },
+  {
+    "kanji": "潰す",
+    "kana": "つぶす",
+    "questionMeaning": "弄碎；败坏；消磨",
+    "classification": "distinction",
+    "reason": "pair:潰す / 潰れる — 压坏、挤碎，或使计划落空；保留原文义项「弄碎，弄坏；败坏；消磨」"
+  },
+  {
+    "kanji": "潰れる",
+    "kana": "つぶれる",
+    "questionMeaning": "（纸箱、公司）压扁；倒闭",
+    "classification": "distinction",
+    "reason": "synonym:坏掉 — 被压扁、破产或店铺倒闭，结果类型不同；保留原文义项「坏掉；倒闭」"
+  },
+  {
+    "kanji": "浮かぶ",
+    "kana": "うかぶ",
+    "questionMeaning": "（叶子、想法）浮现；想法进入脑中",
+    "classification": "distinction",
+    "reason": "pair:浮かぶ / 浮かべる；stem:浮 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "崩す",
+    "kana": "くずす",
+    "questionMeaning": "拆散；拆，粉碎，使崩溃，使分崩离析；打乱",
+    "classification": "distinction",
+    "reason": "pair:崩す / 崩れる — 主动拆散、打乱或破坏；保留原文义项「拆，粉碎，使崩溃，使分崩离析；打乱；换零钱」"
+  },
+  {
+    "kanji": "崩れる",
+    "kana": "くずれる",
+    "questionMeaning": "崩塌；崩溃、散乱；变坏、换零钱",
+    "classification": "distinction",
+    "reason": "pair:崩す / 崩れる — 建筑、平衡或计划自己崩坏；保留原文义项「崩溃，崩塌；乱；变坏；换零钱」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "役立つ",
+    "kana": "やくだつ",
+    "questionMeaning": "（经验、工具）有用",
+    "classification": "distinction",
+    "reason": "pair:役立つ / 役立てる — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "役立てる",
+    "kana": "やくだてる",
+    "questionMeaning": "加以利用（知识、经验）",
+    "classification": "distinction",
+    "reason": "pair:役立つ / 役立てる — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "立ち上がる",
+    "kana": "たちあがる",
+    "questionMeaning": "站起来；恢复；开始，着手",
+    "classification": "distinction",
+    "reason": "stem:立 — 站起或启动；保留原文义项「站起来；恢复；开始，着手」"
+  },
+  {
+    "kanji": "立ち上げる",
+    "kana": "たちあげる",
+    "questionMeaning": "启动（项目、系统）；驱动，开动",
+    "classification": "distinction",
+    "reason": "pair:立ち上がる / 立ち上げる — 使其启动，或创建项目；保留原文义项「驱动，开动；（电脑等）启动」"
+  },
+  {
+    "kanji": "留まる",
+    "kana": "とまる",
+    "questionMeaning": "（人、船）停留；落在；固定",
+    "classification": "distinction",
+    "reason": "pair:留まる / 留める — 人或物停留、不离开；保留原文义项「落在；固定；注意，铭记」"
+  },
+  {
+    "kanji": "留める",
+    "kana": "とめる",
+    "questionMeaning": "固定（物品、视线）；留心",
+    "classification": "distinction",
+    "reason": "pair:留まる / 留める — 把对象留住、固定或记下；保留原文义项「固定；留心」"
+  },
+  {
+    "kanji": "欠かす",
+    "kana": "かかす",
+    "questionMeaning": "省略（步骤、早餐）",
+    "classification": "distinction",
+    "reason": "pair:欠かす / 欠ける — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "整える",
+    "kana": "ととのえる",
+    "questionMeaning": "整理；准备好；达成（协议）",
+    "classification": "distinction",
+    "reason": "pair:整う / 整える — 主动整理、调整或准备好；保留原文义项「整理；准备好；达成（协议）」"
+  },
+  {
+    "kanji": "整う",
+    "kana": "ととのう",
+    "questionMeaning": "（房间、条件）整齐",
+    "classification": "distinction",
+    "reason": "pair:整う / 整える — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "染める",
+    "kana": "そめる",
+    "questionMeaning": "染色（布、头发）；着手，开始",
+    "classification": "distinction",
+    "reason": "stem:染 — 给东西染色；保留原文义项「染色，上色；着手，开始」"
+  },
+  {
+    "kanji": "染まる",
+    "kana": "そまる",
+    "questionMeaning": "（布、天空）染上；沾染",
+    "classification": "distinction",
+    "reason": "stem:染 — 颜色或影响染上；保留原文义项「染上；沾染」"
+  },
+  {
+    "kanji": "荒れる",
+    "kana": "あれる",
+    "questionMeaning": "变荒；天气恶劣、荒废；荒芜、粗糙",
+    "classification": "distinction",
+    "reason": "pair:荒らす / 荒れる — 天气、皮肤或场面自己变得恶劣；保留原文义项「天气恶劣；荒废；荒芜；粗糙」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "荒らす",
+    "kana": "あらす",
+    "questionMeaning": "糟蹋（田地、房间）；偷盗",
+    "classification": "distinction",
+    "reason": "pair:荒らす / 荒れる — 破坏、糟蹋或扰乱；保留原文义项「糟蹋，毁坏；偷盗」"
+  },
+  {
+    "kanji": "混じる",
+    "kana": "まじる",
+    "questionMeaning": "（白发、杂音）混入",
+    "classification": "distinction",
+    "reason": "pair:混じる / 混ぜる；stem:混 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "当てはまる",
+    "kana": "あてはまる",
+    "questionMeaning": "（条件、说明）适用",
+    "classification": "distinction",
+    "reason": "pair:当てはまる / 当てはめる — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "当てはめる",
+    "kana": "あてはめる",
+    "questionMeaning": "套用（规则、方法）",
+    "classification": "distinction",
+    "reason": "pair:当てはまる / 当てはめる — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "ずらす",
+    "kana": "ずらす",
+    "questionMeaning": "挪开（位置）；挪动、移开；错开",
+    "classification": "distinction",
+    "reason": "pair:ずらす / ずれる — 主动挪开、错开或推迟；保留原文义项「挪动，移开；将……错开」"
+  },
+  {
+    "kanji": "ずれる",
+    "kana": "ずれる",
+    "questionMeaning": "（位置、时间）偏离；错开",
+    "classification": "distinction",
+    "reason": "pair:ずらす / ずれる — 位置、时间自己偏离；保留原文义项「移动，错离；偏离，离题」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "改める",
+    "kana": "あらためる",
+    "questionMeaning": "改正（制度、错误）；改变；检查",
+    "classification": "distinction",
+    "reason": "pair:改まる / 改める — 主动改正、重新做或检查；保留原文义项「改变；改正；检查」"
+  },
+  {
+    "kanji": "改まる",
+    "kana": "あらたまる",
+    "questionMeaning": "变正式；更新，更替；改善，革新",
+    "classification": "distinction",
+    "reason": "pair:改まる / 改める — 态度、场合自己变正式或重新开始；保留原文义项「更新，更替；改善，革新；郑重其事」"
+  },
+  {
+    "kanji": "甘やかす",
+    "kana": "あまやかす",
+    "questionMeaning": "娇惯（孩子、宠物）",
+    "classification": "distinction",
+    "reason": "pair:甘える / 甘やかす — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "甘える",
+    "kana": "あまえる",
+    "questionMeaning": "（孩子、下属）撒娇；承蒙，利用……的机会",
+    "classification": "distinction",
+    "reason": "pair:甘える / 甘やかす — 自己撒娇、依赖对方的好意；保留原文义项「撒娇；承蒙，利用……的机会」"
+  },
+  {
+    "kanji": "傾く",
+    "kana": "かたむく",
+    "questionMeaning": "（房屋、夕阳）倾斜；倾向于、西斜；衰落",
+    "classification": "distinction",
+    "reason": "pair:傾く / 傾ける — 物体自己倾斜，或局势偏向一方；保留原文义项「倾斜；倾向于……；（日、月）西斜；衰落」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "傾ける",
+    "kana": "かたむける",
+    "questionMeaning": "使…倾斜（杯子、身体）；倾注",
+    "classification": "distinction",
+    "reason": "pair:傾く / 傾ける — 把物体倾斜，或倾注精力；保留原文义项「使……倾斜，弄歪；倾注」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "収まる",
+    "kana": "おさまる",
+    "questionMeaning": "（物品）收进；（争端）平息、结束",
+    "classification": "distinction",
+    "reason": "pair:収まる / 収める — 东西进入容器、事情平息或归位；保留原文义项「收纳；平息，结束」"
+  },
+  {
+    "kanji": "収める",
+    "kana": "おさめる",
+    "questionMeaning": "收纳（东西）；取得（成果）",
+    "classification": "distinction",
+    "reason": "pair:収まる / 収める — 把东西收进，或取得、缴纳成果；保留原文义项「收纳；取得」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "振り向く",
+    "kana": "ふりむく",
+    "questionMeaning": "（人）回头；接否定表不感兴趣、不屑",
+    "classification": "distinction",
+    "reason": "stem:振 — 回头；保留原文义项「回头看；（后接否定）不感兴趣，不屑一顾」"
+  },
+  {
+    "kanji": "振り向ける",
+    "kana": "ふりむける",
+    "questionMeaning": "转向（视线、资源）；挪用，充当",
+    "classification": "distinction",
+    "reason": "pair:振り向く / 振り向ける — 把视线、资源或对象转向某处；保留原文义项「转向；挪用，充当」"
+  },
+  {
+    "kanji": "納める",
+    "kana": "おさめる",
+    "questionMeaning": "缴纳（税金、费用）；收下；收纳",
+    "classification": "distinction",
+    "reason": "pair:納まる / 納める — 缴纳费用、交付成果或收好；保留原文义项「收下；缴纳；收纳」"
+  },
+  {
+    "kanji": "納まる",
+    "kana": "おさまる",
+    "questionMeaning": "（物品、人员）收妥；缴纳；安坐",
+    "classification": "distinction",
+    "reason": "pair:納まる / 納める — 东西妥善归位、事情平息；保留原文义项「缴纳；安坐」"
+  },
+  {
+    "kanji": "薄める",
+    "kana": "うすめる",
+    "questionMeaning": "稀释（酱汁、药液）",
+    "classification": "distinction",
+    "reason": "pair:薄まる / 薄める — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "薄まる",
+    "kana": "うすまる",
+    "questionMeaning": "变淡",
+    "classification": "distinction",
+    "reason": "pair:薄まる / 薄める；stem:薄 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "備える",
+    "kana": "そなえる",
+    "questionMeaning": "准备（食物、物资）；装备，设置；与生俱来",
+    "classification": "distinction",
+    "reason": "pair:備える / 備わる — 事先准备，或给场所配备设备；保留原文义项「准备；装备，设置；与生俱来」"
+  },
+  {
+    "kanji": "備わる",
+    "kana": "そなわる",
+    "questionMeaning": "（设施、人才）具备；装备，装有",
+    "classification": "distinction",
+    "reason": "pair:備える / 備わる — 能力、设备等本身具备；保留原文义项「装备，装有；具备（资质等）」"
+  },
+  {
+    "kanji": "捕らえる",
+    "kana": "とらえる",
+    "questionMeaning": "捕获；准确把握",
+    "classification": "distinction",
+    "reason": "pair:捕らえる / 捕らわれる；stem:捕 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "捕らわれる",
+    "kana": "とらわれる",
+    "questionMeaning": "（犯人、俘虏）被捕；被逮捕；受束缚",
+    "classification": "distinction",
+    "reason": "stem:捕 — 捕まる／捕らわれる是被抓住，其中捕らわれる还可表示被观念束缚；保留原文义项「被逮捕；受束缚」"
+  },
+  {
+    "kanji": "膨らます",
+    "kana": "ふくらます",
+    "questionMeaning": "吹鼓（气球）；使膨胀",
+    "classification": "distinction",
+    "reason": "pair:膨らます / 膨らむ；pair:膨らます / 膨れる；stem:膨 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "膨らむ",
+    "kana": "ふくらむ",
+    "questionMeaning": "（气球、梦想）膨胀；鼓起",
+    "classification": "distinction",
+    "reason": "pair:膨らます / 膨らむ；stem:膨 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "満ちる",
+    "kana": "みちる",
+    "questionMeaning": "（容器、心中）充满；达到期限",
+    "classification": "distinction",
+    "reason": "pair:満たす / 満ちる — 空间、时间或感情自己充满；保留原文义项「充满；满；达到期限」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "満たす",
+    "kana": "みたす",
+    "questionMeaning": "满足（条件、愿望）；充满，填满",
+    "classification": "distinction",
+    "reason": "pair:満たす / 満ちる — 填满容器，或满足条件、愿望；保留原文义项「充满，填满；满足」"
+  },
+  {
+    "kanji": "叶[かな]う",
+    "kana": "かなう",
+    "questionMeaning": "（愿望、梦想）实现",
+    "classification": "distinction",
+    "reason": "pair:叶[かな]う / 叶[かな]える — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "叶[かな]える",
+    "kana": "かなえる",
+    "questionMeaning": "实现（愿望、梦想）",
+    "classification": "distinction",
+    "reason": "pair:叶[かな]う / 叶[かな]える — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "果たす",
+    "kana": "はたす",
+    "questionMeaning": "完成（目标、责任）；光，尽",
+    "classification": "distinction",
+    "reason": "pair:果たす / 果てる — 主动完成责任、目标或作用；保留原文义项「完成，实现；光，尽」"
+  },
+  {
+    "kanji": "果てる",
+    "kana": "はてる",
+    "questionMeaning": "（时间、生命）结束；终，完毕；死",
+    "classification": "distinction",
+    "reason": "pair:果たす / 果てる — 事情走到尽头、耗尽；保留原文义项「终，完毕；死；……得要死」"
+  },
+  {
+    "kanji": "及ぶ",
+    "kana": "およぶ",
+    "questionMeaning": "（影响、灾害）达到；波及，持续；比得上",
+    "classification": "distinction",
+    "reason": "pair:及ぶ / 及ぼす — 范围、程度达到某处；保留原文义项「波及，持续；达到；比得上」"
+  },
+  {
+    "kanji": "及ぼす",
+    "kana": "およぼす",
+    "questionMeaning": "带来（影响、后果）",
+    "classification": "distinction",
+    "reason": "pair:及ぶ / 及ぼす — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "強める",
+    "kana": "つよめる",
+    "questionMeaning": "加强（语气、力度）",
+    "classification": "distinction",
+    "reason": "pair:強まる / 強める；stem:強 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "強まる",
+    "kana": "つよまる",
+    "questionMeaning": "变强",
+    "classification": "distinction",
+    "reason": "pair:強まる / 強める；stem:強 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "思い浮かぶ",
+    "kana": "おもいうかぶ",
+    "questionMeaning": "（记忆、想法）想起",
+    "classification": "distinction",
+    "reason": "pair:思い浮かぶ / 思い浮かべる — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "思い浮かべる",
+    "kana": "おもいうかべる",
+    "questionMeaning": "想起（人、场景）；浮现在脑中",
+    "classification": "distinction",
+    "reason": "pair:思い浮かぶ / 思い浮かべる — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "傷む",
+    "kana": "いたむ",
+    "questionMeaning": "（食物、物品）损坏；腐烂",
+    "classification": "distinction",
+    "reason": "stem:傷 — 物品损坏或身体疼痛；保留原文义项「损坏；腐烂」"
+  },
+  {
+    "kanji": "傷める",
+    "kana": "いためる",
+    "questionMeaning": "损伤（身体、头发）",
+    "classification": "distinction",
+    "reason": "pair:傷む / 傷める；stem:傷 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "尽きる",
+    "kana": "つきる",
+    "questionMeaning": "（资源、话题）用尽；到头，穷尽",
+    "classification": "distinction",
+    "reason": "synonym:用尽 — 自然耗尽或结束；保留原文义项「用尽；结束」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "尽くす",
+    "kana": "つくす",
+    "questionMeaning": "尽力（全力、努力）；效力",
+    "classification": "distinction",
+    "reason": "pair:尽きる / 尽くす — 把资源用尽，或竭尽全力；保留原文义项「尽力；效力」"
+  },
+  {
+    "kanji": "積み重ねる",
+    "kana": "つみかさねる",
+    "questionMeaning": "层层堆积（箱子、砖）；堆起，垒起；积累",
+    "classification": "distinction",
+    "reason": "stem:積 — 反复累积；保留原文义项「堆起，垒起；积累」"
+  },
+  {
+    "kanji": "積み重なる",
+    "kana": "つみかさなる",
+    "questionMeaning": "（箱子）层层积累；堆积；积累疲劳、努力",
+    "classification": "distinction",
+    "reason": "stem:積 — 层层累积；保留原文义项「堆积；积累（疲劳、努力等）」"
+  },
+  {
+    "kanji": "絶える",
+    "kana": "たえる",
+    "questionMeaning": "（联系、传统）断绝；消失，灭亡",
+    "classification": "distinction",
+    "reason": "pair:絶える / 絶つ — 联系、生命或供应自己中断；保留原文义项「断绝；消失，灭亡」"
+  },
+  {
+    "kanji": "絶つ",
+    "kana": "たつ",
+    "questionMeaning": "断绝（关系、联系）",
+    "classification": "distinction",
+    "reason": "pair:絶える / 絶つ — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "はまる",
+    "kana": "はまる",
+    "questionMeaning": "（零件）嵌入；吻合；陷入圈套；热衷",
+    "classification": "distinction",
+    "reason": "pair:はまる / はめる — 东西自己嵌入、合适或陷入；保留原文义项「套上，嵌入；吻合；陷入，中圈套；热衷」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "はめる",
+    "kana": "はめる",
+    "questionMeaning": "嵌入（零件）；戴上（手套）；引诱",
+    "classification": "distinction",
+    "reason": "pair:はまる / はめる — 把东西嵌入，或使人陷入圈套；保留原文义项「镶嵌，戴上；引诱」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "遠ざかる",
+    "kana": "とおざかる",
+    "questionMeaning": "（人、声音）远离；疏远",
+    "classification": "distinction",
+    "reason": "pair:遠ざかる / 遠ざける — 人或物自己远离；保留原文义项「远离；疏远」"
+  },
+  {
+    "kanji": "遠ざける",
+    "kana": "とおざける",
+    "questionMeaning": "使远离；疏远",
+    "classification": "distinction",
+    "reason": "pair:遠ざかる / 遠ざける — 使对象远离、排斥或疏远；保留原文义项「使远离；疏远」"
+  },
+  {
+    "kanji": "凝る",
+    "kana": "こる",
+    "questionMeaning": "（料理、设计）讲究；（肌肉）酸痛；热衷",
+    "classification": "distinction",
+    "reason": "pair:凝らす / 凝る — 兴趣、身体部位等变得专注或僵硬；保留原文义项「（肌肉）酸痛；热衷；讲究」"
+  },
+  {
+    "kanji": "凝らす",
+    "kana": "こらす",
+    "questionMeaning": "集中（注意力、心思）",
+    "classification": "distinction",
+    "reason": "pair:凝らす / 凝る — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "極める",
+    "kana": "きわめる",
+    "questionMeaning": "达到极致（技术）；到极点；彻底查明",
+    "classification": "distinction",
+    "reason": "pair:極まる / 極める — 主动达到顶点，或钻研到极致；保留原文义项「达到极点；彻底查明」"
+  },
+  {
+    "kanji": "極まる",
+    "kana": "きわまる",
+    "questionMeaning": "（美丽）达到极点；穷尽、极端；极致、极限",
+    "classification": "distinction",
+    "reason": "pair:極まる / 極める — 程度自己达到极点；保留原文义项「穷尽，极端；（前接形容动词）极致，极限」"
+  },
+  {
+    "kanji": "交わす",
+    "kana": "かわす",
+    "questionMeaning": "交换（问候、意见）；交叉，交织",
+    "classification": "distinction",
+    "reason": "pair:交う / 交わす — 双方互相交换、交谈或履行约定；保留原文义项「交，交换；交叉，交织」"
+  },
+  {
+    "kanji": "交う",
+    "kana": "かう",
+    "questionMeaning": "（人、车辆）交错",
+    "classification": "distinction",
+    "reason": "pair:交う / 交わす — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "弱まる",
+    "kana": "よわまる",
+    "questionMeaning": "（风、力量）变弱",
+    "classification": "distinction",
+    "reason": "pair:弱まる / 弱める；stem:弱 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "弱める",
+    "kana": "よわめる",
+    "questionMeaning": "减弱（声音、灯光）",
+    "classification": "distinction",
+    "reason": "pair:弱まる / 弱める；stem:弱 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "浸す",
+    "kana": "ひたす",
+    "questionMeaning": "浸泡（布、食材）",
+    "classification": "distinction",
+    "reason": "pair:浸す / 浸る — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "浸る",
+    "kana": "ひたる",
+    "questionMeaning": "（人、身体）浸泡；沉迷",
+    "classification": "distinction",
+    "reason": "pair:浸す / 浸る — 自己浸泡在液体中，或沉浸于气氛；保留原文义项「浸；沉迷」"
+  },
+  {
+    "kanji": "定まる",
+    "kana": "さだまる",
+    "questionMeaning": "（日期、方针）确定；安定",
+    "classification": "distinction",
+    "reason": "pair:定まる / 定める — 规则、方针或位置确定下来；保留原文义项「决定，确定；安定」"
+  },
+  {
+    "kanji": "定める",
+    "kana": "さだめる",
+    "questionMeaning": "决定（规则、日期）；平息",
+    "classification": "distinction",
+    "reason": "pair:定まる / 定める — 主动规定、决定或确立；保留原文义项「决定，制定；平息」"
+  },
+  {
+    "kanji": "逃す",
+    "kana": "のがす",
+    "questionMeaning": "放走；错过；错过（接在动词后）",
+    "classification": "distinction",
+    "reason": "stem:逃 — 错过或放走；保留原文义项「放跑，错过；（動詞のあとに付いて）错过……」"
+  },
+  {
+    "kanji": "逃れる",
+    "kana": "のがれる",
+    "questionMeaning": "（人、动物）逃脱；逃避",
+    "classification": "distinction",
+    "reason": "stem:逃 — 逃脱危险、责任或困境；保留原文义项「逃脱，摆脱；逃避」"
+  },
+  {
+    "kanji": "惑わす",
+    "kana": "まどわす",
+    "questionMeaning": "迷惑（人、听众）",
+    "classification": "distinction",
+    "reason": "pair:惑う / 惑わす — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "惑う",
+    "kana": "まどう",
+    "questionMeaning": "（人、心）困惑；迷恋，沉溺",
+    "classification": "distinction",
+    "reason": "pair:惑う / 惑わす — 自己困惑、犹豫；保留原文义项「茫然，困惑；迷恋，沉溺」"
+  },
+  {
+    "kanji": "澄む",
+    "kana": "すむ",
+    "questionMeaning": "（水、空气）清澈；清静；清晰",
+    "classification": "distinction",
+    "reason": "pair:澄ます / 澄む — 水、空气或声音自己变清澈；保留原文义项「清澈；清静；清晰」"
+  },
+  {
+    "kanji": "澄ます",
+    "kana": "すます",
+    "questionMeaning": "使清澈；澄清；全神贯注",
+    "classification": "distinction",
+    "reason": "pair:澄ます / 澄む — 使其清澈，或集中精神；保留原文义项「澄清；全神贯注；装作与己无关」"
+  },
+  {
+    "kanji": "携わる",
+    "kana": "たずさわる",
+    "questionMeaning": "（人、专家）从事",
+    "classification": "distinction",
+    "reason": "pair:携える / 携わる — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "携える",
+    "kana": "たずさえる",
+    "questionMeaning": "携带（工具、行李）；偕同；携手",
+    "classification": "distinction",
+    "reason": "pair:携える / 携わる — 随身携带某物；保留原文义项「携，携带；偕同；携手」"
+  },
+  {
+    "kanji": "膨れる",
+    "kana": "ふくれる",
+    "questionMeaning": "（肚子、脸）鼓起；不高兴",
+    "classification": "distinction",
+    "reason": "pair:膨らます / 膨れる；stem:膨 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "励ます",
+    "kana": "はげます",
+    "questionMeaning": "鼓励（朋友、学生）",
+    "classification": "distinction",
+    "reason": "pair:励ます / 励む — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "励む",
+    "kana": "はげむ",
+    "questionMeaning": "（人、学生）勤奋",
+    "classification": "distinction",
+    "reason": "pair:励ます / 励む — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "緩む",
+    "kana": "ゆるむ",
+    "questionMeaning": "变松；松弛；疏忽",
+    "classification": "distinction",
+    "reason": "pair:緩む / 緩める — 绳带、警惕等自己变松或放松；保留原文义项「松弛；疏忽；缓和」"
+  },
+  {
+    "kanji": "緩める",
+    "kana": "ゆるめる",
+    "questionMeaning": "放松（肌肉、肩膀）；放慢；疏忽",
+    "classification": "distinction",
+    "reason": "pair:緩む / 緩める — 主动放松、放宽或拧松；保留原文义项「放松；放慢；疏忽」"
+  },
+  {
+    "kanji": "潤う",
+    "kana": "うるおう",
+    "questionMeaning": "（土地）湿润；宽裕起来",
+    "classification": "distinction",
+    "reason": "pair:潤う / 潤す — 水分、收入等自己得到充足；保留原文义项「湿润；宽裕起来」"
+  },
+  {
+    "kanji": "潤す",
+    "kana": "うるおす",
+    "questionMeaning": "润湿；润，弄湿；使受惠",
+    "classification": "distinction",
+    "reason": "pair:潤う / 潤す — 使其湿润，或使生活得到滋养；保留原文义项「润，弄湿；使受惠」"
+  },
+  {
+    "kanji": "滅びる",
+    "kana": "ほろびる",
+    "questionMeaning": "（物种、国家）灭亡",
+    "classification": "distinction",
+    "reason": "pair:滅びる / 滅ぼす — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "滅ぼす",
+    "kana": "ほろぼす",
+    "questionMeaning": "毁灭；使……灭亡",
+    "classification": "distinction",
+    "reason": "pair:滅びる / 滅ぼす — 使其毁灭、消灭；保留原文义项「毁灭；使……灭亡」"
+  },
+  {
+    "kanji": "揺らぐ",
+    "kana": "ゆらぐ",
+    "questionMeaning": "（招牌、信念）摇晃；动摇；岌岌可危",
+    "classification": "distinction",
+    "reason": "stem:揺 — 基础、信念动摇；保留原文义项「摇动，摇晃；摇摇欲坠，岌岌可危」"
+  },
+  {
+    "kanji": "揺るがす",
+    "kana": "ゆるがす",
+    "questionMeaning": "撼动（社会、信念）",
+    "classification": "distinction",
+    "reason": "pair:揺らぐ / 揺るがす — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "和らげる",
+    "kana": "やわらげる",
+    "questionMeaning": "缓和（疼痛、语气）；使柔和",
+    "classification": "distinction",
+    "reason": "stem:和 — 主动缓和；保留原文义项「使缓和，使柔和；使语言或文章更容易理解」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "和らぐ",
+    "kana": "やわらぐ",
+    "questionMeaning": "（疼痛、气氛）缓和",
+    "classification": "distinction",
+    "reason": "pair:和らぐ / 和らげる；stem:和 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "狭める",
+    "kana": "せばめる",
+    "questionMeaning": "缩小（差距、范围）",
+    "classification": "distinction",
+    "reason": "pair:狭まる / 狭める — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "狭まる",
+    "kana": "せばまる",
+    "questionMeaning": "变窄",
+    "classification": "distinction",
+    "reason": "pair:狭まる / 狭める — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "ほぐす",
+    "kana": "ほぐす",
+    "questionMeaning": "放松（肩膀、肌肉）；解开（线团）",
+    "classification": "distinction",
+    "reason": "synonym:解开 — ほぐす、ほぐれる还可指肌肉和紧张放松；保留原文义项「解开；放松」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "ほぐれる",
+    "kana": "ほぐれる",
+    "questionMeaning": "（肌肉、心情）放松；（线团）解开",
+    "classification": "distinction",
+    "reason": "pair:ほぐす / ほぐれる — 结、紧张等自己松开；保留原文义项「开，解开；舒畅，开朗」；验收改：括号写典型搭配，不写语法标签"
+  },
+  {
+    "kanji": "埋もれる",
+    "kana": "うもれる",
+    "questionMeaning": "（道路、人才）埋没；（被）埋上，压埋",
+    "classification": "distinction",
+    "reason": "stem:埋 — 被埋没或被忽视；保留原文义项「（被）埋上，压埋；湮没，埋没」"
+  },
+  {
+    "kanji": "切らす",
+    "kana": "きらす",
+    "questionMeaning": "用完（存货）；中断",
+    "classification": "distinction",
+    "reason": "synonym:用尽 — 用完导致断供，主语和结果不同；保留原文义项「用尽；断供」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
+  },
+  {
+    "kanji": "探す",
+    "kana": "さがす",
+    "questionMeaning": "寻找（目标）",
+    "classification": "distinction",
+    "reason": "kanji-choice:さがす；stem:探 — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "捜す",
+    "kana": "さがす",
+    "questionMeaning": "寻找（失物）",
+    "classification": "distinction",
+    "reason": "kanji-choice:さがす — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "降りる",
+    "kana": "おりる",
+    "questionMeaning": "下车（从交通工）；下降；下（车）",
+    "classification": "distinction",
+    "reason": "stem:降 — 人下车、下来；保留原文义项「下降；下（车）」"
+  },
+  {
+    "kanji": "温かい",
+    "kana": "あたたかい",
+    "questionMeaning": "温暖的（体感）；温的；温暖的，热情的",
+    "classification": "distinction",
+    "reason": "kanji-choice:あたたかい — 偏体感、食物和气氛的温暖；保留原文义项「温的；温暖的，热情的」"
+  },
+  {
+    "kanji": "暖かい",
+    "kana": "あたたかい",
+    "questionMeaning": "温暖的（环境）",
+    "classification": "distinction",
+    "reason": "kanji-choice:あたたかい — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "温める",
+    "kana": "あたためる",
+    "questionMeaning": "加热；饮食或身体",
+    "classification": "distinction",
+    "reason": "kanji-choice:あたためる — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "暖める",
+    "kana": "あたためる",
+    "questionMeaning": "暖和；房间或气氛",
+    "classification": "distinction",
+    "reason": "kanji-choice:あたためる — 按人工辨析注记补充动作方向、对象或语域，确保组内首义可区分。"
+  },
+  {
+    "kanji": "良い",
+    "kana": "よい",
+    "questionMeaning": "好的、优秀；亲近、没关系；确实",
+    "classification": "distinction",
+    "reason": "reading-register:良い — 较正式，也常用于书面语和复合表达；保留原文义项「优秀的；好的；亲近的；没关系；确实的」；舍弃义项：无，相关义项已合并概括"
+  },
+  {
+    "kanji": "良い",
+    "kana": "いい",
+    "questionMeaning": "好的",
+    "classification": "distinction",
+    "reason": "reading-register:良い — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "皆",
+    "kana": "みんな",
+    "questionMeaning": "大家",
+    "classification": "distinction",
+    "reason": "reading-register:皆 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "行き",
+    "kana": "ゆき",
+    "questionMeaning": "去；方向",
+    "classification": "distinction",
+    "reason": "reading-register:行き — 行き读いき是日常说法；读ゆき常用于列车、航班等方向标识或固定词；保留原文义项「去；方向」"
+  },
+  {
+    "kanji": "行き",
+    "kana": "いき",
+    "questionMeaning": "去，往",
+    "classification": "distinction",
+    "reason": "reading-register:行き — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "一昨日",
+    "kana": "おととい",
+    "questionMeaning": "前天",
+    "classification": "distinction",
+    "reason": "reading-register:一昨日 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "〜通り",
+    "kana": "〜とおり",
+    "questionMeaning": "～通",
+    "classification": "distinction",
+    "reason": "reading-register:〜通り — 可互换组保留自然释义，不强造不存在的语义差异。"
+  },
+  {
+    "kanji": "〜通り",
+    "kana": "〜どおり",
+    "questionMeaning": "～通；按照……；程度",
+    "classification": "distinction",
+    "reason": "reading-register:〜通り — 多见于接在词后表示照样、如同；保留原文义项「按照……；程度」"
+  },
+  {
+    "kanji": "明後日",
+    "kana": "あさって",
+    "questionMeaning": "后天",
+    "classification": "distinction",
+    "reason": "reading-register:明後日 — 可互换组保留自然释义，不强造不存在的语义差异。"
+  }
+]

@@ -42,6 +42,8 @@ export interface ConfusionMember {
   exampleJp: string;
   exampleMeaning: string;
   jlptLevel: string;
+  /** 分组用的冻结词典首义(见 Row.senseKey);给测试和审计用,界面不显示 */
+  senseKey: string;
 }
 
 export interface ConfusionGroup {
@@ -74,10 +76,19 @@ interface Row {
   exampleJp: string;
   exampleMeaning: string;
   jlptLevel: string;
+  /** 分组用的词典首义,冻结在 words.sense_key(见 study-core 的 applyWordSenseKeys)。用户自导的词没有,退回现算。 */
+  senseKey: string;
 }
 
 const firstSense = (meaning: string): string =>
   meaning.split(/[；;，,、]/)[0].trim();
+
+/**
+ * 分组只看冻结的词典首义,不看 words.meaning 当前写的是什么。
+ * 释义审校正是要把「医生 / 医生」写成「医生 / 医师（执照…）」—— 分组要是跟着 meaning 走,
+ * 审校做得越好近义组散得越多,手写辨析稿全成幽灵 key(2026-09-16 踩到,测试当场红了 90 组)。
+ */
+const senseOf = (row: Row): string => row.senseKey || firstSense(row.meaning);
 
 const toMember = (row: Row): ConfusionMember => ({
   id: row.id,
@@ -86,7 +97,8 @@ const toMember = (row: Row): ConfusionMember => ({
   meaning: row.meaning,
   exampleJp: row.exampleJp,
   exampleMeaning: row.exampleMeaning,
-  jlptLevel: row.jlptLevel
+  jlptLevel: row.jlptLevel,
+  senseKey: senseOf(row)
 });
 
 /** 越靠前越具体：同一批词同时命中多个类型时，保留信息量最大的那个说法 */
@@ -173,8 +185,11 @@ const variantMerges = (rows: Row[]): Map<number, number> => {
   // 整桶跳过,两组异写就都漏进去了。
   //
   // 上一轮压掉的行要排除在外,否则可能把留下的那行也一起压了。
+  // 异写判定也按冻结的词典首义,不看当前释义:审校给 愚か 加了「（书面）」之后,按当前释义
+  // 它和 おろか 就分家了(同一个词的两种写法变成一组「近义词」);反过来审校把 もっとも(な形,当然)
+  // 改成「最」之后,按当前释义它又会被当成 最も 的异写吞掉。分组的每一步都只认冻结键,组才稳。
   const rest = rows.filter((row) => !suppressed.has(row.id));
-  groupBy(rest, (row) => `${row.kana}\u0000${firstSense(row.meaning)}`).forEach((members) => {
+  groupBy(rest, (row) => `${row.kana}\u0000${senseOf(row)}`).forEach((members) => {
     if (members.length < 2) return;
     const withKanji = members.filter((row) => CJK.test(row.kanji));
     // 全都带汉字 = 汉字使い分け(探す/捜す),这是最有价值的一类,一行都不能动。
@@ -187,7 +202,14 @@ const variantMerges = (rows: Row[]): Map<number, number> => {
       return;
     }
     // 一个汉字都没有 = 外来語被录了两遍(ロック/lock),留数据更全的那行。
-    const canonical = [...members].sort((left, right) => rank(left) - rank(right) || left.id - right.id)[0];
+    //
+    // 「数据更全」并列时优先留**不是裸重复假名**的那行:kanji 原样重复 kana 是同一个词
+    // 被录第二遍的形态特征(和上面那条外来語规则同一个判据)。少了这一层,存活行会随
+    // 内容变动翻转 —— 给裸重复行补一条例句,它就和英文行同分,再靠 id 兜底时会留下错的
+    // 那行,下一轮 ロック 就变成「一个英文行 + 一个裸行」,又触发一次合并(去重不收敛)。
+    const bareRepeat = (row: Row) => (row.kanji === row.kana ? 1 : 0);
+    const canonical = [...members].sort((left, right) =>
+      rank(left) - rank(right) || bareRepeat(left) - bareRepeat(right) || left.id - right.id)[0];
     members.filter((row) => row.id !== canonical.id).forEach((row) => drop(row, canonical));
   });
 
@@ -284,7 +306,7 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
   //    写法，**不是易混词**，放进来只会让用户去找不存在的区别，直接丢掉。
   groupBy(rows, (row) => row.kana).forEach((members, kana) => {
     if (members.length < 2) return;
-    const senses = new Set(members.map((row) => firstSense(row.meaning)));
+    const senses = new Set(members.map((row) => senseOf(row)));
     if (senses.size > 1) { add("homophone", kana, members); return; }
     if (members.every((row) => CJK.test(row.kanji))) add("kanji-choice", kana, members);
   });
@@ -293,7 +315,7 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
   //    首义相同多半是语体差（あさって/みょうごにち），不同则是真多义（あく/ひらく）。
   groupBy(rows, (row) => (CJK.test(row.kanji) ? row.kanji : "")).forEach((members, kanji) => {
     if (new Set(members.map((row) => row.kana)).size < 2) return;
-    const senses = new Set(members.map((row) => firstSense(row.meaning)));
+    const senses = new Set(members.map((row) => senseOf(row)));
     add(senses.size === 1 ? "reading-register" : "reading-sense", kanji, members);
   });
 
@@ -302,7 +324,7 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
   //    比纯中文模糊匹配准得多（中文「切下」和「放下」都有「下」，日语侧毫无关系）。
   const verbs = rows.filter((row) => (row.verbType === "godan" || row.verbType === "ichidan") && CJK.test(row.kanji));
   groupBy(verbs, (row) => row.kanji.match(CJK)?.[0] ?? "").forEach((members, stem) => {
-    const charsOf = (row: Row) => new Set(firstSense(row.meaning).match(/[㐀-鿿]/g) ?? []);
+    const charsOf = (row: Row) => new Set(senseOf(row).match(/[㐀-鿿]/g) ?? []);
     const cohesive = members.filter((row) => {
       const chars = charsOf(row);
       return members.some((other) => other.id !== row.id
@@ -313,7 +335,7 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
 
   // ⑤ 中文首义完全相同。词性也一致的才收 —— 词性不同的那批（「运动」名词 vs
   //    する动词）多半只是题面给的信息不够，属于要修的题面 bug，不是易混词。
-  groupBy(rows, (row) => firstSense(row.meaning)).forEach((members, sense) => {
+  groupBy(rows, (row) => senseOf(row)).forEach((members, sense) => {
     if (members.length < 2) return;
     if (new Set(members.map((row) => row.pos)).size > 1) return;
     const memberKeys = new Set(members.map((row) => `${row.kanji}\u0000${row.kana}`));
@@ -368,8 +390,11 @@ export const duplicateMergeTargets = (): Map<number, number> => {
 
 const loadRows = (): Row[] => {
   if (cachedRows) return cachedRows;
+  // 测试里手建的裸 words 表没有 sense_key 列;缺列就退回现算首义,别让整页分组出不来。
+  const hasSenseKey = rowsFor("PRAGMA table_info(words)").some((row) => row.name === "sense_key");
   cachedRows = rowsFor(`
-    SELECT id, kanji, kana, meaning, pos, verb_type, example_jp, example_meaning, jlpt_level
+    SELECT id, kanji, kana, meaning, pos, verb_type, example_jp, example_meaning, jlpt_level,
+           ${hasSenseKey ? "sense_key" : "''"} AS sense_key
     FROM words
   `).map((row): Row => ({
     id: Number(row.id ?? 0),
@@ -380,7 +405,8 @@ const loadRows = (): Row[] => {
     verbType: String(row.verb_type ?? ""),
     exampleJp: String(row.example_jp ?? ""),
     exampleMeaning: String(row.example_meaning ?? ""),
-    jlptLevel: String(row.jlpt_level ?? "")
+    jlptLevel: String(row.jlpt_level ?? ""),
+    senseKey: String(row.sense_key ?? "")
   })).filter((row) => row.id && !LATIN.test(row.kana));
   return cachedRows;
 };

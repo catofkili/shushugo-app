@@ -23,9 +23,9 @@
   {
     "kanji": "折",
     "kana": "おり",
-    "questionMeaning": "时机；时候",
+    "questionMeaning": "时机（书面）；时候",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:时机 — 某个时候、机会的书面表达，不能替换动作节奏；保留原文义项「时机；时候」"
   },
   {
     "kanji": "設計",
@@ -72,9 +72,9 @@
   {
     "kanji": "節",
     "kana": "ふし",
-    "questionMeaning": "（竹子等的）节；关节；点；曲调",
+    "questionMeaning": "关节（身体）；竹节、段落；关键处、曲调",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:关节 — 可指关节、段落、节气或关键处；関節专指身体关节，不能替换节的抽象用法；保留原文义项「关节；段落」"
   },
   {
     "kanji": "節電",
@@ -527,7 +527,7 @@
   {
     "kanji": "線路",
     "kana": "せんろ",
-    "questionMeaning": "铁路，轨道",
+    "questionMeaning": "铁路，轨道（轨道、电路线路）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -688,14 +688,14 @@
   {
     "kanji": "前方",
     "kana": "ぜんぽう",
-    "questionMeaning": "前面，前方",
+    "questionMeaning": "前面，前方（空间前侧）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "前面",
     "kana": "ぜんめん",
-    "questionMeaning": "前面，前头",
+    "questionMeaning": "前面，前头（正面、前侧）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -870,7 +870,7 @@
   {
     "kanji": "素質",
     "kana": "そしつ",
-    "questionMeaning": "资质，天分",
+    "questionMeaning": "资质，天分（潜在天分）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -912,7 +912,7 @@
   {
     "kanji": "素朴",
     "kana": "そぼく",
-    "questionMeaning": "朴素；单纯",
+    "questionMeaning": "朴素（质朴、不矫饰）；单纯",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1122,7 +1122,7 @@
   {
     "kanji": "早朝",
     "kana": "そうちょう",
-    "questionMeaning": "早晨",
+    "questionMeaning": "早晨（很早清晨）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1143,9 +1143,9 @@
   {
     "kanji": "相違",
     "kana": "そうい",
-    "questionMeaning": "差异，不同",
+    "questionMeaning": "差异，不同（书面）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:差异 — 相違、差異偏正式书面且强调不同，搭配和语体不同；保留原文义项「差异，不同」"
   },
   {
     "kanji": "相関",
@@ -1661,7 +1661,7 @@
   {
     "kanji": "尊大",
     "kana": "そんだい",
-    "questionMeaning": "自大，骄傲自大",
+    "questionMeaning": "自大，骄傲自大（摆架子自大）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },

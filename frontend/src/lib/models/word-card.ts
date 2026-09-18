@@ -260,7 +260,8 @@ export function buildVerbPair(db: Database, kanji: string, kana: string): WordCa
   const hint = verbPairHints[key];
   if (!hint) return null;
 
-  const [voice, pairKanji, pairKana, note] = hint;
+  // hint[3] 是「自动词：洒；洋溢」这种旧释义，来源不明且早被 words.meaning 的审校稿盖过，不再显示。
+  const [voice, pairKanji, pairKana] = hint;
   const pair = findPairWord(db, pairKanji, pairKana);
 
   return {
@@ -268,8 +269,7 @@ export function buildVerbPair(db: Database, kanji: string, kana: string): WordCa
     pairVoice: voice === "他动词" ? "自动词" : "他动词",
     kana: pair?.kana ?? pairKana,
     kanji: pair?.kanji ?? pairKanji,
-    meaning: pair?.meaning ?? "",
-    note
+    meaning: pair?.meaning ?? ""
   };
 }
 

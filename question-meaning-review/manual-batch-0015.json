@@ -247,7 +247,7 @@
   {
     "kanji": "現地",
     "kana": "げんち",
-    "questionMeaning": "现场，当地；现居住地",
+    "questionMeaning": "现场，当地（事件旅行现场）；现居住地",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -814,7 +814,7 @@
   {
     "kanji": "公平",
     "kana": "こうへい",
-    "questionMeaning": "公平",
+    "questionMeaning": "公平（公正原则）",
     "classification": "same_meaning",
     "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
   },
@@ -863,7 +863,7 @@
   {
     "kanji": "効力",
     "kana": "こうりょく",
-    "questionMeaning": "效力，效果",
+    "questionMeaning": "效力，效果（法律规则效力）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -933,7 +933,7 @@
   {
     "kanji": "好悪",
     "kana": "こうお",
-    "questionMeaning": "好恶，爱憎",
+    "questionMeaning": "好恶，爱憎（书面爱憎）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -968,7 +968,7 @@
   {
     "kanji": "好調",
     "kana": "こうちょう",
-    "questionMeaning": "势头好，情况好",
+    "questionMeaning": "势头好，情况好（业绩状态良好）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1017,9 +1017,9 @@
   {
     "kanji": "工房",
     "kana": "こうぼう",
-    "questionMeaning": "工作室",
+    "questionMeaning": "工作室（手工业）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:工作室 — 手工业、艺术家的作坊，不能全换；保留原文义项「工作室」"
   },
   {
     "kanji": "工面",
@@ -1241,9 +1241,9 @@
   {
     "kanji": "紅葉",
     "kana": "こうよう",
-    "questionMeaning": "红叶，枫叶；变成红叶",
-    "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "questionMeaning": "变红；秋季景观",
+    "classification": "distinction",
+    "reason": "辨析组题面精修：按汉字用法、读音或语域补充区分线索。"
   },
   {
     "kanji": "考案",
@@ -1297,9 +1297,9 @@
   {
     "kanji": "航空機",
     "kana": "こうくうき",
-    "questionMeaning": "飞机",
+    "questionMeaning": "航空器；飞机（正式）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:飞机 — 航空器的正式总称，范围可包括飞机以外的航空器；保留原文义项「飞机」"
   },
   {
     "kanji": "航空券",
@@ -1528,7 +1528,7 @@
   {
     "kanji": "高慢",
     "kana": "こうまん",
-    "questionMeaning": "傲慢，高傲",
+    "questionMeaning": "傲慢，高傲（高傲自负）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1682,9 +1682,9 @@
   {
     "kanji": "国家",
     "kana": "こっか",
-    "questionMeaning": "国家",
+    "questionMeaning": "政治国家（政治实体）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:国家 — 国可指国家、国土或故乡；国家是政治意义上的国家，偏正式且不能替代国的故乡等用法；保留原文义项「国家」"
   },
   {
     "kanji": "国会",

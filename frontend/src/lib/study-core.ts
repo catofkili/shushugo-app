@@ -105,13 +105,13 @@ const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // a fresh install does not replay all 11k metadata updates on first launch.
 // 与 scripts/build-furigana.mjs、scripts/bake-seed-db.mjs 保持一致。
 export const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
-const JLPT_WORD_METADATA_VERSION = `2026-08-11-manual-meanings-5163-polish-1130-corrections-35-examples-122-${FURIGANA_VERSION}`;
+const JLPT_WORD_METADATA_VERSION = `2026-09-19-manual-meanings-5163-polish-1130-corrections-35-distinction-1559-examples-320-audit-revert-73-${FURIGANA_VERSION}`;
 // 这张表只给历史词库里没有 N1-N5 的词补级别。和 metadata 版本分开,
 // 这样既有用户不用重放整套释义/例句迁移,又能让老库收到这次分类。
 const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
-export const GRAMMAR_SEED_VERSION = "2026-09-08-grammar-explanation-rewrite-v1";
+export const GRAMMAR_SEED_VERSION = "2026-09-18-grammar-split-variants-v1";
 /**
  * 种子里有多少条语法点。⚠️ 它不是装饰,是**版本戳撒谎时的唯一兜底**。
  *
@@ -124,7 +124,7 @@ export const GRAMMAR_SEED_VERSION = "2026-09-08-grammar-explanation-rewrite-v1";
  * `grammar_state.queue`、再往 archive 里写一份 —— 只有真的对不上才值得付这个代价。
  * `verify-release-db.mjs` 会钉住这个常数 == 出厂库 == seed。
  */
-export const GRAMMAR_SEED_ROW_COUNT = 741;
+export const GRAMMAR_SEED_ROW_COUNT = 769;
 export const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
 export const JLPT_COLLOCATION_CONTENT_VERSION = "2026-08-28-jlpt-collocations-zh-v1";
 
@@ -161,6 +161,24 @@ type JlptLevelOverrideSeed = {
     note: string;
   };
   rows: JlptLevelOverride[];
+};
+
+/**
+ * 疑难辨析的分组键:冻结在 2026-09-16 的词典首义,只给 confusion-groups 分组用。
+ * 分组算法按「首义相同」成组,而释义审校正是要把首义写得不一样 —— 分组直接读
+ * words.meaning 的话,审校做得越好组散得越多,手写辨析稿就成幽灵 key。
+ * 出厂库由 bake-seed-db.mjs 烧同一份;这里是给老用户的本地库补列。
+ */
+type WordSenseKey = [kanji: string, kana: string, senseKey: string];
+const loadWordSenseKeys = async (): Promise<WordSenseKey[]> => {
+  const payload = await import("../data/word_sense_keys.json");
+  return payload.default as WordSenseKey[];
+};
+const applyWordSenseKeys = (rows: WordSenseKey[]): void => {
+  const db = getDatabase();
+  rows.forEach(([kanji, kana, senseKey]) => {
+    db.run("UPDATE words SET sense_key = ? WHERE kanji = ? AND kana = ?", [senseKey, kanji, kana]);
+  });
 };
 
 const loadJlptMeaningOverrides = async (): Promise<JlptMeaningOverride[]> => {
@@ -218,6 +236,9 @@ export const ensureUserTables = () => {
   if (!wordColumns.includes("example_lemmas")) {
     db.run("ALTER TABLE words ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''");
   }
+  if (!wordColumns.includes("sense_key")) {
+    db.run("ALTER TABLE words ADD COLUMN sense_key TEXT NOT NULL DEFAULT ''");
+  }
   const grammarColumns = rowsFor("PRAGMA table_info(grammar_points)").map((row) => String(row.name ?? ""));
   if (!grammarColumns.includes("example_furigana")) {
     db.run("ALTER TABLE grammar_points ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''");
@@ -259,6 +280,17 @@ export const ensureUserTables = () => {
     db.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
   }
   db.run("CREATE INDEX IF NOT EXISTS idx_reviews_day_direction ON reviews(reviewed_on, direction)");
+  // 周日 14:00 周期计时与周报快照属于用户库本地数据，旧库启动时幂等补齐。
+  db.run(`
+    CREATE TABLE IF NOT EXISTS study_time_by_period (
+      period_start TEXT NOT NULL,
+      device_id TEXT NOT NULL,
+      seconds INTEGER NOT NULL DEFAULT 0,
+      sync_updated_at TEXT,
+      sync_origin_device TEXT,
+      PRIMARY KEY (period_start, device_id)
+    )
+  `);
   db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
   db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
   schemaReadyDbs.add(db);
@@ -418,6 +450,43 @@ export const isFavorite = (type: FavoriteType, id: string | number) => {
 const GRAMMAR_PROGRESS_TABLES = ["grammar_progress", "grammar_reviews", "grammar_mistakes"] as const;
 // 迁移期间把旧 grammar_id 挪出正常取值范围,避免新旧 id 数值重叠时串数据。
 const GRAMMAR_ID_OFFSET = 1_000_000;
+/**
+ * 升版本时按 pattern 迁移进度，改过标题的条目要在这里登记旧名 → 新名，
+ * 否则用户在它上面的进度会被当成「新版本里已经不存在的语法点」删掉。
+ *
+ * 2026-09-18 把「A／B」两个写法拆成两条（见 scripts/grammar-variant-splits.json）：
+ * 旧进度归第一个写法，第二个写法作为新条目从零开始 —— 拆的理由正是
+ * 「看到 A 就点了认识，B 其实不会」，所以 B 不该继承 A 的 FSRS 状态。
+ */
+const GRAMMAR_PATTERN_RENAMES: Record<string, string> = {
+  "誰／どなた／どの方": "誰",
+  "どう／いかが": "どう",
+  "なぜ／どうして／なんで": "なぜ",
+  "かな／かしら": "かな",
+  "～たち／がた": "～たち",
+  "～だろう／でしょう": "～だろう",
+  "あげる／さしあげる": "あげる",
+  "～てあげる／てさしあげる": "～てあげる",
+  "もらう／いただく": "もらう",
+  "～てもらう／ていただく": "～てもらう",
+  "くれる／くださる": "くれる",
+  "～てくれる／てくださる": "～てくれる",
+  "～うちは／ないうちに": "～うちは",
+  "～てしかた（が）ない／てしようがない": "～てしかた（が）ない",
+  "～てもしかた（が）ない／てもしようがない": "～てもしかた（が）ない",
+  "～というのは／とは": "～というのは",
+  "～なんか／なんて": "～なんか",
+  "～ていらっしゃる／ておいでになる": "～ていらっしゃる",
+  "～かねる／かねない": "～かねる",
+  "～次第／次第だ／次第で（は）": "～次第",
+  "～だけあって／だけに／だけのことはある": "～だけあって",
+  "～はもちろん／はもとより": "～はもちろん",
+  // N3 那条「～とは」（下定义）排在前面，N1 这条（吃惊）拿到重名后缀
+  "～とは／なんて": "～とは（N1-2）",
+  "～とはいうものの／とは言い条": "～とはいうものの",
+  "～にたえる／にたえない": "～にたえる",
+  "～や／や否や": "～や"
+};
 
 const ensureGrammarSeed = async () => {
   const db = getDatabase();
@@ -457,6 +526,11 @@ const ensureGrammarSeed = async () => {
     }
 
     db.run("DELETE FROM grammar_points");
+    // ⚠️ AUTOINCREMENT 在 DELETE 之后接着上次的最大值往下编，不重置的话重建出来的 id
+    // 是 742..、1483..（实测一台设备重建九次后 id 落在 6600+），和新装用户的 1..N
+    // 永远对不上 —— 而 grammar_progress 正是按数字 grammar_id 跨设备同步的。
+    // 重置之后 id = 种子行号 = 出厂库的 id（build-furigana.mjs 用同一个顺序编号）。
+    db.run("DELETE FROM sqlite_sequence WHERE name = 'grammar_points'");
     const newIdByPattern = new Map<string, number>();
     grammarSeed.rows.forEach((row, index) => {
       // pattern 带 UNIQUE 约束;种子数据里同一 pattern 出现多次时保留第一条,
@@ -486,7 +560,7 @@ const ensureGrammarSeed = async () => {
       db.run(`UPDATE ${table} SET grammar_id = grammar_id + ${GRAMMAR_ID_OFFSET}`);
     });
     oldIdByPattern.forEach((oldId, pattern) => {
-      const newId = newIdByPattern.get(pattern);
+      const newId = newIdByPattern.get(GRAMMAR_PATTERN_RENAMES[pattern] ?? pattern);
       if (!newId) return;
       GRAMMAR_PROGRESS_TABLES.forEach((table) => {
         db.run(`UPDATE ${table} SET grammar_id = ? WHERE grammar_id = ?`, [newId, oldId + GRAMMAR_ID_OFFSET]);
@@ -497,6 +571,10 @@ const ensureGrammarSeed = async () => {
     });
 
     db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["queue", "[]"]);
+    // 考题的撤销栈和当天重刷队列里存的是旧 id：重建后按旧 id 撤销会删掉一条已经迁走的流水，
+    // 而计数一个都退不回去。清掉比留着强 —— 它们本来就只管当天。
+    db.run("DELETE FROM grammar_state WHERE key LIKE 'quiz_undo:%'");
+    setState("review_queue_grammar", "[]");
     db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["dataset_version", grammarSeed.version]);
     db.run("COMMIT");
   } catch (error) {
@@ -724,10 +802,12 @@ const ensureJlptWordMetadata = async () => {
   const jlptWordSeed = await loadJlptWordSeed();
   const meaningOverrides = await loadJlptMeaningOverrides();
   const exampleOverrides = await loadJlptExampleOverrides();
+  const senseKeys = await loadWordSenseKeys();
   const db = getDatabase();
   db.run("BEGIN TRANSACTION");
   try {
     syncJlptWordMetadata(jlptWordSeed, meaningOverrides, exampleOverrides);
+    applyWordSenseKeys(senseKeys);
     db.run("COMMIT");
   } catch (error) {
     db.run("ROLLBACK");
@@ -791,6 +871,7 @@ const ensureJlptWordSeed = async () => {
   const jlptWordSeed = await loadJlptWordSeed();
   const meaningOverrides = await loadJlptMeaningOverrides();
   const exampleOverrides = await loadJlptExampleOverrides();
+  const senseKeys = await loadWordSenseKeys();
   const db = getDatabase();
   const existing = new Map<string, number>();
   rowsFor("SELECT id, kanji, kana FROM words").forEach((row) => {
@@ -823,6 +904,7 @@ const ensureJlptWordSeed = async () => {
     });
     db.run("INSERT OR IGNORE INTO progress (word_id) SELECT id FROM words");
     syncJlptWordMetadata(jlptWordSeed, meaningOverrides, exampleOverrides);
+    applyWordSenseKeys(senseKeys);
     setState("jlpt_seed_version", JLPT_SEED_VERSION);
     db.run("COMMIT");
   } catch (error) {

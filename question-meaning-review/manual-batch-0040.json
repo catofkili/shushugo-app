@@ -1,0 +1,93 @@
+[
+  {
+    "kanji": "雁[がん]",
+    "kana": "がん",
+    "questionMeaning": "雁，大雁",
+    "classification": "manual_translation",
+    "reason": "homophone:がん — 同音异义，按该表记的原文义项直译；保留原文义项「雁，大雁」"
+  },
+  {
+    "kanji": "淵[ふち]",
+    "kana": "ふち",
+    "questionMeaning": "深渊；边缘",
+    "classification": "manual_translation",
+    "reason": "homophone:ふち — 同音异义，按该表记的原文义项直译；保留原文义项「深渊；边缘」"
+  },
+  {
+    "kanji": "茫[ぼう]然",
+    "kana": "ぼうぜん",
+    "questionMeaning": "茫然的",
+    "classification": "manual_translation",
+    "reason": "homophone:ぼうぜん — 同音异义，按该表记的原文义项直译；保留原文义项「茫然的」"
+  },
+  {
+    "kanji": "呆[ぼう]然",
+    "kana": "ぼうぜん",
+    "questionMeaning": "呆然的",
+    "classification": "manual_translation",
+    "reason": "homophone:ぼうぜん — 同音异义，按该表记的原文义项直译；保留原文义项「呆然的」"
+  },
+  {
+    "kanji": "裁く",
+    "kana": "さばく",
+    "questionMeaning": "裁判；处理",
+    "classification": "manual_translation",
+    "reason": "homophone:さばく — 同音异义，按该表记的原文义项直译；保留原文义项「裁判；处理」"
+  },
+  {
+    "kanji": "さばく",
+    "kana": "さばく",
+    "questionMeaning": "处理；解剖",
+    "classification": "manual_translation",
+    "reason": "homophone:さばく — 同音异义，按该表记的原文义项直译；保留原文义项「处理；解剖」"
+  },
+  {
+    "kanji": "人並み",
+    "kana": "ひとなみ",
+    "questionMeaning": "一般水平；普通",
+    "classification": "manual_translation",
+    "reason": "homophone:ひとなみ — 同音异义，按该表记的原文义项直译；保留原文义项「一般水平；普通」"
+  },
+  {
+    "kanji": "光 芒[ぼう]",
+    "kana": "こうぼう",
+    "questionMeaning": "光芒",
+    "classification": "manual_translation",
+    "reason": "homophone:こうぼう — 同音异义，按该表记的原文义项直译；保留原文义项「光芒」"
+  },
+  {
+    "kanji": "開く",
+    "kana": "ひらく",
+    "questionMeaning": "（门、店）打开；开办",
+    "classification": "distinction",
+    "reason": "reading-sense:開く — 与同表记的另一读法按义项区分；保留原文义项「打开；开办」"
+  },
+  {
+    "kanji": "〜人",
+    "kana": "〜にん",
+    "questionMeaning": "人（量词）；个人特质",
+    "classification": "distinction",
+    "reason": "reading-sense:〜人 — 量词读法也可指人的个体特征，与国籍读法分开；保留原文义项「（量词）……个人；（那个人所固有的性格、能力和经历）……人」"
+  },
+  {
+    "kanji": "〜人",
+    "kana": "〜じん",
+    "questionMeaning": "……人（国籍等）",
+    "classification": "distinction",
+    "reason": "reading-sense:〜人 — 与同表记的另一读法按义项区分；保留原文义项「……人（国籍等）」"
+  },
+  {
+    "kanji": "月",
+    "kana": "げつ",
+    "questionMeaning": "月；月份",
+    "classification": "distinction",
+    "reason": "reading-sense:月 — 与同表记的另一读法按义项区分；保留原文义项「月；月份」"
+  },
+  {
+    "kanji": "抱く",
+    "kana": "いだく",
+    "questionMeaning": "怀有；抱有",
+    "classification": "distinction",
+    "reason": "reading-sense:抱く — 与同表记的另一读法按义项区分；保留原文义项「怀有；抱有」"
+  }
+]

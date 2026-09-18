@@ -212,9 +212,9 @@
   {
     "kanji": "駐車",
     "kana": "ちゅうしゃ",
-    "questionMeaning": "停车",
+    "questionMeaning": "车辆停车（车辆停放）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:停车 — 车辆停放；保留原文义项「停车」"
   },
   {
     "kanji": "駐車場",
@@ -240,9 +240,9 @@
   {
     "kanji": "著者",
     "kana": "ちょしゃ",
-    "questionMeaning": "作者",
+    "questionMeaning": "作者（书籍）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:作者 — 著者特指书籍、论文等著作的作者，范围更窄且更正式；保留原文义项「作者」"
   },
   {
     "kanji": "著書",
@@ -373,7 +373,7 @@
   {
     "kanji": "聴講",
     "kana": "ちょうこう",
-    "questionMeaning": "听讲，旁听",
+    "questionMeaning": "听讲，旁听（听课旁听）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -485,9 +485,9 @@
   {
     "kanji": "長所",
     "kana": "ちょうしょ",
-    "questionMeaning": "长处，优点",
+    "questionMeaning": "长处；优点",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:长处 — 优点、长处；保留原文义项「长处，优点」；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "長年",
@@ -562,7 +562,7 @@
   {
     "kanji": "直感",
     "kana": "ちょっかん",
-    "questionMeaning": "直觉，凭直觉感到",
+    "questionMeaning": "直觉，凭直觉感到（瞬间感受判断）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -751,9 +751,9 @@
   {
     "kanji": "痛烈",
     "kana": "つうれつ",
-    "questionMeaning": "猛烈，激烈",
+    "questionMeaning": "猛烈（批评、打击）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:猛烈的 — 打击、批评、痛感等非常强烈，不能替换一般强度；保留原文义项「猛烈的」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "通過",
@@ -947,9 +947,9 @@
   {
     "kanji": "停車",
     "kana": "ていしゃ",
-    "questionMeaning": "停车",
+    "questionMeaning": "车辆停靠",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:停车 — 车辆停止、停车站停靠或列车停车，不能替换所有停车场景；保留原文义项「停车」；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "停滞",
@@ -1276,14 +1276,14 @@
   {
     "kanji": "適応",
     "kana": "てきおう",
-    "questionMeaning": "适合，适应",
+    "questionMeaning": "适合，适应（适应环境过程）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
   {
     "kanji": "適合",
     "kana": "てきごう",
-    "questionMeaning": "适合，适应，符合",
+    "questionMeaning": "适合，适应，符合（符合条件对象）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1409,7 +1409,7 @@
   {
     "kanji": "鉄道",
     "kana": "てつどう",
-    "questionMeaning": "铁路，铁道",
+    "questionMeaning": "铁路，铁道（铁路系统）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1444,9 +1444,9 @@
   {
     "kanji": "天候",
     "kana": "てんこう",
-    "questionMeaning": "（相对较短的时间内）天气状况",
+    "questionMeaning": "天气状况（一段时间的）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "天才",
@@ -1703,9 +1703,9 @@
   {
     "kanji": "伝説",
     "kana": "でんせつ",
-    "questionMeaning": "传说",
+    "questionMeaning": "传说（历史传承）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:传说 — 传説偏历史传承或传奇，和口头传下来的说法分开；保留原文义项「传说」"
   },
   {
     "kanji": "伝達",

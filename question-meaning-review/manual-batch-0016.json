@@ -2,9 +2,9 @@
   {
     "kanji": "今時",
     "kana": "いまどき",
-    "questionMeaning": "（带有与过去对比的意味）现今，如今；现在这时候",
+    "questionMeaning": "如今（带感叹）；现在这个时代",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:如今 — 如今这个时代，常带感叹或批评；保留原文义项「如今；现在这个时代」"
   },
   {
     "kanji": "今年度",
@@ -79,14 +79,14 @@
   {
     "kanji": "根底",
     "kana": "こんてい",
-    "questionMeaning": "根本，基础",
+    "questionMeaning": "根本，基础（深层底层原因）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
   {
     "kanji": "根本",
     "kana": "こんぽん",
-    "questionMeaning": "根本，根源",
+    "questionMeaning": "根本，根源（根源基础）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -191,9 +191,9 @@
   {
     "kanji": "座席",
     "kana": "ざせき",
-    "questionMeaning": "座位",
+    "questionMeaning": "具体座位",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:座位 — 座席明确指座位；シート偏具体座椅、座席或车内座位，不能全换；保留原文义项「座位」；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "座禅",
@@ -688,9 +688,9 @@
   {
     "kanji": "作者",
     "kana": "さくしゃ",
-    "questionMeaning": "作者",
+    "questionMeaning": "作者（作品）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:作者 — 作品的创作者；著者特指书籍、论文等著作的作者，范围更窄且更正式；保留原文义项「作者」"
   },
   {
     "kanji": "作図",
@@ -786,9 +786,9 @@
   {
     "kanji": "錯誤",
     "kana": "さくご",
-    "questionMeaning": "错误；不相符",
+    "questionMeaning": "错误（书面）；不相符",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:错误 — 偏书面或专业的偏差；保留原文义项「错误；偏差」"
   },
   {
     "kanji": "冊子",
@@ -807,9 +807,9 @@
   {
     "kanji": "察知",
     "kana": "さっち",
-    "questionMeaning": "察觉",
+    "questionMeaning": "察觉（情况、动向）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:察觉 — 察觉到信息、情况；保留原文义项「察觉」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "撮影",
@@ -947,9 +947,9 @@
   {
     "kanji": "山頂",
     "kana": "さんちょう",
-    "questionMeaning": "山顶",
+    "questionMeaning": "山顶（明确）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:山顶 — 山頂明确指山的最高处，不能全换；保留原文义项「山顶」"
   },
   {
     "kanji": "山肌",
@@ -1416,7 +1416,7 @@
   {
     "kanji": "指針",
     "kana": "ししん",
-    "questionMeaning": "指针；方针，准则",
+    "questionMeaning": "指针（正式方针原则）；方针，准则",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1549,9 +1549,9 @@
   {
     "kanji": "支配人",
     "kana": "しはいにん",
-    "questionMeaning": "经理",
+    "questionMeaning": "经理（机构）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:经理 — 负责经营管理店铺、旅馆等机构的负责人；保留原文义项「经理」"
   },
   {
     "kanji": "施錠",
@@ -1661,14 +1661,14 @@
   {
     "kanji": "糸",
     "kana": "いと",
-    "questionMeaning": "线；丝；线索",
+    "questionMeaning": "丝线；线（缝纫用）；线索",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:线 — 线、丝线等细长材料；保留原文义项「线；丝」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "糸口",
     "kana": "いとぐち",
-    "questionMeaning": "线头；线索，头绪",
+    "questionMeaning": "线头（突破口、着手）；线索，头绪",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },

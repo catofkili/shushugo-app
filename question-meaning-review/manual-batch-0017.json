@@ -163,7 +163,7 @@
   {
     "kanji": "資質",
     "kana": "ししつ",
-    "questionMeaning": "资质，秉性，天资",
+    "questionMeaning": "资质，秉性，天资（品质资格条件）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -247,7 +247,7 @@
   {
     "kanji": "事象",
     "kana": "じしょう",
-    "questionMeaning": "事态，现象",
+    "questionMeaning": "事态，现象（客观现象事件）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -268,7 +268,7 @@
   {
     "kanji": "事態",
     "kana": "じたい",
-    "questionMeaning": "事态，局势",
+    "questionMeaning": "事态，局势（问题局势）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -499,7 +499,7 @@
   {
     "kanji": "示唆",
     "kana": "しさ",
-    "questionMeaning": "暗示，启示",
+    "questionMeaning": "暗示，启示（书面启示、可能性）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1003,7 +1003,7 @@
   {
     "kanji": "質素",
     "kana": "しっそ",
-    "questionMeaning": "简单，朴素",
+    "questionMeaning": "简单，朴素（生活服饰简朴）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1255,9 +1255,9 @@
   {
     "kanji": "芝居",
     "kana": "しばい",
-    "questionMeaning": "戏剧；演技；花招",
+    "questionMeaning": "戏（演出）；演技；花招",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:戏剧 — 戏剧、演技，也可指装腔作势，不能全换；保留原文义项「戏剧；演技」；验收改：默认词写平、有标记的写真抓手，不用空洞括号"
   },
   {
     "kanji": "芝生",
@@ -1269,9 +1269,9 @@
   {
     "kanji": "写真家",
     "kana": "しゃしんか",
-    "questionMeaning": "摄影师",
+    "questionMeaning": "摄影师（强调）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:摄影师 — 强调以摄影创作为职业、艺术家的摄影师；保留原文义项「摄影师」"
   },
   {
     "kanji": "写生",
@@ -1353,9 +1353,9 @@
   {
     "kanji": "者",
     "kana": "もの",
-    "questionMeaning": "人",
+    "questionMeaning": "某类人（书面）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:人 — 者多用于书面指某类人，不能完全替换；保留原文义项「人」"
   },
   {
     "kanji": "謝罪",
@@ -1710,9 +1710,9 @@
   {
     "kanji": "取引",
     "kana": "とりひき",
-    "questionMeaning": "交易，贸易；交易，讨价还价",
+    "questionMeaning": "交易，贸易（口语）；交易，讨价还价",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:交易 — 取引是具体买卖、往来或交易关系，范围更日常宽泛；保留原文义项「交易；往来」"
   },
   {
     "kanji": "取材",

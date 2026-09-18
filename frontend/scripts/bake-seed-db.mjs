@@ -19,12 +19,13 @@ const meaningOverridesPath = path.join(here, "../src/data/jlpt_meaning_overrides
 const exampleOverridesPath = path.join(here, "../src/data/jlpt_example_overrides.json");
 const jlptLevelOverridesPath = path.join(here, "../src/data/jlpt_level_overrides.json");
 const dictionarySupplementPath = path.join(here, "../src/data/dictionary_supplement_seed.json");
+const senseKeysPath = path.join(here, "../src/data/word_sense_keys.json");
 
 // 与 src/lib/study-core.ts 保持一致
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // 与 scripts/build-furigana.mjs、src/lib/study-core.ts 保持一致。
 const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
-const JLPT_WORD_METADATA_VERSION = `2026-08-11-manual-meanings-5163-polish-1130-corrections-35-examples-122-${FURIGANA_VERSION}`;
+const JLPT_WORD_METADATA_VERSION = `2026-09-19-manual-meanings-5163-polish-1130-corrections-35-distinction-1559-examples-320-audit-revert-73-${FURIGANA_VERSION}`;
 const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
 
@@ -139,6 +140,9 @@ if (!wordColumns.has("example_tokens")) {
 if (!wordColumns.has("example_lemmas")) {
   db.run("ALTER TABLE words ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''");
 }
+if (!wordColumns.has("sense_key")) {
+  db.run("ALTER TABLE words ADD COLUMN sense_key TEXT NOT NULL DEFAULT ''");
+}
 
 console.log(`words: ${total} 条(${leveled} 条有 JLPT 等级)`);
 console.log(`当前 metadata 版本: ${firstValue("SELECT value FROM app_state WHERE key='jlpt_word_metadata_version'") ?? "(无)"}`);
@@ -171,6 +175,14 @@ meaningOverrides.forEach((meaning, key) => {
   const kanji = key.slice(0, separator);
   const kana = key.slice(separator + 1);
   db.run("UPDATE words SET meaning = ? WHERE kanji = ? AND kana = ?", [meaning, kanji, kana]);
+});
+// 疑难辨析的分组键(与 src/lib/study-core.ts 的 applyWordSenseKeys 同一份数据)。
+// 分组算法按「中文首义相同」找近义组、按首义判同表记异读是语体还是多义 —— 而释义审校
+// 正是要把这些首义写得不一样(医者「医生」/ 医師「医师（执照…）」)。分组如果直接读
+// words.meaning,审校做得越好组散得越多,手写的辨析稿就成了幽灵 key。所以分组只看这份
+// 冻结在 2026-09-16 的词典首义,释义怎么改都不动组。
+JSON.parse(readFileSync(senseKeysPath, "utf8")).forEach(([kanji, kana, senseKey]) => {
+  db.run("UPDATE words SET sense_key = ? WHERE kanji = ? AND kana = ?", [senseKey, kanji, kana]);
 });
 // 不在种子行里的历史词条的例句。只补空缺，绝不覆盖已有例句。
 exampleOverrides.forEach(({ kanji, kana, exampleJp, exampleMeaning, exampleFurigana, exampleTokens, exampleLemmas }) => {

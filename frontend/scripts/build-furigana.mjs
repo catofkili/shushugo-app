@@ -42,7 +42,7 @@ const dbPaths = [
 // 这里、scripts/bake-seed-db.mjs、src/lib/study-core.ts,外加
 // src/data/furigana_overrides.json 的 version(对不上会直接抛错,是有意的)。
 export const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
-const GRAMMAR_DATASET_VERSION = "2026-09-08-grammar-explanation-rewrite-v1";
+const GRAMMAR_DATASET_VERSION = "2026-09-18-grammar-split-variants-v1";
 
 const hasKanji = (text) => /[\u3400-\u9fff々〇]/u.test(String(text ?? ""));
 // 语法标题里有少量为中文解释的括号（例如「基数詞（基数词）」）。
@@ -392,11 +392,26 @@ const compactTitleMap = (entries) => Object.fromEntries(
   entries.map(({ id, annotations }) => [id, compactAnnotations(annotations)])
 );
 
+const compactPatternMap = (entries) => {
+  const seen = new Map();
+  return Object.fromEntries([...entries]
+    .sort((left, right) => Number(left.bookOrder) - Number(right.bookOrder))
+    .map(({ pattern, level, annotations }) => {
+      const duplicateIndex = seen.get(pattern) ?? 0;
+      seen.set(pattern, duplicateIndex + 1);
+      const key = duplicateIndex
+        ? `${pattern}（${level}-${duplicateIndex + 1}）`
+        : pattern;
+      return [key, compactAnnotations(annotations)];
+    }));
+};
+
 const writeGrammarTitleFurigana = (entries) => {
   writeFileSync(grammarTitleFuriganaPath, `${JSON.stringify({
     version: FURIGANA_VERSION,
     source: "grammar.ts",
-    entries: compactTitleMap(entries)
+    entries: compactTitleMap(entries),
+    patterns: compactPatternMap(entries)
   })}\n`, "utf8");
 };
 
@@ -450,45 +465,46 @@ const grammarDbContent = (point, annotations, tokenLengths = "", tokenLemmas = "
 };
 
 /**
- * The shipped grammar DB predates the current grammar.ts rewrite and contains
- * mojibake examples (including 「減る二方だ」).  Keep the DB aligned with the
- * canonical source by sort_order, while preserving its stable numeric ids and
- * importance scores.  This also makes the release check able to catch a future
- * content-only regression instead of treating it as a furigana problem.
+ * 出厂库的 grammar_points 按 grammar.ts 整表重建：id = bookOrder = 种子行号。
+ *
+ * ⚠️ 这个等式不是巧合，是跨设备同步的前提：ensureGrammarSeed 升版本时会
+ * DELETE 全表再按种子顺序 INSERT（并重置 sqlite_sequence），老用户重建出来的 id
+ * 就是 1..N；新装用户直接用这份库。两边 id 不一样的话，按数字 grammar_id 同步的
+ * grammar_progress 会把 A 设备的「～てしようがない」记到 B 设备的「～て済む」头上。
+ * 所以增删条目只改 grammar.ts，让这里和 ensureGrammarSeed 各自按同一个顺序编号，
+ * 别手工往库里 INSERT。
  */
 const syncGrammarDbContent = (db, grammarPoints, firstGrammarResultById) => {
-  const rows = db.exec("SELECT id, sort_order, pattern FROM grammar_points ORDER BY sort_order")[0]?.values ?? [];
   const points = [...grammarPoints].sort((left, right) => Number(left.bookOrder) - Number(right.bookOrder));
-  if (rows.length !== points.length) {
-    throw new Error(`grammar_points 数量 ${rows.length} != grammar.ts ${points.length}，拒绝按顺序同步正文`);
-  }
-  // pattern has a UNIQUE constraint, while the canonical source intentionally
-  // contains a few same-title points at different levels. Vacate old values
-  // first, then assign deterministic suffixes to the later duplicate.
-  rows.forEach(([id]) => {
-    db.run("UPDATE grammar_points SET pattern = ? WHERE id = ?", [`__grammar_sync_${id}`, id]);
-  });
-  const seenPatterns = new Map();
-  rows.forEach(([id, sortOrder], index) => {
-    const point = points[index];
-    if (Number(sortOrder) !== Number(point.bookOrder)) {
-      throw new Error(`grammar_points sort_order=${sortOrder} 与 grammar.ts bookOrder=${point.bookOrder} 不一致`);
+  points.forEach((point, index) => {
+    if (Number(point.bookOrder) !== index + 1) {
+      throw new Error(`grammar.ts bookOrder 必须是 1..N 连续：${point.id} 的 bookOrder=${point.bookOrder} 落在第 ${index + 1} 位`);
     }
+  });
+  db.run("DELETE FROM grammar_points");
+  db.run("DELETE FROM sqlite_sequence WHERE name = 'grammar_points'");
+  const seenPatterns = new Map();
+  points.forEach((point) => {
     const result = firstGrammarResultById.get(point.id);
     if (!result) throw new Error(`找不到 ${point.id} 的首条例句注音结果`);
+    // pattern has a UNIQUE constraint, while the canonical source intentionally
+    // contains a few same-title points at different levels; the later duplicate
+    // gets a deterministic suffix (the seed uses the same rule).
     const duplicateIndex = seenPatterns.get(point.title) ?? 0;
     seenPatterns.set(point.title, duplicateIndex + 1);
     const pattern = duplicateIndex === 0
       ? String(point.title ?? "")
       : `${String(point.title ?? "")}（${String(point.level ?? "")}-${duplicateIndex + 1}）`;
     const [, meaning, prompt, formation, exampleJp, exampleMeaning, notes, confusions, level, exampleFurigana, exampleTokens, exampleLemmas] = grammarDbContent(point, result.annotations, result.tokenLengths, result.tokenLemmas);
+    // importance 出厂库里就是按等级定的：N1/N2 = 4，其余 3（和 grammar_seed 同一条规则）。
+    const importance = point.level === "N1" || point.level === "N2" ? 4 : 3;
     db.run(`
-      UPDATE grammar_points
-      SET pattern = ?, meaning = ?, prompt = ?, formation = ?, example_jp = ?,
-          example_meaning = ?, notes = ?, confusions = ?, level = ?,
-          example_furigana = ?, example_tokens = ?, example_lemmas = ?
-      WHERE id = ?
-    `, [pattern, meaning, prompt, formation, exampleJp, exampleMeaning, notes, confusions, level, exampleFurigana, exampleTokens, exampleLemmas, id]);
+      INSERT INTO grammar_points (
+        id, pattern, meaning, prompt, formation, example_jp, example_meaning,
+        notes, confusions, level, importance, sort_order,
+        example_furigana, example_tokens, example_lemmas
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [point.bookOrder, pattern, meaning, prompt, formation, exampleJp, exampleMeaning, notes, confusions, level, importance, point.bookOrder, exampleFurigana, exampleTokens, exampleLemmas]);
   });
 };
 
@@ -564,7 +580,13 @@ const main = async () => {
     const result = tokenizeSentence(tokenizer, tokenizedTitle);
     const override = overrides.grammarTitle.get(`grammarTitle\u0000${point.id}`);
     const annotations = override ?? result.annotations;
-    grammarTitleEntries.push({ id: String(point.id), annotations });
+    grammarTitleEntries.push({
+      id: String(point.id),
+      pattern: title,
+      level: point.level,
+      bookOrder: point.bookOrder,
+      annotations
+    });
     report.grammarTitles.points += 1;
     if (hasKanji(title)) report.grammarTitles.withKanji += 1;
     report.grammarTitles.annotations += annotations.length;
@@ -726,8 +748,6 @@ const main = async () => {
     const db = new SQL.Database(new Uint8Array(readFileSync(dbPath)));
     ensureFuriganaColumns(db);
     assertCleanDatabase(db, dbPath);
-    const grammarCount = scalar(db, "SELECT COUNT(*) FROM grammar_points");
-    grammarDbCount = Math.max(grammarDbCount, grammarCount);
     db.run("BEGIN TRANSACTION");
     try {
       db.run("UPDATE words SET example_furigana = '', example_tokens = '', example_lemmas = ''");
@@ -740,6 +760,7 @@ const main = async () => {
         db.run("UPDATE words SET example_furigana = ?, example_tokens = ?, example_lemmas = ? WHERE kanji = ? AND kana = ? AND example_jp = ?", [jsonAnnotations(fallback.annotations), fallback.tokenLengths ?? "", fallback.tokenLemmas ?? "", kanji, kana, sentence]);
       }
       syncGrammarDbContent(db, grammarPoints, firstGrammarResultById);
+      grammarDbCount = Math.max(grammarDbCount, scalar(db, "SELECT COUNT(*) FROM grammar_points"));
       const grammarDbRows = db.exec("SELECT id, COALESCE(example_jp, ''), COALESCE(example_furigana, '') FROM grammar_points ORDER BY sort_order")[0]?.values ?? [];
       for (const [id, exampleValue, annotationValue] of grammarDbRows) {
         const sentence = String(exampleValue ?? "");
@@ -755,7 +776,7 @@ const main = async () => {
         }
       }
       db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('furigana_version', ?)", [FURIGANA_VERSION]);
-      db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_word_metadata_version', ?)", [`2026-08-11-manual-meanings-5163-polish-1130-corrections-35-examples-122-${FURIGANA_VERSION}`]);
+      db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_word_metadata_version', ?)", [`2026-09-19-manual-meanings-5163-polish-1130-corrections-35-distinction-1559-examples-320-audit-revert-73-${FURIGANA_VERSION}`]);
       db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('dataset_version', ?)", [GRAMMAR_DATASET_VERSION]);
       db.run("COMMIT");
     } catch (error) {

@@ -12,8 +12,10 @@ import {
   type ConfusionGroup,
   type ConfusionType
 } from "../lib/confusion-groups";
+import { playableGroupKeys, quizGroups, type QuizScope } from "../lib/distinction-quiz";
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
 import { JapaneseWordRuby } from "../components/JapaneseWordRuby";
+import { useStudyTimer } from "../lib/useStudyTimer";
 
 /**
  * 疑难辨析。
@@ -78,7 +80,12 @@ const shuffled = <T,>(items: T[], seedText: string): T[] => {
   return out;
 };
 
-export const ConfusionPage = () => {
+interface ConfusionPageProps {
+  onQuiz?: (scope: QuizScope) => void;
+}
+
+export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
+  useStudyTimer(true);
   const [mastered, setMastered] = useState<Set<string>>(() => new Set());
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -148,6 +155,13 @@ export const ConfusionPage = () => {
       })))
     : new Map<string, string>();
   const remaining = ordered.length - mastered.size;
+  const quizScope = useMemo<QuizScope>(
+    () => (activeType === "all" ? { kind: "learned" } : { kind: "type", type: activeType }),
+    [activeType]
+  );
+  const playableKeys = useMemo(() => (groups ? playableGroupKeys() : new Set<string>()), [groups]);
+  // learned 范围要扫一遍 progress + 每个词的组，别挂在每次渲染（搜索框每敲一个键都会重渲）上。
+  const canQuiz = useMemo(() => Boolean(groups) && quizGroups(quizScope).length > 0, [groups, quizScope]);
 
   if (!groups) {
     return <p className="cf-loading">正在整理词组…</p>;
@@ -202,6 +216,14 @@ export const ConfusionPage = () => {
             </button>
           );
         })}
+        <button
+          type="button"
+          className="cf-type-chip on"
+          disabled={!onQuiz || !canQuiz}
+          onClick={() => onQuiz?.(quizScope)}
+        >
+          练一练
+        </button>
       </div>
 
       {sections.length === 0 && (
@@ -311,6 +333,15 @@ export const ConfusionPage = () => {
                 ? <><Check size={16} /> 已掌握</>
                 : "？掌握"}
             </button>
+            {playableKeys.has(open.key) && onQuiz && (
+              <button
+                type="button"
+                className="cf-master"
+                onClick={() => onQuiz({ kind: "group", key: open.key })}
+              >
+                练这组
+              </button>
+            )}
           </div>
         </div>,
         document.body

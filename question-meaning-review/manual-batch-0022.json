@@ -317,7 +317,7 @@
   {
     "kanji": "対等",
     "kana": "たいとう",
-    "questionMeaning": "对等，同等，平等",
+    "questionMeaning": "对等，同等，平等（双方地位相等）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -611,9 +611,9 @@
   {
     "kanji": "大概",
     "kana": "たいがい",
-    "questionMeaning": "大部分，大致；大概，概要；适度，适可而止；大致上",
+    "questionMeaning": "大概；多半、通常；适度、到大致程度",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:大概 — たぶん是大概、可能，表示推测；大致、通常或多半，确定性和句法功能不同；保留原文义项「大概；多半」"
   },
   {
     "kanji": "大学院生",
@@ -814,16 +814,16 @@
   {
     "kanji": "大都会",
     "kana": "だいとかい",
-    "questionMeaning": "大城市",
+    "questionMeaning": "大城市；都市圈",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:大城市 — 大都会强调繁华、都市圈或大都市生活；保留原文义项「大城市」"
   },
   {
     "kanji": "大都市",
     "kana": "だいとし",
-    "questionMeaning": "大城市",
+    "questionMeaning": "大城市（正式）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:大城市 — 大都会强调繁华、都市圈或大都市生活；人口规模和行政地理意义上的大城市，侧重点不同；保留原文义项「大城市」"
   },
   {
     "kanji": "大豆",
@@ -1220,16 +1220,16 @@
   {
     "kanji": "短期",
     "kana": "たんき",
-    "questionMeaning": "短期",
+    "questionMeaning": "短期概念",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:短期 — 短期、短时间的整体概念；短期間强调持续时间较短的一段期间，不能替换所有短期计划等搭配；保留原文义项「短期」"
   },
   {
     "kanji": "短期間",
     "kana": "たんきかん",
-    "questionMeaning": "短期",
+    "questionMeaning": "短时间期间",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:短期 — 短期間强调持续时间较短的一段期间，不能替换所有短期计划等搭配；保留原文义项「短期」"
   },
   {
     "kanji": "短気",
@@ -1430,7 +1430,7 @@
   {
     "kanji": "知人",
     "kana": "ちじん",
-    "questionMeaning": "熟人，朋友",
+    "questionMeaning": "熟人，朋友（书面相识者）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1465,7 +1465,7 @@
   {
     "kanji": "地位",
     "kana": "ちい",
-    "questionMeaning": "地位，身份",
+    "questionMeaning": "地位，身份（社会身份）",
     "classification": "partial_overlap",
     "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
   },
@@ -1528,7 +1528,7 @@
   {
     "kanji": "地元",
     "kana": "じもと",
-    "questionMeaning": "当地，本地",
+    "questionMeaning": "当地，本地（所属生活本地）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1586,14 +1586,14 @@
     "kana": "じみ",
     "questionMeaning": "素净；质朴",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "地面",
     "kana": "じめん",
-    "questionMeaning": "地面；土地",
+    "questionMeaning": "地面（地表、脚下）；地表",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:地面 — 地可指土地、地面或地域；地面明确指地表，不能替换土地、地盘等抽象用法；保留原文义项「地面；土地」"
   },
   {
     "kanji": "地理",
@@ -1703,7 +1703,7 @@
   {
     "kanji": "中核",
     "kana": "ちゅうかく",
-    "questionMeaning": "中心，核心，骨干",
+    "questionMeaning": "中心，核心，骨干（中心骨干）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },

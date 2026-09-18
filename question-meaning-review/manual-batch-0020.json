@@ -282,9 +282,9 @@
   {
     "kanji": "図",
     "kana": "ず",
-    "questionMeaning": "图表；地图",
+    "questionMeaning": "图示；地图",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:图表 — 图、图示或地图；図表是图和表的正式总称；図式是结构图、示意图，不能全换；保留原文义项「图表；地图」"
   },
   {
     "kanji": "図鑑",
@@ -303,9 +303,9 @@
   {
     "kanji": "図式",
     "kana": "ずしき",
-    "questionMeaning": "图表",
+    "questionMeaning": "结构图；示意图",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:图表 — 図式是结构图、示意图，不能全换；保留原文义项「图表」"
   },
   {
     "kanji": "図書",
@@ -324,9 +324,9 @@
   {
     "kanji": "図表",
     "kana": "ずひょう",
-    "questionMeaning": "图表；曲线图，坐标图",
+    "questionMeaning": "图与表；曲线图",
     "classification": "partial_overlap",
-    "reason": "汉字字面是其中一个义项，但词库还记录了其他常用义，题面保留完整短释义。"
+    "reason": "synonym:图表 — 図表是图和表的正式总称；保留原文义项「图表」"
   },
   {
     "kanji": "図面",
@@ -583,9 +583,9 @@
   {
     "kanji": "随時",
     "kana": "ずいじ",
-    "questionMeaning": "随时",
+    "questionMeaning": "随时（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:随时 — 正式的随时、按需要，常用于通知和制度说明；保留原文义项「随时」"
   },
   {
     "kanji": "随所",
@@ -786,7 +786,7 @@
   {
     "kanji": "制限",
     "kana": "せいげん",
-    "questionMeaning": "限制，节制",
+    "questionMeaning": "限制，节制（限额、自我节制）",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -879,7 +879,7 @@
     "kana": "せいいん",
     "questionMeaning": "成员",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "简体字形与日语常用义一致，题面直接保留汉字。；验收改：去掉重复首义的空括号"
   },
   {
     "kanji": "成果",
@@ -1297,7 +1297,7 @@
   {
     "kanji": "生地",
     "kana": "きじ",
-    "questionMeaning": "布料；本来面目，本色",
+    "questionMeaning": "布料（面料、面团底子）；本来面目，本色",
     "classification": "manual_translation",
     "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
   },
@@ -1318,9 +1318,9 @@
   {
     "kanji": "生物",
     "kana": "せいぶつ",
-    "questionMeaning": "生物",
+    "questionMeaning": "生物（正式）",
     "classification": "same_meaning",
-    "reason": "简体字形与日语常用义一致，题面直接保留汉字。"
+    "reason": "synonym:生物 — 生き物是有生命的生物，日常且具体；生物学分类或正式概念，也可指生物学学科；保留原文义项「生物」"
   },
   {
     "kanji": "生命",
@@ -1675,9 +1675,9 @@
   {
     "kanji": "責任者",
     "kana": "せきにんしゃ",
-    "questionMeaning": "负责人",
+    "questionMeaning": "最终负责人（最终责任）",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "synonym:负责人 — 承担最终责任的负责人，权限和责任范围更强；保留原文义项「负责人」"
   },
   {
     "kanji": "赤字",
