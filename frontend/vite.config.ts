@@ -19,6 +19,15 @@ const liveSnapshotPlugin = () => ({
   name: "live-db-snapshot",
   apply: "serve" as const,
   configureServer(server: ViteDevServer) {
+    // 只有用户日常那台 dev server(默认 5173)收快照。2026-09-16 踩过:Claude 为了看页面
+    // 在 5199 另起一个 dev server,应用内 Browser pane 打开的是空种子库,同样 POST 到这个口,
+    // 把 .local/live.db 里的真实快照覆盖成了出厂库。真实数据在 Chrome 的 IndexedDB 里没事,
+    // 但命令行看到的就是一份假数据。
+    const port = server.config.server.port ?? 5173;
+    if (port !== 5173) {
+      server.config.logger.info(`[live-db-snapshot] 非 5173 端口(${port}),不收快照`);
+      return;
+    }
     server.middlewares.use(LIVE_SNAPSHOT_ENDPOINT, (req, res) => {
       if (req.method !== "POST") {
         res.statusCode = 405;
