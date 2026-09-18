@@ -3,7 +3,7 @@ import { grammarPoints } from "../data/grammar";
 import { grammarKeyPoint, grammarKeyPointFor } from "./grammar-key-points";
 
 describe("语法抓手", () => {
-  it("741 条一条不缺，且都在 20 字以内", () => {
+  it("每条语法都有抓手，且都在 20 字以内", () => {
     const missing = grammarPoints.filter((point) => !grammarKeyPointFor(point));
     expect(missing.map((point) => point.id)).toEqual([]);
     const tooLong = grammarPoints.filter((point) => [...grammarKeyPointFor(point)].length > 20);

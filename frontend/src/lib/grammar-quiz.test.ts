@@ -32,7 +32,7 @@ import {
 } from "./grammar-quiz";
 import { getStubbornGrammarToday } from "./word-api/stubborn-today";
 import { MANUAL_GRAMMAR_QUESTIONS } from "../data/grammar-quiz-questions";
-import { today } from "./study-core";
+import { GRAMMAR_SEED_ROW_COUNT, today } from "./study-core";
 
 const SQL = await initSqlJs();
 const seedPath = fileURLToPath(new URL("../../public/nihongo.db", import.meta.url));
@@ -73,17 +73,21 @@ describe("语法考题（和单词同一套 FSRS）", () => {
     expect(card!.isNew).toBe(true);
   });
 
-  it("741 道题使用逐条人工题面，不靠统一删字规则", () => {
+  it("每道题使用逐条人工题面，不靠统一删字规则；重名后缀不上题面", () => {
     const rows = (["N5", "N4", "N3", "N2", "N1"] as const)
       .flatMap((level) => grammarQuizRanking(level));
-    expect(rows).toHaveLength(741);
+    expect(rows).toHaveLength(GRAMMAR_SEED_ROW_COUNT);
     const patterns = new Set(rows.map((row) => row.pattern));
     expect(Object.keys(MANUAL_GRAMMAR_QUESTIONS)).toHaveLength(21);
     Object.keys(MANUAL_GRAMMAR_QUESTIONS).forEach((pattern) => {
       expect(patterns.has(pattern)).toBe(true);
       expect(MANUAL_GRAMMAR_QUESTIONS[pattern]).not.toBe("");
     });
-    expect(rows.filter((row) => row.question !== row.pattern)).toHaveLength(21);
+    // 21 条人工题面 + 16 条重名消歧后缀（「～とは（N1-2）」题面上要摘掉，否则先把等级说出去）
+    const suffixed = rows.filter((row) => /（N[1-5]-\d+）$/.test(row.pattern));
+    expect(suffixed).toHaveLength(16);
+    suffixed.forEach((row) => expect(row.question).toBe(row.pattern.replace(/（N[1-5]-\d+）$/, "")));
+    expect(rows.filter((row) => row.question !== row.pattern)).toHaveLength(21 + 16);
 
     const spontaneous = rows.find((row) => row.pattern.includes("自発"));
     expect(spontaneous?.question).toBe("～（ら）れる");
@@ -100,7 +104,7 @@ describe("语法考题（和单词同一套 FSRS）", () => {
   it("⚠️ 一天只放新语法配额那么多条，不再是「把整个等级洗一遍」", () => {
     const quota = grammarNewQuota(LEVEL);
     expect(quota).toBeGreaterThan(0);
-    expect(quota).toBeLessThan(120); // N5 一共 120 条
+    expect(quota).toBeLessThan(127); // N5 一共 127 条
     // 首答就点认识 = Easy，当天直接毕业，所以一场正好走完配额
     const { seen } = drain(() => "know");
     expect(new Set(seen).size).toBe(quota);
@@ -279,6 +283,6 @@ describe("语法考题（和单词同一套 FSRS）", () => {
     expect(ranked[0].id).toBe(ids[2]);
     expect(ranked[1].id).toBe(ids[0]);
     expect(ranked[ranked.length - 1].seenCount).toBe(0);
-    expect(ranked).toHaveLength(120);
+    expect(ranked).toHaveLength(127);
   });
 });

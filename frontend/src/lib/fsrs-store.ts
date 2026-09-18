@@ -489,6 +489,29 @@ export function fsrsDueWordIds(
 ): number[] {
   ensureFsrsColumns(entity);
   if (limit <= 0) return [];
+  // 上限装不下今天全部到期词时:**纯随机抽**,不按任何推词逻辑(2026-09-18,用户定的)。
+  //
+  // 有偏好就有系统性饿死:按 due 选,昨天新学的(due 是今天)永远排最后、上限一卡整批掉出计划;
+  // 按 stability 选,老朋友永远轮不到(模拟 180 天:539 个词 90 天没见)。随机没有偏好,
+  // 每个到期词每天被抽中的概率 = 上限 ÷ 池子,尾巴是随机的,不是同一批词永远垫底。
+  // 用用户真实库模拟(上限 150 + 新词 30、0.85·R):随机的积压最小(3,860 vs due 4,333 /
+  // stability 5,973),中位过期天数和 due 顺序一样(17 天)。
+  // 顽固词闸(LEECH_DAILY_INTAKE)在这条路上也不生效 —— 它是推词逻辑的一部分。
+  // 「谁先出」由 pickStage1Next 那一层的优先级 + 抖动决定,选进来之后照旧。
+  const dueCount = firstValue<number>(
+    `SELECT COUNT(*) FROM ${entity.table} WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)`,
+    [now.toISOString()],
+    0
+  );
+  if (dueCount > limit) {
+    return rowsFor(
+      `SELECT ${entity.idColumn} AS id FROM ${entity.table}
+       WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
+       ORDER BY RANDOM() LIMIT ?`,
+      [now.toISOString(), limit]
+    ).map((row) => Number(row.id));
+  }
+  // 装得下的话全进,下面的排序只影响 order_index。
   // 排序的第一优先级不是「谁最过期」,而是「谁刚栽过跟头」。
   //
   // 只按 due 升序的话:积压老词 due 是好几天前、昨天刚答错的词 due 是今天晚些,

@@ -200,6 +200,31 @@ describe("fsrs-store", () => {
       expect(ids.indexOf(203)).toBeLessThan(ids.indexOf(200));
     });
 
+    it("上限装不下时纯随机抽:不按 due、不挡顽固词,每个到期词都抽得到", () => {
+      // 210..229 全部到期,其中 210..219 是顽固词(lapses 9);上限 5
+      for (let id = 210; id < 230; id += 1) {
+        testDb.run(
+          "UPDATE progress SET seen_count = 1, known_forever = 0, fsrs_stability = 5, fsrs_difficulty = 5," +
+          " fsrs_lapses = ?, fsrs_last_review = '2026-07-01T04:00:00Z', fsrs_due = ? WHERE word_id = ?",
+          [id < 220 ? 9 : 0, `2026-07-${String(1 + (id % 20)).padStart(2, "0")}T04:00:00Z`, id]
+        );
+      }
+      const seen = new Set<number>();
+      let leechRuns = 0;
+      for (let run = 0; run < 300; run += 1) {
+        const ids = fsrsDueWordIds(5, now);
+        expect(ids).toHaveLength(5);
+        ids.forEach((id) => seen.add(id));
+        if (ids.filter((id) => id >= 210 && id < 220).length > 0) leechRuns += 1;
+      }
+      for (let id = 210; id < 230; id += 1) expect(seen.has(id)).toBe(true);
+      // 顽固词占池子一半,300 场里几乎每场都该抽到;老的 10 个/天闸在这条路上不生效
+      expect(leechRuns).toBeGreaterThan(250);
+      for (let id = 210; id < 230; id += 1) {
+        testDb.run("UPDATE progress SET seen_count = 0, fsrs_stability = NULL, fsrs_due = NULL, fsrs_lapses = 0 WHERE word_id = ?", [id]);
+      }
+    });
+
     it("积压计数始终使用 FSRS 到期数", async () => {
       const { reviewBacklogCount } = await import("./review-budget");
       expect(reviewBacklogCount()).toBe(fsrsDueCount(new Date()));
