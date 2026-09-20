@@ -367,8 +367,12 @@ export function refreshTodayWordPlan(): WordStats {
   const phase = currentPhase();
   const stage1 = stage1ProgressCounts();
   if (phase === "stage1" && stage1.completed < stage1.total) {
-    getDatabase().run("DELETE FROM stage1_tasks WHERE reviewed_on = ?", [day]);
-    createStage1Tasks(day);
+    // 只删没答的行：答过的留着（既是账，也压住复习/新词额度），没答的按新额度重抽
+    getDatabase().run(
+      "DELETE FROM stage1_tasks WHERE reviewed_on = ? AND word_id NOT IN (SELECT word_id FROM reviews WHERE reviewed_on = ? AND direction = 'forward')",
+      [day, day]
+    );
+    createStage1Tasks(day, { topUp: true });
     // 重排完必须落盘:否则改完设置直接关掉 app,下次启动又读回旧计划
     persistSoon();
   }

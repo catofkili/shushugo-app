@@ -105,11 +105,19 @@ const activateMojiMigratedReviews = (day: string) => {
   });
 };
 
-export const createStage1Tasks = (day: string) => {
+/**
+ * `topUp`：今天的任务表已经有（答过的）行，只把没答的那部分按当前额度重抽。
+ * 改额度走这条，不走「删光重建」—— 重建会把今天答过的**每一个词**（快速学习、自选清单、
+ * 压轴卡、反向题）都回填成今天的任务：清单凭空多出几十条「已完成」，压轴卡还和自己的
+ * 进度条重复计数。回填只在「任务表整个丢了」（换设备 / 恢复备份）时才对。
+ */
+export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}) => {
   const db = getDatabase();
-  if (stage1TaskCount(day) > 0) return;
-  if (firstValue<number>("SELECT 1 FROM reviews WHERE reviewed_on = ? LIMIT 1", [day], 0)) {
-    backfillStage1TasksFromReviews(day);
+  if (!options.topUp) {
+    if (stage1TaskCount(day) > 0) return;
+    if (firstValue<number>("SELECT 1 FROM reviews WHERE reviewed_on = ? LIMIT 1", [day], 0)) {
+      backfillStage1TasksFromReviews(day);
+    }
   }
 
   activateMojiMigratedReviews(day);
@@ -127,7 +135,7 @@ export const createStage1Tasks = (day: string) => {
   const dailyLimit = dailyReviewCap(getReviewCapPreference(), day);
   const reviewLimit = Math.max(dailyLimit - existingReviewTasks, 0);
 
-  let orderIndex = 1;
+  let orderIndex = firstValue<number>("SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?", [day], 1);
   // 选词只有一条路:FSRS 到期集(刚栽过跟头的优先,其余 due 升序)。
   const reviewRows = fsrsDueWordIds(reviewLimit, studyDayEnd()).map((word_id) => ({ word_id }));
 

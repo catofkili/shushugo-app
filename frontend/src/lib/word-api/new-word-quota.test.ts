@@ -127,4 +127,27 @@ describe("每日新词名额", () => {
     // 已经学过的不再当新词发
     expect(next.filter((id) => studied.includes(id))).toHaveLength(0);
   });
+
+  it("改额度是补抽不是重建：答过的留着，今天答过的非计划词（快速学习 / 压轴）不回填成任务", () => {
+    resetProgress();
+    makeDue(40);
+    setGoal(10);
+    createStage1Tasks(DAY1);
+    const before = testDb.exec("SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ?", [DAY1])[0].values[0][0];
+    // 计划外答了 3 个词（快速学习那种），再把新词额度从 10 改到 5：这 3 个不该变成任务
+    testDb.run("UPDATE progress SET seen_count = 9, fsrs_due = '2026-09-01T00:00:00.000Z' WHERE word_id IN (9001, 9002, 9003)");
+    for (const id of [9001, 9002, 9003]) {
+      testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, 'know', 0, ?, 'forward')", [id, DAY1]);
+    }
+    setGoal(5);
+    testDb.run(
+      "DELETE FROM stage1_tasks WHERE reviewed_on = ? AND word_id NOT IN (SELECT word_id FROM reviews WHERE reviewed_on = ? AND direction = 'forward')",
+      [DAY1, DAY1]
+    );
+    createStage1Tasks(DAY1, { topUp: true });
+    const ids = testDb.exec("SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?", [DAY1])[0].values.map((v) => Number(v[0]));
+    expect(ids).not.toContain(9001);
+    expect(newTasks(DAY1)).toHaveLength(5);
+    expect(ids.length).toBe(Number(before) - 5);
+  });
 });
