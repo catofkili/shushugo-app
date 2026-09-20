@@ -2,7 +2,11 @@ export type ProductId = "shushugo_pro_monthly" | "shushugo_pro_yearly" | "shushu
 
 export type EntitlementSource = "free" | "storekit" | "cloud" | "app_store" | "development";
 
+// 2026-09-20 定的会员范围（docs/MIXED_STUDY_PLAN.md）：疑难辨析、一字多音、混合学习是 Pro。
 export type FeatureId =
+  | "confusionGroups"
+  | "kanjiReadingUsage"
+  | "mixedStudy"
   | "immersiveGrammar"
   | "advancedDashboard"
   | "unlimitedMistakes"

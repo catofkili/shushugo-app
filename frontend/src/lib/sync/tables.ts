@@ -30,6 +30,9 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "kanji_unit_memory", keys: ["unit_key"], strategy: "lww" },
   { table: "kanji_unit_flags", keys: ["unit_key"], strategy: "lww" },
   { table: "kanji_unit_tasks", keys: ["reviewed_on", "unit_key"], strategy: "lww" },
+  // 单独汉字卡（kanji-char-cards.ts）。memory 是检查点，合并后由 kanji_char_reviews 重放重建。
+  { table: "kanji_char_memory", keys: ["char"], strategy: "lww" },
+  { table: "kanji_char_tasks", keys: ["reviewed_on", "char"], strategy: "lww" },
   // 反向卡的长期记忆。和 kanji_memory 同构:每个词一行,逐行 LWW。
   { table: "reverse_memory", keys: ["word_id"], strategy: "lww" },
   { table: "grammar_progress", keys: ["grammar_id"], strategy: "lww" },
@@ -69,6 +72,8 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "favorite_folders", keys: ["name"], strategy: "union" },
   // 查词汇量的历史成绩。每次测完追加一行、之后不再改，取并集即可。
   { table: "vocab_test_history", keys: ["run_id"], strategy: "union" },
+  // 柚子账本。每一行是一笔不可变的账,身份是 (kind, key),两端取并集。
+  { table: "yuzu_ledger", keys: ["kind", "key"], strategy: "union" },
 
   // 复习流水按触发器分配的设备:本机 id 去重。created_at 只有秒级精度，
   // 同一秒的两次作答会撞自然键；sync_uid 才是稳定事件身份。
@@ -76,6 +81,7 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "grammar_reviews", keys: ["sync_uid"], strategy: "append" },
   { table: "grammar_activity_events", keys: ["sync_uid"], strategy: "append" },
   { table: "kanji_unit_reviews", keys: ["sync_uid"], strategy: "append" },
+  { table: "kanji_char_reviews", keys: ["sync_uid"], strategy: "append" },
 
   { table: "checkins", keys: ["checked_on"], strategy: "union" },
   // 播报过的时刻。天然幂等的集合,和打卡同构:两端取并集,

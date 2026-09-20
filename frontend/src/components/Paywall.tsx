@@ -16,6 +16,18 @@ const APPLE_STANDARD_EULA_URL = "https://www.apple.com/legal/internet-services/i
 
 const featureCopy: Record<FeatureId, { title: string; body: string }> = {
   immersiveGrammar: {
+  confusionGroups: {
+    title: "疑难辨析是 Pro 功能",
+    body: "1,881 组近义、同音、自他、汉字用法对照，卡上一键看，连线题练到分得清。"
+  },
+  kanjiReadingUsage: {
+    title: "一字多音是 Pro 功能",
+    body: "520 个多音字，什么时候读哪个音，判据说得清的机器说，说不清的人写。"
+  },
+  mixedStudy: {
+    title: "混合学习是 Pro 功能",
+    body: "单词、语法、单独汉字、疑难辨析进同一条队列，一个圆环定当天怎么分。"
+  },
     title: "沉浸式语法学习是 Pro 功能",
     body: "适合集中扫语法、快速推进等级和减少页面切换。"
   },
@@ -43,11 +55,15 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
   }
 };
 
-// 买之前看到的这几条必须和真实解锁的对得上:现在真正锁着的是沉浸式语法学习
-// (requirePro)和完成页的往日顽固词(FinishPanel 自己弹这张 Paywall),
-// 其余三个 FeatureId 定义了但没有任何地方去问权益 —— 归到「后续纳入」那一条里。
+// 买之前看到的这几条必须和真实解锁的对得上。2026-09-20 起真正锁着的：疑难辨析（App.tsx 的
+// proPages + 卡上的辨析入口）、一字多音（proPages）、混合学习（模式列表）、沉浸式语法
+// （requirePro）、完成页的往日顽固词（FinishPanel 自己弹）。其余 FeatureId 定义了但没人问权益，
+// 归到「后续纳入」那一条里。
 const benefits = [
   "沉浸式语法学习",
+  "疑难辨析：1,881 组近义 / 同音 / 自他对照",
+  "一字多音：520 个多音字的读音判据",
+  "混合学习：单词 · 语法 · 汉字 · 疑难一条队列",
   "往日顽固词：翻回任意一天，整批复习或收藏",
   "后续 Pro 功能自动纳入（高级总览、JLPT 规划、专项训练开发中）"
 ];

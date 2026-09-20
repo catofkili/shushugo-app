@@ -29,6 +29,9 @@ import { UNDO_LIMIT } from "../lib/word-api/undo-stack";
 import type { WordSessionOptions } from "../lib/study-types";
 import { DistinctionSheet } from "../components/DistinctionSheet";
 import { GrammarCard, QUIZ_ACCENT_AMBER } from "../features/grammar-quiz/GrammarCard";
+import { Paywall } from "../components/Paywall";
+import { useEntitlements } from "../hooks/useEntitlements";
+import { canUseFeature } from "../lib/entitlements";
 import { getGrammarQuizSession, submitGrammarQuizAnswer, undoLastGrammarQuizAnswer, type GrammarQuizCard } from "../lib/grammar-quiz";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { wordDistinctions } from "../lib/models/word-distinctions";
@@ -178,6 +181,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [noteMemoryOpen, setNoteMemoryOpen] = useState(false);
   const [distinctionOpen, setDistinctionOpen] = useState(false);
   /**
+  // 辨析是 Pro：卡上这个入口和完成页的「往日顽固词」一样，自己弹 Paywall，
+  // 不把 requirePro 从 App 一路穿进来。
+  const entitlements = useEntitlements();
+  const [distinctionPaywall, setDistinctionPaywall] = useState(false);
+  const openDistinction = () => (canUseFeature("confusionGroups", entitlements) ? setDistinctionOpen(true) : setDistinctionPaywall(true));
    * 混合模式插播的语法卡。它**盖在**单词卡上面：下一张单词卡照常排好摆在底下，
    * 答完这条清掉就接着背词，所以插播不需要动单词那边的任何状态。
    */
@@ -1352,7 +1360,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           </button>
           {distinctions.length > 0 && (
             <button
-              onClick={() => setDistinctionOpen(true)}
+              onClick={openDistinction}
               className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 ${distinctionOpen ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
               title="查看辨析"
               aria-label="查看辨析"
@@ -1503,6 +1511,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         )}
 
         {reliefActive && stats?.dailyRelief && (
+        {distinctionPaywall && (
+          <Paywall
+            feature="confusionGroups"
+            onClose={() => setDistinctionPaywall(false)}
+            onUnlocked={() => { setDistinctionPaywall(false); setDistinctionOpen(true); }}
+          />
+        )}
           <div className="daily-relief-banner" role="status" aria-live="polite">
             <span className="daily-relief-banner-spark">✦</span>
             <strong>昨日表现很棒，今日减负（{stats.dailyRelief.total}）个！</strong>
@@ -1677,7 +1692,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                         <button
                           type="button"
                           className="wd-entry sm:col-span-2"
-                          onClick={() => setDistinctionOpen(true)}
+                          onClick={openDistinction}
                         >
                           <span className="wd-entry-main">
                             <span className="wd-entry-types">

@@ -278,6 +278,39 @@ CREATE TABLE IF NOT EXISTS kanji_reading_progress (
   FOREIGN KEY(word_id) REFERENCES words(id)
 );
 
+-- 单独汉字卡（lib/kanji-char-cards.ts，docs/MIXED_STUDY_PLAN.md）：一个字一张卡。
+-- kanji_char_reviews 是唯一的事实（append，跨端按 sync_uid 合并）；memory 是本机检查点，
+-- 合并后由流水重放重建；tasks 是当天的物化清单，快照只带 14 天。
+-- 建在这里而不是懒建：ensureSyncSchema 只给启动时已存在的表挂触发器和 sync_uid。
+CREATE TABLE IF NOT EXISTS kanji_char_memory (
+  char TEXT PRIMARY KEY,
+  level_rank INTEGER NOT NULL DEFAULT 5,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  mistake_streak INTEGER NOT NULL DEFAULT 0,
+  known_forever INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT
+);
+CREATE TABLE IF NOT EXISTS kanji_char_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  char TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  reviewed_at INTEGER NOT NULL,
+  scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+  fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_kanji_char_reviews_char_on ON kanji_char_reviews (char, reviewed_on);
+CREATE TABLE IF NOT EXISTS kanji_char_tasks (
+  reviewed_on TEXT NOT NULL,
+  char TEXT NOT NULL,
+  order_index INTEGER NOT NULL,
+  PRIMARY KEY (reviewed_on, char)
+);
+
 -- 「疑难辨析」里标记为已掌握的词组。
 --
 -- 主键是词组的稳定标识（type:锚点，如 homophone:こうえん），刻意不用 word_id：
@@ -289,6 +322,20 @@ CREATE TABLE IF NOT EXISTS kanji_reading_progress (
 CREATE TABLE IF NOT EXISTS achievements (
   id TEXT PRIMARY KEY,
   unlocked_on TEXT NOT NULL
+);
+
+-- 柚子账本。每一行是一笔不可变的收入或支出,余额 = SUM(amount),不存计数器
+-- (userProfile 里那份 studyTimeMinutes 自攒计数器从来没涨过,前车之鉴)。
+--   kind/key 是这笔账的身份:study / plan / streak / encore 按学习日,
+--   achievement 按成就 id,buy 按商品 id,repair 按补回的那一天。
+--   两端取并集 —— 同一笔账不会记两次,也不会被对端「更新」掉。
+-- 补签本身写的是 checkins 那张表(连击只看它),这里只留花了多少钱的痕迹。
+CREATE TABLE IF NOT EXISTS yuzu_ledger (
+  kind TEXT NOT NULL,
+  key TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (kind, key)
 );
 
 CREATE TABLE IF NOT EXISTS confusion_mastered (
