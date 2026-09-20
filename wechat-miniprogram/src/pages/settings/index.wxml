@@ -13,6 +13,7 @@
     <view class="row"><text class="label">账号</text><text class="value">{{auth.signedIn ? '已绑定' : '未绑定'}}</text></view>
     <text wx:if="{{auth.userId}}" class="detail">用户：{{auth.userId}}</text>
     <button class="secondary small" loading="{{busy}}" disabled="{{busy}}" bindtap="signIn">{{auth.signedIn ? '重新绑定微信账号' : '绑定微信账号'}}</button>
+    <navigator class="legal-link" url="/pages/legal/index">用户协议与隐私政策 →</navigator>
   </view>
   <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="refreshEntitlement">刷新权益</button>
   <button class="secondary" loading="{{busy}}" disabled="{{busy}}" bindtap="buyPro">购买 Pro</button>

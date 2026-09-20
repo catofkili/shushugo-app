@@ -1,6 +1,11 @@
 <scroll-view class="page" scroll-y>
   <view class="hero"><navigator class="back" open-type="navigateBack">‹ 返回学习</navigator><text class="title">疑难辨析</text><text class="subtitle">从本地词库现算的 {{summary.total}} 组；标记掌握不改词卡 FSRS</text></view>
   <view wx:if="{{!ready}}" class="card">{{busy ? '正在初始化本地库…' : error}}</view>
+  <view wx:elif="{{locked}}" class="card paywall">
+    <text class="paywall-title">疑难辨析是 Pro 功能</text>
+    <text class="paywall-body">1,881 组近义、同音、自他、汉字用法对照，卡上一键看，连线题练到分得清。</text>
+    <button class="primary" bindtap="goPro">去开通 Pro</button>
+  </view>
   <view wx:else>
     <view class="search-row"><input class="search" value="{{query}}" placeholder="搜词形、读音或中文" bindinput="handleInput" bindconfirm="handleSearch" /><button bindtap="handleSearch">查找</button></view>
     <picker mode="selector" range="{{typeOptions}}" range-key="label" value="{{typeIndex}}" bindchange="handleTypeChange"><view class="picker">{{typeOptions[typeIndex].label}} ˅</view></picker>

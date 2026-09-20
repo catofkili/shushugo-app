@@ -11,8 +11,12 @@ const localPath = (filePath) => filePath.startsWith(dataRoot) ? filePath : fileP
 const callback = (_ignored, result, hooks) => setTimeout(() => (hooks?.fail && result == null ? hooks.fail(new Error('mock fs failure')) : hooks?.success?.(result)), 0);
 
 const fileSystem = {
-  readFile({ filePath, success, fail }) {
-    try { const data = fs.readFileSync(localPath(filePath)); callback(null, { data: data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) }, { success, fail }); }
+  stat({ path: p, success, fail }) {
+    try { callback(null, { stats: { size: fs.statSync(localPath(p)).size } }, { success, fail }); } catch (error) { callback(error, null, { success, fail }); }
+  },
+  readFile({ filePath, position, length, success, fail }) {
+    // 和真机一样支持 position/length 分块读；整库 11 MB 走的就是这条。
+    try { let data = fs.readFileSync(localPath(filePath)); if (position != null) data = data.subarray(position, position + length); callback(null, { data: data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) }, { success, fail }); }
     catch (error) { callback(null, null, { success, fail }); }
   },
   writeFile({ filePath, data, success, fail }) {

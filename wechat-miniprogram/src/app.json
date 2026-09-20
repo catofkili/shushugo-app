@@ -8,15 +8,17 @@
     "pages/grammar/index",
     "pages/confusion/index",
     "pages/achievements/index",
-    "pages/journey/index"
+    "pages/journey/index",
+    "pages/legal/index"
   ],
   "window": {
-    "navigationBarTitleText": "收集日 · 小程序验证",
+    "navigationBarTitleText": "ShuShuGo",
     "navigationBarBackgroundColor": "#101827",
     "navigationBarTextStyle": "white",
     "backgroundColor": "#f4f6fb",
     "backgroundTextStyle": "light"
   },
   "style": "v2",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "__usePrivacyCheck__": true
 }

@@ -1,0 +1,7 @@
+{
+  "timeout": 60,
+  "envVariables": {
+    "WORKER_ORIGIN": "https://api.shushugo.com"
+  },
+  "permissions": { "openapi": [] }
+}

@@ -1,0 +1,20 @@
+<view class="page">
+  <view class="hero">
+    <navigator class="back" open-type="navigateBack">‹ 返回</navigator>
+    <text class="title">用户协议与隐私政策</text>
+    <text class="subtitle">绑定微信账号、开启云同步之前请先读一遍。正文和网页版（api.shushugo.com/privacy）是同一份。</text>
+  </view>
+  <view wx:if="{{loading}}" class="card"><text class="detail">正在从服务器读取协议正文…</text></view>
+  <view wx:elif="{{error}}" class="card"><text class="detail">读取失败：{{error}}</text><button class="secondary small" bindtap="load">重试</button></view>
+  <block wx:else>
+    <view class="card" wx:for="{{docs}}" wx:key="version">
+      <text class="doc-title">{{item.title}}</text>
+      <text class="detail">版本 {{item.version}} · 生效日期 {{item.effectiveDate}}</text>
+      <view class="section" wx:for="{{item.sections}}" wx:for-item="section" wx:key="title">
+        <text class="section-title">{{section.title}}</text>
+        <text class="paragraph" wx:for="{{section.body}}" wx:for-item="paragraph" wx:key="*this">{{paragraph}}</text>
+      </view>
+    </view>
+    <button wx:if="{{needConsent}}" class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="agree">同意并绑定微信账号</button>
+  </block>
+</view>

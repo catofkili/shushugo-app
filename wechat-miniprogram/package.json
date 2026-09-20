@@ -18,6 +18,9 @@
     "runtime-smoke": "node scripts/runtime-sim-smoke.mjs",
     "budget": "node scripts/package-budget.mjs",
     "check": "node scripts/check-source.mjs",
-    "test": "node scripts/run-all.mjs"
+    "test": "node scripts/run-all.mjs",
+    "cloud-transport-smoke": "node scripts/cloud-transport-smoke.mjs",
+    "build-data": "node scripts/build-data-modules.mjs",
+    "lint-undef": "node scripts/lint-undef.mjs"
   }
 }

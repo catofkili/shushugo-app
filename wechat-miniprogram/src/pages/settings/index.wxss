@@ -17,3 +17,5 @@ button { margin: 18rpx 0; border-radius: 20rpx; line-height: 92rpx; font-size: 2
 .result { color: #344054; line-height: 1.6; }
 .maintenance-card { margin-top: 26rpx; }.section-title { display: block; color: #172033; font-size: 28rpx; font-weight: 750; }.ghost { color: #475467; background: transparent; border: 1rpx solid #d0d5dd; }
 .notice { padding: 22rpx 8rpx; color: #98a2b3; font-size: 22rpx; line-height: 1.7; }
+
+.legal-link { display: block; margin-top: 16rpx; color: #4c6fff; font-size: 23rpx; }

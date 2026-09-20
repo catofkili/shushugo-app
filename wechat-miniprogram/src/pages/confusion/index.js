@@ -1,11 +1,15 @@
 const { ensureDatabase, getStatus } = require('../../runtime/database-store');
 const { TYPE_META, TYPE_ORDER, queryConfusionGroups, confusionSummary, setConfusionMastered } = require('../../runtime/confusion');
+const { cachedEntitlement } = require('../../runtime/entitlements');
+const { canUse } = require('../../core/entitlements');
 
 Page({
   data: {
     ready: false, busy: false, error: '', query: '', typeIndex: 0,
     typeOptions: [{ id: '', label: '全部类型' }, ...TYPE_ORDER.map((id) => ({ id, label: TYPE_META[id].name }))],
-    rows: [], summary: { total: 0, mastered: 0 }, offset: 0, hasMore: false
+    rows: [], summary: { total: 0, mastered: 0 }, offset: 0, hasMore: false,
+    // 疑难辨析是 Pro（和 iOS 同一份会员范围）：没权益整页换成付费墙，不算分组
+    locked: false
   },
 
   async onLoad() {
@@ -14,9 +18,20 @@ Page({
       try { await ensureDatabase(); } catch (error) { this.setData({ error: error?.message || String(error) }); }
       this.setData({ busy: false });
     }
-    this.setData({ ready: getStatus().ready });
-    if (getStatus().ready) this.refresh();
+    const locked = getStatus().ready && !canUse('confusion-groups', cachedEntitlement());
+    this.setData({ ready: getStatus().ready, locked });
+    if (getStatus().ready && !locked) this.refresh();
   },
+
+  onShow() {
+    // 从设置页买完回来要能直接看到内容
+    if (this.data.ready && this.data.locked && canUse('confusion-groups', cachedEntitlement())) {
+      this.setData({ locked: false });
+      this.refresh();
+    }
+  },
+
+  goPro() { wx.navigateTo({ url: '/pages/settings/index' }); },
 
   handleInput(event) { this.setData({ query: event.detail.value }); },
   handleSearch() { this.refresh(); },

@@ -1,6 +1,8 @@
 const {
   ensureDatabase,
-  getStatus
+  getDatabase,
+  getStatus,
+  restoreDatabase
 } = require('../../runtime/database-store');
 const {
   answerCard,
@@ -10,6 +12,8 @@ const {
 } = require('../../runtime/learning');
 const { playWordAudio } = require('../../runtime/audio');
 const { confusionGroupsForWordWithDb } = require('../../runtime/confusion');
+const { cachedEntitlement } = require('../../runtime/entitlements');
+const { canUse } = require('../../core/entitlements');
 
 function formatError(error) {
   return error?.message || error?.errMsg || String(error);
@@ -51,6 +55,17 @@ Page({
   onShow() {
     this.refreshStatus();
     if (getStatus().ready) this.refreshHome();
+    else if (!this.data.busy) this.autoRestore();
+  },
+
+  // 本机已有库就直接打开，不再每次冷启动都让人点「初始化」；没有库才停在按钮上 ——
+  // 首次要下 11 MB，得让人自己点。
+  autoRestore() {
+    this.run('恢复本地库', async () => {
+      try { await restoreDatabase(); } catch { return '还没有本地库'; }
+      await this.refreshHome();
+      return '已恢复';
+    });
   },
 
   refreshStatus() {
@@ -73,7 +88,9 @@ Page({
         mode: this.data.mode === 'classic' ? undefined : this.data.mode
       });
       this.setData({
-        card: home.card ? { ...home.card, confusions: confusionGroupsForWordWithDb(getDatabase(), home.card.id) } : null,
+        // 辨析是 Pro：没权益不算分组，卡上只留一行入口（点进去是付费墙）
+        card: home.card ? { ...home.card, confusions: canUse('confusion-groups', cachedEntitlement()) ? confusionGroupsForWordWithDb(getDatabase(), home.card.id) : [] } : null,
+        confusionsLocked: !canUse('confusion-groups', cachedEntitlement()),
         stats: home.stats,
         answerVisible: false,
         noteDraft: home.card?.note || ''

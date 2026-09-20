@@ -1,7 +1,7 @@
 let table = null;
 
 function load() {
-  if (!table) table = require('../data/pitch_accent.json').accents || {};
+  if (!table) table = require('../data/pitch_accent').accents || {};
   return table;
 }
 

@@ -20,7 +20,7 @@
       <view class="heatmap"><view wx:for="{{summary.recentDays}}" wx:key="day" class="heat heat-{{item.count > 0 ? (item.count > 30 ? '3' : item.count > 10 ? '2' : '1') : '0'}}" title="{{item.day}} {{item.count}} 张"></view></view>
     </view>
     <view class="link-row"><navigator url="/pages/achievements/index">查看 47 个成就 →</navigator><navigator url="/pages/confusion/index">复习疑难辨析 →</navigator></view>
-    <navigator class="journey-link" url="/pages/journey/index">打开学习旅程（进度地图／温泉／图鉴） →</navigator>
+    <navigator class="journey-link" url="/pages/journey/index">打开学习旅程（连击 · 各级进度 · 成就） →</navigator>
     <view class="card">
       <text class="section-title">JLPT 词库进度</text>
       <view wx:for="{{summary.levels}}" wx:key="level" class="level-row">

@@ -12,7 +12,7 @@
  *   3. 出的话拿哪个表记去遮读音
  */
 
-const payload = require('../data/kanji_orthography.json');
+const payload = require('../data/kanji_orthography');
 
 const entries = payload.entries || {};
 const CJK = /[㐀-鿿]/;

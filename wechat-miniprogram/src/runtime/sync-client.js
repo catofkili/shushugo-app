@@ -6,6 +6,7 @@
  */
 const config = require('../config');
 const { requestBinary, requestJson } = require('./wx-promise');
+const { gzipSync } = require('../vendor/fflate.umd.js');
 const { getDatabase, saveDatabase } = require('./database-store');
 const { authHeaders } = require('./auth');
 const core = require('../core/study-core');
@@ -49,12 +50,15 @@ function operationId() {
 
 async function pushSnapshot(bytes, options = {}) {
   const db = getDatabase();
+  // 快照未压缩十几 MB、gzip 后不到 2 MB。压了再传：省用户流量，
+  // 也是云函数入参 5 MB 上限的前提（Worker 两种都收，R2 里原样存）。
+  const compressed = gzipSync(bytes);
   const headers = {
     ...authHeaders(),
     'content-type': 'application/octet-stream',
     'x-sync-format': SYNC_SNAPSHOT_FORMAT,
     'x-sync-protocol-version': String(SYNC_PROTOCOL_VERSION),
-    'x-sync-compression': 'none',
+    'x-sync-compression': 'gzip',
     'x-sync-operation-id': operationId(),
     'x-sync-device-id': getDeviceId(db)
   };
@@ -62,7 +66,7 @@ async function pushSnapshot(bytes, options = {}) {
   if (options.baseModified) headers['x-sync-base-modified'] = String(options.baseModified);
   return requestJson(`${syncApiUrl()}/sync/push`, {
     method: 'POST',
-    data: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+    data: compressed.buffer.slice(compressed.byteOffset, compressed.byteOffset + compressed.byteLength),
     header: headers
   });
 }

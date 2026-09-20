@@ -103,3 +103,4 @@ frontend/scripts/_*
 tmp/
 __pycache__/
 .workbuddy-ai/
+wechat-miniprogram/project.private.config.json

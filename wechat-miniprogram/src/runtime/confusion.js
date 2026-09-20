@@ -27,14 +27,19 @@ const cache = new WeakMap();
 
 function firstSense(meaning) { return String(meaning || '').split(/[；;，,、]/)[0].trim(); }
 
+// 分组只看冻结的词典首义 words.sense_key（和 iOS 的 senseOf 同口径）。释义审校会把
+// 「医生 / 医生」改成「医生 / 医师（执照…）」，按 meaning 分组的话审校做得越好组散得越多
+// （2026-09-19：1912 → 1722 组）。老库 / 用户自导的词没有这一列，退回现算首义。
 function loadRows(db) {
+  const hasSenseKey = core.rowsFor(db, "PRAGMA table_info(words)").some((r) => r.name === 'sense_key');
   return core.rowsFor(db, `
     SELECT id, kanji, kana, meaning, pos, verb_type, importance,
-           example_jp, example_meaning, jlpt_level
+           example_jp, example_meaning, jlpt_level, ${hasSenseKey ? 'sense_key' : "''"} AS sense_key
     FROM words WHERE kana IS NOT NULL AND kana NOT GLOB '*[A-Za-z]*'
   `).map((row) => ({
     id: Number(row.id), kanji: String(row.kanji || ''), kana: String(row.kana || ''),
-    meaning: String(row.meaning || ''), pos: String(row.pos || ''),
+    meaning: String(row.meaning || ''), sense: String(row.sense_key || '') || row.sense,
+    pos: String(row.pos || ''),
     verbType: String(row.verb_type || ''), importance: Number(row.importance || 0),
     exampleJp: String(row.example_jp || ''), exampleMeaning: String(row.example_meaning || ''),
     level: String(row.jlpt_level || '')
@@ -54,12 +59,15 @@ function buildGroups(db) {
   // 和 iOS 的 variantMerges 同一口径：重复词条在分组前全局压掉，不能只在某一组里
   // 去重，否则同一份脏数据会从 synonym 路径重新漏回来。
   const suppressed = new Set();
+  // 并列时优先留「不是裸重复假名」的那行（kanji === kana 是同一个词被录第二遍的形态特征），
+  // 和 iOS 的 bareRepeat 同一口径 —— 否则存活行会随内容变动翻转。
+  const bareRepeat = (row) => (row.kanji === row.kana ? 1 : 0);
   by(allRows, (row) => `${row.kanji}\u0000${row.kana}`).forEach((members) => {
     if (members.length < 2) return;
-    [...members].sort((a, b) => rank(a) - rank(b) || a.id - b.id).slice(1).forEach((row) => suppressed.add(row.id));
+    [...members].sort((a, b) => rank(a) - rank(b) || bareRepeat(a) - bareRepeat(b) || a.id - b.id).slice(1).forEach((row) => suppressed.add(row.id));
   });
   const remaining = allRows.filter((row) => !suppressed.has(row.id));
-  by(remaining, (row) => `${row.kana}\u0000${firstSense(row.meaning)}`).forEach((members) => {
+  by(remaining, (row) => `${row.kana}\u0000${row.sense}`).forEach((members) => {
     if (members.length < 2) return;
     const withKanji = members.filter((row) => CJK.test(row.kanji));
     if (withKanji.length && withKanji.length < members.length) members.filter((row) => !CJK.test(row.kanji)).forEach((row) => suppressed.add(row.id));
@@ -74,6 +82,22 @@ function buildGroups(db) {
       suppressed.add(loser.id);
     }
   });
+  // 和 iOS 共用的人工名单（src/data/confusion_manual_review.json，从 frontend 的 TS 抽出来）：
+  // ① 稳定表记合并：首义不同时自动规则漏掉的同词异写（あなた/貴方），人工逐项确认过，
+  //    合并后只留资料更全的那行；② 中文首义碰巧相同但日语不是近义词的组，不出 synonym。
+  const manual = require('../data/confusion_manual_review');
+  manual.variantGroups.forEach((group) => {
+    const members = group.members
+      .map(([kanji, kana]) => allRows.find((row) => !suppressed.has(row.id) && row.kanji === kanji && row.kana === kana))
+      .filter(Boolean);
+    if (members.length < 2) return;
+    [...members].sort((a, b) => rank(a) - rank(b) || a.id - b.id).slice(1).forEach((row) => suppressed.add(row.id));
+  });
+  const excludedSynonym = (members) => {
+    const keys = new Set(members.map((row) => `${row.kanji}\u0000${row.kana}`));
+    return manual.excludedSynonymGroups.some((group) => group.members.length === members.length
+      && group.members.every(([kanji, kana]) => keys.has(`${kanji}\u0000${kana}`)));
+  };
   const rows = allRows.filter((row) => !suppressed.has(row.id));
   const groups = [];
   const add = (type, label, members) => {
@@ -94,7 +118,7 @@ function buildGroups(db) {
   };
 
   // 与 iOS 共用的自他提示表；两边都要求词形和读音同时命中，避免把同汉字异读塞错。
-  const hints = require('../data/verb_pair_hints.json');
+  const hints = require('../data/verb_pair_hints');
   const seenPairs = new Set();
   rows.forEach((row) => {
     const hint = hints[row.kanji] || hints[row.kana];
@@ -109,23 +133,25 @@ function buildGroups(db) {
 
   by(rows, (row) => row.kana).forEach((members, kana) => {
     if (members.length < 2) return;
-    const senses = new Set(members.map((row) => firstSense(row.meaning)));
+    const senses = new Set(members.map((row) => row.sense));
     if (senses.size > 1) add('homophone', kana, members);
     else if (members.every((row) => CJK.test(row.kanji))) add('kanji-choice', kana, members);
   });
   by(rows.filter((row) => CJK.test(row.kanji)), (row) => row.kanji).forEach((members, kanji) => {
     if (new Set(members.map((row) => row.kana)).size < 2) return;
-    const senses = new Set(members.map((row) => firstSense(row.meaning)));
+    const senses = new Set(members.map((row) => row.sense));
     add(senses.size === 1 ? 'reading-register' : 'reading-sense', kanji, members);
   });
 
   const verbs = rows.filter((row) => ['godan', 'ichidan'].includes(row.verbType) && CJK.test(row.kanji));
   by(verbs, (row) => row.kanji.match(CJK)?.[0] || '').forEach((members, stem) => {
-    const chars = (row) => new Set(firstSense(row.meaning).match(/[㐀-鿿]/g) || []);
+    const chars = (row) => new Set(row.sense.match(/[㐀-鿿]/g) || []);
     add('stem', stem, members.filter((row) => members.some((other) => other.id !== row.id && [...chars(other)].some((char) => chars(row).has(char)))));
   });
-  by(rows, (row) => firstSense(row.meaning)).forEach((members, sense) => {
-    if (new Set(members.map((row) => row.pos)).size === 1) add('synonym', sense, members);
+  by(rows, (row) => row.sense).forEach((members, sense) => {
+    if (members.length < 2 || new Set(members.map((row) => row.pos)).size !== 1) return;
+    if (excludedSynonym(members)) return;
+    add('synonym', sense, members);
   });
 
   // 同一成员集合只保留信息量更大的类型，与 iOS 的 TYPE_PRIORITY 一致。

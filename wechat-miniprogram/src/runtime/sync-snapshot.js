@@ -619,14 +619,8 @@ function mergeSnapshot(db, bytes, options = {}) {
 }
 
 async function decompressGzip(bytes) {
-  const { readCompressedFile, removeFile, writeFile } = require('./wx-promise');
-  const path = `${wx.env.USER_DATA_PATH}/shushugo/sync-${Date.now()}-${Math.random().toString(36).slice(2)}.gz`;
-  await writeFile(path, bytes);
-  try {
-    return await readCompressedFile(path, 'gzip');
-  } finally {
-    await removeFile(path).catch(() => undefined);
-  }
+  // fflate 在 JS 里解，不依赖基础库的 readCompressedFile，也不用先落一个临时文件。
+  return require('../vendor/fflate.umd.js').gunzipSync(bytes);
 }
 
 module.exports = {

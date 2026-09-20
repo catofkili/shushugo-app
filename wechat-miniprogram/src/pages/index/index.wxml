@@ -74,6 +74,7 @@
         </view>
         <view wx:if="{{card.dictionaryEntries.length}}" class="dictionary"><text class="dictionary-title">例句词典</text><view wx:for="{{card.dictionaryEntries}}" wx:key="entry_key" class="dictionary-row"><text class="dictionary-head">{{item.headword}} {{item.kana}}</text><text class="dictionary-meaning">{{item.meaning}}</text><text wx:if="{{item.usage_note}}" class="dictionary-note">{{item.usage_note}}</text></view></view>
         <view wx:if="{{card.confusions.length}}" class="distinction"><text class="distinction-title">辨析提示</text><view wx:for="{{card.confusions}}" wx:key="key" class="distinction-row"><text class="distinction-type">{{item.typeName}} · {{item.label}}</text><text class="distinction-hint">{{item.hint}}</text></view><navigator class="distinction-link" url="/pages/confusion/index">打开全部疑难辨析 →</navigator></view>
+        <navigator wx:elif="{{confusionsLocked}}" class="distinction-link" url="/pages/confusion/index">疑难辨析 · Pro →</navigator>
         <view class="answer-actions">
           <button class="answer forgot" data-answer="forgot" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">忘记</button>
           <button class="answer fuzzy" data-answer="fuzzy" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">模糊</button>
@@ -99,7 +100,7 @@
     <navigator class="library-link" url="/pages/grammar/index">语法库（741 条）→</navigator>
     <navigator class="library-link" url="/pages/confusion/index">疑难辨析（本地分组）→</navigator>
     <navigator class="library-link" url="/pages/achievements/index">成就（47 个）→</navigator>
-    <navigator class="library-link" url="/pages/journey/index">学习旅程：地图／温泉／图鉴 →</navigator>
+    <navigator class="library-link" url="/pages/journey/index">学习旅程：连击 · 各级进度 · 成就 →</navigator>
   </view>
 
   <view class="card result-card" wx:if="{{result}}">

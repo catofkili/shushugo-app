@@ -10,7 +10,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const SQL = await initSqlJs({ locateFile: (name) => path.resolve(root, '../frontend/node_modules/sql.js/dist', name) });
 const db = new SQL.Database(new Uint8Array(fs.readFileSync(path.resolve(root, '../frontend/public/nihongo.db'))));
 const groups = allGroups(db);
-assert.equal(groups.length, 1912, `辨析组数异常: ${groups.length}`);
+assert.equal(groups.length, 1881, `辨析组数异常: ${groups.length}`);
 assert.ok(groups.some((group) => group.type === 'pair'));
 assert.ok(queryConfusionGroupsWithDb(db, '入口', '', 0, 10).length > 0);
 assert.equal(confusionSummaryWithDb(db).total, groups.length);
