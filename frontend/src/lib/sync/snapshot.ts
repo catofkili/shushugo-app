@@ -97,7 +97,8 @@ const DATED_TABLE_RETENTION_DAYS: Record<string, number> = {
   kanji_progress: 14,
   kanji_reading_progress: 14,
   kanji_unit_tasks: 14,
-  kanji_char_tasks: 14
+  kanji_char_tasks: 14,
+  confusion_tasks: 14
 };
 
 const retentionCutoff = (days: number): string => {

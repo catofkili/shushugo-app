@@ -331,6 +331,10 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
       const { replayKanjiCharReviews } = await import("../kanji-char-cards");
       replayKanjiCharReviews();
     }
+    if (tableExists(localDb, "confusion_reviews")) {
+      const { replayConfusionReviews } = await import("../confusion-cards");
+      replayConfusionReviews();
+    }
     // 对端的学习时长同步下来了,但读取方看的是 word_study_time 的每日合计,
     // 不重算一次统计页就只显示本机那份。
     rebuildStudyTimeAggregate();

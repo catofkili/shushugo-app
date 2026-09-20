@@ -311,6 +311,36 @@ CREATE TABLE IF NOT EXISTS kanji_char_tasks (
   PRIMARY KEY (reviewed_on, char)
 );
 
+-- 疑难连线卡（lib/confusion-cards.ts）：一个辨析组一张卡，group_key 同 confusion_mastered。
+-- 三张表和 kanji_char_* 同一套（reviews 事实 / progress 检查点 / tasks 当天投影）。
+CREATE TABLE IF NOT EXISTS confusion_progress (
+  group_key TEXT PRIMARY KEY,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  mistake_streak INTEGER NOT NULL DEFAULT 0,
+  known_forever INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT
+);
+CREATE TABLE IF NOT EXISTS confusion_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  group_key TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  reviewed_at INTEGER NOT NULL,
+  scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+  fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_confusion_reviews_group_on ON confusion_reviews (group_key, reviewed_on);
+CREATE TABLE IF NOT EXISTS confusion_tasks (
+  reviewed_on TEXT NOT NULL,
+  group_key TEXT NOT NULL,
+  order_index INTEGER NOT NULL,
+  PRIMARY KEY (reviewed_on, group_key)
+);
+
 -- 「疑难辨析」里标记为已掌握的词组。
 --
 -- 主键是词组的稳定标识（type:锚点，如 homophone:こうえん），刻意不用 word_id：

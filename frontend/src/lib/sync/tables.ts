@@ -33,6 +33,9 @@ export const SYNCED_TABLES: SyncedTable[] = [
   // 单独汉字卡（kanji-char-cards.ts）。memory 是检查点，合并后由 kanji_char_reviews 重放重建。
   { table: "kanji_char_memory", keys: ["char"], strategy: "lww" },
   { table: "kanji_char_tasks", keys: ["reviewed_on", "char"], strategy: "lww" },
+  // 疑难连线卡（confusion-cards.ts），同一套：progress 检查点、reviews 事实、tasks 当天投影。
+  { table: "confusion_progress", keys: ["group_key"], strategy: "lww" },
+  { table: "confusion_tasks", keys: ["reviewed_on", "group_key"], strategy: "lww" },
   // 反向卡的长期记忆。和 kanji_memory 同构:每个词一行,逐行 LWW。
   { table: "reverse_memory", keys: ["word_id"], strategy: "lww" },
   { table: "grammar_progress", keys: ["grammar_id"], strategy: "lww" },
@@ -82,6 +85,7 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "grammar_activity_events", keys: ["sync_uid"], strategy: "append" },
   { table: "kanji_unit_reviews", keys: ["sync_uid"], strategy: "append" },
   { table: "kanji_char_reviews", keys: ["sync_uid"], strategy: "append" },
+  { table: "confusion_reviews", keys: ["sync_uid"], strategy: "append" },
 
   { table: "checkins", keys: ["checked_on"], strategy: "union" },
   // 播报过的时刻。天然幂等的集合,和打卡同构:两端取并集,
