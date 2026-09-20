@@ -2118,8 +2118,13 @@ memory 是本机检查点（合并后从流水重放重建），tasks 是当天�
   别改成线性或 √ —— 517 词 / 31 语法按原比例是 90% / 5%，√池子那版单词也还占八成，用户当场报的。
 - ⚠️ 备考一键的用时按 `SECONDS_PER_CARD` 固定值算，**不拿用户自己的历史算**（作者边看视频边学，效率不代表标准）。
 - ⚠️ **拖圆环每帧只改 React 状态，松手（`onCommit`）才写盘 + 重排**（`refreshTodayWordPlan` 几十条 SQL、
-  `refreshMixedCardTasks` 删表重建）。第一版每帧都落盘，用户报「掉帧严重」；改后实测每帧 4.6ms 中位 / 9.5ms 最大。
-  放大后的新学/复习滑杆同理（`onPointerUp` / `onKeyUp` / `onBlur` 才 commit）。
+  `refreshMixedCardTasks` 删表重建）。第一版每帧都落盘，用户报「掉帧严重」。第二版每个 pointermove 都
+  `getBoundingClientRect` + setState，触控板 120Hz 下还是卡（用户要 60 帧）。现在：按下时量一次框、
+  pointermove 只记角度、rAF 里一帧最多算一次 + setState、整数没变不 setState，落盘放到 rAF 后的 setTimeout。
+  实测 dev 模式下 60 帧里中位 16.6ms / 最大 18.2ms、没有一帧超 20ms。放大后的新学/复习滑杆同理
+  （`onPointerUp` / `onKeyUp` / `onBlur` 才 commit）。
+- 圆环是**四个滑钮**（用户问「为什么少一个」）：顶上那条 辨析|单词 的界也能拖，拖它时段 0 的起点
+  （`offset`，组件内 state）跟着挪，让它左边那条界不动；别的滑钮不改偏移。
 - **能从数据算的都别让用户猜、也别写死作者的数**（用户原话「所有东西都要灵活有算法」）：
   - 「现在 N几」= `learnedLevel()`：从 N5 往上，一级里学过的词过半就算过了，第一级不过半停；一个词没学过 → 「从零」。
     作者库 N5 93% / N4 82% / N3 56% / N2 3% → N3；出厂库 → 从零。用户改了选择框就按用户的。
