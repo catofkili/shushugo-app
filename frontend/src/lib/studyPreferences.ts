@@ -31,6 +31,10 @@ export interface StudyPreferences {
    */
   kanjiDailyGoal: number;
   confusionDailyGoal: number;
+  /** 语法 / 汉字 / 辨析的每日复习上限，0 = 到期全出（单词那个仍是 reviewCap） */
+  grammarReviewCap: number;
+  kanjiReviewCap: number;
+  confusionReviewCap: number;
   /** 答题音效(评分/翻卡/完成的木质提示音)。键名沿用 zooSounds,改了用户存的开关就丢了 */
   zooSounds: boolean;
   /**
@@ -90,6 +94,9 @@ export const defaultStudyPreferences: StudyPreferences = {
   reviewCap: 0,
   kanjiDailyGoal: 5,
   confusionDailyGoal: 3,
+  grammarReviewCap: 0,
+  kanjiReviewCap: 0,
+  confusionReviewCap: 0,
   zooSounds: true,
   weeklyReportEnabled: true,
   motionLevel: "full",
@@ -103,7 +110,8 @@ const MOTION_LEVELS: MotionLevel[] = ["full", "reduced", "off"];
 
 const clampDailyGoal = (value: number) => {
   const normalized = Number.isFinite(value) ? Math.floor(value) : defaultStudyPreferences.dailyGoal;
-  return Math.min(INTENSITY_MAX, Math.max(INTENSITY_MIN, normalized));
+  // 下限 0 不是 INTENSITY_MIN：圆环允许把某一段拖成 0（今天不学新词只复习）；设置页滑杆仍从 5 起
+  return Math.min(INTENSITY_MAX, Math.max(0, normalized));
 };
 
 const clampGrammarGoal = (value: number) => {
@@ -124,7 +132,8 @@ const clampReviewCap = (value: number) => {
   if (!Number.isFinite(value)) return 0;
   if (value < 0) return REVIEW_CAP_UNLIMITED;
   if (value === 0) return 0;
-  return Math.min(500, Math.max(30, Math.floor(value)));
+  // 下限 1 不是 30：圆环可以把单词复习拖到很小，0 在这里是「自动」所以存 1
+  return Math.min(500, Math.max(1, Math.floor(value)));
 };
 
 export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {}): StudyPreferences => ({
@@ -135,6 +144,9 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   grammarDailyGoal: clampGrammarGoal(Number(value.grammarDailyGoal ?? defaultStudyPreferences.grammarDailyGoal)),
   kanjiDailyGoal: clampSmallGoal(Number(value.kanjiDailyGoal ?? defaultStudyPreferences.kanjiDailyGoal), 50),
   confusionDailyGoal: clampSmallGoal(Number(value.confusionDailyGoal ?? defaultStudyPreferences.confusionDailyGoal), 20),
+  grammarReviewCap: clampSmallGoal(Number(value.grammarReviewCap ?? 0), 500),
+  kanjiReviewCap: clampSmallGoal(Number(value.kanjiReviewCap ?? 0), 500),
+  confusionReviewCap: clampSmallGoal(Number(value.confusionReviewCap ?? 0), 500),
   reviewCap: clampReviewCap(Number(value.reviewCap ?? defaultStudyPreferences.reviewCap)),
   zooSounds: value.zooSounds ?? defaultStudyPreferences.zooSounds,
   weeklyReportEnabled: value.weeklyReportEnabled ?? defaultStudyPreferences.weeklyReportEnabled,

@@ -117,7 +117,7 @@ export const reviewBacklogCount = () => fsrsDueCount();
  */
 export function dailyReviewCap(userCap: number, day = today()): number {
   if (userCap === REVIEW_CAP_UNLIMITED) return NO_REVIEW_LIMIT;
-  if (userCap > 0) return Math.min(Math.max(Math.floor(userCap), 30), 500);
+  if (userCap > 0) return Math.min(Math.max(Math.floor(userCap), 1), 500);
   return autoReviewCap(recentReviewAverages(day).avgDailyWords);
 }
 

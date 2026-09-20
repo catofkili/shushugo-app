@@ -3,7 +3,7 @@ import { parseFurigana } from "./furigana-data";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
 import { dailyReviewCap } from "./review-budget";
-import { getDailyGrammarGoal, getReviewCapPreference } from "./studyPreferences";
+import { getDailyGrammarGoal, getReviewCapPreference, getStudyPreferences } from "./studyPreferences";
 import {
   ensureFsrsColumns,
   fsrsDueWordIds,
@@ -216,10 +216,11 @@ const planIds = (level: string, day: string): { reviewIds: number[]; newIds: num
   ensureGrammarProgressInitialized();
   ensureFsrsColumns(GRAMMAR_FSRS);
   dropLegacyRoundState();
-  // 一个等级最多一百来条，复习上限（面向八千词设的）在这里几乎不会咬到，
-  // 但仍然按它来 —— 那是用户对「一天最多复习多少」的唯一旋钮。
+  // 语法自己的复习上限（圆环给的），0 = 沿用单词那个 reviewCap（一个等级最多一百来条，
+  // 面向八千词设的上限在这里几乎不会咬到）。
+  const grammarCap = getStudyPreferences().grammarReviewCap;
   const reviewLimit = Math.min(
-    dailyReviewCap(getReviewCapPreference(), day),
+    grammarCap > 0 ? grammarCap : dailyReviewCap(getReviewCapPreference(), day),
     levelPointCount(level)
   );
   const reviewIds = fsrsDueWordIds(reviewLimit, studyDayEnd(), levelEntity(level));

@@ -181,6 +181,7 @@ export const recordConfusionReview = (groupKey: string, answer: WordAnswer, now 
   ensureConfusionCardTables();
   return log.record(groupKey, answer, now, mode);
 };
+export const clearConfusionTasks = (day = today()) => { ensureConfusionCardTables(); log.clearTasks(day); };
 export const undoLastConfusionReview = () => { ensureConfusionCardTables(); return log.undoLast(); };
 export const replayConfusionReviews = (onlyKeys?: Iterable<string>) => { ensureConfusionCardTables(); return log.replay(onlyKeys); };
 

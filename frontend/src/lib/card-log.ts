@@ -134,6 +134,12 @@ export const createCardLog = (config: CardLogConfig) => {
     return { review: due.length, fresh: fresh.length };
   };
 
+  /** 改了额度之后重排今天的清单：清单只是投影，删掉重建不丢任何作答（已答的卡由 FSRS 状态说话）。 */
+  const clearTasks = (day = today()) => {
+    ensure();
+    getDatabase().run(`DELETE FROM ${tasksTable} WHERE reviewed_on = ?`, [day]);
+  };
+
   /** 当天还没毕业的下一张。Learning / Relearning 一律不算毕业（同 isGraduatedForDay）。 */
   const pickNext = (day = today(), excluded = new Set<string>()): string | null => {
     ensure();
@@ -194,5 +200,5 @@ export const createCardLog = (config: CardLogConfig) => {
     return firstValue<number>(`SELECT COUNT(*) FROM ${memory} WHERE ${exclude} AND seen_count > 0 AND fsrs_due <= ?`, [studyDayEnd().toISOString()], 0);
   };
 
-  return { ensure, stepMode, record, replay, undoLast, createTasks, pickNext, progress, dueCount, exclude };
+  return { ensure, stepMode, record, replay, undoLast, createTasks, clearTasks, pickNext, progress, dueCount, exclude };
 };

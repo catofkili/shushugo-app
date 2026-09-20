@@ -1096,28 +1096,61 @@
    形制沿用模式切换那一枚（同一层级的「改设置」动作），只是靠左摆，
    因为它解释的是上面那格备考卡的「还差 N」。 */
 .zoo-goal{margin-top:8px}
-.zoo-goal-chip{max-width:100%}
-.zoo-goal-chip i{margin:0 2px;font-style:normal;opacity:.5}
-.zoo-goal-sheet{margin-top:8px;display:flex;flex-direction:column;gap:6px;
-  border:1px solid rgba(192,133,82,.28);border-radius:16px;
-  background:var(--zoo-surface);padding:10px}
-.zoo-goal-row-title{color:var(--zoo-muted,#9A8A78);font-size:10.5px;font-weight:800;letter-spacing:.06em}
-.zoo-goal-chips{display:flex;flex-wrap:wrap;gap:6px}
-.zoo-goal-chips button{border:1px solid rgba(192,133,82,.3);border-radius:999px;
-  background:transparent;padding:5px 11px;color:var(--zoo-ink);font-size:11.5px;font-weight:700}
-.zoo-goal-chips button.on{border-color:transparent;background:var(--zoo-primary,#6FA83E);color:#fff}
-.zoo-goal-plan{margin-top:2px;border:1px solid rgba(111,168,62,.5);border-radius:12px;
-  background:var(--zoo-primary-soft);padding:7px 10px;text-align:left;
-  color:var(--zoo-primary-deep);font-size:11.5px;font-weight:800}
-.zoo-goal-more{border:0;background:transparent;padding:2px;text-align:left;
-  color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:700}
+
+/* —— 每日学习量：圆环 + 数字表单 + 备考一键（DailyPlanPanel）。主页和设置页同一个组件。 —— */
+.zoo-plan{display:flex;flex-direction:column;gap:10px;border:1px solid rgba(192,133,82,.28);border-radius:16px;
+  background:var(--zoo-surface);padding:12px;color:var(--zoo-ink)}
+.zoo-plan-main{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.zoo-ring{flex:none;user-select:none;-webkit-user-select:none}
+.zoo-ring-total{font-size:34px;font-weight:900;fill:var(--zoo-ink);font-family:Georgia,"Songti SC",serif}
+.zoo-ring-caption{font-size:10.5px;font-weight:800;letter-spacing:.06em;fill:var(--zoo-muted,#9A8A78)}
+.zoo-plan-side{flex:1;min-width:150px;display:flex;flex-direction:column;gap:6px}
+.zoo-plan-total{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800}
+.zoo-plan-total input{width:72px;border:1px solid rgba(192,133,82,.35);border-radius:10px;background:transparent;
+  padding:4px 8px;color:var(--zoo-ink);font-size:14px;font-weight:800}
+.zoo-plan-minutes{color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:700}
+.zoo-plan-legend{display:flex;flex-direction:column;gap:3px;margin:0;padding:0;list-style:none}
+.zoo-plan-legend li{display:grid;grid-template-columns:10px auto auto 1fr;align-items:center;gap:6px;
+  border-radius:8px;padding:2px 4px;font-size:12px;cursor:pointer}
+.zoo-plan-legend li.on{background:rgba(0,0,0,.05)}
+.zoo-plan-legend i{width:10px;height:10px;border-radius:999px}
+.zoo-plan-legend b{font-weight:900}
+.zoo-plan-legend small{color:var(--zoo-muted,#9A8A78);font-size:10.5px;font-weight:700}
+.zoo-plan-zoom{border:2px solid;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.zoo-plan-zoom-title{font-size:12px;font-weight:800}
+.zoo-plan-zoom input[type=range]{width:100%}
+.zoo-plan-zoom-meta{font-size:11px;color:var(--zoo-muted,#9A8A78);font-weight:700}
+.zoo-plan-zoom-meta i{margin:0 6px;font-style:normal;opacity:.5}
+.zoo-plan-suggest{align-self:flex-start;border:1px solid rgba(111,168,62,.5);border-radius:12px;background:var(--zoo-primary-soft);
+  padding:5px 10px;color:var(--zoo-primary-deep);font-size:11.5px;font-weight:800}
+.zoo-plan-row{display:flex;justify-content:space-between;align-items:center}
+.zoo-plan-link{border:0;background:transparent;padding:2px;color:var(--zoo-primary-deep,#3f6f1f);font-size:11.5px;font-weight:800}
+.zoo-plan-dim{color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:700}
+.zoo-plan-form{width:100%;border-collapse:collapse;font-size:12px}
+.zoo-plan-form th{text-align:left;font-weight:800;padding:4px 6px}
+.zoo-plan-form thead th{color:var(--zoo-muted,#9A8A78);font-size:10.5px;letter-spacing:.06em}
+.zoo-plan-form th i{display:inline-block;width:8px;height:8px;border-radius:999px;margin-right:6px;vertical-align:middle}
+.zoo-plan-form td{padding:3px 6px}
+.zoo-plan-form input{width:64px;border:1px solid rgba(192,133,82,.35);border-radius:10px;background:transparent;
+  padding:4px 8px;color:var(--zoo-ink);font-size:13px;font-weight:800}
+.zoo-plan-preset{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11.5px;font-weight:800}
+.zoo-plan-preset select{flex:none;width:auto;border:1px solid rgba(192,133,82,.35);border-radius:10px;background:transparent;padding:4px 6px;
+  color:var(--zoo-ink);font-size:12px;font-weight:800}
+.zoo-plan-apply{border:1px solid rgba(111,168,62,.5);border-radius:12px;background:var(--zoo-primary-soft);
+  padding:5px 10px;color:var(--zoo-primary-deep);font-size:11.5px;font-weight:800}
+.zoo-plan-apply:disabled{opacity:.5}
+.zoo-plan-preset small{flex-basis:100%;color:var(--zoo-muted,#9A8A78);font-weight:700}
+[data-theme="dark"] .zoo-plan,[data-theme="dark"] .zoo-plan-total input,[data-theme="dark"] .zoo-plan-form input,
+[data-theme="dark"] .zoo-plan-preset select{color:#f3efe6}
+[data-theme="dark"] .zoo-ring-total{fill:#f3efe6}
+[data-theme="dark"] .zoo-plan-legend li.on{background:rgba(255,255,255,.06)}
 
 /* —— T4 学习工具：七个入口按 4 + 3 排成两行，保证图标和标题都有呼吸空间。 —— */
 .zoo-quad{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
 .zoo-quad button{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;
   border:0;border-radius:14px;background:transparent;padding:8px 2px;color:var(--zoo-ink)}
 .zoo-quad button:active{background:rgba(192,133,82,.1)}
-.zoo-quad span{font-size:21px;line-height:1}
+.zoo-quad span{font-size:21px;line-height:1;height:36px;display:grid;place-items:center}
 .zoo-quad span>svg{display:block;color:var(--zoo-primary-deep)}
 .zoo-quad b{font-size:11.5px;font-weight:700;white-space:nowrap}
 

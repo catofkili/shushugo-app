@@ -190,6 +190,7 @@ export const kanjiCharProgress = (day = today()) => { ensureKanjiCharTables(); r
 export const kanjiCharStepMode = log.stepMode;
 export const recordKanjiCharReview = (char: string, answer: WordAnswer, now = new Date(), mode?: StepMode) => { ensureKanjiCharTables(); return log.record(char, answer, now, mode); };
 /** 撤销今天最后一次汉字作答（删流水 + 重放这个字）。 */
+export const clearKanjiCharTasks = (day = today()) => { ensureKanjiCharTables(); log.clearTasks(day); };
 export const undoLastKanjiCharReview = () => { ensureKanjiCharTables(); return log.undoLast(); };
 /** 合并之后从流水重建检查点。流水里有、本机没物化的字补一行（等级未知记 5）。 */
 export const replayKanjiCharReviews = (onlyChars?: Iterable<string>) => {
