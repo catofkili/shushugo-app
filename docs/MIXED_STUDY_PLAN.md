@@ -96,3 +96,22 @@ dailyPlan: {
 5. 小程序跟进（新表进 `SNAPSHOT_TABLES`、同样的门）
 
 `scheduler/priority.ts` 的「按陌生度排、上限装不下纯随机」那条不动。
+
+## 5. 进度（2026-09-20）
+
+| 步 | 状态 |
+|---|---|
+| 1 会员门 | ✅ iOS + 小程序（辨析页 / 一字多音 / 混合模式；Paywall 文案） |
+| 2 汉字卡 + 连线卡进 FSRS | ✅ `card-log.ts` 抽公共部分；两种卡各自 progress/reviews/tasks 三张表，三处登记，合并后重放 |
+| 3 混合模式吃四种卡 | ✅ 插播语法 → 汉字 → 辨析轮着来；尾巴依次接；撤销四种；首页角标 / 小路 / 脚注算进去 |
+| 4 圆环 + 表单 + 备考一键 | ✅ `daily-plan.ts` + `DailyPlanRing` + `DailyPlanPanel`，主页和设置页同一个组件 |
+| 5 小程序跟进 | ⏳ 新表进 `SNAPSHOT_TABLES`（否则退出透传保护）、同样的卡和门 |
+| 旧辨析题页删除 | ⏳ `DistinctionQuizPage` 还在（Pro 门后面），入口从辨析页搬走后再删 |
+
+坑：
+- `INTENSITY_MIN`(5) 仍是设置页滑杆的下限，但偏好本身允许 0（圆环拖成 0）；`reviewCap` 的 0 是「自动」，
+  圆环写回时 0 存成 1。
+- 改了额度要重排今天的清单：单词走 `refreshTodayWordPlan`，汉字 / 辨析走 `refreshMixedCardTasks`
+  （`card-log.clearTasks` 删今天的投影再建，已答的卡由 FSRS 状态说话，不丢）。
+- 连线卡的评分只看连错次数，没有用时那条（原计划的「< 组员数 × 4 秒 → Easy」删了：
+  第一次见就全对已经走 known → Easy，同词级路径，再加用时是第二套口径）。
