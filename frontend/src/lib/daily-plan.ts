@@ -6,10 +6,10 @@
  *
  * 复习那一半：单词走 reviewCap（0 = 自动、-1 = 不限、n = 上限），另外三种各自一个 cap（0 = 到期全出）。
  */
-import { getStudyPreferences, saveStudyPreferences, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
+import { defaultStudyPreferences, getStudyPreferences, saveStudyPreferences, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
 import { getJlptPlanStatus } from "./jlpt/status";
 import { levelsInScope, CONSOLIDATION_DAYS, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
-import { firstValue, studyDayEnd } from "./study-core";
+import { firstValue, rowsFor, studyDayEnd } from "./study-core";
 import { kanjiCharPool } from "./kanji-char-cards";
 import { confusionCardPool } from "./confusion-cards";
 import { dailyReviewCap } from "./review-budget";
@@ -78,7 +78,7 @@ export const dailyPlanView = (prefs: StudyPreferences = getStudyPreferences()): 
   const wordDue = wordDueCount();
   const grammar = grammarPools(target);
   const kanji = kanjiCharPool(rank);
-  const confusion = confusionCardPool();
+  const confusion = confusionCardPool(rank);
   const pick = (cap: number, due: number) => (cap > 0 ? Math.min(cap, due) : due);
   const segments: PlanSegment[] = [
     {
@@ -111,9 +111,38 @@ export const dailyPlanView = (prefs: StudyPreferences = getStudyPreferences()): 
   return { total, segments, daysLeft: status.plan.daysLeft, minutes };
 };
 
-/** 圆环 / 表单改完写回。数字直接落进偏好，不做二次解释；单词复习 0 存成 1（0 在 reviewCap 里是「自动」）。 */
-export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: number }>) => {
+type Fresh = Record<PlanKind, number>;
+const BASELINE_KEY = "mn-daily-plan-baseline";
+const freshOf = (prefs: StudyPreferences): Fresh => ({
+  words: prefs.dailyGoal, grammar: prefs.grammarDailyGoal, kanji: prefs.kanjiDailyGoal, confusion: prefs.confusionDailyGoal
+});
+/**
+ * 「一键安排」用的基线 = **我平时的新学额度**：只有数字表单和备考一键这种明确写数字的动作才更新它，
+ * 拖圆环是「今天临时挪一下」，不算。没定过就是默认档。用户原话：当天该复习的 + 我本来的新学量。
+ */
+const baselineFresh = (): Fresh => {
+  try {
+    const stored = JSON.parse(localStorage.getItem(BASELINE_KEY) ?? "null") as Fresh | null;
+    if (stored && PLAN_KINDS.every((kind) => Number.isFinite(stored[kind]))) return stored;
+  } catch { /* 没有或坏了：当没有 */ }
+  return freshOf(defaultStudyPreferences);
+};
+
+/** 一键安排：复习 = 今天到期的全部，新学 = 平时的额度。 */
+export const arrangedPlan = (view: DailyPlanView): Record<PlanKind, { fresh: number; review: number }> => {
+  const fresh = baselineFresh();
+  return Object.fromEntries(view.segments.map((segment) => [segment.kind, { fresh: fresh[segment.kind], review: segment.pool.due }])) as Record<PlanKind, { fresh: number; review: number }>;
+};
+
+/**
+ * 圆环 / 表单改完写回。数字直接落进偏好，不做二次解释；单词复习 0 存成 1（0 在 reviewCap 里是「自动」）。
+ * `standing` = 这是明确定的平时额度（表单 / 备考一键），顺手记成一键安排的基线。
+ */
+export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: number }>, standing = false) => {
   const prefs = getStudyPreferences();
+  if (standing) {
+    try { localStorage.setItem(BASELINE_KEY, JSON.stringify(Object.fromEntries(PLAN_KINDS.map((kind) => [kind, next[kind].fresh])))); } catch { /* 存不下就用默认档 */ }
+  }
   saveStudyPreferences({
     ...prefs,
     dailyGoal: next.words.fresh,
@@ -128,21 +157,40 @@ export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: nu
 };
 
 /**
- * 圆环上的段长：数字是真的，长度是压过的。每一类的「一张卡」占 1/√(池子) 的视觉权重，
- * 400 词 vs 20 语法按原比例语法细到看不见，√ 后 20 : 4.5，够拖。
+ * 圆环上的段长 = log(1 + 数量)。**数字是真的，长度是压过的**：517 词 / 31 语法 / 8 汉字 / 19 辨析
+ * 按原比例是 90% / 5% / 1% / 3%，三个滑钮挤成一堆；log 后约 42% / 23% / 15% / 20%，最小那段也有地方可拖。
+ * （第一版用 1/√池子 做权重，单词一多还是占八成 —— 用户当场报的。）数量 0 → 长度 0，滑钮重合。
  */
-export const segmentWeight = (segment: Pick<PlanSegment, "pool">) =>
-  1 / Math.sqrt(Math.max(1, segment.pool.due + segment.pool.unseen));
+export const segmentLength = (count: number) => Math.log1p(Math.max(0, count));
 
 /**
- * 备考一键：现在 N几、下次考 N几 → 按标准量算每日新学。
+ * 「现在 N几」从数据算，不让用户猜：从 N5 往上，一级里学过的词过半就算过了这一级，
+ * 第一级不过半就停。一个词没学过 → null（从零开始，五级全算剩余）。
+ * 阈值 0.5 是「这一级的词大部分见过」的最松说法；作者库 N5 93% / N4 82% / N3 56% / N2 3% → N3。
+ */
+export const learnedLevel = (): JlptTarget | null => {
+  const rows = rowsFor(`
+    SELECT w.jlpt_level AS level, SUM(p.seen_count > 0 OR p.known_forever = 1) AS seen, COUNT(*) AS total
+    FROM progress p JOIN words w ON w.id = p.word_id GROUP BY w.jlpt_level
+  `);
+  const ratio = new Map(rows.map((row) => [String(row.level), Number(row.seen) / Math.max(1, Number(row.total))]));
+  let current: JlptTarget | null = null;
+  for (const level of JLPT_TARGETS) {
+    if ((ratio.get(level) ?? 0) < 0.5) break;
+    current = level;
+  }
+  return current;
+};
+
+/**
+ * 备考一键：现在 N几（null = 从零）、下次考 N几 → 按标准量算每日新学。
  * 剩余 = (现在, 目标] 那几级里没学过的；复习按今天到期的给。
  * 用时按 SECONDS_PER_CARD 固定值算，不看用户历史。
  */
-export const examPreset = (current: JlptTarget, target: JlptTarget) => {
+export const examPreset = (current: JlptTarget | null, target: JlptTarget) => {
   const status = getJlptPlanStatus();
   const intakeDays = Math.max(status.plan.daysLeft - CONSOLIDATION_DAYS, 0);
-  const currentRank = JLPT_TARGETS.indexOf(current);
+  const currentRank = current ? JLPT_TARGETS.indexOf(current) : -1;
   const targetRank = JLPT_TARGETS.indexOf(target);
   const levels = JLPT_TARGETS.slice(currentRank + 1, targetRank + 1).map((level) => `'${level}'`).join(", ") || "''";
   const unseenWords = firstValue<number>(`
@@ -155,23 +203,27 @@ export const examPreset = (current: JlptTarget, target: JlptTarget) => {
   `, [], 0);
   const kanjiUnseen = firstValue<number>(
     "SELECT COUNT(*) FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank > ? AND level_rank <= ?",
-    [LEVEL_RANK[current] ?? -1, LEVEL_RANK[target] ?? 2], 0
+    [currentRank, targetRank], 0
   );
-  const confusion = confusionCardPool();
+  const confusionUnseen = firstValue<number>(
+    "SELECT COUNT(*) FROM confusion_progress WHERE known_forever = 0 AND seen_count = 0 AND level_rank > ? AND level_rank <= ? AND group_key NOT IN (SELECT group_key FROM confusion_mastered)",
+    [currentRank, targetRank], 0
+  );
+  const confusion = confusionCardPool(targetRank);
   const plan: Record<PlanKind, { fresh: number; review: number }> = {
     words: { fresh: Math.min(50, amortize(unseenWords, intakeDays)), review: wordDueCount() },
     grammar: { fresh: Math.min(12, amortize(unseenGrammar, intakeDays)), review: grammarPools(target).due },
-    kanji: { fresh: Math.min(50, amortize(kanjiUnseen, intakeDays)), review: kanjiCharPool(LEVEL_RANK[target] ?? 2).due },
-    confusion: { fresh: Math.min(20, amortize(confusion.unseen, intakeDays)), review: confusion.due }
+    kanji: { fresh: Math.min(50, amortize(kanjiUnseen, intakeDays)), review: kanjiCharPool(targetRank).due },
+    confusion: { fresh: Math.min(20, amortize(confusionUnseen, intakeDays)), review: confusion.due }
   };
   const minutes = Math.round(PLAN_KINDS.reduce((sum, kind) => sum + (plan[kind].fresh + plan[kind].review) * SECONDS_PER_CARD[kind], 0) / 60);
-  return { plan, minutes, daysLeft: status.plan.daysLeft, intakeDays, remaining: { words: unseenWords, grammar: unseenGrammar, kanji: kanjiUnseen, confusion: confusion.unseen } };
+  return { plan, minutes, daysLeft: status.plan.daysLeft, intakeDays, remaining: { words: unseenWords, grammar: unseenGrammar, kanji: kanjiUnseen, confusion: confusionUnseen } };
 };
 
-export const applyExamPreset = (current: JlptTarget, target: JlptTarget) => {
+export const applyExamPreset = (current: JlptTarget | null, target: JlptTarget) => {
   const preset = examPreset(current, target);
   const prefs = getStudyPreferences();
   saveStudyPreferences({ ...prefs, jlptTarget: target });
-  saveDailyPlan(preset.plan);
+  saveDailyPlan(preset.plan, true);
   return preset;
 };

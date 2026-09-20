@@ -48,9 +48,14 @@ export const ensureConfusionCardTables = (): void => {
       forgot_count INTEGER NOT NULL DEFAULT 0,
       mistake_streak INTEGER NOT NULL DEFAULT 0,
       known_forever INTEGER NOT NULL DEFAULT 0,
-      last_seen_on TEXT
+      last_seen_on TEXT,
+      level_rank INTEGER NOT NULL DEFAULT 4
     )
   `);
+  // 老库（level_rank 之前建的表）补列；默认 4 = N1，等 materialize 回填
+  if (!rowsFor("PRAGMA table_info(confusion_progress)").some((row) => row.name === "level_rank")) {
+    db.run("ALTER TABLE confusion_progress ADD COLUMN level_rank INTEGER NOT NULL DEFAULT 4");
+  }
   db.run(`
     CREATE TABLE IF NOT EXISTS confusion_reviews (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,18 +98,28 @@ export const matchable = (group: ConfusionGroup): boolean => {
   });
 };
 
-/** 候选组 = 全部能出题的组。幂等：只补行。返回新补的组数。 */
+const LEVEL_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
+/** 一组的等级 = 最难那个成员的等级：成员没学全就分不了，所以按最难的算。没等级的（自导词）当 N1。 */
+export const groupLevelRank = (group: ConfusionGroup) => Math.max(...group.members.map((member) => LEVEL_RANK[member.jlptLevel] ?? 4));
+
+/** 候选组 = 全部能出题的组。幂等：只补行、补等级。返回新补的组数。 */
 export const materializeConfusionCards = (): number => {
   ensureConfusionCardTables();
   const db = getDatabase();
-  const existing = new Set(rowsFor("SELECT group_key FROM confusion_progress").map((row) => String(row.group_key)));
+  const existing = new Map(rowsFor("SELECT group_key, level_rank FROM confusion_progress").map((row) => [String(row.group_key), Number(row.level_rank)]));
   let inserted = 0;
   db.run("BEGIN");
   try {
     for (const group of confusionGroups()) {
-      if (existing.has(group.key) || !matchable(group)) continue;
-      db.run("INSERT INTO confusion_progress (group_key) VALUES (?)", [group.key]);
-      inserted += 1;
+      if (!matchable(group)) continue;
+      const rank = groupLevelRank(group);
+      const current = existing.get(group.key);
+      if (current === undefined) {
+        db.run("INSERT INTO confusion_progress (group_key, level_rank) VALUES (?, ?)", [group.key, rank]);
+        inserted += 1;
+      } else if (current !== rank) {
+        db.run("UPDATE confusion_progress SET level_rank = ? WHERE group_key = ?", [rank, group.key]);
+      }
     }
     db.run("COMMIT");
   } catch (error) {
@@ -162,11 +177,11 @@ export const gradeMatching = (mistakes: number): WordAnswer =>
  * 当天清单：到期的 + 没见过的。新学优先给「成员里用户学过的词多」的组 —— 没学过的词连起来
  * 是在背题面，不是在辨析。
  */
-export const createConfusionTasks = (quota: { fresh: number; review: number }, day = today()) => {
+export const createConfusionTasks = (quota: { fresh: number; review: number }, targetLevelRank = 4, day = today()) => {
   ensureConfusionCardTables();
   return log.createTasks(quota, () => {
     const learned = new Set(rowsFor("SELECT word_id FROM progress WHERE seen_count > 0").map((row) => Number(row.word_id)));
-    const unseen = new Set(rowsFor(`SELECT group_key FROM confusion_progress WHERE ${log.exclude} AND seen_count = 0`).map((row) => String(row.group_key)));
+    const unseen = new Set(rowsFor(`SELECT group_key FROM confusion_progress WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank]).map((row) => String(row.group_key)));
     return confusionGroups()
       .filter((group) => unseen.has(group.key))
       .map((group) => ({ key: group.key, learned: group.members.filter((member) => learned.has(member.id)).length, size: group.members.length }))
@@ -185,11 +200,11 @@ export const clearConfusionTasks = (day = today()) => { ensureConfusionCardTable
 export const undoLastConfusionReview = () => { ensureConfusionCardTables(); return log.undoLast(); };
 export const replayConfusionReviews = (onlyKeys?: Iterable<string>) => { ensureConfusionCardTables(); return log.replay(onlyKeys); };
 
-/** 池子：到期 + 没学过的（给圆环）。 */
-export const confusionCardPool = () => {
+/** 池子：到期 + 目标等级内没学过的（给圆环）。 */
+export const confusionCardPool = (targetLevelRank = 4) => {
   ensureConfusionCardTables();
   return {
     due: log.dueCount(),
-    unseen: firstValue<number>(`SELECT COUNT(*) FROM confusion_progress WHERE ${log.exclude} AND seen_count = 0`, [], 0)
+    unseen: firstValue<number>(`SELECT COUNT(*) FROM confusion_progress WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank], 0)
   };
 };

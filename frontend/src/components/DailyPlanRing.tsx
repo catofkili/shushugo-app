@@ -1,12 +1,12 @@
 import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { segmentWeight, PLAN_KINDS, PLAN_LABELS, type PlanKind, type PlanSegment } from "../lib/daily-plan";
+import { segmentLength, PLAN_KINDS, PLAN_LABELS, type PlanKind } from "../lib/daily-plan";
 
 /**
  * 每日学习量的圆环（docs/MIXED_STUDY_PLAN.md 第 3 节）。
  *
  * 四段 = 四种卡，三个滑钮在段与段的边界上；中间写总量。总量固定，拖一个滑钮就是把数量从一段
- * 搬到相邻那段。段长 = 数量 × 权重（权重 = 1/√池子，daily-plan.segmentWeight），所以
- * **数字是真的，长度是压过的**：400 词 vs 20 语法不会把语法压成一条看不见的缝。
+ * 搬到相邻那段。段长 = log(1 + 数量)（daily-plan.segmentLength），所以
+ * **数字是真的，长度是压过的**：517 词 vs 31 语法不会把语法压成一条看不见的缝。
  * 滑钮可以重合（某段 0）。点一段 → 放大成该段自己的一条，里面一个滑钮分「新学 / 复习」。
  *
  * 全部 SVG + pointer 事件，没有依赖。只读时（disabled）当进度环用。
@@ -17,9 +17,11 @@ export interface RingValue {
 }
 
 interface Props {
-  segments: PlanSegment[];
   value: Record<PlanKind, RingValue>;
+  /** 拖动过程中每一帧调：只改状态、只重绘，别在这里写盘或重排计划 —— 那是掉帧的来源 */
   onChange: (next: Record<PlanKind, RingValue>) => void;
+  /** 松手那一下调：这时才落盘、重排今天的计划 */
+  onCommit: () => void;
   /** 点了哪一段（放大） */
   focus: PlanKind | null;
   onFocus: (kind: PlanKind | null) => void;
@@ -46,7 +48,7 @@ const arcPath = (cx: number, cy: number, r: number, from: number, to: number) =>
   return `M ${x1} ${y1} A ${r} ${r} 0 ${to - from > Math.PI ? 1 : 0} 1 ${x2} ${y2}`;
 };
 
-export const DailyPlanRing = ({ segments, value, onChange, focus, onFocus, size = 240 }: Props) => {
+export const DailyPlanRing = ({ value, onChange, onCommit, focus, onFocus, size = 240 }: Props) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   const cx = size / 2;
@@ -55,9 +57,8 @@ export const DailyPlanRing = ({ segments, value, onChange, focus, onFocus, size 
 
   const counts = PLAN_KINDS.map((kind) => value[kind].fresh + value[kind].review);
   const total = counts.reduce((sum, count) => sum + count, 0);
-  const weights = segments.map((segment) => segmentWeight(segment));
-  // 段长：数量 × 权重，归一到整圈。全 0 时四段等分（否则没东西可拖）。
-  const lengths = counts.map((count, index) => count * weights[index]);
+  // 段长：log(1 + 数量)，归一到整圈。全 0 时四段等分（否则没东西可拖）。
+  const lengths = counts.map((count) => segmentLength(count));
   const lengthSum = lengths.reduce((sum, length) => sum + length, 0);
   const angles = lengthSum > 0 ? lengths.map((length) => (length / lengthSum) * TAU) : counts.map(() => TAU / 4);
   const anglesKey = angles.join(",");
@@ -76,7 +77,8 @@ export const DailyPlanRing = ({ segments, value, onChange, focus, onFocus, size 
 
   /**
    * 拖第 k 个滑钮 = 在第 k 段和第 k+1 段之间搬数量。两段的数量之和 T 和角度之和 A 固定；
-   * 滑钮落在 θ（相对第 k 段起点）：count_a·w_a ∝ θ，count_b·w_b ∝ A−θ，解出来取整。
+   * 滑钮落在 θ（相对第 k 段起点）：要 log1p(a) / (log1p(a) + log1p(T−a)) = θ/A，
+   * 左边随 a 单调递增，整数上二分。
    */
   const moveKnob = (k: number, angle: number) => {
     const a = k;
@@ -89,11 +91,12 @@ export const DailyPlanRing = ({ segments, value, onChange, focus, onFocus, size 
     while (theta < 0) theta += TAU;
     while (theta > TAU) theta -= TAU;
     theta = Math.max(0, Math.min(A, theta));
-    const wa = weights[a];
-    const wb = weights[b];
-    const denominator = theta / wa + (A - theta) / wb;
-    const countA = denominator > 0 ? Math.round((T * (theta / wa)) / denominator) : counts[a];
-    const nextA = Math.max(0, Math.min(T, countA));
+    const target = A > 0 ? theta / A : 0.5;
+    const share = (x: number) => { const l = segmentLength(x) + segmentLength(T - x); return l > 0 ? segmentLength(x) / l : 0.5; };
+    let lo = 0;
+    let hi = T;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (share(mid) < target) lo = mid; else hi = mid; }
+    const nextA = Math.abs(share(lo) - target) <= Math.abs(share(hi) - target) ? lo : hi;
     const nextB = T - nextA;
     if (nextA === counts[a]) return;
     // 搬数量时按各段现在的新学/复习比例分，比例没有（全 0）就先当复习
@@ -110,6 +113,11 @@ export const DailyPlanRing = ({ segments, value, onChange, focus, onFocus, size 
     if (dragging === null) return;
     moveKnob(dragging, pointerAngle(event));
   };
+  const endDrag = () => {
+    if (dragging === null) return;
+    setDragging(null);
+    onCommit();
+  };
 
   const stroke = 22;
   return (
@@ -120,8 +128,8 @@ export const DailyPlanRing = ({ segments, value, onChange, focus, onFocus, size 
       height={size}
       className="zoo-ring"
       onPointerMove={onPointerMove}
-      onPointerUp={() => setDragging(null)}
-      onPointerLeave={() => setDragging(null)}
+      onPointerUp={endDrag}
+      onPointerLeave={endDrag}
       role="group"
       aria-label="每日学习量"
     >

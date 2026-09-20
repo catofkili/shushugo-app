@@ -2110,7 +2110,19 @@ memory 是本机检查点（合并后从流水重放重建），tasks 是当天�
 - 每日量只有一份状态：`studyPreferences` 的 `dailyGoal / reviewCap / grammarDailyGoal / grammarReviewCap /
   kanjiDailyGoal / kanjiReviewCap / confusionDailyGoal / confusionReviewCap`（三种 cap 的 0 = 到期全出，
   单词那个 0 = 自动、−1 = 不限）。圆环 / 数字表单 / 备考一键都是 `DailyPlanPanel`，主页和设置页同一个组件。
-- ⚠️ 圆环的段长 = 数量 × 1/√池子（`daily-plan.segmentWeight`）：**数字是真的，长度是压过的**。
-  别改成线性 —— 400 词 vs 20 语法按原比例语法细到看不见，正是用户报的那条。
+- ⚠️ 圆环的段长 = log(1 + 数量)（`daily-plan.segmentLength`）：**数字是真的，长度是压过的**。
+  别改成线性或 √ —— 517 词 / 31 语法按原比例是 90% / 5%，√池子那版单词也还占八成，用户当场报的。
 - ⚠️ 备考一键的用时按 `SECONDS_PER_CARD` 固定值算，**不拿用户自己的历史算**（作者边看视频边学，效率不代表标准）。
 - 会员范围（无广告、一档 Pro）：疑难辨析、一字多音、混合学习；页面级在 `App.tsx` 的 `proPages` 一处拦。
+- ⚠️ **拖圆环每帧只改 React 状态，松手（`onCommit`）才写盘 + 重排**（`refreshTodayWordPlan` 几十条 SQL、
+  `refreshMixedCardTasks` 删表重建）。第一版每帧都落盘，用户报「掉帧严重」；改后实测每帧 4.6ms 中位 / 9.5ms 最大。
+  放大后的新学/复习滑杆同理（`onPointerUp` / `onKeyUp` / `onBlur` 才 commit）。
+- **能从数据算的都别让用户猜、也别写死作者的数**（用户原话「所有东西都要灵活有算法」）：
+  - 「现在 N几」= `learnedLevel()`：从 N5 往上，一级里学过的词过半就算过了，第一级不过半停；一个词没学过 → 「从零」。
+    作者库 N5 93% / N4 82% / N3 56% / N2 3% → N3；出厂库 → 从零。用户改了选择框就按用户的。
+  - 汉字卡和连线卡都按 JLPT 分级：`kanji_char_memory.level_rank`（最容易的那个读音单元的等级）、
+    `confusion_progress.level_rank`（**最难那个成员**的等级 —— 成员没学全就分不了）。池子、当天清单、
+    备考剩余量都只数目标等级以内的；老库由 `materializeConfusionCards` 回填（默认 4 = N1）。
+  - 「一键安排」= 复习 = 今天到期全部，新学 = **平时额度**（`mn-daily-plan-baseline`）：只有数字表单和备考一键
+    这种明确写数字的动作才更新基线，拖圆环是临时挪，不算；没定过就是默认档 15 / 5 / 5 / 5。
+    ⚠️ 之前那版叫「按今天本来的来」、新学取默认值 —— 用户要的是「我本来的强度」，不是出厂值。

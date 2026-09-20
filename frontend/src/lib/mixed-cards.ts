@@ -52,7 +52,7 @@ export const undoKanjiCardAnswer = () => undoLastKanjiCharReview();
 export const getConfusionCardSession = (db: object, day = today()): ConfusionCardSession => {
   materializeOnce(db);
   const prefs = getStudyPreferences();
-  createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: prefs.confusionReviewCap > 0 ? prefs.confusionReviewCap : UNLIMITED }, day);
+  createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: prefs.confusionReviewCap > 0 ? prefs.confusionReviewCap : UNLIMITED }, targetLevelRank(), day);
   const next = pickConfusionNext(day);
   const progress = confusionCardProgress(day);
   return { card: next ? matchingCard(next) : null, ...progress };

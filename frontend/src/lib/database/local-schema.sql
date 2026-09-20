@@ -321,7 +321,8 @@ CREATE TABLE IF NOT EXISTS confusion_progress (
   forgot_count INTEGER NOT NULL DEFAULT 0,
   mistake_streak INTEGER NOT NULL DEFAULT 0,
   known_forever INTEGER NOT NULL DEFAULT 0,
-  last_seen_on TEXT
+  last_seen_on TEXT,
+  level_rank INTEGER NOT NULL DEFAULT 4
 );
 CREATE TABLE IF NOT EXISTS confusion_reviews (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

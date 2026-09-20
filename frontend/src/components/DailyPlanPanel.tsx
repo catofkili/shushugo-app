@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DailyPlanRing, RING_COLORS, type RingValue } from "./DailyPlanRing";
 import {
-  applyExamPreset, dailyPlanView, examPreset, saveDailyPlan, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
+  applyExamPreset, arrangedPlan, dailyPlanView, examPreset, learnedLevel, saveDailyPlan, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
   type DailyPlanView, type PlanKind
 } from "../lib/daily-plan";
 import { JLPT_TARGETS, type JlptTarget } from "../lib/jlpt/plan";
@@ -31,11 +31,17 @@ const minutesFor = (plan: Plan) => Math.round(PLAN_KINDS.reduce((sum, kind) => s
 export const DailyPlanPanel = ({ compact = false }: Props) => {
   const [view, setView] = useState<DailyPlanView | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
+  const planRef = useRef<Plan | null>(null);
+  planRef.current = plan;
   const [focus, setFocus] = useState<PlanKind | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [currentLevel, setCurrentLevel] = useState<JlptTarget>("N5");
+  // 「现在 N几」从数据算出来当默认（词过半的最高一级），用户改了就按用户的
+  const [currentLevel, setCurrentLevel] = useState<JlptTarget | null>(() => { try { return learnedLevel(); } catch { return null; } });
   const [targetLevel, setTargetLevel] = useState<JlptTarget>(() => getStudyPreferences().jlptTarget);
   const [presetNote, setPresetNote] = useState("");
+  // 撤回栈：会话内每次改动前的快照。退出页面就没了 —— 它是「手滑了退一步」，不是历史记录。
+  const [history, setHistory] = useState<Plan[]>([]);
+  const dragStartRef = useRef<Plan | null>(null);
 
   const reload = () => {
     try {
@@ -52,18 +58,50 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
     return () => window.removeEventListener(PREFERENCES_EVENT, reload);
   }, []);
 
-  const preview = useMemo(() => (currentLevel && targetLevel ? (() => { try { return examPreset(currentLevel, targetLevel); } catch { return null; } })() : null), [currentLevel, targetLevel, view]);
+  const preset = useMemo(() => { try { return examPreset(currentLevel, targetLevel); } catch { return null; } }, [currentLevel, targetLevel, view]);
 
   if (!view || !plan) return null;
 
-  const commit = (next: Plan) => {
-    setPlan(next);
-    saveDailyPlan(next);
+  /**
+   * 落盘 + 重排今天的计划。⚠️ 这一步很重（refreshTodayWordPlan 是几十条 SQL，重排清单要删表重建），
+   * 拖圆环时**每帧只能改状态**（preview），松手那一下再 persist —— 第一版每帧都 persist，掉帧严重。
+   */
+  const persist = (next: Plan, standing = false) => {
+    saveDailyPlan(next, standing);
     try { refreshTodayWordPlan(); refreshMixedCardTasks(getDatabase()); } catch { /* 词库没就绪，下次进页面自然会排 */ }
     notifyProgressUpdated();
   };
+  /** 拖动中：只改本地状态，不写盘。第一帧记下起点，松手时压进撤回栈。 */
+  const preview = (next: Plan) => {
+    if (!dragStartRef.current) dragStartRef.current = plan;
+    setPlan(next);
+  };
+  const commitDrag = () => {
+    const start = dragStartRef.current;
+    dragStartRef.current = null;
+    if (!start || !planRef.current) return;
+    setHistory((stack) => [...stack, start].slice(-30));
+    persist(planRef.current);
+  };
+  /** 一次性改动（表单、总量、补建议、一键安排）：立刻落盘。表单填的数字是「平时额度」（standing）。 */
+  const commit = (next: Plan, standing = false) => {
+    setHistory((stack) => [...stack, plan].slice(-30));
+    setPlan(next);
+    persist(next, standing);
+  };
 
   const total = PLAN_KINDS.reduce((sum, kind) => sum + plan[kind].fresh + plan[kind].review, 0);
+
+  const undo = () => {
+    const previous = history[history.length - 1];
+    if (!previous) return;
+    setHistory((stack) => stack.slice(0, -1));
+    setPlan(previous);
+    persist(previous);
+  };
+
+  /** 一键安排：复习 = 今天到期的全部，新学 = 平时的额度（daily-plan.arrangedPlan）。 */
+  const arrange = () => commit(arrangedPlan(view));
 
   /** 改总量：四段等比缩放，四舍五入后的差额记到单词上。 */
   const setTotal = (nextTotal: number) => {
@@ -82,7 +120,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
   return (
     <div className={`zoo-plan ${compact ? "zoo-plan-compact" : ""}`}>
       <div className="zoo-plan-main">
-        <DailyPlanRing segments={view.segments} value={plan} onChange={commit} focus={focus} onFocus={setFocus} size={compact ? 200 : 240} />
+        <DailyPlanRing value={plan} onChange={preview} onCommit={commitDrag} focus={focus} onFocus={setFocus} size={compact ? 200 : 240} />
         <div className="zoo-plan-side">
           <label className="zoo-plan-total">
             <span>今天总量</span>
@@ -118,8 +156,11 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
             value={plan[focus].fresh}
             onChange={(event) => {
               const fresh = Number(event.target.value);
-              commit({ ...plan, [focus]: { fresh, review: focusedCount - fresh } });
+              preview({ ...plan, [focus]: { fresh, review: focusedCount - fresh } });
             }}
+            onPointerUp={commitDrag}
+            onKeyUp={commitDrag}
+            onBlur={commitDrag}
             style={{ accentColor: RING_COLORS[focus] }}
           />
           <p className="zoo-plan-zoom-meta">
@@ -139,7 +180,11 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
       )}
 
       <div className="zoo-plan-row">
-        <button className="zoo-plan-link" onClick={() => setShowForm((open) => !open)}>{showForm ? "收起数字" : "直接改数字"}</button>
+        <span className="zoo-plan-actions">
+          <button className="zoo-plan-link" onClick={() => setShowForm((open) => !open)}>{showForm ? "收起数字" : "直接改数字"}</button>
+          <button className="zoo-plan-link" disabled={history.length === 0} onClick={undo}>撤回</button>
+          <button className="zoo-plan-link" onClick={arrange}>一键安排</button>
+        </span>
         <span className="zoo-plan-dim">距下次 JLPT {view.daysLeft} 天</span>
       </div>
       {showForm && (
@@ -149,7 +194,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
             {PLAN_KINDS.map((kind) => (
               <tr key={kind}>
                 <th><i style={{ background: RING_COLORS[kind] }} />{PLAN_LABELS[kind]}</th>
-                <td><input type="number" min={0} value={plan[kind].fresh} onChange={(event) => commit({ ...plan, [kind]: { ...plan[kind], fresh: Math.max(0, Number(event.target.value) || 0) } })} /></td>
+                <td><input type="number" min={0} value={plan[kind].fresh} onChange={(event) => commit({ ...plan, [kind]: { ...plan[kind], fresh: Math.max(0, Number(event.target.value) || 0) } }, true)} /></td>
                 <td><input type="number" min={0} value={plan[kind].review} onChange={(event) => commit({ ...plan, [kind]: { ...plan[kind], review: Math.max(0, Number(event.target.value) || 0) } })} /></td>
               </tr>
             ))}
@@ -159,7 +204,8 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
 
       <div className="zoo-plan-preset">
         <span>备考一键：现在</span>
-        <select value={currentLevel} onChange={(event) => setCurrentLevel(event.target.value as JlptTarget)}>
+        <select value={currentLevel ?? ""} onChange={(event) => setCurrentLevel((event.target.value || null) as JlptTarget | null)}>
+          <option value="">从零</option>
           {JLPT_TARGETS.map((level) => <option key={level} value={level}>{level}</option>)}
         </select>
         <span>下次考</span>
@@ -168,7 +214,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
         </select>
         <button
           className="zoo-plan-apply"
-          disabled={!preview}
+          disabled={!preset}
           onClick={() => {
             const result = applyExamPreset(currentLevel, targetLevel);
             setPresetNote(`已按 ${targetLevel} 设好：每天约 ${result.minutes} 分钟，还能进新内容 ${result.intakeDays} 天`);
@@ -177,7 +223,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
             reload();
           }}
         >
-          {preview ? `设为每天约 ${preview.minutes} 分钟` : "算不出"}
+          {preset ? `设为每天约 ${preset.minutes} 分钟` : "算不出"}
         </button>
         {presetNote && <small>{presetNote}</small>}
       </div>

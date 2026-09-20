@@ -93,7 +93,7 @@ export const defaultStudyPreferences: StudyPreferences = {
   grammarDailyGoal: 5,
   reviewCap: 0,
   kanjiDailyGoal: 5,
-  confusionDailyGoal: 3,
+  confusionDailyGoal: 5,
   grammarReviewCap: 0,
   kanjiReviewCap: 0,
   confusionReviewCap: 0,
