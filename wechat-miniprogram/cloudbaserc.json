@@ -13,6 +13,24 @@
       "envVariables": {
         "WORKER_ORIGIN": "https://api.shushugo.com"
       }
+    },
+    {
+      "name": "reminder",
+      "runtime": "Nodejs18.15",
+      "timeout": 60,
+      "memorySize": 256,
+      "installDependency": true,
+      "envVariables": {
+        "REMINDER_TEMPLATE_ID": "TODO",
+        "REMINDER_DATA": "thing1=今天的单词还没复习;time2={date}"
+      },
+      "triggers": [
+        {
+          "name": "daily",
+          "type": "timer",
+          "config": "0 0 20 * * * *"
+        }
+      ]
     }
   ]
 }

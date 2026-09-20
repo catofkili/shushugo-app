@@ -7,17 +7,23 @@ const { authStatus, signInWithWechat } = require('../../runtime/auth');
 const { updateFromManifest } = require('../../runtime/content-update');
 const { syncNow } = require('../../runtime/sync-client');
 const { exportBackup, importBackup } = require('../../runtime/backup');
+const { status: reminderStatus } = require('../../runtime/reminder');
 
 Page({
-  data: { ready: false, entitlement: { active: false, source: 'loading' }, auth: { signedIn: false, userId: '' }, busy: false, result: '' },
+  data: { ready: false, entitlement: { active: false, source: 'loading' }, auth: { signedIn: false, userId: '' }, busy: false, result: '', reminder: { configured: false, credits: 0, lastSentOn: '' } },
 
   async onLoad() {
     try {
       if (!getStatus().ready) await ensureDatabase();
       this.setData({ ready: true, entitlement: cachedEntitlement(), auth: authStatus() });
+      reminderStatus().then((reminder) => this.setData({ reminder })).catch(() => undefined);
     } catch (error) {
       this.setData({ result: error?.message || error?.errMsg || JSON.stringify(error) });
     }
+  },
+
+  openReminderSetting() {
+    wx.openSetting({ withSubscriptions: true });
   },
 
   async signIn() {

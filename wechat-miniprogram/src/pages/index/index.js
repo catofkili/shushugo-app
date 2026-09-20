@@ -11,6 +11,7 @@ const {
   undoAnswer
 } = require('../../runtime/learning');
 const { playWordAudio } = require('../../runtime/audio');
+const { bank: bankReminder } = require('../../runtime/reminder');
 const { confusionGroupsForWordWithDb } = require('../../runtime/confusion');
 const { cachedEntitlement } = require('../../runtime/entitlements');
 const { canUse } = require('../../core/entitlements');
@@ -127,6 +128,7 @@ Page({
   },
 
   handleReveal() {
+    bankReminder();
     if (this.data.card) this.setData({ answerVisible: true });
   },
 
@@ -140,6 +142,7 @@ Page({
   },
 
   handleAnswer(event) {
+    bankReminder();
     const answer = event.currentTarget.dataset.answer;
     const card = this.data.card;
     if (!card || !answer) return;

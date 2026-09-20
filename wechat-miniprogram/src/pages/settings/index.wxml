@@ -15,6 +15,11 @@
     <button class="secondary small" loading="{{busy}}" disabled="{{busy}}" bindtap="signIn">{{auth.signedIn ? '重新绑定微信账号' : '绑定微信账号'}}</button>
     <navigator class="legal-link" url="/pages/legal/index">用户协议与隐私政策 →</navigator>
   </view>
+  <view class="card" wx:if="{{reminder.configured}}">
+    <view class="row"><text class="label">学习提醒</text><text class="value">{{reminder.credits > 0 ? '已攒 ' + reminder.credits + ' 条' : '还没授权'}}</text></view>
+    <text class="detail">翻面、评分时会静默攒一条微信提醒额度；哪天没学，晚上 8 点提醒一次。{{reminder.lastSentOn ? '上次提醒：' + reminder.lastSentOn : ''}}</text>
+    <button class="ghost small" bindtap="openReminderSetting">在微信里管理订阅</button>
+  </view>
   <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="refreshEntitlement">刷新权益</button>
   <button class="secondary" loading="{{busy}}" disabled="{{busy}}" bindtap="buyPro">购买 Pro</button>
   <view class="card maintenance-card">
