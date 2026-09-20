@@ -11,7 +11,7 @@
     "d1:migrate:remote": "wrangler d1 migrations apply master_nihongo_sync --remote",
     "kv:create": "wrangler kv namespace create SYNC_DATA",
     "r2:create": "wrangler r2 bucket create master-nihongo-sync-snapshots",
-    "test": "node --experimental-strip-types scripts/entitlement-rules.test.mjs && node --experimental-strip-types scripts/apple-subscription.test.mjs && node scripts/worker-purchase-route.test.mjs && node scripts/weekly-report-route.test.mjs",
+    "test": "node --experimental-strip-types scripts/entitlement-rules.test.mjs && node --experimental-strip-types scripts/apple-subscription.test.mjs && node scripts/worker-purchase-route.test.mjs && node scripts/weekly-report-route.test.mjs && node --experimental-strip-types scripts/wechat-pay.test.mjs && node scripts/worker-wechat-pay-route.test.mjs",
     "check": "tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,WebWorker --types @cloudflare/workers-types src/index.ts"
   },
   "devDependencies": {

@@ -3,8 +3,8 @@
 // 内容变更时记得更新生效日期。
 
 export const PRIVACY_POLICY_TITLE = "收集日隐私政策";
-export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 9 月 9 日";
-export const PRIVACY_POLICY_VERSION = "2026-09-09";
+export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 9 月 20 日";
+export const PRIVACY_POLICY_VERSION = "2026-09-20";
 export const PRIVACY_POLICY_CONTACT = "请通过 App Store 的应用支持入口联系开发者";
 
 export interface PrivacyPolicySection {
@@ -56,6 +56,15 @@ export const PRIVACY_POLICY_SECTIONS: PrivacyPolicySection[] = [
       "应用使用 Capacitor、sql.js 等技术组件运行本地数据库和 iOS 容器；账号及同步服务部署在 Cloudflare Workers、D1、KV 和 R2 上（学习数据快照存放在 R2，账号信息、版本记录和限速计数存放在 D1 和 KV），验证邮件通过 Resend 发送。",
       "学习数据快照是压缩后的数据，没有做客户端端到端加密：服务端在技术上能读到你的学习记录和便签。请按这个前提理解上面的隐私边界。",
       "Apple 登录由 Apple Authentication Services 提供；注册、找回密码和异常登录可能使用 Cloudflare Turnstile 检测自动化请求。当前版本没有广告 SDK、第三方统计 SDK 或跨应用追踪。"
+    ]
+  },
+  {
+    title: "微信小程序版",
+    body: [
+      "微信小程序版的学习数据同样先保存在本机（小程序的用户目录）。绑定微信账号时，小程序只把微信登录凭证交给服务器换取你的 OpenID / UnionID 作为账号身份，不会获取你的微信昵称、头像、手机号或通讯录。",
+      "小程序不直接连接境外服务器：请求先经过腾讯云云开发的云函数，再转发到上面所述部署在 Cloudflare 的账号与同步服务。因此，绑定账号并开启同步后，你的学习记录和账号资料会经由云函数传输并存储在中国大陆以外的服务器上；未绑定账号时不会上传。",
+      "词库、读音音频等内容文件存放在腾讯云云开发的云存储，下载它们不需要登录，也不包含你的个人信息。导入学习备份时，小程序只读取你主动选择的那一个文件。",
+      "小程序内的 Pro 购买通过微信小程序虚拟支付完成，我们只收到订单号、商品和支付结果，接触不到你的支付方式；退款按微信平台规则处理。"
     ]
   },
   {

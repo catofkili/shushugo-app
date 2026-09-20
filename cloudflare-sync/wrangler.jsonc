@@ -5,9 +5,17 @@
   "compatibility_date": "2026-07-02",
   "workers_dev": true,
   "preview_urls": false,
+  // api.shushugo.com：小程序的云函数从大陆连不上 workers.dev（被墙），走自己的域名就通。
+  // workers.dev 保留 —— 已发布的 iOS 客户端还指着它。域名 DNS 托管在 Cloudflare，
+  // custom_domain 会自动建 DNS 记录和证书。
+  "routes": [{ "pattern": "api.shushugo.com", "custom_domain": true }],
   "vars": {
     "APP_BUNDLE_ID": "com.shushugo.app",
-    "APPLE_SIGN_IN_CLIENT_ID": "com.shushugo.app"
+    "APPLE_SIGN_IN_CLIENT_ID": "com.shushugo.app",
+    // 微信虚拟支付：OfferID 开通后填。价格单位分（2026-09-20 定：月 12 / 年 98 / 永久 298）。AppKey 是 secret 不在这。
+    "WECHAT_OFFER_ID": "",
+    "WECHAT_PAY_ENV": "0",
+    "WECHAT_PAY_PRICES": "{\"shushugo_pro_monthly\":1200,\"shushugo_pro_yearly\":9800,\"shushugo_pro_lifetime\":29800}"
   },
   "d1_databases": [
     {
