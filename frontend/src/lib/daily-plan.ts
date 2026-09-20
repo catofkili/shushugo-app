@@ -14,6 +14,8 @@ import { kanjiCharPool } from "./kanji-char-cards";
 import { confusionCardPool } from "./confusion-cards";
 import { dailyReviewCap } from "./review-budget";
 import { plannedDueCount } from "./fsrs-store";
+import { getDailyReliefProgress } from "./word-api/daily-relief";
+import { getDailyTailProgress } from "./word-api/daily-tail";
 
 export type PlanKind = "words" | "grammar" | "kanji" | "confusion";
 export const PLAN_KINDS: PlanKind[] = ["words", "grammar", "kanji", "confusion"];
@@ -69,20 +71,28 @@ const wordReviewCount = (cap: number, due: number) => {
   return Math.min(due, limit);
 };
 
+/**
+ * 减负卡（开头）+ 压轴卡（结尾）：不在 stage1_tasks 里，但今天确实会出现。
+ * **圆环上的数就是最终数字**（用户定的）：单词那段把这两批算进去显示，写回时再减掉，
+ * 这样圆环、大卡、小路三处是同一个数。今天还没生成时是 0，生成后当天不变。
+ */
+const wordExtras = () => getDailyReliefProgress().total + getDailyTailProgress().total;
+const pick = (cap: number, due: number) => (cap > 0 ? Math.min(cap, due) : due);
+
 export const dailyPlanView = (prefs: StudyPreferences = getStudyPreferences()): DailyPlanView => {
   const status = getJlptPlanStatus();
   const target = prefs.jlptTarget;
   const rank = LEVEL_RANK[target] ?? 2;
   const intakeDays = Math.max(status.plan.daysLeft - CONSOLIDATION_DAYS, 0);
-  const wordDue = wordDueCount();
+  const extras = wordExtras();
+  const wordDue = wordDueCount() + extras;
   const grammar = grammarPools(target);
   const kanji = kanjiCharPool(rank);
   const confusion = confusionCardPool(rank);
-  const pick = (cap: number, due: number) => (cap > 0 ? Math.min(cap, due) : due);
   const segments: PlanSegment[] = [
     {
       kind: "words", label: PLAN_LABELS.words,
-      fresh: prefs.dailyGoal, review: wordReviewCount(prefs.reviewCap, wordDue),
+      fresh: prefs.dailyGoal, review: wordReviewCount(prefs.reviewCap, wordDue - extras) + extras,
       pool: { due: wordDue, unseen: status.coverage.words.total - status.coverage.words.seen },
       suggest: { fresh: status.plan.newWords, review: wordDue }
     },
@@ -134,7 +144,9 @@ export const arrangedPlan = (view: DailyPlanView): Record<PlanKind, { fresh: num
 };
 
 /**
- * 圆环 / 表单改完写回。数字直接落进偏好，不做二次解释；单词复习 0 存成 1（0 在 reviewCap 里是「自动」）。
+ * 圆环 / 表单改完写回。数字直接落进偏好，不做二次解释；单词复习那段先减掉减负 + 压轴再存。
+ * ⚠️ **复习数没动的段，cap 原样留着**：显示的是 min(到期, cap)，不比对就写回等于把「上限 400」
+ * 悄悄改成「今天到期的 354」，明天到期多了也只给 354；三种 0（到期全出 / 自动）同理会被写死成一个数。
  * `standing` = 这是明确定的平时额度（表单 / 备考一键），顺手记成一键安排的基线。
  */
 export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: number }>, standing = false) => {
@@ -142,16 +154,22 @@ export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: nu
   if (standing) {
     try { localStorage.setItem(BASELINE_KEY, JSON.stringify(Object.fromEntries(PLAN_KINDS.map((kind) => [kind, next[kind].fresh])))); } catch { /* 存不下就用默认档 */ }
   }
+  const extras = wordExtras();
+  const wordDue = wordDueCount();
+  const shownWords = wordReviewCount(prefs.reviewCap, wordDue) + extras;
+  const target = prefs.jlptTarget;
+  const rank = LEVEL_RANK[target] ?? 2;
+  const keepOr = (shown: number, wanted: number, current: number) => (wanted === shown ? current : Math.max(1, wanted));
   saveStudyPreferences({
     ...prefs,
     dailyGoal: next.words.fresh,
-    reviewCap: Math.max(1, next.words.review),
+    reviewCap: next.words.review === shownWords ? prefs.reviewCap : Math.max(1, next.words.review - extras),
     grammarDailyGoal: next.grammar.fresh,
-    grammarReviewCap: Math.max(1, next.grammar.review),
+    grammarReviewCap: keepOr(pick(prefs.grammarReviewCap, grammarPools(target).due), next.grammar.review, prefs.grammarReviewCap),
     kanjiDailyGoal: next.kanji.fresh,
-    kanjiReviewCap: Math.max(1, next.kanji.review),
+    kanjiReviewCap: keepOr(pick(prefs.kanjiReviewCap, kanjiCharPool(rank).due), next.kanji.review, prefs.kanjiReviewCap),
     confusionDailyGoal: next.confusion.fresh,
-    confusionReviewCap: Math.max(1, next.confusion.review)
+    confusionReviewCap: keepOr(pick(prefs.confusionReviewCap, confusionCardPool(rank).due), next.confusion.review, prefs.confusionReviewCap)
   });
 };
 

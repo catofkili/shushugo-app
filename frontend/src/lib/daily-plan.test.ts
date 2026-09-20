@@ -56,7 +56,8 @@ describe("每日学习量：视图 / 写回 / 备考一键", () => {
     expect(segmentLength(0)).toBe(0);
   });
 
-  it("写回落进偏好；某一段可以是 0；单词复习 0 存成 1（0 是「自动」）", () => {
+  it("写回落进偏好；复习数没动的段 cap 原样留着（0 = 自动 / 到期全出 不被写死）；动了才存", () => {
+    // 出厂库到期全是 0，所以复习 0 = 「没动」：三种 cap 都该保持出厂的 0
     saveDailyPlan({
       words: { fresh: 0, review: 0 },
       grammar: { fresh: 7, review: 12 },
@@ -65,12 +66,16 @@ describe("每日学习量：视图 / 写回 / 备考一键", () => {
     });
     const prefs = getStudyPreferences();
     expect(prefs.dailyGoal).toBe(0);
-    expect(prefs.reviewCap).toBe(1);
+    expect(prefs.reviewCap).toBe(0);
     expect(prefs.grammarDailyGoal).toBe(7);
     expect(prefs.grammarReviewCap).toBe(12);
     expect(prefs.kanjiDailyGoal).toBe(9);
+    expect(prefs.kanjiReviewCap).toBe(0);
     expect(prefs.confusionDailyGoal).toBe(2);
+    expect(prefs.confusionReviewCap).toBe(4);
     expect(dailyPlanView().segments[2].fresh).toBe(9);
+    saveDailyPlan({ ...(Object.fromEntries(PLAN_KINDS.map((kind) => [kind, { fresh: 1, review: 0 }])) as any), words: { fresh: 1, review: 3 } });
+    expect(getStudyPreferences().reviewCap).toBe(3);
   });
 
   it("一键安排：复习 = 到期全部，新学 = 平时额度（表单定的算，拖圆环不算；没定过是默认档）", () => {
