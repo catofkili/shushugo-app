@@ -2092,3 +2092,25 @@ FSRS 就收到假的「记住了」，把复习排到几天后，然后必然再
 - Cloudflare Worker 域名、D1 数据库名、R2 桶名：实际线上资源，改配置字符串不等于迁移资源。
 
 迁移这些标识必须另行设计旧数据读取与恢复、跨版本同步及线上切换流程。历史审计 JSON 的 source 保留当时实测路径。正在学习时不可移动服务根目录、修改其页面源码触发热更新或刷新学习标签页；改名先在独立工作目录完成。
+
+## 混合学习：四种卡、一份每日量、三个入口（2026-09-20，设计在 docs/MIXED_STUDY_PLAN.md）
+
+单词 / 语法 / **单独汉字**（`lib/kanji-char-cards.ts`）/ **疑难连线**（`lib/confusion-cards.ts`）
+四种卡进同一条 FSRS 流水线；后两种共用 `lib/card-log.ts`：**reviews 是唯一事实（append，sync_uid），
+memory 是本机检查点（合并后从流水重放重建），tasks 是当天投影（快照只带 14 天）**。
+撤销 = 删最后一行流水 + 重放那张卡（`undoLast`），不另存快照。
+
+- 新表照例三处登记（`sync/tables.ts`、`snapshot.ts` 保留天数、`scripts/user-data-tables.mjs`），
+  且**必须建在 `local-schema.sql`**：`ensureSyncSchema` 只给启动时已存在的表挂触发器和 sync_uid，懒建的表拿不到。
+- 单独汉字卡和 `kanji-unit-scheduler.ts`（按「一个字的一种读音」、在旗子后面）、「汉字读音」方向
+  （词里遮汉字）**是三件事**，记忆各存各的，别互相回填。
+- 连线卡的组 = `confusion_mastered` 同一个 group_key；能出题的组和原辨析题同一道闸（`matchable`）；
+  标了「已掌握」的组不进队列。评分只看连错次数（0 认识 / 1 模糊 / ≥2 忘记），不让用户点四档 ——
+  答案全露着时选分等于灌假数据。
+- 每日量只有一份状态：`studyPreferences` 的 `dailyGoal / reviewCap / grammarDailyGoal / grammarReviewCap /
+  kanjiDailyGoal / kanjiReviewCap / confusionDailyGoal / confusionReviewCap`（三种 cap 的 0 = 到期全出，
+  单词那个 0 = 自动、−1 = 不限）。圆环 / 数字表单 / 备考一键都是 `DailyPlanPanel`，主页和设置页同一个组件。
+- ⚠️ 圆环的段长 = 数量 × 1/√池子（`daily-plan.segmentWeight`）：**数字是真的，长度是压过的**。
+  别改成线性 —— 400 词 vs 20 语法按原比例语法细到看不见，正是用户报的那条。
+- ⚠️ 备考一键的用时按 `SECONDS_PER_CARD` 固定值算，**不拿用户自己的历史算**（作者边看视频边学，效率不代表标准）。
+- 会员范围（无广告、一档 Pro）：疑难辨析、一字多音、混合学习；页面级在 `App.tsx` 的 `proPages` 一处拦。
