@@ -11,6 +11,7 @@ import {
 } from "../lib/notifications";
 import { saveReminderSettings } from "../lib/notifications";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
+import { DailyPlanPanel } from "../components/DailyPlanPanel";
 
 /**
  * 备考计划页。
@@ -152,6 +153,12 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
               </p>
             )}
           </div>
+
+          {/* 每日学习量：圆环 / 数字表单 / 备考一键（DailyPlanPanel，和设置页同一个组件、同一份状态）。
+              「下次考 N几」就是下面「目标级别」那一个，面板不再有第二个选择框。
+              这页是深色卡面，面板的配色跟 [data-theme="dark"] 那套走，所以包一层。 */}
+          <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] text-white/45">每日学习量</p>
+          <div className="mb-4" data-theme="dark"><DailyPlanPanel /></div>
 
           {/* 今天的最低量 */}
           <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] text-white/45">今天最少要做</p>

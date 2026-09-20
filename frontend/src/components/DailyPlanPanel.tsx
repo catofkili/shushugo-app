@@ -37,7 +37,8 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
   const [showForm, setShowForm] = useState(false);
   // 「现在 N几」从数据算出来当默认（词过半的最高一级），用户改了就按用户的
   const [currentLevel, setCurrentLevel] = useState<JlptTarget | null>(() => { try { return learnedLevel(); } catch { return null; } });
-  const [targetLevel, setTargetLevel] = useState<JlptTarget>(() => getStudyPreferences().jlptTarget);
+  // 「下次考 N几」只有一个：备考页 / 设置页的目标级别（jlptTarget），这里不再摆第二个选择框
+  const targetLevel = getStudyPreferences().jlptTarget;
   const [presetNote, setPresetNote] = useState("");
   // 撤回栈：会话内每次改动前的快照。退出页面就没了 —— 它是「手滑了退一步」，不是历史记录。
   const [history, setHistory] = useState<Plan[]>([]);
@@ -208,10 +209,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
           <option value="">从零</option>
           {JLPT_TARGETS.map((level) => <option key={level} value={level}>{level}</option>)}
         </select>
-        <span>下次考</span>
-        <select value={targetLevel} onChange={(event) => setTargetLevel(event.target.value as JlptTarget)}>
-          {JLPT_TARGETS.map((level) => <option key={level} value={level}>{level}</option>)}
-        </select>
+        <span>下次考 {targetLevel}</span>
         <button
           className="zoo-plan-apply"
           disabled={!preset}

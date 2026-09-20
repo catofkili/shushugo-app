@@ -6,7 +6,6 @@ import {
   SkipForward, SlidersHorizontal, Speech, Star
 } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
-import { DailyPlanPanel } from "./DailyPlanPanel";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import { getStudyPreferences, PREFERENCES_EVENT } from "../lib/studyPreferences";
 import { computeStreak } from "../lib/zoo-streak";
@@ -287,13 +286,7 @@ export function ZooHome({
             </small>
           </button>
         </div>
-
-        {/* 每日量 —— 圆环 + 数字表单 + 备考一键（DailyPlanPanel），摆在备考格底下：
-            上面那行「还差 新词 50 · 新语法 6」正是按考期算出来的应学量，这是它的另一半。
-            存的地方和设置页是同一处（daily-plan.saveDailyPlan），这里只是第一个入口。 */}
-        <div className="zoo-goal">
-          <DailyPlanPanel compact />
-        </div>
+        {/* 每日量的圆环收在备考页里（用户定的「收纳到备考入口里」），主页只留上面那格入口。 */}
       </section>
 
       {/* ③ 学习工具 —— 一个盘子里的四格。去掉各自的描边和说明书副标题：
