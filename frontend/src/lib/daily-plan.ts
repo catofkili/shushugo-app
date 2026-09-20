@@ -13,6 +13,7 @@ import { firstValue, rowsFor, studyDayEnd } from "./study-core";
 import { kanjiCharPool } from "./kanji-char-cards";
 import { confusionCardPool } from "./confusion-cards";
 import { dailyReviewCap } from "./review-budget";
+import { plannedDueCount } from "./fsrs-store";
 
 export type PlanKind = "words" | "grammar" | "kanji" | "confusion";
 export const PLAN_KINDS: PlanKind[] = ["words", "grammar", "kanji", "confusion"];
@@ -44,10 +45,8 @@ const LEVEL_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 }
 
 const amortize = (remaining: number, days: number) => (remaining <= 0 ? 0 : Math.ceil(remaining / Math.max(1, days)));
 
-const wordDueCount = () => firstValue<number>(
-  "SELECT COUNT(*) FROM progress WHERE known_forever = 0 AND seen_count > 0 AND (fsrs_due IS NULL OR fsrs_due <= ?)",
-  [studyDayEnd().toISOString()], 0
-);
+/** 单词「今天该复习的」= 到期非顽固全部 + 顽固最多 10 个（fsrs-store.plannedDueCount），不是裸到期数。 */
+const wordDueCount = () => plannedDueCount(studyDayEnd());
 
 const grammarPools = (target: JlptTarget) => {
   const levels = levelsInScope(target).map((level) => `'${level}'`).join(", ");
