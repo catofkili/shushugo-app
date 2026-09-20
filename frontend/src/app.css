@@ -77,6 +77,9 @@
 .zoo-pop{transition:transform .16s cubic-bezier(.34,1.7,.5,1),box-shadow .22s ease,background-color .2s ease,border-color .2s ease,color .2s ease;will-change:transform;-webkit-tap-highlight-color:transparent}
 .zoo-pop:hover:not(:disabled){transform:translateY(-2px)}
 .zoo-pop:active:not(:disabled){transform:translateY(1px) scale(.94);transition-duration:.07s}
+/* 连线卡连错那一下：抖一抖，不弹窗不变红（红是「答案」，抖只是「不是它」） */
+@keyframes zoo-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.zoo-shake{animation:zoo-shake .3s ease}
 .zoo-pop:disabled{cursor:default}
 
 /* 主按钮悬停光泽 */

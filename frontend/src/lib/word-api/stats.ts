@@ -1,6 +1,8 @@
 import type { WordStats } from "../../types/vocabulary";
 import { getDailyWordGoal, getJlptPlanPreferences } from "../studyPreferences";
 import { grammarPlanDone, grammarPlanRemaining } from "../grammar-quiz";
+import { getDatabase } from "../database";
+import { loadMixedCardData, mixedCardCounts, mixedCardDataLoaded } from "../mixed-cards";
 import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
 import type { WordSessionOptions } from "../study-types";
 import {
@@ -197,10 +199,19 @@ export function getWordStats(
   // 今天已经过关的语法条数。混合模式的松鼠小路要拿它当分子 —— 小路画的是「这一场」，
   // 而混合模式的一场里语法和单词是同一场（角标、大卡都已经按合计算）。
   const grammarDone = lazy(() => grammarPlanDone(getJlptPlanPreferences().target));
+  // 混合学习另外两种卡（汉字 / 辨析）今天的账。索引没加载完的那一次先按 0 算，
+  // 同时把加载踢出去 —— 下一次 PROGRESS_UPDATED 重算就有数了（首页和小路都挂着这个事件）。
+  const mixedCards = lazy(() => {
+    if (!mixedCardDataLoaded()) {
+      void loadMixedCardData();
+      return { kanjiDone: 0, kanjiRemaining: 0, confusionDone: 0, confusionRemaining: 0 };
+    }
+    return mixedCardCounts(getDatabase());
+  });
   const modeCounts = lazy(() => ({
     classic: planRemaining,
-    // 混合 = 同一份今日计划 + 插播的语法,所以角标是两者的合计(主页拆成两栏说明)。
-    mixed: planRemaining + grammarRemaining(),
+    // 混合 = 同一份今日计划 + 插播的语法 / 汉字 / 辨析,所以角标是四者的合计(主页拆成几栏说明)。
+    mixed: planRemaining + grammarRemaining() + mixedCards().kanjiRemaining + mixedCards().confusionRemaining,
     mistakes: mistakes().poolSize,
     // 快速复习翻的还是今日计划那批词,只是换了个一页 50 张的形态
     quick: planRemaining,
@@ -290,6 +301,10 @@ export function getWordStats(
     get modeCounts() { return modeCounts(); },
     get grammarRemaining() { return grammarRemaining(); },
     get grammarDone() { return grammarDone(); },
+    get kanjiCardRemaining() { return mixedCards().kanjiRemaining; },
+    get kanjiCardDone() { return mixedCards().kanjiDone; },
+    get confusionCardRemaining() { return mixedCards().confusionRemaining; },
+    get confusionCardDone() { return mixedCards().confusionDone; },
     stage1ProgressDone: frontProgress.completed,
     stage1ProgressTotal: frontProgress.total,
     stage1NewDone: stage1Progress.newLane.done,

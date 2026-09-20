@@ -25,6 +25,12 @@ export interface StudyPreferences {
   grammarDailyGoal: number;
   /** 每日复习上限,0 = 自动(近期节奏 × 1.5 夹 [60, 150]),REVIEW_CAP_UNLIMITED = 不限(全部到期词) */
   reviewCap: number;
+  /**
+   * 混合学习里另外两种卡的每日新学数（docs/MIXED_STUDY_PLAN.md）。复习不设上限：到期的全出。
+   * 圆环 / 数字表单 / 备考一键改的都是这几个字段 —— 它们就是「一份状态」。
+   */
+  kanjiDailyGoal: number;
+  confusionDailyGoal: number;
   /** 答题音效(评分/翻卡/完成的木质提示音)。键名沿用 zooSounds,改了用户存的开关就丢了 */
   zooSounds: boolean;
   /**
@@ -82,6 +88,8 @@ export const defaultStudyPreferences: StudyPreferences = {
   dailyGoal: 15,
   grammarDailyGoal: 5,
   reviewCap: 0,
+  kanjiDailyGoal: 5,
+  confusionDailyGoal: 3,
   zooSounds: true,
   weeklyReportEnabled: true,
   motionLevel: "full",
@@ -103,6 +111,12 @@ const clampGrammarGoal = (value: number) => {
   return Math.min(GRAMMAR_INTENSITY_MAX, Math.max(GRAMMAR_INTENSITY_MIN, normalized));
 };
 
+/** 汉字 / 辨析的每日新学：0 = 今天不学新的只复习 */
+const clampSmallGoal = (value: number, max: number) => {
+  const normalized = Number.isFinite(value) ? Math.floor(value) : 0;
+  return Math.min(max, Math.max(0, normalized));
+};
+
 /** 复习上限「不限」：当天所有到期的词一次全给，不截断、不顺延 */
 export const REVIEW_CAP_UNLIMITED = -1;
 
@@ -119,6 +133,8 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   showRomaji: value.showRomaji ?? defaultStudyPreferences.showRomaji,
   dailyGoal: clampDailyGoal(Number(value.dailyGoal ?? defaultStudyPreferences.dailyGoal)),
   grammarDailyGoal: clampGrammarGoal(Number(value.grammarDailyGoal ?? defaultStudyPreferences.grammarDailyGoal)),
+  kanjiDailyGoal: clampSmallGoal(Number(value.kanjiDailyGoal ?? defaultStudyPreferences.kanjiDailyGoal), 50),
+  confusionDailyGoal: clampSmallGoal(Number(value.confusionDailyGoal ?? defaultStudyPreferences.confusionDailyGoal), 20),
   reviewCap: clampReviewCap(Number(value.reviewCap ?? defaultStudyPreferences.reviewCap)),
   zooSounds: value.zooSounds ?? defaultStudyPreferences.zooSounds,
   weeklyReportEnabled: value.weeklyReportEnabled ?? defaultStudyPreferences.weeklyReportEnabled,

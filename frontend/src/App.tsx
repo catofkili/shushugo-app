@@ -80,15 +80,15 @@ const toolPageTitles: Partial<Record<Page, string>> = {
 };
 
 const accountProtectedPages = new Set<Page>(["account", "personal-info"]);
-
-/** 一枚成就在屏幕上停多久。连着补发五六个时,总长度也要还在「一小串」的量级里。 */
-const ACHIEVEMENT_POP_HOLD_MS = 1700;
 /** Pro 页面：不管从哪个入口进（主页格子、卡上的链接、返回栈），没权益一律拦成付费墙。 */
 const proPages: Partial<Record<Page, FeatureId>> = {
   confusion: "confusionGroups",
   "distinction-quiz": "confusionGroups",
   "kanji-readings": "kanjiReadingUsage"
 };
+
+/** 一枚成就在屏幕上停多久。连着补发五六个时,总长度也要还在「一小串」的量级里。 */
+const ACHIEVEMENT_POP_HOLD_MS = 1700;
 /** 退场动画时长,和 .zoo-achv-pop.leaving 对齐 */
 const ACHIEVEMENT_POP_OUT_MS = 260;
 
@@ -373,16 +373,13 @@ export default function App() {
       setAuthOpen(true);
       return;
     }
-    if (newPage === "word") {
-      const currentMode = studyModeOverride ?? getStudyMode() ?? defaultStudyMode;
-      setSelectedStudyMode(currentMode);
     const proFeature = proPages[newPage];
     if (proFeature && !canUseFeature(proFeature, entitlements)) {
       setPaywallTarget(proFeature);
       return;
     }
-      setLaunchStudyMode(currentMode);
-      setWordStudyRevision((revision) => revision + 1);
+    if (newPage === "word") {
+      const currentMode = studyModeOverride ?? getStudyMode() ?? defaultStudyMode;
       // 混合学习是 Pro。主页 chip、模式页、上次存的模式三条路都从这里进学习页，
       // 拦在这一处就够；存的模式退回经典，免得下次启动又撞一次付费墙。
       if (currentMode === "mixed" && !canUseFeature("mixedStudy", entitlements)) {
@@ -391,6 +388,9 @@ export default function App() {
         setPaywallTarget("mixedStudy");
         return;
       }
+      setSelectedStudyMode(currentMode);
+      setLaunchStudyMode(currentMode);
+      setWordStudyRevision((revision) => revision + 1);
     }
     if (newPage === "home" || newPage === "study-modes") {
       const currentMode = getStudyMode();

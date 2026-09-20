@@ -15,7 +15,6 @@ interface PaywallProps {
 const APPLE_STANDARD_EULA_URL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
 const featureCopy: Record<FeatureId, { title: string; body: string }> = {
-  immersiveGrammar: {
   confusionGroups: {
     title: "疑难辨析是 Pro 功能",
     body: "1,881 组近义、同音、自他、汉字用法对照，卡上一键看，连线题练到分得清。"
@@ -28,12 +27,13 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
     title: "混合学习是 Pro 功能",
     body: "单词、语法、单独汉字、疑难辨析进同一条队列，一个圆环定当天怎么分。"
   },
+  immersiveGrammar: {
     title: "沉浸式语法学习是 Pro 功能",
     body: "适合集中扫语法、快速推进等级和减少页面切换。"
   },
   stubbornHistory: {
     title: "往日顽固词是 Pro 功能",
-    body: "翻回过去任何一天，看那天跟你打过架的词，一键收藏或整批复习。"
+    body: "翻回任意一天的顽固词。"
   },
   // ⚠️ 下面三条现在**没有任何调用方**:只有 immersiveGrammar 走 requirePro()。
   // 留着是因为它们迟早要接上;真接上那天,先确认这句「是 Pro 功能」当时是真的。
@@ -47,11 +47,11 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
   },
   fullJlptPlan: {
     title: "完整 JLPT 规划是 Pro 功能",
-    body: "把 N1-N5 的单词、语法和复习节奏作为一整套计划管理。"
+    body: "N1-N5 一整套计划。"
   },
   weeklyReportCloudHistory: {
     title: "云端历史回顾是 Pro 功能",
-    body: "在登录后的其他设备恢复已经保存的学习回顾；本机已有历史和最新回顾仍可免费阅读。"
+    body: "其他设备恢复学习回顾。"
   }
 };
 
@@ -60,12 +60,12 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
 // （requirePro）、完成页的往日顽固词（FinishPanel 自己弹）。其余 FeatureId 定义了但没人问权益，
 // 归到「后续纳入」那一条里。
 const benefits = [
-  "沉浸式语法学习",
   "疑难辨析：1,881 组近义 / 同音 / 自他对照",
   "一字多音：520 个多音字的读音判据",
   "混合学习：单词 · 语法 · 汉字 · 疑难一条队列",
-  "往日顽固词：翻回任意一天，整批复习或收藏",
-  "后续 Pro 功能自动纳入（高级总览、JLPT 规划、专项训练开发中）"
+  "沉浸式语法学习",
+  "往日顽固词",
+  "后续 Pro 功能自动纳入"
 ];
 
 export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: PaywallProps) {

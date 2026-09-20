@@ -28,11 +28,20 @@ import { studyModeInfo } from "../lib/studyMode";
 import { UNDO_LIMIT } from "../lib/word-api/undo-stack";
 import type { WordSessionOptions } from "../lib/study-types";
 import { DistinctionSheet } from "../components/DistinctionSheet";
-import { GrammarCard, QUIZ_ACCENT_AMBER } from "../features/grammar-quiz/GrammarCard";
 import { Paywall } from "../components/Paywall";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { canUseFeature } from "../lib/entitlements";
+import { GrammarCard, QUIZ_ACCENT_AMBER } from "../features/grammar-quiz/GrammarCard";
 import { getGrammarQuizSession, submitGrammarQuizAnswer, undoLastGrammarQuizAnswer, type GrammarQuizCard } from "../lib/grammar-quiz";
+import { KanjiCharCardView, KANJI_ACCENT } from "../features/mixed-study/KanjiCharCardView";
+import { MatchingCardView, MATCH_ACCENT } from "../features/mixed-study/MatchingCardView";
+import {
+  getConfusionCardSession, getKanjiCardSession, loadMixedCardData, mixedCardDataLoaded,
+  submitConfusionCardAnswer, submitKanjiCardAnswer, undoConfusionCardAnswer, undoKanjiCardAnswer
+} from "../lib/mixed-cards";
+import type { KanjiCharCard } from "../lib/kanji-char-cards";
+import type { MatchingCard } from "../lib/confusion-cards";
+import { getDatabase } from "../lib/database";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { wordDistinctions } from "../lib/models/word-distinctions";
 import { warmConfusionGroups } from "../lib/confusion-groups";
@@ -180,18 +189,26 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteMemoryOpen, setNoteMemoryOpen] = useState(false);
   const [distinctionOpen, setDistinctionOpen] = useState(false);
-  /**
   // 辨析是 Pro：卡上这个入口和完成页的「往日顽固词」一样，自己弹 Paywall，
   // 不把 requirePro 从 App 一路穿进来。
   const entitlements = useEntitlements();
   const [distinctionPaywall, setDistinctionPaywall] = useState(false);
   const openDistinction = () => (canUseFeature("confusionGroups", entitlements) ? setDistinctionOpen(true) : setDistinctionPaywall(true));
+  /**
    * 混合模式插播的语法卡。它**盖在**单词卡上面：下一张单词卡照常排好摆在底下，
    * 答完这条清掉就接着背词，所以插播不需要动单词那边的任何状态。
    */
   const [grammarCard, setGrammarCard] = useState<GrammarQuizCard | null>(null);
   const [grammarRevealed, setGrammarRevealed] = useState(false);
   const wordsSinceGrammarRef = useRef(0);
+  /**
+   * 混合学习另外两种插播（docs/MIXED_STUDY_PLAN.md 第 2 节）：单独汉字卡、疑难连线卡。
+   * 和语法卡一样盖在单词卡上面；三种轮着来（interleaveIndexRef），哪种今天没了就跳过。
+   */
+  const [kanjiCard, setKanjiCard] = useState<KanjiCharCard | null>(null);
+  const [kanjiRevealed, setKanjiRevealed] = useState(false);
+  const [matchCard, setMatchCard] = useState<MatchingCard | null>(null);
+  const interleaveIndexRef = useRef(0);
   /** 语法那一侧还有没有今天的作答可撤（读 grammar-quiz 自己那份 quiz_undo 栈） */
   const [canUndoGrammar, setCanUndoGrammar] = useState(false);
   /**
@@ -205,8 +222,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
    * 长度和 UNDO_LIMIT 对齐就够：两侧各自也只存这么多条，栈顶两条一定在各自的栈里。
    * 用 state 不用 ref：它决定按钮亮不亮，是**参与渲染**的值。
    */
-  const [undoKinds, setUndoKinds] = useState<("word" | "grammar")[]>([]);
-  const pushUndoKind = (kind: "word" | "grammar") => {
+  type UndoKind = "word" | "grammar" | "kanji" | "confusion";
+  const [undoKinds, setUndoKinds] = useState<UndoKind[]>([]);
+  const pushUndoKind = (kind: UndoKind) => {
     setUndoKinds((kinds) => [...kinds, kind].slice(-UNDO_LIMIT));
   };
   const popUndoKind = () => setUndoKinds((kinds) => kinds.slice(0, -1));
@@ -349,6 +367,17 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         setGrammarCard(grammarTail);
         setGrammarRevealed(false);
       }
+      // 语法也空了就轮到汉字、再轮到辨析：四种都空了才算今天完成。
+      let otherTail = false;
+      if (mode === "mixed" && !data.card && !grammarTail) {
+        if (!mixedCardDataLoaded()) await loadMixedCardData();
+        const kanjiTail = getKanjiCardSession(getDatabase()).card;
+        if (kanjiTail) { setKanjiCard(kanjiTail); setKanjiRevealed(false); otherTail = true; }
+        else {
+          const matchTail = getConfusionCardSession(getDatabase()).card;
+          if (matchTail) { setMatchCard(matchTail); otherTail = true; }
+        }
+      }
       setCard(data.card);
       setUnitKey(data.unitKey ?? null);
       setUnitTarget(data.unitTarget ?? null);
@@ -359,7 +388,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setTailActive(false);
       setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
-      if (!data.card && !grammarTail && !completionReportedRef.current && isDailyModeComplete(mode, data.stats)) {
+      if (!data.card && !grammarTail && !otherTail && !completionReportedRef.current && isDailyModeComplete(mode, data.stats)) {
         completionReportedRef.current = true;
         onDailyModeComplete?.(mode);
       }
@@ -385,11 +414,51 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     wordsSinceGrammarRef.current += 1;
     if (wordsSinceGrammarRef.current < MIXED_GRAMMAR_EVERY) return;
     wordsSinceGrammarRef.current = 0;
-    const next = getGrammarQuizSession(grammarLevel).card;
-    if (!next) return;
-    setGrammarCard(next);
-    setGrammarRevealed(false);
+    // 三种插播轮着来：语法 → 汉字 → 辨析。今天没了的那种跳过，三种都没了就不插。
+    const kinds = ["grammar", "kanji", "confusion"] as const;
+    for (let step = 0; step < kinds.length; step += 1) {
+      const kind = kinds[(interleaveIndexRef.current + step) % kinds.length];
+      if (kind === "grammar") {
+        const next = getGrammarQuizSession(grammarLevel).card;
+        if (next) { setGrammarCard(next); setGrammarRevealed(false); interleaveIndexRef.current += step + 1; return; }
+      } else if (mixedCardDataLoaded()) {
+        if (kind === "kanji") {
+          const next = getKanjiCardSession(getDatabase()).card;
+          if (next) { setKanjiCard(next); setKanjiRevealed(false); interleaveIndexRef.current += step + 1; return; }
+        } else {
+          const next = getConfusionCardSession(getDatabase()).card;
+          if (next) { setMatchCard(next); interleaveIndexRef.current += step + 1; return; }
+        }
+      }
+    }
   }, [grammarLevel, initialMode]);
+
+  /** 汉字卡评分。声音、触觉、连对台阶沿用单词那一套。 */
+  const answerKanjiCard = (value: WordAnswer) => {
+    if (!kanjiCard) return;
+    triggerMemoryHaptic(value);
+    if (value === "know" || value === "known_forever") { playKnow(correctStreakRef.current); correctStreakRef.current += 1; }
+    else { correctStreakRef.current = 0; playDontKnow(); }
+    submitKanjiCardAnswer(kanjiCard.char, value);
+    pushUndoKind("kanji");
+    setKanjiCard(null);
+    setKanjiRevealed(false);
+    if (!card) void loadNext(initialMode);
+  };
+
+  /** 连线卡连完那一刻记账；「继续」才翻下一张。 */
+  const finishMatchCard = (value: WordAnswer) => {
+    if (!matchCard) return;
+    triggerMemoryHaptic(value);
+    if (value === "know") { playKnow(correctStreakRef.current); correctStreakRef.current += 1; }
+    else { correctStreakRef.current = 0; playDontKnow(); }
+    submitConfusionCardAnswer(matchCard.groupKey, value);
+    pushUndoKind("confusion");
+  };
+  const continueAfterMatch = () => {
+    setMatchCard(null);
+    if (!card) void loadNext(initialMode);
+  };
 
   /** 语法卡的评分。声音、触觉沿用单词那一套（连对的音高台阶也接着爬）。 */
   const answerGrammarCard = (value: WordAnswer) => {
@@ -828,8 +897,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         || event.metaKey
         || event.altKey
         || distinctionOpen
-        // 语法卡盖在上面时键位归它（GrammarCard 自己挂了一套一模一样的）
-        || grammarCard
+        // 语法卡盖在上面时键位归它（GrammarCard 自己挂了一套一模一样的）；汉字卡、连线卡同理
+        || grammarCard || kanjiCard || matchCard
         || isEditableTarget(event.target)
       ) return;
 
@@ -853,13 +922,29 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [card, distinctionOpen, grammarCard, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
+  }, [card, distinctionOpen, grammarCard, kanjiCard, matchCard, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
     // 混合模式：栈顶那一笔是语法的话走 grammar-quiz 自己那份回滚
     // （FSRS + grammar_reviews + 重刷队列一起退）。两侧是各自独立的栈，
     // 拿单词那条去撤语法只会撤错东西 —— 见 undoKinds 上的注释。
-    if (undoKinds[undoKinds.length - 1] === "grammar") {
+    const topKind = undoKinds[undoKinds.length - 1];
+    if (topKind === "kanji" || topKind === "confusion") {
+      // 汉字 / 辨析：删最后一行流水再重放那张卡（card-log.undoLast），精确回到上一状态；
+      // 然后把那张卡重新摆出来。
+      popUndoKind();
+      correctStreakRef.current = 0;
+      if (topKind === "kanji") {
+        undoKanjiCardAnswer();
+        setKanjiCard(getKanjiCardSession(getDatabase()).card);
+        setKanjiRevealed(false);
+      } else {
+        undoConfusionCardAnswer();
+        setMatchCard(getConfusionCardSession(getDatabase()).card);
+      }
+      return;
+    }
+    if (topKind === "grammar") {
       if (!canUndoGrammar) return;
       const session = undoLastGrammarQuizAnswer(grammarLevel);
       popUndoKind();
@@ -878,9 +963,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 所以语法卡摆在屏幕上时，栈顶那一笔一定是单词。不把插播收回去的话，撤销撤的是
       // 语法卡**底下**那张单词卡，屏幕纹丝不动 —— 看着就是「上一个不能用」。
       // 计数退回一格：那次作答不算数了，插播也不该提前用掉。
-      if (grammarCard) {
+      if (grammarCard || kanjiCard || matchCard) {
         setGrammarCard(null);
         setGrammarRevealed(false);
+        setKanjiCard(null);
+        setMatchCard(null);
         wordsSinceGrammarRef.current = MIXED_GRAMMAR_EVERY - 1;
       }
       // 撤销了刚才那次作答,音高台阶也该跟着退回起点(不做精确回退:撤销很少用,
@@ -1216,13 +1303,45 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
    */
   const undoEnabled = initialMode === "mixed" && undoKinds.length === 0
     ? false
-    : undoKind === "grammar" ? canUndoGrammar : canUndo;
+    : undoKind === "grammar" ? canUndoGrammar
+      // 汉字 / 辨析：栈顶是它就一定能撤（流水就在库里）
+      : undoKind === "kanji" || undoKind === "confusion" ? true : canUndo;
 
   const countdownActive = !loading
     && !dailyReviewActive
     && countdownRemaining > 0
     && countdownRemaining <= 30
     && isPlanMode(initialMode);
+
+  // 混合学习的汉字 / 辨析插播，和语法卡同一个位置、同一颗撤销按钮，只有颜色和内容不同。
+  if (kanjiCard || matchCard) {
+    const accent = kanjiCard ? KANJI_ACCENT : MATCH_ACCENT;
+    return (
+      <div style={accent} className="word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px]">
+        <div className="mb-2 flex items-center gap-2 lg:mx-auto lg:w-[min(900px,100%)]">
+          <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold !text-[#2f3333]" style={{ background: "var(--quiz-accent)" }}>
+            <Shuffle size={13} />
+            {kanjiCard ? "单独汉字" : "疑难辨析"}
+          </span>
+          <span className="text-xs text-white/45">{kanjiCard ? "考的是读音，不考写法" : "连完自动评分"}</span>
+          <button
+            onClick={undo}
+            disabled={!undoEnabled}
+            className="focus-ring ml-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 disabled:opacity-40"
+            title={undoEnabled ? "上一个" : "没有可撤销的作答"}
+            aria-label="上一个"
+          >
+            <RotateCcw size={15} />
+          </button>
+        </div>
+        {kanjiCard ? (
+          <KanjiCharCardView card={kanjiCard} revealed={kanjiRevealed} onReveal={() => setKanjiRevealed(true)} onAnswer={answerKanjiCard} />
+        ) : (
+          <MatchingCardView card={matchCard!} onFinished={finishMatchCard} onContinue={continueAfterMatch} />
+        )}
+      </div>
+    );
+  }
 
   // 混合模式的语法插播。整页换色是这里唯一要说的话：正在答的不是单词。
   // 卡片、键位、评分都和语法考题页共用一份（GrammarCard），只有配色不同。
@@ -1509,8 +1628,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             jumpDisabled={submitting}
           />
         )}
-
-        {reliefActive && stats?.dailyRelief && (
         {distinctionPaywall && (
           <Paywall
             feature="confusionGroups"
@@ -1518,17 +1635,18 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             onUnlocked={() => { setDistinctionPaywall(false); setDistinctionOpen(true); }}
           />
         )}
+
+        {reliefActive && stats?.dailyRelief && (
           <div className="daily-relief-banner" role="status" aria-live="polite">
             <span className="daily-relief-banner-spark">✦</span>
             <strong>昨日表现很棒，今日减负（{stats.dailyRelief.total}）个！</strong>
-            <span>这几张只是把已记住的好消息发给你，不增加今日负担</span>
           </div>
         )}
         {dailyReviewActive && (
           <div className={`daily-review-banner${dailyReviewIntro ? " daily-review-banner-intro" : ""}`} role="status" aria-live="polite">
             <span>当日错题回顾</span>
             <strong>记住一张，红色就少一张</strong>
-            <small>忘记 / 模糊都会隔开再来，全部答对才结束</small>
+            <small>答对为止</small>
           </div>
         )}
         {error && (

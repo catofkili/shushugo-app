@@ -73,6 +73,11 @@ export interface WordStats {
   grammarRemaining: number;
   /** 同一级今天已经过关的语法条数（混合模式顶栏的进度条把它算进今日总量里） */
   grammarDone: number;
+  /** 混合学习的单独汉字卡 / 疑难连线卡今天还剩、已过关（索引没加载完时是 0） */
+  kanjiCardRemaining: number;
+  kanjiCardDone: number;
+  confusionCardRemaining: number;
+  confusionCardDone: number;
   /** 模式切换器的角标：每个模式现在还能练多少（队列没建时算「进去之后会有多少」） */
   modeCounts: {
     classic: number;

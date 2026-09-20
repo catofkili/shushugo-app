@@ -165,11 +165,34 @@ export const createCardLog = (config: CardLogConfig) => {
     return { total, done, remaining: Math.max(0, total - done) };
   };
 
+  /**
+   * 撤销最后一次作答：删最后一行流水，按剩下的流水把这张卡重放一遍。
+   * 精确回到上一状态，不需要另存「上一次的快照」。返回被撤的 key，没有可撤的返回 null。
+   */
+  const undoLast = (day = today()): string | null => {
+    ensure();
+    const last = rowsFor(`SELECT id, ${id} AS k FROM ${reviewsTable} WHERE reviewed_on = ? ORDER BY reviewed_at DESC, id DESC LIMIT 1`, [day])[0];
+    if (!last) return null;
+    const key = String(last.k);
+    getDatabase().run(`DELETE FROM ${reviewsTable} WHERE id = ?`, [last.id as number]);
+    if (!replay([key])) {
+      // 这张卡今天之前从没答过：流水删空了，检查点也清回「没学过」
+      getDatabase().run(`
+        UPDATE ${memory}
+        SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
+            fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL, fsrs_last_review = NULL,
+            fsrs_state = NULL, fsrs_steps = NULL, fsrs_reps = NULL, fsrs_lapses = NULL
+        WHERE ${id} = ?
+      `, [key]);
+    }
+    return key;
+  };
+
   /** 到期数（给圆环做池子和「复习建议下限」）。 */
   const dueCount = () => {
     ensure();
     return firstValue<number>(`SELECT COUNT(*) FROM ${memory} WHERE ${exclude} AND seen_count > 0 AND fsrs_due <= ?`, [studyDayEnd().toISOString()], 0);
   };
 
-  return { ensure, stepMode, record, replay, createTasks, pickNext, progress, dueCount, exclude };
+  return { ensure, stepMode, record, replay, undoLast, createTasks, pickNext, progress, dueCount, exclude };
 };

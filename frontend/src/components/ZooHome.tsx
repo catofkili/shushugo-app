@@ -233,9 +233,13 @@ export function ZooHome({
               而「今天还欠几条语法」在别处一个字都没有。两栏照样加起来等于大卡的数。 */}
           {activeMode === "mixed" && stats ? (
             <span className="zoo-now-split">
-              单词 <b>{Math.max(stats.modeCounts.mixed - stats.grammarRemaining, 0)}</b>
+              单词 <b>{Math.max(stats.modeCounts.mixed - stats.grammarRemaining - stats.kanjiCardRemaining - stats.confusionCardRemaining, 0)}</b>
               <i aria-hidden="true">·</i>
               语法 <b>{stats.grammarRemaining}</b>
+              <i aria-hidden="true">·</i>
+              汉字 <b>{stats.kanjiCardRemaining}</b>
+              <i aria-hidden="true">·</i>
+              辨析 <b>{stats.confusionCardRemaining}</b>
             </span>
           ) : isPlanMode && stats && stats.stage1NewTotal + stats.stage1ReviewTotal > 0 && (
             <span className="zoo-now-split">
