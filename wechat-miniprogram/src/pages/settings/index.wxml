@@ -2,16 +2,14 @@
   <view class="hero">
     <navigator class="back" open-type="navigateBack">‹ 返回学习</navigator>
     <text class="title">设置与权益</text>
-    <text class="subtitle">离线学习始终可用，付费结果以服务端权益为准</text>
+    <text class="subtitle">离线学习始终可用，购买结果会同步到你的账号</text>
   </view>
   <view class="card">
     <view class="row"><text class="label">当前状态</text><text class="value {{entitlement.active ? 'active' : ''}}">{{entitlement.active ? 'Pro' : '免费版'}}</text></view>
     <text wx:if="{{entitlement.expiresAt}}" class="detail">到期：{{entitlement.expiresAt}}</text>
-    <text class="detail">来源：{{entitlement.source}}</text>
   </view>
   <view class="card">
     <view class="row"><text class="label">账号</text><text class="value">{{auth.signedIn ? '已绑定' : '未绑定'}}</text></view>
-    <text wx:if="{{auth.userId}}" class="detail">用户：{{auth.userId}}</text>
     <button class="secondary small" loading="{{busy}}" disabled="{{busy}}" bindtap="signIn">{{auth.signedIn ? '重新绑定微信账号' : '绑定微信账号'}}</button>
     <navigator class="legal-link" url="/pages/legal/index">用户协议与隐私政策 →</navigator>
   </view>
@@ -29,10 +27,7 @@
     <button class="secondary small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleSync">同步进度</button>
     <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleExportBackup">导出学习备份</button>
     <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleImportBackup">合并学习备份</button>
-    <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleSave">原子写盘</button>
-    <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleRestore">冷启动恢复</button>
-    <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="handleDue">查看到期数量</button>
   </view>
   <view wx:if="{{result}}" class="card result">{{result}}</view>
-  <view class="notice">支付不会打开站外网页；客户端只接受服务端生成的微信支付订单，支付结果还要经过权益接口确认。</view>
+  <view class="notice">支付不会打开站外网页；购买结果会经过微信确认，并同步到你的账号。</view>
 </scroll-view>

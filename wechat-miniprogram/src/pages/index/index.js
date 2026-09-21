@@ -16,17 +16,13 @@ const { confusionGroupsForWordWithDb } = require('../../runtime/confusion');
 const { cachedEntitlement } = require('../../runtime/entitlements');
 const { canUse } = require('../../core/entitlements');
 
-function formatError(error) {
-  return error?.message || error?.errMsg || String(error);
-}
-
 Page({
   data: {
     busy: false,
     result: '',
     status: { ready: false },
     statusText: '等待初始化',
-    detailText: '词库会下载到小程序自己的用户目录。',
+    detailText: '首次使用需要下载离线词库。',
     card: null,
     answerVisible: false,
     stats: { planned: 0, completed: 0, remaining: 0, answered: 0, newAnswered: 0, dueTotal: 0 },
@@ -75,8 +71,8 @@ Page({
       status,
       statusText: status.ready ? '离线库已就绪' : '等待初始化',
       detailText: status.ready
-        ? `来源：${status.source}；库文件：${status.paths.dbPath}`
-        : '首次初始化会把词库放入小程序自己的用户目录。'
+        ? '词库已保存在本机，可以断网学习。'
+        : '首次使用需要下载离线词库。'
     });
   },
 
@@ -98,7 +94,7 @@ Page({
       });
     } catch (error) {
       console.error('[study] 刷新首页失败', error);
-      this.setData({ result: `读取今日任务失败：${formatError(error)}` });
+      this.setData({ result: '读取今日任务失败，请稍后重试' });
     }
   },
 
@@ -111,8 +107,8 @@ Page({
       this.refreshStatus();
     } catch (error) {
       console.error(`[study] ${label}失败`, error);
-      this.setData({ result: `${label}失败：${formatError(error)}` });
-      wx.showToast({ title: '操作失败，请看详情', icon: 'none', duration: 2600 });
+      this.setData({ result: `${label}失败，请稍后重试` });
+      wx.showToast({ title: '操作失败，请稍后重试', icon: 'none', duration: 2600 });
     } finally {
       this.setData({ busy: false });
     }
@@ -123,7 +119,7 @@ Page({
       const db = await ensureDatabase();
       const row = db.exec('SELECT COUNT(*) FROM words')[0]?.values?.[0]?.[0] ?? 0;
       await this.refreshHome();
-      return `words=${row}`;
+      return `${row.toLocaleString()} 条词汇已就绪`;
     });
   },
 

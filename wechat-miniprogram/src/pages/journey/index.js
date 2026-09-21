@@ -8,6 +8,6 @@ Page({
     try {
       if (!getStatus().ready) await ensureDatabase();
       this.setData({ ready: true, summary: studySummary(getDatabase()), board: achievementBoard() });
-    } catch (error) { this.setData({ error: error?.message || String(error) }); }
+    } catch (error) { console.error('[journey] 读取失败', error); this.setData({ error: '暂时无法读取，请稍后重试' }); }
   }
 });

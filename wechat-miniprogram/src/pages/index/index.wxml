@@ -2,7 +2,7 @@
   <view class="hero">
     <text class="eyebrow">收集日 · OFFLINE STUDY</text>
     <text class="title">今天学一点</text>
-    <text class="subtitle">本地 SQLite · 断网可用 · 答题后自动保存</text>
+    <text class="subtitle">本地保存 · 断网可用 · 答题后自动记录</text>
   </view>
 
   <view class="card status-card">
@@ -109,6 +109,6 @@
   </view>
 
   <view class="note">
-    <text>本页只使用小程序自己的用户目录，不读取或改写 iOS/Chrome 学习数据。</text>
+    <text>学习记录默认保存在本机，绑定账号后可按你的操作同步。</text>
   </view>
 </scroll-view>

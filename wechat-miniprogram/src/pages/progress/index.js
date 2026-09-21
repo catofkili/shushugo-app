@@ -9,7 +9,8 @@ Page({
       if (!getStatus().ready) await ensureDatabase();
       this.setData({ ready: true, summary: studySummary(getDatabase()) });
     } catch (error) {
-      this.setData({ error: error?.message || String(error) });
+      console.error('[progress] 读取失败', error);
+      this.setData({ error: '暂时无法读取，请稍后重试' });
     }
   }
 });

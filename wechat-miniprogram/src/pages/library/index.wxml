@@ -2,7 +2,7 @@
   <view class="hero">
     <navigator class="back" open-type="navigateBack">‹ 返回学习</navigator>
     <text class="title">词库 · 选词</text>
-    <text class="subtitle">筛选、查看记忆色阶；翻词典不会改变 FSRS</text>
+    <text class="subtitle">筛选、查看记忆状态；查词不会改变复习计划</text>
   </view>
 
   <view wx:if="{{!ready}}" class="card">{{busy ? '正在初始化本地库…' : error}}</view>

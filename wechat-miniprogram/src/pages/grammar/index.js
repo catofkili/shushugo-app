@@ -1,6 +1,11 @@
 const { ensureDatabase, getStatus } = require('../../runtime/database-store');
 const { grammarSummary, markGrammar, searchGrammar, toggleGrammarFavorite } = require('../../runtime/grammar');
 
+const formatError = (error) => {
+  console.error('[grammar] 操作失败', error);
+  return '操作失败，请稍后重试';
+};
+
 Page({
   data: {
     ready: false,
@@ -24,7 +29,7 @@ Page({
       this.setData({ ready: true, summary: grammarSummary() });
       this.search();
     } catch (error) {
-      this.setData({ error: error?.message || String(error) });
+      this.setData({ error: formatError(error) });
     }
   },
 
@@ -43,7 +48,7 @@ Page({
     try {
       this.setData({ rows: searchGrammar(this.data.query, { level: this.data.level, limit: 100 }) });
     } catch (error) {
-      this.setData({ error: error?.message || String(error) });
+      this.setData({ error: formatError(error) });
     }
   },
 
@@ -62,7 +67,7 @@ Page({
       this.setData({ selected: { ...selected, known_forever: 1, seen_count: Number(selected.seen_count || 0) + 1 } });
       this.search();
     } catch (error) {
-      this.setData({ error: error?.message || String(error) });
+      this.setData({ error: formatError(error) });
     } finally {
       this.setData({ busy: false });
     }
@@ -77,7 +82,7 @@ Page({
       this.setData({ selected: { ...selected, favorite: favorite ? 1 : 0 } });
       this.search();
     } catch (error) {
-      this.setData({ error: error?.message || String(error) });
+      this.setData({ error: formatError(error) });
     } finally {
       this.setData({ busy: false });
     }
@@ -87,7 +92,7 @@ Page({
     try {
       const rows = searchGrammar('', { level: this.data.level, limit: 200 }).filter((row) => row.example_jp);
       this.setData({ immersive: true, immersiveRows: rows, immersiveIndex: 0 });
-    } catch (error) { this.setData({ error: error?.message || String(error) }); }
+    } catch (error) { this.setData({ error: formatError(error) }); }
   },
   nextImmersive() {
     if (!this.data.immersiveRows.length) return;

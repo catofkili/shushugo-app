@@ -9,10 +9,21 @@
 4. 开发者工具 → 顶栏「上传」→ 填版本号和备注 → 后台「版本管理」里把这个开发版**提交审核**。
 5. 审核时长通常 1–7 天；被打回看理由，大多是隐私指引和类目。
 
+## 提交审核前：上传包清理
+
+1. 在 `wechat-miniprogram` 运行 `npm test`，必须全部通过；其中发布检查会确认开发诊断控件未回到界面，
+   `uploadWithSourceMap=false`、`urlCheck=true`。
+2. 扫描 `src/`，不得出现 localhost / 测试域名、mock / vConsole、私钥、AppSecret、硬编码 Token 或管理员入口。
+3. 用户界面不得显示数据库路径、内部用户 ID、权益来源枚举、原始服务端异常，或「原子写盘」「冷启动恢复」
+   之类开发诊断操作。检查内容更新、同步、导入导出备份属于正式用户功能，可以保留。
+4. `miniprogramRoot` 必须保持 `src/`。测试脚本、README、提审文档、云函数源码和本机私有配置都在它之外，
+   不进入审核代码包。
+5. 上传新开发版后，在后台确认它替换旧开发版；没有完成本清单和下面的支付硬门槛，不提交审核。
+
 ## 版本号与「项目备注」（上传时填）
 
-版本号：`0.1.0`
-备注：`首个上线版本：JLPT 词汇与语法查询、FSRS 复习、辨析、词汇量测试；本地数据库，可选微信账号同步。`
+版本号：`0.1.1`
+备注：`首个上线版本：JLPT 词汇与语法查询、记忆复习、辨析与学习统计；本地保存，可选微信账号同步。`
 
 ## 提审表单：「版本描述」
 
@@ -56,10 +67,38 @@
 ⚠️ 环境变量里**不能写 JSON**（`{"thing1":…}`）：tcb 部署时会把它解析成对象，云 API 直接拒收
 （`Environment.Variables.1.Value is not valid`），所以字段用 `key=值;key=值` 这种写法。
 
+## 提交审核前：虚拟支付硬门槛（保留「购买 Pro」入口时）
+
+⚠️ **不能把虚拟支付留到上线后。** 支付代码存在不等于微信后台已经开通。只要当前版本显示购买入口，
+下面各项就必须在提交审核前全部完成；否则先隐藏购买入口，再提交一个不含付费功能的版本。
+
+1. 后台「支付与交易 → 虚拟支付」完成开通、实名 / 结算资料和协议签署，取得 OfferID / 当前 AppKey。
+2. 创建并发布客户端实际使用的商品。当前客户端购买入口只调用
+   `shushugo_pro_lifetime`，价格应为 **298 元**，必须与 Worker 的 `29800` 分一致。
+   `shushugo_pro_monthly` / `shushugo_pro_yearly` 目前只有服务端价格，客户端没有购买入口。
+3. `cloudflare-sync/wrangler.jsonc` 填 `WECHAT_OFFER_ID`；AppKey 不得写入仓库或聊天，使用：
+
+   ```bash
+   cd cloudflare-sync
+   npx wrangler secret put WECHAT_PAY_APP_KEY
+   npx wrangler deploy
+   ```
+
+4. 后台「开发 → 消息推送」配置：URL
+   `https://api.shushugo.com/api/purchases/wechat-notifications`，数据格式 **JSON**，加密方式明文。
+   Token 自己生成，并用 `npx wrangler secret put WECHAT_MSG_TOKEN` 保存同一个值。点「提交」时微信会立即
+   向 URL 发 GET 握手，必须通过后才能保存。
+5. 检查 `https://api.shushugo.com/api/health`，必须同时满足：
+   `wechatPayConfigured=true`、`wechatPushConfigured=true`、`migrationsApplied=true`、
+   `productionReady=true`。
+6. 沙箱（`WECHAT_PAY_ENV=1`）真机验收：取消支付不发权益、支付成功发权益、重复 verify 不重复发放、
+   其他账号不能认领订单、发货通知可补单、退款通知撤销权益、重新登录 / 重装后能恢复。通过后切回
+   正式环境（`WECHAT_PAY_ENV=0`），再完成一笔最小范围真实支付与退款验收。
+
+截至 2026-09-21 的已核实状态：OfferID、支付 AppKey、消息推送 Token 均未配置，线上健康检查的
+`wechatPayConfigured` / `wechatPushConfigured` / `productionReady` 均为 false；因此开发版可以保留，
+但还不能提交审核。
+
 ## 上线后
 
-- 后台「支付与交易」开通**虚拟支付**（类目「工具」已满足），拿到 OfferID / AppKey 后：
-  `wrangler.jsonc` 填 `WECHAT_OFFER_ID`，`wrangler secret put WECHAT_PAY_APP_KEY`，重新 `wrangler deploy`。
-- 后台「开发 → 消息推送」：URL `https://api.shushugo.com/api/purchases/wechat-notifications`，
-  Token 自己填一个再 `wrangler secret put WECHAT_MSG_TOKEN`，数据格式 **JSON**，加密方式明文。
-  点「提交」时微信会立刻向这个 URL 发一次 GET 握手，通了才保存 —— 这一步就是「域名能不能用」的实测。
+- 监控支付查询、发货通知和退款通知的错误；抽查权益发放与撤销是否和微信订单状态一致。

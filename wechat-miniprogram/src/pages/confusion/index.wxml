@@ -1,5 +1,5 @@
 <scroll-view class="page" scroll-y>
-  <view class="hero"><navigator class="back" open-type="navigateBack">‹ 返回学习</navigator><text class="title">疑难辨析</text><text class="subtitle">从本地词库现算的 {{summary.total}} 组；标记掌握不改词卡 FSRS</text></view>
+  <view class="hero"><navigator class="back" open-type="navigateBack">‹ 返回学习</navigator><text class="title">疑难辨析</text><text class="subtitle">从本地词库整理的 {{summary.total}} 组；标记掌握不会改变词卡复习进度</text></view>
   <view wx:if="{{!ready}}" class="card">{{busy ? '正在初始化本地库…' : error}}</view>
   <view wx:elif="{{locked}}" class="card paywall">
     <text class="paywall-title">疑难辨析是 Pro 功能</text>

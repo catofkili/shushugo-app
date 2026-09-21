@@ -8,7 +8,7 @@ Page({
       if (!getStatus().ready) await ensureDatabase();
       const board = achievementBoard();
       this.setData({ ready: true, board, rows: board.items });
-    } catch (error) { this.setData({ error: error?.message || String(error) }); }
+    } catch (error) { console.error('[achievements] 读取失败', error); this.setData({ error: '暂时无法读取，请稍后重试' }); }
   },
   handleCategoryChange(event) {
     const categoryIndex = Number(event.detail.value); const category = this.data.categories[categoryIndex];

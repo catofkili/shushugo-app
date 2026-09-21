@@ -34,7 +34,10 @@ const SORT_OPTIONS = [
   { id: 'kana', label: '五十音' }
 ];
 
-const formatError = (error) => error?.message || error?.errMsg || String(error);
+const formatError = (error) => {
+  console.error('[library] 操作失败', error);
+  return '操作失败，请稍后重试';
+};
 
 Page({
   data: {

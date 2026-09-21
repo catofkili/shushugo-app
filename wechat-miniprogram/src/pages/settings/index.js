@@ -1,4 +1,4 @@
-const { ensureDatabase, getDatabase, getStatus, restoreDatabase, saveDatabase } = require('../../runtime/database-store');
+const { ensureDatabase, getDatabase, getStatus } = require('../../runtime/database-store');
 const { cachedEntitlement, fetchEntitlement } = require('../../runtime/entitlements');
 const { requestPayment } = require('../../runtime/payment');
 const config = require('../../config');
@@ -18,7 +18,8 @@ Page({
       this.setData({ ready: true, entitlement: cachedEntitlement(), auth: authStatus() });
       reminderStatus().then((reminder) => this.setData({ reminder })).catch(() => undefined);
     } catch (error) {
-      this.setData({ result: error?.message || error?.errMsg || JSON.stringify(error) });
+      console.error('[settings] 初始化失败', error);
+      this.setData({ result: '设置加载失败，请稍后重试' });
     }
   },
 
@@ -37,9 +38,10 @@ Page({
     this.setData({ busy: true, result: '正在请求微信登录…' });
     try {
       const auth = await signInWithWechat();
-      this.setData({ auth, result: `已绑定账号 ${auth.userId}` });
+      this.setData({ auth, result: '微信账号已绑定' });
     } catch (error) {
-      this.setData({ result: `登录失败：${error?.message || error?.errMsg || JSON.stringify(error)}` });
+      console.error('[settings] 微信登录失败', error);
+      this.setData({ result: '微信登录失败，请稍后重试' });
     } finally {
       this.setData({ busy: false });
     }
@@ -47,12 +49,13 @@ Page({
 
   async refreshEntitlement() {
     if (this.data.busy) return;
-    this.setData({ busy: true, result: '正在读取服务端权益…' });
+    this.setData({ busy: true, result: '正在更新账号权益…' });
     try {
       const entitlement = await fetchEntitlement();
       this.setData({ entitlement, result: '权益状态已更新' });
     } catch (error) {
-      this.setData({ result: `权益读取失败：${error?.message || error?.errMsg || JSON.stringify(error)}` });
+      console.error('[settings] 权益读取失败', error);
+      this.setData({ result: '权益更新失败，请稍后重试' });
     } finally {
       this.setData({ busy: false });
     }
@@ -68,7 +71,8 @@ Page({
       this.setData({ busy: false });
       await this.refreshEntitlement();
     } catch (error) {
-      this.setData({ result: `支付未完成：${error?.message || error?.errMsg || JSON.stringify(error)}` });
+      console.error('[settings] 支付失败', error);
+      this.setData({ result: '支付未完成，请稍后重试' });
     } finally {
       this.setData({ busy: false });
     }
@@ -78,20 +82,17 @@ Page({
     if (this.data.busy) return;
     this.setData({ busy: true, result: `${label}…` });
     try { const result = await task(); this.setData({ result: `${label}完成：${result || 'OK'}` }); }
-    catch (error) { this.setData({ result: `${label}失败：${error?.message || error?.errMsg || JSON.stringify(error)}` }); }
+    catch (error) { console.error(`[settings] ${label}失败`, error); this.setData({ result: `${label}失败，请稍后重试` }); }
     finally { this.setData({ busy: false }); }
   },
   handleContentUpdate() { return this.run('检查内容更新', async () => { const result = await updateFromManifest(); return result.updated ? `已更新 ${result.version}` : `当前已是 ${result.version}`; }); },
-  handleSync() { return this.run('同步进度', async () => { const result = await syncNow(); return `合并流水 ${result.merged?.insertedReviews ?? 0} 条`; }); },
-  handleSave() { return this.run('导出并原子写盘', async () => { const result = await saveDatabase(); return `${(result.bytes / 1024 / 1024).toFixed(2)} MiB`; }); },
-  handleRestore() { return this.run('冷启动恢复', async () => { const db = await restoreDatabase(); return `words=${db.exec('SELECT COUNT(*) FROM words')[0]?.values?.[0]?.[0] ?? 0}`; }); },
-  handleDue() { return this.run('到期查询', async () => { const row = getDatabase().exec("SELECT COUNT(*) FROM progress WHERE known_forever = 0 AND seen_count > 0 AND (fsrs_due IS NULL OR fsrs_due <= datetime('now'))"); return `到期 ${row[0]?.values?.[0]?.[0] ?? 0} 张`; }); },
+  handleSync() { return this.run('同步进度', async () => { const result = await syncNow(); return `已合并 ${result.merged?.insertedReviews ?? 0} 条学习记录`; }); },
   handleExportBackup() { return this.run('导出学习备份', async () => { const result = await exportBackup(); if (typeof wx.shareFileMessage === 'function') wx.shareFileMessage({ filePath: result.path, fileName: 'shushugo-learning-backup.db' }); return `${(result.bytes / 1024 / 1024).toFixed(2)} MiB`; }); },
   handleImportBackup() {
     this.run('合并学习备份', async () => {
       const selection = await new Promise((resolve, reject) => wx.chooseMessageFile({ count: 1, type: 'file', extension: ['db', 'sqlite'], success: resolve, fail: reject }));
       const filePath = selection?.tempFiles?.[0]?.path; if (!filePath) throw new Error('没有选择备份文件');
-      const result = await importBackup(filePath); return `新增流水 ${result.insertedReviews ?? 0} 条`;
+      const result = await importBackup(filePath); return `已合并 ${result.insertedReviews ?? 0} 条学习记录`;
     });
   }
 });

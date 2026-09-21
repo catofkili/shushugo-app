@@ -1,7 +1,7 @@
 {
   "name": "shushugo-wechat-miniprogram",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "收集日微信小程序：离线 SQLite、学习核心、同步与权益适配器",
   "scripts": {
     "smoke": "node scripts/p0-a-smoke.mjs",

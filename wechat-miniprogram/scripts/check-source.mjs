@@ -37,6 +37,7 @@ const indexPage = read('src/pages/index/index.wxml');
 const indexScript = read('src/pages/index/index.js');
 const grammarPage = read('src/pages/grammar/index.wxml');
 const settingsPage = read('src/pages/settings/index.wxml');
+const projectConfig = JSON.parse(read('project.config.json'));
 
 /*
  * 表记数据是从 iOS 端拷过来的，两份必须逐字节一致 —— 一边改了另一边没跟上，
@@ -119,6 +120,8 @@ const checks = [
   ,['47 achievements are locally calculated', achievements.includes('CATALOG') && achievements.includes('achievement_unlocked') && achievementsSmoke.includes('47')]
   ,['rich study card data is rendered', indexPage.includes('pitch-card') && indexPage.includes('furigana-line') && indexPage.includes('dictionaryEntries') && indexScript.includes('modeLabel')]
   ,['maintenance controls are outside study home', !indexPage.includes('handleContentUpdate') && settingsPage.includes('handleContentUpdate')]
+  ,['release UI excludes developer diagnostics', !['handleSave', 'handleRestore', 'handleDue', 'entitlement.source', 'auth.userId', '原子写盘', '冷启动恢复'].some((text) => settingsPage.includes(text)) && !indexScript.includes('status.paths.dbPath')]
+  ,['release upload omits source maps and checks domains', projectConfig.setting.uploadWithSourceMap === false && projectConfig.setting.urlCheck === true]
   ,['immersive grammar mode is wired', grammarPage.includes('沉浸阅读') && read('src/pages/grammar/index.js').includes('handleImmersive')]
   ,['daily relief is bounded and memory-neutral', relief.includes('MIN_ACTIVITY_WORDS') && relief.includes('reviews') && relief.includes('FSRS') && reliefSmoke.includes('120 个词昨天学习')]
 ];

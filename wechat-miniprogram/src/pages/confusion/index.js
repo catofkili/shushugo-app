@@ -3,6 +3,11 @@ const { TYPE_META, TYPE_ORDER, queryConfusionGroups, confusionSummary, setConfus
 const { cachedEntitlement } = require('../../runtime/entitlements');
 const { canUse } = require('../../core/entitlements');
 
+const formatError = (error) => {
+  console.error('[confusion] 操作失败', error);
+  return '操作失败，请稍后重试';
+};
+
 Page({
   data: {
     ready: false, busy: false, error: '', query: '', typeIndex: 0,
@@ -15,7 +20,7 @@ Page({
   async onLoad() {
     if (!getStatus().ready) {
       this.setData({ busy: true });
-      try { await ensureDatabase(); } catch (error) { this.setData({ error: error?.message || String(error) }); }
+      try { await ensureDatabase(); } catch (error) { this.setData({ error: formatError(error) }); }
       this.setData({ busy: false });
     }
     const locked = getStatus().ready && !canUse('confusion-groups', cachedEntitlement());
@@ -47,7 +52,7 @@ Page({
       const type = this.data.typeOptions[typeIndex]?.id || '';
       const rows = queryConfusionGroups(this.data.query, type, 0, 40);
       this.setData({ rows, offset: rows.length, hasMore: rows.length === 40, summary: confusionSummary(), error: '' });
-    } catch (error) { this.setData({ error: error?.message || String(error) }); }
+    } catch (error) { this.setData({ error: formatError(error) }); }
   },
 
   handleLoadMore() {
@@ -55,7 +60,7 @@ Page({
     try {
       const more = queryConfusionGroups(this.data.query, type, this.data.offset, 40);
       this.setData({ rows: [...this.data.rows, ...more], offset: this.data.offset + more.length, hasMore: more.length === 40 });
-    } catch (error) { this.setData({ error: error?.message || String(error) }); }
+    } catch (error) { this.setData({ error: formatError(error) }); }
   },
 
   handleMastered(event) {
@@ -66,7 +71,7 @@ Page({
     this.setData({ busy: true });
     setConfusionMastered(key, mastered)
       .then(() => this.refresh())
-      .catch((error) => this.setData({ error: error?.message || String(error) }))
+      .catch((error) => this.setData({ error: formatError(error) }))
       .finally(() => this.setData({ busy: false }));
   }
 });

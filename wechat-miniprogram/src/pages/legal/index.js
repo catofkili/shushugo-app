@@ -31,7 +31,8 @@ Page({
       const legal = await requestJson(`${apiBase()}/legal`);
       this.setData({ docs: [legal.terms, legal.privacy], loading: false });
     } catch (error) {
-      this.setData({ loading: false, error: error?.message || error?.errMsg || JSON.stringify(error) });
+      console.error('[legal] 协议读取失败', error);
+      this.setData({ loading: false, error: '暂时无法读取，请稍后重试' });
     }
   },
 
