@@ -9,6 +9,7 @@
     "pages/confusion/index",
     "pages/achievements/index",
     "pages/journey/index",
+    "pages/team/index",
     "pages/legal/index"
   ],
   "window": {

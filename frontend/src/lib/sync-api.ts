@@ -105,6 +105,45 @@ export interface CloudWeeklyReportIndexItem {
   byte_length: number;
 }
 
+export interface CloudTeamMember {
+  memberId: string;
+  name: string;
+  avatar: string;
+  isMe: boolean;
+  isOwner: boolean;
+  studyCount: number;
+  completed: boolean;
+  cheersReceived: number;
+  cheeredByMe: boolean;
+}
+
+export interface CloudTeam {
+  id: string;
+  name: string;
+  targetLevel: string;
+  emoji: string;
+  visibility: "public" | "invite";
+  maxMembers: number;
+  inviteCode: string;
+  isOwner: boolean;
+  memberCount: number;
+  activeCount: number;
+  totalStudyCount: number;
+  streak: number;
+  members: CloudTeamMember[];
+}
+
+export interface CloudTeamPlazaItem {
+  id: string;
+  name: string;
+  targetLevel: string;
+  emoji: string;
+  maxMembers: number;
+  memberCount: number;
+  activeCount: number;
+  streak: number;
+}
+
 export type CloudSyncTrigger = "startup" | "login" | "foreground" | "online" | "poll" | "local-change";
 
 interface CloudEntitlements {
@@ -681,6 +720,67 @@ export async function updateCloudUserProfile(profile: {
   emitCloudAuthEvent(await getCloudSession());
   return result;
 }
+
+const teamRequest = async <T>(path: string, method: "GET" | "POST" | "PUT" = "GET", body?: unknown): Promise<T> => {
+  const { token } = await getCloudSession();
+  if (!token) throw new Error("请先登录账号。");
+  return requestJson<T>(path, {
+    method,
+    headers: { authorization: `Bearer ${token}` },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) })
+  });
+};
+
+export const getCloudTeam = async (studyDay: string): Promise<CloudTeam | null> => (
+  (await teamRequest<{ team: CloudTeam | null }>(`/api/teams/me?day=${encodeURIComponent(studyDay)}`)).team
+);
+
+export const getCloudTeamPlaza = async (studyDay: string): Promise<CloudTeamPlazaItem[]> => (
+  (await teamRequest<{ teams: CloudTeamPlazaItem[] }>(`/api/teams/plaza?day=${encodeURIComponent(studyDay)}`)).teams
+);
+
+export const createCloudTeam = async (input: {
+  name: string;
+  targetLevel: string;
+  emoji: string;
+  visibility: "public" | "invite";
+  displayName?: string;
+}): Promise<CloudTeam> => (await teamRequest<{ team: CloudTeam }>("/api/teams", "POST", input)).team;
+
+export const joinCloudTeam = async (input: {
+  teamId?: string;
+  inviteCode?: string;
+  displayName?: string;
+}): Promise<CloudTeam> => (await teamRequest<{ team: CloudTeam }>("/api/teams/join", "POST", input)).team;
+
+export const updateCloudTeam = async (input: {
+  name: string;
+  targetLevel: string;
+  emoji: string;
+  visibility: "public" | "invite";
+}): Promise<CloudTeam> => (await teamRequest<{ team: CloudTeam }>("/api/teams/me", "PUT", input)).team;
+
+export const reportCloudTeamActivity = async (input: {
+  studyDay: string;
+  studyCount: number;
+  completed: boolean;
+}): Promise<CloudTeam> => (await teamRequest<{ team: CloudTeam }>("/api/teams/activity", "POST", input)).team;
+
+export const cheerCloudTeamMember = async (memberId: string, studyDay: string): Promise<CloudTeam> => (
+  (await teamRequest<{ team: CloudTeam }>("/api/teams/cheers", "POST", { memberId, studyDay })).team
+);
+
+export const leaveCloudTeam = async (): Promise<void> => {
+  await teamRequest("/api/teams/leave", "POST");
+};
+
+export const regenerateCloudTeamInvite = async (): Promise<string> => (
+  (await teamRequest<{ inviteCode: string }>("/api/teams/invite/regenerate", "POST")).inviteCode
+);
+
+export const reportCloudTeam = async (teamId: string, reason: string): Promise<void> => {
+  await teamRequest("/api/teams/report", "POST", { teamId, reason });
+};
 
 export async function resetCloudPassword(email: string, code: string, newPassword: string): Promise<string> {
   await requestJson("/api/auth/reset-password", {

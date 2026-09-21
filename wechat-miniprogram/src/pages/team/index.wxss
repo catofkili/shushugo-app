@@ -1,0 +1,27 @@
+page { background: #f4f6fb; color: #172033; }
+.page { min-height: 100vh; padding: 38rpx 38rpx 72rpx; box-sizing: border-box; }
+.hero { padding: 8rpx 8rpx 30rpx; }
+.back, .legal { color: #4c6fff; font-size: 24rpx; }
+.eyebrow { display: block; margin-top: 24rpx; color: #4c6fff; font-size: 21rpx; letter-spacing: 3rpx; font-weight: 700; }
+.title { display: block; margin-top: 12rpx; font-size: 48rpx; font-weight: 800; }
+.subtitle, .detail { display: block; margin-top: 10rpx; color: #667085; font-size: 23rpx; line-height: 1.55; }
+.card { margin-bottom: 22rpx; padding: 28rpx; border-radius: 26rpx; background: #fff; box-shadow: 0 10rpx 26rpx rgba(23,32,51,.05); }
+.section-title, .team-title { display: block; font-size: 29rpx; font-weight: 800; }
+.input { height: 82rpx; margin-top: 18rpx; padding: 0 20rpx; box-sizing: border-box; border: 1rpx solid #d0d5dd; border-radius: 16rpx; background: #fff; font-size: 25rpx; }
+button, .nav-button { margin: 18rpx 0 0; border-radius: 18rpx; font-size: 26rpx; line-height: 82rpx; text-align: center; }
+.primary { color: #fff; background: #4c6fff; }
+.secondary { color: #243b80; background: #e9edff; }
+.ghost { color: #475467; background: #fff; border: 1rpx solid #d0d5dd; }
+.danger { color: #9c2c38; background: #fff0f1; }
+.compact { display: inline-block; width: auto; min-width: 132rpx; margin: 0; padding: 0 22rpx; line-height: 70rpx; font-size: 23rpx; }
+.team-head, .invite, .member, .plaza-item, .action-row, .picker-row, .invite-join, .invite-actions, .plaza-actions { display: flex; align-items: center; gap: 14rpx; }
+.team-head { justify-content: space-between; }
+.count { flex: none; color: #4c6fff; text-align: right; }.count text, .count small { display: block; }.count text { font-size: 40rpx; font-weight: 800; }.count small { color: #667085; font-size: 20rpx; }
+.progress { height: 12rpx; margin: 22rpx 0 8rpx; overflow: hidden; border-radius: 12rpx; background: #e9edff; }.progress view { height: 100%; border-radius: 12rpx; background: #4c6fff; }
+.member { padding: 18rpx 0; border-top: 1rpx solid #eaecf0; }.avatar { width: 60rpx; height: 60rpx; border-radius: 50%; background: #f2f4f7; font-size: 31rpx; line-height: 60rpx; text-align: center; }.member-copy, .plaza-copy { flex: 1; min-width: 0; }.member-name, .member-detail { display: block; }.member-name { font-size: 25rpx; font-weight: 750; }.member-detail { margin-top: 5rpx; color: #667085; font-size: 21rpx; }.state { color: #16835b; font-size: 21rpx; }.cheer { width: auto; margin: 0; padding: 0 20rpx; color: #8b5e00; background: #fff7df; font-size: 21rpx; line-height: 64rpx; }.cheer.sent { color: #16835b; background: #e6f6ed; }
+.invite { justify-content: space-between; }.mini-label, .invite-code { display: block; }.mini-label { color: #667085; font-size: 20rpx; }.invite-code { margin-top: 5rpx; font-family: monospace; font-size: 32rpx; font-weight: 800; letter-spacing: 3rpx; }.invite-actions { flex: none; gap: 8rpx; }
+.action-row { flex-wrap: wrap; margin: 16rpx 0 22rpx; }
+.plaza-actions { flex: none; gap: 6rpx; }.report { min-width: 72rpx; padding: 0 8rpx; color: #98a2b3; background: transparent; }
+.picker-row { flex-wrap: wrap; margin-top: 16rpx; }.picker { padding: 14rpx 18rpx; border-radius: 14rpx; color: #344054; background: #f2f4f7; font-size: 22rpx; }
+.invite-join { align-items: flex-end; }.invite-join .input { flex: 1; margin: 0; }.plaza-title { display: block; margin: 34rpx 4rpx 18rpx; font-size: 31rpx; font-weight: 800; }.plaza-emoji { font-size: 42rpx; }
+.empty { text-align: center; }.result { color: #344054; font-size: 23rpx; line-height: 1.55; }

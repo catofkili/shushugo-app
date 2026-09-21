@@ -19,8 +19,8 @@ module.exports = {
   authUrl: 'https://api.shushugo.com',
   // 与 cloudflare-sync Worker 发布的协议版本保持一致；新微信账号首次登录
   // 必须明确同意当前协议，服务端不会接受缺失版本的注册。
-  termsVersion: '2026-08-03',
-  privacyVersion: '2026-09-20',
+  termsVersion: '2026-09-22',
+  privacyVersion: '2026-09-22',
   // 学习提醒的订阅消息模板 id（mp.weixin.qq.com → 订阅消息 → 我的模板）。留空 = 不要提醒。
   // 云函数 reminder 的环境变量 REMINDER_TEMPLATE_ID 要是同一个（cloudbaserc.json）。
   reminderTemplateId: ''

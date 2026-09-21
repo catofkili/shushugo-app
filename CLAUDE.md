@@ -169,6 +169,90 @@ issuer / audience / expiry 校验原样保留。
 **重放防护不靠 nonce**：nonce 由客户端给、还能整个省略，挡不住「把同一份 identity token
 再发一次」。现在记下 token 哈希放进 KV（TTL 到它自己的 exp），有效期内第二次直接拒。
 
+## ⚠️ 微信小程序付费 / 登录上线闸门（2026-09-21 核实，尚未完成）
+
+**支付代码写完不等于虚拟支付已经开通。** 截至 2026-09-21，微信后台的虚拟支付尚未开通，
+`cloudflare-sync/wrangler.jsonc` 的 `WECHAT_OFFER_ID` 仍为空，Worker secrets 也没有
+`WECHAT_PAY_APP_KEY` / `WECHAT_MSG_TOKEN`。线上 `/api/health` 因此明确返回
+`wechatPayConfigured: false`、`wechatPushConfigured: false`、`productionReady: false`。
+开发版可以上传，但只要小程序里还保留「购买 Pro」入口，**这三项为 false 时就不能提交审核，
+更不能把它写成“上线后再开通”**；否则审核员和用户都会遇到一个必定失败的购买按钮。
+
+提审前必须闭环：
+
+1. 小程序后台「支付与交易 → 虚拟支付」完成主体实名、结算资料和协议签署，取得 OfferID / 当前 AppKey。
+2. 后台创建并发布客户端实际使用的商品。当前购买页只调用永久商品
+   `shushugo_pro_lifetime`，价格必须和 Worker 的 `29800` 分一致；月付 / 年付虽然服务端已有价格，
+   当前客户端没有入口，不要误报为已经可售。
+3. `wrangler.jsonc` 写 OfferID；AppKey 只能用 `wrangler secret put WECHAT_PAY_APP_KEY` 保存，
+   不写进仓库、不贴在聊天里；重新部署 Worker。
+4. 后台「开发 → 消息推送」配置
+   `https://api.shushugo.com/api/purchases/wechat-notifications`，数据格式 JSON、明文；Token 与
+   `wrangler secret put WECHAT_MSG_TOKEN` 保存的值一致，并通过微信的 GET 握手。
+5. `/api/health` 必须同时看到 `wechatPayConfigured: true`、`wechatPushConfigured: true`、
+   `migrationsApplied: true`、`productionReady: true`。
+6. 先用沙箱（`WECHAT_PAY_ENV=1`）和真机验证：取消支付不发权益、支付成功发权益、重复 verify 幂等、
+   另一账号不能领单、发货通知能补单、退款通知撤销权益、重新登录 / 重装后可恢复。全部通过后再切
+   正式环境（`WECHAT_PAY_ENV=0`）并做一笔最小范围真金白银验收。
+
+如果决定本版暂不卖 Pro，必须先隐藏购买入口再提审，不能留下已知必失败按钮。
+
+登录目前能完成 `wx.login` → Worker 换取 openid/session_key → 本地保存会话，支付签名所需的微信会话
+也会记入 KV；但以下三项仍是**可以延期、不可遗忘**的待办：
+
+1. 给 `POST /api/auth/wechat` 增加直接路由自动化测试；现有检查主要是静态约束和传输 smoke，
+   不能替代登录接口的端到端回归。
+2. 增加 `linkWechat` 账号绑定流程，把微信身份绑定到已有邮箱 / Apple / iOS 账号；否则老用户首次微信登录
+   可能得到第二个账号，学习数据和权益会分家。
+3. 同时保存并识别 openid 与 unionid 两个别名。当前 subject 有 unionid 就用 unionid、否则用 openid；
+   如果用户第一次登录只有 openid，后来才获得 unionid，同一个人可能被当成新账号，需要别名表或迁移逻辑。
+
+详细支付路由、密钥和消息推送约定见 `wechat-miniprogram/README.md`；每次提审按
+`wechat-miniprogram/docs-submit.md` 的硬门槛逐项验收。
+
+### ⚠️ 小程序上传包不得夹带开发诊断界面（2026-09-22 修）
+
+2026-09-21 上传的 `0.1.0` 开发版曾把设置页里的「原子写盘」「冷启动恢复」「查看到期数量」、
+内部用户 ID、权益来源、数据库文件路径和原始异常详情一起带进用户界面。它尚未提交审核，
+2026-09-22 已从发布界面删除；真正给用户的更新、同步、备份功能保留。
+
+`scripts/check-source.mjs` 现在会拦截这些诊断控件和数据库路径重新出现，并要求
+`project.config.json` 保持 `uploadWithSourceMap=false`、`urlCheck=true`。每次上传前必须跑
+`npm test`；再扫描 `src/`，确认没有 localhost / mock / vConsole / 私钥 / AppSecret / 硬编码密钥。
+测试脚本、README、提审文档、云函数源码和 `project.private.config.json` 都在 `miniprogramRoot: src/`
+之外，不进入小程序代码包；`src/config.js` 里的云环境 ID、云存储 fileID 和公开 API 地址是客户端
+运行所需的公开标识，不是密钥。开发者工具上传日志只能证明工具成功打包上传，不能代替这道源码检查。
+
+### 组队是云端真实数据，不准再退回示例队友（2026-09-22）
+
+组队页已从 SAMPLE_TEAM / SAMPLE_PLAZA 占位改成网页与微信小程序共用的 Worker + D1 实现。
+首页也不再显示「还没开放」。后续改版不得塞回假队友、NPC 或硬编码队伍来制造热闹；广场没人时就
+明确显示没人。
+
+数据和规则：
+
+- D1 迁移是 0014_teams.sql：teams / team_members / team_daily_activity / team_cheers /
+  team_reports。同一账号只能加入一支队伍，默认 6 人；容量由数据库 trigger 兜底，不能只信客户端。
+- 公开队伍能从广场加入，邀请队伍只能用 8 位邀请码；邀请码只用于入队，不是登录凭据。
+- 队长退出且还有成员时，移交给最早加入的人；最后一人退出时解散。删除账号必须先走同一条退队 /
+  移交流程，否则队伍会留下一个已删除的队长。
+- 每日学习量由各设备上报，只用于组内展示；服务端只允许同日附近日期、0–5000，并用 MAX 合并，
+  避免旧设备把新进度覆盖小。它**绝不**发柚子、Pro、排名奖励或其他权益。
+- 成员接口只返回随机成员 ID、昵称和确定性 emoji，不返回邮箱、OpenID、内部 user id 或原始学习流水。
+- 加油每个发送者对同一队友每天最多一次；公开广场支持举报，举报后该队伍对举报者立即隐藏。
+
+用户生成内容不能靠仓库里维护“敏感词大全”。链接、联系方式和长号码只做便宜的结构校验；微信账号
+提交队名 / 昵称时，Worker 必须再调用微信官方 wxa/msg_sec_check（v2，结果只有 pass 才发布），
+review / risky 一律拒绝，接口异常时也不能放行。它复用 WECHAT_APP_ID / WECHAT_APP_SECRET 和
+现有 access_token KV 缓存；/api/health 的 wechatContentSecurityConfigured 必须为 true。
+邮箱 / Apple 账号没有小程序 OpenID，官方接口无法替它做这一步，目前只允许结构校验并保留举报；
+以后若要让网页版公开组队成为主要入口，应接腾讯云 TMS 这类不依赖 OpenID 的服务，不能扩写本地词表。
+
+发布依赖顺序：先远程应用 0014，再部署 Worker，再上传小程序。旧 Worker 没有 /api/teams/*，
+旧 D1 没有新表，任何一个漏掉都会让组队页真实报错；网页生产构建和小程序静态检查通过不等于线上
+迁移已完成。微信分享路径固定为 /pages/team/index?invite=邀请码，从分享进入只预填邀请码，
+必须由用户主动点加入，禁止自动入队。
+
 ## 小程序不是「能收 v2」就等于双向无损（2026-09-09 修）
 
 ⚠️ **Worker 不做按表合并**：它把每次上传当成这个账号新的**完整备份**。

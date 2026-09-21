@@ -1416,6 +1416,7 @@ const updateProfile = async (request: Request, env: Env) => {
   const bio = String(body.bio ?? "").trim();
   const targetLevel = String(body.target_level ?? "N5").trim();
   if (!displayName || displayName.length > 20) return json({ detail: "昵称需要为 1 至 20 个字符。" }, 400);
+  if (!teamPublicTextAllowed(displayName)) return json({ detail: "昵称不能包含联系方式、链接或不当内容。" }, 400);
   if (bio.length > 100) return json({ detail: "个人简介不能超过 100 个字符。" }, 400);
   if (!["N5", "N4", "N3", "N2", "N1", "旅游", "没有目标"].includes(targetLevel)) {
     return json({ detail: "学习目标无效。" }, 400);
@@ -1443,6 +1444,427 @@ const updateProfile = async (request: Request, env: Env) => {
     // 为了改个昵称从 KV 读一遍 3MB 再原样发回去是纯浪费。
     ...(typeof body.avatar === "undefined" ? {} : { avatar: body.avatar })
   });
+};
+
+const TEAM_TARGETS = new Set(["N5", "N4", "N3", "N2", "N1", "全部"]);
+const TEAM_EMOJIS = new Set(["🌱", "🐿️", "🐦", "🚃", "🦉", "🍊", "📚", "⛩️"]);
+const TEAM_INVITE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const TEAM_REPORT_REASONS = new Set(["广告或联系方式", "不当内容", "冒充或欺骗", "其他"]);
+
+const teamPublicTextAllowed = (value: string) => {
+  if (/[\u0000-\u001f\u007f]/u.test(value)) return false;
+  // 这里只拦结构明确的链接、联系方式和长号码；违法违规语义交给微信官方
+  // msgSecCheck 模型判断，不在代码里维护一份注定漏词的“敏感词大全”。
+  if (/(?:https?:\/\/|www\.|微信|加微|v信|vx|qq|群号|加群|私聊)/iu.test(value)) return false;
+  if (/(?:\d[\s._-]*){7,}/u.test(value)) return false;
+  return true;
+};
+
+const assertWechatTeamContent = async (env: Env, userId: string, content: string) => {
+  const session = await loadWechatSession(env, userId);
+  // 邮箱/Apple 账号没有微信 OpenID，无法调用要求 OpenID 的小程序内容安全接口；
+  // 仍走上面的联系方式/链接拦截和举报。微信账号发布时必须经过官方模型。
+  if (!session) return;
+  if (!env.WECHAT_APP_ID || !env.WECHAT_APP_SECRET) {
+    throw json({ detail: "内容安全服务尚未配置，请稍后再试。", code: "CONTENT_SECURITY_NOT_CONFIGURED" }, 503);
+  }
+  const accessToken = await wechatAccessToken(env);
+  const response = await fetch(`https://api.weixin.qq.com/wxa/msg_sec_check?access_token=${encodeURIComponent(accessToken)}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ content, version: 2, scene: 1, openid: session.openid })
+  });
+  const result = await response.json<{
+    errcode?: number;
+    errmsg?: string;
+    result?: { suggest?: "pass" | "review" | "risky"; label?: number };
+  }>();
+  if (!response.ok || result.errcode) {
+    console.warn("WeChat msgSecCheck failed", response.status, result.errcode, result.errmsg);
+    throw json({ detail: "内容安全检测暂时不可用，请稍后再试。", code: "CONTENT_SECURITY_UNAVAILABLE" }, 503);
+  }
+  if (result.result?.suggest !== "pass") {
+    throw json({ detail: "名称未通过微信内容安全检测，请修改后重试。", code: "CONTENT_REJECTED" }, 400);
+  }
+};
+
+interface TeamRow {
+  id: string;
+  name: string;
+  target_level: string;
+  emoji: string;
+  visibility: "public" | "invite";
+  max_members: number;
+  owner_user_id: string;
+  invite_code: string;
+}
+
+const validStudyDay = (value: unknown): string | null => {
+  const day = String(value ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const timestamp = Date.parse(`${day}T00:00:00Z`);
+  if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 10) !== day) return null;
+  return Math.abs(timestamp - Date.now()) <= 2 * 24 * 60 * 60 * 1000 ? day : null;
+};
+
+const dayBefore = (day: string) => {
+  const date = new Date(`${day}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
+};
+
+const teamStreak = (days: string[], selectedDay: string) => {
+  const active = new Set(days);
+  let cursor = active.has(selectedDay) ? selectedDay : dayBefore(selectedDay);
+  let streak = 0;
+  while (active.has(cursor) && streak < 3660) {
+    streak += 1;
+    cursor = dayBefore(cursor);
+  }
+  return streak;
+};
+
+const teamInviteCode = () => {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (value) => TEAM_INVITE_ALPHABET[value % TEAM_INVITE_ALPHABET.length]).join("");
+};
+
+const teamAvatar = (memberId: string) => {
+  const avatars = ["🙂", "😎", "🧑‍🎓", "🐿️", "🦊", "🐼", "🐧", "🐯"];
+  let hash = 0;
+  for (const char of memberId) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return avatars[hash % avatars.length];
+};
+
+const teamMembership = async (env: Env, userId: string) => env.DB.prepare(`
+  SELECT t.id, t.name, t.target_level, t.emoji, t.visibility, t.max_members,
+         t.owner_user_id, t.invite_code
+  FROM team_members tm JOIN teams t ON t.id = tm.team_id
+  WHERE tm.user_id = ?
+`).bind(userId).first<TeamRow>();
+
+const saveTeamNickname = async (env: Env, userId: string, value: unknown) => {
+  const displayName = String(value ?? "").trim();
+  const user = await env.DB.prepare("SELECT display_name FROM users WHERE id = ?")
+    .bind(userId).first<{ display_name: string | null }>();
+  if (user?.display_name) {
+    if (!teamPublicTextAllowed(user.display_name)) throw json({ detail: "请先修改昵称，昵称不能包含联系方式、链接或不当内容。" }, 400);
+    await assertWechatTeamContent(env, userId, user.display_name);
+    return user.display_name;
+  }
+  if (!displayName || displayName.length > 20) throw json({ detail: "请先填写 1 至 20 个字符的队友昵称。" }, 400);
+  if (!teamPublicTextAllowed(displayName)) throw json({ detail: "昵称不能包含联系方式、链接或不当内容。" }, 400);
+  await assertWechatTeamContent(env, userId, displayName);
+  await env.DB.prepare("UPDATE users SET display_name = ?, profile_updated_at = ? WHERE id = ?")
+    .bind(displayName, new Date().toISOString(), userId).run();
+  return displayName;
+};
+
+const teamSnapshot = async (env: Env, userId: string, day: string) => {
+  const team = await teamMembership(env, userId);
+  if (!team) return null;
+  const members = await env.DB.prepare(`
+    SELECT tm.id AS member_id, tm.user_id, tm.role, u.display_name,
+           COALESCE(a.study_count, 0) AS study_count,
+           COALESCE(a.completed, 0) AS completed,
+           COALESCE(received.cheers, 0) AS cheers_received,
+           CASE WHEN sent.sender_user_id IS NULL THEN 0 ELSE 1 END AS cheered_by_me
+    FROM team_members tm
+    JOIN users u ON u.id = tm.user_id
+    LEFT JOIN team_daily_activity a
+      ON a.team_id = tm.team_id AND a.user_id = tm.user_id AND a.study_day = ?
+    LEFT JOIN (
+      SELECT receiver_user_id, COUNT(*) AS cheers
+      FROM team_cheers WHERE team_id = ? AND study_day = ? GROUP BY receiver_user_id
+    ) received ON received.receiver_user_id = tm.user_id
+    LEFT JOIN team_cheers sent
+      ON sent.team_id = tm.team_id AND sent.study_day = ?
+     AND sent.sender_user_id = ? AND sent.receiver_user_id = tm.user_id
+    WHERE tm.team_id = ?
+    ORDER BY CASE tm.role WHEN 'owner' THEN 0 ELSE 1 END, tm.joined_at ASC
+  `).bind(day, team.id, day, day, userId, team.id).all<{
+    member_id: string;
+    user_id: string;
+    role: "owner" | "member";
+    display_name: string | null;
+    study_count: number;
+    completed: number;
+    cheers_received: number;
+    cheered_by_me: number;
+  }>();
+  const activityDays = await env.DB.prepare(`
+    SELECT DISTINCT study_day FROM team_daily_activity
+    WHERE team_id = ? AND (study_count > 0 OR completed = 1) AND study_day <= ?
+    ORDER BY study_day DESC LIMIT 3660
+  `).bind(team.id, day).all<{ study_day: string }>();
+  const rows = members.results ?? [];
+  return {
+    id: team.id,
+    name: team.name,
+    targetLevel: team.target_level,
+    emoji: team.emoji,
+    visibility: team.visibility,
+    maxMembers: Number(team.max_members),
+    inviteCode: team.invite_code,
+    isOwner: team.owner_user_id === userId,
+    memberCount: rows.length,
+    activeCount: rows.filter((row) => Number(row.study_count) > 0 || Number(row.completed) === 1).length,
+    totalStudyCount: rows.reduce((sum, row) => sum + Number(row.study_count), 0),
+    streak: teamStreak((activityDays.results ?? []).map((row) => row.study_day), day),
+    members: rows.map((row) => ({
+      memberId: row.member_id,
+      name: row.display_name || "学习伙伴",
+      avatar: teamAvatar(row.member_id),
+      isMe: row.user_id === userId,
+      isOwner: row.role === "owner",
+      studyCount: Number(row.study_count),
+      completed: Number(row.completed) === 1,
+      cheersReceived: Number(row.cheers_received),
+      cheeredByMe: Number(row.cheered_by_me) === 1
+    }))
+  };
+};
+
+const getMyTeam = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  const url = new URL(request.url);
+  const day = validStudyDay(url.searchParams.get("day"));
+  if (!day) return json({ detail: "学习日期无效。" }, 400);
+  return json({ team: await teamSnapshot(env, userId, day) });
+};
+
+const listTeamPlaza = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  const url = new URL(request.url);
+  const day = validStudyDay(url.searchParams.get("day"));
+  if (!day) return json({ detail: "学习日期无效。" }, 400);
+  const rows = await env.DB.prepare(`
+    SELECT t.id, t.name, t.target_level, t.emoji, t.max_members,
+           COUNT(tm.id) AS member_count,
+           COALESCE(SUM(CASE WHEN a.study_count > 0 OR a.completed = 1 THEN 1 ELSE 0 END), 0) AS active_count
+    FROM teams t
+    JOIN team_members tm ON tm.team_id = t.id
+    LEFT JOIN team_daily_activity a
+      ON a.team_id = t.id AND a.user_id = tm.user_id AND a.study_day = ?
+    WHERE t.visibility = 'public'
+      AND NOT EXISTS (
+        SELECT 1 FROM team_reports tr WHERE tr.team_id = t.id AND tr.reporter_user_id = ?
+      )
+    GROUP BY t.id
+    HAVING COUNT(tm.id) < t.max_members
+    ORDER BY active_count DESC, t.updated_at DESC
+    LIMIT 20
+  `).bind(day, userId).all<{
+    id: string; name: string; target_level: string; emoji: string;
+    max_members: number; member_count: number; active_count: number;
+  }>();
+  const teams = await Promise.all((rows.results ?? []).map(async (team) => {
+    const days = await env.DB.prepare(`
+      SELECT DISTINCT study_day FROM team_daily_activity
+      WHERE team_id = ? AND (study_count > 0 OR completed = 1) AND study_day <= ?
+      ORDER BY study_day DESC LIMIT 3660
+    `).bind(team.id, day).all<{ study_day: string }>();
+    return {
+      id: team.id,
+      name: team.name,
+      targetLevel: team.target_level,
+      emoji: team.emoji,
+      maxMembers: Number(team.max_members),
+      memberCount: Number(team.member_count),
+      activeCount: Number(team.active_count),
+      streak: teamStreak((days.results ?? []).map((row) => row.study_day), day)
+    };
+  }));
+  return json({ teams });
+};
+
+const createTeam = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-write", `user:${userId}`, 30, 3600);
+  if (await teamMembership(env, userId)) return json({ detail: "你已经加入一支队伍，请先退出当前队伍。" }, 409);
+  const body = await readJson<{ name?: string; targetLevel?: string; emoji?: string; visibility?: string; displayName?: string }>(request);
+  const name = String(body.name ?? "").trim();
+  const targetLevel = String(body.targetLevel ?? "N3");
+  const emoji = String(body.emoji ?? "🌱");
+  const visibility = body.visibility === "invite" ? "invite" : "public";
+  if (name.length < 2 || name.length > 20) return json({ detail: "队伍名称需要为 2 至 20 个字符。" }, 400);
+  if (!teamPublicTextAllowed(name)) return json({ detail: "队伍名称不能包含联系方式、链接或不当内容。" }, 400);
+  await assertWechatTeamContent(env, userId, name);
+  if (!TEAM_TARGETS.has(targetLevel)) return json({ detail: "学习目标无效。" }, 400);
+  if (!TEAM_EMOJIS.has(emoji)) return json({ detail: "队伍图标无效。" }, 400);
+  await saveTeamNickname(env, userId, body.displayName);
+  const now = new Date().toISOString();
+  const teamId = crypto.randomUUID();
+  const memberId = crypto.randomUUID();
+  let inviteCode = teamInviteCode();
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const exists = await env.DB.prepare("SELECT 1 FROM teams WHERE invite_code = ?").bind(inviteCode).first();
+    if (!exists) break;
+    inviteCode = teamInviteCode();
+  }
+  await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO teams (id, name, target_level, emoji, visibility, max_members, owner_user_id, invite_code, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, 6, ?, ?, ?, ?)
+    `).bind(teamId, name, targetLevel, emoji, visibility, userId, inviteCode, now, now),
+    env.DB.prepare(`
+      INSERT INTO team_members (id, team_id, user_id, role, joined_at) VALUES (?, ?, ?, 'owner', ?)
+    `).bind(memberId, teamId, userId, now)
+  ]);
+  return json({ team: await teamSnapshot(env, userId, now.slice(0, 10)) }, 201);
+};
+
+const joinTeam = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-write", `user:${userId}`, 30, 3600);
+  if (await teamMembership(env, userId)) return json({ detail: "你已经加入一支队伍，请先退出当前队伍。" }, 409);
+  const body = await readJson<{ teamId?: string; inviteCode?: string; displayName?: string }>(request);
+  const inviteCode = String(body.inviteCode ?? "").trim().toUpperCase();
+  const team = inviteCode
+    ? await env.DB.prepare(`SELECT id, name, target_level, emoji, visibility, max_members, owner_user_id, invite_code FROM teams WHERE invite_code = ?`).bind(inviteCode).first<TeamRow>()
+    : await env.DB.prepare(`SELECT id, name, target_level, emoji, visibility, max_members, owner_user_id, invite_code FROM teams WHERE id = ? AND visibility = 'public'`).bind(String(body.teamId ?? "")).first<TeamRow>();
+  if (!team) return json({ detail: inviteCode ? "邀请码无效。" : "队伍不存在或不公开。" }, 404);
+  await saveTeamNickname(env, userId, body.displayName);
+  try {
+    await env.DB.prepare(`INSERT INTO team_members (id, team_id, user_id, role, joined_at) VALUES (?, ?, ?, 'member', ?)`).bind(
+      crypto.randomUUID(), team.id, userId, new Date().toISOString()
+    ).run();
+  } catch (error) {
+    if (String(error).includes("team_full")) return json({ detail: "这支队伍已经满员。" }, 409);
+    throw error;
+  }
+  await env.DB.prepare("UPDATE teams SET updated_at = ? WHERE id = ?").bind(new Date().toISOString(), team.id).run();
+  return json({ team: await teamSnapshot(env, userId, new Date().toISOString().slice(0, 10)) });
+};
+
+const updateTeam = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-write", `user:${userId}`, 30, 3600);
+  const team = await teamMembership(env, userId);
+  if (!team) return json({ detail: "你还没有加入队伍。" }, 404);
+  if (team.owner_user_id !== userId) return json({ detail: "只有队长可以修改队伍。" }, 403);
+  const body = await readJson<{ name?: string; targetLevel?: string; emoji?: string; visibility?: string }>(request);
+  const name = String(body.name ?? team.name).trim();
+  const targetLevel = String(body.targetLevel ?? team.target_level);
+  const emoji = String(body.emoji ?? team.emoji);
+  const visibility = body.visibility === "invite" ? "invite" : body.visibility === "public" ? "public" : team.visibility;
+  if (name.length < 2 || name.length > 20) return json({ detail: "队伍名称需要为 2 至 20 个字符。" }, 400);
+  if (!teamPublicTextAllowed(name)) return json({ detail: "队伍名称不能包含联系方式、链接或不当内容。" }, 400);
+  await assertWechatTeamContent(env, userId, name);
+  if (!TEAM_TARGETS.has(targetLevel) || !TEAM_EMOJIS.has(emoji)) return json({ detail: "队伍设置无效。" }, 400);
+  await env.DB.prepare("UPDATE teams SET name = ?, target_level = ?, emoji = ?, visibility = ?, updated_at = ? WHERE id = ?")
+    .bind(name, targetLevel, emoji, visibility, new Date().toISOString(), team.id).run();
+  return json({ team: await teamSnapshot(env, userId, new Date().toISOString().slice(0, 10)) });
+};
+
+const reportTeamActivity = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-activity", `user:${userId}`, 120, 3600);
+  const team = await teamMembership(env, userId);
+  if (!team) return json({ detail: "你还没有加入队伍。" }, 404);
+  const body = await readJson<{ studyDay?: string; studyCount?: number; completed?: boolean }>(request);
+  const day = validStudyDay(body.studyDay);
+  const count = Math.floor(Number(body.studyCount));
+  if (!day || !Number.isFinite(count) || count < 0 || count > 5000) return json({ detail: "学习进度无效。" }, 400);
+  await env.DB.prepare(`
+    INSERT INTO team_daily_activity (team_id, user_id, study_day, study_count, completed, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(team_id, user_id, study_day) DO UPDATE SET
+      study_count = MAX(team_daily_activity.study_count, excluded.study_count),
+      completed = MAX(team_daily_activity.completed, excluded.completed),
+      updated_at = excluded.updated_at
+  `).bind(team.id, userId, day, count, body.completed ? 1 : 0, new Date().toISOString()).run();
+  return json({ team: await teamSnapshot(env, userId, day) });
+};
+
+const cheerTeamMember = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-cheer", `user:${userId}`, 60, 3600);
+  const team = await teamMembership(env, userId);
+  if (!team) return json({ detail: "你还没有加入队伍。" }, 404);
+  const body = await readJson<{ memberId?: string; studyDay?: string }>(request);
+  const day = validStudyDay(body.studyDay);
+  if (!day) return json({ detail: "学习日期无效。" }, 400);
+  const receiver = await env.DB.prepare("SELECT user_id FROM team_members WHERE id = ? AND team_id = ?")
+    .bind(String(body.memberId ?? ""), team.id).first<{ user_id: string }>();
+  if (!receiver) return json({ detail: "队友不存在。" }, 404);
+  if (receiver.user_id === userId) return json({ detail: "不能给自己加油。" }, 400);
+  await env.DB.prepare(`
+    INSERT OR IGNORE INTO team_cheers (team_id, sender_user_id, receiver_user_id, study_day, created_at)
+    VALUES (?, ?, ?, ?, ?)
+  `).bind(team.id, userId, receiver.user_id, day, new Date().toISOString()).run();
+  return json({ team: await teamSnapshot(env, userId, day) });
+};
+
+const leaveTeamForUser = async (env: Env, userId: string) => {
+  const team = await teamMembership(env, userId);
+  if (!team) return false;
+  const nextOwner = team.owner_user_id === userId
+    ? await env.DB.prepare(`SELECT user_id FROM team_members WHERE team_id = ? AND user_id <> ? ORDER BY joined_at ASC LIMIT 1`).bind(team.id, userId).first<{ user_id: string }>()
+    : null;
+  if (team.owner_user_id === userId && !nextOwner) {
+    await env.DB.prepare("DELETE FROM teams WHERE id = ?").bind(team.id).run();
+    return true;
+  }
+  const statements = [
+    env.DB.prepare("DELETE FROM team_cheers WHERE team_id = ? AND (sender_user_id = ? OR receiver_user_id = ?)").bind(team.id, userId, userId),
+    env.DB.prepare("DELETE FROM team_daily_activity WHERE team_id = ? AND user_id = ?").bind(team.id, userId),
+    env.DB.prepare("DELETE FROM team_members WHERE team_id = ? AND user_id = ?").bind(team.id, userId)
+  ];
+  if (nextOwner) {
+    statements.push(
+      env.DB.prepare("UPDATE team_members SET role = 'owner' WHERE team_id = ? AND user_id = ?").bind(team.id, nextOwner.user_id),
+      env.DB.prepare("UPDATE teams SET owner_user_id = ?, updated_at = ? WHERE id = ?").bind(nextOwner.user_id, new Date().toISOString(), team.id)
+    );
+  } else {
+    statements.push(env.DB.prepare("UPDATE teams SET updated_at = ? WHERE id = ?").bind(new Date().toISOString(), team.id));
+  }
+  await env.DB.batch(statements);
+  return true;
+};
+
+const leaveTeam = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-write", `user:${userId}`, 30, 3600);
+  const left = await leaveTeamForUser(env, userId);
+  if (!left) return json({ detail: "你还没有加入队伍。" }, 404);
+  return json({ status: "left" });
+};
+
+const regenerateTeamInvite = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-write", `user:${userId}`, 30, 3600);
+  const team = await teamMembership(env, userId);
+  if (!team) return json({ detail: "你还没有加入队伍。" }, 404);
+  if (team.owner_user_id !== userId) return json({ detail: "只有队长可以更新邀请码。" }, 403);
+  let inviteCode = teamInviteCode();
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const exists = await env.DB.prepare("SELECT 1 FROM teams WHERE invite_code = ?").bind(inviteCode).first();
+    if (!exists) break;
+    inviteCode = teamInviteCode();
+  }
+  await env.DB.prepare("UPDATE teams SET invite_code = ?, updated_at = ? WHERE id = ?")
+    .bind(inviteCode, new Date().toISOString(), team.id).run();
+  return json({ inviteCode });
+};
+
+const reportTeam = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-report", `user:${userId}`, 20, 86400);
+  const body = await readJson<{ teamId?: string; reason?: string }>(request);
+  const teamId = String(body.teamId ?? "");
+  const reason = String(body.reason ?? "");
+  if (!TEAM_REPORT_REASONS.has(reason)) return json({ detail: "举报原因无效。" }, 400);
+  const team = await env.DB.prepare("SELECT owner_user_id FROM teams WHERE id = ?").bind(teamId).first<{ owner_user_id: string }>();
+  if (!team) return json({ detail: "队伍不存在。" }, 404);
+  if (team.owner_user_id === userId) return json({ detail: "不能举报自己创建的队伍。" }, 400);
+  await env.DB.prepare(`
+    INSERT INTO team_reports (id, team_id, reporter_user_id, reason, created_at)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(team_id, reporter_user_id) DO UPDATE SET reason = excluded.reason, created_at = excluded.created_at
+  `).bind(crypto.randomUUID(), teamId, userId, reason, new Date().toISOString()).run();
+  return json({ status: "reported" });
 };
 
 const logout = async (request: Request, env: Env) => {
@@ -1627,6 +2049,9 @@ const deleteAccount = async (request: Request, env: Env) => {
     const keys = weeklyObjects.slice(index, index + 1000).map((object) => object.key);
     if (keys.length) await env.SYNC_BUCKET.delete(keys);
   }
+
+  // 先按正常退队规则移交队长；直接删 users 会让仍在使用的队伍失去队长。
+  await leaveTeamForUser(env, userId);
 
   // 显式逐表删除,不依赖 FK 级联配置。purchase_events 一并删除:
   // 交易记录以 Apple 侧为准,服务端不保留可关联到用户的副本。
@@ -2439,7 +2864,8 @@ const health = async (env: Env) => {
     "apple_transaction_owners", // 0009
     "auth_rate_limits",         // 0010
     "apple_notifications",      // 0012
-    "wechat_orders"             // 0013
+    "wechat_orders",            // 0013
+    "teams", "team_members", "team_daily_activity", "team_cheers", "team_reports" // 0014
   ];
   const found = await env.DB.prepare(
     `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${required.map(() => "?").join(", ")})`
@@ -2470,6 +2896,7 @@ const health = async (env: Env) => {
     appStoreEnvironment: env.APP_STORE_ENVIRONMENT ?? "Production",
     wechatPayConfigured: wechatPayConfigured(env),
     wechatPushConfigured: Boolean(env.WECHAT_MSG_TOKEN),
+    wechatContentSecurityConfigured: Boolean(env.WECHAT_APP_ID && env.WECHAT_APP_SECRET),
     // 云端周报的保存期限。为 0 表示「未配置 = 不清理」：可以继续本地使用，
     // 但按计划不该在期限未定前售卖云端历史。
     weeklyReportRetentionDays: weeklyReportRetentionDays(env),
@@ -2514,6 +2941,16 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/auth/delete-account") return deleteAccount(request, env);
   if (request.method === "GET" && url.pathname === "/api/user/profile") return profile(request, env);
   if (request.method === "POST" && url.pathname === "/api/user/profile") return updateProfile(request, env);
+  if (request.method === "GET" && url.pathname === "/api/teams/me") return getMyTeam(request, env);
+  if (request.method === "GET" && url.pathname === "/api/teams/plaza") return listTeamPlaza(request, env);
+  if (request.method === "POST" && url.pathname === "/api/teams") return createTeam(request, env);
+  if (request.method === "PUT" && url.pathname === "/api/teams/me") return updateTeam(request, env);
+  if (request.method === "POST" && url.pathname === "/api/teams/join") return joinTeam(request, env);
+  if (request.method === "POST" && url.pathname === "/api/teams/activity") return reportTeamActivity(request, env);
+  if (request.method === "POST" && url.pathname === "/api/teams/cheers") return cheerTeamMember(request, env);
+  if (request.method === "POST" && url.pathname === "/api/teams/leave") return leaveTeam(request, env);
+  if (request.method === "POST" && url.pathname === "/api/teams/invite/regenerate") return regenerateTeamInvite(request, env);
+  if (request.method === "POST" && url.pathname === "/api/teams/report") return reportTeam(request, env);
   if (request.method === "GET" && url.pathname === "/api/entitlements") return getEntitlements(request, env);
   if (request.method === "POST" && url.pathname === "/api/purchases/verify") return verifyPurchase(request, env);
   if (request.method === "POST" && url.pathname === "/api/purchases/apple-notifications") return appleNotification(request, env);

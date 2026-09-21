@@ -37,6 +37,10 @@ const indexPage = read('src/pages/index/index.wxml');
 const indexScript = read('src/pages/index/index.js');
 const grammarPage = read('src/pages/grammar/index.wxml');
 const settingsPage = read('src/pages/settings/index.wxml');
+const teamRuntime = read('src/runtime/team.js');
+const teamPage = read('src/pages/team/index.wxml');
+const teamScript = read('src/pages/team/index.js');
+const appConfig = read('src/app.json');
 const projectConfig = JSON.parse(read('project.config.json'));
 
 /*
@@ -120,6 +124,7 @@ const checks = [
   ,['47 achievements are locally calculated', achievements.includes('CATALOG') && achievements.includes('achievement_unlocked') && achievementsSmoke.includes('47')]
   ,['rich study card data is rendered', indexPage.includes('pitch-card') && indexPage.includes('furigana-line') && indexPage.includes('dictionaryEntries') && indexScript.includes('modeLabel')]
   ,['maintenance controls are outside study home', !indexPage.includes('handleContentUpdate') && settingsPage.includes('handleContentUpdate')]
+  ,['real team feature replaces placeholder', appConfig.includes('pages/team/index') && indexPage.includes('组队学习') && teamRuntime.includes('/teams/activity') && teamRuntime.includes('/teams/report') && teamPage.includes('open-type="share"') && teamScript.includes('onShareAppMessage')]
   ,['release UI excludes developer diagnostics', !['handleSave', 'handleRestore', 'handleDue', 'entitlement.source', 'auth.userId', '原子写盘', '冷启动恢复'].some((text) => settingsPage.includes(text)) && !indexScript.includes('status.paths.dbPath')]
   ,['release upload omits source maps and checks domains', projectConfig.setting.uploadWithSourceMap === false && projectConfig.setting.urlCheck === true]
   ,['immersive grammar mode is wired', grammarPage.includes('沉浸阅读') && read('src/pages/grammar/index.js').includes('handleImmersive')]

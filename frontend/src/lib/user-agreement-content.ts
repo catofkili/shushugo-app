@@ -1,6 +1,6 @@
 export const USER_AGREEMENT_TITLE = "收集日用户协议";
-export const USER_AGREEMENT_EFFECTIVE_DATE = "2026 年 8 月 3 日";
-export const USER_AGREEMENT_VERSION = "2026-08-03";
+export const USER_AGREEMENT_EFFECTIVE_DATE = "2026 年 9 月 22 日";
+export const USER_AGREEMENT_VERSION = "2026-09-22";
 
 export interface UserAgreementSection {
   title: string;
@@ -20,6 +20,13 @@ export const USER_AGREEMENT_SECTIONS: UserAgreementSection[] = [
     body: [
       "未登录时，学习记录默认保存在当前设备。登录后，应用会按同步设置把学习记录和账号资料上传至云端，以便在你的设备间恢复和合并。",
       "网络中断不会阻止本机学习。恢复联网后，待同步的数据会继续尝试上传；发生无法自动判断的冲突时，应用会要求你选择保留哪一份数据。"
+    ]
+  },
+  {
+    title: "组队学习",
+    body: [
+      "组队功能用于分享学习进度、互相加油和邀请其他学习者。请勿在队名或昵称中发布违法、侵权、骚扰、广告或联系方式等不适当内容。",
+      "队伍内显示的学习数量来自各设备上报，仅用于互相鼓励，不构成排名、成绩证明，也不会用于发放付费权益或虚拟奖励。"
     ]
   },
   {

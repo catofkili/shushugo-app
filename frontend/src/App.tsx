@@ -79,7 +79,7 @@ const toolPageTitles: Partial<Record<Page, string>> = {
   "vocab-test": "查词汇量"
 };
 
-const accountProtectedPages = new Set<Page>(["account", "personal-info"]);
+const accountProtectedPages = new Set<Page>(["account", "personal-info", "team"]);
 /** Pro 页面：不管从哪个入口进（主页格子、卡上的链接、返回栈），没权益一律拦成付费墙。 */
 const proPages: Partial<Record<Page, FeatureId>> = {
   confusion: "confusionGroups",

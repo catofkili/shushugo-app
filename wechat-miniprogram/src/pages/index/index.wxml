@@ -101,6 +101,7 @@
     <navigator class="library-link" url="/pages/confusion/index">疑难辨析（本地分组）→</navigator>
     <navigator class="library-link" url="/pages/achievements/index">成就（47 个）→</navigator>
     <navigator class="library-link" url="/pages/journey/index">学习旅程：连击 · 各级进度 · 成就 →</navigator>
+    <navigator class="library-link" url="/pages/team/index">组队学习：进度 · 加油 · 微信邀请 →</navigator>
   </view>
 
   <view class="card result-card" wx:if="{{result}}">

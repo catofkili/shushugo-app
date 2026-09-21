@@ -1,0 +1,83 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero">
+    <navigator class="back" open-type="navigateBack">‹ 返回</navigator>
+    <text class="eyebrow">TEAM · 组队学习</text>
+    <text class="title">一起走，更容易坚持</text>
+    <text class="subtitle">分享今天的学习进度，和真实队友互相加油</text>
+  </view>
+
+  <view wx:if="{{needsInit}}" class="card empty">
+    <text class="section-title">先初始化本地学习库</text>
+    <text class="detail">组队会读取今天的本机学习数量。请先回到学习首页完成初始化，再回来加入队伍。</text>
+    <navigator class="primary nav-button" url="/pages/index/index">回学习首页</navigator>
+  </view>
+
+  <block wx:elif="{{!auth.signedIn}}">
+    <view class="card empty">
+      <text class="section-title">绑定微信账号后开始组队</text>
+      <text class="detail">队友只会看到你的昵称、队伍和每日学习数量，不会看到微信标识或原始学习记录。</text>
+      <input class="input" value="{{nickname}}" maxlength="20" placeholder="队友昵称（1–20 个字符）" bindinput="inputNickname" />
+      <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="signIn">微信登录</button>
+      <navigator class="legal" url="/pages/legal/index">查看用户协议与隐私政策 →</navigator>
+    </view>
+  </block>
+
+  <block wx:elif="{{team}}">
+    <view class="card team-card">
+      <view class="team-head">
+        <view><text class="team-title">{{team.emoji}} {{team.name}}</text><text class="detail">{{team.targetLevel}} · 连续活跃 {{team.streak}} 天 · 今天 {{team.activeCount}}/{{team.memberCount}} 人学习</text></view>
+        <view class="count"><text>{{team.totalStudyCount}}</text><small>学习项</small></view>
+      </view>
+      <view class="progress"><view style="width: {{team.memberCount ? team.activeCount / team.memberCount * 100 : 0}}%"></view></view>
+      <view wx:for="{{team.members}}" wx:key="memberId" class="member">
+        <text class="avatar">{{item.avatar}}</text>
+        <view class="member-copy"><text class="member-name">{{item.name}}{{item.isMe ? '（你）' : ''}}{{item.isOwner ? ' · 队长' : ''}}</text><text class="member-detail">{{item.studyCount}} 项{{item.cheersReceived ? ' · ' + item.cheersReceived + ' 次加油' : ''}}</text></view>
+        <text wx:if="{{item.isMe}}" class="state">{{item.completed ? '已完成' : '进行中'}}</text>
+        <button wx:else class="cheer {{item.cheeredByMe ? 'sent' : ''}}" data-id="{{item.memberId}}" disabled="{{busy || item.cheeredByMe}}" bindtap="cheer">{{item.cheeredByMe ? '已加油 ✓' : '加油'}}</button>
+      </view>
+    </view>
+
+    <view class="card invite">
+      <view><text class="mini-label">队伍邀请码</text><text class="invite-code">{{team.inviteCode}}</text></view>
+      <view class="invite-actions"><button class="ghost compact" bindtap="copyInvite">复制</button><button class="primary compact" open-type="share">微信邀请</button></view>
+    </view>
+
+    <view class="action-row">
+      <button wx:if="{{team.isOwner}}" class="ghost compact" bindtap="editTeam">队伍设置</button>
+      <button wx:if="{{team.isOwner}}" class="ghost compact" disabled="{{busy}}" bindtap="regenerateInvite">更新邀请码</button>
+      <button class="danger compact" disabled="{{busy}}" bindtap="leaveTeam">退出队伍</button>
+    </view>
+
+    <view wx:if="{{editing}}" class="card">
+      <text class="section-title">队伍设置</text>
+      <input class="input" value="{{draft.name}}" maxlength="20" placeholder="队伍名称" bindinput="inputName" />
+      <view class="picker-row"><picker range="{{targets}}" value="{{targetIndex}}" bindchange="changeTarget"><view class="picker">目标 {{draft.targetLevel}}⌄</view></picker><picker range="{{emojis}}" value="{{emojiIndex}}" bindchange="changeEmoji"><view class="picker">{{draft.emoji}} 图标⌄</view></picker><picker range="{{visibilities}}" value="{{visibilityIndex}}" bindchange="changeVisibility"><view class="picker">{{draft.visibility === 'public' ? '公开' : '仅邀请'}}⌄</view></picker></view>
+      <view class="action-row"><button class="primary compact" disabled="{{busy || draft.name.length < 2}}" bindtap="saveTeam">保存</button><button class="ghost compact" bindtap="cancelEdit">取消</button></view>
+    </view>
+  </block>
+
+  <block wx:elif="{{auth.signedIn}}">
+    <view class="card">
+      <text class="section-title">创建自己的队伍</text>
+      <input class="input" value="{{nickname}}" maxlength="20" placeholder="队友昵称（1–20 个字符）" bindinput="inputNickname" />
+      <input class="input" value="{{draft.name}}" maxlength="20" placeholder="队伍名称，例如：N3 每日打卡" bindinput="inputName" />
+      <view class="picker-row"><picker range="{{targets}}" value="{{targetIndex}}" bindchange="changeTarget"><view class="picker">目标 {{draft.targetLevel}}⌄</view></picker><picker range="{{emojis}}" value="{{emojiIndex}}" bindchange="changeEmoji"><view class="picker">{{draft.emoji}} 图标⌄</view></picker><picker range="{{visibilities}}" value="{{visibilityIndex}}" bindchange="changeVisibility"><view class="picker">{{draft.visibility === 'public' ? '公开' : '仅邀请'}}⌄</view></picker></view>
+      <button class="primary" loading="{{busy}}" disabled="{{busy || draft.name.length < 2}}" bindtap="createTeam">创建队伍</button>
+    </view>
+
+    <view class="card invite-join">
+      <input class="input" value="{{inviteCode}}" maxlength="8" placeholder="输入 8 位邀请码" bindinput="inputInvite" />
+      <button class="secondary compact" loading="{{busy}}" disabled="{{busy || inviteCode.length !== 8}}" bindtap="joinTeam">加入</button>
+    </view>
+
+    <text class="plaza-title">组队广场</text>
+    <view wx:if="{{!plaza.length}}" class="card empty"><text class="detail">暂时没有可加入的公开队伍，你可以创建第一支。</text></view>
+    <view wx:for="{{plaza}}" wx:key="id" class="card plaza-item">
+      <text class="plaza-emoji">{{item.emoji}}</text>
+      <view class="plaza-copy"><text class="member-name">{{item.name}}</text><text class="member-detail">{{item.targetLevel}} · {{item.memberCount}}/{{item.maxMembers}} 人 · 今天 {{item.activeCount}} 人 · 🔥 {{item.streak}} 天</text></view>
+      <view class="plaza-actions"><button class="report compact" data-id="{{item.id}}" disabled="{{busy}}" bindtap="reportTeam">举报</button><button class="secondary compact" data-id="{{item.id}}" disabled="{{busy}}" bindtap="joinTeam">加入</button></view>
+    </view>
+  </block>
+
+  <view wx:if="{{result}}" class="card result">{{result}}</view>
+</scroll-view>

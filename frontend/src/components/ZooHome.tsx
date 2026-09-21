@@ -274,15 +274,12 @@ export function ZooHome({
               <small>{shortfallText(jlpt.shortfall)}</small>
             </button>
           )}
-          {/* 组队还没接后端(TeamPage 顶上写着这句)。首页原来写的是「我的队伍 · N3 冲刺组 ·
-              看看今天谁学了」—— 那是把一支不存在的队伍当成用户自己的队伍在播报,
-              进去才被告知是示例。入口留着(接了后端就改回来),但首页这行必须说实话。 */}
           <button className="zoo-duo-cell" onClick={() => onNavigate("team")}>
             <span className="zoo-duo-kick">组队</span>
-            <b>还没开放</b>
+            <b>和队友一起学</b>
             <small className="zoo-duo-avatars">
-              <i>🙂</i><i>😎</i><i>🧑‍🎓</i><i>🥱</i>
-              <em>界面预览 · 队友是示例</em>
+              <i>🙂</i><i>🐿️</i><i>🐼</i><i>🐧</i>
+              <em>创建、加入或邀请学习队伍</em>
             </small>
           </button>
         </div>
