@@ -1141,12 +1141,13 @@ const wechatLogin = async (request: Request, env: Env) => {
     console.warn("WeChat code2session failed", result.errcode, result.errmsg);
     return json({ detail: "微信登录凭证无效或已过期。", code: "WECHAT_CODE_INVALID" }, 401);
   }
-  const subject = result.unionid ? `unionid:${result.unionid}` : `openid:${result.openid}`;
+  const openid = result.openid;
+  const subject = result.unionid ? `unionid:${result.unionid}` : `openid:${openid}`;
   // 虚拟支付的 signature 要用 session_key 签、查单要 openid：登录那一刻记下来，
   // 每次登录覆盖（session_key 随 wx.login 刷新）。KV 30 天，过期了让用户重新登录一次。
   const rememberWechatSession = (userId: string) => env.SYNC_DATA.put(
     wechatSessionKey(userId),
-    JSON.stringify({ openid: result.openid, sessionKey: result.session_key ?? "" } satisfies WechatSession),
+    JSON.stringify({ openid, sessionKey: result.session_key ?? "" } satisfies WechatSession),
     { expirationTtl: 30 * 24 * 60 * 60 }
   );
   const identity = await env.DB.prepare(`
