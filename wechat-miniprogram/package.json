@@ -15,6 +15,7 @@
     "confusion-smoke": "node scripts/confusion-smoke.mjs",
     "achievements-smoke": "node scripts/achievements-smoke.mjs",
     "daily-relief-smoke": "node scripts/daily-relief-smoke.mjs",
+    "team-page-smoke": "node scripts/team-page-smoke.cjs",
     "runtime-smoke": "node scripts/runtime-sim-smoke.mjs",
     "budget": "node scripts/package-budget.mjs",
     "check": "node scripts/check-source.mjs",
