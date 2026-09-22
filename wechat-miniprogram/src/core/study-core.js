@@ -181,6 +181,79 @@ function ensureGrammarSchema(db) {
   }
 }
 
+/*
+ * 网页 / App / 小程序共用的非调度功能表。
+ *
+ * 这些表不能继续塞进 app_state：收藏、词汇量成绩、周报和柚子账本都需要逐行
+ * 合并，整块 key/value 会让一台设备的改动覆盖另一台。列名与 frontend 的
+ * local-schema.sql 对齐，sync-snapshot 才能在三端之间原样合并。
+ */
+function ensureFeatureSchema(db) {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS content_favorites (
+      item_type TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      folder TEXT NOT NULL DEFAULT '',
+      sync_updated_at TEXT,
+      sync_origin_device TEXT,
+      PRIMARY KEY (item_type, item_id)
+    )
+  `);
+  db.run(`CREATE TABLE IF NOT EXISTS favorite_folders (
+    name TEXT PRIMARY KEY,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sync_updated_at TEXT,
+    sync_origin_device TEXT
+  )`);
+  db.run(`CREATE TABLE IF NOT EXISTS vocab_test_history (
+    run_id TEXT PRIMARY KEY,
+    started_at TEXT NOT NULL,
+    finished_at TEXT NOT NULL,
+    duration_seconds INTEGER NOT NULL DEFAULT 0,
+    answered INTEGER NOT NULL DEFAULT 0,
+    total_questions INTEGER NOT NULL DEFAULT 0,
+    estimated INTEGER NOT NULL DEFAULT 0,
+    lower_bound INTEGER NOT NULL DEFAULT 0,
+    upper_bound INTEGER NOT NULL DEFAULT 0,
+    confidence INTEGER NOT NULL DEFAULT 0,
+    recommendation TEXT NOT NULL DEFAULT '',
+    levels_json TEXT NOT NULL DEFAULT ''
+  )`);
+  db.run(`CREATE TABLE IF NOT EXISTS yuzu_ledger (
+    kind TEXT NOT NULL,
+    key TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    day TEXT NOT NULL,
+    PRIMARY KEY (kind, key)
+  )`);
+  // 成就表名必须和网页 / App 一样叫 achievements：它按 id 做 union 同步。
+  // 小程序 0.1.0 开发版曾叫 achievement_unlocked，网页那边不认识这张表，
+  // 两端各自解锁、谁也看不到对方的 —— 搬过去然后把旧表删掉。
+  db.run('CREATE TABLE IF NOT EXISTS achievements (id TEXT PRIMARY KEY, unlocked_on TEXT NOT NULL)');
+  if (tableColumns(db, 'achievement_unlocked').size) {
+    db.run('INSERT OR IGNORE INTO achievements (id, unlocked_on) SELECT id, unlocked_on FROM achievement_unlocked');
+    db.run('DROP TABLE achievement_unlocked');
+  }
+  db.run(`CREATE TABLE IF NOT EXISTS weekly_reports (
+    week_start TEXT PRIMARY KEY,
+    week_end TEXT NOT NULL,
+    generated_at TEXT NOT NULL,
+    schema_version INTEGER NOT NULL DEFAULT 3,
+    content_json TEXT NOT NULL,
+    read_at TEXT,
+    source_revision TEXT NOT NULL DEFAULT '',
+    sync_updated_at TEXT,
+    sync_origin_device TEXT
+  )`);
+  for (const table of ['content_favorites', 'favorite_folders']) {
+    const columns = tableColumns(db, table);
+    if (!columns.has('sync_updated_at')) db.run(`ALTER TABLE ${table} ADD COLUMN sync_updated_at TEXT`);
+    if (!columns.has('sync_origin_device')) db.run(`ALTER TABLE ${table} ADD COLUMN sync_origin_device TEXT`);
+    db.run(`UPDATE ${table} SET sync_updated_at = created_at WHERE sync_updated_at IS NULL`);
+  }
+}
+
 function ensureStudySchema(db) {
   const progressColumns = tableColumns(db, 'progress');
   for (const [name, type] of FSRS_COLUMNS) {
@@ -260,7 +333,7 @@ function ensureStudySchema(db) {
   // (不再走透传),表不存在的话导出和合并都会静默跳过 —— 对端的语法进度会在
   // 小程序推上去的那一代快照里凭空消失。
   ensureGrammarSchema(db);
-  db.run('CREATE TABLE IF NOT EXISTS achievement_unlocked (id TEXT PRIMARY KEY, unlocked_on TEXT NOT NULL)');
+  ensureFeatureSchema(db);
   db.run('CREATE INDEX IF NOT EXISTS idx_progress_fsrs_due ON progress(fsrs_due)');
   db.run('CREATE INDEX IF NOT EXISTS idx_reviews_day_direction ON reviews(reviewed_on, direction)');
   db.run('CREATE INDEX IF NOT EXISTS idx_stage1_day_order ON stage1_tasks(reviewed_on, order_index)');
@@ -918,7 +991,7 @@ function undoLastAnswer(db, options = {}) {
   const direction = normalizeDirection(snapshot.direction);
   const entityTable = snapshot.entityTable || directionTable(direction);
   const review = rowsFor(db, `
-    SELECT id FROM reviews
+    SELECT id, sync_uid FROM reviews
     WHERE word_id = ? AND created_at = ? AND direction = ?
   `, [snapshot.wordId, snapshot.reviewCreatedAt, reviewDirection(direction)])[0];
   if (!review) {
@@ -931,6 +1004,11 @@ function undoLastAnswer(db, options = {}) {
     const columns = Object.keys(p);
     db.run(`UPDATE ${entityTable} SET ${columns.map((column) => `${column} = ?`).join(', ')} WHERE word_id = ?`, [...columns.map((column) => p[column]), snapshot.wordId]);
     db.run('DELETE FROM reviews WHERE id = ?', [Number(review.id)]);
+    // 网页那边删作答由触发器留墓碑（键 = sync_uid）。小程序没有触发器，自己补一条，
+    // 否则这条已经推上云的作答会在下一次合并时原样回来，撤销等于没撤。
+    if (review.sync_uid) {
+      db.run('INSERT OR REPLACE INTO sync_tombstones (entity, natural_key, deleted_at) VALUES (?, ?, ?)', ['reviews', String(review.sync_uid), isoNow()]);
+    }
     setState(db, snapshot.currentStateKey || directionStateKey(direction), snapshot.previousCurrentCard || '0');
     setState(db, 'undo_snapshot', '');
     db.run('COMMIT');
@@ -961,6 +1039,7 @@ module.exports = {
   DEFAULT_REVIEW_LIMIT,
   ensureStudySchema,
   ensureGrammarSchema,
+  ensureFeatureSchema,
   GRAMMAR_PROGRESS_COLUMNS,
   localStudyDay,
   studyDayEnd,

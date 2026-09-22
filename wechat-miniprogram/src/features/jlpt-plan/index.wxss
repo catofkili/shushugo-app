@@ -1,0 +1,2 @@
+@import "../common.wxss";
+.date-input{margin-top:14rpx;padding:18rpx;border-radius:18rpx;background:#f5efe5}.phase{font-weight:800;color:#315d35}.coverage{margin-top:14rpx}.progress{height:16rpx;margin-top:8rpx;border-radius:999rpx;background:#eee6d8;overflow:hidden}.progress view{height:100%;background:#88b866}

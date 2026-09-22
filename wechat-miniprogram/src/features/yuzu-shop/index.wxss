@@ -1,0 +1,4 @@
+@import "../common.wxss";
+.balance{display:flex;align-items:baseline;gap:12rpx;margin-top:14rpx}.balance-number{font-size:62rpx;font-weight:900;color:#cc7d28}.item{margin-top:16rpx}.item-actions button{margin:14rpx 0 0;font-size:24rpx}.owned{color:#5d8b3e;background:#e5f0d9}.soon{color:#8d8378;background:#eee8de}.skin-theme-matcha{background:#e7f1d9}.skin-theme-sakura{background:#f8e2e4}.skin-theme-night{background:#362f2b;color:#f7e5bd}.swatch{width:60rpx;height:60rpx;border-radius:18rpx;background:#8ab665}.swatch.sakura{background:#d98f9b}.swatch.night{background:#725232}.swatch.voice{background:#7b8fb9}
+.note{color:#b08a4a}
+.swatch.mascot{background:#5b8a6b}.swatch.icon{background:#e2b04a}.swatch.sound{background:#a37bb3}.swatch.misc{background:#c9b69a}

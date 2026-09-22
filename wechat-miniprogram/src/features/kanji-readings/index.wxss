@@ -1,0 +1,2 @@
+@import "../common.wxss";
+.kanji-input{font-size:34rpx}.kanji-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14rpx;margin-top:22rpx}.kanji-card{padding:20rpx 8rpx;text-align:center;border-radius:20rpx;background:#fffdf8}.char{display:block;font-size:48rpx;font-weight:800}.reading{display:block;margin-top:4rpx;color:#81786d;font-size:19rpx}.reading-card{margin-top:18rpx;padding:22rpx;border-radius:22rpx;background:#f5efe4}.example{display:block;margin-top:10rpx}.kind{margin-left:12rpx;color:#8b6d35;font-size:21rpx}

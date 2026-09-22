@@ -97,10 +97,17 @@ function rowsFor(db, sql, params = []) {
 }
 
 function ensureLibrarySchema(db) {
-  // 收藏属于内容/个人意图，不应该被塞进 progress 或伪造一条 review。
-  // 用 app_state 是为了沿用现有同步快照，不引入另一张两端不认识的表。
-  db.run('CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
   core.ensureStudySchema(db);
+  // 旧版小程序把收藏塞在 app_state；网页/App 已使用 content_favorites。
+  // 一次性搬过去后删掉旧键，三端从此只维护同一张表。
+  for (const table of ['app_state', 'grammar_state']) {
+    const stale = rowsFor(db, `SELECT key FROM ${table} WHERE key LIKE 'favorite:word:%' AND value = '1'`);
+    for (const row of stale) {
+      const id = String(row.key).slice('favorite:word:'.length);
+      if (/^\d+$/.test(id)) db.run("INSERT OR IGNORE INTO content_favorites (item_type, item_id, sync_updated_at) VALUES ('word', ?, ?)", [id, new Date().toISOString()]);
+    }
+    db.run(`DELETE FROM ${table} WHERE key LIKE 'favorite:word:%'`);
+  }
 }
 
 function posRawValues(db, bucket) {
@@ -191,9 +198,9 @@ function queryWordLibraryWithDb(db, inputFilters = {}, offset = 0, limit = 50) {
            p.fsrs_last_review, p.fsrs_lapses, p.fsrs_reps,
            ${BAND_SQL} AS band,
            CASE WHEN ${DUE_SQL} THEN 1 ELSE 0 END AS is_due,
-           CASE WHEN s.value = '1' THEN 1 ELSE 0 END AS favorite
+           CASE WHEN f.item_id IS NOT NULL THEN 1 ELSE 0 END AS favorite
     FROM words w JOIN progress p ON p.word_id = w.id
-    LEFT JOIN app_state s ON s.key = ('favorite:word:' || w.id)
+    LEFT JOIN content_favorites f ON f.item_type = 'word' AND f.item_id = CAST(w.id AS TEXT)
     ${where.sql}
     ORDER BY ${ORDER_SQL[filters.sort]}
     LIMIT ? OFFSET ?
@@ -236,10 +243,10 @@ function wordLibraryDetailWithDb(db, wordId) {
            p.fsrs_last_review, p.fsrs_lapses, p.fsrs_reps,
            ${BAND_SQL} AS band, CASE WHEN ${DUE_SQL} THEN 1 ELSE 0 END AS is_due,
            COALESCE(n.note, '') AS note,
-           CASE WHEN s.value = '1' THEN 1 ELSE 0 END AS favorite
+           CASE WHEN f.item_id IS NOT NULL THEN 1 ELSE 0 END AS favorite
     FROM words w JOIN progress p ON p.word_id = w.id
     LEFT JOIN word_notes n ON n.word_id = w.id
-    LEFT JOIN app_state s ON s.key = ('favorite:word:' || w.id)
+    LEFT JOIN content_favorites f ON f.item_type = 'word' AND f.item_id = CAST(w.id AS TEXT)
     WHERE w.id = ? LIMIT 1
   `, [dayEnd, wordId])[0];
   if (!row) return null;
@@ -276,16 +283,8 @@ function tallyWordLibrary(filters) { return withDb((db) => tallyWordLibraryWithD
 function wordLibraryDetail(wordId) { return withDb((db) => wordLibraryDetailWithDb(db, wordId)); }
 function wordLibraryIds(filters, limit) { return withDb((db) => libraryIdsWithDb(db, filters, limit)); }
 
-async function toggleWordFavorite(wordId) {
-  const { getDatabase, saveDatabase } = databaseStore();
-  const db = getDatabase();
-  ensureLibrarySchema(db);
-  const key = `favorite:word:${Number(wordId)}`;
-  const next = core.getState(db, key, '0') !== '1';
-  core.setState(db, key, next ? '1' : '0');
-  await saveDatabase();
-  return next;
-}
+// 收藏走网页同一份 favorites-api（src/shared/web.js），墓碑由 extended-features 补。
+function toggleWordFavorite(wordId) { return require('./extended-features').toggleFavorite('word', wordId); }
 
 async function setWordsKnownForever(wordIds, known = true) {
   const { getDatabase, saveDatabase } = databaseStore();

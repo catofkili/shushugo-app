@@ -1,0 +1,23 @@
+page {
+  min-height: 100%;
+  background: #f4ead6;
+  color: #3a2e22;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+}
+
+button::after { border: 0; }
+
+.zoo-card {
+  border: 2rpx solid rgba(114, 84, 52, 0.08);
+  border-radius: 30rpx;
+  background: #fbf5e9;
+  box-shadow: 0 12rpx 30rpx rgba(91, 67, 42, 0.08);
+}
+
+.zoo-primary {
+  color: #fff;
+  background: #69a840;
+  box-shadow: 0 10rpx 22rpx rgba(79, 133, 45, 0.22);
+}
+
+.zoo-muted { color: #8a7764; }

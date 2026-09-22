@@ -1,0 +1,2 @@
+@import "../common.wxss";
+.rule{margin-top:18rpx}.pattern{display:block;margin-top:10rpx;padding:12rpx 16rpx;border-radius:14rpx;background:#f4ede2;font-family:serif}.checkpoint{display:block;margin-top:10rpx;padding-left:24rpx;position:relative}.checkpoint:before{content:'·';position:absolute;left:6rpx;color:#72a252}.table-scroll{margin-top:16rpx;white-space:nowrap}.table-row{display:flex}.table-cell{width:210rpx;padding:12rpx;border-right:1rpx solid #eee2d2;border-bottom:1rpx solid #eee2d2;font-size:22rpx;white-space:normal}.table-head{font-weight:800;background:#edf3e5}

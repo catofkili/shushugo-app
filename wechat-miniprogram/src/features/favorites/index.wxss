@@ -1,0 +1,4 @@
+@import "../common.wxss";
+.favorite{margin-top:16rpx}.folder-line{display:flex;gap:12rpx;margin-top:18rpx}.folder-line input{flex:1;padding:16rpx 20rpx;border-radius:18rpx;background:#f4eee3}.folder-line button{margin:0;font-size:24rpx}.actions{display:flex;gap:12rpx;margin-top:14rpx}.actions button{margin:0;padding:0 22rpx;font-size:23rpx}.type-word{background:#edf4e5}.type-grammar{background:#f3e8dc}
+.chip-row.nowrap{flex-wrap:nowrap;width:max-content}
+.folder-tools{display:flex;gap:12rpx;margin-top:14rpx;align-items:center}.folder-tools input{flex:1;padding:16rpx 20rpx;border-radius:18rpx;background:#f4eee3}.folder-tools button{margin:0;font-size:23rpx}

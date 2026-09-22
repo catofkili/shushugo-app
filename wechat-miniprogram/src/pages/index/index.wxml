@@ -1,8 +1,8 @@
 <scroll-view class="page" scroll-y>
   <view class="hero">
-    <text class="eyebrow">收集日 · OFFLINE STUDY</text>
+    <text class="eyebrow">WORD STUDY · 离线可用</text>
     <text class="title">今天学一点</text>
-    <text class="subtitle">本地保存 · 断网可用 · 答题后自动记录</text>
+    <text class="subtitle">按自己的节奏收集，答题后自动保存在本机</text>
   </view>
 
   <view class="card status-card">
@@ -93,15 +93,11 @@
     </view>
 
     <button class="undo" loading="{{busy}}" disabled="{{busy}}" bindtap="handleUndo">撤销上一张</button>
-    <navigator class="library-link" url="/pages/library/index">查词库 →</navigator>
-    <navigator class="library-link" url="/pages/modes/index">学习模式：经典／快速／错题／自选 →</navigator>
-    <navigator class="library-link" url="/pages/settings/index">设置与权益 →</navigator>
-    <navigator class="library-link" url="/pages/progress/index">学习统计 →</navigator>
-    <navigator class="library-link" url="/pages/grammar/index">语法库（741 条）→</navigator>
-    <navigator class="library-link" url="/pages/confusion/index">疑难辨析（本地分组）→</navigator>
-    <navigator class="library-link" url="/pages/achievements/index">成就（47 个）→</navigator>
-    <navigator class="library-link" url="/pages/journey/index">学习旅程：连击 · 各级进度 · 成就 →</navigator>
-    <navigator class="library-link" url="/pages/team/index">组队学习：进度 · 加油 · 微信邀请 →</navigator>
+    <view class="shortcut-row">
+      <navigator class="shortcut" url="/pages/library/index">查词库</navigator>
+      <navigator class="shortcut" url="/pages/modes/index">换模式</navigator>
+      <navigator class="shortcut" url="/pages/team/index">组队学习</navigator>
+    </view>
   </view>
 
   <view class="card result-card" wx:if="{{result}}">

@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/home/index",
     "pages/index/index",
     "pages/modes/index",
     "pages/library/index",
@@ -12,12 +13,39 @@
     "pages/team/index",
     "pages/legal/index"
   ],
+  "subPackages": [
+    {
+      "root": "features",
+      "pages": [
+        "weekly/index",
+        "jlpt-plan/index",
+        "grammar-foundation/index",
+        "kanji-readings/index",
+        "favorites/index",
+        "vocab-test/index",
+        "distinction-quiz/index",
+        "yuzu-shop/index"
+      ]
+    }
+  ],
   "window": {
     "navigationBarTitleText": "ShuShuGo",
-    "navigationBarBackgroundColor": "#101827",
-    "navigationBarTextStyle": "white",
-    "backgroundColor": "#f4f6fb",
-    "backgroundTextStyle": "light"
+    "navigationBarBackgroundColor": "#F4EAD6",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F4EAD6",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#8A7764",
+    "selectedColor": "#5F983A",
+    "backgroundColor": "#FBF5E9",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "主页", "iconPath": "assets/nav/home.png", "selectedIconPath": "assets/nav/home.png" },
+      { "pagePath": "pages/index/index", "text": "单词", "iconPath": "assets/nav/study.png", "selectedIconPath": "assets/nav/study.png" },
+      { "pagePath": "pages/grammar/index", "text": "语法", "iconPath": "assets/nav/grammar.png", "selectedIconPath": "assets/nav/grammar.png" },
+      { "pagePath": "pages/settings/index", "text": "我的", "iconPath": "assets/nav/me.png", "selectedIconPath": "assets/nav/me.png" }
+    ]
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",

@@ -1,0 +1,64 @@
+<scroll-view class="page skin-{{skin}}" scroll-y>
+  <view class="greeting-row">
+    <image class="brand-icon" src="/assets/brand/shushugo-icon.png" mode="aspectFit" />
+    <view class="greeting-copy">
+      <text class="brand">收集日 · SHUSHUGO</text>
+      <text class="greeting">{{greeting}}</text>
+    </view>
+    <view class="streak"><text class="streak-number">{{summary.streak || 0}}</text><text>天连续</text></view>
+  </view>
+
+  <view class="today-card zoo-card">
+    <view class="today-head">
+      <view><text class="eyebrow">今日收集</text><text class="today-title">经典学习</text></view>
+      <text class="mode-chip">日语 → 中文</text>
+    </view>
+    <view wx:if="{{ready}}" class="today-main">
+      <view><text class="remaining">{{stats.remaining}}</text><text class="remaining-label">张待完成</text></view>
+      <view class="today-breakdown">
+        <text>今天 {{stats.completed}} / {{stats.planned}}</text>
+        <text>到期 {{stats.dueTotal}}</text>
+      </view>
+    </view>
+    <view wx:else class="not-ready">
+      <text>{{loading ? '正在读取本地学习记录…' : notice}}</text>
+    </view>
+    <button class="start zoo-primary" data-url="/pages/index/index" bindtap="openTab">{{ready ? '开始今天的学习' : '打开单词学习'}}</button>
+  </view>
+
+  <view class="feature-row">
+    <view class="feature-card grammar" data-url="/pages/grammar/index" bindtap="openTab">
+      <text class="feature-kicker">JLPT 备考</text><text class="feature-title">语法基础</text><text class="feature-detail">系统整理语法点</text>
+    </view>
+    <view class="feature-card team" data-url="/pages/team/index" bindtap="openPage">
+      <text class="feature-kicker">一起坚持</text><text class="feature-title">组队学习</text><text class="feature-detail">进度、加油与邀请</text>
+    </view>
+  </view>
+
+  <view class="section-head"><text class="section-title">学习工具</text><text class="section-note">按自己的节奏收集</text></view>
+  <view class="tool-grid">
+    <view class="tool zoo-card" data-url="/pages/modes/index" bindtap="openPage"><text class="tool-icon green">速</text><text class="tool-title">学习模式</text><text class="tool-sub">经典 · 快速 · 错题</text></view>
+    <view class="tool zoo-card" data-url="/pages/library/index" bindtap="openPage"><text class="tool-icon orange">词</text><text class="tool-title">选择单词</text><text class="tool-sub">查词与自选范围</text></view>
+    <view class="tool zoo-card" data-url="/pages/confusion/index" bindtap="openPage"><text class="tool-icon purple">辨</text><text class="tool-title">疑难辨析</text><text class="tool-sub">相似词集中对照</text></view>
+    <view class="tool zoo-card" data-url="/pages/progress/index" bindtap="openPage"><text class="tool-icon blue">迹</text><text class="tool-title">学习足迹</text><text class="tool-sub">进度与 28 日记录</text></view>
+    <view class="tool zoo-card" data-url="/pages/achievements/index" bindtap="openPage"><text class="tool-icon yellow">成</text><text class="tool-title">成就</text><text class="tool-sub">47 枚收集目标</text></view>
+    <view class="tool zoo-card" data-url="/pages/journey/index" bindtap="openPage"><text class="tool-icon brown">旅</text><text class="tool-title">学习旅程</text><text class="tool-sub">等级与长期进度</text></view>
+    <view class="tool zoo-card" data-url="/features/weekly/index" bindtap="openPage"><text class="tool-icon orange">周</text><text class="tool-title">学习周报</text><text class="tool-sub">七日记录与等级分布</text></view>
+    <view class="tool zoo-card" data-url="/features/jlpt-plan/index" bindtap="openPage"><text class="tool-icon green">计</text><text class="tool-title">JLPT 计划</text><text class="tool-sub">按考期算每日最低量</text></view>
+    <view class="tool zoo-card" data-url="/features/grammar-foundation/index" bindtap="openPage"><text class="tool-icon purple">基</text><text class="tool-title">语法基础</text><text class="tool-sub">43 条结构化规则</text></view>
+    <view class="tool zoo-card" data-url="/features/kanji-readings/index" bindtap="openPage"><text class="tool-icon blue">音</text><text class="tool-title">汉字多音</text><text class="tool-sub">520 字读音用法</text></view>
+    <view class="tool zoo-card" data-url="/features/favorites/index" bindtap="openPage"><text class="tool-icon yellow">藏</text><text class="tool-title">我的收藏</text><text class="tool-sub">单词语法统一整理</text></view>
+    <view class="tool zoo-card" data-url="/features/vocab-test/index" bindtap="openPage"><text class="tool-icon brown">测</text><text class="tool-title">词汇量测试</text><text class="tool-sub">分层抽样，不改进度</text></view>
+    <view class="tool zoo-card" data-url="/features/distinction-quiz/index" bindtap="openPage"><text class="tool-icon purple">挑</text><text class="tool-title">辨析挑战</text><text class="tool-sub">从真实辨析组出题</text></view>
+    <view class="tool zoo-card" data-url="/features/yuzu-shop/index" bindtap="openPage"><text class="tool-icon orange">柚</text><text class="tool-title">柚子商店</text><text class="tool-sub">完成学习换主题与声音</text></view>
+  </view>
+
+  <view class="overview zoo-card">
+    <view class="overview-head"><text class="section-title">本周概览</text><navigator url="/pages/progress/index">查看全部 →</navigator></view>
+    <view class="overview-stats">
+      <view><text class="overview-value">{{summary.today || 0}}</text><text class="overview-label">今天</text></view>
+      <view><text class="overview-value">{{summary.week || 0}}</text><text class="overview-label">近 7 天</text></view>
+      <view><text class="overview-value">{{summary.due || 0}}</text><text class="overview-label">待复习</text></view>
+    </view>
+  </view>
+</scroll-view>

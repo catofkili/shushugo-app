@@ -1,0 +1,12 @@
+<scroll-view class="feature-page" scroll-y>
+  <view class="feature-hero"><text class="feature-kicker">FOUNDATION</text><text class="feature-title">先把骨架搭稳</text><text class="feature-copy">43 条基础规则，不按考试题目拆碎；从谓语、活用、助词一路连到语体与视角。</text></view>
+  <scroll-view scroll-x><view class="chip-row"><text class="chip {{section === '' ? 'active' : ''}}" data-id="" bindtap="pickSection">全部</text><text wx:for="{{sections}}" wx:key="id" class="chip {{section === item.id ? 'active' : ''}}" data-id="{{item.id}}" bindtap="pickSection">{{item.label}}</text></view></scroll-view>
+  <view class="panel rule" wx:for="{{rules}}" wx:key="id" data-id="{{item.id}}" bindtap="toggle">
+    <view class="row"><text class="list-title">{{item.title}}</text><text class="badge">{{item.level}}</text></view><text class="list-sub">{{item.summary}}</text>
+    <view wx:if="{{item.open}}">
+      <view class="divider"></view><text class="panel-title">结构</text><text class="pattern" wx:for="{{item.patterns}}" wx:key="*this">{{item}}</text>
+      <text class="panel-title" style="display:block;margin-top:22rpx">判断要点</text><text class="checkpoint" wx:for="{{item.checkpoints}}" wx:key="*this">{{item}}</text>
+      <block wx:for="{{item.tables}}" wx:key="title" wx:for-item="table"><text class="panel-title" style="display:block;margin-top:22rpx">{{table.title}}</text><scroll-view class="table-scroll" scroll-x><view class="table-row"><text class="table-cell table-head" wx:for="{{table.headers}}" wx:key="*this">{{item}}</text></view><view class="table-row" wx:for="{{table.rows}}" wx:key="index" wx:for-item="cells"><text class="table-cell" wx:for="{{cells}}" wx:key="*this">{{item}}</text></view></scroll-view></block>
+    </view>
+  </view>
+</scroll-view>

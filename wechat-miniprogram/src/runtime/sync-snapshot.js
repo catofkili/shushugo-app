@@ -34,7 +34,12 @@ const SNAPSHOT_TABLES = [
   'grammar_progress',
   'grammar_state',
   'confusion_mastered',
-  'achievement_unlocked',
+  'achievements',
+  'content_favorites',
+  'favorite_folders',
+  'vocab_test_history',
+  'yuzu_ledger',
+  'weekly_reports',
   'sync_tombstones'
 ];
 const LOCAL_STATE_KEYS = new Set([
@@ -45,7 +50,24 @@ const LOCAL_STATE_KEYS = new Set([
   'sync_last_modified',
   'auth_access_token',
   'auth_user_id',
-  'entitlement_cache'
+  'entitlement_cache',
+  // 下面这些和网页 sync/tables.ts 的 DEVICE_LOCAL_STATE_KEYS 逐条对齐：
+  // 「本机内容迁到哪一版」和「本机磁盘快照停在哪一刻」绝不能跨设备（理由见 CLAUDE.md）。
+  // 网页两侧都过滤；这里也两侧都过滤，别指望对端替自己挡。
+  'local_snapshot_mark',
+  'weekly_report_events',
+  'jlpt_seed_version',
+  'jlpt_word_metadata_version',
+  'jlpt_level_override_version',
+  'jlpt_collocation_content_version',
+  'dictionary_supplement_version',
+  'furigana_version',
+  'kana_reading_fix_version',
+  'legacy_biru_merge_version',
+  // 小程序自己的本机标记
+  'content_version',
+  'content_protocol_version',
+  'study_core_version'
 ]);
 /*
  * grammar_state 里的本地内容标记。⚠️ `dataset_version` 说的是「本机语法内容迁到哪一版」,
@@ -294,7 +316,13 @@ function replayPassthroughTables(db, snapshot) {
   }
 }
 
-async function exportSyncSnapshot(db) {
+/** 和网页 syncedTablesForCloud 同一条：免费账号本机留周报，但不把正文推上云端。 */
+function includeWeeklyReportsByDefault() {
+  try { return Boolean(require('./entitlements').cachedEntitlement().active); } catch { return false; }
+}
+
+async function exportSyncSnapshot(db, options = {}) {
+  const includeWeeklyReports = options.includeWeeklyReports ?? includeWeeklyReportsByDefault();
   // 设备号要先有,ensureStudySchema 才补得上 reviews.sync_uid。
   getDeviceId(db);
   core.ensureStudySchema(db);
@@ -309,6 +337,7 @@ async function exportSyncSnapshot(db) {
     ]);
     const originDevice = getDeviceId(db);
     for (const table of SNAPSHOT_TABLES) {
+      if (table === 'weekly_reports' && !includeWeeklyReports) continue;
       if (table === 'sync_tombstones') copyTombstones(db, snapshot);
       else copyTable(db, snapshot, table, originDevice);
     }
@@ -398,15 +427,23 @@ function tombstoneKeyColumns(entity) {
         : entity === 'checkins' ? ['checked_on']
           : entity === 'app_state' ? ['key']
             : entity === 'confusion_mastered' ? ['group_key']
-              : entity === 'achievement_unlocked' ? ['id']
+              : entity === 'achievements' ? ['id']
+                : entity === 'content_favorites' ? ['item_type', 'item_id']
+                  : entity === 'favorite_folders' ? ['name']
+                    : entity === 'vocab_test_history' ? ['run_id']
+                      : entity === 'yuzu_ledger' ? ['kind', 'key']
+                        : entity === 'weekly_reports' ? ['week_start']
                 : ['word_id'];
 }
 
 function applyTombstone(db, tombstone) {
   const table = tombstone.entity;
   if (!tableExists(db, table)) return false;
-  const keys = tombstoneKeyColumns(table);
+  let keys = tombstoneKeyColumns(table);
   const values = tombstone.naturalKey.split('\u001f');
+  // 作答流水的跨端身份是 sync_uid：网页 / App 的墓碑就是一段 uid（没有分隔符）。
+  // 老的三列自然键写法仍然认，两种都能删。
+  if (table === 'reviews' && values.length === 1) keys = ['sync_uid'];
   if (values.length !== keys.length) return false;
   const where = keys.map((key) => `${quoteIdentifier(key)} IS ?`).join(' AND ');
   const local = core.rowsFor(db, `SELECT * FROM ${quoteIdentifier(table)} WHERE ${where} LIMIT 1`, values)[0];
@@ -544,6 +581,10 @@ function mergeSnapshot(db, bytes, options = {}) {
           const mapped = Object.fromEntries(columns.map((column, index) => [column, row[index]]));
           // ⚠️ 有 sync_uid 就只认 sync_uid。created_at 只到秒，前端同一秒答两次
           // 会产生两条自然键完全相同、uid 不同的作答；按自然键去重只会进来一条。
+          // 本机撤销过（或对端撤销后同步过来）的作答有墓碑，一份旧快照不能把它再送回来。
+          const buried = mapped.sync_uid
+            && core.firstValue(db, "SELECT 1 FROM sync_tombstones WHERE entity = 'reviews' AND natural_key = ? LIMIT 1", [mapped.sync_uid], 0);
+          if (buried) continue;
           const exists = mapped.sync_uid
             ? core.firstValue(db, 'SELECT 1 FROM reviews WHERE sync_uid = ? LIMIT 1', [mapped.sync_uid], 0)
             : core.firstValue(db,
@@ -567,7 +608,7 @@ function mergeSnapshot(db, bytes, options = {}) {
           }
         }
       }
-      for (const table of ['checkins', 'stage1_tasks', 'direction_tasks', 'confusion_mastered', 'achievement_unlocked']) {
+      for (const table of ['checkins', 'stage1_tasks', 'direction_tasks', 'confusion_mastered', 'achievements']) {
         if (!tableExists(remote, table) || !tableExists(db, table)) continue;
         const columns = targetColumns(db, table, remote);
         const keys = table === 'checkins'
@@ -580,6 +621,37 @@ function mergeSnapshot(db, bytes, options = {}) {
                 ? ['group_key']
                 : ['id'];
         for (const row of sourceRows(remote, table, columns)) upsertRaw(db, table, columns, row, keys);
+      }
+      // 这些记录都是稳定自然键：收藏/文件夹允许较新的同键行覆盖；测试历史与
+      // 柚子账本是追加集合；周报按生成时间取新。删除由 sync_tombstones 处理。
+      for (const [table, keys] of [
+        ['content_favorites', ['item_type', 'item_id']],
+        ['favorite_folders', ['name']],
+        ['vocab_test_history', ['run_id']],
+        ['yuzu_ledger', ['kind', 'key']],
+        ['weekly_reports', ['week_start']]
+      ]) {
+        if (!tableExists(remote, table) || !tableExists(db, table)) continue;
+        const remoteColumns = columnsOf(remote, table);
+        const columns = targetColumns(db, table, remote);
+        for (const remoteRow of sourceRows(remote, table, remoteColumns)) {
+          const mapped = Object.fromEntries(remoteColumns.map((column, index) => [column, remoteRow[index]]));
+          const row = columns.map((column) => mapped[column]);
+          const local = rowBy(db, table, keys, keys.map((key) => mapped[key]));
+          const remoteTime = String(mapped.sync_updated_at || mapped.generated_at || mapped.created_at || mapped.finished_at || '1970-01-01T00:00:00.000Z');
+          const naturalKey = keys.map((key) => String(mapped[key] ?? '')).join('\u001f');
+          const localDeletion = core.firstValue(db,
+            'SELECT deleted_at FROM sync_tombstones WHERE entity = ? AND natural_key = ? LIMIT 1',
+            [table, naturalKey], '');
+          if (localDeletion && String(localDeletion) >= remoteTime) continue;
+          if (table === 'weekly_reports' && local) {
+            const localTime = String(local.sync_updated_at || local.generated_at || '');
+            if (remoteTime <= localTime) continue;
+          }
+          if ((table === 'content_favorites' || table === 'favorite_folders') && local
+              && remoteTime <= String(local.sync_updated_at || local.created_at || '')) continue;
+          upsertRaw(db, table, columns, row, keys);
+        }
       }
       // 语法进度:和 progress 同一套口径(计数取大、FSRS 看谁的 last_review 新),
       // 只是键换成 grammar_id。

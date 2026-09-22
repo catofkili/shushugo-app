@@ -10,7 +10,7 @@ const eslint = new ESLint({
   overrideConfigFile: true,
   overrideConfig: [{
     files: ['src/**/*.js', 'cloudfunctions/**/*.js'],
-    ignores: ['src/vendor/**', 'src/data/**', 'cloudfunctions/**/node_modules/**'],
+    ignores: ['src/vendor/**', 'src/data/**', 'src/shared/**', 'cloudfunctions/**/node_modules/**'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',

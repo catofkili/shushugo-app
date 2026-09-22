@@ -1,0 +1,12 @@
+@import "../common.wxss";
+.keyword{margin-top:18rpx;padding:22rpx;border-radius:22rpx;background:#edf3e4}
+.keyword-kicker{display:block;color:#69934c;font-size:22rpx;font-weight:700}
+.keyword-text{display:block;margin-top:6rpx;font-size:44rpx;font-weight:800;color:#315d35}
+.day-row{display:flex;align-items:center;gap:14rpx;margin-top:14rpx}
+.day-label{width:70rpx}
+.day-count{width:60rpx;text-align:right}
+.bar{flex:1;height:18rpx;border-radius:999rpx;background:#efe9df;overflow:hidden}
+.bar view{height:100%;border-radius:999rpx;background:#6f9f4d}
+.rules{display:flex;flex-direction:column;gap:10rpx;margin-top:14rpx;color:#6f685f;font-size:25rpx;line-height:1.6}
+.history{margin-top:14rpx;padding:18rpx;border-radius:18rpx;background:#f5efe5}
+.history.active{background:#dfeecf}

@@ -4,6 +4,6 @@
   <view wx:else>
     <view class="score card"><text class="score-number">{{board.unlocked}} / {{board.total}}</text><text> 已解锁</text></view>
     <picker mode="selector" range="{{categories}}" value="{{categoryIndex}}" bindchange="handleCategoryChange"><view class="picker">{{categories[categoryIndex]}} ˅</view></picker>
-    <view wx:for="{{rows}}" wx:key="id" class="card achievement {{item.unlocked ? 'unlocked' : ''}}"><text class="emoji">{{item.emoji}}</text><view class="achievement-copy"><view class="achievement-title"><text>{{item.name}}</text><text class="category">{{item.category}}</text></view><text class="description">{{item.description}}</text><view class="progress"><view class="progress-fill" style="width: {{item.goal ? item.progress / item.goal * 100 : 0}}%;"></view></view><text class="progress-text">{{item.progress}} / {{item.goal}}{{item.unlocked ? ' · 已解锁' : ''}}</text></view></view>
+    <view wx:for="{{rows}}" wx:key="id" class="card achievement {{item.unlocked ? 'unlocked' : ''}}"><text class="emoji">{{item.emoji}}</text><view class="achievement-copy"><view class="achievement-title"><text>{{item.name}}</text><text class="category">{{item.category}}{{item.tier ? " · " + item.tier : ""}}</text></view><text class="description">{{item.description}}</text><view class="progress"><view class="progress-fill" style="width: {{item.percent}}%;"></view></view><text class="progress-text">{{item.progress}} / {{item.goal}}{{item.unlocked ? ' · ' + item.unlockedOn + ' 解锁' : ''}}</text></view></view>
   </view>
 </scroll-view>

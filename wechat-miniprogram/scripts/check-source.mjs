@@ -28,6 +28,8 @@ const modesSmoke = read('scripts/modes-smoke.mjs');
 const confusion = read('src/runtime/confusion.js');
 const confusionSmoke = read('scripts/confusion-smoke.mjs');
 const achievements = read('src/runtime/achievements.js');
+const sharedBundle = read('src/shared/web.js');
+const syncSnapshot = read('src/runtime/sync-snapshot.js');
 const achievementsSmoke = read('scripts/achievements-smoke.mjs');
 const relief = read('src/runtime/daily-relief.js');
 const reliefSmoke = read('scripts/daily-relief-smoke.mjs');
@@ -35,6 +37,11 @@ const studyCore = read('src/core/study-core.js');
 const orthography = read('src/core/orthography.js');
 const indexPage = read('src/pages/index/index.wxml');
 const indexScript = read('src/pages/index/index.js');
+const homePage = read('src/pages/home/index.wxml');
+const homeScript = read('src/pages/home/index.js');
+const extendedFeatures = read('src/runtime/extended-features.js');
+const featuresSmoke = read('scripts/features-smoke.mjs');
+const syncSnapshotSmoke = read('scripts/sync-snapshot-smoke.mjs');
 const grammarPage = read('src/pages/grammar/index.wxml');
 const settingsPage = read('src/pages/settings/index.wxml');
 const teamRuntime = read('src/runtime/team.js');
@@ -50,19 +57,20 @@ const projectConfig = JSON.parse(read('project.config.json'));
  */
 const frontendOrthographyPath = path.resolve(root, '..', 'frontend', 'src', 'data', 'kanji_orthography.json');
 const orthographyInSync = fs.existsSync(frontendOrthographyPath)
-  ? fs.readFileSync(frontendOrthographyPath, 'utf8') === read('src/data/kanji_orthography.json')
+  ? fs.readFileSync(frontendOrthographyPath, 'utf8') === read('data/kanji_orthography.json')
   : 'skipped';
 
 // 微信的 require 不认 .json：数据模块由 build-data-modules.mjs 生成，源 json 改了没重跑就会两边不一致。
 const { moduleSource, manualReviewPath, extractManualReview } = await import('./build-data-modules.mjs');
 // 辨析人工名单必须和 iOS 那份 TS 逐字一致（分组判据两端要对得上，两边写的是同一个 confusion_mastered）。
 const manualReviewInSync = fs.existsSync(manualReviewPath)
-  ? JSON.stringify(await extractManualReview(), null, 2) + '\n' === read('src/data/confusion_manual_review.json')
+  ? JSON.stringify(await extractManualReview(), null, 2) + '\n' === read('data/confusion_manual_review.json')
   : 'skipped';
-const dataModulesFresh = fs.readdirSync(path.join(root, 'src/data')).filter((f) => f.endsWith('.json'))
+const dataModulesFresh = fs.readdirSync(path.join(root, 'data')).filter((f) => f.endsWith('.json'))
   .every((f) => fs.existsSync(path.join(root, 'src/data', f.replace(/\.json$/, '.js')))
-    && read(`src/data/${f.replace(/\.json$/, '.js')}`) === moduleSource(read(`src/data/${f}`)));
-const noJsonRequire = ['src/core', 'src/runtime', 'src/pages'].every((d) =>
+    && read(`src/data/${f.replace(/\.json$/, '.js')}`) === moduleSource(read(`data/${f}`)))
+  && !fs.readdirSync(path.join(root, 'src/data')).some((f) => f.endsWith('.json'));
+const noJsonRequire = ['src/core', 'src/runtime', 'src/pages', 'src/features'].every((d) =>
   fs.readdirSync(path.join(root, d), { recursive: true }).filter((f) => f.endsWith('.js'))
     .every((f) => !/require\([^)]*\.json['"]\)/.test(read(`${d}/${f}`))));
 
@@ -121,8 +129,13 @@ const checks = [
   ,['word library has local filters and memory bands', wordLibrary.includes('BAND_SQL') && wordLibrary.includes('setWordsKnownForever') && wordLibrarySmoke.includes('入口')]
   ,['quick and mistake queues are independent', modes.includes('mode_tasks') && modes.includes('createModePlan') && modesSmoke.includes("mode: 'quick'")]
   ,['confusion groups are computed from local words', confusion.includes('buildGroups') && confusion.includes('confusion_mastered') && confusionSmoke.includes('1881')]
-  ,['47 achievements are locally calculated', achievements.includes('CATALOG') && achievements.includes('achievement_unlocked') && achievementsSmoke.includes('47')]
+  ,['achievements come from the shared web bundle (achievements table, 47 items)', achievements.includes('extended-features') && !/(FROM|INTO) achievement_unlocked/.test(achievements) && sharedBundle.includes('FROM achievements') && !syncSnapshot.includes('achievement_unlocked') && achievementsSmoke.includes('47')]
+  ,['feature layer delegates to frontend/src/lib, never re-implements it', extendedFeatures.includes("require('../shared/web')") && !/INSERT INTO (vocab_test_history|yuzu_ledger|weekly_reports)/.test(extendedFeatures) && sharedBundle.startsWith('/* 由 scripts/build-shared.mjs') && sharedBundle.includes('guessRate') && sharedBundle.includes('buildWeeklyReport')]
+  ,['grammar favorites use grammar.ts string ids like the web', extendedFeatures.includes('grammar_ids') && syncSnapshotSmoke.includes('pdf-n5-017') && featuresSmoke.includes('pdf-n5-017')]
+  ,['free accounts keep weekly reports off the cloud snapshot', syncSnapshot.includes('includeWeeklyReports') && featuresSmoke.includes('includeWeeklyReports: false')]
   ,['rich study card data is rendered', indexPage.includes('pitch-card') && indexPage.includes('furigana-line') && indexPage.includes('dictionaryEntries') && indexScript.includes('modeLabel')]
+  ,['5173 home shell is wired to real local data', appConfig.indexOf('pages/home/index') < appConfig.indexOf('pages/index/index') && appConfig.includes('"tabBar"') && homePage.includes('今日收集') && homePage.includes('/pages/team/index') && homeScript.includes('getStudyHome') && homeScript.includes('studySummary')]
+  ,['5173 extended features are native and subpackaged', appConfig.includes('"subPackages"') && ['/features/weekly/index','/features/jlpt-plan/index','/features/grammar-foundation/index','/features/kanji-readings/index','/features/favorites/index','/features/vocab-test/index','/features/distinction-quiz/index','/features/yuzu-shop/index'].every((route) => homePage.includes(route)) && extendedFeatures.includes('vocabTest') && featuresSmoke.includes('词汇量测试不得写学习进度')]
   ,['maintenance controls are outside study home', !indexPage.includes('handleContentUpdate') && settingsPage.includes('handleContentUpdate')]
   ,['real team feature replaces placeholder', appConfig.includes('pages/team/index') && indexPage.includes('组队学习') && teamRuntime.includes('/teams/activity') && teamRuntime.includes('/teams/report') && teamPage.includes('open-type="share"') && teamScript.includes('onShareAppMessage')]
   ,['release UI excludes developer diagnostics', !['handleSave', 'handleRestore', 'handleDue', 'entitlement.source', 'auth.userId', '原子写盘', '冷启动恢复'].some((text) => settingsPage.includes(text)) && !indexScript.includes('status.paths.dbPath')]

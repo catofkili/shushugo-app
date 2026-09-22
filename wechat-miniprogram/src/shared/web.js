@@ -1,0 +1,15391 @@
+/* 由 scripts/build-shared.mjs 从 frontend/src 生成，别手改；改网页那份再重跑。 */
+/*
+ * 网页模块用到的三样浏览器全局，在小程序里的最小替身。打包时内联在 web.js 顶部。
+ *  - localStorage → wx 同步存储（studyPreferences 那份偏好就存在这里，键名和网页一致）
+ *  - window.dispatchEvent / addEventListener → 进程内事件总线（PREFERENCES_EVENT、YUZU_EVENT）
+ *  - Event / CustomEvent → 只带 type 和 detail 的普通对象
+ *  - crypto.randomUUID → Math.random 版 v4（设备号只要求唯一，不要求密码学强度）
+ *  - document.documentElement → 只有 setAttribute / removeAttribute 的空壳：applyTheme / applyMotionLevel /
+ *    applyYuzuEquipment 往它上面写 data-* 属性，小程序里没人读，页面自己按 equippedItem 套皮肤。
+ */
+(function installPolyfill(scope) {
+  if (!scope.localStorage) {
+    const hasWx = typeof wx !== 'undefined' && wx && typeof wx.getStorageSync === 'function';
+    const memory = new Map();
+    scope.localStorage = {
+      getItem(key) {
+        if (!hasWx) return memory.has(key) ? memory.get(key) : null;
+        try { const value = wx.getStorageSync(key); return value === '' || value == null ? null : String(value); } catch { return null; }
+      },
+      setItem(key, value) {
+        if (!hasWx) { memory.set(key, String(value)); return; }
+        try { wx.setStorageSync(key, String(value)); } catch { /* 存储满了：偏好丢一次不致命 */ }
+      },
+      removeItem(key) {
+        if (!hasWx) { memory.delete(key); return; }
+        try { wx.removeStorageSync(key); } catch { /* 同上 */ }
+      }
+    };
+  }
+  if (typeof scope.Event !== 'function') {
+    scope.Event = function Event(type) { this.type = String(type); };
+    scope.CustomEvent = function CustomEvent(type, init) { this.type = String(type); this.detail = init ? init.detail : undefined; };
+  }
+  if (!scope.document) {
+    const attributes = new Map();
+    scope.document = {
+      documentElement: {
+        setAttribute(name, value) { attributes.set(name, String(value)); },
+        removeAttribute(name) { attributes.delete(name); },
+        getAttribute(name) { return attributes.has(name) ? attributes.get(name) : null; }
+      }
+    };
+  }
+  if (!scope.crypto || typeof scope.crypto.randomUUID !== 'function') {
+    // sync/schema 的设备号用 crypto.randomUUID()；小程序运行时没有 Web Crypto。
+    const hex = (n) => Array.from({ length: n }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    scope.crypto = Object.assign(scope.crypto || {}, {
+      randomUUID: () => `${hex(8)}-${hex(4)}-4${hex(3)}-${(8 + Math.floor(Math.random() * 4)).toString(16)}${hex(3)}-${hex(12)}`
+    });
+  }
+  if (!scope.window) {
+    const listeners = new Map();
+    scope.window = {
+      addEventListener(type, handler) { const list = listeners.get(type) || []; list.push(handler); listeners.set(type, list); },
+      removeEventListener(type, handler) { listeners.set(type, (listeners.get(type) || []).filter((item) => item !== handler)); },
+      dispatchEvent(event) { (listeners.get(event.type) || []).slice().forEach((handler) => { try { handler(event); } catch (error) { console.warn('[shared] 事件回调出错', error); } }); return true; }
+    };
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : (typeof global !== 'undefined' ? global : this));
+
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// scripts/shared/shims/database.js
+var require_database = __commonJS({
+  "scripts/shared/shims/database.js"(exports, module2) {
+    var override = null;
+    var store = () => require("../runtime/database-store");
+    var current = () => override || store().getDatabase();
+    var Database = () => current().constructor;
+    module2.exports = {
+      getDatabase: current,
+      openDatabase: async (bytes) => new (Database())(bytes),
+      createDatabase: async () => new (Database())(),
+      exportDatabase: () => current().export(),
+      initDatabase: async () => current(),
+      withDatabase(db, run) {
+        const previous = override;
+        override = db;
+        try {
+          return run();
+        } finally {
+          override = previous;
+        }
+      }
+    };
+  }
+});
+
+// ../frontend/src/lib/database/local-schema.sql?raw
+var local_schema_default;
+var init_local_schema = __esm({
+  "../frontend/src/lib/database/local-schema.sql?raw"() {
+    local_schema_default = `CREATE TABLE IF NOT EXISTS grammar_points (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  pattern TEXT NOT NULL UNIQUE,
+  meaning TEXT NOT NULL,
+  prompt TEXT NOT NULL,
+  formation TEXT NOT NULL,
+  example_jp TEXT NOT NULL,
+  example_meaning TEXT NOT NULL,
+  example_furigana TEXT NOT NULL DEFAULT '',
+  example_tokens TEXT NOT NULL DEFAULT '',
+  example_lemmas TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  confusions TEXT NOT NULL DEFAULT '',
+  level TEXT NOT NULL DEFAULT 'N5',
+  importance INTEGER NOT NULL DEFAULT 3,
+  sort_order INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS grammar_progress (
+  grammar_id INTEGER PRIMARY KEY,
+  score REAL NOT NULL DEFAULT 0,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  low_history INTEGER NOT NULL DEFAULT 0,
+  known_forever INTEGER NOT NULL DEFAULT 0,
+  mastered_on TEXT,
+  last_seen_on TEXT,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  mistake_streak INTEGER NOT NULL DEFAULT 0,
+  last_decay_amount INTEGER NOT NULL DEFAULT 10,
+  FOREIGN KEY(grammar_id) REFERENCES grammar_points(id)
+);
+
+CREATE TABLE IF NOT EXISTS grammar_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  grammar_id INTEGER NOT NULL,
+  answer TEXT NOT NULL,
+  score_after REAL NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(grammar_id) REFERENCES grammar_points(id)
+);
+
+-- \u8BED\u6CD5\u8F9E\u5178/\u6C89\u6D78\u5F0F\u9605\u8BFB\u7684\u8F7B\u91CF\u5B66\u4E60\u4E8B\u4EF6\u3002\u5B83\u4EEC\u4E0D\u6539\u53D8 FSRS\uFF0C\u53EA\u8BA9\u5468\u62A5\u77E5\u9053\u7528\u6237\u786E\u5B9E\u5B66\u4E60\u8FC7\u3002
+CREATE TABLE IF NOT EXISTS grammar_activity_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  grammar_id TEXT NOT NULL,
+  answer TEXT NOT NULL DEFAULT 'read',
+  activity_at INTEGER NOT NULL,
+  activity_on TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS grammar_state (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+-- \u4ECE\u4F8B\u53E5\u8BCD\u5178\u4E3B\u52A8\u52A0\u5165\u7684\u8BCD\u3002\u4EFB\u52A1\u8868\u6309\u5B66\u4E60\u65E5\u8F6E\u6362\uFF0C\u8FD9\u5F20\u5C0F\u8868\u4FDD\u7559\u53D1\u73B0\u610F\u56FE\uFF0C
+-- \u8BA9\u672A\u5F00\u59CB\u7684\u8BCD\u5728\u7B2C\u4E8C\u5929\u4ECD\u4F1A\u4F18\u5148\u8FDB\u5165\u65B0\u8BCD\u8BA1\u5212\u3002
+CREATE TABLE IF NOT EXISTS dictionary_discovered_words (
+  word_id INTEGER PRIMARY KEY,
+  discovered_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- \u72EC\u7ACB\u4E8E JLPT \u5B66\u4E60\u8BCD\u5E93\u7684\u8865\u5145\u8BCD\u5178\u3002\u8FD9\u91CC\u7684\u6761\u76EE\u53EA\u4F9B\u4F8B\u53E5\u70B9\u8BCD\u67E5\u8BE2\uFF0C
+-- \u4E0D\u4F7F\u7528 words.id\uFF0C\u4E5F\u4E0D\u4F1A\u8FDB\u5165 progress\u3001\u5B66\u4E60\u8BA1\u5212\u6216 FSRS\u3002
+CREATE TABLE IF NOT EXISTS dictionary_entries (
+  entry_key TEXT PRIMARY KEY,
+  headword TEXT NOT NULL,
+  kana TEXT NOT NULL,
+  meaning TEXT NOT NULL,
+  pos TEXT NOT NULL,
+  verb_type TEXT,
+  category TEXT NOT NULL,
+  usage_note TEXT NOT NULL DEFAULT '',
+  example_jp TEXT NOT NULL DEFAULT '',
+  example_meaning TEXT NOT NULL DEFAULT '',
+  priority INTEGER NOT NULL DEFAULT 3,
+  source_name TEXT NOT NULL,
+  source_url TEXT NOT NULL DEFAULT '',
+  license TEXT NOT NULL,
+  seed_version TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_dictionary_entries_headword
+  ON dictionary_entries(headword);
+
+CREATE INDEX IF NOT EXISTS idx_dictionary_entries_kana
+  ON dictionary_entries(kana);
+
+-- \u8BED\u6CD5\u9875\u7684\u5212\u91CD\u70B9\u3002\u8303\u56F4\u7528\u8BED\u6CD5\u70B9\u7A33\u5B9A id + \u5185\u5BB9\u5757 + \u5B57\u7B26\u504F\u79FB\u5B9A\u4F4D\uFF0C
+-- dataset_version \u7528\u6765\u8BC6\u522B grammar.ts/grammar_seed \u6539\u7248\u540E\u5DF2\u7ECF\u6F02\u79FB\u7684\u65E7\u951A\u70B9\u3002
+CREATE TABLE IF NOT EXISTS grammar_highlights (
+  grammar_id TEXT NOT NULL,
+  block TEXT NOT NULL,
+  start INTEGER NOT NULL,
+  end INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  dataset_version TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (grammar_id, block, start, end)
+);
+
+-- Library / \u6C89\u6D78\u5F0F\u9605\u8BFB\u4F4D\u7F6E\u3002\u5B58\u7A33\u5B9A\u7684\u8BED\u6CD5\u70B9 id\uFF0C\u4E0D\u5B58\u8FC7\u6EE4\u6570\u7EC4\u4E0B\u6807\u3002
+CREATE TABLE IF NOT EXISTS grammar_reading_positions (
+  kind TEXT NOT NULL,
+  level TEXT NOT NULL,
+  grammar_id TEXT NOT NULL,
+  scroll_top REAL NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (kind, level)
+);
+
+CREATE TABLE IF NOT EXISTS grammar_points_archive (
+  archive_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  archived_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  dataset_version TEXT NOT NULL,
+  id INTEGER,
+  pattern TEXT NOT NULL,
+  meaning TEXT NOT NULL,
+  prompt TEXT NOT NULL,
+  formation TEXT NOT NULL,
+  example_jp TEXT NOT NULL,
+  example_meaning TEXT NOT NULL,
+  example_furigana TEXT NOT NULL DEFAULT '',
+  example_tokens TEXT NOT NULL DEFAULT '',
+  example_lemmas TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  confusions TEXT NOT NULL DEFAULT '',
+  level TEXT NOT NULL DEFAULT 'N5',
+  importance INTEGER NOT NULL DEFAULT 3,
+  sort_order INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS content_favorites (
+  item_type TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  -- \u6536\u85CF\u5939\u540D\u5B57\u76F4\u63A5\u5B58\u5728\u8FD9\u91CC,\u4E0D\u5EFA id \u5916\u952E:\u540C\u6B65\u7684\u884C\u8EAB\u4EFD\u4E0D\u8BB8\u7528\u81EA\u589E id
+  -- (\u89C1 sync/tables.ts \u5F00\u5934\u90A3\u6761),\u540D\u5B57\u672C\u8EAB\u5C31\u662F\u5929\u7136\u952E\u3002\u4EE3\u4EF7\u662F\u91CD\u547D\u540D\u8981\u8FDE\u5E26
+  -- \u66F4\u65B0\u8FD9\u4E00\u5217 \u2014\u2014 renameFavoriteFolder \u4E00\u4E2A UPDATE \u5C31\u505A\u5B8C\u4E86\u3002
+  folder TEXT NOT NULL DEFAULT '',
+  PRIMARY KEY (item_type, item_id)
+);
+
+-- \u6536\u85CF\u5939\u672C\u4F53\u3002\u53EA\u4E3A\u4E86\u8BA9\u300C\u5EFA\u597D\u4F46\u8FD8\u6CA1\u5F80\u91CC\u653E\u4E1C\u897F\u300D\u7684\u5939\u5B50\u6D3B\u5F97\u4E0B\u6765;
+-- \u6709\u5185\u5BB9\u7684\u5939\u5B50\u5149\u9760 content_favorites.folder \u4E5F\u63A8\u5F97\u51FA\u6765\u3002
+-- \u67E5\u8BCD\u6C47\u91CF\u7684\u5386\u53F2\u6210\u7EE9\u3002\u6BCF\u6B21\u6D4B\u5B8C\u8FFD\u52A0\u4E00\u884C\uFF0Crun_id \u5C31\u662F\u90A3\u4E00\u6B21\u7684\u8EAB\u4EFD\uFF08\u540C\u6B65\u53D6\u5E76\u96C6\uFF09\u3002
+-- \u53EA\u5B58\u7ED3\u679C\uFF0C\u4E0D\u5B58\u9898\u76EE\uFF1A\u9898\u662F\u6BCF\u6B21\u73B0\u62BD\u7684\uFF0C\u5B58\u4E0B\u6765\u65E2\u6CA1\u7528\u4E5F\u767D\u5360\u5FEB\u7167\u4F53\u79EF\u3002
+CREATE TABLE IF NOT EXISTS vocab_test_history (
+  run_id TEXT PRIMARY KEY,
+  started_at TEXT NOT NULL,
+  finished_at TEXT NOT NULL,
+  duration_seconds INTEGER NOT NULL DEFAULT 0,
+  answered INTEGER NOT NULL DEFAULT 0,
+  total_questions INTEGER NOT NULL DEFAULT 0,
+  estimated INTEGER NOT NULL DEFAULT 0,
+  lower_bound INTEGER NOT NULL DEFAULT 0,
+  upper_bound INTEGER NOT NULL DEFAULT 0,
+  confidence INTEGER NOT NULL DEFAULT 0,
+  recommendation TEXT NOT NULL DEFAULT '',
+  -- \u5404\u7EA7\u7B54\u5BF9\u7387\uFF0C\u5206\u4EAB\u56FE\u4E0A\u90A3\u5F20\u6A2A\u6761\u56FE\u8981\u7528\uFF1A[["N5",0.9,12],...]
+  levels_json TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS favorite_folders (
+  name TEXT PRIMARY KEY,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS grammar_mistakes (
+  grammar_id INTEGER PRIMARY KEY,
+  answer TEXT NOT NULL,
+  score_after REAL NOT NULL DEFAULT 0,
+  mistake_count INTEGER NOT NULL DEFAULT 1,
+  first_seen_on TEXT NOT NULL,
+  last_seen_on TEXT NOT NULL,
+  resolved_on TEXT,
+  FOREIGN KEY(grammar_id) REFERENCES grammar_points(id)
+);
+
+CREATE TABLE IF NOT EXISTS word_notes (
+  word_id INTEGER PRIMARY KEY,
+  note TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);
+
+-- \u7528\u6237\u81EA\u5DF1\u6539\u5199\u7684\u9898\u9762\u9996\u4E49\u3002**\u4E0D\u5199 words.meaning**\uFF1Awords \u8868\u4E0D\u540C\u6B65\uFF0C\u800C\u4E14\u8BCD\u5355\u5BFC\u5165/
+-- \u6362\u79CD\u5B50\u5E93\u4F1A\u6574\u8868\u8986\u76D6\uFF0C\u624B\u6539\u7684\u5185\u5BB9\u4F1A\u4E00\u6B21\u6027\u6CA1\u6389\u3002\u8FD9\u5F20\u8868\u8D70 lww \u540C\u6B65\uFF08\u89C1 sync/tables.ts\uFF09\uFF0C
+-- \u540C\u65F6\u5FC5\u987B\u51FA\u73B0\u5728 scripts/bake-seed-db.mjs \u7684 userDataTables \u91CC\uFF0C\u5426\u5219\u4F1A\u968F\u51FA\u5382\u8BCD\u5E93\u5916\u6CC4\u3002
+CREATE TABLE IF NOT EXISTS word_question_meanings (
+  word_id INTEGER PRIMARY KEY,
+  prompt_meaning TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);
+
+-- \u7528\u6237\u81EA\u5DF1\u5BFC\u5165\u7684\u8BCD\u6761\u3002
+--
+-- \u26A0\uFE0F words \u8868\u672C\u8EAB**\u4E0D\u8FDB\u4E91\u5FEB\u7167**\uFF08\u51FA\u5382\u8BCD\u5178\u4E24\u7AEF\u4E00\u81F4\uFF0C\u6CA1\u5FC5\u8981\u4E3A\u6BCF\u4E2A\u8D26\u53F7\u91CD\u590D\u4E0A\u4F20\uFF09\uFF0C
+-- \u4F46 progress / word_notes / reviews \u5168\u662F\u6309 word_id \u540C\u6B65\u7684\u3002\u81EA\u589E id \u5206\u914D\u8EAB\u4EFD\u65F6\uFF1A
+-- \u4E24\u53F0\u8BBE\u5907\u5404\u5BFC\u5165\u4E00\u4E2A\u65B0\u8BCD\u90FD\u4F1A\u62FF\u5230\u540C\u4E00\u4E2A id\uFF08\u76F8\u540C\u6570\u5B57\u4E0D\u662F\u540C\u4E00\u4E2A\u8BCD\uFF09\uFF0C\u800C\u4E00\u53F0
+-- \u6CA1\u6709\u8FD9\u4E2A\u81EA\u5B9A\u4E49\u8BCD\u7684\u65B0\u8BBE\u5907\u53EA\u4F1A\u6536\u5230\u4E00\u5806\u60AC\u7A7A\u7684\u5B66\u4E60\u8BB0\u5F55\u3002
+--
+-- \u6240\u4EE5\u81EA\u5B9A\u4E49\u8BCD\u7684 id \u6539\u6210**\u7531\u5185\u5BB9\u7B97\u51FA\u6765**\uFF08\u89C1 word-list-import \u7684 customWordId\uFF09\uFF0C
+-- \u5E76\u628A\u5185\u5BB9\u672C\u8EAB\u653E\u8FDB\u8FD9\u5F20\u540C\u6B65\u8868\uFF1Aid \u4E24\u7AEF\u5929\u751F\u4E00\u81F4\uFF0C\u5408\u5E76\u4E4B\u540E\u518D\u628A\u7F3A\u7684\u8BCD\u884C\u8865\u51FA\u6765\u3002
+CREATE TABLE IF NOT EXISTS custom_words (
+  word_id INTEGER PRIMARY KEY,
+  kanji TEXT NOT NULL DEFAULT '',
+  kana TEXT NOT NULL DEFAULT '',
+  meaning TEXT NOT NULL DEFAULT '',
+  pos TEXT NOT NULL DEFAULT '',
+  verb_type TEXT,
+  importance INTEGER NOT NULL DEFAULT 0,
+  example_jp TEXT,
+  example_meaning TEXT,
+  jlpt_level TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS moji_migrated_reviews (
+  word_id INTEGER PRIMARY KEY,
+  imported_on TEXT NOT NULL,
+  priority REAL NOT NULL DEFAULT 0,
+  activated_on TEXT,
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_moji_migrated_reviews_activation
+  ON moji_migrated_reviews(activated_on, priority);
+
+-- \u6309 (kanji, kana) \u627E\u8BCD\u662F\u70ED\u8DEF\u5F84\uFF1A\u76F8\u4F3C\u91CA\u4E49\u8BCD\u5BF9\u7167\u6BCF\u5F20\u5361\u90FD\u8981\u67E5\u4E00\u6B21\uFF0C\u8BCD\u5355\u5BFC\u5165
+-- \u6BCF\u6761\u8BB0\u5F55\u4E5F\u8981\u67E5\u4E00\u6B21\u3002\u6CA1\u6709\u8FD9\u4E2A\u7D22\u5F15\u5C31\u662F 11k \u884C\u5168\u8868\u626B\uFF0C\u4E00\u9875\u5FEB\u901F\u5B66\u4E60\u80FD\u626B\u6389\u4E0A\u767E\u4E07\u884C\u3002
+CREATE INDEX IF NOT EXISTS idx_words_kanji_kana ON words(kanji, kana);
+
+-- \u53CD\u5411\u5B66\u4E60(\u65E5\u8BED \u2192 \u91CA\u4E49)\u7684\u957F\u671F\u8BB0\u5FC6\u3002
+--
+-- \u53CD\u5411\u4EE5\u524D\u53EA\u6709\u5F53\u5929\u7684 stage2_progress\uFF0C\u5173\u6389\u5E94\u7528\u4EC0\u4E48\u90FD\u4E0D\u7559 \u2014\u2014 \u5B83\u4E0D\u662F\u4E00\u4E2A\u6A21\u5F0F\uFF0C
+-- \u662F\u4E2A\u7528\u5B8C\u5C31\u6254\u7684\u4E34\u65F6\u961F\u5217\u3002\u73B0\u5728\u4E09\u4E2A\u65B9\u5411(\u6B63\u5411 progress / \u53CD\u5411 reverse_memory /
+-- \u65E7\u6C49\u5B57 kanji_memory)\u5404\u6709\u4E00\u4EFD\u81EA\u5DF1\u7684 FSRS \u72B6\u6001\uFF0C\u89C4\u5219\u5B8C\u5168\u4E00\u6837\uFF1A\u540C\u4E00\u5957\u5230\u671F\u96C6\u9009\u8BCD\u3001
+-- \u540C\u6837\u7684\u5B66\u4E60\u6B65\u9AA4\u548C\u6BD5\u4E1A\u5224\u5B9A\u3001\u540C\u6837\u7684\u6BCF\u65E5\u4E0A\u9650\u3002fsrs_* \u5217\u7531 ensureFsrsColumns \u8865\u3002
+--
+-- \u4E09\u5F20\u5361\u6302\u540C\u4E00\u4E2A word_id\uFF1A\u8BCD\u6761\u3001\u7B14\u8BB0\u3001\u6536\u85CF\u3001\u7EDF\u8BA1\u90FD\u662F\u5171\u4EAB\u7684\uFF0C
+-- \u4F46\u5404\u81EA\u7684 due \u53EA\u7531\u5404\u81EA\u65B9\u5411\u7684\u4F5C\u7B54\u6539\u5199 \u2014\u2014 \u6240\u4EE5\u80CC\u6CA1\u80CC\u53CD\u5411\uFF0C\u4E0D\u5F71\u54CD\u5E38\u89C4\u6A21\u5F0F\u51FA\u54EA\u4E9B\u8BCD\u3002
+CREATE TABLE IF NOT EXISTS reverse_memory (
+  word_id INTEGER PRIMARY KEY,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT,
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);
+
+-- \u6C49\u5B57\u8BFB\u97F3\u6A21\u5F0F\u7684\u957F\u671F\u8BB0\u5FC6\u3002\u65E7 kanji_memory \u8BB0\u5F55\u7684\u662F\u300C\u91CA\u4E49 \u2192 \u6C49\u5B57\u300D\u9898\u578B\uFF0C
+-- \u65B0\u9898\u578B\u6539\u4E3A\u300C\u770B\u8868\u8BB0\uFF0C\u56DE\u5FC6\u6C49\u5B57\u5BF9\u5E94\u8BFB\u97F3\u300D\u540E\u4E0D\u80FD\u628A\u65E7\u7A33\u5B9A\u5EA6\u5192\u5145\u6210\u8BFB\u97F3\u80FD\u529B\u3002
+-- \u56E0\u6B64\u65E7\u8868\u539F\u6837\u4FDD\u7559\u4F5C\u5F52\u6863\uFF0C\u65B0\u8868\u4ECE\u5E72\u51C0\u72B6\u6001\u5F00\u59CB\uFF1Bfsrs_* \u5217\u7531 ensureFsrsColumns \u8865\u3002
+CREATE TABLE IF NOT EXISTS kanji_reading_memory (
+  word_id INTEGER PRIMARY KEY,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  mistake_streak INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT,
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);
+
+-- \u65B0\u9898\u578B\u4E5F\u4F7F\u7528\u72EC\u7ACB\u7684\u5F53\u65E5\u4EFB\u52A1\u8868\uFF0C\u907F\u514D\u53D1\u5E03\u5F53\u5929\u628A\u65E7\u6C49\u5B57\u6A21\u5F0F\u7684\u5B8C\u6210\u8FDB\u5EA6\u63A5\u8FC7\u6765\u3002
+CREATE TABLE IF NOT EXISTS kanji_reading_progress (
+  reviewed_on TEXT NOT NULL,
+  word_id INTEGER NOT NULL,
+  order_index INTEGER NOT NULL,
+  PRIMARY KEY (reviewed_on, word_id),
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);
+
+-- \u5355\u72EC\u6C49\u5B57\u5361\uFF08lib/kanji-char-cards.ts\uFF0Cdocs/MIXED_STUDY_PLAN.md\uFF09\uFF1A\u4E00\u4E2A\u5B57\u4E00\u5F20\u5361\u3002
+-- kanji_char_reviews \u662F\u552F\u4E00\u7684\u4E8B\u5B9E\uFF08append\uFF0C\u8DE8\u7AEF\u6309 sync_uid \u5408\u5E76\uFF09\uFF1Bmemory \u662F\u672C\u673A\u68C0\u67E5\u70B9\uFF0C
+-- \u5408\u5E76\u540E\u7531\u6D41\u6C34\u91CD\u653E\u91CD\u5EFA\uFF1Btasks \u662F\u5F53\u5929\u7684\u7269\u5316\u6E05\u5355\uFF0C\u5FEB\u7167\u53EA\u5E26 14 \u5929\u3002
+-- \u5EFA\u5728\u8FD9\u91CC\u800C\u4E0D\u662F\u61D2\u5EFA\uFF1AensureSyncSchema \u53EA\u7ED9\u542F\u52A8\u65F6\u5DF2\u5B58\u5728\u7684\u8868\u6302\u89E6\u53D1\u5668\u548C sync_uid\u3002
+CREATE TABLE IF NOT EXISTS kanji_char_memory (
+  char TEXT PRIMARY KEY,
+  level_rank INTEGER NOT NULL DEFAULT 5,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  mistake_streak INTEGER NOT NULL DEFAULT 0,
+  known_forever INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT
+);
+CREATE TABLE IF NOT EXISTS kanji_char_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  char TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  reviewed_at INTEGER NOT NULL,
+  scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+  fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_kanji_char_reviews_char_on ON kanji_char_reviews (char, reviewed_on);
+CREATE TABLE IF NOT EXISTS kanji_char_tasks (
+  reviewed_on TEXT NOT NULL,
+  char TEXT NOT NULL,
+  order_index INTEGER NOT NULL,
+  PRIMARY KEY (reviewed_on, char)
+);
+
+-- \u7591\u96BE\u8FDE\u7EBF\u5361\uFF08lib/confusion-cards.ts\uFF09\uFF1A\u4E00\u4E2A\u8FA8\u6790\u7EC4\u4E00\u5F20\u5361\uFF0Cgroup_key \u540C confusion_mastered\u3002
+-- \u4E09\u5F20\u8868\u548C kanji_char_* \u540C\u4E00\u5957\uFF08reviews \u4E8B\u5B9E / progress \u68C0\u67E5\u70B9 / tasks \u5F53\u5929\u6295\u5F71\uFF09\u3002
+CREATE TABLE IF NOT EXISTS confusion_progress (
+  group_key TEXT PRIMARY KEY,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  mistake_streak INTEGER NOT NULL DEFAULT 0,
+  known_forever INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT,
+  level_rank INTEGER NOT NULL DEFAULT 4
+);
+CREATE TABLE IF NOT EXISTS confusion_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  group_key TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  reviewed_at INTEGER NOT NULL,
+  scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+  fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_confusion_reviews_group_on ON confusion_reviews (group_key, reviewed_on);
+CREATE TABLE IF NOT EXISTS confusion_tasks (
+  reviewed_on TEXT NOT NULL,
+  group_key TEXT NOT NULL,
+  order_index INTEGER NOT NULL,
+  PRIMARY KEY (reviewed_on, group_key)
+);
+
+-- \u300C\u7591\u96BE\u8FA8\u6790\u300D\u91CC\u6807\u8BB0\u4E3A\u5DF2\u638C\u63E1\u7684\u8BCD\u7EC4\u3002
+--
+-- \u4E3B\u952E\u662F\u8BCD\u7EC4\u7684\u7A33\u5B9A\u6807\u8BC6\uFF08type:\u951A\u70B9\uFF0C\u5982 homophone:\u3053\u3046\u3048\u3093\uFF09\uFF0C\u523B\u610F\u4E0D\u7528 word_id\uFF1A
+-- \u53BB\u91CD\u548C\u5916\u6765\u8A9E\u5408\u5E76\u52A8\u8FC7 id\uFF08\u89C1 bake-seed-db \u7684 loanword-merge-map\uFF09\uFF0C\u62FF id \u7EC4\u952E
+-- \u4F1A\u8BA9\u7528\u6237\u6807\u8FC7\u7684\u638C\u63E1\u72B6\u6001\u5728\u4E0B\u6B21\u6E05\u5E93\u540E\u5168\u90E8\u5931\u6548\u3002
+-- \u6210\u5C31\u3002\u89E3\u9501\u4E86\u5C31\u6C38\u8FDC\u89E3\u9501,\u6240\u4EE5\u53EA\u8BB0\u300C\u54EA\u5929\u62FF\u5230\u7684\u300D,\u6CA1\u6709\u53D6\u6D88\u8FD9\u56DE\u4E8B\u3002
+-- \u5224\u636E\u4E0D\u5B58\u5728\u8FD9\u91CC \u2014\u2014 \u5B83\u4EEC\u6BCF\u6B21\u90FD\u4ECE reviews/progress \u73B0\u7B97(\u89C1 lib/achievements/stats.ts),
+-- \u8FD9\u6837\u52A0\u65B0\u6210\u5C31\u65F6,\u4EE5\u524D\u8FBE\u6210\u8FC7\u7684\u4F1A\u81EA\u52A8\u8865\u53D1\u3002
+CREATE TABLE IF NOT EXISTS achievements (
+  id TEXT PRIMARY KEY,
+  unlocked_on TEXT NOT NULL
+);
+
+-- \u67DA\u5B50\u8D26\u672C\u3002\u6BCF\u4E00\u884C\u662F\u4E00\u7B14\u4E0D\u53EF\u53D8\u7684\u6536\u5165\u6216\u652F\u51FA,\u4F59\u989D = SUM(amount),\u4E0D\u5B58\u8BA1\u6570\u5668
+-- (userProfile \u91CC\u90A3\u4EFD studyTimeMinutes \u81EA\u6512\u8BA1\u6570\u5668\u4ECE\u6765\u6CA1\u6DA8\u8FC7,\u524D\u8F66\u4E4B\u9274)\u3002
+--   kind/key \u662F\u8FD9\u7B14\u8D26\u7684\u8EAB\u4EFD:study / plan / streak / encore \u6309\u5B66\u4E60\u65E5,
+--   achievement \u6309\u6210\u5C31 id,buy \u6309\u5546\u54C1 id,repair \u6309\u8865\u56DE\u7684\u90A3\u4E00\u5929\u3002
+--   \u4E24\u7AEF\u53D6\u5E76\u96C6 \u2014\u2014 \u540C\u4E00\u7B14\u8D26\u4E0D\u4F1A\u8BB0\u4E24\u6B21,\u4E5F\u4E0D\u4F1A\u88AB\u5BF9\u7AEF\u300C\u66F4\u65B0\u300D\u6389\u3002
+-- \u8865\u7B7E\u672C\u8EAB\u5199\u7684\u662F checkins \u90A3\u5F20\u8868(\u8FDE\u51FB\u53EA\u770B\u5B83),\u8FD9\u91CC\u53EA\u7559\u82B1\u4E86\u591A\u5C11\u94B1\u7684\u75D5\u8FF9\u3002
+CREATE TABLE IF NOT EXISTS yuzu_ledger (
+  kind TEXT NOT NULL,
+  key TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (kind, key)
+);
+
+CREATE TABLE IF NOT EXISTS confusion_mastered (
+  group_key TEXT PRIMARY KEY,
+  mastered_on TEXT NOT NULL
+);
+
+-- \u300C\u65F6\u523B\u300D\u64AD\u62A5\u53F0\u8D26:\u54EA\u4E2A\u65F6\u523B\u5DF2\u7ECF\u64AD\u8FC7\u4E86\u3002
+--
+-- \u6BCF\u52A0\u4E00\u79CD\u5E86\u795D\u5C31\u914D\u4E00\u4E2A app_state \u952E\u7684\u8BDD,\u5F88\u5FEB\u4F1A\u6709\u4E00\u628A\u5F7C\u6B64\u4E0D\u8BA4\u8BC6\u7684\u952E,
+-- \u800C\u4E14\u6CA1\u4EBA\u77E5\u9053\u300C\u4ECA\u5929\u603B\u5171\u5DF2\u7ECF\u8E66\u4E86\u51E0\u4E2A\u300D\u2014\u2014 \u9884\u7B97\u5C31\u65E0\u4ECE\u8C08\u8D77\u3002\u7EDF\u4E00\u8BB0\u8FD9\u4E00\u5F20\u8868:
+--   kind = \u65F6\u523B\u79CD\u7C7B(plan_trend / leech_cleared / ...)
+--   key  = \u4E00\u6B21\u6027\u7684\u7C92\u5EA6,\u7531\u5404\u81EA\u7684\u68C0\u6D4B\u5668\u51B3\u5B9A:
+--          \u6BCF\u5929\u4E00\u6B21 \u2192 \u65E5\u671F,\u6BCF\u8BCD\u4E00\u6B21 \u2192 word_id,\u4E00\u8F88\u5B50\u4E00\u6B21 \u2192 \u56FA\u5B9A\u4E32\u6216\u9608\u503C
+--   (\u6CE8\u610F:\u8FD9\u4E2A\u6587\u4EF6\u662F\u6309\u5206\u53F7\u88F8\u5207\u540E\u9010\u6761\u6267\u884C\u7684,\u6CE8\u91CA\u91CC\u4E5F\u4E0D\u8BB8\u51FA\u73B0\u534A\u89D2\u5206\u53F7)
+--   fired_on = \u64AD\u62A5\u5F53\u5929\u7684\u5B66\u4E60\u65E5,\u7528\u6765\u6570\u6BCF\u65E5\u9884\u7B97
+CREATE TABLE IF NOT EXISTS moments (
+  kind TEXT NOT NULL,
+  key TEXT NOT NULL,
+  fired_on TEXT NOT NULL,
+  PRIMARY KEY (kind, key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_moments_fired_on ON moments(fired_on);
+
+-- \u5468\u62A5\u6309 14:00 \u5468\u671F\u8BB0\u8D26\u3002\u6BCF\u53F0\u8BBE\u5907\u4E00\u884C\uFF0C\u907F\u514D\u8DE8\u8BBE\u5907\u5408\u5E76\u65F6\u91CD\u590D\u7D2F\u52A0\u3002
+-- period_start \u662F\u672C\u5730\u65F6\u95F4\u7684\u5468\u65E5 14:00\uFF0C\u683C\u5F0F YYYY-MM-DD HH:MM\u3002
+CREATE TABLE IF NOT EXISTS study_time_by_period (
+  period_start TEXT NOT NULL,
+  device_id TEXT NOT NULL,
+  seconds INTEGER NOT NULL DEFAULT 0,
+  sync_updated_at TEXT,
+  sync_origin_device TEXT,
+  PRIMARY KEY (period_start, device_id)
+);
+
+-- \u4E00\u5468\u4E00\u4EFD\u5C55\u793A\u5FEB\u7167\u3002\u62A5\u544A\u6B63\u6587\u653E JSON\uFF0C\u4FBF\u4E8E\u89C4\u5219\u5347\u7EA7\u540E\u4FDD\u7559\u5386\u53F2\u539F\u8C8C\uFF1B
+-- \u9605\u8BFB\u72B6\u6001\u548C\u5FEB\u7167\u4E00\u8D77\u8FDB\u5165\u672C\u5730\u589E\u91CF\u6301\u4E45\u5316\uFF0C\u4E91\u7AEF\u5F52\u6863\u4ECD\u7531 Pro \u5468\u62A5\u63A5\u53E3\u5355\u72EC\u5904\u7406\u3002
+CREATE TABLE IF NOT EXISTS weekly_reports (
+  week_start TEXT PRIMARY KEY,
+  week_end TEXT NOT NULL,
+  generated_at INTEGER NOT NULL,
+  schema_version INTEGER NOT NULL DEFAULT 3,
+  content_json TEXT NOT NULL,
+  read_at INTEGER,
+  source_revision TEXT,
+  sync_updated_at TEXT,
+  sync_origin_device TEXT
+);
+
+-- \u6C49\u5B57\u5355\u5143\u8C03\u5EA6\u7684\u672C\u5730\u5185\u5BB9\u3001\u957F\u671F\u8BB0\u5FC6\u548C\u5B66\u4E60\u65E5\u68C0\u67E5\u70B9\u3002
+-- \u5185\u5BB9\u6765\u81EA\u968F App \u53D1\u5E03\u7684 kanji_reading_unit_index.json\uFF0C\u4E0D\u5C5E\u4E8E\u7528\u6237\u540C\u6B65\u6570\u636E\uFF1B
+-- memory/flags/tasks/reviews \u624D\u662F\u7528\u6237\u72B6\u6001\uFF0C\u7531 sync/tables.ts \u5206\u522B\u5408\u5E76\u3002
+CREATE TABLE IF NOT EXISTS kanji_units (
+  unit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  unit_key TEXT NOT NULL UNIQUE,
+  unit_type TEXT NOT NULL,
+  char TEXT NOT NULL DEFAULT '',
+  base TEXT NOT NULL DEFAULT '',
+  surface TEXT NOT NULL DEFAULT '',
+  reading TEXT NOT NULL DEFAULT '',
+  kinds TEXT NOT NULL DEFAULT '[]',
+  CHECK (
+    (unit_type = 'char' AND char <> '' AND base <> '' AND surface = '' AND reading = '')
+    OR (unit_type = 'jukujikun' AND char = '' AND base = '' AND surface <> '' AND reading <> '')
+  )
+);
+
+CREATE TABLE IF NOT EXISTS kanji_unit_memory (
+  unit_key TEXT PRIMARY KEY,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  mistake_streak INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT,
+  fsrs_stability REAL,
+  fsrs_difficulty REAL,
+  fsrs_due TEXT,
+  fsrs_last_review TEXT,
+  fsrs_state INTEGER,
+  fsrs_steps INTEGER,
+  fsrs_reps INTEGER,
+  fsrs_lapses INTEGER,
+  FOREIGN KEY(unit_key) REFERENCES kanji_units(unit_key)
+);
+
+CREATE TABLE IF NOT EXISTS kanji_unit_flags (
+  unit_key TEXT PRIMARY KEY,
+  known_forever INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(unit_key) REFERENCES kanji_units(unit_key)
+);
+
+CREATE TABLE IF NOT EXISTS kanji_unit_tasks (
+  reviewed_on TEXT NOT NULL,
+  unit_key TEXT NOT NULL,
+  order_index INTEGER NOT NULL,
+  PRIMARY KEY (reviewed_on, unit_key),
+  FOREIGN KEY(unit_key) REFERENCES kanji_units(unit_key)
+);
+
+-- \u5355\u5143\u4E8B\u4EF6\u65E5\u5FD7\u662F\u8DE8\u8BBE\u5907 replay \u7684\u4E8B\u5B9E\u6765\u6E90\uFF1Bmemory \u662F\u53EF\u91CD\u5EFA checkpoint\u3002
+CREATE TABLE IF NOT EXISTS kanji_unit_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  unit_key TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  reviewed_at INTEGER NOT NULL,
+  scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+  fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(unit_key) REFERENCES kanji_units(unit_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_kanji_unit_tasks_day
+  ON kanji_unit_tasks(reviewed_on, order_index);
+CREATE INDEX IF NOT EXISTS idx_kanji_unit_reviews_unit_time
+  ON kanji_unit_reviews(unit_key, reviewed_at, id);
+`;
+  }
+});
+
+// ../frontend/src/lib/database/schema.ts
+function runSqlScript(script) {
+  const db = (0, import_database.getDatabase)();
+  script.split(";").map((statement) => statement.trim()).filter(Boolean).forEach((statement) => db.run(statement));
+}
+function ensureLocalSchema() {
+  runSqlScript(local_schema_default);
+}
+var import_database;
+var init_schema = __esm({
+  "../frontend/src/lib/database/schema.ts"() {
+    "use strict";
+    init_local_schema();
+    import_database = __toESM(require_database(), 1);
+  }
+});
+
+// scripts/shared/shims/storage.js
+var require_storage = __commonJS({
+  "scripts/shared/shims/storage.js"(exports, module2) {
+    var pending = null;
+    function scheduleSave() {
+      if (pending) return;
+      pending = setTimeout(() => {
+        pending = null;
+        require("../runtime/database-store").saveDatabase().catch((error) => console.warn("[shared] \u843D\u76D8\u5931\u8D25", error));
+      }, 300);
+    }
+    module2.exports = { scheduleSave, requestFullSnapshot() {
+    } };
+  }
+});
+
+// ../frontend/src/lib/database/db-utils.ts
+var db_utils_exports = {};
+__export(db_utils_exports, {
+  daysSince: () => daysSince,
+  firstRow: () => firstRow,
+  firstValue: () => firstValue,
+  getState: () => getState,
+  oncePerDatabase: () => oncePerDatabase,
+  persistContentSoon: () => persistContentSoon,
+  persistSoon: () => persistSoon,
+  rowsFor: () => rowsFor,
+  setState: () => setState,
+  studyDate: () => studyDate,
+  studyDayEnd: () => studyDayEnd,
+  today: () => today
+});
+function oncePerDatabase(key, run) {
+  const db = (0, import_database2.getDatabase)();
+  let done = oncePerDb.get(db);
+  if (!done) {
+    done = /* @__PURE__ */ new Set();
+    oncePerDb.set(db, done);
+  }
+  if (done.has(key)) return;
+  run();
+  done.add(key);
+}
+function firstValue(query, params = [], fallback) {
+  const statement = (0, import_database2.getDatabase)().prepare(query);
+  try {
+    if (params.length) statement.bind(params);
+    if (!statement.step()) return fallback;
+    return statement.get()[0];
+  } finally {
+    statement.free();
+  }
+}
+function rowsFor(query, params = []) {
+  return queryRows(query, params);
+}
+function firstRow(query, params = []) {
+  return rowsFor(query, params)[0] ?? null;
+}
+function getState(key, fallback) {
+  return firstValue(
+    "SELECT value FROM app_state WHERE key = ?",
+    [key],
+    fallback
+  );
+}
+function setState(key, value) {
+  (0, import_database2.getDatabase)().run("INSERT OR REPLACE INTO app_state (key, value) VALUES (?, ?)", [key, value]);
+}
+function daysSince(dateText) {
+  if (!dateText) return 0;
+  const parsed = /* @__PURE__ */ new Date(`${String(dateText)}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return 0;
+  const now = /* @__PURE__ */ new Date(`${studyDate()}T00:00:00`);
+  return Math.max(0, Math.floor((now.getTime() - parsed.getTime()) / 864e5));
+}
+function studyDate(current = /* @__PURE__ */ new Date()) {
+  const now = new Date(current);
+  if (now.getHours() < 4) {
+    now.setDate(now.getDate() - 1);
+  }
+  return localDateKey(now);
+}
+function studyDayEnd(current = /* @__PURE__ */ new Date()) {
+  const end = new Date(current);
+  if (end.getHours() < 4) {
+    end.setHours(4, 0, 0, 0);
+  } else {
+    end.setDate(end.getDate() + 1);
+    end.setHours(4, 0, 0, 0);
+  }
+  return end;
+}
+function persistSoon() {
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+}
+function persistContentSoon() {
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ requestFullSnapshot, scheduleSave }) => {
+    requestFullSnapshot();
+    scheduleSave();
+  });
+}
+var import_database2, queryRows, oncePerDb, localDateKey, today;
+var init_db_utils = __esm({
+  "../frontend/src/lib/database/db-utils.ts"() {
+    "use strict";
+    import_database2 = __toESM(require_database(), 1);
+    queryRows = (query, params = []) => {
+      const statement = (0, import_database2.getDatabase)().prepare(query);
+      try {
+        if (params.length) statement.bind(params);
+        const result = [];
+        while (statement.step()) {
+          result.push(statement.getAsObject());
+        }
+        return result;
+      } finally {
+        statement.free();
+      }
+    };
+    oncePerDb = /* @__PURE__ */ new WeakMap();
+    localDateKey = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+    today = studyDate;
+  }
+});
+
+// ../frontend/src/lib/legacy-word-migrations.ts
+function migrateLegacyBiruDuplicate() {
+  const db = (0, import_database3.getDatabase)();
+  const canonical = firstRow("SELECT * FROM progress WHERE word_id = ?", [CANONICAL_BIRU_ID]);
+  const legacy = firstRow("SELECT * FROM progress WHERE word_id = ?", [LEGACY_BIRU_ID]);
+  const canonicalSeenCount = Number(canonical?.seen_count ?? 0);
+  const legacySeenCount = Number(legacy?.seen_count ?? 0);
+  const preferLegacy = legacySeenCount > canonicalSeenCount;
+  const winnerId = preferLegacy ? LEGACY_BIRU_ID : CANONICAL_BIRU_ID;
+  const movedReviews = tableExists("reviews") ? firstValue("SELECT COUNT(*) FROM reviews WHERE word_id = ?", [LEGACY_BIRU_ID], 0) : 0;
+  if (!legacyBiruMigrationNeeded()) {
+    return { migrated: false, winnerId, canonicalSeenCount, legacySeenCount, movedReviews: 0 };
+  }
+  db.run("BEGIN TRANSACTION");
+  try {
+    mergeWordInto(db, LEGACY_BIRU_ID, CANONICAL_BIRU_ID);
+    remapSessionStateWordIds((wordId) => wordId === LEGACY_BIRU_ID ? CANONICAL_BIRU_ID : wordId);
+    setState(MIGRATION_STATE_KEY, LEGACY_BIRU_MIGRATION_VERSION);
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+  persistContentSoon();
+  return { migrated: true, winnerId, canonicalSeenCount, legacySeenCount, movedReviews };
+}
+async function ensureLegacyBiruMigration() {
+  if (!legacyBiruMigrationNeeded()) return null;
+  const { saveRecoverySnapshot } = await Promise.resolve().then(() => __toESM(require_storage(), 1));
+  const recovery = await saveRecoverySnapshot("before-biru-2480-to-775");
+  const report = migrateLegacyBiruDuplicate();
+  console.log("[migration] \u30D3\u30EB 2480\u2192775 merged", { ...report, recovery });
+  return report;
+}
+var import_database3, LEGACY_BIRU_ID, CANONICAL_BIRU_ID, LEGACY_BIRU_MIGRATION_VERSION, MIGRATION_STATE_KEY, tableExists, columnsOf, quoteIdentifier, wordRowExists, replaceSingleRow, migrateDatedRows, rewriteQueue, rewriteWordIdsDeep, rewriteJsonState, remapSessionStateWordIds, mergeWordInto, legacyBiruMigrationNeeded;
+var init_legacy_word_migrations = __esm({
+  "../frontend/src/lib/legacy-word-migrations.ts"() {
+    "use strict";
+    import_database3 = __toESM(require_database(), 1);
+    init_db_utils();
+    LEGACY_BIRU_ID = 2480;
+    CANONICAL_BIRU_ID = 775;
+    LEGACY_BIRU_MIGRATION_VERSION = "2026-08-13-biru-2480-to-775-v1";
+    MIGRATION_STATE_KEY = "legacy_biru_merge_version";
+    tableExists = (table) => firstValue(
+      "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1",
+      [table],
+      0
+    ) === 1;
+    columnsOf = (table) => rowsFor(`PRAGMA table_info(${table})`).map((row) => String(row.name ?? "")).filter(Boolean);
+    quoteIdentifier = (value) => `"${value.replace(/"/g, '""')}"`;
+    wordRowExists = (table, wordId, extraWhere = "", params = []) => firstValue(
+      `SELECT 1 FROM ${quoteIdentifier(table)} WHERE word_id = ?${extraWhere} LIMIT 1`,
+      [wordId, ...params],
+      0
+    ) === 1;
+    replaceSingleRow = (db, table, fromId, intoId, preferFrom, extraWhere = "", params = []) => {
+      if (!tableExists(table) || !wordRowExists(table, fromId, extraWhere, params)) return;
+      const canonicalExists = wordRowExists(table, intoId, extraWhere, params);
+      if (!canonicalExists || preferFrom) {
+        if (canonicalExists) {
+          db.run(`DELETE FROM ${quoteIdentifier(table)} WHERE word_id = ?${extraWhere}`, [intoId, ...params]);
+        }
+        const columns = columnsOf(table).filter((column) => column !== "sync_updated_at" && column !== "sync_origin_device");
+        const selectColumns = columns.map((column) => column === "word_id" ? "?" : quoteIdentifier(column));
+        db.run(
+          `INSERT INTO ${quoteIdentifier(table)} (${columns.map(quoteIdentifier).join(", ")})
+       SELECT ${selectColumns.join(", ")}
+       FROM ${quoteIdentifier(table)}
+       WHERE word_id = ?${extraWhere}`,
+          [intoId, fromId, ...params]
+        );
+      }
+      db.run(`DELETE FROM ${quoteIdentifier(table)} WHERE word_id = ?${extraWhere}`, [fromId, ...params]);
+    };
+    migrateDatedRows = (db, table, fromId, intoId, preferFrom) => {
+      if (!tableExists(table)) return;
+      const dates = rowsFor(
+        `SELECT reviewed_on FROM ${quoteIdentifier(table)} WHERE word_id = ? ORDER BY reviewed_on`,
+        [fromId]
+      );
+      dates.forEach((row) => {
+        replaceSingleRow(db, table, fromId, intoId, preferFrom, " AND reviewed_on = ?", [String(row.reviewed_on ?? "")]);
+      });
+    };
+    rewriteQueue = (raw, remap) => {
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return raw;
+        const byWord = /* @__PURE__ */ new Map();
+        parsed.forEach((item) => {
+          if (!item || typeof item !== "object" || Array.isArray(item)) return;
+          const record = item;
+          const originalId = Number(record.word_id);
+          const wordId = remap(originalId);
+          if (!Number.isFinite(wordId)) return;
+          const next = { ...record, word_id: wordId };
+          const existing = byWord.get(wordId);
+          if (!existing || Number(next.due_after ?? 0) < Number(existing.due_after ?? 0)) byWord.set(wordId, next);
+        });
+        return JSON.stringify([...byWord.values()]);
+      } catch {
+        return raw;
+      }
+    };
+    rewriteWordIdsDeep = (value, remap) => {
+      if (Array.isArray(value)) return value.map((item) => rewriteWordIdsDeep(item, remap));
+      if (!value || typeof value !== "object") return value;
+      return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+        key,
+        key === "word_id" && Number.isFinite(Number(item)) ? remap(Number(item)) : rewriteWordIdsDeep(item, remap)
+      ]));
+    };
+    rewriteJsonState = (key, remap) => {
+      const raw = getState(key, "");
+      if (!raw) return;
+      try {
+        setState(key, JSON.stringify(rewriteWordIdsDeep(JSON.parse(raw), remap)));
+      } catch {
+      }
+    };
+    remapSessionStateWordIds = (remap) => {
+      ["review_queue", "review_queue_reverse", "review_queue_kanji", "review_queue_kanji_reading"].forEach((key) => {
+        const raw = getState(key, "");
+        if (raw) setState(key, rewriteQueue(raw, remap));
+      });
+      ["current_card", "last_answered_word", "last_answered_word_reverse", "last_answered_word_kanji", "last_answered_word_kanji_reading"].forEach((key) => {
+        const current = Number(getState(key, "0"));
+        if (!current) return;
+        const next = remap(current);
+        if (next !== current) setState(key, String(next));
+      });
+      ["last_answer", "undo_pinned_card"].forEach((key) => rewriteJsonState(key, remap));
+    };
+    mergeWordInto = (db, fromId, intoId) => {
+      if (fromId === intoId) return 0;
+      const fromSeen = firstValue("SELECT seen_count FROM progress WHERE word_id = ?", [fromId], 0);
+      const intoSeen = firstValue("SELECT seen_count FROM progress WHERE word_id = ?", [intoId], 0);
+      const preferFrom = fromSeen > intoSeen;
+      const movedReviews = tableExists("reviews") ? firstValue("SELECT COUNT(*) FROM reviews WHERE word_id = ?", [fromId], 0) : 0;
+      replaceSingleRow(db, "progress", fromId, intoId, preferFrom);
+      ["reverse_memory", "kanji_memory", "kanji_reading_memory"].forEach((table) => {
+        if (!tableExists(table)) return;
+        const keepClicks = firstValue(
+          `SELECT COALESCE(seen_count, 0) FROM ${quoteIdentifier(table)} WHERE word_id = ?`,
+          [intoId],
+          0
+        );
+        const dropClicks = firstValue(
+          `SELECT COALESCE(seen_count, 0) FROM ${quoteIdentifier(table)} WHERE word_id = ?`,
+          [fromId],
+          0
+        );
+        replaceSingleRow(db, table, fromId, intoId, dropClicks > keepClicks);
+      });
+      ["stage1_tasks", "stage2_progress", "kanji_progress", "kanji_reading_progress", "critical_reviews"].forEach((table) => {
+        migrateDatedRows(db, table, fromId, intoId, preferFrom);
+      });
+      replaceSingleRow(db, "word_notes", fromId, intoId, preferFrom || !wordRowExists("word_notes", intoId));
+      replaceSingleRow(db, "word_question_meanings", fromId, intoId, preferFrom);
+      replaceSingleRow(db, "moji_migrated_reviews", fromId, intoId, preferFrom || !wordRowExists("moji_migrated_reviews", intoId));
+      if (tableExists("dictionary_discovered_words")) {
+        db.run("INSERT OR IGNORE INTO dictionary_discovered_words (word_id) VALUES (?)", [intoId]);
+        db.run("DELETE FROM dictionary_discovered_words WHERE word_id = ?", [fromId]);
+      }
+      if (tableExists("reviews")) {
+        const columns = columnsOf("reviews").filter((column) => column !== "id" && column !== "sync_updated_at" && column !== "sync_origin_device" && column !== "sync_uid");
+        const selectColumns = columns.map((column) => column === "word_id" ? "?" : quoteIdentifier(column));
+        db.run(
+          `INSERT INTO reviews (${columns.map(quoteIdentifier).join(", ")})
+       SELECT ${selectColumns.join(", ")} FROM reviews WHERE word_id = ?`,
+          [intoId, fromId]
+        );
+        db.run("DELETE FROM reviews WHERE word_id = ?", [fromId]);
+      }
+      if (tableExists("content_favorites")) {
+        db.run(`
+      INSERT OR IGNORE INTO content_favorites (item_type, item_id, folder)
+      SELECT item_type, ?, folder FROM content_favorites
+      WHERE item_type = 'word' AND item_id = ?
+    `, [String(intoId), String(fromId)]);
+        db.run("DELETE FROM content_favorites WHERE item_type = 'word' AND item_id = ?", [String(fromId)]);
+      }
+      if (tableExists("custom_words")) db.run("DELETE FROM custom_words WHERE word_id = ?", [fromId]);
+      db.run("DELETE FROM words WHERE id = ?", [fromId]);
+      return movedReviews;
+    };
+    legacyBiruMigrationNeeded = () => getState(MIGRATION_STATE_KEY, "") !== LEGACY_BIRU_MIGRATION_VERSION && firstValue("SELECT 1 FROM words WHERE id = ? LIMIT 1", [LEGACY_BIRU_ID], 0) === 1 && firstValue("SELECT 1 FROM words WHERE id = ? LIMIT 1", [CANONICAL_BIRU_ID], 0) === 1;
+  }
+});
+
+// ../frontend/src/lib/sync/tables.ts
+var tables_exports = {};
+__export(tables_exports, {
+  CONTENT_MIGRATION_STATE_KEYS: () => CONTENT_MIGRATION_STATE_KEYS,
+  DEVICE_LOCAL_GRAMMAR_STATE_KEYS: () => DEVICE_LOCAL_GRAMMAR_STATE_KEYS,
+  DEVICE_LOCAL_STATE_KEYS: () => DEVICE_LOCAL_STATE_KEYS,
+  STUDY_TIME_TABLE: () => STUDY_TIME_TABLE,
+  SYNCED_TABLES: () => SYNCED_TABLES,
+  isAppendTable: () => isAppendTable,
+  isDeviceLocalStateKey: () => isDeviceLocalStateKey,
+  syncedTablesForCloud: () => syncedTablesForCloud
+});
+var STUDY_TIME_TABLE, SYNCED_TABLES, syncedTablesForCloud, CONTENT_MIGRATION_STATE_KEYS, DEVICE_LOCAL_STATE_KEYS, DEVICE_LOCAL_GRAMMAR_STATE_KEYS, isDeviceLocalStateKey, isAppendTable;
+var init_tables = __esm({
+  "../frontend/src/lib/sync/tables.ts"() {
+    "use strict";
+    STUDY_TIME_TABLE = "word_study_time_by_device";
+    SYNCED_TABLES = [
+      // 每词/每语法点的记忆状态,FSRS 的列也在 progress 上,是同步的核心。
+      { table: "progress", keys: ["word_id"], strategy: "lww" },
+      // 新汉字读音题不继承旧 kanji_memory；旧表继续同步，作为历史归档保留。
+      { table: "kanji_reading_memory", keys: ["word_id"], strategy: "lww" },
+      { table: "kanji_memory", keys: ["word_id"], strategy: "lww" },
+      { table: "kanji_unit_memory", keys: ["unit_key"], strategy: "lww" },
+      { table: "kanji_unit_flags", keys: ["unit_key"], strategy: "lww" },
+      { table: "kanji_unit_tasks", keys: ["reviewed_on", "unit_key"], strategy: "lww" },
+      // 单独汉字卡（kanji-char-cards.ts）。memory 是检查点，合并后由 kanji_char_reviews 重放重建。
+      { table: "kanji_char_memory", keys: ["char"], strategy: "lww" },
+      { table: "kanji_char_tasks", keys: ["reviewed_on", "char"], strategy: "lww" },
+      // 疑难连线卡（confusion-cards.ts），同一套：progress 检查点、reviews 事实、tasks 当天投影。
+      { table: "confusion_progress", keys: ["group_key"], strategy: "lww" },
+      { table: "confusion_tasks", keys: ["reviewed_on", "group_key"], strategy: "lww" },
+      // 反向卡的长期记忆。和 kanji_memory 同构:每个词一行,逐行 LWW。
+      { table: "reverse_memory", keys: ["word_id"], strategy: "lww" },
+      { table: "grammar_progress", keys: ["grammar_id"], strategy: "lww" },
+      { table: "grammar_mistakes", keys: ["grammar_id"], strategy: "lww" },
+      { table: "word_notes", keys: ["word_id"], strategy: "lww" },
+      { table: "word_question_meanings", keys: ["word_id"], strategy: "lww" },
+      // 用户自己导入的词条内容。出厂词典不同步,但自定义词必须跟着走 ——
+      // 否则新设备收到的是一堆指向不存在词条的学习记录(见 custom_words 的建表注释)。
+      // union:导入之后内容不再改,也不该被对端那份「更新」覆盖掉本机的编辑。
+      { table: "custom_words", keys: ["word_id"], strategy: "union" },
+      // 例句词典主动发现的词，跨端合并后仍应优先进入新词计划。
+      { table: "dictionary_discovered_words", keys: ["word_id"], strategy: "union" },
+      // 疑难辨析里标过「已掌握」的词组。主键是词组标识而不是 word_id。
+      { table: "confusion_mastered", keys: ["group_key"], strategy: "lww" },
+      // 成就。取并集而不是 LWW：解锁是不可逆的,两端各拿到的都该留下,
+      // 也不该因为对端那行「更新」就把本机的解锁日期改掉。
+      { table: "achievements", keys: ["id"], strategy: "union" },
+      { table: "moji_migrated_reviews", keys: ["word_id"], strategy: "lww" },
+      // 当天的学习会话状态,换设备继续学时要能接上。
+      { table: "critical_reviews", keys: ["reviewed_on", "word_id"], strategy: "lww" },
+      { table: "stage1_tasks", keys: ["reviewed_on", "word_id"], strategy: "lww" },
+      { table: "stage2_progress", keys: ["reviewed_on", "word_id"], strategy: "lww" },
+      { table: "kanji_progress", keys: ["reviewed_on", "word_id"], strategy: "lww" },
+      { table: "kanji_reading_progress", keys: ["reviewed_on", "word_id"], strategy: "lww" },
+      // 键值状态。含设备本地键(见 DEVICE_LOCAL_STATE_KEYS),推送前会过滤。
+      { table: "app_state", keys: ["key"], strategy: "lww" },
+      { table: "grammar_state", keys: ["key"], strategy: "lww" },
+      // 语法阅读状态不是内容数据，必须跟随用户库跨设备同步。
+      { table: "grammar_highlights", keys: ["grammar_id", "block", "start", "end"], strategy: "lww" },
+      { table: "grammar_reading_positions", keys: ["kind", "level"], strategy: "lww" },
+      { table: "content_favorites", keys: ["item_type", "item_id"], strategy: "lww" },
+      // 收藏夹名字就是行身份(不是自增 id),所以两端各建一个同名夹子天然是同一个。
+      { table: "favorite_folders", keys: ["name"], strategy: "union" },
+      // 查词汇量的历史成绩。每次测完追加一行、之后不再改，取并集即可。
+      { table: "vocab_test_history", keys: ["run_id"], strategy: "union" },
+      // 柚子账本。每一行是一笔不可变的账,身份是 (kind, key),两端取并集。
+      { table: "yuzu_ledger", keys: ["kind", "key"], strategy: "union" },
+      // 复习流水按触发器分配的设备:本机 id 去重。created_at 只有秒级精度，
+      // 同一秒的两次作答会撞自然键；sync_uid 才是稳定事件身份。
+      { table: "reviews", keys: ["sync_uid"], strategy: "append" },
+      { table: "grammar_reviews", keys: ["sync_uid"], strategy: "append" },
+      { table: "grammar_activity_events", keys: ["sync_uid"], strategy: "append" },
+      { table: "kanji_unit_reviews", keys: ["sync_uid"], strategy: "append" },
+      { table: "kanji_char_reviews", keys: ["sync_uid"], strategy: "append" },
+      { table: "confusion_reviews", keys: ["sync_uid"], strategy: "append" },
+      { table: "checkins", keys: ["checked_on"], strategy: "union" },
+      // 播报过的时刻。天然幂等的集合,和打卡同构:两端取并集,
+      // 换台设备不会把同一句「比昨天少 48 个」再说一遍。
+      { table: "moments", keys: ["kind", "key"], strategy: "union" },
+      // 每台设备每天只写自己的一行，因此同一主键可安全使用 LWW；跨设备统计时求和。
+      { table: STUDY_TIME_TABLE, keys: ["studied_on", "device_id"], strategy: "lww" },
+      // 周报计时按 14:00 周期归档；每台设备一行，读取时求和。
+      { table: "study_time_by_period", keys: ["period_start", "device_id"], strategy: "lww" },
+      { table: "weekly_reports", keys: ["week_start"], strategy: "lww" }
+    ];
+    syncedTablesForCloud = (includeWeeklyReports) => includeWeeklyReports ? SYNCED_TABLES : SYNCED_TABLES.filter((entry) => entry.table !== "weekly_reports");
+    CONTENT_MIGRATION_STATE_KEYS = [
+      "jlpt_seed_version",
+      "jlpt_word_metadata_version",
+      "jlpt_level_override_version",
+      "jlpt_collocation_content_version",
+      "dictionary_supplement_version",
+      "furigana_version",
+      "kana_reading_fix_version",
+      // 老库重复词条的合并:它删的是 words 行(不同步),所以每台设备得自己跑一遍。
+      "legacy_biru_merge_version"
+    ];
+    DEVICE_LOCAL_STATE_KEYS = /* @__PURE__ */ new Set([
+      "sync_device_id",
+      "sync_cursor",
+      "sync_last_pushed_at",
+      // 本机快照的水位线(见 local-delta.ts)。**绝不能跨设备同步**:
+      // 它是「本机磁盘上那份快照停在哪一刻」,拿对端的值当基准去收集增量,
+      // 收出来的行会对不上本机的快照,重启后就是一份两边拼起来的库。
+      "local_snapshot_mark",
+      // 周报的本地观测台账（见 analytics/weekly-report-events.ts）。它是「这台设备
+      // 上发生过什么」的诊断记录，不是账号数据：同步过去只会让对端的计数被顶掉，
+      // 而且计划明确要求这类采集先只留本地、不默认上传。
+      "weekly_report_events",
+      ...CONTENT_MIGRATION_STATE_KEYS
+    ]);
+    DEVICE_LOCAL_GRAMMAR_STATE_KEYS = /* @__PURE__ */ new Set(["dataset_version"]);
+    isDeviceLocalStateKey = (table, key) => table === "app_state" ? DEVICE_LOCAL_STATE_KEYS.has(key) : table === "grammar_state" ? DEVICE_LOCAL_GRAMMAR_STATE_KEYS.has(key) : false;
+    isAppendTable = (table) => SYNCED_TABLES.find((entry) => entry.table === table)?.strategy === "append";
+  }
+});
+
+// ../frontend/src/lib/sync/study-time.ts
+function recordReportStudySeconds(atMs, seconds) {
+  const amount = Math.max(0, Math.round(seconds));
+  if (!amount) return;
+  const hasTable = rowsFor(
+    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'study_time_by_period' LIMIT 1"
+  ).length > 0;
+  if (!hasTable) return;
+  let cursor = atMs - amount * 1e3;
+  const end = atMs;
+  let remaining = amount;
+  while (cursor < end) {
+    const period = reportPeriodStart(cursor);
+    const boundary = /* @__PURE__ */ new Date(`${period.replace(" ", "T")}:00`);
+    boundary.setDate(boundary.getDate() + 7);
+    const chunkEnd = Math.min(end, boundary.getTime());
+    const chunkSeconds = chunkEnd === end ? remaining : Math.min(remaining, Math.max(0, Math.round((chunkEnd - cursor) / 1e3)));
+    addPeriodSeconds(period, chunkSeconds);
+    remaining -= chunkSeconds;
+    cursor = chunkEnd;
+    if (chunkSeconds === 0) cursor += 1e3;
+  }
+}
+function recordStudySeconds(day, seconds, atMs = Date.now()) {
+  const amount = Math.max(0, Math.round(seconds));
+  if (!amount) return;
+  (0, import_database4.getDatabase)().run(`
+    INSERT INTO ${STUDY_TIME_TABLE} (studied_on, device_id, seconds)
+    VALUES (?, ?, ?)
+    ON CONFLICT(studied_on, device_id) DO UPDATE SET
+      seconds = seconds + excluded.seconds
+  `, [day, getDeviceId(), amount]);
+  aggregateDay(day);
+  recordReportStudySeconds(atMs, amount);
+}
+function rebuildStudyTimeAggregate() {
+  const db = (0, import_database4.getDatabase)();
+  db.run(`
+    INSERT INTO word_study_time (studied_on, seconds, updated_at)
+    SELECT studied_on, SUM(seconds), CURRENT_TIMESTAMP
+    FROM ${STUDY_TIME_TABLE}
+    GROUP BY studied_on
+    ON CONFLICT(studied_on) DO UPDATE SET
+      seconds = excluded.seconds,
+      updated_at = CURRENT_TIMESTAMP
+  `);
+}
+function backfillStudyTimeByDevice() {
+  const pending = rowsFor(`
+    SELECT t.studied_on, t.seconds
+    FROM word_study_time t
+    WHERE t.seconds > 0
+      AND NOT EXISTS (
+        SELECT 1 FROM ${STUDY_TIME_TABLE} d WHERE d.studied_on = t.studied_on
+      )
+  `);
+  if (!pending.length) return;
+  const db = (0, import_database4.getDatabase)();
+  const deviceId = getDeviceId();
+  db.run("BEGIN");
+  try {
+    for (const row of pending) {
+      db.run(
+        `INSERT OR REPLACE INTO ${STUDY_TIME_TABLE} (studied_on, device_id, seconds) VALUES (?, ?, ?)`,
+        [String(row.studied_on), deviceId, Number(row.seconds ?? 0)]
+      );
+    }
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+}
+var import_database4, aggregateDay, localDateKey2, reportPeriodStart, addPeriodSeconds;
+var init_study_time = __esm({
+  "../frontend/src/lib/sync/study-time.ts"() {
+    "use strict";
+    import_database4 = __toESM(require_database(), 1);
+    init_db_utils();
+    init_schema2();
+    init_tables();
+    aggregateDay = (day) => {
+      (0, import_database4.getDatabase)().run(`
+    INSERT INTO word_study_time (studied_on, seconds, updated_at)
+    SELECT ?, COALESCE(SUM(seconds), 0), CURRENT_TIMESTAMP
+    FROM ${STUDY_TIME_TABLE}
+    WHERE studied_on = ?
+    ON CONFLICT(studied_on) DO UPDATE SET
+      seconds = excluded.seconds,
+      updated_at = CURRENT_TIMESTAMP
+  `, [day, day]);
+    };
+    localDateKey2 = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+    reportPeriodStart = (atMs) => {
+      const date = new Date(atMs);
+      date.setHours(14, 0, 0, 0);
+      date.setDate(date.getDate() - date.getDay());
+      if (atMs < date.getTime()) date.setDate(date.getDate() - 7);
+      return `${localDateKey2(date)} 14:00`;
+    };
+    addPeriodSeconds = (period, seconds) => {
+      if (seconds <= 0) return;
+      (0, import_database4.getDatabase)().run(`
+    INSERT INTO study_time_by_period (period_start, device_id, seconds)
+    VALUES (?, ?, ?)
+    ON CONFLICT(period_start, device_id) DO UPDATE SET
+      seconds = seconds + excluded.seconds
+  `, [period, getDeviceId(), seconds]);
+    };
+  }
+});
+
+// ../frontend/src/lib/sync/schema.ts
+var schema_exports = {};
+__export(schema_exports, {
+  SYNC_ORIGIN_COL: () => SYNC_ORIGIN_COL,
+  SYNC_UID_COL: () => SYNC_UID_COL,
+  SYNC_UPDATED_COL: () => SYNC_UPDATED_COL,
+  beginSyncApply: () => beginSyncApply,
+  endSyncApply: () => endSyncApply,
+  ensureSyncSchema: () => ensureSyncSchema,
+  getDeviceId: () => getDeviceId,
+  resetDeviceId: () => resetDeviceId
+});
+function ensureSyncSchema() {
+  const db = (0, import_database5.getDatabase)();
+  if (schemaReadyDbs.has(db)) return;
+  db.run("CREATE TABLE IF NOT EXISTS sync_device (id TEXT NOT NULL)");
+  getDeviceId();
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sync_context (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
+  db.run("DELETE FROM sync_context WHERE key = 'applying_remote'");
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sync_tombstones (
+      table_name TEXT NOT NULL,
+      row_key TEXT NOT NULL,
+      deleted_at TEXT NOT NULL,
+      origin_device TEXT NOT NULL DEFAULT '',
+      PRIMARY KEY (table_name, row_key)
+    )
+  `);
+  const tombstoneColumns = columnsOf2("sync_tombstones");
+  if (!tombstoneColumns.has("origin_device")) {
+    db.run("ALTER TABLE sync_tombstones ADD COLUMN origin_device TEXT NOT NULL DEFAULT ''");
+  }
+  db.run(`
+    CREATE TABLE IF NOT EXISTS ${STUDY_TIME_TABLE} (
+      studied_on TEXT NOT NULL,
+      device_id TEXT NOT NULL,
+      seconds INTEGER NOT NULL DEFAULT 0,
+      ${SYNC_UPDATED_COL} TEXT,
+      PRIMARY KEY (studied_on, device_id)
+    )
+  `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS weekly_reports (
+      week_start TEXT PRIMARY KEY,
+      week_end TEXT NOT NULL,
+      generated_at INTEGER NOT NULL,
+      schema_version INTEGER NOT NULL DEFAULT 3,
+      content_json TEXT NOT NULL,
+      read_at INTEGER,
+      source_revision TEXT,
+      sync_updated_at TEXT,
+      sync_origin_device TEXT
+    )
+  `);
+  for (const entry of SYNCED_TABLES) {
+    if (!tableExists2(entry.table)) continue;
+    if (entry.table === "reviews" && !columnsOf2(entry.table).has("direction")) {
+      db.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
+    }
+    if (entry.table === "reviews") {
+      const columns = columnsOf2(entry.table);
+      if (!columns.has("reviewed_at")) db.run("ALTER TABLE reviews ADD COLUMN reviewed_at INTEGER");
+      if (!columns.has("scheduler_mode")) db.run("ALTER TABLE reviews ADD COLUMN scheduler_mode TEXT NOT NULL DEFAULT 'legacy'");
+      if (!columns.has("fsrs_params_version")) db.run("ALTER TABLE reviews ADD COLUMN fsrs_params_version TEXT NOT NULL DEFAULT 'legacy'");
+      if (!columns.has("event_source")) db.run("ALTER TABLE reviews ADD COLUMN event_source TEXT NOT NULL DEFAULT 'legacy'");
+    }
+    ensureTrackingColumns(entry);
+    ensureTriggers(entry);
+  }
+  schemaReadyDbs.add(db);
+  if (tableExists2("word_study_time")) backfillStudyTimeByDevice();
+}
+function beginSyncApply() {
+  ensureSyncSchema();
+  (0, import_database5.getDatabase)().run("INSERT OR REPLACE INTO sync_context (key, value) VALUES ('applying_remote', '1')");
+}
+function endSyncApply() {
+  (0, import_database5.getDatabase)().run("DELETE FROM sync_context WHERE key = 'applying_remote'");
+}
+function getDeviceId() {
+  const db = (0, import_database5.getDatabase)();
+  db.run("CREATE TABLE IF NOT EXISTS sync_device (id TEXT NOT NULL)");
+  const existing = rowsFor("SELECT id FROM sync_device LIMIT 1");
+  if (existing.length) return String(existing[0].id);
+  const id = crypto.randomUUID();
+  db.run("INSERT INTO sync_device (id) VALUES (?)", [id]);
+  return id;
+}
+function resetDeviceId() {
+  const db = (0, import_database5.getDatabase)();
+  const id = crypto.randomUUID();
+  db.run("DELETE FROM sync_device");
+  db.run("INSERT INTO sync_device (id) VALUES (?)", [id]);
+  return id;
+}
+var import_database5, SYNC_UPDATED_COL, SYNC_UID_COL, SYNC_ORIGIN_COL, NOW_EXPR, schemaReadyDbs, columnsOf2, tableExists2, rowKeyExpr, ensureTrackingColumns, ensureTriggers;
+var init_schema2 = __esm({
+  "../frontend/src/lib/sync/schema.ts"() {
+    "use strict";
+    import_database5 = __toESM(require_database(), 1);
+    init_db_utils();
+    init_study_time();
+    init_tables();
+    SYNC_UPDATED_COL = "sync_updated_at";
+    SYNC_UID_COL = "sync_uid";
+    SYNC_ORIGIN_COL = "sync_origin_device";
+    NOW_EXPR = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
+    schemaReadyDbs = /* @__PURE__ */ new WeakSet();
+    columnsOf2 = (table) => new Set(rowsFor(`PRAGMA table_info(${table})`).map((row) => String(row.name ?? "")));
+    tableExists2 = (table) => rowsFor("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?", [table]).length > 0;
+    rowKeyExpr = (entry, alias) => entry.keys.map((key) => `CAST(${alias}.${key} AS TEXT)`).join(" || char(31) || ");
+    ensureTrackingColumns = (entry) => {
+      const db = (0, import_database5.getDatabase)();
+      const columns = columnsOf2(entry.table);
+      if (!columns.has(SYNC_UPDATED_COL)) {
+        db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_UPDATED_COL} TEXT`);
+      }
+      if (!columns.has(SYNC_ORIGIN_COL)) {
+        db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_ORIGIN_COL} TEXT`);
+      }
+      if (entry.strategy === "append") {
+        if (!columns.has(SYNC_UID_COL)) {
+          db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_UID_COL} TEXT`);
+        }
+        db.run(
+          `UPDATE ${entry.table}
+       SET ${SYNC_UID_COL} = (SELECT id FROM sync_device LIMIT 1) || ':' || CAST(id AS TEXT)
+       WHERE ${SYNC_UID_COL} IS NULL`
+        );
+        db.run(
+          `CREATE UNIQUE INDEX IF NOT EXISTS idx_${entry.table}_sync_uid
+       ON ${entry.table}(${SYNC_UID_COL})`
+        );
+      }
+      db.run(
+        `UPDATE ${entry.table} SET ${SYNC_UPDATED_COL} = '1970-01-01T00:00:00.000Z'
+     WHERE ${SYNC_UPDATED_COL} IS NULL`
+      );
+      db.run(
+        `UPDATE ${entry.table} SET ${SYNC_ORIGIN_COL} = (SELECT id FROM sync_device LIMIT 1)
+     WHERE ${SYNC_ORIGIN_COL} IS NULL OR ${SYNC_ORIGIN_COL} = ''`
+      );
+      db.run(
+        `CREATE INDEX IF NOT EXISTS idx_${entry.table}_sync_updated
+     ON ${entry.table}(${SYNC_UPDATED_COL})`
+      );
+    };
+    ensureTriggers = (entry) => {
+      const db = (0, import_database5.getDatabase)();
+      const { table } = entry;
+      const uidAssign = entry.strategy === "append" ? `, ${SYNC_UID_COL} = COALESCE(NEW.${SYNC_UID_COL},
+         (SELECT id FROM sync_device LIMIT 1) || ':' || CAST(NEW.id AS TEXT))` : "";
+      db.run(`DROP TRIGGER IF EXISTS trg_${table}_sync_insert`);
+      db.run(`DROP TRIGGER IF EXISTS trg_${table}_sync_update`);
+      db.run(`DROP TRIGGER IF EXISTS trg_${table}_sync_delete`);
+      db.run(`
+    CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_insert AFTER INSERT ON ${table}
+    WHEN NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
+    BEGIN
+      UPDATE ${table} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR},
+        ${SYNC_ORIGIN_COL} = (SELECT id FROM sync_device LIMIT 1)${uidAssign}
+      WHERE rowid = NEW.rowid;
+      DELETE FROM sync_tombstones
+      WHERE table_name = '${table}' AND row_key = ${rowKeyExpr(entry, "NEW")};
+    END
+  `);
+      db.run(`
+    CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_update AFTER UPDATE ON ${table}
+    WHEN NEW.${SYNC_UPDATED_COL} IS OLD.${SYNC_UPDATED_COL}
+      AND NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
+    BEGIN
+      UPDATE ${table} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR},
+        ${SYNC_ORIGIN_COL} = (SELECT id FROM sync_device LIMIT 1)
+      WHERE rowid = NEW.rowid;
+    END
+  `);
+      db.run(`
+    CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_delete AFTER DELETE ON ${table}
+    WHEN NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
+      -- \u7B97\u4E0D\u51FA row_key \u7684\u884C(\u67D0\u5217\u662F NULL)\u5199\u4E0D\u4E86\u5893\u7891 \u2014\u2014 \u4F46\u90A3\u4E5F\u4E0D\u8BE5\u8BA9\u8C03\u7528\u65B9\u7684\u4E8B\u52A1
+      -- \u6574\u4E2A\u5931\u8D25\u3002\u6CA1\u6709\u540C\u6B65\u8EAB\u4EFD\u7684\u884C\u672C\u6765\u5C31\u4E0D\u53EF\u80FD\u88AB\u5BF9\u7AEF\u6309\u952E\u590D\u6D3B,\u8DF3\u8FC7\u662F\u5B89\u5168\u7684;
+      -- \u629B\u9519\u5219\u4F1A\u628A\u300C\u5408\u5E76\u91CD\u590D\u8BCD\u6761\u300D\u8FD9\u79CD\u4E00\u6574\u4E2A\u6279\u91CF\u8FC1\u79FB\u6380\u7FFB\u3002\u4E0A\u9762\u7684 uid \u56DE\u586B\u8D1F\u8D23
+      -- \u8BA9\u8FD9\u6761\u5B88\u536B\u5E73\u65F6\u7528\u4E0D\u4E0A\u3002
+      AND ${rowKeyExpr(entry, "OLD")} IS NOT NULL
+    BEGIN
+      INSERT INTO sync_tombstones (table_name, row_key, deleted_at, origin_device)
+      VALUES ('${table}', ${rowKeyExpr(entry, "OLD")}, ${NOW_EXPR},
+        (SELECT id FROM sync_device LIMIT 1))
+      ON CONFLICT(table_name, row_key) DO UPDATE SET
+        deleted_at = excluded.deleted_at,
+        origin_device = excluded.origin_device;
+    END
+  `);
+    };
+  }
+});
+
+// scripts/shared/shims/seed-guard.js
+var require_seed_guard = __commonJS({
+  "scripts/shared/shims/seed-guard.js"(exports, module2) {
+    module2.exports = new Proxy({}, {
+      get(_target, prop) {
+        if (prop === "__esModule") return false;
+        if (typeof prop === "symbol") return void 0;
+        throw new Error(`\u51FA\u5382\u79CD\u5B50\u6570\u636E\u4E0D\u5728\u5C0F\u7A0B\u5E8F\u5305\u91CC\uFF08\u8BBF\u95EE\u4E86 ${String(prop)}\uFF09\uFF1A\u5185\u5BB9\u8FC1\u79FB\u53EA\u5728\u7F51\u9875 / App \u4E0A\u8DD1`);
+      }
+    });
+  }
+});
+
+// ../frontend/src/lib/study-core.ts
+var study_core_exports = {};
+__export(study_core_exports, {
+  DICTIONARY_SUPPLEMENT_VERSION: () => DICTIONARY_SUPPLEMENT_VERSION,
+  FURIGANA_VERSION: () => FURIGANA_VERSION,
+  GRAMMAR_SEED_ROW_COUNT: () => GRAMMAR_SEED_ROW_COUNT,
+  GRAMMAR_SEED_VERSION: () => GRAMMAR_SEED_VERSION,
+  JLPT_COLLOCATION_CONTENT_VERSION: () => JLPT_COLLOCATION_CONTENT_VERSION,
+  answerLabel: () => answerLabel,
+  daysSince: () => daysSince,
+  ensureSeedData: () => ensureSeedData,
+  ensureUserTables: () => ensureUserTables,
+  firstRow: () => firstRow,
+  firstValue: () => firstValue,
+  getState: () => getState,
+  isFavorite: () => isFavorite,
+  persistSoon: () => persistSoon,
+  randomBetween: () => randomBetween,
+  rowsFor: () => rowsFor,
+  sessionScoreDelta: () => sessionScoreDelta,
+  setState: () => setState,
+  studyDate: () => studyDate,
+  studyDayEnd: () => studyDayEnd,
+  today: () => today
+});
+var import_database6, JLPT_SEED_VERSION, FURIGANA_VERSION, JLPT_WORD_METADATA_VERSION, JLPT_LEVEL_OVERRIDE_VERSION, GRAMMAR_SEED_VERSION, GRAMMAR_SEED_ROW_COUNT, DICTIONARY_SUPPLEMENT_VERSION, JLPT_COLLOCATION_CONTENT_VERSION, loadJlptWordSeed, loadWordSenseKeys, applyWordSenseKeys, loadJlptMeaningOverrides, loadJlptExampleOverrides, loadJlptLevelOverrides, loadGrammarSeed, loadDictionarySupplementSeed, loadJlptCollocationContent, schemaReadyDbs2, ensureUserTables, CONTENT_MARKER_REPAIR_VERSION, repairSyncedContentMarkers, ensureSeedData, ensureJlptCollocationContent, ensureDictionarySupplementSeed, isFavorite, GRAMMAR_PROGRESS_TABLES, GRAMMAR_ID_OFFSET, GRAMMAR_PATTERN_RENAMES, ensureGrammarSeed, ensureFuriganaAnnotations, nounSuruCorrections, syncJlptWordMetadata, KANA_READING_FIX_VERSION, ensureKatakanaReadings, ensureJlptWordMetadata, ensureJlptLevelOverrides, ensureJlptWordSeed, randomBetween, sessionScoreDelta, answerLabel;
+var init_study_core = __esm({
+  "../frontend/src/lib/study-core.ts"() {
+    "use strict";
+    import_database6 = __toESM(require_database(), 1);
+    init_schema();
+    init_legacy_word_migrations();
+    init_schema2();
+    init_tables();
+    init_db_utils();
+    init_db_utils();
+    JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
+    FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
+    JLPT_WORD_METADATA_VERSION = `2026-09-19-manual-meanings-5163-polish-1130-corrections-35-distinction-1559-examples-320-audit-revert-76-${FURIGANA_VERSION}`;
+    JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
+    GRAMMAR_SEED_VERSION = "2026-09-18-grammar-split-variants-v1";
+    GRAMMAR_SEED_ROW_COUNT = 769;
+    DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
+    JLPT_COLLOCATION_CONTENT_VERSION = "2026-08-28-jlpt-collocations-zh-v1";
+    loadJlptWordSeed = async () => {
+      const payload = await Promise.resolve().then(() => __toESM(require_seed_guard(), 1));
+      return payload.default;
+    };
+    loadWordSenseKeys = async () => {
+      const payload = await Promise.resolve().then(() => __toESM(require_seed_guard(), 1));
+      return payload.default;
+    };
+    applyWordSenseKeys = (rows) => {
+      const db = (0, import_database6.getDatabase)();
+      rows.forEach(([kanji, kana, senseKey]) => {
+        db.run("UPDATE words SET sense_key = ? WHERE kanji = ? AND kana = ?", [senseKey, kanji, kana]);
+      });
+    };
+    loadJlptMeaningOverrides = async () => {
+      const payload = await Promise.resolve().then(() => __toESM(require_seed_guard(), 1));
+      return payload.default;
+    };
+    loadJlptExampleOverrides = async () => {
+      const payload = await Promise.resolve().then(() => __toESM(require_seed_guard(), 1));
+      return payload.default;
+    };
+    loadJlptLevelOverrides = async () => {
+      const payload = await Promise.resolve().then(() => __toESM(require_seed_guard(), 1));
+      return payload.default;
+    };
+    loadGrammarSeed = async () => {
+      const payload = await Promise.resolve().then(() => __toESM(require_seed_guard(), 1));
+      return payload.default;
+    };
+    loadDictionarySupplementSeed = async () => {
+      const payload = await Promise.resolve().then(() => __toESM(require_seed_guard(), 1));
+      return payload.default;
+    };
+    loadJlptCollocationContent = async () => {
+      const payload = await Promise.resolve().then(() => __toESM(require_seed_guard(), 1));
+      return payload.default;
+    };
+    schemaReadyDbs2 = /* @__PURE__ */ new WeakSet();
+    ensureUserTables = () => {
+      const db = (0, import_database6.getDatabase)();
+      if (schemaReadyDbs2.has(db)) return;
+      ensureLocalSchema();
+      const wordColumns = rowsFor("PRAGMA table_info(words)").map((row) => String(row.name ?? ""));
+      if (!wordColumns.includes("jlpt_level")) {
+        db.run("ALTER TABLE words ADD COLUMN jlpt_level TEXT");
+      }
+      if (!wordColumns.includes("example_furigana")) {
+        db.run("ALTER TABLE words ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''");
+      }
+      if (!wordColumns.includes("example_tokens")) {
+        db.run("ALTER TABLE words ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''");
+      }
+      if (!wordColumns.includes("example_lemmas")) {
+        db.run("ALTER TABLE words ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''");
+      }
+      if (!wordColumns.includes("sense_key")) {
+        db.run("ALTER TABLE words ADD COLUMN sense_key TEXT NOT NULL DEFAULT ''");
+      }
+      const grammarColumns = rowsFor("PRAGMA table_info(grammar_points)").map((row) => String(row.name ?? ""));
+      if (!grammarColumns.includes("example_furigana")) {
+        db.run("ALTER TABLE grammar_points ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''");
+      }
+      if (!grammarColumns.includes("example_tokens")) {
+        db.run("ALTER TABLE grammar_points ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''");
+      }
+      if (!grammarColumns.includes("example_lemmas")) {
+        db.run("ALTER TABLE grammar_points ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''");
+      }
+      const archiveColumns = rowsFor("PRAGMA table_info(grammar_points_archive)").map((row) => String(row.name ?? ""));
+      if (!archiveColumns.includes("example_furigana")) {
+        db.run("ALTER TABLE grammar_points_archive ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''");
+      }
+      if (!archiveColumns.includes("example_tokens")) {
+        db.run("ALTER TABLE grammar_points_archive ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''");
+      }
+      if (!archiveColumns.includes("example_lemmas")) {
+        db.run("ALTER TABLE grammar_points_archive ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''");
+      }
+      const positionColumns = rowsFor("PRAGMA table_info(grammar_reading_positions)").map((row) => String(row.name ?? ""));
+      if (!positionColumns.includes("scroll_top")) {
+        db.run("ALTER TABLE grammar_reading_positions ADD COLUMN scroll_top REAL NOT NULL DEFAULT 0");
+      }
+      const favoriteColumns = rowsFor("PRAGMA table_info(content_favorites)").map((row) => String(row.name ?? ""));
+      if (!favoriteColumns.includes("folder")) {
+        db.run("ALTER TABLE content_favorites ADD COLUMN folder TEXT NOT NULL DEFAULT ''");
+      }
+      const vocabColumns = rowsFor("PRAGMA table_info(vocab_test_history)").map((row) => String(row.name ?? ""));
+      if (vocabColumns.length && !vocabColumns.includes("levels_json")) {
+        db.run("ALTER TABLE vocab_test_history ADD COLUMN levels_json TEXT NOT NULL DEFAULT ''");
+      }
+      const reviewColumns = rowsFor("PRAGMA table_info(reviews)").map((row) => String(row.name ?? ""));
+      if (!reviewColumns.includes("direction")) {
+        db.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
+      }
+      db.run("CREATE INDEX IF NOT EXISTS idx_reviews_day_direction ON reviews(reviewed_on, direction)");
+      db.run(`
+    CREATE TABLE IF NOT EXISTS study_time_by_period (
+      period_start TEXT NOT NULL,
+      device_id TEXT NOT NULL,
+      seconds INTEGER NOT NULL DEFAULT 0,
+      sync_updated_at TEXT,
+      sync_origin_device TEXT,
+      PRIMARY KEY (period_start, device_id)
+    )
+  `);
+      db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
+      db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
+      schemaReadyDbs2.add(db);
+    };
+    CONTENT_MARKER_REPAIR_VERSION = "2026-09-09-unsynced-content-markers-v1";
+    repairSyncedContentMarkers = () => {
+      if (getState("content_marker_repair", "") === CONTENT_MARKER_REPAIR_VERSION) return;
+      for (const key of CONTENT_MIGRATION_STATE_KEYS) setState(key, "");
+      setState("content_marker_repair", CONTENT_MARKER_REPAIR_VERSION);
+    };
+    ensureSeedData = async () => {
+      ensureUserTables();
+      ensureSyncSchema();
+      repairSyncedContentMarkers();
+      await ensureLegacyBiruMigration();
+      await ensureDictionarySupplementSeed();
+      await ensureJlptCollocationContent();
+      await ensureGrammarSeed();
+      await ensureJlptWordSeed();
+      await ensureJlptLevelOverrides();
+      await ensureFuriganaAnnotations();
+    };
+    ensureJlptCollocationContent = async () => {
+      if (getState("jlpt_collocation_content_version", "") === JLPT_COLLOCATION_CONTENT_VERSION) return;
+      const content = await loadJlptCollocationContent();
+      if (content.status !== "content_ready_runtime_migration" || content.entries.length !== 882) {
+        throw new Error(`\u56FA\u5B9A\u642D\u914D\u5185\u5BB9\u7248\u672C\u65E0\u6548: status=${content.status} entries=${content.entries.length}`);
+      }
+      if (content.entries.some((entry) => !entry.surface || !entry.kana || !entry.meaning || !/^N[1-5]$/.test(entry.level))) {
+        throw new Error("\u56FA\u5B9A\u642D\u914D\u5185\u5BB9\u5B58\u5728\u7F3A\u5C11\u8868\u8BB0\u3001\u8BFB\u97F3\u3001\u91CA\u4E49\u6216\u7B49\u7EA7\u7684\u6761\u76EE");
+      }
+      const db = (0, import_database6.getDatabase)();
+      const existing = new Set(
+        rowsFor("SELECT kanji, kana FROM words").map((row) => `${String(row.kanji ?? "")}\0${String(row.kana ?? "")}`)
+      );
+      const insertedIds = [];
+      db.run("BEGIN TRANSACTION");
+      try {
+        content.entries.forEach((entry) => {
+          const key = `${entry.surface}\0${entry.kana}`;
+          if (existing.has(key)) return;
+          db.run(`
+        INSERT INTO words (
+          meaning, kana, kanji, pos, verb_type, importance,
+          shuffle_rank, example_jp, example_meaning, example_furigana, example_tokens, example_lemmas, jlpt_level
+        )
+        VALUES (?, ?, ?, ?, NULL, ?, ABS(RANDOM()) / 9223372036854775807.0, '', '', '', '', '', ?)
+      `, [entry.meaning, entry.kana, entry.surface, "\u56FA\u5B9A\u642D\u914D", 3, entry.level]);
+          const newId = firstValue("SELECT last_insert_rowid()", [], 0);
+          if (newId > 0) insertedIds.push(newId);
+          existing.add(key);
+        });
+        insertedIds.forEach((wordId) => db.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [wordId]));
+        setState("jlpt_collocation_content_version", JLPT_COLLOCATION_CONTENT_VERSION);
+        db.run("COMMIT");
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+      persistContentSoon();
+    };
+    ensureDictionarySupplementSeed = async () => {
+      const installedVersion = getState("dictionary_supplement_version", "");
+      const installedCount = firstValue(
+        "SELECT COUNT(*) FROM dictionary_entries WHERE entry_key LIKE 'builtin:%'",
+        [],
+        0
+      );
+      if (installedVersion === DICTIONARY_SUPPLEMENT_VERSION && installedCount === 21) return;
+      const seed = await loadDictionarySupplementSeed();
+      if (seed.version !== DICTIONARY_SUPPLEMENT_VERSION) {
+        throw new Error(`\u8865\u5145\u8BCD\u5178\u7248\u672C\u4E0D\u4E00\u81F4: ${seed.version} != ${DICTIONARY_SUPPLEMENT_VERSION}`);
+      }
+      if (seed.entries.length !== 21) {
+        throw new Error(`\u8865\u5145\u8BCD\u5178\u6761\u6570\u5F02\u5E38: ${seed.entries.length} != 21`);
+      }
+      const db = (0, import_database6.getDatabase)();
+      db.run("BEGIN TRANSACTION");
+      try {
+        db.run("DELETE FROM dictionary_entries WHERE entry_key LIKE 'builtin:%'");
+        seed.entries.forEach((entry) => {
+          db.run(`
+        INSERT INTO dictionary_entries (
+          entry_key, headword, kana, meaning, pos, verb_type, category,
+          usage_note, example_jp, example_meaning, priority,
+          source_name, source_url, license, seed_version
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+            entry.entryKey,
+            entry.headword,
+            entry.kana,
+            entry.meaning,
+            entry.pos,
+            entry.verbType,
+            entry.category,
+            entry.usageNote,
+            entry.exampleJp,
+            entry.exampleMeaning,
+            entry.priority,
+            seed.source.name,
+            seed.source.url,
+            seed.source.license,
+            seed.version
+          ]);
+        });
+        setState("dictionary_supplement_version", seed.version);
+        db.run("COMMIT");
+        persistContentSoon();
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+    };
+    isFavorite = (type, id) => {
+      ensureUserTables();
+      return Boolean(firstValue(
+        "SELECT 1 FROM content_favorites WHERE item_type = ? AND item_id = ? LIMIT 1",
+        [type, String(id)],
+        0
+      ));
+    };
+    GRAMMAR_PROGRESS_TABLES = ["grammar_progress", "grammar_reviews", "grammar_mistakes"];
+    GRAMMAR_ID_OFFSET = 1e6;
+    GRAMMAR_PATTERN_RENAMES = {
+      "\u8AB0\uFF0F\u3069\u306A\u305F\uFF0F\u3069\u306E\u65B9": "\u8AB0",
+      "\u3069\u3046\uFF0F\u3044\u304B\u304C": "\u3069\u3046",
+      "\u306A\u305C\uFF0F\u3069\u3046\u3057\u3066\uFF0F\u306A\u3093\u3067": "\u306A\u305C",
+      "\u304B\u306A\uFF0F\u304B\u3057\u3089": "\u304B\u306A",
+      "\uFF5E\u305F\u3061\uFF0F\u304C\u305F": "\uFF5E\u305F\u3061",
+      "\uFF5E\u3060\u308D\u3046\uFF0F\u3067\u3057\u3087\u3046": "\uFF5E\u3060\u308D\u3046",
+      "\u3042\u3052\u308B\uFF0F\u3055\u3057\u3042\u3052\u308B": "\u3042\u3052\u308B",
+      "\uFF5E\u3066\u3042\u3052\u308B\uFF0F\u3066\u3055\u3057\u3042\u3052\u308B": "\uFF5E\u3066\u3042\u3052\u308B",
+      "\u3082\u3089\u3046\uFF0F\u3044\u305F\u3060\u304F": "\u3082\u3089\u3046",
+      "\uFF5E\u3066\u3082\u3089\u3046\uFF0F\u3066\u3044\u305F\u3060\u304F": "\uFF5E\u3066\u3082\u3089\u3046",
+      "\u304F\u308C\u308B\uFF0F\u304F\u3060\u3055\u308B": "\u304F\u308C\u308B",
+      "\uFF5E\u3066\u304F\u308C\u308B\uFF0F\u3066\u304F\u3060\u3055\u308B": "\uFF5E\u3066\u304F\u308C\u308B",
+      "\uFF5E\u3046\u3061\u306F\uFF0F\u306A\u3044\u3046\u3061\u306B": "\uFF5E\u3046\u3061\u306F",
+      "\uFF5E\u3066\u3057\u304B\u305F\uFF08\u304C\uFF09\u306A\u3044\uFF0F\u3066\u3057\u3088\u3046\u304C\u306A\u3044": "\uFF5E\u3066\u3057\u304B\u305F\uFF08\u304C\uFF09\u306A\u3044",
+      "\uFF5E\u3066\u3082\u3057\u304B\u305F\uFF08\u304C\uFF09\u306A\u3044\uFF0F\u3066\u3082\u3057\u3088\u3046\u304C\u306A\u3044": "\uFF5E\u3066\u3082\u3057\u304B\u305F\uFF08\u304C\uFF09\u306A\u3044",
+      "\uFF5E\u3068\u3044\u3046\u306E\u306F\uFF0F\u3068\u306F": "\uFF5E\u3068\u3044\u3046\u306E\u306F",
+      "\uFF5E\u306A\u3093\u304B\uFF0F\u306A\u3093\u3066": "\uFF5E\u306A\u3093\u304B",
+      "\uFF5E\u3066\u3044\u3089\u3063\u3057\u3083\u308B\uFF0F\u3066\u304A\u3044\u3067\u306B\u306A\u308B": "\uFF5E\u3066\u3044\u3089\u3063\u3057\u3083\u308B",
+      "\uFF5E\u304B\u306D\u308B\uFF0F\u304B\u306D\u306A\u3044": "\uFF5E\u304B\u306D\u308B",
+      "\uFF5E\u6B21\u7B2C\uFF0F\u6B21\u7B2C\u3060\uFF0F\u6B21\u7B2C\u3067\uFF08\u306F\uFF09": "\uFF5E\u6B21\u7B2C",
+      "\uFF5E\u3060\u3051\u3042\u3063\u3066\uFF0F\u3060\u3051\u306B\uFF0F\u3060\u3051\u306E\u3053\u3068\u306F\u3042\u308B": "\uFF5E\u3060\u3051\u3042\u3063\u3066",
+      "\uFF5E\u306F\u3082\u3061\u308D\u3093\uFF0F\u306F\u3082\u3068\u3088\u308A": "\uFF5E\u306F\u3082\u3061\u308D\u3093",
+      // N3 那条「～とは」（下定义）排在前面，N1 这条（吃惊）拿到重名后缀
+      "\uFF5E\u3068\u306F\uFF0F\u306A\u3093\u3066": "\uFF5E\u3068\u306F\uFF08N1-2\uFF09",
+      "\uFF5E\u3068\u306F\u3044\u3046\u3082\u306E\u306E\uFF0F\u3068\u306F\u8A00\u3044\u6761": "\uFF5E\u3068\u306F\u3044\u3046\u3082\u306E\u306E",
+      "\uFF5E\u306B\u305F\u3048\u308B\uFF0F\u306B\u305F\u3048\u306A\u3044": "\uFF5E\u306B\u305F\u3048\u308B",
+      "\uFF5E\u3084\uFF0F\u3084\u5426\u3084": "\uFF5E\u3084"
+    };
+    ensureGrammarSeed = async () => {
+      const db = (0, import_database6.getDatabase)();
+      const grammarVersion = firstValue("SELECT value FROM grammar_state WHERE key = ?", ["dataset_version"], "");
+      if (grammarVersion === GRAMMAR_SEED_VERSION && firstValue("SELECT COUNT(*) FROM grammar_points", [], 0) === GRAMMAR_SEED_ROW_COUNT) return;
+      const grammarSeed = await loadGrammarSeed();
+      if (grammarSeed.version === grammarVersion && grammarVersion !== GRAMMAR_SEED_VERSION) {
+        console.warn(`GRAMMAR_SEED_VERSION \u5E38\u91CF(${GRAMMAR_SEED_VERSION})\u843D\u540E\u4E8E grammar_seed.json(${grammarSeed.version}),\u8BF7\u66F4\u65B0\u5E38\u91CF\u3002`);
+        return;
+      }
+      db.run("BEGIN TRANSACTION");
+      try {
+        const oldIdByPattern = /* @__PURE__ */ new Map();
+        rowsFor("SELECT id, pattern FROM grammar_points").forEach((row) => {
+          oldIdByPattern.set(String(row.pattern ?? ""), Number(row.id));
+        });
+        if (oldIdByPattern.size > 0) {
+          db.run(`
+        INSERT INTO grammar_points_archive (
+          dataset_version, id, pattern, meaning, prompt, formation,
+          example_jp, example_meaning, notes, confusions, level,
+          importance, example_furigana, example_tokens, example_lemmas, sort_order
+        )
+        SELECT ?, id, pattern, meaning, prompt, formation, example_jp,
+          example_meaning, notes, confusions, level, importance, example_furigana, example_tokens, example_lemmas, sort_order
+        FROM grammar_points
+      `, [grammarVersion || "legacy-before-pdf-n4"]);
+        }
+        db.run("DELETE FROM grammar_points");
+        db.run("DELETE FROM sqlite_sequence WHERE name = 'grammar_points'");
+        const newIdByPattern = /* @__PURE__ */ new Map();
+        grammarSeed.rows.forEach((row, index3) => {
+          if (newIdByPattern.has(row[0])) {
+            console.warn(`grammar_seed \u5B58\u5728\u91CD\u590D pattern,\u5DF2\u8DF3\u8FC7\u540E\u51FA\u73B0\u7684\u4E00\u6761: ${row[0]}`);
+            return;
+          }
+          db.run(`
+        INSERT INTO grammar_points (
+          pattern, meaning, prompt, formation, example_jp, example_meaning,
+          notes, confusions, level, importance, example_furigana, example_tokens, example_lemmas, sort_order
+        )
+        -- \u26A0\uFE0F 14 \u4E2A\u5217\u540D\u5C31\u8981 14 \u4E2A\u5360\u4F4D\u7B26\u3002\u8FD9\u91CC\u66FE\u7ECF\u53EA\u6709 13 \u4E2A,\u800C\u79CD\u5B50\u884C\u662F 13 \u4E2A\u5B57\u6BB5
+        -- \u52A0\u4E0A sort_order \u6B63\u597D 14 \u4E2A\u503C \u2014\u2014 \u5C11\u4E00\u4E2A ? \u5C31\u662F "13 values for 14 columns",
+        -- \u800C\u4E14\u8FD9\u6BB5\u53EA\u5728**\u8BED\u6CD5\u79CD\u5B50\u5347\u7248\u672C**\u65F6\u624D\u8DD1,\u6240\u4EE5\u4ECE\u5199\u4E0B\u6765\u5230 2026-08-23 \u4E00\u6B21\u90FD\u6CA1\u6267\u884C\u8FC7\u3002
+        -- \u771F\u5347\u4E00\u6B21\u7248\u672C\u7684\u8BDD,\u6BCF\u4E2A\u5DF2\u5B89\u88C5\u7528\u6237\u542F\u52A8\u65F6\u90FD\u4F1A\u5D29\u5728 initDatabase(\u754C\u9762\u663E\u793A
+        -- \u300C\u672C\u5730\u8BCD\u5E93\u8BFB\u53D6\u5931\u8D25\u300D),\u7B49\u4E8E\u4E00\u6B21\u5185\u5BB9\u66F4\u65B0\u628A\u6240\u6709\u4EBA\u7684 App \u53D8\u7816\u3002
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [...row, index3 + 1]);
+          newIdByPattern.set(row[0], firstValue("SELECT last_insert_rowid()", [], 0));
+        });
+        GRAMMAR_PROGRESS_TABLES.forEach((table) => {
+          db.run(`UPDATE ${table} SET grammar_id = grammar_id + ${GRAMMAR_ID_OFFSET}`);
+        });
+        oldIdByPattern.forEach((oldId, pattern) => {
+          const newId = newIdByPattern.get(GRAMMAR_PATTERN_RENAMES[pattern] ?? pattern);
+          if (!newId) return;
+          GRAMMAR_PROGRESS_TABLES.forEach((table) => {
+            db.run(`UPDATE ${table} SET grammar_id = ? WHERE grammar_id = ?`, [newId, oldId + GRAMMAR_ID_OFFSET]);
+          });
+        });
+        GRAMMAR_PROGRESS_TABLES.forEach((table) => {
+          db.run(`DELETE FROM ${table} WHERE grammar_id >= ${GRAMMAR_ID_OFFSET}`);
+        });
+        db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["queue", "[]"]);
+        db.run("DELETE FROM grammar_state WHERE key LIKE 'quiz_undo:%'");
+        setState("review_queue_grammar", "[]");
+        db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["dataset_version", grammarSeed.version]);
+        db.run("COMMIT");
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+      persistContentSoon();
+    };
+    ensureFuriganaAnnotations = async () => {
+      if (getState("furigana_version", "") === FURIGANA_VERSION) return;
+      const grammarSeed = await loadGrammarSeed();
+      const db = (0, import_database6.getDatabase)();
+      db.run("BEGIN TRANSACTION");
+      try {
+        grammarSeed.rows.forEach((row) => {
+          const [pattern, , , , exampleJp, , , , , , exampleFurigana, exampleTokens, exampleLemmas] = row;
+          db.run(`
+        UPDATE grammar_points
+        SET example_furigana = ?, example_tokens = ?, example_lemmas = ?
+        WHERE pattern = ?
+          AND example_jp = ?
+      `, [exampleFurigana ?? "", exampleTokens ?? "", exampleLemmas ?? "", pattern, exampleJp]);
+        });
+        setState("furigana_version", FURIGANA_VERSION);
+        db.run("COMMIT");
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+      persistContentSoon();
+    };
+    nounSuruCorrections = [
+      ["\u904B\u52D5", "\u3046\u3093\u3069\u3046"],
+      ["\u8A08\u753B", "\u3051\u3044\u304B\u304F"],
+      ["\u7814\u7A76", "\u3051\u3093\u304D\u3085\u3046"],
+      ["\u6545\u969C", "\u3053\u3057\u3087\u3046"],
+      ["\u6388\u696D", "\u3058\u3085\u304E\u3087\u3046"],
+      ["\u751F\u6D3B", "\u305B\u3044\u304B\u3064"],
+      ["\u9078\u629E", "\u305B\u3093\u305F\u304F"],
+      ["\u5352\u696D", "\u305D\u3064\u304E\u3087\u3046"],
+      ["\u7559\u5B66", "\u308A\u3085\u3046\u304C\u304F"],
+      ["\u65C5\u884C", "\u308A\u3087\u3053\u3046"],
+      ["\u7DF4\u7FD2", "\u308C\u3093\u3057\u3085\u3046"],
+      ["\u9023\u7D61", "\u308C\u3093\u3089\u304F"],
+      ["\u9045\u523B", "\u3061\u3053\u304F"],
+      ["\u51FA\u767A", "\u3057\u3085\u3063\u3071\u3064"],
+      ["\u5230\u7740", "\u3068\u3046\u3061\u3083\u304F"],
+      ["\u898B\u5B66", "\u3051\u3093\u304C\u304F"],
+      ["\u5FA9\u7FD2", "\u3075\u304F\u3057\u3085\u3046"],
+      ["\u4E88\u7FD2", "\u3088\u3057\u3085\u3046"],
+      ["\u4E88\u7D04", "\u3088\u3084\u304F"],
+      ["\u7FFB\u8A33", "\u307B\u3093\u3084\u304F"],
+      ["\u4FE1\u53F7", "\u3057\u3093\u3054\u3046"],
+      ["\u6D17\u6FEF", "\u305B\u3093\u305F\u304F"],
+      ["\u52C9\u5F37", "\u3079\u3093\u304D\u3087\u3046"],
+      ["\u6D3B\u52D5", "\u304B\u3064\u3069\u3046"],
+      ["\u5E30\u56FD", "\u304D\u3053\u304F"],
+      ["\u6328\u62F6", "\u3042\u3044\u3055\u3064"],
+      ["\u55B6\u696D", "\u3048\u3044\u304E\u3087\u3046"],
+      ["\u5E0C\u671B", "\u304D\u307C\u3046"],
+      ["\u6210\u529F", "\u305B\u3044\u3053\u3046"],
+      ["\u5165\u5B66", "\u306B\u3085\u3046\u304C\u304F"],
+      ["\u7D04\u675F", "\u3084\u304F\u305D\u304F"],
+      ["\u5229\u7528", "\u308A\u3088\u3046"],
+      ["\u6025\u884C", "\u304D\u3085\u3046\u3053\u3046"],
+      ["\u5354\u529B", "\u304D\u3087\u3046\u308A\u3087\u304F"],
+      ["\u6559\u80B2", "\u304D\u3087\u3046\u3044\u304F"],
+      ["\u7DCA\u5F35", "\u304D\u3093\u3061\u3087\u3046"],
+      ["\u884C\u52D5", "\u3053\u3046\u3069\u3046"],
+      ["\u4FE1\u7528", "\u3057\u3093\u3088\u3046"],
+      ["\u52AA\u529B", "\u3069\u308A\u3087\u304F"],
+      ["\u8F38\u51FA", "\u3086\u3057\u3085\u3064"],
+      ["\u8F38\u5165", "\u3086\u306B\u3085\u3046"],
+      ["\u51B7\u8535", "\u308C\u3044\u305E\u3046"],
+      ["\u671D\u5BDD\u574A", "\u3042\u3055\u306D\u307C\u3046"],
+      ["\u8A95\u751F", "\u305F\u3093\u3058\u3087\u3046"],
+      ["\u98F2\u98DF", "\u3044\u3093\u3057\u3087\u304F"],
+      ["\u51FA\u5F35", "\u3057\u3085\u3063\u3061\u3087\u3046"],
+      ["\u3054\u3061\u305D\u3046", "\u3054\u3061\u305D\u3046"],
+      ["\u5F71\u97FF", "\u3048\u3044\u304D\u3087\u3046"],
+      ["\u9060\u8DB3", "\u3048\u3093\u305D\u304F"],
+      ["\u5B66\u7FD2", "\u304C\u304F\u3057\u3085\u3046"],
+      ["\u89B3\u5149", "\u304B\u3093\u3053\u3046"],
+      ["\u7AF6\u4E89", "\u304D\u3087\u3046\u305D\u3046"],
+      ["\u898B\u7269", "\u3051\u3093\u3076\u3064"],
+      ["\u5408\u683C", "\u3054\u3046\u304B\u304F"],
+      ["\u96C6\u5408", "\u3057\u3085\u3046\u3054\u3046"],
+      ["\u4F53\u64CD", "\u305F\u3044\u305D\u3046"],
+      ["\u6696\u623F", "\u3060\u3093\u307C\u3046"],
+      ["\u5831\u544A", "\u307B\u3046\u3053\u304F"],
+      ["\u653E\u9001", "\u307B\u3046\u305D\u3046"],
+      ["\u63D0\u51FA", "\u3066\u3044\u3057\u3085\u3064"],
+      ["\u8EE2\u8077", "\u3066\u3093\u3057\u3087\u304F"],
+      ["\u512A\u52DD", "\u3086\u3046\u3057\u3087\u3046"],
+      ["\u5916\u51FA", "\u304C\u3044\u3057\u3085\u3064"],
+      ["\u7814\u4FEE", "\u3051\u3093\u3057\u3085\u3046"],
+      ["\u5E83\u544A", "\u3053\u3046\u3053\u304F"],
+      ["\u6B8B\u696D", "\u3056\u3093\u304E\u3087\u3046"],
+      ["\u5C31\u8077", "\u3057\u3085\u3046\u3057\u3087\u304F"],
+      ["\u5F6B\u523B", "\u3061\u3087\u3046\u3053\u304F"],
+      ["\u6D41\u884C", "\u308A\u3085\u3046\u3053\u3046"],
+      ["\u62C5\u5F53", "\u305F\u3093\u3068\u3046"],
+      ["\u4F01\u753B", "\u304D\u304B\u304F"],
+      ["\u6CE5\u68D2", "\u3069\u308D\u307C\u3046"],
+      ["\u770B\u75C5", "\u304B\u3093\u3073\u3087\u3046"]
+    ];
+    syncJlptWordMetadata = (jlptWordSeed, meaningOverrides = [], exampleOverrides = []) => {
+      const db = (0, import_database6.getDatabase)();
+      const syncedKeys = /* @__PURE__ */ new Set();
+      const meaningByKey = new Map(
+        meaningOverrides.map(({ kanji, kana, meaning }) => [`${kanji}\0${kana}`, meaning])
+      );
+      jlptWordSeed.forEach(([, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, exampleFurigana, exampleTokens, exampleLemmas]) => {
+        const key = `${kanji}\0${kana}`;
+        if (syncedKeys.has(key)) return;
+        syncedKeys.add(key);
+        db.run(`
+      UPDATE words
+      SET meaning = COALESCE(?, meaning),
+          pos = ?,
+          verb_type = ?,
+          importance = MAX(importance, ?),
+          example_jp = ?,
+          example_meaning = ?,
+          example_furigana = COALESCE(NULLIF(?, ''), example_furigana),
+          example_tokens = COALESCE(NULLIF(?, ''), example_tokens),
+          example_lemmas = COALESCE(NULLIF(?, ''), example_lemmas),
+          jlpt_level = COALESCE(jlpt_level, ?)
+      WHERE kanji = ? AND kana = ?
+    `, [meaningByKey.get(key) ?? null, pos, verbType, importance, exampleJp, exampleMeaning, exampleFurigana ?? "", exampleTokens ?? "", exampleLemmas ?? "", jlptLevel, kanji, kana]);
+      });
+      meaningByKey.forEach((meaning, key) => {
+        const separator = key.indexOf("\0");
+        const kanji = key.slice(0, separator);
+        const kana = key.slice(separator + 1);
+        db.run("UPDATE words SET meaning = ? WHERE kanji = ? AND kana = ?", [meaning, kanji, kana]);
+      });
+      exampleOverrides.forEach(({ kanji, kana, exampleJp, exampleMeaning, exampleFurigana, exampleTokens, exampleLemmas }) => {
+        const furigana = typeof exampleFurigana === "string" ? exampleFurigana : JSON.stringify(exampleFurigana ?? []);
+        db.run(`
+      UPDATE words
+      SET example_jp = ?, example_meaning = ?,
+          example_furigana = COALESCE(NULLIF(?, ''), example_furigana),
+          example_tokens = COALESCE(NULLIF(?, ''), example_tokens),
+          example_lemmas = COALESCE(NULLIF(?, ''), example_lemmas)
+      WHERE kanji = ? AND kana = ?
+        AND (example_jp IS NULL OR example_jp = '')
+    `, [exampleJp, exampleMeaning, furigana, typeof exampleTokens === "string" ? exampleTokens : "", typeof exampleLemmas === "string" ? exampleLemmas : "", kanji, kana]);
+      });
+      db.run(`
+    UPDATE words
+    SET pos = '\u540D\u8BCD',
+        verb_type = NULL
+    WHERE pos = '\u540D\u8BCD\u30FB\u3059\u308B\u52A8\u8BCD'
+      AND (
+        (kanji = '\u6226\u4E89' AND kana = '\u305B\u3093\u305D\u3046') OR
+        (kanji = '\u30C1\u30A7\u30C3\u30AF' AND kana = '\u30C1\u30A7\u30C3\u30AF') OR
+        (kanji = '\u30B3\u30D4\u30FC' AND kana = '\u30B3\u30D4\u30FC')
+      )
+  `);
+      nounSuruCorrections.forEach(([kanji, kana]) => {
+        db.run(`
+      UPDATE words
+      SET pos = '\u540D\u8BCD\u30FB\u3059\u308B\u52A8\u8BCD',
+          verb_type = 'suru'
+      WHERE kanji = ?
+        AND kana = ?
+        AND pos = '\u52A8\u8BCD'
+        AND verb_type = 'godan'
+    `, [kanji, kana]);
+      });
+      setState("jlpt_word_metadata_version", JLPT_WORD_METADATA_VERSION);
+    };
+    KANA_READING_FIX_VERSION = "2026-07-31-katakana-readings";
+    ensureKatakanaReadings = async () => {
+      if (getState("kana_reading_fix_version", "") === KANA_READING_FIX_VERSION) return;
+      const payload = await Promise.resolve().then(() => __toESM(require_seed_guard(), 1));
+      const fixes = payload.default.fixes ?? [];
+      const db = (0, import_database6.getDatabase)();
+      db.run("BEGIN TRANSACTION");
+      try {
+        fixes.forEach(([kanji, from, to]) => {
+          if (kanji && from && to) db.run("UPDATE words SET kana = ? WHERE kanji = ? AND kana = ?", [to, kanji, from]);
+        });
+        setState("kana_reading_fix_version", KANA_READING_FIX_VERSION);
+        db.run("COMMIT");
+        persistContentSoon();
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+    };
+    ensureJlptWordMetadata = async () => {
+      if (getState("jlpt_word_metadata_version", "") === JLPT_WORD_METADATA_VERSION) return;
+      const jlptWordSeed = await loadJlptWordSeed();
+      const meaningOverrides = await loadJlptMeaningOverrides();
+      const exampleOverrides = await loadJlptExampleOverrides();
+      const senseKeys = await loadWordSenseKeys();
+      const db = (0, import_database6.getDatabase)();
+      db.run("BEGIN TRANSACTION");
+      try {
+        syncJlptWordMetadata(jlptWordSeed, meaningOverrides, exampleOverrides);
+        applyWordSenseKeys(senseKeys);
+        db.run("COMMIT");
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+      persistContentSoon();
+    };
+    ensureJlptLevelOverrides = async () => {
+      if (getState("jlpt_level_override_version", "") === JLPT_LEVEL_OVERRIDE_VERSION) return;
+      const seed = await loadJlptLevelOverrides();
+      if (seed.version !== JLPT_LEVEL_OVERRIDE_VERSION) {
+        throw new Error(`JLPT \u8BCD\u7EA7\u522B\u8986\u76D6\u7248\u672C\u4E0D\u4E00\u81F4: ${seed.version} != ${JLPT_LEVEL_OVERRIDE_VERSION}`);
+      }
+      if (seed.rows.length !== 320) {
+        throw new Error(`JLPT \u8BCD\u7EA7\u522B\u8986\u76D6\u6761\u6570\u5F02\u5E38: ${seed.rows.length} != 320`);
+      }
+      const db = (0, import_database6.getDatabase)();
+      db.run("BEGIN TRANSACTION");
+      try {
+        seed.rows.forEach(({ kanji, kana, jlptLevel }) => {
+          db.run(`
+        UPDATE words
+        SET jlpt_level = ?
+        WHERE kanji = ?
+          AND kana = ?
+          AND (jlpt_level IS NULL OR jlpt_level NOT IN ('N1', 'N2', 'N3', 'N4', 'N5'))
+      `, [jlptLevel, kanji, kana]);
+        });
+        setState("jlpt_level_override_version", JLPT_LEVEL_OVERRIDE_VERSION);
+        db.run("COMMIT");
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+      persistContentSoon();
+    };
+    ensureJlptWordSeed = async () => {
+      await ensureKatakanaReadings();
+      if (getState("jlpt_seed_version", "") === JLPT_SEED_VERSION) {
+        await ensureJlptWordMetadata();
+        return;
+      }
+      const total = firstValue("SELECT COUNT(*) FROM words", [], 0);
+      const hasEnoughLevels = firstValue(
+        "SELECT COUNT(*) FROM words WHERE jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')",
+        [],
+        0
+      ) >= 1e4;
+      if (total >= 1e4 && hasEnoughLevels) {
+        await ensureJlptWordMetadata();
+        setState("jlpt_seed_version", JLPT_SEED_VERSION);
+        persistContentSoon();
+        return;
+      }
+      const jlptWordSeed = await loadJlptWordSeed();
+      const meaningOverrides = await loadJlptMeaningOverrides();
+      const exampleOverrides = await loadJlptExampleOverrides();
+      const senseKeys = await loadWordSenseKeys();
+      const db = (0, import_database6.getDatabase)();
+      const existing = /* @__PURE__ */ new Map();
+      rowsFor("SELECT id, kanji, kana FROM words").forEach((row) => {
+        existing.set(`${String(row.kanji ?? "")}\0${String(row.kana ?? "")}`, Number(row.id));
+      });
+      db.run("BEGIN TRANSACTION");
+      try {
+        jlptWordSeed.forEach(([meaning, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, jlptLevel, exampleFurigana, exampleTokens, exampleLemmas]) => {
+          const key = `${kanji}\0${kana}`;
+          const existingId = existing.get(key);
+          if (existingId) {
+            db.run(`
+          UPDATE words
+          SET jlpt_level = COALESCE(jlpt_level, ?),
+              importance = MAX(importance, ?)
+          WHERE id = ?
+        `, [jlptLevel, importance, existingId]);
+            return;
+          }
+          db.run(`
+        INSERT INTO words (
+          meaning, kana, kanji, pos, verb_type, importance,
+          shuffle_rank, example_jp, example_meaning, example_furigana, example_tokens, example_lemmas, jlpt_level
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ABS(RANDOM()) / 9223372036854775807.0, ?, ?, ?, ?, ?, ?)
+      `, [meaning, kana, kanji, pos, verbType, importance, exampleJp, exampleMeaning, exampleFurigana ?? "", exampleTokens ?? "", exampleLemmas ?? "", jlptLevel]);
+          const newId = firstValue("SELECT last_insert_rowid()", [], 0);
+          existing.set(key, newId);
+        });
+        db.run("INSERT OR IGNORE INTO progress (word_id) SELECT id FROM words");
+        syncJlptWordMetadata(jlptWordSeed, meaningOverrides, exampleOverrides);
+        applyWordSenseKeys(senseKeys);
+        setState("jlpt_seed_version", JLPT_SEED_VERSION);
+        db.run("COMMIT");
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+      persistContentSoon();
+    };
+    randomBetween = (min, max) => {
+      return min + Math.floor(Math.random() * (max - min + 1));
+    };
+    sessionScoreDelta = {
+      forgot: -10,
+      fuzzy: -2,
+      know: 10,
+      known_forever: 10
+    };
+    answerLabel = {
+      forgot: "\u5FD8\u8BB0",
+      fuzzy: "\u6A21\u7CCA",
+      know: "\u8BA4\u8BC6",
+      known_forever: "\u719F\u77E5"
+    };
+  }
+});
+
+// ../frontend/src/lib/furigana-data.ts
+var furigana_data_exports = {};
+__export(furigana_data_exports, {
+  parseFurigana: () => parseFurigana,
+  parseTokenBoundaries: () => parseTokenBoundaries,
+  tokenBoundaryAtOffset: () => tokenBoundaryAtOffset
+});
+var isAnnotation, normalizeAnnotation, parseFurigana, parseMorph, parseLemmaMap, parseTokenBoundaries, tokenBoundaryAtOffset;
+var init_furigana_data = __esm({
+  "../frontend/src/lib/furigana-data.ts"() {
+    "use strict";
+    isAnnotation = (value) => {
+      if (!value || typeof value !== "object") return false;
+      const item = value;
+      return Number.isInteger(item.start) && Number.isInteger(item.length) && Number(item.start) >= 0 && Number(item.length) > 0 && typeof item.reading === "string" && item.reading.length > 0;
+    };
+    normalizeAnnotation = (value) => {
+      if (Array.isArray(value) && value.length >= 3) {
+        const [start, length, reading] = value;
+        return isAnnotation({ start, length, reading }) ? { start, length, reading } : null;
+      }
+      return isAnnotation(value) ? value : null;
+    };
+    parseFurigana = (raw) => {
+      if (Array.isArray(raw)) {
+        const parsed = raw.map(normalizeAnnotation).filter((item) => Boolean(item));
+        return parsed.length ? parsed : void 0;
+      }
+      if (typeof raw !== "string" || !raw.trim()) return void 0;
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return void 0;
+        const annotations = parsed.map(normalizeAnnotation).filter((item) => Boolean(item));
+        return annotations.length ? annotations : void 0;
+      } catch {
+        return void 0;
+      }
+    };
+    parseMorph = (value) => {
+      if (!value || typeof value !== "object") return null;
+      const item = value;
+      if (typeof item.surface !== "string" || !item.surface || typeof item.lemma !== "string" || !item.lemma || typeof item.pos !== "string" || typeof item.detail !== "string") return null;
+      return {
+        surface: item.surface,
+        lemma: item.lemma,
+        ...item.reading ? { reading: item.reading } : {},
+        pos: item.pos,
+        detail: item.detail,
+        ...item.conjugatedType ? { conjugatedType: item.conjugatedType } : {},
+        ...item.conjugatedForm ? { conjugatedForm: item.conjugatedForm } : {}
+      };
+    };
+    parseLemmaMap = (raw) => {
+      if (!raw) return {};
+      let value = raw;
+      if (typeof raw === "string") {
+        try {
+          value = JSON.parse(raw);
+        } catch {
+          return {};
+        }
+      }
+      if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+      return Object.fromEntries(Object.entries(value).flatMap(([key, item]) => {
+        if (!/^\d+$/u.test(key)) return [];
+        if (typeof item === "string" && item.trim()) return [[key, { lemma: item.trim() }]];
+        if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+        const rawLemma = item.lemma;
+        if (typeof rawLemma !== "string" || !rawLemma.trim()) return [];
+        const morphs = Array.isArray(item.morphs) ? item.morphs.map(parseMorph).filter((m) => Boolean(m)) : [];
+        return [[key, { lemma: rawLemma.trim(), ...morphs.length ? { morphs } : {} }]];
+      }));
+    };
+    parseTokenBoundaries = (raw, text, rawLemmas) => {
+      if (typeof raw !== "string" || !raw.trim()) return void 0;
+      const lengths = raw.split(",").map((value) => Number(value));
+      if (!lengths.length || lengths.some((length) => !Number.isInteger(length) || length === 0)) return void 0;
+      const total = lengths.reduce((sum, length) => sum + Math.abs(length), 0);
+      if (total !== text.length) return void 0;
+      const lemmas = parseLemmaMap(rawLemmas);
+      let cursor = 0;
+      return lengths.map((length, index3) => {
+        const spanLength = Math.abs(length);
+        const start = cursor;
+        cursor += spanLength;
+        const metadata = lemmas[String(index3)];
+        return {
+          start,
+          end: cursor,
+          text: text.slice(start, cursor),
+          clickable: length > 0,
+          ...metadata ? {
+            lemma: metadata.lemma,
+            ...metadata.morphs ? { morphs: metadata.morphs } : {}
+          } : {}
+        };
+      });
+    };
+    tokenBoundaryAtOffset = (boundaries, offset) => boundaries?.find(({ start, end }) => offset >= start && offset < end);
+  }
+});
+
+// scripts/shared/shims/orthography.js
+var require_orthography = __commonJS({
+  "scripts/shared/shims/orthography.js"(exports, module2) {
+    module2.exports = require("../core/orthography");
+  }
+});
+
+// scripts/shared/shims/verb-pair-hints.js
+var require_verb_pair_hints = __commonJS({
+  "scripts/shared/shims/verb-pair-hints.js"(exports, module2) {
+    module2.exports = require("../data/verb_pair_hints");
+  }
+});
+
+// ../frontend/src/data/confusion_manual_review.ts
+var MANUAL_VARIANT_GROUPS, EXCLUDED_SYNONYM_GROUPS;
+var init_confusion_manual_review = __esm({
+  "../frontend/src/data/confusion_manual_review.ts"() {
+    "use strict";
+    MANUAL_VARIANT_GROUPS = [
+      {
+        id: "\u3042\u306A\u305F-kanji-variant",
+        members: [["\u3042\u306A\u305F", "\u3042\u306A\u305F"], ["\u8CB4\u65B9", "\u3042\u306A\u305F"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u8CB4\u65B9\u662F\u540C\u4E00\u8BCD\u7684\u65E7/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3046\u308B\u3055\u3044-kanji-variant",
+        members: [["\u3046\u308B\u3055\u3044", "\u3046\u308B\u3055\u3044"], ["\u7169\u3044", "\u3046\u308B\u3055\u3044"]],
+        reason: "\u3046\u308B\u3055\u3044\u4E0E\u7169\u3044\u662F\u540C\u4E00\u5F62\u5BB9\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3067\u304D\u308B-kanji-variant",
+        members: [["\u3067\u304D\u308B", "\u3067\u304D\u308B"], ["\u51FA\u6765\u308B", "\u3067\u304D\u308B"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u51FA\u6765\u308B\u662F\u540C\u4E00\u8BCD\u7684\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3069\u3046-kanji-variant",
+        members: [["\u3069\u3046", "\u3069\u3046"], ["\u5982\u4F55", "\u3069\u3046"]],
+        reason: "\u3069\u3046\u4E0E\u5982\u4F55\uFF08\u3069\u3046\uFF09\u662F\u540C\u4E00\u526F\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3044\u304B\u304C-kanji-variant",
+        members: [["\u3044\u304B\u304C", "\u3044\u304B\u304C"], ["\u5982\u4F55", "\u3044\u304B\u304C"]],
+        reason: "\u3044\u304B\u304C\u4E0E\u5982\u4F55\uFF08\u3044\u304B\u304C\uFF09\u662F\u540C\u4E00\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\uFF1B\u5982\u4F55\uFF08\u3069\u3046\uFF09\u662F\u53E6\u4E00\u8BFB\u6CD5\uFF0C\u4FDD\u7559\u3002"
+      },
+      {
+        id: "\u3069\u3061\u3089-kanji-variant",
+        members: [["\u3069\u3061\u3089", "\u3069\u3061\u3089"], ["\u4F55\u65B9", "\u3069\u3061\u3089"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u4F55\u65B9\uFF08\u3069\u3061\u3089\uFF09\u662F\u540C\u4E00\u4EE3\u8BCD\u7684\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3069\u306A\u305F-kanji-variant",
+        members: [["\u3069\u306A\u305F", "\u3069\u306A\u305F"], ["\u4F55\u65B9", "\u3069\u306A\u305F"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u4F55\u65B9\uFF08\u3069\u306A\u305F\uFF09\u662F\u540C\u4E00\u4EE3\u8BCD\u7684\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3069\u308C-kanji-variant",
+        members: [["\u3069\u308C", "\u3069\u308C"], ["\u4F55\u308C", "\u3069\u308C"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u4F55\u308C\u662F\u540C\u4E00\u4EE3\u8BCD\u7684\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u307E\u3060-kanji-variant",
+        members: [["\u307E\u3060", "\u307E\u3060"], ["\u672A\u3060", "\u307E\u3060"]],
+        reason: "\u307E\u3060\u4E0E\u672A\u3060\u662F\u540C\u4E00\u526F\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u305F\u307E\u306B-kanji-variant",
+        members: [["\u305F\u307E\u306B", "\u305F\u307E\u306B"], ["\u5076\u306B", "\u305F\u307E\u306B"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u5076\u306B\u662F\u540C\u4E00\u526F\u8BCD\u7684\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3057\u3063\u304B\u308A-kanji-variant",
+        members: [["\u3057\u3063\u304B\u308A", "\u3057\u3063\u304B\u308A"], ["\u78BA\u308A", "\u3057\u3063\u304B\u308A"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u78BA\u308A\u662F\u540C\u4E00\u526F\u8BCD\u7684\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3057\u307E\u3046-kanji-variant",
+        members: [["\u3057\u307E\u3046", "\u3057\u307E\u3046"], ["\u4ED5\u821E\u3046", "\u3057\u307E\u3046"]],
+        reason: "\u3057\u307E\u3046\u4E0E\u4ED5\u821E\u3046\u662F\u540C\u4E00\u52A8\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3046\u308C\u3057\u3044-kanji-variant",
+        members: [["\u3046\u308C\u3057\u3044", "\u3046\u308C\u3057\u3044"], ["\u5B09\u3057\u3044", "\u3046\u308C\u3057\u3044"]],
+        reason: "\u3046\u308C\u3057\u3044\u4E0E\u5B09\u3057\u3044\u662F\u540C\u4E00\u5F62\u5BB9\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3059\u3070\u3089\u3057\u3044-kanji-variant",
+        members: [["\u3059\u3070\u3089\u3057\u3044", "\u3059\u3070\u3089\u3057\u3044"], ["\u7D20\u6674\u3089\u3057\u3044", "\u3059\u3070\u3089\u3057\u3044"]],
+        reason: "\u3059\u3070\u3089\u3057\u3044\u4E0E\u7D20\u6674\u3089\u3057\u3044\u662F\u540C\u4E00\u5F62\u5BB9\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u307E\u3063\u3059\u3050-kanji-variant",
+        members: [["\u307E\u3063\u3059\u3050", "\u307E\u3063\u3059\u3050"], ["\u771F\u3063\u76F4\u3050", "\u307E\u3063\u3059\u3050"]],
+        reason: "\u307E\u3063\u3059\u3050\u4E0E\u771F\u3063\u76F4\u3050\u662F\u540C\u4E00\u5F62\u5BB9\u52A8\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3086\u3046\u3079-kanji-variant",
+        members: [["\u3086\u3046\u3079", "\u3086\u3046\u3079"], ["\u6628\u591C", "\u3086\u3046\u3079"]],
+        reason: "\u3086\u3046\u3079\u4E0E\u6628\u591C\u662F\u540C\u4E00\u540D\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3046\u3061-kanji-variant",
+        members: [["\u3046\u3061", "\u3046\u3061"], ["\u5185", "\u3046\u3061"]],
+        reason: "\u8868\u793A\u5BB6\u91CC/\u5185\u90E8\u7684\u3046\u3061\u4E0E\u5185\u662F\u540C\u4E00\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u3051\u304C-kanji-variant",
+        members: [["\u3051\u304C", "\u3051\u304C"], ["\u602A\u6211", "\u3051\u304C"]],
+        reason: "\u3051\u304C\u4E0E\u602A\u6211\u662F\u540C\u4E00\u540D\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u304B\u3076\u308B-kanji-variant",
+        members: [["\u304B\u3076\u308B", "\u304B\u3076\u308B"], ["\u88AB\u308B", "\u304B\u3076\u308B"]],
+        reason: "\u8868\u793A\u6234\u4E0A/\u8499\u4E0A\u7684\u304B\u3076\u308B\u4E0E\u88AB\u308B\u662F\u540C\u4E00\u52A8\u8BCD\u7684\u5047\u540D/\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u306F\u304F-kanji-variant",
+        members: [["\u306F\u304F", "\u306F\u304F"], ["\u5C65\u304F", "\u306F\u304F"]],
+        reason: "\u8868\u793A\u7A7F\u4E0B\u88C5/\u978B\u7684\u306F\u304F\u4E0E\u5C65\u304F\u662F\u540C\u4E00\u52A8\u8BCD\uFF1B\u6383\u304F\u3001\u5410\u304F\u4E0D\u662F\u6210\u5458\u3002"
+      },
+      {
+        id: "\u3088\u308B-kanji-variant",
+        members: [["\u3088\u308B", "\u3088\u308B"], ["\u5BC4\u308B", "\u3088\u308B"]],
+        reason: "\u8868\u793A\u9760\u8FD1/\u987A\u9053\u62DC\u8BBF\u7684\u3088\u308B\u4E0E\u5BC4\u308B\u662F\u540C\u4E00\u52A8\u8BCD\uFF1B\u591C\u662F\u53E6\u4E00\u8BCD\uFF0C\u4FDD\u7559\u3002"
+      },
+      {
+        id: "\u305F\u3060\u3057-kanji-variant",
+        members: [["\u4F46\u3057", "\u305F\u3060\u3057"], ["\u305F\u3060\u3057", "\u305F\u3060\u3057"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u4F46\u3057\u4E0E\u4F46\u3057\u662F\u540C\u4E00\u63A5\u7EED\u8BCD\u3002"
+      },
+      {
+        id: "\u3055\u3089\u306B-kanji-variant",
+        members: [["\u3055\u3089\u306B", "\u3055\u3089\u306B"], ["\u66F4\u306B", "\u3055\u3089\u306B"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u3055\u3089\u306B\u4E0E\u66F4\u306B\u306F\u540C\u4E00\u526F\u8BCD\u3002"
+      },
+      {
+        id: "\u305F\u305A\u306D\u308B-kanji-variant",
+        members: [["\u5C0B\u306D\u308B", "\u305F\u305A\u306D\u308B"], ["\u8A0A[\u305F\u305A]\u306D\u308B", "\u305F\u305A\u306D\u308B"]],
+        reason: "\u8868\u793A\u8BE2\u95EE\u7684\u5C0B\u306D\u308B\u4E0E\u8A0A\u306D\u308B\u662F\u540C\u4E00\u52A8\u8BCD\u7684\u5F02\u4F53\u5199\u6CD5\uFF1B\u5BFB\u8BBF\u4E49\u4FDD\u7559\u5728\u8F83\u5B8C\u6574\u8BCD\u6761\u3002"
+      },
+      {
+        id: "\u304B\u305F\u3065\u3051\u308B-kanji-variant",
+        members: [["\u7247\u4ED8\u3051\u308B", "\u304B\u305F\u3065\u3051\u308B"], ["\u7247\u3065\u3051\u308B", "\u304B\u305F\u3065\u3051\u308B"]],
+        reason: "\u7247\u4ED8\u3051\u308B\u4E0E\u7247\u3065\u3051\u308B\u662F\u540C\u4E00\u52A8\u8BCD\u7684\u9001\u308A\u4EEE\u540D\u53D8\u4F53\u3002"
+      },
+      {
+        id: "\u3051\u3093\u304B-annotation-duplicate",
+        members: [["\u55A7\u5629[\u3051\u3093\u304B]", "\u3051\u3093\u304B"], ["\u55A7\u5629", "\u3051\u3093\u304B"]],
+        reason: "\u65B9\u62EC\u53F7\u8BFB\u97F3\u6807\u6CE8\u88AB\u6E05\u7406\u540E\u662F\u540C\u4E00\u8BCD\u6761\u3002"
+      },
+      {
+        id: "\u3046\u308F\u3055-annotation-duplicate",
+        members: [["\u5642[\u3046\u308F\u3055]", "\u3046\u308F\u3055"], ["\u5642", "\u3046\u308F\u3055"]],
+        reason: "\u65B9\u62EC\u53F7\u8BFB\u97F3\u6807\u6CE8\u88AB\u6E05\u7406\u540E\u662F\u540C\u4E00\u8BCD\u6761\u3002"
+      },
+      {
+        id: "\u305F\u305F\u304F-annotation-duplicate",
+        members: [["\u53E9\u304F", "\u305F\u305F\u304F"], ["\u53E9[\u305F\u305F]\u304F", "\u305F\u305F\u304F"]],
+        reason: "\u65B9\u62EC\u53F7\u8BFB\u97F3\u6807\u6CE8\u88AB\u6E05\u7406\u540E\u662F\u540C\u4E00\u8BCD\u6761\u3002"
+      },
+      {
+        id: "\u305D\u3070-annotation-duplicate",
+        members: [["\u854E\u9EA6[\u305D\u3070]", "\u305D\u3070"], ["\u854E\u9EA6", "\u305D\u3070"]],
+        reason: "\u65B9\u62EC\u53F7\u8BFB\u97F3\u6807\u6CE8\u88AB\u6E05\u7406\u540E\u662F\u540C\u4E00\u8BCD\u6761\uFF1B\u5074\u662F\u53E6\u4E00\u8BCD\uFF0C\u4FDD\u7559\u3002"
+      },
+      {
+        id: "\u3057\u304B\u3057-kanji-variant",
+        members: [["\u3057\u304B\u3057", "\u3057\u304B\u3057"], ["\u7136\u3057", "\u3057\u304B\u3057"]],
+        reason: "\u73B0\u4EE3\u9ED8\u8BA4\u5199\u4F5C\u5047\u540D\uFF0C\u7136\u3057\u662F\u540C\u4E00\u63A5\u7EED\u8BCD\u7684\u6C49\u5B57\u5199\u6CD5\u3002"
+      },
+      {
+        id: "\u305F\u3060\u3044\u307E-kanji-variant",
+        members: [["\u305F\u3060\u4ECA", "\u305F\u3060\u3044\u307E"], ["\u53EA\u4ECA", "\u305F\u3060\u3044\u307E"]],
+        reason: "\u305F\u3060\u4ECA\u4E0E\u53EA\u4ECA\u662F\u540C\u4E00\u526F\u8BCD\u7684\u8868\u8BB0\u53D8\u4F53\u3002"
+      },
+      {
+        id: "\u5165\u53E3-\u9001\u308A\u4EEE\u540D-variant",
+        members: [["\u5165\u53E3", "\u3044\u308A\u3050\u3061"], ["\u5165\u308A\u53E3", "\u3044\u308A\u3050\u3061"]],
+        reason: "\u5165\u53E3\u4E0E\u5165\u308A\u53E3\u662F\u540C\u4E00\u540D\u8BCD\u7684\u8868\u8BB0\u53D8\u4F53\uFF0C\u4E0D\u5E94\u4F5C\u4E3A\u6C49\u5B57\u7528\u6CD5\u8FA8\u6790\u3002"
+      },
+      {
+        id: "\u6669\u3054\u98EF-\u6669\u5FA1\u98EF-variant",
+        members: [["\u6669\u3054\u98EF", "\u3070\u3093\u3054\u306F\u3093"], ["\u6669\u5FA1\u98EF", "\u3070\u3093\u3054\u306F\u3093"]],
+        reason: "\u6669\u3054\u98EF\u4E0E\u6669\u5FA1\u98EF\u662F\u540C\u4E00\u540D\u8BCD\u7684\u8868\u8BB0\u53D8\u4F53\u3002"
+      },
+      {
+        id: "\u6C17\u3092\u4ED8\u3051\u308B-\u6C17\u3092\u3064\u3051\u308B-variant",
+        members: [["\u6C17\u3092\u4ED8\u3051\u308B", "\u304D\u3092\u3064\u3051\u308B"], ["\u6C17\u3092\u3064\u3051\u308B", "\u304D\u3092\u3064\u3051\u308B"]],
+        reason: "\u6C17\u3092\u4ED8\u3051\u308B\u4E0E\u6C17\u3092\u3064\u3051\u308B\u662F\u540C\u4E00\u60EF\u7528\u8868\u8FBE\u7684\u8868\u8BB0\u53D8\u4F53\u3002"
+      }
+    ];
+    EXCLUDED_SYNONYM_GROUPS = [
+      {
+        id: "synonym-things-east-west",
+        members: [["\u7269", "\u3082\u306E"], ["\u6771\u897F", "\u3068\u3046\u3056\u3044"]],
+        reason: "\u4E2D\u6587\u2018\u4E1C\u897F\u2019\u540C\u5F62\uFF1B\u7269\u662F\u4E1C\u897F\uFF0C\u6771\u897F\u662F\u4E1C\u4E0E\u897F\uFF0C\u4E0D\u662F\u65E5\u8BED\u8FD1\u4E49\u8BCD\u3002"
+      },
+      {
+        id: "synonym-thousand-kilo",
+        members: [["\u5343", "\u305B\u3093"], ["(\u30D5) kilo", "\u30AD\u30ED"]],
+        reason: "\u5343\u662F\u6570\u8BCD\uFF0C\u30AD\u30ED\u662F\u53EF\u8868\u793A\u5343\u514B/\u5343\u7C73\u7B49\u5355\u4F4D\uFF0C\u4E0D\u80FD\u4E92\u6362\u3002"
+      },
+      {
+        id: "synonym-can-tank",
+        members: [["\u7F36", "\u304B\u3093"], ["tank", "\u30BF\u30F3\u30AF"]],
+        reason: "\u7F36\u662F\u7F50\u5934/\u7F50\uFF0C\u30BF\u30F3\u30AF\u662F\u50A8\u7F50\u6216\u5927\u578B\u5BB9\u5668\uFF0C\u4E2D\u6587\u9996\u4E49\u78B0\u649E\u4E0D\u6784\u6210\u8FD1\u4E49\u3002"
+      },
+      {
+        id: "synonym-ice-ice-cream",
+        members: [["\u6C37", "\u3053\u304A\u308A"], ["ice", "\u30A2\u30A4\u30B9"]],
+        reason: "\u6C37\u662F\u51B0\uFF0C\u30A2\u30A4\u30B9\u8FD8\u53EF\u6307\u51B0\u6DC7\u6DCB\uFF0C\u4E0D\u662F\u540C\u4E00\u8BCD\u4E49\u3002"
+      },
+      {
+        id: "synonym-date-calendar-appointment",
+        members: [["date", "\u30C7\u30FC\u30C8"], ["\u65E5\u4ED8", "\u3072\u3065\u3051"], ["\u65E5\u306B\u3061", "\u3072\u306B\u3061"], ["\u671F\u65E5", "\u304D\u3058\u3064"]],
+        reason: "\u30C7\u30FC\u30C8\u662F\u7EA6\u4F1A\uFF0C\u5176\u4ED6\u6210\u5458\u662F\u65E5\u671F/\u671F\u9650\uFF0C\u539F\u4E2D\u6587\u9996\u4E49\u5C5E\u4E8E\u8BEF\u8BD1\u6216\u591A\u4E49\u78B0\u649E\u3002"
+      },
+      {
+        id: "synonym-receipt-ticketing",
+        members: [["\u9818\u53CE\u66F8", "\u308A\u3087\u3046\u3057\u3085\u3046\u3057\u3087"], ["\u767A\u5238", "\u306F\u3063\u3051\u3093"]],
+        reason: "\u9818\u53CE\u66F8\u662F\u6536\u636E\uFF0C\u767A\u5238\u662F\u51FA\u7968/\u53D1\u884C\u7968\u5238\uFF0C\u4E0D\u662F\u53D1\u7968\u7684\u540C\u4E49\u8BCD\u3002"
+      },
+      {
+        id: "synonym-title-question",
+        members: [["\u984C\u540D", "\u3060\u3044\u3081\u3044"], ["\u984C", "\u3060\u3044"], ["\u8A2D\u554F", "\u305B\u3064\u3082\u3093"]],
+        reason: "\u984C\u540D\u662F\u6807\u9898\uFF0C\u984C/\u8A2D\u554F\u662F\u9898\u76EE\u6216\u8BBE\u95EE\uFF0C\u4E0D\u80FD\u4F5C\u4E3A\u4E00\u7EC4\u53EF\u4E92\u6362\u8BCD\u3002"
+      },
+      {
+        id: "synonym-quality-mass",
+        members: [["\u8CEA", "\u3057\u3064"], ["\u8CEA\u91CF", "\u3057\u3064\u308A\u3087\u3046"]],
+        reason: "\u8CEA\u662F\u8D28\u91CF/\u7D20\u8D28\uFF0C\u8CEA\u91CF\u662F\u7269\u7406\u5B66\u7684\u8D28\u91CF\uFF08mass\uFF09\uFF0C\u4E2D\u6587\u540C\u5B57\u4E0D\u540C\u4E49\u3002"
+      },
+      {
+        id: "synonym-ecology-eco",
+        members: [["\u751F\u614B", "\u305B\u3044\u305F\u3044"], ["eco", "\u30A8\u30B3"]],
+        reason: "\u751F\u614B\u662F\u751F\u6001\u72B6\u6001\uFF0C\u30A8\u30B3\u662F\u73AF\u4FDD/\u751F\u6001\u53CB\u597D\uFF0C\u4E0D\u80FD\u4E92\u6362\u3002"
+      },
+      {
+        id: "synonym-literary-entertainment",
+        members: [["\u82B8\u80FD", "\u3052\u3044\u306E\u3046"], ["\u6587\u82B8", "\u3076\u3093\u3052\u3044"]],
+        reason: "\u82B8\u80FD\u662F\u6F14\u827A/\u5A31\u4E50\uFF0C\u6587\u82B8\u662F\u6587\u5B66\u827A\u672F\uFF0C\u4E2D\u6587\u2018\u6587\u827A\u2019\u9020\u6210\u8BEF\u5408\u5E76\u3002"
+      },
+      {
+        id: "synonym-lesson-curriculum",
+        members: [["lesson", "\u30EC\u30C3\u30B9\u30F3"], ["curriculum", "\u30AB\u30EA\u30AD\u30E5\u30E9\u30E0"]],
+        reason: "\u30EC\u30C3\u30B9\u30F3\u662F\u5355\u8282\u8BFE/\u8BFE\u7A0B\uFF0C\u30AB\u30EA\u30AD\u30E5\u30E9\u30E0\u662F\u8BFE\u7A0B\u4F53\u7CFB\uFF0C\u4E0D\u662F\u540C\u4E49\u8BCD\u3002"
+      },
+      {
+        id: "synonym-potted-plant-garden-tree",
+        members: [["\u9262\u690D\u3048", "\u306F\u3061\u3046\u3048"], ["\u690D\u6728", "\u3046\u3048\u304D"]],
+        reason: "\u9262\u690D\u3048\u662F\u76C6\u683D\u690D\u7269\uFF0C\u690D\u6728\u662F\u5EAD\u9662\u6811\u6728/\u56ED\u6797\u690D\u7269\uFF0C\u4E2D\u6587\u9996\u4E49\u8FC7\u5BBD\u3002"
+      },
+      {
+        id: "synonym-decisive-absolutely-not",
+        members: [["\u65AD\u7136", "\u3060\u3093\u305C\u3093"], ["\u65AD\u3058\u3066", "\u3060\u3093\u3058\u3066"]],
+        reason: "\u65AD\u7136\u662F\u65AD\u7136/\u660E\u663E\u5730\uFF0C\u65AD\u3058\u3066\u5E38\u7528\u4E8E\u2018\u7EDD\u4E0D\u2019\uFF0C\u4E0D\u662F\u540C\u4E49\u8BCD\u3002"
+      },
+      {
+        id: "synonym-terminal-station-device",
+        members: [["terminal", "\u30BF\u30FC\u30DF\u30CA\u30EB"], ["\u7AEF\u672B", "\u305F\u3093\u307E\u3064"]],
+        reason: "\u30BF\u30FC\u30DF\u30CA\u30EB\u53EF\u6307\u7EC8\u70B9\u7AD9\uFF0C\u7AEF\u672B\u662F\u7EC8\u7AEF\u8BBE\u5907\uFF0C\u4E2D\u6587\u9996\u4E49\u4E0D\u5E94\u5408\u7EC4\u3002"
+      },
+      {
+        id: "synonym-route-circuit",
+        members: [["\u8DEF\u7DDA", "\u308D\u305B\u3093"], ["\u56DE\u7DDA", "\u304B\u3044\u305B\u3093"]],
+        reason: "\u8DEF\u7DDA\u662F\u8DEF\u7EBF\uFF0C\u56DE\u7DDA\u662F\u901A\u4FE1\u7EBF\u8DEF/\u7535\u8DEF\uFF0C\u4E2D\u6587\u2018\u7EBF\u8DEF\u2019\u9020\u6210\u8BEF\u5408\u5E76\u3002"
+      }
+    ];
+  }
+});
+
+// stub:lucide-react
+var require_lucide_react = __commonJS({
+  "stub:lucide-react"(exports, module2) {
+    module2.exports = new Proxy({}, { get: (_t, p) => p === "__esModule" ? false : () => ({}) });
+  }
+});
+
+// ../frontend/src/lib/confusion-groups.ts
+var confusion_groups_exports = {};
+__export(confusion_groups_exports, {
+  CONFUSION_TYPES: () => CONFUSION_TYPES,
+  TYPE_META: () => TYPE_META,
+  TYPE_PRIORITY: () => TYPE_PRIORITY,
+  confusionGroups: () => confusionGroups,
+  confusionGroupsForWord: () => confusionGroupsForWord,
+  displayForm: () => displayForm,
+  duplicateMergeTargets: () => duplicateMergeTargets,
+  duplicateWordIds: () => duplicateWordIds,
+  groupWordParts: () => groupWordParts,
+  groupWords: () => groupWords,
+  masteredConfusionKeys: () => masteredConfusionKeys,
+  resetConfusionGroups: () => resetConfusionGroups,
+  setConfusionMastered: () => setConfusionMastered,
+  warmConfusionGroups: () => warmConfusionGroups
+});
+var import_database7, import_orthography, import_verb_pair_hints, import_lucide_react, MAX_MEMBERS, CJK, LATIN, firstSense, senseOf, toMember, TYPE_PRIORITY, groupBy, variantMerges, rank, memberForm, memberIdentity, buildGroups, cached, cachedRows, cachedDuplicates, resetConfusionGroups, duplicateWordIds, duplicateMergeTargets, loadRows, confusionGroups, masteredConfusionKeys, setConfusionMastered, CONFUSION_TYPES, TYPE_META, displayForm, groupWordParts, groupWords, groupsByWord, confusionGroupsForWord, warmConfusionGroups;
+var init_confusion_groups = __esm({
+  "../frontend/src/lib/confusion-groups.ts"() {
+    "use strict";
+    import_database7 = __toESM(require_database(), 1);
+    import_orthography = __toESM(require_orthography(), 1);
+    init_db_utils();
+    init_study_core();
+    import_verb_pair_hints = __toESM(require_verb_pair_hints(), 1);
+    init_confusion_manual_review();
+    import_lucide_react = __toESM(require_lucide_react(), 1);
+    MAX_MEMBERS = 8;
+    CJK = /[㐀-鿿]/;
+    LATIN = /[A-Za-z]/;
+    firstSense = (meaning) => meaning.split(/[；;，,、]/)[0].trim();
+    senseOf = (row) => row.senseKey || firstSense(row.meaning);
+    toMember = (row) => ({
+      id: row.id,
+      kanji: row.kanji,
+      kana: row.kana,
+      meaning: row.meaning,
+      exampleJp: row.exampleJp,
+      exampleMeaning: row.exampleMeaning,
+      jlptLevel: row.jlptLevel,
+      senseKey: senseOf(row)
+    });
+    TYPE_PRIORITY = [
+      "pair",
+      "kanji-choice",
+      "reading-register",
+      "reading-sense",
+      "homophone",
+      "stem",
+      "synonym"
+    ];
+    groupBy = (items, keyOf) => {
+      const buckets = /* @__PURE__ */ new Map();
+      items.forEach((item) => {
+        const key = keyOf(item);
+        if (!key) return;
+        const bucket = buckets.get(key);
+        if (bucket) bucket.push(item);
+        else buckets.set(key, [item]);
+      });
+      return buckets;
+    };
+    variantMerges = (rows) => {
+      const merges = /* @__PURE__ */ new Map();
+      const suppressed = /* @__PURE__ */ new Set();
+      const drop = (row, survivor) => {
+        suppressed.add(row.id);
+        merges.set(row.id, survivor.id);
+      };
+      groupBy(rows, (row) => row.kanji ? `${row.kanji}\0${row.kana}` : "").forEach((members) => {
+        if (members.length < 2) return;
+        const [survivor, ...losers] = [...members].sort((left, right) => rank(left) - rank(right) || left.id - right.id);
+        losers.forEach((row) => drop(row, survivor));
+      });
+      groupBy(rows.filter((row) => !suppressed.has(row.id)), (row) => row.kana).forEach((members, kana) => {
+        if (members.length !== 2) return;
+        const latin = members.filter((row) => LATIN.test(row.kanji));
+        const bare = members.filter((row) => row.kanji === kana);
+        if (latin.length !== 1 || bare.length !== 1) return;
+        const [survivor, loser] = [...members].sort((left, right) => rank(left) - rank(right) || left.id - right.id);
+        drop(loser, survivor);
+      });
+      const rest = rows.filter((row) => !suppressed.has(row.id));
+      groupBy(rest, (row) => `${row.kana}\0${senseOf(row)}`).forEach((members) => {
+        if (members.length < 2) return;
+        const withKanji = members.filter((row) => CJK.test(row.kanji));
+        if (withKanji.length === members.length) return;
+        if (withKanji.length) {
+          const survivor = [...withKanji].sort((left, right) => rank(left) - rank(right) || left.id - right.id)[0];
+          members.filter((row) => !CJK.test(row.kanji)).forEach((row) => drop(row, survivor));
+          return;
+        }
+        const bareRepeat = (row) => row.kanji === row.kana ? 1 : 0;
+        const canonical = [...members].sort((left, right) => rank(left) - rank(right) || bareRepeat(left) - bareRepeat(right) || left.id - right.id)[0];
+        members.filter((row) => row.id !== canonical.id).forEach((row) => drop(row, canonical));
+      });
+      const manualRows = () => rows.filter((row) => !suppressed.has(row.id));
+      MANUAL_VARIANT_GROUPS.forEach((group) => {
+        const members = group.members.map(([kanji, kana]) => manualRows().find((row) => row.kanji === kanji && row.kana === kana)).filter((row) => Boolean(row));
+        if (members.length < 2) return;
+        const survivor = [...members].sort((left, right) => rank(left) - rank(right) || left.id - right.id)[0];
+        members.filter((row) => row.id !== survivor.id).forEach((row) => drop(row, survivor));
+      });
+      const resolve = (id, seen = /* @__PURE__ */ new Set()) => {
+        const next = merges.get(id);
+        if (next === void 0 || seen.has(id)) return id;
+        seen.add(id);
+        return resolve(next, seen);
+      };
+      return new Map([...merges.keys()].map((id) => [id, resolve(id)]));
+    };
+    rank = (row) => (row.exampleJp ? 0 : 2) + (row.jlptLevel ? 0 : 1);
+    memberForm = (type, row) => type === "reading-register" || type === "reading-sense" ? row.kana : displayForm(row);
+    memberIdentity = (type, row) => {
+      const form = memberForm(type, row);
+      return LATIN.test(row.kanji) ? `${form}\0${row.kanji}` : form;
+    };
+    buildGroups = (allRows) => {
+      const suppressed = duplicateWordIds();
+      const rows = allRows.filter((row) => !suppressed.has(row.id));
+      const found = [];
+      const add = (type, label2, members) => {
+        const byForm = /* @__PURE__ */ new Map();
+        members.forEach((row) => {
+          const key = memberIdentity(type, row);
+          const kept = byForm.get(key);
+          if (!kept || rank(row) < rank(kept)) byForm.set(key, row);
+        });
+        const unique = [...byForm.values()];
+        if (unique.length < 2 || unique.length > MAX_MEMBERS) return;
+        found.push({ key: `${type}:${label2}`, type, label: label2, members: unique.map(toMember) });
+      };
+      const pairs = import_verb_pair_hints.default;
+      const seenPairs = /* @__PURE__ */ new Set();
+      rows.forEach((row) => {
+        const hint = pairs[row.kanji] ?? pairs[row.kana];
+        if (!hint) return;
+        const partner = hint[1];
+        const partnerKana = hint[2];
+        const mates = rows.filter((other) => other.kanji === partner && (!partnerKana || other.kana === partnerKana) || other.kana === partner);
+        if (!mates.length) return;
+        const label2 = [row.kanji || row.kana, partner].sort().join(" / ");
+        if (seenPairs.has(label2)) return;
+        seenPairs.add(label2);
+        add("pair", label2, [row, ...mates]);
+      });
+      groupBy(rows, (row) => row.kana).forEach((members, kana) => {
+        if (members.length < 2) return;
+        const senses = new Set(members.map((row) => senseOf(row)));
+        if (senses.size > 1) {
+          add("homophone", kana, members);
+          return;
+        }
+        if (members.every((row) => CJK.test(row.kanji))) add("kanji-choice", kana, members);
+      });
+      groupBy(rows, (row) => CJK.test(row.kanji) ? row.kanji : "").forEach((members, kanji) => {
+        if (new Set(members.map((row) => row.kana)).size < 2) return;
+        const senses = new Set(members.map((row) => senseOf(row)));
+        add(senses.size === 1 ? "reading-register" : "reading-sense", kanji, members);
+      });
+      const verbs = rows.filter((row) => (row.verbType === "godan" || row.verbType === "ichidan") && CJK.test(row.kanji));
+      groupBy(verbs, (row) => row.kanji.match(CJK)?.[0] ?? "").forEach((members, stem) => {
+        const charsOf = (row) => new Set(senseOf(row).match(/[㐀-鿿]/g) ?? []);
+        const cohesive = members.filter((row) => {
+          const chars = charsOf(row);
+          return members.some((other) => other.id !== row.id && [...charsOf(other)].some((char) => chars.has(char)));
+        });
+        add("stem", stem, cohesive);
+      });
+      groupBy(rows, (row) => senseOf(row)).forEach((members, sense) => {
+        if (members.length < 2) return;
+        if (new Set(members.map((row) => row.pos)).size > 1) return;
+        const memberKeys = new Set(members.map((row) => `${row.kanji}\0${row.kana}`));
+        const excluded = EXCLUDED_SYNONYM_GROUPS.some((group) => group.members.length === members.length && group.members.every(([kanji, kana]) => memberKeys.has(`${kanji}\0${kana}`)));
+        if (excluded) return;
+        add("synonym", sense, members);
+      });
+      const byMembers = /* @__PURE__ */ new Map();
+      found.forEach((group) => {
+        const fingerprint = group.members.map((member) => member.id).sort((a, b) => a - b).join(",");
+        const previous = byMembers.get(fingerprint);
+        if (!previous || TYPE_PRIORITY.indexOf(group.type) < TYPE_PRIORITY.indexOf(previous.type)) {
+          byMembers.set(fingerprint, group);
+        }
+      });
+      return [...byMembers.values()];
+    };
+    cached = null;
+    cachedRows = null;
+    cachedDuplicates = null;
+    resetConfusionGroups = () => {
+      cached = null;
+      cachedRows = null;
+      cachedDuplicates = null;
+      groupsByWord = null;
+    };
+    duplicateWordIds = () => new Set(duplicateMergeTargets().keys());
+    duplicateMergeTargets = () => {
+      if (!cachedDuplicates) cachedDuplicates = variantMerges(loadRows());
+      return cachedDuplicates;
+    };
+    loadRows = () => {
+      if (cachedRows) return cachedRows;
+      const hasSenseKey = rowsFor("PRAGMA table_info(words)").some((row) => row.name === "sense_key");
+      cachedRows = rowsFor(`
+    SELECT id, kanji, kana, meaning, pos, verb_type, example_jp, example_meaning, jlpt_level,
+           ${hasSenseKey ? "sense_key" : "''"} AS sense_key
+    FROM words
+  `).map((row) => ({
+        id: Number(row.id ?? 0),
+        kanji: String(row.kanji ?? ""),
+        kana: String(row.kana ?? ""),
+        meaning: String(row.meaning ?? ""),
+        pos: String(row.pos ?? ""),
+        verbType: String(row.verb_type ?? ""),
+        exampleJp: String(row.example_jp ?? ""),
+        exampleMeaning: String(row.example_meaning ?? ""),
+        jlptLevel: String(row.jlpt_level ?? ""),
+        senseKey: String(row.sense_key ?? "")
+      })).filter((row) => row.id && !LATIN.test(row.kana));
+      return cachedRows;
+    };
+    confusionGroups = () => {
+      if (!cached) cached = buildGroups(loadRows());
+      return cached;
+    };
+    masteredConfusionKeys = () => new Set(rowsFor("SELECT group_key FROM confusion_mastered").map((row) => String(row.group_key ?? "")));
+    setConfusionMastered = (key, mastered) => {
+      ensureUserTables();
+      const db = (0, import_database7.getDatabase)();
+      if (mastered) {
+        db.run(
+          "INSERT OR REPLACE INTO confusion_mastered (group_key, mastered_on) VALUES (?, date('now','localtime'))",
+          [key]
+        );
+      } else {
+        db.run("DELETE FROM confusion_mastered WHERE group_key = ?", [key]);
+      }
+      persistSoon();
+    };
+    CONFUSION_TYPES = [
+      "pair",
+      "homophone",
+      "kanji-choice",
+      "reading-sense",
+      "reading-register",
+      "stem",
+      "synonym"
+    ];
+    TYPE_META = {
+      pair: {
+        name: "\u81EA\u4ED6\u52A8\u8BCD",
+        Icon: import_lucide_react.ArrowLeftRight
+      },
+      homophone: {
+        name: "\u540C\u97F3\u5F02\u4E49",
+        Icon: import_lucide_react.Volume2
+      },
+      "kanji-choice": {
+        name: "\u6C49\u5B57\u7528\u6CD5",
+        Icon: import_lucide_react.PenLine
+      },
+      "reading-register": {
+        name: "\u8BFB\u97F3\u8BED\u4F53",
+        Icon: import_lucide_react.Crown
+      },
+      "reading-sense": {
+        name: "\u4E00\u5F62\u591A\u8BFB",
+        Icon: import_lucide_react.Type
+      },
+      stem: {
+        name: "\u540C\u8BCD\u6839",
+        Icon: import_lucide_react.Sprout
+      },
+      synonym: {
+        name: "\u4E2D\u6587\u63D0\u793A\u76F8\u540C",
+        Icon: import_lucide_react.Handshake
+      }
+    };
+    displayForm = (member) => (0, import_orthography.preferredWordSurface)({ kanji: member.kanji ?? "", kana: member.kana ?? "" });
+    groupWordParts = (group) => {
+      if (group.type === "reading-register" || group.type === "reading-sense") {
+        return group.members.map((member) => ({ text: member.kana, reading: "" }));
+      }
+      const forms = group.members.map(displayForm);
+      const collides = new Set(forms).size !== forms.length;
+      return group.members.map((member, index3) => {
+        const useSource = collides && LATIN.test(member.kanji);
+        return {
+          text: useSource ? member.kanji : forms[index3],
+          reading: useSource ? "" : member.kana
+        };
+      });
+    };
+    groupWords = (group) => groupWordParts(group).map((part) => part.text).join(" / ");
+    groupsByWord = null;
+    confusionGroupsForWord = (wordId) => {
+      if (!groupsByWord) {
+        const index3 = /* @__PURE__ */ new Map();
+        confusionGroups().forEach((group) => {
+          group.members.forEach((member) => {
+            const bucket = index3.get(member.id);
+            if (bucket) bucket.push(group);
+            else index3.set(member.id, [group]);
+          });
+        });
+        index3.forEach((groups) => groups.sort((left, right) => TYPE_PRIORITY.indexOf(left.type) - TYPE_PRIORITY.indexOf(right.type)));
+        groupsByWord = index3;
+      }
+      return groupsByWord.get(wordId) ?? [];
+    };
+    warmConfusionGroups = () => {
+      confusionGroupsForWord(0);
+    };
+  }
+});
+
+// ../frontend/src/lib/models/familiarity.ts
+var JLPT_RANK, UNLEVELED_RANK, jlptRank, studiedCache, resetFamiliarityCache, studiedWordIds, worthComparing;
+var init_familiarity = __esm({
+  "../frontend/src/lib/models/familiarity.ts"() {
+    "use strict";
+    init_db_utils();
+    JLPT_RANK = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
+    UNLEVELED_RANK = 2.5;
+    jlptRank = (level) => JLPT_RANK[level] ?? UNLEVELED_RANK;
+    studiedCache = null;
+    resetFamiliarityCache = () => {
+      studiedCache = null;
+    };
+    studiedWordIds = () => {
+      if (studiedCache) return studiedCache;
+      try {
+        studiedCache = new Set(
+          rowsFor("SELECT word_id FROM progress WHERE fsrs_last_review IS NOT NULL OR fsrs_due IS NOT NULL").map((row) => Number(row.word_id ?? 0)).filter((id) => id > 0)
+        );
+      } catch {
+        studiedCache = /* @__PURE__ */ new Set();
+      }
+      return studiedCache;
+    };
+    worthComparing = (myLevel, theirLevel, theirId) => jlptRank(theirLevel) <= jlptRank(myLevel) || studiedWordIds().has(theirId);
+  }
+});
+
+// ../frontend/src/lib/models/confusion.ts
+function editDistance(left, right) {
+  const a = Array.from(left);
+  const b = Array.from(right);
+  let previous = new Array(b.length + 1);
+  let current = new Array(b.length + 1);
+  for (let j = 0; j <= b.length; j += 1) previous[j] = j;
+  for (let i = 1; i <= a.length; i += 1) {
+    current[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      current[j] = Math.min(
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+    const swap = previous;
+    previous = current;
+    current = swap;
+  }
+  return previous[b.length];
+}
+function kanaSimilarity(left, right) {
+  if (left === right) return 1;
+  return Math.max(1 - editDistance(left, right) / Math.max(Array.from(left).length, Array.from(right).length, 1), 0);
+}
+function structuralSimilarity(left, right) {
+  let score = kanaSimilarity(left, right);
+  if (left && right && left[0] === right[0]) score += 0.08;
+  if (left && right && left[left.length - 1] === right[right.length - 1]) score += 0.08;
+  if (Array.from(left).length === Array.from(right).length) score += 0.06;
+  return Math.min(score, 1);
+}
+function confusionThreshold(kana) {
+  const length = Array.from(kana).length;
+  if (length <= 2) return 0.9;
+  if (length === 3) return 0.82;
+  if (length === 4) return 0.74;
+  return 0.68;
+}
+function maxConfusionLengthGap(kana) {
+  const length = Array.from(kana).length;
+  if (length <= 3) return 1;
+  if (length <= 5) return 2;
+  return 3;
+}
+function confusionCandidates(row) {
+  const cacheKey = Number(row.id ?? 0);
+  if (cacheKey) {
+    const cached5 = confusionCache.get(cacheKey);
+    if (cached5) return cached5;
+  }
+  const computed = computeConfusionCandidates(row);
+  if (cacheKey) confusionCache.set(cacheKey, computed);
+  return computed;
+}
+function computeConfusionCandidates(row) {
+  const currentKana = String(row.kana ?? "");
+  if (!currentKana) return [];
+  const currentPos = String(row.pos ?? "").split("\u30FB")[0];
+  const currentId = Number(row.id ?? 0);
+  const currentLength = Array.from(currentKana).length;
+  const maxGap = maxConfusionLengthGap(currentKana);
+  const threshold = confusionThreshold(currentKana);
+  const buckets = loadWords();
+  const duplicates = duplicateWordIds();
+  const nearby = [];
+  for (let length = currentLength - maxGap; length <= currentLength + maxGap; length += 1) {
+    const bucket = buckets.get(length);
+    if (bucket) nearby.push(...bucket);
+  }
+  const currentLevel = String(row.jlpt_level ?? "");
+  const scored = nearby.flatMap((candidate) => {
+    if (candidate.id === currentId || duplicates.has(candidate.id)) return [];
+    if (!worthComparing(currentLevel, candidate.jlptLevel, candidate.id)) return [];
+    const candidateKana = candidate.kana;
+    if (candidateKana === currentKana) return [];
+    const phonetic = kanaSimilarity(currentKana, candidateKana);
+    const structural = structuralSimilarity(currentKana, candidateKana);
+    let similarity = phonetic * 0.65 + structural * 0.35;
+    if (currentPos && candidate.pos.includes(currentPos)) similarity += 0.04;
+    if (row.verb_type && row.verb_type === candidate.verbType) similarity += 0.04;
+    if (similarity < threshold) return [];
+    return [{ similarity, candidate }];
+  }).sort((left, right) => right.similarity - left.similarity || right.candidate.importance - left.candidate.importance);
+  const phoneticItems = scored.slice(0, 3).map(({ candidate }) => ({
+    id: candidate.id,
+    kana: candidate.kana,
+    kanji: candidate.kanji,
+    meaning: candidate.meaning,
+    kind: "sound"
+  }));
+  return phoneticItems;
+}
+var confusionCache, resetConfusionCache, wordsByKanaLength, loadWords, OKURIGANA_TAIL, sameStemForms;
+var init_confusion = __esm({
+  "../frontend/src/lib/models/confusion.ts"() {
+    "use strict";
+    init_db_utils();
+    init_confusion_groups();
+    init_familiarity();
+    confusionCache = /* @__PURE__ */ new Map();
+    resetConfusionCache = () => {
+      confusionCache.clear();
+      wordsByKanaLength = null;
+    };
+    wordsByKanaLength = null;
+    loadWords = () => {
+      if (wordsByKanaLength) return wordsByKanaLength;
+      const buckets = /* @__PURE__ */ new Map();
+      for (const candidate of rowsFor("SELECT id, meaning, kana, kanji, pos, verb_type, importance, jlpt_level FROM words")) {
+        const kana = String(candidate.kana ?? "");
+        if (!kana) continue;
+        const length = Array.from(kana).length;
+        const entry = {
+          id: Number(candidate.id ?? 0),
+          meaning: String(candidate.meaning ?? ""),
+          kana,
+          kanji: String(candidate.kanji ?? ""),
+          pos: String(candidate.pos ?? ""),
+          verbType: candidate.verb_type,
+          importance: Number(candidate.importance ?? 0),
+          jlptLevel: String(candidate.jlpt_level ?? ""),
+          length
+        };
+        const bucket = buckets.get(length);
+        if (bucket) bucket.push(entry);
+        else buckets.set(length, [entry]);
+      }
+      wordsByKanaLength = buckets;
+      return buckets;
+    };
+    OKURIGANA_TAIL = /[^\u3400-\u9fff]+$/;
+    sameStemForms = (left, right) => {
+      const stem = (kanji) => kanji.replace(OKURIGANA_TAIL, "");
+      const a = stem(String(left.kanji ?? ""));
+      return Boolean(a) && a === stem(String(right.kanji ?? ""));
+    };
+  }
+});
+
+// ../frontend/src/data/similar_meaning_groups.ts
+function similarMeaningCandidates(row) {
+  const group = similarMeaningGroups.find((candidate) => candidate.members.some((member) => memberMatches(member, row)));
+  if (!group) return autoSimilarMeaningCandidates(row);
+  const currentId = Number(row.id ?? 0);
+  const manualItems = resolveGroup(group).filter((item) => item.id !== currentId);
+  const autoItems = autoItemsFor(row);
+  const manualIds = new Set(manualItems.map((item) => item.id));
+  const items = [...manualItems, ...autoItems.filter((item) => !manualIds.has(item.id))];
+  if (!items.length) return null;
+  const hasAutoExtras = autoItems.some((item) => !manualIds.has(item.id));
+  return {
+    title: group.title,
+    source: "manual",
+    distinction: hasAutoExtras ? `${group.distinction}\u9898\u9762\u9996\u4E49\u76F8\u540C\u7684\u5176\u4ED6\u8BCD\u4E5F\u5217\u5728\u540E\u9762\uFF0C\u8BF7\u7ED3\u5408\u8BCD\u5F62\u3001\u8BED\u5883\u548C\u8BCD\u6027\u533A\u5206\u3002` : group.distinction,
+    items
+  };
+}
+var similarMeaningGroups, memberMatches, rowMatchesMember, resolvedByGroup, resetSimilarMeaningCache, resolveGroup, autoItemsFor, autoSimilarMeaningCandidates;
+var init_similar_meaning_groups = __esm({
+  "../frontend/src/data/similar_meaning_groups.ts"() {
+    "use strict";
+    init_db_utils();
+    init_question_meaning_index();
+    similarMeaningGroups = [
+      {
+        id: "mawari-kanji-choice",
+        title: "\u307E\u308F\u308A\uFF1A\u56DE\u308A\uFF0F\u5468\u308A",
+        distinction: "\u56DE\u308A\u662F\u65CB\u8F6C\u3001\u8FD0\u8F6C\u6216\u8F6E\u6B21\uFF1B\u5468\u308A\u662F\u5468\u56F4\u3001\u9644\u8FD1\u7684\u4EBA\u6216\u4E8B\u7269\u3002\u99C5\u306E\u307E\u308F\u308A\uFF08\u8F66\u7AD9\u5468\u56F4\uFF09\u5199\u4F5C\u300C\u99C5\u306E\u5468\u308A\u300D\u3002",
+        members: [
+          ["\u56DE\u308A", "\u307E\u308F\u308A", "\u65CB\u8F6C"],
+          ["\u5468\u308A", "\u307E\u308F\u308A", "\u5468\u56F4\uFF1B\u9644\u8FD1"]
+        ]
+      },
+      {
+        id: "honorific-come-go-be",
+        title: "\u6765\uFF0F\u53BB\uFF0F\u5728\uFF08\u5C0A\u656C\u8BED\uFF09",
+        distinction: "\u5F88\u591A\u666E\u901A\u201C\u6765\uFF0F\u53BB\uFF0F\u5728\u201D\u7684\u63D0\u793A\u90FD\u80FD\u5BF9\u5E94\u8FD9\u4E9B\u5C0A\u656C\u8868\u8FBE\uFF1B\u304A\u898B\u3048\u306B\u306A\u308B\u66F4\u504F\u201C\u6765\u5230\u3001\u5230\u573A\u201D\u3002",
+        members: [
+          ["\u3044\u3089\u3063\u3057\u3083\u308B", "\u3044\u3089\u3063\u3057\u3083\u308B", "\u6765\u3001\u53BB\u3001\u5728\uFF08\u5C0A\u656C\u8BED\uFF09"],
+          ["\u304A\u3044\u3067\u306B\u306A\u308B", "\u304A\u3044\u3067\u306B\u306A\u308B", "\u6765\u3001\u53BB\u3001\u5728\uFF08\u5C0A\u656C\u8BED\uFF09"],
+          ["\u304A\u898B\u3048\u306B\u306A\u308B", "\u304A\u307F\u3048\u306B\u306A\u308B", "\u6765\u5230\u3001\u5230\u573A\uFF08\u5C0A\u656C\u8BED\uFF09"]
+        ]
+      },
+      {
+        id: "honorific-eat-drink",
+        title: "\u5403\uFF0F\u559D\uFF08\u656C\u8BED\uFF09",
+        distinction: "\u53EC\u3057\u4E0A\u304C\u308B\u62AC\u9AD8\u5BF9\u65B9\uFF1B\u3044\u305F\u3060\u304F\u662F\u81EA\u5DF1\u8C26\u900A\u5730\u5403\u3001\u559D\u6216\u63A5\u53D7\u3002",
+        members: [
+          ["\u98DF\u3079\u308B", "\u305F\u3079\u308B", "\u5403\uFF08\u666E\u901A\u8BF4\u6CD5\uFF09"],
+          ["\u53EC\u3057\u4E0A\u304C\u308B", "\u3081\u3057\u3042\u304C\u308B", "\u5403\u3001\u559D\uFF08\u5C0A\u656C\u8BED\uFF09"],
+          ["\u9802\u304F", "\u3044\u305F\u3060\u304F", "\u5403\u3001\u559D\uFF1B\u5F97\u5230\uFF08\u8C26\u8BA9\u8BED\uFF09"]
+        ]
+      },
+      {
+        id: "honorific-say",
+        title: "\u8BF4\uFF08\u656C\u8BED\uFF09",
+        distinction: "\u304A\u3063\u3057\u3083\u308B\u662F\u5BF9\u65B9\u8BF4\uFF1B\u7533\u3059\u662F\u81EA\u5DF1\u8C26\u900A\u5730\u8BF4\u3002\u4E0D\u80FD\u4E92\u76F8\u66FF\u4EE3\u3002",
+        members: [
+          ["\u304A\u3063\u3057\u3083\u308B", "\u304A\u3063\u3057\u3083\u308B", "\u8BF4\uFF08\u5C0A\u656C\u8BED\uFF09"],
+          ["\u7533\u3059", "\u3082\u3046\u3059", "\u8BF4\u3001\u79F0\u4E3A\uFF08\u8C26\u8BA9\u8BED\uFF09"]
+        ]
+      },
+      {
+        id: "honorific-see",
+        title: "\u770B\uFF08\u656C\u8BED\uFF09",
+        distinction: "\u3054\u89A7\u306B\u306A\u308B\u62AC\u9AD8\u5BF9\u65B9\uFF1B\u62DD\u898B\u3059\u308B\u964D\u4F4E\u81EA\u5DF1\u3002",
+        members: [
+          ["\u3054\u89A7\u306B\u306A\u308B", "\u3054\u3089\u3093\u306B\u306A\u308B", "\u770B\uFF08\u5C0A\u656C\u8BED\uFF09"],
+          ["\u62DD\u898B", "\u306F\u3044\u3051\u3093", "\u62DC\u89C1\u3001\u89C2\u770B\uFF08\u8C26\u8BA9\u8BED\uFF09"],
+          ["\u898B\u308B", "\u307F\u308B", "\u770B\uFF08\u666E\u901A\u8BF4\u6CD5\uFF09"]
+        ]
+      },
+      {
+        id: "open",
+        title: "\u5F00",
+        distinction: "\u958B\u304F\uFF08\u3042\u304F\uFF09\u662F\u4E1C\u897F\u6253\u5F00\uFF1B\u958B\u304F\uFF08\u3072\u3089\u304F\uFF09\u5E38\u7528\u4E8E\u4E66\u3001\u6D3B\u52A8\u3001\u4F1A\u8BAE\uFF1B\u958B\u3051\u308B\u662F\u4EBA\u4E3A\u6253\u5F00\u3002",
+        members: [
+          ["\u958B\u304F", "\u3042\u304F", "\u6253\u5F00\u3001\u5F00\u7740\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u958B\u304F", "\u3072\u3089\u304F", "\u6253\u5F00\uFF1B\u5F00\u529E\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u958B\u3051\u308B", "\u3042\u3051\u308B", "\u6253\u5F00\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "close",
+        title: "\u5173",
+        distinction: "\u9589\u307E\u308B\u662F\u81EA\u5DF1\u5173\u4E0A\uFF1B\u9589\u3081\u308B\u662F\u628A\u67D0\u7269\u5173\u4E0A\u3002",
+        members: [
+          ["\u9589\u307E\u308B", "\u3057\u307E\u308B", "\u5173\u4E0A\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u9589\u3081\u308B", "\u3057\u3081\u308B", "\u5173\u4E0A\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "turn-on",
+        title: "\u5F00\uFF0F\u4EAE\uFF0F\u63A5\u901A",
+        distinction: "\u3064\u304F\u662F\u81EA\u5DF1\u4EAE\u3001\u63A5\u901A\u6216\u9644\u7740\uFF1B\u3064\u3051\u308B\u662F\u4EBA\u4E3A\u6253\u5F00\u3001\u63A5\u4E0A\u6216\u9644\u7740\u3002",
+        members: [
+          ["\u3064\u304F", "\u3064\u304F", "\u4EAE\uFF1B\u63A5\u901A\uFF1B\u9644\u7740\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u3064\u3051\u308B", "\u3064\u3051\u308B", "\u6253\u5F00\uFF1B\u63A5\u4E0A\uFF1B\u9644\u7740\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "disappear",
+        title: "\u6D88\u5931\uFF0F\u5173\u6389",
+        distinction: "\u6D88\u3048\u308B\u662F\u81EA\u5DF1\u6D88\u5931\uFF1B\u6D88\u3059\u662F\u4EBA\u4E3A\u6D88\u9664\u6216\u5173\u6389\u3002",
+        members: [
+          ["\u6D88\u3048\u308B", "\u304D\u3048\u308B", "\u6D88\u5931\uFF1B\u7184\u706D\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u6D88\u3059", "\u3051\u3059", "\u6D88\u9664\uFF1B\u5173\u6389\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "enter-put-in",
+        title: "\u8FDB\u5165\uFF0F\u653E\u5165",
+        distinction: "\u5165\u308B\u662F\u8FDB\u53BB\uFF1B\u5165\u308C\u308B\u662F\u628A\u4E1C\u897F\u653E\u8FDB\u53BB\u3002",
+        members: [
+          ["\u5165\u308B", "\u306F\u3044\u308B", "\u8FDB\u5165\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u5165\u308C\u308B", "\u3044\u308C\u308B", "\u653E\u5165\uFF1B\u88C5\u5165\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "leave-take-out",
+        title: "\u51FA\u53BB\uFF0F\u62FF\u51FA",
+        distinction: "\u51FA\u308B\u662F\u51FA\u6765\u3001\u51FA\u53BB\uFF1B\u51FA\u3059\u662F\u62FF\u51FA\u3001\u63D0\u4EA4\u6216\u53D1\u51FA\u3002",
+        members: [
+          ["\u51FA\u308B", "\u3067\u308B", "\u51FA\u53BB\uFF1B\u51FA\u6765\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u51FA\u3059", "\u3060\u3059", "\u62FF\u51FA\uFF1B\u63D0\u4EA4\uFF1B\u53D1\u51FA\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "start",
+        title: "\u5F00\u59CB",
+        distinction: "\u59CB\u307E\u308B\u662F\u4E8B\u60C5\u5F00\u59CB\uFF1B\u59CB\u3081\u308B\u662F\u67D0\u4EBA\u5F00\u59CB\u67D0\u4E8B\u3002",
+        members: [
+          ["\u59CB\u307E\u308B", "\u306F\u3058\u307E\u308B", "\u5F00\u59CB\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u59CB\u3081\u308B", "\u306F\u3058\u3081\u308B", "\u5F00\u59CB\u505A\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "decide",
+        title: "\u51B3\u5B9A",
+        distinction: "\u6C7A\u307E\u308B\u662F\u88AB\u51B3\u5B9A\u3001\u5B9A\u4E0B\u6765\uFF1B\u6C7A\u3081\u308B\u662F\u4E3B\u52A8\u51B3\u5B9A\u3002",
+        members: [
+          ["\u6C7A\u307E\u308B", "\u304D\u307E\u308B", "\u51B3\u5B9A\u4E0B\u6765\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u6C7A\u3081\u308B", "\u304D\u3081\u308B", "\u51B3\u5B9A\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "change",
+        title: "\u6539\u53D8",
+        distinction: "\u5909\u308F\u308B\u662F\u53D1\u751F\u53D8\u5316\uFF1B\u5909\u3048\u308B\u662F\u6539\u53D8\u67D0\u7269\u3002",
+        members: [
+          ["\u5909\u308F\u308B", "\u304B\u308F\u308B", "\u53D8\u5316\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u5909\u3048\u308B", "\u304B\u3048\u308B", "\u6539\u53D8\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "continue",
+        title: "\u7EE7\u7EED",
+        distinction: "\u7D9A\u304F\u662F\u6301\u7EED\uFF1B\u7D9A\u3051\u308B\u662F\u7EE7\u7EED\u505A\u67D0\u4E8B\u3002",
+        members: [
+          ["\u7D9A\u304F", "\u3064\u3065\u304F", "\u6301\u7EED\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u7D9A\u3051\u308B", "\u3064\u3065\u3051\u308B", "\u7EE7\u7EED\u505A\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "increase",
+        title: "\u589E\u52A0",
+        distinction: "\u5897\u3048\u308B\u662F\u6570\u91CF\u81EA\u7136\u589E\u52A0\uFF1B\u5897\u3084\u3059\u662F\u4EBA\u4E3A\u589E\u52A0\u6570\u91CF\u3002",
+        members: [
+          ["\u5897\u3048\u308B", "\u3075\u3048\u308B", "\u589E\u52A0\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u5897\u3084\u3059", "\u3075\u3084\u3059", "\u589E\u52A0\u67D0\u7269\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "find",
+        title: "\u627E\u5230",
+        distinction: "\u898B\u3064\u304B\u308B\u662F\u88AB\u627E\u5230\uFF1B\u898B\u3064\u3051\u308B\u662F\u627E\u5230\u67D0\u7269\u3002",
+        members: [
+          ["\u898B\u3064\u304B\u308B", "\u307F\u3064\u304B\u308B", "\u88AB\u627E\u5230\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u898B\u3064\u3051\u308B", "\u307F\u3064\u3051\u308B", "\u627E\u5230\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "fix-heal",
+        title: "\u4FEE\u597D\uFF0F\u6CBB\u597D",
+        distinction: "\u76F4\u308B\uFF0F\u76F4\u3059\u7528\u4E8E\u7269\u54C1\u3001\u9519\u8BEF\uFF1B\u6CBB\u308B\uFF0F\u6CBB\u3059\u7528\u4E8E\u75BE\u75C5\u3001\u4F24\u75C5\u3002",
+        members: [
+          ["\u76F4\u308B", "\u306A\u304A\u308B", "\u4FEE\u597D\uFF1B\u6539\u6B63\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u76F4\u3059", "\u306A\u304A\u3059", "\u4FEE\u7406\uFF1B\u6539\u6B63\uFF08\u4ED6\u52A8\u8BCD\uFF09"],
+          ["\u6CBB\u308B", "\u306A\u304A\u308B", "\u75CA\u6108\uFF08\u81EA\u52A8\u8BCD\uFF09"],
+          ["\u6CBB\u3059", "\u306A\u304A\u3059", "\u6CBB\u597D\uFF08\u4ED6\u52A8\u8BCD\uFF09"]
+        ]
+      },
+      {
+        id: "remember-recall",
+        title: "\u8BB0\u5F97\uFF0F\u60F3\u8D77",
+        distinction: "\u899A\u3048\u308B\u662F\u8BB0\u4F4F\u3001\u5B66\u4F1A\uFF1B\u601D\u3044\u51FA\u3059\u662F\u4ECE\u8BB0\u5FC6\u4E2D\u56DE\u60F3\u8D77\u6765\u3002",
+        members: [
+          ["\u899A\u3048\u308B", "\u304A\u307C\u3048\u308B", "\u8BB0\u4F4F\uFF1B\u5B66\u4F1A"],
+          ["\u601D\u3044\u51FA\u3059", "\u304A\u3082\u3044\u3060\u3059", "\u60F3\u8D77\u6765\uFF1B\u56DE\u5FC6\u8D77"]
+        ]
+      },
+      {
+        id: "know-understand",
+        title: "\u77E5\u9053\uFF0F\u660E\u767D",
+        distinction: "\u77E5\u308B\u662F\u83B7\u5F97\u4FE1\u606F\uFF1B\u5206\u304B\u308B\u662F\u7406\u89E3\u5185\u5BB9\u6216\u5F04\u660E\u767D\u3002",
+        members: [
+          ["\u77E5\u308B", "\u3057\u308B", "\u77E5\u9053\uFF1B\u5F97\u77E5"],
+          ["\u5206\u304B\u308B", "\u308F\u304B\u308B", "\u660E\u767D\uFF1B\u7406\u89E3"]
+        ]
+      },
+      {
+        id: "think-consider",
+        title: "\u60F3\uFF0F\u8003\u8651",
+        distinction: "\u601D\u3046\u504F\u611F\u89C9\u3001\u8BA4\u4E3A\uFF1B\u8003\u3048\u308B\u504F\u601D\u8003\u3001\u8003\u8651\u3002",
+        members: [
+          ["\u601D\u3046", "\u304A\u3082\u3046", "\u60F3\uFF1B\u8BA4\u4E3A"],
+          ["\u8003\u3048\u308B", "\u304B\u3093\u304C\u3048\u308B", "\u601D\u8003\uFF1B\u8003\u8651"]
+        ]
+      },
+      {
+        id: "see",
+        title: "\u770B\uFF0F\u770B\u89C1\uFF0F\u7ED9\u770B",
+        distinction: "\u898B\u308B\u662F\u4E3B\u52A8\u770B\uFF1B\u898B\u3048\u308B\u662F\u81EA\u7136\u770B\u5F97\u89C1\uFF1B\u898B\u305B\u308B\u662F\u7ED9\u522B\u4EBA\u770B\u3002",
+        members: [
+          ["\u898B\u308B", "\u307F\u308B", "\u770B"],
+          ["\u898B\u3048\u308B", "\u307F\u3048\u308B", "\u770B\u5F97\u89C1\uFF1B\u6620\u5165\u773C\u5E18"],
+          ["\u898B\u305B\u308B", "\u307F\u305B\u308B", "\u7ED9\u522B\u4EBA\u770B\uFF1B\u5C55\u793A"]
+        ]
+      },
+      {
+        id: "hear",
+        title: "\u542C\uFF0F\u542C\u89C1",
+        distinction: "\u805E\u304F\u662F\u4E3B\u52A8\u542C\u6216\u8BE2\u95EE\uFF1B\u805E\u3053\u3048\u308B\u662F\u58F0\u97F3\u81EA\u7136\u4F20\u5165\u8033\u4E2D\u3002",
+        members: [
+          ["\u805E\u304F", "\u304D\u304F", "\u542C\uFF1B\u8BE2\u95EE"],
+          ["\u805E\u3053\u3048\u308B", "\u304D\u3053\u3048\u308B", "\u542C\u5F97\u89C1\uFF1B\u542C\u8D77\u6765"]
+        ]
+      },
+      {
+        id: "choose-decide",
+        title: "\u9009\u62E9\uFF0F\u51B3\u5B9A",
+        distinction: "\u9078\u3076\u662F\u4ECE\u5019\u9009\u4E2D\u9009\uFF1B\u6C7A\u3081\u308B\u662F\u4F5C\u51FA\u51B3\u5B9A\u3002",
+        members: [
+          ["\u9078\u3076", "\u3048\u3089\u3076", "\u9009\u62E9"],
+          ["\u6C7A\u3081\u308B", "\u304D\u3081\u308B", "\u51B3\u5B9A"]
+        ]
+      },
+      {
+        id: "prepare",
+        title: "\u51C6\u5907",
+        distinction: "\u6E96\u5099\u504F\u4E3A\u4E8B\u60C5\u505A\u51C6\u5907\uFF1B\u7528\u610F\u504F\u51C6\u5907\u5177\u4F53\u7269\u54C1\u3002",
+        members: [
+          ["\u6E96\u5099", "\u3058\u3085\u3093\u3073", "\u51C6\u5907"],
+          ["\u7528\u610F", "\u3088\u3046\u3044", "\u51C6\u5907\u3001\u5907\u597D"]
+        ]
+      },
+      {
+        id: "explain-introduce",
+        title: "\u8BF4\u660E\uFF0F\u4ECB\u7ECD",
+        distinction: "\u8AAC\u660E\u662F\u89E3\u91CA\u5185\u5BB9\uFF1B\u7D39\u4ECB\u662F\u628A\u4EBA\u6216\u4E8B\u7269\u4ECB\u7ECD\u7ED9\u522B\u4EBA\u3002",
+        members: [
+          ["\u8AAC\u660E", "\u305B\u3064\u3081\u3044", "\u8BF4\u660E\uFF1B\u89E3\u91CA"],
+          ["\u7D39\u4ECB", "\u3057\u3087\u3046\u304B\u3044", "\u4ECB\u7ECD"]
+        ]
+      },
+      {
+        id: "participate-attend",
+        title: "\u53C2\u52A0\uFF0F\u51FA\u5E2D",
+        distinction: "\u53C2\u52A0\u504F\u53C2\u4E0E\u6D3B\u52A8\uFF1B\u51FA\u5E2D\u504F\u51FA\u5E2D\u4F1A\u8BAE\u3001\u8BFE\u7A0B\u7B49\u6B63\u5F0F\u573A\u5408\u3002",
+        members: [
+          ["\u53C2\u52A0", "\u3055\u3093\u304B", "\u53C2\u52A0"],
+          ["\u51FA\u5E2D", "\u3057\u3085\u3063\u305B\u304D", "\u51FA\u5E2D"]
+        ]
+      },
+      {
+        id: "experience",
+        title: "\u7ECF\u9A8C\uFF0F\u4F53\u9A8C",
+        distinction: "\u7D4C\u9A13\u504F\u7D2F\u8BA1\u7ECF\u5386\uFF1B\u4F53\u9A13\u504F\u4EB2\u8EAB\u7ECF\u5386\u67D0\u4EF6\u4E8B\u3002",
+        members: [
+          ["\u7D4C\u9A13", "\u3051\u3044\u3051\u3093", "\u7ECF\u9A8C\uFF1B\u7ECF\u5386"],
+          ["\u4F53\u9A13", "\u305F\u3044\u3051\u3093", "\u4EB2\u8EAB\u4F53\u9A8C"]
+        ]
+      },
+      {
+        id: "plan-promise",
+        title: "\u8BA1\u5212\uFF0F\u7EA6\u5B9A",
+        distinction: "\u4E88\u5B9A\u662F\u9884\u5B9A\u5B89\u6392\uFF1B\u7D04\u675F\u662F\u548C\u522B\u4EBA\u7EA6\u597D\u6216\u4F5C\u51FA\u627F\u8BFA\u3002",
+        members: [
+          ["\u4E88\u5B9A", "\u3088\u3066\u3044", "\u9884\u5B9A\uFF1B\u8BA1\u5212"],
+          ["\u7D04\u675F", "\u3084\u304F\u305D\u304F", "\u7EA6\u5B9A\uFF1B\u627F\u8BFA"]
+        ]
+      },
+      {
+        id: "reason-cause",
+        title: "\u7406\u7531\uFF0F\u539F\u56E0",
+        distinction: "\u539F\u56E0\u662F\u4E8B\u60C5\u53D1\u751F\u7684\u5BA2\u89C2\u539F\u56E0\uFF1B\u7406\u7531\u662F\u4EBA\u505A\u67D0\u4E8B\u7684\u7406\u7531\u3002",
+        members: [
+          ["\u539F\u56E0", "\u3052\u3093\u3044\u3093", "\u539F\u56E0"],
+          ["\u7406\u7531", "\u308A\u3086\u3046", "\u7406\u7531"]
+        ]
+      },
+      {
+        id: "safe-relieved",
+        title: "\u5B89\u5168\uFF0F\u653E\u5FC3",
+        distinction: "\u5B89\u5168\u662F\u5BA2\u89C2\u6CA1\u6709\u5371\u9669\uFF1B\u5B89\u5FC3\u662F\u4E3B\u89C2\u611F\u5230\u653E\u5FC3\u3002",
+        members: [
+          ["\u5B89\u5168", "\u3042\u3093\u305C\u3093", "\u5B89\u5168"],
+          ["\u5B89\u5FC3", "\u3042\u3093\u3057\u3093", "\u653E\u5FC3\uFF1B\u5B89\u5FC3"]
+        ]
+      },
+      {
+        id: "always-usually",
+        title: "\u603B\u662F\uFF0F\u5E73\u65F6",
+        distinction: "\u3044\u3064\u3082\u504F\u6BCF\u6B21\u3001\u603B\u662F\uFF1B\u666E\u6BB5\u504F\u5E73\u5E38\u72B6\u6001\u3002",
+        members: [
+          ["\u3044\u3064\u3082", "\u3044\u3064\u3082", "\u603B\u662F\uFF1B\u4E00\u76F4"],
+          ["\u666E\u6BB5", "\u3075\u3060\u3093", "\u5E73\u65F6\uFF1B\u5E73\u5E38"]
+        ]
+      },
+      {
+        id: "sometimes",
+        title: "\u5076\u5C14\uFF0F\u6709\u65F6",
+        distinction: "\u305F\u307E\u306B\u9891\u7387\u66F4\u4F4E\uFF1B\u3068\u304D\u3069\u304D\u662F\u4E2D\u6027\u7684\u201C\u6709\u65F6\u201D\u3002",
+        members: [
+          ["\u305F\u307E\u306B", "\u305F\u307E\u306B", "\u5076\u5C14"],
+          ["\u6642\u3005", "\u3068\u304D\u3069\u304D", "\u6709\u65F6\uFF1B\u65F6\u5E38"]
+        ]
+      },
+      {
+        id: "finally",
+        title: "\u7EC8\u4E8E\uFF0F\u6700\u7EC8",
+        distinction: "\u3084\u3063\u3068\u5F3A\u8C03\u56F0\u96BE\u540E\u5B9E\u73B0\uFF1B\u3068\u3046\u3068\u3046\u5E38\u5E26\u7ED3\u679C\u611F\uFF1B\u3064\u3044\u306B\u8F83\u6B63\u5F0F\u3002",
+        members: [
+          ["\u3084\u3063\u3068", "\u3084\u3063\u3068", "\u7EC8\u4E8E\uFF1B\u597D\u4E0D\u5BB9\u6613"],
+          ["\u3068\u3046\u3068\u3046", "\u3068\u3046\u3068\u3046", "\u7EC8\u4E8E\uFF1B\u6700\u7EC8"],
+          ["\u3064\u3044\u306B", "\u3064\u3044\u306B", "\u7EC8\u4E8E\uFF1B\u6700\u7EC8"]
+        ]
+      },
+      {
+        id: "gradually-rapidly",
+        title: "\u9010\u6E10\uFF0F\u4E0D\u65AD",
+        distinction: "\u3060\u3093\u3060\u3093\u662F\u6E10\u53D8\uFF1B\u3069\u3093\u3069\u3093\u662F\u5FEB\u901F\u3001\u8FDE\u7EED\u5730\u53D1\u5C55\u3002",
+        members: [
+          ["\u3060\u3093\u3060\u3093", "\u3060\u3093\u3060\u3093", "\u9010\u6E10"],
+          ["\u3069\u3093\u3069\u3093", "\u3069\u3093\u3069\u3093", "\u4E0D\u65AD\u5730\uFF1B\u5FEB\u901F\u5730"]
+        ]
+      },
+      {
+        id: "probably-surely",
+        title: "\u5927\u6982\uFF0F\u4E00\u5B9A",
+        distinction: "\u305F\u3076\u3093\u662F\u4E0D\u786E\u5B9A\u63A8\u6D4B\uFF1B\u304D\u3063\u3068\u662F\u8F83\u5F3A\u786E\u4FE1\u3002",
+        members: [
+          ["\u305F\u3076\u3093", "\u305F\u3076\u3093", "\u5927\u6982\uFF1B\u53EF\u80FD"],
+          ["\u304D\u3063\u3068", "\u304D\u3063\u3068", "\u4E00\u5B9A\uFF1B\u60F3\u5FC5"]
+        ]
+      },
+      {
+        id: "properly",
+        title: "\u597D\u597D\u5730\uFF0F\u8BA4\u771F\u5730",
+        distinction: "\u3061\u3083\u3093\u3068\u504F\u53E3\u8BED\uFF1B\u304D\u3061\u3093\u3068\u504F\u6574\u9F50\u89C4\u8303\uFF1B\u3057\u3063\u304B\u308A\u504F\u7262\u56FA\u53EF\u9760\u3002",
+        members: [
+          ["\u3061\u3083\u3093\u3068", "\u3061\u3083\u3093\u3068", "\u597D\u597D\u5730\uFF1B\u786E\u5B9E"],
+          ["\u304D\u3061\u3093\u3068", "\u304D\u3061\u3093\u3068", "\u6574\u9F50\u5730\uFF1B\u89C4\u77E9\u5730"],
+          ["\u3057\u3063\u304B\u308A", "\u3057\u3063\u304B\u308A", "\u7262\u56FA\u5730\uFF1B\u8BA4\u771F\u5730"]
+        ]
+      },
+      {
+        id: "for-now",
+        title: "\u59D1\u4E14\uFF0F\u5148",
+        distinction: "\u4E00\u5FDC\u662F\u6700\u4F4E\u9650\u5EA6\u5B8C\u6210\uFF1B\u3068\u308A\u3042\u3048\u305A\u662F\u5148\u505A\u773C\u524D\u7684\u4E00\u6B65\u3002",
+        members: [
+          ["\u4E00\u5FDC", "\u3044\u3061\u304A\u3046", "\u59D1\u4E14\uFF1B\u6682\u4E14"],
+          ["\u3068\u308A\u3042\u3048\u305A", "\u3068\u308A\u3042\u3048\u305A", "\u5148\uFF1B\u6682\u4E14"]
+        ]
+      },
+      {
+        id: "on-purpose-special-effort",
+        title: "\u6545\u610F\uFF0F\u7279\u610F",
+        distinction: "\u308F\u3056\u3068\u662F\u6545\u610F\u505A\uFF1B\u308F\u3056\u308F\u3056\u662F\u7279\u610F\u8D39\u529B\u53BB\u505A\u3002",
+        members: [
+          ["\u308F\u3056\u3068", "\u308F\u3056\u3068", "\u6545\u610F"],
+          ["\u308F\u3056\u308F\u3056", "\u308F\u3056\u308F\u3056", "\u7279\u610F\uFF1B\u4E13\u7A0B"]
+        ]
+      }
+    ];
+    memberMatches = (member, row) => {
+      const kanji = String(row.kanji ?? "");
+      const kana = String(row.kana ?? "");
+      return member[0] === kanji && member[1] === kana;
+    };
+    rowMatchesMember = (row, member) => String(row.kanji ?? "") === member[0] && String(row.kana ?? "") === member[1];
+    resolvedByGroup = /* @__PURE__ */ new Map();
+    resetSimilarMeaningCache = () => {
+      resolvedByGroup.clear();
+      resetQuestionMeaningIndex();
+    };
+    resolveGroup = (group) => {
+      const cached5 = resolvedByGroup.get(group.id);
+      if (cached5) return cached5;
+      const params = group.members.flatMap(([kanji, kana]) => [kanji, kana]);
+      const clauses = group.members.map(() => "(kanji = ? AND kana = ?)").join(" OR ");
+      const rows = rowsFor(
+        `SELECT id, meaning, kana, kanji FROM words WHERE ${clauses}`,
+        params
+      );
+      const resolved = group.members.flatMap((member) => {
+        const match = rows.find((candidate) => rowMatchesMember(candidate, member));
+        if (!match) return [];
+        return [{
+          id: Number(match.id ?? 0),
+          kana: String(match.kana ?? member[1]),
+          kanji: String(match.kanji ?? member[0]),
+          meaning: String(match.meaning ?? member[2]),
+          note: member[2],
+          manual: true
+        }];
+      });
+      resolvedByGroup.set(group.id, resolved);
+      return resolved;
+    };
+    autoItemsFor = (row) => {
+      const peers = questionMeaningPeers(Number(row.id ?? 0));
+      if (!peers.length) return [];
+      const clauses = peers.map(() => "?").join(", ");
+      return rowsFor(`SELECT id, meaning, kana, kanji FROM words WHERE id IN (${clauses})`, peers).map((peer) => ({
+        id: Number(peer.id ?? 0),
+        kana: String(peer.kana ?? ""),
+        kanji: String(peer.kanji ?? ""),
+        meaning: String(peer.meaning ?? ""),
+        note: String(peer.meaning ?? ""),
+        manual: false
+      }));
+    };
+    autoSimilarMeaningCandidates = (row) => {
+      const key = questionMeaningKeyOf(Number(row.id ?? 0));
+      const items = autoItemsFor(row);
+      if (!key || !items.length) return null;
+      return {
+        title: `\u9898\u9762\u9996\u4E49\u76F8\u540C\uFF1A${key}`,
+        distinction: "\u8FD9\u4E9B\u8BCD\u5728\u9898\u9762\u663E\u793A\u7684\u9996\u4E49\u76F8\u540C\uFF0C\u90FD\u53EF\u80FD\u662F\u5408\u7406\u7B54\u6848\uFF1B\u8BF7\u7ED3\u5408\u65E5\u8BED\u8BCD\u5F62\u3001\u8BED\u5883\u548C\u8BCD\u6027\u533A\u5206\u3002",
+        source: "auto",
+        items
+      };
+    };
+  }
+});
+
+// scripts/shared/shims/lazy-json.js
+var require_lazy_json = __commonJS({
+  "scripts/shared/shims/lazy-json.js"(exports, module2) {
+    var stores = require("../shared/content-store");
+    var level2 = (name, section) => new Proxy({}, {
+      get(_t, key) {
+        if (key === "__esModule") return false;
+        const root = stores[name];
+        const table = root ? root[section] : void 0;
+        return table ? table[key] : void 0;
+      },
+      has(_t, key) {
+        const root = stores[name];
+        return Boolean(root && root[section] && key in root[section]);
+      },
+      ownKeys() {
+        const root = stores[name];
+        return root && root[section] ? Reflect.ownKeys(root[section]) : [];
+      },
+      getOwnPropertyDescriptor(_t, key) {
+        const root = stores[name];
+        return root && root[section] ? Object.getOwnPropertyDescriptor(root[section], key) : void 0;
+      }
+    });
+    module2.exports = (name) => new Proxy({}, {
+      get(_t, section) {
+        if (section === "__esModule") return false;
+        if (section === "default") return module2.exports(name);
+        if (typeof section === "symbol") return void 0;
+        const root = stores[name];
+        const value = root ? root[section] : void 0;
+        return value && typeof value === "object" ? level2(name, section) : value;
+      }
+    });
+  }
+});
+
+// scripts/shared/shims/kanji-variants.js
+var require_kanji_variants = __commonJS({
+  "scripts/shared/shims/kanji-variants.js"(exports, module2) {
+    module2.exports = require_lazy_json()("kanjiVariants");
+  }
+});
+
+// ../frontend/src/data/english_origins.json
+var english_origins_default;
+var init_english_origins = __esm({
+  "../frontend/src/data/english_origins.json"() {
+    english_origins_default = {
+      \u30C1\u30A7\u30C3\u30AF: "check",
+      \u30B3\u30D4\u30FC: "copy",
+      \u30D7\u30EC\u30BC\u30F3\u30C8: "present",
+      \u30AB\u30FC\u30C6\u30F3: "curtain",
+      \u30B3\u30F3\u30AF\u30EA\u30FC\u30C8: "concrete",
+      \u30B5\u30A4\u30BA: "size",
+      \u30B5\u30FC\u30D3\u30B9\u30BB\u30F3\u30BF\u30FC: "service center",
+      \u30B7\u30E5\u30FC\u30C8: "shoot",
+      \u30CE\u30FC\u30C8: "note",
+      \u30D1\u30F3\u30AF: "puncture / punk",
+      \u30D4\u30AF\u30CB\u30C3\u30AF: "picnic",
+      \u30D4\u30B6: "pizza",
+      \u30D5\u30EA\u30FC\u30BA: "freeze",
+      \u30D6\u30ED\u30FC\u30C1: "brooch",
+      \u30D7\u30E9\u30B9\u30C1\u30C3\u30AF: "plastic",
+      \u30E1\u30FC\u30C8\u30EB: "metre",
+      \u30E9\u30B8\u30AA: "radio",
+      \u30B7\u30F3\u30D7\u30EB: "simple",
+      \u30B8\u30E3\u30B9\u30DF\u30F3\u8336: "jasmine",
+      \u30C9\u30E9\u30DE: "drama",
+      \u751F\u7523\u30B3\u30B9\u30C8: "cost",
+      \u30B5\u30F3\u30C0\u30EB: "sandal",
+      \u30AD\u30E3\u30F3\u30D7: "camp",
+      \u30AF\u30E9\u30B9: "class",
+      \u30AF\u30EC\u30B8\u30C3\u30C8\u30AB\u30FC\u30C9: "credit card",
+      \u30B3\u30FC\u30D2\u30FC: "coffee",
+      \u30B3\u30F3\u30B5\u30FC\u30C8: "concert",
+      \u30B4\u30FC\u30EB\u30C7\u30F3\u30A6\u30A3\u30FC\u30AF: "Golden Week",
+      \u30B8\u30E7\u30AE\u30F3\u30B0: "jogging",
+      \u30B9\u30A4\u30C3\u30C1: "switch",
+      \u30BF\u30A4\u30E0\u30B5\u30FC\u30D3\u30B9: "time service",
+      \u30C6\u30FC\u30D7: "tape",
+      \u30C7\u30B6\u30A4\u30CA\u30FC: "designer",
+      \u30D1\u30B9\u30DD\u30FC\u30C8: "passport",
+      \u30D5\u30A1\u30C3\u30AF\u30B9: "fax",
+      \u30D9\u30C3\u30C9: "bed",
+      \u30DB\u30FC\u30E0\u30D1\u30FC\u30C6\u30A3\u30FC: "home party",
+      \u30A2\u30D1\u30FC\u30C8: "apartment",
+      \u30A2\u30E1\u30EA\u30AB\u4EBA: "American",
+      \u751F\u30D3\u30FC\u30EB: "beer",
+      \u30AA\u30FC\u30B9\u30C8\u30E9\u30EA\u30A2\u4EBA: "Australian",
+      \u30A2\u30E1\u30EA\u30AB: "America",
+      \u30C7\u30A3\u30BA\u30CB\u30FC\u30E9\u30F3\u30C9: "Disneyland",
+      \u30A8\u30EC\u30D9\u30FC\u30BF\u30FC: "elevator",
+      \u30B9\u30B1\u30B8\u30E5\u30FC\u30EB: "schedule",
+      \u30C1\u30FC\u30E0: "team",
+      \u793E\u4EA4\u30C0\u30F3\u30B9: "dance"
+    };
+  }
+});
+
+// ../frontend/src/lib/models/user-question-meanings.ts
+var user_question_meanings_exports = {};
+__export(user_question_meanings_exports, {
+  resetUserQuestionMeanings: () => resetUserQuestionMeanings,
+  saveUserQuestionMeaning: () => saveUserQuestionMeaning,
+  userQuestionMeaning: () => userQuestionMeaning,
+  userQuestionMeaningCount: () => userQuestionMeaningCount
+});
+var import_database8, cached2, resetUserQuestionMeanings, index, userQuestionMeaning, userQuestionMeaningCount, saveUserQuestionMeaning;
+var init_user_question_meanings = __esm({
+  "../frontend/src/lib/models/user-question-meanings.ts"() {
+    "use strict";
+    import_database8 = __toESM(require_database(), 1);
+    init_db_utils();
+    cached2 = null;
+    resetUserQuestionMeanings = () => {
+      cached2 = null;
+    };
+    index = () => {
+      if (cached2) return cached2;
+      const map = /* @__PURE__ */ new Map();
+      try {
+        rowsFor("SELECT word_id, prompt_meaning FROM word_question_meanings").forEach((row) => {
+          const id = Number(row.word_id ?? 0);
+          const text = String(row.prompt_meaning ?? "").trim();
+          if (id && text) map.set(id, text);
+        });
+      } catch {
+      }
+      cached2 = map;
+      return map;
+    };
+    userQuestionMeaning = (wordId) => index().get(wordId);
+    userQuestionMeaningCount = () => index().size;
+    saveUserQuestionMeaning = (wordId, text) => {
+      const db = (0, import_database8.getDatabase)();
+      const cleaned = text.trim();
+      if (cleaned) {
+        db.run(
+          `INSERT INTO word_question_meanings (word_id, prompt_meaning, updated_at)
+       VALUES (?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(word_id) DO UPDATE SET
+         prompt_meaning = excluded.prompt_meaning,
+         updated_at = excluded.updated_at`,
+          [wordId, cleaned]
+        );
+      } else {
+        db.run("DELETE FROM word_question_meanings WHERE word_id = ?", [wordId]);
+      }
+      cached2 = null;
+      return cleaned;
+    };
+  }
+});
+
+// scripts/shared/shims/question-meaning-overrides.js
+var require_question_meaning_overrides = __commonJS({
+  "scripts/shared/shims/question-meaning-overrides.js"(exports, module2) {
+    var stores = require("../shared/content-store");
+    var pairKey = (kanji, kana) => `${kanji}\0${kana}`;
+    var map = null;
+    var source = null;
+    var ensure = () => {
+      if (source === stores.questionMeanings) return map;
+      source = stores.questionMeanings;
+      map = source ? new Map(source.map((entry) => [pairKey(entry.kanji, entry.kana), entry.questionMeaning])) : null;
+      return map;
+    };
+    module2.exports = {
+      reviewedQuestionMeaning: (kanji, kana) => ensure() ? ensure().get(pairKey(kanji, kana)) : void 0,
+      reviewedQuestionMeaningEntries: () => stores.questionMeanings || []
+    };
+  }
+});
+
+// ../frontend/src/lib/models/word-card.ts
+var word_card_exports = {};
+__export(word_card_exports, {
+  buildKanjiComponents: () => buildKanjiComponents,
+  buildVerbPair: () => buildVerbPair,
+  hasKanjiText: () => hasKanjiText,
+  honorificLabel: () => honorificLabel,
+  isFavorite: () => isFavorite2,
+  isKanji: () => isKanji,
+  mistakeScore: () => mistakeScore,
+  primaryMeaning: () => primaryMeaning,
+  promptMeaning: () => promptMeaning,
+  questionMeaning: () => questionMeaning,
+  rowObjectToCard: () => rowObjectToCard
+});
+function englishOrigin(kanji, kana, meaning) {
+  if (!/[\u30a0-\u30ff]/.test(`${kanji}${kana}`)) return "";
+  const mapped = englishOrigins[kanji] || englishOrigins[kana];
+  if (mapped) return mapped;
+  const nonEnglishMarker = /^\s*[（(\[]\s*(?:法|フ|仏|德|独|オ|蘭|葡|ポ|伊|イ|露|ロ)\s*[）)\]]/;
+  if (/[A-Za-z]/.test(kanji)) {
+    return kanji.split(/[；;]/).find((part) => /[A-Za-z]/.test(part) && !nonEnglishMarker.test(part))?.trim() ?? "";
+  }
+  if (nonEnglishMarker.test(meaning)) return "";
+  return meaning.match(/[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*/)?.[0]?.replace(/[ .;,-]+$/, "") ?? "";
+}
+function isUpperAcronym(text) {
+  const asciiText = text.replace(/[Ａ-Ｚ]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 65248));
+  return asciiText.length >= 2 && asciiText.length <= 4 && asciiText === asciiText.toUpperCase();
+}
+function hasUpperLatin(text) {
+  return /[A-ZＡ-Ｚ]/.test(text);
+}
+function stripLatinGlosses(text) {
+  return text.replace(latinPattern, (token, offset, source) => {
+    const prev = offset > 0 ? source[offset - 1] : "";
+    const next = offset + token.length < source.length ? source[offset + token.length] : "";
+    if (token.length <= 4 && hasUpperLatin(token) && cjkPattern.test(`${prev}${next}`)) return token;
+    if (isUpperAcronym(token)) return token;
+    return "";
+  });
+}
+function stripAbbreviationNotes(text) {
+  return text.replace(abbreviationNotePattern, (note) => {
+    const hasSourceReading = KANA_CHAR.test(note) || /[A-Za-zＡ-Ｚａ-ｚ]/.test(note);
+    const hasStrippedLatinSource = /[「『“"]\s*[」』”"]/.test(note);
+    return hasSourceReading || hasStrippedLatinSource ? "" : note;
+  }).replace(/[「『]\s*[」』]/g, "").replace(/([。．；;，,、])[；;，,、]+/g, "$1");
+}
+function stripKanaNotes(text) {
+  return text.replace(/[（(［〔\[][^（(）)［\]〔〕]*[）)］〕\]]/g, (m) => KANA_CHAR.test(m) ? "" : m).replace(/[「『“][^「」『』“”]*[」』”]/g, (m) => KANA_CHAR.test(m) ? "" : m).replace(KANA_RUN, "").replace(/[（(［〔\[]\s*[）)］〕\]]/g, "").replace(/[「『]\s*[」』]/g, "").replace(/([；;，,、])[；;，,、]+/g, "$1").replace(/^[\s；;，,、.:：/·]+/, "").replace(/[；;，,、\s]+$/, "").trim();
+}
+function questionMeaning(meaning, kanji = "", kana = "", wordId = 0) {
+  const mine = wordId ? userQuestionMeaning(wordId) : void 0;
+  if (mine) return mine;
+  const reviewed = (0, import_question_meaning_overrides.reviewedQuestionMeaning)(kanji, kana);
+  if (reviewed) return reviewed;
+  return stripKanaNotes(stripAbbreviationNotes(stripLatinGlosses(meaning))).replace(/[（(\[]\s*(?:英|美)\s*[）)\]]/g, "").replace(/[（(]\s*[）)]/g, "").replace(/\s*([；;，,])\s*/g, "$1").replace(/^[\s；;，,、.:：/]+/, "").replace(/[；;，,、\s]+$/, "").trim();
+}
+function isKanji(char) {
+  return char >= "\u4E00" && char <= "\u9FFF";
+}
+function hasKanjiText(text) {
+  return Array.from(text).some(isKanji);
+}
+function buildKanjiComponents(text) {
+  const seen = /* @__PURE__ */ new Set();
+  return Array.from(text).flatMap((char) => {
+    if (!isKanji(char) || seen.has(char)) return [];
+    seen.add(char);
+    const simplified = kanjiVariants[char] ?? char;
+    return [{
+      char,
+      simplified,
+      marked: simplified !== char,
+      source: "auto"
+    }];
+  });
+}
+function findPairWord(db, pairKanji, pairKana) {
+  const statement = db.prepare(`
+    SELECT kana, kanji, meaning
+    FROM words
+    WHERE kana = ? OR kanji = ?
+    ORDER BY CASE WHEN kanji = ? THEN 0 ELSE 1 END
+    LIMIT 1
+  `);
+  try {
+    statement.bind([pairKana, pairKanji, pairKanji]);
+    if (!statement.step()) return null;
+    const row = statement.getAsObject();
+    const { kana, kanji, meaning } = row;
+    return {
+      kana: String(kana ?? pairKana),
+      kanji: String(kanji ?? pairKanji),
+      meaning: String(meaning ?? "")
+    };
+  } finally {
+    statement.free();
+  }
+}
+function buildVerbPair(db, kanji, kana) {
+  const key = kanji in verbPairHints2 ? kanji : !kanji || kanji === kana ? kana : "";
+  const hint = verbPairHints2[key];
+  if (!hint) return null;
+  const [voice, pairKanji, pairKana] = hint;
+  const pair = findPairWord(db, pairKanji, pairKana);
+  return {
+    voice,
+    pairVoice: voice === "\u4ED6\u52A8\u8BCD" ? "\u81EA\u52A8\u8BCD" : "\u4ED6\u52A8\u8BCD",
+    kana: pair?.kana ?? pairKana,
+    kanji: pair?.kanji ?? pairKanji,
+    meaning: pair?.meaning ?? ""
+  };
+}
+function primaryMeaning(meaning) {
+  for (const separator of ["\uFF1B", ";", "\uFF0C"]) {
+    if (meaning.includes(separator)) return meaning.split(separator, 1)[0].trim();
+  }
+  return meaning.trim();
+}
+function promptMeaning(meaning, wordId, kanji, kana = "") {
+  const mine = userQuestionMeaning(wordId);
+  if (mine) return mine;
+  if (shortMeaningOverrides[wordId]) return shortMeaningOverrides[wordId];
+  const reviewed = (0, import_question_meaning_overrides.reviewedQuestionMeaning)(kanji, kana);
+  if (reviewed) return reviewed;
+  if (kanjiMeaningOverrides[kanji]) return kanjiMeaningOverrides[kanji];
+  const text = meaning.trim();
+  if (!text) return "";
+  const parts = text.split(/[；;，,]/).map((part) => part.trim()).filter(Boolean).slice(0, 3);
+  let short = parts[0] || text;
+  short = short.replace(/^[⓪①②③④⑤⑥⑦⑧⑨⑩]+/, "").trim();
+  let previous = "";
+  while (previous !== short) {
+    previous = short;
+    short = short.replace(/^[（(][^）)]{1,40}[）)]/, "").trim();
+  }
+  short = stripAbbreviationNotes(stripLatinGlosses(short)).trim();
+  short = short.replace(/^[〈《][^〉》]{1,20}[〉》]/, "").trim();
+  if (short.includes("\u3002")) short = short.split("\u3002", 1)[0].trim();
+  if (kanji && kanji.length <= 5 && !/[ぁ-ゟァ-ヿA-Za-z〜～]/.test(kanji)) {
+    let prefix = "";
+    Array.from(short).some((textChar, index3) => {
+      if (textChar !== Array.from(kanji)[index3]) return true;
+      prefix += textChar;
+      return false;
+    });
+    if (prefix.length >= 2) short = prefix;
+  }
+  return short.slice(0, 8);
+}
+function honorificLabel(meaning, label2 = "") {
+  if (/(謙譲語|謙讓語|谦让语|谦让|謙讓)/.test(meaning)) return "\u8C26\u8BED";
+  if (/(谦称|謙称|謙稱)/.test(meaning)) return "\u8C26\u79F0";
+  if (meaning.includes("\u81EA\u8C26")) return "\u81EA\u8C26";
+  if (/(敬语|敬語|尊敬表达|尊敬語|敬称|敬意|对外敬语)/.test(meaning)) return "\u656C\u8BED";
+  return HONORIFIC_WORD_LABELS[label2] ?? "";
+}
+function isFavorite2(type, id) {
+  const statement = (0, import_database9.getDatabase)().prepare(
+    "SELECT 1 FROM content_favorites WHERE item_type = ? AND item_id = ? LIMIT 1"
+  );
+  try {
+    statement.bind([type, String(id)]);
+    return statement.step();
+  } finally {
+    statement.free();
+  }
+}
+function mistakeScore(row) {
+  const wrongish = Number(row.forgot_count ?? 0) * 2 + Number(row.fuzzy_count ?? 0);
+  const total = wrongish + Number(row.right_count ?? 0);
+  if (total === 0) return 0;
+  const streakBonus = Math.min(Number(row.mistake_streak ?? 0) * 0.08, 0.32);
+  return Math.min(wrongish / total + streakBonus, 1);
+}
+function rowObjectToCard(row) {
+  const id = Number(row.id ?? row.word_id ?? 0);
+  const meaning = String(row.meaning ?? "");
+  const kana = String(row.kana ?? "");
+  const label2 = String(row.kanji || kana);
+  const importance = Number(row.importance ?? 3);
+  const personalMistakeScore = mistakeScore(row);
+  return {
+    id,
+    meaning,
+    questionMeaning: questionMeaning(meaning, label2, kana, id),
+    primaryMeaning: primaryMeaning(meaning),
+    promptMeaning: promptMeaning(meaning, id, label2, kana),
+    honorificLabel: honorificLabel(meaning, label2),
+    kana,
+    kanji: label2,
+    englishOrigin: englishOrigin(label2, kana, meaning),
+    pos: String(row.pos ?? ""),
+    jlptLevel: String(row.jlpt_level ?? ""),
+    importance,
+    importanceScore: Math.round(Math.min(Math.max(importance * 1.4 + personalMistakeScore * 3, 0), 10) * 10) / 10,
+    isFavorite: isFavorite2("word", id),
+    note: String(row.note ?? ""),
+    example: {
+      jp: String(row.example_jp ?? ""),
+      meaning: String(row.example_meaning ?? ""),
+      furigana: parseFurigana(row.example_furigana),
+      tokens: parseTokenBoundaries(row.example_tokens, String(row.example_jp ?? ""), row.example_lemmas)
+    },
+    kanjiComponents: buildKanjiComponents(label2),
+    conjugations: row.verb_type ? [{ label: "\u52A8\u8BCD\u7C7B\u578B", value: verbTypeLabel(String(row.verb_type)) }] : [],
+    verbPair: buildVerbPair((0, import_database9.getDatabase)(), label2, kana),
+    confusions: confusionCandidates(row),
+    similarMeaning: similarMeaningCandidates(row)
+  };
+}
+var import_database9, import_kanji_variants, import_verb_pair_hints2, import_question_meaning_overrides, VERB_TYPE_LABELS, verbTypeLabel, kanjiVariants, verbPairHints2, englishOrigins, latinPattern, cjkPattern, ABBR_SRC, ABBR_TAIL, abbreviationNotePattern, KANA_CHAR, KANA_RUN, shortMeaningOverrides, kanjiMeaningOverrides, HONORIFIC_WORD_LABELS;
+var init_word_card = __esm({
+  "../frontend/src/lib/models/word-card.ts"() {
+    "use strict";
+    import_database9 = __toESM(require_database(), 1);
+    init_furigana_data();
+    init_confusion();
+    init_similar_meaning_groups();
+    import_kanji_variants = __toESM(require_kanji_variants(), 1);
+    import_verb_pair_hints2 = __toESM(require_verb_pair_hints(), 1);
+    init_english_origins();
+    init_user_question_meanings();
+    import_question_meaning_overrides = __toESM(require_question_meaning_overrides(), 1);
+    VERB_TYPE_LABELS = {
+      godan: "\u4E00\u7C7B\u52A8\u8BCD\uFF08\u4E94\u6BB5\uFF09",
+      iku: "\u4E00\u7C7B\u52A8\u8BCD\uFF08\u4E94\u6BB5\uFF09",
+      ichidan: "\u4E8C\u7C7B\u52A8\u8BCD\uFF08\u4E00\u6BB5\uFF09",
+      suru: "\u4E09\u7C7B\u52A8\u8BCD\uFF08\u30B5\u53D8\uFF09",
+      kuru: "\u4E09\u7C7B\u52A8\u8BCD\uFF08\u30AB\u53D8\uFF09"
+    };
+    verbTypeLabel = (verbType) => VERB_TYPE_LABELS[verbType] ?? verbType;
+    kanjiVariants = import_kanji_variants.default.japanese_to_simplified ?? {};
+    verbPairHints2 = Object.fromEntries(
+      Object.entries(import_verb_pair_hints2.default).flatMap(([key, value]) => {
+        if (value.length < 4) return [];
+        return [[key, [value[0], value[1], value[2], value[3]]]];
+      })
+    );
+    englishOrigins = english_origins_default;
+    latinPattern = /[A-Za-zＡ-Ｚａ-ｚ]+/g;
+    cjkPattern = /[\u3400-\u9fff]/;
+    ABBR_SRC = '(?:[\u300C\u300E\u201C"][^\u300C\u300D\u300E\u300F\u201C\u201D"]*[\u300D\u300F\u201D"]|[\uFF08(\uFF3B\u3014][^\uFF08()\uFF09\uFF3B\\]\u3014\u3015]*[\uFF09)\uFF3D\u3015]|[\u3041-\u3096\u309D\u309E\u30A1-\u30FA\u30FC\u30FD\u30FE\uFF66-\uFF9F\u30FB]+|[A-Za-z\uFF21-\uFF3A\uFF41-\uFF5A]+|[\xB7\\s])*';
+    ABBR_TAIL = "(?:\u7701\u7565|\u7E2E\u7565|\u7F29\u7565|\u7B80\u79F0|\u7C21\u79F0|\u7565\u79F0|\u7565\u8A9E|\u7565\u8BED|\u7F29\u5199|\u7E2E\u5199|\u7565)(?:\u8BED|\u8A9E|\u8BCD|\u8A5E)?";
+    abbreviationNotePattern = new RegExp(`${ABBR_SRC}(?:\u7684|\u306E|\u4E4B)\\s*${ABBR_TAIL}`, "g");
+    KANA_CHAR = /[ぁ-ゖゝゞァ-ヺーヽヾｦ-ﾟ]/;
+    KANA_RUN = /[ぁ-ゖゝゞァ-ヺーヽヾｦ-ﾟ]+/g;
+    shortMeaningOverrides = {
+      596: "\u656C\u79F0",
+      750: "\u804C\u4E1A\u8005",
+      847: "\u5BF9\u8C61\u5730\u70B9",
+      952: "\u5929\u5987\u7F57",
+      1519: "\u5E97\u94FA\u4EBA\u5458",
+      1528: "\u6536\u4FE1\u5730\u5740",
+      2008: "\u79CD\u7C7B\u6570",
+      2084: "\u5E72\u70B8\u98DF\u54C1",
+      2138: "\u64CD\u4F5C",
+      2280: "\u4E8B\u60C5\u4EF6\u6570",
+      2303: "\u6CD5\u56FD",
+      2340: "\u5361\u4E01\u8F66",
+      2358: "\u4F53\u80B2\u4E2D\u5FC3",
+      2379: "\u513F\u7AE5\u8282",
+      2392: "\u805A\u4F1A",
+      2398: "\u5E7F\u5C9B",
+      2401: "\u7EF4\u751F\u7D20\u5242",
+      2425: "\u9AD8\u7EA7\u516C\u5BD3",
+      2428: "\u90AE\u7BB1\u5730\u5740",
+      2446: "\u6635\u79F0\u540E\u7F00",
+      2464: "\u4E0D\u4E45",
+      2480: "\u5927\u697C",
+      2494: "\u8DEF\u4E0A\u5C0F\u5FC3",
+      2495: "\u8BF7\u591A\u5173\u7167",
+      2519: "\u6253\u5DE5",
+      2524: "\u5404\u79CD\u5404\u6837",
+      2525: "\u795E\u6237",
+      2539: "\u5A01\u58EB\u5FCC",
+      2579: "\u6839\u636E",
+      2582: "\u541B\u79F0",
+      2624: "\u5404\u79CD\u5404\u6837"
+    };
+    kanjiMeaningOverrides = {
+      "\u8B1B\u5EA7": "\u8BB2\u5EA7",
+      "\u7DD1\u8336": "\u7EFF\u8336",
+      "\u8272\u925B\u7B46": "\u5F69\u8272\u94C5\u7B14",
+      "\u5BCC\u58EB\u5C71": "\u5BCC\u58EB\u5C71",
+      "\u5730\u5473": "\u6734\u7D20",
+      "\u6D3E\u624B": "\u82B1\u54E8",
+      "\u521D\u8A63": "\u65B0\u5E74\u53C2\u62DC"
+    };
+    HONORIFIC_WORD_LABELS = {
+      "\u3044\u3089\u3063\u3057\u3083\u308B": "\u656C\u8BED",
+      "\u304A\u3063\u3057\u3083\u308B": "\u656C\u8BED",
+      "\u306A\u3055\u308B": "\u656C\u8BED",
+      "\u304F\u3060\u3055\u308B": "\u656C\u8BED",
+      "\u3054\u89A7\u306B\u306A\u308B": "\u656C\u8BED",
+      "\u304A\u3044\u3067\u306B\u306A\u308B": "\u656C\u8BED",
+      "\u304A\u8D8A\u3057\u306B\u306A\u308B": "\u656C\u8BED",
+      "\u304A\u53EC\u3057\u306B\u306A\u308B": "\u656C\u8BED",
+      "\u53EC\u3057\u4E0A\u304C\u308B": "\u656C\u8BED",
+      "\u4F3A\u3046": "\u8C26\u8BED",
+      "\u53C2\u308B": "\u8C26\u8BED",
+      "\u7533\u3059": "\u8C26\u8BED",
+      "\u7533\u3057\u4E0A\u3052\u308B": "\u8C26\u8BED",
+      "\u9802\u304F": "\u8C26\u8BED",
+      "\u3044\u305F\u3060\u304F": "\u8C26\u8BED",
+      "\u5DEE\u3057\u4E0A\u3052\u308B": "\u8C26\u8BED",
+      "\u81F4\u3059": "\u8C26\u8BED",
+      "\u304A\u308B": "\u8C26\u8BED",
+      "\u5B58\u3058\u308B": "\u8C26\u8BED",
+      "\u5B58\u3058\u4E0A\u3052\u308B": "\u8C26\u8BED",
+      "\u62DD\u898B": "\u8C26\u8BED",
+      "\u9802\u6234": "\u8C26\u8BED",
+      "\u62DD\u501F": "\u8C26\u8BED",
+      "\u304A\u76EE\u306B\u304B\u304B\u308B": "\u8C26\u8BED",
+      "\u627F\u308B": "\u8C26\u8BED",
+      "\u304B\u3057\u3053\u307E\u308A\u307E\u3057\u305F": "\u8C26\u8BED"
+    };
+  }
+});
+
+// ../frontend/src/lib/models/question-meaning-index.ts
+var question_meaning_index_exports = {};
+__export(question_meaning_index_exports, {
+  displayedPromptKeyOf: () => displayedPromptKeyOf,
+  displayedPromptPeers: () => displayedPromptPeers,
+  questionMeaningKeyOf: () => questionMeaningKeyOf,
+  questionMeaningPeers: () => questionMeaningPeers,
+  resetQuestionMeaningIndex: () => resetQuestionMeaningIndex
+});
+var cached3, resetQuestionMeaningIndex, buildIndex, index2, questionMeaningKeyOf, questionMeaningPeers, displayedCached, buildDisplayedIndex, displayedIndex, displayedPromptKeyOf, displayedPromptPeers;
+var init_question_meaning_index = __esm({
+  "../frontend/src/lib/models/question-meaning-index.ts"() {
+    "use strict";
+    init_db_utils();
+    init_word_card();
+    cached3 = null;
+    resetQuestionMeaningIndex = () => {
+      cached3 = null;
+      displayedCached = null;
+    };
+    buildIndex = () => {
+      const keyByWord = /* @__PURE__ */ new Map();
+      const wordsByKey = /* @__PURE__ */ new Map();
+      rowsFor("SELECT id, kanji, kana, meaning FROM words").forEach((row) => {
+        const id = Number(row.id ?? 0);
+        if (!id) return;
+        const label2 = String(row.kanji || row.kana || "");
+        const key = promptMeaning(String(row.meaning ?? ""), id, label2, String(row.kana ?? ""));
+        if (!key) return;
+        keyByWord.set(id, key);
+        const peers = wordsByKey.get(key);
+        if (peers) peers.push(id);
+        else wordsByKey.set(key, [id]);
+      });
+      wordsByKey.forEach((ids, key) => {
+        if (ids.length < 2) {
+          wordsByKey.delete(key);
+          keyByWord.delete(ids[0]);
+        }
+      });
+      return { keyByWord, wordsByKey };
+    };
+    index2 = () => {
+      cached3 ?? (cached3 = buildIndex());
+      return cached3;
+    };
+    questionMeaningKeyOf = (wordId) => index2().keyByWord.get(wordId);
+    questionMeaningPeers = (wordId) => {
+      const key = index2().keyByWord.get(wordId);
+      if (!key) return [];
+      return (index2().wordsByKey.get(key) ?? []).filter((id) => id !== wordId);
+    };
+    displayedCached = null;
+    buildDisplayedIndex = () => {
+      const keyByWord = /* @__PURE__ */ new Map();
+      const wordsByKey = /* @__PURE__ */ new Map();
+      rowsFor("SELECT id, kanji, kana, meaning FROM words").forEach((row) => {
+        const id = Number(row.id ?? 0);
+        if (!id) return;
+        const label2 = String(row.kanji || row.kana || "");
+        const key = questionMeaning(String(row.meaning ?? ""), label2, String(row.kana ?? ""), id) || String(row.meaning ?? "").trim();
+        if (!key) return;
+        keyByWord.set(id, key);
+        const peers = wordsByKey.get(key);
+        if (peers) peers.push(id);
+        else wordsByKey.set(key, [id]);
+      });
+      wordsByKey.forEach((ids, key) => {
+        if (ids.length < 2) {
+          wordsByKey.delete(key);
+          keyByWord.delete(ids[0]);
+        }
+      });
+      return { keyByWord, wordsByKey };
+    };
+    displayedIndex = () => {
+      displayedCached ?? (displayedCached = buildDisplayedIndex());
+      return displayedCached;
+    };
+    displayedPromptKeyOf = (wordId) => displayedIndex().keyByWord.get(wordId);
+    displayedPromptPeers = (wordId) => {
+      const key = displayedIndex().keyByWord.get(wordId);
+      if (!key) return [];
+      return (displayedIndex().wordsByKey.get(key) ?? []).filter((id) => id !== wordId);
+    };
+  }
+});
+
+// ../frontend/src/lib/scheduler/interference.ts
+function buildInterferenceIndex(rows) {
+  const ids = rows.map((row) => Number(row.id ?? row.word_id ?? 0));
+  const adjacency = /* @__PURE__ */ new Map();
+  const link = (left, right) => {
+    if (left === right) return;
+    if (!adjacency.has(left)) adjacency.set(left, /* @__PURE__ */ new Set());
+    if (!adjacency.has(right)) adjacency.set(right, /* @__PURE__ */ new Set());
+    adjacency.get(left).add(right);
+    adjacency.get(right).add(left);
+  };
+  const byToken = /* @__PURE__ */ new Map();
+  rows.forEach((row, index3) => {
+    for (const token of staticTokensOf(row)) {
+      const bucket = byToken.get(token) ?? [];
+      bucket.push(ids[index3]);
+      byToken.set(token, bucket);
+    }
+  });
+  for (const bucket of byToken.values()) {
+    for (let i = 0; i < bucket.length; i += 1) {
+      for (let j = i + 1; j < bucket.length; j += 1) link(bucket[i], bucket[j]);
+    }
+  }
+  for (let i = 0; i < rows.length; i += 1) {
+    for (let j = i + 1; j < rows.length; j += 1) {
+      if (soundsAlike(rows[i], rows[j])) link(ids[i], ids[j]);
+    }
+  }
+  const present = new Set(ids);
+  return {
+    conflicts: (left, right) => adjacency.get(left)?.has(right) ?? false,
+    has: (id) => present.has(id)
+  };
+}
+function sessionInterference(day, rows, scope = "forward") {
+  const ids = rows.map((row) => Number(row.id ?? row.word_id ?? 0));
+  if (cached4?.day === day && cached4.scope === scope && ids.every((id) => cached4.index.has(id))) {
+    return cached4.index;
+  }
+  cached4 = { index: buildInterferenceIndex(rows), day, scope };
+  return cached4.index;
+}
+var import_verb_pair_hints3, INTERFERENCE_WINDOW, verbPairs, staticTokensOf, soundsAlike, cached4, resetInterferenceCache;
+var init_interference = __esm({
+  "../frontend/src/lib/scheduler/interference.ts"() {
+    "use strict";
+    import_verb_pair_hints3 = __toESM(require_verb_pair_hints(), 1);
+    init_similar_meaning_groups();
+    init_question_meaning_index();
+    init_confusion();
+    INTERFERENCE_WINDOW = 12;
+    verbPairs = import_verb_pair_hints3.default;
+    staticTokensOf = (row) => {
+      const kanji = String(row.kanji ?? "");
+      const kana = String(row.kana ?? "");
+      const tokens = [];
+      for (const key of [kanji, kana]) {
+        const pair = key && verbPairs[key];
+        if (!pair) continue;
+        const partner = String(pair[1] ?? "");
+        if (!partner) continue;
+        tokens.push(`vp:${[key, partner].sort().join("|")}`);
+      }
+      const group = similarMeaningGroups.find((candidate) => candidate.members.some(
+        ([memberKanji, memberKana]) => memberKanji === kanji && memberKana === kana || memberKanji === kana || memberKana === kana
+      ));
+      if (group) tokens.push(`sm:${group.id}`);
+      const questionKey = questionMeaningKeyOf(Number(row.id ?? 0));
+      if (questionKey) tokens.push(`qm:${questionKey}`);
+      return tokens;
+    };
+    soundsAlike = (left, right) => {
+      const leftKana = String(left.kana ?? "");
+      const rightKana = String(right.kana ?? "");
+      if (!leftKana || !rightKana) return false;
+      const gap = Math.abs(Array.from(leftKana).length - Array.from(rightKana).length);
+      if (gap > maxConfusionLengthGap(leftKana)) return false;
+      let similarity = kanaSimilarity(leftKana, rightKana) * 0.65 + structuralSimilarity(leftKana, rightKana) * 0.35;
+      const leftPos = String(left.pos ?? "").split("\u30FB")[0];
+      if (leftPos && String(right.pos ?? "").includes(leftPos)) similarity += 0.04;
+      if (left.verb_type && left.verb_type === right.verb_type) similarity += 0.04;
+      return similarity >= confusionThreshold(leftKana);
+    };
+    cached4 = null;
+    resetInterferenceCache = () => {
+      cached4 = null;
+    };
+  }
+});
+
+// ../frontend/src/lib/jlpt/plan.ts
+var plan_exports = {};
+__export(plan_exports, {
+  BACKLOG_SPREAD_DAYS: () => BACKLOG_SPREAD_DAYS,
+  CONSOLIDATION_DAYS: () => CONSOLIDATION_DAYS,
+  EXAM_WEEK_DAYS: () => EXAM_WEEK_DAYS,
+  JLPT_TARGETS: () => JLPT_TARGETS,
+  MAX_DAILY_NEW_GRAMMAR: () => MAX_DAILY_NEW_GRAMMAR,
+  MAX_DAILY_NEW_WORDS: () => MAX_DAILY_NEW_WORDS,
+  computeDailyMinimum: () => computeDailyMinimum,
+  consolidationDays: () => consolidationDays,
+  daysBetween: () => daysBetween,
+  levelsInScope: () => levelsInScope,
+  shortfallOf: () => shortfallOf,
+  shortfallText: () => shortfallText
+});
+var JLPT_TARGETS, levelsInScope, CONSOLIDATION_DAYS, consolidationDays, EXAM_WEEK_DAYS, BACKLOG_SPREAD_DAYS, MAX_DAILY_NEW_WORDS, MAX_DAILY_NEW_GRAMMAR, dayMs, daysBetween, phaseFor, amortize, computeDailyMinimum, shortfallOf, shortfallText;
+var init_plan = __esm({
+  "../frontend/src/lib/jlpt/plan.ts"() {
+    "use strict";
+    JLPT_TARGETS = ["N5", "N4", "N3", "N2", "N1"];
+    levelsInScope = (target) => JLPT_TARGETS.slice(0, JLPT_TARGETS.indexOf(target) + 1);
+    CONSOLIDATION_DAYS = 21;
+    consolidationDays = (totalDays) => totalDays === null ? CONSOLIDATION_DAYS : Math.max(0, Math.min(CONSOLIDATION_DAYS, Math.floor(totalDays / 4)));
+    EXAM_WEEK_DAYS = 7;
+    BACKLOG_SPREAD_DAYS = 7;
+    MAX_DAILY_NEW_WORDS = 50;
+    MAX_DAILY_NEW_GRAMMAR = 12;
+    dayMs = 864e5;
+    daysBetween = (from, to) => {
+      const a = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+      const b = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+      return Math.round((b.getTime() - a.getTime()) / dayMs);
+    };
+    phaseFor = (daysLeft, consolidation) => {
+      if (daysLeft < 0) return "past";
+      if (daysLeft <= EXAM_WEEK_DAYS) return "exam-week";
+      if (daysLeft <= consolidation) return "consolidate";
+      return "intake";
+    };
+    amortize = (remaining, days) => {
+      if (remaining <= 0) return 0;
+      if (days <= 0) return remaining;
+      return Math.ceil(remaining / days);
+    };
+    computeDailyMinimum = (input) => {
+      const daysLeft = daysBetween(input.today, input.examDate);
+      const consolidation = consolidationDays(input.planStartedOn ? daysBetween(input.planStartedOn, input.examDate) : null);
+      const phase = phaseFor(daysLeft, consolidation);
+      const intakeDaysLeft = Math.max(daysLeft - consolidation, 0);
+      const takingNew = phase === "intake";
+      const newWords = takingNew ? amortize(input.unseenWords, intakeDaysLeft) : 0;
+      const newGrammar = takingNew ? amortize(input.unseenGrammar, intakeDaysLeft) : 0;
+      const backlogDays = Math.max(Math.min(BACKLOG_SPREAD_DAYS, daysLeft), 1);
+      const reviewWords = input.freshDueWords + amortize(input.overdueWords, backlogDays);
+      const reviewGrammar = input.freshDueGrammar + amortize(input.overdueGrammar, backlogDays);
+      const daysNeeded = Math.max(
+        Math.ceil(input.unseenWords / MAX_DAILY_NEW_WORDS),
+        Math.ceil(input.unseenGrammar / MAX_DAILY_NEW_GRAMMAR)
+      );
+      return {
+        daysLeft,
+        intakeDaysLeft,
+        phase,
+        consolidationDays: consolidation,
+        newWords: Math.min(newWords, MAX_DAILY_NEW_WORDS),
+        reviewWords,
+        newGrammar: Math.min(newGrammar, MAX_DAILY_NEW_GRAMMAR),
+        reviewGrammar,
+        feasible: newWords <= MAX_DAILY_NEW_WORDS && newGrammar <= MAX_DAILY_NEW_GRAMMAR,
+        daysNeeded: daysNeeded + consolidation
+      };
+    };
+    shortfallOf = (plan, done) => {
+      const gap = (target, actual) => Math.max(target - actual, 0);
+      const newWords = gap(plan.newWords, done.newWordsDone);
+      const reviewWords = gap(plan.reviewWords, done.reviewWordsDone);
+      const newGrammar = gap(plan.newGrammar, done.newGrammarDone);
+      const reviewGrammar = gap(plan.reviewGrammar, done.reviewGrammarDone);
+      return {
+        newWords,
+        reviewWords,
+        newGrammar,
+        reviewGrammar,
+        clear: newWords + reviewWords + newGrammar + reviewGrammar === 0
+      };
+    };
+    shortfallText = (shortfall) => {
+      if (shortfall.clear) return "\u4ECA\u5929\u7684\u6700\u4F4E\u91CF\u5DF2\u7ECF\u505A\u5B8C\u4E86";
+      const parts = [];
+      if (shortfall.reviewWords > 0) parts.push(`\u590D\u4E60 ${shortfall.reviewWords}`);
+      if (shortfall.newWords > 0) parts.push(`\u65B0\u8BCD ${shortfall.newWords}`);
+      if (shortfall.reviewGrammar > 0) parts.push(`\u8BED\u6CD5\u590D\u4E60 ${shortfall.reviewGrammar}`);
+      if (shortfall.newGrammar > 0) parts.push(`\u65B0\u8BED\u6CD5 ${shortfall.newGrammar}`);
+      return `\u8FD8\u5DEE ${parts.join(" \xB7 ")}`;
+    };
+  }
+});
+
+// ../frontend/src/lib/studyPreferences.ts
+var studyPreferences_exports = {};
+__export(studyPreferences_exports, {
+  GRAMMAR_INTENSITY_ANCHORS: () => GRAMMAR_INTENSITY_ANCHORS,
+  GRAMMAR_INTENSITY_MAX: () => GRAMMAR_INTENSITY_MAX,
+  GRAMMAR_INTENSITY_MIN: () => GRAMMAR_INTENSITY_MIN,
+  INTENSITY_ANCHORS: () => INTENSITY_ANCHORS,
+  INTENSITY_MAX: () => INTENSITY_MAX,
+  INTENSITY_MIN: () => INTENSITY_MIN,
+  PREFERENCES_EVENT: () => PREFERENCES_EVENT,
+  REVIEW_CAP_UNLIMITED: () => REVIEW_CAP_UNLIMITED,
+  applyMotionLevel: () => applyMotionLevel,
+  applyTheme: () => applyTheme,
+  defaultStudyPreferences: () => defaultStudyPreferences,
+  ensureJlptPlanAnchor: () => ensureJlptPlanAnchor,
+  getDailyGrammarGoal: () => getDailyGrammarGoal,
+  getDailyWordGoal: () => getDailyWordGoal,
+  getJlptPlanPreferences: () => getJlptPlanPreferences,
+  getResolvedTheme: () => getResolvedTheme,
+  getReviewCapPreference: () => getReviewCapPreference,
+  getStudyPreferences: () => getStudyPreferences,
+  jsMotionAllowed: () => jsMotionAllowed,
+  normalizeStudyPreferences: () => normalizeStudyPreferences,
+  saveStudyPreferences: () => saveStudyPreferences
+});
+var PREFERENCES_EVENT, KEY, INTENSITY_ANCHORS, INTENSITY_MIN, INTENSITY_MAX, GRAMMAR_INTENSITY_ANCHORS, GRAMMAR_INTENSITY_MIN, GRAMMAR_INTENSITY_MAX, defaultStudyPreferences, MOTION_LEVELS, clampDailyGoal, clampGrammarGoal, clampSmallGoal, REVIEW_CAP_UNLIMITED, clampReviewCap, normalizeStudyPreferences, getStudyPreferences, localIsoDate, saveStudyPreferences, getDailyWordGoal, getDailyGrammarGoal, getReviewCapPreference, ensureJlptPlanAnchor, getJlptPlanPreferences, getResolvedTheme, applyTheme, applyMotionLevel, jsMotionAllowed;
+var init_studyPreferences = __esm({
+  "../frontend/src/lib/studyPreferences.ts"() {
+    "use strict";
+    init_plan();
+    PREFERENCES_EVENT = "shushugo-preferences";
+    KEY = "mn-study-preferences";
+    INTENSITY_ANCHORS = [
+      { value: 5, label: "\u8F7B\u677E" },
+      { value: 15, label: "\u65E5\u5E38" },
+      { value: 30, label: "\u8BA4\u771F" },
+      { value: 50, label: "\u51B2\u523A" }
+    ];
+    INTENSITY_MIN = 5;
+    INTENSITY_MAX = 50;
+    GRAMMAR_INTENSITY_ANCHORS = [
+      { value: 0, label: "\u53EA\u590D\u4E60" },
+      { value: 3, label: "\u8F7B\u677E" },
+      { value: 5, label: "\u65E5\u5E38" },
+      { value: 10, label: "\u8BA4\u771F" }
+    ];
+    GRAMMAR_INTENSITY_MIN = 0;
+    GRAMMAR_INTENSITY_MAX = 30;
+    defaultStudyPreferences = {
+      theme: "system",
+      autoPlay: true,
+      showRomaji: false,
+      showJlptLevel: false,
+      dailyGoal: 15,
+      grammarDailyGoal: 5,
+      reviewCap: 0,
+      kanjiDailyGoal: 5,
+      confusionDailyGoal: 5,
+      grammarReviewCap: 0,
+      kanjiReviewCap: 0,
+      confusionReviewCap: 0,
+      zooSounds: true,
+      weeklyReportEnabled: true,
+      motionLevel: "full",
+      voiceId: "",
+      jlptPlanEnabled: true,
+      jlptTarget: "N3",
+      jlptExamDate: "",
+      jlptPlanStartedOn: ""
+    };
+    MOTION_LEVELS = ["full", "reduced", "off"];
+    clampDailyGoal = (value) => {
+      const normalized = Number.isFinite(value) ? Math.floor(value) : defaultStudyPreferences.dailyGoal;
+      return Math.min(INTENSITY_MAX, Math.max(0, normalized));
+    };
+    clampGrammarGoal = (value) => {
+      const normalized = Number.isFinite(value) ? Math.floor(value) : defaultStudyPreferences.grammarDailyGoal;
+      return Math.min(GRAMMAR_INTENSITY_MAX, Math.max(GRAMMAR_INTENSITY_MIN, normalized));
+    };
+    clampSmallGoal = (value, max) => {
+      const normalized = Number.isFinite(value) ? Math.floor(value) : 0;
+      return Math.min(max, Math.max(0, normalized));
+    };
+    REVIEW_CAP_UNLIMITED = -1;
+    clampReviewCap = (value) => {
+      if (!Number.isFinite(value)) return 0;
+      if (value < 0) return REVIEW_CAP_UNLIMITED;
+      if (value === 0) return 0;
+      return Math.min(500, Math.max(1, Math.floor(value)));
+    };
+    normalizeStudyPreferences = (value = {}) => ({
+      theme: value.theme === "light" || value.theme === "dark" || value.theme === "system" ? value.theme : "system",
+      autoPlay: value.autoPlay ?? defaultStudyPreferences.autoPlay,
+      showRomaji: value.showRomaji ?? defaultStudyPreferences.showRomaji,
+      showJlptLevel: value.showJlptLevel ?? defaultStudyPreferences.showJlptLevel,
+      dailyGoal: clampDailyGoal(Number(value.dailyGoal ?? defaultStudyPreferences.dailyGoal)),
+      grammarDailyGoal: clampGrammarGoal(Number(value.grammarDailyGoal ?? defaultStudyPreferences.grammarDailyGoal)),
+      kanjiDailyGoal: clampSmallGoal(Number(value.kanjiDailyGoal ?? defaultStudyPreferences.kanjiDailyGoal), 50),
+      confusionDailyGoal: clampSmallGoal(Number(value.confusionDailyGoal ?? defaultStudyPreferences.confusionDailyGoal), 20),
+      grammarReviewCap: clampSmallGoal(Number(value.grammarReviewCap ?? 0), 500),
+      kanjiReviewCap: clampSmallGoal(Number(value.kanjiReviewCap ?? 0), 500),
+      confusionReviewCap: clampSmallGoal(Number(value.confusionReviewCap ?? 0), 500),
+      reviewCap: clampReviewCap(Number(value.reviewCap ?? defaultStudyPreferences.reviewCap)),
+      zooSounds: value.zooSounds ?? defaultStudyPreferences.zooSounds,
+      weeklyReportEnabled: value.weeklyReportEnabled ?? defaultStudyPreferences.weeklyReportEnabled,
+      motionLevel: MOTION_LEVELS.includes(value.motionLevel) ? value.motionLevel : defaultStudyPreferences.motionLevel,
+      // 不校验具体取值:声音是磁盘上有什么就有什么,选了个已删掉的由播放层自动回退
+      voiceId: typeof value.voiceId === "string" ? value.voiceId : defaultStudyPreferences.voiceId,
+      jlptPlanEnabled: value.jlptPlanEnabled ?? defaultStudyPreferences.jlptPlanEnabled,
+      jlptTarget: JLPT_TARGETS.includes(value.jlptTarget) ? value.jlptTarget : defaultStudyPreferences.jlptTarget,
+      // 格式不合法就当没填,由 jlpt/status.ts 回落到自动算下一场
+      jlptExamDate: /^\d{4}-\d{2}-\d{2}$/.test(String(value.jlptExamDate ?? "")) ? String(value.jlptExamDate) : defaultStudyPreferences.jlptExamDate,
+      jlptPlanStartedOn: /^\d{4}-\d{2}-\d{2}$/.test(String(value.jlptPlanStartedOn ?? "")) ? String(value.jlptPlanStartedOn) : defaultStudyPreferences.jlptPlanStartedOn
+    });
+    getStudyPreferences = () => {
+      try {
+        const raw = localStorage.getItem(KEY);
+        return normalizeStudyPreferences(raw ? JSON.parse(raw) : {});
+      } catch {
+        return defaultStudyPreferences;
+      }
+    };
+    localIsoDate = (date = /* @__PURE__ */ new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    saveStudyPreferences = (preferences) => {
+      const normalized = normalizeStudyPreferences(preferences);
+      const previous = getStudyPreferences();
+      if (!normalized.jlptPlanStartedOn || previous.jlptTarget !== normalized.jlptTarget || previous.jlptExamDate !== normalized.jlptExamDate) {
+        normalized.jlptPlanStartedOn = localIsoDate();
+      }
+      localStorage.setItem(KEY, JSON.stringify(normalized));
+      window.dispatchEvent(new CustomEvent(PREFERENCES_EVENT, { detail: normalized }));
+      return normalized;
+    };
+    getDailyWordGoal = () => getStudyPreferences().dailyGoal;
+    getDailyGrammarGoal = () => getStudyPreferences().grammarDailyGoal;
+    getReviewCapPreference = () => getStudyPreferences().reviewCap;
+    ensureJlptPlanAnchor = () => {
+      const prefs = getStudyPreferences();
+      if (!prefs.jlptPlanStartedOn) saveStudyPreferences(prefs);
+    };
+    getJlptPlanPreferences = () => {
+      const prefs = getStudyPreferences();
+      return {
+        enabled: prefs.jlptPlanEnabled,
+        target: prefs.jlptTarget,
+        examDate: prefs.jlptExamDate,
+        startedOn: prefs.jlptPlanStartedOn
+      };
+    };
+    getResolvedTheme = () => {
+      const prefs = getStudyPreferences();
+      if (prefs.theme === "light" || prefs.theme === "dark") return prefs.theme;
+      if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+      }
+      return "light";
+    };
+    applyTheme = () => {
+      const resolved = getResolvedTheme();
+      document.documentElement.setAttribute("data-theme", resolved);
+      console.log("\u2705 Theme applied:", resolved);
+    };
+    applyMotionLevel = (level = getStudyPreferences().motionLevel) => {
+      document.documentElement.setAttribute("data-motion", level);
+    };
+    jsMotionAllowed = () => {
+      if (typeof window === "undefined") return false;
+      if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return false;
+      return getStudyPreferences().motionLevel === "full";
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener(PREFERENCES_EVENT, (event) => {
+        const detail = event.detail;
+        applyTheme();
+        applyMotionLevel(detail?.motionLevel ?? getStudyPreferences().motionLevel);
+      });
+    }
+  }
+});
+
+// scripts/shared/shims/progress-events.js
+var require_progress_events = __commonJS({
+  "scripts/shared/shims/progress-events.js"(exports, module2) {
+    var PROGRESS_UPDATED_EVENT = "shushugo-progress-updated";
+    module2.exports = {
+      PROGRESS_UPDATED_EVENT,
+      notifyProgressUpdated: () => {
+        try {
+          globalThis.window.dispatchEvent(new globalThis.Event(PROGRESS_UPDATED_EVENT));
+        } catch {
+        }
+      }
+    };
+  }
+});
+
+// ../frontend/src/lib/scheduler/requeue.ts
+var defaultRandomBetween, SHORT_STEP_GAP, LONG_STEP_GAP, EXTRA_LONG_STEP_GAP, GRADUATION_TEST_GAP, LONG_STEP_MINUTES, EXTRA_LONG_STEP_MINUTES, requeueGap, STUBBORN_MISTAKE_STREAK, ENDGAME_REMAINING_RATIO, allowsBackToBack;
+var init_requeue = __esm({
+  "../frontend/src/lib/scheduler/requeue.ts"() {
+    "use strict";
+    defaultRandomBetween = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+    SHORT_STEP_GAP = [3, 8];
+    LONG_STEP_GAP = [9, 14];
+    EXTRA_LONG_STEP_GAP = [16, 26];
+    GRADUATION_TEST_GAP = [8, 20];
+    LONG_STEP_MINUTES = 5;
+    EXTRA_LONG_STEP_MINUTES = 20;
+    requeueGap = (minutesUntilDue, randomBetween2 = defaultRandomBetween, isGraduationTest = false) => {
+      const stepGap = minutesUntilDue >= EXTRA_LONG_STEP_MINUTES ? EXTRA_LONG_STEP_GAP : minutesUntilDue >= LONG_STEP_MINUTES ? LONG_STEP_GAP : SHORT_STEP_GAP;
+      const [min, max] = isGraduationTest ? [Math.max(stepGap[0], GRADUATION_TEST_GAP[0]), Math.max(stepGap[1], GRADUATION_TEST_GAP[1])] : stepGap;
+      return randomBetween2(min, max);
+    };
+    STUBBORN_MISTAKE_STREAK = 3;
+    ENDGAME_REMAINING_RATIO = 0.1;
+    allowsBackToBack = (opts) => {
+      if (opts.mistakeStreak >= STUBBORN_MISTAKE_STREAK) return true;
+      if (opts.total <= 0) return false;
+      return opts.remaining <= Math.ceil(opts.total * ENDGAME_REMAINING_RATIO);
+    };
+  }
+});
+
+// ../frontend/src/lib/fsrs-scheduler.ts
+var fsrs_scheduler_exports = {};
+__export(fsrs_scheduler_exports, {
+  FSRS_DEFAULT_RETENTION: () => FSRS_DEFAULT_RETENTION,
+  FSRS_LEARNING_STEPS: () => FSRS_LEARNING_STEPS,
+  FSRS_MAX_INTERVAL_DAYS: () => FSRS_MAX_INTERVAL_DAYS,
+  FSRS_NO_STEPS: () => FSRS_NO_STEPS,
+  FSRS_RELEARNING_STEPS: () => FSRS_RELEARNING_STEPS,
+  FSRS_STUBBORN_RELEARNING_STEPS: () => FSRS_STUBBORN_RELEARNING_STEPS,
+  GRADUATION_STABILITY_DAYS: () => GRADUATION_STABILITY_DAYS,
+  LEECH_LAPSE_THRESHOLD: () => LEECH_LAPSE_THRESHOLD,
+  MASTERED_INTERVAL_DAYS: () => MASTERED_INTERVAL_DAYS,
+  STUBBORN_DAILY_MISTAKES: () => STUBBORN_DAILY_MISTAKES,
+  getScheduler: () => getScheduler,
+  intervalDays: () => intervalDays,
+  isDue: () => isDue,
+  isGraduated: () => isGraduated,
+  isGraduatedForDay: () => isGraduatedForDay,
+  isLearning: () => isLearning,
+  isLeech: () => isLeech,
+  isMastered: () => isMastered,
+  ratingFor: () => ratingFor,
+  recordReview: () => recordReview,
+  retrievability: () => retrievability
+});
+function recordReview(prev, answer, now, opts = {}) {
+  const retention = opts.retention ?? FSRS_DEFAULT_RETENTION;
+  const maxInterval = opts.maxInterval ?? FSRS_MAX_INTERVAL_DAYS;
+  const mode = opts.mode ?? "normal";
+  const scheduler = getScheduler(retention, maxInterval, mode);
+  const next = scheduler.repeat(toCard(prev, now), now)[ratingFor(answer, mode)].card;
+  return cardToState(next, now, maxInterval);
+}
+function retrievability(s, now) {
+  return getScheduler().get_retrievability(toCard(s, now), now, false);
+}
+function isDue(s, now) {
+  if (!hasState(s)) return true;
+  return new Date(s.due).getTime() <= now.getTime();
+}
+function isGraduatedForDay(s, studyDayEnd2) {
+  if (!hasState(s)) return false;
+  if (s.state === import_ts_fsrs.State.Learning || s.state === import_ts_fsrs.State.Relearning) return false;
+  return new Date(s.due).getTime() > studyDayEnd2.getTime();
+}
+function isLearning(s) {
+  return hasState(s) && (s.state === import_ts_fsrs.State.Learning || s.state === import_ts_fsrs.State.Relearning || s.state === import_ts_fsrs.State.New);
+}
+var import_ts_fsrs, FSRS_DEFAULT_RETENTION, FSRS_MAX_INTERVAL_DAYS, FSRS_LEARNING_STEPS, FSRS_RELEARNING_STEPS, FSRS_STUBBORN_RELEARNING_STEPS, STUBBORN_DAILY_MISTAKES, FSRS_NO_STEPS, LEECH_LAPSE_THRESHOLD, DAY_MS, schedulerCache, getScheduler, ratingFor, hasState, toCard, clampDue, cardToState, MASTERED_INTERVAL_DAYS, intervalDays, isMastered, isLeech, GRADUATION_STABILITY_DAYS, isGraduated;
+var init_fsrs_scheduler = __esm({
+  "../frontend/src/lib/fsrs-scheduler.ts"() {
+    "use strict";
+    import_ts_fsrs = require("../vendor/ts-fsrs.umd");
+    FSRS_DEFAULT_RETENTION = 0.9;
+    FSRS_MAX_INTERVAL_DAYS = 365;
+    FSRS_LEARNING_STEPS = ["1m", "10m"];
+    FSRS_RELEARNING_STEPS = ["10m", "10m"];
+    FSRS_STUBBORN_RELEARNING_STEPS = ["10m", "10m", "30m"];
+    STUBBORN_DAILY_MISTAKES = 3;
+    FSRS_NO_STEPS = [];
+    LEECH_LAPSE_THRESHOLD = 8;
+    DAY_MS = 864e5;
+    schedulerCache = /* @__PURE__ */ new Map();
+    getScheduler = (retention = FSRS_DEFAULT_RETENTION, maxInterval = FSRS_MAX_INTERVAL_DAYS, mode = "normal") => {
+      const key = `${retention}|${maxInterval}|${mode}`;
+      let instance = schedulerCache.get(key);
+      if (!instance) {
+        instance = (0, import_ts_fsrs.fsrs)({
+          request_retention: retention,
+          maximum_interval: maxInterval,
+          enable_fuzz: false,
+          // 端侧可复现,不加随机抖动
+          enable_short_term: true,
+          // 开学习步骤:新词/答错当天反复刷到毕业
+          learning_steps: [...mode === "known" ? FSRS_NO_STEPS : FSRS_LEARNING_STEPS],
+          relearning_steps: [
+            ...mode === "known" ? FSRS_NO_STEPS : mode === "stubborn" ? FSRS_STUBBORN_RELEARNING_STEPS : FSRS_RELEARNING_STEPS
+          ]
+        });
+        schedulerCache.set(key, instance);
+      }
+      return instance;
+    };
+    ratingFor = (answer, mode = "normal") => {
+      switch (answer) {
+        case "know":
+          return mode === "known" ? import_ts_fsrs.Rating.Easy : import_ts_fsrs.Rating.Good;
+        case "fuzzy":
+          return import_ts_fsrs.Rating.Hard;
+        case "forgot":
+          return import_ts_fsrs.Rating.Again;
+        case "known_forever":
+          return import_ts_fsrs.Rating.Easy;
+        default:
+          return import_ts_fsrs.Rating.Good;
+      }
+    };
+    hasState = (s) => !!s && Number.isFinite(s.stability) && s.stability > 0 && !!s.due;
+    toCard = (s, now) => {
+      if (!hasState(s)) return (0, import_ts_fsrs.createEmptyCard)(now);
+      return {
+        due: new Date(s.due),
+        stability: s.stability,
+        difficulty: s.difficulty,
+        elapsed_days: 0,
+        scheduled_days: 0,
+        learning_steps: Number.isFinite(s.steps) ? s.steps : 0,
+        reps: Number.isFinite(s.reps) ? s.reps : 1,
+        lapses: Number.isFinite(s.lapses) ? s.lapses : 0,
+        state: Number.isFinite(s.state) ? s.state : import_ts_fsrs.State.Review,
+        last_review: new Date(s.lastReview || s.due)
+      };
+    };
+    clampDue = (dueISO, lastReview, maxInterval) => {
+      const cap = lastReview.getTime() + maxInterval * DAY_MS;
+      const due = new Date(dueISO).getTime();
+      return new Date(Math.min(due, cap)).toISOString();
+    };
+    cardToState = (next, now, maxInterval) => {
+      const lastReview = next.last_review ?? now;
+      return {
+        stability: next.stability,
+        difficulty: next.difficulty,
+        due: clampDue(next.due.toISOString(), lastReview, maxInterval),
+        lastReview: lastReview.toISOString(),
+        state: next.state,
+        steps: next.learning_steps,
+        reps: next.reps,
+        lapses: next.lapses
+      };
+    };
+    MASTERED_INTERVAL_DAYS = 180;
+    intervalDays = (s) => (new Date(s.due).getTime() - new Date(s.lastReview).getTime()) / DAY_MS;
+    isMastered = (s) => hasState(s) ? intervalDays(s) >= MASTERED_INTERVAL_DAYS : false;
+    isLeech = (s) => hasState(s) && s.lapses >= LEECH_LAPSE_THRESHOLD;
+    GRADUATION_STABILITY_DAYS = 180;
+    isGraduated = (s) => hasState(s) && s.stability >= GRADUATION_STABILITY_DAYS;
+  }
+});
+
+// ../frontend/src/lib/fsrs-store.ts
+var fsrs_store_exports = {};
+__export(fsrs_store_exports, {
+  DUE_SQL: () => DUE_SQL,
+  GRAMMAR_FSRS: () => GRAMMAR_FSRS,
+  KANJI_FSRS: () => KANJI_FSRS,
+  LEECH_DAILY_INTAKE: () => LEECH_DAILY_INTAKE,
+  LEECH_SQL: () => LEECH_SQL,
+  MASTERED_SQL: () => MASTERED_SQL,
+  NOT_MASTERED_SQL: () => NOT_MASTERED_SQL,
+  RECENT_LAPSE_HOURS: () => RECENT_LAPSE_HOURS,
+  REVERSE_FSRS: () => REVERSE_FSRS,
+  WORD_FSRS: () => WORD_FSRS,
+  backfillFsrsFromHistory: () => backfillFsrsFromHistory,
+  clearFsrsState: () => clearFsrsState,
+  ensureFsrsColumns: () => ensureFsrsColumns,
+  ensureGrammarFsrs: () => ensureGrammarFsrs,
+  ensureKanjiReadingFsrs: () => ensureKanjiReadingFsrs,
+  fsrsDueCount: () => fsrsDueCount,
+  fsrsDueWordIds: () => fsrsDueWordIds,
+  fsrsMasteredCount: () => fsrsMasteredCount,
+  migrateFullHistoryDailyEasy: () => migrateFullHistoryDailyEasy,
+  migrateRecentDailyEasyReviews: () => migrateRecentDailyEasyReviews,
+  plannedDueCount: () => plannedDueCount,
+  readFsrsState: () => readFsrsState,
+  recallFromRow: () => recallFromRow,
+  recordFsrsReview: () => recordFsrsReview,
+  restoreFsrsState: () => restoreFsrsState,
+  writeFsrsState: () => writeFsrsState
+});
+function ensureFsrsColumns(entity = WORD_FSRS) {
+  const db = (0, import_database10.getDatabase)();
+  let done = columnsReady.get(db);
+  if (!done) {
+    done = /* @__PURE__ */ new Set();
+    columnsReady.set(db, done);
+  }
+  if (done.has(entity.table)) return;
+  const existing = new Set(
+    rowsFor(`PRAGMA table_info(${entity.table})`).map((r) => String(r.name ?? ""))
+  );
+  for (const [name, type] of FSRS_COLS) {
+    if (!existing.has(name)) db.run(`ALTER TABLE ${entity.table} ADD COLUMN ${name} ${type}`);
+  }
+  done.add(entity.table);
+}
+function recallFromRow(row, now = /* @__PURE__ */ new Date()) {
+  const state = rowToState(row);
+  return state ? retrievability(state, now) : void 0;
+}
+function readFsrsState(id, entity = WORD_FSRS) {
+  ensureFsrsColumns(entity);
+  const rows = rowsFor(
+    `SELECT ${FSRS_SELECT} FROM ${entity.table} WHERE ${entity.idColumn} = ?`,
+    [id]
+  );
+  return rowToState(rows[0] ?? null);
+}
+function writeFsrsState(id, s, entity = WORD_FSRS) {
+  ensureFsrsColumns(entity);
+  (0, import_database10.getDatabase)().run(
+    `UPDATE ${entity.table} SET fsrs_stability = ?, fsrs_difficulty = ?, fsrs_due = ?, fsrs_last_review = ?,
+       fsrs_state = ?, fsrs_steps = ?, fsrs_reps = ?, fsrs_lapses = ? WHERE ${entity.idColumn} = ?`,
+    [s.stability, s.difficulty, s.due, s.lastReview, s.state, s.steps, s.reps, s.lapses, id]
+  );
+}
+function ensureKanjiReadingFsrs() {
+  ensureFsrsColumns(KANJI_FSRS);
+}
+function ensureGrammarFsrs() {
+  ensureFsrsColumns(GRAMMAR_FSRS);
+}
+function clearFsrsState(id, entity = WORD_FSRS) {
+  ensureFsrsColumns(entity);
+  (0, import_database10.getDatabase)().run(
+    `UPDATE ${entity.table} SET ${FSRS_COLS.map(([c]) => `${c} = NULL`).join(", ")}
+     WHERE ${entity.idColumn} = ?`,
+    [id]
+  );
+}
+function restoreFsrsState(id, prev, entity = WORD_FSRS) {
+  if (prev) writeFsrsState(id, prev, entity);
+  else clearFsrsState(id, entity);
+}
+function recordFsrsReview(id, answer, now = /* @__PURE__ */ new Date(), opts = {}, entity = WORD_FSRS) {
+  const prev = readFsrsState(id, entity);
+  const next = recordReview(prev, answer, now, opts);
+  writeFsrsState(id, next, entity);
+  return next;
+}
+function backfillFsrsFromHistory() {
+  ensureFsrsColumns();
+  if (getState("fsrs_backfilled", "") === "1") return { migrated: false, words: 0 };
+  const rows = rowsFor(`
+    SELECT r.word_id, r.answer, r.created_at, r.reviewed_on
+    FROM reviews r
+    JOIN (
+      SELECT word_id, reviewed_on, MIN(id) AS mid
+      FROM reviews
+      GROUP BY word_id, reviewed_on
+    ) f ON f.mid = r.id
+    ORDER BY r.word_id ASC, r.created_at ASC, r.id ASC
+  `);
+  const db = (0, import_database10.getDatabase)();
+  const byWord = /* @__PURE__ */ new Map();
+  for (const r of rows) {
+    const wid = Number(r.word_id);
+    const at = new Date(String(r.created_at ?? r.reviewed_on).replace(" ", "T")).getTime();
+    if (!byWord.has(wid)) byWord.set(wid, []);
+    byWord.get(wid).push({ answer: String(r.answer), at: Number.isFinite(at) ? at : Date.now() });
+  }
+  let count = 0;
+  db.run("BEGIN TRANSACTION");
+  try {
+    for (const [wid, seq] of byWord) {
+      seq.sort((a, b) => a.at - b.at);
+      let state = null;
+      let lastAt = 0;
+      for (const ev of seq) {
+        const when = ev.at <= lastAt ? lastAt + 1e3 : ev.at;
+        lastAt = when;
+        state = recordReview(state, ev.answer, new Date(when));
+      }
+      if (state) {
+        writeFsrsState(wid, state);
+        count++;
+      }
+    }
+    db.run("COMMIT");
+  } catch (e) {
+    db.run("ROLLBACK");
+    throw e;
+  }
+  setState("fsrs_backfilled", "1");
+  return { migrated: true, words: count };
+}
+function migrateRecentDailyEasyReviews(current = /* @__PURE__ */ new Date(), dayCount = RECENT_DAILY_EASY_DAYS, migrationKey = RECENT_DAILY_EASY_MIGRATION_KEY) {
+  if (getState(migrationKey, "") === "1") {
+    return { migrated: false, words: 0, reviews: 0 };
+  }
+  ensureFsrsColumns();
+  const endDay = studyDate(current);
+  const { startDay } = recentStudyDayRange(endDay, dayCount);
+  const rows = rowsFor(`
+    SELECT r.id, r.word_id, r.answer, r.reviewed_on, r.created_at
+    FROM reviews r
+    JOIN progress p ON p.word_id = r.word_id
+    WHERE p.known_forever = 0
+    ORDER BY r.word_id ASC, r.id ASC
+  `);
+  const byWord = /* @__PURE__ */ new Map();
+  rows.forEach((row) => {
+    const wordId = Number(row.word_id);
+    const id = Number(row.id);
+    const answer = String(row.answer);
+    const reviewDay = String(row.reviewed_on ?? "");
+    if (!Number.isFinite(wordId) || !Number.isFinite(id) || !reviewDay) return;
+    if (!byWord.has(wordId)) byWord.set(wordId, []);
+    byWord.get(wordId).push({
+      id,
+      wordId,
+      answer,
+      studyDay: reviewDay,
+      at: historicalReviewTime(reviewDay, row.created_at)
+    });
+  });
+  const affected = /* @__PURE__ */ new Map();
+  let affectedReviewCount = 0;
+  byWord.forEach((events, wordId) => {
+    const firstByDay = /* @__PURE__ */ new Map();
+    events.forEach((event) => {
+      if (!firstByDay.has(event.studyDay)) firstByDay.set(event.studyDay, event);
+    });
+    const hasRecentDailyEasy = [...firstByDay.values()].some((event) => event.studyDay >= startDay && event.studyDay <= endDay && event.answer === "know");
+    if (hasRecentDailyEasy) {
+      affected.set(wordId, events);
+      affectedReviewCount += events.length;
+    }
+  });
+  const db = (0, import_database10.getDatabase)();
+  let migratedWords = 0;
+  db.run("BEGIN TRANSACTION");
+  try {
+    affected.forEach((events, wordId) => {
+      const firstByDay = /* @__PURE__ */ new Map();
+      events.forEach((event) => {
+        if (!firstByDay.has(event.studyDay)) firstByDay.set(event.studyDay, event);
+      });
+      const sorted = [...events].sort((left, right) => left.at - right.at || left.id - right.id);
+      const wrongCountByDay = /* @__PURE__ */ new Map();
+      let state = null;
+      let lastAt = 0;
+      sorted.forEach((event) => {
+        if (event.answer === "known_forever") return;
+        if (event.studyDay < startDay && firstByDay.get(event.studyDay)?.id !== event.id) return;
+        const inRecentWindow = event.studyDay >= startDay && event.studyDay <= endDay;
+        const isFirstOfDay = firstByDay.get(event.studyDay)?.id === event.id;
+        const wrongCount = wrongCountByDay.get(event.studyDay) ?? 0;
+        const isWrong = event.answer === "forgot" || event.answer === "fuzzy";
+        const wrongToday = wrongCount + (isWrong ? 1 : 0);
+        const mode = inRecentWindow && isFirstOfDay && event.answer === "know" ? "known" : inRecentWindow && wrongToday >= 3 ? "stubborn" : "normal";
+        const when = event.at <= lastAt ? lastAt + 1e3 : event.at;
+        lastAt = when;
+        state = recordReview(state, event.answer, new Date(when), { mode });
+        if (isWrong && inRecentWindow) wrongCountByDay.set(event.studyDay, wrongToday);
+      });
+      if (state) {
+        writeFsrsState(wordId, state);
+        migratedWords += 1;
+      }
+    });
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+  setState(migrationKey, "1");
+  return { migrated: true, words: migratedWords, reviews: affectedReviewCount };
+}
+function migrateFullHistoryDailyEasy(current = /* @__PURE__ */ new Date()) {
+  return migrateRecentDailyEasyReviews(current, FULL_HISTORY_DAYS, FULL_DAILY_EASY_MIGRATION_KEY);
+}
+function fsrsMasteredCount(entity = WORD_FSRS) {
+  ensureFsrsColumns(entity);
+  return firstValue(
+    `SELECT COUNT(*) FROM ${entity.table} WHERE ${entity.eligible} AND ${MASTERED_SQL}`,
+    [],
+    0
+  );
+}
+function fsrsDueCount(now = /* @__PURE__ */ new Date(), entity = WORD_FSRS) {
+  ensureFsrsColumns(entity);
+  return firstValue(
+    `SELECT COUNT(*) FROM ${entity.table}
+     WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)`,
+    [now.toISOString()],
+    0
+  );
+}
+function plannedDueCount(now = /* @__PURE__ */ new Date(), entity = WORD_FSRS, leechIntake = LEECH_DAILY_INTAKE) {
+  ensureFsrsColumns(entity);
+  const row = rowsFor(
+    `SELECT SUM(COALESCE(fsrs_lapses, 0) < ?) AS normal, SUM(COALESCE(fsrs_lapses, 0) >= ?) AS leech
+     FROM ${entity.table} WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)`,
+    [LEECH_LAPSE_THRESHOLD, LEECH_LAPSE_THRESHOLD, now.toISOString()]
+  )[0];
+  return Number(row?.normal ?? 0) + Math.min(Number(row?.leech ?? 0), leechIntake);
+}
+function fsrsDueWordIds(limit, now = /* @__PURE__ */ new Date(), entity = WORD_FSRS, leechIntake = LEECH_DAILY_INTAKE) {
+  ensureFsrsColumns(entity);
+  if (limit <= 0) return [];
+  const leechIds = rowsFor(
+    `SELECT ${entity.idColumn} AS id FROM ${entity.table}
+     WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?) AND COALESCE(fsrs_lapses, 0) >= ?
+     ORDER BY RANDOM() LIMIT ?`,
+    [now.toISOString(), LEECH_LAPSE_THRESHOLD, leechIntake]
+  ).map((row) => Number(row.id));
+  const normalCount = firstValue(
+    `SELECT COUNT(*) FROM ${entity.table}
+     WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?) AND COALESCE(fsrs_lapses, 0) < ?`,
+    [now.toISOString(), LEECH_LAPSE_THRESHOLD],
+    0
+  );
+  if (normalCount + leechIds.length > limit) {
+    return rowsFor(
+      `SELECT ${entity.idColumn} AS id FROM ${entity.table}
+       WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
+         AND (COALESCE(fsrs_lapses, 0) < ? OR ${entity.idColumn} IN (${leechIds.map(() => "?").join(",") || "NULL"}))
+       ORDER BY RANDOM() LIMIT ?`,
+      [now.toISOString(), LEECH_LAPSE_THRESHOLD, ...leechIds, limit]
+    ).map((row) => Number(row.id));
+  }
+  const lapseSince = new Date(now.getTime() - RECENT_LAPSE_HOURS * 36e5).toISOString();
+  const rows = rowsFor(
+    `SELECT ${entity.idColumn} AS id, COALESCE(fsrs_lapses, 0) AS lapses FROM ${entity.table}
+     WHERE ${entity.eligible}
+       AND (fsrs_due IS NULL OR fsrs_due <= ?)
+     ORDER BY (fsrs_due IS NULL) DESC,
+              (fsrs_lapses > 0 AND fsrs_last_review >= ?) DESC,
+              fsrs_due ASC,
+              ${entity.idColumn} ASC
+     LIMIT ?`,
+    [now.toISOString(), lapseSince, limit * 3]
+  );
+  const picked = [];
+  let leeches = 0;
+  for (const row of rows) {
+    if (picked.length >= limit) break;
+    if (Number(row.lapses ?? 0) >= LEECH_LAPSE_THRESHOLD) {
+      if (leeches >= leechIntake) continue;
+      leeches += 1;
+    }
+    picked.push(Number(row.id));
+  }
+  return picked;
+}
+var import_database10, FSRS_COLS, MOJI_NOT_ACTIVATED, WORD_FSRS, KANJI_FSRS, REVERSE_FSRS, GRAMMAR_FSRS, columnsReady, FSRS_SELECT, rowToState, RECENT_DAILY_EASY_MIGRATION_KEY, RECENT_DAILY_EASY_DAYS, historicalReviewTime, recentStudyDayRange, FULL_DAILY_EASY_MIGRATION_KEY, FULL_HISTORY_DAYS, MASTERED_SQL, NOT_MASTERED_SQL, DUE_SQL, LEECH_SQL, RECENT_LAPSE_HOURS, LEECH_DAILY_INTAKE;
+var init_fsrs_store = __esm({
+  "../frontend/src/lib/fsrs-store.ts"() {
+    "use strict";
+    import_database10 = __toESM(require_database(), 1);
+    init_db_utils();
+    init_fsrs_scheduler();
+    FSRS_COLS = [
+      ["fsrs_stability", "REAL"],
+      ["fsrs_difficulty", "REAL"],
+      ["fsrs_due", "TEXT"],
+      ["fsrs_last_review", "TEXT"],
+      ["fsrs_state", "INTEGER"],
+      // 0=New 1=Learning 2=Review 3=Relearning
+      ["fsrs_steps", "INTEGER"],
+      // 学习步索引
+      ["fsrs_reps", "INTEGER"],
+      ["fsrs_lapses", "INTEGER"]
+      // 累计答错(leech 判据)
+    ];
+    MOJI_NOT_ACTIVATED = `word_id NOT IN (
+  SELECT word_id FROM moji_migrated_reviews WHERE activated_on IS NULL
+)`;
+    WORD_FSRS = {
+      table: "progress",
+      idColumn: "word_id",
+      eligible: `known_forever = 0 AND seen_count > 0 AND ${MOJI_NOT_ACTIVATED}`
+    };
+    KANJI_FSRS = {
+      table: "kanji_reading_memory",
+      idColumn: "word_id",
+      eligible: "1 = 1"
+    };
+    REVERSE_FSRS = {
+      table: "reverse_memory",
+      idColumn: "word_id",
+      eligible: "1 = 1"
+    };
+    GRAMMAR_FSRS = {
+      table: "grammar_progress",
+      idColumn: "grammar_id",
+      eligible: "known_forever = 0 AND seen_count > 0"
+    };
+    columnsReady = /* @__PURE__ */ new WeakMap();
+    FSRS_SELECT = "fsrs_stability, fsrs_difficulty, fsrs_due, fsrs_last_review, fsrs_state, fsrs_steps, fsrs_reps, fsrs_lapses";
+    rowToState = (r) => {
+      if (!r || r.fsrs_stability == null || !r.fsrs_due) return null;
+      return {
+        stability: Number(r.fsrs_stability),
+        difficulty: Number(r.fsrs_difficulty),
+        due: String(r.fsrs_due),
+        lastReview: String(r.fsrs_last_review ?? r.fsrs_due),
+        // 旧四列数据(迁移前)缺这些 → 兜底成复习卡,scheduler.toCard 也有同样兜底
+        state: r.fsrs_state == null ? 2 : Number(r.fsrs_state),
+        steps: r.fsrs_steps == null ? 0 : Number(r.fsrs_steps),
+        reps: r.fsrs_reps == null ? 1 : Number(r.fsrs_reps),
+        lapses: r.fsrs_lapses == null ? 0 : Number(r.fsrs_lapses)
+      };
+    };
+    RECENT_DAILY_EASY_MIGRATION_KEY = "fsrs_recent_daily_easy_v1";
+    RECENT_DAILY_EASY_DAYS = 8;
+    historicalReviewTime = (studyDay, createdAt) => {
+      const fallback = (/* @__PURE__ */ new Date(`${studyDay}T12:00:00`)).getTime();
+      if (createdAt == null || String(createdAt).trim() === "") return fallback;
+      const parsed = new Date(String(createdAt).replace(" ", "T")).getTime();
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+    recentStudyDayRange = (endDay, count) => {
+      const start = /* @__PURE__ */ new Date(`${endDay}T12:00:00`);
+      start.setDate(start.getDate() - Math.max(count - 1, 0));
+      return { startDay: studyDate(start), endDay };
+    };
+    FULL_DAILY_EASY_MIGRATION_KEY = "fsrs_full_daily_easy_v1";
+    FULL_HISTORY_DAYS = 1e4;
+    MASTERED_SQL = `(fsrs_due IS NOT NULL AND fsrs_last_review IS NOT NULL
+    AND julianday(fsrs_due) - julianday(fsrs_last_review) >= ${MASTERED_INTERVAL_DAYS})`;
+    NOT_MASTERED_SQL = `NOT ${MASTERED_SQL}`;
+    DUE_SQL = "(fsrs_due IS NULL OR fsrs_due <= ?)";
+    LEECH_SQL = `COALESCE(fsrs_lapses, 0) >= ${LEECH_LAPSE_THRESHOLD}`;
+    RECENT_LAPSE_HOURS = 36;
+    LEECH_DAILY_INTAKE = 10;
+  }
+});
+
+// ../frontend/src/lib/review-budget.ts
+var review_budget_exports = {};
+__export(review_budget_exports, {
+  NO_REVIEW_LIMIT: () => NO_REVIEW_LIMIT,
+  autoReviewCap: () => autoReviewCap,
+  dailyReviewCap: () => dailyReviewCap,
+  encoreChunkSize: () => encoreChunkSize,
+  encoreWeekKey: () => encoreWeekKey,
+  estimatedMinutesFor: () => estimatedMinutesFor,
+  fatigueDetected: () => fatigueDetected,
+  readEncoreLog: () => readEncoreLog,
+  recentReviewAverages: () => recentReviewAverages,
+  recordEncore: () => recordEncore,
+  reviewBacklogCount: () => reviewBacklogCount
+});
+function readEncoreLog(day) {
+  const weekKey = encoreWeekKey(day);
+  try {
+    const raw = JSON.parse(getState("encore_log", "{}"));
+    return {
+      weekKey,
+      weekCount: raw.weekKey === weekKey ? Number(raw.weekCount) || 0 : 0,
+      day,
+      dayWords: raw.day === day ? Number(raw.dayWords) || 0 : 0
+    };
+  } catch {
+    return { weekKey, weekCount: 0, day, dayWords: 0 };
+  }
+}
+function recordEncore(day, words) {
+  const log3 = readEncoreLog(day);
+  setState("encore_log", JSON.stringify({
+    weekKey: log3.weekKey,
+    weekCount: log3.weekCount + 1,
+    day,
+    dayWords: log3.dayWords + words
+  }));
+}
+function recentReviewAverages(day = today()) {
+  const perDay = rowsFor(`
+    SELECT reviewed_on, COUNT(DISTINCT word_id) AS words
+    FROM reviews
+    WHERE reviewed_on < ? AND reviewed_on >= date(?, '-30 day')
+    GROUP BY reviewed_on
+  `, [day, day]);
+  const totalWords = perDay.reduce((sum, row) => sum + Number(row.words ?? 0), 0);
+  const avgDailyWords = perDay.length ? totalWords / perDay.length : 0;
+  const totalSeconds = firstValue(`
+    SELECT COALESCE(SUM(seconds), 0)
+    FROM word_study_time
+    WHERE studied_on < ? AND studied_on >= date(?, '-30 day')
+  `, [day, day], 0);
+  const secondsPerWord = totalWords > 0 && totalSeconds > 0 ? Math.min(Math.max(totalSeconds / totalWords, 6), 45) : FALLBACK_SECONDS_PER_WORD;
+  return { avgDailyWords, secondsPerWord };
+}
+function dailyReviewCap(userCap, day = today()) {
+  if (userCap === REVIEW_CAP_UNLIMITED) return NO_REVIEW_LIMIT;
+  if (userCap > 0) return Math.min(Math.max(Math.floor(userCap), 1), 500);
+  return autoReviewCap(recentReviewAverages(day).avgDailyWords);
+}
+function fatigueDetected(day = today()) {
+  const totalToday = firstValue(
+    "SELECT COUNT(*) FROM reviews WHERE reviewed_on = ?",
+    [day],
+    0
+  );
+  if (totalToday < 40) return false;
+  const recent = rowsFor(
+    "SELECT answer FROM reviews WHERE reviewed_on = ? ORDER BY id DESC LIMIT 20",
+    [day]
+  );
+  if (recent.length < 20) return false;
+  const isMiss = (answer) => answer === "forgot" || answer === "fuzzy";
+  const recentErrorRate = recent.filter((row) => isMiss(row.answer)).length / recent.length;
+  const overallMisses = firstValue(
+    "SELECT COUNT(*) FROM reviews WHERE reviewed_on = ? AND answer IN ('forgot', 'fuzzy')",
+    [day],
+    0
+  );
+  const overallErrorRate = overallMisses / totalToday;
+  return recentErrorRate >= 0.4 && recentErrorRate >= overallErrorRate + 0.15;
+}
+var AUTO_CAP_MIN, AUTO_CAP_MAX, FALLBACK_SECONDS_PER_WORD, NO_REVIEW_LIMIT, autoReviewCap, encoreChunkSize, encoreWeekKey, estimatedMinutesFor, reviewBacklogCount;
+var init_review_budget = __esm({
+  "../frontend/src/lib/review-budget.ts"() {
+    "use strict";
+    init_db_utils();
+    init_fsrs_store();
+    init_studyPreferences();
+    AUTO_CAP_MIN = 60;
+    AUTO_CAP_MAX = 150;
+    FALLBACK_SECONDS_PER_WORD = 12;
+    NO_REVIEW_LIMIT = 1e9;
+    autoReviewCap = (avgDailyWords) => Math.min(Math.max(Math.round(avgDailyWords * 1.5), AUTO_CAP_MIN), AUTO_CAP_MAX);
+    encoreChunkSize = (remaining) => {
+      if (remaining <= 0) return 0;
+      if (remaining <= 5) return remaining;
+      const chunk = Math.ceil(remaining * 0.3 / 5) * 5;
+      return Math.min(Math.max(chunk, 5), 50, remaining);
+    };
+    encoreWeekKey = (day) => {
+      const base = /* @__PURE__ */ new Date(`${day}T00:00:00`);
+      base.setDate(base.getDate() - base.getDay());
+      const month = String(base.getMonth() + 1).padStart(2, "0");
+      const date = String(base.getDate()).padStart(2, "0");
+      return `${base.getFullYear()}-${month}-${date}`;
+    };
+    estimatedMinutesFor = (wordCount, secondsPerWord) => wordCount <= 0 ? 0 : Math.max(Math.ceil(wordCount * secondsPerWord / 60), 1);
+    reviewBacklogCount = () => fsrsDueCount();
+  }
+});
+
+// ../frontend/src/lib/reviews.ts
+var import_database11, FSRS_PARAMS_VERSION, recordReviewEvent;
+var init_reviews = __esm({
+  "../frontend/src/lib/reviews.ts"() {
+    "use strict";
+    init_db_utils();
+    import_database11 = __toESM(require_database(), 1);
+    init_schema2();
+    FSRS_PARAMS_VERSION = "fsrs-v1";
+    recordReviewEvent = ({
+      wordId,
+      answer,
+      reviewedOn,
+      direction,
+      schedulerMode = "normal",
+      reviewedAt = Date.now(),
+      eventSource = "study"
+    }) => {
+      ensureSyncSchema();
+      const db = (0, import_database11.getDatabase)();
+      db.run(`
+    INSERT INTO reviews (
+      word_id, answer, score_after, reviewed_on, direction,
+      reviewed_at, scheduler_mode, fsrs_params_version, event_source
+    ) VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?)
+  `, [wordId, answer, reviewedOn, direction, reviewedAt, schedulerMode, FSRS_PARAMS_VERSION, eventSource]);
+      return firstValue("SELECT last_insert_rowid()", [], 0);
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/session-state.ts
+function recentAnswersToday(day, limit, direction = "forward") {
+  const answeredToday = firstValue(
+    "SELECT COUNT(*) FROM reviews WHERE reviewed_on = ? AND direction = ?",
+    [day, direction],
+    0
+  );
+  const rows = rowsFor(
+    `SELECT word_id, answer FROM reviews
+     WHERE reviewed_on = ? AND direction = ?
+     ORDER BY created_at DESC, id DESC
+     LIMIT ?`,
+    [day, direction, Math.max(limit, 1)]
+  );
+  const wrongWords = /* @__PURE__ */ new Set();
+  for (const row of rows) {
+    const answer = String(row.answer ?? "");
+    if (answer !== "forgot" && answer !== "fuzzy") break;
+    wrongWords.add(Number(row.word_id));
+  }
+  const wrongStreak = wrongWords.size;
+  return {
+    answeredToday,
+    wordIds: rows.map((row) => Number(row.word_id)),
+    wrongStreak
+  };
+}
+var dailyNewQuota, queueKey, lastAnsweredKey, getReviewQueue, setReviewQueue, advanceReviewQueue, scheduleDelayedReview, setLastAnsweredWord, lastAnsweredWord;
+var init_session_state = __esm({
+  "../frontend/src/lib/word-api/session-state.ts"() {
+    "use strict";
+    init_studyPreferences();
+    init_requeue();
+    init_study_core();
+    dailyNewQuota = () => getDailyWordGoal();
+    queueKey = (direction) => direction === "forward" ? "review_queue" : `review_queue_${direction}`;
+    lastAnsweredKey = (direction) => direction === "forward" ? "last_answered_word" : `last_answered_word_${direction}`;
+    getReviewQueue = (direction = "forward") => {
+      try {
+        const queue = JSON.parse(getState(queueKey(direction), "[]"));
+        if (!Array.isArray(queue)) return [];
+        return queue.flatMap((item) => {
+          const wordId = Number(item?.word_id);
+          if (!Number.isFinite(wordId)) return [];
+          return [{ word_id: wordId, due_after: Math.max(Number(item?.due_after ?? 0), 0) }];
+        });
+      } catch {
+        return [];
+      }
+    };
+    setReviewQueue = (queue, direction = "forward") => {
+      setState(queueKey(direction), JSON.stringify(queue));
+    };
+    advanceReviewQueue = (answeredWordId, direction = "forward") => {
+      setReviewQueue(getReviewQueue(direction).flatMap((item) => {
+        if (item.word_id === answeredWordId) return [];
+        return [{ word_id: item.word_id, due_after: Math.max(item.due_after - 1, 0) }];
+      }), direction);
+    };
+    scheduleDelayedReview = (wordId, minutesUntilDue = 0, immediate = false, isGraduationTest = false, direction = "forward") => {
+      const queue = getReviewQueue(direction).filter((item) => item.word_id !== wordId);
+      queue.push({
+        word_id: wordId,
+        due_after: immediate ? 0 : requeueGap(minutesUntilDue, void 0, isGraduationTest)
+      });
+      setReviewQueue(queue, direction);
+    };
+    setLastAnsweredWord = (wordId, direction = "forward") => setState(lastAnsweredKey(direction), String(wordId));
+    lastAnsweredWord = (direction = "forward") => Number(getState(lastAnsweredKey(direction), "0")) || 0;
+  }
+});
+
+// ../frontend/src/lib/word-api/undo-stack.ts
+var UNDO_LIMIT, STACK_KEY, isSnapshot, readUndoStack, writeUndoStack, pushUndoSnapshot, canUndo, popUndoSnapshot, PIN_KEY, pinCard, readPinnedCard, clearPinnedCard;
+var init_undo_stack = __esm({
+  "../frontend/src/lib/word-api/undo-stack.ts"() {
+    "use strict";
+    init_study_core();
+    UNDO_LIMIT = 2;
+    STACK_KEY = "last_answer";
+    isSnapshot = (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+    readUndoStack = () => {
+      const raw = getState(STACK_KEY, "");
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (isSnapshot(parsed)) return [parsed];
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter(isSnapshot);
+      } catch {
+        return [];
+      }
+    };
+    writeUndoStack = (stack) => {
+      setState(STACK_KEY, JSON.stringify(stack.slice(-UNDO_LIMIT)));
+    };
+    pushUndoSnapshot = (snapshot) => {
+      writeUndoStack([...readUndoStack(), snapshot]);
+    };
+    canUndo = (mode) => {
+      const stack = readUndoStack();
+      const top = stack.length ? stack[stack.length - 1] : null;
+      return Boolean(top) && top.mode === mode && top.reviewed_on === today();
+    };
+    popUndoSnapshot = (mode) => {
+      if (!canUndo(mode)) return null;
+      const stack = readUndoStack();
+      const top = stack.pop();
+      writeUndoStack(stack);
+      return top;
+    };
+    PIN_KEY = "undo_pinned_card";
+    pinCard = (wordId, mode) => {
+      setState(PIN_KEY, JSON.stringify({ word_id: wordId, mode }));
+    };
+    readPinnedCard = (mode) => {
+      const raw = getState(PIN_KEY, "");
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        if (!isSnapshot(parsed) || parsed.mode !== mode) return null;
+        const wordId = Number(parsed.word_id);
+        return Number.isFinite(wordId) && wordId > 0 ? wordId : null;
+      } catch {
+        return null;
+      }
+    };
+    clearPinnedCard = () => {
+      setState(PIN_KEY, "");
+    };
+  }
+});
+
+// ../frontend/src/lib/grammar-api.ts
+var grammar_api_exports = {};
+__export(grammar_api_exports, {
+  ensureGrammarProgressInitialized: () => ensureGrammarProgressInitialized,
+  getGrammarPointFavorite: () => getGrammarPointFavorite,
+  getGrammarQueue: () => getGrammarQueue,
+  setGrammarQueue: () => setGrammarQueue
+});
+function ensureGrammarProgressInitialized() {
+  oncePerDatabase("grammar-progress", () => {
+    ensureUserTables();
+    (0, import_database12.getDatabase)().run(`
+      INSERT OR IGNORE INTO grammar_progress (grammar_id)
+      SELECT id FROM grammar_points
+    `);
+  });
+}
+function getGrammarPointFavorite(pattern) {
+  return isFavorite("grammar", pattern);
+}
+var import_database12, grammarState, setGrammarState, getGrammarQueue, setGrammarQueue;
+var init_grammar_api = __esm({
+  "../frontend/src/lib/grammar-api.ts"() {
+    "use strict";
+    import_database12 = __toESM(require_database(), 1);
+    init_db_utils();
+    init_study_core();
+    grammarState = (key, fallback) => firstValue(
+      "SELECT value FROM grammar_state WHERE key = ?",
+      [key],
+      fallback
+    );
+    setGrammarState = (key, value) => {
+      (0, import_database12.getDatabase)().run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", [key, value]);
+    };
+    getGrammarQueue = () => {
+      try {
+        const queue = JSON.parse(grammarState("queue", "[]"));
+        if (!Array.isArray(queue)) return [];
+        return queue.flatMap((item) => {
+          const grammarId = Number(item?.grammar_id);
+          if (!Number.isFinite(grammarId)) return [];
+          return [{ grammar_id: grammarId, due_after: Math.max(Number(item?.due_after ?? 0), 0) }];
+        });
+      } catch {
+        return [];
+      }
+    };
+    setGrammarQueue = (queue) => {
+      setGrammarState("queue", JSON.stringify(queue));
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/bootstrap.ts
+var import_database13, ensureProgressInitialized, initProgress;
+var init_bootstrap = __esm({
+  "../frontend/src/lib/word-api/bootstrap.ts"() {
+    "use strict";
+    import_database13 = __toESM(require_database(), 1);
+    init_db_utils();
+    init_study_core();
+    init_grammar_api();
+    init_fsrs_store();
+    ensureProgressInitialized = () => oncePerDatabase("word-progress", initProgress);
+    initProgress = () => {
+      const db = (0, import_database13.getDatabase)();
+      ensureUserTables();
+      db.run(`
+    INSERT OR IGNORE INTO progress (word_id)
+    SELECT id FROM words
+  `);
+      db.run("UPDATE words SET shuffle_rank = ABS(RANDOM()) / 9223372036854775807.0 WHERE shuffle_rank IS NULL");
+      if (!getState("first_study_day", "")) {
+        setState("first_study_day", today());
+      }
+      ensureGrammarProgressInitialized();
+      try {
+        ensureFsrsColumns();
+        backfillFsrsFromHistory();
+        migrateRecentDailyEasyReviews();
+        migrateFullHistoryDailyEasy();
+      } catch (err) {
+        console.warn("[fsrs] \u5355\u8BCD\u56DE\u586B\u8DF3\u8FC7:", err);
+      }
+      try {
+        ensureKanjiReadingFsrs();
+      } catch (err) {
+        console.warn("[fsrs] \u6C49\u5B57\u8BFB\u97F3\u5EFA\u8868\u8DF3\u8FC7:", err);
+      }
+      try {
+        ensureGrammarFsrs();
+      } catch (err) {
+        console.warn("[fsrs] \u8BED\u6CD5\u5EFA\u5217\u8DF3\u8FC7:", err);
+      }
+      persistSoon();
+    };
+  }
+});
+
+// ../frontend/src/lib/scheduler/priority.ts
+function priorityComponents(row, dueAfter, newQuotaLeft, options = {}) {
+  const isNew = Number(row.seen_count ?? 0) === 0;
+  const lapses = Number(row.fsrs_lapses ?? 0);
+  const components = {
+    // 「有多该复习」= 有多陌生(FSRS stability),不是欠了多久
+    score: 0,
+    critical: 0,
+    importance: Number(row.importance ?? 3) * 7,
+    // 错误史统一用 FSRS 的 lapses,不再叠加 forgot/fuzzy/mistake_streak 三个旧计数。
+    // 必须封顶:不封的话错了 20 次的词拿 200 分,把陌生度(上限 50)整个压死 ——
+    // 「顽固词不再置顶」就成了空话,只是把置顶从 critical 挪到了这一项。
+    mistake: Math.min(lapses * 10, MISTAKE_CAP),
+    queue: 0,
+    age: Math.min(daysSince(row.last_seen_on) * 3, 30),
+    review: isNew ? 0 : 35,
+    new: 0,
+    // 快速模式传 randomize:false:它是「按优先级浏览」的批次,不能让随机数把低优先级词顶到最上面。
+    jitter: options.randomize === false ? 0 : Math.random() * JITTER
+  };
+  if (isNew) {
+    components.new = 45 + Math.min(newQuotaLeft, 10);
+    components.score = 18;
+    components.shuffle = Number(row.shuffle_rank ?? 0) * 18;
+    components.importance = Number(row.importance ?? 3) * 4;
+  } else {
+    const state = Number(row.fsrs_state ?? 0);
+    const inLearning = state === 1 || state === 3;
+    components.score = inLearning ? RELEARNING_PRIORITY : row.fsrs_due == null || row.fsrs_stability == null ? UNSCHEDULED_PRIORITY : unfamiliarity(Number(row.fsrs_stability));
+  }
+  if (lapses >= LEECH_LAPSE_THRESHOLD) {
+    components.critical = LEECH_PRIORITY;
+  }
+  if (dueAfter !== void 0) {
+    if (dueAfter <= 0) {
+      components.queue = 45;
+    } else {
+      components.queue = -80 - dueAfter * 25;
+    }
+  }
+  return components;
+}
+function priorityScore(components) {
+  return Object.values(components).reduce((total, value) => total + value, 0);
+}
+var UNFAMILIAR_CAP, FAMILIAR_DAYS, JITTER, RELEARNING_PRIORITY, UNSCHEDULED_PRIORITY, LEECH_PRIORITY, MISTAKE_CAP, unfamiliarity, NEW_WORD_MIN_SHARE, shouldPickStage1NewWord;
+var init_priority = __esm({
+  "../frontend/src/lib/scheduler/priority.ts"() {
+    "use strict";
+    init_db_utils();
+    init_fsrs_scheduler();
+    UNFAMILIAR_CAP = 50;
+    FAMILIAR_DAYS = 30;
+    JITTER = 60;
+    RELEARNING_PRIORITY = 55;
+    UNSCHEDULED_PRIORITY = 50;
+    LEECH_PRIORITY = 12;
+    MISTAKE_CAP = 40;
+    unfamiliarity = (stability) => UNFAMILIAR_CAP * Math.max(0, 1 - Math.log2(1 + Math.max(stability, 0)) / Math.log2(1 + FAMILIAR_DAYS));
+    NEW_WORD_MIN_SHARE = 1 / 8;
+    shouldPickStage1NewWord = (remainingReviewCount, remainingNewCount, completedTaskCount, randomValue = Math.random()) => {
+      if (remainingNewCount <= 0) return false;
+      if (remainingReviewCount <= 0) return true;
+      if (completedTaskCount === 0) return false;
+      const share = remainingNewCount / (remainingReviewCount + remainingNewCount);
+      return randomValue < Math.max(share, NEW_WORD_MIN_SHARE);
+    };
+  }
+});
+
+// ../frontend/src/lib/grammar-formation.ts
+var grammar_formation_exports = {};
+__export(grammar_formation_exports, {
+  patternAttachment: () => patternAttachment,
+  patternPieces: () => patternPieces,
+  splitFormationRules: () => splitFormationRules
+});
+var splitFormationRules, TILDE, TILDE_ALL, PLUS, patternPieces, patternLiterals, attachmentOfRule, patternAttachment;
+var init_grammar_formation = __esm({
+  "../frontend/src/lib/grammar-formation.ts"() {
+    "use strict";
+    splitFormationRules = (formation) => {
+      const text = String(formation ?? "").trim();
+      if (!text) return [];
+      const index3 = text.indexOf("\uFF0F");
+      if (index3 <= 0) return [text];
+      const head = text.slice(0, index3).trim();
+      const tail = text.slice(index3 + 1).trim();
+      if (!head.includes("\uFF0B") || !tail.includes("\uFF0B")) return [text];
+      return [head, tail];
+    };
+    TILDE = /[～〜~]/;
+    TILDE_ALL = /[～〜~]/g;
+    PLUS = /[＋+]/;
+    patternPieces = (pattern) => {
+      const pieces = [];
+      let buffer = "";
+      for (const char of String(pattern ?? "")) {
+        if (TILDE.test(char)) {
+          if (buffer) pieces.push({ text: buffer, slot: false });
+          buffer = "";
+          pieces.push({ text: char, slot: true });
+        } else {
+          buffer += char;
+        }
+      }
+      if (buffer) pieces.push({ text: buffer, slot: false });
+      return pieces;
+    };
+    patternLiterals = (pattern) => String(pattern).split(TILDE_ALL).map((part) => part.replace(/^[／/、，,]+|[／/、，,]+$/g, "").trim()).filter(Boolean);
+    attachmentOfRule = (rule, pattern, slots) => {
+      if (!PLUS.test(rule)) return null;
+      const segments = rule.split(PLUS).map((part) => part.trim()).filter(Boolean);
+      const attachment = segments[0] ?? "";
+      if (!attachment || TILDE.test(attachment)) return null;
+      const literals = patternLiterals(pattern);
+      if (literals.some((literal) => attachment.includes(literal) || literal.includes(attachment))) {
+        return null;
+      }
+      if (slots >= 2) {
+        if (segments.length > 2 || literals.length !== slots) return null;
+        const seen = /* @__PURE__ */ new Map();
+        literals.forEach((literal) => seen.set(literal, (seen.get(literal) ?? 0) + 1));
+        if (![...seen.values()].every((count) => count >= 2)) return null;
+      }
+      return attachment;
+    };
+    patternAttachment = (pattern, formation) => {
+      const text = String(pattern ?? "");
+      const slots = (text.match(TILDE_ALL) ?? []).length;
+      if (!slots) return null;
+      const parts = splitFormationRules(formation).map((rule) => attachmentOfRule(rule, text, slots)).filter((part) => Boolean(part));
+      if (!parts.length) return null;
+      return [...new Set(parts)].join("\uFF0F");
+    };
+  }
+});
+
+// ../frontend/src/data/grammar-quiz-questions.ts
+var MANUAL_GRAMMAR_QUESTIONS, grammarQuizQuestion;
+var init_grammar_quiz_questions = __esm({
+  "../frontend/src/data/grammar-quiz-questions.ts"() {
+    "use strict";
+    MANUAL_GRAMMAR_QUESTIONS = {
+      "\u57FA\u6570\u8A5E\uFF08\u57FA\u6570\u8BCD\uFF09": "\u57FA\u6570\u8A5E",
+      "\u5E8F\u6570\u8A5E\uFF08\u5E8F\u6570\u8BCD\uFF09": "\u5E8F\u6570\u8A5E",
+      "\u5E38\u7528\u52A9\u6570\u8A5E\uFF08\u91CF\u8BCD\uFF09": "\u5E38\u7528\u52A9\u6570\u8A5E",
+      "\u5E38\u7528\u6570\u91CF\u306E\u8AAD\u307F\u65B9\uFF08\u5E38\u7528\u6570\u91CF\u8BFB\u6CD5\uFF09": "\u5E38\u7528\u6570\u91CF\u306E\u8AAD\u307F\u65B9",
+      "\u4E09\u985E\u52D5\u8A5E\u306E\u533A\u5206\uFF08\u52A8\u8BCD\u5206\u7C7B\uFF09": "\u4E09\u985E\u52D5\u8A5E\u306E\u533A\u5206",
+      "\u81EA\u52D5\u8A5E\u3068\u4ED6\u52D5\u8A5E\uFF08\u81EA\u4ED6\u52A8\u8BCD\uFF09": "\u81EA\u52D5\u8A5E\u3068\u4ED6\u52D5\u8A5E",
+      "\u52D5\u8A5E\u300C\u307E\u3059\u5F62\u300D\uFF08\u656C\u4F53\u5F62\uFF09": "\u52D5\u8A5E\u300C\u307E\u3059\u5F62\u300D",
+      "\u306A\u5F62\u5BB9\u8A5E\uFF0B\u52D5\u8A5E\uFF08\u526F\u8BCD\u7528\u6CD5\uFF09": "\u306A\u5F62\u5BB9\u8A5E\uFF0B\u52D5\u8A5E",
+      "\u3044\u5F62\u5BB9\u8A5E\uFF0B\u52D5\u8A5E\uFF08\u526F\u8BCD\u7528\u6CD5\uFF09": "\u3044\u5F62\u5BB9\u8A5E\uFF0B\u52D5\u8A5E",
+      "\uFF5E\u304B\u3089\uFF08\u539F\u56E0\uFF09": "\uFF5E\u304B\u3089",
+      "\uFF5E\u304F\u3066\uFF0F\u3067\uFF08\u4E2D\u987F\uFF09": "\uFF5E\u304F\u3066\uFF0F\u3067",
+      "\uFF5E\u304F\u3089\u3044\uFF08\u7A0B\u5EA6\uFF09": "\uFF5E\u304F\u3089\u3044",
+      "\u53EF\u80FD\u52A9\u52A8\u8BCD\u300C\u308C\u308B\uFF0F\u3089\u308C\u308B\u300D": "\u308C\u308B\uFF0F\u3089\u308C\u308B",
+      "\u4F7F\u5F79\u52A9\u52A8\u8BCD\u300C\u305B\u308B\uFF0F\u3055\u305B\u308B\u300D": "\u305B\u308B\uFF0F\u3055\u305B\u308B",
+      "\u88AB\u52A8\u52A9\u52A8\u8BCD\u300C\u308C\u308B\uFF0F\u3089\u308C\u308B\u300D": "\u308C\u308B\uFF0F\u3089\u308C\u308B",
+      "\u4F7F\u5F79\u88AB\u52A8\u52A9\u52A8\u8BCD\u300C\u3055\u308C\u308B\uFF0F\u3055\u305B\u3089\u308C\u308B\u300D": "\u3055\u308C\u308B\uFF0F\u3055\u305B\u3089\u308C\u308B",
+      "\u547D\u4EE4\u52A9\u52A8\u8BCD\u300C\u308C\uFF0F\u308D\u300D": "\u308C\uFF0F\u308D",
+      "\u7981\u6B62\u52A9\u52A8\u8BCD\u300C\u306A\u300D": "\u306A",
+      "\u656C\u8BED\u52A9\u52A8\u8BCD\u300C\u308C\u308B\uFF0F\u3089\u308C\u308B\u300D": "\u308C\u308B\uFF0F\u3089\u308C\u308B",
+      "\uFF5E\uFF08\u3089\uFF09\u308C\u308B\uFF08\u81EA\u767A\uFF09": "\uFF5E\uFF08\u3089\uFF09\u308C\u308B",
+      "\u656C\u8A9E\u306E\u7279\u6B8A\u5F62\uFF08\u7279\u6B8A\u656C\u8BED\u52A8\u8BCD\uFF09": "\u656C\u8A9E\u306E\u7279\u6B8A\u5F62"
+    };
+    grammarQuizQuestion = (pattern) => MANUAL_GRAMMAR_QUESTIONS[pattern] ?? pattern.replace(/（N[1-5]-\d+）$/, "");
+  }
+});
+
+// ../frontend/src/lib/grammar-quiz.ts
+var grammar_quiz_exports = {};
+__export(grammar_quiz_exports, {
+  GRAMMAR_ENCORE_SIZE: () => GRAMMAR_ENCORE_SIZE,
+  extendGrammarQuizPlan: () => extendGrammarQuizPlan,
+  getGrammarQuizSession: () => getGrammarQuizSession,
+  grammarNewQuota: () => grammarNewQuota,
+  grammarPlanDone: () => grammarPlanDone,
+  grammarPlanRemaining: () => grammarPlanRemaining,
+  grammarQuizRanking: () => grammarQuizRanking,
+  submitGrammarQuizAnswer: () => submitGrammarQuizAnswer,
+  undoLastGrammarQuizAnswer: () => undoLastGrammarQuizAnswer
+});
+var import_database14, QUEUE_KEY, LEVEL_PATTERN, levelEntity, levelPointCount, answeredTodayCount, newDoneTodayCount, graduatedTodayCount, encoreKey, readEncore, encoreQuota, grammarNewQuota, roundKeysCleared, dropLegacyRoundState, planIds, CARD_COLUMNS, rowToCard, rowsByIds, pickCard, UNDO_LIMIT2, undoKey, readUndoStack2, writeUndoStack2, sessionFor, grammarPlanRemaining, grammarPlanDone, getGrammarQuizSession, submitGrammarQuizAnswer, undoLastGrammarQuizAnswer, GRAMMAR_ENCORE_SIZE, extendGrammarQuizPlan, grammarQuizRanking;
+var init_grammar_quiz = __esm({
+  "../frontend/src/lib/grammar-quiz.ts"() {
+    "use strict";
+    import_database14 = __toESM(require_database(), 1);
+    init_furigana_data();
+    init_grammar_api();
+    init_study_core();
+    init_review_budget();
+    init_studyPreferences();
+    init_fsrs_store();
+    init_fsrs_scheduler();
+    init_requeue();
+    init_priority();
+    init_session_state();
+    init_grammar_formation();
+    init_grammar_quiz_questions();
+    QUEUE_KEY = "grammar";
+    LEVEL_PATTERN = /^N[1-5]$/;
+    levelEntity = (level) => {
+      if (!LEVEL_PATTERN.test(level)) return GRAMMAR_FSRS;
+      return {
+        ...GRAMMAR_FSRS,
+        eligible: `${GRAMMAR_FSRS.eligible}
+      AND grammar_id IN (SELECT id FROM grammar_points WHERE level = '${level}')`
+      };
+    };
+    levelPointCount = (level) => firstValue(
+      "SELECT COUNT(*) FROM grammar_points WHERE level = ?",
+      [level],
+      0
+    );
+    answeredTodayCount = (level, day) => firstValue(`
+  SELECT COUNT(DISTINCT r.grammar_id)
+  FROM grammar_reviews r
+  JOIN grammar_points g ON g.id = r.grammar_id
+  WHERE r.reviewed_on = ? AND g.level = ?
+`, [day, level], 0);
+    newDoneTodayCount = (level, day) => firstValue(`
+  SELECT COUNT(DISTINCT r.grammar_id)
+  FROM grammar_reviews r
+  JOIN grammar_points g ON g.id = r.grammar_id
+  WHERE r.reviewed_on = ? AND g.level = ?
+    AND NOT EXISTS (
+      SELECT 1 FROM grammar_reviews earlier
+      WHERE earlier.grammar_id = r.grammar_id AND earlier.reviewed_on < ?
+    )
+`, [day, level, day], 0);
+    graduatedTodayCount = (level, day) => firstValue(`
+  SELECT COUNT(DISTINCT r.grammar_id)
+  FROM grammar_reviews r
+  JOIN grammar_points g ON g.id = r.grammar_id
+  JOIN grammar_progress p ON p.grammar_id = r.grammar_id
+  WHERE r.reviewed_on = ? AND g.level = ?
+    AND (p.known_forever = 1 OR (p.fsrs_due IS NOT NULL AND p.fsrs_due > ?))
+`, [day, level, studyDayEnd().toISOString()], 0);
+    encoreKey = (level) => `quiz_encore:${level}`;
+    readEncore = (level) => {
+      try {
+        const parsed = JSON.parse(firstValue(
+          "SELECT value FROM grammar_state WHERE key = ?",
+          [encoreKey(level)],
+          ""
+        ) || "null");
+        if (!parsed || typeof parsed !== "object") return { day: "", count: 0 };
+        return { day: String(parsed.day ?? ""), count: Math.max(Number(parsed.count ?? 0) || 0, 0) };
+      } catch {
+        return { day: "", count: 0 };
+      }
+    };
+    encoreQuota = (level, day) => {
+      const stored = readEncore(level);
+      return stored.day === day ? stored.count : 0;
+    };
+    grammarNewQuota = (level, day = today()) => Math.max(getDailyGrammarGoal() + encoreQuota(level, day) - newDoneTodayCount(level, day), 0);
+    roundKeysCleared = false;
+    dropLegacyRoundState = () => {
+      if (roundKeysCleared) return;
+      roundKeysCleared = true;
+      (0, import_database14.getDatabase)().run("DELETE FROM grammar_state WHERE key LIKE 'quiz_round:%'");
+    };
+    planIds = (level, day) => {
+      ensureGrammarProgressInitialized();
+      ensureFsrsColumns(GRAMMAR_FSRS);
+      dropLegacyRoundState();
+      const grammarCap = getStudyPreferences().grammarReviewCap;
+      const reviewLimit = Math.min(
+        grammarCap > 0 ? grammarCap : dailyReviewCap(getReviewCapPreference(), day),
+        levelPointCount(level)
+      );
+      const reviewIds = fsrsDueWordIds(reviewLimit, studyDayEnd(), levelEntity(level));
+      const newQuota = grammarNewQuota(level, day);
+      const newIds = newQuota <= 0 ? [] : rowsFor(`
+    SELECT g.id
+    FROM grammar_points g
+    JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE g.level = ?
+      AND p.seen_count = 0
+      AND p.known_forever = 0
+    ORDER BY g.sort_order ASC
+    LIMIT ?
+  `, [level, newQuota]).map((row) => Number(row.id));
+      return { reviewIds, newIds };
+    };
+    CARD_COLUMNS = `
+  g.id, g.pattern, g.formation, g.meaning, g.level,
+  g.example_jp, g.example_meaning, g.example_furigana, g.example_tokens, g.example_lemmas,
+  COALESCE(p.forgot_count, 0) AS forgot_count,
+  COALESCE(p.right_count, 0) AS right_count,
+  COALESCE(p.seen_count, 0) AS seen_count,
+  COALESCE(p.mistake_streak, 0) AS mistake_streak,
+  COALESCE(p.known_forever, 0) AS known_forever
+`;
+    rowToCard = (row) => {
+      const pattern = String(row.pattern ?? "");
+      const formation = String(row.formation ?? "");
+      const exampleJp = String(row.example_jp ?? "");
+      const exampleFurigana = parseFurigana(row.example_furigana);
+      return {
+        id: Number(row.id),
+        question: grammarQuizQuestion(pattern),
+        pattern,
+        formation,
+        attachment: patternAttachment(pattern, formation),
+        meaning: String(row.meaning ?? ""),
+        exampleJp,
+        exampleMeaning: String(row.example_meaning ?? ""),
+        exampleFurigana,
+        exampleTokens: String(row.example_tokens ?? ""),
+        exampleLemmas: String(row.example_lemmas ?? ""),
+        level: String(row.level ?? ""),
+        forgotCount: Number(row.forgot_count ?? 0),
+        rightCount: Number(row.right_count ?? 0),
+        isNew: Number(row.seen_count ?? 0) === 0
+      };
+    };
+    rowsByIds = (ids) => {
+      if (!ids.length) return [];
+      const placeholders = ids.map(() => "?").join(",");
+      const rows = rowsFor(`
+    SELECT ${CARD_COLUMNS}
+    FROM grammar_points g
+    LEFT JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE g.id IN (${placeholders}) AND COALESCE(p.known_forever, 0) = 0
+  `, ids);
+      const byId = new Map(rows.map((row) => [Number(row.id), row]));
+      return ids.map((id) => byId.get(id)).filter(Boolean);
+    };
+    pickCard = (level, day) => {
+      const { reviewIds, newIds } = planIds(level, day);
+      const queueById = new Map(getReviewQueue(QUEUE_KEY).map((item) => [item.word_id, item.due_after]));
+      const reviewRows = rowsByIds(reviewIds);
+      const newRows = rowsByIds(newIds);
+      const all = [...reviewRows, ...newRows];
+      if (!all.length) return null;
+      const lastId = lastAnsweredWord(QUEUE_KEY);
+      const lastRow = all.find((row) => Number(row.id) === lastId);
+      if (lastRow && Number(lastRow.mistake_streak ?? 0) >= STUBBORN_MISTAKE_STREAK && (queueById.get(lastId) ?? 0) <= 0) {
+        return rowToCard(lastRow);
+      }
+      const repeatAllowed = allowsBackToBack({
+        mistakeStreak: Number(lastRow?.mistake_streak ?? 0),
+        remaining: all.length,
+        total: all.length + graduatedTodayCount(level, day)
+      });
+      const usable = all.length > 1 && !repeatAllowed ? all.filter((row) => Number(row.id) !== lastId) : all;
+      const usableReviews = usable.filter((row) => Number(row.seen_count ?? 0) > 0);
+      const usableNew = usable.filter((row) => Number(row.seen_count ?? 0) === 0);
+      const preferred = shouldPickStage1NewWord(
+        usableReviews.length,
+        usableNew.length,
+        answeredTodayCount(level, day)
+      ) ? usableNew : usableReviews.length ? usableReviews : usableNew;
+      const pool = preferred.length ? preferred : usable;
+      if (!pool.length) return null;
+      const ready = pool.filter((row) => (queueById.get(Number(row.id)) ?? 0) <= 0);
+      if (ready.length) return rowToCard(ready[0]);
+      const sorted = [...pool].sort(
+        (left, right) => (queueById.get(Number(left.id)) ?? 0) - (queueById.get(Number(right.id)) ?? 0)
+      );
+      return rowToCard(sorted[0]);
+    };
+    UNDO_LIMIT2 = 2;
+    undoKey = (level) => `quiz_undo:${level}`;
+    readUndoStack2 = (level) => {
+      try {
+        const raw = firstValue(
+          "SELECT value FROM grammar_state WHERE key = ?",
+          [undoKey(level)],
+          ""
+        );
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter((item) => item?.reviewedOn === today());
+      } catch {
+        return [];
+      }
+    };
+    writeUndoStack2 = (level, stack) => {
+      (0, import_database14.getDatabase)().run(
+        "INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)",
+        [undoKey(level), JSON.stringify(stack.slice(-UNDO_LIMIT2))]
+      );
+    };
+    sessionFor = (level, card) => {
+      const day = today();
+      const { reviewIds, newIds } = planIds(level, day);
+      const done = graduatedTodayCount(level, day);
+      const remaining = reviewIds.length + newIds.length;
+      return {
+        card,
+        level,
+        done,
+        total: done + remaining,
+        remaining,
+        newDone: newDoneTodayCount(level, day),
+        // 分母是「今天总共能学几条新的」= 每日目标 + 加餐，所以由「已学 + 还能学」倒推，
+        // 直接写 getDailyGrammarGoal() 的话加餐之后会出现 12 / 10。
+        newQuota: newDoneTodayCount(level, day) + grammarNewQuota(level, day),
+        canUndo: readUndoStack2(level).length > 0
+      };
+    };
+    grammarPlanRemaining = (level, day = today()) => {
+      const { reviewIds, newIds } = planIds(level, day);
+      return reviewIds.length + newIds.length;
+    };
+    grammarPlanDone = (level, day = today()) => graduatedTodayCount(level, day);
+    getGrammarQuizSession = (level) => {
+      const day = today();
+      return sessionFor(level, pickCard(level, day));
+    };
+    submitGrammarQuizAnswer = (level, grammarId, answer) => {
+      ensureGrammarProgressInitialized();
+      ensureFsrsColumns(GRAMMAR_FSRS);
+      const db = (0, import_database14.getDatabase)();
+      const day = today();
+      const progress = rowsFor(`
+    SELECT seen_count, known_forever, last_seen_on, right_count, fuzzy_count, forgot_count, mistake_streak
+    FROM grammar_progress
+    WHERE grammar_id = ?
+  `, [grammarId])[0];
+      const snapshot = {
+        grammarId,
+        reviewedOn: day,
+        reviewId: 0,
+        seenCount: Number(progress?.seen_count ?? 0),
+        knownForever: Number(progress?.known_forever ?? 0) === 1 ? 1 : 0,
+        lastSeenOn: progress?.last_seen_on == null ? null : String(progress.last_seen_on),
+        rightCount: Number(progress?.right_count ?? 0),
+        fuzzyCount: Number(progress?.fuzzy_count ?? 0),
+        forgotCount: Number(progress?.forgot_count ?? 0),
+        mistakeStreak: Number(progress?.mistake_streak ?? 0),
+        fsrs: readFsrsState(grammarId, GRAMMAR_FSRS),
+        queue: getReviewQueue(QUEUE_KEY),
+        lastAnswered: lastAnsweredWord(QUEUE_KEY)
+      };
+      advanceReviewQueue(grammarId, QUEUE_KEY);
+      const knownForever = answer === "known_forever";
+      const mistakeStreak = knownForever || answer === "know" ? 0 : snapshot.mistakeStreak + 1;
+      const wrongToday = firstValue(`
+    SELECT COUNT(*) FROM grammar_reviews
+    WHERE grammar_id = ? AND reviewed_on = ? AND answer IN ('forgot','fuzzy')
+  `, [grammarId, day], 0) + (answer === "forgot" || answer === "fuzzy" ? 1 : 0);
+      const stubbornCard = wrongToday >= STUBBORN_DAILY_MISTAKES;
+      const firstSeenToday = firstValue(
+        "SELECT COUNT(*) FROM grammar_reviews WHERE grammar_id = ? AND reviewed_on = ?",
+        [grammarId, day],
+        0
+      ) === 0;
+      const stepMode = firstSeenToday && answer === "know" ? "known" : stubbornCard ? "stubborn" : "normal";
+      let graduated = false;
+      let graduationTest = false;
+      let stepMinutes = 0;
+      if (!knownForever) {
+        try {
+          const next = recordFsrsReview(grammarId, answer, /* @__PURE__ */ new Date(), { mode: stepMode }, GRAMMAR_FSRS);
+          graduated = isGraduatedForDay(next, studyDayEnd());
+          stepMinutes = Math.max((new Date(next.due).getTime() - Date.now()) / 6e4, 0);
+          graduationTest = !graduated && isGraduatedForDay(
+            recordReview(next, "know", /* @__PURE__ */ new Date(), { mode: stubbornCard ? "stubborn" : "normal" }),
+            studyDayEnd()
+          );
+        } catch (err) {
+          console.warn("[fsrs] \u8BED\u6CD5\u8BB0\u5F55\u8DF3\u8FC7:", err);
+          graduated = answer === "know";
+        }
+      }
+      if (!graduated && !knownForever) {
+        scheduleDelayedReview(
+          grammarId,
+          stepMinutes,
+          mistakeStreak >= STUBBORN_MISTAKE_STREAK,
+          graduationTest,
+          QUEUE_KEY
+        );
+      }
+      setLastAnsweredWord(grammarId, QUEUE_KEY);
+      db.run(`
+    UPDATE grammar_progress
+    SET seen_count = COALESCE(seen_count, 0) + 1,
+        last_seen_on = ?,
+        right_count = ?,
+        fuzzy_count = ?,
+        forgot_count = ?,
+        mistake_streak = ?,
+        known_forever = ?
+    WHERE grammar_id = ?
+  `, [
+        day,
+        snapshot.rightCount + (answer === "know" ? 1 : 0),
+        snapshot.fuzzyCount + (answer === "fuzzy" ? 1 : 0),
+        snapshot.forgotCount + (answer === "forgot" ? 1 : 0),
+        mistakeStreak,
+        knownForever ? 1 : 0,
+        grammarId
+      ]);
+      db.run(`
+    INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on)
+    VALUES (?, ?, 0, ?)
+  `, [grammarId, answer, day]);
+      snapshot.reviewId = firstValue("SELECT last_insert_rowid()", [], 0);
+      writeUndoStack2(level, [...readUndoStack2(level), snapshot]);
+      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+      return getGrammarQuizSession(level);
+    };
+    undoLastGrammarQuizAnswer = (level) => {
+      ensureGrammarProgressInitialized();
+      const stack = readUndoStack2(level);
+      if (!stack.length) return getGrammarQuizSession(level);
+      const snapshot = stack.pop();
+      const db = (0, import_database14.getDatabase)();
+      db.run(`
+    UPDATE grammar_progress
+    SET seen_count = ?, known_forever = ?, last_seen_on = ?, right_count = ?,
+        fuzzy_count = ?, forgot_count = ?, mistake_streak = ?
+    WHERE grammar_id = ?
+  `, [
+        snapshot.seenCount,
+        snapshot.knownForever,
+        snapshot.lastSeenOn,
+        snapshot.rightCount,
+        snapshot.fuzzyCount ?? 0,
+        snapshot.forgotCount,
+        snapshot.mistakeStreak,
+        snapshot.grammarId
+      ]);
+      if (snapshot.reviewId) db.run("DELETE FROM grammar_reviews WHERE id = ?", [snapshot.reviewId]);
+      restoreFsrsState(snapshot.grammarId, snapshot.fsrs ?? null, GRAMMAR_FSRS);
+      setReviewQueue(snapshot.queue ?? [], QUEUE_KEY);
+      setLastAnsweredWord(snapshot.lastAnswered ?? 0, QUEUE_KEY);
+      writeUndoStack2(level, stack);
+      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+      const row = rowsFor(`
+    SELECT ${CARD_COLUMNS}
+    FROM grammar_points g
+    LEFT JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE g.id = ?
+  `, [snapshot.grammarId])[0];
+      return sessionFor(level, row ? rowToCard(row) : null);
+    };
+    GRAMMAR_ENCORE_SIZE = 10;
+    extendGrammarQuizPlan = (level, count = GRAMMAR_ENCORE_SIZE) => {
+      const day = today();
+      const remaining = firstValue(`
+    SELECT COUNT(*)
+    FROM grammar_points g
+    JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE g.level = ? AND p.seen_count = 0 AND p.known_forever = 0
+  `, [level], 0);
+      if (remaining > 0) {
+        (0, import_database14.getDatabase)().run(
+          "INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)",
+          [encoreKey(level), JSON.stringify({ day, count: encoreQuota(level, day) + Math.max(count, 0) })]
+        );
+      }
+      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+      return getGrammarQuizSession(level);
+    };
+    grammarQuizRanking = (level) => {
+      ensureGrammarProgressInitialized();
+      ensureFsrsColumns(GRAMMAR_FSRS);
+      return rowsFor(`
+    SELECT ${CARD_COLUMNS}, COALESCE(p.fsrs_lapses, 0) AS lapses
+    FROM grammar_points g
+    LEFT JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE g.level = ?
+    ORDER BY COALESCE(p.forgot_count, 0) DESC,
+             COALESCE(p.seen_count, 0) ASC,
+             g.sort_order ASC
+  `, [level]).map((row) => ({
+        ...rowToCard(row),
+        seenCount: Number(row.seen_count ?? 0),
+        knownForever: Number(row.known_forever ?? 0) === 1,
+        lapses: Number(row.lapses ?? 0)
+      }));
+    };
+  }
+});
+
+// ../frontend/src/lib/card-log.ts
+var import_database15, createCardLog;
+var init_card_log = __esm({
+  "../frontend/src/lib/card-log.ts"() {
+    "use strict";
+    import_database15 = __toESM(require_database(), 1);
+    init_study_core();
+    init_fsrs_store();
+    init_fsrs_scheduler();
+    init_reviews();
+    createCardLog = (config) => {
+      const { entity, reviewsTable, tasksTable } = config;
+      const id = entity.idColumn;
+      const memory = entity.table;
+      const exclude = `known_forever = 0${config.extraExclude ? ` AND ${config.extraExclude}` : ""}`;
+      const ensure = () => ensureFsrsColumns(entity);
+      const updateCounters = (key, answer, seenOn) => {
+        const counts = answer === "forgot" ? [1, 0, 0, 1] : answer === "fuzzy" ? [1, 0, 1, 0] : [1, 1, 0, 0];
+        const previousStreak = firstValue(`SELECT mistake_streak FROM ${memory} WHERE ${id} = ?`, [key], 0);
+        (0, import_database15.getDatabase)().run(`
+      UPDATE ${memory}
+      SET seen_count = seen_count + ?, right_count = right_count + ?, fuzzy_count = fuzzy_count + ?, forgot_count = forgot_count + ?,
+          mistake_streak = ?, last_seen_on = ?
+      WHERE ${id} = ?
+    `, [...counts, answer === "forgot" ? previousStreak + 1 : 0, seenOn, key]);
+      };
+      const stepMode = (key, answer, day = today()) => {
+        const answeredToday = firstValue(`SELECT COUNT(*) FROM ${reviewsTable} WHERE ${id} = ? AND reviewed_on = ?`, [key, day], 0);
+        if (answeredToday === 0 && (answer === "know" || answer === "known_forever")) return "known";
+        const wrongToday = firstValue(
+          `SELECT COUNT(*) FROM ${reviewsTable} WHERE ${id} = ? AND reviewed_on = ? AND answer IN ('forgot','fuzzy')`,
+          [key, day],
+          0
+        ) + (answer === "forgot" || answer === "fuzzy" ? 1 : 0);
+        return wrongToday >= STUBBORN_DAILY_MISTAKES ? "stubborn" : "normal";
+      };
+      const record = (key, answer, now = /* @__PURE__ */ new Date(), mode) => {
+        ensure();
+        if (!firstValue(`SELECT COUNT(*) FROM ${memory} WHERE ${id} = ?`, [key], 0)) throw new Error(`Unknown ${memory} row: ${key}`);
+        mode ?? (mode = stepMode(key, answer));
+        const fsrsAnswer = answer === "known_forever" ? "know" : answer;
+        const next = recordFsrsReview(key, fsrsAnswer, now, { mode }, entity);
+        const seenOn = today();
+        updateCounters(key, fsrsAnswer, seenOn);
+        if (answer === "known_forever") (0, import_database15.getDatabase)().run(`UPDATE ${memory} SET known_forever = 1 WHERE ${id} = ?`, [key]);
+        (0, import_database15.getDatabase)().run(`
+      INSERT INTO ${reviewsTable} (${id}, answer, reviewed_on, reviewed_at, scheduler_mode, fsrs_params_version)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [key, answer, seenOn, now.getTime(), mode, FSRS_PARAMS_VERSION]);
+        return next;
+      };
+      const replay = (onlyKeys, insertMissing = (key) => {
+        (0, import_database15.getDatabase)().run(`INSERT OR IGNORE INTO ${memory} (${id}) VALUES (?)`, [key]);
+      }) => {
+        ensure();
+        const keys = onlyKeys ? [.../* @__PURE__ */ new Set([...onlyKeys])] : rowsFor(`SELECT DISTINCT ${id} FROM ${reviewsTable}`).map((row) => String(row[id]));
+        const db = (0, import_database15.getDatabase)();
+        let replayed = 0;
+        for (const key of keys) {
+          const events = rowsFor(`SELECT answer, reviewed_on, reviewed_at, scheduler_mode FROM ${reviewsTable} WHERE ${id} = ? ORDER BY reviewed_at ASC, id ASC`, [key]);
+          if (!events.length) continue;
+          insertMissing(key);
+          db.run(`
+        UPDATE ${memory}
+        SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
+            fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL, fsrs_last_review = NULL,
+            fsrs_state = NULL, fsrs_steps = NULL, fsrs_reps = NULL, fsrs_lapses = NULL
+        WHERE ${id} = ?
+      `, [key]);
+          for (const event of events) {
+            const answer = String(event.answer);
+            if (!["forgot", "fuzzy", "know", "known_forever"].includes(answer)) continue;
+            const at = Number(event.reviewed_at);
+            const when = Number.isFinite(at) ? new Date(at) : /* @__PURE__ */ new Date(`${String(event.reviewed_on)}T12:00:00`);
+            const fsrsAnswer = answer === "known_forever" ? "know" : answer;
+            recordFsrsReview(key, fsrsAnswer, when, { mode: String(event.scheduler_mode ?? "normal") }, entity);
+            updateCounters(key, fsrsAnswer, String(event.reviewed_on ?? today()));
+            if (answer === "known_forever") db.run(`UPDATE ${memory} SET known_forever = 1 WHERE ${id} = ?`, [key]);
+          }
+          replayed += 1;
+        }
+        return replayed;
+      };
+      const createTasks = (quota, freshCandidates, day = today()) => {
+        ensure();
+        const db = (0, import_database15.getDatabase)();
+        if (firstValue(`SELECT COUNT(*) FROM ${tasksTable} WHERE reviewed_on = ?`, [day], 0) > 0) {
+          const count = (cond) => firstValue(
+            `SELECT COUNT(*) FROM ${tasksTable} t JOIN ${memory} m ON m.${id} = t.${id} WHERE t.reviewed_on = ? AND ${cond}`,
+            [day],
+            0
+          );
+          return { review: count("m.seen_count > 0"), fresh: count("m.seen_count = 0") };
+        }
+        const dayEnd = studyDayEnd().toISOString();
+        const due = rowsFor(`
+      SELECT ${id} FROM ${memory}
+      WHERE ${exclude} AND seen_count > 0 AND fsrs_due IS NOT NULL AND fsrs_due <= ?
+      ORDER BY RANDOM() LIMIT ?
+    `, [dayEnd, Math.max(0, quota.review)]).map((row) => String(row[id]));
+        const fresh = freshCandidates().slice(0, Math.max(0, quota.fresh));
+        db.run("BEGIN");
+        try {
+          [...due, ...fresh].forEach((key, index3) => {
+            db.run(`INSERT OR IGNORE INTO ${tasksTable} (reviewed_on, ${id}, order_index) VALUES (?, ?, ?)`, [day, key, index3]);
+          });
+          db.run("COMMIT");
+        } catch (error) {
+          db.run("ROLLBACK");
+          throw error;
+        }
+        return { review: due.length, fresh: fresh.length };
+      };
+      const clearTasks = (day = today()) => {
+        ensure();
+        (0, import_database15.getDatabase)().run(`DELETE FROM ${tasksTable} WHERE reviewed_on = ?`, [day]);
+      };
+      const pickNext = (day = today(), excluded = /* @__PURE__ */ new Set()) => {
+        ensure();
+        const dayEnd = studyDayEnd().toISOString();
+        const rows = rowsFor(`
+      SELECT t.${id} AS k, m.fsrs_due, m.fsrs_state
+      FROM ${tasksTable} t JOIN ${memory} m ON m.${id} = t.${id}
+      WHERE t.reviewed_on = ? AND m.known_forever = 0
+      ORDER BY t.order_index
+    `, [day]);
+        for (const row of rows) {
+          const key = String(row.k);
+          if (excluded.has(key)) continue;
+          const learning = row.fsrs_state != null && Number(row.fsrs_state) !== 2;
+          const graduated = !learning && row.fsrs_due != null && String(row.fsrs_due) > dayEnd;
+          if (!graduated) return key;
+        }
+        return null;
+      };
+      const progress = (day = today()) => {
+        ensure();
+        const dayEnd = studyDayEnd().toISOString();
+        const total = firstValue(`SELECT COUNT(*) FROM ${tasksTable} WHERE reviewed_on = ?`, [day], 0);
+        const done = firstValue(`
+      SELECT COUNT(*) FROM ${tasksTable} t JOIN ${memory} m ON m.${id} = t.${id}
+      WHERE t.reviewed_on = ? AND (m.known_forever = 1 OR (m.fsrs_state = 2 AND m.fsrs_due > ?))
+    `, [day, dayEnd], 0);
+        return { total, done, remaining: Math.max(0, total - done) };
+      };
+      const undoLast = (day = today()) => {
+        ensure();
+        const last = rowsFor(`SELECT id, ${id} AS k FROM ${reviewsTable} WHERE reviewed_on = ? ORDER BY reviewed_at DESC, id DESC LIMIT 1`, [day])[0];
+        if (!last) return null;
+        const key = String(last.k);
+        (0, import_database15.getDatabase)().run(`DELETE FROM ${reviewsTable} WHERE id = ?`, [last.id]);
+        if (!replay([key])) {
+          (0, import_database15.getDatabase)().run(`
+        UPDATE ${memory}
+        SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
+            fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL, fsrs_last_review = NULL,
+            fsrs_state = NULL, fsrs_steps = NULL, fsrs_reps = NULL, fsrs_lapses = NULL
+        WHERE ${id} = ?
+      `, [key]);
+        }
+        return key;
+      };
+      const dueCount = () => {
+        ensure();
+        return firstValue(`SELECT COUNT(*) FROM ${memory} WHERE ${exclude} AND seen_count > 0 AND fsrs_due <= ?`, [studyDayEnd().toISOString()], 0);
+      };
+      return { ensure, stepMode, record, replay, undoLast, createTasks, clearTasks, pickNext, progress, dueCount, exclude };
+    };
+  }
+});
+
+// scripts/shared/shims/kanji-unit-runtime.js
+var require_kanji_unit_runtime = __commonJS({
+  "scripts/shared/shims/kanji-unit-runtime.js"(exports, module2) {
+    module2.exports = new Proxy({}, {
+      get(_target, prop) {
+        const stores = require("../shared/content-store");
+        if (prop === "__esModule") return false;
+        if (prop === "then") return void 0;
+        if (!stores.kanjiUnitRuntime) throw new Error("\u6C49\u5B57\u5355\u5143\u7D22\u5F15\u8FD8\u6CA1\u4ECE\u5206\u5305\u52A0\u8F7D\uFF1A\u5148 await content.ready()");
+        return prop === "default" ? stores.kanjiUnitRuntime : stores.kanjiUnitRuntime[prop];
+      }
+    });
+  }
+});
+
+// ../frontend/src/lib/kanji-unit-index.ts
+var kanji_unit_index_exports = {};
+__export(kanji_unit_index_exports, {
+  allKanjiUnits: () => allKanjiUnits,
+  kanjiUnitByKey: () => kanjiUnitByKey,
+  kanjiUnitExamples: () => kanjiUnitExamples,
+  kanjiUnitIndexLoaded: () => kanjiUnitIndexLoaded,
+  kanjiUnitIndexVersion: () => kanjiUnitIndexVersion,
+  kanjiUnitLevels: () => kanjiUnitLevels,
+  kanjiUnitWordIds: () => kanjiUnitWordIds,
+  kanjiUnitsUpToLevel: () => kanjiUnitsUpToLevel,
+  loadKanjiUnitIndex: () => loadKanjiUnitIndex
+});
+var loaded, loading, unitKeyOf, decode, loadKanjiUnitIndex, kanjiUnitIndexLoaded, kanjiUnitIndexVersion, kanjiUnitLevels, allKanjiUnits, kanjiUnitByKey, kanjiUnitWordIds, kanjiUnitExamples, kanjiUnitsUpToLevel;
+var init_kanji_unit_index = __esm({
+  "../frontend/src/lib/kanji-unit-index.ts"() {
+    "use strict";
+    loaded = null;
+    loading = null;
+    unitKeyOf = (unitType, char, base, surface, reading) => [unitType, char, base, surface, reading].join("|");
+    decode = (payload) => {
+      const units = [];
+      const byKey = /* @__PURE__ */ new Map();
+      const wordIdsByKey = /* @__PURE__ */ new Map();
+      const examplesByKey = /* @__PURE__ */ new Map();
+      payload.units.forEach((tuple, position) => {
+        const [typeFlag, char, base, surface, reading, kindBits, levelRank] = tuple;
+        const unitType = typeFlag === 0 ? "char" : "jukujikun";
+        const kinds = [];
+        if (kindBits & 1) kinds.push("on");
+        if (kindBits & 2) kinds.push("kun");
+        const unitKey = unitKeyOf(unitType, char, base, surface, reading);
+        const wordIds = payload.wordIds[position] ?? [];
+        const record = {
+          unitKey,
+          unitType,
+          char,
+          base,
+          surface,
+          reading,
+          kinds,
+          levelRank,
+          occurrenceCount: wordIds.length
+        };
+        units.push(record);
+        byKey.set(unitKey, record);
+        wordIdsByKey.set(unitKey, wordIds);
+        examplesByKey.set(unitKey, (payload.examples[position] ?? []).map(([wordId, start, length, exampleReading, variant]) => ({
+          wordId,
+          start,
+          length,
+          reading: exampleReading,
+          variant: payload.variants[variant] ?? "base"
+        })));
+      });
+      return { version: payload.version, levels: payload.levels, units, byKey, wordIdsByKey, examplesByKey };
+    };
+    loadKanjiUnitIndex = () => {
+      if (loaded) return Promise.resolve();
+      loading ?? (loading = Promise.resolve().then(() => __toESM(require_kanji_unit_runtime(), 1)).then((module2) => {
+        loaded = decode(module2.default ?? module2);
+      }));
+      return loading;
+    };
+    kanjiUnitIndexLoaded = () => loaded !== null;
+    kanjiUnitIndexVersion = () => loaded?.version ?? "";
+    kanjiUnitLevels = () => loaded?.levels ?? [];
+    allKanjiUnits = () => loaded?.units ?? [];
+    kanjiUnitByKey = (unitKey) => loaded?.byKey.get(unitKey) ?? null;
+    kanjiUnitWordIds = (unitKey) => loaded?.wordIdsByKey.get(unitKey) ?? [];
+    kanjiUnitExamples = (unitKey) => loaded?.examplesByKey.get(unitKey) ?? [];
+    kanjiUnitsUpToLevel = (levelRank) => allKanjiUnits().filter((unit) => unit.levelRank <= levelRank);
+  }
+});
+
+// scripts/shared/shims/kanji-reading-usage.js
+var require_kanji_reading_usage = __commonJS({
+  "scripts/shared/shims/kanji-reading-usage.js"(exports, module2) {
+    module2.exports = new Proxy({}, {
+      get(_target, prop) {
+        const stores = require("../shared/content-store");
+        if (prop === "__esModule") return false;
+        if (prop === "then") return void 0;
+        if (!stores.kanjiReadingUsage) throw new Error("\u4E00\u5B57\u591A\u97F3\u8BF4\u660E\u8868\u8FD8\u6CA1\u4ECE\u5206\u5305\u52A0\u8F7D\uFF1A\u5148 await content.ready()");
+        return prop === "default" ? stores.kanjiReadingUsage : stores.kanjiReadingUsage[prop];
+      }
+    });
+  }
+});
+
+// ../frontend/src/lib/kanji-reading-usage.ts
+var loaded2, loading2, SPECIFIC, decodeUsagePayload, loadKanjiReadingUsage, kanjiReadingUsageLoaded, kanjiReadingUsageFor, clauseText;
+var init_kanji_reading_usage = __esm({
+  "../frontend/src/lib/kanji-reading-usage.ts"() {
+    "use strict";
+    loaded2 = null;
+    loading2 = null;
+    SPECIFIC = /* @__PURE__ */ new Set(["num", "oku", "list"]);
+    decodeUsagePayload = (payload) => {
+      const chars = payload.chars.map(([char, levelRank, summary, readings2]) => {
+        const decoded = readings2.map(([base, kindBits, clauseIndex, arg, count, examples]) => {
+          const kinds = [];
+          if (kindBits & 1) kinds.push("on");
+          if (kindBits & 2) kinds.push("kun");
+          return {
+            base,
+            kinds,
+            clause: clauseIndex >= 0 ? payload.clauses[clauseIndex] ?? null : null,
+            arg,
+            count,
+            manual: clauseIndex < 0,
+            examples: examples.map((raw) => {
+              const [surface, kana, meaning] = raw.split("|");
+              return { surface: surface ?? "", kana: kana ?? "", meaning: meaning ?? "" };
+            })
+          };
+        });
+        return {
+          char,
+          levelRank,
+          summary,
+          readings: decoded,
+          hasManual: decoded.some((r) => r.manual),
+          hasSpecific: decoded.some((r) => r.manual || r.clause !== null && SPECIFIC.has(r.clause))
+        };
+      });
+      return {
+        version: payload.version,
+        levels: payload.levels,
+        chars,
+        byChar: new Map(chars.map((entry) => [entry.char, entry]))
+      };
+    };
+    loadKanjiReadingUsage = () => {
+      if (loaded2) return Promise.resolve();
+      loading2 ?? (loading2 = Promise.resolve().then(() => __toESM(require_kanji_reading_usage(), 1)).then((module2) => {
+        loaded2 = decodeUsagePayload(module2.default ?? module2);
+      }));
+      return loading2;
+    };
+    kanjiReadingUsageLoaded = () => loaded2 !== null;
+    kanjiReadingUsageFor = (char) => loaded2?.byChar.get(char) ?? null;
+    clauseText = (reading) => {
+      if (reading.manual) return reading.arg;
+      switch (reading.clause) {
+        case "num":
+          return "\u8DDF\u5728\u6570\u5B57\u540E\u9762";
+        case "oku": {
+          const forms = reading.arg.split("\uFF0F").filter(Boolean);
+          return forms.length ? `\u5E26\u9001\u5047\u540D ${forms.map((form) => `\u301C${form}`).join("\uFF0F")}` : "\u5E26\u9001\u5047\u540D";
+        }
+        case "list":
+          return "\u5728\u5F53\u524D\u8BCD\u5E93\u4E3B\u8981\u89C1\u4E8E\u4E0B\u9762\u8FD9\u4E9B\u8BCD";
+        case "on":
+          return "\u97F3\u8BFB \u2014\u2014 \u6C49\u8BED\u590D\u5408\u8BCD\u91CC";
+        case "kun":
+          return "\u8BAD\u8BFB \u2014\u2014 \u5355\u72EC\u7528\u3001\u5E26\u9001\u5047\u540D\uFF0C\u6216\u548C\u8BED\u8BCD\u91CC";
+        default:
+          return "";
+      }
+    };
+  }
+});
+
+// scripts/shared/shims/kanji-readings.js
+var require_kanji_readings = __commonJS({
+  "scripts/shared/shims/kanji-readings.js"(exports, module2) {
+    module2.exports = require_lazy_json()("kanjiReadings");
+  }
+});
+
+// ../frontend/src/lib/kanji-char-cards.ts
+var kanji_char_cards_exports = {};
+__export(kanji_char_cards_exports, {
+  KANJI_CHAR_FSRS: () => KANJI_CHAR_FSRS,
+  clearKanjiCharTasks: () => clearKanjiCharTasks,
+  createKanjiCharTasks: () => createKanjiCharTasks,
+  ensureKanjiCharTables: () => ensureKanjiCharTables,
+  kanjiCharCard: () => kanjiCharCard,
+  kanjiCharDataLoaded: () => kanjiCharDataLoaded,
+  kanjiCharPool: () => kanjiCharPool,
+  kanjiCharProgress: () => kanjiCharProgress,
+  kanjiCharStepMode: () => kanjiCharStepMode,
+  loadKanjiCharData: () => loadKanjiCharData,
+  materializeKanjiChars: () => materializeKanjiChars,
+  pickKanjiCharNext: () => pickKanjiCharNext,
+  recordKanjiCharReview: () => recordKanjiCharReview,
+  replayKanjiCharReviews: () => replayKanjiCharReviews,
+  undoLastKanjiCharReview: () => undoLastKanjiCharReview
+});
+var import_database16, import_kanji_readings, KANJI_CHAR_FSRS, readings, loadKanjiCharData, kanjiCharDataLoaded, ensureKanjiCharTables, materializeKanjiChars, EXAMPLE_CAP, kanjiCharCard, occurrenceByChar, log, createKanjiCharTasks, pickKanjiCharNext, kanjiCharProgress, kanjiCharStepMode, recordKanjiCharReview, clearKanjiCharTasks, undoLastKanjiCharReview, replayKanjiCharReviews, kanjiCharPool;
+var init_kanji_char_cards = __esm({
+  "../frontend/src/lib/kanji-char-cards.ts"() {
+    "use strict";
+    import_database16 = __toESM(require_database(), 1);
+    init_study_core();
+    init_fsrs_store();
+    init_reviews();
+    init_card_log();
+    init_kanji_unit_index();
+    init_kanji_reading_usage();
+    import_kanji_readings = __toESM(require_kanji_readings(), 1);
+    KANJI_CHAR_FSRS = {
+      table: "kanji_char_memory",
+      idColumn: "char",
+      eligible: "known_forever = 0"
+    };
+    readings = import_kanji_readings.default.readings;
+    loadKanjiCharData = () => Promise.all([loadKanjiUnitIndex(), loadKanjiReadingUsage()]).then(() => void 0);
+    kanjiCharDataLoaded = () => kanjiUnitIndexLoaded() && kanjiReadingUsageLoaded();
+    ensureKanjiCharTables = () => {
+      const db = (0, import_database16.getDatabase)();
+      db.run(`
+    CREATE TABLE IF NOT EXISTS kanji_char_memory (
+      char TEXT PRIMARY KEY,
+      level_rank INTEGER NOT NULL DEFAULT 5,
+      seen_count INTEGER NOT NULL DEFAULT 0,
+      right_count INTEGER NOT NULL DEFAULT 0,
+      fuzzy_count INTEGER NOT NULL DEFAULT 0,
+      forgot_count INTEGER NOT NULL DEFAULT 0,
+      mistake_streak INTEGER NOT NULL DEFAULT 0,
+      known_forever INTEGER NOT NULL DEFAULT 0,
+      last_seen_on TEXT
+    )
+  `);
+      db.run(`
+    CREATE TABLE IF NOT EXISTS kanji_char_reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      char TEXT NOT NULL,
+      answer TEXT NOT NULL,
+      reviewed_on TEXT NOT NULL,
+      reviewed_at INTEGER NOT NULL,
+      scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+      fsrs_params_version TEXT NOT NULL DEFAULT '${FSRS_PARAMS_VERSION}',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+      db.run("CREATE INDEX IF NOT EXISTS idx_kanji_char_reviews_char_on ON kanji_char_reviews (char, reviewed_on)");
+      db.run(`
+    CREATE TABLE IF NOT EXISTS kanji_char_tasks (
+      reviewed_on TEXT NOT NULL,
+      char TEXT NOT NULL,
+      order_index INTEGER NOT NULL,
+      PRIMARY KEY (reviewed_on, char)
+    )
+  `);
+      ensureFsrsColumns(KANJI_CHAR_FSRS);
+    };
+    materializeKanjiChars = () => {
+      ensureKanjiCharTables();
+      const levelByChar = /* @__PURE__ */ new Map();
+      for (const unit of allKanjiUnits()) {
+        if (unit.unitType !== "char" || !unit.char) continue;
+        const current = levelByChar.get(unit.char);
+        if (current === void 0 || unit.levelRank < current) levelByChar.set(unit.char, unit.levelRank);
+      }
+      const db = (0, import_database16.getDatabase)();
+      const existing = new Set(rowsFor("SELECT char FROM kanji_char_memory").map((row) => String(row.char)));
+      let inserted = 0;
+      db.run("BEGIN");
+      try {
+        for (const [char, levelRank] of levelByChar) {
+          if (existing.has(char)) continue;
+          db.run("INSERT INTO kanji_char_memory (char, level_rank) VALUES (?, ?)", [char, levelRank]);
+          inserted += 1;
+        }
+        db.run("COMMIT");
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+      return inserted;
+    };
+    EXAMPLE_CAP = 6;
+    kanjiCharCard = (char) => {
+      const row = rowsFor("SELECT level_rank FROM kanji_char_memory WHERE char = ?", [char])[0];
+      if (!row) return null;
+      const wordIds = /* @__PURE__ */ new Set();
+      for (const unit of allKanjiUnits()) {
+        if (unit.unitType === "char" && unit.char === char) kanjiUnitWordIds(unit.unitKey).forEach((id) => wordIds.add(id));
+      }
+      const examples = wordIds.size ? rowsFor(`
+        SELECT w.id, w.kanji, w.kana, w.meaning, w.jlpt_level, COALESCE(p.seen_count, 0) AS seen, COALESCE(w.importance, 0) AS importance
+        FROM words w LEFT JOIN progress p ON p.word_id = w.id
+        WHERE w.id IN (${[...wordIds].map(() => "?").join(",")})
+        ORDER BY seen DESC, importance DESC, w.id ASC
+        LIMIT ${EXAMPLE_CAP}
+      `, [...wordIds]).map((word) => ({
+        wordId: Number(word.id),
+        kanji: String(word.kanji ?? ""),
+        kana: String(word.kana ?? ""),
+        meaning: String(word.meaning ?? ""),
+        level: String(word.jlpt_level ?? "")
+      })) : [];
+      const dict = readings[char] ?? {};
+      const usage = kanjiReadingUsageFor(char)?.readings.map((reading) => ({
+        base: reading.base,
+        kinds: reading.kinds,
+        note: clauseText(reading)
+      })) ?? [];
+      return {
+        char,
+        levelRank: Number(row.level_rank),
+        on: dict.on ?? [],
+        kun: dict.kun ?? [],
+        usage,
+        examples
+      };
+    };
+    occurrenceByChar = () => {
+      const occurrence = /* @__PURE__ */ new Map();
+      for (const unit of allKanjiUnits()) {
+        if (unit.unitType === "char" && unit.char) occurrence.set(unit.char, (occurrence.get(unit.char) ?? 0) + unit.occurrenceCount);
+      }
+      return occurrence;
+    };
+    log = createCardLog({ entity: KANJI_CHAR_FSRS, reviewsTable: "kanji_char_reviews", tasksTable: "kanji_char_tasks" });
+    createKanjiCharTasks = (quota, targetLevelRank2, day = today()) => {
+      ensureKanjiCharTables();
+      return log.createTasks(quota, () => {
+        const occurrence = occurrenceByChar();
+        return rowsFor("SELECT char FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ?", [targetLevelRank2]).map((row) => String(row.char)).sort((a, b) => (occurrence.get(b) ?? 0) - (occurrence.get(a) ?? 0) || a.localeCompare(b));
+      }, day);
+    };
+    pickKanjiCharNext = (day = today(), excluded = /* @__PURE__ */ new Set()) => {
+      ensureKanjiCharTables();
+      return log.pickNext(day, excluded);
+    };
+    kanjiCharProgress = (day = today()) => {
+      ensureKanjiCharTables();
+      return log.progress(day);
+    };
+    kanjiCharStepMode = log.stepMode;
+    recordKanjiCharReview = (char, answer, now = /* @__PURE__ */ new Date(), mode) => {
+      ensureKanjiCharTables();
+      return log.record(char, answer, now, mode);
+    };
+    clearKanjiCharTasks = (day = today()) => {
+      ensureKanjiCharTables();
+      log.clearTasks(day);
+    };
+    undoLastKanjiCharReview = () => {
+      ensureKanjiCharTables();
+      return log.undoLast();
+    };
+    replayKanjiCharReviews = (onlyChars) => {
+      ensureKanjiCharTables();
+      return log.replay(onlyChars, (char) => (0, import_database16.getDatabase)().run("INSERT OR IGNORE INTO kanji_char_memory (char, level_rank) VALUES (?, 5)", [char]));
+    };
+    kanjiCharPool = (targetLevelRank2) => {
+      ensureKanjiCharTables();
+      return {
+        due: log.dueCount(),
+        unseen: firstValue("SELECT COUNT(*) FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ?", [targetLevelRank2], 0)
+      };
+    };
+  }
+});
+
+// scripts/shared/shims/distinction-reviews.js
+var require_distinction_reviews = __commonJS({
+  "scripts/shared/shims/distinction-reviews.js"(exports, module2) {
+    var stores = require("../shared/content-store");
+    var real = () => stores.distinctionReviews;
+    module2.exports = {
+      get DISTINCTION_REVIEWS() {
+        return real() ? real().DISTINCTION_REVIEWS : [];
+      },
+      get distinctionReviewMap() {
+        return real() ? real().distinctionReviewMap : /* @__PURE__ */ new Map();
+      },
+      distinctionReviewFor: (groupKey) => real() ? real().distinctionReviewFor(groupKey) : null,
+      distinctionNotesFor: (...args) => real() ? real().distinctionNotesFor(...args) : []
+    };
+  }
+});
+
+// ../frontend/src/lib/confusion-cards.ts
+var confusion_cards_exports = {};
+__export(confusion_cards_exports, {
+  CONFUSION_FSRS: () => CONFUSION_FSRS,
+  clearConfusionTasks: () => clearConfusionTasks,
+  confusionCardPool: () => confusionCardPool,
+  confusionCardProgress: () => confusionCardProgress,
+  createConfusionTasks: () => createConfusionTasks,
+  ensureConfusionCardTables: () => ensureConfusionCardTables,
+  gradeMatching: () => gradeMatching,
+  groupLevelRank: () => groupLevelRank,
+  matchable: () => matchable,
+  matchingCard: () => matchingCard,
+  materializeConfusionCards: () => materializeConfusionCards,
+  pickConfusionNext: () => pickConfusionNext,
+  recordConfusionReview: () => recordConfusionReview,
+  replayConfusionReviews: () => replayConfusionReviews,
+  undoLastConfusionReview: () => undoLastConfusionReview
+});
+var import_database17, import_confusion_distinction_reviews, import_question_meaning_overrides2, CONFUSION_FSRS, NOT_MASTERED, log2, ensureConfusionCardTables, firstSense2, matchable, LEVEL_RANK, groupLevelRank, materializeConfusionCards, matchingCard, gradeMatching, createConfusionTasks, pickConfusionNext, confusionCardProgress, recordConfusionReview, clearConfusionTasks, undoLastConfusionReview, replayConfusionReviews, confusionCardPool;
+var init_confusion_cards = __esm({
+  "../frontend/src/lib/confusion-cards.ts"() {
+    "use strict";
+    import_database17 = __toESM(require_database(), 1);
+    init_study_core();
+    init_fsrs_store();
+    init_card_log();
+    init_confusion_groups();
+    import_confusion_distinction_reviews = __toESM(require_distinction_reviews(), 1);
+    import_question_meaning_overrides2 = __toESM(require_question_meaning_overrides(), 1);
+    CONFUSION_FSRS = {
+      table: "confusion_progress",
+      idColumn: "group_key",
+      eligible: "known_forever = 0"
+    };
+    NOT_MASTERED = "group_key NOT IN (SELECT group_key FROM confusion_mastered)";
+    log2 = createCardLog({
+      entity: CONFUSION_FSRS,
+      reviewsTable: "confusion_reviews",
+      tasksTable: "confusion_tasks",
+      extraExclude: NOT_MASTERED
+    });
+    ensureConfusionCardTables = () => {
+      const db = (0, import_database17.getDatabase)();
+      db.run(`
+    CREATE TABLE IF NOT EXISTS confusion_progress (
+      group_key TEXT PRIMARY KEY,
+      seen_count INTEGER NOT NULL DEFAULT 0,
+      right_count INTEGER NOT NULL DEFAULT 0,
+      fuzzy_count INTEGER NOT NULL DEFAULT 0,
+      forgot_count INTEGER NOT NULL DEFAULT 0,
+      mistake_streak INTEGER NOT NULL DEFAULT 0,
+      known_forever INTEGER NOT NULL DEFAULT 0,
+      last_seen_on TEXT,
+      level_rank INTEGER NOT NULL DEFAULT 4
+    )
+  `);
+      if (!rowsFor("PRAGMA table_info(confusion_progress)").some((row) => row.name === "level_rank")) {
+        db.run("ALTER TABLE confusion_progress ADD COLUMN level_rank INTEGER NOT NULL DEFAULT 4");
+      }
+      db.run(`
+    CREATE TABLE IF NOT EXISTS confusion_reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      group_key TEXT NOT NULL,
+      answer TEXT NOT NULL,
+      reviewed_on TEXT NOT NULL,
+      reviewed_at INTEGER NOT NULL,
+      scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+      fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+      db.run("CREATE INDEX IF NOT EXISTS idx_confusion_reviews_group_on ON confusion_reviews (group_key, reviewed_on)");
+      db.run(`
+    CREATE TABLE IF NOT EXISTS confusion_tasks (
+      reviewed_on TEXT NOT NULL,
+      group_key TEXT NOT NULL,
+      order_index INTEGER NOT NULL,
+      PRIMARY KEY (reviewed_on, group_key)
+    )
+  `);
+      db.run("CREATE TABLE IF NOT EXISTS confusion_mastered (group_key TEXT PRIMARY KEY, mastered_on TEXT NOT NULL)");
+      ensureFsrsColumns(CONFUSION_FSRS);
+    };
+    firstSense2 = (text) => text.split(/[；;]/)[0].trim();
+    matchable = (group) => {
+      const review = (0, import_confusion_distinction_reviews.distinctionReviewFor)(group.key);
+      if (!review || review.level !== "major" || group.members.length < 2) return false;
+      const senses = /* @__PURE__ */ new Set();
+      return group.members.every((member) => {
+        const meaning = (0, import_question_meaning_overrides2.reviewedQuestionMeaning)(member.kanji, member.kana);
+        if (!meaning) return false;
+        const sense = firstSense2(meaning);
+        if (senses.has(sense)) return false;
+        senses.add(sense);
+        return true;
+      });
+    };
+    LEVEL_RANK = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
+    groupLevelRank = (group) => Math.max(...group.members.map((member) => LEVEL_RANK[member.jlptLevel] ?? 4));
+    materializeConfusionCards = () => {
+      ensureConfusionCardTables();
+      const db = (0, import_database17.getDatabase)();
+      const existing = new Map(rowsFor("SELECT group_key, level_rank FROM confusion_progress").map((row) => [String(row.group_key), Number(row.level_rank)]));
+      let inserted = 0;
+      db.run("BEGIN");
+      try {
+        for (const group of confusionGroups()) {
+          if (!matchable(group)) continue;
+          const rank2 = groupLevelRank(group);
+          const current = existing.get(group.key);
+          if (current === void 0) {
+            db.run("INSERT INTO confusion_progress (group_key, level_rank) VALUES (?, ?)", [group.key, rank2]);
+            inserted += 1;
+          } else if (current !== rank2) {
+            db.run("UPDATE confusion_progress SET level_rank = ? WHERE group_key = ?", [rank2, group.key]);
+          }
+        }
+        db.run("COMMIT");
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+      return inserted;
+    };
+    matchingCard = (groupKey) => {
+      const group = confusionGroups().find((item) => item.key === groupKey);
+      const review = group ? (0, import_confusion_distinction_reviews.distinctionReviewFor)(group.key) : null;
+      if (!group || !review || !matchable(group)) return null;
+      return {
+        groupKey: group.key,
+        type: group.type,
+        label: group.label,
+        pairs: group.members.map((member) => ({
+          id: member.id,
+          surface: displayForm(member),
+          kana: member.kana,
+          prompt: (0, import_question_meaning_overrides2.reviewedQuestionMeaning)(member.kanji, member.kana) ?? ""
+        })),
+        summary: review.summary,
+        notes: (0, import_confusion_distinction_reviews.distinctionNotesFor)(review.summary, group.members.map((member) => ({
+          key: String(member.id),
+          forms: [displayForm(member), member.kanji, member.kana]
+        })))
+      };
+    };
+    gradeMatching = (mistakes) => mistakes <= 0 ? "know" : mistakes === 1 ? "fuzzy" : "forgot";
+    createConfusionTasks = (quota, targetLevelRank2 = 4, day = today()) => {
+      ensureConfusionCardTables();
+      return log2.createTasks(quota, () => {
+        const learned = new Set(rowsFor("SELECT word_id FROM progress WHERE seen_count > 0").map((row) => Number(row.word_id)));
+        const unseen = new Set(rowsFor(`SELECT group_key FROM confusion_progress WHERE ${log2.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank2]).map((row) => String(row.group_key)));
+        return confusionGroups().filter((group) => unseen.has(group.key)).map((group) => ({ key: group.key, learned: group.members.filter((member) => learned.has(member.id)).length, size: group.members.length })).sort((a, b) => b.learned - a.learned || a.size - b.size || a.key.localeCompare(b.key)).map((item) => item.key);
+      }, day);
+    };
+    pickConfusionNext = (day = today(), excluded = /* @__PURE__ */ new Set()) => {
+      ensureConfusionCardTables();
+      return log2.pickNext(day, excluded);
+    };
+    confusionCardProgress = (day = today()) => {
+      ensureConfusionCardTables();
+      return log2.progress(day);
+    };
+    recordConfusionReview = (groupKey, answer, now = /* @__PURE__ */ new Date(), mode) => {
+      ensureConfusionCardTables();
+      return log2.record(groupKey, answer, now, mode);
+    };
+    clearConfusionTasks = (day = today()) => {
+      ensureConfusionCardTables();
+      log2.clearTasks(day);
+    };
+    undoLastConfusionReview = () => {
+      ensureConfusionCardTables();
+      return log2.undoLast();
+    };
+    replayConfusionReviews = (onlyKeys) => {
+      ensureConfusionCardTables();
+      return log2.replay(onlyKeys);
+    };
+    confusionCardPool = (targetLevelRank2 = 4) => {
+      ensureConfusionCardTables();
+      return {
+        due: log2.dueCount(),
+        unseen: firstValue(`SELECT COUNT(*) FROM confusion_progress WHERE ${log2.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank2], 0)
+      };
+    };
+  }
+});
+
+// ../frontend/src/lib/mixed-cards.ts
+var LEVEL_RANK2, targetLevelRank, UNLIMITED, loadMixedCardData, mixedCardDataLoaded, materializedFor, materializeOnce, getKanjiCardSession, getConfusionCardSession, mixedCardCounts;
+var init_mixed_cards = __esm({
+  "../frontend/src/lib/mixed-cards.ts"() {
+    "use strict";
+    init_studyPreferences();
+    init_study_core();
+    init_kanji_char_cards();
+    init_confusion_cards();
+    LEVEL_RANK2 = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
+    targetLevelRank = () => LEVEL_RANK2[getStudyPreferences().jlptTarget] ?? 2;
+    UNLIMITED = 1e5;
+    loadMixedCardData = loadKanjiCharData;
+    mixedCardDataLoaded = kanjiCharDataLoaded;
+    materializedFor = null;
+    materializeOnce = (db) => {
+      if (materializedFor === db) return;
+      materializeKanjiChars();
+      materializeConfusionCards();
+      materializedFor = db;
+    };
+    getKanjiCardSession = (db, day = today()) => {
+      materializeOnce(db);
+      const prefs = getStudyPreferences();
+      createKanjiCharTasks({ fresh: prefs.kanjiDailyGoal, review: prefs.kanjiReviewCap > 0 ? prefs.kanjiReviewCap : UNLIMITED }, targetLevelRank(), day);
+      const next = pickKanjiCharNext(day);
+      const progress = kanjiCharProgress(day);
+      return { card: next ? kanjiCharCard(next) : null, ...progress };
+    };
+    getConfusionCardSession = (db, day = today()) => {
+      materializeOnce(db);
+      const prefs = getStudyPreferences();
+      createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: prefs.confusionReviewCap > 0 ? prefs.confusionReviewCap : UNLIMITED }, targetLevelRank(), day);
+      const next = pickConfusionNext(day);
+      const progress = confusionCardProgress(day);
+      return { card: next ? matchingCard(next) : null, ...progress };
+    };
+    mixedCardCounts = (db, day = today()) => {
+      const kanji = getKanjiCardSession(db, day);
+      const confusion = getConfusionCardSession(db, day);
+      return {
+        kanjiDone: kanji.done,
+        kanjiRemaining: kanji.remaining,
+        confusionDone: confusion.done,
+        confusionRemaining: confusion.remaining
+      };
+    };
+  }
+});
+
+// ../frontend/src/lib/scheduler/sequencer.ts
+function pickNextInSequence(candidates, context) {
+  if (!candidates.length) return null;
+  return weightedPick(applyConstraints(candidates, context), context.random ?? Math.random);
+}
+var OPENING_CARDS, OPENING_MIN_RECALL, WRONG_STREAK_TRIGGER, WEIGHTED_POOL_SIZE, WEIGHT_DECAY, UNKNOWN_RECALL, medianRecall, applyConstraints, weightedPick;
+var init_sequencer = __esm({
+  "../frontend/src/lib/scheduler/sequencer.ts"() {
+    "use strict";
+    init_interference();
+    OPENING_CARDS = 6;
+    OPENING_MIN_RECALL = 0.35;
+    WRONG_STREAK_TRIGGER = 2;
+    WEIGHTED_POOL_SIZE = 6;
+    WEIGHT_DECAY = 0.5;
+    UNKNOWN_RECALL = 0.7;
+    medianRecall = (candidates) => {
+      const sorted = candidates.map((item) => item.recall).sort((left, right) => left - right);
+      if (!sorted.length) return 0;
+      const middle = Math.floor(sorted.length / 2);
+      return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+    };
+    applyConstraints = (candidates, context) => {
+      const keepNonEmpty = (next, current) => next.length ? next : current;
+      let pool = candidates;
+      const window2 = context.recentIds.slice(0, INTERFERENCE_WINDOW);
+      if (window2.length) {
+        pool = keepNonEmpty(
+          pool.filter((item) => !window2.some((recent) => context.interference.conflicts(item.id, recent))),
+          pool
+        );
+      }
+      if (context.answeredToday < OPENING_CARDS) {
+        pool = keepNonEmpty(pool.filter((item) => !item.isLeech), pool);
+        pool = keepNonEmpty(pool.filter((item) => item.recall >= OPENING_MIN_RECALL), pool);
+      }
+      if (context.wrongStreak >= WRONG_STREAK_TRIGGER) {
+        const threshold = medianRecall(pool);
+        pool = keepNonEmpty(pool.filter((item) => item.recall >= threshold), pool);
+      }
+      return pool;
+    };
+    weightedPick = (candidates, random) => {
+      if (!candidates.length) return null;
+      const ranked = [...candidates].sort((left, right) => right.score - left.score || left.id - right.id).slice(0, WEIGHTED_POOL_SIZE);
+      const weights = ranked.map((_, index3) => WEIGHT_DECAY ** index3);
+      const total = weights.reduce((sum, weight) => sum + weight, 0);
+      let cursor = random() * total;
+      for (let index3 = 0; index3 < ranked.length; index3 += 1) {
+        cursor -= weights[index3];
+        if (cursor <= 0) return ranked[index3];
+      }
+      return ranked[ranked.length - 1];
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/filters.ts
+var MISTAKE_MIN_REVIEWS, MISTAKE_MIN_LAPSES, MISTAKE_MIN_LAPSE_RATE, MISTAKE_MIN_WRONG_ANSWERS, MISTAKE_MIN_ERROR_RATE, MISTAKE_MAX_STABILITY, mistakeCandidateSql, isLongTermWeak, newWordLevelRankSql, newWordOrderSql, wordFilterSql, hasWordFilter;
+var init_filters = __esm({
+  "../frontend/src/lib/word-api/filters.ts"() {
+    "use strict";
+    MISTAKE_MIN_REVIEWS = 6;
+    MISTAKE_MIN_LAPSES = 4;
+    MISTAKE_MIN_LAPSE_RATE = 0.2;
+    MISTAKE_MIN_WRONG_ANSWERS = 3;
+    MISTAKE_MIN_ERROR_RATE = 0.65;
+    MISTAKE_MAX_STABILITY = 21;
+    mistakeCandidateSql = (progressAlias = "p") => `(
+  ${progressAlias}.seen_count >= ${MISTAKE_MIN_REVIEWS}
+  AND (
+    ${progressAlias}.fsrs_stability IS NULL
+    OR ${progressAlias}.fsrs_stability < ${MISTAKE_MAX_STABILITY}
+  )
+  AND (
+    (
+      COALESCE(${progressAlias}.fsrs_lapses, 0) >= ${MISTAKE_MIN_LAPSES}
+      AND COALESCE(${progressAlias}.fsrs_lapses, 0) * 1.0
+          / MAX(COALESCE(${progressAlias}.fsrs_reps, 0), 1) >= ${MISTAKE_MIN_LAPSE_RATE}
+    )
+    OR (
+      COALESCE(${progressAlias}.forgot_count, 0) + COALESCE(${progressAlias}.fuzzy_count, 0) >= ${MISTAKE_MIN_WRONG_ANSWERS}
+      AND (
+        COALESCE(${progressAlias}.forgot_count, 0) * 2.0 + COALESCE(${progressAlias}.fuzzy_count, 0)
+      ) / MAX(
+        COALESCE(${progressAlias}.right_count, 0) + COALESCE(${progressAlias}.forgot_count, 0) * 2.0 + COALESCE(${progressAlias}.fuzzy_count, 0),
+        1
+      ) >= ${MISTAKE_MIN_ERROR_RATE}
+    )
+  )
+)`;
+    isLongTermWeak = (row) => {
+      const num2 = (key) => Number(row[key] ?? 0) || 0;
+      if (num2("seen_count") < MISTAKE_MIN_REVIEWS) return false;
+      const stability = row.fsrs_stability == null ? null : num2("fsrs_stability");
+      if (stability !== null && stability >= MISTAKE_MAX_STABILITY) return false;
+      const lapses = num2("fsrs_lapses");
+      const reps = num2("fsrs_reps");
+      if (lapses >= MISTAKE_MIN_LAPSES && lapses / Math.max(reps, 1) >= MISTAKE_MIN_LAPSE_RATE) return true;
+      const forgot = num2("forgot_count");
+      const fuzzy = num2("fuzzy_count");
+      const weightedWrong = forgot * 2 + fuzzy;
+      if (forgot + fuzzy < MISTAKE_MIN_WRONG_ANSWERS) return false;
+      return weightedWrong / Math.max(num2("right_count") + weightedWrong, 1) >= MISTAKE_MIN_ERROR_RATE;
+    };
+    newWordLevelRankSql = (alias = "w") => `CASE ${alias}.jlpt_level
+    WHEN 'N2' THEN 2
+    WHEN 'N1' THEN 3
+    ELSE 1
+  END`;
+    newWordOrderSql = (alias = "w") => `${newWordLevelRankSql(alias)} ASC, ${alias}.importance DESC, ABS(RANDOM()) ASC`;
+    wordFilterSql = (options = {}, alias = "w", progressAlias = "p") => {
+      const clauses = [];
+      const params = [];
+      const level = options.level ?? "All";
+      const type = options.type ?? "all";
+      if (options.focus === "mistakes") {
+        clauses.push(mistakeCandidateSql(progressAlias));
+      }
+      if (level !== "All") {
+        if (level === "Unleveled") {
+          clauses.push(`(${alias}.jlpt_level IS NULL OR ${alias}.jlpt_level = '')`);
+        } else {
+          clauses.push(`${alias}.jlpt_level = ?`);
+          params.push(level);
+        }
+      }
+      if (type === "favorite") {
+        clauses.push(`EXISTS (
+      SELECT 1 FROM content_favorites cf
+      WHERE cf.item_type = 'word' AND cf.item_id = CAST(${alias}.id AS TEXT)
+    )`);
+      } else if (type === "noun") {
+        clauses.push(`(${alias}.pos LIKE '%\u540D%' OR ${alias}.pos LIKE '%\u540D\u8BCD%')`);
+      } else if (type === "verb") {
+        clauses.push(`(
+      ${alias}.pos LIKE '%\u52D5%' OR
+      ${alias}.pos LIKE '%\u52A8\u8BCD%' OR
+      ${alias}.pos LIKE '%\u81EA\u52A8%' OR
+      ${alias}.pos LIKE '%\u4ED6\u52A8%' OR
+      ${alias}.pos LIKE '%\u81EA\u52D5%' OR
+      ${alias}.pos LIKE '%\u4ED6\u52D5%'
+    )`);
+      } else if (type === "adjective") {
+        clauses.push(`(${alias}.pos LIKE '%\u5F62%' OR ${alias}.pos LIKE '%\u5F62\u5BB9\u8BCD%')`);
+      } else if (type === "adverb") {
+        clauses.push(`(${alias}.pos LIKE '%\u526F%' OR ${alias}.pos LIKE '%\u526F\u8BCD%')`);
+      }
+      return {
+        clause: clauses.length ? ` AND ${clauses.join(" AND ")} ` : "",
+        params
+      };
+    };
+    hasWordFilter = (options = {}) => (options.level ?? "All") !== "All" || (options.type ?? "all") !== "all" || options.focus === "mistakes";
+  }
+});
+
+// ../frontend/src/lib/word-api/stage1.ts
+var import_database18, predictedRecall, stage1TaskCount, stage1NewTaskCount, backfillStage1TasksFromReviews, activateMojiMigratedReviews, createStage1Tasks, reconcileStage1NewQuota, STAGE1_PLAN_VERSION, resetUnansweredStage1PlanForVersion, ensureStage1Tasks, stage1ProgressCounts, encoreRemainingCount, pickStage1Next;
+var init_stage1 = __esm({
+  "../frontend/src/lib/word-api/stage1.ts"() {
+    "use strict";
+    import_database18 = __toESM(require_database(), 1);
+    init_studyPreferences();
+    init_word_card();
+    init_priority();
+    init_requeue();
+    init_interference();
+    init_sequencer();
+    init_study_core();
+    init_review_budget();
+    init_fsrs_store();
+    init_fsrs_scheduler();
+    init_filters();
+    init_session_state();
+    predictedRecall = (row) => recallFromRow(row) ?? UNKNOWN_RECALL;
+    stage1TaskCount = (day) => firstValue(
+      "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ?",
+      [day],
+      0
+    );
+    stage1NewTaskCount = (day) => firstValue(
+      "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type = 'new'",
+      [day],
+      0
+    );
+    backfillStage1TasksFromReviews = (day) => {
+      const rows = rowsFor(`
+    SELECT
+      today_reviews.word_id,
+      MIN(today_reviews.id) AS first_review_id,
+      CASE
+        WHEN EXISTS (
+          SELECT 1
+          FROM reviews earlier_reviews
+          WHERE earlier_reviews.word_id = today_reviews.word_id
+            AND earlier_reviews.reviewed_on < ?
+        )
+        THEN 'review'
+        ELSE 'new'
+      END AS task_type
+    FROM reviews today_reviews
+    WHERE today_reviews.reviewed_on = ?
+    GROUP BY today_reviews.word_id
+    ORDER BY first_review_id ASC
+  `, [day, day]);
+      rows.forEach((row, index3) => {
+        (0, import_database18.getDatabase)().run(`
+      INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+      VALUES (?, ?, ?, ?)
+    `, [day, Number(row.word_id), String(row.task_type ?? "review"), index3 + 1]);
+      });
+    };
+    activateMojiMigratedReviews = (day) => {
+      const rows = rowsFor(`
+    SELECT m.word_id
+    FROM moji_migrated_reviews m
+    JOIN progress p ON p.word_id = m.word_id
+    JOIN words w ON w.id = m.word_id
+    WHERE m.activated_on IS NULL
+      AND p.known_forever = 0
+      AND p.seen_count > 0
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+    ORDER BY m.priority DESC, p.fsrs_due ASC, w.importance DESC, m.word_id ASC
+    LIMIT 30
+  `, [studyDayEnd().toISOString()]);
+      rows.forEach((row) => {
+        (0, import_database18.getDatabase)().run("UPDATE moji_migrated_reviews SET activated_on = ? WHERE word_id = ?", [day, Number(row.word_id)]);
+      });
+    };
+    createStage1Tasks = (day, options = {}) => {
+      const db = (0, import_database18.getDatabase)();
+      if (!options.topUp) {
+        if (stage1TaskCount(day) > 0) return;
+        if (firstValue("SELECT 1 FROM reviews WHERE reviewed_on = ? LIMIT 1", [day], 0)) {
+          backfillStage1TasksFromReviews(day);
+        }
+      }
+      activateMojiMigratedReviews(day);
+      const existingReviewTasks = firstValue(
+        "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type = 'review'",
+        [day],
+        0
+      );
+      const dailyLimit = dailyReviewCap(getReviewCapPreference(), day);
+      const reviewLimit = Math.max(dailyLimit - existingReviewTasks, 0);
+      let orderIndex = firstValue("SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?", [day], 1);
+      const reviewRows = fsrsDueWordIds(reviewLimit, studyDayEnd()).map((word_id) => ({ word_id }));
+      reviewRows.forEach((row) => {
+        db.run(`
+      INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+      VALUES (?, ?, 'review', ?)
+    `, [day, Number(row.word_id), orderIndex]);
+        orderIndex += 1;
+      });
+      const newRows = rowsFor(`
+    SELECT p.word_id
+    FROM progress p
+    JOIN words w ON w.id = p.word_id
+    LEFT JOIN dictionary_discovered_words d ON d.word_id = p.word_id
+    LEFT JOIN (
+      SELECT word_id, MIN(reviewed_on) AS first_planned_on
+      FROM stage1_tasks
+      WHERE task_type = 'new' AND reviewed_on < ?
+      GROUP BY word_id
+    ) carried ON carried.word_id = p.word_id
+    WHERE p.known_forever = 0
+      AND p.seen_count = 0
+    ORDER BY
+      CASE WHEN d.word_id IS NOT NULL THEN 0 ELSE 1 END,
+      CASE WHEN carried.word_id IS NOT NULL THEN 0 ELSE 1 END,
+      carried.first_planned_on ASC,
+      ${newWordOrderSql("w")}
+    LIMIT ?
+  `, [day, Math.max(dailyNewQuota() - stage1NewTaskCount(day), 0)]);
+      newRows.forEach((row) => {
+        db.run(`
+      INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+      VALUES (?, ?, 'new', ?)
+    `, [day, Number(row.word_id), orderIndex]);
+        orderIndex += 1;
+      });
+    };
+    reconcileStage1NewQuota = (day) => {
+      const completedNewTasks = firstValue(`
+    SELECT COUNT(*)
+    FROM stage1_tasks t
+    JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+      AND t.task_type = 'new'
+      AND (p.seen_count > 0 OR p.known_forever = 1)
+  `, [day], 0);
+      const remainingNewQuota = Math.max(dailyNewQuota() - completedNewTasks, 0);
+      (0, import_database18.getDatabase)().run(`
+    DELETE FROM stage1_tasks
+    WHERE reviewed_on = ?
+      AND task_type = 'new'
+      AND word_id IN (
+        SELECT word_id
+        FROM (
+          SELECT
+            t.word_id,
+            ROW_NUMBER() OVER (ORDER BY t.order_index ASC, t.word_id ASC) AS row_number
+          FROM stage1_tasks t
+          JOIN progress p ON p.word_id = t.word_id
+          WHERE t.reviewed_on = ?
+            AND t.task_type = 'new'
+            AND p.seen_count = 0
+            AND p.known_forever = 0
+        )
+        WHERE row_number > ?
+      )
+  `, [day, day, remainingNewQuota]);
+    };
+    STAGE1_PLAN_VERSION = "capped-random-v4";
+    resetUnansweredStage1PlanForVersion = (day) => {
+      if (getState("stage1_plan_version", "") === STAGE1_PLAN_VERSION) return;
+      const answeredTaskCount = firstValue(`
+    SELECT COUNT(DISTINCT r.word_id)
+    FROM reviews r
+    JOIN stage1_tasks t ON t.word_id = r.word_id AND t.reviewed_on = r.reviewed_on
+    WHERE t.reviewed_on = ?
+  `, [day], 0);
+      if (answeredTaskCount === 0) {
+        (0, import_database18.getDatabase)().run("DELETE FROM stage1_tasks WHERE reviewed_on = ?", [day]);
+        setReviewQueue([]);
+      }
+      setState("stage1_plan_version", STAGE1_PLAN_VERSION);
+    };
+    ensureStage1Tasks = () => {
+      const day = today();
+      resetUnansweredStage1PlanForVersion(day);
+      createStage1Tasks(day);
+      reconcileStage1NewQuota(day);
+    };
+    stage1ProgressCounts = () => {
+      const day = today();
+      ensureStage1Tasks();
+      const total = stage1TaskCount(day);
+      const completed = firstValue(`
+    SELECT COUNT(DISTINCT t.word_id)
+    FROM stage1_tasks t
+    JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+      AND (p.known_forever = 1 OR (p.fsrs_due IS NOT NULL AND p.fsrs_due > ?))
+  `, [day, studyDayEnd().toISOString()], 0);
+      const lanes = rowsFor(`
+    SELECT
+      CASE WHEN t.task_type = 'review' THEN 'review' ELSE 'new' END AS lane,
+      COUNT(*) AS total,
+      COUNT(CASE WHEN p.known_forever = 1 OR (p.fsrs_due IS NOT NULL AND p.fsrs_due > ?) THEN 1 END) AS done
+    FROM stage1_tasks t
+    LEFT JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+    GROUP BY lane
+  `, [studyDayEnd().toISOString(), day]);
+      const lane = (name) => {
+        const row = lanes.find((item) => String(item.lane) === name);
+        return { total: Number(row?.total ?? 0), done: Number(row?.done ?? 0) };
+      };
+      return {
+        completed: Math.min(Number(completed ?? 0), total),
+        total,
+        newLane: lane("new"),
+        reviewLane: lane("review")
+      };
+    };
+    encoreRemainingCount = (day) => firstValue(`
+  SELECT COUNT(*)
+  FROM progress p
+  WHERE p.known_forever = 0
+    AND p.seen_count > 0
+    AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+    -- \u8FD8\u6CA1\u8F6E\u5230\u6FC0\u6D3B\u7684\u5BFC\u5165\u8BCD\u4E0D\u7B97\u79EF\u538B,\u5426\u5219\u7EED\u676F\u4F1A\u628A\u51E0\u5343\u4E2A\u5BFC\u5165\u8BCD\u4E00\u6B21\u6027\u5012\u51FA\u6765
+    AND p.word_id NOT IN (SELECT word_id FROM moji_migrated_reviews WHERE activated_on IS NULL)
+    AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
+`, [studyDayEnd().toISOString(), day], 0);
+    pickStage1Next = (excludedIds = /* @__PURE__ */ new Set(), options = {}) => {
+      const deterministic = options.deterministic === true;
+      const day = today();
+      ensureStage1Tasks();
+      const queueById = new Map(getReviewQueue().map((item) => [item.word_id, item.due_after]));
+      const newQuotaLeft = firstValue(`
+    SELECT COUNT(*)
+    FROM stage1_tasks t
+    JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+      AND t.task_type = 'new'
+      AND p.seen_count = 0
+      AND p.known_forever = 0
+  `, [day], 0);
+      const rows = rowsFor(`
+    SELECT
+      w.*,
+      p.word_id,
+      p.seen_count,
+      p.known_forever,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      -- stability / difficulty / last_review \u4E00\u8D77\u5E26\u4E0A:\u4F18\u5148\u7EA7\u6309 stability \u6392,\u6392\u7247\u5668\u7684
+      -- recall \u4E5F\u4ECE\u8FD9\u51E0\u5217\u7B97\u3002\u5C11\u4E86\u5B83\u4EEC recallFromRow \u8FD4\u56DE undefined \u2192 \u6BCF\u5F20\u5361\u90FD\u662F 0.7,
+      -- \u5F00\u573A\u51CF\u538B\u548C\u8FDE\u8D25\u4FDD\u62A4\u5728\u6B63\u5411\u8FD9\u6761\u8DEF\u4E0A\u4ECE\u6765\u6CA1\u751F\u6548\u8FC7(2026-09-17 \u67E5\u660E)\u3002
+      p.fsrs_stability,
+      p.fsrs_difficulty,
+      p.fsrs_last_review,
+      p.fsrs_due,
+      p.fsrs_lapses,
+      p.fsrs_state,
+      t.task_type,
+      t.order_index,
+      COALESCE(n.note, '') AS note
+    FROM stage1_tasks t
+    JOIN words w ON w.id = t.word_id
+    JOIN progress p ON p.word_id = t.word_id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE t.reviewed_on = ?
+      AND p.known_forever = 0
+      -- \u51E1\u300C\u672C\u5B66\u4E60\u65E5\u5185\u4ECD\u5230\u671F\u300D\u7684\u90FD\u8981\u51FA:\u8FD8\u6CA1\u7B54\u7684\u3001\u4EE5\u53CA\u7B54\u9519/\u65B0\u8BCD\u5B66\u4E60\u4E2D
+      -- (\u88AB\u6392\u5230\u51E0\u5206\u949F\u540E\u3001\u4ECD <= \u4ECA\u65E5\u8FB9\u754C)\u7684\u3002\u6BD5\u4E1A(due \u6392\u5230\u660E\u5929+)\u624D\u79FB\u51FA\u5F53\u5929\u3002
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+  `, [day, studyDayEnd().toISOString()]);
+      const availableRows = rows.filter((row) => !excludedIds.has(Number(row.id)));
+      const lastId = lastAnsweredWord();
+      const lastRow = availableRows.find((row) => Number(row.id) === lastId);
+      const repeatAllowed = allowsBackToBack({
+        mistakeStreak: Number(lastRow?.mistake_streak ?? 0),
+        remaining: availableRows.length,
+        total: stage1TaskCount(day)
+      });
+      const stubbornDrill = lastRow && Number(lastRow.mistake_streak ?? 0) >= STUBBORN_MISTAKE_STREAK && (queueById.get(lastId) ?? 0) <= 0;
+      if (stubbornDrill) return rowObjectToCard(lastRow);
+      const pickable = availableRows.length > 1 && !repeatAllowed ? availableRows.filter((row) => Number(row.id) !== lastId) : availableRows;
+      const reviewRows = pickable.filter((row) => String(row.task_type) === "review");
+      const newRows = pickable.filter((row) => ["new", "encore_new"].includes(String(row.task_type)));
+      const completedTaskCount = firstValue(`
+    SELECT COUNT(DISTINCT r.word_id)
+    FROM reviews r
+    JOIN stage1_tasks t ON t.word_id = r.word_id AND t.reviewed_on = r.reviewed_on
+    WHERE t.reviewed_on = ?
+  `, [day], 0);
+      const recent = recentAnswersToday(day, INTERFERENCE_WINDOW);
+      const interference = sessionInterference(day, rows);
+      const wantNew = shouldPickStage1NewWord(
+        reviewRows.length,
+        newRows.length,
+        completedTaskCount,
+        deterministic ? 1 : void 0
+      );
+      const conflictsRecent = (row) => recent.wordIds.some((id) => interference.conflicts(Number(row.id), id));
+      const preferredRows = wantNew && !(reviewRows.length && newRows.every(conflictsRecent)) ? newRows : reviewRows.length ? reviewRows : newRows;
+      const candidates = preferredRows.map((row) => {
+        const dueAfter = queueById.get(Number(row.id)) ?? 0;
+        const components = priorityComponents(row, queueById.get(Number(row.id)), newQuotaLeft, {
+          randomize: !deterministic
+        });
+        return {
+          score: priorityScore(components),
+          dueAfter,
+          row
+        };
+      });
+      if (!candidates.length) return null;
+      const ready = candidates.filter((item) => item.dueAfter <= 0);
+      if (!ready.length) {
+        candidates.sort((left, right) => left.dueAfter - right.dueAfter || right.score - left.score);
+        return rowObjectToCard(candidates[0].row);
+      }
+      const byId = new Map(ready.map((item) => [item.row, item]));
+      const picked = pickNextInSequence(
+        ready.map((item) => ({
+          id: Number(item.row.id),
+          score: item.score,
+          recall: predictedRecall(item.row),
+          isLeech: Number(item.row.fsrs_lapses ?? 0) >= LEECH_LAPSE_THRESHOLD
+        })),
+        {
+          answeredToday: recent.answeredToday,
+          recentIds: recent.wordIds,
+          wrongStreak: recent.wrongStreak,
+          interference,
+          ...deterministic ? { random: () => 0 } : {}
+        }
+      );
+      if (!picked) return null;
+      const pickedRow = [...byId.keys()].find((row) => Number(row.id) === picked.id);
+      return pickedRow ? rowObjectToCard(pickedRow) : rowObjectToCard(ready[0].row);
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/directions.ts
+var import_database19, import_orthography2, FORWARD, REVERSE, KANJI, DIRECTIONS, directionByPhase, directionAllowsWord, filterDirectionWordIds, COUNTER_COLS, countersReady, ensureDirectionColumns, SEEDED_STABILITY_RATIO, ensureDirectionCardIds, directionTaskCount;
+var init_directions = __esm({
+  "../frontend/src/lib/word-api/directions.ts"() {
+    "use strict";
+    import_database19 = __toESM(require_database(), 1);
+    init_study_core();
+    init_fsrs_store();
+    import_orthography2 = __toESM(require_orthography(), 1);
+    init_fsrs_scheduler();
+    FORWARD = {
+      id: "forward",
+      phase: "stage1",
+      entity: WORD_FSRS,
+      taskTable: "stage1_tasks",
+      wordFilterSql: "",
+      label: "\u6B63\u5411"
+    };
+    REVERSE = {
+      id: "reverse",
+      phase: "stage2",
+      entity: REVERSE_FSRS,
+      taskTable: "stage2_progress",
+      wordFilterSql: "",
+      label: "\u53CD\u5411"
+    };
+    KANJI = {
+      // phase/模式 ID 继续叫 kanji，避免打乱用户已经保存的模式选择；
+      // reviews 的方向改用新 ID，让旧「释义 → 汉字」流水完整留在历史里。
+      id: "kanji_reading",
+      phase: "kanji",
+      entity: KANJI_FSRS,
+      taskTable: "kanji_reading_progress",
+      // 汉字读音卡只对「写法和读音不同」的词有意义;更细的判断(真的含汉字、
+      // 而且现代日语里确实写汉字)交给 shouldStudyKanjiReading,SQL 这道只是粗筛
+      wordFilterSql: "w.kanji <> w.kana",
+      label: "\u6C49\u5B57"
+    };
+    DIRECTIONS = [FORWARD, REVERSE, KANJI];
+    directionByPhase = (phase) => DIRECTIONS.find((direction) => direction.phase === phase) ?? FORWARD;
+    directionAllowsWord = (direction, word) => direction.id !== "kanji_reading" || (0, import_orthography2.shouldStudyKanjiReading)({
+      kanji: String(word.kanji ?? ""),
+      kana: String(word.kana ?? "")
+    });
+    filterDirectionWordIds = (direction, wordIds) => {
+      if (direction.id !== "kanji_reading" || !wordIds.length) return wordIds;
+      const placeholders = wordIds.map(() => "?").join(",");
+      const allowed = new Set(rowsFor(`
+    SELECT id, kanji, kana FROM words WHERE id IN (${placeholders})
+  `, wordIds).filter((word) => directionAllowsWord(direction, word)).map((word) => Number(word.id)));
+      return wordIds.filter((wordId) => allowed.has(wordId));
+    };
+    COUNTER_COLS = [
+      ["seen_count", "INTEGER NOT NULL DEFAULT 0"],
+      ["right_count", "INTEGER NOT NULL DEFAULT 0"],
+      ["fuzzy_count", "INTEGER NOT NULL DEFAULT 0"],
+      ["forgot_count", "INTEGER NOT NULL DEFAULT 0"],
+      ["mistake_streak", "INTEGER NOT NULL DEFAULT 0"],
+      ["last_seen_on", "TEXT"]
+    ];
+    countersReady = /* @__PURE__ */ new WeakMap();
+    ensureDirectionColumns = (direction) => {
+      const db = (0, import_database19.getDatabase)();
+      ensureFsrsColumns(direction.entity);
+      let done = countersReady.get(db);
+      if (!done) {
+        done = /* @__PURE__ */ new Set();
+        countersReady.set(db, done);
+      }
+      if (done.has(direction.entity.table)) return;
+      const existing = new Set(
+        rowsFor(`PRAGMA table_info(${direction.entity.table})`).map((row) => String(row.name ?? ""))
+      );
+      for (const [name, type] of COUNTER_COLS) {
+        if (!existing.has(name)) db.run(`ALTER TABLE ${direction.entity.table} ADD COLUMN ${name} ${type}`);
+      }
+      done.add(direction.entity.table);
+    };
+    SEEDED_STABILITY_RATIO = 0.5;
+    ensureDirectionCardIds = (direction, limit) => {
+      if (direction.id === "forward" || limit <= 0) return [];
+      ensureDirectionColumns(direction);
+      const table = direction.entity.table;
+      const rows = rowsFor(`
+    SELECT p.word_id, p.fsrs_lapses, w.kanji, w.kana
+    FROM progress p
+    JOIN words w ON w.id = p.word_id
+    WHERE p.seen_count > 0
+      AND p.known_forever = 0
+      AND COALESCE(p.fsrs_lapses, 0) < ?
+      ${direction.wordFilterSql ? `AND ${direction.wordFilterSql}` : ""}
+      AND NOT EXISTS (SELECT 1 FROM ${table} m WHERE m.word_id = p.word_id)
+    ORDER BY p.fsrs_due ASC, p.word_id ASC
+  `, [LEECH_LAPSE_THRESHOLD]).filter((row) => directionAllowsWord(direction, row));
+      if (direction.id === "kanji_reading") {
+        rows.sort(
+          (left, right) => (0, import_orthography2.kanjiReadingPriorityAdjustment)({
+            kanji: String(right.kanji ?? ""),
+            kana: String(right.kana ?? "")
+          }) - (0, import_orthography2.kanjiReadingPriorityAdjustment)({
+            kanji: String(left.kanji ?? ""),
+            kana: String(left.kana ?? "")
+          })
+        );
+      }
+      const db = (0, import_database19.getDatabase)();
+      const now = (/* @__PURE__ */ new Date()).toISOString();
+      const createdIds = [];
+      for (const row of rows) {
+        if (createdIds.length >= limit) break;
+        const wordId = Number(row.word_id);
+        db.run(`INSERT OR IGNORE INTO ${table} (word_id, seen_count) VALUES (?, 0)`, [wordId]);
+        const forward = readFsrsState(wordId, WORD_FSRS);
+        if (forward) {
+          writeFsrsState(wordId, {
+            ...forward,
+            // Keep the seed strictly below the source stability when possible.
+            // A hard floor of 1 day made weak cards more stable after direction
+            // seeding, which is the opposite of a conservative transfer.
+            stability: Math.max(forward.stability * SEEDED_STABILITY_RATIO, 0.1),
+            due: now,
+            // 这个方向还没被真正问过,所以「上次复习」就是现在(播种时刻)
+            lastReview: now,
+            reps: 0,
+            lapses: 0,
+            steps: 0
+          }, direction.entity);
+        }
+        createdIds.push(wordId);
+      }
+      return createdIds;
+    };
+    directionTaskCount = (direction, day = today()) => firstValue(
+      `SELECT COUNT(*) FROM ${direction.taskTable} WHERE reviewed_on = ?`,
+      [day],
+      0
+    );
+  }
+});
+
+// ../frontend/src/lib/word-api/direction-plan.ts
+var import_database20, import_orthography3, predictedRecall2, newTaskCount, pruneIneligibleDirectionTasks, eligibleDueWordIds, createDirectionTasks, backfillDirectionTasksFromToday, ensureDirectionTasks, directionProgressCounts, directionCardColumns, directionCardById, pickDirectionNext;
+var init_direction_plan = __esm({
+  "../frontend/src/lib/word-api/direction-plan.ts"() {
+    "use strict";
+    import_database20 = __toESM(require_database(), 1);
+    init_word_card();
+    init_studyPreferences();
+    init_priority();
+    init_requeue();
+    init_interference();
+    init_sequencer();
+    init_study_core();
+    init_review_budget();
+    init_fsrs_store();
+    init_fsrs_scheduler();
+    import_orthography3 = __toESM(require_orthography(), 1);
+    init_session_state();
+    init_directions();
+    predictedRecall2 = (row) => recallFromRow(row) ?? UNKNOWN_RECALL;
+    newTaskCount = (direction, day) => firstValue(
+      `SELECT COUNT(*)
+   FROM ${direction.taskTable} t
+   JOIN ${direction.entity.table} m ON m.word_id = t.word_id
+   WHERE t.reviewed_on = ? AND COALESCE(m.seen_count, 0) = 0`,
+      [day],
+      0
+    );
+    pruneIneligibleDirectionTasks = (direction, day) => {
+      if (direction.id !== "kanji_reading") return;
+      const stale = rowsFor(`
+    SELECT t.word_id, w.kanji, w.kana
+    FROM ${direction.taskTable} t
+    JOIN words w ON w.id = t.word_id
+    WHERE t.reviewed_on = ?
+  `, [day]).filter((row) => !directionAllowsWord(direction, row));
+      stale.forEach((row) => (0, import_database20.getDatabase)().run(
+        `DELETE FROM ${direction.taskTable} WHERE reviewed_on = ? AND word_id = ?`,
+        [day, Number(row.word_id)]
+      ));
+    };
+    eligibleDueWordIds = (direction, limit, end) => {
+      if (limit <= 0) return [];
+      const candidateLimit = direction.id === "kanji_reading" ? Math.max(limit * 2, 32) : limit;
+      return filterDirectionWordIds(
+        direction,
+        fsrsDueWordIds(candidateLimit, end, direction.entity)
+      ).slice(0, limit);
+    };
+    createDirectionTasks = (direction, day = today(), introduceNew = false) => {
+      ensureDirectionColumns(direction);
+      const db = (0, import_database20.getDatabase)();
+      pruneIneligibleDirectionTasks(direction, day);
+      if (directionTaskCount(direction, day) > 0) return;
+      backfillDirectionTasksFromToday(direction, day);
+      const cap = dailyReviewCap(getReviewCapPreference(), day);
+      const reviewLimit = Math.max(cap - directionTaskCount(direction, day), 0);
+      let orderIndex = directionTaskCount(direction, day) + 1;
+      eligibleDueWordIds(direction, reviewLimit, studyDayEnd()).forEach((wordId) => {
+        db.run(`
+      INSERT OR IGNORE INTO ${direction.taskTable} (reviewed_on, word_id, order_index)
+      VALUES (?, ?, ?)
+    `, [day, wordId, orderIndex]);
+        orderIndex += 1;
+      });
+      const newQuota = introduceNew ? Math.max(dailyNewQuota() - newTaskCount(direction, day), 0) : 0;
+      if (newQuota > 0) {
+        ensureDirectionCardIds(direction, newQuota).forEach((wordId) => {
+          db.run(`
+        INSERT OR IGNORE INTO ${direction.taskTable} (reviewed_on, word_id, order_index)
+        VALUES (?, ?, ?)
+      `, [day, wordId, orderIndex]);
+          orderIndex += 1;
+        });
+      }
+    };
+    backfillDirectionTasksFromToday = (direction, day) => {
+      const rows = rowsFor(`
+    SELECT r.word_id, MIN(r.id) AS first_review_id, w.kanji, w.kana
+    FROM reviews r
+    JOIN words w ON w.id = r.word_id
+    WHERE r.reviewed_on = ? AND r.direction = ? AND r.answer != 'known_forever'
+    GROUP BY r.word_id
+    ORDER BY first_review_id ASC
+  `, [day, direction.id]).filter((row) => directionAllowsWord(direction, row));
+      rows.forEach((row, index3) => {
+        (0, import_database20.getDatabase)().run(`
+      INSERT OR IGNORE INTO ${direction.taskTable} (reviewed_on, word_id, order_index)
+      VALUES (?, ?, ?)
+    `, [day, Number(row.word_id), index3 + 1]);
+      });
+    };
+    ensureDirectionTasks = (direction, introduceNew = false) => {
+      createDirectionTasks(direction, today(), introduceNew);
+    };
+    directionProgressCounts = (direction) => {
+      const day = today();
+      ensureDirectionTasks(direction);
+      const total = directionTaskCount(direction, day);
+      const completed = firstValue(`
+    SELECT COUNT(DISTINCT t.word_id)
+    FROM ${direction.taskTable} t
+    JOIN ${direction.entity.table} m ON m.word_id = t.word_id
+    LEFT JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+      AND (
+        COALESCE(p.known_forever, 0) = 1
+        OR (m.fsrs_due IS NOT NULL AND m.fsrs_due > ?)
+      )
+  `, [day, studyDayEnd().toISOString()], 0);
+      return { total, completed: Math.min(completed, total) };
+    };
+    directionCardColumns = (direction) => `
+      w.*,
+      m.word_id,
+      m.seen_count,
+      m.right_count,
+      m.fuzzy_count,
+      m.forgot_count,
+      m.mistake_streak,
+      m.last_seen_on,
+      m.fsrs_stability,
+      m.fsrs_difficulty,
+      m.fsrs_due,
+      m.fsrs_last_review,
+      m.fsrs_state,
+      m.fsrs_reps,
+      m.fsrs_lapses,
+      COALESCE(p.known_forever, 0) AS known_forever,
+      COALESCE(n.note, '') AS note
+    FROM ${direction.entity.table} m
+    JOIN words w ON w.id = m.word_id
+    LEFT JOIN progress p ON p.word_id = m.word_id
+    LEFT JOIN word_notes n ON n.word_id = w.id`;
+    directionCardById = (direction, wordId) => {
+      ensureDirectionColumns(direction);
+      const row = firstRow(`SELECT ${directionCardColumns(direction)} WHERE m.word_id = ?`, [wordId]);
+      return row && directionAllowsWord(direction, row) ? rowObjectToCard(row) : null;
+    };
+    pickDirectionNext = (direction, excludedIds = /* @__PURE__ */ new Set(), options = {}) => {
+      const deterministic = options.deterministic === true;
+      const day = today();
+      ensureDirectionTasks(direction);
+      const queueById = new Map(getReviewQueue(direction.id).map((item) => [item.word_id, item.due_after]));
+      const rows = rowsFor(`
+    SELECT
+      w.*,
+      m.word_id,
+      m.seen_count,
+      m.right_count,
+      m.fuzzy_count,
+      m.forgot_count,
+      m.mistake_streak,
+      m.last_seen_on,
+      m.fsrs_stability,
+      m.fsrs_difficulty,
+      m.fsrs_due,
+      m.fsrs_last_review,
+      m.fsrs_state,
+      m.fsrs_reps,
+      m.fsrs_lapses,
+      COALESCE(p.known_forever, 0) AS known_forever,
+      t.order_index,
+      'review' AS task_type,
+      COALESCE(n.note, '') AS note
+    FROM ${direction.taskTable} t
+    JOIN words w ON w.id = t.word_id
+    JOIN ${direction.entity.table} m ON m.word_id = t.word_id
+    LEFT JOIN progress p ON p.word_id = t.word_id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE t.reviewed_on = ?
+      AND COALESCE(p.known_forever, 0) = 0
+      -- \u300C\u672C\u5B66\u4E60\u65E5\u5185\u4ECD\u5230\u671F\u300D\u7684\u90FD\u8981\u51FA:\u6CA1\u7B54\u7684\u3001\u7B54\u9519\u8FD8\u5728\u91CD\u5B66\u6B65\u9AA4\u91CC\u7684
+      AND (m.fsrs_due IS NULL OR m.fsrs_due <= ?)
+  `, [day, studyDayEnd().toISOString()]);
+      const availableRows = rows.filter(
+        (row) => !excludedIds.has(Number(row.id)) && directionAllowsWord(direction, row)
+      );
+      if (!availableRows.length) return null;
+      const lastId = lastAnsweredWord(direction.id);
+      const lastRow = availableRows.find((row) => Number(row.id) === lastId);
+      const repeatAllowed = allowsBackToBack({
+        mistakeStreak: Number(lastRow?.mistake_streak ?? 0),
+        remaining: availableRows.length,
+        total: directionTaskCount(direction, day)
+      });
+      const stubbornDrill = lastRow && Number(lastRow.mistake_streak ?? 0) >= STUBBORN_MISTAKE_STREAK && (queueById.get(lastId) ?? 0) <= 0;
+      if (stubbornDrill) return rowObjectToCard(lastRow);
+      const pickable = availableRows.length > 1 && !repeatAllowed ? availableRows.filter((row) => Number(row.id) !== lastId) : availableRows;
+      const candidates = pickable.map((row) => {
+        const components = priorityComponents(row, queueById.get(Number(row.id)), 0, {
+          randomize: !deterministic
+        });
+        if (direction.id === "kanji_reading") {
+          components.orthography = (0, import_orthography3.kanjiReadingPriorityAdjustment)({
+            kanji: String(row.kanji ?? ""),
+            kana: String(row.kana ?? "")
+          });
+        }
+        return {
+          score: priorityScore(components),
+          dueAfter: queueById.get(Number(row.id)) ?? 0,
+          row
+        };
+      });
+      if (!candidates.length) return null;
+      const ready = candidates.filter((item) => item.dueAfter <= 0);
+      if (!ready.length) {
+        candidates.sort((left, right) => left.dueAfter - right.dueAfter || right.score - left.score);
+        return rowObjectToCard(candidates[0].row);
+      }
+      const recent = recentAnswersToday(day, INTERFERENCE_WINDOW, direction.id);
+      const picked = pickNextInSequence(
+        ready.map((item) => ({
+          id: Number(item.row.id),
+          score: item.score,
+          recall: predictedRecall2(item.row),
+          isLeech: Number(item.row.fsrs_lapses ?? 0) >= LEECH_LAPSE_THRESHOLD
+        })),
+        {
+          answeredToday: recent.answeredToday,
+          recentIds: recent.wordIds,
+          wrongStreak: recent.wrongStreak,
+          interference: sessionInterference(day, rows, direction.id),
+          ...deterministic ? { random: () => 0 } : {}
+        }
+      );
+      if (!picked) return null;
+      const pickedRow = ready.find((item) => Number(item.row.id) === picked.id)?.row;
+      return rowObjectToCard(pickedRow ?? ready[0].row);
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/picked.ts
+var KEY2, MAX_PICKED, setPickedWords, pickedWordIds, pickedRows, pickedProgress, pickPickedNext;
+var init_picked = __esm({
+  "../frontend/src/lib/word-api/picked.ts"() {
+    "use strict";
+    init_word_card();
+    init_requeue();
+    init_study_core();
+    init_session_state();
+    KEY2 = "picked_word_ids";
+    MAX_PICKED = 300;
+    setPickedWords = (wordIds) => {
+      const ids = Array.from(new Set(
+        wordIds.map((id) => Math.round(Number(id))).filter((id) => Number.isFinite(id) && id > 0)
+      )).slice(0, MAX_PICKED);
+      setState(KEY2, JSON.stringify(ids));
+      persistSoon();
+      return ids;
+    };
+    pickedWordIds = () => {
+      try {
+        const parsed = JSON.parse(getState(KEY2, "[]"));
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0);
+      } catch {
+        return [];
+      }
+    };
+    pickedRows = () => {
+      const ids = pickedWordIds();
+      if (!ids.length) return [];
+      const placeholders = ids.map(() => "?").join(",");
+      return rowsFor(`
+    SELECT
+      w.*,
+      p.seen_count,
+      p.known_forever,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      p.fsrs_stability,
+      p.fsrs_difficulty,
+      p.fsrs_due,
+      p.fsrs_state,
+      p.fsrs_reps,
+      p.fsrs_lapses,
+      COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE w.id IN (${placeholders})
+      AND p.known_forever = 0
+      AND (
+        p.last_seen_on IS NULL
+        OR p.last_seen_on <> ?
+        OR p.fsrs_due IS NULL
+        OR p.fsrs_due <= ?
+      )
+    ORDER BY
+      CASE WHEN p.last_seen_on IS NULL OR p.last_seen_on <> ? THEN 0 ELSE 1 END ASC,
+      CASE WHEN p.fsrs_due IS NULL THEN 0 ELSE 1 END ASC,
+      p.fsrs_due ASC,
+      w.importance DESC,
+      w.id ASC
+  `, [...ids, today(), studyDayEnd().toISOString(), today()]);
+    };
+    pickedProgress = () => {
+      const total = pickedWordIds().length;
+      return { total, remaining: Math.min(pickedRows().length, total) };
+    };
+    pickPickedNext = () => {
+      const rows = pickedRows();
+      if (!rows.length) return null;
+      const lastId = lastAnsweredWord();
+      const lastRow = rows.find((row) => Number(row.id) === lastId);
+      const repeatAllowed = allowsBackToBack({
+        mistakeStreak: Number(lastRow?.mistake_streak ?? 0),
+        remaining: rows.length,
+        total: pickedWordIds().length
+      });
+      const pickable = rows.length > 1 && !repeatAllowed ? rows.filter((row) => Number(row.id) !== lastId) : rows;
+      return rowObjectToCard(pickable[0] ?? rows[0]);
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/daily-relief.ts
+var import_progress_events, RELIEF_STATE_KEY, MIN_RELIEF_WORDS, MAX_RELIEF_WORDS, MIN_ACTIVITY_WORDS, MAX_ACTIVITY_WORDS_FOR_FULL_RELIEF, emptyState, normalizeState, readState, writeState, previousStudyDate, reliefCandidates, previousStudyWordCount, reliefCountFor, ensureDailyRelief, getDailyReliefProgress, reliefCardById, getDailyReliefNext, advanceDailyRelief, dailyReliefCount;
+var init_daily_relief = __esm({
+  "../frontend/src/lib/word-api/daily-relief.ts"() {
+    "use strict";
+    import_progress_events = __toESM(require_progress_events(), 1);
+    init_word_card();
+    init_study_core();
+    init_stage1();
+    RELIEF_STATE_KEY = "daily_relief_v2";
+    MIN_RELIEF_WORDS = 6;
+    MAX_RELIEF_WORDS = 12;
+    MIN_ACTIVITY_WORDS = 100;
+    MAX_ACTIVITY_WORDS_FOR_FULL_RELIEF = 300;
+    emptyState = (studyDate2 = today()) => ({
+      studyDate: studyDate2,
+      wordIds: [],
+      completed: 0
+    });
+    normalizeState = (value, studyDate2) => {
+      if (!value || typeof value !== "object") return emptyState(studyDate2);
+      const candidate = value;
+      const wordIds = Array.isArray(candidate.wordIds) ? candidate.wordIds.map(Number).filter((id) => Number.isFinite(id)) : [];
+      const uniqueWordIds = Array.from(new Set(wordIds));
+      return {
+        studyDate: studyDate2,
+        wordIds: uniqueWordIds,
+        completed: Math.min(Math.max(Number(candidate.completed ?? 0), 0), uniqueWordIds.length)
+      };
+    };
+    readState = (studyDate2 = today()) => {
+      const raw = getState(RELIEF_STATE_KEY, "");
+      if (!raw) return emptyState(studyDate2);
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.studyDate !== studyDate2) return emptyState(studyDate2);
+        return normalizeState(parsed, studyDate2);
+      } catch {
+        return emptyState(studyDate2);
+      }
+    };
+    writeState = (state) => {
+      setState(RELIEF_STATE_KEY, JSON.stringify(state));
+      persistSoon();
+      (0, import_progress_events.notifyProgressUpdated)();
+      return state;
+    };
+    previousStudyDate = (studyDate2) => {
+      const previousDate = /* @__PURE__ */ new Date(`${studyDate2}T12:00:00`);
+      previousDate.setDate(previousDate.getDate() - 1);
+      return previousDate.toISOString().slice(0, 10);
+    };
+    reliefCandidates = (studyDate2) => {
+      const yesterday = previousStudyDate(studyDate2);
+      return rowsFor(`
+    SELECT r.word_id, COUNT(*) AS remembered_count, MAX(r.id) AS last_review_id
+    FROM reviews r
+    JOIN progress p ON p.word_id = r.word_id
+    WHERE r.reviewed_on = ?
+      AND r.direction = 'forward'
+      AND r.answer IN ('know', 'known_forever')
+      AND NOT EXISTS (
+        SELECT 1 FROM stage1_tasks today_tasks
+        WHERE today_tasks.reviewed_on = ? AND today_tasks.word_id = r.word_id
+      )
+    GROUP BY r.word_id
+    ORDER BY remembered_count ASC, last_review_id ASC, r.word_id ASC
+    LIMIT ?
+  `, [yesterday, studyDate2, MAX_RELIEF_WORDS]).map((row) => ({
+        wordId: Number(row.word_id),
+        rememberedCount: Number(row.remembered_count ?? 0)
+      }));
+    };
+    previousStudyWordCount = (studyDate2) => firstValue(
+      `
+    SELECT COUNT(DISTINCT word_id)
+    FROM reviews
+    WHERE reviewed_on = ?
+      AND direction = 'forward'
+  `,
+      [previousStudyDate(studyDate2)],
+      0
+    );
+    reliefCountFor = (candidates, studiedWordCount) => {
+      if (candidates.length < MIN_RELIEF_WORDS || studiedWordCount < MIN_ACTIVITY_WORDS) return 0;
+      const activityRatio = Math.min(
+        1,
+        (studiedWordCount - MIN_ACTIVITY_WORDS) / (MAX_ACTIVITY_WORDS_FOR_FULL_RELIEF - MIN_ACTIVITY_WORDS)
+      );
+      const activityCount = Math.round(
+        MIN_RELIEF_WORDS + activityRatio * (MAX_RELIEF_WORDS - MIN_RELIEF_WORDS)
+      );
+      return Math.min(candidates.length, activityCount);
+    };
+    ensureDailyRelief = () => {
+      const studyDate2 = today();
+      ensureStage1Tasks();
+      const existing = readState(studyDate2);
+      const raw = getState(RELIEF_STATE_KEY, "");
+      let hasCurrentState = false;
+      if (raw) {
+        try {
+          hasCurrentState = JSON.parse(raw).studyDate === studyDate2;
+        } catch {
+          hasCurrentState = false;
+        }
+      }
+      if (existing.wordIds.length > 0 || hasCurrentState) return existing;
+      const candidates = reliefCandidates(studyDate2);
+      const reliefCount = reliefCountFor(candidates, previousStudyWordCount(studyDate2));
+      const wordIds = candidates.slice(0, reliefCount).map((candidate) => candidate.wordId);
+      return writeState({
+        studyDate: studyDate2,
+        wordIds,
+        completed: 0
+      });
+    };
+    getDailyReliefProgress = () => {
+      const state = readState();
+      return {
+        total: state.wordIds.length,
+        completed: state.completed,
+        pending: Math.max(state.wordIds.length - state.completed, 0)
+      };
+    };
+    reliefCardById = (wordId) => {
+      const row = firstRow(`
+    SELECT
+      w.*,
+      p.seen_count,
+      p.known_forever,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      p.fsrs_stability,
+      p.fsrs_difficulty,
+      p.fsrs_due,
+      p.fsrs_state,
+      p.fsrs_steps,
+      p.fsrs_reps,
+      p.fsrs_lapses,
+      COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE w.id = ?
+  `, [wordId]);
+      return row ? rowObjectToCard(row) : null;
+    };
+    getDailyReliefNext = () => {
+      const state = ensureDailyRelief();
+      const wordId = state.wordIds[state.completed];
+      return wordId == null ? null : reliefCardById(wordId);
+    };
+    advanceDailyRelief = () => {
+      const state = readState();
+      if (state.completed >= state.wordIds.length) return state;
+      return writeState({ ...state, completed: state.completed + 1 });
+    };
+    dailyReliefCount = (studyDate2) => studyDate2 === today() ? readState().completed : reliefCountFor(reliefCandidates(studyDate2), previousStudyWordCount(studyDate2));
+  }
+});
+
+// ../frontend/src/lib/word-api/daily-tail.ts
+var import_progress_events2, TAIL_STATE_KEY, MIN_TAIL_WORDS, MAX_TAIL_WORDS, MAX_TAIL_APPEARANCES, emptyTail, readTail, writeTail, TAIL_MIN_STABILITY, highRecallRows, ensureDailyTail, tailCardById, prepareTailCard, getDailyTailNext, getDailyTailProgress, advanceDailyTail, rewindDailyTail;
+var init_daily_tail = __esm({
+  "../frontend/src/lib/word-api/daily-tail.ts"() {
+    "use strict";
+    init_study_core();
+    import_progress_events2 = __toESM(require_progress_events(), 1);
+    init_word_card();
+    init_fsrs_store();
+    init_stage1();
+    init_daily_relief();
+    TAIL_STATE_KEY = "daily_tail_v2";
+    MIN_TAIL_WORDS = 3;
+    MAX_TAIL_WORDS = 7;
+    MAX_TAIL_APPEARANCES = 3;
+    emptyTail = (studyDate2 = today()) => ({ studyDate: studyDate2, wordIds: [], completed: 0 });
+    readTail = (studyDate2 = today()) => {
+      const raw = getState(TAIL_STATE_KEY, "");
+      if (!raw) return emptyTail(studyDate2);
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.studyDate !== studyDate2) return emptyTail(studyDate2);
+        const wordIds = Array.isArray(parsed.wordIds) ? parsed.wordIds.map(Number).filter((id) => Number.isFinite(id)) : [];
+        return {
+          studyDate: studyDate2,
+          // ⚠️ 这里**不能去重**：答错重来就是往队尾再排一份同一个 id，
+          // 重复项正是「这张卡出现过几次」的记录。
+          wordIds,
+          completed: Math.min(Math.max(Number(parsed.completed ?? 0), 0), wordIds.length)
+        };
+      } catch {
+        return emptyTail(studyDate2);
+      }
+    };
+    writeTail = (state) => {
+      setState(TAIL_STATE_KEY, JSON.stringify(state));
+      persistSoon();
+      (0, import_progress_events2.notifyProgressUpdated)();
+      return state;
+    };
+    TAIL_MIN_STABILITY = 14;
+    highRecallRows = () => {
+      const day = today();
+      const dayEnd = studyDayEnd().toISOString();
+      const reliefWordIds = new Set(ensureDailyRelief().wordIds);
+      const rows = rowsFor(`
+    SELECT
+      w.*,
+      p.seen_count,
+      p.known_forever,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      p.fsrs_stability,
+      p.fsrs_difficulty,
+      p.fsrs_due,
+      p.fsrs_last_review,
+      p.fsrs_state,
+      p.fsrs_steps,
+      p.fsrs_reps,
+      p.fsrs_lapses,
+      COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE p.known_forever = 0
+      AND p.seen_count >= 3
+      AND p.fsrs_due IS NOT NULL
+      AND p.fsrs_due > ?
+      AND p.fsrs_stability >= ?
+      AND NOT EXISTS (
+        SELECT 1 FROM stage1_tasks t
+        WHERE t.reviewed_on = ? AND t.word_id = p.word_id
+      )
+      -- \u4ECA\u5929\u5DF2\u7ECF\u7B54\u8FC7\u7684\u4E0D\u7B97\u300C\u518D\u786E\u8BA4\u4E00\u6B21\u300D\uFF0C\u90A3\u662F\u4E00\u5C0F\u65F6\u524D\u521A\u505A\u8FC7\u7684\u9898
+      AND NOT EXISTS (
+        SELECT 1 FROM reviews r
+        WHERE r.word_id = p.word_id AND r.reviewed_on = ? AND r.direction = 'forward'
+      )
+  `, [dayEnd, TAIL_MIN_STABILITY, day, day]);
+      return rows.map((row) => ({ row, recall: recallFromRow(row) ?? 0 })).filter((item) => !reliefWordIds.has(Number(item.row.id))).filter((item) => item.recall >= 0.82).sort(() => Math.random() - 0.5).slice(0, MAX_TAIL_WORDS).map((item) => item.row);
+    };
+    ensureDailyTail = () => {
+      const studyDate2 = today();
+      const existing = readTail(studyDate2);
+      const raw = getState(TAIL_STATE_KEY, "");
+      let hasCurrentState = false;
+      if (raw) {
+        try {
+          hasCurrentState = JSON.parse(raw).studyDate === studyDate2;
+        } catch {
+          hasCurrentState = false;
+        }
+      }
+      if (existing.wordIds.length > 0 || hasCurrentState) return existing;
+      const frontPlan = stage1ProgressCounts();
+      if (frontPlan.total <= 0) return emptyTail(studyDate2);
+      const wordIds = highRecallRows().map((row) => Number(row.id));
+      const tailSize = wordIds.length >= MIN_TAIL_WORDS ? MIN_TAIL_WORDS + Math.floor(Math.random() * (Math.min(MAX_TAIL_WORDS, wordIds.length) - MIN_TAIL_WORDS + 1)) : 0;
+      return writeTail({ studyDate: studyDate2, wordIds: wordIds.slice(0, tailSize), completed: 0 });
+    };
+    tailCardById = (wordId) => {
+      const row = firstRow(`
+    SELECT w.*, p.seen_count, p.known_forever,
+           p.last_seen_on, p.right_count, p.fuzzy_count,
+           p.forgot_count, p.mistake_streak,
+           p.fsrs_stability, p.fsrs_difficulty, p.fsrs_due, p.fsrs_last_review,
+           p.fsrs_state, p.fsrs_steps, p.fsrs_reps, p.fsrs_lapses,
+           COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE w.id = ?
+  `, [wordId]);
+      return row ? rowObjectToCard(row) : null;
+    };
+    prepareTailCard = (wordId) => {
+      setState("phase_date", today());
+      setState("phase", "stage1");
+      setState("current_card", String(wordId));
+    };
+    getDailyTailNext = () => {
+      const state = ensureDailyTail();
+      const frontPlan = stage1ProgressCounts();
+      if (frontPlan.total <= 0 || frontPlan.completed < frontPlan.total) return null;
+      const wordId = state.wordIds[state.completed];
+      if (wordId == null) return null;
+      const card = tailCardById(wordId);
+      if (card) prepareTailCard(wordId);
+      return card;
+    };
+    getDailyTailProgress = () => {
+      const state = readTail();
+      return {
+        total: state.wordIds.length,
+        completed: state.completed,
+        pending: Math.max(state.wordIds.length - state.completed, 0)
+      };
+    };
+    advanceDailyTail = (options = {}) => {
+      const state = readTail();
+      if (state.completed >= state.wordIds.length) return state;
+      const wordId = state.wordIds[state.completed];
+      const appearances = state.wordIds.filter((id) => id === wordId).length;
+      const wordIds = options.requeue && appearances < MAX_TAIL_APPEARANCES ? [...state.wordIds, wordId] : state.wordIds;
+      return writeTail({ ...state, wordIds, completed: state.completed + 1 });
+    };
+    rewindDailyTail = (wordId) => {
+      const state = readTail();
+      if (state.completed <= 0) return state;
+      const wordIds = [...state.wordIds];
+      if (wordIds[wordIds.length - 1] === wordId && wordIds.filter((id) => id === wordId).length > 1) {
+        wordIds.pop();
+      }
+      return writeTail({ ...state, wordIds, completed: state.completed - 1 });
+    };
+  }
+});
+
+// ../frontend/src/lib/kanji-unit-scheduler.ts
+var kanji_unit_scheduler_exports = {};
+__export(kanji_unit_scheduler_exports, {
+  KANJI_UNIT_FSRS: () => KANJI_UNIT_FSRS,
+  KANJI_UNIT_QUOTA_DEFAULT: () => KANJI_UNIT_QUOTA_DEFAULT,
+  KANJI_UNIT_QUOTA_MAX: () => KANJI_UNIT_QUOTA_MAX,
+  KANJI_UNIT_QUOTA_MIN: () => KANJI_UNIT_QUOTA_MIN,
+  KANJI_UNIT_SCHEDULER_FLAG: () => KANJI_UNIT_SCHEDULER_FLAG,
+  KANJI_UNIT_TARGET_DEFAULT: () => KANJI_UNIT_TARGET_DEFAULT,
+  REVIEWS_PER_NEW_UNIT: () => REVIEWS_PER_NEW_UNIT,
+  buildUnitsByWord: () => buildUnitsByWord,
+  coverageScore: () => coverageScore,
+  createKanjiUnitTasks: () => createKanjiUnitTasks,
+  ensureKanjiUnitTables: () => ensureKanjiUnitTables,
+  getKanjiUnitDailyQuota: () => getKanjiUnitDailyQuota,
+  getKanjiUnitTargetLevelRank: () => getKanjiUnitTargetLevelRank,
+  isKanjiUnitSchedulerEnabled: () => isKanjiUnitSchedulerEnabled,
+  kanjiUnitCardByKey: () => kanjiUnitCardByKey,
+  kanjiUnitEta: () => kanjiUnitEta,
+  kanjiUnitProgress: () => kanjiUnitProgress,
+  kanjiUnitStepMode: () => kanjiUnitStepMode,
+  loadKanjiUnitIndex: () => loadKanjiUnitIndex,
+  materializeKanjiUnitIndex: () => materializeKanjiUnitIndex,
+  pickKanjiUnitNext: () => pickKanjiUnitNext,
+  recordKanjiUnitReview: () => recordKanjiUnitReview,
+  replayKanjiUnitReviews: () => replayKanjiUnitReviews,
+  setKanjiUnitDailyQuota: () => setKanjiUnitDailyQuota,
+  setKanjiUnitKnownForever: () => setKanjiUnitKnownForever,
+  setKanjiUnitSchedulerEnabled: () => setKanjiUnitSchedulerEnabled,
+  setKanjiUnitTargetLevelRank: () => setKanjiUnitTargetLevelRank
+});
+var import_database21, KANJI_UNIT_SCHEDULER_FLAG, DAILY_QUOTA_KEY, TARGET_LEVEL_KEY, KANJI_UNIT_QUOTA_MIN, KANJI_UNIT_QUOTA_MAX, KANJI_UNIT_QUOTA_DEFAULT, readState2, getKanjiUnitDailyQuota, setKanjiUnitDailyQuota, KANJI_UNIT_TARGET_DEFAULT, getKanjiUnitTargetLevelRank, setKanjiUnitTargetLevelRank, REVIEWS_PER_NEW_UNIT, kanjiUnitEta, isKanjiUnitSchedulerEnabled, setKanjiUnitSchedulerEnabled, KANJI_UNIT_FSRS, kanjiUnitCardByKey, ensureColumns, ensureKanjiUnitTables, materializeKanjiUnitIndex, LEVEL_PENALTY, coverageScore, buildUnitsByWord, createKanjiUnitTasks, hasUnlearnedKanjiUnits, pickKanjiUnitNext, kanjiUnitProgress, updateKanjiUnitCounters, kanjiUnitStepMode, recordKanjiUnitReview, replayKanjiUnitReviews, setKanjiUnitKnownForever;
+var init_kanji_unit_scheduler = __esm({
+  "../frontend/src/lib/kanji-unit-scheduler.ts"() {
+    "use strict";
+    import_database21 = __toESM(require_database(), 1);
+    init_study_core();
+    init_fsrs_store();
+    init_kanji_unit_index();
+    init_fsrs_scheduler();
+    init_reviews();
+    KANJI_UNIT_SCHEDULER_FLAG = "feature.kanji_unit_scheduler_v1";
+    DAILY_QUOTA_KEY = "kanji_unit_daily_quota";
+    TARGET_LEVEL_KEY = "kanji_unit_target_level";
+    KANJI_UNIT_QUOTA_MIN = 5;
+    KANJI_UNIT_QUOTA_MAX = 200;
+    KANJI_UNIT_QUOTA_DEFAULT = 30;
+    readState2 = (key) => {
+      try {
+        return firstValue("SELECT value FROM app_state WHERE key = ?", [key], "") || null;
+      } catch {
+        return null;
+      }
+    };
+    getKanjiUnitDailyQuota = () => {
+      const stored = readState2(DAILY_QUOTA_KEY);
+      if (stored === null) return KANJI_UNIT_QUOTA_DEFAULT;
+      const raw = Number(stored);
+      if (!Number.isFinite(raw) || raw <= 0) return KANJI_UNIT_QUOTA_DEFAULT;
+      return Math.min(Math.max(Math.floor(raw), KANJI_UNIT_QUOTA_MIN), KANJI_UNIT_QUOTA_MAX);
+    };
+    setKanjiUnitDailyQuota = (quota) => {
+      const clamped = Math.min(Math.max(Math.floor(quota), KANJI_UNIT_QUOTA_MIN), KANJI_UNIT_QUOTA_MAX);
+      (0, import_database21.getDatabase)().run(`
+    INSERT INTO app_state (key, value) VALUES (?, ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+  `, [DAILY_QUOTA_KEY, String(clamped)]);
+    };
+    KANJI_UNIT_TARGET_DEFAULT = 4;
+    getKanjiUnitTargetLevelRank = () => {
+      const stored = readState2(TARGET_LEVEL_KEY);
+      if (stored === null) return KANJI_UNIT_TARGET_DEFAULT;
+      const raw = Number(stored);
+      if (!Number.isFinite(raw)) return KANJI_UNIT_TARGET_DEFAULT;
+      return Math.min(Math.max(Math.floor(raw), 0), 4);
+    };
+    setKanjiUnitTargetLevelRank = (rank2) => {
+      (0, import_database21.getDatabase)().run(`
+    INSERT INTO app_state (key, value) VALUES (?, ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+  `, [TARGET_LEVEL_KEY, String(Math.min(Math.max(Math.floor(rank2), 0), 4))]);
+    };
+    REVIEWS_PER_NEW_UNIT = 9;
+    kanjiUnitEta = (quota = getKanjiUnitDailyQuota()) => {
+      const levels = kanjiUnitLevels();
+      const learned = new Set(rowsFor(
+        "SELECT unit_key FROM kanji_unit_memory WHERE COALESCE(seen_count, 0) > 0"
+      ).map((row) => String(row.unit_key)));
+      const newPerDay = Math.max(quota / REVIEWS_PER_NEW_UNIT, 0.1);
+      return levels.map((level, levelRank) => {
+        const scope = kanjiUnitsUpToLevel(levelRank);
+        const remaining = scope.filter((unit) => !learned.has(unit.unitKey)).length;
+        return {
+          levelRank,
+          level,
+          unitsNeeded: scope.length,
+          unitsRemaining: remaining,
+          days: Math.ceil(remaining / newPerDay)
+        };
+      });
+    };
+    isKanjiUnitSchedulerEnabled = () => {
+      try {
+        return globalThis.localStorage?.getItem(KANJI_UNIT_SCHEDULER_FLAG) !== "0";
+      } catch {
+        return true;
+      }
+    };
+    setKanjiUnitSchedulerEnabled = (enabled) => {
+      try {
+        globalThis.localStorage?.setItem(KANJI_UNIT_SCHEDULER_FLAG, enabled ? "1" : "0");
+      } catch {
+      }
+    };
+    KANJI_UNIT_FSRS = {
+      table: "kanji_unit_memory",
+      idColumn: "unit_key",
+      eligible: "1 = 1"
+    };
+    kanjiUnitCardByKey = (unitKey, exampleIndex = 0) => {
+      const unit = kanjiUnitByKey(unitKey);
+      const example = kanjiUnitExamples(unitKey)[exampleIndex];
+      if (!unit || !example) return null;
+      const word = rowsFor("SELECT * FROM words WHERE id = ?", [example.wordId])[0];
+      if (!word) return null;
+      const surface = String(word.kanji ?? "");
+      return {
+        unit,
+        exampleWordId: example.wordId,
+        exampleWord: word,
+        targetSegment: {
+          start: example.start,
+          length: example.length,
+          text: surface.slice(example.start, example.start + example.length)
+        },
+        actualReading: example.reading,
+        variant: example.variant
+      };
+    };
+    ensureColumns = (table, columns) => {
+      const existing = new Set(rowsFor(`PRAGMA table_info(${table})`).map((row) => String(row.name ?? "")));
+      const db = (0, import_database21.getDatabase)();
+      for (const [name, definition] of Object.entries(columns)) {
+        if (!existing.has(name)) db.run(`ALTER TABLE ${table} ADD COLUMN ${name} ${definition}`);
+      }
+    };
+    ensureKanjiUnitTables = () => {
+      const db = (0, import_database21.getDatabase)();
+      db.run(`
+    CREATE TABLE IF NOT EXISTS kanji_units (
+      unit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      unit_key TEXT NOT NULL UNIQUE,
+      unit_type TEXT NOT NULL,
+      char TEXT NOT NULL DEFAULT '',
+      base TEXT NOT NULL DEFAULT '',
+      surface TEXT NOT NULL DEFAULT '',
+      reading TEXT NOT NULL DEFAULT '',
+      kinds TEXT NOT NULL DEFAULT '[]',
+      CHECK (
+        (unit_type = 'char' AND char <> '' AND base <> '' AND surface = '' AND reading = '')
+        OR (unit_type = 'jukujikun' AND char = '' AND base = '' AND surface <> '' AND reading <> '')
+      )
+    )
+  `);
+      db.run(`
+    CREATE TABLE IF NOT EXISTS kanji_unit_memory (
+      unit_key TEXT PRIMARY KEY,
+      seen_count INTEGER NOT NULL DEFAULT 0,
+      right_count INTEGER NOT NULL DEFAULT 0,
+      fuzzy_count INTEGER NOT NULL DEFAULT 0,
+      forgot_count INTEGER NOT NULL DEFAULT 0,
+      mistake_streak INTEGER NOT NULL DEFAULT 0,
+      last_seen_on TEXT,
+      FOREIGN KEY(unit_key) REFERENCES kanji_units(unit_key)
+    )
+  `);
+      db.run(`
+    CREATE TABLE IF NOT EXISTS kanji_unit_flags (
+      unit_key TEXT PRIMARY KEY,
+      known_forever INTEGER NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(unit_key) REFERENCES kanji_units(unit_key)
+    )
+  `);
+      db.run(`
+    CREATE TABLE IF NOT EXISTS kanji_unit_tasks (
+      reviewed_on TEXT NOT NULL,
+      unit_key TEXT NOT NULL,
+      order_index INTEGER NOT NULL,
+      PRIMARY KEY (reviewed_on, unit_key),
+      FOREIGN KEY(unit_key) REFERENCES kanji_units(unit_key)
+    )
+  `);
+      db.run(`
+    CREATE TABLE IF NOT EXISTS kanji_unit_reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      unit_key TEXT NOT NULL,
+      answer TEXT NOT NULL,
+      reviewed_on TEXT NOT NULL,
+      reviewed_at INTEGER NOT NULL,
+      scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+      fsrs_params_version TEXT NOT NULL DEFAULT '${FSRS_PARAMS_VERSION}',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(unit_key) REFERENCES kanji_units(unit_key)
+    )
+  `);
+      ensureColumns("kanji_unit_memory", {
+        fsrs_stability: "REAL",
+        fsrs_difficulty: "REAL",
+        fsrs_due: "TEXT",
+        fsrs_last_review: "TEXT",
+        fsrs_state: "INTEGER",
+        fsrs_steps: "INTEGER",
+        fsrs_reps: "INTEGER",
+        fsrs_lapses: "INTEGER"
+      });
+      ensureFsrsColumns(KANJI_UNIT_FSRS);
+    };
+    materializeKanjiUnitIndex = () => {
+      ensureKanjiUnitTables();
+      const units = allKanjiUnits();
+      if (!units.length) return 0;
+      const db = (0, import_database21.getDatabase)();
+      const before = firstValue("SELECT COUNT(*) FROM kanji_units", [], 0);
+      if (before >= units.length) return 0;
+      let owned = false;
+      try {
+        db.run("BEGIN");
+        owned = true;
+      } catch {
+        owned = false;
+      }
+      try {
+        for (const unit of units) {
+          db.run(`
+        INSERT OR IGNORE INTO kanji_units
+          (unit_key, unit_type, char, base, surface, reading, kinds)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [unit.unitKey, unit.unitType, unit.char, unit.base, unit.surface, unit.reading, JSON.stringify(unit.kinds)]);
+          db.run("INSERT OR IGNORE INTO kanji_unit_memory (unit_key) VALUES (?)", [unit.unitKey]);
+        }
+        if (owned) db.run("COMMIT");
+      } catch (error) {
+        if (owned) db.run("ROLLBACK");
+        throw error;
+      }
+      return firstValue("SELECT COUNT(*) FROM kanji_units", [], 0) - before;
+    };
+    LEVEL_PENALTY = 6;
+    coverageScore = (unitKey, context) => {
+      const unit = kanjiUnitByKey(unitKey);
+      if (!unit) return 0;
+      const wordIds = kanjiUnitWordIds(unitKey);
+      const yield_ = wordIds.length;
+      let marginal = 0;
+      let importanceSum = 0;
+      for (const wordId of wordIds) {
+        importanceSum += context.wordMeta.get(wordId)?.importance ?? 0;
+        const needed = context.unitsByWord.get(wordId);
+        if (!needed) continue;
+        if (needed.every((key) => key === unitKey || context.knownUnits.has(key))) marginal += 1;
+      }
+      const importance = wordIds.length ? importanceSum / wordIds.length : 0;
+      const overshoot = Math.max(unit.levelRank - context.targetLevelRank, 0);
+      return yield_ + marginal * 3 + importance * 0.5 - overshoot * LEVEL_PENALTY;
+    };
+    buildUnitsByWord = () => {
+      const map = /* @__PURE__ */ new Map();
+      for (const unit of allKanjiUnits()) {
+        for (const wordId of kanjiUnitWordIds(unit.unitKey)) {
+          const list = map.get(wordId);
+          if (list) list.push(unit.unitKey);
+          else map.set(wordId, [unit.unitKey]);
+        }
+      }
+      return map;
+    };
+    createKanjiUnitTasks = (day = today(), limit = getKanjiUnitDailyQuota(), targetLevelRank2 = getKanjiUnitTargetLevelRank()) => {
+      if (limit <= 0) return { units: [], reviewCount: 0, newCount: 0, crowdedOut: false };
+      materializeKanjiUnitIndex();
+      const db = (0, import_database21.getDatabase)();
+      const existing = rowsFor("SELECT unit_key FROM kanji_unit_tasks WHERE reviewed_on = ? ORDER BY order_index", [day]).map((row) => String(row.unit_key));
+      if (existing.length) {
+        const seen = new Set(rowsFor(`
+      SELECT t.unit_key FROM kanji_unit_tasks t
+      JOIN kanji_unit_memory m ON m.unit_key = t.unit_key
+      WHERE t.reviewed_on = ? AND COALESCE(m.seen_count, 0) > 0
+    `, [day]).map((row) => String(row.unit_key)));
+        return {
+          units: existing,
+          reviewCount: existing.filter((key) => seen.has(key)).length,
+          newCount: existing.filter((key) => !seen.has(key)).length,
+          crowdedOut: false
+        };
+      }
+      const wordMeta = /* @__PURE__ */ new Map();
+      rowsFor(`
+    SELECT w.id, COALESCE(w.importance, 0) AS importance, COALESCE(p.seen_count, 0) AS seen
+    FROM words w LEFT JOIN progress p ON p.word_id = w.id
+  `).forEach((row) => wordMeta.set(Number(row.id), {
+        seen: Number(row.seen ?? 0),
+        importance: Number(row.importance ?? 0)
+      }));
+      const unitsByWord = buildUnitsByWord();
+      const knownUnits = new Set(rowsFor(
+        "SELECT unit_key FROM kanji_unit_memory WHERE COALESCE(seen_count, 0) > 0"
+      ).map((row) => String(row.unit_key)));
+      const context = { wordMeta, knownUnits, unitsByWord, targetLevelRank: targetLevelRank2 };
+      const byScore = (left, right) => coverageScore(right, context) - coverageScore(left, context) || left.localeCompare(right, "ja");
+      const due = rowsFor(`
+    SELECT m.unit_key
+    FROM kanji_unit_memory m
+    LEFT JOIN kanji_unit_flags f ON f.unit_key = m.unit_key
+    WHERE COALESCE(f.known_forever, 0) = 0
+      AND COALESCE(m.seen_count, 0) > 0
+      AND (m.fsrs_due IS NULL OR m.fsrs_due <= ?)
+  `, [studyDayEnd().toISOString()]).map((row) => String(row.unit_key)).sort(byScore);
+      const reviews = due.slice(0, limit);
+      const remaining = Math.max(limit - reviews.length, 0);
+      const fresh = remaining > 0 ? rowsFor(`
+        SELECT m.unit_key
+        FROM kanji_unit_memory m
+        LEFT JOIN kanji_unit_flags f ON f.unit_key = m.unit_key
+        WHERE COALESCE(f.known_forever, 0) = 0
+          AND COALESCE(m.seen_count, 0) = 0
+      `).map((row) => String(row.unit_key)).sort(byScore).slice(0, remaining) : [];
+      const selected = [...reviews, ...fresh];
+      selected.forEach((unitKey, position) => db.run(`
+    INSERT OR IGNORE INTO kanji_unit_tasks (reviewed_on, unit_key, order_index)
+    VALUES (?, ?, ?)
+  `, [day, unitKey, position + 1]));
+      return {
+        units: selected,
+        reviewCount: reviews.length,
+        newCount: fresh.length,
+        // 还有新单位可学,却因为复习占满而一个都没排进来
+        crowdedOut: fresh.length === 0 && reviews.length >= limit && hasUnlearnedKanjiUnits()
+      };
+    };
+    hasUnlearnedKanjiUnits = () => firstValue(`
+  SELECT COUNT(*) FROM kanji_unit_memory m
+  LEFT JOIN kanji_unit_flags f ON f.unit_key = m.unit_key
+  WHERE COALESCE(f.known_forever, 0) = 0 AND COALESCE(m.seen_count, 0) = 0
+`, [], 0) > 0;
+    pickKanjiUnitNext = (day = today(), excluded = /* @__PURE__ */ new Set()) => {
+      ensureKanjiUnitTables();
+      const rows = rowsFor(`
+    SELECT t.unit_key
+    FROM kanji_unit_tasks t
+    JOIN kanji_unit_memory m ON m.unit_key = t.unit_key
+    LEFT JOIN kanji_unit_flags f ON f.unit_key = t.unit_key
+    WHERE t.reviewed_on = ?
+      AND COALESCE(f.known_forever, 0) = 0
+      AND (m.fsrs_due IS NULL OR m.fsrs_due <= ?)
+    ORDER BY t.order_index ASC
+  `, [day, (/* @__PURE__ */ new Date()).toISOString()]);
+      return rows.map((row) => String(row.unit_key)).find((unitKey) => !excluded.has(unitKey)) ?? null;
+    };
+    kanjiUnitProgress = (day = today()) => {
+      ensureKanjiUnitTables();
+      const end = studyDayEnd();
+      createKanjiUnitTasks(day);
+      const total = firstValue("SELECT COUNT(*) FROM kanji_unit_tasks WHERE reviewed_on = ?", [day], 0);
+      const completed = firstValue(`
+    SELECT COUNT(*)
+    FROM kanji_unit_tasks t
+    JOIN kanji_unit_memory m ON m.unit_key = t.unit_key
+    LEFT JOIN kanji_unit_flags f ON f.unit_key = t.unit_key
+    WHERE t.reviewed_on = ?
+      AND (COALESCE(f.known_forever, 0) = 1 OR m.fsrs_due > ?)
+  `, [day, end.toISOString()], 0);
+      return { total, completed: Math.min(total, completed) };
+    };
+    updateKanjiUnitCounters = (unitKey, answer, seenOn) => {
+      const counts = answer === "know" ? [1, 1, 0, 0] : answer === "fuzzy" ? [1, 0, 1, 0] : [1, 0, 0, 1];
+      const previousStreak = firstValue("SELECT mistake_streak FROM kanji_unit_memory WHERE unit_key = ?", [unitKey], 0);
+      const nextStreak = answer === "forgot" ? previousStreak + 1 : 0;
+      (0, import_database21.getDatabase)().run(`
+    UPDATE kanji_unit_memory
+    SET seen_count = seen_count + ?, right_count = right_count + ?,
+        fuzzy_count = fuzzy_count + ?, forgot_count = forgot_count + ?,
+        mistake_streak = ?, last_seen_on = ?
+    WHERE unit_key = ?
+  `, [...counts, nextStreak, seenOn, unitKey]);
+    };
+    kanjiUnitStepMode = (unitKey, answer, day = today()) => {
+      const answeredToday = firstValue(
+        "SELECT COUNT(*) FROM kanji_unit_reviews WHERE unit_key = ? AND reviewed_on = ?",
+        [unitKey, day],
+        0
+      );
+      if (answeredToday === 0 && answer === "know") return "known";
+      const wrongToday = firstValue(
+        `SELECT COUNT(*) FROM kanji_unit_reviews
+     WHERE unit_key = ? AND reviewed_on = ? AND answer IN ('forgot','fuzzy')`,
+        [unitKey, day],
+        0
+      ) + (answer === "forgot" || answer === "fuzzy" ? 1 : 0);
+      return wrongToday >= STUBBORN_DAILY_MISTAKES ? "stubborn" : "normal";
+    };
+    recordKanjiUnitReview = (unitKey, answer, now = /* @__PURE__ */ new Date(), mode) => {
+      ensureKanjiUnitTables();
+      const exists = firstValue("SELECT COUNT(*) FROM kanji_units WHERE unit_key = ?", [unitKey], 0);
+      if (!exists) throw new Error(`Unknown kanji unit: ${unitKey}`);
+      mode ?? (mode = kanjiUnitStepMode(unitKey, answer));
+      const next = recordFsrsReview(unitKey, answer, now, { mode }, KANJI_UNIT_FSRS);
+      const seenOn = today();
+      updateKanjiUnitCounters(unitKey, answer, seenOn);
+      (0, import_database21.getDatabase)().run(`
+    INSERT INTO kanji_unit_reviews
+      (unit_key, answer, reviewed_on, reviewed_at, scheduler_mode, fsrs_params_version)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `, [unitKey, answer, seenOn, now.getTime(), mode, FSRS_PARAMS_VERSION]);
+      return next;
+    };
+    replayKanjiUnitReviews = (onlyUnitKeys) => {
+      ensureKanjiUnitTables();
+      const keys = onlyUnitKeys ? [.../* @__PURE__ */ new Set([...onlyUnitKeys])] : rowsFor("SELECT DISTINCT unit_key FROM kanji_unit_reviews").map((row) => String(row.unit_key));
+      let replayed = 0;
+      for (const unitKey of keys) {
+        const events = rowsFor(`
+      SELECT answer, reviewed_on, reviewed_at, scheduler_mode
+      FROM kanji_unit_reviews
+      WHERE unit_key = ?
+      ORDER BY reviewed_at ASC, id ASC
+    `, [unitKey]);
+        if (!events.length) continue;
+        (0, import_database21.getDatabase)().run(`
+      UPDATE kanji_unit_memory
+      SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0,
+          mistake_streak = 0, last_seen_on = NULL,
+          fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL,
+          fsrs_last_review = NULL, fsrs_state = NULL, fsrs_steps = NULL,
+          fsrs_reps = NULL, fsrs_lapses = NULL
+      WHERE unit_key = ?
+    `, [unitKey]);
+        for (const event of events) {
+          const answer = String(event.answer);
+          if (answer !== "forgot" && answer !== "fuzzy" && answer !== "know") continue;
+          const at = Number(event.reviewed_at);
+          const when = Number.isFinite(at) ? new Date(at) : /* @__PURE__ */ new Date(`${String(event.reviewed_on)}T12:00:00`);
+          recordFsrsReview(unitKey, answer, when, {
+            mode: String(event.scheduler_mode ?? "normal")
+          }, KANJI_UNIT_FSRS);
+          updateKanjiUnitCounters(unitKey, answer, String(event.reviewed_on ?? today()));
+        }
+        replayed += 1;
+      }
+      return replayed;
+    };
+    setKanjiUnitKnownForever = (unitKey, knownForever) => {
+      ensureKanjiUnitTables();
+      (0, import_database21.getDatabase)().run(`
+    INSERT INTO kanji_unit_flags (unit_key, known_forever, updated_at)
+    VALUES (?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(unit_key) DO UPDATE SET known_forever = excluded.known_forever, updated_at = excluded.updated_at
+  `, [unitKey, knownForever ? 1 : 0]);
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/stats.ts
+function getWordStats(phase = "stage1", options = {}, statsOptions = {}) {
+  ensureProgressInitialized();
+  const studyDate2 = today();
+  const filter = wordFilterSql(options, "w");
+  ensureDailyRelief();
+  const dailyReliefProgress = getDailyReliefProgress();
+  const stage1Progress = stage1ProgressCounts();
+  ensureDailyTail();
+  const dailyTailProgress = getDailyTailProgress();
+  const frontProgress = {
+    // 顶部计数板数的是用户今天实际看过的完整正向流。减负卡虽然不写 reviews/FSRS，
+    // 但每张都真实发到学习页并被收走，必须和正式计划、压轴一样进入分子和分母；
+    // 否则开场连续清掉几张，松鼠和计数会一直不动。
+    completed: dailyReliefProgress.completed + stage1Progress.completed + dailyTailProgress.completed,
+    total: dailyReliefProgress.total + stage1Progress.total + dailyTailProgress.total
+  };
+  const actualStage1Done = stage1Progress.total > 0 && stage1Progress.completed >= stage1Progress.total;
+  const dailyPlanDone = actualStage1Done && dailyReliefProgress.pending === 0 && dailyTailProgress.pending === 0;
+  const planRemaining = Math.max(frontProgress.total - frontProgress.completed, 0);
+  const total = lazy(() => firstValue(`
+    SELECT COUNT(*)
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    WHERE 1 = 1 ${filter.clause}
+  `, filter.params, 0));
+  const knownForever = lazy(() => firstValue(`
+    SELECT COUNT(*)
+    FROM progress p
+    JOIN words w ON w.id = p.word_id
+    WHERE p.known_forever = 1 ${filter.clause}
+  `, filter.params, 0));
+  const reviewedToday = lazy(() => firstValue(
+    "SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ? AND direction = 'forward'",
+    [studyDate2],
+    0
+  ));
+  const lowCount = lazy(() => firstValue(`
+    SELECT COUNT(*)
+    FROM progress p
+    JOIN words w ON w.id = p.word_id
+    WHERE p.known_forever = 0 AND p.seen_count > 0
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) ${filter.clause}
+  `, [studyDayEnd().toISOString(), ...filter.params], 0));
+  const unseenCount = lazy(() => firstValue(
+    `
+    SELECT COUNT(*)
+    FROM progress p
+    JOIN words w ON w.id = p.word_id
+    WHERE p.known_forever = 0 AND p.seen_count = 0 ${filter.clause}
+    `,
+    filter.params,
+    0
+  ));
+  const mistakes = lazy(() => ({
+    poolSize: firstValue(`
+      SELECT COUNT(*)
+      FROM progress p
+      WHERE p.known_forever = 0 AND ${mistakeCandidateSql("p")}
+    `, [], 0),
+    answeredToday: firstValue(`
+      SELECT COUNT(DISTINCT r.word_id)
+      FROM reviews r
+      JOIN progress p ON p.word_id = r.word_id
+      WHERE r.reviewed_on = ? AND r.direction = 'forward' AND ${mistakeCandidateSql("p")}
+    `, [studyDate2], 0)
+  }));
+  const stage2 = lazy(() => directionProgressCounts(REVERSE));
+  const kanji = lazy(() => {
+    const useKanjiUnits = statsOptions.kanjiUnits ?? (isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded());
+    return useKanjiUnits ? kanjiUnitProgress() : directionProgressCounts(KANJI);
+  });
+  const grammarRemaining = lazy(() => grammarPlanRemaining(getJlptPlanPreferences().target));
+  const grammarDone = lazy(() => grammarPlanDone(getJlptPlanPreferences().target));
+  const mixedCards = lazy(() => {
+    if (!mixedCardDataLoaded()) {
+      void loadMixedCardData();
+      return { kanjiDone: 0, kanjiRemaining: 0, confusionDone: 0, confusionRemaining: 0 };
+    }
+    return mixedCardCounts((0, import_database22.getDatabase)());
+  });
+  const modeCounts = lazy(() => ({
+    classic: planRemaining,
+    // 混合 = 同一份今日计划 + 插播的语法 / 汉字 / 辨析,所以角标是四者的合计(主页拆成几栏说明)。
+    mixed: planRemaining + grammarRemaining() + mixedCards().kanjiRemaining + mixedCards().confusionRemaining,
+    mistakes: mistakes().poolSize,
+    // 快速复习翻的还是今日计划那批词,只是换了个一页 50 张的形态
+    quick: planRemaining,
+    // 三个方向都各有自己的当日计划,直接读各自的剩余量
+    reverse: Math.max(stage2().total - stage2().completed, 0),
+    kanji: Math.max(kanji().total - kanji().completed, 0),
+    // 自选清单不是个常驻词池，没勾过就是 0
+    picked: pickedProgress().remaining
+  }));
+  const checkins = lazy(() => rowsFor("SELECT checked_on FROM checkins ORDER BY checked_on").map((row) => String(row.checked_on ?? "")));
+  const wordStudySecondsToday = lazy(() => firstValue(
+    "SELECT seconds FROM word_study_time WHERE studied_on = ?",
+    [studyDate2],
+    0
+  ));
+  const encore = lazy(() => {
+    const remainingBacklog = encoreRemainingCount(studyDate2);
+    const { secondsPerWord: recentSecondsPerWord } = recentReviewAverages(studyDate2);
+    const secondsPerWord = reviewedToday() > 0 && wordStudySecondsToday() > 0 ? Math.min(Math.max(wordStudySecondsToday() / reviewedToday(), 6), 60) : recentSecondsPerWord;
+    const backlogChunk = encoreChunkSize(remainingBacklog);
+    const newWordChunk = Math.max(Math.round(getDailyWordGoal() / 2), 5);
+    const encoreSize = backlogChunk > 0 ? backlogChunk : Math.min(newWordChunk, unseenCount());
+    const encoreLog = readEncoreLog(studyDate2);
+    return {
+      available: encoreSize > 0,
+      size: encoreSize,
+      estimatedMinutes: estimatedMinutesFor(encoreSize, secondsPerWord),
+      remaining: remainingBacklog,
+      unseenRemaining: unseenCount(),
+      secondsPerWord,
+      totalLearned: firstValue(
+        "SELECT COUNT(*) FROM progress WHERE seen_count > 0 OR known_forever = 1",
+        [],
+        0
+      ),
+      weekEncoreCount: encoreLog.weekCount,
+      todayEncoreWords: encoreLog.dayWords,
+      fatigued: fatigueDetected(studyDate2)
+    };
+  });
+  const newTodayCount = lazy(() => firstValue(
+    `
+    SELECT COUNT(DISTINCT today_reviews.word_id)
+    FROM reviews today_reviews
+    WHERE today_reviews.reviewed_on = ?
+      AND today_reviews.direction = 'forward'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM reviews earlier_reviews
+        WHERE earlier_reviews.word_id = today_reviews.word_id
+          AND earlier_reviews.direction = 'forward'
+          AND earlier_reviews.reviewed_on < ?
+      )
+    `,
+    [studyDate2, studyDate2],
+    0
+  ));
+  return {
+    get encore() {
+      return encore();
+    },
+    dailyRelief: dailyReliefProgress,
+    get total() {
+      return total();
+    },
+    get knownForever() {
+      return knownForever();
+    },
+    get masteredToday() {
+      return firstValue(
+        `SELECT COUNT(DISTINCT r.word_id)
+         FROM reviews r
+         JOIN progress p ON p.word_id = r.word_id
+         WHERE r.reviewed_on = ?
+           AND r.direction = 'forward'
+           AND (p.known_forever = 1 OR ${MASTERED_SQL})`,
+        [studyDate2],
+        0
+      );
+    },
+    get reviewedToday() {
+      return reviewedToday();
+    },
+    get lowCount() {
+      return lowCount();
+    },
+    get unseenCount() {
+      return unseenCount();
+    },
+    get newToday() {
+      return newTodayCount();
+    },
+    get oldToday() {
+      return Math.max(0, reviewedToday() - newTodayCount());
+    },
+    get newQuota() {
+      return dailyNewQuota();
+    },
+    get mistakes() {
+      return mistakes();
+    },
+    get modeCounts() {
+      return modeCounts();
+    },
+    get grammarRemaining() {
+      return grammarRemaining();
+    },
+    get grammarDone() {
+      return grammarDone();
+    },
+    get kanjiCardRemaining() {
+      return mixedCards().kanjiRemaining;
+    },
+    get kanjiCardDone() {
+      return mixedCards().kanjiDone;
+    },
+    get confusionCardRemaining() {
+      return mixedCards().confusionRemaining;
+    },
+    get confusionCardDone() {
+      return mixedCards().confusionDone;
+    },
+    stage1ProgressDone: frontProgress.completed,
+    stage1ProgressTotal: frontProgress.total,
+    stage1NewDone: stage1Progress.newLane.done,
+    stage1NewTotal: stage1Progress.newLane.total,
+    // 减负卡和压轴对用户来说就是复习,并进这一栏 —— 否则「新词 + 复习」
+    // 加起来对不上大卡上那个合计数,两个数字打架比不显示还糟。
+    stage1ReviewDone: stage1Progress.reviewLane.done + dailyReliefProgress.completed + dailyTailProgress.completed,
+    stage1ReviewTotal: stage1Progress.reviewLane.total + dailyReliefProgress.total + dailyTailProgress.total,
+    phase,
+    stage1Done: actualStage1Done,
+    dailyPlanDone,
+    get stage2Total() {
+      return stage2().total;
+    },
+    get stage2Completed() {
+      return stage2().completed;
+    },
+    get kanjiTotal() {
+      return kanji().total;
+    },
+    get kanjiCompleted() {
+      return kanji().completed;
+    },
+    studyDate: studyDate2,
+    get checkins() {
+      return checkins();
+    },
+    get dailyStudyStats() {
+      return dailyStudyStats(studyDate2);
+    },
+    get wordStudySecondsToday() {
+      return wordStudySecondsToday();
+    },
+    get taskDone() {
+      return kanji().total > 0 ? kanji().completed >= kanji().total : stage2().total > 0 ? stage2().completed >= stage2().total : dailyPlanDone;
+    }
+  };
+}
+var import_database22, dailyStudyStats, lazy;
+var init_stats = __esm({
+  "../frontend/src/lib/word-api/stats.ts"() {
+    "use strict";
+    init_studyPreferences();
+    init_grammar_quiz();
+    import_database22 = __toESM(require_database(), 1);
+    init_mixed_cards();
+    init_study_core();
+    init_review_budget();
+    init_bootstrap();
+    init_session_state();
+    init_stage1();
+    init_direction_plan();
+    init_directions();
+    init_picked();
+    init_filters();
+    init_daily_relief();
+    init_daily_tail();
+    init_fsrs_store();
+    init_kanji_unit_scheduler();
+    init_kanji_unit_index();
+    dailyStudyStats = (day = today()) => {
+      const days = /* @__PURE__ */ new Map();
+      const at = (date) => {
+        let item = days.get(date);
+        if (!item) {
+          item = { date, seconds: 0, wordCount: 0, grammarCount: 0, reliefCount: 0, total: 0 };
+          days.set(date, item);
+        }
+        return item;
+      };
+      rowsFor(`
+    SELECT studied_on, seconds
+    FROM word_study_time
+    WHERE studied_on BETWEEN date(?, '-30 day') AND ?
+  `, [day, day]).forEach((row) => {
+        const date = String(row.studied_on ?? "");
+        if (date) at(date).seconds = Number(row.seconds ?? 0);
+      });
+      rowsFor(`
+    SELECT reviewed_on, COUNT(DISTINCT word_id) AS word_count
+    FROM reviews
+    WHERE direction = 'forward'
+      AND reviewed_on BETWEEN date(?, '-30 day') AND ?
+    GROUP BY reviewed_on
+  `, [day, day]).forEach((row) => {
+        const date = String(row.reviewed_on ?? "");
+        if (date) at(date).wordCount = Number(row.word_count ?? 0);
+      });
+      rowsFor(`
+    SELECT reviewed_on, COUNT(DISTINCT grammar_id) AS grammar_count
+    FROM grammar_reviews
+    WHERE reviewed_on BETWEEN date(?, '-30 day') AND ?
+    GROUP BY reviewed_on
+  `, [day, day]).forEach((row) => {
+        const date = String(row.reviewed_on ?? "");
+        if (date) at(date).grammarCount = Number(row.grammar_count ?? 0);
+      });
+      rowsFor("SELECT checked_on FROM checkins ORDER BY checked_on").forEach((row) => {
+        const date = String(row.checked_on ?? "");
+        if (date) at(date);
+      });
+      for (const item of days.values()) {
+        if (item.date === day || item.wordCount > 0) item.reliefCount = dailyReliefCount(item.date);
+        item.total = item.wordCount + item.grammarCount + item.reliefCount;
+      }
+      return Array.from(days.values()).sort((left, right) => left.date.localeCompare(right.date));
+    };
+    lazy = (compute) => {
+      let box = null;
+      return () => (box ?? (box = { value: compute() })).value;
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/mistakes.ts
+var mistakeRisk, pickMistakeNext;
+var init_mistakes = __esm({
+  "../frontend/src/lib/word-api/mistakes.ts"() {
+    "use strict";
+    init_word_card();
+    init_requeue();
+    init_study_core();
+    init_filters();
+    init_session_state();
+    mistakeRisk = (row) => {
+      const lapses = Number(row.fsrs_lapses ?? 0);
+      const difficulty = Number(row.fsrs_difficulty ?? 0);
+      const stability = Math.max(Number(row.fsrs_stability ?? 0), 0);
+      const forgot = Number(row.forgot_count ?? 0);
+      const fuzzy = Number(row.fuzzy_count ?? 0);
+      const right = Number(row.right_count ?? 0);
+      const weightedWrong = forgot * 2 + fuzzy;
+      const errorRate = weightedWrong / Math.max(right + weightedWrong, 1);
+      return lapses * 100 + difficulty * 8 + errorRate * 50 - Math.min(stability, 365) * 0.03;
+    };
+    pickMistakeNext = () => {
+      const day = today();
+      const dayEnd = studyDayEnd().toISOString();
+      const rows = rowsFor(`
+    SELECT
+      w.*,
+      p.seen_count,
+      p.known_forever,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      p.fsrs_stability,
+      p.fsrs_difficulty,
+      p.fsrs_due,
+      p.fsrs_state,
+      p.fsrs_reps,
+      p.fsrs_lapses,
+      COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE p.known_forever = 0
+      AND ${mistakeCandidateSql("p")}
+      AND (
+        p.last_seen_on IS NULL
+        OR p.last_seen_on <> ?
+        OR p.fsrs_due IS NULL
+        OR p.fsrs_due <= ?
+      )
+  `, [day, dayEnd]);
+      if (!rows.length) return null;
+      const queueById = new Map(getReviewQueue().map((item) => [item.word_id, item.due_after]));
+      const lastId = lastAnsweredWord();
+      const lastRow = rows.find((row) => Number(row.id) === lastId);
+      const repeatAllowed = allowsBackToBack({
+        mistakeStreak: Number(lastRow?.mistake_streak ?? 0),
+        remaining: rows.length,
+        total: rows.length
+      });
+      const pickable = rows.length > 1 && !repeatAllowed ? rows.filter((row) => Number(row.id) !== lastId) : rows;
+      const candidates = pickable.map((row) => ({
+        row,
+        dueAfter: queueById.get(Number(row.id)) ?? 0,
+        risk: mistakeRisk(row)
+      }));
+      const ready = candidates.filter((item) => item.dueAfter <= 0);
+      const pool = ready.length ? ready : candidates;
+      pool.sort((left, right) => ready.length ? right.risk - left.risk : left.dueAfter - right.dueAfter || right.risk - left.risk);
+      return pool[0] ? rowObjectToCard(pool[0].row) : null;
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/direction-answer.ts
+var import_database23, applyDirectionAnswer, undoDirectionAnswer;
+var init_direction_answer = __esm({
+  "../frontend/src/lib/word-api/direction-answer.ts"() {
+    "use strict";
+    import_database23 = __toESM(require_database(), 1);
+    init_study_core();
+    init_fsrs_store();
+    init_fsrs_scheduler();
+    init_requeue();
+    init_session_state();
+    init_directions();
+    init_undo_stack();
+    init_reviews();
+    applyDirectionAnswer = (direction, wordId, answer) => {
+      ensureDirectionColumns(direction);
+      const db = (0, import_database23.getDatabase)();
+      const table = direction.entity.table;
+      const studyDate2 = today();
+      const memory = firstRow(`SELECT * FROM ${table} WHERE word_id = ?`, [wordId]);
+      if (!memory) {
+        db.run(`INSERT OR IGNORE INTO ${table} (word_id, seen_count) VALUES (?, 0)`, [wordId]);
+      }
+      const snapshot = {
+        phase: direction.phase,
+        // 撤销要认「这是哪一场的快照」:模式对不上就当作没得撤销(见 undo-stack)
+        mode: direction.phase,
+        direction: direction.id,
+        reviewed_on: studyDate2,
+        word_id: wordId,
+        memory_exists: Boolean(memory),
+        known_forever: Number(
+          firstValue("SELECT known_forever FROM progress WHERE word_id = ?", [wordId], 0) ?? 0
+        ),
+        last_answered_word: lastAnsweredWord(direction.id),
+        seen_count: Number(memory?.seen_count ?? 0),
+        right_count: Number(memory?.right_count ?? 0),
+        fuzzy_count: Number(memory?.fuzzy_count ?? 0),
+        forgot_count: Number(memory?.forgot_count ?? 0),
+        mistake_streak: Number(memory?.mistake_streak ?? 0),
+        last_seen_on: memory?.last_seen_on ?? null,
+        fsrs: readFsrsState(wordId, direction.entity),
+        review_queue: getReviewQueue(direction.id)
+      };
+      advanceReviewQueue(wordId, direction.id);
+      let rightCount = Number(memory?.right_count ?? 0);
+      let fuzzyCount = Number(memory?.fuzzy_count ?? 0);
+      let forgotCount = Number(memory?.forgot_count ?? 0);
+      let mistakeStreak = Number(memory?.mistake_streak ?? 0);
+      const knownForever = answer === "known_forever";
+      if (knownForever) {
+        db.run("UPDATE progress SET known_forever = 1 WHERE word_id = ?", [wordId]);
+        mistakeStreak = 0;
+      } else {
+        rightCount += answer === "know" ? 1 : 0;
+        fuzzyCount += answer === "fuzzy" ? 1 : 0;
+        forgotCount += answer === "forgot" ? 1 : 0;
+        mistakeStreak = answer === "know" ? 0 : mistakeStreak + 1;
+      }
+      const wrongToday = firstValue(
+        `SELECT COUNT(*) FROM reviews
+     WHERE word_id = ? AND reviewed_on = ? AND direction = ? AND answer IN ('forgot','fuzzy')`,
+        [wordId, studyDate2, direction.id],
+        0
+      ) + (answer === "forgot" || answer === "fuzzy" ? 1 : 0);
+      const stubbornCard = wrongToday >= STUBBORN_DAILY_MISTAKES;
+      const firstSeenToday = firstValue(
+        "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ? AND direction = ?",
+        [wordId, studyDate2, direction.id],
+        0
+      ) === 0;
+      const stepMode = firstSeenToday && answer === "know" ? "known" : stubbornCard ? "stubborn" : "normal";
+      let graduated = false;
+      let graduationTest = false;
+      let stepMinutes = 0;
+      if (!knownForever) {
+        try {
+          const next = recordFsrsReview(wordId, answer, /* @__PURE__ */ new Date(), { mode: stepMode }, direction.entity);
+          graduated = isGraduatedForDay(next, studyDayEnd());
+          stepMinutes = Math.max((new Date(next.due).getTime() - Date.now()) / 6e4, 0);
+          graduationTest = !graduated && isGraduatedForDay(
+            recordReview(next, "know", /* @__PURE__ */ new Date(), { mode: stubbornCard ? "stubborn" : "normal" }),
+            studyDayEnd()
+          );
+        } catch (err) {
+          console.warn(`[fsrs] ${direction.label}\u8BB0\u5F55\u8DF3\u8FC7:`, err);
+          graduated = answer === "know";
+        }
+      }
+      if (!graduated && !knownForever) {
+        scheduleDelayedReview(
+          wordId,
+          stepMinutes,
+          mistakeStreak >= STUBBORN_MISTAKE_STREAK,
+          graduationTest,
+          direction.id
+        );
+      }
+      setLastAnsweredWord(wordId, direction.id);
+      db.run(`
+    UPDATE ${table}
+    SET seen_count = COALESCE(seen_count, 0) + 1,
+        last_seen_on = ?,
+        right_count = ?,
+        fuzzy_count = ?,
+        forgot_count = ?,
+        mistake_streak = ?
+    WHERE word_id = ?
+  `, [studyDate2, rightCount, fuzzyCount, forgotCount, mistakeStreak, wordId]);
+      const reviewId = recordReviewEvent({
+        wordId,
+        answer,
+        reviewedOn: studyDate2,
+        direction: direction.id,
+        schedulerMode: stepMode
+      });
+      pushUndoSnapshot({ ...snapshot, review_id: reviewId });
+    };
+    undoDirectionAnswer = (direction, snapshot) => {
+      ensureDirectionColumns(direction);
+      const db = (0, import_database23.getDatabase)();
+      const wordId = Number(snapshot.word_id);
+      db.run(`
+    UPDATE ${direction.entity.table}
+    SET seen_count = ?, right_count = ?, fuzzy_count = ?, forgot_count = ?,
+        mistake_streak = ?, last_seen_on = ?
+    WHERE word_id = ?
+  `, [
+        Number(snapshot.seen_count ?? 0),
+        Number(snapshot.right_count ?? 0),
+        Number(snapshot.fuzzy_count ?? 0),
+        Number(snapshot.forgot_count ?? 0),
+        Number(snapshot.mistake_streak ?? 0),
+        snapshot.last_seen_on ?? null,
+        wordId
+      ]);
+      restoreFsrsState(wordId, snapshot.fsrs ?? null, direction.entity);
+      db.run("UPDATE progress SET known_forever = ? WHERE word_id = ?", [
+        Number(snapshot.known_forever ?? 0),
+        wordId
+      ]);
+      if (Array.isArray(snapshot.review_queue)) {
+        setReviewQueue(snapshot.review_queue.flatMap((item) => {
+          if (!item || typeof item !== "object") return [];
+          const record = item;
+          const queuedId = Number(record.word_id);
+          if (!Number.isFinite(queuedId)) return [];
+          return [{ word_id: queuedId, due_after: Math.max(Number(record.due_after ?? 0), 0) }];
+        }), direction.id);
+      }
+      if (snapshot.last_answered_word != null) {
+        setLastAnsweredWord(Number(snapshot.last_answered_word), direction.id);
+      }
+      if (snapshot.review_id != null) {
+        db.run("DELETE FROM reviews WHERE id = ?", [Number(snapshot.review_id)]);
+      }
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api/daily-review.ts
+var DAILY_REVIEW_STATE_KEY, readReviewState, writeReviewState, reviewWasTriggeredToday, hasDailyReviewTriggered, markDailyReviewTriggered, currentReviewCountSql, unresolvedSql, candidateRows, dailyReviewCandidateCount, completionInTriggerWindow, shouldStartDailyReview, pickDailyReviewNext;
+var init_daily_review = __esm({
+  "../frontend/src/lib/word-api/daily-review.ts"() {
+    "use strict";
+    init_study_core();
+    init_review_budget();
+    init_word_card();
+    DAILY_REVIEW_STATE_KEY = "daily_review_v1";
+    readReviewState = () => {
+      const raw = getState(DAILY_REVIEW_STATE_KEY, "");
+      if (!raw) return {};
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed.studyDate === today() ? parsed : {};
+      } catch {
+        return {};
+      }
+    };
+    writeReviewState = (next) => {
+      setState(DAILY_REVIEW_STATE_KEY, JSON.stringify({ ...next, studyDate: today() }));
+      persistSoon();
+    };
+    reviewWasTriggeredToday = () => readReviewState().triggered === true;
+    hasDailyReviewTriggered = () => reviewWasTriggeredToday();
+    markDailyReviewTriggered = () => {
+      writeReviewState({ ...readReviewState(), triggered: true });
+    };
+    currentReviewCountSql = `(
+  SELECT COUNT(*)
+  FROM reviews today_reviews
+  WHERE today_reviews.word_id = t.word_id
+    AND today_reviews.reviewed_on = ?
+    AND today_reviews.direction = 'forward'
+)`;
+    unresolvedSql = `(p.known_forever = 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?))`;
+    candidateRows = (excludedIds = /* @__PURE__ */ new Set()) => {
+      const day = today();
+      const dayEnd = studyDayEnd().toISOString();
+      const rows = rowsFor(`
+    SELECT
+      w.*,
+      p.seen_count,
+      p.known_forever,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      p.fsrs_stability,
+      p.fsrs_difficulty,
+      p.fsrs_due,
+      p.fsrs_state,
+      p.fsrs_steps,
+      p.fsrs_reps,
+      p.fsrs_lapses,
+      ${currentReviewCountSql} AS today_seen_count,
+      COALESCE(n.note, '') AS note
+    FROM stage1_tasks t
+    JOIN words w ON w.id = t.word_id
+    JOIN progress p ON p.word_id = t.word_id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE t.reviewed_on = ?
+      AND ${unresolvedSql}
+      AND ${currentReviewCountSql} >= 4
+    ORDER BY today_seen_count DESC, COALESCE(p.fsrs_lapses, 0) DESC, p.fsrs_due ASC, w.id ASC
+  `, [day, day, dayEnd, day]);
+      return rows.filter((row) => !excludedIds.has(Number(row.id)));
+    };
+    dailyReviewCandidateCount = (excludedIds = /* @__PURE__ */ new Set()) => candidateRows(excludedIds).length;
+    completionInTriggerWindow = (day) => {
+      const total = firstValue(
+        "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ?",
+        [day],
+        0
+      );
+      if (total <= 0) return false;
+      const completed = firstValue(`
+    SELECT COUNT(DISTINCT t.word_id)
+    FROM stage1_tasks t
+    JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+      AND (p.known_forever = 1 OR (p.fsrs_due IS NOT NULL AND p.fsrs_due > ?))
+  `, [day, studyDayEnd().toISOString()], 0);
+      const progress = Number(completed) / Number(total);
+      return progress >= 0.6 && progress <= 0.8;
+    };
+    shouldStartDailyReview = (justForgot) => {
+      if (reviewWasTriggeredToday()) return false;
+      const day = today();
+      if (fatigueDetected(day)) return false;
+      const state = readReviewState();
+      if (!state.armed) {
+        if (!completionInTriggerWindow(day)) return false;
+        writeReviewState({ ...state, armed: true });
+      }
+      if (!justForgot) return false;
+      return dailyReviewCandidateCount() >= 4;
+    };
+    pickDailyReviewNext = (excludedIds = /* @__PURE__ */ new Set()) => {
+      const row = candidateRows(excludedIds)[0];
+      return row ? rowObjectToCard(row) : null;
+    };
+  }
+});
+
+// ../frontend/src/lib/adaptive.ts
+function getUserMemoryProfile() {
+  const value = firstValue("SELECT value FROM app_state WHERE key = ?", [MEMORY_PROFILE_KEY], null);
+  if (value != null) {
+    try {
+      return JSON.parse(String(value));
+    } catch {
+      return getDefaultProfile();
+    }
+  }
+  return getDefaultProfile();
+}
+function getDefaultProfile() {
+  return {
+    memoryStrength: 1,
+    firstTimeCorrectRate: 0.5,
+    retentionRate7Days: 0.5,
+    avgReviewsToMaster: 10,
+    totalReviews: 0,
+    lastUpdated: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+function saveMemoryProfile(profile) {
+  const db = (0, import_database24.getDatabase)();
+  db.run(`
+    INSERT OR REPLACE INTO app_state (key, value)
+    VALUES (?, ?)
+  `, [MEMORY_PROFILE_KEY, JSON.stringify(profile)]);
+}
+function calculateFirstTimeCorrectRate() {
+  const day = studyDate();
+  const row = rowsFor(`
+    WITH ranked AS (
+      SELECT
+        r.reviewed_on,
+        r.answer,
+        ROW_NUMBER() OVER (PARTITION BY r.word_id ORDER BY r.reviewed_on, r.id) AS rn
+      FROM reviews r
+      WHERE r.direction = 'forward'
+    )
+    SELECT
+      COUNT(CASE WHEN answer IN ('know', 'known_forever') THEN 1 END) AS correct,
+      COUNT(*) AS total
+    FROM ranked
+    WHERE rn = 1
+      AND reviewed_on BETWEEN date(?, '-30 days') AND ?
+  `, [day, day])[0];
+  if (!row) return 0.5;
+  const correct = Number(row.correct ?? 0);
+  const total = Number(row.total ?? 0);
+  if (total === 0) return 0.5;
+  return correct / total;
+}
+function calculateRetentionRate7Days() {
+  ensureFsrsColumns();
+  const row = rowsFor(`
+    WITH first_day AS (
+      SELECT word_id, MIN(reviewed_on) AS d0
+      FROM reviews
+      WHERE direction = 'forward'
+      GROUP BY word_id
+    ), day_firsts AS (
+      SELECT
+        r.word_id,
+        r.reviewed_on,
+        r.answer,
+        ROW_NUMBER() OVER (PARTITION BY r.word_id, r.reviewed_on ORDER BY r.id) AS rn
+      FROM reviews r
+      WHERE r.direction = 'forward'
+    )
+    SELECT
+      COUNT(CASE WHEN f.answer IN ('know', 'known_forever') THEN 1 END) AS retained,
+      COUNT(*) AS total
+    FROM day_firsts f
+    JOIN first_day fd ON fd.word_id = f.word_id
+    WHERE f.rn = 1
+      AND julianday(f.reviewed_on) - julianday(fd.d0) >= 7
+  `)[0];
+  if (!row) return 0.5;
+  const retained = Number(row.retained ?? 0);
+  const total = Number(row.total ?? 0);
+  if (total === 0) return 0.5;
+  return retained / total;
+}
+function calculateAvgReviewsToMaster() {
+  ensureFsrsColumns();
+  const avgReviews = firstValue(`
+    SELECT
+      AVG(review_count) AS avg_reviews
+    FROM (
+      SELECT p.word_id, COUNT(r.id) AS review_count
+      FROM progress p
+      JOIN reviews r ON r.word_id = p.word_id AND r.direction = 'forward'
+      WHERE p.known_forever = 1 OR ${MASTERED_SQL}
+      GROUP BY p.word_id
+    )
+  `, [], null);
+  return Number(avgReviews) || 10;
+}
+function getTotalReviewCount() {
+  return firstValue("SELECT COUNT(*) FROM reviews WHERE direction = 'forward'", [], 0);
+}
+function calculateMemoryStrength(firstTimeCorrectRate, retentionRate7Days, avgReviewsToMaster) {
+  const firstTimeScore = firstTimeCorrectRate * 0.3;
+  const retentionScore = retentionRate7Days * 0.4;
+  const reviewsScore = Math.min(1, 5 / avgReviewsToMaster) * 0.3;
+  const combinedScore = firstTimeScore + retentionScore + reviewsScore;
+  return 0.5 + combinedScore * 1.5;
+}
+function updateMemoryProfileIfNeeded() {
+  const currentProfile = getUserMemoryProfile();
+  const totalReviews = getTotalReviewCount();
+  if (totalReviews < MIN_REVIEWS_FOR_ADAPTIVE) {
+    return;
+  }
+  const reviewsSinceLastUpdate = totalReviews - currentProfile.totalReviews;
+  if (reviewsSinceLastUpdate < UPDATE_INTERVAL_REVIEWS) {
+    return;
+  }
+  const firstTimeCorrectRate = calculateFirstTimeCorrectRate();
+  const retentionRate7Days = calculateRetentionRate7Days();
+  const avgReviewsToMaster = calculateAvgReviewsToMaster();
+  const memoryStrength = calculateMemoryStrength(
+    firstTimeCorrectRate,
+    retentionRate7Days,
+    avgReviewsToMaster
+  );
+  const newProfile = {
+    memoryStrength,
+    firstTimeCorrectRate,
+    retentionRate7Days,
+    avgReviewsToMaster,
+    totalReviews,
+    lastUpdated: (/* @__PURE__ */ new Date()).toISOString()
+  };
+  saveMemoryProfile(newProfile);
+  console.log("\u{1F4CA} \u8BB0\u5FC6\u753B\u50CF\u5DF2\u66F4\u65B0:", {
+    memoryStrength: memoryStrength.toFixed(2),
+    firstTimeCorrectRate: (firstTimeCorrectRate * 100).toFixed(1) + "%",
+    retentionRate7Days: (retentionRate7Days * 100).toFixed(1) + "%",
+    avgReviewsToMaster: avgReviewsToMaster.toFixed(1)
+  });
+}
+function getMemoryStrengthLabel(strength) {
+  if (strength >= 1.5) return "\u4F18\u79C0";
+  if (strength >= 1.2) return "\u826F\u597D";
+  if (strength >= 0.8) return "\u6B63\u5E38";
+  return "\u9700\u52A0\u5F3A";
+}
+var import_database24, MEMORY_PROFILE_KEY, MIN_REVIEWS_FOR_ADAPTIVE, UPDATE_INTERVAL_REVIEWS;
+var init_adaptive = __esm({
+  "../frontend/src/lib/adaptive.ts"() {
+    "use strict";
+    import_database24 = __toESM(require_database(), 1);
+    init_fsrs_store();
+    init_db_utils();
+    MEMORY_PROFILE_KEY = "user_memory_profile";
+    MIN_REVIEWS_FOR_ADAPTIVE = 100;
+    UPDATE_INTERVAL_REVIEWS = 50;
+  }
+});
+
+// ../frontend/src/lib/analytics/stats.ts
+var stats_exports = {};
+__export(stats_exports, {
+  getEfficiencyAnalytics: () => getEfficiencyAnalytics,
+  getErrorAnalytics: () => getErrorAnalytics,
+  getMasteryAnalytics: () => getMasteryAnalytics,
+  getStudyAnalytics: () => getStudyAnalytics,
+  getStudyTimeAnalytics: () => getStudyTimeAnalytics
+});
+function getStudyTimeAnalytics() {
+  const day = studyDate();
+  const dailyMinutes = rowsFor(`
+    SELECT
+      studied_on AS date,
+      CAST(seconds / 60.0 AS INTEGER) AS minutes,
+      0 AS wordCount
+    FROM word_study_time
+    WHERE studied_on BETWEEN date(?, '-30 days') AND ?
+    ORDER BY studied_on DESC
+  `, [day, day]).map((row) => ({
+    date: String(row.date),
+    minutes: Number(row.minutes ?? 0),
+    wordCount: 0
+    // 暂时不统计，可以后续添加
+  }));
+  const totalSeconds = firstValue(
+    "SELECT SUM(seconds) FROM word_study_time",
+    [],
+    0
+  );
+  const totalHours = Math.floor(totalSeconds / 3600);
+  const checkins = rowsFor(`
+    SELECT checked_on FROM checkins ORDER BY checked_on DESC
+  `).map((row) => String(row.checked_on));
+  let streakDays = 0;
+  const today2 = studyDate();
+  for (let i = 0; i < checkins.length; i++) {
+    const expectedDate = new Date(today2);
+    expectedDate.setDate(expectedDate.getDate() - i);
+    const expected = expectedDate.toISOString().slice(0, 10);
+    if (checkins[i] === expected) {
+      streakDays++;
+    } else {
+      break;
+    }
+  }
+  const avgDailyMinutes = dailyMinutes.length > 0 ? Math.round(dailyMinutes.reduce((sum, d) => sum + d.minutes, 0) / dailyMinutes.length) : 0;
+  const bestTimeOfDay = [];
+  return {
+    dailyMinutes,
+    bestTimeOfDay,
+    totalHours,
+    streakDays,
+    avgDailyMinutes
+  };
+}
+function getMasteryAnalytics() {
+  const byLevel = rowsFor(`
+    SELECT
+      COALESCE(w.jlpt_level, '\u672A\u5206\u7EA7') AS level,
+      COUNT(*) AS total,
+      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+        SELECT 1 FROM reviews r
+        WHERE r.word_id = w.id AND r.direction = 'forward'
+      ) THEN 1 ELSE 0 END) AS studied,
+      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+        SELECT 1 FROM reviews r
+        WHERE r.word_id = w.id AND r.direction = 'forward'
+      )) AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS mastered,
+      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+        SELECT 1 FROM reviews r
+        WHERE r.word_id = w.id AND r.direction = 'forward'
+      )) AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
+        AND COALESCE(p.fsrs_lapses, 0) = 0 THEN 1 ELSE 0 END) AS learning,
+      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+        SELECT 1 FROM reviews r
+        WHERE r.word_id = w.id AND r.direction = 'forward'
+      )) AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
+        AND COALESCE(p.fsrs_lapses, 0) > 0 THEN 1 ELSE 0 END) AS struggling
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    WHERE w.jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')
+    GROUP BY w.jlpt_level
+    ORDER BY CASE w.jlpt_level
+      WHEN 'N5' THEN 1
+      WHEN 'N4' THEN 2
+      WHEN 'N3' THEN 3
+      WHEN 'N2' THEN 4
+      WHEN 'N1' THEN 5
+      ELSE 9 END
+  `).map((row) => {
+    const total = Number(row.total ?? 0);
+    const studied = Number(row.studied ?? 0);
+    const mastered = Number(row.mastered ?? 0);
+    return {
+      level: String(row.level),
+      total,
+      studied,
+      mastered,
+      learning: Number(row.learning ?? 0),
+      struggling: Number(row.struggling ?? 0),
+      percentage: studied > 0 ? Math.round(mastered / studied * 100) : 0
+    };
+  });
+  const byPartOfSpeech = rowsFor(`
+    SELECT
+      CASE
+        WHEN pos LIKE '%\u540D%' THEN '\u540D\u8BCD'
+        WHEN pos LIKE '%\u52D5%' OR pos LIKE '%\u52A8%' THEN '\u52A8\u8BCD'
+        WHEN pos LIKE '%\u5F62%' THEN '\u5F62\u5BB9\u8BCD'
+        WHEN pos LIKE '%\u526F%' THEN '\u526F\u8BCD'
+        ELSE '\u5176\u4ED6'
+      END AS pos,
+      AVG(p.fsrs_stability) AS avgStability,
+      COUNT(*) AS count,
+      SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS masteredCount
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    WHERE (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
+      SELECT 1 FROM reviews r
+      WHERE r.word_id = w.id AND r.direction = 'forward'
+    ))
+    GROUP BY pos
+    ORDER BY count DESC
+    LIMIT 5
+  `).map((row) => ({
+    pos: String(row.pos),
+    avgStability: Math.round(Number(row.avgStability ?? 0) * 10) / 10,
+    count: Number(row.count ?? 0),
+    masteredCount: Number(row.masteredCount ?? 0)
+  }));
+  const estimatedDaysToComplete = {};
+  const avgNewWordsPerDay = firstValue(
+    `SELECT AVG(daily_new) FROM (
+      SELECT COUNT(DISTINCT word_id) AS daily_new
+      FROM reviews
+      WHERE direction = 'forward'
+        AND reviewed_on BETWEEN date(?, '-7 days') AND ?
+      GROUP BY reviewed_on
+    )`,
+    [studyDate(), studyDate()],
+    10
+  );
+  byLevel.forEach((level) => {
+    const remaining = level.total - level.mastered;
+    const days = avgNewWordsPerDay > 0 ? Math.ceil(remaining / avgNewWordsPerDay) : 999;
+    estimatedDaysToComplete[level.level] = days;
+  });
+  return {
+    byLevel,
+    byPartOfSpeech,
+    estimatedDaysToComplete
+  };
+}
+function getErrorAnalytics() {
+  const mostDifficultWords = rowsFor(`
+    SELECT
+      w.id,
+      w.kanji,
+      w.kana,
+      w.meaning,
+      p.fsrs_stability,
+      COUNT(r.id) AS totalReviews,
+      SUM(CASE WHEN r.answer IN ('forgot', 'fuzzy') THEN 1 ELSE 0 END) AS wrong_count
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    JOIN reviews r ON r.word_id = w.id AND r.direction = 'forward'
+    WHERE p.known_forever = 0
+    GROUP BY w.id, w.kanji, w.kana, w.meaning, p.fsrs_stability
+    HAVING COUNT(r.id) >= 3
+    ORDER BY
+      SUM(CASE WHEN r.answer = 'forgot' THEN 2.0 WHEN r.answer = 'fuzzy' THEN 1.0 ELSE 0 END)
+        / NULLIF(COUNT(r.id), 0) DESC,
+      COALESCE(p.fsrs_stability, 0) ASC
+    LIMIT 20
+  `).map((row) => {
+    const wrongCount = Number(row.wrong_count ?? 0);
+    const totalReviews = Number(row.totalReviews ?? 1);
+    return {
+      id: Number(row.id),
+      kanji: String(row.kanji),
+      kana: String(row.kana),
+      meaning: String(row.meaning),
+      errorRate: Math.round(wrongCount / totalReviews * 100),
+      totalReviews,
+      stability: Number(row.fsrs_stability ?? 0)
+    };
+  });
+  const errorDist = firstRow(`
+    SELECT
+      SUM(CASE WHEN answer = 'forgot' THEN 1 ELSE 0 END) AS forgot,
+      SUM(CASE WHEN answer = 'fuzzy' THEN 1 ELSE 0 END) AS fuzzy,
+      SUM(CASE WHEN answer IN ('know', 'known_forever') THEN 1 ELSE 0 END) AS know
+    FROM reviews
+    WHERE direction = 'forward'
+  `);
+  const errorTypeDistribution = {
+    forgot: Number(errorDist?.forgot ?? 0),
+    fuzzy: Number(errorDist?.fuzzy ?? 0),
+    know: Number(errorDist?.know ?? 0)
+  };
+  return {
+    mostDifficultWords,
+    errorTypeDistribution
+  };
+}
+function getEfficiencyAnalytics() {
+  const avgReviewsToMaster = firstValue(
+    `SELECT AVG(review_count) FROM (
+      SELECT p.word_id, COUNT(r.id) AS review_count
+      FROM progress p
+      JOIN reviews r ON r.word_id = p.word_id AND r.direction = 'forward'
+      WHERE p.known_forever = 1 OR ${MASTERED_SQL}
+      GROUP BY p.word_id
+    )`,
+    [],
+    null
+  );
+  const recentStudyData = firstRow(`
+    SELECT
+      SUM(wst.seconds) / 3600.0 AS total_hours,
+      COUNT(DISTINCT r.word_id) AS new_words
+    FROM word_study_time wst
+    LEFT JOIN reviews r ON r.reviewed_on = wst.studied_on
+      AND r.direction = 'forward'
+    WHERE wst.studied_on BETWEEN date(?, '-7 days') AND ?
+      AND NOT EXISTS (
+        SELECT 1 FROM reviews r2
+        WHERE r2.word_id = r.word_id
+          AND r2.direction = 'forward'
+          AND (r2.reviewed_on < r.reviewed_on OR (r2.reviewed_on = r.reviewed_on AND r2.id < r.id))
+      )
+  `, [studyDate(), studyDate()]);
+  const totalHours = Number(recentStudyData?.total_hours ?? 1);
+  const newWords = Number(recentStudyData?.new_words ?? 0);
+  const newWordsPerHour = totalHours > 0 ? Math.round(newWords / totalHours) : 0;
+  const retention = firstRow(`
+    SELECT
+      SUM(CASE WHEN r.answer IN ('know', 'known_forever') THEN 1 ELSE 0 END) AS retained,
+      COUNT(*) AS sample_size
+    FROM reviews r
+    WHERE r.direction = 'forward'
+      AND EXISTS (
+        SELECT 1
+        FROM reviews prior
+        WHERE prior.word_id = r.word_id
+          AND prior.direction = 'forward'
+          AND (julianday(r.reviewed_on) - julianday(prior.reviewed_on)) >= 7
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM reviews same_day
+        WHERE same_day.word_id = r.word_id
+          AND same_day.direction = 'forward'
+          AND same_day.reviewed_on = r.reviewed_on
+          AND same_day.id < r.id
+          AND EXISTS (
+            SELECT 1
+            FROM reviews same_day_prior
+            WHERE same_day_prior.word_id = same_day.word_id
+              AND same_day_prior.direction = 'forward'
+              AND (julianday(same_day.reviewed_on) - julianday(same_day_prior.reviewed_on)) >= 7
+          )
+      )
+  `);
+  const retentionSampleSize = Number(retention?.sample_size ?? 0);
+  const retentionRate = retentionSampleSize > 0 ? Number(retention?.retained ?? 0) / retentionSampleSize : 0;
+  updateMemoryProfileIfNeeded();
+  const memoryProfile = getUserMemoryProfile();
+  const memoryStrength = memoryProfile.memoryStrength;
+  const memoryStrengthLabel = getMemoryStrengthLabel(memoryStrength);
+  let efficiencyTrend = "stable";
+  if (retentionSampleSize > 0 && retentionRate > 0.7) {
+    efficiencyTrend = "improving";
+  } else if (retentionSampleSize > 0 && retentionRate < 0.4) {
+    efficiencyTrend = "declining";
+  }
+  const memorySampleSize = firstValue(
+    "SELECT COUNT(*) FROM reviews WHERE direction = 'forward'",
+    [],
+    0
+  );
+  return {
+    avgReviewsToMaster: avgReviewsToMaster == null ? 0 : Math.round(avgReviewsToMaster * 10) / 10,
+    newWordsPerHour,
+    retentionRate7Days: Math.round(retentionRate * 100),
+    retentionSampleSize,
+    efficiencyTrend,
+    memoryStrength: Math.round(memoryStrength * 100) / 100,
+    memoryStrengthLabel,
+    memorySampleSize
+  };
+}
+function getStudyAnalytics() {
+  ensureFsrsColumns();
+  return {
+    studyTime: getStudyTimeAnalytics(),
+    mastery: getMasteryAnalytics(),
+    errors: getErrorAnalytics(),
+    efficiency: getEfficiencyAnalytics(),
+    generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+var init_stats2 = __esm({
+  "../frontend/src/lib/analytics/stats.ts"() {
+    "use strict";
+    init_db_utils();
+    init_adaptive();
+    init_fsrs_store();
+  }
+});
+
+// ../frontend/src/lib/favorites-api.ts
+var favorites_api_exports = {};
+__export(favorites_api_exports, {
+  FOLDER_NAME_MAX: () => FOLDER_NAME_MAX,
+  UNFILED_FOLDER: () => UNFILED_FOLDER,
+  addFavorite: () => addFavorite,
+  addFavorites: () => addFavorites,
+  createFavoriteFolder: () => createFavoriteFolder,
+  deleteFavoriteFolder: () => deleteFavoriteFolder,
+  getFavoriteItems: () => getFavoriteItems,
+  lastFavoriteFolder: () => lastFavoriteFolder,
+  listFavoriteFolders: () => listFavoriteFolders,
+  renameFavoriteFolder: () => renameFavoriteFolder,
+  setFavoriteFolder: () => setFavoriteFolder,
+  toggleFavorite: () => toggleFavorite,
+  unfiledFavoriteCount: () => unfiledFavoriteCount
+});
+function listFavoriteFolders() {
+  ensureUserTables();
+  const rows = rowsFor(`
+    SELECT name, COALESCE(n, 0) AS n, created_at FROM (
+      SELECT f.name AS name, c.n AS n, f.created_at AS created_at
+      FROM favorite_folders f
+      LEFT JOIN (SELECT folder, COUNT(*) AS n FROM content_favorites GROUP BY folder) c
+        ON c.folder = f.name
+      UNION
+      SELECT folder, COUNT(*), '' FROM content_favorites
+      WHERE folder <> '' AND folder NOT IN (SELECT name FROM favorite_folders)
+      GROUP BY folder
+    )
+    ORDER BY created_at ASC, name ASC
+  `);
+  return rows.map((row) => ({ name: String(row.name ?? ""), count: Number(row.n ?? 0) }));
+}
+function lastFavoriteFolder() {
+  ensureUserTables();
+  return getState(LAST_FOLDER_KEY, UNFILED_FOLDER);
+}
+function unfiledFavoriteCount() {
+  ensureUserTables();
+  return firstValue("SELECT COUNT(*) FROM content_favorites WHERE folder = ''", [], 0);
+}
+function createFavoriteFolder(name) {
+  ensureUserTables();
+  const clean = cleanName(name);
+  if (!clean) return "";
+  (0, import_database25.getDatabase)().run("INSERT OR IGNORE INTO favorite_folders (name) VALUES (?)", [clean]);
+  persistSoon();
+  return clean;
+}
+function renameFavoriteFolder(from, to) {
+  ensureUserTables();
+  const clean = cleanName(to);
+  if (!clean || clean === from) return from;
+  const db = (0, import_database25.getDatabase)();
+  db.run("INSERT OR IGNORE INTO favorite_folders (name) VALUES (?)", [clean]);
+  db.run("DELETE FROM favorite_folders WHERE name = ?", [from]);
+  db.run("UPDATE content_favorites SET folder = ? WHERE folder = ?", [clean, from]);
+  persistSoon();
+  return clean;
+}
+function deleteFavoriteFolder(name) {
+  ensureUserTables();
+  const db = (0, import_database25.getDatabase)();
+  db.run("UPDATE content_favorites SET folder = '' WHERE folder = ?", [name]);
+  db.run("DELETE FROM favorite_folders WHERE name = ?", [name]);
+  persistSoon();
+}
+function setFavoriteFolder(type, id, folder) {
+  ensureUserTables();
+  (0, import_database25.getDatabase)().run(
+    "UPDATE content_favorites SET folder = ? WHERE item_type = ? AND item_id = ?",
+    [folder, type, String(id)]
+  );
+  persistSoon();
+}
+function addFavorite(type, id, folder = UNFILED_FOLDER) {
+  ensureUserTables();
+  const db = (0, import_database25.getDatabase)();
+  const itemId = String(id);
+  db.run(
+    "INSERT OR IGNORE INTO content_favorites (item_type, item_id, folder) VALUES (?, ?, ?)",
+    [type, itemId, folder]
+  );
+  db.run(
+    "UPDATE content_favorites SET folder = ? WHERE item_type = ? AND item_id = ?",
+    [folder, type, itemId]
+  );
+  setState(LAST_FOLDER_KEY, folder);
+  persistSoon();
+}
+function addFavorites(type, ids, folder = UNFILED_FOLDER) {
+  ids.forEach((id) => addFavorite(type, id, folder));
+  return ids.length;
+}
+function toggleFavorite(type, id, folder = UNFILED_FOLDER) {
+  ensureUserTables();
+  const itemId = String(id);
+  if (isFavorite(type, itemId)) {
+    (0, import_database25.getDatabase)().run("DELETE FROM content_favorites WHERE item_type = ? AND item_id = ?", [type, itemId]);
+    persistSoon();
+    return { isFavorite: false };
+  }
+  addFavorite(type, itemId, folder);
+  return { isFavorite: true };
+}
+function getFavoriteItems(type = "all", folder) {
+  ensureUserTables();
+  const clauses = [];
+  const params = [];
+  if (type !== "all") {
+    clauses.push("item_type = ?");
+    params.push(type);
+  }
+  if (folder !== void 0) {
+    clauses.push("folder = ?");
+    params.push(folder);
+  }
+  const favorites = rowsFor(`
+    SELECT item_type, item_id, folder
+    FROM content_favorites
+    ${clauses.length ? `WHERE ${clauses.join(" AND ")}` : ""}
+    ORDER BY created_at DESC
+  `, params);
+  return favorites.flatMap((favorite) => {
+    const itemType = String(favorite.item_type ?? "");
+    const itemId = String(favorite.item_id ?? "");
+    const folderName = String(favorite.folder ?? "");
+    if (itemType === "word") {
+      const row = firstRow("SELECT id, kanji, kana, meaning, pos FROM words WHERE id = ?", [Number(itemId)]);
+      if (!row) return [];
+      return [{
+        type: itemType,
+        id: itemId,
+        folder: folderName,
+        title: String(row.kanji || row.kana || ""),
+        subtitle: String(row.meaning ?? ""),
+        meta: `${String(row.kana ?? "")}${row.pos ? ` \xB7 ${String(row.pos)}` : ""}`
+      }];
+    }
+    if (itemType === "grammar") {
+      const row = firstRow(`
+        SELECT g.pattern, g.prompt, g.meaning, g.level,
+          (SELECT COUNT(*) FROM grammar_points same_level
+           WHERE same_level.level = g.level AND same_level.sort_order <= g.sort_order) AS level_ordinal
+        FROM grammar_points g
+        WHERE g.pattern = ?
+      `, [itemId]);
+      if (!row) {
+        return [{ type: itemType, id: itemId, folder: folderName, title: "", subtitle: "", meta: "" }];
+      }
+      return [{
+        type: itemType,
+        id: itemId,
+        folder: folderName,
+        title: String(row.prompt || row.pattern || ""),
+        subtitle: String(row.meaning ?? ""),
+        meta: `${String(row.level ?? "")} \xB7 ${String(Number(row.level_ordinal ?? 0)).padStart(3, "0")}`
+      }];
+    }
+    return [];
+  });
+}
+var import_database25, UNFILED_FOLDER, FOLDER_NAME_MAX, cleanName, LAST_FOLDER_KEY;
+var init_favorites_api = __esm({
+  "../frontend/src/lib/favorites-api.ts"() {
+    "use strict";
+    import_database25 = __toESM(require_database(), 1);
+    init_study_core();
+    UNFILED_FOLDER = "";
+    FOLDER_NAME_MAX = 20;
+    cleanName = (name) => name.replace(/\s+/g, " ").trim().slice(0, FOLDER_NAME_MAX);
+    LAST_FOLDER_KEY = "favorite_last_folder";
+  }
+});
+
+// ../frontend/src/lib/word-api/stubborn-today.ts
+var STUBBORN_TOTAL_FORGOTS, getStubbornWordsToday, getStubbornGrammarToday, getStubbornHistoryDays;
+var init_stubborn_today = __esm({
+  "../frontend/src/lib/word-api/stubborn-today.ts"() {
+    "use strict";
+    init_study_core();
+    init_fsrs_scheduler();
+    STUBBORN_TOTAL_FORGOTS = 8;
+    getStubbornWordsToday = (day = studyDate()) => rowsFor(`
+    SELECT * FROM (
+      SELECT
+        w.id AS id, w.kanji AS kanji, w.kana AS kana, w.meaning AS meaning,
+        COALESCE(p.forgot_count, 0) AS lapses,
+        (SELECT COUNT(*) FROM reviews r
+          WHERE r.word_id = w.id AND r.reviewed_on = ? AND r.direction = 'forward'
+            AND r.answer IN ('forgot','fuzzy')) AS wrong_today,
+        EXISTS(SELECT 1 FROM content_favorites cf
+          WHERE cf.item_type = 'word' AND cf.item_id = CAST(w.id AS TEXT)) AS favorited
+      FROM words w
+      JOIN progress p ON p.word_id = w.id
+      WHERE w.id IN (
+        SELECT DISTINCT word_id FROM reviews WHERE reviewed_on = ? AND direction = 'forward'
+      )
+    )
+    WHERE lapses > ? AND wrong_today >= ?
+    ORDER BY wrong_today DESC, lapses DESC, id ASC
+  `, [day, day, STUBBORN_TOTAL_FORGOTS, STUBBORN_DAILY_MISTAKES]).map((row) => ({
+      id: Number(row.id ?? 0),
+      kanji: String(row.kanji ?? ""),
+      kana: String(row.kana ?? ""),
+      meaning: String(row.meaning ?? ""),
+      lapses: Number(row.lapses ?? 0),
+      wrongToday: Number(row.wrong_today ?? 0),
+      isFavorite: Number(row.favorited ?? 0) === 1
+    }));
+    getStubbornGrammarToday = (day = studyDate()) => rowsFor(`
+    SELECT * FROM (
+      SELECT
+        g.id AS id, g.pattern AS pattern, g.meaning AS meaning, g.level AS level,
+        COALESCE(p.forgot_count, 0) AS lapses,
+        (SELECT COUNT(*) FROM grammar_reviews r
+          WHERE r.grammar_id = g.id AND r.reviewed_on = ?
+            AND r.answer IN ('forgot','fuzzy')) AS wrong_today
+      FROM grammar_points g
+      JOIN grammar_progress p ON p.grammar_id = g.id
+      WHERE g.id IN (
+        SELECT DISTINCT grammar_id FROM grammar_reviews WHERE reviewed_on = ?
+      )
+    )
+    WHERE lapses > ? AND wrong_today >= ?
+    ORDER BY wrong_today DESC, lapses DESC, id ASC
+  `, [day, day, STUBBORN_TOTAL_FORGOTS, STUBBORN_DAILY_MISTAKES]).map((row) => ({
+      id: Number(row.id ?? 0),
+      pattern: String(row.pattern ?? ""),
+      meaning: String(row.meaning ?? ""),
+      level: String(row.level ?? ""),
+      lapses: Number(row.lapses ?? 0),
+      wrongToday: Number(row.wrong_today ?? 0)
+    }));
+    getStubbornHistoryDays = (limit = 60) => {
+      const today2 = studyDate();
+      const countsFor = (sql) => new Map(
+        rowsFor(sql, [today2, STUBBORN_DAILY_MISTAKES, STUBBORN_TOTAL_FORGOTS]).map((row) => [String(row.day ?? ""), Number(row.n ?? 0)])
+      );
+      const words = countsFor(`
+    SELECT day, COUNT(*) AS n FROM (
+      SELECT r.reviewed_on AS day, r.word_id AS wid, COUNT(*) AS wrong
+      FROM reviews r
+      WHERE r.direction = 'forward' AND r.answer IN ('forgot','fuzzy') AND r.reviewed_on < ?
+      GROUP BY r.reviewed_on, r.word_id
+    ) x
+    JOIN progress p ON p.word_id = x.wid
+    WHERE x.wrong >= ? AND COALESCE(p.forgot_count, 0) > ?
+    GROUP BY day
+  `);
+      const grammar = countsFor(`
+    SELECT day, COUNT(*) AS n FROM (
+      SELECT r.reviewed_on AS day, r.grammar_id AS gid, COUNT(*) AS wrong
+      FROM grammar_reviews r
+      WHERE r.answer IN ('forgot','fuzzy') AND r.reviewed_on < ?
+      GROUP BY r.reviewed_on, r.grammar_id
+    ) x
+    JOIN grammar_progress p ON p.grammar_id = x.gid
+    WHERE x.wrong >= ? AND COALESCE(p.forgot_count, 0) > ?
+    GROUP BY day
+  `);
+      return [.../* @__PURE__ */ new Set([...words.keys(), ...grammar.keys()])].sort((a, b) => a < b ? 1 : -1).slice(0, limit).map((date) => ({ date, words: words.get(date) ?? 0, grammar: grammar.get(date) ?? 0 }));
+    };
+  }
+});
+
+// ../frontend/src/lib/word-api.ts
+var word_api_exports = {};
+__export(word_api_exports, {
+  UNFILED_FOLDER: () => UNFILED_FOLDER,
+  addFavorite: () => addFavorite,
+  addFavorites: () => addFavorites,
+  addWordStudySeconds: () => addWordStudySeconds,
+  addWordToTodayEncore: () => addWordToTodayEncore,
+  addWordsToQueue: () => addWordsToQueue,
+  advanceDailyRelief: () => advanceDailyRelief,
+  advanceDailyTail: () => advanceDailyTail,
+  completeTodayWordPlan: () => completeTodayWordPlan,
+  continueKanjiStudy: () => continueKanjiStudy,
+  continueStage2Study: () => continueStage2Study,
+  continueTodayPlanStudy: () => continueTodayPlanStudy,
+  createFavoriteFolder: () => createFavoriteFolder,
+  dailyReviewCandidateCount: () => dailyReviewCandidateCount,
+  deleteFavoriteFolder: () => deleteFavoriteFolder,
+  ensureDailyRelief: () => ensureDailyRelief,
+  ensureDailyTail: () => ensureDailyTail,
+  ensureProgressInitialized: () => ensureProgressInitialized,
+  getDailyReliefNext: () => getDailyReliefNext,
+  getDailyReliefProgress: () => getDailyReliefProgress,
+  getDailyTailNext: () => getDailyTailNext,
+  getDailyTailProgress: () => getDailyTailProgress,
+  getFavoriteItems: () => getFavoriteItems,
+  getGrammarPointFavorite: () => getGrammarPointFavorite,
+  getQuickStudySession: () => getQuickStudySession,
+  getQuickStudySessionForWords: () => getQuickStudySessionForWords,
+  getReviewQueue: () => getReviewQueue,
+  getStubbornGrammarToday: () => getStubbornGrammarToday,
+  getStubbornHistoryDays: () => getStubbornHistoryDays,
+  getStubbornWordsToday: () => getStubbornWordsToday,
+  getStudyAnalytics: () => getStudyAnalytics,
+  getWordSession: () => getWordSession,
+  getWordStats: () => getWordStats,
+  hasDailyReviewTriggered: () => hasDailyReviewTriggered,
+  jumpToSimilarWord: () => jumpToSimilarWord,
+  lastFavoriteFolder: () => lastFavoriteFolder,
+  listFavoriteFolders: () => listFavoriteFolders,
+  markDailyReviewTriggered: () => markDailyReviewTriggered,
+  markTodayWordCheckin: () => markTodayWordCheckin,
+  markWordKnownForever: () => markWordKnownForever,
+  pickDailyReviewNext: () => pickDailyReviewNext,
+  pickedProgress: () => pickedProgress,
+  questionMeaningRivals: () => questionMeaningRivals,
+  recordStubbornQuickStudy: () => recordStubbornQuickStudy,
+  refreshTodayWordPlan: () => refreshTodayWordPlan,
+  renameFavoriteFolder: () => renameFavoriteFolder,
+  rewindDailyTail: () => rewindDailyTail,
+  setFavoriteFolder: () => setFavoriteFolder,
+  setReviewQueue: () => setReviewQueue,
+  setWordsKnownForever: () => setWordsKnownForever,
+  setWordsKnownForeverIds: () => setWordsKnownForeverIds,
+  shouldStartDailyReview: () => shouldStartDailyReview,
+  startEncore: () => startEncore,
+  startPickedStudy: () => startPickedStudy,
+  submitKanjiUnitAnswer: () => submitKanjiUnitAnswer,
+  submitQuickStudyBatch: () => submitQuickStudyBatch,
+  submitWordAnswer: () => submitWordAnswer,
+  toggleFavorite: () => toggleFavorite,
+  undoLastWordAnswer: () => undoLastWordAnswer,
+  unfiledFavoriteCount: () => unfiledFavoriteCount,
+  unmarkWordKnownForever: () => unmarkWordKnownForever,
+  updateWordNote: () => updateWordNote,
+  updateWordQuestionMeaning: () => updateWordQuestionMeaning,
+  wordCardById: () => wordCardById
+});
+function refreshTodayWordPlan() {
+  ensureProgressInitialized();
+  const day = today();
+  const phase = currentPhase();
+  const stage1 = stage1ProgressCounts();
+  if (phase === "stage1" && stage1.completed < stage1.total) {
+    (0, import_database26.getDatabase)().run(
+      "DELETE FROM stage1_tasks WHERE reviewed_on = ? AND word_id NOT IN (SELECT word_id FROM reviews WHERE reviewed_on = ? AND direction = 'forward')",
+      [day, day]
+    );
+    createStage1Tasks(day, { topUp: true });
+    persistSoon();
+  }
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return getWordStats(currentPhase());
+}
+function completeTodayWordPlan() {
+  ensureProgressInitialized();
+  const day = today();
+  ensureStage1Tasks();
+  const rows = rowsFor(`
+    SELECT t.word_id
+    FROM stage1_tasks t
+    JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+      AND p.known_forever = 0
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+  `, [day, studyDayEnd().toISOString()]);
+  const ids = rows.map((row) => Number(row.word_id)).filter((id) => Number.isFinite(id));
+  if (ids.length) {
+    const placeholders = ids.map(() => "?").join(",");
+    const now = /* @__PURE__ */ new Date();
+    ids.forEach((wordId) => {
+      try {
+        recordFsrsReview(wordId, "know", now);
+      } catch (err) {
+        console.warn("[fsrs] \u4E00\u952E\u5B8C\u6210\u8BB0\u5F55\u8DF3\u8FC7:", err);
+      }
+    });
+    (0, import_database26.getDatabase)().run(`
+      UPDATE progress
+      SET seen_count = seen_count + 1,
+          last_seen_on = ?,
+          right_count = right_count + 1,
+          mistake_streak = 0
+      WHERE word_id IN (${placeholders})
+        AND known_forever = 0
+    `, [day, ...ids]);
+    ids.forEach((wordId) => recordReviewEvent({
+      wordId,
+      answer: "know",
+      reviewedOn: day,
+      direction: "forward",
+      schedulerMode: "normal",
+      eventSource: "bulk_complete"
+    }));
+    setReviewQueue(getReviewQueue().filter((item) => !ids.includes(item.word_id)));
+  }
+  recordCheckin();
+  setPhase("done");
+  persistSoon();
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return { stats: getWordStats("done"), completedCount: ids.length };
+}
+function markTodayWordCheckin() {
+  ensureProgressInitialized();
+  recordCheckin();
+  persistSoon();
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return getWordStats(currentPhase());
+}
+function startEncore(customSize) {
+  ensureProgressInitialized();
+  const day = today();
+  ensureStage1Tasks();
+  const smartSize = encoreChunkSize(encoreRemainingCount(day));
+  const size = customSize && customSize > 0 ? Math.min(Math.round(customSize), 100) : smartSize > 0 ? smartSize : Math.max(Math.round(getDailyWordGoal() / 2), 5);
+  if (size <= 0) return getWordSession();
+  const db = (0, import_database26.getDatabase)();
+  const startIndex = firstValue(
+    "SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?",
+    [day],
+    1
+  );
+  const reviewRows = rowsFor(`
+    SELECT p.word_id
+    FROM progress p
+    JOIN words w ON w.id = p.word_id
+    WHERE p.known_forever = 0
+      AND p.seen_count > 0
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+      AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
+    ORDER BY
+      p.fsrs_due ASC,
+      p.fsrs_lapses DESC,
+      w.importance DESC,
+      p.last_seen_on ASC,
+      p.word_id ASC
+    LIMIT ?
+  `, [studyDayEnd().toISOString(), day, size]);
+  reviewRows.forEach((row, index3) => {
+    db.run(`
+      INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+      VALUES (?, ?, 'review', ?)
+    `, [day, Number(row.word_id), startIndex + index3]);
+  });
+  const newFill = size - reviewRows.length;
+  if (newFill > 0) {
+    const newRows = rowsFor(`
+      SELECT p.word_id
+      FROM progress p
+      JOIN words w ON w.id = p.word_id
+      WHERE p.known_forever = 0
+        AND p.seen_count = 0
+        AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
+      ORDER BY ${newWordOrderSql("w")}
+      LIMIT ?
+    `, [day, newFill]);
+    newRows.forEach((row, index3) => {
+      db.run(`
+        INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+        VALUES (?, ?, 'encore_new', ?)
+      `, [day, Number(row.word_id), startIndex + reviewRows.length + index3]);
+    });
+    if (reviewRows.length + newRows.length > 0) {
+      recordEncore(day, reviewRows.length + newRows.length);
+    }
+  } else if (reviewRows.length > 0) {
+    recordEncore(day, reviewRows.length);
+  }
+  setPhase("stage1");
+  persistSoon();
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return getWordSession();
+}
+function addWordToTodayEncore(wordId) {
+  ensureProgressInitialized();
+  ensureStage1Tasks();
+  const id = Math.round(Number(wordId));
+  if (!Number.isFinite(id) || id <= 0) return false;
+  const day = today();
+  const eligible = firstValue(
+    "SELECT 1 FROM words w JOIN progress p ON p.word_id = w.id WHERE w.id = ? AND p.known_forever = 0 LIMIT 1",
+    [id],
+    0
+  );
+  if (!eligible) return false;
+  const showsToday = firstValue(
+    "SELECT 1 FROM progress WHERE word_id = ? AND (fsrs_due IS NULL OR fsrs_due <= ?) LIMIT 1",
+    [id, studyDayEnd().toISOString()],
+    0
+  );
+  if (!showsToday) return false;
+  const alreadyQueued = firstValue(
+    "SELECT 1 FROM stage1_tasks WHERE reviewed_on = ? AND word_id = ? LIMIT 1",
+    [day, id],
+    0
+  );
+  if (alreadyQueued) return false;
+  const db = (0, import_database26.getDatabase)();
+  db.run("INSERT OR IGNORE INTO dictionary_discovered_words (word_id) VALUES (?)", [id]);
+  db.run(`
+    INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+    VALUES (?, ?, 'encore_new', ?)
+  `, [
+    day,
+    id,
+    firstValue("SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?", [day], 1)
+  ]);
+  setPhase("stage1");
+  persistSoon();
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return true;
+}
+function addWordsToQueue(wordIds) {
+  ensureProgressInitialized();
+  ensureStage1Tasks();
+  const db = (0, import_database26.getDatabase)();
+  const day = today();
+  const quota = dailyNewQuota();
+  const picked = /* @__PURE__ */ new Set();
+  const fresh = [];
+  let alreadyLearning = 0;
+  let known = 0;
+  wordIds.forEach((raw) => {
+    const id = Math.round(Number(raw));
+    if (!Number.isFinite(id) || id <= 0 || picked.has(id)) return;
+    const row = firstRow(
+      "SELECT p.seen_count, p.known_forever FROM progress p JOIN words w ON w.id = p.word_id WHERE w.id = ? LIMIT 1",
+      [id]
+    );
+    if (!row) return;
+    picked.add(id);
+    if (Number(row.known_forever ?? 0) === 1) {
+      known += 1;
+      return;
+    }
+    if (Number(row.seen_count ?? 0) > 0) {
+      alreadyLearning += 1;
+      return;
+    }
+    fresh.push(id);
+  });
+  if (!fresh.length) return { added: 0, today: 0, alreadyLearning, known };
+  const freeOneNewSlot = () => {
+    const placeholders = fresh.map(() => "?").join(",");
+    const victim = firstValue(`
+      SELECT t.word_id
+      FROM stage1_tasks t
+      JOIN progress p ON p.word_id = t.word_id
+      WHERE t.reviewed_on = ?
+        AND t.task_type = 'new'
+        AND p.seen_count = 0
+        AND p.known_forever = 0
+        AND t.word_id NOT IN (${placeholders})
+      ORDER BY t.order_index DESC
+      LIMIT 1
+    `, [day, ...fresh], 0);
+    if (!victim) return false;
+    db.run("DELETE FROM stage1_tasks WHERE reviewed_on = ? AND word_id = ?", [day, victim]);
+    return true;
+  };
+  let orderIndex = firstValue(
+    "SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?",
+    [day],
+    1
+  );
+  let queuedToday = 0;
+  fresh.forEach((id) => {
+    db.run("INSERT OR IGNORE INTO dictionary_discovered_words (word_id) VALUES (?)", [id]);
+    const alreadyQueued = firstValue(
+      "SELECT 1 FROM stage1_tasks WHERE reviewed_on = ? AND word_id = ? LIMIT 1",
+      [day, id],
+      0
+    );
+    if (alreadyQueued) {
+      queuedToday += 1;
+      return;
+    }
+    if (queuedToday >= quota) return;
+    if (stage1NewTaskCount(day) >= quota && !freeOneNewSlot()) return;
+    db.run(`
+      INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
+      VALUES (?, ?, 'new', ?)
+    `, [day, id, orderIndex]);
+    orderIndex += 1;
+    queuedToday += 1;
+  });
+  if (queuedToday > 0) setPhase("stage1");
+  persistSoon();
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return { added: fresh.length, today: queuedToday, alreadyLearning, known };
+}
+function setWordsKnownForeverIds(wordIds, known) {
+  ensureProgressInitialized();
+  const studyDate2 = today();
+  const changed = [];
+  wordIds.forEach((raw) => {
+    const id = validWordId(raw);
+    if (id === null) return;
+    if (known ? applyKnownForever(id, studyDate2) : undoKnownForever(id, studyDate2)) changed.push(id);
+  });
+  if (changed.length > 0) {
+    persistSoon();
+    (0, import_progress_events3.notifyProgressUpdated)();
+  }
+  return changed;
+}
+function setWordsKnownForever(wordIds, known) {
+  return setWordsKnownForeverIds(wordIds, known).length;
+}
+function startPickedStudy(wordIds) {
+  ensureProgressInitialized();
+  const ids = setPickedWords(wordIds);
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return { count: ids.length, session: getWordSession({ focus: "picked" }) };
+}
+function getWordSession(options = {}) {
+  ensureProgressInitialized();
+  if (!options.focus && isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded() && currentPhase() === "kanji") {
+    return getKanjiUnitSession();
+  }
+  const { card, phase } = nextCard(options);
+  return {
+    card,
+    phase,
+    stats: getWordStats(phase, options),
+    canUndo: canUndo(sessionMode(phase, options))
+  };
+}
+function jumpToSimilarWord(currentWordId, targetWordId, options = {}) {
+  ensureProgressInitialized();
+  if (!Number.isFinite(targetWordId) || targetWordId === currentWordId) {
+    throw new Error("\u76F8\u4F3C\u8BCD\u76EE\u6807\u65E0\u6548");
+  }
+  const targetCard = wordCardById(targetWordId);
+  if (!targetCard) throw new Error("\u627E\u4E0D\u5230\u8FD9\u4E2A\u76F8\u4F3C\u8BCD");
+  const scored = submitWordAnswer(currentWordId, "fuzzy", options);
+  setCurrentCard(targetCard);
+  return {
+    card: targetCard,
+    phase: scored.phase,
+    stats: scored.stats,
+    canUndo: scored.canUndo
+  };
+}
+function getQuickStudySession(limit = 50, excludedWordIds = []) {
+  ensureProgressInitialized();
+  const safeLimit = Math.max(1, Math.round(limit));
+  const phase = currentPhase();
+  const cards = [];
+  const excludedIds = new Set(excludedWordIds.map((id) => Number(id)).filter((id) => Number.isFinite(id)));
+  const pickNext = () => {
+    if (phase === "stage1") return pickStage1Next(excludedIds, { deterministic: true });
+    if (phase === "stage2" || phase === "kanji") {
+      return pickDirectionNext(directionByPhase(phase), excludedIds, { deterministic: true });
+    }
+    return null;
+  };
+  while (cards.length < safeLimit) {
+    const card = pickNext();
+    if (!card || excludedIds.has(card.id)) break;
+    cards.push(card);
+    excludedIds.add(card.id);
+  }
+  return { cards, phase, stats: getWordStats(phase) };
+}
+function recordStubbornQuickStudy(wordCount) {
+  if (wordCount <= 0) return;
+  recordEncore(today(), wordCount);
+  persistSoon();
+  (0, import_progress_events3.notifyProgressUpdated)();
+}
+function getQuickStudySessionForWords(wordIds) {
+  ensureProgressInitialized();
+  const cards = wordIds.map((id) => wordCardById(Number(id))).filter((card) => Boolean(card));
+  return { cards, phase: "stage1", stats: getWordStats("stage1") };
+}
+function submitQuickStudyBatch(answers, phase) {
+  ensureProgressInitialized();
+  if (!answers.length) return getWordSession();
+  const safePhase = phase === "stage2" || phase === "kanji" ? phase : "stage1";
+  let result = null;
+  answers.forEach(({ wordId, answer }, index3) => {
+    setPhase(safePhase);
+    setCurrentCard({ id: wordId });
+    result = submitWordAnswer(wordId, answer);
+    if (index3 < answers.length - 1) setPhase(safePhase);
+  });
+  return result ?? getWordSession();
+}
+function continueTodayPlanStudy() {
+  ensureProgressInitialized();
+  setPhase("stage1");
+  const session = getWordSession();
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return session;
+}
+function continueStage2Study() {
+  return continueDirectionStudy(REVERSE);
+}
+function continueKanjiStudy() {
+  return continueDirectionStudy(KANJI);
+}
+function submitKanjiUnitAnswer(unitKey, answer) {
+  ensureProgressInitialized();
+  if (!isKanjiUnitSchedulerEnabled() || !kanjiUnitIndexLoaded() || activeKanjiUnitKey !== unitKey) {
+    return getWordSession();
+  }
+  if (answer === "known_forever") {
+    setKanjiUnitKnownForever(unitKey, true);
+  } else {
+    recordKanjiUnitReview(unitKey, answer);
+  }
+  activeKanjiUnitKey = null;
+  setCurrentCard(null);
+  persistSoon();
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return getWordSession();
+}
+function submitWordAnswer(wordId, answer, options = {}) {
+  ensureProgressInitialized();
+  if (!claimCurrentCard(wordId)) {
+    return getWordSession(options);
+  }
+  const db = (0, import_database26.getDatabase)();
+  const studyDate2 = today();
+  const phase = hasWordFilter(options) ? "stage1" : currentPhase();
+  if (phase === "stage2" || phase === "kanji") {
+    applyDirectionAnswer(directionByPhase(phase), wordId, answer);
+    Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+    (0, import_progress_events3.notifyProgressUpdated)();
+    return getWordSession(options);
+  }
+  const progress = firstRow("SELECT * FROM progress WHERE word_id = ?", [wordId]);
+  if (!progress) return getWordSession(options);
+  const snapshot = {
+    phase: "stage1",
+    // 撤销要认「这是哪一场、哪一天」的快照:对不上就当作没得撤销(见 undo-stack)
+    mode: sessionMode("stage1", options),
+    reviewed_on: studyDate2,
+    word_id: wordId,
+    last_answered_word: lastAnsweredWord(),
+    seen_count: Number(progress.seen_count ?? 0),
+    known_forever: Number(progress.known_forever ?? 0),
+    last_seen_on: progress.last_seen_on,
+    right_count: Number(progress.right_count ?? 0),
+    fuzzy_count: Number(progress.fuzzy_count ?? 0),
+    forgot_count: Number(progress.forgot_count ?? 0),
+    mistake_streak: Number(progress.mistake_streak ?? 0),
+    // 撤销要能把 FSRS 状态原样放回去(null = 这次是它第一次进调度)
+    fsrs: readFsrsState(wordId),
+    review_queue: getReviewQueue()
+  };
+  advanceReviewQueue(wordId);
+  let knownForever = Number(progress.known_forever ?? 0);
+  let rightCount = Number(progress.right_count ?? 0);
+  let fuzzyCount = Number(progress.fuzzy_count ?? 0);
+  let forgotCount = Number(progress.forgot_count ?? 0);
+  let mistakeStreak = Number(progress.mistake_streak ?? 0);
+  if (answer === "known_forever") {
+    knownForever = 1;
+    mistakeStreak = 0;
+  } else {
+    rightCount += answer === "know" ? 1 : 0;
+    fuzzyCount += answer === "fuzzy" ? 1 : 0;
+    forgotCount += answer === "forgot" ? 1 : 0;
+    mistakeStreak = answer === "know" ? 0 : mistakeStreak + 1;
+  }
+  let fsrsGraduated = false;
+  let graduationTest = false;
+  let stepMinutes = 0;
+  const wrongToday = firstValue(
+    `SELECT COUNT(*) FROM reviews
+       WHERE word_id = ? AND reviewed_on = ? AND direction = 'forward'
+         AND answer IN ('forgot','fuzzy')`,
+    [wordId, studyDate2],
+    0
+  ) + (answer === "forgot" || answer === "fuzzy" ? 1 : 0);
+  const stubbornWord = wrongToday >= STUBBORN_DAILY_MISTAKES;
+  const firstSeenToday = firstValue(
+    "SELECT COUNT(*) FROM reviews WHERE word_id = ? AND reviewed_on = ? AND direction = 'forward'",
+    [wordId, studyDate2],
+    0
+  ) === 0;
+  const firstKnowToday = firstSeenToday && answer === "know";
+  const stepMode = firstKnowToday ? "known" : stubbornWord ? "stubborn" : "normal";
+  if (!knownForever) {
+    try {
+      const next = recordFsrsReview(wordId, answer, /* @__PURE__ */ new Date(), { mode: stepMode });
+      fsrsGraduated = isGraduatedForDay(next, studyDayEnd());
+      stepMinutes = Math.max((new Date(next.due).getTime() - Date.now()) / 6e4, 0);
+      graduationTest = !fsrsGraduated && isGraduatedForDay(
+        recordReview(next, "know", /* @__PURE__ */ new Date(), { mode: stubbornWord ? "stubborn" : "normal" }),
+        studyDayEnd()
+      );
+    } catch (err) {
+      console.warn("[fsrs] \u8BB0\u5F55\u8DF3\u8FC7:", err);
+      fsrsGraduated = answer === "know";
+    }
+  }
+  const notPassed = !fsrsGraduated;
+  const stubborn = mistakeStreak >= STUBBORN_MISTAKE_STREAK;
+  if (notPassed && !knownForever) {
+    scheduleDelayedReview(
+      wordId,
+      stepMinutes,
+      stubborn,
+      graduationTest && isLongTermWeak(progress)
+    );
+  }
+  setLastAnsweredWord(wordId);
+  db.run(`
+    UPDATE progress
+    SET seen_count = seen_count + 1,
+        known_forever = ?,
+        last_seen_on = ?,
+        right_count = ?,
+        fuzzy_count = ?,
+        forgot_count = ?,
+        mistake_streak = ?
+    WHERE word_id = ?
+  `, [knownForever, studyDate2, rightCount, fuzzyCount, forgotCount, mistakeStreak, wordId]);
+  const reviewId = recordReviewEvent({
+    wordId,
+    answer,
+    reviewedOn: studyDate2,
+    direction: "forward",
+    schedulerMode: stepMode
+  });
+  pushUndoSnapshot({ ...snapshot, review_id: reviewId });
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  (0, import_progress_events3.notifyProgressUpdated)();
+  return getWordSession(options);
+}
+function undoLastWordAnswer(options = {}) {
+  ensureProgressInitialized();
+  const db = (0, import_database26.getDatabase)();
+  const snapshot = popUndoSnapshot(currentSessionMode(options));
+  if (!snapshot) return stayOnCurrentCard(options);
+  if (snapshot.phase === "stage2" || snapshot.phase === "kanji") {
+    const direction = directionByPhase(String(snapshot.phase));
+    if (snapshot.direction && snapshot.direction !== direction.id) return stayOnCurrentCard(options);
+    undoDirectionAnswer(direction, snapshot);
+    setPhase(String(snapshot.phase));
+  } else if (snapshot.phase === "stage1") {
+    db.run(`
+      UPDATE progress
+      SET seen_count = ?,
+          known_forever = ?,
+          last_seen_on = ?,
+          right_count = ?,
+          fuzzy_count = ?,
+          forgot_count = ?,
+          mistake_streak = ?
+      WHERE word_id = ?
+    `, [
+      Number(snapshot.seen_count ?? 0),
+      Number(snapshot.known_forever ?? 0),
+      snapshot.last_seen_on == null ? null : String(snapshot.last_seen_on),
+      Number(snapshot.right_count ?? 0),
+      Number(snapshot.fuzzy_count ?? 0),
+      Number(snapshot.forgot_count ?? 0),
+      Number(snapshot.mistake_streak ?? 0),
+      Number(snapshot.word_id)
+    ]);
+    if (snapshot.review_id != null) {
+      db.run("DELETE FROM reviews WHERE id = ?", [Number(snapshot.review_id)]);
+    }
+    restoreFsrsState(Number(snapshot.word_id), snapshot.fsrs ?? null);
+    if (Array.isArray(snapshot.review_queue)) {
+      setReviewQueue(snapshot.review_queue.flatMap((item) => {
+        if (!item || typeof item !== "object") return [];
+        const record = item;
+        const wordId2 = Number(record.word_id);
+        if (!Number.isFinite(wordId2)) return [];
+        return [{ word_id: wordId2, due_after: Math.max(Number(record.due_after ?? 0), 0) }];
+      }));
+    }
+    if (snapshot.last_answered_word != null) {
+      setLastAnsweredWord(Number(snapshot.last_answered_word));
+    }
+    if (!hasWordFilter(options)) setPhase("stage1");
+  }
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  (0, import_progress_events3.notifyProgressUpdated)();
+  const mode = String(snapshot.mode ?? snapshot.phase ?? "stage1");
+  const wordId = Number(snapshot.word_id);
+  const restoredCard = mode === "stage2" || mode === "kanji" ? directionCardById(directionByPhase(mode), wordId) : wordCardById(wordId);
+  if (!restoredCard) return getWordSession(options);
+  setCurrentCard(restoredCard);
+  pinCard(restoredCard.id, mode);
+  return {
+    card: restoredCard,
+    phase: mode,
+    stats: getWordStats(mode, options),
+    canUndo: canUndo(mode)
+  };
+}
+function updateWordNote(wordId, note) {
+  const db = (0, import_database26.getDatabase)();
+  const cleaned = note.trim();
+  if (cleaned) {
+    db.run(
+      "INSERT OR REPLACE INTO word_notes (word_id, note, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
+      [wordId, cleaned]
+    );
+  } else {
+    db.run("DELETE FROM word_notes WHERE word_id = ?", [wordId]);
+  }
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  return { wordId, note: cleaned };
+}
+function questionMeaningRivals(wordId) {
+  const peers = displayedPromptPeers(wordId);
+  if (!peers.length) return [];
+  const placeholders = peers.map(() => "?").join(", ");
+  return rowsFor(
+    `SELECT id, kanji, kana, meaning FROM words WHERE id IN (${placeholders})`,
+    peers
+  ).map((row) => ({
+    id: Number(row.id ?? 0),
+    label: String(row.kanji || row.kana || ""),
+    kana: String(row.kana ?? ""),
+    meaning: String(row.meaning ?? "")
+  }));
+}
+function updateWordQuestionMeaning(wordId, text) {
+  const saved = saveUserQuestionMeaning(wordId, text);
+  resetSimilarMeaningCache();
+  resetInterferenceCache();
+  setTimeout(() => displayedPromptKeyOf(wordId), 0);
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  const row = rowsFor("SELECT id, kanji, kana, meaning FROM words WHERE id = ?", [wordId])[0];
+  const label2 = String(row?.kanji || row?.kana || "");
+  const kana = String(row?.kana ?? "");
+  const source = String(row?.meaning ?? "");
+  return {
+    wordId,
+    // 题面上显示的那行（学习页渲染 questionMeaning）
+    questionMeaning: row ? questionMeaning(source, label2, kana, wordId) : saved,
+    // 撞车分组用的短首义
+    promptMeaning: row ? promptMeaning(source, wordId, label2, kana) : saved,
+    isOverridden: Boolean(saved)
+  };
+}
+function addWordStudySeconds(seconds, atMs = Date.now()) {
+  ensureSyncSchema();
+  recordStudySeconds(today(), seconds, atMs);
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  return {
+    seconds,
+    stats: getWordStats("stage1")
+  };
+}
+var import_database26, import_progress_events3, currentPhase, setPhase, recordCheckin, pickFilteredWordNext, setCurrentCard, wordCardById, claimCurrentCard, sessionMode, currentSessionMode, pinnedCard, nextCard, resolveNextCard, applyKnownForever, undoKnownForever, validWordId, markWordKnownForever, unmarkWordKnownForever, activeKanjiUnitKey, kanjiUnitTarget, getKanjiUnitSession, continueDirectionStudy, stayOnCurrentCard;
+var init_word_api = __esm({
+  "../frontend/src/lib/word-api.ts"() {
+    "use strict";
+    import_database26 = __toESM(require_database(), 1);
+    init_question_meaning_index();
+    init_user_question_meanings();
+    init_similar_meaning_groups();
+    init_interference();
+    init_studyPreferences();
+    init_word_card();
+    import_progress_events3 = __toESM(require_progress_events(), 1);
+    init_requeue();
+    init_study_core();
+    init_review_budget();
+    init_schema2();
+    init_study_time();
+    init_reviews();
+    init_fsrs_store();
+    init_fsrs_scheduler();
+    init_session_state();
+    init_undo_stack();
+    init_bootstrap();
+    init_stats();
+    init_filters();
+    init_mistakes();
+    init_picked();
+    init_directions();
+    init_direction_plan();
+    init_direction_answer();
+    init_stage1();
+    init_kanji_unit_scheduler();
+    init_kanji_unit_index();
+    init_session_state();
+    init_bootstrap();
+    init_stats();
+    init_daily_relief();
+    init_daily_tail();
+    init_daily_review();
+    init_stats2();
+    init_grammar_api();
+    init_favorites_api();
+    init_stubborn_today();
+    currentPhase = () => {
+      const day = today();
+      if (getState("phase_date", "") !== day) {
+        setState("phase_date", day);
+        setState("phase", "stage1");
+      }
+      const phase = getState("phase", "stage1");
+      if (phase === "stage2" || phase === "kanji") {
+        if (phase === "kanji" && isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded()) return phase;
+        const counts = directionProgressCounts(directionByPhase(phase));
+        if (counts.total > 0 && counts.completed >= counts.total) {
+          setState("phase", "done");
+          return "done";
+        }
+      }
+      return phase;
+    };
+    setPhase = (phase) => {
+      setState("phase_date", today());
+      setState("phase", phase);
+    };
+    recordCheckin = () => {
+      (0, import_database26.getDatabase)().run("INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)", [today()]);
+    };
+    pickFilteredWordNext = (options) => {
+      const filter = wordFilterSql(options, "w");
+      const dueIds = getReviewQueue().filter((item) => item.due_after <= 0).map((item) => item.word_id);
+      if (dueIds.length) {
+        const placeholders = dueIds.map(() => "?").join(",");
+        const due = firstRow(`
+      SELECT w.*, p.seen_count, p.known_forever,
+             p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
+             p.mistake_streak, COALESCE(n.note, '') AS note
+      FROM words w
+      JOIN progress p ON p.word_id = w.id
+      LEFT JOIN word_notes n ON n.word_id = w.id
+      WHERE w.id IN (${placeholders})
+        AND p.known_forever = 0
+        ${filter.clause}
+      ORDER BY p.fsrs_due ASC, p.fsrs_lapses DESC, w.importance DESC
+      LIMIT 1
+    `, [...dueIds, ...filter.params]);
+        if (due) return rowObjectToCard(due);
+      }
+      const critical = firstRow(`
+    SELECT w.*, p.seen_count, p.known_forever,
+           p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
+           p.mistake_streak, COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE p.known_forever = 0
+      AND p.seen_count > 0
+      AND COALESCE(p.fsrs_lapses, 0) >= ?
+      ${filter.clause}
+    ORDER BY p.fsrs_lapses DESC, p.fsrs_due ASC, w.importance DESC
+    LIMIT 1
+  `, [LEECH_LAPSE_THRESHOLD, ...filter.params]);
+      if (critical) return rowObjectToCard(critical);
+      const low = firstRow(`
+    SELECT w.*, p.seen_count, p.known_forever,
+           p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
+           p.mistake_streak, COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE p.known_forever = 0
+      AND p.seen_count > 0
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+      ${filter.clause}
+    ORDER BY p.fsrs_due ASC, p.fsrs_lapses DESC, w.importance DESC
+    LIMIT 1
+  `, [studyDayEnd().toISOString(), ...filter.params]);
+      if (low) return rowObjectToCard(low);
+      const unseen = firstRow(`
+    SELECT w.*, p.seen_count, p.known_forever,
+           p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
+           p.mistake_streak, COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE p.known_forever = 0
+      AND p.seen_count = 0
+      ${filter.clause}
+    ORDER BY ${newWordOrderSql("w")}
+    LIMIT 1
+  `, filter.params);
+      if (unseen) return rowObjectToCard(unseen);
+      const review = firstRow(`
+    SELECT w.*, p.seen_count, p.known_forever,
+           p.last_seen_on, p.right_count, p.fuzzy_count, p.forgot_count,
+           p.mistake_streak, COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE p.known_forever = 0
+      ${filter.clause}
+    ORDER BY p.fsrs_due ASC, p.last_seen_on ASC, w.importance DESC, w.shuffle_rank DESC
+    LIMIT 1
+  `, filter.params);
+      return review ? rowObjectToCard(review) : null;
+    };
+    setCurrentCard = (card) => {
+      setState("current_card", card && card.id != null ? String(card.id) : "0");
+    };
+    wordCardById = (wordId) => {
+      const row = firstRow(`
+    SELECT
+      w.*,
+      p.seen_count,
+      p.known_forever,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      COALESCE(n.note, '') AS note
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE w.id = ?
+  `, [wordId]);
+      return row ? rowObjectToCard(row) : null;
+    };
+    claimCurrentCard = (wordId) => {
+      const expected = getState("current_card", "");
+      if (expected === "") return true;
+      if (expected === String(wordId)) {
+        setState("current_card", "0");
+        clearPinnedCard();
+        return true;
+      }
+      return false;
+    };
+    sessionMode = (phase, options = {}) => options.focus === "mistakes" ? "mistakes" : options.focus === "picked" ? "picked" : hasWordFilter(options) ? "filtered" : phase;
+    currentSessionMode = (options = {}) => sessionMode(currentPhase(), options);
+    pinnedCard = (options = {}) => {
+      const mode = currentSessionMode(options);
+      const wordId = readPinnedCard(mode);
+      if (!wordId) return null;
+      const card = mode === "stage2" || mode === "kanji" ? directionCardById(directionByPhase(mode), wordId) : wordCardById(wordId);
+      if (!card) {
+        clearPinnedCard();
+        return null;
+      }
+      return { card, phase: mode === "filtered" ? "filtered" : mode };
+    };
+    nextCard = (options = {}) => {
+      const result = pinnedCard(options) ?? resolveNextCard(options);
+      setCurrentCard(result.card);
+      return result;
+    };
+    resolveNextCard = (options = {}) => {
+      if (options.focus === "mistakes") {
+        return { card: pickMistakeNext(), phase: "mistakes" };
+      }
+      if (options.focus === "picked") {
+        return { card: pickPickedNext(), phase: "picked" };
+      }
+      if (hasWordFilter(options)) {
+        return { card: pickFilteredWordNext(options), phase: "filtered" };
+      }
+      const phase = currentPhase();
+      if (phase === "done") return { card: null, phase: "done" };
+      if (phase === "stage2" || phase === "kanji") {
+        const card = pickDirectionNext(directionByPhase(phase));
+        if (card) return { card, phase };
+        setPhase("done");
+        recordCheckin();
+        return { card: null, phase: "done" };
+      }
+      const stage1Card = pickStage1Next();
+      if (stage1Card) return { card: stage1Card, phase: "stage1" };
+      recordCheckin();
+      setPhase("done");
+      return { card: null, phase: "done" };
+    };
+    applyKnownForever = (id, studyDate2) => {
+      const progress = firstRow("SELECT known_forever FROM progress WHERE word_id = ?", [id]);
+      if (!progress || Number(progress.known_forever ?? 0) === 1) return false;
+      const db = (0, import_database26.getDatabase)();
+      db.run(`
+    UPDATE progress
+    SET seen_count = seen_count + 1,
+        known_forever = 1,
+        last_seen_on = ?,
+        mistake_streak = 0
+    WHERE word_id = ?
+  `, [studyDate2, id]);
+      recordReviewEvent({
+        wordId: id,
+        answer: "known_forever",
+        reviewedOn: studyDate2,
+        direction: "forward",
+        schedulerMode: "known_forever",
+        eventSource: "known_forever"
+      });
+      return true;
+    };
+    undoKnownForever = (id, studyDate2) => {
+      const progress = firstRow("SELECT known_forever FROM progress WHERE word_id = ?", [id]);
+      if (!progress || Number(progress.known_forever ?? 0) !== 1) return false;
+      const db = (0, import_database26.getDatabase)();
+      const todayReviewId = firstValue(`
+    SELECT id FROM reviews
+    WHERE word_id = ? AND reviewed_on = ? AND direction = 'forward' AND answer = 'known_forever'
+    ORDER BY id DESC
+    LIMIT 1
+  `, [id, studyDate2], 0);
+      if (todayReviewId) {
+        db.run("DELETE FROM reviews WHERE id = ?", [todayReviewId]);
+        db.run("UPDATE progress SET known_forever = 0, seen_count = MAX(seen_count - 1, 0) WHERE word_id = ?", [id]);
+      } else {
+        db.run("UPDATE progress SET known_forever = 0 WHERE word_id = ?", [id]);
+      }
+      return true;
+    };
+    validWordId = (raw) => {
+      const id = Math.round(Number(raw));
+      return Number.isFinite(id) && id > 0 ? id : null;
+    };
+    markWordKnownForever = (wordId) => setWordsKnownForever([wordId], true) > 0;
+    unmarkWordKnownForever = (wordId) => setWordsKnownForever([wordId], false) > 0;
+    activeKanjiUnitKey = null;
+    kanjiUnitTarget = (unitKey) => {
+      const unitCard = kanjiUnitCardByKey(unitKey);
+      if (!unitCard) return null;
+      return {
+        text: unitCard.targetSegment.text,
+        start: unitCard.targetSegment.start,
+        length: unitCard.targetSegment.length,
+        reading: unitCard.actualReading,
+        unitType: unitCard.unit.unitType,
+        char: unitCard.unit.char,
+        base: unitCard.unit.base,
+        surface: unitCard.unit.surface
+      };
+    };
+    getKanjiUnitSession = () => {
+      ensureKanjiUnitTables();
+      createKanjiUnitTasks(today());
+      const unitKey = pickKanjiUnitNext(today());
+      if (!unitKey) {
+        activeKanjiUnitKey = null;
+        setCurrentCard(null);
+        return {
+          card: null,
+          phase: "done",
+          stats: getWordStats("kanji", {}, { kanjiUnits: true }),
+          unitKey: null,
+          unitTarget: null,
+          canUndo: false
+        };
+      }
+      const unitCard = kanjiUnitCardByKey(unitKey);
+      const card = unitCard ? wordCardById(unitCard.exampleWordId) : null;
+      if (!card) {
+        activeKanjiUnitKey = null;
+        return getKanjiUnitSession();
+      }
+      activeKanjiUnitKey = unitKey;
+      setCurrentCard(card);
+      return {
+        card,
+        phase: "kanji",
+        stats: getWordStats("kanji", {}, { kanjiUnits: true }),
+        unitKey,
+        unitTarget: kanjiUnitTarget(unitKey),
+        canUndo: false
+      };
+    };
+    continueDirectionStudy = (direction) => {
+      ensureProgressInitialized();
+      if (direction.id === "kanji_reading" && isKanjiUnitSchedulerEnabled() && !kanjiUnitIndexLoaded()) {
+        void loadKanjiUnitIndex();
+      }
+      if (direction.id === "kanji_reading" && isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded()) {
+        ensureKanjiUnitTables();
+        createKanjiUnitTasks(today());
+        setPhase("kanji");
+        const session = getKanjiUnitSession();
+        (0, import_progress_events3.notifyProgressUpdated)();
+        return session;
+      }
+      ensureDirectionTasks(direction, true);
+      const counts = directionProgressCounts(direction);
+      if (counts.total > 0 && counts.completed < counts.total) {
+        setPhase(direction.phase);
+        const session = getWordSession();
+        (0, import_progress_events3.notifyProgressUpdated)();
+        return session;
+      }
+      setPhase("done");
+      return getWordSession();
+    };
+    stayOnCurrentCard = (options = {}) => {
+      const mode = currentSessionMode(options);
+      const wordId = Number(getState("current_card", "0")) || 0;
+      const card = wordId ? mode === "stage2" || mode === "kanji" ? directionCardById(directionByPhase(mode), wordId) : wordCardById(wordId) : null;
+      if (!card) return getWordSession(options);
+      const phase = mode === "done" ? currentPhase() : mode;
+      return { card, phase, stats: getWordStats(phase, options), canUndo: false };
+    };
+  }
+});
+
+// scripts/shared/shims/grammar-key-points.js
+var require_grammar_key_points = __commonJS({
+  "scripts/shared/shims/grammar-key-points.js"(exports, module2) {
+    module2.exports = require_lazy_json()("grammarKeyPoints");
+  }
+});
+
+// scripts/shared/shims/entitlements.js
+var require_entitlements = __commonJS({
+  "scripts/shared/shims/entitlements.js"(exports, module2) {
+    var cached5 = () => {
+      try {
+        return require("../runtime/entitlements").cachedEntitlement();
+      } catch {
+        return { active: false, plan: "free", expiresAt: null, source: "local-default" };
+      }
+    };
+    var state = () => {
+      const value = cached5();
+      return { isPro: Boolean(value.active), productId: value.plan, source: value.source, expiresAt: value.expiresAt, updatedAt: value.fetchedAt || null };
+    };
+    module2.exports = {
+      getEntitlements: state,
+      canUseFeature: (_feature, entitlements = state()) => Boolean(entitlements.isPro),
+      saveEntitlements: state,
+      grantPro: state,
+      clearEntitlements: state,
+      subscribeEntitlements: () => () => {
+      }
+    };
+  }
+});
+
+// ../frontend/src/lib/word-list-import.ts
+var word_list_import_exports = {};
+__export(word_list_import_exports, {
+  customWordId: () => customWordId,
+  importExternalWordList: () => importExternalWordList,
+  materializeCustomWords: () => materializeCustomWords,
+  parseExternalWordListText: () => parseExternalWordListText,
+  previewExternalWordList: () => previewExternalWordList
+});
+var import_database30, import_progress_events5, KNOWN_HEADERS, FIELD_ALIASES, normalizeKey, cleanText, hasJapanese, kanaOnly, getByAliases, parseCsv, detectDelimiter, looksLikeHeader, csvRecords, flattenJson, textRecords, parseExternalWordListText, chooseJapaneseFields, parseNumber, parseDate, scoreFromRecord, inferPos, inferVerbType, normalizeDraft, previewExternalWordList, findWordId, reviewPriority, MAX_REPLAY_PER_ANSWER, seedFsrsFromImport, CUSTOM_WORD_ID_BASE, CUSTOM_WORD_ID_SPACE, customWordId, allocateCustomWordId, materializeCustomWords, importExternalWordList;
+var init_word_list_import = __esm({
+  "../frontend/src/lib/word-list-import.ts"() {
+    "use strict";
+    import_database30 = __toESM(require_database(), 1);
+    init_word_api();
+    init_study_core();
+    import_progress_events5 = __toESM(require_progress_events(), 1);
+    init_confusion();
+    init_confusion_groups();
+    init_familiarity();
+    init_fsrs_scheduler();
+    init_fsrs_store();
+    init_similar_meaning_groups();
+    KNOWN_HEADERS = /* @__PURE__ */ new Set([
+      "word",
+      "term",
+      "title",
+      "entry",
+      "spell",
+      "surface",
+      "headword",
+      "\u5355\u8BCD",
+      "\u55AE\u8A5E",
+      "\u8BCD",
+      "\u8A5E",
+      "\u8BCD\u6761",
+      "\u8A5E\u689D",
+      "\u8868\u8BB0",
+      "\u8868\u8A18",
+      "\u898B\u51FA\u3057",
+      "\u65E5\u6587",
+      "kana",
+      "reading",
+      "yomi",
+      "pronunciation",
+      "pron",
+      "\u5047\u540D",
+      "\u304B\u306A",
+      "\u4EEE\u540D",
+      "\u8BFB\u97F3",
+      "\u8AAD\u307F",
+      "meaning",
+      "translation",
+      "definition",
+      "explain",
+      "briefInfo",
+      "excerpt",
+      "\u91CA\u4E49",
+      "\u91CA\u610F",
+      "\u4E2D\u6587",
+      "\u610F\u601D",
+      "\u7FFB\u8BD1",
+      "score",
+      "memory",
+      "\u719F\u6089\u5EA6",
+      "\u719F\u77E5\u5EA6",
+      "\u8BB0\u5FC6",
+      "\u8A18\u61B6",
+      "\u505A\u9898\u5206\u6570",
+      "\u6B63\u786E\u7387"
+    ]);
+    FIELD_ALIASES = {
+      term: ["word", "term", "title", "entry", "spell", "surface", "headword", "\u5355\u8BCD", "\u55AE\u8A5E", "\u8BCD", "\u8A5E", "\u8BCD\u6761", "\u8A5E\u689D", "\u8868\u8BB0", "\u8868\u8A18", "\u898B\u51FA\u3057", "\u65E5\u6587"],
+      kana: ["kana", "reading", "yomi", "pronunciation", "pron", "\u5047\u540D", "\u304B\u306A", "\u4EEE\u540D", "\u8BFB\u97F3", "\u8AAD\u307F", "\u767A\u97F3", "\u53D1\u97F3"],
+      meaning: ["meaning", "translation", "definition", "explain", "briefInfo", "excerpt", "\u91CA\u4E49", "\u91CA\u610F", "\u4E2D\u6587", "\u610F\u601D", "\u7FFB\u8BD1", "\u8A33", "\u8A33\u6587", "\u4E2D\u56FD\u8A9E"],
+      pos: ["pos", "partofspeech", "\u54C1\u8BCD", "\u54C1\u8A5E", "\u8BCD\u6027", "\u8A5E\u6027"],
+      exampleJp: ["examplejp", "example", "sentence", "\u4F8B\u53E5", "\u4F8B\u6587", "\u65E5\u6587\u4F8B\u53E5"],
+      exampleMeaning: ["examplemeaning", "examplecn", "\u4F8B\u53E5\u7FFB\u8BD1", "\u4F8B\u53E5\u91CA\u4E49", "\u4E2D\u6587\u4F8B\u53E5"],
+      jlptLevel: ["jlpt", "level", "\u7B49\u7EA7", "\u7D1A\u5225", "\u7EA7\u522B", "\u96E3\u5EA6", "\u96BE\u5EA6"],
+      note: ["note", "memo", "notes", "\u7B14\u8BB0", "\u7B46\u8A18", "\u5907\u6CE8", "\u5099\u8003"],
+      score: ["score", "memoryscore", "\u719F\u6089\u5EA6", "\u719F\u77E5\u5EA6", "\u8BB0\u5FC6\u5206", "\u8A18\u61B6\u5206", "\u505A\u9898\u5206\u6570", "\u6B63\u786E\u7387", "\u6B63\u7B54\u7387", "\u638C\u63E1\u5EA6"],
+      seenCount: ["seencount", "reviewcount", "testcount", "qcnt", "testtimes", "\u6B21\u6570", "\u590D\u4E60\u6B21\u6570", "\u6D4B\u8BD5\u6B21\u6570", "\u505A\u9898\u6B21\u6570"],
+      rightCount: ["rightcount", "correctcount", "\u6B63\u786E", "\u6B63\u786E\u6570", "\u4F1A\u4E86"],
+      fuzzyCount: ["fuzzycount", "halfcount", "\u6A21\u7CCA", "\u72B9\u8C6B"],
+      forgotCount: ["forgotcount", "wrongcount", "incorrectcount", "qwrcnt", "\u9519\u8BEF", "\u9519\u9898", "\u5FD8\u8BB0", "\u4E0D\u4F1A"],
+      lastSeenOn: ["lastseenon", "reviewedon", "updatedat", "\u6700\u540E\u590D\u4E60", "\u4E0A\u6B21\u590D\u4E60", "\u6700\u8FD1\u5B66\u4E60"]
+    };
+    normalizeKey = (value) => value.toLowerCase().replace(/[\s_\-()[\]（）【】:：/\\.,，。]/g, "");
+    cleanText = (value) => String(value ?? "").replace(/\uFEFF/g, "").trim();
+    hasJapanese = (value) => /[\u3040-\u30ff\u3400-\u9fff々〆〤]/.test(value);
+    kanaOnly = (value) => /^[\u3040-\u30ffー・〜~\s]+$/.test(value.trim());
+    getByAliases = (record, aliases2) => {
+      const normalized = new Map(Object.keys(record).map((key) => [normalizeKey(key), key]));
+      for (const alias of aliases2) {
+        const key = normalized.get(normalizeKey(alias));
+        if (key) {
+          const value = cleanText(record[key]);
+          if (value) return value;
+        }
+      }
+      return "";
+    };
+    parseCsv = (text, delimiter) => {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let quoted = false;
+      for (let index3 = 0; index3 < text.length; index3 += 1) {
+        const char = text[index3];
+        const next = text[index3 + 1];
+        if (quoted) {
+          if (char === '"' && next === '"') {
+            cell += '"';
+            index3 += 1;
+          } else if (char === '"') {
+            quoted = false;
+          } else {
+            cell += char;
+          }
+          continue;
+        }
+        if (char === '"') {
+          quoted = true;
+        } else if (char === delimiter) {
+          row.push(cell.trim());
+          cell = "";
+        } else if (char === "\n") {
+          row.push(cell.trim());
+          rows.push(row);
+          row = [];
+          cell = "";
+        } else if (char !== "\r") {
+          cell += char;
+        }
+      }
+      row.push(cell.trim());
+      if (row.some(Boolean)) rows.push(row);
+      return rows.filter((items) => items.some(Boolean));
+    };
+    detectDelimiter = (text) => {
+      const sample = text.split(/\r?\n/).slice(0, 8).join("\n");
+      const delimiters = ["	", ",", ";", "|"];
+      return delimiters.map((delimiter) => ({ delimiter, count: sample.split(delimiter).length - 1 })).sort((left, right) => right.count - left.count)[0]?.delimiter ?? "	";
+    };
+    looksLikeHeader = (row) => {
+      const matches = row.filter((cell) => KNOWN_HEADERS.has(normalizeKey(cell))).length;
+      return matches >= 1 || row.filter((cell) => !hasJapanese(cell) && /[a-zA-Z]/.test(cell)).length >= Math.max(2, row.length / 2);
+    };
+    csvRecords = (text) => {
+      const rows = parseCsv(text, detectDelimiter(text));
+      if (!rows.length) return [];
+      if (looksLikeHeader(rows[0])) {
+        const headers = rows[0].map((header, index3) => cleanText(header) || `column_${index3 + 1}`);
+        return rows.slice(1).map((row) => Object.fromEntries(headers.map((header, index3) => [header, row[index3] ?? ""])));
+      }
+      return rows.map((row) => Object.fromEntries(row.map((value, index3) => [`column_${index3 + 1}`, value])));
+    };
+    flattenJson = (value) => {
+      if (Array.isArray(value)) {
+        return value.flatMap(flattenJson);
+      }
+      if (!value || typeof value !== "object") return [];
+      const record = value;
+      const nestedKey = ["words", "items", "list", "data", "records", "vocabulary"].find((key) => Array.isArray(record[key]));
+      if (nestedKey) return flattenJson(record[nestedKey]);
+      return [record];
+    };
+    textRecords = (text) => {
+      const blocks = text.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
+      const lines = blocks.length > 1 ? blocks : text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      return lines.map((line) => {
+        const parts = line.split(/\t| {2,}|,|，|、/).map((part) => part.trim()).filter(Boolean);
+        return Object.fromEntries(parts.map((part, index3) => [`column_${index3 + 1}`, part]));
+      });
+    };
+    parseExternalWordListText = (text) => {
+      const normalized = text.replace(/\uFEFF/g, "").trim();
+      if (!normalized) return [];
+      if (/^[\[{]/.test(normalized)) {
+        try {
+          const rows2 = flattenJson(JSON.parse(normalized));
+          if (rows2.length) return rows2;
+        } catch {
+        }
+      }
+      const rows = csvRecords(normalized);
+      return rows.length ? rows : textRecords(normalized);
+    };
+    chooseJapaneseFields = (record) => {
+      const values = Object.values(record).map(cleanText).filter(Boolean);
+      const japanese = values.filter(hasJapanese);
+      const kana = getByAliases(record, FIELD_ALIASES.kana) || japanese.find((value) => kanaOnly(value)) || "";
+      const term = getByAliases(record, FIELD_ALIASES.term) || japanese.find((value) => !kanaOnly(value)) || kana || "";
+      const meaning = getByAliases(record, FIELD_ALIASES.meaning) || values.find((value) => !hasJapanese(value) && value.length > 1) || "";
+      return { term, kana, meaning };
+    };
+    parseNumber = (value) => {
+      const match = value.replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
+      return match ? Number(match[0]) : null;
+    };
+    parseDate = (value) => {
+      const match = value.match(/20\d{2}[-/.年]\d{1,2}[-/.月]\d{1,2}/);
+      if (!match) return null;
+      const [year, month, day] = match[0].split(/\D+/).map(Number);
+      if (!year || !month || !day) return null;
+      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    };
+    scoreFromRecord = (record) => {
+      const raw = getByAliases(record, FIELD_ALIASES.score);
+      const joined = Object.values(record).map(cleanText).join(" ");
+      const numeric = parseNumber(raw);
+      if (numeric !== null) {
+        if (numeric >= -40 && numeric <= 10) return Math.round(numeric);
+        const percent = numeric <= 1 ? numeric * 100 : numeric;
+        if (percent >= 0 && percent <= 100) return Math.max(-15, Math.min(10, Math.round((percent - 60) / 4)));
+      }
+      if (/已掌握|完全记住|熟知|known|master/i.test(joined)) return 8;
+      if (/模糊|一般|fuzzy|again/i.test(joined)) return -2;
+      if (/忘记|不会|错误|错题|forgot|wrong/i.test(joined)) return -10;
+      return 0;
+    };
+    inferPos = (term, explicit) => {
+      if (explicit) return explicit;
+      if (/する$/.test(term)) return "\u540D\u8BCD\u30FB\u3059\u308B\u52A8\u8BCD";
+      if (/[うくぐすつぬぶむる]$/.test(term)) return "\u52A8\u8BCD";
+      if (/い$/.test(term) && !kanaOnly(term)) return "\u3044\u5F62\u5BB9\u8BCD";
+      return "\u5BFC\u5165\u8BCD";
+    };
+    inferVerbType = (term, pos) => {
+      if (/する/.test(term) || /suru|する/.test(pos)) return "suru";
+      if (/动词|動詞/.test(pos)) return /る$/.test(term) ? "ichidan" : "godan";
+      return null;
+    };
+    normalizeDraft = (record) => {
+      const { term, kana, meaning } = chooseJapaneseFields(record);
+      if (!term || !hasJapanese(term)) return null;
+      const cleanTerm = term.replace(/\s+/g, "");
+      const cleanKana = (kana || (kanaOnly(cleanTerm) ? cleanTerm : "")).replace(/\s+/g, "");
+      const kanji = cleanTerm;
+      const reading = cleanKana || cleanTerm;
+      const score = scoreFromRecord(record);
+      const seenCount = Math.max(
+        parseNumber(getByAliases(record, FIELD_ALIASES.seenCount)) ?? 0,
+        score === 0 ? 0 : 1
+      );
+      const rightCount = Math.max(parseNumber(getByAliases(record, FIELD_ALIASES.rightCount)) ?? 0, score > 4 ? 1 : 0);
+      const fuzzyCount = Math.max(parseNumber(getByAliases(record, FIELD_ALIASES.fuzzyCount)) ?? 0, score < 4 && score > -8 ? 1 : 0);
+      const forgotCount = Math.max(parseNumber(getByAliases(record, FIELD_ALIASES.forgotCount)) ?? 0, score <= -8 ? 1 : 0);
+      const pos = inferPos(cleanTerm, getByAliases(record, FIELD_ALIASES.pos));
+      return {
+        term: cleanTerm,
+        kana: reading,
+        kanji,
+        meaning: meaning || "\u81EA\u5B9A\u4E49\u5BFC\u5165",
+        pos,
+        verbType: inferVerbType(cleanTerm, pos),
+        importance: Math.max(1, Math.min(5, score <= -8 ? 5 : score <= 2 ? 4 : 3)),
+        exampleJp: getByAliases(record, FIELD_ALIASES.exampleJp),
+        exampleMeaning: getByAliases(record, FIELD_ALIASES.exampleMeaning),
+        jlptLevel: getByAliases(record, FIELD_ALIASES.jlptLevel).match(/N[1-5]/i)?.[0].toUpperCase() ?? null,
+        memoryScore: score,
+        seenCount,
+        rightCount,
+        fuzzyCount,
+        forgotCount,
+        lowHistory: score <= -10 ? 1 : 0,
+        lastSeenOn: parseDate(getByAliases(record, FIELD_ALIASES.lastSeenOn)),
+        note: getByAliases(record, FIELD_ALIASES.note)
+      };
+    };
+    previewExternalWordList = (text) => {
+      const records = parseExternalWordListText(text);
+      const seen = /* @__PURE__ */ new Set();
+      const drafts = [];
+      let duplicateRows = 0;
+      let skippedRows = 0;
+      records.forEach((record) => {
+        const draft = normalizeDraft(record);
+        if (!draft) {
+          skippedRows += 1;
+          return;
+        }
+        const key = `${draft.kanji}\0${draft.kana}`;
+        if (seen.has(key)) {
+          duplicateRows += 1;
+          return;
+        }
+        seen.add(key);
+        drafts.push(draft);
+      });
+      const warnings = [];
+      if (records.length && drafts.length / records.length < 0.5) {
+        warnings.push("\u53EF\u8BC6\u522B\u884C\u504F\u5C11\uFF0C\u8BF7\u786E\u8BA4\u6587\u4EF6\u91CC\u6709\u65E5\u6587\u8BCD\u6761\u548C\u91CA\u4E49\u5217\u3002");
+      }
+      if (drafts.some((draft) => draft.meaning === "\u81EA\u5B9A\u4E49\u5BFC\u5165")) {
+        warnings.push("\u90E8\u5206\u8BCD\u6CA1\u6709\u8BC6\u522B\u5230\u4E2D\u6587\u91CA\u4E49\uFF0C\u5DF2\u7528\u5360\u4F4D\u91CA\u4E49\u5BFC\u5165\u3002");
+      }
+      return {
+        totalRows: records.length,
+        validRows: drafts.length,
+        duplicateRows,
+        skippedRows,
+        samples: drafts.slice(0, 5),
+        warnings
+      };
+    };
+    findWordId = (kanji, kana) => {
+      return firstValue("SELECT id FROM words WHERE kanji = ? AND kana = ?", [kanji, kana], 0) || firstValue("SELECT id FROM words WHERE kanji = ? OR kana = ? LIMIT 1", [kanji, kana], 0);
+    };
+    reviewPriority = (draft) => {
+      return Math.max(0, 8 - draft.memoryScore) + draft.forgotCount * 2 + draft.fuzzyCount + Math.min(draft.seenCount, 20) / 10;
+    };
+    MAX_REPLAY_PER_ANSWER = 6;
+    seedFsrsFromImport = (wordId, draft) => {
+      const cap = (value) => Math.max(0, Math.min(Math.round(value), MAX_REPLAY_PER_ANSWER));
+      const right = cap(draft.rightCount);
+      const fuzzy = cap(draft.fuzzyCount);
+      const forgot = cap(draft.forgotCount);
+      const repeat = (answer, times) => Array(times).fill(answer);
+      const remembered = draft.memoryScore >= 4;
+      let answers = remembered ? [...repeat("forgot", forgot), ...repeat("fuzzy", fuzzy), ...repeat("know", right)] : [...repeat("know", right), ...repeat("fuzzy", fuzzy), ...repeat("forgot", forgot)];
+      if (!answers.length) {
+        answers = [draft.memoryScore >= 4 ? "know" : draft.memoryScore > -8 ? "fuzzy" : "forgot"];
+      }
+      const anchor = /* @__PURE__ */ new Date(`${draft.lastSeenOn ?? ""}T12:00:00`);
+      let when = Number.isNaN(anchor.getTime()) ? Date.now() - answers.length * 6e4 : anchor.getTime();
+      let state = null;
+      answers.forEach((answer, index3) => {
+        const mode = draft.memoryScore >= 8 && answer === "know" && index3 === answers.length - 1 ? "known" : "normal";
+        state = recordReview(state, answer, new Date(when), { mode });
+        when += 6e4;
+      });
+      if (state) writeFsrsState(wordId, state);
+    };
+    CUSTOM_WORD_ID_BASE = 1e12;
+    CUSTOM_WORD_ID_SPACE = 1e12;
+    customWordId = (kanji, kana) => {
+      const source = `${kanji}\0${kana}`;
+      let high = 2166136261;
+      let low = 16777619;
+      for (let index3 = 0; index3 < source.length; index3 += 1) {
+        const code = source.charCodeAt(index3);
+        high = Math.imul(high ^ code, 16777619) >>> 0;
+        low = Math.imul(low ^ code + index3, 2246822507) >>> 0;
+      }
+      return CUSTOM_WORD_ID_BASE + (high * 4294967296 + low) % CUSTOM_WORD_ID_SPACE;
+    };
+    allocateCustomWordId = (kanji, kana) => {
+      const db = (0, import_database30.getDatabase)();
+      let id = customWordId(kanji, kana);
+      while (firstValue("SELECT 1 FROM words WHERE id = ? LIMIT 1", [id], 0) === 1) {
+        const row = firstRow("SELECT kanji, kana FROM words WHERE id = ?", [id]);
+        if (String(row?.kanji ?? "") === kanji && String(row?.kana ?? "") === kana) break;
+        id += 1;
+      }
+      void db;
+      return id;
+    };
+    materializeCustomWords = () => {
+      const db = (0, import_database30.getDatabase)();
+      const missing = firstValue(
+        "SELECT COUNT(*) FROM custom_words c WHERE NOT EXISTS (SELECT 1 FROM words w WHERE w.id = c.word_id)",
+        [],
+        0
+      );
+      if (!missing) return 0;
+      db.run(`
+    INSERT INTO words (
+      id, meaning, kana, kanji, pos, verb_type, importance,
+      shuffle_rank, example_jp, example_meaning, jlpt_level
+    )
+    SELECT
+      c.word_id, c.meaning, c.kana, c.kanji, c.pos, c.verb_type, c.importance,
+      ABS(RANDOM()) / 9223372036854775807.0, c.example_jp, c.example_meaning, c.jlpt_level
+    FROM custom_words c
+    WHERE NOT EXISTS (SELECT 1 FROM words w WHERE w.id = c.word_id)
+  `);
+      db.run("INSERT OR IGNORE INTO progress (word_id) SELECT word_id FROM custom_words");
+      resetConfusionGroups();
+      resetFamiliarityCache();
+      return missing;
+    };
+    importExternalWordList = (text) => {
+      ensureProgressInitialized();
+      const preview = previewExternalWordList(text);
+      const drafts = parseExternalWordListText(text).map(normalizeDraft).filter((draft) => Boolean(draft));
+      const db = (0, import_database30.getDatabase)();
+      ensureFsrsColumns();
+      const importedOn = today();
+      let inserted = 0;
+      let updated = 0;
+      let queuedForReview = 0;
+      const applied = /* @__PURE__ */ new Set();
+      db.run("BEGIN TRANSACTION");
+      try {
+        drafts.forEach((draft) => {
+          const key = `${draft.kanji}\0${draft.kana}`;
+          if (applied.has(key)) return;
+          applied.add(key);
+          let wordId = findWordId(draft.kanji, draft.kana);
+          if (!wordId) {
+            wordId = allocateCustomWordId(draft.kanji, draft.kana);
+            db.run(`
+          INSERT INTO words (
+            id, meaning, kana, kanji, pos, verb_type, importance,
+            shuffle_rank, example_jp, example_meaning, jlpt_level
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ABS(RANDOM()) / 9223372036854775807.0, ?, ?, ?)
+        `, [
+              wordId,
+              draft.meaning,
+              draft.kana,
+              draft.kanji,
+              draft.pos,
+              draft.verbType,
+              draft.importance,
+              draft.exampleJp,
+              draft.exampleMeaning,
+              draft.jlptLevel
+            ]);
+            db.run(`
+          INSERT OR REPLACE INTO custom_words (
+            word_id, kanji, kana, meaning, pos, verb_type, importance,
+            example_jp, example_meaning, jlpt_level
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+              wordId,
+              draft.kanji,
+              draft.kana,
+              draft.meaning,
+              draft.pos,
+              draft.verbType,
+              draft.importance,
+              draft.exampleJp,
+              draft.exampleMeaning,
+              draft.jlptLevel
+            ]);
+            inserted += 1;
+          } else {
+            db.run(`
+          UPDATE words
+          SET meaning = CASE WHEN meaning = '' OR meaning = '\u81EA\u5B9A\u4E49\u5BFC\u5165' THEN ? ELSE meaning END,
+              pos = CASE WHEN pos = '' OR pos = '\u5BFC\u5165\u8BCD' THEN ? ELSE pos END,
+              verb_type = COALESCE(verb_type, ?),
+              importance = MAX(importance, ?),
+              example_jp = COALESCE(NULLIF(example_jp, ''), ?),
+              example_meaning = COALESCE(NULLIF(example_meaning, ''), ?),
+              jlpt_level = COALESCE(jlpt_level, ?)
+          WHERE id = ?
+        `, [
+              draft.meaning,
+              draft.pos,
+              draft.verbType,
+              draft.importance,
+              draft.exampleJp,
+              draft.exampleMeaning,
+              draft.jlptLevel,
+              wordId
+            ]);
+            updated += 1;
+          }
+          db.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [wordId]);
+          const current = firstRow("SELECT * FROM progress WHERE word_id = ?", [wordId]);
+          const shouldApplyMemory = Number(current?.known_forever ?? 0) === 0 && (Number(current?.seen_count ?? 0) === 0 || current?.fsrs_due == null);
+          if (shouldApplyMemory) {
+            db.run(`
+          UPDATE progress
+          SET seen_count = MAX(seen_count, ?),
+              known_forever = 0,
+              last_seen_on = COALESCE(?, last_seen_on),
+              right_count = MAX(right_count, ?),
+              fuzzy_count = MAX(fuzzy_count, ?),
+              forgot_count = MAX(forgot_count, ?)
+          WHERE word_id = ?
+        `, [
+              draft.seenCount,
+              draft.lastSeenOn ?? importedOn,
+              draft.rightCount,
+              draft.fuzzyCount,
+              draft.forgotCount,
+              wordId
+            ]);
+            seedFsrsFromImport(wordId, draft);
+          }
+          if (draft.note) {
+            db.run(`
+          INSERT INTO word_notes (word_id, note, updated_at)
+          VALUES (?, ?, CURRENT_TIMESTAMP)
+          ON CONFLICT(word_id) DO UPDATE SET
+            note = CASE
+              WHEN word_notes.note = '' THEN excluded.note
+              WHEN instr(word_notes.note, excluded.note) > 0 THEN word_notes.note
+              ELSE word_notes.note || char(10) || excluded.note
+            END,
+            updated_at = CURRENT_TIMESTAMP
+        `, [wordId, draft.note]);
+          }
+          if (draft.seenCount > 0 && draft.memoryScore <= 6) {
+            db.run(`
+          INSERT INTO moji_migrated_reviews (word_id, imported_on, priority, activated_on)
+          VALUES (?, ?, ?, NULL)
+          ON CONFLICT(word_id) DO UPDATE SET
+            imported_on = excluded.imported_on,
+            priority = MAX(priority, excluded.priority),
+            activated_on = NULL
+        `, [wordId, importedOn, reviewPriority(draft)]);
+            queuedForReview += 1;
+          }
+        });
+        setState("external_word_list_last_import", JSON.stringify({ importedOn, inserted, updated, queuedForReview }));
+        db.run("COMMIT");
+      } catch (error) {
+        db.run("ROLLBACK");
+        throw error;
+      }
+      resetSimilarMeaningCache();
+      resetConfusionCache();
+      resetConfusionGroups();
+      resetFamiliarityCache();
+      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ requestFullSnapshot }) => requestFullSnapshot());
+      persistSoon();
+      (0, import_progress_events5.notifyProgressUpdated)();
+      return { ...preview, inserted, updated, queuedForReview };
+    };
+  }
+});
+
+// scripts/shared/shims/zoo-sounds.js
+var require_zoo_sounds = __commonJS({
+  "scripts/shared/shims/zoo-sounds.js"(exports, module2) {
+    module2.exports = { setSoundTimbre() {
+    } };
+  }
+});
+
+// scripts/shared/shims/mascot.js
+var require_mascot = __commonJS({
+  "scripts/shared/shims/mascot.js"(exports, module2) {
+    module2.exports = { setMascotSkin() {
+    } };
+  }
+});
+
+// scripts/shared/entry.ts
+var entry_exports = {};
+__export(entry_exports, {
+  achievements: () => achievements_exports,
+  analytics: () => stats_exports,
+  confusionCards: () => confusion_cards_exports,
+  confusionGroups: () => confusion_groups_exports,
+  dailyPlan: () => daily_plan_exports,
+  database: () => database,
+  dbUtils: () => db_utils_exports,
+  distinctionQuiz: () => distinction_quiz_exports,
+  duplicateMerge: () => duplicate_merge_exports,
+  examDates: () => exam_dates_exports,
+  favorites: () => favorites_api_exports,
+  fsrsScheduler: () => fsrs_scheduler_exports,
+  fsrsStore: () => fsrs_store_exports,
+  furigana: () => furigana_data_exports,
+  grammarApi: () => grammar_api_exports,
+  grammarFormation: () => grammar_formation_exports,
+  grammarKeyPoints: () => grammar_key_points_exports,
+  grammarQuiz: () => grammar_quiz_exports,
+  jlptPlan: () => plan_exports,
+  jlptStatus: () => status_exports,
+  kanjiCharCards: () => kanji_char_cards_exports,
+  kanjiUnitIndex: () => kanji_unit_index_exports,
+  kanjiUnitScheduler: () => kanji_unit_scheduler_exports,
+  preferences: () => studyPreferences_exports,
+  questionMeaningIndex: () => question_meaning_index_exports,
+  reviewBudget: () => review_budget_exports,
+  streak: () => zoo_streak_exports,
+  studyCore: () => study_core_exports,
+  studyLoad: () => study_load_exports,
+  studyMode: () => studyMode_exports,
+  studyTotals: () => study_totals_exports,
+  syncMerge: () => merge_exports,
+  syncSchema: () => schema_exports,
+  syncSnapshot: () => snapshot_exports,
+  syncTables: () => tables_exports,
+  userQuestionMeanings: () => user_question_meanings_exports,
+  vocabTest: () => vocab_test_exports,
+  weekly: () => weekly_exports,
+  weeklyReports: () => weekly_reports_exports,
+  wordApi: () => word_api_exports,
+  wordCard: () => word_card_exports,
+  wordDistinctions: () => word_distinctions_exports,
+  wordLibrary: () => word_library_exports,
+  yuzu: () => yuzu_exports,
+  yuzuCatalog: () => yuzu_catalog_exports
+});
+module.exports = __toCommonJS(entry_exports);
+var database = __toESM(require_database());
+init_study_core();
+init_db_utils();
+init_word_api();
+init_word_card();
+
+// ../frontend/src/lib/models/word-distinctions.ts
+var word_distinctions_exports = {};
+__export(word_distinctions_exports, {
+  wordDistinctions: () => wordDistinctions
+});
+init_confusion_groups();
+init_confusion();
+var import_confusion_distinction_reviews2 = __toESM(require_distinction_reviews(), 1);
+var import_lucide_react2 = __toESM(require_lucide_react(), 1);
+var currentMember = (card) => ({
+  id: card.id,
+  word: displayForm({ kanji: card.kanji, kana: card.kana }),
+  kana: card.kana,
+  meaning: card.meaning,
+  exampleJp: card.example?.jp ?? "",
+  exampleMeaning: card.example?.meaning ?? "",
+  jlptLevel: card.jlptLevel,
+  note: "",
+  isCurrent: true
+});
+var plainMember = (item) => ({
+  id: Number(item.id ?? 0),
+  word: displayForm(item),
+  kana: item.kana,
+  meaning: item.meaning,
+  exampleJp: "",
+  exampleMeaning: "",
+  jlptLevel: "",
+  // note 和 meaning 一样时说明手写组没给单独说法（自动组就是这样），别重复显示一遍
+  note: item.note && item.note !== item.meaning ? item.note : "",
+  isCurrent: false
+});
+function wordDistinctions(card) {
+  const sections = [];
+  const listedIds = /* @__PURE__ */ new Set();
+  const listedForms = /* @__PURE__ */ new Set();
+  const push = (section) => {
+    const seen = /* @__PURE__ */ new Set();
+    const uniqueMembers = section.members.filter((member) => {
+      const key = `${member.word}|${member.kana}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    const currentForms = new Set(
+      uniqueMembers.filter((member) => member.isCurrent).map((member) => `${member.word}|${member.kana}`)
+    );
+    const members = uniqueMembers.filter((member) => {
+      if (member.isCurrent) return true;
+      const form = `${member.word}|${member.kana}`;
+      return !currentForms.has(form) && (member.id <= 0 || !listedIds.has(member.id)) && !listedForms.has(form);
+    });
+    if (!members.some((member) => !member.isCurrent)) return;
+    sections.push({ ...section, members });
+    members.forEach((member) => {
+      if (member.isCurrent) return;
+      if (member.id > 0) listedIds.add(member.id);
+      listedForms.add(`${member.word}|${member.kana}`);
+    });
+  };
+  const similar = card.similarMeaning;
+  if (similar && similar.source === "manual") {
+    const manualItems = similar.items.filter((item) => item.manual !== false);
+    push({
+      key: `manual:${similar.title}`,
+      name: "\u91CA\u4E49\u8FA8\u6790",
+      Icon: import_lucide_react2.NotebookPen,
+      summary: similar.distinction,
+      level: "major",
+      members: [currentMember(card), ...manualItems.map((item) => plainMember({ ...item, note: "" }))],
+      masterable: false
+    });
+  }
+  confusionGroupsForWord(card.id).forEach((group) => {
+    const meta = TYPE_META[group.type];
+    const review = (0, import_confusion_distinction_reviews2.distinctionReviewFor)(group.key);
+    const notes = review?.level === "major" ? (0, import_confusion_distinction_reviews2.distinctionNotesFor)(review.summary, group.members.map((member) => ({
+      key: String(member.id),
+      forms: [displayForm(member), member.kanji, member.kana]
+    }))) : /* @__PURE__ */ new Map();
+    push({
+      key: group.key,
+      name: meta.name,
+      Icon: meta.Icon,
+      summary: review?.summary ?? "",
+      level: review?.level ?? null,
+      // 不按「学没学过」筛。分组里的成员是语言事实，仍要完整展示；只过滤当前卡
+      // 在前面更具体的辨析里已经看过的词，避免一个词在一张展开卡里重复出现。
+      members: group.members.map((member) => ({
+        id: member.id,
+        word: displayForm(member),
+        kana: member.kana,
+        meaning: member.meaning,
+        exampleJp: member.exampleJp,
+        exampleMeaning: member.exampleMeaning,
+        jlptLevel: member.jlptLevel,
+        note: notes.get(String(member.id)) ?? "",
+        isCurrent: member.id === card.id
+      })),
+      masterable: true
+    });
+  });
+  const nearItems = card.confusions.filter((item) => item.kind === "sound" && !listedIds.has(item.id));
+  const stemItems = nearItems.filter((item) => sameStemForms(card, item));
+  if (stemItems.length) {
+    push({
+      key: `derived:${card.id}`,
+      name: TYPE_META.stem.name,
+      Icon: TYPE_META.stem.Icon,
+      summary: "",
+      level: null,
+      members: [currentMember(card), ...stemItems.map(plainMember)],
+      masterable: false
+    });
+  }
+  const soundItems = nearItems.filter((item) => !sameStemForms(card, item));
+  if (soundItems.length) {
+    push({
+      key: `sound:${card.id}`,
+      name: "\u97F3\u5F62\u76F8\u8FD1",
+      Icon: import_lucide_react2.Eye,
+      summary: "",
+      level: null,
+      members: [currentMember(card), ...soundItems.map(plainMember)],
+      masterable: false
+    });
+  }
+  return sections;
+}
+
+// scripts/shared/entry.ts
+init_question_meaning_index();
+init_user_question_meanings();
+
+// ../frontend/src/lib/studyMode.ts
+var studyMode_exports = {};
+__export(studyMode_exports, {
+  STUDY_MODES: () => STUDY_MODES,
+  STUDY_MODE_EVENT: () => STUDY_MODE_EVENT,
+  VISIBLE_STUDY_MODES: () => VISIBLE_STUDY_MODES,
+  activateMistakesForToday: () => activateMistakesForToday,
+  defaultStudyMode: () => defaultStudyMode,
+  getStudyMode: () => getStudyMode,
+  saveStudyMode: () => saveStudyMode,
+  studyModeInfo: () => studyModeInfo
+});
+init_db_utils();
+var import_lucide_react3 = __toESM(require_lucide_react(), 1);
+var KEY3 = "mn-active-study-mode";
+var AUTO_MISTAKES_KEY = "mn-auto-mistakes-mode";
+var STUDY_MODES = [
+  {
+    id: "classic",
+    title: "\u7ECF\u5178\u6A21\u5F0F",
+    short: "\u7ECF\u5178",
+    label: "Classic",
+    subtitle: "\u4ECA\u65E5\u8BA1\u5212",
+    description: "\u5F53\u65E5\u5230\u671F\u96C6\uFF0C\u91CA\u4E49 \u2192 \u65E5\u8BED\u3002",
+    Icon: import_lucide_react3.CalendarCheck
+  },
+  {
+    id: "mixed",
+    title: "\u6DF7\u5408\u5B66\u4E60",
+    short: "\u6DF7\u5408",
+    label: "Mixed",
+    subtitle: "\u5355\u8BCD \xB7 \u8BED\u6CD5 \xB7 \u6C49\u5B57 \xB7 \u8FA8\u6790",
+    description: "\u80CC\u8BCD\u65F6\u63D2\u64AD\u8BED\u6CD5\u3001\u5355\u72EC\u6C49\u5B57\u548C\u8FA8\u6790\u8FDE\u7EBF\uFF0C\u6BCF\u65E5\u91CF\u5706\u73AF\u4E0A\u7684\u56DB\u6BB5\u5168\u51FA\u3002",
+    Icon: import_lucide_react3.Shuffle
+  },
+  {
+    id: "mistakes",
+    title: "\u5B66\u4E60\u9519\u9898\u672C",
+    short: "\u9519\u9898\u672C",
+    label: "Mistakes",
+    subtitle: "\u957F\u671F\u8584\u5F31\u8BCD",
+    description: "\u53EA\u5237\u957F\u671F\u8584\u5F31\u8BCD\uFF0C\u4E0D\u5360\u4ECA\u65E5\u8BA1\u5212\u3002",
+    Icon: import_lucide_react3.Brain
+  },
+  {
+    id: "quick",
+    title: "\u5FEB\u901F\u590D\u4E60",
+    short: "\u5FEB\u901F",
+    label: "Quick",
+    subtitle: "\u4E00\u9875 50 \u5F20",
+    description: "\u4ECA\u65E5\u8BA1\u5212\u4E00\u9875\u94FA 50 \u5F20\u7FFB\u7740\u770B\u3002",
+    Icon: import_lucide_react3.NotebookPen,
+    page: "quick-study"
+  },
+  {
+    id: "reverse",
+    title: "\u53CD\u5411\u5B66\u4E60",
+    short: "\u53CD\u5411",
+    label: "Reverse",
+    subtitle: "\u65E5\u8BED \u2192 \u91CA\u4E49",
+    description: "\u51FA\u65E5\u8BED\uFF0C\u56DE\u5FC6\u91CA\u4E49\u3002\u81EA\u5DF1\u4E00\u5957\u5230\u671F\u96C6\u3002",
+    Icon: import_lucide_react3.Repeat
+  },
+  {
+    id: "kanji",
+    title: "\u6C49\u5B57\u8BFB\u97F3",
+    short: "\u6C49\u5B57",
+    label: "Kanji",
+    subtitle: "\u770B\u8868\u8BB0 \u2192 \u56DE\u5FC6\u8BFB\u97F3",
+    description: "\u53EA\u906E\u6C49\u5B57\u7684\u8BFB\u97F3\uFF0C\u70B9\u5361\u63ED\u6653\u3002",
+    Icon: import_lucide_react3.Languages
+  },
+  {
+    id: "picked",
+    title: "\u81EA\u9009\u6E05\u5355",
+    short: "\u81EA\u9009",
+    label: "Picked",
+    subtitle: "\u4F60\u5728\u8BCD\u5E93\u91CC\u52FE\u7684\u8BCD",
+    description: "\u53EA\u51FA\u52FE\u4E2D\u7684\u8BCD\uFF0C\u4E0D\u770B\u5230\u671F\u3002",
+    Icon: import_lucide_react3.Target,
+    hidden: true,
+    transient: true
+  }
+];
+var STUDY_MODE_EVENT = "mn:study-mode";
+var VISIBLE_STUDY_MODES = STUDY_MODES.filter((mode) => !mode.hidden);
+var modes = new Set(STUDY_MODES.map((mode) => mode.id));
+var defaultStudyMode = "classic";
+var studyModeInfo = (mode) => STUDY_MODES.find((item) => item.id === mode) ?? STUDY_MODES[0];
+var safeMode = (value) => typeof value === "string" && modes.has(value) ? value : defaultStudyMode;
+var readAutoMistakesState = () => {
+  const raw = localStorage.getItem(AUTO_MISTAKES_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.studyDate !== "string") return null;
+    return {
+      studyDate: parsed.studyDate,
+      returnMode: safeMode(parsed.returnMode),
+      dismissed: parsed.dismissed === true
+    };
+  } catch {
+    return null;
+  }
+};
+var savedStudyMode = () => {
+  const value = localStorage.getItem(KEY3);
+  return value && modes.has(value) ? value : defaultStudyMode;
+};
+function getStudyMode(current = /* @__PURE__ */ new Date()) {
+  const autoState = readAutoMistakesState();
+  if (autoState?.studyDate === studyDate(current)) {
+    return autoState.dismissed ? savedStudyMode() : "mistakes";
+  }
+  if (autoState) {
+    if (!autoState.dismissed) localStorage.setItem(KEY3, autoState.returnMode);
+    localStorage.removeItem(AUTO_MISTAKES_KEY);
+  }
+  return savedStudyMode();
+}
+function saveStudyMode(mode, current = /* @__PURE__ */ new Date()) {
+  const savedMode = safeMode(mode);
+  if (!studyModeInfo(savedMode).transient) localStorage.setItem(KEY3, savedMode);
+  const autoState = readAutoMistakesState();
+  if (autoState?.studyDate === studyDate(current)) {
+    localStorage.setItem(AUTO_MISTAKES_KEY, JSON.stringify({
+      ...autoState,
+      dismissed: true
+    }));
+  } else if (autoState) {
+    localStorage.removeItem(AUTO_MISTAKES_KEY);
+  }
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(STUDY_MODE_EVENT));
+  return savedMode;
+}
+function activateMistakesForToday(returnMode, current = /* @__PURE__ */ new Date()) {
+  const savedReturnMode = safeMode(returnMode);
+  if (savedReturnMode === "mistakes") return savedReturnMode;
+  const autoState = readAutoMistakesState();
+  if (autoState?.studyDate === studyDate(current)) {
+    return autoState.dismissed ? savedStudyMode() : "mistakes";
+  }
+  localStorage.setItem(KEY3, savedReturnMode);
+  localStorage.setItem(AUTO_MISTAKES_KEY, JSON.stringify({
+    studyDate: studyDate(current),
+    returnMode: savedReturnMode
+  }));
+  return "mistakes";
+}
+
+// scripts/shared/entry.ts
+init_fsrs_store();
+init_fsrs_scheduler();
+
+// ../frontend/src/lib/daily-plan.ts
+var daily_plan_exports = {};
+__export(daily_plan_exports, {
+  PLAN_KINDS: () => PLAN_KINDS,
+  PLAN_LABELS: () => PLAN_LABELS,
+  SECONDS_PER_CARD: () => SECONDS_PER_CARD,
+  applyExamPreset: () => applyExamPreset,
+  arrangedPlan: () => arrangedPlan,
+  dailyPlanView: () => dailyPlanView,
+  examPreset: () => examPreset,
+  learnedLevel: () => learnedLevel,
+  saveDailyPlan: () => saveDailyPlan,
+  segmentLength: () => segmentLength
+});
+init_studyPreferences();
+
+// ../frontend/src/lib/jlpt/status.ts
+var status_exports = {};
+__export(status_exports, {
+  getJlptPlanStatus: () => getJlptPlanStatus
+});
+init_study_core();
+init_bootstrap();
+init_grammar_api();
+init_studyPreferences();
+
+// ../frontend/src/lib/jlpt/exam-dates.ts
+var exam_dates_exports = {};
+__export(exam_dates_exports, {
+  examDatesOfYear: () => examDatesOfYear,
+  firstSundayOf: () => firstSundayOf,
+  formatExamDate: () => formatExamDate,
+  formatExamDateHuman: () => formatExamDateHuman,
+  nextExamDate: () => nextExamDate,
+  parseExamDate: () => parseExamDate
+});
+var firstSundayOf = (year, month) => {
+  const first = new Date(year, month - 1, 1);
+  const offset = (7 - first.getDay()) % 7;
+  return new Date(year, month - 1, 1 + offset);
+};
+var examDatesOfYear = (year) => [
+  firstSundayOf(year, 7),
+  firstSundayOf(year, 12)
+];
+var nextExamDate = (from = /* @__PURE__ */ new Date()) => {
+  const startOfToday = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  const candidates = [
+    ...examDatesOfYear(from.getFullYear()),
+    ...examDatesOfYear(from.getFullYear() + 1)
+  ];
+  return candidates.find((date) => date.getTime() >= startOfToday.getTime()) ?? candidates[0];
+};
+var parseExamDate = (value) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+  const [, year, month, day] = match;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  if (date.getMonth() !== Number(month) - 1 || date.getDate() !== Number(day)) return null;
+  return date;
+};
+var formatExamDate = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+var formatExamDateHuman = (date) => `${date.getMonth() + 1} \u6708 ${date.getDate()} \u65E5`;
+
+// ../frontend/src/lib/jlpt/status.ts
+init_plan();
+var wordLevelClause = (target) => {
+  const levels = levelsInScope(target).map((level) => `'${level}'`).join(", ");
+  return `(w.jlpt_level IN (${levels}) OR w.jlpt_level IS NULL OR w.jlpt_level = '')`;
+};
+var grammarLevelClause = (target) => {
+  const levels = levelsInScope(target).map((level) => `'${level}'`).join(", ");
+  return `g.level IN (${levels})`;
+};
+var studyDayStart = (current = /* @__PURE__ */ new Date()) => {
+  const start = studyDayEnd(current);
+  start.setDate(start.getDate() - 1);
+  return start;
+};
+function getJlptPlanStatus(now = /* @__PURE__ */ new Date()) {
+  ensureProgressInitialized();
+  ensureGrammarProgressInitialized();
+  const prefs = getJlptPlanPreferences();
+  const target = prefs.target;
+  const manual = prefs.examDate ? parseExamDate(prefs.examDate) : null;
+  const examDate = manual ?? nextExamDate(now);
+  const day = today(now);
+  const dayEnd = studyDayEnd(now).toISOString();
+  const dayStart = studyDayStart(now).toISOString();
+  const words = wordLevelClause(target);
+  const grammar = grammarLevelClause(target);
+  const wordTotal = firstValue(
+    `SELECT COUNT(*) FROM words w WHERE ${words}`,
+    [],
+    0
+  );
+  const wordUnseen = firstValue(`
+    SELECT COUNT(*) FROM words w
+    JOIN progress p ON p.word_id = w.id
+    WHERE ${words} AND p.seen_count = 0 AND p.known_forever = 0
+  `, [], 0);
+  const wordFreshDue = firstValue(`
+    SELECT COUNT(*) FROM words w
+    JOIN progress p ON p.word_id = w.id
+    WHERE ${words} AND p.seen_count > 0 AND p.known_forever = 0
+      AND (p.fsrs_due IS NULL OR (p.fsrs_due <= ? AND p.fsrs_due >= ?))
+  `, [dayEnd, dayStart], 0);
+  const wordOverdue = firstValue(`
+    SELECT COUNT(*) FROM words w
+    JOIN progress p ON p.word_id = w.id
+    WHERE ${words} AND p.seen_count > 0 AND p.known_forever = 0
+      AND p.fsrs_due IS NOT NULL AND p.fsrs_due < ?
+  `, [dayStart], 0);
+  const grammarTotal = firstValue(
+    `SELECT COUNT(*) FROM grammar_points g WHERE ${grammar}`,
+    [],
+    0
+  );
+  const grammarUnseen = firstValue(`
+    SELECT COUNT(*) FROM grammar_points g
+    JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE ${grammar} AND p.seen_count = 0 AND p.known_forever = 0
+  `, [], 0);
+  const grammarFreshDue = firstValue(`
+    SELECT COUNT(*) FROM grammar_points g
+    JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE ${grammar} AND p.seen_count > 0 AND p.known_forever = 0
+      AND (p.fsrs_due IS NULL OR (p.fsrs_due <= ? AND p.fsrs_due >= ?))
+  `, [dayEnd, dayStart], 0);
+  const grammarOverdue = firstValue(`
+    SELECT COUNT(*) FROM grammar_points g
+    JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE ${grammar} AND p.seen_count > 0 AND p.known_forever = 0
+      AND p.fsrs_due IS NOT NULL AND p.fsrs_due < ?
+  `, [dayStart], 0);
+  const newWordsDone = firstValue(`
+    SELECT COUNT(DISTINCT r.word_id)
+    FROM reviews r
+    JOIN words w ON w.id = r.word_id
+    WHERE r.reviewed_on = ? AND ${words}
+      AND NOT EXISTS (
+        SELECT 1 FROM reviews earlier
+        WHERE earlier.word_id = r.word_id AND earlier.reviewed_on < ?
+      )
+  `, [day, day], 0);
+  const wordsAnsweredToday = firstValue(`
+    SELECT COUNT(DISTINCT r.word_id)
+    FROM reviews r
+    JOIN words w ON w.id = r.word_id
+    WHERE r.reviewed_on = ? AND ${words}
+  `, [day], 0);
+  const newGrammarDone = firstValue(`
+    SELECT COUNT(DISTINCT r.grammar_id)
+    FROM grammar_reviews r
+    JOIN grammar_points g ON g.id = r.grammar_id
+    WHERE r.reviewed_on = ? AND ${grammar}
+      AND NOT EXISTS (
+        SELECT 1 FROM grammar_reviews earlier
+        WHERE earlier.grammar_id = r.grammar_id AND earlier.reviewed_on < ?
+      )
+  `, [day, day], 0);
+  const grammarAnsweredToday = firstValue(`
+    SELECT COUNT(DISTINCT r.grammar_id)
+    FROM grammar_reviews r
+    JOIN grammar_points g ON g.id = r.grammar_id
+    WHERE r.reviewed_on = ? AND ${grammar}
+  `, [day], 0);
+  const startedOn = parseExamDate(prefs.startedOn);
+  const plan = computeDailyMinimum({
+    today: now,
+    examDate,
+    planStartedOn: startedOn,
+    unseenWords: wordUnseen,
+    unseenGrammar: grammarUnseen,
+    freshDueWords: wordFreshDue,
+    overdueWords: wordOverdue,
+    freshDueGrammar: grammarFreshDue,
+    overdueGrammar: grammarOverdue
+  });
+  const done = {
+    newWordsDone,
+    reviewWordsDone: Math.max(wordsAnsweredToday - newWordsDone, 0),
+    newGrammarDone,
+    reviewGrammarDone: Math.max(grammarAnsweredToday - newGrammarDone, 0)
+  };
+  return {
+    enabled: prefs.enabled,
+    target,
+    examDate,
+    examDateSource: manual ? "manual" : "auto",
+    plan,
+    done,
+    shortfall: shortfallOf(plan, done),
+    coverage: {
+      words: { seen: wordTotal - wordUnseen, total: wordTotal },
+      grammar: { seen: grammarTotal - grammarUnseen, total: grammarTotal }
+    }
+  };
+}
+
+// ../frontend/src/lib/daily-plan.ts
+init_plan();
+init_study_core();
+init_kanji_char_cards();
+init_confusion_cards();
+init_review_budget();
+init_fsrs_store();
+init_daily_relief();
+init_daily_tail();
+var PLAN_KINDS = ["words", "grammar", "kanji", "confusion"];
+var PLAN_LABELS = { words: "\u5355\u8BCD", grammar: "\u8BED\u6CD5", kanji: "\u6C49\u5B57", confusion: "\u8FA8\u6790" };
+var SECONDS_PER_CARD = { words: 12, grammar: 25, kanji: 10, confusion: 40 };
+var LEVEL_RANK3 = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
+var amortize2 = (remaining, days) => remaining <= 0 ? 0 : Math.ceil(remaining / Math.max(1, days));
+var wordDueCount = () => plannedDueCount(studyDayEnd());
+var grammarPools = (target) => {
+  const levels = levelsInScope(target).map((level) => `'${level}'`).join(", ");
+  return {
+    due: firstValue(`
+      SELECT COUNT(*) FROM grammar_progress p JOIN grammar_points g ON g.id = p.grammar_id
+      WHERE g.level IN (${levels}) AND p.known_forever = 0 AND p.seen_count > 0 AND p.fsrs_due IS NOT NULL AND p.fsrs_due <= ?
+    `, [studyDayEnd().toISOString()], 0),
+    unseen: firstValue(`
+      SELECT COUNT(*) FROM grammar_progress p JOIN grammar_points g ON g.id = p.grammar_id
+      WHERE g.level IN (${levels}) AND p.known_forever = 0 AND p.seen_count = 0
+    `, [], 0)
+  };
+};
+var wordReviewCount = (cap, due) => {
+  if (cap === REVIEW_CAP_UNLIMITED) return due;
+  const limit = dailyReviewCap(cap);
+  return Math.min(due, limit);
+};
+var wordExtras = () => getDailyReliefProgress().total + getDailyTailProgress().total;
+var pick = (cap, due) => cap > 0 ? Math.min(cap, due) : due;
+var dailyPlanView = (prefs = getStudyPreferences()) => {
+  const status = getJlptPlanStatus();
+  const target = prefs.jlptTarget;
+  const rank2 = LEVEL_RANK3[target] ?? 2;
+  const intakeDays = status.plan.intakeDaysLeft;
+  const extras = wordExtras();
+  const wordDue = wordDueCount() + extras;
+  const grammar = grammarPools(target);
+  const kanji = kanjiCharPool(rank2);
+  const confusion = confusionCardPool(rank2);
+  const segments = [
+    {
+      kind: "words",
+      label: PLAN_LABELS.words,
+      fresh: prefs.dailyGoal,
+      review: wordReviewCount(prefs.reviewCap, wordDue - extras) + extras,
+      pool: { due: wordDue, unseen: status.coverage.words.total - status.coverage.words.seen },
+      suggest: { fresh: status.plan.newWords, review: wordDue }
+    },
+    {
+      kind: "grammar",
+      label: PLAN_LABELS.grammar,
+      fresh: prefs.grammarDailyGoal,
+      review: pick(prefs.grammarReviewCap, grammar.due),
+      pool: grammar,
+      suggest: { fresh: status.plan.newGrammar, review: grammar.due }
+    },
+    {
+      kind: "kanji",
+      label: PLAN_LABELS.kanji,
+      fresh: prefs.kanjiDailyGoal,
+      review: pick(prefs.kanjiReviewCap, kanji.due),
+      pool: kanji,
+      suggest: { fresh: intakeDays > 0 ? amortize2(kanji.unseen, intakeDays) : 0, review: kanji.due }
+    },
+    {
+      kind: "confusion",
+      label: PLAN_LABELS.confusion,
+      fresh: prefs.confusionDailyGoal,
+      review: pick(prefs.confusionReviewCap, confusion.due),
+      pool: confusion,
+      suggest: { fresh: intakeDays > 0 ? amortize2(confusion.unseen, intakeDays) : 0, review: confusion.due }
+    }
+  ];
+  const total = segments.reduce((sum, segment) => sum + segment.fresh + segment.review, 0);
+  const minutes = Math.round(segments.reduce((sum, segment) => sum + (segment.fresh + segment.review) * SECONDS_PER_CARD[segment.kind], 0) / 60);
+  return { total, segments, daysLeft: status.plan.daysLeft, minutes, wordExtras: extras };
+};
+var BASELINE_KEY = "mn-daily-plan-baseline";
+var freshOf = (prefs) => ({
+  words: prefs.dailyGoal,
+  grammar: prefs.grammarDailyGoal,
+  kanji: prefs.kanjiDailyGoal,
+  confusion: prefs.confusionDailyGoal
+});
+var baselineFresh = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem(BASELINE_KEY) ?? "null");
+    if (stored && PLAN_KINDS.every((kind) => Number.isFinite(stored[kind]))) return stored;
+  } catch {
+  }
+  return freshOf(defaultStudyPreferences);
+};
+var arrangedPlan = (view) => {
+  const fresh = baselineFresh();
+  return Object.fromEntries(view.segments.map((segment) => [segment.kind, { fresh: fresh[segment.kind], review: segment.pool.due }]));
+};
+var saveDailyPlan = (next, standing = false, shown = dailyPlanView()) => {
+  const prefs = getStudyPreferences();
+  if (standing) {
+    try {
+      localStorage.setItem(BASELINE_KEY, JSON.stringify(Object.fromEntries(PLAN_KINDS.map((kind) => [kind, next[kind].fresh]))));
+    } catch {
+    }
+  }
+  const shownOf = (kind) => shown.segments.find((segment) => segment.kind === kind)?.review ?? 0;
+  const keepOr = (kind, current) => next[kind].review === shownOf(kind) ? current : Math.max(1, next[kind].review);
+  saveStudyPreferences({
+    ...prefs,
+    dailyGoal: next.words.fresh,
+    reviewCap: next.words.review === shownOf("words") ? prefs.reviewCap : Math.max(1, next.words.review - shown.wordExtras),
+    grammarDailyGoal: next.grammar.fresh,
+    grammarReviewCap: keepOr("grammar", prefs.grammarReviewCap),
+    kanjiDailyGoal: next.kanji.fresh,
+    kanjiReviewCap: keepOr("kanji", prefs.kanjiReviewCap),
+    confusionDailyGoal: next.confusion.fresh,
+    confusionReviewCap: keepOr("confusion", prefs.confusionReviewCap)
+  });
+};
+var segmentLength = (count) => Math.log1p(Math.max(0, count));
+var learnedLevel = () => {
+  const rows = rowsFor(`
+    SELECT w.jlpt_level AS level, SUM(p.seen_count > 0 OR p.known_forever = 1) AS seen, COUNT(*) AS total
+    FROM progress p JOIN words w ON w.id = p.word_id GROUP BY w.jlpt_level
+  `);
+  const ratio = new Map(rows.map((row) => [String(row.level), Number(row.seen) / Math.max(1, Number(row.total))]));
+  let current = null;
+  for (const level of JLPT_TARGETS) {
+    if ((ratio.get(level) ?? 0) < 0.5) break;
+    current = level;
+  }
+  return current;
+};
+var examPreset = (current, target) => {
+  const status = getJlptPlanStatus();
+  const intakeDays = status.plan.intakeDaysLeft;
+  const currentRank = current ? JLPT_TARGETS.indexOf(current) : -1;
+  const targetRank = JLPT_TARGETS.indexOf(target);
+  const levels = JLPT_TARGETS.slice(currentRank + 1, targetRank + 1).map((level) => `'${level}'`).join(", ") || "''";
+  const unseenWords = firstValue(`
+    SELECT COUNT(*) FROM progress p JOIN words w ON w.id = p.word_id
+    WHERE w.jlpt_level IN (${levels}) AND p.seen_count = 0 AND p.known_forever = 0
+  `, [], 0);
+  const unseenGrammar = firstValue(`
+    SELECT COUNT(*) FROM grammar_progress p JOIN grammar_points g ON g.id = p.grammar_id
+    WHERE g.level IN (${levels}) AND p.seen_count = 0 AND p.known_forever = 0
+  `, [], 0);
+  const kanjiUnseen = firstValue(
+    "SELECT COUNT(*) FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank > ? AND level_rank <= ?",
+    [currentRank, targetRank],
+    0
+  );
+  const confusionUnseen = firstValue(
+    "SELECT COUNT(*) FROM confusion_progress WHERE known_forever = 0 AND seen_count = 0 AND level_rank > ? AND level_rank <= ? AND group_key NOT IN (SELECT group_key FROM confusion_mastered)",
+    [currentRank, targetRank],
+    0
+  );
+  const confusion = confusionCardPool(targetRank);
+  const plan = {
+    // 和 arrangedPlan 一样带上 extras：写回会减掉它，落下来的 cap 才是「今天该复习的」本身
+    words: { fresh: Math.min(50, amortize2(unseenWords, intakeDays)), review: wordDueCount() + wordExtras() },
+    grammar: { fresh: Math.min(12, amortize2(unseenGrammar, intakeDays)), review: grammarPools(target).due },
+    kanji: { fresh: Math.min(50, amortize2(kanjiUnseen, intakeDays)), review: kanjiCharPool(targetRank).due },
+    confusion: { fresh: Math.min(20, amortize2(confusionUnseen, intakeDays)), review: confusion.due }
+  };
+  const minutes = Math.round(PLAN_KINDS.reduce((sum, kind) => sum + (plan[kind].fresh + plan[kind].review) * SECONDS_PER_CARD[kind], 0) / 60);
+  return { plan, minutes, daysLeft: status.plan.daysLeft, intakeDays, remaining: { words: unseenWords, grammar: unseenGrammar, kanji: kanjiUnseen, confusion: confusionUnseen } };
+};
+var applyExamPreset = (current, target) => {
+  const preset = examPreset(current, target);
+  const prefs = getStudyPreferences();
+  saveStudyPreferences({ ...prefs, jlptTarget: target });
+  saveDailyPlan(preset.plan, true);
+  return preset;
+};
+
+// ../frontend/src/lib/study-load.ts
+var study_load_exports = {};
+__export(study_load_exports, {
+  dailyStudyLoad: () => dailyStudyLoad
+});
+init_study_core();
+init_studyPreferences();
+init_fsrs_store();
+var DEFAULT_PAST_DAYS = 14;
+var DEFAULT_FUTURE_DAYS = 7;
+var shiftDay = (day, delta) => {
+  const date = /* @__PURE__ */ new Date(`${day}T12:00:00`);
+  date.setDate(date.getDate() + delta);
+  return studyDate(date);
+};
+var FORECAST_ENTITY = WORD_FSRS;
+var pastCounts = (firstDay, lastDay) => {
+  const byDay = /* @__PURE__ */ new Map();
+  const bump = (day, key, value) => {
+    if (!day) return;
+    const entry = byDay.get(day) ?? { cards: 0, fresh: 0 };
+    entry[key] += value;
+    byDay.set(day, entry);
+  };
+  rowsFor(`
+    SELECT reviewed_on, COUNT(DISTINCT word_id) AS cards
+    FROM reviews
+    WHERE direction = 'forward' AND reviewed_on BETWEEN ? AND ?
+    GROUP BY reviewed_on
+  `, [firstDay, lastDay]).forEach((row) => bump(String(row.reviewed_on ?? ""), "cards", Number(row.cards ?? 0)));
+  rowsFor(`
+    SELECT reviewed_on, COUNT(*) AS fresh
+    FROM (
+      SELECT word_id, MIN(reviewed_on) AS reviewed_on
+      FROM reviews
+      WHERE direction = 'forward'
+      GROUP BY word_id
+    )
+    WHERE reviewed_on BETWEEN ? AND ?
+    GROUP BY reviewed_on
+  `, [firstDay, lastDay]).forEach((row) => bump(String(row.reviewed_on ?? ""), "fresh", Number(row.fresh ?? 0)));
+  return byDay;
+};
+var forecastDue = (dayCount, now) => {
+  const buckets = new Array(dayCount).fill(0);
+  if (dayCount <= 0) return buckets;
+  const bounds = [];
+  const end = studyDayEnd(now);
+  for (let i = 0; i <= dayCount; i += 1) {
+    const at = new Date(end);
+    at.setDate(at.getDate() + i);
+    bounds.push(at.getTime());
+  }
+  const from = new Date(bounds[0]).toISOString();
+  const to = new Date(bounds[dayCount]).toISOString();
+  ensureFsrsColumns(FORECAST_ENTITY);
+  rowsFor(`
+    SELECT fsrs_due FROM ${FORECAST_ENTITY.table}
+    WHERE ${FORECAST_ENTITY.eligible} AND fsrs_due >= ? AND fsrs_due < ?
+  `, [from, to]).forEach((row) => {
+    const at = new Date(String(row.fsrs_due ?? "")).getTime();
+    if (!Number.isFinite(at)) return;
+    let index3 = 0;
+    while (index3 < dayCount - 1 && at >= bounds[index3 + 1]) index3 += 1;
+    buckets[index3] += 1;
+  });
+  return buckets;
+};
+var pendingDue = (now) => {
+  const end = studyDayEnd(now).toISOString();
+  ensureFsrsColumns(FORECAST_ENTITY);
+  return Number(rowsFor(`
+    SELECT COUNT(*) AS n FROM ${FORECAST_ENTITY.table}
+    WHERE ${FORECAST_ENTITY.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
+  `, [end])[0]?.n ?? 0);
+};
+var unlearnedWordCount = () => Number(rowsFor(`
+  SELECT COUNT(*) AS n FROM progress WHERE known_forever = 0 AND seen_count = 0
+`)[0]?.n ?? 0);
+var dailyStudyLoad = (options = {}) => {
+  const now = options.now ?? /* @__PURE__ */ new Date();
+  const pastDays = Math.max(options.pastDays ?? DEFAULT_PAST_DAYS, 1);
+  const futureDays = Math.max(options.futureDays ?? DEFAULT_FUTURE_DAYS, 0);
+  const day = today(now);
+  const firstDay = shiftDay(day, -(pastDays - 1));
+  const counts = pastCounts(firstDay, day);
+  const bars = [];
+  for (let i = pastDays - 1; i >= 0; i -= 1) {
+    const date = shiftDay(day, -i);
+    const entry = counts.get(date) ?? { cards: 0, fresh: 0 };
+    bars.push({
+      date,
+      fresh: entry.fresh,
+      review: Math.max(entry.cards - entry.fresh, 0),
+      pending: 0,
+      forecast: false,
+      today: i === 0
+    });
+  }
+  const goal = Math.max(getDailyWordGoal(), 0);
+  let unlearned = unlearnedWordCount();
+  const todayBar = bars[bars.length - 1];
+  if (todayBar?.today) {
+    const freshLeft = Math.min(Math.max(goal - todayBar.fresh, 0), unlearned);
+    todayBar.pending = pendingDue(now) + freshLeft;
+    unlearned -= freshLeft;
+  }
+  const due = forecastDue(futureDays, now);
+  for (let i = 0; i < futureDays; i += 1) {
+    const fresh = Math.min(goal, unlearned);
+    unlearned -= fresh;
+    bars.push({
+      date: shiftDay(day, i + 1),
+      fresh,
+      review: due[i] ?? 0,
+      pending: 0,
+      forecast: true,
+      today: false
+    });
+  }
+  const total = (bar) => bar.fresh + bar.review + bar.pending;
+  const settled = bars.filter((bar) => !bar.forecast && !bar.today);
+  const forecasts = bars.filter((bar) => bar.forecast);
+  const mean = (list) => list.length ? Math.round(list.reduce((sum, bar) => sum + total(bar), 0) / list.length) : 0;
+  return { bars, pastAverage: mean(settled), forecastAverage: mean(forecasts) };
+};
+
+// ../frontend/src/lib/word-library.ts
+var word_library_exports = {};
+__export(word_library_exports, {
+  DEFAULT_LIBRARY_FILTERS: () => DEFAULT_LIBRARY_FILTERS,
+  MEMORY_BANDS: () => MEMORY_BANDS,
+  POS_BUCKETS: () => POS_BUCKETS,
+  bandMeta: () => bandMeta,
+  classifyPos: () => classifyPos,
+  queryWordLibrary: () => queryWordLibrary,
+  resetWordLibraryCaches: () => resetWordLibraryCaches,
+  romajiToKana: () => romajiToKana,
+  tallyWordLibrary: () => tallyWordLibrary,
+  wordLibraryDetail: () => wordLibraryDetail,
+  wordLibraryIds: () => wordLibraryIds
+});
+init_fsrs_store();
+init_study_core();
+init_word_api();
+var MEMORY_BANDS = [
+  { id: "mastered", label: "\u5DF2\u638C\u63E1", hint: "\u95F4\u9694\u5DF2\u7ECF\u62C9\u5230\u534A\u5E74\u4EE5\u4E0A\uFF0C\u6216\u4F60\u624B\u52A8\u6807\u4E86\u719F\u77E5" },
+  { id: "d5", label: "3 \u4E2A\u6708+", hint: "\u8BB0\u5F97\u5F88\u7262\uFF0C\u4E09\u4E2A\u6708\u540E\u624D\u9700\u8981\u518D\u770B\u4E00\u773C" },
+  { id: "d4", label: "1\u20133 \u4E2A\u6708", hint: "\u7A33\u56FA\uFF0C\u957F\u95F4\u9694\u590D\u4E60\u4E2D" },
+  { id: "d3", label: "1\u20133 \u5468", hint: "\u6B63\u5728\u53D8\u719F" },
+  { id: "d2", label: "3\u20137 \u5929", hint: "\u8FD8\u4E0D\u7262\uFF0C\u9694\u51E0\u5929\u5C31\u4F1A\u5FD8" },
+  { id: "d1", label: "1\u20133 \u5929", hint: "\u751F\u758F\uFF0C\u6491\u4E0D\u8FC7\u51E0\u5929" },
+  { id: "d0", label: "\u4E0D\u5230 1 \u5929", hint: "\u57FA\u672C\u6CA1\u8BB0\u4F4F\uFF0C\u660E\u5929\u5C31\u4F1A\u5FD8" },
+  { id: "unseen", label: "\u672A\u5B66", hint: "\u8FD8\u6CA1\u5B66\u8FC7\u8FD9\u4E2A\u8BCD" }
+];
+var bandMeta = (band) => MEMORY_BANDS.find((item) => item.id === band) ?? MEMORY_BANDS[MEMORY_BANDS.length - 1];
+var POS_BUCKETS = [
+  { id: "noun", label: "\u540D\u8BCD" },
+  { id: "suru", label: "\u3059\u308B\u52A8\u8BCD" },
+  { id: "verb", label: "\u52A8\u8BCD" },
+  { id: "adj", label: "\u5F62\u5BB9\u8BCD" },
+  { id: "adv", label: "\u526F\u8BCD" },
+  { id: "pron", label: "\u4EE3\u8BCD\xB7\u8FDE\u4F53" },
+  { id: "affix", label: "\u63A5\u8F9E\xB7\u52A9\u8BCD" },
+  { id: "other", label: "\u611F\u53F9\xB7\u60EF\u7528\xB7\u5176\u4ED6" }
+];
+var classifyPos = (raw) => {
+  const text = (raw ?? "").trim();
+  if (!text) return "other";
+  if (/サ变|サ変|する/.test(text)) return "suru";
+  if (/形容词|形容詞|形动|形動|^形$/.test(text)) return "adj";
+  if (/动词|動詞|他动|自动|他動|自動/.test(text)) return "verb";
+  if (/^名|^代名/.test(text)) return "noun";
+  if (/副词|副詞/.test(text)) return "adv";
+  if (/^代|連体|连体/.test(text)) return "pron";
+  if (/接尾|接頭|接头|^接|造|助$|助词|格助|終助|接助|助动/.test(text)) return "affix";
+  return "other";
+};
+var posCache = null;
+var posLookup = () => {
+  if (posCache) return posCache;
+  const map = /* @__PURE__ */ new Map();
+  rowsFor("SELECT DISTINCT pos FROM words").forEach((row) => {
+    const raw = String(row.pos ?? "");
+    const bucket = classifyPos(raw);
+    const list = map.get(bucket) ?? [];
+    list.push(raw);
+    map.set(bucket, list);
+  });
+  posCache = map;
+  return map;
+};
+var resetWordLibraryCaches = () => {
+  posCache = null;
+};
+var DEFAULT_LIBRARY_FILTERS = {
+  level: "all",
+  band: "all",
+  pos: "all",
+  search: "",
+  sort: "level"
+};
+var ROMAJI_KANA = {
+  a: "\u3042",
+  i: "\u3044",
+  u: "\u3046",
+  e: "\u3048",
+  o: "\u304A",
+  ka: "\u304B",
+  ki: "\u304D",
+  ku: "\u304F",
+  ke: "\u3051",
+  ko: "\u3053",
+  ga: "\u304C",
+  gi: "\u304E",
+  gu: "\u3050",
+  ge: "\u3052",
+  go: "\u3054",
+  sa: "\u3055",
+  si: "\u3057",
+  shi: "\u3057",
+  su: "\u3059",
+  se: "\u305B",
+  so: "\u305D",
+  za: "\u3056",
+  zi: "\u3058",
+  ji: "\u3058",
+  zu: "\u305A",
+  ze: "\u305C",
+  zo: "\u305E",
+  ta: "\u305F",
+  ti: "\u3061",
+  chi: "\u3061",
+  tu: "\u3064",
+  tsu: "\u3064",
+  te: "\u3066",
+  to: "\u3068",
+  da: "\u3060",
+  di: "\u3062",
+  du: "\u3065",
+  de: "\u3067",
+  do: "\u3069",
+  na: "\u306A",
+  ni: "\u306B",
+  nu: "\u306C",
+  ne: "\u306D",
+  no: "\u306E",
+  ha: "\u306F",
+  hi: "\u3072",
+  hu: "\u3075",
+  fu: "\u3075",
+  he: "\u3078",
+  ho: "\u307B",
+  ba: "\u3070",
+  bi: "\u3073",
+  bu: "\u3076",
+  be: "\u3079",
+  bo: "\u307C",
+  pa: "\u3071",
+  pi: "\u3074",
+  pu: "\u3077",
+  pe: "\u307A",
+  po: "\u307D",
+  ma: "\u307E",
+  mi: "\u307F",
+  mu: "\u3080",
+  me: "\u3081",
+  mo: "\u3082",
+  ya: "\u3084",
+  yu: "\u3086",
+  yo: "\u3088",
+  ra: "\u3089",
+  ri: "\u308A",
+  ru: "\u308B",
+  re: "\u308C",
+  ro: "\u308D",
+  wa: "\u308F",
+  wi: "\u3046\u3043",
+  we: "\u3046\u3047",
+  wo: "\u3092",
+  kya: "\u304D\u3083",
+  kyu: "\u304D\u3085",
+  kyo: "\u304D\u3087",
+  gya: "\u304E\u3083",
+  gyu: "\u304E\u3085",
+  gyo: "\u304E\u3087",
+  sya: "\u3057\u3083",
+  syu: "\u3057\u3085",
+  syo: "\u3057\u3087",
+  sha: "\u3057\u3083",
+  shu: "\u3057\u3085",
+  sho: "\u3057\u3087",
+  zya: "\u3058\u3083",
+  zyu: "\u3058\u3085",
+  zyo: "\u3058\u3087",
+  jya: "\u3058\u3083",
+  jyu: "\u3058\u3085",
+  jyo: "\u3058\u3087",
+  ja: "\u3058\u3083",
+  ju: "\u3058\u3085",
+  jo: "\u3058\u3087",
+  je: "\u3058\u3047",
+  tya: "\u3061\u3083",
+  tyu: "\u3061\u3085",
+  tyo: "\u3061\u3087",
+  cya: "\u3061\u3083",
+  cyu: "\u3061\u3085",
+  cyo: "\u3061\u3087",
+  cha: "\u3061\u3083",
+  chu: "\u3061\u3085",
+  cho: "\u3061\u3087",
+  che: "\u3061\u3047",
+  dya: "\u3062\u3083",
+  dyu: "\u3062\u3085",
+  dyo: "\u3062\u3087",
+  nya: "\u306B\u3083",
+  nyu: "\u306B\u3085",
+  nyo: "\u306B\u3087",
+  hya: "\u3072\u3083",
+  hyu: "\u3072\u3085",
+  hyo: "\u3072\u3087",
+  bya: "\u3073\u3083",
+  byu: "\u3073\u3085",
+  byo: "\u3073\u3087",
+  pya: "\u3074\u3083",
+  pyu: "\u3074\u3085",
+  pyo: "\u3074\u3087",
+  mya: "\u307F\u3083",
+  myu: "\u307F\u3085",
+  myo: "\u307F\u3087",
+  rya: "\u308A\u3083",
+  ryu: "\u308A\u3085",
+  ryo: "\u308A\u3087",
+  fa: "\u3075\u3041",
+  fi: "\u3075\u3043",
+  fe: "\u3075\u3047",
+  fo: "\u3075\u3049",
+  fya: "\u3075\u3083",
+  fyu: "\u3075\u3085",
+  fyo: "\u3075\u3087",
+  va: "\u3094\u3041",
+  vi: "\u3094\u3043",
+  vu: "\u3094",
+  ve: "\u3094\u3047",
+  vo: "\u3094\u3049",
+  tsa: "\u3064\u3041",
+  tsi: "\u3064\u3043",
+  tse: "\u3064\u3047",
+  tso: "\u3064\u3049",
+  she: "\u3057\u3047",
+  thi: "\u3066\u3043",
+  thu: "\u3066\u3085",
+  dhi: "\u3067\u3043",
+  dhu: "\u3067\u3085",
+  twa: "\u3068\u3041",
+  twi: "\u3068\u3043",
+  twu: "\u3068\u3045",
+  twe: "\u3068\u3047",
+  two: "\u3068\u3049",
+  dwa: "\u3069\u3041",
+  dwi: "\u3069\u3043",
+  dwu: "\u3069\u3045",
+  dwe: "\u3069\u3047",
+  dwo: "\u3069\u3049",
+  kwa: "\u304F\u3041",
+  kwi: "\u304F\u3043",
+  kwe: "\u304F\u3047",
+  kwo: "\u304F\u3049",
+  gwa: "\u3050\u3041",
+  gwi: "\u3050\u3043",
+  gwe: "\u3050\u3047",
+  gwo: "\u3050\u3049",
+  wha: "\u3046\u3041",
+  whi: "\u3046\u3043",
+  whe: "\u3046\u3047",
+  who: "\u3046\u3049",
+  ye: "\u3044\u3047",
+  ca: "\u304B",
+  ci: "\u3057",
+  cu: "\u304F",
+  ce: "\u305B",
+  co: "\u3053",
+  xa: "\u3041",
+  xi: "\u3043",
+  xu: "\u3045",
+  xe: "\u3047",
+  xo: "\u3049",
+  la: "\u3041",
+  li: "\u3043",
+  lu: "\u3045",
+  le: "\u3047",
+  lo: "\u3049",
+  xya: "\u3083",
+  xyu: "\u3085",
+  xyo: "\u3087",
+  lya: "\u3083",
+  lyu: "\u3085",
+  lyo: "\u3087",
+  xtu: "\u3063",
+  xtsu: "\u3063",
+  ltu: "\u3063",
+  ltsu: "\u3063",
+  xwa: "\u308E",
+  lwa: "\u308E"
+};
+var ROMAJI_KEYS = Object.keys(ROMAJI_KANA).sort((left, right) => right.length - left.length);
+var romajiToKana = (input) => {
+  const text = input.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
+  let result = "";
+  for (let index3 = 0; index3 < text.length; ) {
+    const rest = text.slice(index3);
+    if (rest.startsWith("n'")) {
+      result += "\u3093";
+      index3 += 2;
+      continue;
+    }
+    if (rest.startsWith("nn")) {
+      result += "\u3093";
+      index3 += index3 + 2 < text.length && /[aiueoy]/.test(text[index3 + 2]) ? 1 : 2;
+      continue;
+    }
+    const current = text[index3];
+    const next = text[index3 + 1];
+    if (current === "n" && (!next || !/[aiueoyn]/.test(next))) {
+      result += "\u3093";
+      index3 += 1;
+      continue;
+    }
+    if (current === "t" && rest.startsWith("tch") || current === next && /[bcdfghjklmpqrstvwxyz]/.test(current)) {
+      result += "\u3063";
+      index3 += 1;
+      continue;
+    }
+    if (current === "-") {
+      result += "\u30FC";
+      index3 += 1;
+      continue;
+    }
+    const key = ROMAJI_KEYS.find((candidate) => rest.startsWith(candidate));
+    if (key) {
+      result += ROMAJI_KANA[key];
+      index3 += key.length;
+    } else {
+      result += current;
+      index3 += 1;
+    }
+  }
+  return result;
+};
+var toKatakana = (text) => text.replace(/[ぁ-ゖ]/g, (char) => String.fromCharCode(char.charCodeAt(0) + 96));
+var BAND_SQL = `
+  CASE
+    WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 'mastered'
+    WHEN p.seen_count = 0 THEN 'unseen'
+    WHEN p.fsrs_stability IS NULL THEN 'd0'
+    WHEN p.fsrs_stability < 1 THEN 'd0'
+    WHEN p.fsrs_stability < 3 THEN 'd1'
+    WHEN p.fsrs_stability < 7 THEN 'd2'
+    WHEN p.fsrs_stability < 21 THEN 'd3'
+    WHEN p.fsrs_stability < 90 THEN 'd4'
+    ELSE 'd5'
+  END
+`;
+var DUE_IN_LIBRARY_SQL = `
+  (p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?))
+`;
+var LEVEL_ORDER_SQL = "CASE w.jlpt_level WHEN 'N5' THEN 1 WHEN 'N4' THEN 2 WHEN 'N3' THEN 3 WHEN 'N2' THEN 4 WHEN 'N1' THEN 5 ELSE 9 END";
+var baseWhere = (filters) => {
+  const clauses = [];
+  const params = [];
+  if (filters.level === "unranked") {
+    clauses.push("(w.jlpt_level IS NULL OR w.jlpt_level NOT IN ('N5','N4','N3','N2','N1'))");
+  } else if (filters.level !== "all") {
+    clauses.push("w.jlpt_level = ?");
+    params.push(filters.level);
+  }
+  if (filters.pos !== "all") {
+    const raws = posLookup().get(filters.pos) ?? [];
+    if (raws.length === 0) {
+      clauses.push("1 = 0");
+    } else {
+      clauses.push(`w.pos IN (${raws.map(() => "?").join(",")})`);
+      raws.forEach((raw) => params.push(raw));
+    }
+  }
+  const text = filters.search.trim();
+  if (text) {
+    const like = `%${text}%`;
+    const reading = /^[A-Za-z'\s-]+$/.test(text) ? romajiToKana(text) : "";
+    if (reading && !/[a-z]/i.test(reading)) {
+      clauses.push("(w.kanji LIKE ? OR w.kana LIKE ? OR w.meaning LIKE ? OR w.kana LIKE ? OR w.kana LIKE ?)");
+      params.push(like, like, like, `%${reading}%`, `%${toKatakana(reading)}%`);
+    } else {
+      clauses.push("(w.kanji LIKE ? OR w.kana LIKE ? OR w.meaning LIKE ?)");
+      params.push(like, like, like);
+    }
+  }
+  return { sql: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "", params };
+};
+var withBand = (filters, dayEnd) => {
+  const base = baseWhere(filters);
+  if (filters.band === "all") return base;
+  let clause = "";
+  const params = [];
+  if (filters.band === "due") {
+    clause = DUE_IN_LIBRARY_SQL;
+    params.push(dayEnd);
+  } else if (filters.band === "leech") {
+    clause = LEECH_SQL.replace(/fsrs_lapses/g, "p.fsrs_lapses");
+  } else {
+    clause = `${BAND_SQL} = ?`;
+    params.push(filters.band);
+  }
+  const sql = base.sql ? `${base.sql} AND ${clause}` : `WHERE ${clause}`;
+  return { sql, params: [...base.params, ...params] };
+};
+var ORDER_SQL = {
+  level: `${LEVEL_ORDER_SQL} ASC, w.importance DESC, w.id ASC`,
+  // 学过的词按 stability 升序（最弱在最前），没学过的整体沉底
+  weakest: `CASE WHEN p.seen_count = 0 AND p.known_forever = 0 THEN 1 ELSE 0 END ASC,
+            COALESCE(p.fsrs_stability, 999999) ASC, w.importance DESC, w.id ASC`,
+  recent: `CASE WHEN p.fsrs_last_review IS NULL THEN 1 ELSE 0 END ASC, p.fsrs_last_review DESC, w.id ASC`,
+  kana: "w.kana ASC, w.id ASC"
+};
+var toRow = (row) => {
+  const pos = String(row.pos ?? "");
+  return {
+    id: Number(row.id ?? 0),
+    kanji: String(row.kanji ?? ""),
+    kana: String(row.kana ?? ""),
+    meaning: String(row.meaning ?? ""),
+    pos,
+    posBucket: classifyPos(pos),
+    level: String(row.jlpt_level ?? "") || "\u672A\u5206\u7EA7",
+    band: String(row.band ?? "unseen"),
+    stability: row.fsrs_stability === null || row.fsrs_stability === void 0 ? null : Number(row.fsrs_stability),
+    dueAt: row.fsrs_due ? String(row.fsrs_due) : null,
+    lastReview: row.fsrs_last_review ? String(row.fsrs_last_review) : null,
+    lapses: Number(row.fsrs_lapses ?? 0),
+    reps: Number(row.fsrs_reps ?? 0),
+    isDue: Number(row.is_due ?? 0) === 1,
+    isLeech: Number(row.fsrs_lapses ?? 0) >= 8,
+    isKnownForever: Number(row.known_forever ?? 0) === 1
+  };
+};
+var prepare = () => {
+  ensureProgressInitialized();
+  ensureFsrsColumns();
+};
+function queryWordLibrary(filters, offset, limit) {
+  prepare();
+  const dayEnd = studyDayEnd().toISOString();
+  const where = withBand(filters, dayEnd);
+  return rowsFor(`
+    SELECT
+      w.id, w.kanji, w.kana, w.meaning, w.pos, w.jlpt_level,
+      p.known_forever,
+      p.fsrs_stability, p.fsrs_due, p.fsrs_last_review, p.fsrs_lapses, p.fsrs_reps,
+      ${BAND_SQL} AS band,
+      CASE WHEN ${DUE_IN_LIBRARY_SQL} THEN 1 ELSE 0 END AS is_due
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    ${where.sql}
+    ORDER BY ${ORDER_SQL[filters.sort]}
+    LIMIT ? OFFSET ?
+  `, [dayEnd, ...where.params, limit, offset]).map(toRow);
+}
+var emptyBands = () => MEMORY_BANDS.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {});
+function tallyWordLibrary(filters) {
+  prepare();
+  const dayEnd = studyDayEnd().toISOString();
+  const where = baseWhere(filters);
+  const bands = emptyBands();
+  let total = 0;
+  let due = 0;
+  let leech = 0;
+  rowsFor(`
+    SELECT
+      ${BAND_SQL} AS band,
+      COUNT(*) AS n,
+      SUM(CASE WHEN ${DUE_IN_LIBRARY_SQL} THEN 1 ELSE 0 END) AS due_n,
+      SUM(CASE WHEN ${LEECH_SQL.replace(/fsrs_lapses/g, "p.fsrs_lapses")} THEN 1 ELSE 0 END) AS leech_n
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    ${where.sql}
+    GROUP BY band
+  `, [dayEnd, ...where.params]).forEach((row) => {
+    const band = String(row.band ?? "unseen");
+    const n = Number(row.n ?? 0);
+    if (band in bands) bands[band] = n;
+    total += n;
+    due += Number(row.due_n ?? 0);
+    leech += Number(row.leech_n ?? 0);
+  });
+  return { total, bands, due, leech };
+}
+function wordLibraryDetail(wordId) {
+  prepare();
+  const dayEnd = studyDayEnd().toISOString();
+  const row = rowsFor(`
+    SELECT
+      w.id, w.kanji, w.kana, w.meaning, w.pos, w.jlpt_level, w.example_jp, w.example_meaning,
+      p.known_forever,
+      p.fsrs_stability, p.fsrs_due, p.fsrs_last_review, p.fsrs_lapses, p.fsrs_reps,
+      ${BAND_SQL} AS band,
+      CASE WHEN ${DUE_IN_LIBRARY_SQL} THEN 1 ELSE 0 END AS is_due,
+      COALESCE(n.note, '') AS note,
+      CASE WHEN f.item_id IS NULL THEN 0 ELSE 1 END AS favorite
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    LEFT JOIN content_favorites f ON f.item_type = 'word' AND f.item_id = CAST(w.id AS TEXT)
+    WHERE w.id = ?
+    LIMIT 1
+  `, [dayEnd, wordId])[0];
+  if (!row) return null;
+  return {
+    ...toRow(row),
+    example: { jp: String(row.example_jp ?? ""), meaning: String(row.example_meaning ?? "") },
+    note: String(row.note ?? ""),
+    isFavorite: Number(row.favorite ?? 0) === 1
+  };
+}
+function wordLibraryIds(filters, limit = 500) {
+  prepare();
+  const dayEnd = studyDayEnd().toISOString();
+  const where = withBand(filters, dayEnd);
+  return rowsFor(`
+    SELECT w.id
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    ${where.sql}
+    ORDER BY ${ORDER_SQL[filters.sort]}
+    LIMIT ?
+  `, [...where.params, limit]).map((row) => Number(row.id ?? 0));
+}
+
+// scripts/shared/entry.ts
+init_confusion_groups();
+
+// ../frontend/src/lib/distinction-quiz.ts
+var distinction_quiz_exports = {};
+__export(distinction_quiz_exports, {
+  buildQuestions: () => buildQuestions,
+  playableGroupKeys: () => playableGroupKeys,
+  quizGroups: () => quizGroups,
+  settleGroup: () => settleGroup
+});
+init_confusion_groups();
+var import_confusion_distinction_reviews3 = __toESM(require_distinction_reviews(), 1);
+var import_question_meaning_overrides4 = __toESM(require_question_meaning_overrides(), 1);
+init_db_utils();
+
+// ../frontend/src/lib/vocab-test.ts
+var vocab_test_exports = {};
+__export(vocab_test_exports, {
+  VOCAB_TEST_LEVELS: () => VOCAB_TEST_LEVELS,
+  VOCAB_TEST_PROBE_PER_LEVEL: () => VOCAB_TEST_PROBE_PER_LEVEL,
+  VOCAB_TEST_QUESTION_COUNT: () => VOCAB_TEST_QUESTION_COUNT,
+  VOCAB_TEST_SECONDS: () => VOCAB_TEST_SECONDS,
+  buildVocabTestQuestions: () => buildVocabTestQuestions,
+  clearVocabTestSession: () => clearVocabTestSession,
+  extendVocabTestPlan: () => extendVocabTestPlan,
+  finishVocabTest: () => finishVocabTest,
+  getVocabTestHistory: () => getVocabTestHistory,
+  getVocabTestResult: () => getVocabTestResult,
+  getVocabTestSession: () => getVocabTestSession,
+  guessRate: () => guessRate,
+  kanjiCoreReading: () => kanjiCoreReading,
+  recordVocabTestRun: () => recordVocabTestRun,
+  secondsForQuestion: () => secondsForQuestion,
+  shuffle: () => shuffle,
+  startVocabTest: () => startVocabTest,
+  submitVocabTestAnswer: () => submitVocabTestAnswer,
+  vocabTestStorageValue: () => vocabTestStorageValue
+});
+init_study_core();
+var import_database27 = __toESM(require_database(), 1);
+init_confusion_groups();
+init_question_meaning_index();
+var import_question_meaning_overrides3 = __toESM(require_question_meaning_overrides(), 1);
+var import_orthography5 = __toESM(require_orthography(), 1);
+
+// ../frontend/src/features/word-study/word-study-utils.ts
+var import_orthography4 = __toESM(require_orthography(), 1);
+var NON_MORA_KANA = /[ぁぃぅぇぉゃゅょゎァィゥェォャュョヮ]/;
+var moraCount = (kana) => {
+  let count = 0;
+  for (const char of kana.replace(/[～〜（）()\s・]/g, "")) {
+    if (!NON_MORA_KANA.test(char)) count += 1;
+  }
+  return count;
+};
+
+// ../frontend/src/lib/vocab-test.ts
+var SESSION_KEY = "vocab_test_session_v1";
+var VOCAB_TEST_LEVELS = ["N5", "N4", "N3", "N2", "N1"];
+var VOCAB_TEST_QUESTION_COUNT = 60;
+var VOCAB_TEST_SECONDS = { reading: 15, meaning: 10 };
+var secondsForQuestion = (question) => VOCAB_TEST_SECONDS[question.kind] ?? VOCAB_TEST_SECONDS.reading;
+var DISTRACTOR_COUNT = 3;
+var asText = (value) => String(value ?? "").trim();
+var clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+var shuffle = (items, random = Math.random) => {
+  const out = [...items];
+  for (let index3 = out.length - 1; index3 > 0; index3 -= 1) {
+    const target = Math.floor(clamp(random(), 0, 0.999999999) * (index3 + 1));
+    [out[index3], out[target]] = [out[target], out[index3]];
+  }
+  return out;
+};
+var KANA_RUN2 = "[\\u3040-\\u309F\\u30A0-\\u30FF\\u30FC]+";
+var LEADING_KANA = new RegExp(`^${KANA_RUN2}`);
+var TRAILING_KANA = new RegExp(`${KANA_RUN2}$`);
+var kanjiCoreReading = (surface, kana) => {
+  let core = surface.trim();
+  let reading = kana.trim();
+  if (!core || !reading) return null;
+  const head = core.match(LEADING_KANA)?.[0] ?? "";
+  if (head) {
+    if (!reading.startsWith(head)) return null;
+    core = core.slice(head.length);
+    reading = reading.slice(head.length);
+  }
+  const tail = core.match(TRAILING_KANA)?.[0] ?? "";
+  if (tail) {
+    if (!reading.endsWith(tail)) return null;
+    core = core.slice(0, -tail.length);
+    reading = reading.slice(0, -tail.length);
+  }
+  if (!core || !reading) return null;
+  if (new RegExp(KANA_RUN2).test(core)) return null;
+  if (core === surface.trim()) return null;
+  return { core, reading };
+};
+var enrichRow = (row) => {
+  const readingSurface = (0, import_orthography5.kanjiReadingSurface)(row);
+  const core = kanjiCoreReading(readingSurface, row.kana);
+  const readingValue = (core?.reading ?? row.kana).trim();
+  return {
+    ...row,
+    posBucket: classifyPos(row.pos ?? ""),
+    // 拍数是给读音题挑「长得像」的干扰项用的，所以要按**选项实际显示的那串**算
+    morae: moraCount(readingValue),
+    loan: (0, import_orthography5.isLoanwordSourceSurface)({ kanji: row.kanji, kana: row.kana }),
+    readingSurface,
+    core,
+    readingValue
+  };
+};
+var wordRows = () => rowsFor(`
+  SELECT id, kanji, kana, meaning, pos, jlpt_level AS level
+  FROM words
+  WHERE jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')
+    AND TRIM(COALESCE(meaning, '')) <> ''
+    AND TRIM(COALESCE(kana, '')) <> ''
+`).map((row) => ({
+  id: Number(row.id ?? 0),
+  kanji: asText(row.kanji),
+  kana: asText(row.kana),
+  meaning: (0, import_question_meaning_overrides3.reviewedQuestionMeaning)(asText(row.kanji), asText(row.kana)) ?? asText(row.meaning),
+  pos: asText(row.pos),
+  level: asText(row.level)
+})).filter((row) => row.id > 0 && VOCAB_TEST_LEVELS.includes(row.level));
+var KANA_ANYWHERE = new RegExp(KANA_RUN2);
+var READING_MIN_CORE_MORAE = 2;
+var isReadingQuestion = (row) => {
+  if (!(0, import_orthography5.shouldStudyKanjiReading)(row)) return false;
+  if (row.core) {
+    const coreMorae = moraCount(row.core.reading);
+    return coreMorae >= READING_MIN_CORE_MORAE && coreMorae * 2 >= moraCount(row.kana);
+  }
+  return !KANA_ANYWHERE.test(row.readingSurface);
+};
+var promptFor = (row, kind) => kind === "reading" ? (0, import_orthography5.kanjiReadingSurface)(row) : (0, import_orthography5.preferredWordSurface)(row);
+var answerIndexBySurface = (rows) => {
+  const readings2 = /* @__PURE__ */ new Map();
+  const meanings = /* @__PURE__ */ new Map();
+  const push = (map, key, value) => {
+    if (!key || !value) return;
+    const bucket = map.get(key) ?? /* @__PURE__ */ new Set();
+    bucket.add(value);
+    map.set(key, bucket);
+  };
+  rows.forEach((row) => {
+    [(0, import_orthography5.preferredWordSurface)(row), row.readingSurface].forEach((surface) => {
+      push(readings2, surface, row.kana.trim());
+      push(readings2, surface, row.readingValue);
+      push(meanings, surface, row.meaning.trim());
+    });
+  });
+  return { readings: readings2, meanings };
+};
+var confusionPeerIds = (wordId) => {
+  try {
+    const out = /* @__PURE__ */ new Set();
+    confusionGroupsForWord(wordId).forEach((group) => {
+      group.members.forEach((member) => {
+        if (member.id !== wordId) out.add(member.id);
+      });
+    });
+    return out;
+  } catch {
+    return /* @__PURE__ */ new Set();
+  }
+};
+var meaningKeyOf = (wordId) => {
+  try {
+    return questionMeaningKeyOf(wordId);
+  } catch {
+    return void 0;
+  }
+};
+var optionValue = (row, kind) => (kind === "reading" ? row.readingValue : row.meaning).trim();
+var nestedReading = (answer, option) => answer.includes(option) || option.includes(answer);
+var SMALL_KANA = /[ゃゅょぁぃぅぇぉャュョァィゥェォ]/;
+var moraSplit = (kana) => {
+  const out = [];
+  for (const char of kana.replace(/[～〜（）()\s・]/g, "")) {
+    if (SMALL_KANA.test(char) && out.length) out[out.length - 1] += char;
+    else out.push(char);
+  }
+  return out;
+};
+var sharesKanji = (a, b) => Boolean(a && b) && [...a].some((char) => /[\u4E00-\u9FFF]/.test(char) && b.includes(char));
+var distractorTiers = (target, allRows, kind, index3) => {
+  const answer = optionValue(target, kind);
+  const key = kind === "meaning" ? meaningKeyOf(target.id) : void 0;
+  const prompt = promptFor(target, kind);
+  const alsoCorrect = (kind === "reading" ? index3.readings : index3.meanings).get(prompt) ?? /* @__PURE__ */ new Set();
+  const base = allRows.filter((row) => {
+    if (row.id === target.id) return false;
+    const value = optionValue(row, kind);
+    if (!value || value === answer) return false;
+    if (alsoCorrect.has(value)) return false;
+    if (kind === "reading" && nestedReading(answer, value)) return false;
+    if (key && meaningKeyOf(row.id) === key) return false;
+    return true;
+  });
+  const moraOk = (row) => kind !== "reading" || Math.abs(row.morae - target.morae) <= 1;
+  const samePos = (row) => row.posBucket === target.posBucket;
+  const sameKind = (row) => row.loan === target.loan;
+  return [
+    base.filter((row) => row.level === target.level && samePos(row) && sameKind(row) && moraOk(row)),
+    base.filter((row) => samePos(row) && sameKind(row) && moraOk(row)),
+    base.filter((row) => sameKind(row) && moraOk(row)),
+    base.filter(sameKind),
+    base
+  ];
+};
+var readingSlots = (target, answer, pool) => {
+  const morae = moraSplit(answer);
+  const half = Math.max(1, Math.ceil(morae.length / 2));
+  const prefix = (n) => morae.slice(0, n).join("");
+  const suffix = (n) => morae.slice(-n).join("");
+  const startsWith = (n) => (row) => row.readingValue !== answer && row.readingValue.startsWith(prefix(n));
+  const endsWith = (n) => (row) => row.readingValue !== answer && row.readingValue.endsWith(suffix(n));
+  const supplied = (test) => pool.some(test);
+  const head = supplied(startsWith(half)) ? startsWith(half) : startsWith(1);
+  const tail = supplied(endsWith(half)) ? endsWith(half) : endsWith(1);
+  return [
+    head,
+    tail,
+    (row) => sharesKanji(target.kanji, row.kanji) || head(row) || tail(row)
+  ];
+};
+var makeQuestion = (row, allRows, random, index3) => {
+  const kind = isReadingQuestion(row) ? "reading" : "meaning";
+  const answer = optionValue(row, kind);
+  if (!answer) return null;
+  const peers = confusionPeerIds(row.id);
+  const chosen = [];
+  const seen = /* @__PURE__ */ new Set([answer]);
+  const tiers = distractorTiers(row, allRows, kind, index3);
+  const alsoCorrect = (kind === "reading" ? index3.readings : index3.meanings).get(promptFor(row, kind)) ?? /* @__PURE__ */ new Set();
+  alsoCorrect.forEach((value) => seen.add(value));
+  if (kind === "reading") {
+    const pool = tiers[2].length >= 12 ? tiers[2] : tiers[4];
+    const preferred = (a, b) => Number(sharesKanji(row.kanji, b.kanji)) - Number(sharesKanji(row.kanji, a.kanji)) || Number(b.posBucket === row.posBucket) - Number(a.posBucket === row.posBucket);
+    readingSlots(row, answer, pool).forEach((slot) => {
+      if (chosen.length >= DISTRACTOR_COUNT) return;
+      const candidate = shuffle(pool.filter(slot), random).sort(preferred).find((item) => !seen.has(item.readingValue) && !nestedReading(answer, item.readingValue));
+      if (!candidate) return;
+      seen.add(candidate.readingValue);
+      chosen.push(candidate.readingValue);
+    });
+  }
+  for (const tier of tiers) {
+    if (chosen.length >= DISTRACTOR_COUNT) break;
+    const ordered = shuffle(tier, random).sort((left, right) => Number(peers.has(right.id)) - Number(peers.has(left.id)));
+    for (const candidate of ordered) {
+      if (chosen.length >= DISTRACTOR_COUNT) break;
+      const value = optionValue(candidate, kind);
+      if (seen.has(value)) continue;
+      seen.add(value);
+      chosen.push(value);
+    }
+  }
+  if (chosen.length < DISTRACTOR_COUNT) return null;
+  const options = shuffle([answer, ...chosen], random);
+  return {
+    id: row.id,
+    level: row.level,
+    kind,
+    prompt: promptFor(row, kind),
+    // 拆过送假名的题要告诉用户现在问的是哪几个字，否则「培う 选 つちか」看着像少打了一个字
+    readingScope: kind === "reading" ? row.core?.core : void 0,
+    options,
+    answerIndex: options.indexOf(answer),
+    answer
+  };
+};
+var LEVEL_WEIGHT = { N5: 261, N4: 334, N3: 934, N2: 1539, N1: 1435 };
+var LEVEL_FLOOR = 9;
+var levelTargets = (total = VOCAB_TEST_QUESTION_COUNT) => {
+  const out = {};
+  VOCAB_TEST_LEVELS.forEach((level) => {
+    out[level] = LEVEL_FLOOR;
+  });
+  let remaining = total - LEVEL_FLOOR * VOCAB_TEST_LEVELS.length;
+  if (remaining <= 0) return out;
+  const weightSum = VOCAB_TEST_LEVELS.reduce((sum, level) => sum + LEVEL_WEIGHT[level], 0);
+  const shares = VOCAB_TEST_LEVELS.map((level) => {
+    const want = remaining * LEVEL_WEIGHT[level] / weightSum;
+    return { level, whole: Math.floor(want), fraction: want - Math.floor(want) };
+  });
+  shares.forEach((share) => {
+    out[share.level] += share.whole;
+    remaining -= share.whole;
+  });
+  shares.sort((left, right) => right.fraction - left.fraction);
+  for (let index3 = 0; remaining > 0; index3 = (index3 + 1) % shares.length, remaining -= 1) {
+    out[shares[index3].level] += 1;
+  }
+  return out;
+};
+var VOCAB_TEST_PROBE_PER_LEVEL = 4;
+var adaptiveTargets = (scoreByLevel, populationByLevel, remaining) => {
+  const out = {};
+  VOCAB_TEST_LEVELS.forEach((level) => {
+    out[level] = 0;
+  });
+  if (remaining <= 0) return out;
+  const weights = VOCAB_TEST_LEVELS.map((level) => {
+    const score = clamp(scoreByLevel[level] ?? 0.5, 0.15, 0.85);
+    return { level, weight: (populationByLevel[level] ?? 0) * Math.sqrt(score * (1 - score)) };
+  });
+  const sum = weights.reduce((total, item) => total + item.weight, 0);
+  if (sum <= 0) {
+    VOCAB_TEST_LEVELS.forEach((level, index3) => {
+      out[level] = Math.floor(remaining / VOCAB_TEST_LEVELS.length) + (index3 < remaining % VOCAB_TEST_LEVELS.length ? 1 : 0);
+    });
+    return out;
+  }
+  let left = remaining;
+  const shares = weights.map((item) => {
+    const want = remaining * item.weight / sum;
+    return { level: item.level, whole: Math.floor(want), fraction: want - Math.floor(want) };
+  });
+  shares.forEach((share) => {
+    out[share.level] += share.whole;
+    left -= share.whole;
+  });
+  shares.sort((a, b) => b.fraction - a.fraction);
+  for (let index3 = 0; left > 0; index3 = (index3 + 1) % shares.length, left -= 1) {
+    out[shares[index3].level] += 1;
+  }
+  return out;
+};
+var buildVocabTestQuestions = (rawRows, random = Math.random, options = {}) => {
+  const allRows = rawRows.map((row) => ({
+    ...row,
+    meaning: (0, import_question_meaning_overrides3.reviewedQuestionMeaning)(row.kanji, row.kana) ?? row.meaning
+  })).map(enrichRow);
+  const index3 = answerIndexBySurface(allRows);
+  const populationByLevel = Object.fromEntries(VOCAB_TEST_LEVELS.map((level) => [
+    level,
+    allRows.filter((row) => row.level === level).length
+  ]));
+  const targets = options.targets ?? levelTargets();
+  const total = options.total ?? VOCAB_TEST_QUESTION_COUNT;
+  const questions = [];
+  const used = new Set(options.excludeIds ?? []);
+  const addFrom = (rows, target) => {
+    for (const row of shuffle(rows, random)) {
+      if (questions.length >= total || questions.filter((item) => item.level === row.level).length >= target) break;
+      if (used.has(row.id)) continue;
+      const question = makeQuestion(row, allRows, random, index3);
+      if (!question) continue;
+      used.add(row.id);
+      questions.push(question);
+    }
+  };
+  VOCAB_TEST_LEVELS.forEach((level) => addFrom(allRows.filter((row) => row.level === level), targets[level] ?? 0));
+  if (questions.length < total) {
+    addFrom(allRows, total);
+  }
+  return { questions: shuffle(questions, random), populationByLevel };
+};
+var parseSession = (raw) => {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed.version !== 1 || !Array.isArray(parsed.questions) || !Array.isArray(parsed.responses)) return null;
+    const questions = parsed.questions.filter((item) => Boolean(
+      item && Number.isFinite(Number(item.id)) && typeof item.prompt === "string" && Array.isArray(item.options) && item.options.length === DISTRACTOR_COUNT + 1 && Number.isInteger(Number(item.answerIndex))
+    ));
+    if (!questions.length) return null;
+    return {
+      version: 1,
+      runId: asText(parsed.runId) || `vocab-${Date.now()}`,
+      startedAt: Number(parsed.startedAt) || Date.now(),
+      finishedAt: parsed.finishedAt == null ? null : Number(parsed.finishedAt),
+      currentIndex: clamp(Math.floor(Number(parsed.currentIndex) || 0), 0, questions.length),
+      questions,
+      responses: parsed.responses.filter(Boolean).map((item) => ({
+        questionIndex: Number(item.questionIndex),
+        questionId: Number(item.questionId),
+        answerState: item.answerState,
+        selectedOption: item.selectedOption == null ? null : Number(item.selectedOption),
+        responseMs: item.responseMs == null ? null : Number(item.responseMs),
+        answeredAt: Number(item.answeredAt) || Date.now()
+      })),
+      populationByLevel: Object.fromEntries(Object.entries(parsed.populationByLevel ?? {}).map(([key, value]) => [key, Number(value) || 0])),
+      plannedTotal: Math.max(Number(parsed.plannedTotal) || 0, questions.length)
+    };
+  } catch {
+    return null;
+  }
+};
+var saveSession = (session) => {
+  setState(SESSION_KEY, JSON.stringify(session));
+  persistSoon();
+  return session;
+};
+var getVocabTestSession = () => {
+  ensureUserTables();
+  return parseSession(getState(SESSION_KEY, ""));
+};
+var startVocabTest = (random = Math.random) => {
+  ensureUserTables();
+  const rows = wordRows();
+  const probeTargets = Object.fromEntries(VOCAB_TEST_LEVELS.map((level) => [level, VOCAB_TEST_PROBE_PER_LEVEL]));
+  const probeTotal = VOCAB_TEST_PROBE_PER_LEVEL * VOCAB_TEST_LEVELS.length;
+  const { questions, populationByLevel } = buildVocabTestQuestions(rows, random, {
+    targets: probeTargets,
+    total: probeTotal
+  });
+  if (questions.length < 10) throw new Error("\u5F53\u524D\u8BCD\u5E93\u53EF\u7528\u4E8E\u6D4B\u9A8C\u7684\u8BCD\u592A\u5C11\uFF0C\u65E0\u6CD5\u5F00\u59CB\u6D4B\u91CF\u3002");
+  return saveSession({
+    version: 1,
+    runId: `vocab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    startedAt: Date.now(),
+    finishedAt: null,
+    currentIndex: 0,
+    questions,
+    responses: [],
+    populationByLevel,
+    plannedTotal: VOCAB_TEST_QUESTION_COUNT
+  });
+};
+var extendVocabTestPlan = (session, random = Math.random) => {
+  const remaining = session.plannedTotal - session.questions.length;
+  if (remaining <= 0) return session;
+  const scoreByLevel = Object.fromEntries(VOCAB_TEST_LEVELS.map((level) => {
+    const result = levelResult(level, session);
+    return [level, result.rate];
+  }));
+  const targets = adaptiveTargets(scoreByLevel, session.populationByLevel, remaining);
+  const { questions } = buildVocabTestQuestions(wordRows(), random, {
+    targets,
+    total: remaining,
+    excludeIds: session.questions.map((question) => question.id)
+  });
+  if (!questions.length) return session;
+  const merged = [...session.questions, ...questions];
+  return saveSession({
+    ...session,
+    questions: merged,
+    // ⚠️ 词库出不满 60 道时，总数就降到实际能出的题数。
+    // 分母是「这一场一共出了几题」，不是「我们本来想出几题」——
+    // 否则小词库的用户答完了所有题，可信度还要因为「没答满」被扣一截。
+    plannedTotal: Math.min(session.plannedTotal, merged.length)
+  });
+};
+var submitVocabTestAnswer = (answerState, selectedOption, responseMs) => {
+  const session = getVocabTestSession();
+  if (!session || session.finishedAt || session.currentIndex >= session.questions.length) return session;
+  const question = session.questions[session.currentIndex];
+  const response = {
+    questionIndex: session.currentIndex,
+    questionId: question.id,
+    answerState,
+    selectedOption,
+    responseMs,
+    answeredAt: Date.now()
+  };
+  const nextIndex = session.currentIndex + 1;
+  const answered = saveSession({
+    ...session,
+    currentIndex: nextIndex,
+    responses: [...session.responses, response],
+    finishedAt: nextIndex >= session.questions.length && nextIndex >= session.plannedTotal ? Date.now() : null
+  });
+  if (nextIndex >= answered.questions.length && answered.questions.length < answered.plannedTotal) {
+    const extended = extendVocabTestPlan(answered);
+    if (extended.questions.length > answered.questions.length) return extended;
+    return saveSession({
+      ...answered,
+      plannedTotal: answered.questions.length,
+      finishedAt: answered.finishedAt ?? Date.now()
+    });
+  }
+  return answered;
+};
+var finishVocabTest = () => {
+  const session = getVocabTestSession();
+  if (!session || session.finishedAt) return session;
+  return saveSession({ ...session, finishedAt: Date.now() });
+};
+var clearVocabTestSession = () => {
+  ensureUserTables();
+  setState(SESSION_KEY, "");
+  persistSoon();
+};
+var guessRate = (wrong, unanswered) => {
+  const denominator = 4 * wrong + 3 * unanswered;
+  return denominator > 0 ? 4 * wrong / denominator : 0;
+};
+var levelResult = (level, session) => {
+  const rows = session.responses.filter((response) => session.questions[response.questionIndex]?.level === level);
+  const correct = rows.filter((row) => row.answerState === "correct").length;
+  const wrong = rows.filter((row) => row.answerState === "wrong").length;
+  const unknown = rows.filter((row) => row.answerState === "unknown").length;
+  const timeout = rows.filter((row) => row.answerState === "timeout").length;
+  const score = rows.length ? clamp((correct - wrong / 3) / rows.length, 0, 1) : null;
+  return {
+    level,
+    total: session.populationByLevel[level] ?? 0,
+    answered: rows.length,
+    correct,
+    wrong,
+    unknown,
+    timeout,
+    rate: score == null ? null : Math.round(score * 100) / 100
+  };
+};
+var getVocabTestResult = (session) => {
+  if (!session) return null;
+  const levels = VOCAB_TEST_LEVELS.map((level) => levelResult(level, session));
+  const population = levels.reduce((sum, level) => sum + level.total, 0);
+  const estimated = levels.reduce((sum, level) => sum + level.total * (level.rate ?? 0), 0);
+  let variance = 0;
+  levels.forEach((level) => {
+    if (!level.answered || level.rate == null) {
+      variance += level.total * level.total;
+      return;
+    }
+    const gamma2 = guessRate(level.wrong, level.unknown + level.timeout);
+    variance += level.total * level.total * (level.rate * (1 - level.rate) + (1 - level.rate) * gamma2 / 3) / level.answered;
+  });
+  const margin = session.responses.length ? Math.ceil(1.96 * Math.sqrt(Math.max(0, variance))) : population;
+  const roundedEstimate = Math.round(estimated);
+  const recommendation = levels.find((level) => level.rate != null && level.answered >= 5 && level.rate < 0.6)?.level ?? "N1+";
+  const answered = session.responses.length;
+  const coverage = answered / Math.max(1, session.plannedTotal);
+  const totals = levels.reduce((acc, level) => ({
+    wrong: acc.wrong + level.wrong,
+    unanswered: acc.unanswered + level.unknown + level.timeout,
+    timeout: acc.timeout + level.timeout
+  }), { wrong: 0, unanswered: 0, timeout: 0 });
+  const gamma = guessRate(totals.wrong, totals.unanswered);
+  const timeoutShare = answered ? totals.timeout / answered : 0;
+  const rates = levels.map((level) => level.rate).filter((rate) => rate != null);
+  const inversions = rates.reduce(
+    (count, rate, index3) => index3 > 0 && rate > rates[index3 - 1] + 0.15 ? count + 1 : count,
+    0
+  );
+  const guessedShare = answered ? clamp(4 * totals.wrong / (3 * answered), 0, 1) : 0;
+  const confidence = Math.round(clamp(
+    (coverage * 60 + (1 - timeoutShare) * 40) * (1 - guessedShare) - inversions * 8,
+    0,
+    100
+  ));
+  return {
+    estimated: roundedEstimate,
+    lower: clamp(roundedEstimate - margin, 0, population),
+    upper: clamp(roundedEstimate + margin, 0, population),
+    population,
+    answered,
+    totalQuestions: session.plannedTotal,
+    confidence,
+    gamma: Math.round(gamma * 100) / 100,
+    guessedShare: Math.round(guessedShare * 100) / 100,
+    timeoutShare: Math.round(timeoutShare * 100) / 100,
+    recommendation,
+    levels
+  };
+};
+var activeSeconds = (session) => {
+  const total = session.responses.reduce((sum, response) => {
+    const question = session.questions[response.questionIndex];
+    const limit = secondsForQuestion(question ?? { kind: "reading" }) * 1e3;
+    return sum + clamp(Number(response.responseMs ?? 0), 0, limit);
+  }, 0);
+  return Math.max(0, Math.round(total / 1e3));
+};
+var recordVocabTestRun = (session) => {
+  if (!session || session.responses.length === 0) return;
+  const result = getVocabTestResult(session);
+  if (!result) return;
+  ensureUserTables();
+  const finishedAt = session.finishedAt ?? Date.now();
+  (0, import_database27.getDatabase)().run(`
+    INSERT OR IGNORE INTO vocab_test_history (
+      run_id, started_at, finished_at, duration_seconds,
+      answered, total_questions, estimated, lower_bound, upper_bound, confidence, recommendation, levels_json
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `, [
+    session.runId,
+    new Date(session.startedAt).toISOString(),
+    new Date(finishedAt).toISOString(),
+    activeSeconds(session),
+    result.answered,
+    result.totalQuestions,
+    result.estimated,
+    result.lower,
+    result.upper,
+    result.confidence,
+    result.recommendation,
+    JSON.stringify(result.levels.map((level) => [level.level, level.rate, level.answered]))
+  ]);
+  persistSoon();
+};
+var parseLevels = (raw) => {
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((item) => ({
+      level: String(item?.[0] ?? ""),
+      rate: item?.[1] == null ? null : Number(item[1]),
+      answered: Number(item?.[2] ?? 0)
+    })).filter((item) => item.level);
+  } catch {
+    return [];
+  }
+};
+var getVocabTestHistory = (limit = 20) => {
+  ensureUserTables();
+  return rowsFor(`
+    SELECT * FROM vocab_test_history ORDER BY finished_at DESC LIMIT ?
+  `, [limit]).map((row) => ({
+    runId: String(row.run_id ?? ""),
+    startedAt: Date.parse(String(row.started_at ?? "")) || 0,
+    finishedAt: Date.parse(String(row.finished_at ?? "")) || 0,
+    // 早一版按墙上时间记过（切走、隔夜回来都算进去），按「每题最长 20 秒」封顶
+    durationSeconds: Math.min(Number(row.duration_seconds ?? 0), Number(row.answered ?? 0) * 20),
+    answered: Number(row.answered ?? 0),
+    totalQuestions: Number(row.total_questions ?? 0),
+    estimated: Number(row.estimated ?? 0),
+    lower: Number(row.lower_bound ?? 0),
+    upper: Number(row.upper_bound ?? 0),
+    confidence: Number(row.confidence ?? 0),
+    recommendation: String(row.recommendation ?? ""),
+    levels: parseLevels(String(row.levels_json ?? ""))
+  }));
+};
+var vocabTestStorageValue = () => firstValue(
+  "SELECT value FROM app_state WHERE key = ?",
+  [SESSION_KEY],
+  ""
+);
+
+// ../frontend/src/lib/distinction-quiz.ts
+var firstSense3 = (text) => text.split(/[；;]/)[0].trim();
+var reviewable = (group) => {
+  const review = (0, import_confusion_distinction_reviews3.distinctionReviewFor)(group.key);
+  if (!review || review.level !== "major" || group.members.length < 2) return false;
+  const senses = /* @__PURE__ */ new Set();
+  return group.members.every((member) => {
+    const meaning = (0, import_question_meaning_overrides4.reviewedQuestionMeaning)(member.kanji, member.kana);
+    if (!meaning) return false;
+    const sense = firstSense3(meaning);
+    if (senses.has(sense)) return false;
+    senses.add(sense);
+    return true;
+  });
+};
+var groupsByIds = (ids) => {
+  const found = /* @__PURE__ */ new Map();
+  ids.forEach((id) => confusionGroupsForWord(id).forEach((group) => found.set(group.key, group)));
+  return [...found.values()];
+};
+var reviewedIdsToday = () => new Set(rowsFor(
+  "SELECT DISTINCT word_id FROM reviews WHERE reviewed_on = ? AND direction = 'forward'",
+  [today()]
+).map((row) => Number(row.word_id ?? 0)).filter(Boolean));
+var learnedIds = () => new Set(rowsFor(
+  "SELECT word_id FROM progress WHERE seen_count > 0"
+).map((row) => Number(row.word_id ?? 0)).filter(Boolean));
+function quizGroups(scope) {
+  let groups;
+  if (scope.kind === "group") {
+    groups = confusionGroups().filter((group) => group.key === scope.key);
+  } else if (scope.kind === "type") {
+    groups = confusionGroups().filter((group) => group.type === scope.type);
+  } else {
+    groups = groupsByIds(scope.kind === "today" ? reviewedIdsToday() : learnedIds());
+    if (scope.kind === "learned") {
+      const ids = learnedIds();
+      groups = groups.filter((group) => group.members.filter((member) => ids.has(member.id)).length >= 2);
+    }
+  }
+  return groups.filter(reviewable);
+}
+var playableGroupKeys = () => new Set(confusionGroups().filter(reviewable).map((group) => group.key));
+function buildQuestions(groups, rng = Math.random) {
+  const questions = [];
+  for (const group of shuffle(groups, rng)) {
+    const review = (0, import_confusion_distinction_reviews3.distinctionReviewFor)(group.key);
+    if (!reviewable(group) || !review) continue;
+    if (questions.length + group.members.length > 24) continue;
+    const notes = (0, import_confusion_distinction_reviews3.distinctionNotesFor)(review.summary, group.members.map((member) => ({
+      key: String(member.id),
+      forms: [displayForm(member), member.kanji, member.kana]
+    })));
+    const options = shuffle(group.members.map((member) => ({
+      id: member.id,
+      surface: displayForm(member),
+      kana: member.kana
+    })), rng);
+    for (const member of group.members) {
+      const prompt = (0, import_question_meaning_overrides4.reviewedQuestionMeaning)(member.kanji, member.kana);
+      if (!prompt) continue;
+      questions.push({
+        groupKey: group.key,
+        prompt,
+        options,
+        answerId: member.id,
+        summary: review.summary,
+        notes
+      });
+    }
+    if (questions.length === 24) return questions;
+  }
+  return questions;
+}
+var settleGroup = (groupKey, allCorrect) => {
+  setConfusionMastered(groupKey, allCorrect);
+};
+
+// scripts/shared/entry.ts
+init_confusion_cards();
+init_kanji_char_cards();
+init_kanji_unit_scheduler();
+init_kanji_unit_index();
+init_grammar_quiz();
+init_grammar_api();
+
+// ../frontend/src/lib/grammar-key-points.ts
+var grammar_key_points_exports = {};
+__export(grammar_key_points_exports, {
+  grammarKeyPoint: () => grammarKeyPoint,
+  grammarKeyPointFor: () => grammarKeyPointFor
+});
+var import_grammar_key_points = __toESM(require_grammar_key_points(), 1);
+var points = import_grammar_key_points.default.points;
+var aliases = import_grammar_key_points.default.aliases;
+var grammarKeyPoint = (pattern) => points[pattern] ?? "";
+var grammarKeyPointFor = (point) => grammarKeyPoint(aliases[point.id] ?? point.title);
+
+// scripts/shared/entry.ts
+init_grammar_formation();
+init_furigana_data();
+
+// ../frontend/src/lib/duplicate-merge.ts
+var duplicate_merge_exports = {};
+__export(duplicate_merge_exports, {
+  duplicateMergePlan: () => duplicateMergePlan,
+  mergeDuplicateWords: () => mergeDuplicateWords
+});
+var import_database28 = __toESM(require_database(), 1);
+init_confusion_groups();
+init_db_utils();
+init_legacy_word_migrations();
+var import_progress_events4 = __toESM(require_progress_events(), 1);
+init_question_meaning_index();
+init_user_question_meanings();
+var label = (row) => {
+  const kanji = String(row.kanji ?? "");
+  const kana = String(row.kana ?? "");
+  return kanji && kanji !== kana ? `${kanji}/${kana}` : kana || kanji;
+};
+function duplicateMergePlan() {
+  const targets = duplicateMergeTargets();
+  if (!targets.size) return { pairs: [], reviews: 0, bothStudied: 0 };
+  const rows = rowsFor(`
+    SELECT w.id, w.kanji, w.kana, COALESCE(p.seen_count, 0) AS seen_count,
+           (SELECT COUNT(*) FROM reviews r WHERE r.word_id = w.id) AS reviews
+    FROM words w
+    LEFT JOIN progress p ON p.word_id = w.id
+  `);
+  const byId = new Map(rows.map((row) => [Number(row.id), row]));
+  const pairs = [];
+  targets.forEach((intoId, fromId) => {
+    const from = byId.get(fromId);
+    const into = byId.get(intoId);
+    if (!from || !into) return;
+    pairs.push({
+      fromId,
+      intoId,
+      fromLabel: label(from),
+      intoLabel: label(into),
+      reviews: Number(from.reviews ?? 0),
+      bothStudied: Number(from.seen_count ?? 0) > 0 && Number(into.seen_count ?? 0) > 0
+    });
+  });
+  return {
+    pairs,
+    reviews: pairs.reduce((sum, pair) => sum + pair.reviews, 0),
+    bothStudied: pairs.filter((pair) => pair.bothStudied).length
+  };
+}
+function mergeDuplicateWords() {
+  const plan = duplicateMergePlan();
+  const db = (0, import_database28.getDatabase)();
+  const reviewsBefore = firstValue("SELECT COUNT(*) FROM reviews", [], 0);
+  if (!plan.pairs.length) {
+    return { merged: 0, movedReviews: 0, reviewsBefore, reviewsAfter: reviewsBefore };
+  }
+  const remap = new Map(plan.pairs.map((pair) => [pair.fromId, pair.intoId]));
+  let movedReviews = 0;
+  db.run("BEGIN TRANSACTION");
+  try {
+    plan.pairs.forEach((pair) => {
+      movedReviews += mergeWordInto(db, pair.fromId, pair.intoId);
+    });
+    remapSessionStateWordIds((wordId) => remap.get(wordId) ?? wordId);
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+  resetConfusionGroups();
+  resetWordLibraryCaches();
+  resetUserQuestionMeanings();
+  resetQuestionMeaningIndex();
+  void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ requestFullSnapshot }) => requestFullSnapshot());
+  persistSoon();
+  (0, import_progress_events4.notifyProgressUpdated)();
+  return {
+    merged: plan.pairs.length,
+    movedReviews,
+    reviewsBefore,
+    reviewsAfter: firstValue("SELECT COUNT(*) FROM reviews", [], 0)
+  };
+}
+
+// scripts/shared/entry.ts
+init_schema2();
+
+// ../frontend/src/lib/sync/snapshot.ts
+var snapshot_exports = {};
+__export(snapshot_exports, {
+  MAX_UNCOMPRESSED_SNAPSHOT_BYTES: () => MAX_UNCOMPRESSED_SNAPSHOT_BYTES,
+  SUPPORTED_SYNC_PROTOCOL_VERSIONS: () => SUPPORTED_SYNC_PROTOCOL_VERSIONS,
+  SYNC_PROTOCOL_VERSION: () => SYNC_PROTOCOL_VERSION,
+  SYNC_SNAPSHOT_FORMAT: () => SYNC_SNAPSHOT_FORMAT,
+  compressSyncSnapshot: () => compressSyncSnapshot,
+  decompressSyncSnapshot: () => decompressSyncSnapshot,
+  exportSyncSnapshot: () => exportSyncSnapshot,
+  getSnapshotCapacity: () => getSnapshotCapacity,
+  isUserSyncSnapshot: () => isUserSyncSnapshot
+});
+var import_database29 = __toESM(require_database(), 1);
+init_schema2();
+init_tables();
+var import_entitlements = __toESM(require_entitlements(), 1);
+var SYNC_SNAPSHOT_FORMAT = "master-nihongo-user-sqlite-v1";
+var SYNC_PROTOCOL_VERSION = 2;
+var SUPPORTED_SYNC_PROTOCOL_VERSIONS = /* @__PURE__ */ new Set([1, SYNC_PROTOCOL_VERSION]);
+var MAX_UNCOMPRESSED_SNAPSHOT_BYTES = 48e6;
+var lastSnapshotBytes = 0;
+var getSnapshotCapacity = () => ({
+  bytes: lastSnapshotBytes,
+  limit: MAX_UNCOMPRESSED_SNAPSHOT_BYTES,
+  ratio: lastSnapshotBytes / MAX_UNCOMPRESSED_SNAPSHOT_BYTES
+});
+var META_TABLE = "sync_snapshot_meta";
+var EXTRA_TABLES = ["sync_tombstones"];
+var quoteIdentifier2 = (value) => `"${value.replace(/"/g, '""')}"`;
+var firstValue2 = (db, sql, params = []) => (() => {
+  const statement = db.prepare(sql);
+  try {
+    if (params.length) statement.bind(params);
+    return statement.step() ? statement.get()[0] : void 0;
+  } finally {
+    statement.free();
+  }
+})();
+var tableExists3 = (db, table) => Boolean(
+  firstValue2(db, "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1", [table])
+);
+var DATED_TABLE_RETENTION_DAYS = {
+  stage1_tasks: 14,
+  // 另外四张按日的会话表同理：读它们的地方全部是 `reviewed_on = 今天`
+  // （direction-plan 的每一条查询、kanji-unit-scheduler 的每一条查询），
+  // critical_reviews 在运行时干脆没有任何读取方，只剩合并迁移会碰它。
+  // ⚠️ 「stage1 裁了」不等于这几张自动享受同一条策略 —— 上面这句是逐个查过消费者的结论，
+  // 以后有人开始读第 15 天的行，得先改这里。
+  stage2_progress: 14,
+  kanji_progress: 14,
+  kanji_reading_progress: 14,
+  kanji_unit_tasks: 14,
+  kanji_char_tasks: 14,
+  confusion_tasks: 14
+};
+var retentionCutoff = (days) => {
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1e3);
+  return cutoff.toISOString().slice(0, 10);
+};
+var columnsOf3 = (db, table) => {
+  const statement = db.prepare(`PRAGMA table_info(${quoteIdentifier2(table)})`);
+  const names = [];
+  try {
+    while (statement.step()) names.push(String(statement.getAsObject().name));
+  } finally {
+    statement.free();
+  }
+  return names;
+};
+var copyTable = (source, target, table, extraWhere = "") => {
+  if (!tableExists3(source, table)) return;
+  const createSql = String(firstValue2(
+    source,
+    "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
+    [table]
+  ) ?? "");
+  if (!createSql) throw new Error(`\u65E0\u6CD5\u5BFC\u51FA\u540C\u6B65\u8868\u7ED3\u6784\uFF1A${table}`);
+  target.run(createSql);
+  const localStateKeys = table === "app_state" ? [...DEVICE_LOCAL_STATE_KEYS] : table === "grammar_state" ? [...DEVICE_LOCAL_GRAMMAR_STATE_KEYS] : [];
+  const retentionDays = DATED_TABLE_RETENTION_DAYS[table];
+  const bindings = [];
+  let where = "";
+  if (localStateKeys.length) {
+    where = ` WHERE key NOT IN (${localStateKeys.map(() => "?").join(", ")})`;
+    bindings.push(...localStateKeys);
+  } else if (retentionDays) {
+    where = " WHERE reviewed_on >= ?";
+    bindings.push(retentionCutoff(retentionDays));
+  }
+  if (extraWhere) where = where ? `${where} AND (${extraWhere})` : ` WHERE ${extraWhere}`;
+  const columns = columnsOf3(source, table);
+  if (!columns.length) return;
+  const insert = `INSERT INTO ${quoteIdentifier2(table)} (${columns.map(quoteIdentifier2).join(", ")}) VALUES (${columns.map(() => "?").join(", ")})`;
+  const read = source.prepare(`SELECT ${columns.map(quoteIdentifier2).join(", ")} FROM ${quoteIdentifier2(table)}${where}`);
+  const write = target.prepare(insert);
+  target.run("BEGIN");
+  try {
+    if (bindings.length) read.bind(bindings);
+    while (read.step()) write.run(read.get());
+    target.run("COMMIT");
+  } catch (error) {
+    target.run("ROLLBACK");
+    throw error;
+  } finally {
+    read.free();
+    write.free();
+  }
+};
+async function exportSyncSnapshot() {
+  ensureSyncSchema();
+  const source = (0, import_database29.getDatabase)();
+  const snapshot = await (0, import_database29.createDatabase)();
+  try {
+    snapshot.run(`
+      CREATE TABLE ${META_TABLE} (
+        format TEXT PRIMARY KEY,
+        protocol_version INTEGER NOT NULL
+      )
+    `);
+    snapshot.run(`INSERT INTO ${META_TABLE} (format, protocol_version) VALUES (?, ?)`, [SYNC_SNAPSHOT_FORMAT, SYNC_PROTOCOL_VERSION]);
+    const includeWeeklyReports = (0, import_entitlements.canUseFeature)("weeklyReportCloudHistory", (0, import_entitlements.getEntitlements)());
+    const tables = /* @__PURE__ */ new Set([...syncedTablesForCloud(includeWeeklyReports).map((entry) => entry.table), ...EXTRA_TABLES]);
+    for (const table of tables) {
+      const extraWhere = table === "sync_tombstones" && !includeWeeklyReports ? "table_name <> 'weekly_reports'" : "";
+      copyTable(source, snapshot, table, extraWhere);
+    }
+    const bytes = new Uint8Array(snapshot.export());
+    lastSnapshotBytes = bytes.byteLength;
+    return bytes;
+  } finally {
+    snapshot.close();
+  }
+}
+var isUserSyncSnapshot = (db) => {
+  if (!tableExists3(db, META_TABLE)) return false;
+  if (firstValue2(db, `SELECT format FROM ${META_TABLE} LIMIT 1`) !== SYNC_SNAPSHOT_FORMAT) return false;
+  const columns = firstValue2(db, `SELECT COUNT(*) FROM pragma_table_info('${META_TABLE}') WHERE name = 'protocol_version'`);
+  if (!Number(columns)) return true;
+  return SUPPORTED_SYNC_PROTOCOL_VERSIONS.has(Number(firstValue2(db, `SELECT protocol_version FROM ${META_TABLE} LIMIT 1`)));
+};
+var bytesBuffer = (data2) => data2.buffer.slice(data2.byteOffset, data2.byteOffset + data2.byteLength);
+async function compressSyncSnapshot(data2) {
+  if (data2.byteLength > MAX_UNCOMPRESSED_SNAPSHOT_BYTES) {
+    throw new Error(
+      `\u5B66\u4E60\u6570\u636E\u5FEB\u7167 ${(data2.byteLength / 1e6).toFixed(1)} MB\uFF0C\u8D85\u8FC7 ${MAX_UNCOMPRESSED_SNAPSHOT_BYTES / 1e6} MB \u4E0A\u9650\uFF0C\u4E91\u5907\u4EFD\u5DF2\u505C\u6B62\u3002\u672C\u673A\u6570\u636E\u5B8C\u597D\uFF0C\u8BF7\u5728\u8BBE\u7F6E\u9875\u5BFC\u51FA\u672C\u5730\u5907\u4EFD\u5E76\u8054\u7CFB\u652F\u6301\u3002`
+    );
+  }
+  if (typeof CompressionStream === "undefined") return { bytes: data2, compression: "none" };
+  const stream = new Blob([bytesBuffer(data2)]).stream().pipeThrough(new CompressionStream("gzip"));
+  return { bytes: new Uint8Array(await new Response(stream).arrayBuffer()), compression: "gzip" };
+}
+async function decompressSyncSnapshot(data2, compression) {
+  if (compression === "none") {
+    if (data2.byteLength > MAX_UNCOMPRESSED_SNAPSHOT_BYTES) throw new Error("\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\u8D85\u8FC7\u5B89\u5168\u5927\u5C0F\u9650\u5236\u3002");
+    return data2;
+  }
+  if (typeof DecompressionStream === "undefined") {
+    throw new Error("\u5F53\u524D\u7CFB\u7EDF\u7248\u672C\u65E0\u6CD5\u89E3\u538B\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\uFF08\u9700\u8981 iOS/Safari 16.4 \u4EE5\u4E0A\uFF09\uFF0C\u8BF7\u5347\u7EA7\u540E\u91CD\u8BD5\u3002");
+  }
+  const stream = new Blob([bytesBuffer(data2)]).stream().pipeThrough(new DecompressionStream("gzip"));
+  const reader = stream.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_UNCOMPRESSED_SNAPSHOT_BYTES) {
+        await reader.cancel();
+        throw new Error(`\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\u89E3\u538B\u540E\u8D85\u8FC7 ${MAX_UNCOMPRESSED_SNAPSHOT_BYTES / 1e6} MB\uFF0C\u5DF2\u505C\u6B62\u5904\u7406\u3002`);
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return result;
+}
+
+// ../frontend/src/lib/sync/merge.ts
+var merge_exports = {};
+__export(merge_exports, {
+  mergeDatabaseBytes: () => mergeDatabaseBytes
+});
+var import_database31 = __toESM(require_database(), 1);
+init_schema2();
+init_tables();
+var import_entitlements2 = __toESM(require_entitlements(), 1);
+init_study_time();
+
+// ../frontend/src/lib/grammar-events.ts
+var GRAMMAR_HIGHLIGHTS_UPDATED_EVENT = "grammar-highlights-updated";
+var GRAMMAR_POSITIONS_UPDATED_EVENT = "grammar-positions-updated";
+
+// ../frontend/src/lib/sync/merge.ts
+init_familiarity();
+init_question_meaning_index();
+init_user_question_meanings();
+var ROW_SEPARATOR = "";
+var DEFAULT_ORIGIN = "legacy";
+var quoteIdentifier3 = (value) => `"${value.replace(/"/g, '""')}"`;
+var tableExists4 = (db, table) => {
+  const statement = db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1");
+  try {
+    statement.bind([table]);
+    return statement.step();
+  } finally {
+    statement.free();
+  }
+};
+var columnsOf4 = (db, table) => {
+  if (!tableExists4(db, table)) return /* @__PURE__ */ new Set();
+  const statement = db.prepare(`PRAGMA table_info(${quoteIdentifier3(table)})`);
+  try {
+    const result = /* @__PURE__ */ new Set();
+    while (statement.step()) result.add(String(statement.get()[1]));
+    return result;
+  } finally {
+    statement.free();
+  }
+};
+var rowsOf = (db, table) => {
+  if (!tableExists4(db, table)) return [];
+  const statement = db.prepare(`SELECT * FROM ${quoteIdentifier3(table)}`);
+  try {
+    const result = [];
+    while (statement.step()) result.push(statement.getAsObject());
+    return result;
+  } finally {
+    statement.free();
+  }
+};
+var rowKey = (entry, row) => entry.keys.map((key) => String(row[key] ?? "")).join(ROW_SEPARATOR);
+var changedAtOf = (row) => String(row?.[SYNC_UPDATED_COL] ?? "1970-01-01T00:00:00.000Z");
+var originOf = (row) => String(row?.[SYNC_ORIGIN_COL] ?? DEFAULT_ORIGIN);
+var compareVersion = (left, right) => {
+  if (left.changedAt !== right.changedAt) return left.changedAt > right.changedAt ? 1 : -1;
+  if (left.originDevice === right.originDevice) return 0;
+  return left.originDevice > right.originDevice ? 1 : -1;
+};
+var stateOf = (db, sourceOrigin, entries) => {
+  const rows = /* @__PURE__ */ new Map();
+  for (const entry of entries) {
+    if (!tableExists4(db, entry.table)) continue;
+    const items = /* @__PURE__ */ new Map();
+    for (const row of rowsOf(db, entry.table)) {
+      const key = entry.strategy === "append" && !String(row.sync_uid ?? "") ? `${String(row.sync_origin_device ?? sourceOrigin)}:${String(
+        row.id ?? `${row.word_id ?? row.grammar_id ?? row.unit_key ?? ""}|${row.answer ?? ""}|${row.reviewed_on ?? ""}|${row.created_at ?? ""}`
+      )}` : rowKey(entry, row);
+      if (isDeviceLocalStateKey(entry.table, String(row.key ?? ""))) continue;
+      items.set(key, {
+        key,
+        row,
+        deleted: false,
+        changedAt: changedAtOf(row),
+        originDevice: originOf(row) || sourceOrigin
+      });
+    }
+    rows.set(entry.table, items);
+  }
+  if (tableExists4(db, "sync_tombstones")) {
+    for (const tombstone of rowsOf(db, "sync_tombstones")) {
+      const table = String(tombstone.table_name ?? "");
+      const key = String(tombstone.row_key ?? "");
+      const entry = entries.find((candidate) => candidate.table === table);
+      if (!entry || !rows.has(table)) continue;
+      if (isDeviceLocalStateKey(table, key)) continue;
+      const item = {
+        key,
+        deleted: true,
+        changedAt: String(tombstone.deleted_at ?? "1970-01-01T00:00:00.000Z"),
+        originDevice: String(tombstone.origin_device ?? sourceOrigin) || sourceOrigin
+      };
+      const current = rows.get(table)?.get(key);
+      if (!current || compareVersion(item, current) > 0) rows.get(table)?.set(key, item);
+    }
+  }
+  return { rows };
+};
+var mergeItems = (entry, local, remote) => {
+  const merged = /* @__PURE__ */ new Map();
+  const localItems = local.rows.get(entry.table) ?? /* @__PURE__ */ new Map();
+  const remoteItems = remote.rows.get(entry.table) ?? /* @__PURE__ */ new Map();
+  const keys = /* @__PURE__ */ new Set([...localItems.keys(), ...remoteItems.keys()]);
+  for (const key of keys) {
+    const localItem = localItems.get(key);
+    const remoteItem = remoteItems.get(key);
+    if (!localItem) {
+      if (remoteItem) merged.set(key, remoteItem);
+      continue;
+    }
+    if (!remoteItem) {
+      merged.set(key, localItem);
+      continue;
+    }
+    if (entry.strategy === "append" || entry.strategy === "union" || entry.strategy === "lww") {
+      merged.set(key, compareVersion(localItem, remoteItem) >= 0 ? localItem : remoteItem);
+    }
+  }
+  return merged;
+};
+var mergedRow = (selected, localRow) => {
+  if (selected.deleted) return void 0;
+  return { ...localRow ?? {}, ...selected.row ?? {} };
+};
+var cellsEqual = (left, right) => {
+  if (left instanceof Uint8Array || right instanceof Uint8Array) {
+    if (!(left instanceof Uint8Array) || !(right instanceof Uint8Array) || left.length !== right.length) return false;
+    return left.every((value, index3) => value === right[index3]);
+  }
+  return left === right;
+};
+var rowsEqual = (left, right, columns) => {
+  if (!left || !right) return false;
+  for (const column of columns) {
+    if (!cellsEqual(left[column], right[column])) return false;
+  }
+  return true;
+};
+var deleteRowByKey = (db, entry, key) => {
+  const values = key.split(ROW_SEPARATOR);
+  const where = entry.keys.map((column) => `${quoteIdentifier3(column)} = ?`).join(" AND ");
+  db.run(`DELETE FROM ${quoteIdentifier3(entry.table)} WHERE ${where}`, values);
+};
+var foreignKeyedPrimaryColumns = (db, entry) => {
+  if (!tableExists4(db, entry.table)) return [];
+  const syncKeys = new Set(entry.keys);
+  const statement = db.prepare(`PRAGMA table_info(${quoteIdentifier3(entry.table)})`);
+  try {
+    const result = [];
+    while (statement.step()) {
+      const row = statement.get();
+      if (Number(row[5] ?? 0) > 0 && !syncKeys.has(String(row[1]))) result.push(String(row[1]));
+    }
+    return result;
+  } finally {
+    statement.free();
+  }
+};
+var applyTable = (db, entry, selected) => {
+  if (!tableExists4(db, entry.table)) return;
+  const columns = columnsOf4(db, entry.table);
+  const localRows = rowsOf(db, entry.table);
+  const localByKey = new Map(localRows.map((row) => [rowKey(entry, row), row]));
+  const writableColumns = new Set(columns);
+  const borrowedPrimaryColumns = foreignKeyedPrimaryColumns(db, entry);
+  const changes = [];
+  for (const [key, item] of selected) {
+    if (isDeviceLocalStateKey(entry.table, key)) continue;
+    const current = localByKey.get(key);
+    const row = mergedRow(item, current);
+    if (!row) {
+      if (current) changes.push(() => deleteRowByKey(db, entry, key));
+      continue;
+    }
+    for (const column of borrowedPrimaryColumns) {
+      if (current && current[column] != null) row[column] = current[column];
+      else delete row[column];
+    }
+    if (rowsEqual(current, row, writableColumns)) continue;
+    const rowColumns = Object.keys(row).filter((column) => writableColumns.has(column));
+    if (!rowColumns.length) continue;
+    const names = rowColumns.map(quoteIdentifier3).join(", ");
+    const placeholders = rowColumns.map(() => "?").join(", ");
+    changes.push(() => db.run(
+      `INSERT OR REPLACE INTO ${quoteIdentifier3(entry.table)} (${names}) VALUES (${placeholders})`,
+      rowColumns.map((column) => row[column])
+    ));
+  }
+  if (!changes.length) return;
+  db.run("BEGIN");
+  try {
+    changes.forEach((change) => change());
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+};
+var applyTombstones = (db, merged) => {
+  if (!tableExists4(db, "sync_tombstones")) return;
+  db.run("DELETE FROM sync_tombstones");
+  const columns = columnsOf4(db, "sync_tombstones");
+  for (const [table, items] of merged) {
+    for (const item of items.values()) {
+      if (!item.deleted) continue;
+      const values = {
+        table_name: table,
+        row_key: item.key,
+        deleted_at: item.changedAt,
+        origin_device: item.originDevice
+      };
+      const writableColumns = Object.keys(values).filter((column) => columns.has(column));
+      db.run(
+        `INSERT OR REPLACE INTO sync_tombstones (${writableColumns.map(quoteIdentifier3).join(", ")})
+         VALUES (${writableColumns.map(() => "?").join(", ")})`,
+        writableColumns.map((column) => values[column])
+      );
+    }
+  }
+};
+async function mergeDatabaseBytes(remoteBytes) {
+  ensureSyncSchema();
+  const localDb = (0, import_database31.getDatabase)();
+  const remoteDb = await (0, import_database31.openDatabase)(remoteBytes);
+  const legacyFullSnapshot = tableExists4(remoteDb, "words") && tableExists4(remoteDb, "progress") && tableExists4(remoteDb, "app_state");
+  if (!legacyFullSnapshot && !isUserSyncSnapshot(remoteDb)) {
+    remoteDb.close();
+    throw new Error("\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\u683C\u5F0F\u65E0\u6548\uFF0C\u5DF2\u4FDD\u7559\u672C\u673A\u6570\u636E\u3002");
+  }
+  const syncedTables = syncedTablesForCloud((0, import_entitlements2.canUseFeature)("weeklyReportCloudHistory", (0, import_entitlements2.getEntitlements)()));
+  const localState = stateOf(localDb, "local", syncedTables);
+  const remoteState = stateOf(remoteDb, "remote", syncedTables);
+  const merged = /* @__PURE__ */ new Map();
+  beginSyncApply();
+  try {
+    for (const entry of syncedTables) {
+      const items = mergeItems(entry, localState, remoteState);
+      merged.set(entry.table, items);
+      applyTable(localDb, entry, items);
+    }
+    applyTombstones(localDb, merged);
+    if (tableExists4(localDb, "kanji_unit_reviews")) {
+      const { replayKanjiUnitReviews: replayKanjiUnitReviews2 } = await Promise.resolve().then(() => (init_kanji_unit_scheduler(), kanji_unit_scheduler_exports));
+      replayKanjiUnitReviews2();
+    }
+    if (tableExists4(localDb, "kanji_char_reviews")) {
+      const { replayKanjiCharReviews: replayKanjiCharReviews2 } = await Promise.resolve().then(() => (init_kanji_char_cards(), kanji_char_cards_exports));
+      replayKanjiCharReviews2();
+    }
+    if (tableExists4(localDb, "confusion_reviews")) {
+      const { replayConfusionReviews: replayConfusionReviews2 } = await Promise.resolve().then(() => (init_confusion_cards(), confusion_cards_exports));
+      replayConfusionReviews2();
+    }
+    rebuildStudyTimeAggregate();
+    if (tableExists4(localDb, "custom_words")) {
+      const { materializeCustomWords: materializeCustomWords2 } = await Promise.resolve().then(() => (init_word_list_import(), word_list_import_exports));
+      materializeCustomWords2();
+    }
+    resetFamiliarityCache();
+    resetUserQuestionMeanings();
+    resetQuestionMeaningIndex();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event(GRAMMAR_HIGHLIGHTS_UPDATED_EVENT));
+      window.dispatchEvent(new Event(GRAMMAR_POSITIONS_UPDATED_EVENT));
+    }
+  } finally {
+    endSyncApply();
+    remoteDb.close();
+  }
+  const result = (0, import_database31.exportDatabase)();
+  if (!result) throw new Error("\u5F53\u524D\u6CA1\u6709\u53EF\u5408\u5E76\u7684\u672C\u5730\u6570\u636E\u5E93\u3002");
+  return result;
+}
+
+// scripts/shared/entry.ts
+init_tables();
+
+// ../frontend/src/lib/yuzu.ts
+var yuzu_exports = {};
+__export(yuzu_exports, {
+  YUZU: () => YUZU,
+  YUZU_EVENT: () => YUZU_EVENT,
+  applyYuzuEquipment: () => applyYuzuEquipment,
+  buyItem: () => buyItem,
+  equipItem: () => equipItem,
+  equippedItem: () => equippedItem,
+  ownsItem: () => ownsItem,
+  repairDay: () => repairDay,
+  repairPrice: () => repairPrice,
+  repairableDays: () => repairableDays,
+  settleYuzu: () => settleYuzu,
+  unequip: () => unequip,
+  voiceUnlocked: () => voiceUnlocked,
+  yuzuBalance: () => yuzuBalance,
+  yuzuToday: () => yuzuToday
+});
+var import_database32 = __toESM(require_database(), 1);
+init_db_utils();
+init_stage1();
+init_review_budget();
+
+// ../frontend/src/lib/zoo-streak.ts
+var zoo_streak_exports = {};
+__export(zoo_streak_exports, {
+  computeStreak: () => computeStreak,
+  shiftDay: () => shiftDay2,
+  weekDays: () => weekDays
+});
+var DAY = 864e5;
+var toUtc = (day) => Date.parse(`${day}T00:00:00Z`);
+var fromUtc = (ms) => new Date(ms).toISOString().slice(0, 10);
+var isDay = (day) => /^\d{4}-\d{2}-\d{2}$/.test(day) && !Number.isNaN(toUtc(day));
+var shiftDay2 = (day, delta) => isDay(day) ? fromUtc(toUtc(day) + delta * DAY) : day;
+var computeStreak = (checkins, today2) => {
+  if (!isDay(today2)) return 0;
+  const set = new Set(checkins);
+  let cursor = set.has(today2) ? today2 : shiftDay2(today2, -1);
+  let streak = 0;
+  while (set.has(cursor)) {
+    streak += 1;
+    cursor = shiftDay2(cursor, -1);
+  }
+  return streak;
+};
+var weekDays = (today2) => {
+  if (!isDay(today2)) return [];
+  const weekday = new Date(toUtc(today2)).getUTCDay();
+  const backToMonday = weekday === 0 ? 6 : weekday - 1;
+  const monday = shiftDay2(today2, -backToMonday);
+  return Array.from({ length: 7 }, (_, i) => shiftDay2(monday, i));
+};
+
+// ../frontend/src/lib/yuzu.ts
+var import_zoo_sounds = __toESM(require_zoo_sounds(), 1);
+var import_CapybaraMascot = __toESM(require_mascot(), 1);
+
+// ../frontend/src/lib/yuzu-catalog.ts
+var yuzu_catalog_exports = {};
+__export(yuzu_catalog_exports, {
+  CATEGORY_LABEL: () => CATEGORY_LABEL,
+  EQUIPPABLE: () => EQUIPPABLE,
+  VOICE_ITEM_PREFIX: () => VOICE_ITEM_PREFIX,
+  YUZU_ITEMS: () => YUZU_ITEMS,
+  itemById: () => itemById
+});
+var VOICE_ITEM_PREFIX = "voice-";
+var CATEGORY_LABEL = {
+  theme: "\u914D\u8272\u4E3B\u9898",
+  mascot: "\u5409\u7965\u7269\u76AE\u80A4",
+  icon: "App \u56FE\u6807",
+  voice: "\u53D1\u97F3\u58F0\u97F3",
+  sound: "\u7B54\u9898\u97F3\u6548",
+  misc: "\u5176\u5B83"
+};
+var EQUIPPABLE = /* @__PURE__ */ new Set(["theme", "mascot", "icon", "sound"]);
+var YUZU_ITEMS = [
+  { id: "theme-matcha", name: "\u62B9\u8336", description: "\u9752\u7EFF\u4E3B\u8272\u6362\u6210\u62B9\u8336\u7EFF", category: "theme", price: 200 },
+  { id: "theme-sakura", name: "\u6A31", description: "\u7C89\u5E95\u6A31\u8272", category: "theme", price: 200 },
+  { id: "theme-night", name: "\u6DF1\u591C\u98DF\u5802", description: "\u6697\u7425\u73C0\u6696\u8C03\u7684\u591C\u95F4\u914D\u8272", category: "theme", price: 200 },
+  { id: "mascot-croc", name: "\u9CC4\u9C7C", description: "\u6362\u4E00\u53EA\u9CC4\u9C7C:\u8868\u60C5\u3001\u9875\u9762\u56FE\u6807\u3001\u7A7A\u72B6\u6001\u63D2\u753B\u6574\u5957\u6362\u3002\u5C0F\u8DEF\u4E0A\u8D70\u7684\u8FD8\u662F\u6C34\u8C5A", category: "mascot", price: 300 },
+  { id: "icon-happy", name: "\u5F00\u5FC3\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u5F00\u5FC3\u8868\u60C5", category: "icon", price: 500, soon: true, art: "mood-happy" },
+  { id: "icon-study", name: "\u8BFB\u4E66\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u8BFB\u4E66\u8868\u60C5", category: "icon", price: 500, soon: true, art: "mood-study" },
+  { id: "voice-voicevox-10", name: "\u96E8\u6674\u306F\u3046", description: "\u8F7B\u5FEB\u5973\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 600, art: "tool-speak" },
+  { id: "voice-voicevox-11", name: "\u7384\u91CE\u6B66\u5B8F", description: "\u6C89\u7A33\u7537\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 600, art: "tool-listen" },
+  { id: "sound-marimba", name: "\u6728\u7434", description: "\u7B54\u9898\u97F3\u6362\u6210\u6728\u7434:\u66F4\u5706\u3001\u66F4\u77ED", category: "sound", price: 300, art: "bubble-great" },
+  { id: "sound-epiano", name: "\u7535\u94A2", description: "\u7B54\u9898\u97F3\u6362\u6210\u7535\u94A2:\u5E26\u4E00\u70B9\u6BDB\u8FB9\u7684\u6696\u97F3", category: "sound", price: 300, art: "bubble-cheer" },
+  { id: "walk-alt", name: "\u5C0F\u8DEF\u8D70\u6CD5", description: "\u5B66\u4E60\u9875\u5C0F\u8DEF\u4E0A\u6362\u4E00\u5957\u8D70\u8DEF\u52A8\u753B", category: "misc", price: 400, soon: true, art: "walk-frame" },
+  { id: "report-cover", name: "\u5468\u62A5\u5C01\u9762", description: "\u5468\u62A5\u5C01\u9762\u6362\u4E00\u5F20", category: "misc", price: 300, soon: true, art: "card-daily" },
+  { id: "team-title", name: "\u961F\u4F0D\u79F0\u53F7", description: "\u7EC4\u961F\u9875\u540D\u5B57\u65C1\u7684\u4E13\u5C5E\u79F0\u53F7", category: "misc", price: 300, soon: true, art: "decor-set" }
+];
+var itemById = (id) => YUZU_ITEMS.find((item) => item.id === id);
+
+// ../frontend/src/lib/yuzu.ts
+var YUZU = {
+  /** 今天学了 ≥ 100 个词。计划排得太大清不完的日子(作者 7~8 月有 25 天)也该有份 */
+  study: 5,
+  studyWords: 100,
+  /** 今日计划清完,叠在 study 之上 → 一天 10 */
+  plan: 5,
+  /** 连击每满 7 天 */
+  streak7: 30,
+  /** 加餐,一天一次 */
+  encore: 5,
+  achievement: 20,
+  /** 补签:30 天内第 1/2/3 张,再往后按最后一档 */
+  repair: [50, 100, 200],
+  /** 只补 7 天以内的洞 */
+  repairWindowDays: 7
+};
+var YUZU_EVENT = "shushugo:yuzu";
+var emit = () => {
+  applyYuzuEquipment();
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(YUZU_EVENT));
+};
+var applyYuzuEquipment = () => {
+  if (typeof document === "undefined") return;
+  try {
+    const skin = equippedItem("theme");
+    if (skin) document.documentElement.setAttribute("data-skin", skin);
+    else document.documentElement.removeAttribute("data-skin");
+    (0, import_zoo_sounds.setSoundTimbre)(equippedItem("sound").replace("sound-", "") || "kalimba");
+    (0, import_CapybaraMascot.setMascotSkin)(equippedItem("mascot"));
+  } catch {
+  }
+};
+var voiceUnlocked = (voiceId, defaultId) => !voiceId || voiceId === defaultId || ownsItem(VOICE_ITEM_PREFIX + voiceId);
+var book = (kind, key, amount) => {
+  (0, import_database32.getDatabase)().run("INSERT OR IGNORE INTO yuzu_ledger (kind, key, amount, day) VALUES (?, ?, ?, ?)", [kind, key, amount, today()]);
+  return firstValue("SELECT changes()", [], 0) > 0;
+};
+var yuzuBalance = () => firstValue("SELECT COALESCE(SUM(amount), 0) FROM yuzu_ledger", [], 0);
+var yuzuToday = () => rowsFor("SELECT kind, key, amount FROM yuzu_ledger WHERE day = ? ORDER BY rowid", [today()]).map((row) => ({ kind: String(row.kind), key: String(row.key), amount: Number(row.amount) }));
+var settleYuzu = () => {
+  const day = today();
+  let earned = 0;
+  const words = firstValue(
+    "SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ? AND direction = 'forward'",
+    [day],
+    0
+  );
+  if (words >= YUZU.studyWords && book("study", day, YUZU.study)) earned += YUZU.study;
+  const plan = stage1ProgressCounts();
+  if (plan.total > 0 && plan.completed >= plan.total && book("plan", day, YUZU.plan)) earned += YUZU.plan;
+  const checkins = rowsFor("SELECT checked_on FROM checkins").map((row) => String(row.checked_on));
+  const streak = computeStreak(checkins, day);
+  if (checkins.includes(day) && streak > 0 && streak % 7 === 0 && book("streak", day, YUZU.streak7)) earned += YUZU.streak7;
+  if (readEncoreLog(day).dayWords > 0 && book("encore", day, YUZU.encore)) earned += YUZU.encore;
+  rowsFor("SELECT id FROM achievements WHERE id NOT IN (SELECT key FROM yuzu_ledger WHERE kind = 'achievement')").forEach((row) => {
+    if (book("achievement", String(row.id), YUZU.achievement)) earned += YUZU.achievement;
+  });
+  if (earned) {
+    persistSoon();
+    emit();
+  }
+  return earned;
+};
+var ownsItem = (id) => firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'buy' AND key = ?", [id], 0) > 0;
+var buyItem = (id) => {
+  const item = itemById(id);
+  if (!item || item.soon || ownsItem(id) || yuzuBalance() < item.price) return false;
+  book("buy", id, -item.price);
+  if (EQUIPPABLE.has(item.category) && !equippedItem(item.category)) equipItem(id);
+  persistSoon();
+  emit();
+  return true;
+};
+var equipKey = (category) => `yuzu_equipped:${category}`;
+var equippedItem = (category) => getState(equipKey(category), "");
+var equipItem = (id) => {
+  const item = itemById(id);
+  if (!item || !EQUIPPABLE.has(item.category) || !ownsItem(id)) return;
+  setState(equipKey(item.category), id);
+  persistSoon();
+  emit();
+};
+var unequip = (category) => {
+  setState(equipKey(category), "");
+  persistSoon();
+  emit();
+};
+var repairPrice = () => {
+  const since = shiftDay2(today(), -30);
+  const used = firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'repair' AND day >= ?", [since], 0);
+  return YUZU.repair[Math.min(used, YUZU.repair.length - 1)];
+};
+var repairableDays = () => {
+  const day = today();
+  const set = new Set(rowsFor("SELECT checked_on FROM checkins").map((row) => String(row.checked_on)));
+  const first = [...set].sort()[0];
+  if (!first) return [];
+  const out = [];
+  for (let i = 1; i <= YUZU.repairWindowDays; i++) {
+    const d = shiftDay2(day, -i);
+    if (d > first && !set.has(d)) out.push(d);
+  }
+  return out;
+};
+var repairDay = (day) => {
+  if (!repairableDays().includes(day)) return false;
+  const price = repairPrice();
+  if (yuzuBalance() < price) return false;
+  const db = (0, import_database32.getDatabase)();
+  book("repair", day, -price);
+  db.run("INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)", [day]);
+  persistSoon();
+  emit();
+  return true;
+};
+
+// scripts/shared/entry.ts
+init_favorites_api();
+
+// ../frontend/src/lib/analytics/weekly.ts
+var weekly_exports = {};
+__export(weekly_exports, {
+  ETA_MAX_WEEKS: () => ETA_MAX_WEEKS,
+  KEYWORD_RARITY: () => KEYWORD_RARITY,
+  SPEED_BANDS: () => SPEED_BANDS,
+  TIME_REF_MIN_MINUTES: () => TIME_REF_MIN_MINUTES,
+  WEEKLY_HIGHLIGHT_MIN_PEAK: () => WEEKLY_HIGHLIGHT_MIN_PEAK,
+  WEEKLY_REPORT_MIN_DAYS: () => WEEKLY_REPORT_MIN_DAYS,
+  buildReferences: () => buildReferences,
+  buildWeeklyReport: () => buildWeeklyReport,
+  formatDateCn: () => formatDateCn,
+  getGoalEta: () => getGoalEta,
+  getKeywordCandidates: () => getKeywordCandidates,
+  getRollingSpeed: () => getRollingSpeed,
+  getSlotDistribution: () => getSlotDistribution,
+  getSpeedBand: () => getSpeedBand,
+  getStreak: () => getStreak,
+  getWeekWindow: () => getWeekWindow,
+  getWeeklyHighlight: () => getWeeklyHighlight,
+  getWeeklyMetrics: () => getWeeklyMetrics,
+  getWeeklyRevisitWords: () => getWeeklyRevisitWords,
+  hashSeed: () => hashSeed,
+  isWeekend: () => isWeekend,
+  passesThreshold: () => passesThreshold,
+  pickKeyword: () => pickKeyword,
+  reportPeriodStart: () => reportPeriodStart2,
+  weekStartOf: () => weekStartOf,
+  windowDays: () => windowDays
+});
+init_db_utils();
+var localDateKey3 = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+var localDateTimeKey = (date) => `${localDateKey3(date)} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+var dateAt = (dateText, hour, minute = 0) => {
+  const date = /* @__PURE__ */ new Date(`${dateText}T00:00:00`);
+  date.setHours(hour, minute, 0, 0);
+  return date;
+};
+var parseAnchor = (value) => {
+  if (value instanceof Date) return new Date(value);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return dateAt(value, 12);
+  return new Date(value);
+};
+var parseEventAt = (value, fallbackDay) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const numeric = Number(value);
+    if (Number.isFinite(numeric) && numeric > 0) return numeric;
+    const sqliteUtc = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?)$/;
+    const parsedValue = sqliteUtc.test(value) ? `${value.replace(" ", "T")}Z` : value.includes("T") ? value : value.replace(" ", "T");
+    const parsed = new Date(parsedValue);
+    if (Number.isFinite(parsed.getTime())) return parsed.getTime();
+  }
+  const fallback = String(fallbackDay ?? "");
+  const parsedFallback = /^\d{4}-\d{2}-\d{2}$/.test(fallback) ? dateAt(fallback, 12) : new Date(fallback);
+  return Number.isFinite(parsedFallback.getTime()) ? parsedFallback.getTime() : NaN;
+};
+var tableExists5 = (table) => rowsFor(
+  "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1",
+  [table]
+).length > 0;
+var shiftDays = (date, days) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+var reportPeriodStart2 = (atMs) => {
+  const date = new Date(atMs);
+  date.setHours(14, 0, 0, 0);
+  date.setDate(date.getDate() - date.getDay());
+  if (atMs < date.getTime()) date.setDate(date.getDate() - 7);
+  return `${localDateKey3(date)} 14:00`;
+};
+var completedBoundaryFor = (anchor) => {
+  const date = parseAnchor(anchor);
+  if (!Number.isFinite(date.getTime())) return dateAt(localDateKey3(/* @__PURE__ */ new Date()), 14);
+  const sunday = new Date(date);
+  sunday.setHours(14, 0, 0, 0);
+  sunday.setDate(sunday.getDate() - sunday.getDay());
+  if (date.getTime() < sunday.getTime()) sunday.setDate(sunday.getDate() - 7);
+  return sunday;
+};
+var windowFromEndBoundary = (endBoundary, offset) => {
+  const end = shiftDays(endBoundary, offset * 7);
+  const start = shiftDays(end, -7);
+  return {
+    start: localDateKey3(start),
+    end: localDateKey3(shiftDays(end, -1)),
+    startAt: start.getTime(),
+    endAt: end.getTime()
+  };
+};
+function getWeekWindow(anchor = /* @__PURE__ */ new Date(), offset = 0) {
+  return windowFromEndBoundary(completedBoundaryFor(anchor), offset);
+}
+function weekStartOf(dateText) {
+  const d = parseAnchor(dateText);
+  if (!Number.isFinite(d.getTime())) return dateText;
+  d.setDate(d.getDate() - d.getDay());
+  return localDateKey3(d);
+}
+function windowDays(window2) {
+  const days = [];
+  const cursor = dateAt(window2.start, 0);
+  for (let i = 0; i < 7; i += 1) {
+    days.push(localDateKey3(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return days;
+}
+var isWeekend = (dateText) => {
+  const day = parseAnchor(dateText).getDay();
+  return day === 0 || day === 6;
+};
+var readActivityEvents = () => {
+  const events = [];
+  if (tableExists5("reviews")) {
+    const columns = new Set(rowsFor("PRAGMA table_info(reviews)").map((row) => String(row.name ?? "")));
+    const sourceColumn = columns.has("event_source") ? "event_source" : "'legacy' AS event_source";
+    for (const row of rowsFor(`SELECT id, word_id, answer, direction, reviewed_on, reviewed_at, created_at, ${sourceColumn} FROM reviews`)) {
+      const at = parseEventAt(row.reviewed_at ?? row.created_at, row.reviewed_on);
+      events.push({
+        kind: "word",
+        id: `word:${String(row.id)}`,
+        wordId: Number(row.word_id),
+        answer: String(row.answer ?? ""),
+        direction: String(row.direction ?? "forward"),
+        eventSource: String(row.event_source ?? "legacy"),
+        day: String(row.reviewed_on ?? localDateKey3(new Date(at))),
+        at
+      });
+    }
+  }
+  if (tableExists5("grammar_reviews")) {
+    for (const row of rowsFor("SELECT id, grammar_id, answer, reviewed_on, created_at FROM grammar_reviews")) {
+      const at = parseEventAt(row.created_at, row.reviewed_on);
+      events.push({
+        kind: "grammar",
+        id: `grammar:${String(row.id)}`,
+        grammarId: String(row.grammar_id),
+        answer: String(row.answer ?? ""),
+        day: String(row.reviewed_on ?? localDateKey3(new Date(at))),
+        at
+      });
+    }
+  }
+  if (tableExists5("grammar_activity_events")) {
+    for (const row of rowsFor("SELECT id, grammar_id, answer, activity_on, activity_at, created_at FROM grammar_activity_events")) {
+      const at = parseEventAt(row.activity_at ?? row.created_at, row.activity_on);
+      events.push({
+        kind: "grammar",
+        id: `grammar-activity:${String(row.id)}`,
+        grammarId: String(row.grammar_id),
+        answer: String(row.answer ?? "read"),
+        day: String(row.activity_on ?? localDateKey3(new Date(at))),
+        at
+      });
+    }
+  }
+  if (tableExists5("kanji_unit_reviews")) {
+    for (const row of rowsFor("SELECT id, unit_key, answer, reviewed_on, reviewed_at, created_at FROM kanji_unit_reviews")) {
+      const at = parseEventAt(row.reviewed_at ?? row.created_at, row.reviewed_on);
+      events.push({
+        kind: "kanji",
+        id: `kanji:${String(row.id)}`,
+        answer: String(row.answer ?? ""),
+        day: String(row.reviewed_on ?? localDateKey3(new Date(at))),
+        at
+      });
+    }
+  }
+  return events.filter((event) => event.answer !== "known_forever").filter((event) => event.eventSource !== "bulk_complete").filter((event) => Number.isFinite(event.at));
+};
+var eventInWindow = (event, window2) => event.at >= window2.startAt && event.at < window2.endAt;
+var eventDay = (event) => {
+  const date = new Date(event.at);
+  return Number.isFinite(date.getTime()) ? localDateKey3(date) : event.day;
+};
+var displayDayFor = (date, window2, closingDay) => date === closingDay ? window2.start : date;
+var eventDaysBefore = (events, endAt) => {
+  const dates = /* @__PURE__ */ new Set();
+  for (const event of events) if (event.at < endAt) dates.add(eventDay(event));
+  return dates;
+};
+var streakAtEnd = (events, window2) => {
+  const activeDays = eventDaysBefore(events, window2.endAt);
+  let count = 0;
+  const cursor = new Date(window2.endAt - 1);
+  while (activeDays.has(localDateKey3(cursor))) {
+    count += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return count;
+};
+var firstForwardEvents = (events) => {
+  const firstByWord = /* @__PURE__ */ new Map();
+  for (const event of events) {
+    if (event.kind !== "word" || event.direction !== "forward" || event.wordId == null) continue;
+    const existing = firstByWord.get(event.wordId);
+    if (!existing || event.at < existing.at || event.at === existing.at && event.id < existing.id) {
+      firstByWord.set(event.wordId, event);
+    }
+  }
+  return [...firstByWord.values()];
+};
+var secondsInWindow = (window2) => {
+  if (tableExists5("study_time_by_period")) {
+    const periodSeconds = firstValue(
+      "SELECT COALESCE(SUM(seconds), 0) FROM study_time_by_period WHERE period_start = ?",
+      [localDateTimeKey(new Date(window2.startAt))],
+      0
+    );
+    if (periodSeconds > 0) return periodSeconds;
+  }
+  if (!tableExists5("word_study_time")) return 0;
+  return firstValue(
+    "SELECT COALESCE(SUM(seconds), 0) FROM word_study_time WHERE studied_on BETWEEN ? AND ?",
+    [window2.start, window2.end],
+    0
+  );
+};
+function getStreak(window2 = getWeekWindow()) {
+  return streakAtEnd(readActivityEvents(), window2);
+}
+function getWeeklyMetrics(window2) {
+  const events = readActivityEvents();
+  const inWindow = events.filter((event) => eventInWindow(event, window2));
+  const firstWords = firstForwardEvents(events);
+  const newInWindow = firstWords.filter((event) => eventInWindow(event, window2));
+  const closingDay = localDateKey3(new Date(window2.endAt - 1));
+  const dailySeconds = /* @__PURE__ */ new Map();
+  if (tableExists5("word_study_time")) {
+    for (const row of rowsFor(
+      "SELECT studied_on, seconds FROM word_study_time WHERE studied_on BETWEEN ? AND ? AND seconds > 0",
+      [window2.start, closingDay]
+    )) {
+      const date = displayDayFor(String(row.studied_on), window2, closingDay);
+      dailySeconds.set(date, (dailySeconds.get(date) ?? 0) + Math.max(0, Number(row.seconds ?? 0)));
+    }
+  }
+  const days = windowDays(window2);
+  const daily = days.map((date) => ({
+    date,
+    reviews: inWindow.filter((event) => displayDayFor(eventDay(event), window2, closingDay) === date).length,
+    newWords: newInWindow.filter((event) => displayDayFor(eventDay(event), window2, closingDay) === date).length,
+    seconds: dailySeconds.get(date) ?? 0
+  }));
+  const wordReviews = inWindow.filter((event) => event.kind === "word").length;
+  const grammarReviews = inWindow.filter((event) => event.kind === "grammar").length;
+  const kanjiReviews = inWindow.filter((event) => event.kind === "kanji").length;
+  const totalReviews = inWindow.length;
+  const totalSeconds = Math.max(0, Math.round(secondsInWindow(window2)));
+  const eventDays = new Set(inWindow.map((event) => displayDayFor(eventDay(event), window2, closingDay)));
+  const activeDays = /* @__PURE__ */ new Set([...eventDays, ...dailySeconds.keys()]);
+  const daysWithActivity = activeDays.size > 0 ? activeDays.size : totalSeconds > 0 ? 1 : 0;
+  const cumulativeWordCount = firstWords.filter((event) => event.at < window2.endAt).length;
+  const cumulativeDays = eventDaysBefore(events, window2.endAt);
+  if (tableExists5("word_study_time")) {
+    for (const row of rowsFor("SELECT studied_on FROM word_study_time WHERE studied_on <= ? AND seconds > 0", [closingDay])) {
+      cumulativeDays.add(String(row.studied_on));
+    }
+  }
+  return {
+    window: window2,
+    days: daysWithActivity,
+    minutes: Math.round(totalSeconds / 60),
+    totalSeconds,
+    totalReviews,
+    wordReviews,
+    grammarReviews,
+    kanjiReviews,
+    newWords: newInWindow.length,
+    reviewCount: Math.max(0, totalReviews - newInWindow.length),
+    daily,
+    streak: streakAtEnd(events, window2),
+    cumulativeDays: Math.max(cumulativeDays.size, totalSeconds > 0 ? 1 : 0),
+    cumulativeWords: cumulativeWordCount
+  };
+}
+var WEEKLY_HIGHLIGHT_MIN_PEAK = 2;
+function getWeeklyHighlight(metrics) {
+  const active = metrics.daily.filter((item) => item.reviews > 0);
+  if (active.length < 2) return null;
+  const best = active.reduce((current, item) => item.reviews > current.reviews ? item : current);
+  if (best.reviews < WEEKLY_HIGHLIGHT_MIN_PEAK) return null;
+  return { date: best.date, text: `${best.date} \u5B8C\u6210\u4E86 ${best.reviews} \u6B21\u5B66\u4E60\u8BB0\u5F55` };
+}
+function getWeeklyRevisitWords(window2) {
+  const events = readActivityEvents().filter((event) => eventInWindow(event, window2));
+  const counts = /* @__PURE__ */ new Map();
+  for (const event of events) {
+    if (event.kind !== "word" || event.direction !== "forward" || event.wordId == null || !["forgot", "fuzzy"].includes(event.answer)) continue;
+    const previous = counts.get(event.wordId);
+    counts.set(event.wordId, { count: (previous?.count ?? 0) + 1, latest: Math.max(previous?.latest ?? 0, event.at) });
+  }
+  if (!counts.size || !tableExists5("words")) return [];
+  const words = /* @__PURE__ */ new Map();
+  for (const row of rowsFor("SELECT id, kanji, kana FROM words WHERE id IN (" + [...counts.keys()].map(() => "?").join(",") + ")", [...counts.keys()])) {
+    words.set(Number(row.id), String(row.kanji || row.kana || `\u8BCD\u6761 ${row.id}`));
+  }
+  if (tableExists5("custom_words")) {
+    for (const row of rowsFor("SELECT word_id, kanji, kana FROM custom_words WHERE word_id IN (" + [...counts.keys()].map(() => "?").join(",") + ")", [...counts.keys()])) {
+      words.set(Number(row.word_id), String(row.kanji || row.kana || `\u8BCD\u6761 ${row.word_id}`));
+    }
+  }
+  return [...counts.entries()].filter(([wordId]) => words.has(wordId)).map(([wordId, value]) => ({ wordId, text: words.get(wordId), count: value.count, latest: value.latest })).sort((a, b) => b.count - a.count || b.latest - a.latest || a.wordId - b.wordId).slice(0, 8).map(({ wordId, text, count }) => ({ wordId, text, count }));
+}
+var slotOfHour = (hour) => {
+  if (hour >= 22 || hour < 4) return "deepNight";
+  if (hour < 8) return "earlyMorning";
+  if (hour < 12) return "morning";
+  if (hour < 17) return "afternoon";
+  if (hour < 20) return "dusk";
+  return "night";
+};
+function getSlotDistribution(window2) {
+  const counts = {
+    deepNight: 0,
+    earlyMorning: 0,
+    morning: 0,
+    afternoon: 0,
+    dusk: 0,
+    night: 0
+  };
+  let total = 0;
+  let commute = 0;
+  for (const event of readActivityEvents().filter((item) => eventInWindow(item, window2))) {
+    const hour = new Date(event.at).getHours();
+    counts[slotOfHour(hour)] += 1;
+    total += 1;
+    if (hour >= 7 && hour < 9 || hour >= 17 && hour < 19) commute += 1;
+  }
+  return { counts, total, commuteShare: total > 0 ? commute / total : 0 };
+}
+var coefficientOfVariation = (values) => {
+  if (values.length < 2) return Number.POSITIVE_INFINITY;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  if (mean === 0) return Number.POSITIVE_INFINITY;
+  const variance = values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
+  return Math.sqrt(variance) / mean;
+};
+var KEYWORD_RARITY = {
+  \u590D\u4E60\u6D3E: 2,
+  \u94C1\u4EBA: 2,
+  \u5300\u901F\u524D\u8FDB: 3,
+  \u653B\u575A\u624B: 3,
+  \u591C\u884C\u8005: 3,
+  \u901A\u52E4\u515A: 4,
+  \u5F00\u8352\u8005: 4,
+  \u5468\u672B\u7A81\u51FB\u624B: 4,
+  \u65E9\u8D77\u9E1F: 5,
+  \u5355\u65E5\u7206\u53D1: 5
+};
+var maxSlot = (counts) => {
+  let best = null;
+  for (const key of Object.keys(counts)) {
+    if (counts[key] === 0) continue;
+    if (best === null || counts[key] > counts[best]) best = key;
+  }
+  return best;
+};
+function getKeywordCandidates(metrics, slots) {
+  const hits = [];
+  const top = maxSlot(slots.counts);
+  if (top === "deepNight") hits.push("\u591C\u884C\u8005");
+  if (top === "earlyMorning") hits.push("\u65E9\u8D77\u9E1F");
+  if (slots.total > 0 && slots.commuteShare >= 0.35) hits.push("\u901A\u52E4\u515A");
+  const weekendReviews = metrics.daily.filter((day) => isWeekend(day.date)).reduce((sum, day) => sum + day.reviews, 0);
+  if (metrics.totalReviews > 0 && weekendReviews / metrics.totalReviews >= 0.4) hits.push("\u5468\u672B\u7A81\u51FB\u624B");
+  if (metrics.streak >= 14) hits.push("\u94C1\u4EBA");
+  if (coefficientOfVariation(metrics.daily.map((day) => day.newWords)) < 0.3) hits.push("\u5300\u901F\u524D\u8FDB");
+  const activeDays = metrics.daily.filter((day) => day.newWords > 0);
+  if (activeDays.length > 0) {
+    const peak = Math.max(...activeDays.map((day) => day.newWords));
+    const mean = activeDays.reduce((sum, day) => sum + day.newWords, 0) / activeDays.length;
+    if (mean > 0 && peak / mean >= 3) hits.push("\u5355\u65E5\u7206\u53D1");
+  }
+  if (metrics.reviewCount > metrics.newWords) hits.push("\u590D\u4E60\u6D3E");
+  if (metrics.newWords > metrics.reviewCount) hits.push("\u5F00\u8352\u8005");
+  const hardCount = /* @__PURE__ */ new Map();
+  for (const event of readActivityEvents().filter((item) => item.kind === "word" && eventInWindow(item, metrics.window))) {
+    if (event.wordId != null) hardCount.set(event.wordId, (hardCount.get(event.wordId) ?? 0) + 1);
+  }
+  if ([...hardCount.values()].some((count) => count >= 5)) hits.push("\u653B\u575A\u624B");
+  return hits.map((keyword) => ({ keyword, rarity: KEYWORD_RARITY[keyword] ?? 3 }));
+}
+var hashSeed = (text) => {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+};
+var mulberry32 = (seed) => {
+  let state = seed >>> 0;
+  return () => {
+    state = state + 1831565813 | 0;
+    let t = Math.imul(state ^ state >>> 15, 1 | state);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+};
+function pickKeyword(candidates, seed) {
+  if (candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0];
+  const total = candidates.reduce((sum, candidate) => sum + candidate.rarity, 0);
+  const roll = mulberry32(hashSeed(seed))() * total;
+  let accumulated = 0;
+  for (const candidate of candidates) {
+    accumulated += candidate.rarity;
+    if (roll < accumulated) return candidate;
+  }
+  return candidates[candidates.length - 1];
+}
+var SPEED_BANDS = [
+  { level: 4, threshold: 100, label: "\u672C\u5468\u63A5\u89E6\u91CF\u5F88\u9AD8" },
+  { level: 3, threshold: 64, label: "\u672C\u5468\u63A5\u89E6\u91CF\u5F88\u5145\u5B9E" },
+  { level: 2, threshold: 43, label: "\u672C\u5468\u63A5\u89E6\u91CF\u7A33\u5B9A" },
+  { level: 1, threshold: 22, label: "\u672C\u5468\u63A5\u89E6\u4E86\u4E0D\u5C11\u65B0\u8BCD" }
+];
+function getSpeedBand(newWords) {
+  return SPEED_BANDS.find((band) => newWords >= band.threshold) ?? null;
+}
+var ETA_MAX_WEEKS = 104;
+function getGoalEta() {
+  return null;
+}
+var firstActivityAt = () => {
+  const events = readActivityEvents();
+  if (!events.length) return Number.POSITIVE_INFINITY;
+  return events.reduce((earliest, event) => Math.min(earliest, event.at), Number.POSITIVE_INFINITY);
+};
+function getRollingSpeed(window2, weeks = 4) {
+  const startedAt = firstActivityAt();
+  let total = 0;
+  let counted = 0;
+  const end = new Date(window2.endAt);
+  for (let i = 0; i < weeks; i += 1) {
+    const current = windowFromEndBoundary(shiftDays(end, -i * 7), 0);
+    if (current.endAt <= startedAt) continue;
+    total += getWeeklyMetrics(current).newWords;
+    counted += 1;
+  }
+  return counted > 0 ? total / counted : 0;
+}
+var TIME_REF_MIN_MINUTES = 1;
+var formatDuration = (minutes) => {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours > 0 && rest > 0) return `${hours} \u5C0F\u65F6 ${rest} \u5206`;
+  if (hours > 0) return `${hours} \u5C0F\u65F6`;
+  return `${rest} \u5206\u949F`;
+};
+var formatDateCn = (dateText) => {
+  const parts = dateText.split("-");
+  return parts.length === 3 ? `${parts[0]} \u5E74 ${Number(parts[1])} \u6708 ${Number(parts[2])} \u65E5` : dateText;
+};
+function buildReferences(ctx) {
+  const { metrics } = ctx;
+  const references = [];
+  if (metrics.totalSeconds >= 60 * TIME_REF_MIN_MINUTES) {
+    references.push({ kind: "time", text: `\u8FD9\u6BB5\u65F6\u95F4\u4F60\u6295\u5165\u4E86 ${formatDuration(Math.floor(metrics.totalSeconds / 60))}` });
+  }
+  if (metrics.totalReviews > 0) {
+    references.push({ kind: "review", text: `\u8FD9\u6BB5\u65F6\u95F4\u4F60\u5B8C\u6210\u4E86 ${metrics.totalReviews} \u6B21\u5B66\u4E60` });
+  }
+  if (metrics.streak > 0 && !(ctx.takenKeywords ?? []).includes("\u94C1\u4EBA")) {
+    references.push({ kind: "streak", text: `\u4F60\u8FDE\u7EED ${metrics.streak} \u5929\u4E0E\u65E5\u8BED\u89C1\u9762` });
+  }
+  return references;
+}
+function buildWeeklyReport(userSeed, offset = 0, today2 = /* @__PURE__ */ new Date()) {
+  const window2 = getWeekWindow(today2, offset);
+  const metrics = getWeeklyMetrics(window2);
+  const slots = getSlotDistribution(window2);
+  const keywordCandidates = getKeywordCandidates(metrics, slots);
+  const keyword = pickKeyword(keywordCandidates, `${userSeed}:${window2.startAt}`);
+  return {
+    window: window2,
+    metrics,
+    keyword,
+    keywordCandidates,
+    // 首发不再展示“效率 N 档”和“提前几周”的模糊预测。
+    speedBand: null,
+    eta: null,
+    references: buildReferences({ metrics, speedBand: null, eta: null, takenKeywords: keyword ? [keyword.keyword] : [] }),
+    highlight: getWeeklyHighlight(metrics),
+    revisitWords: getWeeklyRevisitWords(window2)
+  };
+}
+var WEEKLY_REPORT_MIN_DAYS = 1;
+var passesThreshold = (metrics) => metrics.totalReviews > 0 || metrics.totalSeconds > 0;
+
+// ../frontend/src/lib/analytics/weekly-reports.ts
+var weekly_reports_exports = {};
+__export(weekly_reports_exports, {
+  WEEKLY_BACKFILL_MAX_WEEKS: () => WEEKLY_BACKFILL_MAX_WEEKS,
+  WEEKLY_REPORT_SCHEMA_VERSION: () => WEEKLY_REPORT_SCHEMA_VERSION,
+  WEEKLY_REPORT_UPDATED_EVENT: () => WEEKLY_REPORT_UPDATED_EVENT,
+  backfillWeeklyReports: () => backfillWeeklyReports,
+  generateLatestWeeklyReport: () => generateLatestWeeklyReport,
+  generateWeeklyReport: () => generateWeeklyReport,
+  getWeeklyReport: () => getWeeklyReport,
+  getWeeklyReportNotice: () => getWeeklyReportNotice,
+  listWeeklyReports: () => listWeeklyReports,
+  markWeeklyReportRead: () => markWeeklyReportRead,
+  reportWindowLabel: () => reportWindowLabel,
+  reportWindowLabelCompact: () => reportWindowLabelCompact,
+  saveWeeklyReport: () => saveWeeklyReport
+});
+var import_database33 = __toESM(require_database(), 1);
+init_db_utils();
+var WEEKLY_REPORT_SCHEMA_VERSION = 3;
+var WEEKLY_REPORT_UPDATED_EVENT = "shushugo-weekly-report-updated";
+var ensureWeeklyReportsTable = () => {
+  (0, import_database33.getDatabase)().run(`
+    CREATE TABLE IF NOT EXISTS weekly_reports (
+      week_start TEXT PRIMARY KEY,
+      week_end TEXT NOT NULL,
+      generated_at INTEGER NOT NULL,
+      schema_version INTEGER NOT NULL DEFAULT 3,
+      content_json TEXT NOT NULL,
+      read_at INTEGER,
+      source_revision TEXT,
+      sync_updated_at TEXT,
+      sync_origin_device TEXT
+    )
+  `);
+  const columns = rowsFor("PRAGMA table_info(weekly_reports)").map((row) => String(row.name ?? ""));
+  if (!columns.includes("source_revision")) (0, import_database33.getDatabase)().run("ALTER TABLE weekly_reports ADD COLUMN source_revision TEXT");
+  if (!columns.includes("sync_updated_at")) (0, import_database33.getDatabase)().run("ALTER TABLE weekly_reports ADD COLUMN sync_updated_at TEXT");
+  if (!columns.includes("sync_origin_device")) (0, import_database33.getDatabase)().run("ALTER TABLE weekly_reports ADD COLUMN sync_origin_device TEXT");
+};
+var sourceRevision = () => {
+  const parts = [];
+  const tables = [
+    ["reviews", "SELECT COUNT(*) count, COALESCE(MAX(id), 0) max_id, COALESCE(MAX(created_at), '') max_at FROM reviews"],
+    ["grammar_reviews", "SELECT COUNT(*) count, COALESCE(MAX(id), 0) max_id, COALESCE(MAX(created_at), '') max_at FROM grammar_reviews"],
+    ["grammar_activity_events", "SELECT COUNT(*) count, COALESCE(MAX(id), 0) max_id, COALESCE(MAX(created_at), '') max_at FROM grammar_activity_events"],
+    ["kanji_unit_reviews", "SELECT COUNT(*) count, COALESCE(MAX(id), 0) max_id, COALESCE(MAX(created_at), '') max_at FROM kanji_unit_reviews"],
+    ["word_study_time", "SELECT COUNT(*) count, COALESCE(SUM(seconds), 0) total FROM word_study_time"],
+    ["study_time_by_period", "SELECT COUNT(*) count, COALESCE(SUM(seconds), 0) total FROM study_time_by_period"]
+  ];
+  for (const [table, query] of tables) {
+    try {
+      const row = rowsFor(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`, [table]).length ? rowsFor(query)[0] : null;
+      parts.push(`${table}:${JSON.stringify(row ?? null)}`);
+    } catch {
+      parts.push(`${table}:null`);
+    }
+  }
+  return parts.join("|");
+};
+var decode2 = (row) => {
+  try {
+    const parsed = JSON.parse(String(row.content_json ?? ""));
+    const report = normalizeWeeklyReport(parsed);
+    if (!report?.window?.start || !report?.metrics) return null;
+    return {
+      schemaVersion: Number(row.schema_version ?? WEEKLY_REPORT_SCHEMA_VERSION),
+      generatedAt: Number(row.generated_at ?? 0),
+      readAt: row.read_at == null ? null : Number(row.read_at),
+      sourceRevision: row.source_revision == null ? void 0 : String(row.source_revision),
+      report
+    };
+  } catch {
+    return null;
+  }
+};
+var localDateKey4 = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+var numberOrZero = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+var normalizeDaily = (report) => {
+  const raw = Array.isArray(report.metrics?.daily) ? report.metrics.daily : [];
+  const daily = raw.map((day) => ({
+    ...day,
+    date: String(day.date ?? ""),
+    reviews: numberOrZero(day.reviews),
+    newWords: numberOrZero(day.newWords),
+    seconds: numberOrZero(day.seconds)
+  }));
+  if (daily.length <= 7) return daily;
+  const closingDay = localDateKey4(new Date(report.window.endAt - 1));
+  const firstIndex = daily.findIndex((day) => day.date === report.window.start);
+  const closingIndex = daily.findIndex((day) => day.date === closingDay && day.date !== report.window.start);
+  if (firstIndex >= 0 && closingIndex >= 0) {
+    daily[firstIndex] = {
+      ...daily[firstIndex],
+      reviews: daily[firstIndex].reviews + daily[closingIndex].reviews,
+      newWords: daily[firstIndex].newWords + daily[closingIndex].newWords,
+      seconds: daily[firstIndex].seconds + daily[closingIndex].seconds
+    };
+    daily.splice(closingIndex, 1);
+  }
+  return daily.slice(0, 7);
+};
+var normalizeWeeklyReport = (report) => {
+  const daily = normalizeDaily(report);
+  const rawDays = numberOrZero(report.metrics?.days);
+  const highlight = report.highlight ?? null;
+  const closingDay = localDateKey4(new Date(report.window.endAt - 1));
+  return {
+    ...report,
+    metrics: {
+      ...report.metrics,
+      // 一周最多七个展示日；旧快照可能在日格已被截断后仍残留 days=8。
+      days: Math.min(Math.max(rawDays, 0), 7),
+      daily
+    },
+    highlight: highlight && highlight.date === closingDay ? { ...highlight, date: report.window.start } : highlight,
+    revisitWords: report.revisitWords ?? []
+  };
+};
+function getWeeklyReport(weekStart) {
+  ensureWeeklyReportsTable();
+  const row = rowsFor(
+    "SELECT schema_version, generated_at, content_json, read_at, source_revision FROM weekly_reports WHERE week_start = ?",
+    [weekStart]
+  )[0];
+  return row ? decode2(row) : null;
+}
+function listWeeklyReports() {
+  ensureWeeklyReportsTable();
+  return rowsFor(
+    "SELECT schema_version, generated_at, content_json, read_at, source_revision FROM weekly_reports ORDER BY week_start DESC"
+  ).flatMap((row) => {
+    const snapshot = decode2(row);
+    return snapshot ? [snapshot] : [];
+  });
+}
+function saveWeeklyReport(report, generatedAt = Date.now()) {
+  ensureWeeklyReportsTable();
+  const normalized = normalizeWeeklyReport(report);
+  const existing = getWeeklyReport(normalized.window.start);
+  const readAt = existing?.readAt ?? null;
+  const revision = sourceRevision();
+  (0, import_database33.getDatabase)().run(`
+    INSERT INTO weekly_reports
+      (week_start, week_end, generated_at, schema_version, content_json, read_at, source_revision, sync_updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(week_start) DO UPDATE SET
+      week_end = excluded.week_end,
+      generated_at = excluded.generated_at,
+      schema_version = excluded.schema_version,
+      content_json = excluded.content_json,
+      read_at = excluded.read_at,
+      source_revision = excluded.source_revision,
+      sync_updated_at = excluded.sync_updated_at
+  `, [
+    normalized.window.start,
+    normalized.window.end,
+    generatedAt,
+    WEEKLY_REPORT_SCHEMA_VERSION,
+    JSON.stringify(normalized),
+    readAt,
+    revision,
+    (/* @__PURE__ */ new Date()).toISOString()
+  ]);
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(WEEKLY_REPORT_UPDATED_EVENT));
+  return {
+    schemaVersion: WEEKLY_REPORT_SCHEMA_VERSION,
+    generatedAt,
+    readAt,
+    sourceRevision: revision,
+    report: normalized
+  };
+}
+function generateWeeklyReport(userSeed = "local", offset = 0, now = /* @__PURE__ */ new Date(), force = false) {
+  const window2 = getWeekWindow(now, offset);
+  const existing = getWeeklyReport(window2.start);
+  if (existing && existing.schemaVersion >= WEEKLY_REPORT_SCHEMA_VERSION && (!force || existing.readAt != null)) return existing;
+  const report = buildWeeklyReport(userSeed, offset, now);
+  if (!passesThreshold(report.metrics)) return null;
+  return saveWeeklyReport(report);
+}
+function generateLatestWeeklyReport(userSeed = "local", now = /* @__PURE__ */ new Date(), force = false) {
+  return generateWeeklyReport(userSeed, 0, now, force);
+}
+function markWeeklyReportRead(weekStart, readAt = Date.now()) {
+  ensureWeeklyReportsTable();
+  const row = rowsFor("SELECT read_at FROM weekly_reports WHERE week_start = ? LIMIT 1", [weekStart])[0];
+  if (!row || row.read_at != null) return false;
+  (0, import_database33.getDatabase)().run(
+    "UPDATE weekly_reports SET read_at = ?, sync_updated_at = ? WHERE week_start = ?",
+    [readAt, (/* @__PURE__ */ new Date()).toISOString(), weekStart]
+  );
+  return true;
+}
+var WEEKLY_BACKFILL_MAX_WEEKS = 12;
+var BACKFILL_EMPTY_STREAK_STOP = 3;
+function backfillWeeklyReports(userSeed = "local", options = {}) {
+  const maxWeeks = Math.max(1, Math.min(WEEKLY_BACKFILL_MAX_WEEKS, options.maxWeeks ?? 6));
+  const now = options.now ?? /* @__PURE__ */ new Date();
+  let generated = 0;
+  let scanned = 0;
+  let emptyStreak = 0;
+  for (let offset = 0; offset < maxWeeks; offset += 1) {
+    const window2 = getWeekWindow(now, -offset);
+    scanned += 1;
+    if (getWeeklyReport(window2.start)) {
+      emptyStreak = 0;
+      continue;
+    }
+    const report = buildWeeklyReport(userSeed, -offset, now);
+    if (!passesThreshold(report.metrics)) {
+      emptyStreak += 1;
+      if (emptyStreak >= BACKFILL_EMPTY_STREAK_STOP) break;
+      continue;
+    }
+    saveWeeklyReport(report);
+    generated += 1;
+    emptyStreak = 0;
+  }
+  return { generated, scanned, stoppedByLimit: scanned >= maxWeeks };
+}
+var NOTICE_WINDOW_MS = 10 * 60 * 60 * 1e3;
+function getWeeklyReportNotice(now = /* @__PURE__ */ new Date()) {
+  const latest = listWeeklyReports()[0] ?? null;
+  if (!latest) return { state: "none", weekStart: null };
+  const weekStart = latest.report.window.start;
+  if (latest.readAt != null) return { state: "read", weekStart };
+  const publishedAt = latest.report.window.endAt;
+  const at = now.getTime();
+  if (!Number.isFinite(publishedAt) || at < publishedAt) return { state: "none", weekStart };
+  if (at >= publishedAt + NOTICE_WINDOW_MS) return { state: "expired", weekStart };
+  return { state: "new", weekStart };
+}
+var windowEndDate = (window2) => {
+  const boundary = new Date(window2.endAt);
+  return `${boundary.getFullYear()}-${String(boundary.getMonth() + 1).padStart(2, "0")}-${String(boundary.getDate()).padStart(2, "0")}`;
+};
+var reportWindowLabel = (window2) => {
+  const format = (value) => {
+    const [, month, day] = value.split("-");
+    return `${Number(month)} \u6708 ${Number(day)} \u65E5`;
+  };
+  return `${format(window2.start)} 14:00\u2014${format(windowEndDate(window2))} 14:00`;
+};
+var reportWindowLabelCompact = (window2) => {
+  const short = (value) => {
+    const [, month, day] = value.split("-");
+    return `${Number(month)}/${Number(day)}`;
+  };
+  return `${short(window2.start)}\u2014${short(windowEndDate(window2))}`;
+};
+
+// scripts/shared/entry.ts
+init_stats2();
+init_plan();
+init_studyPreferences();
+
+// ../frontend/src/lib/achievements/index.ts
+var achievements_exports = {};
+__export(achievements_exports, {
+  ACHIEVEMENTS: () => ACHIEVEMENTS,
+  CATEGORY_ORDER: () => CATEGORY_ORDER,
+  TIER_LABEL: () => TIER_LABEL,
+  achievementBoard: () => achievementBoard,
+  achievementSummary: () => achievementSummary,
+  evaluateAchievements: () => evaluateAchievements,
+  unlockedAchievementIds: () => unlockedAchievementIds
+});
+var import_database34 = __toESM(require_database(), 1);
+init_db_utils();
+init_study_core();
+
+// ../frontend/src/lib/achievements/catalog.ts
+var ACHIEVEMENTS = [
+  // ——— 起步 ———
+  { id: "first-know", name: "\u5F00\u5F20", description: "\u7B54\u5BF9\u7B2C\u4E00\u4E2A\u8BCD", emoji: "\u{1F331}", category: "\u8D77\u6B65", tier: "common", goal: 1, value: (s) => s.totalKnow },
+  { id: "first-note", name: "\u597D\u8BB0\u6027\u4E0D\u5982\u70C2\u7B14\u5934", description: "\u7ED9\u67D0\u4E2A\u8BCD\u5199\u4E0B\u7B2C\u4E00\u6761\u4FBF\u7B7E", emoji: "\u{1F4DD}", category: "\u8D77\u6B65", tier: "common", goal: 1, value: (s) => s.notes },
+  { id: "first-confusion", name: "\u660E\u5BDF\u79CB\u6BEB", description: "\u5728\u7591\u96BE\u8FA8\u6790\u91CC\u6807\u638C\u63E1\u7B2C\u4E00\u7EC4", emoji: "\u{1F50D}", category: "\u8D77\u6B65", tier: "common", goal: 1, value: (s) => s.confusionMastered },
+  { id: "first-kanji", name: "\u8BA4\u5B57", description: "\u5F00\u59CB\u6C49\u5B57\u8BFB\u97F3\u6A21\u5F0F", emoji: "\u{1F236}", category: "\u8D77\u6B65", tier: "common", goal: 1, value: (s) => s.kanjiWords },
+  { id: "first-reverse", name: "\u53CD\u8FC7\u6765", description: "\u7528\u4E00\u6B21\u53CD\u5411\u6A21\u5F0F\uFF1A\u770B\u7740\u4E2D\u6587\u5199\u65E5\u8BED", emoji: "\u{1F504}", category: "\u8D77\u6B65", tier: "common", goal: 1, value: (s) => s.reverseReviews },
+  // ——— 里程碑 ———
+  { id: "words-100", name: "\u767E\u8BCD\u65A9", description: "100 \u4E2A\u8BCD\u8FDB\u5165\u590D\u4E60", emoji: "\u{1F4AF}", category: "\u91CC\u7A0B\u7891", tier: "common", goal: 100, value: (s) => s.distinctWords },
+  { id: "words-1000", name: "\u5343\u8BCD\u65A9", description: "1,000 \u4E2A\u8BCD\u8FDB\u5165\u590D\u4E60", emoji: "\u{1F5E1}\uFE0F", category: "\u91CC\u7A0B\u7891", tier: "common", goal: 1e3, value: (s) => s.distinctWords },
+  { id: "words-3000", name: "\u4E09\u5343\u9662", description: "3,000 \u4E2A\u8BCD\u8FDB\u5165\u590D\u4E60", emoji: "\u26E9\uFE0F", category: "\u91CC\u7A0B\u7891", tier: "rare", goal: 3e3, value: (s) => s.distinctWords },
+  { id: "reviews-10000", name: "\u4E00\u4E07\u6B21", description: "\u7D2F\u8BA1\u4F5C\u7B54 10,000 \u6B21", emoji: "\u{1F522}", category: "\u91CC\u7A0B\u7891", tier: "common", goal: 1e4, value: (s) => s.totalReviews },
+  { id: "reviews-50000", name: "\u4E94\u4E07\u6B21", description: "\u7D2F\u8BA1\u4F5C\u7B54 50,000 \u6B21", emoji: "\u{1F3D4}\uFE0F", category: "\u91CC\u7A0B\u7891", tier: "epic", goal: 5e4, value: (s) => s.totalReviews },
+  { id: "mastered-10", name: "\u7B2C\u4E00\u6279\u6BD5\u4E1A\u751F", description: "10 \u4E2A\u8BCD\u7684\u590D\u4E60\u95F4\u9694\u62C9\u5230 180 \u5929\u4EE5\u4E0A", emoji: "\u{1F393}", category: "\u91CC\u7A0B\u7891", tier: "common", goal: 10, value: (s) => s.masteredWords },
+  { id: "mastered-100", name: "\u9000\u4F11\u540D\u5355", description: "100 \u4E2A\u8BCD\u7684\u590D\u4E60\u95F4\u9694\u62C9\u5230 180 \u5929\u4EE5\u4E0A", emoji: "\u{1F3DD}\uFE0F", category: "\u91CC\u7A0B\u7891", tier: "rare", goal: 100, value: (s) => s.masteredWords },
+  { id: "hours-100", name: "\u4E00\u767E\u5C0F\u65F6", description: "\u7D2F\u8BA1\u5B66\u4E60\u6EE1 100 \u5C0F\u65F6", emoji: "\u23F3", category: "\u91CC\u7A0B\u7891", tier: "rare", goal: 6e3, value: (s) => s.minutesTotal },
+  { id: "one-year", name: "\u4E00\u5468\u5E74", description: "\u4ECE\u7B2C\u4E00\u6B21\u5B66\u4E60\u90A3\u5929\u8D77\u6EE1 365 \u5929", emoji: "\u{1F382}", category: "\u91CC\u7A0B\u7891", tier: "rare", goal: 365, value: (s) => s.daysSinceFirst },
+  // ——— 毅力 ———
+  { id: "streak-7", name: "\u4E00\u5468\u4E0D\u65AD", description: "\u8FDE\u7EED 7 \u5929\u6709\u5B66\u4E60\u8BB0\u5F55", emoji: "\u{1F4C6}", category: "\u6BC5\u529B", tier: "common", goal: 7, value: (s) => s.longestDayStreak },
+  { id: "streak-30", name: "\u6EE1\u6708", description: "\u8FDE\u7EED 30 \u5929\u6709\u5B66\u4E60\u8BB0\u5F55", emoji: "\u{1F315}", category: "\u6BC5\u529B", tier: "rare", goal: 30, value: (s) => s.longestDayStreak },
+  { id: "streak-100", name: "\u767E\u65E5", description: "\u8FDE\u7EED 100 \u5929\u6709\u5B66\u4E60\u8BB0\u5F55", emoji: "\u{1F38F}", category: "\u6BC5\u529B", tier: "epic", goal: 100, value: (s) => s.longestDayStreak },
+  { id: "comeback-7", name: "\u5F52\u961F", description: "\u65AD\u4E86\u4E00\u5468\u4EE5\u4E0A\uFF0C\u53C8\u56DE\u6765\u4E86", emoji: "\u{1FAE1}", category: "\u6BC5\u529B", tier: "common", goal: 7, value: (s) => s.longestComebackGap },
+  { id: "comeback-30", name: "\u4E45\u522B\u91CD\u9022", description: "\u65AD\u4E86\u4E00\u4E2A\u6708\u4EE5\u4E0A\uFF0C\u53C8\u56DE\u6765\u4E86", emoji: "\u{1F570}\uFE0F", category: "\u6BC5\u529B", tier: "rare", hidden: true, goal: 30, value: (s) => s.longestComebackGap },
+  { id: "five-minutes", name: "\u4E94\u5206\u949F\u4E5F\u662F\u5B66", description: "\u6709\u4E00\u5929\u53EA\u5B66\u4E86\u4E0D\u5230\u4E94\u5206\u949F \u2014\u2014 \u4F46\u6CA1\u65AD", emoji: "\u{1F550}", category: "\u6BC5\u529B", tier: "common", goal: 1, value: (s) => s.shortestStudyDayMinutes > 0 && s.shortestStudyDayMinutes < 5 ? 1 : 0 },
+  { id: "day-1000", name: "\u4E00\u65E5\u5343\u8BCD", description: "\u5355\u65E5\u4F5C\u7B54 1,000 \u6B21", emoji: "\u{1F525}", category: "\u6BC5\u529B", tier: "rare", goal: 1e3, value: (s) => s.maxReviewsInDay },
+  { id: "marathon", name: "\u9A6C\u62C9\u677E", description: "\u5355\u65E5\u5B66\u4E60\u65F6\u957F\u6EE1 8 \u5C0F\u65F6", emoji: "\u{1F3C3}", category: "\u6BC5\u529B", tier: "epic", goal: 480, value: (s) => s.maxMinutesInDay },
+  // ——— 手感 ———
+  { id: "know-streak-25", name: "\u987A\u98CE\u5C40", description: "\u8FDE\u7740\u7B54\u5BF9 25 \u6B21", emoji: "\u{1F4C8}", category: "\u624B\u611F", tier: "common", goal: 25, value: (s) => s.longestKnowStreak },
+  { id: "know-streak-50", name: "\u4E00\u6C14\u5475\u6210", description: "\u8FDE\u7740\u7B54\u5BF9 50 \u6B21", emoji: "\u26A1", category: "\u624B\u611F", tier: "rare", goal: 50, value: (s) => s.longestKnowStreak },
+  { id: "accuracy-90", name: "\u7A33\u5982\u8001\u72D7", description: "\u67D0\u5929\u7B54\u6EE1 100 \u6B21\uFF0C\u6B63\u786E\u7387\u8FD8\u6709\u4E5D\u6210", emoji: "\u{1F3AF}", category: "\u624B\u611F", tier: "rare", goal: 90, value: (s) => Math.floor(s.bestDailyAccuracy * 100) },
+  { id: "known-forever-20", name: "\u65AD\u820D\u79BB", description: "\u4E00\u5929\u91CC\u70B9 20 \u6B21\u300C\u719F\u77E5\u300D\uFF0C\u628A\u8BCD\u8BF7\u51FA\u590D\u4E60\u961F\u5217", emoji: "\u2702\uFE0F", category: "\u624B\u611F", tier: "common", goal: 20, value: (s) => s.maxKnownForeverInDay },
+  // ——— 翻车 ———
+  { id: "forgot-streak-10", name: "\u5148\u51B7\u9759", description: "\u8FDE\u7740\u70B9\u4E86 10 \u6B21\u300C\u5FD8\u8BB0\u300D\u3002\u559D\u53E3\u6C34\uFF0C\u8FD9\u4E0D\u602A\u4F60", emoji: "\u{1F9CA}", category: "\u7FFB\u8F66", tier: "common", goal: 10, value: (s) => s.longestForgotStreak },
+  { id: "forgot-streak-20", name: "\u518D\u51B7\u9759\u4E00\u70B9", description: "\u8FDE\u7740\u70B9\u4E86 20 \u6B21\u300C\u5FD8\u8BB0\u300D\u3002\u771F\u7684\uFF0C\u53BB\u7761\u5427", emoji: "\u{1F976}", category: "\u7FFB\u8F66", tier: "rare", goal: 20, value: (s) => s.longestForgotStreak },
+  { id: "leech-1", name: "\u8FD9\u8BCD\u8DDF\u6211\u6709\u4EC7", description: "\u6709\u4E00\u4E2A\u8BCD\u88AB\u4F60\u5FD8\u4E86\u6574\u6574 8 \u6B21", emoji: "\u{1F624}", category: "\u7FFB\u8F66", tier: "common", goal: 1, value: (s) => s.leeches },
+  { id: "leech-100", name: "\u4EC7\u4EBA\u540D\u5355", description: "100 \u4E2A\u8BCD\u5404\u88AB\u4F60\u5FD8\u4E86 8 \u6B21\u4EE5\u4E0A", emoji: "\u{1F4DC}", category: "\u7FFB\u8F66", tier: "rare", goal: 100, value: (s) => s.leeches },
+  { id: "relapse-forever", name: "\u6211\u660E\u660E\u80CC\u8FC7", description: "\u70B9\u8FC7\u300C\u719F\u77E5\u300D\u7684\u8BCD\uFF0C\u540E\u6765\u53C8\u5FD8\u4E86", emoji: "\u{1FAE0}", category: "\u7FFB\u8F66", tier: "common", goal: 1, value: (s) => s.relapsedForever },
+  { id: "fuzzy-half", name: "\u5047\u88C5\u5728\u5B66", description: "\u67D0\u5929\u7B54\u4E86 50 \u6B21\u4EE5\u4E0A\uFF0C\u4E00\u534A\u90FD\u70B9\u7684\u300C\u6A21\u7CCA\u300D", emoji: "\u{1F636}\u200D\u{1F32B}\uFE0F", category: "\u7FFB\u8F66", tier: "common", goal: 50, value: (s) => Math.floor(s.worstDailyFuzzyShare * 100) },
+  { id: "thrice-a-day", name: "\u4E8C\u8FDB\u5BAB", description: "\u540C\u4E00\u4E2A\u8BCD\uFF0C\u5728\u540C\u4E00\u5929\u91CC\u88AB\u4F60\u5FD8\u4E86\u4E09\u6B21", emoji: "\u{1F501}", category: "\u7FFB\u8F66", tier: "common", goal: 1, value: (s) => s.thriceForgotSameDay },
+  { id: "backlog-500", name: "\u9E35\u9E1F", description: "\u5230\u671F\u6C60\u79EF\u538B\u5230 500 \u4E2A", emoji: "\u{1F648}", category: "\u7FFB\u8F66", tier: "common", goal: 500, value: (s) => s.dueBacklog },
+  { id: "backlog-1000", name: "\u503A\u53F0\u9AD8\u7B51", description: "\u5230\u671F\u6C60\u79EF\u538B\u5230 1,000 \u4E2A", emoji: "\u{1F3E6}", category: "\u7FFB\u8F66", tier: "rare", goal: 1e3, value: (s) => s.dueBacklog },
+  { id: "ghosted", name: "\u5931\u8054", description: "\u6574\u6574\u4E24\u5468\u6CA1\u6253\u5F00\u8FC7 \u2014\u2014 \u73B0\u5728\u56DE\u6765\u4E86\u5C31\u4E0D\u7B97\u6570\u4E86", emoji: "\u{1F47B}", category: "\u7FFB\u8F66", tier: "common", hidden: true, goal: 14, value: (s) => s.longestComebackGap },
+  // ——— 怪癖 ———
+  { id: "night-100", name: "\u591C\u732B\u5B50", description: "\u534A\u591C 0 \u70B9\u5230 4 \u70B9\u4E4B\u95F4\u7B54\u8FC7 100 \u6B21", emoji: "\u{1F319}", category: "\u602A\u7656", tier: "common", goal: 100, value: (s) => s.nightReviews },
+  { id: "night-1000", name: "\u4E0E\u6708\u4EAE\u4E3A\u4F34", description: "\u534A\u591C 0 \u70B9\u5230 4 \u70B9\u4E4B\u95F4\u7B54\u8FC7 1,000 \u6B21", emoji: "\u{1F31A}", category: "\u602A\u7656", tier: "rare", goal: 1e3, value: (s) => s.nightReviews },
+  { id: "early-50", name: "\u65E9\u8D77\u7684\u9E1F", description: "\u65E9\u4E0A 5 \u70B9\u5230 8 \u70B9\u4E4B\u95F4\u7B54\u8FC7 50 \u6B21", emoji: "\u{1F426}", category: "\u602A\u7656", tier: "common", goal: 50, value: (s) => s.earlyReviews },
+  { id: "day-and-night", name: "\u663C\u591C\u4E0D\u5206", description: "\u540C\u4E00\u5929\u91CC\uFF0C\u51CC\u6668\u4E09\u70B9\u548C\u65E9\u4E0A\u4E03\u70B9\u4F60\u90FD\u5728\u7B54\u9898", emoji: "\u{1F317}", category: "\u602A\u7656", tier: "epic", hidden: true, goal: 1, value: (s) => s.dayAndNight },
+  { id: "burst", name: "\u624B\u901F", description: "\u540C\u4E00\u79D2\u91CC\u7B54\u6389\u4E86 5 \u5F20\u5361", emoji: "\u{1F5B1}\uFE0F", category: "\u602A\u7656", tier: "common", hidden: true, goal: 5, value: (s) => s.sameSecondBurst },
+  { id: "new-year", name: "\u5143\u65E6\u4E5F\u5B66", description: "1 \u6708 1 \u65E5\u90A3\u5929\u4F60\u5728\u80CC\u5355\u8BCD", emoji: "\u{1F38D}", category: "\u602A\u7656", tier: "rare", hidden: true, goal: 1, value: (s) => s.studiedOnNewYear },
+  { id: "leap-day", name: "\u95F0\u65E5", description: "2 \u6708 29 \u65E5\u90A3\u5929\u4F60\u5728\u80CC\u5355\u8BCD\u3002\u4E0B\u6B21\u673A\u4F1A\u56DB\u5E74\u540E", emoji: "\u{1F438}", category: "\u602A\u7656", tier: "epic", hidden: true, goal: 1, value: (s) => s.studiedOnLeapDay },
+  // ——— 深挖 ———
+  { id: "notes-50", name: "\u7B14\u8BB0\u72C2\u9B54", description: "\u5199\u4E0B 50 \u6761\u4FBF\u7B7E", emoji: "\u{1F5C2}\uFE0F", category: "\u6DF1\u6316", tier: "rare", goal: 50, value: (s) => s.notes },
+  { id: "confusion-100", name: "\u8FA8\u6790\u5927\u5E08", description: "\u5728\u7591\u96BE\u8FA8\u6790\u91CC\u6807\u638C\u63E1 100 \u7EC4", emoji: "\u{1F9E0}", category: "\u6DF1\u6316", tier: "rare", goal: 100, value: (s) => s.confusionMastered },
+  { id: "favorites-50", name: "\u6536\u85CF\u5BB6", description: "\u6536\u85CF 50 \u4E2A\u8BCD", emoji: "\u2B50", category: "\u6DF1\u6316", tier: "common", goal: 50, value: (s) => s.favorites },
+  { id: "all-three", name: "\u5168\u5BB6\u6876", description: "\u5355\u8BCD\u3001\u6C49\u5B57\u3001\u8BED\u6CD5\u4E09\u6761\u7EBF\u90FD\u5F00\u8FC7", emoji: "\u{1F371}", category: "\u6DF1\u6316", tier: "rare", goal: 3, value: (s) => (s.distinctWords > 0 ? 1 : 0) + (s.kanjiWords > 0 ? 1 : 0) + (s.grammarPoints > 0 ? 1 : 0) }
+];
+var CATEGORY_ORDER = ["\u8D77\u6B65", "\u91CC\u7A0B\u7891", "\u6BC5\u529B", "\u624B\u611F", "\u7FFB\u8F66", "\u602A\u7656", "\u6DF1\u6316"];
+var TIER_LABEL = {
+  common: "\u5E38\u89C4",
+  rare: "\u7A00\u6709",
+  epic: "\u53F2\u8BD7"
+};
+
+// ../frontend/src/lib/achievements/stats.ts
+init_db_utils();
+var safeRows = (sql) => {
+  try {
+    return rowsFor(sql);
+  } catch {
+    return [];
+  }
+};
+var num = (sql, params = []) => {
+  try {
+    return Number(firstValue(sql, params, 0) ?? 0);
+  } catch {
+    return 0;
+  }
+};
+var localOffsetModifier = () => {
+  const minutes = -(/* @__PURE__ */ new Date()).getTimezoneOffset();
+  const sign = minutes >= 0 ? "+" : "-";
+  return `${sign}${Math.abs(minutes)} minutes`;
+};
+var longestAnswerStreak = (answer) => num(`
+  WITH ordered AS (SELECT answer, ROW_NUMBER() OVER (ORDER BY id) AS rn FROM reviews),
+  grouped AS (
+    SELECT answer, rn - ROW_NUMBER() OVER (PARTITION BY answer ORDER BY rn) AS island
+    FROM ordered
+  )
+  SELECT COALESCE(MAX(runs.streak), 0) FROM (
+    SELECT COUNT(*) AS streak FROM grouped WHERE answer = ? GROUP BY island
+  ) AS runs
+`, [answer]);
+var dayStreaks = () => {
+  const days = safeRows(`
+    SELECT day FROM (
+      SELECT DISTINCT reviewed_on AS day FROM reviews
+      UNION
+      SELECT studied_on AS day FROM word_study_time WHERE seconds > 0
+    ) WHERE day IS NOT NULL AND day <> '' ORDER BY day
+  `).map((row) => String(row.day));
+  let longest = days.length ? 1 : 0;
+  let current = days.length ? 1 : 0;
+  let longestGap = 0;
+  for (let index3 = 1; index3 < days.length; index3 += 1) {
+    const previous = Date.parse(`${days[index3 - 1]}T00:00:00Z`);
+    const gap = Math.round((Date.parse(`${days[index3]}T00:00:00Z`) - previous) / 864e5);
+    if (gap === 1) {
+      current += 1;
+      longest = Math.max(longest, current);
+    } else {
+      current = 1;
+      longestGap = Math.max(longestGap, gap - 1);
+    }
+  }
+  return { longest, longestGap };
+};
+var lazyStats = (spec) => {
+  const cache = /* @__PURE__ */ new Map();
+  const out = {};
+  Object.keys(spec).forEach((key) => {
+    Object.defineProperty(out, key, {
+      enumerable: true,
+      get: () => {
+        if (!cache.has(key)) cache.set(key, spec[key]());
+        return cache.get(key);
+      }
+    });
+  });
+  return out;
+};
+var achievementStats = () => {
+  const offset = localOffsetModifier();
+  const hourExpr = `CAST(strftime('%H', datetime(created_at, '${offset}')) AS INTEGER)`;
+  let streakCache = null;
+  const streaks = () => streakCache ?? (streakCache = dayStreaks());
+  return lazyStats({
+    totalReviews: () => num("SELECT COUNT(*) FROM reviews"),
+    totalKnow: () => num("SELECT COUNT(*) FROM reviews WHERE answer IN ('know','known_forever')"),
+    knownForeverTotal: () => num("SELECT COUNT(*) FROM reviews WHERE answer = 'known_forever'"),
+    distinctWords: () => num("SELECT COUNT(DISTINCT word_id) FROM reviews"),
+    longestKnowStreak: () => longestAnswerStreak("know"),
+    longestForgotStreak: () => longestAnswerStreak("forgot"),
+    studyDays: () => num(`
+      SELECT COUNT(*) FROM (
+        SELECT reviewed_on AS day FROM reviews
+        UNION
+        SELECT studied_on FROM word_study_time WHERE seconds > 0
+      )
+    `),
+    longestDayStreak: () => streaks().longest,
+    longestComebackGap: () => streaks().longestGap,
+    nightReviews: () => num(`SELECT COUNT(*) FROM reviews WHERE ${hourExpr} BETWEEN 0 AND 3`),
+    earlyReviews: () => num(`SELECT COUNT(*) FROM reviews WHERE ${hourExpr} BETWEEN 5 AND 7`),
+    maxReviewsInDay: () => num("SELECT COALESCE(MAX(n),0) FROM (SELECT COUNT(*) AS n FROM reviews GROUP BY reviewed_on)"),
+    maxMinutesInDay: () => num("SELECT COALESCE(MAX(seconds),0)/60 FROM word_study_time"),
+    minutesTotal: () => num("SELECT COALESCE(SUM(seconds),0)/60 FROM word_study_time"),
+    shortestStudyDayMinutes: () => num(`
+      SELECT COALESCE(MIN(seconds), 0)/60 FROM word_study_time WHERE seconds > 0
+    `),
+    // 当天答满 100 次才算数,不然三题全对就是 100%
+    bestDailyAccuracy: () => num(`
+      SELECT COALESCE(MAX(rate), 0) FROM (
+        SELECT SUM(CASE WHEN answer IN ('know','known_forever') THEN 1.0 ELSE 0 END) / COUNT(*) AS rate
+        FROM reviews GROUP BY reviewed_on HAVING COUNT(*) >= 100
+      )
+    `),
+    worstDailyFuzzyShare: () => num(`
+      SELECT COALESCE(MAX(share), 0) FROM (
+        SELECT SUM(CASE WHEN answer = 'fuzzy' THEN 1.0 ELSE 0 END) / COUNT(*) AS share
+        FROM reviews GROUP BY reviewed_on HAVING COUNT(*) >= 50
+      )
+    `),
+    maxKnownForeverInDay: () => num(`
+      SELECT COALESCE(MAX(n), 0) FROM (
+        SELECT COUNT(*) AS n FROM reviews WHERE answer = 'known_forever' GROUP BY reviewed_on
+      )
+    `),
+    masteredWords: () => num(`
+      SELECT COUNT(*) FROM progress
+      WHERE fsrs_due IS NOT NULL AND fsrs_last_review IS NOT NULL
+        AND julianday(fsrs_due) - julianday(fsrs_last_review) >= 180
+    `),
+    leeches: () => num("SELECT COUNT(*) FROM progress WHERE COALESCE(fsrs_lapses, 0) >= 8"),
+    // 点过「熟知」（本以为一辈子不用再见）之后又忘了的词
+    relapsedForever: () => num(`
+      SELECT COUNT(*) FROM (
+        SELECT word_id FROM reviews WHERE answer = 'known_forever'
+        INTERSECT
+        SELECT word_id FROM reviews WHERE answer = 'forgot'
+          AND id > (SELECT MIN(id) FROM reviews r2 WHERE r2.word_id = reviews.word_id AND r2.answer = 'known_forever')
+      )
+    `),
+    thriceForgotSameDay: () => num(`
+      SELECT COUNT(*) FROM (
+        SELECT word_id FROM reviews WHERE answer = 'forgot'
+        GROUP BY word_id, reviewed_on HAVING COUNT(*) >= 3
+      )
+    `),
+    dueBacklog: () => num("SELECT COUNT(*) FROM progress WHERE fsrs_due IS NOT NULL AND date(fsrs_due) <= date('now','localtime')"),
+    notes: () => num("SELECT COUNT(*) FROM word_notes WHERE TRIM(note) <> ''"),
+    confusionMastered: () => num("SELECT COUNT(*) FROM confusion_mastered"),
+    favorites: () => num("SELECT COUNT(*) FROM content_favorites"),
+    reverseReviews: () => num("SELECT COUNT(*) FROM reviews WHERE direction <> 'forward'"),
+    kanjiWords: () => num("SELECT COUNT(*) FROM kanji_reading_memory WHERE seen_count > 0"),
+    grammarPoints: () => num("SELECT COUNT(*) FROM grammar_progress"),
+    daysSinceFirst: () => num(`
+      SELECT COALESCE(CAST(julianday('now','localtime') - julianday(MIN(reviewed_on)) AS INTEGER), 0) FROM reviews
+    `),
+    studiedOnNewYear: () => num("SELECT COUNT(*) FROM reviews WHERE strftime('%m-%d', reviewed_on) = '01-01'"),
+    studiedOnLeapDay: () => num("SELECT COUNT(*) FROM reviews WHERE strftime('%m-%d', reviewed_on) = '02-29'"),
+    sameSecondBurst: () => num(`
+      SELECT COALESCE(MAX(n), 0) FROM (
+        SELECT COUNT(*) AS n FROM reviews GROUP BY created_at
+      )
+    `),
+    // 同一天里既在凌晨三点答过题,也在早上七点答过题
+    dayAndNight: () => num(`
+      SELECT COUNT(*) FROM (
+        SELECT reviewed_on FROM reviews
+        GROUP BY reviewed_on
+        HAVING SUM(CASE WHEN ${hourExpr} = 3 THEN 1 ELSE 0 END) > 0
+           AND SUM(CASE WHEN ${hourExpr} = 7 THEN 1 ELSE 0 END) > 0
+      )
+    `)
+  });
+};
+
+// ../frontend/src/lib/achievements/index.ts
+var unlockedRows = () => {
+  ensureUserTables();
+  const map = /* @__PURE__ */ new Map();
+  rowsFor("SELECT id, unlocked_on FROM achievements").forEach((row) => {
+    map.set(String(row.id ?? ""), String(row.unlocked_on ?? ""));
+  });
+  return map;
+};
+var unlockedAchievementIds = () => new Set(unlockedRows().keys());
+var lastRunAt = 0;
+var THROTTLE_MS = 6e4;
+var applyUnlocks = (stats, unlocked) => {
+  const pending = ACHIEVEMENTS.filter((item) => !unlocked.has(item.id));
+  if (!pending.length) return [];
+  const earned = pending.filter((item) => item.value(stats) >= item.goal);
+  if (!earned.length) return [];
+  const db = (0, import_database34.getDatabase)();
+  const today2 = (/* @__PURE__ */ new Date()).toLocaleDateString("sv");
+  earned.forEach((item) => {
+    db.run("INSERT OR IGNORE INTO achievements (id, unlocked_on) VALUES (?, ?)", [item.id, today2]);
+    unlocked.set(item.id, today2);
+  });
+  persistSoon();
+  return earned;
+};
+var evaluateAchievements = (options = {}) => {
+  const now = Date.now();
+  if (!options.force && now - lastRunAt < THROTTLE_MS) return [];
+  lastRunAt = now;
+  return applyUnlocks(achievementStats(), unlockedRows());
+};
+var achievementBoard = () => {
+  const unlocked = unlockedRows();
+  const stats = achievementStats();
+  applyUnlocks(stats, unlocked);
+  const items = ACHIEVEMENTS.map((item) => {
+    const progress = Math.max(0, Math.min(item.goal, Math.floor(item.value(stats))));
+    return {
+      ...item,
+      unlocked: unlocked.has(item.id),
+      unlockedOn: unlocked.get(item.id) ?? null,
+      progress
+    };
+  });
+  return { items, unlocked: unlocked.size, total: ACHIEVEMENTS.length };
+};
+var achievementSummary = () => {
+  const rows = unlockedRows();
+  const byId = new Map(ACHIEVEMENTS.map((item) => [item.id, item]));
+  const recent = [...rows.entries()].sort((left, right) => right[1].localeCompare(left[1])).map(([id]) => byId.get(id)).filter((item) => Boolean(item)).slice(0, 3);
+  return { unlocked: rows.size, total: ACHIEVEMENTS.length, recent };
+};
+
+// scripts/shared/entry.ts
+init_review_budget();
+
+// ../frontend/src/lib/study-totals.ts
+var study_totals_exports = {};
+__export(study_totals_exports, {
+  studyTotals: () => studyTotals
+});
+init_db_utils();
+var studyTotals = () => {
+  const seconds = firstValue("SELECT SUM(seconds) FROM word_study_time", [], 0) ?? 0;
+  const days = firstValue(`
+    SELECT COUNT(*) FROM (
+      SELECT studied_on AS day FROM word_study_time WHERE seconds > 0
+      UNION
+      SELECT reviewed_on AS day FROM reviews
+    )
+  `, [], 0) ?? 0;
+  return { minutes: Math.floor(seconds / 60), days };
+};

@@ -15,12 +15,15 @@
     "confusion-smoke": "node scripts/confusion-smoke.mjs",
     "achievements-smoke": "node scripts/achievements-smoke.mjs",
     "daily-relief-smoke": "node scripts/daily-relief-smoke.mjs",
+    "features-smoke": "node scripts/features-smoke.mjs",
     "team-page-smoke": "node scripts/team-page-smoke.cjs",
     "runtime-smoke": "node scripts/runtime-sim-smoke.mjs",
     "budget": "node scripts/package-budget.mjs",
     "check": "node scripts/check-source.mjs",
     "test": "node scripts/run-all.mjs",
     "cloud-transport-smoke": "node scripts/cloud-transport-smoke.mjs",
+    "build-shared": "node scripts/build-shared.mjs",
+    "check-shared": "node scripts/build-shared.mjs --check",
     "build-data": "node scripts/build-data-modules.mjs",
     "lint-undef": "node scripts/lint-undef.mjs"
   }

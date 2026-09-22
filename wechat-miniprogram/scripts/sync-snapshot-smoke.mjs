@@ -39,6 +39,36 @@ assert.equal(merged.insertedReviews, 1);
 assert.equal(core.firstValue(right, 'SELECT seen_count FROM progress WHERE word_id = ?', [leftCard.id]), 1);
 assert.equal(core.firstValue(right, 'SELECT note FROM word_notes WHERE word_id = ?', [leftCard.id]), '跨端笔记');
 
+// 撤销 = 删作答。小程序没有同步触发器，undoLastAnswer 必须自己留一条键为 sync_uid 的墓碑
+// （和网页触发器写的一样），并且之后一份还带着这条作答的旧快照不能把它送回来。
+{
+  const undoDb = new SQL.Database(bytes);
+  core.ensureStudySchema(undoDb);
+  const card = core.nextCard(undoDb, { now });
+  core.recordAnswer(undoDb, card.id, 'know', { now });
+  const staleSnapshot = await exportSyncSnapshot(undoDb);
+  const uid = core.firstValue(undoDb, 'SELECT sync_uid FROM reviews WHERE word_id = ?', [card.id]);
+  assert.ok(uid, '作答必须带 sync_uid');
+  assert.equal(core.undoLastAnswer(undoDb, { now }).undone, true);
+  assert.equal(core.firstValue(undoDb, "SELECT COUNT(*) FROM sync_tombstones WHERE entity = 'reviews' AND natural_key = ?", [uid], 0), 1, '小程序撤销要留 sync_uid 墓碑');
+  const result = mergeSnapshot(undoDb, staleSnapshot);
+  assert.equal(result.insertedReviews, 0, '旧快照不能把撤销掉的作答送回来');
+  assert.equal(core.firstValue(undoDb, 'SELECT COUNT(*) FROM reviews WHERE sync_uid = ?', [uid], 0), 0);
+  // 反过来：网页那边撤销后同步过来的墓碑（键就是一段 uid）要能删掉本机这条作答。
+  const webDb = new SQL.Database(bytes);
+  core.ensureStudySchema(webDb);
+  mergeSnapshot(webDb, staleSnapshot);
+  assert.equal(core.firstValue(webDb, 'SELECT COUNT(*) FROM reviews WHERE sync_uid = ?', [uid], 0), 1);
+  const webTombstone = new SQL.Database();
+  webTombstone.run('CREATE TABLE sync_snapshot_meta (format TEXT PRIMARY KEY, protocol_version INTEGER NOT NULL)');
+  webTombstone.run('INSERT INTO sync_snapshot_meta VALUES (?, ?)', [SYNC_SNAPSHOT_FORMAT, 2]);
+  webTombstone.run("CREATE TABLE sync_tombstones (table_name TEXT NOT NULL, row_key TEXT NOT NULL, deleted_at TEXT NOT NULL, origin_device TEXT NOT NULL DEFAULT '')");
+  webTombstone.run('INSERT INTO sync_tombstones VALUES (?, ?, ?, ?)', ['reviews', uid, '2099-01-01T00:00:00.000Z', 'web-test']);
+  mergeSnapshot(webDb, new Uint8Array(webTombstone.export()));
+  assert.equal(core.firstValue(webDb, 'SELECT COUNT(*) FROM reviews WHERE sync_uid = ?', [uid], 0), 0, '网页的 sync_uid 墓碑必须能删掉小程序本地那条作答');
+  webTombstone.close(); webDb.close(); undoDb.close();
+}
+
 // 兼容 iOS 旧列名：table_name/row_key 的墓碑应删除小程序本地对应行。
 const iosTombstone = new SQL.Database();
 iosTombstone.run('CREATE TABLE sync_snapshot_meta (format TEXT PRIMARY KEY, protocol_version INTEGER NOT NULL)');
@@ -119,9 +149,13 @@ roundTripDb.close();
 // 把「上次收到的远端副本」原样送回 —— 本机新写的一个字都出不去。
 const grammarDb = new SQL.Database(bytes);
 core.ensureStudySchema(grammarDb);
+globalThis.wx ||= { env: { USER_DATA_PATH: '/tmp/shushugo-sync-smoke' }, getFileSystemManager: () => ({}) };
 const grammarRuntime = require('../src/runtime/grammar.js');
+const { grammarStringId } = require('../src/runtime/extended-features.js');
 grammarDb.run('INSERT OR REPLACE INTO grammar_progress (grammar_id, seen_count) VALUES (?, ?)', [17, 7]);
+// 0.1.0 开发版的收藏写法；迁移后必须变成网页的字符串 id 进 content_favorites。
 grammarDb.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('favorite:17', '1')");
+grammarRuntime.migrateFavoritesFromAppState(grammarDb);
 // dataset_version 是本机内容标记,同步出去会让对端跳过语法迁移(见 CLAUDE.md)。
 grammarDb.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('dataset_version', 'local-only')");
 const grammarSnapshot = new SQL.Database(await exportSyncSnapshot(grammarDb));
@@ -131,10 +165,11 @@ assert.equal(
   '小程序写的语法进度必须进快照'
 );
 assert.equal(
-  core.firstValue(grammarSnapshot, "SELECT value FROM grammar_state WHERE key = 'favorite:17'", [], ''),
-  '1',
-  '小程序写的语法收藏必须进快照'
+  core.firstValue(grammarSnapshot, "SELECT COUNT(*) FROM content_favorites WHERE item_type = 'grammar' AND item_id = ?", [grammarStringId(17)], 0),
+  1,
+  '小程序写的语法收藏必须以网页的字符串 id 进 content_favorites 快照'
 );
+assert.equal(grammarStringId(17), 'pdf-n5-017', 'grammar_points.id == bookOrder，换算表必须对得上');
 assert.equal(
   core.firstValue(grammarSnapshot, "SELECT COUNT(*) FROM grammar_state WHERE key = 'dataset_version'"),
   0,
@@ -156,11 +191,14 @@ grammarSnapshot.close();
 grammarRuntime.setGrammarState(grammarDb, 'favorite:31', '1');
 grammarDb.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('favorite:44', '1')");
 grammarRuntime.migrateFavoritesFromAppState(grammarDb);
+// 网页那边收藏的语法（字符串 id）在小程序列表里也要亮星。
+grammarDb.run("INSERT OR IGNORE INTO content_favorites (item_type, item_id) VALUES ('grammar', ?)", [grammarStringId(52)]);
 const grammarList = grammarRuntime.grammarRows(grammarDb, '', '', 800);
 const favoriteIds = new Set(grammarList.filter((row) => Number(row.favorite) === 1).map((row) => Number(row.id)));
 assert.ok(favoriteIds.has(17), 'grammar_state 里的收藏必须显示出来');
 assert.ok(favoriteIds.has(31), '刚写进去的收藏必须立刻读得到（写和读同一张表）');
 assert.ok(favoriteIds.has(44), '早先误写进 app_state 的收藏要迁过来，不能就此消失');
+assert.ok(favoriteIds.has(52), '网页按字符串 id 收藏的语法在小程序列表里必须亮星');
 assert.equal(
   core.firstValue(grammarDb, "SELECT COUNT(*) FROM app_state WHERE key LIKE 'favorite:%'"),
   0,

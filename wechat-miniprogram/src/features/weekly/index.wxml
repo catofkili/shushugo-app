@@ -1,0 +1,51 @@
+<scroll-view class="feature-page" scroll-y>
+  <view class="feature-hero">
+    <text class="feature-kicker">WEEKLY REVIEW</text>
+    <text class="feature-title">每周学习回顾</text>
+    <text class="feature-copy">一个周期是上周日 14:00 到本周日 14:00；单词、语法、汉字读音的作答都算。</text>
+  </view>
+  <view class="panel" wx:if="{{error}}"><text class="danger">{{error}}</text></view>
+  <view class="empty" wx:if="{{ready && !current}}">最近一个周期还没有任何学习记录。空白也会如实保留，不会编造学习成果。</view>
+
+  <block wx:if="{{current}}">
+    <view class="panel">
+      <text class="muted">{{current.label}}</text>
+      <view class="keyword" wx:if="{{current.keyword}}"><text class="keyword-kicker">本周关键词</text><text class="keyword-text">{{current.keyword}}</text></view>
+      <view class="metric-grid">
+        <view class="metric"><text class="metric-value">{{current.metrics.totalReviews}}</text><text class="metric-label">学习次数</text></view>
+        <view class="metric"><text class="metric-value">{{current.metrics.days}}</text><text class="metric-label">学习天数</text></view>
+        <view class="metric"><text class="metric-value">{{current.metrics.newWords}}</text><text class="metric-label">新词</text></view>
+        <view class="metric"><text class="metric-value">{{current.metrics.minutesText}}</text><text class="metric-label">投入时间</text></view>
+      </view>
+      <view class="chip-row" wx:if="{{current.metrics.kinds.length}}"><text class="chip" wx:for="{{current.metrics.kinds}}" wx:key="kind">{{item.label}} · {{item.count}}</text></view>
+    </view>
+
+    <view class="panel">
+      <text class="panel-title">七天</text>
+      <block wx:for="{{current.metrics.daily}}" wx:key="date">
+        <view class="day-row"><text class="muted day-label">{{item.label}}</text><view class="bar"><view style="width:{{item.width}}%"></view></view><text class="muted day-count">{{item.reviews}}</text></view>
+      </block>
+      <text class="muted" wx:if="{{current.highlight}}">{{current.highlight}}</text>
+    </view>
+
+    <view class="panel" wx:if="{{current.references.length}}">
+      <text class="panel-title">这一周</text>
+      <view class="rules"><text wx:for="{{current.references}}" wx:key="*this">· {{item}}</text></view>
+      <text class="muted">累计学习 {{current.metrics.cumulativeDays}} 天 · 见过 {{current.metrics.cumulativeWords}} 个词</text>
+    </view>
+
+    <view class="panel" wx:if="{{current.revisitWords.length}}">
+      <text class="panel-title">再见一面</text>
+      <text class="muted">这一周点过忘记 / 模糊最多的词。</text>
+      <view class="chip-row"><text class="chip" wx:for="{{current.revisitWords}}" wx:key="wordId">{{item.text}} ×{{item.count}}</text></view>
+    </view>
+  </block>
+
+  <view class="panel" wx:if="{{history.length > 1}}">
+    <text class="panel-title">历史</text>
+    <view class="history row {{item.weekStart === current.weekStart ? 'active' : ''}}" wx:for="{{history}}" wx:key="weekStart" data-week="{{item.weekStart}}" bindtap="open">
+      <view><text class="list-title">{{item.compact}}</text><text class="list-sub">{{item.metrics.totalReviews}} 次 · {{item.metrics.days}} 天{{item.keyword ? ' · ' + item.keyword : ''}}</text></view>
+      <text class="badge" wx:if="{{item.readAt == null}}">未读</text>
+    </view>
+  </view>
+</scroll-view>

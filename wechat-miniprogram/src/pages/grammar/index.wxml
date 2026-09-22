@@ -1,7 +1,6 @@
 <scroll-view class="page" scroll-y>
   <view class="hero">
-    <navigator class="back" open-type="navigateBack">‹ 返回学习</navigator>
-    <text class="eyebrow">GRAMMAR · 741</text>
+    <text class="eyebrow">GRAMMAR · 语法基础</text>
     <text class="title">语法库</text>
     <text class="subtitle">按等级查找句型，打开详情，标记自己的掌握状态。</text>
     <button class="immersive-button" bindtap="handleImmersive">{{immersive ? '返回语法库' : '进入沉浸阅读'}}</button>

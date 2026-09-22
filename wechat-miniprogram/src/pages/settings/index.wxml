@@ -1,8 +1,8 @@
 <scroll-view class="page" scroll-y>
   <view class="hero">
-    <navigator class="back" open-type="navigateBack">‹ 返回学习</navigator>
-    <text class="title">设置与权益</text>
-    <text class="subtitle">离线学习始终可用，购买结果会同步到你的账号</text>
+    <text class="eyebrow">MY SHUSHUGO</text>
+    <text class="title">我的收集日</text>
+    <text class="subtitle">账号、权益和学习数据都集中放在这里</text>
   </view>
   <view class="card">
     <view class="row"><text class="label">当前状态</text><text class="value {{entitlement.active ? 'active' : ''}}">{{entitlement.active ? 'Pro' : '免费版'}}</text></view>

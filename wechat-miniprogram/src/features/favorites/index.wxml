@@ -1,0 +1,44 @@
+<scroll-view class="feature-page" scroll-y>
+  <view class="feature-hero">
+    <text class="feature-kicker">FAVORITES</text>
+    <text class="feature-title">收藏</text>
+    <text class="feature-copy">单词和语法在同一张同步表里，网页 / App / 小程序看到的是同一份夹子。</text>
+  </view>
+  <view class="panel" wx:if="{{error}}"><text class="danger">{{error}}</text></view>
+
+  <view class="panel">
+    <view class="chip-row">
+      <text class="chip {{type === 'all' ? 'active' : ''}}" data-value="all" bindtap="pickType">全部</text>
+      <text class="chip {{type === 'word' ? 'active' : ''}}" data-value="word" bindtap="pickType">单词</text>
+      <text class="chip {{type === 'grammar' ? 'active' : ''}}" data-value="grammar" bindtap="pickType">语法</text>
+    </view>
+    <scroll-view scroll-x>
+      <view class="chip-row nowrap">
+        <text class="chip {{folder === 'all' ? 'active' : ''}}" data-value="all" bindtap="pickFolder">全部收藏夹</text>
+        <text class="chip {{folder === '' ? 'active' : ''}}" data-value="" bindtap="pickFolder">未分类 {{unfiled}}</text>
+        <text wx:for="{{folders}}" wx:key="name" class="chip {{folder === item.name ? 'active' : ''}}" data-value="{{item.name}}" bindtap="pickFolder">{{item.name}} {{item.count}}</text>
+      </view>
+    </scroll-view>
+    <view class="folder-line"><input placeholder="新收藏夹（最多 20 字）" value="{{newFolder}}" bindinput="folderInput" /><button bindtap="createFolder">新建</button></view>
+    <view wx:if="{{folder !== 'all' && folder !== ''}}" class="folder-tools">
+      <block wx:if="{{renaming === folder}}">
+        <input value="{{renameTo}}" bindinput="renameInput" focus /><button bindtap="confirmRename">保存</button><button bindtap="cancelRename">取消</button>
+      </block>
+      <block wx:else>
+        <button data-name="{{folder}}" bindtap="startRename">改名</button><button class="danger" data-name="{{folder}}" bindtap="deleteFolder">删除夹子</button>
+      </block>
+    </view>
+  </view>
+
+  <view class="panel favorite" wx:for="{{items}}" wx:key="key">
+    <view class="row">
+      <view><text class="list-title">{{item.title}}</text><text class="list-sub">{{item.subtitle}}</text><text class="list-sub">{{item.meta}}</text></view>
+      <text class="badge type-{{item.type}}">{{item.typeLabel}}</text>
+    </view>
+    <view class="actions">
+      <picker mode="selector" range="{{['未分类'].concat(folderNames)}}" data-type="{{item.type}}" data-id="{{item.id}}" bindchange="move"><button>{{item.folderLabel}} ˅</button></picker>
+      <button class="danger" data-type="{{item.type}}" data-id="{{item.id}}" bindtap="remove">取消收藏</button>
+    </view>
+  </view>
+  <view class="empty" wx:if="{{ready && !items.length}}">这里还没有收藏。去单词库或语法页点星标，内容会出现在这里。</view>
+</scroll-view>

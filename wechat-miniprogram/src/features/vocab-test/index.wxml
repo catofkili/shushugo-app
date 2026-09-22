@@ -1,0 +1,96 @@
+<scroll-view class="feature-page" scroll-y>
+  <!-- 落地页：最近一次成绩 + 历史 + 规则 + 开始/继续。进这一页永远先看这里。 -->
+  <block wx:if="{{view === 'intro'}}">
+    <view class="feature-hero">
+      <text class="feature-kicker">VOCAB SIZE</text>
+      <text class="feature-title">查词汇量</text>
+      <text class="feature-copy">JLPT 词表覆盖范围内的抽样估计，仅供参考。测量不改学习进度：不写 reviews、progress、FSRS 或今日计划。</text>
+      <view wx:if="{{latest}}" class="latest">
+        <text class="latest-number">约 {{latest.estimated}} 词</text>
+        <text class="muted">区间 {{latest.range}} · 可信度 {{latest.confidence}} · 建议从 {{latest.recommendation}} 学起 · {{latest.date}}</text>
+      </view>
+    </view>
+
+    <view class="panel" wx:if="{{error}}"><text class="danger">{{error}}</text></view>
+
+    <view class="panel" wx:if="{{resume}}">
+      <text class="panel-title">上次没测完</text>
+      <text class="muted">本次测试于 {{resume.startedAt}} 开始，已答 {{resume.progress}}，上一次作答是{{resume.stale ? ' ' : ''}}{{resume.gap}}前。</text>
+      <text wx:if="{{resume.stale}}" class="feature-copy danger">搁了半小时以上：前后半场不是同一个状态，把两段拼成一次成绩，那个数就不是这次测出来的。建议重测。</text>
+      <button class="{{resume.stale ? 'secondary' : 'primary'}}" bindtap="resume">继续测验</button>
+      <button class="{{resume.stale ? 'primary' : 'secondary'}}" bindtap="begin">重新开始</button>
+    </view>
+    <view class="panel" wx:else>
+      <text class="panel-title">60 题 · 约 8 分钟</text>
+      <text class="muted">先摸底 20 道（每级 4 题），再把剩下 40 道压到「说不准」的那一带。</text>
+      <button class="primary" disabled="{{!ready}}" bindtap="begin">开始测验</button>
+      <button wx:if="{{hasResult}}" class="secondary" bindtap="openLastResult">上次的详细结果</button>
+    </view>
+
+    <view class="panel">
+      <text class="panel-title">这个数是怎么算的</text>
+      <view class="rules">
+        <text>· 估计 = Σ(该级词数 × 该级答对率)，答对率按四选一扣分：(对 − 错/3) ÷ 答题数。</text>
+        <text>· 不认识就点「不认识」：它不扣分，也不算你蒙。真不会却硬猜，反而会同时拉低词汇量和可信度。</text>
+        <text>· 可信度 = (题量 60% + 没在赶进度 40%) × (1 − 蒙的比例)。答得快不加分。</text>
+        <text>· 读音题 15 秒、释义题 10 秒，超时按不认识记；切到别的页面会自动暂停。</text>
+        <text>· 少于 15 题不给数。</text>
+      </view>
+    </view>
+
+    <view class="panel" wx:if="{{history.length}}">
+      <text class="panel-title">历史</text>
+      <view class="history row" wx:for="{{history}}" wx:key="runId">
+        <view><text class="list-title">约 {{item.estimated}} 词</text><text class="list-sub">{{item.date}} · {{item.range}} · {{item.answered}} 题 · 用时 {{item.duration}}</text></view>
+        <text class="badge">可信度 {{item.confidence}}</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 答题 -->
+  <block wx:if="{{view === 'quiz' && shown}}">
+    <view class="panel quiz">
+      <view class="row">
+        <text class="counter">{{progress}} · {{shown.level}} · {{shown.kindLabel}}题</text>
+        <text class="clock {{remaining <= 3 ? 'urgent' : ''}}">{{remaining}} 秒</text>
+      </view>
+      <view class="prompt">
+        <text class="prompt-word">{{shown.prompt}}</text>
+        <text wx:if="{{shown.readingScope}}" class="prompt-reading">只问「{{shown.readingScope}}」这几拍的读音</text>
+        <text wx:elif="{{shown.kind === 'reading'}}" class="prompt-reading">这个词怎么读？</text>
+        <text wx:else class="prompt-reading">这个词是什么意思？</text>
+      </view>
+      <view wx:for="{{shown.options}}" wx:key="index" class="option {{item.state}}" data-index="{{item.index}}" bindtap="choose">{{item.text}}</view>
+      <view wx:if="{{!feedback}}" class="option unknown" bindtap="unknown">不认识</view>
+      <view wx:if="{{feedback}}" class="feedback {{feedback.state}}">
+        <text>{{feedback.text}}</text>
+        <text wx:if="{{feedback.state !== 'correct'}}" class="feedback-answer">正确答案：{{feedback.answer}}</text>
+      </view>
+      <button wx:if="{{feedback}}" class="primary" bindtap="next">下一题</button>
+      <button class="secondary" bindtap="stop">提前结束</button>
+    </view>
+  </block>
+
+  <!-- 结果 -->
+  <block wx:if="{{view === 'result' && result}}">
+    <view class="feature-hero">
+      <text class="feature-kicker">ESTIMATE</text>
+      <text wx:if="{{result.tooFew}}" class="feature-title">答得还太少</text>
+      <text wx:else class="feature-title">约 {{result.estimated}} 词</text>
+      <text class="feature-copy" wx:if="{{result.tooFew}}">只答了 {{result.answered}} 题，少于 15 题不给数。再测一次答完整场吧。</text>
+      <text class="feature-copy" wx:else>区间 {{result.lower}}–{{result.upper}}（词表共 {{result.population}} 词）· 可信度 {{result.confidence}} · 建议从 {{result.recommendation}} 学起</text>
+      <text class="muted">JLPT 词表覆盖范围内的抽样估计 · 仅供参考</text>
+    </view>
+    <view class="panel">
+      <text class="panel-title">各级表现</text>
+      <view class="level-row" wx:for="{{result.levels}}" wx:key="level">
+        <text class="level-name">{{item.level}}</text>
+        <view class="level-bar"><view class="level-fill {{item.rate == null ? 'empty' : ''}}" style="width:{{item.percent}}%"></view></view>
+        <text class="level-label">{{item.label}}{{item.answered ? ' · ' + item.answered + ' 题' : ''}}</text>
+      </view>
+      <text class="muted">答了 {{result.answered}} / {{result.totalQuestions}} 题 · 蒙的比例 {{result.guessedShare}} · 超时比例 {{result.timeoutShare}}</text>
+    </view>
+    <button class="primary" bindtap="begin">再测一次</button>
+    <button class="secondary" bindtap="backHome">回到落地页</button>
+  </block>
+</scroll-view>

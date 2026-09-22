@@ -1,0 +1,6 @@
+<scroll-view class="feature-page" scroll-y>
+  <view class="feature-hero"><text class="feature-kicker">KANJI READING</text><text class="feature-title">同一个字，什么时候读哪个音</text><text class="feature-copy">这是汉字在词里的读音用法，不会写进 FSRS，也不会和“疑难辨析”的词组混在一起。</text></view>
+  <view class="panel"><input class="kanji-input" placeholder="输入一个汉字，如 日、月、生" value="{{query}}" bindinput="search"/><text class="muted">数据版本 {{version}} · 共 {{total}} 字</text></view>
+  <view wx:if="{{selected}}" class="panel"><view class="row"><text class="feature-title">{{selected.char}}</text><text class="badge">{{selected.level}}</text></view><text class="feature-copy">{{selected.summary}}</text><view class="reading-card" wx:for="{{selected.readings}}" wx:key="base"><view><text class="list-title">{{item.base}}</text><text class="kind">{{item.kindText}}</text></view><text class="list-sub">{{item.description}}</text><text class="example" wx:for="{{item.examples}}" wx:key="surface">{{item.surface}}（{{item.kana}}） · {{item.meaning}}</text></view></view>
+  <view wx:else class="kanji-grid"><view class="kanji-card" wx:for="{{entries}}" wx:key="char" data-char="{{item.char}}" bindtap="select"><text class="char">{{item.char}}</text><text class="reading">{{item.line}}</text></view></view>
+</scroll-view>

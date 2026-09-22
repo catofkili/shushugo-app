@@ -198,8 +198,14 @@ async function setConfusionMastered(groupKey, mastered = true) {
   const { getDatabase, saveDatabase } = databaseStore();
   const db = getDatabase();
   ensureConfusionSchema(db);
-  if (mastered) db.run('INSERT OR REPLACE INTO confusion_mastered (group_key, mastered_on) VALUES (?, ?)', [String(groupKey), core.localStudyDay(new Date())]);
-  else db.run('DELETE FROM confusion_mastered WHERE group_key = ?', [String(groupKey)]);
+  if (mastered) {
+    db.run('INSERT OR REPLACE INTO confusion_mastered (group_key, mastered_on) VALUES (?, ?)', [String(groupKey), core.localStudyDay(new Date())]);
+    db.run("DELETE FROM sync_tombstones WHERE entity = 'confusion_mastered' AND natural_key = ?", [String(groupKey)]);
+  } else {
+    db.run('DELETE FROM confusion_mastered WHERE group_key = ?', [String(groupKey)]);
+    // 小程序没有同步触发器：取消「已掌握」要自己留墓碑，否则对端把它复活。
+    db.run("INSERT OR REPLACE INTO sync_tombstones (entity, natural_key, deleted_at) VALUES ('confusion_mastered', ?, ?)", [String(groupKey), new Date().toISOString()]);
+  }
   await saveDatabase();
   return mastered;
 }

@@ -32,7 +32,18 @@ async function loadAudioIndex() {
 
 async function playWordAudio(kanji, kana) {
   const index = await loadAudioIndex();
-  const voice = index?.voices?.find((item) => item.id === index.default) || index?.voices?.[0];
+  // 用哪个声音走网页同一份口径：studyPreferences.voiceId，且必须在柚子商店买过
+  // （web.yuzu.voiceUnlocked）；没买的退回默认声。空 = 音频库默认。
+  let wanted = '';
+  try {
+    const web = require('../shared/web');
+    require('./database-store').getDatabase();
+    const voiceId = String(web.preferences.getStudyPreferences().voiceId || '');
+    if (voiceId && voiceId !== 'system' && web.yuzu.voiceUnlocked(voiceId, index?.default ?? null)) wanted = voiceId;
+  } catch { /* 本地库未就绪时使用音频索引默认声音 */ }
+  const voice = index?.voices?.find((item) => item.id === wanted)
+    || index?.voices?.find((item) => item.id === index.default)
+    || index?.voices?.[0];
   const name = audioName(kanji, kana);
   if (!config.audioBaseUrl || !voice || !name) return { played: false, reason: '没有配置可用的音频 CDN' };
   audioContext ||= wx.createInnerAudioContext();

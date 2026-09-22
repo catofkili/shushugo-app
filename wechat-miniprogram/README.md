@@ -146,9 +146,9 @@ npx wrangler secret put WECHAT_MSG_TOKEN       # 小程序后台「消息推送�
 - `npm run sync-smoke` 对拍两份本地库，验证 review 自然键去重和进度合并不会重复插入。
 - `npm run sync-snapshot-smoke` 验证与 Worker 同格式的 SQLite 用户快照、跨端合并和本地登录令牌剥离。
 - `npm run runtime-smoke` 用 Node 模拟 `wx` 文件系统与 `WXWebAssembly`，验证两次原子保存后主库损坏能从 `.prev` 冷恢复。
-- `npm run budget` 检查代码包不携带数据库/音频，当前源码包约 1.28 MiB（含音高重音、动词自他提示和表记判定数据）；11 MB 词库仍只走用户目录下载。
+- `npm run budget` 检查代码包不携带数据库/音频，并按主包 / 分包各卡 2 MiB：主包约 1.6 MiB（含音高重音、动词自他提示、表记判定数据和共享层），`features` 分包约 0.5 MiB；11 MB 词库仍只走用户目录下载。
 - `npm run check` 检查适配器、原子写盘和页面代码的关键约束，并比对表记数据与 iOS 端是否一致。
-- 产品层已接上：经典/快速/错题/反向/汉字读音/自选六个入口；词库筛选、记忆色阶、批量熟知、收藏、笔记和详情；741 条本地语法；从真实词库现算的 1,912 组疑难辨析；47 个本地结算成就；统计、28 天学习日历、JLPT 进度地图、温泉打卡和图鉴。卡片还会显示音高重音、例句假名、词源、动词类型、例句词典和辨析提示。
+- 产品层已接上：经典/快速/错题/反向/汉字读音/自选六个入口；词库筛选、记忆色阶、批量熟知、收藏、笔记和详情；741 条本地语法；从真实词库现算的 1,912 组疑难辨析；47 个成就（判据来自网页同一份源码）；收藏夹、备考计划、周报、柚子商店、查词汇量（同上，见「共享层」）；统计、28 天学习日历、JLPT 进度地图、温泉打卡和图鉴。卡片还会显示音高重音、例句假名、词源、动词类型、例句词典和辨析提示。
 - 首页已提供学习入口、查词库、语法、辨析、成就、旅程、账号绑定和权益入口；数据更新、同步、备份等维护动作已移到「设置与权益」，不再和学习卡混在一起。没有配置服务端时，同步/支付会明确保持不可用，不会伪造成功。
 
 ## 汉字读音方向：和 iOS 对齐的三件事
@@ -222,6 +222,44 @@ Worker 的同步入口要求已验证账号（`requireVerifiedUser`）。小程�
 - 微信开发者工具和 iOS/Android 真机：首次下载、WASM 初始化、冷启动恢复、原子写盘、峰值内存和 ruby/字体排版；
 - 云开发环境（见上节）；不走云开发的话才需要已备案 HTTPS 域名与业务域名白名单；
 - Worker 的微信登录已经有 `/api/auth/wechat` 代码路径；上线仍需在 Cloudflare secret 配置 `WECHAT_APP_ID/WECHAT_APP_SECRET`，并在微信公众平台完成小程序主体、业务域名和审核配置；支付下单/回调与审核资质仍必须由商户侧完成。
+
+## 共享层：能从网页源码打出来的，就不再手抄（2026-09-22）
+
+`src/shared/web.js` 由 `scripts/build-shared.mjs` 用 esbuild 把 `frontend/src/lib` 里的纯数据层模块
+**原样**打成小程序能 `require` 的一个文件（约 140 KiB，进主包）。入口清单在
+`scripts/shared/entry.ts`，现在收了：收藏夹（favorites-api）、备考计划（jlpt/plan + status）、
+周报（analytics/weekly + weekly-reports）、柚子（yuzu + yuzu-catalog）、查词汇量（vocab-test）、
+成就（achievements）、studyPreferences、连击、review-budget。
+
+为什么：这些功能之前是「照着网页重写一份」，而它们的表全是跨端同步的，漂移就直接出现在对端——
+成就表叫 `achievement_unlocked`（网页叫 `achievements`，两端各解各的）、语法收藏存数字 id
+（网页存 grammar.ts 的字符串 id，互相看不懂）、词汇量没有猜测修正、可信度写成了正确率、
+周报的 `content_json` 是另一种形状（网页按 schema_version 3 解析会拿到垃圾）。
+同一份源码编出来，就不会再漂。
+
+规则：
+
+- **数据层从网页来，页面（WXML）手写。** 只收不碰 DOM、不带出厂内容 JSON 的模块；构建脚本会拒绝
+  `src/data/*.json` 进包、拒绝超过 400 KiB。
+- 需要平台能力的模块在 `scripts/shared/shims/` 换成小程序自己的实现（库句柄、落盘、正字法、辨析组、
+  `word-api/stage1`…）。⚠️ **`stage1` 必须 shim 成只读**：网页那份 `stage1ProgressCounts` 会先按
+  网页的排计划器往 `stage1_tasks` 写行、还按 `stage1_plan_version` 删没答的行，直接接上等于每次
+  结算柚子都把今天的计划重排一遍。
+- `localStorage` / `window` / `document` 由 `scripts/shared/polyfill.js` 提供替身（内联在 web.js 顶部）：
+  `studyPreferences` 因此落在 wx 存储的 `mn-study-preferences` 键上，和网页同名。
+- 小程序没有网页那套同步触发器，所以 `runtime/extended-features.js` 在每次写收藏 / 夹子之后**自己盖
+  `sync_updated_at`、自己补墓碑**——不盖，lww 合并时本机刚移的夹子会输给对端的旧行。
+- 语法收藏用 grammar.ts 的字符串 id：`data/grammar_ids.json`（`grammar_points.id == bookOrder` ↔ `pdf-n5-041-2`）
+  由 build-shared 从 grammar.ts 抽出来，列表打星在 JS 里按它换算。
+- 产物必须提交。`npm run check-shared` 重新构建一次比对，网页那边改了源码没重跑这里就红；
+  `npm test` 里 `build-shared` 会先跑一遍。
+- `data/*.json` 是数据模块的源，放在 `src/` 外面：放里面会被开发者工具整个打进主包（pitch_accent 一份 266 KiB）。
+
+还没搬过来、仍是小程序自己一份的：单词调度（`core/study-core.js` 的 createTodayPlan，网页是
+`word-api/stage1` + scheduler）、疑难辨析分组（`runtime/confusion.js`，网页 1,933 组 / 小程序 1,881 组）、
+辨析题（页面还在用 `words.meaning` 当题面，网页规定缺人工题面就整组跳过）、题面层
+（`question_meaning_overrides.json`，1 MB）、混合学习的汉字卡 / 连线卡。这几样都要先把
+出厂内容数据（题面、辨析审校、sense_key，合计约 2 MB）放进一个分包再谈。
 
 ## 仍在继续的开发轨
 
