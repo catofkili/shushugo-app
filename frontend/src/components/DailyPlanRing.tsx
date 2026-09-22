@@ -26,6 +26,8 @@ interface Props {
   onChange: (next: Record<PlanKind, RingValue>) => void;
   /** 松手那一下调：这时才落盘、重排今天的计划 */
   onCommit: () => void;
+  /** 当前学习模式会出的段；不在里面的画淡、不计进中间那个数 */
+  active: PlanKind[];
   /** 点了哪一段（放大） */
   focus: PlanKind | null;
   onFocus: (kind: PlanKind | null) => void;
@@ -59,7 +61,7 @@ const anglesOf = (counts: number[]) => {
   return sum > 0 ? lengths.map((length) => (length / sum) * TAU) : counts.map(() => TAU / 4);
 };
 
-export const DailyPlanRing = ({ value, onChange, onCommit, focus, onFocus, size = 240 }: Props) => {
+export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocus, size = 240 }: Props) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   // 段 0 从哪个角度起。拖顶上那颗（辨析|单词）时这个偏移跟着变，别的滑钮才不动。
@@ -69,7 +71,7 @@ export const DailyPlanRing = ({ value, onChange, onCommit, focus, onFocus, size 
   const r = size / 2 - 18;
 
   const counts = PLAN_KINDS.map((kind) => value[kind].fresh + value[kind].review);
-  const total = counts.reduce((sum, count) => sum + count, 0);
+  const total = PLAN_KINDS.reduce((sum, kind, index) => sum + (active.includes(kind) ? counts[index] : 0), 0);
   const angles = anglesOf(counts);
   const bounds = [offset];
   angles.forEach((angle) => bounds.push(bounds[bounds.length - 1] + angle));
@@ -185,7 +187,7 @@ export const DailyPlanRing = ({ value, onChange, onCommit, focus, onFocus, size 
           stroke={RING_COLORS[kind]}
           strokeWidth={focus === kind ? stroke + 6 : stroke}
           strokeLinecap="butt"
-          opacity={focus && focus !== kind ? 0.35 : 1}
+          opacity={!active.includes(kind) ? 0.18 : focus && focus !== kind ? 0.35 : 1}
           onClick={() => onFocus(focus === kind ? null : kind)}
           style={{ cursor: "pointer" }}
         >
@@ -202,8 +204,8 @@ export const DailyPlanRing = ({ value, onChange, onCommit, focus, onFocus, size 
           </g>
         );
       })}
-      <text x={cx} y={cy - 4} textAnchor="middle" className="zoo-ring-total">{total}</text>
-      <text x={cx} y={cy + 16} textAnchor="middle" className="zoo-ring-caption">今天 · 项</text>
+      <text x={cx} y={cy - 4} textAnchor="middle" className="zoo-ring-total">{active.length ? total : "—"}</text>
+      <text x={cx} y={cy + 16} textAnchor="middle" className="zoo-ring-caption">{active.length ? "今天 · 项" : "不按圆环排"}</text>
     </svg>
   );
 };

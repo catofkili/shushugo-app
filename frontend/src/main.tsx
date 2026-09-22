@@ -5,9 +5,11 @@ import './styles.css';
 import './app.css';
 import { initDatabase } from './lib/database';
 import { LocalArchiveUnreadableError, loadDatabase, registerPersistenceLifecycle } from './lib/storage';
+import { Sticker } from './components/CapybaraMascot';
 import { ensureSeedData } from './lib/study-core';
+import { applyYuzuEquipment } from './lib/yuzu';
 import { initWebViewOptimizer } from './lib/webview-optimizer';
-import { applyMotionLevel, applyTheme, getStudyPreferences } from './lib/studyPreferences';
+import { applyMotionLevel, applyTheme, ensureJlptPlanAnchor, getStudyPreferences } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { autoSyncReminderNotifications, autoSyncWeeklyReportNotification, loadReminderSettings, registerNotificationActionListener, syncWeeklyReportNotification } from './lib/notifications';
 import { syncJlptPlanReminders } from './lib/jlpt/reminders';
@@ -53,8 +55,10 @@ root.render(
   <StrictMode>
     <div className="app-boot-loading grid min-h-screen place-items-center overflow-y-auto bg-[#555858] px-6 text-center text-[#fff]">
       <div>
-        <p className="jp-serif text-4xl font-semibold">語</p>
+        <Sticker name="splash-sleep" size={130} className="mx-auto" />
+        <Sticker name="logo-lockup" size={72} className="mx-auto mt-1" alt="收集日" />
         <p className="mt-3 text-sm font-semibold text-white/70">正在读取本地词库...</p>
+        <p className="mt-1 text-xs text-white/45">小小的积累，也会成为巨大的改变。</p>
       </div>
     </div>
   </StrictMode>
@@ -86,6 +90,7 @@ const renderArchiveRecovery = (error: LocalArchiveUnreadableError) => {
     <StrictMode>
       <div className="app-boot-loading grid min-h-screen place-items-center overflow-y-auto bg-[#555858] px-6 py-10 text-center text-[#fff]">
         <div className="max-w-md">
+          <Sticker name="empty-network" size={96} className="mx-auto mb-3" />
           <p className="text-xl font-bold">本地学习存档打不开</p>
           <p className="mt-3 text-sm leading-6 text-white/70">
             这份存档已原样保留，没有被覆盖。可能只是这次读取失败，先重试一下；
@@ -111,6 +116,7 @@ const renderBootFailure = (error: unknown) => {
     <StrictMode>
       <div className="app-boot-loading grid min-h-screen place-items-center overflow-y-auto bg-[#555858] px-6 text-center text-[#fff]">
         <div>
+          <Sticker name="empty-network" size={96} className="mx-auto mb-3" />
           <p className="text-xl font-bold">本地词库读取失败</p>
           <p className="mt-3 text-sm text-white/70">请检查应用内是否包含 nihongo.db 和 sql-wasm.wasm。</p>
         </div>
@@ -122,6 +128,8 @@ const renderBootFailure = (error: unknown) => {
 async function bootWithDatabase() {
     await ensureSeedData();
     ensureSyncSchema();
+    applyYuzuEquipment();
+    ensureJlptPlanAnchor();
     registerPersistenceLifecycle();
     registerCloudAutoSyncLifecycle();
     console.log('✅ Database ready');

@@ -413,6 +413,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
           <button className="weekly-report-back" onClick={onBack}><ArrowLeft size={17} />主页</button>
         </div>
         <div className="weekly-report-empty">
+          <img className="weekly-report-empty-brand" src="/brand/shushugo-cover.png" alt="收集日封面" />
           <Sparkles size={28} aria-hidden="true" />
           <h1>学习回顾</h1>
           <p>周日午后，来收下这一周的日语时光。</p>

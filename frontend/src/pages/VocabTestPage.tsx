@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Clock3, History, ImageDown, Loader2, Pause, Play, RotateCcw, Share2, X } from "lucide-react";
+import { Sticker } from "../components/CapybaraMascot";
 import {
   finishVocabTest,
   getVocabTestHistory,
@@ -250,7 +251,7 @@ const VocabTestHome = ({
           </div>
         ) : (
           <p className="mt-3 text-sm leading-relaxed text-white/65">
-            用一组跨 N5–N1 的抽样题，估计你在当前 JLPT 词表覆盖范围内认识多少词。还没测过。
+            跨 N5–N1 抽样，估计 JLPT 词表内认识多少词。
           </p>
         )}
 
@@ -342,7 +343,7 @@ const VocabTestHome = ({
             </table>
           </div>
         ) : (
-          <p className="mt-2 text-sm text-white/55">还没有记录。测一次就会留在这里。</p>
+          <div className="mt-2 flex items-center gap-3 text-sm text-white/55"><Sticker name="empty-box" size={56} className="shrink-0" />还没有记录。测一次就会留在这里。</div>
         )}
       </div>
 
@@ -448,7 +449,7 @@ const ResultView = ({ result, onRestart, onBack }: { result: VocabTestResult; on
       </div>
     </div>
     <p className="mt-5 rounded-2xl border border-white/12 bg-white/5 p-3 text-xs leading-relaxed text-white/58">
-      这是 JLPT 覆盖词表内的估计，不等于“全日语词汇量”。测验结果不会改变学习进度、复习流水或 FSRS。
+      JLPT 词表内的估计，不等于“全日语词汇量”。
     </p>
     <div className="mt-6 flex flex-wrap justify-end gap-2">
       <button type="button" onClick={onBack} className="focus-ring rounded-2xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white/70 hover:bg-white/[0.08]">返回</button>

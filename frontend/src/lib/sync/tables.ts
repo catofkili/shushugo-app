@@ -75,6 +75,8 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "favorite_folders", keys: ["name"], strategy: "union" },
   // 查词汇量的历史成绩。每次测完追加一行、之后不再改，取并集即可。
   { table: "vocab_test_history", keys: ["run_id"], strategy: "union" },
+  // 柚子账本。每一行是一笔不可变的账,身份是 (kind, key),两端取并集。
+  { table: "yuzu_ledger", keys: ["kind", "key"], strategy: "union" },
 
   // 复习流水按触发器分配的设备:本机 id 去重。created_at 只有秒级精度，
   // 同一秒的两次作答会撞自然键；sync_uid 才是稳定事件身份。

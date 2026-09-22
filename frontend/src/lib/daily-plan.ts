@@ -8,7 +8,7 @@
  */
 import { defaultStudyPreferences, getStudyPreferences, saveStudyPreferences, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
 import { getJlptPlanStatus } from "./jlpt/status";
-import { levelsInScope, CONSOLIDATION_DAYS, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
+import { levelsInScope, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { firstValue, rowsFor, studyDayEnd } from "./study-core";
 import { kanjiCharPool } from "./kanji-char-cards";
 import { confusionCardPool } from "./confusion-cards";
@@ -41,6 +41,8 @@ export interface DailyPlanView {
   daysLeft: number;
   /** 按 SECONDS_PER_CARD 算的预计用时（分钟） */
   minutes: number;
+  /** 单词复习那段里掺着的减负 + 压轴数（写回时要减掉的正是渲染时加上的这一份） */
+  wordExtras: number;
 }
 
 const LEVEL_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
@@ -83,7 +85,7 @@ export const dailyPlanView = (prefs: StudyPreferences = getStudyPreferences()): 
   const status = getJlptPlanStatus();
   const target = prefs.jlptTarget;
   const rank = LEVEL_RANK[target] ?? 2;
-  const intakeDays = Math.max(status.plan.daysLeft - CONSOLIDATION_DAYS, 0);
+  const intakeDays = status.plan.intakeDaysLeft;
   const extras = wordExtras();
   const wordDue = wordDueCount() + extras;
   const grammar = grammarPools(target);
@@ -117,7 +119,7 @@ export const dailyPlanView = (prefs: StudyPreferences = getStudyPreferences()): 
   ];
   const total = segments.reduce((sum, segment) => sum + segment.fresh + segment.review, 0);
   const minutes = Math.round(segments.reduce((sum, segment) => sum + (segment.fresh + segment.review) * SECONDS_PER_CARD[segment.kind], 0) / 60);
-  return { total, segments, daysLeft: status.plan.daysLeft, minutes };
+  return { total, segments, daysLeft: status.plan.daysLeft, minutes, wordExtras: extras };
 };
 
 type Fresh = Record<PlanKind, number>;
@@ -147,29 +149,29 @@ export const arrangedPlan = (view: DailyPlanView): Record<PlanKind, { fresh: num
  * 圆环 / 表单改完写回。数字直接落进偏好，不做二次解释；单词复习那段先减掉减负 + 压轴再存。
  * ⚠️ **复习数没动的段，cap 原样留着**：显示的是 min(到期, cap)，不比对就写回等于把「上限 400」
  * 悄悄改成「今天到期的 354」，明天到期多了也只给 354；三种 0（到期全出 / 自动）同理会被写死成一个数。
+ * ⚠️ **「没动」比的是用户看到的那份 `shown`，不能在这里重算**（2026-09-22 修）：面板的数是挂载时算的，
+ * 之后减负 / 压轴生成了、或答题让到期数掉下来了，重算出来的「显示值」就和圆环上那个不一样 ——
+ * 于是拖别的段也会把单词 cap 写死成挂载时的到期数（用户的 400 很可能就是这样变成 341 的），
+ * 拖单词段则多减一份圆环上根本没加过的 extras。
  * `standing` = 这是明确定的平时额度（表单 / 备考一键），顺手记成一键安排的基线。
  */
-export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: number }>, standing = false) => {
+export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: number }>, standing = false, shown: DailyPlanView = dailyPlanView()) => {
   const prefs = getStudyPreferences();
   if (standing) {
     try { localStorage.setItem(BASELINE_KEY, JSON.stringify(Object.fromEntries(PLAN_KINDS.map((kind) => [kind, next[kind].fresh])))); } catch { /* 存不下就用默认档 */ }
   }
-  const extras = wordExtras();
-  const wordDue = wordDueCount();
-  const shownWords = wordReviewCount(prefs.reviewCap, wordDue) + extras;
-  const target = prefs.jlptTarget;
-  const rank = LEVEL_RANK[target] ?? 2;
-  const keepOr = (shown: number, wanted: number, current: number) => (wanted === shown ? current : Math.max(1, wanted));
+  const shownOf = (kind: PlanKind) => shown.segments.find((segment) => segment.kind === kind)?.review ?? 0;
+  const keepOr = (kind: PlanKind, current: number) => (next[kind].review === shownOf(kind) ? current : Math.max(1, next[kind].review));
   saveStudyPreferences({
     ...prefs,
     dailyGoal: next.words.fresh,
-    reviewCap: next.words.review === shownWords ? prefs.reviewCap : Math.max(1, next.words.review - extras),
+    reviewCap: next.words.review === shownOf("words") ? prefs.reviewCap : Math.max(1, next.words.review - shown.wordExtras),
     grammarDailyGoal: next.grammar.fresh,
-    grammarReviewCap: keepOr(pick(prefs.grammarReviewCap, grammarPools(target).due), next.grammar.review, prefs.grammarReviewCap),
+    grammarReviewCap: keepOr("grammar", prefs.grammarReviewCap),
     kanjiDailyGoal: next.kanji.fresh,
-    kanjiReviewCap: keepOr(pick(prefs.kanjiReviewCap, kanjiCharPool(rank).due), next.kanji.review, prefs.kanjiReviewCap),
+    kanjiReviewCap: keepOr("kanji", prefs.kanjiReviewCap),
     confusionDailyGoal: next.confusion.fresh,
-    confusionReviewCap: keepOr(pick(prefs.confusionReviewCap, confusionCardPool(rank).due), next.confusion.review, prefs.confusionReviewCap)
+    confusionReviewCap: keepOr("confusion", prefs.confusionReviewCap)
   });
 };
 
@@ -206,7 +208,7 @@ export const learnedLevel = (): JlptTarget | null => {
  */
 export const examPreset = (current: JlptTarget | null, target: JlptTarget) => {
   const status = getJlptPlanStatus();
-  const intakeDays = Math.max(status.plan.daysLeft - CONSOLIDATION_DAYS, 0);
+  const intakeDays = status.plan.intakeDaysLeft;
   const currentRank = current ? JLPT_TARGETS.indexOf(current) : -1;
   const targetRank = JLPT_TARGETS.indexOf(target);
   const levels = JLPT_TARGETS.slice(currentRank + 1, targetRank + 1).map((level) => `'${level}'`).join(", ") || "''";
@@ -228,7 +230,8 @@ export const examPreset = (current: JlptTarget | null, target: JlptTarget) => {
   );
   const confusion = confusionCardPool(targetRank);
   const plan: Record<PlanKind, { fresh: number; review: number }> = {
-    words: { fresh: Math.min(50, amortize(unseenWords, intakeDays)), review: wordDueCount() },
+    // 和 arrangedPlan 一样带上 extras：写回会减掉它，落下来的 cap 才是「今天该复习的」本身
+    words: { fresh: Math.min(50, amortize(unseenWords, intakeDays)), review: wordDueCount() + wordExtras() },
     grammar: { fresh: Math.min(12, amortize(unseenGrammar, intakeDays)), review: grammarPools(target).due },
     kanji: { fresh: Math.min(50, amortize(kanjiUnseen, intakeDays)), review: kanjiCharPool(targetRank).due },
     confusion: { fresh: Math.min(20, amortize(confusionUnseen, intakeDays)), review: confusion.due }

@@ -13,6 +13,7 @@ import {
 } from "../../lib/api";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
+import { Sticker } from "../../components/CapybaraMascot";
 import { preferredWordSurface } from "../../lib/orthography";
 import { getGrammarTitleFuriganaByPattern } from "../../lib/grammar-title-furigana";
 
@@ -177,7 +178,7 @@ export const StubbornHistorySheet = ({
         ) : (
           <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
             {days.length === 0 && (
-              <p className="py-6 text-center text-xs text-white/45">还没有更早的顽固词记录。</p>
+              <p className="py-6 text-center text-xs text-white/45"><Sticker name="empty-box" size={72} className="mx-auto mb-2" />还没有更早的顽固词记录。</p>
             )}
             {days.map((item) => (
               <button
@@ -199,8 +200,7 @@ export const StubbornHistorySheet = ({
           </div>
         )}
         <p className="border-t border-white/10 px-3 py-2 text-[11px] text-white/40 sm:px-4">
-          判据和今天那张表一样：一共忘过 8 次以上、当天又错了 3 次。累计次数按现在算，
-          所以最近才变顽固的词也会补进早先的日子里。
+          忘过 8 次以上、当天又错 3 次的词
         </p>
       </section>
       {picker}

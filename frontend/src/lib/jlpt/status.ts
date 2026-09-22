@@ -151,9 +151,12 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
     WHERE r.reviewed_on = ? AND ${grammar}
   `, [day], 0);
 
+  // 没锚（启动时 ensureJlptPlanAnchor 还没跑到、或测试里）→ computeDailyMinimum 退回 21 天
+  const startedOn = parseExamDate(prefs.startedOn);
   const plan = computeDailyMinimum({
     today: now,
     examDate,
+    planStartedOn: startedOn,
     unseenWords: wordUnseen,
     unseenGrammar: grammarUnseen,
     freshDueWords: wordFreshDue,

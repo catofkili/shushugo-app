@@ -19,7 +19,7 @@ import { directionProgressCounts } from "./direction-plan";
 import { KANJI, REVERSE } from "./directions";
 import { pickedProgress } from "./picked";
 import { mistakeCandidateSql, wordFilterSql } from "./filters";
-import { ensureDailyRelief, getDailyReliefProgress } from "./daily-relief";
+import { dailyReliefCount, ensureDailyRelief, getDailyReliefProgress } from "./daily-relief";
 import { ensureDailyTail, getDailyTailProgress } from "./daily-tail";
 import { MASTERED_SQL } from "../fsrs-store";
 import { isKanjiUnitSchedulerEnabled, kanjiUnitProgress } from "../kanji-unit-scheduler";
@@ -38,20 +38,36 @@ export interface WordStatsOptions {
  * (见下面 lazy 上那段),没有改任何一个数的算法。
  */
 
-const dailyStudyStats = (day = today()) => {
-  const days = new Map<string, { date: string; seconds: number; wordCount: number }>();
+export interface DailyStudyStat {
+  date: string;
+  seconds: number;
+  /** 正向作答的不同词数(含新词) */
+  wordCount: number;
+  /** 语法考题 / 混合模式插播答过的不同条数 */
+  grammarCount: number;
+  /** 开场减负卡(不写 reviews,往日按判据重算,见 dailyReliefCount) */
+  reliefCount: number;
+  /** = wordCount + grammarCount + reliefCount,和学习页小路 / 顶栏计数同一口径 */
+  total: number;
+}
+
+const dailyStudyStats = (day = today()): DailyStudyStat[] => {
+  const days = new Map<string, DailyStudyStat>();
+  const at = (date: string) => {
+    let item = days.get(date);
+    if (!item) {
+      item = { date, seconds: 0, wordCount: 0, grammarCount: 0, reliefCount: 0, total: 0 };
+      days.set(date, item);
+    }
+    return item;
+  };
   rowsFor(`
     SELECT studied_on, seconds
     FROM word_study_time
     WHERE studied_on BETWEEN date(?, '-30 day') AND ?
   `, [day, day]).forEach((row) => {
     const date = String(row.studied_on ?? "");
-    if (!date) return;
-    days.set(date, {
-      date,
-      seconds: Number(row.seconds ?? 0),
-      wordCount: days.get(date)?.wordCount ?? 0
-    });
+    if (date) at(date).seconds = Number(row.seconds ?? 0);
   });
   rowsFor(`
     SELECT reviewed_on, COUNT(DISTINCT word_id) AS word_count
@@ -61,18 +77,28 @@ const dailyStudyStats = (day = today()) => {
     GROUP BY reviewed_on
   `, [day, day]).forEach((row) => {
     const date = String(row.reviewed_on ?? "");
-    if (!date) return;
-    days.set(date, {
-      date,
-      seconds: days.get(date)?.seconds ?? 0,
-      wordCount: Number(row.word_count ?? 0)
-    });
+    if (date) at(date).wordCount = Number(row.word_count ?? 0);
+  });
+  // 日历、完成页那格和学习页小路必须是同一个数(2026-09-19):以前这里只数正向单词,
+  // 小路却是「减负 + 单词 + 语法」,同一天一边 364 一边 407,用户当面对不上。
+  rowsFor(`
+    SELECT reviewed_on, COUNT(DISTINCT grammar_id) AS grammar_count
+    FROM grammar_reviews
+    WHERE reviewed_on BETWEEN date(?, '-30 day') AND ?
+    GROUP BY reviewed_on
+  `, [day, day]).forEach((row) => {
+    const date = String(row.reviewed_on ?? "");
+    if (date) at(date).grammarCount = Number(row.grammar_count ?? 0);
   });
   rowsFor("SELECT checked_on FROM checkins ORDER BY checked_on").forEach((row) => {
     const date = String(row.checked_on ?? "");
-    if (!date) return;
-    days.set(date, days.get(date) ?? { date, seconds: 0, wordCount: 0 });
+    if (date) at(date);
   });
+  for (const item of days.values()) {
+    // 没作答的日子不可能见过减负卡,不用去重算;今天读的是状态,不花钱
+    if (item.date === day || item.wordCount > 0) item.reliefCount = dailyReliefCount(item.date);
+    item.total = item.wordCount + item.grammarCount + item.reliefCount;
+  }
   return Array.from(days.values()).sort((left, right) => left.date.localeCompare(right.date));
 };
 

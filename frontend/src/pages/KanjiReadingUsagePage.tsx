@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, PenLine } from "lucide-react";
+import { Sticker } from "../components/CapybaraMascot";
 import {
   allKanjiReadingUsage,
   clauseText,
@@ -125,7 +126,7 @@ export const KanjiReadingUsagePage = () => {
       </div>
 
       {shown.length === 0 ? (
-        <p className="cf-loading">没有匹配的字</p>
+        <p className="cf-loading"><Sticker name="empty-search" size={96} />没有找到相关的字，换个关键词试试吧</p>
       ) : (
         <div className="kr-grid">
           {shown.map((entry) => (

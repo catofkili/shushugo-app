@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, RotateCcw, X } from "lucide-react";
+import { Sticker } from "../components/CapybaraMascot";
 import { buildQuestions, quizGroups, settleGroup, type DistinctionQuestion, type QuizScope } from "../lib/distinction-quiz";
 
 interface DistinctionQuizPageProps {
@@ -81,6 +82,7 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
     return (
       <section className="mx-auto w-full max-w-3xl">
         <div className="rounded-3xl border border-white/10 bg-[#3f4343] p-8 text-center">
+          <Sticker name="empty-box" size={96} className="mx-auto mb-3" />
           <p className="text-lg font-bold text-white">这个范围里还没有能练的组</p>
           <button type="button" onClick={onBackToConfusion} className="focus-ring mt-5 inline-flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2 text-sm font-bold text-white/75">
             <ArrowLeft size={16} /> 回疑难辨析

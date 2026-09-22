@@ -3,7 +3,7 @@ import { getWordStats } from "../lib/api";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import type { WordStats } from "../types/vocabulary";
 import type { StudyMode } from "../types/app";
-import { CapybaraMascot } from "./CapybaraMascot";
+import { CapybaraWalk } from "./CapybaraMascot";
 
 /**
  * 今日进度的小路 —— 放在首页顶部栏中间那块本来空着的地方。
@@ -107,7 +107,7 @@ export function SquirrelTrail({ mode = null }: Props) {
         // 松鼠的活动范围要避开右边的计数,否则走到终点会和数字糊在一起
         style={{ left: `calc(10px + (100% - 10px - var(--zoo-trail-tail)) * ${pct / 100})` }}
       >
-        {trail.emoji ?? <CapybaraMascot size={18} mood="happy" />}
+        {trail.emoji ?? <CapybaraWalk size={18} />}
       </div>
       <span className={`zoo-trail-count ${countdown ? "zoo-trail-countdown" : ""}`}>
         {countdown ? (

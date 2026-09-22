@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
-// 2026-09-16 动物园主题退场：只剩一只吉祥物（CapybaraMascot，换成 AI 生成的定妆图时只改那一个文件）。
-import {
-  BookOpenCheck, Flame, Library, Merge, Puzzle, RefreshCw, Ruler,
-  SkipForward, SlidersHorizontal, Speech, Star
-} from "lucide-react";
+// 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
+import { Citrus, Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import { getStudyPreferences, PREFERENCES_EVENT } from "../lib/studyPreferences";
@@ -18,7 +15,7 @@ import { getWeeklyReportNotice, WEEKLY_REPORT_UPDATED_EVENT } from "../lib/analy
 import { shortfallText } from "../lib/jlpt/plan";
 import { useCountUp } from "../hooks/useCountUp";
 import { useMoments } from "../hooks/useMoments";
-import { CapybaraMascot } from "./CapybaraMascot";
+import { Sticker, BrandIcon } from "./CapybaraMascot";
 import { MomentPop } from "./MomentPop";
 import { WeeklyReportEntrance } from "./WeeklyReportEntrance";
 import { ZooProgressPanel } from "./ZooProgressPanel";
@@ -139,7 +136,7 @@ export function ZooHome({
   const greetLine = !stats
     ? "正在读取今天的计划…"
     : total === 0
-      ? "今天还没排计划，进去就自动排上"
+      ? "今天还没排计划"
       : remaining === 0
         ? "今天的路走完了 🎉"
         : streak > 0
@@ -179,7 +176,7 @@ export function ZooHome({
           第一屏说三遍是这一页显得吵的主要原因之一。这里只说别处没有的：连击和今天的状态。 */}
       <div className="zoo-greet">
         <div className="zoo-greet-capy zoo-breathe">
-          <CapybaraMascot size={56} mood={remaining === 0 && total > 0 ? "cheer" : "happy"} />
+          <BrandIcon alt="收集日" className="brand-icon zoo-greet-brand" />
         </div>
         <div className="zoo-greet-text">
           <p className="zoo-greet-hi">{greet}</p>
@@ -292,32 +289,37 @@ export function ZooHome({
         <p className="zoo-tray-title">学习工具</p>
         <div className="zoo-quad">
           <button onClick={() => onNavigate("study-modes")}>
-            <span aria-hidden="true"><SlidersHorizontal size={21} /></span>
+            <span aria-hidden="true"><Sticker name="icon-study-modes" size={36} /></span>
             <b>学习模式</b>
           </button>
           <button onClick={() => onNavigate("grammar-foundation")}>
-            <span aria-hidden="true"><BookOpenCheck size={21} /></span>
+            <span aria-hidden="true"><Sticker name="icon-grammar" size={36} /></span>
             <b>基础语法</b>
           </button>
           <button onClick={() => onOpenWordList()}>
-            <span aria-hidden="true"><Library size={21} /></span>
+            <span aria-hidden="true"><Sticker name="icon-vocab" size={36} /></span>
             <b>选词</b>
           </button>
           <button onClick={() => onNavigate("confusion")}>
-            <span aria-hidden="true"><Puzzle size={21} /></span>
+            <span aria-hidden="true"><Sticker name="icon-practice" size={36} /></span>
             <b>疑难辨析</b>
           </button>
           <button onClick={() => onNavigate("kanji-readings")}>
-            <span aria-hidden="true"><Speech size={21} /></span>
+            <span aria-hidden="true"><Sticker name="icon-kanji-readings" size={36} /></span>
             <b>一字多音</b>
           </button>
           <button onClick={() => onNavigate("favorites")}>
-            <span aria-hidden="true"><Star size={21} /></span>
+            <span aria-hidden="true"><Sticker name="icon-favorites" size={36} /></span>
             <b>收藏</b>
           </button>
           <button onClick={() => onNavigate("vocab-test")}>
-            <span aria-hidden="true"><Ruler size={21} /></span>
+            <span aria-hidden="true"><Sticker name="icon-stats" size={36} /></span>
             <b>查词汇量</b>
+          </button>
+          {/* 第八格。图标是占位(lucide Citrus),等作者出 icon-shop 贴图后换成 Sticker */}
+          <button onClick={() => onNavigate("yuzu-shop")}>
+            <span aria-hidden="true"><Citrus size={30} /></span>
+            <b>柚子商店</b>
           </button>
         </div>
       </section>
@@ -340,20 +342,16 @@ export function ZooHome({
       <details className="zoo-maint">
         <summary>
           进度维护
-          <small>刷新 · 合并重复词条 · 一键完成今日单词</small>
         </summary>
         <div className="zoo-maint-body">
           <button className="zoo-pop zoo-maint-btn" onClick={onRefreshOverview}>
             <b><RefreshCw size={13} aria-hidden="true" /> 刷新进度</b>
-            <small>重新从本地数据库读一遍统计</small>
           </button>
           <button className="zoo-pop zoo-maint-btn" onClick={onMergeDuplicates}>
             <b><Merge size={13} aria-hidden="true" /> 合并重复词条</b>
-            <small>老库里同一个词录了两遍的，把记录并到一行（会先存恢复点）</small>
           </button>
           <button className="zoo-pop zoo-maint-btn warn" onClick={onCompleteTodayWords}>
             <b><SkipForward size={13} aria-hidden="true" /> 一键完成今日单词</b>
-            <small>跳过今天的复习，直接进完成页</small>
           </button>
         </div>
       </details>

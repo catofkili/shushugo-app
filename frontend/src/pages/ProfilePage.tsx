@@ -81,7 +81,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
               {cloudSession.token ? profile?.nickname || cloudSession.displayName || "收集日用户" : "尚未登录"}
             </p>
             <p className="mt-1 truncate text-sm text-white/58">
-              {cloudSession.token ? cloudSession.email : "登录后同步学习进度和个人资料"}
+              {cloudSession.token ? cloudSession.email : "未登录"}
             </p>
             <p className="mt-2 inline-flex rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/62">
               {entitlements.isPro ? productLabel(entitlements.productId) : cloudSession.token ? "免费账号" : "离线学习可用"}
@@ -104,9 +104,6 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-base font-bold text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</span>
-          <span className="mt-0.5 block text-xs text-white/56">
-            {entitlements.isPro ? "管理权益、恢复购买和购买说明" : "解锁沉浸式语法学习，更多权益开发中"}
-          </span>
         </span>
         <ChevronRight size={18} className="text-white/45" />
       </button>

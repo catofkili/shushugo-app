@@ -403,6 +403,59 @@
   --form-control-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
+/* ======================================================================
+   配色皮肤(柚子商店买的,<html data-skin="theme-*">,yuzu.applyYuzuEquipment 写)
+   只换主色一族和底色,--zoo-orange / --zoo-brown / 文字色不动 —— 柚子和吉祥物
+   在哪个皮肤里都还是它们自己。每个皮肤浅色深色各一份,少一份就是换了皮肤
+   之后切深色模式退回默认绿,看着像坏了。
+   ====================================================================== */
+/* 抹茶:青绿偏蓝,底色带一点绿 */
+[data-skin="theme-matcha"] {
+  --zoo-cream: #EAF1E8; --zoo-cream-2: #DCE8DA; --zoo-surface: #F6FAF5;
+  --zoo-primary: #5FAF8F; --zoo-primary-dark: #4C9A7B; --zoo-primary-deep: #3B7D62;
+  --zoo-primary-soft: #CDEADB; --zoo-on-primary: #14332A;
+  --color-bg-primary: #EAF1E8; --color-bg-secondary: #DCE8DA; --color-bg-card: #F6FAF5;
+  --color-accent: #5FAF8F; --color-accent-light: #8CC9B1; --color-accent-lighter: #CDEADB; --color-accent-dark: #4C9A7B;
+}
+[data-theme="dark"][data-skin="theme-matcha"] {
+  --zoo-cream: #1E2A26; --zoo-cream-2: #283832; --zoo-surface: #2D3C36;
+  --zoo-primary: #7FCBA8; --zoo-primary-dark: #96D6B8; --zoo-primary-deep: #B7E5CC;
+  --zoo-primary-soft: #2E4A3E; --zoo-on-primary: #10221B;
+  --color-bg-primary: #2C3733; --color-bg-secondary: #34413C; --color-bg-card: #3D4B46;
+  --color-accent: #7FCBA8; --color-accent-light: #A4DCC3; --color-accent-lighter: #C9ECDD; --color-accent-dark: #4C9A7B;
+}
+/* 樱:粉主色,底色偏粉白 */
+[data-skin="theme-sakura"] {
+  --zoo-cream: #F8ECEF; --zoo-cream-2: #F1DCE1; --zoo-surface: #FDF6F7;
+  --zoo-primary: #E48AA6; --zoo-primary-dark: #D2718F; --zoo-primary-deep: #B3566F;
+  --zoo-primary-soft: #F7D6E0; --zoo-on-primary: #4A1F2C;
+  --color-bg-primary: #F8ECEF; --color-bg-secondary: #F1DCE1; --color-bg-card: #FDF6F7;
+  --color-accent: #E48AA6; --color-accent-light: #EEAEC1; --color-accent-lighter: #F7D6E0; --color-accent-dark: #D2718F;
+}
+[data-theme="dark"][data-skin="theme-sakura"] {
+  --zoo-cream: #2A2124; --zoo-cream-2: #382B2F; --zoo-surface: #3C3034;
+  --zoo-primary: #E89AB5; --zoo-primary-dark: #F0B0C6; --zoo-primary-deep: #F6C9D8;
+  --zoo-primary-soft: #4B3038; --zoo-on-primary: #2A121A;
+  --color-bg-primary: #362D30; --color-bg-secondary: #40353A; --color-bg-card: #4A3E43;
+  --color-accent: #E89AB5; --color-accent-light: #F0B8CB; --color-accent-lighter: #F8D8E3; --color-accent-dark: #D2718F;
+}
+/* 深夜食堂:琥珀主色,底色暖褐 */
+[data-skin="theme-night"] {
+  --zoo-cream: #F3EBDD; --zoo-cream-2: #EADDC3; --zoo-surface: #FAF4E8;
+  --zoo-primary: #D9A441; --zoo-primary-dark: #C8933A; --zoo-primary-deep: #A6752A;
+  --zoo-primary-soft: #F1E2BE; --zoo-on-primary: #3A2A0E;
+  --color-bg-primary: #F3EBDD; --color-bg-secondary: #EADDC3; --color-bg-card: #FAF4E8;
+  --color-accent: #D9A441; --color-accent-light: #E6BF74; --color-accent-lighter: #F1E2BE; --color-accent-dark: #C8933A;
+}
+[data-theme="dark"][data-skin="theme-night"] {
+  --zoo-cream: #221E18; --zoo-cream-2: #2E2921; --zoo-surface: #352F27;
+  --zoo-primary: #E4B860; --zoo-primary-dark: #ECC77E; --zoo-primary-deep: #F3D9A4;
+  --zoo-primary-soft: #4A3B22; --zoo-on-primary: #241A08;
+  --color-bg-primary: #302A22; --color-bg-secondary: #3A332A; --color-bg-card: #453D32;
+  --color-accent: #E4B860; --color-accent-light: #EDCB86; --color-accent-lighter: #F5E1B5; --color-accent-dark: #C8933A;
+}
+
+
 /* 真正的夜间外壳。App.tsx 和导航里仍有一部分浅色主题时期的固定色及内联背景，
    因此这里用高优先级覆盖；否则会出现「深色卡片漂在奶油色页面上」的割裂效果。 */
 [data-theme="dark"] body,
@@ -2749,3 +2802,4 @@ select {
 .quiz-accent-btn:hover {
   background: var(--quiz-accent-strong);
 }
+

@@ -10,6 +10,7 @@ export type Page =
   | "detail"
   | "study-modes"
   | "favorites"
+  | "yuzu-shop"
   | "confusion"
   | "distinction-quiz"
   | "kanji-readings"

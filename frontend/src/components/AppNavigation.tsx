@@ -1,35 +1,26 @@
 import { useEffect, useState, type TouchEvent } from "react";
-import {
-  ArrowLeft,
-  BookOpenText,
-  Brain,
-  ChevronLeft,
-  ChevronRight,
-  House,
-  LucideIcon,
-  Search,
-  UserRound
-} from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Sticker, type StickerName, BrandIcon } from "./CapybaraMascot";
 import type { JLPTLevel } from "../types/grammar";
 import type { Page, StudyMode } from "../types/app";
 import type { SearchResult } from "../lib/search-api";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
-import { CapybaraMascot } from "./CapybaraMascot";
 import { JapaneseRuby } from "./JapaneseRuby";
 import { SquirrelTrail } from "./SquirrelTrail";
 
 // 主页取代了原来的「工具箱」：工具箱的学习模式、收藏、进度概览等入口都挪到了主页。
-const navItems: { page: Page; label: string; icon: LucideIcon }[] = [
-  { page: "home", label: "主页", icon: House },
-  { page: "word", label: "单词学习", icon: BookOpenText },
-  { page: "grammar", label: "语法", icon: Brain },
-  { page: "profile", label: "我的", icon: UserRound }
+// 图标是作者 2026-09-19 补的高清 Tab 图标那组（带水豚，含语法）
+const navItems: { page: Page; label: string; icon: StickerName }[] = [
+  { page: "home", label: "主页", icon: "tab-home" },
+  { page: "word", label: "单词学习", icon: "tab-study" },
+  { page: "grammar", label: "语法", icon: "tab-grammar" },
+  { page: "profile", label: "我的", icon: "tab-me" }
 ];
 
 const isGrammarPage = (page: Page) => page === "grammar" || page === "detail";
 // 组队/学习模式/收藏都是从主页的格子进去的，导航上仍高亮「主页」。
 const isHomePage = (page: Page) =>
-  ["home", "team", "quick-study", "vocab-test", "study-modes", "grammar-foundation", "favorites", "distinction-quiz"].includes(page);
+  ["home", "team", "quick-study", "vocab-test", "study-modes", "grammar-foundation", "favorites", "distinction-quiz", "yuzu-shop"].includes(page);
 const isRootMobilePage = (page: Page) => ["home", "word", "grammar", "profile"].includes(page);
 
 interface AppNavigationProps {
@@ -138,9 +129,9 @@ export function AppNavigation({
             onClick={() => onNavigate("home")}
             className="focus-ring flex shrink-0 items-center gap-1.5 rounded-xl px-1 text-left"
           >
-            <CapybaraMascot size={24} mood="happy" />
+            <BrandIcon className="brand-icon h-6 w-6 rounded-lg object-cover" />
             <span className="jp-serif block text-base font-semibold leading-none tracking-wide text-white">
-              收集日
+              收集日<i className="brand-sprout" aria-hidden="true" />
             </span>
           </button>
         </div>
@@ -169,14 +160,14 @@ export function AppNavigation({
             className={`focus-ring flex min-w-0 items-center rounded-2xl text-left ${sidebarCollapsed ? "lg:justify-center lg:gap-0" : "gap-3"}`}
           >
             <span className="grid h-11 w-11 place-items-center overflow-hidden rounded-xl border border-white/30 bg-[#C08552] shadow-lg">
-              <CapybaraMascot size={34} mood="happy" />
+              <BrandIcon className="brand-icon h-full w-full object-cover" />
             </span>
             <span className={sidebarCollapsed ? "lg:hidden" : ""}>
               <span className="jp-serif block text-lg font-semibold tracking-normal text-white">
-                收集日
+                收集日<i className="brand-sprout" aria-hidden="true" />
               </span>
-              <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-white/65">
-                Vocabulary · Grammar
+              <span className="block text-[11px] font-semibold text-white/65">
+                收集每一个更好的自己
               </span>
             </span>
           </button>
@@ -232,7 +223,7 @@ export function AppNavigation({
                   </button>
                 ))
               ) : (
-                <div className="px-3 py-3 text-xs font-semibold text-white/55">没有找到匹配内容</div>
+                <div className="flex items-center gap-2 px-3 py-3 text-xs font-semibold text-white/55"><Sticker name="empty-search" size={34} />没有找到相关内容，换个关键词试试吧</div>
               )}
             </div>
           )}
@@ -240,7 +231,6 @@ export function AppNavigation({
 
         <nav className="mt-6 flex flex-col gap-2">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const active = isActive(item.page);
             return (
               <div key={item.page}>
@@ -254,7 +244,7 @@ export function AppNavigation({
                       : "border-transparent text-white/78 backdrop-blur-xl hover:border-white/20 hover:bg-[#81D8CF]/15"
                   }`}
                 >
-                  <Icon size={17} />
+                  <Sticker name={item.icon} size={20} className={active ? "" : "opacity-80"} />
                   <span className={sidebarCollapsed ? "lg:hidden" : ""}>{item.label}</span>
                 </button>
               </div>
@@ -290,7 +280,6 @@ export function AppNavigation({
       >
         <div className="app-landscape-rail-grid grid grid-cols-4 gap-1">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const active = isActive(item.page);
             return (
               <button
@@ -302,7 +291,7 @@ export function AppNavigation({
                     : "border-white/18 bg-white/8 text-white/76 shadow-[0_4px_12px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/12"
                 }`}
               >
-                <Icon size={24} strokeWidth={active ? 2.6 : 2.2} />
+                <Sticker name={item.icon} size={32} className={`app-tab-icon${active ? " is-active" : ""}`} />
                 <span className="mt-0.5 whitespace-nowrap text-[11px] font-bold leading-none tracking-normal">{item.label}</span>
               </button>
             );

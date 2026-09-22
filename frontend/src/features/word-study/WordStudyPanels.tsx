@@ -4,6 +4,7 @@ import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
 import { addFavorite, addFavorites, getStubbornGrammarToday, getStubbornWordsToday, type StubbornGrammarToday, type StubbornWordToday } from "../../lib/api";
 import { ZooConfetti } from "../../components/ZooConfetti";
+import { Sticker } from "../../components/CapybaraMascot";
 import { useCountUp } from "../../hooks/useCountUp";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { estimatedMinutesFor } from "../../lib/review-budget";
@@ -16,7 +17,7 @@ import { saveImageToGallery, shareImage } from "../../lib/share-image";
 import { getStudyPreferences } from "../../lib/studyPreferences";
 import { playExample, prefetchExample } from "../../lib/speech";
 import type { WordCard, WordStats } from "../../types/vocabulary";
-import { encoreDayColor, MILESTONES, pickEncoreHook } from "./encore-style";
+import { ENCORE_DEFAULT_COLOR, encoreLimitedColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
 import {
   answerReadingText,
@@ -264,6 +265,9 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const totalSeconds = (stats?.wordStudySecondsToday ?? 0) + localSeconds;
   const todayStats = dailyStats.get(studyDate);
   const todayWordCount = todayStats?.wordCount ?? stats?.reviewedToday ?? 0;
+  // 面板和日历上摆的是「减负 + 单词 + 语法」的合计,和小路同一口径;
+  // 分享图和里程碑仍按单词算(那张图上写的是「词」,累计里程碑也是词的累计)。
+  const todayTotal = todayStats?.total ?? todayWordCount;
   const distinctionGroupCount = useMemo(() => quizGroups({ kind: "today" }).length, []);
   const checkedToday = checkins.has(studyDate);
   const checkinDays = checkins.size;
@@ -295,7 +299,8 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   // 而且积压未清时它对本次加餐根本不起作用,摆在这里就是个按了没反应的按钮。
   const [showSizePanel, setShowSizePanel] = useState(false);
   const [sizeOverride, setSizeOverride] = useState<number | null>(null);
-  const encoreColor = encoreDayColor(studyDate);
+  const limitedColor = encoreLimitedColor(studyDate);
+  const encoreColor = limitedColor ?? ENCORE_DEFAULT_COLOR;
   const encoreInventory = encore ? encore.remaining + encore.unseenRemaining : 0;
   // 积压未清时数量跟积压走;清空后 = 每日新词配额的一半
   const dailyGoal = getStudyPreferences().dailyGoal;
@@ -332,7 +337,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
    * 刻意不给「用时」:那个数在这一页上还在实时走,delta 恒为 1 —— 滚起来不是动画,
    * 只是给每一次跳动加 320ms 的延迟。同理没给顶栏的松鼠小路(每答一题只 +1)。
    */
-  const shownWordCount = useCountUp(todayWordCount);
+  const shownTotal = useCountUp(todayTotal);
   const shownCheckinDays = useCountUp(checkinDays);
 
   // 今天真正打过架的那几个词。进这一页才查一次:判据要数今天的流水,
@@ -437,14 +442,17 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
       <div className="min-h-0 flex-1 overflow-y-auto p-1 text-center sm:p-2">
         <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-3">
           <div className="flex shrink-0 items-center justify-between gap-3 text-left">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">
-                {phase === "picked" ? "Picked Done" : "Daily Complete"}
-              </p>
-              {/* 自选清单不是今日计划：它勾的词可能一个都没到期，写「今日单词完成」是假的 */}
-              <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">
-                {phase === "picked" ? "这批词过完了" : "今日单词完成"}
-              </h2>
+            <div className="flex items-center gap-3">
+              <Sticker name="empty-done" size={60} className="shrink-0" />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">
+                  {phase === "picked" ? "Picked Done" : "Daily Complete"}
+                </p>
+                {/* 自选清单不是今日计划：它勾的词可能一个都没到期，写「今日单词完成」是假的 */}
+                <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">
+                  {phase === "picked" ? "这批词过完了" : "今日单词完成"}
+                </h2>
+              </div>
             </div>
             <span className="shrink-0 rounded-full border border-[#81D8CF]/35 bg-[#81D8CF]/14 px-3 py-1 text-xs font-bold text-[#81D8CF]">
               {compactPhaseLabel}
@@ -462,9 +470,9 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             <div className="rounded-xl bg-[#373b3b] px-3 py-2 text-left ring-1 ring-white/10">
               <div className="flex items-center gap-1.5 text-white/58">
                 <CalendarDays size={14} />
-                <p className="text-[11px] font-bold">单词</p>
+                <p className="text-[11px] font-bold">学习</p>
               </div>
-              <p className="mt-1 truncate text-base font-semibold">{shownWordCount} 个</p>
+              <p className="mt-1 truncate text-base font-semibold">{shownTotal} 项</p>
             </div>
             <div className="rounded-xl bg-[#373b3b] px-3 py-2 text-left ring-1 ring-white/10">
               <div className="flex items-center gap-1.5 text-white/58">
@@ -501,14 +509,17 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                   const isToday = cell.date === studyDate;
                   const dayStats = dailyStats.get(cell.date);
                   const daySeconds = (dayStats?.seconds ?? 0) + (isToday ? localSeconds : 0);
-                  const wordCount = dayStats?.wordCount ?? 0;
-                  const hasActivity = checked || daySeconds > 0 || wordCount > 0;
+                  const total = dayStats?.total ?? 0;
+                  const hasActivity = checked || daySeconds > 0 || total > 0;
+                  const breakdown = dayStats
+                    ? [`单词 ${dayStats.wordCount}`, dayStats.grammarCount ? `语法 ${dayStats.grammarCount}` : "", dayStats.reliefCount ? `减负 ${dayStats.reliefCount}` : ""].filter(Boolean).join(" · ")
+                    : "";
                   return (
                     <span
                       key={cell.date}
                       className="group relative grid h-7 place-items-center sm:h-8"
                       tabIndex={0}
-                      aria-label={`${cell.date}，学习时间 ${formatDuration(daySeconds)}，单词 ${wordCount} 个`}
+                      aria-label={`${cell.date}，学习时间 ${formatDuration(daySeconds)}，学习 ${total} 项${breakdown ? `（${breakdown}）` : ""}`}
                     >
                       <span
                         className={`grid h-6 w-6 place-items-center rounded-full text-[11px] font-semibold ring-1 sm:h-7 sm:w-7 sm:text-xs ${
@@ -524,7 +535,8 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                       <span className="study-calendar-tooltip pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-44 -translate-x-1/2 rounded-2xl border border-white/15 bg-[#202323] p-3 text-left shadow-xl group-hover:block group-focus:block">
                         <span className="block text-xs font-bold text-white/85">{cell.date}</span>
                         <span className="mt-2 block text-xs text-white/65">学习时间：{formatDuration(daySeconds)}</span>
-                        <span className="mt-1 block text-xs text-white/65">学习单词：{wordCount} 个</span>
+                        <span className="mt-1 block text-xs text-white/65">学习：{total} 项</span>
+                        {breakdown && <span className="mt-0.5 block text-[11px] text-white/45">{breakdown}</span>}
                         <span className="mt-1 block text-xs text-white/45">{checked ? "已打卡" : "未打卡"}</span>
                       </span>
                     </span>
@@ -546,9 +558,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 <Flame size={18} />
                 快速复习这 {stubborn.length} 个顽固词
               </button>
-              <p className="mt-2 text-[11px] text-white/40">
-                在快速学习里一页一页过：默认「认识」，只把还没记住的挑出来。评分照常进 FSRS。
-              </p>
+              <p className="mt-2 text-[11px] text-white/40">一页一页过，只挑没记住的</p>
             </div>
           )}
 
@@ -556,7 +566,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
               {encore.fatigued ? (
                 <>
-                  <p className="mb-2 text-xs text-white/60">最近的正确率有点下滑——今天已经很棒了，剩下的词明天清效率更高。</p>
+                  <p className="mb-2 text-xs text-white/60">正确率在下滑，剩下的明天清更高效。</p>
                   <button
                     onClick={() => onEncore?.(encoreCount)}
                     className="focus-ring inline-flex h-11 w-full items-center justify-center rounded-2xl border border-white/20 bg-white/8 text-sm font-bold text-white/75"
@@ -570,12 +580,14 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                     <p className="min-w-0 truncate text-xs text-white/60">
                       {encoreHook?.lead}
                     </p>
-                    <span
-                      className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                      style={{ color: encoreColor.hex, borderColor: `${encoreColor.hex}59` }}
-                    >
-                      {encoreColor.weekdayJp}・{encoreColor.colorName}
-                    </span>
+                    {limitedColor && (
+                      <span
+                        className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                        style={{ color: limitedColor.hex, borderColor: `${limitedColor.hex}59` }}
+                      >
+                        {limitedColor.weekdayJp}・{limitedColor.colorName}
+                      </span>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -736,7 +748,6 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-bold text-white">今天碰到的易混组 {distinctionGroupCount} 组</p>
-                  <p className="mt-1 text-xs text-white/55">把今天见过的相似词放在一起分清</p>
                 </div>
                 <button
                   type="button"
@@ -796,6 +807,13 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 </span>
               </div>
             </button>
+          </div>
+
+          {/* 定妆稿「退出 / 结束页」+「每日一句」：这一页是今天最后一眼，道个别 */}
+          <div className="mascot-farewell">
+            <Sticker name="empty-bye" size={72} />
+            <span className="mascot-say">再见～明天也要加油！</span>
+            <Sticker name="card-daily" size={64} className="ml-auto" alt="每天收集一点点，未来会不一样" />
           </div>
         </div>
       </div>

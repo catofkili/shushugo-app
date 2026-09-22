@@ -28,9 +28,9 @@ interface Props {
 }
 
 const PHASE_TEXT: Record<string, string> = {
-  intake: "推进期 · 一边进新内容一边复习",
-  consolidate: "巩固期 · 不再进新内容,专心把学过的焐熟",
-  "exam-week": "考前一周 · 只清到期,别再开新坑",
+  intake: "推进期 · 进新 + 复习",
+  consolidate: "巩固期 · 只复习",
+  "exam-week": "考前一周 · 只清到期",
   past: "这一场已经考完了"
 };
 
@@ -43,20 +43,20 @@ const Row = ({
   const left = Math.max(need - done, 0);
   const pct = need > 0 ? Math.min(100, Math.round((done / need) * 100)) : 100;
   return (
-    <div className="mb-3 rounded-2xl border border-white/12 bg-white/4 p-3">
+    <div className="mb-3 rounded-2xl jp-inset p-3">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-sm font-bold text-white/80">{label}</p>
-        <p className="text-sm font-bold tabular-nums text-white/90">
-          {done} <span className="text-white/45">/ {need}</span>
+        <p className="text-sm font-bold jp-ink">{label}</p>
+        <p className="text-sm font-bold tabular-nums jp-ink">
+          {done} <span className="jp-muted">/ {need}</span>
         </p>
       </div>
-      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+      <div className="mt-2 h-2 overflow-hidden rounded-full jp-track">
         <div
-          className={`h-full rounded-full ${left === 0 ? "bg-[#81D8CF]" : "bg-[#F0B67F]"}`}
+          className={`h-full rounded-full ${left === 0 ? "jp-accent" : "bg-[#F0B67F]"}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="mt-2 text-xs text-white/55">
+      <p className="mt-2 text-xs jp-muted">
         {need === 0 ? "今天这一项不需要做" : left === 0 ? "已完成 ✓" : `还差 ${left}${hint ? ` · ${hint}` : ""}`}
       </p>
     </div>
@@ -117,37 +117,37 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
 
   return (
     <div className="mx-auto max-w-3xl pb-6">
-      <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
+      <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl jp-card p-2">
         <button
           onClick={onBack}
-          className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8 hover:text-white"
+          className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold jp-ink"
         >
           <ArrowLeft size={17} />
           返回
         </button>
-        <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">备考计划</p>
+        <p className="min-w-0 truncate px-2 text-sm font-bold jp-muted">备考计划</p>
       </div>
 
       {error && (
-        <p className="mb-4 rounded-2xl border border-white/15 bg-white/5 p-4 text-sm text-white/70">{error}</p>
+        <p className="mb-4 rounded-2xl jp-inset p-4 text-sm jp-muted">{error}</p>
       )}
 
       {status && (
         <>
           {/* 倒计时 + 今天还差什么 */}
-          <div className="mb-4 rounded-3xl border border-white/15 bg-[#474a4a] p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/45">
+          <div className="mb-4 rounded-3xl jp-card p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] jp-muted">
               {formatExamDateHuman(status.examDate)} · {status.target}
             </p>
-            <p className="mt-2 text-4xl font-black tabular-nums text-white">
+            <p className="mt-2 text-4xl font-black tabular-nums jp-ink">
               {status.plan.daysLeft < 0 ? "已考完" : `还有 ${status.plan.daysLeft} 天`}
             </p>
-            <p className="mt-2 text-sm text-white/65">{PHASE_TEXT[status.plan.phase]}</p>
-            <p className="mt-3 rounded-2xl bg-white/6 px-3 py-2 text-sm font-bold text-white/85">
+            <p className="mt-2 text-sm jp-muted">{PHASE_TEXT[status.plan.phase]}</p>
+            <p className="mt-3 rounded-2xl jp-inset px-3 py-2 text-sm font-bold jp-ink">
               {shortfallText(status.shortfall)}
             </p>
             {!status.plan.feasible && (
-              <p className="mt-3 rounded-2xl border border-[#F0B67F]/40 bg-[#F0B67F]/10 px-3 py-2 text-xs leading-5 text-[#F0B67F]">
+              <p className="mt-3 rounded-2xl border border-[#F0B67F]/60 bg-[#F0B67F]/15 px-3 py-2 text-xs leading-5 jp-ink">
                 按每天的上限也吃不完:全部覆盖大约要 {status.plan.daysNeeded} 天,现在只剩 {status.plan.daysLeft} 天。
                 要么把目标降一级,要么把考期改到下一场——继续按现在的排法只会天天欠账。
               </p>
@@ -155,14 +155,13 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
           </div>
 
           {/* 每日学习量：圆环 / 数字表单 / 备考一键（DailyPlanPanel，和设置页同一个组件、同一份状态）。
-              「下次考 N几」就是下面「目标级别」那一个，面板不再有第二个选择框。
-              这页是深色卡面，面板的配色跟 [data-theme="dark"] 那套走，所以包一层。 */}
-          <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] text-white/45">每日学习量</p>
-          <div className="mb-4" data-theme="dark"><DailyPlanPanel /></div>
+              「下次考 N几」就是下面「目标级别」那一个，面板不再有第二个选择框。 */}
+          <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] jp-muted">每日学习量</p>
+          <div className="mb-4"><DailyPlanPanel /></div>
 
           {/* 今天的最低量 */}
-          <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] text-white/45">今天最少要做</p>
-          <div className="mb-4 rounded-3xl border border-white/15 bg-[#474a4a] p-4">
+          <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] jp-muted">今天最少要做</p>
+          <div className="mb-4 rounded-3xl jp-card p-4">
             <Row
               label="单词 · 复习到期"
               need={status.plan.reviewWords}
@@ -175,13 +174,13 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
             <div className="mt-3 grid grid-cols-2 gap-3">
               <button
                 onClick={onStartWords}
-                className="focus-ring h-12 rounded-2xl bg-[#81D8CF] text-sm font-bold !text-[#2f3333]"
+                className="focus-ring h-12 rounded-2xl jp-accent text-sm font-bold"
               >
                 去背词 →
               </button>
               <button
                 onClick={onStartGrammar}
-                className="focus-ring h-12 rounded-2xl border border-white/20 bg-white/6 text-sm font-bold text-white/85"
+                className="focus-ring h-12 rounded-2xl jp-btn text-sm font-bold jp-ink"
               >
                 去学语法 →
               </button>
@@ -189,7 +188,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
           </div>
 
           {/* 覆盖进度 */}
-          <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] text-white/45">
+          <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] jp-muted">
             {status.target} 范围覆盖
           </p>
           <div className="mb-4 grid grid-cols-2 gap-3">
@@ -199,32 +198,32 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
             ] as const).map(([label, data]) => {
               const pct = data.total > 0 ? Math.round((data.seen / data.total) * 100) : 0;
               return (
-                <div key={label} className="rounded-2xl border border-white/15 bg-[#474a4a] p-4">
-                  <p className="text-xs font-bold text-white/55">{label}</p>
-                  <p className="mt-1 text-2xl font-black tabular-nums text-white">{pct}%</p>
-                  <p className="mt-1 text-xs tabular-nums text-white/50">{data.seen} / {data.total}</p>
+                <div key={label} className="rounded-2xl jp-card p-4">
+                  <p className="text-xs font-bold jp-muted">{label}</p>
+                  <p className="mt-1 text-2xl font-black tabular-nums jp-ink">{pct}%</p>
+                  <p className="mt-1 text-xs tabular-nums jp-muted">{data.seen} / {data.total}</p>
                 </div>
               );
             })}
           </div>
 
           {/* 设置 */}
-          <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] text-white/45">计划设置</p>
-          <div className="rounded-3xl border border-white/15 bg-[#474a4a] p-4">
+          <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] jp-muted">计划设置</p>
+          <div className="rounded-3xl jp-card p-4">
             <label className="mb-3 flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 text-sm font-bold text-white/80">
+              <span className="inline-flex items-center gap-2 text-sm font-bold jp-ink">
                 <Target size={16} /> 开启备考计划
               </span>
               <input
                 type="checkbox"
                 checked={status.enabled}
                 onChange={(event) => patchPrefs({ jlptPlanEnabled: event.target.checked })}
-                className="h-5 w-5 accent-[#81D8CF]"
+                className="h-5 w-5 accent-[color:var(--zoo-primary)]"
               />
             </label>
 
             <div className="mb-3">
-              <p className="mb-2 text-sm font-bold text-white/80">目标级别</p>
+              <p className="mb-2 text-sm font-bold jp-ink">目标级别</p>
               <div className="grid grid-cols-5 gap-2">
                 {JLPT_TARGETS.map((level) => (
                   <button
@@ -232,38 +231,38 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
                     onClick={() => patchPrefs({ jlptTarget: level as JlptTarget })}
                     className={`focus-ring h-11 rounded-2xl text-sm font-bold ${
                       status.target === level
-                        ? "bg-[#81D8CF] !text-[#2f3333]"
-                        : "border border-white/20 bg-white/5 text-white/75"
+                        ? "jp-accent"
+                        : "jp-btn jp-muted"
                     }`}
                   >
                     {level}
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-white/50">
-                考的是累计范围:选 N3 就把 N5/N4/N3 全算进来。
+              <p className="mt-2 text-xs jp-muted">
+                累计范围：N3 含 N5/N4。
               </p>
             </div>
 
             <div className="mb-3">
-              <p className="mb-2 inline-flex items-center gap-2 text-sm font-bold text-white/80">
+              <p className="mb-2 inline-flex items-center gap-2 text-sm font-bold jp-ink">
                 <CalendarDays size={16} /> 考试日期
               </p>
               <input
                 type="date"
                 value={formatExamDate(status.examDate)}
                 onChange={(event) => patchPrefs({ jlptExamDate: event.target.value })}
-                className="focus-ring h-11 w-full rounded-2xl border border-white/20 bg-white/6 px-3 text-sm font-bold text-white/85"
+                className="focus-ring h-11 w-full rounded-2xl jp-btn px-3 text-sm font-bold jp-ink"
               />
-              <p className="mt-2 text-xs text-white/50">
+              <p className="mt-2 text-xs jp-muted">
                 {status.examDateSource === "auto"
-                  ? `自动取下一场(7 月和 12 月的第一个周日),现在是 ${formatExamDate(auto)}。`
-                  : "手填的日期。清空下面的按钮可以回到自动。"}
+                  ? `自动：下一场 ${formatExamDate(auto)}`
+                  : "手填。清空即回到自动。"}
               </p>
               {status.examDateSource === "manual" && (
                 <button
                   onClick={() => patchPrefs({ jlptExamDate: "" })}
-                  className="focus-ring mt-2 rounded-2xl border border-white/20 px-3 py-2 text-xs font-bold text-white/70"
+                  className="focus-ring mt-2 rounded-2xl jp-btn px-3 py-2 text-xs font-bold jp-muted"
                 >
                   恢复自动({formatExamDate(auto)})
                 </button>
@@ -271,7 +270,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
             </div>
 
             <label className="flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 text-sm font-bold text-white/80">
+              <span className="inline-flex items-center gap-2 text-sm font-bold jp-ink">
                 <BellRing size={16} /> 每日提醒
               </span>
               <span className="inline-flex items-center gap-2">
@@ -279,18 +278,18 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
                   type="time"
                   value={reminder?.jlptTime ?? "20:30"}
                   onChange={(event) => patchReminder({ jlptTime: event.target.value })}
-                  className="focus-ring h-10 rounded-2xl border border-white/20 bg-white/6 px-2 text-sm font-bold text-white/85"
+                  className="focus-ring h-10 rounded-2xl jp-btn px-2 text-sm font-bold jp-ink"
                 />
                 <input
                   type="checkbox"
                   checked={reminder?.jlptReminder ?? true}
                   onChange={(event) => patchReminder({ jlptReminder: event.target.checked })}
-                  className="h-5 w-5 accent-[#81D8CF]"
+                  className="h-5 w-5 accent-[color:var(--zoo-primary)]"
                 />
               </span>
             </label>
-            <p className="mt-2 text-xs text-white/50">
-              到点播报「今天还差多少」。当天的最低量做完了就不发。浏览器预览里不会响,iOS App 里才生效。
+            <p className="mt-2 text-xs jp-muted">
+              到点提醒今天还差多少，做完了就不发。
             </p>
           </div>
         </>

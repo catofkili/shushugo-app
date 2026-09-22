@@ -103,7 +103,7 @@ export function KanjiUnitPlanSettings() {
         <div>
           <p className="text-sm font-bold text-white">汉字读音 · 每日题量</p>
           <p className="mt-0.5 text-xs text-white/50">
-            这是<b className="text-white/70">总题量</b>(复习 + 新字音)。复习先占额，剩下的名额自动补新字音。
+            总题量（复习 + 新字音）
           </p>
         </div>
         <span className="shrink-0 text-sm font-bold text-[#81D8CF]">{quota} 题/天</span>

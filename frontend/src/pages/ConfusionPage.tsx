@@ -15,6 +15,7 @@ import {
 import { playableGroupKeys, quizGroups, type QuizScope } from "../lib/distinction-quiz";
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
 import { JapaneseWordRuby } from "../components/JapaneseWordRuby";
+import { Sticker } from "../components/CapybaraMascot";
 import { useStudyTimer } from "../lib/useStudyTimer";
 
 /**
@@ -227,7 +228,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
       </div>
 
       {sections.length === 0 && (
-        <p className="cf-loading">没有匹配的词组</p>
+        <p className="cf-loading"><Sticker name="empty-search" size={96} />没有找到相关内容，换个关键词试试吧</p>
       )}
 
       {sections.map((section) => {

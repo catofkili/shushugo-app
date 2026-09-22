@@ -4,6 +4,7 @@ import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/v
 import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { checkAchievements } from "../lib/userProfile";
+import { settleYuzu } from "../lib/yuzu";
 import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic, triggerRevealHaptic, triggerSwipeArmHaptic } from "../lib/haptics";
 import { playPronunciation } from "../lib/speech";
 import { playComplete, playCountdownTick, playDontKnow, playFlip, playKnow, playReliefDeal } from "../lib/zoo-sounds";
@@ -564,6 +565,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 而 flush 是每 15 秒一次,这个式子恒等于 0,所以那份计数器一次都没涨过,
       // 个人信息页常年「累计 0 小时 0 分钟」。整段删掉,不再攒第二份。
       void checkAchievements().catch(() => undefined);
+      try { settleYuzu(); } catch { /* 记账失败不该打断学习 */ }
       return data.stats;
     } catch {
       // Time tracking should never interrupt review.
@@ -1682,7 +1684,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 {/* 等级/词性挪到题目面,并且放在滚动区外面 —— 释义有长到要滚的
                     (「…的省略语；super超,上,高级,超级」这种),标签不能跟着滚没。 */}
                 <div className="mb-1.5 flex flex-wrap items-center justify-center gap-1.5">
-                  {card.jlptLevel && (
+                  {preferences.showJlptLevel && card.jlptLevel && (
                     <span className="rounded-sm border border-white/15 px-1.5 py-0.5 text-[11px] font-bold text-white/60">{card.jlptLevel}</span>
                   )}
                   {card.pos && (
@@ -1895,7 +1897,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               ) : isUnitKanji ? (
                 <div className="w-full">
                   <p className="jp-serif text-6xl font-semibold leading-none sm:text-7xl lg:text-8xl xl:text-[9rem]">{unitTarget?.text}</p>
-                  <p className="mt-5 text-sm font-semibold text-white/52">点一下，显示这个汉字单元的读音</p>
                 </div>
               ) : isKanjiPhase ? (
                 <div className="w-full">
@@ -1962,8 +1963,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                       </button>
                     ))}
                   </div>
-                  {/* 甩卡提示只给触屏设备(桌面没这手势,写了反而是噪音) */}
-                  <p className="zoo-swipe-hint">← 左滑「再来」　右滑「认识」→</p>
                 </>
               )}
             </div>

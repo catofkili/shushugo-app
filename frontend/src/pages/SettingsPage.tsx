@@ -6,7 +6,8 @@ import { exportDatabase } from "../lib/database";
 import { clearLocalAppData } from "../lib/clear-local-data";
 import { clearStorage, restoreDatabaseBackup, saveDatabase } from "../lib/storage";
 import { getPasscodeState, verifyPasscode } from "../lib/localPasscode";
-import { loadVoices, SYSTEM_VOICE_ID, type AudioVoice } from "../lib/speech";
+import { defaultVoiceId, loadVoices, SYSTEM_VOICE_ID, type AudioVoice } from "../lib/speech";
+import { voiceUnlocked } from "../lib/yuzu";
 import {
   CLOUD_AUTH_EVENT,
   cloudLogout,
@@ -369,9 +370,10 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                 className="focus-ring control-cyan h-10 max-w-40 shrink-0 rounded-xl border px-2 text-xs font-bold"
               >
                 <option value="">默认</option>
-                {voices.map((voice) => (
-                  <option key={voice.id} value={voice.id}>{voice.label}</option>
-                ))}
+                {voices.map((voice) => {
+                  const locked = !voiceUnlocked(voice.id, defaultVoiceId());
+                  return <option key={voice.id} value={voice.id} disabled={locked}>{voice.label}{locked ? "(柚子商店解锁)" : ""}</option>;
+                })}
                 <option value={SYSTEM_VOICE_ID}>系统语音</option>
               </select>
             </div>
@@ -404,6 +406,22 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                 type="checkbox"
                 checked={preferences.weeklyReportEnabled}
                 onChange={(event) => updatePreference({ weeklyReportEnabled: event.target.checked })}
+                className="peer sr-only"
+              />
+              <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
+            </label>
+          </div>
+
+          <div className="flex items-center gap-3 p-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-white">题目上显示 JLPT 等级</p>
+              <p className="mt-0.5 text-xs text-white/50">在题目面标出 N5–N1</p>
+            </div>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                checked={preferences.showJlptLevel}
+                onChange={(event) => updatePreference({ showJlptLevel: event.target.checked })}
                 className="peer sr-only"
               />
               <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>

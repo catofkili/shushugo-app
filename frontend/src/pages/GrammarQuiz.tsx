@@ -99,7 +99,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
         <button
           onClick={undo}
           disabled={!session?.canUndo}
-          title={session?.canUndo ? "回到刚答的那条并撤销那次作答" : "今天还没有可撤销的作答"}
+          title="撤销上一次作答"
           aria-label="上一个"
           className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#81D8CF]/10 hover:bg-[#81D8CF]/15 disabled:opacity-35"
         >

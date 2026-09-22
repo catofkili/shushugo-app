@@ -3,6 +3,7 @@ import { encoreWeekKey } from "../../lib/review-budget";
 import {
   ENCORE_DAY_COLORS,
   encoreDayColor,
+  isEncoreLimitedDay,
   nextMilestone,
   nextRoundTarget,
   pickEncoreHook
@@ -81,22 +82,26 @@ describe("pickEncoreHook 巧合层", () => {
   });
 });
 
-describe("pickEncoreHook 常驻层", () => {
-  it("无巧合时按日期在常驻钩子里轮换,连击钩子要求本周加过餐", () => {
-    const days = ["2026-07-13", "2026-07-14", "2026-07-15"];
-    const kinds = days.map((studyDate) =>
-      pickEncoreHook(input({ studyDate, weekEncoreCount: 2 })).kind
-    );
-    expect(new Set(kinds).size).toBe(3);
-    expect(kinds.every((kind) => ["streak", "badge", "color"].includes(kind))).toBe(true);
+const yearDays = Array.from({ length: 365 }, (_, i) => {
+  const d = new Date(Date.UTC(2026, 0, 1 + i));
+  return d.toISOString().slice(0, 10);
+});
+
+describe("限定日", () => {
+  it("一周两天左右,不是天天", () => {
+    const n = yearDays.filter(isEncoreLimitedDay).length;
+    expect(n).toBeGreaterThan(365 * 1.5 / 7);
+    expect(n).toBeLessThan(365 * 2.5 / 7);
   });
 
-  it("本周没加过餐就没有连击钩子", () => {
-    const days = ["2026-07-13", "2026-07-14", "2026-07-15"];
-    const kinds = days.map((studyDate) =>
-      pickEncoreHook(input({ studyDate, weekEncoreCount: 0 })).kind
-    );
-    expect(kinds.every((kind) => ["badge", "color"].includes(kind))).toBe(true);
+  it("限定日出限定色钩子,其余日子只在连击/星徽里轮换", () => {
+    const limited = yearDays.filter(isEncoreLimitedDay);
+    const plain = yearDays.filter((d) => !isEncoreLimitedDay(d));
+    expect(limited.every((studyDate) => pickEncoreHook(input({ studyDate })).kind === "color")).toBe(true);
+    const kinds = plain.map((studyDate) => pickEncoreHook(input({ studyDate, weekEncoreCount: 2 })).kind);
+    expect(new Set(kinds)).toEqual(new Set(["streak", "badge"]));
+    // 本周没加过餐就没有连击钩子
+    expect(plain.every((studyDate) => pickEncoreHook(input({ studyDate, weekEncoreCount: 0 })).kind === "badge")).toBe(true);
   });
 });
 

@@ -472,7 +472,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
         <button
           className="wl-select"
           onClick={() => (picking ? exitPicking() : selection.restore(true, []))}
-          title="也可以长按任意一行进入，按住往下划一路选过去"
+          title="长按任意一行可多选"
         >
           {picking ? "退出选词" : "选词"}
         </button>
@@ -574,7 +574,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
                 className={`wl-row-known${row.isKnownForever ? " on" : ""}`}
                 onClick={() => toggleKnown(row)}
                 aria-pressed={row.isKnownForever}
-                title={row.isKnownForever ? "放回复习队列" : "我已经会了：算一次学过，然后别再出现"}
+                title={row.isKnownForever ? "放回复习队列" : "标为熟知，不再出现"}
               >
                 {row.isKnownForever ? <Check size={13} /> : null}
                 熟知
@@ -628,7 +628,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
           <button
             className="wl-bar-btn"
             disabled={queueable === 0}
-            title={queueable === 0 ? "学过的词不用加，到期会自己出现" : undefined}
+            title={queueable === 0 ? "学过的词到期会自己出现" : undefined}
             onClick={handleAddToQueue}
           >
             加入队列
@@ -789,7 +789,7 @@ const WordDetailSheet = ({
         {detail.band === "unseen" && (
           <button className="wl-sheet-queue" onClick={() => onQueue(detail.id)}>
             加入学习队列
-            <small>按每日新词配额排，今天排不下就排在后面几天</small>
+            <small>排不进今天就排后面几天</small>
           </button>
         )}
 

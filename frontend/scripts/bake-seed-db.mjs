@@ -25,7 +25,7 @@ const senseKeysPath = path.join(here, "../src/data/word_sense_keys.json");
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // 与 scripts/build-furigana.mjs、src/lib/study-core.ts 保持一致。
 const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
-const JLPT_WORD_METADATA_VERSION = `2026-09-19-manual-meanings-5163-polish-1130-corrections-35-distinction-1559-examples-320-audit-revert-73-${FURIGANA_VERSION}`;
+const JLPT_WORD_METADATA_VERSION = `2026-09-19-manual-meanings-5163-polish-1130-corrections-35-distinction-1559-examples-320-audit-revert-76-${FURIGANA_VERSION}`;
 const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
 

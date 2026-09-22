@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { BookOpenText, Brain, FolderPlus, Pencil, Star, Trash2 } from "lucide-react";
+import { Sticker } from "../components/CapybaraMascot";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import {
   createFavoriteFolder,
@@ -266,8 +267,8 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
         </div>
       ) : (
         <div className="dictionary-card rounded-2xl p-8 text-center">
-          <Star className="mx-auto text-white/35" size={32} />
-          <p className="mt-4 text-lg font-bold">{folder === ALL_FOLDERS ? "还没有收藏" : "这个收藏夹是空的"}</p>
+          <Sticker name="empty-box" size={100} className="mx-auto" />
+          <p className="mt-3 text-lg font-bold">{folder === ALL_FOLDERS ? "这里还是空的" : "这个收藏夹是空的"}</p>
           <p className="mt-2 text-sm text-white/55">在单词卡片或语法卡片上点星标，就会收进这里。</p>
         </div>
       )}

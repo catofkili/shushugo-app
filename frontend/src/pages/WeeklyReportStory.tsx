@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import { ArrowUpRight } from "lucide-react";
+import { Sticker, type StickerName } from "../components/CapybaraMascot";
 import type { WeeklyReport } from "../lib/analytics/weekly";
 import { useCountUp } from "../hooks/useCountUp";
 
@@ -44,6 +45,15 @@ function WordGarden({ words, onReviewWords }: { words: WeeklyReport["revisitWord
   </>;
 }
 
+/** 每一章陪在左下角的吉祥物：读书 → 灵感 → 抱心 → 打气 → 道晚安，和封面那张定妆图是同一只。 */
+const CHAPTER_MASCOT: Record<string, { name: StickerName; say?: string }> = {
+  effort: { name: "mood-study" },
+  content: { name: "mood-idea" },
+  highlight: { name: "mood-love" },
+  revisit: { name: "mood-fight", say: "再来一点！" },
+  end: { name: "empty-bye", say: "明天也要加油～" }
+};
+
 export function WeeklyReportStory({ report, chapter, onBack, onReviewWords, onShare, animate = true }: {
   report: WeeklyReport; chapter: string; onBack: () => void;
   onReviewWords?: (ids: number[]) => void; onShare: () => void; animate?: boolean;
@@ -63,7 +73,7 @@ export function WeeklyReportStory({ report, chapter, onBack, onReviewWords, onSh
         {report.keyword && <span className="wr-keyword-stamp"><small>本周的你</small><b>{report.keyword.keyword}</b></span>}
       </div>
       <div className="wr-cover-installation" aria-hidden="true">
-        <div className="wr-paper-landscape"><i className="wr-paper-back"/><i className="wr-paper-middle"/><div className="wr-paper-front"><span className="wr-paper-sun"/><span className="wr-paper-hill"/><b>日</b><small>ことばの庭</small></div></div>
+        <img className="wr-cover-brand-art" src="/brand/shushugo-cover.png" alt="" />
         <div className="wr-cover-ticket"><span>学习的日子</span><b>{String(metrics.days).padStart(2,"0")}</b></div>
         <span className="wr-paper-sprig"><i/><i/><i/></span><span className="wr-floating-glyph">あ</span>
       </div>
@@ -114,5 +124,10 @@ export function WeeklyReportStory({ report, chapter, onBack, onReviewWords, onSh
       <div className="wr-ending-actions"><button className="wr-scene-action" onClick={onShare}>收好这一周 <ArrowUpRight size={16}/></button><button className="wr-inline-action" onClick={onBack}>回到日常</button></div>
       <p className="wr-ending-signature">每一次相遇，都算数。<span>SHUSHUGO / 日々</span></p>
     </>}
+    {/* 放在文档流末尾而不是绝对定位：每章右下都有自己的装置（星、书、拼贴），底部还压着手势条 */}
+    {CHAPTER_MASCOT[chapter] && <div className="wr-mascot" aria-hidden="true">
+      <Sticker name={CHAPTER_MASCOT[chapter].name} size={84} />
+      {CHAPTER_MASCOT[chapter].say && <span>{CHAPTER_MASCOT[chapter].say}</span>}
+    </div>}
   </article>;
 }

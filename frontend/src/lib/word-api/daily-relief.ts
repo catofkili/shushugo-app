@@ -198,3 +198,15 @@ export const advanceDailyRelief = (): DailyReliefState => {
 };
 
 export const dailyReliefCountForToday = (): number => getDailyReliefProgress().completed;
+
+/**
+ * 某一天发了几张减负卡。今天读实际播到哪一张;往日**按当天的判据重算**——
+ * 减负不写 reviews、app_state 里只留今天这一份,当天演完就没有别的痕迹了。
+ * 重算和当天发的只在两种情况下不一样:那天根本没打开学习页(调用方只对有作答的日子问),
+ * 以及新设备上 14 天以前的 stage1_tasks 没同步过来(候选会多几个,但封顶 12 张)。
+ */
+export const dailyReliefCount = (studyDate: string): number => (
+  studyDate === today()
+    ? readState().completed
+    : reliefCountFor(reliefCandidates(studyDate), previousStudyWordCount(studyDate))
+);

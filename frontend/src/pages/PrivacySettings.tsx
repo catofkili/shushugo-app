@@ -131,7 +131,7 @@ export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: Priva
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">云端同步</p>
-              <p className="mt-0.5 text-xs text-white/50">登录后自动同步；未登录和断网时仍保存在本机</p>
+              <p className="mt-0.5 text-xs text-white/50">登录后自动同步</p>
             </div>
             <span
               className={`rounded-full px-2 py-1 text-xs font-bold ${
@@ -156,7 +156,7 @@ export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: Priva
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">不收集使用数据</p>
-              <p className="mt-0.5 text-xs text-white/50">应用里没有第三方分析、没有埋点。学习记录只存在你的设备上，登录后才会加密备份到云端</p>
+              <p className="mt-0.5 text-xs text-white/50">没有第三方分析和埋点</p>
             </div>
           </div>
 
@@ -247,13 +247,6 @@ export function PrivacySettings({ onBack, onOpenPolicy, onOpenAgreement }: Priva
         </div>
       )}
 
-      {/* 说明 */}
-      <div className="rounded-2xl border border-[#81D8CF]/20 bg-[#81D8CF]/20 p-3 text-xs text-[#81D8CF]">
-        <p className="font-bold">我们重视您的隐私</p>
-        <p className="mt-1 text-[#81D8CF]/70">
-          当前版本的学习数据默认保存在本地设备。导出备份后，请妥善保管备份文件。
-        </p>
-      </div>
     </div>
   );
 }

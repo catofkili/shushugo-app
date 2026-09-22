@@ -21,6 +21,7 @@ const dbPath = path.join(publicDir, "nihongo.db");
 const ALLOWED_PUBLIC_ENTRIES = new Set([
   "nihongo.db",   // 出厂词库
   "audio",        // 预生成单词读音
+  "brand",        // 收集日公开品牌素材
   ".DS_Store"
 ]);
 

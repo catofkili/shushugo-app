@@ -1,0 +1,5992 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": "hira-a",
+      "kind": "kana",
+      "group": "seion",
+      "front": "あ",
+      "romaji": "a",
+      "pair": "ア",
+      "origin": "安",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "あさ",
+          "早晨"
+        ],
+        [
+          "あめ",
+          "雨"
+        ],
+        [
+          "あし",
+          "脚"
+        ]
+      ]
+    },
+    {
+      "id": "hira-i",
+      "kind": "kana",
+      "group": "seion",
+      "front": "い",
+      "romaji": "i",
+      "pair": "イ",
+      "origin": "以",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "いえ",
+          "房子"
+        ],
+        [
+          "いす",
+          "椅子"
+        ],
+        [
+          "いぬ",
+          "狗"
+        ]
+      ]
+    },
+    {
+      "id": "hira-u",
+      "kind": "kana",
+      "group": "seion",
+      "front": "う",
+      "romaji": "u",
+      "pair": "ウ",
+      "origin": "宇",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "うえ",
+          "上面"
+        ],
+        [
+          "うみ",
+          "大海"
+        ],
+        [
+          "うた",
+          "歌曲"
+        ]
+      ]
+    },
+    {
+      "id": "hira-e",
+      "kind": "kana",
+      "group": "seion",
+      "front": "え",
+      "romaji": "e",
+      "pair": "エ",
+      "origin": "衣",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "えき",
+          "车站"
+        ],
+        [
+          "えいが",
+          "电影"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ]
+      ]
+    },
+    {
+      "id": "hira-o",
+      "kind": "kana",
+      "group": "seion",
+      "front": "お",
+      "romaji": "o",
+      "pair": "オ",
+      "origin": "於",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "おかね",
+          "钱"
+        ],
+        [
+          "おちゃ",
+          "茶"
+        ],
+        [
+          "おく",
+          "放"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ka",
+      "kind": "kana",
+      "group": "seion",
+      "front": "か",
+      "romaji": "ka",
+      "pair": "カ",
+      "origin": "加",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "かう",
+          "购买"
+        ],
+        [
+          "かお",
+          "脸"
+        ],
+        [
+          "かぎ",
+          "钥匙"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ki",
+      "kind": "kana",
+      "group": "seion",
+      "front": "き",
+      "romaji": "ki",
+      "pair": "キ",
+      "origin": "幾",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "き",
+          "树木"
+        ],
+        [
+          "えき",
+          "车站"
+        ],
+        [
+          "きれい",
+          "漂亮的"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ku",
+      "kind": "kana",
+      "group": "seion",
+      "front": "く",
+      "romaji": "ku",
+      "pair": "ク",
+      "origin": "久",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "くち",
+          "嘴"
+        ],
+        [
+          "くつ",
+          "鞋子"
+        ],
+        [
+          "くに",
+          "国家"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ke",
+      "kind": "kana",
+      "group": "seion",
+      "front": "け",
+      "romaji": "ke",
+      "pair": "ケ",
+      "origin": "計",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "けさ",
+          "今天早上"
+        ],
+        [
+          "けす",
+          "关掉"
+        ],
+        [
+          "けいたい",
+          "手机"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ko",
+      "kind": "kana",
+      "group": "seion",
+      "front": "こ",
+      "romaji": "ko",
+      "pair": "コ",
+      "origin": "己",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "こども",
+          "小孩"
+        ],
+        [
+          "ここ",
+          "这里"
+        ],
+        [
+          "ことば",
+          "词"
+        ]
+      ]
+    },
+    {
+      "id": "hira-sa",
+      "kind": "kana",
+      "group": "seion",
+      "front": "さ",
+      "romaji": "sa",
+      "pair": "サ",
+      "origin": "左",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "さき",
+          "前面"
+        ],
+        [
+          "さら",
+          "盘子"
+        ],
+        [
+          "さん",
+          "三"
+        ]
+      ]
+    },
+    {
+      "id": "hira-shi",
+      "kind": "kana",
+      "group": "seion",
+      "front": "し",
+      "romaji": "shi",
+      "pair": "シ",
+      "origin": "之",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "しお",
+          "食盐"
+        ],
+        [
+          "あし",
+          "脚"
+        ],
+        [
+          "わたし",
+          "我"
+        ]
+      ]
+    },
+    {
+      "id": "hira-su",
+      "kind": "kana",
+      "group": "seion",
+      "front": "す",
+      "romaji": "su",
+      "pair": "ス",
+      "origin": "寸",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "すき",
+          "喜欢的"
+        ],
+        [
+          "すぐ",
+          "立刻"
+        ],
+        [
+          "すし",
+          "寿司"
+        ]
+      ]
+    },
+    {
+      "id": "hira-se",
+      "kind": "kana",
+      "group": "seion",
+      "front": "せ",
+      "romaji": "se",
+      "pair": "セ",
+      "origin": "世",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "みせ",
+          "商店"
+        ],
+        [
+          "せんせい",
+          "老师"
+        ],
+        [
+          "せん",
+          "千"
+        ]
+      ]
+    },
+    {
+      "id": "hira-so",
+      "kind": "kana",
+      "group": "seion",
+      "front": "そ",
+      "romaji": "so",
+      "pair": "ソ",
+      "origin": "曽",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "そう",
+          "那样"
+        ],
+        [
+          "そこ",
+          "那里"
+        ],
+        [
+          "そと",
+          "外面"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ta",
+      "kind": "kana",
+      "group": "seion",
+      "front": "た",
+      "romaji": "ta",
+      "pair": "タ",
+      "origin": "太",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "ただ",
+          "免费"
+        ],
+        [
+          "たち",
+          "～们"
+        ],
+        [
+          "たつ",
+          "站立"
+        ]
+      ]
+    },
+    {
+      "id": "hira-chi",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ち",
+      "romaji": "chi",
+      "pair": "チ",
+      "origin": "知",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "ちず",
+          "地图"
+        ],
+        [
+          "ちち",
+          "父亲"
+        ],
+        [
+          "ちん",
+          "陈"
+        ]
+      ]
+    },
+    {
+      "id": "hira-tsu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "つ",
+      "romaji": "tsu",
+      "pair": "ツ",
+      "origin": "川",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "つき",
+          "月亮"
+        ],
+        [
+          "つぎ",
+          "下一个"
+        ],
+        [
+          "つく",
+          "附着"
+        ]
+      ]
+    },
+    {
+      "id": "hira-te",
+      "kind": "kana",
+      "group": "seion",
+      "front": "て",
+      "romaji": "te",
+      "pair": "テ",
+      "origin": "天",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "て",
+          "手"
+        ],
+        [
+          "てがみ",
+          "书信"
+        ],
+        [
+          "てんき",
+          "天气"
+        ]
+      ]
+    },
+    {
+      "id": "hira-to",
+      "kind": "kana",
+      "group": "seion",
+      "front": "と",
+      "romaji": "to",
+      "pair": "ト",
+      "origin": "止",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "とり",
+          "鸟"
+        ],
+        [
+          "とけい",
+          "钟"
+        ],
+        [
+          "ともだち",
+          "朋友"
+        ]
+      ]
+    },
+    {
+      "id": "hira-na",
+      "kind": "kana",
+      "group": "seion",
+      "front": "な",
+      "romaji": "na",
+      "pair": "ナ",
+      "origin": "奈",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "ない",
+          "没有"
+        ],
+        [
+          "なか",
+          "里面"
+        ],
+        [
+          "なぜ",
+          "为什么"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ni",
+      "kind": "kana",
+      "group": "seion",
+      "front": "に",
+      "romaji": "ni",
+      "pair": "ニ",
+      "origin": "仁",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "にく",
+          "肉"
+        ],
+        [
+          "にわ",
+          "庭院"
+        ],
+        [
+          "あに",
+          "哥哥"
+        ]
+      ]
+    },
+    {
+      "id": "hira-nu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ぬ",
+      "romaji": "nu",
+      "pair": "ヌ",
+      "origin": "奴",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "ぬぐ",
+          "脱下"
+        ],
+        [
+          "ぬるい",
+          "温的"
+        ],
+        [
+          "いぬ",
+          "狗"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ne",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ね",
+      "romaji": "ne",
+      "pair": "ネ",
+      "origin": "祢",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "ねこ",
+          "猫"
+        ],
+        [
+          "あね",
+          "姐姐"
+        ],
+        [
+          "かね",
+          "金钱"
+        ]
+      ]
+    },
+    {
+      "id": "hira-no",
+      "kind": "kana",
+      "group": "seion",
+      "front": "の",
+      "romaji": "no",
+      "pair": "ノ",
+      "origin": "乃",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "のむ",
+          "喝"
+        ],
+        [
+          "のみもの",
+          "饮料"
+        ],
+        [
+          "この",
+          "这个"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ha",
+      "kind": "kana",
+      "group": "seion",
+      "front": "は",
+      "romaji": "ha",
+      "pair": "ハ",
+      "origin": "波",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "はな",
+          "花"
+        ],
+        [
+          "はし",
+          "筷子"
+        ],
+        [
+          "はやい",
+          "早的"
+        ]
+      ]
+    },
+    {
+      "id": "hira-hi",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ひ",
+      "romaji": "hi",
+      "pair": "ヒ",
+      "origin": "比",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "ひ",
+          "火"
+        ],
+        [
+          "ひと",
+          "人"
+        ],
+        [
+          "ひる",
+          "白天"
+        ]
+      ]
+    },
+    {
+      "id": "hira-fu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ふ",
+      "romaji": "fu",
+      "pair": "フ",
+      "origin": "不",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "ふゆ",
+          "冬天"
+        ],
+        [
+          "ふね",
+          "船"
+        ],
+        [
+          "ふく",
+          "衣服"
+        ]
+      ]
+    },
+    {
+      "id": "hira-he",
+      "kind": "kana",
+      "group": "seion",
+      "front": "へ",
+      "romaji": "he",
+      "pair": "ヘ",
+      "origin": "部",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "へや",
+          "房间"
+        ],
+        [
+          "へんじ",
+          "回复"
+        ],
+        [
+          "たいへん",
+          "严重的"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ho",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ほ",
+      "romaji": "ho",
+      "pair": "ホ",
+      "origin": "保",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "ほか",
+          "其他"
+        ],
+        [
+          "ほん",
+          "书"
+        ],
+        [
+          "ほしい",
+          "想要"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ma",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ま",
+      "romaji": "ma",
+      "pair": "マ",
+      "origin": "末",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "まえ",
+          "前面"
+        ],
+        [
+          "まず",
+          "首先"
+        ],
+        [
+          "また",
+          "又"
+        ]
+      ]
+    },
+    {
+      "id": "hira-mi",
+      "kind": "kana",
+      "group": "seion",
+      "front": "み",
+      "romaji": "mi",
+      "pair": "ミ",
+      "origin": "美",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "みぎ",
+          "右"
+        ],
+        [
+          "みず",
+          "水"
+        ],
+        [
+          "みせ",
+          "商店"
+        ]
+      ]
+    },
+    {
+      "id": "hira-mu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "む",
+      "romaji": "mu",
+      "pair": "ム",
+      "origin": "武",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "むいか",
+          "六天"
+        ],
+        [
+          "むこう",
+          "对面"
+        ],
+        [
+          "むっつ",
+          "六个"
+        ]
+      ]
+    },
+    {
+      "id": "hira-me",
+      "kind": "kana",
+      "group": "seion",
+      "front": "め",
+      "romaji": "me",
+      "pair": "メ",
+      "origin": "女",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "め",
+          "眼睛"
+        ],
+        [
+          "あめ",
+          "雨"
+        ],
+        [
+          "めがね",
+          "眼镜"
+        ]
+      ]
+    },
+    {
+      "id": "hira-mo",
+      "kind": "kana",
+      "group": "seion",
+      "front": "も",
+      "romaji": "mo",
+      "pair": "モ",
+      "origin": "毛",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "もり",
+          "森林"
+        ],
+        [
+          "もの",
+          "东西"
+        ],
+        [
+          "もつ",
+          "拿着"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ya",
+      "kind": "kana",
+      "group": "seion",
+      "front": "や",
+      "romaji": "ya",
+      "pair": "ヤ",
+      "origin": "也",
+      "note": "接近拼音 y；ゆ 接近 yu 但嘴不那么圆。五十音 的 や行 只有 3 个音",
+      "examples": [
+        [
+          "やま",
+          "山"
+        ],
+        [
+          "やさい",
+          "蔬菜"
+        ],
+        [
+          "やすい",
+          "便宜的"
+        ]
+      ]
+    },
+    {
+      "id": "hira-yu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ゆ",
+      "romaji": "yu",
+      "pair": "ユ",
+      "origin": "由",
+      "note": "接近拼音 y；ゆ 接近 yu 但嘴不那么圆。五十音 的 や行 只有 3 个音",
+      "examples": [
+        [
+          "ゆき",
+          "雪"
+        ],
+        [
+          "ゆうべ",
+          "昨晚"
+        ],
+        [
+          "ゆうがた",
+          "傍晚"
+        ]
+      ]
+    },
+    {
+      "id": "hira-yo",
+      "kind": "kana",
+      "group": "seion",
+      "front": "よ",
+      "romaji": "yo",
+      "pair": "ヨ",
+      "origin": "与",
+      "note": "接近拼音 y；ゆ 接近 yu 但嘴不那么圆。五十音 的 や行 只有 3 个音",
+      "examples": [
+        [
+          "よる",
+          "晚上"
+        ],
+        [
+          "よむ",
+          "阅读"
+        ],
+        [
+          "よこ",
+          "横向"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ra",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ら",
+      "romaji": "ra",
+      "pair": "ラ",
+      "origin": "良",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "らいげつ",
+          "下个月"
+        ],
+        [
+          "らいねん",
+          "明年"
+        ],
+        [
+          "らいしゅう",
+          "下周"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ri",
+      "kind": "kana",
+      "group": "seion",
+      "front": "り",
+      "romaji": "ri",
+      "pair": "リ",
+      "origin": "利",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "とり",
+          "鸟"
+        ],
+        [
+          "もり",
+          "森林"
+        ],
+        [
+          "くすり",
+          "药"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ru",
+      "kind": "kana",
+      "group": "seion",
+      "front": "る",
+      "romaji": "ru",
+      "pair": "ル",
+      "origin": "留",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "ある",
+          "有"
+        ],
+        [
+          "よる",
+          "晚上"
+        ],
+        [
+          "はる",
+          "春天"
+        ]
+      ]
+    },
+    {
+      "id": "hira-re",
+      "kind": "kana",
+      "group": "seion",
+      "front": "れ",
+      "romaji": "re",
+      "pair": "レ",
+      "origin": "礼",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "れいぞうこ",
+          "冰箱"
+        ],
+        [
+          "れんしゅう",
+          "练习"
+        ],
+        [
+          "あれ",
+          "那个"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ro",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ろ",
+      "romaji": "ro",
+      "pair": "ロ",
+      "origin": "呂",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "ろく",
+          "六"
+        ],
+        [
+          "ろくがつ",
+          "六月"
+        ],
+        [
+          "いろ",
+          "颜色"
+        ]
+      ]
+    },
+    {
+      "id": "hira-wa",
+      "kind": "kana",
+      "group": "seion",
+      "front": "わ",
+      "romaji": "wa",
+      "pair": "ワ",
+      "origin": "和",
+      "note": "わ 接近「哇」但嘴不那么圆；を 只做助词，罗马字写 wo，词里不出现",
+      "examples": [
+        [
+          "わかい",
+          "年轻的"
+        ],
+        [
+          "わかる",
+          "明白"
+        ],
+        [
+          "わたし",
+          "我"
+        ]
+      ]
+    },
+    {
+      "id": "hira-wo",
+      "kind": "kana",
+      "group": "seion",
+      "front": "を",
+      "romaji": "wo",
+      "pair": "ヲ",
+      "origin": "遠",
+      "note": "わ 接近「哇」但嘴不那么圆；を 只做助词，罗马字写 wo，词里不出现",
+      "examples": [
+        [
+          "かぜをひく",
+          "感冒"
+        ],
+        [
+          "わかい",
+          "年轻的"
+        ],
+        [
+          "わかる",
+          "明白"
+        ]
+      ]
+    },
+    {
+      "id": "hira-n",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ん",
+      "romaji": "n",
+      "pair": "ン",
+      "origin": "无",
+      "note": "ん 是拨音，也写 撥音，单独一拍，不能开头。后面 m、b、p 读 m，n、t、d 读 n，k、g 读 ng，词尾轻鼻音",
+      "examples": [
+        [
+          "ほん",
+          "书"
+        ],
+        [
+          "にほん",
+          "日本"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ]
+      ]
+    },
+    {
+      "id": "kata-a",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ア",
+      "romaji": "a",
+      "pair": "あ",
+      "origin": "阿",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "アパート",
+          "公寓"
+        ],
+        [
+          "アメリカじん",
+          "美国人"
+        ],
+        [
+          "ドア",
+          "门"
+        ]
+      ]
+    },
+    {
+      "id": "kata-i",
+      "kind": "kana",
+      "group": "seion",
+      "front": "イ",
+      "romaji": "i",
+      "pair": "い",
+      "origin": "伊",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "イチゴ",
+          "草莓"
+        ],
+        [
+          "スイカ",
+          "西瓜"
+        ],
+        [
+          "トイレ",
+          "厕所"
+        ]
+      ]
+    },
+    {
+      "id": "kata-u",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ウ",
+      "romaji": "u",
+      "pair": "う",
+      "origin": "宇",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "ウーロンちゃ",
+          "乌龙茶"
+        ],
+        [
+          "アパート",
+          "公寓"
+        ],
+        [
+          "エアコン",
+          "空调"
+        ]
+      ]
+    },
+    {
+      "id": "kata-e",
+      "kind": "kana",
+      "group": "seion",
+      "front": "エ",
+      "romaji": "e",
+      "pair": "え",
+      "origin": "江",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "エアコン",
+          "空调"
+        ],
+        [
+          "エレベーター",
+          "电梯"
+        ],
+        [
+          "えき",
+          "车站"
+        ]
+      ]
+    },
+    {
+      "id": "kata-o",
+      "kind": "kana",
+      "group": "seion",
+      "front": "オ",
+      "romaji": "o",
+      "pair": "お",
+      "origin": "於",
+      "note": "あ 口型比汉语 a 小，う 不圆唇，え 在「爱」「诶」间，お 比 o 口小。字源：平假名是万叶假名草书，片假名取偏旁",
+      "examples": [
+        [
+          "ラジオ",
+          "收音机"
+        ],
+        [
+          "おかね",
+          "钱"
+        ],
+        [
+          "おちゃ",
+          "茶"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ka",
+      "kind": "kana",
+      "group": "seion",
+      "front": "カ",
+      "romaji": "ka",
+      "pair": "か",
+      "origin": "加",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "カップ",
+          "杯子"
+        ],
+        [
+          "カメラ",
+          "相机"
+        ],
+        [
+          "カレー",
+          "咖喱"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ki",
+      "kind": "kana",
+      "group": "seion",
+      "front": "キ",
+      "romaji": "ki",
+      "pair": "き",
+      "origin": "幾",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "ケーキ",
+          "蛋糕"
+        ],
+        [
+          "スキー",
+          "滑雪"
+        ],
+        [
+          "クッキー",
+          "曲奇饼干"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ku",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ク",
+      "romaji": "ku",
+      "pair": "く",
+      "origin": "久",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "クラス",
+          "班级"
+        ],
+        [
+          "クッキー",
+          "曲奇饼干"
+        ],
+        [
+          "タクシー",
+          "出租车"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ke",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ケ",
+      "romaji": "ke",
+      "pair": "け",
+      "origin": "介",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "ケーキ",
+          "蛋糕"
+        ],
+        [
+          "チケット",
+          "票"
+        ],
+        [
+          "バスケットボール",
+          "篮球"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ko",
+      "kind": "kana",
+      "group": "seion",
+      "front": "コ",
+      "romaji": "ko",
+      "pair": "こ",
+      "origin": "己",
+      "note": "词首送气像 k；词中不送气，听着像拼音 g，但仍是 か。汉字后的送假名照假名读",
+      "examples": [
+        [
+          "コップ",
+          "杯子"
+        ],
+        [
+          "コピー",
+          "复印"
+        ],
+        [
+          "コート",
+          "外套"
+        ]
+      ]
+    },
+    {
+      "id": "kata-sa",
+      "kind": "kana",
+      "group": "seion",
+      "front": "サ",
+      "romaji": "sa",
+      "pair": "さ",
+      "origin": "散",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "サッカー",
+          "足球"
+        ],
+        [
+          "ハサミ",
+          "剪刀"
+        ],
+        [
+          "さき",
+          "前面"
+        ]
+      ]
+    },
+    {
+      "id": "kata-shi",
+      "kind": "kana",
+      "group": "seion",
+      "front": "シ",
+      "romaji": "shi",
+      "pair": "し",
+      "origin": "之",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "シャツ",
+          "衬衫"
+        ],
+        [
+          "シャワー",
+          "淋浴"
+        ],
+        [
+          "シーディー",
+          "CD"
+        ]
+      ]
+    },
+    {
+      "id": "kata-su",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ス",
+      "romaji": "su",
+      "pair": "す",
+      "origin": "須",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "スイカ",
+          "西瓜"
+        ],
+        [
+          "スキー",
+          "滑雪"
+        ],
+        [
+          "スーパー",
+          "超市"
+        ]
+      ]
+    },
+    {
+      "id": "kata-se",
+      "kind": "kana",
+      "group": "seion",
+      "front": "セ",
+      "romaji": "se",
+      "pair": "せ",
+      "origin": "世",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "セーター",
+          "毛衣"
+        ],
+        [
+          "みせ",
+          "商店"
+        ],
+        [
+          "せんせい",
+          "老师"
+        ]
+      ]
+    },
+    {
+      "id": "kata-so",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ソ",
+      "romaji": "so",
+      "pair": "そ",
+      "origin": "曽",
+      "note": "整行不卷舌；し 接近「西」不是「诗」；す 接近 si，嘴不圆",
+      "examples": [
+        [
+          "ソファー",
+          "沙发"
+        ],
+        [
+          "そと",
+          "外面"
+        ],
+        [
+          "そら",
+          "天空"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ta",
+      "kind": "kana",
+      "group": "seion",
+      "front": "タ",
+      "romaji": "ta",
+      "pair": "た",
+      "origin": "多",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "タクシー",
+          "出租车"
+        ],
+        [
+          "ギター",
+          "吉他"
+        ],
+        [
+          "セーター",
+          "毛衣"
+        ]
+      ]
+    },
+    {
+      "id": "kata-chi",
+      "kind": "kana",
+      "group": "seion",
+      "front": "チ",
+      "romaji": "chi",
+      "pair": "ち",
+      "origin": "千",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "チケット",
+          "票"
+        ],
+        [
+          "チョコレート",
+          "巧克力"
+        ],
+        [
+          "イチゴ",
+          "草莓"
+        ]
+      ]
+    },
+    {
+      "id": "kata-tsu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ツ",
+      "romaji": "tsu",
+      "pair": "つ",
+      "origin": "川",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "シャツ",
+          "衬衫"
+        ],
+        [
+          "スポーツ",
+          "运动"
+        ],
+        [
+          "ワイシャツ",
+          "男式衬衫"
+        ]
+      ]
+    },
+    {
+      "id": "kata-te",
+      "kind": "kana",
+      "group": "seion",
+      "front": "テ",
+      "romaji": "te",
+      "pair": "て",
+      "origin": "天",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "テスト",
+          "考试"
+        ],
+        [
+          "テニス",
+          "网球"
+        ],
+        [
+          "テレビ",
+          "电视"
+        ]
+      ]
+    },
+    {
+      "id": "kata-to",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ト",
+      "romaji": "to",
+      "pair": "と",
+      "origin": "止",
+      "note": "词中不送气像拼音 d；ち 接近「七」；つ 是拼音 c 的音，不是 t 加 s",
+      "examples": [
+        [
+          "トイレ",
+          "厕所"
+        ],
+        [
+          "コート",
+          "外套"
+        ],
+        [
+          "テスト",
+          "考试"
+        ]
+      ]
+    },
+    {
+      "id": "kata-na",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ナ",
+      "romaji": "na",
+      "pair": "な",
+      "origin": "奈",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "ナイフ",
+          "小刀"
+        ],
+        [
+          "バナナ",
+          "香蕉"
+        ],
+        [
+          "ない",
+          "没有"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ni",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ニ",
+      "romaji": "ni",
+      "pair": "に",
+      "origin": "二",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "ニュース",
+          "新闻"
+        ],
+        [
+          "テニス",
+          "网球"
+        ],
+        [
+          "にく",
+          "肉"
+        ]
+      ]
+    },
+    {
+      "id": "kata-nu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ヌ",
+      "romaji": "nu",
+      "pair": "ぬ",
+      "origin": "奴",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "いぬ",
+          "狗"
+        ],
+        [
+          "ぬぐ",
+          "脱下"
+        ],
+        [
+          "ぬるい",
+          "温的"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ne",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ネ",
+      "romaji": "ne",
+      "pair": "ね",
+      "origin": "祢",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "ねこ",
+          "猫"
+        ],
+        [
+          "あね",
+          "姐姐"
+        ],
+        [
+          "かね",
+          "金钱"
+        ]
+      ]
+    },
+    {
+      "id": "kata-no",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ノ",
+      "romaji": "no",
+      "pair": "の",
+      "origin": "乃",
+      "note": "接近拼音 n；に 接近「尼」",
+      "examples": [
+        [
+          "ノート",
+          "笔记"
+        ],
+        [
+          "のむ",
+          "喝"
+        ],
+        [
+          "のみもの",
+          "饮料"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ha",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ハ",
+      "romaji": "ha",
+      "pair": "は",
+      "origin": "八",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "ハサミ",
+          "剪刀"
+        ],
+        [
+          "シャンハイ",
+          "上海"
+        ],
+        [
+          "はな",
+          "花"
+        ]
+      ]
+    },
+    {
+      "id": "kata-hi",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ヒ",
+      "romaji": "hi",
+      "pair": "ひ",
+      "origin": "比",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "コーヒー",
+          "咖啡"
+        ],
+        [
+          "ひ",
+          "火"
+        ],
+        [
+          "ひと",
+          "人"
+        ]
+      ]
+    },
+    {
+      "id": "kata-fu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "フ",
+      "romaji": "fu",
+      "pair": "ふ",
+      "origin": "不",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "ナイフ",
+          "小刀"
+        ],
+        [
+          "ソファー",
+          "沙发"
+        ],
+        [
+          "ふゆ",
+          "冬天"
+        ]
+      ]
+    },
+    {
+      "id": "kata-he",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ヘ",
+      "romaji": "he",
+      "pair": "へ",
+      "origin": "部",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "へや",
+          "房间"
+        ],
+        [
+          "へんじ",
+          "回复"
+        ],
+        [
+          "たいへん",
+          "严重的"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ho",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ホ",
+      "romaji": "ho",
+      "pair": "ほ",
+      "origin": "保",
+      "note": "は 接近「哈」；ふ 是双唇音，吹气不咬唇，不是拼音 f；へ 接近「嘿」",
+      "examples": [
+        [
+          "ホテル",
+          "酒店"
+        ],
+        [
+          "ホンコン",
+          "香港"
+        ],
+        [
+          "ほん",
+          "书"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ma",
+      "kind": "kana",
+      "group": "seion",
+      "front": "マ",
+      "romaji": "ma",
+      "pair": "ま",
+      "origin": "末",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "ハサミ",
+          "剪刀"
+        ],
+        [
+          "いま",
+          "现在"
+        ],
+        [
+          "まえ",
+          "前面"
+        ]
+      ]
+    },
+    {
+      "id": "kata-mi",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ミ",
+      "romaji": "mi",
+      "pair": "み",
+      "origin": "三",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "ミカン",
+          "橘子"
+        ],
+        [
+          "ハサミ",
+          "剪刀"
+        ],
+        [
+          "ゴミ",
+          "垃圾"
+        ]
+      ]
+    },
+    {
+      "id": "kata-mu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ム",
+      "romaji": "mu",
+      "pair": "む",
+      "origin": "牟",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "グラム",
+          "克"
+        ],
+        [
+          "けしゴム",
+          "橡皮"
+        ],
+        [
+          "すむ",
+          "居住"
+        ]
+      ]
+    },
+    {
+      "id": "kata-me",
+      "kind": "kana",
+      "group": "seion",
+      "front": "メ",
+      "romaji": "me",
+      "pair": "め",
+      "origin": "女",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "メモ",
+          "备忘录"
+        ],
+        [
+          "メール",
+          "邮件"
+        ],
+        [
+          "メートル",
+          "米"
+        ]
+      ]
+    },
+    {
+      "id": "kata-mo",
+      "kind": "kana",
+      "group": "seion",
+      "front": "モ",
+      "romaji": "mo",
+      "pair": "も",
+      "origin": "毛",
+      "note": "接近拼音 m",
+      "examples": [
+        [
+          "メモ",
+          "备忘录"
+        ],
+        [
+          "もり",
+          "森林"
+        ],
+        [
+          "くもり",
+          "阴天"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ya",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ヤ",
+      "romaji": "ya",
+      "pair": "や",
+      "origin": "也",
+      "note": "接近拼音 y；ゆ 接近 yu 但嘴不那么圆。五十音 的 や行 只有 3 个音",
+      "examples": [
+        [
+          "やま",
+          "山"
+        ],
+        [
+          "やさい",
+          "蔬菜"
+        ],
+        [
+          "やすい",
+          "便宜的"
+        ]
+      ]
+    },
+    {
+      "id": "kata-yu",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ユ",
+      "romaji": "yu",
+      "pair": "ゆ",
+      "origin": "由",
+      "note": "接近拼音 y；ゆ 接近 yu 但嘴不那么圆。五十音 的 や行 只有 3 个音",
+      "examples": [
+        [
+          "ゆき",
+          "雪"
+        ],
+        [
+          "ふゆ",
+          "冬天"
+        ],
+        [
+          "ゆうべ",
+          "昨晚"
+        ]
+      ]
+    },
+    {
+      "id": "kata-yo",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ヨ",
+      "romaji": "yo",
+      "pair": "よ",
+      "origin": "與",
+      "note": "接近拼音 y；ゆ 接近 yu 但嘴不那么圆。五十音 的 や行 只有 3 个音",
+      "examples": [
+        [
+          "よる",
+          "晚上"
+        ],
+        [
+          "よむ",
+          "阅读"
+        ],
+        [
+          "よこ",
+          "横向"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ra",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ラ",
+      "romaji": "ra",
+      "pair": "ら",
+      "origin": "良",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "ラジオ",
+          "收音机"
+        ],
+        [
+          "ラーメン",
+          "拉面"
+        ],
+        [
+          "カメラ",
+          "相机"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ri",
+      "kind": "kana",
+      "group": "seion",
+      "front": "リ",
+      "romaji": "ri",
+      "pair": "り",
+      "origin": "利",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "リボン",
+          "丝带"
+        ],
+        [
+          "リンゴ",
+          "苹果"
+        ],
+        [
+          "アメリカじん",
+          "美国人"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ru",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ル",
+      "romaji": "ru",
+      "pair": "る",
+      "origin": "流",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "ビル",
+          "大楼"
+        ],
+        [
+          "プール",
+          "游泳池"
+        ],
+        [
+          "ホテル",
+          "酒店"
+        ]
+      ]
+    },
+    {
+      "id": "kata-re",
+      "kind": "kana",
+      "group": "seion",
+      "front": "レ",
+      "romaji": "re",
+      "pair": "れ",
+      "origin": "礼",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "レストラン",
+          "餐厅"
+        ],
+        [
+          "カレー",
+          "咖喱"
+        ],
+        [
+          "テレビ",
+          "电视"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ro",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ロ",
+      "romaji": "ro",
+      "pair": "ろ",
+      "origin": "呂",
+      "note": "舌尖轻弹一下，是闪音，介于 l 和 r 之间，不卷舌、不颤",
+      "examples": [
+        [
+          "ウーロンちゃ",
+          "乌龙茶"
+        ],
+        [
+          "くろ",
+          "黑色"
+        ],
+        [
+          "しろ",
+          "白"
+        ]
+      ]
+    },
+    {
+      "id": "kata-wa",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ワ",
+      "romaji": "wa",
+      "pair": "わ",
+      "origin": "和",
+      "note": "わ 接近「哇」但嘴不那么圆；を 只做助词，罗马字写 wo，词里不出现",
+      "examples": [
+        [
+          "ワイシャツ",
+          "男式衬衫"
+        ],
+        [
+          "シャワー",
+          "淋浴"
+        ],
+        [
+          "わかい",
+          "年轻的"
+        ]
+      ]
+    },
+    {
+      "id": "kata-wo",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ヲ",
+      "romaji": "wo",
+      "pair": "を",
+      "origin": "乎",
+      "note": "わ 接近「哇」但嘴不那么圆；を 只做助词，罗马字写 wo，词里不出现",
+      "examples": [
+        [
+          "かぜをひく",
+          "感冒"
+        ],
+        [
+          "かわ",
+          "河川"
+        ],
+        [
+          "にわ",
+          "庭院"
+        ]
+      ]
+    },
+    {
+      "id": "kata-n",
+      "kind": "kana",
+      "group": "seion",
+      "front": "ン",
+      "romaji": "n",
+      "pair": "ん",
+      "origin": "尓",
+      "note": "ん 是拨音，也写 撥音，单独一拍，不能开头。后面 m、b、p 读 m，n、t、d 读 n，k、g 读 ng，词尾轻鼻音",
+      "examples": [
+        [
+          "パン",
+          "面包"
+        ],
+        [
+          "ペン",
+          "笔"
+        ],
+        [
+          "ズボン",
+          "裤子"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ga",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "が",
+      "romaji": "ga",
+      "pair": "ガ",
+      "origin": "加",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "がっこう",
+          "学校"
+        ],
+        [
+          "えいが",
+          "电影"
+        ],
+        [
+          "いかが",
+          "怎么样"
+        ]
+      ]
+    },
+    {
+      "id": "hira-gi",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぎ",
+      "romaji": "gi",
+      "pair": "ギ",
+      "origin": "幾",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "ぎんこう",
+          "银行"
+        ],
+        [
+          "ぎゅうにゅう",
+          "牛奶"
+        ],
+        [
+          "かぎ",
+          "钥匙"
+        ]
+      ]
+    },
+    {
+      "id": "hira-gu",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぐ",
+      "romaji": "gu",
+      "pair": "グ",
+      "origin": "久",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "すぐ",
+          "立刻"
+        ],
+        [
+          "ぬぐ",
+          "脱下"
+        ],
+        [
+          "いそぐ",
+          "赶快"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ge",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "げ",
+      "romaji": "ge",
+      "pair": "ゲ",
+      "origin": "計",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "げんき",
+          "健康"
+        ],
+        [
+          "げんかん",
+          "玄关"
+        ],
+        [
+          "げつようび",
+          "周一"
+        ]
+      ]
+    },
+    {
+      "id": "hira-go",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ご",
+      "romaji": "go",
+      "pair": "ゴ",
+      "origin": "己",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "ごご",
+          "下午"
+        ],
+        [
+          "ごはん",
+          "米饭"
+        ],
+        [
+          "いちご",
+          "草莓"
+        ]
+      ]
+    },
+    {
+      "id": "hira-za",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ざ",
+      "romaji": "za",
+      "pair": "ザ",
+      "origin": "左",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "ざっし",
+          "杂志"
+        ],
+        [
+          "はいざら",
+          "烟灰缸"
+        ],
+        [
+          "さき",
+          "前面"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ji",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "じ",
+      "romaji": "ji",
+      "pair": "ジ",
+      "origin": "之",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "じかん",
+          "时间"
+        ],
+        [
+          "じしょ",
+          "词典"
+        ],
+        [
+          "おじ",
+          "叔叔"
+        ]
+      ]
+    },
+    {
+      "id": "hira-zu",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ず",
+      "romaji": "zu",
+      "pair": "ズ",
+      "origin": "寸",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "ずっと",
+          "一直"
+        ],
+        [
+          "ちず",
+          "地图"
+        ],
+        [
+          "まず",
+          "首先"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ze",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぜ",
+      "romaji": "ze",
+      "pair": "ゼ",
+      "origin": "世",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "ぜんぶ",
+          "全部"
+        ],
+        [
+          "かぜ",
+          "风"
+        ],
+        [
+          "なぜ",
+          "为什么"
+        ]
+      ]
+    },
+    {
+      "id": "hira-zo",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぞ",
+      "romaji": "zo",
+      "pair": "ゾ",
+      "origin": "曽",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "かぞく",
+          "家族"
+        ],
+        [
+          "どうぞ",
+          "请"
+        ],
+        [
+          "れいぞうこ",
+          "冰箱"
+        ]
+      ]
+    },
+    {
+      "id": "hira-da",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "だ",
+      "romaji": "da",
+      "pair": "ダ",
+      "origin": "太",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "だけ",
+          "只"
+        ],
+        [
+          "だす",
+          "拿出"
+        ],
+        [
+          "だれ",
+          "谁"
+        ]
+      ]
+    },
+    {
+      "id": "hira-di",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぢ",
+      "romaji": "di",
+      "pair": "ヂ",
+      "origin": "知",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "ちち",
+          "父亲"
+        ],
+        [
+          "ちかい",
+          "近的"
+        ],
+        [
+          "くち",
+          "嘴"
+        ]
+      ]
+    },
+    {
+      "id": "hira-du",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "づ",
+      "romaji": "du",
+      "pair": "ヅ",
+      "origin": "川",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "つくえ",
+          "桌子"
+        ],
+        [
+          "つぎ",
+          "下一个"
+        ],
+        [
+          "くつ",
+          "鞋子"
+        ]
+      ]
+    },
+    {
+      "id": "hira-de",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "で",
+      "romaji": "de",
+      "pair": "デ",
+      "origin": "天",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "では",
+          "那么"
+        ],
+        [
+          "でも",
+          "但是"
+        ],
+        [
+          "でる",
+          "出去"
+        ]
+      ]
+    },
+    {
+      "id": "hira-do",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ど",
+      "romaji": "do",
+      "pair": "ド",
+      "origin": "止",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "どう",
+          "怎么样"
+        ],
+        [
+          "どこ",
+          "哪里"
+        ],
+        [
+          "どの",
+          "哪一个"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ba",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ば",
+      "romaji": "ba",
+      "pair": "バ",
+      "origin": "波",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "ばん",
+          "夜晚"
+        ],
+        [
+          "ばんごう",
+          "号码"
+        ],
+        [
+          "ばんごはん",
+          "晚饭"
+        ]
+      ]
+    },
+    {
+      "id": "hira-bi",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "び",
+      "romaji": "bi",
+      "pair": "ビ",
+      "origin": "比",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "びょういん",
+          "医院"
+        ],
+        [
+          "あびる",
+          "淋浴"
+        ],
+        [
+          "ようび",
+          "星期"
+        ]
+      ]
+    },
+    {
+      "id": "hira-bu",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぶ",
+      "romaji": "bu",
+      "pair": "ブ",
+      "origin": "不",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "とぶ",
+          "飞"
+        ],
+        [
+          "よぶ",
+          "叫"
+        ],
+        [
+          "あそぶ",
+          "玩"
+        ]
+      ]
+    },
+    {
+      "id": "hira-be",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "べ",
+      "romaji": "be",
+      "pair": "ベ",
+      "origin": "部",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "べんり",
+          "方便的"
+        ],
+        [
+          "べんとう",
+          "便当"
+        ],
+        [
+          "べんきょう",
+          "学习"
+        ]
+      ]
+    },
+    {
+      "id": "hira-bo",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぼ",
+      "romaji": "bo",
+      "pair": "ボ",
+      "origin": "保",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "ぼく",
+          "我"
+        ],
+        [
+          "ぼうし",
+          "帽子"
+        ],
+        [
+          "そぼ",
+          "祖母"
+        ]
+      ]
+    },
+    {
+      "id": "hira-pa",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぱ",
+      "romaji": "pa",
+      "pair": "パ",
+      "origin": "波",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "いっぱい",
+          "满"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "さんぽ",
+          "散步"
+        ]
+      ]
+    },
+    {
+      "id": "hira-pi",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぴ",
+      "romaji": "pi",
+      "pair": "ピ",
+      "origin": "比",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "いっぱい",
+          "满"
+        ],
+        [
+          "きっぷ",
+          "票"
+        ]
+      ]
+    },
+    {
+      "id": "hira-pu",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぷ",
+      "romaji": "pu",
+      "pair": "プ",
+      "origin": "不",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "きっぷ",
+          "票"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "いっぱい",
+          "满"
+        ]
+      ]
+    },
+    {
+      "id": "hira-pe",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぺ",
+      "romaji": "pe",
+      "pair": "ペ",
+      "origin": "部",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "さんぽ",
+          "散步"
+        ],
+        [
+          "いっぱい",
+          "满"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ]
+      ]
+    },
+    {
+      "id": "hira-po",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ぽ",
+      "romaji": "po",
+      "pair": "ポ",
+      "origin": "保",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "さんぽ",
+          "散步"
+        ],
+        [
+          "きっぷ",
+          "票"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ga",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ガ",
+      "romaji": "ga",
+      "pair": "が",
+      "origin": "加",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "がっこう",
+          "学校"
+        ],
+        [
+          "しょうがっこう",
+          "小学"
+        ],
+        [
+          "ちゅうがっこう",
+          "初中"
+        ]
+      ]
+    },
+    {
+      "id": "kata-gi",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ギ",
+      "romaji": "gi",
+      "pair": "ぎ",
+      "origin": "幾",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "ギター",
+          "吉他"
+        ],
+        [
+          "ぎんこう",
+          "银行"
+        ],
+        [
+          "ぎゅうにゅう",
+          "牛奶"
+        ]
+      ]
+    },
+    {
+      "id": "kata-gu",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "グ",
+      "romaji": "gu",
+      "pair": "ぐ",
+      "origin": "久",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "グラム",
+          "克"
+        ],
+        [
+          "すぐ",
+          "立刻"
+        ],
+        [
+          "すぐに",
+          "立刻"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ge",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ゲ",
+      "romaji": "ge",
+      "pair": "げ",
+      "origin": "介",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "げんき",
+          "健康"
+        ],
+        [
+          "げんかん",
+          "玄关"
+        ],
+        [
+          "げつようび",
+          "周一"
+        ]
+      ]
+    },
+    {
+      "id": "kata-go",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ゴ",
+      "romaji": "go",
+      "pair": "ご",
+      "origin": "己",
+      "note": "清音 か行 加两点成 が行，叫浊音。声带振动从开口第一下就开始，和词中不送气的 か 不是一回事",
+      "examples": [
+        [
+          "ゴミ",
+          "垃圾"
+        ],
+        [
+          "イチゴ",
+          "草莓"
+        ],
+        [
+          "けしゴム",
+          "橡皮"
+        ]
+      ]
+    },
+    {
+      "id": "kata-za",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ザ",
+      "romaji": "za",
+      "pair": "ざ",
+      "origin": "散",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "ピザ",
+          "比萨"
+        ],
+        [
+          "ざっし",
+          "杂志"
+        ],
+        [
+          "はいざら",
+          "烟灰缸"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ji",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ジ",
+      "romaji": "ji",
+      "pair": "じ",
+      "origin": "之",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "ジュース",
+          "果汁"
+        ],
+        [
+          "ジェーアール",
+          "日本铁路"
+        ],
+        [
+          "ページ",
+          "页"
+        ]
+      ]
+    },
+    {
+      "id": "kata-zu",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ズ",
+      "romaji": "zu",
+      "pair": "ず",
+      "origin": "須",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "ズボン",
+          "裤子"
+        ],
+        [
+          "ずっと",
+          "一直"
+        ],
+        [
+          "ちず",
+          "地图"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ze",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ゼ",
+      "romaji": "ze",
+      "pair": "ぜ",
+      "origin": "世",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "プレゼント",
+          "礼物"
+        ],
+        [
+          "ぜんぶ",
+          "全部"
+        ],
+        [
+          "かぜ",
+          "风"
+        ]
+      ]
+    },
+    {
+      "id": "kata-zo",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ゾ",
+      "romaji": "zo",
+      "pair": "ぞ",
+      "origin": "曽",
+      "note": "ざ行 是 さ行 的浊音，开口即振动声带。じ 接近「机」不卷舌，ず 接近「资」嘴不圆",
+      "examples": [
+        [
+          "かぞく",
+          "家族"
+        ],
+        [
+          "どうぞ",
+          "请"
+        ],
+        [
+          "れいぞうこ",
+          "冰箱"
+        ]
+      ]
+    },
+    {
+      "id": "kata-da",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ダ",
+      "romaji": "da",
+      "pair": "だ",
+      "origin": "多",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "ダンス",
+          "跳舞"
+        ],
+        [
+          "カレンダー",
+          "日历"
+        ],
+        [
+          "だけ",
+          "只"
+        ]
+      ]
+    },
+    {
+      "id": "kata-di",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ヂ",
+      "romaji": "di",
+      "pair": "ぢ",
+      "origin": "千",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "チケット",
+          "票"
+        ],
+        [
+          "イチゴ",
+          "草莓"
+        ],
+        [
+          "チョコレート",
+          "巧克力"
+        ]
+      ]
+    },
+    {
+      "id": "kata-du",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ヅ",
+      "romaji": "du",
+      "pair": "づ",
+      "origin": "川",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "シャツ",
+          "衬衫"
+        ],
+        [
+          "スポーツ",
+          "运动"
+        ],
+        [
+          "ワイシャツ",
+          "男式衬衫"
+        ]
+      ]
+    },
+    {
+      "id": "kata-de",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "デ",
+      "romaji": "de",
+      "pair": "で",
+      "origin": "天",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "デパート",
+          "百货商店"
+        ],
+        [
+          "シーディー",
+          "CD"
+        ],
+        [
+          "では",
+          "那么"
+        ]
+      ]
+    },
+    {
+      "id": "kata-do",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ド",
+      "romaji": "do",
+      "pair": "ど",
+      "origin": "止",
+      "note": "だ行 是 た行 的浊音，开口即振动声带。ぢ・づ 同 じ・ず，只在 ちぢむ、つづく 出现，打字打 di、du",
+      "examples": [
+        [
+          "ドア",
+          "门"
+        ],
+        [
+          "ベッド",
+          "床"
+        ],
+        [
+          "どう",
+          "怎么样"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ba",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "バ",
+      "romaji": "ba",
+      "pair": "ば",
+      "origin": "八",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "バス",
+          "公交车"
+        ],
+        [
+          "バナナ",
+          "香蕉"
+        ],
+        [
+          "バスてい",
+          "公共汽车站"
+        ]
+      ]
+    },
+    {
+      "id": "kata-bi",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ビ",
+      "romaji": "bi",
+      "pair": "び",
+      "origin": "比",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "ビル",
+          "大楼"
+        ],
+        [
+          "テレビ",
+          "电视"
+        ],
+        [
+          "びょういん",
+          "医院"
+        ]
+      ]
+    },
+    {
+      "id": "kata-bu",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ブ",
+      "romaji": "bu",
+      "pair": "ぶ",
+      "origin": "不",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "ストーブ",
+          "炉子"
+        ],
+        [
+          "テーブル",
+          "桌子"
+        ],
+        [
+          "とぶ",
+          "飞"
+        ]
+      ]
+    },
+    {
+      "id": "kata-be",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ベ",
+      "romaji": "be",
+      "pair": "べ",
+      "origin": "部",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "ベッド",
+          "床"
+        ],
+        [
+          "エレベーター",
+          "电梯"
+        ],
+        [
+          "べんり",
+          "方便的"
+        ]
+      ]
+    },
+    {
+      "id": "kata-bo",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ボ",
+      "romaji": "bo",
+      "pair": "ぼ",
+      "origin": "保",
+      "note": "ば行 是 は行 的浊音，开口即振动声带。ば 和 ぱ 只差一个小圈",
+      "examples": [
+        [
+          "ボール",
+          "球"
+        ],
+        [
+          "ボールペン",
+          "圆珠笔"
+        ],
+        [
+          "ズボン",
+          "裤子"
+        ]
+      ]
+    },
+    {
+      "id": "kata-pa",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "パ",
+      "romaji": "pa",
+      "pair": "ぱ",
+      "origin": "八",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "パン",
+          "面包"
+        ],
+        [
+          "アパート",
+          "公寓"
+        ],
+        [
+          "スーパー",
+          "超市"
+        ]
+      ]
+    },
+    {
+      "id": "kata-pi",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ピ",
+      "romaji": "pi",
+      "pair": "ぴ",
+      "origin": "比",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "ピザ",
+          "比萨"
+        ],
+        [
+          "コピー",
+          "复印"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ]
+      ]
+    },
+    {
+      "id": "kata-pu",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "プ",
+      "romaji": "pu",
+      "pair": "ぷ",
+      "origin": "不",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "プール",
+          "游泳池"
+        ],
+        [
+          "プレゼント",
+          "礼物"
+        ],
+        [
+          "カップ",
+          "杯子"
+        ]
+      ]
+    },
+    {
+      "id": "kata-pe",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ペ",
+      "romaji": "pe",
+      "pair": "ぺ",
+      "origin": "部",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "ペン",
+          "笔"
+        ],
+        [
+          "ページ",
+          "页"
+        ],
+        [
+          "プレゼント",
+          "礼物"
+        ]
+      ]
+    },
+    {
+      "id": "kata-po",
+      "kind": "kana",
+      "group": "dakuon",
+      "front": "ポ",
+      "romaji": "po",
+      "pair": "ぽ",
+      "origin": "保",
+      "note": "ぱ 是 は 加小圈，叫半浊音，读不送气的 p，接近拼音 b",
+      "examples": [
+        [
+          "スポーツ",
+          "运动"
+        ],
+        [
+          "さんぽ",
+          "散步"
+        ],
+        [
+          "きっぷ",
+          "票"
+        ]
+      ]
+    },
+    {
+      "id": "hira-kya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "きゃ",
+      "romaji": "kya",
+      "pair": "キャ",
+      "origin": "幾",
+      "note": "き 加小写假名 ゃゅょ 合成一拍，叫拗音；小 ゃ 写在右下角、小一半，大小是区别",
+      "examples": [
+        [
+          "おきゃくさん",
+          "客人"
+        ],
+        [
+          "きょう",
+          "今天"
+        ],
+        [
+          "きょうしつ",
+          "教室"
+        ]
+      ]
+    },
+    {
+      "id": "hira-kyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "きゅ",
+      "romaji": "kyu",
+      "pair": "キュ",
+      "origin": "幾",
+      "note": "き 加小写假名 ゃゅょ 合成一拍，叫拗音；小 ゃ 写在右下角、小一半，大小是区别",
+      "examples": [
+        [
+          "きゅう",
+          "九"
+        ],
+        [
+          "きょう",
+          "今天"
+        ],
+        [
+          "きょうしつ",
+          "教室"
+        ]
+      ]
+    },
+    {
+      "id": "hira-kyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "きょ",
+      "romaji": "kyo",
+      "pair": "キョ",
+      "origin": "幾",
+      "note": "き 加小写假名 ゃゅょ 合成一拍，叫拗音；小 ゃ 写在右下角、小一半，大小是区别",
+      "examples": [
+        [
+          "きょう",
+          "今天"
+        ],
+        [
+          "きょねん",
+          "去年"
+        ],
+        [
+          "きょうしつ",
+          "教室"
+        ]
+      ]
+    },
+    {
+      "id": "hira-sha",
+      "kind": "kana",
+      "group": "youon",
+      "front": "しゃ",
+      "romaji": "sha",
+      "pair": "シャ",
+      "origin": "之",
+      "note": "し 加小 ゃ 合成一拍，叫拗音。しゃ 不卷舌，不是「沙」",
+      "examples": [
+        [
+          "しゃしん",
+          "照片"
+        ],
+        [
+          "かいしゃ",
+          "公司"
+        ],
+        [
+          "でんしゃ",
+          "电车"
+        ]
+      ]
+    },
+    {
+      "id": "hira-shu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "しゅ",
+      "romaji": "shu",
+      "pair": "シュ",
+      "origin": "之",
+      "note": "し 加小 ゃ 合成一拍，叫拗音。しゃ 不卷舌，不是「沙」",
+      "examples": [
+        [
+          "しゅ",
+          "手"
+        ],
+        [
+          "しゅう",
+          "周"
+        ],
+        [
+          "しゅみ",
+          "爱好"
+        ]
+      ]
+    },
+    {
+      "id": "hira-sho",
+      "kind": "kana",
+      "group": "youon",
+      "front": "しょ",
+      "romaji": "sho",
+      "pair": "ショ",
+      "origin": "之",
+      "note": "し 加小 ゃ 合成一拍，叫拗音。しゃ 不卷舌，不是「沙」",
+      "examples": [
+        [
+          "しょうゆ",
+          "酱油"
+        ],
+        [
+          "しょくじ",
+          "吃饭"
+        ],
+        [
+          "しょくどう",
+          "食堂"
+        ]
+      ]
+    },
+    {
+      "id": "hira-cha",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ちゃ",
+      "romaji": "cha",
+      "pair": "チャ",
+      "origin": "知",
+      "note": "ち 加小 ゃ 合成一拍，叫拗音。ちゃ 接近「恰」，ちゅ 接近「秋」",
+      "examples": [
+        [
+          "おちゃ",
+          "茶"
+        ],
+        [
+          "こうちゃ",
+          "红茶"
+        ],
+        [
+          "ちゃいろ",
+          "茶色的"
+        ]
+      ]
+    },
+    {
+      "id": "hira-chu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ちゅ",
+      "romaji": "chu",
+      "pair": "チュ",
+      "origin": "知",
+      "note": "ち 加小 ゃ 合成一拍，叫拗音。ちゃ 接近「恰」，ちゅ 接近「秋」",
+      "examples": [
+        [
+          "ちゅう",
+          "中"
+        ],
+        [
+          "ちゅうごく",
+          "中国"
+        ],
+        [
+          "ちゅうごくご",
+          "中文"
+        ]
+      ]
+    },
+    {
+      "id": "hira-cho",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ちょ",
+      "romaji": "cho",
+      "pair": "チョ",
+      "origin": "知",
+      "note": "ち 加小 ゃ 合成一拍，叫拗音。ちゃ 接近「恰」，ちゅ 接近「秋」",
+      "examples": [
+        [
+          "ちょう",
+          "……町"
+        ],
+        [
+          "ちょうど",
+          "正好"
+        ],
+        [
+          "ちょっと",
+          "一点"
+        ]
+      ]
+    },
+    {
+      "id": "hira-nya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "にゃ",
+      "romaji": "nya",
+      "pair": "ニャ",
+      "origin": "仁",
+      "note": "に 加小 ゃ 合成一拍，叫拗音。にゃ 像「你呀」连读成一拍",
+      "examples": [
+        [
+          "にわ",
+          "庭院"
+        ],
+        [
+          "にく",
+          "肉"
+        ],
+        [
+          "にほん",
+          "日本"
+        ]
+      ]
+    },
+    {
+      "id": "hira-nyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "にゅ",
+      "romaji": "nyu",
+      "pair": "ニュ",
+      "origin": "仁",
+      "note": "に 加小 ゃ 合成一拍，叫拗音。にゃ 像「你呀」连读成一拍",
+      "examples": [
+        [
+          "ぎゅうにゅう",
+          "牛奶"
+        ],
+        [
+          "に",
+          "二"
+        ],
+        [
+          "にく",
+          "肉"
+        ]
+      ]
+    },
+    {
+      "id": "hira-nyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "にょ",
+      "romaji": "nyo",
+      "pair": "ニョ",
+      "origin": "仁",
+      "note": "に 加小 ゃ 合成一拍，叫拗音。にゃ 像「你呀」连读成一拍",
+      "examples": [
+        [
+          "に",
+          "二"
+        ],
+        [
+          "にく",
+          "肉"
+        ],
+        [
+          "にし",
+          "西方"
+        ]
+      ]
+    },
+    {
+      "id": "hira-hya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ひゃ",
+      "romaji": "hya",
+      "pair": "ヒャ",
+      "origin": "比",
+      "note": "ひ 加小 ゃ 合成一拍，叫拗音。ひゃ 是 ひ 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "ひゃく",
+          "百"
+        ],
+        [
+          "ひ",
+          "火"
+        ],
+        [
+          "ひと",
+          "人"
+        ]
+      ]
+    },
+    {
+      "id": "hira-hyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ひゅ",
+      "romaji": "hyu",
+      "pair": "ヒュ",
+      "origin": "比",
+      "note": "ひ 加小 ゃ 合成一拍，叫拗音。ひゃ 是 ひ 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "ひ",
+          "火"
+        ],
+        [
+          "ひと",
+          "人"
+        ],
+        [
+          "ひる",
+          "白天"
+        ]
+      ]
+    },
+    {
+      "id": "hira-hyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ひょ",
+      "romaji": "hyo",
+      "pair": "ヒョ",
+      "origin": "比",
+      "note": "ひ 加小 ゃ 合成一拍，叫拗音。ひゃ 是 ひ 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "ひ",
+          "火"
+        ],
+        [
+          "ひと",
+          "人"
+        ],
+        [
+          "ひる",
+          "白天"
+        ]
+      ]
+    },
+    {
+      "id": "hira-mya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "みゃ",
+      "romaji": "mya",
+      "pair": "ミャ",
+      "origin": "美",
+      "note": "み 加小 ゃ 合成一拍，叫拗音。みゃ 是 み 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "みせ",
+          "商店"
+        ],
+        [
+          "みかん",
+          "橘子"
+        ],
+        [
+          "みず",
+          "水"
+        ]
+      ]
+    },
+    {
+      "id": "hira-myu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "みゅ",
+      "romaji": "myu",
+      "pair": "ミュ",
+      "origin": "美",
+      "note": "み 加小 ゃ 合成一拍，叫拗音。みゃ 是 み 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "みぎ",
+          "右"
+        ],
+        [
+          "みず",
+          "水"
+        ],
+        [
+          "みせ",
+          "商店"
+        ]
+      ]
+    },
+    {
+      "id": "hira-myo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "みょ",
+      "romaji": "myo",
+      "pair": "ミョ",
+      "origin": "美",
+      "note": "み 加小 ゃ 合成一拍，叫拗音。みゃ 是 み 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "みぎ",
+          "右"
+        ],
+        [
+          "みず",
+          "水"
+        ],
+        [
+          "みせ",
+          "商店"
+        ]
+      ]
+    },
+    {
+      "id": "hira-rya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "りゃ",
+      "romaji": "rya",
+      "pair": "リャ",
+      "origin": "利",
+      "note": "り 加小 ゃ 合成一拍，叫拗音。りゃ 里的 り 仍要轻弹舌尖",
+      "examples": [
+        [
+          "りょうり",
+          "料理"
+        ],
+        [
+          "りょこう",
+          "旅行"
+        ],
+        [
+          "りょうしん",
+          "双亲"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ryu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "りゅ",
+      "romaji": "ryu",
+      "pair": "リュ",
+      "origin": "利",
+      "note": "り 加小 ゃ 合成一拍，叫拗音。りゃ 里的 り 仍要轻弹舌尖",
+      "examples": [
+        [
+          "りゅうがく",
+          "留学"
+        ],
+        [
+          "りゅうがくせい",
+          "留学生"
+        ],
+        [
+          "りんご",
+          "苹果"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ryo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "りょ",
+      "romaji": "ryo",
+      "pair": "リョ",
+      "origin": "利",
+      "note": "り 加小 ゃ 合成一拍，叫拗音。りゃ 里的 り 仍要轻弹舌尖",
+      "examples": [
+        [
+          "りょうり",
+          "料理"
+        ],
+        [
+          "りょこう",
+          "旅行"
+        ],
+        [
+          "りょうしん",
+          "双亲"
+        ]
+      ]
+    },
+    {
+      "id": "hira-gya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ぎゃ",
+      "romaji": "gya",
+      "pair": "ギャ",
+      "origin": "幾",
+      "note": "ぎ 加小 ゃ 合成一拍，叫拗音。ぎゃ 一开口声带就振动",
+      "examples": [
+        [
+          "ぎんこう",
+          "银行"
+        ],
+        [
+          "かぎ",
+          "钥匙"
+        ],
+        [
+          "みぎ",
+          "右"
+        ]
+      ]
+    },
+    {
+      "id": "hira-gyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ぎゅ",
+      "romaji": "gyu",
+      "pair": "ギュ",
+      "origin": "幾",
+      "note": "ぎ 加小 ゃ 合成一拍，叫拗音。ぎゃ 一开口声带就振动",
+      "examples": [
+        [
+          "ぎゅうにゅう",
+          "牛奶"
+        ],
+        [
+          "ぎんこう",
+          "银行"
+        ],
+        [
+          "かぎ",
+          "钥匙"
+        ]
+      ]
+    },
+    {
+      "id": "hira-gyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ぎょ",
+      "romaji": "gyo",
+      "pair": "ギョ",
+      "origin": "幾",
+      "note": "ぎ 加小 ゃ 合成一拍，叫拗音。ぎゃ 一开口声带就振动",
+      "examples": [
+        [
+          "じゅぎょう",
+          "授业"
+        ],
+        [
+          "ぎんこう",
+          "银行"
+        ],
+        [
+          "ぎゅうにゅう",
+          "牛奶"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ja",
+      "kind": "kana",
+      "group": "youon",
+      "front": "じゃ",
+      "romaji": "ja",
+      "pair": "ジャ",
+      "origin": "之",
+      "note": "じ 加小 ゃ 合成一拍，叫拗音。じゃ 接近「加」的浊音，不卷舌",
+      "examples": [
+        [
+          "じゃあ",
+          "那么"
+        ],
+        [
+          "じかん",
+          "时间"
+        ],
+        [
+          "じしょ",
+          "词典"
+        ]
+      ]
+    },
+    {
+      "id": "hira-ju",
+      "kind": "kana",
+      "group": "youon",
+      "front": "じゅ",
+      "romaji": "ju",
+      "pair": "ジュ",
+      "origin": "之",
+      "note": "じ 加小 ゃ 合成一拍，叫拗音。じゃ 接近「加」的浊音，不卷舌",
+      "examples": [
+        [
+          "じゅう",
+          "十"
+        ],
+        [
+          "じゅうがつ",
+          "十月"
+        ],
+        [
+          "じゅうぶん",
+          "足够的"
+        ]
+      ]
+    },
+    {
+      "id": "hira-jo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "じょ",
+      "romaji": "jo",
+      "pair": "ジョ",
+      "origin": "之",
+      "note": "じ 加小 ゃ 合成一拍，叫拗音。じゃ 接近「加」的浊音，不卷舌",
+      "examples": [
+        [
+          "じょうず",
+          "擅长的"
+        ],
+        [
+          "じょせい",
+          "女性"
+        ],
+        [
+          "かのじょ",
+          "她"
+        ]
+      ]
+    },
+    {
+      "id": "hira-bya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "びゃ",
+      "romaji": "bya",
+      "pair": "ビャ",
+      "origin": "比",
+      "note": "び 加小 ゃ 合成一拍，叫拗音。びゃ 是 び 和 ya 快速连读",
+      "examples": [
+        [
+          "びょういん",
+          "医院"
+        ],
+        [
+          "あびる",
+          "淋浴"
+        ],
+        [
+          "ようび",
+          "星期"
+        ]
+      ]
+    },
+    {
+      "id": "hira-byu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "びゅ",
+      "romaji": "byu",
+      "pair": "ビュ",
+      "origin": "比",
+      "note": "び 加小 ゃ 合成一拍，叫拗音。びゃ 是 び 和 ya 快速连读",
+      "examples": [
+        [
+          "びょういん",
+          "医院"
+        ],
+        [
+          "あびる",
+          "淋浴"
+        ],
+        [
+          "ようび",
+          "星期"
+        ]
+      ]
+    },
+    {
+      "id": "hira-byo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "びょ",
+      "romaji": "byo",
+      "pair": "ビョ",
+      "origin": "比",
+      "note": "び 加小 ゃ 合成一拍，叫拗音。びゃ 是 び 和 ya 快速连读",
+      "examples": [
+        [
+          "びょういん",
+          "医院"
+        ],
+        [
+          "あびる",
+          "淋浴"
+        ],
+        [
+          "ようび",
+          "星期"
+        ]
+      ]
+    },
+    {
+      "id": "hira-pya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ぴゃ",
+      "romaji": "pya",
+      "pair": "ピャ",
+      "origin": "比",
+      "note": "ぴ 加小 ゃ 合成一拍，叫拗音。ぴゃ 的 ぴ 读不送气的 p",
+      "examples": [
+        [
+          "いっぱい",
+          "满"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "さんぽ",
+          "散步"
+        ]
+      ]
+    },
+    {
+      "id": "hira-pyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ぴゅ",
+      "romaji": "pyu",
+      "pair": "ピュ",
+      "origin": "比",
+      "note": "ぴ 加小 ゃ 合成一拍，叫拗音。ぴゃ 的 ぴ 读不送气的 p",
+      "examples": [
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "は",
+          "牙"
+        ],
+        [
+          "はい",
+          "是的"
+        ]
+      ]
+    },
+    {
+      "id": "hira-pyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ぴょ",
+      "romaji": "pyo",
+      "pair": "ピョ",
+      "origin": "比",
+      "note": "ぴ 加小 ゃ 合成一拍，叫拗音。ぴゃ 的 ぴ 读不送气的 p",
+      "examples": [
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "は",
+          "牙"
+        ],
+        [
+          "はい",
+          "是的"
+        ]
+      ]
+    },
+    {
+      "id": "kata-kya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "キャ",
+      "romaji": "kya",
+      "pair": "きゃ",
+      "origin": "幾",
+      "note": "き 加小写假名 ゃゅょ 合成一拍，叫拗音；小 ゃ 写在右下角、小一半，大小是区别",
+      "examples": [
+        [
+          "おきゃくさん",
+          "客人"
+        ],
+        [
+          "きょう",
+          "今天"
+        ],
+        [
+          "きょうしつ",
+          "教室"
+        ]
+      ]
+    },
+    {
+      "id": "kata-kyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "キュ",
+      "romaji": "kyu",
+      "pair": "きゅ",
+      "origin": "幾",
+      "note": "き 加小写假名 ゃゅょ 合成一拍，叫拗音；小 ゃ 写在右下角、小一半，大小是区别",
+      "examples": [
+        [
+          "きゅう",
+          "九"
+        ],
+        [
+          "きょう",
+          "今天"
+        ],
+        [
+          "きょうしつ",
+          "教室"
+        ]
+      ]
+    },
+    {
+      "id": "kata-kyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "キョ",
+      "romaji": "kyo",
+      "pair": "きょ",
+      "origin": "幾",
+      "note": "き 加小写假名 ゃゅょ 合成一拍，叫拗音；小 ゃ 写在右下角、小一半，大小是区别",
+      "examples": [
+        [
+          "きょう",
+          "今天"
+        ],
+        [
+          "きょうしつ",
+          "教室"
+        ],
+        [
+          "きょうだい",
+          "兄弟姐妹"
+        ]
+      ]
+    },
+    {
+      "id": "kata-sha",
+      "kind": "kana",
+      "group": "youon",
+      "front": "シャ",
+      "romaji": "sha",
+      "pair": "しゃ",
+      "origin": "之",
+      "note": "し 加小 ゃ 合成一拍，叫拗音。しゃ 不卷舌，不是「沙」",
+      "examples": [
+        [
+          "シャツ",
+          "衬衫"
+        ],
+        [
+          "シャワー",
+          "淋浴"
+        ],
+        [
+          "シャンハイ",
+          "上海"
+        ]
+      ]
+    },
+    {
+      "id": "kata-shu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "シュ",
+      "romaji": "shu",
+      "pair": "しゅ",
+      "origin": "之",
+      "note": "し 加小 ゃ 合成一拍，叫拗音。しゃ 不卷舌，不是「沙」",
+      "examples": [
+        [
+          "しゅ",
+          "手"
+        ],
+        [
+          "しゅう",
+          "周"
+        ],
+        [
+          "しゅみ",
+          "爱好"
+        ]
+      ]
+    },
+    {
+      "id": "kata-sho",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ショ",
+      "romaji": "sho",
+      "pair": "しょ",
+      "origin": "之",
+      "note": "し 加小 ゃ 合成一拍，叫拗音。しゃ 不卷舌，不是「沙」",
+      "examples": [
+        [
+          "しょうゆ",
+          "酱油"
+        ],
+        [
+          "しょくじ",
+          "吃饭"
+        ],
+        [
+          "しょくどう",
+          "食堂"
+        ]
+      ]
+    },
+    {
+      "id": "kata-cha",
+      "kind": "kana",
+      "group": "youon",
+      "front": "チャ",
+      "romaji": "cha",
+      "pair": "ちゃ",
+      "origin": "千",
+      "note": "ち 加小 ゃ 合成一拍，叫拗音。ちゃ 接近「恰」，ちゅ 接近「秋」",
+      "examples": [
+        [
+          "おちゃ",
+          "茶"
+        ],
+        [
+          "こうちゃ",
+          "红茶"
+        ],
+        [
+          "ちゃいろ",
+          "茶色的"
+        ]
+      ]
+    },
+    {
+      "id": "kata-chu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "チュ",
+      "romaji": "chu",
+      "pair": "ちゅ",
+      "origin": "千",
+      "note": "ち 加小 ゃ 合成一拍，叫拗音。ちゃ 接近「恰」，ちゅ 接近「秋」",
+      "examples": [
+        [
+          "ちゅう",
+          "中"
+        ],
+        [
+          "ちゅうごく",
+          "中国"
+        ],
+        [
+          "ちゅうごくご",
+          "中文"
+        ]
+      ]
+    },
+    {
+      "id": "kata-cho",
+      "kind": "kana",
+      "group": "youon",
+      "front": "チョ",
+      "romaji": "cho",
+      "pair": "ちょ",
+      "origin": "千",
+      "note": "ち 加小 ゃ 合成一拍，叫拗音。ちゃ 接近「恰」，ちゅ 接近「秋」",
+      "examples": [
+        [
+          "チョコレート",
+          "巧克力"
+        ],
+        [
+          "ちょう",
+          "……町"
+        ],
+        [
+          "ちょうど",
+          "正好"
+        ]
+      ]
+    },
+    {
+      "id": "kata-nya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ニャ",
+      "romaji": "nya",
+      "pair": "にゃ",
+      "origin": "二",
+      "note": "に 加小 ゃ 合成一拍，叫拗音。にゃ 像「你呀」连读成一拍",
+      "examples": [
+        [
+          "にわ",
+          "庭院"
+        ],
+        [
+          "にく",
+          "肉"
+        ],
+        [
+          "にほん",
+          "日本"
+        ]
+      ]
+    },
+    {
+      "id": "kata-nyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ニュ",
+      "romaji": "nyu",
+      "pair": "にゅ",
+      "origin": "二",
+      "note": "に 加小 ゃ 合成一拍，叫拗音。にゃ 像「你呀」连读成一拍",
+      "examples": [
+        [
+          "ニュース",
+          "新闻"
+        ],
+        [
+          "ぎゅうにゅう",
+          "牛奶"
+        ],
+        [
+          "に",
+          "二"
+        ]
+      ]
+    },
+    {
+      "id": "kata-nyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ニョ",
+      "romaji": "nyo",
+      "pair": "にょ",
+      "origin": "二",
+      "note": "に 加小 ゃ 合成一拍，叫拗音。にゃ 像「你呀」连读成一拍",
+      "examples": [
+        [
+          "に",
+          "二"
+        ],
+        [
+          "にく",
+          "肉"
+        ],
+        [
+          "にし",
+          "西方"
+        ]
+      ]
+    },
+    {
+      "id": "kata-hya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ヒャ",
+      "romaji": "hya",
+      "pair": "ひゃ",
+      "origin": "比",
+      "note": "ひ 加小 ゃ 合成一拍，叫拗音。ひゃ 是 ひ 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "ひゃく",
+          "百"
+        ],
+        [
+          "ひ",
+          "火"
+        ],
+        [
+          "ひと",
+          "人"
+        ]
+      ]
+    },
+    {
+      "id": "kata-hyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ヒュ",
+      "romaji": "hyu",
+      "pair": "ひゅ",
+      "origin": "比",
+      "note": "ひ 加小 ゃ 合成一拍，叫拗音。ひゃ 是 ひ 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "ひ",
+          "火"
+        ],
+        [
+          "ひと",
+          "人"
+        ],
+        [
+          "ひる",
+          "白天"
+        ]
+      ]
+    },
+    {
+      "id": "kata-hyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ヒョ",
+      "romaji": "hyo",
+      "pair": "ひょ",
+      "origin": "比",
+      "note": "ひ 加小 ゃ 合成一拍，叫拗音。ひゃ 是 ひ 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "ひ",
+          "火"
+        ],
+        [
+          "ひと",
+          "人"
+        ],
+        [
+          "ひる",
+          "白天"
+        ]
+      ]
+    },
+    {
+      "id": "kata-mya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ミャ",
+      "romaji": "mya",
+      "pair": "みゃ",
+      "origin": "三",
+      "note": "み 加小 ゃ 合成一拍，叫拗音。みゃ 是 み 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "みせ",
+          "商店"
+        ],
+        [
+          "みせる",
+          "给看"
+        ],
+        [
+          "おみせ",
+          "商店"
+        ]
+      ]
+    },
+    {
+      "id": "kata-myu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ミュ",
+      "romaji": "myu",
+      "pair": "みゅ",
+      "origin": "三",
+      "note": "み 加小 ゃ 合成一拍，叫拗音。みゃ 是 み 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "みぎ",
+          "右"
+        ],
+        [
+          "みぎて",
+          "右手"
+        ],
+        [
+          "みぎがわ",
+          "右边"
+        ]
+      ]
+    },
+    {
+      "id": "kata-myo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ミョ",
+      "romaji": "myo",
+      "pair": "みょ",
+      "origin": "三",
+      "note": "み 加小 ゃ 合成一拍，叫拗音。みゃ 是 み 和 ya 快速连读，中间不断",
+      "examples": [
+        [
+          "みぎ",
+          "右"
+        ],
+        [
+          "みぎて",
+          "右手"
+        ],
+        [
+          "みぎがわ",
+          "右边"
+        ]
+      ]
+    },
+    {
+      "id": "kata-rya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "リャ",
+      "romaji": "rya",
+      "pair": "りゃ",
+      "origin": "利",
+      "note": "り 加小 ゃ 合成一拍，叫拗音。りゃ 里的 り 仍要轻弹舌尖",
+      "examples": [
+        [
+          "りょうり",
+          "料理"
+        ],
+        [
+          "りょこう",
+          "旅行"
+        ],
+        [
+          "りょうしん",
+          "双亲"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ryu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "リュ",
+      "romaji": "ryu",
+      "pair": "りゅ",
+      "origin": "利",
+      "note": "り 加小 ゃ 合成一拍，叫拗音。りゃ 里的 り 仍要轻弹舌尖",
+      "examples": [
+        [
+          "りゅうがく",
+          "留学"
+        ],
+        [
+          "りゅうがくせい",
+          "留学生"
+        ],
+        [
+          "りんご",
+          "苹果"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ryo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "リョ",
+      "romaji": "ryo",
+      "pair": "りょ",
+      "origin": "利",
+      "note": "り 加小 ゃ 合成一拍，叫拗音。りゃ 里的 り 仍要轻弹舌尖",
+      "examples": [
+        [
+          "りょうり",
+          "料理"
+        ],
+        [
+          "りょこう",
+          "旅行"
+        ],
+        [
+          "りょうしん",
+          "双亲"
+        ]
+      ]
+    },
+    {
+      "id": "kata-gya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ギャ",
+      "romaji": "gya",
+      "pair": "ぎゃ",
+      "origin": "幾",
+      "note": "ぎ 加小 ゃ 合成一拍，叫拗音。ぎゃ 一开口声带就振动",
+      "examples": [
+        [
+          "ぎんこう",
+          "银行"
+        ],
+        [
+          "かぎ",
+          "钥匙"
+        ],
+        [
+          "みぎ",
+          "右"
+        ]
+      ]
+    },
+    {
+      "id": "kata-gyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ギュ",
+      "romaji": "gyu",
+      "pair": "ぎゅ",
+      "origin": "幾",
+      "note": "ぎ 加小 ゃ 合成一拍，叫拗音。ぎゃ 一开口声带就振动",
+      "examples": [
+        [
+          "ぎゅうにゅう",
+          "牛奶"
+        ],
+        [
+          "ぎんこう",
+          "银行"
+        ],
+        [
+          "かぎ",
+          "钥匙"
+        ]
+      ]
+    },
+    {
+      "id": "kata-gyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ギョ",
+      "romaji": "gyo",
+      "pair": "ぎょ",
+      "origin": "幾",
+      "note": "ぎ 加小 ゃ 合成一拍，叫拗音。ぎゃ 一开口声带就振动",
+      "examples": [
+        [
+          "じゅぎょう",
+          "授业"
+        ],
+        [
+          "ぎんこう",
+          "银行"
+        ],
+        [
+          "ぎゅうにゅう",
+          "牛奶"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ja",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ジャ",
+      "romaji": "ja",
+      "pair": "じゃ",
+      "origin": "之",
+      "note": "じ 加小 ゃ 合成一拍，叫拗音。じゃ 接近「加」的浊音，不卷舌",
+      "examples": [
+        [
+          "じゃあ",
+          "那么"
+        ],
+        [
+          "じかん",
+          "时间"
+        ],
+        [
+          "じしょ",
+          "词典"
+        ]
+      ]
+    },
+    {
+      "id": "kata-ju",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ジュ",
+      "romaji": "ju",
+      "pair": "じゅ",
+      "origin": "之",
+      "note": "じ 加小 ゃ 合成一拍，叫拗音。じゃ 接近「加」的浊音，不卷舌",
+      "examples": [
+        [
+          "ジュース",
+          "果汁"
+        ],
+        [
+          "じゅう",
+          "十"
+        ],
+        [
+          "じゅうがつ",
+          "十月"
+        ]
+      ]
+    },
+    {
+      "id": "kata-jo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ジョ",
+      "romaji": "jo",
+      "pair": "じょ",
+      "origin": "之",
+      "note": "じ 加小 ゃ 合成一拍，叫拗音。じゃ 接近「加」的浊音，不卷舌",
+      "examples": [
+        [
+          "じょうず",
+          "擅长的"
+        ],
+        [
+          "じょせい",
+          "女性"
+        ],
+        [
+          "かのじょ",
+          "她"
+        ]
+      ]
+    },
+    {
+      "id": "kata-bya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ビャ",
+      "romaji": "bya",
+      "pair": "びゃ",
+      "origin": "比",
+      "note": "び 加小 ゃ 合成一拍，叫拗音。びゃ 是 び 和 ya 快速连读",
+      "examples": [
+        [
+          "びょういん",
+          "医院"
+        ],
+        [
+          "あびる",
+          "淋浴"
+        ],
+        [
+          "ようび",
+          "星期"
+        ]
+      ]
+    },
+    {
+      "id": "kata-byu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ビュ",
+      "romaji": "byu",
+      "pair": "びゅ",
+      "origin": "比",
+      "note": "び 加小 ゃ 合成一拍，叫拗音。びゃ 是 び 和 ya 快速连读",
+      "examples": [
+        [
+          "びょういん",
+          "医院"
+        ],
+        [
+          "あびる",
+          "淋浴"
+        ],
+        [
+          "ようび",
+          "星期"
+        ]
+      ]
+    },
+    {
+      "id": "kata-byo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ビョ",
+      "romaji": "byo",
+      "pair": "びょ",
+      "origin": "比",
+      "note": "び 加小 ゃ 合成一拍，叫拗音。びゃ 是 び 和 ya 快速连读",
+      "examples": [
+        [
+          "びょういん",
+          "医院"
+        ],
+        [
+          "あびる",
+          "淋浴"
+        ],
+        [
+          "ようび",
+          "星期"
+        ]
+      ]
+    },
+    {
+      "id": "kata-pya",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ピャ",
+      "romaji": "pya",
+      "pair": "ぴゃ",
+      "origin": "比",
+      "note": "ぴ 加小 ゃ 合成一拍，叫拗音。ぴゃ 的 ぴ 读不送气的 p",
+      "examples": [
+        [
+          "いっぱい",
+          "满"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "さんぽ",
+          "散步"
+        ]
+      ]
+    },
+    {
+      "id": "kata-pyu",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ピュ",
+      "romaji": "pyu",
+      "pair": "ぴゅ",
+      "origin": "比",
+      "note": "ぴ 加小 ゃ 合成一拍，叫拗音。ぴゃ 的 ぴ 读不送气的 p",
+      "examples": [
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "は",
+          "牙"
+        ],
+        [
+          "はい",
+          "是的"
+        ]
+      ]
+    },
+    {
+      "id": "kata-pyo",
+      "kind": "kana",
+      "group": "youon",
+      "front": "ピョ",
+      "romaji": "pyo",
+      "pair": "ぴょ",
+      "origin": "比",
+      "note": "ぴ 加小 ゃ 合成一拍，叫拗音。ぴゃ 的 ぴ 读不送气的 p",
+      "examples": [
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "は",
+          "牙"
+        ],
+        [
+          "はい",
+          "是的"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-fa",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "ファ",
+      "romaji": "fa",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "ソファー",
+          "沙发"
+        ],
+        [
+          "ファクス",
+          "传真"
+        ],
+        [
+          "カフェ",
+          "咖啡馆"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-fi",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "フィ",
+      "romaji": "fi",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "オフィス",
+          "办公室"
+        ],
+        [
+          "サーフィン",
+          "冲浪"
+        ],
+        [
+          "ソファー",
+          "沙发"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-fe",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "フェ",
+      "romaji": "fe",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "カフェ",
+          "咖啡馆"
+        ],
+        [
+          "フェリー",
+          "渡轮"
+        ],
+        [
+          "フォーク",
+          "叉子"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-fo",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "フォ",
+      "romaji": "fo",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "フォーク",
+          "叉子"
+        ],
+        [
+          "フォーム",
+          "表格"
+        ],
+        [
+          "ファクス",
+          "传真"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-ti",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "ティ",
+      "romaji": "ti",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "パーティー",
+          "聚会"
+        ],
+        [
+          "スパゲッティ",
+          "意大利面"
+        ],
+        [
+          "メディア",
+          "媒体"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-di",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "ディ",
+      "romaji": "di",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "シーディー",
+          "CD"
+        ],
+        [
+          "メディア",
+          "媒体"
+        ],
+        [
+          "パーティー",
+          "聚会"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-wi",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "ウィ",
+      "romaji": "wi",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "ゴールデンウィーク",
+          "黄金周"
+        ],
+        [
+          "ウィンドー",
+          "橱窗"
+        ],
+        [
+          "シェア",
+          "共享"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-she",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "シェ",
+      "romaji": "she",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "シェア",
+          "共享"
+        ],
+        [
+          "シェフ",
+          "主厨"
+        ],
+        [
+          "プロジェクト",
+          "项目"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-je",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "ジェ",
+      "romaji": "je",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "プロジェクト",
+          "项目"
+        ],
+        [
+          "シェア",
+          "共享"
+        ],
+        [
+          "チェック",
+          "检查"
+        ]
+      ]
+    },
+    {
+      "id": "gairai-che",
+      "kind": "kana",
+      "group": "gairai",
+      "front": "チェ",
+      "romaji": "che",
+      "pair": "",
+      "origin": "",
+      "note": "外来语专用音：本土词里没有，只用来拼外来语。老词不用 ティ，写成 チ（チケット），新词才写 パーティー",
+      "examples": [
+        [
+          "チェック",
+          "检查"
+        ],
+        [
+          "チェックイン",
+          "入住"
+        ],
+        [
+          "シェフ",
+          "主厨"
+        ]
+      ]
+    },
+    {
+      "id": "rule-long-a",
+      "kind": "rule",
+      "group": "rule",
+      "front": "ああ 读什么？",
+      "note": "あ段 后面再跟一个 あ，就把音拉长一拍，叫长音。おばあさん 是奶奶，少一个 あ 就成 おばさん（阿姨）",
+      "examples": [
+        [
+          "おかあさん",
+          "妈妈"
+        ],
+        [
+          "おばあさん",
+          "奶奶"
+        ],
+        [
+          "おばさん",
+          "阿姨"
+        ],
+        [
+          "ああ",
+          "啊"
+        ]
+      ],
+      "quiz": [
+        [
+          "おかあさん",
+          "おかさん"
+        ],
+        [
+          "おばあさん",
+          "おばーさん"
+        ],
+        [
+          "ああ",
+          "あ"
+        ]
+      ]
+    },
+    {
+      "id": "rule-long-i",
+      "kind": "rule",
+      "group": "rule",
+      "front": "いい 读什么？",
+      "note": "い段 后面跟 い，拉长一拍，不是两个短音。おにいさん、ちいさい 都是这样",
+      "examples": [
+        [
+          "おにいさん",
+          "哥哥"
+        ],
+        [
+          "おいしい",
+          "好吃的"
+        ],
+        [
+          "ちいさい",
+          "小的"
+        ],
+        [
+          "おじいさん",
+          "爷爷"
+        ]
+      ],
+      "quiz": [
+        [
+          "おにいさん",
+          "おにさん"
+        ],
+        [
+          "ちいさい",
+          "ちさい"
+        ],
+        [
+          "おいしい",
+          "おしい"
+        ]
+      ]
+    },
+    {
+      "id": "rule-long-u",
+      "kind": "rule",
+      "group": "rule",
+      "front": "うう 读什么？",
+      "note": "う段 后面跟 う，拉长一拍。くうこう、ぎゅうにゅう 都是这样",
+      "examples": [
+        [
+          "くうこう",
+          "机场"
+        ],
+        [
+          "ぎゅうにゅう",
+          "牛奶"
+        ],
+        [
+          "ゆうべ",
+          "昨晚"
+        ],
+        [
+          "しゅうかん",
+          "周"
+        ]
+      ],
+      "quiz": [
+        [
+          "くうこう",
+          "くこう"
+        ],
+        [
+          "ゆうべ",
+          "ゆべ"
+        ],
+        [
+          "しゅうかん",
+          "しゅかん"
+        ]
+      ]
+    },
+    {
+      "id": "rule-long-e",
+      "kind": "rule",
+      "group": "rule",
+      "front": "えい 读什么？",
+      "note": "え段 后面跟 い，读成 ee，不读 e-i。おねえさん 是例外，写成 ええ",
+      "examples": [
+        [
+          "せんせい",
+          "老师"
+        ],
+        [
+          "えいが",
+          "电影"
+        ],
+        [
+          "とけい",
+          "钟"
+        ],
+        [
+          "きれい",
+          "漂亮的"
+        ]
+      ],
+      "quiz": [
+        [
+          "せんせい",
+          "せんせ"
+        ],
+        [
+          "えいが",
+          "えが"
+        ],
+        [
+          "とけい",
+          "とけ"
+        ]
+      ]
+    },
+    {
+      "id": "rule-long-o",
+      "kind": "rule",
+      "group": "rule",
+      "front": "おう 读什么？",
+      "note": "お段 后面跟 う，读成 oo。おおきい、とおい 这几个写 おお",
+      "examples": [
+        [
+          "おとうさん",
+          "爸爸"
+        ],
+        [
+          "がっこう",
+          "学校"
+        ],
+        [
+          "おおきい",
+          "大的"
+        ],
+        [
+          "とおい",
+          "远的"
+        ]
+      ],
+      "quiz": [
+        [
+          "がっこう",
+          "がっこ"
+        ],
+        [
+          "おとうさん",
+          "おとさん"
+        ],
+        [
+          "とおい",
+          "とい"
+        ]
+      ]
+    },
+    {
+      "id": "rule-long-bar",
+      "kind": "rule",
+      "group": "rule",
+      "front": "ー 是什么？",
+      "note": "片假名 的长音符「ー」，把前一个音拉长一拍。写在假名右边",
+      "examples": [
+        [
+          "ケーキ",
+          "蛋糕"
+        ],
+        [
+          "コーヒー",
+          "咖啡"
+        ],
+        [
+          "ノート",
+          "笔记"
+        ],
+        [
+          "スーパー",
+          "超市"
+        ]
+      ],
+      "quiz": [
+        [
+          "ケーキ",
+          "ケキ"
+        ],
+        [
+          "コーヒー",
+          "コヒー"
+        ],
+        [
+          "スーパー",
+          "スパー"
+        ]
+      ]
+    },
+    {
+      "id": "rule-sokuon",
+      "kind": "rule",
+      "group": "rule",
+      "front": "小 っ 是什么？",
+      "note": "促音：小 っ 占一拍停顿，不出声，不能开头、不能结尾。后面是清音时读得更用力",
+      "examples": [
+        [
+          "きって",
+          "邮票"
+        ],
+        [
+          "ざっし",
+          "杂志"
+        ],
+        [
+          "きっぷ",
+          "票"
+        ],
+        [
+          "がっこう",
+          "学校"
+        ]
+      ],
+      "quiz": [
+        [
+          "きって",
+          "きて"
+        ],
+        [
+          "ざっし",
+          "ざし"
+        ],
+        [
+          "きっぷ",
+          "きぷ"
+        ]
+      ]
+    },
+    {
+      "id": "rule-hatsuon",
+      "kind": "rule",
+      "group": "rule",
+      "front": "ん 后面跟什么会变？",
+      "note": "ん 单独一拍。后面是 m、b、p 读 m，n、t、d 读 n，k、g 读 ng，词尾轻鼻音",
+      "examples": [
+        [
+          "さんぽ",
+          "散步"
+        ],
+        [
+          "えんぴつ",
+          "铅笔"
+        ],
+        [
+          "にほんご",
+          "日语"
+        ],
+        [
+          "ほん",
+          "书"
+        ]
+      ],
+      "quiz": [
+        [
+          "さんぽ",
+          "さぽ"
+        ],
+        [
+          "えんぴつ",
+          "えぴつ"
+        ],
+        [
+          "にほんご",
+          "にほご"
+        ]
+      ]
+    },
+    {
+      "id": "rule-youon-long",
+      "kind": "rule",
+      "group": "rule",
+      "front": "きょう 几拍？",
+      "note": "拗音 一拍，加后面的 う 再一拍，一共两拍。きょ 写两个假名，也只算一拍",
+      "examples": [
+        [
+          "きょう",
+          "今天"
+        ],
+        [
+          "りょこう",
+          "旅行"
+        ],
+        [
+          "じゅう",
+          "十"
+        ],
+        [
+          "ちゅうごく",
+          "中国"
+        ]
+      ],
+      "quiz": [
+        [
+          "きょう",
+          "きょ"
+        ],
+        [
+          "りょこう",
+          "りょこ"
+        ],
+        [
+          "ちゅうごく",
+          "ちゅごく"
+        ]
+      ]
+    },
+    {
+      "id": "rule-unaspirated",
+      "kind": "rule",
+      "group": "rule",
+      "front": "たかい 的 か 为什么像 ga？",
+      "note": "词中清音不送气，听着像浊音，但它仍是清音，声带不振动",
+      "examples": [
+        [
+          "たかい",
+          "高的"
+        ],
+        [
+          "あなた",
+          "你"
+        ],
+        [
+          "いくつ",
+          "几个"
+        ],
+        [
+          "みかん",
+          "橘子"
+        ]
+      ],
+      "quiz": [
+        [
+          "たかい",
+          "たがい"
+        ],
+        [
+          "あなた",
+          "あなだ"
+        ],
+        [
+          "みかん",
+          "みがん"
+        ]
+      ]
+    },
+    {
+      "id": "rule-particles",
+      "kind": "rule",
+      "group": "rule",
+      "front": "は 什么时候读 wa？",
+      "note": "做助词时 は 读 wa、へ 读 e；写在词里照常读 ha、he。こんにちは 的 は 也是助词",
+      "examples": [
+        [
+          "こんにちは",
+          "你好"
+        ],
+        [
+          "それでは",
+          "那么"
+        ],
+        [
+          "とうきょうへ",
+          "往东京"
+        ],
+        [
+          "わたしは",
+          "我（主题）"
+        ]
+      ],
+      "quiz": [
+        [
+          "こんにちは",
+          "こんにちわ"
+        ],
+        [
+          "それでは",
+          "それでわ"
+        ],
+        [
+          "では",
+          "でわ"
+        ]
+      ]
+    },
+    {
+      "id": "rule-pitch",
+      "kind": "rule",
+      "group": "rule",
+      "front": "声调是什么？",
+      "note": "声调是高低不是轻重，分 平板型、头高型、中高型、尾高型 四类",
+      "examples": [
+        [
+          "はし",
+          "桥"
+        ],
+        [
+          "はし",
+          "筷子"
+        ],
+        [
+          "あめ",
+          "雨"
+        ],
+        [
+          "あめ",
+          "糖"
+        ]
+      ],
+      "quiz": []
+    },
+    {
+      "id": "phrase-ohayou-gozaimasu",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "おはようございます",
+      "romaji": "ohayou gozaimasu",
+      "note": "お·は·よ·う·ご·ざ·い·ま·す 9 拍，う 和 い 各占一拍",
+      "meaning": "早上好（对家人、熟人）",
+      "scenes": [
+        "早上到中午前见到同事、老师说",
+        "家人之间更常说 おはよう",
+        "下午说这句会显得没睡醒"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-konnichiwa",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "こんにちは",
+      "romaji": "konnichiwa",
+      "note": "こ·ん·に·ち·は 5 拍，ん 单独一拍",
+      "meaning": "你好（白天问候）",
+      "scenes": [
+        "白天十点到傍晚见人时说",
+        "对不熟的人、店员都能用",
+        "傍晚以后要换成 こんばんは"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-konbanwa",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "こんばんは",
+      "romaji": "konbanwa",
+      "note": "こ·ん·ば·ん·は 5 拍，两个 ん 各占一拍",
+      "meaning": "晚上好",
+      "scenes": [
+        "天黑以后见面打招呼",
+        "对同事、邻居都能用",
+        "睡前道晚安要说 おやすみなさい"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-oyasuminasai",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "おやすみなさい",
+      "romaji": "oyasuminasai",
+      "note": "お·や·す·み·な·さ·い 7 拍，最后的 い 是长音",
+      "meaning": "晚安",
+      "scenes": [
+        "睡前对家人说",
+        "同事下班道别也能说",
+        "对长辈用完整形更稳妥"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-sayounara",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "さようなら",
+      "romaji": "sayounara",
+      "note": "さ·よ·う·な·ら 5 拍，う 是长音占一拍",
+      "meaning": "再见",
+      "scenes": [
+        "长时间不见、正式道别时用",
+        "对老师、同学都可以",
+        "同事日常道别多说 じゃあね"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-arigatou-gozaimasu",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "ありがとうございます",
+      "romaji": "arigatou gozaimasu",
+      "note": "あ·り·が·と·う·ご·ざ·い·ま·す 10 拍",
+      "meaning": "非常感谢",
+      "scenes": [
+        "受帮助、收礼物时说",
+        "对长辈、客户都合适",
+        "朋友之间说 ありがとう 更随意"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-doumo-arigatou",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "どうもありがとう",
+      "romaji": "doumo arigatou",
+      "note": "ど·う·も·あ·り·が·と·う 8 拍，两个 う 都是长音",
+      "meaning": "多谢",
+      "scenes": [
+        "对平辈、朋友道谢",
+        "比 ありがとう 多一分郑重",
+        "对上司别省掉 ございます"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-sumimasen",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "すみません",
+      "romaji": "sumimasen",
+      "note": "す·み·ま·せ·ん 5 拍，ん 单独一拍",
+      "meaning": "不好意思；劳驾",
+      "scenes": [
+        "撞到人时先道歉",
+        "叫店员、问路时开口用",
+        "别人帮了忙，比 ありがとう 更客气"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-gomennasai",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "ごめんなさい",
+      "romaji": "gomennasai",
+      "note": "ご·め·ん·な·さ·い 6 拍，ん 单独一拍",
+      "meaning": "对不起",
+      "scenes": [
+        "自己做错事、迟到时道歉",
+        "对朋友、家人常用",
+        "对外人道歉说 すみません 更稳妥"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-hajimemashite",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "はじめまして",
+      "romaji": "hajimemashite",
+      "note": "は·じ·め·ま·し·て 6 拍",
+      "meaning": "初次见面",
+      "scenes": [
+        "初次见面开口第一句",
+        "后面接 どうぞよろしく",
+        "见过面的人不能说这句"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-douzo-yoroshiku-onegai-shimasu",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "どうぞよろしくおねがいします",
+      "romaji": "douzo yoroshiku onegai shimasu",
+      "note": "ど·う·ぞ·よ·ろ·し·く·お·ね·が·い·し·ま·す 14 拍",
+      "meaning": "请多关照",
+      "scenes": [
+        "自我介绍之后接这句",
+        "对上司、客户用完整形",
+        "朋友之间只说 よろしく 就行"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-itadakimasu",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "いただきます",
+      "romaji": "itadakimasu",
+      "note": "い·た·だ·き·ま·す 6 拍",
+      "meaning": "我开动了（饭前）",
+      "scenes": [
+        "饭前双手合十说",
+        "自己开动前对做饭的人说",
+        "饭后要说 ごちそうさまでした"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-gochisousama-deshita",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "ごちそうさまでした",
+      "romaji": "gochisousama deshita",
+      "note": "ご·ち·そ·う·さ·ま·で·し·た 9 拍，う 是长音",
+      "meaning": "我吃饱了（饭后）",
+      "scenes": [
+        "吃完饭放下筷子说",
+        "对请客的人说更显感谢",
+        "饭前不能说这句"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-ittekimasu",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "いってきます",
+      "romaji": "ittekimasu",
+      "note": "い·っ·て·き·ま·す 6 拍，小 っ 占一拍停顿",
+      "meaning": "我出门了",
+      "scenes": [
+        "出门时对家里人说",
+        "上班、上学都能用",
+        "家里人要回 いってらっしゃい"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-itterasshai",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "いってらっしゃい",
+      "romaji": "itterasshai",
+      "note": "い·っ·て·ら·っ·し·ゃ·い 8 拍，两个小 っ 各占一拍",
+      "meaning": "路上小心（对出门的人说）",
+      "scenes": [
+        "对要出门的人说",
+        "送到门口时一起说",
+        "自己出门时不能说这句"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-tadaima",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "ただいま",
+      "romaji": "tadaima",
+      "note": "た·だ·い·ま 4 拍",
+      "meaning": "我回来了",
+      "scenes": [
+        "回到家进门就说",
+        "对家人说，在公司也能用",
+        "家里人要回 おかえりなさい"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-okaerinasai",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "おかえりなさい",
+      "romaji": "okaerinasai",
+      "note": "お·か·え·り·な·さ·い 7 拍",
+      "meaning": "你回来啦（对回家的人说）",
+      "scenes": [
+        "对回家的人说",
+        "家人、室友之间常用",
+        "自己回家时不能说这句"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-otsukaresama-deshita",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "おつかれさまでした",
+      "romaji": "otsukaresama deshita",
+      "note": "お·つ·か·れ·さ·ま·で·し·た 10 拍",
+      "meaning": "辛苦了",
+      "scenes": [
+        "下班和同事道别时说",
+        "对方干完活也可以说",
+        "对上司说这句很自然"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-shitsurei-shimasu",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "しつれいします",
+      "romaji": "shitsurei shimasu",
+      "note": "し·つ·れ·い·し·ま·す 7 拍，い 是长音",
+      "meaning": "我先走了；打扰了",
+      "scenes": [
+        "进别人房间、先离席时说",
+        "挂电话前说一句",
+        "道歉场合要用 ごめんなさい"
+      ],
+      "examples": []
+    },
+    {
+      "id": "phrase-ogenki-desu-ka",
+      "kind": "phrase",
+      "group": "phrase",
+      "front": "おげんきですか",
+      "romaji": "ogenki desu ka",
+      "note": "お·げ·ん·き·で·す·か 7 拍，ん 单独一拍",
+      "meaning": "你好吗",
+      "scenes": [
+        "久未见面的熟人问好",
+        "邮件、信里也常用",
+        "每天见面的人问会显得奇怪"
+      ],
+      "examples": []
+    }
+  ]
+}

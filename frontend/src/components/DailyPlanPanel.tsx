@@ -6,6 +6,8 @@ import {
 } from "../lib/daily-plan";
 import { JLPT_TARGETS, type JlptTarget } from "../lib/jlpt/plan";
 import { getStudyPreferences, PREFERENCES_EVENT } from "../lib/studyPreferences";
+import { getStudyMode, saveStudyMode, STUDY_MODE_EVENT, VISIBLE_STUDY_MODES } from "../lib/studyMode";
+import type { StudyMode } from "../types/app";
 import { refreshTodayWordPlan } from "../lib/api";
 import { notifyProgressUpdated } from "../lib/progress-events";
 import { refreshMixedCardTasks } from "../lib/mixed-cards";
@@ -22,9 +24,20 @@ interface Props {
 
 type Plan = Record<PlanKind, RingValue>;
 
+/**
+ * 每个学习模式会出圆环上的哪几段。用户问「总量 406 为什么大卡只有三百多」——因为经典模式只出单词那段；
+ * 圆环中间的数和「今天总量」只算当前模式会出的段，不出的段画淡。
+ * 错题本 / 反向 / 汉字读音各有自己的题池，不按这个圆环排。
+ */
+const MODE_KINDS: Record<StudyMode, PlanKind[]> = {
+  classic: ["words"], quick: ["words"], picked: ["words"], mixed: PLAN_KINDS, mistakes: [], reverse: [], kanji: []
+};
+
 const toPlan = (view: DailyPlanView): Plan => Object.fromEntries(
   view.segments.map((segment) => [segment.kind, { fresh: segment.fresh, review: segment.review }])
 ) as Plan;
+
+const studyModeTitle = (mode: StudyMode) => VISIBLE_STUDY_MODES.find((item) => item.id === mode)?.title ?? "";
 
 const minutesFor = (plan: Plan) => Math.round(PLAN_KINDS.reduce((sum, kind) => sum + (plan[kind].fresh + plan[kind].review) * SECONDS_PER_CARD[kind], 0) / 60);
 
@@ -43,6 +56,13 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
   // 撤回栈：会话内每次改动前的快照。退出页面就没了 —— 它是「手滑了退一步」，不是历史记录。
   const [history, setHistory] = useState<Plan[]>([]);
   const dragStartRef = useRef<Plan | null>(null);
+  const [mode, setMode] = useState<StudyMode>(() => getStudyMode());
+  useEffect(() => {
+    const sync = () => setMode(getStudyMode());
+    window.addEventListener(STUDY_MODE_EVENT, sync);
+    return () => window.removeEventListener(STUDY_MODE_EVENT, sync);
+  }, []);
+  const active = MODE_KINDS[mode] ?? [];
 
   const reload = () => {
     try {
@@ -68,7 +88,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
    * 拖圆环时**每帧只能改状态**（preview），松手那一下再 persist —— 第一版每帧都 persist，掉帧严重。
    */
   const persist = (next: Plan, standing = false) => {
-    saveDailyPlan(next, standing);
+    saveDailyPlan(next, standing, view);
     try { refreshTodayWordPlan(); refreshMixedCardTasks(getDatabase()); } catch { /* 词库没就绪，下次进页面自然会排 */ }
     notifyProgressUpdated();
   };
@@ -91,7 +111,8 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
     persist(next, standing);
   };
 
-  const total = PLAN_KINDS.reduce((sum, kind) => sum + plan[kind].fresh + plan[kind].review, 0);
+  // 「今天总量」= 当前模式会出的段之和；改总量也只在这几段之间等比缩放
+  const total = active.reduce((sum, kind) => sum + plan[kind].fresh + plan[kind].review, 0);
 
   const undo = () => {
     const previous = history[history.length - 1];
@@ -107,11 +128,14 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
   /** 改总量：四段等比缩放，四舍五入后的差额记到单词上。 */
   const setTotal = (nextTotal: number) => {
     const clean = Math.max(0, Math.min(2000, Math.floor(nextTotal) || 0));
-    if (total === 0) { commit({ ...plan, words: { fresh: clean, review: 0 } }); return; }
+    if (!active.length) return;
+    if (total === 0) { commit({ ...plan, [active[0]]: { fresh: clean, review: 0 } }); return; }
     const ratio = clean / total;
-    const next = Object.fromEntries(PLAN_KINDS.map((kind) => [kind, { fresh: Math.round(plan[kind].fresh * ratio), review: Math.round(plan[kind].review * ratio) }])) as Plan;
-    const drift = clean - PLAN_KINDS.reduce((sum, kind) => sum + next[kind].fresh + next[kind].review, 0);
-    next.words = { ...next.words, review: Math.max(0, next.words.review + drift) };
+    const next = { ...plan };
+    active.forEach((kind) => { next[kind] = { fresh: Math.round(plan[kind].fresh * ratio), review: Math.round(plan[kind].review * ratio) }; });
+    const drift = clean - active.reduce((sum, kind) => sum + next[kind].fresh + next[kind].review, 0);
+    const first = active[0];
+    next[first] = { ...next[first], review: Math.max(0, next[first].review + drift) };
     commit(next);
   };
 
@@ -120,12 +144,20 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
 
   return (
     <div className={`zoo-plan ${compact ? "zoo-plan-compact" : ""}`}>
+      <div className="zoo-plan-modes" role="radiogroup" aria-label="学习模式">
+        {VISIBLE_STUDY_MODES.map((item) => (
+          <button key={item.id} role="radio" aria-checked={mode === item.id} className={mode === item.id ? "on" : ""} onClick={() => saveStudyMode(item.id)}>
+            {item.short}
+          </button>
+        ))}
+        <small>{active.length ? `${studyModeTitle(mode)}出高亮的 ${active.length} 段` : `${studyModeTitle(mode)}有自己的题池，不按圆环排`}</small>
+      </div>
       <div className="zoo-plan-main">
-        <DailyPlanRing value={plan} onChange={preview} onCommit={commitDrag} focus={focus} onFocus={setFocus} size={compact ? 200 : 240} />
+        <DailyPlanRing value={plan} onChange={preview} onCommit={commitDrag} active={active} focus={focus} onFocus={setFocus} size={compact ? 200 : 240} />
         <div className="zoo-plan-side">
           <label className="zoo-plan-total">
             <span>今天总量</span>
-            <input type="number" min={0} max={2000} value={total} onChange={(event) => setTotal(Number(event.target.value))} />
+            <input type="number" min={0} max={2000} value={total} disabled={!active.length} onChange={(event) => setTotal(Number(event.target.value))} />
           </label>
           <p className="zoo-plan-minutes">预计 {minutesFor(plan)} 分钟 · 按标准节奏算，不看你的历史</p>
           <ul className="zoo-plan-legend">
@@ -133,7 +165,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
               const count = plan[segment.kind].fresh + plan[segment.kind].review;
               const below = plan[segment.kind].review < segment.suggest.review || plan[segment.kind].fresh < segment.suggest.fresh;
               return (
-                <li key={segment.kind} className={focus === segment.kind ? "on" : ""} onClick={() => setFocus(focus === segment.kind ? null : segment.kind)}>
+                <li key={segment.kind} className={`${focus === segment.kind ? "on" : ""} ${active.includes(segment.kind) ? "" : "off"}`} onClick={() => setFocus(focus === segment.kind ? null : segment.kind)}>
                   <i style={{ background: RING_COLORS[segment.kind] }} />
                   <span>{segment.label}</span>
                   <b>{count}</b>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, Crown, ReceiptText, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, Crown, ReceiptText, RotateCcw, ShieldCheck, Sparkles, Ticket } from "lucide-react";
 import { EntitlementState, productLabel } from "../lib/entitlements";
-import { initializePurchases, restorePurchases } from "../lib/purchases";
+import { initializePurchases, redeemOfferCode, restorePurchases } from "../lib/purchases";
 
 interface ProPageProps {
   entitlements: EntitlementState;
@@ -117,6 +117,20 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold text-white">{restoring ? "正在恢复" : "恢复购买"}</span>
             <span className="mt-0.5 block text-xs text-white/50">换机或重装后从 App Store 恢复权益</span>
+          </span>
+          <ChevronRight size={17} className="text-white/40" />
+        </button>
+
+        <button
+          onClick={async () => setMessage((await redeemOfferCode()).message)}
+          className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#3b3f3f] text-white/76">
+            <Ticket size={20} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold text-white">兑换码</span>
+            <span className="mt-0.5 block text-xs text-white/50">在 App Store 兑换页输入活动或赠送的兑换码</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
         </button>

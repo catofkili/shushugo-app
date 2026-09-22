@@ -28,18 +28,40 @@ function ac(): AudioContext {
   return ctx;
 }
 
+/**
+ * 音色。柚子商店卖的就是这个开关(yuzu.applyYuzuEquipment 设置)。
+ * 只换波形和衰减,音高怎么走(Shepard)一个字不动 —— 上面那段分析对任何谐波结构都成立。
+ *   kalimba:三角波,默认;marimba:正弦、更短,像敲木头;epiano:锯齿波过低通,有毛边的暖音。
+ */
+export type SoundTimbre = "kalimba" | "marimba" | "epiano";
+let timbre: SoundTimbre = "kalimba";
+export const setSoundTimbre = (next: SoundTimbre) => { timbre = next; };
+/** 商店试听:临时切到这个音色,连对三下(step 0/1/2)再切回去。不看「答题音效」开关 —— 点了试听就是要听 */
+export const previewTimbre = (next: SoundTimbre) => {
+  const prev = timbre;
+  timbre = next;
+  try { [0, 1, 2].forEach((step) => { shepardPluck(step, step * 0.28, 0.16, 0.23); shepardPluck(step + 4, step * 0.28 + 0.09, 0.22, 0.23); }); } catch { /* 音频不可用 */ }
+  timbre = prev;
+};
+
 /** 一个"木质"音:三角波 + 快速指数衰减,像敲一下卡林巴。 */
 function pluck(freq: number, start: number, dur: number, gain = 0.18) {
   const c = ac();
   const osc = c.createOscillator();
   const g = c.createGain();
   const t = c.currentTime + start;
-  osc.type = "triangle";
+  osc.type = timbre === "marimba" ? "sine" : timbre === "epiano" ? "sawtooth" : "triangle";
+  if (timbre === "marimba") dur *= 0.7;
   osc.frequency.setValueAtTime(freq, t);
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(gain, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(timbre === "epiano" ? gain * 0.45 : gain, t + 0.012);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  osc.connect(g).connect(c.destination);
+  if (timbre === "epiano") {
+    const lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.setValueAtTime(Math.min(freq * 3, 4000), t);
+    osc.connect(lp).connect(g).connect(c.destination);
+  } else osc.connect(g).connect(c.destination);
   osc.start(t);
   osc.stop(t + dur + 0.02);
 }

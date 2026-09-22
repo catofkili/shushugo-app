@@ -107,7 +107,7 @@ export interface WordStats {
   kanjiCompleted: number;
   studyDate: string;
   checkins: string[];
-  dailyStudyStats: { date: string; seconds: number; wordCount: number }[];
+  dailyStudyStats: { date: string; seconds: number; wordCount: number; grammarCount: number; reliefCount: number; total: number }[];
   wordStudySecondsToday: number;
   taskDone: boolean;
   /** 完成今日计划后的「再来一批」信息 */

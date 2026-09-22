@@ -1,3 +1,4 @@
+import { getStudyPreferences } from "../lib/studyPreferences";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { ChevronDown, Eye, ListChecks, NotebookPen, Send } from "lucide-react";
 import { getQuickStudySession, getQuickStudySessionForWords, submitQuickStudyBatch } from "../lib/api";
@@ -529,7 +530,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                     <div className="quick-study-meaning">
                       <span>{card.questionMeaning || card.primaryMeaning || card.meaning}</span>
                       <div className="quick-study-meta">
-                        <small>{card.jlptLevel} · {card.pos || "词汇"}</small>
+                        <small>{[getStudyPreferences().showJlptLevel ? card.jlptLevel : "", card.pos || "词汇"].filter(Boolean).join(" · ")}</small>
                         {card.honorificLabel && (
                           <strong className="quick-study-honorific">{card.honorificLabel}</strong>
                         )}

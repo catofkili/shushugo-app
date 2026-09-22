@@ -229,6 +229,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
               <ArrowLeft size={19} />
             </button>
           )}
+          <img src="/brand/shushugo-icon.png" alt="" className="brand-icon h-10 w-10 shrink-0 rounded-xl" />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[.18em] text-[#B7E38D]">收集日</p>
             <h2 id="auth-dialog-title" className="mt-0.5 truncate text-lg font-bold text-white">{title}</h2>
@@ -261,7 +262,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
             <div className="mx-auto max-w-[480px] space-y-4">
               {mode === "login" && (
                 <>
-                  <p className="text-sm leading-6 text-white/58">登录后可跨设备同步学习进度和个人资料；不登录也能继续离线学习。</p>
+                  <p className="text-sm leading-6 text-white/58">不登录也能离线学习。</p>
                   <button
                     onClick={() => void appleLogin()}
                     disabled={busy || !appleLoginAvailable}

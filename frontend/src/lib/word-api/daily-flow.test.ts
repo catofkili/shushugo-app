@@ -140,6 +140,15 @@ describe("昨日减负、当日错题与真正结尾", () => {
     )[0].values[0]).toEqual(progressBefore);
     // 减负只清后台奖励卡,今日计划(包括新词)一张都不能被删。
     expect(Number(testDb.exec("SELECT COUNT(*) FROM stage1_tasks")[0].values[0][0])).toBe(7);
+
+    // 日历 / 完成页那格和小路同一口径:减负 + 单词 + 语法。往日的减负按当天判据重算。
+    testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (1, 'know', 0, ?, 'forward')", [day]);
+    testDb.run("INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on) VALUES (1, 'know', 0, ?)", [day]);
+    testDb.run("INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on) VALUES (1, 'forgot', 0, ?)", [day]);
+    const byDate = new Map(getWordStats().dailyStudyStats.map((item) => [item.date, item]));
+    expect(byDate.get(day)).toMatchObject({ wordCount: 1, grammarCount: 1, reliefCount: 1, total: 3 });
+    // 昨天答了 100 个词,但前天没学 → 昨天没有减负
+    expect(byDate.get(yesterday)).toMatchObject({ wordCount: 100, grammarCount: 0, reliefCount: 0, total: 100 });
   });
 
   it("前一天学得越多才逐步增加减负,100个不是12个,300个才到12个", () => {

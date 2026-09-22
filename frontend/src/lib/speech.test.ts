@@ -1,10 +1,21 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  audioDeliveryMode,
+  prepareVoice,
   pronunciationAudioName,
   pronunciationAudioUrl,
   pronunciationReading,
   speechText
 } from "./speech";
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe("audioDeliveryMode", () => {
+  it("同源资源算包内，独立音频域名算远程按需加载", () => {
+    expect(audioDeliveryMode("/audio/", "https://localhost/shop")).toBe("bundled");
+    expect(audioDeliveryMode("https://audio.shushugo.app/", "https://app.shushugo.app/shop")).toBe("remote");
+  });
+});
 
 describe("pronunciationReading", () => {
   it("给 VOICEVOX 保留词库原始假名,不把 ゆしゅつ 变成会误解析的全片假名", () => {
@@ -76,5 +87,20 @@ describe("speechText", () => {
 
   it("没生成过音频库时不给地址,调用方直接走系统语音,不发无谓请求", () => {
     expect(pronunciationAudioUrl("灰皿", "はいざら")).toBeNull();
+  });
+});
+
+describe("prepareVoice", () => {
+  it("先读声音索引，再把首个真实音频拉进浏览器缓存", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ voices: [{ id: "voicevox-10", label: "雨晴はう", ext: ".aac" }], default: "voicevox-10" }) })
+      .mockResolvedValueOnce({ arrayBuffer: async () => new ArrayBuffer(1) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await prepareVoice("voicevox-10");
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(String(fetchMock.mock.calls[0][0])).toContain("words/index.json");
+    expect(String(fetchMock.mock.calls[1][0])).toMatch(/words\/voicevox-10\/[0-9a-f]{16}\.aac$/);
   });
 });

@@ -15,6 +15,8 @@ export interface StudyPreferences {
   theme: ThemePreference;
   autoPlay: boolean;
   showRomaji: boolean;
+  /** 题目面上那枚「N4」等级标。默认关：起点当先验写进 FSRS 后，N4 词会当复习露面，标着等级等于把「在过一遍你的 N4」说出来 */
+  showJlptLevel: boolean;
   /** 学习强度 = 每日新词数(复习量由算法定) */
   dailyGoal: number;
   /**
@@ -59,6 +61,8 @@ export interface StudyPreferences {
    * 留手填的口子是因为考期毕竟是外部安排,报名到了别的场次时不该改代码。
    */
   jlptExamDate: string;
+  /** 计划锚点：目标 / 考期最后一次改动的日期（YYYY-MM-DD）。巩固期按「锚点 → 考期」这个窗口的 1/4 缩 */
+  jlptPlanStartedOn: string;
 }
 
 export const PREFERENCES_EVENT = "shushugo-preferences";
@@ -89,6 +93,7 @@ export const defaultStudyPreferences: StudyPreferences = {
   theme: "system",
   autoPlay: true,
   showRomaji: false,
+  showJlptLevel: false,
   dailyGoal: 15,
   grammarDailyGoal: 5,
   reviewCap: 0,
@@ -103,7 +108,8 @@ export const defaultStudyPreferences: StudyPreferences = {
   voiceId: "",
   jlptPlanEnabled: true,
   jlptTarget: "N3",
-  jlptExamDate: ""
+  jlptExamDate: "",
+  jlptPlanStartedOn: ""
 };
 
 const MOTION_LEVELS: MotionLevel[] = ["full", "reduced", "off"];
@@ -140,6 +146,7 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   theme: value.theme === "light" || value.theme === "dark" || value.theme === "system" ? value.theme : "system",
   autoPlay: value.autoPlay ?? defaultStudyPreferences.autoPlay,
   showRomaji: value.showRomaji ?? defaultStudyPreferences.showRomaji,
+  showJlptLevel: value.showJlptLevel ?? defaultStudyPreferences.showJlptLevel,
   dailyGoal: clampDailyGoal(Number(value.dailyGoal ?? defaultStudyPreferences.dailyGoal)),
   grammarDailyGoal: clampGrammarGoal(Number(value.grammarDailyGoal ?? defaultStudyPreferences.grammarDailyGoal)),
   kanjiDailyGoal: clampSmallGoal(Number(value.kanjiDailyGoal ?? defaultStudyPreferences.kanjiDailyGoal), 50),
@@ -162,7 +169,10 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   // 格式不合法就当没填,由 jlpt/status.ts 回落到自动算下一场
   jlptExamDate: /^\d{4}-\d{2}-\d{2}$/.test(String(value.jlptExamDate ?? ""))
     ? String(value.jlptExamDate)
-    : defaultStudyPreferences.jlptExamDate
+    : defaultStudyPreferences.jlptExamDate,
+  jlptPlanStartedOn: /^\d{4}-\d{2}-\d{2}$/.test(String(value.jlptPlanStartedOn ?? ""))
+    ? String(value.jlptPlanStartedOn)
+    : defaultStudyPreferences.jlptPlanStartedOn
 });
 
 export const getStudyPreferences = (): StudyPreferences => {
@@ -174,8 +184,15 @@ export const getStudyPreferences = (): StudyPreferences => {
   }
 };
 
+const localIsoDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
 export const saveStudyPreferences = (preferences: StudyPreferences) => {
   const normalized = normalizeStudyPreferences(preferences);
+  // 目标或考期变了 = 一份新计划，窗口从今天起算；没锚的老存档也在这里补上
+  const previous = getStudyPreferences();
+  if (!normalized.jlptPlanStartedOn || previous.jlptTarget !== normalized.jlptTarget || previous.jlptExamDate !== normalized.jlptExamDate) {
+    normalized.jlptPlanStartedOn = localIsoDate();
+  }
   localStorage.setItem(KEY, JSON.stringify(normalized));
   window.dispatchEvent(new CustomEvent(PREFERENCES_EVENT, { detail: normalized }));
   return normalized;
@@ -185,12 +202,19 @@ export const getDailyWordGoal = () => getStudyPreferences().dailyGoal;
 export const getDailyGrammarGoal = () => getStudyPreferences().grammarDailyGoal;
 export const getReviewCapPreference = () => getStudyPreferences().reviewCap;
 
+/** 老存档没有计划锚点：启动时补成今天（saveStudyPreferences 见空就填）。之前的巩固期按 21 天算，补上之后才按窗口缩 */
+export const ensureJlptPlanAnchor = () => {
+  const prefs = getStudyPreferences();
+  if (!prefs.jlptPlanStartedOn) saveStudyPreferences(prefs);
+};
+
 export const getJlptPlanPreferences = () => {
   const prefs = getStudyPreferences();
   return {
     enabled: prefs.jlptPlanEnabled,
     target: prefs.jlptTarget,
-    examDate: prefs.jlptExamDate
+    examDate: prefs.jlptExamDate,
+    startedOn: prefs.jlptPlanStartedOn
   };
 };
 

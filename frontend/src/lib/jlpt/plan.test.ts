@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   BACKLOG_SPREAD_DAYS,
   CONSOLIDATION_DAYS,
+  consolidationDays,
   MAX_DAILY_NEW_WORDS,
   computeDailyMinimum,
   daysBetween,
@@ -51,6 +52,26 @@ describe("exam dates", () => {
     expect(parseExamDate("2026-12-06")).toEqual(new Date(2026, 11, 6));
     expect(parseExamDate("2026/12/06")).toBeNull();
     expect(parseExamDate("2026-02-30")).toBeNull();
+  });
+});
+
+describe("consolidationDays", () => {
+  it("短计划按窗口的 1/4 缩，长计划封在 21，没锚退回 21", () => {
+    expect(consolidationDays(75)).toBe(18);
+    expect(consolidationDays(180)).toBe(21);
+    expect(consolidationDays(null)).toBe(CONSOLIDATION_DAYS);
+  });
+
+  it("有锚时按锚算：75 天的计划进新 57 天，剩 18 天进巩固期；锚是计划定下那天，不随剩余天数漂", () => {
+    const exam = new Date(2026, 11, 6);
+    const started = new Date(2026, 8, 22);   // 距考试 75 天
+    const day1 = computeDailyMinimum(inputs({ today: started, examDate: exam, planStartedOn: started, unseenWords: 2144 }));
+    expect(day1.consolidationDays).toBe(18);
+    expect(day1.intakeDaysLeft).toBe(57);
+    expect(day1.newWords).toBe(Math.ceil(2144 / 57));
+    const late = computeDailyMinimum(inputs({ today: new Date(2026, 10, 20), examDate: exam, planStartedOn: started }));
+    expect(late.daysLeft).toBe(16);
+    expect(late.phase).toBe("consolidate");
   });
 });
 

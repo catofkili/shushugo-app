@@ -1,6 +1,7 @@
 import { lazy, ReactNode, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { WordStudy } from "./pages/WordStudy";
+import { CapybaraMascot, CapybaraWalk } from "./components/CapybaraMascot";
 import { AppNavigation } from "./components/AppNavigation";
 import { ZooHome } from "./components/ZooHome";
 import { Paywall } from "./components/Paywall";
@@ -12,7 +13,7 @@ import { completeTodayWordPlan, getProgressOverview, recordStubbornQuickStudy, s
 import { canUseFeature, FeatureId } from "./lib/entitlements";
 import { PROGRESS_UPDATED_EVENT, notifyProgressUpdated } from "./lib/progress-events";
 import { loadKanjiUnitIndex } from "./lib/kanji-unit-index";
-import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, studyModeInfo } from "./lib/studyMode";
+import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, STUDY_MODE_EVENT, studyModeInfo } from "./lib/studyMode";
 import { studyDayEnd } from "./lib/database/db-utils";
 import { getGrammarLevelPreference, saveGrammarLevelPreference, type GrammarLevelSelection } from "./lib/grammarPreferences";
 import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, putCloudWeeklyReport, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
@@ -23,6 +24,7 @@ import { GrammarMode, Page, StudyMode } from "./types/app";
 import { JLPTLevel } from "./types/grammar";
 import type { LibraryLevel } from "./lib/word-library";
 import { AchievementsPage } from "./pages/AchievementsPage";
+import { YuzuShopPage } from "./pages/YuzuShopPage";
 import { ACHIEVEMENT_UNLOCKED_EVENT } from "./lib/userProfile";
 import { playStreakChirp } from "./lib/zoo-sounds";
 import { triggerAchievementHaptic } from "./lib/haptics";
@@ -63,7 +65,7 @@ const WeeklyReportPage = lazy(() => import("./pages/WeeklyReportPage").then((mod
 
 const PageLoading = () => (
   <div className="grid min-h-[40vh] place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#464949] p-6 text-sm font-semibold text-white/65" aria-busy="true">
-    正在加载页面...
+    <div className="text-center"><CapybaraWalk size={64} className="mx-auto mb-2" />正在加载页面...</div>
   </div>
 );
 
@@ -76,7 +78,8 @@ const toolPageTitles: Partial<Record<Page, string>> = {
   "kanji-readings": "一字多音",
   "word-list": "选词",
   "quick-study": "快速学习",
-  "vocab-test": "查词汇量"
+  "vocab-test": "查词汇量",
+  "yuzu-shop": "柚子商店"
 };
 
 const accountProtectedPages = new Set<Page>(["account", "personal-info", "team"]);
@@ -164,6 +167,13 @@ export default function App() {
     };
     window.addEventListener(PREFERENCES_EVENT, sync);
     return () => window.removeEventListener(PREFERENCES_EVENT, sync);
+  }, []);
+
+  // 每日量面板上也能换模式，那边写完 localStorage 只发一个事件，这里把 state 对上
+  useEffect(() => {
+    const sync = () => setSelectedStudyMode(getStudyMode() || defaultStudyMode);
+    window.addEventListener(STUDY_MODE_EVENT, sync);
+    return () => window.removeEventListener(STUDY_MODE_EVENT, sync);
   }, []);
 
   // 周日 14:00 之后第一次进入 App 时生成最近完整周期。生成是幂等的，
@@ -785,6 +795,9 @@ export default function App() {
     if (page === "pro") {
       return <ProPage entitlements={entitlements} onBack={goBack} onOpenPaywall={() => setPaywallTarget("general")} onOpenPrivacy={() => navigateToPage("privacy-policy")} />;
     }
+    if (page === "yuzu-shop") {
+      return renderToolSubpage(toolPageTitles["yuzu-shop"] ?? "柚子商店", <YuzuShopPage />);
+    }
     if (page === "favorites") {
       return renderToolSubpage(toolPageTitles.favorites ?? "收藏", <FavoritesPage onOpenGrammar={openGrammar} onStudyPicked={startPickedStudy} />);
     }
@@ -864,7 +877,7 @@ export default function App() {
   };
 
   return (
-    <div className={`app-shell ${page === "weekly-report" ? "is-weekly-report" : ""} relative h-screen overflow-hidden bg-gradient-to-br from-[#FFFBF2] via-[#FDF1DC] to-[#F6E9D2] text-[#3A2E22]`}>
+    <div className={`app-shell ${page === "weekly-report" ? "is-weekly-report" : ""} ${sidebarCollapsed ? "is-sidebar-collapsed" : ""} relative h-screen overflow-hidden bg-gradient-to-br from-[#FFFBF2] via-[#FDF1DC] to-[#F6E9D2] text-[#3A2E22]`}>
       <div className={`grid h-full min-w-0 transition-[grid-template-columns] duration-200 ${page === "weekly-report" ? "lg:grid-cols-1" : sidebarCollapsed ? "lg:grid-cols-[78px_1fr]" : "lg:grid-cols-[268px_1fr]"}`}>
         {/* 二楼自带返回与章节导航；收起学习工具栏，把手机的阅读高度还给手记。 */}
         {page !== "weekly-report" && <AppNavigation
@@ -972,7 +985,7 @@ function PersistenceBanner() {
       role="alert"
       className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-[60] flex w-[min(92vw,30rem)] -translate-x-1/2 items-center gap-3 rounded-2xl bg-[#B3402F] px-4 py-3 text-sm font-semibold text-white shadow-lg lg:bottom-5"
     >
-      <AlertTriangle size={18} className="shrink-0" />
+      <CapybaraMascot mood="surprised" size={34} className="shrink-0" />
       <span className="flex-1 leading-5">{failed === 'recovery'
         ? '部分学习记录未能恢复，当前显示较早的存档。请保留本机数据并联系支持；重新保存不能找回缺失的记录。'
         : '学习记录没能保存到本机，请检查存储空间。这期间答的题可能丢失。'}</span>

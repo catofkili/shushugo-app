@@ -23,8 +23,16 @@ export const JLPT_TARGETS: JlptTarget[] = ["N5", "N4", "N3", "N2", "N1"];
 export const levelsInScope = (target: JlptTarget): JlptTarget[] =>
   JLPT_TARGETS.slice(0, JLPT_TARGETS.indexOf(target) + 1);
 
-/** 考前多少天停止进新内容,全部转复习 */
+/** 考前多少天停止进新内容,全部转复习（上限；短计划按 1/4 缩，见 consolidationDays） */
 export const CONSOLIDATION_DAYS = 21;
+/**
+ * 巩固期 = min(21, 整个计划窗口的 1/4)。75 天的计划留 21 天巩固是 28%，进新只剩 54 天；
+ * 按 1/4 缩到 18 天。窗口要有锚（计划从哪天开始），没锚就退回 21 —— 拿「剩余天数」当窗口
+ * 会自指（剩得越少巩固期越短，永远进不了巩固期）。
+ */
+export const consolidationDays = (totalDays: number | null): number => (
+  totalDays === null ? CONSOLIDATION_DAYS : Math.max(0, Math.min(CONSOLIDATION_DAYS, Math.floor(totalDays / 4)))
+);
 /** 考前多少天进入「只清到期、不碰没把握的」 */
 export const EXAM_WEEK_DAYS = 7;
 /** 过期积压摊到几天里还,不要求一天清完 */
@@ -40,6 +48,8 @@ export interface PlanInputs {
   /** 今天(学习日,不是自然日) */
   today: Date;
   examDate: Date;
+  /** 计划是哪天定的（目标 / 考期最后一次改动那天）。有它巩固期才按窗口缩；没有按 21 天 */
+  planStartedOn?: Date | null;
   /** 范围内没学过的词 */
   unseenWords: number;
   /** 范围内没学过的语法点 */
@@ -57,6 +67,8 @@ export interface DailyMinimum {
   /** 还能进新内容的天数(已扣掉考前的复习期) */
   intakeDaysLeft: number;
   phase: PlanPhase;
+  /** 这份计划实际用的巩固期天数 */
+  consolidationDays: number;
   newWords: number;
   reviewWords: number;
   newGrammar: number;
@@ -76,10 +88,10 @@ export const daysBetween = (from: Date, to: Date): number => {
   return Math.round((b.getTime() - a.getTime()) / dayMs);
 };
 
-const phaseFor = (daysLeft: number): PlanPhase => {
+const phaseFor = (daysLeft: number, consolidation: number): PlanPhase => {
   if (daysLeft < 0) return "past";
   if (daysLeft <= EXAM_WEEK_DAYS) return "exam-week";
-  if (daysLeft <= CONSOLIDATION_DAYS) return "consolidate";
+  if (daysLeft <= consolidation) return "consolidate";
   return "intake";
 };
 
@@ -95,10 +107,11 @@ const amortize = (remaining: number, days: number): number => {
 
 export const computeDailyMinimum = (input: PlanInputs): DailyMinimum => {
   const daysLeft = daysBetween(input.today, input.examDate);
-  const phase = phaseFor(daysLeft);
-  // 考前 CONSOLIDATION_DAYS 天不再进新内容:新学的词在考试前根本走不完
+  const consolidation = consolidationDays(input.planStartedOn ? daysBetween(input.planStartedOn, input.examDate) : null);
+  const phase = phaseFor(daysLeft, consolidation);
+  // 考前 consolidation 天不再进新内容:新学的词在考试前根本走不完
   // 一个 FSRS 循环,考场上等于没记住,却要占掉复习时间。
-  const intakeDaysLeft = Math.max(daysLeft - CONSOLIDATION_DAYS, 0);
+  const intakeDaysLeft = Math.max(daysLeft - consolidation, 0);
   const takingNew = phase === "intake";
 
   const newWords = takingNew ? amortize(input.unseenWords, intakeDaysLeft) : 0;
@@ -119,12 +132,13 @@ export const computeDailyMinimum = (input: PlanInputs): DailyMinimum => {
     daysLeft,
     intakeDaysLeft,
     phase,
+    consolidationDays: consolidation,
     newWords: Math.min(newWords, MAX_DAILY_NEW_WORDS),
     reviewWords,
     newGrammar: Math.min(newGrammar, MAX_DAILY_NEW_GRAMMAR),
     reviewGrammar,
     feasible: newWords <= MAX_DAILY_NEW_WORDS && newGrammar <= MAX_DAILY_NEW_GRAMMAR,
-    daysNeeded: daysNeeded + CONSOLIDATION_DAYS
+    daysNeeded: daysNeeded + consolidation
   };
 };
 

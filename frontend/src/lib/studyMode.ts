@@ -50,16 +50,16 @@ export const STUDY_MODES: {
     short: "经典",
     label: "Classic",
     subtitle: "今日计划",
-    description: "按 FSRS 排的当日到期集出题，释义 → 日语。",
+    description: "当日到期集，释义 → 日语。",
     Icon: CalendarCheck
   },
   {
     id: "mixed",
-    title: "单词 + 语法",
+    title: "混合学习",
     short: "混合",
     label: "Mixed",
-    subtitle: "背词时插播语法",
-    description: "今日计划照旧，每答几个单词插一条语法考题。语法卡换成琥珀色，和单词一眼分得开。",
+    subtitle: "单词 · 语法 · 汉字 · 辨析",
+    description: "背词时插播语法、单独汉字和辨析连线，每日量圆环上的四段全出。",
     Icon: Shuffle
   },
   {
@@ -68,7 +68,7 @@ export const STUDY_MODES: {
     short: "错题本",
     label: "Mistakes",
     subtitle: "长期薄弱词",
-    description: "从长期错误率和记忆难度挑仍不牢固的词，集中攻坚，不占今日计划。",
+    description: "只刷长期薄弱词，不占今日计划。",
     Icon: Brain
   },
   {
@@ -77,7 +77,7 @@ export const STUDY_MODES: {
     short: "快速",
     label: "Quick",
     subtitle: "一页 50 张",
-    description: "同样是今日计划的词，但一页铺 50 张翻着看，适合零碎时间扫一遍。",
+    description: "今日计划一页铺 50 张翻着看。",
     Icon: NotebookPen,
     page: "quick-study"
   },
@@ -87,7 +87,7 @@ export const STUDY_MODES: {
     short: "反向",
     label: "Reverse",
     subtitle: "日语 → 释义",
-    description: "出日语，回忆中文释义。和经典一样有自己的到期集和毕业判定，新卡从正向的熟练度折算。",
+    description: "出日语，回忆释义。自己一套到期集。",
     Icon: Repeat
   },
   {
@@ -96,7 +96,7 @@ export const STUDY_MODES: {
     short: "汉字",
     label: "Kanji",
     subtitle: "看表记 → 回忆读音",
-    description: "显示日文表记和释义，只遮住汉字对应的假名；点卡片揭晓读音。只收含汉字的词。",
+    description: "只遮汉字的读音，点卡揭晓。",
     Icon: Languages
   },
   {
@@ -105,7 +105,7 @@ export const STUDY_MODES: {
     short: "自选",
     label: "Picked",
     subtitle: "你在词库里勾的词",
-    description: "只出勾中的那批词，不看到期与否，也不占今日计划。考前突击用。",
+    description: "只出勾中的词，不看到期。",
     Icon: Target,
     hidden: true,
     transient: true
@@ -113,6 +113,9 @@ export const STUDY_MODES: {
 ];
 
 /** 摆进模式列表的那六个。自选清单要先有清单，入口在词库页。 */
+/** 模式在别处被改了（每日量面板上的 chip）：App 里那份 selectedStudyMode 要跟着刷 */
+export const STUDY_MODE_EVENT = "mn:study-mode";
+
 export const VISIBLE_STUDY_MODES = STUDY_MODES.filter((mode) => !mode.hidden);
 
 const modes = new Set<StudyMode>(STUDY_MODES.map((mode) => mode.id));
@@ -199,6 +202,7 @@ export function saveStudyMode(mode: StudyMode, current = new Date()): StudyMode 
   } else if (autoState) {
     localStorage.removeItem(AUTO_MISTAKES_KEY);
   }
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(STUDY_MODE_EVENT));
   return savedMode;
 }
 

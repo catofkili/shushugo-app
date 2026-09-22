@@ -776,7 +776,7 @@ const main = async () => {
         }
       }
       db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('furigana_version', ?)", [FURIGANA_VERSION]);
-      db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_word_metadata_version', ?)", [`2026-09-19-manual-meanings-5163-polish-1130-corrections-35-distinction-1559-examples-320-audit-revert-73-${FURIGANA_VERSION}`]);
+      db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_word_metadata_version', ?)", [`2026-09-19-manual-meanings-5163-polish-1130-corrections-35-distinction-1559-examples-320-audit-revert-76-${FURIGANA_VERSION}`]);
       db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('dataset_version', ?)", [GRAMMAR_DATASET_VERSION]);
       db.run("COMMIT");
     } catch (error) {

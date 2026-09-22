@@ -344,6 +344,26 @@ export async function restorePurchases(): Promise<PurchaseResult> {
   }
 }
 
+/**
+ * 打开 Apple 的兑换码页（App Store Connect 生成的 Offer Codes）。
+ *
+ * ⚠️ 这是 App 里唯一允许存在的「兑换码」：3.1.1 明文禁止用自建的 license key 解锁功能，
+ * 而这张页是系统的 —— 兑完 StoreKit 会像正常购买一样吐一笔交易，走上面同一条
+ * approved → verified → 云端校验 → grantPro 的路，App 侧不需要另写任何授权逻辑。
+ * 码本身从不经过仓库或 Worker：在 App Store Connect 生成、下载 CSV、自己保管。
+ */
+export async function redeemOfferCode(): Promise<PurchaseResult> {
+  if (!isStoreAvailable()) {
+    return { ok: false, message: "当前环境没有 App Store，兑换码只能在真机上使用。" };
+  }
+  try {
+    await window.CdvPurchase.store.getAdapter(platform())?.presentCodeRedemptionSheet();
+    return { ok: true, message: "兑换成功后权益会自动到账。" };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "打开兑换页失败。" };
+  }
+}
+
 export function developmentUnlock(productId: ProductId = "shushugo_pro_yearly"): PurchaseResult {
   if (!import.meta.env.DEV) {
     return { ok: false, message: "开发解锁只在本地开发环境可用。" };

@@ -25,6 +25,8 @@
 
 /** 词库表记里夹着 〜出す 的波浪号、濡[ぬ]れる 的注音方括号,读之前先剥掉。
  *  波浪号三种写法都有(全角 〜、全角 ～、半角 ~),词库里混着用。 */
+import { voiceUnlocked } from "./yuzu";
+
 const clean = (text: string) => text.replace(/\[[^\]]*\]/g, "").replace(/[〜～~\s]/g, "");
 
 const toKatakana = (text: string) =>
@@ -92,6 +94,17 @@ export function exampleAudioName(sentence: string): string {
 const audioBase = (): string =>
   ((import.meta.env.VITE_AUDIO_BASE_URL as string | undefined) || `${import.meta.env.BASE_URL}audio/`).replace(/\/*$/, "/");
 
+export type VoiceDeliveryMode = "bundled" | "remote";
+
+/**
+ * 开发版 / 未配 CDN 的 App 直接读包内 public/audio；配了独立音频域名的发布版按需联网。
+ * 只比 origin，不拿 URL 文本猜，Capacitor 的 https://localhost 和网页子路径都能正确判断。
+ */
+export const audioDeliveryMode = (baseUrl: string, pageUrl: string): VoiceDeliveryMode =>
+  new URL(baseUrl, pageUrl).origin === new URL(pageUrl).origin ? "bundled" : "remote";
+
+export const voiceDeliveryMode = (): VoiceDeliveryMode => audioDeliveryMode(audioBase(), window.location.href);
+
 /**
  * 音频库的索引(由 scripts/build-word-audio.mjs 写出)。没跑过生成脚本时它不存在,
  * 这时一个音频请求都不发,直接走系统语音 —— 否则每个词都要白撞一次 404。
@@ -115,6 +128,7 @@ interface AudioIndex {
 type AudioKind = "words" | "examples";
 const audioIndex: Record<AudioKind, AudioIndex | null> = { words: null, examples: null };
 const audioIndexLoading: Partial<Record<AudioKind, Promise<void>>> = {};
+const voicePreparation = new Map<string, Promise<void>>();
 
 const loadAudioIndex = (kind: AudioKind): Promise<void> => {
   audioIndexLoading[kind] ??= fetch(`${audioBase()}${kind}/index.json`)
@@ -131,6 +145,8 @@ const loadAudioIndex = (kind: AudioKind): Promise<void> => {
 
 /** 已生成的声音列表(设置页据此列选项);没有音频库时为空数组。 */
 export const availableVoices = (): AudioVoice[] => audioIndex.words?.voices ?? [];
+/** 索引里标的默认声音(免费那一个) */
+export const defaultVoiceId = (): string | null => audioIndex.words?.default ?? null;
 
 /** 预热索引,好让设置页能立刻列出可选声音。 */
 export const loadVoices = async (): Promise<AudioVoice[]> => {
@@ -144,7 +160,11 @@ function resolveVoice(kind: AudioKind, preferred?: string | null): AudioVoice | 
   const index = audioIndex[kind];
   const voices = index?.voices ?? [];
   if (!voices.length) return null;
-  return voices.find((voice) => voice.id === preferred) ?? voices.find((voice) => voice.id === index?.default) ?? voices[0];
+  // 默认那个声音免费,别的要在柚子商店买过。以前选过、后来没买的退回默认。
+  let unlocked = true;
+  try { unlocked = voiceUnlocked(preferred ?? "", index?.default ?? null); } catch { /* 没有库(测试)就不设门 */ }
+  const wanted = unlocked ? preferred : null;
+  return voices.find((voice) => voice.id === wanted) ?? voices.find((voice) => voice.id === index?.default) ?? voices[0];
 }
 
 /** 预生成音频的地址。索引没加载、音频库不存在、或选了系统语音时返回 null。 */
@@ -160,6 +180,41 @@ export function exampleAudioUrl(sentence: string, preferredVoice?: string | null
   const voice = resolveVoice("examples", preferredVoice);
   if (!voice) return null;
   return `${audioBase()}examples/${voice.id}/${exampleAudioName(sentence)}${voice.ext}`;
+}
+
+/**
+ * 商店试听:直接按 voice id 播一个词,**不过购买那道门**(没买的当然要能试听)。
+ * 用例句库那句听得出语调,单词库一个词太短;例句库只做了一个声音时退回单词。
+ */
+export async function previewVoice(voiceId: string): Promise<void> {
+  await Promise.all([loadAudioIndex("words"), loadAudioIndex("examples")]);
+  const ex = audioIndex.examples?.voices.find((v) => v.id === voiceId);
+  const sentence = "毎日少しずつ、日本語を勉強しています。";
+  if (ex) return playFileOrSpeak(`${audioBase()}examples/${ex.id}/${exampleAudioName(sentence)}${ex.ext}`, sentence);
+  const w = audioIndex.words?.voices.find((v) => v.id === voiceId);
+  const [kanji, kana] = ["勉強", "べんきょう"];
+  return playFileOrSpeak(w ? `${audioBase()}words/${w.id}/${pronunciationAudioName(kanji, kana)}${w.ext}` : null, speechText(kanji, kana));
+}
+
+/**
+ * 购买确认开始时预热声音索引和第一条真实音频。任务放在模块级 Map 里，离开商店组件
+ * 不会取消；远程发布版之后按学习进度继续走 HTTP 缓存，不在一次结账里硬拉一万多个小文件。
+ */
+export function prepareVoice(voiceId: string): Promise<void> {
+  const running = voicePreparation.get(voiceId);
+  if (running) return running;
+  const task = (async () => {
+    await loadAudioIndex("words");
+    const voice = audioIndex.words?.voices.find((item) => item.id === voiceId);
+    if (!voice) throw new Error("声音资源暂不可用");
+    const url = `${audioBase()}words/${voice.id}/${pronunciationAudioName("勉強", "べんきょう")}${voice.ext}`;
+    await fetch(url, { mode: "no-cors" }).then((response) => response.arrayBuffer());
+  })().catch((error) => {
+    voicePreparation.delete(voiceId);
+    throw error;
+  });
+  voicePreparation.set(voiceId, task);
+  return task;
 }
 
 /** 设置里选「系统语音」时用这个 id —— 表示不用预生成音频,直接交给设备合成。 */

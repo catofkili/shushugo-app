@@ -78,6 +78,20 @@ describe("每日学习量：视图 / 写回 / 备考一键", () => {
     expect(getStudyPreferences().reviewCap).toBe(3);
   });
 
+  it("写回按用户看到的那份 view 比对，不重算：view 之后多出 extras / 到期数变了，没拖的段 cap 不动", () => {
+    saveDailyPlan({ words: { fresh: 15, review: 400 }, grammar: { fresh: 5, review: 0 }, kanji: { fresh: 5, review: 0 }, confusion: { fresh: 5, review: 0 } });
+    expect(getStudyPreferences().reviewCap).toBe(400);
+    // 面板挂载时看到 353（341 + 12 减负），之后库里的数怎么变都不关它事
+    const seen = dailyPlanView();
+    seen.wordExtras = 12;
+    seen.segments[0].review = 353;
+    const plan = { words: { fresh: 15, review: 353 }, grammar: { fresh: 5, review: 0 }, kanji: { fresh: 5, review: 0 }, confusion: { fresh: 5, review: 0 } };
+    saveDailyPlan({ ...plan, grammar: { fresh: 6, review: 0 } }, false, seen);
+    expect(getStudyPreferences().reviewCap).toBe(400);
+    saveDailyPlan({ ...plan, words: { fresh: 15, review: 360 } }, false, seen);
+    expect(getStudyPreferences().reviewCap).toBe(348);
+  });
+
   it("一键安排：复习 = 到期全部，新学 = 平时额度（表单定的算，拖圆环不算；没定过是默认档）", () => {
     store.delete("mn-daily-plan-baseline");
     expect(PLAN_KINDS.map((kind) => arrangedPlan(dailyPlanView())[kind].fresh)).toEqual([15, 5, 5, 5]);

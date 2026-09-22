@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, CheckCircle2, Crown, LockKeyhole, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Crown, LockKeyhole, RotateCcw, ShieldCheck } from "lucide-react";
+import { CapybaraMascot } from "./CapybaraMascot";
 import { FeatureId, ProductId } from "../lib/entitlements";
 import { developmentUnlock, getPurchaseRuntime, initializePurchases, purchaseProduct, restorePurchases, StoreProduct } from "../lib/purchases";
 import { useEntitlements } from "../hooks/useEntitlements";
@@ -169,9 +170,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
 
         <div className="rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/14 p-4">
           <div className="flex items-start gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#81D8CF] text-[#343838]">
-              <Sparkles size={22} />
-            </span>
+            <CapybaraMascot mood="happy" size={56} className="-mt-1 shrink-0" />
             <div>
               <h2 className="text-xl font-bold text-white">{copy.title}</h2>
               <p className="mt-2 text-sm leading-6 text-white/68">{copy.body}</p>

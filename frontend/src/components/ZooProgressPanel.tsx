@@ -128,9 +128,7 @@ const DailyLoadChart = () => {
         <span><i className="rv" />复习</span>
         <span><i className="fc" />还没做 / 预计</span>
       </div>
-      <p className="zoo-load-note">
-        预计只算了已经排好的到期量和新词额度，<b>是个下限</b>：今天答错的卡过几天还会回来，那部分还没发生。
-      </p>
+      <p className="zoo-load-note">预计是下限，答错的卡回来还没算</p>
     </div>
   );
 };

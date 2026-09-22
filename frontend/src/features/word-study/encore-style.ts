@@ -1,6 +1,8 @@
-// 「继续学习」按钮的每日装扮:颜色按七曜换日本传统色,文案钩子分两层——
-// 巧合钩子(日凑整/累计里程碑,条件苛刻、出现即彩蛋)优先,
-// 常驻钩子(连击/星徽/限定色)按日期轮换兜底。纯函数,方便测试。
+// 「继续学习」按钮的装扮:文案钩子分两层——巧合钩子(日凑整/累计里程碑,条件苛刻、
+// 出现即彩蛋)优先,常驻钩子(连击/星徽)按日期轮换兜底。
+// 「限定色」是第三样东西:一周只有两天左右(按日期哈希定),那天按钮换成当天七曜的
+// 日本传统色、文案也换成限定。原来它是常驻钩子之一、颜色天天换 —— 天天限定就不是限定了
+// (2026-09-19,作者原意就是一周几次)。纯函数,方便测试。
 
 export interface EncoreDayColor {
   weekdayJp: string;
@@ -24,6 +26,19 @@ export const ENCORE_DAY_COLORS: EncoreDayColor[] = [
 
 export const encoreDayColor = (studyDate: string): EncoreDayColor =>
   ENCORE_DAY_COLORS[new Date(`${studyDate}T00:00:00`).getDay()];
+
+/** 非限定日的按钮色:全应用的青绿 */
+export const ENCORE_DEFAULT_COLOR: EncoreDayColor = { weekdayJp: "", colorName: "", hex: "#81D8CF", ink: "#0F3B37" };
+
+/** 限定日:按日期哈希,平均一周两天。同一天在任何设备上答案相同,不用存状态。 */
+export const isEncoreLimitedDay = (studyDate: string): boolean => {
+  let h = 0;
+  for (const ch of studyDate) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return h % 7 < 2;
+};
+
+export const encoreLimitedColor = (studyDate: string): EncoreDayColor | null =>
+  isEncoreLimitedDay(studyDate) ? encoreDayColor(studyDate) : null;
 
 export interface EncoreHookInput {
   studyDate: string;
@@ -76,13 +91,14 @@ export const pickEncoreHook = (input: EncoreHookInput): EncoreHook => {
     return { kind: "round", lead: `顺手凑个整?离今日 ${nextRoundTarget(input.todayWordCount)} 只差 ${roundGap} 个`, suggestedSize: roundGap };
   }
 
+  const color = encoreLimitedColor(input.studyDate);
+  if (color) return { kind: "color", lead: `今日${color.weekdayJp} · ${color.colorName}限定` };
+
   const evergreen: EncoreHook[] = [];
   if (input.weekEncoreCount >= 1) {
     evergreen.push({ kind: "streak", lead: `本周已加餐 ${input.weekEncoreCount} 次,再下一城` });
   }
   evergreen.push({ kind: "badge", lead: "加餐一批,给今天的炫耀图镶颗星" });
-  const color = encoreDayColor(input.studyDate);
-  evergreen.push({ kind: "color", lead: `今日${color.weekdayJp} · ${color.colorName}限定` });
 
   const dayOfYear = Math.floor(
     (new Date(`${input.studyDate}T00:00:00`).getTime() - new Date(`${input.studyDate.slice(0, 4)}-01-01T00:00:00`).getTime()) / 86_400_000
