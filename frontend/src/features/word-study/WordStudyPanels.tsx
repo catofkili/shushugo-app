@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Brain, CalendarDays, CheckCircle2, Clock3, Flame, History, ListChecks, Minus, Pencil, Plus, Share2, Star, Volume2 } from "lucide-react";
+import { Brain, CalendarDays, CheckCircle2, ChevronRight, Clock3, Flame, History, Languages, ListChecks, Minus, Pencil, Plus, Puzzle, Repeat, Share2, Star, Volume2 } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
 import { addFavorite, addFavorites, getStubbornGrammarToday, getStubbornWordsToday, type StubbornGrammarToday, type StubbornWordToday } from "../../lib/api";
 import { ZooConfetti } from "../../components/ZooConfetti";
 import { Sticker } from "../../components/CapybaraMascot";
+import { MascotSay } from "../../components/MascotSay";
 import { useCountUp } from "../../hooks/useCountUp";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { estimatedMinutesFor } from "../../lib/review-budget";
@@ -440,157 +441,120 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   return (
     <>
       {celebrate && <ZooConfetti />}
-      <div className="min-h-0 flex-1 overflow-y-auto p-1 text-center sm:p-2">
-        <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-3">
-          <div className="flex shrink-0 items-center justify-between gap-3 text-left">
-            <div className="flex items-center gap-3">
-              <Sticker name="mood-cheer" size={72} className="shrink-0" />
-              <div>
-                {/* 自选清单不是今日计划：它勾的词可能一个都没到期，写「今日单词完成」是假的 */}
-                <h2 className="text-2xl font-black sm:text-3xl">
-                  {phase === "picked" ? "这批词过完了" : "今日单词完成"}
-                </h2>
-              </div>
+      <div className="fin-scroll min-h-0 flex-1 overflow-y-auto">
+        <div className="fin-page mx-auto flex min-h-full w-full max-w-2xl flex-col">
+          {/* 标题只说一次：原来右上还挂一枚「全部完成」，和「今日单词完成」是同一句话。
+              阶段胶囊只在它真有别的信息时才出现（第一阶段 / 错题本 / 自选清单）。 */}
+          <header className="fin-hero">
+            <Sticker name="mood-cheer" size={68} className="shrink-0" />
+            <div className="min-w-0 flex-1">
+              {/* 自选清单不是今日计划：它勾的词可能一个都没到期，写「今日单词完成」是假的 */}
+              <h2 className="fin-title">{phase === "picked" ? "这批词过完了" : "今日单词完成"}</h2>
+              <p className="fin-sub">
+                学习日 {Number(studyDate.slice(5, 7))}/{Number(studyDate.slice(8))}
+                {phase !== "done" && <span className="ds-pill ds-pill-primary">{compactPhaseLabel}</span>}
+              </p>
             </div>
-            <span className="shrink-0 rounded-full border border-[#81D8CF]/35 bg-[#81D8CF]/14 px-3 py-1 text-xs font-bold text-[#81D8CF]">
-              {compactPhaseLabel}
-            </span>
+          </header>
+
+          {/* 三个数一条带子。今天学了多少是这一页的主角，排第一 */}
+          <div className="fin-stats">
+            <div><b>{shownTotal}<small>项</small></b><span><CalendarDays size={13} aria-hidden="true" />今天学了</span></div>
+            {/* 单位缩小一号：「5小时42分」按 22px 排，三等分的一格放不下，会被截成「5小时4…」 */}
+            <div><b>{formatDuration(totalSeconds).split(/(\d+)/).filter(Boolean).map((part, i) => (/^\d+$/.test(part) ? part : <small key={i}>{part}</small>))}</b><span><Clock3 size={13} aria-hidden="true" />用时</span></div>
+            <div><b>{shownCheckinDays}<small>天</small></b><span><CheckCircle2 size={13} aria-hidden="true" />累计打卡</span></div>
           </div>
 
-          <div className="grid shrink-0 grid-cols-3 gap-2">
-            <div className="rounded-xl bg-[#373b3b] px-3 py-2 text-left ring-1 ring-white/10">
-              <div className="flex items-center gap-1.5 text-white/58">
-                <Clock3 size={14} />
-                <p className="text-[11px] font-bold">用时</p>
-              </div>
-              <p className="mt-1 truncate text-base font-semibold">{formatDuration(totalSeconds)}</p>
-            </div>
-            <div className="rounded-xl bg-[#373b3b] px-3 py-2 text-left ring-1 ring-white/10">
-              <div className="flex items-center gap-1.5 text-white/58">
-                <CalendarDays size={14} />
-                <p className="text-[11px] font-bold">学习</p>
-              </div>
-              <p className="mt-1 truncate text-base font-semibold">{shownTotal} 项</p>
-            </div>
-            <div className="rounded-xl bg-[#373b3b] px-3 py-2 text-left ring-1 ring-white/10">
-              <div className="flex items-center gap-1.5 text-white/58">
-                <CheckCircle2 size={14} />
-                <p className="text-[11px] font-bold">累计</p>
-              </div>
-              <p className="mt-1 truncate text-base font-semibold">{shownCheckinDays} 天</p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-[#3f4343] p-3 ring-1 ring-white/10 sm:p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="text-left">
-                <p className="font-semibold">{calendar.title}</p>
-                <p className="mt-0.5 text-xs text-white/50">学习日：{studyDate}</p>
-              </div>
+          <section className="fin-block">
+            <div className="fin-cal-head">
+              <p className="fin-block-title">{calendar.title}</p>
               <button
                 onClick={onCheckIn}
                 disabled={checkedToday || !onCheckIn}
-                className="focus-ring inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-[#81D8CF]/35 bg-[#81D8CF]/14 px-3 text-xs font-bold text-[#81D8CF] disabled:opacity-70"
+                className={`focus-ring fin-checkin${checkedToday ? " is-done" : ""}`}
               >
-                <CheckCircle2 size={14} />
+                <CheckCircle2 size={15} />
                 {checkedToday ? "已打卡" : "打卡"}
               </button>
             </div>
-            <div className="rounded-xl bg-[#343838] p-2 sm:p-2.5">
-              <div className="grid grid-cols-7 gap-1 text-xs">
-                {["日", "一", "二", "三", "四", "五", "六"].map((label) => (
-                  <span key={label} className="grid h-6 place-items-center text-white/45">{label}</span>
-                ))}
-                {calendar.cells.map((cell, index) => {
-                  if (!cell) return <span key={`empty-${index}`} className="h-7 sm:h-8" />;
-                  const checked = checkins.has(cell.date);
-                  const isToday = cell.date === studyDate;
-                  const dayStats = dailyStats.get(cell.date);
-                  const daySeconds = (dayStats?.seconds ?? 0) + (isToday ? localSeconds : 0);
-                  const total = dayStats?.total ?? 0;
-                  const hasActivity = checked || daySeconds > 0 || total > 0;
-                  const breakdown = dayStats
-                    ? [`单词 ${dayStats.wordCount}`, dayStats.grammarCount ? `语法 ${dayStats.grammarCount}` : "", dayStats.reliefCount ? `减负 ${dayStats.reliefCount}` : ""].filter(Boolean).join(" · ")
-                    : "";
-                  return (
-                    <span
-                      key={cell.date}
-                      className="group relative grid h-7 place-items-center sm:h-8"
-                      tabIndex={0}
-                      aria-label={`${cell.date}，学习时间 ${formatDuration(daySeconds)}，学习 ${total} 项${breakdown ? `（${breakdown}）` : ""}`}
-                    >
-                      <span
-                        className={`grid h-6 w-6 place-items-center rounded-full text-[11px] font-semibold ring-1 sm:h-7 sm:w-7 sm:text-xs ${
-                          checked
-                            ? "bg-[#81D8CF]/18 text-white ring-[#81D8CF] shadow-[0_0_0_3px_rgba(145,201,104,0.12)]"
-                            : hasActivity
-                              ? "bg-white/10 text-white/70 ring-white/10"
-                              : "text-white/55 ring-transparent"
-                        } ${isToday ? "shadow-[0_0_0_3px_rgba(145,201,104,0.35)]" : ""}`}
-                      >
-                        {cell.day}
-                      </span>
-                      <span className="study-calendar-tooltip pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-44 -translate-x-1/2 rounded-2xl border border-white/15 bg-[#202323] p-3 text-left shadow-xl group-hover:block group-focus:block">
-                        <span className="block text-xs font-bold text-white/85">{cell.date}</span>
-                        <span className="mt-2 block text-xs text-white/65">学习时间：{formatDuration(daySeconds)}</span>
-                        <span className="mt-1 block text-xs text-white/65">学习：{total} 项</span>
-                        {breakdown && <span className="mt-0.5 block text-[11px] text-white/45">{breakdown}</span>}
-                        <span className="mt-1 block text-xs text-white/45">{checked ? "已打卡" : "未打卡"}</span>
-                      </span>
+            <div className="fin-cal">
+              {["日", "一", "二", "三", "四", "五", "六"].map((label) => (
+                <span key={label} className="fin-cal-wd">{label}</span>
+              ))}
+              {calendar.cells.map((cell, index) => {
+                if (!cell) return <span key={`empty-${index}`} />;
+                const checked = checkins.has(cell.date);
+                const isToday = cell.date === studyDate;
+                const dayStats = dailyStats.get(cell.date);
+                const daySeconds = (dayStats?.seconds ?? 0) + (isToday ? localSeconds : 0);
+                const total = dayStats?.total ?? 0;
+                const hasActivity = checked || daySeconds > 0 || total > 0;
+                const breakdown = dayStats
+                  ? [`单词 ${dayStats.wordCount}`, dayStats.grammarCount ? `语法 ${dayStats.grammarCount}` : "", dayStats.reliefCount ? `减负 ${dayStats.reliefCount}` : ""].filter(Boolean).join(" · ")
+                  : "";
+                return (
+                  <span
+                    key={cell.date}
+                    className="group relative grid place-items-center"
+                    tabIndex={0}
+                    aria-label={`${cell.date}，学习时间 ${formatDuration(daySeconds)}，学习 ${total} 项${breakdown ? `（${breakdown}）` : ""}`}
+                  >
+                    <span className={`fin-day${checked ? " is-checked" : hasActivity ? " is-active" : ""}${isToday ? " is-today" : ""}`}>
+                      {cell.day}
                     </span>
-                  );
-                })}
-              </div>
+                    <span className="study-calendar-tooltip pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-44 -translate-x-1/2 rounded-2xl p-3 text-left group-hover:block group-focus:block">
+                      <span className="block text-xs font-bold">{cell.date}</span>
+                      <span className="mt-2 block text-xs">学习时间：{formatDuration(daySeconds)}</span>
+                      <span className="mt-1 block text-xs">学习：{total} 项</span>
+                      {breakdown && <span className="mt-0.5 block text-[11px] opacity-70">{breakdown}</span>}
+                      <span className="mt-1 block text-xs opacity-70">{checked ? "已打卡" : "未打卡"}</span>
+                    </span>
+                  </span>
+                );
+              })}
             </div>
-          </div>
+          </section>
 
           {stubbornOverload && (
-            <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
-              <p className="mb-2 text-xs text-white/60">
-                今天有 {stubborn.length} 个词跟你打了一架。这种时候再加一批新词，只是把明天的账提前记上。
-              </p>
+            <section className="fin-block">
+              <MascotSay sticker="mood-puzzled" tone="warn" size={52}>
+                今天有 <b>{stubborn.length}</b> 个词跟你打了一架。这种时候再加一批新词，只是把明天的账提前记上。
+              </MascotSay>
               <button
                 onClick={() => onStubbornQuickStudy?.(stubborn.map((word) => word.id))}
-                className="focus-ring inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] text-lg font-bold !text-[#2f3333]"
+                className="focus-ring ds-btn mt-3 w-full"
               >
                 <Flame size={18} />
                 快速复习这 {stubborn.length} 个顽固词
               </button>
-              <p className="mt-2 text-[11px] text-white/40">一页一页过，只挑没记住的</p>
-            </div>
+              <p className="fin-note">一页一页过，只挑没记住的</p>
+            </section>
           )}
 
           {showEncore && encore && (
-            <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
+            <section className="fin-block">
               {encore.fatigued ? (
                 <>
-                  <p className="mb-2 text-xs text-white/60">正确率在下滑，剩下的明天清更高效。</p>
-                  <button
-                    onClick={() => onEncore?.(encoreCount)}
-                    className="focus-ring inline-flex h-11 w-full items-center justify-center rounded-2xl border border-white/20 bg-white/8 text-sm font-bold text-white/75"
-                  >
+                  <MascotSay sticker="mood-sleep" size={52}>正确率在往下掉了。剩下的明天清，更高效。</MascotSay>
+                  <button onClick={() => onEncore?.(encoreCount)} className="focus-ring ds-btn-soft mt-3 w-full">
                     仍要再来 {encoreCount} 个 · 约 {encoreMinutes} 分钟
                   </button>
                 </>
               ) : (
                 <>
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="min-w-0 truncate text-xs text-white/60">
-                      {encoreHook?.lead}
-                    </p>
+                  <div className="fin-encore-lead">
+                    <p className="min-w-0 truncate">{encoreHook?.lead}</p>
                     {limitedColor && (
-                      <span
-                        className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                        style={{ color: limitedColor.hex, borderColor: `${limitedColor.hex}59` }}
-                      >
+                      <span className="fin-limited" style={{ color: limitedColor.hex, borderColor: `${limitedColor.hex}59` }}>
                         {limitedColor.weekdayJp}・{limitedColor.colorName}
                       </span>
                     )}
                   </div>
                   <div className="flex gap-2">
+                    {/* 限定色是加餐这件事自己的彩头（每天一色），不跟皮肤走，所以这里的底色是内联的 */}
                     <button
                       onClick={() => onEncore?.(encoreCount)}
-                      className="encore-cta focus-ring relative inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl text-lg font-bold"
+                      className="encore-cta focus-ring fin-encore-btn"
                       style={{ backgroundColor: encoreColor.hex, color: encoreColor.ink }}
                     >
                       继续学习 {encoreCount} 个 · 约 {encoreMinutes} 分钟
@@ -600,29 +564,21 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                       onClick={() => setShowSizePanel((value) => !value)}
                       aria-label="调整本次加餐数量"
                       aria-expanded={showSizePanel}
-                      className="focus-ring grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-white/15 bg-white/8 text-white/75"
+                      className="focus-ring fin-encore-edit"
                     >
                       <Pencil size={18} />
                     </button>
                   </div>
                   {showSizePanel && (
-                    <div className="mt-2 rounded-xl bg-[#343838] p-3">
+                    <div className="fin-size">
                       <div className="mb-2 flex items-center justify-between gap-2">
-                        <p className="text-xs font-bold text-white/70">本次加餐 · {encoreCount} 个</p>
+                        <p className="text-sm font-bold">本次加餐 · {encoreCount} 个</p>
                         <span className="inline-flex items-center gap-1.5">
-                          <button
-                            onClick={() => applyEncoreSize(encoreCount - 1)}
-                            aria-label="本次减 1 个"
-                            className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-white/8 text-white/70"
-                          >
-                            <Minus size={13} />
+                          <button onClick={() => applyEncoreSize(encoreCount - 1)} aria-label="本次减 1 个" className="focus-ring fin-round">
+                            <Minus size={14} />
                           </button>
-                          <button
-                            onClick={() => applyEncoreSize(encoreCount + 1)}
-                            aria-label="本次加 1 个"
-                            className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-white/8 text-white/70"
-                          >
-                            <Plus size={13} />
+                          <button onClick={() => applyEncoreSize(encoreCount + 1)} aria-label="本次加 1 个" className="focus-ring fin-round">
+                            <Plus size={14} />
                           </button>
                         </span>
                       </div>
@@ -634,18 +590,14 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                         value={encoreCount}
                         onChange={(event) => applyEncoreSize(Number(event.target.value))}
                         aria-label="本次加餐数量"
-                        className="w-full accent-[#81D8CF]"
+                        className="w-full"
                         style={{ accentColor: encoreColor.hex }}
                       />
-                      <div className="mt-1.5 flex flex-wrap gap-2">
+                      <div className="mt-2 flex flex-wrap gap-1.5">
                         <button
                           onClick={() => setSizeOverride(null)}
-                          className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
-                            sizeOverride === null
-                              ? "text-[#2f3333]"
-                              : "border border-white/15 bg-white/8 text-white/70"
-                          }`}
-                          style={sizeOverride === null ? { backgroundColor: encoreColor.hex } : undefined}
+                          aria-pressed={sizeOverride === null}
+                          className="focus-ring ds-chip"
                         >
                           推荐 {suggestedCount}
                         </button>
@@ -653,12 +605,8 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                           <button
                             key={value}
                             onClick={() => applyEncoreSize(value)}
-                            className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
-                              sizeOverride === value
-                                ? "text-[#2f3333]"
-                                : "border border-white/15 bg-white/8 text-white/70"
-                            }`}
-                            style={sizeOverride === value ? { backgroundColor: encoreColor.hex } : undefined}
+                            aria-pressed={sizeOverride === value}
+                            className="focus-ring ds-chip"
                           >
                             {value}
                           </button>
@@ -666,63 +614,62 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                       </div>
                     </div>
                   )}
-                  <p className="mt-2 text-[11px] text-white/40">
+                  <p className="fin-note">
                     {encore.remaining > 0
-                      ? `待清积压还剩 ${encore.remaining} 个,优先复习`
-                      : `积压已清空,这批是新词 · 库存 ${encore.unseenRemaining} 个`}
+                      ? `待清积压还剩 ${encore.remaining} 个，优先复习`
+                      : `积压已清空，这批是新词 · 库存 ${encore.unseenRemaining} 个`}
                   </p>
                 </>
               )}
-            </div>
+            </section>
           )}
 
           {stubborn.length === 0 && stubbornGrammar.length === 0 && (
             <button
               onClick={() => (canUseFeature("stubbornHistory", entitlements) ? setHistoryOpen(true) : setHistoryPaywall(true))}
-              className="focus-ring flex shrink-0 items-center gap-2 rounded-2xl bg-[#3f4343] p-3 text-left text-xs font-bold text-white/60 ring-1 ring-white/10 sm:p-4"
+              className="focus-ring fin-block fin-row"
             >
-              <History size={14} className="shrink-0 text-[#E8971C]" />
-              今天没有顽固词 · 翻翻往日跟你打过架的词
+              <History size={16} className="shrink-0 text-[#E8971C]" />
+              <span className="min-w-0 flex-1">今天没有顽固词<small className="fin-row-sub">翻翻往日跟你打过架的词</small></span>
+              <ChevronRight size={16} className="shrink-0 opacity-50" />
             </button>
           )}
           {(stubborn.length > 0 || stubbornGrammar.length > 0) && (
-            <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2">
-                  <Flame size={16} className="shrink-0 text-[#E8971C]" />
-                  <p className="min-w-0 truncate text-sm font-bold text-white">{stubbornTitle}</p>
-                </div>
-                <span className="flex shrink-0 items-center gap-2">
-                  <button
-                    onClick={() => (canUseFeature("stubbornHistory", entitlements) ? setHistoryOpen(true) : setHistoryPaywall(true))}
-                    className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 text-xs font-bold text-white/75"
-                  >
-                    <History size={13} />
-                    往日
-                  </button>
-                  {/* 快速复习不等到「顽固词多到换掉加餐」才给入口：列表就在眼前，
-                      想现在过一遍是最自然的下一步。超过阈值时上面那块会把加餐整个换掉。 */}
-                  {!stubbornOverload && onStubbornQuickStudy && (
-                    <button
-                      onClick={() => onStubbornQuickStudy(stubborn.map((word) => word.id))}
-                      className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 text-xs font-bold text-white/75"
-                    >
-                      <ListChecks size={13} />
-                      快速复习
-                    </button>
-                  )}
-                  {unfavoritedStubborn.length > 0 && (
-                    <button
-                      onClick={() => favoriteStubborn(unfavoritedStubborn, `把今天 ${unfavoritedStubborn.length} 个顽固词收进`)}
-                      className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-[#81D8CF]/35 bg-[#81D8CF]/14 px-3 text-xs font-bold text-[#81D8CF]"
-                    >
-                      <Star size={13} />
-                      全部收藏
-                    </button>
-                  )}
-                </span>
+            <section className="fin-block">
+              <div className="mb-2 flex items-center gap-2">
+                <Flame size={16} className="shrink-0 text-[#E8971C]" />
+                <p className="fin-block-title min-w-0 flex-1 truncate">{stubbornTitle}</p>
               </div>
-              <div className="max-h-56 overflow-y-auto">
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => (canUseFeature("stubbornHistory", entitlements) ? setHistoryOpen(true) : setHistoryPaywall(true))}
+                  className="focus-ring ds-chip fin-chip"
+                >
+                  <History size={13} />
+                  往日
+                </button>
+                {/* 快速复习不等到「顽固词多到换掉加餐」才给入口：列表就在眼前，
+                    想现在过一遍是最自然的下一步。超过阈值时上面那块会把加餐整个换掉。 */}
+                {!stubbornOverload && onStubbornQuickStudy && (
+                  <button
+                    onClick={() => onStubbornQuickStudy(stubborn.map((word) => word.id))}
+                    className="focus-ring ds-chip fin-chip"
+                  >
+                    <ListChecks size={13} />
+                    快速复习
+                  </button>
+                )}
+                {unfavoritedStubborn.length > 0 && (
+                  <button
+                    onClick={() => favoriteStubborn(unfavoritedStubborn, `把今天 ${unfavoritedStubborn.length} 个顽固词收进`)}
+                    className="focus-ring ds-chip fin-chip"
+                  >
+                    <Star size={13} />
+                    全部收藏
+                  </button>
+                )}
+              </div>
+              <div className="fin-list max-h-56 overflow-y-auto">
                 {stubborn.map((word) => (
                   <StubbornWordRow key={word.id} word={word} onFavorite={toggleStubbornFavorite} />
                 ))}
@@ -734,85 +681,63 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                   <StubbornGrammarRow key={`g-${point.id}`} point={point} />
                 ))}
               </div>
-              <p className="mt-2 text-[11px] text-white/40">
+              <p className="fin-note">
                 一共忘过 8 次以上、今天又错了 {STUBBORN_DAILY_MISTAKES} 次的词。集中攻坚走错题本模式；
                 语法同一条判据，收藏和攻坚在语法列表页。
               </p>
-            </div>
+            </section>
           )}
 
           {distinctionGroupCount > 0 && onOpenDistinctionQuiz && (
-            <div className="shrink-0 rounded-2xl bg-[#3f4343] p-3 text-left ring-1 ring-white/10 sm:p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-bold text-white">今天碰到的易混组 {distinctionGroupCount} 组</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={onOpenDistinctionQuiz}
-                  className="focus-ring shrink-0 rounded-xl bg-[#81D8CF] px-3 py-2 text-sm font-bold !text-[#2f3333]"
-                >
-                  练一练
-                </button>
-              </div>
-            </div>
+            <section className="fin-block fin-row">
+              <Puzzle size={16} className="shrink-0 text-[var(--ds-primary-ink)]" />
+              <p className="fin-block-title min-w-0 flex-1">今天碰到的易混组 {distinctionGroupCount} 组</p>
+              <button type="button" onClick={onOpenDistinctionQuiz} className="focus-ring ds-btn fin-small-btn">
+                练一练
+              </button>
+            </section>
           )}
 
-          <div className="grid shrink-0 gap-2 sm:grid-cols-3">
+          <div className="fin-tiles">
             {isStage1Complete && (
               <>
                 <button
                   onClick={onContinueStage2}
                   disabled={!onContinueStage2 || !stats?.stage2Total || stats.stage2Completed >= stats.stage2Total}
-                  className="focus-ring rounded-xl border border-[#81D8CF]/30 bg-[#81D8CF]/12 p-3 text-left disabled:opacity-45"
+                  className="focus-ring fin-tile"
                 >
-                  <p className="text-sm font-bold text-white">反向学习</p>
-                  <p className="mt-1 text-xs text-white/60">出日语，回忆释义 {stats?.stage2Completed ?? 0}/{stats?.stage2Total ?? 0}</p>
+                  <Repeat size={18} />
+                  <b>反向学习</b>
+                  <span>出日语，回忆释义 {stats?.stage2Completed ?? 0}/{stats?.stage2Total ?? 0}</span>
                 </button>
                 <button
                   onClick={onContinueKanji}
                   disabled={!onContinueKanji || Boolean(stats?.kanjiTotal && stats.kanjiCompleted >= stats.kanjiTotal)}
-                  className="focus-ring rounded-xl border border-[#81D8CF]/30 bg-[#81D8CF]/12 p-3 text-left disabled:opacity-45"
+                  className="focus-ring fin-tile"
                 >
-                  <p className="text-sm font-bold text-white">汉字读音</p>
-                  <p className="mt-1 text-xs text-white/60">
-                    {stats?.kanjiTotal ? `看表记，回忆读音 ${stats.kanjiCompleted}/${stats.kanjiTotal}` : "生成今日汉字读音队列后开始"}
-                  </p>
+                  <Languages size={18} />
+                  <b>汉字读音</b>
+                  <span>{stats?.kanjiTotal ? `看表记，回忆读音 ${stats.kanjiCompleted}/${stats.kanjiTotal}` : "生成今日汉字读音队列后开始"}</span>
                 </button>
               </>
             )}
-            <button
-              onClick={() => setShowAnalytics(true)}
-              className="focus-ring rounded-xl border border-[#81D8CF]/30 bg-[#81D8CF]/10 p-3 text-left transition-all hover:bg-[#81D8CF]/20"
-            >
-              <div className="flex items-center gap-2">
-                <Brain size={17} className="text-[#81D8CF]" />
-                <span>
-                  <span className="block text-sm font-bold text-white">记忆程度</span>
-                  <span className="mt-0.5 block text-xs text-white/60">基于实际复习数据</span>
-                </span>
-              </div>
+            <button onClick={() => setShowAnalytics(true)} className="focus-ring fin-tile">
+              <Brain size={18} />
+              <b>记忆程度</b>
+              <span>基于实际复习数据</span>
             </button>
-            <button
-              onClick={() => void generateShareImage()}
-              className="focus-ring rounded-xl border border-[#81D8CF]/30 bg-[#81D8CF]/10 p-3 text-left transition-all hover:bg-[#81D8CF]/20"
-            >
-              <div className="flex items-center gap-2">
-                <Share2 size={17} className="text-[#81D8CF]" />
-                <span>
-                  <span className="block text-sm font-bold text-white">生成炫耀图</span>
-                  <span className="mt-0.5 block text-xs text-white/60">数量、用时、打卡</span>
-                </span>
-              </div>
+            <button onClick={() => void generateShareImage()} className="focus-ring fin-tile">
+              <Share2 size={18} />
+              <b>生成炫耀图</b>
+              <span>数量、用时、打卡</span>
             </button>
           </div>
 
-          {/* 定妆稿「退出 / 结束页」+「每日一句」：这一页是今天最后一眼，道个别 */}
-          <div className="mascot-farewell">
-            <Sticker name="empty-bye" size={72} />
-            <span className="mascot-say">再见～明天也要加油！</span>
-            <Sticker name="card-daily" size={64} className="ml-auto" alt="每天收集一点点，未来会不一样" />
-          </div>
+          {/* 这一页是今天最后一眼，道个别。原来是一枚贴纸 + 一个窄气泡 + 每日一句贴纸挤一行，
+              手机上气泡被挤成一行四个字；每日一句那张图上的字直接写进气泡里 */}
+          <MascotSay sticker="empty-bye" size={64} className="fin-bye">
+            再见～明天也要加油！<br />每天收集一点点，未来会不一样。
+          </MascotSay>
         </div>
       </div>
 

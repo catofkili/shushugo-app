@@ -719,3 +719,66 @@
 .yz-day:disabled { background: var(--ds-inset); color: var(--ds-ink-3); }
 /* 试衣台上那张迷你主页只有 56px：按货架的字号画，「15 词」会折成两行压在一起 */
 [data-theme] .yz-art-l .yz-mini { font-size: 5px; }
+
+/* —————————————————— 18. 单词完成页（FinishPanel） —————————————————— */
+/* 这一页摆在学习区那张白卡里面，所以里面的块一律是 inset 实底、不描边不投影 ——
+   原来是一张张带投影的「卡」套在白卡里，外加绿圈加光晕的日历，看着像三层。 */
+.fin-scroll { padding: 4px; text-align: left; }
+.fin-page { gap: 12px; }
+.fin-hero { display: flex; align-items: center; gap: 12px; }
+/* 标题不许折行：375px 屏上原来是「今日单词完 / 成」 */
+.fin-title { margin: 0; color: var(--ds-ink); font-size: clamp(22px, 6.4vw, 28px); font-weight: 900; line-height: 1.15; letter-spacing: -.01em; white-space: nowrap; }
+.fin-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0 0; color: var(--ds-ink-3); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.fin-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-radius: 18px; background: var(--ds-inset); }
+.fin-stats > div { min-width: 0; padding: 12px 10px 11px 14px; }
+.fin-stats > div + div { border-left: 1px solid var(--ds-line); }
+.fin-stats b { display: block; overflow: hidden; color: var(--ds-ink); font-size: 22px; font-weight: 900; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fin-stats > div:first-child b { color: var(--ds-primary-ink); }
+.fin-stats small { margin-left: 2px; font-size: 13px; font-weight: 700; }
+.fin-stats span { display: flex; align-items: center; gap: 4px; margin-top: 3px; color: var(--ds-ink-3); font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+.fin-block { padding: 14px; border: 0; border-radius: 18px; background: var(--ds-inset); color: var(--ds-ink); text-align: left; }
+.fin-block-title { margin: 0; color: var(--ds-ink); font-size: 15px; font-weight: 800; }
+.fin-row { display: flex; align-items: center; gap: 10px; width: 100%; color: var(--ds-ink-2); font-size: 14px; font-weight: 700; }
+button.fin-row:hover { background: var(--ds-inset-2); }
+.fin-note { margin: 8px 0 0; color: var(--ds-ink-3); font-size: 12px; line-height: 1.55; }
+.fin-small-btn { min-height: 38px; padding: 0 14px; border-radius: 12px; font-size: 14px; }
+.fin-chip { min-height: 32px; font-size: 12px; }
+[data-theme] .fin-block .ds-chip { background: var(--ds-surface); }
+[data-theme] .fin-block .ds-chip[aria-pressed="true"] { background: var(--ds-primary); color: var(--ds-on-primary); }
+.fin-list { margin: 0 -4px; }
+
+/* 日历：打卡的日子主色浅底、今天主色实心；学过但没打卡的只给一层浅底。不再有绿圈和光晕 */
+.fin-cal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.fin-checkin { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--ds-primary); color: var(--ds-on-primary); font-size: 13px; font-weight: 800; }
+.fin-checkin.is-done { background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
+.fin-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 4px; }
+.fin-cal-wd { display: grid; height: 24px; place-items: center; color: var(--ds-ink-3); font-size: 12px; font-weight: 600; }
+.fin-day { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 50%; color: var(--ds-ink-3); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.fin-day.is-active { background: var(--ds-surface); color: var(--ds-ink-2); }
+.fin-day.is-checked { background: var(--ds-primary-tint-2); color: var(--ds-primary-ink); }
+.fin-day.is-today { background: var(--ds-primary); color: var(--ds-on-primary); }
+[data-theme] .study-calendar-tooltip { color: var(--ds-ink); }
+
+/* 加餐：限定色按钮保持原样（每天一色是它自己的彩头），外面那一圈收进设计系统 */
+.fin-encore-lead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: var(--ds-ink-2); font-size: 13px; font-weight: 600; }
+.fin-limited { flex: none; padding: 2px 10px; border: 1px solid; border-radius: 999px; font-size: 11px; font-weight: 800; }
+.fin-encore-btn { position: relative; display: inline-flex; flex: 1; min-width: 0; min-height: 52px; align-items: center; justify-content: center; gap: 6px; overflow: hidden; padding: 0 12px; border: 0; border-radius: 14px; font-size: 16px; font-weight: 800; }
+.fin-encore-edit { display: grid; flex: none; width: 52px; height: 52px; place-items: center; border: 0; border-radius: 14px; background: var(--ds-surface); color: var(--ds-ink-2); }
+.fin-size { margin-top: 8px; padding: 12px; border-radius: 14px; background: var(--ds-surface); color: var(--ds-ink); }
+[data-theme] .fin-size .ds-chip { background: var(--ds-inset); }
+.fin-round { display: grid; width: 32px; height: 32px; place-items: center; border: 0; border-radius: 50%; background: var(--ds-inset); color: var(--ds-ink-2); }
+
+/* 底部几件事：两列小方块（记忆程度 / 炫耀图，第一阶段完成时前面多两格反向 / 汉字读音） */
+.fin-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.fin-tile { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border: 0; border-radius: 18px; background: var(--ds-inset); color: var(--ds-ink); text-align: left; transition: background-color .15s, transform .12s; }
+.fin-tile:hover { background: var(--ds-inset-2); }
+.fin-tile:active { transform: scale(.98); }
+.fin-tile:disabled { opacity: .5; }
+.fin-tile svg { margin-bottom: 6px; color: var(--ds-primary-ink); }
+.fin-tile b { font-size: 15px; font-weight: 800; }
+.fin-tile span { color: var(--ds-ink-3); font-size: 12px; line-height: 1.4; }
+.fin-bye { margin: 4px 0 8px; }
+.fin-stats small + b, .fin-stats b small { margin: 0 1px; }
+.fin-row-sub { display: block; margin-top: 1px; color: var(--ds-ink-3); font-size: 12px; font-weight: 600; }
