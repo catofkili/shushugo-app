@@ -6,19 +6,22 @@
  * 零参数。全部通过时打印一行 `kana cards ok: 250 cards` 并 exit 0；
  * 任何一条不过则 exit 1，逐条打印「哪张卡、哪个字段、为什么」。
  *
- * 只依赖 node:fs / node:path，不引入新依赖；词表读 docs/kana-cards-n5-words.tsv，不读数据库。
+ * 只依赖 node:fs / node:path，不引入新依赖；词表读 docs/kana-cards-words.tsv（出厂词典里
+ * 全部纯假名词，任意等级），不读数据库。
  *
- * 例词白名单说明：
- * - gairai 组：词表里没有 ファ／ティ 这些音的词，按规格 3.4 放行下面这份白名单。
- * - rule-particles / rule-pitch：按规格 3.7 放行（助词卡是短语、声调卡是同一个词的两个意思）。
+ * ⚠️ 这里最要紧的一条是「例词里必须真的含有这张卡教的假名」。
+ * 第一版只查了「例词在词表里」，于是 218 张字卡里 118 张拿同行的近似词顶着：
+ * ネ 卡摆 ねこ・あね・かね（全是平假名 ね）、ヅ 卡摆 シャツ・スポーツ（全是 ツ）。
+ * 能过校验、却把卡片的正事说没了。containsFront() 就是补这一条的。
  *
- * 例词选取规则（卡片侧）：优先取含本假名的词；该假名在词表里凑不满 3 个时，
- * 用同一行／同音的词补齐（片假名卡用对应平假名卡的例词，外来语专用音用白名单）。
- * 例如 ぺ／ぴゃ 在 892 词里没有对应的词，只能用 ぱ 行的 いっぱい・えんぴつ・さんぽ 顶上。
+ * 清音／浊音卡还要排掉「假名后面跟小 ゃゅょ」那种命中：きゃく 里的 き 读 kya 不是 ki，
+ * 拿它教 き 是错的。
  *
- * 例词比对的是词表的「假名」列（本文件第 1 列），同时也接受第 2 列：
- * 词表第 2 列是表记（有汉字时写汉字，没汉字时才写假名），例词统一用假名写，
- * 所以两列都收进白名单，避免把 あさ（朝）这种正确例词判成表外词。
+ * 例词数量是 0〜3，不是硬性 3：ヲ・ヂ・ヅ・ミョ・ピャ 这些现代日语里真的没有词，
+ * 硬凑就只能回到上面那个毛病。凑不满的卡由 note 说明「几乎不出现」。
+ *
+ * MANUAL_WORDS 是人工补的例词（出厂词典里没有的基础词，こんにゃく・ギョーザ・ミャンマー…）。
+ * 它是唯一一处没有机器依据的内容，独立成一段就是为了让人一眼看完复核。
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -29,26 +32,39 @@ const F = {
   cards: path.join(ROOT, 'frontend/src/data/kana_cards.json'),
   confusables: path.join(ROOT, 'frontend/src/data/kana_confusables.json'),
   glossary: path.join(ROOT, 'frontend/src/data/kana_glossary.json'),
-  words: path.join(ROOT, 'docs/kana-cards-n5-words.tsv'),
+  words: path.join(ROOT, 'docs/kana-cards-words.tsv'),
 };
 
 const GROUP_COUNTS = { seion: 92, dakuon: 50, youon: 66, gairai: 10, rule: 12, phrase: 20 };
 const TOTAL = 250;
 const NOTE_MAX = 60;
 const BODY_MAX = 60;
-const EXAMPLE_COUNT = { kana: 3, rule: 4, phrase: 0 };
+const EXAMPLE_COUNT = { kana: [0, 3], rule: [4, 4], phrase: [0, 0] };
+const SMALL_KANA = 'ゃゅょャュョ';
 const KANA_ONE = /^[\u3041-\u3096\u30a1-\u30fa]{1,2}$/;
 const ID_RE = /^(hira|kata|gairai|rule|phrase)-[a-z]+(-[a-z]+)*$/;
 
-// 规格 3.4：外来语专用音的例词白名单
-const GAIRAI_WHITELIST = [
-  'ソファー', 'ファクス', 'オフィス', 'サーフィン', 'カフェ', 'フェリー', 'フォーク', 'フォーム',
-  'パーティー', 'スパゲッティ', 'シーディー', 'メディア', 'ゴールデンウィーク', 'ウィンドー',
-  'シェア', 'シェフ', 'プロジェクト', 'チェック', 'チェックイン',
-];
-// 规格 3.7：这两张卡的例词允许不在词表里
+// 人工补的例词：出厂词典里没有、但都是基础词汇。改这份名单等于改内容，要人复核。
+const MANUAL_WORDS = new Set([
+  'ヌードル', 'カヌー', 'ゾウ', 'ゾーン', 'リゾート', 'こんにゃく', 'ひゅうひゅう',
+  'さんびゃく', 'びゃくや', 'びゅうびゅう', 'はっぴゃく', 'ろっぴゃく', 'ぴゅうぴゅう',
+  'チューリップ', 'チューブ', 'チョーク', 'ヒューズ', 'ヒョウ', 'ミャンマー', 'ギャング',
+  'ギョーザ', 'ジョーク', 'ビュッフェ', 'ピュア', 'ウィスキー', 'シェイク',
+]);
+// 规格 3.7：这两张卡的例词是短语／同词异义，允许不在词表里
 const OFF_LIST_OK = new Set(['rule-particles', 'rule-pitch']);
-const GAIRAI_SET = new Set(GAIRAI_WHITELIST);
+
+// 例词里「含有这张卡教的假名」：拗音要整段命中；一个字的卡后面不能跟小 ゃゅょ
+// （きゃく 里的 き 读 kya，不是 ki）
+const containsFront = (word, front) => {
+  for (let i = 0; i <= word.length - front.length; i += 1) {
+    if (word.slice(i, i + front.length) !== front) continue;
+    const next = word[i + front.length];
+    if (front.length === 1 && next && SMALL_KANA.includes(next)) continue;
+    return true;
+  }
+  return false;
+};
 
 // 规格 3.5 字源表（平假名 + 片假名两栏合起来）
 const ORIGINS = new Set(
@@ -103,7 +119,7 @@ function readWordList(errors) {
     }
     return set;
   } catch (e) {
-    errors.push(`[文件] docs/kana-cards-n5-words.tsv: 读不到 —— ${e.message}`);
+    errors.push(`[文件] docs/kana-cards-words.tsv: 读不到 —— ${e.message}`);
     return new Set();
   }
 }
@@ -208,19 +224,24 @@ function validate(data) {
       errors.push(`${tag} examples: 必须是数组`);
       continue;
     }
-    const want = EXAMPLE_COUNT[c.kind];
-    if (c.examples.length !== want) {
-      errors.push(`${tag} examples: ${c.kind} 卡应有 ${want} 个例词，实际 ${c.examples.length} 个`);
+    const [lo, hi] = EXAMPLE_COUNT[c.kind];
+    if (c.examples.length < lo || c.examples.length > hi) {
+      errors.push(`${tag} examples: ${c.kind} 卡应有 ${lo === hi ? lo : `${lo}〜${hi}`} 个例词，实际 ${c.examples.length} 个`);
+    }
+    if (c.kind === 'kana' && c.examples.length === 0 && !/几乎不出现|见不到它|几乎不用/.test(c.note)) {
+      errors.push(`${tag} examples: 一个例词都没有时，note 必须说明这个假名几乎不出现`);
     }
     for (const ex of c.examples) {
       if (!Array.isArray(ex) || ex.length !== 2 || typeof ex[0] !== 'string' || typeof ex[1] !== 'string' || !ex[1].trim()) {
         errors.push(`${tag} examples: 「${JSON.stringify(ex)}」必须是 [假名, 中文] 两个字符串`);
         continue;
       }
+      if (c.kind === 'kana' && !containsFront(ex[0], c.front)) {
+        errors.push(`${tag} examples: 例词「${ex[0]}」里没有 ${c.front}（跟着小 ゃゅょ 的那次不算）`);
+      }
       if (OFF_LIST_OK.has(c.id)) continue;
-      const allowed = c.group === 'gairai' ? GAIRAI_SET : words;
-      if (!allowed.has(ex[0])) {
-        errors.push(`${tag} examples: 例词「${ex[0]}」不在 docs/kana-cards-n5-words.tsv 里`);
+      if (!words.has(ex[0]) && !MANUAL_WORDS.has(ex[0])) {
+        errors.push(`${tag} examples: 例词「${ex[0]}」既不在 docs/kana-cards-words.tsv 里，也不在人工名单里`);
       }
     }
   }
@@ -278,10 +299,12 @@ function validate(data) {
     if (!cardText.includes(t.label)) errors.push(`${tag} label: 在卡片正文（note / quiz / scenes）里一次都没出现`);
   }
 
-  // 10. 反查：术语清单里的词在正文里露头了，术语表就必须有
+  // 10. 反查：规格 5 那张术语清单里的词，术语表里一个都不能漏。
+  //     清单外的「高深词」没法机器判定 —— 判据是「没学过日语的中国人看到会不会停下来想这是什么」，
+  //     所以那一半靠人工；能自动查的就是「清单里的词必须都有条目」，
+  //     加上第 9 条「每一条 label 都得在卡片正文里露头」。
   for (const term of REQUIRED_TERMS) {
     if (!labels.has(term)) errors.push(`[术语表] 规格 5 要求的术语「${term}」没有条目`);
-    else if (cardText.includes(term) && !labels.has(term)) errors.push(`[术语表] 「${term}」出现在卡片里，却没有条目`);
   }
 
   return errors;
@@ -339,6 +362,14 @@ function main() {
   const d = clone();
   d.confusables = [['あ', 'お'], ['あ', 'ぬ']];
   fixtures.push(['形近表里同一个假名出现两次', d]);
+  const e = clone();
+  const ne = e.cards.find((x) => x.id === 'kata-ne');
+  ne.examples = [['ねこ', '猫'], ['あね', '姐姐'], ['かね', '钱']];
+  fixtures.push(['例词里没有这张卡教的假名（ネ 卡摆平假名 ね 的词）', e]);
+  const f = clone();
+  const ki = f.cards.find((x) => x.id === 'hira-ki');
+  ki.examples = [['きゃく', '客人'], ['きゃく', '客人'], ['きゃく', '客人']];
+  fixtures.push(['き 卡拿 きゃく 顶（那里的 き 读 kya）', f]);
 
   const missed = fixtures.filter(([, bad]) => validate(bad).length === 0).map(([name]) => name);
   if (missed.length) {

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "prebuild": "node scripts/verify-release-db.mjs && node scripts/verify-kanji-reading-unit-index.mjs",
+    "prebuild": "node scripts/verify-release-db.mjs && node scripts/verify-kanji-reading-unit-index.mjs && node scripts/verify-kana-cards.mjs",
     "dev": "vite",
     "db": "node --no-warnings scripts/live-db.mjs",
     "zoo": "vite --config zoo-lab/vite.config.ts --host",
