@@ -598,55 +598,141 @@
 .zoo-maint-btn.warn{border-color:rgba(232,151,28,.45);background:var(--zoo-orange-soft)}
 .zoo-maint-btn.warn small{color:#8A5A08}
 
-/* ===== 组队面板 ===== */
-.zoo-tm-card{margin-bottom:12px}
-.zoo-tm-head{display:flex;align-items:center;justify-content:space-between}
-.zoo-tm-head b{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:18px;font-weight:800;display:block}
-.zoo-tm-head small{color:var(--zoo-brown-deep);font-size:12px}
-.zoo-tm-nuts{font-size:12px;color:var(--zoo-brown-deep);text-align:right}
-.zoo-tm-nuts b{display:block;font-size:20px;color:var(--zoo-primary-deep)}
-.zoo-tm-progress{margin:12px 0 4px;height:8px;border-radius:8px;background:var(--zoo-primary-soft);overflow:hidden}
-.zoo-tm-progress i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--zoo-primary-dark),var(--zoo-primary));transition:width .5s cubic-bezier(.34,1.4,.6,1)}
-.zoo-tm-members{list-style:none;margin:10px 0 0;padding:0}
-.zoo-tm-members li{display:flex;align-items:center;gap:9px;padding:9px 0;border-top:1px solid var(--ds-line)}
-.zoo-tm-members li:first-child{border-top:0}
-.zoo-tm-av{position:relative;width:32px;height:32px;flex:none;display:grid;place-items:center;font-size:18px;background:var(--zoo-cream-2);border-radius:50%}
-.zoo-tm-dot{position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--zoo-primary);border:2px solid var(--zoo-surface)}
-.zoo-tm-name{flex:1;font-weight:700;font-size:14px}
-.zoo-tm-npc{margin-left:5px;font-style:normal;font-size:9px;font-weight:800;color:#8A5A08;background:var(--zoo-orange-soft);border-radius:4px;padding:1px 4px;vertical-align:middle}
-.zoo-tm-mnuts{font-size:12px;color:var(--zoo-brown-deep)}
-.zoo-tm-state{font-size:11px;font-weight:800;color:var(--zoo-primary-deep);background:var(--zoo-primary-soft);border-radius:8px;padding:4px 9px}
-.zoo-tm-poke{border:1px solid rgba(232,151,28,.5);background:var(--zoo-orange-soft);color:#8A5A08;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800}
-.zoo-tm-poke.sent{background:var(--zoo-primary-soft);border-color:var(--zoo-primary-dark);color:var(--zoo-primary-deep)}
-.zoo-tm-invite{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.zoo-tm-invite-label{display:block;font-size:11px;font-weight:800;letter-spacing:1.2px;color:var(--zoo-muted)}
-.zoo-tm-key{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:18px;letter-spacing:1px;color:var(--zoo-brown-deep)}
-.zoo-tm-copy{flex:none;border:0;border-radius:12px;background:var(--zoo-primary);color:var(--zoo-on-primary);padding:10px 15px;font-weight:800;font-size:13px;box-shadow:0 5px 14px rgba(111,168,62,.3)}
-.zoo-tm-copy.done{background:var(--zoo-primary-deep);color:#fff}
-.zoo-tm-plaza{display:flex;flex-direction:column;gap:9px}
-.zoo-tm-plaza-item{display:flex;align-items:center;gap:11px;padding:13px 14px}
-.zoo-tm-plaza-emoji{font-size:24px}
-.zoo-tm-plaza-info{flex:1;min-width:0}
-.zoo-tm-plaza-info b{display:block;font-size:14px;font-weight:800}
-.zoo-tm-plaza-info small{color:var(--zoo-brown-deep);font-size:12px}
-.zoo-tm-chip{display:inline-block;margin-right:6px;background:var(--zoo-primary-soft);color:var(--zoo-primary-deep);border-radius:8px;padding:1px 6px;font-weight:800;font-size:11px}
-.zoo-tm-join{flex:none;border:1.5px solid var(--zoo-primary-dark);background:var(--zoo-primary);color:var(--zoo-on-primary);border-radius:12px;padding:8px 15px;font-weight:800;font-size:13px}
-.zoo-tm-join:disabled{background:var(--zoo-cream-2);border-color:var(--ds-line);color:var(--zoo-muted)}
-.zoo-tm-join.done{background:var(--zoo-primary-deep);border-color:var(--zoo-primary-deep);color:#fff}
-.zoo-tm-plaza-buttons{display:flex;align-items:center;gap:6px}
-.zoo-tm-report{border:0;background:transparent;color:var(--zoo-muted);padding:6px;font-size:11px}
-.zoo-tm-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-.zoo-tm-secondary,.zoo-tm-danger{border:1px solid var(--ds-line-2);border-radius:12px;padding:8px 12px;background:var(--zoo-surface);color:var(--zoo-brown-deep);font-weight:750}
-.zoo-tm-danger{color:#9b3b32;border-color:rgba(180,65,53,.3)}
-.zoo-tm-onboard{margin-bottom:12px}
-.zoo-tm-onboard h3{margin:0 0 12px;font-size:16px}
-.zoo-tm-onboard label,.zoo-tm-form label,.zoo-tm-join-code label{display:flex;flex-direction:column;gap:5px;color:var(--zoo-brown-deep);font-size:12px;font-weight:750}
-.zoo-tm-form{margin-top:12px;padding-top:12px;border-top:1px solid var(--ds-line)}
-.zoo-tm-form input,.zoo-tm-form select,.zoo-tm-onboard input,.zoo-tm-join-code input{width:100%;box-sizing:border-box;border:1px solid var(--ds-line-2);border-radius:12px;background:var(--zoo-surface);color:var(--zoo-ink);padding:9px 10px;font:inherit}
-.zoo-tm-form-row{display:grid;grid-template-columns:1fr .72fr 1fr;gap:8px;margin-top:9px}
-.zoo-tm-join-code{display:flex;align-items:end;gap:10px;margin-bottom:18px}
-.zoo-tm-join-code label{flex:1}
-.zoo-tm-members button:disabled,.zoo-tm-actions button:disabled{opacity:.58}
+/* ===== 组队面板 =====
+   结构沿用小程序（头图 → 队伍概况 → 今天的队友 → 邀请码票根 → 管理；没队伍时 创建 → 输邀请码 → 广场），
+   外观走设计系统的三种面：头图 = 主页今日大卡那块主色（跟皮肤走），其余白卡 + inset 实底，全跟 --ds-* 变量，
+   所以深色和换皮肤不用再单独写一套。原来这里是写死的森林绿 + 一串 [data-theme="dark"] 覆盖（2026-09-24 换掉）。 */
+.zoo-tm-page{display:flex;flex-direction:column;gap:12px;padding-bottom:24px}
+.zoo-tm-hero{position:relative;display:flex;align-items:flex-end;gap:10px;min-height:150px;padding:20px 16px 18px 20px;overflow:hidden;border-radius:24px;
+  background:linear-gradient(135deg,var(--zoo-primary),color-mix(in srgb,var(--zoo-primary) 82%,var(--zoo-primary-deep)));color:var(--zoo-on-primary)}
+.zoo-tm-hero::after{position:absolute;right:-60px;bottom:-110px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.14);content:""}
+.zoo-tm-hero-copy{position:relative;z-index:1;flex:1;min-width:0;padding-bottom:4px}
+.zoo-tm-hero h1{margin:0 0 6px;font-size:clamp(22px,6vw,28px);font-weight:900;line-height:1.25;letter-spacing:-.01em;text-wrap:balance}
+.zoo-tm-hero-copy p{margin:0;font-size:13px;line-height:1.5;opacity:.82}
+.zoo-tm-hero-art{position:relative;z-index:1;flex:none;margin:0 -4px -8px 0;filter:drop-shadow(0 6px 10px rgba(40,30,18,.15))}
+.zoo-tm-refresh{position:absolute;top:12px;right:12px;z-index:2;display:inline-flex;align-items:center;gap:4px;min-height:30px;padding:0 11px;border:0;border-radius:999px;
+  background:rgba(255,255,255,.4);color:inherit;font-size:12px;font-weight:800}
+.zoo-tm-refresh:disabled{opacity:.55}
+.zoo-tm-back{display:none}
+.zoo-tm-content{display:flex;flex-direction:column;gap:12px}
+
+.zoo-tm-card-shell,.zoo-tm-summary,.zoo-tm-join-ticket{border:1px solid var(--ds-line);border-radius:20px;background:var(--ds-surface);box-shadow:var(--ds-shadow);color:var(--ds-ink)}
+.zoo-tm-loading{display:flex;flex-direction:column;align-items:center;gap:8px;padding:28px 18px;text-align:center}
+.zoo-tm-loading h2{margin:0;color:var(--ds-ink-2);font-size:14px;font-weight:700}
+.zoo-tm-card-kicker{display:block;color:var(--ds-ink-3);font-size:12px;font-weight:700}
+
+/* 队伍概况 */
+.zoo-tm-summary{padding:16px}
+.zoo-tm-team-topline{display:flex;align-items:center;gap:12px}
+.zoo-tm-team-mark,.zoo-tm-create-emoji{display:grid;width:52px;height:52px;flex:none;place-items:center;border-radius:16px;background:var(--ds-inset);font-size:28px}
+.zoo-tm-team-copy{min-width:0;flex:1}
+.zoo-tm-team-copy h2{overflow:hidden;margin:0;color:var(--ds-ink);font-size:20px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
+.zoo-tm-team-copy p{margin:3px 0 0;color:var(--ds-ink-3);font-size:12px;font-weight:600}
+.zoo-tm-owner-badge,.zoo-tm-you-badge,.zoo-tm-captain-badge{flex:none;border-radius:999px;padding:3px 9px;background:var(--ds-primary-tint);color:var(--ds-primary-ink);font-size:12px;font-weight:800;white-space:nowrap}
+.zoo-tm-you-badge,.zoo-tm-captain-badge{padding:1px 7px;font-size:11px}
+.zoo-tm-captain-badge{background:var(--ds-warn-tint);color:var(--ds-warn-ink)}
+.zoo-tm-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:14px 0 12px;border-radius:16px;background:var(--ds-inset)}
+.zoo-tm-stats div{display:flex;min-width:0;flex-direction:column;gap:2px;padding:11px 12px}
+.zoo-tm-stats div+div{border-left:1px solid var(--ds-line)}
+.zoo-tm-stats b{color:var(--ds-ink);font-size:22px;font-weight:900;line-height:1.15;font-variant-numeric:tabular-nums}
+.zoo-tm-stats div:first-child b{color:var(--ds-primary-ink)}
+.zoo-tm-stats span{color:var(--ds-ink-3);font-size:12px;font-weight:600}
+.zoo-tm-summary-progress{height:8px;overflow:hidden;border-radius:999px;background:var(--ds-inset-2)}
+.zoo-tm-summary-progress span{display:block;height:100%;border-radius:inherit;background:var(--ds-primary);transition:width .4s cubic-bezier(.34,1.2,.6,1)}
+.zoo-tm-progress-note{margin:6px 0 0;color:var(--ds-ink-3);font-size:12px}
+
+/* 今天的队友 */
+.zoo-tm-members-card{padding:14px 16px 6px}
+.zoo-tm-section-head,.zoo-tm-plaza-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.zoo-tm-section-head h2,.zoo-tm-plaza-heading h2{margin:0;color:var(--ds-ink);font-size:17px;font-weight:900}
+.zoo-tm-member-count,.zoo-tm-plaza-heading>span{border-radius:999px;padding:3px 10px;background:var(--ds-inset);color:var(--ds-ink-2);font-size:12px;font-weight:700}
+.zoo-tm-members{margin:6px 0 0;padding:0;list-style:none}
+.zoo-tm-member{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--ds-line)}
+.zoo-tm-member:first-child{border-top:0}
+.zoo-tm-avatar{display:grid;width:40px;height:40px;flex:none;place-items:center;border-radius:50%;background:var(--ds-inset);font-size:21px}
+.zoo-tm-member.is-me .zoo-tm-avatar{background:var(--ds-primary-tint-2)}
+.zoo-tm-member-copy{min-width:0;flex:1}
+.zoo-tm-name-line{display:flex;align-items:center;gap:6px;min-width:0}
+.zoo-tm-name-line b{overflow:hidden;color:var(--ds-ink);font-size:15px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
+.zoo-tm-member-copy p{margin:2px 0 0;color:var(--ds-ink-3);font-size:12px}
+.zoo-tm-member-state,.zoo-tm-cheer{flex:none;min-height:32px;border:0;border-radius:999px;padding:0 13px;background:var(--ds-inset);color:var(--ds-ink-2);font-size:13px;font-weight:800;line-height:32px}
+.zoo-tm-member-state.done{background:var(--ds-primary-tint);color:var(--ds-primary-ink)}
+/* 加油 = 柚子橙浅底（一个动作，不是状态）；给过了退回 inset */
+.zoo-tm-cheer{background:var(--ds-warn-tint);color:var(--ds-warn-ink)}
+.zoo-tm-cheer.sent{background:var(--ds-inset);color:var(--ds-ink-3)}
+
+/* 邀请码票根：柚子橙浅底，码用等宽大字 */
+.zoo-tm-invite-ticket{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px;border-radius:20px;background:var(--ds-warn-tint);color:var(--ds-warn-ink)}
+.zoo-tm-invite-ticket .zoo-tm-card-kicker{color:inherit;opacity:.75}
+.zoo-tm-ticket-copy{display:flex;min-width:0;flex-direction:column;gap:3px}
+.zoo-tm-ticket-copy b{color:var(--ds-ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:24px;font-weight:800;letter-spacing:2px}
+.zoo-tm-ticket-copy small{font-size:12px;opacity:.8}
+.zoo-tm-invite-actions{display:flex;flex:none;gap:8px}
+
+/* 按钮：主操作 = 主色实心，次要 = inset 实底，票根上的次要 = 白底 */
+.zoo-tm-primary,.zoo-tm-secondary,.zoo-tm-ghost{display:inline-flex;align-items:center;justify-content:center;min-height:42px;border:0;border-radius:12px;padding:0 16px;font-size:14px;font-weight:800;transition:transform .12s}
+.zoo-tm-primary{background:var(--ds-primary);color:var(--ds-on-primary)}
+.zoo-tm-secondary{background:var(--ds-inset);color:var(--ds-ink)}
+.zoo-tm-ghost{background:var(--ds-surface);color:var(--ds-ink)}
+.zoo-tm-primary:active:not(:disabled),.zoo-tm-secondary:active:not(:disabled),.zoo-tm-ghost:active:not(:disabled){transform:scale(.97)}
+/* 灰掉但读得清：不是 50% 透明的一块绿 */
+.zoo-tm-primary:disabled,.zoo-tm-secondary:disabled,.zoo-tm-ghost:disabled{background:var(--ds-inset);color:var(--ds-ink-3);cursor:default}
+.zoo-tm-primary.compact,.zoo-tm-secondary.compact{min-height:36px;padding:0 14px;font-size:13px}
+.zoo-tm-manage-row{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}
+.zoo-tm-manage-row button{min-height:32px;border:0;border-radius:999px;padding:0 12px;background:var(--ds-inset);color:var(--ds-ink-2);font-size:12px;font-weight:700}
+.zoo-tm-manage-row button.danger{background:transparent;color:var(--ds-danger)}
+.zoo-tm-edit-card,.zoo-tm-create-card{padding:16px}
+
+/* 创建队伍 / 队伍设置 */
+.zoo-tm-create-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.zoo-tm-create-head h2{margin:0;color:var(--ds-ink);font-size:20px;font-weight:900}
+.zoo-tm-detail{margin:6px 0 14px;color:var(--ds-ink-3);font-size:13px;line-height:1.6}
+.zoo-tm-field{display:flex;min-width:0;flex-direction:column;gap:6px;color:var(--ds-ink-2);font-size:13px;font-weight:700}
+.zoo-tm-input{width:100%;min-height:44px;box-sizing:border-box;border:0;border-radius:12px;background:var(--ds-inset);color:var(--ds-ink);padding:0 12px;font:inherit;font-size:15px;font-weight:600;outline:none}
+.zoo-tm-input:focus{box-shadow:0 0 0 2px color-mix(in srgb,var(--ds-primary) 55%,transparent)}
+.zoo-tm-form{display:flex;flex-direction:column;gap:14px;margin-top:14px;padding-top:14px;border-top:1px solid var(--ds-line)}
+.zoo-tm-form-head{display:flex;align-items:center;justify-content:space-between}
+.zoo-tm-form-head h3{margin:0;color:var(--ds-ink);font-size:16px;font-weight:900}
+.zoo-tm-close{border:0;background:transparent;color:var(--ds-ink-3);font-size:22px}
+.zoo-tm-chips{display:flex;flex-wrap:wrap;gap:6px}
+.zoo-tm-chips .ds-chip{min-height:34px}
+.zoo-tm-emoji-chip{min-width:44px;padding:0;font-size:20px}
+.zoo-tm-form-actions{display:flex;gap:8px}
+.zoo-tm-form-actions .zoo-tm-primary{flex:1}
+
+/* 输邀请码 */
+.zoo-tm-join-ticket{display:flex;flex-direction:column;gap:10px;padding:16px}
+.zoo-tm-join-copy h2{margin:0;color:var(--ds-ink);font-size:16px;font-weight:900}
+.zoo-tm-join-copy p{margin:3px 0 0;color:var(--ds-ink-3);font-size:12px}
+.zoo-tm-join-form{display:flex;gap:8px}
+.zoo-tm-input.code{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:17px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+
+/* 组队广场 */
+.zoo-tm-plaza-heading{margin:8px 4px 0}
+.zoo-tm-plaza{display:flex;flex-direction:column;gap:10px}
+.zoo-tm-empty{display:flex;flex-direction:column;align-items:center;padding:20px 16px;text-align:center}
+.zoo-tm-empty h3{margin:6px 0 3px;color:var(--ds-ink);font-size:15px;font-weight:800}
+.zoo-tm-empty p{margin:0;color:var(--ds-ink-3);font-size:13px}
+.zoo-tm-plaza-item{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.zoo-tm-plaza-emoji{display:grid;width:44px;height:44px;flex:none;place-items:center;border-radius:14px;background:var(--ds-inset);font-size:24px}
+.zoo-tm-plaza-copy{min-width:0;flex:1}
+.zoo-tm-plaza-copy b{display:block;overflow:hidden;color:var(--ds-ink);font-size:15px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
+.zoo-tm-plaza-copy p{display:flex;align-items:center;gap:6px;margin:3px 0 2px;color:var(--ds-ink-2);font-size:12px;font-weight:600}
+.zoo-tm-plaza-copy p span{border-radius:999px;padding:1px 8px;background:var(--ds-primary-tint);color:var(--ds-primary-ink);font-weight:800}
+.zoo-tm-plaza-copy small{color:var(--ds-ink-3);font-size:12px}
+.zoo-tm-plaza-actions{display:flex;flex:none;flex-direction:column;align-items:flex-end;gap:2px}
+.zoo-tm-report{border:0;background:transparent;color:var(--ds-ink-3);padding:4px 2px;font-size:12px}
+.zoo-tm-plaza-actions .zoo-tm-secondary{background:var(--ds-primary);color:var(--ds-on-primary)}
+.zoo-tm-plaza-actions .zoo-tm-secondary:disabled{background:var(--ds-inset);color:var(--ds-ink-3)}
+
+@media(min-width:1024px){
+  .zoo-tm-back{position:absolute;top:12px;left:14px;z-index:2;display:inline-flex;align-items:center;min-height:30px;padding:0 11px;border:0;border-radius:999px;background:rgba(255,255,255,.4);color:inherit;font-size:12px;font-weight:800}
+  .zoo-tm-hero{padding-top:52px}
+}
+@media(max-width:420px){
+  .zoo-tm-invite-ticket{flex-direction:column;align-items:stretch;gap:12px}
+  .zoo-tm-invite-actions button{flex:1}
+}
 
 /* 蒸汽:CSS 画的模糊白团。
    两个坑:①原来用 "˚" 字符是白底白字,根本看不见;

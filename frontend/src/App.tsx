@@ -780,7 +780,7 @@ export default function App() {
       );
     }
     if (page === "team") {
-      return <TeamPage />;
+      return <TeamPage onBack={goBack} />;
     }
     if (page === "quick-study") {
       return renderToolSubpage(
