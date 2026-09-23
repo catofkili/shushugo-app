@@ -190,11 +190,10 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteMemoryOpen, setNoteMemoryOpen] = useState(false);
   const [distinctionOpen, setDistinctionOpen] = useState(false);
-  // 辨析是 Pro：卡上这个入口和完成页的「往日顽固词」一样，自己弹 Paywall，
-  // 不把 requirePro 从 App 一路穿进来。
+  // 辨析是查资料型 Pro：先打开卡内对角线预览，只有主动点会员方案才弹购买小窗。
   const entitlements = useEntitlements();
   const [distinctionPaywall, setDistinctionPaywall] = useState(false);
-  const openDistinction = () => (canUseFeature("confusionGroups", entitlements) ? setDistinctionOpen(true) : setDistinctionPaywall(true));
+  const openDistinction = () => setDistinctionOpen(true);
   /**
    * 混合模式插播的语法卡。它**盖在**单词卡上面：下一张单词卡照常排好摆在底下，
    * 答完这条清掉就接着背词，所以插播不需要动单词那边的任何状态。
@@ -1628,13 +1627,15 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             onClose={() => setDistinctionOpen(false)}
             onJump={jumpToSimilar}
             jumpDisabled={submitting}
+            locked={!canUseFeature("confusionGroups", entitlements)}
+            onUpgrade={() => setDistinctionPaywall(true)}
           />
         )}
         {distinctionPaywall && (
           <Paywall
             feature="confusionGroups"
             onClose={() => setDistinctionPaywall(false)}
-            onUnlocked={() => { setDistinctionPaywall(false); setDistinctionOpen(true); }}
+            onUnlocked={() => setDistinctionPaywall(false)}
           />
         )}
 

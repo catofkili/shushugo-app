@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, CheckCircle2, Crown, LockKeyhole, RotateCcw, ShieldCheck } from "lucide-react";
-import { CapybaraMascot } from "./CapybaraMascot";
+import { Crown, LockKeyhole, RotateCcw, X } from "lucide-react";
 import { FeatureId, ProductId } from "../lib/entitlements";
 import { developmentUnlock, getPurchaseRuntime, initializePurchases, purchaseProduct, restorePurchases, StoreProduct } from "../lib/purchases";
 import { useEntitlements } from "../hooks/useEntitlements";
@@ -36,8 +35,8 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
     title: "往日顽固词是 Pro 功能",
     body: "翻回任意一天的顽固词。"
   },
-  // ⚠️ 下面三条现在**没有任何调用方**:只有 immersiveGrammar 走 requirePro()。
-  // 留着是因为它们迟早要接上;真接上那天,先确认这句「是 Pro 功能」当时是真的。
+  // ⚠️ 下面三条现在**没有任何调用方**。留着是因为它们迟早要接上；
+  // 真接上那天，先确认这句「是 Pro 功能」当时是真的。
   advancedDashboard: {
     title: "学习总览高级统计是 Pro 功能",
     body: "用更完整的进度视图观察单词、语法和等级推进。"
@@ -55,19 +54,6 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
     body: "其他设备恢复学习回顾。"
   }
 };
-
-// 买之前看到的这几条必须和真实解锁的对得上。2026-09-20 起真正锁着的：疑难辨析（App.tsx 的
-// proPages + 卡上的辨析入口）、一字多音（proPages）、混合学习（模式列表）、沉浸式语法
-// （requirePro）、完成页的往日顽固词（FinishPanel 自己弹）。其余 FeatureId 定义了但没人问权益，
-// 归到「后续纳入」那一条里。
-const benefits = [
-  "疑难辨析：1,881 组近义 / 同音 / 自他对照",
-  "一字多音：520 个多音字的读音判据",
-  "混合学习：单词 · 语法 · 汉字 · 疑难一条队列",
-  "沉浸式语法学习",
-  "往日顽固词",
-  "后续 Pro 功能自动纳入"
-];
 
 export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: PaywallProps) {
   const entitlements = useEntitlements();
@@ -92,34 +78,14 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
     if (entitlements.isPro) onUnlocked?.();
   }, [entitlements.isPro, onUnlocked]);
 
-  // 模态语义:Esc 关闭、焦点进来、Tab 在卡片里循环、关掉之后还回原处。
-  // ⚠️ 缺了这几样,键盘和 VoiceOver 用户会在背后那一页里乱走 —— 而背后那一页
-  // 正是刚刚被拦下来的付费功能。用原生 <dialog> 能白捡这些,但它要 Safari 15.4,
-  // 而工程的部署目标还写着 iOS 15.0(见 Podfile),所以这里自己做。
+  // 这是非模态小窗，不再困住 Tab：用户可以关、可以买，也可以直接继续用背后的页面。
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     dialogRef.current?.querySelector<HTMLElement>('button, [href], input, select, textarea')?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
-        onClose();
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const focusable = Array.from(
-        dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input, select, textarea') ?? []
-      ).filter((element) => element.offsetParent !== null);
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-      if (event.shiftKey && (active === first || !dialogRef.current?.contains(active))) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
-      }
+      if (event.key !== 'Escape') return;
+      event.stopPropagation();
+      onClose();
     };
     document.addEventListener('keydown', onKeyDown, true);
     return () => {
@@ -149,116 +115,60 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-end justify-center overflow-y-auto bg-black/50 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-6">
+    <div className="paywall-popover-host">
       <section
         ref={dialogRef}
         role="dialog"
-        aria-modal="true"
         aria-label={copy.title}
-        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-white/15 bg-[#3f4343] p-4 shadow-2xl sm:p-5"
+        className="paywall-popover"
       >
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <button onClick={onClose} className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/76 hover:bg-white/8">
-            <ArrowLeft size={17} />
-            返回
-          </button>
-          <span className="inline-flex items-center gap-1 rounded-sm border border-[#81D8CF]/30 bg-[#81D8CF]/15 px-2 py-1 text-xs font-bold text-[#81D8CF]">
+        <div className="paywall-popover-head">
+          <span>
             <Crown size={13} />
             收集日 Pro
           </span>
+          <button type="button" onClick={onClose} aria-label="关闭会员提示"><X size={16} /></button>
         </div>
 
-        <div className="rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/14 p-4">
-          <div className="flex items-start gap-3">
-            <CapybaraMascot mood="happy" size={56} className="-mt-1 shrink-0" />
-            <div>
-              <h2 className="text-xl font-bold text-white">{copy.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-white/68">{copy.body}</p>
-            </div>
-          </div>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {benefits.map((benefit) => (
-              <div key={benefit} className="flex items-center gap-2 rounded-2xl border border-white/12 bg-[#81D8CF]/10 px-3 py-2">
-                <CheckCircle2 size={16} className="shrink-0 text-[#81D8CF]" />
-                <span className="text-sm font-semibold text-white/78">{benefit}</span>
-              </div>
-            ))}
-          </div>
+        <div className="paywall-popover-intro">
+          <h2>{copy.title}</h2>
+          <p>{copy.body}</p>
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="paywall-popover-products" aria-label="会员方案">
           {products.map((product) => (
             <button
               key={product.id}
               onClick={() => buy(product.id)}
               disabled={busyProduct !== null || restoring}
-              className={`focus-ring relative rounded-2xl border p-4 text-left transition ${
-                product.recommended ? "border-[#81D8CF] bg-[#81D8CF]/12" : "border-white/15 bg-[#464949] hover:bg-[#4d5151]"
-              } disabled:opacity-60`}
+              className={product.recommended ? "is-recommended" : ""}
+              aria-label={`${product.title}，${product.price}`}
             >
-              {product.recommended && (
-                <span className="absolute right-3 top-3 rounded-sm bg-[#81D8CF] px-2 py-1 text-[11px] font-bold text-[#343838]">
-                  推荐
-                </span>
-              )}
-              <p className="pr-12 text-base font-bold text-white">{product.title}</p>
-              <p className="mt-2 text-xs font-bold text-[#81D8CF]">{product.period}</p>
-              <p className="mt-3 text-sm leading-6 text-white/58">{product.description}</p>
-              <p className="mt-4 text-lg font-bold text-white">{busyProduct === product.id ? "处理中..." : product.price}</p>
+              <b>{product.title.replace("收集日 Pro ", "")}</b>
+              <small>{busyProduct === product.id ? "处理中…" : product.price}</small>
             </button>
           ))}
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-          <p className="rounded-2xl border border-white/12 bg-[#81D8CF]/10 px-3 py-2 text-xs leading-6 text-white/58">
-            {status}
-          </p>
+        <div className="paywall-popover-actions">
+          <p title={status}>{status}</p>
           <button
             onClick={restore}
             disabled={restoring || busyProduct !== null}
-            className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-white/18 px-4 text-sm font-bold text-white/78 hover:bg-white/8 disabled:opacity-60"
+            title="恢复购买"
           >
-            <RotateCcw size={16} />
-            {restoring ? "恢复中" : "恢复购买"}
+            <RotateCcw size={13} />{restoring ? "恢复中" : "恢复"}
           </button>
+          {import.meta.env.DEV && (
+            <button onClick={unlockForDevelopment} title="本地开发临时解锁 Pro"><LockKeyhole size={13} />开发解锁</button>
+          )}
         </div>
 
-        {import.meta.env.DEV && (
-          <button
-            onClick={unlockForDevelopment}
-            className="focus-ring mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#81D8CF]/35 bg-[#81D8CF]/10 px-4 py-3 text-sm font-bold text-[#81D8CF]"
-          >
-            <LockKeyhole size={16} />
-            本地开发临时解锁 Pro
-          </button>
-        )}
-
-        <div className="mt-4 space-y-2 rounded-2xl border border-white/12 bg-[#81D8CF]/10 p-3 text-xs leading-6 text-white/52">
-          <div className="flex items-start gap-2">
-            <ShieldCheck size={16} className="mt-0.5 shrink-0 text-[#81D8CF]" />
-            <p>
-              付款将通过你的 Apple 账户完成。月度 / 年度 Pro 为自动续订订阅：除非在当前订阅期结束前至少
-              24 小时关闭自动续订，订阅会按相同价格和周期自动续订，费用在当期结束前 24
-              小时内从 Apple 账户扣除。你可以随时在系统「设置 → Apple 账户 → 订阅」中管理或取消订阅。
-              永久 Pro 为一次性买断，不会自动扣费。
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pl-6">
-            {onOpenPrivacy && (
-              <button onClick={onOpenPrivacy} className="focus-ring font-bold text-[#81D8CF] underline underline-offset-2">
-                隐私政策
-              </button>
-            )}
-            <a
-              href={APPLE_STANDARD_EULA_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="focus-ring font-bold text-[#81D8CF] underline underline-offset-2"
-            >
-              服务条款（EULA）
-            </a>
-          </div>
-        </div>
+        <p className="paywall-popover-legal">
+          月 / 年方案自动续订，除非在到期前至少 24 小时取消；续订费将在到期前 24 小时内扣除。永久版一次买断。
+          {onOpenPrivacy && <button onClick={onOpenPrivacy}>隐私</button>}
+          <a href={APPLE_STANDARD_EULA_URL} target="_blank" rel="noreferrer">EULA</a>
+        </p>
       </section>
     </div>
   );

@@ -5,6 +5,7 @@ import { CapybaraMascot, CapybaraWalk } from "./components/CapybaraMascot";
 import { AppNavigation } from "./components/AppNavigation";
 import { ZooHome } from "./components/ZooHome";
 import { Paywall } from "./components/Paywall";
+import { ProReadingPreview } from "./components/ProReadingPreview";
 import { AuthDialog } from "./components/AuthDialog";
 import { GrammarHighlightProvider } from "./components/GrammarHighlightProvider";
 import { useStudyStore } from "./hooks/useStudyStore";
@@ -85,10 +86,13 @@ const toolPageTitles: Partial<Record<Page, string>> = {
 };
 
 const accountProtectedPages = new Set<Page>(["account", "personal-info", "team"]);
-/** Pro 页面：不管从哪个入口进（主页格子、卡上的链接、返回栈），没权益一律拦成付费墙。 */
+/** 练习型 Pro 页面仍直接拦截；浏览型页面在页内给固定的对角线预览。 */
 const proPages: Partial<Record<Page, FeatureId>> = {
+  "distinction-quiz": "confusionGroups"
+};
+
+const proReadingPages: Partial<Record<Page, FeatureId>> = {
   confusion: "confusionGroups",
-  "distinction-quiz": "confusionGroups",
   "kanji-readings": "kanjiReadingUsage"
 };
 
@@ -114,6 +118,9 @@ export default function App() {
   // 不给 feature 就干脆不渲染 —— 那份文案从写下来起没有一条路走得到,
   // 于是 Pro 页只能借一个「完整 JLPT 规划」的名头把弹层叫出来,而那功能根本没上锁。
   const [paywallTarget, setPaywallTarget] = useState<FeatureId | "general" | undefined>();
+  const readingPreviewFeature = proReadingPages[page]
+    ?? (page === "grammar" && grammarMode === "immersive" ? "immersiveGrammar" : undefined);
+  const readingPreviewLocked = Boolean(readingPreviewFeature && !canUseFeature(readingPreviewFeature, entitlements));
   // 词库页的预设等级：进度概览点 N5 那根柱子进来时带着它
   const [wordListLevel, setWordListLevel] = useState<LibraryLevel>("all");
   /** 完成页交给快速学习的那批顽固词；null = 正常的今日快速学习。 */
@@ -138,6 +145,11 @@ export default function App() {
   const savedWeeklyReportStartRef = useRef<string | null>(null);
   const uploadedWeeklyReportStartRef = useRef<string | null>(null);
   const weeklyNotificationKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!readingPreviewLocked) return;
+    document.querySelector<HTMLElement>("main.app-landscape-main")?.scrollTo({ top: 0 });
+  }, [page, readingPreviewLocked]);
 
   useEffect(() => {
     let alive = true;
@@ -570,13 +582,7 @@ export default function App() {
     }
   };
 
-  const requirePro = (feature: FeatureId, action: () => void) => {
-    if (canUseFeature(feature, entitlements)) {
-      action();
-      return;
-    }
-    setPaywallTarget(feature);
-  };
+
 
   /** 完成页：今天顽固词太多时不给加餐，改成把这批词丢进快速学习过一遍。 */
   const startStubbornQuickStudy = (wordIds: number[]) => {
@@ -692,13 +698,25 @@ export default function App() {
             onBack={() => openGrammarTab("learn")}
           />
         ) : grammarMode === "immersive" ? (
-          <ImmersiveGrammar
-            key={selectedGrammarLevel}
-            selectedLevel={selectedGrammarLevel}
-            onBack={() => openGrammarTab("learn")}
-            onOpenFavorites={() => navigateToPage("favorites")}
-            onMarkLearned={markLearnedWithNotice}
-          />
+          canUseFeature("immersiveGrammar", entitlements) ? (
+            <ImmersiveGrammar
+              key={selectedGrammarLevel}
+              selectedLevel={selectedGrammarLevel}
+              onBack={() => openGrammarTab("learn")}
+              onOpenFavorites={() => navigateToPage("favorites")}
+              onMarkLearned={markLearnedWithNotice}
+            />
+          ) : (
+            <ProReadingPreview title="沉浸式语法" onUpgrade={() => setPaywallTarget("immersiveGrammar")}>
+              <ImmersiveGrammar
+                key={selectedGrammarLevel}
+                selectedLevel={selectedGrammarLevel}
+                onBack={() => openGrammarTab("learn")}
+                onOpenFavorites={() => navigateToPage("favorites")}
+                onMarkLearned={markLearnedWithNotice}
+              />
+            </ProReadingPreview>
+          )
         ) : (
           <Library
             getMastery={store.getMastery}
@@ -707,7 +725,7 @@ export default function App() {
             selectedLevel={selectedGrammarLevel}
             onSelectedLevelChange={setSelectedGrammarLevel}
             onOpenFavorites={() => navigateToPage("favorites")}
-            onOpenImmersive={() => requirePro("immersiveGrammar", () => openGrammarTab("immersive"))}
+            onOpenImmersive={() => openGrammarTab("immersive")}
             onOpenQuiz={() => openGrammarTab("quiz")}
             onOpenDetail={openGrammar}
           />
@@ -833,10 +851,16 @@ export default function App() {
       );
     }
     if (page === "kanji-readings") {
-      return renderToolSubpage(toolPageTitles["kanji-readings"] ?? "一字多音", <KanjiReadingUsagePage />);
+      const title = toolPageTitles["kanji-readings"] ?? "一字多音";
+      return renderToolSubpage(title, canUseFeature("kanjiReadingUsage", entitlements)
+        ? <KanjiReadingUsagePage />
+        : <ProReadingPreview title={title} onUpgrade={() => setPaywallTarget("kanjiReadingUsage")}><KanjiReadingUsagePage /></ProReadingPreview>);
     }
     if (page === "confusion") {
-      return renderToolSubpage(toolPageTitles.confusion ?? "疑难辨析", <ConfusionPage onQuiz={startDistinctionQuiz} />);
+      const title = toolPageTitles.confusion ?? "疑难辨析";
+      return renderToolSubpage(title, canUseFeature("confusionGroups", entitlements)
+        ? <ConfusionPage onQuiz={startDistinctionQuiz} />
+        : <ProReadingPreview title={title} onUpgrade={() => setPaywallTarget("confusionGroups")}><ConfusionPage onQuiz={startDistinctionQuiz} /></ProReadingPreview>);
     }
     if (page === "distinction-quiz") {
       return renderToolSubpage(
@@ -919,7 +943,7 @@ export default function App() {
 
         {/* pb 只留一点呼吸空间:底部导航的位置已经由下面的 bottom 让出来了,
             以前这里是 pb-[6rem](96px),等于同一块空间预留两次,凭空多出一条死白。 */}
-        <main className="app-landscape-main fixed inset-0 min-w-0 overflow-y-auto px-4 pb-4 pt-4 sm:px-6 lg:static lg:h-screen lg:overflow-y-auto lg:px-8 lg:py-8" style={{ top: 'var(--app-main-top)', left: 0, right: 0, bottom: 'var(--app-main-bottom)' }}>
+        <main className={`app-landscape-main fixed inset-0 min-w-0 px-4 pb-4 pt-4 sm:px-6 lg:static lg:h-screen lg:px-8 lg:py-8 ${readingPreviewLocked ? "overflow-hidden lg:overflow-hidden" : "overflow-y-auto lg:overflow-y-auto"}`} style={{ top: 'var(--app-main-top)', left: 0, right: 0, bottom: 'var(--app-main-bottom)' }}>
           <div className="mx-auto max-w-[1400px]">
             <Suspense fallback={<PageLoading />}>{renderPage()}</Suspense>
           </div>

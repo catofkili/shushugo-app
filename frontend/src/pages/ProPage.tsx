@@ -11,9 +11,9 @@ interface ProPageProps {
 }
 
 /**
- * ⚠️ 这几条里**现在真正锁着的只有「沉浸式语法学习」**。
- * `FeatureId` 定义了 advancedDashboard / unlimitedMistakes / fullJlptPlan 三个,
- * Paywall 也给它们写了文案,但全库只有一处 `requirePro()` 调用,就是沉浸式语法 ——
+ * ⚠️ 这张表只列 Pro 页上的产品路线，不是完整权益清单；疑难辨析、一字多音、
+ * 混合学习、往日顽固词等已上线权益以 `entitlements.ts` 和真实入口为准。
+ * `FeatureId` 里的 advancedDashboard / unlimitedMistakes / fullJlptPlan 仍没有调用方，
  * 学习总览、JLPT 规划免费用户本来就在用。
  *
  * 所以这里如实标注,把没上锁的写成「开发中」。**没有顺手去给它们上锁** ——

@@ -4,6 +4,7 @@ import { ArrowRightLeft, Check, RotateCcw, X } from "lucide-react";
 import { masteredConfusionKeys, setConfusionMastered } from "../lib/confusion-groups";
 import type { DistinctionSection } from "../lib/models/word-distinctions";
 import { JapaneseWordRuby } from "./JapaneseWordRuby";
+import { ProReadingGate } from "./ProReadingPreview";
 
 /**
  * 学习页的辨析气泡 —— 卡中卡：盖住六成屏幕，学习卡还在后面。
@@ -25,9 +26,11 @@ interface DistinctionSheetProps {
   /** 「换这张来答」。传了才显示 —— 它会给当前词记一次「模糊」，得是用户明确点的 */
   onJump?: (wordId: number) => void;
   jumpDisabled?: boolean;
+  locked?: boolean;
+  onUpgrade?: () => void;
 }
 
-export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, jumpDisabled }: DistinctionSheetProps) => {
+export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, jumpDisabled, locked = false, onUpgrade }: DistinctionSheetProps) => {
   const [mastered, setMastered] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
@@ -57,7 +60,7 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
 
   return createPortal(
     <div className="wd-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label={`${title} 的辨析`}>
-      <div className="wd-sheet" onClick={(event) => event.stopPropagation()}>
+      <div className={`wd-sheet${locked ? " is-pro-preview" : ""}`} onClick={(event) => event.stopPropagation()}>
         <div className="wd-head">
           <div>
             <p className="jp-serif wd-title">{title}</p>
@@ -67,7 +70,7 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
           </button>
         </div>
 
-        <div className="wd-body">
+        <div className="wd-body" inert={locked}>
           {sections.map((section) => (
             <section key={section.key} className="wd-section">
               <div className="wd-section-head">
@@ -135,6 +138,7 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
             </section>
           ))}
         </div>
+        {locked && onUpgrade && <ProReadingGate title="辨析资料" onUpgrade={onUpgrade} />}
       </div>
     </div>,
     document.body
