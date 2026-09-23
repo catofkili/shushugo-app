@@ -30,6 +30,28 @@ const tableExists = (table: string): boolean =>
 const rowKeyExpr = (entry: SyncedTable, alias: "OLD" | "NEW"): string =>
   entry.keys.map((key) => `CAST(${alias}.${key} AS TEXT)`).join(" || char(31) || ");
 
+/**
+ * 小程序 0.1.x 的 reverse_memory / kanji_reading_memory 还带旧评分/掌握字段，它推上云的
+ * 快照里就有这些列。Web 不消费它们，但 merge.ts 的 assertSnapshotWritable 会拒绝「本机存不下
+ * 的列」，不补上的话，任何一个用过旧小程序的账号整次同步都会被拒。
+ * （2026-09-23 合入 9-17 那批同步修复时曾当成过时删掉，sync-snapshot-smoke 当场红了。）
+ * merge 在做能力检查前也会调一次：表可能是在 ensureSyncSchema 之后才建出来的。
+ */
+export function ensureLegacyMemoryColumns(table: string): void {
+  if (table !== "reverse_memory" && table !== "kanji_reading_memory") return;
+  if (!tableExists(table)) return;
+  const columns = columnsOf(table);
+  const compatibilityColumns = {
+    score: "INTEGER NOT NULL DEFAULT 0", low_history: "INTEGER NOT NULL DEFAULT 0",
+    known_forever: "INTEGER NOT NULL DEFAULT 0", mastered_on: "TEXT",
+    mistake_streak: "INTEGER NOT NULL DEFAULT 0", last_decay_amount: "INTEGER DEFAULT 10",
+    right_streak: "INTEGER NOT NULL DEFAULT 0", auto_retired_on: "TEXT"
+  };
+  for (const [column, definition] of Object.entries(compatibilityColumns)) {
+    if (!columns.has(column)) getDatabase().run(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
 export function ensureSyncSchema(): void {
   const db = getDatabase();
   if (schemaReadyDbs.has(db)) return;
@@ -107,6 +129,7 @@ export function ensureSyncSchema(): void {
       if (!columns.has("fsrs_params_version")) db.run("ALTER TABLE reviews ADD COLUMN fsrs_params_version TEXT NOT NULL DEFAULT 'legacy'");
       if (!columns.has("event_source")) db.run("ALTER TABLE reviews ADD COLUMN event_source TEXT NOT NULL DEFAULT 'legacy'");
     }
+    ensureLegacyMemoryColumns(entry.table);
     ensureTrackingColumns(entry);
     ensureTriggers(entry);
   }
@@ -131,8 +154,8 @@ const ensureTrackingColumns = (entry: SyncedTable): void => {
 
   if (entry.strategy === "append") {
     if (!columns.has(SYNC_UID_COL)) {
-      // 两端的自增 id 会撞车(各自都会产生 id=5001),所以仍保留
-      // 「设备号:本地 id」作为事件追踪号;跨设备合并身份由 tables.ts 的自然键决定。
+      // 两端可能从同一份存档继承相同的自增 id；事件身份必须与它解耦。
+      // 旧行仍按设备号:本地 id 回填，新写入由触发器生成设备号:随机尾段。
       db.run(`ALTER TABLE ${entry.table} ADD COLUMN ${SYNC_UID_COL} TEXT`);
     }
     // ⚠️ 这条回填**必须每次都跑**,不能只在刚加列的那一次跑。
@@ -175,7 +198,7 @@ const ensureTriggers = (entry: SyncedTable): void => {
   const { table } = entry;
   const uidAssign = entry.strategy === "append"
     ? `, ${SYNC_UID_COL} = COALESCE(NEW.${SYNC_UID_COL},
-         (SELECT id FROM sync_device LIMIT 1) || ':' || CAST(NEW.id AS TEXT))`
+         (SELECT id FROM sync_device LIMIT 1) || ':' || lower(hex(randomblob(16))))`
     : "";
 
   // 触发器定义会随着同步协议升级而变化,不能只依赖 IF NOT EXISTS;

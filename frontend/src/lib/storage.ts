@@ -12,6 +12,7 @@ import {
   stampSnapshotMark,
   type LocalDelta
 } from './local-delta';
+import { rebuildStudyTimeAggregate } from './sync/study-time';
 
 // 供当前页面把“数据库写盘失败”显示出来；旧版 localStorage 配额异常曾被静默吞掉。
 export const PERSISTENCE_ERROR_EVENT = 'persistence-error';
@@ -76,6 +77,39 @@ const BROWSER_DB_STORE = 'databases';
 const BROWSER_DB_KEY = 'study-database';
 const BROWSER_RECOVERY_KEY_PREFIX = 'recovery-';
 const BROWSER_DELTA_KEY = 'study-database-delta';
+const LOCAL_SYNC_OWNER_KEY = 'mn_cloud_sync_owner_email';
+
+// 页面从读库到关闭始终持有同一把锁；只锁保存不能阻止旧内存覆盖共享增量。
+// 不支持 Web Locks 时拒绝进入可写学习页，不能静默降级到不安全的多写者模式。
+export class BrowserDatabaseInUseError extends Error {
+  constructor(message = '学习数据已在另一个窗口打开，请回到那个窗口继续。关闭那个窗口后，可以在这里重试。') {
+    super(message);
+    this.name = 'BrowserDatabaseInUseError';
+  }
+}
+// 已拿到的锁记在 globalThis 上而不是模块变量里：开发时 Vite 会原地热替换这个模块，
+// 新模块实例看不到旧实例的变量，再去申请同一把锁就会被「自己」挡住，之后每次保存都失败 ——
+// 而作者恰恰是在 5173 开着学习页的时候改代码。页面真正关闭时浏览器照样释放锁。
+const writerHolder = globalThis as { __shushugoBrowserWriter?: Promise<void> };
+const requireBrowserWriter = (): Promise<void> => {
+  if (isNativeFileStorage()) return Promise.resolve();
+  if (writerHolder.__shushugoBrowserWriter) return writerHolder.__shushugoBrowserWriter;
+  const locks = globalThis.navigator?.locks;
+  if (!locks) return Promise.reject(new BrowserDatabaseInUseError('当前浏览器无法安全保存学习数据，请使用支持 Web Locks 的浏览器并通过 HTTPS 或 localhost 打开。'));
+  const browserWriter = new Promise<void>((resolve, reject) => {
+    void locks.request('shushugo-study-database-write', { mode: 'exclusive', ifAvailable: true }, lock => {
+      if (!lock) { reject(new BrowserDatabaseInUseError()); return; }
+      resolve();
+      // 浏览器在页面关闭/销毁时释放锁。不可在 visibilitychange/pagehide 提前释放：
+      // 旧页可能从后台或 bfcache 恢复，仍持有旧内存库。
+      return new Promise<void>(() => {});
+    }).catch(reject);
+  });
+  writerHolder.__shushugoBrowserWriter = browserWriter;
+  // 拿锁失败（另一个窗口占着）不能记住：关掉那个窗口后「在此窗口重试」要能重新申请。
+  browserWriter.catch(() => { if (writerHolder.__shushugoBrowserWriter === browserWriter) delete writerHolder.__shushugoBrowserWriter; });
+  return browserWriter;
+};
 
 const isNativeFileStorage = () => Capacitor.isNativePlatform();
 
@@ -110,6 +144,7 @@ const saveBrowserDatabase = async (data: Uint8Array): Promise<void> => {
  * 同名迁移只需要保留最近一次执行前的状态，因此 key/path 固定，不无限堆积。
  */
 export async function saveRecoverySnapshot(label: string): Promise<string> {
+  await requireBrowserWriter();
   const data = exportDatabase();
   if (!data) throw new Error('Database is not ready for recovery snapshot');
   const safeLabel = label.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'migration';
@@ -281,6 +316,9 @@ const replayDeltaRecord = async (): Promise<void> => {
     const delta = JSON.parse(raw) as LocalDelta;
     if (!delta?.to || delta.to <= readSnapshotMark()) return;
     applyDelta(delta);
+    // word_study_time_by_device 是同步/增量的明细表，而统计读取旧的日汇总表。
+    // 增量回放也必须重建派生汇总，否则重启后明细在、统计却少算。
+    rebuildStudyTimeAggregate();
     console.log('✅ 本机增量已回放');
   } catch (error) {
     // 回放本身是原子的(applyDelta 自带事务),失败时库还停在快照那一刻。
@@ -462,6 +500,11 @@ export function saveDatabase(options: { notifyCloud?: boolean } = {}): Promise<v
 }
 
 async function saveDatabaseNow(options: { notifyCloud?: boolean } = {}): Promise<void> {
+  await requireBrowserWriter();
+  return saveDatabaseNowUnlocked(options);
+}
+
+async function saveDatabaseNowUnlocked(options: { notifyCloud?: boolean } = {}): Promise<void> {
   const { notifyCloud = true } = options;
   if (notifyCloud) localDataRevision += 1;
   const revisionAtStart = localDataRevision;
@@ -518,6 +561,7 @@ async function saveDatabaseNow(options: { notifyCloud?: boolean } = {}): Promise
 
 // 从本地存储恢复数据库
 export async function loadDatabase(): Promise<boolean> {
+  await requireBrowserWriter();
   try {
     if (isNativeFileStorage()) {
       if (await loadFileDatabase()) {
@@ -587,15 +631,14 @@ export async function loadDatabase(): Promise<boolean> {
  * 恢复一份完整的本机备份(设置页「导入学习数据」)。
  *
  * ⚠️ **必须换设备号。** 备份里带着导出那台设备的 sync_device 行,而作答流水的
- * 跨端身份 `sync_uid` 就是「设备号 : 本机自增 id」—— 两台设备从同一份备份出发、
- * 各自答一道**不同**的题,会生成一模一样的 uid,云端按 uid 合并时把两次不同的
- * 作答当成同一件事,后到的那条直接丢掉。已有的历史流水保留原来的 uid(它们
- * 确实是那台设备产生的),只有本机之后新产生的行用新号。
+ * 跨端身份 `sync_uid` 带设备号和随机尾段。两台设备从同一份备份出发时，
+ * 新作答也不会因为继承相同的自增 id 而撞身份；已有历史流水保留原 uid。
  *
  * ⚠️ 这一条只属于「用户主动导入整库备份」。普通启动恢复不能每次换号 ——
  * 那样每次重启都是一台新设备,墓碑和 append 表的来源全乱。
  */
 export async function restoreDatabaseBackup(data: Uint8Array): Promise<void> {
+  await requireBrowserWriter();
   await importDatabase(data, { validateBackup: true });
   ensureSyncSchema();
   resetDeviceId();
@@ -604,12 +647,12 @@ export async function restoreDatabaseBackup(data: Uint8Array): Promise<void> {
 
 // 清除本地存储
 export async function clearStorage(): Promise<void> {
+  await requireBrowserWriter();
   try {
     await Preferences.remove({ key: DB_KEY });
     // 增量必须跟着一起清:留着的话下次启动会把它回放到刚重建的出厂库上,
     // 「清除数据」就成了「清一半」。
     await removeDeltaRecord().catch(() => undefined);
-    snapshotDb = null;
     await removeChunkedDatabase();
     if (isNativeFileStorage()) {
       await deleteFileIfExists(DB_FILE_MAIN);
@@ -618,6 +661,10 @@ export async function clearStorage(): Promise<void> {
     } else {
       await clearBrowserDatabase();
     }
+    snapshotDb = null;
+    // 存储清除成功后才解除账号绑定；清除失败时保留归属，避免残留数据被
+    // 下一位登录用户误当成自己的库。
+    await Preferences.remove({ key: LOCAL_SYNC_OWNER_KEY });
     console.log('✅ Local storage cleared');
   } catch (error) {
     console.error('❌ Failed to clear storage:', error);
@@ -709,6 +756,7 @@ const mirrorForDev = (): void => {
 const persistNow = (): Promise<void> => enqueueWrite(persistNowInQueue);
 
 const persistNowInQueue = async (): Promise<void> => {
+  await requireBrowserWriter();
   if (needsFullSnapshot()) {
     await saveDatabaseNow();
     return;
@@ -723,6 +771,13 @@ const persistNowInQueue = async (): Promise<void> => {
       return;
     }
     const delta = collectDelta(since);
+    // 触发器和水位线都使用墙上时钟。系统时间回拨后，新的改动可能比旧水位线
+    // 更早；继续写这份增量会把它永久漏掉。整库快照能把现有状态完整带走，
+    // 同时把下一次增量的基准重置到回拨后的时间。
+    if (delta.to < since) {
+      await saveDatabaseNow();
+      return;
+    }
     if (deltaRowCount(delta) > DELTA_ROW_LIMIT) {
       await saveDatabaseNow();
       return;

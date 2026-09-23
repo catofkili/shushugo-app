@@ -141,6 +141,11 @@ export const DEVICE_LOCAL_STATE_KEYS = new Set([
   "sync_device_id",
   "sync_cursor",
   "sync_last_pushed_at",
+  "sync_generation",
+  "sync_last_modified",
+  "auth_access_token",
+  "auth_user_id",
+  "entitlement_cache",
   // 本机快照的水位线(见 local-delta.ts)。**绝不能跨设备同步**:
   // 它是「本机磁盘上那份快照停在哪一刻」,拿对端的值当基准去收集增量,
   // 收出来的行会对不上本机的快照,重启后就是一份两边拼起来的库。

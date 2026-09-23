@@ -155,6 +155,28 @@ describe("collectDelta / applyDelta", () => {
     expect(rows(restored, "SELECT COUNT(*) AS n FROM reviews")[0]?.n).toBe(once);
   });
 
+  it("兼容没有 sync_uid 的旧增量,回放后仍有稳定事件身份", () => {
+    const restored = new SQL.Database(snapshot);
+    testDb = restored;
+    applyDelta({
+      from: snapshotMark,
+      to: currentMark(),
+      rows: {
+        reviews: [{
+          id: 777,
+          word_id: 1,
+          answer: "know",
+          score_after: 1,
+          reviewed_on: "2026-09-06",
+          direction: "forward"
+        }]
+      },
+      tombstones: []
+    });
+    expect(rows(restored, "SELECT sync_uid FROM reviews WHERE id = 777")[0]?.sync_uid)
+      .toBe("legacy:777");
+  });
+
   it("中途写不下去时整条回滚,不留一份「放了一半」的库", () => {
     // 前半段能写(progress),后半段一定写不下去(reviews 少一列)。
     // 没有事务的话,前半段会留在库里 —— 而启动代码只在控制台说一句

@@ -103,15 +103,27 @@ export function recordStudySeconds(day: string, seconds: number, atMs = Date.now
  */
 export function rebuildStudyTimeAggregate(): void {
   const db = getDatabase();
-  db.run(`
-    INSERT INTO word_study_time (studied_on, seconds, updated_at)
-    SELECT studied_on, SUM(seconds), CURRENT_TIMESTAMP
-    FROM ${STUDY_TIME_TABLE}
-    GROUP BY studied_on
-    ON CONFLICT(studied_on) DO UPDATE SET
-      seconds = excluded.seconds,
-      updated_at = CURRENT_TIMESTAMP
-  `);
+  // 启动恢复和云端事务都会调用；savepoint 允许嵌套且避免重建只执行一半。
+  db.run("SAVEPOINT rebuild_study_time");
+  try {
+    db.run(`DELETE FROM word_study_time WHERE NOT EXISTS (
+      SELECT 1 FROM ${STUDY_TIME_TABLE} d WHERE d.studied_on = word_study_time.studied_on
+    )`);
+    db.run(`
+      INSERT INTO word_study_time (studied_on, seconds, updated_at)
+      SELECT studied_on, SUM(seconds), CURRENT_TIMESTAMP
+      FROM ${STUDY_TIME_TABLE}
+      GROUP BY studied_on
+      ON CONFLICT(studied_on) DO UPDATE SET
+        seconds = excluded.seconds,
+        updated_at = CURRENT_TIMESTAMP
+    `);
+    db.run("RELEASE rebuild_study_time");
+  } catch (error) {
+    db.run("ROLLBACK TO rebuild_study_time");
+    db.run("RELEASE rebuild_study_time");
+    throw error;
+  }
 }
 
 /**
@@ -128,6 +140,11 @@ export function backfillStudyTimeByDevice(): void {
     WHERE t.seconds > 0
       AND NOT EXISTS (
         SELECT 1 FROM ${STUDY_TIME_TABLE} d WHERE d.studied_on = t.studied_on
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM sync_tombstones s
+        WHERE s.table_name = '${STUDY_TIME_TABLE}'
+          AND substr(s.row_key, 1, length(t.studied_on) + 1) = t.studied_on || char(31)
       )
   `);
   if (!pending.length) return;

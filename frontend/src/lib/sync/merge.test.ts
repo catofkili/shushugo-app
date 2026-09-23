@@ -368,8 +368,8 @@ describe("database snapshot merge", () => {
     `);
 
     await mergeDatabaseBytes(new Uint8Array(remote.export()));
-    expect(rows(testDb, "SELECT answer FROM reviews ORDER BY sync_uid").map((row) => row.answer))
-      .toEqual(["know", "fuzzy", "forgot"]);
+    expect(rows(testDb, "SELECT answer FROM reviews").map((row) => row.answer).sort())
+      .toEqual(["forgot", "fuzzy", "know"]);
     const countAfterFirstMerge = rows(testDb, "SELECT sync_uid FROM reviews").length;
     await mergeDatabaseBytes(new Uint8Array(remote.export()));
     expect(rows(testDb, "SELECT sync_uid FROM reviews")).toHaveLength(countAfterFirstMerge);
@@ -427,6 +427,21 @@ describe("database snapshot merge", () => {
     await mergeDatabaseBytes(new Uint8Array(remote.export()));
     expect(rows(testDb, "SELECT word_id FROM progress WHERE word_id = 42")).toHaveLength(0);
     expect(rows(testDb, "SELECT row_key FROM sync_tombstones WHERE table_name = 'progress' AND row_key = '42'")).toHaveLength(1);
+  });
+
+  it("无法保留的新表在合并前拒绝,不会被下一次上传静默削掉", async () => {
+    const remote = new SQL.Database();
+    remote.run(`
+      CREATE TABLE sync_snapshot_meta (format TEXT PRIMARY KEY, protocol_version INTEGER NOT NULL);
+      INSERT INTO sync_snapshot_meta VALUES ('master-nihongo-user-sqlite-v1', 2);
+      CREATE TABLE future_user_table (id TEXT PRIMARY KEY, value TEXT);
+      INSERT INTO future_user_table VALUES ('1', 'must survive');
+    `);
+    testDb.run("INSERT OR REPLACE INTO progress (word_id, score) VALUES (1, 13)");
+    await expect(mergeDatabaseBytes(new Uint8Array(remote.export())))
+      .rejects.toThrow(/无法保留.*表/);
+    expect(rows(testDb, "SELECT score FROM progress WHERE word_id = 1")).toEqual([{ score: 13 }]);
+    remote.close();
   });
 });
 

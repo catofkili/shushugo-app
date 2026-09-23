@@ -111,6 +111,14 @@ export const deltaRowCount = (delta: LocalDelta): number =>
   Object.values(delta.rows).reduce((sum, list) => sum + list.length, 0) + delta.tombstones.length;
 
 const upsert = (entry: SyncedTable, row: DbRow, columns: Set<string>): void => {
+  // 旧版增量可能在 sync_uid 列加入前生成。回放时触发器被压住，不能指望
+  // SQLite 替它补身份；用旧行 id 加来源造稳定键，避免留下 NULL 事件。
+  if (entry.strategy === "append" && !String(row.sync_uid ?? "")) {
+    row = {
+      ...row,
+      sync_uid: `${String(row.sync_origin_device ?? "legacy")}:${String(row.id ?? "")}`
+    };
+  }
   const names = Object.keys(row).filter((name) => columns.has(name));
   if (!names.length) return;
   getDatabase().run(

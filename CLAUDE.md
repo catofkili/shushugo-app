@@ -777,6 +777,35 @@ stage1Progress / dailyRelief / stage1Done / dailyPlanDone 这几项；30 天曲�
 只认 delta 等于把它扔了。半份 tmp（writeFile 途中被杀）解析不出 JSON，
 由 `replayDeltaRecord` 的 catch 丢掉，所以多读这一个候选是安全的。
 
+### ⑤ 同一时间只有一个标签页能写（2026-09-17 修，2026-09-23 才合进来）
+
+两个标签页各开一份内存库、各写各的增量，后写的那份把先写的整个盖掉 —— Codex 实测
+「两页各保存一次，最终只剩第二页的答案」。现在 `storage.ts` 的 `requireBrowserWriter`
+用 Web Locks 拿一把排他锁，从读库一直拿到页面关闭；第二个标签页停在「请使用一个学习窗口」。
+
+⚠️ **拿到的锁记在 `globalThis.__shushugoBrowserWriter`，不是模块变量。** Vite 开发时会把
+`storage.ts` 原地热替换，新模块实例看不到旧变量，再申请同一把锁会被「自己」挡住，之后每次
+保存都失败 —— 而作者就是开着 5173 学习页改代码的。`self-audit-tabs.test.ts` 两条都钉着：
+两个标签页（各自的 globalThis）互斥；同一页热替换后继续用原来那把锁。
+拿锁**失败**不记住，否则关掉另一个窗口后「在此窗口重试」永远失败。
+
+### ⑥ 对端快照里有本机存不下的表或列，整次合并拒绝（同一批）
+
+Worker 把每次上传当完整备份。本机静默忽略一张新表或一列，下一次上传就把它从云端削掉。
+所以 `merge.ts` 的 `assertSnapshotWritable` 在动本机数据之前先检查。三个口子，都踩过：
+
+- `fsrs_*` 列是运行时按需补的（混合学习的汉字卡 / 辨析卡 / 假名卡也有）。检查前**按对端有什么就补什么**，
+  不手列实体 —— 9-17 那版只列了单词 / 语法四张表，9-20 加的 `kanji_char_memory` 就被误拒。
+- 小程序 0.1.x 的 `reverse_memory` / `kanji_reading_memory` 带旧评分列（`mistake_streak` 等），
+  由 `schema.ts` 的 `ensureLegacyMemoryColumns` 补上，合并前也调一次（表可能晚于同步初始化才建）。
+- 小程序 0.1.x 自创的 `direction_tasks` / `mode_tasks` / `achievement_unlocked` 在白名单里，丢弃即可。
+
+⚠️ 以后**新加同步表或新列**，发版顺序很重要：先发能收的版本，再让任何一端开始写。
+旧版本收到带新列的快照会拒绝同步（提示「请先更新应用」），这是设计如此，不是 bug。
+
+作答流水的 `sync_uid` 新行改成「设备号 : 随机 32 位十六进制」（旧行保持「设备号 : 本机 id」）：
+两台设备从同一份存档出发时自增 id 相同，不能再靠它区分事件。
+
 ### ⚠️ 内容迁移必须喊 `persistContentSoon()`，不是 `persistSoon()`
 
 内容迁移改的是 `words` / `grammar_points` / `dictionary_entries` 这些

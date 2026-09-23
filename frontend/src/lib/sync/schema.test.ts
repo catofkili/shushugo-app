@@ -132,7 +132,9 @@ describe("变更追踪触发器", () => {
     testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (1,'know',5,'2026-07-28')");
     const uid = String(rows("SELECT sync_uid AS u FROM reviews WHERE word_id = 1")[0]?.u ?? "");
     expect(uid).toContain(getDeviceId());
-    expect(uid).toMatch(/:\d+$/);
+    // 自增 id 会在两个标签页从同一份存档分叉时撞车；uid 的随机尾段
+    // 让事件身份独立于本地 id，同时保留设备前缀便于排查来源。
+    expect(uid).toMatch(/:[0-9a-f]{32}$/);
   });
 });
 

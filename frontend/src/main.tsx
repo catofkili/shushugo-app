@@ -5,7 +5,7 @@ import './styles.css';
 import './app.css';
 import './skins.css'; // 风格主题（纸本 / 圆圆）必须排在 app.css 之后，见 skins.css 开头
 import { initDatabase } from './lib/database';
-import { LocalArchiveUnreadableError, loadDatabase, registerPersistenceLifecycle } from './lib/storage';
+import { BrowserDatabaseInUseError, LocalArchiveUnreadableError, loadDatabase, registerPersistenceLifecycle } from './lib/storage';
 import { Sticker } from './components/CapybaraMascot';
 import { ensureSeedData } from './lib/study-core';
 import { applyYuzuEquipment } from './lib/yuzu';
@@ -201,6 +201,18 @@ async function bootWithDatabase() {
   try {
     restored = await loadDatabase();
   } catch (error) {
+    if (error instanceof BrowserDatabaseInUseError) {
+      root.render(
+        <div className="app-boot-loading grid min-h-screen place-items-center bg-[#555858] px-6 text-center text-white">
+          <div className="max-w-md">
+            <p className="text-xl font-bold">请使用一个学习窗口</p>
+            <p className="mt-3 text-sm leading-6 text-white/70">{error.message}</p>
+            <button className="focus-ring mt-6 rounded-2xl border border-white/20 px-4 py-2" onClick={() => window.location.reload()}>在此窗口重试</button>
+          </div>
+        </div>
+      );
+      return;
+    }
     if (error instanceof LocalArchiveUnreadableError) {
       renderArchiveRecovery(error);
       return;

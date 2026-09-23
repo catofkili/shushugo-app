@@ -102,10 +102,12 @@ const installIndexedDb = () => {
 
 beforeEach(() => {
   vi.useFakeTimers();
+  vi.stubGlobal('navigator', { locks: { request: (_name: string, _options: unknown, callback: (lock: object) => unknown) => Promise.resolve(callback({})) } });
 });
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
   files.clear();
   isNative.value = false;
   applyDelta.mockReset();
@@ -164,7 +166,7 @@ describe("导入整库备份", () => {
     await vi.runAllTimersAsync();
     await restore;
 
-    // ⚠️ 备份里带着导出那台设备的设备号,而 sync_uid = 设备号:本机自增 id。
+    // ⚠️ 备份里带着导出那台设备的设备号；新 sync_uid 还带随机尾段。
     // 不换的话,两台设备各答一道**不同**的题会撞成同一个 uid,云端按 uid
     // 合并时把后到的那条当重复丢掉 —— 一次静默的、不可逆的丢数据。
     expect(resetDeviceId).toHaveBeenCalled();

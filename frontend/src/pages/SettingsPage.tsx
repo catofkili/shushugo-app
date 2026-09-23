@@ -273,11 +273,10 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
   };
 
   const pullCloud = () => {
-    const confirmed = window.confirm("确定要用云端备份覆盖本机学习数据吗？建议先导出一份本机备份。");
+    const confirmed = window.confirm("确定要把当前账号的云端进度合并到本机吗？建议先导出一份本机备份。");
     if (!confirmed) return;
     runCloudAction(async () => {
       const text = await pullCloudBackup();
-      window.setTimeout(() => window.location.reload(), 900);
       return text;
     }, "云端备份已恢复。");
   };

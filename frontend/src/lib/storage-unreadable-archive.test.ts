@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // importDatabase 会真的起 sql.js/WASM，这里只关心「打不开时存档还在不在」。
 const importDatabase = vi.fn();
@@ -42,7 +42,12 @@ const installIndexedDb = (initial: Record<string, ArrayBuffer>) => {
   return store;
 };
 
+beforeEach(() => {
+  vi.stubGlobal('navigator', { locks: { request: async (_name: string, _options: unknown, callback: (lock: object) => unknown) => callback({}) } });
+});
+
 afterEach(() => {
+  vi.unstubAllGlobals();
   Reflect.deleteProperty(globalThis as Record<string, unknown>, "indexedDB");
   importDatabase.mockReset();
   vi.resetModules();

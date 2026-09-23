@@ -3,11 +3,12 @@ import { exportDatabase, getDatabase, openDatabase } from "../database";
 import {
   beginSyncApply,
   endSyncApply,
+  ensureLegacyMemoryColumns,
   ensureSyncSchema,
   SYNC_ORIGIN_COL,
   SYNC_UPDATED_COL
 } from "./schema";
-import { isDeviceLocalStateKey, syncedTablesForCloud, type SyncedTable } from "./tables";
+import { isDeviceLocalStateKey, SYNCED_TABLES, syncedTablesForCloud, type SyncedTable } from "./tables";
 import { isUserSyncSnapshot } from "./snapshot";
 import { canUseFeature, getEntitlements } from "../entitlements";
 import { rebuildStudyTimeAggregate } from "./study-time";
@@ -15,6 +16,7 @@ import { GRAMMAR_HIGHLIGHTS_UPDATED_EVENT, GRAMMAR_POSITIONS_UPDATED_EVENT } fro
 import { resetFamiliarityCache } from "../models/familiarity";
 import { resetQuestionMeaningIndex } from "../models/question-meaning-index";
 import { resetUserQuestionMeanings } from "../models/user-question-meanings";
+import { ensureFsrsColumns } from "../fsrs-store";
 
 const ROW_SEPARATOR = "\u001f";
 const DEFAULT_ORIGIN = "legacy";
@@ -55,6 +57,62 @@ const columnsOf = (db: Database, table: string): Set<string> => {
     return result;
   } finally {
     statement.free();
+  }
+};
+
+/**
+ * 新快照不能被「认识一半」的客户端重新上传。
+ *
+ * Worker 保存的是每次上传的完整用户快照；如果这里静默忽略一张新表或一列，
+ * 下一次上传就会把它从云端当前版本削掉。旧整库快照保持原有兼容路径，只有
+ * 带同步元数据的新格式需要在写入前确认本机可以无损往返。
+ */
+const assertSnapshotWritable = (
+  remote: Database,
+  local: Database,
+  entries: SyncedTable[]
+): void => {
+  const runtimeAddedColumns = new Set([
+    "sync_updated_at",
+    "sync_origin_device",
+    "sync_uid"
+  ]);
+  const allowed = new Set([
+    "sync_snapshot_meta",
+    "sync_tombstones",
+    // 小程序 0.1.x 自创的表，推上云的快照里会有。9-22 起小程序也用网页这套表，
+    // legacy-migrations 会把它们折进 achievements / 直接删掉 —— 丢弃正是想要的结果，
+    // 不能因为它们整次拒绝同步。
+    "direction_tasks",
+    "mode_tasks",
+    "achievement_unlocked",
+    ...entries.map((entry) => entry.table)
+  ]);
+  const statement = remote.prepare("SELECT name FROM sqlite_master WHERE type = 'table'");
+  const tables: string[] = [];
+  try {
+    while (statement.step()) tables.push(String(statement.get()[0] ?? ""));
+  } finally {
+    statement.free();
+  }
+  const unknown = tables
+    .filter((table) => table && table !== "sqlite_sequence" && !allowed.has(table));
+  if (unknown.length) {
+    throw new Error(`云端学习数据包含当前版本无法保留的表：${unknown.join(", ")}，请先更新应用。`);
+  }
+  for (const entry of entries) {
+    if (!tableExists(remote, entry.table)) continue;
+    if (!tableExists(local, entry.table)) {
+      throw new Error(`云端学习数据需要表 ${entry.table}，当前版本无法无损保存，请先更新应用。`);
+    }
+    const localColumns = columnsOf(local, entry.table);
+    const missing = [...columnsOf(remote, entry.table)]
+      .filter((column) => !localColumns.has(column) && !runtimeAddedColumns.has(column));
+    if (missing.length) {
+      throw new Error(
+        `云端学习数据的 ${entry.table} 包含当前版本无法保留的列：${missing.join(", ")}，请先更新应用。`
+      );
+    }
   }
 };
 
@@ -238,6 +296,10 @@ const applyTable = (
       if (current) changes.push(() => deleteRowByKey(db, entry, key));
       continue;
     }
+    // v1 快照可能没有 sync_uid。stateOf 已用「来源 + 原表 id」给它造了
+    // 稳定身份；写回时也要把这身份落进本机，避免远端合并后留下 NULL 事件，
+    // 下一次删除又无法写墓碑。
+    if (entry.strategy === "append" && !String(row.sync_uid ?? "")) row.sync_uid = key;
     // 云端的自增主键在本机没有意义:本机已有这行就沿用本机 id,
     // 是新行就把 id 拿掉,让 SQLite 重新分配一个不冲突的。
     for (const column of borrowedPrimaryColumns) {
@@ -298,10 +360,26 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
     const legacyFullSnapshot = tableExists(remoteDb, "words")
       && tableExists(remoteDb, "progress")
       && tableExists(remoteDb, "app_state");
-    if (!legacyFullSnapshot && !isUserSyncSnapshot(remoteDb)) {
+    const isNewSnapshot = isUserSyncSnapshot(remoteDb);
+    if (!legacyFullSnapshot && !isNewSnapshot) {
       throw new Error("云端学习数据格式无效，已保留本机数据。");
     }
     const syncedTables = syncedTablesForCloud(canUseFeature("weeklyReportCloudHistory", getEntitlements()));
+    // fsrs_* 列由运行时迁移按需补在各表上（单词、语法，以及混合学习的汉字卡 /
+    // 辨析卡 / 假名卡），本机可能还没碰过那张表。先按对端有什么就补什么，
+    // 再做能力检查，否则一个本可无损兼容的库会被误判成「新列无法保存」而整次同步被拒。
+    // 不手列实体：9-17 那版只列了四张表，9-20 加的混合学习表就被误拒过。
+    for (const entry of syncedTables) {
+      if (!tableExists(localDb, entry.table) || !tableExists(remoteDb, entry.table)) continue;
+      ensureLegacyMemoryColumns(entry.table);
+      const local = columnsOf(localDb, entry.table);
+      if ([...columnsOf(remoteDb, entry.table)].some((column) => column.startsWith("fsrs_") && !local.has(column))) {
+        ensureFsrsColumns({ table: entry.table, idColumn: "", eligible: "" });
+      }
+    }
+    // 能力检查依据版本支持的完整表结构；权益变化后遇到旧周报不应阻断普通进度。
+    // 实际合并范围仍由 syncedTables 控制，未参与的周报和墓碑保持本机原样。
+    if (isNewSnapshot) assertSnapshotWritable(remoteDb, localDb, SYNCED_TABLES);
     // 动态模块先加载完，再停同步触发器并进入事务；事务中不 await，用户作答不会
     // 插进“触发器关闭”的窗口，也不会出现前几张表成功、后面失败的半份合并。
     const replayKanjiUnitReviews = tableExists(localDb, "kanji_unit_reviews")

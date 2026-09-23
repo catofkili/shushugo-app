@@ -1123,6 +1123,11 @@ var init_tables = __esm({
       "sync_device_id",
       "sync_cursor",
       "sync_last_pushed_at",
+      "sync_generation",
+      "sync_last_modified",
+      "auth_access_token",
+      "auth_user_id",
+      "entitlement_cache",
       // 本机快照的水位线(见 local-delta.ts)。**绝不能跨设备同步**:
       // 它是「本机磁盘上那份快照停在哪一刻」,拿对端的值当基准去收集增量,
       // 收出来的行会对不上本机的快照,重启后就是一份两边拼起来的库。
@@ -1178,15 +1183,26 @@ function recordStudySeconds(day, seconds, atMs = Date.now()) {
 }
 function rebuildStudyTimeAggregate() {
   const db = (0, import_database4.getDatabase)();
-  db.run(`
-    INSERT INTO word_study_time (studied_on, seconds, updated_at)
-    SELECT studied_on, SUM(seconds), CURRENT_TIMESTAMP
-    FROM ${STUDY_TIME_TABLE}
-    GROUP BY studied_on
-    ON CONFLICT(studied_on) DO UPDATE SET
-      seconds = excluded.seconds,
-      updated_at = CURRENT_TIMESTAMP
-  `);
+  db.run("SAVEPOINT rebuild_study_time");
+  try {
+    db.run(`DELETE FROM word_study_time WHERE NOT EXISTS (
+      SELECT 1 FROM ${STUDY_TIME_TABLE} d WHERE d.studied_on = word_study_time.studied_on
+    )`);
+    db.run(`
+      INSERT INTO word_study_time (studied_on, seconds, updated_at)
+      SELECT studied_on, SUM(seconds), CURRENT_TIMESTAMP
+      FROM ${STUDY_TIME_TABLE}
+      GROUP BY studied_on
+      ON CONFLICT(studied_on) DO UPDATE SET
+        seconds = excluded.seconds,
+        updated_at = CURRENT_TIMESTAMP
+    `);
+    db.run("RELEASE rebuild_study_time");
+  } catch (error) {
+    db.run("ROLLBACK TO rebuild_study_time");
+    db.run("RELEASE rebuild_study_time");
+    throw error;
+  }
 }
 function backfillStudyTimeByDevice() {
   const pending = rowsFor(`
@@ -1195,6 +1211,11 @@ function backfillStudyTimeByDevice() {
     WHERE t.seconds > 0
       AND NOT EXISTS (
         SELECT 1 FROM ${STUDY_TIME_TABLE} d WHERE d.studied_on = t.studied_on
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM sync_tombstones s
+        WHERE s.table_name = '${STUDY_TIME_TABLE}'
+          AND substr(s.row_key, 1, length(t.studied_on) + 1) = t.studied_on || char(31)
       )
   `);
   if (!pending.length) return;
@@ -1266,11 +1287,30 @@ __export(schema_exports, {
   SYNC_UPDATED_COL: () => SYNC_UPDATED_COL,
   beginSyncApply: () => beginSyncApply,
   endSyncApply: () => endSyncApply,
+  ensureLegacyMemoryColumns: () => ensureLegacyMemoryColumns,
   ensureSyncSchema: () => ensureSyncSchema,
   getDeviceId: () => getDeviceId,
   resetDeviceId: () => resetDeviceId,
   withoutSyncStamp: () => withoutSyncStamp
 });
+function ensureLegacyMemoryColumns(table2) {
+  if (table2 !== "reverse_memory" && table2 !== "kanji_reading_memory") return;
+  if (!tableExists2(table2)) return;
+  const columns = columnsOf2(table2);
+  const compatibilityColumns = {
+    score: "INTEGER NOT NULL DEFAULT 0",
+    low_history: "INTEGER NOT NULL DEFAULT 0",
+    known_forever: "INTEGER NOT NULL DEFAULT 0",
+    mastered_on: "TEXT",
+    mistake_streak: "INTEGER NOT NULL DEFAULT 0",
+    last_decay_amount: "INTEGER DEFAULT 10",
+    right_streak: "INTEGER NOT NULL DEFAULT 0",
+    auto_retired_on: "TEXT"
+  };
+  for (const [column, definition] of Object.entries(compatibilityColumns)) {
+    if (!columns.has(column)) (0, import_database5.getDatabase)().run(`ALTER TABLE ${table2} ADD COLUMN ${column} ${definition}`);
+  }
+}
 function ensureSyncSchema() {
   const db = (0, import_database5.getDatabase)();
   if (schemaReadyDbs.has(db)) return;
@@ -1330,6 +1370,7 @@ function ensureSyncSchema() {
       if (!columns.has("fsrs_params_version")) db.run("ALTER TABLE reviews ADD COLUMN fsrs_params_version TEXT NOT NULL DEFAULT 'legacy'");
       if (!columns.has("event_source")) db.run("ALTER TABLE reviews ADD COLUMN event_source TEXT NOT NULL DEFAULT 'legacy'");
     }
+    ensureLegacyMemoryColumns(entry.table);
     ensureTrackingColumns(entry);
     ensureTriggers(entry);
   }
@@ -1430,7 +1471,7 @@ var init_schema2 = __esm({
       const db = (0, import_database5.getDatabase)();
       const { table: table2 } = entry;
       const uidAssign = entry.strategy === "append" ? `, ${SYNC_UID_COL} = COALESCE(NEW.${SYNC_UID_COL},
-         (SELECT id FROM sync_device LIMIT 1) || ':' || CAST(NEW.id AS TEXT))` : "";
+         (SELECT id FROM sync_device LIMIT 1) || ':' || lower(hex(randomblob(16))))` : "";
       db.run(`DROP TRIGGER IF EXISTS trg_${table2}_sync_insert`);
       db.run(`DROP TRIGGER IF EXISTS trg_${table2}_sync_update`);
       db.run(`DROP TRIGGER IF EXISTS trg_${table2}_sync_delete`);
@@ -16595,6 +16636,7 @@ var GRAMMAR_POSITIONS_UPDATED_EVENT = "grammar-positions-updated";
 init_familiarity();
 init_question_meaning_index();
 init_user_question_meanings();
+init_fsrs_store();
 var ROW_SEPARATOR = "";
 var DEFAULT_ORIGIN = "legacy";
 var quoteIdentifier3 = (value) => `"${value.replace(/"/g, '""')}"`;
@@ -16616,6 +16658,48 @@ var columnsOf4 = (db, table2) => {
     return result;
   } finally {
     statement.free();
+  }
+};
+var assertSnapshotWritable = (remote, local, entries2) => {
+  const runtimeAddedColumns = /* @__PURE__ */ new Set([
+    "sync_updated_at",
+    "sync_origin_device",
+    "sync_uid"
+  ]);
+  const allowed = /* @__PURE__ */ new Set([
+    "sync_snapshot_meta",
+    "sync_tombstones",
+    // 小程序 0.1.x 自创的表，推上云的快照里会有。9-22 起小程序也用网页这套表，
+    // legacy-migrations 会把它们折进 achievements / 直接删掉 —— 丢弃正是想要的结果，
+    // 不能因为它们整次拒绝同步。
+    "direction_tasks",
+    "mode_tasks",
+    "achievement_unlocked",
+    ...entries2.map((entry) => entry.table)
+  ]);
+  const statement = remote.prepare("SELECT name FROM sqlite_master WHERE type = 'table'");
+  const tables = [];
+  try {
+    while (statement.step()) tables.push(String(statement.get()[0] ?? ""));
+  } finally {
+    statement.free();
+  }
+  const unknown = tables.filter((table2) => table2 && table2 !== "sqlite_sequence" && !allowed.has(table2));
+  if (unknown.length) {
+    throw new Error(`\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\u5305\u542B\u5F53\u524D\u7248\u672C\u65E0\u6CD5\u4FDD\u7559\u7684\u8868\uFF1A${unknown.join(", ")}\uFF0C\u8BF7\u5148\u66F4\u65B0\u5E94\u7528\u3002`);
+  }
+  for (const entry of entries2) {
+    if (!tableExists4(remote, entry.table)) continue;
+    if (!tableExists4(local, entry.table)) {
+      throw new Error(`\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\u9700\u8981\u8868 ${entry.table}\uFF0C\u5F53\u524D\u7248\u672C\u65E0\u6CD5\u65E0\u635F\u4FDD\u5B58\uFF0C\u8BF7\u5148\u66F4\u65B0\u5E94\u7528\u3002`);
+    }
+    const localColumns = columnsOf4(local, entry.table);
+    const missing = [...columnsOf4(remote, entry.table)].filter((column) => !localColumns.has(column) && !runtimeAddedColumns.has(column));
+    if (missing.length) {
+      throw new Error(
+        `\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\u7684 ${entry.table} \u5305\u542B\u5F53\u524D\u7248\u672C\u65E0\u6CD5\u4FDD\u7559\u7684\u5217\uFF1A${missing.join(", ")}\uFF0C\u8BF7\u5148\u66F4\u65B0\u5E94\u7528\u3002`
+      );
+    }
   }
 };
 var rowsOf = (db, table2) => {
@@ -16752,6 +16836,7 @@ var applyTable = (db, entry, selected) => {
       if (current) changes.push(() => deleteRowByKey(db, entry, key));
       continue;
     }
+    if (entry.strategy === "append" && !String(row.sync_uid ?? "")) row.sync_uid = key;
     for (const column of borrowedPrimaryColumns) {
       if (current && current[column] != null) row[column] = current[column];
       else delete row[column];
@@ -16796,10 +16881,20 @@ async function mergeDatabaseBytes(remoteBytes) {
   const remoteDb = await (0, import_database33.openDatabase)(remoteBytes);
   try {
     const legacyFullSnapshot = tableExists4(remoteDb, "words") && tableExists4(remoteDb, "progress") && tableExists4(remoteDb, "app_state");
-    if (!legacyFullSnapshot && !isUserSyncSnapshot(remoteDb)) {
+    const isNewSnapshot = isUserSyncSnapshot(remoteDb);
+    if (!legacyFullSnapshot && !isNewSnapshot) {
       throw new Error("\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\u683C\u5F0F\u65E0\u6548\uFF0C\u5DF2\u4FDD\u7559\u672C\u673A\u6570\u636E\u3002");
     }
     const syncedTables = syncedTablesForCloud((0, import_entitlements2.canUseFeature)("weeklyReportCloudHistory", (0, import_entitlements2.getEntitlements)()));
+    for (const entry of syncedTables) {
+      if (!tableExists4(localDb, entry.table) || !tableExists4(remoteDb, entry.table)) continue;
+      ensureLegacyMemoryColumns(entry.table);
+      const local = columnsOf4(localDb, entry.table);
+      if ([...columnsOf4(remoteDb, entry.table)].some((column) => column.startsWith("fsrs_") && !local.has(column))) {
+        ensureFsrsColumns({ table: entry.table, idColumn: "", eligible: "" });
+      }
+    }
+    if (isNewSnapshot) assertSnapshotWritable(remoteDb, localDb, SYNCED_TABLES);
     const replayKanjiUnitReviews2 = tableExists4(localDb, "kanji_unit_reviews") ? (await Promise.resolve().then(() => (init_kanji_unit_scheduler(), kanji_unit_scheduler_exports))).replayKanjiUnitReviews : void 0;
     const replayKanjiCharReviews2 = tableExists4(localDb, "kanji_char_reviews") ? (await Promise.resolve().then(() => (init_kanji_char_cards(), kanji_char_cards_exports))).replayKanjiCharReviews : void 0;
     const replayConfusionReviews2 = tableExists4(localDb, "confusion_reviews") ? (await Promise.resolve().then(() => (init_confusion_cards(), confusion_cards_exports))).replayConfusionReviews : void 0;
@@ -16930,6 +17025,9 @@ var YUZU_ITEMS = [
   { id: "theme-matcha", name: "\u62B9\u8336", description: "\u9752\u7EFF\u4E3B\u8272\u6362\u6210\u62B9\u8336\u7EFF", category: "theme", price: 200 },
   { id: "theme-sakura", name: "\u6A31", description: "\u7C89\u5E95\u6A31\u8272", category: "theme", price: 200 },
   { id: "theme-night", name: "\u6DF1\u591C\u98DF\u5802", description: "\u6697\u7425\u73C0\u6696\u8C03\u7684\u591C\u95F4\u914D\u8272", category: "theme", price: 200 },
+  // 下面两件不只换颜色，还换质感（投影、边框、按钮、字体），样式在 skins.css
+  { id: "theme-paper", name: "\u7EB8\u672C", description: "\u5976\u6CB9\u7EB8\u8272\u3001\u58A8\u8272\u4E3B\u952E\u3001\u7EC6\u7EBF\u5206\u9694\uFF0C\u50CF\u4E00\u672C\u5B89\u9759\u7684\u5355\u8BCD\u672C", category: "theme", price: 300 },
+  { id: "theme-round", name: "\u5706\u5706", description: "\u767D\u5E95\u5706\u4F53\u3001\u4F1A\u6309\u4E0B\u53BB\u7684\u7ACB\u4F53\u6309\u94AE\u3001\u67DA\u5B50\u6A59\u70B9\u7F00", category: "theme", price: 300 },
   { id: "mascot-croc", name: "\u9CC4\u9C7C", description: "\u6362\u4E00\u53EA\u9CC4\u9C7C:\u8868\u60C5\u3001\u9875\u9762\u56FE\u6807\u3001\u7A7A\u72B6\u6001\u63D2\u753B\u6574\u5957\u6362\u3002\u5C0F\u8DEF\u4E0A\u8D70\u7684\u8FD8\u662F\u6C34\u8C5A", category: "mascot", price: 300 },
   { id: "icon-happy", name: "\u5F00\u5FC3\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u5F00\u5FC3\u8868\u60C5", category: "icon", price: 500, soon: true, art: "mood-happy" },
   { id: "icon-study", name: "\u8BFB\u4E66\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u8BFB\u4E66\u8868\u60C5", category: "icon", price: 500, soon: true, art: "mood-study" },

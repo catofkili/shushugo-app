@@ -1136,7 +1136,8 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
         });
         const remoteModified = remote.last_modified;
         if (!remote.available || !remoteModified) {
-          return pushCloudDatabase(session, undefined, undefined, true);
+          // 空云端也有 generation=0；带上它可避免两台设备首次上传时互相覆盖。
+          return pushCloudDatabase(session, remote.generation, remoteModified ?? undefined, true);
         }
 
         const remoteGeneration = remote.generation;
