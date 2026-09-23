@@ -80,6 +80,15 @@ npx wrangler secret put WECHAT_APP_ID
 npx wrangler secret put WECHAT_APP_SECRET
 ```
 
+移动 App 微信登录（微信开放平台“移动应用”审核通过后再配置；不是上面的小程序凭据）：
+
+```bash
+npx wrangler secret put WECHAT_MOBILE_APP_ID
+npx wrangler secret put WECHAT_MOBILE_APP_SECRET
+```
+
+只配置 Worker secret 不会让 iOS 自动出现微信登录。还必须完成微信 OpenSDK、Universal Link、URL Scheme、开放平台应用审核和真机回调；`/api/health` 的 `wechatAppLoginConfigured=true` 只验证服务端凭据存在。详见 [`WECHAT_APP_LOGIN.md`](WECHAT_APP_LOGIN.md)。
+
 生产认证加固开关必须在 Turnstile 与 Resend 均配置成功之后打开：
 
 ```bash

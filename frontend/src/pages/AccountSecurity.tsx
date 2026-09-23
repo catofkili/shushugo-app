@@ -1,11 +1,12 @@
-import { Apple, ArrowLeft, Check, Crown, KeyRound, ReceiptText, Shield, Smartphone, Trash2, User } from "lucide-react";
+import { Apple, ArrowLeft, Check, Crown, KeyRound, MessageCircle, ReceiptText, Shield, Smartphone, Trash2, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { productLabel } from "../lib/entitlements";
 import { clearLocalPasscode, getPasscodeState, setLocalPasscode, type PasscodeState } from "../lib/localPasscode";
-import { changeCloudPassword, deleteCloudAccount, getCloudAuthConfig, linkCloudApple, type CloudSession } from "../lib/sync-api";
+import { changeCloudPassword, deleteCloudAccount, getCloudAuthConfig, linkCloudApple, linkCloudWechatApp, type CloudSession } from "../lib/sync-api";
 import { requestAppleCredential } from "../lib/apple-auth";
+import { isWechatAppLoginAvailable, requestWechatAppCode } from "../lib/wechat-auth";
 
 interface AccountSecurityProps {
   onBack: () => void;
@@ -28,12 +29,18 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
   const [accountConfirmPassword, setAccountConfirmPassword] = useState("");
   const [deletePanelOpen, setDeletePanelOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
+  const [wechatAvailable, setWechatAvailable] = useState(false);
 
   useEffect(() => {
     let alive = true;
     getPasscodeState().then((state) => {
       if (alive) setPasscodeState(state);
     });
+    getCloudAuthConfig()
+      .then((config) => {
+        if (alive) setWechatAvailable(isWechatAppLoginAvailable(config));
+      })
+      .catch(() => undefined);
     return () => {
       alive = false;
     };
@@ -68,10 +75,12 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
     try {
       if (cloudSession.authProviders?.includes("email")) {
         await deleteCloudAccount(deletePassword);
-      } else {
+      } else if (cloudSession.authProviders?.includes("apple")) {
         const config = await getCloudAuthConfig();
         const credential = await requestAppleCredential(config);
         await deleteCloudAccount("", credential);
+      } else {
+        await deleteCloudAccount("");
       }
       onBack();
     } catch (error) {
@@ -91,6 +100,21 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
       finishSuccess("Apple 登录已关联。");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Apple 登录关联失败。");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const connectWechat = async () => {
+    setSaving(true);
+    setMessage("");
+    try {
+      const config = await getCloudAuthConfig();
+      const code = await requestWechatAppCode(config);
+      await linkCloudWechatApp(code);
+      finishSuccess("微信登录已关联。");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "微信登录关联失败。");
     } finally {
       setSaving(false);
     }
@@ -224,6 +248,23 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
             >
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white text-black"><Apple size={20} fill="currentColor" /></div>
               <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">关联 Apple 登录</p><p className="mt-0.5 text-xs text-white/50">关联后可使用 Face ID 或 Apple 账号登录</p></div>
+            </button>
+          )}
+          {cloudSession.authProviders?.includes("wechat") && (
+            <div className="flex w-full items-center gap-3 border-b border-white/10 p-4">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#07C160] text-white"><MessageCircle size={20} fill="currentColor" /></div>
+              <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">微信登录</p><p className="mt-0.5 text-xs text-white/50">已关联，可从 App 唤起微信登录</p></div>
+              <span className="text-xs font-bold text-[#B7E38D]">已关联</span>
+            </div>
+          )}
+          {!cloudSession.authProviders?.includes("wechat") && wechatAvailable && (
+            <button
+              onClick={() => void connectWechat()}
+              disabled={saving}
+              className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151] disabled:opacity-50"
+            >
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#07C160] text-white"><MessageCircle size={20} fill="currentColor" /></div>
+              <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">关联微信登录</p><p className="mt-0.5 text-xs text-white/50">已有账号请在这里关联，避免创建重复账号</p></div>
             </button>
           )}
           <button
@@ -364,8 +405,10 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
           <div className="border-t border-red-300/15 p-4">
             {cloudSession.authProviders?.includes("email") ? (
               <input type="password" value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} className="focus-ring w-full rounded-2xl border border-red-300/25 bg-[#3c3f3f] px-3 py-2 text-sm text-white" placeholder="输入账号密码确认" />
-            ) : (
+            ) : cloudSession.authProviders?.includes("apple") ? (
               <p className="text-xs leading-5 text-white/55">继续后会调用 Apple 登录重新验证身份。</p>
+            ) : (
+              <p className="text-xs leading-5 text-white/55">微信账号没有可再次输入的密码；继续后将使用当前有效登录会话确认删除。</p>
             )}
             <button onClick={() => void removeAccount()} disabled={saving || (Boolean(cloudSession.authProviders?.includes("email")) && deletePassword.length < 8)} className="focus-ring mt-3 w-full rounded-2xl bg-red-400 px-4 py-2 text-sm font-bold text-red-950 disabled:opacity-50">永久删除账号</button>
           </div>

@@ -1,4 +1,4 @@
-import { Apple, ArrowLeft, Check, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, ShieldCheck, X } from "lucide-react";
+import { Apple, ArrowLeft, Check, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, MessageCircle, ShieldCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { requestAppleCredential } from "../lib/apple-auth";
 import { Capacitor } from "@capacitor/core";
@@ -6,6 +6,7 @@ import {
   cloudAppleLogin,
   cloudLogin,
   cloudRegister,
+  cloudWechatAppLogin,
   getCloudApiUrl,
   getCloudAuthConfig,
   isCloudErrorCode,
@@ -16,10 +17,11 @@ import {
   type CloudAuthConfig,
   type CloudSession
 } from "../lib/sync-api";
+import { isWechatAppLoginAvailable, requestWechatAppCode } from "../lib/wechat-auth";
 import { PRIVACY_POLICY_EFFECTIVE_DATE, PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_TITLE } from "../lib/privacy-policy-content";
 import { USER_AGREEMENT_EFFECTIVE_DATE, USER_AGREEMENT_SECTIONS, USER_AGREEMENT_TITLE } from "../lib/user-agreement-content";
 
-type AuthMode = "login" | "register" | "reset" | "apple-consent" | "terms" | "privacy" | "success";
+type AuthMode = "login" | "register" | "reset" | "apple-consent" | "wechat-consent" | "terms" | "privacy" | "success";
 type TurnstileAction = "register" | "login" | "password_reset";
 
 interface AuthDialogProps {
@@ -53,7 +55,7 @@ function TurnstileFrame({ action, onToken }: { action: TurnstileAction; onToken:
 export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) {
   const [mode, setMode] = useState<AuthMode>("login");
   const [returnMode, setReturnMode] = useState<AuthMode>("login");
-  const [config, setConfig] = useState<CloudAuthConfig>({ appleEnabled: false, turnstileEnabled: false });
+  const [config, setConfig] = useState<CloudAuthConfig>({ appleEnabled: false, wechatAppEnabled: false, turnstileEnabled: false });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -71,6 +73,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
     Capacitor.isNativePlatform()
     || Boolean(import.meta.env.VITE_APPLE_CLIENT_ID && import.meta.env.VITE_APPLE_REDIRECT_URI)
   );
+  const wechatLoginAvailable = isWechatAppLoginAvailable(config);
 
   useEffect(() => {
     if (!open) return;
@@ -92,6 +95,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
     register: "创建收集日账号",
     reset: "重置密码",
     "apple-consent": "完成 Apple 账号创建",
+    "wechat-consent": "完成微信账号创建",
     terms: USER_AGREEMENT_TITLE,
     privacy: PRIVACY_POLICY_TITLE,
     success: "设置完成"
@@ -180,6 +184,31 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
     await appleLogin({ ...pendingApple, displayName: nickname || pendingApple.displayName, consentAccepted: true });
   };
 
+  const wechatLogin = async (consentAccepted = false) => {
+    setBusy(true);
+    setMessage("");
+    try {
+      const code = await requestWechatAppCode(config);
+      await finish(await cloudWechatAppLogin({ code, displayName: nickname || undefined, consentAccepted }));
+    } catch (error) {
+      if (isCloudErrorCode(error, "CONSENT_REQUIRED")) {
+        setConsented(false);
+        setMode("wechat-consent");
+        setMessage("首次使用微信登录。已有收集日账号请返回后先用原方式登录，再到账号安全页关联微信；否则确认协议后会创建新账号。");
+      } else {
+        handleError(error);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const continueWechatCreation = async () => {
+    if (!consented) return setMessage("请先阅读并同意用户协议和隐私政策。");
+    // 微信 code 只能使用一次；协议确认后重新唤起微信，不能复用首次探测所消耗的 code。
+    await wechatLogin(true);
+  };
+
   const sendResetCode = async () => {
     setBusy(true);
     setMessage("");
@@ -263,6 +292,16 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
               {mode === "login" && (
                 <>
                   <p className="text-sm leading-6 text-white/58">不登录也能离线学习。</p>
+                  {wechatLoginAvailable && (
+                    <button
+                      onClick={() => void wechatLogin()}
+                      disabled={busy}
+                      className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-[#07C160] px-4 py-3 text-sm font-bold text-white hover:bg-[#06ad56] disabled:opacity-45"
+                    >
+                      <MessageCircle size={20} fill="currentColor" />
+                      使用微信登录
+                    </button>
+                  )}
                   <button
                     onClick={() => void appleLogin()}
                     disabled={busy || !appleLoginAvailable}
@@ -303,7 +342,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
                 </>
               )}
 
-              {mode === "apple-consent" && (
+              {(mode === "apple-consent" || mode === "wechat-consent") && (
                 <label className="block"><span className="mb-1.5 block text-xs font-bold text-white/62">昵称（可修改）</span><input value={nickname || pendingApple?.displayName || ""} maxLength={20} onChange={(event) => setNickname(event.target.value)} className="focus-ring w-full rounded-2xl border border-white/16 bg-[#242a24] px-3 py-3 text-sm text-white" /></label>
               )}
 
@@ -314,7 +353,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
                 </>
               )}
 
-              {(mode === "register" || mode === "apple-consent") && (
+              {(mode === "register" || mode === "apple-consent" || mode === "wechat-consent") && (
                 <label className="flex items-start gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 text-xs leading-5 text-white/58">
                   <input type="checkbox" checked={consented} onChange={(event) => setConsented(event.target.checked)} className="peer sr-only" />
                   <span aria-hidden="true" className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border border-[#B7E38D]/55 bg-[#202720] text-[#172112] peer-checked:bg-[#91C968]">
@@ -331,11 +370,12 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
               {mode === "login" && <button onClick={() => void login()} disabled={busy || !email || !password || (turnstileAction === "login" && !turnstileToken)} className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-[#91C968] px-4 py-3 text-sm font-bold text-[#172112] disabled:opacity-45">{busy && <LoaderCircle size={17} className="animate-spin" />}登录</button>}
               {mode === "register" && <button onClick={() => void register()} disabled={busy || !email || password.length < 8 || !nickname || (config.turnstileEnabled && !turnstileToken)} className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-[#91C968] px-4 py-3 text-sm font-bold text-[#172112] disabled:opacity-45">{busy && <LoaderCircle size={17} className="animate-spin" />}创建账号</button>}
               {mode === "apple-consent" && <button onClick={() => void continueAppleCreation()} disabled={busy || !consented} className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-[#91C968] px-4 py-3 text-sm font-bold text-[#172112] disabled:opacity-45"><ShieldCheck size={18} />同意并创建账号</button>}
+              {mode === "wechat-consent" && <button onClick={() => void continueWechatCreation()} disabled={busy || !consented} className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-[#07C160] px-4 py-3 text-sm font-bold text-white disabled:opacity-45"><MessageCircle size={18} fill="currentColor" />同意并使用微信创建账号</button>}
               {mode === "reset" && <button onClick={() => void resetPassword()} disabled={busy || resetCode.length !== 6 || newPassword.length < 8} className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-[#91C968] px-4 py-3 text-sm font-bold text-[#172112] disabled:opacity-45">确认重置密码</button>}
 
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs font-bold text-white/55">
                 {mode === "login" && <><button onClick={() => { setMode("register"); setMessage(""); }}>创建邮箱账号</button><button onClick={() => { setMode("reset"); setMessage(""); }}>忘记密码</button></>}
-                {(mode === "register" || mode === "reset" || mode === "apple-consent") && <button onClick={() => { setMode("login"); setMessage(""); }}>返回登录</button>}
+                {(mode === "register" || mode === "reset" || mode === "apple-consent" || mode === "wechat-consent") && <button onClick={() => { setMode("login"); setMessage(""); }}>返回登录</button>}
                 {mode === "login" && <><button onClick={() => openLegal("terms")}>用户协议</button><button onClick={() => openLegal("privacy")}>隐私政策</button></>}
               </div>
             </div>

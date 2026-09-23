@@ -11,7 +11,6 @@ import {
   USER_AGREEMENT_VERSION
 } from "../../frontend/src/lib/user-agreement-content";
 import { entitlementStrength } from "./entitlement-rules";
-import { matchedWechatUser, wechatSubjects } from "./wechat-identity";
 import {
   configured as wechatPayConfigured,
   createOrder as createWechatOrder,
@@ -46,8 +45,12 @@ export interface Env {
   APPLE_SIGN_IN_CLIENT_ID?: string;
   TURNSTILE_SITE_KEY?: string;
   TURNSTILE_SECRET_KEY?: string;
+  /** 微信小程序身份与虚拟支付。 */
   WECHAT_APP_ID?: string;
   WECHAT_APP_SECRET?: string;
+  /** 微信开放平台「移动应用」凭据，与小程序 AppID/Secret 不是同一组。 */
+  WECHAT_MOBILE_APP_ID?: string;
+  WECHAT_MOBILE_APP_SECRET?: string;
   /** 虚拟支付（个人主体）：小程序后台「支付与交易」自助开通后给的 */
   WECHAT_OFFER_ID?: string;
   WECHAT_PAY_APP_KEY?: string;
@@ -578,7 +581,7 @@ const verifyAppleIdentityToken = async (identityToken: string, env: Env, expecte
 };
 
 const identityProviders = async (env: Env, userId: string) => {
-  const rows = await env.DB.prepare("SELECT provider FROM auth_identities WHERE user_id = ? ORDER BY provider")
+  const rows = await env.DB.prepare("SELECT DISTINCT provider FROM auth_identities WHERE user_id = ? ORDER BY provider")
     .bind(userId)
     .all<{ provider: "email" | "apple" | "wechat" }>();
   return (rows.results ?? []).map((row) => row.provider);
@@ -1117,6 +1120,72 @@ const appleLogin = async (request: Request, env: Env) => {
   return json({ ...(await sessionPayload(env, user!, await createToken(env, id))), isNewAccount: true });
 };
 
+type WechatLoginKind = "mini" | "mobile";
+
+const wechatIdentitySubjects = (kind: WechatLoginKind, openid: string, unionid?: string) => [
+  ...(unionid ? [`unionid:${unionid}`] : []),
+  kind === "mini" ? `openid:${openid}` : `mobile-openid:${openid}`
+];
+
+const findWechatIdentity = async (env: Env, subjects: string[]) => {
+  const rows = await env.DB.prepare(`
+    SELECT provider, provider_subject, user_id, email
+    FROM auth_identities
+    WHERE provider = 'wechat' AND provider_subject IN (${subjects.map(() => "?").join(", ")})
+  `).bind(...subjects).all<AuthIdentityRow>();
+  const identities = rows.results ?? [];
+  if (new Set(identities.map((identity) => identity.user_id)).size > 1) {
+    throw json({
+      detail: "这个微信身份关联到了多个收集日账号，请联系客服处理，系统不会自动合并学习数据。",
+      code: "WECHAT_IDENTITY_CONFLICT"
+    }, 409);
+  }
+  return identities[0] ?? null;
+};
+
+const linkWechatSubjects = async (env: Env, userId: string, subjects: string[], email: string) => {
+  const existing = await findWechatIdentity(env, subjects);
+  if (existing && existing.user_id !== userId) {
+    throw json({ detail: "这个微信账号已关联其他收集日账号。", code: "ACCOUNT_LINK_CONFLICT" }, 409);
+  }
+  const now = new Date().toISOString();
+  await env.DB.batch(subjects.map((subject) => env.DB.prepare(`
+    INSERT OR IGNORE INTO auth_identities (provider, provider_subject, user_id, email, created_at)
+    VALUES ('wechat', ?, ?, ?, ?)
+  `).bind(subject, userId, email, now)));
+  const linked = await findWechatIdentity(env, subjects);
+  if (!linked || linked.user_id !== userId) {
+    throw json({ detail: "这个微信账号已关联其他收集日账号。", code: "ACCOUNT_LINK_CONFLICT" }, 409);
+  }
+};
+
+const createWechatUser = async (env: Env, subjects: string[], displayName?: string) => {
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const salt = randomToken(16);
+  const inaccessiblePasswordHash = await hashPassword(randomToken(32), salt);
+  const email = `wechat-${(await sha256(subjects[0])).slice(0, 32)}@wechat.invalid`;
+  await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO users (
+        id, email, password_hash, password_salt, display_name, email_verified_at,
+        created_at, last_login, profile_updated_at, terms_version, privacy_version, consented_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id, email, inaccessiblePasswordHash, salt, displayName?.trim() || null, now,
+      now, now, now, USER_AGREEMENT_VERSION, PRIVACY_POLICY_VERSION, now
+    ),
+    ...subjects.map((subject) => env.DB.prepare(`
+      INSERT INTO auth_identities (provider, provider_subject, user_id, email, created_at)
+      VALUES ('wechat', ?, ?, ?, ?)
+    `).bind(subject, id, email, now))
+  ]);
+  return (await env.DB.prepare(`
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+    FROM users WHERE id = ?
+  `).bind(id).first<UserRow>())!;
+};
+
 // 微信小程序登录：code 只在服务端向微信换取 openid/unionid，永不把 app
 // secret 放进小程序代码包。没有配置凭据时明确返回 501，而不是签发一个
 // 看似成功但无法续期的本地 token。
@@ -1143,7 +1212,7 @@ const wechatLogin = async (request: Request, env: Env) => {
     return json({ detail: "微信登录凭证无效或已过期。", code: "WECHAT_CODE_INVALID" }, 401);
   }
   const openid = result.openid;
-  const subjects = wechatSubjects(openid, result.unionid);
+  const subjects = wechatIdentitySubjects("mini", openid, result.unionid);
   // 虚拟支付的 signature 要用 session_key 签、查单要 openid：登录那一刻记下来，
   // 每次登录覆盖（session_key 随 wx.login 刷新）。KV 30 天，过期了让用户重新登录一次。
   const rememberWechatSession = (userId: string) => env.SYNC_DATA.put(
@@ -1151,39 +1220,18 @@ const wechatLogin = async (request: Request, env: Env) => {
     JSON.stringify({ openid, sessionKey: result.session_key ?? "" } satisfies WechatSession),
     { expirationTtl: 30 * 24 * 60 * 60 }
   );
-  const identities = await env.DB.prepare(`
-    SELECT provider, provider_subject, user_id, email
-    FROM auth_identities WHERE provider = 'wechat'
-      AND provider_subject IN (${subjects.map(() => '?').join(', ')})
-  `).bind(...subjects).all<AuthIdentityRow>();
-  const matched = identities.results ?? [];
-  let matchedUserId: string | null;
-  try { matchedUserId = matchedWechatUser(matched); } catch {
-    // UnionID 和 OpenID 已分别落到两个账号时不能猜谁是真身，也不能静默合并学习数据。
-    return json({ detail: "这个微信身份关联到了多个账号，请联系支持处理。", code: "WECHAT_IDENTITY_CONFLICT" }, 409);
-  }
-  if (matchedUserId) {
-    const userId = matchedUserId;
+  const identity = await findWechatIdentity(env, subjects);
+  if (identity) {
     const user = await env.DB.prepare(`
       SELECT id, email, password_hash, password_salt, display_name, email_verified_at
       FROM users WHERE id = ?
-    `).bind(userId).first<UserRow>();
+    `).bind(identity.user_id).first<UserRow>();
     if (!user) return json({ detail: "微信账号关联的用户不存在。" }, 404);
-    const now = new Date().toISOString();
-    for (const subject of subjects) {
-      await env.DB.prepare(`
-        INSERT OR IGNORE INTO auth_identities (provider, provider_subject, user_id, email, created_at)
-        VALUES ('wechat', ?, ?, ?, ?)
-      `).bind(subject, user.id, user.email, now).run();
-      const owner = await env.DB.prepare(`
-        SELECT user_id FROM auth_identities WHERE provider = 'wechat' AND provider_subject = ?
-      `).bind(subject).first<{ user_id: string }>();
-      if (owner?.user_id !== user.id) {
-        return json({ detail: "这个微信身份已经属于另一个账号，请联系支持处理。", code: "WECHAT_IDENTITY_CONFLICT" }, 409);
-      }
-    }
     await env.DB.prepare("UPDATE users SET last_login = ? WHERE id = ?")
-      .bind(now, user.id).run();
+      .bind(new Date().toISOString(), user.id).run();
+    // 旧账号可能只有小程序 openid；绑定开放平台后第一次拿到 unionid 时补上别名，
+    // 之后移动 App 才能认回同一个 user_id，而不是创建第二份学习数据。
+    await linkWechatSubjects(env, user.id, subjects, user.email);
     await rememberWechatSession(user.id);
     return json({ ...(await sessionPayload(env, user, await createToken(env, user.id))), isNewAccount: false });
   }
@@ -1191,33 +1239,86 @@ const wechatLogin = async (request: Request, env: Env) => {
   if (body.terms_version !== USER_AGREEMENT_VERSION || body.privacy_version !== PRIVACY_POLICY_VERSION) {
     return json({ detail: "请阅读并同意当前版本的用户协议和隐私政策。", code: "CONSENT_REQUIRED" }, 400);
   }
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
-  const salt = randomToken(16);
-  const inaccessiblePasswordHash = await hashPassword(randomToken(32), salt);
-  const email = `wechat-${(await sha256(result.unionid ? `unionid:${result.unionid}` : subjects[0])).slice(0, 32)}@wechat.invalid`;
-  const displayName = String(body.display_name ?? "").trim() || null;
-  await env.DB.batch([
-    env.DB.prepare(`
-      INSERT INTO users (
-        id, email, password_hash, password_salt, display_name, email_verified_at,
-        created_at, last_login, profile_updated_at, terms_version, privacy_version, consented_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-      id, email, inaccessiblePasswordHash, salt, displayName, now,
-      now, now, now, USER_AGREEMENT_VERSION, PRIVACY_POLICY_VERSION, now
-    ),
-    ...subjects.map((subject) => env.DB.prepare(`
-        INSERT INTO auth_identities (provider, provider_subject, user_id, email, created_at)
-        VALUES ('wechat', ?, ?, ?, ?)
-      `).bind(subject, id, email, now))
-  ]);
-  const user = await env.DB.prepare(`
-    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
-    FROM users WHERE id = ?
-  `).bind(id).first<UserRow>();
-  await rememberWechatSession(id);
-  return json({ ...(await sessionPayload(env, user!, await createToken(env, id))), isNewAccount: true });
+  const user = await createWechatUser(env, subjects, body.display_name);
+  await rememberWechatSession(user.id);
+  return json({ ...(await sessionPayload(env, user, await createToken(env, user.id))), isNewAccount: true });
+};
+
+const exchangeWechatMobileCode = async (env: Env, code: string) => {
+  if (!env.WECHAT_MOBILE_APP_ID || !env.WECHAT_MOBILE_APP_SECRET) {
+    throw json({ detail: "App 微信登录尚未在服务端配置。", code: "WECHAT_APP_LOGIN_NOT_CONFIGURED" }, 501);
+  }
+  if (!code) throw json({ detail: "微信登录 code 缺失。" }, 400);
+  const response = await fetch(
+    `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${encodeURIComponent(env.WECHAT_MOBILE_APP_ID)}&secret=${encodeURIComponent(env.WECHAT_MOBILE_APP_SECRET)}&code=${encodeURIComponent(code)}&grant_type=authorization_code`
+  );
+  if (!response.ok) throw json({ detail: "微信登录服务暂时不可用。" }, 502);
+  const result = await response.json<{
+    openid?: string;
+    unionid?: string;
+    scope?: string;
+    errcode?: number;
+    errmsg?: string;
+  }>();
+  if (result.errcode || !result.openid) {
+    console.warn("WeChat mobile OAuth failed", result.errcode, result.errmsg);
+    throw json({ detail: "微信登录凭证无效或已过期。", code: "WECHAT_CODE_INVALID" }, 401);
+  }
+  // 没有 unionid 就无法证明 App 与小程序里的微信身份是同一个人。宁可拒绝，
+  // 也不能退回各端 openid 后静默创建两份账号和两套学习进度。
+  if (!result.unionid) {
+    throw json({
+      detail: "微信没有返回跨应用身份，请确认移动应用与小程序已绑定同一微信开放平台，并使用 snsapi_userinfo 授权。",
+      code: "WECHAT_UNIONID_REQUIRED"
+    }, 409);
+  }
+  return { openid: result.openid, unionid: result.unionid };
+};
+
+const wechatAppLogin = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "wechat-app-login", 10, 300);
+  const body = await readJson<{
+    code?: string;
+    display_name?: string;
+    terms_version?: string;
+    privacy_version?: string;
+  }>(request);
+  const identityClaims = await exchangeWechatMobileCode(env, String(body.code ?? "").trim());
+  const subjects = wechatIdentitySubjects("mobile", identityClaims.openid, identityClaims.unionid);
+  const identity = await findWechatIdentity(env, subjects);
+  if (identity) {
+    const user = await env.DB.prepare(`
+      SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+      FROM users WHERE id = ?
+    `).bind(identity.user_id).first<UserRow>();
+    if (!user) return json({ detail: "微信账号关联的用户不存在。" }, 404);
+    await linkWechatSubjects(env, user.id, subjects, user.email);
+    await env.DB.prepare("UPDATE users SET last_login = ? WHERE id = ?")
+      .bind(new Date().toISOString(), user.id).run();
+    return json({ ...(await sessionPayload(env, user, await createToken(env, user.id))), isNewAccount: false });
+  }
+
+  if (body.terms_version !== USER_AGREEMENT_VERSION || body.privacy_version !== PRIVACY_POLICY_VERSION) {
+    return json({
+      detail: "首次使用微信登录前，请先确认协议；已有收集日账号应先登录原账号，再关联微信，避免产生两个账号。",
+      code: "CONSENT_REQUIRED"
+    }, 400);
+  }
+  const user = await createWechatUser(env, subjects, body.display_name);
+  return json({ ...(await sessionPayload(env, user, await createToken(env, user.id))), isNewAccount: true });
+};
+
+const linkWechatApp = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "link-wechat-app", 10, 300);
+  const userId = await requireUser(request, env);
+  const body = await readJson<{ code?: string }>(request);
+  const identityClaims = await exchangeWechatMobileCode(env, String(body.code ?? "").trim());
+  const subjects = wechatIdentitySubjects("mobile", identityClaims.openid, identityClaims.unionid);
+  const user = await env.DB.prepare("SELECT email FROM users WHERE id = ?")
+    .bind(userId).first<{ email: string }>();
+  if (!user) return json({ detail: "User not found" }, 404);
+  await linkWechatSubjects(env, userId, subjects, user.email);
+  return json({ status: "linked", authProviders: await identityProviders(env, userId) });
 };
 
 const wechatSessionKey = (userId: string) => `wechat-session:${userId}`;
@@ -2944,6 +3045,7 @@ const health = async (env: Env) => {
       env.APP_STORE_ISSUER_ID && env.APP_STORE_KEY_ID && env.APP_STORE_PRIVATE_KEY && env.APP_BUNDLE_ID
     ),
     appStoreEnvironment: env.APP_STORE_ENVIRONMENT ?? "Production",
+    wechatAppLoginConfigured: Boolean(env.WECHAT_MOBILE_APP_ID && env.WECHAT_MOBILE_APP_SECRET),
     wechatPayConfigured: wechatPayConfigured(env),
     wechatPushConfigured: Boolean(env.WECHAT_MSG_TOKEN),
     wechatContentSecurityConfigured: Boolean(env.WECHAT_APP_ID && env.WECHAT_APP_SECRET),
@@ -2975,13 +3077,16 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "GET" && url.pathname === "/api/auth/config") return json({
     appleEnabled: Boolean(env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID),
     appleClientId: env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID ?? null,
+    wechatAppEnabled: Boolean(env.WECHAT_MOBILE_APP_ID && env.WECHAT_MOBILE_APP_SECRET),
     turnstileEnabled: turnstileEnabled(env)
   });
   if (request.method === "POST" && url.pathname === "/api/auth/register") return register(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/login") return login(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/apple") return appleLogin(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/wechat") return wechatLogin(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/wechat-app") return wechatAppLogin(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/link-apple") return linkApple(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/link-wechat-app") return linkWechatApp(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/logout") return logout(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/change-password") return changePassword(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/send-verification-email") return sendVerificationEmail(request, env);

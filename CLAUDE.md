@@ -226,6 +226,17 @@ issuer / audience / expiry 校验原样保留。
 3. 同时保存并识别 openid 与 unionid 两个别名。当前 subject 有 unionid 就用 unionid、否则用 openid；
    如果用户第一次登录只有 openid，后来才获得 unionid，同一个人可能被当成新账号，需要别名表或迁移逻辑。
 
+**2026-09-23 进度**：第 2、3 条服务端已做（Codex 9-22 在 `wechat-app-login` 隔离目录里写的，
+今天才合进来）。`auth_identities` 里一个人可以有 `openid:`（小程序）、`mobile-openid:`（App）、
+`unionid:` 三种别名，都指向同一个 user_id；老小程序账号第一次拿到 unionid 时自动补别名；
+几种别名已经分别落到两个账号时返回 `WECHAT_IDENTITY_CONFLICT` 停下，**不自动合并学习数据**。
+App 端有 `/api/auth/wechat-app`、`/api/auth/link-wechat-app` 和账号安全页的「关联微信」，
+判据在 `cloudflare-sync/scripts/worker-wechat-auth-route.test.mjs`。
+⚠️ 当时 level-plan 那边也各写了一份别名逻辑（`wechat-identity.ts`），合并时删掉了，
+只留这一套 —— 两套各管一半的登录路由，迟早有一边改了格式另一边没跟上。
+App 真正能拉起微信还差 iOS 那一半（开放平台移动应用、Universal Link、OpenSDK 桥接），
+清单在 `docs/WECHAT_APP_LOGIN.md`；原生插件不存在时按钮不显示。
+
 详细支付路由、密钥和消息推送约定见 `wechat-miniprogram/README.md`；每次提审按
 `wechat-miniprogram/docs-submit.md` 的硬门槛逐项验收。
 

@@ -44,6 +44,7 @@ interface TokenResponse {
 export interface CloudAuthConfig {
   appleEnabled: boolean;
   appleClientId?: string | null;
+  wechatAppEnabled: boolean;
   turnstileEnabled: boolean;
 }
 
@@ -517,7 +518,7 @@ export async function deleteCloudWeeklyReport(weekStart: string): Promise<void> 
 }
 
 export async function getCloudAuthConfig(): Promise<CloudAuthConfig> {
-  if (!API_URL) return { appleEnabled: false, turnstileEnabled: false };
+  if (!API_URL) return { appleEnabled: false, wechatAppEnabled: false, turnstileEnabled: false };
   return requestJson<CloudAuthConfig>("/api/auth/config", { method: "GET" });
 }
 
@@ -563,6 +564,43 @@ export interface AppleLoginCredential {
   email?: string;
   displayName?: string;
   consentAccepted?: boolean;
+}
+
+export interface WechatAppLoginCredential {
+  code: string;
+  displayName?: string;
+  consentAccepted?: boolean;
+}
+
+export async function cloudWechatAppLogin(credential: WechatAppLoginCredential): Promise<CloudSession> {
+  return withSyncLock(async () => {
+    const data = await requestJson<TokenResponse>("/api/auth/wechat-app", {
+      method: "POST",
+      body: JSON.stringify({
+        code: credential.code,
+        display_name: credential.displayName,
+        terms_version: credential.consentAccepted ? USER_AGREEMENT_VERSION : undefined,
+        privacy_version: credential.consentAccepted ? PRIVACY_POLICY_VERSION : undefined
+      })
+    });
+    await saveCloudSession(data);
+    requestCloudAutoSync("login");
+    return { ...(await getCloudSession()), isNewAccount: data.isNewAccount };
+  });
+}
+
+export async function linkCloudWechatApp(code: string): Promise<CloudSession> {
+  const { token } = await getCloudSession();
+  if (!token) throw new Error("请先登录原账号。");
+  const result = await requestJson<{ authProviders?: Array<"email" | "apple" | "wechat"> }>("/api/auth/link-wechat-app", {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}` },
+    body: JSON.stringify({ code })
+  });
+  await Preferences.set({ key: AUTH_PROVIDERS_KEY, value: JSON.stringify(result.authProviders ?? ["wechat"]) });
+  const session = await getCloudSession();
+  emitCloudAuthEvent(session);
+  return session;
 }
 
 export async function cloudAppleLogin(credential: AppleLoginCredential): Promise<CloudSession> {

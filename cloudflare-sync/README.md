@@ -28,6 +28,10 @@ npm run deploy
 
 微信小程序使用同一个 Worker 的 `POST /api/auth/wechat`：小程序只提交一次性 `wx.login` code，Worker 通过 `WECHAT_APP_ID` 与 `WECHAT_APP_SECRET` 向微信换取 openid/unionid，再签发与 iOS 相同的 Bearer session。两个密钥只能配置在 Worker secret/变量中，不能写入小程序代码包；微信身份视为已验证身份，可直接使用云同步。
 
+移动 App 微信登录使用独立的 `POST /api/auth/wechat-app`，不能把小程序 code 交给它。Worker 使用微信开放平台“移动应用”的 `WECHAT_MOBILE_APP_ID` 与 `WECHAT_MOBILE_APP_SECRET` 调用 OAuth `sns/oauth2/access_token`；AppSecret 仍然只能放在 Worker。服务端要求微信返回 `unionid`，并用它认回同一开放平台下的小程序账号；缺少 `unionid` 时宁可拒绝，也不会退回 App OpenID 静默创建第二个账号。已有邮箱或 Apple 账号应先登录原账号，再调用 `POST /api/auth/link-wechat-app` 关联微信。
+
+当前仓库已完成上述服务端路由和前端 API 边界，但尚未在 iOS 中安装微信 OpenSDK、配置移动应用 AppID、Universal Link 或显示微信登录按钮。完整外部配置与验收边界见 [`docs/WECHAT_APP_LOGIN.md`](../docs/WECHAT_APP_LOGIN.md)。
+
 发布前需要完成以下配置：
 
 1. 在 Apple Developer 后台为 App ID `com.shushugo.app` 启用 **Sign in with Apple**。
@@ -166,7 +170,9 @@ npx wrangler d1 execute master_nihongo_sync --remote \
 - `POST /api/auth/login`
 - `POST /api/auth/apple`
 - `POST /api/auth/wechat`
+- `POST /api/auth/wechat-app`
 - `POST /api/auth/link-apple`
+- `POST /api/auth/link-wechat-app`
 - `POST /api/auth/logout`
 - `POST /api/auth/change-password`
 - `POST /api/auth/send-verification-email`
@@ -182,13 +188,22 @@ npx wrangler d1 execute master_nihongo_sync --remote \
 - `GET /api/sync/status`
 - `GET /api/sync/pull`
 
-微信小程序首次登录请求体还必须带当前 `terms_version` 与 `privacy_version`（当前仓库版本为 `2026-08-03`），服务端会拒绝缺失或过期的协议同意。启用微信登录前配置：
+微信小程序首次登录请求体还必须带当前 `terms_version` 与 `privacy_version`（当前仓库均为 `2026-09-22`），服务端会拒绝缺失或过期的协议同意。启用微信登录前配置：
 
 ```bash
 cd cloudflare-sync
 npx wrangler secret put WECHAT_APP_ID
 npx wrangler secret put WECHAT_APP_SECRET
 ```
+
+移动 App 微信登录另用一组微信开放平台凭据，不能填小程序 AppID/Secret：
+
+```bash
+npx wrangler secret put WECHAT_MOBILE_APP_ID
+npx wrangler secret put WECHAT_MOBILE_APP_SECRET
+```
+
+`GET /api/auth/config` 的 `wechatAppEnabled` 和 `GET /api/health` 的 `wechatAppLoginConfigured` 只说明 Worker 已配置这两个值，不代表 iOS SDK、Universal Link、开放平台审核或真机回调已经通过。
 
 前端生成一个只包含用户学习表的临时 SQLite，gzip 后作为二进制上传。`words`、`grammar_points` 等出厂内容由 App 版本统一提供，绝不再随账号重复上传。D1 保存账号、版本和对象元数据，R2 保存最近三代压缩快照。
 
