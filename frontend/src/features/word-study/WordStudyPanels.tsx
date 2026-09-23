@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Brain, CalendarDays, CheckCircle2, Clock3, Flame, History, ImageDown, ListChecks, Loader2, Minus, Pencil, Plus, Share2, Star, Volume2, X } from "lucide-react";
+import { Brain, CalendarDays, CheckCircle2, Clock3, Flame, History, ListChecks, Minus, Pencil, Plus, Share2, Star, Volume2 } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
 import { addFavorite, addFavorites, getStubbornGrammarToday, getStubbornWordsToday, type StubbornGrammarToday, type StubbornWordToday } from "../../lib/api";
@@ -19,6 +19,7 @@ import { playExample, prefetchExample } from "../../lib/speech";
 import type { WordCard, WordStats } from "../../types/vocabulary";
 import { ENCORE_DEFAULT_COLOR, encoreLimitedColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
+import { ShareImageSheet } from "../../components/ShareImageSheet";
 import {
   answerReadingText,
   concealedReadingParts,
@@ -816,40 +817,16 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
       </div>
 
       {shareCard && (
-        <div className="fixed inset-0 z-50 grid overflow-y-auto place-items-center bg-black/65 p-4">
-          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border border-white/15 bg-[#2f3333] p-3 shadow-2xl">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-sm font-bold text-white">今日炫耀图</p>
-              <button
-                onClick={closeShareImage}
-                className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-white/8 text-white"
-                title="关闭"
-              >
-                <X size={15} />
-              </button>
-            </div>
-            <img src={shareCard.url} alt="今日单词完成分享图" className="max-h-[62vh] w-full rounded-xl object-contain" />
-            {shareNotice && <p className="mt-2 text-center text-xs font-semibold text-[#81D8CF]">{shareNotice}</p>}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button
-                onClick={() => void handleSaveImage()}
-                disabled={shareBusy !== null}
-                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#81D8CF]/40 bg-[#81D8CF]/14 text-sm font-bold text-[#81D8CF] disabled:opacity-60"
-              >
-                {shareBusy === "save" ? <Loader2 size={16} className="animate-spin" /> : <ImageDown size={16} />}
-                保存到相册
-              </button>
-              <button
-                onClick={() => void handleShareImage()}
-                disabled={shareBusy !== null}
-                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#81D8CF] text-sm font-bold !text-[#2f3333] disabled:opacity-60"
-              >
-                {shareBusy === "share" ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16} />}
-                发给好友
-              </button>
-            </div>
-          </div>
-        </div>
+        <ShareImageSheet
+          title="今日炫耀图"
+          url={shareCard.url}
+          alt="今日单词完成分享图"
+          notice={shareNotice}
+          busy={shareBusy}
+          onSave={() => void handleSaveImage()}
+          onShare={() => void handleShareImage()}
+          onClose={closeShareImage}
+        />
       )}
 
       {showAnalytics && <AnalyticsDashboard onClose={() => setShowAnalytics(false)} />}

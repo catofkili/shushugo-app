@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, Clock3, History, ImageDown, Loader2, Pause, Play, RotateCcw, Share2, X } from "lucide-react";
-import { Sticker } from "../components/CapybaraMascot";
+import { Check, History, ListChecks, Pause, Play, RotateCcw, Share2, ShieldCheck, Timer, X } from "lucide-react";
+import { Sticker, type StickerName } from "../components/CapybaraMascot";
 import {
   finishVocabTest,
   getVocabTestHistory,
@@ -21,53 +21,63 @@ import {
 import { saveImageToGallery, shareImage } from "../lib/share-image";
 import { renderVocabShareCard } from "../features/vocab-test/share-card";
 import { MascotSay } from "../components/MascotSay";
+import { ShareImageSheet } from "../components/ShareImageSheet";
 import { useStudyTimer } from "../lib/useStudyTimer";
 
 type View = "intro" | "quiz" | "result";
 
-const answerLabel = (state: VocabTestAnswerState): string => {
-  if (state === "correct") return "答对了";
-  if (state === "unknown") return "记为不认识";
-  if (state === "timeout") return "超时，记为不认识";
-  return "这题选错了";
+/** 答完一题，吉祥物怎么说：对了欢呼，错了想不通，不认识 / 超时各有各的表情 */
+const FEEDBACK: Record<VocabTestAnswerState, { sticker: StickerName; tone: "good" | "warn"; label: string }> = {
+  correct: { sticker: "mood-yay", tone: "good", label: "答对了！" },
+  wrong: { sticker: "mood-puzzled", tone: "warn", label: "这题选错了" },
+  unknown: { sticker: "mood-ask", tone: "warn", label: "记为不认识，不扣分" },
+  timeout: { sticker: "mood-dizzy", tone: "warn", label: "超时了，记为不认识" }
 };
 
-const answerClass = (state: VocabTestAnswerState): string => {
-  if (state === "correct") return "vocab-fb-correct";
-  if (state === "unknown" || state === "timeout") return "vocab-fb-unknown";
-  return "vocab-fb-wrong";
+/** 每题的倒计时：一圈细环，最后 5 秒变暖色。切走时环停住、中间换成暂停符号。 */
+const TimerRing = ({ remaining, total, paused }: { remaining: number; total: number; paused: boolean }) => {
+  const circumference = 97.4; // 2π × 15.5
+  const ratio = total ? Math.max(0, Math.min(1, remaining / total)) : 0;
+  return (
+    <span className={`vt-timer ${remaining <= 5 && !paused ? "is-low" : ""}`} role="timer" aria-label={paused ? "已暂停" : `剩 ${remaining} 秒`}>
+      <svg viewBox="0 0 36 36" aria-hidden="true">
+        <circle cx="18" cy="18" r="15.5" className="vt-timer-track" />
+        <circle cx="18" cy="18" r="15.5" className="vt-timer-fill" style={{ strokeDasharray: `${ratio * circumference} ${circumference}` }} />
+      </svg>
+      <b>{paused ? <Pause size={13} /> : remaining}</b>
+    </span>
+  );
 };
 
 const QuestionCard = ({
   question,
   disabled,
   onChoose,
-  feedback
+  feedback,
+  next
 }: {
   question: VocabTestQuestion;
   disabled: boolean;
   onChoose: (index: number | null) => void;
   feedback: { state: VocabTestAnswerState; selected: number | null } | null;
+  /** 答完之后「不认识」那一格换成「下一题」：拇指不用挪，手机上也不会被推到底栏下面 */
+  next: { label: string; onClick: () => void };
 }) => (
-  <div className="dictionary-card rounded-3xl p-4 shadow-xl sm:p-6">
-    <div className="mb-5 flex items-center justify-between gap-3 text-xs font-bold text-white/55">
-      <span>{question.kind === "reading" ? "读音题" : "释义题"}</span>
-      <span>{question.level}</span>
+  <div className="ds-card vt-card">
+    <div className="flex items-center gap-1.5">
+      <span className="ds-pill">{question.kind === "reading" ? "读音题" : "释义题"}</span>
+      <span className="ds-pill">{question.level}</span>
     </div>
-    <div className="grid min-h-[130px] place-items-center vocab-prompt-panel rounded-2xl px-4 py-8 text-center">
-      <p className="font-serif text-4xl font-extrabold tracking-wide sm:text-5xl">
-        {question.prompt}
-      </p>
-      <p className="mt-3 text-xs font-semibold text-white/45">
-        {/* 拆掉送假名的题必须说清楚在问哪几个字，否则「培う 选 つちか」看着像少打了一个字 */}
-        {question.kind !== "reading"
-          ? "请选择中文释义"
-          : question.readingScope
-            ? `请选择「${question.readingScope}」的读音（送假名已给出）`
-            : "请选择假名读音"}
-      </p>
-    </div>
-    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+    <p className="vt-prompt">{question.prompt}</p>
+    <p className="vt-ask">
+      {/* 拆掉送假名的题必须说清楚在问哪几个字，否则「培う 选 つちか」看着像少打了一个字 */}
+      {question.kind !== "reading"
+        ? "选出它的中文意思"
+        : question.readingScope
+          ? `选出「${question.readingScope}」的读音（送假名已给出）`
+          : "选出它的读音"}
+    </p>
+    <div className="ds-choices">
       {question.options.map((option, index) => {
         const isCorrect = feedback && index === question.answerIndex;
         const isSelected = feedback && index === feedback.selected;
@@ -77,32 +87,21 @@ const QuestionCard = ({
             type="button"
             disabled={disabled}
             onClick={() => onChoose(index)}
-            className={`focus-ring min-h-12 rounded-2xl border px-3 py-3 text-left text-sm font-bold transition ${
-              isCorrect ? "border-[#81D8CF] bg-[#81D8CF]/18 text-[#81D8CF]"
-                : isSelected ? "border-red-300/60 bg-red-300/10 text-red-200"
-                  : "border-white/15 bg-white/[0.04] text-white/78 hover:bg-white/[0.08] disabled:cursor-default"
-            }`}
+            className={`ds-choice focus-ring ${isCorrect ? "is-correct" : isSelected ? "is-wrong" : ""}`}
           >
-            <span className="mr-2 text-xs text-white/38">{index + 1}</span>
-            {option}
-            {isCorrect && <Check size={15} className="float-right mt-0.5" />}
-            {isSelected && !isCorrect && <X size={15} className="float-right mt-0.5" />}
+            <span className="ds-choice-key">{index + 1}</span>
+            <span className="min-w-0 flex-1">{option}</span>
+            {isCorrect && <Check size={16} className="shrink-0" />}
+            {isSelected && !isCorrect && <X size={16} className="shrink-0" />}
           </button>
         );
       })}
     </div>
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => onChoose(null)}
-      className={`focus-ring mt-2 min-h-11 w-full rounded-2xl border px-3 py-2.5 text-sm font-bold transition ${
-        feedback?.state === "unknown" || feedback?.state === "timeout"
-          ? "vocab-fb-unknown"
-          : "border-white/12 bg-white/[0.03] text-white/55 hover:bg-white/[0.06] disabled:cursor-default"
-      }`}
-    >
-      不认识
-    </button>
+    {feedback ? (
+      <button type="button" onClick={next.onClick} className="ds-btn focus-ring mt-2.5 w-full">{next.label} →</button>
+    ) : (
+      <button type="button" disabled={disabled} onClick={() => onChoose(null)} className="vt-unknown focus-ring">不认识</button>
+    )}
   </div>
 );
 
@@ -128,6 +127,14 @@ const formatWhen = (timestamp: number): string => {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
+/** 列表里用的短日期：今年的不写年份（「9月23日 23:03」），一行放得下 */
+const formatShort = (timestamp: number): string => {
+  const date = new Date(timestamp);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  const year = date.getFullYear() === new Date().getFullYear() ? "" : `${date.getFullYear()}年`;
+  return `${year}${date.getMonth() + 1}月${date.getDate()}日 ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
 /** 搁置超过这个时长就建议重测（半小时：够上个厕所，不够换一个人的状态） */
 const STALE_RESUME_MS = 30 * 60 * 1000;
 
@@ -149,32 +156,14 @@ const dateKey = (timestamp: number): string => {
 };
 
 /**
- * 查词汇量的「第二主页」：进测验的入口 + 过去测过几次 + 这个数怎么算出来的。
- *
- * 规则那一段是**必要的**，不是装饰：这个数天然会被当成「我的日语水平」到处说，
- * 而它只是 JLPT 词表范围内的抽样外推。把口径摆在进门的地方，比在结果页写一行小字管用。
+ * 分享 = 出一张图，和打卡分享同一块底座（lib/share-canvas），不是发一行字。
+ * 落地页的「分享」、历史每一行、结果页三处共用这一份。
  */
-const VocabTestHome = ({
-  history, latest, resumable, resumeProgress, resumeStartedAt, resumeIdleMs, error, onResume, onStart, onOpenResult, hasResult
-}: {
-  history: VocabTestHistoryRow[];
-  latest: VocabTestHistoryRow | null;
-  resumable: boolean;
-  resumeProgress: string;
-  /** 未答完的那场是什么时候开的、上一次作答离现在多久（毫秒） */
-  resumeStartedAt: number;
-  resumeIdleMs: number;
-  error: string;
-  onResume: () => void;
-  onStart: () => void;
-  onOpenResult: () => void;
-  hasResult: boolean;
-}) => {
+const useVocabShare = () => {
   const [notice, setNotice] = useState("");
   const [card, setCard] = useState<{ url: string; blob: Blob; row: VocabTestHistoryRow } | null>(null);
   const [busy, setBusy] = useState<"render" | "save" | "share" | null>(null);
 
-  /** 分享 = 出一张图，和打卡分享同一块底座（lib/share-canvas），不是发一行字。 */
   const share = async (row: VocabTestHistoryRow) => {
     if (busy) return;
     setBusy("render");
@@ -204,7 +193,7 @@ const VocabTestHome = ({
 
   const fileName = card ? `shushugo-vocab-${dateKey(card.row.finishedAt)}.png` : "shushugo-vocab.png";
 
-  const saveCard = async () => {
+  const save = async () => {
     if (!card || busy) return;
     setBusy("save");
     try {
@@ -217,7 +206,7 @@ const VocabTestHome = ({
     }
   };
 
-  const sendCard = async () => {
+  const send = async () => {
     if (!card || busy) return;
     setBusy("share");
     try {
@@ -230,236 +219,247 @@ const VocabTestHome = ({
     }
   };
 
-  const closeCard = () => {
+  const close = () => {
     if (card) URL.revokeObjectURL(card.url);
     setCard(null);
     setNotice("");
   };
 
+  const sheet = card ? (
+    <ShareImageSheet title="词汇量分享图" url={card.url} alt="词汇量分享图" notice={notice} busy={busy} onSave={() => void save()} onShare={() => void send()} onClose={close} />
+  ) : null;
+  /** 没弹出图时的提示（生成失败）要摆在页面上，不然没人看得见 */
+  return { share, busy, sheet, pageNotice: card ? "" : notice };
+};
+
+/** 答题太少的那几次不算成绩：历史里写「题太少」，也不拿它当「最近一次」 */
+const hasEstimate = (row: VocabTestHistoryRow) => row.answered >= MIN_ANSWERS_FOR_ESTIMATE;
+
+/**
+ * 查词汇量的「第二主页」：进测验的入口 + 过去测过几次 + 这个数怎么算出来的。
+ *
+ * 规则那一段是**必要的**，不是装饰：这个数天然会被当成「我的日语水平」到处说，
+ * 而它只是 JLPT 词表范围内的抽样外推。把口径摆在进门的地方，比在结果页写一行小字管用。
+ */
+const VocabTestHome = ({
+  history, resumable, resumeProgress, resumeStartedAt, resumeIdleMs, error, onResume, onStart, onOpenResult, hasResult, onShare, shareBusy, shareNotice
+}: {
+  history: VocabTestHistoryRow[];
+  resumable: boolean;
+  resumeProgress: string;
+  /** 未答完的那场是什么时候开的、上一次作答离现在多久（毫秒） */
+  resumeStartedAt: number;
+  resumeIdleMs: number;
+  error: string;
+  onResume: () => void;
+  onStart: () => void;
+  onOpenResult: () => void;
+  hasResult: boolean;
+  onShare: (row: VocabTestHistoryRow) => void;
+  shareBusy: boolean;
+  shareNotice: string;
+}) => {
+  const latest = history.find(hasEstimate) ?? null;
+  const stale = resumeIdleMs >= STALE_RESUME_MS;
+
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-4">
-      <div className="dictionary-card rounded-3xl p-5 shadow-xl sm:p-7">
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <h2 className="text-2xl font-extrabold">查一下词汇量</h2>
-          <Sticker name="scene-laptop" size={64} className="-my-2 shrink-0" />
+    <div className="mx-auto w-full max-w-2xl space-y-3">
+      <section className="ds-card vt-hero">
+        <div className="vt-hero-row">
+          <div className="min-w-0 flex-1">
+            {latest ? (
+              <>
+                <p className="ds-kicker">上次测出 · {formatShort(latest.finishedAt)}</p>
+                <p className="vt-big">{latest.estimated.toLocaleString()}<small>词</small></p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <span className="ds-pill">{latest.answered} 题 · {formatDuration(latest.durationSeconds)}</span>
+                  <span className="ds-pill ds-pill-primary">可信度 {latest.confidence}%</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="ds-kicker">查词汇量</p>
+                <h2 className="vt-title">我认识多少日语词？</h2>
+                <p className="vt-sub">跨 N5–N1 抽样，估计 JLPT 词表里你认识多少词。</p>
+              </>
+            )}
+          </div>
+          <Sticker name="scene-laptop" size={92} className="vt-hero-mascot" />
         </div>
 
-        {latest ? (
-          <div className="mt-4 rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/[0.07] p-4">
-            <p className="text-xs font-bold text-white/55">最近一次 · {formatWhen(latest.finishedAt)}</p>
-            <p className="mt-1 text-3xl font-extrabold text-[#81D8CF]">约 {latest.estimated.toLocaleString()} 词</p>
-            <p className="mt-1 text-xs font-semibold text-white/55">
-              {latest.answered} 题 · 用时 {formatDuration(latest.durationSeconds)} · 可信度 {latest.confidence}%
-            </p>
-          </div>
-        ) : (
-          <p className="mt-3 text-sm leading-relaxed text-white/65">
-            跨 N5–N1 抽样，估计 JLPT 词表内认识多少词。
-          </p>
-        )}
-
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
-          <div className="rounded-2xl bg-white/[0.05] p-3"><b className="block">约 60 题</b><span className="text-xs text-white/50">可随时结束</span></div>
-          <div className="rounded-2xl bg-white/[0.05] p-3"><b className="block">读音 {VOCAB_TEST_SECONDS.reading} 秒 · 释义 {VOCAB_TEST_SECONDS.meaning} 秒</b><span className="text-xs text-white/50">切走会暂停</span></div>
-          <div className="rounded-2xl bg-white/[0.05] p-3"><b className="block">独立记录</b><span className="text-xs text-white/50">不改学习状态</span></div>
+        <div className="vt-facts">
+          <span className="ds-pill"><ListChecks size={13} />约 60 题 · 随时交卷</span>
+          <span className="ds-pill"><Timer size={13} />每题 {VOCAB_TEST_SECONDS.reading} / {VOCAB_TEST_SECONDS.meaning} 秒 · 切走暂停</span>
+          <span className="ds-pill"><ShieldCheck size={13} />不影响学习记录</span>
         </div>
 
         {resumable && (
           /* ⚠️ 隔了很久再接着答，前后半场不是同一个状态（也不是同一天的水平），
              结果会带误差。所以这里必须把「什么时候开的、隔了多久」摆出来，
              让用户自己决定接着答还是重测 —— 而不是默默把两段拼成一次成绩。 */
-          <MascotSay
-            sticker={resumeIdleMs >= STALE_RESUME_MS ? "mood-puzzled" : "mood-ask"}
-            tone={resumeIdleMs >= STALE_RESUME_MS ? "warn" : "info"}
-            className="mt-4"
-          >
+          <MascotSay sticker={stale ? "mood-puzzled" : "mood-ask"} tone={stale ? "warn" : "info"} className="mt-4">
             上次答到 <b>{resumeProgress}</b>，开始于 {formatWhen(resumeStartedAt)}。
-            {resumeIdleMs >= STALE_RESUME_MS
+            {stale
               ? `${joinGap("已经搁了", formatGap(resumeIdleMs))}，接着答会把两段不同状态拼成一次成绩，建议重测。`
               : `${joinGap("搁了", formatGap(resumeIdleMs))}，接着答就行。`}
           </MascotSay>
         )}
         {error && <div role="alert"><MascotSay sticker="mood-dizzy" tone="warn" className="mt-4">{error}</MascotSay></div>}
-        {notice && <p className="mt-3 text-center text-xs font-semibold text-[#81D8CF]">{notice}</p>}
+        {shareNotice && <div role="status"><MascotSay sticker="mood-dizzy" tone="warn" className="mt-4">{shareNotice}</MascotSay></div>}
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          {resumable && (
-            <button type="button" onClick={onResume} className="focus-ring inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] px-4 py-3 text-sm font-extrabold text-[#293333]">
-              <Play size={16} />继续测验
-            </button>
+        <div className="mt-4 grid gap-2">
+          {resumable ? (
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={onResume} className={`focus-ring ${stale ? "ds-btn-soft" : "ds-btn"}`}><Play size={16} />继续测验</button>
+              <button type="button" onClick={onStart} className={`focus-ring ${stale ? "ds-btn" : "ds-btn-soft"}`}><RotateCcw size={16} />重新开始</button>
+            </div>
+          ) : (
+            <button type="button" onClick={onStart} className="ds-btn focus-ring w-full">开始测验 →</button>
           )}
-          <button
-            type="button"
-            onClick={onStart}
-            className={`focus-ring inline-flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-extrabold ${
-              resumable ? "border border-white/15 bg-white/[0.06] text-white/80" : "bg-[#81D8CF] text-[#293333]"
-            }`}
-          >
-            <RotateCcw size={16} />{resumable ? "重新开始" : "开始测验"}
-          </button>
-          {latest && (
-            <button type="button" onClick={() => void share(latest)} className="focus-ring inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-3 text-sm font-bold text-white/80">
-              <Share2 size={16} />分享
-            </button>
-          )}
-          {hasResult && (
-            <button type="button" onClick={onOpenResult} className="focus-ring inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 py-3 text-sm font-bold text-white/70">
-              上次的详细结果
-            </button>
+          {(hasResult || latest) && (
+            <div className="flex gap-2">
+              {hasResult && <button type="button" onClick={onOpenResult} className="ds-btn-soft focus-ring flex-1">上次的详细结果</button>}
+              {latest && (
+                <button type="button" onClick={() => onShare(latest)} disabled={shareBusy} className="ds-btn-soft focus-ring flex-1 disabled:opacity-60">
+                  <Share2 size={16} />分享成绩
+                </button>
+              )}
+            </div>
           )}
         </div>
-      </div>
+      </section>
 
-      <div className="dictionary-card rounded-3xl p-5 shadow-xl sm:p-7">
-        <h3 className="inline-flex items-center gap-2 text-sm font-extrabold text-white/80"><History size={15} />过去的成绩</h3>
+      <section className="ds-card p-4 sm:p-5">
+        <h3 className="vt-h3"><History size={16} />过去的成绩</h3>
         {history.length ? (
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[420px] text-left text-sm">
-              <thead className="text-xs text-white/45">
-                <tr>
-                  <th className="py-1.5 font-bold">时间</th>
-                  <th className="py-1.5 font-bold">词汇量</th>
-                  <th className="py-1.5 font-bold">题数</th>
-                  <th className="py-1.5 font-bold">用时</th>
-                  <th className="py-1.5 font-bold">可信度</th>
-                  <th className="py-1.5" />
-                </tr>
-              </thead>
-              <tbody>
-                {history.map((row) => (
-                  <tr key={row.runId} className="border-t border-white/8">
-                    <td className="py-2 text-xs text-white/62">{formatWhen(row.finishedAt)}</td>
-                    <td className="py-2 font-bold">{row.estimated.toLocaleString()}</td>
-                    <td className="py-2 text-white/68">{row.answered}/{row.totalQuestions}</td>
-                    <td className="py-2 text-white/68">{formatDuration(row.durationSeconds)}</td>
-                    <td className="py-2 text-white/68">{row.confidence}%</td>
-                    <td className="py-2 text-right">
-                      <button type="button" onClick={() => void share(row)} className="focus-ring rounded-xl border border-white/15 px-2 py-1 text-xs font-bold text-white/62" aria-label="分享这次成绩">
-                        <Share2 size={13} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ul className="mt-2">
+            {history.map((row, index) => {
+              const valid = hasEstimate(row);
+              const older = valid ? history.slice(index + 1).find(hasEstimate) : undefined;
+              const delta = older ? row.estimated - older.estimated : 0;
+              return (
+                <li key={row.runId} className="vt-hist-row">
+                  <div className="min-w-0 flex-1">
+                    <p className="vt-hist-num">
+                      {valid ? <>{row.estimated.toLocaleString()}<small>词</small></> : <span className="ds-pill ds-pill-warn">题太少，没出数</span>}
+                      {delta !== 0 && <span className={`ds-pill ${delta > 0 ? "ds-pill-primary" : ""}`}>{delta > 0 ? "+" : "−"}{Math.abs(delta).toLocaleString()}</span>}
+                      {valid && <span className="ds-pill">可信度 {row.confidence}%</span>}
+                    </p>
+                    <p className="vt-hist-meta">
+                      {formatShort(row.finishedAt)} · {row.answered}/{row.totalQuestions} 题 · {formatDuration(row.durationSeconds)}
+                    </p>
+                  </div>
+                  {valid && (
+                    <button type="button" onClick={() => onShare(row)} disabled={shareBusy} className="ds-icon-btn focus-ring grid h-9 w-9 shrink-0 place-items-center rounded-full" aria-label="分享这次成绩">
+                      <Share2 size={15} />
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         ) : (
-          <div className="mt-2 flex items-center gap-3 text-sm text-white/55"><Sticker name="empty-box" size={56} className="shrink-0" />还没有记录。测一次就会留在这里。</div>
+          <div className="mt-2 flex items-center gap-3 text-sm vt-muted"><Sticker name="empty-box" size={56} className="shrink-0" />还没有记录。测一次就会留在这里。</div>
         )}
-      </div>
+      </section>
 
-      {card && (
-        <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/65 p-4">
-          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border border-white/15 bg-[#2f3333] p-3 shadow-2xl">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-sm font-bold text-white">词汇量分享图</p>
-              <button onClick={closeCard} className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-white/8 text-white" title="关闭">
-                <X size={15} />
-              </button>
-            </div>
-            <img src={card.url} alt="词汇量分享图" className="max-h-[62vh] w-full rounded-xl object-contain" />
-            {notice && <p className="mt-2 text-center text-xs font-semibold text-[#81D8CF]">{notice}</p>}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button
-                onClick={() => void saveCard()}
-                disabled={busy !== null}
-                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#81D8CF]/40 bg-[#81D8CF]/14 text-sm font-bold text-[#81D8CF] disabled:opacity-60"
-              >
-                {busy === "save" ? <Loader2 size={16} className="animate-spin" /> : <ImageDown size={16} />}
-                保存到相册
-              </button>
-              <button
-                onClick={() => void sendCard()}
-                disabled={busy !== null}
-                className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#81D8CF] text-sm font-bold !text-[#2f3333] disabled:opacity-60"
-              >
-                {busy === "share" ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16} />}
-                发给好友
-              </button>
-            </div>
+      <section className="ds-card p-4 sm:p-5">
+        <div className="flex items-center gap-3">
+          <Sticker name="mood-ask" size={52} className="shrink-0" />
+          <div>
+            <h3 className="vt-h3">这个数是怎么算出来的</h3>
+            <p className="ds-kicker mt-0.5">仅供参考，别当成体检报告</p>
           </div>
         </div>
-      )}
-
-      <div className="dictionary-card rounded-3xl p-5 text-sm leading-relaxed text-white/68 shadow-xl sm:p-7">
-        <div className="flex items-center gap-3">
-          <Sticker name="mood-ask" size={56} className="shrink-0" />
-          <h3 className="text-base font-extrabold text-white/85">这个数是怎么算出来的<span className="ml-1 text-xs font-bold text-white/45">仅供参考</span></h3>
-        </div>
-        <ul className="mt-3 space-y-2">
-          <li>· <b className="text-white/85">抽样外推</b>：N5–N1 每级抽十几道，各级答对率乘以该级词表规模再相加。所以它是<b className="text-white/85">当前 JLPT 词表范围内</b>的估计，不是「全日语词汇量」。</li>
-          <li>· <b className="text-white/85">四选一，蒙也能蒙对</b>：所以每级得分按「答对 − 答错 ÷ 3」折算，<b className="text-white/85">答错会把这一级的分数往下压</b>，不是简单不计分。</li>
-          <li>· <b className="text-white/85">不认识就点「不认识」</b>：它不扣分，也不算你蒙。真不会却硬猜，反而会同时拉低词汇量和可信度。</li>
-          <li>· <b className="text-white/85">可信度</b> = 答题量（60）+ 没在赶进度（40），再<b className="text-white/85">乘以</b>「有多少作答其实是蒙的」的补数；越难的级别反而答得越好，每处再扣 8 分。所以全靠蒙的话，题答得再多可信度也接近 0。</li>
-          <li>· <b className="text-white/85">超时按不认识记</b>，超时太多同样降可信度。切到别的页面会自动暂停，不算你超时。</li>
-          <li>· 少于 15 题不给估计值：一个等级一题没答，区间会撑到整份词表那么宽，那个数是没意义的。</li>
+        <ul className="vt-rules">
+          <li><b>抽样外推</b>：N5–N1 每级抽十几道，各级答对率乘以该级词表规模再相加。所以它是<b>当前 JLPT 词表范围内</b>的估计，不是「全日语词汇量」。</li>
+          <li><b>四选一，蒙也能蒙对</b>：所以每级得分按「答对 − 答错 ÷ 3」折算，<b>答错会把这一级的分数往下压</b>，不是简单不计分。</li>
+          <li><b>不认识就点「不认识」</b>：它不扣分，也不算你蒙。真不会却硬猜，反而会同时拉低词汇量和可信度。</li>
+          <li><b>可信度</b> = 答题量（60）+ 没在赶进度（40），再<b>乘以</b>「有多少作答其实是蒙的」的补数；越难的级别反而答得越好，每处再扣 8 分。所以全靠蒙的话，题答得再多可信度也接近 0。</li>
+          <li><b>超时按不认识记</b>，超时太多同样降可信度。切到别的页面会自动暂停，不算你超时。</li>
+          <li>少于 15 题不给估计值：一个等级一题没答，区间会撑到整份词表那么宽，那个数是没意义的。</li>
         </ul>
-      </div>
+      </section>
     </div>
   );
 };
 
-const ResultView = ({ result, onRestart, onBack }: { result: VocabTestResult; onRestart: () => void; onBack: () => void }) => (
-  <div className="mx-auto w-full max-w-3xl dictionary-card rounded-3xl p-5 shadow-xl sm:p-7">
-    <div className="text-center">
-      <h2 className="mt-2 text-2xl font-extrabold">
-        {result.answered >= MIN_ANSWERS_FOR_ESTIMATE ? "你的词汇量" : "答得还太少"}
-      </h2>
-      {result.answered >= MIN_ANSWERS_FOR_ESTIMATE ? (
-        <>
-          {/* 摆点估计，不摆区间。区间退到底下那行小字 ——
-              「3,860 – 6,402」这种宽度读不出任何东西，用户宁可要一个具体数字。 */}
-          <p className="mt-4 text-4xl font-extrabold text-[#81D8CF] sm:text-5xl">
-            约 {result.estimated.toLocaleString()} 词
-          </p>
-          <p className="mt-2 text-sm font-semibold text-white/58">
-            在当前 JLPT 词表覆盖范围内 · 区间 {result.lower.toLocaleString()}–{result.upper.toLocaleString()}
-          </p>
-        </>
-      ) : (
-        <p className="mx-auto mt-4 max-w-md text-sm font-semibold leading-relaxed text-white/58">
-          只答了 {result.answered} 题，还有等级一题没碰过，给不出有意义的区间。
-          至少答满 {MIN_ANSWERS_FOR_ESTIMATE} 题（五个等级各三题左右）再看结果。
-        </p>
-      )}
-    </div>
-    <div className="mt-6 grid gap-2 sm:grid-cols-3">
-      <div className="rounded-2xl bg-white/5 p-3 text-center">
-        <b className="block text-xl">{result.answered}</b>
-        <span className="text-xs text-white/52">已答题</span>
-      </div>
-      <div className="rounded-2xl bg-white/5 p-3 text-center">
-        <b className="block text-xl">{result.confidence}%</b>
-        <span className="text-xs text-white/52">结果可信度</span>
-      </div>
-      <div className="rounded-2xl bg-white/5 p-3 text-center">
-        <b className="block text-xl">{result.answered >= MIN_ANSWERS_FOR_ESTIMATE ? result.recommendation : "—"}</b>
-        <span className="text-xs text-white/52">建议从这里继续</span>
-      </div>
-    </div>
-    <div className="mt-6">
-      <h3 className="text-sm font-extrabold text-white/78">各级表现</h3>
-      <div className="mt-2 grid gap-2 sm:grid-cols-5">
-        {result.levels.map((level) => (
-          <div key={level.level} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-center">
-            <b className="block">{level.level}</b>
-            <span className="mt-1 block text-xs text-white/52">
-              {level.rate == null ? "未答" : `${Math.round(level.rate * 100)}%`}
-            </span>
-            <span className="mt-1 block text-[11px] text-white/38">{level.answered} 题</span>
+/** 可信度偏低时，吉祥物说一句为什么（超时多 / 蒙得多），不然用户只看见一个低百分比 */
+const confidenceHint = (result: VocabTestResult): string | null => {
+  if (result.confidence >= 60) return null;
+  if (result.timeoutShare >= 0.2) return `可信度只有 ${result.confidence}%：超时的题有点多。下次不会的题直接点「不认识」，别等它倒数完。`;
+  if (result.guessedShare >= 0.2) return `可信度只有 ${result.confidence}%：看起来蒙的题不少。不会就点「不认识」——它不扣分，结果反而更准。`;
+  return `可信度只有 ${result.confidence}%：题答得还不够多。答满 60 题，数字会稳很多。`;
+};
+
+const ResultView = ({ result, row, onRestart, onBack, onShare, shareBusy }: {
+  result: VocabTestResult;
+  row: VocabTestHistoryRow | null;
+  onRestart: () => void;
+  onBack: () => void;
+  onShare: (row: VocabTestHistoryRow) => void;
+  shareBusy: boolean;
+}) => {
+  const enough = result.answered >= MIN_ANSWERS_FOR_ESTIMATE;
+  const hint = enough ? confidenceHint(result) : null;
+  return (
+    <div className="mx-auto w-full max-w-2xl space-y-3">
+      <section className="ds-card vt-hero">
+        <div className="vt-hero-row">
+          <div className="min-w-0 flex-1">
+            <p className="ds-kicker">{enough ? "这次测出" : "这次还没出数"}</p>
+            {enough ? (
+              <>
+                {/* 摆点估计，不摆区间。区间退到底下那行小字 ——
+                    「3,860 – 6,402」这种宽度读不出任何东西，用户宁可要一个具体数字。 */}
+                <p className="vt-big">{result.estimated.toLocaleString()}<small>词</small></p>
+                <p className="vt-sub"><span className="whitespace-nowrap">区间 {result.lower.toLocaleString()}–{result.upper.toLocaleString()}</span> · <span className="whitespace-nowrap">JLPT 词表范围内</span></p>
+              </>
+            ) : (
+              <h2 className="vt-title">答得还太少</h2>
+            )}
           </div>
-        ))}
+          <Sticker name={!enough ? "mood-ask" : hint ? "mood-puzzled" : "mood-proud"} size={96} className="vt-hero-mascot" />
+        </div>
+        {!enough && (
+          <MascotSay sticker="scene-book" tone="warn" size={48} className="mt-3">
+            只答了 <b>{result.answered}</b> 题，还有等级一题没碰过，给不出有意义的区间。至少答满 {MIN_ANSWERS_FOR_ESTIMATE} 题（五个等级各三题左右）再看结果。
+          </MascotSay>
+        )}
+        <div className="vt-stats">
+          <div><b>{result.answered}</b><span>已答题</span></div>
+          <div><b>{result.confidence}%</b><span>可信度</span></div>
+          <div><b>{enough ? result.recommendation : "—"}</b><span>建议从这级继续</span></div>
+        </div>
+      </section>
+
+      {hint && <MascotSay sticker="mood-dizzy" tone="warn" className="ds-say-onbg">{hint}</MascotSay>}
+
+      <section className="ds-card p-4 sm:p-5">
+        <h3 className="vt-h3">各级表现</h3>
+        <div className="mt-3 space-y-2.5">
+          {result.levels.map((level) => (
+            <div key={level.level} className="vt-level">
+              <b>{level.level}</b>
+              {/* 没答过的等级画空槽写「未答」，不画成 0% —— 那是两件事 */}
+              <div className="ds-bar flex-1"><i style={{ width: `${level.rate ? Math.max(4, level.rate * 100) : 0}%` }} /></div>
+              <span className={level.rate == null ? "vt-muted" : ""}>{level.rate == null ? "未答" : `${Math.round(level.rate * 100)}%`}</span>
+              <small>{level.answered} 题</small>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="flex gap-2">
+        <button type="button" onClick={onBack} className="ds-btn-soft focus-ring">返回</button>
+        {enough && row && (
+          <button type="button" onClick={() => onShare(row)} disabled={shareBusy} className="ds-btn-soft focus-ring flex-1 disabled:opacity-60"><Share2 size={16} />分享</button>
+        )}
+        <button type="button" onClick={onRestart} className="ds-btn focus-ring flex-1"><RotateCcw size={15} />再测一次</button>
       </div>
     </div>
-    <p className="mt-5 rounded-2xl border border-white/12 bg-white/5 p-3 text-xs leading-relaxed text-white/58">
-      JLPT 词表内的估计，不等于“全日语词汇量”。
-    </p>
-    <div className="mt-6 flex flex-wrap justify-end gap-2">
-      <button type="button" onClick={onBack} className="focus-ring rounded-2xl border border-white/15 px-4 py-2.5 text-sm font-bold text-white/70 hover:bg-white/[0.08]">返回</button>
-      <button type="button" onClick={onRestart} className="focus-ring inline-flex items-center gap-2 rounded-2xl bg-[#81D8CF] px-4 py-2.5 text-sm font-extrabold text-[#293333] hover:bg-[#A4E7E0]"><RotateCcw size={15} />重新测一次</button>
-    </div>
-  </div>
-);
+  );
+};
 
 export function VocabTestPage() {
   const [session, setSession] = useState<VocabTestSession | null>(() => getVocabTestSession());
@@ -632,58 +632,77 @@ export function VocabTestPage() {
     refreshHistory();
   }, [view, session, refreshHistory]);
 
+  const vocabShare = useVocabShare();
+  const shareBusy = vocabShare.busy !== null;
+
   if (view === "result" && result) {
-    return <ResultView result={result} onRestart={() => begin(true)} onBack={() => setView("intro")} />;
+    return (
+      <>
+        <ResultView
+          result={result}
+          row={history.find((row) => row.runId === session?.runId) ?? null}
+          onRestart={() => begin(true)}
+          onBack={() => setView("intro")}
+          onShare={(row) => void vocabShare.share(row)}
+          shareBusy={shareBusy}
+        />
+        {vocabShare.sheet}
+      </>
+    );
   }
 
   if (view === "intro" || !session || !shownQuestion) {
     const resumable = Boolean(session && !session.finishedAt && session.responses.length > 0);
     return (
-      <VocabTestHome
-        history={history}
-        latest={history[0] ?? null}
-        resumable={resumable}
-        resumeProgress={session ? `${session.responses.length} / ${session.plannedTotal}` : ""}
-        resumeStartedAt={session?.startedAt ?? 0}
-        resumeIdleMs={session ? openedAt - (session.responses[session.responses.length - 1]?.answeredAt ?? session.startedAt) : 0}
-        error={error}
-        onResume={() => { setView("quiz"); setFeedback(null); }}
-        onStart={() => begin(resumable)}
-        onOpenResult={() => setView("result")}
-        hasResult={Boolean(result) && (session?.responses.length ?? 0) > 0}
-      />
+      <>
+        <VocabTestHome
+          history={history}
+          resumable={resumable}
+          resumeProgress={session ? `${session.responses.length} / ${session.plannedTotal}` : ""}
+          resumeStartedAt={session?.startedAt ?? 0}
+          resumeIdleMs={session ? openedAt - (session.responses[session.responses.length - 1]?.answeredAt ?? session.startedAt) : 0}
+          error={error}
+          onResume={() => { setView("quiz"); setFeedback(null); }}
+          onStart={() => begin(resumable)}
+          onOpenResult={() => setView("result")}
+          hasResult={Boolean(result) && (session?.responses.length ?? 0) > 0}
+          onShare={(row) => void vocabShare.share(row)}
+          shareBusy={shareBusy}
+          shareNotice={vocabShare.pageNotice}
+        />
+        {vocabShare.sheet}
+      </>
     );
   }
 
   // ⚠️ 分母是 plannedTotal 不是 questions.length：摸底阶段只出好了 20 道，
   // 拿它当分母，进度条会在第 20 题冲到 100% 然后倒回去。
   const progress = Math.round((session.responses.length / session.plannedTotal) * 100);
+  const said = feedback ? FEEDBACK[feedback.state] : null;
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div>
-          <h2 className="mt-1 text-xl font-extrabold">词汇量测验</h2>
+    <div className="mx-auto w-full max-w-2xl">
+      <div className="vt-quiz-top">
+        <div className="min-w-0 flex-1">
+          <p className="vt-count"><b>{session.responses.length}</b> / {session.plannedTotal}</p>
+          <div className="ds-bar mt-1.5"><i style={{ width: `${progress}%` }} /></div>
         </div>
-        <button type="button" onClick={stop} className="focus-ring rounded-2xl border border-white/15 px-3 py-2 text-xs font-bold text-white/60 hover:bg-white/[0.08]">结束并看结果</button>
+        <TimerRing remaining={remaining} total={shownQuestion ? secondsForQuestion(shownQuestion) : 0} paused={paused} />
+        <button type="button" onClick={stop} className="ds-chip focus-ring">提前交卷</button>
       </div>
-      <div className="mb-3 flex items-center gap-3 text-xs font-semibold text-white/55">
-        <span className="min-w-0 flex-1">已答 {session.responses.length} / {session.plannedTotal}</span>
-        <span className="inline-flex items-center gap-1"><Clock3 size={14} />{paused ? "已暂停" : `${remaining}s`}</span>
-        {paused ? <Pause size={15} className="text-white/70" /> : <Play size={15} className="text-[#BFF4EE]" />}
-      </div>
-      <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#81D8CF] transition-[width]" style={{ width: `${progress}%` }} /></div>
-      <QuestionCard question={shownQuestion} disabled={Boolean(feedback) || paused} onChoose={choose} feedback={feedback ? { state: feedback.state, selected: feedback.selected } : null} />
-      {paused && <p className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl vocab-fb-unknown border px-3 py-2 text-xs font-semibold"><Pause size={14} />切回此页面后会继续计时</p>}
-      {feedback && (
-        <div className={`mt-3 rounded-2xl border p-3 ${answerClass(feedback.state)}`}>
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-extrabold">{answerLabel(feedback.state)}</p>
-            <span className="text-xs font-bold opacity-75">答案：{feedback.question.answer}</span>
-          </div>
-          <button type="button" onClick={nextQuestion} className="focus-ring mt-3 w-full rounded-xl bg-white/10 px-3 py-2 text-sm font-bold hover:bg-white/[0.08]">
-            {atEnd ? "查看结果" : "下一题"}
-          </button>
-        </div>
+      <QuestionCard
+        question={shownQuestion}
+        disabled={Boolean(feedback) || paused}
+        onChoose={choose}
+        feedback={feedback ? { state: feedback.state, selected: feedback.selected } : null}
+        next={{ label: atEnd ? "查看结果" : "下一题", onClick: nextQuestion }}
+      />
+      {paused && (
+        <MascotSay sticker="mood-sleep" size={52} className="ds-say-onbg mt-3">切走了，计时先停着。回到这页就接着算。</MascotSay>
+      )}
+      {feedback && said && (
+        <MascotSay sticker={said.sticker} tone={said.tone} size={56} className="ds-say-onbg mt-3">
+          <b>{said.label}</b>{feedback.state !== "correct" && <> 答案是「<b>{feedback.question.answer}</b>」。</>}
+        </MascotSay>
       )}
     </div>
   );

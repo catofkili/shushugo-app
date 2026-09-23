@@ -68,7 +68,7 @@ const WeeklyReportPage = lazy(() => import("./pages/WeeklyReportPage").then((mod
 
 const PageLoading = () => (
   <div className="grid min-h-[50vh] place-items-center p-6 text-sm font-semibold text-white/55" aria-busy="true">
-    <div className="text-center"><CapybaraWalk size={72} className="mx-auto mb-3" />正在加载…</div>
+    <div className="text-center"><CapybaraWalk size={72} className="mb-3" /><p>正在加载…</p></div>
   </div>
 );
 
@@ -1000,15 +1000,27 @@ export default function App() {
           setPage("jlpt-plan");
         }}
       />}
-      {trialEndedOpen && <div className="fixed inset-0 z-[85] grid place-items-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-label="试用结束">
-        <div className="w-full max-w-sm rounded-3xl bg-[#FFF9ED] p-6 shadow-2xl">
-          <h2 className="text-xl font-black jp-ink">7 天试用已结束</h2>
-          <p className="mt-3 text-sm leading-6 jp-muted">现在计划会继续安排单词。开通 Pro 后，语法、汉字和辨析会按原计划恢复。</p>
-          <button className="focus-ring mt-5 h-11 w-full rounded-2xl jp-accent text-sm font-black" onClick={() => {
-            const expiresAt = localStorage.getItem(LEVEL_PLAN_TRIAL_EXPIRES_KEY);
-            if (expiresAt) localStorage.setItem(LEVEL_PLAN_TRIAL_NOTICE_KEY, expiresAt);
-            setTrialEndedOpen(false);
-          }}>知道了</button>
+      {/* 原来是写死的奶油底 + jp-ink：深色主题下浅底浅字；z-85 也压不过手机底栏（9999） */}
+      {trialEndedOpen && <div className="fixed inset-0 z-[10001] grid place-items-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-label="试用结束">
+        <div className="ds-card w-full max-w-sm p-5">
+          <div className="flex items-center gap-3">
+            <CapybaraMascot mood="shy" size={64} className="shrink-0" />
+            <h2 className="text-xl font-black">7 天试用结束啦</h2>
+          </div>
+          <p className="mt-3 text-sm leading-6" style={{ color: "var(--ds-ink-2)" }}>计划会继续安排单词。开通 Pro 后，语法、汉字和辨析会按原来的计划恢复。</p>
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            <button className="ds-btn-soft focus-ring" onClick={() => {
+              const expiresAt = localStorage.getItem(LEVEL_PLAN_TRIAL_EXPIRES_KEY);
+              if (expiresAt) localStorage.setItem(LEVEL_PLAN_TRIAL_NOTICE_KEY, expiresAt);
+              setTrialEndedOpen(false);
+            }}>知道了</button>
+            <button className="ds-btn focus-ring" onClick={() => {
+              const expiresAt = localStorage.getItem(LEVEL_PLAN_TRIAL_EXPIRES_KEY);
+              if (expiresAt) localStorage.setItem(LEVEL_PLAN_TRIAL_NOTICE_KEY, expiresAt);
+              setTrialEndedOpen(false);
+              navigateToPage("pro");
+            }}>看看 Pro</button>
+          </div>
         </div>
       </div>}
     </div>

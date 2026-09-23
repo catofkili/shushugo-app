@@ -1664,7 +1664,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         )}
 
         {loading ? (
-          <div className="grid min-h-[360px] place-items-center text-center text-sm font-semibold text-white/55"><div><CapybaraWalk size={72} className="mx-auto mb-3" />正在取下一张…</div></div>
+          <div className="grid min-h-[360px] place-items-center text-center text-sm font-semibold text-white/55"><div><CapybaraWalk size={72} className="mb-3" /><p>正在取下一张…</p></div></div>
         ) : card ? (
           <div
             key={`${card.id}:${unitKey ?? "word"}`}

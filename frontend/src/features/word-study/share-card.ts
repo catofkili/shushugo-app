@@ -1,11 +1,12 @@
 import { formatDuration, monthDays } from "./word-study-utils";
 import {
-  createShareCanvas, drawBackground, drawBrandRow, FONT_SANS, FONT_SERIF,
-  INK, MARGIN, MINT, roundRectPath, toPngBlob, WIDTH
+  createShareCanvas, drawBackground, drawBigNumber, drawBrandRow, drawCard, drawChip, drawFooter, drawStatCards, drawSticker,
+  FONT_SANS, GOLD, GOLD_INK, INK, INK3, INNER, loadImage, MARGIN, ON_PRIMARY, PRIMARY, PRIMARY_DEEP, PRIMARY_TINT, toPngBlob, WIDTH
 } from "../../lib/share-canvas";
+import { brandIconUrl, stickerUrl } from "../../components/CapybaraMascot";
 
-// 打卡分享图:1080×1500 深色卡片,与 App 内主题(炭黑 + 新绿)一致。
-// 纯 canvas 绘制,不依赖外部资源,离线可用。底座(背景/品牌行/圆角/导出)在 lib/share-canvas。
+// 打卡分享图:1080×1500,和 App 同一张浅纸 + 吉祥物(当天欢呼,破里程碑得意)。
+// 纯 canvas 绘制,贴纸和图标是 public/brand 下的本地文件,离线可用。底座在 lib/share-canvas。
 
 export interface ShareCardInput {
   studyDate: string;
@@ -47,166 +48,93 @@ export const streakDays = (checkins: Set<string>, studyDate: string) => {
   return streak;
 };
 
-const drawHero = (ctx: CanvasRenderingContext2D, todayWordCount: number, encoreWords: number, milestoneReached: number) => {
+/** 顶上那块浅绿大卡：今天背了几个词 + 徽章 + 右下角一只吉祥物 */
+const drawHero = async (ctx: CanvasRenderingContext2D, todayWordCount: number, encoreWords: number, milestoneReached: number) => {
+  const top = 232;
+  const height = 380;
+  drawCard(ctx, MARGIN, top, INNER, height, PRIMARY_TINT);
+  const mascot = await loadImage(stickerUrl(milestoneReached > 0 ? "mood-proud" : "mood-yay"));
+  const mascotHeight = 300;
+  const mascotWidth = mascot ? (mascot.naturalWidth / mascot.naturalHeight) * mascotHeight : 0;
+  drawSticker(ctx, mascot, WIDTH - MARGIN - 28, top + height - 14, mascotHeight);
+
   ctx.textAlign = "left";
-  ctx.fillStyle = MINT;
-  ctx.font = `700 30px ${FONT_SANS}`;
-  ctx.fillText("今日背诵", MARGIN, 336);
+  ctx.fillStyle = PRIMARY_DEEP;
+  ctx.font = `800 32px ${FONT_SANS}`;
+  ctx.fillText("今天背了", MARGIN + 56, top + 78);
+  drawBigNumber(ctx, String(todayWordCount), "词", MARGIN + 56, top + 262, INNER - 112 - mascotWidth);
 
-  ctx.fillStyle = "#F4FAF9";
-  ctx.font = `800 168px ${FONT_SANS}`;
-  const numberText = String(todayWordCount);
-  ctx.fillText(numberText, MARGIN - 6, 484);
-  const numberWidth = ctx.measureText(numberText).width;
-  ctx.fillStyle = "rgba(244, 250, 249, 0.55)";
-  ctx.font = `700 46px ${FONT_SANS}`;
-  ctx.fillText("词", MARGIN + numberWidth + 22, 480);
-
-  // 数字下的强调短线
-  roundRectPath(ctx, MARGIN, 508, 132, 10, 5);
-  ctx.fillStyle = MINT;
-  ctx.fill();
-
-  // 徽章从数字右侧向右排:里程碑(稀有,金色)在前,加餐星徽在后
-  let chipX = MARGIN + numberWidth + 96;
-  if (milestoneReached > 0) {
-    const label = `⚑ 累计破 ${milestoneReached}`;
-    ctx.font = `700 28px ${FONT_SANS}`;
-    const labelWidth = ctx.measureText(label).width;
-    const chipW = labelWidth + 52;
-    roundRectPath(ctx, chipX, 402, chipW, 58, 29);
-    ctx.fillStyle = "#F5C15C";
-    ctx.fill();
-    ctx.fillStyle = "#4A3407";
-    ctx.fillText(label, chipX + 26, 441);
-    chipX += chipW + 18;
-  }
-  if (encoreWords > 0) {
-    const label = `✦ 加餐 +${encoreWords}`;
-    ctx.font = `700 28px ${FONT_SANS}`;
-    const labelWidth = ctx.measureText(label).width;
-    const chipW = labelWidth + 52;
-    roundRectPath(ctx, chipX, 402, chipW, 58, 29);
-    ctx.fillStyle = MINT;
-    ctx.fill();
-    ctx.fillStyle = INK;
-    ctx.fillText(label, chipX + 26, 441);
-  }
-};
-
-const drawStatCards = (ctx: CanvasRenderingContext2D, input: ShareCardInput) => {
-  const items = [
-    { label: "背词用时", value: formatDuration(input.totalSeconds) },
-    { label: "连续打卡", value: `${streakDays(input.checkins, input.studyDate)} 天` },
-    { label: "累计打卡", value: `${input.checkins.size} 天` }
-  ];
-  const cardW = 280;
-  const gap = 36;
-  const top = 560;
-  items.forEach((item, index) => {
-    const x = MARGIN + index * (cardW + gap);
-    roundRectPath(ctx, x, top, cardW, 168, 30);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.045)";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.textAlign = "left";
-    ctx.fillStyle = "rgba(244, 250, 249, 0.52)";
-    ctx.font = `700 26px ${FONT_SANS}`;
-    ctx.fillText(item.label, x + 34, top + 62);
-    ctx.fillStyle = "#F4FAF9";
-    ctx.font = `800 44px ${FONT_SANS}`;
-    ctx.fillText(item.value, x + 34, top + 128);
-  });
+  // 徽章从数字下方向右排:里程碑(稀有,金色)在前,加餐在后
+  let chipX = MARGIN + 56;
+  if (milestoneReached > 0) chipX += drawChip(ctx, chipX, top + 290, `⚑ 累计破 ${milestoneReached}`, GOLD, GOLD_INK) + 14;
+  if (encoreWords > 0) drawChip(ctx, chipX, top + 290, `✦ 加餐 +${encoreWords}`, PRIMARY, ON_PRIMARY);
 };
 
 const drawCalendar = (ctx: CanvasRenderingContext2D, input: ShareCardInput) => {
   const calendar = monthDays(input.studyDate);
-  const top = 776;
-  const height = 508;
-  roundRectPath(ctx, MARGIN, top, WIDTH - MARGIN * 2, height, 36);
-  ctx.fillStyle = "rgba(255, 255, 255, 0.045)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  const top = 818;
+  drawCard(ctx, MARGIN, top, INNER, 500);
 
   ctx.textAlign = "left";
-  ctx.fillStyle = "#F4FAF9";
+  ctx.fillStyle = INK;
   ctx.font = `800 36px ${FONT_SANS}`;
   ctx.fillText(calendar.title, MARGIN + 46, top + 70);
 
   const checkedToday = input.checkins.has(input.studyDate);
   ctx.textAlign = "right";
-  ctx.fillStyle = checkedToday ? MINT : "rgba(244, 250, 249, 0.45)";
+  ctx.fillStyle = checkedToday ? PRIMARY_DEEP : INK3;
   ctx.font = `700 26px ${FONT_SANS}`;
   ctx.fillText(checkedToday ? "✓ 今日已打卡" : "今日未打卡", WIDTH - MARGIN - 46, top + 68);
 
-  const gridLeft = MARGIN + 70;
-  const gridPitch = (WIDTH - MARGIN * 2 - 140) / 6;
+  const gridLeft = MARGIN + 80;
+  const gridPitch = (INNER - 160) / 6;
   ctx.textAlign = "center";
   ["日", "一", "二", "三", "四", "五", "六"].forEach((label, index) => {
-    ctx.fillStyle = "rgba(244, 250, 249, 0.4)";
+    ctx.fillStyle = INK3;
     ctx.font = `700 24px ${FONT_SANS}`;
-    ctx.fillText(label, gridLeft + index * gridPitch, top + 136);
+    ctx.fillText(label, gridLeft + index * gridPitch, top + 126);
   });
 
-  const rowPitch = 58;
-  const firstRowY = top + 196;
+  const rowPitch = 56;
+  const firstRowY = top + 180;
   calendar.cells.forEach((cell, index) => {
     if (!cell) return;
     const cx = gridLeft + (index % 7) * gridPitch;
     const cy = firstRowY + Math.floor(index / 7) * rowPitch;
     const checked = input.checkins.has(cell.date);
-    const isToday = cell.date === input.studyDate;
     if (checked) {
       ctx.beginPath();
-      ctx.arc(cx, cy, 25, 0, Math.PI * 2);
-      ctx.fillStyle = MINT;
+      ctx.arc(cx, cy, 24, 0, Math.PI * 2);
+      ctx.fillStyle = PRIMARY;
       ctx.fill();
     }
-    if (isToday) {
+    if (cell.date === input.studyDate) {
       ctx.beginPath();
       ctx.arc(cx, cy, 29, 0, Math.PI * 2);
-      ctx.strokeStyle = MINT;
+      ctx.strokeStyle = PRIMARY_DEEP;
       ctx.lineWidth = 3;
       ctx.stroke();
     }
-    ctx.fillStyle = checked ? INK : "rgba(244, 250, 249, 0.55)";
+    ctx.fillStyle = checked ? ON_PRIMARY : INK3;
     ctx.font = `${checked ? 800 : 600} 24px ${FONT_SANS}`;
     ctx.fillText(String(cell.day), cx, cy + 9);
   });
 };
 
-const drawQuoteAndFooter = (ctx: CanvasRenderingContext2D, studyDate: string) => {
-  const quote = QUOTES[new Date(`${studyDate}T00:00:00`).getDate() % QUOTES.length];
-  roundRectPath(ctx, MARGIN, 1330, 8, 84, 4);
-  ctx.fillStyle = MINT;
-  ctx.fill();
-  ctx.textAlign = "left";
-  ctx.fillStyle = "#F4FAF9";
-  ctx.font = `600 40px ${FONT_SERIF}`;
-  ctx.fillText(`「${quote.jp}」`, MARGIN + 38, 1368);
-  ctx.fillStyle = "rgba(244, 250, 249, 0.5)";
-  ctx.font = `600 26px ${FONT_SANS}`;
-  ctx.fillText(quote.zh, MARGIN + 42, 1410);
-
-  ctx.textAlign = "right";
-  ctx.fillStyle = "rgba(244, 250, 249, 0.35)";
-  ctx.font = `600 24px ${FONT_SANS}`;
-  ctx.fillText("今天也把日语往前推了一点。", WIDTH - MARGIN, 1410);
-};
-
 export const renderShareCard = async (input: ShareCardInput): Promise<Blob> => {
   const { canvas, ctx } = createShareCanvas();
+  const quote = QUOTES[new Date(`${input.studyDate}T00:00:00`).getDate() % QUOTES.length];
 
   drawBackground(ctx);
-  drawBrandRow(ctx, input.studyDate);
-  drawHero(ctx, input.todayWordCount, input.encoreWords ?? 0, input.milestoneReached ?? 0);
-  drawStatCards(ctx, input);
+  await drawBrandRow(ctx, input.studyDate, brandIconUrl());
+  await drawHero(ctx, input.todayWordCount, input.encoreWords ?? 0, input.milestoneReached ?? 0);
+  drawStatCards(ctx, 640, [
+    { label: "背词用时", value: formatDuration(input.totalSeconds) },
+    { label: "连续打卡", value: `${streakDays(input.checkins, input.studyDate)} 天` },
+    { label: "累计打卡", value: `${input.checkins.size} 天` }
+  ]);
   drawCalendar(ctx, input);
-  drawQuoteAndFooter(ctx, input.studyDate);
+  drawFooter(ctx, `「${quote.jp}」`, quote.zh, "今天也把日语往前推了一点。");
 
   return toPngBlob(canvas);
 };
