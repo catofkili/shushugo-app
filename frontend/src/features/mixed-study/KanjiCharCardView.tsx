@@ -111,7 +111,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
                 aria-keyshortcuts={answerHotkeyLabels[option.value]}
                 className={`focus-ring zoo-pop h-16 min-w-0 rounded-2xl border ${option.secondary ? "border-white/12 px-1 text-sm font-semibold text-white/60 hover:bg-white/[0.06]" : "quiz-accent-btn border-white/20 px-2 text-base font-bold"}`}
               >
-                <span className={`block text-[10px] font-black text-white/45 ${option.secondary ? "tracking-normal" : "tracking-[0.18em]"}`}>{answerHotkeyLabels[option.value]}</span>
+                <span className={`block text-[11px] font-black text-white/45 ${option.secondary ? "tracking-normal" : "tracking-[0.18em]"}`}>{answerHotkeyLabels[option.value]}</span>
                 <span>{option.label}</span>
               </button>
             ))}

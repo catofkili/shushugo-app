@@ -16,7 +16,8 @@
 }
 
 .jp-token[data-jp-token-clickable="true"] { cursor: pointer; }
-.jp-token[data-jp-token-clickable="false"] { opacity: 0.66; }
+/* 不可点的词块（助词、助动词…）以前调到 66% 透明来暗示「点不开」—— 句子读起来一块深一块浅，
+   而语法例句里被调淡的正好是要学的 は / です。可点的那些有悬停高亮和手型光标，够了。 */
 
 .jp-token[data-jp-token-clickable="true"]:hover {
   background-color: rgba(129, 216, 207, 0.16);
@@ -59,7 +60,7 @@
   transform: translateX(-50%);
   overflow-y: auto;
   border: 1px solid rgba(129, 216, 207, 0.38);
-  border-radius: 22px;
+  border-radius: 20px;
   padding: 12px 16px 16px;
   background: rgba(47, 51, 51, 0.98);
   box-shadow: 0 16px 42px rgba(0, 0, 0, 0.3);
@@ -226,7 +227,7 @@
   border-radius: 0.75rem;
   background: rgba(129, 216, 207, 0.12);
   padding: 0.5rem 0.75rem;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.6;
   color: #81D8CF;
@@ -481,19 +482,7 @@
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.36) !important;
 }
 
-[data-theme="dark"] .app-mobile-tabbar button {
-  background: #30392F !important;
-  border-color: rgba(196, 232, 155, 0.18) !important;
-  color: #EEE9DC !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 3px 10px rgba(0, 0, 0, 0.22) !important;
-}
 
-[data-theme="dark"] .app-mobile-tabbar button.bg-\[\#81D8CF\] {
-  background: #89C95D !important;
-  border-color: #B7E38D !important;
-  color: #172112 !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 14px rgba(91, 145, 57, 0.32) !important;
-}
 
 [data-theme="dark"] .app-mobile-topbar .text-white,
 [data-theme="dark"] .app-mobile-topbar .text-white\/78 {
@@ -585,7 +574,7 @@
   max-width: min(92vw, 480px);
   transform: translateX(-50%);
   border: 1px solid rgba(185, 28, 28, 0.28);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 9px 12px;
   background: rgba(255, 250, 244, 0.98);
   box-shadow: 0 8px 24px rgba(127, 29, 29, 0.18);
@@ -1076,6 +1065,25 @@ main .kanji-variant-mark {
   opacity: 1;
 }
 
+/* 「图标 + 输入框」组合：外层 label/span 自己画框、里面一个 svg 一个 input（搜索框、登录框都是）。
+   上面那条全局规则会给里面的 input 再套一层框 —— 框中框。input 上显式写了 border/bg 类的照样赢（类的特异度更高）。 */
+:where(label, span, div):has(> svg):has(> input) > input {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: transparent;
+  padding-left: 0;
+  padding-right: 0;
+}
+:where(label, span, div):has(> svg):has(> input:focus) {
+  border-color: var(--color-accent) !important;
+}
+
+/* 组件里常写 placeholder:text-white/45 —— 深色主题下对，浅色翻译层不管 placeholder: 变体，于是浅底白字。 */
+[data-theme="light"] :where(input, textarea)::placeholder {
+  color: var(--form-control-placeholder) !important;
+}
+
 :where(input[type="checkbox"], input[type="radio"]) {
   -webkit-appearance: auto;
   appearance: auto;
@@ -1094,9 +1102,53 @@ main .kanji-variant-mark {
   color-scheme: dark;
 }
 
+/* 滑杆自己画轨道和滑块。原生那条在 Chrome 里会按 accent-color 的明暗「自动配对比色」：
+   主色一浅（青、抹茶绿），没填充的那段就成了一条粗黑线（设置页、起点弹窗、每日量都是）。
+   WebKit 没有「已填充段」伪元素，所以只画轨道 + 实心滑块，数值由旁边的文字说。 */
 :where(input[type="range"]) {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 24px;
+  background: transparent;
   accent-color: var(--zoo-primary);
+  cursor: pointer;
 }
+:where(input[type="range"])::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(107, 90, 72, 0.18);
+}
+:where(input[type="range"])::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(107, 90, 72, 0.18);
+}
+:where(input[type="range"])::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--zoo-primary);
+}
+:where(input[type="range"])::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: var(--zoo-primary);
+  box-shadow: 0 1px 4px rgba(60, 45, 25, 0.3);
+}
+:where(input[type="range"])::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: var(--zoo-primary);
+  box-shadow: 0 1px 4px rgba(60, 45, 25, 0.3);
+}
+[data-theme="dark"] :where(input[type="range"])::-webkit-slider-runnable-track { background: rgba(255, 255, 255, 0.16); }
+[data-theme="dark"] :where(input[type="range"])::-moz-range-track { background: rgba(255, 255, 255, 0.16); }
+:where(input[type="range"]):focus-visible { outline: 2px solid var(--zoo-primary); outline-offset: 4px; border-radius: 999px; }
 
 :where(input[type="file"]) {
   color: var(--form-control-text);
@@ -1677,7 +1729,7 @@ select {
 
 ::-webkit-scrollbar-track {
   background: rgba(242, 250, 247, 0.5);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -1686,7 +1738,7 @@ select {
     rgba(143, 203, 94, 0.6) 0%,
     rgba(111, 168, 62, 0.7) 100%
   );
-  border-radius: 10px;
+  border-radius: 12px;
   border: 2px solid rgba(242, 250, 247, 0.5);
 }
 
@@ -1720,19 +1772,7 @@ select {
   -webkit-backdrop-filter: blur(12px) saturate(125%) !important;
 }
 
-[data-theme="light"] .app-mobile-tabbar button {
-  background: rgba(255, 255, 255, 0.72) !important;
-  border-color: rgba(111, 168, 62, 0.22) !important;
-  color: #6B5A48 !important;
-  box-shadow: 0 2px 8px rgba(150, 110, 55, 0.06) !important;
-}
 
-[data-theme="light"] .app-mobile-tabbar button.bg-\[\#81D8CF\] {
-  background: #DCF0C4 !important;
-  border-color: rgba(111, 168, 62, 0.48) !important;
-  color: #4E7D2A !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(111, 168, 62, 0.2) !important;
-}
 
 [data-theme="light"] .bg-\[\#555858\],
 [data-theme="light"] .bg-\[\#343838\] {
@@ -2294,14 +2334,6 @@ select {
   background-color: rgba(143, 203, 94, 0.9) !important;
 }
 
-/* —— 底部标签栏激活项：改为实心新绿 + 深字，最醒目 —— */
-[data-theme="light"] .app-mobile-tabbar button.bg-\[\#81D8CF\] {
-  background: var(--zoo-primary) !important;
-  border-color: rgba(111, 168, 62, 0.6) !important;
-  color: var(--zoo-on-primary) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
-              0 6px 16px rgba(111, 168, 62, 0.35) !important;
-}
 
 /* —— 页面主体的暖奶油底 —— */
 [data-theme="light"] .app-shell {
@@ -2399,13 +2431,6 @@ select {
   background-color: rgba(145, 201, 104, 0.9) !important;
 }
 
-[data-theme="dark"] .app-mobile-tabbar button.bg-\[\#81D8CF\] {
-  background: var(--zoo-primary) !important;
-  border-color: var(--zoo-primary-deep) !important;
-  color: var(--zoo-on-primary) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
-              0 4px 14px rgba(91, 145, 57, 0.32) !important;
-}
 
 /* ——— 学习页的辨析气泡（卡中卡） ———
    形制照抄疑难辨析页的大卡（.cf-sheet：60vh、min(560px)、从下方弹起），
@@ -2449,7 +2474,7 @@ select {
 }
 
 .wd-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px }
-.wd-title { margin-top: 2px; font-size: 22px; font-weight: 700; line-height: 1.15 }
+.wd-title { margin-top: 2px; font-size: 24px; font-weight: 700; line-height: 1.15 }
 .wd-close {
   display: grid;
   flex: none;
@@ -2497,34 +2522,34 @@ select {
 .wd-members { display: flex; flex-direction: column; gap: 8px }
 .wd-member {
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.04);
   padding: 10px 12px;
 }
 /* 当前这张要一眼认出来 —— 没有参照物的「对照」等于没对照 */
 .wd-member.is-current { border-color: rgba(129, 216, 207, 0.5); background: rgba(129, 216, 207, 0.1) }
 .wd-member-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px }
-.wd-member-word { font-size: 21px; font-weight: 700; line-height: 1.2 }
+.wd-member-word { font-size: 20px; font-weight: 700; line-height: 1.2 }
 .wd-member-kana { color: rgba(129, 216, 207, 0.85); font-size: 13px; font-weight: 600 }
 .wd-member-tag {
-  border-radius: 6px;
+  border-radius: 8px;
   background: #81D8CF;
   padding: 1px 6px;
   color: #2f3333;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 .wd-member-level {
   margin-left: auto;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
   padding: 1px 6px;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
-.wd-member-meaning { margin-top: 4px; color: rgba(255, 255, 255, 0.88); font-size: 13.5px; line-height: 1.6 }
-.wd-member-note { margin-top: 4px; color: rgba(255, 255, 255, 0.62); font-size: 12.5px; line-height: 1.7 }
+.wd-member-meaning { margin-top: 4px; color: rgba(255, 255, 255, 0.88); font-size: 14px; line-height: 1.6 }
+.wd-member-note { margin-top: 4px; color: rgba(255, 255, 255, 0.62); font-size: 13px; line-height: 1.7 }
 .wd-member-note.is-major {
   border-left: 3px solid rgba(255, 105, 105, 0.55);
   border-radius: 8px;
@@ -2534,19 +2559,19 @@ select {
   font-weight: 700;
   overflow-wrap: anywhere;
 }
-.wd-member-example { margin-top: 6px; color: rgba(255, 255, 255, 0.8); font-size: 12.5px; line-height: 1.7 }
-.wd-member-example span { display: block; color: rgba(255, 255, 255, 0.5); font-size: 11.5px }
+.wd-member-example { margin-top: 6px; color: rgba(255, 255, 255, 0.8); font-size: 13px; line-height: 1.7 }
+.wd-member-example span { display: block; color: rgba(255, 255, 255, 0.5); font-size: 12px }
 .wd-jump {
   margin-top: 8px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
   border: 1px solid rgba(90, 167, 255, 0.4);
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgba(90, 167, 255, 0.12);
   padding: 5px 10px;
   color: #9ac6ff;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
 }
 .wd-jump:disabled { opacity: 0.5 }
@@ -2615,13 +2640,13 @@ select {
   margin-top: 3px;
   overflow: hidden;
   color: rgba(255, 255, 255, 0.88);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.wd-entry-go { flex: none; color: rgba(255, 255, 255, 0.5); font-size: 11.5px; font-weight: 700 }
+.wd-entry-go { flex: none; color: rgba(255, 255, 255, 0.5); font-size: 12px; font-weight: 700 }
 [data-theme="light"] .wd-entry { border-color: rgba(126, 190, 79, 0.35); background: rgba(126, 190, 79, 0.12) }
 [data-theme="light"] .wd-entry-types { color: var(--zoo-primary-deep, #3B5220) }
 [data-theme="light"] .wd-entry-words { color: var(--zoo-ink, #3A2E22) }
@@ -2633,19 +2658,19 @@ select {
   align-items: center;
   gap: 14px;
   border: 1px solid rgba(129, 216, 207, 0.25);
-  border-radius: 18px;
+  border-radius: 20px;
   background: rgba(129, 216, 207, 0.12);
   padding: 14px 16px;
 }
 .ach-summary-kick {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .ach-summary-count { margin-top: 2px; color: rgba(255, 255, 255, 0.6); font-size: 13px; font-weight: 700 }
-.ach-summary-count b { color: #81D8CF; font-size: 26px }
+.ach-summary-count b { color: #81D8CF; font-size: 24px }
 .ach-summary-bar {
   position: relative;
   flex: 1;
@@ -2661,7 +2686,7 @@ select {
   background: linear-gradient(90deg, #81D8CF, #B7E38D);
   transition: width 0.4s ease;
 }
-.ach-summary-percent { flex: none; color: #81D8CF; font-size: 15px; font-weight: 800 }
+.ach-summary-percent { flex: none; color: #81D8CF; font-size: 16px; font-weight: 800 }
 
 .ach-grid { display: grid; gap: 8px }
 @media (min-width: 720px) { .ach-grid { grid-template-columns: 1fr 1fr } }
@@ -2698,7 +2723,7 @@ select {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.5);
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1;
 }
 .ach-name {
@@ -2706,13 +2731,13 @@ select {
   align-items: center;
   gap: 6px;
   color: #fff;
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 800;
 }
 .ach-tag {
-  border-radius: 5px;
+  border-radius: 4px;
   padding: 1px 5px;
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
@@ -2746,7 +2771,7 @@ select {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
 }
-.ach-progress b { position: relative; flex: none; color: rgba(255, 255, 255, 0.5); font-size: 10.5px; font-weight: 700 }
+.ach-progress b { position: relative; flex: none; color: rgba(255, 255, 255, 0.5); font-size: 11px; font-weight: 700 }
 
 [data-theme="light"] .ach-summary { border-color: rgba(126, 190, 79, 0.35); background: rgba(126, 190, 79, 0.12) }
 [data-theme="light"] .ach-summary-kick { color: var(--zoo-muted, #9A8A78) }
@@ -2756,7 +2781,8 @@ select {
 [data-theme="light"] .ach-summary-bar { background: rgba(154, 138, 120, 0.2) }
 [data-theme="light"] .ach-summary-bar span { background: linear-gradient(90deg, #7EBE4F, #B7E38D) }
 [data-theme="light"] .ach-card { background: var(--zoo-surface, #FBF5E9); border-color: rgba(154, 138, 120, 0.25) }
-[data-theme="light"] .ach-card.is-locked { background: var(--zoo-cream-2, #EFDFC2) }
+/* 没拿到的不能比拿到的更显眼：以前填 cream-2，换了抹茶皮肤就是一块比已达成还绿的底。改成虚线空槽 */
+[data-theme="light"] .ach-card.is-locked { background: transparent; border-style: dashed }
 [data-theme="light"] .ach-card.is-locked .ach-name { color: var(--zoo-muted, #9A8A78) }
 [data-theme="light"] .ach-name { color: var(--zoo-ink, #3A2E22) }
 [data-theme="light"] .ach-desc { color: var(--zoo-muted, #9A8A78) }

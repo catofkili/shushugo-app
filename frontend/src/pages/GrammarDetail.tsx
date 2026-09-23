@@ -8,6 +8,7 @@ import { grammarKeyPointFor } from "../lib/grammar-key-points";
 import { grammarPoints } from "../data/grammar";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
 import { grammarSequence } from "../lib/grammar-numbering";
+import { MASTERY_LABEL } from "../types/grammar";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { MasteryStatus } from "../types/grammar";
 import { useStudyTimer } from "../lib/useStudyTimer";
@@ -41,21 +42,21 @@ export const GrammarDetail = ({
   }, [point.id]);
   return (
     <div className="space-y-6">
-      <button onClick={onBack} className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-1 text-sm font-semibold text-[#f9faf7] hover:text-[#343838] dark:text-zinc-400 dark:hover:text-zinc-50">
+      <button onClick={onBack} className="page-backbar focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-1 text-sm font-semibold text-[#f9faf7] hover:text-[#343838] dark:text-zinc-400 dark:hover:text-zinc-50">
         <ArrowLeft size={16} />
         返回语法辞典
       </button>
       <section data-grammar-point-id={point.id} className="dictionary-card rounded-2xl p-6">
         <div className="flex flex-col justify-between gap-5 md:flex-row">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#81D8CF]">{grammarSequence(point).label} · {mastery}</p>
-            <h1 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-3 text-6xl font-semibold leading-none text-[#343838] dark:text-[#f4efe4]"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h1>
+            <p className="text-xs font-bold text-[#81D8CF]">{grammarSequence(point).label} · {MASTERY_LABEL[mastery]}</p>
+            <h1 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-3 text-[32px] font-semibold leading-snug md:text-6xl md:leading-none text-[#343838] dark:text-[#f4efe4]"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h1>
             <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-4 text-xl text-[#f9faf7] dark:text-zinc-200">{point.meaning}</p>
-            <p data-grammar-point-id={point.id} data-grammar-highlight-block="formation" className="jp mt-4 inline-block rounded-2xl border-l-2 border-[#81D8CF] bg-[#81D8CF] px-3 py-2 text-[#f9faf7] dark:bg-[#171611] dark:text-zinc-200">
+            <p data-grammar-point-id={point.id} data-grammar-highlight-block="formation" className="jp mt-4 inline-block rounded-2xl border-l-2 border-[#81D8CF] bg-[#81D8CF]/12 px-3 py-2 text-white">
               <GrammarTermHint text={point.connection ?? point.structure} />
             </p>
           </div>
-          <div className="space-y-3">
+          <div className="flex flex-wrap items-start gap-3 md:block md:space-y-3">
             <button
               onClick={() => {
                 setNoteDraft(getGrammarNote(point.id));
@@ -72,7 +73,7 @@ export const GrammarDetail = ({
         {(note || noteEditorOpen) && (
           <div className="mt-5 rounded-2xl border border-white/15 bg-[#373b3b] p-4">
             <div className="mb-2 flex items-center justify-between gap-3">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">My Note</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">我的笔记</p>
               {noteEditorOpen && (
                 <button onClick={() => setNoteEditorOpen(false)} className="focus-ring grid h-7 w-7 place-items-center rounded-xl border border-white/15 bg-white/5" title="关闭备注">
                   <X size={14} />
@@ -116,7 +117,7 @@ export const GrammarDetail = ({
           {grammarKeyPointFor(point) && (
             <p className="grammar-key-point !mt-0">{grammarKeyPointFor(point)}</p>
           )}
-          <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-4 text-[15px] leading-8 text-[#f9faf7] dark:text-zinc-300">{point.explanation}</p>
+          <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-4 text-base leading-8 text-[#f9faf7] dark:text-zinc-300">{point.explanation}</p>
         </div>
       </section>
 

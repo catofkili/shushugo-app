@@ -1,7 +1,7 @@
 /**
  * 收集日的吉祥物：全部是作者的原图（`public/brand/sheet/`），不是画的。
  * 表情 / 功能图标 / Tab / 空状态 / Logo / 启动页来自 2026-09-19 晚补的五张高清分图（一格约 300px，
- * `scripts/brand-sheet/cut-hires.sh`）；满足、加油、一字多音、工具盘更多图标、气泡、每日一句、走路帧
+ * `scripts/brand-sheet/cut-hires.sh`）；2026-09-23 又补了四张表情分图（20 格，`cut-extra.sh`）；满足、加油、一字多音、工具盘更多图标、气泡、每日一句、走路帧
  * 只有定妆总表上有（一格约 100px，`cut-v2.sh` 双三次放大 3~4 倍）。换图同名替换即可，代码不用改。
  *
  * 裁图坐标在 scratchpad 的 cut-all.sh 里（面板底色按四边泛洪抠掉）；总表本身在 ~/收集日/。
@@ -15,7 +15,11 @@ import type React from "react";
 import { useSyncExternalStore } from "react";
 
 export type MascotMood =
-  | "default" | "happy" | "content" | "study" | "idea" | "fight" | "confused" | "surprised" | "working" | "love";
+  | "default" | "happy" | "content" | "study" | "idea" | "fight" | "confused" | "surprised" | "working" | "love"
+  // 2026-09-23 晚补的四张分图（cut-extra.sh）：生病 饿了 欢呼 头晕 挥手 / 惊吓 害羞 抱心 想不通 得意 /
+  // 大哭 生气 想问 睡着 耶 / 攥拳。鳄鱼皮肤没有这些，按下面的规则退回鳄鱼默认表情。
+  | "sick" | "hungry" | "cheer" | "dizzy" | "wave" | "shocked" | "shy" | "heart" | "puzzled" | "proud"
+  | "cry" | "angry" | "ask" | "sleep" | "yay" | "fired-up";
 
 export type StickerName =
   | `mood-${MascotMood}`
@@ -26,6 +30,7 @@ export type StickerName =
   | "tab-home" | "tab-study" | "tab-grammar" | "tab-practice" | "tab-stats" | "tab-me"
   | "bubble-cheer" | "bubble-great" | "bubble-more" | "card-daily"
   | "logo-lockup" | "splash-sleep" | "quote-splash" | "scene-onsen" | "scene-reading" | "decor-set"
+  | "scene-laptop" | "scene-music" | "scene-book" | "scene-stretch"
   | "walk-frame";
 
 /**

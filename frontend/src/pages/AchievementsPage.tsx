@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Lock } from "lucide-react";
 import { achievementBoard, CATEGORY_ORDER, TIER_LABEL, type AchievementView } from "../lib/achievements";
+import { Sticker } from "../components/CapybaraMascot";
 
 interface AchievementsPageProps {
   onBack: () => void;
@@ -45,7 +46,7 @@ export const AchievementsPage = ({ onBack }: AchievementsPageProps) => {
 
   return (
     <div className="mx-auto max-w-3xl pb-4">
-      <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
+      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
         <button
           onClick={onBack}
           className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8 hover:text-white"
@@ -61,8 +62,9 @@ export const AchievementsPage = ({ onBack }: AchievementsPageProps) => {
       ) : (
         <>
           <div className="ach-summary">
+            <Sticker name="mood-proud" size={52} className="shrink-0" />
             <div>
-              <p className="ach-summary-kick">Achievements</p>
+              <p className="ach-summary-kick">已解锁</p>
               <p className="ach-summary-count"><b>{board.unlocked}</b> / {board.total}</p>
             </div>
             <div className="ach-summary-bar" role="img" aria-label={`完成度 ${percent}%`}>

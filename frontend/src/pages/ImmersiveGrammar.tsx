@@ -147,7 +147,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
           {(note || noteEditorOpen) && (
             <div className="mb-5 rounded-2xl border border-white/15 bg-[#373b3b] p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">My Note</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">我的笔记</p>
                 {noteEditorOpen && (
                   <button onClick={() => setNoteEditorOpen(false)} className="focus-ring grid h-7 w-7 place-items-center rounded-xl border border-white/15 bg-white/5" title="关闭备注">
                     <X size={14} />
@@ -192,7 +192,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
           {grammarKeyPointFor(point) && (
             <p className="grammar-key-point">{grammarKeyPointFor(point)}</p>
           )}
-          <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-5 text-[15px] leading-8 text-white/76">{point.explanation}</p>
+          <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-5 text-base leading-8 text-white/76">{point.explanation}</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {point.examples.slice(0, 4).map((example, exampleIndex) => (
               <div key={example.jp ?? example.japanese} data-grammar-point-id={point.id} data-grammar-highlight-block={`immersive-example-${exampleIndex}`} className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">

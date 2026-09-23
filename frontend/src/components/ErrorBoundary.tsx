@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Sticker } from "./CapybaraMascot";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -34,7 +35,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <div className="grid min-h-screen place-items-center bg-[#555858] px-6 text-center text-[#fff]">
           <div className="max-w-sm">
-            <p className="jp-serif text-4xl font-semibold">語</p>
+            <Sticker name="mood-dizzy" size={120} className="mx-auto" />
             <p className="mt-4 text-xl font-bold">应用出了点问题</p>
             <p className="mt-2 text-sm text-white/70">
               界面遇到一个错误。你的学习数据已保存在本地，重新载入即可继续。

@@ -23,6 +23,38 @@ const isHomePage = (page: Page) =>
   ["home", "team", "quick-study", "vocab-test", "study-modes", "grammar-foundation", "favorites", "distinction-quiz", "yuzu-shop"].includes(page);
 const isRootMobilePage = (page: Page) => ["home", "word", "grammar", "profile"].includes(page);
 
+// 手机顶栏的标题。页面里各自那条「← 返回 | 标题」(.page-backbar) 在手机上藏掉，
+// 返回和标题只由顶栏说一次 —— 以前子页面是两个返回键、同一个标题说两三遍。
+// null = 页面自己有大标题(h1)，顶栏只留返回键，免得标题叠两层。
+const mobileTitles: Partial<Record<Page, string | null>> = {
+  grammar: "语法",
+  profile: "我的",
+  team: "组队",
+  "quick-study": "快速复习",
+  "vocab-test": null,
+  detail: "语法",
+  "grammar-foundation": null,
+  "study-modes": null,
+  favorites: null,
+  "yuzu-shop": "柚子商店",
+  confusion: null,
+  "distinction-quiz": "辨析练习",
+  "kanji-readings": null,
+  "word-list": null,
+  "jlpt-plan": "备考计划",
+  pro: "收集日 Pro",
+  account: "账号和安全",
+  "personal-info": "个人信息",
+  notifications: "通知提醒",
+  settings: "设置",
+  privacy: "隐私",
+  "privacy-policy": "隐私政策",
+  "user-agreement": "用户协议",
+  help: "帮助和支持",
+  achievements: "成就",
+  about: "关于"
+};
+
 interface AppNavigationProps {
   page: Page;
   sidebarCollapsed: boolean;
@@ -99,41 +131,27 @@ export function AppNavigation({
   return (
     <>
       <div
-        className="app-mobile-topbar app-landscape-topbar fixed left-0 right-0 top-0 z-10 bg-white/15 px-4 pb-2 pt-[calc(max(env(safe-area-inset-top),54px)+0.4rem)] backdrop-blur-[30px] lg:hidden"
-        style={{
-          touchAction: "none",
-          pointerEvents: "auto",
-          transition: "transform 0.3s ease-out",
-          transform: "translateY(0)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.25)",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)"
-        }}
+        className="app-mobile-topbar app-landscape-topbar fixed left-0 right-0 top-0 z-10 px-4 pb-2 pt-[calc(max(env(safe-area-inset-top),54px)+0.4rem)] backdrop-blur-[30px] lg:hidden"
+        style={{ touchAction: "none", pointerEvents: "auto" }}
         onTouchMove={(event) => event.preventDefault()}
       >
-        <div className="flex items-center justify-between gap-2">
-          {!isRootMobilePage(page) ? (
-            <button
-              onClick={onBack}
-              className="focus-ring inline-flex shrink-0 items-center gap-2 rounded-xl px-2 py-1 text-sm font-bold text-white/78 hover:bg-[#81D8CF]/15 hover:text-white"
-            >
-              <ArrowLeft size={18} />
+        <div className="app-topbar-row">
+          {!isRootMobilePage(page) && (
+            <button onClick={onBack} className="focus-ring app-topbar-back" aria-label="返回">
+              <ArrowLeft size={20} />
             </button>
-          ) : (
-            <div className="w-1 shrink-0" />
           )}
 
-          {/* 顶栏中间本来是空的,今天这趟复习的小路放这儿 */}
-          <SquirrelTrail mode={studyMode} />
-
-          <button
-            onClick={() => onNavigate("home")}
-            className="focus-ring flex shrink-0 items-center gap-1.5 rounded-xl px-1 text-left"
-          >
-            <BrandIcon className="brand-icon h-6 w-6 rounded-lg object-cover" />
-            <span className="jp-serif block text-base font-semibold leading-none tracking-wide text-white">
-              收集日<i className="brand-sprout" aria-hidden="true" />
+          {page === "word" ? (
+            // 小路只在学习页出现：它说的是「这一趟走到哪」，别的页面上它是重复主页大卡的那个数
+            <SquirrelTrail mode={studyMode} />
+          ) : page === "home" ? (
+            <span className="app-topbar-brand">
+              <span className="jp-serif">收集日<i className="brand-sprout" aria-hidden="true" /></span>
             </span>
-          </button>
+          ) : (
+            <h1 className="app-topbar-title">{mobileTitles[page] ?? ""}</h1>
+          )}
         </div>
       </div>
 
@@ -208,7 +226,7 @@ export function AppNavigation({
                     onClick={() => chooseSearchResult(result)}
                     className="focus-ring flex w-full items-start gap-3 border-b border-white/10 px-3 py-2.5 text-left last:border-b-0 hover:bg-[#4f5353]"
                   >
-                    <span className="mt-0.5 rounded-lg bg-[#81D8CF]/18 px-2 py-1 text-[10px] font-black text-[#81D8CF]">
+                    <span className="mt-0.5 rounded-lg bg-[#81D8CF]/18 px-2 py-1 text-[11px] font-black text-[#81D8CF]">
                       {result.type === "word" ? "词" : "文"}
                     </span>
                     <span className="min-w-0 flex-1">
@@ -218,7 +236,7 @@ export function AppNavigation({
                           : result.title}
                       </span>
                       <span className="mt-0.5 block truncate text-xs text-white/58">{result.subtitle}</span>
-                      <span className="mt-0.5 block truncate text-[10px] font-bold uppercase text-white/40">{result.meta}</span>
+                      <span className="mt-0.5 block truncate text-[11px] font-bold uppercase text-white/40">{result.meta}</span>
                     </span>
                   </button>
                 ))
@@ -260,39 +278,27 @@ export function AppNavigation({
         </div>
       </aside>
 
+      {/* 四个 Tab 以前各是一个描边+投影+填色的按钮，选中的那个是整块实心色 ——
+          底栏本身成了全屏最重的东西。现在不画框：选中只靠图标底下一小块浅色和文字变色。 */}
       <nav
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 9999,
-          backgroundColor: "rgba(255, 255, 255, 0.15)",
-          backdropFilter: "blur(30px) saturate(200%)",
-          WebkitBackdropFilter: "blur(30px) saturate(200%)",
-          transition: "transform 0.3s ease-out",
-          transform: "translateY(0)",
-          borderTop: "1px solid rgba(255, 255, 255, 0.25)",
-          boxShadow: "0 -8px 32px rgba(0, 0, 0, 0.1)"
-        }}
         onTouchMove={handleNavTouchMove}
-        className="app-mobile-tabbar app-landscape-rail px-1 pb-[calc(max(env(safe-area-inset-bottom),20px)*0.5+0.25rem)] pt-1 lg:hidden"
+        className="app-mobile-tabbar app-landscape-rail fixed bottom-0 left-0 right-0 z-[9999] px-1 pb-[calc(max(env(safe-area-inset-bottom),20px)*0.5+0.25rem)] pt-1 lg:hidden"
       >
-        <div className="app-landscape-rail-grid grid grid-cols-4 gap-1">
+        <div className="app-landscape-rail-grid grid grid-cols-4">
           {navItems.map((item) => {
             const active = isActive(item.page);
             return (
               <button
                 key={item.page}
                 onClick={() => openNavPage(item.page)}
-                className={`focus-ring flex h-[54px] min-w-0 flex-col items-center justify-center rounded-2xl border px-0.5 transition-all duration-300 ${
-                  active
-                    ? "border-white/30 bg-[#81D8CF] text-[#343838] shadow-[0_6px_20px_rgba(143,203,94,0.4),inset_0_1px_0_rgba(255,255,255,0.4)]"
-                    : "border-white/18 bg-white/8 text-white/76 shadow-[0_4px_12px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/12"
-                }`}
+                aria-label={item.label}
+                aria-current={active ? "page" : undefined}
+                className={`focus-ring app-tab${active ? " is-active" : ""}`}
               >
-                <Sticker name={item.icon} size={32} className={`app-tab-icon${active ? " is-active" : ""}`} />
-                <span className="mt-0.5 whitespace-nowrap text-[11px] font-bold leading-none tracking-normal">{item.label}</span>
+                <span className="app-tab-pill">
+                  <Sticker name={item.icon} size={30} className={`app-tab-icon${active ? " is-active" : ""}`} />
+                </span>
+                <span className="app-tab-label">{item.label}</span>
               </button>
             );
           })}

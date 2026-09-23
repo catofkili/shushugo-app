@@ -105,7 +105,9 @@ export function FloatingDoodlePen({ resetKey, surfaceSelector }: FloatingDoodleP
   useEffect(() => {
     redrawDoodles();
     if (!penPositionInitializedRef.current) {
-      setPenPosition(clampPenPosition(window.innerWidth - 76, 112));
+      // 默认停在右下、底栏上方（拇指区）。以前是右上 y=112，正好压在语法列表第一张卡的收藏星标上；
+      // 往下留 200px 是给打开笔之后多出来的「撤回」键（笔下方 54px）也让开底栏。
+      setPenPosition(clampPenPosition(window.innerWidth - 76, window.innerHeight - 200));
       penPositionInitializedRef.current = true;
     }
     window.addEventListener("resize", redrawDoodles);

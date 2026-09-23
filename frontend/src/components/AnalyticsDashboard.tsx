@@ -77,7 +77,7 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
         <div className="grid h-16 w-16 place-items-center rounded-full bg-[#81D8CF]/20 text-[#1e6a5f] ring-1 ring-[#81D8CF]/35">
           <Brain size={30} />
         </div>
-        <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#4d8378]">Memory</p>
+        <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#4d8378]">记忆</p>
         <h2 className="mt-1 text-2xl font-black leading-tight">学习记忆程度</h2>
 
         {loading && <p className="mt-5 text-sm font-semibold text-[#4d706b]">正在读取你的学习记录...</p>}

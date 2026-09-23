@@ -11,16 +11,22 @@ interface ProPageProps {
 }
 
 /**
- * ⚠️ 这张表只列 Pro 页上的产品路线，不是完整权益清单；疑难辨析、一字多音、
- * 混合学习、往日顽固词等已上线权益以 `entitlements.ts` 和真实入口为准。
+ * ⚠️ live 行 = 真的锁在 Pro 后面的功能（以 `entitlements.ts` 的 FeatureId 和真实入口为准，
+ * 新锁一个功能要来这里加一行）；live=false 的是产品路线。
  * `FeatureId` 里的 advancedDashboard / unlimitedMistakes / fullJlptPlan 仍没有调用方，
  * 学习总览、JLPT 规划免费用户本来就在用。
  *
  * 所以这里如实标注,把没上锁的写成「开发中」。**没有顺手去给它们上锁** ——
  * 那等于把现在能用的东西收走,是产品决定,不该由一次文案修订带出来。
  */
+// 已上线那几行的文案跟 Paywall.tsx 的 featureCopy 同一个口径；2026-09-23 之前这里只列了沉浸式语法，
+// 页头还写着「其余权益还在开发中」—— 疑难辨析、一字多音、混合学习、往日顽固词早就锁在 Pro 后面了。
 const rows = [
+  { label: "疑难辨析", detail: "近义、同音、自他、汉字用法对照，连线题练到分得清", live: true },
+  { label: "一字多音", detail: "520 个多音字，什么时候读哪个音", live: true },
+  { label: "混合学习", detail: "单词、语法、汉字、辨析进同一条队列", live: true },
   { label: "沉浸式语法学习", detail: "低干扰阅读卡片，适合集中推进", live: true },
+  { label: "往日顽固词", detail: "翻回任意一天跟你打过架的词", live: true },
   { label: "高级学习总览", detail: "整合单词、语法和等级进度", live: false },
   { label: "完整 JLPT 规划", detail: "按 N1-N5 组织未来学习路线", live: false },
   { label: "高级专项能力", detail: "专项训练和 AI 讲解", live: false }
@@ -43,7 +49,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
 
   return (
     <div className="mx-auto max-w-3xl pb-4">
-      <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
+      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
         <button onClick={onBack} className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8">
           <ArrowLeft size={17} />
           返回
@@ -57,12 +63,12 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
             <Crown size={25} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#81D8CF]">Membership</p>
+            <p className="text-xs font-bold text-[#81D8CF]">会员</p>
             <h1 className="mt-1 text-2xl font-bold text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</h1>
             <p className="mt-2 text-sm leading-6 text-white/66">
               {entitlements.isPro
                 ? `${productLabel(entitlements.productId)} · ${entitlements.source === "development" ? "本地开发解锁" : "App Store 权益"}`
-                : "当前为免费版。现在解锁的是沉浸式语法学习，其余权益还在开发中。"}
+                : "当前为免费版。开通后下面标 ✓ 的功能立即可用。"}
             </p>
           </div>
         </div>
@@ -80,7 +86,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
                   : <Clock3 size={16} className="shrink-0 text-white/40" />}
                 <p className={`text-sm font-bold ${row.live ? "text-white" : "text-white/70"}`}>{row.label}</p>
                 {!row.live && (
-                  <span className="ml-auto shrink-0 rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-bold text-white/45">
+                  <span className="ml-auto shrink-0 rounded-full border border-white/15 px-2 py-0.5 text-[11px] font-bold text-white/45">
                     开发中
                   </span>
                 )}

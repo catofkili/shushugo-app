@@ -54,7 +54,7 @@ export const GrammarPointPopover = ({ point, targetText, children }: {
         </div>
         <p className="mt-3 text-sm font-semibold leading-6">{point.meaning}</p>
         <div className="token-dictionary-conjugation mt-3 rounded-xl p-3">
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] opacity-65">接续</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] opacity-65">接续</p>
           <p className="jp mt-1 text-sm font-semibold"><GrammarTermHint text={point.structure} /></p>
           <p className="mt-2 text-xs leading-5 opacity-80">{point.explanation}</p>
         </div>

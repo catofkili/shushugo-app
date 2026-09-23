@@ -5,6 +5,7 @@ export type JlptLevel = JLPTLevel; // 别名兼容
 
 export type MasteryStatus = "new" | "learning" | "familiar" | "mastered";
 export type MasteryState = MasteryStatus; // 别名兼容
+export const MASTERY_LABEL: Record<MasteryStatus, string> = { new: "未学", learning: "学习中", familiar: "熟悉", mastered: "掌握" };
 
 export interface WordNote {
   word: string;

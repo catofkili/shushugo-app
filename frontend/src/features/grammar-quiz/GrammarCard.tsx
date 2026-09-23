@@ -18,16 +18,20 @@ import { ExamplePlayButton } from "../word-study/WordStudyPanels";
  * 「这一张是语法不是单词」全靠颜色说话（见 QUIZ_ACCENT_*）。
  * 组件内部一律走 CSS 变量，Tailwind 的 hex 是静态字符串，塞不进变量。
  */
+// 考题页跟全应用的主色走（换柚子商店的配色皮肤也跟着换）。以前写死 #81D8CF ——
+// 那是主色还是青绿时候的值，主色换成绿之后考题页成了全应用唯一一块青色。
 export const QUIZ_ACCENT_TEAL: CSSProperties = {
-  "--quiz-accent": "#81D8CF",
-  "--quiz-accent-soft": "rgba(129,216,207,0.10)",
-  "--quiz-accent-strong": "rgba(129,216,207,0.16)",
-  "--quiz-accent-line": "rgba(129,216,207,0.45)"
+  "--quiz-accent": "var(--zoo-primary)",
+  "--quiz-accent-ink": "var(--zoo-primary-deep)",
+  "--quiz-accent-soft": "color-mix(in srgb, var(--zoo-primary) 12%, transparent)",
+  "--quiz-accent-strong": "color-mix(in srgb, var(--zoo-primary) 20%, transparent)",
+  "--quiz-accent-line": "color-mix(in srgb, var(--zoo-primary) 45%, transparent)"
 } as CSSProperties;
 
 /** 混合模式里语法卡的颜色。和接续标注的橙同一系，与单词卡的青绿一眼分得开。 */
 export const QUIZ_ACCENT_AMBER: CSSProperties = {
   "--quiz-accent": "#F3B14D",
+  "--quiz-accent-ink": "#B7791F",
   "--quiz-accent-soft": "rgba(243,177,77,0.12)",
   "--quiz-accent-strong": "rgba(243,177,77,0.20)",
   "--quiz-accent-line": "rgba(243,177,77,0.45)"
@@ -117,8 +121,8 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
     >
       <div
         onClick={() => !revealed && onReveal()}
-        className={`grid min-h-0 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] px-3 py-4 text-center sm:min-h-32 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)] ${
-          revealed ? "" : "cursor-pointer"
+        className={`grid min-h-0 place-items-center rounded-2xl px-3 py-4 text-center sm:p-6 lg:mx-auto lg:w-[min(900px,100%)] ${
+          revealed ? "shrink-0 rounded-none border-b border-white/15 sm:min-h-32" : "flex-1 cursor-pointer"
         }`}
       >
         <div className="w-full min-w-0">
@@ -128,7 +132,7 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
           {card.isNew && (
             <span
               className="ml-1.5 rounded-sm border px-1.5 py-0.5 text-[11px] font-bold"
-              style={{ borderColor: "var(--quiz-accent-line)", color: "var(--quiz-accent)" }}
+              style={{ borderColor: "var(--quiz-accent-line)", color: "var(--quiz-accent-ink)" }}
             >
               新
             </span>
@@ -141,11 +145,11 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
         </div>
       </div>
 
+      {revealed && (
       <div
         data-word-scrollable="true"
-        className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]"
+        className="grid min-h-0 flex-1 place-items-center overflow-y-auto p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]"
       >
-        {revealed ? (
           <div className="zoo-reveal-in w-full min-w-0">
             {/* 答案上半：接续（题面 `～` 上标的只是它的头一段） */}
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">接续</p>
@@ -162,7 +166,7 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
             {grammarKeyPoint(card.pattern) && (
               <p
                 className="mx-auto mt-5 max-w-2xl break-words rounded-2xl px-3 py-2 text-base font-bold leading-7 sm:text-lg"
-                style={{ background: "var(--quiz-accent-soft)", color: "var(--quiz-accent)" }}
+                style={{ background: "var(--quiz-accent-soft)", color: "var(--quiz-accent-ink)" }}
               >
                 {grammarKeyPoint(card.pattern)}
               </p>
@@ -188,13 +192,8 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
               <p className="mt-4 text-xs text-white/40">这条你答错过 {card.forgotCount} 次</p>
             )}
           </div>
-        ) : (
-          <div className="text-center">
-            <p className="text-base font-bold text-white/72">答案已隐藏</p>
-            <p className="mt-1 text-xs text-white/45">先回忆接续和意思</p>
-          </div>
-        )}
       </div>
+      )}
 
       <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
         {!revealed ? (
@@ -205,7 +204,7 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
           >
             <Eye size={18} />
             <span>显示答案</span>
-            <span className="text-xs font-semibold opacity-65">（按任意键）</span>
+            <span className="kbd-hint text-xs font-semibold opacity-65">（按任意键）</span>
           </button>
         ) : (
           // 忘记/认识 是主键，模糊/熟知 摆一半宽、不填色 —— 和单词学习同一副骨架
@@ -215,14 +214,17 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
                 key={option.value}
                 onClick={() => onAnswer(option.value)}
                 aria-keyshortcuts={answerHotkeyLabels[option.value]}
-                className={`focus-ring zoo-pop h-16 min-w-0 rounded-2xl border ${
+                // 主次和单词卡一样：认识 = 本卡配色实心，忘记 = 暖色描边（rate-forgot 那条规则）
+                className={`focus-ring zoo-pop rate-btn rate-${option.value} h-16 min-w-0 rounded-2xl border ${
                   option.secondary
                     ? "border-white/12 px-1 text-sm font-semibold text-white/60 hover:bg-white/[0.06]"
-                    : "quiz-accent-btn border-white/20 px-2 text-base font-bold"
+                    : option.value === "know"
+                      ? "quiz-accent-solid px-2 text-base font-bold"
+                      : "quiz-accent-btn border-white/20 px-2 text-base font-bold"
                 }`}
               >
                 <span
-                  className={`block text-[10px] font-black text-white/45 ${
+                  className={`kbd-hint block text-[11px] font-black text-white/45 ${
                     option.secondary ? "tracking-normal" : "tracking-[0.18em]"
                   }`}
                 >

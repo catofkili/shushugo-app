@@ -438,7 +438,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   }
 
   return (
-    <section ref={panelRef} className="quick-study-panel" aria-label="快速学习">
+    <section ref={panelRef} className="quick-study-panel" aria-label="快速复习">
       <div className={`quick-study-head${selectionMode ? " quick-study-selection-head" : ""}`}>
         {selectionMode ? (
           <>
@@ -467,7 +467,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
         ) : (
           <>
             <div className="quick-study-title">
-              <span className="quick-study-kick"><ListChecks size={13} /> {heading ?? "快速学习"}</span>
+              <span className="quick-study-kick"><ListChecks size={13} /> {heading ?? "快速复习"}</span>
               <b>{loading
                 ? "正在准备词卡…"
                 : cards.length

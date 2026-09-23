@@ -1,4 +1,4 @@
-import { Apple, ArrowLeft, Check, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, MessageCircle, ShieldCheck, X } from "lucide-react";
+import { Apple, ArrowLeft, Check, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, MessageCircle, ShieldCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { requestAppleCredential } from "../lib/apple-auth";
 import { Capacitor } from "@capacitor/core";
@@ -20,6 +20,7 @@ import {
 import { isWechatAppLoginAvailable, requestWechatAppCode } from "../lib/wechat-auth";
 import { PRIVACY_POLICY_EFFECTIVE_DATE, PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_TITLE } from "../lib/privacy-policy-content";
 import { USER_AGREEMENT_EFFECTIVE_DATE, USER_AGREEMENT_SECTIONS, USER_AGREEMENT_TITLE } from "../lib/user-agreement-content";
+import { Sticker } from "./CapybaraMascot";
 
 type AuthMode = "login" | "register" | "reset" | "apple-consent" | "wechat-consent" | "terms" | "privacy" | "success";
 type TurnstileAction = "register" | "login" | "password_reset";
@@ -250,7 +251,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-dialog-title"
-        className="flex max-h-[78dvh] w-[92vw] flex-col overflow-hidden rounded-[28px] border border-[#B7E38D]/35 bg-[#303730] shadow-[0_28px_90px_rgba(0,0,0,.5)] sm:w-[60vw] sm:max-w-[840px]"
+        className="auth-dialog flex max-h-[78dvh] w-[92vw] flex-col overflow-hidden rounded-[28px] border border-[#B7E38D]/35 bg-[#303730] shadow-[0_28px_90px_rgba(0,0,0,.5)] sm:w-[60vw] sm:max-w-[840px]"
       >
         <header className="flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-3">
           {(mode === "terms" || mode === "privacy") && (
@@ -282,7 +283,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
           ) : mode === "success" ? (
             <div className="grid min-h-[240px] place-items-center text-center">
               <div>
-                <CheckCircle2 size={48} className="mx-auto text-[#91C968]" />
+                <Sticker name="mood-yay" size={96} className="mx-auto" />
                 <p className="mt-4 text-base font-bold text-white">登录成功</p>
                 <p className="mt-2 text-sm text-white/55">{message}</p>
               </div>

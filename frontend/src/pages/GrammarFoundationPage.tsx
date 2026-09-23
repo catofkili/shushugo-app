@@ -70,8 +70,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
       <section className="dictionary-card space-y-3 rounded-3xl p-4 sm:p-5">
         <div className="flex items-end justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#81D8CF]">Grammar framework</p>
-            <h1 className="jp-serif mt-1 text-2xl font-semibold text-[#343838] dark:text-[#f4efe4]">基础语法框架</h1>
+            <h1 className="jp-serif text-2xl font-semibold text-[#343838] dark:text-[#f4efe4]">基础语法框架</h1>
           </div>
           <span className="shrink-0 rounded-full border border-[#81D8CF]/50 bg-[#81D8CF]/12 px-3 py-1 text-xs font-bold text-[#81D8CF]">
             {shownRules.length} / {grammarFoundationRules.length} 条

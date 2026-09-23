@@ -736,7 +736,7 @@ export default function App() {
 
   const renderToolSubpage = (title: string, content: ReactNode) => (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
+      <div className="page-backbar flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
         <button
           onClick={() => navigateToPage("home")}
           className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8 hover:text-white"

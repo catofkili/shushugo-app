@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { BookOpenText, Brain, FolderPlus, Pencil, Star, Trash2 } from "lucide-react";
+import { FolderPlus, Pencil, Star, Trash2 } from "lucide-react";
 import { Sticker } from "../components/CapybaraMascot";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import {
@@ -129,8 +129,7 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
       <div className="dictionary-card rounded-2xl p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/55">Favorites</p>
-            <h1 className="mt-1 text-2xl font-semibold">收藏</h1>
+            <h1 className="text-2xl font-semibold">收藏</h1>
           </div>
           <Star className="text-[#81D8CF]" size={24} fill="currentColor" />
         </div>
@@ -220,47 +219,43 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
       {items.length ? (
         <div className="grid gap-3 sm:grid-cols-2">
           {items.map((item) => {
-            const Icon = item.type === "word" ? BookOpenText : Brain;
             const fallback = item.title ? null : grammarInfo.get(item.id);
             const title = item.title || fallback?.title || item.id;
             const subtitle = item.subtitle || fallback?.meaning || "";
             const meta = item.meta || fallback?.level || "";
             return (
               <article key={`${item.type}-${item.id}`} className="dictionary-card rounded-2xl p-4">
+                {/* 以前左边还有一块书本/大脑图标，和下面「单词 / 语法」标签说的是同一件事；
+                    读音又被塞进词上方的标签里，读起来是先读音后词。现在词形打头，读音词性一行小字。 */}
                 <div className="flex items-start gap-3">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#81D8CF]/14 text-[#81D8CF]">
-                    <Icon size={21} />
-                  </span>
                   <button
                     onClick={() => item.type === "grammar" && onOpenGrammar(item.id)}
                     className="focus-ring min-w-0 flex-1 text-left"
                   >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/55">{item.type === "word" ? "单词" : "语法"}</span>
-                      {meta && <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/55">{meta}</span>}
-                    </div>
-                    <h2 className="jp-serif mt-3 text-2xl font-semibold leading-tight">
+                    <h2 className="jp-serif text-2xl font-semibold leading-tight">
                       {item.type === "grammar" ? <JapaneseRuby text={title} furigana={getGrammarTitleFurigana(item.id)} /> : title}
                     </h2>
+                    {meta && <p className="mt-1 text-xs font-bold text-white/55">{meta}</p>}
                     <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/68">{subtitle}</p>
                   </button>
-                  <div className="grid shrink-0 gap-2">
-                    <button
-                      onClick={() => remove(item)}
-                      className="focus-ring grid h-9 w-9 place-items-center rounded-2xl border border-white/15 bg-[#81D8CF]/10 text-white/62 hover:bg-[#81D8CF]/15"
-                      title="取消收藏"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => remove(item)}
+                    className="focus-ring grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#81D8CF]/10 text-white/62 hover:bg-[#81D8CF]/15"
+                    title="取消收藏"
+                  >
+                    <Trash2 size={15} />
+                  </button>
                 </div>
-                <button
-                  onClick={() => move(item)}
-                  className="focus-ring mt-3 h-8 rounded-full border border-white/15 bg-white/6 px-3 text-xs font-bold text-white/62"
-                  title="换个收藏夹"
-                >
-                  {item.folder || "未分类"} ▸
-                </button>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/55">{item.type === "word" ? "单词" : "语法"}</span>
+                  <button
+                    onClick={() => move(item)}
+                    className="focus-ring h-7 rounded-full border border-white/15 bg-white/6 px-3 text-xs font-bold text-white/62"
+                    title="换个收藏夹"
+                  >
+                    {item.folder || "未分类"} ▸
+                  </button>
+                </div>
               </article>
             );
           })}

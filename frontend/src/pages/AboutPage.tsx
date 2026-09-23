@@ -7,7 +7,7 @@ interface AboutPageProps {
 export function AboutPage({ onBack }: AboutPageProps) {
   return (
     <div className="mx-auto max-w-3xl pb-4">
-      <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
+      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
         <button
           onClick={onBack}
           className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8 hover:text-white"
@@ -30,7 +30,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4">
         <h2 className="mb-3 text-sm font-bold text-white">应用介绍</h2>
         <p className="text-sm leading-relaxed text-white/70">
-          收集日是一款离线日语学习应用，内置 10,919 个 JLPT 词条、882 个固定搭配与固定表达，以及 741 个语法点。
+          收集日是一款离线日语学习应用，内置 10,919 个 JLPT 词条、882 个固定搭配与固定表达，以及 769 个语法点。
           单词、汉字读音和语法三条线都由同一套 FSRS 记忆算法排复习。
         </p>
       </div>
@@ -53,7 +53,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
           </div>
           <div className="flex items-start gap-2">
             <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
-            <p className="text-sm text-white/70">741 个语法点详解（N5 120 · N4 130 · N3 140 · N2 150 · N1 201）</p>
+            <p className="text-sm text-white/70">769 个语法点详解（N5 127 · N4 136 · N3 146 · N2 155 · N1 205）</p>
           </div>
           <div className="flex items-start gap-2">
             <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
@@ -103,7 +103,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
             <div>
               <p className="font-bold text-white/60">移动端</p>
               <p className="mt-1 text-white/50">Capacitor</p>
-              <p className="text-white/50">iOS 15.0+</p>
+              <p className="text-white/50">iOS 16.4+</p>
               <p className="text-white/50">SQLite (sql.js)</p>
             </div>
           </div>
@@ -116,7 +116,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <p className="mt-3 text-sm text-white/70">
           感谢所有为日语学习资源贡献的开发者和社区
         </p>
-        <p className="mt-2 text-xs text-white/50">Made for Japanese learners</p>
+        <p className="mt-2 text-xs text-white/50">给每一个在学日语的人</p>
       </div>
     </div>
   );

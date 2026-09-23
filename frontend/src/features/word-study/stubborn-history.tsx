@@ -47,7 +47,7 @@ export const StubbornWordRow = ({
 /** 顽固语法那一行。没有收藏按钮，理由见 stubborn-today.ts 里 getStubbornGrammarToday 的注释。 */
 export const StubbornGrammarRow = ({ point }: { point: StubbornGrammarToday }) => (
   <div className="flex items-center gap-3 border-t border-white/8 py-2 first:border-t-0">
-    <span className="shrink-0 rounded-md bg-[#E8971C]/18 px-1.5 py-0.5 text-[10px] font-bold text-[#E8971C]">
+    <span className="shrink-0 rounded-md bg-[#E8971C]/18 px-1.5 py-0.5 text-[11px] font-bold text-[#E8971C]">
       {point.level}
     </span>
     <div className="min-w-0 flex-1">

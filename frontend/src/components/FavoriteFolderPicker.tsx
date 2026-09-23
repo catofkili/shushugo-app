@@ -123,7 +123,7 @@ export const FavoriteFolderSheet = ({
               <span className="min-w-0 truncate">{folder.name || "未分类"}</span>
               <span className="ml-auto flex shrink-0 items-center gap-2">
                 {folder.name === lastFolder && current === undefined && (
-                  <span className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-bold text-white/45">上次</span>
+                  <span className="rounded-full border border-white/15 px-2 py-0.5 text-[11px] font-bold text-white/45">上次</span>
                 )}
                 {folder.count >= 0 && <span className="text-xs text-white/45">{folder.count}</span>}
               </span>

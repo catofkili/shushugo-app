@@ -75,7 +75,6 @@ export const KanjiReadingUsagePage = () => {
     <section className="cf-page">
       <header className="cf-head">
         <div>
-          <p className="cf-kick">Readings</p>
           <h1 className="cf-title">一字多音</h1>
         </div>
         <p className="cf-count">

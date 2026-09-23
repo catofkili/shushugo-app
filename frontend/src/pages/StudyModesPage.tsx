@@ -1,6 +1,7 @@
 import { BookOpenText, Brain, CheckCircle2, Layers3, LetterText, ListChecks, Repeat2, Shuffle } from "lucide-react";
 import { defaultStudyMode, saveStudyMode, VISIBLE_STUDY_MODES } from "../lib/studyMode";
 import type { StudyMode } from "../types/app";
+import { useEntitlements } from "../hooks/useEntitlements";
 
 interface StudyModesPageProps {
   selectedMode: StudyMode;
@@ -23,6 +24,7 @@ const MODE_ICONS: Record<StudyMode, typeof Layers3> = {
 
 export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyModesPageProps) {
   const currentMode = selectedMode || defaultStudyMode;
+  const { isPro } = useEntitlements();
 
   const chooseMode = (mode: StudyMode) => {
     onModeChange(saveStudyMode(mode));
@@ -31,7 +33,6 @@ export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyMod
   return (
     <section className="mx-auto max-w-4xl">
       <div className="mb-5">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/55">Study Modes</p>
         <h1 className="mt-1 text-2xl font-semibold">学习模式</h1>
         <p className="mt-2 text-sm leading-6 text-white/58">
           学完今日任务自动进错题本。
@@ -60,7 +61,11 @@ export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyMod
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-3">
-                    <span className="text-lg font-bold text-white">{item.title}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-white">{item.title}</span>
+                      {/* 点进去才撞付费小窗之前，先在卡上说一声 */}
+                      {item.id === "mixed" && !isPro && <span className="rounded-full border border-[#81D8CF]/45 px-2 py-0.5 text-[11px] font-bold text-[#81D8CF]">Pro</span>}
+                    </span>
                     {active && <CheckCircle2 size={18} className="shrink-0 text-[#81D8CF]" />}
                   </span>
                   <span className="mt-1 block text-xs font-bold text-[#81D8CF]">{item.subtitle}</span>

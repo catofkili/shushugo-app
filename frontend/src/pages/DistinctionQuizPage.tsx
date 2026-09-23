@@ -97,7 +97,6 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
     return (
       <section className="mx-auto w-full max-w-3xl">
         <div className="mb-4">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/45">DISTINCTION PRACTICE</p>
           <h1 className="mt-1 text-2xl font-extrabold text-white">辨析练习完成</h1>
         </div>
         <div className="space-y-3">
@@ -130,7 +129,6 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
     <section className="mx-auto w-full max-w-3xl">
       <div className="mb-4 flex items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/45">DISTINCTION PRACTICE</p>
           <h1 className="mt-1 text-2xl font-extrabold text-white">{scopeTitle(scope)}</h1>
         </div>
         <span className="text-xs font-semibold text-white/50">{index + 1} / {questions.length}</span>

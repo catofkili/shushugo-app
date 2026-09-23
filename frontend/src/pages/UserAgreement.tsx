@@ -4,7 +4,7 @@ import { USER_AGREEMENT_EFFECTIVE_DATE, USER_AGREEMENT_SECTIONS, USER_AGREEMENT_
 export function UserAgreement({ onBack }: { onBack: () => void }) {
   return (
     <div className="mx-auto max-w-3xl pb-4">
-      <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
+      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
         <button onClick={onBack} className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8"><ArrowLeft size={17} />返回</button>
         <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">用户协议</p>
       </div>

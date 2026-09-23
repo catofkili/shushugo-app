@@ -97,7 +97,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
   return (
     <div className="mx-auto max-w-3xl pb-4">
-      <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
+      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
         <button
           onClick={onBack}
           className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8 hover:text-white"
@@ -152,12 +152,12 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
             <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3">
               <label className="flex items-center gap-3">
                 <Clock size={16} className="text-white/60" />
-                <span className="text-xs text-white/70">提醒时间</span>
+                <span className="shrink-0 whitespace-nowrap text-xs text-white/70">提醒时间</span>
                 <input
                   type="time"
                   value={settings.studyTime}
                   onChange={(e) => updateSettings({ studyTime: e.target.value })}
-                  className="focus-ring ml-auto rounded-2xl border border-white/20 bg-[#464949] px-3 py-1 text-sm text-white"
+                  className="focus-ring ml-auto w-auto rounded-2xl border border-white/20 bg-[#464949] px-3 py-1 text-sm text-white"
                 />
               </label>
             </div>
@@ -186,12 +186,12 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
             <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3">
               <label className="flex items-center gap-3">
                 <Clock size={16} className="text-white/60" />
-                <span className="text-xs text-white/70">提醒时间</span>
+                <span className="shrink-0 whitespace-nowrap text-xs text-white/70">提醒时间</span>
                 <input
                   type="time"
                   value={settings.reviewTime}
                   onChange={(e) => updateSettings({ reviewTime: e.target.value })}
-                  className="focus-ring ml-auto rounded-2xl border border-white/20 bg-[#464949] px-3 py-1 text-sm text-white"
+                  className="focus-ring ml-auto w-auto rounded-2xl border border-white/20 bg-[#464949] px-3 py-1 text-sm text-white"
                 />
               </label>
             </div>

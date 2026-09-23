@@ -81,7 +81,6 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
           返回
         </button>
         <div className="min-w-0">
-          <p className="whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">GRAMMAR QUIZ</p>
           <h1 className="truncate text-lg font-semibold leading-tight">
             {level} 语法考题
           </h1>
@@ -159,7 +158,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
                   <p className={`text-sm font-black ${row.forgotCount > 0 ? "text-[#81D8CF]" : "text-white/30"}`}>
                     错 {row.forgotCount}
                   </p>
-                  <p className="text-[10px] text-white/40">
+                  <p className="text-[11px] text-white/40">
                     {row.knownForever ? "已熟知" : row.seenCount > 0 ? `答过 ${row.seenCount}` : "没答过"}
                   </p>
                 </div>

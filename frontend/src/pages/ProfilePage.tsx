@@ -16,7 +16,25 @@ import { EntitlementState, productLabel } from "../lib/entitlements";
 import { cloudLogout, type CloudSession } from "../lib/sync-api";
 import { loadUserProfile, type UserProfile } from "../lib/userProfile";
 import { Page } from "../types/app";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { firstValue } from "../lib/database/db-utils";
+import { studyTotals } from "../lib/study-totals";
+import { yuzuBalance } from "../lib/yuzu";
+import { Sticker } from "../components/CapybaraMascot";
+
+// 「我的」页以前只是一张设置列表，没有「我」。页头下面摆三个只有这里说的数：
+// 连击和今天的量主页已经说了，这里说的是累计 —— 学过多少词、学了多少天、攒了多少柚子。
+const readProfileStats = () => {
+  try {
+    return {
+      words: firstValue<number>("SELECT COUNT(*) FROM progress WHERE seen_count > 0", [], 0) ?? 0,
+      days: studyTotals().days,
+      yuzu: yuzuBalance()
+    };
+  } catch {
+    return null; // 库还没就位时整行不画，不摆 0 出来误导
+  }
+};
 
 interface ProfilePageProps {
   entitlements: EntitlementState;
@@ -43,7 +61,7 @@ const profileSections = [
     items: [
       { label: "设置", detail: "显示、声音和学习偏好", icon: Settings, page: "settings" as Page },
       { label: "隐私", detail: "本地数据与同步权限", icon: LockKeyhole, page: "privacy" as Page },
-      { label: "关于和帮助", detail: "版本、反馈与常见问题", icon: CircleHelp, page: "help" as Page },
+      { label: "帮助和支持", detail: "使用教程、反馈与常见问题", icon: CircleHelp, page: "help" as Page },
       { label: "关于收集日", detail: "内容来源和应用信息", icon: Info, page: "about" as Page }
     ]
   }
@@ -60,6 +78,8 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
     return () => { alive = false; };
   }, [cloudSession.displayName]);
 
+  const stats = useMemo(() => readProfileStats(), []);
+
   const logout = async () => {
     await cloudLogout();
     onNotice("已退出账号；本机学习数据仍可离线使用。", 2600);
@@ -71,6 +91,11 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
         <div className="flex items-center gap-4">
           {profile?.avatar ? (
             <img src={profile.avatar} alt="账号头像" className="h-16 w-16 shrink-0 rounded-full border border-white/20 object-cover" />
+          ) : !cloudSession.token ? (
+            // 没登录时是吉祥物在招手，不是一个灰色的「空用户」剪影
+            <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-white/20 bg-[#81D8CF]/12">
+              <Sticker name="mood-wave" size={46} />
+            </div>
           ) : (
             <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full border border-white/20 bg-[#91C968] text-[#243019]">
               <UserRound size={34} />
@@ -81,7 +106,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
               {cloudSession.token ? profile?.nickname || cloudSession.displayName || "收集日用户" : "尚未登录"}
             </p>
             <p className="mt-1 truncate text-sm text-white/58">
-              {cloudSession.token ? cloudSession.email : "未登录"}
+              {cloudSession.token ? cloudSession.email : "登录后多设备同步"}
             </p>
             <p className="mt-2 inline-flex rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/62">
               {entitlements.isPro ? productLabel(entitlements.productId) : cloudSession.token ? "免费账号" : "离线学习可用"}
@@ -94,6 +119,21 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
           )}
         </div>
       </div>
+
+      {stats && (
+        <div className="profile-stats mt-3 grid grid-cols-3 gap-2">
+          {[
+            { value: stats.words.toLocaleString(), label: "学过的词" },
+            { value: stats.days.toLocaleString(), label: "学习天数" },
+            { value: stats.yuzu.toLocaleString(), label: "柚子" }
+          ].map((item) => (
+            <div key={item.label} className="rounded-2xl border border-white/15 bg-[#464949] px-3 py-3 text-center">
+              <p className="text-2xl font-bold leading-none text-white">{item.value}</p>
+              <p className="mt-1.5 text-xs text-white/55">{item.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <button
         onClick={() => onNavigate("pro")}

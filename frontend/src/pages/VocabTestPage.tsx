@@ -238,7 +238,6 @@ const VocabTestHome = ({
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4">
       <div className="dictionary-card rounded-3xl p-5 shadow-xl sm:p-7">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/48">VOCABULARY CHECK</p>
         <h2 className="mt-2 text-2xl font-extrabold">查一下词汇量</h2>
 
         {latest ? (
@@ -398,7 +397,6 @@ const VocabTestHome = ({
 const ResultView = ({ result, onRestart, onBack }: { result: VocabTestResult; onRestart: () => void; onBack: () => void }) => (
   <div className="mx-auto w-full max-w-3xl dictionary-card rounded-3xl p-5 shadow-xl sm:p-7">
     <div className="text-center">
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/48">VOCABULARY SIZE</p>
       <h2 className="mt-2 text-2xl font-extrabold">
         {result.answered >= MIN_ANSWERS_FOR_ESTIMATE ? "你的词汇量" : "答得还太少"}
       </h2>
@@ -659,7 +657,6 @@ export function VocabTestPage() {
     <div className="mx-auto w-full max-w-3xl">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/48">VOCABULARY CHECK</p>
           <h2 className="mt-1 text-xl font-extrabold">词汇量测验</h2>
         </div>
         <button type="button" onClick={stop} className="focus-ring rounded-2xl border border-white/15 px-3 py-2 text-xs font-bold text-white/60 hover:bg-white/[0.08]">结束并看结果</button>

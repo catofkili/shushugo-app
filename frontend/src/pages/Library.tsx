@@ -18,7 +18,7 @@ import {
   GRAMMAR_POSITIONS_UPDATED_EVENT
 } from "../lib/grammarProgressPreferences";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
-import { GrammarPoint, JLPTLevel, MasteryStatus } from "../types/grammar";
+import { GrammarPoint, JLPTLevel, MASTERY_LABEL, MasteryStatus } from "../types/grammar";
 
 interface LibraryProps {
   getMastery: (id: string) => MasteryStatus;
@@ -34,6 +34,9 @@ interface LibraryProps {
 
 const levels: ("All" | JLPTLevel)[] = ["All", "N5", "N4", "N3", "N2", "N1"];
 const ORDER_KEY = "jp-grammar-card-order-v2";
+// 比较接续和标题时忽略空白、全半角 ＋/+、～/~ —— 同一句话两种写法不算两句
+const normalizeGrammarText = (text: string) => text.replace(/[\s　]/g, "").replace(/＋/g, "+").replace(/[～〜]/g, "~");
+const sameText = (a: string, b: string) => normalizeGrammarText(a) === normalizeGrammarText(b);
 
 // 必须与 tailwind.config.js 的 `twopane` 屏幕断点完全一致：
 // 只有宽到能并排显示「左列表 / 右详情」时才用内联双栏，
@@ -41,12 +44,7 @@ const ORDER_KEY = "jp-grammar-card-order-v2";
 const TWO_PANE_QUERY =
   "(min-width: 1024px), (orientation: landscape) and (min-width: 700px) and (max-height: 600px)";
 
-const statusLabel: Record<MasteryStatus, string> = {
-  new: "未学",
-  learning: "学习中",
-  familiar: "熟悉",
-  mastered: "掌握"
-};
+const statusLabel = MASTERY_LABEL;
 
 const readOrder = () => {
   try {
@@ -137,7 +135,7 @@ const GrammarExplanation = ({
       {(note || noteEditorOpen) && (
         <div className="mt-4 rounded-2xl border border-white/15 bg-[#373b3b] p-3">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">My Note</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">我的笔记</p>
             {noteEditorOpen && (
               <button onClick={onCancelNote} className="focus-ring grid h-7 w-7 place-items-center rounded-xl border border-white/15 bg-white/5" title="关闭备注">
                 <X size={14} />
@@ -167,15 +165,15 @@ const GrammarExplanation = ({
 
     <div className="space-y-5 pt-5">
       <section>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">Explanation</p>
+        <p className="text-xs font-bold text-white/55">解释</p>
         {grammarKeyPointFor(point) && (
           <p className="grammar-key-point">{grammarKeyPointFor(point)}</p>
         )}
-        <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-3 text-[15px] leading-8 text-white/78">{point.explanation}</p>
+        <p data-grammar-point-id={point.id} data-grammar-highlight-block="explanation" className="mt-3 text-base leading-8 text-white/78">{point.explanation}</p>
       </section>
 
       <section>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">Examples</p>
+        <p className="text-xs font-bold text-white/55">例句</p>
         <div className="mt-3 space-y-3">
           {point.examples.slice(0, 4).map((example, exampleIndex) => (
             <article key={example.jp ?? example.japanese} data-grammar-point-id={point.id} data-grammar-highlight-block={`library-example-${exampleIndex}`} className="rounded-2xl border border-white/15 bg-[#373b3b] p-4">
@@ -369,7 +367,7 @@ export const Library = ({
                 placeholder="搜索语法、接续、含义"
               />
             </label>
-            <div className="grid grid-cols-[minmax(82px,1fr)_minmax(96px,1fr)_minmax(68px,0.8fr)] gap-2">
+            <div className="grid grid-cols-[4.25rem_1fr_1.5fr_1fr] gap-2">
               <div className="relative min-w-0">
                 <button
                   onClick={() => setFilterOpen((value) => !value)}
@@ -452,10 +450,11 @@ export const Library = ({
                         <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{grammarSequence(point).label}</span>
                         <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/65">{statusLabel[mastery]}</span>
                       </div>
-                      {formationRules[0] && (
+                      {/* 接续和标题写得一模一样的（N5 开头那批「名詞1＋は＋名詞2＋です」）不再印两遍 */}
+                      {formationRules[0] && !sameText(formationRules[0], point.title) && (
                         <p className="jp mt-2 text-xs font-semibold leading-5 text-white/45">{formationRules[0]}</p>
                       )}
-                      <h3 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-1 text-3xl font-semibold leading-none"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h3>
+                      <h3 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-1 text-2xl font-semibold leading-tight"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h3>
                       <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-2 text-sm font-semibold leading-6 text-white/82">{point.meaning}</p>
                       {/* 第二条接续摆正下方，和上面那条一上一下对着看 ——
                           只有真的分两条规则的卡才有（55/731），见 splitFormationRules。 */}
@@ -465,7 +464,7 @@ export const Library = ({
                     </div>
                     {firstExample && (
                       <div data-grammar-point-id={point.id} data-grammar-highlight-block="card-example-0" className="mt-3 rounded-2xl border border-white/10 bg-[#373b3b] px-3 py-2 text-sm leading-6 text-white/65">
-                        <p className="jp"><JapaneseRuby text={firstExample.jp ?? firstExample.japanese} furigana={firstExample.furigana} tokenLengths={firstExample.tokenLengths} tokenLemmas={firstExample.tokenLemmas} /></p>
+                        <p className="jp text-white"><JapaneseRuby text={firstExample.jp ?? firstExample.japanese} furigana={firstExample.furigana} tokenLengths={firstExample.tokenLengths} tokenLemmas={firstExample.tokenLemmas} /></p>
                         <p className="mt-1 text-xs leading-5 text-white/55">{firstExample.cn ?? firstExample.chinese}</p>
                       </div>
                     )}

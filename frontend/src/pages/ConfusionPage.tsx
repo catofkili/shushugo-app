@@ -35,9 +35,17 @@ import { useStudyTimer } from "../lib/useStudyTimer";
  * 「観戦 / 汗腺 / 感染」下面写「观看比赛」会让人以为三个词都是这个意思。
  * 那类改用共同的那一项(读音或写法)当副标题。
  */
+// 卡片上只放主义：先摘掉括号里的补充再切义项。以前直接按逗号切，括号里的逗号也被切断，
+// 卡上留下半个括号 ——「（方向 / 朝向（目光」，看着像坏了。括号里的话点开大卡都还在。
+const firstSense = (meaning: string) => {
+  let bare = meaning;
+  for (let prev = ""; prev !== bare; ) { prev = bare; bare = bare.replace(/[（(][^（）()]*[）)]/g, ""); }
+  return (bare.split(/[；;，,、]/)[0].trim() || meaning.split(/[；;]/)[0]).trim();
+};
+
 const cardSub = (group: ConfusionGroup): string => {
-  const senses = [...new Set(group.members.map((member) => member.meaning.split(/[；;，,、]/)[0].trim()))];
-  if (senses.length === 1) return group.members[0]?.meaning ?? "";
+  const senses = [...new Set(group.members.map((member) => firstSense(member.meaning)))];
+  if (senses.length === 1) return senses[0] ?? "";
   // 释义不同的组，副标题给「大家共有的那一项」——但共有的是什么因类型而异：
   // 同音类共有读音，同表記类共有写法。自他对和同词根族两样都不共有
   // （欠ける/欠く 读音就不同），硬写「读作 欠く / 欠ける」是错的，那类改列各自的义项。
@@ -172,7 +180,6 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
     <section className="cf-page">
       <header className="cf-head">
         <div>
-          <p className="cf-kick">Confusables</p>
           <h1 className="cf-title">疑难辨析</h1>
         </div>
         <p className="cf-count">

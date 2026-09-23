@@ -21,6 +21,7 @@ import { useRowSelection } from "../hooks/useRowSelection";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { displayForm } from "../lib/confusion-groups";
 import { kanaToRomaji } from "../features/word-study/word-study-utils";
+import { getStudyPreferences } from "../lib/studyPreferences";
 import {
   addWordsToQueue,
   markWordKnownForever,
@@ -133,6 +134,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
   const [filters, setFilters] = useState<WordLibraryFilters>({ ...DEFAULT_LIBRARY_FILTERS, level: initialLevel });
   const [searchInput, setSearchInput] = useState("");
   const [rows, setRows] = useState<WordLibraryRow[]>([]);
+  const showRomaji = getStudyPreferences().showRomaji;
   const [hasMore, setHasMore] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
   /**
@@ -383,7 +385,6 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
     <section className="wl-page" ref={pageRef}>
       <header className="wl-head">
         <div>
-          <p className="wl-kick">Vocabulary</p>
           <h1 className="wl-title">
             {filters.level === "all" ? "词库" : filters.level === "unranked" ? "未分级词库" : `${filters.level} 词库`}
           </h1>
@@ -523,7 +524,8 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
         {rows.map((row) => {
           const checked = selected.has(row.id);
           const forms = wordForms(row);
-          const romaji = kanaToRomaji(row.kana);
+          // 罗马音跟设置页「显示罗马音」走：关着的人每行多一行 ku u ko u 只是噪音
+          const romaji = showRomaji ? kanaToRomaji(row.kana) : "";
           return (
             /* 行本身不能再是 button 了：里面还要放「熟知」那颗，button 套 button 不合法 */
             <li

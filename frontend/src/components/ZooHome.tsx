@@ -251,7 +251,7 @@ export function ZooHome({
                 >
                   <span className="zoo-modes-item-emoji" aria-hidden="true"><mode.Icon size={20} /></span>
                   <span className="zoo-modes-item-copy">
-                    <b>{mode.title}</b>
+                    <b>{mode.title}{mode.id === "mixed" && !entitlements.isPro && <span className="zoo-pro-tag">Pro</span>}</b>
                     <small>{mode.subtitle} · {mode.description}</small>
                   </span>
                   {/* 角标写「现在能练多少」:反向/汉字的队列是进去才建的,
