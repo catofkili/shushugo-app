@@ -20,6 +20,7 @@ import {
 } from "../lib/vocab-test";
 import { saveImageToGallery, shareImage } from "../lib/share-image";
 import { renderVocabShareCard } from "../features/vocab-test/share-card";
+import { MascotSay } from "../components/MascotSay";
 import { useStudyTimer } from "../lib/useStudyTimer";
 
 type View = "intro" | "quiz" | "result";
@@ -238,7 +239,10 @@ const VocabTestHome = ({
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4">
       <div className="dictionary-card rounded-3xl p-5 shadow-xl sm:p-7">
-        <h2 className="mt-2 text-2xl font-extrabold">查一下词汇量</h2>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <h2 className="text-2xl font-extrabold">查一下词汇量</h2>
+          <Sticker name="scene-laptop" size={64} className="-my-2 shrink-0" />
+        </div>
 
         {latest ? (
           <div className="mt-4 rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/[0.07] p-4">
@@ -264,20 +268,18 @@ const VocabTestHome = ({
           /* ⚠️ 隔了很久再接着答，前后半场不是同一个状态（也不是同一天的水平），
              结果会带误差。所以这里必须把「什么时候开的、隔了多久」摆出来，
              让用户自己决定接着答还是重测 —— 而不是默默把两段拼成一次成绩。 */
-          <div className={`mt-4 rounded-2xl border p-3 text-sm font-semibold ${
-            resumeIdleMs >= STALE_RESUME_MS
-              ? "border-[#E8971C]/35 bg-[#E8971C]/[0.09] text-[#F0C68A]"
-              : "border-[#81D8CF]/25 bg-[#81D8CF]/[0.07] text-[#BFF4EE]"
-          }`}>
-            <p>上次测验答到 {resumeProgress}，开始于 {formatWhen(resumeStartedAt)}。</p>
-            <p className="mt-1 font-normal opacity-85">
-              {resumeIdleMs >= STALE_RESUME_MS
-                ? `${joinGap("已经搁了", formatGap(resumeIdleMs))}，接着答会让这次成绩掺进两段不同状态，建议重测。`
-                : `${joinGap("搁了", formatGap(resumeIdleMs))}，接着答就行。`}
-            </p>
-          </div>
+          <MascotSay
+            sticker={resumeIdleMs >= STALE_RESUME_MS ? "mood-puzzled" : "mood-ask"}
+            tone={resumeIdleMs >= STALE_RESUME_MS ? "warn" : "info"}
+            className="mt-4"
+          >
+            上次答到 <b>{resumeProgress}</b>，开始于 {formatWhen(resumeStartedAt)}。
+            {resumeIdleMs >= STALE_RESUME_MS
+              ? `${joinGap("已经搁了", formatGap(resumeIdleMs))}，接着答会把两段不同状态拼成一次成绩，建议重测。`
+              : `${joinGap("搁了", formatGap(resumeIdleMs))}，接着答就行。`}
+          </MascotSay>
         )}
-        {error && <p role="alert" className="mt-4 rounded-2xl border border-red-300/25 bg-red-300/[0.07] p-3 text-sm font-semibold text-red-100">{error}</p>}
+        {error && <div role="alert"><MascotSay sticker="mood-dizzy" tone="warn" className="mt-4">{error}</MascotSay></div>}
         {notice && <p className="mt-3 text-center text-xs font-semibold text-[#81D8CF]">{notice}</p>}
 
         <div className="mt-5 flex flex-wrap gap-2">
@@ -380,7 +382,10 @@ const VocabTestHome = ({
       )}
 
       <div className="dictionary-card rounded-3xl p-5 text-sm leading-relaxed text-white/68 shadow-xl sm:p-7">
-        <h3 className="text-sm font-extrabold text-white/80">这个数是怎么算出来的（仅供参考）</h3>
+        <div className="flex items-center gap-3">
+          <Sticker name="mood-ask" size={56} className="shrink-0" />
+          <h3 className="text-base font-extrabold text-white/85">这个数是怎么算出来的<span className="ml-1 text-xs font-bold text-white/45">仅供参考</span></h3>
+        </div>
         <ul className="mt-3 space-y-2">
           <li>· <b className="text-white/85">抽样外推</b>：N5–N1 每级抽十几道，各级答对率乘以该级词表规模再相加。所以它是<b className="text-white/85">当前 JLPT 词表范围内</b>的估计，不是「全日语词汇量」。</li>
           <li>· <b className="text-white/85">四选一，蒙也能蒙对</b>：所以每级得分按「答对 − 答错 ÷ 3」折算，<b className="text-white/85">答错会把这一级的分数往下压</b>，不是简单不计分。</li>

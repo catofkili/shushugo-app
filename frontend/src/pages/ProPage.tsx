@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, Crown, ReceiptText, RotateCcw, ShieldCheck, Sparkles, Ticket } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, Crown, RotateCcw, ShieldCheck, Sparkles, Ticket } from "lucide-react";
 import { EntitlementState, productLabel } from "../lib/entitlements";
+import { MascotSay } from "../components/MascotSay";
+import { Sticker } from "../components/CapybaraMascot";
 import { initializePurchases, redeemOfferCode, restorePurchases } from "../lib/purchases";
 
 interface ProPageProps {
@@ -57,20 +59,18 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
         <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">收集日 Pro</p>
       </div>
 
-      <section className="rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/14 p-4">
-        <div className="flex items-start gap-3">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#81D8CF] text-[#343838]">
-            <Crown size={25} />
-          </span>
+      <section className="ds-card p-5">
+        <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-[#81D8CF]">会员</p>
-            <h1 className="mt-1 text-2xl font-bold text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</h1>
+            <span className="ds-pill ds-pill-primary"><Crown size={13} /> 会员</span>
+            <h1 className="mt-2 text-2xl font-black text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</h1>
             <p className="mt-2 text-sm leading-6 text-white/66">
               {entitlements.isPro
                 ? `${productLabel(entitlements.productId)} · ${entitlements.source === "development" ? "本地开发解锁" : "App Store 权益"}`
                 : "当前为免费版。开通后下面标 ✓ 的功能立即可用。"}
             </p>
           </div>
+          <Sticker name={entitlements.isPro ? "mood-proud" : "mood-heart"} size={92} className="-mr-2 shrink-0" />
         </div>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           {rows.map((row) => (
@@ -156,13 +156,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
         </button>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-white/15 bg-[#81D8CF]/10 p-3 text-xs leading-6 text-white/56">
-        <div className="mb-1 flex items-center gap-2 font-bold text-white/72">
-          <ReceiptText size={15} />
-          内购状态
-        </div>
-        {message}
-      </div>
+      <MascotSay sticker="scene-laptop" size={52} className="ds-say-onbg mt-4">{message}</MascotSay>
 
       <div className="mt-4 rounded-2xl border border-white/12 bg-[#464949] p-3 text-xs leading-6 text-white/50">
         <p>

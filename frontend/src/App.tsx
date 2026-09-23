@@ -67,8 +67,8 @@ const WordLibraryPage = lazy(() => import("./pages/WordLibraryPage").then((modul
 const WeeklyReportPage = lazy(() => import("./pages/WeeklyReportPage").then((module) => ({ default: module.WeeklyReportPage })));
 
 const PageLoading = () => (
-  <div className="grid min-h-[40vh] place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#464949] p-6 text-sm font-semibold text-white/65" aria-busy="true">
-    <div className="text-center"><CapybaraWalk size={64} className="mx-auto mb-2" />正在加载页面...</div>
+  <div className="grid min-h-[50vh] place-items-center p-6 text-sm font-semibold text-white/55" aria-busy="true">
+    <div className="text-center"><CapybaraWalk size={72} className="mx-auto mb-3" />正在加载…</div>
   </div>
 );
 

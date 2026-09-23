@@ -1,0 +1,541 @@
+/* ======================================================================
+   收集日设计系统（2026-09-23 重做）
+
+   用户原话：「丑得吓人」「前端不合格，要大胆改，完全重构也不为过」。
+   诊断：不是哪一页的问题，是整套视觉语言是泥的 ——
+     · 奶油底上叠奶油卡，再叠奶油内框，层级全靠一圈圈绿/棕描边区分；
+     · 按钮、胶囊、输入框都是「浅绿渐变 + 绿描边 + 内高光」的果冻，和卡片分不开；
+     · 小标题是加宽字距的全大写小字（中文界面照搬英文模板）；
+     · 提醒/警告是一块带橙描边的色块，里面一段干巴巴的字。
+
+   这一层怎么收：
+     1. 三种面，不靠描边靠明度分层：页面底 --ds-bg（跟皮肤淡淡着色）、白卡 --ds-surface
+        （一条发丝线 + 很淡的投影）、卡里的块 --ds-inset（比卡深一点的实底，不描边）。
+     2. 控件只有两种长相：实心主色（主操作）和 inset 实底（次操作/胶囊/输入框），都不描边。
+     3. 小标题一律 12px 正常字距；层级靠字号和墨色三档（ink / ink-2 / ink-3）。
+     4. 长提示走 <MascotSay>：吉祥物表情 + 对话气泡（.ds-say），不再是干巴巴的色块。
+
+   ⚠️ 接法：组件里大量写的是深色时期的 Tailwind hex（bg-[#464949]、border-white/15、
+   text-white/65…），浅色靠 styles.css 的翻译层。这一层**不改组件**，而是把同一批类
+   在两种主题下都重新映射到上面三种面 / 三档墨色 / 主色（跟皮肤走）。
+   特异度刻意和翻译层一样（[data-theme] + 一个类），靠「加载顺序在后」取胜：
+   main.tsx 里排在 app.css 之后、skins.css 之前 —— 柚子商店卖的「纸本 / 圆圆」风格主题
+   仍然排在最后、仍然能盖过这里。别把选择器写得比这更重，否则风格主题就失效了。
+   ====================================================================== */
+
+/* —————————————————— 1. 设计变量 —————————————————— */
+/* :root 也挂一份：data-theme 是启动后才写上去的，没有这份的话头几帧 var(--ds-line) 无效，描边退成 currentColor */
+:root,
+[data-theme="light"] {
+  /* 底色跟皮肤的 --zoo-cream 走，只取一半的量：抹茶皮肤是淡绿底、樱是淡粉底，默认是暖白 */
+  --ds-bg: color-mix(in srgb, var(--zoo-cream) 42%, #fff);
+  --ds-surface: #fff;
+  --ds-inset: color-mix(in srgb, var(--zoo-cream) 62%, #fff);
+  --ds-inset-2: color-mix(in srgb, var(--zoo-cream) 92%, #fff);
+  --ds-line: rgba(60, 45, 30, 0.09);
+  --ds-line-2: rgba(60, 45, 30, 0.16);
+  --ds-ink: #2B241C;
+  --ds-ink-2: #5E5448;
+  --ds-ink-3: #978C7E;
+  --ds-primary: var(--zoo-primary);
+  --ds-primary-ink: var(--zoo-primary-deep);
+  --ds-primary-tint: color-mix(in srgb, var(--zoo-primary) 15%, #fff);
+  --ds-primary-tint-2: color-mix(in srgb, var(--zoo-primary) 26%, #fff);
+  --ds-on-primary: var(--zoo-on-primary);
+  --ds-warn-tint: #FCEFD8;
+  --ds-warn-ink: #85520D;
+  --ds-danger: #C2493D;
+  --ds-shadow: 0 1px 2px rgba(60, 45, 30, 0.05), 0 8px 24px -10px rgba(60, 45, 30, 0.14);
+  --ds-shadow-lg: 0 2px 6px rgba(60, 45, 30, 0.06), 0 22px 44px -14px rgba(60, 45, 30, 0.22);
+
+  /* 老变量也指过来：大量组件类（zoo-*、wl-*、cf-*、kr-*…）直接读它们 */
+  --zoo-surface: #fff;
+  --zoo-ink: #2B241C;
+  --zoo-muted: #978C7E;
+  --color-border-light: rgba(60, 45, 30, 0.09);
+  --color-border: rgba(60, 45, 30, 0.16);
+  --form-control-bg: var(--ds-inset);
+  --form-control-bg-focus: #fff;
+  --form-control-border: transparent;
+  --form-control-shadow: none;
+  --form-control-text: var(--ds-ink);
+  --form-control-placeholder: var(--ds-ink-3);
+  /* 果冻阴影（带内高光的三层投影）全部指到新阴影：老组件引用这些变量的地方一起换装 */
+  --jelly-shadow-sm: var(--ds-shadow);
+  --jelly-shadow-md: var(--ds-shadow);
+  --jelly-shadow-lg: var(--ds-shadow-lg);
+  --glass-border: var(--ds-line);
+}
+
+[data-theme="dark"] {
+  --ds-bg: color-mix(in srgb, var(--zoo-cream) 58%, #070907);
+  --ds-surface: color-mix(in srgb, var(--zoo-cream) 92%, #fff);
+  --ds-inset: var(--zoo-cream);
+  --ds-inset-2: color-mix(in srgb, var(--zoo-cream) 84%, #fff);
+  --ds-line: rgba(255, 255, 255, 0.07);
+  --ds-line-2: rgba(255, 255, 255, 0.14);
+  --ds-ink: #F2EFE8;
+  --ds-ink-2: #C9C2B6;
+  --ds-ink-3: #8F887D;
+  --ds-primary: var(--zoo-primary);
+  --ds-primary-ink: var(--zoo-primary-deep);
+  --ds-primary-tint: color-mix(in srgb, var(--zoo-primary) 16%, var(--zoo-cream));
+  --ds-primary-tint-2: color-mix(in srgb, var(--zoo-primary) 28%, var(--zoo-cream));
+  --ds-on-primary: var(--zoo-on-primary);
+  --ds-warn-tint: #3A2F1C;
+  --ds-warn-ink: #F2CD8E;
+  --ds-danger: #F08A7E;
+  --ds-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), 0 10px 26px -12px rgba(0, 0, 0, 0.5);
+  --ds-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.3), 0 24px 48px -16px rgba(0, 0, 0, 0.6);
+
+  --zoo-ink: #F2EFE8;
+  --color-border-light: rgba(255, 255, 255, 0.07);
+  --color-border: rgba(255, 255, 255, 0.14);
+  --form-control-bg: var(--ds-inset);
+  --form-control-bg-focus: var(--ds-inset-2);
+  --form-control-border: transparent;
+  --form-control-shadow: none;
+  --form-control-text: var(--ds-ink);
+  --form-control-placeholder: var(--ds-ink-3);
+  --jelly-shadow-sm: var(--ds-shadow);
+  --jelly-shadow-md: var(--ds-shadow);
+  --jelly-shadow-lg: var(--ds-shadow-lg);
+  --glass-border: var(--ds-line);
+}
+
+/* —————————————————— 2. 外壳 —————————————————— */
+[data-theme] body,
+[data-theme] #root,
+[data-theme] .app-shell {
+  background: var(--ds-bg) !important;
+  color: var(--ds-ink) !important;
+}
+[data-theme] .app-mobile-topbar {
+  background: color-mix(in srgb, var(--ds-bg) 90%, transparent) !important;
+  border-bottom: 1px solid var(--ds-line) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+}
+[data-theme] .app-mobile-tabbar {
+  background: color-mix(in srgb, var(--ds-surface) 94%, transparent) !important;
+  border-top: 1px solid var(--ds-line) !important;
+  box-shadow: none !important;
+}
+[data-theme] .app-tab { color: var(--ds-ink-3); }
+[data-theme] .app-tab.is-active .app-tab-pill { background: var(--ds-primary-tint-2); }
+[data-theme] .app-tab.is-active .app-tab-label { color: var(--ds-ink); }
+[data-theme] .app-topbar-title,
+[data-theme] .app-topbar-brand,
+[data-theme] .app-topbar-back { color: var(--ds-ink); }
+[data-theme] aside.hairline {
+  background: var(--ds-surface) !important;
+  box-shadow: inset -1px 0 0 var(--ds-line) !important;
+}
+
+/* —————————————————— 3. 三种面 —————————————————— */
+/* 卡：白底 + 发丝线 + 淡投影。深色时期的「卡片色」全部归到这里。 */
+[data-theme] .dictionary-card,
+[data-theme] .grammar-anki-card,
+[data-theme] .jp-card,
+[data-theme] .word-note-popover,
+[data-theme] .bg-\[\#464949\]:not(input),
+[data-theme] .bg-\[\#474a4a\],
+[data-theme] .bg-\[\#475252\],
+[data-theme] .bg-\[\#3d4848\],
+[data-theme] .bg-\[\#555858\] {
+  background: var(--ds-surface) !important;
+  border-color: var(--ds-line) !important;
+  box-shadow: var(--ds-shadow) !important;
+}
+[data-theme] .dictionary-card,
+[data-theme] .grammar-anki-card,
+[data-theme] .jp-card { color: var(--ds-ink) !important; }
+[data-theme] .grammar-anki-card:hover,
+[data-theme] .grammar-anki-card-active { background: var(--ds-surface) !important; border-color: var(--ds-line-2) !important; }
+[data-theme] .grammar-anki-card-active { box-shadow: 0 0 0 2px var(--ds-primary-tint-2), var(--ds-shadow) !important; }
+
+/* 卡里的块：比卡深一档的实底，不描边、不投影 —— 以前这里是「框中框」的来源 */
+[data-theme] .bg-\[\#373b3b\],
+[data-theme] .bg-\[\#3c3f3f\],
+[data-theme] .bg-\[\#424545\],
+[data-theme] .bg-\[\#2f3333\],
+[data-theme] .bg-\[\#343838\],
+[data-theme] input.bg-\[\#464949\],
+[data-theme] .bg-white\/4,
+[data-theme] .bg-white\/5,
+[data-theme] .bg-white\/6,
+[data-theme] .bg-white\/8,
+[data-theme] .bg-white\/10,
+[data-theme] .bg-white\/12,
+[data-theme] .bg-white\/15,
+[data-theme] .bg-white\/\[0\.03\],
+[data-theme] .bg-white\/\[0\.035\],
+[data-theme] .bg-white\/\[0\.04\],
+[data-theme] .bg-white\/\[0\.05\],
+[data-theme] .bg-white\/\[0\.06\],
+[data-theme] .bg-white\/\[0\.08\],
+[data-theme] .jp-inset,
+[data-theme] .jp-btn {
+  background: var(--ds-inset) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+[data-theme] .bg-white\/20 { background: var(--ds-inset-2) !important; }
+[data-theme] .hover\:bg-\[\#4d5151\]:hover,
+[data-theme] .hover\:bg-white\/8:hover,
+[data-theme] .hover\:bg-white\/\[0\.06\]:hover,
+[data-theme] .hover\:bg-white\/\[0\.08\]:hover,
+[data-theme] .jp-btn:hover { background: var(--ds-inset-2) !important; }
+/* 关着的开关轨道：inset 在白卡上太淡，单独深一档（勾上以后走主色那条） */
+[data-theme] .peer:not(:checked) ~ .peer.rounded-full.bg-white\/20 { background-color: var(--ds-line-2) !important; }
+
+/* 线：一律发丝线，不再是绿/棕描边 */
+[data-theme] .border-white\/5,
+[data-theme] .border-white\/8,
+[data-theme] .border-white\/10,
+[data-theme] .border-white\/12,
+[data-theme] .border-white\/14,
+[data-theme] .border-white\/15,
+[data-theme] .border-white\/16,
+[data-theme] .border-white\/18,
+[data-theme] .border-white\/20,
+[data-theme] .border-white\/25,
+[data-theme] .border-white\/30,
+[data-theme] .ring-white\/10 { border-color: var(--ds-line) !important; --tw-ring-color: var(--ds-line) !important; }
+
+/* —————————————————— 4. 主色（跟皮肤走） —————————————————— */
+/* 以前浅色翻译层把这些写死成默认绿，换了抹茶/樱皮肤按钮还是绿的 */
+[data-theme] .bg-\[\#81D8CF\],
+[data-theme] .jp-accent { background: var(--ds-primary) !important; color: var(--ds-on-primary) !important; }
+[data-theme] .bg-\[\#81D8CF\]\/\[0\.07\],
+[data-theme] .bg-\[\#81D8CF\]\/8,
+[data-theme] .bg-\[\#81D8CF\]\/10,
+[data-theme] .bg-\[\#81D8CF\]\/12,
+[data-theme] .bg-\[\#81D8CF\]\/14,
+[data-theme] .bg-\[\#81D8CF\]\/15,
+[data-theme] .bg-\[\#81D8CF\]\/16,
+[data-theme] .bg-\[\#81D8CF\]\/18 { background: var(--ds-primary-tint) !important; }
+[data-theme] .bg-\[\#81D8CF\]\/20,
+[data-theme] .bg-\[\#81D8CF\]\/25,
+[data-theme] .hover\:bg-\[\#81D8CF\]\/10:hover,
+[data-theme] .hover\:bg-\[\#81D8CF\]\/15:hover,
+[data-theme] .hover\:bg-\[\#81D8CF\]\/18:hover,
+[data-theme] .hover\:bg-\[\#81D8CF\]\/20:hover { background: var(--ds-primary-tint-2) !important; }
+[data-theme] .text-\[\#81D8CF\] { color: var(--ds-primary-ink) !important; }
+[data-theme] .border-\[\#81D8CF\],
+[data-theme] .border-\[\#81D8CF\]\/20,
+[data-theme] .border-\[\#81D8CF\]\/25,
+[data-theme] .border-\[\#81D8CF\]\/30,
+[data-theme] .border-\[\#81D8CF\]\/35,
+[data-theme] .border-\[\#81D8CF\]\/40,
+[data-theme] .border-\[\#81D8CF\]\/45,
+[data-theme] .border-\[\#81D8CF\]\/50,
+[data-theme] .border-\[\#81D8CF\]\/65 { border-color: color-mix(in srgb, var(--ds-primary) 40%, transparent) !important; }
+[data-theme] .peer:checked ~ .peer-checked\:bg-\[\#81D8CF\] { background-color: var(--ds-primary) !important; }
+
+/* —————————————————— 5. 墨色三档（浅色） —————————————————— */
+/* 翻译层把 text-white/xx 几乎全翻成同一个 #6B5A48，于是正文、说明、注脚一个颜色 —— 没有层级。 */
+[data-theme="light"] .text-white,
+[data-theme="light"] .text-white\/95,
+[data-theme="light"] .text-white\/92,
+[data-theme="light"] .text-white\/90,
+[data-theme="light"] .text-white\/88,
+[data-theme="light"] .text-white\/86,
+[data-theme="light"] .text-white\/85,
+[data-theme="light"] .text-white\/84,
+[data-theme="light"] .text-white\/82,
+[data-theme="light"] .text-white\/80 { color: var(--ds-ink) !important; }
+[data-theme="light"] .text-white\/78,
+[data-theme="light"] .text-white\/76,
+[data-theme="light"] .text-white\/75,
+[data-theme="light"] .text-white\/72,
+[data-theme="light"] .text-white\/70,
+[data-theme="light"] .text-white\/68,
+[data-theme="light"] .text-white\/66,
+[data-theme="light"] .text-white\/65,
+[data-theme="light"] .text-white\/62,
+[data-theme="light"] .text-white\/60 { color: var(--ds-ink-2) !important; }
+[data-theme="light"] .text-white\/58,
+[data-theme="light"] .text-white\/55,
+[data-theme="light"] .text-white\/52,
+[data-theme="light"] .text-white\/50,
+[data-theme="light"] .text-white\/48,
+[data-theme="light"] .text-white\/45,
+[data-theme="light"] .text-white\/42,
+[data-theme="light"] .text-white\/40,
+[data-theme="light"] .text-white\/38,
+[data-theme="light"] .text-white\/35,
+[data-theme="light"] .text-white\/30 { color: var(--ds-ink-3) !important; }
+[data-theme] .jp-ink { color: var(--ds-ink) !important; }
+[data-theme] .jp-muted { color: var(--ds-ink-3) !important; }
+[data-theme] .jp-track { background: var(--ds-inset-2) !important; }
+
+/* 小标题：中文不加宽字距、不转大写（照搬英文模板的 VOCABULARY 式小标题） */
+[data-theme] .uppercase[class*="tracking-[0."],
+[data-theme] .zoo-tray-title,
+[data-theme] .cf-kick { text-transform: none !important; letter-spacing: .02em !important; }
+
+/* —————————————————— 6. 控件 —————————————————— */
+[data-theme] .control-cyan {
+  background: var(--ds-inset) !important;
+  border-color: transparent !important;
+  color: var(--ds-ink) !important;
+  box-shadow: none !important;
+}
+[data-theme] .control-cyan:hover { background: var(--ds-inset-2) !important; }
+[data-theme] .control-cyan:focus,
+[data-theme] .control-cyan-search:focus-within {
+  border-color: transparent !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ds-primary) 55%, transparent) !important;
+}
+[data-theme] .control-cyan-search-input { color: var(--ds-ink) !important; }
+[data-theme] .control-cyan::placeholder,
+[data-theme] .control-cyan-search-input::placeholder { color: var(--ds-ink-3) !important; }
+[data-theme] .control-cyan-icon { color: var(--ds-ink-3) !important; }
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select) { border-radius: 12px; }
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select):focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ds-primary) 55%, transparent);
+  border-color: transparent;
+}
+
+/* —————————————————— 7. 设计系统自己的小件（新写的 JSX 用） —————————————————— */
+.ds-card { border: 1px solid var(--ds-line); border-radius: 20px; background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink); }
+.ds-inset { border-radius: 14px; background: var(--ds-inset); }
+.ds-kicker { margin: 0; color: var(--ds-ink-3); font-size: 12px; font-weight: 700; letter-spacing: .02em; }
+.ds-section { margin: 22px 4px 8px; color: var(--ds-ink-2); font-size: 13px; font-weight: 800; }
+.ds-muted { color: var(--ds-ink-3); }
+.ds-ink2 { color: var(--ds-ink-2); }
+.ds-num { font-variant-numeric: tabular-nums; }
+.ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 18px; border: 0; border-radius: 14px; background: var(--ds-primary); color: var(--ds-on-primary); font-size: 15px; font-weight: 800; transition: transform .12s, filter .12s; }
+.ds-btn:active { transform: scale(.98); }
+.ds-btn:hover { filter: brightness(1.03); }
+.ds-btn-soft { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 18px; border: 0; border-radius: 14px; background: var(--ds-inset); color: var(--ds-ink); font-size: 15px; font-weight: 800; }
+.ds-btn-soft:hover { background: var(--ds-inset-2); }
+.ds-chip { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 13px; font-weight: 700; white-space: nowrap; transition: background-color .15s, color .15s; }
+.ds-chip:hover { background: var(--ds-inset-2); }
+.ds-chip.on, .ds-chip[aria-pressed="true"] { background: var(--ds-primary); color: var(--ds-on-primary); }
+.ds-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 12px; font-weight: 700; }
+.ds-pill-primary { background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
+.ds-pill-warn { background: var(--ds-warn-tint); color: var(--ds-warn-ink); }
+.ds-bar { height: 8px; overflow: hidden; border-radius: 999px; background: var(--ds-inset-2); }
+.ds-bar > i { display: block; height: 100%; border-radius: inherit; background: var(--ds-primary); transition: width .4s cubic-bezier(.34, 1.2, .6, 1); }
+.ds-bar.warn > i { background: var(--zoo-orange, #E8971C); }
+
+/* 吉祥物说话（MascotSay）：表情坐在左下，气泡的左下角收成小尖，像是从它嘴里说出来的 */
+.ds-say { display: flex; align-items: flex-end; gap: 6px; }
+.ds-say-mascot { flex: none; margin-bottom: -4px; filter: drop-shadow(0 3px 6px rgba(60, 45, 30, .12)); }
+.ds-say-bubble { position: relative; flex: 1; min-width: 0; padding: 11px 14px; border-radius: 18px 18px 18px 6px; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 14px; line-height: 1.65; }
+.ds-say-bubble b { color: var(--ds-ink); font-weight: 800; }
+.ds-say-warn .ds-say-bubble { background: var(--ds-warn-tint); color: var(--ds-warn-ink); }
+.ds-say-warn .ds-say-bubble b { color: inherit; }
+.ds-say-good .ds-say-bubble { background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
+.ds-say-good .ds-say-bubble b { color: inherit; }
+/* 气泡摆在页面底色上（不在白卡里）时，白底更清楚 */
+.ds-say-onbg .ds-say-bubble { background: var(--ds-surface); box-shadow: var(--ds-shadow); }
+.ds-say-onbg.ds-say-warn .ds-say-bubble { background: var(--ds-warn-tint); box-shadow: none; }
+
+/* —————————————————— 8. 主页 —————————————————— */
+[data-theme] .zoo-home-v2 { gap: 14px; }
+/* 问候：左字右吉祥物。吉祥物按时段 / 今天的进度换表情（ZooHome.greetSticker） */
+[data-theme] .zoo-home-v2 .zoo-greet { align-items: center; gap: 12px; }
+[data-theme] .zoo-home-v2 .zoo-greet-hi { font-family: inherit; font-size: 26px; font-weight: 800; letter-spacing: -.01em; color: var(--ds-ink); }
+[data-theme] .zoo-home-v2 .zoo-greet-sub { margin-top: 2px; color: var(--ds-ink-2); font-size: 14px; }
+.zoo-greet-mascot { flex: none; order: 3; margin: -6px -4px -10px 0; }
+[data-theme] .zoo-greet-streak { order: 2; flex-direction: row; gap: 3px; align-self: flex-start; margin-top: 4px; padding: 4px 10px; border-radius: 999px; background: var(--ds-warn-tint); color: var(--ds-warn-ink); font-size: 13px; }
+[data-theme] .zoo-greet-streak b { font-size: 14px; color: inherit; }
+[data-theme] .has-weekly-cord .zoo-greet { padding-right: 56px; }
+
+/* 盘子不再是一层底框：今天那盘直接露出大卡，工具盘是白卡 */
+[data-theme] .zoo-tray { border: 1px solid var(--ds-line); border-radius: 22px; background: var(--ds-surface); box-shadow: var(--ds-shadow); padding: 14px; }
+[data-theme] .zoo-tray-today { border: 0; background: none; box-shadow: none; padding: 0; }
+[data-theme] .zoo-tray-title { margin: 0 2px 10px; color: var(--ds-ink-2); font-size: 13px; font-weight: 800; }
+
+/* 今日大卡：主色实底、右侧一只吉祥物、底下一条今天的进度 */
+[data-theme] .zoo-now {
+  grid-template-columns: 1fr auto;
+  gap: 0 8px;
+  min-height: 156px;
+  border-radius: 26px;
+  padding: 18px 18px 16px 20px;
+  background: var(--ds-primary);
+  color: var(--ds-on-primary);
+  box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--ds-primary) 70%, #000);
+  overflow: hidden;
+}
+[data-theme] .zoo-now::after { content: ""; position: absolute; right: -40px; top: -60px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255, 255, 255, .14); pointer-events: none; }
+[data-theme] .zoo-now-kick { font-size: 13px; font-weight: 800; letter-spacing: 0; opacity: .8; }
+[data-theme] .zoo-now-num { margin-top: 2px; font-family: inherit; font-size: 44px; font-weight: 900; letter-spacing: -.02em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+[data-theme] .zoo-now-num small { margin-left: 4px; font-size: 18px; font-weight: 800; letter-spacing: 0; opacity: .85; }
+[data-theme] .zoo-now-sub { font-size: 14px; font-weight: 700; opacity: .85; }
+[data-theme] .zoo-now-split { margin-top: 10px; font-size: 13px; opacity: .78; }
+.zoo-now-mascot { position: relative; z-index: 1; grid-row: 1 / 4; grid-column: 2; align-self: center; margin: -8px -6px 0 0; animation: zooHopIdle 3.2s ease-in-out infinite; }
+[data-motion="off"] .zoo-now-mascot { animation: none; }
+[data-theme] .zoo-now-go { grid-row: auto; grid-column: 1 / -1; justify-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.zoo-now-bar { flex: 1; height: 6px; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, .32); }
+[data-theme="dark"] .zoo-now-bar { background: rgba(0, 0, 0, .22); }
+.zoo-now-bar i { display: block; height: 100%; border-radius: inherit; background: currentColor; opacity: .85; }
+.zoo-now-cta { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 8px 16px; border-radius: 999px; background: rgba(255, 255, 255, .9); color: #2B241C; font-size: 14px; font-weight: 800; }
+[data-theme] .zoo-now-foot { margin-top: 10px; }
+[data-theme] .zoo-mode-chip { border: 0; background: var(--ds-surface); box-shadow: var(--ds-shadow); padding: 7px 14px; color: var(--ds-ink-2); font-size: 13px; }
+[data-theme] .zoo-mode-chip b { color: var(--ds-ink); }
+[data-theme] .zoo-modes-sheet { border: 1px solid var(--ds-line); background: var(--ds-surface); box-shadow: var(--ds-shadow-lg); }
+[data-theme] .zoo-modes-item:hover { background: var(--ds-inset); }
+[data-theme] .zoo-modes-item.on { border-color: transparent; background: var(--ds-primary-tint); }
+[data-theme] .zoo-modes-item-emoji,
+[data-theme] .zoo-modes-item-count { color: var(--ds-primary-ink); }
+[data-theme] .zoo-modes-item-copy b { color: var(--ds-ink); }
+[data-theme] .zoo-modes-item-copy small { color: var(--ds-ink-3); }
+
+/* 备考 / 组队两格 */
+[data-theme] .zoo-duo { gap: 10px; margin-top: 10px; }
+[data-theme] .zoo-duo-cell { gap: 3px; border: 1px solid var(--ds-line); border-radius: 20px; padding: 14px; background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink); }
+[data-theme] .zoo-duo-cell b { font-size: 18px; font-weight: 900; letter-spacing: -.01em; }
+[data-theme] .zoo-duo-cell small { color: var(--ds-ink-3); font-size: 12px; }
+[data-theme] .zoo-duo-kick { color: var(--ds-primary-ink); font-size: 12px; font-weight: 800; letter-spacing: 0; }
+[data-theme] .zoo-duo-avatars i { width: 22px; height: 22px; margin-left: -6px; border: 2px solid var(--ds-surface); background: var(--ds-inset); font-size: 12px; }
+[data-theme] .zoo-duo-avatars em { margin-left: 6px; }
+
+/* 工具格 */
+[data-theme] .zoo-quad button b { color: var(--ds-ink-2); font-weight: 700; }
+[data-theme] .zoo-quad button:active { background: var(--ds-inset); }
+
+/* 进度概览 / 进度维护 */
+[data-theme] .zoo-fold > summary small { color: var(--ds-ink-3); }
+[data-theme] .zoo-prog-tabs { background: var(--ds-inset); }
+[data-theme] .zoo-prog-tabs button { color: var(--ds-ink-2); }
+[data-theme] .zoo-prog-tabs button.on { background: var(--ds-surface); color: var(--ds-ink); box-shadow: var(--ds-shadow); }
+[data-theme] .zoo-prog-col { border: 0; background: var(--ds-inset); }
+[data-theme] .zoo-prog-col.on { background: var(--ds-inset); }
+[data-theme] .zoo-prog-bar-track { background: var(--ds-inset-2); }
+[data-theme] .zoo-prog-bar-track i { background: var(--ds-primary); }
+[data-theme] .zoo-maint { border: 1px dashed var(--ds-line-2); background: transparent; }
+[data-theme] .zoo-maint > summary { color: var(--ds-ink-3); }
+[data-theme] .zoo-maint-btn { border: 0; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
+
+/* —————————————————— 9. 每日学习量（DailyPlanPanel） —————————————————— */
+[data-theme] .zoo-plan { gap: 14px; border: 1px solid var(--ds-line); border-radius: 22px; background: var(--ds-surface); box-shadow: var(--ds-shadow); padding: 16px; }
+[data-theme] .zoo-plan-main { gap: 18px; }
+[data-theme] .zoo-plan-side { gap: 10px; }
+[data-theme] .zoo-ring-total { font-family: inherit; font-weight: 900; fill: var(--ds-ink); }
+[data-theme] .zoo-ring-caption { fill: var(--ds-ink-3); letter-spacing: 0; }
+.zoo-plan-headline { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+.zoo-plan-headline label { display: inline-flex; align-items: baseline; gap: 6px; color: var(--ds-ink-3); font-size: 13px; font-weight: 700; }
+[data-theme] .zoo-plan-headline input[type="number"] { width: 3.6em; min-width: 0; padding: 0; border: 0; border-bottom: 2px dashed var(--ds-line-2); border-radius: 0; background: transparent; color: var(--ds-ink); font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; box-shadow: none; }
+[data-theme] .zoo-plan-headline input[type="number"]:focus { border-bottom-color: var(--ds-primary); box-shadow: none; }
+[data-theme] .zoo-plan-legend { gap: 2px; }
+[data-theme] .zoo-plan-legend li { padding: 6px 8px; border-radius: 12px; font-size: 13px; }
+[data-theme] .zoo-plan-legend li.on { background: var(--ds-inset); }
+[data-theme] .zoo-plan-legend small { color: var(--ds-ink-3); }
+[data-theme] .zoo-plan-zoom { border-width: 0 !important; border-radius: 16px; background: var(--ds-inset); padding: 12px 14px; }
+[data-theme] .zoo-plan-zoom-meta { color: var(--ds-ink-3); }
+[data-theme] .zoo-plan-suggest { border: 0; background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
+[data-theme] .zoo-plan-row { padding-top: 12px; border-top: 1px solid var(--ds-line); }
+[data-theme] .zoo-plan-link { color: var(--ds-primary-ink); font-size: 13px; }
+[data-theme] .zoo-plan-dim { color: var(--ds-ink-3); font-size: 12px; }
+[data-theme] .zoo-plan-form input { border: 0; background: var(--ds-inset); }
+
+/* —————————————————— 10. 其它页面上最常见的几种块 —————————————————— */
+/* 语法「抓手」：一句最容易错的点，用主色浅底，不再是青色竖条 */
+[data-theme] .grammar-key-point { border-left: 0; border-radius: 14px; background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
+/* 评分键：宽窄主次不变，次键退成 inset 实底 */
+[data-theme] .rate-btn { border-color: transparent !important; }
+[data-theme] .rate-btn:not(.rate-know):not(.rate-forgot):not(.quiz-accent-solid) { background: var(--ds-inset) !important; color: var(--ds-ink-2) !important; }
+/* 成就卡、词库行、辨析卡：白卡 + 发丝线 */
+[data-theme] .ach-card,
+[data-theme] .wl-row,
+[data-theme] .cf-card { border-color: var(--ds-line) !important; }
+[data-theme] .ach-summary { border: 0; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
+
+/* 浮层 / 气泡类：浅色翻译层给的是绿描边 + 暖渐变 */
+[data-theme] .memory-bubble,
+[data-theme] .study-calendar-tooltip,
+[data-theme] .doodle-pen-idle { background: var(--ds-surface) !important; border-color: var(--ds-line) !important; box-shadow: var(--ds-shadow-lg) !important; }
+[data-theme] .shadow-2xl,
+[data-theme] .shadow-lg,
+[data-theme] .shadow-md { box-shadow: var(--ds-shadow-lg) !important; }
+
+/* 滚动条：原来是一根 8px 的绿色渐变粗条，网页版桌面上永远挂在右边 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb:hover { border-radius: 999px; background: var(--ds-line-2); }
+* { scrollbar-width: thin; scrollbar-color: var(--ds-line-2) transparent; }
+
+/* —————————————————— 11. 单词学习卡 —————————————————— */
+/* 外层 .dictionary-card 就是那张卡：题面条、答案区都不再各自铺底、各自投影，只用一条发丝线分开 */
+[data-theme] .dictionary-card .word-prompt:not(.is-bare),
+[data-theme] .dictionary-card .word-answer { background: none !important; box-shadow: none !important; border-color: transparent !important; }
+[data-theme] .dictionary-card .word-prompt:not(.is-bare) { border-radius: 0 !important; border-bottom: 1px solid var(--ds-line) !important; }
+/* 答案区里的例句 / 和式汉字 / 辨析这些块：卡里的块 = inset 实底，不是又一张白卡 */
+[data-theme] .word-answer .bg-\[\#464949\],
+[data-theme] .word-answer .bg-\[\#474a4a\],
+[data-theme] .word-answer .dictionary-card { background: var(--ds-inset) !important; border-color: transparent !important; box-shadow: none !important; }
+/* 评分键：认识 = 主色实心、忘记 = 暖色浅底、模糊 / 熟知 = inset。
+   ⚠️ 要比上面「主色浅底」那条映射重一档（按钮身上同时挂着 bg-[#81D8CF]/10），否则主次又被抹平 */
+[data-theme] .rate-btn.rate-know { background: var(--ds-primary) !important; border-color: transparent !important; color: var(--ds-on-primary) !important; }
+[data-theme] .rate-btn.rate-forgot { background: color-mix(in srgb, var(--zoo-orange) 16%, var(--ds-surface)) !important; border-color: transparent !important; color: var(--ds-ink) !important; }
+[data-theme] .rate-btn.rate-fuzzy,
+[data-theme] .rate-btn.rate-known_forever { background: var(--ds-inset) !important; border-color: transparent !important; color: var(--ds-ink-2) !important; }
+[data-theme] .rate-btn.quiz-accent-solid { background: var(--quiz-accent) !important; color: #2f3333 !important; }
+/* 卡顶那排工具键（收藏 / 便签 / 撤销 / 辨析）：圆形 inset，点亮时主色 */
+[data-theme] .ds-icon-btn { border-color: transparent !important; }
+[data-theme] .ds-icon-btn:not(.bg-\[\#81D8CF\]) { background: var(--ds-inset) !important; color: var(--ds-ink-2); }
+[data-theme] .ds-icon-btn:not(.bg-\[\#81D8CF\]):hover { background: var(--ds-inset-2) !important; }
+
+/* inset 块身上常同时挂着 border-white/xx：发丝线映射那条在后面，会把「块不描边」盖回去。
+   这里用 :is() + 属性选择器重一档，保证卡里的块永远只靠底色区分。 */
+[data-theme] :is(.bg-\[\#373b3b\], .bg-\[\#3c3f3f\], .bg-\[\#424545\], .bg-\[\#2f3333\], .bg-\[\#343838\], .bg-white\/5, .bg-white\/\[0\.035\], .bg-white\/\[0\.04\], .jp-inset)[class*="border"] { border-color: transparent !important; }
+
+/* —————————————————— 12. 首次设定弹窗（固定浅色纸面） —————————————————— */
+/* 这个弹窗在深色主题下也是浅纸（见 CLAUDE.md「首次设定界面」）：在它内部把设计变量重新指成浅色值，
+   里面的 MascotSay / ds-* 小件就不会拿到深色主题那套 */
+.level-setup {
+  --ds-surface: #fff; --ds-inset: #F4EDE1; --ds-inset-2: #ECE2D1;
+  --ds-ink: #2B241C; --ds-ink-2: #5E5448; --ds-ink-3: #978C7E; --ds-line: rgba(60, 45, 30, .09);
+  --ds-warn-tint: #FCEFD8; --ds-warn-ink: #85520D;
+  --ds-primary-tint: #E6F1D8; --ds-primary-ink: #3F6B22;
+  background: #FFFBF3 !important;
+}
+.level-setup-option { border: 0 !important; background: #F4EDE1 !important; color: #3A2F24 !important; }
+.level-setup-option:hover { background: #ECE2D1 !important; }
+.level-setup-option[aria-pressed="true"] { background: #7EBE4F !important; color: #1B2E10 !important; }
+.level-setup-option:disabled { border: 1px dashed #D8CCBA !important; background: transparent !important; color: #978C7E !important; }
+.level-setup-details { border: 0 !important; background: #F8F2E8 !important; }
+.level-setup-submit { background: #7EBE4F !important; color: #1B2E10 !important; }
+[data-theme] :is(.bg-\[\#81D8CF\]\/8, .bg-\[\#81D8CF\]\/10, .bg-\[\#81D8CF\]\/12, .bg-\[\#81D8CF\]\/14, .bg-\[\#81D8CF\]\/15, .bg-\[\#81D8CF\]\/16, .bg-\[\#81D8CF\]\/18)[class*="border-white"] { border-color: transparent !important; }
+
+/* —————————————————— 13. 词库 / 疑难辨析 / 一字多音：搜索框和筛选胶囊 —————————————————— */
+/* 三页各自写过一套「白底 + 描边」的搜索框和 chip，现在统一成 inset 实底胶囊，选中 = 主色实心 */
+[data-theme] .wl-search,
+[data-theme] .cf-search,
+[data-theme] .kr-search { border: 0 !important; border-radius: 999px !important; background: var(--ds-inset) !important; box-shadow: none !important; }
+[data-theme] .wl-search:focus-within,
+[data-theme] .cf-search:focus-within,
+[data-theme] .kr-search:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--ds-primary) 55%, transparent) !important; }
+[data-theme] .wl-chip,
+[data-theme] .wl-legend-item,
+[data-theme] .cf-type-chip,
+[data-theme] .kr-chips button { border: 0 !important; border-radius: 999px !important; background: var(--ds-inset) !important; color: var(--ds-ink-2) !important; box-shadow: none !important; }
+[data-theme] .wl-chip.on,
+[data-theme] .cf-type-chip.on,
+[data-theme] .kr-chips button.is-on { background: var(--ds-primary) !important; color: var(--ds-on-primary) !important; }
+[data-theme] .wl-legend-item.on { background: var(--ds-primary-tint-2) !important; color: var(--ds-primary-ink) !important; }
+[data-theme] .wl-legend-item b { color: var(--ds-ink) !important; }
+[data-theme] .wl-title,
+[data-theme] .cf-title { font-size: 26px; font-weight: 900; letter-spacing: -.01em; color: var(--ds-ink); }
+[data-theme] .wl-select,
+[data-theme] .wl-more-btn { min-height: 36px; border: 0 !important; border-radius: 999px !important; background: var(--ds-inset) !important; padding: 0 14px !important; color: var(--ds-ink-2) !important; }
+[data-theme] .wl-select { background: var(--ds-primary-tint) !important; color: var(--ds-primary-ink) !important; }
+[data-theme] .wl-panel { border: 0 !important; background: var(--ds-inset); }
+[data-theme] .wl-panel-title { letter-spacing: .02em; }
+
+/* 疑难辨析卡：白卡，不再是米黄渐变 + 绿描边 */
+[data-theme] .cf-card { border: 1px solid var(--ds-line) !important; background: var(--ds-surface) !important; box-shadow: var(--ds-shadow); }
+[data-theme] .cf-card.is-mastered { background: var(--ds-inset) !important; box-shadow: none; }
+[data-theme] .cf-card-type,
+[data-theme] .cf-card-gloss { color: var(--ds-ink-3); letter-spacing: 0; }
+/* 会员三角里的水豚：贴在「收集日 Pro」上面，靠右 */
+.pro-reading-preview-mascot { display: block; margin: 0 0 4px auto; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .25)); }
+.paywall-popover-intro { display: flex; align-items: center; gap: 8px; }
+.paywall-popover-mascot { flex: none; }

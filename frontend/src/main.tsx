@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
 import './app.css';
+import './design.css'; // 设计系统（2026-09-23 重做）：在 app.css 之后、skins.css 之前，见 design.css 开头
 import './skins.css'; // 风格主题（纸本 / 圆圆）必须排在 app.css 之后，见 skins.css 开头
 import { initDatabase } from './lib/database';
 import { BrowserDatabaseInUseError, LocalArchiveUnreadableError, loadDatabase, registerPersistenceLifecycle } from './lib/storage';

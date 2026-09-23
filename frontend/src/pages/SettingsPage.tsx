@@ -29,6 +29,7 @@ import {
   ThemePreference
 } from "../lib/studyPreferences";
 import { importExternalWordList, previewExternalWordList } from "../lib/word-list-import";
+import { MascotSay } from "../components/MascotSay";
 import { yieldToPaint } from "../lib/yield-to-paint";
 
 interface SettingsPageProps {
@@ -326,9 +327,10 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">每日学习量</p>
         {/* 圆环 / 数字表单 / 备考一键都在 DailyPlanPanel 里，和主页是同一个组件、同一份状态。
             别再往这一节插开关：它只装「今天给我多少题」这一类的量。 */}
-        <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
-          <div className="p-4"><DailyPlanPanel /></div>
-          {/* 汉字读音（词里遮汉字那个方向）是另一套队列（字音单位），题量和目标级别单独存，不在圆环里 */}
+        {/* 面板自己就是一张卡，外面不再包一层（以前是卡里一张卡） */}
+        <DailyPlanPanel />
+        {/* 汉字读音（词里遮汉字那个方向）是另一套队列（字音单位），题量和目标级别单独存，不在圆环里 */}
+        <div className="mt-3 overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
           <KanjiUnitPlanSettings />
         </div>
       </div>
@@ -488,16 +490,20 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                     : "可登录后把本机学习数据库备份到云端"
                   : "还没有配置 VITE_SYNC_API_URL，部署 Cloudflare Worker 后即可启用"}
               </p>
-              <p className="mt-1 text-xs leading-5 text-white/42">
-                第一次使用请先在有进度的设备登录并点“上传本机进度”，再在新手机登录——不要先从空白手机上传。
-              </p>
-              {snapshotCapacity && snapshotCapacity.bytes > 0 && (
-                <p className={`mt-1 text-xs leading-5 ${snapshotCapacity.ratio >= 0.85 ? "text-[#E8971C]" : "text-white/42"}`}>
-                  云备份体积 {formatBytes(snapshotCapacity.bytes)} / {formatBytes(snapshotCapacity.limit)}
-                  （{Math.round(snapshotCapacity.ratio * 100)}%）
-                  {snapshotCapacity.ratio >= 0.85 && "　接近上限，超过后云备份会停止，请先导出本地备份。"}
+              {/* 顺序提醒是换设备时唯一会出事的一步，让吉祥物说；体积接近上限时它换成吓一跳 */}
+              <MascotSay sticker="scene-laptop" size={48} className="mt-3">
+                第一次用：先在<b>有进度的设备</b>登录、点「上传本机进度」，再去新手机登录 —— 别先从空白手机上传。
+              </MascotSay>
+              {snapshotCapacity && snapshotCapacity.bytes > 0 && (snapshotCapacity.ratio >= 0.85 ? (
+                <MascotSay sticker="mood-shocked" tone="warn" size={48} className="mt-3">
+                  云备份已经 <b>{formatBytes(snapshotCapacity.bytes)} / {formatBytes(snapshotCapacity.limit)}</b>（{Math.round(snapshotCapacity.ratio * 100)}%）。
+                  超过上限云备份会停，先导出一份本地备份吧。
+                </MascotSay>
+              ) : (
+                <p className="mt-2 text-xs leading-5 text-white/42">
+                  云备份体积 {formatBytes(snapshotCapacity.bytes)} / {formatBytes(snapshotCapacity.limit)}（{Math.round(snapshotCapacity.ratio * 100)}%）
                 </p>
-              )}
+              ))}
             </div>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-2">

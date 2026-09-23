@@ -22,6 +22,7 @@ import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { displayForm } from "../lib/confusion-groups";
 import { kanaToRomaji } from "../features/word-study/word-study-utils";
 import { getStudyPreferences } from "../lib/studyPreferences";
+import { Sticker } from "../components/CapybaraMascot";
 import {
   addWordsToQueue,
   markWordKnownForever,
@@ -384,7 +385,8 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
   return (
     <section className="wl-page" ref={pageRef}>
       <header className="wl-head">
-        <div>
+        <div className="flex items-center gap-2">
+          <Sticker name="scene-book" size={52} className="-my-2 shrink-0" />
           <h1 className="wl-title">
             {filters.level === "all" ? "词库" : filters.level === "unranked" ? "未分级词库" : `${filters.level} 词库`}
           </h1>

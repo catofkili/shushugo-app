@@ -47,6 +47,7 @@ import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { wordDistinctions } from "../lib/models/word-distinctions";
 import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
+import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction } from "../lib/study-clock";
 
 interface WordStudyProps {
@@ -1450,7 +1451,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           <button
             onClick={toggleCardFavorite}
             disabled={!card}
-            className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 disabled:opacity-50 lg:ml-auto ${card?.isFavorite ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
+            className={`focus-ring ds-icon-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 hover:bg-[#81D8CF]/15 disabled:opacity-50 lg:ml-auto ${card?.isFavorite ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
             title={card?.isFavorite ? "取消收藏" : "收藏单词"}
           >
             <Star size={17} fill={card?.isFavorite ? "currentColor" : "none"} />
@@ -1465,7 +1466,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               });
             }}
             disabled={!card}
-            className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 disabled:opacity-50 ${card?.note ? "bg-[#81D8CF]/20" : "bg-[#81D8CF]/10"}`}
+            className={`focus-ring ds-icon-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 hover:bg-[#81D8CF]/15 disabled:opacity-50 ${card?.note ? "bg-[#81D8CF]/20" : "bg-[#81D8CF]/10"}`}
             title={card?.note ? "编辑便签" : "添加便签"}
           >
             <StickyNote size={17} />
@@ -1473,7 +1474,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           <button
             onClick={undo}
             disabled={submitting || !undoEnabled}
-            className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#81D8CF]/10 hover:bg-[#81D8CF]/15 disabled:opacity-50"
+            className="focus-ring ds-icon-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-[#81D8CF]/10 hover:bg-[#81D8CF]/15 disabled:opacity-50"
             title={undoEnabled ? (undoKind === "grammar" ? "上一个（刚答的那条语法）" : "上一个") : "没有可撤销的作答"}
           >
             <RotateCcw size={17} />
@@ -1481,7 +1482,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           {distinctions.length > 0 && (
             <button
               onClick={openDistinction}
-              className={`focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 hover:bg-[#81D8CF]/15 ${distinctionOpen ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
+              className={`focus-ring ds-icon-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 hover:bg-[#81D8CF]/15 ${distinctionOpen ? "bg-[#81D8CF] !text-[#2f3333]" : "bg-[#81D8CF]/10"}`}
               title="查看辨析"
               aria-label="查看辨析"
               aria-expanded={distinctionOpen}
@@ -1663,7 +1664,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         )}
 
         {loading ? (
-          <div className="grid min-h-[360px] place-items-center text-center text-white/75">正在读取下一题...</div>
+          <div className="grid min-h-[360px] place-items-center text-center text-sm font-semibold text-white/55"><div><CapybaraWalk size={72} className="mx-auto mb-3" />正在取下一张…</div></div>
         ) : card ? (
           <div
             key={`${card.id}:${unitKey ?? "word"}`}

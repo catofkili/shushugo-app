@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Crown, LockKeyhole, RotateCcw, X } from "lucide-react";
 import { FeatureId, ProductId } from "../lib/entitlements";
 import { developmentUnlock, getPurchaseRuntime, initializePurchases, purchaseProduct, restorePurchases, StoreProduct } from "../lib/purchases";
+import { Sticker } from "./CapybaraMascot";
 import { useEntitlements } from "../hooks/useEntitlements";
 
 interface PaywallProps {
@@ -130,9 +131,13 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
           <button type="button" onClick={onClose} aria-label="关闭会员提示"><X size={16} /></button>
         </div>
 
+        {/* 小窗里也让吉祥物开口：拦你的是一只在求你的水豚，不是一行冷冰冰的「是 Pro 功能」 */}
         <div className="paywall-popover-intro">
-          <h2>{copy.title}</h2>
-          <p>{copy.body}</p>
+          <Sticker name="mood-shy" size={40} className="paywall-popover-mascot" />
+          <div className="min-w-0">
+            <h2>{copy.title}</h2>
+            <p>{copy.body}</p>
+          </div>
         </div>
 
         <div className="paywall-popover-products" aria-label="会员方案">

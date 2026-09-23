@@ -20,6 +20,8 @@ import { refreshMixedCardTasks } from "../lib/mixed-cards";
 import { getDatabase } from "../lib/database";
 import { notifyProgressUpdated } from "../lib/progress-events";
 import { deferWordPlanUntilKanaComplete } from "../lib/kana-progress";
+import { MascotSay } from "./MascotSay";
+import { Sticker } from "./CapybaraMascot";
 import { ExamDateWheel } from "./ExamDateWheel";
 
 const STARTS: Array<{ value: StartingLevel; label: string }> = [
@@ -91,7 +93,10 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
       <div className="level-setup flex h-full min-h-0 w-full max-w-2xl flex-col bg-[#FFF9ED] shadow-2xl sm:h-auto sm:max-h-[92vh] sm:rounded-3xl">
         <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
           <div className="flex items-start justify-between gap-4">
-            <div><p className="text-xs font-bold tracking-[0.12em] text-[#746250]">建立学习计划</p><h2 className="mt-2 text-2xl font-black leading-tight">先选起点，再定目标</h2></div>
+            <div className="flex items-center gap-3">
+              <Sticker name="mood-wave" size={64} className="shrink-0" />
+              <div><p className="text-xs font-bold text-[#746250]">建立学习计划</p><h2 className="mt-1 text-2xl font-black leading-tight">先选起点，再定目标</h2></div>
+            </div>
             {dismissible && <button className="level-setup-option focus-ring h-11 w-11 shrink-0 rounded-full" onClick={onClose} aria-label="关闭"><X size={18} /></button>}
           </div>
 
@@ -120,14 +125,14 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
             </label>)}
           </div>
 
-          <div className="mt-4 rounded-2xl border border-[#D9CBB6] bg-white/75 p-4 text-sm leading-6">
-            <p className="font-black">按这个起点，预计要学 {preview.content.words} 个词</p>
-            <p>考前约有 {preview.intakeDays} 天能进新词，需要约 {preview.required.words} 个/天；当前最多安排 {preview.daily.words} 个/天。</p>
-            <p>另有语法 {preview.content.grammar} 条、汉字 {preview.content.kanji} 张、辨析 {preview.content.confusion} 组；复习量会随作答变化。</p>
-            {!preview.feasible && <p className="mt-2 font-bold text-[#A43B25]">按现有每日上限，这场考试前无法覆盖完所选范围。可改考期或目标。</p>}
-          </div>
-
-          {startingLevel === "kana-none" && <p className="mt-2 text-sm font-semibold leading-6">五十音按实际掌握进度完成，没学完就顺延。</p>}
+          {/* 估算：吉祥物说出来。来得及是攥拳，来不及是吓一跳 + 琥珀底 */}
+          <MascotSay sticker={preview.feasible ? "mood-fired-up" : "mood-shocked"} tone={preview.feasible ? "info" : "warn"} size={64} className="mt-5">
+            按这个起点，一共要学 <b>{preview.content.words}</b> 个词。考前约 {preview.intakeDays} 天能进新词，
+            每天要 <b>{preview.required.words}</b> 个，现在最多排 {preview.daily.words} 个。
+            另有语法 {preview.content.grammar} 条、汉字 {preview.content.kanji} 张、辨析 {preview.content.confusion} 组。
+            {!preview.feasible && <><br /><b>照每天的上限，这场考前学不完。</b>换一场考期或者降一级目标吧。</>}
+            {startingLevel === "kana-none" && <><br />五十音按真的学会了多少来算，没学完就往后顺延。</>}
+          </MascotSay>
           {error && <p className="mt-3 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         </div>
         <div className="shrink-0 border-t border-[#E8DDCD] bg-[#FFF9ED] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:rounded-b-3xl sm:px-7 sm:py-5">

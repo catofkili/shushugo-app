@@ -127,11 +127,17 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
       <div className="zoo-plan-main">
         <DailyPlanRing value={plan} onChange={preview} onCommit={commitDrag} active={active} focus={focus} onFocus={setFocus} size={compact ? 200 : 240} />
         <div className="zoo-plan-side">
-          <label className="zoo-plan-total">
-            <span>今天总量</span>
-            <input type="number" min={0} max={2000} value={total} disabled={!active.length} onChange={(event) => setTotal(Number(event.target.value))} />
-          </label>
-          <p className="zoo-plan-minutes">预计 {minutesFor(plan, active)} 分钟 · 按标准节奏算，不看你的历史</p>
+          {/* 「今天总量」是一个可以直接改的大数；用时收成一枚胶囊。
+              用时按 SECONDS_PER_CARD 的标准节奏算、不看个人历史（见 CLAUDE.md），这句解释放进 title，
+              不再每次都印在面板上。 */}
+          <div className="zoo-plan-headline">
+            <label>
+              今天
+              <input type="number" min={0} max={2000} value={total} disabled={!active.length} onChange={(event) => setTotal(Number(event.target.value))} aria-label="今天总量" />
+              项
+            </label>
+            <span className="ds-pill" title="按标准答题节奏估算，不看个人历史">约 {minutesFor(plan, active)} 分钟</span>
+          </div>
           <ul className="zoo-plan-legend">
             {view.segments.map((segment) => {
               const count = plan[segment.kind].fresh + plan[segment.kind].review;

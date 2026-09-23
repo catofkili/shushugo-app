@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { FolderPlus, Pencil, Star, Trash2 } from "lucide-react";
+import { FolderPlus, Pencil, Trash2 } from "lucide-react";
 import { Sticker } from "../components/CapybaraMascot";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import {
@@ -16,6 +16,7 @@ import {
 } from "../lib/api";
 import type { FavoriteFolder } from "../lib/api";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
+import { MascotSay } from "../components/MascotSay";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 
 type FavoriteFilter = "all" | "word" | "grammar";
@@ -131,7 +132,7 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
           <div>
             <h1 className="text-2xl font-semibold">收藏</h1>
           </div>
-          <Star className="text-[#81D8CF]" size={24} fill="currentColor" />
+          <Sticker name="mood-heart" size={60} className="-my-3 shrink-0" />
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-white/15 bg-[#81D8CF]/10 p-1">
           {filters.map((item) => (
@@ -210,10 +211,7 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-[#E8971C]/45 bg-[#E8971C]/12 p-4 text-sm text-white">
-          <p className="font-bold">收藏没读出来</p>
-          <p className="mt-1 text-white/70">{error}</p>
-        </div>
+        <MascotSay sticker="mood-cry" tone="warn"><b>收藏没读出来。</b>{error}</MascotSay>
       )}
 
       {items.length ? (
@@ -262,9 +260,9 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
         </div>
       ) : (
         <div className="dictionary-card rounded-2xl p-8 text-center">
-          <Sticker name="empty-box" size={100} className="mx-auto" />
-          <p className="mt-3 text-lg font-bold">{folder === ALL_FOLDERS ? "这里还是空的" : "这个收藏夹是空的"}</p>
-          <p className="mt-2 text-sm text-white/55">在单词卡片或语法卡片上点星标，就会收进这里。</p>
+          <Sticker name="mood-hungry" size={110} className="mx-auto" />
+          <p className="mt-3 text-lg font-bold">{folder === ALL_FOLDERS ? "这里还空着，饿了" : "这个收藏夹还空着"}</p>
+          <p className="mt-2 text-sm text-white/55">在单词卡或语法卡上点星标，就会收进这里。</p>
         </div>
       )}
       {picker}

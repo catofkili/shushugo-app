@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
 import { Crown } from "lucide-react";
+import { Sticker } from "./CapybaraMascot";
 
 export const ProReadingGate = ({ title, onUpgrade }: { title: string; onUpgrade: () => void }) => (
   <div className="pro-reading-preview-gate">
     <div className="pro-reading-preview-copy">
+      {/* 三角里坐一只害羞的水豚：这块是「请你开通」，不是一面冷冰冰的墙 */}
+      <Sticker name="mood-shy" size={64} className="pro-reading-preview-mascot" />
       <span><Crown size={14} aria-hidden="true" />收集日 Pro</span>
       <h2>解锁完整{title}</h2>
       <button type="button" onClick={onUpgrade}>查看会员方案</button>

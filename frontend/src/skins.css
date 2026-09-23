@@ -115,10 +115,14 @@ html[data-skin="theme-paper"] .zoo-now {
 }
 html[data-skin="theme-paper"] .zoo-now-num { font-size: 52px; letter-spacing: -0.01em; }
 html[data-skin="theme-paper"] .zoo-now-emoji { color: var(--zoo-primary); animation: none; }
-html[data-skin="theme-paper"] .zoo-now-go {
-  padding: 8px 14px; border-radius: 999px;
+/* 2026-09-23 设计系统重做后，大卡底部一行是「进度条 + 按钮」（.zoo-now-bar + .zoo-now-cta），
+   墨色胶囊只给按钮，不能再给整行 .zoo-now-go —— 否则整条进度条被染成一根黑棍 */
+html[data-skin="theme-paper"] .zoo-now-cta {
   background: var(--skin-key); color: var(--skin-on-key);
 }
+html[data-skin="theme-paper"] .zoo-now-bar { background: var(--skin-line); }
+html[data-skin="theme-paper"] .zoo-now-bar i { background: var(--zoo-ink); }
+html[data-skin="theme-paper"] .zoo-now::after { display: none; }
 html[data-skin="theme-paper"] :is(.zoo-tray, .zoo-duo-cell, .zoo-tray-today) {
   background: transparent !important;
   border-color: var(--skin-line) !important;

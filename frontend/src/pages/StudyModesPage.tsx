@@ -1,6 +1,7 @@
 import { BookOpenText, Brain, CheckCircle2, Layers3, LetterText, ListChecks, Repeat2, Shuffle } from "lucide-react";
 import { defaultStudyMode, saveStudyMode, VISIBLE_STUDY_MODES } from "../lib/studyMode";
 import type { StudyMode } from "../types/app";
+import { Sticker } from "../components/CapybaraMascot";
 import { useEntitlements } from "../hooks/useEntitlements";
 
 interface StudyModesPageProps {
@@ -33,7 +34,10 @@ export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyMod
   return (
     <section className="mx-auto max-w-4xl">
       <div className="mb-5">
-        <h1 className="mt-1 text-2xl font-semibold">学习模式</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="mt-1 text-2xl font-black">学习模式</h1>
+          <Sticker name="mood-ask" size={60} className="-my-3 shrink-0" />
+        </div>
         <p className="mt-2 text-sm leading-6 text-white/58">
           学完今日任务自动进错题本。
         </p>

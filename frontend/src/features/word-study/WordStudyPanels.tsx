@@ -443,13 +443,10 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
         <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-3">
           <div className="flex shrink-0 items-center justify-between gap-3 text-left">
             <div className="flex items-center gap-3">
-              <Sticker name="empty-done" size={60} className="shrink-0" />
+              <Sticker name="mood-cheer" size={72} className="shrink-0" />
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">
-                  {phase === "picked" ? "Picked Done" : "Daily Complete"}
-                </p>
                 {/* 自选清单不是今日计划：它勾的词可能一个都没到期，写「今日单词完成」是假的 */}
-                <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">
+                <h2 className="text-2xl font-black sm:text-3xl">
                   {phase === "picked" ? "这批词过完了" : "今日单词完成"}
                 </h2>
               </div>

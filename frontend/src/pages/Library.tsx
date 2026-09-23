@@ -356,73 +356,53 @@ export const Library = ({
       <FloatingDoodlePen resetKey={selectedLevel} surfaceSelector='[data-doodle-surface="grammar-page"]' />
       <div data-doodle-surface="grammar-page" className="relative grid gap-5 twopane:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <section className="min-w-0 space-y-4">
-        <div className="dictionary-card rounded-2xl p-4">
-          <div className="space-y-2">
-            <label className="focus-ring control-cyan control-cyan-search soft-text-outline min-w-0 flex-1 rounded-2xl border px-3 py-2.5">
-              <Search className="control-cyan-icon shrink-0" size={17} />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                className="control-cyan-search-input text-sm font-semibold"
-                placeholder="搜索语法、接续、含义"
-              />
-            </label>
-            <div className="grid grid-cols-[4.25rem_1fr_1.5fr_1fr] gap-2">
-              <div className="relative min-w-0">
-                <button
-                  onClick={() => setFilterOpen((value) => !value)}
-                  className="focus-ring control-cyan soft-text-outline inline-flex h-8 w-full items-center justify-center gap-1 rounded-xl border px-2 text-xs font-bold"
-              >
-                  <span className="truncate">{selectedLevel === "All" ? "全部等级" : selectedLevel}</span>
-                  <ChevronDown size={13} />
-                </button>
-                {filterOpen && (
-                  <div className="absolute left-0 top-10 z-20 grid w-44 grid-cols-2 gap-2 rounded-2xl border border-white/20 bg-[#373b3b] p-3 shadow-lg">
-                    {levels.map((level) => (
-                      <button
-                        key={level}
-                        onClick={() => {
-                          rememberScroll();
-                          onSelectedLevelChange(level);
-                          setFilterOpen(false);
-                        }}
-                        className={`focus-ring rounded-2xl border px-3 py-2 text-sm font-bold ${
-                          selectedLevel === level
-                            ? "border-[#81D8CF] bg-[#81D8CF] !text-[#343838]"
-                            : "border-white/15 bg-[#81D8CF]/10 text-white/78 hover:bg-[#81D8CF]/15"
-                        }`}
-                      >
-                        {level}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {/* 考题：题面给句型、答案给接续+中文意。和沉浸学习并排,都是「换一种过法」。 */}
+        {/* 工具条：搜索是一条 inset 实底，下面一排胶囊。以前是「浅绿渐变 + 绿描边 + 内高光」的果冻按钮，
+            和卡片、和彼此都分不开（用户截图原话「丑得吓人」）。条数挪进搜索框尾巴上。 */}
+        <div className="ds-card p-3">
+          <label className="focus-ring control-cyan control-cyan-search min-w-0 rounded-full px-4 py-3">
+            <Search className="control-cyan-icon shrink-0" size={17} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="control-cyan-search-input text-sm font-semibold"
+              placeholder="搜索语法、接续、含义"
+            />
+            <span className="shrink-0 text-xs font-bold ds-muted">{filtered.length} 条</span>
+          </label>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="relative">
               <button
-                onClick={onOpenQuiz}
-                className="focus-ring inline-flex h-8 min-w-0 items-center justify-center gap-1 rounded-xl border border-white/20 bg-[#81D8CF]/10 px-2 text-xs font-bold text-white/78 hover:bg-[#81D8CF]/15"
+                onClick={() => setFilterOpen((value) => !value)}
+                aria-expanded={filterOpen}
+                className="focus-ring ds-chip on"
               >
-                <PenLine size={13} />
-                <span className="truncate">考题</span>
+                {selectedLevel === "All" ? "全部等级" : selectedLevel}
+                <ChevronDown size={14} />
               </button>
-              <button
-                onClick={onOpenImmersive}
-                className="focus-ring inline-flex h-8 min-w-0 items-center justify-center gap-1 rounded-xl border border-white/20 bg-[#81D8CF]/10 px-2 text-xs font-bold text-white/78 hover:bg-[#81D8CF]/15"
-              >
-                <Layers size={13} />
-                <span className="truncate">沉浸学习</span>
-              </button>
-              <button
-                onClick={onOpenFavorites}
-                className="focus-ring inline-flex h-8 min-w-0 items-center justify-center gap-1 rounded-xl border border-white/20 bg-[#81D8CF]/10 px-2 text-xs font-bold text-white/78 hover:bg-[#81D8CF]/15"
-              >
-                <Star size={13} />
-                <span className="truncate">收藏</span>
-              </button>
+              {filterOpen && (
+                <div className="ds-card absolute left-0 top-11 z-20 grid w-44 grid-cols-2 gap-2 p-2">
+                  {levels.map((level) => (
+                    <button
+                      key={level}
+                      onClick={() => {
+                        rememberScroll();
+                        onSelectedLevelChange(level);
+                        setFilterOpen(false);
+                      }}
+                      aria-pressed={selectedLevel === level}
+                      className="focus-ring ds-chip"
+                    >
+                      {level === "All" ? "全部" : level}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+            {/* 考题：题面给句型、答案给接续+中文意。和沉浸学习并排,都是「换一种过法」。 */}
+            <button onClick={onOpenQuiz} className="focus-ring ds-chip"><PenLine size={14} />考题</button>
+            <button onClick={onOpenImmersive} className="focus-ring ds-chip"><Layers size={14} />沉浸学习</button>
+            <button onClick={onOpenFavorites} className="focus-ring ds-chip"><Star size={14} />收藏</button>
           </div>
-          <p className="mt-3 text-xs text-white/55">{filtered.length} 张语法卡片</p>
         </div>
 
         <div className="grid gap-3">
@@ -436,56 +416,52 @@ export const Library = ({
               <article
                 key={point.id}
                 data-grammar-point-id={point.id}
-                className={`grammar-anki-card rounded-2xl p-4 transition ${
+                className={`grammar-anki-card rounded-[22px] p-4 transition ${
                   active ? "grammar-anki-card-active" : ""
                 }`}
               >
-                <div className="flex items-start gap-3">
-                  <button onClick={() => openCard(point.id)} className="focus-ring min-w-0 flex-1 text-left">
-                    <div className="min-w-0">
-                      {/* 等级/序号和状态靠右：它们是「这是第几条」，不是这张卡的主语。
-                          左边空出来给接续 —— 接续读起来就在句型前面（「辞书形＋」），
-                          摆在标题正上方才顺，摆右上角就得斜着看。 */}
-                      <div className="flex flex-wrap items-center justify-end gap-2">
-                        <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/60">{grammarSequence(point).label}</span>
-                        <span className="rounded-sm bg-[#81D8CF]/10 px-2 py-1 text-xs font-bold text-white/65">{statusLabel[mastery]}</span>
-                      </div>
-                      {/* 接续和标题写得一模一样的（N5 开头那批「名詞1＋は＋名詞2＋です」）不再印两遍 */}
-                      {formationRules[0] && !sameText(formationRules[0], point.title) && (
-                        <p className="jp mt-2 text-xs font-semibold leading-5 text-white/45">{formationRules[0]}</p>
-                      )}
-                      <h3 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-1 text-2xl font-semibold leading-tight"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h3>
-                      <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-2 text-sm font-semibold leading-6 text-white/82">{point.meaning}</p>
-                      {/* 第二条接续摆正下方，和上面那条一上一下对着看 ——
-                          只有真的分两条规则的卡才有（55/731），见 splitFormationRules。 */}
-                      {formationRules[1] && (
-                        <p className="jp mt-2 text-xs font-semibold leading-5 text-white/45">{formationRules[1]}</p>
-                      )}
-                    </div>
-                    {firstExample && (
-                      <div data-grammar-point-id={point.id} data-grammar-highlight-block="card-example-0" className="mt-3 rounded-2xl border border-white/10 bg-[#373b3b] px-3 py-2 text-sm leading-6 text-white/65">
-                        <p className="jp text-white"><JapaneseRuby text={firstExample.jp ?? firstExample.japanese} furigana={firstExample.furigana} tokenLengths={firstExample.tokenLengths} tokenLemmas={firstExample.tokenLemmas} /></p>
-                        <p className="mt-1 text-xs leading-5 text-white/55">{firstExample.cn ?? firstExample.chinese}</p>
-                      </div>
-                    )}
-                  </button>
-                  <div className="grid shrink-0 gap-2">
+                {/* 序号 / 状态在左上、收藏和备注在右上：一行说完「这是哪条、我学到哪」，下面整张宽度留给内容。
+                    以前收藏 / 备注是一条竖着的按钮列，把例句框挤窄了一截。 */}
+                <div className="flex items-center gap-2">
+                  <span className="ds-pill ds-num">{grammarSequence(point).label}</span>
+                  <span className={`ds-pill ${mastery === "new" ? "" : "ds-pill-primary"}`}>{statusLabel[mastery]}</span>
+                  <span className="ml-auto flex items-center gap-1">
                     <button
                       onClick={() => toggleGrammarFavorite(point.id, point.title)}
-                      className={`focus-ring grid h-8 w-8 place-items-center rounded-2xl border border-white/20 ${isGrammarFavorite(point.id) ? "bg-[#81D8CF] !text-[#343838]" : "bg-[#81D8CF]/10 text-white/65"}`}
+                      className={`focus-ring grid h-9 w-9 place-items-center rounded-full hover:bg-white/8 ${isGrammarFavorite(point.id) ? "text-[#E8971C]" : "text-white/45"}`}
                       title={isGrammarFavorite(point.id) ? "取消收藏" : "收藏语法"}
+                      aria-pressed={isGrammarFavorite(point.id)}
                     >
-                      <Star size={14} fill={isGrammarFavorite(point.id) ? "currentColor" : "none"} />
+                      <Star size={18} fill={isGrammarFavorite(point.id) ? "currentColor" : "none"} />
                     </button>
                     <button
                       onClick={() => openNoteEditor(point.id)}
-                      className={`focus-ring grid h-8 w-8 place-items-center rounded-2xl border border-white/20 ${note ? "bg-[#81D8CF] !text-[#343838]" : "bg-[#81D8CF]/10 text-white/65"}`}
+                      className={`focus-ring grid h-9 w-9 place-items-center rounded-full hover:bg-white/8 ${note ? "text-[#81D8CF]" : "text-white/45"}`}
                       title={note ? "编辑备注" : "添加备注"}
                     >
-                      <StickyNote size={14} />
+                      <StickyNote size={18} />
                     </button>
-                  </div>
+                  </span>
                 </div>
+                <button onClick={() => openCard(point.id)} className="focus-ring mt-1 block w-full min-w-0 text-left">
+                  {/* 接续和标题写得一模一样的（N5 开头那批「名詞1＋は＋名詞2＋です」）不再印两遍 */}
+                  {formationRules[0] && !sameText(formationRules[0], point.title) && (
+                    <p className="jp mt-2 text-xs font-semibold leading-5 text-white/45">{formationRules[0]}</p>
+                  )}
+                  <h3 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-1 text-2xl font-semibold leading-tight"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h3>
+                  <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-2 text-sm font-semibold leading-6 text-white/65">{point.meaning}</p>
+                  {/* 第二条接续摆正下方，和上面那条一上一下对着看 ——
+                      只有真的分两条规则的卡才有（55/731），见 splitFormationRules。 */}
+                  {formationRules[1] && (
+                    <p className="jp mt-2 text-xs font-semibold leading-5 text-white/45">{formationRules[1]}</p>
+                  )}
+                  {firstExample && (
+                    <div data-grammar-point-id={point.id} data-grammar-highlight-block="card-example-0" className="ds-inset mt-3 px-3 py-2.5 text-sm leading-6">
+                      <p className="jp text-white"><JapaneseRuby text={firstExample.jp ?? firstExample.japanese} furigana={firstExample.furigana} tokenLengths={firstExample.tokenLengths} tokenLemmas={firstExample.tokenLemmas} /></p>
+                      <p className="mt-1 text-xs leading-5 text-white/55">{firstExample.cn ?? firstExample.chinese}</p>
+                    </div>
+                  )}
+                </button>
                 {note && noteEditorId !== point.id && (
                   <button
                     onClick={() => openNoteEditor(point.id)}
@@ -521,14 +497,14 @@ export const Library = ({
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button
                     onClick={() => forget(point.id)}
-                    className="focus-ring inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-[#81D8CF]/10 text-sm font-bold hover:bg-[#81D8CF]/15"
+                    className="focus-ring ds-btn-soft !min-h-[42px] text-sm"
                   >
                     <XCircle size={15} />
                     没记住
                   </button>
                   <button
                     onClick={() => remember(point.id)}
-                    className="focus-ring inline-flex h-10 items-center justify-center gap-2 rounded-2xl bg-[#81D8CF] text-sm font-bold !text-[#343838]"
+                    className="focus-ring ds-btn !min-h-[42px] text-sm"
                   >
                     <CheckCircle2 size={15} />
                     熟悉

@@ -59,7 +59,7 @@
   max-height: min(72vh, 520px);
   transform: translateX(-50%);
   overflow-y: auto;
-  border: 1px solid rgba(129, 216, 207, 0.38);
+  border: 1px solid var(--ds-line);
   border-radius: 20px;
   padding: 12px 16px 16px;
   background: rgba(47, 51, 51, 0.98);
@@ -89,7 +89,7 @@
 }
 
 .token-dictionary-conjugation {
-  border: 1px solid rgba(129, 216, 207, 0.3);
+  border: 1px solid var(--ds-line);
   background: rgba(129, 216, 207, 0.12);
 }
 
@@ -123,7 +123,7 @@
 }
 
 .token-dictionary-audio {
-  border: 1px solid rgba(129, 216, 207, 0.44);
+  border: 1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);
   background: rgba(129, 216, 207, 0.12);
 }
 
@@ -135,7 +135,7 @@
 .token-dictionary-add:disabled { opacity: 0.7; }
 
 [data-theme="light"] .token-dictionary-sheet {
-  border-color: rgba(111, 168, 62, 0.35);
+  border-color: var(--ds-line);
   background: rgba(255, 253, 248, 0.98);
   box-shadow: 0 16px 42px rgba(150, 110, 55, 0.22);
   color: #3A2E22;
@@ -148,12 +148,12 @@
 }
 
 [data-theme="light"] .token-dictionary-conjugation {
-  border-color: rgba(111, 168, 62, 0.28);
+  border-color: var(--ds-line);
   background: rgba(111, 168, 62, 0.09);
 }
 
 [data-theme="light"] .token-dictionary-close {
-  border-color: rgba(111, 168, 62, 0.28);
+  border-color: var(--ds-line);
   color: rgba(58, 46, 34, 0.68);
 }
 
@@ -289,13 +289,13 @@
   --color-text-light: #BCAE9C;
 
   /* 边框颜色 - 温暖棕 */
-  --color-border: rgba(192, 133, 82, 0.22);
-  --color-border-light: rgba(192, 133, 82, 0.12);
+  --color-border: var(--ds-line);
+  --color-border-light: var(--ds-line);
 
   /* 玻璃效果颜色 - 奶油磨砂 */
   --glass-bg: rgba(255, 253, 248, 0.72);
   --glass-bg-hover: rgba(255, 253, 248, 0.86);
-  --glass-border: rgba(143, 203, 94, 0.30);
+  --glass-border: var(--ds-line);
   --glass-shadow: rgba(160, 120, 60, 0.14);
 
   /* 果冻效果阴影 - 暖调 */
@@ -321,7 +321,7 @@
   --form-control-bg-focus: #FFFDFA;
   --form-control-text: #3A2E22;
   --form-control-placeholder: rgba(107, 90, 72, 0.48);
-  --form-control-border: rgba(111, 168, 62, 0.34);
+  --form-control-border: var(--ds-line);
   --form-control-shadow: inset 0 1px 2px rgba(128, 91, 48, 0.08);
 
   /* 移动端安全区域 */
@@ -500,7 +500,7 @@
 
 [data-theme="light"] .dictionary-card {
   background: linear-gradient(145deg, rgba(251, 245, 233, 0.96), rgba(244, 234, 214, 0.94)) !important;
-  border: 1px solid rgba(111, 168, 62, 0.28) !important;
+  border: 1px solid var(--ds-line) !important;
   box-shadow: var(--jelly-shadow-md) !important;
   color: #3A2E22 !important;
 }
@@ -508,13 +508,13 @@
 /* 词汇便签浮在筛选工具栏上方，不能继续沿用只适合夜间的深灰底。 */
 .word-note-popover {
   background: rgba(47, 51, 51, 0.96);
-  border-color: rgba(145, 201, 104, 0.35);
+  border-color: var(--ds-line);
   color: rgba(255, 255, 255, 0.95);
 }
 
 [data-theme="light"] .word-note-popover {
   background: rgba(255, 253, 248, 0.97) !important;
-  border-color: rgba(111, 168, 62, 0.34) !important;
+  border-color: var(--ds-line) !important;
   color: #3A2E22 !important;
   box-shadow: 0 14px 34px rgba(150, 110, 55, 0.18) !important;
 }
@@ -628,14 +628,14 @@
 
 .grammar-anki-card:hover {
   background: linear-gradient(145deg, #464b4b 0%, #3a3f3f 100%) !important;
-  border-color: rgba(143, 203, 94, 0.42) !important;
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent) !important;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .grammar-anki-card-active {
   background: linear-gradient(145deg, #475252 0%, #3d4848 100%) !important;
-  border-color: rgba(143, 203, 94, 0.85) !important;
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent) !important;
   box-shadow: 0 0 0 1px rgba(143, 203, 94, 0.28),
               0 16px 34px rgba(0, 0, 0, 0.22),
               inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -712,7 +712,7 @@ body.is-scrolling {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(143, 203, 94, 0.25);
+  border: 1px solid var(--ds-line);
   box-shadow: var(--jelly-shadow-md);
 }
 
@@ -723,7 +723,7 @@ body.is-scrolling {
     rgba(255, 255, 255, 0.9) 0%,
     rgba(230, 242, 235, 0.85) 100%
   );
-  border: 1px solid rgba(143, 203, 94, 0.3);
+  border: 1px solid var(--ds-line);
   box-shadow: var(--jelly-shadow-sm);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -750,7 +750,7 @@ body.is-scrolling {
     rgba(143, 203, 94, 0.15) 0%,
     rgba(212, 236, 190, 0.2) 100%
   );
-  border: 1px solid rgba(143, 203, 94, 0.4);
+  border: 1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);
   box-shadow: 0 8px 24px rgba(143, 203, 94, 0.15),
               inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
@@ -762,7 +762,7 @@ body.is-scrolling {
     rgba(26, 77, 62, 0.85) 0%,
     rgba(107, 90, 72, 0.8) 100%
   );
-  border: 1px solid rgba(143, 203, 94, 0.5);
+  border: 1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);
   box-shadow: 0 8px 24px rgba(26, 77, 62, 0.2),
               inset 0 1px 0 rgba(143, 203, 94, 0.3);
 }
@@ -788,7 +788,7 @@ body.is-scrolling {
     rgba(230, 242, 235, 0.9) 50%,
     rgba(242, 250, 247, 0.85) 100%
   );
-  border: 1.5px solid rgba(143, 203, 94, 0.35);
+  border: 1.5px solid var(--ds-line);
   border-radius: 24px;
   box-shadow: var(--jelly-shadow-md);
   backdrop-filter: blur(10px);
@@ -824,7 +824,7 @@ body.is-scrolling {
   );
   transform: translateY(-4px) scale(1.01);
   box-shadow: var(--jelly-shadow-lg);
-  border-color: rgba(143, 203, 94, 0.5);
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent);
 }
 
 .card-glass:active {
@@ -901,7 +901,7 @@ body.is-scrolling {
     rgba(255, 255, 255, 0.95) 0%,
     rgba(230, 242, 235, 0.9) 100%
   );
-  border: 1px solid rgba(143, 203, 94, 0.3);
+  border: 1px solid var(--ds-line);
   border-radius: 20px;
   padding: 1.5rem;
   box-shadow: var(--jelly-shadow-sm);
@@ -913,7 +913,7 @@ body.is-scrolling {
 .card:hover {
   box-shadow: var(--jelly-shadow-md);
   transform: translateY(-2px);
-  border-color: rgba(143, 203, 94, 0.45);
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent);
 }
 
 .card:active {
@@ -999,7 +999,7 @@ main .kanji-variant-mark {
     rgba(230, 242, 235, 0.85) 100%
   );
   color: var(--color-text-primary);
-  border: 1px solid rgba(143, 203, 94, 0.3);
+  border: 1px solid var(--ds-line);
   box-shadow: var(--jelly-shadow-sm);
 }
 
@@ -1035,7 +1035,7 @@ main .kanji-variant-mark {
 ) {
   font-size: 16px;
   padding: 0.75rem 1rem;
-  border: 1.5px solid rgba(143, 203, 94, 0.3);
+  border: 1.5px solid var(--ds-line);
   border-radius: 16px;
   background-color: var(--form-control-bg);
   background-image: none;
@@ -1202,7 +1202,7 @@ main .kanji-variant-mark {
     rgba(212, 236, 190, 0.96) 0%,
     rgba(238, 248, 224, 0.92) 100%
   ) !important;
-  border-color: rgba(143, 203, 94, 0.56) !important;
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent) !important;
   color: #1f514d !important;
   box-shadow: 0 5px 16px rgba(143, 203, 94, 0.18),
               inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
@@ -1217,7 +1217,7 @@ main .kanji-variant-mark {
 }
 
 .control-cyan:focus {
-  border-color: rgba(143, 203, 94, 0.9) !important;
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent) !important;
   box-shadow: 0 0 0 4px rgba(143, 203, 94, 0.18),
               0 6px 18px rgba(143, 203, 94, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
@@ -1230,7 +1230,7 @@ main .kanji-variant-mark {
 }
 
 .control-cyan-search:focus-within {
-  border-color: rgba(143, 203, 94, 0.9) !important;
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent) !important;
   box-shadow: 0 0 0 4px rgba(143, 203, 94, 0.18),
               0 6px 18px rgba(143, 203, 94, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
@@ -1551,7 +1551,7 @@ main .kanji-variant-mark {
   );
   border-radius: 20px;
   overflow: hidden;
-  border: 1px solid rgba(143, 203, 94, 0.2);
+  border: 1px solid var(--ds-line);
   box-shadow: inset 0 2px 4px rgba(143, 203, 94, 0.1);
   position: relative;
 }
@@ -1616,7 +1616,7 @@ main .kanji-variant-mark {
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 3px solid rgba(143, 203, 94, 0.2);
+  border: 3px solid var(--ds-line);
   border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -1640,7 +1640,7 @@ main .kanji-variant-mark {
   color: white;
   padding: 1rem 1.5rem;
   border-radius: 16px;
-  border: 1px solid rgba(143, 203, 94, 0.4);
+  border: 1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);
   box-shadow: 0 8px 24px rgba(26, 77, 62, 0.3),
               inset 0 1px 0 rgba(143, 203, 94, 0.3);
   backdrop-filter: blur(12px);
@@ -1700,7 +1700,7 @@ select {
 /* 高对比度模式支持 */
 @media (prefers-contrast: high) {
   :root {
-    --color-border: rgba(143, 203, 94, 0.5);
+    --color-border: color-mix(in srgb, var(--ds-primary) 45%, transparent);
     --color-text-muted: #6B5A48;
   }
 }
@@ -1758,7 +1758,7 @@ select {
 
 [data-theme="light"] .app-mobile-topbar {
   background: rgba(255, 251, 242, 0.96) !important;
-  border-bottom-color: rgba(111, 168, 62, 0.22) !important;
+  border-bottom-color: var(--ds-line) !important;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 8px 20px rgba(150, 110, 55, 0.06) !important;
   backdrop-filter: blur(14px) saturate(130%) !important;
   -webkit-backdrop-filter: blur(14px) saturate(130%) !important;
@@ -1766,7 +1766,7 @@ select {
 
 [data-theme="light"] .app-mobile-tabbar {
   background: rgba(255, 247, 234, 0.98) !important;
-  border-top-color: rgba(111, 168, 62, 0.26) !important;
+  border-top-color: var(--ds-line) !important;
   box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.86) inset, 0 -8px 22px rgba(150, 110, 55, 0.08) !important;
   backdrop-filter: blur(12px) saturate(125%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(125%) !important;
@@ -1843,7 +1843,7 @@ select {
 [data-theme="light"] .border-white\/30,
 [data-theme="light"] .dark\:border-zinc-700,
 [data-theme="light"] .dark\:border-zinc-800 {
-  border-color: rgba(111, 168, 62, 0.26) !important;
+  border-color: var(--ds-line) !important;
 }
 
 /* 兜底：下面那张明细表每漏一个档位，就是一处「浅色模式下白字白底」的隐形失败
@@ -1930,34 +1930,34 @@ select {
 
 [data-theme="light"] .grammar-anki-card {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 234, 0.93)) !important;
-  border-color: rgba(111, 168, 62, 0.3) !important;
+  border-color: var(--ds-line) !important;
   box-shadow: var(--jelly-shadow-sm) !important;
 }
 
 [data-theme="light"] .grammar-anki-card:hover,
 [data-theme="light"] .grammar-anki-card-active {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(246, 233, 210, 0.95)) !important;
-  border-color: rgba(111, 168, 62, 0.55) !important;
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent) !important;
   box-shadow: var(--jelly-shadow-md) !important;
 }
 
 [data-theme="light"] .study-calendar-tooltip {
   background: rgba(255, 255, 255, 0.96) !important;
-  border-color: rgba(111, 168, 62, 0.3) !important;
+  border-color: var(--ds-line) !important;
   color: #3A2E22 !important;
   box-shadow: 0 14px 32px rgba(150, 110, 55, 0.14) !important;
 }
 
 [data-theme="light"] .doodle-pen-idle {
   background: rgba(255, 255, 255, 0.92) !important;
-  border-color: rgba(111, 168, 62, 0.34) !important;
+  border-color: var(--ds-line) !important;
   color: #5C8F32 !important;
   box-shadow: 0 10px 24px rgba(150, 110, 55, 0.14) !important;
 }
 
 [data-theme="light"] .memory-bubble {
   background: radial-gradient(circle at 22% 14%, rgba(246, 233, 210, 0.96), rgba(255, 255, 255, 0.98) 48%, rgba(255, 251, 242, 0.98)) !important;
-  border-color: rgba(111, 168, 62, 0.34) !important;
+  border-color: var(--ds-line) !important;
   box-shadow: 0 18px 44px rgba(150, 110, 55, 0.16) !important;
 }
 
@@ -1982,7 +1982,7 @@ select {
     rgba(255, 255, 255, 0.95) 0%,
     rgba(230, 242, 235, 0.9) 100%
   );
-  border: 1.5px solid rgba(143, 203, 94, 0.3);
+  border: 1.5px solid var(--ds-line);
   border-radius: 20px;
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -2013,7 +2013,7 @@ select {
 .grammar-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--jelly-shadow-md);
-  border-color: rgba(143, 203, 94, 0.5);
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent);
 }
 
 .grammar-card:active {
@@ -2054,7 +2054,7 @@ select {
     rgba(212, 236, 190, 0.3) 100%
   );
   border-radius: 20px;
-  border: 1.5px solid rgba(143, 203, 94, 0.35);
+  border: 1.5px solid var(--ds-line);
   box-shadow: var(--jelly-shadow-sm);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -2090,7 +2090,7 @@ select {
 .stat-card:hover {
   transform: translateY(-3px) scale(1.02);
   box-shadow: var(--jelly-shadow-md);
-  border-color: rgba(143, 203, 94, 0.5);
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent);
 }
 
 .stat-value {
@@ -2299,13 +2299,13 @@ select {
 [data-theme="light"] .border-\[\#81D8CF\]\/25,
 [data-theme="light"] .border-\[\#81D8CF\]\/30,
 [data-theme="light"] .border-\[\#81D8CF\]\/35 {
-  border-color: rgba(143, 203, 94, 0.34) !important;
+  border-color: var(--ds-line) !important;
 }
 [data-theme="light"] .border-\[\#81D8CF\]\/40,
 [data-theme="light"] .border-\[\#81D8CF\]\/45,
 [data-theme="light"] .border-\[\#81D8CF\]\/50,
 [data-theme="light"] .border-\[\#81D8CF\]\/65 {
-  border-color: rgba(143, 203, 94, 0.55) !important;
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent) !important;
 }
 
 /* —— 焦点环 —— */
@@ -2390,14 +2390,14 @@ select {
 [data-theme="dark"] .border-\[\#81D8CF\]\/25,
 [data-theme="dark"] .border-\[\#81D8CF\]\/30,
 [data-theme="dark"] .border-\[\#81D8CF\]\/35 {
-  border-color: rgba(145, 201, 104, 0.34) !important;
+  border-color: var(--ds-line) !important;
 }
 
 [data-theme="dark"] .border-\[\#81D8CF\]\/40,
 [data-theme="dark"] .border-\[\#81D8CF\]\/45,
 [data-theme="dark"] .border-\[\#81D8CF\]\/50,
 [data-theme="dark"] .border-\[\#81D8CF\]\/65 {
-  border-color: rgba(145, 201, 104, 0.55) !important;
+  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent) !important;
 }
 
 [data-theme="dark"] .ring-\[\#81D8CF\],
@@ -2454,7 +2454,7 @@ select {
   height: 62vh;
   flex-direction: column;
   gap: 10px;
-  border: 1px solid rgba(129, 216, 207, 0.28);
+  border: 1px solid var(--ds-line);
   border-radius: 26px 26px 0 0;
   background: #2f3333;
   padding: 16px 16px calc(12px + env(safe-area-inset-bottom, 0px));
@@ -2496,7 +2496,7 @@ select {
   flex: none;
   align-items: center;
   gap: 5px;
-  border: 1px solid rgba(129, 216, 207, 0.35);
+  border: 1px solid var(--ds-line);
   border-radius: 999px;
   padding: 4px 10px;
   color: rgba(255, 255, 255, 0.72);
@@ -2527,7 +2527,7 @@ select {
   padding: 10px 12px;
 }
 /* 当前这张要一眼认出来 —— 没有参照物的「对照」等于没对照 */
-.wd-member.is-current { border-color: rgba(129, 216, 207, 0.5); background: rgba(129, 216, 207, 0.1) }
+.wd-member.is-current { border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent); background: rgba(129, 216, 207, 0.1) }
 .wd-member-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px }
 .wd-member-word { font-size: 20px; font-weight: 700; line-height: 1.2 }
 .wd-member-kana { color: rgba(129, 216, 207, 0.85); font-size: 13px; font-weight: 600 }
@@ -2590,7 +2590,7 @@ select {
 [data-theme="light"] .wd-master { border-color: rgba(126, 190, 79, 0.45); color: var(--zoo-muted, #9A8A78) }
 [data-theme="light"] .wd-master.is-on { background: var(--zoo-primary, #7EBE4F); border-color: var(--zoo-primary-deep, #5B9139); color: #fff }
 [data-theme="light"] .wd-member {
-  border: 1px dashed rgba(192, 133, 82, 0.3);
+  border: 1px dashed var(--ds-line-2);
   background: rgba(255, 255, 255, 0.42);
 }
 [data-theme="light"] .wd-member.is-current { border: 1px solid rgba(126, 190, 79, 0.5); background: rgba(126, 190, 79, 0.12) }
@@ -2622,7 +2622,7 @@ select {
   min-width: 0;
   align-items: center;
   gap: 10px;
-  border: 1px solid rgba(129, 216, 207, 0.3);
+  border: 1px solid var(--ds-line);
   border-radius: 16px;
   background: rgba(129, 216, 207, 0.1);
   padding: 11px 13px;
@@ -2657,7 +2657,7 @@ select {
   display: flex;
   align-items: center;
   gap: 14px;
-  border: 1px solid rgba(129, 216, 207, 0.25);
+  border: 1px solid var(--ds-line);
   border-radius: 20px;
   background: rgba(129, 216, 207, 0.12);
   padding: 14px 16px;
@@ -2704,7 +2704,7 @@ select {
 .ach-card.is-locked .ach-emoji { opacity: 0.35 }
 .ach-card.is-locked .ach-name { color: rgba(255, 255, 255, 0.55) }
 /* 稀有度只在拿到之后才显形 —— 锁着的时候一片灰，拿到才亮 */
-.ach-tier-common { border-color: rgba(129, 216, 207, 0.3) }
+.ach-tier-common { border-color: var(--ds-line) }
 .ach-tier-rare {
   border-color: rgba(126, 178, 255, 0.45);
   background: linear-gradient(135deg, rgba(126, 178, 255, 0.14), #464949 65%);
@@ -2807,10 +2807,10 @@ select {
 }
 [data-theme="light"] .vocab-prompt-panel {
   background: rgba(255, 255, 255, 0.72) !important;
-  border-color: rgba(111, 168, 62, 0.24) !important;
+  border-color: var(--ds-line) !important;
 }
 
-.vocab-fb-correct { border-color: rgba(129, 216, 207, 0.55); background: rgba(129, 216, 207, 0.14); color: #BFF4EE; }
+.vocab-fb-correct { border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent); background: rgba(129, 216, 207, 0.14); color: #BFF4EE; }
 .vocab-fb-wrong   { border-color: rgba(252, 165, 165, 0.55); background: rgba(252, 165, 165, 0.1); color: #FEE2E2; }
 .vocab-fb-unknown { border-color: rgba(253, 224, 71, 0.55); background: rgba(253, 224, 71, 0.1); color: #FEF9C3; }
 

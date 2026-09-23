@@ -179,7 +179,8 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
   return (
     <section className="cf-page">
       <header className="cf-head">
-        <div>
+        <div className="flex items-center gap-2">
+          <Sticker name="mood-puzzled" size={52} className="-my-2 shrink-0" />
           <h1 className="cf-title">疑难辨析</h1>
         </div>
         <p className="cf-count">

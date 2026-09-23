@@ -3,6 +3,7 @@ import { ArrowLeft, ListOrdered, Plus, Undo2 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
 import { GrammarCard } from "../features/grammar-quiz/GrammarCard";
 import { useStudyTimer } from "../lib/useStudyTimer";
+import { Sticker } from "../components/CapybaraMascot";
 import {
   extendGrammarQuizPlan,
   getGrammarQuizSession,
@@ -177,6 +178,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
         // 今天的都过关了。不自动往后借明天的账 —— 想继续得自己点，和单词的续杯同理。
         <div className="dictionary-card grid min-h-[320px] place-items-center rounded-2xl p-6 text-center">
           <div>
+            <Sticker name="mood-yay" size={120} className="mx-auto mb-2" />
             <p className="text-2xl font-bold">{level} 今天过完了</p>
             <p className="mt-2 text-sm text-white/60">
               到期的 {total} 条都过关了，剩下的 FSRS 排在后面几天

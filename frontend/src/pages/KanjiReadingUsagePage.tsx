@@ -10,6 +10,7 @@ import {
   readingLine,
   type KanjiCharUsage
 } from "../lib/kanji-reading-usage";
+import { MascotSay } from "../components/MascotSay";
 import { useStudyTimer } from "../lib/useStudyTimer";
 
 /**
@@ -88,14 +89,14 @@ export const KanjiReadingUsagePage = () => {
           <b>先看这条通则</b>
           <small>大半的音训分工靠它就够了</small>
         </summary>
-        <p>
+        <MascotSay sticker="mood-idea" className="mt-2">
           汉语复合词里读 <b>音读</b>（学生 がくせい・食堂 しょくどう）；单独用、带送假名，
           或在和语词里读 <b>训读</b>（生きる・近道・本屋）。
-        </p>
-        <p className="kr-rule-more">
-          下面摆出来的是<b>这条通则说不清</b>的那批：跟数字走的、靠送假名分的、
-          只在两三个词里出现的，以及两个音读撞在一起、只能一条条写的 {handWritten} 个。
-        </p>
+          <span className="mt-2 block text-[13px] opacity-80">
+            下面摆出来的是这条通则<b>说不清</b>的那批：跟数字走的、靠送假名分的、
+            只在两三个词里出现的，以及两个音读撞在一起、只能一条条写的 {handWritten} 个。
+          </span>
+        </MascotSay>
       </details>
 
       <div className="kr-bar">

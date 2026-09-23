@@ -1,5 +1,6 @@
 import { ArrowLeft, Bell, BellRing, Clock, FileText, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { MascotSay } from "../components/MascotSay";
 import {
   checkReminderPermission,
   defaultReminderSettings,
@@ -274,13 +275,14 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
         </div>
       </div>
 
-      {/* 提示 */}
-      <div className="rounded-2xl border border-[#81D8CF]/20 bg-[#81D8CF]/20 p-3 text-xs text-[#81D8CF]">
-        <p className="font-bold">{syncing ? "同步中" : status?.permission === "granted" ? "已接通" : "提示"}</p>
-        <p className="mt-1 text-[#81D8CF]/70">
-          {message}
-        </p>
-      </div>
+      {/* 通知的状态由吉祥物说：接通了是欢呼，被系统关掉是犯愁，其它时候是在问 */}
+      <MascotSay
+        sticker={syncing ? "scene-laptop" : !status?.native ? "mood-ask" : status.permission === "granted" ? "mood-yay" : status.permission === "denied" ? "mood-puzzled" : "mood-ask"}
+        tone={!status?.native ? "info" : status.permission === "denied" ? "warn" : status.permission === "granted" ? "good" : "info"}
+        className="ds-say-onbg"
+      >
+        {syncing ? "正在同步提醒计划…" : message}
+      </MascotSay>
     </div>
   );
 }

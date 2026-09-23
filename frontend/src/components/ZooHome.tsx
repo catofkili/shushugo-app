@@ -16,7 +16,7 @@ import { availableShortfall, shortfallText } from "../lib/jlpt/plan";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { useCountUp } from "../hooks/useCountUp";
 import { useMoments } from "../hooks/useMoments";
-import { Sticker, BrandIcon } from "./CapybaraMascot";
+import { Sticker, type StickerName } from "./CapybaraMascot";
 import { MomentPop } from "./MomentPop";
 import { WeeklyReportEntrance } from "./WeeklyReportEntrance";
 import { ZooProgressPanel } from "./ZooProgressPanel";
@@ -57,6 +57,19 @@ type Props = {
 
 const greetingFor = (hour: number) =>
   hour < 5 ? "夜深了" : hour < 11 ? "早上好" : hour < 14 ? "中午好" : hour < 18 ? "下午好" : "晚上好";
+
+/**
+ * 问候旁边那只吉祥物跟着「现在几点」换：早上伸懒腰、中午饿了、下午敲电脑、晚上戴耳机、深夜睡着；
+ * 今天走完了就换成欢呼。主页是一天打开次数最多的一屏，永远同一张 App 图标等于没有表情。
+ * ⚠️ 别和下面大卡那只（按进度换：fired-up / book / cheer）撞成同一张。
+ */
+const greetSticker = (hour: number, total: number, done: number): StickerName =>
+  total > 0 && done >= total ? "mood-yay"
+    : hour < 5 || hour >= 23 ? "mood-sleep"
+      : hour < 10 ? "scene-stretch"
+        : hour < 14 ? "mood-hungry"
+          : hour < 18 ? "scene-laptop"
+            : "scene-music";
 
 export function ZooHome({
   overview,
@@ -158,8 +171,15 @@ export function ZooHome({
   const heroNum = !stats
     ? "…"
     : activeCount > 0
-      ? `${heroCount} ${heroUnit}`
+      ? <>{heroCount}<small>{heroUnit}</small></>
       : isPlanMode ? "已完成" : "暂无题";
+  // 今天走到哪：只有「按今日计划走」的模式才有这条（错题本 / 反向 / 汉字读音各有各的题池）
+  const heroPct = isPlanMode && total > 0 ? Math.min(100, Math.round((done / total) * 100)) : null;
+  const heroSticker: StickerName = !stats ? "mood-default"
+    : activeMode === "mistakes" ? "mood-puzzled"
+      : activeCount === 0 ? "mood-cheer"
+        : done === 0 ? "mood-fired-up"
+          : "scene-book";
   const heroSub = !stats
     ? "正在读取"
     : activeMode === "mistakes"
@@ -167,7 +187,7 @@ export function ZooHome({
       : isPlanMode
         ? (activeCount > 0 ? "走一趟今天的路" : `今天走了 ${done} 站`)
         : activeInfo.subtitle;
-  const heroCta = activeCount > 0 ? "开始 →" : isPlanMode ? "再来一批 →" : "去看看 →";
+  const heroCta = activeCount > 0 ? (done > 0 ? "继续" : "开始") : isPlanMode ? "再来一批" : "去看看";
 
   const weeklyEntryEnabled = goals.weeklyReportEnabled;
 
@@ -177,18 +197,16 @@ export function ZooHome({
       {/* 问候条。**不再重复「今天还有 N 个词」** —— 顶栏的进度条和下面的大卡各说了一遍，
           第一屏说三遍是这一页显得吵的主要原因之一。这里只说别处没有的：连击和今天的状态。 */}
       <div className="zoo-greet">
-        <div className="zoo-greet-capy zoo-breathe">
-          <BrandIcon alt="收集日" className="brand-icon zoo-greet-brand" />
-        </div>
         <div className="zoo-greet-text">
           <p className="zoo-greet-hi">{greet}</p>
           <p className="zoo-greet-sub">{greetLine}</p>
         </div>
         {streak > 0 && (
-          <div className="zoo-greet-streak">
+          <div className="zoo-greet-streak" title={`连续学习 ${streak} 天`}>
             <Flame size={14} aria-hidden="true" /><b>{streakCount}</b>
           </div>
         )}
+        <Sticker name={greetSticker(new Date().getHours(), total, done)} size={78} className="zoo-greet-mascot" />
       </div>
 
       {/* ① 今天 —— 全页唯一的实心主色块。层级靠三件事拉开：最大、最亮、字最重。
@@ -223,8 +241,11 @@ export function ZooHome({
             </span>
           )}
           <MomentPop moment={moment} leaving={momentLeaving} />
-          <span className="zoo-now-emoji" aria-hidden="true"><activeInfo.Icon size={38} strokeWidth={1.5} /></span>
-          <span className="zoo-now-go">{heroCta}</span>
+          <Sticker name={heroSticker} size={96} className="zoo-now-mascot" />
+          <span className="zoo-now-go">
+            {heroPct !== null ? <span className="zoo-now-bar" aria-label={`今天完成 ${heroPct}%`}><i style={{ width: `${heroPct}%` }} /></span> : <span />}
+            <span className="zoo-now-cta">{heroCta} →</span>
+          </span>
         </button>
 
         <div className="zoo-now-foot">

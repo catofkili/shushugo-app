@@ -58,7 +58,7 @@ export const AchievementsPage = ({ onBack }: AchievementsPageProps) => {
       </div>
 
       {!board ? (
-        <p className="py-10 text-center text-sm font-bold text-white/45">正在结算…</p>
+        <div className="py-10 text-center text-sm font-bold text-white/45"><Sticker name="mood-ask" size={80} className="mx-auto mb-2" />正在结算…</div>
       ) : (
         <>
           <div className="ach-summary">
