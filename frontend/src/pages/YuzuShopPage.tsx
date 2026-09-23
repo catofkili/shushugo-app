@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { AppWindow, Check, ChevronDown, Citrus, LoaderCircle, Mic, Music, PackageCheck, Palette, Play, Shirt, Sparkles, type LucideProps } from "lucide-react";
 import { CATEGORY_LABEL, EQUIPPABLE, VOICE_ITEM_PREFIX, YUZU_ITEMS, type YuzuCategory, type YuzuItem } from "../lib/yuzu-catalog";
-import { brandIconUrl, stickerUrl, useMascotSkin } from "../components/CapybaraMascot";
+import { brandIconUrl, Sticker, stickerUrl, useMascotSkin } from "../components/CapybaraMascot";
 import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences } from "../lib/studyPreferences";
 import { prepareVoice, previewVoice, voiceDeliveryMode } from "../lib/speech";
 import { previewTimbre, type SoundTimbre } from "../lib/zoo-sounds";
@@ -252,7 +252,7 @@ export const YuzuShopPage = () => {
         )}
       </section>}
       {tab === "owned" && ownedItems.length === 0 && (
-        <div className="yz-owned-empty"><PackageCheck size={28} /><b>还没有已购入的商品</b><span>从“全部”里挑一件，买下后会集中出现在这里。</span></div>
+        <div className="yz-owned-empty"><Sticker name="empty-box" size={88} /><b>还没有已购入的商品</b><span>从“全部”里挑一件，买下后会集中出现在这里。</span></div>
       )}
       <div className="yz-grid">
         {items.map((it) => {

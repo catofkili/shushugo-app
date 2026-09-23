@@ -643,3 +643,79 @@
 /* —————————————————— 16. 五十音起步（备考页的 KanaPrimer） —————————————————— */
 .kana-primer-glyph { margin: 18px 0 4px; color: var(--ds-ink); font-family: "Hiragino Mincho ProN", "Songti SC", serif; font-size: 72px; font-weight: 800; line-height: 1.1; text-align: center; }
 .kana-primer-table { padding: 12px; border-radius: 16px; background: var(--ds-inset); color: var(--ds-ink); }
+
+/* —————————————————— 17. 柚子商店（.yz-*） —————————————————— */
+/* 老样式在 app.css「柚子商店」那段（描边 + 棕投影 + 奶油底），这里按三种面重新映射，不去动那段：
+   那段里还有补签卡 / 价格 ×10 那条线没提交的改动。选择器带 [data-theme] 是为了压过 app.css 里
+   [data-theme="dark"] .yz-* 那几条；skins.css 只碰 .yz-mini，纸本 / 圆圆主题的商品图不受影响。 */
+[data-theme] .yz-page { gap: 12px; padding-bottom: 196px; }
+[data-theme] .yz-sticky { background: linear-gradient(var(--ds-bg) 82%, transparent); }
+
+/* 钱包：一张白卡，数字用无衬线大字（和主页今日大卡同一种），柚子橙只给那枚圆章 */
+[data-theme] .yz-wallet { gap: 6px 10px; padding: 12px 14px; border: 1px solid var(--ds-line); border-radius: 20px; background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink); }
+[data-theme] .yz-wallet-num { gap: 8px; font-family: inherit; font-size: 28px; font-weight: 900; letter-spacing: -.01em; }
+[data-theme] .yz-wallet-num svg { box-sizing: border-box; width: 32px; height: 32px; padding: 7px; border-radius: 50%; background: var(--ds-warn-tint); color: var(--zoo-orange); }
+[data-theme] .yz-wallet-today { color: var(--ds-ink-3); font-size: 13px; }
+[data-theme] .yz-wallet-how { min-height: 32px; padding: 0 12px; border: 0; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 13px; }
+[data-theme] .yz-rules { margin-top: 6px; padding-top: 10px; gap: 6px 16px; border-top: 1px solid var(--ds-line); color: var(--ds-ink-3); font-size: 13px; }
+[data-theme] .yz-rules li b { color: var(--ds-ink); }
+[data-theme] .yz-rules-today { color: var(--ds-ink-2); font-size: 12px; line-height: 1.5; }
+
+/* 分类：和词库那排同一种胶囊，inset 实底、选中主色实心 */
+[data-theme] .yz-tabs { gap: 6px; padding: 2px 2px 4px; }
+[data-theme] .yz-tabs button { display: inline-flex; align-items: center; gap: 3px; min-height: 34px; padding: 0 13px; border: 0; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 13px; font-weight: 700; }
+[data-theme] .yz-tabs button.is-on { background: var(--ds-primary); color: var(--ds-on-primary); }
+[data-theme] .yz-tabs button svg { margin: 0; }
+
+/* 货架：白卡，不描棕边；选中 = 一圈主色 */
+[data-theme] .yz-grid { gap: 12px; }
+[data-theme] .yz-card { gap: 8px; padding: 8px 8px 12px; border: 1px solid var(--ds-line); border-radius: 20px; background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink); }
+[data-theme] .yz-card.is-picked { border-color: transparent; box-shadow: 0 0 0 2px var(--ds-primary), var(--ds-shadow); }
+[data-theme] .yz-card b { padding: 0 4px; font-size: 15px; font-weight: 800; }
+[data-theme] .yz-art { background: var(--ds-inset); color: var(--ds-ink-3); }
+[data-theme] .yz-art-s { border-radius: 14px; }
+[data-theme] :is(.yz-price, .yz-tag) { margin: 0 4px; padding: 3px 9px; font-size: 12px; }
+[data-theme] .yz-price { background: var(--ds-warn-tint); color: var(--ds-warn-ink); }
+[data-theme] .yz-price svg { color: var(--zoo-orange); }
+[data-theme] .yz-tag { background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
+[data-theme] .yz-tag.is-on { background: var(--ds-primary); color: var(--ds-on-primary); }
+[data-theme] .yz-tag.is-soon { border: 0; background: var(--ds-inset); color: var(--ds-ink-3); }
+
+/* 补签：货架第一件，占满一整行。它是消耗品、带状态（断了几天、手上几张卡），
+   塞进方格里要么把小图标放大到糊，要么比同一行的商品高一截、把旁边那格撑出空白（两样都踩过）。 */
+[data-theme] .yz-card-wide { grid-column: 1 / -1; padding: 10px 12px 12px; }
+.yz-card-wide .yz-card-select { flex-direction: row; align-items: center; gap: 12px; }
+.yz-card-wide .yz-art-s { flex: none; width: 52px; }
+.yz-card-main { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
+[data-theme] .yz-card-main b { padding: 0; font-size: 16px; }
+.yz-card-main small { color: var(--ds-ink-3); font-size: 12px; font-weight: 600; }
+[data-theme] .yz-card-wide .yz-card-select .yz-price { align-self: center; margin: 0; }
+[data-theme] .yz-card-footer { gap: 6px; padding-left: 64px; }
+[data-theme] .yz-card-count { position: static; padding: 3px 9px; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 12px; font-weight: 700; }
+[data-theme] .yz-card-pro { min-height: 26px; padding: 0 10px; border: 0; background: var(--ds-primary-tint); color: var(--ds-primary-ink); font-size: 12px; }
+
+[data-theme] .yz-owned-empty { gap: 6px; padding: 20px 16px; border: 0; background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink-3); }
+[data-theme] .yz-owned-empty b { color: var(--ds-ink); font-size: 15px; }
+
+/* 试衣台：固定在底栏上方的一张白卡。小标题不再是加宽字距的 9px 大写（中文不需要） */
+[data-theme] .yz-stage { gap: 6px 12px; padding: 12px; border: 1px solid var(--ds-line); border-radius: 22px; background: color-mix(in srgb, var(--ds-surface) 94%, transparent); box-shadow: var(--ds-shadow-lg); }
+[data-theme] .yz-art-l { width: 56px; height: 56px; border-radius: 14px; }
+[data-theme] .yz-stage-kick { color: var(--ds-ink-3); font-size: 11px; font-weight: 700; letter-spacing: 0; }
+[data-theme] .yz-stage-name { color: var(--ds-ink); font-size: 17px; }
+[data-theme] .yz-stage-desc { margin-top: 2px; color: var(--ds-ink-3); font-size: 12px; line-height: 1.45; }
+[data-theme] .yz-cta { min-height: 40px; padding: 0 14px; border-radius: 12px; background: var(--ds-primary); color: var(--ds-on-primary); box-shadow: none; font-size: 13px; }
+/* 买不起 / 即将上架 / 已有卡：灰掉但字还读得清，不是 45% 透明的一块绿 */
+[data-theme] .yz-cta:disabled { opacity: 1; background: var(--ds-inset); color: var(--ds-ink-3); }
+[data-theme] .yz-cta.is-confirm { background: var(--ds-ink); color: var(--ds-surface); }
+[data-theme] .yz-cta.is-owned { border: 0; background: var(--ds-primary); color: var(--ds-on-primary); }
+[data-theme] .yz-cta.is-on { border: 0; background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
+[data-theme] .yz-listen { min-height: 30px; padding: 0 11px; border: 0; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 12px; }
+/* 补签的日子：换行排开的小胶囊，不再横向滚、被截成「补 9/18 · 用」；前面一句说清楚用卡还是花多少 */
+[data-theme] .yz-repair-days { flex-wrap: wrap; align-items: center; gap: 6px; overflow: visible; }
+.yz-repair-label { display: inline-flex; align-items: center; gap: 3px; margin-right: 2px; color: var(--ds-ink-2); font-size: 12px; font-weight: 700; }
+.yz-repair-label svg { color: var(--zoo-orange); }
+.yz-day { min-height: 34px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--ds-primary-tint); color: var(--ds-primary-ink); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.yz-day:active { transform: scale(.97); }
+.yz-day:disabled { background: var(--ds-inset); color: var(--ds-ink-3); }
+/* 试衣台上那张迷你主页只有 56px：按货架的字号画，「15 词」会折成两行压在一起 */
+[data-theme] .yz-art-l .yz-mini { font-size: 5px; }
