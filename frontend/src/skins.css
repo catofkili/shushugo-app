@@ -1,0 +1,242 @@
+/* ======================================================================
+   风格主题：纸本（theme-paper）/ 圆圆（theme-round）—— 柚子商店里的两件「主题」商品
+   （2026-09-23，来自三个视觉方向效果图里用户挑中的 A 和 B′）。
+
+   和抹茶 / 樱 / 深夜食堂的区别：那三件只换 --zoo-* 颜色变量；这两件还换「质感」——
+   卡片有没有投影、边框粗细、按钮有没有立体底边、主键是什么颜色、字体圆不圆。
+   所以除了变量，还有一批组件覆盖，全部挂在 html[data-skin] 下面。
+
+   ⚠️ 为什么单独一个文件、在 main.tsx 里排在 app.css 之后：styles.css 的浅色翻译层
+   （[data-theme="light"] .bg-\[\#464949\] 这类）全是 !important，这里要压过它们，
+   靠的是「更高的特异度（html + 属性 + 类）+ 更晚出现」两样一起。挪到前面去就压不住了。
+
+   ⚠️ 浅色、深色各一份。只写浅色的话，换了主题再切深色会退回默认深色、看着像坏了
+   （CLAUDE.md「柚子」那节同一条规矩）。
+
+   ⚠️ 评分键按 DOM 顺序认（忘记 / 模糊 / 认识 / 熟知 = nth-child 1..4，
+   见 word-study-utils.answerOptions）。那边改了顺序，这里要跟着改。
+
+   ⚠️ 圆圆不许用 Duolingo 的绿（#58CC02）、蓝（#1CB0F6）和红，也不许把「火焰 + 货币」
+   摆成它那种右上角胶囊：风格可以像这一类，但一眼得是收集日（苹果审核 4.1 Copycats）。
+   ====================================================================== */
+
+/* ---------- 纸本：变量 ---------- */
+[data-skin="theme-paper"] {
+  --zoo-cream: #F6F1E7; --zoo-cream-2: #EFE7D8; --zoo-surface: #FBF8F1;
+  --zoo-primary: #4F7A3A; --zoo-primary-dark: #44692F; --zoo-primary-deep: #3A5A28;
+  --zoo-primary-soft: #E3EAD6; --zoo-on-primary: #F6F1E7;
+  --zoo-ink: #2B2620; --zoo-muted: #8A8173;
+  --color-bg-primary: #F6F1E7; --color-bg-secondary: #EFE7D8; --color-bg-card: #FBF8F1;
+  --color-accent: #4F7A3A; --color-accent-light: #7C9C69; --color-accent-lighter: #E3EAD6; --color-accent-dark: #44692F;
+  --color-border: #E3DACB; --color-border-light: #EDE6D8;
+  --skin-bg: #F6F1E7; --skin-surface: #FBF8F1; --skin-line: #E3DACB;
+  --skin-key: #2B2620; --skin-on-key: #F6F1E7; --skin-forgot: #9A4A2E;
+}
+[data-theme="dark"][data-skin="theme-paper"] {
+  --zoo-cream: #1C1A17; --zoo-cream-2: #24211D; --zoo-surface: #24211D;
+  --zoo-primary: #8FB173; --zoo-primary-dark: #A3C28A; --zoo-primary-deep: #BCD3A7;
+  --zoo-primary-soft: #2F3627; --zoo-on-primary: #1C1A17;
+  --zoo-ink: #EDE6D8; --zoo-muted: #A39A8A;
+  --color-bg-primary: #1C1A17; --color-bg-secondary: #24211D; --color-bg-card: #24211D;
+  --color-accent: #8FB173; --color-accent-light: #A3C28A; --color-accent-lighter: #BCD3A7; --color-accent-dark: #6F8F57;
+  --color-border: #3A352E; --color-border-light: #302C26;
+  --skin-bg: #1C1A17; --skin-surface: #24211D; --skin-line: #3A352E;
+  --skin-key: #EDE6D8; --skin-on-key: #1C1A17; --skin-forgot: #E0A08A;
+}
+
+/* ---------- 圆圆：变量 ---------- */
+[data-skin="theme-round"] {
+  --zoo-cream: #FFFBF4; --zoo-cream-2: #F7F0E3; --zoo-surface: #FFFFFF;
+  --zoo-primary: #7EBE4F; --zoo-primary-dark: #6FA83E; --zoo-primary-deep: #5C8F32;
+  --zoo-primary-soft: #EEF6E4; --zoo-on-primary: #1F2E10;
+  --zoo-ink: #3C3A36; --zoo-muted: #A09A90;
+  --color-bg-primary: #FFFBF4; --color-bg-secondary: #F7F0E3; --color-bg-card: #FFFFFF;
+  --color-accent: #7EBE4F; --color-accent-light: #A6D477; --color-accent-lighter: #EEF6E4; --color-accent-dark: #5C8F32;
+  --color-border: #EFE6D6; --color-border-light: #EFE6D6;
+  --skin-bg: #FFFBF4; --skin-surface: #FFFFFF; --skin-line: #EFE6D6;
+  --skin-lip: #5C8F32; --skin-orange: #F0A04B; --skin-orange-lip: #C27A2C; --skin-on-orange: #3A2208;
+}
+[data-theme="dark"][data-skin="theme-round"] {
+  --zoo-cream: #1B1F17; --zoo-cream-2: #242A20; --zoo-surface: #242A20;
+  --zoo-primary: #91C968; --zoo-primary-dark: #A7D77D; --zoo-primary-deep: #C4E89B;
+  --zoo-primary-soft: #2F3B27; --zoo-on-primary: #172112;
+  --zoo-ink: #F3F1EA; --zoo-muted: #A9AD9F;
+  --color-bg-primary: #1B1F17; --color-bg-secondary: #242A20; --color-bg-card: #242A20;
+  --color-accent: #91C968; --color-accent-light: #A7D77D; --color-accent-lighter: #C4E89B; --color-accent-dark: #6FA83E;
+  --color-border: #343C2E; --color-border-light: #343C2E;
+  --skin-bg: #1B1F17; --skin-surface: #242A20; --skin-line: #343C2E;
+  --skin-lip: #4A7328; --skin-orange: #E89A45; --skin-orange-lip: #9C6424; --skin-on-orange: #2A1804;
+}
+
+/* ---------- 两件共用：底色、表面、描边都走上面的变量，不再是浅色翻译层写死的奶油 + 绿边 ---------- */
+html:is([data-skin="theme-paper"], [data-skin="theme-round"]) body,
+html:is([data-skin="theme-paper"], [data-skin="theme-round"]) #root,
+html:is([data-skin="theme-paper"], [data-skin="theme-round"]) .app-shell {
+  background: var(--skin-bg) !important;
+  color: var(--zoo-ink) !important;
+}
+html:is([data-skin="theme-paper"], [data-skin="theme-round"]) :is(
+  .bg-\[\#474a4a\], .bg-\[\#464949\], .bg-\[\#424545\], .bg-\[\#3f4343\], .bg-\[\#3c3f3f\],
+  .bg-\[\#3b3f3f\], .bg-\[\#373b3b\], .bg-\[\#353939\], .bg-\[\#2f3333\], .bg-\[\#4d5151\]) {
+  background: var(--skin-surface) !important;
+  box-shadow: none !important;
+}
+html:is([data-skin="theme-paper"], [data-skin="theme-round"]) :is(
+  .border-white\/10, .border-white\/12, .border-white\/15, .border-white\/16, .border-white\/18,
+  .border-white\/20, .border-white\/25, .border-white\/30) {
+  border-color: var(--skin-line) !important;
+}
+html:is([data-skin="theme-paper"], [data-skin="theme-round"]) :is(.app-mobile-topbar, .app-mobile-tabbar) {
+  background: var(--skin-bg) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-color: var(--skin-line) !important;
+}
+/* 底栏：不画按钮框，选中那格只换字色（圆圆另外给一块底） */
+html:is([data-skin="theme-paper"], [data-skin="theme-round"]) .app-mobile-tabbar button.focus-ring {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--zoo-muted) !important;
+}
+html:is([data-skin="theme-paper"], [data-skin="theme-round"]) .app-mobile-tabbar button.focus-ring.bg-\[\#81D8CF\] {
+  color: var(--zoo-ink) !important;
+}
+
+/* ====================== 纸本：组件 ====================== */
+/* 今日大卡：不再是一整块绿，是一张纸 —— 墨色大字、细边、主键是墨色胶囊 */
+html[data-skin="theme-paper"] .zoo-now {
+  background: var(--skin-surface) !important;
+  color: var(--zoo-ink) !important;
+  border: 1px solid var(--skin-line) !important;
+  box-shadow: none !important;
+  border-radius: 16px;
+}
+html[data-skin="theme-paper"] .zoo-now-num { font-size: 52px; letter-spacing: -0.01em; }
+html[data-skin="theme-paper"] .zoo-now-emoji { color: var(--zoo-primary); animation: none; }
+html[data-skin="theme-paper"] .zoo-now-go {
+  padding: 8px 14px; border-radius: 999px;
+  background: var(--skin-key); color: var(--skin-on-key);
+}
+html[data-skin="theme-paper"] :is(.zoo-tray, .zoo-duo-cell, .zoo-tray-today) {
+  background: transparent !important;
+  border-color: var(--skin-line) !important;
+  box-shadow: none !important;
+}
+html[data-skin="theme-paper"] .dictionary-card {
+  background: var(--skin-surface) !important;
+  border: 1px solid var(--skin-line) !important;
+  box-shadow: none !important;
+  color: var(--zoo-ink) !important;
+}
+/* 评分：只有「认识」是实心墨色；其余细边空心，忘记用赭石字 */
+html[data-skin="theme-paper"] .zoo-rate-row > button {
+  background: transparent !important;
+  border: 1px solid var(--skin-line) !important;
+  color: var(--zoo-ink) !important;
+  box-shadow: none !important;
+}
+html[data-skin="theme-paper"] .zoo-rate-row > button:nth-child(1) { color: var(--skin-forgot) !important; }
+html[data-skin="theme-paper"] .zoo-rate-row > button:nth-child(3) {
+  background: var(--skin-key) !important;
+  border-color: var(--skin-key) !important;
+  color: var(--skin-on-key) !important;
+}
+html[data-skin="theme-paper"] .zoo-rate-row > button span { color: inherit !important; opacity: .55; }
+/* 「显示答案」那颗主键同样换成墨色，不是整块青绿 */
+html[data-skin="theme-paper"] .bg-\[\#81D8CF\]:not(.app-mobile-tabbar *) {
+  background: var(--skin-key) !important;
+  color: var(--skin-on-key) !important;
+  border-color: var(--skin-key) !important;
+}
+html[data-skin="theme-paper"] .bg-\[\#81D8CF\]:not(.app-mobile-tabbar *) * { color: inherit !important; }
+
+/* ====================== 圆圆：组件 ====================== */
+html[data-skin="theme-round"] :is(body, .app-shell) {
+  font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", "PingFang SC", system-ui, sans-serif;
+}
+/* 日文大字也用圆体，不用明朝 —— 这一套里宋体会像走错了片场 */
+html[data-skin="theme-round"] :is(.jp-serif, .zoo-now-num, .zoo-greet-hi) {
+  font-family: "Hiragino Maru Gothic ProN", ui-rounded, "PingFang SC", sans-serif !important;
+  font-weight: 800;
+}
+/* 今日大卡：实心品牌绿 + 立体底边（深一档的同色），深色字 */
+html[data-skin="theme-round"] .zoo-now {
+  background: var(--zoo-primary) !important;
+  color: var(--zoo-on-primary) !important;
+  border-radius: 20px;
+  box-shadow: 0 5px 0 var(--skin-lip) !important;
+}
+html[data-skin="theme-round"] .zoo-now:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--skin-lip) !important; }
+/* 格子：2px 描边 + 4px 底边，像一块能按下去的糖 */
+html[data-skin="theme-round"] :is(.zoo-tray, .zoo-duo-cell) {
+  background: var(--skin-surface) !important;
+  border: 2px solid var(--skin-line) !important;
+  border-bottom-width: 4px !important;
+  border-radius: 18px;
+  box-shadow: none !important;
+}
+html[data-skin="theme-round"] .zoo-tray-today { background: transparent !important; border: 0 !important; padding: 0; }
+html[data-skin="theme-round"] .zoo-duo-kick { color: #E8971C; }
+html[data-skin="theme-round"] .dictionary-card {
+  background: var(--skin-surface) !important;
+  border: 2px solid var(--skin-line) !important;
+  border-bottom-width: 4px !important;
+  border-radius: 22px;
+  box-shadow: none !important;
+  color: var(--zoo-ink) !important;
+}
+/* 评分：忘记 = 柚子橙实心、认识 = 品牌绿实心，都带立体底边；模糊 / 熟知是白底描边 */
+html[data-skin="theme-round"] .zoo-rate-row > button {
+  background: var(--skin-surface) !important;
+  border: 2px solid var(--skin-line) !important;
+  border-bottom-width: 4px !important;
+  color: var(--zoo-muted) !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+html[data-skin="theme-round"] .zoo-rate-row > button:nth-child(1) {
+  background: var(--skin-orange) !important;
+  border-color: var(--skin-orange-lip) !important;
+  color: var(--skin-on-orange) !important;
+}
+html[data-skin="theme-round"] .zoo-rate-row > button:nth-child(3) {
+  background: var(--zoo-primary) !important;
+  border-color: var(--skin-lip) !important;
+  color: var(--zoo-on-primary) !important;
+}
+html[data-skin="theme-round"] .zoo-rate-row > button span { color: inherit !important; opacity: .6; }
+html[data-skin="theme-round"] .zoo-rate-row > button:active { transform: translateY(2px); border-bottom-width: 2px !important; }
+html[data-skin="theme-round"] .bg-\[\#81D8CF\]:not(.app-mobile-tabbar *) {
+  background: var(--zoo-primary) !important;
+  color: var(--zoo-on-primary) !important;
+  border: 0 !important;
+  box-shadow: 0 4px 0 var(--skin-lip) !important;
+}
+html[data-skin="theme-round"] .bg-\[\#81D8CF\]:not(.app-mobile-tabbar *) * { color: inherit !important; }
+/* 底栏选中：一块浅绿底 + 描边，不是整格实心 */
+html[data-skin="theme-round"] .app-mobile-tabbar button.focus-ring.bg-\[\#81D8CF\] {
+  background: var(--zoo-primary-soft) !important;
+  border: 2px solid var(--color-accent-light) !important;
+  color: var(--zoo-primary-deep) !important;
+}
+
+/* ====================== 商店里的迷你主页（商品图） ======================
+   迷你主页的 data-skin 挂在它自己的 div 上，不在 html 上，上面那批 html[data-skin] 规则碰不到它，
+   所以这里单独给两张商品图画出各自的质感，不然两件在货架上看着和普通配色一样。 */
+.yz-mini[data-skin="theme-paper"] .yz-mini-hero {
+  background: var(--zoo-surface); color: var(--zoo-ink);
+  border: 1px solid var(--color-border); box-shadow: none;
+}
+.yz-mini[data-skin="theme-paper"] :is(.yz-mini-row i, .yz-mini-tray) {
+  background: transparent; border: 1px solid var(--color-border); box-shadow: none;
+}
+.yz-mini[data-skin="theme-round"] .yz-mini-hero {
+  background: var(--zoo-primary); color: var(--zoo-on-primary);
+  box-shadow: 0 3px 0 var(--skin-lip);
+}
+.yz-mini[data-skin="theme-round"] :is(.yz-mini-row i, .yz-mini-tray) {
+  background: var(--zoo-surface); border: 1.5px solid var(--color-border); border-bottom-width: 3px; box-shadow: none;
+}
+.yz-mini[data-skin="theme-round"] .yz-mini-hero b { font-family: "Hiragino Maru Gothic ProN", ui-rounded, sans-serif; }

@@ -1065,6 +1065,13 @@ R2 的操作步骤在 `scripts/upload-audio.sh` 头部；密钥只能作者自�
   - **配色**：写 `<html data-skin="theme-*">`，`styles.css` 里每个皮肤浅色 + 深色各一份
     `--zoo-*` / `--color-accent*` 覆盖。⚠️ 只换主色一族和底色，`--zoo-orange` / 棕 / 文字色不动 ——
     柚子和吉祥物在哪个皮肤里都还是自己。少写深色那份 = 换皮肤后切深色退回默认绿，看着像坏了。
+  - **风格主题（纸本 `theme-paper` / 圆圆 `theme-round`，2026-09-23）**：同样是 theme 槽位，
+    但不只换颜色变量，还换质感（投影、描边粗细、按钮立体底边、主键颜色、字体），
+    样式单独在 `src/skins.css`，**在 `main.tsx` 里排在 app.css 之后**才压得住浅色翻译层的 `!important`。
+    来源是作者从三个视觉方向效果图里挑的 A（纸本）和 B′（圆润·收集日版）。
+    ⚠️ 圆圆不许用 Duolingo 的绿 / 蓝 / 红，也不许把连击 + 货币摆成它那种右上角胶囊（苹果审核 4.1 Copycats）。
+    ⚠️ 评分键按 DOM 顺序 `nth-child(1..4)` 认，`answerOptions` 改了顺序这里要跟着改。
+    ⚠️ 商店迷你主页的 `data-skin` 挂在 div 上不在 html 上，所以 skins.css 末尾给商品图单独写了一段。
   - **声音**：商品 id 是 `voice-<音频库 voice id>`（现在 voicevox-10 / 11 各 600），索引里 `default`
     那个免费。`speech.resolveVoice` 按 `voiceUnlocked` 设门（没买的退回默认，以前选过的也一样），
     设置页下拉把没买的 `disabled` 并标「柚子商店解锁」。⚠️ `speech.ts` 因此多了唯一一个 import；

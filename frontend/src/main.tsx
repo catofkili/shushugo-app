@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
 import './app.css';
+import './skins.css'; // 风格主题（纸本 / 圆圆）必须排在 app.css 之后，见 skins.css 开头
 import { initDatabase } from './lib/database';
 import { LocalArchiveUnreadableError, loadDatabase, registerPersistenceLifecycle } from './lib/storage';
 import { Sticker } from './components/CapybaraMascot';

@@ -44,6 +44,9 @@ export const YUZU_ITEMS: YuzuItem[] = [
   { id: "theme-matcha", name: "抹茶", description: "青绿主色换成抹茶绿", category: "theme", price: 200 },
   { id: "theme-sakura", name: "樱", description: "粉底樱色", category: "theme", price: 200 },
   { id: "theme-night", name: "深夜食堂", description: "暗琥珀暖调的夜间配色", category: "theme", price: 200 },
+  // 下面两件不只换颜色，还换质感（投影、边框、按钮、字体），样式在 skins.css
+  { id: "theme-paper", name: "纸本", description: "奶油纸色、墨色主键、细线分隔，像一本安静的单词本", category: "theme", price: 300 },
+  { id: "theme-round", name: "圆圆", description: "白底圆体、会按下去的立体按钮、柚子橙点缀", category: "theme", price: 300 },
   { id: "mascot-croc", name: "鳄鱼", description: "换一只鳄鱼:表情、页面图标、空状态插画整套换。小路上走的还是水豚", category: "mascot", price: 300 },
   { id: "icon-happy", name: "开心图标", description: "把 App 图标换成开心表情", category: "icon", price: 500, soon: true, art: "mood-happy" },
   { id: "icon-study", name: "读书图标", description: "把 App 图标换成读书表情", category: "icon", price: 500, soon: true, art: "mood-study" },
