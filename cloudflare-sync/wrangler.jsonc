@@ -13,7 +13,7 @@
     "APP_BUNDLE_ID": "com.shushugo.app",
     "APPLE_SIGN_IN_CLIENT_ID": "com.shushugo.app",
     // 微信虚拟支付：OfferID 开通后填。价格单位分（2026-09-20 定：月 12 / 年 98 / 永久 298）。AppKey 是 secret 不在这。
-    "WECHAT_OFFER_ID": "",
+    "WECHAT_OFFER_ID": "1450657377",
     "WECHAT_PAY_ENV": "0",
     "WECHAT_PAY_PRICES": "{\"shushugo_pro_monthly\":1200,\"shushugo_pro_yearly\":9800,\"shushugo_pro_lifetime\":29800}"
   },
