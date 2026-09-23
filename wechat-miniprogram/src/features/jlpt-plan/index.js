@@ -15,13 +15,6 @@ const STARTS = [
   ...features.web.jlptPlan.JLPT_TARGETS.map((value) => ({ value, label: value }))
 ];
 const FAMILIARITY = { words: '单词', grammar: '语法', kanji: '汉字', confusion: '辨析' };
-const kanaChoices = (index) => {
-  const kana = features.web.kanaProgress.KANA;
-  const options = new Set([kana[index][1]]);
-  for (let offset = 7; options.size < 4; offset += 11) options.add(kana[(index + offset) % kana.length][1]);
-  return [...options];
-};
-
 Page({
   data: {
     ready: false, busy: false, error: '', note: '', setupOpen: false, hasPlan: false,
@@ -62,7 +55,7 @@ Page({
     this.setData({
       kanaPending: index >= 0,
       hasPlan: Boolean(settings),
-      kanaCard: index >= 0 ? { symbol: kana.KANA[index][0], reading: kana.KANA[index][1], choices: kanaChoices(index), mastered: kana.kanaMasteredCount(progress), total: kana.KANA.length } : null,
+      kanaCard: index >= 0 ? { symbol: kana.KANA[index][0], reading: kana.KANA[index][1], choices: kana.kanaQuizChoices(index), mastered: kana.kanaMasteredCount(progress), total: kana.KANA.length } : null,
       status: { ...status, examDate: dateKey(status.examDate), examDateHuman: features.web.examDates.formatExamDateHuman(status.examDate) },
       planEstimate,
       target: status.target,
@@ -160,7 +153,7 @@ Page({
       if (result.completed) core.withDb(db, () => features.web.wordApi.refreshTodayWordPlan());
       await saveDatabase();
       this.load();
-      this.setData({ note: result.completed ? '五十音完成，新词计划已解锁。' : correct ? '答对了' : `读音是 ${reading}，再来一次` });
+      this.setData({ note: result.completed ? '五十音完成，新词计划已解锁。' : correct ? '答对了' : `罗马字是 ${reading}，再来一次` });
     } catch (error) { this.setData({ error: error?.message || '假名作答保存失败。' }); }
     finally { this.setData({ busy: false }); }
   },

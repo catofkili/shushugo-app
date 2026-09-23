@@ -44,7 +44,8 @@
   <view class="panel" wx:if="{{ready && !setupOpen && kanaPending && kanaCard}}">
     <view class="row"><text class="panel-title">五十音起步</text><text class="badge">{{kanaCard.mastered}} / {{kanaCard.total}}</text></view>
     <text class="kana-symbol">{{kanaCard.symbol}}</text>
-    <text class="muted">选出读音；每个假名连续答对两次算掌握</text>
+    <text class="muted">选出对应罗马字；每个假名连续答对两次算掌握</text>
+    <text wx:if="{{kanaCard.symbol === 'を' || kanaCard.symbol === 'ヲ'}}" class="muted">wo 是五十音表的罗马字写法；を/ヲ 作助词时读 o。</text>
     <view class="choice-grid"><button wx:for="{{kanaCard.choices}}" wx:key="*this" data-reading="{{item}}" disabled="{{busy}}" bindtap="answerKana">{{item}}</button></view>
   </view>
 

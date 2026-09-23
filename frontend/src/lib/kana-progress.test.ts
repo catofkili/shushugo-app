@@ -15,7 +15,7 @@ vi.mock("./storage", () => ({ requestFullSnapshot: vi.fn(), scheduleSave: vi.fn(
 import { ensureUserTables } from "./study-core";
 import { getState, setState } from "./database/db-utils";
 import { getDailyWordGoal, getStudyPreferences } from "./studyPreferences";
-import { KANA, deferWordPlanUntilKanaComplete, getKanaProgress, kanaComplete, recordKanaAnswer, replayKanaReviews } from "./kana-progress";
+import { KANA, deferWordPlanUntilKanaComplete, getKanaProgress, kanaComplete, kanaQuizChoices, recordKanaAnswer, replayKanaReviews } from "./kana-progress";
 import { hydrateLevelPlanPreferences } from "./level-plan";
 
 describe("五十音进度门槛", () => {
@@ -24,6 +24,15 @@ describe("五十音进度门槛", () => {
     testDb = new SQL.Database(new Uint8Array(readFileSync(fileURLToPath(new URL("../../public/nihongo.db", import.meta.url)))));
     ensureUserTables();
     setState("starting_level", "kana-none");
+  });
+
+  it("92 个字卡的四选一题都包含正确罗马字，且选项不重复", () => {
+    KANA.forEach(([, reading], index) => {
+      const choices = kanaQuizChoices(index);
+      expect(choices).toHaveLength(4);
+      expect(new Set(choices).size).toBe(4);
+      expect(choices).toContain(reading);
+    });
   });
 
   it("答题写 FSRS 和流水，重放后保留正确次数", () => {

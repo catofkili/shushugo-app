@@ -18,6 +18,18 @@ export const KANA = [
   ["ル","ru"],["レ","re"],["ロ","ro"],["ワ","wa"],["ヲ","wo"],["ン","n"]
 ] as const;
 
+// Share this across Web and Mini Program; separate copies left the Mini Program answer first.
+export const kanaQuizChoices = (index: number, attempt = 0): string[] => {
+  const options = new Set<string>([KANA[index][1]]);
+  for (let offset = 7; options.size < 4; offset += 11) options.add(KANA[(index + offset) % KANA.length][1]);
+  const shuffled = [...options];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = (Math.floor(Math.random() * (i + 1)) + attempt) % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const WORD_GOAL_KEY = "kana_deferred_word_goal";
 const KANA_FSRS: FsrsEntity = { table: "kana_memory", idColumn: "symbol", eligible: "1=1" };
 

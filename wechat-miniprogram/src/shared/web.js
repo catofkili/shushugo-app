@@ -12001,10 +12001,11 @@ __export(kana_progress_exports, {
   getKanaProgress: () => getKanaProgress,
   kanaComplete: () => kanaComplete,
   kanaMasteredCount: () => kanaMasteredCount,
+  kanaQuizChoices: () => kanaQuizChoices,
   recordKanaAnswer: () => recordKanaAnswer,
   replayKanaReviews: () => replayKanaReviews
 });
-var import_database27, import_progress_events4, import_storage, KANA, WORD_GOAL_KEY, KANA_FSRS, ensureKanaRows, getKanaProgress, kanaMasteredCount, kanaComplete, deferWordPlanUntilKanaComplete, enforceKanaGate, recordKanaAnswer, replayKanaReviews;
+var import_database27, import_progress_events4, import_storage, KANA, kanaQuizChoices, WORD_GOAL_KEY, KANA_FSRS, ensureKanaRows, getKanaProgress, kanaMasteredCount, kanaComplete, deferWordPlanUntilKanaComplete, enforceKanaGate, recordKanaAnswer, replayKanaReviews;
 var init_kana_progress = __esm({
   "../frontend/src/lib/kana-progress.ts"() {
     "use strict";
@@ -12108,6 +12109,16 @@ var init_kana_progress = __esm({
       ["\u30F2", "wo"],
       ["\u30F3", "n"]
     ];
+    kanaQuizChoices = (index3, attempt = 0) => {
+      const options = /* @__PURE__ */ new Set([KANA[index3][1]]);
+      for (let offset = 7; options.size < 4; offset += 11) options.add(KANA[(index3 + offset) % KANA.length][1]);
+      const shuffled = [...options];
+      for (let i = shuffled.length - 1; i > 0; i -= 1) {
+        const j = (Math.floor(Math.random() * (i + 1)) + attempt) % (i + 1);
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
     WORD_GOAL_KEY = "kana_deferred_word_goal";
     KANA_FSRS = { table: "kana_memory", idColumn: "symbol", eligible: "1=1" };
     ensureKanaRows = () => oncePerDatabase("kana-rows", () => {
