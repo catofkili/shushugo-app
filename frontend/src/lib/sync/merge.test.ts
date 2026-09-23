@@ -14,14 +14,24 @@ vi.mock("../database", () => ({
   initDatabase: async () => testDb
 }));
 
+// 占位行那一条用例会走 ensureProgressInitialized，它末尾 persistSoon() 会动态 import
+// storage.ts 去排落盘定时器 —— 纯 Node 环境里没有浏览器那套，桩掉即可。
+vi.mock("../storage", () => ({
+  scheduleSave: () => undefined,
+  requestFullSnapshot: () => undefined,
+  persistSoon: () => undefined
+}));
+vi.mock("../progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
+
 import { mergeDatabaseBytes } from "./merge";
-import { ensureSyncSchema } from "./schema";
+import { ensureSyncSchema, withoutSyncStamp } from "./schema";
 import { recordStudySeconds } from "./study-time";
 import { ensureUserTables } from "../study-core";
 import { compressSyncSnapshot, decompressSyncSnapshot, exportSyncSnapshot, isUserSyncSnapshot, SYNC_PROTOCOL_VERSION } from "./snapshot";
 import { createKanjiUnitTasks, materializeKanjiUnitIndex, recordKanjiUnitReview } from "../kanji-unit-scheduler";
 import { loadKanjiUnitIndex } from "../kanji-unit-index";
 import { customWordId, importExternalWordList } from "../word-list-import";
+import { setState } from "../database/db-utils";
 
 const seedPath = fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url));
 
@@ -50,6 +60,36 @@ beforeEach(() => {
 });
 
 describe("database snapshot merge", () => {
+  it("起点、计划额度和 FSRS 基线随账号同步到另一台设备", async () => {
+    const firstDevice = testDb;
+    ensureUserTables();
+    ensureSyncSchema();
+    setState("starting_level", "N4");
+    setState("type_familiarity", JSON.stringify({ words: 75, grammar: 50, kanji: 25, confusion: 0 }));
+    setState("jlpt_plan_target", "N3");
+    setState("jlpt_plan_exam_date", "2026-12-06");
+    setState("level_plan_quotas", JSON.stringify({ dailyGoal: 35, grammarDailyGoal: 3 }));
+    firstDevice.run(`INSERT INTO level_prior_baselines
+      (entity,entity_key,stability,difficulty,due,last_review,state,steps,reps,lapses,starting_level,familiarity)
+      VALUES ('words','1',30,5,'2026-10-01T00:00:00Z','2026-09-01T00:00:00Z',2,0,0,0,'N4',75)`);
+    const snapshot = await exportSyncSnapshot();
+
+    const secondDevice = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    testDb = secondDevice;
+    ensureUserTables();
+    ensureSyncSchema();
+    await mergeDatabaseBytes(snapshot);
+    expect(rows(secondDevice, "SELECT key,value FROM app_state WHERE key IN ('starting_level','jlpt_plan_target','level_plan_quotas') ORDER BY key"))
+      .toEqual([
+        { key: "jlpt_plan_target", value: "N3" },
+        { key: "level_plan_quotas", value: JSON.stringify({ dailyGoal: 35, grammarDailyGoal: 3 }) },
+        { key: "starting_level", value: "N4" }
+      ]);
+    expect(rows(secondDevice, "SELECT stability,last_review FROM level_prior_baselines WHERE entity='words' AND entity_key='1'"))
+      .toEqual([{ stability: 30, last_review: "2026-09-01T00:00:00Z" }]);
+    firstDevice.close();
+  });
+
   it("云同步快照只包含用户数据，不重复打包出厂词典", async () => {
     testDb.run("INSERT OR REPLACE INTO progress (word_id, score, seen_count) VALUES (1, 10, 1)");
     testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (1, 'know', 10, '2026-08-03')");
@@ -387,5 +427,60 @@ describe("database snapshot merge", () => {
     await mergeDatabaseBytes(new Uint8Array(remote.export()));
     expect(rows(testDb, "SELECT word_id FROM progress WHERE word_id = 42")).toHaveLength(0);
     expect(rows(testDb, "SELECT row_key FROM sync_tombstones WHERE table_name = 'progress' AND row_key = '42'")).toHaveLength(1);
+  });
+});
+
+/*
+ * ⚠️ 占位行不能赢过云端那条真学过的行。
+ *
+ * progress / grammar_progress 的合并是 LWW，而 ensureProgressInitialized 会给每个词补
+ * 一行空 progress。那些占位行要是盖上「现在」的时间戳，今天刚装上的设备就会用一堆空行
+ * 把云端的学习状态静默盖掉（现象：换台设备打开，学过的词全变回未学）。
+ * 所以它们在 applying_remote 下写、sync_updated_at 留空，见 sync/schema 的 withoutSyncStamp。
+ */
+describe("占位行不参与 LWW", () => {
+  it("新设备补出来的空 progress 行不会盖掉云端学过的那一行", async () => {
+    const wordId = Number(rows(testDb, "SELECT MIN(id) AS id FROM words")[0].id);
+    // bootstrap 的 initProgress 就是这一句（外面包着 withoutSyncStamp）；这里不走 bootstrap
+    // 本体是因为它末尾会 persistSoon()，在纯 Node 里要拉起整个 storage.ts。
+    const initPlaceholders = () => withoutSyncStamp(() => {
+      testDb.run("INSERT OR IGNORE INTO progress (word_id) SELECT id FROM words");
+    });
+
+    // 云端那台：学过这个词，时间戳是很早以前
+    ensureUserTables();
+    initPlaceholders();
+    testDb.run("UPDATE progress SET seen_count = 9 WHERE word_id = ?", [wordId]);
+    testDb.run("UPDATE progress SET sync_updated_at = '2026-01-01T00:00:00.000Z' WHERE word_id = ?", [wordId]);
+    const snapshot = await exportSyncSnapshot();
+
+    // 今天刚装上的那台：占位行是刚补出来的，必须没有时间戳
+    testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    ensureSyncSchema();
+    ensureUserTables();
+    initPlaceholders();
+    expect(rows(testDb, `SELECT sync_updated_at FROM progress WHERE word_id = ${wordId}`)[0].sync_updated_at).toBe(null);
+
+    await mergeDatabaseBytes(snapshot);
+    expect(Number(rows(testDb, `SELECT seen_count FROM progress WHERE word_id = ${wordId}`)[0].seen_count)).toBe(9);
+  });
+
+  it("混合学习那两张表的占位行也不盖时间戳", async () => {
+    const { materializeKanjiChars } = await import("../kanji-char-cards");
+    const { materializeConfusionCards } = await import("../confusion-cards");
+    // 这两张表在 local-schema.sql 里（懒建的表拿不到同步列和触发器）。真实启动顺序是
+    // ensureUserTables → ensureSyncSchema，而 ensureSyncSchema 按 db 实例只跑一次，
+    // 所以换一个新库再按那个顺序走一遍。
+    testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    ensureUserTables();
+    ensureSyncSchema();
+    materializeKanjiChars();
+    materializeConfusionCards();
+    for (const [table, key] of [["kanji_char_memory", "char"], ["confusion_progress", "group_key"]] as const) {
+      const stamped = rows(testDb, `SELECT COUNT(*) AS n FROM ${table} WHERE sync_updated_at IS NOT NULL`)[0];
+      expect(Number(stamped.n)).toBe(0);
+      expect(Number(rows(testDb, `SELECT COUNT(*) AS n FROM ${table}`)[0].n)).toBeGreaterThan(0);
+      expect(rows(testDb, `SELECT ${key} FROM ${table} LIMIT 1`).length).toBe(1);
+    }
   });
 });

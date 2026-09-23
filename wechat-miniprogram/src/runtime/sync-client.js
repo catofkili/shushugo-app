@@ -10,7 +10,6 @@ const { gzipSync } = require('../vendor/fflate.umd.js');
 const { getDatabase, saveDatabase } = require('./database-store');
 const { authHeaders } = require('./auth');
 const core = require('../core/study-core');
-const { getDeviceId } = require('../core/sync-protocol');
 const {
   SYNC_PROTOCOL_VERSION,
   SYNC_SNAPSHOT_FORMAT,
@@ -60,7 +59,8 @@ async function pushSnapshot(bytes, options = {}) {
     'x-sync-protocol-version': String(SYNC_PROTOCOL_VERSION),
     'x-sync-compression': 'gzip',
     'x-sync-operation-id': operationId(),
-    'x-sync-device-id': getDeviceId(db)
+    // 设备号和网页一样存在 sync_device 表里（网页的 sync/schema 负责建和发）
+    'x-sync-device-id': core.withDb(db, () => core.web.syncSchema.getDeviceId())
   };
   if (typeof options.baseGeneration === 'number') headers['x-sync-base-generation'] = String(options.baseGeneration);
   if (options.baseModified) headers['x-sync-base-modified'] = String(options.baseModified);
@@ -108,7 +108,7 @@ function saveCursor(db, generation, modified) {
 async function mergeRemote(db, remote) {
   // legacy-full-sqlite 只用于兼容旧服务端快照；mergeSnapshot 会只处理
   // 用户表，不会把云端词典覆盖本地内容。
-  const result = mergeSnapshot(db, remote.bytes, { allowLegacy: remote.format === 'legacy-full-sqlite' });
+  const result = await mergeSnapshot(db, remote.bytes);
   saveCursor(db, remote.generation, remote.lastModified);
   return result;
 }

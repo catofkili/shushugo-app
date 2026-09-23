@@ -1,8 +1,10 @@
-const usage = require('../data/kanji-reading-usage');
+// 一字多音的说明表和判据都是网页的 lib/kanji-reading-usage（表在 content 分包里）。
+const { ensureContentLoaded } = require('../../runtime/database-store');
+const usage = require('../../shared/web').kanjiReadingUsage;
 const LEVELS = ['N5','N4','N3','N2','N1','未分级'];
 Page({
   data: { query: '', version: '', total: 0, entries: [], selected: null },
-  async onLoad() { await usage.loadKanjiReadingUsage(); this.showList(); },
+  async onLoad() { await ensureContentLoaded(); this.showList(); },
   showList(query = '') {
     const all = usage.allKanjiReadingUsage();
     const entries = all.filter((entry) => !query || entry.char.includes(query)).slice(0, query ? 80 : 48).map((entry) => ({ char: entry.char, line: usage.readingLine(entry) }));

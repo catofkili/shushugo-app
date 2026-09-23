@@ -275,7 +275,12 @@ export function getWordStats(
       unseenRemaining: unseenCount(),
       secondsPerWord,
       totalLearned: firstValue<number>(
-        "SELECT COUNT(*) FROM progress WHERE seen_count > 0 OR known_forever = 1", [], 0
+        `SELECT COUNT(*) FROM progress p
+         WHERE p.known_forever = 1
+           OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id=p.word_id AND r.direction='forward')
+           OR (p.seen_count > 0 AND NOT EXISTS (
+             SELECT 1 FROM level_prior_baselines b WHERE b.entity='words' AND b.entity_key=CAST(p.word_id AS TEXT)
+           ))`, [], 0
       ),
       weekEncoreCount: encoreLog.weekCount,
       todayEncoreWords: encoreLog.dayWords,

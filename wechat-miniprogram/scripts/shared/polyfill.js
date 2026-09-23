@@ -47,12 +47,23 @@
       randomUUID: () => `${hex(8)}-${hex(4)}-4${hex(3)}-${(8 + Math.floor(Math.random() * 4)).toString(16)}${hex(3)}-${hex(12)}`
     });
   }
-  if (!scope.window) {
+  if (!scope.window || typeof wx !== 'undefined') {
     const listeners = new Map();
-    scope.window = {
+    const eventTarget = {
       addEventListener(type, handler) { const list = listeners.get(type) || []; list.push(handler); listeners.set(type, list); },
       removeEventListener(type, handler) { listeners.set(type, (listeners.get(type) || []).filter((item) => item !== handler)); },
       dispatchEvent(event) { (listeners.get(event.type) || []).slice().forEach((handler) => { try { handler(event); } catch (error) { console.warn('[shared] 事件回调出错', error); } }); return true; }
     };
+    if (!scope.window) scope.window = eventTarget;
+    scope.__shushugoWindow = eventTarget;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof global !== 'undefined' ? global : this));
+
+// 微信逻辑层会在页面切换时重建全局代理；网页源码里的裸引用要抓住本模块初始化的替身。
+var sharedScope = typeof globalThis !== 'undefined' ? globalThis : (typeof global !== 'undefined' ? global : this);
+var localStorage = sharedScope.localStorage;
+var window = sharedScope.__shushugoWindow || sharedScope.window;
+var Event = sharedScope.Event;
+var CustomEvent = sharedScope.CustomEvent;
+var document = sharedScope.document;
+var crypto = sharedScope.crypto;

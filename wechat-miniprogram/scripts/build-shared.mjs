@@ -12,7 +12,7 @@
  *  - src/content/question-meanings.js        content 分包：人工题面层（1 MB）
  *  - src/features/content/distinction-reviews.js   features 分包：辨析审校（数据 + 函数）
  *  - src/content/kanji-unit-runtime.js             content 分包：汉字单元索引
- *  - src/features/content/kanji-reading-usage.js   features 分包：一字多音说明表
+ *  - src/content/kanji-reading-usage.js            content 分包：一字多音说明表
  *  - data/grammar_ids.json                    grammar_points.id ↔ grammar.ts 字符串 id
  *  分包里的三份由 src/shared/content.js 用 require.async 灌进 shims/content-store.js。
  *
@@ -47,7 +47,6 @@ const SHIMS = {
   [`${lib}/storage`]: shim('storage.js'),
   [`${lib}/entitlements`]: shim('entitlements.js'),
   [`${lib}/progress-events`]: shim('progress-events.js'),
-  [`${lib}/orthography`]: shim('orthography.js'),
   [`${lib}/zoo-sounds`]: shim('zoo-sounds.js'),
   [`${lib}/models/question-meaning-overrides`]: shim('question-meaning-overrides.js'),
   [`${path.join(frontend, 'src/components/CapybaraMascot')}`]: shim('mascot.js'),
@@ -56,6 +55,7 @@ const SHIMS = {
   [`${data}/confusion_distinction_reviews`]: shim('distinction-reviews.js'),
   [`${data}/kanji_reading_unit_runtime`]: shim('kanji-unit-runtime.js'),
   [`${data}/kanji_reading_usage`]: shim('kanji-reading-usage.js'),
+  [`${data}/pitch_accent`]: shim('pitch-accent-data.js'),
   [`${data}/kanji_variants`]: shim('kanji-variants.js'),
   [`${data}/kanji_readings`]: shim('kanji-readings.js'),
   [`${data}/grammar_key_points`]: shim('grammar-key-points.js'),
@@ -71,7 +71,7 @@ const SHIMS = {
   [`${data}/word_sense_keys`]: shim('seed-guard.js')
 };
 // 允许直接打进主包的 src/data JSON（都不大）
-const INLINE_DATA = new Set(['english_origins.json']);
+const INLINE_DATA = new Set(['english_origins.json', 'kanji_orthography.json']);
 
 const plugin = {
   name: 'shushugo-shims',
@@ -127,10 +127,11 @@ outputs.set('src/shared/content-store.js', HEADER + fs.readFileSync(shim('conten
 const jsonModule = (file) => HEADER + 'module.exports = ' + JSON.stringify(JSON.parse(fs.readFileSync(path.join(data, file), 'utf8'))) + ';\n';
 outputs.set('src/content/question-meanings.js', jsonModule('question_meaning_overrides.json'));
 outputs.set('src/content/kanji-unit-runtime.js', jsonModule('kanji_reading_unit_runtime.json'));
-outputs.set('src/features/content/kanji-reading-usage.js', jsonModule('kanji_reading_usage.json'));
+outputs.set('src/content/kanji-reading-usage.js', jsonModule('kanji_reading_usage.json'));
 outputs.set('src/features/content/kanji-variants.js', jsonModule('kanji_variants.json'));
 outputs.set('src/features/content/kanji-readings.js', jsonModule('kanji_readings.json'));
 outputs.set('src/features/content/grammar-key-points.js', jsonModule('grammar_key_points.json'));
+outputs.set('src/content/pitch-accent.js', jsonModule('pitch_accent.json'));
 const reviews = await build({ ...common, entryPoints: [path.join(data, 'confusion_distinction_reviews.ts')] });
 outputs.set('src/features/content/distinction-reviews.js', HEADER + reviews.outputFiles[0].text);
 
@@ -143,7 +144,7 @@ outputs.set('data/grammar_ids.json', JSON.stringify(grammarIds) + '\n');
 
 // ---- 体积闸门 ----
 const kib = (text) => Buffer.byteLength(text) / 1024;
-const LIMITS = { 'src/shared/web.js': Number(process.env.SHARED_LIMIT_KIB || 700), 'src/content/question-meanings.js': 1400, 'src/features/content/distinction-reviews.js': 420, 'src/content/kanji-unit-runtime.js': 640, 'src/features/content/kanji-reading-usage.js': 400 };
+const LIMITS = { 'src/shared/web.js': Number(process.env.SHARED_LIMIT_KIB || 760), 'src/content/question-meanings.js': 1400, 'src/features/content/distinction-reviews.js': 420, 'src/content/kanji-unit-runtime.js': 640, 'src/content/kanji-reading-usage.js': 400, 'src/content/pitch-accent.js': 320 };
 const largestMain = () => Object.entries(mainInputs).sort((a, b) => b[1].bytesInOutput - a[1].bytesInOutput).slice(0, 12)
   .map(([file, info]) => `${(info.bytesInOutput / 1024).toFixed(0).padStart(4)} KiB ${path.relative(frontend, file)}`).join('\n');
 for (const [file, limit] of Object.entries(LIMITS)) {

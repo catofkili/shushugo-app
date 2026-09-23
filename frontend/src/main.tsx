@@ -17,6 +17,7 @@ import { initializePurchases, retryPendingPurchaseVerifications } from './lib/pu
 import { autoSyncCloudDatabase, CLOUD_AUTH_EVENT, registerCloudAutoSyncLifecycle, refreshCloudEntitlements } from './lib/sync-api';
 import { ensureSyncSchema } from './lib/sync/schema';
 import { flushPendingUserProfileSync } from './lib/profile-sync';
+import { hydrateLevelPlanPreferences } from './lib/level-plan';
 
 // 初始化 WebView 优化
 initWebViewOptimizer();
@@ -128,6 +129,7 @@ const renderBootFailure = (error: unknown) => {
 async function bootWithDatabase() {
     await ensureSeedData();
     ensureSyncSchema();
+    hydrateLevelPlanPreferences();
     applyYuzuEquipment();
     ensureJlptPlanAnchor();
     registerPersistenceLifecycle();

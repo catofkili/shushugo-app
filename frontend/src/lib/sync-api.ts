@@ -163,6 +163,8 @@ const AUTH_PROVIDERS_KEY = "mn_cloud_auth_providers";
 const SYNC_STATE_KEY_PREFIX = "mn_cloud_sync_state:";
 const LOCAL_SYNC_OWNER_KEY = "mn_cloud_sync_owner_email";
 export const CLOUD_SYNC_EVENT = "shushugo-cloud-sync";
+export const LEVEL_PLAN_TRIAL_EXPIRES_KEY = "mn-level-plan-trial-expires-at";
+export const LEVEL_PLAN_TRIAL_NOTICE_KEY = "mn-level-plan-trial-expiry-noticed";
 export const CLOUD_SYNC_REQUEST_EVENT = "shushugo-cloud-sync-request";
 export const CLOUD_AUTH_EVENT = "shushugo-cloud-auth";
 // 当前同步传输的是整份 SQLite 快照。先等待用户停止连续操作，再上传；
@@ -407,9 +409,15 @@ export function requestCloudAutoSync(reason: CloudSyncTrigger = "local-change"):
 
 const applyCloudEntitlements = (data?: CloudEntitlements): EntitlementState | undefined => {
   if (!data) return undefined;
+  if (data.source === "trial" && data.expiresAt && typeof localStorage !== "undefined") {
+    if (localStorage.getItem(LEVEL_PLAN_TRIAL_EXPIRES_KEY) !== data.expiresAt) {
+      localStorage.removeItem(LEVEL_PLAN_TRIAL_NOTICE_KEY);
+    }
+    localStorage.setItem(LEVEL_PLAN_TRIAL_EXPIRES_KEY, data.expiresAt);
+  }
   return saveEntitlements({
     isPro: data.isPro,
-    source: data.isPro ? "cloud" : "free",
+    source: data.isPro && data.source === "trial" ? "trial" : data.isPro ? "cloud" : "free",
     productId: data.productId,
     expiresAt: data.expiresAt
   });
@@ -816,6 +824,16 @@ export async function verifyCloudPurchase(productId: ProductId, transactionId: s
   return applyCloudEntitlements(data);
 }
 
+export async function claimLevelPlanTrial(): Promise<EntitlementState | undefined> {
+  const { token } = await getCloudSession();
+  if (!token) return undefined;
+  const data = await requestJson<CloudEntitlements>('/api/entitlements/trial', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}` }
+  });
+  return applyCloudEntitlements(data);
+}
+
 const hasLocalLearningData = (): boolean => {
   const db = getDatabase();
   const tableStatement = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'");
@@ -846,6 +864,16 @@ const hasLocalLearningData = (): boolean => {
       statement.free();
     }
   });
+};
+
+const assertLocalSyncOwnership = async (email: string, bindUnownedData = false): Promise<void> => {
+  const owner = await getLocalSyncOwner();
+  if (owner && owner !== email) {
+    throw new Error("本机仍保留另一个账号的学习数据，请先导出并清除本机数据，再操作当前账号的云备份。");
+  }
+  if (!owner && hasLocalLearningData() && !bindUnownedData) {
+    throw new Error("本机已有尚未绑定账号的学习数据，请先上传并绑定当前账号，不能直接混入另一份云端数据。");
+  }
 };
 
 const pushCloudDatabase = async (
@@ -927,6 +955,7 @@ const pullCloudDatabase = async (
   await mergeDatabaseBytes(data.bytes);
   await ensureSeedData();
   ensureSyncSchema();
+  (await import("./level-plan")).hydrateLevelPlanPreferences();
   await saveDatabase({ notifyCloud: false });
   await saveSyncState(session.email, {
     lastSyncedGeneration: generation ?? data.generation,
@@ -945,7 +974,19 @@ export async function pushCloudBackup(): Promise<string> {
   return withSyncLock(async () => {
     await flushPendingSave();
     const session = await getCloudSession();
-    await pushCloudDatabase(session, undefined, undefined, false);
+    if (!session.token || !session.email) throw new Error("请先登录云同步账号。");
+    await assertLocalSyncOwnership(session.email, true);
+    const state = await getSyncState(session.email);
+    const remote = await requestJson<SyncStatusResponse>("/api/sync/status", {
+      method: "GET",
+      headers: { authorization: `Bearer ${session.token}` }
+    });
+    await pushCloudDatabase(
+      session,
+      typeof remote.generation === "number" ? remote.generation : state.lastSyncedGeneration,
+      remote.last_modified ?? state.lastSyncedModified,
+      false
+    );
     return "云端备份已上传。";
   });
 }
@@ -955,6 +996,8 @@ export async function pullCloudBackup(): Promise<string> {
     await flushPendingSave();
     const localRevision = getLocalDataRevision();
     const session = await getCloudSession();
+    if (!session.token || !session.email) throw new Error("请先登录云同步账号。");
+    await assertLocalSyncOwnership(session.email);
     const result = await pullCloudDatabase(session, false, undefined, localRevision);
     return result.message ?? "云端备份已恢复。";
   });
@@ -973,6 +1016,7 @@ const mergeCloudDatabase = async (
   await mergeDatabaseBytes(data.bytes);
   await ensureSeedData();
   ensureSyncSchema();
+  (await import("./level-plan")).hydrateLevelPlanPreferences();
   await saveDatabase({ notifyCloud: false });
   notifyProgressUpdated();
   const message = "已合并两台设备的学习进度，正在上传合并结果。";

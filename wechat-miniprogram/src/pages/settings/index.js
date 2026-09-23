@@ -10,12 +10,12 @@ const { exportBackup, importBackup } = require('../../runtime/backup');
 const { status: reminderStatus } = require('../../runtime/reminder');
 
 Page({
-  data: { ready: false, entitlement: { active: false, source: 'loading' }, auth: { signedIn: false, userId: '' }, busy: false, result: '', reminder: { configured: false, credits: 0, lastSentOn: '' } },
+  data: { ready: false, entitlement: { active: false, source: 'loading' }, auth: { signedIn: false, userId: '' }, busy: false, result: '', soundOn: true, reminder: { configured: false, credits: 0, lastSentOn: '' } },
 
   async onLoad() {
     try {
       if (!getStatus().ready) await ensureDatabase();
-      this.setData({ ready: true, entitlement: cachedEntitlement(), auth: authStatus() });
+      this.setData({ ready: true, entitlement: cachedEntitlement(), auth: authStatus(), soundOn: core.web.preferences.getStudyPreferences().zooSounds });
       reminderStatus().then((reminder) => this.setData({ reminder })).catch(() => undefined);
     } catch (error) {
       console.error('[settings] 初始化失败', error);
@@ -25,6 +25,13 @@ Page({
 
   openReminderSetting() {
     wx.openSetting({ withSubscriptions: true });
+  },
+
+  toggleSound(event) {
+    const soundOn = Boolean(event.detail.value);
+    const prefs = core.web.preferences.getStudyPreferences();
+    core.web.preferences.saveStudyPreferences({ ...prefs, zooSounds: soundOn });
+    this.setData({ soundOn });
   },
 
   async signIn() {

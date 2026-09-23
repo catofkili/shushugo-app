@@ -18,6 +18,7 @@ import { getDatabase } from "./database";
 import { firstValue, rowsFor, today } from "./study-core";
 import { ensureFsrsColumns, type FsrsEntity } from "./fsrs-store";
 import { createCardLog, type StepMode } from "./card-log";
+import { withoutSyncStamp } from "./sync/schema";
 import { confusionGroups, displayForm, type ConfusionGroup } from "./confusion-groups";
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
 import { reviewedQuestionMeaning } from "./models/question-meaning-overrides";
@@ -105,27 +106,35 @@ export const groupLevelRank = (group: ConfusionGroup) => Math.max(...group.membe
 /** 候选组 = 全部能出题的组。幂等：只补行、补等级。返回新补的组数。 */
 export const materializeConfusionCards = (): number => {
   ensureConfusionCardTables();
+  /*
+   * ⚠️ 占位行和 level_rank 回填都不盖同步时间戳（理由同 word-api/bootstrap 的 initProgress）。
+   * confusion_progress 是 lww：一行刚补出来的空占位（或只是重算了一下等级）时间戳是「现在」，
+   * 比云端那条真练过的行新，合并之后会把对端的连线卡进度静默盖掉。
+   * level_rank 是从出厂内容算的，每台设备自己算得出同一个值，不需要靠同步传播。
+   */
   const db = getDatabase();
   const existing = new Map(rowsFor("SELECT group_key, level_rank FROM confusion_progress").map((row) => [String(row.group_key), Number(row.level_rank)]));
   let inserted = 0;
-  db.run("BEGIN");
-  try {
-    for (const group of confusionGroups()) {
-      if (!matchable(group)) continue;
-      const rank = groupLevelRank(group);
-      const current = existing.get(group.key);
-      if (current === undefined) {
-        db.run("INSERT INTO confusion_progress (group_key, level_rank) VALUES (?, ?)", [group.key, rank]);
-        inserted += 1;
-      } else if (current !== rank) {
-        db.run("UPDATE confusion_progress SET level_rank = ? WHERE group_key = ?", [rank, group.key]);
+  withoutSyncStamp(() => {
+    db.run("BEGIN");
+    try {
+      for (const group of confusionGroups()) {
+        if (!matchable(group)) continue;
+        const rank = groupLevelRank(group);
+        const current = existing.get(group.key);
+        if (current === undefined) {
+          db.run("INSERT INTO confusion_progress (group_key, level_rank) VALUES (?, ?)", [group.key, rank]);
+          inserted += 1;
+        } else if (current !== rank) {
+          db.run("UPDATE confusion_progress SET level_rank = ? WHERE group_key = ?", [rank, group.key]);
+        }
       }
+      db.run("COMMIT");
+    } catch (error) {
+      db.run("ROLLBACK");
+      throw error;
     }
-    db.run("COMMIT");
-  } catch (error) {
-    db.run("ROLLBACK");
-    throw error;
-  }
+  });
   return inserted;
 };
 

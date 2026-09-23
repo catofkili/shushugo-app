@@ -53,6 +53,13 @@ const prevPath = store.databasePaths().prevPath;
 assert.equal(fs.existsSync(dbPath), true);
 await store.saveDatabase();
 assert.equal(fs.existsSync(prevPath), true, '第二次保存后应有 prev 快照');
+await Promise.all([store.saveDatabase(), store.saveDatabase(), store.saveDatabase()]);
+assert.equal(fs.existsSync(dbPath), true, '并发保存后 main 仍在');
+assert.equal(fs.existsSync(prevPath), true, '并发保存后 prev 仍在');
+// 网页的 persistSoon 还有 300ms 防抖写；先等它结束，再人为破坏 main 测冷启动恢复。
+// 否则测试自己会在后台轮转时把刚写坏的 main 移成 prev，变成三份都坏的伪故障。
+await new Promise((resolve) => setTimeout(resolve, 400));
+await store.saveDatabase();
 fs.writeFileSync(dbPath, Buffer.from('corrupted database'));
 await store.closeDatabase();
 const restored = await store.restoreDatabase();

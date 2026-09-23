@@ -36,7 +36,78 @@
       <view wx:if="{{stats.reliefTotal}}" class="stat"><text class="stat-value">{{stats.reliefCompleted}}/{{stats.reliefTotal}}</text><text class="stat-label">昨日减负</text></view>
     </view>
 
-    <view wx:if="{{card}}" class="card study-card">
+    <!-- 混合模式的插播卡：盖在单词卡上面，答完清掉就接着背词。
+         三种卡出的都是网页那同一副牌（同一份进度表、同一套 FSRS），在哪边答的都算数。 -->
+    <view wx:if="{{interleave}}" class="card study-card interleave interleave-{{interleave.kind}}">
+      <view class="card-meta">
+        <text>{{interleave.kind === 'grammar' ? '插播 · 语法' : interleave.kind === 'kanji' ? '插播 · 单独汉字' : '插播 · 疑难连线'}}</text>
+        <text>{{interleave.kind === 'grammar' ? interleave.card.level : interleave.kind === 'kanji' ? '' : interleave.card.label}}</text>
+      </view>
+
+      <!-- 语法：题面是句型，答案是接续 + 中文意 -->
+      <block wx:if="{{interleave.kind === 'grammar'}}">
+        <text class="meaning">{{interleave.card.question}}</text>
+        <button wx:if="{{!interleaveRevealed}}" class="reveal" bindtap="revealInterleave">显示答案</button>
+        <view wx:else class="answer">
+          <text class="kanji">{{interleave.card.pattern}}</text>
+          <text class="kana">{{interleave.card.formation}}</text>
+          <text class="grammar-meaning">{{interleave.card.meaning}}</text>
+          <view wx:if="{{interleave.card.exampleJp}}" class="example">
+            <text class="example-jp">{{interleave.card.exampleJp}}</text>
+            <text class="example-meaning">{{interleave.card.exampleMeaning}}</text>
+          </view>
+        </view>
+      </block>
+
+      <!-- 单独汉字：一个字的读音 + 什么时候读它 + 例词 -->
+      <block wx:elif="{{interleave.kind === 'kanji'}}">
+        <text class="kanji-char">{{interleave.card.char}}</text>
+        <button wx:if="{{!interleaveRevealed}}" class="reveal" bindtap="revealInterleave">显示读音</button>
+        <view wx:else class="answer">
+          <text wx:if="{{interleave.card.on.length}}" class="kana">音读：{{interleave.card.on}}</text>
+          <text wx:if="{{interleave.card.kun.length}}" class="kana">训读：{{interleave.card.kun}}</text>
+          <view wx:for="{{interleave.card.usage}}" wx:key="base" class="usage-row">
+            <text class="usage-base">{{item.base}}</text><text class="usage-note">{{item.note}}</text>
+          </view>
+          <view wx:for="{{interleave.card.examples}}" wx:key="wordId" class="example">
+            <text class="example-jp">{{item.kanji || item.kana}}（{{item.kana}}）</text>
+            <text class="example-meaning">{{item.meaning}}</text>
+          </view>
+        </view>
+      </block>
+
+      <!-- 疑难连线：左列词形、右列题面。连错次数决定四档，所以没有评分按钮。 -->
+      <block wx:else>
+        <text class="match-hint">{{matchFinished ? (matchMistakes === 0 ? '全连对了' : '连错 ' + matchMistakes + ' 次') : '先点左边的词，再点它对应的意思'}}</text>
+        <view class="match-body">
+          <view class="match-col">
+            <view wx:for="{{interleave.card.pairs}}" wx:key="id" class="match-item {{matchPicked === item.id + '' ? 'picked' : ''}} {{matchDone[item.id] ? 'done' : ''}}" data-id="{{item.id}}" bindtap="pickMatchLeft">
+              <text class="match-surface">{{item.surface}}</text><text class="match-kana">{{item.kana}}</text>
+            </view>
+          </view>
+          <view class="match-col">
+            <view wx:for="{{interleave.card.pairs}}" wx:key="id" class="match-item {{matchDone[item.id] ? 'done' : ''}}" data-id="{{item.id}}" bindtap="pickMatchRight">
+              <text class="match-prompt">{{item.prompt}}</text>
+              <text wx:if="{{matchFinished && item.note}}" class="match-note">{{item.note}}</text>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{matchFinished}}" class="answer">
+          <text class="grammar-meaning">{{interleave.card.summary}}</text>
+          <button class="reveal" bindtap="continueAfterMatch">继续</button>
+        </view>
+      </block>
+
+      <view wx:if="{{interleaveRevealed && interleave.kind !== 'confusion'}}" class="answer-actions">
+        <button class="answer-btn forgot" data-answer="forgot" bindtap="answerInterleaveCard" disabled="{{busy}}">忘记</button>
+        <button class="answer-btn fuzzy" data-answer="fuzzy" bindtap="answerInterleaveCard" disabled="{{busy}}">模糊</button>
+        <button class="answer-btn know" data-answer="know" bindtap="answerInterleaveCard" disabled="{{busy}}">认识</button>
+        <button class="answer-btn forever" data-answer="known_forever" bindtap="answerInterleaveCard" disabled="{{busy}}">熟知</button>
+      </view>
+    </view>
+
+    <view wx:if="{{card && !interleave}}" class="card study-card word-card" style="{{swipeStyle}}" bindtouchstart="wordTouchStart" bindtouchmove="wordTouchMove" bindtouchend="wordTouchEnd" bindtouchcancel="wordTouchEnd">
+      <text wx:if="{{swipeStamp}}" class="swipe-stamp {{swipeStamp === '认识' ? 'good' : 'bad'}}">{{swipeStamp}}</text>
       <view class="card-meta"><text>{{card.relief ? '昨日减负' : modeLabel + ' · ' + (card.task_type === 'new' ? '新词' : '复习')}}</text><text>{{card.jlpt_level || '未分级'}}</text></view>
       <text class="meaning">{{card.prompt}}</text>
 
@@ -52,14 +123,14 @@
         </view>
       </view>
 
-      <button wx:if="{{!answerVisible}}" class="reveal" bindtap="handleReveal">
+      <button wx:if="{{!answerVisible}}" class="reveal" data-no-swipe="1" bindtap="handleReveal">
         {{direction === 'kanji' ? '显示读音' : '显示答案'}}
       </button>
-      <view wx:if="{{answerVisible}}" class="answer">
+      <view wx:if="{{answerVisible}}" class="answer revealed-answer">
         <text wx:if="{{direction !== 'reverse'}}" class="kanji">{{card.surface}}</text>
         <text wx:if="{{direction !== 'reverse'}}" class="kana">{{card.kana}}</text>
         <text wx:if="{{direction === 'reverse'}}" class="reverse-answer">{{card.answerText}}</text>
-        <button class="audio-button" disabled="{{busy}}" bindtap="handleAudio">▶ 播放读音</button>
+        <button class="audio-button" data-no-swipe="1" disabled="{{busy}}" bindtap="handleAudio">▶ 播放读音</button>
         <text wx:if="{{card.pos}}" class="pos">{{card.pos}}</text>
         <text wx:if="{{card.verb_type}}" class="word-meta">动词类型：{{card.verb_type}}</text>
         <text wx:if="{{card.wordOrigin}}" class="word-meta">词源：{{card.wordOrigin}}</text>
@@ -74,25 +145,25 @@
         </view>
         <view wx:if="{{card.dictionaryEntries.length}}" class="dictionary"><text class="dictionary-title">例句词典</text><view wx:for="{{card.dictionaryEntries}}" wx:key="entry_key" class="dictionary-row"><text class="dictionary-head">{{item.headword}} {{item.kana}}</text><text class="dictionary-meaning">{{item.meaning}}</text><text wx:if="{{item.usage_note}}" class="dictionary-note">{{item.usage_note}}</text></view></view>
         <view wx:if="{{card.confusions.length}}" class="distinction"><text class="distinction-title">辨析提示</text><view wx:for="{{card.confusions}}" wx:key="key" class="distinction-row"><text class="distinction-type">{{item.typeName}} · {{item.label}}</text><text class="distinction-hint">{{item.hint}}</text></view><navigator class="distinction-link" url="/pages/confusion/index">打开全部疑难辨析 →</navigator></view>
-        <navigator wx:elif="{{confusionsLocked}}" class="distinction-link" url="/pages/confusion/index">疑难辨析 · Pro →</navigator>
+        <navigator wx:elif="{{confusionsLocked}}" class="distinction-link" data-no-swipe="1" url="/pages/confusion/index">疑难辨析 · Pro →</navigator>
         <view class="answer-actions">
-          <button class="answer forgot" data-answer="forgot" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">忘记</button>
-          <button class="answer fuzzy" data-answer="fuzzy" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">模糊</button>
-          <button class="answer know" data-answer="know" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">认识</button>
+          <button class="answer forgot" data-answer="forgot" data-no-swipe="1" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">忘记</button>
+          <button class="answer fuzzy" data-answer="fuzzy" data-no-swipe="1" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">模糊</button>
+          <button class="answer know" data-answer="know" data-no-swipe="1" loading="{{busy}}" disabled="{{busy}}" bindtap="handleAnswer">认识</button>
         </view>
         <view class="note-editor">
-          <input value="{{noteDraft}}" placeholder="给这个词留一句笔记" bindinput="handleNoteInput" />
-          <button class="note-button" disabled="{{busy}}" bindtap="handleSaveNote">保存笔记</button>
+          <input value="{{noteDraft}}" data-no-swipe="1" placeholder="给这个词留一句笔记" bindinput="handleNoteInput" />
+          <button class="note-button" data-no-swipe="1" disabled="{{busy}}" bindtap="handleSaveNote">保存笔记</button>
         </view>
       </view>
     </view>
 
-    <view wx:else class="card empty-card">
+    <view wx:elif="{{!interleave}}" class="card empty-card">
       <text class="empty-title">今天的计划完成了</text>
       <text class="empty-text">可以继续查词，或明天再来。</text>
     </view>
 
-    <button class="undo" loading="{{busy}}" disabled="{{busy}}" bindtap="handleUndo">撤销上一张</button>
+    <button class="undo" loading="{{busy}}" disabled="{{busy || (mode === 'mixed' && !undoKinds.length)}}" bindtap="handleUndo">撤销上一张</button>
     <view class="shortcut-row">
       <navigator class="shortcut" url="/pages/library/index">查词库</navigator>
       <navigator class="shortcut" url="/pages/modes/index">换模式</navigator>

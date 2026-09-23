@@ -13,6 +13,7 @@ vi.mock("./database", () => ({
 }));
 
 import { confusionGroups, masteredConfusionKeys, resetConfusionGroups } from "./confusion-groups";
+import { ensureUserTables } from "./study-core";
 import { reviewedQuestionMeaning } from "./models/question-meaning-overrides";
 import { buildQuestions, quizGroups, settleGroup } from "./distinction-quiz";
 
@@ -22,6 +23,7 @@ describe("辨析题", () => {
     testDb = new SQL.Database(new Uint8Array(readFileSync(
       fileURLToPath(new URL("../../public/nihongo.db", import.meta.url))
     )));
+    ensureUserTables();
     resetConfusionGroups();
   });
 
@@ -74,5 +76,21 @@ describe("辨析题", () => {
       expect(count).toBe(groups.find((group) => group.key === key)?.members.length ?? 0);
       index += count;
     }
+  });
+
+  it("已学范围不把仅有自报起点的辨析词算成真实学过", () => {
+    const group = quizGroups({ kind: "type", type: "pair" })[0];
+    for (const member of group.members) {
+      testDb.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [member.id]);
+      testDb.run("UPDATE progress SET seen_count=1 WHERE word_id=?", [member.id]);
+      testDb.run(`INSERT INTO level_prior_baselines
+        (entity,entity_key,stability,due,last_review,starting_level,familiarity)
+        VALUES ('words',?,30,'2026-10-01','2026-09-01','N4',75)`, [String(member.id)]);
+    }
+    expect(quizGroups({ kind: "learned" }).some((item) => item.key === group.key)).toBe(false);
+    for (const member of group.members) {
+      testDb.run("INSERT INTO reviews (word_id,answer,score_after,reviewed_on,direction) VALUES (?,'know',1,'2026-09-23','forward')", [member.id]);
+    }
+    expect(quizGroups({ kind: "learned" }).some((item) => item.key === group.key)).toBe(true);
   });
 });

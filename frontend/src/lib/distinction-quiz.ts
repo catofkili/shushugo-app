@@ -8,7 +8,7 @@ import {
 } from "./confusion-groups";
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
 import { reviewedQuestionMeaning } from "./models/question-meaning-overrides";
-import { rowsFor, today } from "./database/db-utils";
+import { firstValue, rowsFor, today } from "./database/db-utils";
 import { shuffle } from "./vocab-test";
 
 export interface DistinctionQuestion {
@@ -54,9 +54,14 @@ const reviewedIdsToday = (): Set<number> => new Set(rowsFor(
   [today()]
 ).map((row) => Number(row.word_id ?? 0)).filter(Boolean));
 
-const learnedIds = (): Set<number> => new Set(rowsFor(
-  "SELECT word_id FROM progress WHERE seen_count > 0",
-).map((row) => Number(row.word_id ?? 0)).filter(Boolean));
+const learnedIds = (): Set<number> => {
+  const hasBaselines = firstValue<number>("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='level_prior_baselines'", [], 0) > 0;
+  return new Set(rowsFor(`SELECT p.word_id FROM progress p WHERE p.known_forever = 1
+    OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = p.word_id AND r.direction = 'forward')
+    OR (p.seen_count > 0${hasBaselines ? ` AND NOT EXISTS (
+      SELECT 1 FROM level_prior_baselines b WHERE b.entity='words' AND b.entity_key=CAST(p.word_id AS TEXT)
+    )` : ""})`).map((row) => Number(row.word_id ?? 0)).filter(Boolean));
+};
 
 export function quizGroups(scope: QuizScope): ConfusionGroup[] {
   let groups: ConfusionGroup[];

@@ -55,7 +55,7 @@ export function TeamPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState("");
-  const activity = useMemo(localActivity, []);
+  const activity = useMemo(() => localActivity(), []);
 
   const refresh = useCallback(async () => {
     const [current, available] = await Promise.all([

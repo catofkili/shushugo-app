@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Citrus, Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
-import { getStudyPreferences, PREFERENCES_EVENT } from "../lib/studyPreferences";
+import { getStudyPreferences, kanaGatePending, PREFERENCES_EVENT } from "../lib/studyPreferences";
 import { computeStreak } from "../lib/zoo-streak";
 import type { WordStats } from "../types/vocabulary";
 import type { Page, StudyMode } from "../types/app";
@@ -12,7 +12,8 @@ import type { JLPTLevel } from "../types/grammar";
 import { VISIBLE_STUDY_MODES, studyModeInfo } from "../lib/studyMode";
 import { getJlptPlanStatus, type JlptPlanStatus } from "../lib/jlpt/status";
 import { getWeeklyReportNotice, WEEKLY_REPORT_UPDATED_EVENT } from "../lib/analytics/weekly-reports";
-import { shortfallText } from "../lib/jlpt/plan";
+import { availableShortfall, shortfallText } from "../lib/jlpt/plan";
+import { useEntitlements } from "../hooks/useEntitlements";
 import { useCountUp } from "../hooks/useCountUp";
 import { useMoments } from "../hooks/useMoments";
 import { Sticker, BrandIcon } from "./CapybaraMascot";
@@ -70,6 +71,7 @@ export function ZooHome({
   onMergeDuplicates,
   onOpenWeeklyReport
 }: Props) {
+  const entitlements = useEntitlements();
   const [stats, setStats] = useState<WordStats | null>(null);
   const [jlpt, setJlpt] = useState<JlptPlanStatus | null>(null);
   const [modeSheetOpen, setModeSheetOpen] = useState(false);
@@ -268,7 +270,7 @@ export function ZooHome({
             <button className="zoo-duo-cell" onClick={() => onNavigate("jlpt-plan")}>
               <span className="zoo-duo-kick">{jlpt.target} 备考</span>
               <b>{jlpt.plan.daysLeft < 0 ? "已考完" : `还有 ${jlpt.plan.daysLeft} 天`}</b>
-              <small>{shortfallText(jlpt.shortfall)}</small>
+              <small>{kanaGatePending() ? "先学五十音，完成后开始新词" : shortfallText(availableShortfall(jlpt.shortfall, entitlements.isPro))}</small>
             </button>
           )}
           <button className="zoo-duo-cell" onClick={() => onNavigate("team")}>

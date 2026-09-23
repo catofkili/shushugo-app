@@ -66,7 +66,7 @@
         <text class="detail-kana">{{detail.kana}}</text>
         <view class="detail-tags"><text>{{detail.level}}</text><text>{{detail.pos || '词性未标'}}</text><text>{{detail.isDue ? '该复习' : detail.band === 'unseen' ? '未学' : detail.band === 'mastered' ? '已掌握' : detail.band}}</text></view>
         <text class="detail-meaning">{{detail.meaning}}</text>
-        <view wx:if="{{detail.example.jp}}" class="example"><text class="example-jp">{{detail.example.jp}}</text><text wx:if="{{detail.exampleFurigana}}" class="example-furigana">读音标注已在学习卡显示</text><text class="example-meaning">{{detail.example.meaning}}</text></view>
+        <view wx:if="{{detail.example.jp}}" class="example"><text class="example-jp">{{detail.example.jp}}</text><text class="example-meaning">{{detail.example.meaning}}</text></view>
         <view class="detail-actions"><button bindtap="handleFavorite">{{detail.isFavorite ? '★ 已收藏' : '☆ 收藏'}}</button><button wx:if="{{!detail.isKnownForever}}" bindtap="handleDetailKnown">标记熟知</button></view>
         <textarea class="note" value="{{noteDraft}}" maxlength="500" placeholder="给这个词留一句笔记" bindinput="handleNoteInput"></textarea>
         <button class="save-note" loading="{{busy}}" disabled="{{busy}}" bindtap="handleSaveNote">保存笔记</button>

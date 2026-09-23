@@ -20,6 +20,7 @@ export const USER_DATA_TABLES = [
   "word_study_time", "word_study_time_by_device", "study_time_by_period", "weekly_reports", "word_question_meanings",
   "stage1_tasks", "stage2_progress", "reverse_memory", "confusion_mastered",
   "dictionary_discovered_words", "moji_migrated_reviews", "custom_words",
+  "level_prior_baselines", "kana_memory", "kana_reviews",
   // 汉字
   "kanji_progress", "kanji_memory", "kanji_char_overrides",
   "kanji_reading_memory", "kanji_reading_progress",

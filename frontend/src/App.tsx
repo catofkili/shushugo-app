@@ -10,13 +10,13 @@ import { GrammarHighlightProvider } from "./components/GrammarHighlightProvider"
 import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
 import { completeTodayWordPlan, getProgressOverview, recordStubbornQuickStudy, startPickedStudy as startPickedWordStudy, ProgressOverview } from "./lib/api";
-import { canUseFeature, FeatureId } from "./lib/entitlements";
+import { canUseFeature, FeatureId, getEntitlements } from "./lib/entitlements";
 import { PROGRESS_UPDATED_EVENT, notifyProgressUpdated } from "./lib/progress-events";
 import { loadKanjiUnitIndex } from "./lib/kanji-unit-index";
 import { activateMistakesForToday, defaultStudyMode, getStudyMode, saveStudyMode, STUDY_MODE_EVENT, studyModeInfo } from "./lib/studyMode";
 import { studyDayEnd } from "./lib/database/db-utils";
 import { getGrammarLevelPreference, saveGrammarLevelPreference, type GrammarLevelSelection } from "./lib/grammarPreferences";
-import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, putCloudWeeklyReport, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
+import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, putCloudWeeklyReport, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
 import { syncUserProfileAfterLogin } from "./lib/profile-sync";
 import { getPersistenceFailure, PERSISTENCE_ERROR_EVENT, PERSISTENCE_OK_EVENT, requestFullSnapshot, saveDatabase } from "./lib/storage";
 import type { SearchResult } from "./lib/search-api";
@@ -34,6 +34,8 @@ import { getStudyPreferences, PREFERENCES_EVENT } from "./lib/studyPreferences";
 import { consumePendingWeeklyReportWeekStart, loadReminderSettings, syncWeeklyReportNotification, WEEKLY_REPORT_NOTIFICATION_EVENT } from "./lib/notifications";
 import { OPEN_GRAMMAR_FOUNDATION_EVENT } from "./lib/grammar-foundation-navigation";
 import type { QuizScope } from "./lib/distinction-quiz";
+import { LevelSetup } from "./components/LevelSetup";
+import { shouldShowLevelSetup } from "./lib/level-plan";
 
 const Library = lazy(() => import("./pages/Library").then((module) => ({ default: module.Library })));
 const GrammarFoundationPage = lazy(() => import("./pages/GrammarFoundationPage").then((module) => ({ default: module.GrammarFoundationPage })));
@@ -125,6 +127,10 @@ export default function App() {
   const [pendingAccountPage, setPendingAccountPage] = useState<Page | null>(null);
   const [weeklyReportStart, setWeeklyReportStart] = useState<string | null>(null);
   const [weeklyReportEntry, setWeeklyReportEntry] = useState<WeeklyReportEntry>("button");
+  const [levelSetupOpen, setLevelSetupOpen] = useState(() => {
+    try { return shouldShowLevelSetup(); } catch { return false; }
+  });
+  const [trialEndedOpen, setTrialEndedOpen] = useState(false);
   // 发布期开关：关掉之后入口、提醒、通知和云归档一起停，历史照旧可读。
   const [weeklyReportEnabled, setWeeklyReportEnabled] = useState(
     () => getStudyPreferences().weeklyReportEnabled
@@ -151,6 +157,25 @@ export default function App() {
       window.removeEventListener(CLOUD_AUTH_EVENT, refreshAuth);
     };
   }, []);
+
+  useEffect(() => {
+    const expiresAt = localStorage.getItem(LEVEL_PLAN_TRIAL_EXPIRES_KEY);
+    if (!expiresAt || localStorage.getItem(LEVEL_PLAN_TRIAL_NOTICE_KEY) === expiresAt) return;
+    let timer: number;
+    const checkExpiry = () => {
+      const remaining = Date.parse(expiresAt) - Date.now();
+      if (remaining > 0) {
+        timer = window.setTimeout(checkExpiry, Math.min(remaining + 100, 2_000_000_000));
+        return;
+      }
+      const current = getEntitlements();
+      if (current.isPro && current.source !== "trial") return;
+      saveStudyMode("classic");
+      setTrialEndedOpen(true);
+    };
+    timer = window.setTimeout(checkExpiry, 0);
+    return () => window.clearTimeout(timer);
+  }, [entitlements.isPro, entitlements.source]);
 
   useEffect(() => {
     const sync = () => {
@@ -942,6 +967,26 @@ export default function App() {
         }}
         onAuthenticated={handleAuthenticated}
       />
+      {levelSetupOpen && <LevelSetup
+        open
+        onComplete={(message) => {
+          setLevelSetupOpen(false);
+          showNotice(message, 5200);
+          setPageHistory((history) => [...history, page]);
+          setPage("jlpt-plan");
+        }}
+      />}
+      {trialEndedOpen && <div className="fixed inset-0 z-[85] grid place-items-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-label="试用结束">
+        <div className="w-full max-w-sm rounded-3xl bg-[#FFF9ED] p-6 shadow-2xl">
+          <h2 className="text-xl font-black jp-ink">7 天试用已结束</h2>
+          <p className="mt-3 text-sm leading-6 jp-muted">现在计划会继续安排单词。开通 Pro 后，语法、汉字和辨析会按原计划恢复。</p>
+          <button className="focus-ring mt-5 h-11 w-full rounded-2xl jp-accent text-sm font-black" onClick={() => {
+            const expiresAt = localStorage.getItem(LEVEL_PLAN_TRIAL_EXPIRES_KEY);
+            if (expiresAt) localStorage.setItem(LEVEL_PLAN_TRIAL_NOTICE_KEY, expiresAt);
+            setTrialEndedOpen(false);
+          }}>知道了</button>
+        </div>
+      </div>}
     </div>
   );
 }

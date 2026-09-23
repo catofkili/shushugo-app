@@ -1,5 +1,6 @@
 import { getDatabase } from "./database";
 import { oncePerDatabase } from "./database/db-utils";
+import { withoutSyncStamp } from "./sync/schema";
 import {
   ensureUserTables,
   firstValue,
@@ -16,10 +17,14 @@ export function ensureGrammarProgressInitialized() {
   // 不加闸门的话每答一次卡要跑 10 遍全表 INSERT OR IGNORE(实测 12ms/次作答)。
   oncePerDatabase("grammar-progress", () => {
     ensureUserTables();
-    getDatabase().run(`
-      INSERT OR IGNORE INTO grammar_progress (grammar_id)
-      SELECT id FROM grammar_points
-    `);
+    // ⚠️ 占位行不盖同步时间戳,理由见 word-api/bootstrap 的 initProgress:
+    // 空行的时间戳比云端真学过的行新时,LWW 会让空行赢,静默抹掉对端的语法进度。
+    withoutSyncStamp(() => {
+      getDatabase().run(`
+        INSERT OR IGNORE INTO grammar_progress (grammar_id)
+        SELECT id FROM grammar_points
+      `);
+    });
   });
 }
 

@@ -43,6 +43,15 @@ describe("getEntitlements", () => {
     const state = getEntitlements();
     expect(state.isPro).toBe(false);
     expect(state.source).toBe("free");
+    expect(state.expiresAt).toBeUndefined();
+    expect(state.productId).toBeUndefined();
+    expect(getEntitlements()).toEqual(state);
+  });
+
+  it("ends a trial once and leaves words available", () => {
+    grantPro("shushugo_pro_trial", "trial", new Date(Date.now() - 60_000).toISOString());
+    expect(getEntitlements().isPro).toBe(false);
+    expect(getEntitlements().source).toBe("free");
   });
 
   it("keeps Pro active before the expiry date", () => {

@@ -35,6 +35,17 @@ export const nextExamDate = (from: Date = new Date()): Date => {
   return candidates.find((date) => date.getTime() >= startOfToday.getTime()) ?? candidates[0];
 };
 
+/** 滚轮中显示接下来的四场；未公布的考期只是按首个周日估算。 */
+export const upcomingExamDates = (from: Date = new Date()): Date[] => {
+  const next = nextExamDate(from);
+  const year = next.getFullYear();
+  return [
+    ...examDatesOfYear(year),
+    ...examDatesOfYear(year + 1),
+    ...examDatesOfYear(year + 2)
+  ].filter((date) => date >= next).slice(0, 4);
+};
+
 /** "2026-12-06" → Date;格式不对返回 null,调用方回落到 nextExamDate */
 export const parseExamDate = (value: string): Date | null => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());

@@ -1,5 +1,6 @@
 import { getDatabase } from "../database";
 import { oncePerDatabase } from "../database/db-utils";
+import { withoutSyncStamp } from "../sync/schema";
 import { ensureUserTables, getState, persistSoon, setState, today } from "../study-core";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
 import {
@@ -34,10 +35,22 @@ const initProgress = () => {
   const db = getDatabase();
   // 种子数据迁移已在启动时(main.tsx 的 ensureSeedData)完成。
   ensureUserTables();
-  db.run(`
-    INSERT OR IGNORE INTO progress (word_id)
-    SELECT id FROM words
-  `);
+  /*
+   * ⚠️ 占位行**不能盖同步时间戳**。
+   *
+   * 这一句给每个词补一行空 progress(seen_count = 0)。它不是用户的改动,可是 insert
+   * 触发器会照常盖上 sync_updated_at = 现在 —— 而 progress 的合并是 LWW。于是
+   * 「今天装上的设备」的空行时间戳比云端那条真学过的行新,合并之后**云端的学习状态被
+   * 一行空记录盖掉**,而且完全静默(界面上那个词变回未学)。
+   * 在 applying_remote 下跑,让这些行的 sync_updated_at 留空(= 纪元),任何一条
+   * 真实记录都赢得过它。同理见 ensureGrammarProgressInitialized。
+   */
+  withoutSyncStamp(() => {
+    db.run(`
+      INSERT OR IGNORE INTO progress (word_id)
+      SELECT id FROM words
+    `);
+  });
   db.run("UPDATE words SET shuffle_rank = ABS(RANDOM()) / 9223372036854775807.0 WHERE shuffle_rank IS NULL");
   if (!getState("first_study_day", "")) {
     setState("first_study_day", today());

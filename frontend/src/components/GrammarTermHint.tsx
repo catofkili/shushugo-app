@@ -1,7 +1,8 @@
-import { ReactNode, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { openGrammarFoundation } from "../lib/grammar-foundation-navigation";
 import { JapaneseRuby } from "./JapaneseRuby";
+import kanaGlossary from "../data/kana_glossary.json";
 
 type Hint = {
   label: string;
@@ -10,7 +11,7 @@ type Hint = {
   examples: string[];
 };
 
-const hints: Hint[] = [
+const grammarHints: Hint[] = [
   { label: "ない形", title: "ない形", body: "动词普通体否定形。常用来接续表示否定、义务、禁止等语法。", examples: ["書く→書かない", "食べる→食べない", "する→しない"] },
   { label: "ナイ形", title: "ない形", body: "动词普通体否定形。常用来接续表示否定、义务、禁止等语法。", examples: ["買う→買わない", "見る→見ない", "来る→来ない"] },
   { label: "た形", title: "た形", body: "动词普通体过去形。常接表示经验、之后、假定等语法。", examples: ["書く→書いた", "食べる→食べた", "する→した"] },
@@ -55,7 +56,17 @@ const hints: Hint[] = [
   { label: "たい形", title: "たい形", body: "连用形接たい，表示想做；之后按い形容词变化。", examples: ["書きたい", "食べたくない", "したかった"] },
   { label: "ず形", title: "ず形", body: "未然形接ず构成书面否定；ず本身已经表示否定。", examples: ["書かず", "食べず", "せず"] },
   { label: "まい形", title: "まい形", body: "表示否定意志或否定推测的书面形式。", examples: ["行くまい", "食べるまい", "すまい"] }
-].sort((left, right) => right.label.length - left.label.length);
+];
+
+// 五十音术语（frontend/src/data/kana_glossary.json，由 scripts/verify-kana-cards.mjs 校验）。
+// 结构和上面的语法术语完全一样，所以直接并进同一张词表和同一个正则 —— 不写第二套识别逻辑。
+// 这批是假名／发音概念，foundationRuleByTitle 里没有对应条目，因此没有「基础规则」链接，
+// 手机上靠 HintBubble 的点击展开（见下）。
+const kanaHints: Hint[] = kanaGlossary.terms;
+
+const hints: Hint[] = [...grammarHints, ...kanaHints].sort(
+  (left, right) => right.label.length - left.label.length
+);
 
 const regex = new RegExp(`(${hints.map((hint) => hint.label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g");
 const hintByLabel = new Map(hints.map((hint) => [hint.label, hint]));
@@ -103,6 +114,8 @@ const foundationRuleByTitle: Record<string, string> = {
 const HintBubble = ({ hint, children }: { hint: Hint; children: ReactNode }) => {
   const ref = useRef<HTMLSpanElement>(null);
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
+  // 手机上没有悬停：点一下把术语小卡钉住，再点一下或点别处才收起
+  const [pinned, setPinned] = useState(false);
   const foundationRuleId = foundationRuleByTitle[hint.title];
 
   const show = () => {
@@ -115,25 +128,58 @@ const HintBubble = ({ hint, children }: { hint: Hint; children: ReactNode }) => 
     });
   };
 
+  const togglePin = () => {
+    if (pinned) {
+      setPinned(false);
+      setPosition(null);
+      return;
+    }
+    show();
+    setPinned(true);
+  };
+
+  // 钉住期间只有点别处才收起 —— 悬停移开／失焦都不收，否则手机上刚点出来就没了
+  useEffect(() => {
+    if (!pinned) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (ref.current?.contains(event.target as Node)) return;
+      setPinned(false);
+      setPosition(null);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [pinned]);
+
   return (
     <>
       <span
         ref={ref}
         onMouseEnter={show}
-        onMouseLeave={() => setPosition(null)}
+        onMouseLeave={() => {
+          if (!pinned) setPosition(null);
+        }}
         onFocus={show}
-        onBlur={() => setPosition(null)}
+        onBlur={() => {
+          if (!pinned) setPosition(null);
+        }}
         onClick={(event) => {
-          if (!foundationRuleId) return;
           event.stopPropagation();
-          openGrammarFoundation(foundationRuleId);
+          // 有「基础规则」的术语照旧直接跳转；假名／发音术语没有链接，点了要能弹出解释
+          if (foundationRuleId) {
+            openGrammarFoundation(foundationRuleId);
+            return;
+          }
+          togglePin();
         }}
         onKeyDown={(event) => {
-          if (foundationRuleId && (event.key === "Enter" || event.key === " ")) {
-            event.preventDefault();
-            event.stopPropagation();
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          event.stopPropagation();
+          if (foundationRuleId) {
             openGrammarFoundation(foundationRuleId);
+            return;
           }
+          togglePin();
         }}
         className={`relative inline-flex items-center border-b border-dotted border-[#81D8CF] ${foundationRuleId ? "cursor-pointer" : "cursor-help"}`}
         role={foundationRuleId ? "button" : undefined}

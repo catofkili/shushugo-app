@@ -11,6 +11,10 @@
  * 见 build-shared.mjs 的 SHIMS 表。
  */
 export * as database from "../../../frontend/src/lib/database";
+export * as progressApi from "../../../frontend/src/lib/progress-api";
+export * as tokenDictionary from "../../../frontend/src/lib/token-dictionary";
+export * as pitchAccent from "../../../frontend/src/lib/pitch-accent";
+export * as orthography from "../../../frontend/src/lib/orthography";
 export * as studyCore from "../../../frontend/src/lib/study-core";
 export * as dbUtils from "../../../frontend/src/lib/database/db-utils";
 export * as wordApi from "../../../frontend/src/lib/word-api";
@@ -29,11 +33,15 @@ export * as distinctionQuiz from "../../../frontend/src/lib/distinction-quiz";
 export * as confusionCards from "../../../frontend/src/lib/confusion-cards";
 export * as kanjiCharCards from "../../../frontend/src/lib/kanji-char-cards";
 export * as kanjiUnitScheduler from "../../../frontend/src/lib/kanji-unit-scheduler";
+export * as kanjiReadingUsage from "../../../frontend/src/lib/kanji-reading-usage";
 export * as kanjiUnitIndex from "../../../frontend/src/lib/kanji-unit-index";
+export * as mixedCards from "../../../frontend/src/lib/mixed-cards";
 export * as grammarQuiz from "../../../frontend/src/lib/grammar-quiz";
 export * as grammarApi from "../../../frontend/src/lib/grammar-api";
 export * as grammarKeyPoints from "../../../frontend/src/lib/grammar-key-points";
 export * as grammarFormation from "../../../frontend/src/lib/grammar-formation";
+export * as furiganaSplit from "../../../frontend/src/lib/furigana";
+export * as wordStudyUtils from "../../../frontend/src/features/word-study/word-study-utils";
 export * as furigana from "../../../frontend/src/lib/furigana-data";
 export * as duplicateMerge from "../../../frontend/src/lib/duplicate-merge";
 export * as syncSchema from "../../../frontend/src/lib/sync/schema";
@@ -49,8 +57,12 @@ export * as weeklyReports from "../../../frontend/src/lib/analytics/weekly-repor
 export * as analytics from "../../../frontend/src/lib/analytics/stats";
 export * as jlptPlan from "../../../frontend/src/lib/jlpt/plan";
 export * as jlptStatus from "../../../frontend/src/lib/jlpt/status";
+export * as levelPlan from "../../../frontend/src/lib/level-plan";
+export * as planContent from "../../../frontend/src/lib/plan/content-matrix";
+export * as kanaProgress from "../../../frontend/src/lib/kana-progress";
 export * as examDates from "../../../frontend/src/lib/jlpt/exam-dates";
 export * as preferences from "../../../frontend/src/lib/studyPreferences";
+export * as sounds from "../../../frontend/src/lib/zoo-sounds";
 export * as achievements from "../../../frontend/src/lib/achievements/index";
 export * as streak from "../../../frontend/src/lib/zoo-streak";
 export * as reviewBudget from "../../../frontend/src/lib/review-budget";

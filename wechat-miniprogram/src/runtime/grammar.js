@@ -78,17 +78,49 @@ function searchGrammar(query, options = {}) {
   return grammarRows(db, query, options.level, options.limit);
 }
 
+/*
+ * 语法列表上的「熟悉 / 没记住」。
+ *
+ * ⚠️ 以前这里直接 UPDATE grammar_progress（seen_count + 1、known_forever = 1），
+ * 既不写 grammar_reviews 也不动 FSRS —— 而 grammar_progress 是按 grammar_id 跨端同步的：
+ * 网页那边看到 seen_count 涨了、却没有任何一条作答流水，FSRS 状态也停在原地。
+ * 现在走网页同一条 submitGrammarQuizAnswer（FSRS + 流水 + 当日计划）。
+ */
 async function markGrammar(grammarId, known = true) {
   const { getDatabase, saveDatabase } = databaseStore();
   const db = getDatabase();
   ensureGrammarSchema(db);
   const id = Number(grammarId);
   if (!Number.isInteger(id) || id <= 0) throw new Error('语法编号无效');
-  const day = core.localStudyDay(new Date());
-  db.run(`INSERT OR IGNORE INTO grammar_progress (grammar_id) VALUES (?)`, [id]);
-  db.run(`UPDATE grammar_progress SET seen_count = seen_count + 1, known_forever = ?, last_seen_on = ? WHERE grammar_id = ?`, [known ? 1 : 0, day, id]);
+  const level = String(core.firstValue(db, 'SELECT level FROM grammar_points WHERE id = ?', [id], 'N5'));
+  core.withDb(db, () => core.web.grammarQuiz.submitGrammarQuizAnswer(level, id, known ? 'know' : 'forgot'));
   await saveDatabase();
   return { grammarId: id, known };
+}
+
+/** 语法考题：出题、FSRS、当日配额、撤销全是网页的 grammar-quiz。 */
+function grammarQuizSession(level) {
+  const { getDatabase } = databaseStore();
+  const db = getDatabase();
+  ensureGrammarSchema(db);
+  return core.withDb(db, () => core.web.grammarQuiz.getGrammarQuizSession(String(level)));
+}
+
+async function answerGrammarQuiz(level, grammarId, answer) {
+  const { getDatabase, saveDatabase } = databaseStore();
+  const db = getDatabase();
+  ensureGrammarSchema(db);
+  const session = core.withDb(db, () => core.web.grammarQuiz.submitGrammarQuizAnswer(String(level), Number(grammarId), answer));
+  await saveDatabase();
+  return session;
+}
+
+async function undoGrammarQuiz(level) {
+  const { getDatabase, saveDatabase } = databaseStore();
+  const db = getDatabase();
+  const session = core.withDb(db, () => core.web.grammarQuiz.undoLastGrammarQuizAnswer(String(level)));
+  await saveDatabase();
+  return session;
 }
 
 // 收藏走网页同一份 favorites-api（字符串 id 由 extended-features 换算，墓碑也在那边补）。
@@ -119,5 +151,8 @@ module.exports = {
   migrateFavoritesFromAppState,
   searchGrammar,
   setGrammarState,
+  grammarQuizSession,
+  answerGrammarQuiz,
+  undoGrammarQuiz,
   toggleGrammarFavorite
 };

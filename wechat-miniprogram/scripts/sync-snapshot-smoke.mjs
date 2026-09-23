@@ -1,3 +1,14 @@
+/*
+ * 云快照的导出与合并。**导出器和合并器都是网页的 sync/snapshot + sync/merge**，
+ * 所以这里不再重测合并规则（那些判据在 frontend 的 merge.test.ts 里），只盯小程序特有的四件事：
+ *
+ *  1. 导出的还是那个格式（master-nihongo-user-sqlite-v1 / 协议 2），本机登录态和
+ *     「本机内容迁到哪一版」的标记绝不出门；
+ *  2. 0.1.x 小程序的本地库能升上来：墓碑表换列名、透传表放回真表、自己发明的
+ *     direction_tasks / mode_tasks 删掉；
+ *  3. 老小程序推上云的那几代快照（墓碑写成 entity/natural_key）里的删除仍然生效；
+ *  4. 真实往返：小程序导出 → 小程序合并，收藏 / 成就 / 柚子 / 语法进度一列不少。
+ */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -5,222 +16,139 @@ import initSqlJs from '../../frontend/node_modules/sql.js/dist/sql-wasm.js';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const core = require('../src/core/study-core.js');
-const { exportSyncSnapshot, mergeSnapshot, SYNC_SNAPSHOT_FORMAT } = require('../src/runtime/sync-snapshot.js');
 const root = path.resolve(import.meta.dirname, '..');
 const seedPath = path.resolve(root, '../frontend/public/nihongo.db');
 const SQL = await initSqlJs({ locateFile: (name) => path.resolve(root, '../frontend/node_modules/sql.js/dist', name) });
 const bytes = new Uint8Array(fs.readFileSync(seedPath));
-const left = new SQL.Database(bytes);
-const right = new SQL.Database(bytes);
-const now = new Date('2026-08-22T12:00:00+08:00');
+const seed = () => new SQL.Database(bytes);
+/** 同步身份里的分隔符（网页那边是 char(31)） */
+const UNIT = String.fromCharCode(31);
 
-for (const db of [left, right]) core.ensureStudySchema(db);
-const leftCard = core.nextCard(left, { now });
-core.recordAnswer(left, leftCard.id, 'know', { now });
-core.saveNote(left, leftCard.id, '跨端笔记', now);
+const storage = {};
+globalThis.wx = {
+  env: { USER_DATA_PATH: '/tmp/shushugo-snapshot-smoke' },
+  getFileSystemManager: () => ({}),
+  getStorageSync: (key) => storage[key] ?? '',
+  setStorageSync: (key, value) => { storage[key] = value; },
+  removeStorageSync: (key) => { delete storage[key]; }
+};
+const left = seed();
+let current = left;
+const store = require('../src/runtime/database-store.js');
+store.getDatabase = () => current;
+store.saveDatabase = async () => ({ bytes: 0 });
+await store.ensureContentLoaded();
+
+const core = require('../src/core/study-core.js');
+const learning = require('../src/runtime/learning.js');
+const features = require('../src/runtime/extended-features.js');
+const grammar = require('../src/runtime/grammar.js');
+const { exportSyncSnapshot, mergeSnapshot, SYNC_SNAPSHOT_FORMAT, SYNC_PROTOCOL_VERSION } = require('../src/runtime/sync-snapshot.js');
+core.ensureStudySchema(left);
+
+/* ---- 1. 格式，以及不许出门的东西 ---- */
+const card = (await learning.getStudyHome({ direction: 'forward' })).card;
+await learning.answerCard(card.id, 'know', { direction: 'forward' });
+await learning.saveWordNote(card.id, '跨端笔记');
 core.setState(left, 'auth_access_token', 'must-not-leave-device');
+core.setState(left, 'jlpt_seed_version', 'local-content-marker');
+core.setState(left, 'local_snapshot_mark', '2026-09-22T00:00:00.000Z');
+
 const snapshot = await exportSyncSnapshot(left);
-const repeatedSnapshot = await exportSyncSnapshot(left);
-assert.deepEqual(repeatedSnapshot, snapshot, '未发生学习变化时快照应保持幂等，便于服务端重试');
 const snapshotDb = new SQL.Database(snapshot);
 assert.equal(core.firstValue(snapshotDb, 'SELECT format FROM sync_snapshot_meta'), SYNC_SNAPSHOT_FORMAT);
-assert.equal(core.firstValue(snapshotDb, 'SELECT value FROM app_state WHERE key = ?', ['auth_access_token'], 0), 0);
-assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM pragma_table_info(\'progress\') WHERE name = \'sync_updated_at\''), 1);
-assert.ok(core.firstValue(snapshotDb, 'SELECT sync_updated_at FROM progress WHERE word_id = ?', [leftCard.id]));
-assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM pragma_table_info(\'sync_tombstones\') WHERE name = \'table_name\''), 1);
-assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM pragma_table_info(\'sync_tombstones\') WHERE name = \'entity\''), 1);
-assert.equal(core.firstValue(snapshotDb, 'SELECT reviewed_at FROM reviews LIMIT 1'), now.getTime());
-assert.equal(core.firstValue(snapshotDb, 'SELECT event_source FROM reviews LIMIT 1'), 'study');
+assert.equal(Number(core.firstValue(snapshotDb, 'SELECT protocol_version FROM sync_snapshot_meta')), SYNC_PROTOCOL_VERSION);
+assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM app_state WHERE key = ?', ['auth_access_token'], 0), 0,
+  '登录态不能进快照');
+for (const key of ['jlpt_seed_version', 'local_snapshot_mark']) {
+  assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM app_state WHERE key = ?', [key], 0), 0,
+    `${key} 说的是本机状态，绝不能跨设备同步`);
+}
+assert.ok(core.firstValue(snapshotDb, 'SELECT sync_uid FROM reviews LIMIT 1'), '作答必须带 sync_uid');
+assert.equal(core.firstValue(snapshotDb, "SELECT COUNT(*) FROM pragma_table_info('sync_tombstones') WHERE name = 'table_name'"), 1);
+// grammar_progress 必须逐列齐全：少一列就等于每次推快照都把网页 / iOS 那一列抹掉
+const grammarColumns = new Set(core.rowsFor(snapshotDb, "SELECT name FROM pragma_table_info('grammar_progress')").map((row) => String(row.name)));
+for (const column of ['grammar_id', 'seen_count', 'known_forever', 'last_seen_on', 'right_count', 'fuzzy_count', 'forgot_count',
+  'fsrs_stability', 'fsrs_difficulty', 'fsrs_due', 'fsrs_last_review', 'fsrs_state', 'fsrs_steps', 'fsrs_reps', 'fsrs_lapses']) {
+  assert.ok(grammarColumns.has(column), `快照里的 grammar_progress 缺列 ${column}`);
+}
 snapshotDb.close();
 
-const merged = mergeSnapshot(right, snapshot);
-assert.equal(merged.insertedReviews, 1);
-assert.equal(core.firstValue(right, 'SELECT seen_count FROM progress WHERE word_id = ?', [leftCard.id]), 1);
-assert.equal(core.firstValue(right, 'SELECT note FROM word_notes WHERE word_id = ?', [leftCard.id]), '跨端笔记');
-
-// 撤销 = 删作答。小程序没有同步触发器，undoLastAnswer 必须自己留一条键为 sync_uid 的墓碑
-// （和网页触发器写的一样），并且之后一份还带着这条作答的旧快照不能把它送回来。
-{
-  const undoDb = new SQL.Database(bytes);
-  core.ensureStudySchema(undoDb);
-  const card = core.nextCard(undoDb, { now });
-  core.recordAnswer(undoDb, card.id, 'know', { now });
-  const staleSnapshot = await exportSyncSnapshot(undoDb);
-  const uid = core.firstValue(undoDb, 'SELECT sync_uid FROM reviews WHERE word_id = ?', [card.id]);
-  assert.ok(uid, '作答必须带 sync_uid');
-  assert.equal(core.undoLastAnswer(undoDb, { now }).undone, true);
-  assert.equal(core.firstValue(undoDb, "SELECT COUNT(*) FROM sync_tombstones WHERE entity = 'reviews' AND natural_key = ?", [uid], 0), 1, '小程序撤销要留 sync_uid 墓碑');
-  const result = mergeSnapshot(undoDb, staleSnapshot);
-  assert.equal(result.insertedReviews, 0, '旧快照不能把撤销掉的作答送回来');
-  assert.equal(core.firstValue(undoDb, 'SELECT COUNT(*) FROM reviews WHERE sync_uid = ?', [uid], 0), 0);
-  // 反过来：网页那边撤销后同步过来的墓碑（键就是一段 uid）要能删掉本机这条作答。
-  const webDb = new SQL.Database(bytes);
-  core.ensureStudySchema(webDb);
-  mergeSnapshot(webDb, staleSnapshot);
-  assert.equal(core.firstValue(webDb, 'SELECT COUNT(*) FROM reviews WHERE sync_uid = ?', [uid], 0), 1);
-  const webTombstone = new SQL.Database();
-  webTombstone.run('CREATE TABLE sync_snapshot_meta (format TEXT PRIMARY KEY, protocol_version INTEGER NOT NULL)');
-  webTombstone.run('INSERT INTO sync_snapshot_meta VALUES (?, ?)', [SYNC_SNAPSHOT_FORMAT, 2]);
-  webTombstone.run("CREATE TABLE sync_tombstones (table_name TEXT NOT NULL, row_key TEXT NOT NULL, deleted_at TEXT NOT NULL, origin_device TEXT NOT NULL DEFAULT '')");
-  webTombstone.run('INSERT INTO sync_tombstones VALUES (?, ?, ?, ?)', ['reviews', uid, '2099-01-01T00:00:00.000Z', 'web-test']);
-  mergeSnapshot(webDb, new Uint8Array(webTombstone.export()));
-  assert.equal(core.firstValue(webDb, 'SELECT COUNT(*) FROM reviews WHERE sync_uid = ?', [uid], 0), 0, '网页的 sync_uid 墓碑必须能删掉小程序本地那条作答');
-  webTombstone.close(); webDb.close(); undoDb.close();
+/* ---- 2. 0.1.x 的本地库能升上来 ---- */
+const legacy = seed();
+legacy.run('CREATE TABLE sync_tombstones (entity TEXT NOT NULL, natural_key TEXT NOT NULL, deleted_at TEXT NOT NULL, PRIMARY KEY (entity, natural_key))');
+legacy.run('INSERT INTO sync_tombstones VALUES (?, ?, ?)', ['content_favorites', `word${UNIT}1`, '2026-09-01T00:00:00.000Z']);
+legacy.run('CREATE TABLE direction_tasks (study_day TEXT, direction TEXT, word_id INTEGER, order_index INTEGER)');
+legacy.run('CREATE TABLE mode_tasks (study_day TEXT, mode TEXT, word_id INTEGER, order_index INTEGER)');
+legacy.run('CREATE TABLE sync_passthrough (table_name TEXT PRIMARY KEY, create_sql TEXT, columns_json TEXT, rows_json TEXT, received_at TEXT)');
+legacy.run('CREATE TABLE achievements (id TEXT PRIMARY KEY, unlocked_on TEXT NOT NULL)');
+legacy.run("INSERT INTO sync_passthrough VALUES ('achievements', '', ?, ?, '2026-09-01')",
+  [JSON.stringify(['id', 'unlocked_on']), JSON.stringify([['first-know', '2026-09-01']])]);
+current = legacy;
+core.ensureStudySchema(legacy);
+assert.equal(core.firstValue(legacy, "SELECT COUNT(*) FROM pragma_table_info('sync_tombstones') WHERE name = 'table_name'"), 1,
+  '老墓碑表必须换成网页的列名，否则网页的删除触发器往里写会报错、把调用方的事务整个掀翻');
+assert.equal(core.firstValue(legacy, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'content_favorites'", [], 0), 1,
+  '老墓碑要搬过来，不能丢');
+assert.equal(core.firstValue(legacy, "SELECT unlocked_on FROM achievements WHERE id = 'first-know'"), '2026-09-01',
+  '透传表里存着的远端行要放回真表，否则这台设备推上去的快照会缺这些表');
+for (const table of ['sync_passthrough', 'direction_tasks', 'mode_tasks']) {
+  assert.equal(core.firstValue(legacy, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", [table], 0), 0,
+    `${table} 是老小程序自己发明的表，升级后要删掉`);
 }
+legacy.close();
 
-// 兼容 iOS 旧列名：table_name/row_key 的墓碑应删除小程序本地对应行。
-const iosTombstone = new SQL.Database();
-iosTombstone.run('CREATE TABLE sync_snapshot_meta (format TEXT PRIMARY KEY, protocol_version INTEGER NOT NULL)');
-iosTombstone.run('INSERT INTO sync_snapshot_meta VALUES (?, ?)', [SYNC_SNAPSHOT_FORMAT, 1]);
-iosTombstone.run('CREATE TABLE sync_tombstones (table_name TEXT NOT NULL, row_key TEXT NOT NULL, deleted_at TEXT NOT NULL, origin_device TEXT NOT NULL DEFAULT \'\')');
-iosTombstone.run('INSERT INTO sync_tombstones VALUES (?, ?, ?, ?)', ['progress', String(leftCard.id), '2026-08-22T12:01:00.000Z', 'ios-test']);
-mergeSnapshot(right, new Uint8Array(iosTombstone.export()));
-assert.equal(core.firstValue(right, 'SELECT 1 FROM progress WHERE word_id = ?', [leftCard.id], 0), 0);
-iosTombstone.close();
+/* ---- 3. 老格式的远端快照里的删除仍然生效 ---- */
+const localWithFavorite = seed();
+current = localWithFavorite;
+core.ensureStudySchema(localWithFavorite);
+localWithFavorite.run("INSERT INTO content_favorites (item_type, item_id) VALUES ('word', '1')");
+const legacyRemote = new SQL.Database();
+legacyRemote.run('CREATE TABLE sync_snapshot_meta (format TEXT PRIMARY KEY, protocol_version INTEGER NOT NULL)');
+legacyRemote.run('INSERT INTO sync_snapshot_meta VALUES (?, ?)', [SYNC_SNAPSHOT_FORMAT, 2]);
+// 真实的老快照里这张表是有的（只是那一行被删了），网页的合并器只看它认识且**存在**的表
+legacyRemote.run("CREATE TABLE content_favorites (item_type TEXT NOT NULL, item_id TEXT NOT NULL, created_at TEXT, folder TEXT NOT NULL DEFAULT '', sync_updated_at TEXT, sync_origin_device TEXT, PRIMARY KEY (item_type, item_id))");
+legacyRemote.run("CREATE TABLE sync_tombstones (entity TEXT NOT NULL, natural_key TEXT NOT NULL, deleted_at TEXT NOT NULL, origin_device TEXT NOT NULL DEFAULT '')");
+legacyRemote.run('INSERT INTO sync_tombstones VALUES (?, ?, ?, ?)', ['content_favorites', `word${UNIT}1`, '2099-01-01T00:00:00.000Z', 'mini-0.1']);
+await mergeSnapshot(localWithFavorite, new Uint8Array(legacyRemote.export()));
+assert.equal(core.firstValue(localWithFavorite, "SELECT COUNT(*) FROM content_favorites WHERE item_id = '1'", [], 0), 0,
+  '老小程序（entity/natural_key）推上去的删除必须仍然生效，否则用户删掉的收藏会复活');
+legacyRemote.close();
+localWithFavorite.close();
 
-// 前端从 fdc44a2 起导出 protocol_version = 2（reviews 多一列 sync_uid）。
-// 只认自己那个版本号的话这里会抛「云端学习数据版本不兼容」，v2 的每一次同步全都白跑。
-const iosV2 = new SQL.Database();
-iosV2.run('CREATE TABLE sync_snapshot_meta (format TEXT PRIMARY KEY, protocol_version INTEGER NOT NULL)');
-iosV2.run('INSERT INTO sync_snapshot_meta VALUES (?, ?)', [SYNC_SNAPSHOT_FORMAT, 2]);
-iosV2.run('CREATE TABLE reviews (id INTEGER PRIMARY KEY, word_id INTEGER, answer TEXT, score_after INTEGER, reviewed_on TEXT, created_at TEXT, direction TEXT, sync_uid TEXT)');
-iosV2.run('INSERT INTO reviews (word_id, answer, score_after, reviewed_on, created_at, direction, sync_uid) VALUES (?, ?, ?, ?, ?, ?, ?)', [
-  leftCard.id, 'know', 0, '2026-08-22', '2026-08-22T05:00:00.000Z', 'forward', 'ios-uid-1'
-]);
-const mergedV2 = mergeSnapshot(right, new Uint8Array(iosV2.export()));
-assert.equal(mergedV2.insertedReviews, 1, 'v2 快照必须能导入');
-iosV2.close();
-
-// ── 前端 → 小程序 → 前端 的真实往返 ────────────────────────────────────
-// 这里钉住两条曾经静默丢数据的路：
-//   ① 同一秒的两次作答（自然键完全相同、sync_uid 不同）不能被去重成一条；
-//   ② 小程序还不认识的表（grammar_progress 等）必须原样带回快照 ——
-//      Worker 把每次上传当成账号的新完整备份，缺表就是把云端那一代备份削掉一截。
-const roundTripDb = new SQL.Database(bytes);
-core.ensureStudySchema(roundTripDb);
-const sameSecond = new SQL.Database();
-sameSecond.run('CREATE TABLE sync_snapshot_meta (format TEXT PRIMARY KEY, protocol_version INTEGER NOT NULL)');
-sameSecond.run('INSERT INTO sync_snapshot_meta VALUES (?, ?)', [SYNC_SNAPSHOT_FORMAT, 2]);
-sameSecond.run('CREATE TABLE reviews (id INTEGER PRIMARY KEY, word_id INTEGER, answer TEXT, score_after INTEGER, reviewed_on TEXT, created_at TEXT, direction TEXT, sync_uid TEXT, reviewed_at INTEGER, event_source TEXT)');
-for (const uid of ['ios-A:1', 'ios-A:2']) {
-  sameSecond.run('INSERT INTO reviews (word_id, answer, score_after, reviewed_on, created_at, direction, sync_uid, reviewed_at, event_source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [
-    leftCard.id, 'know', 0, '2026-08-22', '2026-08-22T06:00:00.000Z', 'forward', uid, now.getTime(), 'study'
-  ]);
+/* ---- 4. 真实往返：小程序导出 → 小程序合并 ---- */
+current = left;
+await features.createFavoriteFolder('冲刺');
+await features.toggleFavorite('word', card.id, '冲刺');
+await grammar.toggleGrammarFavorite(17);
+await grammar.markGrammar(17, true);
+left.run("INSERT OR IGNORE INTO achievements (id, unlocked_on) VALUES ('first-know', ?)", [core.localStudyDay()]);
+left.run("INSERT OR IGNORE INTO yuzu_ledger (kind, key, amount, day) VALUES ('test', 'seed', 25, ?)", [core.localStudyDay()]);
+const roundTripSource = await exportSyncSnapshot(left);
+const other = seed();
+current = other;
+core.ensureStudySchema(other);
+await mergeSnapshot(other, roundTripSource);
+for (const [label, sql] of [
+  ['收藏', 'SELECT COUNT(*) FROM content_favorites'],
+  ['收藏夹', 'SELECT COUNT(*) FROM favorite_folders'],
+  ['成就', 'SELECT COUNT(*) FROM achievements'],
+  ['柚子账本', 'SELECT COALESCE(SUM(amount), 0) FROM yuzu_ledger'],
+  ['语法进度', 'SELECT COUNT(*) FROM grammar_progress WHERE seen_count > 0'],
+  ['语法流水', 'SELECT COUNT(*) FROM grammar_reviews'],
+  ['作答流水', 'SELECT COUNT(*) FROM reviews'],
+  ['笔记', "SELECT COUNT(*) FROM word_notes WHERE TRIM(note) <> ''"]
+]) {
+  assert.equal(core.firstValue(other, sql), core.firstValue(left, sql),
+    `${label} 必须原样到对端（本机 ${core.firstValue(left, sql)} / 对端 ${core.firstValue(other, sql)}）`);
 }
-sameSecond.run('CREATE TABLE grammar_progress (grammar_id INTEGER PRIMARY KEY, seen_count INTEGER, forgot_count INTEGER, fsrs_due TEXT)');
-sameSecond.run('INSERT INTO grammar_progress VALUES (?, ?, ?, ?)', [17, 4, 1, '2026-09-01T00:00:00.000Z']);
-const roundTripMerged = mergeSnapshot(roundTripDb, new Uint8Array(sameSecond.export()));
-sameSecond.close();
-assert.equal(roundTripMerged.insertedReviews, 2, '同一秒的两次作答必须都进来（身份是 sync_uid，不是 word_id+created_at+direction）');
+// 语法收藏存的是 grammar.ts 的字符串 id（和网页同一批行）
+assert.equal(core.firstValue(other, "SELECT item_id FROM content_favorites WHERE item_type = 'grammar'"), 'pdf-n5-017');
+const backAgain = new SQL.Database(await exportSyncSnapshot(other));
+assert.equal(core.firstValue(backAgain, 'SELECT COUNT(*) FROM content_favorites'), core.firstValue(left, 'SELECT COUNT(*) FROM content_favorites'),
+  '对端再导出一次仍然带着这些行');
+backAgain.close();
 
-const roundTripSnapshot = new SQL.Database(await exportSyncSnapshot(roundTripDb));
-assert.equal(core.firstValue(roundTripSnapshot, 'SELECT protocol_version FROM sync_snapshot_meta'), 2);
-assert.equal(
-  core.firstValue(roundTripSnapshot, 'SELECT COUNT(*) FROM reviews WHERE created_at = ?', ['2026-08-22T06:00:00.000Z']),
-  2,
-  '回传的快照里也必须还是两条'
-);
-assert.equal(core.firstValue(roundTripSnapshot, 'SELECT reviewed_at FROM reviews WHERE sync_uid = ?', ['ios-A:1']), now.getTime());
-assert.equal(core.firstValue(roundTripSnapshot, 'SELECT event_source FROM reviews WHERE sync_uid = ?', ['ios-A:1']), 'study');
-assert.equal(
-  core.firstValue(roundTripSnapshot, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'grammar_progress'"),
-  1,
-  '小程序不认识的表必须原样回传，否则云端最新一代备份缺表'
-);
-assert.equal(core.firstValue(roundTripSnapshot, 'SELECT seen_count FROM grammar_progress WHERE grammar_id = ?', [17]), 4);
-// grammar_progress 现在是正式同步表(不再走透传),所以要多钉两条:
-// ① 对端的 FSRS 排期不能在合并里丢掉；② 小程序自己写的进度必须真的出现在导出里。
-assert.equal(
-  core.firstValue(roundTripSnapshot, 'SELECT fsrs_due FROM grammar_progress WHERE grammar_id = ?', [17]),
-  '2026-09-01T00:00:00.000Z',
-  '对端排好的语法到期时间必须活着回去'
-);
-assert.equal(
-  core.firstValue(roundTripSnapshot, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'sync_passthrough'"),
-  0,
-  '透传的存放表自己不该出现在快照里'
-);
-roundTripSnapshot.close();
-roundTripDb.close();
-
-// ── 小程序自己写的语法进度 / 收藏必须能同步出去 ────────────────────────────
-// K2:grammar_progress 和 grammar_state 以前不在 SNAPSHOT_TABLES 里,而透传只会
-// 把「上次收到的远端副本」原样送回 —— 本机新写的一个字都出不去。
-const grammarDb = new SQL.Database(bytes);
-core.ensureStudySchema(grammarDb);
-globalThis.wx ||= { env: { USER_DATA_PATH: '/tmp/shushugo-sync-smoke' }, getFileSystemManager: () => ({}) };
-const grammarRuntime = require('../src/runtime/grammar.js');
-const { grammarStringId } = require('../src/runtime/extended-features.js');
-grammarDb.run('INSERT OR REPLACE INTO grammar_progress (grammar_id, seen_count) VALUES (?, ?)', [17, 7]);
-// 0.1.0 开发版的收藏写法；迁移后必须变成网页的字符串 id 进 content_favorites。
-grammarDb.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('favorite:17', '1')");
-grammarRuntime.migrateFavoritesFromAppState(grammarDb);
-// dataset_version 是本机内容标记,同步出去会让对端跳过语法迁移(见 CLAUDE.md)。
-grammarDb.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('dataset_version', 'local-only')");
-const grammarSnapshot = new SQL.Database(await exportSyncSnapshot(grammarDb));
-assert.equal(
-  core.firstValue(grammarSnapshot, 'SELECT seen_count FROM grammar_progress WHERE grammar_id = ?', [17], 0),
-  7,
-  '小程序写的语法进度必须进快照'
-);
-assert.equal(
-  core.firstValue(grammarSnapshot, "SELECT COUNT(*) FROM content_favorites WHERE item_type = 'grammar' AND item_id = ?", [grammarStringId(17)], 0),
-  1,
-  '小程序写的语法收藏必须以网页的字符串 id 进 content_favorites 快照'
-);
-assert.equal(grammarStringId(17), 'pdf-n5-017', 'grammar_points.id == bookOrder，换算表必须对得上');
-assert.equal(
-  core.firstValue(grammarSnapshot, "SELECT COUNT(*) FROM grammar_state WHERE key = 'dataset_version'"),
-  0,
-  'dataset_version 是本机内容标记，绝不能跨设备同步'
-);
-// 列必须和 iOS 的 grammar_progress 对齐:少一列就等于每次推快照都把 iOS 那一列
-// 从云端最新那一代里抹掉(导出只写本机有的列)。
-for (const [column] of core.GRAMMAR_PROGRESS_COLUMNS) {
-  assert.equal(
-    core.firstValue(grammarSnapshot, 'SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?', ['grammar_progress', column]),
-    1,
-    `快照里的 grammar_progress 缺列 ${column}`
-  );
-}
-grammarSnapshot.close();
-
-// U4:收藏的**写**和**读**必须落在同一张表上。老代码写 app_state(core.setState)、
-// 读 grammar_state(grammarRows 的 JOIN),于是点了收藏永远显示不出来。
-grammarRuntime.setGrammarState(grammarDb, 'favorite:31', '1');
-grammarDb.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('favorite:44', '1')");
-grammarRuntime.migrateFavoritesFromAppState(grammarDb);
-// 网页那边收藏的语法（字符串 id）在小程序列表里也要亮星。
-grammarDb.run("INSERT OR IGNORE INTO content_favorites (item_type, item_id) VALUES ('grammar', ?)", [grammarStringId(52)]);
-const grammarList = grammarRuntime.grammarRows(grammarDb, '', '', 800);
-const favoriteIds = new Set(grammarList.filter((row) => Number(row.favorite) === 1).map((row) => Number(row.id)));
-assert.ok(favoriteIds.has(17), 'grammar_state 里的收藏必须显示出来');
-assert.ok(favoriteIds.has(31), '刚写进去的收藏必须立刻读得到（写和读同一张表）');
-assert.ok(favoriteIds.has(44), '早先误写进 app_state 的收藏要迁过来，不能就此消失');
-assert.ok(favoriteIds.has(52), '网页按字符串 id 收藏的语法在小程序列表里必须亮星');
-assert.equal(
-  core.firstValue(grammarDb, "SELECT COUNT(*) FROM app_state WHERE key LIKE 'favorite:%'"),
-  0,
-  '迁移之后 app_state 里不该再留 favorite: 键'
-);
-grammarDb.close();
-
+other.close();
 left.close();
-right.close();
-console.log(JSON.stringify({ ok: true, bytes: snapshot.byteLength, merged }, null, 2));
-
-// 语法业务字段必须完整往返，更新时允许降分、清空日期和归零错题连续次数。
-const grammarRemote = new SQL.Database(bytes);
-const grammarLocal = new SQL.Database(bytes);
-for (const db of [grammarRemote, grammarLocal]) core.ensureStudySchema(db);
-grammarRemote.run("INSERT OR REPLACE INTO grammar_progress(grammar_id, seen_count, score, low_history, mistake_streak, last_decay_amount, mastered_on, last_seen_on) VALUES(1,7,42,3,2,15,'2026-09-09','2026-09-09')");
-mergeSnapshot(grammarLocal, await exportSyncSnapshot(grammarRemote));
-const readGrammar = db => core.rowsFor(db, 'SELECT score, low_history, mistake_streak, last_decay_amount, mastered_on FROM grammar_progress WHERE grammar_id=1')[0];
-assert.deepEqual(readGrammar(grammarLocal), readGrammar(grammarRemote));
-grammarRemote.run("UPDATE grammar_progress SET score=0, low_history=0, mistake_streak=0, last_decay_amount=10, mastered_on=NULL, last_seen_on='2026-09-10' WHERE grammar_id=1");
-mergeSnapshot(grammarLocal, await exportSyncSnapshot(grammarRemote));
-assert.deepEqual(readGrammar(grammarLocal), readGrammar(grammarRemote));
-const grammarRoundTrip = new SQL.Database(await exportSyncSnapshot(grammarLocal));
-assert.deepEqual(readGrammar(grammarRoundTrip), readGrammar(grammarRemote));
-for (const db of [grammarRemote, grammarLocal, grammarRoundTrip]) db.close();
+console.log(JSON.stringify({ ok: true, bytes: snapshot.byteLength }, null, 2));

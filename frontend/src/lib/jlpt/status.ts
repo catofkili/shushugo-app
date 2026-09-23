@@ -77,6 +77,10 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
     JOIN progress p ON p.word_id = w.id
     WHERE ${words} AND p.seen_count = 0 AND p.known_forever = 0
   `, [], 0);
+  const wordCovered = firstValue<number>(`
+    SELECT COUNT(*) FROM words w JOIN progress p ON p.word_id = w.id
+    WHERE ${words} AND (p.known_forever = 1 OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = p.word_id))
+  `, [], 0);
 
   // 到期分两块:本学习日内到期的(今天的正常量)和更早就到期的(积压)。
   // fsrs_due IS NULL 也算到期——和 CLAUDE.md 里的口径保持一致。
@@ -100,6 +104,10 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
     SELECT COUNT(*) FROM grammar_points g
     JOIN grammar_progress p ON p.grammar_id = g.id
     WHERE ${grammar} AND p.seen_count = 0 AND p.known_forever = 0
+  `, [], 0);
+  const grammarCovered = firstValue<number>(`
+    SELECT COUNT(*) FROM grammar_points g JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE ${grammar} AND (p.known_forever = 1 OR EXISTS (SELECT 1 FROM grammar_reviews r WHERE r.grammar_id = p.grammar_id))
   `, [], 0);
   const grammarFreshDue = firstValue<number>(`
     SELECT COUNT(*) FROM grammar_points g
@@ -181,8 +189,8 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
     done,
     shortfall: shortfallOf(plan, done),
     coverage: {
-      words: { seen: wordTotal - wordUnseen, total: wordTotal },
-      grammar: { seen: grammarTotal - grammarUnseen, total: grammarTotal }
+      words: { seen: wordCovered, total: wordTotal },
+      grammar: { seen: grammarCovered, total: grammarTotal }
     }
   };
 }

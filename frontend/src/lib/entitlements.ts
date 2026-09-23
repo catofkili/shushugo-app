@@ -1,6 +1,6 @@
-export type ProductId = "shushugo_pro_monthly" | "shushugo_pro_yearly" | "shushugo_pro_lifetime";
+export type ProductId = "shushugo_pro_monthly" | "shushugo_pro_yearly" | "shushugo_pro_lifetime" | "shushugo_pro_trial";
 
-export type EntitlementSource = "free" | "storekit" | "cloud" | "app_store" | "development";
+export type EntitlementSource = "free" | "storekit" | "cloud" | "app_store" | "trial" | "development";
 
 // 2026-09-20 定的会员范围（docs/MIXED_STUDY_PLAN.md）：疑难辨析、一字多音、混合学习是 Pro。
 export type FeatureId =
@@ -52,12 +52,12 @@ export function getEntitlements(): EntitlementState {
     if (!raw) return defaultEntitlements();
     const parsed = JSON.parse(raw);
     if (!isEntitlementState(parsed)) return defaultEntitlements();
-    if (parsed.expiresAt && Date.parse(parsed.expiresAt) < Date.now()) {
-      return saveEntitlements({ isPro: false, source: "free" });
+    if (parsed.expiresAt && Date.parse(parsed.expiresAt) <= Date.now()) {
+      return clearEntitlements();
     }
     if (parsed.isPro && parsed.source === "storekit"
       && Date.parse(parsed.updatedAt) + STOREKIT_OFFLINE_MAX_AGE_MS < Date.now()) {
-      return saveEntitlements({ isPro: false, source: "free" });
+      return clearEntitlements();
     }
     return parsed;
   } catch {
@@ -114,5 +114,6 @@ export function productLabel(productId?: ProductId): string {
   if (productId === "shushugo_pro_monthly") return "月度 Pro";
   if (productId === "shushugo_pro_yearly") return "年度 Pro";
   if (productId === "shushugo_pro_lifetime") return "永久 Pro";
+  if (productId === "shushugo_pro_trial") return "7 天计划试用";
   return "免费版";
 }

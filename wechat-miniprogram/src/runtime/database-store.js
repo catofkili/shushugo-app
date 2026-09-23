@@ -72,7 +72,9 @@ async function readSeedFromCodePackage() {
   return bytes;
 }
 
-async function atomicWrite(bytes) {
+let writeQueue = Promise.resolve();
+
+async function writeOnce(bytes) {
   if (!bytes || bytes.byteLength < 1024) throw new Error('拒绝写入过小的数据库文件');
   // 先完整写入 tmp；随后轮转 main → prev，最后 tmp → main。
   // 任一步中断都保留至少一份完整数据库，冷启动会按 main/tmp/prev 尝试恢复。
@@ -90,7 +92,25 @@ async function atomicWrite(bytes) {
   }
 }
 
+function atomicWrite(bytes) {
+  // 网页源码的 persistSoon 和页面显式 saveDatabase 会同时落盘；共用 tmp 路径必须串行。
+  const next = writeQueue.then(() => writeOnce(bytes));
+  writeQueue = next.catch(() => undefined);
+  return next;
+}
+
+/*
+ * ⚠️ 出厂内容（题面层、辨析注记、汉字单元索引…）在分包里，而网页那份代码会在第一次出题时
+ * 自己 `void loadKanjiUnitIndex()` 去拿；它把那个 promise 缓存在 `loading ??=` 里，
+ * **失败一次就永久失败**。所以库就绪之前必须先把内容灌好，这是全小程序唯一的顺序保证点：
+ * 每个页面都先 await ensureDatabase / restoreDatabase 才用库。
+ */
+async function ensureContentLoaded() {
+  await require('../shared/content').readyForKanji();
+}
+
 async function ensureDatabase() {
+  await ensureContentLoaded();
   if (database) return database;
 
   const existing = await loadExistingDatabase();
@@ -112,6 +132,7 @@ async function saveDatabase() {
 }
 
 async function restoreDatabase() {
+  await ensureContentLoaded();
   database = null;
   databaseSource = null;
   const existing = await loadExistingDatabase();
@@ -139,6 +160,7 @@ function getStatus() {
 }
 
 module.exports = {
+  ensureContentLoaded,
   atomicWrite,
   databasePaths,
   ensureDatabase,

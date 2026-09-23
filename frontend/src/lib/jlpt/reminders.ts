@@ -1,6 +1,8 @@
 import { syncJlptPlanNotifications } from "../notifications";
 import { getJlptPlanStatus } from "./status";
-import { shortfallText } from "./plan";
+import { availableShortfall, shortfallText } from "./plan";
+import { getEntitlements } from "../entitlements";
+import { kanaGatePending } from "../studyPreferences";
 
 /**
  * 把「当前计划状态」翻译成通知层要的扁平结构,再排进系统。
@@ -17,18 +19,21 @@ export async function syncJlptPlanReminders(): Promise<void> {
     return;
   }
 
-  if (!status.enabled) {
+  if (!status.enabled || kanaGatePending()) {
     await syncJlptPlanNotifications(null);
     return;
   }
 
+  const isPro = getEntitlements().isPro;
+  const available = availableShortfall(status.shortfall, isPro);
+
   await syncJlptPlanNotifications({
     target: status.target,
     daysLeft: status.plan.daysLeft,
-    todayText: shortfallText(status.shortfall),
-    todayClear: status.shortfall.clear,
+    todayText: shortfallText(available),
+    todayClear: available.clear,
     newWordsPerDay: status.plan.newWords,
-    newGrammarPerDay: status.plan.newGrammar,
+    newGrammarPerDay: isPro ? status.plan.newGrammar : 0,
     feasible: status.plan.feasible
   });
 }

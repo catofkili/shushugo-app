@@ -255,15 +255,7 @@ const applyTable = (
     ));
   }
 
-  if (!changes.length) return;
-  db.run("BEGIN");
-  try {
-    changes.forEach((change) => change());
-    db.run("COMMIT");
-  } catch (error) {
-    db.run("ROLLBACK");
-    throw error;
-  }
+  changes.forEach((change) => change());
 };
 
 const applyTombstones = (
@@ -271,7 +263,9 @@ const applyTombstones = (
   merged: Map<string, Map<string, VersionedItem>>
 ): void => {
   if (!tableExists(db, "sync_tombstones")) return;
-  db.run("DELETE FROM sync_tombstones");
+  // 只重建本次参与合并的表。权益限制可能让 weekly_reports 不参与本次合并；
+  // 清空整张墓碑表会让它以后恢复权益时重新复活。
+  for (const table of merged.keys()) db.run("DELETE FROM sync_tombstones WHERE table_name = ?", [table]);
   const columns = columnsOf(db, "sync_tombstones");
   for (const [table, items] of merged) {
     for (const item of items.values()) {
@@ -300,49 +294,51 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
   ensureSyncSchema();
   const localDb = getDatabase();
   const remoteDb = await openDatabase(remoteBytes);
-  const legacyFullSnapshot = tableExists(remoteDb, "words")
-    && tableExists(remoteDb, "progress")
-    && tableExists(remoteDb, "app_state");
-  if (!legacyFullSnapshot && !isUserSyncSnapshot(remoteDb)) {
-    remoteDb.close();
-    throw new Error("云端学习数据格式无效，已保留本机数据。");
-  }
-  const syncedTables = syncedTablesForCloud(canUseFeature("weeklyReportCloudHistory", getEntitlements()));
-  const localState = stateOf(localDb, "local", syncedTables);
-  const remoteState = stateOf(remoteDb, "remote", syncedTables);
-  const merged = new Map<string, Map<string, VersionedItem>>();
-
-  beginSyncApply();
   try {
-    for (const entry of syncedTables) {
-      const items = mergeItems(entry, localState, remoteState);
-      merged.set(entry.table, items);
-      applyTable(localDb, entry, items);
+    const legacyFullSnapshot = tableExists(remoteDb, "words")
+      && tableExists(remoteDb, "progress")
+      && tableExists(remoteDb, "app_state");
+    if (!legacyFullSnapshot && !isUserSyncSnapshot(remoteDb)) {
+      throw new Error("云端学习数据格式无效，已保留本机数据。");
     }
-    applyTombstones(localDb, merged);
-    // Unit memory is a checkpoint, not the source of truth. The append-only
-    // unit events from both devices are replayed in timestamp order so a
-    // concurrent review cannot be lost by LWW on kanji_unit_memory.
-    if (tableExists(localDb, "kanji_unit_reviews")) {
-      const { replayKanjiUnitReviews } = await import("../kanji-unit-scheduler");
-      replayKanjiUnitReviews();
-    }
-    if (tableExists(localDb, "kanji_char_reviews")) {
-      const { replayKanjiCharReviews } = await import("../kanji-char-cards");
-      replayKanjiCharReviews();
-    }
-    if (tableExists(localDb, "confusion_reviews")) {
-      const { replayConfusionReviews } = await import("../confusion-cards");
-      replayConfusionReviews();
-    }
-    // 对端的学习时长同步下来了,但读取方看的是 word_study_time 的每日合计,
-    // 不重算一次统计页就只显示本机那份。
-    rebuildStudyTimeAggregate();
-    // 用户自己导入的词条:内容在 custom_words 里同步过来了,这里补出 words 行。
-    // 不补的话,新设备恢复出来的是一批指向不存在词条的 progress / reviews。
-    if (tableExists(localDb, "custom_words")) {
-      const { materializeCustomWords } = await import("../word-list-import");
-      materializeCustomWords();
+    const syncedTables = syncedTablesForCloud(canUseFeature("weeklyReportCloudHistory", getEntitlements()));
+    // 动态模块先加载完，再停同步触发器并进入事务；事务中不 await，用户作答不会
+    // 插进“触发器关闭”的窗口，也不会出现前几张表成功、后面失败的半份合并。
+    const replayKanjiUnitReviews = tableExists(localDb, "kanji_unit_reviews")
+      ? (await import("../kanji-unit-scheduler")).replayKanjiUnitReviews : undefined;
+    const replayKanjiCharReviews = tableExists(localDb, "kanji_char_reviews")
+      ? (await import("../kanji-char-cards")).replayKanjiCharReviews : undefined;
+    const replayConfusionReviews = tableExists(localDb, "confusion_reviews")
+      ? (await import("../confusion-cards")).replayConfusionReviews : undefined;
+    const replayKanaReviews = tableExists(localDb, "kana_reviews")
+      ? (await import("../kana-progress")).replayKanaReviews : undefined;
+    const materializeCustomWords = tableExists(localDb, "custom_words")
+      ? (await import("../word-list-import")).materializeCustomWords : undefined;
+    const localState = stateOf(localDb, "local", syncedTables);
+    const remoteState = stateOf(remoteDb, "remote", syncedTables);
+    const merged = new Map<string, Map<string, VersionedItem>>();
+
+    beginSyncApply();
+    localDb.run("BEGIN TRANSACTION");
+    try {
+      for (const entry of syncedTables) {
+        const items = mergeItems(entry, localState, remoteState);
+        merged.set(entry.table, items);
+        applyTable(localDb, entry, items);
+      }
+      applyTombstones(localDb, merged);
+      replayKanjiUnitReviews?.();
+      replayKanjiCharReviews?.();
+      replayConfusionReviews?.();
+      replayKanaReviews?.();
+      rebuildStudyTimeAggregate();
+      materializeCustomWords?.();
+      localDb.run("COMMIT");
+    } catch (error) {
+      localDb.run("ROLLBACK");
+      throw error;
+    } finally {
+      endSyncApply();
     }
     // 对端同步下来一批新学的词,「学过没」的名单跟着变 —— 易混词按它筛候选。
     resetFamiliarityCache();
@@ -356,12 +352,10 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
       window.dispatchEvent(new Event(GRAMMAR_HIGHLIGHTS_UPDATED_EVENT));
       window.dispatchEvent(new Event(GRAMMAR_POSITIONS_UPDATED_EVENT));
     }
+    const result = exportDatabase();
+    if (!result) throw new Error("当前没有可合并的本地数据库。");
+    return result;
   } finally {
-    endSyncApply();
     remoteDb.close();
   }
-
-  const result = exportDatabase();
-  if (!result) throw new Error("当前没有可合并的本地数据库。");
-  return result;
 }

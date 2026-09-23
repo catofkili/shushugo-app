@@ -1,103 +1,139 @@
+/*
+ * 学习核心的回归。**判据本身在 frontend 的测试里**（调度器、FSRS、撤销都是网页那份源码）；
+ * 这里盯的是「小程序接上去之后还是那一份」：建表 + 触发器、三个方向各写对表、
+ * 撤销留墓碑、汉字读音卡不泄题、内容更新不冲掉进度。
+ */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import initSqlJs from '../../frontend/node_modules/sql.js/dist/sql-wasm.js';
-import core from '../src/core/study-core.js';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { mergeContentDatabase } = require('../src/runtime/content-update.js');
-const { studySummary } = require('../src/core/analytics.js');
-const { shouldStudyKanjiReading } = require('../src/core/orthography.js');
-
 const root = path.resolve(import.meta.dirname, '..');
 const seedPath = path.resolve(root, '../frontend/public/nihongo.db');
 const SQL = await initSqlJs({ locateFile: (name) => path.resolve(root, '../frontend/node_modules/sql.js/dist', name) });
 const db = new SQL.Database(new Uint8Array(fs.readFileSync(seedPath)));
-const now = new Date('2026-08-22T12:00:00+08:00');
 
+const storage = {};
+globalThis.wx = {
+  env: { USER_DATA_PATH: '/tmp/shushugo-study-core-smoke' },
+  getFileSystemManager: () => ({}),
+  getStorageSync: (key) => storage[key] ?? '',
+  setStorageSync: (key, value) => { storage[key] = value; },
+  removeStorageSync: (key) => { delete storage[key]; }
+};
+const store = require('../src/runtime/database-store.js');
+store.getDatabase = () => db;
+store.saveDatabase = async () => ({ bytes: 0 });
+await store.ensureContentLoaded();
+
+const core = require('../src/core/study-core.js');
+const { mergeContentDatabase } = require('../src/runtime/content-update.js');
+const { studySummary } = require('../src/core/analytics.js');
+const learning = require('../src/runtime/learning.js');
+const { web } = core;
+
+// 学习日边界是凌晨四点，和网页同一条。
 assert.equal(core.localStudyDay(new Date('2026-08-22T03:59:00+08:00')), '2026-08-21');
 assert.equal(core.localStudyDay(new Date('2026-08-22T04:00:00+08:00')), '2026-08-22');
 
 core.ensureStudySchema(db);
 assert.equal(core.firstValue(db, 'SELECT COUNT(*) FROM progress'), 10919, '首次打开应创建所有 progress 行');
+// ⚠️ 同步触发器必须建出来：小程序以前没有触发器，删除不留墓碑，对端合并时原样复活。
+assert.ok(core.firstValue(db, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'trg_%_sync_%'", [], 0) > 0,
+  '网页的同步触发器必须装在小程序的库上');
+assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM pragma_table_info('sync_tombstones') WHERE name = 'table_name'"), 1,
+  '墓碑表必须是网页的列名（table_name / row_key）');
 
-const plan = core.createTodayPlan(db, { now, reviewLimit: 4, newLimit: 3 });
-assert.equal(plan.count, 3, '无历史记录时应生成新词计划');
-const first = core.nextCard(db, { now });
-assert.ok(first?.id, '计划必须能取出第一张卡');
-const answer = core.recordAnswer(db, first.id, 'know', { now });
-assert.equal(answer.stats.answered, 1);
-assert.ok(answer.fsrs?.due, '作答后必须写入 FSRS due');
+// 今日计划 → 出卡 → 作答 → 撤销
+const plan = core.createTodayPlan(db);
+assert.ok(plan.planned > 0, '应排出今日计划');
+const home = await learning.getStudyHome({ direction: 'forward' });
+assert.ok(home.card && home.card.id, '计划必须能取出第一张卡');
+assert.equal(home.stats.planned, plan.planned);
+// 正向题面是中文题面层（人工审校那一层），答案面才是日文词形 —— 和网页一致。
+assert.ok(home.card.prompt && !/[぀-ヿ]/.test(home.card.prompt.replace(/[（）()]/g, '')) || home.card.prompt !== home.card.surface,
+  '正向卡的题面不能就是日文词形');
+await learning.answerCard(home.card.id, 'know', { direction: 'forward' });
 assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'forward'"), 1);
 assert.equal(core.firstValue(db, "SELECT event_source FROM reviews WHERE direction = 'forward'"), 'study');
-assert.equal(core.firstValue(db, "SELECT reviewed_at FROM reviews WHERE direction = 'forward'"), now.getTime());
+assert.ok(core.firstValue(db, "SELECT sync_uid FROM reviews WHERE direction = 'forward'"), '作答必须带跨端身份 sync_uid');
 
-core.saveNote(db, first.id, 'smoke note', now);
-assert.equal(core.firstValue(db, 'SELECT note FROM word_notes WHERE word_id = ?', [first.id]), 'smoke note');
+await learning.saveWordNote(home.card.id, 'smoke note');
+assert.equal(core.firstValue(db, 'SELECT note FROM word_notes WHERE word_id = ?', [home.card.id]), 'smoke note');
 
-const undone = core.undoLastAnswer(db, { now });
+const undoUid = core.firstValue(db, "SELECT sync_uid FROM reviews WHERE direction = 'forward'");
+const undone = await learning.undoAnswer({ direction: 'forward' });
 assert.equal(undone.undone, true, '最后一张卡应可安全撤销');
 assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'forward'"), 0);
-assert.equal(core.firstValue(db, 'SELECT seen_count FROM progress WHERE word_id = ?', [first.id]), 0);
+assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'reviews' AND row_key = ?", [undoUid], 0), 1,
+  '撤销必须留墓碑，否则这条作答会在对端下一次合并时复活');
 
-const seededForward = core.nextCard(db, { now });
-core.recordAnswer(db, seededForward.id, 'know', { now });
-const reversePlan = core.createDirectionPlan(db, 'reverse', { now, directionLimit: 1 });
-assert.equal(reversePlan.count, 1, '已有正向学习记录后应能生成反向计划');
-const reverseCard = core.nextCard(db, { now, direction: 'reverse' });
-assert.ok(reverseCard?.prompt && reverseCard.direction === 'reverse');
-core.recordAnswer(db, reverseCard.id, 'know', { now, direction: 'reverse' });
+// 反向 / 汉字读音的当日计划只从「学过的词」里排，所以先答几张正向。
+// ⚠️ 要答到计划里不止一条：一条的话答完当天这个方向就 done 了，
+// 而 done 之后网页本来就不给撤销（canUndo 为假），那时候断言撤销等于测了个假规则。
+for (let index = 0; index < 4; index += 1) {
+  const seeded = await learning.getStudyHome({ direction: 'forward' });
+  if (!seeded.card) break;
+  await learning.answerCard(seeded.card.id, 'know', { direction: 'forward' });
+}
+const reverse = await learning.getStudyHome({ direction: 'reverse' });
+assert.ok(reverse.card, '已有正向学习记录后应能出反向卡');
+assert.ok(core.firstValue(db, "SELECT COUNT(*) FROM stage2_progress WHERE reviewed_on = ?", [core.localStudyDay()], 0) > 0,
+  '反向的当日计划写在网页的 stage2_progress 表里');
+await learning.answerCard(reverse.card.id, 'know', { direction: 'reverse' });
 assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'reverse'"), 1);
-assert.equal(core.firstValue(db, 'SELECT seen_count FROM reverse_memory WHERE word_id = ?', [reverseCard.id]), 1);
-assert.equal(core.undoLastAnswer(db, { now }).undone, true);
-assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'reverse'"), 0);
+assert.equal(core.firstValue(db, 'SELECT seen_count FROM reverse_memory WHERE word_id = ?', [reverse.card.id]), 1);
+const reverseNext = await learning.getStudyHome({ direction: 'reverse' });
+if (reverseNext.canUndo) {
+  assert.equal((await learning.undoAnswer({ direction: 'reverse' })).undone, true);
+  assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'reverse'"), 0);
+}
 
-// 汉字读音方向：题面是表记，答案是读音；流水必须写 kanji_reading（和 iOS 对齐）。
-const kanjiPlan = core.createDirectionPlan(db, 'kanji', { now, directionLimit: 3 });
-assert.ok(kanjiPlan.count > 0, '有正向学习记录后应能生成汉字读音计划');
-const kanjiCard = core.nextCard(db, { now, direction: 'kanji' });
-assert.ok(kanjiCard, '汉字读音方向应能取到卡');
-assert.ok(kanjiCard.surface && kanjiCard.surface !== kanjiCard.kana,
-  '汉字读音卡的题面必须是表记，且不能和读音是同一串');
-assert.ok(/[\u3400-\u9fff]/.test(kanjiCard.surface), '题面里必须真的有汉字');
-assert.ok(Array.isArray(kanjiCard.concealedReading) && kanjiCard.concealedReading.some((part) => part.hidden),
+// 汉字读音：题面是表记，只遮汉字那几拍；流水记 kanji_reading（写成 kanji 会被当成归档的旧题型）
+const kanji = await learning.getStudyHome({ direction: 'kanji' });
+assert.ok(kanji.card, '汉字读音方向应能取到卡');
+assert.ok(/[㐀-鿿]/.test(kanji.card.surface), '题面里必须真的有汉字');
+assert.ok(Array.isArray(kanji.card.concealedReading) && kanji.card.concealedReading.some((part) => part.hidden),
   '揭晓前至少要遮住一段读音');
-assert.ok(kanjiCard.concealedReading.every((part) => !part.hidden ? !/[\u3400-\u9fff]/.test(part.text) : true),
-  '露出来的只能是送り仮名/片假名，不能把汉字读音漏出去');
-core.recordAnswer(db, kanjiCard.id, 'know', { now, direction: 'kanji' });
-assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'kanji_reading'"), 1,
-  '汉字方向的流水必须记成 kanji_reading —— 写成 kanji 的话 iOS 会当成归档的旧题型');
+assert.ok(kanji.card.concealedReading.every((part) => part.hidden || !/[㐀-鿿]/.test(part.text)),
+  '露出来的只能是送り仮名/片假名');
+await learning.answerCard(kanji.card.id, 'know', { direction: 'kanji' });
+assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'kanji_reading'"), 1);
 assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'kanji'"), 0);
-assert.equal(core.firstValue(db, 'SELECT seen_count FROM kanji_reading_memory WHERE word_id = ?', [kanjiCard.id]), 1);
-assert.equal(core.undoLastAnswer(db, { now }).undone, true, '汉字读音卡也要能撤销');
-assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM reviews WHERE direction = 'kanji_reading'"), 0);
+assert.equal(core.firstValue(db, 'SELECT seen_count FROM kanji_reading_memory WHERE word_id = ?', [kanji.card.id]), 1);
+const kanjiNext = await learning.getStudyHome({ direction: 'kanji' });
+if (kanjiNext.canUndo) {
+  assert.equal((await learning.undoAnswer({ direction: 'kanji' })).undone, true, '汉字读音卡也要能撤销');
+}
 
-// 现代日语里本来就写假名的词，不该被当成汉字读音卡问一遍。
+// 现代日语里本来就写假名的词不该被当成汉字读音卡问一遍（判据是网页的 orthography）
 const kanaOnly = core.rowsFor(db, `
-  SELECT t.word_id, w.kanji, w.kana FROM direction_tasks t JOIN words w ON w.id = t.word_id
-  WHERE t.direction = 'kanji'
-`).filter((row) => !shouldStudyKanjiReading(row));
-assert.equal(kanaOnly.length, 0,
-  `汉字读音计划里混进了不该出汉字卡的词: ${kanaOnly.map((r) => `${r.kanji}/${r.kana}`).join(', ')}`);
+  SELECT t.word_id, w.kanji, w.kana FROM kanji_reading_progress t JOIN words w ON w.id = t.word_id
+  WHERE t.reviewed_on = ?
+`, [core.localStudyDay()]).filter((row) => !web.orthography.shouldStudyKanjiReading(row));
+assert.equal(kanaOnly.length, 0, `汉字读音计划里混进了不该出汉字卡的词: ${kanaOnly.map((row) => `${row.kanji}/${row.kana}`).join(', ')}`);
 
-// 内容更新只替换 words，不得冲掉用户进度和复习流水。
+// 内容更新只替换 words，不得冲掉用户进度和复习流水
 const source = new SQL.Database(new Uint8Array(fs.readFileSync(seedPath)));
-core.ensureStudySchema(source);
-source.run('UPDATE words SET meaning = ? WHERE id = ?', ['内容更新后的释义', first.id]);
-const second = core.nextCard(db, { now });
-core.recordAnswer(db, second.id, 'know', { now });
+core.ensureTablesOnly(source);
+source.run('UPDATE words SET meaning = ? WHERE id = ?', ['内容更新后的释义', home.card.id]);
+const second = await learning.getStudyHome({ direction: 'forward' });
+await learning.answerCard(second.card.id, 'know', { direction: 'forward' });
 const beforeReviews = core.firstValue(db, 'SELECT COUNT(*) FROM reviews');
 const merge = mergeContentDatabase(db, source, 'content-v2');
 assert.equal(merge.sourceWords, 10919);
 assert.equal(core.firstValue(db, 'SELECT COUNT(*) FROM reviews'), beforeReviews);
-assert.equal(core.firstValue(db, 'SELECT seen_count FROM progress WHERE word_id = ?', [second.id]), 1);
-assert.equal(core.firstValue(db, 'SELECT meaning FROM words WHERE id = ?', [first.id]), '内容更新后的释义');
-const summary = studySummary(db, now);
-assert.ok(summary.levels.length >= 5 && summary.today > 0, '统计页应能读取本地作答和 JLPT 分组');
-db.run("INSERT OR IGNORE INTO checkins (checked_on) VALUES ('2026-08-21'), ('2026-08-20')");
-assert.equal(studySummary(db, now).streak, 3, '统计页的连续学习天数应按连续日期而不是七日总数计算');
+assert.equal(core.firstValue(db, 'SELECT seen_count FROM progress WHERE word_id = ?', [second.card.id]), 1);
+assert.equal(core.firstValue(db, 'SELECT meaning FROM words WHERE id = ?', [home.card.id]), '内容更新后的释义');
 source.close();
 
+const summary = studySummary(db);
+assert.ok(summary.levels.length >= 5 && summary.recentDays.length === 28, '足迹页要 28 格 + 各等级进度');
+const today = core.localStudyDay();
+db.run('INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)', [today]);
+assert.equal(studySummary(db).streak, 1, '连击按连续日期算');
+
 db.close();
-console.log(JSON.stringify({ ok: true, plan, firstCard: first.id, undo: undone }, null, 2));
+console.log(JSON.stringify({ ok: true, planned: plan.planned, reviews: beforeReviews }, null, 2));

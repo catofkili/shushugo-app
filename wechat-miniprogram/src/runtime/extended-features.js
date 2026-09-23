@@ -29,59 +29,29 @@ const grammarNumericId = (stringId) => grammarNumberById.get(String(stringId)) ?
 
 /* ---------------- 收藏 ---------------- */
 
-// 和网页 sync 触发器的 row_key 同一个分隔符（char(31)）
-const tombstoneKey = (type, id) => `${type}\u001f${id}`;
-
-/**
- * 网页那边删收藏由同步触发器留墓碑；小程序没有触发器，删完自己补一条，
- * 否则对端下一代快照会把这条收藏复活。加回来时把墓碑撤掉。
+/*
+ * 小程序现在和网页一样装了同步触发器（core/study-core 的 ensureStudySchema →
+ * web.syncSchema.ensureSyncSchema），所以 sync_updated_at 的盖章和删除墓碑都由触发器写，
+ * **这里不要再手工补**。手工补过一版：容易漏（夹子改名、删夹子把收藏挪回未分类那两条就漏了），
+ * 漏掉的那些在对端下一次合并时会被旧行盖回来。
  */
-function noteFavoriteTombstone(database, type, id, deleted) {
-  const key = tombstoneKey(type, id);
-  if (deleted) {
-    database.run("INSERT OR REPLACE INTO sync_tombstones (entity, natural_key, deleted_at) VALUES ('content_favorites', ?, ?)", [key, new Date().toISOString()]);
-  } else {
-    database.run("DELETE FROM sync_tombstones WHERE entity = 'content_favorites' AND natural_key = ?", [key]);
-  }
-}
-
-/**
- * 小程序没有网页那套「业务列变了就盖 sync_updated_at」的触发器，而 content_favorites /
- * favorite_folders 是 lww 合并：不盖时间戳，本机刚移的夹子会被对端一份旧的覆盖回去。
- * 所以每次写完自己盖一次。
- */
-function stampFavorite(database, type, id) {
-  database.run('UPDATE content_favorites SET sync_updated_at = ? WHERE item_type = ? AND item_id = ?', [new Date().toISOString(), type, id]);
-}
-function stampFolderRows(database, folder) {
-  const now = new Date().toISOString();
-  database.run('UPDATE favorite_folders SET sync_updated_at = ? WHERE name = ?', [now, folder]);
-  database.run('UPDATE content_favorites SET sync_updated_at = ? WHERE folder = ?', [now, folder]);
-}
-function noteFolderTombstone(database, name, deleted) {
-  if (deleted) database.run("INSERT OR REPLACE INTO sync_tombstones (entity, natural_key, deleted_at) VALUES ('favorite_folders', ?, ?)", [name, new Date().toISOString()]);
-  else database.run("DELETE FROM sync_tombstones WHERE entity = 'favorite_folders' AND natural_key = ?", [name]);
-}
-
 async function toggleFavorite(type, id, folder = web.favorites.UNFILED_FOLDER) {
   const database = db();
   const itemId = type === 'grammar' ? grammarStringId(id) : String(Number(id));
-  const { isFavorite } = web.favorites.toggleFavorite(type, itemId, folder);
-  noteFavoriteTombstone(database, type, itemId, !isFavorite);
-  if (isFavorite) stampFavorite(database, type, itemId);
+  const result = core.withDb(database, () => web.favorites.toggleFavorite(type, itemId, folder));
   await save();
-  return isFavorite;
+  return result.isFavorite;
 }
 
 function isFavorite(type, id) {
+  const database = db();
   const itemId = type === 'grammar' ? grammarStringId(id) : String(Number(id));
-  return Boolean(core.firstValue(db(), 'SELECT 1 FROM content_favorites WHERE item_type = ? AND item_id = ? LIMIT 1', [type, itemId], 0));
+  return core.withDb(database, () => web.studyCore.isFavorite(type, itemId));
 }
 
 /** 已收藏的语法数字 id 集合，给语法列表打星用（列表 SQL 里换算不了字符串 id）。 */
 function favoriteGrammarNumericIds(database = db()) {
   const out = new Set();
-  core.ensureFeatureSchema(database);
   for (const row of core.rowsFor(database, "SELECT item_id FROM content_favorites WHERE item_type = 'grammar'")) {
     const numeric = grammarNumericId(row.item_id);
     if (numeric != null) out.add(numeric);
@@ -89,14 +59,16 @@ function favoriteGrammarNumericIds(database = db()) {
   return out;
 }
 
-function listFavoriteFolders() { db(); return web.favorites.listFavoriteFolders(); }
-function unfiledFavoriteCount() { db(); return web.favorites.unfiledFavoriteCount(); }
-function lastFavoriteFolder() { db(); return web.favorites.lastFavoriteFolder(); }
+const run = (task) => core.withDb(db(), task);
+
+function listFavoriteFolders() { return run(() => web.favorites.listFavoriteFolders()); }
+function unfiledFavoriteCount() { return run(() => web.favorites.unfiledFavoriteCount()); }
+function lastFavoriteFolder() { return run(() => web.favorites.lastFavoriteFolder()); }
 
 /** folder: 'all' = 不筛；'' = 未分类；其它 = 夹名。语法行用本地 grammar_points 补标题。 */
 function listFavorites(type = 'all', folder = 'all') {
   const database = db();
-  const items = web.favorites.getFavoriteItems(type, folder === 'all' ? undefined : String(folder));
+  const items = core.withDb(database, () => web.favorites.getFavoriteItems(type, folder === 'all' ? undefined : String(folder)));
   return items.map((item) => {
     if (item.type !== 'grammar' || item.title) return { ...item, key: `${item.type}:${item.id}` };
     const numeric = grammarNumericId(item.id);
@@ -116,42 +88,14 @@ function listFavorites(type = 'all', folder = 'all') {
   });
 }
 
-async function createFavoriteFolder(name) {
-  const database = db();
-  const clean = web.favorites.createFavoriteFolder(name);
-  if (clean) { noteFolderTombstone(database, clean, false); stampFolderRows(database, clean); await save(); }
-  return clean;
-}
-async function renameFavoriteFolder(from, to) {
-  const database = db();
-  const clean = web.favorites.renameFavoriteFolder(from, to);
-  if (clean && clean !== from) {
-    noteFolderTombstone(database, from, true);
-    noteFolderTombstone(database, clean, false);
-    stampFolderRows(database, clean);
-    await save();
-  }
-  return clean;
-}
-async function deleteFavoriteFolder(name) {
-  const database = db();
-  // 里面的收藏回到未分类，这也是一次改动，先记下是哪些行再盖时间戳
-  const moved = core.rowsFor(database, 'SELECT item_type, item_id FROM content_favorites WHERE folder = ?', [name]);
-  web.favorites.deleteFavoriteFolder(name);
-  noteFolderTombstone(database, name, true);
-  for (const row of moved) stampFavorite(database, String(row.item_type), String(row.item_id));
-  await save();
-}
-async function moveFavorite(type, id, folder = '') {
-  const database = db();
-  web.favorites.setFavoriteFolder(type, String(id), String(folder));
-  stampFavorite(database, type, String(id));
-  await save();
-}
+async function createFavoriteFolder(name) { const clean = run(() => web.favorites.createFavoriteFolder(name)); if (clean) await save(); return clean; }
+async function renameFavoriteFolder(from, to) { const clean = run(() => web.favorites.renameFavoriteFolder(from, to)); if (clean && clean !== from) await save(); return clean; }
+async function deleteFavoriteFolder(name) { run(() => web.favorites.deleteFavoriteFolder(name)); await save(); }
+async function moveFavorite(type, id, folder = '') { run(() => web.favorites.setFavoriteFolder(type, String(id), String(folder))); await save(); }
 
 /* ---------------- 备考计划：状态在 studyPreferences（wx 存储，键名同网页） ---------------- */
 
-function jlptPlanStatus(now = new Date()) { db(); return web.jlptStatus.getJlptPlanStatus(now); }
+function jlptPlanStatus(now = new Date()) { return run(() => web.jlptStatus.getJlptPlanStatus(now)); }
 function jlptPreferences() { return web.preferences.getJlptPlanPreferences(); }
 function saveJlptPreferences(patch) {
   const current = web.preferences.getStudyPreferences();
@@ -161,19 +105,18 @@ function saveJlptPreferences(patch) {
 /* ---------------- 周报 ---------------- */
 
 function weeklyReport(offset = 0, now = new Date()) {
-  db();
-  const snapshot = web.weeklyReports.generateWeeklyReport('local', offset, now);
+  const snapshot = run(() => web.weeklyReports.generateWeeklyReport('local', offset, now));
   return snapshot ? snapshot.report : null;
 }
-function listWeeklyReports() { db(); return web.weeklyReports.listWeeklyReports(); }
-async function markWeeklyReportRead(weekStart) { db(); const changed = web.weeklyReports.markWeeklyReportRead(weekStart); if (changed) await save(); return changed; }
+function listWeeklyReports() { return run(() => web.weeklyReports.listWeeklyReports()); }
+async function markWeeklyReportRead(weekStart) { const changed = run(() => web.weeklyReports.markWeeklyReportRead(weekStart)); if (changed) await save(); return changed; }
 
 /* ---------------- 柚子 ---------------- */
 
-async function settleYuzu() { db(); const earned = web.yuzu.settleYuzu(); if (earned) await save(); return earned; }
-function yuzuBalance() { db(); return web.yuzu.yuzuBalance(); }
+async function settleYuzu() { const earned = run(() => web.yuzu.settleYuzu()); if (earned) await save(); return earned; }
+function yuzuBalance() { return run(() => web.yuzu.yuzuBalance()); }
 function yuzuShop() {
-  db();
+  return run(() => {
   const balance = web.yuzu.yuzuBalance();
   return {
     balance,
@@ -188,30 +131,31 @@ function yuzuShop() {
       canBuy: !item.soon && balance >= item.price
     }))
   };
+  });
 }
-async function buyYuzuItem(id) { db(); const ok = web.yuzu.buyItem(id); if (ok) await save(); return ok; }
-async function equipYuzuItem(id) { db(); web.yuzu.equipItem(id); await save(); }
-async function repairYuzuDay(day) { db(); const ok = web.yuzu.repairDay(day); if (ok) await save(); return ok; }
-function equippedYuzu(category) { db(); return web.yuzu.equippedItem(category); }
+async function buyYuzuItem(id) { const ok = run(() => web.yuzu.buyItem(id)); if (ok) await save(); return ok; }
+async function equipYuzuItem(id) { run(() => web.yuzu.equipItem(id)); await save(); }
+async function repairYuzuDay(day) { const ok = run(() => web.yuzu.repairDay(day)); if (ok) await save(); return ok; }
+function equippedYuzu(category) { return run(() => web.yuzu.equippedItem(category)); }
 
 /* ---------------- 词汇量 ---------------- */
 
 const vocabTest = {
   ...web.vocabTest,
-  start: () => { db(); return web.vocabTest.startVocabTest(); },
-  session: () => { db(); return web.vocabTest.getVocabTestSession(); },
-  submit: (state, selected, responseMs) => { db(); return web.vocabTest.submitVocabTestAnswer(state, selected, responseMs); },
-  finish: async () => { db(); const session = web.vocabTest.finishVocabTest(); web.vocabTest.recordVocabTestRun(session); await save(); return session; },
-  clear: async () => { db(); web.vocabTest.clearVocabTestSession(); await save(); },
-  result: (session) => web.vocabTest.getVocabTestResult(session),
-  history: (limit) => { db(); return web.vocabTest.getVocabTestHistory(limit); }
+  start: () => run(() => web.vocabTest.startVocabTest()),
+  session: () => run(() => web.vocabTest.getVocabTestSession()),
+  submit: (state, selected, responseMs) => run(() => web.vocabTest.submitVocabTestAnswer(state, selected, responseMs)),
+  finish: async () => { const session = run(() => { const value = web.vocabTest.finishVocabTest(); web.vocabTest.recordVocabTestRun(value); return value; }); await save(); return session; },
+  clear: async () => { run(() => web.vocabTest.clearVocabTestSession()); await save(); },
+  result: (session) => run(() => web.vocabTest.getVocabTestResult(session)),
+  history: (limit) => run(() => web.vocabTest.getVocabTestHistory(limit))
 };
 
 /* ---------------- 成就 ---------------- */
 
-function achievementBoard() { db(); return web.achievements.achievementBoard(); }
-function achievementSummary() { db(); return web.achievements.achievementSummary(); }
-async function evaluateAchievements() { db(); const unlocked = web.achievements.evaluateAchievements(); if (unlocked.length) await save(); return unlocked; }
+function achievementBoard() { return run(() => web.achievements.achievementBoard()); }
+function achievementSummary() { return run(() => web.achievements.achievementSummary()); }
+async function evaluateAchievements() { const unlocked = run(() => web.achievements.evaluateAchievements()); if (unlocked.length) await save(); return unlocked; }
 
 module.exports = {
   web,

@@ -1,0 +1,30 @@
+<scroll-view class="feature-page" scroll-y>
+  <view class="feature-hero">
+    <text class="feature-kicker">DISTINCTION QUIZ</text>
+    <text class="feature-title">辨析题</text>
+    <text class="feature-copy">题面来自逐组人工审校的辨析稿；缺题面的组整组跳过，不拿词库释义凑。答完只标「已掌握」，不改词卡的 FSRS。</text>
+  </view>
+  <view wx:if="{{locked}}" class="panel"><text class="panel-title">疑难辨析是 Pro 功能</text><button class="primary" bindtap="goPro">去开通 Pro</button></view>
+  <view wx:elif="{{state === 'intro'}}" class="panel">
+    <text class="panel-title">选范围</text>
+    <picker mode="selector" range="{{scopes}}" range-key="label" value="{{scopeIndex}}" bindchange="pickScope"><view class="field">{{scopes[scopeIndex].label}} ˅</view></picker>
+    <button class="primary" bindtap="start">开始</button>
+    <text wx:if="{{error}}" class="danger">{{error}}</text>
+  </view>
+  <view wx:elif="{{state === 'quiz'}}" class="panel">
+    <text class="counter">{{index + 1}} / {{questions.length}}</text>
+    <view class="prompt"><text class="prompt-word">{{question.prompt}}</text></view>
+    <view wx:for="{{question.options}}" wx:key="id" class="option {{revealed && item.id === question.answerId ? 'correct' : ''}} {{revealed && selected === item.id && item.id !== question.answerId ? 'wrong' : ''}}" data-id="{{item.id}}" bindtap="answer">
+      <text class="list-title">{{item.surface}}</text>
+      <text class="list-sub">{{item.kana}}{{revealed && item.note ? ' · ' + item.note : ''}}</text>
+    </view>
+    <view wx:if="{{revealed && note}}" class="feedback"><text>{{note}}</text></view>
+    <button wx:if="{{revealed}}" class="primary" bindtap="next">{{index + 1 === questions.length ? '查看结果' : '下一题'}}</button>
+  </view>
+  <view wx:elif="{{state === 'result'}}" class="panel">
+    <text class="feature-kicker">RESULT</text>
+    <text class="feature-title">{{correct}} / {{questions.length}}</text>
+    <text class="feature-copy">整组全对的已标为掌握；答错的留在疑难辨析列表里，之后还能练。</text>
+    <button class="secondary" bindtap="start">再来一组</button>
+  </view>
+</scroll-view>

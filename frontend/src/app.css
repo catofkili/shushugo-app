@@ -1416,3 +1416,15 @@
 [data-theme="dark"] .jp-inset,[data-theme="dark"] .jp-btn{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
 [data-theme="dark"] .jp-track{background:rgba(255,255,255,.1)}
 [data-theme="dark"] .jp-accent{color:#1f2a1a}
+/* 起点弹窗固定浅色纸面；不继承深色主题的文字与按钮变量。 */
+.level-setup{color:#352c23;color-scheme:light}
+.level-setup-option{display:flex;align-items:center;justify-content:center;border:1px solid #c9bba8;background:#fffdf8;color:#352c23}
+.level-setup-option[aria-pressed="true"]{border-color:#78ad52;background:#91c968;color:#1d3019}
+.level-setup-option:disabled{justify-content:flex-start;border-style:dashed;background:#f3eee4;color:#71685c;cursor:not-allowed}
+.level-setup-details{border:1px solid #c9bba8;background:#fffdf8;color:#352c23}
+.level-setup-submit{border:0;background:#78ad52;color:#15250f}
+.level-exam-wheel{border:1px solid #c9bba8;background:#fffdf8;color:#352c23;color-scheme:light}
+.level-exam-wheel-scroll{scrollbar-width:none;scroll-snap-type:y mandatory}
+.level-exam-wheel-scroll::-webkit-scrollbar{display:none}
+.level-exam-wheel-option{scroll-snap-align:center;color:#71685c}
+.level-exam-wheel-option[aria-pressed="true"]{border-radius:14px;background:#e6f1d8;color:#1d3019}

@@ -50,6 +50,9 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "dictionary_discovered_words", keys: ["word_id"], strategy: "union" },
   // 疑难辨析里标过「已掌握」的词组。主键是词组标识而不是 word_id。
   { table: "confusion_mastered", keys: ["group_key"], strategy: "lww" },
+  // 自报水平形成的 FSRS 起始状态。它不是作答流水，但重放/撤销必须从这里起步。
+  { table: "level_prior_baselines", keys: ["entity", "entity_key"], strategy: "lww" },
+  { table: "kana_memory", keys: ["symbol"], strategy: "lww" },
   // 成就。取并集而不是 LWW：解锁是不可逆的,两端各拿到的都该留下,
   // 也不该因为对端那行「更新」就把本机的解锁日期改掉。
   { table: "achievements", keys: ["id"], strategy: "union" },
@@ -86,6 +89,7 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "kanji_unit_reviews", keys: ["sync_uid"], strategy: "append" },
   { table: "kanji_char_reviews", keys: ["sync_uid"], strategy: "append" },
   { table: "confusion_reviews", keys: ["sync_uid"], strategy: "append" },
+  { table: "kana_reviews", keys: ["sync_uid"], strategy: "append" },
 
   { table: "checkins", keys: ["checked_on"], strategy: "union" },
   // 播报过的时刻。天然幂等的集合,和打卡同构:两端取并集,
@@ -145,6 +149,8 @@ export const DEVICE_LOCAL_STATE_KEYS = new Set([
   // 上发生过什么」的诊断记录，不是账号数据：同步过去只会让对端的计数被顶掉，
   // 而且计划明确要求这类采集先只留本地、不默认上传。
   "weekly_report_events",
+  // 到期弹窗是设备本地的已读状态；同步后不能让另一台设备错过提醒。
+  "level_trial_expiry_noticed",
   ...CONTENT_MIGRATION_STATE_KEYS
 ]);
 

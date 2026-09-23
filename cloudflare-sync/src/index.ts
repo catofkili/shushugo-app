@@ -11,6 +11,7 @@ import {
   USER_AGREEMENT_VERSION
 } from "../../frontend/src/lib/user-agreement-content";
 import { entitlementStrength } from "./entitlement-rules";
+import { matchedWechatUser, wechatSubjects } from "./wechat-identity";
 import {
   configured as wechatPayConfigured,
   createOrder as createWechatOrder,
@@ -759,7 +760,7 @@ const saveEntitlement = async (
 ) => {
   const now = new Date().toISOString();
   const current = await getEntitlementRow(env, userId);
-  const candidate = { is_pro: 1, product_id: data.productId, expires_at: data.expiresAt ?? null };
+  const candidate = { is_pro: 1, product_id: data.productId, source: data.source, expires_at: data.expiresAt ?? null };
   // 同一笔原始交易的新消息（续费、到期、退款）永远可以改写自己那一行，
   // 包括往下改；别的交易只有更强时才准覆盖。
   const sameTransaction = Boolean(
@@ -1142,7 +1143,7 @@ const wechatLogin = async (request: Request, env: Env) => {
     return json({ detail: "微信登录凭证无效或已过期。", code: "WECHAT_CODE_INVALID" }, 401);
   }
   const openid = result.openid;
-  const subject = result.unionid ? `unionid:${result.unionid}` : `openid:${openid}`;
+  const subjects = wechatSubjects(openid, result.unionid);
   // 虚拟支付的 signature 要用 session_key 签、查单要 openid：登录那一刻记下来，
   // 每次登录覆盖（session_key 随 wx.login 刷新）。KV 30 天，过期了让用户重新登录一次。
   const rememberWechatSession = (userId: string) => env.SYNC_DATA.put(
@@ -1150,19 +1151,39 @@ const wechatLogin = async (request: Request, env: Env) => {
     JSON.stringify({ openid, sessionKey: result.session_key ?? "" } satisfies WechatSession),
     { expirationTtl: 30 * 24 * 60 * 60 }
   );
-  const identity = await env.DB.prepare(`
+  const identities = await env.DB.prepare(`
     SELECT provider, provider_subject, user_id, email
-    FROM auth_identities
-    WHERE provider = 'wechat' AND provider_subject = ?
-  `).bind(subject).first<AuthIdentityRow>();
-  if (identity) {
+    FROM auth_identities WHERE provider = 'wechat'
+      AND provider_subject IN (${subjects.map(() => '?').join(', ')})
+  `).bind(...subjects).all<AuthIdentityRow>();
+  const matched = identities.results ?? [];
+  let matchedUserId: string | null;
+  try { matchedUserId = matchedWechatUser(matched); } catch {
+    // UnionID 和 OpenID 已分别落到两个账号时不能猜谁是真身，也不能静默合并学习数据。
+    return json({ detail: "这个微信身份关联到了多个账号，请联系支持处理。", code: "WECHAT_IDENTITY_CONFLICT" }, 409);
+  }
+  if (matchedUserId) {
+    const userId = matchedUserId;
     const user = await env.DB.prepare(`
       SELECT id, email, password_hash, password_salt, display_name, email_verified_at
       FROM users WHERE id = ?
-    `).bind(identity.user_id).first<UserRow>();
+    `).bind(userId).first<UserRow>();
     if (!user) return json({ detail: "微信账号关联的用户不存在。" }, 404);
+    const now = new Date().toISOString();
+    for (const subject of subjects) {
+      await env.DB.prepare(`
+        INSERT OR IGNORE INTO auth_identities (provider, provider_subject, user_id, email, created_at)
+        VALUES ('wechat', ?, ?, ?, ?)
+      `).bind(subject, user.id, user.email, now).run();
+      const owner = await env.DB.prepare(`
+        SELECT user_id FROM auth_identities WHERE provider = 'wechat' AND provider_subject = ?
+      `).bind(subject).first<{ user_id: string }>();
+      if (owner?.user_id !== user.id) {
+        return json({ detail: "这个微信身份已经属于另一个账号，请联系支持处理。", code: "WECHAT_IDENTITY_CONFLICT" }, 409);
+      }
+    }
     await env.DB.prepare("UPDATE users SET last_login = ? WHERE id = ?")
-      .bind(new Date().toISOString(), user.id).run();
+      .bind(now, user.id).run();
     await rememberWechatSession(user.id);
     return json({ ...(await sessionPayload(env, user, await createToken(env, user.id))), isNewAccount: false });
   }
@@ -1174,7 +1195,7 @@ const wechatLogin = async (request: Request, env: Env) => {
   const now = new Date().toISOString();
   const salt = randomToken(16);
   const inaccessiblePasswordHash = await hashPassword(randomToken(32), salt);
-  const email = `wechat-${(await sha256(subject)).slice(0, 32)}@wechat.invalid`;
+  const email = `wechat-${(await sha256(result.unionid ? `unionid:${result.unionid}` : subjects[0])).slice(0, 32)}@wechat.invalid`;
   const displayName = String(body.display_name ?? "").trim() || null;
   await env.DB.batch([
     env.DB.prepare(`
@@ -1186,10 +1207,10 @@ const wechatLogin = async (request: Request, env: Env) => {
       id, email, inaccessiblePasswordHash, salt, displayName, now,
       now, now, now, USER_AGREEMENT_VERSION, PRIVACY_POLICY_VERSION, now
     ),
-    env.DB.prepare(`
-      INSERT INTO auth_identities (provider, provider_subject, user_id, email, created_at)
-      VALUES ('wechat', ?, ?, ?, ?)
-    `).bind(subject, id, email, now)
+    ...subjects.map((subject) => env.DB.prepare(`
+        INSERT INTO auth_identities (provider, provider_subject, user_id, email, created_at)
+        VALUES ('wechat', ?, ?, ?, ?)
+      `).bind(subject, id, email, now))
   ]);
   const user = await env.DB.prepare(`
     SELECT id, email, password_hash, password_salt, display_name, email_verified_at
@@ -2055,7 +2076,7 @@ const deleteAccount = async (request: Request, env: Env) => {
 
   // 显式逐表删除,不依赖 FK 级联配置。purchase_events 一并删除:
   // 交易记录以 Apple 侧为准,服务端不保留可关联到用户的副本。
-  for (const table of ["sessions", "auth_email_tokens", "auth_identities", "sync_rate_limits", "sync_uploads", "sync_heads", "sync_objects", "entitlements", "purchase_events"]) {
+  for (const table of ["sessions", "auth_email_tokens", "auth_identities", "sync_rate_limits", "sync_uploads", "sync_heads", "sync_objects", "entitlements", "trial_grants", "purchase_events"]) {
     await env.DB.prepare(`DELETE FROM ${table} WHERE user_id = ?`).bind(userId).run();
   }
   await env.SYNC_DATA.delete(`${PROFILE_AVATAR_PREFIX}${userId}`);
@@ -2202,6 +2223,34 @@ const verifyPurchase = async (request: Request, env: Env) => {
 
   const result = await applyAppleTransaction(env, userId, transactionId, productId);
   return result.ok ? json(result.entitlement) : json({ detail: result.detail }, result.status);
+};
+
+const claimPlanTrial = async (request: Request, env: Env) => {
+  const userId = await requireUser(request, env);
+  await rateLimitSubject(env, "trial-claim", `user:${userId}`, 10, 3600);
+  const now = new Date();
+  const grantedAt = now.toISOString();
+  const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  await env.DB.prepare(`
+    INSERT OR IGNORE INTO trial_grants (user_id, granted_at, expires_at)
+    VALUES (?, ?, ?)
+  `).bind(userId, grantedAt, expiresAt).run();
+  const grant = await env.DB.prepare(
+    "SELECT granted_at, expires_at FROM trial_grants WHERE user_id = ?"
+  ).bind(userId).first<{ granted_at: string; expires_at: string }>();
+  if (!grant) return json({ detail: "试用领取记录写入失败。" }, 500);
+
+  // INSERT 和权益写入之间如果中断，重复请求会用第一次固定的到期日补齐权益，
+  // 既不会多送七天，也不会让一次网络错误永久吞掉试用。
+  if (Date.parse(grant.expires_at) > Date.now()) {
+    const entitlement = await saveEntitlement(env, userId, {
+      productId: "shushugo_pro_trial",
+      source: "trial",
+      expiresAt: grant.expires_at
+    });
+    return json({ ...entitlement, trialGrantedAt: grant.granted_at });
+  }
+  return json({ ...(entitlementPayload(await getEntitlementRow(env, userId))), trialAlreadyUsed: true });
 };
 
 /**
@@ -2865,7 +2914,8 @@ const health = async (env: Env) => {
     "auth_rate_limits",         // 0010
     "apple_notifications",      // 0012
     "wechat_orders",            // 0013
-    "teams", "team_members", "team_daily_activity", "team_cheers", "team_reports" // 0014
+    "teams", "team_members", "team_daily_activity", "team_cheers", "team_reports", // 0014
+    "trial_grants"             // 0015
   ];
   const found = await env.DB.prepare(
     `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${required.map(() => "?").join(", ")})`
@@ -2952,6 +3002,7 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/teams/invite/regenerate") return regenerateTeamInvite(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams/report") return reportTeam(request, env);
   if (request.method === "GET" && url.pathname === "/api/entitlements") return getEntitlements(request, env);
+  if (request.method === "POST" && url.pathname === "/api/entitlements/trial") return claimPlanTrial(request, env);
   if (request.method === "POST" && url.pathname === "/api/purchases/verify") return verifyPurchase(request, env);
   if (request.method === "POST" && url.pathname === "/api/purchases/apple-notifications") return appleNotification(request, env);
   if (request.method === "POST" && url.pathname === "/api/pay/wechat/orders") return createWechatPayOrder(request, env);

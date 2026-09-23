@@ -27,3 +27,29 @@ button { margin: 16rpx 0; border-radius: 20rpx; font-size: 27rpx; line-height: 8
 .note-editor { display: flex; gap: 12rpx; align-items: center; margin-top: 22rpx; }.note-editor input { flex: 1; height: 74rpx; padding: 0 18rpx; box-sizing: border-box; border: 2rpx solid #e1d5c5; border-radius: 14rpx; background: #fffaf1; font-size: 22rpx; }.note-button { width: 146rpx; margin: 0; color: #685b4d; background: #eee6da; font-size: 21rpx; line-height: 74rpx; }
 .empty-card { padding: 44rpx 30rpx; text-align: center; }.empty-title, .empty-text { display: block; }.empty-title { color: #3a2e22; font-size: 33rpx; font-weight: 850; }.empty-text { margin-top: 13rpx; color: #806f5c; font-size: 23rpx; }.undo { margin: 4rpx 0 22rpx; line-height: 76rpx; font-size: 23rpx; }
 .shortcut-row { display: flex; gap: 12rpx; margin-bottom: 16rpx; }.shortcut { flex: 1; padding: 20rpx 8rpx; border-radius: 16rpx; color: #557d38; background: #e5efd9; text-align: center; font-size: 22rpx; font-weight: 750; }.result-card { margin-top: 22rpx; }.result-title { display: block; font-weight: 800; color: #3a2e22; }.note { padding: 16rpx 8rpx; color: #a08d79; font-size: 21rpx; line-height: 1.6; }
+
+/* 混合模式的插播卡。颜色区别于单词卡（网页那边也是琥珀 / 青绿分开的）。 */
+.interleave{border-left:8rpx solid #cc9a3e}
+.interleave-kanji{border-left-color:#5c813f}
+.interleave-confusion{border-left-color:#8a6ea8}
+.kanji-char{display:block;text-align:center;font-size:120rpx;font-weight:800;line-height:1.2;margin:20rpx 0}
+.grammar-meaning{display:block;margin-top:12rpx;font-size:28rpx;line-height:1.6}
+.usage-row{margin-top:12rpx;padding:16rpx;border-radius:16rpx;background:#f5efe5}
+.usage-base{font-weight:800;margin-right:12rpx}
+.usage-note{color:#6f685f;font-size:24rpx}
+.match-hint{display:block;margin:16rpx 0;color:#8a8177;font-size:24rpx}
+.match-body{display:flex;gap:16rpx}
+.match-col{flex:1;display:flex;flex-direction:column;gap:12rpx}
+.match-item{padding:18rpx;border-radius:18rpx;background:#f3ede3}
+.match-item.picked{background:#dfeecf;font-weight:700}
+.match-item.done{opacity:.45}
+.match-surface{display:block;font-size:30rpx;font-weight:700}
+.match-kana{display:block;color:#887d70;font-size:22rpx}
+.match-prompt{display:block;font-size:26rpx;line-height:1.5}
+.match-note{display:block;margin-top:6rpx;color:#6f685f;font-size:22rpx}
+
+.word-card{position:relative;will-change:transform}
+.revealed-answer{animation:wordReveal .24s ease-out both}
+.swipe-stamp{position:absolute;right:30rpx;top:85rpx;z-index:2;padding:10rpx 22rpx;border:4rpx solid currentColor;border-radius:14rpx;font-size:36rpx;font-weight:900;transform:rotate(9deg);pointer-events:none}
+.swipe-stamp.good{color:#6fa83e}.swipe-stamp.bad{color:#bb7972}
+@keyframes wordReveal{from{opacity:0;transform:rotateY(-12deg) translateY(10rpx)}to{opacity:1;transform:rotateY(0) translateY(0)}}

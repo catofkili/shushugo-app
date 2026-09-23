@@ -4,6 +4,13 @@ import { ensureProgressInitialized } from "./word-api";
 import { MASTERED_SQL } from "./fsrs-store";
 import type { ProgressOverview } from "./study-types";
 
+// 自报水平写入的基线会让 seen_count=1 以进入复习队列，但它不是一次真实学习。
+// 老数据/导入数据没有 baseline，仍保留原来的 seen_count 口径。
+const REAL_WORD = `(p.known_forever = 1 OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = p.word_id AND r.direction = 'forward')
+  OR (p.seen_count > 0 AND NOT EXISTS (SELECT 1 FROM level_prior_baselines b WHERE b.entity='words' AND b.entity_key=CAST(p.word_id AS TEXT))))`;
+const REAL_GRAMMAR = `(p.known_forever = 1 OR EXISTS (SELECT 1 FROM grammar_reviews r WHERE r.grammar_id = p.grammar_id)
+  OR (p.seen_count > 0 AND NOT EXISTS (SELECT 1 FROM level_prior_baselines b WHERE b.entity='grammar' AND b.entity_key=CAST(p.grammar_id AS TEXT))))`;
+
 export function getProgressOverview(): ProgressOverview {
   ensureProgressInitialized();
   ensureGrammarProgressInitialized();
@@ -12,10 +19,10 @@ export function getProgressOverview(): ProgressOverview {
   const wordRow = firstRow(`
     SELECT
       COUNT(*) AS total,
-      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 THEN 1 ELSE 0 END) AS seen,
-      SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN ${REAL_WORD} THEN 1 ELSE 0 END) AS seen,
+      SUM(CASE WHEN ${REAL_WORD} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS completed,
       SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
-      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count = 0 THEN 1 ELSE 0 END) AS unseen
+      SUM(CASE WHEN NOT ${REAL_WORD} THEN 1 ELSE 0 END) AS unseen
     FROM words w
     JOIN progress p ON p.word_id = w.id
   `, [dayEnd]);
@@ -23,10 +30,10 @@ export function getProgressOverview(): ProgressOverview {
     SELECT
       COALESCE(w.jlpt_level, '未分级') AS level,
       COUNT(*) AS total,
-      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 THEN 1 ELSE 0 END) AS seen,
-      SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN ${REAL_WORD} THEN 1 ELSE 0 END) AS seen,
+      SUM(CASE WHEN ${REAL_WORD} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS completed,
       SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
-      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count = 0 THEN 1 ELSE 0 END) AS unseen
+      SUM(CASE WHEN NOT ${REAL_WORD} THEN 1 ELSE 0 END) AS unseen
     FROM words w
     JOIN progress p ON p.word_id = w.id
     WHERE w.jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')
@@ -44,10 +51,10 @@ export function getProgressOverview(): ProgressOverview {
     SELECT
       g.level,
       COUNT(*) AS total,
-      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 THEN 1 ELSE 0 END) AS seen,
-      SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN ${REAL_GRAMMAR} THEN 1 ELSE 0 END) AS seen,
+      SUM(CASE WHEN ${REAL_GRAMMAR} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS completed,
       SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
-      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count = 0 THEN 1 ELSE 0 END) AS unseen
+      SUM(CASE WHEN NOT ${REAL_GRAMMAR} THEN 1 ELSE 0 END) AS unseen
     FROM grammar_points g
     JOIN grammar_progress p ON p.grammar_id = g.id
     GROUP BY g.level

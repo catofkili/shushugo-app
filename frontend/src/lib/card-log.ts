@@ -30,6 +30,38 @@ export const createCardLog = (config: CardLogConfig) => {
 
   const ensure = () => ensureFsrsColumns(entity);
 
+  const priorEntity = memory === "kanji_char_memory" ? "kanji"
+    : memory === "confusion_progress" ? "confusion"
+      : "";
+
+  /** 流水从用户自报水平形成的起点重放；没有起点才回到全新卡。 */
+  const resetToStartingPoint = (key: string) => {
+    const hasBaselines = priorEntity && firstValue<number>(
+      "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'level_prior_baselines'", [], 0
+    ) > 0;
+    const baseline = hasBaselines ? rowsFor(`
+      SELECT stability, difficulty, due, last_review, state, steps, reps, lapses
+      FROM level_prior_baselines WHERE entity = ? AND entity_key = ?
+    `, [priorEntity, key])[0] : undefined;
+    if (baseline) {
+      getDatabase().run(`
+        UPDATE ${memory}
+        SET seen_count = 1, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
+            fsrs_stability = ?, fsrs_difficulty = ?, fsrs_due = ?, fsrs_last_review = ?,
+            fsrs_state = ?, fsrs_steps = ?, fsrs_reps = ?, fsrs_lapses = ?
+        WHERE ${id} = ?
+      `, [baseline.stability, baseline.difficulty, baseline.due, baseline.last_review, baseline.state, baseline.steps, baseline.reps, baseline.lapses, key]);
+      return;
+    }
+    getDatabase().run(`
+      UPDATE ${memory}
+      SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
+          fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL, fsrs_last_review = NULL,
+          fsrs_state = NULL, fsrs_steps = NULL, fsrs_reps = NULL, fsrs_lapses = NULL
+      WHERE ${id} = ?
+    `, [key]);
+  };
+
   const updateCounters = (key: string, answer: WordAnswer, seenOn: string) => {
     const counts = answer === "forgot" ? [1, 0, 0, 1] : answer === "fuzzy" ? [1, 0, 1, 0] : [1, 1, 0, 0];
     const previousStreak = firstValue<number>(`SELECT mistake_streak FROM ${memory} WHERE ${id} = ?`, [key], 0);
@@ -79,13 +111,7 @@ export const createCardLog = (config: CardLogConfig) => {
       const events = rowsFor(`SELECT answer, reviewed_on, reviewed_at, scheduler_mode FROM ${reviewsTable} WHERE ${id} = ? ORDER BY reviewed_at ASC, id ASC`, [key]);
       if (!events.length) continue;
       insertMissing(key);
-      db.run(`
-        UPDATE ${memory}
-        SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
-            fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL, fsrs_last_review = NULL,
-            fsrs_state = NULL, fsrs_steps = NULL, fsrs_reps = NULL, fsrs_lapses = NULL
-        WHERE ${id} = ?
-      `, [key]);
+      resetToStartingPoint(key);
       for (const event of events) {
         const answer = String(event.answer) as WordAnswer;
         if (!["forgot", "fuzzy", "know", "known_forever"].includes(answer)) continue;
@@ -181,16 +207,7 @@ export const createCardLog = (config: CardLogConfig) => {
     if (!last) return null;
     const key = String(last.k);
     getDatabase().run(`DELETE FROM ${reviewsTable} WHERE id = ?`, [last.id as number]);
-    if (!replay([key])) {
-      // 这张卡今天之前从没答过：流水删空了，检查点也清回「没学过」
-      getDatabase().run(`
-        UPDATE ${memory}
-        SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
-            fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL, fsrs_last_review = NULL,
-            fsrs_state = NULL, fsrs_steps = NULL, fsrs_reps = NULL, fsrs_lapses = NULL
-        WHERE ${id} = ?
-      `, [key]);
-    }
+    if (!replay([key])) resetToStartingPoint(key);
     return key;
   };
 

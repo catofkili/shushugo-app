@@ -48,15 +48,26 @@
       randomUUID: () => `${hex(8)}-${hex(4)}-4${hex(3)}-${(8 + Math.floor(Math.random() * 4)).toString(16)}${hex(3)}-${hex(12)}`
     });
   }
-  if (!scope.window) {
+  if (!scope.window || typeof wx !== 'undefined') {
     const listeners = new Map();
-    scope.window = {
+    const eventTarget = {
       addEventListener(type, handler) { const list = listeners.get(type) || []; list.push(handler); listeners.set(type, list); },
       removeEventListener(type, handler) { listeners.set(type, (listeners.get(type) || []).filter((item) => item !== handler)); },
       dispatchEvent(event) { (listeners.get(event.type) || []).slice().forEach((handler) => { try { handler(event); } catch (error) { console.warn('[shared] 事件回调出错', error); } }); return true; }
     };
+    if (!scope.window) scope.window = eventTarget;
+    scope.__shushugoWindow = eventTarget;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof global !== 'undefined' ? global : this));
+
+// 微信逻辑层会在页面切换时重建全局代理；网页源码里的裸引用要抓住本模块初始化的替身。
+var sharedScope = typeof globalThis !== 'undefined' ? globalThis : (typeof global !== 'undefined' ? global : this);
+var localStorage = sharedScope.localStorage;
+var window = sharedScope.__shushugoWindow || sharedScope.window;
+var Event = sharedScope.Event;
+var CustomEvent = sharedScope.CustomEvent;
+var document = sharedScope.document;
+var crypto = sharedScope.crypto;
 
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -180,6 +191,52 @@ CREATE TABLE IF NOT EXISTS grammar_state (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+
+-- \u7528\u6237\u81EA\u62A5\u6C34\u5E73\u53EA\u7ED9 FSRS \u4E00\u4E2A\u521D\u59CB\u72B6\u6001\uFF0C\u4E0D\u4F2A\u9020\u6210\u771F\u5B9E\u4F5C\u7B54\u3002\u6C49\u5B57\u548C\u8FA8\u6790\u7684
+-- memory \u4F1A\u5728\u540C\u6B65/\u64A4\u9500\u540E\u4ECE\u6D41\u6C34\u91CD\u653E\uFF0C\u56E0\u6B64\u5FC5\u987B\u628A\u8FD9\u4EFD\u8D77\u59CB\u72B6\u6001\u5355\u72EC\u4FDD\u5B58\uFF1B
+-- \u5426\u5219\u7B2C\u4E00\u6B21\u771F\u5B9E\u4F5C\u7B54\u91CD\u653E\u540E\u4F1A\u4ECE\u201C\u5168\u65B0\u5361\u201D\u8D77\u7B97\uFF0C\u64A4\u9500\u8FD8\u4F1A\u628A\u521D\u59CB\u72B6\u6001\u6E05\u7A7A\u3002
+CREATE TABLE IF NOT EXISTS level_prior_baselines (
+  entity TEXT NOT NULL,
+  entity_key TEXT NOT NULL,
+  stability REAL NOT NULL,
+  difficulty REAL NOT NULL DEFAULT 5,
+  due TEXT NOT NULL,
+  last_review TEXT NOT NULL,
+  state INTEGER NOT NULL DEFAULT 2,
+  steps INTEGER NOT NULL DEFAULT 0,
+  reps INTEGER NOT NULL DEFAULT 0,
+  lapses INTEGER NOT NULL DEFAULT 0,
+  starting_level TEXT NOT NULL,
+  familiarity INTEGER NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (entity, entity_key)
+);
+
+-- \u4E94\u5341\u97F3\u4E5F\u6709\u81EA\u5DF1\u7684 FSRS \u8BB0\u5FC6\u4E0E\u771F\u5B9E\u4F5C\u7B54\u6D41\u6C34\uFF1B\u5B8C\u6210 92 \u4E2A\u57FA\u7840\u5047\u540D\u4EE5\u524D\uFF0C
+-- \u65B0\u8BCD\u8BA1\u5212\u6309\u5B9E\u9645\u8FDB\u5EA6\u5EF6\u540E\u3002\u8BB0\u5FC6\u662F\u53EF\u91CD\u653E\u68C0\u67E5\u70B9\uFF0C\u6D41\u6C34\u8DE8\u8BBE\u5907\u53D6\u5E76\u96C6\u3002
+CREATE TABLE IF NOT EXISTS kana_memory (
+  symbol TEXT PRIMARY KEY,
+  correct_streak INTEGER NOT NULL DEFAULT 0,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  fsrs_stability REAL,
+  fsrs_difficulty REAL,
+  fsrs_due TEXT,
+  fsrs_last_review TEXT,
+  fsrs_state INTEGER,
+  fsrs_steps INTEGER,
+  fsrs_reps INTEGER,
+  fsrs_lapses INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS kana_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  symbol TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  reviewed_at INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_kana_reviews_symbol_at ON kana_reviews (symbol, reviewed_at);
 
 -- \u4ECE\u4F8B\u53E5\u8BCD\u5178\u4E3B\u52A8\u52A0\u5165\u7684\u8BCD\u3002\u4EFB\u52A1\u8868\u6309\u5B66\u4E60\u65E5\u8F6E\u6362\uFF0C\u8FD9\u5F20\u5C0F\u8868\u4FDD\u7559\u53D1\u73B0\u610F\u56FE\uFF0C
 -- \u8BA9\u672A\u5F00\u59CB\u7684\u8BCD\u5728\u7B2C\u4E8C\u5929\u4ECD\u4F1A\u4F18\u5148\u8FDB\u5165\u65B0\u8BCD\u8BA1\u5212\u3002
@@ -635,14 +692,20 @@ var init_schema = __esm({
 var require_storage = __commonJS({
   "scripts/shared/shims/storage.js"(exports, module2) {
     var pending = null;
-    function scheduleSave() {
+    function scheduleSave3() {
       if (pending) return;
       pending = setTimeout(() => {
         pending = null;
-        require("../runtime/database-store").saveDatabase().catch((error) => console.warn("[shared] \u843D\u76D8\u5931\u8D25", error));
+        try {
+          Promise.resolve(require("../runtime/database-store").saveDatabase()).catch((error) => {
+            if (!/尚未初始化/.test(String(error && error.message))) console.warn("[shared] \u843D\u76D8\u5931\u8D25", error);
+          });
+        } catch (error) {
+          console.warn("[shared] \u843D\u76D8\u8DF3\u8FC7", error);
+        }
       }, 300);
     }
-    module2.exports = { scheduleSave, requestFullSnapshot() {
+    module2.exports = { scheduleSave: scheduleSave3, requestFullSnapshot() {
     } };
   }
 });
@@ -725,12 +788,12 @@ function studyDayEnd(current = /* @__PURE__ */ new Date()) {
   return end;
 }
 function persistSoon() {
-  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
 }
 function persistContentSoon() {
-  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ requestFullSnapshot, scheduleSave }) => {
-    requestFullSnapshot();
-    scheduleSave();
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ requestFullSnapshot: requestFullSnapshot3, scheduleSave: scheduleSave3 }) => {
+    requestFullSnapshot3();
+    scheduleSave3();
   });
 }
 var import_database2, queryRows, oncePerDb, localDateKey, today;
@@ -806,45 +869,45 @@ var init_legacy_word_migrations = __esm({
     CANONICAL_BIRU_ID = 775;
     LEGACY_BIRU_MIGRATION_VERSION = "2026-08-13-biru-2480-to-775-v1";
     MIGRATION_STATE_KEY = "legacy_biru_merge_version";
-    tableExists = (table) => firstValue(
+    tableExists = (table2) => firstValue(
       "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1",
-      [table],
+      [table2],
       0
     ) === 1;
-    columnsOf = (table) => rowsFor(`PRAGMA table_info(${table})`).map((row) => String(row.name ?? "")).filter(Boolean);
+    columnsOf = (table2) => rowsFor(`PRAGMA table_info(${table2})`).map((row) => String(row.name ?? "")).filter(Boolean);
     quoteIdentifier = (value) => `"${value.replace(/"/g, '""')}"`;
-    wordRowExists = (table, wordId, extraWhere = "", params = []) => firstValue(
-      `SELECT 1 FROM ${quoteIdentifier(table)} WHERE word_id = ?${extraWhere} LIMIT 1`,
+    wordRowExists = (table2, wordId, extraWhere = "", params = []) => firstValue(
+      `SELECT 1 FROM ${quoteIdentifier(table2)} WHERE word_id = ?${extraWhere} LIMIT 1`,
       [wordId, ...params],
       0
     ) === 1;
-    replaceSingleRow = (db, table, fromId, intoId, preferFrom, extraWhere = "", params = []) => {
-      if (!tableExists(table) || !wordRowExists(table, fromId, extraWhere, params)) return;
-      const canonicalExists = wordRowExists(table, intoId, extraWhere, params);
+    replaceSingleRow = (db, table2, fromId, intoId, preferFrom, extraWhere = "", params = []) => {
+      if (!tableExists(table2) || !wordRowExists(table2, fromId, extraWhere, params)) return;
+      const canonicalExists = wordRowExists(table2, intoId, extraWhere, params);
       if (!canonicalExists || preferFrom) {
         if (canonicalExists) {
-          db.run(`DELETE FROM ${quoteIdentifier(table)} WHERE word_id = ?${extraWhere}`, [intoId, ...params]);
+          db.run(`DELETE FROM ${quoteIdentifier(table2)} WHERE word_id = ?${extraWhere}`, [intoId, ...params]);
         }
-        const columns = columnsOf(table).filter((column) => column !== "sync_updated_at" && column !== "sync_origin_device");
+        const columns = columnsOf(table2).filter((column) => column !== "sync_updated_at" && column !== "sync_origin_device");
         const selectColumns = columns.map((column) => column === "word_id" ? "?" : quoteIdentifier(column));
         db.run(
-          `INSERT INTO ${quoteIdentifier(table)} (${columns.map(quoteIdentifier).join(", ")})
+          `INSERT INTO ${quoteIdentifier(table2)} (${columns.map(quoteIdentifier).join(", ")})
        SELECT ${selectColumns.join(", ")}
-       FROM ${quoteIdentifier(table)}
+       FROM ${quoteIdentifier(table2)}
        WHERE word_id = ?${extraWhere}`,
           [intoId, fromId, ...params]
         );
       }
-      db.run(`DELETE FROM ${quoteIdentifier(table)} WHERE word_id = ?${extraWhere}`, [fromId, ...params]);
+      db.run(`DELETE FROM ${quoteIdentifier(table2)} WHERE word_id = ?${extraWhere}`, [fromId, ...params]);
     };
-    migrateDatedRows = (db, table, fromId, intoId, preferFrom) => {
-      if (!tableExists(table)) return;
+    migrateDatedRows = (db, table2, fromId, intoId, preferFrom) => {
+      if (!tableExists(table2)) return;
       const dates = rowsFor(
-        `SELECT reviewed_on FROM ${quoteIdentifier(table)} WHERE word_id = ? ORDER BY reviewed_on`,
+        `SELECT reviewed_on FROM ${quoteIdentifier(table2)} WHERE word_id = ? ORDER BY reviewed_on`,
         [fromId]
       );
       dates.forEach((row) => {
-        replaceSingleRow(db, table, fromId, intoId, preferFrom, " AND reviewed_on = ?", [String(row.reviewed_on ?? "")]);
+        replaceSingleRow(db, table2, fromId, intoId, preferFrom, " AND reviewed_on = ?", [String(row.reviewed_on ?? "")]);
       });
     };
     rewriteQueue = (raw, remap) => {
@@ -903,22 +966,22 @@ var init_legacy_word_migrations = __esm({
       const preferFrom = fromSeen > intoSeen;
       const movedReviews = tableExists("reviews") ? firstValue("SELECT COUNT(*) FROM reviews WHERE word_id = ?", [fromId], 0) : 0;
       replaceSingleRow(db, "progress", fromId, intoId, preferFrom);
-      ["reverse_memory", "kanji_memory", "kanji_reading_memory"].forEach((table) => {
-        if (!tableExists(table)) return;
+      ["reverse_memory", "kanji_memory", "kanji_reading_memory"].forEach((table2) => {
+        if (!tableExists(table2)) return;
         const keepClicks = firstValue(
-          `SELECT COALESCE(seen_count, 0) FROM ${quoteIdentifier(table)} WHERE word_id = ?`,
+          `SELECT COALESCE(seen_count, 0) FROM ${quoteIdentifier(table2)} WHERE word_id = ?`,
           [intoId],
           0
         );
         const dropClicks = firstValue(
-          `SELECT COALESCE(seen_count, 0) FROM ${quoteIdentifier(table)} WHERE word_id = ?`,
+          `SELECT COALESCE(seen_count, 0) FROM ${quoteIdentifier(table2)} WHERE word_id = ?`,
           [fromId],
           0
         );
-        replaceSingleRow(db, table, fromId, intoId, dropClicks > keepClicks);
+        replaceSingleRow(db, table2, fromId, intoId, dropClicks > keepClicks);
       });
-      ["stage1_tasks", "stage2_progress", "kanji_progress", "kanji_reading_progress", "critical_reviews"].forEach((table) => {
-        migrateDatedRows(db, table, fromId, intoId, preferFrom);
+      ["stage1_tasks", "stage2_progress", "kanji_progress", "kanji_reading_progress", "critical_reviews"].forEach((table2) => {
+        migrateDatedRows(db, table2, fromId, intoId, preferFrom);
       });
       replaceSingleRow(db, "word_notes", fromId, intoId, preferFrom || !wordRowExists("word_notes", intoId));
       replaceSingleRow(db, "word_question_meanings", fromId, intoId, preferFrom);
@@ -999,6 +1062,9 @@ var init_tables = __esm({
       { table: "dictionary_discovered_words", keys: ["word_id"], strategy: "union" },
       // 疑难辨析里标过「已掌握」的词组。主键是词组标识而不是 word_id。
       { table: "confusion_mastered", keys: ["group_key"], strategy: "lww" },
+      // 自报水平形成的 FSRS 起始状态。它不是作答流水，但重放/撤销必须从这里起步。
+      { table: "level_prior_baselines", keys: ["entity", "entity_key"], strategy: "lww" },
+      { table: "kana_memory", keys: ["symbol"], strategy: "lww" },
       // 成就。取并集而不是 LWW：解锁是不可逆的,两端各拿到的都该留下,
       // 也不该因为对端那行「更新」就把本机的解锁日期改掉。
       { table: "achievements", keys: ["id"], strategy: "union" },
@@ -1030,6 +1096,7 @@ var init_tables = __esm({
       { table: "kanji_unit_reviews", keys: ["sync_uid"], strategy: "append" },
       { table: "kanji_char_reviews", keys: ["sync_uid"], strategy: "append" },
       { table: "confusion_reviews", keys: ["sync_uid"], strategy: "append" },
+      { table: "kana_reviews", keys: ["sync_uid"], strategy: "append" },
       { table: "checkins", keys: ["checked_on"], strategy: "union" },
       // 播报过的时刻。天然幂等的集合,和打卡同构:两端取并集,
       // 换台设备不会把同一句「比昨天少 48 个」再说一遍。
@@ -1064,11 +1131,13 @@ var init_tables = __esm({
       // 上发生过什么」的诊断记录，不是账号数据：同步过去只会让对端的计数被顶掉，
       // 而且计划明确要求这类采集先只留本地、不默认上传。
       "weekly_report_events",
+      // 到期弹窗是设备本地的已读状态；同步后不能让另一台设备错过提醒。
+      "level_trial_expiry_noticed",
       ...CONTENT_MIGRATION_STATE_KEYS
     ]);
     DEVICE_LOCAL_GRAMMAR_STATE_KEYS = /* @__PURE__ */ new Set(["dataset_version"]);
-    isDeviceLocalStateKey = (table, key) => table === "app_state" ? DEVICE_LOCAL_STATE_KEYS.has(key) : table === "grammar_state" ? DEVICE_LOCAL_GRAMMAR_STATE_KEYS.has(key) : false;
-    isAppendTable = (table) => SYNCED_TABLES.find((entry) => entry.table === table)?.strategy === "append";
+    isDeviceLocalStateKey = (table2, key) => table2 === "app_state" ? DEVICE_LOCAL_STATE_KEYS.has(key) : table2 === "grammar_state" ? DEVICE_LOCAL_GRAMMAR_STATE_KEYS.has(key) : false;
+    isAppendTable = (table2) => SYNCED_TABLES.find((entry) => entry.table === table2)?.strategy === "append";
   }
 });
 
@@ -1199,7 +1268,8 @@ __export(schema_exports, {
   endSyncApply: () => endSyncApply,
   ensureSyncSchema: () => ensureSyncSchema,
   getDeviceId: () => getDeviceId,
-  resetDeviceId: () => resetDeviceId
+  resetDeviceId: () => resetDeviceId,
+  withoutSyncStamp: () => withoutSyncStamp
 });
 function ensureSyncSchema() {
   const db = (0, import_database5.getDatabase)();
@@ -1273,6 +1343,21 @@ function beginSyncApply() {
 function endSyncApply() {
   (0, import_database5.getDatabase)().run("DELETE FROM sync_context WHERE key = 'applying_remote'");
 }
+function withoutSyncStamp(run) {
+  ensureSyncSchema();
+  const alreadyApplying = firstValue(
+    "SELECT value FROM sync_context WHERE key = 'applying_remote'",
+    [],
+    ""
+  ) === "1";
+  if (alreadyApplying) return run();
+  beginSyncApply();
+  try {
+    return run();
+  } finally {
+    endSyncApply();
+  }
+}
 function getDeviceId() {
   const db = (0, import_database5.getDatabase)();
   db.run("CREATE TABLE IF NOT EXISTS sync_device (id TEXT NOT NULL)");
@@ -1302,8 +1387,8 @@ var init_schema2 = __esm({
     SYNC_ORIGIN_COL = "sync_origin_device";
     NOW_EXPR = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
     schemaReadyDbs = /* @__PURE__ */ new WeakSet();
-    columnsOf2 = (table) => new Set(rowsFor(`PRAGMA table_info(${table})`).map((row) => String(row.name ?? "")));
-    tableExists2 = (table) => rowsFor("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?", [table]).length > 0;
+    columnsOf2 = (table2) => new Set(rowsFor(`PRAGMA table_info(${table2})`).map((row) => String(row.name ?? "")));
+    tableExists2 = (table2) => rowsFor("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?", [table2]).length > 0;
     rowKeyExpr = (entry, alias) => entry.keys.map((key) => `CAST(${alias}.${key} AS TEXT)`).join(" || char(31) || ");
     ensureTrackingColumns = (entry) => {
       const db = (0, import_database5.getDatabase)();
@@ -1343,35 +1428,35 @@ var init_schema2 = __esm({
     };
     ensureTriggers = (entry) => {
       const db = (0, import_database5.getDatabase)();
-      const { table } = entry;
+      const { table: table2 } = entry;
       const uidAssign = entry.strategy === "append" ? `, ${SYNC_UID_COL} = COALESCE(NEW.${SYNC_UID_COL},
          (SELECT id FROM sync_device LIMIT 1) || ':' || CAST(NEW.id AS TEXT))` : "";
-      db.run(`DROP TRIGGER IF EXISTS trg_${table}_sync_insert`);
-      db.run(`DROP TRIGGER IF EXISTS trg_${table}_sync_update`);
-      db.run(`DROP TRIGGER IF EXISTS trg_${table}_sync_delete`);
+      db.run(`DROP TRIGGER IF EXISTS trg_${table2}_sync_insert`);
+      db.run(`DROP TRIGGER IF EXISTS trg_${table2}_sync_update`);
+      db.run(`DROP TRIGGER IF EXISTS trg_${table2}_sync_delete`);
       db.run(`
-    CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_insert AFTER INSERT ON ${table}
+    CREATE TRIGGER IF NOT EXISTS trg_${table2}_sync_insert AFTER INSERT ON ${table2}
     WHEN NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
     BEGIN
-      UPDATE ${table} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR},
+      UPDATE ${table2} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR},
         ${SYNC_ORIGIN_COL} = (SELECT id FROM sync_device LIMIT 1)${uidAssign}
       WHERE rowid = NEW.rowid;
       DELETE FROM sync_tombstones
-      WHERE table_name = '${table}' AND row_key = ${rowKeyExpr(entry, "NEW")};
+      WHERE table_name = '${table2}' AND row_key = ${rowKeyExpr(entry, "NEW")};
     END
   `);
       db.run(`
-    CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_update AFTER UPDATE ON ${table}
+    CREATE TRIGGER IF NOT EXISTS trg_${table2}_sync_update AFTER UPDATE ON ${table2}
     WHEN NEW.${SYNC_UPDATED_COL} IS OLD.${SYNC_UPDATED_COL}
       AND NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
     BEGIN
-      UPDATE ${table} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR},
+      UPDATE ${table2} SET ${SYNC_UPDATED_COL} = ${NOW_EXPR},
         ${SYNC_ORIGIN_COL} = (SELECT id FROM sync_device LIMIT 1)
       WHERE rowid = NEW.rowid;
     END
   `);
       db.run(`
-    CREATE TRIGGER IF NOT EXISTS trg_${table}_sync_delete AFTER DELETE ON ${table}
+    CREATE TRIGGER IF NOT EXISTS trg_${table2}_sync_delete AFTER DELETE ON ${table2}
     WHEN NOT EXISTS (SELECT 1 FROM sync_context WHERE key = 'applying_remote' AND value = '1')
       -- \u7B97\u4E0D\u51FA row_key \u7684\u884C(\u67D0\u5217\u662F NULL)\u5199\u4E0D\u4E86\u5893\u7891 \u2014\u2014 \u4F46\u90A3\u4E5F\u4E0D\u8BE5\u8BA9\u8C03\u7528\u65B9\u7684\u4E8B\u52A1
       -- \u6574\u4E2A\u5931\u8D25\u3002\u6CA1\u6709\u540C\u6B65\u8EAB\u4EFD\u7684\u884C\u672C\u6765\u5C31\u4E0D\u53EF\u80FD\u88AB\u5BF9\u7AEF\u6309\u952E\u590D\u6D3B,\u8DF3\u8FC7\u662F\u5B89\u5168\u7684;
@@ -1380,7 +1465,7 @@ var init_schema2 = __esm({
       AND ${rowKeyExpr(entry, "OLD")} IS NOT NULL
     BEGIN
       INSERT INTO sync_tombstones (table_name, row_key, deleted_at, origin_device)
-      VALUES ('${table}', ${rowKeyExpr(entry, "OLD")}, ${NOW_EXPR},
+      VALUES ('${table2}', ${rowKeyExpr(entry, "OLD")}, ${NOW_EXPR},
         (SELECT id FROM sync_device LIMIT 1))
       ON CONFLICT(table_name, row_key) DO UPDATE SET
         deleted_at = excluded.deleted_at,
@@ -1755,18 +1840,18 @@ var init_study_core = __esm({
       `, [...row, index3 + 1]);
           newIdByPattern.set(row[0], firstValue("SELECT last_insert_rowid()", [], 0));
         });
-        GRAMMAR_PROGRESS_TABLES.forEach((table) => {
-          db.run(`UPDATE ${table} SET grammar_id = grammar_id + ${GRAMMAR_ID_OFFSET}`);
+        GRAMMAR_PROGRESS_TABLES.forEach((table2) => {
+          db.run(`UPDATE ${table2} SET grammar_id = grammar_id + ${GRAMMAR_ID_OFFSET}`);
         });
         oldIdByPattern.forEach((oldId, pattern) => {
           const newId = newIdByPattern.get(GRAMMAR_PATTERN_RENAMES[pattern] ?? pattern);
           if (!newId) return;
-          GRAMMAR_PROGRESS_TABLES.forEach((table) => {
-            db.run(`UPDATE ${table} SET grammar_id = ? WHERE grammar_id = ?`, [newId, oldId + GRAMMAR_ID_OFFSET]);
+          GRAMMAR_PROGRESS_TABLES.forEach((table2) => {
+            db.run(`UPDATE ${table2} SET grammar_id = ? WHERE grammar_id = ?`, [newId, oldId + GRAMMAR_ID_OFFSET]);
           });
         });
-        GRAMMAR_PROGRESS_TABLES.forEach((table) => {
-          db.run(`DELETE FROM ${table} WHERE grammar_id >= ${GRAMMAR_ID_OFFSET}`);
+        GRAMMAR_PROGRESS_TABLES.forEach((table2) => {
+          db.run(`DELETE FROM ${table2} WHERE grammar_id >= ${GRAMMAR_ID_OFFSET}`);
         });
         db.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", ["queue", "[]"]);
         db.run("DELETE FROM grammar_state WHERE key LIKE 'quiz_undo:%'");
@@ -2090,6 +2175,63 @@ var init_study_core = __esm({
   }
 });
 
+// ../frontend/src/lib/grammar-api.ts
+var grammar_api_exports = {};
+__export(grammar_api_exports, {
+  ensureGrammarProgressInitialized: () => ensureGrammarProgressInitialized,
+  getGrammarPointFavorite: () => getGrammarPointFavorite,
+  getGrammarQueue: () => getGrammarQueue,
+  setGrammarQueue: () => setGrammarQueue
+});
+function ensureGrammarProgressInitialized() {
+  oncePerDatabase("grammar-progress", () => {
+    ensureUserTables();
+    withoutSyncStamp(() => {
+      (0, import_database7.getDatabase)().run(`
+        INSERT OR IGNORE INTO grammar_progress (grammar_id)
+        SELECT id FROM grammar_points
+      `);
+    });
+  });
+}
+function getGrammarPointFavorite(pattern) {
+  return isFavorite("grammar", pattern);
+}
+var import_database7, grammarState, setGrammarState, getGrammarQueue, setGrammarQueue;
+var init_grammar_api = __esm({
+  "../frontend/src/lib/grammar-api.ts"() {
+    "use strict";
+    import_database7 = __toESM(require_database(), 1);
+    init_db_utils();
+    init_schema2();
+    init_study_core();
+    grammarState = (key, fallback) => firstValue(
+      "SELECT value FROM grammar_state WHERE key = ?",
+      [key],
+      fallback
+    );
+    setGrammarState = (key, value) => {
+      (0, import_database7.getDatabase)().run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", [key, value]);
+    };
+    getGrammarQueue = () => {
+      try {
+        const queue = JSON.parse(grammarState("queue", "[]"));
+        if (!Array.isArray(queue)) return [];
+        return queue.flatMap((item) => {
+          const grammarId = Number(item?.grammar_id);
+          if (!Number.isFinite(grammarId)) return [];
+          return [{ grammar_id: grammarId, due_after: Math.max(Number(item?.due_after ?? 0), 0) }];
+        });
+      } catch {
+        return [];
+      }
+    };
+    setGrammarQueue = (queue) => {
+      setGrammarState("queue", JSON.stringify(queue));
+    };
+  }
+});
+
 // ../frontend/src/lib/furigana-data.ts
 var furigana_data_exports = {};
 __export(furigana_data_exports, {
@@ -2192,10 +2334,874 @@ var init_furigana_data = __esm({
   }
 });
 
-// scripts/shared/shims/orthography.js
-var require_orthography = __commonJS({
-  "scripts/shared/shims/orthography.js"(exports, module2) {
-    module2.exports = require("../core/orthography");
+// ../frontend/src/data/kanji_orthography.json
+var kanji_orthography_default;
+var init_kanji_orthography = __esm({
+  "../frontend/src/data/kanji_orthography.json"() {
+    kanji_orthography_default = {
+      source: "JMdict \xA9 EDRDG, CC BY-SA 4.0",
+      sourceUrl: "http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz",
+      generatedBy: "frontend/scripts/audit-kanji-orthography.mjs",
+      manualReview: "frontend/scripts/kanji-orthography-manual-review.json",
+      entries: {
+        "\u7121\u304F\u3059|\u306A\u304F\u3059": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306A\u304F\u3059"
+        },
+        "\u7121\u304F\u306A\u308B|\u306A\u304F\u306A\u308B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306A\u304F\u306A\u308B"
+        },
+        "\u7E4B\u304C\u308B|\u3064\u306A\u304C\u308B": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u3064\u306A\u304C\u308B"
+        },
+        "\u305F\u3060\u4ECA|\u305F\u3060\u3044\u307E": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u305F\u3060\u3044\u307E"
+        },
+        "\u639B\u304B\u308B|\u304B\u304B\u308B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u304B\u304B\u308B"
+        },
+        "\u639B\u3051\u308B|\u304B\u3051\u308B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u304B\u3051\u308B"
+        },
+        "\u5E73\u4EEE\u540D|\u3072\u3089\u304C\u306A": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3072\u3089\u304C\u306A"
+        },
+        "\u7247\u4EEE\u540D|\u304B\u305F\u304B\u306A": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u30AB\u30BF\u30AB\u30CA"
+        },
+        "\u8449\u66F8|\u306F\u304C\u304D": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u306F\u304C\u304D"
+        },
+        "\u9802\u304F|\u3044\u305F\u3060\u304F": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3044\u305F\u3060\u304F"
+        },
+        "\u4F55\u3067|\u306A\u3093\u3067": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306A\u3093\u3067"
+        },
+        "\u4E0B\u3055\u3044|\u304F\u3060\u3055\u3044": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u304F\u3060\u3055\u3044"
+        },
+        "\u521D\u3081\u307E\u3057\u3066|\u306F\u3058\u3081\u307E\u3057\u3066": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306F\u3058\u3081\u307E\u3057\u3066"
+        },
+        "\u301C\u9054|\u301C\u305F\u3061": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u301C\u305F\u3061"
+        },
+        "\u4E8B|\u3053\u3068": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3053\u3068"
+        },
+        "\u5168\u3066|\u3059\u3079\u3066": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u3059\u3079\u3066"
+        },
+        "\u5927\u4EBA\u3057\u3044|\u304A\u3068\u306A\u3057\u3044": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u304A\u3068\u306A\u3057\u3044"
+        },
+        "\u5927\u4F53|\u3060\u3044\u305F\u3044": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u3060\u3044\u305F\u3044"
+        },
+        "\u5168\u304F|\u307E\u3063\u305F\u304F": {
+          band: "low",
+          score: 34,
+          preferredSurface: "\u307E\u3063\u305F\u304F"
+        },
+        "\u5699[\u304B]\u3080|\u304B\u3080": {
+          band: "alternate",
+          score: 0,
+          preferredSurface: "\u565B\u3080"
+        },
+        "\u968F\u5206|\u305A\u3044\u3076\u3093": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u305A\u3044\u3076\u3093"
+        },
+        "\u81F4\u3059|\u3044\u305F\u3059": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3044\u305F\u3059"
+        },
+        "\u7136\u3057|\u3057\u304B\u3057": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3057\u304B\u3057"
+        },
+        "\u5438\u6BBB|\u3059\u3044\u304C\u3089": {
+          band: "alternate",
+          score: 34,
+          preferredSurface: "\u5438\u3044\u6BBB"
+        },
+        "\u5074|\u305D\u3070": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u305D\u3070"
+        },
+        "\u4F46\u3057|\u305F\u3060\u3057": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u305F\u3060\u3057"
+        },
+        "\u4F55\u65B9|\u3069\u306A\u305F": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3069\u306A\u305F"
+        },
+        "\u7247\u3065\u3051\u308B|\u304B\u305F\u3065\u3051\u308B": {
+          band: "alternate",
+          score: 34,
+          preferredSurface: "\u7247\u4ED8\u3051\u308B"
+        },
+        "\u6B86\u3069|\u307B\u3068\u3093\u3069": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u307B\u3068\u3093\u3069"
+        },
+        "\u52FF\u4F53\u306A\u3044|\u3082\u3063\u305F\u3044\u306A\u3044": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3082\u3063\u305F\u3044\u306A\u3044"
+        },
+        "\u8CB0\u3046|\u3082\u3089\u3046": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u3082\u3089\u3046"
+        },
+        "\u5411\u65E5\u8475|\u3072\u307E\u308F\u308A": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u3072\u307E\u308F\u308A"
+        },
+        "\u4E0D\u5473\u3044|\u307E\u305A\u3044": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u307E\u305A\u3044"
+        },
+        "\u78BA\u308A|\u3057\u3063\u304B\u308A": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3057\u3063\u304B\u308A"
+        },
+        "\u66F4\u306B|\u3055\u3089\u306B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3055\u3089\u306B"
+        },
+        "\u66AB\u304F|\u3057\u3070\u3089\u304F": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3057\u3070\u3089\u304F"
+        },
+        "\u4ED5\u821E\u3046|\u3057\u307E\u3046": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3057\u307E\u3046"
+        },
+        "\u65E8\u304F|\u3046\u307E\u304F": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u3046\u307E\u304F"
+        },
+        "\u51FA\u6765\u308B|\u3067\u304D\u308B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3067\u304D\u308B"
+        },
+        "\u51FA\u6765\u308B\u3060\u3051|\u3067\u304D\u308B\u3060\u3051": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3067\u304D\u308B\u3060\u3051"
+        },
+        "\u5148\u305A|\u307E\u305A": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u307E\u305A"
+        },
+        "\u5927\u5206|\u3060\u3044\u3076": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3060\u3044\u3076"
+        },
+        "\u4E01\u5EA6|\u3061\u3087\u3046\u3069": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3061\u3087\u3046\u3069"
+        },
+        "\u76F4\u3050|\u3059\u3050": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3059\u3050"
+        },
+        "\u76F4\u3050\u306B|\u3059\u3050\u306B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3059\u3050\u306B"
+        },
+        "\u304A\u6C41\u7C89|\u304A\u3057\u308B\u3053": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u304A\u3057\u308B\u3053"
+        },
+        "\u5982\u4F55|\u3044\u304B\u304C": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3044\u304B\u304C"
+        },
+        "\u304A\u7956\u6BCD\u3055\u3093|\u304A\u3070\u3042\u3055\u3093": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u304A\u3070\u3042\u3055\u3093"
+        },
+        "\u53C8|\u307E\u305F": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u307E\u305F"
+        },
+        "\u304A\u723A\u3055\u3093|\u304A\u3058\u3044\u3055\u3093": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u304A\u3058\u3044\u3055\u3093"
+        },
+        "\u77E2\u3063\u5F35\u308A|\u3084\u3063\u3071\u308A": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3084\u3063\u3071\u308A"
+        },
+        "\u77E2\u5F35\u308A|\u3084\u306F\u308A": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3084\u306F\u308A"
+        },
+        "\u4F59\u308A|\u3042\u307E\u308A": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3042\u307E\u308A"
+        },
+        "\u826F\u304F|\u3088\u304F": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3088\u304F"
+        },
+        "\u7686|\u307F\u3093\u306A": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u307F\u3093\u306A"
+        },
+        "\u9054|\u305F\u3061": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u305F\u3061"
+        },
+        "\u99C4\u76EE|\u3060\u3081": {
+          band: "low",
+          score: 34,
+          preferredSurface: "\u3060\u3081"
+        },
+        "\u65AF\u3046|\u3053\u3046": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3053\u3046"
+        },
+        "\u672A\u3060|\u307E\u3060": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u307E\u3060"
+        },
+        "\u305D\u3046\u8A00\u3048\u3070|\u305D\u3046\u3044\u3048\u3070": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u305D\u3046\u3044\u3048\u3070"
+        },
+        "\u6BB5\u6BB5|\u3060\u3093\u3060\u3093": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3060\u3093\u3060\u3093"
+        },
+        "\u4F55\u6642|\u3044\u3064": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3044\u3064"
+        },
+        "\u4F55\u6642\u3082|\u3044\u3064\u3082": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3044\u3064\u3082"
+        },
+        "\u4F55\u51E6|\u3069\u3053": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3069\u3053"
+        },
+        "\u4F55\u65B9|\u3069\u3061\u3089": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3069\u3061\u3089"
+        },
+        "\u53EF\u7B11\u3057\u3044|\u304A\u304B\u3057\u3044": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u304A\u304B\u3057\u3044"
+        },
+        "\u5982\u4F55|\u3069\u3046": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3069\u3046"
+        },
+        "\u6210\u308B|\u306A\u308B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306A\u308B"
+        },
+        "\u5E7E\u3089|\u3044\u304F\u3089": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3044\u304F\u3089"
+        },
+        "\u8CB4\u65B9|\u3042\u306A\u305F": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3042\u306A\u305F"
+        },
+        "\u8A70\u307E\u3089\u306A\u3044|\u3064\u307E\u3089\u306A\u3044": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3064\u307E\u3089\u306A\u3044"
+        },
+        "\u5076\u306B|\u305F\u307E\u306B": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u305F\u307E\u306B"
+        },
+        "\u5FA1\u514D|\u3054\u3081\u3093": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3054\u3081\u3093"
+        },
+        "\u82E5\u3057|\u3082\u3057": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3082\u3057"
+        },
+        "\u884C\u3063\u3066\u3089\u3063\u3057\u3083\u3044|\u3044\u3063\u3066\u3089\u3063\u3057\u3083\u3044": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3044\u3063\u3066\u3089\u3063\u3057\u3083\u3044"
+        },
+        "\u6B64\u306E\u5118|\u3053\u306E\u307E\u307E": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3053\u306E\u307E\u307E"
+        },
+        "\u6B64\u308C\u304B\u3089|\u3053\u308C\u304B\u3089": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3053\u308C\u304B\u3089"
+        },
+        "\u6B62\u3081\u308B|\u3084\u3081\u308B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3084\u3081\u308B"
+        },
+        "\u82E5\u3057\u304B\u3057\u305F\u3089|\u3082\u3057\u304B\u3057\u305F\u3089": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3082\u3057\u304B\u3057\u305F\u3089"
+        },
+        "\u53D6\u308A\u6562\u3048\u305A|\u3068\u308A\u3042\u3048\u305A": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u3068\u308A\u3042\u3048\u305A"
+        },
+        "\u745E\u897F|\u30B9\u30A4\u30B9": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u30B9\u30A4\u30B9"
+        },
+        "\u5176\u65B9|\u305D\u3061\u3089": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u305D\u3061\u3089"
+        },
+        "\u9942\u98E9|\u3046\u3069\u3093": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3046\u3069\u3093"
+        },
+        "\u7169\u3044|\u3046\u308B\u3055\u3044": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3046\u308B\u3055\u3044"
+        },
+        "\u53EA\u4ECA|\u305F\u3060\u3044\u307E": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u305F\u3060\u3044\u307E"
+        },
+        "\u4E2D\u3005|\u306A\u304B\u306A\u304B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306A\u304B\u306A\u304B"
+        },
+        "\u73A9\u5177|\u304A\u3082\u3061\u3083": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u304A\u3082\u3061\u3083"
+        },
+        "\u5982\u4F55\u3057\u3066|\u3069\u3046\u3057\u3066": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3069\u3046\u3057\u3066"
+        },
+        "\u304A\u65E9\u3046|\u304A\u306F\u3088\u3046": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u304A\u306F\u3088\u3046"
+        },
+        "\u5F7C\u51E6|\u3042\u305D\u3053": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3042\u305D\u3053"
+        },
+        "\u5F7C\u65B9|\u3042\u3061\u3089": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3042\u3061\u3089"
+        },
+        "\u4F55\u308C|\u3069\u308C": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3069\u308C"
+        },
+        "\u8272\u3093\u306A|\u3044\u308D\u3093\u306A": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3044\u308D\u3093\u306A"
+        },
+        "\u5FA1\u89A7|\u3054\u3089\u3093": {
+          band: "alternate",
+          score: 23,
+          preferredSurface: "\u3054\u89A7"
+        },
+        "\u525D[\u3080]\u304F|\u3080\u304F": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3080\u304F"
+        },
+        "\u7F79[\u304B\u304B]\u308B|\u304B\u304B\u308B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u304B\u304B\u308B"
+        },
+        "\u6414[\u304B]\u304F|\u304B\u304F": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u304B\u304F"
+        },
+        "\u67D3\u307F|\u3057\u307F": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u3057\u307F"
+        },
+        "\u7A0B|\u307B\u3069": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u307B\u3069"
+        },
+        "\u5224\u5B50|\u306F\u3093\u3053": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u306F\u3093\u3053"
+        },
+        "\u6765\u3059|\u304D\u305F\u3059": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u304D\u305F\u3059"
+        },
+        "\u8A0A[\u305F\u305A]\u306D\u308B|\u305F\u305A\u306D\u308B": {
+          band: "alternate",
+          score: 34,
+          preferredSurface: "\u5C0B\u306D\u308B"
+        },
+        "\u4F55\u3068\u306A\u304F|\u306A\u3093\u3068\u306A\u304F": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306A\u3093\u3068\u306A\u304F"
+        },
+        "\u6B63\u306B|\u307E\u3055\u306B": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u307E\u3055\u306B"
+        },
+        "\u8E0F\u307F\u5207\u308A|\u3075\u307F\u304D\u308A": {
+          band: "alternate",
+          score: 34,
+          preferredSurface: "\u8E0F\u5207"
+        },
+        "\u7121\u3057|\u306A\u3057": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306A\u3057"
+        },
+        "\u6709\u308A\u96E3\u3044|\u3042\u308A\u304C\u305F\u3044": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3042\u308A\u304C\u305F\u3044"
+        },
+        "\u4ED5\u69D8\u304C\u306A\u3044|\u3057\u3088\u3046\u304C\u306A\u3044": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3057\u3088\u3046\u304C\u306A\u3044"
+        },
+        "\u4F55\u3060\u304B|\u306A\u3093\u3060\u304B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306A\u3093\u3060\u304B"
+        },
+        "\u5EA6\u3005|\u305F\u3073\u305F\u3073": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u305F\u3073\u305F\u3073"
+        },
+        "\u6050\u3089\u304F|\u304A\u305D\u3089\u304F": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u304A\u305D\u3089\u304F"
+        },
+        "\u6975[\u3054\u304F]|\u3054\u304F": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3054\u304F"
+        },
+        "\u53F0\u8A5E[\u305B\u308A\u3075]|\u305B\u308A\u3075": {
+          band: "low",
+          score: 20,
+          preferredSurface: "\u305B\u308A\u3075"
+        },
+        "\u7C60|\u304B\u3054": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u304B\u3054"
+        },
+        "\u301C\u907F\u3051|\u301C\u3088\u3051": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u301C\u3088\u3051"
+        },
+        "\u87FB[\u3042\u308A]|\u3042\u308A": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u30A2\u30EA"
+        },
+        "\u304F\u307F\u53D6\u308B|\u304F\u307F\u3068\u308B": {
+          band: "alternate",
+          score: 0,
+          preferredSurface: "\u6C72\u307F\u53D6\u308B"
+        },
+        "\u63AC[\u3059\u304F]\u3046|\u3059\u304F\u3046": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3059\u304F\u3046"
+        },
+        "\u525D[\u3080]\u3051\u308B|\u3080\u3051\u308B": {
+          band: "alternate",
+          score: 34,
+          preferredSurface: "\u5265\u3051\u308B"
+        },
+        "\u81EA[\u304A\u306E]\u305A\u304B\u3089|\u304A\u306E\u305A\u304B\u3089": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u304A\u306E\u305A\u304B\u3089"
+        },
+        "\u898B\u306A\u3059|\u307F\u306A\u3059": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u307F\u306A\u3059"
+        },
+        "\u6301\u3066\u6210\u3059|\u3082\u3066\u306A\u3059": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u3082\u3066\u306A\u3059"
+        },
+        "\u8CBC\u308A\u7D19|\u306F\u308A\u304C\u307F": {
+          band: "alternate",
+          score: 34,
+          preferredSurface: "\u5F35\u308A\u7D19"
+        },
+        "\u5699[\u304B]\u307F\u5408\u3046|\u304B\u307F\u3042\u3046": {
+          band: "alternate",
+          score: 20,
+          preferredSurface: "\u565B\u307F\u5408\u3046"
+        },
+        "\u8FC2\u95CA[\u3046\u304B\u3064]|\u3046\u304B\u3064": {
+          band: "low",
+          score: 16,
+          preferredSurface: "\u3046\u304B\u3064"
+        },
+        "\u4ED8\u304D\u7269|\u3064\u304D\u3082\u306E": {
+          band: "low",
+          score: 16,
+          preferredSurface: "\u3064\u304D\u3082\u306E"
+        },
+        "\u689F[\u3075\u304F\u308D\u3046]|\u3075\u304F\u308D\u3046": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u30D5\u30AF\u30ED\u30A6"
+        },
+        "\u6D77\u8C5A[\u3044\u308B\u304B]|\u3044\u308B\u304B": {
+          band: "kana",
+          score: 0,
+          preferredSurface: "\u30A4\u30EB\u30AB"
+        },
+        "\u4ECA\u4E00\u3064|\u3044\u307E\u3072\u3068\u3064": {
+          band: "low",
+          score: 34,
+          preferredSurface: "\u3044\u307E\u3072\u3068\u3064"
+        },
+        "\u51FA\u6765\u305F\u3066|\u3067\u304D\u305F\u3066": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u3067\u304D\u305F\u3066"
+        },
+        "\u9AED[\u3072\u3052]|\u3072\u3052": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u3072\u3052"
+        },
+        "\u764C[\u304C\u3093]|\u304C\u3093": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u304C\u3093"
+        },
+        "\u9762\u5012\u81ED\u3044|\u3081\u3093\u3069\u3046\u304F\u3055\u3044": {
+          band: "alternate",
+          score: 24,
+          preferredSurface: "\u9762\u5012\u304F\u3055\u3044"
+        },
+        "\u89E3\u304B\u3059|\u3068\u304B\u3059": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3068\u304B\u3059"
+        },
+        "\u70BA[\u306A]\u3059|\u306A\u3059": {
+          band: "alternate",
+          score: 24,
+          preferredSurface: "\u6210\u3059"
+        },
+        "\u5927\u5C64|\u305F\u3044\u305D\u3046": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u305F\u3044\u305D\u3046"
+        },
+        "\u525D\u304C\u3059|\u306F\u304C\u3059": {
+          band: "alternate",
+          score: 0,
+          preferredSurface: "\u5265\u304C\u3059"
+        },
+        "\u5343\u5207\u308C\u308B|\u3061\u304E\u308C\u308B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3061\u304E\u308C\u308B"
+        },
+        "\u525D\u304C\u308C\u308B|\u306F\u304C\u308C\u308B": {
+          band: "alternate",
+          score: 34,
+          preferredSurface: "\u5265\u304C\u308C\u308B"
+        },
+        "\u96C4|\u304A\u3059": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u30AA\u30B9"
+        },
+        "\u5D69\u5F35[\u304B\u3055\u3070]\u308B|\u304B\u3055\u3070\u308B": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u304B\u3055\u3070\u308B"
+        },
+        "\u4F55\u3052\u306A\u3044|\u306A\u306B\u3052\u306A\u3044": {
+          band: "alternate",
+          score: 0,
+          preferredSurface: "\u4F55\u6C17\u306A\u3044"
+        },
+        "\u61D0\u304F|\u306A\u3064\u304F": {
+          band: "low",
+          score: 16,
+          preferredSurface: "\u306A\u3064\u304F"
+        },
+        "\u96CC|\u3081\u3059": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u30E1\u30B9"
+        },
+        "\u7121\u95C7|\u3080\u3084\u307F": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u3080\u3084\u307F"
+        },
+        "\u6B8A\u66F4|\u3053\u3068\u3055\u3089": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u3053\u3068\u3055\u3089"
+        },
+        "\u5927\u304C\u304B\u308A|\u304A\u304A\u304C\u304B\u308A": {
+          band: "alternate",
+          score: 34,
+          preferredSurface: "\u5927\u639B\u304B\u308A"
+        },
+        "\u87F9[\u304B\u306B]|\u304B\u306B": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u30AB\u30CB"
+        },
+        "\u6A9C[\u3072\u306E\u304D]|\u3072\u306E\u304D": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u30D2\u30CE\u30AD"
+        },
+        "\u72F8[\u305F\u306C\u304D]|\u305F\u306C\u304D": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u30BF\u30CC\u30AD"
+        },
+        "\u4E00\u307E\u3068\u3081|\u3072\u3068\u307E\u3068\u3081": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u3072\u3068\u307E\u3068\u3081"
+        },
+        "\u7269\u771F\u4F3C|\u3082\u306E\u307E\u306D": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u3082\u306E\u307E\u306D"
+        },
+        "\u51FA\u3057\u3083\u3070\u308B|\u3067\u3057\u3083\u3070\u308B": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u3067\u3057\u3083\u3070\u308B"
+        },
+        "\u86D9[\u304B\u3048\u308B]|\u304B\u3048\u308B": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u30AB\u30A8\u30EB"
+        },
+        "\u71D5[\u3064\u3070\u3081]|\u3064\u3070\u3081": {
+          band: "low",
+          score: 34,
+          preferredSurface: "\u30C4\u30D0\u30E1"
+        },
+        "\u8B33[\u3046\u305F]\u3046|\u3046\u305F\u3046": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3046\u305F\u3046"
+        },
+        "\u5699[\u304B]\u307F\u4ED8\u304F|\u304B\u307F\u3064\u304F": {
+          band: "alternate",
+          score: 0,
+          preferredSurface: "\u565B\u307F\u4ED8\u304F"
+        },
+        "\u73CA\u745A[\u3055\u3093\u3054]|\u3055\u3093\u3054": {
+          band: "low",
+          score: 24,
+          preferredSurface: "\u30B5\u30F3\u30B4"
+        },
+        "\u9280\u674F[\u3044\u3061\u3087\u3046]|\u3044\u3061\u3087\u3046": {
+          band: "kana",
+          score: 8,
+          preferredSurface: "\u30A4\u30C1\u30E7\u30A6"
+        },
+        "\u9DAF[\u3046\u3050\u3044\u3059]|\u3046\u3050\u3044\u3059": {
+          band: "low",
+          score: 34,
+          preferredSurface: "\u30A6\u30B0\u30A4\u30B9"
+        },
+        "\u88DC\u5861|\u307B\u3066\u3093": {
+          band: "alternate",
+          score: 2,
+          preferredSurface: "\u88DC\u586B"
+        },
+        "\u4F38\u3073\u4F38\u3073|\u306E\u3073\u306E\u3073": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u306E\u3073\u306E\u3073"
+        },
+        "\u64E6\u308A\u629C\u3051\u308B|\u3059\u308A\u306C\u3051\u308B": {
+          band: "kana",
+          score: 15,
+          preferredSurface: "\u3059\u308A\u629C\u3051\u308B"
+        }
+      }
+    };
+  }
+});
+
+// ../frontend/src/lib/orthography.ts
+var orthography_exports = {};
+__export(orthography_exports, {
+  cleanWordSurface: () => cleanWordSurface,
+  isLoanwordSourceSurface: () => isLoanwordSourceSurface,
+  kanjiReadingPriorityAdjustment: () => kanjiReadingPriorityAdjustment,
+  kanjiReadingSurface: () => kanjiReadingSurface,
+  orthographyEntry: () => orthographyEntry,
+  preferredWordSurface: () => preferredWordSurface,
+  shouldStudyKanjiReading: () => shouldStudyKanjiReading
+});
+var entries, cjkPattern, cleanWordSurface, isLoanwordSourceSurface, orthographyEntry, preferredWordSurface, kanjiReadingSurface, shouldStudyKanjiReading, kanjiReadingPriorityAdjustment;
+var init_orthography = __esm({
+  "../frontend/src/lib/orthography.ts"() {
+    "use strict";
+    init_kanji_orthography();
+    entries = kanji_orthography_default.entries;
+    cjkPattern = /[\u3400-\u9fff]/u;
+    cleanWordSurface = (surface) => surface.replace(/\[[^\]]*\]/g, "").replace(/\s+/g, "") || surface;
+    isLoanwordSourceSurface = ({ kanji, kana }) => /[A-Za-z]/.test(kanji) && /[\u30a0-\u30ff]/u.test(kana);
+    orthographyEntry = ({ kanji, kana }) => entries[`${kanji}|${kana}`] ?? null;
+    preferredWordSurface = (word) => {
+      if (isLoanwordSourceSurface(word)) return word.kana;
+      return orthographyEntry(word)?.preferredSurface || cleanWordSurface(word.kanji) || word.kana;
+    };
+    kanjiReadingSurface = (word) => {
+      const entry = orthographyEntry(word);
+      if (entry?.band === "alternate") return entry.preferredSurface;
+      return cleanWordSurface(word.kanji);
+    };
+    shouldStudyKanjiReading = (word) => {
+      if (isLoanwordSourceSurface(word)) return false;
+      const entry = orthographyEntry(word);
+      if (entry?.band === "kana") return false;
+      const surface = kanjiReadingSurface(word);
+      return surface !== word.kana && cjkPattern.test(surface);
+    };
+    kanjiReadingPriorityAdjustment = (word) => orthographyEntry(word)?.band === "low" ? -30 : 0;
   }
 });
 
@@ -2488,12 +3494,12 @@ __export(confusion_groups_exports, {
   setConfusionMastered: () => setConfusionMastered,
   warmConfusionGroups: () => warmConfusionGroups
 });
-var import_database7, import_orthography, import_verb_pair_hints, import_lucide_react, MAX_MEMBERS, CJK, LATIN, firstSense, senseOf, toMember, TYPE_PRIORITY, groupBy, variantMerges, rank, memberForm, memberIdentity, buildGroups, cached, cachedRows, cachedDuplicates, resetConfusionGroups, duplicateWordIds, duplicateMergeTargets, loadRows, confusionGroups, masteredConfusionKeys, setConfusionMastered, CONFUSION_TYPES, TYPE_META, displayForm, groupWordParts, groupWords, groupsByWord, confusionGroupsForWord, warmConfusionGroups;
+var import_database8, import_verb_pair_hints, import_lucide_react, MAX_MEMBERS, CJK, LATIN, firstSense, senseOf, toMember, TYPE_PRIORITY, groupBy, variantMerges, rank, memberForm, memberIdentity, buildGroups, cached, cachedRows, cachedDuplicates, resetConfusionGroups, duplicateWordIds, duplicateMergeTargets, loadRows, confusionGroups, masteredConfusionKeys, setConfusionMastered, CONFUSION_TYPES, TYPE_META, displayForm, groupWordParts, groupWords, groupsByWord, confusionGroupsForWord, warmConfusionGroups;
 var init_confusion_groups = __esm({
   "../frontend/src/lib/confusion-groups.ts"() {
     "use strict";
-    import_database7 = __toESM(require_database(), 1);
-    import_orthography = __toESM(require_orthography(), 1);
+    import_database8 = __toESM(require_database(), 1);
+    init_orthography();
     init_db_utils();
     init_study_core();
     import_verb_pair_hints = __toESM(require_verb_pair_hints(), 1);
@@ -2701,7 +3707,7 @@ var init_confusion_groups = __esm({
     masteredConfusionKeys = () => new Set(rowsFor("SELECT group_key FROM confusion_mastered").map((row) => String(row.group_key ?? "")));
     setConfusionMastered = (key, mastered) => {
       ensureUserTables();
-      const db = (0, import_database7.getDatabase)();
+      const db = (0, import_database8.getDatabase)();
       if (mastered) {
         db.run(
           "INSERT OR REPLACE INTO confusion_mastered (group_key, mastered_on) VALUES (?, date('now','localtime'))",
@@ -2751,7 +3757,7 @@ var init_confusion_groups = __esm({
         Icon: import_lucide_react.Handshake
       }
     };
-    displayForm = (member) => (0, import_orthography.preferredWordSurface)({ kanji: member.kanji ?? "", kana: member.kana ?? "" });
+    displayForm = (member) => preferredWordSurface({ kanji: member.kanji ?? "", kana: member.kana ?? "" });
     groupWordParts = (group) => {
       if (group.type === "reading-register" || group.type === "reading-sense") {
         return group.members.map((member) => ({ text: member.kana, reading: "" }));
@@ -3410,36 +4416,36 @@ var init_similar_meaning_groups = __esm({
 var require_lazy_json = __commonJS({
   "scripts/shared/shims/lazy-json.js"(exports, module2) {
     var stores = require("../shared/content-store");
-    var level2 = (name, section) => new Proxy({}, {
-      get(_t, key) {
+    var resolve = (name, path) => {
+      let value = stores[name];
+      for (const key of path) value = value == null ? void 0 : value[key];
+      return value;
+    };
+    var proxy = (name, path) => new Proxy({}, {
+      get(_target, key) {
         if (key === "__esModule") return false;
-        const root = stores[name];
-        const table = root ? root[section] : void 0;
-        return table ? table[key] : void 0;
+        if (typeof key === "symbol") return void 0;
+        if (key === "default" && path.length === 0) return proxy(name, path);
+        const value = resolve(name, [...path, key]);
+        if (value === void 0) return proxy(name, [...path, key]);
+        return value && typeof value === "object" ? proxy(name, [...path, key]) : value;
       },
-      has(_t, key) {
-        const root = stores[name];
-        return Boolean(root && root[section] && key in root[section]);
+      has(_target, key) {
+        const parent = resolve(name, path);
+        return Boolean(parent) && typeof parent === "object" && key in parent;
       },
       ownKeys() {
-        const root = stores[name];
-        return root && root[section] ? Reflect.ownKeys(root[section]) : [];
+        const parent = resolve(name, path);
+        return parent && typeof parent === "object" ? Reflect.ownKeys(parent) : [];
       },
-      getOwnPropertyDescriptor(_t, key) {
-        const root = stores[name];
-        return root && root[section] ? Object.getOwnPropertyDescriptor(root[section], key) : void 0;
+      getOwnPropertyDescriptor(_target, key) {
+        const parent = resolve(name, path);
+        if (!parent || typeof parent !== "object") return void 0;
+        const descriptor = Object.getOwnPropertyDescriptor(parent, key);
+        return descriptor ? { ...descriptor, configurable: true } : void 0;
       }
     });
-    module2.exports = (name) => new Proxy({}, {
-      get(_t, section) {
-        if (section === "__esModule") return false;
-        if (section === "default") return module2.exports(name);
-        if (typeof section === "symbol") return void 0;
-        const root = stores[name];
-        const value = root ? root[section] : void 0;
-        return value && typeof value === "object" ? level2(name, section) : value;
-      }
-    });
+    module2.exports = (name) => proxy(name, []);
   }
 });
 
@@ -3514,11 +4520,11 @@ __export(user_question_meanings_exports, {
   userQuestionMeaning: () => userQuestionMeaning,
   userQuestionMeaningCount: () => userQuestionMeaningCount
 });
-var import_database8, cached2, resetUserQuestionMeanings, index, userQuestionMeaning, userQuestionMeaningCount, saveUserQuestionMeaning;
+var import_database9, cached2, resetUserQuestionMeanings, index, userQuestionMeaning, userQuestionMeaningCount, saveUserQuestionMeaning;
 var init_user_question_meanings = __esm({
   "../frontend/src/lib/models/user-question-meanings.ts"() {
     "use strict";
-    import_database8 = __toESM(require_database(), 1);
+    import_database9 = __toESM(require_database(), 1);
     init_db_utils();
     cached2 = null;
     resetUserQuestionMeanings = () => {
@@ -3541,7 +4547,7 @@ var init_user_question_meanings = __esm({
     userQuestionMeaning = (wordId) => index().get(wordId);
     userQuestionMeaningCount = () => index().size;
     saveUserQuestionMeaning = (wordId, text) => {
-      const db = (0, import_database8.getDatabase)();
+      const db = (0, import_database9.getDatabase)();
       const cleaned = text.trim();
       if (cleaned) {
         db.run(
@@ -3618,7 +4624,7 @@ function stripLatinGlosses(text) {
   return text.replace(latinPattern, (token, offset, source) => {
     const prev = offset > 0 ? source[offset - 1] : "";
     const next = offset + token.length < source.length ? source[offset + token.length] : "";
-    if (token.length <= 4 && hasUpperLatin(token) && cjkPattern.test(`${prev}${next}`)) return token;
+    if (token.length <= 4 && hasUpperLatin(token) && cjkPattern2.test(`${prev}${next}`)) return token;
     if (isUpperAcronym(token)) return token;
     return "";
   });
@@ -3741,7 +4747,7 @@ function honorificLabel(meaning, label2 = "") {
   return HONORIFIC_WORD_LABELS[label2] ?? "";
 }
 function isFavorite2(type, id) {
-  const statement = (0, import_database9.getDatabase)().prepare(
+  const statement = (0, import_database10.getDatabase)().prepare(
     "SELECT 1 FROM content_favorites WHERE item_type = ? AND item_id = ? LIMIT 1"
   );
   try {
@@ -3789,16 +4795,16 @@ function rowObjectToCard(row) {
     },
     kanjiComponents: buildKanjiComponents(label2),
     conjugations: row.verb_type ? [{ label: "\u52A8\u8BCD\u7C7B\u578B", value: verbTypeLabel(String(row.verb_type)) }] : [],
-    verbPair: buildVerbPair((0, import_database9.getDatabase)(), label2, kana),
+    verbPair: buildVerbPair((0, import_database10.getDatabase)(), label2, kana),
     confusions: confusionCandidates(row),
     similarMeaning: similarMeaningCandidates(row)
   };
 }
-var import_database9, import_kanji_variants, import_verb_pair_hints2, import_question_meaning_overrides, VERB_TYPE_LABELS, verbTypeLabel, kanjiVariants, verbPairHints2, englishOrigins, latinPattern, cjkPattern, ABBR_SRC, ABBR_TAIL, abbreviationNotePattern, KANA_CHAR, KANA_RUN, shortMeaningOverrides, kanjiMeaningOverrides, HONORIFIC_WORD_LABELS;
+var import_database10, import_kanji_variants, import_verb_pair_hints2, import_question_meaning_overrides, VERB_TYPE_LABELS, verbTypeLabel, kanjiVariants, verbPairHints2, englishOrigins, latinPattern, cjkPattern2, ABBR_SRC, ABBR_TAIL, abbreviationNotePattern, KANA_CHAR, KANA_RUN, shortMeaningOverrides, kanjiMeaningOverrides, HONORIFIC_WORD_LABELS;
 var init_word_card = __esm({
   "../frontend/src/lib/models/word-card.ts"() {
     "use strict";
-    import_database9 = __toESM(require_database(), 1);
+    import_database10 = __toESM(require_database(), 1);
     init_furigana_data();
     init_confusion();
     init_similar_meaning_groups();
@@ -3824,7 +4830,7 @@ var init_word_card = __esm({
     );
     englishOrigins = english_origins_default;
     latinPattern = /[A-Za-zＡ-Ｚａ-ｚ]+/g;
-    cjkPattern = /[\u3400-\u9fff]/;
+    cjkPattern2 = /[\u3400-\u9fff]/;
     ABBR_SRC = '(?:[\u300C\u300E\u201C"][^\u300C\u300D\u300E\u300F\u201C\u201D"]*[\u300D\u300F\u201D"]|[\uFF08(\uFF3B\u3014][^\uFF08()\uFF09\uFF3B\\]\u3014\u3015]*[\uFF09)\uFF3D\u3015]|[\u3041-\u3096\u309D\u309E\u30A1-\u30FA\u30FC\u30FD\u30FE\uFF66-\uFF9F\u30FB]+|[A-Za-z\uFF21-\uFF3A\uFF41-\uFF5A]+|[\xB7\\s])*';
     ABBR_TAIL = "(?:\u7701\u7565|\u7E2E\u7565|\u7F29\u7565|\u7B80\u79F0|\u7C21\u79F0|\u7565\u79F0|\u7565\u8A9E|\u7565\u8BED|\u7F29\u5199|\u7E2E\u5199|\u7565)(?:\u8BED|\u8A9E|\u8BCD|\u8A5E)?";
     abbreviationNotePattern = new RegExp(`${ABBR_SRC}(?:\u7684|\u306E|\u4E4B)\\s*${ABBR_TAIL}`, "g");
@@ -4091,6 +5097,7 @@ __export(plan_exports, {
   JLPT_TARGETS: () => JLPT_TARGETS,
   MAX_DAILY_NEW_GRAMMAR: () => MAX_DAILY_NEW_GRAMMAR,
   MAX_DAILY_NEW_WORDS: () => MAX_DAILY_NEW_WORDS,
+  availableShortfall: () => availableShortfall,
   computeDailyMinimum: () => computeDailyMinimum,
   consolidationDays: () => consolidationDays,
   daysBetween: () => daysBetween,
@@ -4098,7 +5105,7 @@ __export(plan_exports, {
   shortfallOf: () => shortfallOf,
   shortfallText: () => shortfallText
 });
-var JLPT_TARGETS, levelsInScope, CONSOLIDATION_DAYS, consolidationDays, EXAM_WEEK_DAYS, BACKLOG_SPREAD_DAYS, MAX_DAILY_NEW_WORDS, MAX_DAILY_NEW_GRAMMAR, dayMs, daysBetween, phaseFor, amortize, computeDailyMinimum, shortfallOf, shortfallText;
+var JLPT_TARGETS, levelsInScope, CONSOLIDATION_DAYS, consolidationDays, EXAM_WEEK_DAYS, BACKLOG_SPREAD_DAYS, MAX_DAILY_NEW_WORDS, MAX_DAILY_NEW_GRAMMAR, dayMs, daysBetween, phaseFor, amortize, computeDailyMinimum, shortfallOf, availableShortfall, shortfallText;
 var init_plan = __esm({
   "../frontend/src/lib/jlpt/plan.ts"() {
     "use strict";
@@ -4151,7 +5158,10 @@ var init_plan = __esm({
         reviewWords,
         newGrammar: Math.min(newGrammar, MAX_DAILY_NEW_GRAMMAR),
         reviewGrammar,
-        feasible: newWords <= MAX_DAILY_NEW_WORDS && newGrammar <= MAX_DAILY_NEW_GRAMMAR,
+        // 进入巩固期后 newWords/newGrammar 会变成 0，不能再拿这两个“今天不进新”的数
+        // 判断整份计划是否来得及。真正的问题是剩余内容按每日上限需要几天，而还能进
+        // 新内容的天数已经归零；旧写法会把“还剩 1000 词、距考试 10 天”判成 feasible。
+        feasible: input.unseenWords === 0 && input.unseenGrammar === 0 || takingNew && Math.ceil(input.unseenWords / MAX_DAILY_NEW_WORDS) <= intakeDaysLeft && Math.ceil(input.unseenGrammar / MAX_DAILY_NEW_GRAMMAR) <= intakeDaysLeft,
         daysNeeded: daysNeeded + consolidation
       };
     };
@@ -4168,6 +5178,13 @@ var init_plan = __esm({
         reviewGrammar,
         clear: newWords + reviewWords + newGrammar + reviewGrammar === 0
       };
+    };
+    availableShortfall = (shortfall, isPro, kanaPending = false) => {
+      const newWords = kanaPending ? 0 : shortfall.newWords;
+      const reviewWords = shortfall.reviewWords;
+      const newGrammar = isPro ? shortfall.newGrammar : 0;
+      const reviewGrammar = isPro ? shortfall.reviewGrammar : 0;
+      return { newWords, reviewWords, newGrammar, reviewGrammar, clear: newWords + reviewWords + newGrammar + reviewGrammar === 0 };
     };
     shortfallText = (shortfall) => {
       if (shortfall.clear) return "\u4ECA\u5929\u7684\u6700\u4F4E\u91CF\u5DF2\u7ECF\u505A\u5B8C\u4E86";
@@ -4190,6 +5207,7 @@ __export(studyPreferences_exports, {
   INTENSITY_ANCHORS: () => INTENSITY_ANCHORS,
   INTENSITY_MAX: () => INTENSITY_MAX,
   INTENSITY_MIN: () => INTENSITY_MIN,
+  PLAN_QUOTA_KEYS: () => PLAN_QUOTA_KEYS,
   PREFERENCES_EVENT: () => PREFERENCES_EVENT,
   REVIEW_CAP_UNLIMITED: () => REVIEW_CAP_UNLIMITED,
   applyMotionLevel: () => applyMotionLevel,
@@ -4203,14 +5221,16 @@ __export(studyPreferences_exports, {
   getReviewCapPreference: () => getReviewCapPreference,
   getStudyPreferences: () => getStudyPreferences,
   jsMotionAllowed: () => jsMotionAllowed,
+  kanaGatePending: () => kanaGatePending,
   normalizeStudyPreferences: () => normalizeStudyPreferences,
   saveStudyPreferences: () => saveStudyPreferences
 });
-var PREFERENCES_EVENT, KEY, INTENSITY_ANCHORS, INTENSITY_MIN, INTENSITY_MAX, GRAMMAR_INTENSITY_ANCHORS, GRAMMAR_INTENSITY_MIN, GRAMMAR_INTENSITY_MAX, defaultStudyPreferences, MOTION_LEVELS, clampDailyGoal, clampGrammarGoal, clampSmallGoal, REVIEW_CAP_UNLIMITED, clampReviewCap, normalizeStudyPreferences, getStudyPreferences, localIsoDate, saveStudyPreferences, getDailyWordGoal, getDailyGrammarGoal, getReviewCapPreference, ensureJlptPlanAnchor, getJlptPlanPreferences, getResolvedTheme, applyTheme, applyMotionLevel, jsMotionAllowed;
+var PREFERENCES_EVENT, KEY, INTENSITY_ANCHORS, INTENSITY_MIN, INTENSITY_MAX, GRAMMAR_INTENSITY_ANCHORS, GRAMMAR_INTENSITY_MIN, GRAMMAR_INTENSITY_MAX, defaultStudyPreferences, MOTION_LEVELS, clampDailyGoal, clampGrammarGoal, clampSmallGoal, REVIEW_CAP_UNLIMITED, clampReviewCap, normalizeStudyPreferences, getStudyPreferences, localIsoDate, PLAN_QUOTA_KEYS, saveStudyPreferences, kanaGatePending, getDailyWordGoal, getDailyGrammarGoal, getReviewCapPreference, ensureJlptPlanAnchor, getJlptPlanPreferences, getResolvedTheme, applyTheme, applyMotionLevel, jsMotionAllowed;
 var init_studyPreferences = __esm({
   "../frontend/src/lib/studyPreferences.ts"() {
     "use strict";
     init_plan();
+    init_db_utils();
     PREFERENCES_EVENT = "shushugo-preferences";
     KEY = "mn-study-preferences";
     INTENSITY_ANCHORS = [
@@ -4304,17 +5324,50 @@ var init_studyPreferences = __esm({
       }
     };
     localIsoDate = (date = /* @__PURE__ */ new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    saveStudyPreferences = (preferences) => {
+    PLAN_QUOTA_KEYS = [
+      "dailyGoal",
+      "reviewCap",
+      "grammarDailyGoal",
+      "grammarReviewCap",
+      "kanjiDailyGoal",
+      "kanjiReviewCap",
+      "confusionDailyGoal",
+      "confusionReviewCap"
+    ];
+    saveStudyPreferences = (preferences, options = {}) => {
       const normalized = normalizeStudyPreferences(preferences);
       const previous = getStudyPreferences();
-      if (!normalized.jlptPlanStartedOn || previous.jlptTarget !== normalized.jlptTarget || previous.jlptExamDate !== normalized.jlptExamDate) {
+      if (!options.keepPlanAnchor && (!normalized.jlptPlanStartedOn || previous.jlptTarget !== normalized.jlptTarget || previous.jlptExamDate !== normalized.jlptExamDate)) {
         normalized.jlptPlanStartedOn = localIsoDate();
+      }
+      if (!options.fromLevelPlanSync) {
+        let hasPlan = false;
+        try {
+          hasPlan = Boolean(getState("starting_level", ""));
+        } catch {
+        }
+        if (hasPlan) {
+          if (previous.jlptPlanEnabled !== normalized.jlptPlanEnabled) setState("jlpt_plan_enabled", normalized.jlptPlanEnabled ? "1" : "0");
+          if (previous.jlptTarget !== normalized.jlptTarget) setState("jlpt_plan_target", normalized.jlptTarget);
+          if (previous.jlptExamDate !== normalized.jlptExamDate) setState("jlpt_plan_exam_date", normalized.jlptExamDate);
+          if (previous.jlptPlanStartedOn !== normalized.jlptPlanStartedOn) setState("jlpt_plan_started_on", normalized.jlptPlanStartedOn);
+          if (PLAN_QUOTA_KEYS.some((key) => previous[key] !== normalized[key])) {
+            setState("level_plan_quotas", JSON.stringify(Object.fromEntries(PLAN_QUOTA_KEYS.map((key) => [key, normalized[key]]))));
+          }
+        }
       }
       localStorage.setItem(KEY, JSON.stringify(normalized));
       window.dispatchEvent(new CustomEvent(PREFERENCES_EVENT, { detail: normalized }));
       return normalized;
     };
-    getDailyWordGoal = () => getStudyPreferences().dailyGoal;
+    kanaGatePending = () => {
+      try {
+        return getState("starting_level", "") === "kana-none" && getState("kana_completed", "0") !== "1";
+      } catch {
+        return false;
+      }
+    };
+    getDailyWordGoal = () => kanaGatePending() ? 0 : getStudyPreferences().dailyGoal;
     getDailyGrammarGoal = () => getStudyPreferences().grammarDailyGoal;
     getReviewCapPreference = () => getStudyPreferences().reviewCap;
     ensureJlptPlanAnchor = () => {
@@ -4575,7 +5628,7 @@ __export(fsrs_store_exports, {
   writeFsrsState: () => writeFsrsState
 });
 function ensureFsrsColumns(entity = WORD_FSRS) {
-  const db = (0, import_database10.getDatabase)();
+  const db = (0, import_database11.getDatabase)();
   let done = columnsReady.get(db);
   if (!done) {
     done = /* @__PURE__ */ new Set();
@@ -4604,7 +5657,7 @@ function readFsrsState(id, entity = WORD_FSRS) {
 }
 function writeFsrsState(id, s, entity = WORD_FSRS) {
   ensureFsrsColumns(entity);
-  (0, import_database10.getDatabase)().run(
+  (0, import_database11.getDatabase)().run(
     `UPDATE ${entity.table} SET fsrs_stability = ?, fsrs_difficulty = ?, fsrs_due = ?, fsrs_last_review = ?,
        fsrs_state = ?, fsrs_steps = ?, fsrs_reps = ?, fsrs_lapses = ? WHERE ${entity.idColumn} = ?`,
     [s.stability, s.difficulty, s.due, s.lastReview, s.state, s.steps, s.reps, s.lapses, id]
@@ -4618,7 +5671,7 @@ function ensureGrammarFsrs() {
 }
 function clearFsrsState(id, entity = WORD_FSRS) {
   ensureFsrsColumns(entity);
-  (0, import_database10.getDatabase)().run(
+  (0, import_database11.getDatabase)().run(
     `UPDATE ${entity.table} SET ${FSRS_COLS.map(([c]) => `${c} = NULL`).join(", ")}
      WHERE ${entity.idColumn} = ?`,
     [id]
@@ -4647,7 +5700,7 @@ function backfillFsrsFromHistory() {
     ) f ON f.mid = r.id
     ORDER BY r.word_id ASC, r.created_at ASC, r.id ASC
   `);
-  const db = (0, import_database10.getDatabase)();
+  const db = (0, import_database11.getDatabase)();
   const byWord = /* @__PURE__ */ new Map();
   for (const r of rows) {
     const wid = Number(r.word_id);
@@ -4723,7 +5776,7 @@ function migrateRecentDailyEasyReviews(current = /* @__PURE__ */ new Date(), day
       affectedReviewCount += events.length;
     }
   });
-  const db = (0, import_database10.getDatabase)();
+  const db = (0, import_database11.getDatabase)();
   let migratedWords = 0;
   db.run("BEGIN TRANSACTION");
   try {
@@ -4840,11 +5893,11 @@ function fsrsDueWordIds(limit, now = /* @__PURE__ */ new Date(), entity = WORD_F
   }
   return picked;
 }
-var import_database10, FSRS_COLS, MOJI_NOT_ACTIVATED, WORD_FSRS, KANJI_FSRS, REVERSE_FSRS, GRAMMAR_FSRS, columnsReady, FSRS_SELECT, rowToState, RECENT_DAILY_EASY_MIGRATION_KEY, RECENT_DAILY_EASY_DAYS, historicalReviewTime, recentStudyDayRange, FULL_DAILY_EASY_MIGRATION_KEY, FULL_HISTORY_DAYS, MASTERED_SQL, NOT_MASTERED_SQL, DUE_SQL, LEECH_SQL, RECENT_LAPSE_HOURS, LEECH_DAILY_INTAKE;
+var import_database11, FSRS_COLS, MOJI_NOT_ACTIVATED, WORD_FSRS, KANJI_FSRS, REVERSE_FSRS, GRAMMAR_FSRS, columnsReady, FSRS_SELECT, rowToState, RECENT_DAILY_EASY_MIGRATION_KEY, RECENT_DAILY_EASY_DAYS, historicalReviewTime, recentStudyDayRange, FULL_DAILY_EASY_MIGRATION_KEY, FULL_HISTORY_DAYS, MASTERED_SQL, NOT_MASTERED_SQL, DUE_SQL, LEECH_SQL, RECENT_LAPSE_HOURS, LEECH_DAILY_INTAKE;
 var init_fsrs_store = __esm({
   "../frontend/src/lib/fsrs-store.ts"() {
     "use strict";
-    import_database10 = __toESM(require_database(), 1);
+    import_database11 = __toESM(require_database(), 1);
     init_db_utils();
     init_fsrs_scheduler();
     FSRS_COLS = [
@@ -5037,12 +6090,12 @@ var init_review_budget = __esm({
 });
 
 // ../frontend/src/lib/reviews.ts
-var import_database11, FSRS_PARAMS_VERSION, recordReviewEvent;
+var import_database12, FSRS_PARAMS_VERSION, recordReviewEvent;
 var init_reviews = __esm({
   "../frontend/src/lib/reviews.ts"() {
     "use strict";
     init_db_utils();
-    import_database11 = __toESM(require_database(), 1);
+    import_database12 = __toESM(require_database(), 1);
     init_schema2();
     FSRS_PARAMS_VERSION = "fsrs-v1";
     recordReviewEvent = ({
@@ -5055,7 +6108,7 @@ var init_reviews = __esm({
       eventSource = "study"
     }) => {
       ensureSyncSchema();
-      const db = (0, import_database11.getDatabase)();
+      const db = (0, import_database12.getDatabase)();
       db.run(`
     INSERT INTO reviews (
       word_id, answer, score_after, reviewed_on, direction,
@@ -5200,60 +6253,6 @@ var init_undo_stack = __esm({
   }
 });
 
-// ../frontend/src/lib/grammar-api.ts
-var grammar_api_exports = {};
-__export(grammar_api_exports, {
-  ensureGrammarProgressInitialized: () => ensureGrammarProgressInitialized,
-  getGrammarPointFavorite: () => getGrammarPointFavorite,
-  getGrammarQueue: () => getGrammarQueue,
-  setGrammarQueue: () => setGrammarQueue
-});
-function ensureGrammarProgressInitialized() {
-  oncePerDatabase("grammar-progress", () => {
-    ensureUserTables();
-    (0, import_database12.getDatabase)().run(`
-      INSERT OR IGNORE INTO grammar_progress (grammar_id)
-      SELECT id FROM grammar_points
-    `);
-  });
-}
-function getGrammarPointFavorite(pattern) {
-  return isFavorite("grammar", pattern);
-}
-var import_database12, grammarState, setGrammarState, getGrammarQueue, setGrammarQueue;
-var init_grammar_api = __esm({
-  "../frontend/src/lib/grammar-api.ts"() {
-    "use strict";
-    import_database12 = __toESM(require_database(), 1);
-    init_db_utils();
-    init_study_core();
-    grammarState = (key, fallback) => firstValue(
-      "SELECT value FROM grammar_state WHERE key = ?",
-      [key],
-      fallback
-    );
-    setGrammarState = (key, value) => {
-      (0, import_database12.getDatabase)().run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)", [key, value]);
-    };
-    getGrammarQueue = () => {
-      try {
-        const queue = JSON.parse(grammarState("queue", "[]"));
-        if (!Array.isArray(queue)) return [];
-        return queue.flatMap((item) => {
-          const grammarId = Number(item?.grammar_id);
-          if (!Number.isFinite(grammarId)) return [];
-          return [{ grammar_id: grammarId, due_after: Math.max(Number(item?.due_after ?? 0), 0) }];
-        });
-      } catch {
-        return [];
-      }
-    };
-    setGrammarQueue = (queue) => {
-      setGrammarState("queue", JSON.stringify(queue));
-    };
-  }
-});
-
 // ../frontend/src/lib/word-api/bootstrap.ts
 var import_database13, ensureProgressInitialized, initProgress;
 var init_bootstrap = __esm({
@@ -5261,6 +6260,7 @@ var init_bootstrap = __esm({
     "use strict";
     import_database13 = __toESM(require_database(), 1);
     init_db_utils();
+    init_schema2();
     init_study_core();
     init_grammar_api();
     init_fsrs_store();
@@ -5268,10 +6268,12 @@ var init_bootstrap = __esm({
     initProgress = () => {
       const db = (0, import_database13.getDatabase)();
       ensureUserTables();
-      db.run(`
-    INSERT OR IGNORE INTO progress (word_id)
-    SELECT id FROM words
-  `);
+      withoutSyncStamp(() => {
+        db.run(`
+      INSERT OR IGNORE INTO progress (word_id)
+      SELECT id FROM words
+    `);
+      });
       db.run("UPDATE words SET shuffle_rank = ABS(RANDOM()) / 9223372036854775807.0 WHERE shuffle_rank IS NULL");
       if (!getState("first_study_day", "")) {
         setState("first_study_day", today());
@@ -5386,10 +6388,10 @@ var init_grammar_formation = __esm({
       if (!text) return [];
       const index3 = text.indexOf("\uFF0F");
       if (index3 <= 0) return [text];
-      const head = text.slice(0, index3).trim();
+      const head2 = text.slice(0, index3).trim();
       const tail = text.slice(index3 + 1).trim();
-      if (!head.includes("\uFF0B") || !tail.includes("\uFF0B")) return [text];
-      return [head, tail];
+      if (!head2.includes("\uFF0B") || !tail.includes("\uFF0B")) return [text];
+      return [head2, tail];
     };
     TILDE = /[～〜~]/;
     TILDE_ALL = /[～〜~]/g;
@@ -5806,7 +6808,7 @@ var init_grammar_quiz = __esm({
   `, [grammarId, answer, day]);
       snapshot.reviewId = firstValue("SELECT last_insert_rowid()", [], 0);
       writeUndoStack2(level, [...readUndoStack2(level), snapshot]);
-      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
       return getGrammarQuizSession(level);
     };
     undoLastGrammarQuizAnswer = (level) => {
@@ -5835,7 +6837,7 @@ var init_grammar_quiz = __esm({
       setReviewQueue(snapshot.queue ?? [], QUEUE_KEY);
       setLastAnsweredWord(snapshot.lastAnswered ?? 0, QUEUE_KEY);
       writeUndoStack2(level, stack);
-      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
       const row = rowsFor(`
     SELECT ${CARD_COLUMNS}
     FROM grammar_points g
@@ -5859,7 +6861,7 @@ var init_grammar_quiz = __esm({
           [encoreKey(level), JSON.stringify({ day, count: encoreQuota(level, day) + Math.max(count, 0) })]
         );
       }
-      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
       return getGrammarQuizSession(level);
     };
     grammarQuizRanking = (level) => {
@@ -5899,6 +6901,35 @@ var init_card_log = __esm({
       const memory = entity.table;
       const exclude = `known_forever = 0${config.extraExclude ? ` AND ${config.extraExclude}` : ""}`;
       const ensure = () => ensureFsrsColumns(entity);
+      const priorEntity = memory === "kanji_char_memory" ? "kanji" : memory === "confusion_progress" ? "confusion" : "";
+      const resetToStartingPoint = (key) => {
+        const hasBaselines = priorEntity && firstValue(
+          "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'level_prior_baselines'",
+          [],
+          0
+        ) > 0;
+        const baseline = hasBaselines ? rowsFor(`
+      SELECT stability, difficulty, due, last_review, state, steps, reps, lapses
+      FROM level_prior_baselines WHERE entity = ? AND entity_key = ?
+    `, [priorEntity, key])[0] : void 0;
+        if (baseline) {
+          (0, import_database15.getDatabase)().run(`
+        UPDATE ${memory}
+        SET seen_count = 1, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
+            fsrs_stability = ?, fsrs_difficulty = ?, fsrs_due = ?, fsrs_last_review = ?,
+            fsrs_state = ?, fsrs_steps = ?, fsrs_reps = ?, fsrs_lapses = ?
+        WHERE ${id} = ?
+      `, [baseline.stability, baseline.difficulty, baseline.due, baseline.last_review, baseline.state, baseline.steps, baseline.reps, baseline.lapses, key]);
+          return;
+        }
+        (0, import_database15.getDatabase)().run(`
+      UPDATE ${memory}
+      SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
+          fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL, fsrs_last_review = NULL,
+          fsrs_state = NULL, fsrs_steps = NULL, fsrs_reps = NULL, fsrs_lapses = NULL
+      WHERE ${id} = ?
+    `, [key]);
+      };
       const updateCounters = (key, answer, seenOn) => {
         const counts = answer === "forgot" ? [1, 0, 0, 1] : answer === "fuzzy" ? [1, 0, 1, 0] : [1, 1, 0, 0];
         const previousStreak = firstValue(`SELECT mistake_streak FROM ${memory} WHERE ${id} = ?`, [key], 0);
@@ -5945,13 +6976,7 @@ var init_card_log = __esm({
           const events = rowsFor(`SELECT answer, reviewed_on, reviewed_at, scheduler_mode FROM ${reviewsTable} WHERE ${id} = ? ORDER BY reviewed_at ASC, id ASC`, [key]);
           if (!events.length) continue;
           insertMissing(key);
-          db.run(`
-        UPDATE ${memory}
-        SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
-            fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL, fsrs_last_review = NULL,
-            fsrs_state = NULL, fsrs_steps = NULL, fsrs_reps = NULL, fsrs_lapses = NULL
-        WHERE ${id} = ?
-      `, [key]);
+          resetToStartingPoint(key);
           for (const event of events) {
             const answer = String(event.answer);
             if (!["forgot", "fuzzy", "know", "known_forever"].includes(answer)) continue;
@@ -6034,15 +7059,7 @@ var init_card_log = __esm({
         if (!last) return null;
         const key = String(last.k);
         (0, import_database15.getDatabase)().run(`DELETE FROM ${reviewsTable} WHERE id = ?`, [last.id]);
-        if (!replay([key])) {
-          (0, import_database15.getDatabase)().run(`
-        UPDATE ${memory}
-        SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0, mistake_streak = 0, known_forever = 0, last_seen_on = NULL,
-            fsrs_stability = NULL, fsrs_difficulty = NULL, fsrs_due = NULL, fsrs_last_review = NULL,
-            fsrs_state = NULL, fsrs_steps = NULL, fsrs_reps = NULL, fsrs_lapses = NULL
-        WHERE ${id} = ?
-      `, [key]);
-        }
+        if (!replay([key])) resetToStartingPoint(key);
         return key;
       };
       const dueCount = () => {
@@ -6160,7 +7177,18 @@ var require_kanji_reading_usage = __commonJS({
 });
 
 // ../frontend/src/lib/kanji-reading-usage.ts
-var loaded2, loading2, SPECIFIC, decodeUsagePayload, loadKanjiReadingUsage, kanjiReadingUsageLoaded, kanjiReadingUsageFor, clauseText;
+var kanji_reading_usage_exports = {};
+__export(kanji_reading_usage_exports, {
+  allKanjiReadingUsage: () => allKanjiReadingUsage,
+  clauseText: () => clauseText,
+  decodeUsagePayload: () => decodeUsagePayload,
+  kanjiReadingUsageFor: () => kanjiReadingUsageFor,
+  kanjiReadingUsageLoaded: () => kanjiReadingUsageLoaded,
+  kanjiReadingUsageVersion: () => kanjiReadingUsageVersion,
+  loadKanjiReadingUsage: () => loadKanjiReadingUsage,
+  readingLine: () => readingLine
+});
+var loaded2, loading2, SPECIFIC, decodeUsagePayload, loadKanjiReadingUsage, kanjiReadingUsageLoaded, kanjiReadingUsageVersion, allKanjiReadingUsage, kanjiReadingUsageFor, clauseText, readingLine;
 var init_kanji_reading_usage = __esm({
   "../frontend/src/lib/kanji-reading-usage.ts"() {
     "use strict";
@@ -6168,8 +7196,8 @@ var init_kanji_reading_usage = __esm({
     loading2 = null;
     SPECIFIC = /* @__PURE__ */ new Set(["num", "oku", "list"]);
     decodeUsagePayload = (payload) => {
-      const chars = payload.chars.map(([char, levelRank, summary, readings2]) => {
-        const decoded = readings2.map(([base, kindBits, clauseIndex, arg, count, examples]) => {
+      const chars = payload.chars.map(([char, levelRank, summary, readings3]) => {
+        const decoded = readings3.map(([base, kindBits, clauseIndex, arg, count, examples]) => {
           const kinds = [];
           if (kindBits & 1) kinds.push("on");
           if (kindBits & 2) kinds.push("kun");
@@ -6210,6 +7238,8 @@ var init_kanji_reading_usage = __esm({
       return loading2;
     };
     kanjiReadingUsageLoaded = () => loaded2 !== null;
+    kanjiReadingUsageVersion = () => loaded2?.version ?? "";
+    allKanjiReadingUsage = () => loaded2?.chars ?? [];
     kanjiReadingUsageFor = (char) => loaded2?.byChar.get(char) ?? null;
     clauseText = (reading) => {
       if (reading.manual) return reading.arg;
@@ -6230,6 +7260,7 @@ var init_kanji_reading_usage = __esm({
           return "";
       }
     };
+    readingLine = (entry) => entry.readings.map((reading) => reading.base).join(" / ");
   }
 });
 
@@ -6268,6 +7299,7 @@ var init_kanji_char_cards = __esm({
     init_fsrs_store();
     init_reviews();
     init_card_log();
+    init_schema2();
     init_kanji_unit_index();
     init_kanji_reading_usage();
     import_kanji_readings = __toESM(require_kanji_readings(), 1);
@@ -6328,18 +7360,20 @@ var init_kanji_char_cards = __esm({
       const db = (0, import_database16.getDatabase)();
       const existing = new Set(rowsFor("SELECT char FROM kanji_char_memory").map((row) => String(row.char)));
       let inserted = 0;
-      db.run("BEGIN");
-      try {
-        for (const [char, levelRank] of levelByChar) {
-          if (existing.has(char)) continue;
-          db.run("INSERT INTO kanji_char_memory (char, level_rank) VALUES (?, ?)", [char, levelRank]);
-          inserted += 1;
+      withoutSyncStamp(() => {
+        db.run("BEGIN");
+        try {
+          for (const [char, levelRank] of levelByChar) {
+            if (existing.has(char)) continue;
+            db.run("INSERT INTO kanji_char_memory (char, level_rank) VALUES (?, ?)", [char, levelRank]);
+            inserted += 1;
+          }
+          db.run("COMMIT");
+        } catch (error) {
+          db.run("ROLLBACK");
+          throw error;
         }
-        db.run("COMMIT");
-      } catch (error) {
-        db.run("ROLLBACK");
-        throw error;
-      }
+      });
       return inserted;
     };
     EXAMPLE_CAP = 6;
@@ -6473,6 +7507,7 @@ var init_confusion_cards = __esm({
     init_study_core();
     init_fsrs_store();
     init_card_log();
+    init_schema2();
     init_confusion_groups();
     import_confusion_distinction_reviews = __toESM(require_distinction_reviews(), 1);
     import_question_meaning_overrides2 = __toESM(require_question_meaning_overrides(), 1);
@@ -6551,24 +7586,26 @@ var init_confusion_cards = __esm({
       const db = (0, import_database17.getDatabase)();
       const existing = new Map(rowsFor("SELECT group_key, level_rank FROM confusion_progress").map((row) => [String(row.group_key), Number(row.level_rank)]));
       let inserted = 0;
-      db.run("BEGIN");
-      try {
-        for (const group of confusionGroups()) {
-          if (!matchable(group)) continue;
-          const rank2 = groupLevelRank(group);
-          const current = existing.get(group.key);
-          if (current === void 0) {
-            db.run("INSERT INTO confusion_progress (group_key, level_rank) VALUES (?, ?)", [group.key, rank2]);
-            inserted += 1;
-          } else if (current !== rank2) {
-            db.run("UPDATE confusion_progress SET level_rank = ? WHERE group_key = ?", [rank2, group.key]);
+      withoutSyncStamp(() => {
+        db.run("BEGIN");
+        try {
+          for (const group of confusionGroups()) {
+            if (!matchable(group)) continue;
+            const rank2 = groupLevelRank(group);
+            const current = existing.get(group.key);
+            if (current === void 0) {
+              db.run("INSERT INTO confusion_progress (group_key, level_rank) VALUES (?, ?)", [group.key, rank2]);
+              inserted += 1;
+            } else if (current !== rank2) {
+              db.run("UPDATE confusion_progress SET level_rank = ? WHERE group_key = ?", [rank2, group.key]);
+            }
           }
+          db.run("COMMIT");
+        } catch (error) {
+          db.run("ROLLBACK");
+          throw error;
         }
-        db.run("COMMIT");
-      } catch (error) {
-        db.run("ROLLBACK");
-        throw error;
-      }
+      });
       return inserted;
     };
     matchingCard = (groupKey) => {
@@ -6636,7 +7673,21 @@ var init_confusion_cards = __esm({
 });
 
 // ../frontend/src/lib/mixed-cards.ts
-var LEVEL_RANK2, targetLevelRank, UNLIMITED, loadMixedCardData, mixedCardDataLoaded, materializedFor, materializeOnce, getKanjiCardSession, getConfusionCardSession, mixedCardCounts;
+var mixed_cards_exports = {};
+__export(mixed_cards_exports, {
+  getConfusionCardSession: () => getConfusionCardSession,
+  getKanjiCardSession: () => getKanjiCardSession,
+  loadMixedCardData: () => loadMixedCardData,
+  mixedCardCounts: () => mixedCardCounts,
+  mixedCardDataLoaded: () => mixedCardDataLoaded,
+  refreshMixedCardTasks: () => refreshMixedCardTasks,
+  submitConfusionCardAnswer: () => submitConfusionCardAnswer,
+  submitKanjiCardAnswer: () => submitKanjiCardAnswer,
+  targetLevelRank: () => targetLevelRank,
+  undoConfusionCardAnswer: () => undoConfusionCardAnswer,
+  undoKanjiCardAnswer: () => undoKanjiCardAnswer
+});
+var LEVEL_RANK2, targetLevelRank, UNLIMITED, loadMixedCardData, mixedCardDataLoaded, materializedFor, materializeOnce, getKanjiCardSession, submitKanjiCardAnswer, undoKanjiCardAnswer, getConfusionCardSession, submitConfusionCardAnswer, undoConfusionCardAnswer, refreshMixedCardTasks, mixedCardCounts;
 var init_mixed_cards = __esm({
   "../frontend/src/lib/mixed-cards.ts"() {
     "use strict";
@@ -6664,6 +7715,8 @@ var init_mixed_cards = __esm({
       const progress = kanjiCharProgress(day);
       return { card: next ? kanjiCharCard(next) : null, ...progress };
     };
+    submitKanjiCardAnswer = (char, answer) => recordKanjiCharReview(char, answer);
+    undoKanjiCardAnswer = () => undoLastKanjiCharReview();
     getConfusionCardSession = (db, day = today()) => {
       materializeOnce(db);
       const prefs = getStudyPreferences();
@@ -6671,6 +7724,15 @@ var init_mixed_cards = __esm({
       const next = pickConfusionNext(day);
       const progress = confusionCardProgress(day);
       return { card: next ? matchingCard(next) : null, ...progress };
+    };
+    submitConfusionCardAnswer = (groupKey, answer) => recordConfusionReview(groupKey, answer);
+    undoConfusionCardAnswer = () => undoLastConfusionReview();
+    refreshMixedCardTasks = (db) => {
+      if (!mixedCardDataLoaded()) return;
+      clearKanjiCharTasks();
+      clearConfusionTasks();
+      getKanjiCardSession(db);
+      getConfusionCardSession(db);
     };
     mixedCardCounts = (db, day = today()) => {
       const kanji = getKanjiCardSession(db, day);
@@ -6686,9 +7748,9 @@ var init_mixed_cards = __esm({
 });
 
 // ../frontend/src/lib/scheduler/sequencer.ts
-function pickNextInSequence(candidates, context) {
-  if (!candidates.length) return null;
-  return weightedPick(applyConstraints(candidates, context), context.random ?? Math.random);
+function pickNextInSequence(candidates2, context) {
+  if (!candidates2.length) return null;
+  return weightedPick(applyConstraints(candidates2, context), context.random ?? Math.random);
 }
 var OPENING_CARDS, OPENING_MIN_RECALL, WRONG_STREAK_TRIGGER, WEIGHTED_POOL_SIZE, WEIGHT_DECAY, UNKNOWN_RECALL, medianRecall, applyConstraints, weightedPick;
 var init_sequencer = __esm({
@@ -6701,15 +7763,15 @@ var init_sequencer = __esm({
     WEIGHTED_POOL_SIZE = 6;
     WEIGHT_DECAY = 0.5;
     UNKNOWN_RECALL = 0.7;
-    medianRecall = (candidates) => {
-      const sorted = candidates.map((item) => item.recall).sort((left, right) => left - right);
+    medianRecall = (candidates2) => {
+      const sorted = candidates2.map((item) => item.recall).sort((left, right) => left - right);
       if (!sorted.length) return 0;
       const middle = Math.floor(sorted.length / 2);
       return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
     };
-    applyConstraints = (candidates, context) => {
+    applyConstraints = (candidates2, context) => {
       const keepNonEmpty = (next, current) => next.length ? next : current;
-      let pool = candidates;
+      let pool = candidates2;
       const window2 = context.recentIds.slice(0, INTERFERENCE_WINDOW);
       if (window2.length) {
         pool = keepNonEmpty(
@@ -6727,9 +7789,9 @@ var init_sequencer = __esm({
       }
       return pool;
     };
-    weightedPick = (candidates, random) => {
-      if (!candidates.length) return null;
-      const ranked = [...candidates].sort((left, right) => right.score - left.score || left.id - right.id).slice(0, WEIGHTED_POOL_SIZE);
+    weightedPick = (candidates2, random) => {
+      if (!candidates2.length) return null;
+      const ranked = [...candidates2].sort((left, right) => right.score - left.score || left.id - right.id).slice(0, WEIGHTED_POOL_SIZE);
       const weights = ranked.map((_, index3) => WEIGHT_DECAY ** index3);
       const total = weights.reduce((sum, weight) => sum + weight, 0);
       let cursor = random() * total;
@@ -7138,7 +8200,7 @@ var init_stage1 = __esm({
       );
       const conflictsRecent = (row) => recent.wordIds.some((id) => interference.conflicts(Number(row.id), id));
       const preferredRows = wantNew && !(reviewRows.length && newRows.every(conflictsRecent)) ? newRows : reviewRows.length ? reviewRows : newRows;
-      const candidates = preferredRows.map((row) => {
+      const candidates2 = preferredRows.map((row) => {
         const dueAfter = queueById.get(Number(row.id)) ?? 0;
         const components = priorityComponents(row, queueById.get(Number(row.id)), newQuotaLeft, {
           randomize: !deterministic
@@ -7149,11 +8211,11 @@ var init_stage1 = __esm({
           row
         };
       });
-      if (!candidates.length) return null;
-      const ready = candidates.filter((item) => item.dueAfter <= 0);
+      if (!candidates2.length) return null;
+      const ready = candidates2.filter((item) => item.dueAfter <= 0);
       if (!ready.length) {
-        candidates.sort((left, right) => left.dueAfter - right.dueAfter || right.score - left.score);
-        return rowObjectToCard(candidates[0].row);
+        candidates2.sort((left, right) => left.dueAfter - right.dueAfter || right.score - left.score);
+        return rowObjectToCard(candidates2[0].row);
       }
       const byId = new Map(ready.map((item) => [item.row, item]));
       const picked = pickNextInSequence(
@@ -7179,14 +8241,14 @@ var init_stage1 = __esm({
 });
 
 // ../frontend/src/lib/word-api/directions.ts
-var import_database19, import_orthography2, FORWARD, REVERSE, KANJI, DIRECTIONS, directionByPhase, directionAllowsWord, filterDirectionWordIds, COUNTER_COLS, countersReady, ensureDirectionColumns, SEEDED_STABILITY_RATIO, ensureDirectionCardIds, directionTaskCount;
+var import_database19, FORWARD, REVERSE, KANJI, DIRECTIONS, directionByPhase, directionAllowsWord, filterDirectionWordIds, COUNTER_COLS, countersReady, ensureDirectionColumns, SEEDED_STABILITY_RATIO, ensureDirectionCardIds, directionTaskCount;
 var init_directions = __esm({
   "../frontend/src/lib/word-api/directions.ts"() {
     "use strict";
     import_database19 = __toESM(require_database(), 1);
     init_study_core();
     init_fsrs_store();
-    import_orthography2 = __toESM(require_orthography(), 1);
+    init_orthography();
     init_fsrs_scheduler();
     FORWARD = {
       id: "forward",
@@ -7218,7 +8280,7 @@ var init_directions = __esm({
     };
     DIRECTIONS = [FORWARD, REVERSE, KANJI];
     directionByPhase = (phase) => DIRECTIONS.find((direction) => direction.phase === phase) ?? FORWARD;
-    directionAllowsWord = (direction, word) => direction.id !== "kanji_reading" || (0, import_orthography2.shouldStudyKanjiReading)({
+    directionAllowsWord = (direction, word) => direction.id !== "kanji_reading" || shouldStudyKanjiReading({
       kanji: String(word.kanji ?? ""),
       kana: String(word.kana ?? "")
     });
@@ -7260,7 +8322,7 @@ var init_directions = __esm({
     ensureDirectionCardIds = (direction, limit) => {
       if (direction.id === "forward" || limit <= 0) return [];
       ensureDirectionColumns(direction);
-      const table = direction.entity.table;
+      const table2 = direction.entity.table;
       const rows = rowsFor(`
     SELECT p.word_id, p.fsrs_lapses, w.kanji, w.kana
     FROM progress p
@@ -7269,15 +8331,15 @@ var init_directions = __esm({
       AND p.known_forever = 0
       AND COALESCE(p.fsrs_lapses, 0) < ?
       ${direction.wordFilterSql ? `AND ${direction.wordFilterSql}` : ""}
-      AND NOT EXISTS (SELECT 1 FROM ${table} m WHERE m.word_id = p.word_id)
+      AND NOT EXISTS (SELECT 1 FROM ${table2} m WHERE m.word_id = p.word_id)
     ORDER BY p.fsrs_due ASC, p.word_id ASC
   `, [LEECH_LAPSE_THRESHOLD]).filter((row) => directionAllowsWord(direction, row));
       if (direction.id === "kanji_reading") {
         rows.sort(
-          (left, right) => (0, import_orthography2.kanjiReadingPriorityAdjustment)({
+          (left, right) => kanjiReadingPriorityAdjustment({
             kanji: String(right.kanji ?? ""),
             kana: String(right.kana ?? "")
-          }) - (0, import_orthography2.kanjiReadingPriorityAdjustment)({
+          }) - kanjiReadingPriorityAdjustment({
             kanji: String(left.kanji ?? ""),
             kana: String(left.kana ?? "")
           })
@@ -7289,7 +8351,7 @@ var init_directions = __esm({
       for (const row of rows) {
         if (createdIds.length >= limit) break;
         const wordId = Number(row.word_id);
-        db.run(`INSERT OR IGNORE INTO ${table} (word_id, seen_count) VALUES (?, 0)`, [wordId]);
+        db.run(`INSERT OR IGNORE INTO ${table2} (word_id, seen_count) VALUES (?, 0)`, [wordId]);
         const forward = readFsrsState(wordId, WORD_FSRS);
         if (forward) {
           writeFsrsState(wordId, {
@@ -7319,7 +8381,7 @@ var init_directions = __esm({
 });
 
 // ../frontend/src/lib/word-api/direction-plan.ts
-var import_database20, import_orthography3, predictedRecall2, newTaskCount, pruneIneligibleDirectionTasks, eligibleDueWordIds, createDirectionTasks, backfillDirectionTasksFromToday, ensureDirectionTasks, directionProgressCounts, directionCardColumns, directionCardById, pickDirectionNext;
+var import_database20, predictedRecall2, newTaskCount, pruneIneligibleDirectionTasks, eligibleDueWordIds, createDirectionTasks, backfillDirectionTasksFromToday, ensureDirectionTasks, directionProgressCounts, directionCardColumns, directionCardById, pickDirectionNext;
 var init_direction_plan = __esm({
   "../frontend/src/lib/word-api/direction-plan.ts"() {
     "use strict";
@@ -7334,7 +8396,7 @@ var init_direction_plan = __esm({
     init_review_budget();
     init_fsrs_store();
     init_fsrs_scheduler();
-    import_orthography3 = __toESM(require_orthography(), 1);
+    init_orthography();
     init_session_state();
     init_directions();
     predictedRecall2 = (row) => recallFromRow(row) ?? UNKNOWN_RECALL;
@@ -7507,12 +8569,12 @@ var init_direction_plan = __esm({
       const stubbornDrill = lastRow && Number(lastRow.mistake_streak ?? 0) >= STUBBORN_MISTAKE_STREAK && (queueById.get(lastId) ?? 0) <= 0;
       if (stubbornDrill) return rowObjectToCard(lastRow);
       const pickable = availableRows.length > 1 && !repeatAllowed ? availableRows.filter((row) => Number(row.id) !== lastId) : availableRows;
-      const candidates = pickable.map((row) => {
+      const candidates2 = pickable.map((row) => {
         const components = priorityComponents(row, queueById.get(Number(row.id)), 0, {
           randomize: !deterministic
         });
         if (direction.id === "kanji_reading") {
-          components.orthography = (0, import_orthography3.kanjiReadingPriorityAdjustment)({
+          components.orthography = kanjiReadingPriorityAdjustment({
             kanji: String(row.kanji ?? ""),
             kana: String(row.kana ?? "")
           });
@@ -7523,11 +8585,11 @@ var init_direction_plan = __esm({
           row
         };
       });
-      if (!candidates.length) return null;
-      const ready = candidates.filter((item) => item.dueAfter <= 0);
+      if (!candidates2.length) return null;
+      const ready = candidates2.filter((item) => item.dueAfter <= 0);
       if (!ready.length) {
-        candidates.sort((left, right) => left.dueAfter - right.dueAfter || right.score - left.score);
-        return rowObjectToCard(candidates[0].row);
+        candidates2.sort((left, right) => left.dueAfter - right.dueAfter || right.score - left.score);
+        return rowObjectToCard(candidates2[0].row);
       }
       const recent = recentAnswersToday(day, INTERFERENCE_WINDOW, direction.id);
       const picked = pickNextInSequence(
@@ -7723,8 +8785,8 @@ var init_daily_relief = __esm({
       [previousStudyDate(studyDate2)],
       0
     );
-    reliefCountFor = (candidates, studiedWordCount) => {
-      if (candidates.length < MIN_RELIEF_WORDS || studiedWordCount < MIN_ACTIVITY_WORDS) return 0;
+    reliefCountFor = (candidates2, studiedWordCount) => {
+      if (candidates2.length < MIN_RELIEF_WORDS || studiedWordCount < MIN_ACTIVITY_WORDS) return 0;
       const activityRatio = Math.min(
         1,
         (studiedWordCount - MIN_ACTIVITY_WORDS) / (MAX_ACTIVITY_WORDS_FOR_FULL_RELIEF - MIN_ACTIVITY_WORDS)
@@ -7732,7 +8794,7 @@ var init_daily_relief = __esm({
       const activityCount = Math.round(
         MIN_RELIEF_WORDS + activityRatio * (MAX_RELIEF_WORDS - MIN_RELIEF_WORDS)
       );
-      return Math.min(candidates.length, activityCount);
+      return Math.min(candidates2.length, activityCount);
     };
     ensureDailyRelief = () => {
       const studyDate2 = today();
@@ -7748,9 +8810,9 @@ var init_daily_relief = __esm({
         }
       }
       if (existing.wordIds.length > 0 || hasCurrentState) return existing;
-      const candidates = reliefCandidates(studyDate2);
-      const reliefCount = reliefCountFor(candidates, previousStudyWordCount(studyDate2));
-      const wordIds = candidates.slice(0, reliefCount).map((candidate) => candidate.wordId);
+      const candidates2 = reliefCandidates(studyDate2);
+      const reliefCount = reliefCountFor(candidates2, previousStudyWordCount(studyDate2));
+      const wordIds = candidates2.slice(0, reliefCount).map((candidate) => candidate.wordId);
       return writeState({
         studyDate: studyDate2,
         wordIds,
@@ -8105,11 +9167,11 @@ var init_kanji_unit_scheduler = __esm({
         variant: example.variant
       };
     };
-    ensureColumns = (table, columns) => {
-      const existing = new Set(rowsFor(`PRAGMA table_info(${table})`).map((row) => String(row.name ?? "")));
+    ensureColumns = (table2, columns) => {
+      const existing = new Set(rowsFor(`PRAGMA table_info(${table2})`).map((row) => String(row.name ?? "")));
       const db = (0, import_database21.getDatabase)();
       for (const [name, definition] of Object.entries(columns)) {
-        if (!existing.has(name)) db.run(`ALTER TABLE ${table} ADD COLUMN ${name} ${definition}`);
+        if (!existing.has(name)) db.run(`ALTER TABLE ${table2} ADD COLUMN ${name} ${definition}`);
       }
     };
     ensureKanjiUnitTables = () => {
@@ -8543,7 +9605,12 @@ function getWordStats(phase = "stage1", options = {}, statsOptions = {}) {
       unseenRemaining: unseenCount(),
       secondsPerWord,
       totalLearned: firstValue(
-        "SELECT COUNT(*) FROM progress WHERE seen_count > 0 OR known_forever = 1",
+        `SELECT COUNT(*) FROM progress p
+         WHERE p.known_forever = 1
+           OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id=p.word_id AND r.direction='forward')
+           OR (p.seen_count > 0 AND NOT EXISTS (
+             SELECT 1 FROM level_prior_baselines b WHERE b.entity='words' AND b.entity_key=CAST(p.word_id AS TEXT)
+           ))`,
         [],
         0
       ),
@@ -8811,13 +9878,13 @@ var init_mistakes = __esm({
         total: rows.length
       });
       const pickable = rows.length > 1 && !repeatAllowed ? rows.filter((row) => Number(row.id) !== lastId) : rows;
-      const candidates = pickable.map((row) => ({
+      const candidates2 = pickable.map((row) => ({
         row,
         dueAfter: queueById.get(Number(row.id)) ?? 0,
         risk: mistakeRisk(row)
       }));
-      const ready = candidates.filter((item) => item.dueAfter <= 0);
-      const pool = ready.length ? ready : candidates;
+      const ready = candidates2.filter((item) => item.dueAfter <= 0);
+      const pool = ready.length ? ready : candidates2;
       pool.sort((left, right) => ready.length ? right.risk - left.risk : left.dueAfter - right.dueAfter || right.risk - left.risk);
       return pool[0] ? rowObjectToCard(pool[0].row) : null;
     };
@@ -8841,11 +9908,11 @@ var init_direction_answer = __esm({
     applyDirectionAnswer = (direction, wordId, answer) => {
       ensureDirectionColumns(direction);
       const db = (0, import_database23.getDatabase)();
-      const table = direction.entity.table;
+      const table2 = direction.entity.table;
       const studyDate2 = today();
-      const memory = firstRow(`SELECT * FROM ${table} WHERE word_id = ?`, [wordId]);
+      const memory = firstRow(`SELECT * FROM ${table2} WHERE word_id = ?`, [wordId]);
       if (!memory) {
-        db.run(`INSERT OR IGNORE INTO ${table} (word_id, seen_count) VALUES (?, 0)`, [wordId]);
+        db.run(`INSERT OR IGNORE INTO ${table2} (word_id, seen_count) VALUES (?, 0)`, [wordId]);
       }
       const snapshot = {
         phase: direction.phase,
@@ -8924,7 +9991,7 @@ var init_direction_answer = __esm({
       }
       setLastAnsweredWord(wordId, direction.id);
       db.run(`
-    UPDATE ${table}
+    UPDATE ${table2}
     SET seen_count = COALESCE(seen_count, 0) + 1,
         last_seen_on = ?,
         right_count = ?,
@@ -9309,27 +10376,16 @@ function getStudyTimeAnalytics() {
   };
 }
 function getMasteryAnalytics() {
+  const REAL_WORD_STUDY = realWordStudySql();
   const byLevel = rowsFor(`
     SELECT
       COALESCE(w.jlpt_level, '\u672A\u5206\u7EA7') AS level,
       COUNT(*) AS total,
-      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-        SELECT 1 FROM reviews r
-        WHERE r.word_id = w.id AND r.direction = 'forward'
-      ) THEN 1 ELSE 0 END) AS studied,
-      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-        SELECT 1 FROM reviews r
-        WHERE r.word_id = w.id AND r.direction = 'forward'
-      )) AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS mastered,
-      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-        SELECT 1 FROM reviews r
-        WHERE r.word_id = w.id AND r.direction = 'forward'
-      )) AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
+      SUM(CASE WHEN ${REAL_WORD_STUDY} THEN 1 ELSE 0 END) AS studied,
+      SUM(CASE WHEN ${REAL_WORD_STUDY} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS mastered,
+      SUM(CASE WHEN ${REAL_WORD_STUDY} AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
         AND COALESCE(p.fsrs_lapses, 0) = 0 THEN 1 ELSE 0 END) AS learning,
-      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-        SELECT 1 FROM reviews r
-        WHERE r.word_id = w.id AND r.direction = 'forward'
-      )) AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
+      SUM(CASE WHEN ${REAL_WORD_STUDY} AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
         AND COALESCE(p.fsrs_lapses, 0) > 0 THEN 1 ELSE 0 END) AS struggling
     FROM words w
     JOIN progress p ON p.word_id = w.id
@@ -9370,10 +10426,7 @@ function getMasteryAnalytics() {
       SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS masteredCount
     FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-      SELECT 1 FROM reviews r
-      WHERE r.word_id = w.id AND r.direction = 'forward'
-    ))
+    WHERE ${REAL_WORD_STUDY}
     GROUP BY pos
     ORDER BY count DESC
     LIMIT 5
@@ -9555,12 +10608,25 @@ function getStudyAnalytics() {
     generatedAt: (/* @__PURE__ */ new Date()).toISOString()
   };
 }
+var realWordStudySql;
 var init_stats2 = __esm({
   "../frontend/src/lib/analytics/stats.ts"() {
     "use strict";
     init_db_utils();
     init_adaptive();
     init_fsrs_store();
+    realWordStudySql = () => {
+      const baselineExists = firstValue(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='level_prior_baselines'",
+        [],
+        0
+      ) > 0;
+      return `(p.known_forever = 1 OR EXISTS (
+    SELECT 1 FROM reviews r WHERE r.word_id = w.id AND r.direction = 'forward'
+  ) OR (p.seen_count > 0${baselineExists ? ` AND NOT EXISTS (
+    SELECT 1 FROM level_prior_baselines b WHERE b.entity='words' AND b.entity_key=CAST(p.word_id AS TEXT)
+  )` : ""}))`;
+    };
   }
 });
 
@@ -9608,22 +10674,22 @@ function unfiledFavoriteCount() {
 }
 function createFavoriteFolder(name) {
   ensureUserTables();
-  const clean = cleanName(name);
-  if (!clean) return "";
-  (0, import_database25.getDatabase)().run("INSERT OR IGNORE INTO favorite_folders (name) VALUES (?)", [clean]);
+  const clean2 = cleanName(name);
+  if (!clean2) return "";
+  (0, import_database25.getDatabase)().run("INSERT OR IGNORE INTO favorite_folders (name) VALUES (?)", [clean2]);
   persistSoon();
-  return clean;
+  return clean2;
 }
 function renameFavoriteFolder(from, to) {
   ensureUserTables();
-  const clean = cleanName(to);
-  if (!clean || clean === from) return from;
+  const clean2 = cleanName(to);
+  if (!clean2 || clean2 === from) return from;
   const db = (0, import_database25.getDatabase)();
-  db.run("INSERT OR IGNORE INTO favorite_folders (name) VALUES (?)", [clean]);
+  db.run("INSERT OR IGNORE INTO favorite_folders (name) VALUES (?)", [clean2]);
   db.run("DELETE FROM favorite_folders WHERE name = ?", [from]);
-  db.run("UPDATE content_favorites SET folder = ? WHERE folder = ?", [clean, from]);
+  db.run("UPDATE content_favorites SET folder = ? WHERE folder = ?", [clean2, from]);
   persistSoon();
-  return clean;
+  return clean2;
 }
 function deleteFavoriteFolder(name) {
   ensureUserTables();
@@ -10289,7 +11355,7 @@ function submitWordAnswer(wordId, answer, options = {}) {
   const phase = hasWordFilter(options) ? "stage1" : currentPhase();
   if (phase === "stage2" || phase === "kanji") {
     applyDirectionAnswer(directionByPhase(phase), wordId, answer);
-    Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+    Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
     (0, import_progress_events3.notifyProgressUpdated)();
     return getWordSession(options);
   }
@@ -10390,7 +11456,7 @@ function submitWordAnswer(wordId, answer, options = {}) {
     schedulerMode: stepMode
   });
   pushUndoSnapshot({ ...snapshot, review_id: reviewId });
-  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
   (0, import_progress_events3.notifyProgressUpdated)();
   return getWordSession(options);
 }
@@ -10443,7 +11509,7 @@ function undoLastWordAnswer(options = {}) {
     }
     if (!hasWordFilter(options)) setPhase("stage1");
   }
-  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
   (0, import_progress_events3.notifyProgressUpdated)();
   const mode = String(snapshot.mode ?? snapshot.phase ?? "stage1");
   const wordId = Number(snapshot.word_id);
@@ -10469,7 +11535,7 @@ function updateWordNote(wordId, note) {
   } else {
     db.run("DELETE FROM word_notes WHERE word_id = ?", [wordId]);
   }
-  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
   return { wordId, note: cleaned };
 }
 function questionMeaningRivals(wordId) {
@@ -10491,7 +11557,7 @@ function updateWordQuestionMeaning(wordId, text) {
   resetSimilarMeaningCache();
   resetInterferenceCache();
   setTimeout(() => displayedPromptKeyOf(wordId), 0);
-  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
   const row = rowsFor("SELECT id, kanji, kana, meaning FROM words WHERE id = ?", [wordId])[0];
   const label2 = String(row?.kanji || row?.kana || "");
   const kana = String(row?.kana ?? "");
@@ -10508,7 +11574,7 @@ function updateWordQuestionMeaning(wordId, text) {
 function addWordStudySeconds(seconds, atMs = Date.now()) {
   ensureSyncSchema();
   recordStudySeconds(today(), seconds, atMs);
-  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave }) => scheduleSave());
+  Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ scheduleSave: scheduleSave3 }) => scheduleSave3());
   return {
     seconds,
     stats: getWordStats("stage1")
@@ -10863,6 +11929,231 @@ var init_word_api = __esm({
   }
 });
 
+// stub:react
+var require_react = __commonJS({
+  "stub:react"(exports, module2) {
+    module2.exports = new Proxy({}, { get: (_t, p) => p === "__esModule" ? false : () => ({}) });
+  }
+});
+
+// scripts/shared/shims/pitch-accent-data.js
+var require_pitch_accent_data = __commonJS({
+  "scripts/shared/shims/pitch-accent-data.js"(exports, module2) {
+    module2.exports = new Proxy({}, {
+      get(_target, prop) {
+        const stores = require("../shared/content-store");
+        if (prop === "__esModule") return false;
+        if (prop === "then") return void 0;
+        if (!stores.pitchAccent) throw new Error("\u97F3\u9AD8\u91CD\u97F3\u8868\u8FD8\u6CA1\u4ECE\u5206\u5305\u52A0\u8F7D\uFF1A\u5148 await content.ready()");
+        return prop === "default" ? stores.pitchAccent : stores.pitchAccent[prop];
+      }
+    });
+  }
+});
+
+// ../frontend/src/lib/kana-progress.ts
+var kana_progress_exports = {};
+__export(kana_progress_exports, {
+  KANA: () => KANA,
+  deferWordPlanUntilKanaComplete: () => deferWordPlanUntilKanaComplete,
+  enforceKanaGate: () => enforceKanaGate,
+  getKanaProgress: () => getKanaProgress,
+  kanaComplete: () => kanaComplete,
+  kanaMasteredCount: () => kanaMasteredCount,
+  recordKanaAnswer: () => recordKanaAnswer,
+  replayKanaReviews: () => replayKanaReviews
+});
+var import_database27, import_progress_events4, import_storage, KANA, WORD_GOAL_KEY, KANA_FSRS, ensureKanaRows, getKanaProgress, kanaMasteredCount, kanaComplete, deferWordPlanUntilKanaComplete, enforceKanaGate, recordKanaAnswer, replayKanaReviews;
+var init_kana_progress = __esm({
+  "../frontend/src/lib/kana-progress.ts"() {
+    "use strict";
+    import_database27 = __toESM(require_database(), 1);
+    init_db_utils();
+    init_fsrs_store();
+    init_studyPreferences();
+    import_progress_events4 = __toESM(require_progress_events(), 1);
+    import_storage = __toESM(require_storage(), 1);
+    KANA = [
+      ["\u3042", "a"],
+      ["\u3044", "i"],
+      ["\u3046", "u"],
+      ["\u3048", "e"],
+      ["\u304A", "o"],
+      ["\u304B", "ka"],
+      ["\u304D", "ki"],
+      ["\u304F", "ku"],
+      ["\u3051", "ke"],
+      ["\u3053", "ko"],
+      ["\u3055", "sa"],
+      ["\u3057", "shi"],
+      ["\u3059", "su"],
+      ["\u305B", "se"],
+      ["\u305D", "so"],
+      ["\u305F", "ta"],
+      ["\u3061", "chi"],
+      ["\u3064", "tsu"],
+      ["\u3066", "te"],
+      ["\u3068", "to"],
+      ["\u306A", "na"],
+      ["\u306B", "ni"],
+      ["\u306C", "nu"],
+      ["\u306D", "ne"],
+      ["\u306E", "no"],
+      ["\u306F", "ha"],
+      ["\u3072", "hi"],
+      ["\u3075", "fu"],
+      ["\u3078", "he"],
+      ["\u307B", "ho"],
+      ["\u307E", "ma"],
+      ["\u307F", "mi"],
+      ["\u3080", "mu"],
+      ["\u3081", "me"],
+      ["\u3082", "mo"],
+      ["\u3084", "ya"],
+      ["\u3086", "yu"],
+      ["\u3088", "yo"],
+      ["\u3089", "ra"],
+      ["\u308A", "ri"],
+      ["\u308B", "ru"],
+      ["\u308C", "re"],
+      ["\u308D", "ro"],
+      ["\u308F", "wa"],
+      ["\u3092", "wo"],
+      ["\u3093", "n"],
+      ["\u30A2", "a"],
+      ["\u30A4", "i"],
+      ["\u30A6", "u"],
+      ["\u30A8", "e"],
+      ["\u30AA", "o"],
+      ["\u30AB", "ka"],
+      ["\u30AD", "ki"],
+      ["\u30AF", "ku"],
+      ["\u30B1", "ke"],
+      ["\u30B3", "ko"],
+      ["\u30B5", "sa"],
+      ["\u30B7", "shi"],
+      ["\u30B9", "su"],
+      ["\u30BB", "se"],
+      ["\u30BD", "so"],
+      ["\u30BF", "ta"],
+      ["\u30C1", "chi"],
+      ["\u30C4", "tsu"],
+      ["\u30C6", "te"],
+      ["\u30C8", "to"],
+      ["\u30CA", "na"],
+      ["\u30CB", "ni"],
+      ["\u30CC", "nu"],
+      ["\u30CD", "ne"],
+      ["\u30CE", "no"],
+      ["\u30CF", "ha"],
+      ["\u30D2", "hi"],
+      ["\u30D5", "fu"],
+      ["\u30D8", "he"],
+      ["\u30DB", "ho"],
+      ["\u30DE", "ma"],
+      ["\u30DF", "mi"],
+      ["\u30E0", "mu"],
+      ["\u30E1", "me"],
+      ["\u30E2", "mo"],
+      ["\u30E4", "ya"],
+      ["\u30E6", "yu"],
+      ["\u30E8", "yo"],
+      ["\u30E9", "ra"],
+      ["\u30EA", "ri"],
+      ["\u30EB", "ru"],
+      ["\u30EC", "re"],
+      ["\u30ED", "ro"],
+      ["\u30EF", "wa"],
+      ["\u30F2", "wo"],
+      ["\u30F3", "n"]
+    ];
+    WORD_GOAL_KEY = "kana_deferred_word_goal";
+    KANA_FSRS = { table: "kana_memory", idColumn: "symbol", eligible: "1=1" };
+    ensureKanaRows = () => oncePerDatabase("kana-rows", () => {
+      const db = (0, import_database27.getDatabase)();
+      for (const [symbol] of KANA) db.run("INSERT OR IGNORE INTO kana_memory (symbol) VALUES (?)", [symbol]);
+      ensureFsrsColumns(KANA_FSRS);
+    });
+    getKanaProgress = () => {
+      ensureKanaRows();
+      return Object.fromEntries(rowsFor("SELECT symbol, correct_streak FROM kana_memory").map((row) => [String(row.symbol), Number(row.correct_streak)]));
+    };
+    kanaMasteredCount = (progress = getKanaProgress()) => KANA.filter(([kana]) => (progress[kana] ?? 0) >= 2).length;
+    kanaComplete = (progress = getKanaProgress()) => kanaMasteredCount(progress) === KANA.length;
+    deferWordPlanUntilKanaComplete = (wordGoal) => {
+      setState(WORD_GOAL_KEY, String(Math.max(0, Math.round(wordGoal))));
+      setState("kana_completed", kanaComplete() ? "1" : "0");
+      const prefs = getStudyPreferences();
+      if (!kanaComplete()) saveStudyPreferences({ ...prefs, dailyGoal: 0 });
+      (0, import_storage.requestFullSnapshot)();
+      (0, import_storage.scheduleSave)(0);
+    };
+    enforceKanaGate = () => {
+      if (getState("starting_level", "") !== "kana-none" || kanaComplete()) return;
+      const prefs = getStudyPreferences();
+      if (prefs.dailyGoal !== 0) saveStudyPreferences({ ...prefs, dailyGoal: 0 });
+    };
+    recordKanaAnswer = (kana, correct) => {
+      ensureKanaRows();
+      if (!KANA.some(([symbol]) => symbol === kana)) throw new Error("\u672A\u77E5\u7684\u5047\u540D\u5361");
+      const progress = getKanaProgress();
+      const wasComplete = kanaComplete(progress);
+      const now = /* @__PURE__ */ new Date();
+      recordFsrsReview(kana, correct ? "know" : "forgot", now, {}, KANA_FSRS);
+      progress[kana] = correct ? Math.min(2, (progress[kana] ?? 0) + 1) : 0;
+      const db = (0, import_database27.getDatabase)();
+      db.run("UPDATE kana_memory SET correct_streak=?, seen_count=seen_count+1 WHERE symbol=?", [progress[kana], kana]);
+      db.run("INSERT INTO kana_reviews (symbol,answer,reviewed_on,reviewed_at) VALUES (?,?,?,?)", [kana, correct ? "know" : "forgot", today(now), now.getTime()]);
+      const completed = kanaComplete(progress);
+      if (completed && !wasComplete) {
+        setState("kana_completed", "1");
+        const goal = Math.max(0, Number(getState(WORD_GOAL_KEY, "0")) || 0);
+        const prefs = getStudyPreferences();
+        const now2 = /* @__PURE__ */ new Date();
+        const startedOn = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, "0")}-${String(now2.getDate()).padStart(2, "0")}`;
+        setState("jlpt_plan_started_on", startedOn);
+        saveStudyPreferences({
+          ...prefs,
+          jlptPlanStartedOn: startedOn,
+          dailyGoal: goal > 0 && prefs.dailyGoal === 0 ? goal : prefs.dailyGoal
+        }, { keepPlanAnchor: true });
+      }
+      (0, import_storage.requestFullSnapshot)();
+      (0, import_storage.scheduleSave)(0);
+      (0, import_progress_events4.notifyProgressUpdated)();
+      return { progress, completed };
+    };
+    replayKanaReviews = () => {
+      ensureKanaRows();
+      const db = (0, import_database27.getDatabase)();
+      const symbols = rowsFor("SELECT DISTINCT symbol FROM kana_reviews").map((row) => String(row.symbol));
+      let completedAt = 0;
+      for (const symbol of symbols) {
+        const events = rowsFor("SELECT answer, reviewed_at FROM kana_reviews WHERE symbol=? ORDER BY reviewed_at, id", [symbol]);
+        db.run(`UPDATE kana_memory SET correct_streak=0, seen_count=0,
+      fsrs_stability=NULL, fsrs_difficulty=NULL, fsrs_due=NULL, fsrs_last_review=NULL,
+      fsrs_state=NULL, fsrs_steps=NULL, fsrs_reps=NULL, fsrs_lapses=NULL WHERE symbol=?`, [symbol]);
+        let streak = 0;
+        let masteredAt = 0;
+        for (const event of events) {
+          const correct = event.answer === "know";
+          recordFsrsReview(symbol, correct ? "know" : "forgot", new Date(Number(event.reviewed_at)), {}, KANA_FSRS);
+          streak = correct ? Math.min(2, streak + 1) : 0;
+          masteredAt = streak === 2 ? masteredAt || Number(event.reviewed_at) : 0;
+          db.run("UPDATE kana_memory SET correct_streak=?, seen_count=seen_count+1 WHERE symbol=?", [streak, symbol]);
+        }
+        if (streak === 2) completedAt = Math.max(completedAt, masteredAt);
+      }
+      const completed = kanaComplete();
+      if (completed && getState("kana_completed", "0") !== "1" && completedAt) {
+        const date = new Date(completedAt);
+        setState("jlpt_plan_started_on", `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`);
+      }
+      setState("kana_completed", completed ? "1" : "0");
+    };
+  }
+});
+
 // scripts/shared/shims/grammar-key-points.js
 var require_grammar_key_points = __commonJS({
   "scripts/shared/shims/grammar-key-points.js"(exports, module2) {
@@ -10905,14 +12196,14 @@ __export(word_list_import_exports, {
   parseExternalWordListText: () => parseExternalWordListText,
   previewExternalWordList: () => previewExternalWordList
 });
-var import_database30, import_progress_events5, KNOWN_HEADERS, FIELD_ALIASES, normalizeKey, cleanText, hasJapanese, kanaOnly, getByAliases, parseCsv, detectDelimiter, looksLikeHeader, csvRecords, flattenJson, textRecords, parseExternalWordListText, chooseJapaneseFields, parseNumber, parseDate, scoreFromRecord, inferPos, inferVerbType, normalizeDraft, previewExternalWordList, findWordId, reviewPriority, MAX_REPLAY_PER_ANSWER, seedFsrsFromImport, CUSTOM_WORD_ID_BASE, CUSTOM_WORD_ID_SPACE, customWordId, allocateCustomWordId, materializeCustomWords, importExternalWordList;
+var import_database32, import_progress_events7, KNOWN_HEADERS, FIELD_ALIASES, normalizeKey, cleanText, hasJapanese, kanaOnly, getByAliases, parseCsv, detectDelimiter, looksLikeHeader, csvRecords, flattenJson, textRecords, parseExternalWordListText, chooseJapaneseFields, parseNumber, parseDate, scoreFromRecord, inferPos, inferVerbType, normalizeDraft, previewExternalWordList, findWordId, reviewPriority, MAX_REPLAY_PER_ANSWER, seedFsrsFromImport, CUSTOM_WORD_ID_BASE, CUSTOM_WORD_ID_SPACE, customWordId, allocateCustomWordId, materializeCustomWords, importExternalWordList;
 var init_word_list_import = __esm({
   "../frontend/src/lib/word-list-import.ts"() {
     "use strict";
-    import_database30 = __toESM(require_database(), 1);
+    import_database32 = __toESM(require_database(), 1);
     init_word_api();
     init_study_core();
-    import_progress_events5 = __toESM(require_progress_events(), 1);
+    import_progress_events7 = __toESM(require_progress_events(), 1);
     init_confusion();
     init_confusion_groups();
     init_familiarity();
@@ -11244,7 +12535,7 @@ var init_word_list_import = __esm({
       return CUSTOM_WORD_ID_BASE + (high * 4294967296 + low) % CUSTOM_WORD_ID_SPACE;
     };
     allocateCustomWordId = (kanji, kana) => {
-      const db = (0, import_database30.getDatabase)();
+      const db = (0, import_database32.getDatabase)();
       let id = customWordId(kanji, kana);
       while (firstValue("SELECT 1 FROM words WHERE id = ? LIMIT 1", [id], 0) === 1) {
         const row = firstRow("SELECT kanji, kana FROM words WHERE id = ?", [id]);
@@ -11255,7 +12546,7 @@ var init_word_list_import = __esm({
       return id;
     };
     materializeCustomWords = () => {
-      const db = (0, import_database30.getDatabase)();
+      const db = (0, import_database32.getDatabase)();
       const missing = firstValue(
         "SELECT COUNT(*) FROM custom_words c WHERE NOT EXISTS (SELECT 1 FROM words w WHERE w.id = c.word_id)",
         [],
@@ -11282,7 +12573,7 @@ var init_word_list_import = __esm({
       ensureProgressInitialized();
       const preview = previewExternalWordList(text);
       const drafts = parseExternalWordListText(text).map(normalizeDraft).filter((draft) => Boolean(draft));
-      const db = (0, import_database30.getDatabase)();
+      const db = (0, import_database32.getDatabase)();
       ensureFsrsColumns();
       const importedOn = today();
       let inserted = 0;
@@ -11415,9 +12706,9 @@ var init_word_list_import = __esm({
       resetConfusionCache();
       resetConfusionGroups();
       resetFamiliarityCache();
-      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ requestFullSnapshot }) => requestFullSnapshot());
+      void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ requestFullSnapshot: requestFullSnapshot3 }) => requestFullSnapshot3());
       persistSoon();
-      (0, import_progress_events5.notifyProgressUpdated)();
+      (0, import_progress_events7.notifyProgressUpdated)();
       return { ...preview, inserted, updated, queuedForReview };
     };
   }
@@ -11426,8 +12717,112 @@ var init_word_list_import = __esm({
 // scripts/shared/shims/zoo-sounds.js
 var require_zoo_sounds = __commonJS({
   "scripts/shared/shims/zoo-sounds.js"(exports, module2) {
-    module2.exports = { setSoundTimbre() {
-    } };
+    var timbre = "kalimba";
+    var player = null;
+    var files = /* @__PURE__ */ new Map();
+    var RATE = 16e3;
+    var TWO_PI = Math.PI * 2;
+    function setSoundTimbre2(next) {
+      timbre = ["kalimba", "marimba", "epiano"].includes(next) ? next : "kalimba";
+    }
+    function wave(phase) {
+      if (timbre === "marimba") return Math.sin(phase);
+      if (timbre === "epiano") return Math.sin(phase) * 0.78 + Math.sin(phase * 2) * 0.22;
+      return 2 / Math.PI * Math.asin(Math.sin(phase));
+    }
+    function note(freq, start, duration, gain) {
+      return { freq, start, duration, gain };
+    }
+    function shepard(step, start, duration, gain) {
+      const offset = (step % 12 + 12) % 12 / 12;
+      const parts = Array.from({ length: 9 }, (_, octave) => {
+        const freq = 32.703 * 2 ** (octave + offset);
+        const distance = Math.log2(freq / 523.25);
+        return { freq, weight: Math.exp(-distance * distance / (2 * 0.85 ** 2)) };
+      });
+      const total = parts.reduce((sum, part) => sum + part.weight, 0);
+      return parts.map((part) => note(part.freq, start, duration * Math.min(2.2, Math.max(0.3, (523.25 / part.freq) ** 0.8)), gain * part.weight / total));
+    }
+    function score(name) {
+      if (name.startsWith("know-")) {
+        const step = Number(name.slice(5));
+        return [...shepard(step, 0, 0.16, 0.23), ...shepard(step + 4, 0.09, 0.22, 0.23)];
+      }
+      if (name === "wrong") return [note(440, 0, 0.18, 0.12), note(349.23, 0.1, 0.26, 0.11)];
+      if (name === "flip") return [note(880, 0, 0.06, 0.06)];
+      if (name === "complete") return [note(523.25, 0, 0.2, 0.23), note(659.25, 0.12, 0.2, 0.23), note(783.99, 0.24, 0.32, 0.25)];
+      if (name === "countdown") return [note(880, 0, 0.1, 0.105), note(1046.5, 0.045, 0.13, 0.09)];
+      if (name === "relief") return [note(783.99, 0, 0.09, 0.13), note(1046.5, 0.055, 0.14, 0.11)];
+      return [];
+    }
+    function wav(notes) {
+      const seconds = Math.max(...notes.map((item) => item.start + item.duration), 0) + 0.04;
+      const samples = Math.ceil(seconds * RATE);
+      const buffer = new ArrayBuffer(44 + samples * 2);
+      const view = new DataView(buffer);
+      const label2 = (at, value) => {
+        for (let i = 0; i < 4; i++) view.setUint8(at + i, value.charCodeAt(i));
+      };
+      label2(0, "RIFF");
+      view.setUint32(4, 36 + samples * 2, true);
+      label2(8, "WAVE");
+      label2(12, "fmt ");
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, RATE, true);
+      view.setUint32(28, RATE * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      label2(36, "data");
+      view.setUint32(40, samples * 2, true);
+      for (let i = 0; i < samples; i++) {
+        const t = i / RATE;
+        let value = 0;
+        for (const item of notes) {
+          const age = t - item.start;
+          if (age < 0 || age >= item.duration) continue;
+          const attack = Math.min(1, age / 0.012);
+          const decay = Math.exp(-5.5 * age / item.duration);
+          value += wave(TWO_PI * item.freq * age) * attack * decay * item.gain;
+        }
+        view.setInt16(44 + i * 2, Math.max(-1, Math.min(1, value)) * 32767, true);
+      }
+      return buffer;
+    }
+    function play(name) {
+      if (typeof wx === "undefined" || !wx.createInnerAudioContext || !wx.getFileSystemManager || !wx.env?.USER_DATA_PATH) return;
+      try {
+        const key = `${timbre}-${name}`;
+        let file = files.get(key);
+        if (!file) {
+          file = `${wx.env.USER_DATA_PATH}/shushugo-sfx-v1-${key}.wav`;
+          wx.getFileSystemManager().writeFileSync(file, wav(score(name)));
+          files.set(key, file);
+        }
+        player || (player = wx.createInnerAudioContext());
+        player.stop();
+        player.src = file;
+        player.play();
+      } catch (error) {
+        console.warn("[sounds] \u97F3\u6548\u4E0D\u53EF\u7528", error);
+      }
+    }
+    module2.exports = {
+      setSoundTimbre: setSoundTimbre2,
+      playKnow: (step = 0) => play(`know-${(step % 12 + 12) % 12}`),
+      playDontKnow: () => play("wrong"),
+      playFlip: () => play("flip"),
+      playComplete: () => play("complete"),
+      playCountdownTick: () => play("countdown"),
+      playReliefDeal: () => play("relief"),
+      previewTimbre(next) {
+        const previous = timbre;
+        setSoundTimbre2(next);
+        play("know-0");
+        timbre = previous;
+      }
+    };
   }
 });
 
@@ -11456,18 +12851,28 @@ __export(entry_exports, {
   fsrsScheduler: () => fsrs_scheduler_exports,
   fsrsStore: () => fsrs_store_exports,
   furigana: () => furigana_data_exports,
+  furiganaSplit: () => furigana_exports,
   grammarApi: () => grammar_api_exports,
   grammarFormation: () => grammar_formation_exports,
   grammarKeyPoints: () => grammar_key_points_exports,
   grammarQuiz: () => grammar_quiz_exports,
   jlptPlan: () => plan_exports,
   jlptStatus: () => status_exports,
+  kanaProgress: () => kana_progress_exports,
   kanjiCharCards: () => kanji_char_cards_exports,
+  kanjiReadingUsage: () => kanji_reading_usage_exports,
   kanjiUnitIndex: () => kanji_unit_index_exports,
   kanjiUnitScheduler: () => kanji_unit_scheduler_exports,
+  levelPlan: () => level_plan_exports,
+  mixedCards: () => mixed_cards_exports,
+  orthography: () => orthography_exports,
+  pitchAccent: () => pitch_accent_exports,
+  planContent: () => content_matrix_exports,
   preferences: () => studyPreferences_exports,
+  progressApi: () => progress_api_exports,
   questionMeaningIndex: () => question_meaning_index_exports,
   reviewBudget: () => review_budget_exports,
+  sounds: () => sounds,
   streak: () => zoo_streak_exports,
   studyCore: () => study_core_exports,
   studyLoad: () => study_load_exports,
@@ -11477,6 +12882,7 @@ __export(entry_exports, {
   syncSchema: () => schema_exports,
   syncSnapshot: () => snapshot_exports,
   syncTables: () => tables_exports,
+  tokenDictionary: () => token_dictionary_exports,
   userQuestionMeanings: () => user_question_meanings_exports,
   vocabTest: () => vocab_test_exports,
   weekly: () => weekly_exports,
@@ -11485,11 +12891,405 @@ __export(entry_exports, {
   wordCard: () => word_card_exports,
   wordDistinctions: () => word_distinctions_exports,
   wordLibrary: () => word_library_exports,
+  wordStudyUtils: () => word_study_utils_exports,
   yuzu: () => yuzu_exports,
   yuzuCatalog: () => yuzu_catalog_exports
 });
 module.exports = __toCommonJS(entry_exports);
 var database = __toESM(require_database());
+
+// ../frontend/src/lib/progress-api.ts
+var progress_api_exports = {};
+__export(progress_api_exports, {
+  getProgressOverview: () => getProgressOverview
+});
+init_study_core();
+init_grammar_api();
+init_word_api();
+init_fsrs_store();
+var REAL_WORD = `(p.known_forever = 1 OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = p.word_id AND r.direction = 'forward')
+  OR (p.seen_count > 0 AND NOT EXISTS (SELECT 1 FROM level_prior_baselines b WHERE b.entity='words' AND b.entity_key=CAST(p.word_id AS TEXT))))`;
+var REAL_GRAMMAR = `(p.known_forever = 1 OR EXISTS (SELECT 1 FROM grammar_reviews r WHERE r.grammar_id = p.grammar_id)
+  OR (p.seen_count > 0 AND NOT EXISTS (SELECT 1 FROM level_prior_baselines b WHERE b.entity='grammar' AND b.entity_key=CAST(p.grammar_id AS TEXT))))`;
+function getProgressOverview() {
+  ensureProgressInitialized();
+  ensureGrammarProgressInitialized();
+  const dayEnd = studyDayEnd().toISOString();
+  const wordRow = firstRow(`
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN ${REAL_WORD} THEN 1 ELSE 0 END) AS seen,
+      SUM(CASE WHEN ${REAL_WORD} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
+      SUM(CASE WHEN NOT ${REAL_WORD} THEN 1 ELSE 0 END) AS unseen
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+  `, [dayEnd]);
+  const wordsByLevel = rowsFor(`
+    SELECT
+      COALESCE(w.jlpt_level, '\u672A\u5206\u7EA7') AS level,
+      COUNT(*) AS total,
+      SUM(CASE WHEN ${REAL_WORD} THEN 1 ELSE 0 END) AS seen,
+      SUM(CASE WHEN ${REAL_WORD} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
+      SUM(CASE WHEN NOT ${REAL_WORD} THEN 1 ELSE 0 END) AS unseen
+    FROM words w
+    JOIN progress p ON p.word_id = w.id
+    WHERE w.jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')
+    GROUP BY w.jlpt_level
+    ORDER BY CASE w.jlpt_level WHEN 'N5' THEN 1 WHEN 'N4' THEN 2 WHEN 'N3' THEN 3 WHEN 'N2' THEN 4 WHEN 'N1' THEN 5 ELSE 9 END
+  `, [dayEnd]).map((row) => ({
+    level: String(row.level ?? ""),
+    total: Number(row.total ?? 0),
+    seen: Number(row.seen ?? 0),
+    completed: Number(row.completed ?? 0),
+    low: Number(row.low ?? 0),
+    unseen: Number(row.unseen ?? 0)
+  }));
+  const grammar = rowsFor(`
+    SELECT
+      g.level,
+      COUNT(*) AS total,
+      SUM(CASE WHEN ${REAL_GRAMMAR} THEN 1 ELSE 0 END) AS seen,
+      SUM(CASE WHEN ${REAL_GRAMMAR} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
+      SUM(CASE WHEN NOT ${REAL_GRAMMAR} THEN 1 ELSE 0 END) AS unseen
+    FROM grammar_points g
+    JOIN grammar_progress p ON p.grammar_id = g.id
+    GROUP BY g.level
+    ORDER BY CASE g.level WHEN 'N5' THEN 1 WHEN 'N4' THEN 2 WHEN 'N3' THEN 3 WHEN 'N2' THEN 4 WHEN 'N1' THEN 5 ELSE 9 END
+  `, [dayEnd]).map((row) => ({
+    level: String(row.level ?? ""),
+    total: Number(row.total ?? 0),
+    seen: Number(row.seen ?? 0),
+    completed: Number(row.completed ?? 0),
+    low: Number(row.low ?? 0),
+    unseen: Number(row.unseen ?? 0)
+  }));
+  return {
+    words: {
+      total: Number(wordRow?.total ?? 0),
+      seen: Number(wordRow?.seen ?? 0),
+      completed: Number(wordRow?.completed ?? 0),
+      low: Number(wordRow?.low ?? 0),
+      unseen: Number(wordRow?.unseen ?? 0)
+    },
+    wordsByLevel,
+    grammar
+  };
+}
+
+// ../frontend/src/lib/token-dictionary.ts
+var token_dictionary_exports = {};
+__export(token_dictionary_exports, {
+  lookupTokenEntries: () => lookupTokenEntries
+});
+init_study_core();
+
+// ../frontend/src/lib/conjugation-explanation.ts
+var import_verb_pair_hints4 = __toESM(require_verb_pair_hints(), 1);
+var VERB_PAIR_HINTS = import_verb_pair_hints4.default;
+var toHiragana = (value) => value.replace(/[ァ-ヶ]/gu, (char) => String.fromCodePoint((char.codePointAt(0) ?? 0) - 96));
+var VERB_PAIR_READING_PAIRS = /* @__PURE__ */ new Set();
+Object.entries(VERB_PAIR_HINTS).forEach(([, hint]) => {
+  const pairedKanji = hint?.[1];
+  const pairedReading = hint?.[2];
+  if (!pairedKanji || !pairedReading) return;
+  const reverse = VERB_PAIR_HINTS[pairedKanji];
+  if (!reverse?.[2]) return;
+  const leftReading = toHiragana(reverse[2]);
+  const rightReading = toHiragana(pairedReading);
+  VERB_PAIR_READING_PAIRS.add(`${leftReading}${rightReading}`);
+  VERB_PAIR_READING_PAIRS.add(`${rightReading}${leftReading}`);
+});
+var GODAN_E = {
+  \u3046: "\u3048",
+  \u304F: "\u3051",
+  \u3050: "\u3052",
+  \u3059: "\u305B",
+  \u3064: "\u3066",
+  \u306C: "\u306D",
+  \u3076: "\u3079",
+  \u3080: "\u3081",
+  \u308B: "\u308C"
+};
+var clean = (value) => String(value ?? "").replace(/[\s]/gu, "");
+var lastKana = (value) => {
+  const chars = [...value];
+  return chars[chars.length - 1] ?? "";
+};
+var head = (value) => [...value].slice(0, -1).join("");
+var replaceLast = (value, replacement) => `${head(value)}${replacement}`;
+var godanStem = (lemma, table2) => {
+  const tail = lastKana(lemma);
+  return table2[tail] ? replaceLast(lemma, table2[tail]) : null;
+};
+var potentialDictionaryCandidates = (text) => {
+  const value = clean(text);
+  const candidates2 = [];
+  if (value.endsWith("\u3089\u308C\u308B") && value.length > 3) candidates2.push(`${value.slice(0, -3)}\u308B`);
+  if (value.endsWith("\u308B") && value.length > 1) {
+    const potentialStem = value.slice(0, -1);
+    const tail = lastKana(potentialStem);
+    const godanOriginal = Object.entries(GODAN_E).find(([, e]) => e === tail)?.[0];
+    if (godanOriginal) candidates2.push(replaceLast(potentialStem, godanOriginal));
+  }
+  return candidates2.filter((candidate, index3) => candidate && candidates2.indexOf(candidate) === index3);
+};
+var potentialReadingCandidates = (dictionaryReading, verbType) => {
+  const reading = toHiragana(clean(dictionaryReading));
+  if (!reading) return [];
+  let full = "";
+  if (verbType === "godan") {
+    const stem2 = godanStem(reading, GODAN_E);
+    full = stem2 ? `${stem2}\u308B` : "";
+  } else if (verbType === "ichidan" && reading.endsWith("\u308B")) {
+    full = `${reading.slice(0, -1)}\u3089\u308C\u308B`;
+  } else if (verbType === "suru" || reading === "\u3059\u308B") {
+    full = "\u3067\u304D\u308B";
+  } else if (verbType === "kuru" || reading === "\u304F\u308B") {
+    full = "\u3053\u3089\u308C\u308B";
+  }
+  if (!full) return [];
+  const stem = full.endsWith("\u308B") ? full.slice(0, -1) : full;
+  const suffixes = [
+    "",
+    "\u307E\u3059",
+    "\u307E\u305B\u3093",
+    "\u307E\u3057\u305F",
+    "\u307E\u305B\u3093\u3067\u3057\u305F",
+    "\u306A\u3044",
+    "\u306A\u304B\u3063\u305F",
+    "\u306A\u3051\u308C\u3070",
+    "\u306A\u304F\u3066",
+    "\u3066",
+    "\u305F",
+    "\u305F\u3089",
+    "\u3066\u3044\u308B",
+    "\u3066\u3044\u307E\u3059",
+    "\u3066\u3044\u305F",
+    "\u3066\u3044\u307E\u3057\u305F",
+    "\u3066\u3044\u306A\u3044",
+    "\u3066\u3044\u307E\u305B\u3093",
+    "\u3066\u3057\u307E\u3046",
+    "\u3066\u3057\u307E\u3044\u307E\u3059",
+    "\u3066\u3057\u307E\u3063\u305F",
+    "\u3066\u3057\u307E\u3044\u307E\u3057\u305F"
+  ];
+  return [stem, ...suffixes.map((suffix) => `${stem}${suffix}`), full];
+};
+var isPotentialReadingCompatible = (surfaceReading, dictionaryReading, verbType) => {
+  const target = toHiragana(clean(surfaceReading));
+  return Boolean(target) && potentialReadingCandidates(dictionaryReading, verbType).some((candidate) => target === candidate || target.startsWith(candidate) && [...target.slice(candidate.length)].length <= 6);
+};
+var isKnownVerbPair = (left, right, leftReading = "", rightReading = "") => {
+  const normalizedLeft = clean(left);
+  const normalizedRight = clean(right);
+  if (!normalizedLeft || !normalizedRight || normalizedLeft === normalizedRight) return false;
+  const matches = (key, other) => {
+    const hint = VERB_PAIR_HINTS[key];
+    if (!Array.isArray(hint)) return false;
+    return hint.slice(1, 3).some((value) => clean(value) === other);
+  };
+  if (matches(normalizedLeft, normalizedRight) || matches(normalizedRight, normalizedLeft)) return true;
+  if (!leftReading || !rightReading) return false;
+  const leftKana = toHiragana(clean(leftReading));
+  const rightKana = toHiragana(clean(rightReading));
+  return VERB_PAIR_READING_PAIRS.has(`${leftKana}${rightKana}`);
+};
+
+// ../frontend/src/lib/token-dictionary.ts
+var isKanaWritten = (text) => /^[ぁ-ゖァ-ヺー]+$/u.test(text) && text.length >= 2;
+var hasKanji = (text) => /[\p{Script=Han}]/u.test(text);
+var toHiragana2 = (text) => text.replace(/[ァ-ヶ]/gu, (char) => String.fromCodePoint((char.codePointAt(0) ?? 0) - 96));
+var firstKanji = (text) => [...text].find((char) => /[\p{Script=Han}]/u.test(char)) ?? "";
+var isVerbPos = (pos) => /动词|動詞/u.test(String(pos ?? ""));
+var rowToEntry = (row, matchedForm) => ({
+  id: String(row.lookup_source ?? "jlpt") === "supplement" ? String(row.id ?? "") : Number(row.id ?? 0),
+  studyWordId: row.study_word_id == null ? null : Number(row.study_word_id),
+  source: String(row.lookup_source ?? "jlpt") === "supplement" ? "supplement" : "jlpt",
+  kanji: String(row.kanji ?? ""),
+  kana: String(row.kana ?? ""),
+  meaning: String(row.meaning ?? ""),
+  pos: String(row.pos ?? ""),
+  verbType: String(row.verb_type ?? ""),
+  jlptLevel: String(row.jlpt_level ?? ""),
+  exampleJp: String(row.example_jp ?? ""),
+  exampleMeaning: String(row.example_meaning ?? ""),
+  category: String(row.category ?? ""),
+  usageNote: String(row.usage_note ?? ""),
+  sourceName: String(row.source_name ?? ""),
+  matchedForm
+});
+var lookupTokenEntries = (surface, reading = "", limit = 4, lemma = "", morphs = []) => {
+  const normalizedSurface = surface.trim();
+  const normalizedLookup = lemma.trim() || normalizedSurface;
+  if (!normalizedLookup) return [];
+  const surfaceIsKana = isKanaWritten(normalizedSurface);
+  try {
+    const find = (query, allowKana = false) => rowsFor(`
+      SELECT * FROM (
+        SELECT
+          CAST(id AS TEXT) AS id,
+          id AS study_word_id,
+          kanji,
+          kana,
+          meaning,
+          pos,
+          verb_type,
+          jlpt_level,
+          example_jp,
+          example_meaning,
+          importance AS lookup_priority,
+          'jlpt' AS lookup_source,
+          '' AS category,
+          '' AS usage_note,
+          '' AS source_name
+        FROM words
+        WHERE kanji = ? OR (? = 1 AND kana = ?)
+
+        UNION ALL
+
+        SELECT
+          entry_key AS id,
+          NULL AS study_word_id,
+          headword AS kanji,
+          kana,
+          meaning,
+          pos,
+          verb_type,
+          '' AS jlpt_level,
+          example_jp,
+          example_meaning,
+          priority AS lookup_priority,
+          'supplement' AS lookup_source,
+          category,
+          usage_note,
+          source_name
+        FROM dictionary_entries
+        WHERE headword = ? OR (? = 1 AND kana = ?)
+      ) AS dictionary_matches
+      ORDER BY
+        CASE
+          WHEN kanji = ? THEN 0
+          ELSE 1
+        END,
+        CASE WHEN lookup_source = 'jlpt' THEN 0 ELSE 1 END,
+        lookup_priority DESC,
+        id ASC
+      LIMIT ?
+    `, [
+      query,
+      allowKana ? 1 : 0,
+      query,
+      query,
+      allowKana ? 1 : 0,
+      query,
+      query,
+      limit
+    ]);
+    const toEntries = (rows) => rows.map((row) => rowToEntry(row, String(row.kanji || row.kana || normalizedLookup)));
+    const queries = lemma.trim() && normalizedSurface !== normalizedLookup && hasKanji(normalizedSurface) ? [normalizedSurface, normalizedLookup] : [normalizedLookup];
+    for (const query of queries) {
+      const direct = find(query, isKanaWritten(query) || !lemma.trim() && surfaceIsKana);
+      if (direct.length) return toEntries(direct);
+    }
+    const recoveryReadings = [reading, ...morphs.map((morph) => morph.reading ?? "")];
+    for (const query of queries) {
+      for (const candidate of potentialDictionaryCandidates(query)) {
+        const recovered = find(candidate, isKanaWritten(candidate));
+        const safeRecovered = recovered.filter((row) => {
+          if (!isVerbPos(row.pos)) return false;
+          if (isKnownVerbPair(query, candidate, reading, String(row.kana ?? ""))) return false;
+          return recoveryReadings.some((tokenReading) => isPotentialReadingCompatible(
+            tokenReading,
+            String(row.kana ?? ""),
+            String(row.verb_type ?? "")
+          ));
+        });
+        if (safeRecovered.length) return toEntries(safeRecovered);
+      }
+    }
+    const readingCandidates = [
+      ...morphs.slice(0, 1).map((morph) => morph.reading ?? ""),
+      reading
+    ].map((value) => toHiragana2(value.trim())).filter(Boolean);
+    for (const normalizedReading of readingCandidates) {
+      const byReading = find(normalizedReading, true);
+      const writtenHead = firstKanji(normalizedSurface);
+      const guarded = byReading.filter((row) => surfaceIsKana || writtenHead && String(row.kanji ?? "").startsWith(writtenHead));
+      if (guarded.length) return toEntries(guarded);
+    }
+    if (/^[おご]/u.test(normalizedLookup) && normalizedLookup.length > 1) {
+      const stripped = find(normalizedLookup.slice(1), true);
+      if (stripped.length) return toEntries(stripped);
+    }
+    return [];
+  } catch {
+    return [];
+  }
+};
+
+// ../frontend/src/lib/pitch-accent.ts
+var pitch_accent_exports = {};
+__export(pitch_accent_exports, {
+  loadPitchAccent: () => loadPitchAccent,
+  lookupAccent: () => lookupAccent,
+  pitchAccentLoaded: () => pitchAccentLoaded,
+  pitchPattern: () => pitchPattern,
+  splitMorae: () => splitMorae,
+  usePitchAccentReady: () => usePitchAccentReady
+});
+var import_react = __toESM(require_react(), 1);
+var table = null;
+var loading3 = null;
+var loadPitchAccent = () => {
+  if (table) return Promise.resolve();
+  loading3 ?? (loading3 = Promise.resolve().then(() => __toESM(require_pitch_accent_data(), 1)).then((module2) => {
+    table = module2.default.accents;
+  }));
+  return loading3;
+};
+var pitchAccentLoaded = () => table !== null;
+function lookupAccent(kanji, kana) {
+  if (!table) return null;
+  const entry = table[`${kanji || kana}|${kana}`];
+  if (entry === void 0) return null;
+  return Array.isArray(entry) ? entry[0] ?? null : entry;
+}
+var SMALL_KANA = /[ぁぃぅぇぉゃゅょゎァィゥェォャュョヮヵヶ]/;
+function splitMorae(reading) {
+  const morae = [];
+  for (const char of reading) {
+    if (morae.length && SMALL_KANA.test(char)) morae[morae.length - 1] += char;
+    else morae.push(char);
+  }
+  return morae;
+}
+function pitchPattern(moraCount2, accent) {
+  return Array.from({ length: moraCount2 }, (_, index3) => {
+    const position = index3 + 1;
+    const high = accent === 1 ? position === 1 : position > 1 && (accent === 0 || position <= accent);
+    return { high, drop: accent !== 0 && position === accent };
+  });
+}
+function usePitchAccentReady() {
+  const [ready, setReady] = (0, import_react.useState)(pitchAccentLoaded());
+  (0, import_react.useEffect)(() => {
+    if (ready) return;
+    let alive = true;
+    loadPitchAccent().then(() => {
+      if (alive) setReady(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [ready]);
+  return ready;
+}
+
+// scripts/shared/entry.ts
+init_orthography();
 init_study_core();
 init_db_utils();
 init_word_api();
@@ -11817,7 +13617,8 @@ __export(exam_dates_exports, {
   formatExamDate: () => formatExamDate,
   formatExamDateHuman: () => formatExamDateHuman,
   nextExamDate: () => nextExamDate,
-  parseExamDate: () => parseExamDate
+  parseExamDate: () => parseExamDate,
+  upcomingExamDates: () => upcomingExamDates
 });
 var firstSundayOf = (year, month) => {
   const first = new Date(year, month - 1, 1);
@@ -11830,11 +13631,20 @@ var examDatesOfYear = (year) => [
 ];
 var nextExamDate = (from = /* @__PURE__ */ new Date()) => {
   const startOfToday = new Date(from.getFullYear(), from.getMonth(), from.getDate());
-  const candidates = [
+  const candidates2 = [
     ...examDatesOfYear(from.getFullYear()),
     ...examDatesOfYear(from.getFullYear() + 1)
   ];
-  return candidates.find((date) => date.getTime() >= startOfToday.getTime()) ?? candidates[0];
+  return candidates2.find((date) => date.getTime() >= startOfToday.getTime()) ?? candidates2[0];
+};
+var upcomingExamDates = (from = /* @__PURE__ */ new Date()) => {
+  const next = nextExamDate(from);
+  const year = next.getFullYear();
+  return [
+    ...examDatesOfYear(year),
+    ...examDatesOfYear(year + 1),
+    ...examDatesOfYear(year + 2)
+  ].filter((date) => date >= next).slice(0, 4);
 };
 var parseExamDate = (value) => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
@@ -11884,6 +13694,10 @@ function getJlptPlanStatus(now = /* @__PURE__ */ new Date()) {
     JOIN progress p ON p.word_id = w.id
     WHERE ${words} AND p.seen_count = 0 AND p.known_forever = 0
   `, [], 0);
+  const wordCovered = firstValue(`
+    SELECT COUNT(*) FROM words w JOIN progress p ON p.word_id = w.id
+    WHERE ${words} AND (p.known_forever = 1 OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = p.word_id))
+  `, [], 0);
   const wordFreshDue = firstValue(`
     SELECT COUNT(*) FROM words w
     JOIN progress p ON p.word_id = w.id
@@ -11905,6 +13719,10 @@ function getJlptPlanStatus(now = /* @__PURE__ */ new Date()) {
     SELECT COUNT(*) FROM grammar_points g
     JOIN grammar_progress p ON p.grammar_id = g.id
     WHERE ${grammar} AND p.seen_count = 0 AND p.known_forever = 0
+  `, [], 0);
+  const grammarCovered = firstValue(`
+    SELECT COUNT(*) FROM grammar_points g JOIN grammar_progress p ON p.grammar_id = g.id
+    WHERE ${grammar} AND (p.known_forever = 1 OR EXISTS (SELECT 1 FROM grammar_reviews r WHERE r.grammar_id = p.grammar_id))
   `, [], 0);
   const grammarFreshDue = firstValue(`
     SELECT COUNT(*) FROM grammar_points g
@@ -11977,8 +13795,8 @@ function getJlptPlanStatus(now = /* @__PURE__ */ new Date()) {
     done,
     shortfall: shortfallOf(plan, done),
     coverage: {
-      words: { seen: wordTotal - wordUnseen, total: wordTotal },
-      grammar: { seen: grammarTotal - grammarUnseen, total: grammarTotal }
+      words: { seen: wordCovered, total: wordTotal },
+      grammar: { seen: grammarCovered, total: grammarTotal }
     }
   };
 }
@@ -11992,6 +13810,382 @@ init_review_budget();
 init_fsrs_store();
 init_daily_relief();
 init_daily_tail();
+
+// ../frontend/src/lib/level-plan.ts
+var level_plan_exports = {};
+__export(level_plan_exports, {
+  applyLevelStartingPoint: () => applyLevelStartingPoint,
+  effectiveStartingLevel: () => effectiveStartingLevel,
+  familiarityDefaults: () => familiarityDefaults,
+  getLevelPlanSettings: () => getLevelPlanSettings,
+  hydrateLevelPlanPreferences: () => hydrateLevelPlanPreferences,
+  recalibrateLevelStartingPoint: () => recalibrateLevelStartingPoint,
+  saveLevelPlanSettings: () => saveLevelPlanSettings,
+  shouldShowLevelSetup: () => shouldShowLevelSetup,
+  stabilityFor: () => stabilityFor
+});
+var import_database28 = __toESM(require_database(), 1);
+init_db_utils();
+init_grammar_api();
+init_kanji_char_cards();
+init_confusion_cards();
+init_mixed_cards();
+var import_progress_events5 = __toESM(require_progress_events(), 1);
+var import_storage2 = __toESM(require_storage(), 1);
+init_bootstrap();
+init_word_api();
+init_plan();
+init_studyPreferences();
+init_kana_progress();
+var PRIOR_VERSION = "level-prior-v1";
+var priorSignature = (settings) => JSON.stringify({ version: PRIOR_VERSION, level: settings.startingLevel, familiarity: settings.familiarity });
+var STARTING_LEVELS = /* @__PURE__ */ new Set(["kana-none", "kana", ...JLPT_TARGETS, "beyond"]);
+var SETTINGS_KEYS = {
+  startingLevel: "starting_level",
+  familiarity: "type_familiarity",
+  target: "jlpt_plan_target",
+  examDate: "jlpt_plan_exam_date",
+  startedOn: "jlpt_plan_started_on",
+  applied: "level_prior_applied"
+};
+var localDate = (date = /* @__PURE__ */ new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+var clamp = (value) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+var normalizedFamiliarity = (value = {}) => ({
+  words: clamp(value.words),
+  grammar: clamp(value.grammar),
+  kanji: clamp(value.kanji),
+  confusion: clamp(value.confusion)
+});
+var familiarityDefaults = (level) => {
+  const value = JLPT_TARGETS.includes(level) ? 75 : 0;
+  return { words: value, grammar: value, kanji: value, confusion: value };
+};
+var stabilityFor = (familiarity) => {
+  const stops = [[0, 0], [25, 3], [50, 10], [75, 30], [100, 90]];
+  const value = clamp(familiarity);
+  for (let index3 = 1; index3 < stops.length; index3 += 1) {
+    const [rightX, rightY] = stops[index3];
+    const [leftX, leftY] = stops[index3 - 1];
+    if (value <= rightX) {
+      if (value === rightX) return rightY;
+      const ratio = (value - leftX) / (rightX - leftX);
+      return leftY === 0 ? rightY * ratio : Math.exp(Math.log(leftY) + (Math.log(rightY) - Math.log(leftY)) * ratio);
+    }
+  }
+  return 90;
+};
+var parseFamiliarity = (raw) => {
+  try {
+    return normalizedFamiliarity(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+};
+var getLevelPlanSettings = () => {
+  const startingLevel = getState(SETTINGS_KEYS.startingLevel, "");
+  const familiarity = parseFamiliarity(getState(SETTINGS_KEYS.familiarity, ""));
+  if (!STARTING_LEVELS.has(startingLevel) || !familiarity) return null;
+  const targetRaw = getState(SETTINGS_KEYS.target, "");
+  const target = JLPT_TARGETS.includes(targetRaw) ? targetRaw : getStudyPreferences().jlptTarget;
+  return {
+    startingLevel,
+    familiarity,
+    target,
+    examDate: getState(SETTINGS_KEYS.examDate, ""),
+    startedOn: getState(SETTINGS_KEYS.startedOn, "") || localDate()
+  };
+};
+var shouldShowLevelSetup = () => {
+  if (getState(SETTINGS_KEYS.startingLevel, "")) return false;
+  return [
+    ["reviews", "1=1"],
+    ["grammar_reviews", "1=1"],
+    ["kanji_char_reviews", "1=1"],
+    ["confusion_reviews", "1=1"],
+    ["kana_reviews", "1=1"],
+    ["progress", "seen_count > 0 OR known_forever = 1"],
+    ["grammar_progress", "seen_count > 0 OR known_forever = 1"],
+    ["checkins", "1=1"]
+  ].every(([table2, condition]) => {
+    try {
+      return firstValue(`SELECT COUNT(*) FROM ${table2} WHERE ${condition}`, [], 0) === 0;
+    } catch {
+      return true;
+    }
+  });
+};
+var hash = (value) => {
+  let result = 2166136261;
+  for (const char of value) result = Math.imul(result ^ char.charCodeAt(0), 16777619);
+  return result >>> 0;
+};
+var dueFor = (entity, key, spreadDays, now) => {
+  const due = new Date(now.getFullYear(), now.getMonth(), now.getDate() + hash(`${entity}:${key}`) % spreadDays, 12);
+  return due.toISOString();
+};
+var ENTITIES = [
+  { name: "words", table: "progress", key: "word_id", level: "(SELECT CASE w.jlpt_level WHEN 'N5' THEN 0 WHEN 'N4' THEN 1 WHEN 'N3' THEN 2 WHEN 'N2' THEN 3 WHEN 'N1' THEN 4 ELSE 99 END FROM words w WHERE w.id = t.word_id)", reviewTable: "reviews", reviewKey: "word_id" },
+  { name: "grammar", table: "grammar_progress", key: "grammar_id", level: "(SELECT CASE g.level WHEN 'N5' THEN 0 WHEN 'N4' THEN 1 WHEN 'N3' THEN 2 WHEN 'N2' THEN 3 WHEN 'N1' THEN 4 ELSE 99 END FROM grammar_points g WHERE g.id = t.grammar_id)", reviewTable: "grammar_reviews", reviewKey: "grammar_id" },
+  { name: "kanji", table: "kanji_char_memory", key: "char", level: "level_rank", reviewTable: "kanji_char_reviews", reviewKey: "char" },
+  { name: "confusion", table: "confusion_progress", key: "group_key", level: "level_rank", reviewTable: "confusion_reviews", reviewKey: "group_key" }
+];
+var resetFields = `seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0,
+  known_forever = 0, last_seen_on = NULL, fsrs_stability = NULL, fsrs_difficulty = NULL,
+  fsrs_due = NULL, fsrs_last_review = NULL, fsrs_state = NULL, fsrs_steps = NULL,
+  fsrs_reps = NULL, fsrs_lapses = NULL`;
+async function applyLevelStartingPoint(settings, now = /* @__PURE__ */ new Date()) {
+  const applied = priorSignature(settings);
+  if (getState(SETTINGS_KEYS.applied, "") === applied) return;
+  ensureProgressInitialized();
+  ensureGrammarProgressInitialized();
+  await loadKanjiCharData();
+  materializeKanjiChars();
+  materializeConfusionCards();
+  const db = (0, import_database28.getDatabase)();
+  const rank2 = JLPT_TARGETS.indexOf(settings.startingLevel);
+  db.run("BEGIN");
+  try {
+    for (const entity of ENTITIES) {
+      const existing = rowsFor(
+        "SELECT entity_key FROM level_prior_baselines WHERE entity = ?",
+        [entity.name]
+      ).map((row) => String(row.entity_key));
+      const desired = /* @__PURE__ */ new Map();
+      if (rank2 >= 0) {
+        const candidates2 = rowsFor(`
+          SELECT CAST(t.${entity.key} AS TEXT) AS entity_key, ${entity.level} AS level_rank
+          FROM ${entity.table} t
+          WHERE t.known_forever = 0
+            AND (t.seen_count = 0 OR EXISTS (
+              SELECT 1 FROM level_prior_baselines b WHERE b.entity = ? AND b.entity_key = CAST(t.${entity.key} AS TEXT)
+            ))
+            AND NOT EXISTS (SELECT 1 FROM ${entity.reviewTable} r WHERE r.${entity.reviewKey} = t.${entity.key})
+        `, [entity.name]);
+        for (const row of candidates2) {
+          const levelRank = Number(row.level_rank);
+          if (levelRank > rank2) continue;
+          const familiarity = levelRank < rank2 ? 100 : settings.familiarity[entity.name];
+          const stability = stabilityFor(familiarity);
+          if (stability <= 0) continue;
+          const spread = levelRank < rank2 ? 30 : 14;
+          const key = String(row.entity_key);
+          const due = dueFor(entity.name, key, spread, now);
+          const lastReview = new Date(Math.min(now.getTime(), Date.parse(due) - stability * 864e5)).toISOString();
+          desired.set(key, { familiarity, stability, due, lastReview });
+        }
+      }
+      for (const key of existing) {
+        if (desired.has(key)) continue;
+        const hasReview = firstValue(
+          `SELECT COUNT(*) FROM ${entity.reviewTable} WHERE ${entity.reviewKey} = ?`,
+          [key],
+          0
+        ) > 0;
+        if (hasReview) continue;
+        db.run(`UPDATE ${entity.table} SET ${resetFields} WHERE ${entity.key} = ?`, [key]);
+        db.run("DELETE FROM level_prior_baselines WHERE entity = ? AND entity_key = ?", [entity.name, key]);
+      }
+      for (const [key, value] of desired) {
+        db.run(`
+          INSERT OR REPLACE INTO level_prior_baselines
+            (entity, entity_key, stability, difficulty, due, last_review, state, steps, reps, lapses, starting_level, familiarity, updated_at)
+          VALUES (?, ?, ?, 5, ?, ?, 2, 0, 0, 0, ?, ?, ?)
+        `, [entity.name, key, value.stability, value.due, value.lastReview, settings.startingLevel, value.familiarity, now.toISOString()]);
+        db.run(`UPDATE ${entity.table} SET
+          seen_count = 1, known_forever = 0, fsrs_stability = ?, fsrs_difficulty = 5,
+          fsrs_due = ?, fsrs_last_review = ?, fsrs_state = 2, fsrs_steps = 0,
+          fsrs_reps = 0, fsrs_lapses = 0
+          WHERE ${entity.key} = ?`, [value.stability, value.due, value.lastReview, key]);
+      }
+    }
+    setState(SETTINGS_KEYS.applied, applied);
+    db.run("COMMIT");
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+  (0, import_storage2.requestFullSnapshot)();
+  (0, import_storage2.scheduleSave)(0);
+  (0, import_progress_events5.notifyProgressUpdated)();
+}
+async function saveLevelPlanSettings(input) {
+  const previous = getLevelPlanSettings();
+  const familiarity = normalizedFamiliarity(input.familiarity);
+  const unchanged = previous?.startingLevel === input.startingLevel && previous.target === input.target && previous.examDate === input.examDate && JSON.stringify(previous.familiarity) === JSON.stringify(familiarity);
+  const settings = {
+    ...input,
+    familiarity,
+    startedOn: input.startedOn || (unchanged ? previous.startedOn : localDate())
+  };
+  await applyLevelStartingPoint({ ...settings, startingLevel: effectiveStartingLevelFor(settings) ?? settings.startingLevel });
+  setState(SETTINGS_KEYS.startingLevel, settings.startingLevel);
+  setState(SETTINGS_KEYS.familiarity, JSON.stringify(settings.familiarity));
+  setState(SETTINGS_KEYS.target, settings.target);
+  setState(SETTINGS_KEYS.examDate, settings.examDate);
+  setState(SETTINGS_KEYS.startedOn, settings.startedOn);
+  setState("jlpt_plan_enabled", "1");
+  const currentPrefs = getStudyPreferences();
+  setState("level_plan_quotas", JSON.stringify(Object.fromEntries(PLAN_QUOTA_KEYS.map((key) => [key, currentPrefs[key]]))));
+  saveStudyPreferences({
+    ...currentPrefs,
+    jlptPlanEnabled: true,
+    jlptTarget: settings.target,
+    jlptExamDate: settings.examDate,
+    jlptPlanStartedOn: settings.startedOn
+  }, { keepPlanAnchor: true, fromLevelPlanSync: true });
+  (0, import_storage2.requestFullSnapshot)();
+  (0, import_storage2.scheduleSave)(0);
+  return settings;
+}
+var hydrateLevelPlanPreferences = () => {
+  const settings = getLevelPlanSettings();
+  if (!settings) return;
+  let quotas = {};
+  try {
+    quotas = JSON.parse(getState("level_plan_quotas", "{}"));
+  } catch {
+  }
+  if (settings.startingLevel === "kana-none" && getState("kana_completed", "0") === "1" && quotas.dailyGoal === 0) {
+    const deferred = Number(getState("kana_deferred_word_goal", "0"));
+    if (Number.isFinite(deferred) && deferred > 0) {
+      quotas.dailyGoal = deferred;
+      setState("level_plan_quotas", JSON.stringify(quotas));
+    }
+  }
+  const syncedQuotas = Object.fromEntries(PLAN_QUOTA_KEYS.filter((key) => Number.isFinite(quotas[key])).map((key) => [key, quotas[key]]));
+  saveStudyPreferences({
+    ...getStudyPreferences(),
+    ...syncedQuotas,
+    jlptPlanEnabled: getState("jlpt_plan_enabled", "1") !== "0",
+    jlptTarget: settings.target,
+    jlptExamDate: settings.examDate,
+    jlptPlanStartedOn: settings.startedOn
+  }, { keepPlanAnchor: true, fromLevelPlanSync: true });
+  enforceKanaGate();
+};
+var effectiveStartingLevelFor = (settings, now = /* @__PURE__ */ new Date()) => {
+  if (!JLPT_TARGETS.includes(settings.startingLevel)) return null;
+  const base = settings.startingLevel;
+  const start = /* @__PURE__ */ new Date(`${settings.startedOn}T12:00:00`);
+  if (!Number.isFinite(start.getTime()) || now.getTime() - start.getTime() < 14 * 864e5) return base;
+  const rows = rowsFor(`
+    SELECT w.jlpt_level AS level, COUNT(*) AS total,
+      SUM(CASE WHEN first.answer IN ('know', 'known_forever') THEN 1 ELSE 0 END) AS correct
+    FROM (
+      SELECT r.word_id, r.answer, r.reviewed_on
+      FROM reviews r
+      JOIN (SELECT word_id, MIN(id) AS id FROM reviews WHERE direction = 'forward' GROUP BY word_id) f ON f.id = r.id
+    ) first JOIN words w ON w.id = first.word_id
+    WHERE first.reviewed_on >= ?
+    GROUP BY w.jlpt_level
+  `, [localDate(new Date(now.getTime() - 14 * 864e5))]);
+  const evidence = new Map(rows.map((row) => [String(row.level), { total: Number(row.total), rate: Number(row.correct) / Math.max(1, Number(row.total)) }]));
+  const index3 = JLPT_TARGETS.indexOf(base);
+  const current = evidence.get(base);
+  if (current && current.total >= 50 && current.rate < 0.55) return JLPT_TARGETS[Math.max(0, index3 - 1)];
+  const next = JLPT_TARGETS[index3 + 1];
+  const upper = next ? evidence.get(next) : void 0;
+  if (upper && upper.total >= 50 && upper.rate >= 0.85) return next;
+  return base;
+};
+var effectiveStartingLevel = (now = /* @__PURE__ */ new Date()) => {
+  const settings = getLevelPlanSettings();
+  return settings ? effectiveStartingLevelFor(settings, now) : null;
+};
+var recalibrateLevelStartingPoint = async (now = /* @__PURE__ */ new Date()) => {
+  const settings = getLevelPlanSettings();
+  if (!settings) return false;
+  const next = { ...settings, startingLevel: effectiveStartingLevelFor(settings, now) ?? settings.startingLevel };
+  if (getState(SETTINGS_KEYS.applied, "") === priorSignature(next)) return false;
+  await applyLevelStartingPoint(next, now);
+  refreshTodayWordPlan();
+  refreshMixedCardTasks((0, import_database28.getDatabase)());
+  return true;
+};
+
+// ../frontend/src/lib/plan/load-model.ts
+var SECONDS = { words: 12, grammar: 25, kanji: 10, confusion: 40 };
+var ANSWERS_BY_AGE_WEEK = [3, 2, 1.5, 1.5, 0.5, 0.5, 0.5, 0.5];
+var tierOf = (minutes) => minutes <= 30 ? "light" : minutes <= 60 ? "steady" : minutes <= 90 ? "heavy" : "aggressive";
+function predictLoad(input) {
+  const weeks = Math.max(1, Math.min(12, input.weeks ?? 8));
+  const intakeWeeks = Math.ceil(Math.max(0, input.intakeDaysLeft ?? weeks * 7) / 7);
+  const perWeek = Array.from({ length: weeks }, (_, weekIndex) => {
+    let seconds = 0;
+    let answers = 0;
+    for (const kind of Object.keys(SECONDS)) {
+      let dailyAnswers = Number(input.existingDuePerWeek?.[weekIndex]?.[kind] ?? 0) / 7;
+      for (let cohort = 0; cohort <= weekIndex && cohort < intakeWeeks; cohort += 1) {
+        const age = weekIndex - cohort;
+        dailyAnswers += input.dailyNew[kind] * (ANSWERS_BY_AGE_WEEK[age] ?? 0.5);
+      }
+      answers += dailyAnswers;
+      seconds += dailyAnswers * SECONDS[kind];
+    }
+    return { week: weekIndex + 1, minutes: Math.round(seconds / 60), answers: Math.round(answers) };
+  });
+  const peak = perWeek.reduce((best, item) => item.minutes > best.minutes ? item : best, perWeek[0]);
+  const steadyMinutes = perWeek[Math.min(3, perWeek.length - 1)].minutes;
+  return { perWeek, peakWeek: peak.week, steadyMinutes, tier: tierOf(steadyMinutes) };
+}
+
+// ../frontend/src/lib/plan/content-matrix.ts
+var content_matrix_exports = {};
+__export(content_matrix_exports, {
+  CONTENT_BY_LEVEL: () => CONTENT_BY_LEVEL,
+  CONTENT_MATRIX: () => CONTENT_MATRIX,
+  VISIBLE_STARTS: () => VISIBLE_STARTS,
+  expectedContent: () => expectedContent,
+  previewLevelPlan: () => previewLevelPlan
+});
+init_plan();
+var CONTENT_BY_LEVEL = {
+  N5: { words: 929, grammar: 127, kanji: 448, confusion: 20 },
+  N4: { words: 886, grammar: 136, kanji: 362, confusion: 48 },
+  N3: { words: 2144, grammar: 146, kanji: 408, confusion: 110 },
+  N2: { words: 3626, grammar: 155, kanji: 390, confusion: 292 },
+  N1: { words: 4216, grammar: 205, kanji: 362, confusion: 545 }
+};
+var VISIBLE_STARTS = ["kana-none", "kana", ...JLPT_TARGETS];
+var KINDS = ["words", "grammar", "kanji", "confusion"];
+var zero = () => ({ words: 0, grammar: 0, kanji: 0, confusion: 0 });
+var CONTENT_MATRIX = Object.fromEntries(VISIBLE_STARTS.map((start) => [
+  start,
+  Object.fromEntries(JLPT_TARGETS.map((target) => {
+    const startRank = JLPT_TARGETS.indexOf(start);
+    const targetRank = JLPT_TARGETS.indexOf(target);
+    const counts = zero();
+    for (let rank2 = startRank + 1; rank2 <= targetRank; rank2 += 1) {
+      for (const kind of KINDS) counts[kind] += CONTENT_BY_LEVEL[JLPT_TARGETS[rank2]][kind];
+    }
+    return [target, counts];
+  }))
+]));
+var expectedContent = (start, target, familiarity) => {
+  if (start === "beyond") return zero();
+  const counts = { ...CONTENT_MATRIX[start][target] };
+  if (JLPT_TARGETS.includes(start) && JLPT_TARGETS.indexOf(start) <= JLPT_TARGETS.indexOf(target)) {
+    for (const kind of KINDS) if (familiarity?.[kind] === 0) counts[kind] += CONTENT_BY_LEVEL[start][kind];
+  }
+  return counts;
+};
+var CAPS = { words: MAX_DAILY_NEW_WORDS, grammar: MAX_DAILY_NEW_GRAMMAR, kanji: 50, confusion: 20 };
+var previewLevelPlan = (input) => {
+  const today2 = input.today ?? /* @__PURE__ */ new Date();
+  const daysLeft = daysBetween(today2, input.examDate);
+  const totalDays = daysBetween(input.startedOn ?? today2, input.examDate);
+  const reviewDays = consolidationDays(totalDays);
+  const kanaDays = input.startingLevel === "kana-none" && !input.kanaCompleted ? 7 : 0;
+  const intakeDays = Math.max(0, daysLeft - reviewDays - kanaDays);
+  const content = expectedContent(input.startingLevel, input.target, input.familiarity);
+  const required = Object.fromEntries(KINDS.map((kind) => [kind, Math.ceil(content[kind] / Math.max(1, intakeDays))]));
+  const daily = Object.fromEntries(KINDS.map((kind) => [kind, Math.min(required[kind], CAPS[kind])]));
+  const feasible = daysLeft > 0 && intakeDays > 0 && KINDS.every((kind) => required[kind] <= CAPS[kind]);
+  return { content, required, daily, daysLeft, intakeDays, reviewDays, kanaDays, feasible };
+};
+
+// ../frontend/src/lib/daily-plan.ts
+init_kana_progress();
 var PLAN_KINDS = ["words", "grammar", "kanji", "confusion"];
 var PLAN_LABELS = { words: "\u5355\u8BCD", grammar: "\u8BED\u6CD5", kanji: "\u6C49\u5B57", confusion: "\u8FA8\u6790" };
 var SECONDS_PER_CARD = { words: 12, grammar: 25, kanji: 10, confusion: 40 };
@@ -12032,7 +14226,7 @@ var dailyPlanView = (prefs = getStudyPreferences()) => {
     {
       kind: "words",
       label: PLAN_LABELS.words,
-      fresh: prefs.dailyGoal,
+      fresh: kanaGatePending() ? 0 : prefs.dailyGoal,
       review: wordReviewCount(prefs.reviewCap, wordDue - extras) + extras,
       pool: { due: wordDue, unseen: status.coverage.words.total - status.coverage.words.seen },
       suggest: { fresh: status.plan.newWords, review: wordDue }
@@ -12109,6 +14303,7 @@ var saveDailyPlan = (next, standing = false, shown = dailyPlanView()) => {
 };
 var segmentLength = (count) => Math.log1p(Math.max(0, count));
 var learnedLevel = () => {
+  if (getLevelPlanSettings()) return effectiveStartingLevel();
   const rows = rowsFor(`
     SELECT w.jlpt_level AS level, SUM(p.seen_count > 0 OR p.known_forever = 1) AS seen, COUNT(*) AS total
     FROM progress p JOIN words w ON w.id = p.word_id GROUP BY w.jlpt_level
@@ -12121,43 +14316,70 @@ var learnedLevel = () => {
   }
   return current;
 };
-var examPreset = (current, target) => {
+var examPreset = (target) => {
   const status = getJlptPlanStatus();
-  const intakeDays = status.plan.intakeDaysLeft;
-  const currentRank = current ? JLPT_TARGETS.indexOf(current) : -1;
+  const settings = getLevelPlanSettings();
+  const expected = settings ? previewLevelPlan({
+    startingLevel: settings.startingLevel,
+    familiarity: settings.familiarity,
+    target,
+    examDate: status.examDate,
+    startedOn: parseExamDate(settings.startedOn) ?? void 0,
+    kanaCompleted: settings.startingLevel === "kana-none" && kanaComplete()
+  }) : null;
+  const intakeDays = expected?.intakeDays ?? status.plan.intakeDaysLeft;
   const targetRank = JLPT_TARGETS.indexOf(target);
-  const levels = JLPT_TARGETS.slice(currentRank + 1, targetRank + 1).map((level) => `'${level}'`).join(", ") || "''";
-  const unseenWords = firstValue(`
+  const levels = JLPT_TARGETS.slice(0, targetRank + 1).map((level) => `'${level}'`).join(", ");
+  const unseenWords = expected?.content.words ?? firstValue(`
     SELECT COUNT(*) FROM progress p JOIN words w ON w.id = p.word_id
     WHERE w.jlpt_level IN (${levels}) AND p.seen_count = 0 AND p.known_forever = 0
   `, [], 0);
-  const unseenGrammar = firstValue(`
+  const unseenGrammar = expected?.content.grammar ?? firstValue(`
     SELECT COUNT(*) FROM grammar_progress p JOIN grammar_points g ON g.id = p.grammar_id
     WHERE g.level IN (${levels}) AND p.seen_count = 0 AND p.known_forever = 0
   `, [], 0);
-  const kanjiUnseen = firstValue(
-    "SELECT COUNT(*) FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank > ? AND level_rank <= ?",
-    [currentRank, targetRank],
+  const kanjiUnseen = expected?.content.kanji ?? firstValue(
+    "SELECT COUNT(*) FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ?",
+    [targetRank],
     0
   );
-  const confusionUnseen = firstValue(
-    "SELECT COUNT(*) FROM confusion_progress WHERE known_forever = 0 AND seen_count = 0 AND level_rank > ? AND level_rank <= ? AND group_key NOT IN (SELECT group_key FROM confusion_mastered)",
-    [currentRank, targetRank],
+  const confusionUnseen = expected?.content.confusion ?? firstValue(
+    "SELECT COUNT(*) FROM confusion_progress WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ? AND group_key NOT IN (SELECT group_key FROM confusion_mastered)",
+    [targetRank],
     0
   );
   const confusion = confusionCardPool(targetRank);
   const plan = {
     // 和 arrangedPlan 一样带上 extras：写回会减掉它，落下来的 cap 才是「今天该复习的」本身
-    words: { fresh: Math.min(50, amortize2(unseenWords, intakeDays)), review: wordDueCount() + wordExtras() },
-    grammar: { fresh: Math.min(12, amortize2(unseenGrammar, intakeDays)), review: grammarPools(target).due },
-    kanji: { fresh: Math.min(50, amortize2(kanjiUnseen, intakeDays)), review: kanjiCharPool(targetRank).due },
-    confusion: { fresh: Math.min(20, amortize2(confusionUnseen, intakeDays)), review: confusion.due }
+    words: { fresh: expected?.daily.words ?? Math.min(50, amortize2(unseenWords, intakeDays)), review: wordDueCount() + wordExtras() },
+    grammar: { fresh: expected?.daily.grammar ?? Math.min(12, amortize2(unseenGrammar, intakeDays)), review: grammarPools(target).due },
+    kanji: { fresh: expected?.daily.kanji ?? Math.min(50, amortize2(kanjiUnseen, intakeDays)), review: kanjiCharPool(targetRank).due },
+    confusion: { fresh: expected?.daily.confusion ?? Math.min(20, amortize2(confusionUnseen, intakeDays)), review: confusion.due }
   };
   const minutes = Math.round(PLAN_KINDS.reduce((sum, kind) => sum + (plan[kind].fresh + plan[kind].review) * SECONDS_PER_CARD[kind], 0) / 60);
-  return { plan, minutes, daysLeft: status.plan.daysLeft, intakeDays, remaining: { words: unseenWords, grammar: unseenGrammar, kanji: kanjiUnseen, confusion: confusionUnseen } };
+  const dueTables = { words: "progress", grammar: "grammar_progress", kanji: "kanji_char_memory", confusion: "confusion_progress" };
+  const existingDuePerWeek = Array.from({ length: 8 }, (_, index3) => {
+    const start = /* @__PURE__ */ new Date();
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() + index3 * 7);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return Object.fromEntries(Object.keys(dueTables).map((kind) => [kind, firstValue(
+      `SELECT COUNT(*) FROM ${dueTables[kind]} WHERE known_forever = 0 AND fsrs_due >= ? AND fsrs_due < ?`,
+      [start.toISOString(), end.toISOString()],
+      0
+    )]));
+  });
+  const load = predictLoad({
+    dailyNew: Object.fromEntries(PLAN_KINDS.map((kind) => [kind, plan[kind].fresh])),
+    existingDuePerWeek,
+    intakeDaysLeft: intakeDays,
+    weeks: 8
+  });
+  return { plan, minutes, load, daysLeft: status.plan.daysLeft, intakeDays, remaining: { words: unseenWords, grammar: unseenGrammar, kanji: kanjiUnseen, confusion: confusionUnseen }, expected };
 };
-var applyExamPreset = (current, target) => {
-  const preset = examPreset(current, target);
+var applyExamPreset = (target) => {
+  const preset = examPreset(target);
   const prefs = getStudyPreferences();
   saveStudyPreferences({ ...prefs, jlptTarget: target });
   saveDailyPlan(preset.plan, true);
@@ -12841,14 +15063,335 @@ __export(vocab_test_exports, {
   vocabTestStorageValue: () => vocabTestStorageValue
 });
 init_study_core();
-var import_database27 = __toESM(require_database(), 1);
+var import_database29 = __toESM(require_database(), 1);
 init_confusion_groups();
 init_question_meaning_index();
 var import_question_meaning_overrides3 = __toESM(require_question_meaning_overrides(), 1);
-var import_orthography5 = __toESM(require_orthography(), 1);
+init_orthography();
 
 // ../frontend/src/features/word-study/word-study-utils.ts
-var import_orthography4 = __toESM(require_orthography(), 1);
+var word_study_utils_exports = {};
+__export(word_study_utils_exports, {
+  answerHotkeyLabels: () => answerHotkeyLabels,
+  answerOptions: () => answerOptions,
+  answerReadingText: () => answerReadingText,
+  cardLabel: () => cardLabel,
+  concealedReadingParts: () => concealedReadingParts,
+  formatDuration: () => formatDuration,
+  isLoanwordSourceCard: () => isLoanwordSourceCard,
+  kanaToRomaji: () => kanaToRomaji,
+  levelOptions: () => levelOptions,
+  monthDays: () => monthDays,
+  moraCount: () => moraCount,
+  primaryAnswerText: () => primaryAnswerText,
+  secondaryAnswerText: () => secondaryAnswerText,
+  typeOptions: () => typeOptions
+});
+init_orthography();
+var answerOptions = [
+  { value: "forgot", label: "\u5FD8\u8BB0" },
+  { value: "fuzzy", label: "\u6A21\u7CCA", secondary: true },
+  { value: "know", label: "\u8BA4\u8BC6" },
+  { value: "known_forever", label: "\u719F\u77E5", secondary: true }
+];
+var answerHotkeyLabels = {
+  forgot: "V",
+  fuzzy: "B",
+  know: "N",
+  known_forever: "M"
+};
+var levelOptions = [
+  { value: "All", label: "\u5168\u90E8" },
+  { value: "N5", label: "N5" },
+  { value: "N4", label: "N4" },
+  { value: "N3", label: "N3" },
+  { value: "N2", label: "N2" },
+  { value: "N1", label: "N1" },
+  { value: "Unleveled", label: "\u672A\u5206\u7EA7" }
+];
+var typeOptions = [
+  { value: "all", label: "\u5168\u90E8\u7C7B\u578B" },
+  { value: "noun", label: "\u540D\u8BCD" },
+  { value: "verb", label: "\u52A8\u8BCD" },
+  { value: "adjective", label: "\u5F62\u5BB9\u8BCD" },
+  { value: "adverb", label: "\u526F\u8BCD" },
+  { value: "favorite", label: "\u6536\u85CF" }
+];
+var isLoanwordSourceCard = (card) => isLoanwordSourceSurface(card);
+var primaryAnswerText = (card) => preferredWordSurface(card);
+var secondaryAnswerText = (card) => {
+  if (isLoanwordSourceSurface(card)) return card.kanji;
+  const entry = orthographyEntry(card);
+  if (entry?.band === "kana" || entry?.band === "low") return cleanWordSurface(card.kanji);
+  return card.kana;
+};
+var cardLabel = (card) => {
+  const primary = primaryAnswerText(card);
+  const secondary = secondaryAnswerText(card);
+  return primary === secondary ? primary : `${primary} / ${secondary}`;
+};
+var answerReadingText = (card, surface = primaryAnswerText(card)) => {
+  if (!surface || !/[\u3400-\u9fff]/u.test(surface)) return "";
+  return card.kana;
+};
+var concealedReadingParts = (segments) => {
+  if (!segments?.length) return [{ text: "", hidden: true }];
+  return segments.map((segment) => segment.isKanji ? { text: "", hidden: true } : { text: segment.text, hidden: false });
+};
+var kanaMap = {
+  \u3042: "a",
+  \u3044: "i",
+  \u3046: "u",
+  \u3048: "e",
+  \u304A: "o",
+  \u304B: "ka",
+  \u304D: "ki",
+  \u304F: "ku",
+  \u3051: "ke",
+  \u3053: "ko",
+  \u3055: "sa",
+  \u3057: "shi",
+  \u3059: "su",
+  \u305B: "se",
+  \u305D: "so",
+  \u305F: "ta",
+  \u3061: "chi",
+  \u3064: "tsu",
+  \u3066: "te",
+  \u3068: "to",
+  \u306A: "na",
+  \u306B: "ni",
+  \u306C: "nu",
+  \u306D: "ne",
+  \u306E: "no",
+  \u306F: "ha",
+  \u3072: "hi",
+  \u3075: "fu",
+  \u3078: "he",
+  \u307B: "ho",
+  \u307E: "ma",
+  \u307F: "mi",
+  \u3080: "mu",
+  \u3081: "me",
+  \u3082: "mo",
+  \u3084: "ya",
+  \u3086: "yu",
+  \u3088: "yo",
+  \u3089: "ra",
+  \u308A: "ri",
+  \u308B: "ru",
+  \u308C: "re",
+  \u308D: "ro",
+  \u308F: "wa",
+  \u3092: "wo",
+  \u3093: "n",
+  \u304C: "ga",
+  \u304E: "gi",
+  \u3050: "gu",
+  \u3052: "ge",
+  \u3054: "go",
+  \u3056: "za",
+  \u3058: "ji",
+  \u305A: "zu",
+  \u305C: "ze",
+  \u305E: "zo",
+  \u3060: "da",
+  \u3062: "ji",
+  \u3065: "zu",
+  \u3067: "de",
+  \u3069: "do",
+  \u3070: "ba",
+  \u3073: "bi",
+  \u3076: "bu",
+  \u3079: "be",
+  \u307C: "bo",
+  \u3071: "pa",
+  \u3074: "pi",
+  \u3077: "pu",
+  \u307A: "pe",
+  \u307D: "po",
+  \u3041: "a",
+  \u3043: "i",
+  \u3045: "u",
+  \u3047: "e",
+  \u3049: "o",
+  \u3083: "ya",
+  \u3085: "yu",
+  \u3087: "yo",
+  \u30A1: "a",
+  \u30A3: "i",
+  \u30A5: "u",
+  \u30A7: "e",
+  \u30A9: "o",
+  \u30E3: "ya",
+  \u30E5: "yu",
+  \u30E7: "yo",
+  \u30A2: "a",
+  \u30A4: "i",
+  \u30A6: "u",
+  \u30A8: "e",
+  \u30AA: "o",
+  \u30AB: "ka",
+  \u30AD: "ki",
+  \u30AF: "ku",
+  \u30B1: "ke",
+  \u30B3: "ko",
+  \u30B5: "sa",
+  \u30B7: "shi",
+  \u30B9: "su",
+  \u30BB: "se",
+  \u30BD: "so",
+  \u30BF: "ta",
+  \u30C1: "chi",
+  \u30C4: "tsu",
+  \u30C6: "te",
+  \u30C8: "to",
+  \u30CA: "na",
+  \u30CB: "ni",
+  \u30CC: "nu",
+  \u30CD: "ne",
+  \u30CE: "no",
+  \u30CF: "ha",
+  \u30D2: "hi",
+  \u30D5: "fu",
+  \u30D8: "he",
+  \u30DB: "ho",
+  \u30DE: "ma",
+  \u30DF: "mi",
+  \u30E0: "mu",
+  \u30E1: "me",
+  \u30E2: "mo",
+  \u30E4: "ya",
+  \u30E6: "yu",
+  \u30E8: "yo",
+  \u30E9: "ra",
+  \u30EA: "ri",
+  \u30EB: "ru",
+  \u30EC: "re",
+  \u30ED: "ro",
+  \u30EF: "wa",
+  \u30F2: "wo",
+  \u30F3: "n",
+  \u30AC: "ga",
+  \u30AE: "gi",
+  \u30B0: "gu",
+  \u30B2: "ge",
+  \u30B4: "go",
+  \u30B6: "za",
+  \u30B8: "ji",
+  \u30BA: "zu",
+  \u30BC: "ze",
+  \u30BE: "zo",
+  \u30C0: "da",
+  \u30C2: "ji",
+  \u30C5: "zu",
+  \u30C7: "de",
+  \u30C9: "do",
+  \u30D0: "ba",
+  \u30D3: "bi",
+  \u30D6: "bu",
+  \u30D9: "be",
+  \u30DC: "bo",
+  \u30D1: "pa",
+  \u30D4: "pi",
+  \u30D7: "pu",
+  \u30DA: "pe",
+  \u30DD: "po"
+};
+var yoonMap = {
+  kya: "kya",
+  kiya: "kya",
+  kyu: "kyu",
+  kiyu: "kyu",
+  kyo: "kyo",
+  kiyo: "kyo",
+  sha: "sha",
+  shiya: "sha",
+  shu: "shu",
+  shiyu: "shu",
+  sho: "sho",
+  shiyo: "sho",
+  cha: "cha",
+  chiya: "cha",
+  chu: "chu",
+  chiyu: "chu",
+  cho: "cho",
+  chiyo: "cho",
+  nya: "nya",
+  niya: "nya",
+  nyu: "nyu",
+  niyu: "nyu",
+  nyo: "nyo",
+  niyo: "nyo",
+  hya: "hya",
+  hiya: "hya",
+  hyu: "hyu",
+  hiyu: "hyu",
+  hyo: "hyo",
+  hiyo: "hyo",
+  mya: "mya",
+  miya: "mya",
+  myu: "myu",
+  miyu: "myu",
+  myo: "myo",
+  miyo: "myo",
+  rya: "rya",
+  riya: "rya",
+  ryu: "ryu",
+  riyu: "ryu",
+  ryo: "ryo",
+  riyo: "ryo",
+  gya: "gya",
+  giya: "gya",
+  gyu: "gyu",
+  giyu: "gyu",
+  gyo: "gyo",
+  giyo: "gyo",
+  ja: "ja",
+  jiya: "ja",
+  ju: "ju",
+  jiyu: "ju",
+  jo: "jo",
+  jiyo: "jo",
+  bya: "bya",
+  biya: "bya",
+  byu: "byu",
+  biyu: "byu",
+  byo: "byo",
+  biyo: "byo",
+  pya: "pya",
+  piya: "pya",
+  pyu: "pyu",
+  piyu: "pyu",
+  pyo: "pyo",
+  piyo: "pyo"
+};
+var kanaToRomaji = (text) => {
+  const parts = [];
+  let doubleNext = false;
+  for (let index3 = 0; index3 < text.length; index3 += 1) {
+    const char = text[index3];
+    if (char === "\u3063" || char === "\u30C3") {
+      doubleNext = true;
+      continue;
+    }
+    if (char === "\u30FC") {
+      parts[parts.length - 1] = `${parts[parts.length - 1] ?? ""}-`;
+      continue;
+    }
+    const base = kanaMap[char];
+    const next = kanaMap[text[index3 + 1]];
+    let roman = base ?? char;
+    if (next && ["\u3083", "\u3085", "\u3087", "\u30E3", "\u30E5", "\u30E7"].includes(text[index3 + 1])) {
+      roman = yoonMap[`${roman}${next}`] ?? roman;
+      index3 += 1;
+    }
+    if (doubleNext && /^[bcdfghjklmnpqrstvwxyz]/.test(roman)) roman = `${roman[0]}${roman}`;
+    doubleNext = false;
+    parts.push(roman);
+  }
+  return parts.join(" ");
+};
 var NON_MORA_KANA = /[ぁぃぅぇぉゃゅょゎァィゥェォャュョヮ]/;
 var moraCount = (kana) => {
   let count = 0;
@@ -12856,6 +15399,37 @@ var moraCount = (kana) => {
     if (!NON_MORA_KANA.test(char)) count += 1;
   }
   return count;
+};
+var formatDuration = (seconds) => {
+  const safeSeconds = Math.max(0, Math.round(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainder = safeSeconds % 60;
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const restMinutes = minutes % 60;
+    return `${hours}\u5C0F\u65F6${restMinutes.toString().padStart(2, "0")}\u5206`;
+  }
+  if (minutes > 0) return `${minutes}\u5206${remainder.toString().padStart(2, "0")}\u79D2`;
+  return `${remainder}\u79D2`;
+};
+var monthDays = (studyDate2) => {
+  const base = studyDate2 ? /* @__PURE__ */ new Date(`${studyDate2}T00:00:00`) : /* @__PURE__ */ new Date();
+  const year = base.getFullYear();
+  const month = base.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prefix = Array.from({ length: firstDay.getDay() }, () => null);
+  const days = Array.from({ length: daysInMonth }, (_, index3) => {
+    const day = index3 + 1;
+    return {
+      day,
+      date: `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+    };
+  });
+  return {
+    title: `${year}\u5E74${month + 1}\u6708`,
+    cells: [...prefix, ...days]
+  };
 };
 
 // ../frontend/src/lib/vocab-test.ts
@@ -12866,11 +15440,11 @@ var VOCAB_TEST_SECONDS = { reading: 15, meaning: 10 };
 var secondsForQuestion = (question) => VOCAB_TEST_SECONDS[question.kind] ?? VOCAB_TEST_SECONDS.reading;
 var DISTRACTOR_COUNT = 3;
 var asText = (value) => String(value ?? "").trim();
-var clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+var clamp2 = (value, min, max) => Math.min(max, Math.max(min, value));
 var shuffle = (items, random = Math.random) => {
   const out = [...items];
   for (let index3 = out.length - 1; index3 > 0; index3 -= 1) {
-    const target = Math.floor(clamp(random(), 0, 0.999999999) * (index3 + 1));
+    const target = Math.floor(clamp2(random(), 0, 0.999999999) * (index3 + 1));
     [out[index3], out[target]] = [out[target], out[index3]];
   }
   return out;
@@ -12882,11 +15456,11 @@ var kanjiCoreReading = (surface, kana) => {
   let core = surface.trim();
   let reading = kana.trim();
   if (!core || !reading) return null;
-  const head = core.match(LEADING_KANA)?.[0] ?? "";
-  if (head) {
-    if (!reading.startsWith(head)) return null;
-    core = core.slice(head.length);
-    reading = reading.slice(head.length);
+  const head2 = core.match(LEADING_KANA)?.[0] ?? "";
+  if (head2) {
+    if (!reading.startsWith(head2)) return null;
+    core = core.slice(head2.length);
+    reading = reading.slice(head2.length);
   }
   const tail = core.match(TRAILING_KANA)?.[0] ?? "";
   if (tail) {
@@ -12900,7 +15474,7 @@ var kanjiCoreReading = (surface, kana) => {
   return { core, reading };
 };
 var enrichRow = (row) => {
-  const readingSurface = (0, import_orthography5.kanjiReadingSurface)(row);
+  const readingSurface = kanjiReadingSurface(row);
   const core = kanjiCoreReading(readingSurface, row.kana);
   const readingValue = (core?.reading ?? row.kana).trim();
   return {
@@ -12908,7 +15482,7 @@ var enrichRow = (row) => {
     posBucket: classifyPos(row.pos ?? ""),
     // 拍数是给读音题挑「长得像」的干扰项用的，所以要按**选项实际显示的那串**算
     morae: moraCount(readingValue),
-    loan: (0, import_orthography5.isLoanwordSourceSurface)({ kanji: row.kanji, kana: row.kana }),
+    loan: isLoanwordSourceSurface({ kanji: row.kanji, kana: row.kana }),
     readingSurface,
     core,
     readingValue
@@ -12931,16 +15505,16 @@ var wordRows = () => rowsFor(`
 var KANA_ANYWHERE = new RegExp(KANA_RUN2);
 var READING_MIN_CORE_MORAE = 2;
 var isReadingQuestion = (row) => {
-  if (!(0, import_orthography5.shouldStudyKanjiReading)(row)) return false;
+  if (!shouldStudyKanjiReading(row)) return false;
   if (row.core) {
     const coreMorae = moraCount(row.core.reading);
     return coreMorae >= READING_MIN_CORE_MORAE && coreMorae * 2 >= moraCount(row.kana);
   }
   return !KANA_ANYWHERE.test(row.readingSurface);
 };
-var promptFor = (row, kind) => kind === "reading" ? (0, import_orthography5.kanjiReadingSurface)(row) : (0, import_orthography5.preferredWordSurface)(row);
+var promptFor = (row, kind) => kind === "reading" ? kanjiReadingSurface(row) : preferredWordSurface(row);
 var answerIndexBySurface = (rows) => {
-  const readings2 = /* @__PURE__ */ new Map();
+  const readings3 = /* @__PURE__ */ new Map();
   const meanings = /* @__PURE__ */ new Map();
   const push = (map, key, value) => {
     if (!key || !value) return;
@@ -12949,13 +15523,13 @@ var answerIndexBySurface = (rows) => {
     map.set(key, bucket);
   };
   rows.forEach((row) => {
-    [(0, import_orthography5.preferredWordSurface)(row), row.readingSurface].forEach((surface) => {
-      push(readings2, surface, row.kana.trim());
-      push(readings2, surface, row.readingValue);
+    [preferredWordSurface(row), row.readingSurface].forEach((surface) => {
+      push(readings3, surface, row.kana.trim());
+      push(readings3, surface, row.readingValue);
       push(meanings, surface, row.meaning.trim());
     });
   });
-  return { readings: readings2, meanings };
+  return { readings: readings3, meanings };
 };
 var confusionPeerIds = (wordId) => {
   try {
@@ -12979,11 +15553,11 @@ var meaningKeyOf = (wordId) => {
 };
 var optionValue = (row, kind) => (kind === "reading" ? row.readingValue : row.meaning).trim();
 var nestedReading = (answer, option) => answer.includes(option) || option.includes(answer);
-var SMALL_KANA = /[ゃゅょぁぃぅぇぉャュョァィゥェォ]/;
+var SMALL_KANA2 = /[ゃゅょぁぃぅぇぉャュョァィゥェォ]/;
 var moraSplit = (kana) => {
   const out = [];
   for (const char of kana.replace(/[～〜（）()\s・]/g, "")) {
-    if (SMALL_KANA.test(char) && out.length) out[out.length - 1] += char;
+    if (SMALL_KANA2.test(char) && out.length) out[out.length - 1] += char;
     else out.push(char);
   }
   return out;
@@ -13022,12 +15596,12 @@ var readingSlots = (target, answer, pool) => {
   const startsWith = (n) => (row) => row.readingValue !== answer && row.readingValue.startsWith(prefix(n));
   const endsWith = (n) => (row) => row.readingValue !== answer && row.readingValue.endsWith(suffix(n));
   const supplied = (test) => pool.some(test);
-  const head = supplied(startsWith(half)) ? startsWith(half) : startsWith(1);
+  const head2 = supplied(startsWith(half)) ? startsWith(half) : startsWith(1);
   const tail = supplied(endsWith(half)) ? endsWith(half) : endsWith(1);
   return [
-    head,
+    head2,
     tail,
-    (row) => sharesKanji(target.kanji, row.kanji) || head(row) || tail(row)
+    (row) => sharesKanji(target.kanji, row.kanji) || head2(row) || tail(row)
   ];
 };
 var makeQuestion = (row, allRows, random, index3) => {
@@ -13108,7 +15682,7 @@ var adaptiveTargets = (scoreByLevel, populationByLevel, remaining) => {
   });
   if (remaining <= 0) return out;
   const weights = VOCAB_TEST_LEVELS.map((level) => {
-    const score = clamp(scoreByLevel[level] ?? 0.5, 0.15, 0.85);
+    const score = clamp2(scoreByLevel[level] ?? 0.5, 0.15, 0.85);
     return { level, weight: (populationByLevel[level] ?? 0) * Math.sqrt(score * (1 - score)) };
   });
   const sum = weights.reduce((total, item) => total + item.weight, 0);
@@ -13177,7 +15751,7 @@ var parseSession = (raw) => {
       runId: asText(parsed.runId) || `vocab-${Date.now()}`,
       startedAt: Number(parsed.startedAt) || Date.now(),
       finishedAt: parsed.finishedAt == null ? null : Number(parsed.finishedAt),
-      currentIndex: clamp(Math.floor(Number(parsed.currentIndex) || 0), 0, questions.length),
+      currentIndex: clamp2(Math.floor(Number(parsed.currentIndex) || 0), 0, questions.length),
       questions,
       responses: parsed.responses.filter(Boolean).map((item) => ({
         questionIndex: Number(item.questionIndex),
@@ -13299,7 +15873,7 @@ var levelResult = (level, session) => {
   const wrong = rows.filter((row) => row.answerState === "wrong").length;
   const unknown = rows.filter((row) => row.answerState === "unknown").length;
   const timeout = rows.filter((row) => row.answerState === "timeout").length;
-  const score = rows.length ? clamp((correct - wrong / 3) / rows.length, 0, 1) : null;
+  const score = rows.length ? clamp2((correct - wrong / 3) / rows.length, 0, 1) : null;
   return {
     level,
     total: session.populationByLevel[level] ?? 0,
@@ -13342,16 +15916,16 @@ var getVocabTestResult = (session) => {
     (count, rate, index3) => index3 > 0 && rate > rates[index3 - 1] + 0.15 ? count + 1 : count,
     0
   );
-  const guessedShare = answered ? clamp(4 * totals.wrong / (3 * answered), 0, 1) : 0;
-  const confidence = Math.round(clamp(
+  const guessedShare = answered ? clamp2(4 * totals.wrong / (3 * answered), 0, 1) : 0;
+  const confidence = Math.round(clamp2(
     (coverage * 60 + (1 - timeoutShare) * 40) * (1 - guessedShare) - inversions * 8,
     0,
     100
   ));
   return {
     estimated: roundedEstimate,
-    lower: clamp(roundedEstimate - margin, 0, population),
-    upper: clamp(roundedEstimate + margin, 0, population),
+    lower: clamp2(roundedEstimate - margin, 0, population),
+    upper: clamp2(roundedEstimate + margin, 0, population),
     population,
     answered,
     totalQuestions: session.plannedTotal,
@@ -13367,7 +15941,7 @@ var activeSeconds = (session) => {
   const total = session.responses.reduce((sum, response) => {
     const question = session.questions[response.questionIndex];
     const limit = secondsForQuestion(question ?? { kind: "reading" }) * 1e3;
-    return sum + clamp(Number(response.responseMs ?? 0), 0, limit);
+    return sum + clamp2(Number(response.responseMs ?? 0), 0, limit);
   }, 0);
   return Math.max(0, Math.round(total / 1e3));
 };
@@ -13377,7 +15951,7 @@ var recordVocabTestRun = (session) => {
   if (!result) return;
   ensureUserTables();
   const finishedAt = session.finishedAt ?? Date.now();
-  (0, import_database27.getDatabase)().run(`
+  (0, import_database29.getDatabase)().run(`
     INSERT OR IGNORE INTO vocab_test_history (
       run_id, started_at, finished_at, duration_seconds,
       answered, total_questions, estimated, lower_bound, upper_bound, confidence, recommendation, levels_json
@@ -13461,9 +16035,14 @@ var reviewedIdsToday = () => new Set(rowsFor(
   "SELECT DISTINCT word_id FROM reviews WHERE reviewed_on = ? AND direction = 'forward'",
   [today()]
 ).map((row) => Number(row.word_id ?? 0)).filter(Boolean));
-var learnedIds = () => new Set(rowsFor(
-  "SELECT word_id FROM progress WHERE seen_count > 0"
-).map((row) => Number(row.word_id ?? 0)).filter(Boolean));
+var learnedIds = () => {
+  const hasBaselines = firstValue("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='level_prior_baselines'", [], 0) > 0;
+  return new Set(rowsFor(`SELECT p.word_id FROM progress p WHERE p.known_forever = 1
+    OR EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = p.word_id AND r.direction = 'forward')
+    OR (p.seen_count > 0${hasBaselines ? ` AND NOT EXISTS (
+      SELECT 1 FROM level_prior_baselines b WHERE b.entity='words' AND b.entity_key=CAST(p.word_id AS TEXT)
+    )` : ""})`).map((row) => Number(row.word_id ?? 0)).filter(Boolean));
+};
 function quizGroups(scope) {
   let groups;
   if (scope.kind === "group") {
@@ -13519,7 +16098,9 @@ var settleGroup = (groupKey, allCorrect) => {
 init_confusion_cards();
 init_kanji_char_cards();
 init_kanji_unit_scheduler();
+init_kanji_reading_usage();
 init_kanji_unit_index();
+init_mixed_cards();
 init_grammar_quiz();
 init_grammar_api();
 
@@ -13537,6 +16118,189 @@ var grammarKeyPointFor = (point) => grammarKeyPoint(aliases[point.id] ?? point.t
 
 // scripts/shared/entry.ts
 init_grammar_formation();
+
+// ../frontend/src/lib/furigana.ts
+var furigana_exports = {};
+__export(furigana_exports, {
+  kanjiReadingsLoaded: () => kanjiReadingsLoaded,
+  loadKanjiReadings: () => loadKanjiReadings,
+  splitFurigana: () => splitFurigana,
+  useFuriganaReady: () => useFuriganaReady
+});
+var import_react2 = __toESM(require_react(), 1);
+var readings2 = null;
+var loading4 = null;
+var loadKanjiReadings = () => {
+  if (readings2) return Promise.resolve();
+  loading4 ?? (loading4 = Promise.resolve().then(() => __toESM(require_kanji_readings(), 1)).then((module2) => {
+    readings2 = module2.default.readings;
+  }));
+  return loading4;
+};
+var kanjiReadingsLoaded = () => readings2 !== null;
+function useFuriganaReady() {
+  const [ready, setReady] = (0, import_react2.useState)(kanjiReadingsLoaded());
+  (0, import_react2.useEffect)(() => {
+    if (ready) return;
+    let alive = true;
+    loadKanjiReadings().then(() => {
+      if (alive) setReady(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [ready]);
+  return ready;
+}
+var isKanjiChar = (char) => char >= "\u4E00" && char <= "\u9FFF" || char === "\u3005";
+var toHiragana3 = (text) => text.replace(/[ァ-ヶ]/g, (char) => String.fromCodePoint((char.codePointAt(0) ?? 0) - 96));
+var RENDAKU = {
+  \u304B: "\u304C",
+  \u304D: "\u304E",
+  \u304F: "\u3050",
+  \u3051: "\u3052",
+  \u3053: "\u3054",
+  \u3055: "\u3056",
+  \u3057: "\u3058",
+  \u3059: "\u305A",
+  \u305B: "\u305C",
+  \u305D: "\u305E",
+  \u305F: "\u3060",
+  \u3061: "\u3062",
+  \u3064: "\u3065",
+  \u3066: "\u3067",
+  \u3068: "\u3069",
+  \u306F: "\u3070",
+  \u3072: "\u3073",
+  \u3075: "\u3076",
+  \u3078: "\u3079",
+  \u307B: "\u307C"
+};
+var HANDAKU = { \u306F: "\u3071", \u3072: "\u3074", \u3075: "\u3077", \u3078: "\u307A", \u307B: "\u307D" };
+var RENYOU = {
+  \u3046: "\u3044",
+  \u304F: "\u304D",
+  \u3050: "\u304E",
+  \u3059: "\u3057",
+  \u3064: "\u3061",
+  \u306C: "\u306B",
+  \u3076: "\u3073",
+  \u3080: "\u307F",
+  \u308B: "\u308A"
+};
+function surfaceForms(reading) {
+  if (!reading) return [];
+  const forms = [[reading, 0]];
+  const head2 = reading[0];
+  const tail = reading.slice(1);
+  if (RENDAKU[head2]) forms.push([RENDAKU[head2] + tail, 1]);
+  if (HANDAKU[head2]) forms.push([HANDAKU[head2] + tail, 1]);
+  if (/[つちく]$/.test(reading)) forms.push([`${reading.slice(0, -1)}\u3063`, 1]);
+  forms.push([`${reading}\u3063`, 2]);
+  return forms;
+}
+var candidateCache = /* @__PURE__ */ new Map();
+function candidates(char) {
+  const cached5 = candidateCache.get(char);
+  if (cached5) return cached5;
+  const entry = readings2?.[char];
+  const scored = /* @__PURE__ */ new Map();
+  const add = (reading, penalty) => {
+    if (!reading) return;
+    for (const [form, variantCost] of surfaceForms(reading)) {
+      const cost = penalty + variantCost;
+      if (!scored.has(form) || scored.get(form) > cost) scored.set(form, cost);
+    }
+  };
+  entry?.on?.forEach((on, index3) => {
+    add(on, index3 === 0 ? 0 : 1);
+    if (/[ちつ]$/.test(on) && on.length > 1) add(on.slice(0, -1), 2);
+  });
+  entry?.kun?.forEach((kun, index3) => {
+    const [stem, okurigana = ""] = kun.split(".");
+    add(stem, index3 === 0 ? 0 : 1);
+    for (let take = 1; take <= okurigana.length; take += 1) {
+      add(stem + okurigana.slice(0, take), take < okurigana.length ? 3 : 2);
+    }
+    const renyou = RENYOU[okurigana[0] ?? ""];
+    if (renyou) add(stem + renyou, 3);
+  });
+  const list = [...scored.entries()].sort((left, right) => left[1] - right[1]);
+  candidateCache.set(char, list);
+  return list;
+}
+var scriptOf = (char) => {
+  if (isKanjiChar(char)) return "kanji";
+  if (char >= "\u30A1" && char <= "\u30FA") return "katakana";
+  if (char >= "\u3041" && char <= "\u3096") return "hiragana";
+  return "other";
+};
+function splitRuns(surface) {
+  const runs = [];
+  for (const char of surface) {
+    const script = scriptOf(char);
+    const last = runs[runs.length - 1];
+    if (last && (last.script === script || char === "\u30FC")) last.text += char;
+    else runs.push({ text: char, isKanji: script === "kanji", script });
+  }
+  return runs;
+}
+var resultCache = /* @__PURE__ */ new Map();
+var STEP_BUDGET = 2e4;
+function splitFurigana(surface, kana) {
+  if (!readings2 || !surface || !kana) return null;
+  const cacheKey = `${surface}\0${kana}`;
+  if (resultCache.has(cacheKey)) return resultCache.get(cacheKey) ?? null;
+  const result = align(surface, kana);
+  resultCache.set(cacheKey, result);
+  return result;
+}
+function align(surface, kana) {
+  if (surface === kana || ![...surface].some(isKanjiChar)) return null;
+  const target = toHiragana3(kana);
+  const runs = splitRuns(surface);
+  let steps = 0;
+  let best = null;
+  const walkRun = (runIndex, position, picks, penalty) => {
+    if (steps++ > STEP_BUDGET) return;
+    if (best && penalty >= best.penalty) return;
+    if (runIndex === runs.length) {
+      if (position === target.length) best = { picks: [...picks], penalty };
+      return;
+    }
+    const run = runs[runIndex];
+    if (!run.isKanji) {
+      const literal = toHiragana3(run.text);
+      if (!target.startsWith(literal, position)) return;
+      picks.push({ text: run.text, reading: kana.slice(position, position + literal.length), isKanji: false });
+      walkRun(runIndex + 1, position + literal.length, picks, penalty);
+      picks.pop();
+      return;
+    }
+    walkKanji(runIndex, 0, position, picks, penalty);
+  };
+  const walkKanji = (runIndex, charIndex, position, picks, penalty) => {
+    if (steps++ > STEP_BUDGET) return;
+    const run = runs[runIndex];
+    if (charIndex === run.text.length) {
+      walkRun(runIndex + 1, position, picks, penalty);
+      return;
+    }
+    const char = run.text[charIndex];
+    const isLastCharOfWord = runIndex === runs.length - 1 && charIndex === run.text.length - 1;
+    for (const [form, cost] of candidates(char)) {
+      if (!target.startsWith(form, position)) continue;
+      if (isLastCharOfWord && position + form.length !== target.length) continue;
+      picks.push({ text: char, reading: kana.slice(position, position + form.length), isKanji: true });
+      walkKanji(runIndex, charIndex + 1, position + form.length, picks, penalty + cost);
+      picks.pop();
+    }
+  };
+  walkRun(0, 0, [], 0);
+  return best ? best.picks : null;
+}
+
+// scripts/shared/entry.ts
 init_furigana_data();
 
 // ../frontend/src/lib/duplicate-merge.ts
@@ -13545,11 +16309,11 @@ __export(duplicate_merge_exports, {
   duplicateMergePlan: () => duplicateMergePlan,
   mergeDuplicateWords: () => mergeDuplicateWords
 });
-var import_database28 = __toESM(require_database(), 1);
+var import_database30 = __toESM(require_database(), 1);
 init_confusion_groups();
 init_db_utils();
 init_legacy_word_migrations();
-var import_progress_events4 = __toESM(require_progress_events(), 1);
+var import_progress_events6 = __toESM(require_progress_events(), 1);
 init_question_meaning_index();
 init_user_question_meanings();
 var label = (row) => {
@@ -13589,7 +16353,7 @@ function duplicateMergePlan() {
 }
 function mergeDuplicateWords() {
   const plan = duplicateMergePlan();
-  const db = (0, import_database28.getDatabase)();
+  const db = (0, import_database30.getDatabase)();
   const reviewsBefore = firstValue("SELECT COUNT(*) FROM reviews", [], 0);
   if (!plan.pairs.length) {
     return { merged: 0, movedReviews: 0, reviewsBefore, reviewsAfter: reviewsBefore };
@@ -13611,9 +16375,9 @@ function mergeDuplicateWords() {
   resetWordLibraryCaches();
   resetUserQuestionMeanings();
   resetQuestionMeaningIndex();
-  void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ requestFullSnapshot }) => requestFullSnapshot());
+  void Promise.resolve().then(() => __toESM(require_storage(), 1)).then(({ requestFullSnapshot: requestFullSnapshot3 }) => requestFullSnapshot3());
   persistSoon();
-  (0, import_progress_events4.notifyProgressUpdated)();
+  (0, import_progress_events6.notifyProgressUpdated)();
   return {
     merged: plan.pairs.length,
     movedReviews,
@@ -13638,7 +16402,7 @@ __export(snapshot_exports, {
   getSnapshotCapacity: () => getSnapshotCapacity,
   isUserSyncSnapshot: () => isUserSyncSnapshot
 });
-var import_database29 = __toESM(require_database(), 1);
+var import_database31 = __toESM(require_database(), 1);
 init_schema2();
 init_tables();
 var import_entitlements = __toESM(require_entitlements(), 1);
@@ -13664,8 +16428,8 @@ var firstValue2 = (db, sql, params = []) => (() => {
     statement.free();
   }
 })();
-var tableExists3 = (db, table) => Boolean(
-  firstValue2(db, "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1", [table])
+var tableExists3 = (db, table2) => Boolean(
+  firstValue2(db, "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1", [table2])
 );
 var DATED_TABLE_RETENTION_DAYS = {
   stage1_tasks: 14,
@@ -13685,8 +16449,8 @@ var retentionCutoff = (days) => {
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1e3);
   return cutoff.toISOString().slice(0, 10);
 };
-var columnsOf3 = (db, table) => {
-  const statement = db.prepare(`PRAGMA table_info(${quoteIdentifier2(table)})`);
+var columnsOf3 = (db, table2) => {
+  const statement = db.prepare(`PRAGMA table_info(${quoteIdentifier2(table2)})`);
   const names = [];
   try {
     while (statement.step()) names.push(String(statement.getAsObject().name));
@@ -13695,17 +16459,17 @@ var columnsOf3 = (db, table) => {
   }
   return names;
 };
-var copyTable = (source, target, table, extraWhere = "") => {
-  if (!tableExists3(source, table)) return;
+var copyTable = (source, target, table2, extraWhere = "") => {
+  if (!tableExists3(source, table2)) return;
   const createSql = String(firstValue2(
     source,
     "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
-    [table]
+    [table2]
   ) ?? "");
-  if (!createSql) throw new Error(`\u65E0\u6CD5\u5BFC\u51FA\u540C\u6B65\u8868\u7ED3\u6784\uFF1A${table}`);
+  if (!createSql) throw new Error(`\u65E0\u6CD5\u5BFC\u51FA\u540C\u6B65\u8868\u7ED3\u6784\uFF1A${table2}`);
   target.run(createSql);
-  const localStateKeys = table === "app_state" ? [...DEVICE_LOCAL_STATE_KEYS] : table === "grammar_state" ? [...DEVICE_LOCAL_GRAMMAR_STATE_KEYS] : [];
-  const retentionDays = DATED_TABLE_RETENTION_DAYS[table];
+  const localStateKeys = table2 === "app_state" ? [...DEVICE_LOCAL_STATE_KEYS] : table2 === "grammar_state" ? [...DEVICE_LOCAL_GRAMMAR_STATE_KEYS] : [];
+  const retentionDays = DATED_TABLE_RETENTION_DAYS[table2];
   const bindings = [];
   let where = "";
   if (localStateKeys.length) {
@@ -13716,10 +16480,10 @@ var copyTable = (source, target, table, extraWhere = "") => {
     bindings.push(retentionCutoff(retentionDays));
   }
   if (extraWhere) where = where ? `${where} AND (${extraWhere})` : ` WHERE ${extraWhere}`;
-  const columns = columnsOf3(source, table);
+  const columns = columnsOf3(source, table2);
   if (!columns.length) return;
-  const insert = `INSERT INTO ${quoteIdentifier2(table)} (${columns.map(quoteIdentifier2).join(", ")}) VALUES (${columns.map(() => "?").join(", ")})`;
-  const read = source.prepare(`SELECT ${columns.map(quoteIdentifier2).join(", ")} FROM ${quoteIdentifier2(table)}${where}`);
+  const insert = `INSERT INTO ${quoteIdentifier2(table2)} (${columns.map(quoteIdentifier2).join(", ")}) VALUES (${columns.map(() => "?").join(", ")})`;
+  const read = source.prepare(`SELECT ${columns.map(quoteIdentifier2).join(", ")} FROM ${quoteIdentifier2(table2)}${where}`);
   const write = target.prepare(insert);
   target.run("BEGIN");
   try {
@@ -13736,8 +16500,8 @@ var copyTable = (source, target, table, extraWhere = "") => {
 };
 async function exportSyncSnapshot() {
   ensureSyncSchema();
-  const source = (0, import_database29.getDatabase)();
-  const snapshot = await (0, import_database29.createDatabase)();
+  const source = (0, import_database31.getDatabase)();
+  const snapshot = await (0, import_database31.createDatabase)();
   try {
     snapshot.run(`
       CREATE TABLE ${META_TABLE} (
@@ -13748,9 +16512,9 @@ async function exportSyncSnapshot() {
     snapshot.run(`INSERT INTO ${META_TABLE} (format, protocol_version) VALUES (?, ?)`, [SYNC_SNAPSHOT_FORMAT, SYNC_PROTOCOL_VERSION]);
     const includeWeeklyReports = (0, import_entitlements.canUseFeature)("weeklyReportCloudHistory", (0, import_entitlements.getEntitlements)());
     const tables = /* @__PURE__ */ new Set([...syncedTablesForCloud(includeWeeklyReports).map((entry) => entry.table), ...EXTRA_TABLES]);
-    for (const table of tables) {
-      const extraWhere = table === "sync_tombstones" && !includeWeeklyReports ? "table_name <> 'weekly_reports'" : "";
-      copyTable(source, snapshot, table, extraWhere);
+    for (const table2 of tables) {
+      const extraWhere = table2 === "sync_tombstones" && !includeWeeklyReports ? "table_name <> 'weekly_reports'" : "";
+      copyTable(source, snapshot, table2, extraWhere);
     }
     const bytes = new Uint8Array(snapshot.export());
     lastSnapshotBytes = bytes.byteLength;
@@ -13817,7 +16581,7 @@ var merge_exports = {};
 __export(merge_exports, {
   mergeDatabaseBytes: () => mergeDatabaseBytes
 });
-var import_database31 = __toESM(require_database(), 1);
+var import_database33 = __toESM(require_database(), 1);
 init_schema2();
 init_tables();
 var import_entitlements2 = __toESM(require_entitlements(), 1);
@@ -13834,18 +16598,18 @@ init_user_question_meanings();
 var ROW_SEPARATOR = "";
 var DEFAULT_ORIGIN = "legacy";
 var quoteIdentifier3 = (value) => `"${value.replace(/"/g, '""')}"`;
-var tableExists4 = (db, table) => {
+var tableExists4 = (db, table2) => {
   const statement = db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1");
   try {
-    statement.bind([table]);
+    statement.bind([table2]);
     return statement.step();
   } finally {
     statement.free();
   }
 };
-var columnsOf4 = (db, table) => {
-  if (!tableExists4(db, table)) return /* @__PURE__ */ new Set();
-  const statement = db.prepare(`PRAGMA table_info(${quoteIdentifier3(table)})`);
+var columnsOf4 = (db, table2) => {
+  if (!tableExists4(db, table2)) return /* @__PURE__ */ new Set();
+  const statement = db.prepare(`PRAGMA table_info(${quoteIdentifier3(table2)})`);
   try {
     const result = /* @__PURE__ */ new Set();
     while (statement.step()) result.add(String(statement.get()[1]));
@@ -13854,9 +16618,9 @@ var columnsOf4 = (db, table) => {
     statement.free();
   }
 };
-var rowsOf = (db, table) => {
-  if (!tableExists4(db, table)) return [];
-  const statement = db.prepare(`SELECT * FROM ${quoteIdentifier3(table)}`);
+var rowsOf = (db, table2) => {
+  if (!tableExists4(db, table2)) return [];
+  const statement = db.prepare(`SELECT * FROM ${quoteIdentifier3(table2)}`);
   try {
     const result = [];
     while (statement.step()) result.push(statement.getAsObject());
@@ -13873,9 +16637,9 @@ var compareVersion = (left, right) => {
   if (left.originDevice === right.originDevice) return 0;
   return left.originDevice > right.originDevice ? 1 : -1;
 };
-var stateOf = (db, sourceOrigin, entries) => {
+var stateOf = (db, sourceOrigin, entries2) => {
   const rows = /* @__PURE__ */ new Map();
-  for (const entry of entries) {
+  for (const entry of entries2) {
     if (!tableExists4(db, entry.table)) continue;
     const items = /* @__PURE__ */ new Map();
     for (const row of rowsOf(db, entry.table)) {
@@ -13895,19 +16659,19 @@ var stateOf = (db, sourceOrigin, entries) => {
   }
   if (tableExists4(db, "sync_tombstones")) {
     for (const tombstone of rowsOf(db, "sync_tombstones")) {
-      const table = String(tombstone.table_name ?? "");
+      const table2 = String(tombstone.table_name ?? "");
       const key = String(tombstone.row_key ?? "");
-      const entry = entries.find((candidate) => candidate.table === table);
-      if (!entry || !rows.has(table)) continue;
-      if (isDeviceLocalStateKey(table, key)) continue;
+      const entry = entries2.find((candidate) => candidate.table === table2);
+      if (!entry || !rows.has(table2)) continue;
+      if (isDeviceLocalStateKey(table2, key)) continue;
       const item = {
         key,
         deleted: true,
         changedAt: String(tombstone.deleted_at ?? "1970-01-01T00:00:00.000Z"),
         originDevice: String(tombstone.origin_device ?? sourceOrigin) || sourceOrigin
       };
-      const current = rows.get(table)?.get(key);
-      if (!current || compareVersion(item, current) > 0) rows.get(table)?.set(key, item);
+      const current = rows.get(table2)?.get(key);
+      if (!current || compareVersion(item, current) > 0) rows.get(table2)?.set(key, item);
     }
   }
   return { rows };
@@ -14002,25 +16766,17 @@ var applyTable = (db, entry, selected) => {
       rowColumns.map((column) => row[column])
     ));
   }
-  if (!changes.length) return;
-  db.run("BEGIN");
-  try {
-    changes.forEach((change) => change());
-    db.run("COMMIT");
-  } catch (error) {
-    db.run("ROLLBACK");
-    throw error;
-  }
+  changes.forEach((change) => change());
 };
 var applyTombstones = (db, merged) => {
   if (!tableExists4(db, "sync_tombstones")) return;
-  db.run("DELETE FROM sync_tombstones");
+  for (const table2 of merged.keys()) db.run("DELETE FROM sync_tombstones WHERE table_name = ?", [table2]);
   const columns = columnsOf4(db, "sync_tombstones");
-  for (const [table, items] of merged) {
+  for (const [table2, items] of merged) {
     for (const item of items.values()) {
       if (!item.deleted) continue;
       const values = {
-        table_name: table,
+        table_name: table2,
         row_key: item.key,
         deleted_at: item.changedAt,
         origin_device: item.originDevice
@@ -14036,41 +16792,43 @@ var applyTombstones = (db, merged) => {
 };
 async function mergeDatabaseBytes(remoteBytes) {
   ensureSyncSchema();
-  const localDb = (0, import_database31.getDatabase)();
-  const remoteDb = await (0, import_database31.openDatabase)(remoteBytes);
-  const legacyFullSnapshot = tableExists4(remoteDb, "words") && tableExists4(remoteDb, "progress") && tableExists4(remoteDb, "app_state");
-  if (!legacyFullSnapshot && !isUserSyncSnapshot(remoteDb)) {
-    remoteDb.close();
-    throw new Error("\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\u683C\u5F0F\u65E0\u6548\uFF0C\u5DF2\u4FDD\u7559\u672C\u673A\u6570\u636E\u3002");
-  }
-  const syncedTables = syncedTablesForCloud((0, import_entitlements2.canUseFeature)("weeklyReportCloudHistory", (0, import_entitlements2.getEntitlements)()));
-  const localState = stateOf(localDb, "local", syncedTables);
-  const remoteState = stateOf(remoteDb, "remote", syncedTables);
-  const merged = /* @__PURE__ */ new Map();
-  beginSyncApply();
+  const localDb = (0, import_database33.getDatabase)();
+  const remoteDb = await (0, import_database33.openDatabase)(remoteBytes);
   try {
-    for (const entry of syncedTables) {
-      const items = mergeItems(entry, localState, remoteState);
-      merged.set(entry.table, items);
-      applyTable(localDb, entry, items);
+    const legacyFullSnapshot = tableExists4(remoteDb, "words") && tableExists4(remoteDb, "progress") && tableExists4(remoteDb, "app_state");
+    if (!legacyFullSnapshot && !isUserSyncSnapshot(remoteDb)) {
+      throw new Error("\u4E91\u7AEF\u5B66\u4E60\u6570\u636E\u683C\u5F0F\u65E0\u6548\uFF0C\u5DF2\u4FDD\u7559\u672C\u673A\u6570\u636E\u3002");
     }
-    applyTombstones(localDb, merged);
-    if (tableExists4(localDb, "kanji_unit_reviews")) {
-      const { replayKanjiUnitReviews: replayKanjiUnitReviews2 } = await Promise.resolve().then(() => (init_kanji_unit_scheduler(), kanji_unit_scheduler_exports));
-      replayKanjiUnitReviews2();
-    }
-    if (tableExists4(localDb, "kanji_char_reviews")) {
-      const { replayKanjiCharReviews: replayKanjiCharReviews2 } = await Promise.resolve().then(() => (init_kanji_char_cards(), kanji_char_cards_exports));
-      replayKanjiCharReviews2();
-    }
-    if (tableExists4(localDb, "confusion_reviews")) {
-      const { replayConfusionReviews: replayConfusionReviews2 } = await Promise.resolve().then(() => (init_confusion_cards(), confusion_cards_exports));
-      replayConfusionReviews2();
-    }
-    rebuildStudyTimeAggregate();
-    if (tableExists4(localDb, "custom_words")) {
-      const { materializeCustomWords: materializeCustomWords2 } = await Promise.resolve().then(() => (init_word_list_import(), word_list_import_exports));
-      materializeCustomWords2();
+    const syncedTables = syncedTablesForCloud((0, import_entitlements2.canUseFeature)("weeklyReportCloudHistory", (0, import_entitlements2.getEntitlements)()));
+    const replayKanjiUnitReviews2 = tableExists4(localDb, "kanji_unit_reviews") ? (await Promise.resolve().then(() => (init_kanji_unit_scheduler(), kanji_unit_scheduler_exports))).replayKanjiUnitReviews : void 0;
+    const replayKanjiCharReviews2 = tableExists4(localDb, "kanji_char_reviews") ? (await Promise.resolve().then(() => (init_kanji_char_cards(), kanji_char_cards_exports))).replayKanjiCharReviews : void 0;
+    const replayConfusionReviews2 = tableExists4(localDb, "confusion_reviews") ? (await Promise.resolve().then(() => (init_confusion_cards(), confusion_cards_exports))).replayConfusionReviews : void 0;
+    const replayKanaReviews2 = tableExists4(localDb, "kana_reviews") ? (await Promise.resolve().then(() => (init_kana_progress(), kana_progress_exports))).replayKanaReviews : void 0;
+    const materializeCustomWords2 = tableExists4(localDb, "custom_words") ? (await Promise.resolve().then(() => (init_word_list_import(), word_list_import_exports))).materializeCustomWords : void 0;
+    const localState = stateOf(localDb, "local", syncedTables);
+    const remoteState = stateOf(remoteDb, "remote", syncedTables);
+    const merged = /* @__PURE__ */ new Map();
+    beginSyncApply();
+    localDb.run("BEGIN TRANSACTION");
+    try {
+      for (const entry of syncedTables) {
+        const items = mergeItems(entry, localState, remoteState);
+        merged.set(entry.table, items);
+        applyTable(localDb, entry, items);
+      }
+      applyTombstones(localDb, merged);
+      replayKanjiUnitReviews2?.();
+      replayKanjiCharReviews2?.();
+      replayConfusionReviews2?.();
+      replayKanaReviews2?.();
+      rebuildStudyTimeAggregate();
+      materializeCustomWords2?.();
+      localDb.run("COMMIT");
+    } catch (error) {
+      localDb.run("ROLLBACK");
+      throw error;
+    } finally {
+      endSyncApply();
     }
     resetFamiliarityCache();
     resetUserQuestionMeanings();
@@ -14079,13 +16837,12 @@ async function mergeDatabaseBytes(remoteBytes) {
       window.dispatchEvent(new Event(GRAMMAR_HIGHLIGHTS_UPDATED_EVENT));
       window.dispatchEvent(new Event(GRAMMAR_POSITIONS_UPDATED_EVENT));
     }
+    const result = (0, import_database33.exportDatabase)();
+    if (!result) throw new Error("\u5F53\u524D\u6CA1\u6709\u53EF\u5408\u5E76\u7684\u672C\u5730\u6570\u636E\u5E93\u3002");
+    return result;
   } finally {
-    endSyncApply();
     remoteDb.close();
   }
-  const result = (0, import_database31.exportDatabase)();
-  if (!result) throw new Error("\u5F53\u524D\u6CA1\u6709\u53EF\u5408\u5E76\u7684\u672C\u5730\u6570\u636E\u5E93\u3002");
-  return result;
 }
 
 // scripts/shared/entry.ts
@@ -14110,7 +16867,7 @@ __export(yuzu_exports, {
   yuzuBalance: () => yuzuBalance,
   yuzuToday: () => yuzuToday
 });
-var import_database32 = __toESM(require_database(), 1);
+var import_database34 = __toESM(require_database(), 1);
 init_db_utils();
 init_stage1();
 init_review_budget();
@@ -14221,7 +16978,7 @@ var applyYuzuEquipment = () => {
 };
 var voiceUnlocked = (voiceId, defaultId) => !voiceId || voiceId === defaultId || ownsItem(VOICE_ITEM_PREFIX + voiceId);
 var book = (kind, key, amount) => {
-  (0, import_database32.getDatabase)().run("INSERT OR IGNORE INTO yuzu_ledger (kind, key, amount, day) VALUES (?, ?, ?, ?)", [kind, key, amount, today()]);
+  (0, import_database34.getDatabase)().run("INSERT OR IGNORE INTO yuzu_ledger (kind, key, amount, day) VALUES (?, ?, ?, ?)", [kind, key, amount, today()]);
   return firstValue("SELECT changes()", [], 0) > 0;
 };
 var yuzuBalance = () => firstValue("SELECT COALESCE(SUM(amount), 0) FROM yuzu_ledger", [], 0);
@@ -14295,7 +17052,7 @@ var repairDay = (day) => {
   if (!repairableDays().includes(day)) return false;
   const price = repairPrice();
   if (yuzuBalance() < price) return false;
-  const db = (0, import_database32.getDatabase)();
+  const db = (0, import_database34.getDatabase)();
   book("repair", day, -price);
   db.run("INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)", [day]);
   persistSoon();
@@ -14368,9 +17125,9 @@ var parseEventAt = (value, fallbackDay) => {
   const parsedFallback = /^\d{4}-\d{2}-\d{2}$/.test(fallback) ? dateAt(fallback, 12) : new Date(fallback);
   return Number.isFinite(parsedFallback.getTime()) ? parsedFallback.getTime() : NaN;
 };
-var tableExists5 = (table) => rowsFor(
+var tableExists5 = (table2) => rowsFor(
   "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1",
-  [table]
+  [table2]
 ).length > 0;
 var shiftDays = (date, days) => {
   const result = new Date(date);
@@ -14714,17 +17471,17 @@ var mulberry32 = (seed) => {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
 };
-function pickKeyword(candidates, seed) {
-  if (candidates.length === 0) return null;
-  if (candidates.length === 1) return candidates[0];
-  const total = candidates.reduce((sum, candidate) => sum + candidate.rarity, 0);
+function pickKeyword(candidates2, seed) {
+  if (candidates2.length === 0) return null;
+  if (candidates2.length === 1) return candidates2[0];
+  const total = candidates2.reduce((sum, candidate) => sum + candidate.rarity, 0);
   const roll = mulberry32(hashSeed(seed))() * total;
   let accumulated = 0;
-  for (const candidate of candidates) {
+  for (const candidate of candidates2) {
     accumulated += candidate.rarity;
     if (roll < accumulated) return candidate;
   }
-  return candidates[candidates.length - 1];
+  return candidates2[candidates2.length - 1];
 }
 var SPEED_BANDS = [
   { level: 4, threshold: 100, label: "\u672C\u5468\u63A5\u89E6\u91CF\u5F88\u9AD8" },
@@ -14758,7 +17515,7 @@ function getRollingSpeed(window2, weeks = 4) {
   return counted > 0 ? total / counted : 0;
 }
 var TIME_REF_MIN_MINUTES = 1;
-var formatDuration = (minutes) => {
+var formatDuration2 = (minutes) => {
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
   if (hours > 0 && rest > 0) return `${hours} \u5C0F\u65F6 ${rest} \u5206`;
@@ -14773,7 +17530,7 @@ function buildReferences(ctx) {
   const { metrics } = ctx;
   const references = [];
   if (metrics.totalSeconds >= 60 * TIME_REF_MIN_MINUTES) {
-    references.push({ kind: "time", text: `\u8FD9\u6BB5\u65F6\u95F4\u4F60\u6295\u5165\u4E86 ${formatDuration(Math.floor(metrics.totalSeconds / 60))}` });
+    references.push({ kind: "time", text: `\u8FD9\u6BB5\u65F6\u95F4\u4F60\u6295\u5165\u4E86 ${formatDuration2(Math.floor(metrics.totalSeconds / 60))}` });
   }
   if (metrics.totalReviews > 0) {
     references.push({ kind: "review", text: `\u8FD9\u6BB5\u65F6\u95F4\u4F60\u5B8C\u6210\u4E86 ${metrics.totalReviews} \u6B21\u5B66\u4E60` });
@@ -14822,12 +17579,12 @@ __export(weekly_reports_exports, {
   reportWindowLabelCompact: () => reportWindowLabelCompact,
   saveWeeklyReport: () => saveWeeklyReport
 });
-var import_database33 = __toESM(require_database(), 1);
+var import_database35 = __toESM(require_database(), 1);
 init_db_utils();
 var WEEKLY_REPORT_SCHEMA_VERSION = 3;
 var WEEKLY_REPORT_UPDATED_EVENT = "shushugo-weekly-report-updated";
 var ensureWeeklyReportsTable = () => {
-  (0, import_database33.getDatabase)().run(`
+  (0, import_database35.getDatabase)().run(`
     CREATE TABLE IF NOT EXISTS weekly_reports (
       week_start TEXT PRIMARY KEY,
       week_end TEXT NOT NULL,
@@ -14841,9 +17598,9 @@ var ensureWeeklyReportsTable = () => {
     )
   `);
   const columns = rowsFor("PRAGMA table_info(weekly_reports)").map((row) => String(row.name ?? ""));
-  if (!columns.includes("source_revision")) (0, import_database33.getDatabase)().run("ALTER TABLE weekly_reports ADD COLUMN source_revision TEXT");
-  if (!columns.includes("sync_updated_at")) (0, import_database33.getDatabase)().run("ALTER TABLE weekly_reports ADD COLUMN sync_updated_at TEXT");
-  if (!columns.includes("sync_origin_device")) (0, import_database33.getDatabase)().run("ALTER TABLE weekly_reports ADD COLUMN sync_origin_device TEXT");
+  if (!columns.includes("source_revision")) (0, import_database35.getDatabase)().run("ALTER TABLE weekly_reports ADD COLUMN source_revision TEXT");
+  if (!columns.includes("sync_updated_at")) (0, import_database35.getDatabase)().run("ALTER TABLE weekly_reports ADD COLUMN sync_updated_at TEXT");
+  if (!columns.includes("sync_origin_device")) (0, import_database35.getDatabase)().run("ALTER TABLE weekly_reports ADD COLUMN sync_origin_device TEXT");
 };
 var sourceRevision = () => {
   const parts = [];
@@ -14855,12 +17612,12 @@ var sourceRevision = () => {
     ["word_study_time", "SELECT COUNT(*) count, COALESCE(SUM(seconds), 0) total FROM word_study_time"],
     ["study_time_by_period", "SELECT COUNT(*) count, COALESCE(SUM(seconds), 0) total FROM study_time_by_period"]
   ];
-  for (const [table, query] of tables) {
+  for (const [table2, query] of tables) {
     try {
-      const row = rowsFor(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`, [table]).length ? rowsFor(query)[0] : null;
-      parts.push(`${table}:${JSON.stringify(row ?? null)}`);
+      const row = rowsFor(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`, [table2]).length ? rowsFor(query)[0] : null;
+      parts.push(`${table2}:${JSON.stringify(row ?? null)}`);
     } catch {
-      parts.push(`${table}:null`);
+      parts.push(`${table2}:null`);
     }
   }
   return parts.join("|");
@@ -14955,7 +17712,7 @@ function saveWeeklyReport(report, generatedAt = Date.now()) {
   const existing = getWeeklyReport(normalized.window.start);
   const readAt = existing?.readAt ?? null;
   const revision = sourceRevision();
-  (0, import_database33.getDatabase)().run(`
+  (0, import_database35.getDatabase)().run(`
     INSERT INTO weekly_reports
       (week_start, week_end, generated_at, schema_version, content_json, read_at, source_revision, sync_updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -15001,7 +17758,7 @@ function markWeeklyReportRead(weekStart, readAt = Date.now()) {
   ensureWeeklyReportsTable();
   const row = rowsFor("SELECT read_at FROM weekly_reports WHERE week_start = ? LIMIT 1", [weekStart])[0];
   if (!row || row.read_at != null) return false;
-  (0, import_database33.getDatabase)().run(
+  (0, import_database35.getDatabase)().run(
     "UPDATE weekly_reports SET read_at = ?, sync_updated_at = ? WHERE week_start = ?",
     [readAt, (/* @__PURE__ */ new Date()).toISOString(), weekStart]
   );
@@ -15068,7 +17825,9 @@ var reportWindowLabelCompact = (window2) => {
 // scripts/shared/entry.ts
 init_stats2();
 init_plan();
+init_kana_progress();
 init_studyPreferences();
+var sounds = __toESM(require_zoo_sounds());
 
 // ../frontend/src/lib/achievements/index.ts
 var achievements_exports = {};
@@ -15081,7 +17840,7 @@ __export(achievements_exports, {
   evaluateAchievements: () => evaluateAchievements,
   unlockedAchievementIds: () => unlockedAchievementIds
 });
-var import_database34 = __toESM(require_database(), 1);
+var import_database36 = __toESM(require_database(), 1);
 init_db_utils();
 init_study_core();
 
@@ -15332,7 +18091,7 @@ var applyUnlocks = (stats, unlocked) => {
   if (!pending.length) return [];
   const earned = pending.filter((item) => item.value(stats) >= item.goal);
   if (!earned.length) return [];
-  const db = (0, import_database34.getDatabase)();
+  const db = (0, import_database36.getDatabase)();
   const today2 = (/* @__PURE__ */ new Date()).toLocaleDateString("sv");
   earned.forEach((item) => {
     db.run("INSERT OR IGNORE INTO achievements (id, unlocked_on) VALUES (?, ?)", [item.id, today2]);

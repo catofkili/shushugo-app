@@ -5,30 +5,76 @@
     <text class="feature-copy">按范围内真实的未学量、到期量和考期算今天最低做多少；考前 {{status ? status.plan.consolidationDays : 21}} 天进入巩固期，不再塞新内容。</text>
   </view>
   <view class="panel" wx:if="{{error}}"><text class="danger">{{error}}</text></view>
+  <view class="panel" wx:if="{{ready && setupOpen}}">
+    <text class="panel-title">先选起点，再定目标</text>
+    <text class="muted">你现在学到哪里？</text>
+    <view class="setup-starts"><button wx:for="{{starts}}" wx:key="value" class="chip {{setupStart === item.value ? 'active' : ''}}" data-value="{{item.value}}" bindtap="pickStart">{{item.label}}</button></view>
+    <view class="setup-levels"><button wx:for="{{startLevels}}" wx:key="value" class="chip {{setupStart === item.value ? 'active' : ''}}" data-value="{{item.value}}" bindtap="pickStart">{{item.label}}</button></view>
+    <button class="chip" disabled>专业进阶 · 内容准备中</button>
+    <text class="section-label">准备考哪级？</text>
+    <view class="setup-levels"><button wx:for="{{targets}}" wx:key="*this" class="chip {{setupTarget === item ? 'active' : ''}}" data-value="{{item}}" bindtap="pickSetupTarget">{{item}}</button></view>
+    <text class="section-label">选一场 JLPT 考试</text>
+    <picker range="{{examOptions}}" range-key="label" value="{{examIndex}}" bindchange="pickExam"><view class="field">{{selectedExamLabel}} ▾</view></picker>
+    <text class="muted">尚未公布的考期标为“预计”。</text>
+    <text class="section-label">这些内容你有多熟？</text>
+    <view wx:for="{{familiarityRows}}" wx:key="kind" class="familiarity-row">
+      <text>{{item.label}} · {{item.value}}</text>
+      <slider min="0" max="100" step="25" value="{{item.value}}" data-kind="{{item.kind}}" bindchange="changeFamiliarity" activeColor="#6f9f4d" />
+    </view>
+    <view wx:if="{{setupPreview}}" class="setup-preview">
+      <text class="panel-title">按这个起点，预计要学 {{setupPreview.content.words}} 个词</text>
+      <text class="muted">考前约有 {{setupPreview.intakeDays}} 天能进新词，需要约 {{setupPreview.required.words}} 个/天；当前最多安排 {{setupPreview.daily.words}} 个/天。</text>
+      <text class="muted">另有语法 {{setupPreview.content.grammar}} 条、汉字 {{setupPreview.content.kanji}} 张、辨析 {{setupPreview.content.confusion}} 组；复习量会随作答变化。</text>
+      <text wx:if="{{!setupPreview.feasible}}" class="danger">按现有每日上限，这场考试前无法覆盖完所选范围。可改考期或目标。</text>
+    </view>
+    <text wx:if="{{setupStart === 'kana-none'}}" class="muted">五十音按实际掌握进度完成，没学完就顺延新词。</text>
+    <button wx:if="{{hasPlan}}" class="secondary" disabled="{{busy}}" bindtap="closeSetup">取消</button>
+  </view>
+  <view class="panel" wx:if="{{ready && !setupOpen && !hasPlan}}">
+    <text class="panel-title">建立你的备考计划</text>
+    <text class="feature-copy">选起点、目标和考期后，这里会显示今天能做的任务。</text>
+    <button class="primary" bindtap="openSetup">开始设定 →</button>
+  </view>
+  <view class="panel" wx:if="{{ready && !setupOpen && hasPlan}}">
+    <text class="panel-title">今天先做</text>
+    <text class="feature-copy">{{shortfallText}}</text>
+    <button wx:if="{{!kanaPending}}" class="primary" bindtap="startWords">开始今天的单词 →</button>
+    <text wx:if="{{note}}" class="muted">{{note}}</text>
+  </view>
+  <view class="panel" wx:if="{{ready && !setupOpen && kanaPending && kanaCard}}">
+    <view class="row"><text class="panel-title">五十音起步</text><text class="badge">{{kanaCard.mastered}} / {{kanaCard.total}}</text></view>
+    <text class="kana-symbol">{{kanaCard.symbol}}</text>
+    <text class="muted">选出读音；每个假名连续答对两次算掌握</text>
+    <view class="choice-grid"><button wx:for="{{kanaCard.choices}}" wx:key="*this" data-reading="{{item}}" disabled="{{busy}}" bindtap="answerKana">{{item}}</button></view>
+  </view>
 
-  <view class="panel">
-    <text class="panel-title">目标级别</text>
-    <view class="chip-row"><text wx:for="{{targets}}" wx:key="*this" class="chip {{target === item ? 'active' : ''}}" data-value="{{item}}" bindtap="pickTarget">{{item}}</text></view>
-    <picker mode="date" value="{{examDate}}" bindchange="pickDate"><view class="field">考试日期：{{status.examDateHuman || examDate}}（{{sourceText}}）˅</view></picker>
-    <button wx:if="{{examDateInput}}" class="secondary" bindtap="clearDate">改回自动（7 月 / 12 月首个周日）</button>
+  <view class="panel" wx:if="{{ready && !setupOpen && hasPlan}}">
+    <button class="secondary" bindtap="openSetup">重新设定起点与目标</button>
+    <button class="secondary" bindtap="openDailyPlan">调整每日学习量</button>
+    <text class="muted">{{target}} · {{status.examDateHuman}}（{{sourceText}}）</text>
     <text class="muted">报名前以官方考点通知为准。</text>
   </view>
 
-  <view class="panel" wx:if="{{status}}">
+  <view class="panel" wx:if="{{hasPlan && status && !setupOpen}}">
     <view class="row"><text class="panel-title">今日最低量</text><text class="badge">{{phaseText}} · 还剩 {{status.plan.daysLeft}} 天</text></view>
+    <text wx:if="{{planEstimate}}" class="muted">按所选起点，预计共要学 {{planEstimate.content.words}} 个词；剩余约 {{planEstimate.intakeDays}} 个进新日，平均需 {{planEstimate.required.words}} 个/天，当前每日计划上限 {{planEstimate.daily.words}} 个。今天能安排的任务会根据实际学习记录变化。</text>
+    <text wx:if="{{planEstimate && !planEstimate.feasible}}" class="feature-copy danger">按所选起点估算，本场考前无法覆盖全部内容；可改考期或目标。</text>
     <view class="metric-grid">
-      <view class="metric"><text class="metric-value">{{status.done.newWordsDone}} / {{status.plan.newWords}}</text><text class="metric-label">新词</text></view>
+      <view class="metric"><text class="metric-value">{{status.done.newWordsDone}} / {{kanaPending ? 0 : status.plan.newWords}}</text><text class="metric-label">新词</text></view>
       <view class="metric"><text class="metric-value">{{status.done.reviewWordsDone}} / {{status.plan.reviewWords}}</text><text class="metric-label">复习词</text></view>
-      <view class="metric"><text class="metric-value">{{status.done.newGrammarDone}} / {{status.plan.newGrammar}}</text><text class="metric-label">新语法</text></view>
-      <view class="metric"><text class="metric-value">{{status.done.reviewGrammarDone}} / {{status.plan.reviewGrammar}}</text><text class="metric-label">语法复习</text></view>
+      <view wx:if="{{hasPro}}" class="metric"><text class="metric-value">{{status.done.newGrammarDone}} / {{status.plan.newGrammar}}</text><text class="metric-label">新语法</text></view>
+      <view wx:if="{{hasPro}}" class="metric"><text class="metric-value">{{status.done.reviewGrammarDone}} / {{status.plan.reviewGrammar}}</text><text class="metric-label">语法复习</text></view>
     </view>
     <text class="muted">{{shortfallText}}</text>
-    <text wx:if="{{!status.plan.feasible}}" class="feature-copy danger">按每日上限（新词 50 / 新语法 12）也覆盖不完，至少需要 {{status.plan.daysNeeded}} 天。建议降一级目标或改考期，而不是硬塞。</text>
+    <text wx:if="{{!status.plan.feasible}}" class="feature-copy danger">按当前学习记录，每天做到上限仍需约 {{status.plan.daysNeeded}} 天，距考试只剩 {{status.plan.daysLeft}} 天。建议降一级目标或改考期，而不是硬塞。</text>
+    <text wx:if="{{quotaWarning}}" class="feature-copy danger">按当前固定额度，{{quotaWarning}}；可以调整每日学习量或考期，系统不会自动增加额度。</text>
+    <text wx:if="{{!hasPro}}" class="muted">当前只安排单词；语法、汉字和辨析额度会保留。</text>
   </view>
 
-  <view class="panel" wx:if="{{status}}">
+  <view class="panel" wx:if="{{hasPlan && status && !setupOpen}}">
     <text class="panel-title">覆盖进度</text>
     <view class="coverage"><text class="muted">词汇 {{status.coverage.words.seen}} / {{status.coverage.words.total}}</text><view class="progress"><view style="width:{{wordPercent}}%"></view></view></view>
     <view class="coverage"><text class="muted">语法 {{status.coverage.grammar.seen}} / {{status.coverage.grammar.total}}</text><view class="progress"><view style="width:{{grammarPercent}}%"></view></view></view>
   </view>
 </scroll-view>
+<view wx:if="{{ready && setupOpen}}" class="setup-footer"><button class="primary" disabled="{{busy}}" bindtap="saveSetup">{{busy ? '正在建立计划…' : '保存并查看今天怎么学 →'}}</button></view>

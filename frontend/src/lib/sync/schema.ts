@@ -7,7 +7,7 @@
 // 依赖 SQLite 默认关闭 recursive_triggers:触发器内部的 UPDATE 不会再次触发自己。
 
 import { getDatabase } from "../database";
-import { rowsFor } from "../database/db-utils";
+import { firstValue, rowsFor } from "../database/db-utils";
 import { backfillStudyTimeByDevice } from "./study-time";
 import { SYNCED_TABLES, STUDY_TIME_TABLE, type SyncedTable } from "./tables";
 
@@ -235,6 +235,31 @@ export function beginSyncApply(): void {
 
 export function endSyncApply(): void {
   getDatabase().run("DELETE FROM sync_context WHERE key = 'applying_remote'");
+}
+
+/**
+ * 跑一段「不算本地改动」的写入：占位行(progress / grammar_progress 的空行)。
+ *
+ * ⚠️ 这些行不盖 sync_updated_at 是**必须的**：它们的合并策略是 LWW，而占位行的
+ * 「现在」比云端那条真学过的行新，合并之后云端的学习状态会被一行空记录静默盖掉
+ * （现象：换台设备打开，学过的词变回未学）。留空 = 纪元，任何真实记录都赢得过它。
+ *
+ * 嵌套安全：已经在 applying_remote 里的话原样跑完，不提前把标志清掉。
+ */
+export function withoutSyncStamp<T>(run: () => T): T {
+  ensureSyncSchema();
+  const alreadyApplying = firstValue<string>(
+    "SELECT value FROM sync_context WHERE key = 'applying_remote'",
+    [],
+    ""
+  ) === "1";
+  if (alreadyApplying) return run();
+  beginSyncApply();
+  try {
+    return run();
+  } finally {
+    endSyncApply();
+  }
 }
 
 /** 本机设备号;首次调用时生成并落库。恢复他人备份后需调用 resetDeviceId。 */

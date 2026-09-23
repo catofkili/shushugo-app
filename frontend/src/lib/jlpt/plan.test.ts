@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   BACKLOG_SPREAD_DAYS,
+  availableShortfall,
   CONSOLIDATION_DAYS,
   consolidationDays,
   MAX_DAILY_NEW_WORDS,
@@ -11,7 +12,7 @@ import {
   shortfallText,
   type PlanInputs
 } from "./plan";
-import { firstSundayOf, nextExamDate, parseExamDate } from "./exam-dates";
+import { firstSundayOf, nextExamDate, parseExamDate, upcomingExamDates } from "./exam-dates";
 
 const inputs = (overrides: Partial<PlanInputs> = {}): PlanInputs => ({
   today: new Date(2026, 7, 14),      // 2026-08-14
@@ -46,6 +47,13 @@ describe("exam dates", () => {
 
   it("rolls over to next July after December", () => {
     expect(nextExamDate(new Date(2026, 11, 7))).toEqual(new Date(2027, 6, 4));
+  });
+
+  it("offers the next four exam sessions across years", () => {
+    expect(upcomingExamDates(new Date(2026, 8, 23))).toEqual([
+      new Date(2026, 11, 6), new Date(2027, 6, 4),
+      new Date(2027, 11, 5), new Date(2028, 6, 2)
+    ]);
   });
 
   it("rejects malformed and non-existent dates", () => {
@@ -99,6 +107,21 @@ describe("computeDailyMinimum", () => {
     expect(plan.newGrammar).toBe(0);
     // 复习照做
     expect(plan.reviewWords).toBe(40);
+    expect(plan.feasible).toBe(false);
+  });
+
+  it("does not call unfinished content feasible after intake has closed", () => {
+    const plan = computeDailyMinimum(inputs({
+      today: new Date(2026, 10, 26),
+      examDate: new Date(2026, 11, 6),
+      planStartedOn: new Date(2026, 8, 22),
+      unseenWords: 1000,
+      unseenGrammar: 100
+    }));
+    expect(plan.intakeDaysLeft).toBe(0);
+    expect(plan.newWords).toBe(0);
+    expect(plan.feasible).toBe(false);
+    expect(plan.daysNeeded).toBeGreaterThan(plan.daysLeft);
   });
 
   it("amortises the overdue backlog instead of demanding it all today", () => {
@@ -176,5 +199,13 @@ describe("shortfallOf", () => {
       reviewGrammarDone: 0
     });
     expect(shortfallText(gap)).toMatch(/^还差 复习 60 · 新词 \d+/);
+  });
+
+  it("only counts content currently available to the learner", () => {
+    const gap = { newWords: 5, reviewWords: 2, newGrammar: 3, reviewGrammar: 4, clear: false };
+    expect(shortfallText(availableShortfall(gap, false))).toBe("还差 复习 2 · 新词 5");
+    expect(availableShortfall(gap, false, true)).toEqual({
+      newWords: 0, reviewWords: 2, newGrammar: 0, reviewGrammar: 0, clear: false
+    });
   });
 });

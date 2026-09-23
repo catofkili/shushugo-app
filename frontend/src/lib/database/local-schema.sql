@@ -57,6 +57,52 @@ CREATE TABLE IF NOT EXISTS grammar_state (
   value TEXT NOT NULL
 );
 
+-- 用户自报水平只给 FSRS 一个初始状态，不伪造成真实作答。汉字和辨析的
+-- memory 会在同步/撤销后从流水重放，因此必须把这份起始状态单独保存；
+-- 否则第一次真实作答重放后会从“全新卡”起算，撤销还会把初始状态清空。
+CREATE TABLE IF NOT EXISTS level_prior_baselines (
+  entity TEXT NOT NULL,
+  entity_key TEXT NOT NULL,
+  stability REAL NOT NULL,
+  difficulty REAL NOT NULL DEFAULT 5,
+  due TEXT NOT NULL,
+  last_review TEXT NOT NULL,
+  state INTEGER NOT NULL DEFAULT 2,
+  steps INTEGER NOT NULL DEFAULT 0,
+  reps INTEGER NOT NULL DEFAULT 0,
+  lapses INTEGER NOT NULL DEFAULT 0,
+  starting_level TEXT NOT NULL,
+  familiarity INTEGER NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (entity, entity_key)
+);
+
+-- 五十音也有自己的 FSRS 记忆与真实作答流水；完成 92 个基础假名以前，
+-- 新词计划按实际进度延后。记忆是可重放检查点，流水跨设备取并集。
+CREATE TABLE IF NOT EXISTS kana_memory (
+  symbol TEXT PRIMARY KEY,
+  correct_streak INTEGER NOT NULL DEFAULT 0,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  fsrs_stability REAL,
+  fsrs_difficulty REAL,
+  fsrs_due TEXT,
+  fsrs_last_review TEXT,
+  fsrs_state INTEGER,
+  fsrs_steps INTEGER,
+  fsrs_reps INTEGER,
+  fsrs_lapses INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS kana_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  symbol TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  reviewed_at INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_kana_reviews_symbol_at ON kana_reviews (symbol, reviewed_at);
+
 -- 从例句词典主动加入的词。任务表按学习日轮换，这张小表保留发现意图，
 -- 让未开始的词在第二天仍会优先进入新词计划。
 CREATE TABLE IF NOT EXISTS dictionary_discovered_words (

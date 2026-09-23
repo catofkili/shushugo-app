@@ -4,9 +4,13 @@
     <text class="title">学习模式</text>
     <text class="subtitle">按今天的需要选择练习方式</text>
   </view>
-  <view wx:for="{{modes}}" wx:key="title" class="mode-card tone-{{item.tone}}">
-    <view class="mode-copy"><text class="mode-title">{{item.title}}</text><text class="mode-detail">{{item.detail}}</text></view>
-    <navigator class="start" url="{{item.url}}">开始 →</navigator>
+  <view wx:if="{{error}}" class="note">{{error}}</view>
+  <view wx:for="{{modes}}" wx:key="id" class="mode-card tone-{{item.tone}}">
+    <view class="mode-copy">
+      <text class="mode-title">{{item.title}}<text wx:if="{{item.count}}" class="mode-count"> · 还能练 {{item.count}}</text></text>
+      <text class="mode-detail">{{item.subtitle}} · {{item.detail}}</text>
+    </view>
+    <button class="start" data-mode="{{item.id}}" bindtap="startMode">开始 →</button>
   </view>
-  <view class="note">快速学习和错题本不会打乱经典模式；自选清单、收藏和笔记都会保存在本机。</view>
+  <view class="note">错题本和自选清单不占今日计划；收藏和笔记都保存在本机，并和网页 / App 同步。</view>
 </scroll-view>

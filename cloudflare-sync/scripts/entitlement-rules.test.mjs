@@ -13,10 +13,13 @@ import { entitlementStrength } from '../src/entitlement-rules.ts';
 const lifetime = { is_pro: 1, product_id: 'shushugo_pro_lifetime', expires_at: null };
 const activeSub = { is_pro: 1, product_id: 'shushugo_pro_monthly', expires_at: '2099-01-01T00:00:00.000Z' };
 const expiredSub = { is_pro: 1, product_id: 'shushugo_pro_monthly', expires_at: '2020-01-01T00:00:00.000Z' };
+const trial = { is_pro: 1, product_id: 'shushugo_pro_trial', source: 'trial', expires_at: '2099-01-01T00:00:00.000Z' };
 
 assert.ok(entitlementStrength(lifetime) > entitlementStrength(activeSub), '永久强于任何订阅');
 assert.ok(entitlementStrength(activeSub) > entitlementStrength(expiredSub), '有效订阅强于过期订单');
 assert.ok(entitlementStrength(expiredSub) > entitlementStrength(null), '过期订单仍强于没有权益');
+assert.ok(entitlementStrength(activeSub) > entitlementStrength(trial), '付费订阅永远强于试用');
+assert.ok(entitlementStrength(trial) > entitlementStrength(expiredSub), '试用强于过期订单');
 assert.equal(entitlementStrength({ is_pro: 0, product_id: 'shushugo_pro_lifetime', expires_at: null }), -1);
 // 订阅缺到期时间不许被解释成永久 —— 那正是「取消续订后 Pro 永不过期」的来源。
 assert.ok(

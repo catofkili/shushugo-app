@@ -5,6 +5,14 @@ import initSqlJs from '../../frontend/node_modules/sql.js/dist/sql-wasm.js';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
+const storage = {};
+globalThis.wx = {
+  env: { USER_DATA_PATH: '/tmp/shushugo-smoke' },
+  getFileSystemManager: () => ({}),
+  getStorageSync: (key) => storage[key] ?? '',
+  setStorageSync: (key, value) => { storage[key] = value; },
+  removeStorageSync: (key) => { delete storage[key]; }
+};
 const { ensureGrammarSchema, grammarRows } = require('../src/runtime/grammar.js');
 const root = path.resolve(import.meta.dirname, '..');
 const SQL = await initSqlJs({ locateFile: (name) => path.resolve(root, '../frontend/node_modules/sql.js/dist', name) });

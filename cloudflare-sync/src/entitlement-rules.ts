@@ -13,11 +13,17 @@ export const LIFETIME_PRODUCT_ID = "shushugo_pro_lifetime";
 export const entitlementStrength = (row?: {
   is_pro?: number | null;
   product_id?: string | null;
+  source?: string | null;
   expires_at?: string | null;
 } | null): number => {
   if (!row || !row.is_pro) return -1;
   // 永久购买没有到期时间；订阅缺了到期时间不能顺手解释成永久 ——
   // 那正是「取消续订之后 Pro 永不过期」的来源，所以它是最弱的一档。
   if (row.product_id === LIFETIME_PRODUCT_ID && !row.expires_at) return Number.MAX_SAFE_INTEGER;
-  return row.expires_at ? Date.parse(row.expires_at) : 0;
+  if (!row.expires_at) return 0;
+  // 试用永远弱于任何付费订阅。否则一个稍晚到期的试用会把购买来源和交易号覆盖掉，
+  // 后续退款/续费通知便无法再准确更新那笔购买。
+  const expiry = Date.parse(row.expires_at);
+  if (row.source === "trial") return 2_000_000_000_000_000 + expiry;
+  return (expiry > Date.now() ? 3_000_000_000_000_000 : 1_000_000_000_000_000) + expiry;
 };

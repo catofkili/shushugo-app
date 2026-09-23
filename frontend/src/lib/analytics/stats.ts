@@ -6,6 +6,17 @@ import { firstRow, firstValue, rowsFor, studyDate } from "../database/db-utils";
 import { updateMemoryProfileIfNeeded, getUserMemoryProfile, getMemoryStrengthLabel } from "../adaptive";
 import { ensureFsrsColumns, MASTERED_SQL } from "../fsrs-store";
 
+const realWordStudySql = () => {
+  const baselineExists = firstValue<number>(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='level_prior_baselines'", [], 0
+  ) > 0;
+  return `(p.known_forever = 1 OR EXISTS (
+    SELECT 1 FROM reviews r WHERE r.word_id = w.id AND r.direction = 'forward'
+  ) OR (p.seen_count > 0${baselineExists ? ` AND NOT EXISTS (
+    SELECT 1 FROM level_prior_baselines b WHERE b.entity='words' AND b.entity_key=CAST(p.word_id AS TEXT)
+  )` : ""}))`;
+};
+
 export interface DailyStudyTime {
   date: string;
   minutes: number;
@@ -155,29 +166,18 @@ export function getStudyTimeAnalytics(): StudyTimeAnalytics {
  * 获取掌握度分析
  */
 export function getMasteryAnalytics(): MasteryAnalytics {
+  const REAL_WORD_STUDY = realWordStudySql();
   // 按 JLPT 等级统计。total 是词表规模,studied 才是有真实学习记录的词数。
   // progress 会在启动时为全库补行,所以不能再用 JOIN progress 作为「已学习」判据。
   const byLevel = rowsFor(`
     SELECT
       COALESCE(w.jlpt_level, '未分级') AS level,
       COUNT(*) AS total,
-      SUM(CASE WHEN p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-        SELECT 1 FROM reviews r
-        WHERE r.word_id = w.id AND r.direction = 'forward'
-      ) THEN 1 ELSE 0 END) AS studied,
-      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-        SELECT 1 FROM reviews r
-        WHERE r.word_id = w.id AND r.direction = 'forward'
-      )) AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS mastered,
-      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-        SELECT 1 FROM reviews r
-        WHERE r.word_id = w.id AND r.direction = 'forward'
-      )) AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
+      SUM(CASE WHEN ${REAL_WORD_STUDY} THEN 1 ELSE 0 END) AS studied,
+      SUM(CASE WHEN ${REAL_WORD_STUDY} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS mastered,
+      SUM(CASE WHEN ${REAL_WORD_STUDY} AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
         AND COALESCE(p.fsrs_lapses, 0) = 0 THEN 1 ELSE 0 END) AS learning,
-      SUM(CASE WHEN (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-        SELECT 1 FROM reviews r
-        WHERE r.word_id = w.id AND r.direction = 'forward'
-      )) AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
+      SUM(CASE WHEN ${REAL_WORD_STUDY} AND NOT (p.known_forever = 1 OR ${MASTERED_SQL})
         AND COALESCE(p.fsrs_lapses, 0) > 0 THEN 1 ELSE 0 END) AS struggling
     FROM words w
     JOIN progress p ON p.word_id = w.id
@@ -220,10 +220,7 @@ export function getMasteryAnalytics(): MasteryAnalytics {
       SUM(CASE WHEN p.known_forever = 1 OR ${MASTERED_SQL} THEN 1 ELSE 0 END) AS masteredCount
     FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE (p.seen_count > 0 OR p.known_forever = 1 OR EXISTS (
-      SELECT 1 FROM reviews r
-      WHERE r.word_id = w.id AND r.direction = 'forward'
-    ))
+    WHERE ${REAL_WORD_STUDY}
     GROUP BY pos
     ORDER BY count DESC
     LIMIT 5

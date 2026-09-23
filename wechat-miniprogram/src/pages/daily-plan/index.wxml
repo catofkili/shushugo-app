@@ -1,0 +1,41 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero"><text class="eyebrow">DAILY PLAN</text><text class="title">每日学习量</text><text class="subtitle">四种卡共用一份计划。拖动圆环是今天临时调整；数字表单会记住平时的新学强度。</text></view>
+  <view wx:if="{{error}}" class="notice">{{error}}</view>
+  <view wx:if="{{ready}}" class="panel">
+    <text class="mode-note">{{active.length ? '高亮的段计入今天总量' : '当前学习模式有自己的题池，不按圆环排'}}</text>
+    <canvas id="dailyPlanRing" canvas-id="dailyPlanRing" class="ring" width="240" height="240" bindtouchstart="touchStart" bindtouchmove="touchMove" bindtouchend="touchEnd" bindtouchcancel="touchEnd"></canvas>
+    <view class="total-row"><text>今天总量</text><input type="number" value="{{active.length ? total : ''}}" disabled="{{!active.length || busy}}" placeholder="—" bindblur="editTotal" /><text>项 · 预计 {{minutes}} 分钟</text></view>
+    <text class="detail">用时按标准节奏计算，不使用个人历史速度。距下次 JLPT {{daysLeft}} 天。</text>
+    <view wx:for="{{rows}}" wx:key="kind" class="row {{item.active ? '' : 'muted'}} {{focus === item.kind ? 'focused' : ''}}" data-kind="{{item.kind}}" bindtap="pickFocus">
+      <view class="dot" style="background: {{item.color}}"></view>
+      <text class="row-name">{{item.label}}</text><text class="row-count">{{item.count}}</text>
+      <text class="row-detail">新 {{item.fresh}} · 复 {{item.review}}{{item.low ? ' · 低于建议' : ''}}</text>
+    </view>
+    <view wx:if="{{focus}}" class="split">
+      <text>{{focusRow.label}} · 左边新学，右边复习</text>
+      <slider min="0" max="{{focusRow.count}}" value="{{focusRow.fresh}}" activeColor="#6FA83E" bindchange="changeSplit" />
+      <text class="detail">建议新学至少 {{focusRow.suggest.fresh}}，复习至少 {{focusRow.suggest.review}}。</text>
+      <button wx:if="{{focusRow.low}}" class="suggest" disabled="{{busy}}" bindtap="topUp">补到建议值 →</button>
+    </view>
+    <view class="actions"><button class="arrange" disabled="{{busy}}" bindtap="arrange">一键安排今天</button><button class="undo" disabled="{{busy || !canUndo}}" bindtap="undo">撤回</button></view>
+  </view>
+
+  <view wx:if="{{ready}}" class="panel">
+    <text class="section-title">直接改数字</text>
+    <text class="detail">改完一个数字后离开输入框，才会保存并重排今天的清单。</text>
+    <view class="form-head"><text>卡片</text><text>新学</text><text>复习</text></view>
+    <view wx:for="{{rows}}" wx:key="kind" class="form-row">
+      <text>{{item.label}}</text>
+      <input type="number" value="{{item.fresh}}" disabled="{{busy}}" data-kind="{{item.kind}}" data-field="fresh" bindblur="editNumber" />
+      <input type="number" value="{{item.review}}" disabled="{{busy}}" data-kind="{{item.kind}}" data-field="review" bindblur="editNumber" />
+    </view>
+  </view>
+
+  <view wx:if="{{ready}}" class="panel">
+    <text class="section-title">按备考目标一键设置</text>
+    <view class="preset"><text>目标 {{target}}</text></view>
+    <button class="arrange" disabled="{{busy}}" bindtap="applyPreset">设为每天约 {{presetMinutes}} 分钟</button>
+    <text wx:if="{{note}}" class="detail">{{note}}</text>
+    <navigator class="detail link" url="/features/jlpt-plan/index">修改目标或考期 →</navigator>
+  </view>
+</scroll-view>

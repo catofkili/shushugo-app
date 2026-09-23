@@ -22,6 +22,8 @@ const store = require('../src/runtime/database-store.js');
 store.getDatabase = () => db;
 let saves = 0;
 store.saveDatabase = async () => { saves += 1; return { bytes: 0 }; };
+// 出厂内容（题面层、辨析注记、一字多音…）在分包里，页面开门前都要先等它
+await store.ensureContentLoaded();
 const features = require('../src/runtime/extended-features.js');
 const words = require('../src/runtime/word-library.js');
 const grammar = require('../src/runtime/grammar.js');
@@ -51,13 +53,15 @@ assert.equal(await features.renameFavoriteFolder('考试 重点', '冲刺'), '�
 assert.equal(features.listFavorites('word', '冲刺').length, 1, '改名要连带把收藏行的 folder 一起改');
 await features.deleteFavoriteFolder('冲刺');
 assert.equal(features.unfiledFavoriteCount(), 2, '删夹子不删收藏，里面的东西回到未分类');
-assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE entity = 'favorite_folders' AND natural_key = '冲刺'"), 1, '删夹子要留墓碑，否则对端把它复活');
-assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE entity = 'favorite_folders' AND natural_key = '考试 重点'"), 1, '改名 = 旧名删除');
-assert.ok(core.rowsFor(db, 'SELECT sync_updated_at FROM content_favorites').every((row) => row.sync_updated_at), '小程序没有触发器，每次写都要自己盖 sync_updated_at，否则 lww 合并时输给对端的旧行');
+// 墓碑和 sync_updated_at 现在由网页的同步触发器写（小程序以前没有触发器，要手工补，
+// 而手工补必然会漏：删夹子把收藏挪回未分类那条就漏过）。
+assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'favorite_folders' AND row_key = '冲刺'"), 1, '删夹子要留墓碑，否则对端把它复活');
+assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'favorite_folders' AND row_key = '考试 重点'"), 1, '改名 = 旧名删除');
+assert.ok(core.rowsFor(db, 'SELECT sync_updated_at FROM content_favorites').every((row) => row.sync_updated_at), 'lww 表的每次写都要有 sync_updated_at，否则合并时输给对端的旧行');
 assert.equal(await grammar.toggleGrammarFavorite(17), false);
-assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE entity = 'content_favorites' AND natural_key = ?", ['grammar\u001fpdf-n5-017'], 0), 1, '小程序没有触发器，删收藏要自己补墓碑');
+assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'content_favorites' AND row_key = ?", [`grammar${String.fromCharCode(31)}pdf-n5-017`], 0), 1, '删收藏要留墓碑（触发器写的）');
 assert.equal(await grammar.toggleGrammarFavorite(17), true);
-assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE entity = 'content_favorites'", [], 0), 0, '加回来要撤掉墓碑');
+assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'content_favorites'", [], 0), 0, '加回来要撤掉墓碑');
 assert.ok(grammar.grammarRows(db, '', 'N5', 50).find((row) => Number(row.id) === 17).favorite === 1, '列表按字符串 id 亮星');
 
 /* ---- 备考：偏好在 wx 存储（键名同网页），状态形状是网页的 ---- */
@@ -108,8 +112,10 @@ assert.equal(features.yuzuBalance(), 320);
 
 /* ---- 周报：content_json 必须是网页 analytics/weekly 的形状（window.endAt、metrics.days、keyword…） ---- */
 const now = new Date('2026-09-22T10:00:00+08:00');
-core.recordAnswer(db, wordId, 'know', { now: new Date('2026-09-15T10:00:00+08:00') });
-core.recordAnswer(db, wordId, 'forgot', { now: new Date('2026-09-16T10:00:00+08:00') });
+// 周报要的是「那一周里有作答」，而作答时间由网页的 submitWordAnswer 用当前时间写，
+// 没法伪造 —— 所以这两条直接当数据写进去（这里测的是周报的形状，不是作答路径）。
+db.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on, created_at, direction, event_source) VALUES (?, 'know', 0, '2026-09-15', '2026-09-15T02:00:00.000Z', 'forward', 'study')", [wordId]);
+db.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on, created_at, direction, event_source) VALUES (?, 'forgot', 0, '2026-09-16', '2026-09-16T02:00:00.000Z', 'forward', 'study')", [wordId]);
 const report = features.weeklyReport(0, now);
 assert.equal(report.window.start, '2026-09-13');
 assert.ok(Number.isFinite(report.window.endAt) && report.metrics.daily.length === 7 && 'keyword' in report && Array.isArray(report.revisitWords));
@@ -119,49 +125,26 @@ assert.equal(core.firstValue(db, "SELECT schema_version FROM weekly_reports WHER
 assert.ok(features.listWeeklyReports()[0].readAt == null);
 assert.equal(await features.markWeeklyReportRead('2026-09-13'), true);
 
-/* ---- 同步：免费账号的周报不上云；收藏 / 账本 / 测验历史 / 成就 真实往返 ---- */
-const freeSnapshot = new SQL.Database(await exportSyncSnapshot(db, { includeWeeklyReports: false }));
-assert.equal(core.firstValue(freeSnapshot, "SELECT COUNT(*) FROM sqlite_master WHERE name = 'weekly_reports'"), 0, '免费账号本机留周报，但不推上云端（同网页 syncedTablesForCloud）');
+/* ---- 同步：免费账号的周报不上云（其余的往返在 sync-snapshot-smoke 里测） ---- */
+const freeSnapshot = new SQL.Database(await exportSyncSnapshot(db));
+assert.equal(core.firstValue(freeSnapshot, "SELECT COUNT(*) FROM sqlite_master WHERE name = 'weekly_reports'"), 0,
+  '免费账号本机留周报，但不推上云端（网页的 syncedTablesForCloud 同一条）');
 freeSnapshot.close();
-const proSnapshot = await exportSyncSnapshot(db, { includeWeeklyReports: true });
-const other = seed();
-core.ensureStudySchema(other);
-mergeSnapshot(other, proSnapshot);
-for (const [table, sql] of [
-  ['content_favorites', "SELECT COUNT(*) FROM content_favorites"],
-  ['yuzu_ledger', "SELECT COALESCE(SUM(amount), 0) FROM yuzu_ledger"],
-  ['vocab_test_history', "SELECT COUNT(*) FROM vocab_test_history"],
-  ['achievements', "SELECT COUNT(*) FROM achievements"],
-  ['weekly_reports', "SELECT COUNT(*) FROM weekly_reports"]
-]) {
-  assert.equal(core.firstValue(other, sql), core.firstValue(db, sql), `${table} 必须原样到对端`);
-}
-const roundTrip = new SQL.Database(await exportSyncSnapshot(other, { includeWeeklyReports: true }));
-assert.equal(core.firstValue(roundTrip, "SELECT COUNT(*) FROM content_favorites"), 2, '对端再导出仍然带着这些行');
-roundTrip.close(); other.close();
+core.setState(db, 'entitlement_cache', JSON.stringify({ active: true, plan: 'pro', expiresAt: null, source: 'test' }));
+const proSnapshot = new SQL.Database(await exportSyncSnapshot(db));
+assert.equal(core.firstValue(proSnapshot, "SELECT COUNT(*) FROM weekly_reports"), 1, 'Pro 账号的周报要上云');
+proSnapshot.close();
+core.setState(db, 'entitlement_cache', '');
 
-// 本机已经删除的收藏不能被另一台设备的旧快照复活；较新的本机分组移动也不能被旧 folder 覆盖。
-const remote = seed();
-const local = seed();
-for (const database of [remote, local]) core.ensureStudySchema(database);
-remote.run("INSERT INTO content_favorites(item_type,item_id,folder,created_at,sync_updated_at) VALUES('word','1','旧分组','2026-01-01','2026-01-01T00:00:00.000Z')");
-const remoteSnapshot = await exportSyncSnapshot(remote, { includeWeeklyReports: false });
-local.run("INSERT OR REPLACE INTO sync_tombstones(entity,natural_key,deleted_at) VALUES('content_favorites',?,?)", ['word\u001f1', '2026-02-01T00:00:00.000Z']);
-mergeSnapshot(local, remoteSnapshot);
-assert.equal(core.firstValue(local, "SELECT COUNT(*) FROM content_favorites WHERE item_type='word' AND item_id='1'", [], 0), 0, '旧快照不能复活已删除收藏');
-local.run("DELETE FROM sync_tombstones WHERE entity='content_favorites' AND natural_key=?", ['word\u001f1']);
-local.run("INSERT INTO content_favorites(item_type,item_id,folder,created_at,sync_updated_at) VALUES('word','1','新分组','2026-01-01','2026-03-01T00:00:00.000Z')");
-mergeSnapshot(local, remoteSnapshot);
-assert.equal(core.firstValue(local, "SELECT folder FROM content_favorites WHERE item_type='word' AND item_id='1'"), '新分组', '旧快照不能覆盖较新的收藏分组');
-remote.close(); local.close();
+// 「删掉的收藏不能被旧快照复活」「较新的本机分组不能被旧 folder 覆盖」这两条是网页合并器的
+// 规则（frontend 的 merge.test.ts 里钉着），小程序这边由 sync-snapshot-smoke 验证老格式墓碑的兼容。
 
 /* ---- 分包里的静态内容 ---- */
 const foundation = require('../src/features/data/grammar-foundation.js');
-const kanji = require('../src/features/data/kanji-reading-usage.js');
 assert.equal(foundation.grammarFoundationRules.length, 43);
-await kanji.loadKanjiReadingUsage();
-assert.equal(kanji.allKanjiReadingUsage().length, 520);
-assert.ok(kanji.kanjiReadingUsageFor('日').readings.length >= 2);
+// 一字多音：表在 content 分包，判据是网页的 lib/kanji-reading-usage（ensureContentLoaded 已经灌好）
+assert.equal(web.kanjiReadingUsage.allKanjiReadingUsage().length, 520);
+assert.ok(web.kanjiReadingUsage.kanjiReadingUsageFor('日').readings.length >= 2);
 
 assert.ok(saves > 0, '写操作要落盘');
 db.close();

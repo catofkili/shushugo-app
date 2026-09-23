@@ -137,7 +137,13 @@ export const computeDailyMinimum = (input: PlanInputs): DailyMinimum => {
     reviewWords,
     newGrammar: Math.min(newGrammar, MAX_DAILY_NEW_GRAMMAR),
     reviewGrammar,
-    feasible: newWords <= MAX_DAILY_NEW_WORDS && newGrammar <= MAX_DAILY_NEW_GRAMMAR,
+    // 进入巩固期后 newWords/newGrammar 会变成 0，不能再拿这两个“今天不进新”的数
+    // 判断整份计划是否来得及。真正的问题是剩余内容按每日上限需要几天，而还能进
+    // 新内容的天数已经归零；旧写法会把“还剩 1000 词、距考试 10 天”判成 feasible。
+    feasible: input.unseenWords === 0 && input.unseenGrammar === 0
+      || (takingNew
+        && Math.ceil(input.unseenWords / MAX_DAILY_NEW_WORDS) <= intakeDaysLeft
+        && Math.ceil(input.unseenGrammar / MAX_DAILY_NEW_GRAMMAR) <= intakeDaysLeft),
     daysNeeded: daysNeeded + consolidation
   };
 };
@@ -172,6 +178,15 @@ export const shortfallOf = (plan: DailyMinimum, done: TodayProgress): Shortfall 
     reviewGrammar,
     clear: newWords + reviewWords + newGrammar + reviewGrammar === 0
   };
+};
+
+/** 页面和提醒只催当前确实可学的内容；原计划额度继续保留。 */
+export const availableShortfall = (shortfall: Shortfall, isPro: boolean, kanaPending = false): Shortfall => {
+  const newWords = kanaPending ? 0 : shortfall.newWords;
+  const reviewWords = shortfall.reviewWords;
+  const newGrammar = isPro ? shortfall.newGrammar : 0;
+  const reviewGrammar = isPro ? shortfall.reviewGrammar : 0;
+  return { newWords, reviewWords, newGrammar, reviewGrammar, clear: newWords + reviewWords + newGrammar + reviewGrammar === 0 };
 };
 
 /**

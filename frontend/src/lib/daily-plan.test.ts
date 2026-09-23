@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -104,26 +103,29 @@ describe("每日学习量：视图 / 写回 / 备考一键", () => {
 
   it("「现在 N几」从数据算：出厂库一个词没学 → 从零；辨析组按最难成员分级", () => {
     expect(learnedLevel()).toBeNull();
-    const byLevel = [0, 1, 2, 3, 4].map((rank) => examPreset(null, ["N5", "N4", "N3", "N2", "N1"][rank] as any).remaining.confusion);
+    const byLevel = [0, 1, 2, 3, 4].map((rank) => examPreset(["N5", "N4", "N3", "N2", "N1"][rank] as any).remaining.confusion);
     expect(byLevel[0]).toBeGreaterThan(0);
     expect(byLevel).toEqual([...byLevel].sort((a, b) => a - b));
     expect(byLevel[4]).toBeGreaterThan(byLevel[0]);
   });
 
-  it("备考一键：只算 (现在, 目标] 那几级的剩余，按可进新内容的天数摊，封顶", () => {
-    const preset = examPreset("N5", "N3");
+  it("备考一键：按目标范围内实际未学的行计算，自报本级熟悉度为 0 仍需新学", () => {
+    const preset = examPreset("N3");
     expect(preset.remaining.words).toBeGreaterThan(0);
     expect(preset.remaining.grammar).toBeGreaterThan(0);
-    expect(examPreset(null, "N3").remaining.words).toBeGreaterThan(preset.remaining.words);
     expect(preset.plan.words.fresh).toBeLessThanOrEqual(50);
     expect(preset.plan.grammar.fresh).toBeLessThanOrEqual(12);
     expect(preset.plan.words.fresh).toBeGreaterThan(0);
-    // 现在 N3 考 N3：没有可进的等级，新学全 0
-    const none = examPreset("N3", "N3");
-    expect(none.remaining.words).toBe(0);
-    expect(none.plan.words.fresh).toBe(0);
-    applyExamPreset("N5", "N2");
+    expect(preset.load.perWeek).toHaveLength(8);
+    expect(preset.load.peakWeek).toBeGreaterThanOrEqual(1);
+    // 自报 N3 但熟悉度设为 0 时，N3 行仍是未学，不能被「当前 N3」排除。
+    expect(examPreset("N3").remaining.words).toBe(preset.remaining.words);
+    const wordId = Number(testDb.exec("SELECT id FROM words WHERE jlpt_level='N3' LIMIT 1")[0].values[0][0]);
+    testDb.run("UPDATE progress SET seen_count=1 WHERE word_id=?", [wordId]);
+    expect(examPreset("N3").remaining.words).toBe(preset.remaining.words - 1);
+    testDb.run("UPDATE progress SET seen_count=0 WHERE word_id=?", [wordId]);
+    applyExamPreset("N2");
     expect(getStudyPreferences().jlptTarget).toBe("N2");
-    expect(getStudyPreferences().dailyGoal).toBe(examPreset("N5", "N2").plan.words.fresh);
+    expect(getStudyPreferences().dailyGoal).toBe(examPreset("N2").plan.words.fresh);
   });
 });

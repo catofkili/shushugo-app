@@ -6,7 +6,7 @@
  *
  * 复习那一半：单词走 reviewCap（0 = 自动、-1 = 不限、n = 上限），另外三种各自一个 cap（0 = 到期全出）。
  */
-import { defaultStudyPreferences, getStudyPreferences, saveStudyPreferences, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
+import { defaultStudyPreferences, getStudyPreferences, kanaGatePending, saveStudyPreferences, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
 import { getJlptPlanStatus } from "./jlpt/status";
 import { levelsInScope, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { firstValue, rowsFor, studyDayEnd } from "./study-core";
@@ -16,6 +16,11 @@ import { dailyReviewCap } from "./review-budget";
 import { plannedDueCount } from "./fsrs-store";
 import { getDailyReliefProgress } from "./word-api/daily-relief";
 import { getDailyTailProgress } from "./word-api/daily-tail";
+import { effectiveStartingLevel, getLevelPlanSettings } from "./level-plan";
+import { predictLoad, type LoadKind } from "./plan/load-model";
+import { previewLevelPlan } from "./plan/content-matrix";
+import { parseExamDate } from "./jlpt/exam-dates";
+import { kanaComplete } from "./kana-progress";
 
 export type PlanKind = "words" | "grammar" | "kanji" | "confusion";
 export const PLAN_KINDS: PlanKind[] = ["words", "grammar", "kanji", "confusion"];
@@ -94,7 +99,7 @@ export const dailyPlanView = (prefs: StudyPreferences = getStudyPreferences()): 
   const segments: PlanSegment[] = [
     {
       kind: "words", label: PLAN_LABELS.words,
-      fresh: prefs.dailyGoal, review: wordReviewCount(prefs.reviewCap, wordDue - extras) + extras,
+      fresh: kanaGatePending() ? 0 : prefs.dailyGoal, review: wordReviewCount(prefs.reviewCap, wordDue - extras) + extras,
       pool: { due: wordDue, unseen: status.coverage.words.total - status.coverage.words.seen },
       suggest: { fresh: status.plan.newWords, review: wordDue }
     },
@@ -188,6 +193,7 @@ export const segmentLength = (count: number) => Math.log1p(Math.max(0, count));
  * 阈值 0.5 是「这一级的词大部分见过」的最松说法；作者库 N5 93% / N4 82% / N3 56% / N2 3% → N3。
  */
 export const learnedLevel = (): JlptTarget | null => {
+  if (getLevelPlanSettings()) return effectiveStartingLevel();
   const rows = rowsFor(`
     SELECT w.jlpt_level AS level, SUM(p.seen_count > 0 OR p.known_forever = 1) AS seen, COUNT(*) AS total
     FROM progress p JOIN words w ON w.id = p.word_id GROUP BY w.jlpt_level
@@ -203,45 +209,71 @@ export const learnedLevel = (): JlptTarget | null => {
 
 /**
  * 备考一键：现在 N几（null = 从零）、下次考 N几 → 按标准量算每日新学。
- * 剩余 = (现在, 目标] 那几级里没学过的；复习按今天到期的给。
+ * 剩余 = 目标范围内实际没学过的；自报本级熟悉度为 0 时本级也要进新学。
  * 用时按 SECONDS_PER_CARD 固定值算，不看用户历史。
  */
-export const examPreset = (current: JlptTarget | null, target: JlptTarget) => {
+export const examPreset = (target: JlptTarget) => {
   const status = getJlptPlanStatus();
-  const intakeDays = status.plan.intakeDaysLeft;
-  const currentRank = current ? JLPT_TARGETS.indexOf(current) : -1;
+  const settings = getLevelPlanSettings();
+  const expected = settings ? previewLevelPlan({
+    startingLevel: settings.startingLevel,
+    familiarity: settings.familiarity,
+    target,
+    examDate: status.examDate,
+    startedOn: parseExamDate(settings.startedOn) ?? undefined,
+    kanaCompleted: settings.startingLevel === "kana-none" && kanaComplete()
+  }) : null;
+  const intakeDays = expected?.intakeDays ?? status.plan.intakeDaysLeft;
   const targetRank = JLPT_TARGETS.indexOf(target);
-  const levels = JLPT_TARGETS.slice(currentRank + 1, targetRank + 1).map((level) => `'${level}'`).join(", ") || "''";
-  const unseenWords = firstValue<number>(`
+  const levels = JLPT_TARGETS.slice(0, targetRank + 1).map((level) => `'${level}'`).join(", ");
+  const unseenWords = expected?.content.words ?? firstValue<number>(`
     SELECT COUNT(*) FROM progress p JOIN words w ON w.id = p.word_id
     WHERE w.jlpt_level IN (${levels}) AND p.seen_count = 0 AND p.known_forever = 0
   `, [], 0);
-  const unseenGrammar = firstValue<number>(`
+  const unseenGrammar = expected?.content.grammar ?? firstValue<number>(`
     SELECT COUNT(*) FROM grammar_progress p JOIN grammar_points g ON g.id = p.grammar_id
     WHERE g.level IN (${levels}) AND p.seen_count = 0 AND p.known_forever = 0
   `, [], 0);
-  const kanjiUnseen = firstValue<number>(
-    "SELECT COUNT(*) FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank > ? AND level_rank <= ?",
-    [currentRank, targetRank], 0
+  const kanjiUnseen = expected?.content.kanji ?? firstValue<number>(
+    "SELECT COUNT(*) FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ?",
+    [targetRank], 0
   );
-  const confusionUnseen = firstValue<number>(
-    "SELECT COUNT(*) FROM confusion_progress WHERE known_forever = 0 AND seen_count = 0 AND level_rank > ? AND level_rank <= ? AND group_key NOT IN (SELECT group_key FROM confusion_mastered)",
-    [currentRank, targetRank], 0
+  const confusionUnseen = expected?.content.confusion ?? firstValue<number>(
+    "SELECT COUNT(*) FROM confusion_progress WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ? AND group_key NOT IN (SELECT group_key FROM confusion_mastered)",
+    [targetRank], 0
   );
   const confusion = confusionCardPool(targetRank);
   const plan: Record<PlanKind, { fresh: number; review: number }> = {
     // 和 arrangedPlan 一样带上 extras：写回会减掉它，落下来的 cap 才是「今天该复习的」本身
-    words: { fresh: Math.min(50, amortize(unseenWords, intakeDays)), review: wordDueCount() + wordExtras() },
-    grammar: { fresh: Math.min(12, amortize(unseenGrammar, intakeDays)), review: grammarPools(target).due },
-    kanji: { fresh: Math.min(50, amortize(kanjiUnseen, intakeDays)), review: kanjiCharPool(targetRank).due },
-    confusion: { fresh: Math.min(20, amortize(confusionUnseen, intakeDays)), review: confusion.due }
+    words: { fresh: expected?.daily.words ?? Math.min(50, amortize(unseenWords, intakeDays)), review: wordDueCount() + wordExtras() },
+    grammar: { fresh: expected?.daily.grammar ?? Math.min(12, amortize(unseenGrammar, intakeDays)), review: grammarPools(target).due },
+    kanji: { fresh: expected?.daily.kanji ?? Math.min(50, amortize(kanjiUnseen, intakeDays)), review: kanjiCharPool(targetRank).due },
+    confusion: { fresh: expected?.daily.confusion ?? Math.min(20, amortize(confusionUnseen, intakeDays)), review: confusion.due }
   };
   const minutes = Math.round(PLAN_KINDS.reduce((sum, kind) => sum + (plan[kind].fresh + plan[kind].review) * SECONDS_PER_CARD[kind], 0) / 60);
-  return { plan, minutes, daysLeft: status.plan.daysLeft, intakeDays, remaining: { words: unseenWords, grammar: unseenGrammar, kanji: kanjiUnseen, confusion: confusionUnseen } };
+  const dueTables: Record<LoadKind, string> = { words: "progress", grammar: "grammar_progress", kanji: "kanji_char_memory", confusion: "confusion_progress" };
+  const existingDuePerWeek = Array.from({ length: 8 }, (_, index) => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() + index * 7);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return Object.fromEntries((Object.keys(dueTables) as LoadKind[]).map((kind) => [kind, firstValue<number>(
+      `SELECT COUNT(*) FROM ${dueTables[kind]} WHERE known_forever = 0 AND fsrs_due >= ? AND fsrs_due < ?`,
+      [start.toISOString(), end.toISOString()], 0
+    )])) as Record<LoadKind, number>;
+  });
+  const load = predictLoad({
+    dailyNew: Object.fromEntries(PLAN_KINDS.map((kind) => [kind, plan[kind].fresh])) as Record<LoadKind, number>,
+    existingDuePerWeek,
+    intakeDaysLeft: intakeDays,
+    weeks: 8
+  });
+  return { plan, minutes, load, daysLeft: status.plan.daysLeft, intakeDays, remaining: { words: unseenWords, grammar: unseenGrammar, kanji: kanjiUnseen, confusion: confusionUnseen }, expected };
 };
 
-export const applyExamPreset = (current: JlptTarget | null, target: JlptTarget) => {
-  const preset = examPreset(current, target);
+export const applyExamPreset = (target: JlptTarget) => {
+  const preset = examPreset(target);
   const prefs = getStudyPreferences();
   saveStudyPreferences({ ...prefs, jlptTarget: target });
   saveDailyPlan(preset.plan, true);

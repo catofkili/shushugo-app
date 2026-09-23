@@ -12,6 +12,8 @@
     "grammar-smoke": "node scripts/grammar-smoke.mjs",
     "word-library-smoke": "node scripts/word-library-smoke.mjs",
     "modes-smoke": "node scripts/modes-smoke.mjs",
+    "daily-plan-smoke": "node scripts/daily-plan-smoke.mjs",
+    "jlpt-plan-smoke": "node scripts/jlpt-plan-smoke.mjs",
     "confusion-smoke": "node scripts/confusion-smoke.mjs",
     "achievements-smoke": "node scripts/achievements-smoke.mjs",
     "daily-relief-smoke": "node scripts/daily-relief-smoke.mjs",

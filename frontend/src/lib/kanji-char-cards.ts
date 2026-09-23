@@ -17,6 +17,7 @@ import { firstValue, rowsFor, today } from "./study-core";
 import { ensureFsrsColumns, type FsrsEntity } from "./fsrs-store";
 import { FSRS_PARAMS_VERSION } from "./reviews";
 import { createCardLog, type StepMode } from "./card-log";
+import { withoutSyncStamp } from "./sync/schema";
 import { allKanjiUnits, kanjiUnitIndexLoaded, kanjiUnitWordIds, loadKanjiUnitIndex } from "./kanji-unit-index";
 import { kanjiReadingUsageFor, kanjiReadingUsageLoaded, loadKanjiReadingUsage, clauseText } from "./kanji-reading-usage";
 import readingsPayload from "../data/kanji_readings.json";
@@ -78,6 +79,8 @@ export const ensureKanjiCharTables = (): void => {
  */
 export const materializeKanjiChars = (): number => {
   ensureKanjiCharTables();
+  // ⚠️ 占位行不盖同步时间戳，理由同 word-api/bootstrap 的 initProgress：kanji_char_memory
+  // 是 lww，空占位行的「现在」比云端那条真学过的行新，合并之后会把它静默盖掉。
   const levelByChar = new Map<string, number>();
   for (const unit of allKanjiUnits()) {
     if (unit.unitType !== "char" || !unit.char) continue;
@@ -87,18 +90,20 @@ export const materializeKanjiChars = (): number => {
   const db = getDatabase();
   const existing = new Set(rowsFor("SELECT char FROM kanji_char_memory").map((row) => String(row.char)));
   let inserted = 0;
-  db.run("BEGIN");
-  try {
-    for (const [char, levelRank] of levelByChar) {
-      if (existing.has(char)) continue;
-      db.run("INSERT INTO kanji_char_memory (char, level_rank) VALUES (?, ?)", [char, levelRank]);
-      inserted += 1;
+  withoutSyncStamp(() => {
+    db.run("BEGIN");
+    try {
+      for (const [char, levelRank] of levelByChar) {
+        if (existing.has(char)) continue;
+        db.run("INSERT INTO kanji_char_memory (char, level_rank) VALUES (?, ?)", [char, levelRank]);
+        inserted += 1;
+      }
+      db.run("COMMIT");
+    } catch (error) {
+      db.run("ROLLBACK");
+      throw error;
     }
-    db.run("COMMIT");
-  } catch (error) {
-    db.run("ROLLBACK");
-    throw error;
-  }
+  });
   return inserted;
 };
 

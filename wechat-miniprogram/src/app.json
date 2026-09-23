@@ -3,6 +3,7 @@
     "pages/home/index",
     "pages/index/index",
     "pages/modes/index",
+    "pages/daily-plan/index",
     "pages/library/index",
     "pages/settings/index",
     "pages/progress/index",
@@ -20,11 +21,16 @@
         "weekly/index",
         "jlpt-plan/index",
         "grammar-foundation/index",
-        "kanji-readings/index",
         "favorites/index",
         "vocab-test/index",
-        "distinction-quiz/index",
         "yuzu-shop/index"
+      ]
+    },
+    {
+      "root": "content",
+      "pages": [
+        "kanji-readings/index",
+        "distinction-quiz/index"
       ]
     }
   ],
@@ -41,10 +47,30 @@
     "backgroundColor": "#FBF5E9",
     "borderStyle": "white",
     "list": [
-      { "pagePath": "pages/home/index", "text": "主页", "iconPath": "assets/nav/home.png", "selectedIconPath": "assets/nav/home.png" },
-      { "pagePath": "pages/index/index", "text": "单词", "iconPath": "assets/nav/study.png", "selectedIconPath": "assets/nav/study.png" },
-      { "pagePath": "pages/grammar/index", "text": "语法", "iconPath": "assets/nav/grammar.png", "selectedIconPath": "assets/nav/grammar.png" },
-      { "pagePath": "pages/settings/index", "text": "我的", "iconPath": "assets/nav/me.png", "selectedIconPath": "assets/nav/me.png" }
+      {
+        "pagePath": "pages/home/index",
+        "text": "主页",
+        "iconPath": "assets/nav/home.png",
+        "selectedIconPath": "assets/nav/home.png"
+      },
+      {
+        "pagePath": "pages/index/index",
+        "text": "单词",
+        "iconPath": "assets/nav/study.png",
+        "selectedIconPath": "assets/nav/study.png"
+      },
+      {
+        "pagePath": "pages/grammar/index",
+        "text": "语法",
+        "iconPath": "assets/nav/grammar.png",
+        "selectedIconPath": "assets/nav/grammar.png"
+      },
+      {
+        "pagePath": "pages/settings/index",
+        "text": "我的",
+        "iconPath": "assets/nav/me.png",
+        "selectedIconPath": "assets/nav/me.png"
+      }
     ]
   },
   "style": "v2",

@@ -1,8 +1,8 @@
 import { ArrowLeft, BellRing, CalendarDays, Target } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { getJlptPlanStatus, type JlptPlanStatus } from "../lib/jlpt/status";
-import { JLPT_TARGETS, shortfallText, type JlptTarget } from "../lib/jlpt/plan";
-import { formatExamDate, formatExamDateHuman, nextExamDate } from "../lib/jlpt/exam-dates";
+import { availableShortfall, JLPT_TARGETS, shortfallText, type JlptTarget } from "../lib/jlpt/plan";
+import { formatExamDate, formatExamDateHuman, nextExamDate, parseExamDate } from "../lib/jlpt/exam-dates";
 import { getStudyPreferences, saveStudyPreferences } from "../lib/studyPreferences";
 import {
   loadReminderSettings,
@@ -12,6 +12,14 @@ import {
 import { saveReminderSettings } from "../lib/notifications";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import { DailyPlanPanel } from "../components/DailyPlanPanel";
+import { LevelSetup } from "../components/LevelSetup";
+import { LoadCurve } from "../components/LoadCurve";
+import { KanaPrimer } from "../components/KanaPrimer";
+import { ExamDateWheel } from "../components/ExamDateWheel";
+import { getLevelPlanSettings, recalibrateLevelStartingPoint } from "../lib/level-plan";
+import { kanaComplete } from "../lib/kana-progress";
+import { previewLevelPlan } from "../lib/plan/content-matrix";
+import { useEntitlements } from "../hooks/useEntitlements";
 
 /**
  * 备考计划页。
@@ -64,9 +72,11 @@ const Row = ({
 };
 
 export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
+  const entitlements = useEntitlements();
   const [status, setStatus] = useState<JlptPlanStatus | null>(null);
   const [reminder, setReminder] = useState<ReminderSettings | null>(null);
   const [error, setError] = useState("");
+  const [setupOpen, setSetupOpen] = useState(false);
 
   const refresh = useCallback(() => {
     try {
@@ -84,22 +94,29 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
   }, [refresh]);
 
   useEffect(() => {
+    void recalibrateLevelStartingPoint().then((changed) => { if (changed) refresh(); }).catch(() => undefined);
+  }, [refresh]);
+
+  useEffect(() => {
     loadReminderSettings().then(setReminder).catch(() => setReminder(null));
   }, []);
 
   // 计划一变就把未来两周的通知重排一遍,不然改完目标/考期,提醒还在报旧数
   useEffect(() => {
     if (!status) return;
+    const pending = getLevelPlanSettings()?.startingLevel === "kana-none" && !kanaComplete();
+    if (pending) { void syncJlptPlanNotifications(null); return; }
+    const available = availableShortfall(status.shortfall, entitlements.isPro);
     syncJlptPlanNotifications(status.enabled ? {
       target: status.target,
       daysLeft: status.plan.daysLeft,
-      todayText: shortfallText(status.shortfall),
-      todayClear: status.shortfall.clear,
+      todayText: shortfallText(available),
+      todayClear: available.clear,
       newWordsPerDay: status.plan.newWords,
-      newGrammarPerDay: status.plan.newGrammar,
+      newGrammarPerDay: entitlements.isPro ? status.plan.newGrammar : 0,
       feasible: status.plan.feasible
     } : null).catch(() => undefined);
-  }, [status]);
+  }, [status, entitlements.isPro]);
 
   const patchPrefs = (patch: Partial<ReturnType<typeof getStudyPreferences>>) => {
     saveStudyPreferences({ ...getStudyPreferences(), ...patch });
@@ -114,6 +131,20 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
   };
 
   const auto = nextExamDate(new Date());
+  const kanaPending = getLevelPlanSettings()?.startingLevel === "kana-none" && !kanaComplete();
+  const available = status ? availableShortfall(status.shortfall, entitlements.isPro, kanaPending) : null;
+  const quotas = getStudyPreferences();
+  const planSettings = getLevelPlanSettings();
+  const estimate = status && planSettings ? previewLevelPlan({
+    startingLevel: planSettings.startingLevel,
+    familiarity: planSettings.familiarity,
+    target: status.target,
+    examDate: status.examDate,
+    startedOn: parseExamDate(planSettings.startedOn) ?? undefined,
+    kanaCompleted: planSettings.startingLevel === "kana-none" && kanaComplete()
+  }) : null;
+  const wordQuotaShort = !kanaPending && status?.plan.phase === "intake" && status.plan.newWords > quotas.dailyGoal;
+  const grammarQuotaShort = entitlements.isPro && status?.plan.phase === "intake" && status.plan.newGrammar > quotas.grammarDailyGoal;
 
   return (
     <div className="mx-auto max-w-3xl pb-6">
@@ -134,6 +165,15 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
 
       {status && (
         <>
+          <div className="mb-4 rounded-3xl jp-card p-5">
+            <p className="text-xs font-bold tracking-[0.14em] jp-muted">下一步 · 今天先做</p>
+            <p className="mt-2 text-xl font-black jp-ink">{kanaPending ? "从五十音开始" : shortfallText(available!)}</p>
+            {kanaPending ? <p className="mt-2 text-sm jp-muted">从下方第一个假名开始选读音，学完再进入新词。</p> : !available!.clear && <div className="mt-4 flex flex-wrap gap-2">
+              {(available!.newWords + available!.reviewWords > 0) && <button onClick={onStartWords} className="focus-ring min-h-12 flex-1 rounded-2xl jp-accent px-4 text-sm font-bold">开始今天的单词 →</button>}
+              {(available!.newGrammar + available!.reviewGrammar > 0) && <button onClick={onStartGrammar} className="focus-ring min-h-12 flex-1 rounded-2xl jp-btn px-4 text-sm font-bold jp-ink">开始今天的语法 →</button>}
+            </div>}
+          </div>
+          {kanaPending && <KanaPrimer />}
           {/* 倒计时 + 今天还差什么 */}
           <div className="mb-4 rounded-3xl jp-card p-5">
             <p className="text-xs font-bold uppercase tracking-[0.2em] jp-muted">
@@ -143,13 +183,22 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
               {status.plan.daysLeft < 0 ? "已考完" : `还有 ${status.plan.daysLeft} 天`}
             </p>
             <p className="mt-2 text-sm jp-muted">{PHASE_TEXT[status.plan.phase]}</p>
-            <p className="mt-3 rounded-2xl jp-inset px-3 py-2 text-sm font-bold jp-ink">
-              {shortfallText(status.shortfall)}
-            </p>
+            {estimate && <p className="mt-3 rounded-2xl jp-inset px-3 py-2 text-sm leading-6 jp-ink">
+              按所选起点，预计共要学 {estimate.content.words} 个词；剩余约 {estimate.intakeDays} 个进新日，平均需 {estimate.required.words} 个/天，当前每日计划上限 {estimate.daily.words} 个。今天能安排的任务会根据实际学习记录变化。
+            </p>}
+            {estimate && !estimate.feasible && <p className="mt-2 rounded-2xl border border-[#F0B67F]/60 bg-[#F0B67F]/15 px-3 py-2 text-xs leading-5 jp-ink">按所选起点估算，本场考前无法覆盖全部内容；可改考期或目标。</p>}
             {!status.plan.feasible && (
               <p className="mt-3 rounded-2xl border border-[#F0B67F]/60 bg-[#F0B67F]/15 px-3 py-2 text-xs leading-5 jp-ink">
-                按每天的上限也吃不完:全部覆盖大约要 {status.plan.daysNeeded} 天,现在只剩 {status.plan.daysLeft} 天。
+                按当前学习记录，每天做到上限仍需约 {status.plan.daysNeeded} 天，距考试只剩 {status.plan.daysLeft} 天。
                 要么把目标降一级,要么把考期改到下一场——继续按现在的排法只会天天欠账。
+              </p>
+            )}
+            {status.plan.feasible && (wordQuotaShort || grammarQuotaShort) && (
+              <p className="mt-3 rounded-2xl border border-[#F0B67F]/60 bg-[#F0B67F]/15 px-3 py-2 text-xs leading-5 jp-ink">
+                按当前固定额度，考前无法覆盖全部新内容。
+                {wordQuotaShort && ` 单词每天需约 ${status.plan.newWords} 个，当前安排 ${quotas.dailyGoal} 个。`}
+                {grammarQuotaShort && ` 语法每天需约 ${status.plan.newGrammar} 个，当前安排 ${quotas.grammarDailyGoal} 个。`}
+                可以调整每日学习量或改考期；额度不会自动增加。
               </p>
             )}
           </div>
@@ -158,6 +207,8 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
               「下次考 N几」就是下面「目标级别」那一个，面板不再有第二个选择框。 */}
           <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] jp-muted">每日学习量</p>
           <div className="mb-4"><DailyPlanPanel /></div>
+          {!entitlements.isPro && <p className="-mt-2 mb-4 px-1 text-xs leading-5 jp-muted">当前只安排单词；语法、汉字和辨析的原定额度已保留，开通 Pro 后恢复。</p>}
+          <LoadCurve />
 
           {/* 今天的最低量 */}
           <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] jp-muted">今天最少要做</p>
@@ -168,23 +219,11 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
               done={status.done.reviewWordsDone}
               hint="积压已经摊到一周里还了"
             />
-            <Row label="单词 · 新词" need={status.plan.newWords} done={status.done.newWordsDone} />
-            <Row label="语法 · 复习到期" need={status.plan.reviewGrammar} done={status.done.reviewGrammarDone} />
-            <Row label="语法 · 新语法" need={status.plan.newGrammar} done={status.done.newGrammarDone} />
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <button
-                onClick={onStartWords}
-                className="focus-ring h-12 rounded-2xl jp-accent text-sm font-bold"
-              >
-                去背词 →
-              </button>
-              <button
-                onClick={onStartGrammar}
-                className="focus-ring h-12 rounded-2xl jp-btn text-sm font-bold jp-ink"
-              >
-                去学语法 →
-              </button>
-            </div>
+            <Row label="单词 · 新词" need={kanaPending ? 0 : status.plan.newWords} done={status.done.newWordsDone} />
+            {entitlements.isPro && <>
+              <Row label="语法 · 复习到期" need={status.plan.reviewGrammar} done={status.done.reviewGrammarDone} />
+              <Row label="语法 · 新语法" need={status.plan.newGrammar} done={status.done.newGrammarDone} />
+            </>}
           </div>
 
           {/* 覆盖进度 */}
@@ -210,6 +249,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
           {/* 设置 */}
           <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.2em] jp-muted">计划设置</p>
           <div className="rounded-3xl jp-card p-4">
+            <button onClick={() => setSetupOpen(true)} className="focus-ring mb-4 h-11 w-full rounded-2xl jp-btn text-sm font-bold jp-ink">重新设定起点与目标</button>
             <label className="mb-3 flex items-center justify-between gap-3">
               <span className="inline-flex items-center gap-2 text-sm font-bold jp-ink">
                 <Target size={16} /> 开启备考计划
@@ -248,16 +288,11 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
               <p className="mb-2 inline-flex items-center gap-2 text-sm font-bold jp-ink">
                 <CalendarDays size={16} /> 考试日期
               </p>
-              <input
-                type="date"
-                value={formatExamDate(status.examDate)}
-                onChange={(event) => patchPrefs({ jlptExamDate: event.target.value })}
-                className="focus-ring h-11 w-full rounded-2xl jp-btn px-3 text-sm font-bold jp-ink"
-              />
+              <ExamDateWheel value={formatExamDate(status.examDate)} onChange={(value) => patchPrefs({ jlptExamDate: value })} />
               <p className="mt-2 text-xs jp-muted">
                 {status.examDateSource === "auto"
                   ? `自动：下一场 ${formatExamDate(auto)}`
-                  : "手填。清空即回到自动。"}
+                  : "已选考期；未公布的日期按惯例预计。"}
               </p>
               {status.examDateSource === "manual" && (
                 <button
@@ -294,6 +329,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
           </div>
         </>
       )}
+      {setupOpen && <LevelSetup open dismissible onClose={() => setSetupOpen(false)} onComplete={() => { setSetupOpen(false); refresh(); }} />}
     </div>
   );
 }

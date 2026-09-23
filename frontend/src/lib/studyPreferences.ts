@@ -1,4 +1,5 @@
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
+import { getState, setState } from "./database/db-utils";
 
 export type ThemePreference = "system" | "light" | "dark";
 
@@ -186,19 +187,44 @@ export const getStudyPreferences = (): StudyPreferences => {
 
 const localIsoDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
-export const saveStudyPreferences = (preferences: StudyPreferences) => {
+export const PLAN_QUOTA_KEYS = [
+  "dailyGoal", "reviewCap", "grammarDailyGoal", "grammarReviewCap",
+  "kanjiDailyGoal", "kanjiReviewCap", "confusionDailyGoal", "confusionReviewCap"
+] as const;
+
+export const saveStudyPreferences = (preferences: StudyPreferences, options: { keepPlanAnchor?: boolean; fromLevelPlanSync?: boolean } = {}) => {
   const normalized = normalizeStudyPreferences(preferences);
   // 目标或考期变了 = 一份新计划，窗口从今天起算；没锚的老存档也在这里补上
   const previous = getStudyPreferences();
-  if (!normalized.jlptPlanStartedOn || previous.jlptTarget !== normalized.jlptTarget || previous.jlptExamDate !== normalized.jlptExamDate) {
+  if (!options.keepPlanAnchor && (!normalized.jlptPlanStartedOn || previous.jlptTarget !== normalized.jlptTarget || previous.jlptExamDate !== normalized.jlptExamDate)) {
     normalized.jlptPlanStartedOn = localIsoDate();
+  }
+  if (!options.fromLevelPlanSync) {
+    let hasPlan = false;
+    try {
+      hasPlan = Boolean(getState("starting_level", ""));
+    } catch { /* 词库尚未打开时本机偏好照常保存；计划创建时会补齐同步状态。 */ }
+    if (hasPlan) {
+        if (previous.jlptPlanEnabled !== normalized.jlptPlanEnabled) setState("jlpt_plan_enabled", normalized.jlptPlanEnabled ? "1" : "0");
+        if (previous.jlptTarget !== normalized.jlptTarget) setState("jlpt_plan_target", normalized.jlptTarget);
+        if (previous.jlptExamDate !== normalized.jlptExamDate) setState("jlpt_plan_exam_date", normalized.jlptExamDate);
+        if (previous.jlptPlanStartedOn !== normalized.jlptPlanStartedOn) setState("jlpt_plan_started_on", normalized.jlptPlanStartedOn);
+        if (PLAN_QUOTA_KEYS.some((key) => previous[key] !== normalized[key])) {
+          setState("level_plan_quotas", JSON.stringify(Object.fromEntries(PLAN_QUOTA_KEYS.map((key) => [key, normalized[key]]))));
+        }
+    }
   }
   localStorage.setItem(KEY, JSON.stringify(normalized));
   window.dispatchEvent(new CustomEvent(PREFERENCES_EVENT, { detail: normalized }));
   return normalized;
 };
 
-export const getDailyWordGoal = () => getStudyPreferences().dailyGoal;
+export const kanaGatePending = () => {
+  try {
+    return getState("starting_level", "") === "kana-none" && getState("kana_completed", "0") !== "1";
+  } catch { return false; }
+};
+export const getDailyWordGoal = () => kanaGatePending() ? 0 : getStudyPreferences().dailyGoal;
 export const getDailyGrammarGoal = () => getStudyPreferences().grammarDailyGoal;
 export const getReviewCapPreference = () => getStudyPreferences().reviewCap;
 
