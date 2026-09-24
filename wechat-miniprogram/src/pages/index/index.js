@@ -7,7 +7,6 @@ const {
 const {
   answerCard,
   answerInterleave,
-  gradeMatching,
   getStudyHome,
   nextOfKind,
   saveWordNote,
@@ -22,6 +21,45 @@ const { cachedEntitlement, notifyTrialExpiry } = require('../../runtime/entitlem
 const { canUse } = require('../../core/entitlements');
 const core = require('../../core/study-core');
 const { web } = core;
+
+const KANJI_ROW_PITCH = 112;
+const KANJI_GUTTER = 64;
+
+const kanjiMatchView = (question, readings, pairs, selectedWord, revealed) => {
+  const items = question?.items || [];
+  const lines = [];
+  const addLine = (wordIndex, readingIndex, kind) => {
+    const deltaY = (readingIndex - wordIndex) * KANJI_ROW_PITCH;
+    const angle = Math.atan2(deltaY, KANJI_GUTTER) * 180 / Math.PI;
+    lines.push({
+      index: lines.length,
+      kind,
+      style: `top:${wordIndex * KANJI_ROW_PITCH + KANJI_ROW_PITCH / 2}rpx;transform:translateY(-50%) rotate(${angle}deg)`
+    });
+  };
+
+  items.forEach((item, wordIndex) => {
+    const assigned = pairs[wordIndex];
+    const correct = readings.indexOf(item.targetReading);
+    if (revealed) {
+      if (assigned !== undefined && assigned !== correct) addLine(wordIndex, assigned, 'wrong');
+      if (correct >= 0) addLine(wordIndex, correct, 'correct');
+    } else if (assigned !== undefined) addLine(wordIndex, assigned, 'attempt');
+  });
+
+  const pairedReadings = new Set(Object.values(pairs));
+  return {
+    kanjiWordRows: items.map((item, index) => ({ ...item, index, selected: selectedWord === index, paired: pairs[index] !== undefined })),
+    kanjiReadingRows: readings.map((reading, index) => ({
+      index,
+      reading,
+      paired: pairedReadings.has(index),
+      correct: revealed && items.some((item, wordIndex) => item.targetReading === reading && pairs[wordIndex] === index)
+    })),
+    kanjiConnections: lines,
+    kanjiMatchComplete: items.length > 0 && Object.keys(pairs).length === items.length
+  };
+};
 
 Page({
   data: {
@@ -45,11 +83,13 @@ Page({
     // 混合模式的插播卡「盖在」单词卡上面：{ kind: grammar|kanji|confusion, card }
     interleave: null,
     interleaveRevealed: false,
-    // 连线卡：左列词形、右列题面，连错次数决定四档（0 认识 / 1 模糊 / ≥2 忘记）
-    matchPicked: null,
-    matchDone: {},
-    matchMistakes: 0,
-    matchFinished: false,
+    kanjiReadings: [],
+    kanjiPairs: {},
+    selectedKanjiWord: null,
+    kanjiWordRows: [],
+    kanjiReadingRows: [],
+    kanjiConnections: [],
+    kanjiMatchComplete: false,
     // 跟网页的 UNDO_LIMIT=2 对齐；只记本次进入页面后的作答顺序。
     undoKinds: [],
     swipeStyle: '', swipeStamp: '',
@@ -158,7 +198,7 @@ Page({
       const shareReady = !home.card && !home.interleave && Number(home.stats.completed) > 0;
       if (shareReady) wx.showShareMenu({ menus: ['shareAppMessage', 'shareTimeline'] });
       else wx.hideShareMenu();
-      // ⚠️ 屏幕上已经有插播卡时不许动它：连线卡连完之后要停在那儿让人读辨析总述、点「继续」，
+      // ⚠️ 屏幕上已经有插播卡时不许动它：插播卡作答前要留在屏幕上显示答案和评分，
       // 而 refreshHome 是在那次记账里被调用的 —— 覆盖掉的话卡片当场消失，连错次数也被清零。
       if (!this.data.interleave) this.showInterleave(home.interleave || null);
       const app = getApp();
@@ -321,22 +361,54 @@ Page({
   /* ---------------- 混合模式的插播卡 ---------------- */
 
   showInterleave(interleave) {
+    const question = interleave?.kind === 'kanji' ? interleave.card.question : null;
+    const readings = question
+      ? web.kanjiReadingUsage.shuffleKanjiReadingOptions(question.items.map(item => item.targetReading))
+      : [];
+    const pairs = {};
+    const selectedWord = null;
     this.setData({
       interleave: interleave || null,
       interleaveRevealed: false,
-      matchPicked: null,
-      matchDone: {},
-      matchMistakes: 0,
-      matchFinished: false
+      kanjiReadings: readings,
+      kanjiPairs: pairs,
+      selectedKanjiWord: selectedWord,
+      ...kanjiMatchView(question, readings, pairs, selectedWord, false)
     });
   },
 
   revealInterleave() {
     bankReminder();
     if (this.data.interleave) {
-      this.setData({ interleaveRevealed: true });
+      const question = this.data.interleave.kind === 'kanji' ? this.data.interleave.card.question : null;
+      this.setData({
+        interleaveRevealed: true,
+        ...kanjiMatchView(question, this.data.kanjiReadings, this.data.kanjiPairs, this.data.selectedKanjiWord, true)
+      });
       if (web.preferences.getStudyPreferences().zooSounds) web.sounds.playFlip();
     }
+  },
+
+  selectKanjiWord(event) {
+    if (this.data.interleaveRevealed || !this.data.interleave?.card.question) return;
+    const index = Number(event.currentTarget.dataset.index);
+    const selectedWord = this.data.selectedKanjiWord === index ? null : index;
+    this.setData({
+      selectedKanjiWord: selectedWord,
+      ...kanjiMatchView(this.data.interleave.card.question, this.data.kanjiReadings, this.data.kanjiPairs, selectedWord, false)
+    });
+  },
+
+  selectKanjiReading(event) {
+    if (this.data.interleaveRevealed || this.data.selectedKanjiWord === null) return;
+    const readingIndex = Number(event.currentTarget.dataset.index);
+    const pairs = web.kanjiReadingUsage.assignKanjiReadingPair(this.data.kanjiPairs, this.data.selectedKanjiWord, readingIndex);
+    const selectedWord = null;
+    this.setData({
+      kanjiPairs: pairs,
+      selectedKanjiWord: selectedWord,
+      ...kanjiMatchView(this.data.interleave.card.question, this.data.kanjiReadings, pairs, selectedWord, false)
+    });
   },
 
   answerInterleaveCard(event) {
@@ -358,38 +430,6 @@ Page({
       await this.refreshHome();
       return answer === 'forgot' ? '已安排稍后重学' : '已保存到本地库';
     });
-  },
-
-  /** 连线卡：先点左列一个词形，再点右列一个题面。连错次数决定四档，不让用户自己选分。 */
-  pickMatchLeft(event) {
-    if (this.data.matchFinished) return;
-    this.setData({ matchPicked: String(event.currentTarget.dataset.id) });
-  },
-
-  pickMatchRight(event) {
-    const picked = this.data.matchPicked;
-    const target = String(event.currentTarget.dataset.id);
-    const interleave = this.data.interleave;
-    if (!picked || !interleave || this.data.matchFinished) return;
-    const right = picked === target;
-    const matchDone = { ...this.data.matchDone };
-    if (right) matchDone[target] = true;
-    const mistakes = this.data.matchMistakes + (right ? 0 : 1);
-    const finished = interleave.card.pairs.every((pair) => matchDone[String(pair.id)]);
-    this.setData({ matchPicked: null, matchDone, matchMistakes: mistakes, matchFinished: finished, interleaveRevealed: finished });
-    if (!finished) return;
-    // 连完那一刻就记账（评分由连错次数定），「继续」才翻下一张
-    this.run('记录作答', async () => {
-      await answerInterleave('confusion', interleave.card.groupKey, gradeMatching(mistakes));
-      this.pushUndo('confusion');
-      await this.refreshHome();
-      return mistakes === 0 ? '全连对了' : `连错 ${mistakes} 次，已安排复习`;
-    });
-  },
-
-  continueAfterMatch() {
-    this.showInterleave(null);
-    this.refreshHome();
   },
 
   handleLevelChange(event) {

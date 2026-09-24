@@ -34,11 +34,13 @@ button { margin: 16rpx 0; border-radius: 20rpx; font-size: 27rpx; line-height: 8
 .interleave-kanji{border-left-color:#5c813f}
 .interleave-confusion{border-left-color:#8a6ea8}
 .kanji-char{display:block;text-align:center;font-size:120rpx;font-weight:800;line-height:1.2;margin:20rpx 0}
+.kanji-question-cue{display:block;margin:16rpx 0;text-align:center;color:#806f5c;font-size:24rpx;line-height:1.45}.kanji-match-labels{display:grid;grid-template-columns:minmax(0,1fr) 64rpx minmax(0,1fr);margin:18rpx 0 10rpx;color:#9b8875;font-size:20rpx;font-weight:800}.kanji-match-labels text:last-child{text-align:right}.kanji-match-board{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 64rpx minmax(0,1fr);align-items:stretch}.kanji-match-column{display:flex;min-width:0;flex-direction:column;gap:12rpx}.kanji-match-gutter{position:relative}.kanji-match-cell{position:relative;z-index:1;display:flex;min-width:0;min-height:100rpx;box-sizing:border-box;flex-direction:column;justify-content:center;padding:10rpx 12rpx;border:2rpx solid #e7dccb;border-radius:16rpx;background:#f5eddf}.kanji-match-cell.picked{border-color:#8cae6b;background:#e5efd9}.kanji-match-cell.paired{border-color:#bb9bcf;background:#f1e9f5}.kanji-match-cell.correct{border-color:#78a755;background:#e5efd9}.kanji-match-cell.available{cursor:pointer}.kanji-match-word{display:block;overflow:hidden;color:#55483c;font-size:27rpx;font-weight:800;text-overflow:ellipsis;white-space:nowrap}.kanji-match-kana{display:block;overflow:hidden;color:#5f983a;font-size:19rpx;text-overflow:ellipsis;white-space:nowrap}.kanji-match-meaning{display:block;overflow:hidden;margin-top:4rpx;color:#8a7764;font-size:18rpx;text-overflow:ellipsis;white-space:nowrap}.kanji-reading-cell{align-items:flex-end;text-align:right}.kanji-match-line{position:absolute;left:0;width:64rpx;height:5rpx;border-radius:8rpx;transform-origin:left center;pointer-events:none}.kanji-match-line.attempt{background:#9d7db4;opacity:.82}.kanji-match-line.correct{background:#6fa83e;opacity:.92}.kanji-match-line.wrong{background:#c87971;opacity:.82}
 .grammar-meaning{display:block;margin-top:12rpx;font-size:28rpx;line-height:1.6}
 .usage-row{margin-top:12rpx;padding:16rpx;border-radius:16rpx;background:#f5efe5}
 .usage-base{font-weight:800;margin-right:12rpx}
 .usage-note{color:#6f685f;font-size:24rpx}
 .match-hint{display:block;margin:16rpx 0;color:#8a8177;font-size:24rpx}
+.distinction-front{display:flex;flex-direction:column;gap:12rpx}
 .match-body{display:flex;gap:16rpx}
 .match-col{flex:1;display:flex;flex-direction:column;gap:12rpx}
 .match-item{padding:18rpx;border-radius:18rpx;background:#f3ede3}

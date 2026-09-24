@@ -35,7 +35,7 @@ import { canUseFeature } from "../lib/entitlements";
 import { GrammarCard, QUIZ_ACCENT_AMBER } from "../features/grammar-quiz/GrammarCard";
 import { getGrammarQuizSession, submitGrammarQuizAnswer, undoLastGrammarQuizAnswer, type GrammarQuizCard } from "../lib/grammar-quiz";
 import { KanjiCharCardView, KANJI_ACCENT } from "../features/mixed-study/KanjiCharCardView";
-import { MatchingCardView, MATCH_ACCENT } from "../features/mixed-study/MatchingCardView";
+import { ConfusionCardView, MATCH_ACCENT } from "../features/mixed-study/ConfusionCardView";
 import {
   getConfusionCardSession, getKanjiCardSession, loadMixedCardData, mixedCardDataLoaded,
   submitConfusionCardAnswer, submitKanjiCardAnswer, undoConfusionCardAnswer, undoKanjiCardAnswer
@@ -48,7 +48,7 @@ import { wordDistinctions } from "../lib/models/word-distinctions";
 import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
-import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction } from "../lib/study-clock";
+import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -203,12 +203,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [grammarRevealed, setGrammarRevealed] = useState(false);
   const wordsSinceGrammarRef = useRef(0);
   /**
-   * 混合学习另外两种插播（docs/MIXED_STUDY_PLAN.md 第 2 节）：单独汉字卡、疑难连线卡。
+   * 混合学习另外两种插播（docs/MIXED_STUDY_PLAN.md 第 2 节）：单独汉字卡、疑难辨析 Anki 卡。
    * 和语法卡一样盖在单词卡上面；三种轮着来（interleaveIndexRef），哪种今天没了就跳过。
    */
   const [kanjiCard, setKanjiCard] = useState<KanjiCharCard | null>(null);
   const [kanjiRevealed, setKanjiRevealed] = useState(false);
   const [matchCard, setMatchCard] = useState<MatchingCard | null>(null);
+  const [matchRevealed, setMatchRevealed] = useState(false);
   const interleaveIndexRef = useRef(0);
   /** 语法那一侧还有没有今天的作答可撤（读 grammar-quiz 自己那份 quiz_undo 栈） */
   const [canUndoGrammar, setCanUndoGrammar] = useState(false);
@@ -376,7 +377,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         if (kanjiTail) { setKanjiCard(kanjiTail); setKanjiRevealed(false); otherTail = true; }
         else {
           const matchTail = getConfusionCardSession(getDatabase()).card;
-          if (matchTail) { setMatchCard(matchTail); otherTail = true; }
+          if (matchTail) { setMatchCard(matchTail); setMatchRevealed(false); otherTail = true; }
         }
       }
       setCard(data.card);
@@ -428,7 +429,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           if (next) { setKanjiCard(next); setKanjiRevealed(false); interleaveIndexRef.current += step + 1; return; }
         } else {
           const next = getConfusionCardSession(getDatabase()).card;
-          if (next) { setMatchCard(next); interleaveIndexRef.current += step + 1; return; }
+          if (next) { setMatchCard(next); setMatchRevealed(false); interleaveIndexRef.current += step + 1; return; }
         }
       }
     }
@@ -447,17 +448,17 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     if (!card) void loadNext(initialMode);
   };
 
-  /** 连线卡连完那一刻记账；「继续」才翻下一张。 */
-  const finishMatchCard = (value: WordAnswer) => {
+  const revealMatchCard = () => { setMatchRevealed(true); playFlip(); };
+  /** 学习者看完手写辨析后自评，按 FSRS 评分；不以选择题正确率代替记忆。 */
+  const answerMatchCard = (value: WordAnswer) => {
     if (!matchCard) return;
     triggerMemoryHaptic(value);
     if (value === "know") { playKnow(correctStreakRef.current); correctStreakRef.current += 1; }
     else { correctStreakRef.current = 0; playDontKnow(); }
     submitConfusionCardAnswer(matchCard.groupKey, value);
     pushUndoKind("confusion");
-  };
-  const continueAfterMatch = () => {
     setMatchCard(null);
+    setMatchRevealed(false);
     if (!card) void loadNext(initialMode);
   };
 
@@ -574,19 +575,22 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     }
   }, []);
 
+  // 连线要逐项比较；单词、语法和辨析沿用原来的 60 秒无操作阈值。
+  const studyIdleLimitMs = kanjiCard ? STUDY_IDLE_LIMIT_MS * 2 : STUDY_IDLE_LIMIT_MS;
+
   /** 结上一段的账，把攒够的整秒取出来落库(零头留着，见 study-clock.ts) */
   const elapsedStudySeconds = useCallback((visibleOverride?: boolean) => {
-    const accrued = accrueStudyTime(studyClockRef.current, Date.now(), { visible: visibleOverride ?? pageVisible() });
+    const accrued = accrueStudyTime(studyClockRef.current, Date.now(), { visible: visibleOverride ?? pageVisible(), idleLimitMs: studyIdleLimitMs });
     const { seconds, state } = drainStudySeconds(accrued);
     studyClockRef.current = state;
     return seconds;
-  }, []);
+  }, [studyIdleLimitMs]);
 
   useEffect(() => {
-    trackingActiveRef.current = Boolean(card?.id);
+    trackingActiveRef.current = Boolean(card?.id || kanjiCard);
     // 换卡本身就是一次交互(刚点过评分)，顺手把上一段结掉。
-    studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible() });
-  }, [card?.id, unitKey]);
+    studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible(), idleLimitMs: studyIdleLimitMs });
+  }, [card?.id, kanjiCard, studyIdleLimitMs, unitKey]);
 
   useEffect(() => {
     const flushStudyTime = async () => {
@@ -597,7 +601,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 「有没有在操作」的口径:点、按键、滚、划都算,**鼠标移动不算** ——
     // 鼠标扫过、页面轻微抖一下都会误判成还在学。
     const handleInteraction = () => {
-      studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible() });
+      studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible(), idleLimitMs: studyIdleLimitMs });
     };
     const interactionEvents = ["pointerdown", "keydown", "wheel", "scroll", "touchmove"] as const;
     interactionEvents.forEach((name) => {
@@ -623,7 +627,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       document.removeEventListener("visibilitychange", handleVisibility);
       flushStudyTime();
     };
-  }, [elapsedStudySeconds, sendStudySeconds]);
+  }, [elapsedStudySeconds, sendStudySeconds, studyIdleLimitMs]);
 
   useEffect(() => {
     setNoteText(card?.note ?? "");
@@ -899,7 +903,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         || event.metaKey
         || event.altKey
         || distinctionOpen
-        // 语法卡盖在上面时键位归它（GrammarCard 自己挂了一套一模一样的）；汉字卡、连线卡同理
+        // 语法卡盖在上面时键位归它（GrammarCard 自己挂了一套一模一样的）；汉字卡、辨析卡同理
         || grammarCard || kanjiCard || matchCard
         || isEditableTarget(event.target)
       ) return;
@@ -943,6 +947,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       } else {
         undoConfusionCardAnswer();
         setMatchCard(getConfusionCardSession(getDatabase()).card);
+        setMatchRevealed(false);
       }
       return;
     }
@@ -970,6 +975,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         setGrammarRevealed(false);
         setKanjiCard(null);
         setMatchCard(null);
+        setMatchRevealed(false);
         wordsSinceGrammarRef.current = MIXED_GRAMMAR_EVERY - 1;
       }
       // 撤销了刚才那次作答,音高台阶也该跟着退回起点(不做精确回退:撤销很少用,
@@ -1320,13 +1326,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   if (kanjiCard || matchCard) {
     const accent = kanjiCard ? KANJI_ACCENT : MATCH_ACCENT;
     return (
-      <div style={accent} className="word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px]">
+      <div style={accent} className={`word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px] ${kanjiCard ? "kanji-match-shell" : ""}`}>
         <div className="mb-2 flex items-center gap-2 lg:mx-auto lg:w-[min(900px,100%)]">
           <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold !text-[#2f3333]" style={{ background: "var(--quiz-accent)" }}>
             <Shuffle size={13} />
             {kanjiCard ? "单独汉字" : "疑难辨析"}
           </span>
-          <span className="text-xs text-white/45">{kanjiCard ? "考的是读音，不考写法" : "连完自动评分"}</span>
+          <span className="text-xs text-white/45">{kanjiCard ? "考的是读音，不考写法" : "回想区别后翻面自评"}</span>
           <button
             onClick={undo}
             disabled={!undoEnabled}
@@ -1340,7 +1346,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         {kanjiCard ? (
           <KanjiCharCardView card={kanjiCard} revealed={kanjiRevealed} onReveal={() => setKanjiRevealed(true)} onAnswer={answerKanjiCard} />
         ) : (
-          <MatchingCardView card={matchCard!} onFinished={finishMatchCard} onContinue={continueAfterMatch} />
+          <ConfusionCardView card={matchCard!} revealed={matchRevealed} onReveal={revealMatchCard} onAnswer={answerMatchCard} />
         )}
       </div>
     );

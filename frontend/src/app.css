@@ -252,6 +252,15 @@
 @media(min-width:1024px){
   .word-study-shell{height:calc(100vh - 4rem);min-height:600px}
 }
+/* 汉字连线在手机横屏时仍要留得下操作键，词语列表在卡内滚动。 */
+@media (max-height:600px) and (orientation:landscape){
+  .word-study-shell.kanji-match-shell{min-height:0}
+  .kanji-match-card{padding:8px;gap:6px}
+  .kanji-match-card>div:first-child{min-height:0;padding:6px}
+  .kanji-match-card>div:first-child .jp-serif{margin-top:4px;font-size:36px}
+  .kanji-match-card>div:first-child p:last-child{margin-top:4px}
+  .kanji-match-card>div:nth-child(2){padding:8px}
+}
 
 /* ===== 松鼠捡松子的小路（首页顶部栏） =====
    放全局顶栏而不是学习卡片里:卡片高度是死的,进度条占的每一像素都是从答案区扣的;

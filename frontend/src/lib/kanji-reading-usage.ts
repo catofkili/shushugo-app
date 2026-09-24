@@ -56,6 +56,42 @@ export interface KanjiCharUsage {
   hasSpecific: boolean;
 }
 
+export interface KanjiReadingMatch {
+  word: string;
+  wordKana: string;
+  meaning: string;
+  targetReading: string;
+}
+
+export interface KanjiReadingQuestion {
+  items: KanjiReadingMatch[];
+}
+
+/** Web and WeChat share the same unique-option order and one-to-one pairing rules. */
+export const shuffleKanjiReadingOptions = (readings: readonly string[], rng: () => number = Math.random): string[] => {
+  const options = [...readings];
+  for (let index = options.length - 1; index > 0; index -= 1) {
+    const other = Math.floor(rng() * (index + 1));
+    [options[index], options[other]] = [options[other], options[index]];
+  }
+  return options;
+};
+
+/** Reassigning a reading moves it from its previous word; every option has at most one match. */
+export const assignKanjiReadingPair = (
+  pairs: Readonly<Record<number, number>>,
+  wordIndex: number,
+  readingIndex: number
+): Record<number, number> => {
+  const next = { ...pairs };
+  delete next[wordIndex];
+  for (const [assignedWord, assignedReading] of Object.entries(next)) {
+    if (assignedReading === readingIndex) delete next[Number(assignedWord)];
+  }
+  next[wordIndex] = readingIndex;
+  return next;
+};
+
 type ReadingTuple = [string, number, number, string, number, string[]];
 type CharTuple = [string, number, string, ReadingTuple[]];
 interface Payload {
@@ -63,6 +99,7 @@ interface Payload {
   clauses: UsageClause[];
   levels: string[];
   chars: CharTuple[];
+  questions?: Record<string, KanjiReadingQuestion>;
 }
 
 interface Loaded {
@@ -70,6 +107,7 @@ interface Loaded {
   levels: string[];
   chars: KanjiCharUsage[];
   byChar: Map<string, KanjiCharUsage>;
+  questions: Map<string, KanjiReadingQuestion>;
 }
 
 let loaded: Loaded | null = null;
@@ -109,7 +147,8 @@ export const decodeUsagePayload = (payload: Payload): Loaded => {
     version: payload.version,
     levels: payload.levels,
     chars,
-    byChar: new Map(chars.map((entry) => [entry.char, entry]))
+    byChar: new Map(chars.map((entry) => [entry.char, entry])),
+    questions: new Map(Object.entries(payload.questions ?? {}))
   };
 };
 
@@ -124,7 +163,9 @@ export const loadKanjiReadingUsage = (): Promise<void> => {
 export const kanjiReadingUsageLoaded = (): boolean => loaded !== null;
 export const kanjiReadingUsageVersion = (): string => loaded?.version ?? "";
 export const allKanjiReadingUsage = (): readonly KanjiCharUsage[] => loaded?.chars ?? [];
+export const allKanjiReadingQuestionChars = (): readonly string[] => [...(loaded?.questions.keys() ?? [])];
 export const kanjiReadingUsageFor = (char: string): KanjiCharUsage | null => loaded?.byChar.get(char) ?? null;
+export const kanjiReadingQuestionFor = (char: string): KanjiReadingQuestion | null => loaded?.questions.get(char) ?? null;
 
 /**
  * 判据渲染成中文。

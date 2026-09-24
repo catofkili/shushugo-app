@@ -20,6 +20,7 @@ import {
   recordKanjiCharReview,
   replayKanjiCharReviews
 } from "./kanji-char-cards";
+import { allKanjiReadingQuestionChars, assignKanjiReadingPair, shuffleKanjiReadingOptions } from "./kanji-reading-usage";
 import { rowsFor, firstValue, today } from "./study-core";
 
 describe("单独汉字卡", () => {
@@ -46,6 +47,9 @@ describe("单独汉字卡", () => {
     expect(card!.usage.every((u) => u.note.length > 0)).toBe(true);
     expect(card!.examples.length).toBeGreaterThan(0);
     expect(card!.examples.every((e) => e.kanji.includes("悪") && e.meaning)).toBe(true);
+    expect(card!.question?.items.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(card!.question!.items.map((item) => item.targetReading)).size).toBe(card!.question!.items.length);
+    expect(card!.question!.items.every((item) => [...item.word].filter((char) => char === "悪").length === 1)).toBe(true);
     // 学过的例词排前面
     const wordId = card!.examples[card!.examples.length - 1].wordId;
     testDb.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [wordId]);
@@ -57,14 +61,29 @@ describe("单独汉字卡", () => {
   });
 
   it("当天清单：新学按额度、目标等级内、出现多的先；同一天不重排", () => {
+    const eligible = new Set(allKanjiReadingQuestionChars());
+    expect(eligible.size).toBe(520);
+    const unsupported = rowsFor("SELECT char FROM kanji_char_memory").map((row) => String(row.char)).find((char) => !eligible.has(char));
+    expect(unsupported).toBeTruthy();
+    testDb.run("INSERT INTO kanji_char_tasks (reviewed_on, char, order_index) VALUES (?, ?, 0)", [today(), unsupported!]);
     const made = createKanjiCharTasks({ fresh: 5, review: 10 }, 0);
     expect(made).toEqual({ fresh: 5, review: 0 });
     const tasks = rowsFor("SELECT t.char, m.level_rank FROM kanji_char_tasks t JOIN kanji_char_memory m ON m.char = t.char ORDER BY order_index");
     expect(tasks).toHaveLength(5);
+    expect(tasks.every((row) => eligible.has(String(row.char)))).toBe(true);
     expect(tasks.every((row) => Number(row.level_rank) === 0)).toBe(true);
     expect(createKanjiCharTasks({ fresh: 50, review: 50 }, 4)).toEqual({ fresh: 5, review: 0 });
     expect(kanjiCharProgress()).toEqual({ total: 5, done: 0, remaining: 5 });
     expect(kanjiCharPool(0).unseen).toBeGreaterThan(5);
+  });
+
+  it("读音选项打乱后仍各不相同，重配时每个读音只连一词", () => {
+    const shuffled = shuffleKanjiReadingOptions(["あ", "い", "う"], () => 0);
+    expect(new Set(shuffled)).toEqual(new Set(["あ", "い", "う"]));
+    const first = assignKanjiReadingPair({}, 0, 0);
+    const reassigned = assignKanjiReadingPair(first, 1, 0);
+    expect(reassigned).toEqual({ 1: 0 });
+    expect(Object.values(reassigned)).toEqual([0]);
   });
 
   it("作答进 FSRS、写流水；第一次就认识当天毕业，忘记的当天再出；重放能原样重建", () => {

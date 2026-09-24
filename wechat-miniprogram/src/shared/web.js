@@ -6940,7 +6940,10 @@ var init_card_log = __esm({
       const { entity, reviewsTable, tasksTable } = config;
       const id = entity.idColumn;
       const memory = entity.table;
-      const exclude = `known_forever = 0${config.extraExclude ? ` AND ${config.extraExclude}` : ""}`;
+      const exclude = () => {
+        const extra = typeof config.extraExclude === "function" ? config.extraExclude() : config.extraExclude;
+        return `known_forever = 0${extra ? ` AND ${extra}` : ""}`;
+      };
       const ensure = () => ensureFsrsColumns(entity);
       const priorEntity = memory === "kanji_char_memory" ? "kanji" : memory === "confusion_progress" ? "confusion" : "";
       const resetToStartingPoint = (key) => {
@@ -7046,7 +7049,7 @@ var init_card_log = __esm({
         const dayEnd = studyDayEnd().toISOString();
         const due = rowsFor(`
       SELECT ${id} FROM ${memory}
-      WHERE ${exclude} AND seen_count > 0 AND fsrs_due IS NOT NULL AND fsrs_due <= ?
+      WHERE ${exclude()} AND seen_count > 0 AND fsrs_due IS NOT NULL AND fsrs_due <= ?
       ORDER BY RANDOM() LIMIT ?
     `, [dayEnd, Math.max(0, quota.review)]).map((row) => String(row[id]));
         const fresh = freshCandidates().slice(0, Math.max(0, quota.fresh));
@@ -7105,9 +7108,11 @@ var init_card_log = __esm({
       };
       const dueCount = () => {
         ensure();
-        return firstValue(`SELECT COUNT(*) FROM ${memory} WHERE ${exclude} AND seen_count > 0 AND fsrs_due <= ?`, [studyDayEnd().toISOString()], 0);
+        return firstValue(`SELECT COUNT(*) FROM ${memory} WHERE ${exclude()} AND seen_count > 0 AND fsrs_due <= ?`, [studyDayEnd().toISOString()], 0);
       };
-      return { ensure, stepMode, record, replay, undoLast, createTasks, clearTasks, pickNext, progress, dueCount, exclude };
+      return { ensure, stepMode, record, replay, undoLast, createTasks, clearTasks, pickNext, progress, dueCount, get exclude() {
+        return exclude();
+      } };
     };
   }
 });
@@ -7220,19 +7225,40 @@ var require_kanji_reading_usage = __commonJS({
 // ../frontend/src/lib/kanji-reading-usage.ts
 var kanji_reading_usage_exports = {};
 __export(kanji_reading_usage_exports, {
+  allKanjiReadingQuestionChars: () => allKanjiReadingQuestionChars,
   allKanjiReadingUsage: () => allKanjiReadingUsage,
+  assignKanjiReadingPair: () => assignKanjiReadingPair,
   clauseText: () => clauseText,
   decodeUsagePayload: () => decodeUsagePayload,
+  kanjiReadingQuestionFor: () => kanjiReadingQuestionFor,
   kanjiReadingUsageFor: () => kanjiReadingUsageFor,
   kanjiReadingUsageLoaded: () => kanjiReadingUsageLoaded,
   kanjiReadingUsageVersion: () => kanjiReadingUsageVersion,
   loadKanjiReadingUsage: () => loadKanjiReadingUsage,
-  readingLine: () => readingLine
+  readingLine: () => readingLine,
+  shuffleKanjiReadingOptions: () => shuffleKanjiReadingOptions
 });
-var loaded2, loading2, SPECIFIC, decodeUsagePayload, loadKanjiReadingUsage, kanjiReadingUsageLoaded, kanjiReadingUsageVersion, allKanjiReadingUsage, kanjiReadingUsageFor, clauseText, readingLine;
+var shuffleKanjiReadingOptions, assignKanjiReadingPair, loaded2, loading2, SPECIFIC, decodeUsagePayload, loadKanjiReadingUsage, kanjiReadingUsageLoaded, kanjiReadingUsageVersion, allKanjiReadingUsage, allKanjiReadingQuestionChars, kanjiReadingUsageFor, kanjiReadingQuestionFor, clauseText, readingLine;
 var init_kanji_reading_usage = __esm({
   "../frontend/src/lib/kanji-reading-usage.ts"() {
     "use strict";
+    shuffleKanjiReadingOptions = (readings3, rng = Math.random) => {
+      const options = [...readings3];
+      for (let index3 = options.length - 1; index3 > 0; index3 -= 1) {
+        const other = Math.floor(rng() * (index3 + 1));
+        [options[index3], options[other]] = [options[other], options[index3]];
+      }
+      return options;
+    };
+    assignKanjiReadingPair = (pairs, wordIndex, readingIndex) => {
+      const next = { ...pairs };
+      delete next[wordIndex];
+      for (const [assignedWord, assignedReading] of Object.entries(next)) {
+        if (assignedReading === readingIndex) delete next[Number(assignedWord)];
+      }
+      next[wordIndex] = readingIndex;
+      return next;
+    };
     loaded2 = null;
     loading2 = null;
     SPECIFIC = /* @__PURE__ */ new Set(["num", "oku", "list"]);
@@ -7268,7 +7294,8 @@ var init_kanji_reading_usage = __esm({
         version: payload.version,
         levels: payload.levels,
         chars,
-        byChar: new Map(chars.map((entry) => [entry.char, entry]))
+        byChar: new Map(chars.map((entry) => [entry.char, entry])),
+        questions: new Map(Object.entries(payload.questions ?? {}))
       };
     };
     loadKanjiReadingUsage = () => {
@@ -7281,7 +7308,9 @@ var init_kanji_reading_usage = __esm({
     kanjiReadingUsageLoaded = () => loaded2 !== null;
     kanjiReadingUsageVersion = () => loaded2?.version ?? "";
     allKanjiReadingUsage = () => loaded2?.chars ?? [];
+    allKanjiReadingQuestionChars = () => [...loaded2?.questions.keys() ?? []];
     kanjiReadingUsageFor = (char) => loaded2?.byChar.get(char) ?? null;
+    kanjiReadingQuestionFor = (char) => loaded2?.questions.get(char) ?? null;
     clauseText = (reading) => {
       if (reading.manual) return reading.arg;
       switch (reading.clause) {
@@ -7331,7 +7360,7 @@ __export(kanji_char_cards_exports, {
   replayKanjiCharReviews: () => replayKanjiCharReviews,
   undoLastKanjiCharReview: () => undoLastKanjiCharReview
 });
-var import_database16, import_kanji_readings, KANJI_CHAR_FSRS, readings, loadKanjiCharData, kanjiCharDataLoaded, ensureKanjiCharTables, materializeKanjiChars, EXAMPLE_CAP, kanjiCharCard, occurrenceByChar, log, createKanjiCharTasks, pickKanjiCharNext, kanjiCharProgress, kanjiCharStepMode, recordKanjiCharReview, clearKanjiCharTasks, undoLastKanjiCharReview, replayKanjiCharReviews, kanjiCharPool;
+var import_database16, import_kanji_readings, KANJI_CHAR_FSRS, readings, loadKanjiCharData, kanjiCharDataLoaded, ensureKanjiCharTables, materializeKanjiChars, EXAMPLE_CAP, kanjiCharCard, occurrenceByChar, questionCharSql, log, createKanjiCharTasks, pickKanjiCharNext, kanjiCharProgress, kanjiCharStepMode, recordKanjiCharReview, clearKanjiCharTasks, undoLastKanjiCharReview, replayKanjiCharReviews, kanjiCharPool;
 var init_kanji_char_cards = __esm({
   "../frontend/src/lib/kanji-char-cards.ts"() {
     "use strict";
@@ -7450,7 +7479,8 @@ var init_kanji_char_cards = __esm({
         on: dict.on ?? [],
         kun: dict.kun ?? [],
         usage,
-        examples
+        examples,
+        question: kanjiReadingQuestionFor(char) ?? void 0
       };
     };
     occurrenceByChar = () => {
@@ -7460,17 +7490,39 @@ var init_kanji_char_cards = __esm({
       }
       return occurrence;
     };
-    log = createCardLog({ entity: KANJI_CHAR_FSRS, reviewsTable: "kanji_char_reviews", tasksTable: "kanji_char_tasks" });
+    questionCharSql = () => {
+      const chars = allKanjiReadingQuestionChars();
+      return chars.length ? `char IN (${chars.map((char) => `'${char.replace(/'/gu, "''")}'`).join(",")})` : "0";
+    };
+    log = createCardLog({
+      entity: KANJI_CHAR_FSRS,
+      reviewsTable: "kanji_char_reviews",
+      tasksTable: "kanji_char_tasks",
+      extraExclude: questionCharSql
+    });
     createKanjiCharTasks = (quota, targetLevelRank2, day = today()) => {
       ensureKanjiCharTables();
+      const eligible = new Set(allKanjiReadingQuestionChars());
+      if (!eligible.size) throw new Error("\u6C49\u5B57\u8FDE\u7EBF\u9898\u5C1A\u672A\u52A0\u8F7D\uFF0C\u4E0D\u80FD\u751F\u6210\u6C49\u5B57\u5361\u6E05\u5355");
+      if (rowsFor("SELECT char FROM kanji_char_tasks WHERE reviewed_on = ?", [day]).some((row) => !eligible.has(String(row.char)))) {
+        (0, import_database16.getDatabase)().run("DELETE FROM kanji_char_tasks WHERE reviewed_on = ?", [day]);
+      }
       return log.createTasks(quota, () => {
         const occurrence = occurrenceByChar();
-        return rowsFor("SELECT char FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ?", [targetLevelRank2]).map((row) => String(row.char)).sort((a, b) => (occurrence.get(b) ?? 0) - (occurrence.get(a) ?? 0) || a.localeCompare(b));
+        return rowsFor(`SELECT char FROM kanji_char_memory WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank2]).map((row) => String(row.char)).sort((a, b) => (occurrence.get(b) ?? 0) - (occurrence.get(a) ?? 0) || a.localeCompare(b));
       }, day);
     };
     pickKanjiCharNext = (day = today(), excluded = /* @__PURE__ */ new Set()) => {
       ensureKanjiCharTables();
-      return log.pickNext(day, excluded);
+      const eligible = new Set(allKanjiReadingQuestionChars());
+      const skip = new Set(excluded);
+      for (let attempts = 0; attempts < 1e3; attempts += 1) {
+        const char = log.pickNext(day, skip);
+        if (!char) return null;
+        if (eligible.has(char)) return char;
+        skip.add(char);
+      }
+      return null;
     };
     kanjiCharProgress = (day = today()) => {
       ensureKanjiCharTables();
@@ -7497,7 +7549,7 @@ var init_kanji_char_cards = __esm({
       ensureKanjiCharTables();
       return {
         due: log.dueCount(),
-        unseen: firstValue("SELECT COUNT(*) FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ?", [targetLevelRank2], 0)
+        unseen: firstValue(`SELECT COUNT(*) FROM kanji_char_memory WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank2], 0)
       };
     };
   }
@@ -7530,7 +7582,6 @@ __export(confusion_cards_exports, {
   confusionCardProgress: () => confusionCardProgress,
   createConfusionTasks: () => createConfusionTasks,
   ensureConfusionCardTables: () => ensureConfusionCardTables,
-  gradeMatching: () => gradeMatching,
   groupLevelRank: () => groupLevelRank,
   matchable: () => matchable,
   matchingCard: () => matchingCard,
@@ -7540,7 +7591,7 @@ __export(confusion_cards_exports, {
   replayConfusionReviews: () => replayConfusionReviews,
   undoLastConfusionReview: () => undoLastConfusionReview
 });
-var import_database17, import_confusion_distinction_reviews, import_question_meaning_overrides2, CONFUSION_FSRS, NOT_MASTERED, log2, ensureConfusionCardTables, firstSense2, matchable, LEVEL_RANK, groupLevelRank, materializeConfusionCards, matchingCard, gradeMatching, createConfusionTasks, pickConfusionNext, confusionCardProgress, recordConfusionReview, clearConfusionTasks, undoLastConfusionReview, replayConfusionReviews, confusionCardPool;
+var import_database17, import_confusion_distinction_reviews, CONFUSION_FSRS, sqlValue, eligibleGroupSql, NOT_MASTERED, log2, ensureConfusionCardTables, matchable, LEVEL_RANK, groupLevelRank, materializeConfusionCards, matchingCard, createConfusionTasks, pickConfusionNext, confusionCardProgress, recordConfusionReview, clearConfusionTasks, undoLastConfusionReview, replayConfusionReviews, confusionCardPool;
 var init_confusion_cards = __esm({
   "../frontend/src/lib/confusion-cards.ts"() {
     "use strict";
@@ -7551,18 +7602,22 @@ var init_confusion_cards = __esm({
     init_schema2();
     init_confusion_groups();
     import_confusion_distinction_reviews = __toESM(require_distinction_reviews(), 1);
-    import_question_meaning_overrides2 = __toESM(require_question_meaning_overrides(), 1);
     CONFUSION_FSRS = {
       table: "confusion_progress",
       idColumn: "group_key",
       eligible: "known_forever = 0"
+    };
+    sqlValue = (value) => `'${value.replace(/'/gu, "''")}'`;
+    eligibleGroupSql = () => {
+      const keys = confusionGroups().filter(matchable).map((group) => group.key);
+      return `group_key IN (${keys.map(sqlValue).join(",") || "NULL"})`;
     };
     NOT_MASTERED = "group_key NOT IN (SELECT group_key FROM confusion_mastered)";
     log2 = createCardLog({
       entity: CONFUSION_FSRS,
       reviewsTable: "confusion_reviews",
       tasksTable: "confusion_tasks",
-      extraExclude: NOT_MASTERED
+      extraExclude: () => `${eligibleGroupSql()} AND ${NOT_MASTERED}`
     });
     ensureConfusionCardTables = () => {
       const db = (0, import_database17.getDatabase)();
@@ -7606,19 +7661,11 @@ var init_confusion_cards = __esm({
       db.run("CREATE TABLE IF NOT EXISTS confusion_mastered (group_key TEXT PRIMARY KEY, mastered_on TEXT NOT NULL)");
       ensureFsrsColumns(CONFUSION_FSRS);
     };
-    firstSense2 = (text) => text.split(/[；;]/)[0].trim();
     matchable = (group) => {
       const review = (0, import_confusion_distinction_reviews.distinctionReviewFor)(group.key);
-      if (!review || review.level !== "major" || group.members.length < 2) return false;
-      const senses = /* @__PURE__ */ new Set();
-      return group.members.every((member) => {
-        const meaning = (0, import_question_meaning_overrides2.reviewedQuestionMeaning)(member.kanji, member.kana);
-        if (!meaning) return false;
-        const sense = firstSense2(meaning);
-        if (senses.has(sense)) return false;
-        senses.add(sense);
-        return true;
-      });
+      if (!review || review.level !== "major" || group.type === "synonym" || group.members.length < 2 || !review.summary.trim()) return false;
+      const forms = new Set(group.members.map((member) => `${displayForm(member)}\0${member.kana}`));
+      return forms.size === group.members.length;
     };
     LEVEL_RANK = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
     groupLevelRank = (group) => Math.max(...group.members.map((member) => LEVEL_RANK[member.jlptLevel] ?? 4));
@@ -7653,35 +7700,48 @@ var init_confusion_cards = __esm({
       const group = confusionGroups().find((item) => item.key === groupKey);
       const review = group ? (0, import_confusion_distinction_reviews.distinctionReviewFor)(group.key) : null;
       if (!group || !review || !matchable(group)) return null;
+      const notes = (0, import_confusion_distinction_reviews.distinctionNotesFor)(review.summary, group.members.map((member) => ({
+        key: String(member.id),
+        forms: [displayForm(member), member.kanji, member.kana]
+      })));
       return {
         groupKey: group.key,
         type: group.type,
         label: group.label,
-        pairs: group.members.map((member) => ({
+        members: group.members.map((member) => ({
           id: member.id,
           surface: displayForm(member),
           kana: member.kana,
-          prompt: (0, import_question_meaning_overrides2.reviewedQuestionMeaning)(member.kanji, member.kana) ?? ""
+          note: notes.get(String(member.id))
         })),
         summary: review.summary,
-        notes: (0, import_confusion_distinction_reviews.distinctionNotesFor)(review.summary, group.members.map((member) => ({
-          key: String(member.id),
-          forms: [displayForm(member), member.kanji, member.kana]
-        })))
+        notes
       };
     };
-    gradeMatching = (mistakes) => mistakes <= 0 ? "know" : mistakes === 1 ? "fuzzy" : "forgot";
     createConfusionTasks = (quota, targetLevelRank2 = 4, day = today()) => {
       ensureConfusionCardTables();
+      const eligible = new Set(confusionGroups().filter(matchable).map((group) => group.key));
+      const existing = rowsFor("SELECT group_key FROM confusion_tasks WHERE reviewed_on = ?", [day]);
+      if (existing.some((row) => !eligible.has(String(row.group_key)))) {
+        (0, import_database17.getDatabase)().run("DELETE FROM confusion_tasks WHERE reviewed_on = ?", [day]);
+      }
       return log2.createTasks(quota, () => {
         const learned = new Set(rowsFor("SELECT word_id FROM progress WHERE seen_count > 0").map((row) => Number(row.word_id)));
         const unseen = new Set(rowsFor(`SELECT group_key FROM confusion_progress WHERE ${log2.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank2]).map((row) => String(row.group_key)));
-        return confusionGroups().filter((group) => unseen.has(group.key)).map((group) => ({ key: group.key, learned: group.members.filter((member) => learned.has(member.id)).length, size: group.members.length })).sort((a, b) => b.learned - a.learned || a.size - b.size || a.key.localeCompare(b.key)).map((item) => item.key);
+        return confusionGroups().filter((group) => matchable(group)).filter((group) => unseen.has(group.key)).map((group) => ({ key: group.key, learned: group.members.filter((member) => learned.has(member.id)).length, size: group.members.length })).sort((a, b) => b.learned - a.learned || a.size - b.size || a.key.localeCompare(b.key)).map((item) => item.key);
       }, day);
     };
     pickConfusionNext = (day = today(), excluded = /* @__PURE__ */ new Set()) => {
       ensureConfusionCardTables();
-      return log2.pickNext(day, excluded);
+      const skip = new Set(excluded);
+      const eligible = new Set(confusionGroups().filter(matchable).map((group) => group.key));
+      for (let attempts = 0; attempts < 1e3; attempts += 1) {
+        const key = log2.pickNext(day, skip);
+        if (!key) return null;
+        if (eligible.has(key)) return key;
+        skip.add(key);
+      }
+      return null;
     };
     confusionCardProgress = (day = today()) => {
       ensureConfusionCardTables();
@@ -15088,7 +15148,8 @@ __export(distinction_quiz_exports, {
 });
 init_confusion_groups();
 var import_confusion_distinction_reviews3 = __toESM(require_distinction_reviews(), 1);
-var import_question_meaning_overrides4 = __toESM(require_question_meaning_overrides(), 1);
+init_confusion_cards();
+var import_question_meaning_overrides3 = __toESM(require_question_meaning_overrides(), 1);
 init_db_utils();
 
 // ../frontend/src/lib/vocab-test.ts
@@ -15118,7 +15179,7 @@ init_study_core();
 var import_database29 = __toESM(require_database(), 1);
 init_confusion_groups();
 init_question_meaning_index();
-var import_question_meaning_overrides3 = __toESM(require_question_meaning_overrides(), 1);
+var import_question_meaning_overrides2 = __toESM(require_question_meaning_overrides(), 1);
 init_orthography();
 
 // ../frontend/src/features/word-study/word-study-utils.ts
@@ -15550,7 +15611,7 @@ var wordRows = () => rowsFor(`
   id: Number(row.id ?? 0),
   kanji: asText(row.kanji),
   kana: asText(row.kana),
-  meaning: (0, import_question_meaning_overrides3.reviewedQuestionMeaning)(asText(row.kanji), asText(row.kana)) ?? asText(row.meaning),
+  meaning: (0, import_question_meaning_overrides2.reviewedQuestionMeaning)(asText(row.kanji), asText(row.kana)) ?? asText(row.meaning),
   pos: asText(row.pos),
   level: asText(row.level)
 })).filter((row) => row.id > 0 && VOCAB_TEST_LEVELS.includes(row.level));
@@ -15762,7 +15823,7 @@ var adaptiveTargets = (scoreByLevel, populationByLevel, remaining) => {
 var buildVocabTestQuestions = (rawRows, random = Math.random, options = {}) => {
   const allRows = rawRows.map((row) => ({
     ...row,
-    meaning: (0, import_question_meaning_overrides3.reviewedQuestionMeaning)(row.kanji, row.kana) ?? row.meaning
+    meaning: (0, import_question_meaning_overrides2.reviewedQuestionMeaning)(row.kanji, row.kana) ?? row.meaning
   })).map(enrichRow);
   const index3 = answerIndexBySurface(allRows);
   const populationByLevel = Object.fromEntries(VOCAB_TEST_LEVELS.map((level) => [
@@ -16064,15 +16125,18 @@ var vocabTestStorageValue = () => firstValue(
 );
 
 // ../frontend/src/lib/distinction-quiz.ts
-var firstSense3 = (text) => text.split(/[；;]/)[0].trim();
+var firstSense2 = (text) => text.split(/[；;]/)[0].trim();
 var reviewable = (group) => {
   const review = (0, import_confusion_distinction_reviews3.distinctionReviewFor)(group.key);
-  if (!review || review.level !== "major" || group.members.length < 2) return false;
+  if (!review || !matchable(group)) return false;
   const senses = /* @__PURE__ */ new Set();
+  const ids = /* @__PURE__ */ new Set();
   return group.members.every((member) => {
-    const meaning = (0, import_question_meaning_overrides4.reviewedQuestionMeaning)(member.kanji, member.kana);
+    if (ids.has(member.id)) return false;
+    ids.add(member.id);
+    const meaning = (0, import_question_meaning_overrides3.reviewedQuestionMeaning)(member.kanji, member.kana);
     if (!meaning) return false;
-    const sense = firstSense3(meaning);
+    const sense = firstSense2(meaning);
     if (senses.has(sense)) return false;
     senses.add(sense);
     return true;
@@ -16127,7 +16191,7 @@ function buildQuestions(groups, rng = Math.random) {
       kana: member.kana
     })), rng);
     for (const member of group.members) {
-      const prompt = (0, import_question_meaning_overrides4.reviewedQuestionMeaning)(member.kanji, member.kana);
+      const prompt = (0, import_question_meaning_overrides3.reviewedQuestionMeaning)(member.kanji, member.kana);
       if (!prompt) continue;
       questions.push({
         groupKey: group.key,
@@ -16961,6 +17025,7 @@ __export(yuzu_exports, {
   YUZU_EVENT: () => YUZU_EVENT,
   applyYuzuEquipment: () => applyYuzuEquipment,
   buyItem: () => buyItem,
+  buyRepairCard: () => buyRepairCard,
   equipItem: () => equipItem,
   equippedItem: () => equippedItem,
   grantRepairCard: () => grantRepairCard,
@@ -17039,22 +17104,22 @@ var CATEGORY_LABEL = {
 };
 var EQUIPPABLE = /* @__PURE__ */ new Set(["theme", "mascot", "icon", "sound"]);
 var YUZU_ITEMS = [
-  { id: "theme-matcha", name: "\u62B9\u8336", description: "\u9752\u7EFF\u4E3B\u8272\u6362\u6210\u62B9\u8336\u7EFF", category: "theme", price: 2000 },
-  { id: "theme-sakura", name: "\u6A31", description: "\u7C89\u5E95\u6A31\u8272", category: "theme", price: 2000 },
-  { id: "theme-night", name: "\u6DF1\u591C\u98DF\u5802", description: "\u6697\u7425\u73C0\u6696\u8C03\u7684\u591C\u95F4\u914D\u8272", category: "theme", price: 2000 },
+  { id: "theme-matcha", name: "\u62B9\u8336", description: "\u9752\u7EFF\u4E3B\u8272\u6362\u6210\u62B9\u8336\u7EFF", category: "theme", price: 2e3 },
+  { id: "theme-sakura", name: "\u6A31", description: "\u7C89\u5E95\u6A31\u8272", category: "theme", price: 2e3 },
+  { id: "theme-night", name: "\u6DF1\u591C\u98DF\u5802", description: "\u6697\u7425\u73C0\u6696\u8C03\u7684\u591C\u95F4\u914D\u8272", category: "theme", price: 2e3 },
   // 下面两件不只换颜色，还换质感（投影、边框、按钮、字体），样式在 skins.css
-  { id: "theme-paper", name: "\u7EB8\u672C", description: "\u5976\u6CB9\u7EB8\u8272\u3001\u58A8\u8272\u4E3B\u952E\u3001\u7EC6\u7EBF\u5206\u9694\uFF0C\u50CF\u4E00\u672C\u5B89\u9759\u7684\u5355\u8BCD\u672C", category: "theme", price: 3000 },
-  { id: "theme-round", name: "\u5706\u5706", description: "\u767D\u5E95\u5706\u4F53\u3001\u4F1A\u6309\u4E0B\u53BB\u7684\u7ACB\u4F53\u6309\u94AE\u3001\u67DA\u5B50\u6A59\u70B9\u7F00", category: "theme", price: 3000 },
-  { id: "mascot-croc", name: "\u9CC4\u9C7C", description: "\u6362\u4E00\u53EA\u9CC4\u9C7C:\u8868\u60C5\u3001\u9875\u9762\u56FE\u6807\u3001\u7A7A\u72B6\u6001\u63D2\u753B\u6574\u5957\u6362\u3002\u5C0F\u8DEF\u4E0A\u8D70\u7684\u8FD8\u662F\u6C34\u8C5A", category: "mascot", price: 3000 },
-  { id: "icon-happy", name: "\u5F00\u5FC3\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u5F00\u5FC3\u8868\u60C5", category: "icon", price: 5000, soon: true, art: "mood-happy" },
-  { id: "icon-study", name: "\u8BFB\u4E66\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u8BFB\u4E66\u8868\u60C5", category: "icon", price: 5000, soon: true, art: "mood-study" },
-  { id: "voice-voicevox-10", name: "\u96E8\u6674\u306F\u3046", description: "\u8F7B\u5FEB\u5973\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 6000, art: "tool-speak" },
-  { id: "voice-voicevox-11", name: "\u7384\u91CE\u6B66\u5B8F", description: "\u6C89\u7A33\u7537\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 6000, art: "tool-listen" },
-  { id: "sound-marimba", name: "\u6728\u7434", description: "\u7B54\u9898\u97F3\u6362\u6210\u6728\u7434:\u66F4\u5706\u3001\u66F4\u77ED", category: "sound", price: 3000, art: "bubble-great" },
-  { id: "sound-epiano", name: "\u7535\u94A2", description: "\u7B54\u9898\u97F3\u6362\u6210\u7535\u94A2:\u5E26\u4E00\u70B9\u6BDB\u8FB9\u7684\u6696\u97F3", category: "sound", price: 3000, art: "bubble-cheer" },
-  { id: "walk-alt", name: "\u5C0F\u8DEF\u8D70\u6CD5", description: "\u5B66\u4E60\u9875\u5C0F\u8DEF\u4E0A\u6362\u4E00\u5957\u8D70\u8DEF\u52A8\u753B", category: "misc", price: 4000, soon: true, art: "walk-frame" },
-  { id: "report-cover", name: "\u5468\u62A5\u5C01\u9762", description: "\u5468\u62A5\u5C01\u9762\u6362\u4E00\u5F20", category: "misc", price: 3000, soon: true, art: "card-daily" },
-  { id: "team-title", name: "\u961F\u4F0D\u79F0\u53F7", description: "\u7EC4\u961F\u9875\u540D\u5B57\u65C1\u7684\u4E13\u5C5E\u79F0\u53F7", category: "misc", price: 3000, soon: true, art: "decor-set" }
+  { id: "theme-paper", name: "\u7EB8\u672C", description: "\u5976\u6CB9\u7EB8\u8272\u3001\u58A8\u8272\u4E3B\u952E\u3001\u7EC6\u7EBF\u5206\u9694\uFF0C\u50CF\u4E00\u672C\u5B89\u9759\u7684\u5355\u8BCD\u672C", category: "theme", price: 3e3 },
+  { id: "theme-round", name: "\u5706\u5706", description: "\u767D\u5E95\u5706\u4F53\u3001\u4F1A\u6309\u4E0B\u53BB\u7684\u7ACB\u4F53\u6309\u94AE\u3001\u67DA\u5B50\u6A59\u70B9\u7F00", category: "theme", price: 3e3 },
+  { id: "mascot-croc", name: "\u9CC4\u9C7C", description: "\u6362\u4E00\u53EA\u9CC4\u9C7C:\u8868\u60C5\u3001\u9875\u9762\u56FE\u6807\u3001\u7A7A\u72B6\u6001\u63D2\u753B\u6574\u5957\u6362\u3002\u5C0F\u8DEF\u4E0A\u8D70\u7684\u8FD8\u662F\u6C34\u8C5A", category: "mascot", price: 3e3 },
+  { id: "icon-happy", name: "\u5F00\u5FC3\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u5F00\u5FC3\u8868\u60C5", category: "icon", price: 5e3, soon: true, art: "mood-happy" },
+  { id: "icon-study", name: "\u8BFB\u4E66\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u8BFB\u4E66\u8868\u60C5", category: "icon", price: 5e3, soon: true, art: "mood-study" },
+  { id: "voice-voicevox-10", name: "\u96E8\u6674\u306F\u3046", description: "\u8F7B\u5FEB\u5973\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 6e3, art: "item-voice-female-2" },
+  { id: "voice-voicevox-11", name: "\u7384\u91CE\u6B66\u5B8F", description: "\u6C89\u7A33\u7537\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 6e3, art: "item-voice-male" },
+  { id: "sound-marimba", name: "\u6728\u7434", description: "\u7B54\u9898\u97F3\u6362\u6210\u6728\u7434:\u66F4\u5706\u3001\u66F4\u77ED", category: "sound", price: 3e3, art: "item-sound-marimba-2" },
+  { id: "sound-epiano", name: "\u7535\u94A2", description: "\u7B54\u9898\u97F3\u6362\u6210\u7535\u94A2:\u5E26\u4E00\u70B9\u6BDB\u8FB9\u7684\u6696\u97F3", category: "sound", price: 3e3, art: "item-sound-epiano-2" },
+  { id: "walk-alt", name: "\u5C0F\u8DEF\u8D70\u6CD5", description: "\u5B66\u4E60\u9875\u5C0F\u8DEF\u4E0A\u6362\u4E00\u5957\u8D70\u8DEF\u52A8\u753B", category: "misc", price: 4e3, soon: true, art: "roll-frame" },
+  { id: "report-cover", name: "\u5468\u62A5\u5C01\u9762", description: "\u5468\u62A5\u5C01\u9762\u6362\u4E00\u5F20", category: "misc", price: 3e3, soon: true, art: "card-daily" },
+  { id: "team-title", name: "\u961F\u4F0D\u79F0\u53F7", description: "\u961F\u4F0D\u79F0\u53F7\u9875\u540D\u5B57\u65C1\u7684\u4E13\u5C5E\u79F0\u53F7", category: "misc", price: 3e3, soon: true, art: "decor-set" }
 ];
 var itemById = (id) => YUZU_ITEMS.find((item) => item.id === id);
 
@@ -17071,16 +17136,14 @@ var YUZU = {
   encore: 50,
   achievement: 200,
   /** 补签:30 天内第 1/2/3 张,再往后按最后一档 */
-  repair: [500, 1000, 2000],
+  repair: [500, 1e3, 2e3],
   /** 只补 7 天以内的洞 */
-  repairWindowDays: 7,
-  /** 补签卡最多存一张,多拿到的当场折成这么多柚子 */
-  repairCardOverflow: 800
+  repairWindowDays: 7
 };
 var YUZU_EVENT = "shushugo:yuzu";
 var ensureYuzuScale = () => {
   if (getState("yuzu_scale_10", "") === "1") return;
-  const db = getDatabase();
+  const db = (0, import_database34.getDatabase)();
   db.run("BEGIN");
   try {
     if (getState("yuzu_scale_10", "") !== "1") {
@@ -17175,7 +17238,7 @@ var unequip = (category) => {
 var repairPrice = () => {
   ensureYuzuScale();
   const since = shiftDay2(today(), -30);
-  const used = firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'repair' AND day >= ?", [since], 0);
+  const used = firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind IN ('repair', 'card_buy') AND day >= ?", [since], 0);
   return YUZU.repair[Math.min(used, YUZU.repair.length - 1)];
 };
 var repairableDays = () => {
@@ -17192,16 +17255,27 @@ var repairableDays = () => {
 };
 var repairCards = () => Math.max(
   0,
-  firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'card'", [], 0) - firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'repair_card'", [], 0)
+  firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind IN ('card', 'card_buy')", [], 0) - firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'repair_card'", [], 0)
 );
 var grantRepairCard = (key, notify = true) => {
   if (firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind IN ('card', 'card_overflow') AND key = ?", [key], 0)) return false;
-  const booked = repairCards() >= 1 ? book("card_overflow", key, YUZU.repairCardOverflow) : book("card", key, 0);
+  if (repairCards() >= 1) return false;
+  const booked = book("card", key, 0);
   if (booked && notify) {
     persistSoon();
     emit();
   }
   return booked;
+};
+var buyRepairCard = () => {
+  if (repairCards() >= 1) return false;
+  const price = repairPrice();
+  if (yuzuBalance() < price) return false;
+  const key = `${today()}:${firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'card_buy' AND day = ?", [today()], 0) + 1}`;
+  if (!book("card_buy", key, -price)) return false;
+  persistSoon();
+  emit();
+  return true;
 };
 var proGiftEligible = () => {
   try {

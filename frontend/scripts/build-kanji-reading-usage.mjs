@@ -29,9 +29,10 @@ const frontend = fileURLToPath(new URL("..", here));
 const defaultDb = resolve(frontend, "public/nihongo.db");
 const indexPath = resolve(frontend, "src/data/kanji_reading_unit_index.json");
 const manualPath = resolve(frontend, "scripts/kanji-reading-usage-manual-review.json");
+const questionsPath = resolve(frontend, "scripts/kanji-reading-questions-manual.json");
 const outputPath = resolve(frontend, "src/data/kanji_reading_usage.json");
 
-export const VERSION = "2026-08-24-kanji-reading-usage-v1";
+export const VERSION = "2026-09-24-kanji-reading-matches-v2";
 
 const args = process.argv.slice(2);
 const argValue = (name, fallback) => {
@@ -111,8 +112,13 @@ const idx = JSON.parse(readFileSync(indexPath, "utf8"));
 const SQL = await initSqlJs();
 const db = new SQL.Database(new Uint8Array(readFileSync(dbPath)));
 const words = new Map();
+const wordIdsByForm = new Map();
+const wordVariantsBySurface = new Map();
+const normalizeSurface = (surface) => String(surface ?? "").replace(/\[[^\]]*\]/gu, "").replace(/\s+/gu, "");
+const formKey = (surface, kana) => `${normalizeSurface(surface)}\u0000${String(kana ?? "")}`;
 for (const row of db.exec("SELECT id, kanji, kana, meaning, jlpt_level, importance FROM words")[0].values) {
-  words.set(row[0], {
+  const word = {
+    id: Number(row[0]),
     kanji: String(row[1] ?? ""),
     kana: String(row[2] ?? ""),
     // 「哪个音」靠送假名,「哪个意思」靠这一列 —— 冷える(变冷) / 冷ます(晾凉)
@@ -120,7 +126,16 @@ for (const row of db.exec("SELECT id, kanji, kana, meaning, jlpt_level, importan
     meaning: String(row[3] ?? ""),
     lv: String(row[4] ?? ""),
     imp: Number(row[5] ?? 0)
-  });
+  };
+  words.set(row[0], word);
+  const key = formKey(word.kanji, word.kana);
+  const matches = wordIdsByForm.get(key) ?? [];
+  matches.push(word);
+  wordIdsByForm.set(key, matches);
+  const surface = normalizeSurface(word.kanji);
+  const variants = wordVariantsBySurface.get(surface) ?? [];
+  variants.push(word);
+  wordVariantsBySurface.set(surface, variants);
 }
 
 const LEVELS = ["N5", "N4", "N3", "N2", "N1"];
@@ -189,6 +204,113 @@ const manual = existsSync(manualPath)
   ? JSON.parse(readFileSync(manualPath, "utf8"))
   : { notes: {}, pending: [] };
 const notes = manual.notes ?? {};
+const questionSource = JSON.parse(readFileSync(questionsPath, "utf8"));
+const manualQuestions = questionSource.questions ?? {};
+const excludedReadings = questionSource.excludedReadings ?? {};
+const occurrencesByWord = new Map();
+for (const occurrence of idx.occurrences) {
+  const wordOccurrences = occurrencesByWord.get(occurrence.exampleWordId) ?? [];
+  wordOccurrences.push(occurrence);
+  occurrencesByWord.set(occurrence.exampleWordId, wordOccurrences);
+}
+
+const errors = [];
+const eligibleChars = new Set([...byChar].filter(([, readings]) => readings.length >= 2).map(([char]) => char));
+for (const char of Object.keys(manualQuestions)) {
+  if (!eligibleChars.has(char)) errors.push(`题库包含无效汉字：${char}`);
+}
+for (const char of eligibleChars) {
+  if (!Object.hasOwn(manualQuestions, char)) errors.push(`缺少汉字配对题：${char}`);
+}
+
+const questionBases = new Map();
+const sourceBases = new Map();
+for (const reading of stats.values()) {
+  const bases = sourceBases.get(reading.char) ?? new Set();
+  bases.add(reading.base);
+  sourceBases.set(reading.char, bases);
+}
+const questions = {};
+for (const [char, group] of Object.entries(manualQuestions)) {
+  if (!eligibleChars.has(char)) continue;
+  const items = Array.isArray(group.items) ? group.items : [];
+  if (items.length < 2) errors.push(`${char}：至少需要两组可连线读音`);
+  const surfaces = new Set();
+  const targetReadings = new Set();
+  const usedBases = new Set();
+  const decodedItems = [];
+  for (const item of items) {
+    const surface = normalizeSurface(item.word);
+    if (!surface || [...surface].filter((value) => value === char).length !== 1) {
+      errors.push(`${char}：词面必须且只能包含一次目标汉字：${item.word}`);
+    }
+    if (surfaces.has(surface)) errors.push(`${char}：重复词面无法唯一连线：${surface}`);
+    surfaces.add(surface);
+    if (!item.targetReading || targetReadings.has(item.targetReading)) {
+      errors.push(`${char}：读音选项缺失或重复：${item.targetReading ?? ""}`);
+    }
+    targetReadings.add(item.targetReading);
+
+    const matches = wordIdsByForm.get(formKey(item.word, item.wordKana)) ?? [];
+    if (matches.length !== 1) {
+      errors.push(`${char}：${surface}（${item.wordKana}）在出厂词库中匹配 ${matches.length} 条，不能唯一核对`);
+      continue;
+    }
+    const word = matches[0];
+    const surfaceReadings = new Set((wordVariantsBySurface.get(surface) ?? []).flatMap((variant) =>
+      (occurrencesByWord.get(variant.id) ?? []).filter((occurrence) => {
+        const unit = unitByKey.get(occurrence.unitKey);
+        return unit?.unitType === "char" && unit.char === char && occurrence.targetSegment?.text === char;
+      }).map((occurrence) => occurrence.reading)
+    ));
+    if (surfaceReadings.size !== 1) {
+      errors.push(`${char}：詞形 ${surface} 在出厂词库中的目标字读音有 ${surfaceReadings.size} 种，不能唯一连线`);
+      continue;
+    }
+    const charOccurrences = (occurrencesByWord.get(word.id) ?? []).filter((occurrence) => {
+      const unit = unitByKey.get(occurrence.unitKey);
+      return unit?.unitType === "char" && unit.char === char && occurrence.targetSegment?.text === char;
+    });
+    const matchingOccurrences = charOccurrences.filter((occurrence) => occurrence.reading === item.targetReading);
+    const bases = new Set(matchingOccurrences.map((occurrence) => unitByKey.get(occurrence.unitKey)?.base).filter(Boolean));
+    if (bases.size !== 1) {
+      errors.push(`${char}：${surface}（${item.wordKana}）对应读音 ${item.targetReading} 的有效字音单元数为 ${bases.size}`);
+      continue;
+    }
+    const [base] = bases;
+    if (usedBases.has(base)) errors.push(`${char}：${base} 被重复配对`);
+    usedBases.add(base);
+    decodedItems.push({
+      word: surface,
+      wordKana: item.wordKana,
+      targetReading: item.targetReading,
+      meaning: String(item.meaning ?? word.meaning)
+    });
+  }
+  questionBases.set(char, usedBases);
+  questions[char] = { items: decodedItems };
+}
+
+for (const [char, readings] of byChar) {
+  if (!eligibleChars.has(char)) continue;
+  const expected = new Set(readings.map((reading) => reading.base));
+  const covered = questionBases.get(char) ?? new Set();
+  for (const base of expected) {
+    if (covered.has(base)) continue;
+    if (!String(excludedReadings[char]?.[base] ?? "").trim()) errors.push(`${char}：遗漏 ${base}，且没有手写排除理由`);
+  }
+  for (const base of covered) {
+    if (!sourceBases.get(char)?.has(base)) errors.push(`${char}：题库读音 ${base} 不在词库来源读音中`);
+  }
+}
+for (const [char, excluded] of Object.entries(excludedReadings)) {
+  for (const base of Object.keys(excluded)) {
+    if (!eligibleChars.has(char) || !sourceBases.get(char)?.has(base) || questionBases.get(char)?.has(base)) {
+      errors.push(`${char}：排除项 ${base} 已失效或同时出现在题库中`);
+    }
+  }
+}
+if (errors.length) throw new Error(`汉字配对题校验失败（${errors.length} 项）：\n${errors.slice(0, 80).join("\n")}`);
 
 const EXAMPLE_CAP = 4;
 const pickExamples = (entry) => {
@@ -262,7 +384,8 @@ const payload = {
   clauses: CLAUSES,
   levels: LEVELS,
   exampleCap: EXAMPLE_CAP,
-  chars
+  chars,
+  questions
 };
 writeFileSync(outputPath, `${JSON.stringify(payload)}\n`, "utf8");
 
@@ -275,6 +398,7 @@ writeFileSync(
 
 const size = (readFileSync(outputPath).length / 1024).toFixed(0);
 console.log(`多音字 ${chars.length} 个 → ${outputPath.replace(frontend, "")} (${size} KB)`);
+console.log(`汉字连线题 ${eligibleChars.size} 组、${Object.values(questions).reduce((sum, group) => sum + group.items.length, 0)} 对；排除读音 ${Object.values(excludedReadings).reduce((sum, readings) => sum + Object.keys(readings).length, 0)} 个，均有手写原因`);
 console.log(`  判据齐活、不用人管的: ${autoChars}`);
 console.log(`  已有人工说明的:      ${partialChars}`);
 console.log(`  还缺人工说明的:      ${pending.length}  →  scripts/kanji-reading-usage-manual-review.json`);

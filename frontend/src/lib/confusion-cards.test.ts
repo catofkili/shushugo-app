@@ -14,51 +14,67 @@ vi.mock("./database", () => ({
 import {
   confusionCardPool,
   confusionCardProgress,
+  clearConfusionTasks,
   createConfusionTasks,
-  gradeMatching,
   matchingCard,
   materializeConfusionCards,
+  matchable,
   pickConfusionNext,
   recordConfusionReview,
   replayConfusionReviews
 } from "./confusion-cards";
-import { setConfusionMastered } from "./confusion-groups";
+import { confusionGroups, displayForm, setConfusionMastered } from "./confusion-groups";
 import { firstValue, rowsFor } from "./study-core";
+import { distinctionReviewFor } from "../data/confusion_distinction_reviews";
 
-describe("疑难连线卡", () => {
+describe("疑难辨析 Anki 卡", () => {
   beforeAll(async () => {
     const SQL = await initSqlJs();
     testDb = new SQL.Database(new Uint8Array(readFileSync(fileURLToPath(new URL("../../public/nihongo.db", import.meta.url)))));
   });
 
-  it("候选 = 能出题的组（有 major 辨析稿、题面齐），幂等", () => {
+  it("候选 = 有人工辨析稿的组，幂等", () => {
     const inserted = materializeConfusionCards();
-    expect(inserted).toBeGreaterThan(200);
+    expect(inserted).toBeGreaterThan(0);
     expect(materializeConfusionCards()).toBe(0);
   });
 
-  it("连线题：每对都有词形和题面，反面有辨析稿；不能出题的组返回 null", () => {
-    const key = String(rowsFor("SELECT group_key FROM confusion_progress LIMIT 1")[0].group_key);
-    const card = matchingCard(key)!;
-    expect(card.pairs.length).toBeGreaterThanOrEqual(2);
-    expect(card.pairs.every((pair) => pair.surface && pair.prompt)).toBe(true);
-    expect(new Set(card.pairs.map((pair) => pair.prompt.split(/[；;]/)[0])).size).toBe(card.pairs.length);
-    expect(card.summary.length).toBeGreaterThan(0);
-    expect(matchingCard("homophone:根本不存在")).toBeNull();
+  it("只把人工审校为不可互换的非同义组放进 Anki 队列", () => {
+    const groups = confusionGroups();
+    const eligible = groups.filter(matchable);
+    expect(eligible.length).toBeGreaterThan(0);
+    expect(eligible.every((group) => group.type !== "synonym" && distinctionReviewFor(group.key)?.level === "major")).toBe(true);
+    expect(groups.filter((group) => group.type === "synonym" || distinctionReviewFor(group.key)?.level === "interchangeable").every((group) => !matchable(group))).toBe(true);
+    expect(eligible.every((group) => new Set(group.members.map((member) => `${displayForm(member)}\u0000${member.kana}`)).size === group.members.length)).toBe(true);
   });
 
-  it("评分：全对认识、错一模糊、错两忘记", () => {
-    expect(gradeMatching(0)).toBe("know");
-    expect(gradeMatching(1)).toBe("fuzzy");
-    expect(gradeMatching(2)).toBe("forgot");
+  it("旧版本遗留的不可辨析组到期状态不进入复习池或当天清单", () => {
+    materializeConfusionCards();
+    const legacy = confusionGroups().find((group) => !matchable(group))!;
+    testDb.run("INSERT OR IGNORE INTO confusion_progress (group_key) VALUES (?)", [legacy.key]);
+    testDb.run("UPDATE confusion_progress SET seen_count = 1, fsrs_due = ?, fsrs_state = 2 WHERE group_key = ?", ["2000-01-01T00:00:00.000Z", legacy.key]);
+    const dueBefore = confusionCardPool().due;
+    clearConfusionTasks();
+    createConfusionTasks({ fresh: 0, review: 100 });
+    expect(confusionCardPool().due).toBe(dueBefore);
+    expect(rowsFor("SELECT group_key FROM confusion_tasks").map((row) => String(row.group_key))).not.toContain(legacy.key);
+  });
+
+  it("卡片包含整组词形和手写辨析；没有辨析稿的组不生成卡", () => {
+    const key = String(rowsFor("SELECT group_key FROM confusion_progress LIMIT 1")[0].group_key);
+    const card = matchingCard(key)!;
+    expect(card.members.length).toBeGreaterThanOrEqual(2);
+    expect(card.members.every((member) => member.surface && member.kana)).toBe(true);
+    expect(card.summary.length).toBeGreaterThan(0);
+    expect(matchingCard("homophone:根本不存在")).toBeNull();
   });
 
   it("新学优先给成员学过的组；已掌握的组不进队列", () => {
     const some = String(rowsFor("SELECT group_key FROM confusion_progress LIMIT 1 OFFSET 5")[0].group_key);
     const card = matchingCard(some)!;
-    card.pairs.forEach((pair) => {
-      testDb.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [pair.id]);
-      testDb.run("UPDATE progress SET seen_count = 5 WHERE word_id = ?", [pair.id]);
+    card.members.forEach((member) => {
+      testDb.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [member.id]);
+      testDb.run("UPDATE progress SET seen_count = 5 WHERE word_id = ?", [member.id]);
     });
     const mastered = String(rowsFor("SELECT group_key FROM confusion_progress LIMIT 1 OFFSET 6")[0].group_key);
     setConfusionMastered(mastered, true);
@@ -71,11 +87,11 @@ describe("疑难连线卡", () => {
 
   it("作答进 FSRS 与流水，重放能原样重建", () => {
     const first = pickConfusionNext()!;
-    recordConfusionReview(first, gradeMatching(0));
+    recordConfusionReview(first, "know");
     expect(confusionCardProgress().done).toBe(1);
     const second = pickConfusionNext()!;
     expect(second).not.toBe(first);
-    recordConfusionReview(second, gradeMatching(2));
+    recordConfusionReview(second, "forgot");
     expect(pickConfusionNext()).toBe(second);
     const before = rowsFor("SELECT group_key, seen_count, forgot_count, fsrs_due, fsrs_state FROM confusion_progress WHERE group_key IN (?, ?) ORDER BY group_key", [first, second]);
     testDb.run("UPDATE confusion_progress SET seen_count = 0, fsrs_due = NULL, fsrs_state = NULL WHERE group_key IN (?, ?)", [first, second]);

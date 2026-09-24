@@ -19,14 +19,17 @@ export interface CardLogConfig {
   reviewsTable: string;
   tasksTable: string;
   /** 除 known_forever 之外还要排掉的（比如「已掌握」的辨析组），写成 SQL 片段 */
-  extraExclude?: string;
+  extraExclude?: string | (() => string);
 }
 
 export const createCardLog = (config: CardLogConfig) => {
   const { entity, reviewsTable, tasksTable } = config;
   const id = entity.idColumn;
   const memory = entity.table;
-  const exclude = `known_forever = 0${config.extraExclude ? ` AND ${config.extraExclude}` : ""}`;
+  const exclude = () => {
+    const extra = typeof config.extraExclude === "function" ? config.extraExclude() : config.extraExclude;
+    return `known_forever = 0${extra ? ` AND ${extra}` : ""}`;
+  };
 
   const ensure = () => ensureFsrsColumns(entity);
 
@@ -143,7 +146,7 @@ export const createCardLog = (config: CardLogConfig) => {
     const dayEnd = studyDayEnd().toISOString();
     const due = rowsFor(`
       SELECT ${id} FROM ${memory}
-      WHERE ${exclude} AND seen_count > 0 AND fsrs_due IS NOT NULL AND fsrs_due <= ?
+      WHERE ${exclude()} AND seen_count > 0 AND fsrs_due IS NOT NULL AND fsrs_due <= ?
       ORDER BY RANDOM() LIMIT ?
     `, [dayEnd, Math.max(0, quota.review)]).map((row) => String(row[id]));
     const fresh = freshCandidates().slice(0, Math.max(0, quota.fresh));
@@ -214,8 +217,8 @@ export const createCardLog = (config: CardLogConfig) => {
   /** 到期数（给圆环做池子和「复习建议下限」）。 */
   const dueCount = () => {
     ensure();
-    return firstValue<number>(`SELECT COUNT(*) FROM ${memory} WHERE ${exclude} AND seen_count > 0 AND fsrs_due <= ?`, [studyDayEnd().toISOString()], 0);
+    return firstValue<number>(`SELECT COUNT(*) FROM ${memory} WHERE ${exclude()} AND seen_count > 0 AND fsrs_due <= ?`, [studyDayEnd().toISOString()], 0);
   };
 
-  return { ensure, stepMode, record, replay, undoLast, createTasks, clearTasks, pickNext, progress, dueCount, exclude };
+  return { ensure, stepMode, record, replay, undoLast, createTasks, clearTasks, pickNext, progress, dueCount, get exclude() { return exclude(); } };
 };

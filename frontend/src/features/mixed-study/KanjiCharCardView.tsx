@@ -1,13 +1,10 @@
-import { useEffect, type CSSProperties } from "react";
-import { Eye } from "lucide-react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { Eye, RotateCcw } from "lucide-react";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
 import type { KanjiCharCard } from "../../lib/kanji-char-cards";
+import { assignKanjiReadingPair, shuffleKanjiReadingOptions } from "../../lib/kanji-reading-usage";
 import type { WordAnswer } from "../../types/vocabulary";
 
-/**
- * 单独汉字卡：正面一个字，反面音读 / 训读 + 多音字判据 + 例词。
- * 键位和评分骨架照抄 GrammarCard（任意键翻面，V/B/N/M 评分），只换内容和颜色。
- */
 export const KANJI_ACCENT: CSSProperties = {
   "--quiz-accent": "#B9A7F2",
   "--quiz-accent-soft": "rgba(185,167,242,0.12)",
@@ -16,6 +13,7 @@ export const KANJI_ACCENT: CSSProperties = {
 } as CSSProperties;
 
 const LEVELS = ["N5", "N4", "N3", "N2", "N1", "无级"];
+const ROW_HEIGHT = 68;
 
 interface Props {
   card: KanjiCharCard;
@@ -25,11 +23,21 @@ interface Props {
 }
 
 export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props) => {
+  const items = card.question?.items ?? [];
+  const readings = useMemo(() => shuffleKanjiReadingOptions(items.map((item) => item.targetReading)), [card.char, card.question]);
+  const [pairs, setPairs] = useState<Record<number, number>>({});
+  const [selectedWord, setSelectedWord] = useState<number | null>(null);
+
+  useEffect(() => {
+    setPairs({});
+    setSelectedWord(null);
+  }, [card.char]);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
-      if (target && /^(INPUT|TEXTAREA)$/.test(target.tagName)) return;
+      if (target?.closest("button, input, textarea, select, [contenteditable='true']")) return;
       if (!revealed) {
         if (event.key.length === 1 || event.key === "Enter" || event.key === " ") { event.preventDefault(); onReveal(); }
         return;
@@ -41,34 +49,125 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
     return () => window.removeEventListener("keydown", onKey);
   }, [onAnswer, onReveal, revealed]);
 
+  const selectReading = (readingIndex: number) => {
+    if (revealed || selectedWord === null) return;
+    setPairs((current) => assignKanjiReadingPair(current, selectedWord, readingIndex));
+    setSelectedWord(null);
+  };
+
+  const allConnected = items.length > 0 && Object.keys(pairs).length === items.length;
+
   return (
-    <div key={card.char} style={KANJI_ACCENT} className="zoo-enter dictionary-card flex h-full min-h-0 flex-col gap-2 rounded-2xl px-3 pb-2 pt-3 sm:gap-3 sm:p-6">
-      <div
-        onClick={() => !revealed && onReveal()}
-        className={`grid min-h-0 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] px-3 py-4 text-center sm:min-h-32 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)] ${revealed ? "" : "cursor-pointer"}`}
-      >
+    <div key={card.char} style={KANJI_ACCENT} className="kanji-match-card zoo-enter dictionary-card flex h-full min-h-0 flex-col gap-2 rounded-2xl px-3 pb-2 pt-3 sm:gap-3 sm:p-6">
+      <div className="grid shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] px-3 py-3 text-center sm:min-h-32 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
         <div>
           <span className="rounded-sm border border-white/15 px-1.5 py-0.5 text-[11px] font-bold text-white/60">{LEVELS[card.levelRank] ?? "无级"}</span>
-          <p className="jp-serif mt-2 text-7xl font-semibold leading-none sm:text-8xl">{card.char}</p>
+          <p className="jp-serif mt-2 text-5xl font-semibold leading-none sm:text-6xl">{card.char}</p>
+          <p className="mt-2 text-sm font-semibold text-white/65">{items.length ? "把每个词和这个字在词中的读音连起来" : "先回想这个字的读音"}</p>
         </div>
       </div>
 
-      <div data-word-scrollable="true" className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
-        {revealed ? (
-          <div className="zoo-reveal-in w-full min-w-0">
-            <div className="mx-auto grid max-w-2xl grid-cols-2 gap-3 text-left">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">音读</p>
-                <p className="jp mt-1 text-lg font-semibold leading-7">{card.on.length ? card.on.join(" · ") : "—"}</p>
+      <div data-word-scrollable="true" className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-3 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
+        {items.length > 0 && (
+          <div className="mx-auto max-w-2xl">
+            <div className="grid grid-cols-[minmax(0,1fr)_60px_minmax(0,1fr)] items-end pb-2 text-xs font-bold text-white/55">
+              <span>词语 · 含「{card.char}」</span><span /><span className="text-right">读音</span>
+            </div>
+            <div
+              className="relative grid grid-cols-[minmax(0,1fr)_60px_minmax(0,1fr)]"
+              style={{ height: items.length * ROW_HEIGHT }}
+            >
+              <svg
+                aria-hidden="true"
+                className="pointer-events-none absolute left-[calc(50%-30px)] top-0 z-0 h-full w-[60px] overflow-visible"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                {items.map((item, wordIndex) => {
+                  const centerY = ((wordIndex + 0.5) / items.length) * 100;
+                  const assignedReading = pairs[wordIndex];
+                  const correctReading = readings.indexOf(item.targetReading);
+                  if (!revealed) {
+                    return assignedReading === undefined ? null : (
+                      <line key={`attempt-${wordIndex}`} x1="0" y1={centerY} x2="100" y2={((assignedReading + 0.5) / items.length) * 100} stroke="#d7b5f1" strokeWidth="2.6" strokeLinecap="round" opacity="0.8" />
+                    );
+                  }
+                  return (
+                    <g key={`answer-${wordIndex}`}>
+                      {assignedReading !== undefined && assignedReading !== correctReading && (
+                        <line x1="0" y1={centerY} x2="100" y2={((assignedReading + 0.5) / items.length) * 100} stroke="#f19595" strokeWidth="2.4" strokeLinecap="round" opacity="0.78" />
+                      )}
+                      <line x1="0" y1={centerY} x2="100" y2={((correctReading + 0.5) / items.length) * 100} stroke="#81D8CF" strokeWidth="2.8" strokeLinecap="round" opacity="0.92" />
+                    </g>
+                  );
+                })}
+              </svg>
+
+              <div className="relative z-10 grid grid-cols-1" style={{ gridTemplateRows: `repeat(${items.length}, ${ROW_HEIGHT}px)` }}>
+                {items.map((item, wordIndex) => {
+                  const assigned = pairs[wordIndex];
+                  return (
+                    <button
+                      key={`word-${item.word}-${wordIndex}`}
+                      type="button"
+                      disabled={revealed}
+                      aria-pressed={selectedWord === wordIndex}
+                      aria-label={`${item.word}，${item.meaning}`}
+                      onClick={() => setSelectedWord((current) => current === wordIndex ? null : wordIndex)}
+                      className={`relative z-10 flex h-full min-w-0 flex-col justify-center rounded-xl border px-2 text-left transition-colors ${selectedWord === wordIndex ? "border-[#d7b5f1] bg-[#d7b5f1]/20" : assigned !== undefined && !revealed ? "border-[#d7b5f1]/55 bg-[#d7b5f1]/8" : "border-white/10 bg-[#393d3d]"}`}
+                    >
+                      <span className="jp-serif text-sm font-bold text-white sm:text-lg">{item.word}</span>
+                      {revealed && <span className="jp truncate text-xs text-[#81D8CF]">{item.wordKana}</span>}
+                      <span className="truncate text-[11px] text-white/55">{item.meaning}</span>
+                    </button>
+                  );
+                })}
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">训读</p>
-                <p className="jp mt-1 text-lg font-semibold leading-7">{card.kun.length ? card.kun.join(" · ") : "—"}</p>
+              <div aria-hidden="true" />
+              <div className="relative z-10 grid grid-cols-1" style={{ gridTemplateRows: `repeat(${items.length}, ${ROW_HEIGHT}px)` }}>
+                {readings.map((option, readingIndex) => {
+                  const assignedBy = Object.entries(pairs).find(([, value]) => value === readingIndex)?.[0];
+                  const correctFor = items.findIndex((item) => item.targetReading === option);
+                  const isCorrectLine = revealed && Number(assignedBy) === correctFor;
+                  return (
+                    <button
+                      key={`reading-${option}`}
+                      type="button"
+                      disabled={revealed || selectedWord === null}
+                      aria-label={`读音 ${option}`}
+                      aria-pressed={assignedBy !== undefined}
+                      onClick={() => selectReading(readingIndex)}
+                      className={`relative z-10 flex h-full min-w-0 items-center justify-end rounded-xl border px-2 text-right transition-colors ${isCorrectLine ? "border-[#81D8CF]/70 bg-[#81D8CF]/12" : assignedBy !== undefined ? "border-[#d7b5f1]/60 bg-[#d7b5f1]/10" : "border-white/10 bg-[#393d3d]"} ${selectedWord !== null && !revealed ? "cursor-pointer" : ""}`}
+                    >
+                      <span className="jp text-base font-bold text-white sm:text-lg">{option}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+            {!revealed && <p className="mt-3 text-center text-xs text-white/45">先点左侧词语，再点右侧读音；已连好的词可以重新选择。</p>}
+            {revealed && <p className="mt-3 text-center text-xs text-white/55">绿色线是正确答案，红色线是你原来的错误连线。</p>}
+          </div>
+        )}
+
+        {revealed ? (
+          <div className="zoo-reveal-in mx-auto mt-5 max-w-2xl text-left">
+            {items.length === 0 && <p className="jp-serif text-7xl text-center font-semibold">{card.char}</p>}
+            {card.on.length > 0 || card.kun.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3 text-left">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">音读</p>
+                  <p className="jp mt-1 text-lg font-semibold leading-7">{card.on.length ? card.on.join(" · ") : "—"}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">训读</p>
+                  <p className="jp mt-1 text-lg font-semibold leading-7">{card.kun.length ? card.kun.join(" · ") : "—"}</p>
+                </div>
+              </div>
+            ) : null}
             {card.usage.length > 0 && (
-              <div className="mx-auto mt-4 max-w-2xl text-left">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">什么时候读哪个</p>
+              <div className="mt-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">读音要点</p>
                 {card.usage.map((usage) => (
                   <p key={usage.base} className="mt-1.5 rounded-2xl px-3 py-2 text-sm leading-6" style={{ background: "var(--quiz-accent-soft)" }}>
                     <span className="jp mr-2 font-bold" style={{ color: "var(--quiz-accent)" }}>{usage.base}</span>
@@ -77,8 +176,8 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
                 ))}
               </div>
             )}
-            <div className="mx-auto mt-4 max-w-2xl text-left">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">例词</p>
+            <div className="mt-4">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">词库例词</p>
               {card.examples.length === 0 && <p className="mt-1 text-sm text-white/50">词库里没有例词</p>}
               {card.examples.map((example) => (
                 <p key={example.wordId} className="mt-1.5 flex flex-wrap items-baseline gap-x-2 text-sm leading-6">
@@ -89,19 +188,21 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
               ))}
             </div>
           </div>
-        ) : (
-          <div className="text-center">
-            <p className="text-base font-bold text-white/72">先想读音</p>
-            <p className="mt-1 text-xs text-white/45">音读、训读，以及你认识的带这个字的词</p>
+        ) : items.length === 0 ? (
+          <div className="grid h-full place-items-center text-center">
+            <div><p className="text-base font-bold text-white/72">先想这个字的读音</p><p className="mt-1 text-xs text-white/45">回想音读、训读和你认识的例词</p></div>
           </div>
-        )}
+        ) : null}
       </div>
 
       <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
         {!revealed ? (
-          <button onClick={onReveal} style={{ background: "var(--quiz-accent)" }} className="focus-ring zoo-pop zoo-gloss inline-flex h-16 w-full items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333]">
-            <Eye size={18} /><span>显示答案</span><span className="text-xs font-semibold opacity-65">（按任意键）</span>
-          </button>
+          <div className="flex h-16 gap-2">
+            {Object.keys(pairs).length > 0 && <button type="button" onClick={() => { setPairs({}); setSelectedWord(null); }} className="focus-ring zoo-pop inline-flex h-16 shrink-0 items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 text-sm font-bold text-white/70"><RotateCcw size={16} />清空</button>}
+            <button onClick={onReveal} style={{ background: "var(--quiz-accent)" }} className="focus-ring zoo-pop zoo-gloss inline-flex h-16 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333]">
+              <Eye size={18} /><span>{allConnected ? "核对连线" : "显示答案"}</span><span className="hidden text-xs font-semibold opacity-65 sm:inline">（按任意键）</span>
+            </button>
+          </div>
         ) : (
           <div className="zoo-rate-row grid h-16 grid-cols-[1.35fr_0.65fr_1.35fr_0.65fr] gap-2 sm:gap-3">
             {answerOptions.map((option) => (

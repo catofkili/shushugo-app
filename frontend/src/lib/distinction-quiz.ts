@@ -7,6 +7,7 @@ import {
   type ConfusionType
 } from "./confusion-groups";
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
+import { matchable } from "./confusion-cards";
 import { reviewedQuestionMeaning } from "./models/question-meaning-overrides";
 import { firstValue, rowsFor, today } from "./database/db-utils";
 import { shuffle } from "./vocab-test";
@@ -31,9 +32,12 @@ const firstSense = (text: string): string => text.split(/[；;]/)[0].trim();
 
 const reviewable = (group: ConfusionGroup): boolean => {
   const review = distinctionReviewFor(group.key);
-  if (!review || review.level !== "major" || group.members.length < 2) return false;
+  if (!review || !matchable(group)) return false;
   const senses = new Set<string>();
+  const ids = new Set<number>();
   return group.members.every((member) => {
+    if (ids.has(member.id)) return false;
+    ids.add(member.id);
     const meaning = reviewedQuestionMeaning(member.kanji, member.kana);
     if (!meaning) return false;
     const sense = firstSense(meaning);

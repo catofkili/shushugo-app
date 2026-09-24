@@ -10,7 +10,7 @@ import {
 const visible = { visible: true };
 const hidden = { visible: false };
 
-const secondsAfter = (state: ReturnType<typeof createStudyClock>, nowMs: number, options = visible) =>
+const secondsAfter = (state: ReturnType<typeof createStudyClock>, nowMs: number, options: { visible: boolean; idleLimitMs?: number } = visible) =>
   drainStudySeconds(accrueStudyTime(state, nowMs, options)).seconds;
 
 describe("学习时长记账", () => {
@@ -26,6 +26,12 @@ describe("学习时长记账", () => {
     const clock = createStudyClock(0);
     // 十分钟没有任何操作:只认头 60 秒
     expect(secondsAfter(clock, 600_000)).toBe(STUDY_IDLE_LIMIT_MS / 1000);
+  });
+
+  it("连线题可等双倍时间，普通单词仍用默认阈值", () => {
+    const clock = createStudyClock(0);
+    expect(secondsAfter(clock, 180_000)).toBe(60);
+    expect(secondsAfter(clock, 180_000, { visible: true, idleLimitMs: STUDY_IDLE_LIMIT_MS * 2 })).toBe(120);
   });
 
   it("走神回来不补算走神那段", () => {

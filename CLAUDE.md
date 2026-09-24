@@ -1266,6 +1266,8 @@ R2 的操作步骤在 `scripts/upload-audio.sh` 头部；密钥只能作者自�
 今天范围只查 `reviews` 的当天 `forward` 词，已学范围只查 `progress.seen_count > 0` 且组内命中至少两个成员；
 这两个查询是筛选范围，不是辨析题作答流水。
 
+Anki 辨析卡和辨析练习都只允许手写 `level=major` 的非 `synonym` 组；`interchangeable` 组以及同义组即使写了语感说明，也不进入卡片队列。正面直接给词组供回忆，答案面展示手写区别稿，不新增情景题。练习入口还要保证组内词形和释义题面都唯一。现有 370 个非 synonym 手写组里，25 个标为 `interchangeable`，因此当前可进入这些入口的是其余 345 个 `major` 组。
+
 辨析成员题面同时服务正向题和查词汇量释义选项，因此修改 `questionMeaning` 后必须重建
 `question_meaning_overrides.json`，并跑 `validate-manual-batch.mjs`、`distinction-candidates.test.ts`
 和 `vocab-test-distractors.test.ts`。审校批次可包含不在 `jlpt_words_seed.json`、但已登记在

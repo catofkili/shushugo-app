@@ -1,0 +1,8407 @@
+{
+  "version": "2026-09-24-kanji-reading-matches-v1",
+  "questions": {
+    "悪": {
+      "items": [
+        {
+          "word": "悪い",
+          "wordKana": "わるい",
+          "targetReading": "わる"
+        },
+        {
+          "word": "最悪",
+          "wordKana": "さいあく",
+          "targetReading": "あく"
+        },
+        {
+          "word": "好悪",
+          "wordKana": "こうお",
+          "targetReading": "お"
+        },
+        {
+          "word": "善し悪し",
+          "wordKana": "よしあし",
+          "targetReading": "あ"
+        }
+      ]
+    },
+    "握": {
+      "items": [
+        {
+          "word": "握る",
+          "wordKana": "にぎる",
+          "targetReading": "にぎ"
+        },
+        {
+          "word": "把握",
+          "wordKana": "はあく",
+          "targetReading": "あく"
+        }
+      ]
+    },
+    "安": {
+      "items": [
+        {
+          "word": "不安",
+          "wordKana": "ふあん",
+          "targetReading": "あん"
+        },
+        {
+          "word": "安い",
+          "wordKana": "やすい",
+          "targetReading": "やす"
+        }
+      ]
+    },
+    "暗": {
+      "items": [
+        {
+          "word": "暗い",
+          "wordKana": "くらい",
+          "targetReading": "くら"
+        },
+        {
+          "word": "暗記",
+          "wordKana": "あんき",
+          "targetReading": "あん"
+        }
+      ]
+    },
+    "囲": {
+      "items": [
+        {
+          "word": "雰囲気",
+          "wordKana": "ふんいき",
+          "targetReading": "い"
+        },
+        {
+          "word": "囲む",
+          "wordKana": "かこむ",
+          "targetReading": "かこ"
+        }
+      ]
+    },
+    "易": {
+      "items": [
+        {
+          "word": "貿易",
+          "wordKana": "ぼうえき",
+          "targetReading": "えき"
+        },
+        {
+          "word": "易しい",
+          "wordKana": "やさしい",
+          "targetReading": "やさ"
+        },
+        {
+          "word": "安易",
+          "wordKana": "あんい",
+          "targetReading": "い"
+        }
+      ]
+    },
+    "移": {
+      "items": [
+        {
+          "word": "移す",
+          "wordKana": "うつす",
+          "targetReading": "うつ"
+        },
+        {
+          "word": "移動",
+          "wordKana": "いどう",
+          "targetReading": "い"
+        }
+      ]
+    },
+    "違": {
+      "items": [
+        {
+          "word": "間違える",
+          "wordKana": "まちがえる",
+          "targetReading": "ちが"
+        },
+        {
+          "word": "相違",
+          "wordKana": "そうい",
+          "targetReading": "い"
+        }
+      ]
+    },
+    "育": {
+      "items": [
+        {
+          "word": "育てる",
+          "wordKana": "そだてる",
+          "targetReading": "そだ"
+        },
+        {
+          "word": "体育",
+          "wordKana": "たいいく",
+          "targetReading": "いく"
+        },
+        {
+          "word": "育む",
+          "wordKana": "はぐくむ",
+          "targetReading": "はぐく"
+        }
+      ]
+    },
+    "一": {
+      "items": [
+        {
+          "word": "一つ",
+          "wordKana": "ひとつ",
+          "targetReading": "ひと"
+        },
+        {
+          "word": "一度",
+          "wordKana": "いちど",
+          "targetReading": "いち"
+        },
+        {
+          "word": "同一",
+          "wordKana": "どういつ",
+          "targetReading": "いつ"
+        }
+      ]
+    },
+    "印": {
+      "items": [
+        {
+          "word": "印刷",
+          "wordKana": "いんさつ",
+          "targetReading": "いん"
+        },
+        {
+          "word": "目印",
+          "wordKana": "めじるし",
+          "targetReading": "じるし"
+        }
+      ]
+    },
+    "引": {
+      "items": [
+        {
+          "word": "引く",
+          "wordKana": "ひく",
+          "targetReading": "ひ"
+        },
+        {
+          "word": "引用",
+          "wordKana": "いんよう",
+          "targetReading": "いん"
+        }
+      ]
+    },
+    "飲": {
+      "items": [
+        {
+          "word": "飲む",
+          "wordKana": "のむ",
+          "targetReading": "の"
+        },
+        {
+          "word": "飲料",
+          "wordKana": "いんりょう",
+          "targetReading": "いん"
+        }
+      ]
+    },
+    "陰": {
+      "items": [
+        {
+          "word": "日陰",
+          "wordKana": "ひかげ",
+          "targetReading": "かげ"
+        },
+        {
+          "word": "陰影",
+          "wordKana": "いんえい",
+          "targetReading": "いん"
+        }
+      ]
+    },
+    "雨": {
+      "items": [
+        {
+          "word": "大雨",
+          "wordKana": "おおあめ",
+          "targetReading": "あめ"
+        },
+        {
+          "word": "雨天",
+          "wordKana": "うてん",
+          "targetReading": "う"
+        },
+        {
+          "word": "雨水",
+          "wordKana": "あまみず",
+          "targetReading": "あま"
+        }
+      ]
+    },
+    "運": {
+      "items": [
+        {
+          "word": "運動",
+          "wordKana": "うんどう",
+          "targetReading": "うん"
+        },
+        {
+          "word": "運ぶ",
+          "wordKana": "はこぶ",
+          "targetReading": "はこ"
+        }
+      ]
+    },
+    "営": {
+      "items": [
+        {
+          "word": "営業",
+          "wordKana": "えいぎょう",
+          "targetReading": "えい"
+        },
+        {
+          "word": "営む",
+          "wordKana": "いとなむ",
+          "targetReading": "いとな"
+        }
+      ]
+    },
+    "映": {
+      "items": [
+        {
+          "word": "映画",
+          "wordKana": "えいが",
+          "targetReading": "えい"
+        },
+        {
+          "word": "映る",
+          "wordKana": "うつる",
+          "targetReading": "うつ"
+        },
+        {
+          "word": "映える",
+          "wordKana": "はえる",
+          "targetReading": "は"
+        }
+      ]
+    },
+    "栄": {
+      "items": [
+        {
+          "word": "栄養",
+          "wordKana": "えいよう",
+          "targetReading": "えい"
+        },
+        {
+          "word": "栄える",
+          "wordKana": "さかえる",
+          "targetReading": "さか"
+        },
+        {
+          "word": "見栄え",
+          "wordKana": "みばえ",
+          "targetReading": "ば"
+        }
+      ]
+    },
+    "延": {
+      "items": [
+        {
+          "word": "延ばす",
+          "wordKana": "のばす",
+          "targetReading": "の"
+        },
+        {
+          "word": "延期",
+          "wordKana": "えんき",
+          "targetReading": "えん"
+        }
+      ]
+    },
+    "遠": {
+      "items": [
+        {
+          "word": "遠い",
+          "wordKana": "とおい",
+          "targetReading": "とお"
+        },
+        {
+          "word": "遠慮",
+          "wordKana": "えんりょ",
+          "targetReading": "えん"
+        }
+      ]
+    },
+    "汚": {
+      "items": [
+        {
+          "word": "汚い",
+          "wordKana": "きたない",
+          "targetReading": "きたな"
+        },
+        {
+          "word": "汚れる",
+          "wordKana": "よごれる",
+          "targetReading": "よご"
+        },
+        {
+          "word": "汚染",
+          "wordKana": "おせん",
+          "targetReading": "お"
+        }
+      ]
+    },
+    "応": {
+      "items": [
+        {
+          "word": "一応",
+          "wordKana": "いちおう",
+          "targetReading": "おう"
+        },
+        {
+          "word": "応える",
+          "wordKana": "こたえる",
+          "targetReading": "こた"
+        },
+        {
+          "word": "反応",
+          "wordKana": "はんのう",
+          "targetReading": "のう"
+        }
+      ]
+    },
+    "押": {
+      "items": [
+        {
+          "word": "押す",
+          "wordKana": "おす",
+          "targetReading": "お"
+        },
+        {
+          "word": "押印",
+          "wordKana": "おういん",
+          "targetReading": "おう"
+        }
+      ]
+    },
+    "横": {
+      "items": [
+        {
+          "word": "横取り",
+          "wordKana": "よこどり",
+          "targetReading": "よこ"
+        },
+        {
+          "word": "横断",
+          "wordKana": "おうだん",
+          "targetReading": "おう"
+        }
+      ]
+    },
+    "屋": {
+      "items": [
+        {
+          "word": "本屋",
+          "wordKana": "ほんや",
+          "targetReading": "や"
+        },
+        {
+          "word": "屋上",
+          "wordKana": "おくじょう",
+          "targetReading": "おく"
+        }
+      ]
+    },
+    "温": {
+      "items": [
+        {
+          "word": "温かい",
+          "wordKana": "あたたかい",
+          "targetReading": "あたた"
+        },
+        {
+          "word": "温泉",
+          "wordKana": "おんせん",
+          "targetReading": "おん"
+        }
+      ]
+    },
+    "音": {
+      "items": [
+        {
+          "word": "音楽",
+          "wordKana": "おんがく",
+          "targetReading": "おん"
+        },
+        {
+          "word": "足音",
+          "wordKana": "あしおと",
+          "targetReading": "おと"
+        },
+        {
+          "word": "本音",
+          "wordKana": "ほんね",
+          "targetReading": "ね"
+        }
+      ]
+    },
+    "下": {
+      "items": [
+        {
+          "word": "靴下",
+          "wordKana": "くつした",
+          "targetReading": "した"
+        },
+        {
+          "word": "地下鉄",
+          "wordKana": "ちかてつ",
+          "targetReading": "か"
+        },
+        {
+          "word": "下さい",
+          "wordKana": "ください",
+          "targetReading": "くだ"
+        },
+        {
+          "word": "下がる",
+          "wordKana": "さがる",
+          "targetReading": "さ"
+        },
+        {
+          "word": "下りる",
+          "wordKana": "おりる",
+          "targetReading": "お"
+        },
+        {
+          "word": "上下",
+          "wordKana": "じょうげ",
+          "targetReading": "げ"
+        },
+        {
+          "word": "足下",
+          "wordKana": "あしもと",
+          "targetReading": "もと"
+        }
+      ]
+    },
+    "化": {
+      "items": [
+        {
+          "word": "文化",
+          "wordKana": "ぶんか",
+          "targetReading": "か"
+        },
+        {
+          "word": "化粧",
+          "wordKana": "けしょう",
+          "targetReading": "け"
+        },
+        {
+          "word": "化ける",
+          "wordKana": "ばける",
+          "targetReading": "ば"
+        }
+      ]
+    },
+    "仮": {
+      "items": [
+        {
+          "word": "仮定",
+          "wordKana": "かてい",
+          "targetReading": "か"
+        },
+        {
+          "word": "仮に",
+          "wordKana": "かりに",
+          "targetReading": "かり"
+        }
+      ]
+    },
+    "何": {
+      "items": [
+        {
+          "word": "何か",
+          "wordKana": "なにか",
+          "targetReading": "なに"
+        },
+        {
+          "word": "何で",
+          "wordKana": "なんで",
+          "targetReading": "なん"
+        }
+      ]
+    },
+    "加": {
+      "items": [
+        {
+          "word": "参加",
+          "wordKana": "さんか",
+          "targetReading": "か"
+        },
+        {
+          "word": "加える",
+          "wordKana": "くわえる",
+          "targetReading": "くわ"
+        }
+      ]
+    },
+    "夏": {
+      "items": [
+        {
+          "word": "夏休み",
+          "wordKana": "なつやすみ",
+          "targetReading": "なつ"
+        },
+        {
+          "word": "初夏",
+          "wordKana": "しょか",
+          "targetReading": "か"
+        },
+        {
+          "word": "夏至",
+          "wordKana": "げし",
+          "targetReading": "げ"
+        }
+      ]
+    },
+    "家": {
+      "items": [
+        {
+          "word": "家族",
+          "wordKana": "かぞく",
+          "targetReading": "か"
+        },
+        {
+          "word": "家柄",
+          "wordKana": "いえがら",
+          "targetReading": "いえ"
+        },
+        {
+          "word": "大家",
+          "wordKana": "おおや",
+          "targetReading": "や"
+        },
+        {
+          "word": "武家",
+          "wordKana": "ぶけ",
+          "targetReading": "け"
+        }
+      ]
+    },
+    "果": {
+      "items": [
+        {
+          "word": "効果",
+          "wordKana": "こうか",
+          "targetReading": "か"
+        },
+        {
+          "word": "果たす",
+          "wordKana": "はたす",
+          "targetReading": "は"
+        }
+      ]
+    },
+    "歌": {
+      "items": [
+        {
+          "word": "歌う",
+          "wordKana": "うたう",
+          "targetReading": "うた"
+        },
+        {
+          "word": "歌手",
+          "wordKana": "かしゅ",
+          "targetReading": "か"
+        }
+      ]
+    },
+    "火": {
+      "items": [
+        {
+          "word": "火曜日",
+          "wordKana": "かようび",
+          "targetReading": "か"
+        },
+        {
+          "word": "花火",
+          "wordKana": "はなび",
+          "targetReading": "び"
+        }
+      ]
+    },
+    "花": {
+      "items": [
+        {
+          "word": "花屋",
+          "wordKana": "はなや",
+          "targetReading": "はな"
+        },
+        {
+          "word": "花壇",
+          "wordKana": "かだん",
+          "targetReading": "か"
+        }
+      ]
+    },
+    "荷": {
+      "items": [
+        {
+          "word": "荷物",
+          "wordKana": "にもつ",
+          "targetReading": "に"
+        },
+        {
+          "word": "入荷",
+          "wordKana": "にゅうか",
+          "targetReading": "か"
+        }
+      ]
+    },
+    "過": {
+      "items": [
+        {
+          "word": "過ぎる",
+          "wordKana": "すぎる",
+          "targetReading": "す"
+        },
+        {
+          "word": "過去",
+          "wordKana": "かこ",
+          "targetReading": "か"
+        },
+        {
+          "word": "過ち",
+          "wordKana": "あやまち",
+          "targetReading": "あやま"
+        }
+      ]
+    },
+    "我": {
+      "items": [
+        {
+          "word": "怪我",
+          "wordKana": "けが",
+          "targetReading": "が"
+        },
+        {
+          "word": "我々",
+          "wordKana": "われわれ",
+          "targetReading": "われ"
+        },
+        {
+          "word": "我が",
+          "wordKana": "わが",
+          "targetReading": "わ"
+        }
+      ]
+    },
+    "画": {
+      "items": [
+        {
+          "word": "計画",
+          "wordKana": "けいかく",
+          "targetReading": "かく"
+        },
+        {
+          "word": "映画",
+          "wordKana": "えいが",
+          "targetReading": "が"
+        }
+      ]
+    },
+    "会": {
+      "items": [
+        {
+          "word": "会社",
+          "wordKana": "かいしゃ",
+          "targetReading": "かい"
+        },
+        {
+          "word": "会う",
+          "wordKana": "あう",
+          "targetReading": "あ"
+        }
+      ]
+    },
+    "解": {
+      "items": [
+        {
+          "word": "正解",
+          "wordKana": "せいかい",
+          "targetReading": "かい"
+        },
+        {
+          "word": "解く",
+          "wordKana": "とく",
+          "targetReading": "と"
+        }
+      ]
+    },
+    "回": {
+      "items": [
+        {
+          "word": "何回",
+          "wordKana": "なんかい",
+          "targetReading": "かい"
+        },
+        {
+          "word": "回る",
+          "wordKana": "まわる",
+          "targetReading": "まわ"
+        }
+      ]
+    },
+    "壊": {
+      "items": [
+        {
+          "word": "壊れる",
+          "wordKana": "こわれる",
+          "targetReading": "こわ"
+        },
+        {
+          "word": "破壊",
+          "wordKana": "はかい",
+          "targetReading": "かい"
+        }
+      ]
+    },
+    "懐": {
+      "items": [
+        {
+          "word": "懐かしい",
+          "wordKana": "なつかしい",
+          "targetReading": "なつ"
+        },
+        {
+          "word": "懐中電灯",
+          "wordKana": "かいちゅうでんとう",
+          "targetReading": "かい"
+        }
+      ]
+    },
+    "改": {
+      "items": [
+        {
+          "word": "改札",
+          "wordKana": "かいさつ",
+          "targetReading": "かい"
+        },
+        {
+          "word": "改まる",
+          "wordKana": "あらたまる",
+          "targetReading": "あらた"
+        }
+      ]
+    },
+    "海": {
+      "items": [
+        {
+          "word": "海辺",
+          "wordKana": "うみべ",
+          "targetReading": "うみ"
+        },
+        {
+          "word": "海岸",
+          "wordKana": "かいがん",
+          "targetReading": "かい"
+        }
+      ]
+    },
+    "開": {
+      "items": [
+        {
+          "word": "開ける",
+          "wordKana": "あける",
+          "targetReading": "あ"
+        },
+        {
+          "word": "切り開く",
+          "wordKana": "きりひらく",
+          "targetReading": "ひら"
+        },
+        {
+          "word": "開会",
+          "wordKana": "かいかい",
+          "targetReading": "かい"
+        }
+      ]
+    },
+    "外": {
+      "items": [
+        {
+          "word": "外側",
+          "wordKana": "そとがわ",
+          "targetReading": "そと"
+        },
+        {
+          "word": "外国",
+          "wordKana": "がいこく",
+          "targetReading": "がい"
+        },
+        {
+          "word": "外す",
+          "wordKana": "はずす",
+          "targetReading": "はず"
+        },
+        {
+          "word": "外科",
+          "wordKana": "げか",
+          "targetReading": "げ"
+        }
+      ]
+    },
+    "街": {
+      "items": [
+        {
+          "word": "街角",
+          "wordKana": "まちかど",
+          "targetReading": "まち"
+        },
+        {
+          "word": "中華街",
+          "wordKana": "ちゅうかがい",
+          "targetReading": "がい"
+        }
+      ]
+    },
+    "確": {
+      "items": [
+        {
+          "word": "正確",
+          "wordKana": "せいかく",
+          "targetReading": "かく"
+        },
+        {
+          "word": "確か",
+          "wordKana": "たしか",
+          "targetReading": "たし"
+        }
+      ]
+    },
+    "覚": {
+      "items": [
+        {
+          "word": "覚える",
+          "wordKana": "おぼえる",
+          "targetReading": "おぼ"
+        },
+        {
+          "word": "感覚",
+          "wordKana": "かんかく",
+          "targetReading": "かく"
+        },
+        {
+          "word": "覚める",
+          "wordKana": "さめる",
+          "targetReading": "さ"
+        }
+      ]
+    },
+    "角": {
+      "items": [
+        {
+          "word": "街角",
+          "wordKana": "まちかど",
+          "targetReading": "かど"
+        },
+        {
+          "word": "四角",
+          "wordKana": "しかく",
+          "targetReading": "かく"
+        }
+      ]
+    },
+    "楽": {
+      "items": [
+        {
+          "word": "音楽",
+          "wordKana": "おんがく",
+          "targetReading": "がく"
+        },
+        {
+          "word": "楽しい",
+          "wordKana": "たのしい",
+          "targetReading": "たの"
+        },
+        {
+          "word": "安楽",
+          "wordKana": "あんらく",
+          "targetReading": "らく"
+        }
+      ]
+    },
+    "割": {
+      "items": [
+        {
+          "word": "時間割",
+          "wordKana": "じかんわり",
+          "targetReading": "わり"
+        },
+        {
+          "word": "割る",
+          "wordKana": "わる",
+          "targetReading": "わ"
+        },
+        {
+          "word": "分割",
+          "wordKana": "ぶんかつ",
+          "targetReading": "かつ"
+        }
+      ]
+    },
+    "滑": {
+      "items": [
+        {
+          "word": "滑る",
+          "wordKana": "すべる",
+          "targetReading": "すべ"
+        },
+        {
+          "word": "円滑",
+          "wordKana": "えんかつ",
+          "targetReading": "かつ"
+        },
+        {
+          "word": "滑らか",
+          "wordKana": "なめらか",
+          "targetReading": "なめ"
+        },
+        {
+          "word": "滑稽",
+          "wordKana": "こっけい",
+          "targetReading": "こっ"
+        }
+      ]
+    },
+    "乾": {
+      "items": [
+        {
+          "word": "乾く",
+          "wordKana": "かわく",
+          "targetReading": "かわ"
+        },
+        {
+          "word": "乾燥",
+          "wordKana": "かんそう",
+          "targetReading": "かん"
+        }
+      ]
+    },
+    "巻": {
+      "items": [
+        {
+          "word": "圧巻",
+          "wordKana": "あっかん",
+          "targetReading": "かん"
+        },
+        {
+          "word": "巻く",
+          "wordKana": "まく",
+          "targetReading": "ま"
+        },
+        {
+          "word": "巻物",
+          "wordKana": "まきもの",
+          "targetReading": "まき"
+        }
+      ]
+    },
+    "慣": {
+      "items": [
+        {
+          "word": "慣れる",
+          "wordKana": "なれる",
+          "targetReading": "な"
+        },
+        {
+          "word": "習慣",
+          "wordKana": "しゅうかん",
+          "targetReading": "かん"
+        }
+      ]
+    },
+    "換": {
+      "items": [
+        {
+          "word": "乗り換える",
+          "wordKana": "のりかえる",
+          "targetReading": "か"
+        },
+        {
+          "word": "交換",
+          "wordKana": "こうかん",
+          "targetReading": "かん"
+        }
+      ]
+    },
+    "間": {
+      "items": [
+        {
+          "word": "時間",
+          "wordKana": "じかん",
+          "targetReading": "かん"
+        },
+        {
+          "word": "間違える",
+          "wordKana": "まちがえる",
+          "targetReading": "ま"
+        },
+        {
+          "word": "世間",
+          "wordKana": "せけん",
+          "targetReading": "けん"
+        },
+        {
+          "word": "この間",
+          "wordKana": "このあいだ",
+          "targetReading": "あいだ"
+        },
+        {
+          "word": "幕間",
+          "wordKana": "まくあい",
+          "targetReading": "あい"
+        }
+      ]
+    },
+    "関": {
+      "items": [
+        {
+          "word": "玄関",
+          "wordKana": "げんかん",
+          "targetReading": "かん"
+        },
+        {
+          "word": "関わる",
+          "wordKana": "かかわる",
+          "targetReading": "かか"
+        }
+      ]
+    },
+    "願": {
+      "items": [
+        {
+          "word": "お願い",
+          "wordKana": "おねがい",
+          "targetReading": "ねが"
+        },
+        {
+          "word": "出願",
+          "wordKana": "しゅつがん",
+          "targetReading": "がん"
+        }
+      ]
+    },
+    "危": {
+      "items": [
+        {
+          "word": "危ない",
+          "wordKana": "あぶない",
+          "targetReading": "あぶ"
+        },
+        {
+          "word": "危険",
+          "wordKana": "きけん",
+          "targetReading": "き"
+        },
+        {
+          "word": "危うい",
+          "wordKana": "あやうい",
+          "targetReading": "あや"
+        }
+      ]
+    },
+    "喜": {
+      "items": [
+        {
+          "word": "喜ぶ",
+          "wordKana": "よろこぶ",
+          "targetReading": "よろこ"
+        },
+        {
+          "word": "喜劇",
+          "wordKana": "きげき",
+          "targetReading": "き"
+        }
+      ]
+    },
+    "寄": {
+      "items": [
+        {
+          "word": "寄る",
+          "wordKana": "よる",
+          "targetReading": "よ"
+        },
+        {
+          "word": "寄付",
+          "wordKana": "きふ",
+          "targetReading": "き"
+        }
+      ]
+    },
+    "帰": {
+      "items": [
+        {
+          "word": "帰り",
+          "wordKana": "かえり",
+          "targetReading": "かえ"
+        },
+        {
+          "word": "帰国",
+          "wordKana": "きこく",
+          "targetReading": "き"
+        }
+      ]
+    },
+    "気": {
+      "items": [
+        {
+          "word": "元気",
+          "wordKana": "げんき",
+          "targetReading": "き"
+        },
+        {
+          "word": "湿気",
+          "wordKana": "しっけ",
+          "targetReading": "け"
+        }
+      ]
+    },
+    "起": {
+      "items": [
+        {
+          "word": "起きる",
+          "wordKana": "おきる",
+          "targetReading": "お"
+        },
+        {
+          "word": "突起",
+          "wordKana": "とっき",
+          "targetReading": "き"
+        }
+      ]
+    },
+    "偽": {
+      "items": [
+        {
+          "word": "偽物",
+          "wordKana": "にせもの",
+          "targetReading": "にせ"
+        },
+        {
+          "word": "偽造",
+          "wordKana": "ぎぞう",
+          "targetReading": "ぎ"
+        },
+        {
+          "word": "偽る",
+          "wordKana": "いつわる",
+          "targetReading": "いつわ"
+        }
+      ]
+    },
+    "疑": {
+      "items": [
+        {
+          "word": "疑問",
+          "wordKana": "ぎもん",
+          "targetReading": "ぎ"
+        },
+        {
+          "word": "疑う",
+          "wordKana": "うたがう",
+          "targetReading": "うたが"
+        }
+      ]
+    },
+    "逆": {
+      "items": [
+        {
+          "word": "逆算",
+          "wordKana": "ぎゃくさん",
+          "targetReading": "ぎゃく"
+        },
+        {
+          "word": "逆らう",
+          "wordKana": "さからう",
+          "targetReading": "さか"
+        }
+      ]
+    },
+    "休": {
+      "items": [
+        {
+          "word": "休み",
+          "wordKana": "やすみ",
+          "targetReading": "やす"
+        },
+        {
+          "word": "休日",
+          "wordKana": "きゅうじつ",
+          "targetReading": "きゅう"
+        }
+      ]
+    },
+    "及": {
+      "items": [
+        {
+          "word": "普及",
+          "wordKana": "ふきゅう",
+          "targetReading": "きゅう"
+        },
+        {
+          "word": "及ぶ",
+          "wordKana": "およぶ",
+          "targetReading": "およ"
+        }
+      ]
+    },
+    "吸": {
+      "items": [
+        {
+          "word": "吸う",
+          "wordKana": "すう",
+          "targetReading": "す"
+        },
+        {
+          "word": "呼吸",
+          "wordKana": "こきゅう",
+          "targetReading": "きゅう"
+        }
+      ]
+    },
+    "急": {
+      "items": [
+        {
+          "word": "急ぐ",
+          "wordKana": "いそぐ",
+          "targetReading": "いそ"
+        },
+        {
+          "word": "急行",
+          "wordKana": "きゅうこう",
+          "targetReading": "きゅう"
+        }
+      ]
+    },
+    "求": {
+      "items": [
+        {
+          "word": "求める",
+          "wordKana": "もとめる",
+          "targetReading": "もと"
+        },
+        {
+          "word": "欲求",
+          "wordKana": "よっきゅう",
+          "targetReading": "きゅう"
+        }
+      ]
+    },
+    "去": {
+      "items": [
+        {
+          "word": "去年",
+          "wordKana": "きょねん",
+          "targetReading": "きょ"
+        },
+        {
+          "word": "過去",
+          "wordKana": "かこ",
+          "targetReading": "こ"
+        },
+        {
+          "word": "去る",
+          "wordKana": "さる",
+          "targetReading": "さ"
+        }
+      ]
+    },
+    "居": {
+      "items": [
+        {
+          "word": "居間",
+          "wordKana": "いま",
+          "targetReading": "い"
+        },
+        {
+          "word": "新居",
+          "wordKana": "しんきょ",
+          "targetReading": "きょ"
+        }
+      ]
+    },
+    "挙": {
+      "items": [
+        {
+          "word": "挙げる",
+          "wordKana": "あげる",
+          "targetReading": "あ"
+        },
+        {
+          "word": "列挙",
+          "wordKana": "れっきょ",
+          "targetReading": "きょ"
+        }
+      ]
+    },
+    "魚": {
+      "items": [
+        {
+          "word": "魚屋",
+          "wordKana": "さかなや",
+          "targetReading": "さかな"
+        },
+        {
+          "word": "金魚",
+          "wordKana": "きんぎょ",
+          "targetReading": "ぎょ"
+        }
+      ]
+    },
+    "共": {
+      "items": [
+        {
+          "word": "公共",
+          "wordKana": "こうきょう",
+          "targetReading": "きょう"
+        },
+        {
+          "word": "共働き",
+          "wordKana": "ともばたらき",
+          "targetReading": "とも"
+        }
+      ]
+    },
+    "境": {
+      "items": [
+        {
+          "word": "環境",
+          "wordKana": "かんきょう",
+          "targetReading": "きょう"
+        },
+        {
+          "word": "境目",
+          "wordKana": "さかいめ",
+          "targetReading": "さかい"
+        },
+        {
+          "word": "境内",
+          "wordKana": "けいだい",
+          "targetReading": "けい"
+        }
+      ]
+    },
+    "強": {
+      "items": [
+        {
+          "word": "強い",
+          "wordKana": "つよい",
+          "targetReading": "つよ"
+        },
+        {
+          "word": "勉強",
+          "wordKana": "べんきょう",
+          "targetReading": "きょう"
+        },
+        {
+          "word": "強引",
+          "wordKana": "ごういん",
+          "targetReading": "ごう"
+        },
+        {
+          "word": "強いる",
+          "wordKana": "しいる",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "恐": {
+      "items": [
+        {
+          "word": "恐ろしい",
+          "wordKana": "おそろしい",
+          "targetReading": "おそ"
+        },
+        {
+          "word": "恐怖",
+          "wordKana": "きょうふ",
+          "targetReading": "きょう"
+        }
+      ]
+    },
+    "教": {
+      "items": [
+        {
+          "word": "教える",
+          "wordKana": "おしえる",
+          "targetReading": "おし"
+        },
+        {
+          "word": "教室",
+          "wordKana": "きょうしつ",
+          "targetReading": "きょう"
+        },
+        {
+          "word": "教わる",
+          "wordKana": "おそわる",
+          "targetReading": "おそ"
+        }
+      ]
+    },
+    "興": {
+      "items": [
+        {
+          "word": "興味",
+          "wordKana": "きょうみ",
+          "targetReading": "きょう"
+        },
+        {
+          "word": "興奮",
+          "wordKana": "こうふん",
+          "targetReading": "こう"
+        },
+        {
+          "word": "興す",
+          "wordKana": "おこす",
+          "targetReading": "おこ"
+        }
+      ]
+    },
+    "響": {
+      "items": [
+        {
+          "word": "影響",
+          "wordKana": "えいきょう",
+          "targetReading": "きょう"
+        },
+        {
+          "word": "響く",
+          "wordKana": "ひびく",
+          "targetReading": "ひび"
+        }
+      ]
+    },
+    "凝": {
+      "items": [
+        {
+          "word": "凝る",
+          "wordKana": "こる",
+          "targetReading": "こ"
+        },
+        {
+          "word": "凝縮",
+          "wordKana": "ぎょうしゅく",
+          "targetReading": "ぎょう"
+        }
+      ]
+    },
+    "曲": {
+      "items": [
+        {
+          "word": "曲がる",
+          "wordKana": "まがる",
+          "targetReading": "ま"
+        },
+        {
+          "word": "作曲",
+          "wordKana": "さっきょく",
+          "targetReading": "きょく"
+        }
+      ]
+    },
+    "極": {
+      "items": [
+        {
+          "word": "消極的",
+          "wordKana": "しょうきょくてき",
+          "targetReading": "きょく"
+        },
+        {
+          "word": "極意",
+          "wordKana": "ごくい",
+          "targetReading": "ごく"
+        },
+        {
+          "word": "極める",
+          "wordKana": "きわめる",
+          "targetReading": "きわ"
+        }
+      ]
+    },
+    "勤": {
+      "items": [
+        {
+          "word": "勤め",
+          "wordKana": "つとめ",
+          "targetReading": "つと"
+        },
+        {
+          "word": "出勤",
+          "wordKana": "しゅっきん",
+          "targetReading": "きん"
+        }
+      ]
+    },
+    "近": {
+      "items": [
+        {
+          "word": "最近",
+          "wordKana": "さいきん",
+          "targetReading": "きん"
+        },
+        {
+          "word": "近い",
+          "wordKana": "ちかい",
+          "targetReading": "ちか"
+        }
+      ]
+    },
+    "金": {
+      "items": [
+        {
+          "word": "お金",
+          "wordKana": "おかね",
+          "targetReading": "かね"
+        },
+        {
+          "word": "金曜日",
+          "wordKana": "きんようび",
+          "targetReading": "きん"
+        },
+        {
+          "word": "金具",
+          "wordKana": "かなぐ",
+          "targetReading": "かな"
+        }
+      ]
+    },
+    "苦": {
+      "items": [
+        {
+          "word": "苦い",
+          "wordKana": "にがい",
+          "targetReading": "にが"
+        },
+        {
+          "word": "苦しい",
+          "wordKana": "くるしい",
+          "targetReading": "くる"
+        },
+        {
+          "word": "苦労",
+          "wordKana": "くろう",
+          "targetReading": "く"
+        }
+      ]
+    },
+    "駆": {
+      "items": [
+        {
+          "word": "駆ける",
+          "wordKana": "かける",
+          "targetReading": "か"
+        },
+        {
+          "word": "駆使",
+          "wordKana": "くし",
+          "targetReading": "く"
+        }
+      ]
+    },
+    "空": {
+      "items": [
+        {
+          "word": "空港",
+          "wordKana": "くうこう",
+          "targetReading": "くう"
+        },
+        {
+          "word": "上の空",
+          "wordKana": "うわのそら",
+          "targetReading": "そら"
+        },
+        {
+          "word": "空き缶",
+          "wordKana": "あきかん",
+          "targetReading": "あ"
+        },
+        {
+          "word": "空っぽ",
+          "wordKana": "からっぽ",
+          "targetReading": "から"
+        }
+      ]
+    },
+    "群": {
+      "items": [
+        {
+          "word": "群れ",
+          "wordKana": "むれ",
+          "targetReading": "む"
+        },
+        {
+          "word": "抜群",
+          "wordKana": "ばつぐん",
+          "targetReading": "ぐん"
+        }
+      ]
+    },
+    "係": {
+      "items": [
+        {
+          "word": "関係",
+          "wordKana": "かんけい",
+          "targetReading": "けい"
+        },
+        {
+          "word": "係員",
+          "wordKana": "かかりいん",
+          "targetReading": "かかり"
+        }
+      ]
+    },
+    "傾": {
+      "items": [
+        {
+          "word": "傾向",
+          "wordKana": "けいこう",
+          "targetReading": "けい"
+        },
+        {
+          "word": "傾く",
+          "wordKana": "かたむく",
+          "targetReading": "かたむ"
+        }
+      ]
+    },
+    "型": {
+      "items": [
+        {
+          "word": "型破り",
+          "wordKana": "かたやぶり",
+          "targetReading": "かた"
+        },
+        {
+          "word": "典型的",
+          "wordKana": "てんけいてき",
+          "targetReading": "けい"
+        }
+      ]
+    },
+    "形": {
+      "items": [
+        {
+          "word": "姿形",
+          "wordKana": "すがたかたち",
+          "targetReading": "かたち"
+        },
+        {
+          "word": "人形",
+          "wordKana": "にんぎょう",
+          "targetReading": "ぎょう"
+        },
+        {
+          "word": "変形",
+          "wordKana": "へんけい",
+          "targetReading": "けい"
+        }
+      ]
+    },
+    "憩": {
+      "items": [
+        {
+          "word": "休憩時間",
+          "wordKana": "きゅうけいじかん",
+          "targetReading": "けい"
+        },
+        {
+          "word": "憩う",
+          "wordKana": "いこう",
+          "targetReading": "いこ"
+        }
+      ]
+    },
+    "携": {
+      "items": [
+        {
+          "word": "携帯",
+          "wordKana": "けいたい",
+          "targetReading": "けい"
+        },
+        {
+          "word": "携える",
+          "wordKana": "たずさえる",
+          "targetReading": "たずさ"
+        }
+      ]
+    },
+    "継": {
+      "items": [
+        {
+          "word": "継ぐ",
+          "wordKana": "つぐ",
+          "targetReading": "つ"
+        },
+        {
+          "word": "中継",
+          "wordKana": "ちゅうけい",
+          "targetReading": "けい"
+        }
+      ]
+    },
+    "軽": {
+      "items": [
+        {
+          "word": "軽い",
+          "wordKana": "かるい",
+          "targetReading": "かる"
+        },
+        {
+          "word": "軽視",
+          "wordKana": "けいし",
+          "targetReading": "けい"
+        },
+        {
+          "word": "軽やか",
+          "wordKana": "かろやか",
+          "targetReading": "かろ"
+        }
+      ]
+    },
+    "迎": {
+      "items": [
+        {
+          "word": "迎える",
+          "wordKana": "むかえる",
+          "targetReading": "むか"
+        },
+        {
+          "word": "歓迎",
+          "wordKana": "かんげい",
+          "targetReading": "げい"
+        }
+      ]
+    },
+    "欠": {
+      "items": [
+        {
+          "word": "不可欠",
+          "wordKana": "ふかけつ",
+          "targetReading": "けつ"
+        },
+        {
+          "word": "欠かす",
+          "wordKana": "かかす",
+          "targetReading": "か"
+        }
+      ]
+    },
+    "決": {
+      "items": [
+        {
+          "word": "決まる",
+          "wordKana": "きまる",
+          "targetReading": "き"
+        },
+        {
+          "word": "解決",
+          "wordKana": "かいけつ",
+          "targetReading": "けつ"
+        }
+      ]
+    },
+    "結": {
+      "items": [
+        {
+          "word": "団結",
+          "wordKana": "だんけつ",
+          "targetReading": "けつ"
+        },
+        {
+          "word": "結び",
+          "wordKana": "むすび",
+          "targetReading": "むす"
+        },
+        {
+          "word": "結う",
+          "wordKana": "ゆう",
+          "targetReading": "ゆ"
+        }
+      ]
+    },
+    "月": {
+      "items": [
+        {
+          "word": "今月",
+          "wordKana": "こんげつ",
+          "targetReading": "げつ"
+        },
+        {
+          "word": "毎月",
+          "wordKana": "まいつき",
+          "targetReading": "つき"
+        },
+        {
+          "word": "一月",
+          "wordKana": "いちがつ",
+          "targetReading": "がつ"
+        }
+      ]
+    },
+    "堅": {
+      "items": [
+        {
+          "word": "堅い",
+          "wordKana": "かたい",
+          "targetReading": "かた"
+        },
+        {
+          "word": "堅実",
+          "wordKana": "けんじつ",
+          "targetReading": "けん"
+        }
+      ]
+    },
+    "嫌": {
+      "items": [
+        {
+          "word": "嫌がる",
+          "wordKana": "いやがる",
+          "targetReading": "いや"
+        },
+        {
+          "word": "嫌い",
+          "wordKana": "きらい",
+          "targetReading": "きら"
+        },
+        {
+          "word": "嫌悪",
+          "wordKana": "けんお",
+          "targetReading": "けん"
+        }
+      ]
+    },
+    "建": {
+      "items": [
+        {
+          "word": "建てる",
+          "wordKana": "たてる",
+          "targetReading": "た"
+        },
+        {
+          "word": "建築家",
+          "wordKana": "けんちくか",
+          "targetReading": "けん"
+        }
+      ]
+    },
+    "見": {
+      "items": [
+        {
+          "word": "意見",
+          "wordKana": "いけん",
+          "targetReading": "けん"
+        },
+        {
+          "word": "見る",
+          "wordKana": "みる",
+          "targetReading": "み"
+        }
+      ]
+    },
+    "軒": {
+      "items": [
+        {
+          "word": "軒下",
+          "wordKana": "のきした",
+          "targetReading": "のき"
+        },
+        {
+          "word": "一軒家",
+          "wordKana": "いっけんや",
+          "targetReading": "けん"
+        }
+      ]
+    },
+    "元": {
+      "items": [
+        {
+          "word": "元気",
+          "wordKana": "げんき",
+          "targetReading": "げん"
+        },
+        {
+          "word": "地元",
+          "wordKana": "じもと",
+          "targetReading": "もと"
+        },
+        {
+          "word": "元来",
+          "wordKana": "がんらい",
+          "targetReading": "がん"
+        }
+      ]
+    },
+    "原": {
+      "items": [
+        {
+          "word": "原因",
+          "wordKana": "げんいん",
+          "targetReading": "げん"
+        },
+        {
+          "word": "野原",
+          "wordKana": "のはら",
+          "targetReading": "はら"
+        }
+      ]
+    },
+    "減": {
+      "items": [
+        {
+          "word": "減る",
+          "wordKana": "へる",
+          "targetReading": "へ"
+        },
+        {
+          "word": "減少",
+          "wordKana": "げんしょう",
+          "targetReading": "げん"
+        }
+      ]
+    },
+    "現": {
+      "items": [
+        {
+          "word": "現在",
+          "wordKana": "げんざい",
+          "targetReading": "げん"
+        },
+        {
+          "word": "現れ",
+          "wordKana": "あらわれ",
+          "targetReading": "あらわ"
+        }
+      ]
+    },
+    "言": {
+      "items": [
+        {
+          "word": "言う",
+          "wordKana": "いう",
+          "targetReading": "い"
+        },
+        {
+          "word": "言葉",
+          "wordKana": "ことば",
+          "targetReading": "こと"
+        },
+        {
+          "word": "発言",
+          "wordKana": "はつげん",
+          "targetReading": "げん"
+        },
+        {
+          "word": "伝言",
+          "wordKana": "でんごん",
+          "targetReading": "ごん"
+        }
+      ]
+    },
+    "限": {
+      "items": [
+        {
+          "word": "制限",
+          "wordKana": "せいげん",
+          "targetReading": "げん"
+        },
+        {
+          "word": "限る",
+          "wordKana": "かぎる",
+          "targetReading": "かぎ"
+        }
+      ]
+    },
+    "古": {
+      "items": [
+        {
+          "word": "古い",
+          "wordKana": "ふるい",
+          "targetReading": "ふる"
+        },
+        {
+          "word": "中古",
+          "wordKana": "ちゅうこ",
+          "targetReading": "こ"
+        }
+      ]
+    },
+    "固": {
+      "items": [
+        {
+          "word": "固い",
+          "wordKana": "かたい",
+          "targetReading": "かた"
+        },
+        {
+          "word": "固定",
+          "wordKana": "こてい",
+          "targetReading": "こ"
+        }
+      ]
+    },
+    "誇": {
+      "items": [
+        {
+          "word": "誇り",
+          "wordKana": "ほこり",
+          "targetReading": "ほこ"
+        },
+        {
+          "word": "誇張",
+          "wordKana": "こちょう",
+          "targetReading": "こ"
+        }
+      ]
+    },
+    "五": {
+      "items": [
+        {
+          "word": "五つ",
+          "wordKana": "いつつ",
+          "targetReading": "いつ"
+        },
+        {
+          "word": "五月",
+          "wordKana": "ごがつ",
+          "targetReading": "ご"
+        }
+      ]
+    },
+    "互": {
+      "items": [
+        {
+          "word": "互い",
+          "wordKana": "たがい",
+          "targetReading": "たが"
+        },
+        {
+          "word": "相互",
+          "wordKana": "そうご",
+          "targetReading": "ご"
+        }
+      ]
+    },
+    "後": {
+      "items": [
+        {
+          "word": "午後",
+          "wordKana": "ごご",
+          "targetReading": "ご"
+        },
+        {
+          "word": "後で",
+          "wordKana": "あとで",
+          "targetReading": "あと"
+        },
+        {
+          "word": "後ろ",
+          "wordKana": "うしろ",
+          "targetReading": "うし"
+        },
+        {
+          "word": "後半",
+          "wordKana": "こうはん",
+          "targetReading": "こう"
+        },
+        {
+          "word": "後ほど",
+          "wordKana": "のちほど",
+          "targetReading": "のち"
+        },
+        {
+          "word": "気後れ",
+          "wordKana": "きおくれ",
+          "targetReading": "おく"
+        }
+      ]
+    },
+    "御": {
+      "items": [
+        {
+          "word": "御免",
+          "wordKana": "ごめん",
+          "targetReading": "ご"
+        },
+        {
+          "word": "制御",
+          "wordKana": "せいぎょ",
+          "targetReading": "ぎょ"
+        }
+      ]
+    },
+    "語": {
+      "items": [
+        {
+          "word": "英語",
+          "wordKana": "えいご",
+          "targetReading": "ご"
+        },
+        {
+          "word": "語る",
+          "wordKana": "かたる",
+          "targetReading": "かた"
+        }
+      ]
+    },
+    "誤": {
+      "items": [
+        {
+          "word": "誤用",
+          "wordKana": "ごよう",
+          "targetReading": "ご"
+        },
+        {
+          "word": "誤る",
+          "wordKana": "あやまる",
+          "targetReading": "あやま"
+        }
+      ]
+    },
+    "交": {
+      "items": [
+        {
+          "word": "交番",
+          "wordKana": "こうばん",
+          "targetReading": "こう"
+        },
+        {
+          "word": "交わす",
+          "wordKana": "かわす",
+          "targetReading": "か"
+        },
+        {
+          "word": "入り交じる",
+          "wordKana": "いりまじる",
+          "targetReading": "ま"
+        },
+        {
+          "word": "交える",
+          "wordKana": "まじえる",
+          "targetReading": "まじ"
+        }
+      ]
+    },
+    "効": {
+      "items": [
+        {
+          "word": "効果",
+          "wordKana": "こうか",
+          "targetReading": "こう"
+        },
+        {
+          "word": "効く",
+          "wordKana": "きく",
+          "targetReading": "き"
+        }
+      ]
+    },
+    "厚": {
+      "items": [
+        {
+          "word": "厚い",
+          "wordKana": "あつい",
+          "targetReading": "あつ"
+        },
+        {
+          "word": "温厚",
+          "wordKana": "おんこう",
+          "targetReading": "こう"
+        }
+      ]
+    },
+    "口": {
+      "items": [
+        {
+          "word": "無口",
+          "wordKana": "むくち",
+          "targetReading": "くち"
+        },
+        {
+          "word": "人口",
+          "wordKana": "じんこう",
+          "targetReading": "こう"
+        }
+      ]
+    },
+    "向": {
+      "items": [
+        {
+          "word": "向こう",
+          "wordKana": "むこう",
+          "targetReading": "む"
+        },
+        {
+          "word": "方向",
+          "wordKana": "ほうこう",
+          "targetReading": "こう"
+        }
+      ]
+    },
+    "好": {
+      "items": [
+        {
+          "word": "好き",
+          "wordKana": "すき",
+          "targetReading": "す"
+        },
+        {
+          "word": "格好",
+          "wordKana": "かっこう",
+          "targetReading": "こう"
+        },
+        {
+          "word": "好む",
+          "wordKana": "このむ",
+          "targetReading": "この"
+        }
+      ]
+    },
+    "工": {
+      "items": [
+        {
+          "word": "工事",
+          "wordKana": "こうじ",
+          "targetReading": "こう"
+        },
+        {
+          "word": "工夫",
+          "wordKana": "くふう",
+          "targetReading": "く"
+        }
+      ]
+    },
+    "広": {
+      "items": [
+        {
+          "word": "広い",
+          "wordKana": "ひろい",
+          "targetReading": "ひろ"
+        },
+        {
+          "word": "広告",
+          "wordKana": "こうこく",
+          "targetReading": "こう"
+        }
+      ]
+    },
+    "攻": {
+      "items": [
+        {
+          "word": "専攻",
+          "wordKana": "せんこう",
+          "targetReading": "こう"
+        },
+        {
+          "word": "攻める",
+          "wordKana": "せめる",
+          "targetReading": "せ"
+        }
+      ]
+    },
+    "更": {
+      "items": [
+        {
+          "word": "更に",
+          "wordKana": "さらに",
+          "targetReading": "さら"
+        },
+        {
+          "word": "変更",
+          "wordKana": "へんこう",
+          "targetReading": "こう"
+        }
+      ]
+    },
+    "構": {
+      "items": [
+        {
+          "word": "結構",
+          "wordKana": "けっこう",
+          "targetReading": "こう"
+        },
+        {
+          "word": "構わない",
+          "wordKana": "かまわない",
+          "targetReading": "かま"
+        }
+      ]
+    },
+    "考": {
+      "items": [
+        {
+          "word": "考え",
+          "wordKana": "かんがえ",
+          "targetReading": "かんが"
+        },
+        {
+          "word": "参考",
+          "wordKana": "さんこう",
+          "targetReading": "こう"
+        }
+      ]
+    },
+    "行": {
+      "items": [
+        {
+          "word": "旅行",
+          "wordKana": "りょこう",
+          "targetReading": "こう"
+        },
+        {
+          "word": "行き先",
+          "wordKana": "いきさき",
+          "targetReading": "い"
+        },
+        {
+          "word": "行く先",
+          "wordKana": "ゆくさき",
+          "targetReading": "ゆ"
+        },
+        {
+          "word": "行う",
+          "wordKana": "おこなう",
+          "targetReading": "おこな"
+        },
+        {
+          "word": "行列",
+          "wordKana": "ぎょうれつ",
+          "targetReading": "ぎょう"
+        }
+      ]
+    },
+    "降": {
+      "items": [
+        {
+          "word": "降りる",
+          "wordKana": "おりる",
+          "targetReading": "お"
+        },
+        {
+          "word": "降る",
+          "wordKana": "ふる",
+          "targetReading": "ふ"
+        },
+        {
+          "word": "以降",
+          "wordKana": "いこう",
+          "targetReading": "こう"
+        }
+      ]
+    },
+    "高": {
+      "items": [
+        {
+          "word": "高校",
+          "wordKana": "こうこう",
+          "targetReading": "こう"
+        },
+        {
+          "word": "高い",
+          "wordKana": "たかい",
+          "targetReading": "たか"
+        }
+      ]
+    },
+    "合": {
+      "items": [
+        {
+          "word": "合う",
+          "wordKana": "あう",
+          "targetReading": "あ"
+        },
+        {
+          "word": "都合",
+          "wordKana": "つごう",
+          "targetReading": "ごう"
+        },
+        {
+          "word": "合唱",
+          "wordKana": "がっしょう",
+          "targetReading": "がっ"
+        }
+      ]
+    },
+    "刻": {
+      "items": [
+        {
+          "word": "遅刻",
+          "wordKana": "ちこく",
+          "targetReading": "こく"
+        },
+        {
+          "word": "刻む",
+          "wordKana": "きざむ",
+          "targetReading": "きざ"
+        }
+      ]
+    },
+    "国": {
+      "items": [
+        {
+          "word": "外国",
+          "wordKana": "がいこく",
+          "targetReading": "こく"
+        },
+        {
+          "word": "国々",
+          "wordKana": "くにぐに",
+          "targetReading": "くに"
+        }
+      ]
+    },
+    "黒": {
+      "items": [
+        {
+          "word": "黒い",
+          "wordKana": "くろい",
+          "targetReading": "くろ"
+        },
+        {
+          "word": "黒板",
+          "wordKana": "こくばん",
+          "targetReading": "こく"
+        }
+      ]
+    },
+    "骨": {
+      "items": [
+        {
+          "word": "骨折る",
+          "wordKana": "ほねおる",
+          "targetReading": "ほね"
+        },
+        {
+          "word": "露骨",
+          "wordKana": "ろこつ",
+          "targetReading": "こつ"
+        }
+      ]
+    },
+    "今": {
+      "items": [
+        {
+          "word": "只今",
+          "wordKana": "ただいま",
+          "targetReading": "いま"
+        },
+        {
+          "word": "今晩",
+          "wordKana": "こんばん",
+          "targetReading": "こん"
+        }
+      ]
+    },
+    "根": {
+      "items": [
+        {
+          "word": "屋根",
+          "wordKana": "やね",
+          "targetReading": "ね"
+        },
+        {
+          "word": "根本的",
+          "wordKana": "こんぽんてき",
+          "targetReading": "こん"
+        }
+      ]
+    },
+    "混": {
+      "items": [
+        {
+          "word": "混ぜる",
+          "wordKana": "まぜる",
+          "targetReading": "ま"
+        },
+        {
+          "word": "混雑",
+          "wordKana": "こんざつ",
+          "targetReading": "こん"
+        },
+        {
+          "word": "人混み",
+          "wordKana": "ひとごみ",
+          "targetReading": "ご"
+        }
+      ]
+    },
+    "左": {
+      "items": [
+        {
+          "word": "左側",
+          "wordKana": "ひだりがわ",
+          "targetReading": "ひだり"
+        },
+        {
+          "word": "左右",
+          "wordKana": "さゆう",
+          "targetReading": "さ"
+        }
+      ]
+    },
+    "砂": {
+      "items": [
+        {
+          "word": "砂糖",
+          "wordKana": "さとう",
+          "targetReading": "さ"
+        },
+        {
+          "word": "砂浜",
+          "wordKana": "すなはま",
+          "targetReading": "すな"
+        },
+        {
+          "word": "土砂",
+          "wordKana": "どしゃ",
+          "targetReading": "しゃ"
+        }
+      ]
+    },
+    "催": {
+      "items": [
+        {
+          "word": "催す",
+          "wordKana": "もよおす",
+          "targetReading": "もよお"
+        },
+        {
+          "word": "催促",
+          "wordKana": "さいそく",
+          "targetReading": "さい"
+        }
+      ]
+    },
+    "再": {
+      "items": [
+        {
+          "word": "再来週",
+          "wordKana": "さらいしゅう",
+          "targetReading": "さ"
+        },
+        {
+          "word": "再生",
+          "wordKana": "さいせい",
+          "targetReading": "さい"
+        },
+        {
+          "word": "再び",
+          "wordKana": "ふたたび",
+          "targetReading": "ふたた"
+        }
+      ]
+    },
+    "済": {
+      "items": [
+        {
+          "word": "返済",
+          "wordKana": "へんさい",
+          "targetReading": "さい"
+        },
+        {
+          "word": "済む",
+          "wordKana": "すむ",
+          "targetReading": "す"
+        }
+      ]
+    },
+    "細": {
+      "items": [
+        {
+          "word": "細い",
+          "wordKana": "ほそい",
+          "targetReading": "ほそ"
+        },
+        {
+          "word": "細かい",
+          "wordKana": "こまかい",
+          "targetReading": "こま"
+        },
+        {
+          "word": "繊細",
+          "wordKana": "せんさい",
+          "targetReading": "さい"
+        }
+      ]
+    },
+    "裁": {
+      "items": [
+        {
+          "word": "仲裁",
+          "wordKana": "ちゅうさい",
+          "targetReading": "さい"
+        },
+        {
+          "word": "裁く",
+          "wordKana": "さばく",
+          "targetReading": "さば"
+        }
+      ]
+    },
+    "載": {
+      "items": [
+        {
+          "word": "載る",
+          "wordKana": "のる",
+          "targetReading": "の"
+        },
+        {
+          "word": "掲載",
+          "wordKana": "けいさい",
+          "targetReading": "さい"
+        }
+      ]
+    },
+    "際": {
+      "items": [
+        {
+          "word": "国際",
+          "wordKana": "こくさい",
+          "targetReading": "さい"
+        },
+        {
+          "word": "際立つ",
+          "wordKana": "きわだつ",
+          "targetReading": "きわ"
+        }
+      ]
+    },
+    "罪": {
+      "items": [
+        {
+          "word": "罪深い",
+          "wordKana": "つみぶかい",
+          "targetReading": "つみ"
+        },
+        {
+          "word": "謝罪",
+          "wordKana": "しゃざい",
+          "targetReading": "ざい"
+        }
+      ]
+    },
+    "作": {
+      "items": [
+        {
+          "word": "作る",
+          "wordKana": "つくる",
+          "targetReading": "つく"
+        },
+        {
+          "word": "作文",
+          "wordKana": "さくぶん",
+          "targetReading": "さく"
+        },
+        {
+          "word": "動作",
+          "wordKana": "どうさ",
+          "targetReading": "さ"
+        }
+      ]
+    },
+    "札": {
+      "items": [
+        {
+          "word": "改札",
+          "wordKana": "かいさつ",
+          "targetReading": "さつ"
+        },
+        {
+          "word": "名札",
+          "wordKana": "なふだ",
+          "targetReading": "ふだ"
+        }
+      ]
+    },
+    "殺": {
+      "items": [
+        {
+          "word": "殺す",
+          "wordKana": "ころす",
+          "targetReading": "ころ"
+        },
+        {
+          "word": "殺到",
+          "wordKana": "さっとう",
+          "targetReading": "さっ"
+        }
+      ]
+    },
+    "三": {
+      "items": [
+        {
+          "word": "三つ",
+          "wordKana": "みっつ",
+          "targetReading": "みっ"
+        },
+        {
+          "word": "三月",
+          "wordKana": "さんがつ",
+          "targetReading": "さん"
+        },
+        {
+          "word": "三日月",
+          "wordKana": "みかづき",
+          "targetReading": "み"
+        }
+      ]
+    },
+    "山": {
+      "items": [
+        {
+          "word": "山道",
+          "wordKana": "やまみち",
+          "targetReading": "やま"
+        },
+        {
+          "word": "富士山",
+          "wordKana": "ふじさん",
+          "targetReading": "さん"
+        }
+      ]
+    },
+    "散": {
+      "items": [
+        {
+          "word": "散歩",
+          "wordKana": "さんぽ",
+          "targetReading": "さん"
+        },
+        {
+          "word": "散らし",
+          "wordKana": "ちらし",
+          "targetReading": "ち"
+        }
+      ]
+    },
+    "残": {
+      "items": [
+        {
+          "word": "残念",
+          "wordKana": "ざんねん",
+          "targetReading": "ざん"
+        },
+        {
+          "word": "残す",
+          "wordKana": "のこす",
+          "targetReading": "のこ"
+        }
+      ]
+    },
+    "使": {
+      "items": [
+        {
+          "word": "使う",
+          "wordKana": "つかう",
+          "targetReading": "つか"
+        },
+        {
+          "word": "大使館",
+          "wordKana": "たいしかん",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "刺": {
+      "items": [
+        {
+          "word": "刺す",
+          "wordKana": "さす",
+          "targetReading": "さ"
+        },
+        {
+          "word": "名刺",
+          "wordKana": "めいし",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "四": {
+      "items": [
+        {
+          "word": "四つ",
+          "wordKana": "よっつ",
+          "targetReading": "よっ"
+        },
+        {
+          "word": "四",
+          "wordKana": "よん",
+          "targetReading": "よん"
+        },
+        {
+          "word": "四月",
+          "wordKana": "しがつ",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "始": {
+      "items": [
+        {
+          "word": "始まる",
+          "wordKana": "はじまる",
+          "targetReading": "はじ"
+        },
+        {
+          "word": "始発",
+          "wordKana": "しはつ",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "姿": {
+      "items": [
+        {
+          "word": "姿勢",
+          "wordKana": "しせい",
+          "targetReading": "し"
+        },
+        {
+          "word": "姿形",
+          "wordKana": "すがたかたち",
+          "targetReading": "すがた"
+        }
+      ]
+    },
+    "子": {
+      "items": [
+        {
+          "word": "帽子",
+          "wordKana": "ぼうし",
+          "targetReading": "し"
+        },
+        {
+          "word": "椅子",
+          "wordKana": "いす",
+          "targetReading": "す"
+        },
+        {
+          "word": "子供",
+          "wordKana": "こども",
+          "targetReading": "こ"
+        }
+      ]
+    },
+    "市": {
+      "items": [
+        {
+          "word": "市民",
+          "wordKana": "しみん",
+          "targetReading": "し"
+        },
+        {
+          "word": "朝市",
+          "wordKana": "あさいち",
+          "targetReading": "いち"
+        }
+      ]
+    },
+    "思": {
+      "items": [
+        {
+          "word": "思う",
+          "wordKana": "おもう",
+          "targetReading": "おも"
+        },
+        {
+          "word": "不思議",
+          "wordKana": "ふしぎ",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "指": {
+      "items": [
+        {
+          "word": "中指",
+          "wordKana": "なかゆび",
+          "targetReading": "ゆび"
+        },
+        {
+          "word": "指定",
+          "wordKana": "してい",
+          "targetReading": "し"
+        },
+        {
+          "word": "指す",
+          "wordKana": "さす",
+          "targetReading": "さ"
+        }
+      ]
+    },
+    "止": {
+      "items": [
+        {
+          "word": "止まる",
+          "wordKana": "とまる",
+          "targetReading": "と"
+        },
+        {
+          "word": "止む",
+          "wordKana": "やむ",
+          "targetReading": "や"
+        },
+        {
+          "word": "中止",
+          "wordKana": "ちゅうし",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "紙": {
+      "items": [
+        {
+          "word": "紙飛行機",
+          "wordKana": "かみひこうき",
+          "targetReading": "かみ"
+        },
+        {
+          "word": "用紙",
+          "wordKana": "ようし",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "至": {
+      "items": [
+        {
+          "word": "至る",
+          "wordKana": "いたる",
+          "targetReading": "いた"
+        },
+        {
+          "word": "至急",
+          "wordKana": "しきゅう",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "試": {
+      "items": [
+        {
+          "word": "試験",
+          "wordKana": "しけん",
+          "targetReading": "し"
+        },
+        {
+          "word": "試す",
+          "wordKana": "ためす",
+          "targetReading": "ため"
+        },
+        {
+          "word": "試み",
+          "wordKana": "こころみ",
+          "targetReading": "こころ"
+        }
+      ]
+    },
+    "飼": {
+      "items": [
+        {
+          "word": "飼う",
+          "wordKana": "かう",
+          "targetReading": "か"
+        },
+        {
+          "word": "飼育",
+          "wordKana": "しいく",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "事": {
+      "items": [
+        {
+          "word": "返事",
+          "wordKana": "へんじ",
+          "targetReading": "じ"
+        },
+        {
+          "word": "事柄",
+          "wordKana": "ことがら",
+          "targetReading": "こと"
+        }
+      ]
+    },
+    "似": {
+      "items": [
+        {
+          "word": "似る",
+          "wordKana": "にる",
+          "targetReading": "に"
+        },
+        {
+          "word": "類似",
+          "wordKana": "るいじ",
+          "targetReading": "じ"
+        }
+      ]
+    },
+    "持": {
+      "items": [
+        {
+          "word": "持つ",
+          "wordKana": "もつ",
+          "targetReading": "も"
+        },
+        {
+          "word": "持参",
+          "wordKana": "じさん",
+          "targetReading": "じ"
+        }
+      ]
+    },
+    "時": {
+      "items": [
+        {
+          "word": "時間",
+          "wordKana": "じかん",
+          "targetReading": "じ"
+        },
+        {
+          "word": "時々",
+          "wordKana": "ときどき",
+          "targetReading": "とき"
+        }
+      ]
+    },
+    "次": {
+      "items": [
+        {
+          "word": "次に",
+          "wordKana": "つぎに",
+          "targetReading": "つぎ"
+        },
+        {
+          "word": "次第",
+          "wordKana": "しだい",
+          "targetReading": "し"
+        },
+        {
+          "word": "次回",
+          "wordKana": "じかい",
+          "targetReading": "じ"
+        },
+        {
+          "word": "次ぐ",
+          "wordKana": "つぐ",
+          "targetReading": "つ"
+        }
+      ]
+    },
+    "治": {
+      "items": [
+        {
+          "word": "政治",
+          "wordKana": "せいじ",
+          "targetReading": "じ"
+        },
+        {
+          "word": "治る",
+          "wordKana": "なおる",
+          "targetReading": "なお"
+        },
+        {
+          "word": "治療",
+          "wordKana": "ちりょう",
+          "targetReading": "ち"
+        },
+        {
+          "word": "治まる",
+          "wordKana": "おさまる",
+          "targetReading": "おさ"
+        }
+      ]
+    },
+    "示": {
+      "items": [
+        {
+          "word": "展示場",
+          "wordKana": "てんじじょう",
+          "targetReading": "じ"
+        },
+        {
+          "word": "示す",
+          "wordKana": "しめす",
+          "targetReading": "しめ"
+        },
+        {
+          "word": "示唆",
+          "wordKana": "しさ",
+          "targetReading": "し"
+        }
+      ]
+    },
+    "耳": {
+      "items": [
+        {
+          "word": "耳慣れる",
+          "wordKana": "みみなれる",
+          "targetReading": "みみ"
+        },
+        {
+          "word": "牛耳る",
+          "wordKana": "ぎゅうじる",
+          "targetReading": "じ"
+        }
+      ]
+    },
+    "自": {
+      "items": [
+        {
+          "word": "自分",
+          "wordKana": "じぶん",
+          "targetReading": "じ"
+        },
+        {
+          "word": "自然",
+          "wordKana": "しぜん",
+          "targetReading": "し"
+        },
+        {
+          "word": "自ら",
+          "wordKana": "みずから",
+          "targetReading": "みずか"
+        },
+        {
+          "word": "自ずから",
+          "wordKana": "おのずから",
+          "targetReading": "おの"
+        }
+      ]
+    },
+    "失": {
+      "items": [
+        {
+          "word": "失礼",
+          "wordKana": "しつれい",
+          "targetReading": "しつ"
+        },
+        {
+          "word": "失う",
+          "wordKana": "うしなう",
+          "targetReading": "うしな"
+        },
+        {
+          "word": "失せる",
+          "wordKana": "うせる",
+          "targetReading": "う"
+        }
+      ]
+    },
+    "実": {
+      "items": [
+        {
+          "word": "実は",
+          "wordKana": "じつは",
+          "targetReading": "じつ"
+        },
+        {
+          "word": "木の実",
+          "wordKana": "このみ",
+          "targetReading": "み"
+        },
+        {
+          "word": "実る",
+          "wordKana": "みのる",
+          "targetReading": "みの"
+        }
+      ]
+    },
+    "写": {
+      "items": [
+        {
+          "word": "写真",
+          "wordKana": "しゃしん",
+          "targetReading": "しゃ"
+        },
+        {
+          "word": "写す",
+          "wordKana": "うつす",
+          "targetReading": "うつ"
+        }
+      ]
+    },
+    "捨": {
+      "items": [
+        {
+          "word": "捨てる",
+          "wordKana": "すてる",
+          "targetReading": "す"
+        },
+        {
+          "word": "捨象",
+          "wordKana": "しゃしょう",
+          "targetReading": "しゃ"
+        }
+      ]
+    },
+    "者": {
+      "items": [
+        {
+          "word": "医者",
+          "wordKana": "いしゃ",
+          "targetReading": "しゃ"
+        },
+        {
+          "word": "若者",
+          "wordKana": "わかもの",
+          "targetReading": "もの"
+        }
+      ]
+    },
+    "車": {
+      "items": [
+        {
+          "word": "電車",
+          "wordKana": "でんしゃ",
+          "targetReading": "しゃ"
+        },
+        {
+          "word": "車椅子",
+          "wordKana": "くるまいす",
+          "targetReading": "くるま"
+        }
+      ]
+    },
+    "借": {
+      "items": [
+        {
+          "word": "借り",
+          "wordKana": "かり",
+          "targetReading": "か"
+        },
+        {
+          "word": "拝借",
+          "wordKana": "はいしゃく",
+          "targetReading": "しゃく"
+        }
+      ]
+    },
+    "若": {
+      "items": [
+        {
+          "word": "若い",
+          "wordKana": "わかい",
+          "targetReading": "わか"
+        },
+        {
+          "word": "若し",
+          "wordKana": "もし",
+          "targetReading": "も"
+        },
+        {
+          "word": "若年",
+          "wordKana": "じゃくねん",
+          "targetReading": "じゃく"
+        },
+        {
+          "word": "老若男女",
+          "wordKana": "ろうにゃくなんにょ",
+          "targetReading": "にゃく"
+        }
+      ]
+    },
+    "弱": {
+      "items": [
+        {
+          "word": "弱い",
+          "wordKana": "よわい",
+          "targetReading": "よわ"
+        },
+        {
+          "word": "軟弱",
+          "wordKana": "なんじゃく",
+          "targetReading": "じゃく"
+        }
+      ]
+    },
+    "主": {
+      "items": [
+        {
+          "word": "ご主人",
+          "wordKana": "ごしゅじん",
+          "targetReading": "しゅ"
+        },
+        {
+          "word": "飼い主",
+          "wordKana": "かいぬし",
+          "targetReading": "ぬし"
+        }
+      ]
+    },
+    "取": {
+      "items": [
+        {
+          "word": "取る",
+          "wordKana": "とる",
+          "targetReading": "と"
+        },
+        {
+          "word": "取得",
+          "wordKana": "しゅとく",
+          "targetReading": "しゅ"
+        }
+      ]
+    },
+    "守": {
+      "items": [
+        {
+          "word": "守る",
+          "wordKana": "まもる",
+          "targetReading": "まも"
+        },
+        {
+          "word": "留守",
+          "wordKana": "るす",
+          "targetReading": "す"
+        },
+        {
+          "word": "厳守",
+          "wordKana": "げんしゅ",
+          "targetReading": "しゅ"
+        }
+      ]
+    },
+    "手": {
+      "items": [
+        {
+          "word": "右手",
+          "wordKana": "みぎて",
+          "targetReading": "て"
+        },
+        {
+          "word": "運転手",
+          "wordKana": "うんてんしゅ",
+          "targetReading": "しゅ"
+        }
+      ]
+    },
+    "種": {
+      "items": [
+        {
+          "word": "種類",
+          "wordKana": "しゅるい",
+          "targetReading": "しゅ"
+        },
+        {
+          "word": "種まき",
+          "wordKana": "たねまき",
+          "targetReading": "たね"
+        }
+      ]
+    },
+    "首": {
+      "items": [
+        {
+          "word": "首になる",
+          "wordKana": "くびになる",
+          "targetReading": "くび"
+        },
+        {
+          "word": "首相",
+          "wordKana": "しゅしょう",
+          "targetReading": "しゅ"
+        }
+      ]
+    },
+    "受": {
+      "items": [
+        {
+          "word": "受ける",
+          "wordKana": "うける",
+          "targetReading": "う"
+        },
+        {
+          "word": "受験",
+          "wordKana": "じゅけん",
+          "targetReading": "じゅ"
+        }
+      ]
+    },
+    "収": {
+      "items": [
+        {
+          "word": "収入",
+          "wordKana": "しゅうにゅう",
+          "targetReading": "しゅう"
+        },
+        {
+          "word": "収まる",
+          "wordKana": "おさまる",
+          "targetReading": "おさ"
+        }
+      ]
+    },
+    "就": {
+      "items": [
+        {
+          "word": "就職",
+          "wordKana": "しゅうしょく",
+          "targetReading": "しゅう"
+        },
+        {
+          "word": "就く",
+          "wordKana": "つく",
+          "targetReading": "つ"
+        },
+        {
+          "word": "成就",
+          "wordKana": "じょうじゅ",
+          "targetReading": "じゅ"
+        }
+      ]
+    },
+    "修": {
+      "items": [
+        {
+          "word": "研修生",
+          "wordKana": "けんしゅうせい",
+          "targetReading": "しゅう"
+        },
+        {
+          "word": "修める",
+          "wordKana": "おさめる",
+          "targetReading": "おさ"
+        },
+        {
+          "word": "修業",
+          "wordKana": "しゅぎょう",
+          "targetReading": "しゅ"
+        }
+      ]
+    },
+    "終": {
+      "items": [
+        {
+          "word": "終わり",
+          "wordKana": "おわり",
+          "targetReading": "お"
+        },
+        {
+          "word": "最終",
+          "wordKana": "さいしゅう",
+          "targetReading": "しゅう"
+        }
+      ]
+    },
+    "習": {
+      "items": [
+        {
+          "word": "練習",
+          "wordKana": "れんしゅう",
+          "targetReading": "しゅう"
+        },
+        {
+          "word": "習う",
+          "wordKana": "ならう",
+          "targetReading": "なら"
+        }
+      ]
+    },
+    "臭": {
+      "items": [
+        {
+          "word": "臭い",
+          "wordKana": "くさい",
+          "targetReading": "くさ"
+        },
+        {
+          "word": "悪臭",
+          "wordKana": "あくしゅう",
+          "targetReading": "しゅう"
+        }
+      ]
+    },
+    "集": {
+      "items": [
+        {
+          "word": "集まる",
+          "wordKana": "あつまる",
+          "targetReading": "あつ"
+        },
+        {
+          "word": "写真集",
+          "wordKana": "しゃしんしゅう",
+          "targetReading": "しゅう"
+        },
+        {
+          "word": "集う",
+          "wordKana": "つどう",
+          "targetReading": "つど"
+        }
+      ]
+    },
+    "住": {
+      "items": [
+        {
+          "word": "住所",
+          "wordKana": "じゅうしょ",
+          "targetReading": "じゅう"
+        },
+        {
+          "word": "住む",
+          "wordKana": "すむ",
+          "targetReading": "す"
+        }
+      ]
+    },
+    "十": {
+      "items": [
+        {
+          "word": "十日",
+          "wordKana": "とおか",
+          "targetReading": "とお"
+        },
+        {
+          "word": "二十",
+          "wordKana": "にじゅう",
+          "targetReading": "じゅう"
+        }
+      ]
+    },
+    "重": {
+      "items": [
+        {
+          "word": "重い",
+          "wordKana": "おもい",
+          "targetReading": "おも"
+        },
+        {
+          "word": "体重",
+          "wordKana": "たいじゅう",
+          "targetReading": "じゅう"
+        },
+        {
+          "word": "重なる",
+          "wordKana": "かさなる",
+          "targetReading": "かさ"
+        },
+        {
+          "word": "慎重",
+          "wordKana": "しんちょう",
+          "targetReading": "ちょう"
+        }
+      ]
+    },
+    "縮": {
+      "items": [
+        {
+          "word": "縮小",
+          "wordKana": "しゅくしょう",
+          "targetReading": "しゅく"
+        },
+        {
+          "word": "縮む",
+          "wordKana": "ちぢむ",
+          "targetReading": "ちぢ"
+        }
+      ]
+    },
+    "出": {
+      "items": [
+        {
+          "word": "出る",
+          "wordKana": "でる",
+          "targetReading": "で"
+        },
+        {
+          "word": "出す",
+          "wordKana": "だす",
+          "targetReading": "だ"
+        },
+        {
+          "word": "輸出",
+          "wordKana": "ゆしゅつ",
+          "targetReading": "しゅつ"
+        }
+      ]
+    },
+    "春": {
+      "items": [
+        {
+          "word": "春休み",
+          "wordKana": "はるやすみ",
+          "targetReading": "はる"
+        },
+        {
+          "word": "春節",
+          "wordKana": "しゅんせつ",
+          "targetReading": "しゅん"
+        }
+      ]
+    },
+    "潤": {
+      "items": [
+        {
+          "word": "潤う",
+          "wordKana": "うるおう",
+          "targetReading": "うるお"
+        },
+        {
+          "word": "潤沢",
+          "wordKana": "じゅんたく",
+          "targetReading": "じゅん"
+        }
+      ]
+    },
+    "初": {
+      "items": [
+        {
+          "word": "最初",
+          "wordKana": "さいしょ",
+          "targetReading": "しょ"
+        },
+        {
+          "word": "初め",
+          "wordKana": "はじめ",
+          "targetReading": "はじ"
+        },
+        {
+          "word": "初詣",
+          "wordKana": "はつもうで",
+          "targetReading": "はつ"
+        }
+      ]
+    },
+    "所": {
+      "items": [
+        {
+          "word": "住所",
+          "wordKana": "じゅうしょ",
+          "targetReading": "しょ"
+        },
+        {
+          "word": "台所",
+          "wordKana": "だいどころ",
+          "targetReading": "どころ"
+        }
+      ]
+    },
+    "書": {
+      "items": [
+        {
+          "word": "辞書",
+          "wordKana": "じしょ",
+          "targetReading": "しょ"
+        },
+        {
+          "word": "書く",
+          "wordKana": "かく",
+          "targetReading": "か"
+        },
+        {
+          "word": "葉書",
+          "wordKana": "はがき",
+          "targetReading": "がき"
+        }
+      ]
+    },
+    "助": {
+      "items": [
+        {
+          "word": "助ける",
+          "wordKana": "たすける",
+          "targetReading": "たす"
+        },
+        {
+          "word": "補助",
+          "wordKana": "ほじょ",
+          "targetReading": "じょ"
+        }
+      ]
+    },
+    "女": {
+      "items": [
+        {
+          "word": "女の子",
+          "wordKana": "おんなのこ",
+          "targetReading": "おんな"
+        },
+        {
+          "word": "女性",
+          "wordKana": "じょせい",
+          "targetReading": "じょ"
+        },
+        {
+          "word": "女房",
+          "wordKana": "にょうぼう",
+          "targetReading": "にょう"
+        },
+        {
+          "word": "老若男女",
+          "wordKana": "ろうにゃくなんにょ",
+          "targetReading": "にょ"
+        }
+      ]
+    },
+    "除": {
+      "items": [
+        {
+          "word": "掃除",
+          "wordKana": "そうじ",
+          "targetReading": "じ"
+        },
+        {
+          "word": "削除",
+          "wordKana": "さくじょ",
+          "targetReading": "じょ"
+        },
+        {
+          "word": "除く",
+          "wordKana": "のぞく",
+          "targetReading": "のぞ"
+        }
+      ]
+    },
+    "傷": {
+      "items": [
+        {
+          "word": "傷つく",
+          "wordKana": "きずつく",
+          "targetReading": "きず"
+        },
+        {
+          "word": "傷む",
+          "wordKana": "いたむ",
+          "targetReading": "いた"
+        },
+        {
+          "word": "軽傷",
+          "wordKana": "けいしょう",
+          "targetReading": "しょう"
+        }
+      ]
+    },
+    "勝": {
+      "items": [
+        {
+          "word": "勝つ",
+          "wordKana": "かつ",
+          "targetReading": "か"
+        },
+        {
+          "word": "優勝",
+          "wordKana": "ゆうしょう",
+          "targetReading": "しょう"
+        }
+      ]
+    },
+    "小": {
+      "items": [
+        {
+          "word": "小学校",
+          "wordKana": "しょうがっこう",
+          "targetReading": "しょう"
+        },
+        {
+          "word": "小さい",
+          "wordKana": "ちいさい",
+          "targetReading": "ちい"
+        },
+        {
+          "word": "小型",
+          "wordKana": "こがた",
+          "targetReading": "こ"
+        },
+        {
+          "word": "小野",
+          "wordKana": "おの",
+          "targetReading": "お"
+        }
+      ]
+    },
+    "少": {
+      "items": [
+        {
+          "word": "少し",
+          "wordKana": "すこし",
+          "targetReading": "すこ"
+        },
+        {
+          "word": "少ない",
+          "wordKana": "すくない",
+          "targetReading": "すく"
+        },
+        {
+          "word": "少女",
+          "wordKana": "しょうじょ",
+          "targetReading": "しょう"
+        }
+      ]
+    },
+    "消": {
+      "items": [
+        {
+          "word": "消す",
+          "wordKana": "けす",
+          "targetReading": "け"
+        },
+        {
+          "word": "消える",
+          "wordKana": "きえる",
+          "targetReading": "き"
+        },
+        {
+          "word": "消費",
+          "wordKana": "しょうひ",
+          "targetReading": "しょう"
+        }
+      ]
+    },
+    "焼": {
+      "items": [
+        {
+          "word": "焼く",
+          "wordKana": "やく",
+          "targetReading": "や"
+        },
+        {
+          "word": "焼酎",
+          "wordKana": "しょうちゅう",
+          "targetReading": "しょう"
+        }
+      ]
+    },
+    "焦": {
+      "items": [
+        {
+          "word": "焦げる",
+          "wordKana": "こげる",
+          "targetReading": "こ"
+        },
+        {
+          "word": "焦点",
+          "wordKana": "しょうてん",
+          "targetReading": "しょう"
+        },
+        {
+          "word": "焦る",
+          "wordKana": "あせる",
+          "targetReading": "あせ"
+        }
+      ]
+    },
+    "照": {
+      "items": [
+        {
+          "word": "照らす",
+          "wordKana": "てらす",
+          "targetReading": "て"
+        },
+        {
+          "word": "照明",
+          "wordKana": "しょうめい",
+          "targetReading": "しょう"
+        }
+      ]
+    },
+    "省": {
+      "items": [
+        {
+          "word": "省く",
+          "wordKana": "はぶく",
+          "targetReading": "はぶ"
+        },
+        {
+          "word": "省略",
+          "wordKana": "しょうりゃく",
+          "targetReading": "しょう"
+        },
+        {
+          "word": "反省",
+          "wordKana": "はんせい",
+          "targetReading": "せい"
+        },
+        {
+          "word": "省みる",
+          "wordKana": "かえりみる",
+          "targetReading": "かえり"
+        }
+      ]
+    },
+    "上": {
+      "items": [
+        {
+          "word": "年上",
+          "wordKana": "としうえ",
+          "targetReading": "うえ"
+        },
+        {
+          "word": "上がる",
+          "wordKana": "あがる",
+          "targetReading": "あ"
+        },
+        {
+          "word": "上着",
+          "wordKana": "うわぎ",
+          "targetReading": "うわ"
+        },
+        {
+          "word": "以上",
+          "wordKana": "いじょう",
+          "targetReading": "じょう"
+        },
+        {
+          "word": "上る",
+          "wordKana": "のぼる",
+          "targetReading": "のぼ"
+        }
+      ]
+    },
+    "丈": {
+      "items": [
+        {
+          "word": "大丈夫",
+          "wordKana": "だいじょうぶ",
+          "targetReading": "じょう"
+        },
+        {
+          "word": "背丈",
+          "wordKana": "せたけ",
+          "targetReading": "たけ"
+        }
+      ]
+    },
+    "乗": {
+      "items": [
+        {
+          "word": "乗る",
+          "wordKana": "のる",
+          "targetReading": "の"
+        },
+        {
+          "word": "乗車",
+          "wordKana": "じょうしゃ",
+          "targetReading": "じょう"
+        }
+      ]
+    },
+    "場": {
+      "items": [
+        {
+          "word": "会場",
+          "wordKana": "かいじょう",
+          "targetReading": "じょう"
+        },
+        {
+          "word": "場合",
+          "wordKana": "ばあい",
+          "targetReading": "ば"
+        }
+      ]
+    },
+    "蒸": {
+      "items": [
+        {
+          "word": "蒸し暑い",
+          "wordKana": "むしあつい",
+          "targetReading": "む"
+        },
+        {
+          "word": "蒸発",
+          "wordKana": "じょうはつ",
+          "targetReading": "じょう"
+        }
+      ]
+    },
+    "譲": {
+      "items": [
+        {
+          "word": "譲る",
+          "wordKana": "ゆずる",
+          "targetReading": "ゆず"
+        },
+        {
+          "word": "譲歩",
+          "wordKana": "じょうほ",
+          "targetReading": "じょう"
+        }
+      ]
+    },
+    "飾": {
+      "items": [
+        {
+          "word": "飾る",
+          "wordKana": "かざる",
+          "targetReading": "かざ"
+        },
+        {
+          "word": "修飾",
+          "wordKana": "しゅうしょく",
+          "targetReading": "しょく"
+        }
+      ]
+    },
+    "植": {
+      "items": [
+        {
+          "word": "植える",
+          "wordKana": "うえる",
+          "targetReading": "う"
+        },
+        {
+          "word": "植林",
+          "wordKana": "しょくりん",
+          "targetReading": "しょく"
+        }
+      ]
+    },
+    "色": {
+      "items": [
+        {
+          "word": "色々",
+          "wordKana": "いろいろ",
+          "targetReading": "いろ"
+        },
+        {
+          "word": "特色",
+          "wordKana": "とくしょく",
+          "targetReading": "しょく"
+        },
+        {
+          "word": "色彩",
+          "wordKana": "しきさい",
+          "targetReading": "しき"
+        }
+      ]
+    },
+    "触": {
+      "items": [
+        {
+          "word": "触る",
+          "wordKana": "さわる",
+          "targetReading": "さわ"
+        },
+        {
+          "word": "触れる",
+          "wordKana": "ふれる",
+          "targetReading": "ふ"
+        },
+        {
+          "word": "接触",
+          "wordKana": "せっしょく",
+          "targetReading": "しょく"
+        }
+      ]
+    },
+    "食": {
+      "items": [
+        {
+          "word": "食事",
+          "wordKana": "しょくじ",
+          "targetReading": "しょく"
+        },
+        {
+          "word": "食べる",
+          "wordKana": "たべる",
+          "targetReading": "た"
+        },
+        {
+          "word": "食う",
+          "wordKana": "くう",
+          "targetReading": "く"
+        }
+      ]
+    },
+    "寝": {
+      "items": [
+        {
+          "word": "寝る",
+          "wordKana": "ねる",
+          "targetReading": "ね"
+        },
+        {
+          "word": "就寝",
+          "wordKana": "しゅうしん",
+          "targetReading": "しん"
+        }
+      ]
+    },
+    "心": {
+      "items": [
+        {
+          "word": "中心",
+          "wordKana": "ちゅうしん",
+          "targetReading": "しん"
+        },
+        {
+          "word": "心強い",
+          "wordKana": "こころづよい",
+          "targetReading": "こころ"
+        }
+      ]
+    },
+    "振": {
+      "items": [
+        {
+          "word": "振り",
+          "wordKana": "ふり",
+          "targetReading": "ふ"
+        },
+        {
+          "word": "振動",
+          "wordKana": "しんどう",
+          "targetReading": "しん"
+        }
+      ]
+    },
+    "新": {
+      "items": [
+        {
+          "word": "新聞",
+          "wordKana": "しんぶん",
+          "targetReading": "しん"
+        },
+        {
+          "word": "新しい",
+          "wordKana": "あたらしい",
+          "targetReading": "あたら"
+        },
+        {
+          "word": "新た",
+          "wordKana": "あらた",
+          "targetReading": "あら"
+        }
+      ]
+    },
+    "浸": {
+      "items": [
+        {
+          "word": "浸す",
+          "wordKana": "ひたす",
+          "targetReading": "ひた"
+        },
+        {
+          "word": "浸水",
+          "wordKana": "しんすい",
+          "targetReading": "しん"
+        }
+      ]
+    },
+    "深": {
+      "items": [
+        {
+          "word": "深い",
+          "wordKana": "ふかい",
+          "targetReading": "ふか"
+        },
+        {
+          "word": "深刻",
+          "wordKana": "しんこく",
+          "targetReading": "しん"
+        }
+      ]
+    },
+    "真": {
+      "items": [
+        {
+          "word": "写真",
+          "wordKana": "しゃしん",
+          "targetReading": "しん"
+        },
+        {
+          "word": "真っ直ぐ",
+          "wordKana": "まっすぐ",
+          "targetReading": "ま"
+        }
+      ]
+    },
+    "神": {
+      "items": [
+        {
+          "word": "精神的",
+          "wordKana": "せいしんてき",
+          "targetReading": "しん"
+        },
+        {
+          "word": "神様",
+          "wordKana": "かみさま",
+          "targetReading": "かみ"
+        }
+      ]
+    },
+    "親": {
+      "items": [
+        {
+          "word": "両親",
+          "wordKana": "りょうしん",
+          "targetReading": "しん"
+        },
+        {
+          "word": "母親",
+          "wordKana": "ははおや",
+          "targetReading": "おや"
+        },
+        {
+          "word": "親しい",
+          "wordKana": "したしい",
+          "targetReading": "した"
+        }
+      ]
+    },
+    "身": {
+      "items": [
+        {
+          "word": "自身",
+          "wordKana": "じしん",
+          "targetReading": "しん"
+        },
+        {
+          "word": "中身",
+          "wordKana": "なかみ",
+          "targetReading": "み"
+        }
+      ]
+    },
+    "進": {
+      "items": [
+        {
+          "word": "進む",
+          "wordKana": "すすむ",
+          "targetReading": "すす"
+        },
+        {
+          "word": "進学",
+          "wordKana": "しんがく",
+          "targetReading": "しん"
+        }
+      ]
+    },
+    "人": {
+      "items": [
+        {
+          "word": "外国人",
+          "wordKana": "がいこくじん",
+          "targetReading": "じん"
+        },
+        {
+          "word": "あの人",
+          "wordKana": "あのひと",
+          "targetReading": "ひと"
+        },
+        {
+          "word": "何人",
+          "wordKana": "なんにん",
+          "targetReading": "にん"
+        }
+      ]
+    },
+    "図": {
+      "items": [
+        {
+          "word": "図書館",
+          "wordKana": "としょかん",
+          "targetReading": "と"
+        },
+        {
+          "word": "地図",
+          "wordKana": "ちず",
+          "targetReading": "ず"
+        },
+        {
+          "word": "図る",
+          "wordKana": "はかる",
+          "targetReading": "はか"
+        }
+      ]
+    },
+    "推": {
+      "items": [
+        {
+          "word": "推測",
+          "wordKana": "すいそく",
+          "targetReading": "すい"
+        },
+        {
+          "word": "推し進める",
+          "wordKana": "おしすすめる",
+          "targetReading": "お"
+        }
+      ]
+    },
+    "水": {
+      "items": [
+        {
+          "word": "水っぽい",
+          "wordKana": "みずっぽい",
+          "targetReading": "みず"
+        },
+        {
+          "word": "水曜日",
+          "wordKana": "すいようび",
+          "targetReading": "すい"
+        }
+      ]
+    },
+    "衰": {
+      "items": [
+        {
+          "word": "衰える",
+          "wordKana": "おとろえる",
+          "targetReading": "おとろ"
+        },
+        {
+          "word": "衰退",
+          "wordKana": "すいたい",
+          "targetReading": "すい"
+        }
+      ]
+    },
+    "数": {
+      "items": [
+        {
+          "word": "数々",
+          "wordKana": "かずかず",
+          "targetReading": "かず"
+        },
+        {
+          "word": "数える",
+          "wordKana": "かぞえる",
+          "targetReading": "かぞ"
+        },
+        {
+          "word": "回数",
+          "wordKana": "かいすう",
+          "targetReading": "すう"
+        }
+      ]
+    },
+    "世": {
+      "items": [
+        {
+          "word": "世界",
+          "wordKana": "せかい",
+          "targetReading": "せ"
+        },
+        {
+          "word": "世紀",
+          "wordKana": "せいき",
+          "targetReading": "せい"
+        },
+        {
+          "word": "この世",
+          "wordKana": "このよ",
+          "targetReading": "よ"
+        }
+      ]
+    },
+    "性": {
+      "items": [
+        {
+          "word": "女性",
+          "wordKana": "じょせい",
+          "targetReading": "せい"
+        },
+        {
+          "word": "相性",
+          "wordKana": "あいしょう",
+          "targetReading": "しょう"
+        }
+      ]
+    },
+    "成": {
+      "items": [
+        {
+          "word": "成功",
+          "wordKana": "せいこう",
+          "targetReading": "せい"
+        },
+        {
+          "word": "成る",
+          "wordKana": "なる",
+          "targetReading": "な"
+        },
+        {
+          "word": "成就",
+          "wordKana": "じょうじゅ",
+          "targetReading": "じょう"
+        }
+      ]
+    },
+    "整": {
+      "items": [
+        {
+          "word": "整理",
+          "wordKana": "せいり",
+          "targetReading": "せい"
+        },
+        {
+          "word": "整う",
+          "wordKana": "ととのう",
+          "targetReading": "ととの"
+        }
+      ]
+    },
+    "星": {
+      "items": [
+        {
+          "word": "星空",
+          "wordKana": "ほしぞら",
+          "targetReading": "ほし"
+        },
+        {
+          "word": "衛星",
+          "wordKana": "えいせい",
+          "targetReading": "せい"
+        }
+      ]
+    },
+    "正": {
+      "items": [
+        {
+          "word": "正しい",
+          "wordKana": "ただしい",
+          "targetReading": "ただ"
+        },
+        {
+          "word": "正月",
+          "wordKana": "しょうがつ",
+          "targetReading": "しょう"
+        },
+        {
+          "word": "正確",
+          "wordKana": "せいかく",
+          "targetReading": "せい"
+        },
+        {
+          "word": "正に",
+          "wordKana": "まさに",
+          "targetReading": "まさ"
+        }
+      ]
+    },
+    "清": {
+      "items": [
+        {
+          "word": "清掃",
+          "wordKana": "せいそう",
+          "targetReading": "せい"
+        },
+        {
+          "word": "清い",
+          "wordKana": "きよい",
+          "targetReading": "きよ"
+        }
+      ]
+    },
+    "生": {
+      "items": [
+        {
+          "word": "先生",
+          "wordKana": "せんせい",
+          "targetReading": "せい"
+        },
+        {
+          "word": "生まれる",
+          "wordKana": "うまれる",
+          "targetReading": "う"
+        },
+        {
+          "word": "一生",
+          "wordKana": "いっしょう",
+          "targetReading": "しょう"
+        },
+        {
+          "word": "生きる",
+          "wordKana": "いきる",
+          "targetReading": "い"
+        },
+        {
+          "word": "生地",
+          "wordKana": "きじ",
+          "targetReading": "き"
+        },
+        {
+          "word": "生ビール",
+          "wordKana": "なまビール",
+          "targetReading": "なま"
+        },
+        {
+          "word": "生える",
+          "wordKana": "はえる",
+          "targetReading": "は"
+        }
+      ]
+    },
+    "盛": {
+      "items": [
+        {
+          "word": "盛ん",
+          "wordKana": "さかん",
+          "targetReading": "さか"
+        },
+        {
+          "word": "盛り上がる",
+          "wordKana": "もりあがる",
+          "targetReading": "も"
+        },
+        {
+          "word": "旺盛",
+          "wordKana": "おうせい",
+          "targetReading": "せい"
+        },
+        {
+          "word": "繁盛",
+          "wordKana": "はんじょう",
+          "targetReading": "じょう"
+        }
+      ]
+    },
+    "声": {
+      "items": [
+        {
+          "word": "大声",
+          "wordKana": "おおごえ",
+          "targetReading": "ごえ"
+        },
+        {
+          "word": "声援",
+          "wordKana": "せいえん",
+          "targetReading": "せい"
+        },
+        {
+          "word": "声高",
+          "wordKana": "こわだか",
+          "targetReading": "こわ"
+        }
+      ]
+    },
+    "請": {
+      "items": [
+        {
+          "word": "申請",
+          "wordKana": "しんせい",
+          "targetReading": "せい"
+        },
+        {
+          "word": "下請け",
+          "wordKana": "したうけ",
+          "targetReading": "う"
+        }
+      ]
+    },
+    "青": {
+      "items": [
+        {
+          "word": "青い",
+          "wordKana": "あおい",
+          "targetReading": "あお"
+        },
+        {
+          "word": "青年",
+          "wordKana": "せいねん",
+          "targetReading": "せい"
+        }
+      ]
+    },
+    "静": {
+      "items": [
+        {
+          "word": "静か",
+          "wordKana": "しずか",
+          "targetReading": "しず"
+        },
+        {
+          "word": "冷静",
+          "wordKana": "れいせい",
+          "targetReading": "せい"
+        }
+      ]
+    },
+    "石": {
+      "items": [
+        {
+          "word": "石垣",
+          "wordKana": "いしがき",
+          "targetReading": "いし"
+        },
+        {
+          "word": "石油",
+          "wordKana": "せきゆ",
+          "targetReading": "せき"
+        }
+      ]
+    },
+    "積": {
+      "items": [
+        {
+          "word": "積む",
+          "wordKana": "つむ",
+          "targetReading": "つ"
+        },
+        {
+          "word": "蓄積",
+          "wordKana": "ちくせき",
+          "targetReading": "せき"
+        }
+      ]
+    },
+    "跡": {
+      "items": [
+        {
+          "word": "足跡",
+          "wordKana": "あしあと",
+          "targetReading": "あと"
+        },
+        {
+          "word": "旧跡",
+          "wordKana": "きゅうせき",
+          "targetReading": "せき"
+        }
+      ]
+    },
+    "切": {
+      "items": [
+        {
+          "word": "大切",
+          "wordKana": "たいせつ",
+          "targetReading": "せつ"
+        },
+        {
+          "word": "切る",
+          "wordKana": "きる",
+          "targetReading": "き"
+        },
+        {
+          "word": "一切",
+          "wordKana": "いっさい",
+          "targetReading": "さい"
+        }
+      ]
+    },
+    "折": {
+      "items": [
+        {
+          "word": "折り紙",
+          "wordKana": "おりがみ",
+          "targetReading": "お"
+        },
+        {
+          "word": "右折",
+          "wordKana": "うせつ",
+          "targetReading": "せつ"
+        },
+        {
+          "word": "時折",
+          "wordKana": "ときおり",
+          "targetReading": "おり"
+        }
+      ]
+    },
+    "絶": {
+      "items": [
+        {
+          "word": "拒絶",
+          "wordKana": "きょぜつ",
+          "targetReading": "ぜつ"
+        },
+        {
+          "word": "絶える",
+          "wordKana": "たえる",
+          "targetReading": "た"
+        }
+      ]
+    },
+    "先": {
+      "items": [
+        {
+          "word": "先月",
+          "wordKana": "せんげつ",
+          "targetReading": "せん"
+        },
+        {
+          "word": "先に",
+          "wordKana": "さきに",
+          "targetReading": "さき"
+        },
+        {
+          "word": "先ず",
+          "wordKana": "まず",
+          "targetReading": "ま"
+        }
+      ]
+    },
+    "占": {
+      "items": [
+        {
+          "word": "占う",
+          "wordKana": "うらなう",
+          "targetReading": "うらな"
+        },
+        {
+          "word": "占める",
+          "wordKana": "しめる",
+          "targetReading": "し"
+        },
+        {
+          "word": "独占",
+          "wordKana": "どくせん",
+          "targetReading": "せん"
+        }
+      ]
+    },
+    "戦": {
+      "items": [
+        {
+          "word": "戦争",
+          "wordKana": "せんそう",
+          "targetReading": "せん"
+        },
+        {
+          "word": "戦う",
+          "wordKana": "たたかう",
+          "targetReading": "たたか"
+        }
+      ]
+    },
+    "洗": {
+      "items": [
+        {
+          "word": "洗う",
+          "wordKana": "あらう",
+          "targetReading": "あら"
+        },
+        {
+          "word": "洗濯",
+          "wordKana": "せんたく",
+          "targetReading": "せん"
+        }
+      ]
+    },
+    "染": {
+      "items": [
+        {
+          "word": "染み",
+          "wordKana": "しみ",
+          "targetReading": "し"
+        },
+        {
+          "word": "汚染",
+          "wordKana": "おせん",
+          "targetReading": "せん"
+        },
+        {
+          "word": "染まる",
+          "wordKana": "そまる",
+          "targetReading": "そ"
+        }
+      ]
+    },
+    "選": {
+      "items": [
+        {
+          "word": "選手",
+          "wordKana": "せんしゅ",
+          "targetReading": "せん"
+        },
+        {
+          "word": "選ぶ",
+          "wordKana": "えらぶ",
+          "targetReading": "えら"
+        }
+      ]
+    },
+    "前": {
+      "items": [
+        {
+          "word": "午前",
+          "wordKana": "ごぜん",
+          "targetReading": "ぜん"
+        },
+        {
+          "word": "名前",
+          "wordKana": "なまえ",
+          "targetReading": "まえ"
+        }
+      ]
+    },
+    "全": {
+      "items": [
+        {
+          "word": "全部",
+          "wordKana": "ぜんぶ",
+          "targetReading": "ぜん"
+        },
+        {
+          "word": "全て",
+          "wordKana": "すべて",
+          "targetReading": "すべ"
+        },
+        {
+          "word": "全く",
+          "wordKana": "まったく",
+          "targetReading": "まった"
+        }
+      ]
+    },
+    "素": {
+      "items": [
+        {
+          "word": "素敵",
+          "wordKana": "すてき",
+          "targetReading": "す"
+        },
+        {
+          "word": "酵素",
+          "wordKana": "こうそ",
+          "targetReading": "そ"
+        }
+      ]
+    },
+    "組": {
+      "items": [
+        {
+          "word": "組む",
+          "wordKana": "くむ",
+          "targetReading": "く"
+        },
+        {
+          "word": "組合",
+          "wordKana": "くみあい",
+          "targetReading": "くみ"
+        },
+        {
+          "word": "組織",
+          "wordKana": "そしき",
+          "targetReading": "そ"
+        }
+      ]
+    },
+    "想": {
+      "items": [
+        {
+          "word": "予想",
+          "wordKana": "よそう",
+          "targetReading": "そう"
+        },
+        {
+          "word": "愛想",
+          "wordKana": "あいそ",
+          "targetReading": "そ"
+        }
+      ]
+    },
+    "早": {
+      "items": [
+        {
+          "word": "早い",
+          "wordKana": "はやい",
+          "targetReading": "はや"
+        },
+        {
+          "word": "早朝",
+          "wordKana": "そうちょう",
+          "targetReading": "そう"
+        },
+        {
+          "word": "早速",
+          "wordKana": "さっそく",
+          "targetReading": "さっ"
+        }
+      ]
+    },
+    "争": {
+      "items": [
+        {
+          "word": "戦争",
+          "wordKana": "せんそう",
+          "targetReading": "そう"
+        },
+        {
+          "word": "争う",
+          "wordKana": "あらそう",
+          "targetReading": "あらそ"
+        }
+      ]
+    },
+    "相": {
+      "items": [
+        {
+          "word": "相談",
+          "wordKana": "そうだん",
+          "targetReading": "そう"
+        },
+        {
+          "word": "相手",
+          "wordKana": "あいて",
+          "targetReading": "あい"
+        },
+        {
+          "word": "首相",
+          "wordKana": "しゅしょう",
+          "targetReading": "しょう"
+        }
+      ]
+    },
+    "窓": {
+      "items": [
+        {
+          "word": "窓側",
+          "wordKana": "まどがわ",
+          "targetReading": "まど"
+        },
+        {
+          "word": "車窓",
+          "wordKana": "しゃそう",
+          "targetReading": "そう"
+        }
+      ]
+    },
+    "草": {
+      "items": [
+        {
+          "word": "道草",
+          "wordKana": "みちくさ",
+          "targetReading": "くさ"
+        },
+        {
+          "word": "雑草",
+          "wordKana": "ざっそう",
+          "targetReading": "そう"
+        }
+      ]
+    },
+    "装": {
+      "items": [
+        {
+          "word": "服装",
+          "wordKana": "ふくそう",
+          "targetReading": "そう"
+        },
+        {
+          "word": "衣装",
+          "wordKana": "いしょう",
+          "targetReading": "しょう"
+        },
+        {
+          "word": "装う",
+          "wordKana": "よそおう",
+          "targetReading": "よそお"
+        }
+      ]
+    },
+    "走": {
+      "items": [
+        {
+          "word": "走る",
+          "wordKana": "はしる",
+          "targetReading": "はし"
+        },
+        {
+          "word": "ご馳走",
+          "wordKana": "ごちそう",
+          "targetReading": "そう"
+        }
+      ]
+    },
+    "送": {
+      "items": [
+        {
+          "word": "送る",
+          "wordKana": "おくる",
+          "targetReading": "おく"
+        },
+        {
+          "word": "送別会",
+          "wordKana": "そうべつかい",
+          "targetReading": "そう"
+        }
+      ]
+    },
+    "騒": {
+      "items": [
+        {
+          "word": "騒ぐ",
+          "wordKana": "さわぐ",
+          "targetReading": "さわ"
+        },
+        {
+          "word": "物騒",
+          "wordKana": "ぶっそう",
+          "targetReading": "そう"
+        }
+      ]
+    },
+    "増": {
+      "items": [
+        {
+          "word": "増える",
+          "wordKana": "ふえる",
+          "targetReading": "ふ"
+        },
+        {
+          "word": "増加",
+          "wordKana": "ぞうか",
+          "targetReading": "ぞう"
+        },
+        {
+          "word": "増す",
+          "wordKana": "ます",
+          "targetReading": "ま"
+        }
+      ]
+    },
+    "造": {
+      "items": [
+        {
+          "word": "創造",
+          "wordKana": "そうぞう",
+          "targetReading": "ぞう"
+        },
+        {
+          "word": "造る",
+          "wordKana": "つくる",
+          "targetReading": "つく"
+        }
+      ]
+    },
+    "息": {
+      "items": [
+        {
+          "word": "息抜き",
+          "wordKana": "いきぬき",
+          "targetReading": "いき"
+        },
+        {
+          "word": "休息",
+          "wordKana": "きゅうそく",
+          "targetReading": "そく"
+        }
+      ]
+    },
+    "束": {
+      "items": [
+        {
+          "word": "約束",
+          "wordKana": "やくそく",
+          "targetReading": "そく"
+        },
+        {
+          "word": "花束",
+          "wordKana": "はなたば",
+          "targetReading": "たば"
+        }
+      ]
+    },
+    "足": {
+      "items": [
+        {
+          "word": "足りる",
+          "wordKana": "たりる",
+          "targetReading": "た"
+        },
+        {
+          "word": "足跡",
+          "wordKana": "あしあと",
+          "targetReading": "あし"
+        },
+        {
+          "word": "不足",
+          "wordKana": "ふそく",
+          "targetReading": "そく"
+        }
+      ]
+    },
+    "速": {
+      "items": [
+        {
+          "word": "速い",
+          "wordKana": "はやい",
+          "targetReading": "はや"
+        },
+        {
+          "word": "早速",
+          "wordKana": "さっそく",
+          "targetReading": "そく"
+        },
+        {
+          "word": "速やか",
+          "wordKana": "すみやか",
+          "targetReading": "すみ"
+        }
+      ]
+    },
+    "続": {
+      "items": [
+        {
+          "word": "続く",
+          "wordKana": "つづく",
+          "targetReading": "つづ"
+        },
+        {
+          "word": "持続",
+          "wordKana": "じぞく",
+          "targetReading": "ぞく"
+        }
+      ]
+    },
+    "損": {
+      "items": [
+        {
+          "word": "損害",
+          "wordKana": "そんがい",
+          "targetReading": "そん"
+        },
+        {
+          "word": "損なう",
+          "wordKana": "そこなう",
+          "targetReading": "そこ"
+        }
+      ]
+    },
+    "多": {
+      "items": [
+        {
+          "word": "多い",
+          "wordKana": "おおい",
+          "targetReading": "おお"
+        },
+        {
+          "word": "多少",
+          "wordKana": "たしょう",
+          "targetReading": "た"
+        }
+      ]
+    },
+    "太": {
+      "items": [
+        {
+          "word": "太い",
+          "wordKana": "ふとい",
+          "targetReading": "ふと"
+        },
+        {
+          "word": "太陽",
+          "wordKana": "たいよう",
+          "targetReading": "たい"
+        },
+        {
+          "word": "太郎",
+          "wordKana": "たろう",
+          "targetReading": "た"
+        }
+      ]
+    },
+    "打": {
+      "items": [
+        {
+          "word": "打つ",
+          "wordKana": "うつ",
+          "targetReading": "う"
+        },
+        {
+          "word": "打撲",
+          "wordKana": "だぼく",
+          "targetReading": "だ"
+        }
+      ]
+    },
+    "耐": {
+      "items": [
+        {
+          "word": "耐える",
+          "wordKana": "たえる",
+          "targetReading": "た"
+        },
+        {
+          "word": "忍耐",
+          "wordKana": "にんたい",
+          "targetReading": "たい"
+        }
+      ]
+    },
+    "待": {
+      "items": [
+        {
+          "word": "接待",
+          "wordKana": "せったい",
+          "targetReading": "たい"
+        },
+        {
+          "word": "待つ",
+          "wordKana": "まつ",
+          "targetReading": "ま"
+        }
+      ]
+    },
+    "貸": {
+      "items": [
+        {
+          "word": "貸す",
+          "wordKana": "かす",
+          "targetReading": "か"
+        },
+        {
+          "word": "貸与",
+          "wordKana": "たいよ",
+          "targetReading": "たい"
+        }
+      ]
+    },
+    "代": {
+      "items": [
+        {
+          "word": "時代",
+          "wordKana": "じだい",
+          "targetReading": "だい"
+        },
+        {
+          "word": "代わる",
+          "wordKana": "かわる",
+          "targetReading": "か"
+        },
+        {
+          "word": "交代",
+          "wordKana": "こうたい",
+          "targetReading": "たい"
+        }
+      ]
+    },
+    "台": {
+      "items": [
+        {
+          "word": "台所",
+          "wordKana": "だいどころ",
+          "targetReading": "だい"
+        },
+        {
+          "word": "台風",
+          "wordKana": "たいふう",
+          "targetReading": "たい"
+        }
+      ]
+    },
+    "大": {
+      "items": [
+        {
+          "word": "大切",
+          "wordKana": "たいせつ",
+          "targetReading": "たい"
+        },
+        {
+          "word": "大学",
+          "wordKana": "だいがく",
+          "targetReading": "だい"
+        },
+        {
+          "word": "大きい",
+          "wordKana": "おおきい",
+          "targetReading": "おお"
+        }
+      ]
+    },
+    "達": {
+      "items": [
+        {
+          "word": "配達",
+          "wordKana": "はいたつ",
+          "targetReading": "たつ"
+        },
+        {
+          "word": "達",
+          "wordKana": "たち",
+          "targetReading": "たち"
+        }
+      ]
+    },
+    "担": {
+      "items": [
+        {
+          "word": "担任",
+          "wordKana": "たんにん",
+          "targetReading": "たん"
+        },
+        {
+          "word": "担う",
+          "wordKana": "になう",
+          "targetReading": "にな"
+        }
+      ]
+    },
+    "探": {
+      "items": [
+        {
+          "word": "探す",
+          "wordKana": "さがす",
+          "targetReading": "さが"
+        },
+        {
+          "word": "探る",
+          "wordKana": "さぐる",
+          "targetReading": "さぐ"
+        },
+        {
+          "word": "探究",
+          "wordKana": "たんきゅう",
+          "targetReading": "たん"
+        }
+      ]
+    },
+    "端": {
+      "items": [
+        {
+          "word": "極端",
+          "wordKana": "きょくたん",
+          "targetReading": "たん"
+        },
+        {
+          "word": "道端",
+          "wordKana": "みちばた",
+          "targetReading": "ばた"
+        },
+        {
+          "word": "半端",
+          "wordKana": "はんぱ",
+          "targetReading": "ぱ"
+        },
+        {
+          "word": "片っ端から",
+          "wordKana": "かたっぱしから",
+          "targetReading": "ぱし"
+        }
+      ]
+    },
+    "断": {
+      "items": [
+        {
+          "word": "断る",
+          "wordKana": "ことわる",
+          "targetReading": "ことわ"
+        },
+        {
+          "word": "横断",
+          "wordKana": "おうだん",
+          "targetReading": "だん"
+        },
+        {
+          "word": "断つ",
+          "wordKana": "たつ",
+          "targetReading": "た"
+        }
+      ]
+    },
+    "暖": {
+      "items": [
+        {
+          "word": "暖かい",
+          "wordKana": "あたたかい",
+          "targetReading": "あたた"
+        },
+        {
+          "word": "暖房",
+          "wordKana": "だんぼう",
+          "targetReading": "だん"
+        }
+      ]
+    },
+    "男": {
+      "items": [
+        {
+          "word": "男の子",
+          "wordKana": "おとこのこ",
+          "targetReading": "おとこ"
+        },
+        {
+          "word": "男性",
+          "wordKana": "だんせい",
+          "targetReading": "だん"
+        },
+        {
+          "word": "老若男女",
+          "wordKana": "ろうにゃくなんにょ",
+          "targetReading": "なん"
+        }
+      ]
+    },
+    "値": {
+      "items": [
+        {
+          "word": "値段",
+          "wordKana": "ねだん",
+          "targetReading": "ね"
+        },
+        {
+          "word": "価値",
+          "wordKana": "かち",
+          "targetReading": "ち"
+        },
+        {
+          "word": "値する",
+          "wordKana": "あたいする",
+          "targetReading": "あたい"
+        }
+      ]
+    },
+    "知": {
+      "items": [
+        {
+          "word": "知る",
+          "wordKana": "しる",
+          "targetReading": "し"
+        },
+        {
+          "word": "承知",
+          "wordKana": "しょうち",
+          "targetReading": "ち"
+        }
+      ]
+    },
+    "地": {
+      "items": [
+        {
+          "word": "地味",
+          "wordKana": "じみ",
+          "targetReading": "じ"
+        },
+        {
+          "word": "地図",
+          "wordKana": "ちず",
+          "targetReading": "ち"
+        }
+      ]
+    },
+    "置": {
+      "items": [
+        {
+          "word": "置く",
+          "wordKana": "おく",
+          "targetReading": "お"
+        },
+        {
+          "word": "位置",
+          "wordKana": "いち",
+          "targetReading": "ち"
+        }
+      ]
+    },
+    "遅": {
+      "items": [
+        {
+          "word": "遅刻",
+          "wordKana": "ちこく",
+          "targetReading": "ち"
+        },
+        {
+          "word": "遅い",
+          "wordKana": "おそい",
+          "targetReading": "おそ"
+        },
+        {
+          "word": "遅れる",
+          "wordKana": "おくれる",
+          "targetReading": "おく"
+        }
+      ]
+    },
+    "蓄": {
+      "items": [
+        {
+          "word": "蓄える",
+          "wordKana": "たくわえる",
+          "targetReading": "たくわ"
+        },
+        {
+          "word": "蓄積",
+          "wordKana": "ちくせき",
+          "targetReading": "ちく"
+        }
+      ]
+    },
+    "着": {
+      "items": [
+        {
+          "word": "到着",
+          "wordKana": "とうちゃく",
+          "targetReading": "ちゃく"
+        },
+        {
+          "word": "着る",
+          "wordKana": "きる",
+          "targetReading": "き"
+        },
+        {
+          "word": "着く",
+          "wordKana": "つく",
+          "targetReading": "つ"
+        }
+      ]
+    },
+    "中": {
+      "items": [
+        {
+          "word": "中国",
+          "wordKana": "ちゅうごく",
+          "targetReading": "ちゅう"
+        },
+        {
+          "word": "中身",
+          "wordKana": "なかみ",
+          "targetReading": "なか"
+        }
+      ]
+    },
+    "昼": {
+      "items": [
+        {
+          "word": "お昼",
+          "wordKana": "おひる",
+          "targetReading": "ひる"
+        },
+        {
+          "word": "昼食",
+          "wordKana": "ちゅうしょく",
+          "targetReading": "ちゅう"
+        }
+      ]
+    },
+    "注": {
+      "items": [
+        {
+          "word": "注意",
+          "wordKana": "ちゅうい",
+          "targetReading": "ちゅう"
+        },
+        {
+          "word": "降り注ぐ",
+          "wordKana": "ふりそそぐ",
+          "targetReading": "そそ"
+        }
+      ]
+    },
+    "虫": {
+      "items": [
+        {
+          "word": "虫歯",
+          "wordKana": "むしば",
+          "targetReading": "むし"
+        },
+        {
+          "word": "害虫",
+          "wordKana": "がいちゅう",
+          "targetReading": "ちゅう"
+        }
+      ]
+    },
+    "張": {
+      "items": [
+        {
+          "word": "張る",
+          "wordKana": "はる",
+          "targetReading": "は"
+        },
+        {
+          "word": "緊張",
+          "wordKana": "きんちょう",
+          "targetReading": "ちょう"
+        }
+      ]
+    },
+    "朝": {
+      "items": [
+        {
+          "word": "毎朝",
+          "wordKana": "まいあさ",
+          "targetReading": "あさ"
+        },
+        {
+          "word": "早朝",
+          "wordKana": "そうちょう",
+          "targetReading": "ちょう"
+        }
+      ]
+    },
+    "町": {
+      "items": [
+        {
+          "word": "町並み",
+          "wordKana": "まちなみ",
+          "targetReading": "まち"
+        },
+        {
+          "word": "町内",
+          "wordKana": "ちょうない",
+          "targetReading": "ちょう"
+        }
+      ]
+    },
+    "調": {
+      "items": [
+        {
+          "word": "調べる",
+          "wordKana": "しらべる",
+          "targetReading": "しら"
+        },
+        {
+          "word": "調子",
+          "wordKana": "ちょうし",
+          "targetReading": "ちょう"
+        }
+      ]
+    },
+    "長": {
+      "items": [
+        {
+          "word": "社長",
+          "wordKana": "しゃちょう",
+          "targetReading": "ちょう"
+        },
+        {
+          "word": "長い",
+          "wordKana": "ながい",
+          "targetReading": "なが"
+        }
+      ]
+    },
+    "鳥": {
+      "items": [
+        {
+          "word": "小鳥",
+          "wordKana": "ことり",
+          "targetReading": "とり"
+        },
+        {
+          "word": "鳥類",
+          "wordKana": "ちょうるい",
+          "targetReading": "ちょう"
+        }
+      ]
+    },
+    "直": {
+      "items": [
+        {
+          "word": "直す",
+          "wordKana": "なおす",
+          "targetReading": "なお"
+        },
+        {
+          "word": "正直",
+          "wordKana": "しょうじき",
+          "targetReading": "じき"
+        },
+        {
+          "word": "直接",
+          "wordKana": "ちょくせつ",
+          "targetReading": "ちょく"
+        },
+        {
+          "word": "直ぐ",
+          "wordKana": "すぐ",
+          "targetReading": "す"
+        }
+      ]
+    },
+    "追": {
+      "items": [
+        {
+          "word": "追う",
+          "wordKana": "おう",
+          "targetReading": "お"
+        },
+        {
+          "word": "追加",
+          "wordKana": "ついか",
+          "targetReading": "つい"
+        }
+      ]
+    },
+    "痛": {
+      "items": [
+        {
+          "word": "痛い",
+          "wordKana": "いたい",
+          "targetReading": "いた"
+        },
+        {
+          "word": "腹痛",
+          "wordKana": "ふくつう",
+          "targetReading": "つう"
+        }
+      ]
+    },
+    "通": {
+      "items": [
+        {
+          "word": "普通",
+          "wordKana": "ふつう",
+          "targetReading": "つう"
+        },
+        {
+          "word": "通う",
+          "wordKana": "かよう",
+          "targetReading": "かよ"
+        },
+        {
+          "word": "通す",
+          "wordKana": "とおす",
+          "targetReading": "とお"
+        }
+      ]
+    },
+    "定": {
+      "items": [
+        {
+          "word": "予定",
+          "wordKana": "よてい",
+          "targetReading": "てい"
+        },
+        {
+          "word": "勘定",
+          "wordKana": "かんじょう",
+          "targetReading": "じょう"
+        },
+        {
+          "word": "定まる",
+          "wordKana": "さだまる",
+          "targetReading": "さだ"
+        }
+      ]
+    },
+    "底": {
+      "items": [
+        {
+          "word": "奥底",
+          "wordKana": "おくそこ",
+          "targetReading": "そこ"
+        },
+        {
+          "word": "徹底",
+          "wordKana": "てってい",
+          "targetReading": "てい"
+        }
+      ]
+    },
+    "庭": {
+      "items": [
+        {
+          "word": "庭先",
+          "wordKana": "にわさき",
+          "targetReading": "にわ"
+        },
+        {
+          "word": "家庭",
+          "wordKana": "かてい",
+          "targetReading": "てい"
+        }
+      ]
+    },
+    "程": {
+      "items": [
+        {
+          "word": "日程",
+          "wordKana": "にってい",
+          "targetReading": "てい"
+        },
+        {
+          "word": "程遠い",
+          "wordKana": "ほどとおい",
+          "targetReading": "ほど"
+        }
+      ]
+    },
+    "的": {
+      "items": [
+        {
+          "word": "動的",
+          "wordKana": "どうてき",
+          "targetReading": "てき"
+        },
+        {
+          "word": "的外れ",
+          "wordKana": "まとはずれ",
+          "targetReading": "まと"
+        }
+      ]
+    },
+    "適": {
+      "items": [
+        {
+          "word": "適当",
+          "wordKana": "てきとう",
+          "targetReading": "てき"
+        },
+        {
+          "word": "適う",
+          "wordKana": "かなう",
+          "targetReading": "かな"
+        }
+      ]
+    },
+    "店": {
+      "items": [
+        {
+          "word": "店員",
+          "wordKana": "てんいん",
+          "targetReading": "てん"
+        },
+        {
+          "word": "お店",
+          "wordKana": "おみせ",
+          "targetReading": "みせ"
+        }
+      ]
+    },
+    "添": {
+      "items": [
+        {
+          "word": "添付",
+          "wordKana": "てんぷ",
+          "targetReading": "てん"
+        },
+        {
+          "word": "添える",
+          "wordKana": "そえる",
+          "targetReading": "そ"
+        }
+      ]
+    },
+    "転": {
+      "items": [
+        {
+          "word": "自転車",
+          "wordKana": "じてんしゃ",
+          "targetReading": "てん"
+        },
+        {
+          "word": "転ぶ",
+          "wordKana": "ころぶ",
+          "targetReading": "ころ"
+        }
+      ]
+    },
+    "点": {
+      "items": [
+        {
+          "word": "交差点",
+          "wordKana": "こうさてん",
+          "targetReading": "てん"
+        },
+        {
+          "word": "点く",
+          "wordKana": "つく",
+          "targetReading": "つ"
+        }
+      ]
+    },
+    "伝": {
+      "items": [
+        {
+          "word": "伝える",
+          "wordKana": "つたえる",
+          "targetReading": "つた"
+        },
+        {
+          "word": "手伝い",
+          "wordKana": "てつだい",
+          "targetReading": "つだ"
+        },
+        {
+          "word": "伝言",
+          "wordKana": "でんごん",
+          "targetReading": "でん"
+        }
+      ]
+    },
+    "登": {
+      "items": [
+        {
+          "word": "登る",
+          "wordKana": "のぼる",
+          "targetReading": "のぼ"
+        },
+        {
+          "word": "登山",
+          "wordKana": "とざん",
+          "targetReading": "と"
+        },
+        {
+          "word": "登場",
+          "wordKana": "とうじょう",
+          "targetReading": "とう"
+        }
+      ]
+    },
+    "都": {
+      "items": [
+        {
+          "word": "都合",
+          "wordKana": "つごう",
+          "targetReading": "つ"
+        },
+        {
+          "word": "京都",
+          "wordKana": "きょうと",
+          "targetReading": "と"
+        }
+      ]
+    },
+    "度": {
+      "items": [
+        {
+          "word": "一度",
+          "wordKana": "いちど",
+          "targetReading": "ど"
+        },
+        {
+          "word": "度々",
+          "wordKana": "たびたび",
+          "targetReading": "たび"
+        }
+      ]
+    },
+    "怒": {
+      "items": [
+        {
+          "word": "怒る",
+          "wordKana": "おこる",
+          "targetReading": "おこ"
+        },
+        {
+          "word": "怒鳴る",
+          "wordKana": "どなる",
+          "targetReading": "ど"
+        },
+        {
+          "word": "怒り",
+          "wordKana": "いかり",
+          "targetReading": "いか"
+        }
+      ]
+    },
+    "倒": {
+      "items": [
+        {
+          "word": "倒れる",
+          "wordKana": "たおれる",
+          "targetReading": "たお"
+        },
+        {
+          "word": "圧倒",
+          "wordKana": "あっとう",
+          "targetReading": "とう"
+        }
+      ]
+    },
+    "冬": {
+      "items": [
+        {
+          "word": "冬休み",
+          "wordKana": "ふゆやすみ",
+          "targetReading": "ふゆ"
+        },
+        {
+          "word": "冬至",
+          "wordKana": "とうじ",
+          "targetReading": "とう"
+        }
+      ]
+    },
+    "島": {
+      "items": [
+        {
+          "word": "広島",
+          "wordKana": "ひろしま",
+          "targetReading": "しま"
+        },
+        {
+          "word": "列島",
+          "wordKana": "れっとう",
+          "targetReading": "とう"
+        }
+      ]
+    },
+    "投": {
+      "items": [
+        {
+          "word": "投げる",
+          "wordKana": "なげる",
+          "targetReading": "な"
+        },
+        {
+          "word": "投票",
+          "wordKana": "とうひょう",
+          "targetReading": "とう"
+        }
+      ]
+    },
+    "東": {
+      "items": [
+        {
+          "word": "東側",
+          "wordKana": "ひがしがわ",
+          "targetReading": "ひがし"
+        },
+        {
+          "word": "東京",
+          "wordKana": "とうきょう",
+          "targetReading": "とう"
+        }
+      ]
+    },
+    "当": {
+      "items": [
+        {
+          "word": "弁当",
+          "wordKana": "べんとう",
+          "targetReading": "とう"
+        },
+        {
+          "word": "当たる",
+          "wordKana": "あたる",
+          "targetReading": "あ"
+        }
+      ]
+    },
+    "答": {
+      "items": [
+        {
+          "word": "答え",
+          "wordKana": "こたえ",
+          "targetReading": "こた"
+        },
+        {
+          "word": "応答",
+          "wordKana": "おうとう",
+          "targetReading": "とう"
+        }
+      ]
+    },
+    "踏": {
+      "items": [
+        {
+          "word": "踏む",
+          "wordKana": "ふむ",
+          "targetReading": "ふ"
+        },
+        {
+          "word": "踏襲",
+          "wordKana": "とうしゅう",
+          "targetReading": "とう"
+        }
+      ]
+    },
+    "逃": {
+      "items": [
+        {
+          "word": "逃げる",
+          "wordKana": "にげる",
+          "targetReading": "に"
+        },
+        {
+          "word": "逃亡",
+          "wordKana": "とうぼう",
+          "targetReading": "とう"
+        },
+        {
+          "word": "逃す",
+          "wordKana": "のがす",
+          "targetReading": "のが"
+        }
+      ]
+    },
+    "透": {
+      "items": [
+        {
+          "word": "透明",
+          "wordKana": "とうめい",
+          "targetReading": "とう"
+        },
+        {
+          "word": "透ける",
+          "wordKana": "すける",
+          "targetReading": "す"
+        }
+      ]
+    },
+    "頭": {
+      "items": [
+        {
+          "word": "頭がいい",
+          "wordKana": "あたまがいい",
+          "targetReading": "あたま"
+        },
+        {
+          "word": "頭痛",
+          "wordKana": "ずつう",
+          "targetReading": "ず"
+        },
+        {
+          "word": "先頭",
+          "wordKana": "せんとう",
+          "targetReading": "とう"
+        }
+      ]
+    },
+    "働": {
+      "items": [
+        {
+          "word": "働く",
+          "wordKana": "はたらく",
+          "targetReading": "はたら"
+        },
+        {
+          "word": "労働",
+          "wordKana": "ろうどう",
+          "targetReading": "どう"
+        }
+      ]
+    },
+    "動": {
+      "items": [
+        {
+          "word": "動物",
+          "wordKana": "どうぶつ",
+          "targetReading": "どう"
+        },
+        {
+          "word": "動き",
+          "wordKana": "うごき",
+          "targetReading": "うご"
+        }
+      ]
+    },
+    "同": {
+      "items": [
+        {
+          "word": "同じ",
+          "wordKana": "おなじ",
+          "targetReading": "おな"
+        },
+        {
+          "word": "同席",
+          "wordKana": "どうせき",
+          "targetReading": "どう"
+        }
+      ]
+    },
+    "道": {
+      "items": [
+        {
+          "word": "坂道",
+          "wordKana": "さかみち",
+          "targetReading": "みち"
+        },
+        {
+          "word": "道具",
+          "wordKana": "どうぐ",
+          "targetReading": "どう"
+        }
+      ]
+    },
+    "得": {
+      "items": [
+        {
+          "word": "得意",
+          "wordKana": "とくい",
+          "targetReading": "とく"
+        },
+        {
+          "word": "得る",
+          "wordKana": "える",
+          "targetReading": "え"
+        },
+        {
+          "word": "有り得る",
+          "wordKana": "ありうる",
+          "targetReading": "う"
+        }
+      ]
+    },
+    "独": {
+      "items": [
+        {
+          "word": "独身",
+          "wordKana": "どくしん",
+          "targetReading": "どく"
+        },
+        {
+          "word": "独り言",
+          "wordKana": "ひとりごと",
+          "targetReading": "ひと"
+        }
+      ]
+    },
+    "読": {
+      "items": [
+        {
+          "word": "読む",
+          "wordKana": "よむ",
+          "targetReading": "よ"
+        },
+        {
+          "word": "読書",
+          "wordKana": "どくしょ",
+          "targetReading": "どく"
+        }
+      ]
+    },
+    "突": {
+      "items": [
+        {
+          "word": "突然",
+          "wordKana": "とつぜん",
+          "targetReading": "とつ"
+        },
+        {
+          "word": "突き進む",
+          "wordKana": "つきすすむ",
+          "targetReading": "つ"
+        }
+      ]
+    },
+    "内": {
+      "items": [
+        {
+          "word": "以内",
+          "wordKana": "いない",
+          "targetReading": "ない"
+        },
+        {
+          "word": "内側",
+          "wordKana": "うちがわ",
+          "targetReading": "うち"
+        },
+        {
+          "word": "境内",
+          "wordKana": "けいだい",
+          "targetReading": "だい"
+        }
+      ]
+    },
+    "南": {
+      "items": [
+        {
+          "word": "南側",
+          "wordKana": "みなみがわ",
+          "targetReading": "みなみ"
+        },
+        {
+          "word": "南極",
+          "wordKana": "なんきょく",
+          "targetReading": "なん"
+        }
+      ]
+    },
+    "難": {
+      "items": [
+        {
+          "word": "難しい",
+          "wordKana": "むずかしい",
+          "targetReading": "むずか"
+        },
+        {
+          "word": "避難",
+          "wordKana": "ひなん",
+          "targetReading": "なん"
+        },
+        {
+          "word": "難くない",
+          "wordKana": "かたくない",
+          "targetReading": "かた"
+        }
+      ]
+    },
+    "日": {
+      "items": [
+        {
+          "word": "一日",
+          "wordKana": "いちにち",
+          "targetReading": "にち"
+        },
+        {
+          "word": "こどもの日",
+          "wordKana": "こどものひ",
+          "targetReading": "ひ"
+        },
+        {
+          "word": "七日",
+          "wordKana": "なのか",
+          "targetReading": "か"
+        },
+        {
+          "word": "平日",
+          "wordKana": "へいじつ",
+          "targetReading": "じつ"
+        }
+      ]
+    },
+    "入": {
+      "items": [
+        {
+          "word": "入れる",
+          "wordKana": "いれる",
+          "targetReading": "い"
+        },
+        {
+          "word": "入る",
+          "wordKana": "はいる",
+          "targetReading": "はい"
+        },
+        {
+          "word": "入学",
+          "wordKana": "にゅうがく",
+          "targetReading": "にゅう"
+        }
+      ]
+    },
+    "任": {
+      "items": [
+        {
+          "word": "担任",
+          "wordKana": "たんにん",
+          "targetReading": "にん"
+        },
+        {
+          "word": "任す",
+          "wordKana": "まかす",
+          "targetReading": "まか"
+        }
+      ]
+    },
+    "年": {
+      "items": [
+        {
+          "word": "何年",
+          "wordKana": "なんねん",
+          "targetReading": "ねん"
+        },
+        {
+          "word": "毎年",
+          "wordKana": "まいとし",
+          "targetReading": "とし"
+        }
+      ]
+    },
+    "粘": {
+      "items": [
+        {
+          "word": "粘土",
+          "wordKana": "ねんど",
+          "targetReading": "ねん"
+        },
+        {
+          "word": "粘る",
+          "wordKana": "ねばる",
+          "targetReading": "ねば"
+        }
+      ]
+    },
+    "納": {
+      "items": [
+        {
+          "word": "納豆",
+          "wordKana": "なっとう",
+          "targetReading": "なっ"
+        },
+        {
+          "word": "納める",
+          "wordKana": "おさめる",
+          "targetReading": "おさ"
+        },
+        {
+          "word": "収納",
+          "wordKana": "しゅうのう",
+          "targetReading": "のう"
+        }
+      ]
+    },
+    "波": {
+      "items": [
+        {
+          "word": "波風",
+          "wordKana": "なみかぜ",
+          "targetReading": "なみ"
+        },
+        {
+          "word": "波及",
+          "wordKana": "はきゅう",
+          "targetReading": "は"
+        }
+      ]
+    },
+    "破": {
+      "items": [
+        {
+          "word": "破る",
+          "wordKana": "やぶる",
+          "targetReading": "やぶ"
+        },
+        {
+          "word": "破壊",
+          "wordKana": "はかい",
+          "targetReading": "は"
+        }
+      ]
+    },
+    "背": {
+      "items": [
+        {
+          "word": "背中",
+          "wordKana": "せなか",
+          "targetReading": "せ"
+        },
+        {
+          "word": "背景",
+          "wordKana": "はいけい",
+          "targetReading": "はい"
+        }
+      ]
+    },
+    "配": {
+      "items": [
+        {
+          "word": "配達",
+          "wordKana": "はいたつ",
+          "targetReading": "はい"
+        },
+        {
+          "word": "配る",
+          "wordKana": "くばる",
+          "targetReading": "くば"
+        }
+      ]
+    },
+    "買": {
+      "items": [
+        {
+          "word": "買う",
+          "wordKana": "かう",
+          "targetReading": "か"
+        },
+        {
+          "word": "売買",
+          "wordKana": "ばいばい",
+          "targetReading": "ばい"
+        }
+      ]
+    },
+    "売": {
+      "items": [
+        {
+          "word": "売る",
+          "wordKana": "うる",
+          "targetReading": "う"
+        },
+        {
+          "word": "発売",
+          "wordKana": "はつばい",
+          "targetReading": "ばい"
+        }
+      ]
+    },
+    "拍": {
+      "items": [
+        {
+          "word": "拍手",
+          "wordKana": "はくしゅ",
+          "targetReading": "はく"
+        },
+        {
+          "word": "拍子",
+          "wordKana": "ひょうし",
+          "targetReading": "ひょう"
+        }
+      ]
+    },
+    "泊": {
+      "items": [
+        {
+          "word": "泊まる",
+          "wordKana": "とまる",
+          "targetReading": "と"
+        },
+        {
+          "word": "宿泊",
+          "wordKana": "しゅくはく",
+          "targetReading": "はく"
+        }
+      ]
+    },
+    "白": {
+      "items": [
+        {
+          "word": "白い",
+          "wordKana": "しろい",
+          "targetReading": "しろ"
+        },
+        {
+          "word": "白菜",
+          "wordKana": "はくさい",
+          "targetReading": "はく"
+        },
+        {
+          "word": "白木",
+          "wordKana": "しらき",
+          "targetReading": "しら"
+        }
+      ]
+    },
+    "迫": {
+      "items": [
+        {
+          "word": "迫る",
+          "wordKana": "せまる",
+          "targetReading": "せま"
+        },
+        {
+          "word": "強迫",
+          "wordKana": "きょうはく",
+          "targetReading": "はく"
+        }
+      ]
+    },
+    "発": {
+      "items": [
+        {
+          "word": "始発",
+          "wordKana": "しはつ",
+          "targetReading": "はつ"
+        },
+        {
+          "word": "発足",
+          "wordKana": "ほっそく",
+          "targetReading": "ほっ"
+        }
+      ]
+    },
+    "抜": {
+      "items": [
+        {
+          "word": "抜ける",
+          "wordKana": "ぬける",
+          "targetReading": "ぬ"
+        },
+        {
+          "word": "選抜",
+          "wordKana": "せんばつ",
+          "targetReading": "ばつ"
+        }
+      ]
+    },
+    "悲": {
+      "items": [
+        {
+          "word": "悲しい",
+          "wordKana": "かなしい",
+          "targetReading": "かな"
+        },
+        {
+          "word": "悲観",
+          "wordKana": "ひかん",
+          "targetReading": "ひ"
+        }
+      ]
+    },
+    "比": {
+      "items": [
+        {
+          "word": "比べる",
+          "wordKana": "くらべる",
+          "targetReading": "くら"
+        },
+        {
+          "word": "比較",
+          "wordKana": "ひかく",
+          "targetReading": "ひ"
+        }
+      ]
+    },
+    "皮": {
+      "items": [
+        {
+          "word": "皮切り",
+          "wordKana": "かわきり",
+          "targetReading": "かわ"
+        },
+        {
+          "word": "皮膚",
+          "wordKana": "ひふ",
+          "targetReading": "ひ"
+        }
+      ]
+    },
+    "飛": {
+      "items": [
+        {
+          "word": "飛ぶ",
+          "wordKana": "とぶ",
+          "targetReading": "と"
+        },
+        {
+          "word": "飛行機",
+          "wordKana": "ひこうき",
+          "targetReading": "ひ"
+        }
+      ]
+    },
+    "備": {
+      "items": [
+        {
+          "word": "準備",
+          "wordKana": "じゅんび",
+          "targetReading": "び"
+        },
+        {
+          "word": "備える",
+          "wordKana": "そなえる",
+          "targetReading": "そな"
+        }
+      ]
+    },
+    "必": {
+      "items": [
+        {
+          "word": "必要",
+          "wordKana": "ひつよう",
+          "targetReading": "ひつ"
+        },
+        {
+          "word": "必ず",
+          "wordKana": "かならず",
+          "targetReading": "かなら"
+        }
+      ]
+    },
+    "筆": {
+      "items": [
+        {
+          "word": "代筆",
+          "wordKana": "だいひつ",
+          "targetReading": "ひつ"
+        },
+        {
+          "word": "筆遣い",
+          "wordKana": "ふでづかい",
+          "targetReading": "ふで"
+        }
+      ]
+    },
+    "表": {
+      "items": [
+        {
+          "word": "表立つ",
+          "wordKana": "おもてだつ",
+          "targetReading": "おもて"
+        },
+        {
+          "word": "表す",
+          "wordKana": "あらわす",
+          "targetReading": "あらわ"
+        },
+        {
+          "word": "代表",
+          "wordKana": "だいひょう",
+          "targetReading": "ひょう"
+        }
+      ]
+    },
+    "描": {
+      "items": [
+        {
+          "word": "絵描き",
+          "wordKana": "えかき",
+          "targetReading": "か"
+        },
+        {
+          "word": "思い描く",
+          "wordKana": "おもいえがく",
+          "targetReading": "えが"
+        },
+        {
+          "word": "描写",
+          "wordKana": "びょうしゃ",
+          "targetReading": "びょう"
+        }
+      ]
+    },
+    "品": {
+      "items": [
+        {
+          "word": "食料品",
+          "wordKana": "しょくりょうひん",
+          "targetReading": "ひん"
+        },
+        {
+          "word": "品物",
+          "wordKana": "しなもの",
+          "targetReading": "しな"
+        }
+      ]
+    },
+    "付": {
+      "items": [
+        {
+          "word": "付く",
+          "wordKana": "つく",
+          "targetReading": "つ"
+        },
+        {
+          "word": "日付",
+          "wordKana": "ひづけ",
+          "targetReading": "づけ"
+        },
+        {
+          "word": "付属",
+          "wordKana": "ふぞく",
+          "targetReading": "ふ"
+        }
+      ]
+    },
+    "夫": {
+      "items": [
+        {
+          "word": "夫",
+          "wordKana": "おっと",
+          "targetReading": "おっと"
+        },
+        {
+          "word": "農夫",
+          "wordKana": "のうふ",
+          "targetReading": "ふ"
+        },
+        {
+          "word": "夫婦",
+          "wordKana": "ふうふ",
+          "targetReading": "ふう"
+        }
+      ]
+    },
+    "布": {
+      "items": [
+        {
+          "word": "財布",
+          "wordKana": "さいふ",
+          "targetReading": "ふ"
+        },
+        {
+          "word": "布地",
+          "wordKana": "ぬのじ",
+          "targetReading": "ぬの"
+        }
+      ]
+    },
+    "父": {
+      "items": [
+        {
+          "word": "父親",
+          "wordKana": "ちちおや",
+          "targetReading": "ちち"
+        },
+        {
+          "word": "祖父",
+          "wordKana": "そふ",
+          "targetReading": "ふ"
+        }
+      ]
+    },
+    "負": {
+      "items": [
+        {
+          "word": "負ける",
+          "wordKana": "まける",
+          "targetReading": "ま"
+        },
+        {
+          "word": "負う",
+          "wordKana": "おう",
+          "targetReading": "お"
+        },
+        {
+          "word": "自負",
+          "wordKana": "じふ",
+          "targetReading": "ふ"
+        }
+      ]
+    },
+    "舞": {
+      "items": [
+        {
+          "word": "見舞い",
+          "wordKana": "みまい",
+          "targetReading": "ま"
+        },
+        {
+          "word": "舞台",
+          "wordKana": "ぶたい",
+          "targetReading": "ぶ"
+        },
+        {
+          "word": "獅子舞",
+          "wordKana": "ししまい",
+          "targetReading": "まい"
+        }
+      ]
+    },
+    "風": {
+      "items": [
+        {
+          "word": "波風",
+          "wordKana": "なみかぜ",
+          "targetReading": "かぜ"
+        },
+        {
+          "word": "風呂",
+          "wordKana": "ふろ",
+          "targetReading": "ふ"
+        },
+        {
+          "word": "台風",
+          "wordKana": "たいふう",
+          "targetReading": "ふう"
+        }
+      ]
+    },
+    "伏": {
+      "items": [
+        {
+          "word": "伏せる",
+          "wordKana": "ふせる",
+          "targetReading": "ふ"
+        },
+        {
+          "word": "起伏",
+          "wordKana": "きふく",
+          "targetReading": "ふく"
+        }
+      ]
+    },
+    "腹": {
+      "items": [
+        {
+          "word": "腹が立つ",
+          "wordKana": "はらがたつ",
+          "targetReading": "はら"
+        },
+        {
+          "word": "腹痛",
+          "wordKana": "ふくつう",
+          "targetReading": "ふく"
+        }
+      ]
+    },
+    "物": {
+      "items": [
+        {
+          "word": "建物",
+          "wordKana": "たてもの",
+          "targetReading": "もの"
+        },
+        {
+          "word": "荷物",
+          "wordKana": "にもつ",
+          "targetReading": "もつ"
+        },
+        {
+          "word": "動物",
+          "wordKana": "どうぶつ",
+          "targetReading": "ぶつ"
+        }
+      ]
+    },
+    "分": {
+      "items": [
+        {
+          "word": "十分",
+          "wordKana": "じゅうぶん",
+          "targetReading": "ぶん"
+        },
+        {
+          "word": "分かる",
+          "wordKana": "わかる",
+          "targetReading": "わ"
+        },
+        {
+          "word": "大分",
+          "wordKana": "だいぶ",
+          "targetReading": "ぶ"
+        }
+      ]
+    },
+    "粉": {
+      "items": [
+        {
+          "word": "お汁粉",
+          "wordKana": "おしるこ",
+          "targetReading": "こ"
+        },
+        {
+          "word": "粉薬",
+          "wordKana": "こなぐすり",
+          "targetReading": "こな"
+        },
+        {
+          "word": "花粉",
+          "wordKana": "かふん",
+          "targetReading": "ふん"
+        }
+      ]
+    },
+    "文": {
+      "items": [
+        {
+          "word": "作文",
+          "wordKana": "さくぶん",
+          "targetReading": "ぶん"
+        },
+        {
+          "word": "文句",
+          "wordKana": "もんく",
+          "targetReading": "もん"
+        }
+      ]
+    },
+    "聞": {
+      "items": [
+        {
+          "word": "新聞",
+          "wordKana": "しんぶん",
+          "targetReading": "ぶん"
+        },
+        {
+          "word": "聞く",
+          "wordKana": "きく",
+          "targetReading": "き"
+        }
+      ]
+    },
+    "平": {
+      "items": [
+        {
+          "word": "平仮名",
+          "wordKana": "ひらがな",
+          "targetReading": "ひら"
+        },
+        {
+          "word": "平日",
+          "wordKana": "へいじつ",
+          "targetReading": "へい"
+        },
+        {
+          "word": "平等",
+          "wordKana": "びょうどう",
+          "targetReading": "びょう"
+        },
+        {
+          "word": "平ら",
+          "wordKana": "たいら",
+          "targetReading": "たい"
+        }
+      ]
+    },
+    "並": {
+      "items": [
+        {
+          "word": "並ぶ",
+          "wordKana": "ならぶ",
+          "targetReading": "なら"
+        },
+        {
+          "word": "並木",
+          "wordKana": "なみき",
+          "targetReading": "なみ"
+        },
+        {
+          "word": "並み",
+          "wordKana": "なみ",
+          "targetReading": "な"
+        },
+        {
+          "word": "並列",
+          "wordKana": "へいれつ",
+          "targetReading": "へい"
+        }
+      ]
+    },
+    "閉": {
+      "items": [
+        {
+          "word": "閉まる",
+          "wordKana": "しまる",
+          "targetReading": "し"
+        },
+        {
+          "word": "閉じる",
+          "wordKana": "とじる",
+          "targetReading": "と"
+        },
+        {
+          "word": "閉店",
+          "wordKana": "へいてん",
+          "targetReading": "へい"
+        }
+      ]
+    },
+    "別": {
+      "items": [
+        {
+          "word": "別に",
+          "wordKana": "べつに",
+          "targetReading": "べつ"
+        },
+        {
+          "word": "お別れ",
+          "wordKana": "おわかれ",
+          "targetReading": "わか"
+        }
+      ]
+    },
+    "偏": {
+      "items": [
+        {
+          "word": "偏る",
+          "wordKana": "かたよる",
+          "targetReading": "かたよ"
+        },
+        {
+          "word": "偏食",
+          "wordKana": "へんしょく",
+          "targetReading": "へん"
+        }
+      ]
+    },
+    "変": {
+      "items": [
+        {
+          "word": "変える",
+          "wordKana": "かえる",
+          "targetReading": "か"
+        },
+        {
+          "word": "大変",
+          "wordKana": "たいへん",
+          "targetReading": "へん"
+        }
+      ]
+    },
+    "片": {
+      "items": [
+        {
+          "word": "片仮名",
+          "wordKana": "かたかな",
+          "targetReading": "かた"
+        },
+        {
+          "word": "破片",
+          "wordKana": "はへん",
+          "targetReading": "へん"
+        }
+      ]
+    },
+    "編": {
+      "items": [
+        {
+          "word": "編む",
+          "wordKana": "あむ",
+          "targetReading": "あ"
+        },
+        {
+          "word": "編集",
+          "wordKana": "へんしゅう",
+          "targetReading": "へん"
+        }
+      ]
+    },
+    "辺": {
+      "items": [
+        {
+          "word": "辺り",
+          "wordKana": "あたり",
+          "targetReading": "あた"
+        },
+        {
+          "word": "この辺",
+          "wordKana": "このへん",
+          "targetReading": "へん"
+        },
+        {
+          "word": "上辺",
+          "wordKana": "うわべ",
+          "targetReading": "べ"
+        }
+      ]
+    },
+    "返": {
+      "items": [
+        {
+          "word": "返事",
+          "wordKana": "へんじ",
+          "targetReading": "へん"
+        },
+        {
+          "word": "返す",
+          "wordKana": "かえす",
+          "targetReading": "かえ"
+        }
+      ]
+    },
+    "便": {
+      "items": [
+        {
+          "word": "便利",
+          "wordKana": "べんり",
+          "targetReading": "べん"
+        },
+        {
+          "word": "郵便",
+          "wordKana": "ゆうびん",
+          "targetReading": "びん"
+        }
+      ]
+    },
+    "捕": {
+      "items": [
+        {
+          "word": "捕まえる",
+          "wordKana": "つかまえる",
+          "targetReading": "つか"
+        },
+        {
+          "word": "捕らえる",
+          "wordKana": "とらえる",
+          "targetReading": "と"
+        },
+        {
+          "word": "捕獲",
+          "wordKana": "ほかく",
+          "targetReading": "ほ"
+        }
+      ]
+    },
+    "歩": {
+      "items": [
+        {
+          "word": "歩行",
+          "wordKana": "ほこう",
+          "targetReading": "ほ"
+        },
+        {
+          "word": "歩く",
+          "wordKana": "あるく",
+          "targetReading": "ある"
+        },
+        {
+          "word": "歩む",
+          "wordKana": "あゆむ",
+          "targetReading": "あゆ"
+        }
+      ]
+    },
+    "母": {
+      "items": [
+        {
+          "word": "祖母",
+          "wordKana": "そぼ",
+          "targetReading": "ぼ"
+        },
+        {
+          "word": "母親",
+          "wordKana": "ははおや",
+          "targetReading": "はは"
+        }
+      ]
+    },
+    "包": {
+      "items": [
+        {
+          "word": "包む",
+          "wordKana": "つつむ",
+          "targetReading": "つつ"
+        },
+        {
+          "word": "包丁",
+          "wordKana": "ほうちょう",
+          "targetReading": "ほう"
+        }
+      ]
+    },
+    "報": {
+      "items": [
+        {
+          "word": "情報",
+          "wordKana": "じょうほう",
+          "targetReading": "ほう"
+        },
+        {
+          "word": "報う",
+          "wordKana": "むくう",
+          "targetReading": "むく"
+        }
+      ]
+    },
+    "宝": {
+      "items": [
+        {
+          "word": "宝くじ",
+          "wordKana": "たからくじ",
+          "targetReading": "たから"
+        },
+        {
+          "word": "重宝",
+          "wordKana": "ちょうほう",
+          "targetReading": "ほう"
+        }
+      ]
+    },
+    "抱": {
+      "items": [
+        {
+          "word": "抱っこ",
+          "wordKana": "だっこ",
+          "targetReading": "だ"
+        },
+        {
+          "word": "抱える",
+          "wordKana": "かかえる",
+          "targetReading": "かか"
+        },
+        {
+          "word": "抱負",
+          "wordKana": "ほうふ",
+          "targetReading": "ほう"
+        }
+      ]
+    },
+    "放": {
+      "items": [
+        {
+          "word": "放る",
+          "wordKana": "ほうる",
+          "targetReading": "ほう"
+        },
+        {
+          "word": "放す",
+          "wordKana": "はなす",
+          "targetReading": "はな"
+        }
+      ]
+    },
+    "方": {
+      "items": [
+        {
+          "word": "仕方",
+          "wordKana": "しかた",
+          "targetReading": "かた"
+        },
+        {
+          "word": "両方",
+          "wordKana": "りょうほう",
+          "targetReading": "ほう"
+        }
+      ]
+    },
+    "訪": {
+      "items": [
+        {
+          "word": "訪ねる",
+          "wordKana": "たずねる",
+          "targetReading": "たず"
+        },
+        {
+          "word": "訪問",
+          "wordKana": "ほうもん",
+          "targetReading": "ほう"
+        },
+        {
+          "word": "訪れる",
+          "wordKana": "おとずれる",
+          "targetReading": "おとず"
+        }
+      ]
+    },
+    "望": {
+      "items": [
+        {
+          "word": "希望",
+          "wordKana": "きぼう",
+          "targetReading": "ぼう"
+        },
+        {
+          "word": "望む",
+          "wordKana": "のぞむ",
+          "targetReading": "のぞ"
+        }
+      ]
+    },
+    "北": {
+      "items": [
+        {
+          "word": "北側",
+          "wordKana": "きたがわ",
+          "targetReading": "きた"
+        },
+        {
+          "word": "北海道",
+          "wordKana": "ほっかいどう",
+          "targetReading": "ほっ"
+        }
+      ]
+    },
+    "末": {
+      "items": [
+        {
+          "word": "週末",
+          "wordKana": "しゅうまつ",
+          "targetReading": "まつ"
+        },
+        {
+          "word": "行く末",
+          "wordKana": "ゆくすえ",
+          "targetReading": "すえ"
+        }
+      ]
+    },
+    "万": {
+      "items": [
+        {
+          "word": "万が一",
+          "wordKana": "まんがいち",
+          "targetReading": "まん"
+        },
+        {
+          "word": "万人",
+          "wordKana": "ばんにん",
+          "targetReading": "ばん"
+        }
+      ]
+    },
+    "満": {
+      "items": [
+        {
+          "word": "不満",
+          "wordKana": "ふまん",
+          "targetReading": "まん"
+        },
+        {
+          "word": "満たす",
+          "wordKana": "みたす",
+          "targetReading": "み"
+        }
+      ]
+    },
+    "味": {
+      "items": [
+        {
+          "word": "趣味",
+          "wordKana": "しゅみ",
+          "targetReading": "み"
+        },
+        {
+          "word": "味わう",
+          "wordKana": "あじわう",
+          "targetReading": "あじ"
+        }
+      ]
+    },
+    "眠": {
+      "items": [
+        {
+          "word": "眠い",
+          "wordKana": "ねむい",
+          "targetReading": "ねむ"
+        },
+        {
+          "word": "休眠",
+          "wordKana": "きゅうみん",
+          "targetReading": "みん"
+        }
+      ]
+    },
+    "務": {
+      "items": [
+        {
+          "word": "事務所",
+          "wordKana": "じむしょ",
+          "targetReading": "む"
+        },
+        {
+          "word": "務める",
+          "wordKana": "つとめる",
+          "targetReading": "つと"
+        }
+      ]
+    },
+    "夢": {
+      "items": [
+        {
+          "word": "夢見る",
+          "wordKana": "ゆめみる",
+          "targetReading": "ゆめ"
+        },
+        {
+          "word": "夢中",
+          "wordKana": "むちゅう",
+          "targetReading": "む"
+        }
+      ]
+    },
+    "無": {
+      "items": [
+        {
+          "word": "無くなる",
+          "wordKana": "なくなる",
+          "targetReading": "な"
+        },
+        {
+          "word": "無理",
+          "wordKana": "むり",
+          "targetReading": "む"
+        },
+        {
+          "word": "無事",
+          "wordKana": "ぶじ",
+          "targetReading": "ぶ"
+        }
+      ]
+    },
+    "名": {
+      "items": [
+        {
+          "word": "名前",
+          "wordKana": "なまえ",
+          "targetReading": "な"
+        },
+        {
+          "word": "有名",
+          "wordKana": "ゆうめい",
+          "targetReading": "めい"
+        },
+        {
+          "word": "名字",
+          "wordKana": "みょうじ",
+          "targetReading": "みょう"
+        }
+      ]
+    },
+    "命": {
+      "items": [
+        {
+          "word": "命がけ",
+          "wordKana": "いのちがけ",
+          "targetReading": "いのち"
+        },
+        {
+          "word": "命令",
+          "wordKana": "めいれい",
+          "targetReading": "めい"
+        },
+        {
+          "word": "寿命",
+          "wordKana": "じゅみょう",
+          "targetReading": "みょう"
+        }
+      ]
+    },
+    "明": {
+      "items": [
+        {
+          "word": "説明",
+          "wordKana": "せつめい",
+          "targetReading": "めい"
+        },
+        {
+          "word": "明るい",
+          "wordKana": "あかるい",
+          "targetReading": "あか"
+        },
+        {
+          "word": "明かり",
+          "wordKana": "あかり",
+          "targetReading": "あ"
+        },
+        {
+          "word": "明後日",
+          "wordKana": "みょうごにち",
+          "targetReading": "みょう"
+        },
+        {
+          "word": "明らか",
+          "wordKana": "あきらか",
+          "targetReading": "あき"
+        }
+      ]
+    },
+    "迷": {
+      "items": [
+        {
+          "word": "迷う",
+          "wordKana": "まよう",
+          "targetReading": "まよ"
+        },
+        {
+          "word": "迷惑",
+          "wordKana": "めいわく",
+          "targetReading": "めい"
+        }
+      ]
+    },
+    "滅": {
+      "items": [
+        {
+          "word": "撲滅",
+          "wordKana": "ぼくめつ",
+          "targetReading": "めつ"
+        },
+        {
+          "word": "滅びる",
+          "wordKana": "ほろびる",
+          "targetReading": "ほろ"
+        }
+      ]
+    },
+    "面": {
+      "items": [
+        {
+          "word": "面白い",
+          "wordKana": "おもしろい",
+          "targetReading": "おも"
+        },
+        {
+          "word": "地面",
+          "wordKana": "じめん",
+          "targetReading": "めん"
+        }
+      ]
+    },
+    "模": {
+      "items": [
+        {
+          "word": "模索",
+          "wordKana": "もさく",
+          "targetReading": "も"
+        },
+        {
+          "word": "規模",
+          "wordKana": "きぼ",
+          "targetReading": "ぼ"
+        }
+      ]
+    },
+    "毛": {
+      "items": [
+        {
+          "word": "髪の毛",
+          "wordKana": "かみのけ",
+          "targetReading": "け"
+        },
+        {
+          "word": "毛布",
+          "wordKana": "もうふ",
+          "targetReading": "もう"
+        }
+      ]
+    },
+    "木": {
+      "items": [
+        {
+          "word": "並木",
+          "wordKana": "なみき",
+          "targetReading": "き"
+        },
+        {
+          "word": "木曜日",
+          "wordKana": "もくようび",
+          "targetReading": "もく"
+        },
+        {
+          "word": "木の実",
+          "wordKana": "このみ",
+          "targetReading": "こ"
+        },
+        {
+          "word": "大木",
+          "wordKana": "たいぼく",
+          "targetReading": "ぼく"
+        }
+      ]
+    },
+    "目": {
+      "items": [
+        {
+          "word": "目標",
+          "wordKana": "もくひょう",
+          "targetReading": "もく"
+        },
+        {
+          "word": "駄目",
+          "wordKana": "だめ",
+          "targetReading": "め"
+        }
+      ]
+    },
+    "問": {
+      "items": [
+        {
+          "word": "問題",
+          "wordKana": "もんだい",
+          "targetReading": "もん"
+        },
+        {
+          "word": "問い合わせ",
+          "wordKana": "といあわせ",
+          "targetReading": "と"
+        }
+      ]
+    },
+    "夜": {
+      "items": [
+        {
+          "word": "夜",
+          "wordKana": "よる",
+          "targetReading": "よる"
+        },
+        {
+          "word": "今夜",
+          "wordKana": "こんや",
+          "targetReading": "や"
+        },
+        {
+          "word": "夜中",
+          "wordKana": "よなか",
+          "targetReading": "よ"
+        }
+      ]
+    },
+    "野": {
+      "items": [
+        {
+          "word": "野菜",
+          "wordKana": "やさい",
+          "targetReading": "や"
+        },
+        {
+          "word": "野原",
+          "wordKana": "のはら",
+          "targetReading": "の"
+        }
+      ]
+    },
+    "役": {
+      "items": [
+        {
+          "word": "役に立つ",
+          "wordKana": "やくにたつ",
+          "targetReading": "やく"
+        },
+        {
+          "word": "現役",
+          "wordKana": "げんえき",
+          "targetReading": "えき"
+        }
+      ]
+    },
+    "薬": {
+      "items": [
+        {
+          "word": "薬指",
+          "wordKana": "くすりゆび",
+          "targetReading": "くすり"
+        },
+        {
+          "word": "薬品",
+          "wordKana": "やくひん",
+          "targetReading": "やく"
+        }
+      ]
+    },
+    "訳": {
+      "items": [
+        {
+          "word": "翻訳",
+          "wordKana": "ほんやく",
+          "targetReading": "やく"
+        },
+        {
+          "word": "申し訳",
+          "wordKana": "もうしわけ",
+          "targetReading": "わけ"
+        }
+      ]
+    },
+    "油": {
+      "items": [
+        {
+          "word": "油絵",
+          "wordKana": "あぶらえ",
+          "targetReading": "あぶら"
+        },
+        {
+          "word": "石油",
+          "wordKana": "せきゆ",
+          "targetReading": "ゆ"
+        }
+      ]
+    },
+    "有": {
+      "items": [
+        {
+          "word": "有名",
+          "wordKana": "ゆうめい",
+          "targetReading": "ゆう"
+        },
+        {
+          "word": "有り得る",
+          "wordKana": "ありうる",
+          "targetReading": "あ"
+        },
+        {
+          "word": "有無",
+          "wordKana": "うむ",
+          "targetReading": "う"
+        }
+      ]
+    },
+    "由": {
+      "items": [
+        {
+          "word": "理由",
+          "wordKana": "りゆう",
+          "targetReading": "ゆう"
+        },
+        {
+          "word": "経由",
+          "wordKana": "けいゆ",
+          "targetReading": "ゆ"
+        },
+        {
+          "word": "由緒",
+          "wordKana": "ゆいしょ",
+          "targetReading": "ゆい"
+        }
+      ]
+    },
+    "誘": {
+      "items": [
+        {
+          "word": "誘う",
+          "wordKana": "さそう",
+          "targetReading": "さそ"
+        },
+        {
+          "word": "勧誘",
+          "wordKana": "かんゆう",
+          "targetReading": "ゆう"
+        }
+      ]
+    },
+    "遊": {
+      "items": [
+        {
+          "word": "遊ぶ",
+          "wordKana": "あそぶ",
+          "targetReading": "あそ"
+        },
+        {
+          "word": "遊園地",
+          "wordKana": "ゆうえんち",
+          "targetReading": "ゆう"
+        },
+        {
+          "word": "遊山",
+          "wordKana": "ゆさん",
+          "targetReading": "ゆ"
+        }
+      ]
+    },
+    "余": {
+      "items": [
+        {
+          "word": "余り",
+          "wordKana": "あまり",
+          "targetReading": "あま"
+        },
+        {
+          "word": "余計",
+          "wordKana": "よけい",
+          "targetReading": "よ"
+        }
+      ]
+    },
+    "与": {
+      "items": [
+        {
+          "word": "与える",
+          "wordKana": "あたえる",
+          "targetReading": "あた"
+        },
+        {
+          "word": "供与",
+          "wordKana": "きょうよ",
+          "targetReading": "よ"
+        }
+      ]
+    },
+    "幼": {
+      "items": [
+        {
+          "word": "幼稚園",
+          "wordKana": "ようちえん",
+          "targetReading": "よう"
+        },
+        {
+          "word": "幼い",
+          "wordKana": "おさない",
+          "targetReading": "おさな"
+        }
+      ]
+    },
+    "揚": {
+      "items": [
+        {
+          "word": "唐揚げ",
+          "wordKana": "からあげ",
+          "targetReading": "あ"
+        },
+        {
+          "word": "高揚",
+          "wordKana": "こうよう",
+          "targetReading": "よう"
+        }
+      ]
+    },
+    "様": {
+      "items": [
+        {
+          "word": "お客様",
+          "wordKana": "おきゃくさま",
+          "targetReading": "さま"
+        },
+        {
+          "word": "一様",
+          "wordKana": "いちよう",
+          "targetReading": "よう"
+        }
+      ]
+    },
+    "葉": {
+      "items": [
+        {
+          "word": "葉書",
+          "wordKana": "はがき",
+          "targetReading": "は"
+        },
+        {
+          "word": "紅葉",
+          "wordKana": "こうよう",
+          "targetReading": "よう"
+        }
+      ]
+    },
+    "浴": {
+      "items": [
+        {
+          "word": "浴びる",
+          "wordKana": "あびる",
+          "targetReading": "あ"
+        },
+        {
+          "word": "海水浴",
+          "wordKana": "かいすいよく",
+          "targetReading": "よく"
+        }
+      ]
+    },
+    "来": {
+      "items": [
+        {
+          "word": "来年",
+          "wordKana": "らいねん",
+          "targetReading": "らい"
+        },
+        {
+          "word": "来る",
+          "wordKana": "くる",
+          "targetReading": "く"
+        },
+        {
+          "word": "出来る",
+          "wordKana": "できる",
+          "targetReading": "き"
+        },
+        {
+          "word": "来す",
+          "wordKana": "きたす",
+          "targetReading": "きた"
+        },
+        {
+          "word": "来し方",
+          "wordKana": "こしかた",
+          "targetReading": "こ"
+        }
+      ]
+    },
+    "頼": {
+      "items": [
+        {
+          "word": "頼む",
+          "wordKana": "たのむ",
+          "targetReading": "たの"
+        },
+        {
+          "word": "頼る",
+          "wordKana": "たよる",
+          "targetReading": "たよ"
+        },
+        {
+          "word": "依頼",
+          "wordKana": "いらい",
+          "targetReading": "らい"
+        }
+      ]
+    },
+    "絡": {
+      "items": [
+        {
+          "word": "連絡",
+          "wordKana": "れんらく",
+          "targetReading": "らく"
+        },
+        {
+          "word": "絡む",
+          "wordKana": "からむ",
+          "targetReading": "から"
+        }
+      ]
+    },
+    "落": {
+      "items": [
+        {
+          "word": "落ちる",
+          "wordKana": "おちる",
+          "targetReading": "お"
+        },
+        {
+          "word": "一段落",
+          "wordKana": "いちだんらく",
+          "targetReading": "らく"
+        }
+      ]
+    },
+    "乱": {
+      "items": [
+        {
+          "word": "乱暴",
+          "wordKana": "らんぼう",
+          "targetReading": "らん"
+        },
+        {
+          "word": "乱れる",
+          "wordKana": "みだれる",
+          "targetReading": "みだ"
+        }
+      ]
+    },
+    "卵": {
+      "items": [
+        {
+          "word": "卵焼き",
+          "wordKana": "たまごやき",
+          "targetReading": "たまご"
+        },
+        {
+          "word": "排卵",
+          "wordKana": "はいらん",
+          "targetReading": "らん"
+        }
+      ]
+    },
+    "利": {
+      "items": [
+        {
+          "word": "便利",
+          "wordKana": "べんり",
+          "targetReading": "り"
+        },
+        {
+          "word": "左利き",
+          "wordKana": "ひだりきき",
+          "targetReading": "き"
+        }
+      ]
+    },
+    "裏": {
+      "items": [
+        {
+          "word": "裏側",
+          "wordKana": "うらがわ",
+          "targetReading": "うら"
+        },
+        {
+          "word": "裏面",
+          "wordKana": "りめん",
+          "targetReading": "り"
+        }
+      ]
+    },
+    "里": {
+      "items": [
+        {
+          "word": "万里の長城",
+          "wordKana": "ばんりのちょうじょう",
+          "targetReading": "り"
+        },
+        {
+          "word": "里帰り",
+          "wordKana": "さとがえり",
+          "targetReading": "さと"
+        }
+      ]
+    },
+    "離": {
+      "items": [
+        {
+          "word": "距離",
+          "wordKana": "きょり",
+          "targetReading": "り"
+        },
+        {
+          "word": "離す",
+          "wordKana": "はなす",
+          "targetReading": "はな"
+        }
+      ]
+    },
+    "率": {
+      "items": [
+        {
+          "word": "効率",
+          "wordKana": "こうりつ",
+          "targetReading": "りつ"
+        },
+        {
+          "word": "軽率",
+          "wordKana": "けいそつ",
+          "targetReading": "そつ"
+        },
+        {
+          "word": "率いる",
+          "wordKana": "ひきいる",
+          "targetReading": "ひき"
+        }
+      ]
+    },
+    "立": {
+      "items": [
+        {
+          "word": "立つ",
+          "wordKana": "たつ",
+          "targetReading": "た"
+        },
+        {
+          "word": "国立",
+          "wordKana": "こくりつ",
+          "targetReading": "りつ"
+        }
+      ]
+    },
+    "流": {
+      "items": [
+        {
+          "word": "流す",
+          "wordKana": "ながす",
+          "targetReading": "なが"
+        },
+        {
+          "word": "一流",
+          "wordKana": "いちりゅう",
+          "targetReading": "りゅう"
+        },
+        {
+          "word": "流布",
+          "wordKana": "るふ",
+          "targetReading": "る"
+        }
+      ]
+    },
+    "留": {
+      "items": [
+        {
+          "word": "留学",
+          "wordKana": "りゅうがく",
+          "targetReading": "りゅう"
+        },
+        {
+          "word": "留守",
+          "wordKana": "るす",
+          "targetReading": "る"
+        },
+        {
+          "word": "留まる",
+          "wordKana": "とまる",
+          "targetReading": "と"
+        }
+      ]
+    },
+    "旅": {
+      "items": [
+        {
+          "word": "旅行",
+          "wordKana": "りょこう",
+          "targetReading": "りょ"
+        },
+        {
+          "word": "旅立つ",
+          "wordKana": "たびだつ",
+          "targetReading": "たび"
+        }
+      ]
+    },
+    "良": {
+      "items": [
+        {
+          "word": "仲良く",
+          "wordKana": "なかよく",
+          "targetReading": "よ"
+        },
+        {
+          "word": "不良",
+          "wordKana": "ふりょう",
+          "targetReading": "りょう"
+        }
+      ]
+    },
+    "力": {
+      "items": [
+        {
+          "word": "力強い",
+          "wordKana": "ちからづよい",
+          "targetReading": "ちから"
+        },
+        {
+          "word": "努力",
+          "wordKana": "どりょく",
+          "targetReading": "りょく"
+        },
+        {
+          "word": "力む",
+          "wordKana": "りきむ",
+          "targetReading": "りき"
+        }
+      ]
+    },
+    "輪": {
+      "items": [
+        {
+          "word": "指輪",
+          "wordKana": "ゆびわ",
+          "targetReading": "わ"
+        },
+        {
+          "word": "駐輪場",
+          "wordKana": "ちゅうりんじょう",
+          "targetReading": "りん"
+        }
+      ]
+    },
+    "例": {
+      "items": [
+        {
+          "word": "例文",
+          "wordKana": "れいぶん",
+          "targetReading": "れい"
+        },
+        {
+          "word": "例えば",
+          "wordKana": "たとえば",
+          "targetReading": "たと"
+        }
+      ]
+    },
+    "冷": {
+      "items": [
+        {
+          "word": "冷たい",
+          "wordKana": "つめたい",
+          "targetReading": "つめ"
+        },
+        {
+          "word": "冷蔵庫",
+          "wordKana": "れいぞうこ",
+          "targetReading": "れい"
+        },
+        {
+          "word": "冷える",
+          "wordKana": "ひえる",
+          "targetReading": "ひ"
+        },
+        {
+          "word": "冷ます",
+          "wordKana": "さます",
+          "targetReading": "さ"
+        }
+      ]
+    },
+    "恋": {
+      "items": [
+        {
+          "word": "恋しい",
+          "wordKana": "こいしい",
+          "targetReading": "こい"
+        },
+        {
+          "word": "恋愛",
+          "wordKana": "れんあい",
+          "targetReading": "れん"
+        }
+      ]
+    },
+    "練": {
+      "items": [
+        {
+          "word": "練習",
+          "wordKana": "れんしゅう",
+          "targetReading": "れん"
+        },
+        {
+          "word": "練る",
+          "wordKana": "ねる",
+          "targetReading": "ね"
+        }
+      ]
+    },
+    "連": {
+      "items": [
+        {
+          "word": "連絡",
+          "wordKana": "れんらく",
+          "targetReading": "れん"
+        },
+        {
+          "word": "連れ",
+          "wordKana": "つれ",
+          "targetReading": "つ"
+        },
+        {
+          "word": "連なる",
+          "wordKana": "つらなる",
+          "targetReading": "つら"
+        }
+      ]
+    },
+    "老": {
+      "items": [
+        {
+          "word": "老化",
+          "wordKana": "ろうか",
+          "targetReading": "ろう"
+        },
+        {
+          "word": "老いる",
+          "wordKana": "おいる",
+          "targetReading": "お"
+        }
+      ]
+    },
+    "和": {
+      "items": [
+        {
+          "word": "和食",
+          "wordKana": "わしょく",
+          "targetReading": "わ"
+        },
+        {
+          "word": "和やか",
+          "wordKana": "なごやか",
+          "targetReading": "なご"
+        },
+        {
+          "word": "和らぐ",
+          "wordKana": "やわらぐ",
+          "targetReading": "やわ"
+        }
+      ]
+    },
+    "話": {
+      "items": [
+        {
+          "word": "話す",
+          "wordKana": "はなす",
+          "targetReading": "はな"
+        },
+        {
+          "word": "電話",
+          "wordKana": "でんわ",
+          "targetReading": "わ"
+        },
+        {
+          "word": "話半分",
+          "wordKana": "はなしはんぶん",
+          "targetReading": "はなし"
+        }
+      ]
+    },
+    "惑": {
+      "items": [
+        {
+          "word": "迷惑",
+          "wordKana": "めいわく",
+          "targetReading": "わく"
+        },
+        {
+          "word": "惑わす",
+          "wordKana": "まどわす",
+          "targetReading": "まど"
+        }
+      ]
+    },
+    "剝": {
+      "items": [
+        {
+          "word": "剝く",
+          "wordKana": "むく",
+          "targetReading": "む"
+        },
+        {
+          "word": "剝がす",
+          "wordKana": "はがす",
+          "targetReading": "は"
+        }
+      ]
+    }
+  },
+  "excludedReadings": {
+    "角": {
+      "つの": "词库中这个读音只有词头「角」，而相同词形还对应 かく、かど；无法作为唯一连线项。"
+    },
+    "空": {
+      "す": "词库中这个读音只有「空く」，同一词形还读 あく；没有不歧义的替代词项。"
+    },
+    "主": {
+      "おも": "词库中这个读音只有独立词头「主」，该词形还对应 ぬし、しゅ；无法作为唯一连线项。"
+    },
+    "上": {
+      "かみ": "词库中这个读音只有独立词头「上」，该词形还对应 うえ；无法作为唯一连线项。"
+    },
+    "分": {
+      "ふん": "词库中这个读音只有独立词头「分」，该词形还对应 ぶん、ぶ；无法作为唯一连线项。"
+    },
+    "抱": {
+      "いだ": "词库中这个读音只有「抱く」，同一词形还读 だく；无法作为唯一连线项。"
+    },
+    "良": {
+      "い": "词库中这个读音只有「良い」，同一词形还读 よい；无法作为唯一连线项。"
+    },
+    "十": {
+      "と": "词库中唯一例词「十人十色」把目标字写了两次，分别读じゅう和と，无法无歧义地连线。"
+    },
+    "注": {
+      "つ": "词库中「注ぐ」也有そそぐ和つぐ两种读法，同一词面无法唯一作答。"
+    },
+    "直": {
+      "じか": "词库只有未完成词头「直〜」，没有可用的完整词。"
+    }
+  }
+}

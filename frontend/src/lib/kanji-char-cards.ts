@@ -1,8 +1,8 @@
 /**
  * 单独汉字卡：一个字一张卡，进 FSRS（docs/MIXED_STUDY_PLAN.md 第 1 节）。
  *
- * 正面一个字；反面音读 / 训读（KANJIDIC）、多音字的读音判据（kanji_reading_usage）、
- * 例词（这个字出现的词，按用户熟悉度排）。中文母语者认字不认音，所以考的是读音不是写法。
+ * 正面给一个字和含它的词，连每个词里实际使用的读音；只调度有手写且唯一配对题的多音字。
+ * 翻面再看音读 / 训读（KANJIDIC）、读音判据与例词。中文母语者认字不认音，所以考读音，不考写法。
  *
  * ⚠️ 和 `kanji-unit-scheduler.ts`（按「一个字的一种读音」为单位、在旗子后面）不是一回事，
  * 也不动它；和「汉字读音」方向（词里遮住汉字那几拍）也不是一回事。三者的记忆各存各的。
@@ -19,7 +19,7 @@ import { FSRS_PARAMS_VERSION } from "./reviews";
 import { createCardLog, type StepMode } from "./card-log";
 import { withoutSyncStamp } from "./sync/schema";
 import { allKanjiUnits, kanjiUnitIndexLoaded, kanjiUnitWordIds, loadKanjiUnitIndex } from "./kanji-unit-index";
-import { kanjiReadingUsageFor, kanjiReadingUsageLoaded, loadKanjiReadingUsage, clauseText } from "./kanji-reading-usage";
+import { allKanjiReadingQuestionChars, kanjiReadingQuestionFor, kanjiReadingUsageFor, kanjiReadingUsageLoaded, loadKanjiReadingUsage, clauseText, type KanjiReadingQuestion } from "./kanji-reading-usage";
 import readingsPayload from "../data/kanji_readings.json";
 
 export const KANJI_CHAR_FSRS: FsrsEntity = {
@@ -123,6 +123,8 @@ export interface KanjiCharCard {
   /** 多音字才有：每个读音一句「什么时候读它」 */
   usage: { base: string; kinds: string[]; note: string }[];
   examples: KanjiCharExample[];
+  /** 人工编写的一个具体词语读音题；未审校的字不显示泛化题面。 */
+  question?: KanjiReadingQuestion;
 }
 
 const EXAMPLE_CAP = 6;
@@ -162,7 +164,8 @@ export const kanjiCharCard = (char: string): KanjiCharCard | null => {
     on: dict.on ?? [],
     kun: dict.kun ?? [],
     usage,
-    examples
+    examples,
+    question: kanjiReadingQuestionFor(char) ?? undefined
   };
 };
 
@@ -174,7 +177,16 @@ const occurrenceByChar = () => {
   return occurrence;
 };
 
-const log = createCardLog({ entity: KANJI_CHAR_FSRS, reviewsTable: "kanji_char_reviews", tasksTable: "kanji_char_tasks" });
+const questionCharSql = (): string => {
+  const chars = allKanjiReadingQuestionChars();
+  return chars.length ? `char IN (${chars.map((char) => `'${char.replace(/'/gu, "''")}'`).join(",")})` : "0";
+};
+const log = createCardLog({
+  entity: KANJI_CHAR_FSRS,
+  reviewsTable: "kanji_char_reviews",
+  tasksTable: "kanji_char_tasks",
+  extraExclude: questionCharSql
+});
 
 /**
  * 生成当天的清单：到期的（复习额度内，装不下随机抽）+ 没见过的（新学额度内，目标等级及以下，
@@ -182,15 +194,32 @@ const log = createCardLog({ entity: KANJI_CHAR_FSRS, reviewsTable: "kanji_char_r
  */
 export const createKanjiCharTasks = (quota: { fresh: number; review: number }, targetLevelRank: number, day = today()) => {
   ensureKanjiCharTables();
+  const eligible = new Set(allKanjiReadingQuestionChars());
+  if (!eligible.size) throw new Error("汉字连线题尚未加载，不能生成汉字卡清单");
+  if (rowsFor("SELECT char FROM kanji_char_tasks WHERE reviewed_on = ?", [day]).some((row) => !eligible.has(String(row.char)))) {
+    // 旧版本的当日投影可能包含没有连线题的单音字。只重建任务投影，保留复习历史和进度。
+    getDatabase().run("DELETE FROM kanji_char_tasks WHERE reviewed_on = ?", [day]);
+  }
   return log.createTasks(quota, () => {
     const occurrence = occurrenceByChar();
-    return rowsFor("SELECT char FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ?", [targetLevelRank])
+    return rowsFor(`SELECT char FROM kanji_char_memory WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank])
       .map((row) => String(row.char))
       .sort((a, b) => (occurrence.get(b) ?? 0) - (occurrence.get(a) ?? 0) || a.localeCompare(b));
   }, day);
 };
 
-export const pickKanjiCharNext = (day = today(), excluded = new Set<string>()) => { ensureKanjiCharTables(); return log.pickNext(day, excluded); };
+export const pickKanjiCharNext = (day = today(), excluded = new Set<string>()) => {
+  ensureKanjiCharTables();
+  const eligible = new Set(allKanjiReadingQuestionChars());
+  const skip = new Set(excluded);
+  for (let attempts = 0; attempts < 1000; attempts += 1) {
+    const char = log.pickNext(day, skip);
+    if (!char) return null;
+    if (eligible.has(char)) return char;
+    skip.add(char);
+  }
+  return null;
+};
 export const kanjiCharProgress = (day = today()) => { ensureKanjiCharTables(); return log.progress(day); };
 export const kanjiCharStepMode = log.stepMode;
 export const recordKanjiCharReview = (char: string, answer: WordAnswer, now = new Date(), mode?: StepMode) => { ensureKanjiCharTables(); return log.record(char, answer, now, mode); };
@@ -208,6 +237,6 @@ export const kanjiCharPool = (targetLevelRank: number) => {
   ensureKanjiCharTables();
   return {
     due: log.dueCount(),
-    unseen: firstValue<number>("SELECT COUNT(*) FROM kanji_char_memory WHERE known_forever = 0 AND seen_count = 0 AND level_rank <= ?", [targetLevelRank], 0)
+    unseen: firstValue<number>(`SELECT COUNT(*) FROM kanji_char_memory WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank], 0)
   };
 };

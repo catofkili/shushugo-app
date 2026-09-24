@@ -1,14 +1,10 @@
 /**
- * 疑难连线卡：一个辨析组一张卡，进 FSRS（docs/MIXED_STUDY_PLAN.md 第 1 节）。
+ * 疑难辨析 Anki 卡：一个手写辨析组一张卡，进 FSRS（docs/MIXED_STUDY_PLAN.md 第 1 节）。
  *
- * 正面是连线题：左列组内成员（词形按 displayForm），右列各自的题面（reviewedQuestionMeaning，
- * 和原来的辨析题同一口径）打乱；点左边一个再点右边一个就是一条线，不强制拖。
- * 反面是辨析稿（distinction_reviews 的 summary 和逐词注记）。
+ * 一张卡对应一组人工写明、标为不可互换的词：正面给词组，先回想核心差异；反面展示辨析稿。
+ * 同义词组和可互换组不进队列，题面也不写情景提示。
  *
- * 评分不让用户点四档，按结果算（`gradeMatching`）：一次全对 → 认识（第一次见就全对走 known → Easy，
- * 同词级路径）；错 1 条 → 模糊；错 ≥ 2 → 忘记。
- *
- * 哪些组能出：和原辨析题同一道闸（`reviewable`：有 major 级辨析稿、每个成员都有题面且首义不撞）。
+ * 哪些组能出：非 synonym 组、review level=major、词形唯一且有完整辨析稿。
  * 「已掌握」（confusion_mastered，用户手动标的）的组不进队列 —— 等于手动毕业，保留那张表。
  *
  * 存储同 kanji-char-cards：confusion_reviews 是事实，confusion_progress 是检查点，confusion_tasks 是当天投影。
@@ -21,7 +17,6 @@ import { createCardLog, type StepMode } from "./card-log";
 import { withoutSyncStamp } from "./sync/schema";
 import { confusionGroups, displayForm, type ConfusionGroup } from "./confusion-groups";
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
-import { reviewedQuestionMeaning } from "./models/question-meaning-overrides";
 
 export const CONFUSION_FSRS: FsrsEntity = {
   table: "confusion_progress",
@@ -29,13 +24,18 @@ export const CONFUSION_FSRS: FsrsEntity = {
   eligible: "known_forever = 0"
 };
 
+const sqlValue = (value: string): string => `'${value.replace(/'/gu, "''")}'`;
+const eligibleGroupSql = (): string => {
+  const keys = confusionGroups().filter(matchable).map((group) => group.key);
+  return `group_key IN (${keys.map(sqlValue).join(",") || "NULL"})`;
+};
 const NOT_MASTERED = "group_key NOT IN (SELECT group_key FROM confusion_mastered)";
 
 const log = createCardLog({
   entity: CONFUSION_FSRS,
   reviewsTable: "confusion_reviews",
   tasksTable: "confusion_tasks",
-  extraExclude: NOT_MASTERED
+  extraExclude: () => `${eligibleGroupSql()} AND ${NOT_MASTERED}`
 });
 
 export const ensureConfusionCardTables = (): void => {
@@ -82,21 +82,12 @@ export const ensureConfusionCardTables = (): void => {
   ensureFsrsColumns(CONFUSION_FSRS);
 };
 
-const firstSense = (text: string): string => text.split(/[；;]/)[0].trim();
-
-/** 能出连线题的组：有 major 级辨析稿、每个成员都有审校过的题面、首义不撞。和原辨析题同一道闸。 */
+/** 仅收录核心用法确实不同的非同义组，词形重复或只是语气差别的组不出卡。 */
 export const matchable = (group: ConfusionGroup): boolean => {
   const review = distinctionReviewFor(group.key);
-  if (!review || review.level !== "major" || group.members.length < 2) return false;
-  const senses = new Set<string>();
-  return group.members.every((member) => {
-    const meaning = reviewedQuestionMeaning(member.kanji, member.kana);
-    if (!meaning) return false;
-    const sense = firstSense(meaning);
-    if (senses.has(sense)) return false;
-    senses.add(sense);
-    return true;
-  });
+  if (!review || review.level !== "major" || group.type === "synonym" || group.members.length < 2 || !review.summary.trim()) return false;
+  const forms = new Set(group.members.map((member) => `${displayForm(member)}\u0000${member.kana}`));
+  return forms.size === group.members.length;
 };
 
 const LEVEL_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
@@ -109,7 +100,7 @@ export const materializeConfusionCards = (): number => {
   /*
    * ⚠️ 占位行和 level_rank 回填都不盖同步时间戳（理由同 word-api/bootstrap 的 initProgress）。
    * confusion_progress 是 lww：一行刚补出来的空占位（或只是重算了一下等级）时间戳是「现在」，
-   * 比云端那条真练过的行新，合并之后会把对端的连线卡进度静默盖掉。
+   * 比云端那条真练过的行新，合并之后会把对端的辨析卡进度静默盖掉。
    * level_rank 是从出厂内容算的，每台设备自己算得出同一个值，不需要靠同步传播。
    */
   const db = getDatabase();
@@ -138,19 +129,18 @@ export const materializeConfusionCards = (): number => {
   return inserted;
 };
 
-export interface MatchingPair {
+export interface ConfusionCardMember {
   id: number;
   surface: string;
   kana: string;
-  /** 右列的题面 */
-  prompt: string;
+  note?: string;
 }
 
 export interface MatchingCard {
   groupKey: string;
   type: ConfusionGroup["type"];
   label: string;
-  pairs: MatchingPair[];
+  members: ConfusionCardMember[];
   /** 反面：辨析稿总述 + 逐词注记（key 是 word id） */
   summary: string;
   notes: Map<string, string>;
@@ -160,27 +150,24 @@ export const matchingCard = (groupKey: string): MatchingCard | null => {
   const group = confusionGroups().find((item) => item.key === groupKey);
   const review = group ? distinctionReviewFor(group.key) : null;
   if (!group || !review || !matchable(group)) return null;
+  const notes = distinctionNotesFor(review.summary, group.members.map((member) => ({
+    key: String(member.id),
+    forms: [displayForm(member), member.kanji, member.kana]
+  })));
   return {
     groupKey: group.key,
     type: group.type,
     label: group.label,
-    pairs: group.members.map((member) => ({
+    members: group.members.map((member) => ({
       id: member.id,
       surface: displayForm(member),
       kana: member.kana,
-      prompt: reviewedQuestionMeaning(member.kanji, member.kana) ?? ""
+      note: notes.get(String(member.id))
     })),
     summary: review.summary,
-    notes: distinctionNotesFor(review.summary, group.members.map((member) => ({
-      key: String(member.id),
-      forms: [displayForm(member), member.kanji, member.kana]
-    })))
+    notes
   };
 };
-
-/** 连线结果 → 四档里的一档。mistakes = 连错的次数（连错一条改对再算一条）。 */
-export const gradeMatching = (mistakes: number): WordAnswer =>
-  mistakes <= 0 ? "know" : mistakes === 1 ? "fuzzy" : "forgot";
 
 /**
  * 当天清单：到期的 + 没见过的。新学优先给「成员里用户学过的词多」的组 —— 没学过的词连起来
@@ -188,10 +175,17 @@ export const gradeMatching = (mistakes: number): WordAnswer =>
  */
 export const createConfusionTasks = (quota: { fresh: number; review: number }, targetLevelRank = 4, day = today()) => {
   ensureConfusionCardTables();
+  const eligible = new Set(confusionGroups().filter(matchable).map((group) => group.key));
+  const existing = rowsFor("SELECT group_key FROM confusion_tasks WHERE reviewed_on = ?", [day]);
+  if (existing.some((row) => !eligible.has(String(row.group_key)))) {
+    // 旧版本的当日清单可能含同义组或可互换组。它只是投影，重建不会删除任何复习记录。
+    getDatabase().run("DELETE FROM confusion_tasks WHERE reviewed_on = ?", [day]);
+  }
   return log.createTasks(quota, () => {
     const learned = new Set(rowsFor("SELECT word_id FROM progress WHERE seen_count > 0").map((row) => Number(row.word_id)));
     const unseen = new Set(rowsFor(`SELECT group_key FROM confusion_progress WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank]).map((row) => String(row.group_key)));
     return confusionGroups()
+      .filter((group) => matchable(group))
       .filter((group) => unseen.has(group.key))
       .map((group) => ({ key: group.key, learned: group.members.filter((member) => learned.has(member.id)).length, size: group.members.length }))
       .sort((a, b) => b.learned - a.learned || a.size - b.size || a.key.localeCompare(b.key))
@@ -199,7 +193,18 @@ export const createConfusionTasks = (quota: { fresh: number; review: number }, t
   }, day);
 };
 
-export const pickConfusionNext = (day = today(), excluded = new Set<string>()) => { ensureConfusionCardTables(); return log.pickNext(day, excluded); };
+export const pickConfusionNext = (day = today(), excluded = new Set<string>()) => {
+  ensureConfusionCardTables();
+  const skip = new Set(excluded);
+  const eligible = new Set(confusionGroups().filter(matchable).map((group) => group.key));
+  for (let attempts = 0; attempts < 1000; attempts += 1) {
+    const key = log.pickNext(day, skip);
+    if (!key) return null;
+    if (eligible.has(key)) return key;
+    skip.add(key);
+  }
+  return null;
+};
 export const confusionCardProgress = (day = today()) => { ensureConfusionCardTables(); return log.progress(day); };
 export const recordConfusionReview = (groupKey: string, answer: WordAnswer, now = new Date(), mode?: StepMode) => {
   ensureConfusionCardTables();

@@ -52,7 +52,7 @@
          三种卡出的都是网页那同一副牌（同一份进度表、同一套 FSRS），在哪边答的都算数。 -->
     <view wx:if="{{interleave}}" class="card study-card interleave interleave-{{interleave.kind}}">
       <view class="card-meta">
-        <text>{{interleave.kind === 'grammar' ? '插播 · 语法' : interleave.kind === 'kanji' ? '插播 · 单独汉字' : '插播 · 疑难连线'}}</text>
+        <text>{{interleave.kind === 'grammar' ? '插播 · 语法' : interleave.kind === 'kanji' ? '插播 · 单独汉字' : '插播 · 辨析卡'}}</text>
         <text>{{interleave.kind === 'grammar' ? interleave.card.level : interleave.kind === 'kanji' ? '' : interleave.card.label}}</text>
       </view>
 
@@ -73,8 +73,32 @@
 
       <!-- 单独汉字：一个字的读音 + 什么时候读它 + 例词 -->
       <block wx:elif="{{interleave.kind === 'kanji'}}">
-        <text class="kanji-char">{{interleave.card.char}}</text>
-        <button wx:if="{{!interleaveRevealed}}" class="reveal" bindtap="revealInterleave">显示读音</button>
+        <block wx:if="{{interleave.card.question}}">
+          <text class="kanji-question-cue">把每个词中「{{interleave.card.char}}」的读音连起来</text>
+          <view class="kanji-match-labels"><text>词语</text><text>读音</text></view>
+          <view class="kanji-match-board">
+            <view class="kanji-match-column">
+              <view wx:for="{{kanjiWordRows}}" wx:key="index" class="kanji-match-cell {{item.selected ? 'picked' : ''}} {{item.paired ? 'paired' : ''}}" data-index="{{index}}" catchtap="selectKanjiWord">
+                <text class="kanji-match-word">{{item.word}}</text>
+                <text wx:if="{{interleaveRevealed}}" class="kanji-match-kana">{{item.wordKana}}</text>
+                <text class="kanji-match-meaning">{{item.meaning}}</text>
+              </view>
+            </view>
+            <view class="kanji-match-gutter">
+              <view wx:for="{{kanjiConnections}}" wx:key="index" class="kanji-match-line {{item.kind}}" style="{{item.style}}"></view>
+            </view>
+            <view class="kanji-match-column">
+              <view wx:for="{{kanjiReadingRows}}" wx:key="index" class="kanji-match-cell kanji-reading-cell {{item.paired ? 'paired' : ''}} {{item.correct ? 'correct' : ''}} {{selectedKanjiWord !== null ? 'available' : ''}}" data-index="{{index}}" catchtap="selectKanjiReading">
+                <text class="kanji-match-word">{{item.reading}}</text>
+              </view>
+            </view>
+          </view>
+          <text wx:if="{{!interleaveRevealed}}" class="kanji-question-cue">先点左侧词语，再点右侧读音；可以重新连线</text>
+          <text wx:else class="kanji-question-cue">绿色线是正确配对，红色线是原来的错误连线</text>
+        </block>
+        <text wx:else class="kanji-char">{{interleave.card.char}}</text>
+        <button wx:if="{{!interleaveRevealed && interleave.card.question}}" class="reveal" bindtap="revealInterleave">{{kanjiMatchComplete ? '核对连线' : '显示答案'}}</button>
+        <button wx:elif="{{!interleaveRevealed}}" class="reveal" bindtap="revealInterleave">显示读音</button>
         <view wx:else class="answer">
           <text wx:if="{{interleave.card.on.length}}" class="kana">音读：{{interleave.card.on}}</text>
           <text wx:if="{{interleave.card.kun.length}}" class="kana">训读：{{interleave.card.kun}}</text>
@@ -88,29 +112,26 @@
         </view>
       </block>
 
-      <!-- 疑难连线：左列词形、右列题面。连错次数决定四档，所以没有评分按钮。 -->
+      <!-- 辨析 Anki 卡：正面回想词间区别，翻面查看手写辨析后自评。 -->
       <block wx:else>
-        <text class="match-hint">{{matchFinished ? (matchMistakes === 0 ? '全连对了' : '连错 ' + matchMistakes + ' 次') : '先点左边的词，再点它对应的意思'}}</text>
-        <view class="match-body">
-          <view class="match-col">
-            <view wx:for="{{interleave.card.pairs}}" wx:key="id" class="match-item {{matchPicked === item.id + '' ? 'picked' : ''}} {{matchDone[item.id] ? 'done' : ''}}" data-id="{{item.id}}" bindtap="pickMatchLeft">
-              <text class="match-surface">{{item.surface}}</text><text class="match-kana">{{item.kana}}</text>
-            </view>
+        <view wx:if="{{!interleaveRevealed}}" class="distinction-front">
+          <text class="match-hint">先回想这组词各自表达什么，以及最核心的区别。</text>
+          <view wx:for="{{interleave.card.members}}" wx:key="id" class="match-item">
+            <text class="match-surface">{{item.surface}}</text><text class="match-kana">{{item.kana}}</text>
           </view>
-          <view class="match-col">
-            <view wx:for="{{interleave.card.pairs}}" wx:key="id" class="match-item {{matchDone[item.id] ? 'done' : ''}}" data-id="{{item.id}}" bindtap="pickMatchRight">
-              <text class="match-prompt">{{item.prompt}}</text>
-              <text wx:if="{{matchFinished && item.note}}" class="match-note">{{item.note}}</text>
-            </view>
-          </view>
+          <button class="reveal" bindtap="revealInterleave">显示辨析</button>
         </view>
-        <view wx:if="{{matchFinished}}" class="answer">
+        <view wx:else class="answer">
+          <text class="match-hint">手写辨析</text>
           <text class="grammar-meaning">{{interleave.card.summary}}</text>
-          <button class="reveal" bindtap="continueAfterMatch">继续</button>
+            <view wx:for="{{interleave.card.members}}" wx:key="id" class="match-item">
+            <text class="match-surface">{{item.surface}}（{{item.kana}}）</text>
+            <text wx:if="{{item.note}}" class="match-note">{{item.note}}</text>
+          </view>
         </view>
       </block>
 
-      <view wx:if="{{interleaveRevealed && interleave.kind !== 'confusion'}}" class="answer-actions">
+      <view wx:if="{{interleaveRevealed}}" class="answer-actions">
         <button class="answer-btn forgot" data-answer="forgot" bindtap="answerInterleaveCard" disabled="{{busy}}">忘记</button>
         <button class="answer-btn fuzzy" data-answer="fuzzy" bindtap="answerInterleaveCard" disabled="{{busy}}">模糊</button>
         <button class="answer-btn know" data-answer="know" bindtap="answerInterleaveCard" disabled="{{busy}}">认识</button>
