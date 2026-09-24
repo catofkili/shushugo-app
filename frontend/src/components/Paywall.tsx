@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Crown, LockKeyhole, RotateCcw, X } from "lucide-react";
+import { Crown, RotateCcw, X } from "lucide-react";
 import { FeatureId, ProductId } from "../lib/entitlements";
-import { developmentUnlock, getPurchaseRuntime, initializePurchases, purchaseProduct, restorePurchases, StoreProduct } from "../lib/purchases";
+import { getPurchaseRuntime, initializePurchases, purchaseProduct, restorePurchases, StoreProduct } from "../lib/purchases";
 import { Sticker } from "./CapybaraMascot";
 import { useEntitlements } from "../hooks/useEntitlements";
 
@@ -109,12 +109,6 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
     setRestoring(false);
   };
 
-  const unlockForDevelopment = () => {
-    const result = developmentUnlock();
-    setStatus(result.message);
-    if (result.ok) onUnlocked?.();
-  };
-
   return (
     <div className="paywall-popover-host">
       <section
@@ -164,9 +158,6 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy }: Paywall
           >
             <RotateCcw size={13} />{restoring ? "恢复中" : "恢复"}
           </button>
-          {import.meta.env.DEV && (
-            <button onClick={unlockForDevelopment} title="本地开发临时解锁 Pro"><LockKeyhole size={13} />开发解锁</button>
-          )}
         </div>
 
         <p className="paywall-popover-legal">

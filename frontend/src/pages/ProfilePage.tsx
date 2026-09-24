@@ -11,7 +11,6 @@ import {
   Trophy,
   UserRound
 } from "lucide-react";
-import { DevTools } from "../components/DevTools";
 import { EntitlementState, productLabel } from "../lib/entitlements";
 import { cloudLogout, type CloudSession } from "../lib/sync-api";
 import { loadUserProfile, type UserProfile } from "../lib/userProfile";
@@ -147,8 +146,6 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
         </span>
         <ChevronRight size={18} className="text-white/45" />
       </button>
-
-      <DevTools />
 
       <div className="mt-4 space-y-4">
         {profileSections.map((section) => (

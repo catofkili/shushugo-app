@@ -363,11 +363,3 @@ export async function redeemOfferCode(): Promise<PurchaseResult> {
     return { ok: false, message: error instanceof Error ? error.message : "打开兑换页失败。" };
   }
 }
-
-export function developmentUnlock(productId: ProductId = "shushugo_pro_yearly"): PurchaseResult {
-  if (!import.meta.env.DEV) {
-    return { ok: false, message: "开发解锁只在本地开发环境可用。" };
-  }
-  grantPro(productId, "development");
-  return { ok: true, message: "已在本地开发环境临时解锁 Pro。" };
-}
