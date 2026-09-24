@@ -573,6 +573,10 @@
 .share-sheet { width: 100%; max-width: 400px; padding: 14px; border-radius: 24px; }
 .share-sheet-img { display: block; width: 100%; max-height: 62vh; margin-top: 12px; border-radius: 16px; object-fit: contain; box-shadow: 0 6px 20px rgba(60, 45, 30, .14); }
 .share-sheet-notice { margin-top: 10px; color: var(--ds-primary-ink); font-size: 13px; font-weight: 700; text-align: center; }
+/* 两颗微信按钮用微信绿：这是「去微信」的动作，认的是微信的颜色，不跟皮肤走 */
+.share-sheet-wechat { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.share-sheet-wechat .ds-btn { background: #07c160; color: #fff; }
+.share-sheet-hint { margin: 8px 0 0; color: var(--ds-ink-3); font-size: 12px; text-align: center; }
 .ds-say-onbg.ds-say-good .ds-say-bubble { background: var(--ds-primary-tint); box-shadow: none; }
 
 /* —————————————————— 15. 查词汇量（落地页 / 答题 / 结果） —————————————————— */

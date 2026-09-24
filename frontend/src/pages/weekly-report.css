@@ -293,3 +293,5 @@ html[data-motion="off"] .wr-experience,html[data-motion="reduced"] .wr-experienc
 @media(max-width:420px){.wr-experience-header{gap:6px}.wr-variant-switch{padding:0 9px;font-size:11px!important}.wr-week-picker i{margin-inline:2px}}
 .wr-variant-switch{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 11px;white-space:nowrap;flex:none;border:1px solid var(--wr-line);border-radius:999px;background:color-mix(in srgb,var(--wr-bg) 70%,transparent);color:var(--wr-fg);font-size:12px!important;font-weight:700}
 .wr-variant-switch:active{transform:scale(.95)}
+/* 开发预览的模拟周报（空库时顶上，见 weekly/mock-report.ts）：挂在顶栏下面，免得把假数当成真的 */
+.wr-mock-badge{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 50px);left:50%;translate:-50% 0;padding:3px 10px;border-radius:999px;background:#ff5a4e;color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em;white-space:nowrap;pointer-events:none}

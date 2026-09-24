@@ -111,3 +111,22 @@ export const shareText = async (text: string, title: string): Promise<ShareTextR
     return "unsupported";
   }
 };
+
+/**
+ * 「发到朋友圈」：先把图存进相册，再拉起微信，用户在朋友圈里选这张图发。
+ *
+ * ⚠️ 这是没有微信 OpenSDK 时能做到的最近一步。直接把图塞进朋友圈 / 好友会话（WXApi sendReq，
+ * WXSceneTimeline / WXSceneSession）要开放平台「移动应用」AppID + Universal Link + OpenSDK 原生桥接，
+ * 和 App 微信登录是同一批前置条件（docs/WECHAT_APP_LOGIN.md），都还没做。接上之后把这里换成直接分享。
+ *
+ * 拉起微信用 `weixin://`：Capacitor 的 WebView 遇到非本应用的顶层跳转会交给 UIApplication.open
+ * （WebViewDelegationHandler），不需要在 LSApplicationQueriesSchemes 里登记（那个只管 canOpenURL）。
+ * 代价是判断不了用户装没装微信 —— 没装的话什么都不会发生，所以界面上一定要先说「已存到相册」。
+ */
+export const isNativeApp = (): boolean => Capacitor.isNativePlatform();
+
+export const prepareWechatMomentsPost = async (blob: Blob, fileName: string): Promise<SaveImageResult> => {
+  const saved = await saveImageToGallery(blob, fileName);
+  if (saved === "gallery") window.location.href = "weixin://";
+  return saved;
+};

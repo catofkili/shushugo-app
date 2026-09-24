@@ -159,3 +159,6 @@
   .sa-story{padding:120px 48px 120px}
   .sa-mega{margin-top:14vh}
 }
+/* ⚠️ 外壳有一条 `.weekly-report-page button{color:inherit}`（0,1,1），比单个类名高，按钮字会被染成页面的浅色字，
+   浅金底上几乎看不见（第一版就是这样）。带上场景根类名压过去。 */
+.sa-story .sa-cta{color:#1b1640}

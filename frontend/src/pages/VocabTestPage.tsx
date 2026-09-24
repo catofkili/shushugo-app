@@ -18,7 +18,6 @@ import {
   type VocabTestResult,
   type VocabTestSession
 } from "../lib/vocab-test";
-import { saveImageToGallery, shareImage } from "../lib/share-image";
 import { renderVocabShareCard } from "../features/vocab-test/share-card";
 import { MascotSay } from "../components/MascotSay";
 import { ShareImageSheet } from "../components/ShareImageSheet";
@@ -162,7 +161,7 @@ const dateKey = (timestamp: number): string => {
 const useVocabShare = () => {
   const [notice, setNotice] = useState("");
   const [card, setCard] = useState<{ url: string; blob: Blob; row: VocabTestHistoryRow } | null>(null);
-  const [busy, setBusy] = useState<"render" | "save" | "share" | null>(null);
+  const [busy, setBusy] = useState<"render" | null>(null);
 
   const share = async (row: VocabTestHistoryRow) => {
     if (busy) return;
@@ -193,32 +192,6 @@ const useVocabShare = () => {
 
   const fileName = card ? `shushugo-vocab-${dateKey(card.row.finishedAt)}.png` : "shushugo-vocab.png";
 
-  const save = async () => {
-    if (!card || busy) return;
-    setBusy("save");
-    try {
-      const result = await saveImageToGallery(card.blob, fileName);
-      setNotice(result === "gallery" ? "已保存到相册 ✓" : "已开始下载 ✓");
-    } catch {
-      setNotice("保存失败，请在 设置 > 收集日里允许访问相册后重试");
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const send = async () => {
-    if (!card || busy) return;
-    setBusy("share");
-    try {
-      const result = await shareImage(card.blob, fileName, "我的日语词汇量");
-      if (result === "unsupported") setNotice("当前浏览器不支持直接分享，请先保存图片");
-    } catch {
-      setNotice("分享失败，再试一次");
-    } finally {
-      setBusy(null);
-    }
-  };
-
   const close = () => {
     if (card) URL.revokeObjectURL(card.url);
     setCard(null);
@@ -226,7 +199,7 @@ const useVocabShare = () => {
   };
 
   const sheet = card ? (
-    <ShareImageSheet title="词汇量分享图" url={card.url} alt="词汇量分享图" notice={notice} busy={busy} onSave={() => void save()} onShare={() => void send()} onClose={close} />
+    <ShareImageSheet title="词汇量分享图" url={card.url} alt="词汇量分享图" blob={card.blob} fileName={fileName} shareTitle="我的日语词汇量" onClose={close} />
   ) : null;
   /** 没弹出图时的提示（生成失败）要摆在页面上，不然没人看得见 */
   return { share, busy, sheet, pageNotice: card ? "" : notice };

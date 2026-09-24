@@ -14,7 +14,6 @@ import { studyDate as currentStudyDate } from "../../lib/database/db-utils";
 import { splitFurigana, useFuriganaReady } from "../../lib/furigana";
 import { lookupAccent, pitchPattern, splitMorae, usePitchAccentReady } from "../../lib/pitch-accent";
 import { lookupTransitivity, useTransitivityReady } from "../../lib/transitivity";
-import { saveImageToGallery, shareImage } from "../../lib/share-image";
 import { getStudyPreferences } from "../../lib/studyPreferences";
 import { playExample, prefetchExample } from "../../lib/speech";
 import type { WordCard, WordStats } from "../../types/vocabulary";
@@ -258,8 +257,6 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const [stubbornGrammar, setStubbornGrammar] = useState<StubbornGrammarToday[]>([]);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [shareCard, setShareCard] = useState<{ url: string; blob: Blob } | null>(null);
-  const [shareBusy, setShareBusy] = useState<"save" | "share" | null>(null);
-  const [shareNotice, setShareNotice] = useState("");
   const studyDate = stats?.studyDate ?? currentStudyDate();
   const calendar = monthDays(studyDate);
   const checkins = new Set(stats?.checkins ?? []);
@@ -400,42 +397,12 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
       milestoneReached
     });
     if (shareCard) URL.revokeObjectURL(shareCard.url);
-    setShareNotice("");
     setShareCard({ url: URL.createObjectURL(blob), blob });
-  };
-
-  const handleSaveImage = async () => {
-    if (!shareCard || shareBusy) return;
-    setShareBusy("save");
-    setShareNotice("");
-    try {
-      const result = await saveImageToGallery(shareCard.blob, shareFileName);
-      setShareNotice(result === "gallery" ? "已保存到相册 ✓" : "已开始下载 ✓");
-    } catch {
-      setShareNotice("保存失败,请在 设置 > 收集日里允许访问相册后重试");
-    } finally {
-      setShareBusy(null);
-    }
-  };
-
-  const handleShareImage = async () => {
-    if (!shareCard || shareBusy) return;
-    setShareBusy("share");
-    setShareNotice("");
-    try {
-      const result = await shareImage(shareCard.blob, shareFileName, "今日单词完成");
-      if (result === "unsupported") setShareNotice("当前浏览器不支持直接分享,请先保存图片");
-    } catch {
-      setShareNotice("分享失败,请重试");
-    } finally {
-      setShareBusy(null);
-    }
   };
 
   const closeShareImage = () => {
     if (shareCard) URL.revokeObjectURL(shareCard.url);
     setShareCard(null);
-    setShareNotice("");
   };
 
   return (
@@ -746,10 +713,9 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
           title="今日炫耀图"
           url={shareCard.url}
           alt="今日单词完成分享图"
-          notice={shareNotice}
-          busy={shareBusy}
-          onSave={() => void handleSaveImage()}
-          onShare={() => void handleShareImage()}
+          blob={shareCard.blob}
+          fileName={shareFileName}
+          shareTitle="今日单词完成"
           onClose={closeShareImage}
         />
       )}

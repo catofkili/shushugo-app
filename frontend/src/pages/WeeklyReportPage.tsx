@@ -19,8 +19,9 @@ import { StarAtlasStory } from "./weekly/StarAtlasStory";
 import { FilmStory } from "./weekly/FilmStory";
 import { WEEKLY_VARIANTS, chaptersFor, loadWeeklyVariant, saveWeeklyVariant, type WeeklyVariant } from "./weekly/variants";
 import { requestFullSnapshot, saveDatabase } from "../lib/storage";
-import { renderWeeklyReportShareImage, type WeeklyReportShareImage } from "../lib/weekly-report-share";
-import { saveImageToGallery, shareImage } from "../lib/share-image";
+import { renderWeeklyReportShareImage } from "../lib/weekly-report-share";
+import { renderFilmShare, renderStarShare } from "./weekly/share-images";
+import { ShareImageSheet } from "../components/ShareImageSheet";
 import { canUseFeature, getEntitlements } from "../lib/entitlements";
 import type { FeatureId } from "../lib/entitlements";
 import { CLOUD_AUTH_EVENT, getCloudSession, getLocalSyncOwnerEmail, listCloudWeeklyReports, getCloudWeeklyReport } from "../lib/sync-api";
@@ -44,9 +45,12 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
   const [page, setPage] = useState(0);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [sharePreview, setSharePreview] = useState<WeeklyReportShareImage | null>(null);
+  const [shareCard, setShareCard] = useState<{ url: string; blob: Blob; fileName: string } | null>(null);
   const [shareBusy, setShareBusy] = useState(false);
   const [shareMessage, setShareMessage] = useState("");
+  // 开发预览（5199 这种空库）里没有任何真实周报时，用模拟数据顶上，见 weekly/mock-report.ts。
+  // 模拟的这份不写库、不标已读、不记埋点、不给「再练这个词」。
+  const [mock, setMock] = useState(false);
   const [cloudHistory, setCloudHistory] = useState<{ week_start: string; uploaded_at: string; byte_length: number }[]>([]);
   const [cloudMessage, setCloudMessage] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -61,8 +65,6 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
   const weekPickerRef = useRef<HTMLButtonElement | null>(null);
   const readerRef = useRef<HTMLElement | null>(null);
   const reportsRef = useRef<WeeklyReportSnapshot[]>([]);
-  const shareDialogRef = useRef<HTMLDivElement | null>(null);
-  const shareTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const onBack = useCallback(() => {
     const reader = readerRef.current;
@@ -99,6 +101,10 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
     reportsRef.current = reports;
   }, [reports]);
 
+  useEffect(() => () => {
+    if (shareCard) URL.revokeObjectURL(shareCard.url);
+  }, [shareCard]);
+
   const reload = useCallback(async () => {
     const session = await getCloudSession();
     const owner = await getLocalSyncOwnerEmail();
@@ -118,6 +124,16 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
       : latest
         ? all.filter((item) => item.report.window.start === latest.report.window.start)
         : [];
+    if (import.meta.env.DEV && next.length === 0) {
+      const { mockWeeklyReport } = await import("./weekly/mock-report");
+      const report = mockWeeklyReport();
+      setReports([{ schemaVersion: 3, generatedAt: Date.now(), readAt: Date.now(), report }]);
+      setSelectedStart(report.window.start);
+      setMock(true);
+      setLoading(false);
+      return;
+    }
+    setMock(false);
     setReports(next);
     setSelectedStart((current) => current ?? latest?.report.window.start ?? next[0]?.report.window.start ?? null);
     setLoading(false);
@@ -155,6 +171,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
           try {
             const payload = await getCloudWeeklyReport(initialWeekStart) as { report?: WeeklyReportSnapshot["report"] };
             if (payload.report) {
+              setMock(false);
               const local = saveWeeklyReport(payload.report);
               requestFullSnapshot();
               await saveDatabase().catch(() => undefined);
@@ -222,26 +239,26 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
   const pageTotal = chapters.length;
 
   useEffect(() => {
-    if (!selected) return;
+    if (!selected || mock) return;
     recordWeeklyReportEvent({
       kind: "opened",
       weekStart: selected.report.window.start,
       at: Date.now(),
       entry
     });
-  }, [entry, selected]);
+  }, [entry, selected, mock]);
 
   useEffect(() => {
-    if (!selected || pageTotal <= 0 || page < pageTotal - 1) return;
+    if (!selected || mock || pageTotal <= 0 || page < pageTotal - 1) return;
     recordWeeklyReportEvent({
       kind: "completed",
       weekStart: selected.report.window.start,
       at: Date.now()
     });
-  }, [page, pageTotal, selected]);
+  }, [page, pageTotal, selected, mock]);
 
   useEffect(() => {
-    if (!selected) return;
+    if (!selected || mock) return;
     const markedRead = markWeeklyReportRead(selected.report.window.start);
     const isLatest = reports[0]?.report.window.start === selected.report.window.start;
     if (markedRead || isLatest) {
@@ -251,37 +268,38 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
       requestFullSnapshot();
       void saveDatabase().catch(() => undefined);
     }
-  }, [reports, selected]);
+  }, [reports, selected, mock]);
 
+  /** 分享长图跟着版式走：星图 / 放映厅各画各的，字间小院用原来那张。保存、发微信好友、发朋友圈都在 ShareImageSheet 里。 */
   const createSharePreview = async () => {
     if (!selected || shareBusy) return;
-    shareTriggerRef.current = document.activeElement instanceof HTMLButtonElement ? document.activeElement : null;
     setShareBusy(true);
     setShareMessage("");
     try {
-      setSharePreview(await renderWeeklyReportShareImage(selected.report));
+      const report = selected.report;
+      const blob = variant === "stars" ? await renderStarShare(report)
+        : variant === "film" ? await renderFilmShare(report)
+          : (await renderWeeklyReportShareImage(report)).blob;
+      setShareCard({ url: URL.createObjectURL(blob), blob, fileName: `shushugo-weekly-${report.window.start}-${variant}.png` });
     } catch {
       setShareMessage("长图生成失败，请稍后再试。");
     } finally {
       setShareBusy(false);
     }
   };
-
-  useEffect(() => {
-    if (!sharePreview) return;
-    const frame = window.requestAnimationFrame(() => shareDialogRef.current?.querySelector<HTMLButtonElement>("button")?.focus());
-    return () => window.cancelAnimationFrame(frame);
-  }, [sharePreview]);
+  const closeShare = () => {
+    setShareCard(null);
+  };
 
   const movePage = useCallback((delta: number) => {
-    if (!selected || sharePreview || historyOpen || performance.now() - lastTurnRef.current < 160) return;
+    if (!selected || shareCard || historyOpen || performance.now() - lastTurnRef.current < 160) return;
     const next = Math.max(0, Math.min(pageTotal - 1, page + delta));
     if (next === page) return;
     lastTurnRef.current = performance.now();
     setOutgoing({report:selected.report, chapter:chapters[page]?.id ?? "cover", variant});
     setDirection(delta > 0 ? 1 : -1);
     setPage(next);
-  }, [selected, sharePreview, historyOpen, pageTotal, page, chapters, variant]);
+  }, [selected, shareCard, historyOpen, pageTotal, page, chapters, variant]);
   const cycleVariant = () => {
     const next = WEEKLY_VARIANTS[(WEEKLY_VARIANTS.findIndex((item) => item.id === variant) + 1) % WEEKLY_VARIANTS.length].id;
     saveWeeklyVariant(next);
@@ -292,13 +310,13 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
   };
   const moveWeek = useCallback((delta: number) => {
     const next = reports[selectedReportIndex + delta];
-    if (!next || sharePreview || historyOpen) return;
+    if (!next || shareCard || historyOpen) return;
     setOutgoing(null);
     setDirection(1);
     setFloorDirection(delta > 0 ? 1 : -1);
     setSelectedStart(next.report.window.start);
     setPage(0);
-  }, [reports, selectedReportIndex, sharePreview, historyOpen]);
+  }, [reports, selectedReportIndex, shareCard, historyOpen]);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -309,7 +327,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (sharePreview || historyOpen || (event.target instanceof HTMLElement && event.target.closest("input,textarea,select,[contenteditable='true'],dialog"))) return;
+      if (shareCard || historyOpen || (event.target instanceof HTMLElement && event.target.closest("input,textarea,select,[contenteditable='true'],dialog"))) return;
       if (event.key === "ArrowRight" || event.key === "PageDown") { event.preventDefault(); movePage(1); }
       else if (event.key === "ArrowLeft" || event.key === "PageUp") { event.preventDefault(); movePage(-1); }
       else if (event.key === "ArrowUp") { event.preventDefault(); moveWeek(-1); }
@@ -318,7 +336,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [movePage, moveWeek, onBack, sharePreview, historyOpen]);
+  }, [movePage, moveWeek, onBack, shareCard, historyOpen]);
 
   useEffect(() => {
     const reader = readerRef.current;
@@ -326,7 +344,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
     let total = 0;
     let previousAt = 0;
     const wheel = (event: WheelEvent) => {
-      if (event.ctrlKey || sharePreview || historyOpen) return; // 浏览器缩放不用于翻篇。
+      if (event.ctrlKey || shareCard || historyOpen) return; // 浏览器缩放不用于翻篇。
       const now = performance.now();
       const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
       // 长页始终保留原生纵向阅读；只在本来不需要滚动的场景用滚轮翻页。
@@ -341,11 +359,11 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
     };
     reader.addEventListener("wheel", wheel, {passive:false});
     return () => reader.removeEventListener("wheel", wheel);
-  }, [movePage, sharePreview, historyOpen, loading, selected?.report.window.start]);
+  }, [movePage, shareCard, historyOpen, loading, selected?.report.window.start]);
 
   const startDrag = (event: PointerEvent<HTMLElement>, axis: "page"|"week" = "page") => {
     suppressClickRef.current = false;
-    if (!event.isPrimary || event.button !== 0 || sharePreview || historyOpen) return;
+    if (!event.isPrimary || event.button !== 0 || shareCard || historyOpen) return;
     const target = event.target as HTMLElement;
     if (axis === "page" && target.closest("button:not([data-word-art]),a,input,select,textarea")) return;
     dragRef.current = {x:event.clientX,y:event.clientY,at:performance.now(),id:event.pointerId,axis,locked:false};
@@ -377,28 +395,6 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
     if (Math.abs(delta)>=56 || (Math.abs(delta)>=24 && Math.abs(delta)/elapsed>.4)) {
       if (start.axis === "page") movePage(delta<0 ? 1 : -1);
       else moveWeek(delta<0 ? 1 : -1);
-    }
-  };
-
-  const sharePreviewImage = async () => {
-    if (!sharePreview || !selected || shareBusy) return;
-    setShareBusy(true);
-    setShareMessage("");
-    try {
-      const filename = `shushugo-weekly-${selected.report.window.start}.png`;
-      const result = await shareImage(sharePreview.blob, filename, "收集日学习回顾");
-      if (result === "unsupported") {
-        await saveImageToGallery(sharePreview.blob, filename);
-        setShareMessage("当前浏览器不支持系统分享，已改为下载图片。");
-      } else if (result === "canceled") {
-        setShareMessage("已取消分享。");
-      } else {
-        setShareMessage("分享面板已打开。");
-      }
-    } catch {
-      setShareMessage("分享失败；你仍可以保存图片到本地。");
-    } finally {
-      setShareBusy(false);
     }
   };
 
@@ -449,6 +445,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
         <button ref={weekPickerRef} className="wr-week-picker" aria-haspopup="dialog" aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)} onPointerDown={(event) => startDrag(event,"week")} onPointerMove={dragMove} onPointerUp={endDrag} onPointerCancel={resetDrag}>
           <span>{floorNumber}F <i> / </i> {reportWindowLabelCompact(report.window)}</span><ChevronDown size={13}/>
         </button>
+        {mock && <span className="wr-mock-badge">模拟数据 · 仅开发预览</span>}
         <div className="wr-header-tools">
           {/* 三套版式并排比较用；用户选定之后连同另外两套一起删掉 */}
           <button className="wr-variant-switch" onClick={cycleVariant} aria-label={`切换周报版式，当前：${WEEKLY_VARIANTS.find((item) => item.id === variant)?.label}`}><Palette size={14}/>{WEEKLY_VARIANTS.find((item) => item.id === variant)?.label}</button>
@@ -460,7 +457,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
         <div className="wr-drag-layer">
           {outgoing && OutgoingStory && <div className={`wr-outgoing wr-theme-${outgoing.chapter}`} aria-hidden="true" inert><OutgoingStory report={outgoing.report} chapter={outgoing.chapter} onBack={()=>{}} onShare={()=>{}} animate={false}/></div>}
           <div className={`wr-stage wr-theme-${chapter}`} key={`${variant}:${report.window.start}:${page}`}>
-            <Story report={report} chapter={chapter} animate={!paused && !hidden} onBack={onBack} onShare={createSharePreview} onReviewWords={onReviewWords ? (ids) => {
+            <Story report={report} chapter={chapter} animate={!paused && !hidden} onBack={onBack} onShare={createSharePreview} onReviewWords={onReviewWords && !mock ? (ids) => {
               recordWeeklyReportEvent({kind:"review_added",weekStart:report.window.start,at:Date.now()});
               onReviewWords(ids);
             } : undefined}/>
@@ -498,6 +495,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
                 try {
                   const payload = await getCloudWeeklyReport(item.week_start) as { report?: WeeklyReportSnapshot["report"] };
                   if (payload.report) {
+                    setMock(false);
                     const local = saveWeeklyReport(payload.report);
                     requestFullSnapshot();
                     await saveDatabase().catch(() => undefined);
@@ -524,48 +522,9 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
           </div>
         </div>
       </dialog>
-      {shareMessage && !sharePreview && <p className="weekly-report-share-message wr-toast" role="status">{shareMessage}</p>}
-      {sharePreview && (
-        <div className="weekly-report-share-backdrop" role="presentation" onClick={() => { setSharePreview(null); shareTriggerRef.current?.focus(); }}>
-          <div ref={shareDialogRef} className="weekly-report-share-dialog" role="dialog" aria-modal="true" aria-label="预览周报长图" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              event.stopPropagation();
-              setSharePreview(null);
-              window.requestAnimationFrame(() => shareTriggerRef.current?.focus());
-              return;
-            }
-            if (event.key === "Tab") {
-              const focusables = [...shareDialogRef.current?.querySelectorAll<HTMLElement>("button, [href], input, textarea, select, [tabindex]:not([tabindex='-1'])") ?? []].filter((node) => !node.hasAttribute("disabled"));
-              if (!focusables.length) return;
-              const first = focusables[0];
-              const last = focusables[focusables.length - 1];
-              if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-              else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-            }
-          }} tabIndex={-1}>
-            <div className="weekly-report-share-dialog-head">
-              <b>分享预览</b>
-              <button onClick={() => { setSharePreview(null); shareTriggerRef.current?.focus(); }} aria-label="关闭预览">关闭</button>
-            </div>
-            <img src={sharePreview.dataUrl} alt="周报长图预览" />
-            {shareMessage && <p className="weekly-report-share-message">{shareMessage}</p>}
-            <div className="weekly-report-share-actions">
-              <button onClick={() => void sharePreviewImage()} disabled={shareBusy}>{shareBusy ? "处理中…" : "分享图片"}</button>
-              <button onClick={async () => {
-                if (!selected || shareBusy) return;
-                setShareBusy(true);
-                try {
-                  await saveImageToGallery(sharePreview.blob, `shushugo-weekly-${selected.report.window.start}.png`);
-                  setShareMessage("图片已保存。");
-                } catch {
-                  setShareMessage("图片保存失败。");
-                } finally {
-                  setShareBusy(false);
-                }
-              }} disabled={shareBusy}>保存图片</button>
-            </div>
-          </div>
-        </div>
+      {shareMessage && <p className="weekly-report-share-message wr-toast" role="status">{shareMessage}</p>}
+      {shareCard && (
+        <ShareImageSheet title="这一周的分享图" url={shareCard.url} alt="周报分享长图" blob={shareCard.blob} fileName={shareCard.fileName} shareTitle="收集日 · 我这一周的日语" onClose={closeShare} />
       )}
     </div>
   );

@@ -189,3 +189,5 @@ html[data-motion="off"] .fm-leader,html[data-motion="reduced"] .fm-leader,html[d
 
 @media(max-width:420px){.fm-story{padding-inline:30px}.fm-billing{gap:26px}}
 @media(min-width:801px){.fm-story{padding:120px 56px 120px}}
+/* ⚠️ 同星图版：外壳 `.weekly-report-page button{color:inherit}` 会把按钮字染成浅色，琥珀底上看不见 */
+.fm-story .fm-cta{color:#140d06}
