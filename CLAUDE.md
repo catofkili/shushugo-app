@@ -2968,3 +2968,76 @@ tone 只管气泡底色（info 中性 / warn 琥珀 / good 主色）；表情单
   5199 往 `/__live-snapshot` 回写会 404，这是设计好的保护，不会覆盖真实快照。
 - ⚠️ **还没做**：分享长图（`weekly-report-share.ts`）仍是 V3 的样子。用户选定版式之后只按选中的那版重画，免得白画一份。
   小程序的周报页也没跟着改（它是另一套 WXML）。
+
+## 周报三套版式、一张分享面板，微信只能做到「系统分享 + 存图开微信」（2026-09-24）
+
+提交在 `5ed9920`（星图 / 放映厅版式）、`5f140e3`（分享图 + 模拟数据 + 微信按钮）、`db62ce5`（0924 原画）。
+
+### 版式
+
+`pages/weekly/variants.ts`：**星图**（默认）/ **放映厅** / **字间小院**（V3 原版，保留）。选哪套存
+localStorage `mn-weekly-report-variant`，是设备偏好、不同步。新两套比 V3 多一章「关键词」
+（`KEYWORD_NOTES` 的说法和 `getKeywordCandidates` 的判据一一对应，改判据要一起改）。
+水豚的去处：星图收尾那章睡在月亮下、放映厅片尾当场记 —— V3 那只是后加的，没挪过去。
+
+周报外壳（`WeeklyReportPage`）的几条坑，新写版式一定会再撞：
+
+- ⚠️ **暂停 / 减弱动效时外壳会把所有 animation 去掉**，所以**基础样式必须是最终态**，
+  入场动画写成 `from{…}` + `animation-fill-mode:both`。反过来写（基础隐藏、`forwards` 显出来）
+  的话，一暂停北斗连线和光芒就全没了（踩过）。动画移除后会挡住内容的封面层（放映厅的倒数、闪白）
+  暂停时要 `display:none`。
+- ⚠️ `weekly-report.css` 必须在各版式 CSS **之前** import，且每一章要把整套 `--wr-*` 写全 ——
+  V3 的浅色章节把 `--wr-fg` 设成深色，漏写一个就是深底深字。
+- ⚠️ `.weekly-report-page button{color:inherit}`（0,1,1）压得过单类名的按钮颜色，
+  所以 CTA 要写 `.sa-story .sa-cta` 这种两级。`<Count>` 里面还有 span，
+  大数字的选择器要写子代（`.sa-mega>span`），写后代会把里面的小字一起放大。
+
+### 分享
+
+- **分享面板只有一份 `components/ShareImageSheet`**：打卡图、词汇量图、周报三处共用，
+  保存 / 分享 / 朋友圈的逻辑都在里面，调用方只给 `blob` + 文件名。别再在页面里写第二套保存逻辑。
+- 周报分享图：字间小院沿用 `renderWeeklyReportShareImage`，星图 / 放映厅在 `weekly/share-images.ts`
+  （1080×1920，颜色写死 —— 图离开 App 没有主题可跟）。图上用第一人称「我」，
+  ⚠️ **不画「这周忘了的词」**：那是给自己看的，晒出去的图不该带。两张图的纵向排布在文件里按
+  y 坐标写了预算注释，加东西先改预算，不然会叠（第一版关键词压在月亮上、高光压在底部那块上）。
+  放映厅的 REC 红点要在**设了字体之后**再 `measureText`，`restore()` 会把字体退回默认。
+
+### ⚠️ 微信：没有 OpenSDK，所谓「一键」是这两条
+
+App 里没有接微信 OpenSDK（没有开放平台移动应用 AppID、Universal Link 和原生桥，
+和微信登录是同一组前置条件，清单在 `docs/WECHAT_APP_LOGIN.md`）。现在能做到的：
+
+| 按钮 | 实际做的 |
+|---|---|
+| 发给微信好友 | 系统分享面板（`@capacitor/share`），微信在面板里，用户点微信再挑人 |
+| 发到朋友圈 | 先存相册，再 `location.href = "weixin://"` 打开微信，面板上提示「在朋友圈点相机，选刚存的这张」 |
+
+- `weixin://` 能打开是因为 Capacitor 的 `WebViewDelegationHandler` 把非本 App 的顶层导航交给
+  `UIApplication.shared.open`；我们不调 `canOpenURL`，所以**不用**在 Info.plist 登记
+  `LSApplicationQueriesSchemes`。没装微信时这一步静默失败，图已经存好了。
+- 只在原生端显示这两颗绿按钮（`canOpenWechat()`）；网页版只有「保存图片 / 分享」。
+- ⚠️ **只在网页预览里看过，没在真机上点过**：iOS 相册权限弹窗、系统面板里有没有微信、
+  `weixin://` 跳转，都要真机验一遍。相册权限说明（`Info.plist`）已改成「打卡、词汇量、周报的分享图」。
+- 真正的一键直发（`WXApi sendReq` 到会话 / 朋友圈）要等 OpenSDK 接上，到时候只改 `share-image.ts`
+  的 `postToWechatMoments` 和面板里那两颗按钮，调用方不用动。
+
+### 空库时的模拟周报（只在开发环境）
+
+周报要有真实作答才生成，Claude 自己起的 5199 验证服务器是空库，看不到周报。
+`reload()` 里 `import.meta.env.DEV && 没有任何一期` 时动态加载 `weekly/mock-report.ts`，
+顶上挂一枚红色「模拟数据 · 仅开发预览」。模拟那期**不标已读、不发观测事件、不给「去复习」**
+（词 id 是负数，点进去会查不到）。生产构建靠 DEV 常量整段摇掉 —— 2026-09-24 查过 `dist/`，
+没有 mock 的代码。别把这个条件改成「没数据就给模拟」：线上新用户会看到一份假周报。
+
+### 0924 原画
+
+`scripts/brand-sheet/cut-0924.sh`，源图在 `~/收集日/未命名文件夹/`（作者本机，不进仓库），
+**排在 `cut-v2.sh`、`cut-hires.sh` 之后跑**（同名覆盖 `icon-vocab` / `icon-kanji-readings`）。
+裁出来的：组队场景 `scene-team`…`-8`、柚子商店的声音 / 音效 / 补签四张、主页工具格的
+选词 / 一字多音 / 汉字选择 / 柚子商店图标、走法 8 帧 `roll-strip.png`（`strip.mjs` 现在收前缀和帧数）。
+
+- 功能图标有日文和拼音两版，用的是日文版（`70485e6d`）；拼音版 `044f5ae3` 没用。
+- 「扩展视觉提案」那张（`945b61f9`）每格太小，只能当方向参考，没裁。
+- ⚠️ **走法那 8 帧裁好了但商品还是 `soon`**：要卖得先让小路（`SquirrelTrail` / `CapybaraWalk`）
+  按装备换 sprite，并在 yuzu 的装备槽里加这一类。现在只把商品图换成了 `roll-frame`。
+- 小程序的周报和分享**没跟着改**。
