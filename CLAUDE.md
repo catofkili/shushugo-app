@@ -408,7 +408,23 @@ DOM + 编译后的 CSS（Tailwind 产物 + `app.css` / `design.css` / `styles.cs
 已知要手改的只有 WXSS 不认的选择器（`:has()`、挂在 `html` 上的 `[data-theme]` / `[data-skin]` 要改挂页面根节点）、
 `position:fixed` 与原生 tabBar 的关系、`<canvas>` 画的东西（分享图、圆环）。**不要再「照网页的意思重写一版」**。
 
-`miniprogram-parity-20260924` 分支的逐项取舍记在 `docs/WECHAT_WEB_PARITY_PLAN.md` 顶部。
+下一步怎么做见 `docs/MINIPROGRAM_SYNC_PLAN.md`（Codex 写的 `WECHAT_WEB_PARITY_PLAN.md` 按「逐页重写」估了 20–40 个工作日，
+2026-09-25 删掉了；其中「主要功能一致」那条规则上面已有，parity 分支里还能取用的东西列在新计划的路线 B 里）。
+
+### 旧工作目录和分支都归档在 `refs/archive/*`（2026-09-25）
+
+那天把 21 个 worktree（`~/.codex/worktrees/*`、`.claude/worktrees/*`、`~/Documents/日语学习/开发中/shushugo-data-sync-fix-20260917`）
+全部删了：每个先把未提交的改动连同未跟踪文件提交成一个快照，挂在 `refs/archive/worktree/<名字>` 上再删。
+这些 ref **不出现在 `git branch` 里，但随时能取回**：
+
+```bash
+git for-each-ref refs/archive                       # 列出全部
+git show refs/archive/worktree/level-plan --stat     # 看某一个快照改了什么
+git worktree add /tmp/x refs/archive/worktree/level-plan   # 需要时再展开成目录
+```
+
+绝大多数是已经合进 main 的旧副本（main 上是更新的版本），归档只是为了「万一有漏的」能找回。
+⚠️ 以后**不要再从这些快照里整份拷文件回 main** —— 它们基于旧提交，整份拷回等于回退。要用就按文件看差异、只取缺的那一处。
 
 - 新功能进小程序：先看能不能加进 `entry.ts`。不能（碰 DOM、带出厂内容 JSON）才 shim，shim 只做
   平台替换，不改判据。

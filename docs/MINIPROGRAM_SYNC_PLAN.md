@@ -67,7 +67,7 @@
 1. **能自动生成的都自动生成，不许手抄**
    - 颜色、圆角、字号这些设计变量：构建脚本从 `frontend/src/design.css` 的 `:root` / 主题段落生成
      `wechat-miniprogram/src/styles/tokens.wxss`，小程序页面只引用变量。改网页配色 = 改小程序配色。
-   - 贴纸、图标：构建脚本从 `frontend/public/brand/` 压缩拷贝到小程序（参考 parity 分支 `3480ac0` 里的 `src/assets/home/*.webp`）。
+   - 贴纸、图标：构建脚本从 `frontend/public/brand/` 压缩拷贝到小程序（Codex 09-24 压过一份，在 `refs/archive/worktree/miniprogram-parity-20260924` 的 `wechat-miniprogram/src/assets/home/*.webp`）。
    - 业务逻辑：已经是 `web.js`，保持。
 
 2. **页面对照表 + 提交闸门**
@@ -81,6 +81,14 @@
    - `scripts/parity-screenshots.mjs`：用同一份种子库，Playwright 按 375×812 截网页，
      `miniprogram-automator` 截开发者工具里的同一页，拼成左右对照的 HTML 报告。
    - AI 改完必须自己看这份报告，把它附在回复里，再说完成。
+
+Codex 09-24 逐页手写的那一版（`refs/archive/worktree/miniprogram-parity-20260924`）只在走路线 B 时有一点用，
+而且只能取「数据怎么接」的部分，**页面的 WXML/WXSS 和那十来个 `*-page-smoke` 一律不要**：
+快速复习 / 合并重复词条 / 一键完成 / 学习计时在 `runtime/learning.js` 的转发，`backup.js` 合并前恢复点，
+`database-store.resetToSeed`，`auth.js` 多存的账号字段（都登记成了设备本地键，不上云），语法详情投影
+`features/content/grammar-details.js`，`frontend/src/lib/grammar-mastery.ts`，`confusion-groups.ts` 新导出的三个函数
+（⚠️ 抽出来时把 `ConfusionPage.tsx` 里说明「为什么」的注释丢了，取的时候一起搬回来）。
+走路线 A 就全部用不上：页面直接调 `frontend/src/lib`，不需要这层转发。
 
 移植方法照 CLAUDE.md 那节复盘：**搬网页渲染出来的 DOM 和编译后的 CSS**
 （`div→view`、`span/p→text`、`img→image`、`className→class`、`{cond && …}→wx:if`、`.map→wx:for`、`onClick→bindtap`，
