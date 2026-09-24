@@ -1116,8 +1116,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const isReversePhase = phase === "stage2";
   const isKanjiPhase = phase === "kanji";
   const isUnitKanji = isKanjiPhase && Boolean(unitTarget);
-  // 翻面前、而且答案区没有要摆的东西（汉字读音题翻面前就要摆遮住的词）：题面独占这一屏
-  const showBarePrompt = !revealed && !isKanjiPhase;
   // 顶栏按钮和答案区那一行入口共用这一份 —— 两处从来就该是同一件事。
   // 反向/汉字模式不给：那两个模式的题面本身就是中文或汉字，摆出同义词等于送答案。
   const distinctions = useMemo(
@@ -1687,13 +1685,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
             {/* 手机端题目框尽量压扁:题目通常就几个字,省下的高度让给答案区(长题目仍由内层 max-h 滚动)。
                 「题目」这个标签在手机上省掉 —— 顶上那个框是题目本来就一目了然。 */}
-            {/* 翻面前题面就是这一屏的全部内容：撑满、放大、不画框 —— 以前是一行小字挤在顶上，
-                底下一个大空框写着「答案已隐藏」，最大的字是一句废话。翻面后才收成压扁的一条，把高度让给答案。 */}
-            <div className={`word-prompt grid min-h-0 place-items-center text-center lg:mx-auto lg:w-[min(900px,100%)] ${
-              showBarePrompt
-                ? "is-bare flex-1 px-3 py-6"
-                : "shrink-0 rounded-2xl border border-white/15 bg-[#464949] px-3 py-2 sm:min-h-28 sm:p-4 lg:min-h-36 lg:p-6"
-            }`}>
+            <div className="grid min-h-0 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#464949] px-3 py-2 text-center sm:min-h-28 sm:p-4 lg:mx-auto lg:min-h-36 lg:w-[min(900px,100%)] lg:p-6">
               <div className="w-full">
                 {/* 等级/词性挪到题目面,并且放在滚动区外面 —— 释义有长到要滚的
                     (「…的省略语；super超,上,高级,超级」这种),标签不能跟着滚没。 */}
@@ -1723,7 +1715,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                     </span>
                   )}
                 </div>
-                <div data-word-scrollable="true" className={`w-full overflow-y-auto px-1 ${showBarePrompt ? "max-h-[40vh]" : "max-h-24 sm:max-h-28"}`}>
+                <div data-word-scrollable="true" className="max-h-24 w-full overflow-y-auto px-1 sm:max-h-28">
                   {isUnitKanji ? (
                     <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{unitTarget?.text}</p>
                   ) : isReversePhase ? (
@@ -1732,7 +1724,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                       <ReadingLine card={card} className="jp mt-1 text-xl text-white/72 sm:text-2xl lg:text-3xl" />
                     </>
                   ) : (
-                    <p className={`break-words font-semibold leading-snug ${showBarePrompt ? "text-[32px] sm:text-5xl" : "text-xl sm:text-3xl lg:text-4xl"}`}>
+                    <p className="break-words text-xl font-semibold leading-snug sm:text-3xl lg:text-4xl">
                       {card.questionMeaning || card.meaning}
                     </p>
                   )}
@@ -1740,7 +1732,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               </div>
             </div>
 
-            {!showBarePrompt && <div data-word-scrollable="true" className="word-answer grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(1040px,100%)] lg:p-10">
+            <div data-word-scrollable="true" className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(1040px,100%)] lg:p-10">
               {revealed ? (
                 <div className="zoo-reveal-in w-full min-w-0">
                   {isReversePhase ? (
@@ -1925,8 +1917,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                   />
                   <p className="mt-5 text-sm font-semibold text-white/52">点一下，显示汉字读音</p>
                 </div>
-              ) : null}
-            </div>}
+              ) : (
+                <div>
+                  <p className="text-2xl font-semibold text-white/70">答案已隐藏</p>
+                  <p className="mt-3 text-sm text-white/55">{isReversePhase ? "先回忆中文释义" : "先回忆假名和汉字"}</p>
+                </div>
+              )}
+            </div>
 
             <div className="relative h-16 lg:mx-auto lg:w-[min(900px,100%)]">
               {reliefActive ? (
