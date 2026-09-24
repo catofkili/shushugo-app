@@ -285,3 +285,11 @@ html[data-motion="off"] .wr-experience,html[data-motion="reduced"] .wr-experienc
 
 /* 手机长字景中，点选反馈留在被点的纸叶上，不要求先滑到底部。 */
 .wr-leaf-detail{position:absolute;bottom:34px;left:8%;right:8%;font:11px/1.5 -apple-system,"PingFang SC",sans-serif;animation:wr-text-in .45s both}
+
+/* 版式切换（2026-09-24，三套并排比较用；选定后连同 .wr-variant-* 的另外两套一起删） */
+.wr-header-tools{display:flex;align-items:center;gap:8px;flex:none}
+/* 多了切换键之后窄屏放不下：日期那颗让出空间，但不许折成两行 */
+.wr-variant-stars .wr-week-picker,.wr-variant-film .wr-week-picker,.wr-variant-garden .wr-week-picker{min-width:0;white-space:nowrap;gap:4px;padding-inline:4px}
+@media(max-width:420px){.wr-experience-header{gap:6px}.wr-variant-switch{padding:0 9px;font-size:11px!important}.wr-week-picker i{margin-inline:2px}}
+.wr-variant-switch{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 11px;white-space:nowrap;flex:none;border:1px solid var(--wr-line);border-radius:999px;background:color-mix(in srgb,var(--wr-bg) 70%,transparent);color:var(--wr-fg);font-size:12px!important;font-weight:700}
+.wr-variant-switch:active{transform:scale(.95)}

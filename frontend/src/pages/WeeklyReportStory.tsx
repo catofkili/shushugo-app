@@ -10,12 +10,12 @@ export const weeklyChapters = (report: WeeklyReport | null) => [
   ...(report?.revisitWords.length ? [{ id: "revisit", label: "再见一面" }] : []),
   { id: "end", label: "留给下周" }
 ];
-const number = (value: number) => value.toLocaleString("zh-CN");
-const weekday = (date: string) => ["日", "一", "二", "三", "四", "五", "六"][new Date(`${date}T12:00:00`).getDay()] ?? "";
+export const number = (value: number) => value.toLocaleString("zh-CN");
+export const weekday = (date: string) => ["日", "一", "二", "三", "四", "五", "六"][new Date(`${date}T12:00:00`).getDay()] ?? "";
 const style = (index: number, extra: Record<string, string | number> = {}) => ({ "--i": index, ...extra } as CSSProperties);
 
 /** 数字动画只在当前场景播放；离场副本直接显示最终数字，避免回到 0。读屏也始终读最终值。 */
-function Count({ value, animate }: { value: number; animate: boolean }) {
+export function Count({ value, animate }: { value: number; animate: boolean }) {
   const displayed = useCountUp(animate ? value : 0);
   return <><span aria-hidden="true">{number(animate ? displayed : value)}</span><span className="wr-sr-only">{number(value)}</span></>;
 }

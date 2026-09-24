@@ -1,0 +1,161 @@
+/* 周报 · 星图版（.sa-*）。
+   ⚠️ 基础样式必须是终态，动画只负责「从起点走到终态」（fill:both）。写成「基础藏起来、动画 forwards 放出来」的话，
+   一暂停 / 一关动效，外壳把 animation 拿掉，东西就永远藏着（连线、光线第一版就是这样）。
+   外壳（翻页、手势、页脚）还是 weekly-report.css 那一套，这里只管场景。
+   规则沿用 V3 的几条踩坑约束：动效只动 transform / opacity；入场都是 `both` 填充、从「看不见」开始，
+   所以暂停 / 减少动效时（外壳会把 animation 全部拿掉）元素直接停在终态、读得到；
+   大数字由 <Count> 滚，读屏读最终值。 */
+
+/* 每一页的天色。外壳的页脚、进度点读 --wr-*，所以同一处一起给。 */
+/* ⚠️ 每一页都要把整套颜色写全：旧版几页是浅底深字（.wr-theme-effort 的 --wr-fg 是深绿），只覆盖背景的话字会变成深底深字。 */
+.weekly-report-page.wr-variant-stars.wr-theme-cover,.wr-variant-stars .wr-theme-cover{--wr-bg:#0a0f2c;--wr-fg:#f4efff;--wr-muted:#aab0d6;--wr-pop:#ffd88a;--wr-line:#ffffff2e;--sa-n1:#3b2a7a;--sa-n2:#0f3a6b}
+.weekly-report-page.wr-variant-stars.wr-theme-effort,.wr-variant-stars .wr-theme-effort{--wr-bg:#061a2b;--wr-fg:#eefcff;--wr-muted:#9fbfcc;--wr-pop:#8ff0dc;--wr-line:#ffffff2e;--sa-n1:#0d4a5a;--sa-n2:#1a2a6b}
+.weekly-report-page.wr-variant-stars.wr-theme-content,.wr-variant-stars .wr-theme-content{--wr-bg:#150b2e;--wr-fg:#f7efff;--wr-muted:#b8a9d9;--wr-pop:#ffcf70;--wr-line:#ffffff2e;--sa-n1:#5a2a7a;--sa-n2:#2a1a6b}
+.weekly-report-page.wr-variant-stars.wr-theme-keyword,.wr-variant-stars .wr-theme-keyword{--wr-bg:#0d0822;--wr-fg:#f7efff;--wr-muted:#b3a9d6;--wr-pop:#ffd88a;--wr-line:#ffffff2e;--sa-n1:#6b2a6b;--sa-n2:#2a2a8a}
+.weekly-report-page.wr-variant-stars.wr-theme-highlight,.wr-variant-stars .wr-theme-highlight{--wr-bg:#04142a;--wr-fg:#eef6ff;--wr-muted:#9fb6d6;--wr-pop:#a8dcff;--wr-line:#ffffff2e;--sa-n1:#0f3f7a;--sa-n2:#0a2a4a}
+.weekly-report-page.wr-variant-stars.wr-theme-revisit,.wr-variant-stars .wr-theme-revisit{--wr-bg:#0b1024;--wr-fg:#f4efff;--wr-muted:#aab0d6;--wr-pop:#ffe29a;--wr-line:#ffffff2e;--sa-n1:#243a6b;--sa-n2:#3a1f5a}
+.weekly-report-page.wr-variant-stars.wr-theme-end,.wr-variant-stars .wr-theme-end{--wr-bg:#05071a;--wr-fg:#f4efff;--wr-muted:#a6abd0;--wr-pop:#ffd88a;--wr-line:#ffffff2e;--sa-n1:#2a1f5a;--sa-n2:#0a2a4a}
+.wr-variant-stars{font-family:-apple-system,"PingFang SC","Hiragino Sans GB",sans-serif}
+.app-shell.is-weekly-report:has(.wr-variant-stars){background:#0a0f2c!important}
+
+.sa-story{position:relative;min-height:100svh;overflow:hidden;padding:104px 28px 112px;background:var(--wr-bg);color:var(--wr-fg);isolation:isolate}
+.sa-canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}
+/* 星云：两团模糊的颜色慢慢挪。用 transform 挪，不动 background-position（那个每帧重绘整屏）。 */
+.sa-nebula{position:absolute;inset:-20%;z-index:0;pointer-events:none;
+  background:radial-gradient(40% 35% at 25% 30%,color-mix(in srgb,var(--sa-n1) 70%,transparent),transparent 70%),radial-gradient(45% 40% at 80% 75%,color-mix(in srgb,var(--sa-n2) 70%,transparent),transparent 70%);
+  opacity:.75;animation:sa-nebula 26s ease-in-out infinite alternate}
+.sa-body{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:14px;max-width:560px;margin:0 auto}
+.sa-body.is-center{align-items:center;text-align:center}
+
+/* 逐行浮现：每行自己的 --d（秒）。 */
+.sa-kicker,.sa-range,.sa-title>span,.sa-line,.sa-fine,.sa-mega,.sa-keyword,.sa-date,.sa-planet,.sa-orbit-wrap,.sa-sleep,.sa-actions,.sa-cta,.sa-wordstar{animation:sa-rise 1s var(--d,0s) cubic-bezier(.22,1,.36,1) both}
+.sa-kicker{margin:0;color:var(--wr-pop);font-size:13px;font-weight:700;letter-spacing:.14em}
+.sa-range{margin:0;color:var(--wr-muted);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.sa-title{margin:10px 0 0;font-size:clamp(34px,9vw,56px);font-weight:900;line-height:1.2;letter-spacing:-.01em}
+.sa-title.is-small{font-size:clamp(26px,7vw,40px);margin:0}
+.sa-title>span{display:block}
+.sa-num{display:inline-block;color:var(--wr-pop);font-size:1.5em;line-height:1;text-shadow:0 0 28px color-mix(in srgb,var(--wr-pop) 60%,transparent);font-variant-numeric:tabular-nums;animation:sa-pulse 3.2s 2s ease-in-out infinite}
+.sa-line{margin:0;color:var(--wr-fg);font-size:17px;line-height:1.75;opacity:.92;text-wrap:pretty}
+.sa-line b{color:var(--wr-pop);font-size:1.15em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sa-fine{margin:0;color:var(--wr-muted);font-size:13px;line-height:1.7;text-wrap:pretty}
+
+/* 封面：北斗七星。body 撑满一屏，北斗用 margin-block:auto 落在标题和结语之间的正中 */
+.sa-cover .sa-body,.sa-highlight .sa-body{min-height:calc(100svh - 216px)}
+.sa-cover .sa-dipper{margin-block:auto}
+.sa-highlight .sa-body{justify-content:center}
+.sa-dipper{width:100%;max-width:480px;margin:26px 0 6px;overflow:visible}
+.sa-dipper-link{stroke:color-mix(in srgb,var(--wr-fg) 22%,transparent);stroke-width:1;stroke-dasharray:1;animation:sa-draw 1.1s var(--d,0s) ease-out both}
+.sa-dipper-link:not(.is-lit){stroke-dasharray:none;opacity:.55;animation:sa-fade-dim .8s var(--d,0s) both}
+.sa-dipper-link.is-lit{stroke:color-mix(in srgb,var(--wr-pop) 70%,transparent);stroke-width:1.4}
+.sa-dipper-star{animation:sa-pop .7s var(--d,0s) cubic-bezier(.34,1.6,.5,1) both}
+.sa-dipper-star circle:last-of-type{fill:color-mix(in srgb,var(--wr-fg) 35%,transparent)}
+.sa-dipper-star.is-lit circle:last-of-type{fill:#fff6de}
+.sa-dipper-star.is-lit circle:first-of-type{animation:sa-twinkle 2.6s calc(var(--d,0s) + 1s) ease-in-out infinite alternate}
+.sa-dipper-star text{fill:var(--wr-muted);font-size:11px;font-weight:700}
+.sa-dipper-star.is-lit text{fill:var(--wr-pop)}
+
+/* 时间：七道光 + 中间的数 */
+.sa-orbit-wrap{position:relative;width:min(92vw,380px);aspect-ratio:1;margin:4px auto 0;align-self:center}
+.sa-rays{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.sa-rays-orbit{fill:none;stroke:color-mix(in srgb,var(--wr-fg) 12%,transparent);stroke-dasharray:2 7;transform-origin:160px 160px;animation:sa-spin 90s linear infinite}
+.sa-rays-orbit.is-inner{stroke-dasharray:1 5;animation-direction:reverse;animation-duration:60s}
+.sa-ray line{stroke:color-mix(in srgb,var(--wr-pop) 70%,transparent);stroke-width:5;stroke-linecap:round;stroke-dasharray:1;animation:sa-draw 1s var(--d,0s) cubic-bezier(.22,1,.36,1) both}
+.sa-ray.is-peak line{stroke:var(--wr-pop);stroke-width:7;filter:drop-shadow(0 0 6px var(--wr-pop))}
+.sa-ray.is-empty line{stroke:color-mix(in srgb,var(--wr-fg) 18%,transparent);stroke-width:3}
+.sa-ray text{fill:var(--wr-muted);font-size:12px;font-weight:700;animation:sa-fade .6s calc(var(--d,0s) + .5s) both}
+.sa-ray.is-peak text{fill:var(--wr-pop)}
+.sa-orb{position:absolute;left:50%;top:50%;display:grid;place-items:center;width:34%;aspect-ratio:1;border-radius:50%;translate:-50% -50%;
+  background:radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--wr-pop) 45%,#fff),color-mix(in srgb,var(--wr-pop) 30%,transparent) 55%,transparent 72%);
+  box-shadow:0 0 60px color-mix(in srgb,var(--wr-pop) 45%,transparent);animation:sa-breathe 4s ease-in-out infinite alternate}
+.sa-orb>b{align-self:end;color:#10213a;font-size:clamp(34px,11vw,52px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.sa-orb>span{align-self:start;color:#10213acc;font-size:13px;font-weight:800}
+
+/* 大数（新星 / 累计词）。⚠️ 一律写子选择器 `>`：大数里面是 <Count>，它自己渲染两个 <span>，
+   写成 `.sa-mega span` 会把数字本身也缩成 18px 的小字（第一版就是这样）。 */
+.sa-mega{display:flex;flex-direction:column;align-items:center;margin:18vh 0 4px}
+.sa-end .sa-mega{margin-top:4vh}
+.sa-end .sa-sleep{margin-top:40px}
+.sa-mega>b{color:var(--wr-fg);font-size:clamp(76px,24vw,150px);font-weight:900;line-height:.95;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 40px color-mix(in srgb,var(--wr-pop) 55%,transparent),0 0 2px #fff}
+.sa-mega>span{margin-top:8px;color:var(--wr-pop);font-size:18px;font-weight:800;letter-spacing:.2em}
+.sa-planets{display:flex;align-items:flex-end;justify-content:center;gap:clamp(12px,5vw,32px);margin:22px 0 4px}
+.sa-planet{display:flex;flex-direction:column;align-items:center;gap:6px}
+.sa-planet>i{position:relative;display:block;width:var(--size);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff8,color-mix(in srgb,var(--wr-pop) 55%,var(--sa-n1)) 45%,var(--sa-n1) 100%);box-shadow:0 0 30px color-mix(in srgb,var(--wr-pop) 30%,transparent)}
+.sa-planet i::after{content:"";position:absolute;inset:-18% -32%;border:1.5px solid color-mix(in srgb,var(--wr-fg) 30%,transparent);border-radius:50%;transform:rotate(-18deg) scaleY(.32);animation:sa-ring 7s linear infinite}
+.sa-planet>b{color:var(--wr-fg);font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.sa-planet>span{color:var(--wr-muted);font-size:12px;font-weight:700}
+
+/* 本周的你 */
+.sa-halo{position:absolute;left:50%;top:44%;width:min(96vw,520px);aspect-ratio:1;translate:-50% -50%;pointer-events:none}
+.sa-halo i{position:absolute;inset:0;border:1px dashed color-mix(in srgb,var(--wr-pop) 35%,transparent);border-radius:50%;animation:sa-spin 40s linear infinite}
+.sa-halo i:nth-child(2){inset:12%;border-style:solid;border-color:color-mix(in srgb,var(--wr-fg) 12%,transparent);animation-duration:26s;animation-direction:reverse}
+.sa-halo i:nth-child(3){inset:24%;border-style:dotted;animation-duration:18s}
+.sa-body.is-center:has(.sa-keyword){min-height:calc(100svh - 216px);justify-content:center}
+.sa-keyword{margin:4px 0 6px;font-size:clamp(56px,17vw,108px);font-weight:900;line-height:1.1;letter-spacing:.02em;
+  background:linear-gradient(100deg,#ffd88a 0%,#fff 22%,#c9b6ff 44%,#8ff0dc 66%,#ffd88a 88%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 24px #ffd88a55);animation:sa-reveal 1.4s var(--d,0s) cubic-bezier(.22,1,.36,1) both,sa-shimmer 6s 2.4s linear infinite}
+
+/* 流星那天 */
+.sa-date{display:flex;align-items:baseline;gap:14px;margin:8vh 0 6px;color:var(--wr-fg);font-size:clamp(90px,28vw,168px);font-weight:900;line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 50px color-mix(in srgb,var(--wr-pop) 60%,transparent)}
+.sa-date>small{color:var(--wr-pop);font-size:22px;letter-spacing:.1em}
+
+/* 暗星 */
+.sa-wordfield{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 24px;max-width:620px;margin:20px 0 4px;padding:0 4px}
+/* ⚠️ 错落和明暗都不能写在按钮本身上：入场动画 sa-rise 以 fill:both 停在 translate 0 / opacity 1，会把它们盖掉。
+   错落用 margin-top，明暗给到里面的点和字。 */
+.sa-wordstar{display:inline-flex;flex-direction:column;align-items:center;gap:8px;min-width:64px;margin-top:var(--lift,0px);padding:6px 4px;border:0;background:none;color:var(--wr-fg);transition:transform .5s cubic-bezier(.34,1.6,.5,1)}
+.sa-wordstar>i,.sa-wordstar>b{opacity:var(--dim);transition:opacity .5s}
+.sa-wordstar.is-lit>i,.sa-wordstar.is-lit>b{opacity:1}
+.sa-wordstar i{display:block;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 10px 2px color-mix(in srgb,var(--wr-pop) 50%,transparent);animation:sa-twinkle 2.4s ease-in-out infinite alternate}
+.sa-wordstar b{font-size:clamp(20px,5.6vw,26px);font-weight:700;letter-spacing:.02em}
+.sa-wordstar.is-lit{opacity:1;transform:scale(1.12)}
+.sa-wordstar.is-lit i{width:16px;height:16px;background:#fff6de;box-shadow:0 0 22px 8px color-mix(in srgb,var(--wr-pop) 70%,transparent)}
+.sa-wordstar.is-lit b{color:var(--wr-pop);text-shadow:0 0 18px color-mix(in srgb,var(--wr-pop) 60%,transparent)}
+.sa-caption{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 14px;min-height:44px;margin:4px 0;color:var(--wr-muted);font-size:14px}
+.sa-caption b{color:var(--wr-fg)}
+
+/* 晚安 */
+.sa-sleep{position:relative;display:flex;flex-direction:column;align-items:center;margin-top:24px}
+.sa-moon{position:absolute;top:-40px;right:-54px;width:54px;height:54px;border-radius:50%;box-shadow:-12px 8px 0 0 #fff2c4;rotate:-20deg;filter:drop-shadow(0 0 14px #fff2c488);animation:sa-bob 5s ease-in-out infinite alternate}
+.sa-sleep img{filter:drop-shadow(0 10px 22px #0008) brightness(.92)}
+.sa-bubble{position:absolute;top:-8px;left:-86px;padding:6px 12px;border-radius:14px 14px 4px 14px;background:#f4efff;color:#1c1b3a;font-size:13px;font-weight:800;white-space:nowrap;animation:sa-bob 4s ease-in-out infinite alternate}
+.sa-actions{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:20px}
+
+.sa-cta{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;margin-top:6px;padding:0 26px;border:0;border-radius:999px;overflow:hidden;
+  background:linear-gradient(120deg,#ffd88a,#ffeec2);color:#1b1640;font-size:16px!important;font-weight:900;box-shadow:0 0 30px #ffd88a55}
+.sa-cta::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,#fff9 50%,transparent 70%);transform:translateX(-120%);animation:sa-sheen 3.4s 1.5s ease-in-out infinite}
+.sa-cta:active{transform:scale(.97)}
+.sa-link{display:inline-flex;align-items:center;gap:4px;min-height:44px;border:0;padding:0 6px;background:none;color:var(--wr-fg);font-size:14px!important;text-decoration:underline;text-underline-offset:5px}
+
+/* 翻页：星图的转场是「往前飞」—— 新页从远处放大进来，旧页冲过镜头散掉 */
+.wr-variant-stars .wr-stage{animation-name:sa-zoom-in;animation-duration:1s}
+.wr-variant-stars .weekly-report-reader[data-dir="-1"] .wr-stage{animation-name:sa-zoom-in-back}
+.wr-variant-stars .wr-outgoing{animation-name:sa-zoom-out;animation-duration:.8s}
+.wr-variant-stars .weekly-report-reader[data-dir="-1"] .wr-outgoing{animation-name:sa-zoom-out-back}
+
+@keyframes sa-rise{from{opacity:0;translate:0 26px}to{opacity:1;translate:0 0}}
+@keyframes sa-reveal{from{opacity:0;scale:.6;letter-spacing:.5em}to{opacity:1;scale:1;letter-spacing:.02em}}
+@keyframes sa-fade{from{opacity:0}to{opacity:1}}
+@keyframes sa-fade-dim{from{opacity:0}to{opacity:.55}}
+@keyframes sa-pop{from{opacity:0;scale:0}to{opacity:1;scale:1}}
+@keyframes sa-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes sa-twinkle{from{opacity:.55}to{opacity:1}}
+@keyframes sa-pulse{0%,100%{scale:1}50%{scale:1.06}}
+@keyframes sa-breathe{from{scale:.96}to{scale:1.04}}
+@keyframes sa-spin{to{rotate:360deg}}
+@keyframes sa-ring{to{rotate:342deg}}
+@keyframes sa-shimmer{to{background-position:300% 0}}
+@keyframes sa-sheen{0%{transform:translateX(-120%)}60%,100%{transform:translateX(120%)}}
+@keyframes sa-bob{from{translate:0 0}to{translate:0 -8px}}
+@keyframes sa-nebula{from{transform:translate3d(-3%,-2%,0) rotate(-4deg)}to{transform:translate3d(4%,3%,0) rotate(5deg)}}
+@keyframes sa-zoom-in{from{opacity:0;transform:scale(.72)}to{opacity:1;transform:none}}
+@keyframes sa-zoom-in-back{from{opacity:0;transform:scale(1.3)}to{opacity:1;transform:none}}
+@keyframes sa-zoom-out{from{opacity:1;transform:none}to{opacity:0;transform:scale(1.35)}}
+@keyframes sa-zoom-out-back{from{opacity:1;transform:none}to{opacity:0;transform:scale(.7)}}
+
+@media(min-width:801px){
+  .sa-story{padding:120px 48px 120px}
+  .sa-mega{margin-top:14vh}
+}

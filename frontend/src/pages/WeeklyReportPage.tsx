@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { flushSync } from "react-dom";
 import { jsMotionAllowed } from "../lib/studyPreferences";
-import { AlertTriangle, ArrowLeft, ChevronDown, X, Sparkles, Pause, Play } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ChevronDown, X, Sparkles, Pause, Play, Palette } from "lucide-react";
 import {
   generateLatestWeeklyReport,
   listWeeklyReports,
@@ -12,8 +12,12 @@ import {
   type WeeklyReportSnapshot
 } from "../lib/analytics/weekly-reports";
 import { recordWeeklyReportEvent, type WeeklyReportEntry } from "../lib/analytics/weekly-report-events";
-import { WeeklyReportStory, weeklyChapters } from "./WeeklyReportStory";
+// ⚠️ 旧版样式要先于两个新版式的 css 引入：同优先级时后引入的赢，新版的配色得压过旧版。
 import "./weekly-report.css";
+import { WeeklyReportStory } from "./WeeklyReportStory";
+import { StarAtlasStory } from "./weekly/StarAtlasStory";
+import { FilmStory } from "./weekly/FilmStory";
+import { WEEKLY_VARIANTS, chaptersFor, loadWeeklyVariant, saveWeeklyVariant, type WeeklyVariant } from "./weekly/variants";
 import { requestFullSnapshot, saveDatabase } from "../lib/storage";
 import { renderWeeklyReportShareImage, type WeeklyReportShareImage } from "../lib/weekly-report-share";
 import { saveImageToGallery, shareImage } from "../lib/share-image";
@@ -31,6 +35,9 @@ interface WeeklyReportPageProps {
   entry?: WeeklyReportEntry;
 }
 
+/** 三套版式并排，等用户选定一套（见 weekly/variants.ts）。三者接口一致，外壳只管翻页和手势。 */
+const STORIES: Record<WeeklyVariant, typeof WeeklyReportStory> = { garden: WeeklyReportStory, stars: StarAtlasStory, film: FilmStory };
+
 export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRequirePro, onReviewWords, entry = "button" }: WeeklyReportPageProps) {
   const [reports, setReports] = useState<WeeklyReportSnapshot[]>([]);
   const [selectedStart, setSelectedStart] = useState<string | null>(initialWeekStart);
@@ -46,7 +53,8 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
   const dragRef = useRef<{ x:number; y:number; at:number; id:number; axis:"page"|"week"; locked:boolean } | null>(null);
   const suppressClickRef = useRef(false);
   const lastTurnRef = useRef(0);
-  const [outgoing, setOutgoing] = useState<{report: WeeklyReportSnapshot["report"]; chapter:string} | null>(null);
+  const [outgoing, setOutgoing] = useState<{report: WeeklyReportSnapshot["report"]; chapter:string; variant:WeeklyVariant} | null>(null);
+  const [variant, setVariant] = useState<WeeklyVariant>(loadWeeklyVariant);
   const [paused, setPaused] = useState(false);
   const [hidden, setHidden] = useState(document.hidden);
   const historyDialogRef = useRef<HTMLDialogElement | null>(null);
@@ -210,7 +218,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
     else if (!historyOpen && dialog?.open) { dialog.close(); weekPickerRef.current?.focus(); }
   }, [historyOpen]);
 
-  const chapters = weeklyChapters(selected?.report ?? null);
+  const chapters = chaptersFor(variant, selected?.report ?? null);
   const pageTotal = chapters.length;
 
   useEffect(() => {
@@ -270,10 +278,18 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
     const next = Math.max(0, Math.min(pageTotal - 1, page + delta));
     if (next === page) return;
     lastTurnRef.current = performance.now();
-    setOutgoing({report:selected.report, chapter:weeklyChapters(selected.report)[page]?.id ?? "cover"});
+    setOutgoing({report:selected.report, chapter:chapters[page]?.id ?? "cover", variant});
     setDirection(delta > 0 ? 1 : -1);
     setPage(next);
-  }, [selected, sharePreview, historyOpen, pageTotal, page]);
+  }, [selected, sharePreview, historyOpen, pageTotal, page, chapters, variant]);
+  const cycleVariant = () => {
+    const next = WEEKLY_VARIANTS[(WEEKLY_VARIANTS.findIndex((item) => item.id === variant) + 1) % WEEKLY_VARIANTS.length].id;
+    saveWeeklyVariant(next);
+    setOutgoing(null);
+    setDirection(1);
+    setVariant(next);
+    setPage(0);
+  };
   const moveWeek = useCallback((delta: number) => {
     const next = reports[selectedReportIndex + delta];
     if (!next || sharePreview || historyOpen) return;
@@ -424,21 +440,27 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
 
   const report = selected.report;
   const chapter = chapters[page]?.id ?? "cover";
+  const Story = STORIES[variant];
+  const OutgoingStory = outgoing ? STORIES[outgoing.variant] : null;
   return (
-    <div className={`weekly-report-page wr-experience wr-theme-${chapter}`} data-paused={paused || hidden ? "true" : "false"} onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); suppressClickRef.current = false; } }}>
+    <div className={`weekly-report-page wr-experience wr-variant-${variant} wr-theme-${chapter}`} data-paused={paused || hidden ? "true" : "false"} onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); suppressClickRef.current = false; } }}>
       <header className="wr-experience-header">
         <button className="wr-icon-control" onClick={onBack} aria-label="关闭回顾，回到主页"><X size={20}/></button>
         <button ref={weekPickerRef} className="wr-week-picker" aria-haspopup="dialog" aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)} onPointerDown={(event) => startDrag(event,"week")} onPointerMove={dragMove} onPointerUp={endDrag} onPointerCancel={resetDrag}>
           <span>{floorNumber}F <i> / </i> {reportWindowLabelCompact(report.window)}</span><ChevronDown size={13}/>
         </button>
-        <button className="wr-icon-control" onClick={() => setPaused(!paused)} aria-label={paused ? "播放场景动效" : "暂停场景动效"} aria-pressed={paused}>{paused ? <Play size={16}/> : <Pause size={16}/>}</button>
+        <div className="wr-header-tools">
+          {/* 三套版式并排比较用；用户选定之后连同另外两套一起删掉 */}
+          <button className="wr-variant-switch" onClick={cycleVariant} aria-label={`切换周报版式，当前：${WEEKLY_VARIANTS.find((item) => item.id === variant)?.label}`}><Palette size={14}/>{WEEKLY_VARIANTS.find((item) => item.id === variant)?.label}</button>
+          <button className="wr-icon-control" onClick={() => setPaused(!paused)} aria-label={paused ? "播放场景动效" : "暂停场景动效"} aria-pressed={paused}>{paused ? <Play size={16}/> : <Pause size={16}/>}</button>
+        </div>
       </header>
       <section ref={readerRef} className="weekly-report-reader" data-dir={direction} data-floor-dir={floorDirection} key={report.window.start} tabIndex={-1} aria-label="学习回顾，左右滑动翻篇，日期区域上下滑动切周" onPointerDown={(event)=>startDrag(event)} onPointerMove={dragMove} onPointerUp={endDrag} onPointerCancel={resetDrag}>
         <p className="wr-sr-only" role="status">第 {page+1} 篇，共 {chapters.length} 篇：{chapters[page]?.label}</p>
         <div className="wr-drag-layer">
-          {outgoing && <div className={`wr-outgoing wr-theme-${outgoing.chapter}`} aria-hidden="true" inert><WeeklyReportStory report={outgoing.report} chapter={outgoing.chapter} onBack={()=>{}} onShare={()=>{}} animate={false}/></div>}
-          <div className={`wr-stage wr-theme-${chapter}`} key={`${report.window.start}:${page}`}>
-            <WeeklyReportStory report={report} chapter={chapter} animate={!paused && !hidden} onBack={onBack} onShare={createSharePreview} onReviewWords={onReviewWords ? (ids) => {
+          {outgoing && OutgoingStory && <div className={`wr-outgoing wr-theme-${outgoing.chapter}`} aria-hidden="true" inert><OutgoingStory report={outgoing.report} chapter={outgoing.chapter} onBack={()=>{}} onShare={()=>{}} animate={false}/></div>}
+          <div className={`wr-stage wr-theme-${chapter}`} key={`${variant}:${report.window.start}:${page}`}>
+            <Story report={report} chapter={chapter} animate={!paused && !hidden} onBack={onBack} onShare={createSharePreview} onReviewWords={onReviewWords ? (ids) => {
               recordWeeklyReportEvent({kind:"review_added",weekStart:report.window.start,at:Date.now()});
               onReviewWords(ids);
             } : undefined}/>
