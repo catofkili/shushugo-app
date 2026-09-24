@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
 // 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
-import { Citrus, Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal } from "lucide-react";
+import { Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import { getStudyPreferences, kanaGatePending, PREFERENCES_EVENT } from "../lib/studyPreferences";
@@ -297,8 +297,9 @@ export function ZooHome({
           <button className="zoo-duo-cell" onClick={() => onNavigate("team")}>
             <span className="zoo-duo-kick">组队</span>
             <b>和队友一起学</b>
+            {/* 原来是 🙂🐿️🐼🐧 四个 emoji 排成一排，换成作者画的组队头图（和组队页头图同一张） */}
             <small className="zoo-duo-avatars">
-              <i>🙂</i><i>🐿️</i><i>🐼</i><i>🐧</i>
+              <Sticker name="scene-team" size={34} className="zoo-duo-team" />
               <em>创建、加入或邀请学习队伍</em>
             </small>
           </button>
@@ -339,9 +340,8 @@ export function ZooHome({
             <span aria-hidden="true"><Sticker name="icon-stats" size={36} /></span>
             <b>查词汇量</b>
           </button>
-          {/* 第八格。图标是占位(lucide Citrus),等作者出 icon-shop 贴图后换成 Sticker */}
           <button onClick={() => onNavigate("yuzu-shop")}>
-            <span aria-hidden="true"><Citrus size={30} /></span>
+            <span aria-hidden="true"><Sticker name="icon-shop" size={36} /></span>
             <b>柚子商店</b>
           </button>
         </div>

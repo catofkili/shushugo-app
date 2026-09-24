@@ -184,7 +184,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
           <h1>一起学，会走得更远</h1>
           <p>分享今天的脚步，给认真学习的队友加油</p>
         </div>
-        <Sticker name="scene-reading" size={96} className="zoo-tm-hero-art" />
+        <Sticker name="scene-team" size={96} className="zoo-tm-hero-art" />
         {!loading && (
           <button className="zoo-tm-refresh" disabled={Boolean(busy)} onClick={refreshPage}>
             <RefreshCw size={13} aria-hidden="true" /> 刷新

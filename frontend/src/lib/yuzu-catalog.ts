@@ -50,11 +50,11 @@ export const YUZU_ITEMS: YuzuItem[] = [
   { id: "mascot-croc", name: "鳄鱼", description: "换一只鳄鱼:表情、页面图标、空状态插画整套换。小路上走的还是水豚", category: "mascot", price: 3000 },
   { id: "icon-happy", name: "开心图标", description: "把 App 图标换成开心表情", category: "icon", price: 5000, soon: true, art: "mood-happy" },
   { id: "icon-study", name: "读书图标", description: "把 App 图标换成读书表情", category: "icon", price: 5000, soon: true, art: "mood-study" },
-  { id: "voice-voicevox-10", name: "雨晴はう", description: "轻快女声。切换单词发音；例句仍用默认声", category: "voice", price: 6000, art: "tool-speak" },
-  { id: "voice-voicevox-11", name: "玄野武宏", description: "沉稳男声。切换单词发音；例句仍用默认声", category: "voice", price: 6000, art: "tool-listen" },
-  { id: "sound-marimba", name: "木琴", description: "答题音换成木琴:更圆、更短", category: "sound", price: 3000, art: "bubble-great" },
-  { id: "sound-epiano", name: "电钢", description: "答题音换成电钢:带一点毛边的暖音", category: "sound", price: 3000, art: "bubble-cheer" },
-  { id: "walk-alt", name: "小路走法", description: "学习页小路上换一套走路动画", category: "misc", price: 4000, soon: true, art: "walk-frame" },
+  { id: "voice-voicevox-10", name: "雨晴はう", description: "轻快女声。切换单词发音；例句仍用默认声", category: "voice", price: 6000, art: "item-voice-female-2" },
+  { id: "voice-voicevox-11", name: "玄野武宏", description: "沉稳男声。切换单词发音；例句仍用默认声", category: "voice", price: 6000, art: "item-voice-male" },
+  { id: "sound-marimba", name: "木琴", description: "答题音换成木琴:更圆、更短", category: "sound", price: 3000, art: "item-sound-marimba-2" },
+  { id: "sound-epiano", name: "电钢", description: "答题音换成电钢:带一点毛边的暖音", category: "sound", price: 3000, art: "item-sound-epiano-2" },
+  { id: "walk-alt", name: "小路走法", description: "学习页小路上换一套走路动画", category: "misc", price: 4000, soon: true, art: "roll-frame" },
   { id: "report-cover", name: "周报封面", description: "周报封面换一张", category: "misc", price: 3000, soon: true, art: "card-daily" },
   { id: "team-title", name: "队伍称号", description: "队伍称号页名字旁的专属称号", category: "misc", price: 3000, soon: true, art: "decor-set" }
 ];

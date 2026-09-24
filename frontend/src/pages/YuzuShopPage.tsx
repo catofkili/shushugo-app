@@ -27,7 +27,7 @@ const formatYuzu = (amount: number) => Math.abs(amount) >= 1000
   : String(amount);
 /** 补签不在 catalog 里(价格是算出来的、买了就消耗),页面里当一件特殊商品摆 */
 const REPAIR_ID = "repair";
-const REPAIR_ITEM: YuzuItem = { id: REPAIR_ID, name: "补签", description: `补回最近 ${YUZU.repairWindowDays} 天里断掉的一天,只算进连击。30 天内第 1/2/3 张 ${YUZU.repair.map(formatYuzu).join("/")}`, category: "misc", price: YUZU.repair[0], art: "tool-review" };
+const REPAIR_ITEM: YuzuItem = { id: REPAIR_ID, name: "补签", description: `补回最近 ${YUZU.repairWindowDays} 天里断掉的一天,只算进连击。30 天内第 1/2/3 张 ${YUZU.repair.map(formatYuzu).join("/")}`, category: "misc", price: YUZU.repair[0], art: "item-repair" };
 const CATEGORY_ICON: Record<YuzuCategory, ComponentType<LucideProps>> = {
   theme: Palette, mascot: Shirt, icon: AppWindow, voice: Mic, sound: Music, misc: Sparkles
 };

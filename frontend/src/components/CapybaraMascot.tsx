@@ -31,7 +31,14 @@ export type StickerName =
   | "bubble-cheer" | "bubble-great" | "bubble-more" | "card-daily"
   | "logo-lockup" | "splash-sleep" | "quote-splash" | "scene-onsen" | "scene-reading" | "decor-set"
   | "scene-laptop" | "scene-music" | "scene-book" | "scene-stretch"
-  | "walk-frame";
+  | "walk-frame"
+  // 2026-09-24 那批（scripts/brand-sheet/cut-0924.sh）：组队头图 8 张、商店商品图、首页三格新图标
+  | "icon-shop" | "icon-kanji-choice"
+  | "scene-team" | "scene-team-2" | "scene-team-3" | "scene-team-4" | "scene-team-5" | "scene-team-6" | "scene-team-7" | "scene-team-8"
+  | "item-repair" | "item-repair-card" | "item-repair-write" | "item-repair-cheer"
+  | "item-voice-male" | "item-voice-male-2" | "item-voice-female" | "item-voice-female-2"
+  | "item-sound-epiano" | "item-sound-epiano-2" | "item-sound-marimba" | "item-sound-marimba-2"
+  | "roll-frame";
 
 /**
  * 吉祥物皮肤（柚子商店 mascot 槽位）。每套皮肤是 `public/brand/sheet-<皮肤>/` 下**同名**的一批贴纸，
