@@ -50,6 +50,8 @@ backend/.env
 backend/sync_data.db
 
 # Database backups
+# 曾误提交到 legacy-learning-app 的个人真实学习记录库，严禁再次入库。
+/japanese_words.sqlite3
 *.db-journal
 *.sqlite3-journal
 *.db.bak_*
