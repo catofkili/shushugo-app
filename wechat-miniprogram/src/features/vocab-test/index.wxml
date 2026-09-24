@@ -6,6 +6,7 @@
       <text wx:else class="feature-title">约 {{sharedResult.estimated}} 词</text>
       <text wx:if="{{sharedResult.tooFew}}" class="feature-copy">朋友答了 {{sharedResult.answered}} 题，少于 15 题，暂不给词汇量估计。</text>
       <text wx:else class="feature-copy">区间 {{sharedResult.lower}}–{{sharedResult.upper}} · 可信度 {{sharedResult.confidence}}% · 建议从 {{sharedResult.recommendation}} 学起</text>
+      <text wx:if="{{!sharedResult.tooFew && sharedResult.scoreVersion === 1}}" class="muted">旧版计分；重测后使用较严格的答错扣分</text>
       <text class="muted">JLPT 词表覆盖范围内的抽样估计 · 仅供参考</text>
     </view>
     <view class="panel">
@@ -22,6 +23,7 @@
       <text class="feature-copy">JLPT 词表覆盖范围内的抽样估计，仅供参考。测量不改学习进度：不写 reviews、progress、FSRS 或今日计划。</text>
       <view wx:if="{{latest}}" class="latest">
         <text class="latest-number">约 {{latest.estimated}} 词</text>
+        <text wx:if="{{latest.scoreVersion === 1}}" class="muted">旧版计分；重测后使用较严格的答错扣分</text>
         <text class="muted">区间 {{latest.range}} · 可信度 {{latest.confidence}} · 建议从 {{latest.recommendation}} 学起 · {{latest.date}}</text>
       </view>
     </view>
@@ -45,7 +47,7 @@
     <view class="panel">
       <text class="panel-title">这个数是怎么算的</text>
       <view class="rules">
-        <text>· 估计 = Σ(该级词数 × 该级答对率)，答对率按四选一扣分：(对 − 错/3) ÷ 答题数。</text>
+        <text>· 四个答案 + 不认识：答对 +1，答错 −1.15，不认识或超时 0；各级得分乘以该级词数再相加。</text>
         <text>· 不认识就点「不认识」：它不扣分，也不算你蒙。真不会却硬猜，反而会同时拉低词汇量和可信度。</text>
         <text>· 可信度 = (题量 60% + 没在赶进度 40%) × (1 − 蒙的比例)。答得快不加分。</text>
         <text>· 读音题 15 秒、释义题 10 秒，超时按不认识记；切到别的页面会自动暂停。</text>
@@ -56,8 +58,13 @@
     <view class="panel" wx:if="{{history.length}}">
       <text class="panel-title">历史</text>
       <view class="history row" wx:for="{{history}}" wx:key="runId">
-        <view><text class="list-title">约 {{item.estimated}} 词</text><text class="list-sub">{{item.date}} · {{item.range}} · {{item.answered}} 题 · 用时 {{item.duration}}</text></view>
-        <text class="badge">可信度 {{item.confidence}}</text>
+        <view>
+          <text wx:if="{{item.tooFew}}" class="list-title">题太少，没出数</text>
+          <text wx:else class="list-title">约 {{item.estimated}} 词{{item.scoreVersion === 1 ? ' · 旧版' : ''}}</text>
+          <text class="list-sub">{{item.date}} · {{item.answered}} 题 · 用时 {{item.duration}}<text wx:if="{{!item.tooFew}}"> · {{item.range}}</text></text>
+        </view>
+        <text wx:if="{{!item.tooFew && item.scoreVersion === 1}}" class="badge">旧版计分</text>
+        <text wx:elif="{{!item.tooFew}}" class="badge">可信度 {{item.confidence}}</text>
       </view>
     </view>
   </block>
@@ -92,6 +99,7 @@
       <text class="feature-kicker">ESTIMATE</text>
       <text wx:if="{{result.tooFew}}" class="feature-title">答得还太少</text>
       <text wx:else class="feature-title">约 {{result.estimated}} 词</text>
+      <text wx:if="{{!result.tooFew && result.scoreVersion === 1}}" class="muted">旧版计分；重测后使用较严格的答错扣分</text>
       <text class="feature-copy" wx:if="{{result.tooFew}}">只答了 {{result.answered}} 题，少于 15 题不给数。再测一次答完整场吧。</text>
       <text class="feature-copy" wx:else>区间 {{result.lower}}–{{result.upper}}（词表共 {{result.population}} 词）· 可信度 {{result.confidence}} · 建议从 {{result.recommendation}} 学起</text>
       <text class="muted">JLPT 词表覆盖范围内的抽样估计 · 仅供参考</text>

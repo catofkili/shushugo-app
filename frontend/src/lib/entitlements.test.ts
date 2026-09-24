@@ -108,6 +108,7 @@ describe("saveEntitlements", () => {
 describe("productLabel", () => {
   it("maps product ids to labels", () => {
     expect(productLabel("shushugo_pro_monthly")).toBe("月度 Pro");
+    expect(productLabel("shushugo_pro_quarterly")).toBe("季度 Pro");
     expect(productLabel("shushugo_pro_yearly")).toBe("年度 Pro");
     expect(productLabel("shushugo_pro_lifetime")).toBe("永久 Pro");
     expect(productLabel(undefined)).toBe("免费版");

@@ -15549,6 +15549,7 @@ var monthDays = (studyDate2) => {
 var SESSION_KEY = "vocab_test_session_v1";
 var VOCAB_TEST_LEVELS = ["N5", "N4", "N3", "N2", "N1"];
 var VOCAB_TEST_QUESTION_COUNT = 60;
+var PENALTY = 1.15;
 var VOCAB_TEST_SECONDS = { reading: 15, meaning: 10 };
 var secondsForQuestion = (question) => VOCAB_TEST_SECONDS[question.kind] ?? VOCAB_TEST_SECONDS.reading;
 var DISTRACTOR_COUNT = 3;
@@ -15861,6 +15862,7 @@ var parseSession = (raw) => {
     if (!questions.length) return null;
     return {
       version: 1,
+      scoreVersion: parsed.scoreVersion === 2 ? 2 : 1,
       runId: asText(parsed.runId) || `vocab-${Date.now()}`,
       startedAt: Number(parsed.startedAt) || Date.now(),
       finishedAt: parsed.finishedAt == null ? null : Number(parsed.finishedAt),
@@ -15902,6 +15904,7 @@ var startVocabTest = (random = Math.random) => {
   if (questions.length < 10) throw new Error("\u5F53\u524D\u8BCD\u5E93\u53EF\u7528\u4E8E\u6D4B\u9A8C\u7684\u8BCD\u592A\u5C11\uFF0C\u65E0\u6CD5\u5F00\u59CB\u6D4B\u91CF\u3002");
   return saveSession({
     version: 1,
+    scoreVersion: 2,
     runId: `vocab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     startedAt: Date.now(),
     finishedAt: null,
@@ -15986,7 +15989,8 @@ var levelResult = (level, session) => {
   const wrong = rows.filter((row) => row.answerState === "wrong").length;
   const unknown = rows.filter((row) => row.answerState === "unknown").length;
   const timeout = rows.filter((row) => row.answerState === "timeout").length;
-  const score = rows.length ? clamp2((correct - wrong / 3) / rows.length, 0, 1) : null;
+  const penalty = session.scoreVersion === 2 ? PENALTY : 1 / DISTRACTOR_COUNT;
+  const score = rows.length ? clamp2((correct - wrong * penalty) / rows.length, 0, 1) : null;
   return {
     level,
     total: session.populationByLevel[level] ?? 0,
@@ -16005,12 +16009,19 @@ var getVocabTestResult = (session) => {
   const estimated = levels.reduce((sum, level) => sum + level.total * (level.rate ?? 0), 0);
   let variance = 0;
   levels.forEach((level) => {
-    if (!level.answered || level.rate == null) {
-      variance += level.total * level.total;
+    const { total, answered: answered2, rate, correct, wrong, unknown, timeout } = level;
+    if (!answered2 || rate == null) {
+      variance += total * total;
       return;
     }
-    const gamma2 = guessRate(level.wrong, level.unknown + level.timeout);
-    variance += level.total * level.total * (level.rate * (1 - level.rate) + (1 - level.rate) * gamma2 / 3) / level.answered;
+    if (session.scoreVersion === 1) {
+      const gamma2 = guessRate(wrong, unknown + timeout);
+      variance += total * total * (rate * (1 - rate) + (1 - rate) * gamma2 / DISTRACTOR_COUNT) / answered2;
+      return;
+    }
+    const sum = correct - wrong * PENALTY;
+    const squares = correct + wrong * PENALTY ** 2;
+    variance += total * total * (answered2 < 2 ? 1 : Math.max(0, squares - sum ** 2 / answered2) / (answered2 * (answered2 - 1)));
   });
   const margin = session.responses.length ? Math.ceil(1.96 * Math.sqrt(Math.max(0, variance))) : population;
   const roundedEstimate = Math.round(estimated);
@@ -16036,6 +16047,7 @@ var getVocabTestResult = (session) => {
     100
   ));
   return {
+    scoreVersion: session.scoreVersion,
     estimated: roundedEstimate,
     lower: clamp2(roundedEstimate - margin, 0, population),
     upper: clamp2(roundedEstimate + margin, 0, population),
@@ -16081,21 +16093,24 @@ var recordVocabTestRun = (session) => {
     result.upper,
     result.confidence,
     result.recommendation,
-    JSON.stringify(result.levels.map((level) => [level.level, level.rate, level.answered]))
+    session.scoreVersion === 2 ? JSON.stringify({ version: 2, levels: result.levels.map((level) => [level.level, level.rate, level.answered]) }) : JSON.stringify(result.levels.map((level) => [level.level, level.rate, level.answered]))
   ]);
   persistSoon();
 };
 var parseLevels = (raw) => {
   try {
     const parsed = JSON.parse(raw || "[]");
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map((item) => ({
+    const scoreVersion = parsed?.version === 2 ? 2 : 1;
+    const items = Array.isArray(parsed) ? parsed : parsed?.levels;
+    if (!Array.isArray(items)) return { scoreVersion, levels: [] };
+    const levels = items.map((item) => ({
       level: String(item?.[0] ?? ""),
       rate: item?.[1] == null ? null : Number(item[1]),
       answered: Number(item?.[2] ?? 0)
     })).filter((item) => item.level);
+    return { scoreVersion, levels };
   } catch {
-    return [];
+    return { scoreVersion: 1, levels: [] };
   }
 };
 var getVocabTestHistory = (limit = 20) => {
@@ -16115,7 +16130,7 @@ var getVocabTestHistory = (limit = 20) => {
     upper: Number(row.upper_bound ?? 0),
     confidence: Number(row.confidence ?? 0),
     recommendation: String(row.recommendation ?? ""),
-    levels: parseLevels(String(row.levels_json ?? ""))
+    ...parseLevels(String(row.levels_json ?? ""))
   }));
 };
 var vocabTestStorageValue = () => firstValue(

@@ -128,7 +128,9 @@ const jsonModule = (file) => HEADER + 'module.exports = ' + JSON.stringify(JSON.
 outputs.set('src/content/question-meanings.js', jsonModule('question_meaning_overrides.json'));
 outputs.set('src/content/kanji-unit-runtime.js', jsonModule('kanji_reading_unit_runtime.json'));
 outputs.set('src/content/kanji-reading-usage.js', jsonModule('kanji_reading_usage.json'));
-outputs.set('src/features/content/kanji-variants.js', jsonModule('kanji_variants.json'));
+// Keep rare CJK keys inside a string; the Mini Program compiler unquotes them into invalid identifiers.
+const kanjiVariantsJson = fs.readFileSync(path.join(data, 'kanji_variants.json'), 'utf8');
+outputs.set('src/features/content/kanji-variants.js', HEADER + 'module.exports = JSON.parse(' + JSON.stringify(kanjiVariantsJson) + ');\n');
 outputs.set('src/features/content/kanji-readings.js', jsonModule('kanji_readings.json'));
 outputs.set('src/features/content/grammar-key-points.js', jsonModule('grammar_key_points.json'));
 outputs.set('src/content/pitch-accent.js', jsonModule('pitch_accent.json'));

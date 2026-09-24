@@ -34,7 +34,12 @@
   </view>
   <button wx:if="{{pendingPayment}}" class="ghost" loading="{{busy}}" disabled="{{busy}}" bindtap="checkPendingPayment">重新确认最近一笔支付</button>
   <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="refreshEntitlement">刷新权益</button>
-  <button class="secondary" loading="{{busy}}" disabled="{{busy}}" bindtap="buyPro">购买 Pro</button>
+  <view class="card">
+    <text class="section-title">购买 Pro</text>
+    <text class="detail">月卡、季卡、年卡都是单次购买；到期后停止，不会自动扣费。已有付费 Pro 时不能重复购买期限卡，可升级永久版。</text>
+    <text wx:if="{{!auth.signedIn}}" class="detail">请先登录收集日账号，再购买并同步权益。</text>
+    <button wx:for="{{plans}}" wx:key="id" class="secondary" loading="{{busy}}" disabled="{{busy || !auth.signedIn}}" data-id="{{item.id}}" data-price-cents="{{item.priceCents}}" bindtap="buyPro">{{item.name}} · ¥{{item.priceYuan}}</button>
+  </view>
   <view class="card maintenance-card">
     <text class="section-title">数据与内容</text>
     <text class="detail">学习页面只负责学习；更新、同步、备份和恢复集中在这里。</text>

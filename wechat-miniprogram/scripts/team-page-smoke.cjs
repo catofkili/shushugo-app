@@ -246,7 +246,7 @@ const reset = ({ team = fixture(), plaza = plazaFixture() } = {}) => {
   consentVersion = 'older-version';
   const consentBlocked = page({ nickname: '小松鼠' });
   await consentBlocked.signIn();
-  assert.equal(ui.navigations.at(-1).url, '/pages/legal/index?consent=1');
+  assert.equal(ui.navigations.at(-1).url, '/pages/legal/index?consent=1&flow=team-signin');
 
   reset();
   const signedIn = page({ nickname: '小松鼠' });

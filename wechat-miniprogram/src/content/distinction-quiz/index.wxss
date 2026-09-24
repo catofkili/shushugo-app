@@ -1,2 +1,2 @@
-@import "../common.wxss";
+@import "../../features/common.wxss";
 .quiz-prompt{padding:46rpx 20rpx;text-align:center}.quiz-meaning{display:block;font-size:38rpx;font-weight:800}.quiz-hint{display:block;margin-top:12rpx;color:#8a7d70}.option{margin-top:14rpx;padding:22rpx;border-radius:20rpx;background:#f3ede3}.right{background:#dceecf;color:#315d35}.wrong{background:#f5dfd9;color:#963f36}

@@ -18,7 +18,7 @@ const env = {
   WECHAT_OFFER_ID: "1450000000",
   WECHAT_PAY_APP_KEY: "appkey-abc",
   WECHAT_PAY_ENV: "0",
-  WECHAT_PAY_PRICES: JSON.stringify({ shushugo_pro_monthly: 1200, shushugo_pro_lifetime: 12800, shushugo_pro_yearly: "bad" })
+  WECHAT_PAY_PRICES: JSON.stringify({ shushugo_pro_monthly: 1000, shushugo_pro_quarterly: 2400, shushugo_pro_yearly: 6800, shushugo_pro_lifetime: 29800, bad: "bad" })
 };
 const session = { openid: "oX", sessionKey: "sk-123" };
 
@@ -28,26 +28,36 @@ assert.equal(await paySig("k", "requestVirtualPayment", "{\"a\":1}"),
 assert.equal(await userSig("sk", "{\"a\":1}"), createHmac("sha256", "sk").update("{\"a\":1}").digest("hex"));
 
 // 价格表：非法值丢掉，不用 NaN 下单。
-assert.deepEqual(priceTable(env), { shushugo_pro_monthly: 1200, shushugo_pro_lifetime: 12800 });
+assert.deepEqual(priceTable(env), { shushugo_pro_monthly: 1000, shushugo_pro_quarterly: 2400, shushugo_pro_yearly: 6800, shushugo_pro_lifetime: 29800 });
 
 // 订单：signData 是字符串，字段齐；productId 是微信道具短名（后台限 20 字），两道签名分别对 AppKey 和 session_key。
-const order = await createOrder(env, session, "shushugo_pro_monthly", "abc123");
+const order = await createOrder(env, session, "shushugo_pro_lifetime", "abc123");
 const signData = JSON.parse(order.payload.signData);
 assert.deepEqual(signData, {
   offerId: "1450000000", buyQuantity: 1, env: 0, currencyType: "CNY",
-  productId: "pro_monthly", goodsPrice: 1200, outTradeNo: "abc123", attach: "shushugo_pro_monthly"
+  productId: "pro_lifetime", goodsPrice: 29800, outTradeNo: "abc123", attach: "shushugo_pro_lifetime"
 });
 assert.equal(order.payload.paySig, await paySig("appkey-abc", "requestVirtualPayment", order.payload.signData));
 assert.equal(order.payload.signature, await userSig("sk-123", order.payload.signData));
 assert.equal(order.payload.mode, "short_series_goods");
-await assert.rejects(createOrder(env, session, "shushugo_pro_yearly", "x"), /PRICE_NOT_CONFIGURED/);
+for (const [id, propId, price] of [
+  ["shushugo_pro_monthly", "pro_monthly", 1000],
+  ["shushugo_pro_quarterly", "pro_quarterly", 2400],
+  ["shushugo_pro_yearly", "pro_yearly", 6800]
+]) {
+  const item = await createOrder(env, session, id, "abc123");
+  assert.equal(JSON.parse(item.payload.signData).productId, propId);
+  assert.equal(item.priceCents, price);
+}
 await assert.rejects(createOrder(env, session, "shushugo_pro_gold", "x"), /UNKNOWN_PRODUCT/);
 await assert.rejects(createOrder({ ...env, WECHAT_PAY_APP_KEY: "" }, session, "shushugo_pro_monthly", "x"), /NOT_CONFIGURED/);
 
-// 到期：月 31 天、年 366 天、永久 null。
-const t0 = Date.parse("2026-09-20T00:00:00.000Z");
-assert.equal(expiresAtFor("shushugo_pro_monthly", t0), "2026-10-21T00:00:00.000Z");
-assert.equal(expiresAtFor("shushugo_pro_yearly", t0), "2027-09-21T00:00:00.000Z");
+// 到期按北京时间自然月计算，并在目标月份较短时取月末。
+const t0 = Date.parse("2026-01-31T12:34:56.000Z");
+assert.equal(expiresAtFor("shushugo_pro_monthly", t0), "2026-02-28T12:34:56.000Z");
+assert.equal(expiresAtFor("shushugo_pro_quarterly", t0), "2026-04-30T12:34:56.000Z");
+assert.equal(expiresAtFor("shushugo_pro_yearly", Date.parse("2024-02-29T12:34:56.000Z")), "2025-02-28T12:34:56.000Z");
+assert.equal(expiresAtFor("shushugo_pro_monthly", Date.parse("2026-09-30T20:00:00.000Z")), "2026-10-31T20:00:00.000Z");
 assert.equal(expiresAtFor("shushugo_pro_lifetime", t0), null);
 
 // 查单：只有 status === 2 算付了；errcode 一律没付；pay_sig 用接口路径签。

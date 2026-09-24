@@ -177,6 +177,7 @@ const useVocabShare = () => {
         totalQuestions: row.totalQuestions,
         durationSeconds: row.durationSeconds,
         confidence: row.confidence,
+        scoreVersion: row.scoreVersion,
         recommendation: row.recommendation || "N1+",
         // 早一版的记录没存各级数据，那就只画空槽，不假造
         levels: row.levels.length ? row.levels : VOCAB_TEST_LEVELS.map((level) => ({ level, rate: null, answered: 0 }))
@@ -244,6 +245,7 @@ const VocabTestHome = ({
               <>
                 <p className="ds-kicker">上次测出 · {formatShort(latest.finishedAt)}</p>
                 <p className="vt-big">{latest.estimated.toLocaleString()}<small>词</small></p>
+                {latest.scoreVersion === 1 && <p className="mt-1 text-xs font-semibold text-[#F0C68A]">旧版计分；重测后使用较严格的答错扣分</p>}
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   <span className="ds-pill">{latest.answered} 题 · {formatDuration(latest.durationSeconds)}</span>
                   <span className="ds-pill ds-pill-primary">可信度 {latest.confidence}%</span>
@@ -315,6 +317,7 @@ const VocabTestHome = ({
                   <div className="min-w-0 flex-1">
                     <p className="vt-hist-num">
                       {valid ? <>{row.estimated.toLocaleString()}<small>词</small></> : <span className="ds-pill ds-pill-warn">题太少，没出数</span>}
+                      {valid && row.scoreVersion === 1 && <span className="ds-pill">旧版计分</span>}
                       {delta !== 0 && <span className={`ds-pill ${delta > 0 ? "ds-pill-primary" : ""}`}>{delta > 0 ? "+" : "−"}{Math.abs(delta).toLocaleString()}</span>}
                       {valid && <span className="ds-pill">可信度 {row.confidence}%</span>}
                     </p>
@@ -346,7 +349,7 @@ const VocabTestHome = ({
         </div>
         <ul className="vt-rules">
           <li><b>抽样外推</b>：N5–N1 每级抽十几道，各级答对率乘以该级词表规模再相加。所以它是<b>当前 JLPT 词表范围内</b>的估计，不是「全日语词汇量」。</li>
-          <li><b>四选一，蒙也能蒙对</b>：所以每级得分按「答对 − 答错 ÷ 3」折算，<b>答错会把这一级的分数往下压</b>，不是简单不计分。</li>
+          <li><b>四个答案 + 不认识</b>：答对 +1，答错 −1.15，不认识或超时 0。错题扣得更重，是为了减少靠选项线索猜对造成的虚高。</li>
           <li><b>不认识就点「不认识」</b>：它不扣分，也不算你蒙。真不会却硬猜，反而会同时拉低词汇量和可信度。</li>
           <li><b>可信度</b> = 答题量（60）+ 没在赶进度（40），再<b>乘以</b>「有多少作答其实是蒙的」的补数；越难的级别反而答得越好，每处再扣 8 分。所以全靠蒙的话，题答得再多可信度也接近 0。</li>
           <li><b>超时按不认识记</b>，超时太多同样降可信度。切到别的页面会自动暂停，不算你超时。</li>
@@ -387,6 +390,7 @@ const ResultView = ({ result, row, onRestart, onBack, onShare, shareBusy }: {
                     「3,860 – 6,402」这种宽度读不出任何东西，用户宁可要一个具体数字。 */}
                 <p className="vt-big">{result.estimated.toLocaleString()}<small>词</small></p>
                 <p className="vt-sub"><span className="whitespace-nowrap">区间 {result.lower.toLocaleString()}–{result.upper.toLocaleString()}</span> · <span className="whitespace-nowrap">JLPT 词表范围内</span></p>
+                {result.scoreVersion === 1 && <p className="mt-1 text-xs font-semibold text-[#F0C68A]">旧版计分；重测后使用较严格的答错扣分</p>}
               </>
             ) : (
               <h2 className="vt-title">答得还太少</h2>

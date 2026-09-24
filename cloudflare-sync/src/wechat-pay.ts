@@ -35,7 +35,7 @@ export interface WechatSession {
   sessionKey: string;
 }
 
-export const WECHAT_PAY_PRODUCTS = ["shushugo_pro_monthly", "shushugo_pro_yearly", "shushugo_pro_lifetime"] as const;
+export const WECHAT_PAY_PRODUCTS = ["shushugo_pro_monthly", "shushugo_pro_quarterly", "shushugo_pro_yearly", "shushugo_pro_lifetime"] as const;
 export type WechatPayProduct = (typeof WECHAT_PAY_PRODUCTS)[number];
 
 /**
@@ -45,17 +45,19 @@ export type WechatPayProduct = (typeof WECHAT_PAY_PRODUCTS)[number];
  */
 export const WECHAT_PROP_IDS: Record<WechatPayProduct, string> = {
   shushugo_pro_monthly: "pro_monthly",
+  shushugo_pro_quarterly: "pro_quarterly",
   shushugo_pro_yearly: "pro_yearly",
   shushugo_pro_lifetime: "pro_lifetime"
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-/** 订阅类商品在微信这边是一次性扣款，到期时间由我们按天数算。 */
-export const PRODUCT_DURATION_DAYS: Record<WechatPayProduct, number | null> = {
-  shushugo_pro_monthly: 31,
-  shushugo_pro_yearly: 366,
+/** 微信期限卡是单次付款，到期后停止；按北京时间的自然月数计算。 */
+export const PRODUCT_DURATION_MONTHS: Record<WechatPayProduct, number | null> = {
+  shushugo_pro_monthly: 1,
+  shushugo_pro_quarterly: 3,
+  shushugo_pro_yearly: 12,
   shushugo_pro_lifetime: null
 };
+const CHINA_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 const encoder = new TextEncoder();
 
@@ -165,8 +167,15 @@ export interface XpayOrder {
 }
 
 export const expiresAtFor = (productId: WechatPayProduct, paidAtMs: number) => {
-  const days = PRODUCT_DURATION_DAYS[productId];
-  return days === null ? null : new Date(paidAtMs + days * DAY_MS).toISOString();
+  const months = PRODUCT_DURATION_MONTHS[productId];
+  if (months === null) return null;
+  const paid = new Date(paidAtMs + CHINA_UTC_OFFSET_MS);
+  const expires = new Date(paid);
+  expires.setUTCDate(1);
+  expires.setUTCMonth(expires.getUTCMonth() + months);
+  const lastDay = new Date(Date.UTC(expires.getUTCFullYear(), expires.getUTCMonth() + 1, 0)).getUTCDate();
+  expires.setUTCDate(Math.min(paid.getUTCDate(), lastDay));
+  return new Date(expires.getTime() - CHINA_UTC_OFFSET_MS).toISOString();
 };
 
 /**

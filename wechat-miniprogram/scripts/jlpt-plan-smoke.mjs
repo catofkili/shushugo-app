@@ -13,7 +13,8 @@ let navigatedTo = '';
 globalThis.wx = {
   env: { USER_DATA_PATH: '/tmp/shushugo-jlpt-plan-smoke' }, getFileSystemManager: () => ({}),
   getStorageSync: (key) => storage[key] ?? '', setStorageSync: (key, value) => { storage[key] = value; },
-  removeStorageSync: (key) => { delete storage[key]; }, switchTab: () => {}, navigateTo: ({ url }) => { navigatedTo = url; }
+  removeStorageSync: (key) => { delete storage[key]; }, switchTab: () => {}, navigateTo: ({ url }) => { navigatedTo = url; },
+  showShareMenu: () => {}, hideShareMenu: () => {}
 };
 const store = require('../src/runtime/database-store.js');
 store.getDatabase = () => db;

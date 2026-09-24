@@ -67,7 +67,7 @@ async function verifyWithRetry(outTradeNo) {
   return { ...(lastResult || {}), paid: false, pending: true };
 }
 
-async function requestPayment(productId) {
+async function requestPayment(productId, expectedPriceCents) {
   const order = await requestJson(`${apiBase()}/pay/wechat/orders`, {
     method: 'POST',
     data: { productId },
@@ -76,6 +76,7 @@ async function requestPayment(productId) {
   for (const field of ['outTradeNo', 'signData', 'paySig', 'signature']) {
     if (!order?.[field]) throw new Error(`支付订单缺少 ${field}`);
   }
+  if (order.productId !== productId || order.priceCents !== expectedPriceCents) throw new Error('PAYMENT_PRICE_CHANGED');
   wx.setStorageSync(PENDING_ORDER_KEY, order.outTradeNo);
   try {
     await requestVirtualPayment(order);

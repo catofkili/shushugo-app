@@ -29,6 +29,7 @@ const vocabShare = (result) => {
   const tooFew = answered < 15;
   const values = {
     share: 'vocab',
+    scoringVersion: result.scoreVersion === 2 ? 2 : 1,
     answered,
     total: safeCount(result.totalQuestions),
     estimate: safeCount(result.estimated),
@@ -46,6 +47,7 @@ const vocabShare = (result) => {
 
 const historyRow = (row) => ({
   ...row,
+  tooFew: row.answered < 15,
   date: dateKey(row.finishedAt),
   range: `${row.lower}–${row.upper}`,
   duration: formatDuration(row.durationSeconds)
@@ -93,6 +95,7 @@ Page({
         sharedResult: {
           answered,
           totalQuestions: safeCount(options.total),
+          scoreVersion: Number(options.scoringVersion) === 2 ? 2 : 1,
           estimated: safeCount(options.estimate),
           lower: safeCount(options.lower),
           upper: safeCount(options.upper),
@@ -148,7 +151,7 @@ Page({
       };
     }
     const finished = session && session.finishedAt && session.responses.length > 0 ? session : null;
-    this.setData({ history, latest: history[0] || null, resume, session, hasResult: Boolean(finished), view: 'intro', feedback: null });
+    this.setData({ history, latest: history.find((row) => !row.tooFew) || null, resume, session, hasResult: Boolean(finished), view: 'intro', feedback: null });
     wx.hideShareMenu();
   },
 

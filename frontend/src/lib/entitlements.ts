@@ -1,4 +1,4 @@
-export type ProductId = "shushugo_pro_monthly" | "shushugo_pro_yearly" | "shushugo_pro_lifetime" | "shushugo_pro_trial";
+export type ProductId = "shushugo_pro_monthly" | "shushugo_pro_quarterly" | "shushugo_pro_yearly" | "shushugo_pro_lifetime" | "shushugo_pro_trial";
 
 export type EntitlementSource = "free" | "storekit" | "cloud" | "app_store" | "trial" | "development";
 
@@ -112,6 +112,7 @@ export function subscribeEntitlements(listener: (state: EntitlementState) => voi
 
 export function productLabel(productId?: ProductId): string {
   if (productId === "shushugo_pro_monthly") return "月度 Pro";
+  if (productId === "shushugo_pro_quarterly") return "季度 Pro";
   if (productId === "shushugo_pro_yearly") return "年度 Pro";
   if (productId === "shushugo_pro_lifetime") return "永久 Pro";
   if (productId === "shushugo_pro_trial") return "7 天计划试用";

@@ -138,7 +138,9 @@ interface EntitlementRow {
   updated_at: string;
 }
 
-const PRODUCT_IDS = new Set(["shushugo_pro_monthly", "shushugo_pro_yearly", "shushugo_pro_lifetime"]);
+// Quarterly is a Mini Program virtual-payment good; Apple's catalog still has three products.
+const APPLE_PRODUCT_IDS = new Set(["shushugo_pro_monthly", "shushugo_pro_yearly", "shushugo_pro_lifetime"]);
+const PRODUCT_IDS = new Set([...APPLE_PRODUCT_IDS, "shushugo_pro_quarterly"]);
 const SUBSCRIPTION_PRODUCT_IDS = new Set(["shushugo_pro_monthly", "shushugo_pro_yearly"]);
 
 const TOKEN_TTL_DAYS = 30;
@@ -1461,6 +1463,11 @@ const createWechatPayOrder = async (request: Request, env: Env) => {
     const code = error instanceof Error ? error.message : "ORDER_FAILED";
     return json({ detail: code === "UNKNOWN_PRODUCT" ? "未知商品。" : code === "PRICE_NOT_CONFIGURED" ? "商品价格未配置。" : "下单失败。", code }, 400);
   }
+  const current = await getEntitlementRow(env, userId);
+  if (entitlementPayload(current).isPro && current?.source !== "trial"
+    && (order.productId !== "shushugo_pro_lifetime" || current?.product_id === "shushugo_pro_lifetime")) {
+    return json({ detail: "当前 Pro 仍有效；月、季、年卡请到期后再购买，或升级永久版。", code: "PRO_ALREADY_ACTIVE" }, 409);
+  }
   const now = new Date().toISOString();
   await env.DB.prepare(`
     INSERT INTO wechat_orders (out_trade_no, user_id, openid, product_id, price_cents, status, created_at, updated_at)
@@ -2345,7 +2352,7 @@ const applyAppleTransaction = async (
   const productId = tx.productId ?? expectedProductId ?? "";
   const originalTransactionId = tx.originalTransactionId ?? tx.transactionId ?? transactionId;
   const bundleMatches = !env.APP_BUNDLE_ID || tx.bundleId === env.APP_BUNDLE_ID;
-  const productMatches = PRODUCT_IDS.has(productId) && (!expectedProductId || productId === expectedProductId);
+  const productMatches = APPLE_PRODUCT_IDS.has(productId) && (!expectedProductId || productId === expectedProductId);
   const transactionMatches = tx.transactionId === transactionId || tx.originalTransactionId === transactionId;
 
   // 撤权也属于写操作；先确认这确实是本应用、目标商品和同一条交易链，不能因为
@@ -2429,7 +2436,7 @@ const verifyPurchase = async (request: Request, env: Env) => {
   const body = await readJson<{ product_id?: string; transaction_id?: string }>(request);
   const productId = String(body.product_id ?? "");
   const transactionId = String(body.transaction_id ?? "");
-  if (!PRODUCT_IDS.has(productId)) return json({ detail: "Unknown product_id" }, 400);
+  if (!APPLE_PRODUCT_IDS.has(productId)) return json({ detail: "Unknown product_id" }, 400);
   if (!transactionId) return json({ detail: "transaction_id is required" }, 400);
 
   const result = await applyAppleTransaction(env, userId, transactionId, productId);

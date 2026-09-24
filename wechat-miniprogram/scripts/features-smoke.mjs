@@ -100,15 +100,19 @@ assert.equal(features.vocabTest.history()[0].levels.length, 5);
 
 /* ---- 柚子：只奖「做完了」，账本幂等；目录是网页的那 13 件 ---- */
 db.run("INSERT OR IGNORE INTO achievements(id, unlocked_on) VALUES('feature-smoke', '2026-09-22')");
-assert.equal(await features.settleYuzu(), 20);
+const achievementReward = web.yuzu.YUZU.achievement;
+assert.equal(await features.settleYuzu(), achievementReward);
 assert.equal(await features.settleYuzu(), 0, '柚子结算必须幂等');
-db.run("INSERT OR IGNORE INTO yuzu_ledger(kind, key, amount, day) VALUES('test', 'seed', 500, '2026-09-22')");
+const matchaPrice = web.yuzuCatalog.YUZU_ITEMS.find((item) => item.id === 'theme-matcha').price;
+const voicePrice = web.yuzuCatalog.YUZU_ITEMS.find((item) => item.id === 'voice-voicevox-10').price;
+const balanceAfterMatcha = voicePrice - 1;
+db.run("INSERT OR IGNORE INTO yuzu_ledger(kind, key, amount, day) VALUES('test', 'seed', ?, '2026-09-22')", [matchaPrice + balanceAfterMatcha - achievementReward]);
 assert.equal(features.yuzuShop().items.length, web.yuzuCatalog.YUZU_ITEMS.length);
 assert.equal(await features.buyYuzuItem('theme-matcha'), true);
 assert.equal(features.equippedYuzu('theme'), 'theme-matcha', '买了槽位空着就自动装上');
 assert.equal(await features.buyYuzuItem('icon-happy'), false, 'soon 的商品不卖');
-assert.equal(await features.buyYuzuItem('voice-voicevox-10'), false, '余额 320 买不起 600 的');
-assert.equal(features.yuzuBalance(), 320);
+assert.equal(await features.buyYuzuItem('voice-voicevox-10'), false, '余额比商品价格少 1，买不起');
+assert.equal(features.yuzuBalance(), balanceAfterMatcha);
 
 /* ---- 周报：content_json 必须是网页 analytics/weekly 的形状（window.endAt、metrics.days、keyword…） ---- */
 const now = new Date('2026-09-22T10:00:00+08:00');

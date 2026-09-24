@@ -73,7 +73,7 @@ const env = {
   SYNC_DATA: { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); }, delete: async (k) => { kv.delete(k); } },
   SYNC_BUCKET: { delete: async () => undefined },
   WECHAT_APP_ID: "wx1", WECHAT_APP_SECRET: "sec", WECHAT_OFFER_ID: "1450", WECHAT_PAY_APP_KEY: "appkey",
-  WECHAT_PAY_ENV: "0", WECHAT_PAY_PRICES: JSON.stringify({ shushugo_pro_lifetime: 12800 }), WECHAT_MSG_TOKEN: "pushtoken"
+  WECHAT_PAY_ENV: "0", WECHAT_PAY_PRICES: JSON.stringify({ shushugo_pro_monthly: 1000, shushugo_pro_quarterly: 2400, shushugo_pro_yearly: 6800, shushugo_pro_lifetime: 29800 }), WECHAT_MSG_TOKEN: "pushtoken"
 };
 
 const wx = { paidStatus: 2, calls: [] };
@@ -96,7 +96,8 @@ try {
   assert.equal(res.status, 200, await res.clone().text());
   const order = await res.json();
   assert.match(order.outTradeNo, /^[0-9a-f]{32}$/);
-  assert.equal(JSON.parse(order.signData).goodsPrice, 12800);
+  assert.equal(JSON.parse(order.signData).productId, "pro_lifetime");
+  assert.equal(JSON.parse(order.signData).goodsPrice, 29800);
   assert.equal(env.DB.orders[order.outTradeNo].status, "created");
 
   // 没登录过微信的账号（KV 里没 session）不能下单
@@ -125,6 +126,14 @@ try {
   assert.equal(env.DB.orders[order.outTradeNo].status, "delivered");
   assert.deepEqual(wx.calls, ["https://api.weixin.qq.com/xpay/query_order", "https://api.weixin.qq.com/xpay/notify_provide_goods"]);
 
+  // 有效的永久权益不允许再付期限卡或重复买永久版。
+  res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_monthly" });
+  assert.equal(res.status, 409);
+  assert.equal((await res.json()).code, "PRO_ALREADY_ACTIVE");
+  res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_lifetime" });
+  assert.equal(res.status, 409);
+  assert.equal((await res.json()).code, "PRO_ALREADY_ACTIVE");
+
   // 再 verify 一次是幂等的（不再打微信）
   wx.calls.length = 0;
   res = await post("/api/pay/wechat/orders/verify", "tok-a", { outTradeNo: order.outTradeNo });
@@ -149,6 +158,19 @@ try {
   assert.equal(env.DB.entitlement.is_pro, 0);
   assert.equal(env.DB.orders[order.outTradeNo].status, "refunded");
   assert.ok(env.DB.events.some((e) => e.status === "revoked"));
+
+  // 退款后能购买期限卡；有效期内再买月、季、年卡会在扣钱前拒绝。
+  res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_quarterly" });
+  assert.equal(res.status, 200, await res.clone().text());
+  const quarterly = await res.json();
+  assert.equal(JSON.parse(quarterly.signData).productId, "pro_quarterly");
+  assert.equal(quarterly.priceCents, 2400);
+  res = await post("/api/pay/wechat/orders/verify", "tok-a", { outTradeNo: quarterly.outTradeNo });
+  assert.equal(res.status, 200);
+  assert.equal(env.DB.entitlement.product_id, "shushugo_pro_quarterly");
+  res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_yearly" });
+  assert.equal(res.status, 409);
+  assert.equal((await res.json()).code, "PRO_ALREADY_ACTIVE");
 
   console.log("OK Worker wechat pay routes: order, verify (unpaid/paid/idempotent/other-account), push handshake and refund");
 } finally {

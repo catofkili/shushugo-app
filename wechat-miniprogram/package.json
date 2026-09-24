@@ -9,6 +9,8 @@
     "sync-smoke": "node scripts/sync-smoke.mjs",
     "sync-snapshot-smoke": "node scripts/sync-snapshot-smoke.mjs",
     "entitlement-smoke": "node scripts/entitlement-smoke.mjs",
+    "payment-price-smoke": "node scripts/payment-price-smoke.cjs",
+    "vocab-page-smoke": "node scripts/vocab-page-smoke.cjs",
     "grammar-smoke": "node scripts/grammar-smoke.mjs",
     "word-library-smoke": "node scripts/word-library-smoke.mjs",
     "modes-smoke": "node scripts/modes-smoke.mjs",

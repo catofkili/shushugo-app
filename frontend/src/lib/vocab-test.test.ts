@@ -98,9 +98,7 @@ describe("词汇量测验会话", () => {
 
 describe("⚠️ 计分的无偏性", () => {
   /**
-   * 这条钉住的是 DISTRACTOR_COUNT(3) 和 levelResult 里 `wrong / 3` 的一致性 ——
-   * 惩罚必须是 1/(实义选项数 − 1)。曾经出过 4 个干扰配 `/3` 的版本，
-   * 纯猜的人期望得分变成 −0.067 而不是 0，而 clamp(0,1) 把负数截掉、看不出来。
+   * 新版惩罚比随机猜测的无偏值更严；纯随机作答仍会被 clamp 到 0，不能得到正估计。
    */
   it("纯靠猜的人（四选一里四分之一蒙对）估计词汇量为 0", () => {
     startVocabTest(() => 0.3);
@@ -122,6 +120,41 @@ describe("⚠️ 计分的无偏性", () => {
     expect(result?.answered).toBe(40);
     result?.levels.forEach((level) => expect(level.rate).toBe(0));
     expect(result?.estimated).toBe(0);
+  });
+
+  it("新场次按答对 +1、答错 −1.15、不认识 0 逐级折算", () => {
+    const session = startVocabTest(() => 0.3);
+    const firstLevel = session.questions[0].level;
+    const questions = session.questions.map((question, index) => ({ question, index }))
+      .filter(({ question }) => question.level === firstLevel);
+    const responses = questions.map(({ question, index }, number) => ({
+      questionIndex: index,
+      questionId: question.id,
+      answerState: number < 3 ? "correct" as const : "wrong" as const,
+      selectedOption: number < 3 ? question.answerIndex : (question.answerIndex + 1) % 4,
+      responseMs: 900,
+      answeredAt: 0
+    }));
+    const result = getVocabTestResult({ ...session, responses });
+    expect(session.scoreVersion).toBe(2);
+    expect(result?.levels.find((level) => level.level === firstLevel)?.rate).toBe(0.46);
+  });
+
+  it("旧场次仍用 −1/3，不会升级后变成新分数", () => {
+    const session = startVocabTest(() => 0.3);
+    const firstLevel = session.questions[0].level;
+    const questions = session.questions.map((question, index) => ({ question, index }))
+      .filter(({ question }) => question.level === firstLevel);
+    const responses = questions.map(({ question, index }, number) => ({
+      questionIndex: index,
+      questionId: question.id,
+      answerState: number < 3 ? "correct" as const : "wrong" as const,
+      selectedOption: number < 3 ? question.answerIndex : (question.answerIndex + 1) % 4,
+      responseMs: 900,
+      answeredAt: 0
+    }));
+    expect(getVocabTestResult({ ...session, scoreVersion: 1, responses })?.levels.find((level) => level.level === firstLevel)?.rate).toBe(0.67);
+    expect(getVocabTestResult({ ...session, scoreVersion: 2, responses })?.levels.find((level) => level.level === firstLevel)?.rate).toBe(0.46);
   });
 
   it("全会的人拿满分", () => {
@@ -320,8 +353,21 @@ describe("历史成绩", () => {
     expect(history).toHaveLength(1);
     expect(history[0].runId).toBe(finished?.runId);
     expect(history[0].answered).toBe(1);
+    expect(history[0].scoreVersion).toBe(2);
     // 这一场原本要出 60 题（分母是计划题数，不是「已经出好的那 20 道」）
     expect(history[0].totalQuestions).toBe(finished?.plannedTotal);
+  });
+
+  it("旧会话与旧历史继续保留旧计分标记", () => {
+    const started = startVocabTest(() => 0.35);
+    const oldSession = { ...started, scoreVersion: 1 as const, runId: "old-vocab-test" };
+    testDb.run("UPDATE app_state SET value = ? WHERE key = 'vocab_test_session_v1'", [JSON.stringify(oldSession)]);
+    const first = getVocabTestSession()!.questions[0];
+    submitVocabTestAnswer("correct", first.answerIndex, 1000);
+    const finished = finishVocabTest();
+    expect(getVocabTestResult(finished)?.scoreVersion).toBe(1);
+    recordVocabTestRun(finished);
+    expect(getVocabTestHistory()[0].scoreVersion).toBe(1);
   });
 
   // ⚠️ 用时 = 真正花在答题上的秒数，不是墙上时间。实测出过「2 题 · 用时 4160 分 36 秒」：

@@ -139,6 +139,25 @@ npx wrangler secret put WECHAT_MSG_TOKEN       # 小程序后台「消息推送�
 判据：`cloudflare-sync/scripts/wechat-pay.test.mjs`（签名和 Node 的 HMAC 对拍、signData 形状、只有 status=2 算付了、
 推送签名）和 `worker-wechat-pay-route.test.mjs`（真实 Worker 构建产物走完下单 → 未付 402 → 付了写权益 → 幂等 → 他人 409 → 退款撤销）。
 
+### 2026-09-24 期限卡接线（覆盖本节旧的商品数量与到期算法）
+
+微信端提供四种普通虚拟道具，均为一次性付款：
+
+| 内部商品 ID | 微信后台道具 ID | 售价 | 期限 |
+| --- | --- | ---: | --- |
+| `shushugo_pro_monthly` | `pro_monthly` | ¥10 | 北京时间自然月 1 个月 |
+| `shushugo_pro_quarterly` | `pro_quarterly` | ¥24 | 北京时间自然月 3 个月 |
+| `shushugo_pro_yearly` | `pro_yearly` | ¥68 | 北京时间自然月 12 个月 |
+| `shushugo_pro_lifetime` | `pro_lifetime` | ¥298 | 永久 |
+
+前三档不会自动扣费，到期后由用户手动续购。Worker 的 `WECHAT_PAY_PRICES` 以分保存这四个内部 ID；
+签名时才映射为微信短道具 ID。小程序下单后会比较服务端返回的商品 ID 和分价与当前按钮，任何一项不一致都不打开微信支付。
+当前有效的期限权益不允许重复购买期限卡，避免扣款却不增加有效期；期限权益可升级永久版。
+
+本次接线只改了本地 Worker 和小程序代码，尚未部署。用户本轮报告四档后台商品已填写；本次未独立核对各道具是否已在对应环境发布，
+也未做开发者工具、真机支付或退款验收。仓库里的 `WECHAT_PAY_ENV=1` 表示沙箱；确认对应沙箱 AppKey 后才能测试，
+不能据本地价格配置或 `/api/health` 的配置布尔值声称四档已经可售。
+
 ## 已完成的离线能力
 
 - `npm run smoke` 用仓库真实 `frontend/public/nihongo.db` 完成查询、导出、重新打开和关键表校验。

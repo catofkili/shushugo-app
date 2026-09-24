@@ -10,7 +10,15 @@ const { exportBackup, importBackup } = require('../../runtime/backup');
 const { status: reminderStatus } = require('../../runtime/reminder');
 
 Page({
-  data: { ready: false, entitlement: { active: false, source: 'loading' }, auth: { signedIn: false, userId: '' }, busy: false, result: '', pendingPayment: false, showWechatLink: false, linkEmail: '', linkCode: '', soundOn: true, reminder: { configured: false, credits: 0, lastSentOn: '' } },
+  data: {
+    ready: false, entitlement: { active: false, source: 'loading' }, auth: { signedIn: false, userId: '' }, busy: false, result: '', pendingPayment: false, showWechatLink: false, linkEmail: '', linkCode: '', soundOn: true, reminder: { configured: false, credits: 0, lastSentOn: '' },
+    plans: [
+      { id: 'shushugo_pro_monthly', name: '月卡', priceYuan: 10, priceCents: 1000 },
+      { id: 'shushugo_pro_quarterly', name: '季卡', priceYuan: 24, priceCents: 2400 },
+      { id: 'shushugo_pro_yearly', name: '年卡', priceYuan: 68, priceCents: 6800 },
+      { id: 'shushugo_pro_lifetime', name: '永久版', priceYuan: 298, priceCents: 29800 }
+    ]
+  },
 
   async onLoad() {
     try {
@@ -152,12 +160,12 @@ Page({
     }
   },
 
-  async buyPro() {
+  async buyPro(event) {
     if (this.data.busy) return;
+    const { id, priceCents } = event.currentTarget.dataset;
     this.setData({ busy: true, result: '正在创建支付订单…' });
     try {
-      // 商品 id 和 Worker / iOS 同一套：shushugo_pro_monthly / _yearly / _lifetime
-      const result = await requestPayment('shushugo_pro_lifetime');
+      const result = await requestPayment(id, Number(priceCents));
       this.setData({
         pendingPayment: Boolean(result.pending),
         result: result.paid ? '已购买，正在刷新权益…' : result.cancelled ? '已取消支付' : result.pending ? '支付结果暂未确认，可稍后重新确认订单。' : '支付未完成'
@@ -166,7 +174,7 @@ Page({
       if (result.paid) await this.refreshEntitlement();
     } catch (error) {
       console.error('[settings] 支付失败', error);
-      this.setData({ result: '支付未完成，请稍后重试' });
+      this.setData({ result: error.message === 'PAYMENT_PRICE_CHANGED' ? '支付价格与页面不一致，请更新小程序后重试' : error?.data?.code === 'PRO_ALREADY_ACTIVE' ? error.data.detail : '支付未完成，请稍后重试' });
     } finally {
       this.setData({ busy: false });
     }

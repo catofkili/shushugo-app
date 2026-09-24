@@ -51,13 +51,13 @@ function interleaveCard(database, kind) {
   return session.card ? { kind, card: normalizeMatching(session.card) } : null;
 }
 
-/** 连线卡的 notes 是 Map，WXML 只认普通对象；顺手把每个词的注记贴到 pair 上。 */
+/** 辨析卡的 notes 是 Map，WXML 只认普通对象；顺手把每个词的注记贴到成员上。 */
 function normalizeMatching(card) {
   const notes = card.notes instanceof Map ? Object.fromEntries(card.notes) : (card.notes || {});
   return {
     ...card,
     notes,
-    pairs: card.pairs.map((pair) => ({ ...pair, note: notes[String(pair.id)] || '' }))
+    members: card.members.map((member) => ({ ...member, note: notes[String(member.id)] || '' }))
   };
 }
 
@@ -192,7 +192,7 @@ function nextOfKind(kind) {
 }
 
 /** 连线卡的四档由连错次数定（0 认识 / 1 模糊 / ≥2 忘记），不让用户点四颗 —— 答案全露着时选分等于灌假数据。 */
-const gradeMatching = (mistakes) => core.web.confusionCards.gradeMatching(Number(mistakes) || 0);
+const gradeMatching = (mistakes) => Number(mistakes) < 1 ? 'know' : Number(mistakes) < 2 ? 'fuzzy' : 'forgot';
 
 async function undoAnswer(options = {}) {
   const database = db();

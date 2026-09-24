@@ -21,6 +21,7 @@ export interface VocabShareInput {
   totalQuestions: number;
   durationSeconds: number;
   confidence: number;
+  scoreVersion: 1 | 2;
   recommendation: string;
   levels: { level: string; rate: number | null; answered: number }[];
 }
@@ -103,6 +104,11 @@ export const renderVocabShareCard = async (input: VocabShareInput): Promise<Blob
     { label: "结果可信度", value: `${input.confidence}%` }
   ]);
   drawLevels(ctx, input);
-  drawFooter(ctx, "「知らない言葉は、まだ会っていない友達」", "JLPT 词表覆盖范围内的抽样估计 · 仅供参考", "收集日 · 查词汇量");
+  drawFooter(
+    ctx,
+    "「知らない言葉は、まだ会っていない友達」",
+    input.scoreVersion === 1 ? "旧版计分 · 请重测后再参考" : "JLPT 词表覆盖范围内的抽样估计 · 仅供参考",
+    "收集日 · 查词汇量"
+  );
   return toPngBlob(canvas);
 };

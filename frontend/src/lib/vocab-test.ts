@@ -37,6 +37,8 @@ export interface VocabTestResponse {
 
 export interface VocabTestSession {
   version: 1;
+  /** 旧会话按旧口径完成；新会话才使用更严格的扣分。 */
+  scoreVersion: 1 | 2;
   runId: string;
   startedAt: number;
   finishedAt: number | null;
@@ -61,6 +63,7 @@ export interface VocabTestLevelResult {
 }
 
 export interface VocabTestResult {
+  scoreVersion: 1 | 2;
   estimated: number;
   lower: number;
   upper: number;
@@ -80,6 +83,8 @@ export interface VocabTestResult {
 const SESSION_KEY = "vocab_test_session_v1";
 export const VOCAB_TEST_LEVELS = ["N5", "N4", "N3", "N2", "N1"] as const;
 export const VOCAB_TEST_QUESTION_COUNT = 60;
+/** 2026-09 校准：四个答案里的有依据猜测常高于随机的 25%，每次答错扣 1.15。 */
+const PENALTY = 1.15;
 
 /**
  * 每题的秒数按题型分：读音题要在四个假名串里逐拍比对，天然比读中文释义慢。
@@ -93,9 +98,9 @@ export const secondsForQuestion = (question: Pick<VocabTestQuestion, "kind">): n
 /**
  * ⚠️ 一题 1 个正确 + **3** 个干扰，加「不认识」共五个按钮。
  *
- * 这个数和 levelResult 的 `wrong / 3` 是**同一个常数的两面**（惩罚 = 1/(实义选项数−1)），
- * 改一个必须改另一个。曾经出过 4 个干扰配 `/3` 的版本：纯猜的人期望得分变成 −0.067
- * 而不是 0，无偏性没了，中间水平的人被系统性压低，而 clamp(0,1) 把负数截掉、看不出来。
+ * 旧计分的 `wrong / 3` 与四个实义选项配套，只对完全随机的 25% 猜中率无偏。
+ * 实测反馈是用户能借读音和词形线索排除选项；校准后改用 PENALTY，
+ * 仍须保留选项数校验，旧版五个实义选项的会话不能沿用当前题型。
  */
 const DISTRACTOR_COUNT = 3;
 
@@ -616,14 +621,14 @@ const parseSession = (raw: string): VocabTestSession | null => {
       item && Number.isFinite(Number(item.id)) && typeof item.prompt === "string"
       // ⚠️ 用常数不用字面量：这是选项数的**第二个**落点，写死过一次 5，
       // 改成 4 个选项后这里没跟着改，整场会话被静默丢掉（questions 全被过滤空 → 返回 null）。
-      // 顺带这也让旧版 5 选项的未完成会话作废 —— 那是对的，它是按 wrong/4 才无偏的，
-      // 拿现在的 wrong/3 去算等于给用户一个错的词汇量。
+      // 旧版 5 个实义选项的未完成会话作废，不能和当前四个实义选项混算。
       && Array.isArray(item.options) && item.options.length === DISTRACTOR_COUNT + 1
       && Number.isInteger(Number(item.answerIndex))
     ));
     if (!questions.length) return null;
     return {
       version: 1,
+      scoreVersion: parsed.scoreVersion === 2 ? 2 : 1,
       runId: asText(parsed.runId) || `vocab-${Date.now()}`,
       startedAt: Number(parsed.startedAt) || Date.now(),
       finishedAt: parsed.finishedAt == null ? null : Number(parsed.finishedAt),
@@ -675,6 +680,7 @@ export const startVocabTest = (random: () => number = Math.random): VocabTestSes
   if (questions.length < 10) throw new Error("当前词库可用于测验的词太少，无法开始测量。");
   return saveSession({
     version: 1,
+    scoreVersion: 2,
     runId: `vocab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     startedAt: Date.now(),
     finishedAt: null,
@@ -790,7 +796,8 @@ const levelResult = (level: string, session: VocabTestSession): VocabTestLevelRe
   const wrong = rows.filter((row) => row.answerState === "wrong").length;
   const unknown = rows.filter((row) => row.answerState === "unknown").length;
   const timeout = rows.filter((row) => row.answerState === "timeout").length;
-  const score = rows.length ? clamp((correct - wrong / 3) / rows.length, 0, 1) : null;
+  const penalty = session.scoreVersion === 2 ? PENALTY : 1 / DISTRACTOR_COUNT;
+  const score = rows.length ? clamp((correct - wrong * penalty) / rows.length, 0, 1) : null;
   return {
     level,
     total: session.populationByLevel[level] ?? 0,
@@ -810,14 +817,20 @@ export const getVocabTestResult = (session: VocabTestSession | null): VocabTestR
   const estimated = levels.reduce((sum, level) => sum + level.total * (level.rate ?? 0), 0);
   let variance = 0;
   levels.forEach((level) => {
-    if (!level.answered || level.rate == null) {
-      variance += level.total * level.total;
+    const { total, answered, rate, correct, wrong, unknown, timeout } = level;
+    if (!answered || rate == null) {
+      variance += total * total;
       return;
     }
-    const gamma = guessRate(level.wrong, level.unknown + level.timeout);
-    variance += level.total * level.total
-      * (level.rate * (1 - level.rate) + (1 - level.rate) * gamma / 3)
-      / level.answered;
+    if (session.scoreVersion === 1) {
+      const gamma = guessRate(wrong, unknown + timeout);
+      variance += total * total * (rate * (1 - rate) + (1 - rate) * gamma / DISTRACTOR_COUNT) / answered;
+      return;
+    }
+    // 用 +1 / -1.15 / 0 的实际逐题得分算样本方差；旧的 /3 方差不适用于新扣分。
+    const sum = correct - wrong * PENALTY;
+    const squares = correct + wrong * PENALTY ** 2;
+    variance += total * total * (answered < 2 ? 1 : Math.max(0, squares - sum ** 2 / answered) / (answered * (answered - 1)));
   });
   const margin = session.responses.length ? Math.ceil(1.96 * Math.sqrt(Math.max(0, variance))) : population;
   const roundedEstimate = Math.round(estimated);
@@ -866,6 +879,7 @@ export const getVocabTestResult = (session: VocabTestSession | null): VocabTestR
     100
   ));
   return {
+    scoreVersion: session.scoreVersion,
     estimated: roundedEstimate,
     lower: clamp(roundedEstimate - margin, 0, population),
     upper: clamp(roundedEstimate + margin, 0, population),
@@ -893,6 +907,7 @@ export interface VocabTestHistoryRow {
   upper: number;
   confidence: number;
   recommendation: string;
+  scoreVersion: 1 | 2;
   /** 各级答对率，给分享图画横条用 */
   levels: { level: string; rate: number | null; answered: number }[];
 }
@@ -945,22 +960,27 @@ export const recordVocabTestRun = (session: VocabTestSession | null): void => {
     result.upper,
     result.confidence,
     result.recommendation,
-    JSON.stringify(result.levels.map((level) => [level.level, level.rate, level.answered]))
+    session.scoreVersion === 2
+      ? JSON.stringify({ version: 2, levels: result.levels.map((level) => [level.level, level.rate, level.answered]) })
+      : JSON.stringify(result.levels.map((level) => [level.level, level.rate, level.answered]))
   ]);
   persistSoon();
 };
 
-const parseLevels = (raw: string): VocabTestHistoryRow["levels"] => {
+const parseLevels = (raw: string): Pick<VocabTestHistoryRow, "levels" | "scoreVersion"> => {
   try {
     const parsed = JSON.parse(raw || "[]");
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map((item) => ({
+    const scoreVersion = parsed?.version === 2 ? 2 : 1;
+    const items = Array.isArray(parsed) ? parsed : parsed?.levels;
+    if (!Array.isArray(items)) return { scoreVersion, levels: [] };
+    const levels = items.map((item) => ({
       level: String(item?.[0] ?? ""),
       rate: item?.[1] == null ? null : Number(item[1]),
       answered: Number(item?.[2] ?? 0)
     })).filter((item) => item.level);
+    return { scoreVersion, levels };
   } catch {
-    return [];
+    return { scoreVersion: 1, levels: [] };
   }
 };
 
@@ -981,7 +1001,7 @@ export const getVocabTestHistory = (limit = 20): VocabTestHistoryRow[] => {
     upper: Number(row.upper_bound ?? 0),
     confidence: Number(row.confidence ?? 0),
     recommendation: String(row.recommendation ?? ""),
-    levels: parseLevels(String(row.levels_json ?? ""))
+    ...parseLevels(String(row.levels_json ?? ""))
   }));
 };
 
