@@ -17,6 +17,7 @@ vi.mock("./review-budget", () => ({ readEncoreLog: () => ({ dayWords: encoreWord
 
 import { buyItem, equippedItem, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
 import { computeStreak } from "./zoo-streak";
+import { itemById } from "./yuzu-catalog";
 
 const checkin = (...days: string[]) => days.forEach((d) => db.run("INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)", [d]));
 const answers = (n: number, day = TODAY) => {
@@ -30,6 +31,8 @@ beforeEach(async () => {
   db.run("CREATE TABLE checkins (checked_on TEXT PRIMARY KEY)");
   db.run("CREATE TABLE achievements (id TEXT PRIMARY KEY, unlocked_on TEXT NOT NULL)");
   db.run("CREATE TABLE app_state (key TEXT PRIMARY KEY, value TEXT)");
+  // 新装的库:账本已经是 ×10 之后的面额。不写这个标记的话,第一次读余额会把 fund() 直接写进去的行当旧账本再乘 10
+  db.run("INSERT INTO app_state VALUES ('yuzu_scale_10', '1')");
   db.run("CREATE TABLE yuzu_ledger (kind TEXT NOT NULL, key TEXT NOT NULL, amount INTEGER NOT NULL, day TEXT NOT NULL, PRIMARY KEY (kind, key))");
   plan = { total: 0, completed: 0 };
   encoreWords = 0;
@@ -69,7 +72,8 @@ describe("消费", () => {
   const fund = (n: number) => db.run("INSERT INTO yuzu_ledger VALUES ('test', ?, ?, ?)", [String(seed++), n, TODAY]);
 
   it("钱不够不卖;买到即拥有,槽位空着就自动装上;不重复卖", () => {
-    fund(199);
+    // 价格从目录读：2026-09-24 按人民币面额整体 ×10 时这里写死的 199 就过期了
+    fund(itemById("theme-matcha")!.price - 1);
     expect(buyItem("theme-matcha")).toBe(false);
     fund(1);
     expect(buyItem("theme-matcha")).toBe(true);
@@ -84,7 +88,7 @@ describe("消费", () => {
     // 窗口是今天 −1..−7 = 09-12..09-18,09-09 在外面
     expect(repairableDays()).toEqual(["2026-09-18", "2026-09-16", "2026-09-15", "2026-09-13", "2026-09-12"]);
     expect(repairDay("2026-09-09")).toBe(false);
-    fund(150);
+    fund(1500);
     expect(repairPrice()).toBe(500);
     expect(repairDay("2026-09-18")).toBe(true);
     expect(repairPrice()).toBe(1000);
