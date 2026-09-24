@@ -199,7 +199,13 @@ Page({
     finally { this.setData({ busy: false }); }
   },
   handleContentUpdate() { return this.run('检查内容更新', async () => { const result = await updateFromManifest(); return result.updated ? `已更新 ${result.version}` : `当前已是 ${result.version}`; }); },
-  handleSync() { return this.run('同步进度', async () => { const result = await syncNow(); return `已合并 ${result.merged?.insertedReviews ?? 0} 条学习记录`; }); },
+  handleSync() {
+    if (!authStatus().signedIn) {
+      this.setData({ result: '请先登录收集日账号，再同步学习进度。' });
+      return;
+    }
+    return this.run('同步进度', async () => { const result = await syncNow(); return `已合并 ${result.merged?.insertedReviews ?? 0} 条学习记录`; });
+  },
   handleExportBackup() { return this.run('导出学习备份', async () => { const result = await exportBackup(); if (typeof wx.shareFileMessage === 'function') wx.shareFileMessage({ filePath: result.path, fileName: 'shushugo-learning-backup.db' }); return `${(result.bytes / 1024 / 1024).toFixed(2)} MiB`; }); },
   handleImportBackup() {
     this.run('合并学习备份', async () => {
