@@ -1,5 +1,24 @@
 # 小程序与 5173 网页对齐工程计划
 
+> ⚠️ **2026-09-25 增补：本计划的实施路线已被用户否定，下面正文保留作历史。**
+> 下文「技术路线与排期」按「逐页读 React 源码、重写 WXML/WXSS」估了一人 20–40 个工作日，
+> Codex 照此跑了约 5 小时（分支 `codex/miniprogram-parity-20260924`，存档提交 `3480ac0`）后被用户叫停。
+> 新路线：直接把网页手机宽度渲染出的 DOM + 编译后 CSS 搬成 WXML/WXSS，再在模拟器按报错修。原因和做法见 CLAUDE.md
+> 「2026-09-25 复盘：小程序「对齐网页」耗了二十来个小时」。**「主要功能跨端一致」那条最高优先级规则仍然有效。**
+>
+> **`3480ac0` 里的东西怎么处理（按移植路线判断，不是按「写得好不好」）：**
+>
+> | 取 | 内容 | 状态 |
+> |---|---|---|
+> | ✅ 已并入 main | `frontend/src/lib/plan/content-matrix.ts` 辨析卡数改成 8/33/58/92/154（合计 345 = 严格 major 组，`e1f9d1f` 之后 main 上这条测试一直是红的） | 09-25 |
+> | ✅ 已并入 main | 组队页首次进入走 `ensureDatabase()`（原来只 `restoreDatabase()`，新装用户永远卡在「先准备好本地学习库」——截图里那一页的真实原因） | 09-25 |
+> | ✅ 已并入 main | `build-shared.mjs` 的 `minifyWhitespace`：`web.js` 离 760 KiB 闸门只剩 8 字节，移植任何一页都会撞 | 09-25 |
+> | 🟡 移植那页时再取 | `runtime/learning.js` 的快速复习 / 合并重复词条 / 一键完成 / 学习计时转发；`backup.js` 合并前恢复点；`database-store.resetToSeed`；`auth.js` 多存邮箱等字段且都登记为设备本地键（不上云）；`features/content/grammar-details.js` 语法详情投影；`lib/grammar-mastery.ts`（网页语法列表那份 localStorage 进度抽成共享）；`profile-entry.ts` + `shims/sync-api.js`、`preferences.js` | 都是「数据怎么接」，和长相无关，搬页面时照着用 |
+> | 🟡 移植那页时再取 | `confusion-groups.ts` 新导出的 `confusionCardSubtitle / confusionSearchText / shuffleConfusionGroups` | ⚠️ 从 `ConfusionPage.tsx` 抽出来时**把原来那几段「为什么」的注释丢了**（括号里的逗号、副标题按类型说共有项、搜索文本为什么缓存），取的时候要把注释一起搬过去 |
+> | 🟡 可复用 | `src/assets/home/*.webp`（网页贴纸 / 图标压成小程序尺寸，168 KB） | 移植首页直接用 |
+> | ❌ 不要 | 所有页面的 WXML/WXSS（首页、语法、辨析、每日量、组队、设置、快速复习、个人资料、帮助、关于、隐私） | 仍是它自己理解的版式，移植时整份换掉 |
+> | ❌ 不要 | 新增的十来个 `*-page-smoke` 脚本 | 断言的是那套手写 WXML 的绑定名，版式一换就全废 |
+
 状态：待实施。基线检查日期：2026-09-24。本文是完整工作清单；勾完少数页面不构成项目完成。
 
 ## 目标与边界

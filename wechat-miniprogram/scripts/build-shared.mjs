@@ -96,6 +96,8 @@ const common = {
   platform: 'neutral',
   mainFields: ['module', 'main'],
   target: 'es2020',
+  // 主包 web.js 贴着 760 KiB 闸门（2026-09-25 只剩 8 字节）；空白不是运行时数据。
+  minifyWhitespace: true,
   write: false,
   metafile: true,
   logLevel: 'warning',

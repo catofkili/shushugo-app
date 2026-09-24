@@ -2,7 +2,7 @@ const config = require('../../config');
 const core = require('../../core/study-core');
 const analytics = require('../../core/analytics');
 const { authStatus, signInWithWechat } = require('../../runtime/auth');
-const { getDatabase, getStatus, restoreDatabase } = require('../../runtime/database-store');
+const { ensureDatabase, getDatabase, getStatus } = require('../../runtime/database-store');
 const teamApi = require('../../runtime/team');
 
 const emojis = ['🌱', '🐿️', '🐦', '🚃', '🦉', '🍊', '📚', '⛩️'];
@@ -53,9 +53,10 @@ Page({
 
   async onShow() {
     if (!getStatus().ready) {
-      try { await restoreDatabase(); }
-      catch {
-        this.setData({ needsInit: true, ready: true });
+      // 首次安装时本机还没有库，restoreDatabase 只会恢复已有的那份，新用户会永远停在这里。
+      try { await ensureDatabase(); }
+      catch (error) {
+        this.setData({ needsInit: true, ready: true, result: errorText(error) });
         return;
       }
     }
