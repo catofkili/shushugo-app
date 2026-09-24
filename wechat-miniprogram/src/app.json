@@ -23,7 +23,8 @@
         "grammar-foundation/index",
         "favorites/index",
         "vocab-test/index",
-        "yuzu-shop/index"
+        "yuzu-shop/index",
+        "about/index"
       ]
     },
     {

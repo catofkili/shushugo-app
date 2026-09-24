@@ -1,0 +1,40 @@
+<view class="page">
+  <view class="hero">
+    <image class="mascot" src="../../assets/brand/shushugo-icon.png" mode="aspectFit" aria-label="收集日吉祥物抱着书" />
+    <text class="eyebrow">SHUSHUGO · 收集日</text>
+    <text class="title">把日语，收集成每天的进步</text>
+    <text class="intro">从五十音到 JLPT N1，让单词、语法和复习有条理地待在一起。今天学一点，明天再接着来。</text>
+  </view>
+
+  <view class="section-heading">
+    <text class="section-kicker">一个地方，慢慢积累</text>
+    <text class="section-title">学过的每一点，都能好好接住。</text>
+  </view>
+  <view class="features">
+    <view class="feature">
+      <text class="feature-number">01 / 词汇</text>
+      <text class="feature-title">JLPT N5–N1 词汇</text>
+      <text class="feature-copy">看词义、读音和例句，也记下自己真正掌握了多少。</text>
+    </view>
+    <view class="feature">
+      <text class="feature-number">02 / 语法</text>
+      <text class="feature-title">语法与例句</text>
+      <text class="feature-copy">按等级查找语法说明，把抽象规则放进能读懂的句子里。</text>
+    </view>
+    <view class="feature">
+      <text class="feature-number">03 / 复习</text>
+      <text class="feature-title">按作答安排复习</text>
+      <text class="feature-copy">根据答题记录回顾学过的内容，错过的知识也能再遇见。</text>
+    </view>
+    <view class="feature">
+      <text class="feature-number">04 / 随时</text>
+      <text class="feature-title">离线保存基础学习</text>
+      <text class="feature-copy">基础词库和进度留在设备上；没有网络，也能继续积累。</text>
+    </view>
+  </view>
+
+  <view class="status">
+    <text class="status-title">学习不是一口气跑完，是愿意一次次回来。</text>
+    <text class="status-copy">收集日是一款持续开发中的日语学习应用。我们把词汇、语法、例句和复习安排放在一起，希望你能按自己的节奏积累。不同平台的功能与发布进度可能不同，请以实际提供的版本为准。</text>
+  </view>
+</view>
