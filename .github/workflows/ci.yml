@@ -47,6 +47,9 @@ jobs:
   miniprogram:
     name: WeChat mini program (all checks)
     runs-on: ubuntu-latest
+    # Smoke fixtures use +08 timestamps and the app's local 4 AM study-day boundary.
+    env:
+      TZ: Asia/Shanghai
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

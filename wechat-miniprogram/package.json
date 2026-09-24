@@ -24,8 +24,8 @@
     "check": "node scripts/check-source.mjs",
     "test": "node scripts/run-all.mjs",
     "cloud-transport-smoke": "node scripts/cloud-transport-smoke.mjs",
-    "build-shared": "node scripts/build-shared.mjs",
     "check-shared": "node scripts/build-shared.mjs --check",
+    "build-shared": "node scripts/build-shared.mjs",
     "build-data": "node scripts/build-data-modules.mjs",
     "lint-undef": "node scripts/lint-undef.mjs"
   }
