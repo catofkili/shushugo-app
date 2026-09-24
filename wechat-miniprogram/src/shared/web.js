@@ -16963,8 +16963,13 @@ __export(yuzu_exports, {
   buyItem: () => buyItem,
   equipItem: () => equipItem,
   equippedItem: () => equippedItem,
+  grantRepairCard: () => grantRepairCard,
   ownsItem: () => ownsItem,
+  proGiftClaimed: () => proGiftClaimed,
+  proGiftEligible: () => proGiftEligible,
+  repairCards: () => repairCards,
   repairDay: () => repairDay,
+  repairDayWithCard: () => repairDayWithCard,
   repairPrice: () => repairPrice,
   repairableDays: () => repairableDays,
   settleYuzu: () => settleYuzu,
@@ -17012,6 +17017,7 @@ var weekDays = (today2) => {
 // ../frontend/src/lib/yuzu.ts
 var import_zoo_sounds = __toESM(require_zoo_sounds(), 1);
 var import_CapybaraMascot = __toESM(require_mascot(), 1);
+var import_entitlements3 = __toESM(require_entitlements(), 1);
 
 // ../frontend/src/lib/yuzu-catalog.ts
 var yuzu_catalog_exports = {};
@@ -17033,43 +17039,61 @@ var CATEGORY_LABEL = {
 };
 var EQUIPPABLE = /* @__PURE__ */ new Set(["theme", "mascot", "icon", "sound"]);
 var YUZU_ITEMS = [
-  { id: "theme-matcha", name: "\u62B9\u8336", description: "\u9752\u7EFF\u4E3B\u8272\u6362\u6210\u62B9\u8336\u7EFF", category: "theme", price: 200 },
-  { id: "theme-sakura", name: "\u6A31", description: "\u7C89\u5E95\u6A31\u8272", category: "theme", price: 200 },
-  { id: "theme-night", name: "\u6DF1\u591C\u98DF\u5802", description: "\u6697\u7425\u73C0\u6696\u8C03\u7684\u591C\u95F4\u914D\u8272", category: "theme", price: 200 },
+  { id: "theme-matcha", name: "\u62B9\u8336", description: "\u9752\u7EFF\u4E3B\u8272\u6362\u6210\u62B9\u8336\u7EFF", category: "theme", price: 2000 },
+  { id: "theme-sakura", name: "\u6A31", description: "\u7C89\u5E95\u6A31\u8272", category: "theme", price: 2000 },
+  { id: "theme-night", name: "\u6DF1\u591C\u98DF\u5802", description: "\u6697\u7425\u73C0\u6696\u8C03\u7684\u591C\u95F4\u914D\u8272", category: "theme", price: 2000 },
   // 下面两件不只换颜色，还换质感（投影、边框、按钮、字体），样式在 skins.css
-  { id: "theme-paper", name: "\u7EB8\u672C", description: "\u5976\u6CB9\u7EB8\u8272\u3001\u58A8\u8272\u4E3B\u952E\u3001\u7EC6\u7EBF\u5206\u9694\uFF0C\u50CF\u4E00\u672C\u5B89\u9759\u7684\u5355\u8BCD\u672C", category: "theme", price: 300 },
-  { id: "theme-round", name: "\u5706\u5706", description: "\u767D\u5E95\u5706\u4F53\u3001\u4F1A\u6309\u4E0B\u53BB\u7684\u7ACB\u4F53\u6309\u94AE\u3001\u67DA\u5B50\u6A59\u70B9\u7F00", category: "theme", price: 300 },
-  { id: "mascot-croc", name: "\u9CC4\u9C7C", description: "\u6362\u4E00\u53EA\u9CC4\u9C7C:\u8868\u60C5\u3001\u9875\u9762\u56FE\u6807\u3001\u7A7A\u72B6\u6001\u63D2\u753B\u6574\u5957\u6362\u3002\u5C0F\u8DEF\u4E0A\u8D70\u7684\u8FD8\u662F\u6C34\u8C5A", category: "mascot", price: 300 },
-  { id: "icon-happy", name: "\u5F00\u5FC3\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u5F00\u5FC3\u8868\u60C5", category: "icon", price: 500, soon: true, art: "mood-happy" },
-  { id: "icon-study", name: "\u8BFB\u4E66\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u8BFB\u4E66\u8868\u60C5", category: "icon", price: 500, soon: true, art: "mood-study" },
-  { id: "voice-voicevox-10", name: "\u96E8\u6674\u306F\u3046", description: "\u8F7B\u5FEB\u5973\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 600, art: "tool-speak" },
-  { id: "voice-voicevox-11", name: "\u7384\u91CE\u6B66\u5B8F", description: "\u6C89\u7A33\u7537\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 600, art: "tool-listen" },
-  { id: "sound-marimba", name: "\u6728\u7434", description: "\u7B54\u9898\u97F3\u6362\u6210\u6728\u7434:\u66F4\u5706\u3001\u66F4\u77ED", category: "sound", price: 300, art: "bubble-great" },
-  { id: "sound-epiano", name: "\u7535\u94A2", description: "\u7B54\u9898\u97F3\u6362\u6210\u7535\u94A2:\u5E26\u4E00\u70B9\u6BDB\u8FB9\u7684\u6696\u97F3", category: "sound", price: 300, art: "bubble-cheer" },
-  { id: "walk-alt", name: "\u5C0F\u8DEF\u8D70\u6CD5", description: "\u5B66\u4E60\u9875\u5C0F\u8DEF\u4E0A\u6362\u4E00\u5957\u8D70\u8DEF\u52A8\u753B", category: "misc", price: 400, soon: true, art: "walk-frame" },
-  { id: "report-cover", name: "\u5468\u62A5\u5C01\u9762", description: "\u5468\u62A5\u5C01\u9762\u6362\u4E00\u5F20", category: "misc", price: 300, soon: true, art: "card-daily" },
-  { id: "team-title", name: "\u961F\u4F0D\u79F0\u53F7", description: "\u7EC4\u961F\u9875\u540D\u5B57\u65C1\u7684\u4E13\u5C5E\u79F0\u53F7", category: "misc", price: 300, soon: true, art: "decor-set" }
+  { id: "theme-paper", name: "\u7EB8\u672C", description: "\u5976\u6CB9\u7EB8\u8272\u3001\u58A8\u8272\u4E3B\u952E\u3001\u7EC6\u7EBF\u5206\u9694\uFF0C\u50CF\u4E00\u672C\u5B89\u9759\u7684\u5355\u8BCD\u672C", category: "theme", price: 3000 },
+  { id: "theme-round", name: "\u5706\u5706", description: "\u767D\u5E95\u5706\u4F53\u3001\u4F1A\u6309\u4E0B\u53BB\u7684\u7ACB\u4F53\u6309\u94AE\u3001\u67DA\u5B50\u6A59\u70B9\u7F00", category: "theme", price: 3000 },
+  { id: "mascot-croc", name: "\u9CC4\u9C7C", description: "\u6362\u4E00\u53EA\u9CC4\u9C7C:\u8868\u60C5\u3001\u9875\u9762\u56FE\u6807\u3001\u7A7A\u72B6\u6001\u63D2\u753B\u6574\u5957\u6362\u3002\u5C0F\u8DEF\u4E0A\u8D70\u7684\u8FD8\u662F\u6C34\u8C5A", category: "mascot", price: 3000 },
+  { id: "icon-happy", name: "\u5F00\u5FC3\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u5F00\u5FC3\u8868\u60C5", category: "icon", price: 5000, soon: true, art: "mood-happy" },
+  { id: "icon-study", name: "\u8BFB\u4E66\u56FE\u6807", description: "\u628A App \u56FE\u6807\u6362\u6210\u8BFB\u4E66\u8868\u60C5", category: "icon", price: 5000, soon: true, art: "mood-study" },
+  { id: "voice-voicevox-10", name: "\u96E8\u6674\u306F\u3046", description: "\u8F7B\u5FEB\u5973\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 6000, art: "tool-speak" },
+  { id: "voice-voicevox-11", name: "\u7384\u91CE\u6B66\u5B8F", description: "\u6C89\u7A33\u7537\u58F0\u3002\u5207\u6362\u5355\u8BCD\u53D1\u97F3\uFF1B\u4F8B\u53E5\u4ECD\u7528\u9ED8\u8BA4\u58F0", category: "voice", price: 6000, art: "tool-listen" },
+  { id: "sound-marimba", name: "\u6728\u7434", description: "\u7B54\u9898\u97F3\u6362\u6210\u6728\u7434:\u66F4\u5706\u3001\u66F4\u77ED", category: "sound", price: 3000, art: "bubble-great" },
+  { id: "sound-epiano", name: "\u7535\u94A2", description: "\u7B54\u9898\u97F3\u6362\u6210\u7535\u94A2:\u5E26\u4E00\u70B9\u6BDB\u8FB9\u7684\u6696\u97F3", category: "sound", price: 3000, art: "bubble-cheer" },
+  { id: "walk-alt", name: "\u5C0F\u8DEF\u8D70\u6CD5", description: "\u5B66\u4E60\u9875\u5C0F\u8DEF\u4E0A\u6362\u4E00\u5957\u8D70\u8DEF\u52A8\u753B", category: "misc", price: 4000, soon: true, art: "walk-frame" },
+  { id: "report-cover", name: "\u5468\u62A5\u5C01\u9762", description: "\u5468\u62A5\u5C01\u9762\u6362\u4E00\u5F20", category: "misc", price: 3000, soon: true, art: "card-daily" },
+  { id: "team-title", name: "\u961F\u4F0D\u79F0\u53F7", description: "\u7EC4\u961F\u9875\u540D\u5B57\u65C1\u7684\u4E13\u5C5E\u79F0\u53F7", category: "misc", price: 3000, soon: true, art: "decor-set" }
 ];
 var itemById = (id) => YUZU_ITEMS.find((item) => item.id === id);
 
 // ../frontend/src/lib/yuzu.ts
 var YUZU = {
   /** 今天学了 ≥ 100 个词。计划排得太大清不完的日子(作者 7~8 月有 25 天)也该有份 */
-  study: 5,
+  study: 50,
   studyWords: 100,
-  /** 今日计划清完,叠在 study 之上 → 一天 10 */
-  plan: 5,
+  /** 今日计划清完,叠在 study 之上 → 一天 100 */
+  plan: 50,
   /** 连击每满 7 天 */
-  streak7: 30,
+  streak7: 300,
   /** 加餐,一天一次 */
-  encore: 5,
-  achievement: 20,
+  encore: 50,
+  achievement: 200,
   /** 补签:30 天内第 1/2/3 张,再往后按最后一档 */
-  repair: [50, 100, 200],
+  repair: [500, 1000, 2000],
   /** 只补 7 天以内的洞 */
-  repairWindowDays: 7
+  repairWindowDays: 7,
+  /** 补签卡最多存一张,多拿到的当场折成这么多柚子 */
+  repairCardOverflow: 800
 };
 var YUZU_EVENT = "shushugo:yuzu";
+var ensureYuzuScale = () => {
+  if (getState("yuzu_scale_10", "") === "1") return;
+  const db = getDatabase();
+  db.run("BEGIN");
+  try {
+    if (getState("yuzu_scale_10", "") !== "1") {
+      db.run("UPDATE yuzu_ledger SET amount = amount * 10 WHERE amount != 0");
+      setState("yuzu_scale_10", "1");
+    }
+    db.run("COMMIT");
+    persistSoon();
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+};
 var emit = () => {
   applyYuzuEquipment();
   if (typeof window !== "undefined") window.dispatchEvent(new Event(YUZU_EVENT));
@@ -17090,9 +17114,16 @@ var book = (kind, key, amount) => {
   (0, import_database34.getDatabase)().run("INSERT OR IGNORE INTO yuzu_ledger (kind, key, amount, day) VALUES (?, ?, ?, ?)", [kind, key, amount, today()]);
   return firstValue("SELECT changes()", [], 0) > 0;
 };
-var yuzuBalance = () => firstValue("SELECT COALESCE(SUM(amount), 0) FROM yuzu_ledger", [], 0);
-var yuzuToday = () => rowsFor("SELECT kind, key, amount FROM yuzu_ledger WHERE day = ? ORDER BY rowid", [today()]).map((row) => ({ kind: String(row.kind), key: String(row.key), amount: Number(row.amount) }));
+var yuzuBalance = () => {
+  ensureYuzuScale();
+  return firstValue("SELECT COALESCE(SUM(amount), 0) FROM yuzu_ledger", [], 0);
+};
+var yuzuToday = () => {
+  ensureYuzuScale();
+  return rowsFor("SELECT kind, key, amount FROM yuzu_ledger WHERE day = ? ORDER BY rowid", [today()]).map((row) => ({ kind: String(row.kind), key: String(row.key), amount: Number(row.amount) }));
+};
 var settleYuzu = () => {
+  ensureYuzuScale();
   const day = today();
   let earned = 0;
   const words = firstValue(
@@ -17110,7 +17141,8 @@ var settleYuzu = () => {
   rowsFor("SELECT id FROM achievements WHERE id NOT IN (SELECT key FROM yuzu_ledger WHERE kind = 'achievement')").forEach((row) => {
     if (book("achievement", String(row.id), YUZU.achievement)) earned += YUZU.achievement;
   });
-  if (earned) {
+  const gifted = proGiftEligible() && grantRepairCard("pro", false);
+  if (earned || gifted) {
     persistSoon();
     emit();
   }
@@ -17141,6 +17173,7 @@ var unequip = (category) => {
   emit();
 };
 var repairPrice = () => {
+  ensureYuzuScale();
   const since = shiftDay2(today(), -30);
   const used = firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'repair' AND day >= ?", [since], 0);
   return YUZU.repair[Math.min(used, YUZU.repair.length - 1)];
@@ -17156,6 +17189,36 @@ var repairableDays = () => {
     if (d > first && !set.has(d)) out.push(d);
   }
   return out;
+};
+var repairCards = () => Math.max(
+  0,
+  firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'card'", [], 0) - firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'repair_card'", [], 0)
+);
+var grantRepairCard = (key, notify = true) => {
+  if (firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind IN ('card', 'card_overflow') AND key = ?", [key], 0)) return false;
+  const booked = repairCards() >= 1 ? book("card_overflow", key, YUZU.repairCardOverflow) : book("card", key, 0);
+  if (booked && notify) {
+    persistSoon();
+    emit();
+  }
+  return booked;
+};
+var proGiftEligible = () => {
+  try {
+    const ent = (0, import_entitlements3.getEntitlements)();
+    return ent.isPro && ent.source !== "trial";
+  } catch {
+    return false;
+  }
+};
+var proGiftClaimed = () => firstValue("SELECT COUNT(*) FROM yuzu_ledger WHERE kind IN ('card', 'card_overflow') AND key = 'pro'", [], 0) > 0;
+var repairDayWithCard = (day) => {
+  if (!repairableDays().includes(day) || repairCards() < 1) return false;
+  book("repair_card", day, 0);
+  (0, import_database34.getDatabase)().run("INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)", [day]);
+  persistSoon();
+  emit();
+  return true;
 };
 var repairDay = (day) => {
   if (!repairableDays().includes(day)) return false;

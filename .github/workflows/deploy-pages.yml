@@ -2,7 +2,7 @@ name: Deploy ShuShuGo Pages
 
 on:
   push:
-    branches: [feat/fsrs-sync-accounts]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

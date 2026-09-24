@@ -15,6 +15,7 @@ button { margin: 16rpx 0; border-radius: 20rpx; font-size: 27rpx; line-height: 8
 .filter-row { margin: 17rpx 4rpx; }.picker { padding: 12rpx 20rpx; color: #5f5143; background: #fbf5e9; border-radius: 16rpx; font-size: 23rpx; box-shadow: 0 4rpx 14rpx rgba(91,67,42,.06); }
 .stats { display: flex; justify-content: space-around; padding: 24rpx 12rpx; }.stat { flex: 1; text-align: center; border-right: 2rpx solid #eadfcf; }.stat:last-child { border-right: 0; }
 .stat-value, .stat-label { display: block; }.stat-value { color: #3a2e22; font-size: 36rpx; font-weight: 900; }.stat-label { margin-top: 5rpx; color: #a08d79; font-size: 20rpx; }
+.share-done { margin: 28rpx 0 0; }.share-hint { display: block; margin-top: 10rpx; color: #8a7764; font-size: 20rpx; }
 .study-card { padding: 32rpx; }.card-meta { color: #9b8875; font-size: 21rpx; }.meaning { display: block; margin-top: 38rpx; color: #3a2e22; font-size: 42rpx; line-height: 1.35; font-weight: 850; }
 .reveal { margin-top: 42rpx; color: #4f7936; background: #e4efd8; }.answer { margin-top: 32rpx; }.kanji, .kana, .pos { display: block; }.kanji { color: #3a2e22; font-size: 62rpx; line-height: 1.15; font-weight: 900; }
 .kanji-prompt { margin-top: 12rpx; text-align: center; }.reading-mask { margin-top: 14rpx; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8rpx; }.reading-blank { width: 52rpx; height: 26rpx; border-radius: 8rpx; border: 2rpx solid rgba(105,168,64,.5); background: rgba(105,168,64,.14); }.reading-kana { color: #5f983a; font-size: 31rpx; line-height: 1; }

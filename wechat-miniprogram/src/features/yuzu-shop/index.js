@@ -7,8 +7,9 @@
 const { ensureDatabase, getStatus } = require('../../runtime/database-store');
 const features = require('../../runtime/extended-features');
 
-const RULES = ['今天学了 ≥ 100 词 +5', '清完今日计划 +5', '连击每满 7 天 +30', '加餐 +5', '每个成就 +20'];
+const RULES = ['今天学了 ≥ 100 词 +50', '清完今日计划 +50', '连击每满 7 天 +300', '加餐 +50', '每个成就 +200'];
 const LOCAL_EFFECT = { theme: true, voice: true };
+const formatYuzu = (amount) => Math.abs(amount) >= 1000 ? `${Number((amount / 1000).toFixed(2))}k` : String(amount);
 
 Page({
   data: { ready: false, error: '', shop: { balance: 0, items: [], repairableDays: [], repairPrice: 0 }, rules: RULES, earned: 0, skin: '', repairDay: '' },
@@ -28,11 +29,12 @@ Page({
     const shop = features.yuzuShop();
     const items = shop.items.map((item) => ({
       ...item,
+      priceDisplay: formatYuzu(item.price),
       swatchClass: item.category === 'theme' ? item.id.replace('theme-', '') : item.category,
       localEffect: Boolean(LOCAL_EFFECT[item.category]),
       action: item.soon ? 'soon' : item.equipped ? 'equipped' : item.owned && item.equippable ? 'equip' : item.owned ? 'owned' : 'buy'
     }));
-    this.setData({ ready: true, shop: { ...shop, items }, earned, skin: features.equippedYuzu('theme'), repairDay: shop.repairableDays[0] || '' });
+    this.setData({ ready: true, shop: { ...shop, balanceDisplay: formatYuzu(shop.balance), repairPriceDisplay: formatYuzu(shop.repairPrice), items }, earned, earnedDisplay: formatYuzu(earned), skin: features.equippedYuzu('theme'), repairDay: shop.repairableDays[0] || '' });
   },
 
   async buy(event) {

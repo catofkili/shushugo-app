@@ -142,7 +142,9 @@ try {
   assert.equal(res.status, 403);
   res = await call(`/api/purchases/wechat-notifications?signature=${sig}&timestamp=${ts}&nonce=${nonce}&echostr=hello`);
   assert.equal(await res.text(), "hello");
-  res = await post(`/api/purchases/wechat-notifications?signature=${sig}&timestamp=${ts}&nonce=${nonce}`, null, { Event: "xpay_refund_notify", OutTradeNo: order.outTradeNo });
+  res = await post(`/api/purchases/wechat-notifications?signature=${sig}&timestamp=${ts}&nonce=${nonce}`, null, {
+    Event: "xpay_refund_notify", OpenId: "openid-a", MchOrderId: order.outTradeNo, RetCode: 0
+  });
   assert.deepEqual(await res.json(), { ErrCode: 0 });
   assert.equal(env.DB.entitlement.is_pro, 0);
   assert.equal(env.DB.orders[order.outTradeNo].status, "refunded");

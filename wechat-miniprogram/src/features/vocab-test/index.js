@@ -8,6 +8,7 @@ const { vocabTest } = require('../../runtime/extended-features');
 
 const STALE_RESUME_MS = 30 * 60 * 1000;
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
+const SHARE_LEVELS = [...LEVELS, 'N1+'];
 
 const pad = (value) => String(value).padStart(2, '0');
 const dateKey = (timestamp) => { const d = new Date(timestamp); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
@@ -20,6 +21,28 @@ const formatGap = (ms) => {
 };
 const formatDuration = (seconds) => (seconds >= 60 ? `${Math.floor(seconds / 60)} 分 ${seconds % 60} 秒` : `${seconds} 秒`);
 const feedbackText = (state) => ({ correct: '答对了', wrong: '答错了', unknown: '记为不认识', timeout: '超时，记为不认识' })[state] || '';
+const safeCount = (value) => Math.max(0, Math.min(999999, Number.parseInt(value, 10) || 0));
+
+const vocabShare = (result) => {
+  if (!result) return null;
+  const answered = safeCount(result.answered);
+  const tooFew = answered < 15;
+  const values = {
+    share: 'vocab',
+    answered,
+    total: safeCount(result.totalQuestions),
+    estimate: safeCount(result.estimated),
+    lower: safeCount(result.lower),
+    upper: safeCount(result.upper),
+    confidence: safeCount(result.confidence),
+    duration: safeCount(result.durationSeconds),
+    recommendation: SHARE_LEVELS.includes(result.recommendation) ? result.recommendation : 'N5'
+  };
+  return {
+    title: tooFew ? `我测了日语词汇量，答了 ${answered} 题` : `我的日语词汇量约 ${values.estimate} 词，可信度 ${values.confidence}%`,
+    query: Object.entries(values).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&')
+  };
+};
 
 const historyRow = (row) => ({
   ...row,
@@ -53,6 +76,7 @@ Page({
     remaining: 0,
     progress: '',
     result: null,
+    sharedResult: null,
     levels: LEVELS
   },
 
@@ -60,7 +84,27 @@ Page({
   questionStartedAt: 0,
   hiddenAt: 0,
 
-  async onLoad() {
+  async onLoad(options = {}) {
+    if (options.share === 'vocab') {
+      wx.hideShareMenu();
+      const answered = safeCount(options.answered);
+      this.setData({
+        view: 'shared',
+        sharedResult: {
+          answered,
+          totalQuestions: safeCount(options.total),
+          estimated: safeCount(options.estimate),
+          lower: safeCount(options.lower),
+          upper: safeCount(options.upper),
+          confidence: safeCount(options.confidence),
+          duration: formatDuration(safeCount(options.duration)),
+          recommendation: SHARE_LEVELS.includes(options.recommendation) ? options.recommendation : 'N5',
+          tooFew: answered < 15
+        }
+      });
+      return;
+    }
+    wx.hideShareMenu();
     try {
       if (!getStatus().ready) await ensureDatabase();
       this.setData({ ready: true });
@@ -72,6 +116,7 @@ Page({
   },
 
   onShow() {
+    if (this.data.view === 'shared') return;
     // 切回来：把离开的这段从本题用时里减掉（计时器停了不等于账没记）
     if (this.hiddenAt) {
       this.questionStartedAt += Date.now() - this.hiddenAt;
@@ -104,6 +149,7 @@ Page({
     }
     const finished = session && session.finishedAt && session.responses.length > 0 ? session : null;
     this.setData({ history, latest: history[0] || null, resume, session, hasResult: Boolean(finished), view: 'intro', feedback: null });
+    wx.hideShareMenu();
   },
 
   /* ---------- 出题 / 作答 ---------- */
@@ -210,11 +256,27 @@ Page({
     if (!finished.finishedAt) finished = await vocabTest.finish();
     else await vocabTest.finish();
     this.setData({ view: 'result', session: finished, feedback: null, result: resultView(vocabTest.result(finished)), history: vocabTest.history().map(historyRow) });
+    wx.showShareMenu({ menus: ['shareAppMessage', 'shareTimeline'] });
   },
 
   openLastResult() {
     const session = vocabTest.session();
-    if (session && session.finishedAt) this.setData({ view: 'result', session, result: resultView(vocabTest.result(session)) });
+    if (session && session.finishedAt) {
+      this.setData({ view: 'result', session, result: resultView(vocabTest.result(session)) });
+      wx.showShareMenu({ menus: ['shareAppMessage', 'shareTimeline'] });
+    }
+  },
+
+  onShareAppMessage() {
+    const share = vocabShare(this.data.result);
+    return share
+      ? { title: share.title, path: `/features/vocab-test/index?${share.query}` }
+      : { title: '来测测你的日语词汇量', path: '/features/vocab-test/index' };
+  },
+
+  onShareTimeline() {
+    const share = vocabShare(this.data.result);
+    return share ? { title: share.title, query: share.query } : { title: '来测测你的日语词汇量', query: '' };
   },
 
   backHome() { this.refreshHome(); }

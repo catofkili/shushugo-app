@@ -7,7 +7,7 @@ import { prepareVoice, previewVoice, voiceDeliveryMode } from "../lib/speech";
 import { previewTimbre, type SoundTimbre } from "../lib/zoo-sounds";
 
 import {
-  buyItem, equipItem, equippedItem, ownsItem, repairableDays, repairDay, repairPrice,
+  buyItem, buyRepairCard, equipItem, equippedItem, ownsItem, proGiftEligible, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice,
   settleYuzu, unequip, YUZU, YUZU_EVENT, yuzuBalance, yuzuToday
 } from "../lib/yuzu";
 
@@ -22,14 +22,18 @@ import {
  */
 
 const CATEGORY_ORDER: YuzuCategory[] = ["theme", "mascot", "icon", "voice", "sound", "misc"];
+const formatYuzu = (amount: number) => Math.abs(amount) >= 1000
+  ? `${Number((amount / 1000).toFixed(2))}k`
+  : String(amount);
 /** 补签不在 catalog 里(价格是算出来的、买了就消耗),页面里当一件特殊商品摆 */
 const REPAIR_ID = "repair";
-const REPAIR_ITEM: YuzuItem = { id: REPAIR_ID, name: "补签", description: `补回最近 ${YUZU.repairWindowDays} 天里断掉的一天,只算进连击。30 天内第 1/2/3 张 ${YUZU.repair.join("/")}`, category: "misc", price: YUZU.repair[0], art: "tool-review" };
+const REPAIR_ITEM: YuzuItem = { id: REPAIR_ID, name: "补签", description: `补回最近 ${YUZU.repairWindowDays} 天里断掉的一天,只算进连击。30 天内第 1/2/3 张 ${YUZU.repair.map(formatYuzu).join("/")}`, category: "misc", price: YUZU.repair[0], art: "tool-review" };
 const CATEGORY_ICON: Record<YuzuCategory, ComponentType<LucideProps>> = {
   theme: Palette, mascot: Shirt, icon: AppWindow, voice: Mic, sound: Music, misc: Sparkles
 };
 const KIND_LABEL: Record<string, string> = {
-  study: "今天学了 100 词", plan: "清完今日计划", streak: "连击满 7 天", encore: "加餐", achievement: "成就", buy: "购买", repair: "补签"
+  study: "今天学了 100 词", plan: "清完今日计划", streak: "连击满 7 天", encore: "加餐", achievement: "成就", buy: "购买", repair: "补签",
+  card: "获得补签卡", card_buy: "购买补签卡", card_overflow: "补签卡折算", repair_card: "用补签卡"
 };
 type CheckoutStatus = "paying" | "preparing" | "done" | "deferred" | "failed";
 
@@ -69,7 +73,7 @@ const Art = ({ item, size }: { item: YuzuItem; size: "s" | "l" }) => {
   );
 };
 
-export const YuzuShopPage = () => {
+export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
   const [, bump] = useState(0);
   const [tab, setTab] = useState<YuzuCategory | "all" | "owned" | "repair">("all");
   const [picked, setPicked] = useState<string>(REPAIR_ID);
@@ -96,6 +100,9 @@ export const YuzuShopPage = () => {
   const todayIncome = todayRows.filter((r) => r.amount > 0).reduce((a, r) => a + r.amount, 0);
   const gaps = repairableDays();
   const price = repairPrice();
+  const cards = repairCards();
+  // 已经是正式会员的话那张卡已经发过了（settleYuzu），再摆「开通会员赠送」就是在向会员推销会员
+  const showProGift = Boolean(onOpenPro) && !proGiftEligible();
   const repair: YuzuItem = { ...REPAIR_ITEM, price };
   const ownedItems = YUZU_ITEMS.filter((i) => ownsItem(i.id));
   const items = tab === "all" ? [repair, ...YUZU_ITEMS]
@@ -173,19 +180,19 @@ export const YuzuShopPage = () => {
       {/* 只有余额固定在顶上;商品货架应当成为首屏主角 */}
       <div className="yz-sticky">
         <section className="yz-wallet">
-          <p className="yz-wallet-num"><Citrus size={18} aria-hidden="true" />{balance}</p>
-          <b className="yz-wallet-today">{todayIncome > 0 ? `今天 +${todayIncome}` : "今天还没进账"}</b>
+          <p className="yz-wallet-num"><Citrus size={18} aria-hidden="true" />{formatYuzu(balance)}</p>
+          <b className="yz-wallet-today">{todayIncome > 0 ? `今天 +${formatYuzu(todayIncome)}` : "今天还没进账"}</b>
           <button className="yz-wallet-how" onClick={() => setRulesOpen((v) => !v)} aria-expanded={rulesOpen}>
             怎么赚 <ChevronDown size={13} className={rulesOpen ? "is-open" : ""} aria-hidden="true" />
           </button>
           {rulesOpen && (
             <ul className="yz-rules">
-              <li><span>学 {YUZU.studyWords} 个词</span><b>+{YUZU.study}</b></li>
-              <li><span>清完今日计划</span><b>+{YUZU.plan}</b></li>
-              <li><span>连击每满 7 天</span><b>+{YUZU.streak7}</b></li>
-              <li><span>加餐(每天一次)</span><b>+{YUZU.encore}</b></li>
-              <li><span>解锁一个成就</span><b>+{YUZU.achievement}</b></li>
-              {todayRows.length > 0 && <li className="yz-rules-today">今天:{todayRows.map((r) => `${KIND_LABEL[r.kind] ?? r.kind} ${r.amount > 0 ? "+" : ""}${r.amount}`).join(" · ")}</li>}
+              <li><span>学 {YUZU.studyWords} 个词</span><b>+{formatYuzu(YUZU.study)}</b></li>
+              <li><span>清完今日计划</span><b>+{formatYuzu(YUZU.plan)}</b></li>
+              <li><span>连击每满 7 天</span><b>+{formatYuzu(YUZU.streak7)}</b></li>
+              <li><span>加餐(每天一次)</span><b>+{formatYuzu(YUZU.encore)}</b></li>
+              <li><span>解锁一个成就</span><b>+{formatYuzu(YUZU.achievement)}</b></li>
+              {todayRows.length > 0 && <li className="yz-rules-today">今天:{todayRows.map((r) => `${KIND_LABEL[r.kind] ?? r.kind}${r.amount ? ` ${r.amount > 0 ? "+" : ""}${formatYuzu(r.amount)}` : ""}`).join(" · ")}</li>}
             </ul>
           )}
         </section>
@@ -228,14 +235,26 @@ export const YuzuShopPage = () => {
         {isRepair ? (
           gaps.length ? (
             <div className="yz-repair-days">
+              <span className="yz-repair-label">
+                {cards > 0 ? "用补签卡补" : <><Citrus size={13} aria-hidden="true" />{formatYuzu(price)} 补一天{balance < price ? ` · 还差 ${formatYuzu(price - balance)}` : ""}</>}
+              </span>
               {gaps.map((day) => (
-                <button key={day} className="yz-cta" disabled={balance < price} onClick={() => repairDay(day)}>
-                  补 {Number(day.slice(5, 7))}/{Number(day.slice(8))} · <Citrus size={14} aria-hidden="true" />{price}
+                <button
+                  key={day}
+                  className="yz-day"
+                  disabled={cards === 0 && balance < price}
+                  onClick={() => (cards > 0 ? repairDayWithCard(day) : repairDay(day))}
+                  aria-label={`补 ${Number(day.slice(5, 7))} 月 ${Number(day.slice(8))} 日`}
+                >
+                  {Number(day.slice(5, 7))}/{Number(day.slice(8))}
                 </button>
               ))}
             </div>
           ) : (
-            <button className="yz-cta" disabled>最近 {YUZU.repairWindowDays} 天没断,不用补</button>
+            <button className="yz-cta" disabled={cards >= 1 || balance < price} onClick={buyRepairCard}>
+              {cards >= 1 ? <><Check size={15} /> 已有一张补签卡</>
+                : <>买一张备用 · <Citrus size={15} aria-hidden="true" />{formatYuzu(price)}{balance < price ? ` · 还差 ${formatYuzu(price - balance)}` : ""}</>}
+            </button>
           )
         ) : (
           <button
@@ -247,7 +266,7 @@ export const YuzuShopPage = () => {
               : item.soon ? "即将上架"
               : inUse ? <><Check size={15} /> 使用中 · 点击换回默认</>
                 : owned ? (item.category === "voice" || EQUIPPABLE.has(item.category) ? "使用" : <><Check size={15} /> 已拥有</>)
-                  : confirming ? `确认花 ${item.price} 买下` : <><Citrus size={15} /> {item.price}{balance < item.price ? ` · 还差 ${item.price - balance}` : ""}</>}
+                  : confirming ? `确认花 ${formatYuzu(item.price)} 买下` : <><Citrus size={15} /> {formatYuzu(item.price)}{balance < item.price ? ` · 还差 ${formatYuzu(item.price - balance)}` : ""}</>}
           </button>
         )}
       </section>}
@@ -259,6 +278,22 @@ export const YuzuShopPage = () => {
           const rep = it.id === REPAIR_ID;
           const has = !rep && ownsItem(it.id);
           const on = has && itemInUse(it);
+          if (rep) return (
+            <div key={it.id} className={`yz-card yz-card-wide${picked === it.id ? " is-picked" : ""}`}>
+              <button type="button" className="yz-card-select" onClick={() => pick(it.id)} aria-pressed={picked === it.id}>
+                <Art item={it} size="s" />
+                <span className="yz-card-main">
+                  <b>{it.name}</b>
+                  <small>{gaps.length ? `最近 ${YUZU.repairWindowDays} 天断了 ${gaps.length} 天` : `最近 ${YUZU.repairWindowDays} 天没断`}</small>
+                </span>
+                <span className="yz-price"><Citrus size={11} aria-hidden="true" />{formatYuzu(it.price)} / 天</span>
+              </button>
+              <div className="yz-card-footer">
+                <span className="yz-card-count">补签卡 {Math.min(cards, 1)}/1</span>
+                {showProGift && <button type="button" className="yz-card-pro" onClick={onOpenPro}><Sparkles size={12} aria-hidden="true" />开通会员送一张</button>}
+              </div>
+            </div>
+          );
           return (
             <button key={it.id} className={`yz-card${picked === it.id ? " is-picked" : ""}${has ? " is-owned" : ""}`} onClick={() => pick(it.id)} aria-pressed={picked === it.id}>
               <Art item={it} size="s" />
@@ -266,7 +301,7 @@ export const YuzuShopPage = () => {
               {it.soon ? <span className="yz-tag is-soon">即将上架</span>
                 : on ? <span className="yz-tag is-on"><Check size={11} /> 使用中</span>
                 : has ? <span className="yz-tag"><Check size={11} /> 已拥有</span>
-                  : <span className="yz-price"><Citrus size={11} aria-hidden="true" />{it.price}{rep ? " / 天" : ""}</span>}
+                  : <span className="yz-price"><Citrus size={11} aria-hidden="true" />{formatYuzu(it.price)}</span>}
             </button>
           );
         })}

@@ -1467,7 +1467,7 @@
 .yz-stage-text{min-width:0}
 .yz-stage-kick{font-size:9px;font-weight:800;letter-spacing:.14em;color:var(--zoo-muted)}
 .yz-stage-name{font-size:16px;font-weight:800;line-height:1.2;color:var(--zoo-ink)}
-.yz-stage-desc{overflow:hidden;color:var(--zoo-muted);font-size:11px;line-height:1.35;margin-top:1px;text-overflow:ellipsis;white-space:nowrap}
+.yz-stage-desc{color:var(--zoo-muted);font-size:11px;line-height:1.35;margin-top:1px;overflow-wrap:anywhere}
 /* 动作按钮 = 主页今日大卡那块绿,但只占一格 */
 .yz-cta{grid-column:3;grid-row:1;justify-self:end;display:inline-flex;justify-content:center;align-items:center;gap:4px;min-height:34px;max-width:100%;padding:0 11px;border:0;border-radius:12px;
   background:linear-gradient(122deg,var(--zoo-primary-dark),var(--zoo-primary));color:var(--zoo-on-primary);
@@ -1527,9 +1527,14 @@
 /* 货架:两列方格(.zoo-tile 同款描边和阴影),≥560px 三列 */
 .yz-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 @media (min-width:560px){.yz-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-.yz-card{display:flex;flex-direction:column;gap:6px;text-align:left;border:1.5px solid var(--ds-line);border-radius:20px;padding:10px;
+.yz-card{position:relative;display:flex;flex-direction:column;gap:6px;text-align:left;border:1.5px solid var(--ds-line);border-radius:20px;padding:10px;
   background:var(--zoo-surface);box-shadow:0 6px 18px rgba(160,120,60,.1);color:var(--zoo-ink);-webkit-tap-highlight-color:transparent;
   transition:transform .16s cubic-bezier(.34,1.7,.5,1),border-color .16s}
+.yz-card-select{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left}
+.yz-card-footer{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.yz-card-count{position:absolute;top:10px;right:10px;border-radius:999px;padding:2px 5px;background:var(--zoo-surface);color:var(--zoo-muted);font-size:9px;font-weight:800;line-height:1.2}
+.yz-card-pro{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border:1px solid rgba(111,168,62,.4);border-radius:999px;background:transparent;color:var(--zoo-primary-deep);font-size:12px;font-weight:800;white-space:nowrap}
+.yz-card-pro:focus-visible{outline:2px solid var(--zoo-primary);outline-offset:2px}
 .yz-card:active{transform:translateY(1px) scale(.97);transition-duration:.07s}
 .yz-card.is-picked{border-color:color-mix(in srgb, var(--ds-primary) 45%, transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--zoo-primary) 30%,transparent),0 6px 18px rgba(160,120,60,.1)}
 .yz-card b{font-size:14px;padding:0 2px}

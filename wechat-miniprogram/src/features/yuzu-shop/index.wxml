@@ -2,20 +2,20 @@
   <view class="feature-hero">
     <text class="feature-kicker">YUZU SHOP</text>
     <text class="feature-title">柚子商店</text>
-    <view class="balance"><text class="balance-number">{{shop.balance}}</text><text>🍊 可用</text></view>
-    <text class="feature-copy">只奖「做完了」，绝不奖「答得好」—— 答对答错、认识忘记都不发柚子，免得为了钱点认识、把假数据喂给 FSRS。没有花钱买柚子的路。</text>
+    <view class="balance"><text class="balance-number">{{shop.balanceDisplay}}</text><text>🍊 可用</text></view>
+    <text class="feature-copy">只奖「做完了」，绝不奖「答得好」——答对答错、认识忘记都不发柚子，免得为了钱点认识、把假数据喂给 FSRS。人民币充值入口尚未接入。</text>
   </view>
   <view class="panel" wx:if="{{error}}"><text class="danger">{{error}}</text></view>
 
   <view class="panel">
     <text class="panel-title">怎么攒</text>
     <view class="chip-row"><text class="chip" wx:for="{{rules}}" wx:key="*this">{{item}}</text></view>
-    <text wx:if="{{earned}}" class="feature-copy">刚刚结算到账 {{earned}} 枚。</text>
+    <text wx:if="{{earned}}" class="feature-copy">刚刚结算到账 {{earnedDisplay}} 枚。</text>
   </view>
 
   <view class="panel">
-    <view class="row"><text class="panel-title">补签</text><text class="badge">{{shop.repairPrice}} 柚子</text></view>
-    <text class="muted">只补最近 7 天的洞，30 天内第 1 / 2 / 3 张 50 / 100 / 200。补回的那天接上连击，但不算成就里的学习日 —— 那天没学就是没学。</text>
+    <view class="row"><text class="panel-title">补签</text><text class="badge">{{shop.repairPriceDisplay}} 柚子</text></view>
+    <text class="muted">只补最近 7 天的洞，30 天内第 1 / 2 / 3 张 500 / 1k / 2k。补回的那天接上连击，但不算成就里的学习日 —— 那天没学就是没学。</text>
     <block wx:if="{{shop.repairableDays.length}}">
       <picker mode="selector" range="{{shop.repairableDays}}" bindchange="pickRepairDay"><view class="field">补 {{repairDay}} ˅</view></picker>
       <button class="primary" disabled="{{shop.balance < shop.repairPrice}}" bindtap="repair">{{shop.balance < shop.repairPrice ? '柚子不够' : '补这一天'}}</button>
@@ -29,11 +29,11 @@
       <view class="swatch {{item.swatchClass}}"></view>
     </view>
     <view class="item-actions">
-      <button wx:if="{{item.action === 'soon'}}" class="soon" disabled>即将推出 · {{item.price}} 柚子</button>
+      <button wx:if="{{item.action === 'soon'}}" class="soon" disabled>即将推出 · {{item.priceDisplay}} 柚子</button>
       <button wx:elif="{{item.action === 'equipped'}}" class="owned" disabled>使用中</button>
       <button wx:elif="{{item.action === 'equip'}}" class="owned" data-id="{{item.id}}" bindtap="equip">使用</button>
       <button wx:elif="{{item.action === 'owned'}}" class="owned" disabled>已解锁 · 在设置里选声音</button>
-      <button wx:else disabled="{{!item.canBuy}}" data-id="{{item.id}}" bindtap="buy">{{item.price}} 柚子 · {{item.canBuy ? '购买' : '余额不足'}}</button>
+      <button wx:else disabled="{{!item.canBuy}}" data-id="{{item.id}}" bindtap="buy">{{item.priceDisplay}} 柚子 · {{item.canBuy ? '购买' : '余额不足'}}</button>
     </view>
   </view>
 </scroll-view>

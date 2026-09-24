@@ -20,7 +20,10 @@ export interface WechatPayEnv {
   WECHAT_APP_ID?: string;
   WECHAT_APP_SECRET?: string;
   WECHAT_OFFER_ID?: string;
+  /** 兼容旧部署；优先使用按环境区分的 AppKey。 */
   WECHAT_PAY_APP_KEY?: string;
+  WECHAT_PAY_SANDBOX_APP_KEY?: string;
+  WECHAT_PAY_PRODUCTION_APP_KEY?: string;
   /** "0" 正式 / "1" 沙箱 */
   WECHAT_PAY_ENV?: string;
   /** JSON：{ productId: 分 }。价格写在这里而不是代码里，改价不用发版。 */
@@ -34,6 +37,17 @@ export interface WechatSession {
 
 export const WECHAT_PAY_PRODUCTS = ["shushugo_pro_monthly", "shushugo_pro_yearly", "shushugo_pro_lifetime"] as const;
 export type WechatPayProduct = (typeof WECHAT_PAY_PRODUCTS)[number];
+
+/**
+ * 微信后台「道具 ID」限 20 个字符，shushugo_pro_lifetime 有 21 个，建不出来。
+ * 所以交给微信的 productId 用短名；我们自己的商品 id（权益、订单表、客户端）不变。
+ * ⚠️ 这里的值必须和虚拟支付后台建的道具 ID 一字不差，改一边就要改另一边。
+ */
+export const WECHAT_PROP_IDS: Record<WechatPayProduct, string> = {
+  shushugo_pro_monthly: "pro_monthly",
+  shushugo_pro_yearly: "pro_yearly",
+  shushugo_pro_lifetime: "pro_lifetime"
+};
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** 订阅类商品在微信这边是一次性扣款，到期时间由我们按天数算。 */
@@ -56,7 +70,11 @@ export const paySig = (appKey: string, uri: string, body: string) => hmacSha256H
 /** signature = HMAC-SHA256(session_key, body)。 */
 export const userSig = (sessionKey: string, body: string) => hmacSha256Hex(sessionKey, body);
 
-export const configured = (env: WechatPayEnv) => Boolean(env.WECHAT_OFFER_ID && env.WECHAT_PAY_APP_KEY && env.WECHAT_APP_ID && env.WECHAT_APP_SECRET);
+export const payAppKey = (env: WechatPayEnv) => Number(env.WECHAT_PAY_ENV ?? "0") === 1
+  ? env.WECHAT_PAY_SANDBOX_APP_KEY || env.WECHAT_PAY_APP_KEY
+  : env.WECHAT_PAY_PRODUCTION_APP_KEY || env.WECHAT_PAY_APP_KEY;
+
+export const configured = (env: WechatPayEnv) => Boolean(env.WECHAT_OFFER_ID && payAppKey(env) && env.WECHAT_APP_ID && env.WECHAT_APP_SECRET);
 
 export const priceTable = (env: WechatPayEnv): Partial<Record<WechatPayProduct, number>> => {
   try {
@@ -99,7 +117,7 @@ export const createOrder = async (
     buyQuantity: 1,
     env: Number(env.WECHAT_PAY_ENV ?? "0") === 1 ? 1 : 0,
     currencyType: "CNY",
-    productId,
+    productId: WECHAT_PROP_IDS[productId as WechatPayProduct],
     goodsPrice: priceCents,
     outTradeNo,
     attach: productId
@@ -110,7 +128,7 @@ export const createOrder = async (
     priceCents,
     payload: {
       signData,
-      paySig: await paySig(env.WECHAT_PAY_APP_KEY!, "requestVirtualPayment", signData),
+      paySig: await paySig(payAppKey(env)!, "requestVirtualPayment", signData),
       signature: await userSig(session.sessionKey, signData),
       mode: "short_series_goods"
     }
@@ -126,7 +144,7 @@ export const callXpay = async (
   fetchImpl: typeof fetch = fetch
 ) => {
   const json = JSON.stringify(body);
-  const sig = await paySig(env.WECHAT_PAY_APP_KEY!, path, json);
+  const sig = await paySig(payAppKey(env)!, path, json);
   const response = await fetchImpl(`https://api.weixin.qq.com${path}?access_token=${encodeURIComponent(accessToken)}&pay_sig=${sig}`, {
     method: "POST",
     headers: { "content-type": "application/json" },

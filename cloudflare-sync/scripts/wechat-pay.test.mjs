@@ -30,12 +30,12 @@ assert.equal(await userSig("sk", "{\"a\":1}"), createHmac("sha256", "sk").update
 // 价格表：非法值丢掉，不用 NaN 下单。
 assert.deepEqual(priceTable(env), { shushugo_pro_monthly: 1200, shushugo_pro_lifetime: 12800 });
 
-// 订单：signData 是字符串，字段齐，两道签名分别对 AppKey 和 session_key。
+// 订单：signData 是字符串，字段齐；productId 是微信道具短名（后台限 20 字），两道签名分别对 AppKey 和 session_key。
 const order = await createOrder(env, session, "shushugo_pro_monthly", "abc123");
 const signData = JSON.parse(order.payload.signData);
 assert.deepEqual(signData, {
   offerId: "1450000000", buyQuantity: 1, env: 0, currencyType: "CNY",
-  productId: "shushugo_pro_monthly", goodsPrice: 1200, outTradeNo: "abc123", attach: "shushugo_pro_monthly"
+  productId: "pro_monthly", goodsPrice: 1200, outTradeNo: "abc123", attach: "shushugo_pro_monthly"
 });
 assert.equal(order.payload.paySig, await paySig("appkey-abc", "requestVirtualPayment", order.payload.signData));
 assert.equal(order.payload.signature, await userSig("sk-123", order.payload.signData));

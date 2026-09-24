@@ -30,7 +30,7 @@
       <view class="card welcome-card">
         <view class="card-kicker">开始组队</view>
         <text class="section-title large">先给自己取个队友昵称</text>
-        <text class="detail">登录后才能加入真实队伍。队友看不到你的微信标识和原始学习记录。</text>
+        <text class="detail">登录后才能加入真实队伍。已有邮箱或 Apple 账号请先关联微信；只有在确认创建新账号后才会注册。</text>
         <label class="field-label">队友昵称</label>
         <input class="input" value="{{nickname}}" maxlength="20" placeholder="例如：每天背十个" bindinput="inputNickname" />
         <button class="primary" loading="{{busy}}" disabled="{{busy || !nickname.length}}" bindtap="signIn">微信登录并开始</button>

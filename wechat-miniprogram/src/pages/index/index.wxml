@@ -1,4 +1,16 @@
-<scroll-view class="page" scroll-y>
+<view wx:if="{{sharedDaily}}" class="page">
+  <view class="hero">
+    <text class="eyebrow">DAILY STUDY</text>
+    <text class="title">今日学习</text>
+    <text class="subtitle">朋友今天完成了 {{sharedDaily.completed}} 个单词</text>
+  </view>
+  <view class="card empty-card">
+    <text class="empty-title">{{sharedDaily.completed}} / {{sharedDaily.planned}} 个单词</text>
+    <text class="empty-text">收集日 · 每天学一点日语</text>
+  </view>
+</view>
+
+<scroll-view wx:else class="page" scroll-y>
   <view class="hero">
     <text class="eyebrow">WORD STUDY · 离线可用</text>
     <text class="title">今天学一点</text>
@@ -161,6 +173,8 @@
     <view wx:elif="{{!interleave}}" class="card empty-card">
       <text class="empty-title">今天的计划完成了</text>
       <text class="empty-text">可以继续查词，或明天再来。</text>
+      <button wx:if="{{stats.completed > 0}}" class="primary share-done" open-type="share">分享今日完成</button>
+      <text wx:if="{{stats.completed > 0}}" class="share-hint">分享到朋友圈：点右上角「…」并选择「分享到朋友圈」</text>
     </view>
 
     <button class="undo" loading="{{busy}}" disabled="{{busy || (mode === 'mixed' && !undoKinds.length)}}" bindtap="handleUndo">撤销上一张</button>

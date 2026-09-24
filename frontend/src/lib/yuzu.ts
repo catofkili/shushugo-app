@@ -3,7 +3,7 @@
  * 和答对/答错挂钩的那一刻,用户就会为了钱点「认识」,喂给 FSRS 的全是假数据。
  *
  * 数字是拿作者 102 天真实流水回放定的(见 CLAUDE.md「柚子」一节):
- * 稳态 ≈ 14/天,首件 200 的主题在第 7 天到手。
+ * 奖励和商店价格同时乘 10，保持攒到首件主题所需的学习时间不变。
  */
 import { getDatabase } from "./database";
 import { firstValue, persistSoon, rowsFor, getState, setState, today } from "./database/db-utils";
@@ -12,26 +12,43 @@ import { readEncoreLog } from "./review-budget";
 import { computeStreak, shiftDay } from "./zoo-streak";
 import { setSoundTimbre, type SoundTimbre } from "./zoo-sounds";
 import { setMascotSkin } from "../components/CapybaraMascot";
+import { getEntitlements } from "./entitlements";
 import { EQUIPPABLE, itemById, VOICE_ITEM_PREFIX, type YuzuCategory } from "./yuzu-catalog";
 
 export const YUZU = {
   /** 今天学了 ≥ 100 个词。计划排得太大清不完的日子(作者 7~8 月有 25 天)也该有份 */
-  study: 5,
+  study: 50,
   studyWords: 100,
-  /** 今日计划清完,叠在 study 之上 → 一天 10 */
-  plan: 5,
+  /** 今日计划清完,叠在 study 之上 → 一天 100 */
+  plan: 50,
   /** 连击每满 7 天 */
-  streak7: 30,
+  streak7: 300,
   /** 加餐,一天一次 */
-  encore: 5,
-  achievement: 20,
+  encore: 50,
+  achievement: 200,
   /** 补签:30 天内第 1/2/3 张,再往后按最后一档 */
-  repair: [50, 100, 200],
+  repair: [500, 1000, 2000],
   /** 只补 7 天以内的洞 */
   repairWindowDays: 7
 } as const;
 
 export const YUZU_EVENT = "shushugo:yuzu";
+const ensureYuzuScale = (): void => {
+  if (getState("yuzu_scale_10", "") === "1") return;
+  const db = getDatabase();
+  db.run("BEGIN");
+  try {
+    if (getState("yuzu_scale_10", "") !== "1") {
+      db.run("UPDATE yuzu_ledger SET amount = amount * 10 WHERE amount != 0");
+      setState("yuzu_scale_10", "1");
+    }
+    db.run("COMMIT");
+    persistSoon();
+  } catch (error) {
+    db.run("ROLLBACK");
+    throw error;
+  }
+};
 const emit = () => {
   applyYuzuEquipment();
   if (typeof window !== "undefined") window.dispatchEvent(new Event(YUZU_EVENT));
@@ -61,17 +78,24 @@ const book = (kind: string, key: string, amount: number): boolean => {
   return firstValue<number>("SELECT changes()", [], 0) > 0;
 };
 
-export const yuzuBalance = (): number => firstValue<number>("SELECT COALESCE(SUM(amount), 0) FROM yuzu_ledger", [], 0);
+export const yuzuBalance = (): number => {
+  ensureYuzuScale();
+  return firstValue<number>("SELECT COALESCE(SUM(amount), 0) FROM yuzu_ledger", [], 0);
+};
 
 /** 今天记了哪几笔,商店页头部列出来 */
-export const yuzuToday = () => rowsFor("SELECT kind, key, amount FROM yuzu_ledger WHERE day = ? ORDER BY rowid", [today()])
-  .map((row) => ({ kind: String(row.kind), key: String(row.key), amount: Number(row.amount) }));
+export const yuzuToday = () => {
+  ensureYuzuScale();
+  return rowsFor("SELECT kind, key, amount FROM yuzu_ledger WHERE day = ? ORDER BY rowid", [today()])
+    .map((row) => ({ kind: String(row.kind), key: String(row.key), amount: Number(row.amount) }));
+};
 
 /**
  * 结算今天的收入。幂等,学习页每次 flush 都可以叫。
  * 成就那一笔不挂在解锁事件上,而是对着 achievements 表补差 —— 补发的老成就也拿得到。
  */
 export const settleYuzu = (): number => {
+  ensureYuzuScale();
   const day = today();
   let earned = 0;
   const words = firstValue<number>(
@@ -85,7 +109,8 @@ export const settleYuzu = (): number => {
   if (readEncoreLog(day).dayWords > 0 && book("encore", day, YUZU.encore)) earned += YUZU.encore;
   rowsFor("SELECT id FROM achievements WHERE id NOT IN (SELECT key FROM yuzu_ledger WHERE kind = 'achievement')")
     .forEach((row) => { if (book("achievement", String(row.id), YUZU.achievement)) earned += YUZU.achievement; });
-  if (earned) { persistSoon(); emit(); }
+  const gifted = proGiftEligible() && grantRepairCard("pro", false);
+  if (earned || gifted) { persistSoon(); emit(); }
   return earned;
 };
 
@@ -114,8 +139,9 @@ export const unequip = (category: YuzuCategory): void => { setState(equipKey(cat
 
 /** 补签价:30 天内已经补过几次 */
 export const repairPrice = (): number => {
+  ensureYuzuScale();
   const since = shiftDay(today(), -30);
-  const used = firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'repair' AND day >= ?", [since], 0);
+  const used = firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind IN ('repair', 'card_buy') AND day >= ?", [since], 0);
   return YUZU.repair[Math.min(used, YUZU.repair.length - 1)];
 };
 
@@ -131,6 +157,50 @@ export const repairableDays = (): string[] => {
     if (d > first && !set.has(d)) out.push(d);
   }
   return out;
+};
+
+/** 补签卡记 `card` 或付费购买 `card_buy`；使用时记 `repair_card`。 */
+export const repairCards = (): number => Math.max(0,
+  firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind IN ('card', 'card_buy')", [], 0)
+  - firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'repair_card'", [], 0));
+
+export const grantRepairCard = (key: string, notify = true): boolean => {
+  if (firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind IN ('card', 'card_overflow') AND key = ?", [key], 0)) return false;
+  if (repairCards() >= 1) return false;
+  const booked = book("card", key, 0);
+  if (booked && notify) { persistSoon(); emit(); }
+  return booked;
+};
+
+export const buyRepairCard = (): boolean => {
+  if (repairCards() >= 1) return false;
+  const price = repairPrice();
+  if (yuzuBalance() < price) return false;
+  const key = `${today()}:${firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'card_buy' AND day = ?", [today()], 0) + 1}`;
+  if (!book("card_buy", key, -price)) return false;
+  persistSoon(); emit();
+  return true;
+};
+
+/**
+ * 开通 Pro 送一张,每个账号一次(key 固定 'pro',账本跨设备同步)。
+ * 试用不算「开通」:试用一次送一张的话,到期前退掉再开就是白拿。
+ */
+export const proGiftEligible = (): boolean => {
+  try {
+    const ent = getEntitlements();
+    return ent.isPro && ent.source !== "trial";
+  } catch { return false; }
+};
+export const proGiftClaimed = (): boolean =>
+  firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind IN ('card', 'card_overflow') AND key = 'pro'", [], 0) > 0;
+
+export const repairDayWithCard = (day: string): boolean => {
+  if (!repairableDays().includes(day) || repairCards() < 1) return false;
+  book("repair_card", day, 0);
+  getDatabase().run("INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)", [day]);
+  persistSoon(); emit();
+  return true;
 };
 
 export const repairDay = (day: string): boolean => {

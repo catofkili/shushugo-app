@@ -52,10 +52,17 @@ Page({
     matchFinished: false,
     // 跟网页的 UNDO_LIMIT=2 对齐；只记本次进入页面后的作答顺序。
     undoKinds: [],
-    swipeStyle: '', swipeStamp: ''
+    swipeStyle: '', swipeStamp: '',
+    sharedDaily: null
   },
 
   onLoad(options = {}) {
+    if (options.share === 'daily') {
+      wx.hideShareMenu();
+      const number = (value) => Math.max(0, Math.min(999999, Number.parseInt(value, 10) || 0));
+      this.setData({ sharedDaily: { completed: number(options.completed), planned: number(options.planned) } });
+      return;
+    }
     const mode = ['quick', 'mistakes', 'mixed'].includes(options.mode) ? options.mode : 'classic';
     const direction = ['forward', 'reverse', 'kanji'].includes(options.direction) ? options.direction : 'forward';
     const directionIndex = ['forward', 'reverse', 'kanji'].indexOf(direction);
@@ -65,9 +72,36 @@ Page({
       direction,
       directionIndex
     });
+    wx.hideShareMenu();
+  },
+
+  shareDailyQuery() {
+    const completed = Math.max(0, Number(this.data.stats.completed) || 0);
+    const planned = Math.max(0, Number(this.data.stats.planned) || 0);
+    return `share=daily&completed=${completed}&planned=${planned}`;
+  },
+
+  shareDailyTitle() {
+    const completed = Number(this.data.stats.completed) || 0;
+    return completed ? `我今天完成了 ${completed} 个单词，一起学日语！` : '一起学日语，今天也进步一点！';
+  },
+
+  onShareAppMessage() {
+    return {
+      title: this.shareDailyTitle(),
+      path: `/pages/index/index?${this.shareDailyQuery()}`
+    };
+  },
+
+  onShareTimeline() {
+    return {
+      title: this.shareDailyTitle(),
+      query: this.shareDailyQuery()
+    };
   },
 
   onShow() {
+    if (this.data.sharedDaily) return;
     const selected = getApp().globalData.pendingStudyMode;
     if (selected) {
       delete getApp().globalData.pendingStudyMode;
@@ -121,6 +155,9 @@ Page({
         answerVisible: false,
         noteDraft: home.card?.note || ''
       });
+      const shareReady = !home.card && !home.interleave && Number(home.stats.completed) > 0;
+      if (shareReady) wx.showShareMenu({ menus: ['shareAppMessage', 'shareTimeline'] });
+      else wx.hideShareMenu();
       // ⚠️ 屏幕上已经有插播卡时不许动它：连线卡连完之后要停在那儿让人读辨析总述、点「继续」，
       // 而 refreshHome 是在那次记账里被调用的 —— 覆盖掉的话卡片当场消失，连错次数也被清零。
       if (!this.data.interleave) this.showInterleave(home.interleave || null);

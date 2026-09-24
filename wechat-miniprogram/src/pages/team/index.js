@@ -88,16 +88,34 @@ Page({
   async signIn() {
     if (this.data.busy) return;
     if (core.getState(getDatabase(), 'consent_privacy_version', '') !== config.privacyVersion) {
-      wx.navigateTo({ url: '/pages/legal/index?consent=1' });
+      wx.navigateTo({ url: '/pages/legal/index?consent=1&flow=team-signin' });
       return;
     }
     this.setData({ busy: true, result: '正在绑定微信账号…' });
     try {
-      const auth = await signInWithWechat();
+      let auth;
+      try {
+        auth = await signInWithWechat();
+      } catch (error) {
+        if (error?.data?.code !== 'WECHAT_ACCOUNT_NOT_FOUND') throw error;
+        const choice = await new Promise((resolve) => wx.showModal({
+          title: '微信尚未关联收集日账号',
+          content: '已有邮箱或 Apple 账号？先关联微信，避免创建重复账号。没有账号时可以创建新账号。',
+          confirmText: '新建账号',
+          cancelText: '去关联',
+          success: resolve,
+          fail: () => resolve({ confirm: false })
+        }));
+        if (!choice.confirm) {
+          wx.switchTab({ url: '/pages/settings/index' });
+          return;
+        }
+        auth = await signInWithWechat({ createAccount: true });
+      }
       this.setData({ auth, result: '微信账号已绑定' });
     } catch (error) {
       console.error('[team] 登录失败', error);
-      this.setData({ result: errorText(error) });
+      this.setData({ result: error?.data?.detail || errorText(error) });
     } finally {
       this.setData({ busy: false });
     }

@@ -7,6 +7,11 @@
 const config = require('../config');
 const { requestJson } = require('./wx-promise');
 const { authHeaders } = require('./auth');
+const PENDING_ORDER_KEY = 'wechat_pending_order_no';
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function apiBase() {
   const base = String(config.paymentUrl || config.syncUrl || '').replace(/\/$/, '');
@@ -39,6 +44,29 @@ async function verifyOrder(outTradeNo) {
   });
 }
 
+async function verifyWithRetry(outTradeNo) {
+  let lastResult;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      lastResult = await verifyOrder(outTradeNo);
+      if (lastResult?.paid) {
+        wx.removeStorageSync(PENDING_ORDER_KEY);
+        return lastResult;
+      }
+    } catch (error) {
+      if (error?.data?.code === 'ORDER_REFUNDED') {
+        wx.removeStorageSync(PENDING_ORDER_KEY);
+        throw error;
+      }
+      const status = Number(error?.statusCode || 0);
+      if (status && status !== 402 && status < 500) throw error;
+      lastResult = { paid: false };
+    }
+    if (attempt < 3) await wait(350 * (attempt + 1));
+  }
+  return { ...(lastResult || {}), paid: false, pending: true };
+}
+
 async function requestPayment(productId) {
   const order = await requestJson(`${apiBase()}/pay/wechat/orders`, {
     method: 'POST',
@@ -48,17 +76,37 @@ async function requestPayment(productId) {
   for (const field of ['outTradeNo', 'signData', 'paySig', 'signature']) {
     if (!order?.[field]) throw new Error(`支付订单缺少 ${field}`);
   }
+  wx.setStorageSync(PENDING_ORDER_KEY, order.outTradeNo);
   try {
     await requestVirtualPayment(order);
   } catch (error) {
-    // 用户取消是正常路径，不当错误抛；其它失败也先问一遍服务端，付了就补发。
-    if (/cancel/i.test(error?.errMsg || '')) return { paid: false, cancelled: true, outTradeNo: order.outTradeNo };
-    const verified = await verifyOrder(order.outTradeNo).catch(() => null);
+    // 回调有歧义时仍以服务端查单为准；沙箱可能没有发货推送，订单号留本机供稍后补查。
+    const cancelled = /cancel/i.test(error?.errMsg || '');
+    if (cancelled) {
+      const verified = await verifyOrder(order.outTradeNo).catch(() => null);
+      if (verified?.paid) {
+        wx.removeStorageSync(PENDING_ORDER_KEY);
+        return { paid: true, outTradeNo: order.outTradeNo, entitlement: verified.entitlement };
+      }
+      return { paid: false, cancelled: true, pending: true, outTradeNo: order.outTradeNo };
+    }
+    const verified = await verifyWithRetry(order.outTradeNo).catch(() => null);
     if (verified?.paid) return { paid: true, outTradeNo: order.outTradeNo, entitlement: verified.entitlement };
+    if (verified?.pending) return { paid: false, pending: true, outTradeNo: order.outTradeNo };
     throw error;
   }
-  const verified = await verifyOrder(order.outTradeNo);
-  return { paid: Boolean(verified?.paid), outTradeNo: order.outTradeNo, entitlement: verified?.entitlement };
+  const verified = await verifyWithRetry(order.outTradeNo);
+  return { paid: Boolean(verified?.paid), pending: Boolean(verified?.pending), outTradeNo: order.outTradeNo, entitlement: verified?.entitlement };
 }
 
-module.exports = { requestPayment, verifyOrder };
+async function verifyPendingPayment() {
+  const outTradeNo = String(wx.getStorageSync(PENDING_ORDER_KEY) || '');
+  if (!outTradeNo) return { paid: false, pending: false };
+  return { ...(await verifyWithRetry(outTradeNo)), outTradeNo };
+}
+
+function pendingOrderNo() {
+  return String(wx.getStorageSync(PENDING_ORDER_KEY) || '');
+}
+
+module.exports = { pendingOrderNo, requestPayment, verifyOrder, verifyPendingPayment };

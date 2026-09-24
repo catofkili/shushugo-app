@@ -1,4 +1,19 @@
 <scroll-view class="feature-page" scroll-y>
+  <block wx:if="{{view === 'shared' && sharedResult}}">
+    <view class="feature-hero">
+      <text class="feature-kicker">VOCAB SIZE · FRIEND RESULT</text>
+      <text wx:if="{{sharedResult.tooFew}}" class="feature-title">词汇量小测</text>
+      <text wx:else class="feature-title">约 {{sharedResult.estimated}} 词</text>
+      <text wx:if="{{sharedResult.tooFew}}" class="feature-copy">朋友答了 {{sharedResult.answered}} 题，少于 15 题，暂不给词汇量估计。</text>
+      <text wx:else class="feature-copy">区间 {{sharedResult.lower}}–{{sharedResult.upper}} · 可信度 {{sharedResult.confidence}}% · 建议从 {{sharedResult.recommendation}} 学起</text>
+      <text class="muted">JLPT 词表覆盖范围内的抽样估计 · 仅供参考</text>
+    </view>
+    <view class="panel">
+      <text class="panel-title">测验情况</text>
+      <text class="muted">答了 {{sharedResult.answered}} / {{sharedResult.totalQuestions}} 题 · 用时 {{sharedResult.duration}}</text>
+    </view>
+  </block>
+
   <!-- 落地页：最近一次成绩 + 历史 + 规则 + 开始/继续。进这一页永远先看这里。 -->
   <block wx:if="{{view === 'intro'}}">
     <view class="feature-hero">
@@ -90,6 +105,8 @@
       </view>
       <text class="muted">答了 {{result.answered}} / {{result.totalQuestions}} 题 · 蒙的比例 {{result.guessedShare}} · 超时比例 {{result.timeoutShare}}</text>
     </view>
+    <button class="primary" open-type="share">分享这次词汇量结果给好友</button>
+    <text class="muted">分享到朋友圈：点右上角「…」并选择「分享到朋友圈」</text>
     <button class="primary" bindtap="begin">再测一次</button>
     <button class="secondary" bindtap="backHome">回到落地页</button>
   </block>

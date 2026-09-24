@@ -3,8 +3,8 @@
 // 内容变更时记得更新生效日期。
 
 export const PRIVACY_POLICY_TITLE = "收集日隐私政策";
-export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 9 月 22 日";
-export const PRIVACY_POLICY_VERSION = "2026-09-22";
+export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 9 月 24 日";
+export const PRIVACY_POLICY_VERSION = "2026-09-24";
 export const PRIVACY_POLICY_CONTACT = "请通过 App Store 的应用支持入口联系开发者";
 
 export interface PrivacyPolicySection {
@@ -62,7 +62,7 @@ export const PRIVACY_POLICY_SECTIONS: PrivacyPolicySection[] = [
   {
     title: "微信小程序版",
     body: [
-      "微信小程序版的学习数据同样先保存在本机（小程序的用户目录）。绑定微信账号时，小程序只把微信登录凭证交给服务器换取你的 OpenID / UnionID 作为账号身份，不会获取你的微信昵称、头像、手机号或通讯录。",
+      "微信小程序版的学习数据同样先保存在本机（小程序的用户目录）。绑定微信账号时，小程序把微信登录凭证交给服务器换取 OpenID / UnionID 作为账号身份，不会获取你的微信昵称、头像、手机号或通讯录。若要把微信关联到已有的收集日账号，你可以填写该账号邮箱并接收一次性验证码；服务器通过邮件服务商 Resend 发送验证码，验证邮箱后将微信身份关联到该账号。",
       "小程序不直接连接境外服务器：请求先经过腾讯云云开发的云函数，再转发到上面所述部署在 Cloudflare 的账号与同步服务。因此，绑定账号并开启同步后，你的学习记录和账号资料会经由云函数传输并存储在中国大陆以外的服务器上；未绑定账号时不会上传。",
       "词库、读音音频等内容文件存放在腾讯云云开发的云存储，下载它们不需要登录，也不包含你的个人信息。导入学习备份时，小程序只读取你主动选择的那一个文件。",
       "你在组队功能中提交队名或昵称时，服务端会把这段文本和你的微信 OpenID 发送给微信内容安全接口，用于识别广告、引流和违法违规内容；未通过检测的文本不会发布到组队广场。",

@@ -18,10 +18,10 @@ function hasConsented() {
 }
 
 Page({
-  data: { loading: true, error: '', docs: [], needConsent: false, busy: false },
+  data: { loading: true, error: '', docs: [], needConsent: false, busy: false, consentFlow: 'signin' },
 
   onLoad(options = {}) {
-    this.setData({ needConsent: options.consent === '1' });
+    this.setData({ needConsent: options.consent === '1', consentFlow: options.flow || 'signin' });
     this.load();
   },
 
@@ -43,9 +43,10 @@ Page({
       core.setState(getDatabase(), CONSENT_KEY, config.privacyVersion);
       await saveDatabase();
       const settings = getCurrentPages().find((page) => page.route === 'pages/settings/index');
+      const flow = this.data.consentFlow;
       wx.navigateBack();
-      // 回到设置页再发起绑定；settings 不在栈里（直接进的协议页）就只记同意。
-      if (settings) setTimeout(() => settings.signIn(), 300);
+      // 回到设置页继续用户刚才选择的账号操作；直接进入协议页则只记录同意。
+      if (settings) setTimeout(() => settings.resumeConsentFlow(flow), 300);
     } finally {
       this.setData({ busy: false });
     }

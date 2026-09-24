@@ -53,7 +53,10 @@ export interface Env {
   WECHAT_MOBILE_APP_SECRET?: string;
   /** 虚拟支付（个人主体）：小程序后台「支付与交易」自助开通后给的 */
   WECHAT_OFFER_ID?: string;
+  /** 旧部署兼容；优先使用按环境区分的 AppKey。 */
   WECHAT_PAY_APP_KEY?: string;
+  WECHAT_PAY_SANDBOX_APP_KEY?: string;
+  WECHAT_PAY_PRODUCTION_APP_KEY?: string;
   WECHAT_PAY_ENV?: string;
   WECHAT_PAY_PRICES?: string;
   /** 小程序后台「消息推送」配的 Token，校验 xpay_* 推送用 */
@@ -647,7 +650,7 @@ const sendEmail = async (env: Env, to: string, subject: string, html: string) =>
 const createEmailToken = async (
   env: Env,
   userId: string,
-  purpose: "verify_email" | "password_reset",
+  purpose: "verify_email" | "password_reset" | "wechat_link",
   minutes: number
 ) => {
   const code = randomEmailCode();
@@ -678,7 +681,7 @@ const createEmailToken = async (
 const verifyEmailToken = async (
   env: Env,
   userId: string,
-  purpose: "verify_email" | "password_reset",
+  purpose: "verify_email" | "password_reset" | "wechat_link",
   code: string
 ) => {
   const row = await env.DB.prepare(`
@@ -1186,31 +1189,37 @@ const createWechatUser = async (env: Env, subjects: string[], displayName?: stri
   `).bind(id).first<UserRow>())!;
 };
 
+const exchangeWechatMiniCode = async (env: Env, code: string) => {
+  if (!env.WECHAT_APP_ID || !env.WECHAT_APP_SECRET) {
+    throw json({ detail: "微信登录尚未在服务端配置。", code: "WECHAT_LOGIN_NOT_CONFIGURED" }, 501);
+  }
+  if (!code) throw json({ detail: "微信登录 code 缺失。" }, 400);
+  const response = await fetch(
+    `https://api.weixin.qq.com/sns/jscode2session?appid=${encodeURIComponent(env.WECHAT_APP_ID)}&secret=${encodeURIComponent(env.WECHAT_APP_SECRET)}&js_code=${encodeURIComponent(code)}&grant_type=authorization_code`
+  );
+  if (!response.ok) throw json({ detail: "微信登录服务暂时不可用。" }, 502);
+  const result = await response.json<{ openid?: string; unionid?: string; session_key?: string; errcode?: number; errmsg?: string }>();
+  if (result.errcode || !result.openid) {
+    console.warn("WeChat code2session failed", result.errcode, result.errmsg);
+    throw json({ detail: "微信登录凭证无效或已过期。", code: "WECHAT_CODE_INVALID" }, 401);
+  }
+  return { openid: result.openid, unionid: result.unionid, session_key: result.session_key };
+};
+
 // 微信小程序登录：code 只在服务端向微信换取 openid/unionid，永不把 app
 // secret 放进小程序代码包。没有配置凭据时明确返回 501，而不是签发一个
 // 看似成功但无法续期的本地 token。
 const wechatLogin = async (request: Request, env: Env) => {
   await rateLimit(env, request, "wechat-login", 10, 300);
-  if (!env.WECHAT_APP_ID || !env.WECHAT_APP_SECRET) {
-    return json({ detail: "微信登录尚未在服务端配置。", code: "WECHAT_LOGIN_NOT_CONFIGURED" }, 501);
-  }
   const body = await readJson<{
     code?: string;
+    create_account?: boolean;
     display_name?: string;
     terms_version?: string;
     privacy_version?: string;
   }>(request);
   const code = String(body.code ?? "").trim();
-  if (!code) return json({ detail: "微信登录 code 缺失。" }, 400);
-  const response = await fetch(
-    `https://api.weixin.qq.com/sns/jscode2session?appid=${encodeURIComponent(env.WECHAT_APP_ID)}&secret=${encodeURIComponent(env.WECHAT_APP_SECRET)}&js_code=${encodeURIComponent(code)}&grant_type=authorization_code`
-  );
-  if (!response.ok) return json({ detail: "微信登录服务暂时不可用。" }, 502);
-  const result = await response.json<{ openid?: string; unionid?: string; session_key?: string; errcode?: number; errmsg?: string }>();
-  if (result.errcode || !result.openid) {
-    console.warn("WeChat code2session failed", result.errcode, result.errmsg);
-    return json({ detail: "微信登录凭证无效或已过期。", code: "WECHAT_CODE_INVALID" }, 401);
-  }
+  const result = await exchangeWechatMiniCode(env, code);
   const openid = result.openid;
   const subjects = wechatIdentitySubjects("mini", openid, result.unionid);
   // 虚拟支付的 signature 要用 session_key 签、查单要 openid：登录那一刻记下来，
@@ -1236,12 +1245,91 @@ const wechatLogin = async (request: Request, env: Env) => {
     return json({ ...(await sessionPayload(env, user, await createToken(env, user.id))), isNewAccount: false });
   }
 
+  if (body.create_account !== true) {
+    return json({
+      detail: "这个微信还没有收集日账号。已有账号请先验证邮箱并关联微信；没有账号时再选择创建。",
+      code: "WECHAT_ACCOUNT_NOT_FOUND"
+    }, 409);
+  }
   if (body.terms_version !== USER_AGREEMENT_VERSION || body.privacy_version !== PRIVACY_POLICY_VERSION) {
     return json({ detail: "请阅读并同意当前版本的用户协议和隐私政策。", code: "CONSENT_REQUIRED" }, 400);
   }
   const user = await createWechatUser(env, subjects, body.display_name);
   await rememberWechatSession(user.id);
   return json({ ...(await sessionPayload(env, user, await createToken(env, user.id))), isNewAccount: true });
+};
+
+const requestWechatLinkCode = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "wechat-link-code", 5, 900);
+  const body = await readJson<{ email?: string }>(request);
+  const email = normalizeEmail(body.email);
+  if (!email.includes("@")) return json({ detail: "请输入有效邮箱。" }, 400);
+  await rateLimitSubject(env, "wechat-link-email", await sha256(email), 3, 3600);
+
+  const user = await env.DB.prepare(`
+    SELECT id, email FROM users WHERE email = ? AND email NOT LIKE '%@wechat.invalid'
+  `).bind(email).first<{ id: string; email: string }>();
+  if (user) {
+    await rateLimitSubject(env, "wechat-link-user", `user:${user.id}`, 3, 3600);
+    const code = await createEmailToken(env, user.id, "wechat_link", EMAIL_CODE_TTL_MINUTES);
+    await sendEmail(
+      env,
+      user.email,
+      "收集日微信账号关联验证码",
+      emailHtml("请使用下面的验证码，把当前微信关联到这个收集日账号：", code, EMAIL_CODE_TTL_MINUTES)
+    );
+  }
+  // 无论账号是否存在，都返回相同响应，避免用这个入口枚举注册邮箱。
+  return json({ status: "sent_if_account_exists", expiresInMinutes: EMAIL_CODE_TTL_MINUTES });
+};
+
+const linkWechatMini = async (request: Request, env: Env) => {
+  await rateLimit(env, request, "wechat-link", 10, 900);
+  const body = await readJson<{
+    email?: string;
+    email_code?: string;
+    code?: string;
+    terms_version?: string;
+    privacy_version?: string;
+  }>(request);
+  if (body.terms_version !== USER_AGREEMENT_VERSION || body.privacy_version !== PRIVACY_POLICY_VERSION) {
+    return json({ detail: "请先阅读并同意当前版本的用户协议和隐私政策。", code: "CONSENT_REQUIRED" }, 400);
+  }
+  const email = normalizeEmail(body.email);
+  const emailCode = String(body.email_code ?? "").trim();
+  if (!email.includes("@") || !/^\d{6}$/.test(emailCode)) {
+    return json({ detail: "邮箱或验证码无效或已过期。", code: "EMAIL_CODE_INVALID" }, 400);
+  }
+
+  // 微信 code 一次性使用；先核验它，再消费邮件验证码，避免微信回包失败时浪费邮件码。
+  const mini = await exchangeWechatMiniCode(env, String(body.code ?? "").trim());
+  const user = await env.DB.prepare(`
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+    FROM users WHERE email = ? AND email NOT LIKE '%@wechat.invalid'
+  `).bind(email).first<UserRow>();
+  if (!user || !(await verifyEmailToken(env, user.id, "wechat_link", emailCode))) {
+    return json({ detail: "邮箱或验证码无效或已过期。", code: "EMAIL_CODE_INVALID" }, 400);
+  }
+
+  const subjects = wechatIdentitySubjects("mini", mini.openid, mini.unionid);
+  await linkWechatSubjects(env, user.id, subjects, user.email);
+  const now = new Date().toISOString();
+  await env.DB.prepare("UPDATE users SET last_login = ?, email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ?")
+    .bind(now, now, user.id).run();
+  const linkedUser = await env.DB.prepare(`
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at
+    FROM users WHERE id = ?
+  `).bind(user.id).first<UserRow>();
+  await env.SYNC_DATA.put(
+    wechatSessionKey(user.id),
+    JSON.stringify({ openid: mini.openid, sessionKey: mini.session_key ?? "" } satisfies WechatSession),
+    { expirationTtl: 30 * 24 * 60 * 60 }
+  );
+  return json({
+    ...(await sessionPayload(env, linkedUser!, await createToken(env, user.id))),
+    isNewAccount: false,
+    linked: true
+  });
 };
 
 const exchangeWechatMobileCode = async (env: Env, code: string) => {
@@ -1415,16 +1503,20 @@ const settleWechatOrder = async (env: Env, order: WechatOrderRow, payload: unkno
   await env.DB.prepare("UPDATE wechat_orders SET status = 'paid', wx_order_id = ?, updated_at = ? WHERE out_trade_no = ?")
     .bind(wxOrderId, now, order.out_trade_no).run();
   // 发货确认放最后：权益已经写好，这一步失败只是微信那边会催，下次 verify 再喊。
+  let delivered = false;
   try {
-    const delivered = await wechatNotifyProvideGoods(env, accessToken, { openid: order.openid }, order.out_trade_no);
-    if (!delivered.errcode) {
+    const result = await wechatNotifyProvideGoods(env, accessToken, { openid: order.openid }, order.out_trade_no);
+    if (result.errcode === 0) {
       await env.DB.prepare("UPDATE wechat_orders SET status = 'delivered', updated_at = ? WHERE out_trade_no = ?")
         .bind(new Date().toISOString(), order.out_trade_no).run();
+      delivered = true;
+    } else {
+      console.warn("wechat notify_provide_goods rejected", result.errcode, result.errmsg);
     }
   } catch (error) {
     console.warn("wechat notify_provide_goods failed", error);
   }
-  return { paid: true as const, entitlement };
+  return { paid: true as const, delivered, entitlement };
 };
 
 const verifyWechatPayOrder = async (request: Request, env: Env) => {
@@ -1438,7 +1530,8 @@ const verifyWechatPayOrder = async (request: Request, env: Env) => {
   if (!order) return json({ detail: "订单不存在。" }, 404);
   // 一笔订单只能给下单的那个账号（同 apple_transaction_owners 的道理）。
   if (order.user_id !== userId) return json({ detail: "这笔订单属于另一个账号。" }, 409);
-  if (order.status === "delivered" || order.status === "paid") {
+  if (order.status === "refunded") return json({ paid: false, code: "ORDER_REFUNDED", detail: "订单已退款。" }, 409);
+  if (order.status === "delivered") {
     return json({ paid: true, entitlement: entitlementPayload(await getEntitlementRow(env, userId)) });
   }
   const result = await settleWechatOrder(env, order, { via: "client" });
@@ -1448,7 +1541,7 @@ const verifyWechatPayOrder = async (request: Request, env: Env) => {
 
 /**
  * 小程序后台「消息推送」的接收端（JSON 模式）。GET 是握手，POST 是事件。
- * ⚠️ 推送内容一个字都不信：只取 OutTradeNo，然后照常去问微信这单付了没。
+ * ⚠️ 推送内容一个字都不信：发货和退款分别读各自订单号字段；发货仍要向微信查单。
  */
 const wechatNotification = async (request: Request, env: Env) => {
   const url = new URL(request.url);
@@ -1460,18 +1553,35 @@ const wechatNotification = async (request: Request, env: Env) => {
     return new Response("forbidden", { status: 403 });
   }
   if (request.method === "GET") return new Response(url.searchParams.get("echostr") ?? "", { status: 200 });
-  const event = await readJson<{ Event?: string; OutTradeNo?: string; OpenId?: string }>(request);
-  const outTradeNo = String(event.OutTradeNo ?? "").trim();
+  const event = await readJson<{
+    Event?: string;
+    OutTradeNo?: string;
+    MchOrderId?: string;
+    OpenId?: string;
+    RetCode?: number;
+  }>(request);
+  // 发货事件叫 OutTradeNo，退款结果事件叫 MchOrderId；RetCode 只有 0 才能撤销权益。
+  const isRefund = event.Event === "xpay_refund_notify";
+  const outTradeNo = String(isRefund ? event.MchOrderId ?? "" : event.OutTradeNo ?? "").trim();
   const order = outTradeNo
     ? await env.DB.prepare("SELECT * FROM wechat_orders WHERE out_trade_no = ?").bind(outTradeNo).first<WechatOrderRow>()
     : null;
-  if (event.Event === "xpay_goods_deliver_notify" && order && order.status === "created") {
-    await settleWechatOrder(env, order, { via: "push", event });
-  } else if (event.Event === "xpay_refund_notify" && order) {
+  if (event.Event === "xpay_goods_deliver_notify" && (!order || event.OpenId !== order.openid)) {
+    return json({ ErrCode: 1, ErrMsg: "发货订单暂时无法核对。" });
+  }
+  if (event.Event === "xpay_goods_deliver_notify" && order && ["created", "paid"].includes(order.status)) {
+    const settlement = await settleWechatOrder(env, order, { via: "push", event });
+    if (!settlement.delivered) return json({ ErrCode: 1, ErrMsg: "订单发货尚未完成。" });
+  } else if (isRefund && event.RetCode === 0) {
+    if (!order || event.OpenId !== order.openid) {
+      return json({ ErrCode: 1, ErrMsg: "退款订单暂时无法核对。" });
+    }
     await revokeEntitlementForTransaction(env, order.user_id, order.out_trade_no);
     await recordPurchaseEvent(env, order.user_id, order.product_id, order.wx_order_id ?? order.out_trade_no, "revoked", event, order.out_trade_no, "wechat");
     await env.DB.prepare("UPDATE wechat_orders SET status = 'refunded', updated_at = ? WHERE out_trade_no = ?")
       .bind(new Date().toISOString(), order.out_trade_no).run();
+  } else if (isRefund && !Number.isInteger(event.RetCode)) {
+    return json({ ErrCode: 1, ErrMsg: "退款结果字段缺失。" });
   }
   // 微信要求这个格式；不认识的事件也回 0，否则它会一直重投。
   return json({ ErrCode: 0 });
@@ -3084,6 +3194,8 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/auth/login") return login(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/apple") return appleLogin(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/wechat") return wechatLogin(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/request-wechat-link") return requestWechatLinkCode(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/link-wechat") return linkWechatMini(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/wechat-app") return wechatAppLogin(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/link-apple") return linkApple(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/link-wechat-app") return linkWechatApp(request, env);

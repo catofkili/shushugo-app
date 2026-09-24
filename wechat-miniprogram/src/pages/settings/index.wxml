@@ -9,8 +9,20 @@
     <text wx:if="{{entitlement.expiresAt}}" class="detail">到期：{{entitlement.expiresAt}}</text>
   </view>
   <view class="card">
-    <view class="row"><text class="label">账号</text><text class="value">{{auth.signedIn ? '已绑定' : '未绑定'}}</text></view>
-    <button class="secondary small" loading="{{busy}}" disabled="{{busy}}" bindtap="signIn">{{auth.signedIn ? '重新绑定微信账号' : '绑定微信账号'}}</button>
+    <view class="row"><text class="label">账号</text><text class="value">{{auth.signedIn ? '已登录' : '未登录'}}</text></view>
+    <text class="detail">微信未关联过账号时会先询问：创建新账号，或验证已有账号邮箱后关联。</text>
+    <button class="secondary small" loading="{{busy}}" disabled="{{busy}}" bindtap="signIn">微信登录</button>
+    <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="openWechatLink">已有账号？关联微信</button>
+    <view wx:if="{{showWechatLink}}" class="link-form">
+      <text class="section-title">关联到已有收集日账号</text>
+      <text class="detail">验证码会发送到账号邮箱。Apple 登录账号也可以用已登记邮箱验证。</text>
+      <input class="link-input" type="text" value="{{linkEmail}}" maxlength="254" placeholder="账号邮箱" bindinput="inputLinkEmail" />
+      <view class="link-code-row">
+        <input class="link-input code-input" type="number" value="{{linkCode}}" maxlength="6" placeholder="6 位验证码" bindinput="inputLinkCode" />
+        <button class="ghost small" loading="{{busy}}" disabled="{{busy}}" bindtap="sendWechatLinkCode">发送验证码</button>
+      </view>
+      <button class="primary small" loading="{{busy}}" disabled="{{busy}}" bindtap="linkWechatAccount">验证并关联当前微信</button>
+    </view>
     <navigator class="legal-link" url="/pages/legal/index">用户协议与隐私政策 →</navigator>
   </view>
   <view class="card"><text class="section-title">每日学习量</text><text class="detail">圆环、数字和备考一键共用同一份计划。</text><navigator class="legal-link" url="/pages/daily-plan/index">调整今天的学习量 →</navigator></view>
@@ -20,6 +32,7 @@
     <text class="detail">翻面、评分时会静默攒一条微信提醒额度；哪天没学，晚上 8 点提醒一次。{{reminder.lastSentOn ? '上次提醒：' + reminder.lastSentOn : ''}}</text>
     <button class="ghost small" bindtap="openReminderSetting">在微信里管理订阅</button>
   </view>
+  <button wx:if="{{pendingPayment}}" class="ghost" loading="{{busy}}" disabled="{{busy}}" bindtap="checkPendingPayment">重新确认最近一笔支付</button>
   <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="refreshEntitlement">刷新权益</button>
   <button class="secondary" loading="{{busy}}" disabled="{{busy}}" bindtap="buyPro">购买 Pro</button>
   <view class="card maintenance-card">

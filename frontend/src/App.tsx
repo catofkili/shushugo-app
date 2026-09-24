@@ -839,7 +839,7 @@ export default function App() {
       return <ProPage entitlements={entitlements} onBack={goBack} onOpenPaywall={() => setPaywallTarget("general")} onOpenPrivacy={() => navigateToPage("privacy-policy")} />;
     }
     if (page === "yuzu-shop") {
-      return renderToolSubpage(toolPageTitles["yuzu-shop"] ?? "柚子商店", <YuzuShopPage />);
+      return renderToolSubpage(toolPageTitles["yuzu-shop"] ?? "柚子商店", <YuzuShopPage onOpenPro={() => navigateToPage("pro")} />);
     }
     if (page === "favorites") {
       return renderToolSubpage(toolPageTitles.favorites ?? "收藏", <FavoritesPage onOpenGrammar={openGrammar} onStudyPicked={startPickedStudy} />);

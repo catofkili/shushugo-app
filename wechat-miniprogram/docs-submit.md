@@ -89,6 +89,10 @@
 2. 创建并发布客户端实际使用的商品。当前客户端购买入口只调用
    `shushugo_pro_lifetime`，价格应为 **298 元**，必须与 Worker 的 `29800` 分一致。
    `shushugo_pro_monthly` / `shushugo_pro_yearly` 目前只有服务端价格，客户端没有购买入口。
+   ⚠️ 后台「道具 ID」限 20 个字符，`shushugo_pro_lifetime` 有 21 个建不出来（2026-09-23 撞上）。
+   后台道具 ID 用短名 **`pro_lifetime`**（月 / 年为 `pro_monthly` / `pro_yearly`），由
+   `cloudflare-sync/src/wechat-pay.ts` 的 `WECHAT_PROP_IDS` 只在签单时换过去；
+   内部商品 id、订单表、客户端调用仍是 `shushugo_pro_*`。两边改一边就要改另一边。
 3. `cloudflare-sync/wrangler.jsonc` 填 `WECHAT_OFFER_ID`；AppKey 不得写入仓库或聊天，使用：
 
    ```bash
@@ -96,6 +100,11 @@
    npx wrangler secret put WECHAT_PAY_APP_KEY
    npx wrangler deploy
    ```
+
+   沙箱和正式环境的 AppKey 不同。Worker 会按 `WECHAT_PAY_ENV` 优先读取
+   `WECHAT_PAY_SANDBOX_APP_KEY`（`1`）或 `WECHAT_PAY_PRODUCTION_APP_KEY`（`0`）；
+   当前通用名 `WECHAT_PAY_APP_KEY` 只作为旧配置回退。不要把现网 AppKey 用在沙箱签名，或反过来。
+   确认有对应密钥后再切换 `WECHAT_PAY_ENV`。
 
 4. 后台「开发 → 消息推送」配置：URL
    `https://api.shushugo.com/api/purchases/wechat-notifications`，数据格式 **JSON**，加密方式明文。
@@ -111,6 +120,14 @@
 截至 2026-09-21 的已核实状态：OfferID、支付 AppKey、消息推送 Token 均未配置，线上健康检查的
 `wechatPayConfigured` / `wechatPushConfigured` / `productionReady` 均为 false；因此开发版可以保留，
 但还不能提交审核。
+
+2026-09-24 只读复查：线上 `/api/health` 的 `wechatPayConfigured`、`wechatPushConfigured`、
+`wechatContentSecurityConfigured`、`migrationsApplied` 均为 true；Cloudflare 密钥清单也有支付 AppKey 与推送 Token。
+`productionReady` 仍为 false（当前 `authHardening=false`、`emailConfigured=false`），所以仍未达到提审门槛。
+当前 Worker 版本的 `WECHAT_PAY_ENV=1`；通用 AppKey 的内容不可读取，手测前需确认它对应沙箱，
+并在小程序后台已有开发环境发布的 `pro_lifetime` 道具（298 元）。真机支付与退款仍待人工验收。
+同日为补查发货失败、退款事件字段及环境 AppKey 选择而部署 Worker 版本
+`84372322-2120-46f7-a87c-d6a529f155bc`；部署后健康接口仍报告支付、推送配置和所需迁移齐全。
 
 ## 上线后
 
