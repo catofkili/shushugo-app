@@ -1,5 +1,5 @@
 import config from '../../../wechat-miniprogram/src/config';
-import { readyForKanji } from '../../../wechat-miniprogram/src/shared/content';
+import { readyForKanji } from '../../scripts/taro-content.cjs';
 import { downloadFile, readFile, removeFile } from '../../../wechat-miniprogram/src/runtime/wx-promise';
 import { ensureUserTables } from '../../../frontend/src/lib/study-core';
 import { getDatabase, importDatabase } from '../../../frontend/src/lib/database';

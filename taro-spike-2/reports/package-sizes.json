@@ -2,18 +2,18 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 2544950,
-      "mib": 2.427,
-      "passes": false
+      "bytes": 1860907,
+      "mib": 1.775,
+      "passes": true
     },
     "quiz": {
-      "bytes": 27201,
-      "mib": 0.026,
+      "bytes": 75266,
+      "mib": 0.072,
       "passes": true
     },
     "study": {
-      "bytes": 293712,
-      "mib": 0.28,
+      "bytes": 381251,
+      "mib": 0.364,
       "passes": true
     },
     "features": {
@@ -37,17 +37,17 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 157661,
-      "mib": 0.15,
+      "bytes": 240579,
+      "mib": 0.229,
       "passes": true
     }
   },
-  "totalBytes": 6520498,
+  "totalBytes": 6054977,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 1403241
+      "bytes": 723238
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -97,7 +97,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 261813
+      "bytes": 261888
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -107,12 +107,12 @@
     {
       "path": "grammar-pages/compile/index.js",
       "package": "grammar-pages",
-      "bytes": 157540
+      "bytes": 158316
     },
     {
       "path": "vendors.js",
       "package": "main",
-      "bytes": 149541
+      "bytes": 145466
     },
     {
       "path": "taro.js",
@@ -142,7 +142,7 @@
     {
       "path": "quiz/vocab-test/index.js",
       "package": "quiz",
-      "bytes": 27021
+      "bytes": 27410
     },
     {
       "path": "assets/brand/mood-yay.webp",
@@ -155,6 +155,21 @@
       "bytes": 19048
     },
     {
+      "path": "grammar-pages/sub-common/6f47ed103877313791280ac220ca408d.js",
+      "package": "grammar-pages",
+      "bytes": 19004
+    },
+    {
+      "path": "quiz/sub-common/6f47ed103877313791280ac220ca408d.js",
+      "package": "quiz",
+      "bytes": 19004
+    },
+    {
+      "path": "study/sub-common/6f47ed103877313791280ac220ca408d.js",
+      "package": "study",
+      "bytes": 19004
+    },
+    {
       "path": "assets/brand/mood-puzzled.webp",
       "package": "main",
       "bytes": 18992
@@ -163,6 +178,16 @@
       "path": "assets/brand/scene-laptop.webp",
       "package": "main",
       "bytes": 18510
+    },
+    {
+      "path": "grammar-pages/sub-common/14f27fbdf17950820e1cd95d91c7d7bd.js",
+      "package": "grammar-pages",
+      "bytes": 17410
+    },
+    {
+      "path": "study/sub-common/14f27fbdf17950820e1cd95d91c7d7bd.js",
+      "package": "study",
+      "bytes": 17410
     },
     {
       "path": "assets/brand/mood-sleep.webp",
@@ -195,9 +220,104 @@
       "bytes": 14916
     },
     {
+      "path": "grammar-pages/sub-common/e2ca18bb51b298f6b3cd2d8dbadc8362.js",
+      "package": "grammar-pages",
+      "bytes": 14584
+    },
+    {
+      "path": "quiz/sub-common/e2ca18bb51b298f6b3cd2d8dbadc8362.js",
+      "package": "quiz",
+      "bytes": 14584
+    },
+    {
+      "path": "study/sub-common/e2ca18bb51b298f6b3cd2d8dbadc8362.js",
+      "package": "study",
+      "bytes": 14584
+    },
+    {
+      "path": "grammar-pages/sub-common/b7110e25a05283964b3ac45421b9666e.js",
+      "package": "grammar-pages",
+      "bytes": 8465
+    },
+    {
+      "path": "study/sub-common/b7110e25a05283964b3ac45421b9666e.js",
+      "package": "study",
+      "bytes": 8465
+    },
+    {
+      "path": "grammar-pages/sub-common/c20dcfb90f5aa2b00e816c26546347cd.js",
+      "package": "grammar-pages",
+      "bytes": 6617
+    },
+    {
+      "path": "study/sub-common/c20dcfb90f5aa2b00e816c26546347cd.js",
+      "package": "study",
+      "bytes": 6617
+    },
+    {
+      "path": "grammar-pages/sub-common/405760f5b01b9abb340258a2f0ab82c4.js",
+      "package": "grammar-pages",
+      "bytes": 5679
+    },
+    {
+      "path": "quiz/sub-common/405760f5b01b9abb340258a2f0ab82c4.js",
+      "package": "quiz",
+      "bytes": 5679
+    },
+    {
+      "path": "study/sub-common/405760f5b01b9abb340258a2f0ab82c4.js",
+      "package": "study",
+      "bytes": 5679
+    },
+    {
+      "path": "quiz/sub-common/47e3c563a135bce7e1217e839d065f09.js",
+      "package": "quiz",
+      "bytes": 5397
+    },
+    {
+      "path": "study/sub-common/47e3c563a135bce7e1217e839d065f09.js",
+      "package": "study",
+      "bytes": 5397
+    },
+    {
       "path": "app.js",
       "package": "main",
       "bytes": 5172
+    },
+    {
+      "path": "grammar-pages/sub-common/02d6841cd0c12a32ec14f64872a9b194.js",
+      "package": "grammar-pages",
+      "bytes": 3791
+    },
+    {
+      "path": "study/sub-common/02d6841cd0c12a32ec14f64872a9b194.js",
+      "package": "study",
+      "bytes": 3791
+    },
+    {
+      "path": "grammar-pages/sub-common/4823ac61b53e5919880ed346d7fdd0d8.js",
+      "package": "grammar-pages",
+      "bytes": 2665
+    },
+    {
+      "path": "study/sub-common/4823ac61b53e5919880ed346d7fdd0d8.js",
+      "package": "study",
+      "bytes": 2665
+    },
+    {
+      "path": "grammar-pages/sub-common/41d60a2bcf9c6931866ed4fde106f5bd.js",
+      "package": "grammar-pages",
+      "bytes": 2495
+    },
+    {
+      "path": "quiz/sub-common/41d60a2bcf9c6931866ed4fde106f5bd.js",
+      "package": "quiz",
+      "bytes": 2495
+    },
+    {
+      "path": "study/sub-common/41d60a2bcf9c6931866ed4fde106f5bd.js",
+      "package": "study",
+      "bytes": 2495
     },
     {
       "path": "runtime.js",
@@ -265,6 +385,16 @@
       "bytes": 584
     },
     {
+      "path": "grammar-pages/sub-common/bafb29be7cd57d22a0b725dfb5a2c2ba.js",
+      "package": "grammar-pages",
+      "bytes": 577
+    },
+    {
+      "path": "study/sub-common/bafb29be7cd57d22a0b725dfb5a2c2ba.js",
+      "package": "study",
+      "bytes": 577
+    },
+    {
       "path": "app.json",
       "package": "main",
       "bytes": 574
@@ -288,6 +418,21 @@
       "path": "assets/lucide/handshake-light.svg",
       "package": "main",
       "bytes": 522
+    },
+    {
+      "path": "grammar-pages/sub-common/27bdd46757e0c871422b02714117dd66.js",
+      "package": "grammar-pages",
+      "bytes": 517
+    },
+    {
+      "path": "quiz/sub-common/27bdd46757e0c871422b02714117dd66.js",
+      "package": "quiz",
+      "bytes": 517
+    },
+    {
+      "path": "study/sub-common/27bdd46757e0c871422b02714117dd66.js",
+      "package": "study",
+      "bytes": 517
     },
     {
       "path": "assets/lucide/calendardays-ink.svg",
@@ -517,6 +662,16 @@
     {
       "path": "assets/lucide/timer-light.svg",
       "package": "main",
+      "bytes": 338
+    },
+    {
+      "path": "grammar-pages/sub-common/843214b9a34d2706b2637bdc2f6248ea.js",
+      "package": "grammar-pages",
+      "bytes": 338
+    },
+    {
+      "path": "study/sub-common/843214b9a34d2706b2637bdc2f6248ea.js",
+      "package": "study",
       "bytes": 338
     },
     {
@@ -793,11 +948,6 @@
       "path": "grammar-pages/compile/index.json",
       "package": "grammar-pages",
       "bytes": 41
-    },
-    {
-      "path": "common.js.LICENSE.txt",
-      "package": "main",
-      "bytes": 40
     },
     {
       "path": "content/placeholder/index.wxss",

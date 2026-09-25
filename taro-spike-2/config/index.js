@@ -47,7 +47,7 @@ module.exports = {
   mini: {
     optimizeMainPackage: {
       enable: true,
-      exclude: [(module) => /(?:frontend\/src\/(?:lib|components|data|features)\/|node_modules\/ts-fsrs\/|wechat-miniprogram\/src\/vendor\/sql-wasm\.js$|src\/platform\/sql-js\.weapp\.cjs$)/.test(module.resource || '')]
+      exclude: [(module) => /(?:frontend\/src\/lib\/|node_modules\/ts-fsrs\/|wechat-miniprogram\/src\/(?:vendor\/sql-wasm\.js|runtime\/text-decoder\.js)$|taro-spike-2\/src\/platform\/(?:database-runtime\.weapp\.ts|sql-js\.weapp\.cjs|sql-wasm-url\.weapp\.cjs|entitlements\.weapp\.cjs)$)/.test(module.resource || '')]
     },
     compile: { include: [frontend, mini] },
     cssLoaderOption: { url: { filter: (url) => !url.startsWith('/') } },
@@ -121,6 +121,10 @@ module.exports = {
             .replace(/\?raw$/, '');
           if (target === path.join(mini, 'src/shared/content')) {
             resource.request = path.join(root, 'scripts/taro-content.cjs');
+            return;
+          }
+          if (target === path.join(mini, 'src/runtime/entitlements')) {
+            resource.request = path.join(root, 'src/platform/entitlements.weapp.cjs');
             return;
           }
           if (target === path.join(frontend, 'src/data/grammar')) {

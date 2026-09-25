@@ -1,6 +1,10 @@
 // Match the native Mini Program loader: async module load -> content-store ->
 // prime Web loaders. Keep every require.async path literal for WeChat's analyzer.
 const stores = require('../../wechat-miniprogram/src/shared/content-store.js');
+const pitchAccent = require('../../frontend/src/lib/pitch-accent');
+const furigana = require('../../frontend/src/lib/furigana');
+const kanjiUnitIndex = require('../../frontend/src/lib/kanji-unit-index');
+const kanjiReadingUsage = require('../../frontend/src/lib/kanji-reading-usage');
 if (stores.grammar === undefined) stores.grammar = null;
 
 const SOURCES = {
@@ -18,7 +22,7 @@ const GRAMMAR_SOURCES = [
   () => __non_webpack_require__.async('./grammar-foundation/grammar.js'),
   () => __non_webpack_require__.async('./grammar-advanced/grammar.js')
 ];
-const NODE_GRAMMAR_SOURCES = ['./grammar-foundation/grammar.js', './grammar-advanced/grammar.js'];
+const NODE_GRAMMAR_SOURCES = ['../dist/grammar-foundation/grammar.js', '../dist/grammar-advanced/grammar.js'];
 
 const NODE_SOURCES = {
   questionMeanings: '../../wechat-miniprogram/src/content/question-meanings.js',
@@ -32,6 +36,18 @@ const NODE_SOURCES = {
 };
 
 const loading = {};
+
+// Prime the same lazy stores after we have hydrated content-store. These are
+// the source loaders used by the web app; importing the native content loader
+// here would also import its bundled web.js graph into the Taro main package.
+function primeWebLoaders() {
+  return Promise.all([
+    pitchAccent.loadPitchAccent(),
+    furigana.loadKanjiReadings(),
+    kanjiUnitIndex.loadKanjiUnitIndex(),
+    kanjiReadingUsage.loadKanjiReadingUsage()
+  ]).then(() => undefined);
+}
 
 function load(name) {
   if (name === 'grammar') return loadGrammar();
@@ -75,7 +91,7 @@ function ready() {
 }
 
 function readyForKanji() {
-  return ready().then(() => Promise.all(['kanjiUnitRuntime', 'kanjiReadingUsage'].map(load))).then(() => undefined);
+  return ready().then(() => Promise.all(['kanjiUnitRuntime', 'kanjiReadingUsage'].map(load))).then(() => primeWebLoaders());
 }
 
-module.exports = { load, ready, readyForKanji, loaded: (name) => Boolean(stores[name]) };
+module.exports = { load, ready, readyForKanji, primeWebLoaders, loaded: (name) => Boolean(stores[name]) };

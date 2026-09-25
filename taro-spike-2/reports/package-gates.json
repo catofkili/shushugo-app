@@ -2,15 +2,15 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 2544950,
-      "passes": false
+      "bytes": 1860907,
+      "passes": true
     },
     "quiz": {
-      "bytes": 27201,
+      "bytes": 75266,
       "passes": true
     },
     "study": {
-      "bytes": 293712,
+      "bytes": 381251,
       "passes": true
     },
     "features": {
@@ -30,16 +30,246 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 157661,
+      "bytes": 240579,
       "passes": true
     }
   },
-  "duplicateSourceModuleCount": 0,
-  "duplicatedModules": [],
-  "webModuleCount": 1,
-  "webModules": [
-    "/private/tmp/shushugo-w1/wechat-miniprogram/src/shared/web.js"
+  "maxDuplicateBytes": 100000,
+  "duplicateSourceModuleCount": 13,
+  "duplicatedModules": [
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/data/similar_meaning_groups.ts",
+      "bytes": 16774,
+      "packages": [
+        "grammar-pages",
+        "quiz",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/GrammarTermHint.tsx",
+      "bytes": 16114,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/JapaneseRuby.tsx",
+      "bytes": 12642,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "bytes": 11588,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/data/confusion_manual_review.ts",
+      "bytes": 11538,
+      "packages": [
+        "grammar-pages",
+        "quiz",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/features/word-study/word-study-utils.ts",
+      "bytes": 10862,
+      "packages": [
+        "grammar-pages",
+        "quiz",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/ShareImageSheet.tsx",
+      "bytes": 10814,
+      "packages": [
+        "quiz",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/FavoriteFolderPicker.tsx",
+      "bytes": 7857,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/GrammarPointPopover.tsx",
+      "bytes": 4619,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/data/grammar-quiz-questions.ts",
+      "bytes": 2464,
+      "packages": [
+        "grammar-pages",
+        "quiz",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/MascotSay.tsx",
+      "bytes": 1595,
+      "packages": [
+        "grammar-pages",
+        "quiz",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/JapaneseWordRuby.tsx",
+      "bytes": 1142,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "bytes": 517,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    }
   ],
-  "webModulePolicy": "warn until W3 final merge",
-  "passes": false
+  "duplicatedCoreModuleCount": 0,
+  "duplicatedCoreModules": [],
+  "duplicatedPageComponents": [
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/GrammarTermHint.tsx",
+      "bytes": 16114,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/JapaneseRuby.tsx",
+      "bytes": 12642,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "bytes": 11588,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/ShareImageSheet.tsx",
+      "bytes": 10814,
+      "packages": [
+        "quiz",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/FavoriteFolderPicker.tsx",
+      "bytes": 7857,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/GrammarPointPopover.tsx",
+      "bytes": 4619,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/MascotSay.tsx",
+      "bytes": 1595,
+      "packages": [
+        "grammar-pages",
+        "quiz",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/JapaneseWordRuby.tsx",
+      "bytes": 1142,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "bytes": 517,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    }
+  ],
+  "duplicatedPageComponentBytes": 66888,
+  "pageComponentDuplicateBudgetPasses": true,
+  "webModuleCount": 0,
+  "webModules": [],
+  "webModulePolicy": "error",
+  "mainTopModules": [
+    {
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/ts-fsrs/dist/index.mjs",
+      "bytes": 60657
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/plugin-framework-react/dist/runtime.js",
+      "bytes": 40901
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/react/dist/react.esm.js",
+      "bytes": 34644
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/lib/grammar-title-furigana.ts",
+      "bytes": 33342
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/plugin-platform-weapp/dist/runtime.js",
+      "bytes": 27737
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/lib/speech.ts",
+      "bytes": 20385
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/tslib/tslib.es6.mjs",
+      "bytes": 17648
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/plugin-html/dist/runtime.js",
+      "bytes": 14818
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/lib/token-dictionary.ts",
+      "bytes": 12208
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/frontend/src/lib/share-canvas.ts",
+      "bytes": 10022
+    }
+  ],
+  "passes": true
 }
