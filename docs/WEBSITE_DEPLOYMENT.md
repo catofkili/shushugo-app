@@ -24,3 +24,7 @@ cloudflare-sync/node_modules/.bin/wrangler pages deploy website --project-name s
 Cloudflare Pages 自定义域名绑定到 `shushugo.com`；`api.shushugo.com` 仍指向现有 Worker。发布后检查主页、样式、图片、`robots.txt`、`sitemap.xml` 和网页学习 CTA。部署是单独的外部操作，不会由本仓库当前的 GitHub Pages 工作流自动完成。
 
 不要把 Pages 项目命名为 `shushugo-home`：现有 `api.shushugo.com` Worker 已用这个服务名。根域目前是代理模式的 CNAME，目标为 `shushugo-website.pages.dev`；改动 DNS 前先核对 `api.shushugo.com` 的 Worker 路由。
+
+## 学习版版本核对
+
+GitHub Pages 工作流在 `Deploy to GitHub Pages` 成功后发布 `/shushugo-app/release.json`，其中 `commit` 是构建所用的完整 SHA。核对学习版版本时，比较这个 SHA 与成功的 `Deploy ShuShuGo Pages` 工作流的 `headSha`；不要只凭本地代码或官网 CTA 判断已上线。
