@@ -15,7 +15,7 @@ class Statement {
   constructor(db, sql) { this.db = db; this.sql = sql.replace(/\s+/g, " ").trim(); this.params = []; }
   bind(...params) { this.params = params; return this; }
   async first() {
-    if (this.sql.includes("FROM sessions")) return { user_id: "user-1", expires_at: farFuture };
+    if (this.sql.includes("FROM sessions")) return { user_id: "user-1", expires_at: this.db.sessionExpired ? "2000-01-01T00:00:00.000Z" : farFuture };
     if (this.sql.startsWith("INSERT INTO auth_rate_limits")) return { request_count: 1 };
     if (this.sql.includes("FROM launch_gift_grants")) return this.db.grant;
     if (this.sql.includes("FROM entitlements")) return this.db.entitlement;
@@ -70,6 +70,11 @@ try {
   const anonymousStatus = await worker.fetch(new Request("https://worker.test/api/entitlements", { method: "GET" }), env, {});
   assert.equal(anonymousStatus.status, 200, "the client can read the public claim window before login");
   assert.deepEqual((await anonymousStatus.json()).launchGift, { open: true, claimUntil: farFuture });
+
+  db.sessionExpired = true;
+  const expiredStatus = await worker.fetch(request("/api/entitlements", "GET"), env, {});
+  db.sessionExpired = false;
+  assert.equal(expiredStatus.status, 401, "an expired session must stay 401, not read as an anonymous non-Pro user");
 
   const first = await worker.fetch(request("/api/entitlements/launch-gift"), env, {});
   assert.equal(first.status, 200);

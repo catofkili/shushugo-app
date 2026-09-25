@@ -2598,7 +2598,12 @@ const getEntitlements = async (request: Request, env: Env) => {
   const userId = await currentUser(request, env);
   const launchGift = launchGiftAvailability(env);
   // 领取窗口是公开信息，匿名设备也要能决定是否提示登录领取；权益行仍只对账号本人可读。
-  if (!userId) return json({ ...entitlementPayload(null), launchGift });
+  // ⚠️ 只有「没带令牌」才按匿名答。带了令牌却无效 = 会话过期，必须照旧 401：
+  // 当成匿名回一个「不是会员」的 200，客户端会用它覆盖本地缓存，登录过期的付费用户就被静默降级了。
+  if (!userId) {
+    if (await bearerTokenHash(request)) return json({ detail: "Invalid or expired token" }, 401);
+    return json({ ...entitlementPayload(null), launchGift });
+  }
   const row = await getEntitlementRow(env, userId);
   const stale = row?.is_pro
     && row.source === "app_store"
