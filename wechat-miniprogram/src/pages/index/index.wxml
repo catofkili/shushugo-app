@@ -51,9 +51,9 @@
     <!-- 混合模式的插播卡：盖在单词卡上面，答完清掉就接着背词。
          三种卡出的都是网页那同一副牌（同一份进度表、同一套 FSRS），在哪边答的都算数。 -->
     <view wx:if="{{interleave}}" class="card study-card interleave interleave-{{interleave.kind}}">
-      <view class="card-meta">
-        <text>{{interleave.kind === 'grammar' ? '插播 · 语法' : interleave.kind === 'kanji' ? '插播 · 单独汉字' : '插播 · 辨析卡'}}</text>
-        <text>{{interleave.kind === 'grammar' ? interleave.card.level : interleave.kind === 'kanji' ? '' : interleave.card.label}}</text>
+      <view wx:if="{{interleave.kind !== 'kanji'}}" class="card-meta">
+        <text>{{interleave.kind === 'grammar' ? '插播 · 语法' : '插播 · 辨析卡'}}</text>
+        <text>{{interleave.kind === 'grammar' ? interleave.card.level : interleave.card.label}}</text>
       </view>
 
       <!-- 语法：题面是句型，答案是接续 + 中文意 -->
@@ -74,13 +74,6 @@
       <!-- 单独汉字：一个字的读音 + 什么时候读它 + 例词 -->
       <block wx:elif="{{interleave.kind === 'kanji'}}">
         <block wx:if="{{interleave.card.question}}">
-          <view class="kanji-question-hero">
-            <text class="kanji-question-symbol">{{interleave.card.char}}</text>
-            <view class="kanji-question-copy">
-              <text class="kanji-question-title">把词语和「{{interleave.card.char}}」的读音连起来</text>
-              <text class="kanji-question-subtitle">先选左边的词，再选右边对应的读音</text>
-            </view>
-          </view>
           <view wx:if="{{!interleaveRevealed}}" class="kanji-match-progress">
             <text>已连 <text class="kanji-match-count">{{kanjiMatchCount}}</text> / {{kanjiWordRows.length}}</text>
             <view class="kanji-progress-track"><view class="kanji-progress-fill" style="width:{{kanjiMatchPercent}}%"></view></view>

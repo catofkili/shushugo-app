@@ -12,7 +12,6 @@ export const KANJI_ACCENT: CSSProperties = {
   "--quiz-accent-line": "rgba(185,167,242,0.45)"
 } as CSSProperties;
 
-const LEVELS = ["N5", "N4", "N3", "N2", "N1", "无级"];
 const ROW_HEIGHT = 82;
 const ROW_GAP = 8;
 
@@ -62,20 +61,6 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
 
   return (
     <div key={card.char} style={KANJI_ACCENT} className="kanji-match-card zoo-enter dictionary-card flex h-full min-h-0 flex-col gap-2 rounded-2xl px-3 pb-2 pt-3 sm:gap-3 sm:p-6">
-      <div style={{ background: "linear-gradient(118deg,var(--ds-primary-tint-2),var(--ds-surface) 72%)" }} className="shrink-0 rounded-2xl border border-[var(--ds-line)] px-4 py-3 sm:px-5 sm:py-4 lg:mx-auto lg:w-[min(900px,100%)]">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[11px] font-bold tracking-[0.14em] text-[var(--ds-ink-3)]">单独汉字 · 读音连线</span>
-          <span className="rounded-full border border-[var(--ds-line)] bg-[var(--ds-inset)] px-2 py-1 text-[10px] font-bold text-[var(--ds-ink-2)]">{LEVELS[card.levelRank] ?? "无级"}</span>
-        </div>
-        <div className="mt-2 flex items-center gap-3 sm:mt-3 sm:gap-4">
-          <span className="jp-serif grid size-14 shrink-0 place-items-center rounded-2xl border border-[color:var(--quiz-accent-line)] bg-[color:var(--quiz-accent-soft)] text-4xl font-semibold text-[color:var(--quiz-accent)] sm:size-16 sm:text-5xl">{card.char}</span>
-          <div className="min-w-0">
-            <p className="text-base font-bold leading-6 text-[var(--ds-ink)] sm:text-lg">{items.length ? `把词语和「${card.char}」的读音连起来` : `先回想「${card.char}」的读音`}</p>
-            <p className="mt-0.5 text-xs leading-5 text-[var(--ds-ink-2)]">{items.length ? "先选左边的词，再选右边对应的读音" : "翻面查看音读、训读和例词"}</p>
-          </div>
-        </div>
-      </div>
-
       <div data-word-scrollable="true" className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-[var(--ds-line)] bg-[var(--ds-inset)] p-3 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
         {items.length > 0 && (
           <div className="mx-auto grid min-h-full max-w-2xl content-center">

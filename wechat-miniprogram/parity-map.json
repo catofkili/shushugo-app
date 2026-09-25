@@ -4,6 +4,7 @@
     "frontend/src/App.tsx",
     "frontend/src/pages/",
     "frontend/src/components/",
+    "frontend/src/features/mixed-study/KanjiCharCardView.tsx",
     "frontend/src/app.css",
     "frontend/src/styles.css",
     "frontend/src/design.css",
@@ -54,11 +55,12 @@
     { "web": "frontend/src/pages/weekly/share-images.ts", "mini": ["wechat-miniprogram/src/features/weekly/index.js", "wechat-miniprogram/src/features/weekly/index.wxml"] },
     { "web": "frontend/src/pages/weekly/variants.ts", "mini": ["wechat-miniprogram/src/features/weekly/index.js", "wechat-miniprogram/src/features/weekly/index.wxml"] },
     { "web": "frontend/src/pages/WordLibraryPage.tsx", "mini": ["wechat-miniprogram/src/pages/library/index.js", "wechat-miniprogram/src/pages/library/index.wxml", "wechat-miniprogram/src/pages/library/index.wxss"] },
+    { "web": "frontend/src/features/mixed-study/KanjiCharCardView.tsx", "mini": ["wechat-miniprogram/src/pages/index/index.js", "wechat-miniprogram/src/pages/index/index.wxml", "wechat-miniprogram/src/pages/index/index.wxss"] },
     { "web": "frontend/src/pages/WordStudy.tsx", "mini": ["wechat-miniprogram/src/pages/index/index.js", "wechat-miniprogram/src/pages/index/index.wxml", "wechat-miniprogram/src/pages/index/index.wxss"] },
     { "web": "frontend/src/pages/YuzuShopPage.tsx", "mini": ["wechat-miniprogram/src/features/yuzu-shop/index.js", "wechat-miniprogram/src/features/yuzu-shop/index.wxml", "wechat-miniprogram/src/features/yuzu-shop/index.wxss"] },
     { "web": "frontend/src/design.css", "mini": ["wechat-miniprogram/src/styles/tokens.wxss"] },
     { "web": "frontend/src/styles.css", "mini": ["wechat-miniprogram/src/app.wxss"] },
-    { "web": "frontend/src/app.css", "mini": ["wechat-miniprogram/src/app.wxss", "wechat-miniprogram/src/features/common.wxss"] },
+    { "web": "frontend/src/app.css", "mini": ["wechat-miniprogram/src/app.wxss", "wechat-miniprogram/src/features/common.wxss", "wechat-miniprogram/src/pages/index/index.wxss"] },
     { "web": "frontend/src/skins.css", "mini": ["wechat-miniprogram/src/app.wxss", "wechat-miniprogram/src/styles/tokens.wxss"] },
     { "web": "frontend/public/brand/shushugo-icon.png", "mini": ["wechat-miniprogram/src/assets/brand/shushugo-icon.webp"] }
   ]
