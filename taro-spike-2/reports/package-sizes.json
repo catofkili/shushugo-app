@@ -2,32 +2,32 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1473104,
-      "mib": 1.405,
+      "bytes": 1479998,
+      "mib": 1.411,
       "passes": true
     },
     "quiz": {
-      "bytes": 1549318,
-      "mib": 1.478,
+      "bytes": 1551835,
+      "mib": 1.48,
       "passes": true
     },
     "study": {
-      "bytes": 2021793,
-      "mib": 1.928,
+      "bytes": 2025567,
+      "mib": 1.932,
       "passes": true
     },
     "features": {
-      "bytes": 659695,
-      "mib": 0.629,
+      "bytes": 661707,
+      "mib": 0.631,
       "passes": true
     },
     "content": {
-      "bytes": 1618463,
-      "mib": 1.543,
+      "bytes": 1619455,
+      "mib": 1.544,
       "passes": true
     }
   },
-  "totalBytes": 7322373,
+  "totalBytes": 7338562,
   "files": [
     {
       "path": "assets/sql-wasm.wasm",
@@ -42,17 +42,17 @@
     {
       "path": "quiz/sub-common/3ae043a1b5b3006bb1d0724915f10689.js",
       "package": "quiz",
-      "bytes": 546992
+      "bytes": 548921
     },
     {
       "path": "study/sub-common/3ae043a1b5b3006bb1d0724915f10689.js",
       "package": "study",
-      "bytes": 546992
+      "bytes": 548921
     },
     {
       "path": "study/word-study/index.js",
       "package": "study",
-      "bytes": 509798
+      "bytes": 511196
     },
     {
       "path": "quiz/sub-common/02aa333f2b6ffe685515b7da73065954.js",
@@ -72,12 +72,12 @@
     {
       "path": "features/content/distinction-reviews.js",
       "package": "features",
-      "bytes": 334372
+      "bytes": 336384
     },
     {
       "path": "content/kanji-reading-usage.js",
       "package": "content",
-      "bytes": 332314
+      "bytes": 333306
     },
     {
       "path": "content/pitch-accent.js",
@@ -87,7 +87,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 254898
+      "bytes": 261813
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -142,7 +142,7 @@
     {
       "path": "quiz/vocab-test/index.js",
       "package": "quiz",
-      "bytes": 37323
+      "bytes": 37464
     },
     {
       "path": "quiz/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js",
@@ -205,16 +205,6 @@
       "bytes": 18992
     },
     {
-      "path": "quiz/sub-common/4fda187aea66f502cd5beef836191ddf.js",
-      "package": "quiz",
-      "bytes": 18757
-    },
-    {
-      "path": "study/sub-common/4fda187aea66f502cd5beef836191ddf.js",
-      "package": "study",
-      "bytes": 18757
-    },
-    {
       "path": "assets/brand/scene-laptop.webp",
       "package": "main",
       "bytes": 18510
@@ -228,6 +218,16 @@
       "path": "study/sub-common/1ad6a7f8f63e443489d1850c48ea504e.js",
       "package": "study",
       "bytes": 18481
+    },
+    {
+      "path": "quiz/sub-common/4fda187aea66f502cd5beef836191ddf.js",
+      "package": "quiz",
+      "bytes": 18149
+    },
+    {
+      "path": "study/sub-common/4fda187aea66f502cd5beef836191ddf.js",
+      "package": "study",
+      "bytes": 18149
     },
     {
       "path": "assets/brand/mood-sleep.webp",
@@ -312,12 +312,12 @@
     {
       "path": "quiz/sub-common/66be035b9b519c71ca9ff98265d8efed.js",
       "package": "quiz",
-      "bytes": 10048
+      "bytes": 10059
     },
     {
       "path": "study/sub-common/66be035b9b519c71ca9ff98265d8efed.js",
       "package": "study",
-      "bytes": 10048
+      "bytes": 10059
     },
     {
       "path": "quiz/sub-common/4cda6fed0d2352f896aebb3e419cd3e1.js",
@@ -412,12 +412,22 @@
     {
       "path": "quiz/sub-common/8dfe5890a0f72cbab4196bbee3dcc417.js",
       "package": "quiz",
-      "bytes": 6481
+      "bytes": 6529
     },
     {
       "path": "study/sub-common/8dfe5890a0f72cbab4196bbee3dcc417.js",
       "package": "study",
-      "bytes": 6481
+      "bytes": 6529
+    },
+    {
+      "path": "quiz/sub-common/e5831ecb14c8a76903ce86c87b6c0a44.js",
+      "package": "quiz",
+      "bytes": 5810
+    },
+    {
+      "path": "study/sub-common/e5831ecb14c8a76903ce86c87b6c0a44.js",
+      "package": "study",
+      "bytes": 5810
     },
     {
       "path": "quiz/sub-common/6036885f7068873ac86cc29fba3efc5f.js",
@@ -428,16 +438,6 @@
       "path": "study/sub-common/6036885f7068873ac86cc29fba3efc5f.js",
       "package": "study",
       "bytes": 5681
-    },
-    {
-      "path": "quiz/sub-common/e5831ecb14c8a76903ce86c87b6c0a44.js",
-      "package": "quiz",
-      "bytes": 5467
-    },
-    {
-      "path": "study/sub-common/e5831ecb14c8a76903ce86c87b6c0a44.js",
-      "package": "study",
-      "bytes": 5467
     },
     {
       "path": "quiz/sub-common/cfb512dc3e6f0dcd6277bd96ec6ffffd.js",
@@ -827,12 +827,12 @@
     {
       "path": "quiz/sub-common/605b885d9595b1a50bb90eb27904971e.js",
       "package": "quiz",
-      "bytes": 1844
+      "bytes": 1845
     },
     {
       "path": "study/sub-common/605b885d9595b1a50bb90eb27904971e.js",
       "package": "study",
-      "bytes": 1844
+      "bytes": 1845
     },
     {
       "path": "quiz/sub-common/67eaba175aa877c5a1d53242bab52122.js",
@@ -847,7 +847,7 @@
     {
       "path": "app.js",
       "package": "main",
-      "bytes": 1697
+      "bytes": 1676
     },
     {
       "path": "quiz/sub-common/b7f63dc3a649e26fa4bb21b58d0cc748.js",
@@ -1070,7 +1070,17 @@
       "bytes": 652
     },
     {
+      "path": "quiz/sub-common/d4d135d3a4635572806426b2a769aa40.js",
+      "package": "quiz",
+      "bytes": 652
+    },
+    {
       "path": "study/sub-common/c8a0e1586430d7c5ed2fb262521fd44f.js",
+      "package": "study",
+      "bytes": 652
+    },
+    {
+      "path": "study/sub-common/d4d135d3a4635572806426b2a769aa40.js",
       "package": "study",
       "bytes": 652
     },

@@ -12,7 +12,7 @@ export default function VocabTestRoute() {
     ensureDatabase().then(() => setReady(true)).catch((cause) => setError(String(cause?.message || cause?.errMsg || JSON.stringify(cause))));
   }, [ready]);
 
-  if (error) return <View className="p-4"><Text>{error}</Text></View>;
-  if (!ready) return <View className="p-4"><Text>正在载入隔离出厂词库…</Text></View>;
-  return <VocabTestPage />;
+  if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
+  if (!ready) return <View className="theme-light p-4"><Text>正在载入隔离出厂词库…</Text></View>;
+  return <View className="theme-light"><VocabTestPage /></View>;
 }

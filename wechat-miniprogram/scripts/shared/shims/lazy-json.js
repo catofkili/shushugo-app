@@ -24,7 +24,7 @@ const proxy = (name, path) => new Proxy({}, {
     if (typeof key === 'symbol') return undefined;
     if (key === 'default' && path.length === 0) return proxy(name, path);
     const value = resolve(name, [...path, key]);
-    // 还没加载 → 继续给一层代理，让调用方存下来的引用保持活的。
+    // content-store 用 null 表示未加载：此时给代理保住早期引用；加载后缺失的键必须是 undefined，不能让代理参与字符串转换。
     if (value === undefined) return stores[name] == null ? proxy(name, [...path, key]) : undefined;
     return value && typeof value === 'object' ? proxy(name, [...path, key]) : value;
   },

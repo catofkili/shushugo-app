@@ -21,12 +21,19 @@ const screenshot = (name) => path.join(root, 'reports', `${screenshotPrefix}-${n
   await page.getByRole('button', { name: /开始今天的单词/ }).waitFor({ timeout: 30000 });
   await page.getByRole('button', { name: /开始今天的单词/ }).click();
   await page.getByRole('button', { name: /显示答案/ }).waitFor({ timeout: 30000 });
+  await page.mouse.move(1, 1); // 避免把鼠标悬停产生的提示气泡截进来。
+  await page.getByText(/计划已创建/).waitFor({ state: 'hidden', timeout: 5000 });
   await sleep(300);
   await page.screenshot({ path: screenshot('word-study-front') });
   await page.getByRole('button', { name: /显示答案/ }).click();
   await page.getByRole('button', { name: /忘了|模糊|记得|熟知/ }).first().waitFor({ timeout: 10000 });
   await sleep(300);
   await page.screenshot({ path: screenshot('word-study-back') });
+  await page.locator('.jp-token').first().click();
+  await page.locator('.token-dictionary-sheet').waitFor({ timeout: 10000 });
+  await sleep(150);
+  await page.screenshot({ path: screenshot('word-study-dictionary') });
+  await page.locator('.token-dictionary-close').click();
 
   await page.getByRole('button', { name: /首页|主页/ }).first().click();
   await page.getByRole('button', { name: /查词汇量/ }).click();
@@ -48,10 +55,11 @@ const screenshot = (name) => path.join(root, 'reports', `${screenshotPrefix}-${n
   await page.getByRole('button', { name: /提前交卷/ }).waitFor({ timeout: 10000 });
   await page.getByRole('button', { name: /提前交卷/ }).click();
   await page.getByText(/这次测出|这次还没出数/).waitFor({ timeout: 15000 });
-  await sleep(300);
+  await sleep(500);
   await page.screenshot({ path: screenshot('vocab-result') });
   console.log(JSON.stringify({ viewport: '375x812', answered: 15, screenshots: [
-    screenshot('word-study-front'), screenshot('word-study-back'), screenshot('vocab-landing'), screenshot('vocab-question'), screenshot('vocab-result')
+    screenshot('word-study-front'), screenshot('word-study-back'), screenshot('word-study-dictionary'),
+    screenshot('vocab-landing'), screenshot('vocab-question'), screenshot('vocab-result')
   ], pageErrors: errors }, null, 2));
   await browser.close();
 })().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -48,6 +48,7 @@ module.exports = {
     postcss: {
       pxtransform: { enable: true, config: {} },
       htmltransform: { enable: true, config: { removeCursorStyle: true } },
+      [path.join(root, 'scripts/weapp-theme-selectors.cjs')]: {},
       [path.join(root, 'scripts/strip-weapp-css.cjs')]: {}
     },
     webpackChain(chain, webpack) {

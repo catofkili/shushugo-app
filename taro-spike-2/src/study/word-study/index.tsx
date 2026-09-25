@@ -23,7 +23,7 @@ export default function WordStudyRoute() {
     });
   }, [ready]);
 
-  if (error) return <View className="p-4"><Text>{error}</Text></View>;
-  if (!ready) return <View className="p-4"><Text>正在载入隔离出厂词库…</Text></View>;
-  return <WordStudy initialMode={mode} />;
+  if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
+  if (!ready) return <View className="theme-light p-4"><Text>正在载入隔离出厂词库…</Text></View>;
+  return <View className="theme-light"><WordStudy initialMode={mode} /></View>;
 }
