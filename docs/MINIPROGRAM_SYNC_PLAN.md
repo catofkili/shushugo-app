@@ -192,3 +192,143 @@ WXSS 报错来自一个 `::highlight` 选择器，真正难的弹层 / DOM / 真
 </table>
 
 完整报告：[网页 / 小程序首页对照](assets/route-b-parity/report.html)。后续每次网页 UI 改动仍须在同一提交更新对应小程序文件，并检查实际对照报告；映射表里未登记的 Web 组件变更会被拦下，须先确定它的小程序对应项。
+
+## 路线 A 第二轮实测记录（2026-09-25）
+
+> 结论：生产构建与包体门槛通过，但查词汇量主流程未走通，视觉差异明显；路线 A 本轮不通过。
+
+### 实验边界
+
+- 试验在独立 worktree 分支 `codex/taro-spike-2` 执行，基于当时本地 `main` 的 `48c3b6a`。Taro 4.2.1、React 18.3.1、Webpack 5、`@tarojs/plugin-html` 生产构建成功。
+- 页面入口直接导入 `frontend/src/pages/VocabTestPage.tsx`。`VocabTestPage.tsx` 与 `WordStudy.tsx` 的页面源码 diff 均为空；没有改 `frontend/src/`，没有改路线 B 配对表。
+- 网页对照使用隔离 Vite 端口 5194，出厂数据库由仅绑定 `127.0.0.1:5195` 的临时服务提供；开发者工具只打开试验项目。云端地址与 ID 均清空，只用 `frontend/public/nihongo.db`，未读取 `.local/live.db`，没有上传、预览或提审。两个临时服务已关闭。
+- 主目录的 5173 学习页没有操作或刷新。网页源文件、学习数据和已有未提交改动未触碰。
+
+### 六条过关条件
+
+| # | 结果 | 数字与证据 |
+|---|---|---|
+| 1 | **未通过（源码部分同源）** | `VocabTestPage.tsx` 由 Taro 入口直接 import，两个页面文件的 diff 为空；但 `WordStudy.tsx` 未编译。第 3 步未通过后，按本计划条件跳过第 4 步。Taro 侧适配列于下表。 |
+| 2 | **部分通过** | 主包 **1,256,398 B（1.198 MiB）**；`features` 分包 **1,835,040 B（1.750 MiB）**；实测合计 **3,091,438 B（2.948 MiB）**。主包与该分包均低于 **2,097,152 B（2 MiB）**。主包含 `sql-wasm.wasm` 的 **659,730 B**。全部页面迁移未估；Webpack 另有共享 entrypoint **2.02 MiB** 警告，分包根目录的实测数字见 `taro-spike-2/reports/package-sizes.json`。 |
+| 3 | **未通过** | 开发者工具能显示查词汇量落地页，但“开始测验”无状态变化。`Element.tap()`、`trigger tap`、`dispatchEvent click` 和界面点击均未触发页面跳转；未到第 1 题，无法答 5 题、提前交卷或查看结果。 |
+| 4 | **未测** | 没有“点评分 → 下一张”可用流程，因此没有 20 次计时、中位数或最大值，也没有与原生版比较。未生成预览二维码：本轮硬规则禁止上传或预览；真机验收待以后获准生成二维码后进行。 |
+| 5 | **未通过** | 两端均截在查词汇量落地页。Taro 截图出现 🦫 占位表情，网页使用原吉祥物图；Taro 的文字、卡片和留白也明显更小。网页 DOM 视口为 **375×812**，截图接口实际输出 **375×780**；DevTools 截图为 **476×1030**。对照图见下方。 |
+| 6 | **通过** | `cd frontend && npm run check` 通过；`npm test` 通过，**112 个测试文件通过、2 个跳过；789 项测试通过、26 项跳过**。网页只在 5194 对照，没有改源码；5173 未操作。 |
+
+<table>
+  <tr><th>网页：DOM 视口 375×812；截图文件 375×780</th><th>Taro：微信开发者工具落地页，截图 476×1030</th></tr>
+  <tr>
+    <td><img src="assets/taro-spike-2/web-vocab-intro-viewport-375x812-image-375x780.png" width="375" alt="隔离端口网页查词汇量落地页"></td>
+    <td><img src="assets/taro-spike-2/taro-vocab-intro-devtools-476x1030.png" width="375" alt="Taro 试验版查词汇量落地页"></td>
+  </tr>
+</table>
+
+### Taro 侧适配与影响
+
+| 文件 | 行数 | 内容与网页影响 |
+|---|---:|---|
+| `taro-spike-2/src/features/vocab-test/index.tsx` | 18 | 等待现有 `database-store` 从出厂库就绪，再直接渲染原 `VocabTestPage`；只影响试验入口。 |
+| `taro-spike-2/src/platform/iframe-polyfill.weapp.ts`、`src/app.tsx` | 17、10 | 补 `HTMLIFrameElement`（React DOM 报错点为 `react-dom.development.js:8445`）及 `document.documentElement` 属性桩；仅 Taro 试验启用。 |
+| `taro-spike-2/src/platform/mascot.weapp.tsx` | 16 | 用 🦫 表情替代网页吉祥物素材；这是截图中可见的差异，不能算视觉同源。 |
+| `taro-spike-2/scripts/taro-content.cjs` | 17 | 为单页静态打入题意内容，绕过 Taro 产物中不可用的 `require.async`；其他内容加载器在此试验页中不工作。 |
+| `taro-spike-2/scripts/offline-config.cjs` | 15 | 清空云地址与 ID，题库地址指向本机 5195；不接正式服务。 |
+| `taro-spike-2/scripts/strip-weapp-css.cjs` | 51 | 过滤器报告剥除 **100 条选择器记录**，包括 `:where`、`:has`、`::highlight`、`@layer` 相关规则及部分伪元素 / 相邻兄弟选择器；会造成样式损失。 |
+| `wechat-miniprogram/scripts/shared/shims-map.mjs`、`build-shared.mjs` | 36；文件净变化 38 行新增 / 34 行删除 | 将 `SHIMS` 抽为同一份映射供共享构建复用；只在试验分支提交，未合入主分支。 |
+
+未用于最终构建的 `src/platform/react-dom.weapp.ts` 等失败尝试也保留在归档快照中，没有删除。
+
+### 全量迁移工作量
+
+- 静态盘点为 **34 个 `frontend/src/pages/*.tsx` 文件**；本次只验证 VocabTest，仍有 **33 个页面**未在 Taro 验证，其中包括 `WordStudy.tsx`。另有 **28 个**含浏览器专用 API 的 TSX 文件，以及 **13 处** `createPortal`。这些数字可能重叠，不能相加当作独立适配项。
+- 本轮只完成一个页面的生产打包与落地页渲染，且在完整答题流程前受阻；没有可用于外推的“每页通过工时”，所以全量迁移的日历工时仍为**未知**。现阶段能确认的是 33 页、28 个浏览器 API 文件、13 处 Portal 尚未完成盘点适配；继续估时会变成猜测。
+
+### 归档与建议
+
+- 完整试验快照（包括 Taro 源码、生产 `dist`、依赖锁文件、体积统计、CSS 清单和截图）位于 `refs/archive/worktree/taro-spike-2`，提交为 `152c4e681053798129244135c1f197d05b34903f`。需要复查时可运行 `git worktree add /tmp/taro-spike-2 refs/archive/worktree/taro-spike-2`。
+- 没有遇到主包或分包超过 2 MiB 的数字硬阻塞；路线 A 未通过的决定性证据是页面交互未工作，且截图不一致。速度与 WordStudy 仍无实测证据。
+
+**建议走路线 B**：A 的查词汇量主流程仍未通，视觉差异明显，WordStudy 与真机性能也没有通过证据；当前继续 A 的剩余工作量无法可靠估算。
+
+## 第二轮复核：哪些是做错了、哪些是真问题（Claude，2026-09-25）
+
+> 复核方法：把 `refs/archive/worktree/taro-spike-2` 展开，在微信开发者工具里（出厂库、离线配置、不上传）实际跑，
+> 再只改两处配置重新生产构建。改后的版本存在 `refs/archive/worktree/taro-spike-2-review`（`2e1b5ef`）。
+> **结论：第二轮判路线 A 不通过的决定性证据（按钮点了没反应）是配置错误，不是 Taro 做不到。路线 A 没有被否定。**
+
+### 第二轮说「没过」的，逐条定性
+
+| 第二轮的结论 | 定性 | 证据 |
+|---|---|---|
+| 「开始测验」点了没反应，主流程走不通 | **做错了** | `package.json` 里**没装 `@tarojs/react`**（Taro 的小程序渲染器），`config/index.js` 还把 `react-dom` 手动别名到网页用的 react-dom。网页渲染器靠 Taro 模拟的 DOM 能把页面画出来，但它的事件系统接不上小程序的 tap，所以点了毫无反应、也不报错。第一轮的 `instanceof` 报错、第二轮不得不补的 `HTMLIFrameElement` 假对象，都是同一个原因。装上 `@tarojs/react@4.2.1`、删掉 `react-dom` 别名后：落地页 → 开始 → 答 5 题 → 提前交卷 → 结果页**全部走通、零异常**。见下图。 |
+| 字、卡片、留白都比网页小一圈 | **做错了** | `designWidth: 750` 且开着 `pxtransform`：网页 CSS 按 375 宽写的 `16px` 被当成 750 设计稿换算成 `16rpx`，手机上只剩 8px。改成 `designWidth: 375` 后尺寸和网页一致。 |
+| 吉祥物变成 🦫 表情 | **偷懒了** | `platform/mascot.weapp.tsx` 直接用表情顶替，贴纸图片根本没拷进包。按路线 B 已有的 `sync-brand-assets.mjs` 把用到的贴纸压成 webp 放进分包即可。 |
+| 真机速度没测、没出二维码 | **计划的错** | `TARO_SPIKE_ROUND2.md` 硬规则写了「不上传」，第 5 步又要求生成预览二维码，自相矛盾。**预览二维码是开发预览、不是上传版本，下一轮允许生成**。开发者工具里复核测得点选项到页面更新 35–66 ms（含自动化工具往返）。 |
+| WordStudy 没试 | 连带 | 计划规定第 3 步通过才做第 4 步，第 3 步是被上面的配置错误卡住的。 |
+| 全量工作量「未知」 | 连带 | 同上，没有一页真正跑通过，无从外推。 |
+
+<table>
+  <tr><th>复核：答题页（开发者工具，改配置后）</th><th>复核：结果页</th></tr>
+  <tr>
+    <td><img src="assets/taro-spike-2/review-quiz.png" width="375" alt="Taro 查词汇量答题页"></td>
+    <td><img src="assets/taro-spike-2/review-result.png" width="375" alt="Taro 查词汇量结果页"></td>
+  </tr>
+</table>
+
+### 真问题（不是做错了，是路线 A 本来就要付的成本，下一轮要量清楚）
+
+1. **SVG 图标全部不显示。** `@tarojs/plugin-html` 不支持 `<svg>`，控制台满屏 `Template tmpl_0_path not found`；lucide 图标全应用都在用（倒计时圈、按钮图标都没了）。要一个 `lucide-react` 的小程序替身，把图标在构建时转成图片。一次性工作。
+2. **不支持的 CSS 被剥掉 100 条**（`:has`、`::highlight`、`@layer`、部分伪元素 / 兄弟选择器，清单在归档的 `reports/css-removed.json`）。看得见的要逐条改写成小程序能认的写法。一次性工作。
+3. **页面外壳**：网页的页边距、顶栏、底栏在 `App.tsx` 里，单独编译一个页面就贴边了（截图顶部那行贴着左边）。要一个小程序版的外壳组件。
+4. **按需加载出厂内容**：试验里题面数据（约 0.6 MB）是静态打进页面的，别的内容加载器不可用。`features` 分包因此是 1.8 MB，离每包 2 MiB 很近。要找到 Taro 下的分包异步加载做法，否则页面一多分包就会超。**这是路线 A 现在最大的未知数。**
+5. **浏览器专用功能**：28 个文件、13 处 `createPortal`（`@tarojs/react` 自带 `createPortal`，但弹层定位、量尺寸、canvas 分享图没验证）。
+6. **真机速度**：只有开发者工具的数，没有真机的数。
+
+### 第三轮（给 Codex）：在 `refs/archive/worktree/taro-spike-2-review` 基础上继续
+
+规则沿用 `TARO_SPIKE_ROUND2.md`，只改一条：**允许生成预览二维码请用户扫码测真机**（仍然不许上传版本、不许提审）。
+
+1. **先查 Taro 官方文档确认配置再动手**：React 项目必须装 `@tarojs/react`，`react-dom` 由框架插件别名，不要自己指；`designWidth` 按网页的 375。第二轮两个决定性错误都是没看文档造成的。
+2. 贴纸按 `sync-brand-assets.mjs` 的做法进分包，不许再用表情顶替。
+3. `lucide-react` 小程序替身（第 1 条真问题）。
+4. 小程序版页面外壳（第 3 条）。
+5. **重点**：Taro 下出厂内容的分包按需加载（第 4 条）。给出做法和查词汇量页改完后的分包字节数。做不到就停下来报告，这条决定路线 A 能不能走。
+6. 通过后编译 `WordStudy.tsx`，走通出卡 → 翻面 → 评分 → 下一张。
+7. 预览二维码请用户扫码，测真机答题到下一题的延迟，和原生小程序对比。
+8. 两端同一状态截图对照；六条过关条件逐条给数字，写回本文件末尾。
+
+## 路线 A 第三轮实测记录（2026-09-25）
+
+> 从 `refs/archive/worktree/taro-spike-2-review`（`2e1b5ef`）展开 worktree `codex/taro-spike-3`。先核对 Taro 官方文档，再完成贴纸、Lucide 图片替身和页面外壳；第 5 步确认无法用 Taro 支持的方式做出厂内容跨分包按需加载后，按硬规则停止第 6–8 步。
+
+### 官方配置与实现
+
+- Taro 4 官方实现文档说明小程序 React 渲染器在 `@tarojs/react`，由它替代 ReactDOM；归档配置中的依赖和 `react-dom` 无手动 alias 符合该结构。
+- Taro 尺寸文档规定 375 设计稿要配 `designWidth: 375` 和 `deviceRatio: { 375: 2 }`，归档配置正确。
+- 官方分包配置以 `subPackages` 声明页面路由，另可按规则预下载分包。官方动态 `import()` 文档说明小程序默认会把它转换成同步 `require()`；智能分包文档说明分包间不能互相引用模块，共用依赖会复制进各自分包。本 worktree 锁定的 Taro 4.2.1 Babel preset 实测也输出 `Promise.resolve().then(() => require(...))`，不是延迟加载 chunk。
+
+依据：[Taro 实现细节](https://docs.taro.zone/docs/implement-note)、[Taro 设计稿及尺寸单位](https://docs.taro.zone/docs/3.x/size)、[Taro 全局配置](https://docs.taro.zone/docs/app-config)、[Taro 动态 import](https://docs.taro.zone/en/docs/3.x/dynamic-import)、[Taro 智能提取分包依赖](https://docs.taro.zone/en/docs/mini-split-chunks-plugin)。动态 import 与分包依赖文档标注为 3.x；另用当前锁定的 4.2.1 preset 实测动态 import 编译结果。
+
+### 第 2–5 步结果
+
+- 贴纸按小程序品牌素材流程从网页原图以 `cwebp -q 82` 压缩 10 张，放进查词页功能分包；新增 21 个 Lucide 图标的深色 / 浅色静态 SVG 图片；Taro App 入口加了浅色背景、页边距和居中内容区外壳。
+- `NODE_ENV=production CI=1 npm run build:weapp` 通过。生产包：主包 **1,230,874 B（1.174 MiB）**；`features` 分包 **2,017,226 B（1.924 MiB）**；每包上限 **2,097,152 B（2 MiB）**，功能分包余量只有 **79,926 B**。WebPack 页面入口另报合计 entrypoint **1.99 MiB**；包大小按小程序主包 / 分包根目录统计。Webpack stats 中 `question-meanings.js` 为 **719,694 B**，仍静态进入查词页分包。
+- **第 5 步未通过，停止后续试验。** Taro 4.2.1 / Webpack 5 没有受支持的跨分包 JS 模块异步导入路径：Taro 的动态 import 会编译为同步 require；分包不能互相引用。把题面移到单独分包后，当前 React 页面无法从该包按需导入；留在查词页路由包则仍是静态内容，无法给后续页面腾出包体空间。第三方动态 import 插件文档只覆盖 Webpack4，并警告可能影响审核，本轮不把它当作可行方案。
+- 没有编译 `WordStudy.tsx`、生成预览二维码、测真机速度或制作两端截图。开发者工具 CLI 打开试验项目返回「需要重新登录」，所以本轮贴纸、图标和外壳没有新增的 DevTools 视觉验收；无真机数据请求发生在第 5 步通过之后，按停止条件未走到该阶段。
+- Web 源码没有改动；本轮未重跑网页测试。完整配置、构建数据及阻塞证据在归档的 `taro-spike-2/reports/round3-step5-blocker.md`。
+
+### 六条过关条件
+
+| # | 结果 | 数字与证据 |
+|---|---|---|
+| 1 | **部分通过** | 查词页直接编译原 `VocabTestPage.tsx`，没有改页面源码；`WordStudy.tsx` 因第 5 步阻塞未编译。 |
+| 2 | **部分通过** | 当前主包 **1,230,874 B**、功能分包 **2,017,226 B**，均低于 **2,097,152 B**；全页面迁移估算未做，且功能分包只余 **79,926 B**。 |
+| 3 | **沿用第二轮复核通过，本轮未复验** | 第二轮复核记录了落地页 → 开始 → 5 题 → 提前交卷 → 结果页零异常；本轮 Developer Tools 要求重新登录，未重跑页面流程。 |
+| 4 | **未通过（真机待测）** | 第二轮只有开发者工具点选到页面更新 **35–66 ms** 的记录；没有真机数据，也没有与原生版的真机中位数差值。 |
+| 5 | **未通过（本轮未测）** | 本轮没有 DevTools 新截图或网页 / 小程序同状态对照；上一轮记录的吉祥物和尺寸差异未被本轮视觉复核。 |
+| 6 | **沿用第二轮复核通过，本轮未重跑** | 第二轮 `frontend` check 与测试通过；本轮没有修改 `frontend/` 源码，但没有重跑该测试组。 |
+
+试验提交 **`83613eebee02e4984961eeecabad4801e979109d`** 已归档到 `refs/archive/worktree/taro-spike-3`，随后移除了 worktree；需要复查可运行 `git worktree add /tmp/taro-spike-3 refs/archive/worktree/taro-spike-3`。未上传版本、未提审、未打开或刷新 5173、未读写个人学习库。
+
+**建议走路线 B**：路线 A 的关键前提——把题面内容放在独立包并由页面按需异步读取——在 Taro 4.2.1 / Webpack 5 支持的分包模型中无法实现；当前功能分包也只比 2 MiB 上限少 **79,926 B**，剩余页面没有包体余量依据。
+
+**状态说明：**本节只记录试验结果和阶段建议，尚未安排实装；建议不构成定案，可由后续资深工程师评审否决或修订。

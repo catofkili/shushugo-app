@@ -69,6 +69,20 @@ describe("疑难辨析 Anki 卡", () => {
     expect(matchingCard("homophone:根本不存在")).toBeNull();
   });
 
+  it("止系列分别说明自行停止、使对象停止、自然现象停歇和结束活动", () => {
+    const card = matchingCard("stem:止")!;
+    const noteFor = (kana: string) => card.members.find((member) => member.kana === kana)?.note ?? "";
+
+    expect(card.overview).toContain("自然现象停歇和人结束自己的活动");
+    expect(noteFor("とまる")).toContain("移动中的人或物");
+    expect(noteFor("とまる")).toContain("「が」");
+    expect(noteFor("とめる")).toContain("让交通工具");
+    expect(noteFor("とめる")).toContain("「を」");
+    expect(noteFor("やむ")).toContain("雨、风");
+    expect(noteFor("やめる")).toContain("勉強するのをやめる");
+    expect(noteFor("やめる")).toContain("今天不学习");
+  });
+
   it("新学优先给成员学过的组；已掌握的组不进队列", () => {
     const some = String(rowsFor("SELECT group_key FROM confusion_progress LIMIT 1 OFFSET 5")[0].group_key);
     const card = matchingCard(some)!;

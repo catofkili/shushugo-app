@@ -6,6 +6,7 @@ const { ensureDatabase, getDatabase, getStatus, saveDatabase } = require('../../
 const features = require('../../runtime/extended-features');
 const core = require('../../core/study-core');
 const entitlements = require('../../runtime/entitlements');
+const examDates = features.web.examDates;
 
 const PHASES = { intake: '学习期', consolidate: '巩固期', 'exam-week': '考试周', past: '已过期' };
 const pad = (value) => String(value).padStart(2, '0');
@@ -19,16 +20,17 @@ Page({
   data: {
     ready: false, busy: false, error: '', note: '', setupOpen: false, hasPlan: false,
     starts: STARTS.slice(0, 2), startLevels: STARTS.slice(2), setupStart: 'kana', setupTarget: 'N3', familiarityRows: [],
-    examOptions: [], examIndex: 0, selectedExamLabel: '', setupPreview: null, kanaPending: false, kanaCard: null,
-    targets: features.web.jlptPlan.JLPT_TARGETS, target: 'N3', examDate: '',
-    status: null, planEstimate: null, phaseText: '', shortfallText: '', wordPercent: 0, grammarPercent: 0, sourceText: ''
+    examKinds: examDates.EXAM_TYPES, setupExamKind: 'jlpt', setupExamName: 'JLPT', setupExamDate: '', setupDatePickerValue: dateKey(new Date()), examOptions: [], today: dateKey(new Date()), maxDate: dateKey(new Date(new Date().getFullYear() + 5, new Date().getMonth(), new Date().getDate())),
+    setupPreview: null, kanaPending: false, kanaCard: null,
+    targets: features.web.jlptPlan.JLPT_TARGETS, target: 'N3', examKind: 'jlpt', examName: 'JLPT', examDate: '',
+    status: null, noDate: false, planEstimate: null, phaseText: '', shortfallText: '', wordPercent: 0, grammarPercent: 0, sourceText: ''
   },
 
   async onShow() {
     try {
       if (!getStatus().ready) await ensureDatabase();
       this.setData({ ready: true });
-      if (!this.setup && core.withDb(getDatabase(), () => features.web.levelPlan.shouldShowLevelSetup())) this.openSetup();
+      if (!this.data.setupOpen && core.withDb(getDatabase(), () => features.web.levelPlan.shouldShowLevelSetup())) this.openSetup();
       if (await features.web.levelPlan.recalibrateLevelStartingPoint()) await saveDatabase();
       this.load();
       entitlements.notifyTrialExpiry();
@@ -45,6 +47,7 @@ Page({
     const progress = settings?.startingLevel === 'kana-none' ? core.withDb(getDatabase(), () => kana.getKanaProgress()) : null;
     const index = progress ? kana.KANA.findIndex(([symbol]) => (progress[symbol] || 0) < 2) : -1;
     const quota = features.web.preferences.getStudyPreferences();
+    const noDate = !examDates.parseExamDate(quota.jlptExamDate) && !examDates.suggestedExamDate(status.examKind);
     const access = entitlements.cachedEntitlement();
     const planEstimate = settings ? features.web.planContent.previewLevelPlan({
       startingLevel: settings.startingLevel, familiarity: settings.familiarity, target: status.target,
@@ -56,11 +59,14 @@ Page({
       kanaPending: index >= 0,
       hasPlan: Boolean(settings),
       kanaCard: index >= 0 ? { symbol: kana.KANA[index][0], reading: kana.KANA[index][1], choices: kana.kanaQuizChoices(index), mastered: kana.kanaMasteredCount(progress), total: kana.KANA.length } : null,
-      status: { ...status, examDate: dateKey(status.examDate), examDateHuman: features.web.examDates.formatExamDateHuman(status.examDate) },
+      status: { ...status, examKind: status.examKind, examName: examDates.examLabel(status.examKind), examDate: dateKey(status.examDate), examDateHuman: features.web.examDates.formatExamDateHuman(status.examDate) },
+      noDate,
       planEstimate,
       target: status.target,
+      examKind: status.examKind,
+      examName: examDates.examLabel(status.examKind),
       examDate: dateKey(status.examDate),
-      sourceText: status.examDateSource === 'manual' ? '手动设置' : '自动估算',
+      sourceText: noDate ? '请先选择考试日期' : status.examDateSource === 'manual' ? '手动设置' : status.examKind === 'gaokao' ? '默认排期，可按准考证修改' : '自动建议',
       phaseText: PHASES[status.plan.phase] || status.plan.phase,
       shortfallText: index >= 0 ? '从五十音开始，掌握后解锁新词' : features.web.jlptPlan.shortfallText(shortfall),
       quotaWarning: status.plan.feasible && status.plan.phase === 'intake' ? [
@@ -75,18 +81,23 @@ Page({
 
   openSetup() {
     const previous = core.withDb(getDatabase(), () => features.web.levelPlan.getLevelPlanSettings());
-    const dates = features.web.examDates.upcomingExamDates();
-    const examOptions = dates.map((date) => ({
-      value: dateKey(date), label: `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日${dateKey(date) === '2026-12-06' ? '' : ' · 预计'}`
+    const examKind = previous?.examKind || 'jlpt';
+    const suggested = examDates.suggestedExamDate(examKind);
+    const savedDate = examDates.parseExamDate(previous?.examDate || '');
+    const today = new Date();
+    const examDate = savedDate && savedDate >= new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      ? dateKey(savedDate) : suggested ? dateKey(suggested) : '';
+    const examOptions = (examKind === 'jlpt' ? examDates.upcomingExamDates() : examDates.announcedExamDates(examKind)).slice(0, 4).map((date) => ({
+      value: dateKey(date), label: `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日${examKind === 'jlpt' && date.getFullYear() > 2026 ? ' · 预计' : ' · 已公布'}`
     }));
     this.setup = {
       startingLevel: previous?.startingLevel || 'kana', target: previous?.target || 'N3',
       familiarity: previous?.familiarity || features.web.levelPlan.familiarityDefaults('kana'),
-      examDate: previous?.examDate && examOptions.some((item) => item.value === previous.examDate) ? previous.examDate : examOptions[0].value
+      examKind, examDate
     };
     this.setData({ setupOpen: true, setupStart: this.setup.startingLevel, setupTarget: this.setup.target,
-      examOptions, examIndex: examOptions.findIndex((item) => item.value === this.setup.examDate),
-      selectedExamLabel: examOptions.find((item) => item.value === this.setup.examDate)?.label || '',
+      setupExamKind: examKind, setupExamName: examDates.examLabel(examKind), setupExamDate: examDate, examOptions,
+      today: dateKey(new Date()), setupDatePickerValue: examDate || dateKey(new Date()), maxDate: dateKey(new Date(new Date().getFullYear() + 5, new Date().getMonth(), new Date().getDate())),
       familiarityRows: Object.entries(FAMILIARITY).map(([kind, label]) => ({ kind, label, value: this.setup.familiarity[kind] })) });
     this.updateSetupPreview();
   },
@@ -94,7 +105,7 @@ Page({
     const value = features.web.planContent.previewLevelPlan({
       startingLevel: this.setup.startingLevel, target: this.setup.target,
       familiarity: this.setup.familiarity,
-      examDate: features.web.examDates.parseExamDate(this.setup.examDate)
+      examDate: features.web.examDates.parseExamDate(this.setup.examDate) || new Date(Date.now() + 90 * 86400000)
     });
     this.setData({ setupPreview: value });
   },
@@ -107,12 +118,19 @@ Page({
     this.updateSetupPreview();
   },
   pickSetupTarget(event) { this.setup.target = event.currentTarget.dataset.value; this.setData({ setupTarget: this.setup.target }); this.updateSetupPreview(); },
-  pickExam(event) {
-    const examIndex = Number(event.detail.value);
-    this.setup.examDate = this.data.examOptions[examIndex].value;
-    this.setData({ examIndex, selectedExamLabel: this.data.examOptions[examIndex].label });
+  pickExamKind(event) {
+    const examKind = event.currentTarget.dataset.kind;
+    this.setup.examKind = examKind;
+    const suggested = examDates.suggestedExamDate(examKind);
+    this.setup.examDate = suggested ? dateKey(suggested) : '';
+    const examOptions = (examKind === 'jlpt' ? examDates.upcomingExamDates() : examDates.announcedExamDates(examKind)).slice(0, 4).map((date) => ({
+      value: dateKey(date), label: `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日${examKind === 'jlpt' && date.getFullYear() > 2026 ? ' · 预计' : ' · 已公布'}`
+    }));
+    this.setData({ setupExamKind: examKind, setupExamName: examDates.examLabel(examKind), setupExamDate: this.setup.examDate, setupDatePickerValue: this.setup.examDate || this.data.today, examOptions });
     this.updateSetupPreview();
   },
+  pickExamDate(event) { this.setup.examDate = event.currentTarget.dataset.date; this.setData({ setupExamDate: this.setup.examDate, setupDatePickerValue: this.setup.examDate }); this.updateSetupPreview(); },
+  pickDate(event) { this.setup.examDate = event.detail.value; this.setData({ setupExamDate: this.setup.examDate, setupDatePickerValue: this.setup.examDate }); this.updateSetupPreview(); },
   changeFamiliarity(event) {
     const kind = event.currentTarget.dataset.kind;
     this.setup.familiarity[kind] = Number(event.detail.value);
@@ -120,7 +138,7 @@ Page({
     this.updateSetupPreview();
   },
   async saveSetup() {
-    if (this.data.busy) return;
+    if (this.data.busy || !this.setup?.examDate) return;
     this.setData({ busy: true, error: '', note: '' });
     try {
       const db = getDatabase();

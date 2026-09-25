@@ -256,10 +256,7 @@
 @media (max-height:600px) and (orientation:landscape){
   .word-study-shell.kanji-match-shell{min-height:0}
   .kanji-match-card{padding:8px;gap:6px}
-  .kanji-match-card>div:first-child{min-height:0;padding:6px}
-  .kanji-match-card>div:first-child .jp-serif{margin-top:4px;font-size:36px}
-  .kanji-match-card>div:first-child p:last-child{margin-top:4px}
-  .kanji-match-card>div:nth-child(2){padding:8px}
+  .kanji-match-card>div:first-child{min-height:0;padding:8px}
 }
 
 /* ===== 松鼠捡松子的小路（首页顶部栏） =====

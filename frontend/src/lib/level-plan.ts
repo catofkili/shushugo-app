@@ -9,6 +9,7 @@ import { requestFullSnapshot, scheduleSave } from "./storage";
 import { ensureProgressInitialized } from "./word-api/bootstrap";
 import { refreshTodayWordPlan } from "./word-api";
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
+import { isExamKind, type ExamKind } from "./jlpt/exam-dates";
 import { getStudyPreferences, PLAN_QUOTA_KEYS, saveStudyPreferences } from "./studyPreferences";
 import { enforceKanaGate } from "./kana-progress";
 
@@ -19,6 +20,7 @@ export interface LevelPlanSettings {
   startingLevel: StartingLevel;
   familiarity: Familiarity;
   target: JlptTarget;
+  examKind: ExamKind;
   examDate: string;
   startedOn: string;
 }
@@ -30,6 +32,7 @@ const SETTINGS_KEYS = {
   startingLevel: "starting_level",
   familiarity: "type_familiarity",
   target: "jlpt_plan_target",
+  examKind: "jlpt_plan_exam_kind",
   examDate: "jlpt_plan_exam_date",
   startedOn: "jlpt_plan_started_on",
   applied: "level_prior_applied"
@@ -76,21 +79,14 @@ export const getLevelPlanSettings = (): LevelPlanSettings | null => {
     startingLevel,
     familiarity,
     target,
+    examKind: isExamKind(getState(SETTINGS_KEYS.examKind, "jlpt")) ? getState(SETTINGS_KEYS.examKind, "jlpt") as ExamKind : "jlpt",
     examDate: getState(SETTINGS_KEYS.examDate, ""),
     startedOn: getState(SETTINGS_KEYS.startedOn, "") || localDate()
   };
 };
 
 export const shouldShowLevelSetup = (): boolean => {
-  if (getState(SETTINGS_KEYS.startingLevel, "")) return false;
-  return [
-    ["reviews", "1=1"], ["grammar_reviews", "1=1"], ["kanji_char_reviews", "1=1"], ["confusion_reviews", "1=1"], ["kana_reviews", "1=1"],
-    ["progress", "seen_count > 0 OR known_forever = 1"], ["grammar_progress", "seen_count > 0 OR known_forever = 1"],
-    ["checkins", "1=1"]
-  ].every(([table, condition]) => {
-      try { return firstValue<number>(`SELECT COUNT(*) FROM ${table} WHERE ${condition}`, [], 0) === 0; }
-      catch { return true; }
-    });
+  return !getState(SETTINGS_KEYS.startingLevel, "");
 };
 
 const hash = (value: string) => {
@@ -206,15 +202,18 @@ export async function applyLevelStartingPoint(settings: LevelPlanSettings, now =
   notifyProgressUpdated();
 }
 
-export async function saveLevelPlanSettings(input: Omit<LevelPlanSettings, "startedOn"> & { startedOn?: string }): Promise<LevelPlanSettings> {
+export async function saveLevelPlanSettings(input: Omit<LevelPlanSettings, "startedOn" | "examKind"> & { startedOn?: string; examKind?: ExamKind }): Promise<LevelPlanSettings> {
   const previous = getLevelPlanSettings();
+  const examKind = input.examKind ?? previous?.examKind ?? "jlpt";
   const familiarity = normalizedFamiliarity(input.familiarity);
   const unchanged = previous?.startingLevel === input.startingLevel
     && previous.target === input.target
+    && previous.examKind === examKind
     && previous.examDate === input.examDate
     && JSON.stringify(previous.familiarity) === JSON.stringify(familiarity);
   const settings: LevelPlanSettings = {
     ...input,
+    examKind,
     familiarity,
     startedOn: input.startedOn || (unchanged ? previous.startedOn : localDate())
   };
@@ -222,6 +221,7 @@ export async function saveLevelPlanSettings(input: Omit<LevelPlanSettings, "star
   setState(SETTINGS_KEYS.startingLevel, settings.startingLevel);
   setState(SETTINGS_KEYS.familiarity, JSON.stringify(settings.familiarity));
   setState(SETTINGS_KEYS.target, settings.target);
+  setState(SETTINGS_KEYS.examKind, settings.examKind);
   setState(SETTINGS_KEYS.examDate, settings.examDate);
   setState(SETTINGS_KEYS.startedOn, settings.startedOn);
   setState("jlpt_plan_enabled", "1");
@@ -231,6 +231,7 @@ export async function saveLevelPlanSettings(input: Omit<LevelPlanSettings, "star
     ...currentPrefs,
     jlptPlanEnabled: true,
     jlptTarget: settings.target,
+    planExamKind: settings.examKind,
     jlptExamDate: settings.examDate,
     jlptPlanStartedOn: settings.startedOn
   }, { keepPlanAnchor: true, fromLevelPlanSync: true });
@@ -258,6 +259,7 @@ export const hydrateLevelPlanPreferences = (): void => {
     ...syncedQuotas,
     jlptPlanEnabled: getState("jlpt_plan_enabled", "1") !== "0",
     jlptTarget: settings.target,
+    planExamKind: settings.examKind,
     jlptExamDate: settings.examDate,
     jlptPlanStartedOn: settings.startedOn
   }, { keepPlanAnchor: true, fromLevelPlanSync: true });

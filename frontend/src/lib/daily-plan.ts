@@ -4,9 +4,9 @@
  * 状态就是 studyPreferences 里那几个字段，这里只是把它们按「四种卡 × 新学 / 复习」摆成一个视图，
  * 再配上圆环要的两样东西：各类型的池子（段长按 √池子压缩）和建议下限。
  *
- * 复习那一半：单词走 reviewCap（0 = 自动、-1 = 不限、n = 上限），另外三种各自一个 cap（0 = 到期全出）。
+ * 复习那一半：单词走 reviewCap（0 = 自动、-1 = 不限、n = 上限）；另外三种各自一个 cap（0 = 到期全出、-1 = 不出复习）。
  */
-import { defaultStudyPreferences, getStudyPreferences, kanaGatePending, saveStudyPreferences, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
+import { defaultStudyPreferences, getStudyPreferences, kanaGatePending, saveStudyPreferences, PLAN_REVIEW_DISABLED, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
 import { getJlptPlanStatus } from "./jlpt/status";
 import { levelsInScope, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { firstValue, rowsFor, studyDayEnd } from "./study-core";
@@ -84,7 +84,7 @@ const wordReviewCount = (cap: number, due: number) => {
  * 这样圆环、大卡、小路三处是同一个数。今天还没生成时是 0，生成后当天不变。
  */
 const wordExtras = () => getDailyReliefProgress().total + getDailyTailProgress().total;
-const pick = (cap: number, due: number) => (cap > 0 ? Math.min(cap, due) : due);
+const pick = (cap: number, due: number) => (cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? Math.min(cap, due) : due);
 
 export const dailyPlanView = (prefs: StudyPreferences = getStudyPreferences()): DailyPlanView => {
   const status = getJlptPlanStatus();
@@ -166,7 +166,12 @@ export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: nu
     try { localStorage.setItem(BASELINE_KEY, JSON.stringify(Object.fromEntries(PLAN_KINDS.map((kind) => [kind, next[kind].fresh])))); } catch { /* 存不下就用默认档 */ }
   }
   const shownOf = (kind: PlanKind) => shown.segments.find((segment) => segment.kind === kind)?.review ?? 0;
-  const keepOr = (kind: PlanKind, current: number) => (next[kind].review === shownOf(kind) ? current : Math.max(1, next[kind].review));
+  const keepOr = (kind: PlanKind, current: number) => {
+    const item = next[kind];
+    if (item.fresh + item.review === 0) return PLAN_REVIEW_DISABLED;
+    if (item.review === shownOf(kind)) return current;
+    return item.review > 0 ? item.review : PLAN_REVIEW_DISABLED;
+  };
   saveStudyPreferences({
     ...prefs,
     dailyGoal: next.words.fresh,

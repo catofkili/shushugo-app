@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { Sticker, type StickerName } from "../components/CapybaraMascot";
+import { Sticker, brandAssetUrl, type StickerName } from "../components/CapybaraMascot";
 import type { WeeklyReport } from "../lib/analytics/weekly";
 import { useCountUp } from "../hooks/useCountUp";
 
@@ -73,7 +73,7 @@ export function WeeklyReportStory({ report, chapter, onBack, onReviewWords, onSh
         {report.keyword && <span className="wr-keyword-stamp"><small>本周的你</small><b>{report.keyword.keyword}</b></span>}
       </div>
       <div className="wr-cover-installation" aria-hidden="true">
-        <img className="wr-cover-brand-art" src="/brand/shushugo-cover.png" alt="" />
+        <img className="wr-cover-brand-art" src={brandAssetUrl("shushugo-cover.png")} alt="" />
         <div className="wr-cover-ticket"><span>学习的日子</span><b>{String(metrics.days).padStart(2,"0")}</b></div>
         <span className="wr-paper-sprig"><i/><i/><i/></span><span className="wr-floating-glyph">あ</span>
       </div>

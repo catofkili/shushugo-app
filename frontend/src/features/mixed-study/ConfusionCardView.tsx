@@ -45,26 +45,32 @@ export const ConfusionCardView = ({ card, revealed, onReveal, onAnswer }: Props)
 
       <div data-word-scrollable="true" className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
         {!revealed ? (
-          <div className="flex min-h-full flex-col items-center justify-center text-center">
-            <div className="flex flex-wrap justify-center gap-3">
+          <div className="mx-auto flex min-h-full max-w-2xl flex-col justify-center py-4 text-center">
+            <p className="text-xs font-bold tracking-[0.16em] text-white/45">先回想，再翻面</p>
+            <p className="mt-2 text-sm leading-6 text-white/65">说出每个词的意思和常见搭配，想清楚它们不能互换的地方。</p>
+            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
               {card.members.map((member) => (
-                <div key={member.id} className="rounded-2xl border border-white/15 bg-white/[0.035] px-5 py-4">
-                  <p className="jp text-2xl font-bold text-white">{member.surface}</p>
-                  <p className="jp mt-1 text-sm text-white/55">{member.kana}</p>
+                <div key={member.id} className="rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 text-left">
+                  <p className="jp text-xl font-bold text-white">{member.surface}</p>
+                  <p className="jp mt-0.5 text-sm text-white/55">{member.kana}</p>
                 </div>
               ))}
             </div>
-            <p className="mt-6 text-sm leading-6 text-white/65">先回想这组词各自表达什么，以及最核心的区别。</p>
           </div>
         ) : (
-          <div className="zoo-reveal-in mx-auto max-w-2xl text-left">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">手写辨析</p>
-            <p className="mt-2 text-base leading-7 text-white/90">{card.summary}</p>
-            <div className="mt-4 flex flex-col gap-2">
+          <div className="zoo-reveal-in mx-auto w-full max-w-2xl py-1 text-left">
+            <div className="rounded-2xl border border-[color:var(--quiz-accent-line)] bg-[color:var(--quiz-accent-soft)] px-4 py-3">
+              <p className="text-[11px] font-bold tracking-[0.16em] text-white/55">判断要点</p>
+              <p className="mt-1.5 text-sm leading-6 text-white/90">{card.overview}</p>
+            </div>
+            <div className="mt-3 flex flex-col gap-2">
               {card.members.map((member) => (
-                <div key={member.id} className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3">
-                  <p className="flex flex-wrap items-baseline gap-x-2"><span className="jp text-lg font-semibold">{member.surface}</span><span className="jp text-xs text-white/55">{member.kana}</span></p>
-                  {member.note && <p className="mt-1 text-sm leading-6 text-white/70">{member.note}</p>}
+                <div key={member.id} className="grid grid-cols-[minmax(84px,0.34fr)_minmax(0,1fr)] gap-x-3 rounded-2xl border border-white/10 bg-white/[0.045] px-3 py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:px-4">
+                  <div className="min-w-0">
+                    <p className="jp break-words text-lg font-bold leading-6 text-white">{member.surface}</p>
+                    <p className="jp mt-0.5 break-words text-xs leading-5 text-white/50">{member.kana}</p>
+                  </div>
+                  <p className="min-w-0 self-center text-sm leading-6 text-white/78">{member.note || "此组词的用法见总述。"}</p>
                 </div>
               ))}
             </div>

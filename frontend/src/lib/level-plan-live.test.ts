@@ -33,7 +33,7 @@ describe.skipIf(!snapshotPath)("作者库起点只读验收", () => {
     expect(eligible).toBeGreaterThan(0);
     const settings: LevelPlanSettings = {
       startingLevel: "N4", familiarity: { words: 75, grammar: 75, kanji: 75, confusion: 75 },
-      target: "N3", examDate: "2026-12-06", startedOn: "2026-09-23"
+      target: "N3", examKind: "jlpt", examDate: "2026-12-06", startedOn: "2026-09-23"
     };
     await applyLevelStartingPoint(settings, new Date("2026-09-23T12:00:00+08:00"));
     expect(Number(db.exec("SELECT COUNT(*) FROM reviews")[0].values[0][0])).toBe(beforeReviews);

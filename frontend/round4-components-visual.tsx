@@ -34,18 +34,20 @@ const PairBefore = ({ revealed = false }: { revealed?: boolean }) => <svg
   viewBox="0 0 100 100" preserveAspectRatio="none"
 >
   {items.map((item: { targetReading: string }, wordIndex: number) => {
-    const centerY = ((wordIndex + 0.5) / items.length) * 100;
+    const diagramHeight = items.length * 82 + Math.max(0, items.length - 1) * 8;
+    const center = (index: number) => ((index * 90 + 41) / diagramHeight) * 100;
+    const centerY = center(wordIndex);
     const assignedReading = pairs[wordIndex as keyof typeof pairs];
     const correctReading = readings.indexOf(item.targetReading);
-    if (!revealed) return assignedReading === undefined ? null : <line key={`attempt-${wordIndex}`} x1="0" y1={centerY} x2="100" y2={((assignedReading + 0.5) / items.length) * 100} stroke="#d7b5f1" strokeWidth="2.6" strokeLinecap="round" opacity="0.8" />;
+    if (!revealed) return assignedReading === undefined ? null : <line key={`attempt-${wordIndex}`} x1="0" y1={centerY} x2="100" y2={center(assignedReading)} stroke="var(--quiz-accent)" strokeWidth="2.6" strokeLinecap="round" opacity="0.8" />;
     return <g key={`answer-${wordIndex}`}>
-      {assignedReading !== undefined && assignedReading !== correctReading && <line x1="0" y1={centerY} x2="100" y2={((assignedReading + 0.5) / items.length) * 100} stroke="#f19595" strokeWidth="2.4" strokeLinecap="round" opacity="0.78" />}
-      <line x1="0" y1={centerY} x2="100" y2={((correctReading + 0.5) / items.length) * 100} stroke="#81D8CF" strokeWidth="2.8" strokeLinecap="round" opacity="0.92" />
+      {assignedReading !== undefined && assignedReading !== correctReading && <line x1="0" y1={centerY} x2="100" y2={center(assignedReading)} stroke="var(--ds-danger)" strokeWidth="2.4" strokeLinecap="round" opacity="0.78" />}
+      <line x1="0" y1={centerY} x2="100" y2={center(correctReading)} stroke="var(--ds-primary)" strokeWidth="2.8" strokeLinecap="round" opacity="0.92" />
     </g>;
   })}
 </svg>;
 
-const PairAfter = () => <KanjiPairLines items={items} pairs={pairs} readings={readings} revealed={false} />;
+const PairAfter = () => <KanjiPairLines items={items} pairs={pairs} readings={readings} revealed={false} height={262} rowHeight={82} rowGap={8} />;
 
 const Panel = ({ label, children }: React.PropsWithChildren<{ label: string }>) => <section className="compare-panel">
   <h2>{label}</h2>{children}
@@ -76,8 +78,8 @@ style.textContent = `
   .compare-panel{background:#fff;border:1px solid #e8e1d5;border-radius:12px;padding:8px;min-width:0}
   .compare-panel h2{font-size:11px;margin:0 0 8px}
   .compare-panel .vt-timer{margin:auto}
-  .pair-demo{display:grid;grid-template-columns:1fr 60px 1fr;align-items:start;min-height:204px}
-  .line-area{height:204px;position:relative;width:60px}
-  .match-rows{display:grid;grid-template-rows:repeat(3,68px);font-size:12px;text-align:center;align-items:center}
+  .pair-demo{display:grid;grid-template-columns:1fr 60px 1fr;align-items:start;min-height:262px}
+  .line-area{height:262px;position:relative;width:60px;--quiz-accent:#B9A7F2;--ds-danger:#C2493D;--ds-primary:#6FA83E}
+  .match-rows{display:grid;grid-template-rows:repeat(3,82px);row-gap:8px;font-size:12px;text-align:center;align-items:center}
 `;
 document.head.appendChild(style);

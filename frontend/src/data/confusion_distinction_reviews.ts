@@ -92,7 +92,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "pair:止まる / 止める",
     level: "major",
-    summary: "止まる表示运动或事情自己停下；止める表示人为使其停止或阻止。"
+    summary: "先看句子里自行变化的主体，以及对对象施加动作的人。这不只说移动停止，也能说运转或事情进程中断。；止まる：移动中的人或物、运转中的机器等自己停下来，停下者用「が」。例：車が止まる。；止める：某人主动让交通工具、机器或声音停止，受影响的对象用「を」。例：車を止める。"
   },
   {
     groupKey: "pair:無くす / 無くなる",
@@ -1182,7 +1182,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "stem:止",
     level: "major",
-    summary: "止まる是停下，止める是使停下；止む是雨、风等停止；止める（やめる）是停止做某事或戒掉。"
+    summary: "先看主体和助词：人或物自身发生状态变化时用「が」，有人对对象施加动作时用「を」。停止可指移动、运转、声音或事情进程。自然现象停歇和人结束自己的活动也要区分。；とまる：移动中的人或物、运转中的机器自己停下来，用「が」标出停下者。例：電車が止まった。；とめる：人让交通工具、机器或声音停止，用「を」标出对象。例：車を止めた。；やむ：雨、风等持续现象停歇，现象本身用「が」。例：雨が止んだ。；やめる：人结束正在做的活动或习惯。名词＋をやめる（たばこをやめる），动词＋のをやめる（勉強するのをやめる）。「今日は勉強しない」只说今天不学习，不表示中途停下。"
   },
   {
     groupKey: "stem:知",
@@ -2742,7 +2742,7 @@ export const distinctionNotesFor = (
       let note = clause;
       if (matched.length === 1) {
         const prefixes = [...target.forms, "前者", "后者"].map(escapeRegExp).join("|");
-        note = note.replace(new RegExp(`^(?:${prefixes})(?:（[^）]+）)?(?:是|表示)?`, "u"), "");
+        note = note.replace(new RegExp(`^(?:${prefixes})(?:（[^）]+）)?(?:是|表示)?[：:，,、\\s]*`, "u"), "");
       }
       if (!note) return;
       notes.set(target.key, [...(notes.get(target.key) ?? []), note]);

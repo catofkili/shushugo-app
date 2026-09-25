@@ -117,6 +117,7 @@ dailyPlan: {
 坑：
 - `INTENSITY_MIN`(5) 仍是设置页滑杆的下限，但偏好本身允许 0（圆环拖成 0）；`reviewCap` 的 0 是「自动」，
   圆环写回时 0 存成 1。
+- 分类复习字段 `grammarReviewCap` / `kanjiReviewCap` / `confusionReviewCap`：0 表示「到期全出」，`-1` 表示明确关闭该类复习。圆环把某一类总量调到 0 时必须写 `-1`，否则默认的 0 会在新卡额度为 0 时仍排入到期复习。将一个当前总量为 0 的环段扩到正数时，新量先全分给新学，不能凭空分成复习；否则会把复习 cap 写成正数，却因没有到期复习而排不出卡。
 - 改了额度要重排今天的清单：单词走 `refreshTodayWordPlan`，汉字 / 辨析走 `refreshMixedCardTasks`
   （`card-log.clearTasks` 删今天的投影再建，已答的卡由 FSRS 状态说话，不丢）。
 - 连线卡的评分只看连错次数，没有用时那条（原计划的「< 组员数 × 4 秒 → Easy」删了：

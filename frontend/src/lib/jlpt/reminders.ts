@@ -3,6 +3,7 @@ import { getJlptPlanStatus } from "./status";
 import { availableShortfall, shortfallText } from "./plan";
 import { getEntitlements } from "../entitlements";
 import { kanaGatePending } from "../studyPreferences";
+import { examEndAt, examLabel } from "./exam-dates";
 
 /**
  * 把「当前计划状态」翻译成通知层要的扁平结构,再排进系统。
@@ -19,7 +20,7 @@ export async function syncJlptPlanReminders(): Promise<void> {
     return;
   }
 
-  if (!status.enabled || kanaGatePending()) {
+  if (!status.enabled || status.finished || kanaGatePending()) {
     await syncJlptPlanNotifications(null);
     return;
   }
@@ -28,7 +29,8 @@ export async function syncJlptPlanReminders(): Promise<void> {
   const available = availableShortfall(status.shortfall, isPro);
 
   await syncJlptPlanNotifications({
-    target: status.target,
+    target: status.examKind === "jlpt" ? status.target : examLabel(status.examKind),
+    examEndAt: examEndAt(status.examKind, status.examDate),
     daysLeft: status.plan.daysLeft,
     todayText: shortfallText(available),
     todayClear: available.clear,

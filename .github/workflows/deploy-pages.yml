@@ -75,6 +75,7 @@ jobs:
         run: |
           mkdir -p dist/zoo
           cp -R zoo-lab/dist/. dist/zoo/
+          printf '{"commit":"%s"}\n' "$GITHUB_SHA" > dist/release.json
           printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
           # 发布前把「这一版到底带没带音频」写进日志,别等用户报「没声音」。
           if [ -f dist/audio/words/index.json ]; then

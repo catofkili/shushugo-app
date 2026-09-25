@@ -9,6 +9,7 @@
 ## 内容与素材
 
 - 主 CTA 暂时指向已可访问的网页学习 App：`https://catofkili.github.io/shushugo-app/`。迁移学习 App 域名时须先设计同源 IndexedDB 数据迁移与入口兼容，不能只替换链接。
+- 官网学习入口点击时追加 `fresh` 查询参数，绕开 GitHub Pages 当前 10 分钟 HTML 缓存；主机名不变，因此不会切换 IndexedDB 来源。
 - `assets/` 的水豚 WebP 图来自本仓库 `frontend/public/brand/sheet/`，这些切图由用户在 `~/收集日/未命名文件夹/` 的源图整理而来；小程序复用现有品牌图。
 - 功能说明与小程序 `features/about/index` 对齐；平台公开状态只按已验证发布情况描述，不以仓库源码或本地编译代替上线验收。
 
@@ -23,3 +24,7 @@ cloudflare-sync/node_modules/.bin/wrangler pages deploy website --project-name s
 Cloudflare Pages 自定义域名绑定到 `shushugo.com`；`api.shushugo.com` 仍指向现有 Worker。发布后检查主页、样式、图片、`robots.txt`、`sitemap.xml` 和网页学习 CTA。部署是单独的外部操作，不会由本仓库当前的 GitHub Pages 工作流自动完成。
 
 不要把 Pages 项目命名为 `shushugo-home`：现有 `api.shushugo.com` Worker 已用这个服务名。根域目前是代理模式的 CNAME，目标为 `shushugo-website.pages.dev`；改动 DNS 前先核对 `api.shushugo.com` 的 Worker 路由。
+
+## 学习版版本核对
+
+GitHub Pages 工作流在 `Deploy to GitHub Pages` 成功后发布 `/shushugo-app/release.json`，其中 `commit` 是构建所用的完整 SHA。核对学习版版本时，比较这个 SHA 与成功的 `Deploy ShuShuGo Pages` 工作流的 `headSha`；不要只凭本地代码或官网 CTA 判断已上线。

@@ -281,6 +281,7 @@ export function consumePendingWeeklyReportWeekStart(): string | null {
  */
 export interface JlptReminderInput {
   target: string;
+  examEndAt: Date;
   daysLeft: number;
   /** 今天还差多少的那句话,已经由 jlpt/plan.ts 拼好 */
   todayText: string;
@@ -344,6 +345,7 @@ export async function syncJlptPlanNotifications(
     at.setDate(at.getDate() + offset);
     at.setHours(hour, minute, 0, 0);
     if (at.getTime() <= now.getTime()) continue;      // 今天这个点已经过了
+    if (at >= input.examEndAt) continue;               // 考试结束后不再提醒
 
     notifications.push({
       id: JLPT_NOTIFICATION_BASE_ID + offset,

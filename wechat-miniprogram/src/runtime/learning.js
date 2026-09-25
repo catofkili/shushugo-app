@@ -56,6 +56,7 @@ function normalizeMatching(card) {
   const notes = card.notes instanceof Map ? Object.fromEntries(card.notes) : (card.notes || {});
   return {
     ...card,
+    overview: card.overview || String(card.summary || '').split(/[；;]/)[0].trim(),
     notes,
     members: card.members.map((member) => ({ ...member, note: notes[String(member.id)] || '' }))
   };

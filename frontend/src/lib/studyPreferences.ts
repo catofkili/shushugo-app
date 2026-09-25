@@ -1,4 +1,5 @@
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
+import { isExamKind, type ExamKind } from "./jlpt/exam-dates";
 import { getState, setState } from "./database/db-utils";
 
 export type ThemePreference = "system" | "light" | "dark";
@@ -34,7 +35,7 @@ export interface StudyPreferences {
    */
   kanjiDailyGoal: number;
   confusionDailyGoal: number;
-  /** 语法 / 汉字 / 辨析的每日复习上限，0 = 到期全出（单词那个仍是 reviewCap） */
+  /** 语法 / 汉字 / 辨析的每日复习上限：0 = 到期全出，PLAN_REVIEW_DISABLED = 不出复习（单词那个仍是 reviewCap） */
   grammarReviewCap: number;
   kanjiReviewCap: number;
   confusionReviewCap: number;
@@ -57,6 +58,8 @@ export interface StudyPreferences {
   jlptPlanEnabled: boolean;
   /** 备考目标级别 */
   jlptTarget: JlptTarget;
+  /** 考试类型；N 级仍只代表本站学习素材范围。 */
+  planExamKind: ExamKind;
   /**
    * 考试日期,"" = 自动取下一场(7 月/12 月的第一个周日)。
    * 留手填的口子是因为考期毕竟是外部安排,报名到了别的场次时不该改代码。
@@ -109,6 +112,7 @@ export const defaultStudyPreferences: StudyPreferences = {
   voiceId: "",
   jlptPlanEnabled: true,
   jlptTarget: "N3",
+  planExamKind: "jlpt",
   jlptExamDate: "",
   jlptPlanStartedOn: ""
 };
@@ -134,6 +138,8 @@ const clampSmallGoal = (value: number, max: number) => {
 
 /** 复习上限「不限」：当天所有到期的词一次全给，不截断、不顺延 */
 export const REVIEW_CAP_UNLIMITED = -1;
+/** 分类复习额度的专用哨兵；区别于 0（到期全出），用于用户明确把该类计划调到 0。 */
+export const PLAN_REVIEW_DISABLED = -1;
 
 const clampReviewCap = (value: number) => {
   if (!Number.isFinite(value)) return 0;
@@ -141,6 +147,11 @@ const clampReviewCap = (value: number) => {
   if (value === 0) return 0;
   // 下限 1 不是 30：圆环可以把单词复习拖到很小，0 在这里是「自动」所以存 1
   return Math.min(500, Math.max(1, Math.floor(value)));
+};
+
+const clampPlanReviewCap = (value: number) => {
+  const normalized = Number.isFinite(value) ? Math.floor(value) : 0;
+  return normalized === PLAN_REVIEW_DISABLED ? PLAN_REVIEW_DISABLED : Math.min(500, Math.max(0, normalized));
 };
 
 export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {}): StudyPreferences => ({
@@ -152,9 +163,9 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   grammarDailyGoal: clampGrammarGoal(Number(value.grammarDailyGoal ?? defaultStudyPreferences.grammarDailyGoal)),
   kanjiDailyGoal: clampSmallGoal(Number(value.kanjiDailyGoal ?? defaultStudyPreferences.kanjiDailyGoal), 50),
   confusionDailyGoal: clampSmallGoal(Number(value.confusionDailyGoal ?? defaultStudyPreferences.confusionDailyGoal), 20),
-  grammarReviewCap: clampSmallGoal(Number(value.grammarReviewCap ?? 0), 500),
-  kanjiReviewCap: clampSmallGoal(Number(value.kanjiReviewCap ?? 0), 500),
-  confusionReviewCap: clampSmallGoal(Number(value.confusionReviewCap ?? 0), 500),
+  grammarReviewCap: clampPlanReviewCap(Number(value.grammarReviewCap ?? 0)),
+  kanjiReviewCap: clampPlanReviewCap(Number(value.kanjiReviewCap ?? 0)),
+  confusionReviewCap: clampPlanReviewCap(Number(value.confusionReviewCap ?? 0)),
   reviewCap: clampReviewCap(Number(value.reviewCap ?? defaultStudyPreferences.reviewCap)),
   zooSounds: value.zooSounds ?? defaultStudyPreferences.zooSounds,
   weeklyReportEnabled: value.weeklyReportEnabled ?? defaultStudyPreferences.weeklyReportEnabled,
@@ -167,6 +178,7 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   jlptTarget: JLPT_TARGETS.includes(value.jlptTarget as JlptTarget)
     ? (value.jlptTarget as JlptTarget)
     : defaultStudyPreferences.jlptTarget,
+  planExamKind: isExamKind(value.planExamKind) ? value.planExamKind : "jlpt",
   // 格式不合法就当没填,由 jlpt/status.ts 回落到自动算下一场
   jlptExamDate: /^\d{4}-\d{2}-\d{2}$/.test(String(value.jlptExamDate ?? ""))
     ? String(value.jlptExamDate)
@@ -196,7 +208,7 @@ export const saveStudyPreferences = (preferences: StudyPreferences, options: { k
   const normalized = normalizeStudyPreferences(preferences);
   // 目标或考期变了 = 一份新计划，窗口从今天起算；没锚的老存档也在这里补上
   const previous = getStudyPreferences();
-  if (!options.keepPlanAnchor && (!normalized.jlptPlanStartedOn || previous.jlptTarget !== normalized.jlptTarget || previous.jlptExamDate !== normalized.jlptExamDate)) {
+  if (!options.keepPlanAnchor && (!normalized.jlptPlanStartedOn || previous.jlptTarget !== normalized.jlptTarget || previous.planExamKind !== normalized.planExamKind || previous.jlptExamDate !== normalized.jlptExamDate)) {
     normalized.jlptPlanStartedOn = localIsoDate();
   }
   if (!options.fromLevelPlanSync) {
@@ -207,6 +219,7 @@ export const saveStudyPreferences = (preferences: StudyPreferences, options: { k
     if (hasPlan) {
         if (previous.jlptPlanEnabled !== normalized.jlptPlanEnabled) setState("jlpt_plan_enabled", normalized.jlptPlanEnabled ? "1" : "0");
         if (previous.jlptTarget !== normalized.jlptTarget) setState("jlpt_plan_target", normalized.jlptTarget);
+        if (previous.planExamKind !== normalized.planExamKind) setState("jlpt_plan_exam_kind", normalized.planExamKind);
         if (previous.jlptExamDate !== normalized.jlptExamDate) setState("jlpt_plan_exam_date", normalized.jlptExamDate);
         if (previous.jlptPlanStartedOn !== normalized.jlptPlanStartedOn) setState("jlpt_plan_started_on", normalized.jlptPlanStartedOn);
         if (PLAN_QUOTA_KEYS.some((key) => previous[key] !== normalized[key])) {
@@ -239,6 +252,7 @@ export const getJlptPlanPreferences = () => {
   return {
     enabled: prefs.jlptPlanEnabled,
     target: prefs.jlptTarget,
+    examKind: prefs.planExamKind,
     examDate: prefs.jlptExamDate,
     startedOn: prefs.jlptPlanStartedOn
   };

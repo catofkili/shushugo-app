@@ -11,6 +11,7 @@ import type { Page, StudyMode } from "../types/app";
 import type { JLPTLevel } from "../types/grammar";
 import { VISIBLE_STUDY_MODES, studyModeInfo } from "../lib/studyMode";
 import { getJlptPlanStatus, type JlptPlanStatus } from "../lib/jlpt/status";
+import { examLabel, parseExamDate, suggestedExamDate } from "../lib/jlpt/exam-dates";
 import { getWeeklyReportNotice, WEEKLY_REPORT_UPDATED_EVENT } from "../lib/analytics/weekly-reports";
 import { availableShortfall, shortfallText } from "../lib/jlpt/plan";
 import { useEntitlements } from "../hooks/useEntitlements";
@@ -145,6 +146,7 @@ export function ZooHome({
   const remaining = Math.max(0, total - done);
   const streak = stats ? computeStreak(stats.checkins, stats.studyDate) : 0;
   const streakCount = useCountUp(streak);
+  const examDateMissing = Boolean(jlpt && !parseExamDate(goals.jlptExamDate) && !suggestedExamDate(jlpt.examKind));
 
   // 问候语只说**别处没说过的**：剩余量顶栏的进度条和大卡已经各写了一遍。
   // 这里给的是当天的状态和连击 —— 同一屏里同一个数字出现三次，是这页显吵的主因之一。
@@ -289,9 +291,9 @@ export function ZooHome({
         <div className="zoo-duo">
           {jlpt && (
             <button className="zoo-duo-cell" onClick={() => onNavigate("jlpt-plan")}>
-              <span className="zoo-duo-kick">{jlpt.target} 备考</span>
-              <b>{jlpt.plan.daysLeft < 0 ? "已考完" : `还有 ${jlpt.plan.daysLeft} 天`}</b>
-              <small>{kanaGatePending() ? "先学五十音，完成后开始新词" : shortfallText(availableShortfall(jlpt.shortfall, entitlements.isPro))}</small>
+              <span className="zoo-duo-kick">{jlpt.examKind === "jlpt" ? `${jlpt.target} 备考` : examLabel(jlpt.examKind)}</span>
+              <b>{examDateMissing ? "先选考试日期" : jlpt.finished ? "已考完" : `还有 ${jlpt.plan.daysLeft} 天`}</b>
+              <small>{examDateMissing ? "选择日期后生成每日计划" : kanaGatePending() ? "先学五十音，完成后开始新词" : shortfallText(availableShortfall(jlpt.shortfall, entitlements.isPro))}</small>
             </button>
           )}
           <button className="zoo-duo-cell" onClick={() => onNavigate("team")}>

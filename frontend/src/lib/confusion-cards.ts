@@ -141,6 +141,8 @@ export interface MatchingCard {
   type: ConfusionGroup["type"];
   label: string;
   members: ConfusionCardMember[];
+  /** 总述只显示开头这句；逐词说明已拆到成员卡片上，避免整段重复四遍。 */
+  overview: string;
   /** 反面：辨析稿总述 + 逐词注记（key 是 word id） */
   summary: string;
   notes: Map<string, string>;
@@ -158,6 +160,7 @@ export const matchingCard = (groupKey: string): MatchingCard | null => {
     groupKey: group.key,
     type: group.type,
     label: group.label,
+    overview: review.summary.split(/[；;]/u)[0].trim(),
     members: group.members.map((member) => ({
       id: member.id,
       surface: displayForm(member),

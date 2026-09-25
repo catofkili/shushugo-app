@@ -2948,17 +2948,20 @@
         {
           "word": "止まる",
           "wordKana": "とまる",
-          "targetReading": "と"
+          "targetReading": "と",
+          "meaning": "（人、车辆）停下；（机器）停止运转"
         },
         {
           "word": "止む",
           "wordKana": "やむ",
-          "targetReading": "や"
+          "targetReading": "や",
+          "meaning": "（雨、风等持续现象）停歇"
         },
         {
           "word": "中止",
           "wordKana": "ちゅうし",
-          "targetReading": "し"
+          "targetReading": "し",
+          "meaning": "（活动、计划等）中止；取消"
         }
       ]
     },

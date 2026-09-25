@@ -134,5 +134,17 @@
         <small>© 2026 收集日 ShuShuGo</small>
       </div>
     </footer>
+    <!-- GitHub Pages caches its app entry for 10 minutes; vary each click without changing the IndexedDB origin. -->
+    <script>
+      document.querySelectorAll('a[href="https://catofkili.github.io/shushugo-app/"]').forEach((link) => {
+        const refreshAppUrl = () => {
+          const url = new URL(link.href);
+          url.searchParams.set("fresh", Date.now().toString());
+          link.href = url.toString();
+        };
+        link.addEventListener("click", refreshAppUrl);
+        link.addEventListener("auxclick", refreshAppUrl);
+      });
+    </script>
   </body>
 </html>

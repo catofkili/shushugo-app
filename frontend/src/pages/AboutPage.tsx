@@ -1,4 +1,5 @@
 import { ArrowLeft, Heart, Check } from "lucide-react";
+import { brandAssetUrl } from "../components/CapybaraMascot";
 
 interface AboutPageProps {
   onBack: () => void;
@@ -20,7 +21,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
 
       {/* 应用信息 */}
       <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-6 text-center">
-        <img src="/brand/shushugo-icon.png" alt="" className="brand-icon mx-auto h-24 w-24 rounded-3xl shadow-lg" />
+        <img src={brandAssetUrl("shushugo-icon.png")} alt="" className="brand-icon mx-auto h-24 w-24 rounded-3xl shadow-lg" />
         <h1 className="jp-serif mt-4 text-2xl font-semibold text-white">收集日</h1>
         <p className="mt-2 text-sm text-white/60">收集每一个更好的自己</p>
         <p className="mt-3 text-xs font-bold text-white/50">版本 {__APP_VERSION__}</p>

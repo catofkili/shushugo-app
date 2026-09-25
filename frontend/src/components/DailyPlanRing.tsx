@@ -108,11 +108,11 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
     const nextA = Math.abs(share(lo) - target) <= Math.abs(share(hi) - target) ? lo : hi;
     const nextB = T - nextA;
     if (nextA === cur[a]) return;
-    // 搬数量时按各段现在的新学/复习比例分，比例没有（全 0）就先当复习
+    // 搬数量时按各段现在的新学/复习比例分；旧段全 0 时先把新增部分记作新学。
     const split = (kind: PlanKind, count: number) => {
       const item = current[kind];
       const itemTotal = item.fresh + item.review;
-      const fresh = itemTotal > 0 ? Math.round((count * item.fresh) / itemTotal) : 0;
+      const fresh = itemTotal > 0 ? Math.round((count * item.fresh) / itemTotal) : count;
       return { fresh, review: count - fresh };
     };
     const next = { ...current, [PLAN_KINDS[a]]: split(PLAN_KINDS[a], nextA), [PLAN_KINDS[b]]: split(PLAN_KINDS[b], nextB) };
