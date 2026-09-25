@@ -10,7 +10,7 @@
     "frontend/src/skins.css",
     "frontend/public/brand/"
   ],
-  "approvedExemptions": [],
+  "approvedExemptions": ["GitHub Pages 子路径图片"],
   "pairs": [
     { "web": "frontend/src/App.tsx", "mini": ["wechat-miniprogram/src/app.json", "wechat-miniprogram/src/pages/home/index.js", "wechat-miniprogram/src/pages/home/index.wxml"] },
     { "web": "frontend/src/components/ZooHome.tsx", "mini": ["wechat-miniprogram/src/pages/home/index.js", "wechat-miniprogram/src/pages/home/index.wxml", "wechat-miniprogram/src/pages/home/index.wxss"] },

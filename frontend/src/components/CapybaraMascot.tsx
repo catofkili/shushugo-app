@@ -70,15 +70,17 @@ const subscribe = (cb: () => void) => { window.addEventListener(MASCOT_SKIN_EVEN
 /** 组件里拿当前皮肤，皮肤一换所有贴纸同一帧重画 */
 export const useMascotSkin = () => useSyncExternalStore(subscribe, () => skin, () => "");
 
+export const brandAssetUrl = (path: string) => `${import.meta.env.BASE_URL}brand/${path}`;
+
 export const stickerUrl = (name: StickerName, skinId = skin) => {
   const sheet = SKIN_SHEETS[skinId];
-  if (!sheet) return `/brand/sheet/${name}.png`;
-  if (sheet.names.has(name)) return `/brand/${sheet.dir}/${name}.png`;
-  if (name.startsWith("mood-")) return `/brand/${sheet.dir}/mood-default.png`;
-  return `/brand/sheet/${name}.png`;
+  if (!sheet) return brandAssetUrl(`sheet/${name}.png`);
+  if (sheet.names.has(name)) return brandAssetUrl(`${sheet.dir}/${name}.png`);
+  if (name.startsWith("mood-")) return brandAssetUrl(`${sheet.dir}/mood-default.png`);
+  return brandAssetUrl(`sheet/${name}.png`);
 };
 /** 问候条 / 导航栏那枚品牌图标：皮肤自带 App 图标就用皮肤的 */
-export const brandIconUrl = (skinId = skin) => (SKIN_SHEETS[skinId] ? `/brand/${SKIN_SHEETS[skinId].dir}/app-icon.png` : "/brand/shushugo-icon.png");
+export const brandIconUrl = (skinId = skin) => brandAssetUrl(SKIN_SHEETS[skinId] ? `${SKIN_SHEETS[skinId].dir}/app-icon.png` : "shushugo-icon.png");
 
 /** 总表上的任意一格。size 是高度，宽度按原图比例走（空状态那排不是正方形）。 */
 export function Sticker({ name, size = 96, className = "", alt = "" }: { name: StickerName; size?: number; className?: string; alt?: string }) {
