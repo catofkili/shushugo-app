@@ -11,7 +11,7 @@
     "frontend/src/skins.css",
     "frontend/public/brand/"
   ],
-  "approvedExemptions": ["GitHub Pages 子路径图片"],
+  "approvedExemptions": ["GitHub Pages 子路径图片", "仅开发模式（import.meta.env.DEV）生效的调试开关，正式构建和小程序里都不存在，无需原生页面对应（用户 2026-09-26 同意提交）", "用户 2026-09-25 决定走路线 A（Taro，页面只保留网页一份源码），原生小程序页面停止维护、将整体替换，不再逐页配对"],
   "pairs": [
     { "web": "frontend/src/App.tsx", "mini": ["wechat-miniprogram/src/app.json", "wechat-miniprogram/src/pages/home/index.js", "wechat-miniprogram/src/pages/home/index.wxml"] },
     { "web": "frontend/src/components/ZooHome.tsx", "mini": ["wechat-miniprogram/src/pages/home/index.js", "wechat-miniprogram/src/pages/home/index.wxml", "wechat-miniprogram/src/pages/home/index.wxss"] },
