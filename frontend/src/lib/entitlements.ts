@@ -46,7 +46,29 @@ const isEntitlementState = (value: unknown): value is EntitlementState => {
   return typeof item.isPro === "boolean" && typeof item.source === "string" && typeof item.updatedAt === "string";
 };
 
+// Keep the local development override separate from cloud-cached entitlements.
+const DEV_FORCE_PRO_KEY = "mn-dev-force-pro";
+
+export function devForcePro(): boolean {
+  if (!import.meta.env.DEV) return false;
+  try {
+    return localStorage.getItem(DEV_FORCE_PRO_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setDevForcePro(on: boolean): void {
+  if (!import.meta.env.DEV) return;
+  if (on) localStorage.setItem(DEV_FORCE_PRO_KEY, "1");
+  else localStorage.removeItem(DEV_FORCE_PRO_KEY);
+  window.dispatchEvent(new CustomEvent(EVENT, { detail: getEntitlements() }));
+}
+
 export function getEntitlements(): EntitlementState {
+  if (devForcePro()) {
+    return { isPro: true, source: "development", productId: "shushugo_pro_lifetime", updatedAt: new Date().toISOString() };
+  }
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultEntitlements();
@@ -102,10 +124,8 @@ export function canUseFeature(_feature: FeatureId, entitlements = getEntitlement
 }
 
 export function subscribeEntitlements(listener: (state: EntitlementState) => void): () => void {
-  const handler = (event: Event) => {
-    const detail = (event as CustomEvent<EntitlementState>).detail;
-    listener(detail ?? getEntitlements());
-  };
+  // Cloud events contain the cached value; reread so the local development override wins.
+  const handler = () => listener(getEntitlements());
   window.addEventListener(EVENT, handler);
   return () => window.removeEventListener(EVENT, handler);
 }
