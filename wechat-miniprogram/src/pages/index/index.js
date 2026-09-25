@@ -22,7 +22,7 @@ const { canUse } = require('../../core/entitlements');
 const core = require('../../core/study-core');
 const { web } = core;
 
-const KANJI_ROW_PITCH = 112;
+const KANJI_ROW_PITCH = 164;
 const KANJI_GUTTER = 64;
 
 const kanjiMatchView = (question, readings, pairs, selectedWord, revealed) => {
@@ -48,6 +48,7 @@ const kanjiMatchView = (question, readings, pairs, selectedWord, revealed) => {
   });
 
   const pairedReadings = new Set(Object.values(pairs));
+  const matchedCount = Object.keys(pairs).length;
   return {
     kanjiWordRows: items.map((item, index) => ({ ...item, index, selected: selectedWord === index, paired: pairs[index] !== undefined })),
     kanjiReadingRows: readings.map((reading, index) => ({
@@ -57,7 +58,9 @@ const kanjiMatchView = (question, readings, pairs, selectedWord, revealed) => {
       correct: revealed && items.some((item, wordIndex) => item.targetReading === reading && pairs[wordIndex] === index)
     })),
     kanjiConnections: lines,
-    kanjiMatchComplete: items.length > 0 && Object.keys(pairs).length === items.length
+    kanjiMatchCount: matchedCount,
+    kanjiMatchPercent: items.length ? Math.round(matchedCount / items.length * 100) : 0,
+    kanjiMatchComplete: items.length > 0 && matchedCount === items.length
   };
 };
 
@@ -408,6 +411,16 @@ Page({
       kanjiPairs: pairs,
       selectedKanjiWord: selectedWord,
       ...kanjiMatchView(this.data.interleave.card.question, this.data.kanjiReadings, pairs, selectedWord, false)
+    });
+  },
+
+  clearKanjiConnections() {
+    if (this.data.interleaveRevealed || !this.data.interleave?.card.question) return;
+    const pairs = {};
+    this.setData({
+      kanjiPairs: pairs,
+      selectedKanjiWord: null,
+      ...kanjiMatchView(this.data.interleave.card.question, this.data.kanjiReadings, pairs, null, false)
     });
   },
 

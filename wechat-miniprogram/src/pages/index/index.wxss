@@ -51,6 +51,38 @@ button { margin: 16rpx 0; border-radius: 20rpx; font-size: 27rpx; line-height: 8
 .match-prompt{display:block;font-size:26rpx;line-height:1.5}
 .match-note{display:block;margin-top:6rpx;color:#6f685f;font-size:22rpx}
 
+.kanji-question-hero{display:flex;align-items:center;gap:18rpx;margin-top:18rpx;padding:20rpx;border:2rpx solid rgba(138,110,168,.18);border-radius:22rpx;background:linear-gradient(120deg,#eee8f5,#fbf5e9 78%)}
+.kanji-question-symbol{display:flex;flex:none;align-items:center;justify-content:center;width:88rpx;height:88rpx;border-radius:20rpx;color:#745d93;background:#e3d9ef;font-size:60rpx;font-weight:800;line-height:1}
+.kanji-question-copy{min-width:0;flex:1}
+.kanji-question-title,.kanji-question-subtitle{display:block}
+.kanji-question-title{color:#3a2e22;font-size:27rpx;line-height:1.4;font-weight:800}
+.kanji-question-subtitle{margin-top:5rpx;color:#806f5c;font-size:21rpx;line-height:1.4}
+.kanji-match-progress{display:flex;align-items:center;justify-content:space-between;gap:16rpx;margin:20rpx 4rpx 8rpx;color:#806f5c;font-size:21rpx}
+.kanji-match-count{color:#745d93;font-weight:900}
+.kanji-progress-track{width:150rpx;height:10rpx;overflow:hidden;border-radius:20rpx;background:#e5dfeb}
+.kanji-progress-fill{height:100%;border-radius:20rpx;background:#9a7eb7}
+.kanji-match-labels{display:flex;justify-content:space-between;gap:12rpx;margin:12rpx 4rpx 8rpx;color:#8a7764;font-size:20rpx;letter-spacing:.4rpx}
+.kanji-match-cell{height:152rpx;min-height:152rpx;padding:10rpx 14rpx;border-radius:18rpx;background:linear-gradient(145deg,#fbf5e9,#f2eadd)}
+.kanji-match-cell.picked{border-color:#9a7eb7;background:#eee5f4;box-shadow:0 4rpx 12rpx rgba(116,93,147,.12)}
+.kanji-match-cell.paired{border-color:#b79bcf;background:#f1e9f5}
+.kanji-reading-cell{align-items:flex-end}
+.kanji-match-word{font-size:28rpx;line-height:1.25}
+.kanji-match-kana{font-size:19rpx}
+.kanji-match-meaning{display:-webkit-box;overflow:hidden;margin-top:4rpx;color:#806f5c;font-size:19rpx;line-height:1.25;white-space:normal;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.kanji-match-actions{display:flex;align-items:stretch;gap:12rpx;margin-top:22rpx}
+.kanji-match-actions .reveal{flex:1;margin:0}
+.kanji-match-actions .kanji-clear{width:144rpx;margin:0;color:#685b4d;background:#eee6da;font-size:23rpx;line-height:88rpx}
+.kanji-question-cue{margin:12rpx 0;text-align:center;font-size:21rpx}
+.distinction-front-item{padding:20rpx 18rpx;border:2rpx solid rgba(138,110,168,.16);border-radius:18rpx;background:#f3edf7}
+.distinction-overview{margin-top:8rpx;padding:20rpx;border:2rpx solid rgba(138,110,168,.18);border-radius:20rpx;background:#eee8f5}
+.distinction-overview-title{display:block;color:#745d93;font-size:20rpx;font-weight:800;letter-spacing:1rpx}
+.distinction-overview-text{display:block;margin-top:7rpx;color:#55483c;font-size:24rpx;line-height:1.55}
+.distinction-note-row{display:grid;grid-template-columns:180rpx minmax(0,1fr);gap:16rpx;margin-top:12rpx;padding:18rpx;border:2rpx solid rgba(114,84,52,.08);border-radius:18rpx;background:#fbf5e9}
+.distinction-note-term{min-width:0}
+.distinction-note-term .match-surface{font-size:26rpx;line-height:1.35;word-break:break-all}
+.distinction-note-term .match-kana{font-size:20rpx;word-break:break-all}
+.distinction-note-row .match-note{align-self:center;margin:0;color:#675747;font-size:22rpx;line-height:1.55}
+
 .word-card{position:relative;will-change:transform}
 .revealed-answer{animation:wordReveal .24s ease-out both}
 .swipe-stamp{position:absolute;right:30rpx;top:85rpx;z-index:2;padding:10rpx 22rpx;border:4rpx solid currentColor;border-radius:14rpx;font-size:36rpx;font-weight:900;transform:rotate(9deg);pointer-events:none}

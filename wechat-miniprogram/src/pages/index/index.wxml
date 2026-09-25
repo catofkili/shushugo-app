@@ -74,8 +74,18 @@
       <!-- 单独汉字：一个字的读音 + 什么时候读它 + 例词 -->
       <block wx:elif="{{interleave.kind === 'kanji'}}">
         <block wx:if="{{interleave.card.question}}">
-          <text class="kanji-question-cue">把每个词中「{{interleave.card.char}}」的读音连起来</text>
-          <view class="kanji-match-labels"><text>词语</text><text>读音</text></view>
+          <view class="kanji-question-hero">
+            <text class="kanji-question-symbol">{{interleave.card.char}}</text>
+            <view class="kanji-question-copy">
+              <text class="kanji-question-title">把词语和「{{interleave.card.char}}」的读音连起来</text>
+              <text class="kanji-question-subtitle">先选左边的词，再选右边对应的读音</text>
+            </view>
+          </view>
+          <view wx:if="{{!interleaveRevealed}}" class="kanji-match-progress">
+            <text>已连 <text class="kanji-match-count">{{kanjiMatchCount}}</text> / {{kanjiWordRows.length}}</text>
+            <view class="kanji-progress-track"><view class="kanji-progress-fill" style="width:{{kanjiMatchPercent}}%"></view></view>
+          </view>
+          <view class="kanji-match-labels"><text>词语 · 含「{{interleave.card.char}}」</text><text>读音选项</text></view>
           <view class="kanji-match-board">
             <view class="kanji-match-column">
               <view wx:for="{{kanjiWordRows}}" wx:key="index" class="kanji-match-cell {{item.selected ? 'picked' : ''}} {{item.paired ? 'paired' : ''}}" data-index="{{index}}" catchtap="selectKanjiWord">
@@ -93,11 +103,14 @@
               </view>
             </view>
           </view>
-          <text wx:if="{{!interleaveRevealed}}" class="kanji-question-cue">先点左侧词语，再点右侧读音；可以重新连线</text>
-          <text wx:else class="kanji-question-cue">绿色线是正确配对，红色线是原来的错误连线</text>
+          <text wx:if="{{!interleaveRevealed}}" class="kanji-question-cue">已连好的词可以重新选择</text>
+          <text wx:else class="kanji-question-cue">绿色线是正确答案，红色线是你原来的错误连线</text>
         </block>
         <text wx:else class="kanji-char">{{interleave.card.char}}</text>
-        <button wx:if="{{!interleaveRevealed && interleave.card.question}}" class="reveal" bindtap="revealInterleave">{{kanjiMatchComplete ? '核对连线' : '显示答案'}}</button>
+        <view wx:if="{{!interleaveRevealed && interleave.card.question}}" class="kanji-match-actions">
+          <button wx:if="{{kanjiMatchCount}}" class="kanji-clear" bindtap="clearKanjiConnections">清空</button>
+          <button class="reveal" bindtap="revealInterleave">{{kanjiMatchComplete ? '核对连线' : '显示答案'}}</button>
+        </view>
         <button wx:elif="{{!interleaveRevealed}}" class="reveal" bindtap="revealInterleave">显示读音</button>
         <view wx:else class="answer">
           <text wx:if="{{interleave.card.on.length}}" class="kana">音读：{{interleave.card.on}}</text>
@@ -115,18 +128,20 @@
       <!-- 辨析 Anki 卡：正面回想词间区别，翻面查看手写辨析后自评。 -->
       <block wx:else>
         <view wx:if="{{!interleaveRevealed}}" class="distinction-front">
-          <text class="match-hint">先回想这组词各自表达什么，以及最核心的区别。</text>
-          <view wx:for="{{interleave.card.members}}" wx:key="id" class="match-item">
-            <text class="match-surface">{{item.surface}}</text><text class="match-kana">{{item.kana}}</text>
+          <text class="match-hint">先说出每个词的意思和常见搭配，想清楚它们不能互换的地方。</text>
+          <view wx:for="{{interleave.card.members}}" wx:key="id" class="distinction-front-item">
+            <view><text class="match-surface">{{item.surface}}</text><text class="match-kana">{{item.kana}}</text></view>
           </view>
           <button class="reveal" bindtap="revealInterleave">显示辨析</button>
         </view>
         <view wx:else class="answer">
-          <text class="match-hint">手写辨析</text>
-          <text class="grammar-meaning">{{interleave.card.summary}}</text>
-            <view wx:for="{{interleave.card.members}}" wx:key="id" class="match-item">
-            <text class="match-surface">{{item.surface}}（{{item.kana}}）</text>
-            <text wx:if="{{item.note}}" class="match-note">{{item.note}}</text>
+          <view class="distinction-overview">
+            <text class="distinction-overview-title">判断要点</text>
+            <text class="distinction-overview-text">{{interleave.card.overview}}</text>
+          </view>
+          <view wx:for="{{interleave.card.members}}" wx:key="id" class="distinction-note-row">
+            <view class="distinction-note-term"><text class="match-surface">{{item.surface}}</text><text class="match-kana">{{item.kana}}</text></view>
+            <text class="match-note">{{item.note || '具体用法见上方总述。'}}</text>
           </view>
         </view>
       </block>

@@ -145,7 +145,14 @@ describe("一字多音的说明表", () => {
       expect(at(char).hasManual).toBe(true);
     }
     expect(at("止").summary).toContain("止める");
-    expect(clauseText(reading("止", "や"))).toContain("作罢");
+    expect(at("止").summary).toContain("止む（やむ）");
+    const yaNote = clauseText(reading("止", "や"));
+    expect(yaNote).toContain("止む（やむ）");
+    expect(yaNote).toContain("雨が止む");
+    expect(yaNote).toContain("止める（やめる）");
+    expect(yaNote).toContain("勉強するのをやめる");
+    expect(yaNote).toContain("たばこをやめる");
+    expect(yaNote).toContain("勉強しない");
   });
 
   /**
