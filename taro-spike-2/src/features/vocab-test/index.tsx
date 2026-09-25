@@ -9,7 +9,7 @@ export default function VocabTestRoute() {
 
   useEffect(() => {
     if (ready) return;
-    ensureDatabase().then(() => setReady(true)).catch((cause) => setError(String(cause?.message || cause)));
+    ensureDatabase().then(() => setReady(true)).catch((cause) => setError(String(cause?.message || cause?.errMsg || JSON.stringify(cause))));
   }, [ready]);
 
   if (error) return <View className="p-4"><Text>{error}</Text></View>;

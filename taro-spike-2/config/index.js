@@ -20,6 +20,7 @@ module.exports = {
   copy: {
     patterns: [
       { from: path.join(mini, 'src/assets/sql-wasm.wasm'), to: path.join(root, 'dist/assets/sql-wasm.wasm') },
+      { from: path.join(mini, 'src/content/question-meanings.js'), to: path.join(root, 'dist/content/question-meanings.js') },
       { from: path.join(root, 'src/features/vocab-test/assets'), to: path.join(root, 'dist/features/vocab-test/assets') }
     ],
     options: {}
