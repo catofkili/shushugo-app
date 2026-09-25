@@ -433,6 +433,9 @@
     "sub-common/4f49e0e3ba7937d2bf4e232216490f3e": [
       "sub-common/4f49e0e3ba7937d2bf4e232216490f3e.js"
     ],
+    "sub-common/73863b0af0024d4b5184115137676489": [
+      "sub-common/73863b0af0024d4b5184115137676489.js"
+    ],
     "sub-common/1d679efe4873f12ecf7f3181b632241f": [
       "sub-common/1d679efe4873f12ecf7f3181b632241f.js"
     ],
@@ -547,14 +550,14 @@
     {
       "type": "asset",
       "name": "study/word-study/index.js",
-      "size": 511196,
+      "size": 511318,
       "emitted": true,
       "comparedForEmit": false,
       "cached": false,
       "info": {
         "javascriptModule": false,
         "minimized": true,
-        "size": 511196
+        "size": 511318
       },
       "chunkNames": [
         "study/word-study/index"
@@ -849,14 +852,14 @@
     {
       "type": "asset",
       "name": "quiz/vocab-test/index.js",
-      "size": 37464,
+      "size": 37581,
       "emitted": true,
       "comparedForEmit": false,
       "cached": false,
       "info": {
         "javascriptModule": false,
         "minimized": true,
-        "size": 37464
+        "size": 37581
       },
       "chunkNames": [
         "quiz/vocab-test/index"
@@ -6837,6 +6840,38 @@
     },
     {
       "type": "asset",
+      "name": "quiz/sub-common/73863b0af0024d4b5184115137676489.js",
+      "size": 215,
+      "emitted": true,
+      "comparedForEmit": false,
+      "cached": false,
+      "info": {
+        "minimized": true,
+        "size": 215
+      },
+      "chunkNames": [],
+      "chunkIdHints": [],
+      "auxiliaryChunkNames": [],
+      "auxiliaryChunkIdHints": []
+    },
+    {
+      "type": "asset",
+      "name": "study/sub-common/73863b0af0024d4b5184115137676489.js",
+      "size": 215,
+      "emitted": true,
+      "comparedForEmit": false,
+      "cached": false,
+      "info": {
+        "minimized": true,
+        "size": 215
+      },
+      "chunkNames": [],
+      "chunkIdHints": [],
+      "auxiliaryChunkNames": [],
+      "auxiliaryChunkIdHints": []
+    },
+    {
+      "type": "asset",
       "name": "quiz/sub-common/4f49e0e3ba7937d2bf4e232216490f3e.js",
       "size": 208,
       "emitted": true,
@@ -8681,8 +8716,8 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/wrapNativeSuper.js",
-          "issuerName": "./node_modules/@babel/runtime/helpers/wrapNativeSuper.js",
+          "issuer": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/inherits.js",
+          "issuerName": "./node_modules/@babel/runtime/helpers/inherits.js",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
@@ -8709,8 +8744,8 @@
               "name": "../wechat-miniprogram/src/vendor/ts-fsrs.umd.js"
             },
             {
-              "identifier": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/wrapNativeSuper.js",
-              "name": "./node_modules/@babel/runtime/helpers/wrapNativeSuper.js"
+              "identifier": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/inherits.js",
+              "name": "./node_modules/@babel/runtime/helpers/inherits.js"
             }
           ],
           "failed": false,
@@ -9076,9 +9111,9 @@
       "initial": true,
       "entry": false,
       "recorded": false,
-      "size": 57174,
+      "size": 57334,
       "sizes": {
-        "javascript": 57174
+        "javascript": 57334
       },
       "names": [
         "quiz/vocab-test/index"
@@ -9091,16 +9126,16 @@
         "quiz/vocab-test/index.js"
       ],
       "auxiliaryFiles": [],
-      "hash": "01c320627b4f97f53e12",
+      "hash": "0c0e04a15bf3dd21686a",
       "childrenByOrder": {},
       "modules": [
         {
           "type": "module",
           "moduleType": "javascript/esm",
           "layer": null,
-          "size": 57174,
+          "size": 57334,
           "sizes": {
-            "javascript": 57174
+            "javascript": 57334
           },
           "built": true,
           "codeGenerated": true,
@@ -9111,8 +9146,8 @@
           "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
           "index": 136,
           "preOrderIndex": 136,
-          "index2": 282,
-          "postOrderIndex": 282,
+          "index2": 283,
+          "postOrderIndex": 283,
           "cacheable": true,
           "optional": false,
           "orphan": false,
@@ -10294,6 +10329,73 @@
             {
               "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
               "name": "../frontend/src/lib/grammar-quiz.ts"
+            }
+          ],
+          "failed": false,
+          "errors": 0,
+          "warnings": 0
+        }
+      ]
+    },
+    {
+      "rendered": true,
+      "initial": true,
+      "entry": false,
+      "recorded": false,
+      "reason": "split chunk (cache group: sub-common/73863b0af0024d4b5184115137676489) (name: sub-common/73863b0af0024d4b5184115137676489)",
+      "size": 228,
+      "sizes": {
+        "javascript": 228
+      },
+      "names": [
+        "sub-common/73863b0af0024d4b5184115137676489"
+      ],
+      "idHints": [
+        "sub-common/73863b0af0024d4b5184115137676489"
+      ],
+      "runtime": [
+        "runtime"
+      ],
+      "files": [
+        "sub-common/73863b0af0024d4b5184115137676489.js"
+      ],
+      "auxiliaryFiles": [],
+      "hash": "a79f54e716fe1bf6ece6",
+      "childrenByOrder": {},
+      "modules": [
+        {
+          "type": "module",
+          "moduleType": "javascript/auto",
+          "layer": null,
+          "size": 228,
+          "sizes": {
+            "javascript": 228
+          },
+          "built": true,
+          "codeGenerated": true,
+          "buildTimeExecuted": false,
+          "cached": false,
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/platform/preview-timing-off.weapp.tsx",
+          "name": "./src/platform/preview-timing-off.weapp.tsx",
+          "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/platform/preview-timing-off.weapp.tsx",
+          "index": 283,
+          "preOrderIndex": 283,
+          "index2": 281,
+          "postOrderIndex": 281,
+          "cacheable": true,
+          "optional": false,
+          "orphan": false,
+          "dependent": false,
+          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
+          "issuerName": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx",
+          "issuerPath": [
+            {
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
+              "name": "./src/quiz/vocab-test/index.tsx"
+            },
+            {
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
             }
           ],
           "failed": false,
@@ -11839,20 +11941,20 @@
           "issuerName": "../frontend/src/lib/study-core.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-              "name": "../frontend/src/lib/vocab-test.ts"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+              "name": "../frontend/src/lib/grammar-quiz.ts"
             },
             {
               "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -12459,20 +12561,20 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "issuerName": "../frontend/src/pages/VocabTestPage.tsx",
+          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "issuerName": "../frontend/src/pages/WordStudy.tsx",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             }
           ],
           "failed": false,
@@ -12684,20 +12786,20 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "issuerName": "../frontend/src/pages/VocabTestPage.tsx",
+          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "issuerName": "../frontend/src/pages/WordStudy.tsx",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             }
           ],
           "failed": false,
@@ -12913,20 +13015,20 @@
           "issuerName": "../frontend/src/lib/study-core.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-              "name": "../frontend/src/lib/vocab-test.ts"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+              "name": "../frontend/src/lib/grammar-quiz.ts"
             },
             {
               "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -13063,20 +13165,20 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "issuerName": "../frontend/src/pages/VocabTestPage.tsx",
+          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "issuerName": "../frontend/src/pages/WordStudy.tsx",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             }
           ],
           "failed": false,
@@ -13675,20 +13777,20 @@
           "issuerName": "../frontend/src/lib/study-core.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-              "name": "../frontend/src/lib/vocab-test.ts"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+              "name": "../frontend/src/lib/grammar-quiz.ts"
             },
             {
               "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -14141,24 +14243,24 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-          "issuerName": "../frontend/src/lib/vocab-test.ts",
+          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+          "issuerName": "../frontend/src/lib/grammar-quiz.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-              "name": "../frontend/src/lib/vocab-test.ts"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+              "name": "../frontend/src/lib/grammar-quiz.ts"
             }
           ],
           "failed": false,
@@ -15017,8 +15119,8 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/callSuper.js",
-          "issuerName": "./node_modules/@babel/runtime/helpers/callSuper.js",
+          "issuer": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/superPropGet.js",
+          "issuerName": "./node_modules/@babel/runtime/helpers/superPropGet.js",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
@@ -15045,8 +15147,8 @@
               "name": "../wechat-miniprogram/src/vendor/ts-fsrs.umd.js"
             },
             {
-              "identifier": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/callSuper.js",
-              "name": "./node_modules/@babel/runtime/helpers/callSuper.js"
+              "identifier": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/superPropGet.js",
+              "name": "./node_modules/@babel/runtime/helpers/superPropGet.js"
             }
           ],
           "failed": false,
@@ -15488,10 +15590,10 @@
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/content/placeholder/index.tsx|da88fbfae459d5cca9687abf3663943d",
           "name": "./src/content/placeholder/index.tsx + 1 modules",
           "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/content/placeholder/index.tsx",
-          "index": 355,
-          "preOrderIndex": 355,
-          "index2": 356,
-          "postOrderIndex": 356,
+          "index": 356,
+          "preOrderIndex": 356,
+          "index2": 357,
+          "postOrderIndex": 357,
           "cacheable": true,
           "optional": false,
           "orphan": false,
@@ -15792,20 +15894,20 @@
           "issuerName": "../frontend/src/lib/study-core.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-              "name": "../frontend/src/lib/vocab-test.ts"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+              "name": "../frontend/src/lib/grammar-quiz.ts"
             },
             {
               "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -17497,20 +17599,20 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "issuerName": "../frontend/src/pages/VocabTestPage.tsx",
+          "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "issuerName": "../frontend/src/pages/WordStudy.tsx",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             }
           ],
           "failed": false,
@@ -18172,9 +18274,9 @@
       "initial": true,
       "entry": false,
       "recorded": false,
-      "size": 905683,
+      "size": 905847,
       "sizes": {
-        "javascript": 905683
+        "javascript": 905847
       },
       "names": [
         "study/word-study/index"
@@ -18187,7 +18289,7 @@
         "study/word-study/index.js"
       ],
       "auxiliaryFiles": [],
-      "hash": "434367c1205e1f207113",
+      "hash": "ddf6780eb386c827e3b8",
       "childrenByOrder": {},
       "modules": [
         {
@@ -18203,9 +18305,9 @@
           "type": "module",
           "moduleType": "javascript/esm",
           "layer": null,
-          "size": 800665,
+          "size": 800829,
           "sizes": {
-            "javascript": 800665
+            "javascript": 800829
           },
           "built": true,
           "codeGenerated": true,
@@ -18214,10 +18316,10 @@
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx|9c3609a14d4ba3ce84527a7df18ff67d",
           "name": "./src/study/word-study/index.tsx + 61 modules",
           "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
-          "index": 283,
-          "preOrderIndex": 283,
-          "index2": 352,
-          "postOrderIndex": 352,
+          "index": 284,
+          "preOrderIndex": 284,
+          "index2": 353,
+          "postOrderIndex": 353,
           "cacheable": true,
           "optional": false,
           "orphan": false,
@@ -18281,20 +18383,20 @@
           "issuerName": "../frontend/src/lib/database/schema.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-              "name": "../frontend/src/lib/vocab-test.ts"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+              "name": "../frontend/src/lib/grammar-quiz.ts"
             },
             {
               "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -18428,10 +18530,10 @@
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/features/placeholder/index.tsx|98daa7a1281733f1a25569d98b495df0",
           "name": "./src/features/placeholder/index.tsx + 1 modules",
           "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/features/placeholder/index.tsx",
-          "index": 353,
-          "preOrderIndex": 353,
-          "index2": 354,
-          "postOrderIndex": 354,
+          "index": 354,
+          "preOrderIndex": 354,
+          "index2": 355,
+          "postOrderIndex": 355,
           "cacheable": true,
           "optional": false,
           "orphan": false,
@@ -19524,16 +19626,16 @@
           "issuerName": "./node_modules/@babel/runtime/helpers/esm/regenerator.js",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+              "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-              "name": "../frontend/src/pages/VocabTestPage.tsx"
+              "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             },
             {
               "identifier": "javascript/esm|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/esm/regenerator.js",
@@ -19706,9 +19808,9 @@
       "type": "orphan modules",
       "orphan": true,
       "filteredChildren": 149,
-      "size": 1355908.4,
+      "size": 1356232.4,
       "sizes": {
-        "javascript": 1350885.4,
+        "javascript": 1351209.4,
         "runtime": 5023
       }
     },
@@ -20009,9 +20111,9 @@
       "type": "module",
       "moduleType": "javascript/esm",
       "layer": null,
-      "size": 57174,
+      "size": 57334,
       "sizes": {
-        "javascript": 57174
+        "javascript": 57334
       },
       "built": true,
       "codeGenerated": true,
@@ -20022,8 +20124,8 @@
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
       "index": 136,
       "preOrderIndex": 136,
-      "index2": 282,
-      "postOrderIndex": 282,
+      "index2": 283,
+      "postOrderIndex": 283,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -20035,9 +20137,9 @@
       "type": "module",
       "moduleType": "javascript/esm",
       "layer": null,
-      "size": 800665,
+      "size": 800829,
       "sizes": {
-        "javascript": 800665
+        "javascript": 800829
       },
       "built": true,
       "codeGenerated": true,
@@ -20046,10 +20148,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx|9c3609a14d4ba3ce84527a7df18ff67d",
       "name": "./src/study/word-study/index.tsx + 61 modules",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
-      "index": 283,
-      "preOrderIndex": 283,
-      "index2": 352,
-      "postOrderIndex": 352,
+      "index": 284,
+      "preOrderIndex": 284,
+      "index2": 353,
+      "postOrderIndex": 353,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -20072,10 +20174,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/features/placeholder/index.tsx|98daa7a1281733f1a25569d98b495df0",
       "name": "./src/features/placeholder/index.tsx + 1 modules",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/features/placeholder/index.tsx",
-      "index": 353,
-      "preOrderIndex": 353,
-      "index2": 354,
-      "postOrderIndex": 354,
+      "index": 354,
+      "preOrderIndex": 354,
+      "index2": 355,
+      "postOrderIndex": 355,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -20098,10 +20200,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/content/placeholder/index.tsx|da88fbfae459d5cca9687abf3663943d",
       "name": "./src/content/placeholder/index.tsx + 1 modules",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/content/placeholder/index.tsx",
-      "index": 355,
-      "preOrderIndex": 355,
-      "index2": 356,
-      "postOrderIndex": 356,
+      "index": 356,
+      "preOrderIndex": 356,
+      "index2": 357,
+      "postOrderIndex": 357,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -21763,6 +21865,44 @@
     },
     {
       "type": "module",
+      "moduleType": "javascript/auto",
+      "layer": null,
+      "size": 228,
+      "sizes": {
+        "javascript": 228
+      },
+      "built": true,
+      "codeGenerated": true,
+      "buildTimeExecuted": false,
+      "cached": false,
+      "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/platform/preview-timing-off.weapp.tsx",
+      "name": "./src/platform/preview-timing-off.weapp.tsx",
+      "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/platform/preview-timing-off.weapp.tsx",
+      "index": 283,
+      "preOrderIndex": 283,
+      "index2": 281,
+      "postOrderIndex": 281,
+      "cacheable": true,
+      "optional": false,
+      "orphan": false,
+      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
+      "issuerName": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx",
+      "issuerPath": [
+        {
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
+          "name": "./src/quiz/vocab-test/index.tsx"
+        },
+        {
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+        }
+      ],
+      "failed": false,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "type": "module",
       "moduleType": "javascript/esm",
       "layer": null,
       "size": 634,
@@ -22732,20 +22872,20 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-      "issuerName": "../frontend/src/pages/VocabTestPage.tsx",
+      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+      "issuerName": "../frontend/src/pages/WordStudy.tsx",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         }
       ],
       "failed": false,
@@ -22774,20 +22914,20 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-      "issuerName": "../frontend/src/pages/VocabTestPage.tsx",
+      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+      "issuerName": "../frontend/src/pages/WordStudy.tsx",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         }
       ],
       "failed": false,
@@ -22816,20 +22956,20 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-      "issuerName": "../frontend/src/pages/VocabTestPage.tsx",
+      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+      "issuerName": "../frontend/src/pages/WordStudy.tsx",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         }
       ],
       "failed": false,
@@ -22858,20 +22998,20 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-      "issuerName": "../frontend/src/pages/VocabTestPage.tsx",
+      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+      "issuerName": "../frontend/src/pages/WordStudy.tsx",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         }
       ],
       "failed": false,
@@ -23481,10 +23621,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/wechat-miniprogram/scripts/shared/shims/zoo-sounds.js",
       "name": "../wechat-miniprogram/scripts/shared/shims/zoo-sounds.js",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/wechat-miniprogram/scripts/shared/shims/zoo-sounds.js",
-      "index": 297,
-      "preOrderIndex": 297,
-      "index2": 293,
-      "postOrderIndex": 293,
+      "index": 298,
+      "preOrderIndex": 298,
+      "index2": 294,
+      "postOrderIndex": 294,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -23523,10 +23663,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/wechat-miniprogram/scripts/shared/shims/entitlements.js",
       "name": "../wechat-miniprogram/scripts/shared/shims/entitlements.js",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/wechat-miniprogram/scripts/shared/shims/entitlements.js",
-      "index": 298,
-      "preOrderIndex": 298,
-      "index2": 294,
-      "postOrderIndex": 294,
+      "index": 299,
+      "preOrderIndex": 299,
+      "index2": 295,
+      "postOrderIndex": 295,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -23770,16 +23910,16 @@
       "issuerName": "./node_modules/@babel/runtime/helpers/esm/regenerator.js",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         },
         {
           "identifier": "javascript/esm|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/esm/regenerator.js",
@@ -23812,24 +23952,24 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-      "issuerName": "../frontend/src/lib/vocab-test.ts",
+      "issuer": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+      "issuerName": "../frontend/src/lib/grammar-quiz.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-          "name": "../frontend/src/lib/vocab-test.ts"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+          "name": "../frontend/src/lib/grammar-quiz.ts"
         }
       ],
       "failed": false,
@@ -25655,8 +25795,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "javascript/esm|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/esm/set.js",
-      "issuerName": "./node_modules/@babel/runtime/helpers/esm/set.js",
+      "issuer": "javascript/esm|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/esm/get.js",
+      "issuerName": "./node_modules/@babel/runtime/helpers/esm/get.js",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/app.tsx",
@@ -25671,12 +25811,12 @@
           "name": "./node_modules/@tarojs/runtime/dist/dom/element.js"
         },
         {
-          "identifier": "javascript/esm|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/esm/superPropSet.js",
-          "name": "./node_modules/@babel/runtime/helpers/esm/superPropSet.js"
+          "identifier": "javascript/esm|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/esm/superPropGet.js",
+          "name": "./node_modules/@babel/runtime/helpers/esm/superPropGet.js"
         },
         {
-          "identifier": "javascript/esm|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/esm/set.js",
-          "name": "./node_modules/@babel/runtime/helpers/esm/set.js"
+          "identifier": "javascript/esm|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/esm/get.js",
+          "name": "./node_modules/@babel/runtime/helpers/esm/get.js"
         }
       ],
       "failed": false,
@@ -27111,20 +27251,20 @@
       "issuerName": "../frontend/src/lib/study-core.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-          "name": "../frontend/src/lib/vocab-test.ts"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+          "name": "../frontend/src/lib/grammar-quiz.ts"
         },
         {
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -27161,20 +27301,20 @@
       "issuerName": "../frontend/src/lib/study-core.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-          "name": "../frontend/src/lib/vocab-test.ts"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+          "name": "../frontend/src/lib/grammar-quiz.ts"
         },
         {
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -27311,20 +27451,20 @@
       "issuerName": "../frontend/src/lib/study-core.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-          "name": "../frontend/src/lib/vocab-test.ts"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+          "name": "../frontend/src/lib/grammar-quiz.ts"
         },
         {
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -27361,20 +27501,20 @@
       "issuerName": "../frontend/src/lib/study-core.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-          "name": "../frontend/src/lib/vocab-test.ts"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+          "name": "../frontend/src/lib/grammar-quiz.ts"
         },
         {
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -28984,10 +29124,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/wechat-miniprogram/scripts/shared/shims/pitch-accent-data.js",
       "name": "../wechat-miniprogram/scripts/shared/shims/pitch-accent-data.js",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/wechat-miniprogram/scripts/shared/shims/pitch-accent-data.js",
-      "index": 321,
-      "preOrderIndex": 321,
-      "index2": 316,
-      "postOrderIndex": 316,
+      "index": 322,
+      "preOrderIndex": 322,
+      "index2": 317,
+      "postOrderIndex": 317,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -29034,10 +29174,10 @@
       "identifier": "json|/private/tmp/shushugo-taro-spike-4-r4/frontend/src/data/verb_transitivity.json",
       "name": "../frontend/src/data/verb_transitivity.json",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/frontend/src/data/verb_transitivity.json",
-      "index": 323,
-      "preOrderIndex": 323,
-      "index2": 318,
-      "postOrderIndex": 318,
+      "index": 324,
+      "preOrderIndex": 324,
+      "index2": 319,
+      "postOrderIndex": 319,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -29084,10 +29224,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
       "name": "../wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
-      "index": 346,
-      "preOrderIndex": 346,
-      "index2": 341,
-      "postOrderIndex": 341,
+      "index": 347,
+      "preOrderIndex": 347,
+      "index2": 342,
+      "postOrderIndex": 342,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -29575,20 +29715,20 @@
       "issuerName": "../frontend/src/lib/database/schema.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
-          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=quiz/vocab-test/index!./src/quiz/vocab-test/index.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/study/word-study/index.tsx",
+          "name": "./node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/word-study/index!./src/study/word-study/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/VocabTestPage.tsx",
-          "name": "../frontend/src/pages/VocabTestPage.tsx"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/vocab-test.ts",
-          "name": "../frontend/src/lib/vocab-test.ts"
+          "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/grammar-quiz.ts",
+          "name": "../frontend/src/lib/grammar-quiz.ts"
         },
         {
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/study-core.ts",
@@ -29934,10 +30074,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/level-plan.ts",
       "name": "../frontend/src/lib/level-plan.ts",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/level-plan.ts",
-      "index": 337,
-      "preOrderIndex": 337,
-      "index2": 330,
-      "postOrderIndex": 330,
+      "index": 338,
+      "preOrderIndex": 338,
+      "index2": 331,
+      "postOrderIndex": 331,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -30149,8 +30289,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/callSuper.js",
-      "issuerName": "./node_modules/@babel/runtime/helpers/callSuper.js",
+      "issuer": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/superPropGet.js",
+      "issuerName": "./node_modules/@babel/runtime/helpers/superPropGet.js",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
@@ -30177,8 +30317,8 @@
           "name": "../wechat-miniprogram/src/vendor/ts-fsrs.umd.js"
         },
         {
-          "identifier": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/callSuper.js",
-          "name": "./node_modules/@babel/runtime/helpers/callSuper.js"
+          "identifier": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/superPropGet.js",
+          "name": "./node_modules/@babel/runtime/helpers/superPropGet.js"
         }
       ],
       "failed": false,
@@ -30323,8 +30463,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/wrapNativeSuper.js",
-      "issuerName": "./node_modules/@babel/runtime/helpers/wrapNativeSuper.js",
+      "issuer": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/inherits.js",
+      "issuerName": "./node_modules/@babel/runtime/helpers/inherits.js",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/src/quiz/vocab-test/index.tsx",
@@ -30351,8 +30491,8 @@
           "name": "../wechat-miniprogram/src/vendor/ts-fsrs.umd.js"
         },
         {
-          "identifier": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/wrapNativeSuper.js",
-          "name": "./node_modules/@babel/runtime/helpers/wrapNativeSuper.js"
+          "identifier": "javascript/dynamic|/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/@babel/runtime/helpers/inherits.js",
+          "name": "./node_modules/@babel/runtime/helpers/inherits.js"
         }
       ],
       "failed": false,
@@ -30490,10 +30630,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/kana-progress.ts",
       "name": "../frontend/src/lib/kana-progress.ts",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/kana-progress.ts",
-      "index": 332,
-      "preOrderIndex": 332,
-      "index2": 324,
-      "postOrderIndex": 324,
+      "index": 333,
+      "preOrderIndex": 333,
+      "index2": 325,
+      "postOrderIndex": 325,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -30548,10 +30688,10 @@
       "identifier": "/private/tmp/shushugo-taro-spike-4-r4/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/word-list-import.ts",
       "name": "../frontend/src/lib/word-list-import.ts",
       "nameForCondition": "/private/tmp/shushugo-taro-spike-4-r4/frontend/src/lib/word-list-import.ts",
-      "index": 333,
-      "preOrderIndex": 333,
-      "index2": 325,
-      "postOrderIndex": 325,
+      "index": 334,
+      "preOrderIndex": 334,
+      "index2": 326,
+      "postOrderIndex": 326,
       "cacheable": true,
       "optional": false,
       "orphan": false,
@@ -31497,6 +31637,10 @@
           "size": -1
         },
         {
+          "name": "sub-common/73863b0af0024d4b5184115137676489.js",
+          "size": -1
+        },
+        {
           "name": "sub-common/1d679efe4873f12ecf7f3181b632241f.js",
           "size": -1
         },
@@ -31530,11 +31674,11 @@
         },
         {
           "name": "quiz/vocab-test/index.js",
-          "size": 37464
+          "size": 37581
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 292016,
+      "assetsSize": 292132,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -32086,6 +32230,10 @@
           "size": -1
         },
         {
+          "name": "sub-common/73863b0af0024d4b5184115137676489.js",
+          "size": -1
+        },
+        {
           "name": "sub-common/1d679efe4873f12ecf7f3181b632241f.js",
           "size": -1
         },
@@ -32119,11 +32267,11 @@
         },
         {
           "name": "study/word-study/index.js",
-          "size": 511196
+          "size": 511318
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 765748,
+      "assetsSize": 765869,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },

@@ -10,6 +10,7 @@ const frontend = path.join(repoRoot, 'frontend');
 const mini = path.join(repoRoot, 'wechat-miniprogram');
 const shims = createSharedShims(mini);
 const weappEnv = require(path.join(root, 'src/platform/weapp-env.weapp.cjs'));
+const previewTimingEnabled = process.env.TARO_PREVIEW_TIMING === '1';
 
 module.exports = {
   projectName: 'shushugo-taro-spike-2',
@@ -62,6 +63,12 @@ module.exports = {
         /^node:fs$/,
         path.join(root, 'scripts/node-fs-stub.cjs')
       ]);
+      if (!previewTimingEnabled) {
+        chain.plugin('preview-timing-off').use(webpack.NormalModuleReplacementPlugin, [
+          /preview-timing\.weapp$/,
+          path.join(root, 'src/platform/preview-timing-off.weapp.tsx')
+        ]);
+      }
       chain.plugin('spike-weapp-env').use(webpack.DefinePlugin, [{
         'import.meta.env': JSON.stringify(weappEnv)
       }]);

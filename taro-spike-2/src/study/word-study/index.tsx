@@ -3,6 +3,7 @@ import { Text, View } from '@tarojs/components';
 import { WordStudy } from '../../../../frontend/src/pages/WordStudy';
 import { ensureDatabase, getStatus } from '../../../../wechat-miniprogram/src/runtime/database-store';
 import { prepareFactoryWordStudy } from '../../platform/prepare-word-study.weapp';
+import PreviewTimingBoundary from '../../platform/preview-timing.weapp';
 
 export default function WordStudyRoute() {
   const [ready, setReady] = useState(getStatus().ready);
@@ -25,5 +26,5 @@ export default function WordStudyRoute() {
 
   if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
   if (!ready) return <View className="theme-light p-4"><Text>正在载入隔离出厂词库…</Text></View>;
-  return <View className="theme-light"><WordStudy initialMode={mode} /></View>;
+  return <View className="theme-light"><PreviewTimingBoundary kind="study"><WordStudy initialMode={mode} /></PreviewTimingBoundary></View>;
 }

@@ -7,12 +7,12 @@
       "passes": true
     },
     "quiz": {
-      "bytes": 1551835,
+      "bytes": 1552167,
       "mib": 1.48,
       "passes": true
     },
     "study": {
-      "bytes": 2025567,
+      "bytes": 2025904,
       "mib": 1.932,
       "passes": true
     },
@@ -27,7 +27,7 @@
       "passes": true
     }
   },
-  "totalBytes": 7338562,
+  "totalBytes": 7339231,
   "files": [
     {
       "path": "assets/sql-wasm.wasm",
@@ -52,7 +52,7 @@
     {
       "path": "study/word-study/index.js",
       "package": "study",
-      "bytes": 511196
+      "bytes": 511318
     },
     {
       "path": "quiz/sub-common/02aa333f2b6ffe685515b7da73065954.js",
@@ -142,7 +142,7 @@
     {
       "path": "quiz/vocab-test/index.js",
       "package": "quiz",
-      "bytes": 37464
+      "bytes": 37581
     },
     {
       "path": "quiz/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js",
@@ -1973,6 +1973,16 @@
       "path": "study/sub-common/5903893b4e779143e926e5ddeb8140c6.js",
       "package": "study",
       "bytes": 235
+    },
+    {
+      "path": "quiz/sub-common/73863b0af0024d4b5184115137676489.js",
+      "package": "quiz",
+      "bytes": 215
+    },
+    {
+      "path": "study/sub-common/73863b0af0024d4b5184115137676489.js",
+      "package": "study",
+      "bytes": 215
     },
     {
       "path": "quiz/sub-common/4f49e0e3ba7937d2bf4e232216490f3e.js",
