@@ -123,6 +123,10 @@ Codex 09-24 逐页手写的那一版（`refs/archive/worktree/miniprogram-parity
 等用户批准路线 A 的 spike。批准后由**一个**会话在 worktree 里做完 spike，把四条过关条件的结果（带数字和截图）写回本文件末尾，
 再由用户决定走 A 还是 B。（此待办已完成，结果和后续决定见下文。）
 
+**2026-09-25 复查补记**：第一轮 spike 的体积失败主要来自 11 MB 的 `jlpt_words_seed` 被并进页面（原生小程序用 `build-shared.mjs` 的 `SHIMS` 早就挡掉了），
+WXSS 报错来自一个 `::highlight` 选择器，真正难的弹层 / DOM / 真机速度都没测到。所以安排了第二轮，计划在 [`TARO_SPIKE_ROUND2.md`](TARO_SPIKE_ROUND2.md)，
+结果出来前路线 B 照常作为兜底保留。
+
 ## 路线 A Spike 实测记录（2026-09-25）
 
 > 状态说明：用户已批准路线 A spike，以下记录本次已完成的实测；上文“等用户批准”这一等待条件已满足。
