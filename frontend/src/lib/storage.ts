@@ -111,7 +111,7 @@ const requireBrowserWriter = (): Promise<void> => {
   return browserWriter;
 };
 
-const isNativeFileStorage = () => Capacitor.isNativePlatform();
+const isNativeFileStorage = () => Capacitor.isNativePlatform() || Capacitor.getPlatform?.() === 'wechat';
 
 const openBrowserDatabase = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
   const request = indexedDB.open(BROWSER_DB_NAME, 1);
