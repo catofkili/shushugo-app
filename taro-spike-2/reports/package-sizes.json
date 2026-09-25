@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1860907,
-      "mib": 1.775,
+      "bytes": 1868488,
+      "mib": 1.782,
       "passes": true
     },
     "quiz": {
@@ -37,17 +37,17 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 240579,
+      "bytes": 240490,
       "mib": 0.229,
       "passes": true
     }
   },
-  "totalBytes": 6054977,
+  "totalBytes": 6062469,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 723238
+      "bytes": 723657
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -107,7 +107,7 @@
     {
       "path": "grammar-pages/compile/index.js",
       "package": "grammar-pages",
-      "bytes": 158316
+      "bytes": 158227
     },
     {
       "path": "vendors.js",
@@ -420,6 +420,16 @@
       "bytes": 522
     },
     {
+      "path": "assets/lucide/layers-ink.svg",
+      "package": "main",
+      "bytes": 520
+    },
+    {
+      "path": "assets/lucide/layers-light.svg",
+      "package": "main",
+      "bytes": 520
+    },
+    {
       "path": "grammar-pages/sub-common/27bdd46757e0c871422b02714117dd66.js",
       "package": "grammar-pages",
       "bytes": 517
@@ -510,6 +520,26 @@
       "bytes": 438
     },
     {
+      "path": "assets/lucide/trash2-ink.svg",
+      "package": "main",
+      "bytes": 434
+    },
+    {
+      "path": "assets/lucide/trash2-light.svg",
+      "package": "main",
+      "bytes": 434
+    },
+    {
+      "path": "assets/lucide/bookopencheck-ink.svg",
+      "package": "main",
+      "bytes": 433
+    },
+    {
+      "path": "assets/lucide/bookopencheck-light.svg",
+      "package": "main",
+      "bytes": 433
+    },
+    {
       "path": "assets/lucide/shieldcheck-ink.svg",
       "package": "main",
       "bytes": 429
@@ -538,6 +568,16 @@
       "path": "grammar-advanced/placeholder/index.js",
       "package": "grammar-advanced",
       "bytes": 418
+    },
+    {
+      "path": "assets/lucide/pencilline-ink.svg",
+      "package": "main",
+      "bytes": 417
+    },
+    {
+      "path": "assets/lucide/pencilline-light.svg",
+      "package": "main",
+      "bytes": 417
     },
     {
       "path": "content/placeholder/index.js",
@@ -645,6 +685,16 @@
       "bytes": 350
     },
     {
+      "path": "assets/lucide/externallink-ink.svg",
+      "package": "main",
+      "bytes": 349
+    },
+    {
+      "path": "assets/lucide/externallink-light.svg",
+      "package": "main",
+      "bytes": 349
+    },
+    {
       "path": "assets/lucide/type-ink.svg",
       "package": "main",
       "bytes": 346
@@ -735,6 +785,16 @@
       "bytes": 320
     },
     {
+      "path": "assets/lucide/undo2-ink.svg",
+      "package": "main",
+      "bytes": 316
+    },
+    {
+      "path": "assets/lucide/undo2-light.svg",
+      "package": "main",
+      "bytes": 316
+    },
+    {
       "path": "assets/lucide/rotateccw-ink.svg",
       "package": "main",
       "bytes": 309
@@ -743,6 +803,16 @@
       "path": "assets/lucide/rotateccw-light.svg",
       "package": "main",
       "bytes": 309
+    },
+    {
+      "path": "assets/lucide/xcircle-ink.svg",
+      "package": "main",
+      "bytes": 307
+    },
+    {
+      "path": "assets/lucide/xcircle-light.svg",
+      "package": "main",
+      "bytes": 307
     },
     {
       "path": "assets/lucide/clock3-ink.svg",
@@ -763,6 +833,26 @@
       "path": "assets/lucide/checkcircle2-light.svg",
       "package": "main",
       "bytes": 289
+    },
+    {
+      "path": "assets/lucide/search-ink.svg",
+      "package": "main",
+      "bytes": 283
+    },
+    {
+      "path": "assets/lucide/search-light.svg",
+      "package": "main",
+      "bytes": 283
+    },
+    {
+      "path": "assets/lucide/arrowleft-ink.svg",
+      "package": "main",
+      "bytes": 274
+    },
+    {
+      "path": "assets/lucide/arrowleft-light.svg",
+      "package": "main",
+      "bytes": 274
     },
     {
       "path": "assets/lucide/messagecircle-ink.svg",
@@ -833,6 +923,16 @@
       "path": "assets/lucide/chevronright-light.svg",
       "package": "main",
       "bytes": 250
+    },
+    {
+      "path": "assets/lucide/chevrondown-ink.svg",
+      "package": "main",
+      "bytes": 248
+    },
+    {
+      "path": "assets/lucide/chevrondown-light.svg",
+      "package": "main",
+      "bytes": 248
     },
     {
       "path": "assets/lucide/check-ink.svg",

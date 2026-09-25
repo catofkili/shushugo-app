@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1860907,
+      "bytes": 1868488,
       "passes": true
     },
     "quiz": {
@@ -30,7 +30,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 240579,
+      "bytes": 240490,
       "passes": true
     }
   },
