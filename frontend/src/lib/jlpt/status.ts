@@ -2,7 +2,7 @@ import { firstValue, studyDayEnd, today } from "../study-core";
 import { ensureProgressInitialized } from "../word-api/bootstrap";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
 import { getJlptPlanPreferences } from "../studyPreferences";
-import { nextExamDate, parseExamDate } from "./exam-dates";
+import { defaultExamDate, examEndAt, parseExamDate, type ExamKind } from "./exam-dates";
 import {
   computeDailyMinimum,
   levelsInScope,
@@ -23,6 +23,8 @@ import {
 export interface JlptPlanStatus {
   enabled: boolean;
   target: JlptTarget;
+  examKind: ExamKind;
+  finished: boolean;
   examDate: Date;
   /** 考期是自动算的还是用户手填的 */
   examDateSource: "auto" | "manual";
@@ -61,7 +63,8 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
   const prefs = getJlptPlanPreferences();
   const target = prefs.target;
   const manual = prefs.examDate ? parseExamDate(prefs.examDate) : null;
-  const examDate = manual ?? nextExamDate(now);
+  const startedOn = parseExamDate(prefs.startedOn);
+  const examDate = manual ?? defaultExamDate(prefs.examKind, startedOn ?? now);
 
   const day = today(now);
   const dayEnd = studyDayEnd(now).toISOString();
@@ -160,7 +163,6 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
   `, [day], 0);
 
   // 没锚（启动时 ensureJlptPlanAnchor 还没跑到、或测试里）→ computeDailyMinimum 退回 21 天
-  const startedOn = parseExamDate(prefs.startedOn);
   const plan = computeDailyMinimum({
     today: now,
     examDate,
@@ -183,6 +185,8 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
   return {
     enabled: prefs.enabled,
     target,
+    examKind: prefs.examKind,
+    finished: now >= examEndAt(prefs.examKind, examDate),
     examDate,
     examDateSource: manual ? "manual" : "auto",
     plan,

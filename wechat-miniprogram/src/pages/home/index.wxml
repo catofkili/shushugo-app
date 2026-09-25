@@ -45,7 +45,7 @@
     <view class="tool zoo-card" data-url="/pages/achievements/index" bindtap="openPage"><text class="tool-icon yellow">成</text><text class="tool-title">成就</text><text class="tool-sub">47 枚收集目标</text></view>
     <view class="tool zoo-card" data-url="/pages/journey/index" bindtap="openPage"><text class="tool-icon brown">旅</text><text class="tool-title">学习旅程</text><text class="tool-sub">等级与长期进度</text></view>
     <view class="tool zoo-card" data-url="/features/weekly/index" bindtap="openPage"><text class="tool-icon orange">周</text><text class="tool-title">学习周报</text><text class="tool-sub">七日记录与等级分布</text></view>
-    <view class="tool zoo-card" data-url="/features/jlpt-plan/index" bindtap="openPage"><text class="tool-icon green">计</text><text class="tool-title">JLPT 计划</text><text class="tool-sub">按考期算每日最低量</text></view>
+    <view class="tool zoo-card" data-url="/features/jlpt-plan/index" bindtap="openPage"><text class="tool-icon green">计</text><text class="tool-title">备考计划</text><text class="tool-sub">按考试日期安排每日学习</text></view>
     <view class="tool zoo-card" data-url="/features/grammar-foundation/index" bindtap="openPage"><text class="tool-icon purple">基</text><text class="tool-title">语法基础</text><text class="tool-sub">43 条结构化规则</text></view>
     <view class="tool zoo-card" data-url="/content/kanji-readings/index" bindtap="openPage"><text class="tool-icon blue">音</text><text class="tool-title">汉字多音</text><text class="tool-sub">520 字读音用法</text></view>
     <view class="tool zoo-card" data-url="/features/favorites/index" bindtap="openPage"><text class="tool-icon yellow">藏</text><text class="tool-title">我的收藏</text><text class="tool-sub">单词语法统一整理</text></view>

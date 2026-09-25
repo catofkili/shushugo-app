@@ -20,6 +20,50 @@ export const examDatesOfYear = (year: number): Date[] => [
   firstSundayOf(year, 12)
 ];
 
+export const EXAM_TYPES = [
+  { kind: "jlpt", label: "JLPT" },
+  { kind: "eju", label: "EJU 留考" },
+  { kind: "kaoyan", label: "考研日语" },
+  { kind: "university", label: "大学日语四/六级" },
+  { kind: "major", label: "日语专四/专八" },
+  { kind: "jtest", label: "J.TEST" },
+  { kind: "nat", label: "NAT-TEST" },
+  { kind: "bjt", label: "BJT 商务日语" },
+  { kind: "gaokao", label: "高考日语" },
+  { kind: "other", label: "其他考试" }
+] as const;
+export type ExamKind = typeof EXAM_TYPES[number]["kind"];
+export const isExamKind = (value: unknown): value is ExamKind => EXAM_TYPES.some((item) => item.kind === value);
+export const examLabel = (kind: ExamKind): string => EXAM_TYPES.find((item) => item.kind === kind)?.label ?? "其他考试";
+
+/** 只列当前已公布的国内场次；地区场次和其他年份由用户按准考信息选择。 */
+const ANNOUNCED: Partial<Record<ExamKind, string[]>> = {
+  eju: ["2026-11-08"],
+  jtest: ["2026-11-01"]
+};
+export const announcedExamDates = (kind: ExamKind, from = new Date()): Date[] =>
+  (ANNOUNCED[kind] ?? []).map((value) => parseExamDate(value)!).filter((date) => date >= new Date(from.getFullYear(), from.getMonth(), from.getDate()));
+
+export const suggestedExamDate = (kind: ExamKind, from = new Date()): Date | null => {
+  if (kind === "gaokao") return nextGaokaoDate(from);
+  if (kind === "jlpt") return nextExamDate(from);
+  return announcedExamDates(kind, from)[0] ?? null;
+};
+
+/** 高考日语先以 6 月 8 日作默认占位；实际日期按准考证调整。 */
+export const nextGaokaoDate = (from: Date = new Date()): Date => {
+  const date = new Date(from.getFullYear(), 5, 8);
+  return from >= examEndAt("gaokao", date)
+    ? new Date(from.getFullYear() + 1, 5, 8) : date;
+};
+
+export const defaultExamDate = (kind: ExamKind, from: Date = new Date()): Date =>
+  suggestedExamDate(kind, from) ?? new Date(from.getFullYear(), from.getMonth(), from.getDate() - 1);
+
+export const examEndAt = (kind: ExamKind, date: Date): Date =>
+  kind === "gaokao" ? new Date(date.getFullYear(), date.getMonth(), date.getDate(), 17)
+    : new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+
 /**
  * 下一场考试。
  *
