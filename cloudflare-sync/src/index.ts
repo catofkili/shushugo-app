@@ -59,6 +59,7 @@ export interface Env {
   WECHAT_PAY_PRODUCTION_APP_KEY?: string;
   WECHAT_PAY_ENV?: string;
   WECHAT_PAY_PRICES?: string;
+  LAUNCH_GIFT_CLAIM_UNTIL?: string;
   /** 小程序后台「消息推送」配的 Token，校验 xpay_* 推送用 */
   WECHAT_MSG_TOKEN?: string;
   /** "1" = 生产模式:Turnstile 和邮件服务必须配好,否则认证路由直接 503。 */
@@ -2294,7 +2295,7 @@ const deleteAccount = async (request: Request, env: Env) => {
 
   // 显式逐表删除,不依赖 FK 级联配置。purchase_events 一并删除:
   // 交易记录以 Apple 侧为准,服务端不保留可关联到用户的副本。
-  for (const table of ["sessions", "auth_email_tokens", "auth_identities", "sync_rate_limits", "sync_uploads", "sync_heads", "sync_objects", "entitlements", "trial_grants", "purchase_events"]) {
+  for (const table of ["sessions", "auth_email_tokens", "auth_identities", "sync_rate_limits", "sync_uploads", "sync_heads", "sync_objects", "entitlements", "trial_grants", "launch_gift_grants", "purchase_events"]) {
     await env.DB.prepare(`DELETE FROM ${table} WHERE user_id = ?`).bind(userId).run();
   }
   await env.SYNC_DATA.delete(`${PROFILE_AVATAR_PREFIX}${userId}`);
@@ -2443,33 +2444,41 @@ const verifyPurchase = async (request: Request, env: Env) => {
   return result.ok ? json(result.entitlement) : json({ detail: result.detail }, result.status);
 };
 
-const claimPlanTrial = async (request: Request, env: Env) => {
+const claimLaunchGift = async (request: Request, env: Env) => {
   const userId = await requireUser(request, env);
-  await rateLimitSubject(env, "trial-claim", `user:${userId}`, 10, 3600);
+  await rateLimitSubject(env, "launch-gift-claim", `user:${userId}`, 10, 3600);
+  const launchGift = launchGiftAvailability(env);
+  if (!launchGift.open) return json({ code: "LAUNCH_GIFT_CLOSED" }, 409);
+
   const now = new Date();
   const grantedAt = now.toISOString();
-  const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
   await env.DB.prepare(`
-    INSERT OR IGNORE INTO trial_grants (user_id, granted_at, expires_at)
+    INSERT OR IGNORE INTO launch_gift_grants (user_id, granted_at, expires_at)
     VALUES (?, ?, ?)
   `).bind(userId, grantedAt, expiresAt).run();
   const grant = await env.DB.prepare(
-    "SELECT granted_at, expires_at FROM trial_grants WHERE user_id = ?"
+    "SELECT granted_at, expires_at FROM launch_gift_grants WHERE user_id = ?"
   ).bind(userId).first<{ granted_at: string; expires_at: string }>();
-  if (!grant) return json({ detail: "试用领取记录写入失败。" }, 500);
+  if (!grant) return json({ detail: "首月赠送领取记录写入失败。" }, 500);
 
-  // INSERT 和权益写入之间如果中断，重复请求会用第一次固定的到期日补齐权益，
-  // 既不会多送七天，也不会让一次网络错误永久吞掉试用。
+  // INSERT 和权益写入之间如果中断，重试读回第一次固定的到期日补齐权益，不会续送。
   if (Date.parse(grant.expires_at) > Date.now()) {
     const entitlement = await saveEntitlement(env, userId, {
-      productId: "shushugo_pro_trial",
+      productId: "shushugo_pro_launch_gift",
       source: "trial",
       expiresAt: grant.expires_at
     });
-    return json({ ...entitlement, trialGrantedAt: grant.granted_at });
+    return json({ ...entitlement, launchGift, launchGiftGrantedAt: grant.granted_at });
   }
-  return json({ ...(entitlementPayload(await getEntitlementRow(env, userId))), trialAlreadyUsed: true });
+  return json({
+    ...entitlementPayload(await getEntitlementRow(env, userId)),
+    launchGift,
+    launchGiftAlreadyUsed: true
+  });
 };
+
+const disabledPlanTrial = () => json({ code: "TRIAL_DISABLED" }, 410);
 
 /**
  * App Store Server Notifications V2。
@@ -2576,8 +2585,20 @@ const ENTITLEMENT_RECHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 /** Apple 查不通时把下次重查推后这么久,而不是留在「陈的」状态被每次请求重试。 */
 const RECHECK_BACKOFF_MS = 60 * 60 * 1000;
 
+const launchGiftAvailability = (env: Env) => {
+  const claimUntil = env.LAUNCH_GIFT_CLAIM_UNTIL?.trim() ?? "";
+  const deadline = Date.parse(claimUntil);
+  return {
+    open: Number.isFinite(deadline) && Date.now() < deadline,
+    claimUntil: Number.isFinite(deadline) ? claimUntil : null
+  };
+};
+
 const getEntitlements = async (request: Request, env: Env) => {
-  const userId = await requireUser(request, env);
+  const userId = await currentUser(request, env);
+  const launchGift = launchGiftAvailability(env);
+  // 领取窗口是公开信息，匿名设备也要能决定是否提示登录领取；权益行仍只对账号本人可读。
+  if (!userId) return json({ ...entitlementPayload(null), launchGift });
   const row = await getEntitlementRow(env, userId);
   const stale = row?.is_pro
     && row.source === "app_store"
@@ -2586,7 +2607,7 @@ const getEntitlements = async (request: Request, env: Env) => {
   if (stale) {
     try {
       const result = await recheckAppleEntitlement(env, userId, row!);
-      if (result?.ok) return json(result.entitlement);
+      if (result?.ok) return json({ ...result.entitlement, launchGift });
     } catch {
       // ⚠️ Apple 不通时按现有缓存回答,但**必须把下次重查往后推**。
       // 只 catch 不推的话 updated_at 一直是陈的,于是 Apple 挂着的时候
@@ -2595,9 +2616,9 @@ const getEntitlements = async (request: Request, env: Env) => {
         .bind(new Date(Date.now() - ENTITLEMENT_RECHECK_INTERVAL_MS + RECHECK_BACKOFF_MS).toISOString(), userId)
         .run();
     }
-    return json(entitlementPayload(await getEntitlementRow(env, userId)));
+    return json({ ...entitlementPayload(await getEntitlementRow(env, userId)), launchGift });
   }
-  return json(entitlementPayload(row));
+  return json({ ...entitlementPayload(row), launchGift });
 };
 
 const deleteSyncObject = async (
@@ -3133,7 +3154,8 @@ const health = async (env: Env) => {
     "apple_notifications",      // 0012
     "wechat_orders",            // 0013
     "teams", "team_members", "team_daily_activity", "team_cheers", "team_reports", // 0014
-    "trial_grants"             // 0015
+    "trial_grants",            // 0015
+    "launch_gift_grants"       // 0016
   ];
   const found = await env.DB.prepare(
     `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${required.map(() => "?").join(", ")})`
@@ -3226,7 +3248,8 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/teams/invite/regenerate") return regenerateTeamInvite(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams/report") return reportTeam(request, env);
   if (request.method === "GET" && url.pathname === "/api/entitlements") return getEntitlements(request, env);
-  if (request.method === "POST" && url.pathname === "/api/entitlements/trial") return claimPlanTrial(request, env);
+  if (request.method === "POST" && url.pathname === "/api/entitlements/trial") return disabledPlanTrial();
+  if (request.method === "POST" && url.pathname === "/api/entitlements/launch-gift") return claimLaunchGift(request, env);
   if (request.method === "POST" && url.pathname === "/api/purchases/verify") return verifyPurchase(request, env);
   if (request.method === "POST" && url.pathname === "/api/purchases/apple-notifications") return appleNotification(request, env);
   if (request.method === "POST" && url.pathname === "/api/pay/wechat/orders") return createWechatPayOrder(request, env);

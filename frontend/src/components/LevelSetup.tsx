@@ -12,7 +12,6 @@ import {
   type Familiarity,
   type StartingLevel
 } from "../lib/level-plan";
-import { claimLevelPlanTrial } from "../lib/sync-api";
 import { getEntitlements } from "../lib/entitlements";
 import { saveStudyMode } from "../lib/studyMode";
 import { refreshTodayWordPlan } from "../lib/api";
@@ -87,15 +86,12 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
       await saveLevelPlanSettings({ startingLevel, familiarity, target, examKind, examDate });
       const preset = applyExamPreset(target);
       if (startingLevel === "kana-none") deferWordPlanUntilKanaComplete(preset.plan.words.fresh);
-      let entitlement = getEntitlements();
-      if (!entitlement.isPro) {
-        try { entitlement = await claimLevelPlanTrial() ?? entitlement; } catch { /* 领取失败就按现有权益继续。 */ }
-      }
+      const entitlement = getEntitlements();
       saveStudyMode(entitlement?.isPro ? "mixed" : "classic");
       refreshTodayWordPlan();
       refreshMixedCardTasks(getDatabase());
       notifyProgressUpdated();
-      const accessText = entitlement?.source === "trial" ? "7 天完整计划试用已开始。" : entitlement?.isPro ? "完整计划已启用。" : "计划已创建；当前先安排单词。";
+      const accessText = entitlement.isPro ? "完整计划已启用。" : "计划已创建；当前先安排单词。";
       onComplete(`${accessText} 先完成今天的任务。`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "计划创建失败，请稍后重试。");

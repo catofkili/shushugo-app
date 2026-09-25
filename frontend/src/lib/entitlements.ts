@@ -1,4 +1,9 @@
-export type ProductId = "shushugo_pro_monthly" | "shushugo_pro_quarterly" | "shushugo_pro_yearly" | "shushugo_pro_lifetime" | "shushugo_pro_trial";
+export type ProductId = "shushugo_pro_monthly" | "shushugo_pro_quarterly" | "shushugo_pro_yearly" | "shushugo_pro_lifetime" | "shushugo_pro_trial" | "shushugo_pro_launch_gift";
+
+export interface LaunchGiftAvailability {
+  open: boolean;
+  claimUntil: string | null;
+}
 
 export type EntitlementSource = "free" | "storekit" | "cloud" | "app_store" | "trial" | "development";
 
@@ -19,6 +24,7 @@ export interface EntitlementState {
   source: EntitlementSource;
   productId?: ProductId;
   expiresAt?: string;
+  launchGift?: LaunchGiftAvailability;
   updatedAt: string;
 }
 
@@ -135,6 +141,7 @@ export function productLabel(productId?: ProductId): string {
   if (productId === "shushugo_pro_quarterly") return "季度 Pro";
   if (productId === "shushugo_pro_yearly") return "年度 Pro";
   if (productId === "shushugo_pro_lifetime") return "永久 Pro";
-  if (productId === "shushugo_pro_trial") return "7 天计划试用";
+  if (productId === "shushugo_pro_trial") return "计划试用";
+  if (productId === "shushugo_pro_launch_gift") return "首月赠送会员";
   return "免费版";
 }
