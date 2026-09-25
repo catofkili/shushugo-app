@@ -18,30 +18,39 @@ const resolve = (name, path) => {
   return value;
 };
 
-const proxy = (name, path) => new Proxy({}, {
-  get(_target, key) {
+const proxy = (name, path, kind = 'object') => {
+  const target = kind === 'array' ? [] : {};
+  return new Proxy(target, {
+  get(_target, key, receiver) {
     if (key === '__esModule') return false;
-    if (typeof key === 'symbol') return undefined;
-    if (key === 'default' && path.length === 0) return proxy(name, path);
+    if (key === 'default' && path.length === 0) return proxy(name, path, kind);
     const value = resolve(name, [...path, key]);
     // content-store 用 null 表示未加载：此时给代理保住早期引用；加载后缺失的键必须是 undefined，不能让代理参与字符串转换。
-    if (value === undefined) return stores[name] == null ? proxy(name, [...path, key]) : undefined;
-    return value && typeof value === 'object' ? proxy(name, [...path, key]) : value;
+    if (value === undefined) {
+      if (kind === 'array' && key in target) return Reflect.get(target, key, receiver);
+      return stores[name] == null ? proxy(name, [...path, key]) : undefined;
+    }
+    return value && typeof value === 'object' ? proxy(name, [...path, key], Array.isArray(value) ? 'array' : 'object') : value;
   },
   has(_target, key) {
+    if (kind === 'array' && key === 'length') return true;
     const parent = resolve(name, path);
     return Boolean(parent) && typeof parent === 'object' && key in parent;
   },
   ownKeys() {
     const parent = resolve(name, path);
-    return parent && typeof parent === 'object' ? Reflect.ownKeys(parent) : [];
+    return parent && typeof parent === 'object' ? Reflect.ownKeys(parent) : kind === 'array' ? ['length'] : [];
   },
   getOwnPropertyDescriptor(_target, key) {
     const parent = resolve(name, path);
+    if (kind === 'array' && key === 'length') {
+      return Object.getOwnPropertyDescriptor(parent && typeof parent === 'object' ? parent : target, 'length');
+    }
     if (!parent || typeof parent !== 'object') return undefined;
     const descriptor = Object.getOwnPropertyDescriptor(parent, key);
     return descriptor ? { ...descriptor, configurable: true } : undefined;
   }
-});
+  });
+};
 
-module.exports = (name) => proxy(name, []);
+module.exports = (name, kind) => proxy(name, [], kind);

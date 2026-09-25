@@ -1,0 +1,45 @@
+{
+  "maxBytes": 1900000,
+  "packages": {
+    "main": {
+      "bytes": 2544950,
+      "passes": false
+    },
+    "quiz": {
+      "bytes": 27201,
+      "passes": true
+    },
+    "study": {
+      "bytes": 293712,
+      "passes": true
+    },
+    "features": {
+      "bytes": 661703,
+      "passes": true
+    },
+    "content": {
+      "bytes": 1619451,
+      "passes": true
+    },
+    "grammar-foundation": {
+      "bytes": 668448,
+      "passes": true
+    },
+    "grammar-advanced": {
+      "bytes": 547372,
+      "passes": true
+    },
+    "grammar-pages": {
+      "bytes": 157661,
+      "passes": true
+    }
+  },
+  "duplicateSourceModuleCount": 0,
+  "duplicatedModules": [],
+  "webModuleCount": 1,
+  "webModules": [
+    "/private/tmp/shushugo-w1/wechat-miniprogram/src/shared/web.js"
+  ],
+  "webModulePolicy": "warn until W3 final merge",
+  "passes": false
+}

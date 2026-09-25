@@ -1,1 +1,1 @@
-module.exports = '/assets/sql-wasm.wasm';
+module.exports = '/assets/sql-wasm.wasm.br';
