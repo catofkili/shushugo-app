@@ -14,8 +14,8 @@ const snapshot = async (page) => ({
 (async () => {
   const mini = await automator.connect({ wsEndpoint: 'ws://127.0.0.1:9420' });
   let page = await mini.currentPage();
-  if (page.path !== 'features/vocab-test/index') {
-    void mini.navigateTo('/features/vocab-test/index').catch(() => undefined);
+  if (page.path !== 'quiz/vocab-test/index') {
+    void mini.navigateTo('/quiz/vocab-test/index').catch(() => undefined);
     await sleep(2500);
     page = await mini.currentPage();
   }

@@ -10,7 +10,9 @@
     "frontend/src/skins.css",
     "frontend/public/brand/"
   ],
-  "approvedExemptions": [],
+  "approvedExemptions": [
+    "Taro route A spike only; isolated component adapters preserve web behavior and do not change native pages"
+  ],
   "pairs": [
     { "web": "frontend/src/App.tsx", "mini": ["wechat-miniprogram/src/app.json", "wechat-miniprogram/src/pages/home/index.js", "wechat-miniprogram/src/pages/home/index.wxml"] },
     { "web": "frontend/src/components/ZooHome.tsx", "mini": ["wechat-miniprogram/src/pages/home/index.js", "wechat-miniprogram/src/pages/home/index.wxml", "wechat-miniprogram/src/pages/home/index.wxss"] },

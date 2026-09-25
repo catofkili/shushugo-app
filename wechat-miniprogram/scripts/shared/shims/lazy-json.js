@@ -5,9 +5,9 @@
  *   const kanjiVariants = payload.japanese_to_simplified ?? {}   (models/word-card)
  *   const readings = payload.readings                            (kanji-char-cards)
  *   const points = data.points                                   (grammar-key-points)
- * 而数据要等分包 require.async 回来。所以这里**永远返回代理、绝不返回 undefined** ——
- * 返回 undefined 的话那个 `?? {}` 会把空对象永久固定下来，表加载完了也永远查不到东西
- * （现象：卡面不显示简繁对照、语法抓手永远为空，而且没有任何报错）。
+ * 而数据要等分包 require.async 回来。所以数据未加载时必须返回代理，不能让那个 `?? {}`
+ * 把空对象永久固定下来；但数据已加载后，缺失键必须返回 undefined，否则代理参与字符串
+ * 转换时会因没有可调用的 valueOf / toString 抛错。
  * 真正的键在每次访问时才去 content-store 查。
  */
 const stores = require('../shared/content-store');
@@ -25,7 +25,7 @@ const proxy = (name, path) => new Proxy({}, {
     if (key === 'default' && path.length === 0) return proxy(name, path);
     const value = resolve(name, [...path, key]);
     // 还没加载 → 继续给一层代理，让调用方存下来的引用保持活的。
-    if (value === undefined) return proxy(name, [...path, key]);
+    if (value === undefined) return stores[name] == null ? proxy(name, [...path, key]) : undefined;
     return value && typeof value === 'object' ? proxy(name, [...path, key]) : value;
   },
   has(_target, key) {

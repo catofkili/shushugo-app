@@ -9,6 +9,7 @@ const repoRoot = path.resolve(root, '..');
 const frontend = path.join(repoRoot, 'frontend');
 const mini = path.join(repoRoot, 'wechat-miniprogram');
 const shims = createSharedShims(mini);
+const weappEnv = require(path.join(root, 'src/platform/weapp-env.weapp.cjs'));
 
 module.exports = {
   projectName: 'shushugo-taro-spike-2',
@@ -21,7 +22,14 @@ module.exports = {
     patterns: [
       { from: path.join(mini, 'src/assets/sql-wasm.wasm'), to: path.join(root, 'dist/assets/sql-wasm.wasm') },
       { from: path.join(mini, 'src/content/question-meanings.js'), to: path.join(root, 'dist/content/question-meanings.js') },
-      { from: path.join(root, 'src/features/vocab-test/assets'), to: path.join(root, 'dist/features/vocab-test/assets') }
+      { from: path.join(mini, 'src/content/kanji-unit-runtime.js'), to: path.join(root, 'dist/content/kanji-unit-runtime.js') },
+      { from: path.join(mini, 'src/content/kanji-reading-usage.js'), to: path.join(root, 'dist/content/kanji-reading-usage.js') },
+      { from: path.join(mini, 'src/content/pitch-accent.js'), to: path.join(root, 'dist/content/pitch-accent.js') },
+      { from: path.join(mini, 'src/features/content/distinction-reviews.js'), to: path.join(root, 'dist/features/content/distinction-reviews.js') },
+      { from: path.join(mini, 'src/features/content/kanji-variants.js'), to: path.join(root, 'dist/features/content/kanji-variants.js') },
+      { from: path.join(mini, 'src/features/content/kanji-readings.js'), to: path.join(root, 'dist/features/content/kanji-readings.js') },
+      { from: path.join(mini, 'src/features/content/grammar-key-points.js'), to: path.join(root, 'dist/features/content/grammar-key-points.js') },
+      { from: path.join(root, 'src/assets'), to: path.join(root, 'dist/assets') }
     ],
     options: {}
   },
@@ -53,9 +61,22 @@ module.exports = {
         /^node:fs$/,
         path.join(root, 'scripts/node-fs-stub.cjs')
       ]);
+      chain.plugin('spike-weapp-env').use(webpack.DefinePlugin, [{
+        'import.meta.env': JSON.stringify(weappEnv)
+      }]);
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,
         (resource) => {
+          if (/(^|\/)TokenDictionaryPopover(?:\.[^/]*)?$/.test(resource.request)) {
+            // The web source imports react-dom/createPortal at TokenDictionaryPopover.tsx:3
+            // and targets document.body at :148-199; WeChat has no DOM portal target.
+            resource.request = path.join(frontend, 'src/components/TokenDictionaryPopover.weapp.tsx');
+            return;
+          }
+          if (/(^|\/)JapaneseRubyText(?:\.[^/]*)?$/.test(resource.request)) {
+            resource.request = path.join(frontend, 'src/components/JapaneseRubyText.weapp.tsx');
+            return;
+          }
           if (/^(@capacitor\/|@capacitor-community\/|@aparajita\/)/.test(resource.request)) {
             resource.request = path.join(root, 'scripts/native-stubs.cjs');
             return;
@@ -67,6 +88,10 @@ module.exports = {
             .replace(/\?raw$/, '');
           if (target === path.join(mini, 'src/config')) {
             resource.request = path.join(root, 'scripts/offline-config.cjs');
+            return;
+          }
+          if (target === path.join(mini, 'src/runtime/database-store')) {
+            resource.request = path.join(root, 'src/platform/database-store.weapp.cjs');
             return;
           }
           if (target === path.join(mini, 'src/shared/content')) {

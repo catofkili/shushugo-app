@@ -34,6 +34,8 @@ const require = createRequire(import.meta.url);
 const root = path.resolve(import.meta.dirname, '..');
 const frontend = path.resolve(root, '../frontend');
 const shims = path.join(root, 'scripts/shared/shims');
+const shim = (name) => path.join(shims, name);
+const data = path.join(frontend, 'src/data');
 const { build } = require(path.join(frontend, 'node_modules/esbuild/lib/main.js'));
 const checkOnly = process.argv.includes('--check');
 

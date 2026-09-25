@@ -5,6 +5,7 @@ import type { FuriganaAnnotation, TokenBoundary } from "../types/furigana";
 import type { ReactNode } from "react";
 import { GrammarPointPopover } from "./GrammarPointPopover";
 import { TokenDictionaryPopover } from "./TokenDictionaryPopover";
+import { JapaneseRubyText } from "./JapaneseRubyText";
 
 const rubyRules = [
   ["名詞", "めいし"],
@@ -182,10 +183,7 @@ const renderNodes = (nodes: RubyNode[]) => nodes.map((node, nodeIndex) =>
   typeof node === "string" ? (
     <span key={`${node}-${nodeIndex}`}>{node}</span>
   ) : (
-    <ruby key={`${node.base}-${nodeIndex}`} className="jp-ruby">
-      {node.base}
-      <rt>{node.reading}</rt>
-    </ruby>
+    <JapaneseRubyText key={`${node.base}-${nodeIndex}`} base={node.base} reading={node.reading} />
   )
 );
 

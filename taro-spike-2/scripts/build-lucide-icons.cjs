@@ -5,12 +5,14 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const icons = require('lucide-react');
 
 const names = [
-  'ArrowLeftRight', 'Check', 'Crown', 'Handshake', 'History', 'ImageDown',
-  'ListChecks', 'Loader2', 'MessageCircle', 'Pause', 'PenLine', 'Play',
-  'RotateCcw', 'Share2', 'ShieldCheck', 'Sparkles', 'Sprout', 'Timer',
-  'Type', 'Volume2', 'X'
+  'AlertCircle', 'ArrowLeftRight', 'ArrowRightLeft', 'Brain', 'CalendarCheck', 'CalendarDays',
+  'Check', 'CheckCircle2', 'ChevronLeft', 'ChevronRight', 'Clock3', 'Crown', 'Eye', 'Flame',
+  'FolderPlus', 'GitCompareArrows', 'Handshake', 'History', 'ImageDown', 'Languages', 'ListChecks',
+  'Loader2', 'MessageCircle', 'Minus', 'NotebookPen', 'Pause', 'PenLine', 'Pencil', 'Play', 'Plus',
+  'Puzzle', 'Repeat', 'RotateCcw', 'Share2', 'ShieldCheck', 'Shuffle', 'Sparkles', 'Sprout', 'Star',
+  'StickyNote', 'Target', 'Timer', 'Type', 'Volume2', 'X'
 ];
-const out = path.join(__dirname, '../src/features/vocab-test/assets/lucide');
+const out = path.join(__dirname, '../src/assets/lucide');
 fs.mkdirSync(out, { recursive: true });
 
 for (const name of names) {

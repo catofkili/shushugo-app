@@ -10,7 +10,7 @@ MiniProgram.prototype.checkVersion = async function checkVersionCompat() { await
 (async () => {
   const mini = await automator.connect({ wsEndpoint: 'ws://127.0.0.1:9420' });
   mini.on('console', (event) => console.log('CONSOLE', JSON.stringify(event)));
-  const navigation = mini.navigateTo('/features/vocab-test/index').catch((error) => console.log('NAVIGATION_EVENT', String(error)));
+  const navigation = mini.navigateTo('/quiz/vocab-test/index').catch((error) => console.log('NAVIGATION_EVENT', String(error)));
   await new Promise((resolve) => setTimeout(resolve, 2500));
   const page = await mini.currentPage();
   console.log('PAGE', page?.path);

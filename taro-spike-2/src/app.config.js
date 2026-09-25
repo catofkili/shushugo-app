@@ -1,6 +1,11 @@
 export default {
   pages: ['pages/index/index'],
-  subPackages: [{ root: 'features', pages: ['vocab-test/index'] }, { root: 'content', pages: ['placeholder/index'] }],
+  subPackages: [
+    { root: 'quiz', pages: ['vocab-test/index'] },
+    { root: 'study', pages: ['word-study/index'] },
+    { root: 'features', pages: ['placeholder/index'] },
+    { root: 'content', pages: ['placeholder/index'] }
+  ],
   window: {
     navigationBarTitleText: 'ShuShuGo · 路线 A 试验',
     navigationBarBackgroundColor: '#FBF6EC',

@@ -2,107 +2,882 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1230874,
-      "mib": 1.174,
+      "bytes": 1473104,
+      "mib": 1.405,
+      "passes": true
+    },
+    "quiz": {
+      "bytes": 1549318,
+      "mib": 1.478,
+      "passes": true
+    },
+    "study": {
+      "bytes": 2021793,
+      "mib": 1.928,
       "passes": true
     },
     "features": {
-      "bytes": 2017226,
-      "mib": 1.924,
+      "bytes": 659695,
+      "mib": 0.629,
+      "passes": true
+    },
+    "content": {
+      "bytes": 1618463,
+      "mib": 1.543,
       "passes": true
     }
   },
-  "totalBytes": 3248100,
+  "totalBytes": 7322373,
   "files": [
-    {
-      "path": "features/vocab-test/index.js",
-      "package": "features",
-      "bytes": 1829927
-    },
     {
       "path": "assets/sql-wasm.wasm",
       "package": "main",
       "bytes": 659730
     },
     {
+      "path": "content/question-meanings.js",
+      "package": "content",
+      "bytes": 613408
+    },
+    {
+      "path": "quiz/sub-common/3ae043a1b5b3006bb1d0724915f10689.js",
+      "package": "quiz",
+      "bytes": 546992
+    },
+    {
+      "path": "study/sub-common/3ae043a1b5b3006bb1d0724915f10689.js",
+      "package": "study",
+      "bytes": 546992
+    },
+    {
+      "path": "study/word-study/index.js",
+      "package": "study",
+      "bytes": 509798
+    },
+    {
+      "path": "quiz/sub-common/02aa333f2b6ffe685515b7da73065954.js",
+      "package": "quiz",
+      "bytes": 404241
+    },
+    {
+      "path": "study/sub-common/02aa333f2b6ffe685515b7da73065954.js",
+      "package": "study",
+      "bytes": 404241
+    },
+    {
+      "path": "content/kanji-unit-runtime.js",
+      "package": "content",
+      "bytes": 399493
+    },
+    {
+      "path": "features/content/distinction-reviews.js",
+      "package": "features",
+      "bytes": 334372
+    },
+    {
+      "path": "content/kanji-reading-usage.js",
+      "package": "content",
+      "bytes": 332314
+    },
+    {
+      "path": "content/pitch-accent.js",
+      "package": "content",
+      "bytes": 272712
+    },
+    {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 254051
+      "bytes": 254898
+    },
+    {
+      "path": "features/content/kanji-variants.js",
+      "package": "features",
+      "bytes": 162562
     },
     {
       "path": "taro.js",
       "package": "main",
-      "bytes": 139305
+      "bytes": 139341
+    },
+    {
+      "path": "features/content/kanji-readings.js",
+      "package": "features",
+      "bytes": 115462
     },
     {
       "path": "vendors.js",
       "package": "main",
-      "bytes": 113039
+      "bytes": 113041
     },
     {
       "path": "base.wxml",
       "package": "main",
-      "bytes": 56670
+      "bytes": 62282
     },
     {
-      "path": "features/vocab-test/assets/brand/mood-yay.webp",
+      "path": "quiz/sub-common/6e8adf4d8ba92c911f58e1b7a0b524a8.js",
+      "package": "quiz",
+      "bytes": 60463
+    },
+    {
+      "path": "study/sub-common/6e8adf4d8ba92c911f58e1b7a0b524a8.js",
+      "package": "study",
+      "bytes": 60463
+    },
+    {
+      "path": "quiz/sub-common/34abca01da8e8d38cefa542ba6bceb3a.js",
+      "package": "quiz",
+      "bytes": 46748
+    },
+    {
+      "path": "study/sub-common/34abca01da8e8d38cefa542ba6bceb3a.js",
+      "package": "study",
+      "bytes": 46748
+    },
+    {
+      "path": "features/content/grammar-key-points.js",
       "package": "features",
+      "bytes": 46508
+    },
+    {
+      "path": "quiz/vocab-test/index.js",
+      "package": "quiz",
+      "bytes": 37323
+    },
+    {
+      "path": "quiz/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js",
+      "package": "quiz",
+      "bytes": 29259
+    },
+    {
+      "path": "study/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js",
+      "package": "study",
+      "bytes": 29259
+    },
+    {
+      "path": "assets/brand/walk-strip.webp",
+      "package": "main",
+      "bytes": 29090
+    },
+    {
+      "path": "quiz/sub-common/f84a866875c3802ecad242e64aaedb7e.js",
+      "package": "quiz",
+      "bytes": 27606
+    },
+    {
+      "path": "study/sub-common/f84a866875c3802ecad242e64aaedb7e.js",
+      "package": "study",
+      "bytes": 27606
+    },
+    {
+      "path": "quiz/sub-common/c2676f6fda65a4d11d9f6b50f6899e14.js",
+      "package": "quiz",
+      "bytes": 21250
+    },
+    {
+      "path": "study/sub-common/c2676f6fda65a4d11d9f6b50f6899e14.js",
+      "package": "study",
+      "bytes": 21250
+    },
+    {
+      "path": "assets/brand/mood-yay.webp",
+      "package": "main",
       "bytes": 20262
     },
     {
-      "path": "features/vocab-test/assets/brand/shushugo-icon.webp",
-      "package": "features",
+      "path": "assets/brand/shushugo-icon.webp",
+      "package": "main",
       "bytes": 19048
     },
     {
-      "path": "features/vocab-test/assets/brand/mood-puzzled.webp",
-      "package": "features",
+      "path": "quiz/sub-common/1e1afabeec6a346309db1b216fa25da5.js",
+      "package": "quiz",
+      "bytes": 18995
+    },
+    {
+      "path": "study/sub-common/1e1afabeec6a346309db1b216fa25da5.js",
+      "package": "study",
+      "bytes": 18995
+    },
+    {
+      "path": "assets/brand/mood-puzzled.webp",
+      "package": "main",
       "bytes": 18992
     },
     {
-      "path": "features/vocab-test/assets/brand/scene-laptop.webp",
-      "package": "features",
+      "path": "quiz/sub-common/4fda187aea66f502cd5beef836191ddf.js",
+      "package": "quiz",
+      "bytes": 18757
+    },
+    {
+      "path": "study/sub-common/4fda187aea66f502cd5beef836191ddf.js",
+      "package": "study",
+      "bytes": 18757
+    },
+    {
+      "path": "assets/brand/scene-laptop.webp",
+      "package": "main",
       "bytes": 18510
     },
     {
-      "path": "features/vocab-test/assets/brand/mood-sleep.webp",
-      "package": "features",
+      "path": "quiz/sub-common/1ad6a7f8f63e443489d1850c48ea504e.js",
+      "package": "quiz",
+      "bytes": 18481
+    },
+    {
+      "path": "study/sub-common/1ad6a7f8f63e443489d1850c48ea504e.js",
+      "package": "study",
+      "bytes": 18481
+    },
+    {
+      "path": "assets/brand/mood-sleep.webp",
+      "package": "main",
       "bytes": 17014
     },
     {
-      "path": "features/vocab-test/assets/brand/empty-box.webp",
-      "package": "features",
+      "path": "assets/brand/empty-box.webp",
+      "package": "main",
       "bytes": 16412
     },
     {
-      "path": "features/vocab-test/assets/brand/mood-ask.webp",
-      "package": "features",
+      "path": "quiz/sub-common/1beb5a63afad9733b4d96ff342525892.js",
+      "package": "quiz",
+      "bytes": 16401
+    },
+    {
+      "path": "study/sub-common/1beb5a63afad9733b4d96ff342525892.js",
+      "package": "study",
+      "bytes": 16401
+    },
+    {
+      "path": "assets/brand/mood-ask.webp",
+      "package": "main",
       "bytes": 15702
     },
     {
-      "path": "features/vocab-test/assets/brand/scene-book.webp",
-      "package": "features",
+      "path": "assets/brand/scene-book.webp",
+      "package": "main",
       "bytes": 15244
     },
     {
-      "path": "features/vocab-test/assets/brand/mood-dizzy.webp",
-      "package": "features",
+      "path": "assets/brand/mood-dizzy.webp",
+      "package": "main",
       "bytes": 15102
     },
     {
-      "path": "features/vocab-test/assets/brand/mood-proud.webp",
-      "package": "features",
+      "path": "assets/brand/mood-proud.webp",
+      "package": "main",
       "bytes": 14916
+    },
+    {
+      "path": "quiz/sub-common/5986b9a47f582fee4bb57e426d1017ac.js",
+      "package": "quiz",
+      "bytes": 14635
+    },
+    {
+      "path": "study/sub-common/5986b9a47f582fee4bb57e426d1017ac.js",
+      "package": "study",
+      "bytes": 14635
+    },
+    {
+      "path": "quiz/sub-common/acd3e96e4582971292964da8bc97a460.js",
+      "package": "quiz",
+      "bytes": 14585
+    },
+    {
+      "path": "study/sub-common/acd3e96e4582971292964da8bc97a460.js",
+      "package": "study",
+      "bytes": 14585
+    },
+    {
+      "path": "quiz/sub-common/486a2f6a6d529e153df05a2720cee41e.js",
+      "package": "quiz",
+      "bytes": 10570
+    },
+    {
+      "path": "study/sub-common/486a2f6a6d529e153df05a2720cee41e.js",
+      "package": "study",
+      "bytes": 10570
+    },
+    {
+      "path": "quiz/sub-common/1c30f4373d966859e7673818f3ac91c8.js",
+      "package": "quiz",
+      "bytes": 10472
+    },
+    {
+      "path": "study/sub-common/1c30f4373d966859e7673818f3ac91c8.js",
+      "package": "study",
+      "bytes": 10472
+    },
+    {
+      "path": "quiz/sub-common/66be035b9b519c71ca9ff98265d8efed.js",
+      "package": "quiz",
+      "bytes": 10048
+    },
+    {
+      "path": "study/sub-common/66be035b9b519c71ca9ff98265d8efed.js",
+      "package": "study",
+      "bytes": 10048
+    },
+    {
+      "path": "quiz/sub-common/4cda6fed0d2352f896aebb3e419cd3e1.js",
+      "package": "quiz",
+      "bytes": 9404
+    },
+    {
+      "path": "study/sub-common/4cda6fed0d2352f896aebb3e419cd3e1.js",
+      "package": "study",
+      "bytes": 9404
+    },
+    {
+      "path": "quiz/sub-common/bf92b9b4be40a89907c8024d20341c60.js",
+      "package": "quiz",
+      "bytes": 8612
+    },
+    {
+      "path": "study/sub-common/bf92b9b4be40a89907c8024d20341c60.js",
+      "package": "study",
+      "bytes": 8612
+    },
+    {
+      "path": "quiz/sub-common/a622fca19844a4171fa1d7a109b7a737.js",
+      "package": "quiz",
+      "bytes": 7761
+    },
+    {
+      "path": "study/sub-common/a622fca19844a4171fa1d7a109b7a737.js",
+      "package": "study",
+      "bytes": 7761
+    },
+    {
+      "path": "quiz/sub-common/ea47049e0c21935716fd9411e7b66a1d.js",
+      "package": "quiz",
+      "bytes": 7733
+    },
+    {
+      "path": "study/sub-common/ea47049e0c21935716fd9411e7b66a1d.js",
+      "package": "study",
+      "bytes": 7733
+    },
+    {
+      "path": "quiz/sub-common/f6fd3199210eee00595aa4cabd6051c8.js",
+      "package": "quiz",
+      "bytes": 7684
+    },
+    {
+      "path": "study/sub-common/f6fd3199210eee00595aa4cabd6051c8.js",
+      "package": "study",
+      "bytes": 7684
+    },
+    {
+      "path": "quiz/sub-common/048a7ac4ea618a91870c044e5aef72a9.js",
+      "package": "quiz",
+      "bytes": 7670
+    },
+    {
+      "path": "study/sub-common/048a7ac4ea618a91870c044e5aef72a9.js",
+      "package": "study",
+      "bytes": 7670
+    },
+    {
+      "path": "quiz/sub-common/6be2c600d1fbef70eaee57640f54fa94.js",
+      "package": "quiz",
+      "bytes": 7659
+    },
+    {
+      "path": "study/sub-common/6be2c600d1fbef70eaee57640f54fa94.js",
+      "package": "study",
+      "bytes": 7659
+    },
+    {
+      "path": "quiz/sub-common/d137996300ae8ff6468bc84f5b6921c1.js",
+      "package": "quiz",
+      "bytes": 6761
+    },
+    {
+      "path": "study/sub-common/d137996300ae8ff6468bc84f5b6921c1.js",
+      "package": "study",
+      "bytes": 6761
+    },
+    {
+      "path": "quiz/sub-common/217028d4066898ab7a565f7def7bc15b.js",
+      "package": "quiz",
+      "bytes": 6633
+    },
+    {
+      "path": "study/sub-common/217028d4066898ab7a565f7def7bc15b.js",
+      "package": "study",
+      "bytes": 6633
+    },
+    {
+      "path": "quiz/sub-common/8dfe5890a0f72cbab4196bbee3dcc417.js",
+      "package": "quiz",
+      "bytes": 6481
+    },
+    {
+      "path": "study/sub-common/8dfe5890a0f72cbab4196bbee3dcc417.js",
+      "package": "study",
+      "bytes": 6481
+    },
+    {
+      "path": "quiz/sub-common/6036885f7068873ac86cc29fba3efc5f.js",
+      "package": "quiz",
+      "bytes": 5681
+    },
+    {
+      "path": "study/sub-common/6036885f7068873ac86cc29fba3efc5f.js",
+      "package": "study",
+      "bytes": 5681
+    },
+    {
+      "path": "quiz/sub-common/e5831ecb14c8a76903ce86c87b6c0a44.js",
+      "package": "quiz",
+      "bytes": 5467
+    },
+    {
+      "path": "study/sub-common/e5831ecb14c8a76903ce86c87b6c0a44.js",
+      "package": "study",
+      "bytes": 5467
+    },
+    {
+      "path": "quiz/sub-common/cfb512dc3e6f0dcd6277bd96ec6ffffd.js",
+      "package": "quiz",
+      "bytes": 5397
+    },
+    {
+      "path": "study/sub-common/cfb512dc3e6f0dcd6277bd96ec6ffffd.js",
+      "package": "study",
+      "bytes": 5397
+    },
+    {
+      "path": "quiz/sub-common/22217c8bf87b4bf354d185505a3b1cf2.js",
+      "package": "quiz",
+      "bytes": 5026
+    },
+    {
+      "path": "study/sub-common/22217c8bf87b4bf354d185505a3b1cf2.js",
+      "package": "study",
+      "bytes": 5026
+    },
+    {
+      "path": "quiz/sub-common/9c06c22d2522a3e3c14449f1f52646ab.js",
+      "package": "quiz",
+      "bytes": 4866
+    },
+    {
+      "path": "study/sub-common/9c06c22d2522a3e3c14449f1f52646ab.js",
+      "package": "study",
+      "bytes": 4866
+    },
+    {
+      "path": "quiz/sub-common/140b009028aff90c9b276c1afb79711f.js",
+      "package": "quiz",
+      "bytes": 4481
+    },
+    {
+      "path": "study/sub-common/140b009028aff90c9b276c1afb79711f.js",
+      "package": "study",
+      "bytes": 4481
+    },
+    {
+      "path": "quiz/sub-common/32bfefa351ea5ae444426d6b053a423d.js",
+      "package": "quiz",
+      "bytes": 4365
+    },
+    {
+      "path": "study/sub-common/32bfefa351ea5ae444426d6b053a423d.js",
+      "package": "study",
+      "bytes": 4365
+    },
+    {
+      "path": "quiz/sub-common/6b090506c60ac13067c1123beb17d68f.js",
+      "package": "quiz",
+      "bytes": 4209
+    },
+    {
+      "path": "study/sub-common/6b090506c60ac13067c1123beb17d68f.js",
+      "package": "study",
+      "bytes": 4209
+    },
+    {
+      "path": "quiz/sub-common/474f6a1f2032a41a76005d6c8f900309.js",
+      "package": "quiz",
+      "bytes": 3976
+    },
+    {
+      "path": "study/sub-common/474f6a1f2032a41a76005d6c8f900309.js",
+      "package": "study",
+      "bytes": 3976
+    },
+    {
+      "path": "quiz/sub-common/7dba71d64ddb42029f746cedc40e22a8.js",
+      "package": "quiz",
+      "bytes": 3958
+    },
+    {
+      "path": "study/sub-common/7dba71d64ddb42029f746cedc40e22a8.js",
+      "package": "study",
+      "bytes": 3958
+    },
+    {
+      "path": "quiz/sub-common/aa5c0d5ae2eaefa9d094f100792d05a1.js",
+      "package": "quiz",
+      "bytes": 3671
+    },
+    {
+      "path": "study/sub-common/aa5c0d5ae2eaefa9d094f100792d05a1.js",
+      "package": "study",
+      "bytes": 3671
+    },
+    {
+      "path": "quiz/sub-common/31db00687ed37439161ad06def50387a.js",
+      "package": "quiz",
+      "bytes": 3525
+    },
+    {
+      "path": "study/sub-common/31db00687ed37439161ad06def50387a.js",
+      "package": "study",
+      "bytes": 3525
+    },
+    {
+      "path": "quiz/sub-common/28ec64d4fabab98df88b036359c881e7.js",
+      "package": "quiz",
+      "bytes": 3434
+    },
+    {
+      "path": "study/sub-common/28ec64d4fabab98df88b036359c881e7.js",
+      "package": "study",
+      "bytes": 3434
+    },
+    {
+      "path": "quiz/sub-common/a9cea07dfad70f34c7f238f4de5d18a2.js",
+      "package": "quiz",
+      "bytes": 3415
+    },
+    {
+      "path": "study/sub-common/a9cea07dfad70f34c7f238f4de5d18a2.js",
+      "package": "study",
+      "bytes": 3415
+    },
+    {
+      "path": "quiz/sub-common/150fa1436fbe3958fd220f2e975564f4.js",
+      "package": "quiz",
+      "bytes": 3343
+    },
+    {
+      "path": "study/sub-common/150fa1436fbe3958fd220f2e975564f4.js",
+      "package": "study",
+      "bytes": 3343
+    },
+    {
+      "path": "quiz/sub-common/8825a63d0d48dbc7f17df4766abd115b.js",
+      "package": "quiz",
+      "bytes": 3159
+    },
+    {
+      "path": "study/sub-common/8825a63d0d48dbc7f17df4766abd115b.js",
+      "package": "study",
+      "bytes": 3159
+    },
+    {
+      "path": "quiz/sub-common/e33c857c1005768479c42cbd47b7b6b0.js",
+      "package": "quiz",
+      "bytes": 3063
+    },
+    {
+      "path": "study/sub-common/e33c857c1005768479c42cbd47b7b6b0.js",
+      "package": "study",
+      "bytes": 3063
+    },
+    {
+      "path": "quiz/sub-common/5d540c63870bf4b16b086b44ba3816bd.js",
+      "package": "quiz",
+      "bytes": 2882
+    },
+    {
+      "path": "study/sub-common/5d540c63870bf4b16b086b44ba3816bd.js",
+      "package": "study",
+      "bytes": 2882
+    },
+    {
+      "path": "quiz/sub-common/034242805418dad608e6de910c83e453.js",
+      "package": "quiz",
+      "bytes": 2836
+    },
+    {
+      "path": "study/sub-common/034242805418dad608e6de910c83e453.js",
+      "package": "study",
+      "bytes": 2836
+    },
+    {
+      "path": "quiz/sub-common/20b62c0f641f2b4639938543282abdbe.js",
+      "package": "quiz",
+      "bytes": 2769
+    },
+    {
+      "path": "study/sub-common/20b62c0f641f2b4639938543282abdbe.js",
+      "package": "study",
+      "bytes": 2769
+    },
+    {
+      "path": "quiz/sub-common/d3d781e8ceeae79dd9d4a6acc8d5d8d2.js",
+      "package": "quiz",
+      "bytes": 2656
+    },
+    {
+      "path": "study/sub-common/d3d781e8ceeae79dd9d4a6acc8d5d8d2.js",
+      "package": "study",
+      "bytes": 2656
+    },
+    {
+      "path": "quiz/sub-common/a3c900c729ff7afda44f285f1ae6ac6c.js",
+      "package": "quiz",
+      "bytes": 2625
+    },
+    {
+      "path": "study/sub-common/a3c900c729ff7afda44f285f1ae6ac6c.js",
+      "package": "study",
+      "bytes": 2625
+    },
+    {
+      "path": "quiz/sub-common/8585daa0f100b4819b4ba924ba09758e.js",
+      "package": "quiz",
+      "bytes": 2576
+    },
+    {
+      "path": "study/sub-common/8585daa0f100b4819b4ba924ba09758e.js",
+      "package": "study",
+      "bytes": 2576
+    },
+    {
+      "path": "quiz/sub-common/e6ca7e80b00d7370c01687f98867a128.js",
+      "package": "quiz",
+      "bytes": 2522
+    },
+    {
+      "path": "study/sub-common/e6ca7e80b00d7370c01687f98867a128.js",
+      "package": "study",
+      "bytes": 2522
+    },
+    {
+      "path": "quiz/sub-common/dce45beb90bddb0d3ec58b176a5ad55c.js",
+      "package": "quiz",
+      "bytes": 2521
+    },
+    {
+      "path": "study/sub-common/dce45beb90bddb0d3ec58b176a5ad55c.js",
+      "package": "study",
+      "bytes": 2521
+    },
+    {
+      "path": "quiz/sub-common/016dac40481b40f07f8924e21fdf8a17.js",
+      "package": "quiz",
+      "bytes": 2519
+    },
+    {
+      "path": "study/sub-common/016dac40481b40f07f8924e21fdf8a17.js",
+      "package": "study",
+      "bytes": 2519
+    },
+    {
+      "path": "quiz/sub-common/5d434ef84fd21ed9d476d617729a0b79.js",
+      "package": "quiz",
+      "bytes": 2495
+    },
+    {
+      "path": "study/sub-common/5d434ef84fd21ed9d476d617729a0b79.js",
+      "package": "study",
+      "bytes": 2495
+    },
+    {
+      "path": "quiz/sub-common/a932cda3b340218bdc8ca701e4b9b308.js",
+      "package": "quiz",
+      "bytes": 2376
+    },
+    {
+      "path": "study/sub-common/a932cda3b340218bdc8ca701e4b9b308.js",
+      "package": "study",
+      "bytes": 2376
+    },
+    {
+      "path": "quiz/sub-common/07be447d95c8478a420c3265c3da0820.js",
+      "package": "quiz",
+      "bytes": 2369
+    },
+    {
+      "path": "study/sub-common/07be447d95c8478a420c3265c3da0820.js",
+      "package": "study",
+      "bytes": 2369
     },
     {
       "path": "runtime.js",
       "package": "main",
-      "bytes": 2310
+      "bytes": 2311
+    },
+    {
+      "path": "quiz/sub-common/816d1f37ace5ab7750ef1e7207120522.js",
+      "package": "quiz",
+      "bytes": 2300
+    },
+    {
+      "path": "study/sub-common/816d1f37ace5ab7750ef1e7207120522.js",
+      "package": "study",
+      "bytes": 2300
+    },
+    {
+      "path": "quiz/sub-common/bfd0d6bd2b411d5bde52b5fac4d9a2d2.js",
+      "package": "quiz",
+      "bytes": 2261
+    },
+    {
+      "path": "study/sub-common/bfd0d6bd2b411d5bde52b5fac4d9a2d2.js",
+      "package": "study",
+      "bytes": 2261
+    },
+    {
+      "path": "quiz/sub-common/63d96315e1463f86c53ed8c240d235da.js",
+      "package": "quiz",
+      "bytes": 2187
+    },
+    {
+      "path": "study/sub-common/63d96315e1463f86c53ed8c240d235da.js",
+      "package": "study",
+      "bytes": 2187
+    },
+    {
+      "path": "quiz/sub-common/95030410ea74db210dd214b9718dc833.js",
+      "package": "quiz",
+      "bytes": 2183
+    },
+    {
+      "path": "study/sub-common/95030410ea74db210dd214b9718dc833.js",
+      "package": "study",
+      "bytes": 2183
+    },
+    {
+      "path": "quiz/sub-common/5a733fb8a894dbd1241fc43312a8fec6.js",
+      "package": "quiz",
+      "bytes": 2089
+    },
+    {
+      "path": "study/sub-common/5a733fb8a894dbd1241fc43312a8fec6.js",
+      "package": "study",
+      "bytes": 2089
+    },
+    {
+      "path": "quiz/sub-common/96f146ab80f1339a06fd3ca52cf7ee7f.js",
+      "package": "quiz",
+      "bytes": 2063
+    },
+    {
+      "path": "study/sub-common/96f146ab80f1339a06fd3ca52cf7ee7f.js",
+      "package": "study",
+      "bytes": 2063
+    },
+    {
+      "path": "quiz/sub-common/b3e9ee5ea1844d3a35e0eac495a579a9.js",
+      "package": "quiz",
+      "bytes": 2062
+    },
+    {
+      "path": "study/sub-common/b3e9ee5ea1844d3a35e0eac495a579a9.js",
+      "package": "study",
+      "bytes": 2062
+    },
+    {
+      "path": "quiz/sub-common/5d17f225606cd1ad9c26db077d14c165.js",
+      "package": "quiz",
+      "bytes": 2035
+    },
+    {
+      "path": "study/sub-common/5d17f225606cd1ad9c26db077d14c165.js",
+      "package": "study",
+      "bytes": 2035
+    },
+    {
+      "path": "quiz/sub-common/a84e38ed6b1f6d1dd3cdb4224fbba394.js",
+      "package": "quiz",
+      "bytes": 2032
+    },
+    {
+      "path": "study/sub-common/a84e38ed6b1f6d1dd3cdb4224fbba394.js",
+      "package": "study",
+      "bytes": 2032
+    },
+    {
+      "path": "quiz/sub-common/c3022851aedb2190225fecf25878ad5d.js",
+      "package": "quiz",
+      "bytes": 2027
+    },
+    {
+      "path": "study/sub-common/c3022851aedb2190225fecf25878ad5d.js",
+      "package": "study",
+      "bytes": 2027
+    },
+    {
+      "path": "quiz/sub-common/a03d76f99bcc63be1e356a37d335a38e.js",
+      "package": "quiz",
+      "bytes": 1948
+    },
+    {
+      "path": "study/sub-common/a03d76f99bcc63be1e356a37d335a38e.js",
+      "package": "study",
+      "bytes": 1948
+    },
+    {
+      "path": "quiz/sub-common/605b885d9595b1a50bb90eb27904971e.js",
+      "package": "quiz",
+      "bytes": 1844
+    },
+    {
+      "path": "study/sub-common/605b885d9595b1a50bb90eb27904971e.js",
+      "package": "study",
+      "bytes": 1844
+    },
+    {
+      "path": "quiz/sub-common/67eaba175aa877c5a1d53242bab52122.js",
+      "package": "quiz",
+      "bytes": 1764
+    },
+    {
+      "path": "study/sub-common/67eaba175aa877c5a1d53242bab52122.js",
+      "package": "study",
+      "bytes": 1764
     },
     {
       "path": "app.js",
       "package": "main",
-      "bytes": 1543
+      "bytes": 1697
+    },
+    {
+      "path": "quiz/sub-common/b7f63dc3a649e26fa4bb21b58d0cc748.js",
+      "package": "quiz",
+      "bytes": 1639
+    },
+    {
+      "path": "study/sub-common/b7f63dc3a649e26fa4bb21b58d0cc748.js",
+      "package": "study",
+      "bytes": 1639
+    },
+    {
+      "path": "quiz/sub-common/1de2681e1cc18c3d017fa62f4a6ceaa1.js",
+      "package": "quiz",
+      "bytes": 1402
+    },
+    {
+      "path": "study/sub-common/1de2681e1cc18c3d017fa62f4a6ceaa1.js",
+      "package": "study",
+      "bytes": 1402
+    },
+    {
+      "path": "quiz/sub-common/c57b902556f0f01172b55ba4896292de.js",
+      "package": "quiz",
+      "bytes": 1392
+    },
+    {
+      "path": "study/sub-common/c57b902556f0f01172b55ba4896292de.js",
+      "package": "study",
+      "bytes": 1392
     },
     {
       "path": "vendors.js.LICENSE.txt",
@@ -110,64 +885,419 @@
       "bytes": 1237
     },
     {
+      "path": "quiz/sub-common/a729dd04e043f65cc7b824313767b214.js",
+      "package": "quiz",
+      "bytes": 1180
+    },
+    {
+      "path": "study/sub-common/a729dd04e043f65cc7b824313767b214.js",
+      "package": "study",
+      "bytes": 1180
+    },
+    {
+      "path": "quiz/sub-common/422e4154b2d9530ed08986bb51d1007d.js",
+      "package": "quiz",
+      "bytes": 1143
+    },
+    {
+      "path": "study/sub-common/422e4154b2d9530ed08986bb51d1007d.js",
+      "package": "study",
+      "bytes": 1143
+    },
+    {
+      "path": "quiz/sub-common/e87de98eabb710c38298964356af6562.js",
+      "package": "quiz",
+      "bytes": 1134
+    },
+    {
+      "path": "study/sub-common/e87de98eabb710c38298964356af6562.js",
+      "package": "study",
+      "bytes": 1134
+    },
+    {
+      "path": "quiz/sub-common/95ca75b8deee4d2a3fda1dab0ab9f4da.js",
+      "package": "quiz",
+      "bytes": 1037
+    },
+    {
+      "path": "study/sub-common/95ca75b8deee4d2a3fda1dab0ab9f4da.js",
+      "package": "study",
+      "bytes": 1037
+    },
+    {
       "path": "utils.wxs",
       "package": "main",
       "bytes": 997
     },
     {
+      "path": "quiz/sub-common/8ec15f54cfe72ceb57387b796b903c5a.js",
+      "package": "quiz",
+      "bytes": 979
+    },
+    {
+      "path": "study/sub-common/8ec15f54cfe72ceb57387b796b903c5a.js",
+      "package": "study",
+      "bytes": 979
+    },
+    {
+      "path": "quiz/sub-common/0d673c4fc72ea42e628c0b0469d9d211.js",
+      "package": "quiz",
+      "bytes": 956
+    },
+    {
+      "path": "study/sub-common/0d673c4fc72ea42e628c0b0469d9d211.js",
+      "package": "study",
+      "bytes": 956
+    },
+    {
+      "path": "quiz/sub-common/c08c768f432d3332e6893a5c8e4f2bed.js",
+      "package": "quiz",
+      "bytes": 918
+    },
+    {
+      "path": "study/sub-common/c08c768f432d3332e6893a5c8e4f2bed.js",
+      "package": "study",
+      "bytes": 918
+    },
+    {
+      "path": "quiz/sub-common/a3ac095cb59575768b0b0293e53334be.js",
+      "package": "quiz",
+      "bytes": 909
+    },
+    {
+      "path": "study/sub-common/a3ac095cb59575768b0b0293e53334be.js",
+      "package": "study",
+      "bytes": 909
+    },
+    {
       "path": "pages/index/index.js",
       "package": "main",
-      "bytes": 724
+      "bytes": 887
     },
     {
-      "path": "features/vocab-test/assets/lucide/sparkles-ink.svg",
+      "path": "quiz/sub-common/2f15a6a2569a7af70fccf3a210fe1ff1.js",
+      "package": "quiz",
+      "bytes": 870
+    },
+    {
+      "path": "study/sub-common/2f15a6a2569a7af70fccf3a210fe1ff1.js",
+      "package": "study",
+      "bytes": 870
+    },
+    {
+      "path": "quiz/sub-common/07bb5f67a115618ee9e5265cd907a35c.js",
+      "package": "quiz",
+      "bytes": 821
+    },
+    {
+      "path": "study/sub-common/07bb5f67a115618ee9e5265cd907a35c.js",
+      "package": "study",
+      "bytes": 821
+    },
+    {
+      "path": "quiz/sub-common/aba97fae57d99178dbec69ad553c72e5.js",
+      "package": "quiz",
+      "bytes": 811
+    },
+    {
+      "path": "study/sub-common/aba97fae57d99178dbec69ad553c72e5.js",
+      "package": "study",
+      "bytes": 811
+    },
+    {
+      "path": "assets/lucide/brain-ink.svg",
+      "package": "main",
+      "bytes": 767
+    },
+    {
+      "path": "assets/lucide/brain-light.svg",
+      "package": "main",
+      "bytes": 767
+    },
+    {
+      "path": "quiz/sub-common/70b12f545b8c1a6a915ade9c94ae1720.js",
+      "package": "quiz",
+      "bytes": 732
+    },
+    {
+      "path": "study/sub-common/70b12f545b8c1a6a915ade9c94ae1720.js",
+      "package": "study",
+      "bytes": 732
+    },
+    {
+      "path": "quiz/sub-common/bf1f4cc21149f6f185f95134a0a3233b.js",
+      "package": "quiz",
+      "bytes": 718
+    },
+    {
+      "path": "study/sub-common/bf1f4cc21149f6f185f95134a0a3233b.js",
+      "package": "study",
+      "bytes": 718
+    },
+    {
+      "path": "quiz/sub-common/f9dd805f4ef8db7ba4c2d1aa9bde0dd5.js",
+      "package": "quiz",
+      "bytes": 709
+    },
+    {
+      "path": "study/sub-common/f9dd805f4ef8db7ba4c2d1aa9bde0dd5.js",
+      "package": "study",
+      "bytes": 709
+    },
+    {
+      "path": "quiz/sub-common/89414e2cd6bf11f6dabe7f9ca194a703.js",
+      "package": "quiz",
+      "bytes": 697
+    },
+    {
+      "path": "study/sub-common/89414e2cd6bf11f6dabe7f9ca194a703.js",
+      "package": "study",
+      "bytes": 697
+    },
+    {
+      "path": "assets/lucide/puzzle-ink.svg",
+      "package": "main",
+      "bytes": 691
+    },
+    {
+      "path": "assets/lucide/puzzle-light.svg",
+      "package": "main",
+      "bytes": 691
+    },
+    {
+      "path": "quiz/sub-common/c8a0e1586430d7c5ed2fb262521fd44f.js",
+      "package": "quiz",
+      "bytes": 652
+    },
+    {
+      "path": "study/sub-common/c8a0e1586430d7c5ed2fb262521fd44f.js",
+      "package": "study",
+      "bytes": 652
+    },
+    {
+      "path": "quiz/sub-common/953820c7d8de1de150c0b38912c57dc6.js",
+      "package": "quiz",
+      "bytes": 641
+    },
+    {
+      "path": "study/sub-common/953820c7d8de1de150c0b38912c57dc6.js",
+      "package": "study",
+      "bytes": 641
+    },
+    {
+      "path": "features/placeholder/index.js",
       "package": "features",
+      "bytes": 624
+    },
+    {
+      "path": "quiz/sub-common/5b5396078adea9e7214b8bdd06f9b002.js",
+      "package": "quiz",
+      "bytes": 618
+    },
+    {
+      "path": "study/sub-common/5b5396078adea9e7214b8bdd06f9b002.js",
+      "package": "study",
+      "bytes": 618
+    },
+    {
+      "path": "quiz/sub-common/269ef979580b7351a603d2e45dfb601f.js",
+      "package": "quiz",
+      "bytes": 608
+    },
+    {
+      "path": "study/sub-common/269ef979580b7351a603d2e45dfb601f.js",
+      "package": "study",
+      "bytes": 608
+    },
+    {
+      "path": "assets/lucide/star-ink.svg",
+      "package": "main",
+      "bytes": 592
+    },
+    {
+      "path": "assets/lucide/star-light.svg",
+      "package": "main",
+      "bytes": 592
+    },
+    {
+      "path": "assets/lucide/sparkles-ink.svg",
+      "package": "main",
       "bytes": 584
     },
     {
-      "path": "features/vocab-test/assets/lucide/sparkles-light.svg",
-      "package": "features",
+      "path": "assets/lucide/sparkles-light.svg",
+      "package": "main",
       "bytes": 584
     },
     {
-      "path": "features/vocab-test/assets/lucide/handshake-ink.svg",
-      "package": "features",
+      "path": "quiz/sub-common/38d9b6410e4988efb4964e647768f0cf.js",
+      "package": "quiz",
+      "bytes": 548
+    },
+    {
+      "path": "study/sub-common/38d9b6410e4988efb4964e647768f0cf.js",
+      "package": "study",
+      "bytes": 548
+    },
+    {
+      "path": "assets/lucide/notebookpen-ink.svg",
+      "package": "main",
+      "bytes": 541
+    },
+    {
+      "path": "assets/lucide/notebookpen-light.svg",
+      "package": "main",
+      "bytes": 541
+    },
+    {
+      "path": "assets/lucide/handshake-ink.svg",
+      "package": "main",
       "bytes": 522
     },
     {
-      "path": "features/vocab-test/assets/lucide/handshake-light.svg",
-      "package": "features",
+      "path": "assets/lucide/handshake-light.svg",
+      "package": "main",
       "bytes": 522
     },
     {
-      "path": "features/vocab-test/assets/lucide/sprout-ink.svg",
-      "package": "features",
+      "path": "quiz/sub-common/ee57ca25a5195568d6deacfbf3104e50.js",
+      "package": "quiz",
+      "bytes": 518
+    },
+    {
+      "path": "study/sub-common/ee57ca25a5195568d6deacfbf3104e50.js",
+      "package": "study",
+      "bytes": 518
+    },
+    {
+      "path": "assets/lucide/calendardays-ink.svg",
+      "package": "main",
+      "bytes": 515
+    },
+    {
+      "path": "assets/lucide/calendardays-light.svg",
+      "package": "main",
+      "bytes": 515
+    },
+    {
+      "path": "quiz/sub-common/db26e52feac4d6fa06fd1288e7b02bea.js",
+      "package": "quiz",
+      "bytes": 494
+    },
+    {
+      "path": "study/sub-common/db26e52feac4d6fa06fd1288e7b02bea.js",
+      "package": "study",
+      "bytes": 494
+    },
+    {
+      "path": "assets/lucide/sprout-ink.svg",
+      "package": "main",
       "bytes": 488
     },
     {
-      "path": "features/vocab-test/assets/lucide/sprout-light.svg",
-      "package": "features",
+      "path": "assets/lucide/sprout-light.svg",
+      "package": "main",
       "bytes": 488
     },
     {
-      "path": "features/vocab-test/assets/lucide/volume2-ink.svg",
-      "package": "features",
+      "path": "assets/lucide/volume2-ink.svg",
+      "package": "main",
       "bytes": 487
     },
     {
-      "path": "features/vocab-test/assets/lucide/volume2-light.svg",
-      "package": "features",
+      "path": "assets/lucide/volume2-light.svg",
+      "package": "main",
       "bytes": 487
     },
     {
-      "path": "features/vocab-test/assets/lucide/crown-ink.svg",
-      "package": "features",
+      "path": "quiz/sub-common/c36a8c215704569ba849dbd8eca92136.js",
+      "package": "quiz",
+      "bytes": 480
+    },
+    {
+      "path": "study/sub-common/c36a8c215704569ba849dbd8eca92136.js",
+      "package": "study",
+      "bytes": 480
+    },
+    {
+      "path": "assets/lucide/crown-ink.svg",
+      "package": "main",
       "bytes": 471
     },
     {
-      "path": "features/vocab-test/assets/lucide/crown-light.svg",
-      "package": "features",
+      "path": "assets/lucide/crown-light.svg",
+      "package": "main",
       "bytes": 471
+    },
+    {
+      "path": "quiz/sub-common/033167829ea866fff5a5024ed66a805c.js",
+      "package": "quiz",
+      "bytes": 471
+    },
+    {
+      "path": "quiz/sub-common/07f899c00a4ddaac8321f07b2b0cb0c6.js",
+      "package": "quiz",
+      "bytes": 471
+    },
+    {
+      "path": "study/sub-common/033167829ea866fff5a5024ed66a805c.js",
+      "package": "study",
+      "bytes": 471
+    },
+    {
+      "path": "study/sub-common/07f899c00a4ddaac8321f07b2b0cb0c6.js",
+      "package": "study",
+      "bytes": 471
+    },
+    {
+      "path": "quiz/sub-common/4366a4b1c46740bd7f93255f1f02071f.js",
+      "package": "quiz",
+      "bytes": 465
+    },
+    {
+      "path": "study/sub-common/4366a4b1c46740bd7f93255f1f02071f.js",
+      "package": "study",
+      "bytes": 465
+    },
+    {
+      "path": "quiz/sub-common/dd4f00d8cf82cee6a4b741621ad1e208.js",
+      "package": "quiz",
+      "bytes": 460
+    },
+    {
+      "path": "study/sub-common/dd4f00d8cf82cee6a4b741621ad1e208.js",
+      "package": "study",
+      "bytes": 460
+    },
+    {
+      "path": "assets/lucide/shuffle-ink.svg",
+      "package": "main",
+      "bytes": 459
+    },
+    {
+      "path": "assets/lucide/shuffle-light.svg",
+      "package": "main",
+      "bytes": 459
+    },
+    {
+      "path": "quiz/sub-common/85a17fbb9f31d602ecabfec50fa53934.js",
+      "package": "quiz",
+      "bytes": 448
+    },
+    {
+      "path": "study/sub-common/85a17fbb9f31d602ecabfec50fa53934.js",
+      "package": "study",
+      "bytes": 448
+    },
+    {
+      "path": "assets/lucide/gitcomparearrows-ink.svg",
+      "package": "main",
+      "bytes": 445
+    },
+    {
+      "path": "assets/lucide/gitcomparearrows-light.svg",
+      "package": "main",
+      "bytes": 445
     },
     {
       "path": "project.config.json",
@@ -175,184 +1305,819 @@
       "bytes": 443
     },
     {
-      "path": "features/vocab-test/assets/lucide/share2-ink.svg",
-      "package": "features",
+      "path": "quiz/sub-common/deca3324c56ae0d43a26685da145a9ba.js",
+      "package": "quiz",
+      "bytes": 443
+    },
+    {
+      "path": "study/sub-common/deca3324c56ae0d43a26685da145a9ba.js",
+      "package": "study",
+      "bytes": 443
+    },
+    {
+      "path": "quiz/sub-common/f0370a10d561db9c292d29d92d817650.js",
+      "package": "quiz",
+      "bytes": 441
+    },
+    {
+      "path": "study/sub-common/f0370a10d561db9c292d29d92d817650.js",
+      "package": "study",
+      "bytes": 441
+    },
+    {
+      "path": "assets/lucide/share2-ink.svg",
+      "package": "main",
       "bytes": 438
     },
     {
-      "path": "features/vocab-test/assets/lucide/share2-light.svg",
-      "package": "features",
+      "path": "assets/lucide/share2-light.svg",
+      "package": "main",
       "bytes": 438
     },
     {
-      "path": "features/vocab-test/assets/lucide/shieldcheck-ink.svg",
-      "package": "features",
+      "path": "quiz/sub-common/36c123f3e7d864f3903f2a6f258a8d0c.js",
+      "package": "quiz",
+      "bytes": 434
+    },
+    {
+      "path": "study/sub-common/36c123f3e7d864f3903f2a6f258a8d0c.js",
+      "package": "study",
+      "bytes": 434
+    },
+    {
+      "path": "assets/lucide/shieldcheck-ink.svg",
+      "package": "main",
       "bytes": 429
     },
     {
-      "path": "features/vocab-test/assets/lucide/shieldcheck-light.svg",
-      "package": "features",
+      "path": "assets/lucide/shieldcheck-light.svg",
+      "package": "main",
       "bytes": 429
     },
     {
-      "path": "features/vocab-test/assets/lucide/imagedown-ink.svg",
-      "package": "features",
+      "path": "assets/lucide/imagedown-ink.svg",
+      "package": "main",
       "bytes": 426
     },
     {
-      "path": "features/vocab-test/assets/lucide/imagedown-light.svg",
-      "package": "features",
+      "path": "assets/lucide/imagedown-light.svg",
+      "package": "main",
       "bytes": 426
     },
     {
-      "path": "features/vocab-test/assets/lucide/penline-ink.svg",
-      "package": "features",
-      "bytes": 387
+      "path": "quiz/sub-common/903af8d5fb5bdeacbbb6b95b2d006ffa.js",
+      "package": "quiz",
+      "bytes": 424
     },
     {
-      "path": "features/vocab-test/assets/lucide/penline-light.svg",
-      "package": "features",
-      "bytes": 387
+      "path": "study/sub-common/903af8d5fb5bdeacbbb6b95b2d006ffa.js",
+      "package": "study",
+      "bytes": 424
     },
     {
-      "path": "features/vocab-test/assets/lucide/listchecks-ink.svg",
-      "package": "features",
-      "bytes": 355
+      "path": "content/placeholder/index.js",
+      "package": "content",
+      "bytes": 415
     },
     {
-      "path": "features/vocab-test/assets/lucide/listchecks-light.svg",
-      "package": "features",
-      "bytes": 355
+      "path": "quiz/sub-common/bb7fc85b3b4ab269414ffd3d5b9b6f4a.js",
+      "package": "quiz",
+      "bytes": 412
     },
     {
-      "path": "features/vocab-test/assets/lucide/type-ink.svg",
-      "package": "features",
-      "bytes": 346
+      "path": "study/sub-common/bb7fc85b3b4ab269414ffd3d5b9b6f4a.js",
+      "package": "study",
+      "bytes": 412
     },
     {
-      "path": "features/vocab-test/assets/lucide/type-light.svg",
-      "package": "features",
-      "bytes": 346
+      "path": "quiz/sub-common/57a4798576eba0e4e503e630b081e123.js",
+      "package": "quiz",
+      "bytes": 411
     },
     {
-      "path": "features/vocab-test/assets/lucide/timer-ink.svg",
-      "package": "features",
-      "bytes": 338
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/timer-light.svg",
-      "package": "features",
-      "bytes": 338
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/arrowleftright-ink.svg",
-      "package": "features",
-      "bytes": 335
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/arrowleftright-light.svg",
-      "package": "features",
-      "bytes": 335
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/history-ink.svg",
-      "package": "features",
-      "bytes": 335
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/history-light.svg",
-      "package": "features",
-      "bytes": 335
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/pause-ink.svg",
-      "package": "features",
-      "bytes": 320
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/pause-light.svg",
-      "package": "features",
-      "bytes": 320
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/rotateccw-ink.svg",
-      "package": "features",
-      "bytes": 309
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/rotateccw-light.svg",
-      "package": "features",
-      "bytes": 309
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/messagecircle-ink.svg",
-      "package": "features",
-      "bytes": 268
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/messagecircle-light.svg",
-      "package": "features",
-      "bytes": 268
+      "path": "study/sub-common/57a4798576eba0e4e503e630b081e123.js",
+      "package": "study",
+      "bytes": 411
     },
     {
       "path": "app.json",
       "package": "main",
+      "bytes": 405
+    },
+    {
+      "path": "assets/lucide/folderplus-ink.svg",
+      "package": "main",
+      "bytes": 404
+    },
+    {
+      "path": "assets/lucide/folderplus-light.svg",
+      "package": "main",
+      "bytes": 404
+    },
+    {
+      "path": "quiz/sub-common/afc381fcce24e86fc37f62c6654a2402.js",
+      "package": "quiz",
+      "bytes": 401
+    },
+    {
+      "path": "study/sub-common/afc381fcce24e86fc37f62c6654a2402.js",
+      "package": "study",
+      "bytes": 401
+    },
+    {
+      "path": "assets/lucide/flame-ink.svg",
+      "package": "main",
+      "bytes": 398
+    },
+    {
+      "path": "assets/lucide/flame-light.svg",
+      "package": "main",
+      "bytes": 398
+    },
+    {
+      "path": "quiz/sub-common/cba927f4c7888a4a27bc5dc00ac96a65.js",
+      "package": "quiz",
+      "bytes": 397
+    },
+    {
+      "path": "study/sub-common/cba927f4c7888a4a27bc5dc00ac96a65.js",
+      "package": "study",
+      "bytes": 397
+    },
+    {
+      "path": "assets/lucide/penline-ink.svg",
+      "package": "main",
+      "bytes": 387
+    },
+    {
+      "path": "assets/lucide/penline-light.svg",
+      "package": "main",
+      "bytes": 387
+    },
+    {
+      "path": "assets/lucide/pencil-ink.svg",
+      "package": "main",
+      "bytes": 385
+    },
+    {
+      "path": "assets/lucide/pencil-light.svg",
+      "package": "main",
+      "bytes": 385
+    },
+    {
+      "path": "assets/lucide/calendarcheck-ink.svg",
+      "package": "main",
+      "bytes": 381
+    },
+    {
+      "path": "assets/lucide/calendarcheck-light.svg",
+      "package": "main",
+      "bytes": 381
+    },
+    {
+      "path": "assets/lucide/languages-ink.svg",
+      "package": "main",
+      "bytes": 381
+    },
+    {
+      "path": "assets/lucide/languages-light.svg",
+      "package": "main",
+      "bytes": 381
+    },
+    {
+      "path": "assets/lucide/eye-ink.svg",
+      "package": "main",
+      "bytes": 367
+    },
+    {
+      "path": "assets/lucide/eye-light.svg",
+      "package": "main",
+      "bytes": 367
+    },
+    {
+      "path": "quiz/sub-common/9cdeea425884959c9e2c05d2ccca2aa7.js",
+      "package": "quiz",
+      "bytes": 365
+    },
+    {
+      "path": "study/sub-common/9cdeea425884959c9e2c05d2ccca2aa7.js",
+      "package": "study",
+      "bytes": 365
+    },
+    {
+      "path": "quiz/sub-common/46ec3eb0d8eb18e3441bc587ce7dd365.js",
+      "package": "quiz",
+      "bytes": 360
+    },
+    {
+      "path": "study/sub-common/46ec3eb0d8eb18e3441bc587ce7dd365.js",
+      "package": "study",
+      "bytes": 360
+    },
+    {
+      "path": "assets/lucide/repeat-ink.svg",
+      "package": "main",
+      "bytes": 359
+    },
+    {
+      "path": "assets/lucide/repeat-light.svg",
+      "package": "main",
+      "bytes": 359
+    },
+    {
+      "path": "assets/lucide/listchecks-ink.svg",
+      "package": "main",
+      "bytes": 355
+    },
+    {
+      "path": "assets/lucide/listchecks-light.svg",
+      "package": "main",
+      "bytes": 355
+    },
+    {
+      "path": "quiz/sub-common/00c8940e18734ca3591e39216e5e8d2c.js",
+      "package": "quiz",
+      "bytes": 353
+    },
+    {
+      "path": "study/sub-common/00c8940e18734ca3591e39216e5e8d2c.js",
+      "package": "study",
+      "bytes": 353
+    },
+    {
+      "path": "assets/lucide/alertcircle-ink.svg",
+      "package": "main",
+      "bytes": 350
+    },
+    {
+      "path": "assets/lucide/alertcircle-light.svg",
+      "package": "main",
+      "bytes": 350
+    },
+    {
+      "path": "quiz/sub-common/fb4d643468201eabf864439e8ac822e3.js",
+      "package": "quiz",
+      "bytes": 348
+    },
+    {
+      "path": "study/sub-common/fb4d643468201eabf864439e8ac822e3.js",
+      "package": "study",
+      "bytes": 348
+    },
+    {
+      "path": "assets/lucide/type-ink.svg",
+      "package": "main",
+      "bytes": 346
+    },
+    {
+      "path": "assets/lucide/type-light.svg",
+      "package": "main",
+      "bytes": 346
+    },
+    {
+      "path": "assets/lucide/timer-ink.svg",
+      "package": "main",
+      "bytes": 338
+    },
+    {
+      "path": "assets/lucide/timer-light.svg",
+      "package": "main",
+      "bytes": 338
+    },
+    {
+      "path": "assets/lucide/arrowleftright-ink.svg",
+      "package": "main",
+      "bytes": 335
+    },
+    {
+      "path": "assets/lucide/arrowleftright-light.svg",
+      "package": "main",
+      "bytes": 335
+    },
+    {
+      "path": "assets/lucide/arrowrightleft-ink.svg",
+      "package": "main",
+      "bytes": 335
+    },
+    {
+      "path": "assets/lucide/arrowrightleft-light.svg",
+      "package": "main",
+      "bytes": 335
+    },
+    {
+      "path": "assets/lucide/history-ink.svg",
+      "package": "main",
+      "bytes": 335
+    },
+    {
+      "path": "assets/lucide/history-light.svg",
+      "package": "main",
+      "bytes": 335
+    },
+    {
+      "path": "quiz/sub-common/e7d60dd993c14b5a0531105dc92682cb.js",
+      "package": "quiz",
+      "bytes": 335
+    },
+    {
+      "path": "study/sub-common/e7d60dd993c14b5a0531105dc92682cb.js",
+      "package": "study",
+      "bytes": 335
+    },
+    {
+      "path": "assets/lucide/stickynote-ink.svg",
+      "package": "main",
+      "bytes": 334
+    },
+    {
+      "path": "assets/lucide/stickynote-light.svg",
+      "package": "main",
+      "bytes": 334
+    },
+    {
+      "path": "quiz/sub-common/b9627d25d4e579a76d2c73f118ce9130.js",
+      "package": "quiz",
+      "bytes": 331
+    },
+    {
+      "path": "study/sub-common/b9627d25d4e579a76d2c73f118ce9130.js",
+      "package": "study",
+      "bytes": 331
+    },
+    {
+      "path": "assets/lucide/target-ink.svg",
+      "package": "main",
+      "bytes": 330
+    },
+    {
+      "path": "assets/lucide/target-light.svg",
+      "package": "main",
+      "bytes": 330
+    },
+    {
+      "path": "assets/lucide/pause-ink.svg",
+      "package": "main",
+      "bytes": 320
+    },
+    {
+      "path": "assets/lucide/pause-light.svg",
+      "package": "main",
+      "bytes": 320
+    },
+    {
+      "path": "quiz/sub-common/707a58d25860e775a89db65841b3bf09.js",
+      "package": "quiz",
+      "bytes": 320
+    },
+    {
+      "path": "study/sub-common/707a58d25860e775a89db65841b3bf09.js",
+      "package": "study",
+      "bytes": 320
+    },
+    {
+      "path": "quiz/sub-common/bd8db392059eb3ebc4f42bfd47944ea9.js",
+      "package": "quiz",
+      "bytes": 315
+    },
+    {
+      "path": "study/sub-common/bd8db392059eb3ebc4f42bfd47944ea9.js",
+      "package": "study",
+      "bytes": 315
+    },
+    {
+      "path": "quiz/sub-common/8317b5810c5d21b9302218b12a1c1417.js",
+      "package": "quiz",
+      "bytes": 312
+    },
+    {
+      "path": "study/sub-common/8317b5810c5d21b9302218b12a1c1417.js",
+      "package": "study",
+      "bytes": 312
+    },
+    {
+      "path": "assets/lucide/rotateccw-ink.svg",
+      "package": "main",
+      "bytes": 309
+    },
+    {
+      "path": "assets/lucide/rotateccw-light.svg",
+      "package": "main",
+      "bytes": 309
+    },
+    {
+      "path": "assets/lucide/clock3-ink.svg",
+      "package": "main",
+      "bytes": 301
+    },
+    {
+      "path": "assets/lucide/clock3-light.svg",
+      "package": "main",
+      "bytes": 301
+    },
+    {
+      "path": "quiz/sub-common/88ae4de4f7e84ab02df66c5f0b9ca135.js",
+      "package": "quiz",
+      "bytes": 296
+    },
+    {
+      "path": "study/sub-common/88ae4de4f7e84ab02df66c5f0b9ca135.js",
+      "package": "study",
+      "bytes": 296
+    },
+    {
+      "path": "quiz/sub-common/fcb1e7c01c94236e790938d9a4f3d07f.js",
+      "package": "quiz",
+      "bytes": 292
+    },
+    {
+      "path": "study/sub-common/fcb1e7c01c94236e790938d9a4f3d07f.js",
+      "package": "study",
+      "bytes": 292
+    },
+    {
+      "path": "assets/lucide/checkcircle2-ink.svg",
+      "package": "main",
+      "bytes": 289
+    },
+    {
+      "path": "assets/lucide/checkcircle2-light.svg",
+      "package": "main",
+      "bytes": 289
+    },
+    {
+      "path": "quiz/sub-common/d1fc6463b4472f5e8a56d8ab5eeff834.js",
+      "package": "quiz",
+      "bytes": 289
+    },
+    {
+      "path": "study/sub-common/d1fc6463b4472f5e8a56d8ab5eeff834.js",
+      "package": "study",
+      "bytes": 289
+    },
+    {
+      "path": "quiz/sub-common/403447fea36e1341dd9c74d43e91de29.js",
+      "package": "quiz",
+      "bytes": 282
+    },
+    {
+      "path": "study/sub-common/403447fea36e1341dd9c74d43e91de29.js",
+      "package": "study",
+      "bytes": 282
+    },
+    {
+      "path": "quiz/sub-common/d48882fd9067dc6c2ad7394e0888e430.js",
+      "package": "quiz",
+      "bytes": 269
+    },
+    {
+      "path": "study/sub-common/d48882fd9067dc6c2ad7394e0888e430.js",
+      "package": "study",
+      "bytes": 269
+    },
+    {
+      "path": "assets/lucide/messagecircle-ink.svg",
+      "package": "main",
+      "bytes": 268
+    },
+    {
+      "path": "assets/lucide/messagecircle-light.svg",
+      "package": "main",
+      "bytes": 268
+    },
+    {
+      "path": "assets/lucide/loader2-ink.svg",
+      "package": "main",
       "bytes": 264
     },
     {
-      "path": "features/vocab-test/assets/lucide/loader2-ink.svg",
-      "package": "features",
+      "path": "assets/lucide/loader2-light.svg",
+      "package": "main",
       "bytes": 264
     },
     {
-      "path": "features/vocab-test/assets/lucide/loader2-light.svg",
-      "package": "features",
-      "bytes": 264
-    },
-    {
-      "path": "features/vocab-test/assets/lucide/x-ink.svg",
-      "package": "features",
+      "path": "assets/lucide/x-ink.svg",
+      "package": "main",
       "bytes": 263
     },
     {
-      "path": "features/vocab-test/assets/lucide/x-light.svg",
-      "package": "features",
+      "path": "assets/lucide/x-light.svg",
+      "package": "main",
       "bytes": 263
     },
     {
-      "path": "features/vocab-test/assets/lucide/play-ink.svg",
-      "package": "features",
+      "path": "assets/lucide/plus-ink.svg",
+      "package": "main",
+      "bytes": 262
+    },
+    {
+      "path": "assets/lucide/plus-light.svg",
+      "package": "main",
+      "bytes": 262
+    },
+    {
+      "path": "quiz/sub-common/346b5f362d04a8068ae0ce66a197f859.js",
+      "package": "quiz",
+      "bytes": 262
+    },
+    {
+      "path": "study/sub-common/346b5f362d04a8068ae0ce66a197f859.js",
+      "package": "study",
+      "bytes": 262
+    },
+    {
+      "path": "quiz/sub-common/4e7e8a4de5836b4e5508dac3dc3bfb6f.js",
+      "package": "quiz",
+      "bytes": 259
+    },
+    {
+      "path": "quiz/sub-common/d83dc43d9d1283ba547596a13aad31ee.js",
+      "package": "quiz",
+      "bytes": 259
+    },
+    {
+      "path": "study/sub-common/4e7e8a4de5836b4e5508dac3dc3bfb6f.js",
+      "package": "study",
+      "bytes": 259
+    },
+    {
+      "path": "study/sub-common/d83dc43d9d1283ba547596a13aad31ee.js",
+      "package": "study",
+      "bytes": 259
+    },
+    {
+      "path": "assets/lucide/play-ink.svg",
+      "package": "main",
       "bytes": 257
     },
     {
-      "path": "features/vocab-test/assets/lucide/play-light.svg",
-      "package": "features",
+      "path": "assets/lucide/play-light.svg",
+      "package": "main",
       "bytes": 257
     },
     {
-      "path": "features/vocab-test/assets/lucide/check-ink.svg",
-      "package": "features",
+      "path": "quiz/sub-common/9dbe8527038c9ffa4ae03dbccaa02c9f.js",
+      "package": "quiz",
+      "bytes": 256
+    },
+    {
+      "path": "study/sub-common/9dbe8527038c9ffa4ae03dbccaa02c9f.js",
+      "package": "study",
+      "bytes": 256
+    },
+    {
+      "path": "assets/lucide/chevronleft-ink.svg",
+      "package": "main",
+      "bytes": 250
+    },
+    {
+      "path": "assets/lucide/chevronleft-light.svg",
+      "package": "main",
+      "bytes": 250
+    },
+    {
+      "path": "assets/lucide/chevronright-ink.svg",
+      "package": "main",
+      "bytes": 250
+    },
+    {
+      "path": "assets/lucide/chevronright-light.svg",
+      "package": "main",
+      "bytes": 250
+    },
+    {
+      "path": "quiz/sub-common/85d5f68dc938834464ce9faad0b1e816.js",
+      "package": "quiz",
+      "bytes": 246
+    },
+    {
+      "path": "study/sub-common/85d5f68dc938834464ce9faad0b1e816.js",
+      "package": "study",
+      "bytes": 246
+    },
+    {
+      "path": "assets/lucide/check-ink.svg",
+      "package": "main",
       "bytes": 244
     },
     {
-      "path": "features/vocab-test/assets/lucide/check-light.svg",
-      "package": "features",
+      "path": "assets/lucide/check-light.svg",
+      "package": "main",
       "bytes": 244
     },
     {
-      "path": "features/vocab-test/index.js.LICENSE.txt",
-      "package": "features",
-      "bytes": 204
+      "path": "quiz/sub-common/363914338152cae33b13b12e8b665383.js",
+      "package": "quiz",
+      "bytes": 242
+    },
+    {
+      "path": "quiz/sub-common/ec172ad8292574c83955fdb4abbf79f5.js",
+      "package": "quiz",
+      "bytes": 242
+    },
+    {
+      "path": "study/sub-common/363914338152cae33b13b12e8b665383.js",
+      "package": "study",
+      "bytes": 242
+    },
+    {
+      "path": "study/sub-common/ec172ad8292574c83955fdb4abbf79f5.js",
+      "package": "study",
+      "bytes": 242
+    },
+    {
+      "path": "assets/lucide/minus-ink.svg",
+      "package": "main",
+      "bytes": 237
+    },
+    {
+      "path": "assets/lucide/minus-light.svg",
+      "package": "main",
+      "bytes": 237
+    },
+    {
+      "path": "quiz/sub-common/254b9084e4d930a0cad519c74ea4e547.js",
+      "package": "quiz",
+      "bytes": 237
+    },
+    {
+      "path": "quiz/sub-common/6652dfe7a526ec53b549ee5e7fa70af4.js",
+      "package": "quiz",
+      "bytes": 237
+    },
+    {
+      "path": "study/sub-common/254b9084e4d930a0cad519c74ea4e547.js",
+      "package": "study",
+      "bytes": 237
+    },
+    {
+      "path": "study/sub-common/6652dfe7a526ec53b549ee5e7fa70af4.js",
+      "package": "study",
+      "bytes": 237
+    },
+    {
+      "path": "quiz/sub-common/5903893b4e779143e926e5ddeb8140c6.js",
+      "package": "quiz",
+      "bytes": 235
+    },
+    {
+      "path": "study/sub-common/5903893b4e779143e926e5ddeb8140c6.js",
+      "package": "study",
+      "bytes": 235
+    },
+    {
+      "path": "quiz/sub-common/4f49e0e3ba7937d2bf4e232216490f3e.js",
+      "package": "quiz",
+      "bytes": 208
+    },
+    {
+      "path": "study/sub-common/4f49e0e3ba7937d2bf4e232216490f3e.js",
+      "package": "study",
+      "bytes": 208
+    },
+    {
+      "path": "quiz/sub-common/1d679efe4873f12ecf7f3181b632241f.js",
+      "package": "quiz",
+      "bytes": 206
+    },
+    {
+      "path": "study/sub-common/1d679efe4873f12ecf7f3181b632241f.js",
+      "package": "study",
+      "bytes": 206
+    },
+    {
+      "path": "quiz/sub-common/2c27be73ea2cfaa10b2ad0371a118d10.js",
+      "package": "quiz",
+      "bytes": 189
+    },
+    {
+      "path": "study/sub-common/2c27be73ea2cfaa10b2ad0371a118d10.js",
+      "package": "study",
+      "bytes": 189
     },
     {
       "path": "comp.js",
       "package": "main",
-      "bytes": 171
+      "bytes": 175
+    },
+    {
+      "path": "quiz/sub-common/f21ed6fc3cfadc29622cc030b836ef65.js",
+      "package": "quiz",
+      "bytes": 162
+    },
+    {
+      "path": "study/sub-common/f21ed6fc3cfadc29622cc030b836ef65.js",
+      "package": "study",
+      "bytes": 162
     },
     {
       "path": "comp.wxml",
       "package": "main",
       "bytes": 140
+    },
+    {
+      "path": "quiz/sub-common/8ca1cb9a6d679d35cf141bb2b1c29829.js",
+      "package": "quiz",
+      "bytes": 138
+    },
+    {
+      "path": "study/sub-common/8ca1cb9a6d679d35cf141bb2b1c29829.js",
+      "package": "study",
+      "bytes": 138
+    },
+    {
+      "path": "quiz/sub-common/9778e7f4adac0015d291e36950fac3cb.js",
+      "package": "quiz",
+      "bytes": 118
+    },
+    {
+      "path": "study/sub-common/9778e7f4adac0015d291e36950fac3cb.js",
+      "package": "study",
+      "bytes": 118
+    },
+    {
+      "path": "quiz/sub-common/28f05798638ea9b6cc42c4fb6b748832.js",
+      "package": "quiz",
+      "bytes": 117
+    },
+    {
+      "path": "study/sub-common/28f05798638ea9b6cc42c4fb6b748832.js",
+      "package": "study",
+      "bytes": 117
+    },
+    {
+      "path": "quiz/sub-common/487fb4f2abcd116fe67eba82bcd42d23.js",
+      "package": "quiz",
+      "bytes": 112
+    },
+    {
+      "path": "study/sub-common/487fb4f2abcd116fe67eba82bcd42d23.js",
+      "package": "study",
+      "bytes": 112
+    },
+    {
+      "path": "quiz/sub-common/68583b4cdc3cd7c0e34e476efa5c1c0e.js",
+      "package": "quiz",
+      "bytes": 101
+    },
+    {
+      "path": "study/sub-common/68583b4cdc3cd7c0e34e476efa5c1c0e.js",
+      "package": "study",
+      "bytes": 101
+    },
+    {
+      "path": "quiz/vocab-test/index.json",
+      "package": "quiz",
+      "bytes": 100
+    },
+    {
+      "path": "study/word-study/index.json",
+      "package": "study",
+      "bytes": 100
+    },
+    {
+      "path": "quiz/sub-common/5a733fb8a894dbd1241fc43312a8fec6.js.LICENSE.txt",
+      "package": "quiz",
+      "bytes": 90
+    },
+    {
+      "path": "quiz/sub-common/b3e9ee5ea1844d3a35e0eac495a579a9.js.LICENSE.txt",
+      "package": "quiz",
+      "bytes": 90
+    },
+    {
+      "path": "quiz/sub-common/c2676f6fda65a4d11d9f6b50f6899e14.js.LICENSE.txt",
+      "package": "quiz",
+      "bytes": 90
+    },
+    {
+      "path": "quiz/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js.LICENSE.txt",
+      "package": "quiz",
+      "bytes": 90
+    },
+    {
+      "path": "study/sub-common/5a733fb8a894dbd1241fc43312a8fec6.js.LICENSE.txt",
+      "package": "study",
+      "bytes": 90
+    },
+    {
+      "path": "study/sub-common/b3e9ee5ea1844d3a35e0eac495a579a9.js.LICENSE.txt",
+      "package": "study",
+      "bytes": 90
+    },
+    {
+      "path": "study/sub-common/c2676f6fda65a4d11d9f6b50f6899e14.js.LICENSE.txt",
+      "package": "study",
+      "bytes": 90
+    },
+    {
+      "path": "study/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js.LICENSE.txt",
+      "package": "study",
+      "bytes": 90
+    },
+    {
+      "path": "features/placeholder/index.json",
+      "package": "features",
+      "bytes": 87
     },
     {
       "path": "comp.json",
@@ -365,12 +2130,12 @@
       "bytes": 84
     },
     {
-      "path": "features/vocab-test/index.json",
-      "package": "features",
-      "bytes": 81
+      "path": "content/placeholder/index.wxml",
+      "package": "content",
+      "bytes": 80
     },
     {
-      "path": "features/vocab-test/index.wxml",
+      "path": "features/placeholder/index.wxml",
       "package": "features",
       "bytes": 80
     },
@@ -380,8 +2145,38 @@
       "bytes": 80
     },
     {
-      "path": "features/vocab-test/index.wxss",
+      "path": "quiz/vocab-test/index.wxml",
+      "package": "quiz",
+      "bytes": 80
+    },
+    {
+      "path": "study/word-study/index.wxml",
+      "package": "study",
+      "bytes": 80
+    },
+    {
+      "path": "content/placeholder/index.json",
+      "package": "content",
+      "bytes": 41
+    },
+    {
+      "path": "content/placeholder/index.wxss",
+      "package": "content",
+      "bytes": 0
+    },
+    {
+      "path": "features/placeholder/index.wxss",
       "package": "features",
+      "bytes": 0
+    },
+    {
+      "path": "quiz/vocab-test/index.wxss",
+      "package": "quiz",
+      "bytes": 0
+    },
+    {
+      "path": "study/word-study/index.wxss",
+      "package": "study",
       "bytes": 0
     }
   ]

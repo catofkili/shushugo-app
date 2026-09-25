@@ -11,7 +11,7 @@ const dataText = async (page) => JSON.stringify(await page.data()).replace(/\\u[
   const mini = await automator.connect({ wsEndpoint: 'ws://127.0.0.1:9420' });
   mini.on('exception', (e) => console.log('EXCEPTION', JSON.stringify(e).slice(0, 800)));
   mini.on('console', (e) => console.log('CONSOLE', JSON.stringify(e).slice(0, 400)));
-  await mini.reLaunch('/features/vocab-test/index').catch((e) => console.log('NAV', String(e)));
+  await mini.reLaunch('/quiz/vocab-test/index').catch((e) => console.log('NAV', String(e)));
   await sleep(6000);
   let page = await mini.currentPage();
   let d = await dataText(page);

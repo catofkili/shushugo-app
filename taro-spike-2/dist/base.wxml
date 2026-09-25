@@ -51,6 +51,42 @@
   </button>
 </template>
 
+<template name="tmpl_0_19">
+  <checkbox value="{{i.p4}}" disabled="{{i.p2}}" checked="{{xs.b(i.p0,!1)}}" color="{{i.p1||'#09BB07'}}" name="{{i.p3}}" style="{{i.st}}" class="{{i.cl}}" bindtap="eh"  id="{{i.uid||i.sid}}" data-sid="{{i.sid}}">
+    <template is="{{xs.a(c, item.nn, l)}}" data="{{i:item,c:c+1,l:xs.f(l,item.nn)}}" wx:for="{{i.cn}}" wx:key="sid" />
+  </checkbox>
+</template>
+
+<template name="tmpl_0_33">
+  <template is="{{xs.c(i, 'tmpl_0_')}}" data="{{i:i,c:c}}" />
+</template>
+
+<template name="tmpl_0_33_focus">
+  <input value="{{i.p25}}" type="{{i.p24||''}}" password="{{xs.b(i.p12,!1)}}" placeholder="{{i.p13}}" placeholder-style="{{i.p15}}" placeholder-class="{{i.p14||'input-placeholder'}}" disabled="{{i.p8}}" maxlength="{{xs.b(i.p10,140)}}" cursor-spacing="{{xs.b(i.p7,0)}}" focus="{{xs.b(i.focus,!1)}}" confirm-type="{{i.p4||'done'}}" confirm-hold="{{xs.b(i.p3,!1)}}" cursor="{{xs.b(i.p5,-1)}}" selection-start="{{xs.b(i.p23,-1)}}" selection-end="{{xs.b(i.p22,-1)}}" bindinput="eh" bindfocus="eh" bindblur="eh" bindconfirm="eh" name="{{i.p11}}" always-embed="{{xs.b(i.p1,false)}}" adjust-position="{{xs.b(i.p0,true)}}" hold-keyboard="{{xs.b(i.p9,false)}}" safe-password-cert-path="{{i.p16}}" safe-password-length="{{i.p18}}" safe-password-time-stamp="{{i.p21}}" safe-password-nonce="{{i.p19}}" safe-password-salt="{{i.p20}}" safe-password-custom-hash="{{i.p17}}" auto-fill="{{i.p2}}" cursor-color="{{i.p6}}" bindkeyboardheightchange="eh" bindnicknamereview="eh" bindselectionchange="eh" bindkeyboardcompositionstart="eh" bindkeyboardcompositionupdate="eh" bindkeyboardcompositionend="eh" style="{{i.st}}" class="{{i.cl}}" bindtap="eh"  id="{{i.uid||i.sid}}" data-sid="{{i.sid}}"></input>
+</template>
+
+<template name="tmpl_0_33_blur">
+  <input value="{{i.p25}}" type="{{i.p24||''}}" password="{{xs.b(i.p12,!1)}}" placeholder="{{i.p13}}" placeholder-style="{{i.p15}}" placeholder-class="{{i.p14||'input-placeholder'}}" disabled="{{i.p8}}" maxlength="{{xs.b(i.p10,140)}}" cursor-spacing="{{xs.b(i.p7,0)}}" confirm-type="{{i.p4||'done'}}" confirm-hold="{{xs.b(i.p3,!1)}}" cursor="{{xs.b(i.p5,-1)}}" selection-start="{{xs.b(i.p23,-1)}}" selection-end="{{xs.b(i.p22,-1)}}" bindinput="eh" bindfocus="eh" bindblur="eh" bindconfirm="eh" name="{{i.p11}}" always-embed="{{xs.b(i.p1,false)}}" adjust-position="{{xs.b(i.p0,true)}}" hold-keyboard="{{xs.b(i.p9,false)}}" safe-password-cert-path="{{i.p16}}" safe-password-length="{{i.p18}}" safe-password-time-stamp="{{i.p21}}" safe-password-nonce="{{i.p19}}" safe-password-salt="{{i.p20}}" safe-password-custom-hash="{{i.p17}}" auto-fill="{{i.p2}}" cursor-color="{{i.p6}}" bindkeyboardheightchange="eh" bindnicknamereview="eh" bindselectionchange="eh" bindkeyboardcompositionstart="eh" bindkeyboardcompositionupdate="eh" bindkeyboardcompositionend="eh" style="{{i.st}}" class="{{i.cl}}" bindtap="eh"  id="{{i.uid||i.sid}}" data-sid="{{i.sid}}"></input>
+</template>
+
+<template name="tmpl_0_60">
+  <radio value="{{i.p4}}" checked="{{xs.b(i.p0,!1)}}" disabled="{{i.p2}}" color="{{i.p1||'#09BB07'}}" name="{{i.p3}}" style="{{i.st}}" class="{{i.cl}}" bindtap="eh"  id="{{i.uid||i.sid}}" data-sid="{{i.sid}}">
+    <template is="{{xs.a(c, item.nn, l)}}" data="{{i:item,c:c+1,l:xs.f(l,item.nn)}}" wx:for="{{i.cn}}" wx:key="sid" />
+  </radio>
+</template>
+
+<template name="tmpl_0_79">
+  <template is="{{xs.c(i, 'tmpl_0_')}}" data="{{i:i,c:c}}" />
+</template>
+
+<template name="tmpl_0_79_focus">
+  <textarea value="{{i.p20}}" placeholder="{{i.p14}}" placeholder-style="{{i.p16}}" placeholder-class="{{i.p15||'textarea-placeholder'}}" disabled="{{i.p9}}" maxlength="{{xs.b(i.p12,140)}}" auto-focus="{{xs.b(i.p2,!1)}}" focus="{{xs.b(i.focus,!1)}}" auto-height="{{xs.b(i.p3,!1)}}" fixed="{{xs.b(i.p10,!1)}}" cursor-spacing="{{xs.b(i.p7,0)}}" cursor="{{xs.b(i.p6,-1)}}" selection-start="{{xs.b(i.p18,-1)}}" selection-end="{{xs.b(i.p17,-1)}}" bindfocus="eh" bindblur="eh" bindlinechange="eh" bindinput="eh" bindconfirm="eh" name="{{i.p13}}" show-confirm-bar="{{xs.b(i.p19,true)}}" adjust-position="{{xs.b(i.p1,true)}}" hold-keyboard="{{xs.b(i.p11,false)}}" disable-default-padding="{{xs.b(i.p8,false)}}" confirm-type="{{i.p5||'return'}}" confirm-hold="{{xs.b(i.p4,false)}}" adjust-keyboard-to="{{i.p0||'cursor'}}" bindkeyboardheightchange="eh" bindselectionchange="eh" bindkeyboardcompositionstart="eh" bindkeyboardcompositionupdate="eh" bindkeyboardcompositionend="eh" style="{{i.st}}" class="{{i.cl}}" bindtap="eh"  id="{{i.uid||i.sid}}" data-sid="{{i.sid}}"></textarea>
+</template>
+
+<template name="tmpl_0_79_blur">
+  <textarea value="{{i.p20}}" placeholder="{{i.p14}}" placeholder-style="{{i.p16}}" placeholder-class="{{i.p15||'textarea-placeholder'}}" disabled="{{i.p9}}" maxlength="{{xs.b(i.p12,140)}}" auto-focus="{{xs.b(i.p2,!1)}}" auto-height="{{xs.b(i.p3,!1)}}" fixed="{{xs.b(i.p10,!1)}}" cursor-spacing="{{xs.b(i.p7,0)}}" cursor="{{xs.b(i.p6,-1)}}" selection-start="{{xs.b(i.p18,-1)}}" selection-end="{{xs.b(i.p17,-1)}}" bindfocus="eh" bindblur="eh" bindlinechange="eh" bindinput="eh" bindconfirm="eh" name="{{i.p13}}" show-confirm-bar="{{xs.b(i.p19,true)}}" adjust-position="{{xs.b(i.p1,true)}}" hold-keyboard="{{xs.b(i.p11,false)}}" disable-default-padding="{{xs.b(i.p8,false)}}" confirm-type="{{i.p5||'return'}}" confirm-hold="{{xs.b(i.p4,false)}}" adjust-keyboard-to="{{i.p0||'cursor'}}" bindkeyboardheightchange="eh" bindselectionchange="eh" bindkeyboardcompositionstart="eh" bindkeyboardcompositionupdate="eh" bindkeyboardcompositionend="eh" style="{{i.st}}" class="{{i.cl}}" bindtap="eh"  id="{{i.uid||i.sid}}" data-sid="{{i.sid}}"></textarea>
+</template>
+
 <template name="tmpl_0_66">
   <scroll-view scroll-x="{{xs.b(i.p34,!1)}}" scroll-y="{{xs.b(i.p35,!1)}}" upper-threshold="{{xs.b(i.p38,50)}}" lower-threshold="{{xs.b(i.p10,50)}}" scroll-top="{{i.p32}}" scroll-left="{{i.p31}}" scroll-into-view="{{i.p28}}" scroll-with-animation="{{xs.b(i.p33,!1)}}" enable-back-to-top="{{xs.b(i.p5,false)}}" bindscrolltoupper="eh" bindscrolltolower="eh" bindscroll="eh" bindtouchstart="eh" bindtouchmove="eh" bindtouchend="eh" bindtouchcancel="eh" bindlongpress="eh" animation="{{i.p0}}" bindanimationstart="eh" bindanimationiteration="eh" bindanimationend="eh" bindtransitionend="eh" enable-flex="{{xs.b(i.p6,false)}}" scroll-anchoring="{{xs.b(i.p27,false)}}" enhanced="{{xs.b(i.p8,false)}}" using-sticky="{{xs.b(i.p39,false)}}" paging-enabled="{{xs.b(i.p13,false)}}" enable-passive="{{xs.b(i.p7,false)}}" refresher-enabled="{{xs.b(i.p17,false)}}" refresher-threshold="{{xs.b(i.p18,45)}}" refresher-default-style="{{i.p16||'black'}}" refresher-background="{{i.p14||'#FFF'}}" refresher-triggered="{{xs.b(i.p19,false)}}" bounces="{{xs.b(i.p2,true)}}" show-scrollbar="{{xs.b(i.p36,true)}}" fast-deceleration="{{xs.b(i.p9,false)}}" type="{{i.p37||'list'}}" associative-container="{{i.p1||''}}" reverse="{{xs.b(i.p26,false)}}" clip="{{xs.b(i.p4,true)}}" cache-extent="{{i.p3}}" min-drag-distance="{{xs.b(i.p11,18)}}" scroll-into-view-within-extent="{{xs.b(i.p30,false)}}" scroll-into-view-alignment="{{i.p29||'start'}}" padding="{{i.p12||[0,0,0,0]}}" refresher-two-level-enabled="{{xs.b(i.p21,false)}}" refresher-two-level-triggered="{{xs.b(i.p25,false)}}" refresher-two-level-threshold="{{xs.b(i.p24,150)}}" refresher-two-level-close-threshold="{{xs.b(i.p20,80)}}" refresher-two-level-scroll-enabled="{{xs.b(i.p23,false)}}" refresher-ballistic-refresh-enabled="{{xs.b(i.p15,false)}}" refresher-two-level-pinned="{{xs.b(i.p22,false)}}" binddragstart="eh" binddragging="eh" binddragend="eh" bindrefresherpulling="eh" bindrefresherrefresh="eh" bindrefresherrestore="eh" bindrefresherabort="eh" bindscrollstart="eh" bindscrollend="eh" bindrefresherwillrefresh="eh" bindrefresherstatuschange="eh" style="{{i.st}}" class="{{i.cl}}" bindtap="eh"  id="{{i.uid||i.sid}}" data-sid="{{i.sid}}">
     <template is="{{xs.a(c, item.nn, l)}}" data="{{i:item,c:c+1,l:xs.f(l,item.nn)}}" wx:for="{{i.cn}}" wx:key="sid" />
