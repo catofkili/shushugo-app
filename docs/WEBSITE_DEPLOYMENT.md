@@ -9,6 +9,7 @@
 ## 内容与素材
 
 - 主 CTA 暂时指向已可访问的网页学习 App：`https://catofkili.github.io/shushugo-app/`。迁移学习 App 域名时须先设计同源 IndexedDB 数据迁移与入口兼容，不能只替换链接。
+- 官网学习入口点击时追加 `fresh` 查询参数，绕开 GitHub Pages 当前 10 分钟 HTML 缓存；主机名不变，因此不会切换 IndexedDB 来源。
 - `assets/` 的水豚 WebP 图来自本仓库 `frontend/public/brand/sheet/`，这些切图由用户在 `~/收集日/未命名文件夹/` 的源图整理而来；小程序复用现有品牌图。
 - 功能说明与小程序 `features/about/index` 对齐；平台公开状态只按已验证发布情况描述，不以仓库源码或本地编译代替上线验收。
 
