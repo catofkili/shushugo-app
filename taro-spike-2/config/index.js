@@ -18,13 +18,17 @@ module.exports = {
   sourceRoot: 'src',
   outputRoot: 'dist',
   copy: {
-    patterns: [{ from: path.join(mini, 'src/assets/sql-wasm.wasm'), to: path.join(root, 'dist/assets/sql-wasm.wasm') }],
+    patterns: [
+      { from: path.join(mini, 'src/assets/sql-wasm.wasm'), to: path.join(root, 'dist/assets/sql-wasm.wasm') },
+      { from: path.join(root, 'src/features/vocab-test/assets'), to: path.join(root, 'dist/features/vocab-test/assets') }
+    ],
     options: {}
   },
   plugins: ['@tarojs/plugin-html'],
   framework: 'react',
   compiler: 'webpack5',
   alias: {
+    'lucide-react': path.join(root, 'src/platform/lucide.weapp.tsx'),
     react: path.join(root, 'node_modules/react'),
     'react/jsx-runtime': path.join(root, 'node_modules/react/jsx-runtime.js'),
     'react/jsx-dev-runtime': path.join(root, 'node_modules/react/jsx-dev-runtime.js')

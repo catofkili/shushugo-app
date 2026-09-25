@@ -1,0 +1,13 @@
+.taro-spike-shell {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 16px 12px 24px;
+  color: #3a2e22;
+  background: #fffbf2;
+}
+
+.taro-spike-content {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}

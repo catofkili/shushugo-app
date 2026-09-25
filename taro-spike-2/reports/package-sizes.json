@@ -2,22 +2,22 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1256398,
-      "mib": 1.198,
+      "bytes": 1230874,
+      "mib": 1.174,
       "passes": true
     },
     "features": {
-      "bytes": 1835040,
-      "mib": 1.75,
+      "bytes": 2017226,
+      "mib": 1.924,
       "passes": true
     }
   },
-  "totalBytes": 3091438,
+  "totalBytes": 3248100,
   "files": [
     {
       "path": "features/vocab-test/index.js",
       "package": "features",
-      "bytes": 1834501
+      "bytes": 1829927
     },
     {
       "path": "assets/sql-wasm.wasm",
@@ -27,22 +27,72 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 253324
-    },
-    {
-      "path": "vendors.js",
-      "package": "main",
-      "bytes": 152306
+      "bytes": 254051
     },
     {
       "path": "taro.js",
       "package": "main",
-      "bytes": 127241
+      "bytes": 139305
+    },
+    {
+      "path": "vendors.js",
+      "package": "main",
+      "bytes": 113039
     },
     {
       "path": "base.wxml",
       "package": "main",
       "bytes": 56670
+    },
+    {
+      "path": "features/vocab-test/assets/brand/mood-yay.webp",
+      "package": "features",
+      "bytes": 20262
+    },
+    {
+      "path": "features/vocab-test/assets/brand/shushugo-icon.webp",
+      "package": "features",
+      "bytes": 19048
+    },
+    {
+      "path": "features/vocab-test/assets/brand/mood-puzzled.webp",
+      "package": "features",
+      "bytes": 18992
+    },
+    {
+      "path": "features/vocab-test/assets/brand/scene-laptop.webp",
+      "package": "features",
+      "bytes": 18510
+    },
+    {
+      "path": "features/vocab-test/assets/brand/mood-sleep.webp",
+      "package": "features",
+      "bytes": 17014
+    },
+    {
+      "path": "features/vocab-test/assets/brand/empty-box.webp",
+      "package": "features",
+      "bytes": 16412
+    },
+    {
+      "path": "features/vocab-test/assets/brand/mood-ask.webp",
+      "package": "features",
+      "bytes": 15702
+    },
+    {
+      "path": "features/vocab-test/assets/brand/scene-book.webp",
+      "package": "features",
+      "bytes": 15244
+    },
+    {
+      "path": "features/vocab-test/assets/brand/mood-dizzy.webp",
+      "package": "features",
+      "bytes": 15102
+    },
+    {
+      "path": "features/vocab-test/assets/brand/mood-proud.webp",
+      "package": "features",
+      "bytes": 14916
     },
     {
       "path": "runtime.js",
@@ -52,7 +102,12 @@
     {
       "path": "app.js",
       "package": "main",
-      "bytes": 1072
+      "bytes": 1543
+    },
+    {
+      "path": "vendors.js.LICENSE.txt",
+      "package": "main",
+      "bytes": 1237
     },
     {
       "path": "utils.wxs",
@@ -62,12 +117,57 @@
     {
       "path": "pages/index/index.js",
       "package": "main",
-      "bytes": 751
+      "bytes": 724
     },
     {
-      "path": "vendors.js.LICENSE.txt",
-      "package": "main",
-      "bytes": 729
+      "path": "features/vocab-test/assets/lucide/sparkles-ink.svg",
+      "package": "features",
+      "bytes": 584
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/sparkles-light.svg",
+      "package": "features",
+      "bytes": 584
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/handshake-ink.svg",
+      "package": "features",
+      "bytes": 522
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/handshake-light.svg",
+      "package": "features",
+      "bytes": 522
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/sprout-ink.svg",
+      "package": "features",
+      "bytes": 488
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/sprout-light.svg",
+      "package": "features",
+      "bytes": 488
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/volume2-ink.svg",
+      "package": "features",
+      "bytes": 487
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/volume2-light.svg",
+      "package": "features",
+      "bytes": 487
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/crown-ink.svg",
+      "package": "features",
+      "bytes": 471
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/crown-light.svg",
+      "package": "features",
+      "bytes": 471
     },
     {
       "path": "project.config.json",
@@ -75,14 +175,174 @@
       "bytes": 443
     },
     {
-      "path": "features/vocab-test/index.js.LICENSE.txt",
+      "path": "features/vocab-test/assets/lucide/share2-ink.svg",
       "package": "features",
-      "bytes": 378
+      "bytes": 438
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/share2-light.svg",
+      "package": "features",
+      "bytes": 438
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/shieldcheck-ink.svg",
+      "package": "features",
+      "bytes": 429
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/shieldcheck-light.svg",
+      "package": "features",
+      "bytes": 429
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/imagedown-ink.svg",
+      "package": "features",
+      "bytes": 426
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/imagedown-light.svg",
+      "package": "features",
+      "bytes": 426
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/penline-ink.svg",
+      "package": "features",
+      "bytes": 387
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/penline-light.svg",
+      "package": "features",
+      "bytes": 387
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/listchecks-ink.svg",
+      "package": "features",
+      "bytes": 355
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/listchecks-light.svg",
+      "package": "features",
+      "bytes": 355
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/type-ink.svg",
+      "package": "features",
+      "bytes": 346
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/type-light.svg",
+      "package": "features",
+      "bytes": 346
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/timer-ink.svg",
+      "package": "features",
+      "bytes": 338
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/timer-light.svg",
+      "package": "features",
+      "bytes": 338
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/arrowleftright-ink.svg",
+      "package": "features",
+      "bytes": 335
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/arrowleftright-light.svg",
+      "package": "features",
+      "bytes": 335
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/history-ink.svg",
+      "package": "features",
+      "bytes": 335
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/history-light.svg",
+      "package": "features",
+      "bytes": 335
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/pause-ink.svg",
+      "package": "features",
+      "bytes": 320
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/pause-light.svg",
+      "package": "features",
+      "bytes": 320
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/rotateccw-ink.svg",
+      "package": "features",
+      "bytes": 309
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/rotateccw-light.svg",
+      "package": "features",
+      "bytes": 309
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/messagecircle-ink.svg",
+      "package": "features",
+      "bytes": 268
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/messagecircle-light.svg",
+      "package": "features",
+      "bytes": 268
     },
     {
       "path": "app.json",
       "package": "main",
       "bytes": 264
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/loader2-ink.svg",
+      "package": "features",
+      "bytes": 264
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/loader2-light.svg",
+      "package": "features",
+      "bytes": 264
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/x-ink.svg",
+      "package": "features",
+      "bytes": 263
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/x-light.svg",
+      "package": "features",
+      "bytes": 263
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/play-ink.svg",
+      "package": "features",
+      "bytes": 257
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/play-light.svg",
+      "package": "features",
+      "bytes": 257
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/check-ink.svg",
+      "package": "features",
+      "bytes": 244
+    },
+    {
+      "path": "features/vocab-test/assets/lucide/check-light.svg",
+      "package": "features",
+      "bytes": 244
+    },
+    {
+      "path": "features/vocab-test/index.js.LICENSE.txt",
+      "package": "features",
+      "bytes": 204
     },
     {
       "path": "comp.js",
