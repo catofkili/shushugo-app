@@ -68,6 +68,13 @@ module.exports = {
           /preview-timing\.weapp$/,
           path.join(root, 'src/platform/preview-timing-off.weapp.tsx')
         ]);
+      } else {
+        // React disables Profiler callbacks in its normal production reconciler.
+        // The preview-only measurement layer needs the matching profiling build.
+        chain.resolve.alias.set(
+          'react-reconciler$',
+          path.join(root, 'node_modules/react-reconciler/cjs/react-reconciler.profiling.min.js')
+        );
       }
       chain.plugin('spike-weapp-env').use(webpack.DefinePlugin, [{
         'import.meta.env': JSON.stringify(weappEnv)

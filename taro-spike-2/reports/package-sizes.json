@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1479998,
-      "mib": 1.411,
+      "bytes": 1488704,
+      "mib": 1.42,
       "passes": true
     },
     "quiz": {
@@ -27,7 +27,7 @@
       "passes": true
     }
   },
-  "totalBytes": 7344639,
+  "totalBytes": 7353345,
   "files": [
     {
       "path": "assets/sql-wasm.wasm",
@@ -97,17 +97,17 @@
     {
       "path": "taro.js",
       "package": "main",
-      "bytes": 139341
+      "bytes": 139340
+    },
+    {
+      "path": "vendors.js",
+      "package": "main",
+      "bytes": 121749
     },
     {
       "path": "features/content/kanji-readings.js",
       "package": "features",
       "bytes": 115462
-    },
-    {
-      "path": "vendors.js",
-      "package": "main",
-      "bytes": 113041
     },
     {
       "path": "base.wxml",
@@ -892,7 +892,7 @@
     {
       "path": "vendors.js.LICENSE.txt",
       "package": "main",
-      "bytes": 1237
+      "bytes": 1236
     },
     {
       "path": "quiz/sub-common/a729dd04e043f65cc7b824313767b214.js",
