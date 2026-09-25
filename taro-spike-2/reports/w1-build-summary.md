@@ -69,4 +69,4 @@ The project compiled, but Developer Tools runtime and iPhone preview checks were
 
 > ✖ IDE server has started on http://127.0.0.1:49985 and must be restarted on port 9421 first
 
-The visible IDE window remained on `/private/tmp/shushugo-release-prep`; it was not switched or closed, and port 49985 was not used. No preview QR was generated. Therefore database open, quiz flow, WordStudy flow, and actual iPhone WASM loading are still unverified and require a W1 Developer Tools instance bound to 9421, followed by opening the iPhone preview QR on device.
+The visible IDE window remained on `/private/tmp/shushugo-release-prep`; it was not switched or closed. W1 was not opened or built on 49985; a read-only GET of `/` returned `404 Cannot GET /`. No preview QR was generated. Therefore database open, quiz flow, WordStudy flow, and actual iPhone WASM loading are still unverified and require a W1 Developer Tools instance bound to 9421, followed by opening the iPhone preview QR on device.
