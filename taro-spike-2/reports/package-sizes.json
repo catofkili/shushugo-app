@@ -7,13 +7,13 @@
       "passes": true
     },
     "quiz": {
-      "bytes": 1552167,
-      "mib": 1.48,
+      "bytes": 1554871,
+      "mib": 1.483,
       "passes": true
     },
     "study": {
-      "bytes": 2025904,
-      "mib": 1.932,
+      "bytes": 2028608,
+      "mib": 1.935,
       "passes": true
     },
     "features": {
@@ -27,7 +27,7 @@
       "passes": true
     }
   },
-  "totalBytes": 7339231,
+  "totalBytes": 7344639,
   "files": [
     {
       "path": "assets/sql-wasm.wasm",
@@ -52,7 +52,7 @@
     {
       "path": "study/word-study/index.js",
       "package": "study",
-      "bytes": 511318
+      "bytes": 511317
     },
     {
       "path": "quiz/sub-common/02aa333f2b6ffe685515b7da73065954.js",
@@ -142,7 +142,7 @@
     {
       "path": "quiz/vocab-test/index.js",
       "package": "quiz",
-      "bytes": 37581
+      "bytes": 37580
     },
     {
       "path": "quiz/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js",
@@ -588,6 +588,16 @@
       "path": "study/sub-common/e33c857c1005768479c42cbd47b7b6b0.js",
       "package": "study",
       "bytes": 3063
+    },
+    {
+      "path": "quiz/sub-common/baee45b69300f154618d13c31ef5ffdd.js",
+      "package": "quiz",
+      "bytes": 2920
+    },
+    {
+      "path": "study/sub-common/baee45b69300f154618d13c31ef5ffdd.js",
+      "package": "study",
+      "bytes": 2920
     },
     {
       "path": "quiz/sub-common/5d540c63870bf4b16b086b44ba3816bd.js",
@@ -1973,16 +1983,6 @@
       "path": "study/sub-common/5903893b4e779143e926e5ddeb8140c6.js",
       "package": "study",
       "bytes": 235
-    },
-    {
-      "path": "quiz/sub-common/73863b0af0024d4b5184115137676489.js",
-      "package": "quiz",
-      "bytes": 215
-    },
-    {
-      "path": "study/sub-common/73863b0af0024d4b5184115137676489.js",
-      "package": "study",
-      "bytes": 215
     },
     {
       "path": "quiz/sub-common/4f49e0e3ba7937d2bf4e232216490f3e.js",
