@@ -1,6 +1,6 @@
 <scroll-view class="page skin-{{skin}}" scroll-y>
   <view class="greeting-row">
-    <image class="brand-icon" src="/assets/brand/shushugo-icon.png" mode="aspectFit" />
+    <image class="brand-icon" src="/assets/brand/shushugo-icon.webp" mode="aspectFit" />
     <view class="greeting-copy">
       <text class="brand">收集日 · SHUSHUGO</text>
       <text class="greeting">{{greeting}}</text>

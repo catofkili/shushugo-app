@@ -1,0 +1,13 @@
+{
+  "generatedFrom": "frontend/public/brand",
+  "assets": [
+    {
+      "source": "frontend/public/brand/shushugo-icon.png",
+      "target": "wechat-miniprogram/src/assets/brand/shushugo-icon.webp",
+      "quality": 82,
+      "sourceSha256": "f2dcea76ae0c3e09c3c9083db57ec8ba7e67b466cbe0f6ab33ff05a7644a4d49",
+      "targetSha256": "5d0748ef1969d296aae5da728f82358751c672b9ca9388723e84111882e05ae8",
+      "targetBytes": 19048
+    }
+  ]
+}

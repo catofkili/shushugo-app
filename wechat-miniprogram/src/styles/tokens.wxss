@@ -1,0 +1,60 @@
+/* Generated from frontend/src/design.css. Run node wechat-miniprogram/scripts/sync-design-tokens.mjs. */
+/* source sha256: 9e3da2b4d4cb84bc5c9d7ad13e267647b50422adbda77bb4f6e66673ae574df8 */
+/* WXSS does not support color-mix(); those values stay on the existing native fallback. */
+page {
+  --ds-surface: #fff;
+  --ds-line: rgba(60, 45, 30, 0.09);
+  --ds-line-2: rgba(60, 45, 30, 0.16);
+  --ds-ink: #2B241C;
+  --ds-ink-2: #5E5448;
+  --ds-ink-3: #978C7E;
+  --ds-primary: var(--zoo-primary, #69a840);
+  --ds-primary-ink: var(--zoo-primary-deep, #5C8F32);
+  --ds-on-primary: var(--zoo-on-primary, #ffffff);
+  --ds-warn-tint: #FCEFD8;
+  --ds-warn-ink: #85520D;
+  --ds-danger: #C2493D;
+  --ds-shadow: 0 1px 2px rgba(60, 45, 30, 0.05), 0 8px 24px -10px rgba(60, 45, 30, 0.14);
+  --ds-shadow-lg: 0 2px 6px rgba(60, 45, 30, 0.06), 0 22px 44px -14px rgba(60, 45, 30, 0.22);
+  --zoo-surface: #fff;
+  --zoo-ink: #2B241C;
+  --zoo-muted: #978C7E;
+  --color-border-light: rgba(60, 45, 30, 0.09);
+  --color-border: rgba(60, 45, 30, 0.16);
+  --form-control-bg-focus: #fff;
+  --form-control-border: transparent;
+  --form-control-shadow: none;
+  --form-control-text: var(--ds-ink);
+  --form-control-placeholder: var(--ds-ink-3);
+  --jelly-shadow-sm: var(--ds-shadow);
+  --jelly-shadow-md: var(--ds-shadow);
+  --jelly-shadow-lg: var(--ds-shadow-lg);
+  --glass-border: var(--ds-line);
+}
+
+.theme-dark {
+  --ds-line: rgba(255, 255, 255, 0.07);
+  --ds-line-2: rgba(255, 255, 255, 0.14);
+  --ds-ink: #F2EFE8;
+  --ds-ink-2: #C9C2B6;
+  --ds-ink-3: #8F887D;
+  --ds-primary: var(--zoo-primary, #69a840);
+  --ds-primary-ink: var(--zoo-primary-deep, #5C8F32);
+  --ds-on-primary: var(--zoo-on-primary, #ffffff);
+  --ds-warn-tint: #3A2F1C;
+  --ds-warn-ink: #F2CD8E;
+  --ds-danger: #F08A7E;
+  --ds-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), 0 10px 26px -12px rgba(0, 0, 0, 0.5);
+  --ds-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.3), 0 24px 48px -16px rgba(0, 0, 0, 0.6);
+  --zoo-ink: #F2EFE8;
+  --color-border-light: rgba(255, 255, 255, 0.07);
+  --color-border: rgba(255, 255, 255, 0.14);
+  --form-control-border: transparent;
+  --form-control-shadow: none;
+  --form-control-text: var(--ds-ink);
+  --form-control-placeholder: var(--ds-ink-3);
+  --jelly-shadow-sm: var(--ds-shadow);
+  --jelly-shadow-md: var(--ds-shadow);
+  --jelly-shadow-lg: var(--ds-shadow-lg);
+  --glass-border: var(--ds-line);
+}

@@ -27,8 +27,14 @@
     "test": "node scripts/run-all.mjs",
     "cloud-transport-smoke": "node scripts/cloud-transport-smoke.mjs",
     "check-shared": "node scripts/build-shared.mjs --check",
+    "check-parity": "node scripts/check-parity.mjs",
+    "check-design-tokens": "node scripts/sync-design-tokens.mjs --check",
+    "check-brand-assets": "node scripts/sync-brand-assets.mjs --check",
     "build-shared": "node scripts/build-shared.mjs",
     "build-data": "node scripts/build-data-modules.mjs",
     "lint-undef": "node scripts/lint-undef.mjs"
+  },
+  "devDependencies": {
+    "miniprogram-automator": "^0.12.1"
   }
 }

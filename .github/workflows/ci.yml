@@ -50,8 +50,12 @@ jobs:
     # Smoke fixtures use +08 timestamps and the app's local 4 AM study-day boundary.
     env:
       TZ: Asia/Shanghai
+      PARITY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+      PARITY_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22

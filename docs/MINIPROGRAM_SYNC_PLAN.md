@@ -118,8 +118,10 @@ Codex 09-24 逐页手写的那一版（`refs/archive/worktree/miniprogram-parity
 
 ## 下一步
 
+**状态更新（2026-09-25）**：下文是路线 A spike 执行前的计划。A 已完成且未通过；用户要求继续后，已转做路线 B，记录见本文末尾。下方“等用户批准”是当时的历史待办，批准已取得。
+
 等用户批准路线 A 的 spike。批准后由**一个**会话在 worktree 里做完 spike，把四条过关条件的结果（带数字和截图）写回本文件末尾，
-再由用户决定走 A 还是 B。
+再由用户决定走 A 还是 B。（此待办已完成，结果和后续决定见下文。）
 
 ## 路线 A Spike 实测记录（2026-09-25）
 
@@ -153,4 +155,36 @@ Codex 09-24 逐页手写的那一版（`refs/archive/worktree/miniprogram-parity
 
 ### 结论
 
-**路线 A 未通过**，主因是单页产物超过微信单包上限 11 倍以上；开发者工具还存在 WXSS 编译错误和 React 运行时异常。按原计划转路线 B 前，需由用户决定是否继续。Taro / Tailwind 接入依据：[Taro 小程序 HTML 插件说明](https://docs.taro.zone/docs/use-h5)、[weapp-tailwindcss 的 Taro Webpack 配置](https://tw.weapp.dev/docs/quick-start/frameworks/taro)。
+**路线 A 未通过**，主因是单页产物超过微信单包上限 11 倍以上；开发者工具还存在 WXSS 编译错误和 React 运行时异常。按原计划转路线 B 前，需由用户决定是否继续（此决定已于 2026-09-25 作出，见下文）。Taro / Tailwind 接入依据：[Taro 小程序 HTML 插件说明](https://docs.taro.zone/docs/use-h5)、[weapp-tailwindcss 的 Taro Webpack 配置](https://tw.weapp.dev/docs/quick-start/frameworks/taro)。
+
+## 路线 B 落地记录（2026-09-25）
+
+> 本记录更新了上面的旧结论：用户要求继续路线 B，并批准启用本机 CLI/HTTP 自动化、信任本次临时项目。正式工作均在独立 worktree 完成；5173 和主目录中的个人学习库未访问或修改。
+
+### 已落地的同步机制
+
+1. `scripts/sync-design-tokens.mjs` 从 `frontend/src/design.css` 的浅色 / 深色变量段生成 `src/styles/tokens.wxss`，并由 `check-design-tokens` 比对是否过期。WXSS 不支持的 `color-mix()` 值沿用小程序现有 fallback；`app.wxss` 的卡片、主按钮和次要文字已开始引用生成变量。现有设计表只定义颜色、边框和阴影变量，没有共用圆角和字号变量；小程序各页仍有自己的样式值，后续页面改动须继续收敛到生成变量。
+2. `scripts/sync-brand-assets.mjs` 依据 `scripts/brand-assets.json` 压缩所需的品牌资源，并生成哈希清单供 `check-brand-assets` 校验。目前同步 Web 与小程序首页、关于页共用的吉祥物图标，Web 原图为 258,201 字节，小程序 WebP 为 19,048 字节。品牌目录约 21 MiB，清单只纳入当前小程序实际使用的资源；新增 Web 品牌资源若进入同步范围，须同时登记清单与小程序对应项。
+3. `parity-map.json` 记录网页文件与小程序文件的对应关系；没有对应页面的文件保持空目标，任何对应关系缺失或只改网页侧都会让 `check-parity` 失败。`npm test` 自动运行该检查，CI 对 PR 的 base/head 逐提交检查，并继续执行现有全部小程序脚本。豁免原因必须在映射表登记，且提交信息带 `Parity-Exempt: <原因>`。
+4. `scripts/parity-screenshots.mjs` 用 Playwright 截隔离端口的网页，用微信开发者工具 CLI 和 `miniprogram-automator` 截小程序，再生成 HTML 对照报告。脚本拒绝 5173、非本机网址和含 `.local/live.db` 的 worktree；临时项目使用 `touristappid`、独立目录和出厂数据库，额外启动空白引导页，并把数据库写入独立用户目录，避免加载已有模拟器数据；云 / 同步 / 支付地址清空，退出时关闭项目并清理数据库及临时目录。服务端口从开发者工具“设置 → 安全设置”读取，通过 `--cli-http-port` 传入；自动信任只由该次 CLI 命令的 `--trust-project` 指向临时项目，没有打开全局默认信任开关。
+
+本地运行截图：在 worktree 启动隔离 Vite `npm --prefix frontend run dev -- --host 127.0.0.1 --port 5194 --strictPort`，再执行 `node wechat-miniprogram/scripts/parity-screenshots.mjs --web-url http://127.0.0.1:5194/ --mini-route /pages/home/index --cli-http-port <安全设置端口> --output-dir docs/assets/route-b-parity`。端口值取自开发者工具“设置 → 安全设置”，不能用 5173。
+
+### 验证结果和当前视觉差异
+
+- `TZ=Asia/Shanghai npm test`：28 个小程序检查全部通过；`check-shared`、预算、生成变量、品牌资源和页面配对均通过。
+- 页面配对负向检查：只改 `frontend/src/pages/TeamPage.tsx` 会失败并指出对应的小程序页面没有变化；恢复文件后检查通过。
+- 微信开发者工具自动化已运行，安全设置中服务端口原已开启（49985），未更改全局设置。报告由隔离的 5194 网页端口和 `touristappid` 临时项目生成，使用仓库出厂种子库；没有用 5173。
+- 首页截图揭示了真实差异：网页出厂库首次启动时显示“先定个小目标”计划设置层，小程序截图显示原生首页；两图因此不是完全相同的首屏状态。开发者工具页面窗口为 390 × 753，报告保留包含系统栏的原截图 476 × 1030；网页截图为 375 × 812。当前报告用于发现差异，不能作为视觉一致的验收结论。
+
+对照图：
+
+<table>
+  <tr><th>网页（375 × 812；首次启动设置层）</th><th>微信开发者工具（首页；390 × 753 页面窗口）</th></tr>
+  <tr>
+    <td><img src="assets/route-b-parity/pages-home-index-web.png" width="375" alt="网页首页首次启动设置层"></td>
+    <td><img src="assets/route-b-parity/pages-home-index-miniprogram.png" width="375" alt="微信小程序首页"></td>
+  </tr>
+</table>
+
+完整报告：[网页 / 小程序首页对照](assets/route-b-parity/report.html)。后续每次网页 UI 改动仍须在同一提交更新对应小程序文件，并检查实际对照报告；映射表里未登记的 Web 组件变更会被拦下，须先确定它的小程序对应项。

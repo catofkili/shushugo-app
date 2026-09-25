@@ -1,3 +1,5 @@
+@import './styles/tokens.wxss';
+
 page {
   min-height: 100%;
   background: #f4ead6;
@@ -8,16 +10,16 @@ page {
 button::after { border: 0; }
 
 .zoo-card {
-  border: 2rpx solid rgba(114, 84, 52, 0.08);
+  border: 2rpx solid var(--ds-line, rgba(114, 84, 52, 0.08));
   border-radius: 30rpx;
-  background: #fbf5e9;
-  box-shadow: 0 12rpx 30rpx rgba(91, 67, 42, 0.08);
+  background: var(--ds-surface, #fbf5e9);
+  box-shadow: var(--ds-shadow, 0 12rpx 30rpx rgba(91, 67, 42, 0.08));
 }
 
 .zoo-primary {
-  color: #fff;
-  background: #69a840;
+  color: var(--ds-on-primary, #fff);
+  background: var(--ds-primary, #69a840);
   box-shadow: 0 10rpx 22rpx rgba(79, 133, 45, 0.22);
 }
 
-.zoo-muted { color: #8a7764; }
+.zoo-muted { color: var(--ds-ink-3, #8a7764); }

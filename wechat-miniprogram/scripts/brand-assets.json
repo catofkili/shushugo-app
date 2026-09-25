@@ -1,0 +1,9 @@
+{
+  "assets": [
+    {
+      "source": "frontend/public/brand/shushugo-icon.png",
+      "target": "wechat-miniprogram/src/assets/brand/shushugo-icon.webp",
+      "quality": 82
+    }
+  ]
+}
