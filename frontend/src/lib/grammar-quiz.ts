@@ -3,7 +3,7 @@ import { parseFurigana } from "./furigana-data";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
 import { dailyReviewCap } from "./review-budget";
-import { getDailyGrammarGoal, getReviewCapPreference, getStudyPreferences } from "./studyPreferences";
+import { getDailyGrammarGoal, getReviewCapPreference, getStudyPreferences, PLAN_REVIEW_DISABLED } from "./studyPreferences";
 import {
   ensureFsrsColumns,
   fsrsDueWordIds,
@@ -220,7 +220,7 @@ const planIds = (level: string, day: string): { reviewIds: number[]; newIds: num
   // 面向八千词设的上限在这里几乎不会咬到）。
   const grammarCap = getStudyPreferences().grammarReviewCap;
   const reviewLimit = Math.min(
-    grammarCap > 0 ? grammarCap : dailyReviewCap(getReviewCapPreference(), day),
+    grammarCap === PLAN_REVIEW_DISABLED ? 0 : grammarCap > 0 ? grammarCap : dailyReviewCap(getReviewCapPreference(), day),
     levelPointCount(level)
   );
   const reviewIds = fsrsDueWordIds(reviewLimit, studyDayEnd(), levelEntity(level));

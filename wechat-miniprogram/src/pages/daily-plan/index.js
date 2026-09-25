@@ -157,7 +157,8 @@ Page({
     this.dragChanged = true;
     const split = (kind, count) => {
       const old = this.plan[kind], oldTotal = old.fresh + old.review;
-      const fresh = oldTotal ? Math.round(count * old.fresh / oldTotal) : 0;
+      // 空段没有可沿用的比例，新分到的量先记作新学。
+      const fresh = oldTotal ? Math.round(count * old.fresh / oldTotal) : count;
       return { fresh, review: count - fresh };
     };
     this.plan = { ...this.plan, [KINDS[a]]: split(KINDS[a], nextA), [KINDS[b]]: split(KINDS[b], total - nextA) };

@@ -2,10 +2,10 @@
  * 混合学习里「另外两种卡」的会话入口（docs/MIXED_STUDY_PLAN.md 第 2 节）：
  * 单独汉字卡、疑难连线卡。语法走 grammar-quiz 自己那套，单词走 stage1。
  *
- * 每日新学数和复习上限从 studyPreferences 读（kanjiDailyGoal / kanjiReviewCap …，0 = 到期全出）。
+ * 每日新学数和复习上限从 studyPreferences 读（kanjiDailyGoal / kanjiReviewCap …，复习 0 = 到期全出、-1 = 不出）。
  * 汉字的候选按备考目标等级过滤。
  */
-import { getStudyPreferences } from "./studyPreferences";
+import { getStudyPreferences, PLAN_REVIEW_DISABLED } from "./studyPreferences";
 import { today } from "./study-core";
 import {
   createKanjiCharTasks, kanjiCharCard, kanjiCharDataLoaded, kanjiCharProgress, loadKanjiCharData,
@@ -21,6 +21,7 @@ const LEVEL_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 }
 export const targetLevelRank = () => LEVEL_RANK[getStudyPreferences().jlptTarget] ?? 2;
 
 const UNLIMITED = 100000;
+const reviewQuota = (cap: number) => cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? cap : UNLIMITED;
 
 export const loadMixedCardData = loadKanjiCharData;
 export const mixedCardDataLoaded = kanjiCharDataLoaded;
@@ -40,7 +41,7 @@ export interface ConfusionCardSession { card: MatchingCard | null; done: number;
 export const getKanjiCardSession = (db: object, day = today()): KanjiCardSession => {
   materializeOnce(db);
   const prefs = getStudyPreferences();
-  createKanjiCharTasks({ fresh: prefs.kanjiDailyGoal, review: prefs.kanjiReviewCap > 0 ? prefs.kanjiReviewCap : UNLIMITED }, targetLevelRank(), day);
+  createKanjiCharTasks({ fresh: prefs.kanjiDailyGoal, review: reviewQuota(prefs.kanjiReviewCap) }, targetLevelRank(), day);
   const next = pickKanjiCharNext(day);
   const progress = kanjiCharProgress(day);
   return { card: next ? kanjiCharCard(next) : null, ...progress };
@@ -52,7 +53,7 @@ export const undoKanjiCardAnswer = () => undoLastKanjiCharReview();
 export const getConfusionCardSession = (db: object, day = today()): ConfusionCardSession => {
   materializeOnce(db);
   const prefs = getStudyPreferences();
-  createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: prefs.confusionReviewCap > 0 ? prefs.confusionReviewCap : UNLIMITED }, targetLevelRank(), day);
+  createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: reviewQuota(prefs.confusionReviewCap) }, targetLevelRank(), day);
   const next = pickConfusionNext(day);
   const progress = confusionCardProgress(day);
   return { card: next ? matchingCard(next) : null, ...progress };

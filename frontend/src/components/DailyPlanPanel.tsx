@@ -6,7 +6,7 @@ import {
 } from "../lib/daily-plan";
 import { PREFERENCES_EVENT } from "../lib/studyPreferences";
 import { refreshTodayWordPlan } from "../lib/api";
-import { notifyProgressUpdated } from "../lib/progress-events";
+import { notifyProgressUpdated, PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import { refreshMixedCardTasks } from "../lib/mixed-cards";
 import { getDatabase } from "../lib/database";
 import { useEntitlements } from "../hooks/useEntitlements";
@@ -58,7 +58,11 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
   useEffect(() => {
     reload();
     window.addEventListener(PREFERENCES_EVENT, reload);
-    return () => window.removeEventListener(PREFERENCES_EVENT, reload);
+    window.addEventListener(PROGRESS_UPDATED_EVENT, reload);
+    return () => {
+      window.removeEventListener(PREFERENCES_EVENT, reload);
+      window.removeEventListener(PROGRESS_UPDATED_EVENT, reload);
+    };
   }, []);
 
   if (!view || !plan) return null;
