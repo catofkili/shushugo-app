@@ -332,3 +332,229 @@ WXSS 报错来自一个 `::highlight` 选择器，真正难的弹层 / DOM / 真
 **建议走路线 B**：路线 A 的关键前提——把题面内容放在独立包并由页面按需异步读取——在 Taro 4.2.1 / Webpack 5 支持的分包模型中无法实现；当前功能分包也只比 2 MiB 上限少 **79,926 B**，剩余页面没有包体余量依据。
 
 **状态说明：**本节只记录试验结果和阶段建议，尚未安排实装；建议不构成定案，可由后续资深工程师评审否决或修订。
+
+## 路线 A 第四轮：结论与决定（Claude，2026-09-25 晚）
+
+- **第三轮「Taro 做不到出厂内容跨分包按需加载、建议走 B」的结论作废。** 它只试了 Taro 的 `import()`（确实会被编译成同步 require），
+  没试微信原生的分包异步化 `require.async`——原生小程序本来就这么加载内容（`wechat-miniprogram/src/shared/content.js`）。
+  用 `__non_webpack_require__.async('<相对产物文件的路径>')` 在 Taro 里实测通过（`refs/archive/worktree/taro-spike-4`，`a2da99c`）。
+- 第四轮（Codex，`refs/archive/worktree/taro-spike-5`，最新 `a8ba16c`，报告 `taro-spike-2/reports/round4-summary.md`）：8 份内容走 `require.async` 并有构建期路径校验；
+  WordStudy（出卡 / 翻面 / 查词 / 评分 / 下一张 / 撤销）和查词汇量（15 题到结果）在开发者工具里直接编译网页源码跑通；
+  WXSS 不认属性选择器，`[data-theme]` / `[data-skin]` 构建期改写成类、挂到每个页面真正的根节点后配色与网页一致；
+  lazy-json 代理「查不到的键也返回代理」的老 bug（`Cannot convert object to primitive value`）已修，未加载哨兵是 `null` 不是 `undefined`。
+- **⚠️ iPhone 真机首测（2026-09-25）**：原生小程序一打开就「初始化本地库失败」——iOS 微信没有 `TextDecoder`，
+  `vendor/sql-wasm.js` 无条件 `new TextDecoder`。模拟器（Chromium）和 Node 测试（npm 版 sql.js）都复现不了。已修 `86f1712`，
+  `scripts/text-decoder-smoke.mjs` 用包里那份 vendored sql.js 钉着。修后实测：点「认识」到下一张约 0.5 s，首次进入到能背词约 3 s，无报错。
+  **Taro 版在 iPhone 上比原生慢多少还没量**（计时版预览码在做，Taro 那份用 profiling React，数字是上限）。
+- **用户决定（2026-09-25）：走路线 A，页面只保留网页一份源码；多个 Codex 并行 + Claude 统筹。** 实施分工见下一节。
+
+## 路线 A 第四轮：34 页全迁的包体账与架构（Claude，2026-09-25）
+
+> 和 Codex 第四轮并行做的。Codex 负责主题映射、截图对照和预览码；这一节只回答一个问题：
+> **34 个页面全迁过去，包装不装得下、主包边界怎么划。** 数字全部来自实测，方法写在每张表下面，重跑命令在末尾。
+
+### 结论
+
+**装得下，但有三处必须先改，否则迁到一半就会撞 2 MiB：**
+
+1. **数据层只能打一份。** 现在 Taro 包里同时有原生小程序预打好的 `wechat-miniprogram/src/shared/web.js`（压缩后 546,992 B）
+   和页面直接引用的 `frontend/src/lib` 源码。
+2. **不许让 Taro 把共用模块复制进每个分包。** 默认的 `optimizeMainPackage` 会把「只被分包用、主包没用」的模块
+   复制进**每个**分包的 `sub-common/`。
+3. **大块出厂内容全部走 `require.async`。** 其中 `grammar.ts`（1,847,428 B）目前被 5 个语法页同步 import。
+
+改完之后主包预计约 **1.80 MB**（上限 2,097,152 B），余约 29 万字节；整个小程序约 7.7 MB（总上限 20 MB）。
+
+**另外三件试验版看起来正常、其实没做的事**（都是静默的，这是它们危险的地方）：
+
+4. **学习数据没有落盘**：试验库在内存里，保存是空操作（实测 4）。
+5. **`localStorage` 在小程序里不存在**：偏好、每日量、登录会话每次重开都丢，而且不报错（实测 5）。
+6. **页面之间的跳转全断**：接线在网页 `App.tsx` 里，试验版没有（实测 6）。
+
+这三件都不影响「路线 A 走得通」的判断——每件都有明确、不写第二份业务代码的做法——但它们决定了「迁一页」的真实工作量，
+不能拿试验里「页面打开了」当成「页面迁完了」。
+
+### 实测 1：共用模块被复制进每个分包
+
+第四轮检查点 `ae31527` 的产物里，`quiz/` 和 `study/` 两个分包各有一份完全相同的 `sub-common/`：
+
+| 文件（两个分包各一份） | 压缩后 | 是什么 |
+|---|---:|---|
+| `sub-common/3ae043a1….js` | 546,992 | `wechat-miniprogram/src/shared/web.js` |
+| `sub-common/02aa333f….js` | 404,241 | 试验用的 48 词/级测试库（正式版没有） |
+| `sub-common/6e8adf4d….js` | 60,463 | `wechat-miniprogram/src/data/verb_pair_hints.js` |
+| `sub-common/34abca01….js` | 46,748 | sql.js 胶水 `vendor/sql-wasm.js` |
+| `sub-common/ee639fd6….js` | 29,259 | 原生那份 `vendor/ts-fsrs.umd.js`（npm 的 `ts-fsrs` 另有一份） |
+
+这是 Taro `mini.optimizeMainPackage`（默认 `enable: true`）的行为：只被分包引用的模块提到各分包的 `sub-common`。
+两页时每个分包多背约 1.09 MB；照这样迁 34 页，每个分包都背一遍。
+
+把它关掉（`optimizeMainPackage: { enable: false }`）实测：`quiz` 1,549,318 → **28,281**，`study` 2,021,793 → **500,753**，
+共用部分全进主包的 `common.js`（1,462,997 B），主包变成 2,972,458（超）——超的原因是上表那些东西都跑进了主包，见下面的预算。
+
+**正式做法**：保持 `enable: true`，用 `optimizeMainPackage.exclude` 把「启动就要用的核心」钉在主包
+（`frontend/src/lib/`、`ts-fsrs`、sql.js 胶水、≥2 个分包共用的组件）；只被一个功能用到的 lib 模块仍然跟着那个分包走。
+`exclude` 接受函数（`plugins/MiniSplitChunksPlugin.js` 的 `isExcludeModule`，按 `module.resource` 判断）。实测
+`optimizeMainPackage: { enable: true, exclude: [(m) => /frontend\/src\/lib\/|wechat-miniprogram\/src\/|node_modules\/ts-fsrs/.test(m.resource || '')] }`：
+每个分包的 `sub-common` 从约 1.09 MB 降到 **47,665 B**（剩下的是两页共用的几个组件），核心只在主包 `common.js` 留一份。
+
+⚠️ 同一次构建里还发现：内容分包里落哪几份文件取决于配置，没有闸门。我这边 `content` 分包装进了
+question-meanings 845,519 + kanji-reading-usage 526,754 + kanji-unit-runtime 483,625 + pitch-accent 470,453 = **2,326,883 B（超）**，
+Codex 同一检查点报的是 1,618,463。**每个内容分包都要进 ≤ 1.9 MB 的构建闸门**；加上 `grammar.ts` 之后内容至少分 4 个分包。
+
+### 实测 2：数据层打了两份，而且是两个数据库单例
+
+试验壳的 `platform/database-store.weapp.cjs` 为了开库，引用了原生的 `runtime/sqlite.js` 和 `core/study-core.js`，
+后者把整份 `web.js` 带进来；页面自己又 import `frontend/src/lib`。于是：
+
+- 体积：同一套数据层两份（上表第一行 + 页面引用的 lib 源码）。
+- **正确性**：`web.js` 里有一份 `database.ts`/`storage.ts` 的模块实例，`frontend/src/lib` 里又有一份。
+  两份各自持有「当前库」。试验里没出事是因为库是内存夹具、保存是空操作（见实测 4），迁正式版会直接出「写进了 A 实例、页面读 B 实例」。
+
+**正式做法**：Taro 构建里**不许出现 `wechat-miniprogram/src/shared/web.js`**。数据层只用 `frontend/src/lib` 源码，
+平台差异沿用 `wechat-miniprogram/scripts/shared/shims-map.mjs` 那一套垫片（它就是生成 `web.js` 时用的，挡掉了
+`jlpt_words_seed.json`（12.6 MB）这类只在种子迁移用的大数据——那 76 个 lib 入口不加垫片时能牵出 2,100 万字节）。
+构建后加一道闸：产物里出现 `shared/web.js` 就失败。
+
+### 实测 3：页面代码很小，重的是同步 import 的出厂内容
+
+用 esbuild 把 `frontend/src/pages/*.tsx` 31 个页面逐页打包（压缩，`frontend/src/lib` 视为共享、不计入）：
+
+| 页面 | 压缩后 | 最大的一块 |
+|---|---:|---|
+| GrammarFoundation / Library / ImmersiveGrammar / Favorites / GrammarDetail | 1.90–1.95 MB 各 | `src/data/grammar.ts` **1,847,428** |
+| ConfusionPage | 342,519 | `confusion_distinction_reviews.ts` 334,403 |
+| WordStudy | 158,082 | 页面本身 37,405 |
+| 其余 24 页 | 1.5 K – 70 K，合计约 45 万 | — |
+
+对照：同一个 `VocabTestPage`，esbuild 28,225 B，Taro 产物（关掉复制后）`quiz` 分包 28,281 B —— **两者基本 1:1**，所以上表可以直接当 Taro 的估算。
+
+**正式做法**：`grammar.ts` 和辨析审校数据改成和那 8 份一样的异步内容（`content` 类分包 + `require.async` + 构建期路径校验）。
+`grammar.ts` 单个 1.85 MB，放一个分包也只剩 25 万，建议按等级拆成两个。5 个语法页先 `await` 内容就绪再渲染，和原生的 `content.ready()` 同一个口径。
+
+### 实测 4：试验版根本没有落盘
+
+`database-store.weapp.cjs` 打开的是内存里的测试库，`saveDatabase()` 返回 `{ bytes: 0, path: 'memory://…' }`。
+**学习数据怎么存下来，路线 A 到现在一行都没做。**
+
+**正式做法（不另写一套存储）**：网页的 `frontend/src/lib/storage.ts` 在 iOS 上走 `@capacitor/filesystem`
+（`writeFile / readFile / rename / stat / deleteFile / readdir`，三代轮转、增量落盘、串行写队列都在这条路上，iOS 已经跑过）。
+给 Taro 加两个垫片：`@capacitor/core` 的 `isNativePlatform()` 返回 true，`@capacitor/filesystem` 用 `wx.getFileSystemManager()`
+实现同名接口（base64 / utf8 两种编码、`Directory.Data` 映射到 `wx.env.USER_DATA_PATH`）。这样小程序直接复用 CLAUDE.md
+「落盘的四条不变量」那一整套，不需要原生那份 `database-store.js` 的原子写。
+⚠️ 老用户的原生版小程序库在 `USER_DATA_PATH` 下另一个文件名（`database-store.databasePaths()`），切换时要做一次性迁移，不能让新版当成「没有存档」重建出厂库。
+sql.js 本身把 `sql.js` 别名到 `wechat-miniprogram/src/vendor/sql-wasm.js`（已经适配 `WXWebAssembly`）。
+
+### 实测 5：平台接口——哪些要垫、垫成什么
+
+**⚠️ 小程序里没有 `localStorage`，Taro 也不补**（`@tarojs/runtime` 里搜不到，只有 H5 的 hydrate 用到）。
+网页 17 个文件读写它（学习偏好 / 每日量 / 主题 / 登录会话 / 权益缓存…），而且按约定都包了 try/catch——
+所以在小程序里是**静默失败**：不报错，每次重开都回到默认值。试验版看起来正常就是这个原因。
+修法：入口第一行装全局 `localStorage`（`getItem / setItem / removeItem / key / length / clear`），底层 `wx.getStorageSync / setStorageSync`。
+注意微信本地存储总量 10 MB、单键 1 MB；学习数据库不走这里（走下面的文件）。
+
+**`@capacitor/core` 垫片：`getPlatform()` 返回 `'wechat'`，`isNativePlatform()` 返回 `false`，`isPluginAvailable()` 返回 `false`。**
+⚠️ 不能为了让存储走文件路径就让 `isNativePlatform()` 返回 true——它在网页里有 15 处，另外 14 处会一起切到 iOS 分支
+（StoreKit 内购、Apple 登录、原生通知…），在小程序里全是错的。存储只改一行（见下表），其余逐处定：
+
+| 调用点 | 小程序该走 | 要做的 |
+|---|---|---|
+| `lib/storage.ts:114` `isNativeFileStorage` | 文件存储 | 改成 `isNativePlatform() \|\| getPlatform() === 'wechat'`（网页 / iOS 行为不变）；`@capacitor/filesystem` 垫片用 `wx.getFileSystemManager()` 实现 `writeFile / readFile / rename / stat / deleteFile / readdir`（`recursive`、UTF8 / base64 两种编码） |
+| `lib/secure-token.ts` | 网页分支（localStorage） | 靠上面的 localStorage 垫片即可 |
+| `lib/purchases.ts:68` | 不走 StoreKit | 微信虚拟支付那条（CLAUDE.md 允许的平台差异），接现有 Worker 接口 |
+| `lib/apple-auth.ts`、`components/AuthDialog.tsx:74` | 不显示 Apple 登录 | 当前判断天然为 false，确认一下 `VITE_APPLE_*` 在小程序构建里是空 |
+| `lib/wechat-auth.ts` | 走 `wx.login` | 小程序登录适配（CLAUDE.md 允许） |
+| `lib/notifications.ts:74` | 订阅消息 | 平台适配；未做之前入口要隐藏，不能留一个点了没反应的开关 |
+| `lib/share-image.ts` | `wx.shareFileMessage` / 存相册 | 平台适配；另外分享图的 `<canvas>` 绘制要换小程序 Canvas |
+| `lib/webview-optimizer.ts` | 网页分支 | 确认里面碰的 DOM 在 Taro 下不报错即可 |
+| `pages/AccountSecurity.tsx:390` | 文案 | 现在会显示「本机（浏览器）」；加 `'wechat'` →「本机（小程序）」 |
+
+其余 Capacitor 插件（preferences / status-bar / keyboard / haptics / share / local-notifications / media / apple-sign-in / secure-storage）
+在试验里被统一映射到空桩 `scripts/native-stubs.cjs`。**空桩等于静默失效**，正式迁移要逐个换成 wx 实现或在小程序里隐藏入口，
+并把「这个插件在小程序里是什么」列成表进仓库。
+
+### 实测 6：页面之间的接线全在 `App.tsx`，试验版全是断的
+
+`frontend/src/App.tsx`（1,082 行）是网页的路由 + 跨页状态中心：`navigateToPage`、`goBack`、`launchStudyMode`、
+`stubbornQuickIds`、付费窗、登录框、首次设定、写盘失败横幅、通知……页面靠它传进来的回调互相衔接。
+试验版的路由壳只渲染 `<WordStudy initialMode="picked" />`：`onDailyModeComplete`、`onStubbornQuickStudy`、
+`onOpenDistinctionQuiz` 全是 undefined——页面能打开，**「背完 → 加餐 / 辨析题 / 顽固词复习」这些跳转全是死的**，而且不报错。
+
+两种架构都算过：
+
+- ❌ **整个 `App.tsx` 进一个小程序页**（照搬网页的单页应用）：它 import 全部页面。esbuild 实测全部页面 + 组件 + lib + 小数据 1,651,983 B，
+  加运行时 / 样式 / wasm 约 **2.58 MB**，而入口页必须在主包——装不下。跨分包懒加载 React 组件 Taro 不支持（webpack 同步 require）。
+- ✅ **每个 Page id 一个小程序页，接线逻辑两端共用**：把 `App.tsx` 里「这一页的 props 怎么接」逐页抽成
+  `frontend/src/routes/<page>.tsx`（例如 `WordRoute` 从共享 store 取 `launchStudyMode`、调 `ctx.navigate("distinction-quiz")`），
+  网页 `App.tsx` 改成渲染这些 route 组件（**网页行为不变，抽完跑全部网页测试 + 截图对照**），小程序每页的入口文件只有一行：渲染同一个 route。
+  - 跨页状态（学习模式、顽固词名单、要打开的语法点…）放一个模块级 store——小程序所有页面共享同一个 JS 上下文，模块单例天然跨页。
+  - `ctx.navigate(page)` 各平台实现：网页 = 现在的 setState；小程序 = 一张 Page id → 路由表（标签页 `wx.switchTab`，其余 `wx.navigateTo`）。
+  - 付费窗 / 登录框 / 首次设定 / 写盘失败横幅 / 提示条抽成 `AppShell`，网页包一次、小程序每页包一次。
+  - 这一步是**网页侧的重构**，单独一个提交、先合，之后每迁一页小程序只加一个一行的入口。
+
+### 主包预算（原生 tabBar：4 个标签页必须在主包）
+
+| 进主包的东西 | 压缩后 | 依据 |
+|---|---:|---|
+| Taro 运行时 + React 渲染器（`taro.js`、`vendors.js`、`runtime.js`…） | ≈ 290 K | 试验产物实测 |
+| 全局样式 `app.wxss` + `base.wxml` | ≈ 317 K | 实测 254,898 + 62,282 |
+| sql.js：`sql-wasm.wasm.br` + 胶水 | ≈ 326 K | wasm 659,730 → brotli q11 **278,641**；胶水 46,748 |
+| 数据层一份（`frontend/src/lib` + 垫片） | ≈ 636 K | 就是现在 `web.js` 的实测大小（同一份源码、同一套垫片、同样压缩） |
+| 主页 / 单词 / 语法 / 我的 四个标签页及其组件 | ≈ 182 K | esbuild 实测，`grammar.ts` 不计入（改异步） |
+| **合计** | **≈ 1.80 MB** | 上限 2,097,152 |
+
+- ⚠️ `.wasm.br`：微信文档写 `WXWebAssembly.instantiate` 支持 `.wasm.br`，**本仓库还没在开发者工具和真机上验过**。
+  验过了原生小程序也该换（它的主包现在 1.80 MB 里也有这 66 万）。
+- 余量约 29 万字节。会吃余量的：`app.wxss`（页面迁得越多 Tailwind 工具类越多；目前是扫全前端生成的，应该已经接近满额，要实测）、
+  标签页后续加功能。**构建闸门要卡主包 ≤ 1.9 MB**，留 19 万给意外。
+- 如果以后主包放不下，退路是不用原生 tabBar：标签页做成普通分包页、底栏做成组件、切换用 `wx.redirectTo`，
+  主包只剩首页。代价是切 tab 有一次页面跳转。现在不需要。
+
+### 全量体积
+
+| | 压缩后 |
+|---|---:|
+| 主包 | ≈ 1.80 MB |
+| 其余 27 页代码（按功能分 4–6 个分包，每个远低于 2 MB） | ≈ 0.33 MB 页面 + 仅本功能用的 lib |
+| 已异步的 8 份内容（content / features 分包） | ≈ 3.1 MB |
+| `grammar.ts`（按等级拆 2 个分包）+ 辨析审校 | ≈ 2.2 MB |
+| **整个小程序** | **≈ 7.7 MB**（总上限 20 MB） |
+
+### 交给 Codex 的实现顺序（每一步都是可测的）
+
+1. 去掉 `web.js`：`database-store.weapp` 改成调 `frontend/src/lib` 的开库 / 建表；`sql.js` 别名到原生 vendor；构建后闸门「产物里不许有 `shared/web.js`」。
+2. `optimizeMainPackage.exclude` 钉住核心，验证 `sub-common` 不再重复；产物统计里「同一模块出现在 >1 个包」必须为 0（写成构建闸门）。
+3. `.wasm.br` 在开发者工具和真机各开一次库。
+4. 全局 `localStorage` 垫片（入口第一行）；`@capacitor/core` / `@capacitor/filesystem` 两个垫片；用 `storage-durability.test.ts` 的同一组断言在 Node 里跑垫片版本；
+   开发者工具里「答题 → 杀进程 → 重开」进度还在。
+5. `grammar.ts`、辨析审校数据进异步内容分包；5 个语法页和 ConfusionPage 各编译一次，量分包。
+6. 主包闸门 1.9 MB、单分包闸门 1.9 MB 进 `npm test`。
+7. 网页侧先做 `routes/` 抽取 + `AppShell`（单独提交、先合 main，网页全部测试 + 375×812 截图对照不变）；之后小程序每页一个一行入口。
+8. 逐个把 `native-stubs.cjs` 里的空桩换成 wx 实现或隐藏入口，列表进仓库。
+
+### 重跑
+
+- 逐页大小：在仓库根目录 `node docs/assets/taro-size/page-sizes.mjs`、`tabs-size.mjs`、`lib-size.mjs`（esbuild，只读 `frontend/src`，入口临时文件写系统临时目录，不碰任何构建目录；需要 `frontend/node_modules`）。
+- 复制问题：在试验目录把 `config/index.js` 的 `mini.optimizeMainPackage` 在默认 / `enable:false` 间切换，各跑一次 `taro build --type weapp`，对比 `reports/package-sizes.json`。
+
+## 路线 A 全量实施：并行分工（2026-09-25 起）
+
+**集成分支 `taro/main`**：从 `refs/archive/worktree/taro-spike-5` 起、合入最新 `main`。所有 Taro 侧工作从它开 worktree、做完合回它；
+网页侧（`frontend/`）的改动走 `main`，`taro/main` 定期合 `main`。Taro 工程目录暂时仍叫 `taro-spike-2/`，全部迁完再一次性改名（省得并行期间互相冲突）。
+**合并由 Claude 审**：每条线做完提交在自己的分支上，报告里给提交哈希，Claude 审过再合。
+
+| 线 | 谁 | 做什么 | 分支 | 依赖 |
+|---|---|---|---|---|
+| W1 构建地基 | Codex #1（「继续 Taro 第四轮试验」） | iPhone 计时；`optimizeMainPackage.exclude` 钉核心；`.wasm.br`；`grammar.ts` 与辨析审校数据进异步内容分包；构建闸门（主包 / 每个分包 ≤ 1.9 MB、同一模块不许出现在 > 1 个包、产物里不许有 `shared/web.js`） | `taro/main` 上的 `taro/w1-*` | 无 |
+| W2 网页接线抽取 | 新 Codex | `App.tsx` 按页抽成 `frontend/src/routes/*`，`AppShell` + 跨页 store + `ctx.navigate`；**网页行为不变** | `main` 上的 `codex/w2-routes` | 无 |
+| W3 平台地基 | 新 Codex | 全局 `localStorage`；`@capacitor/core` / `@capacitor/filesystem` 垫片；`storage.ts` 一行接缝；Taro 里用网页那套开库 / 落盘 / 增量（去掉内存夹具和 `database-store.weapp.cjs`） | `taro/w3-*` | 无 |
+| W4 微信平台接口 | 新 Codex | 把 `native-stubs.cjs` 的空桩逐个换成 wx 实现或隐藏入口：登录、虚拟支付、分享图、订阅消息、音频、震动…，复用原生小程序已有的 `runtime/*` | `taro/w4-*` | W3 的 localStorage（可先自带临时版） |
+| W5 原生保底发布 | Codex #2（「检查并执行发布准备事项」） | 原生版提审准备（开关、iPhone 修复、真机核心流程） | `codex/release-prep` | 用户是否本周提审原生版 |
+| 统筹 | Claude | 分工、审核合并、W2 的接口设计、iPhone 性能分析、页面迁移批次划分 | — | — |
+
+地基（W1–W4）合进 `taro/main` 后进入**页面迁移**，按区域分批并行（每批一个 Codex，每页：一行入口 + 两端 375×812 对照 + iPhone 真机走一遍）：
+标签页（主页 / 单词 / 语法 / 我的）→ 学习工具（快速复习、查词汇量、辨析题、语法考题、一字多音、疑难辨析、学习模式、词库）→
+账号设置（设置、账号安全、个人信息、隐私、协议、关于、帮助、通知、Pro）→ 内容与其它（语法详情 / 基础 / 沉浸、收藏、周报、成就、柚子商店、组队、备考）。
+
+**微信开发者工具只有一个 IDE 实例，是共享资源**：各线用各自的自动化端口（W1 9421、W5 9430、W3 9440、W4 9450），
+**不许关闭 IDE、不许操作别人的项目窗口**；同一时间最多两条线在跑模拟器。真机验收要用户扫码，统一由 Claude 转达。
