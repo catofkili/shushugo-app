@@ -51,7 +51,7 @@
 
 34 页全迁完的包体估算和分包拆分方案由 Claude 负责；本记录只报告本次实测构建产物，不包含 34 页外推或拆包预算。每次正式构建后的原始字节统计见 `taro-spike-2/reports/package-sizes.json` 和 `taro-spike-2/reports/webpack-stats.json`。
 
-微信预览 CLI 对最终预览包的独立统计也记录如下，和上述 `dist` 原始文件求和口径不同，不混用：Taro 预览总计 **6,630,296 B**（main 1,329,490；content 1,562,316；features 478,594；quiz 1,451,228；study 1,808,668）；原生预览总计 **3,849,298 B**（main 1,646,222；content 1,570,232；features 632,844）。
+微信预览 CLI 对最终预览包的独立统计也记录如下，和上述 `dist` 原始文件求和口径不同，不混用：Taro 预览总计 **6,642,179 B**（main 1,329,566；content 1,561,222；features 513,564；quiz 1,441,331；study 1,796,496）；原生预览总计 **3,851,665 B**（main 1,647,960；content 1,570,232；features 633,473）。Taro 预览包用的是 profiling 版 React，比正式版慢，所以 Taro 的计时数字是上限。
 
 ## 页面流程与截图
 
