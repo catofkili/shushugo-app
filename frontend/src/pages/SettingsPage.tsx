@@ -2,6 +2,8 @@ import { AlertTriangle, Check, ChevronRight, Download, Moon, RotateCcw, Smartpho
 import { useEffect, useRef, useState } from "react";
 import { DailyPlanPanel } from "../components/DailyPlanPanel";
 import { KanjiUnitPlanSettings } from "../components/KanjiUnitPlanSettings";
+import { useEntitlements } from "../hooks/useEntitlements";
+import { devForcePro, setDevForcePro } from "../lib/entitlements";
 import { exportDatabase } from "../lib/database";
 import { clearLocalAppData } from "../lib/clear-local-data";
 import { clearStorage, restoreDatabaseBackup, saveDatabase } from "../lib/storage";
@@ -46,6 +48,7 @@ const themeOptions: { value: ThemePreference; label: string; icon: typeof Moon }
 const CLEAR_CONFIRM_TEXT = "清除所有数据";
 
 export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPageProps) {
+  const entitlements = useEntitlements();
   const [preferences, setPreferences] = useState<StudyPreferences>(defaultStudyPreferences);
   // 有哪些声音可选要问磁盘(音频库是构建产物,可能一个都没生成)
   const [voices, setVoices] = useState<AudioVoice[]>([]);
@@ -294,6 +297,24 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
 
   return (
     <div className="mx-auto max-w-3xl pb-4">
+      {import.meta.env.DEV && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4">
+          <div>
+            <p className="text-sm font-bold text-white">开发环境常开 Pro</p>
+            <p className="mt-0.5 text-xs text-white/60">仅本地生效；云端免费状态不会关闭此开关。</p>
+          </div>
+          <label className="relative inline-flex cursor-pointer items-center">
+            <input
+              type="checkbox"
+              aria-label="开发环境常开 Pro"
+              checked={entitlements.source === "development" && devForcePro()}
+              onChange={(event) => setDevForcePro(event.currentTarget.checked)}
+              className="peer sr-only"
+            />
+            <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5" />
+          </label>
+        </div>
+      )}
 
       <div className="mb-4">
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">外观</p>
