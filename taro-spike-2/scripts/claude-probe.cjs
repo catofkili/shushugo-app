@@ -1,0 +1,30 @@
+const { createRequire } = require('node:module');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const miniRequire = createRequire(path.join(path.resolve(root, '..'), 'wechat-miniprogram/package.json'));
+const automator = miniRequire('miniprogram-automator');
+const MiniProgram = miniRequire('miniprogram-automator/out/MiniProgram').default;
+MiniProgram.prototype.checkVersion = async function () { await this.send('Tool.getInfo'); };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const dataText = async (page) => JSON.stringify(await page.data()).replace(/\\u[0-9a-f]{4}/g, '').slice(0, 0) || JSON.stringify(await page.data());
+(async () => {
+  const mini = await automator.connect({ wsEndpoint: 'ws://127.0.0.1:9420' });
+  mini.on('exception', (e) => console.log('EXCEPTION', JSON.stringify(e).slice(0, 800)));
+  mini.on('console', (e) => console.log('CONSOLE', JSON.stringify(e).slice(0, 400)));
+  await mini.reLaunch('/features/vocab-test/index').catch((e) => console.log('NAV', String(e)));
+  await sleep(6000);
+  let page = await mini.currentPage();
+  let d = await dataText(page);
+  console.log('PATH', page.path, 'has开始测验', d.includes('开始测验'), 'has第', /第\s*\d+\s*题|1\s*\/\s*20/.test(d), 'len', d.length);
+  const buttons = await page.$$('button');
+  console.log('BUTTONS', JSON.stringify(await Promise.all(buttons.map((b) => b.text()))));
+  const start = [];
+  for (const b of buttons) if ((await b.text()).includes('开始测验')) start.push(b);
+  console.log('START_FOUND', start.length);
+  if (start[0]) { console.log('WXML', (await start[0].outerWxml()).slice(0, 400)); await start[0].tap(); }
+  await sleep(3000);
+  page = await mini.currentPage(); d = await dataText(page);
+  console.log('AFTER has开始测验', d.includes('开始测验'), 'has不认识', d.includes('不认识'), 'has提前交卷', d.includes('提前交卷'), 'len', d.length);
+  await mini.screenshot({ path: path.join(root, 'reports', 'claude-after-tap.png') });
+  await mini.disconnect();
+})().catch((e) => { console.error('ERR', e); process.exitCode = 1; });

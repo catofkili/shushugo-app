@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@tarojs/components": "4.2.1",
+    "@tarojs/react": "^4.2.1",
     "@tarojs/taro": "4.2.1",
     "lucide-react": "0.468.0",
     "react": "18.3.1",
@@ -17,18 +18,18 @@
   "devDependencies": {
     "@babel/preset-react": "^7.24.1",
     "@tarojs/cli": "4.2.1",
-    "babel-preset-taro": "4.2.1",
     "@tarojs/plugin-framework-react": "4.2.1",
     "@tarojs/plugin-html": "4.2.1",
     "@tarojs/plugin-platform-weapp": "4.2.1",
     "@tarojs/webpack5-runner": "4.2.1",
     "@types/react": "18.3.24",
     "autoprefixer": "10.4.20",
+    "babel-preset-taro": "4.2.1",
     "postcss": "8.5.6",
     "postcss-selector-parser": "7.1.0",
     "tailwindcss": "3.4.17",
     "typescript": "5.8.3",
-    "webpack": "5.91.0",
-    "weapp-tailwindcss": "3.7.0"
+    "weapp-tailwindcss": "3.7.0",
+    "webpack": "5.91.0"
   }
 }

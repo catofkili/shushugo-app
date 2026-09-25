@@ -13,7 +13,7 @@ const shims = createSharedShims(mini);
 module.exports = {
   projectName: 'shushugo-taro-spike-2',
   date: '2026-09-25',
-  designWidth: 750,
+  designWidth: 375,
   deviceRatio: { 375: 2, 750: 1 },
   sourceRoot: 'src',
   outputRoot: 'dist',
@@ -26,7 +26,6 @@ module.exports = {
   compiler: 'webpack5',
   alias: {
     react: path.join(root, 'node_modules/react'),
-    'react-dom': path.join(root, 'node_modules/react-dom'),
     'react/jsx-runtime': path.join(root, 'node_modules/react/jsx-runtime.js'),
     'react/jsx-dev-runtime': path.join(root, 'node_modules/react/jsx-dev-runtime.js')
   },
