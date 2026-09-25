@@ -1,87 +1,57 @@
 {
-  "expectedTargetCount": 8,
-  "callCount": 16,
-  "resolvedTargetCount": 8,
+  "expectedTargetCount": 10,
+  "callCount": 10,
+  "resolvedTargetCount": 10,
   "calls": [
     {
-      "caller": "quiz/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../content/question-meanings.js",
+      "caller": "common.js",
+      "request": "./content/question-meanings.js",
       "target": "content/question-meanings.js"
     },
     {
-      "caller": "quiz/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../content/kanji-unit-runtime.js",
+      "caller": "common.js",
+      "request": "./content/kanji-unit-runtime.js",
       "target": "content/kanji-unit-runtime.js"
     },
     {
-      "caller": "quiz/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../features/content/distinction-reviews.js",
+      "caller": "common.js",
+      "request": "./features/content/distinction-reviews.js",
       "target": "features/content/distinction-reviews.js"
     },
     {
-      "caller": "quiz/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../content/kanji-reading-usage.js",
+      "caller": "common.js",
+      "request": "./content/kanji-reading-usage.js",
       "target": "content/kanji-reading-usage.js"
     },
     {
-      "caller": "quiz/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../features/content/kanji-variants.js",
+      "caller": "common.js",
+      "request": "./features/content/kanji-variants.js",
       "target": "features/content/kanji-variants.js"
     },
     {
-      "caller": "quiz/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../features/content/kanji-readings.js",
+      "caller": "common.js",
+      "request": "./features/content/kanji-readings.js",
       "target": "features/content/kanji-readings.js"
     },
     {
-      "caller": "quiz/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../features/content/grammar-key-points.js",
+      "caller": "common.js",
+      "request": "./features/content/grammar-key-points.js",
       "target": "features/content/grammar-key-points.js"
     },
     {
-      "caller": "quiz/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../content/pitch-accent.js",
+      "caller": "common.js",
+      "request": "./content/pitch-accent.js",
       "target": "content/pitch-accent.js"
     },
     {
-      "caller": "study/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../content/question-meanings.js",
-      "target": "content/question-meanings.js"
+      "caller": "common.js",
+      "request": "./grammar-foundation/grammar.js",
+      "target": "grammar-foundation/grammar.js"
     },
     {
-      "caller": "study/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../content/kanji-unit-runtime.js",
-      "target": "content/kanji-unit-runtime.js"
-    },
-    {
-      "caller": "study/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../features/content/distinction-reviews.js",
-      "target": "features/content/distinction-reviews.js"
-    },
-    {
-      "caller": "study/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../content/kanji-reading-usage.js",
-      "target": "content/kanji-reading-usage.js"
-    },
-    {
-      "caller": "study/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../features/content/kanji-variants.js",
-      "target": "features/content/kanji-variants.js"
-    },
-    {
-      "caller": "study/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../features/content/kanji-readings.js",
-      "target": "features/content/kanji-readings.js"
-    },
-    {
-      "caller": "study/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../features/content/grammar-key-points.js",
-      "target": "features/content/grammar-key-points.js"
-    },
-    {
-      "caller": "study/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
-      "request": "../../content/pitch-accent.js",
-      "target": "content/pitch-accent.js"
+      "caller": "common.js",
+      "request": "./grammar-advanced/grammar.js",
+      "target": "grammar-advanced/grammar.js"
     }
   ]
 }

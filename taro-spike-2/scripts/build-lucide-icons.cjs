@@ -5,12 +5,12 @@ const { renderToStaticMarkup } = require('react-dom/server');
 const icons = require('lucide-react');
 
 const names = [
-  'AlertCircle', 'ArrowLeftRight', 'ArrowRightLeft', 'Brain', 'CalendarCheck', 'CalendarDays',
-  'Check', 'CheckCircle2', 'ChevronLeft', 'ChevronRight', 'Clock3', 'Crown', 'Eye', 'Flame',
-  'FolderPlus', 'GitCompareArrows', 'Handshake', 'History', 'ImageDown', 'Languages', 'ListChecks',
-  'Loader2', 'MessageCircle', 'Minus', 'NotebookPen', 'Pause', 'PenLine', 'Pencil', 'Play', 'Plus',
-  'Puzzle', 'Repeat', 'RotateCcw', 'Share2', 'ShieldCheck', 'Shuffle', 'Sparkles', 'Sprout', 'Star',
-  'StickyNote', 'Target', 'Timer', 'Type', 'Volume2', 'X'
+  'AlertCircle', 'ArrowLeft', 'ArrowLeftRight', 'ArrowRightLeft', 'BookOpenCheck', 'Brain', 'CalendarCheck', 'CalendarDays',
+  'Check', 'CheckCircle2', 'ChevronDown', 'ChevronLeft', 'ChevronRight', 'Clock3', 'Crown', 'Eye', 'ExternalLink', 'Flame',
+  'FolderPlus', 'GitCompareArrows', 'Handshake', 'History', 'ImageDown', 'Languages', 'Layers', 'ListChecks',
+  'Loader2', 'MessageCircle', 'Minus', 'NotebookPen', 'Pause', 'PenLine', 'Pencil', 'PencilLine', 'Play', 'Plus',
+  'Puzzle', 'Repeat', 'RotateCcw', 'Search', 'Share2', 'ShieldCheck', 'Shuffle', 'Sparkles', 'Sprout', 'Star',
+  'StickyNote', 'Target', 'Timer', 'Trash2', 'Type', 'Undo2', 'Volume2', 'X', 'XCircle'
 ];
 const out = path.join(__dirname, '../src/assets/lucide');
 fs.mkdirSync(out, { recursive: true });

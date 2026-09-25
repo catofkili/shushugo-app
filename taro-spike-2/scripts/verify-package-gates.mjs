@@ -1,0 +1,120 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const dist = path.join(root, 'dist');
+const maxBytes = 1_900_000;
+const maxDuplicateBytes = 100_000;
+const coreModule = (source) => /(?:\/frontend\/src\/lib\/|\/node_modules\/ts-fsrs\/)/.test(source);
+const pageComponent = (source) => /\/frontend\/src\/(?:components|pages)\//.test(source);
+const packages = JSON.parse(fs.readFileSync(path.join(root, 'reports/package-sizes.json'), 'utf8'));
+const stats = JSON.parse(fs.readFileSync(path.join(root, 'reports/webpack-stats.json'), 'utf8'));
+const roots = Object.keys(packages.packages).filter((name) => name !== 'main');
+const owner = (filename) => roots.find((name) => filename === name || filename.startsWith(`${name}/`)) ?? 'main';
+const modulePackages = new Map();
+const moduleSizes = new Map();
+const webModules = new Set();
+
+function sourceName(module) {
+  return typeof module.nameForCondition === 'string'
+    ? module.nameForCondition.replaceAll('\\', '/').replace(/\?.*$/, '')
+    : null;
+}
+
+function collectModules(module, packageName) {
+  const source = sourceName(module);
+  if (source) {
+    if (!modulePackages.has(source)) modulePackages.set(source, new Set());
+    modulePackages.get(source).add(packageName);
+    moduleSizes.set(source, Math.max(moduleSizes.get(source) ?? 0, module.size ?? 0));
+    if (/wechat-miniprogram\/src\/shared\/web\.js$/.test(source)) webModules.add(source);
+  }
+  for (const key of ['modules', 'filteredChildren']) {
+    if (Array.isArray(module[key])) for (const child of module[key]) collectModules(child, packageName);
+  }
+}
+
+function collectWebModules(module) {
+  if (!module || typeof module !== 'object') return;
+  const source = sourceName(module);
+  if (source && /wechat-miniprogram\/src\/shared\/web\.js$/.test(source)) webModules.add(source);
+  for (const value of Object.values(module)) {
+    if (Array.isArray(value)) value.forEach(collectWebModules);
+    else if (value && typeof value === 'object') collectWebModules(value);
+  }
+}
+
+collectWebModules(stats.modules);
+
+for (const chunk of stats.chunks ?? []) {
+  const jsFiles = (chunk.files ?? []).filter((file) => file.endsWith('.js'));
+  const chunkPackages = new Set();
+  for (const filename of jsFiles) {
+    const matches = packages.files
+      .filter((file) => file.path === filename || file.path.endsWith(`/${filename}`))
+      .map((file) => file.package);
+    if (matches.length) matches.forEach((name) => chunkPackages.add(name));
+    else chunkPackages.add(owner(filename));
+  }
+  if (!chunkPackages.size) chunkPackages.add(owner(chunk.names?.[0] ?? 'main'));
+  for (const module of chunk.modules ?? []) {
+    for (const packageName of chunkPackages) collectModules(module, packageName);
+  }
+}
+
+const overBudget = Object.entries(packages.packages)
+  .filter(([, item]) => item.bytes > maxBytes)
+  .map(([name, item]) => ({ name, bytes: item.bytes, overBytes: item.bytes - maxBytes }));
+const duplicatedModules = [...modulePackages]
+  .filter(([, moduleOwners]) => moduleOwners.size > 1)
+  .map(([source, moduleOwners]) => ({ source, bytes: moduleSizes.get(source) ?? 0, packages: [...moduleOwners].sort() }))
+  .sort((a, b) => b.bytes - a.bytes);
+const duplicatedCoreModules = duplicatedModules.filter(({ source }) => coreModule(source));
+const duplicatedPageComponents = duplicatedModules.filter(({ source }) => pageComponent(source));
+const duplicatedPageComponentBytes = duplicatedPageComponents.reduce((sum, item) => sum + item.bytes, 0);
+const mainTopModules = [...modulePackages]
+  .filter(([, moduleOwners]) => moduleOwners.has('main'))
+  .map(([source]) => ({ source, bytes: moduleSizes.get(source) ?? 0 }))
+  .sort((a, b) => b.bytes - a.bytes)
+  .slice(0, 10);
+const gate = {
+  maxBytes,
+  packages: Object.fromEntries(Object.entries(packages.packages).map(([name, item]) => [name, {
+    bytes: item.bytes,
+    passes: item.bytes <= maxBytes
+  }])),
+  maxDuplicateBytes,
+  duplicateSourceModuleCount: duplicatedModules.length,
+  duplicatedModules,
+  duplicatedCoreModuleCount: duplicatedCoreModules.length,
+  duplicatedCoreModules,
+  duplicatedPageComponents,
+  duplicatedPageComponentBytes,
+  pageComponentDuplicateBudgetPasses: duplicatedPageComponentBytes <= maxDuplicateBytes,
+  webModuleCount: webModules.size,
+  webModules: [...webModules],
+  webModulePolicy: 'error',
+  mainTopModules,
+  passes: overBudget.length === 0 && duplicatedCoreModules.length === 0 && duplicatedPageComponentBytes <= maxDuplicateBytes && webModules.size === 0
+};
+const reportPath = path.join(root, 'reports/package-gates.json');
+fs.writeFileSync(reportPath, `${JSON.stringify(gate, null, 2)}\n`);
+console.log(JSON.stringify({
+  maxBytes,
+  overBudget,
+  duplicateSourceModuleCount: duplicatedModules.length,
+  duplicatedCoreModuleCount: duplicatedCoreModules.length,
+  duplicatedPageComponentBytes,
+  pageComponentDuplicateBudgetBytes: maxDuplicateBytes,
+  webModuleCount: webModules.size,
+  webModulePolicy: gate.webModulePolicy,
+  passes: gate.passes,
+  report: path.relative(root, reportPath)
+}, null, 2));
+
+const reportOnly = process.argv.includes('--report-only');
+if (!reportOnly && overBudget.length) throw new Error(`分包超出 ${maxBytes} B 上限：${JSON.stringify(overBudget)}`);
+if (!reportOnly && duplicatedCoreModules.length) throw new Error(`核心模块出现在多个包：${JSON.stringify(duplicatedCoreModules.slice(0, 10))}`);
+if (!reportOnly && duplicatedPageComponentBytes > maxDuplicateBytes) throw new Error(`页面组件重复总量 ${duplicatedPageComponentBytes} B 超出 ${maxDuplicateBytes} B：${JSON.stringify(duplicatedPageComponents.slice(0, 10))}`);
+if (!reportOnly && webModules.size) throw new Error(`产物包含禁止的 shared/web.js：${[...webModules].join(', ')}`);

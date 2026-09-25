@@ -5,14 +5,16 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const expected = [
-  '../../content/question-meanings.js',
-  '../../content/kanji-unit-runtime.js',
-  '../../features/content/distinction-reviews.js',
-  '../../content/kanji-reading-usage.js',
-  '../../features/content/kanji-variants.js',
-  '../../features/content/kanji-readings.js',
-  '../../features/content/grammar-key-points.js',
-  '../../content/pitch-accent.js'
+  './content/question-meanings.js',
+  './content/kanji-unit-runtime.js',
+  './features/content/distinction-reviews.js',
+  './content/kanji-reading-usage.js',
+  './features/content/kanji-variants.js',
+  './features/content/kanji-readings.js',
+  './features/content/grammar-key-points.js',
+  './content/pitch-accent.js',
+  './grammar-foundation/grammar.js',
+  './grammar-advanced/grammar.js'
 ];
 const calls = [];
 
@@ -44,8 +46,10 @@ if (!calls.length) throw new Error('构建产物里没有 require.async 调用')
 for (const call of calls) {
   const sourcePath = call.request.includes('/features/content/')
     ? path.join(root, '../wechat-miniprogram/src/features/content', path.basename(call.request))
+    : call.request.includes('/grammar-')
+      ? null
     : path.join(root, '../wechat-miniprogram/src/content', path.basename(call.request));
-  if (fs.existsSync(sourcePath)
+  if (sourcePath && fs.existsSync(sourcePath)
     && !fs.readFileSync(path.join(dist, ...call.target.split('/'))).equals(fs.readFileSync(sourcePath))) {
     throw new Error(`${call.caller}: dist/${call.target} 与原始出厂内容不同，疑似被 Webpack 编译或改写`);
   }
@@ -54,5 +58,5 @@ for (const call of calls) {
 const result = { expectedTargetCount: expected.length, callCount: calls.length, resolvedTargetCount: found.size, calls };
 const report = path.join(root, 'reports/require-async-paths.json');
 fs.writeFileSync(report, `${JSON.stringify(result, null, 2)}\n`);
-console.log(`require.async 路径校验通过：${calls.length} 次调用，${found.size} 个独立目标；8 个出厂模块均存在。`);
+console.log(`require.async 路径校验通过：${calls.length} 次调用，${found.size} 个独立目标；${expected.length} 个目标模块均存在。`);
 for (const call of calls) console.log(`  ${call.caller} -> ${call.request} -> dist/${call.target}`);
