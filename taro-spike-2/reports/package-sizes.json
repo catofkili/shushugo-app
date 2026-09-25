@@ -1,0 +1,128 @@
+{
+  "limitBytes": 2097152,
+  "packages": {
+    "main": {
+      "bytes": 1256398,
+      "mib": 1.198,
+      "passes": true
+    },
+    "features": {
+      "bytes": 1835040,
+      "mib": 1.75,
+      "passes": true
+    }
+  },
+  "totalBytes": 3091438,
+  "files": [
+    {
+      "path": "features/vocab-test/index.js",
+      "package": "features",
+      "bytes": 1834501
+    },
+    {
+      "path": "assets/sql-wasm.wasm",
+      "package": "main",
+      "bytes": 659730
+    },
+    {
+      "path": "app.wxss",
+      "package": "main",
+      "bytes": 253324
+    },
+    {
+      "path": "vendors.js",
+      "package": "main",
+      "bytes": 152306
+    },
+    {
+      "path": "taro.js",
+      "package": "main",
+      "bytes": 127241
+    },
+    {
+      "path": "base.wxml",
+      "package": "main",
+      "bytes": 56670
+    },
+    {
+      "path": "runtime.js",
+      "package": "main",
+      "bytes": 2310
+    },
+    {
+      "path": "app.js",
+      "package": "main",
+      "bytes": 1072
+    },
+    {
+      "path": "utils.wxs",
+      "package": "main",
+      "bytes": 997
+    },
+    {
+      "path": "pages/index/index.js",
+      "package": "main",
+      "bytes": 751
+    },
+    {
+      "path": "vendors.js.LICENSE.txt",
+      "package": "main",
+      "bytes": 729
+    },
+    {
+      "path": "project.config.json",
+      "package": "main",
+      "bytes": 443
+    },
+    {
+      "path": "features/vocab-test/index.js.LICENSE.txt",
+      "package": "features",
+      "bytes": 378
+    },
+    {
+      "path": "app.json",
+      "package": "main",
+      "bytes": 264
+    },
+    {
+      "path": "comp.js",
+      "package": "main",
+      "bytes": 171
+    },
+    {
+      "path": "comp.wxml",
+      "package": "main",
+      "bytes": 140
+    },
+    {
+      "path": "comp.json",
+      "package": "main",
+      "bytes": 86
+    },
+    {
+      "path": "pages/index/index.json",
+      "package": "main",
+      "bytes": 84
+    },
+    {
+      "path": "features/vocab-test/index.json",
+      "package": "features",
+      "bytes": 81
+    },
+    {
+      "path": "features/vocab-test/index.wxml",
+      "package": "features",
+      "bytes": 80
+    },
+    {
+      "path": "pages/index/index.wxml",
+      "package": "main",
+      "bytes": 80
+    },
+    {
+      "path": "features/vocab-test/index.wxss",
+      "package": "features",
+      "bytes": 0
+    }
+  ]
+}

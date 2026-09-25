@@ -1,0 +1,10 @@
+export default {
+  pages: ['pages/index/index'],
+  subPackages: [{ root: 'features', pages: ['vocab-test/index'] }],
+  window: {
+    navigationBarTitleText: 'ShuShuGo · 路线 A 试验',
+    navigationBarBackgroundColor: '#FBF6EC',
+    navigationBarTextStyle: 'black',
+    backgroundColor: '#FBF6EC'
+  }
+};

@@ -1,0 +1,18 @@
+{
+  "description": "ShuShuGo Taro spike 2 (isolated; no upload)",
+  "miniprogramRoot": "dist/",
+  "compileType": "miniprogram",
+  "projectname": "shushugo-taro-spike-2",
+  "appid": "wxfbdb3cd03f09fa7d",
+  "setting": {
+    "es6": true,
+    "minified": true,
+    "urlCheck": true,
+    "postcss": true,
+    "minifyWXML": true,
+    "minifyWXSS": true,
+    "uploadWithSourceMap": false
+  },
+  "condition": {},
+  "packOptions": { "ignore": [] }
+}
