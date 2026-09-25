@@ -192,3 +192,59 @@ WXSS 报错来自一个 `::highlight` 选择器，真正难的弹层 / DOM / 真
 </table>
 
 完整报告：[网页 / 小程序首页对照](assets/route-b-parity/report.html)。后续每次网页 UI 改动仍须在同一提交更新对应小程序文件，并检查实际对照报告；映射表里未登记的 Web 组件变更会被拦下，须先确定它的小程序对应项。
+
+## 路线 A 第二轮实测记录（2026-09-25）
+
+> 结论：生产构建与包体门槛通过，但查词汇量主流程未走通，视觉差异明显；路线 A 本轮不通过。
+
+### 实验边界
+
+- 试验在独立 worktree 分支 `codex/taro-spike-2` 执行，基于当时本地 `main` 的 `48c3b6a`。Taro 4.2.1、React 18.3.1、Webpack 5、`@tarojs/plugin-html` 生产构建成功。
+- 页面入口直接导入 `frontend/src/pages/VocabTestPage.tsx`。`VocabTestPage.tsx` 与 `WordStudy.tsx` 的页面源码 diff 均为空；没有改 `frontend/src/`，没有改路线 B 配对表。
+- 网页对照使用隔离 Vite 端口 5194，出厂数据库由仅绑定 `127.0.0.1:5195` 的临时服务提供；开发者工具只打开试验项目。云端地址与 ID 均清空，只用 `frontend/public/nihongo.db`，未读取 `.local/live.db`，没有上传、预览或提审。两个临时服务已关闭。
+- 主目录的 5173 学习页没有操作或刷新。网页源文件、学习数据和已有未提交改动未触碰。
+
+### 六条过关条件
+
+| # | 结果 | 数字与证据 |
+|---|---|---|
+| 1 | **未通过（源码部分同源）** | `VocabTestPage.tsx` 由 Taro 入口直接 import，两个页面文件的 diff 为空；但 `WordStudy.tsx` 未编译。第 3 步未通过后，按本计划条件跳过第 4 步。Taro 侧适配列于下表。 |
+| 2 | **部分通过** | 主包 **1,256,398 B（1.198 MiB）**；`features` 分包 **1,835,040 B（1.750 MiB）**；实测合计 **3,091,438 B（2.948 MiB）**。主包与该分包均低于 **2,097,152 B（2 MiB）**。主包含 `sql-wasm.wasm` 的 **659,730 B**。全部页面迁移未估；Webpack 另有共享 entrypoint **2.02 MiB** 警告，分包根目录的实测数字见 `taro-spike-2/reports/package-sizes.json`。 |
+| 3 | **未通过** | 开发者工具能显示查词汇量落地页，但“开始测验”无状态变化。`Element.tap()`、`trigger tap`、`dispatchEvent click` 和界面点击均未触发页面跳转；未到第 1 题，无法答 5 题、提前交卷或查看结果。 |
+| 4 | **未测** | 没有“点评分 → 下一张”可用流程，因此没有 20 次计时、中位数或最大值，也没有与原生版比较。未生成预览二维码：本轮硬规则禁止上传或预览；真机验收待以后获准生成二维码后进行。 |
+| 5 | **未通过** | 两端均截在查词汇量落地页。Taro 截图出现 🦫 占位表情，网页使用原吉祥物图；Taro 的文字、卡片和留白也明显更小。网页 DOM 视口为 **375×812**，截图接口实际输出 **375×780**；DevTools 截图为 **476×1030**。对照图见下方。 |
+| 6 | **通过** | `cd frontend && npm run check` 通过；`npm test` 通过，**112 个测试文件通过、2 个跳过；789 项测试通过、26 项跳过**。网页只在 5194 对照，没有改源码；5173 未操作。 |
+
+<table>
+  <tr><th>网页：DOM 视口 375×812；截图文件 375×780</th><th>Taro：微信开发者工具落地页，截图 476×1030</th></tr>
+  <tr>
+    <td><img src="assets/taro-spike-2/web-vocab-intro-viewport-375x812-image-375x780.png" width="375" alt="隔离端口网页查词汇量落地页"></td>
+    <td><img src="assets/taro-spike-2/taro-vocab-intro-devtools-476x1030.png" width="375" alt="Taro 试验版查词汇量落地页"></td>
+  </tr>
+</table>
+
+### Taro 侧适配与影响
+
+| 文件 | 行数 | 内容与网页影响 |
+|---|---:|---|
+| `taro-spike-2/src/features/vocab-test/index.tsx` | 18 | 等待现有 `database-store` 从出厂库就绪，再直接渲染原 `VocabTestPage`；只影响试验入口。 |
+| `taro-spike-2/src/platform/iframe-polyfill.weapp.ts`、`src/app.tsx` | 17、10 | 补 `HTMLIFrameElement`（React DOM 报错点为 `react-dom.development.js:8445`）及 `document.documentElement` 属性桩；仅 Taro 试验启用。 |
+| `taro-spike-2/src/platform/mascot.weapp.tsx` | 16 | 用 🦫 表情替代网页吉祥物素材；这是截图中可见的差异，不能算视觉同源。 |
+| `taro-spike-2/scripts/taro-content.cjs` | 17 | 为单页静态打入题意内容，绕过 Taro 产物中不可用的 `require.async`；其他内容加载器在此试验页中不工作。 |
+| `taro-spike-2/scripts/offline-config.cjs` | 15 | 清空云地址与 ID，题库地址指向本机 5195；不接正式服务。 |
+| `taro-spike-2/scripts/strip-weapp-css.cjs` | 51 | 过滤器报告剥除 **100 条选择器记录**，包括 `:where`、`:has`、`::highlight`、`@layer` 相关规则及部分伪元素 / 相邻兄弟选择器；会造成样式损失。 |
+| `wechat-miniprogram/scripts/shared/shims-map.mjs`、`build-shared.mjs` | 36；文件净变化 38 行新增 / 34 行删除 | 将 `SHIMS` 抽为同一份映射供共享构建复用；只在试验分支提交，未合入主分支。 |
+
+未用于最终构建的 `src/platform/react-dom.weapp.ts` 等失败尝试也保留在归档快照中，没有删除。
+
+### 全量迁移工作量
+
+- 静态盘点为 **34 个 `frontend/src/pages/*.tsx` 文件**；本次只验证 VocabTest，仍有 **33 个页面**未在 Taro 验证，其中包括 `WordStudy.tsx`。另有 **28 个**含浏览器专用 API 的 TSX 文件，以及 **13 处** `createPortal`。这些数字可能重叠，不能相加当作独立适配项。
+- 本轮只完成一个页面的生产打包与落地页渲染，且在完整答题流程前受阻；没有可用于外推的“每页通过工时”，所以全量迁移的日历工时仍为**未知**。现阶段能确认的是 33 页、28 个浏览器 API 文件、13 处 Portal 尚未完成盘点适配；继续估时会变成猜测。
+
+### 归档与建议
+
+- 完整试验快照（包括 Taro 源码、生产 `dist`、依赖锁文件、体积统计、CSS 清单和截图）位于 `refs/archive/worktree/taro-spike-2`，提交为 `152c4e681053798129244135c1f197d05b34903f`。需要复查时可运行 `git worktree add /tmp/taro-spike-2 refs/archive/worktree/taro-spike-2`。
+- 没有遇到主包或分包超过 2 MiB 的数字硬阻塞；路线 A 未通过的决定性证据是页面交互未工作，且截图不一致。速度与 WordStudy 仍无实测证据。
+
+**建议走路线 B**：A 的查词汇量主流程仍未通，视觉差异明显，WordStudy 与真机性能也没有通过证据；当前继续 A 的剩余工作量无法可靠估算。
