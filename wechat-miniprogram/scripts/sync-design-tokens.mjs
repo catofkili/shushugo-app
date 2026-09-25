@@ -26,7 +26,10 @@ function supported(values) {
   const result = new Map();
   for (const [key, value] of values) {
     if (!/^(--ds-|--zoo-|--color-|--form-control-|--jelly-|--glass-)/.test(key)) continue;
-    const normalized = wxssFallbacks.get(key) ?? value;
+    let normalized = wxssFallbacks.get(key) ?? value;
+    if (/^--ds-(?:radius|font-size)-/.test(key)) {
+      normalized = normalized.replace(/(-?(?:\d+\.?\d*|\.\d+))px\b/g, (_, pixels) => `${Number(pixels) * 2}rpx`);
+    }
     if (/color-mix\(|\b(?:oklch|lab|lch|color)\(|\b(?:min|max|clamp)\(/i.test(normalized)) continue;
     result.set(key, normalized);
   }

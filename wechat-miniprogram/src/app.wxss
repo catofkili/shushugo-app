@@ -11,7 +11,7 @@ button::after { border: 0; }
 
 .zoo-card {
   border: 2rpx solid var(--ds-line, rgba(114, 84, 52, 0.08));
-  border-radius: 30rpx;
+  border-radius: var(--ds-radius-card, 40rpx);
   background: var(--ds-surface, #fbf5e9);
   box-shadow: var(--ds-shadow, 0 12rpx 30rpx rgba(91, 67, 42, 0.08));
 }

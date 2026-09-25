@@ -47,6 +47,17 @@
   --ds-danger: #C2493D;
   --ds-shadow: 0 1px 2px rgba(60, 45, 30, 0.05), 0 8px 24px -10px rgba(60, 45, 30, 0.14);
   --ds-shadow-lg: 0 2px 6px rgba(60, 45, 30, 0.06), 0 22px 44px -14px rgba(60, 45, 30, 0.22);
+  --ds-radius-input: 12px;
+  --ds-radius-card: 20px;
+  --ds-radius-inset: 14px;
+  --ds-radius-button: 14px;
+  --ds-radius-pill: 999px;
+  --ds-font-size-body: 14px;
+  --ds-font-size-section: 13px;
+  --ds-font-size-kicker: 12px;
+  --ds-font-size-button: 15px;
+  --ds-font-size-chip: 13px;
+  --ds-font-size-pill: 12px;
 
   /* 老变量也指过来：大量组件类（zoo-*、wl-*、cf-*、kr-*…）直接读它们 */
   --zoo-surface: #fff;
@@ -87,6 +98,17 @@
   --ds-danger: #F08A7E;
   --ds-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), 0 10px 26px -12px rgba(0, 0, 0, 0.5);
   --ds-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.3), 0 24px 48px -16px rgba(0, 0, 0, 0.6);
+  --ds-radius-input: 12px;
+  --ds-radius-card: 20px;
+  --ds-radius-inset: 14px;
+  --ds-radius-button: 14px;
+  --ds-radius-pill: 999px;
+  --ds-font-size-body: 14px;
+  --ds-font-size-section: 13px;
+  --ds-font-size-kicker: 12px;
+  --ds-font-size-button: 15px;
+  --ds-font-size-chip: 13px;
+  --ds-font-size-pill: 12px;
 
   --zoo-ink: #F2EFE8;
   --color-border-light: rgba(255, 255, 255, 0.07);
@@ -293,29 +315,29 @@
 [data-theme] .control-cyan::placeholder,
 [data-theme] .control-cyan-search-input::placeholder { color: var(--ds-ink-3) !important; }
 [data-theme] .control-cyan-icon { color: var(--ds-ink-3) !important; }
-:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select) { border-radius: 12px; }
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select) { border-radius: var(--ds-radius-input); }
 :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select):focus {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--ds-primary) 55%, transparent);
   border-color: transparent;
 }
 
 /* —————————————————— 7. 设计系统自己的小件（新写的 JSX 用） —————————————————— */
-.ds-card { border: 1px solid var(--ds-line); border-radius: 20px; background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink); }
-.ds-inset { border-radius: 14px; background: var(--ds-inset); }
-.ds-kicker { margin: 0; color: var(--ds-ink-3); font-size: 12px; font-weight: 700; letter-spacing: .02em; }
-.ds-section { margin: 22px 4px 8px; color: var(--ds-ink-2); font-size: 13px; font-weight: 800; }
+.ds-card { border: 1px solid var(--ds-line); border-radius: var(--ds-radius-card); background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink); }
+.ds-inset { border-radius: var(--ds-radius-inset); background: var(--ds-inset); }
+.ds-kicker { margin: 0; color: var(--ds-ink-3); font-size: var(--ds-font-size-kicker); font-weight: 700; letter-spacing: .02em; }
+.ds-section { margin: 22px 4px 8px; color: var(--ds-ink-2); font-size: var(--ds-font-size-section); font-weight: 800; }
 .ds-muted { color: var(--ds-ink-3); }
 .ds-ink2 { color: var(--ds-ink-2); }
 .ds-num { font-variant-numeric: tabular-nums; }
-.ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 18px; border: 0; border-radius: 14px; background: var(--ds-primary); color: var(--ds-on-primary); font-size: 15px; font-weight: 800; transition: transform .12s, filter .12s; }
+.ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 18px; border: 0; border-radius: var(--ds-radius-button); background: var(--ds-primary); color: var(--ds-on-primary); font-size: var(--ds-font-size-button); font-weight: 800; transition: transform .12s, filter .12s; }
 .ds-btn:active { transform: scale(.98); }
 .ds-btn:hover { filter: brightness(1.03); }
-.ds-btn-soft { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 18px; border: 0; border-radius: 14px; background: var(--ds-inset); color: var(--ds-ink); font-size: 15px; font-weight: 800; }
+.ds-btn-soft { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 18px; border: 0; border-radius: var(--ds-radius-button); background: var(--ds-inset); color: var(--ds-ink); font-size: var(--ds-font-size-button); font-weight: 800; }
 .ds-btn-soft:hover { background: var(--ds-inset-2); }
-.ds-chip { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 13px; font-weight: 700; white-space: nowrap; transition: background-color .15s, color .15s; }
+.ds-chip { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--ds-radius-pill); background: var(--ds-inset); color: var(--ds-ink-2); font-size: var(--ds-font-size-chip); font-weight: 700; white-space: nowrap; transition: background-color .15s, color .15s; }
 .ds-chip:hover { background: var(--ds-inset-2); }
 .ds-chip.on, .ds-chip[aria-pressed="true"] { background: var(--ds-primary); color: var(--ds-on-primary); }
-.ds-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 12px; font-weight: 700; }
+.ds-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--ds-radius-pill); background: var(--ds-inset); color: var(--ds-ink-2); font-size: var(--ds-font-size-pill); font-weight: 700; }
 .ds-pill-primary { background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
 .ds-pill-warn { background: var(--ds-warn-tint); color: var(--ds-warn-ink); }
 .ds-bar { height: 8px; overflow: hidden; border-radius: 999px; background: var(--ds-inset-2); }
