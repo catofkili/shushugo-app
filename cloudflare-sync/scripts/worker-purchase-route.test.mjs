@@ -149,7 +149,8 @@ try {
     source: "app_store",
     productId: "shushugo_pro_yearly",
     expiresAt: futureDate,
-    updatedAt: routeDb.entitlement.updated_at
+    updatedAt: routeDb.entitlement.updated_at,
+    launchGift: { open: false, claimUntil: null }
   });
   assert.equal(routeDb.entitlement.transaction_id, "T2", "route must replace missed T1 renewal with T2");
 

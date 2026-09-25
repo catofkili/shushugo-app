@@ -13,7 +13,9 @@
   ],
   "approvedExemptions": [
     "GitHub Pages 子路径图片",
-    "Taro route A spike only; isolated component adapters preserve web behavior and do not change native pages"
+    "Taro route A spike only; isolated component adapters preserve web behavior and do not change native pages",
+    "仅开发模式（import.meta.env.DEV）生效的调试开关，正式构建和小程序里都不存在，无需原生页面对应（用户 2026-09-26 同意提交）",
+    "用户 2026-09-25 决定走路线 A（Taro，页面只保留网页一份源码），原生小程序页面停止维护、将整体替换，不再逐页配对"
   ],
   "pairs": [
     {
