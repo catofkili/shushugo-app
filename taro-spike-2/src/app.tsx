@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react';
 import { View } from '@tarojs/components';
+import './platform/app-polyfills.weapp';
 import './platform/iframe-polyfill.weapp';
 import './app.css';
 import '../../frontend/src/styles.css';

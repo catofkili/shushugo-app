@@ -2,18 +2,18 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1488704,
-      "mib": 1.42,
+      "bytes": 1484655,
+      "mib": 1.416,
       "passes": true
     },
     "quiz": {
-      "bytes": 1554871,
-      "mib": 1.483,
+      "bytes": 1312691,
+      "mib": 1.252,
       "passes": true
     },
     "study": {
-      "bytes": 2028608,
-      "mib": 1.935,
+      "bytes": 1749161,
+      "mib": 1.668,
       "passes": true
     },
     "features": {
@@ -27,7 +27,7 @@
       "passes": true
     }
   },
-  "totalBytes": 7353345,
+  "totalBytes": 6827669,
   "files": [
     {
       "path": "assets/sql-wasm.wasm",
@@ -40,29 +40,19 @@
       "bytes": 613408
     },
     {
-      "path": "quiz/sub-common/3ae043a1b5b3006bb1d0724915f10689.js",
+      "path": "quiz/sub-common/57f3e5efe2d941969cc7a7b8194c3b41.js",
       "package": "quiz",
-      "bytes": 548921
+      "bytes": 550304
     },
     {
-      "path": "study/sub-common/3ae043a1b5b3006bb1d0724915f10689.js",
+      "path": "study/sub-common/57f3e5efe2d941969cc7a7b8194c3b41.js",
       "package": "study",
-      "bytes": 548921
+      "bytes": 550304
     },
     {
       "path": "study/word-study/index.js",
       "package": "study",
-      "bytes": 511317
-    },
-    {
-      "path": "quiz/sub-common/02aa333f2b6ffe685515b7da73065954.js",
-      "package": "quiz",
-      "bytes": 404241
-    },
-    {
-      "path": "study/sub-common/02aa333f2b6ffe685515b7da73065954.js",
-      "package": "study",
-      "bytes": 404241
+      "bytes": 474869
     },
     {
       "path": "content/kanji-unit-runtime.js",
@@ -97,12 +87,7 @@
     {
       "path": "taro.js",
       "package": "main",
-      "bytes": 139340
-    },
-    {
-      "path": "vendors.js",
-      "package": "main",
-      "bytes": 121749
+      "bytes": 139341
     },
     {
       "path": "features/content/kanji-readings.js",
@@ -110,27 +95,32 @@
       "bytes": 115462
     },
     {
+      "path": "vendors.js",
+      "package": "main",
+      "bytes": 114375
+    },
+    {
       "path": "base.wxml",
       "package": "main",
       "bytes": 62282
     },
     {
-      "path": "quiz/sub-common/6e8adf4d8ba92c911f58e1b7a0b524a8.js",
+      "path": "quiz/sub-common/3f307a764bb5289eb93fb07e943a327f.js",
       "package": "quiz",
       "bytes": 60463
     },
     {
-      "path": "study/sub-common/6e8adf4d8ba92c911f58e1b7a0b524a8.js",
+      "path": "study/sub-common/3f307a764bb5289eb93fb07e943a327f.js",
       "package": "study",
       "bytes": 60463
     },
     {
-      "path": "quiz/sub-common/34abca01da8e8d38cefa542ba6bceb3a.js",
+      "path": "quiz/sub-common/704509f0d944bc31a06f6221bb3c1e89.js",
       "package": "quiz",
       "bytes": 46748
     },
     {
-      "path": "study/sub-common/34abca01da8e8d38cefa542ba6bceb3a.js",
+      "path": "study/sub-common/704509f0d944bc31a06f6221bb3c1e89.js",
       "package": "study",
       "bytes": 46748
     },
@@ -140,17 +130,27 @@
       "bytes": 46508
     },
     {
-      "path": "quiz/vocab-test/index.js",
+      "path": "quiz/sub-common/1ad0e6b87f72a574748b26b2954afb44.js",
       "package": "quiz",
-      "bytes": 37580
+      "bytes": 41185
     },
     {
-      "path": "quiz/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js",
+      "path": "study/sub-common/1ad0e6b87f72a574748b26b2954afb44.js",
+      "package": "study",
+      "bytes": 41185
+    },
+    {
+      "path": "quiz/vocab-test/index.js",
+      "package": "quiz",
+      "bytes": 38399
+    },
+    {
+      "path": "quiz/sub-common/8786d5c3ca7217b0e0de6432d6c28d94.js",
       "package": "quiz",
       "bytes": 29259
     },
     {
-      "path": "study/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js",
+      "path": "study/sub-common/8786d5c3ca7217b0e0de6432d6c28d94.js",
       "package": "study",
       "bytes": 29259
     },
@@ -160,22 +160,42 @@
       "bytes": 29090
     },
     {
-      "path": "quiz/sub-common/f84a866875c3802ecad242e64aaedb7e.js",
+      "path": "quiz/sub-common/59140675711e89600872eeba18de616e.js",
+      "package": "quiz",
+      "bytes": 28541
+    },
+    {
+      "path": "study/sub-common/59140675711e89600872eeba18de616e.js",
+      "package": "study",
+      "bytes": 28541
+    },
+    {
+      "path": "quiz/sub-common/2a1e6fff4cc7db5a7ba400f6270bf8b4.js",
       "package": "quiz",
       "bytes": 27606
     },
     {
-      "path": "study/sub-common/f84a866875c3802ecad242e64aaedb7e.js",
+      "path": "study/sub-common/2a1e6fff4cc7db5a7ba400f6270bf8b4.js",
       "package": "study",
       "bytes": 27606
     },
     {
-      "path": "quiz/sub-common/c2676f6fda65a4d11d9f6b50f6899e14.js",
+      "path": "quiz/sub-common/0cbd0300bac7809d012e4af19066215f.js",
+      "package": "quiz",
+      "bytes": 23510
+    },
+    {
+      "path": "study/sub-common/0cbd0300bac7809d012e4af19066215f.js",
+      "package": "study",
+      "bytes": 23510
+    },
+    {
+      "path": "quiz/sub-common/d9ce608fe940f7d2bb06fb7d582d5eb9.js",
       "package": "quiz",
       "bytes": 21250
     },
     {
-      "path": "study/sub-common/c2676f6fda65a4d11d9f6b50f6899e14.js",
+      "path": "study/sub-common/d9ce608fe940f7d2bb06fb7d582d5eb9.js",
       "package": "study",
       "bytes": 21250
     },
@@ -190,12 +210,12 @@
       "bytes": 19048
     },
     {
-      "path": "quiz/sub-common/1e1afabeec6a346309db1b216fa25da5.js",
+      "path": "quiz/sub-common/35051463b970943ac16863360eaf9ef0.js",
       "package": "quiz",
       "bytes": 18995
     },
     {
-      "path": "study/sub-common/1e1afabeec6a346309db1b216fa25da5.js",
+      "path": "study/sub-common/35051463b970943ac16863360eaf9ef0.js",
       "package": "study",
       "bytes": 18995
     },
@@ -210,24 +230,24 @@
       "bytes": 18510
     },
     {
-      "path": "quiz/sub-common/1ad6a7f8f63e443489d1850c48ea504e.js",
+      "path": "quiz/sub-common/b179b729443ad6e5b35d37c7fb513f28.js",
       "package": "quiz",
       "bytes": 18481
     },
     {
-      "path": "study/sub-common/1ad6a7f8f63e443489d1850c48ea504e.js",
+      "path": "study/sub-common/b179b729443ad6e5b35d37c7fb513f28.js",
       "package": "study",
       "bytes": 18481
     },
     {
-      "path": "quiz/sub-common/4fda187aea66f502cd5beef836191ddf.js",
+      "path": "quiz/sub-common/3c9fe44e86881913534e29eb9cbf2114.js",
       "package": "quiz",
-      "bytes": 18149
+      "bytes": 18086
     },
     {
-      "path": "study/sub-common/4fda187aea66f502cd5beef836191ddf.js",
+      "path": "study/sub-common/3c9fe44e86881913534e29eb9cbf2114.js",
       "package": "study",
-      "bytes": 18149
+      "bytes": 18086
     },
     {
       "path": "assets/brand/mood-sleep.webp",
@@ -240,14 +260,14 @@
       "bytes": 16412
     },
     {
-      "path": "quiz/sub-common/1beb5a63afad9733b4d96ff342525892.js",
+      "path": "quiz/sub-common/f9b280ccf7e0c0e4d1b8bee50e6f7ba8.js",
       "package": "quiz",
-      "bytes": 16401
+      "bytes": 16391
     },
     {
-      "path": "study/sub-common/1beb5a63afad9733b4d96ff342525892.js",
+      "path": "study/sub-common/f9b280ccf7e0c0e4d1b8bee50e6f7ba8.js",
       "package": "study",
-      "bytes": 16401
+      "bytes": 16391
     },
     {
       "path": "assets/brand/mood-ask.webp",
@@ -270,454 +290,539 @@
       "bytes": 14916
     },
     {
-      "path": "quiz/sub-common/5986b9a47f582fee4bb57e426d1017ac.js",
+      "path": "quiz/sub-common/da2ac94bffd50325c844f8c55fe80896.js",
       "package": "quiz",
-      "bytes": 14635
+      "bytes": 14810
     },
     {
-      "path": "study/sub-common/5986b9a47f582fee4bb57e426d1017ac.js",
+      "path": "study/sub-common/da2ac94bffd50325c844f8c55fe80896.js",
       "package": "study",
-      "bytes": 14635
+      "bytes": 14810
     },
     {
-      "path": "quiz/sub-common/acd3e96e4582971292964da8bc97a460.js",
+      "path": "quiz/sub-common/e93b42a5987e916f636e6e193235bbb0.js",
       "package": "quiz",
       "bytes": 14585
     },
     {
-      "path": "study/sub-common/acd3e96e4582971292964da8bc97a460.js",
+      "path": "study/sub-common/e93b42a5987e916f636e6e193235bbb0.js",
       "package": "study",
       "bytes": 14585
     },
     {
-      "path": "quiz/sub-common/486a2f6a6d529e153df05a2720cee41e.js",
+      "path": "quiz/sub-common/1a8eb83be325628c03123eec9bf46aa9.js",
       "package": "quiz",
-      "bytes": 10570
+      "bytes": 14545
     },
     {
-      "path": "study/sub-common/486a2f6a6d529e153df05a2720cee41e.js",
+      "path": "study/sub-common/1a8eb83be325628c03123eec9bf46aa9.js",
       "package": "study",
-      "bytes": 10570
+      "bytes": 14545
     },
     {
-      "path": "quiz/sub-common/1c30f4373d966859e7673818f3ac91c8.js",
+      "path": "quiz/sub-common/871a9249922382ce31b5624f7470ecef.js",
       "package": "quiz",
-      "bytes": 10472
+      "bytes": 11257
     },
     {
-      "path": "study/sub-common/1c30f4373d966859e7673818f3ac91c8.js",
+      "path": "study/sub-common/871a9249922382ce31b5624f7470ecef.js",
       "package": "study",
-      "bytes": 10472
+      "bytes": 11257
     },
     {
-      "path": "quiz/sub-common/66be035b9b519c71ca9ff98265d8efed.js",
+      "path": "quiz/sub-common/dd6db7fe04e274a8a51e6f1a7564efdf.js",
       "package": "quiz",
-      "bytes": 10059
+      "bytes": 10649
     },
     {
-      "path": "study/sub-common/66be035b9b519c71ca9ff98265d8efed.js",
+      "path": "study/sub-common/dd6db7fe04e274a8a51e6f1a7564efdf.js",
       "package": "study",
-      "bytes": 10059
+      "bytes": 10649
     },
     {
-      "path": "quiz/sub-common/4cda6fed0d2352f896aebb3e419cd3e1.js",
+      "path": "quiz/sub-common/b7b0beb258e2a92ae890e204d591080b.js",
       "package": "quiz",
-      "bytes": 9404
+      "bytes": 10525
     },
     {
-      "path": "study/sub-common/4cda6fed0d2352f896aebb3e419cd3e1.js",
+      "path": "study/sub-common/b7b0beb258e2a92ae890e204d591080b.js",
       "package": "study",
-      "bytes": 9404
+      "bytes": 10525
     },
     {
-      "path": "quiz/sub-common/bf92b9b4be40a89907c8024d20341c60.js",
+      "path": "quiz/sub-common/6a0c3a6944a4a372546991384d81de1e.js",
+      "package": "quiz",
+      "bytes": 10454
+    },
+    {
+      "path": "study/sub-common/6a0c3a6944a4a372546991384d81de1e.js",
+      "package": "study",
+      "bytes": 10454
+    },
+    {
+      "path": "quiz/sub-common/48dc7f57e225670273b6f67cd5f890b4.js",
+      "package": "quiz",
+      "bytes": 10023
+    },
+    {
+      "path": "study/sub-common/48dc7f57e225670273b6f67cd5f890b4.js",
+      "package": "study",
+      "bytes": 10023
+    },
+    {
+      "path": "quiz/sub-common/d88ad4703dea5770f1f12bd499022571.js",
+      "package": "quiz",
+      "bytes": 9359
+    },
+    {
+      "path": "study/sub-common/d88ad4703dea5770f1f12bd499022571.js",
+      "package": "study",
+      "bytes": 9359
+    },
+    {
+      "path": "quiz/sub-common/b190d086278494a3ca943bb8666e21cf.js",
       "package": "quiz",
       "bytes": 8612
     },
     {
-      "path": "study/sub-common/bf92b9b4be40a89907c8024d20341c60.js",
+      "path": "study/sub-common/b190d086278494a3ca943bb8666e21cf.js",
       "package": "study",
       "bytes": 8612
     },
     {
-      "path": "quiz/sub-common/a622fca19844a4171fa1d7a109b7a737.js",
+      "path": "quiz/sub-common/a496df5c8f4c4e9fc09b6dbe1961b82e.js",
+      "package": "quiz",
+      "bytes": 7912
+    },
+    {
+      "path": "study/sub-common/a496df5c8f4c4e9fc09b6dbe1961b82e.js",
+      "package": "study",
+      "bytes": 7912
+    },
+    {
+      "path": "quiz/sub-common/31c8ba41955be180838a71b26e70d716.js",
       "package": "quiz",
       "bytes": 7761
     },
     {
-      "path": "study/sub-common/a622fca19844a4171fa1d7a109b7a737.js",
+      "path": "study/sub-common/31c8ba41955be180838a71b26e70d716.js",
       "package": "study",
       "bytes": 7761
     },
     {
-      "path": "quiz/sub-common/ea47049e0c21935716fd9411e7b66a1d.js",
+      "path": "quiz/sub-common/db342047e064da3129c284cbd5667793.js",
       "package": "quiz",
-      "bytes": 7733
+      "bytes": 7724
     },
     {
-      "path": "study/sub-common/ea47049e0c21935716fd9411e7b66a1d.js",
+      "path": "study/sub-common/db342047e064da3129c284cbd5667793.js",
       "package": "study",
-      "bytes": 7733
+      "bytes": 7724
     },
     {
-      "path": "quiz/sub-common/f6fd3199210eee00595aa4cabd6051c8.js",
+      "path": "quiz/sub-common/bda783c94406e47a93343130e79d16ba.js",
       "package": "quiz",
-      "bytes": 7684
+      "bytes": 7650
     },
     {
-      "path": "study/sub-common/f6fd3199210eee00595aa4cabd6051c8.js",
+      "path": "study/sub-common/bda783c94406e47a93343130e79d16ba.js",
       "package": "study",
-      "bytes": 7684
+      "bytes": 7650
     },
     {
-      "path": "quiz/sub-common/048a7ac4ea618a91870c044e5aef72a9.js",
+      "path": "quiz/sub-common/0b23c6db62616ec61e249e2bd41b1242.js",
       "package": "quiz",
-      "bytes": 7670
+      "bytes": 7580
     },
     {
-      "path": "study/sub-common/048a7ac4ea618a91870c044e5aef72a9.js",
+      "path": "study/sub-common/0b23c6db62616ec61e249e2bd41b1242.js",
       "package": "study",
-      "bytes": 7670
+      "bytes": 7580
     },
     {
-      "path": "quiz/sub-common/6be2c600d1fbef70eaee57640f54fa94.js",
+      "path": "quiz/sub-common/171e40676e4d9439766a6948888a4e7d.js",
       "package": "quiz",
-      "bytes": 7659
+      "bytes": 6725
     },
     {
-      "path": "study/sub-common/6be2c600d1fbef70eaee57640f54fa94.js",
+      "path": "study/sub-common/171e40676e4d9439766a6948888a4e7d.js",
       "package": "study",
-      "bytes": 7659
+      "bytes": 6725
     },
     {
-      "path": "quiz/sub-common/d137996300ae8ff6468bc84f5b6921c1.js",
+      "path": "quiz/sub-common/2703e039caffbbddd36a1acfa64e0970.js",
       "package": "quiz",
-      "bytes": 6761
+      "bytes": 6606
     },
     {
-      "path": "study/sub-common/d137996300ae8ff6468bc84f5b6921c1.js",
+      "path": "study/sub-common/2703e039caffbbddd36a1acfa64e0970.js",
       "package": "study",
-      "bytes": 6761
+      "bytes": 6606
     },
     {
-      "path": "quiz/sub-common/217028d4066898ab7a565f7def7bc15b.js",
+      "path": "quiz/sub-common/c01e9dae0fd249b3e1fc3be52b762f8d.js",
       "package": "quiz",
-      "bytes": 6633
+      "bytes": 6501
     },
     {
-      "path": "study/sub-common/217028d4066898ab7a565f7def7bc15b.js",
+      "path": "study/sub-common/c01e9dae0fd249b3e1fc3be52b762f8d.js",
       "package": "study",
-      "bytes": 6633
+      "bytes": 6501
     },
     {
-      "path": "quiz/sub-common/8dfe5890a0f72cbab4196bbee3dcc417.js",
+      "path": "quiz/sub-common/dd8e57feaec741eda7751588c5617e32.js",
       "package": "quiz",
-      "bytes": 6529
+      "bytes": 6472
     },
     {
-      "path": "study/sub-common/8dfe5890a0f72cbab4196bbee3dcc417.js",
+      "path": "study/sub-common/dd8e57feaec741eda7751588c5617e32.js",
       "package": "study",
-      "bytes": 6529
+      "bytes": 6472
     },
     {
-      "path": "quiz/sub-common/e5831ecb14c8a76903ce86c87b6c0a44.js",
+      "path": "quiz/sub-common/5cd0a896fb25d7710db0390421c96953.js",
       "package": "quiz",
-      "bytes": 5810
+      "bytes": 5864
     },
     {
-      "path": "study/sub-common/e5831ecb14c8a76903ce86c87b6c0a44.js",
+      "path": "study/sub-common/5cd0a896fb25d7710db0390421c96953.js",
       "package": "study",
-      "bytes": 5810
+      "bytes": 5864
     },
     {
-      "path": "quiz/sub-common/6036885f7068873ac86cc29fba3efc5f.js",
+      "path": "quiz/sub-common/8e6f245ecb7520b330c7f3328ce87763.js",
+      "package": "quiz",
+      "bytes": 5809
+    },
+    {
+      "path": "study/sub-common/8e6f245ecb7520b330c7f3328ce87763.js",
+      "package": "study",
+      "bytes": 5809
+    },
+    {
+      "path": "quiz/sub-common/57c3e2426994e8de99556a2b81b218a3.js",
+      "package": "quiz",
+      "bytes": 5690
+    },
+    {
+      "path": "study/sub-common/57c3e2426994e8de99556a2b81b218a3.js",
+      "package": "study",
+      "bytes": 5690
+    },
+    {
+      "path": "quiz/sub-common/18c0cdab7b0c2d44913d8ffa1555af6c.js",
       "package": "quiz",
       "bytes": 5681
     },
     {
-      "path": "study/sub-common/6036885f7068873ac86cc29fba3efc5f.js",
+      "path": "study/sub-common/18c0cdab7b0c2d44913d8ffa1555af6c.js",
       "package": "study",
       "bytes": 5681
     },
     {
-      "path": "quiz/sub-common/cfb512dc3e6f0dcd6277bd96ec6ffffd.js",
+      "path": "quiz/sub-common/67a7b5648dee1dc910ca56c17e445ba8.js",
       "package": "quiz",
-      "bytes": 5397
+      "bytes": 5497
     },
     {
-      "path": "study/sub-common/cfb512dc3e6f0dcd6277bd96ec6ffffd.js",
+      "path": "study/sub-common/67a7b5648dee1dc910ca56c17e445ba8.js",
       "package": "study",
-      "bytes": 5397
+      "bytes": 5497
     },
     {
-      "path": "quiz/sub-common/22217c8bf87b4bf354d185505a3b1cf2.js",
+      "path": "quiz/sub-common/12667880ef659b5a2f053926d43dcbcb.js",
+      "package": "quiz",
+      "bytes": 5399
+    },
+    {
+      "path": "study/sub-common/12667880ef659b5a2f053926d43dcbcb.js",
+      "package": "study",
+      "bytes": 5399
+    },
+    {
+      "path": "quiz/sub-common/34d910cb8a1eb18b00c5ed5d6a8b33b4.js",
       "package": "quiz",
       "bytes": 5026
     },
     {
-      "path": "study/sub-common/22217c8bf87b4bf354d185505a3b1cf2.js",
+      "path": "study/sub-common/34d910cb8a1eb18b00c5ed5d6a8b33b4.js",
       "package": "study",
       "bytes": 5026
     },
     {
-      "path": "quiz/sub-common/9c06c22d2522a3e3c14449f1f52646ab.js",
+      "path": "app.js",
+      "package": "main",
+      "bytes": 4999
+    },
+    {
+      "path": "quiz/sub-common/3fead8d73de82e39b6562836fa4cf946.js",
       "package": "quiz",
       "bytes": 4866
     },
     {
-      "path": "study/sub-common/9c06c22d2522a3e3c14449f1f52646ab.js",
+      "path": "study/sub-common/3fead8d73de82e39b6562836fa4cf946.js",
       "package": "study",
       "bytes": 4866
     },
     {
-      "path": "quiz/sub-common/140b009028aff90c9b276c1afb79711f.js",
+      "path": "quiz/sub-common/4ebbce64adb553d4117a5d2da8879975.js",
       "package": "quiz",
       "bytes": 4481
     },
     {
-      "path": "study/sub-common/140b009028aff90c9b276c1afb79711f.js",
+      "path": "study/sub-common/4ebbce64adb553d4117a5d2da8879975.js",
       "package": "study",
       "bytes": 4481
     },
     {
-      "path": "quiz/sub-common/32bfefa351ea5ae444426d6b053a423d.js",
+      "path": "quiz/sub-common/60c732599d69d2e3e8e4dc79ebd87faa.js",
       "package": "quiz",
-      "bytes": 4365
+      "bytes": 4364
     },
     {
-      "path": "study/sub-common/32bfefa351ea5ae444426d6b053a423d.js",
+      "path": "study/sub-common/60c732599d69d2e3e8e4dc79ebd87faa.js",
       "package": "study",
-      "bytes": 4365
+      "bytes": 4364
     },
     {
-      "path": "quiz/sub-common/6b090506c60ac13067c1123beb17d68f.js",
+      "path": "quiz/sub-common/b7bb0a23a500022462b413d1ca30b903.js",
       "package": "quiz",
-      "bytes": 4209
+      "bytes": 4192
     },
     {
-      "path": "study/sub-common/6b090506c60ac13067c1123beb17d68f.js",
+      "path": "study/sub-common/b7bb0a23a500022462b413d1ca30b903.js",
       "package": "study",
-      "bytes": 4209
+      "bytes": 4192
     },
     {
-      "path": "quiz/sub-common/474f6a1f2032a41a76005d6c8f900309.js",
-      "package": "quiz",
-      "bytes": 3976
-    },
-    {
-      "path": "study/sub-common/474f6a1f2032a41a76005d6c8f900309.js",
-      "package": "study",
-      "bytes": 3976
-    },
-    {
-      "path": "quiz/sub-common/7dba71d64ddb42029f746cedc40e22a8.js",
+      "path": "quiz/sub-common/ea157baa2e1ba169dfd30a7acdd432dc.js",
       "package": "quiz",
       "bytes": 3958
     },
     {
-      "path": "study/sub-common/7dba71d64ddb42029f746cedc40e22a8.js",
+      "path": "study/sub-common/ea157baa2e1ba169dfd30a7acdd432dc.js",
       "package": "study",
       "bytes": 3958
     },
     {
-      "path": "quiz/sub-common/aa5c0d5ae2eaefa9d094f100792d05a1.js",
+      "path": "quiz/sub-common/28e2c8a1ee7abbc70e38c4e5b161277e.js",
       "package": "quiz",
-      "bytes": 3671
+      "bytes": 3954
     },
     {
-      "path": "study/sub-common/aa5c0d5ae2eaefa9d094f100792d05a1.js",
+      "path": "study/sub-common/28e2c8a1ee7abbc70e38c4e5b161277e.js",
       "package": "study",
-      "bytes": 3671
+      "bytes": 3954
     },
     {
-      "path": "quiz/sub-common/31db00687ed37439161ad06def50387a.js",
+      "path": "quiz/sub-common/89572928c2221ad954f2851258f029cc.js",
       "package": "quiz",
-      "bytes": 3525
+      "bytes": 3589
     },
     {
-      "path": "study/sub-common/31db00687ed37439161ad06def50387a.js",
+      "path": "study/sub-common/89572928c2221ad954f2851258f029cc.js",
       "package": "study",
-      "bytes": 3525
+      "bytes": 3589
     },
     {
-      "path": "quiz/sub-common/28ec64d4fabab98df88b036359c881e7.js",
+      "path": "quiz/sub-common/6ac67c162b81193fb15a8f9d6e8aaf84.js",
       "package": "quiz",
-      "bytes": 3434
+      "bytes": 3507
     },
     {
-      "path": "study/sub-common/28ec64d4fabab98df88b036359c881e7.js",
+      "path": "study/sub-common/6ac67c162b81193fb15a8f9d6e8aaf84.js",
       "package": "study",
-      "bytes": 3434
+      "bytes": 3507
     },
     {
-      "path": "quiz/sub-common/a9cea07dfad70f34c7f238f4de5d18a2.js",
+      "path": "quiz/sub-common/b4a39b13dd36c389fd761fb3376fda7f.js",
       "package": "quiz",
-      "bytes": 3415
+      "bytes": 3435
     },
     {
-      "path": "study/sub-common/a9cea07dfad70f34c7f238f4de5d18a2.js",
+      "path": "study/sub-common/b4a39b13dd36c389fd761fb3376fda7f.js",
       "package": "study",
-      "bytes": 3415
+      "bytes": 3435
     },
     {
-      "path": "quiz/sub-common/150fa1436fbe3958fd220f2e975564f4.js",
+      "path": "quiz/sub-common/57aadf40af84cd87f666abba1d1031b7.js",
       "package": "quiz",
-      "bytes": 3343
+      "bytes": 3430
     },
     {
-      "path": "study/sub-common/150fa1436fbe3958fd220f2e975564f4.js",
+      "path": "study/sub-common/57aadf40af84cd87f666abba1d1031b7.js",
       "package": "study",
-      "bytes": 3343
+      "bytes": 3430
     },
     {
-      "path": "quiz/sub-common/8825a63d0d48dbc7f17df4766abd115b.js",
+      "path": "quiz/sub-common/ae36ab980e30ededfc72fd25839695a0.js",
       "package": "quiz",
-      "bytes": 3159
+      "bytes": 3414
     },
     {
-      "path": "study/sub-common/8825a63d0d48dbc7f17df4766abd115b.js",
+      "path": "study/sub-common/ae36ab980e30ededfc72fd25839695a0.js",
       "package": "study",
-      "bytes": 3159
+      "bytes": 3414
     },
     {
-      "path": "quiz/sub-common/e33c857c1005768479c42cbd47b7b6b0.js",
+      "path": "quiz/sub-common/f23e4917554eaf991ccce32060f5fe3e.js",
       "package": "quiz",
-      "bytes": 3063
+      "bytes": 3334
     },
     {
-      "path": "study/sub-common/e33c857c1005768479c42cbd47b7b6b0.js",
+      "path": "study/sub-common/f23e4917554eaf991ccce32060f5fe3e.js",
       "package": "study",
-      "bytes": 3063
+      "bytes": 3334
     },
     {
-      "path": "quiz/sub-common/baee45b69300f154618d13c31ef5ffdd.js",
+      "path": "quiz/sub-common/3b4f072fb4a1467d5bbf639979561f16.js",
       "package": "quiz",
-      "bytes": 2920
+      "bytes": 3158
     },
     {
-      "path": "study/sub-common/baee45b69300f154618d13c31ef5ffdd.js",
+      "path": "study/sub-common/3b4f072fb4a1467d5bbf639979561f16.js",
       "package": "study",
-      "bytes": 2920
+      "bytes": 3158
     },
     {
-      "path": "quiz/sub-common/5d540c63870bf4b16b086b44ba3816bd.js",
+      "path": "quiz/sub-common/b096ee69f71e8785b3041e3f16750f4c.js",
       "package": "quiz",
-      "bytes": 2882
+      "bytes": 3064
     },
     {
-      "path": "study/sub-common/5d540c63870bf4b16b086b44ba3816bd.js",
+      "path": "study/sub-common/b096ee69f71e8785b3041e3f16750f4c.js",
       "package": "study",
-      "bytes": 2882
+      "bytes": 3064
     },
     {
-      "path": "quiz/sub-common/034242805418dad608e6de910c83e453.js",
+      "path": "quiz/sub-common/5dac2306e63edd5a410ef7cf8b5daca8.js",
+      "package": "quiz",
+      "bytes": 2894
+    },
+    {
+      "path": "study/sub-common/5dac2306e63edd5a410ef7cf8b5daca8.js",
+      "package": "study",
+      "bytes": 2894
+    },
+    {
+      "path": "quiz/sub-common/320d243abfe198053f0bf0db3ddae34f.js",
       "package": "quiz",
       "bytes": 2836
     },
     {
-      "path": "study/sub-common/034242805418dad608e6de910c83e453.js",
+      "path": "study/sub-common/320d243abfe198053f0bf0db3ddae34f.js",
       "package": "study",
       "bytes": 2836
     },
     {
-      "path": "quiz/sub-common/20b62c0f641f2b4639938543282abdbe.js",
-      "package": "quiz",
-      "bytes": 2769
-    },
-    {
-      "path": "study/sub-common/20b62c0f641f2b4639938543282abdbe.js",
-      "package": "study",
-      "bytes": 2769
-    },
-    {
-      "path": "quiz/sub-common/d3d781e8ceeae79dd9d4a6acc8d5d8d2.js",
+      "path": "quiz/sub-common/4584ad66eb5e5a9750b69f59c1bc9b7c.js",
       "package": "quiz",
       "bytes": 2656
     },
     {
-      "path": "study/sub-common/d3d781e8ceeae79dd9d4a6acc8d5d8d2.js",
+      "path": "study/sub-common/4584ad66eb5e5a9750b69f59c1bc9b7c.js",
       "package": "study",
       "bytes": 2656
     },
     {
-      "path": "quiz/sub-common/a3c900c729ff7afda44f285f1ae6ac6c.js",
+      "path": "quiz/sub-common/89974d942ab47ad1cdbe95b02505f8fd.js",
       "package": "quiz",
-      "bytes": 2625
+      "bytes": 2645
     },
     {
-      "path": "study/sub-common/a3c900c729ff7afda44f285f1ae6ac6c.js",
+      "path": "study/sub-common/89974d942ab47ad1cdbe95b02505f8fd.js",
       "package": "study",
-      "bytes": 2625
+      "bytes": 2645
     },
     {
-      "path": "quiz/sub-common/8585daa0f100b4819b4ba924ba09758e.js",
+      "path": "quiz/sub-common/5f0a000c26afdae0ce974d9c46ab81bf.js",
+      "package": "quiz",
+      "bytes": 2632
+    },
+    {
+      "path": "study/sub-common/5f0a000c26afdae0ce974d9c46ab81bf.js",
+      "package": "study",
+      "bytes": 2632
+    },
+    {
+      "path": "quiz/sub-common/3bbc26fe8af727cde27e4331da11b4b5.js",
       "package": "quiz",
       "bytes": 2576
     },
     {
-      "path": "study/sub-common/8585daa0f100b4819b4ba924ba09758e.js",
+      "path": "study/sub-common/3bbc26fe8af727cde27e4331da11b4b5.js",
       "package": "study",
       "bytes": 2576
     },
     {
-      "path": "quiz/sub-common/e6ca7e80b00d7370c01687f98867a128.js",
+      "path": "quiz/sub-common/0de8b29fd711a6cc533e661e70211f9a.js",
       "package": "quiz",
       "bytes": 2522
     },
     {
-      "path": "study/sub-common/e6ca7e80b00d7370c01687f98867a128.js",
+      "path": "study/sub-common/0de8b29fd711a6cc533e661e70211f9a.js",
       "package": "study",
       "bytes": 2522
     },
     {
-      "path": "quiz/sub-common/dce45beb90bddb0d3ec58b176a5ad55c.js",
+      "path": "quiz/sub-common/dd65464cbf259d87c38711b467c2476c.js",
       "package": "quiz",
       "bytes": 2521
     },
     {
-      "path": "study/sub-common/dce45beb90bddb0d3ec58b176a5ad55c.js",
+      "path": "study/sub-common/dd65464cbf259d87c38711b467c2476c.js",
       "package": "study",
       "bytes": 2521
     },
     {
-      "path": "quiz/sub-common/016dac40481b40f07f8924e21fdf8a17.js",
+      "path": "quiz/sub-common/2153f3a43200e30c53880cf7ed3f5b92.js",
       "package": "quiz",
       "bytes": 2519
     },
     {
-      "path": "study/sub-common/016dac40481b40f07f8924e21fdf8a17.js",
+      "path": "study/sub-common/2153f3a43200e30c53880cf7ed3f5b92.js",
       "package": "study",
       "bytes": 2519
     },
     {
-      "path": "quiz/sub-common/5d434ef84fd21ed9d476d617729a0b79.js",
+      "path": "quiz/sub-common/8560aa060a814cad75692f9a5a85eed9.js",
       "package": "quiz",
-      "bytes": 2495
+      "bytes": 2496
     },
     {
-      "path": "study/sub-common/5d434ef84fd21ed9d476d617729a0b79.js",
+      "path": "study/sub-common/8560aa060a814cad75692f9a5a85eed9.js",
       "package": "study",
-      "bytes": 2495
+      "bytes": 2496
     },
     {
-      "path": "quiz/sub-common/a932cda3b340218bdc8ca701e4b9b308.js",
+      "path": "quiz/sub-common/ee7f486978202be5d35fc74b3e50b36b.js",
       "package": "quiz",
       "bytes": 2376
     },
     {
-      "path": "study/sub-common/a932cda3b340218bdc8ca701e4b9b308.js",
+      "path": "study/sub-common/ee7f486978202be5d35fc74b3e50b36b.js",
       "package": "study",
       "bytes": 2376
     },
     {
-      "path": "quiz/sub-common/07be447d95c8478a420c3265c3da0820.js",
+      "path": "quiz/sub-common/bd30ce596b0529a732c6ac2a180c46a8.js",
       "package": "quiz",
       "bytes": 2369
     },
     {
-      "path": "study/sub-common/07be447d95c8478a420c3265c3da0820.js",
+      "path": "study/sub-common/bd30ce596b0529a732c6ac2a180c46a8.js",
       "package": "study",
       "bytes": 2369
+    },
+    {
+      "path": "quiz/sub-common/af494191eff41f3734070977407eb6b1.js",
+      "package": "quiz",
+      "bytes": 2319
+    },
+    {
+      "path": "study/sub-common/af494191eff41f3734070977407eb6b1.js",
+      "package": "study",
+      "bytes": 2319
     },
     {
       "path": "runtime.js",
@@ -725,212 +830,237 @@
       "bytes": 2311
     },
     {
-      "path": "quiz/sub-common/816d1f37ace5ab7750ef1e7207120522.js",
-      "package": "quiz",
-      "bytes": 2300
-    },
-    {
-      "path": "study/sub-common/816d1f37ace5ab7750ef1e7207120522.js",
-      "package": "study",
-      "bytes": 2300
-    },
-    {
-      "path": "quiz/sub-common/bfd0d6bd2b411d5bde52b5fac4d9a2d2.js",
+      "path": "quiz/sub-common/3073b76dab52101d5a74f0c09354f8c1.js",
       "package": "quiz",
       "bytes": 2261
     },
     {
-      "path": "study/sub-common/bfd0d6bd2b411d5bde52b5fac4d9a2d2.js",
+      "path": "study/sub-common/3073b76dab52101d5a74f0c09354f8c1.js",
       "package": "study",
       "bytes": 2261
     },
     {
-      "path": "quiz/sub-common/63d96315e1463f86c53ed8c240d235da.js",
-      "package": "quiz",
-      "bytes": 2187
-    },
-    {
-      "path": "study/sub-common/63d96315e1463f86c53ed8c240d235da.js",
-      "package": "study",
-      "bytes": 2187
-    },
-    {
-      "path": "quiz/sub-common/95030410ea74db210dd214b9718dc833.js",
+      "path": "quiz/sub-common/b9b94226c004b9887522124d31bf6ad2.js",
       "package": "quiz",
       "bytes": 2183
     },
     {
-      "path": "study/sub-common/95030410ea74db210dd214b9718dc833.js",
+      "path": "study/sub-common/b9b94226c004b9887522124d31bf6ad2.js",
       "package": "study",
       "bytes": 2183
     },
     {
-      "path": "quiz/sub-common/5a733fb8a894dbd1241fc43312a8fec6.js",
+      "path": "quiz/sub-common/a15a8c65a5bd7c3694768b1b2e393b9d.js",
+      "package": "quiz",
+      "bytes": 2159
+    },
+    {
+      "path": "study/sub-common/a15a8c65a5bd7c3694768b1b2e393b9d.js",
+      "package": "study",
+      "bytes": 2159
+    },
+    {
+      "path": "quiz/sub-common/2527e4f9a6ee64503eea1ce82d2bc2e9.js",
       "package": "quiz",
       "bytes": 2089
     },
     {
-      "path": "study/sub-common/5a733fb8a894dbd1241fc43312a8fec6.js",
+      "path": "study/sub-common/2527e4f9a6ee64503eea1ce82d2bc2e9.js",
       "package": "study",
       "bytes": 2089
     },
     {
-      "path": "quiz/sub-common/96f146ab80f1339a06fd3ca52cf7ee7f.js",
+      "path": "quiz/sub-common/53d6ca0d2f894c54aeeb38bd330ced12.js",
       "package": "quiz",
       "bytes": 2063
     },
     {
-      "path": "study/sub-common/96f146ab80f1339a06fd3ca52cf7ee7f.js",
+      "path": "study/sub-common/53d6ca0d2f894c54aeeb38bd330ced12.js",
       "package": "study",
       "bytes": 2063
     },
     {
-      "path": "quiz/sub-common/b3e9ee5ea1844d3a35e0eac495a579a9.js",
+      "path": "quiz/sub-common/513b859aa56df6cfd02542ff19021aac.js",
       "package": "quiz",
       "bytes": 2062
     },
     {
-      "path": "study/sub-common/b3e9ee5ea1844d3a35e0eac495a579a9.js",
+      "path": "study/sub-common/513b859aa56df6cfd02542ff19021aac.js",
       "package": "study",
       "bytes": 2062
     },
     {
-      "path": "quiz/sub-common/5d17f225606cd1ad9c26db077d14c165.js",
+      "path": "quiz/sub-common/b6fc18cd4edbc9676417ab8895981753.js",
       "package": "quiz",
-      "bytes": 2035
+      "bytes": 2031
     },
     {
-      "path": "study/sub-common/5d17f225606cd1ad9c26db077d14c165.js",
+      "path": "study/sub-common/b6fc18cd4edbc9676417ab8895981753.js",
       "package": "study",
-      "bytes": 2035
+      "bytes": 2031
     },
     {
-      "path": "quiz/sub-common/a84e38ed6b1f6d1dd3cdb4224fbba394.js",
+      "path": "quiz/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
       "package": "quiz",
-      "bytes": 2032
+      "bytes": 2029
     },
     {
-      "path": "study/sub-common/a84e38ed6b1f6d1dd3cdb4224fbba394.js",
+      "path": "study/sub-common/0d99250b528ea503cd956625a38fdbf3.js",
       "package": "study",
-      "bytes": 2032
+      "bytes": 2029
     },
     {
-      "path": "quiz/sub-common/c3022851aedb2190225fecf25878ad5d.js",
+      "path": "quiz/sub-common/105335eda0ee7cd7dc9fdffa93248d7e.js",
       "package": "quiz",
       "bytes": 2027
     },
     {
-      "path": "study/sub-common/c3022851aedb2190225fecf25878ad5d.js",
+      "path": "study/sub-common/105335eda0ee7cd7dc9fdffa93248d7e.js",
       "package": "study",
       "bytes": 2027
     },
     {
-      "path": "quiz/sub-common/a03d76f99bcc63be1e356a37d335a38e.js",
+      "path": "quiz/sub-common/bc3ca60c8e1d4cd35449da2c71ec6ac9.js",
       "package": "quiz",
-      "bytes": 1948
+      "bytes": 2008
     },
     {
-      "path": "study/sub-common/a03d76f99bcc63be1e356a37d335a38e.js",
+      "path": "study/sub-common/bc3ca60c8e1d4cd35449da2c71ec6ac9.js",
       "package": "study",
-      "bytes": 1948
+      "bytes": 2008
     },
     {
-      "path": "quiz/sub-common/605b885d9595b1a50bb90eb27904971e.js",
+      "path": "quiz/sub-common/959bb060a423d6d7e51310e76303c7eb.js",
+      "package": "quiz",
+      "bytes": 1947
+    },
+    {
+      "path": "study/sub-common/959bb060a423d6d7e51310e76303c7eb.js",
+      "package": "study",
+      "bytes": 1947
+    },
+    {
+      "path": "quiz/sub-common/3ba3c09f000ff44b259e7c36adb6b62d.js",
+      "package": "quiz",
+      "bytes": 1921
+    },
+    {
+      "path": "study/sub-common/3ba3c09f000ff44b259e7c36adb6b62d.js",
+      "package": "study",
+      "bytes": 1921
+    },
+    {
+      "path": "quiz/sub-common/a14060f2b6020dcfbf46aec44e2d4f7d.js",
       "package": "quiz",
       "bytes": 1845
     },
     {
-      "path": "study/sub-common/605b885d9595b1a50bb90eb27904971e.js",
+      "path": "study/sub-common/a14060f2b6020dcfbf46aec44e2d4f7d.js",
       "package": "study",
       "bytes": 1845
     },
     {
-      "path": "quiz/sub-common/67eaba175aa877c5a1d53242bab52122.js",
+      "path": "quiz/sub-common/430a4d89f28579efc2c4161f2f89ef86.js",
       "package": "quiz",
-      "bytes": 1764
+      "bytes": 1765
     },
     {
-      "path": "study/sub-common/67eaba175aa877c5a1d53242bab52122.js",
+      "path": "study/sub-common/430a4d89f28579efc2c4161f2f89ef86.js",
       "package": "study",
-      "bytes": 1764
+      "bytes": 1765
     },
     {
-      "path": "app.js",
-      "package": "main",
-      "bytes": 1676
-    },
-    {
-      "path": "quiz/sub-common/b7f63dc3a649e26fa4bb21b58d0cc748.js",
+      "path": "quiz/sub-common/36e168279289e9b1ebb3f44bbbdbca33.js",
       "package": "quiz",
       "bytes": 1639
     },
     {
-      "path": "study/sub-common/b7f63dc3a649e26fa4bb21b58d0cc748.js",
+      "path": "study/sub-common/36e168279289e9b1ebb3f44bbbdbca33.js",
       "package": "study",
       "bytes": 1639
     },
     {
-      "path": "quiz/sub-common/1de2681e1cc18c3d017fa62f4a6ceaa1.js",
+      "path": "quiz/sub-common/185f6e93c3549257b61bbdcea9edf0d3.js",
       "package": "quiz",
       "bytes": 1402
     },
     {
-      "path": "study/sub-common/1de2681e1cc18c3d017fa62f4a6ceaa1.js",
+      "path": "study/sub-common/185f6e93c3549257b61bbdcea9edf0d3.js",
       "package": "study",
       "bytes": 1402
     },
     {
-      "path": "quiz/sub-common/c57b902556f0f01172b55ba4896292de.js",
+      "path": "quiz/sub-common/ad317a67bceb8e85dddf1fbffdfde036.js",
       "package": "quiz",
       "bytes": 1392
     },
     {
-      "path": "study/sub-common/c57b902556f0f01172b55ba4896292de.js",
+      "path": "study/sub-common/ad317a67bceb8e85dddf1fbffdfde036.js",
       "package": "study",
       "bytes": 1392
     },
     {
       "path": "vendors.js.LICENSE.txt",
       "package": "main",
-      "bytes": 1236
+      "bytes": 1237
     },
     {
-      "path": "quiz/sub-common/a729dd04e043f65cc7b824313767b214.js",
+      "path": "quiz/sub-common/6563e7350759faa7b988775d51ba6ad3.js",
       "package": "quiz",
       "bytes": 1180
     },
     {
-      "path": "study/sub-common/a729dd04e043f65cc7b824313767b214.js",
+      "path": "study/sub-common/6563e7350759faa7b988775d51ba6ad3.js",
       "package": "study",
       "bytes": 1180
     },
     {
-      "path": "quiz/sub-common/422e4154b2d9530ed08986bb51d1007d.js",
-      "package": "quiz",
-      "bytes": 1143
-    },
-    {
-      "path": "study/sub-common/422e4154b2d9530ed08986bb51d1007d.js",
-      "package": "study",
-      "bytes": 1143
-    },
-    {
-      "path": "quiz/sub-common/e87de98eabb710c38298964356af6562.js",
+      "path": "quiz/sub-common/6eb11e809c34ba3c1dbdb02083ac137b.js",
       "package": "quiz",
       "bytes": 1134
     },
     {
-      "path": "study/sub-common/e87de98eabb710c38298964356af6562.js",
+      "path": "study/sub-common/6eb11e809c34ba3c1dbdb02083ac137b.js",
       "package": "study",
       "bytes": 1134
     },
     {
-      "path": "quiz/sub-common/95ca75b8deee4d2a3fda1dab0ab9f4da.js",
+      "path": "quiz/sub-common/7143a0d018b0e08087c70b0162336eb8.js",
+      "package": "quiz",
+      "bytes": 1123
+    },
+    {
+      "path": "study/sub-common/7143a0d018b0e08087c70b0162336eb8.js",
+      "package": "study",
+      "bytes": 1123
+    },
+    {
+      "path": "quiz/sub-common/ba5445e7907224d9439226b98d8871b0.js",
+      "package": "quiz",
+      "bytes": 1112
+    },
+    {
+      "path": "study/sub-common/ba5445e7907224d9439226b98d8871b0.js",
+      "package": "study",
+      "bytes": 1112
+    },
+    {
+      "path": "quiz/sub-common/c9b4856ff7cbe62599e8d0d5569e823a.js",
+      "package": "quiz",
+      "bytes": 1093
+    },
+    {
+      "path": "study/sub-common/c9b4856ff7cbe62599e8d0d5569e823a.js",
+      "package": "study",
+      "bytes": 1093
+    },
+    {
+      "path": "quiz/sub-common/4b4f957425711fb2cd7e76687158bac1.js",
       "package": "quiz",
       "bytes": 1037
     },
     {
-      "path": "study/sub-common/95ca75b8deee4d2a3fda1dab0ab9f4da.js",
+      "path": "study/sub-common/4b4f957425711fb2cd7e76687158bac1.js",
       "package": "study",
       "bytes": 1037
     },
@@ -940,44 +1070,34 @@
       "bytes": 997
     },
     {
-      "path": "quiz/sub-common/8ec15f54cfe72ceb57387b796b903c5a.js",
+      "path": "quiz/sub-common/ff504da4a3dbbb4db02018115ec41c0b.js",
       "package": "quiz",
       "bytes": 979
     },
     {
-      "path": "study/sub-common/8ec15f54cfe72ceb57387b796b903c5a.js",
+      "path": "study/sub-common/ff504da4a3dbbb4db02018115ec41c0b.js",
       "package": "study",
       "bytes": 979
     },
     {
-      "path": "quiz/sub-common/0d673c4fc72ea42e628c0b0469d9d211.js",
+      "path": "quiz/sub-common/d9315874b8b5956dda962320c5adc7fe.js",
       "package": "quiz",
-      "bytes": 956
+      "bytes": 954
     },
     {
-      "path": "study/sub-common/0d673c4fc72ea42e628c0b0469d9d211.js",
+      "path": "study/sub-common/d9315874b8b5956dda962320c5adc7fe.js",
       "package": "study",
-      "bytes": 956
+      "bytes": 954
     },
     {
-      "path": "quiz/sub-common/c08c768f432d3332e6893a5c8e4f2bed.js",
+      "path": "quiz/sub-common/9fae0a55a0c5d0966c2f4defeae0bc3f.js",
       "package": "quiz",
-      "bytes": 918
+      "bytes": 901
     },
     {
-      "path": "study/sub-common/c08c768f432d3332e6893a5c8e4f2bed.js",
+      "path": "study/sub-common/9fae0a55a0c5d0966c2f4defeae0bc3f.js",
       "package": "study",
-      "bytes": 918
-    },
-    {
-      "path": "quiz/sub-common/a3ac095cb59575768b0b0293e53334be.js",
-      "package": "quiz",
-      "bytes": 909
-    },
-    {
-      "path": "study/sub-common/a3ac095cb59575768b0b0293e53334be.js",
-      "package": "study",
-      "bytes": 909
+      "bytes": 901
     },
     {
       "path": "pages/index/index.js",
@@ -985,34 +1105,44 @@
       "bytes": 887
     },
     {
-      "path": "quiz/sub-common/2f15a6a2569a7af70fccf3a210fe1ff1.js",
+      "path": "quiz/sub-common/9341fbbe790615774dc5681edc915e1e.js",
       "package": "quiz",
       "bytes": 870
     },
     {
-      "path": "study/sub-common/2f15a6a2569a7af70fccf3a210fe1ff1.js",
+      "path": "study/sub-common/9341fbbe790615774dc5681edc915e1e.js",
       "package": "study",
       "bytes": 870
     },
     {
-      "path": "quiz/sub-common/07bb5f67a115618ee9e5265cd907a35c.js",
+      "path": "quiz/sub-common/e12fb43c6fffe45ec59ab7921af3c5c1.js",
       "package": "quiz",
-      "bytes": 821
+      "bytes": 820
     },
     {
-      "path": "study/sub-common/07bb5f67a115618ee9e5265cd907a35c.js",
+      "path": "study/sub-common/e12fb43c6fffe45ec59ab7921af3c5c1.js",
       "package": "study",
-      "bytes": 821
+      "bytes": 820
     },
     {
-      "path": "quiz/sub-common/aba97fae57d99178dbec69ad553c72e5.js",
+      "path": "quiz/sub-common/89b4a696c12e154da9a467e71f007e51.js",
       "package": "quiz",
       "bytes": 811
     },
     {
-      "path": "study/sub-common/aba97fae57d99178dbec69ad553c72e5.js",
+      "path": "study/sub-common/89b4a696c12e154da9a467e71f007e51.js",
       "package": "study",
       "bytes": 811
+    },
+    {
+      "path": "quiz/sub-common/0baac9865fe7c877732a641d44306946.js",
+      "package": "quiz",
+      "bytes": 802
+    },
+    {
+      "path": "study/sub-common/0baac9865fe7c877732a641d44306946.js",
+      "package": "study",
+      "bytes": 802
     },
     {
       "path": "assets/lucide/brain-ink.svg",
@@ -1025,42 +1155,42 @@
       "bytes": 767
     },
     {
-      "path": "quiz/sub-common/70b12f545b8c1a6a915ade9c94ae1720.js",
+      "path": "quiz/sub-common/899f7501886b35a794db49423508f68f.js",
       "package": "quiz",
-      "bytes": 732
+      "bytes": 733
     },
     {
-      "path": "study/sub-common/70b12f545b8c1a6a915ade9c94ae1720.js",
+      "path": "study/sub-common/899f7501886b35a794db49423508f68f.js",
       "package": "study",
-      "bytes": 732
+      "bytes": 733
     },
     {
-      "path": "quiz/sub-common/bf1f4cc21149f6f185f95134a0a3233b.js",
+      "path": "quiz/sub-common/e5e1e50cf02a165eff815ecd873a83e7.js",
       "package": "quiz",
       "bytes": 718
     },
     {
-      "path": "study/sub-common/bf1f4cc21149f6f185f95134a0a3233b.js",
+      "path": "study/sub-common/e5e1e50cf02a165eff815ecd873a83e7.js",
       "package": "study",
       "bytes": 718
     },
     {
-      "path": "quiz/sub-common/f9dd805f4ef8db7ba4c2d1aa9bde0dd5.js",
+      "path": "quiz/sub-common/4b83f2174d946c052bf6786231a5c7c0.js",
       "package": "quiz",
-      "bytes": 709
+      "bytes": 700
     },
     {
-      "path": "study/sub-common/f9dd805f4ef8db7ba4c2d1aa9bde0dd5.js",
+      "path": "study/sub-common/4b83f2174d946c052bf6786231a5c7c0.js",
       "package": "study",
-      "bytes": 709
+      "bytes": 700
     },
     {
-      "path": "quiz/sub-common/89414e2cd6bf11f6dabe7f9ca194a703.js",
+      "path": "quiz/sub-common/7aa3ee416d3d98ae30b344f8891489a7.js",
       "package": "quiz",
       "bytes": 697
     },
     {
-      "path": "study/sub-common/89414e2cd6bf11f6dabe7f9ca194a703.js",
+      "path": "study/sub-common/7aa3ee416d3d98ae30b344f8891489a7.js",
       "package": "study",
       "bytes": 697
     },
@@ -1075,32 +1205,32 @@
       "bytes": 691
     },
     {
-      "path": "quiz/sub-common/c8a0e1586430d7c5ed2fb262521fd44f.js",
+      "path": "quiz/sub-common/6e5d5168d78a8ebe82b0d05f3d657a3e.js",
       "package": "quiz",
       "bytes": 652
     },
     {
-      "path": "quiz/sub-common/d4d135d3a4635572806426b2a769aa40.js",
+      "path": "quiz/sub-common/d9180aacb5868368d56cb4d195e7a1f4.js",
       "package": "quiz",
       "bytes": 652
     },
     {
-      "path": "study/sub-common/c8a0e1586430d7c5ed2fb262521fd44f.js",
+      "path": "study/sub-common/6e5d5168d78a8ebe82b0d05f3d657a3e.js",
       "package": "study",
       "bytes": 652
     },
     {
-      "path": "study/sub-common/d4d135d3a4635572806426b2a769aa40.js",
+      "path": "study/sub-common/d9180aacb5868368d56cb4d195e7a1f4.js",
       "package": "study",
       "bytes": 652
     },
     {
-      "path": "quiz/sub-common/953820c7d8de1de150c0b38912c57dc6.js",
+      "path": "quiz/sub-common/55ceb2c767694da297b76e328a385209.js",
       "package": "quiz",
       "bytes": 641
     },
     {
-      "path": "study/sub-common/953820c7d8de1de150c0b38912c57dc6.js",
+      "path": "study/sub-common/55ceb2c767694da297b76e328a385209.js",
       "package": "study",
       "bytes": 641
     },
@@ -1110,24 +1240,44 @@
       "bytes": 624
     },
     {
-      "path": "quiz/sub-common/5b5396078adea9e7214b8bdd06f9b002.js",
+      "path": "quiz/sub-common/6d545053b16b745b0cf2afb9c4cd45ea.js",
       "package": "quiz",
       "bytes": 618
     },
     {
-      "path": "study/sub-common/5b5396078adea9e7214b8bdd06f9b002.js",
+      "path": "study/sub-common/6d545053b16b745b0cf2afb9c4cd45ea.js",
       "package": "study",
       "bytes": 618
     },
     {
-      "path": "quiz/sub-common/269ef979580b7351a603d2e45dfb601f.js",
+      "path": "quiz/sub-common/18d558d2128dea38749500c7fe2b8a32.js",
       "package": "quiz",
-      "bytes": 608
+      "bytes": 609
     },
     {
-      "path": "study/sub-common/269ef979580b7351a603d2e45dfb601f.js",
+      "path": "study/sub-common/18d558d2128dea38749500c7fe2b8a32.js",
       "package": "study",
-      "bytes": 608
+      "bytes": 609
+    },
+    {
+      "path": "quiz/sub-common/19b5cad640c1efd2e4ddd1a6dd096712.js",
+      "package": "quiz",
+      "bytes": 606
+    },
+    {
+      "path": "study/sub-common/19b5cad640c1efd2e4ddd1a6dd096712.js",
+      "package": "study",
+      "bytes": 606
+    },
+    {
+      "path": "quiz/sub-common/36f8cba06c1a64df4623f10089751e32.js",
+      "package": "quiz",
+      "bytes": 603
+    },
+    {
+      "path": "study/sub-common/36f8cba06c1a64df4623f10089751e32.js",
+      "package": "study",
+      "bytes": 603
     },
     {
       "path": "assets/lucide/star-ink.svg",
@@ -1150,12 +1300,12 @@
       "bytes": 584
     },
     {
-      "path": "quiz/sub-common/38d9b6410e4988efb4964e647768f0cf.js",
+      "path": "quiz/sub-common/f857a5b71e6cc4266f66dfe1cc284a72.js",
       "package": "quiz",
       "bytes": 548
     },
     {
-      "path": "study/sub-common/38d9b6410e4988efb4964e647768f0cf.js",
+      "path": "study/sub-common/f857a5b71e6cc4266f66dfe1cc284a72.js",
       "package": "study",
       "bytes": 548
     },
@@ -1180,12 +1330,12 @@
       "bytes": 522
     },
     {
-      "path": "quiz/sub-common/ee57ca25a5195568d6deacfbf3104e50.js",
+      "path": "quiz/sub-common/fb4ebbee69479eac99f21c26cee372b5.js",
       "package": "quiz",
       "bytes": 518
     },
     {
-      "path": "study/sub-common/ee57ca25a5195568d6deacfbf3104e50.js",
+      "path": "study/sub-common/fb4ebbee69479eac99f21c26cee372b5.js",
       "package": "study",
       "bytes": 518
     },
@@ -1200,12 +1350,12 @@
       "bytes": 515
     },
     {
-      "path": "quiz/sub-common/db26e52feac4d6fa06fd1288e7b02bea.js",
+      "path": "quiz/sub-common/6c334f38f10396f704747c65503f13ca.js",
       "package": "quiz",
       "bytes": 494
     },
     {
-      "path": "study/sub-common/db26e52feac4d6fa06fd1288e7b02bea.js",
+      "path": "study/sub-common/6c334f38f10396f704747c65503f13ca.js",
       "package": "study",
       "bytes": 494
     },
@@ -1230,14 +1380,24 @@
       "bytes": 487
     },
     {
-      "path": "quiz/sub-common/c36a8c215704569ba849dbd8eca92136.js",
+      "path": "quiz/sub-common/e113ee58fc45eab8993bd88705b3303a.js",
       "package": "quiz",
-      "bytes": 480
+      "bytes": 479
     },
     {
-      "path": "study/sub-common/c36a8c215704569ba849dbd8eca92136.js",
+      "path": "study/sub-common/e113ee58fc45eab8993bd88705b3303a.js",
       "package": "study",
-      "bytes": 480
+      "bytes": 479
+    },
+    {
+      "path": "quiz/sub-common/959bf3a3f6bf238d4e179744f0416326.js",
+      "package": "quiz",
+      "bytes": 472
+    },
+    {
+      "path": "study/sub-common/959bf3a3f6bf238d4e179744f0416326.js",
+      "package": "study",
+      "bytes": 472
     },
     {
       "path": "assets/lucide/crown-ink.svg",
@@ -1250,42 +1410,32 @@
       "bytes": 471
     },
     {
-      "path": "quiz/sub-common/033167829ea866fff5a5024ed66a805c.js",
+      "path": "quiz/sub-common/00ccbea99fdaef032a757b644085113b.js",
       "package": "quiz",
       "bytes": 471
     },
     {
-      "path": "quiz/sub-common/07f899c00a4ddaac8321f07b2b0cb0c6.js",
-      "package": "quiz",
-      "bytes": 471
-    },
-    {
-      "path": "study/sub-common/033167829ea866fff5a5024ed66a805c.js",
+      "path": "study/sub-common/00ccbea99fdaef032a757b644085113b.js",
       "package": "study",
       "bytes": 471
     },
     {
-      "path": "study/sub-common/07f899c00a4ddaac8321f07b2b0cb0c6.js",
-      "package": "study",
-      "bytes": 471
-    },
-    {
-      "path": "quiz/sub-common/4366a4b1c46740bd7f93255f1f02071f.js",
+      "path": "quiz/sub-common/739d723cf9a6ffc435fab77d7fddc4bf.js",
       "package": "quiz",
       "bytes": 465
     },
     {
-      "path": "study/sub-common/4366a4b1c46740bd7f93255f1f02071f.js",
+      "path": "study/sub-common/739d723cf9a6ffc435fab77d7fddc4bf.js",
       "package": "study",
       "bytes": 465
     },
     {
-      "path": "quiz/sub-common/dd4f00d8cf82cee6a4b741621ad1e208.js",
+      "path": "quiz/sub-common/1431a575d406673df241bf61ff50c82b.js",
       "package": "quiz",
       "bytes": 460
     },
     {
-      "path": "study/sub-common/dd4f00d8cf82cee6a4b741621ad1e208.js",
+      "path": "study/sub-common/1431a575d406673df241bf61ff50c82b.js",
       "package": "study",
       "bytes": 460
     },
@@ -1300,14 +1450,14 @@
       "bytes": 459
     },
     {
-      "path": "quiz/sub-common/85a17fbb9f31d602ecabfec50fa53934.js",
+      "path": "quiz/sub-common/5d8c9524363431e91fe05355944630c3.js",
       "package": "quiz",
-      "bytes": 448
+      "bytes": 455
     },
     {
-      "path": "study/sub-common/85a17fbb9f31d602ecabfec50fa53934.js",
+      "path": "study/sub-common/5d8c9524363431e91fe05355944630c3.js",
       "package": "study",
-      "bytes": 448
+      "bytes": 455
     },
     {
       "path": "assets/lucide/gitcomparearrows-ink.svg",
@@ -1325,22 +1475,22 @@
       "bytes": 443
     },
     {
-      "path": "quiz/sub-common/deca3324c56ae0d43a26685da145a9ba.js",
+      "path": "quiz/sub-common/02866c9cf57cefd5eafaf8cb194e8855.js",
       "package": "quiz",
       "bytes": 443
     },
     {
-      "path": "study/sub-common/deca3324c56ae0d43a26685da145a9ba.js",
+      "path": "study/sub-common/02866c9cf57cefd5eafaf8cb194e8855.js",
       "package": "study",
       "bytes": 443
     },
     {
-      "path": "quiz/sub-common/f0370a10d561db9c292d29d92d817650.js",
+      "path": "quiz/sub-common/020090d1844c40c723296a3389cc5602.js",
       "package": "quiz",
       "bytes": 441
     },
     {
-      "path": "study/sub-common/f0370a10d561db9c292d29d92d817650.js",
+      "path": "study/sub-common/020090d1844c40c723296a3389cc5602.js",
       "package": "study",
       "bytes": 441
     },
@@ -1355,14 +1505,14 @@
       "bytes": 438
     },
     {
-      "path": "quiz/sub-common/36c123f3e7d864f3903f2a6f258a8d0c.js",
+      "path": "quiz/sub-common/71b0a52c19707bd33bfd3d5dd824ffd3.js",
       "package": "quiz",
-      "bytes": 434
+      "bytes": 435
     },
     {
-      "path": "study/sub-common/36c123f3e7d864f3903f2a6f258a8d0c.js",
+      "path": "study/sub-common/71b0a52c19707bd33bfd3d5dd824ffd3.js",
       "package": "study",
-      "bytes": 434
+      "bytes": 435
     },
     {
       "path": "assets/lucide/shieldcheck-ink.svg",
@@ -1385,12 +1535,12 @@
       "bytes": 426
     },
     {
-      "path": "quiz/sub-common/903af8d5fb5bdeacbbb6b95b2d006ffa.js",
+      "path": "quiz/sub-common/63d161031ffe5a1cd5a60be8c06658e7.js",
       "package": "quiz",
       "bytes": 424
     },
     {
-      "path": "study/sub-common/903af8d5fb5bdeacbbb6b95b2d006ffa.js",
+      "path": "study/sub-common/63d161031ffe5a1cd5a60be8c06658e7.js",
       "package": "study",
       "bytes": 424
     },
@@ -1400,22 +1550,22 @@
       "bytes": 415
     },
     {
-      "path": "quiz/sub-common/bb7fc85b3b4ab269414ffd3d5b9b6f4a.js",
+      "path": "quiz/sub-common/6bc7af05fd46582e506ff456d98c8361.js",
       "package": "quiz",
       "bytes": 412
     },
     {
-      "path": "study/sub-common/bb7fc85b3b4ab269414ffd3d5b9b6f4a.js",
+      "path": "study/sub-common/6bc7af05fd46582e506ff456d98c8361.js",
       "package": "study",
       "bytes": 412
     },
     {
-      "path": "quiz/sub-common/57a4798576eba0e4e503e630b081e123.js",
+      "path": "quiz/sub-common/d95f1781f1335bf7a8aa3aad027b852c.js",
       "package": "quiz",
       "bytes": 411
     },
     {
-      "path": "study/sub-common/57a4798576eba0e4e503e630b081e123.js",
+      "path": "study/sub-common/d95f1781f1335bf7a8aa3aad027b852c.js",
       "package": "study",
       "bytes": 411
     },
@@ -1435,14 +1585,14 @@
       "bytes": 404
     },
     {
-      "path": "quiz/sub-common/afc381fcce24e86fc37f62c6654a2402.js",
+      "path": "quiz/sub-common/498c886a9a3926c243e4200dafe19444.js",
       "package": "quiz",
-      "bytes": 401
+      "bytes": 402
     },
     {
-      "path": "study/sub-common/afc381fcce24e86fc37f62c6654a2402.js",
+      "path": "study/sub-common/498c886a9a3926c243e4200dafe19444.js",
       "package": "study",
-      "bytes": 401
+      "bytes": 402
     },
     {
       "path": "assets/lucide/flame-ink.svg",
@@ -1455,14 +1605,14 @@
       "bytes": 398
     },
     {
-      "path": "quiz/sub-common/cba927f4c7888a4a27bc5dc00ac96a65.js",
+      "path": "quiz/sub-common/94418bfac609c141856043635b5aa884.js",
       "package": "quiz",
-      "bytes": 397
+      "bytes": 388
     },
     {
-      "path": "study/sub-common/cba927f4c7888a4a27bc5dc00ac96a65.js",
+      "path": "study/sub-common/94418bfac609c141856043635b5aa884.js",
       "package": "study",
-      "bytes": 397
+      "bytes": 388
     },
     {
       "path": "assets/lucide/penline-ink.svg",
@@ -1515,24 +1665,14 @@
       "bytes": 367
     },
     {
-      "path": "quiz/sub-common/9cdeea425884959c9e2c05d2ccca2aa7.js",
+      "path": "quiz/sub-common/92639b4ade41ff4b3c61902411410548.js",
       "package": "quiz",
-      "bytes": 365
+      "bytes": 361
     },
     {
-      "path": "study/sub-common/9cdeea425884959c9e2c05d2ccca2aa7.js",
+      "path": "study/sub-common/92639b4ade41ff4b3c61902411410548.js",
       "package": "study",
-      "bytes": 365
-    },
-    {
-      "path": "quiz/sub-common/46ec3eb0d8eb18e3441bc587ce7dd365.js",
-      "package": "quiz",
-      "bytes": 360
-    },
-    {
-      "path": "study/sub-common/46ec3eb0d8eb18e3441bc587ce7dd365.js",
-      "package": "study",
-      "bytes": 360
+      "bytes": 361
     },
     {
       "path": "assets/lucide/repeat-ink.svg",
@@ -1555,14 +1695,14 @@
       "bytes": 355
     },
     {
-      "path": "quiz/sub-common/00c8940e18734ca3591e39216e5e8d2c.js",
+      "path": "quiz/sub-common/67839df30c12b648d11b1c10633809bb.js",
       "package": "quiz",
-      "bytes": 353
+      "bytes": 354
     },
     {
-      "path": "study/sub-common/00c8940e18734ca3591e39216e5e8d2c.js",
+      "path": "study/sub-common/67839df30c12b648d11b1c10633809bb.js",
       "package": "study",
-      "bytes": 353
+      "bytes": 354
     },
     {
       "path": "assets/lucide/alertcircle-ink.svg",
@@ -1575,12 +1715,12 @@
       "bytes": 350
     },
     {
-      "path": "quiz/sub-common/fb4d643468201eabf864439e8ac822e3.js",
+      "path": "quiz/sub-common/4e447c445a2fdded1876ceb9fd244e7e.js",
       "package": "quiz",
       "bytes": 348
     },
     {
-      "path": "study/sub-common/fb4d643468201eabf864439e8ac822e3.js",
+      "path": "study/sub-common/4e447c445a2fdded1876ceb9fd244e7e.js",
       "package": "study",
       "bytes": 348
     },
@@ -1635,12 +1775,12 @@
       "bytes": 335
     },
     {
-      "path": "quiz/sub-common/e7d60dd993c14b5a0531105dc92682cb.js",
+      "path": "quiz/sub-common/999a5d73fac67670ea0d311c04a8639e.js",
       "package": "quiz",
       "bytes": 335
     },
     {
-      "path": "study/sub-common/e7d60dd993c14b5a0531105dc92682cb.js",
+      "path": "study/sub-common/999a5d73fac67670ea0d311c04a8639e.js",
       "package": "study",
       "bytes": 335
     },
@@ -1655,14 +1795,14 @@
       "bytes": 334
     },
     {
-      "path": "quiz/sub-common/b9627d25d4e579a76d2c73f118ce9130.js",
+      "path": "quiz/sub-common/be3c43e819259676f20403e7f3fce1ed.js",
       "package": "quiz",
-      "bytes": 331
+      "bytes": 332
     },
     {
-      "path": "study/sub-common/b9627d25d4e579a76d2c73f118ce9130.js",
+      "path": "study/sub-common/be3c43e819259676f20403e7f3fce1ed.js",
       "package": "study",
-      "bytes": 331
+      "bytes": 332
     },
     {
       "path": "assets/lucide/target-ink.svg",
@@ -1685,34 +1825,14 @@
       "bytes": 320
     },
     {
-      "path": "quiz/sub-common/707a58d25860e775a89db65841b3bf09.js",
+      "path": "quiz/sub-common/c0b390c89dfc089db07111057fcd61a8.js",
       "package": "quiz",
       "bytes": 320
     },
     {
-      "path": "study/sub-common/707a58d25860e775a89db65841b3bf09.js",
+      "path": "study/sub-common/c0b390c89dfc089db07111057fcd61a8.js",
       "package": "study",
       "bytes": 320
-    },
-    {
-      "path": "quiz/sub-common/bd8db392059eb3ebc4f42bfd47944ea9.js",
-      "package": "quiz",
-      "bytes": 315
-    },
-    {
-      "path": "study/sub-common/bd8db392059eb3ebc4f42bfd47944ea9.js",
-      "package": "study",
-      "bytes": 315
-    },
-    {
-      "path": "quiz/sub-common/8317b5810c5d21b9302218b12a1c1417.js",
-      "package": "quiz",
-      "bytes": 312
-    },
-    {
-      "path": "study/sub-common/8317b5810c5d21b9302218b12a1c1417.js",
-      "package": "study",
-      "bytes": 312
     },
     {
       "path": "assets/lucide/rotateccw-ink.svg",
@@ -1725,6 +1845,16 @@
       "bytes": 309
     },
     {
+      "path": "quiz/sub-common/e7cfdc34c22941970f02377d9589f656.js",
+      "package": "quiz",
+      "bytes": 303
+    },
+    {
+      "path": "study/sub-common/e7cfdc34c22941970f02377d9589f656.js",
+      "package": "study",
+      "bytes": 303
+    },
+    {
       "path": "assets/lucide/clock3-ink.svg",
       "package": "main",
       "bytes": 301
@@ -1735,22 +1865,22 @@
       "bytes": 301
     },
     {
-      "path": "quiz/sub-common/88ae4de4f7e84ab02df66c5f0b9ca135.js",
+      "path": "quiz/sub-common/ec52ce125f6854a858adb9fda62b15dc.js",
       "package": "quiz",
       "bytes": 296
     },
     {
-      "path": "study/sub-common/88ae4de4f7e84ab02df66c5f0b9ca135.js",
+      "path": "study/sub-common/ec52ce125f6854a858adb9fda62b15dc.js",
       "package": "study",
       "bytes": 296
     },
     {
-      "path": "quiz/sub-common/fcb1e7c01c94236e790938d9a4f3d07f.js",
+      "path": "quiz/sub-common/a5a67c6b51ff18454e85cf88c82730e2.js",
       "package": "quiz",
       "bytes": 292
     },
     {
-      "path": "study/sub-common/fcb1e7c01c94236e790938d9a4f3d07f.js",
+      "path": "study/sub-common/a5a67c6b51ff18454e85cf88c82730e2.js",
       "package": "study",
       "bytes": 292
     },
@@ -1765,32 +1895,42 @@
       "bytes": 289
     },
     {
-      "path": "quiz/sub-common/d1fc6463b4472f5e8a56d8ab5eeff834.js",
+      "path": "quiz/sub-common/e93ac988aa9c92b0705724c5360d0aef.js",
       "package": "quiz",
       "bytes": 289
     },
     {
-      "path": "study/sub-common/d1fc6463b4472f5e8a56d8ab5eeff834.js",
+      "path": "study/sub-common/e93ac988aa9c92b0705724c5360d0aef.js",
       "package": "study",
       "bytes": 289
     },
     {
-      "path": "quiz/sub-common/403447fea36e1341dd9c74d43e91de29.js",
+      "path": "quiz/sub-common/91ee6f634d397ddbb72895565ed1d60e.js",
+      "package": "quiz",
+      "bytes": 286
+    },
+    {
+      "path": "study/sub-common/91ee6f634d397ddbb72895565ed1d60e.js",
+      "package": "study",
+      "bytes": 286
+    },
+    {
+      "path": "quiz/sub-common/5c6fe8138567dbd1490520c6cd1ece52.js",
       "package": "quiz",
       "bytes": 282
     },
     {
-      "path": "study/sub-common/403447fea36e1341dd9c74d43e91de29.js",
+      "path": "study/sub-common/5c6fe8138567dbd1490520c6cd1ece52.js",
       "package": "study",
       "bytes": 282
     },
     {
-      "path": "quiz/sub-common/d48882fd9067dc6c2ad7394e0888e430.js",
+      "path": "quiz/sub-common/c3f87026bc70ba9c03d3a549d7fe7e59.js",
       "package": "quiz",
       "bytes": 269
     },
     {
-      "path": "study/sub-common/d48882fd9067dc6c2ad7394e0888e430.js",
+      "path": "study/sub-common/c3f87026bc70ba9c03d3a549d7fe7e59.js",
       "package": "study",
       "bytes": 269
     },
@@ -1835,32 +1975,22 @@
       "bytes": 262
     },
     {
-      "path": "quiz/sub-common/346b5f362d04a8068ae0ce66a197f859.js",
+      "path": "quiz/sub-common/08f5a401ec29fc99ebd68fc2ae2145f4.js",
       "package": "quiz",
       "bytes": 262
     },
     {
-      "path": "study/sub-common/346b5f362d04a8068ae0ce66a197f859.js",
+      "path": "study/sub-common/08f5a401ec29fc99ebd68fc2ae2145f4.js",
       "package": "study",
       "bytes": 262
     },
     {
-      "path": "quiz/sub-common/4e7e8a4de5836b4e5508dac3dc3bfb6f.js",
+      "path": "quiz/sub-common/6684ad014871995879e5aef8bca27b84.js",
       "package": "quiz",
       "bytes": 259
     },
     {
-      "path": "quiz/sub-common/d83dc43d9d1283ba547596a13aad31ee.js",
-      "package": "quiz",
-      "bytes": 259
-    },
-    {
-      "path": "study/sub-common/4e7e8a4de5836b4e5508dac3dc3bfb6f.js",
-      "package": "study",
-      "bytes": 259
-    },
-    {
-      "path": "study/sub-common/d83dc43d9d1283ba547596a13aad31ee.js",
+      "path": "study/sub-common/6684ad014871995879e5aef8bca27b84.js",
       "package": "study",
       "bytes": 259
     },
@@ -1875,12 +2005,12 @@
       "bytes": 257
     },
     {
-      "path": "quiz/sub-common/9dbe8527038c9ffa4ae03dbccaa02c9f.js",
+      "path": "quiz/sub-common/a52ae6f923c2081c17e5c607f8c7825d.js",
       "package": "quiz",
       "bytes": 256
     },
     {
-      "path": "study/sub-common/9dbe8527038c9ffa4ae03dbccaa02c9f.js",
+      "path": "study/sub-common/a52ae6f923c2081c17e5c607f8c7825d.js",
       "package": "study",
       "bytes": 256
     },
@@ -1905,16 +2035,6 @@
       "bytes": 250
     },
     {
-      "path": "quiz/sub-common/85d5f68dc938834464ce9faad0b1e816.js",
-      "package": "quiz",
-      "bytes": 246
-    },
-    {
-      "path": "study/sub-common/85d5f68dc938834464ce9faad0b1e816.js",
-      "package": "study",
-      "bytes": 246
-    },
-    {
       "path": "assets/lucide/check-ink.svg",
       "package": "main",
       "bytes": 244
@@ -1925,22 +2045,22 @@
       "bytes": 244
     },
     {
-      "path": "quiz/sub-common/363914338152cae33b13b12e8b665383.js",
+      "path": "quiz/sub-common/41382471e27ca4f66541ab50235943d9.js",
       "package": "quiz",
-      "bytes": 242
+      "bytes": 243
     },
     {
-      "path": "quiz/sub-common/ec172ad8292574c83955fdb4abbf79f5.js",
-      "package": "quiz",
-      "bytes": 242
-    },
-    {
-      "path": "study/sub-common/363914338152cae33b13b12e8b665383.js",
+      "path": "study/sub-common/41382471e27ca4f66541ab50235943d9.js",
       "package": "study",
+      "bytes": 243
+    },
+    {
+      "path": "quiz/sub-common/491be1a9f0aeed46a3dd5afcc17c7ca9.js",
+      "package": "quiz",
       "bytes": 242
     },
     {
-      "path": "study/sub-common/ec172ad8292574c83955fdb4abbf79f5.js",
+      "path": "study/sub-common/491be1a9f0aeed46a3dd5afcc17c7ca9.js",
       "package": "study",
       "bytes": 242
     },
@@ -1955,62 +2075,62 @@
       "bytes": 237
     },
     {
-      "path": "quiz/sub-common/254b9084e4d930a0cad519c74ea4e547.js",
+      "path": "quiz/sub-common/b05fee8d3291d13412493a2b8e5a97fc.js",
       "package": "quiz",
       "bytes": 237
     },
     {
-      "path": "quiz/sub-common/6652dfe7a526ec53b549ee5e7fa70af4.js",
-      "package": "quiz",
-      "bytes": 237
-    },
-    {
-      "path": "study/sub-common/254b9084e4d930a0cad519c74ea4e547.js",
+      "path": "study/sub-common/b05fee8d3291d13412493a2b8e5a97fc.js",
       "package": "study",
       "bytes": 237
     },
     {
-      "path": "study/sub-common/6652dfe7a526ec53b549ee5e7fa70af4.js",
-      "package": "study",
-      "bytes": 237
-    },
-    {
-      "path": "quiz/sub-common/5903893b4e779143e926e5ddeb8140c6.js",
+      "path": "quiz/sub-common/ed26e676241d78fc8d66bb49a18ae187.js",
       "package": "quiz",
       "bytes": 235
     },
     {
-      "path": "study/sub-common/5903893b4e779143e926e5ddeb8140c6.js",
+      "path": "study/sub-common/ed26e676241d78fc8d66bb49a18ae187.js",
       "package": "study",
       "bytes": 235
     },
     {
-      "path": "quiz/sub-common/4f49e0e3ba7937d2bf4e232216490f3e.js",
+      "path": "quiz/sub-common/75681d0aec8db8b59927136aa4d73988.js",
       "package": "quiz",
-      "bytes": 208
+      "bytes": 216
     },
     {
-      "path": "study/sub-common/4f49e0e3ba7937d2bf4e232216490f3e.js",
+      "path": "study/sub-common/75681d0aec8db8b59927136aa4d73988.js",
       "package": "study",
-      "bytes": 208
+      "bytes": 216
     },
     {
-      "path": "quiz/sub-common/1d679efe4873f12ecf7f3181b632241f.js",
+      "path": "quiz/sub-common/6d2d9ae1cde2625616805eeb8882e4b3.js",
       "package": "quiz",
-      "bytes": 206
+      "bytes": 215
     },
     {
-      "path": "study/sub-common/1d679efe4873f12ecf7f3181b632241f.js",
+      "path": "study/sub-common/6d2d9ae1cde2625616805eeb8882e4b3.js",
       "package": "study",
-      "bytes": 206
+      "bytes": 215
     },
     {
-      "path": "quiz/sub-common/2c27be73ea2cfaa10b2ad0371a118d10.js",
+      "path": "quiz/sub-common/8cdc869eb2a5f46caa322542bd7506ad.js",
+      "package": "quiz",
+      "bytes": 207
+    },
+    {
+      "path": "study/sub-common/8cdc869eb2a5f46caa322542bd7506ad.js",
+      "package": "study",
+      "bytes": 207
+    },
+    {
+      "path": "quiz/sub-common/94811ca86d7b9c6d977128bb2065a578.js",
       "package": "quiz",
       "bytes": 189
     },
     {
-      "path": "study/sub-common/2c27be73ea2cfaa10b2ad0371a118d10.js",
+      "path": "study/sub-common/94811ca86d7b9c6d977128bb2065a578.js",
       "package": "study",
       "bytes": 189
     },
@@ -2020,14 +2140,24 @@
       "bytes": 175
     },
     {
-      "path": "quiz/sub-common/f21ed6fc3cfadc29622cc030b836ef65.js",
+      "path": "quiz/sub-common/bc51c95e87f73c5b7552beaac39ad42b.js",
       "package": "quiz",
       "bytes": 162
     },
     {
-      "path": "study/sub-common/f21ed6fc3cfadc29622cc030b836ef65.js",
+      "path": "study/sub-common/bc51c95e87f73c5b7552beaac39ad42b.js",
       "package": "study",
       "bytes": 162
+    },
+    {
+      "path": "quiz/sub-common/d32417873cd48c5f752b37f80576ca48.js",
+      "package": "quiz",
+      "bytes": 147
+    },
+    {
+      "path": "study/sub-common/d32417873cd48c5f752b37f80576ca48.js",
+      "package": "study",
+      "bytes": 147
     },
     {
       "path": "comp.wxml",
@@ -2035,52 +2165,52 @@
       "bytes": 140
     },
     {
-      "path": "quiz/sub-common/8ca1cb9a6d679d35cf141bb2b1c29829.js",
+      "path": "quiz/sub-common/4cf416e819d1c5e43eef00fdc91c4795.js",
       "package": "quiz",
       "bytes": 138
     },
     {
-      "path": "study/sub-common/8ca1cb9a6d679d35cf141bb2b1c29829.js",
+      "path": "study/sub-common/4cf416e819d1c5e43eef00fdc91c4795.js",
       "package": "study",
       "bytes": 138
     },
     {
-      "path": "quiz/sub-common/9778e7f4adac0015d291e36950fac3cb.js",
+      "path": "quiz/sub-common/4fda61e475763fc1d52d635774d15579.js",
       "package": "quiz",
       "bytes": 118
     },
     {
-      "path": "study/sub-common/9778e7f4adac0015d291e36950fac3cb.js",
+      "path": "study/sub-common/4fda61e475763fc1d52d635774d15579.js",
       "package": "study",
       "bytes": 118
     },
     {
-      "path": "quiz/sub-common/28f05798638ea9b6cc42c4fb6b748832.js",
+      "path": "quiz/sub-common/43172b7035f4547349b7e1ad85cc5c0e.js",
       "package": "quiz",
       "bytes": 117
     },
     {
-      "path": "study/sub-common/28f05798638ea9b6cc42c4fb6b748832.js",
+      "path": "study/sub-common/43172b7035f4547349b7e1ad85cc5c0e.js",
       "package": "study",
       "bytes": 117
     },
     {
-      "path": "quiz/sub-common/487fb4f2abcd116fe67eba82bcd42d23.js",
+      "path": "quiz/sub-common/beb9a5f09bad32e1b9d12a91daba6d5f.js",
       "package": "quiz",
-      "bytes": 112
+      "bytes": 113
     },
     {
-      "path": "study/sub-common/487fb4f2abcd116fe67eba82bcd42d23.js",
+      "path": "study/sub-common/beb9a5f09bad32e1b9d12a91daba6d5f.js",
       "package": "study",
-      "bytes": 112
+      "bytes": 113
     },
     {
-      "path": "quiz/sub-common/68583b4cdc3cd7c0e34e476efa5c1c0e.js",
+      "path": "quiz/sub-common/3943dc0717f2ed21540f76a22077a5c1.js",
       "package": "quiz",
       "bytes": 101
     },
     {
-      "path": "study/sub-common/68583b4cdc3cd7c0e34e476efa5c1c0e.js",
+      "path": "study/sub-common/3943dc0717f2ed21540f76a22077a5c1.js",
       "package": "study",
       "bytes": 101
     },
@@ -2095,42 +2225,42 @@
       "bytes": 100
     },
     {
-      "path": "quiz/sub-common/5a733fb8a894dbd1241fc43312a8fec6.js.LICENSE.txt",
+      "path": "quiz/sub-common/2527e4f9a6ee64503eea1ce82d2bc2e9.js.LICENSE.txt",
       "package": "quiz",
       "bytes": 90
     },
     {
-      "path": "quiz/sub-common/b3e9ee5ea1844d3a35e0eac495a579a9.js.LICENSE.txt",
+      "path": "quiz/sub-common/513b859aa56df6cfd02542ff19021aac.js.LICENSE.txt",
       "package": "quiz",
       "bytes": 90
     },
     {
-      "path": "quiz/sub-common/c2676f6fda65a4d11d9f6b50f6899e14.js.LICENSE.txt",
+      "path": "quiz/sub-common/8786d5c3ca7217b0e0de6432d6c28d94.js.LICENSE.txt",
       "package": "quiz",
       "bytes": 90
     },
     {
-      "path": "quiz/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js.LICENSE.txt",
+      "path": "quiz/sub-common/d9ce608fe940f7d2bb06fb7d582d5eb9.js.LICENSE.txt",
       "package": "quiz",
       "bytes": 90
     },
     {
-      "path": "study/sub-common/5a733fb8a894dbd1241fc43312a8fec6.js.LICENSE.txt",
+      "path": "study/sub-common/2527e4f9a6ee64503eea1ce82d2bc2e9.js.LICENSE.txt",
       "package": "study",
       "bytes": 90
     },
     {
-      "path": "study/sub-common/b3e9ee5ea1844d3a35e0eac495a579a9.js.LICENSE.txt",
+      "path": "study/sub-common/513b859aa56df6cfd02542ff19021aac.js.LICENSE.txt",
       "package": "study",
       "bytes": 90
     },
     {
-      "path": "study/sub-common/c2676f6fda65a4d11d9f6b50f6899e14.js.LICENSE.txt",
+      "path": "study/sub-common/8786d5c3ca7217b0e0de6432d6c28d94.js.LICENSE.txt",
       "package": "study",
       "bytes": 90
     },
     {
-      "path": "study/sub-common/ee639fd698b3019f8e5b13cb7498ac8d.js.LICENSE.txt",
+      "path": "study/sub-common/d9ce608fe940f7d2bb06fb7d582d5eb9.js.LICENSE.txt",
       "package": "study",
       "bytes": 90
     },

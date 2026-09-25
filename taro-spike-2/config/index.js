@@ -39,6 +39,7 @@ module.exports = {
   compiler: 'webpack5',
   alias: {
     'lucide-react': path.join(root, 'src/platform/lucide.weapp.tsx'),
+    'sql.js$': path.join(root, 'src/platform/sql-js.weapp.cjs'),
     react: path.join(root, 'node_modules/react'),
     'react/jsx-runtime': path.join(root, 'node_modules/react/jsx-runtime.js'),
     'react/jsx-dev-runtime': path.join(root, 'node_modules/react/jsx-dev-runtime.js')
@@ -54,6 +55,7 @@ module.exports = {
     },
     webpackChain(chain, webpack) {
       chain.resolve.modules.add(path.join(root, 'node_modules'));
+      chain.resolve.modules.add(path.join(frontend, 'node_modules'));
       chain.module.rule('sql-source').test(/\.sql$/).type('asset/source');
       chain.plugin('spike-node-crypto').use(webpack.NormalModuleReplacementPlugin, [
         /^node:crypto$/,
@@ -82,6 +84,10 @@ module.exports = {
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,
         (resource) => {
+          if (resource.request === 'sql.js/dist/sql-wasm.wasm?url') {
+            resource.request = path.join(root, 'src/platform/sql-wasm-url.weapp.cjs');
+            return;
+          }
           if (/(^|\/)TokenDictionaryPopover(?:\.[^/]*)?$/.test(resource.request)) {
             // The web source imports react-dom/createPortal at TokenDictionaryPopover.tsx:3
             // and targets document.body at :148-199; WeChat has no DOM portal target.
@@ -93,6 +99,14 @@ module.exports = {
             return;
           }
           if (/^(@capacitor\/|@capacitor-community\/|@aparajita\/)/.test(resource.request)) {
+            if (resource.request === '@capacitor/core') {
+              resource.request = path.join(root, 'src/platform/capacitor-core.weapp.cjs');
+              return;
+            }
+            if (resource.request === '@capacitor/filesystem') {
+              resource.request = path.join(root, 'src/platform/filesystem.weapp.cjs');
+              return;
+            }
             resource.request = path.join(root, 'scripts/native-stubs.cjs');
             return;
           }
@@ -101,18 +115,12 @@ module.exports = {
           const target = path.resolve(fromShim ? path.join(mini, 'src/shared') : resource.context, resource.request)
             .replace(/\.(tsx?|jsx?|js|json)$/, '')
             .replace(/\?raw$/, '');
-          if (target === path.join(mini, 'src/config')) {
-            resource.request = path.join(root, 'scripts/offline-config.cjs');
-            return;
-          }
-          if (target === path.join(mini, 'src/runtime/database-store')) {
-            resource.request = path.join(root, 'src/platform/database-store.weapp.cjs');
-            return;
-          }
           if (target === path.join(mini, 'src/shared/content')) {
             resource.request = path.join(root, 'scripts/taro-content.cjs');
             return;
           }
+          // Route all frontend modules through the same live DB and durable file storage.
+          if (target === path.join(frontend, 'src/lib/database') || target === path.join(frontend, 'src/lib/storage')) return;
           if (target === path.join(frontend, 'src/components/CapybaraMascot')) {
             resource.request = path.join(root, 'src/platform/mascot.weapp.tsx');
             return;

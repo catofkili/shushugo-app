@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Text, View } from '@tarojs/components';
 import { VocabTestPage } from '../../../../frontend/src/pages/VocabTestPage';
-import { ensureDatabase, getStatus } from '../../../../wechat-miniprogram/src/runtime/database-store';
+import { ensureDatabase } from '../../platform/database-runtime.weapp';
 import PreviewTimingBoundary from '../../platform/preview-timing.weapp';
 
 export default function VocabTestRoute() {
-  const [ready, setReady] = useState(getStatus().ready);
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -14,6 +14,6 @@ export default function VocabTestRoute() {
   }, [ready]);
 
   if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
-  if (!ready) return <View className="theme-light p-4"><Text>正在载入隔离出厂词库…</Text></View>;
+  if (!ready) return <View className="theme-light p-4"><Text>正在载入学习数据…</Text></View>;
   return <View className="theme-light"><PreviewTimingBoundary kind="vocab"><VocabTestPage /></PreviewTimingBoundary></View>;
 }

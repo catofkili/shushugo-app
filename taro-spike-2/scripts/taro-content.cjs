@@ -49,17 +49,7 @@ function ready() {
 }
 
 function readyForKanji() {
-  return ready().then(() => Promise.all(['kanjiUnitRuntime', 'kanjiReadingUsage'].map(load))).then(() => primeWebLoaders());
+  return ready().then(() => Promise.all(['kanjiUnitRuntime', 'kanjiReadingUsage'].map(load))).then(() => undefined);
 }
 
-function primeWebLoaders() {
-  const web = require('../../wechat-miniprogram/src/shared/web.js');
-  return Promise.all([
-    web.pitchAccent.loadPitchAccent(),
-    web.furiganaSplit.loadKanjiReadings(),
-    web.kanjiUnitIndex.loadKanjiUnitIndex(),
-    web.kanjiReadingUsage ? web.kanjiReadingUsage.loadKanjiReadingUsage() : Promise.resolve()
-  ]).then(() => undefined);
-}
-
-module.exports = { load, ready, readyForKanji, primeWebLoaders, loaded: (name) => Boolean(stores[name]) };
+module.exports = { load, ready, readyForKanji, loaded: (name) => Boolean(stores[name]) };

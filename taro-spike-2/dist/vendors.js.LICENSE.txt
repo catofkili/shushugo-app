@@ -20,7 +20,7 @@
 
 /**
  * @license React
- * react-reconciler.profiling.min.js
+ * react-reconciler.production.min.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
  *

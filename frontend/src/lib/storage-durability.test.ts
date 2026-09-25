@@ -8,34 +8,86 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const exportDatabase = vi.fn<() => Uint8Array | null>();
-const files = new Map<string, string>();
-const isNative = { value: false };
+const files = new Map<string, Uint8Array>();
+const directories = new Set(['/wx-user']);
+const platform = { value: 'web' };
 
-vi.mock("@capacitor/core", () => ({ Capacitor: { isNativePlatform: () => isNative.value } }));
-vi.mock("@capacitor/preferences", () => ({ Preferences: { get: async () => ({ value: null }), remove: async () => undefined } }));
-vi.mock("@capacitor/filesystem", () => ({
-  Directory: { Library: "LIBRARY" },
-  Encoding: { UTF8: "utf8" },
-  Filesystem: {
-    readdir: async ({ path }: { path: string }) => ({ files: path === ''
-      ? (files.size ? [{ name: 'masternihongo' }] : [])
-      : [...files.keys()].map(key => ({ name: key.split('/').pop() })) }),
-    readFile: async ({ path }: { path: string }) => {
-      if (!files.has(path)) throw new Error(`ENOENT ${path}`);
-      return { data: files.get(path) };
-    },
-    writeFile: async ({ path, data }: { path: string; data: string }) => { files.set(path, data); },
-    deleteFile: async ({ path }: { path: string }) => { files.delete(path); },
-    rename: async ({ from, to }: { from: string; to: string }) => {
-      files.set(to, files.get(from)!);
-      files.delete(from);
-    },
-    stat: async ({ path }: { path: string }) => {
-      if (!files.has(path)) throw new Error(`ENOENT ${path}`);
-      return { size: 0 };
+const fail = (options: { fail?: (error: { errMsg: string }) => void }, message = 'no such file or directory') =>
+  options.fail?.({ errMsg: `operate:fail ${message}` });
+const fileManager = {
+  mkdir({ dirPath, recursive, success, fail: onFail }: any) {
+    if (recursive) {
+      let current = '';
+      dirPath.split('/').filter(Boolean).forEach((part: string) => {
+        current += `/${part}`;
+        directories.add(current);
+      });
+    } else if (directories.has(dirPath)) return fail({ fail: onFail }, 'file already exists');
+    else directories.add(dirPath);
+    success?.();
+  },
+  writeFile({ filePath, data, encoding, success }: any) {
+    if (typeof data === 'string') files.set(filePath, new Uint8Array(Buffer.from(data, encoding || 'binary')));
+    else files.set(filePath, new Uint8Array(data.slice(0)));
+    success?.();
+  },
+  readFile({ filePath, encoding, success, fail: onFail }: any) {
+    const data = files.get(filePath);
+    if (!data) return fail({ fail: onFail });
+    success?.({ data: encoding === 'utf8' ? Buffer.from(data).toString('utf8') : data.slice().buffer });
+  },
+  unlink({ filePath, success, fail: onFail }: any) {
+    if (!files.delete(filePath)) return fail({ fail: onFail });
+    success?.();
+  },
+  rename({ oldPath, newPath, success, fail: onFail }: any) {
+    const data = files.get(oldPath);
+    if (!data) return fail({ fail: onFail });
+    files.set(newPath, data);
+    files.delete(oldPath);
+    success?.();
+  },
+  stat({ path, success, fail: onFail }: any) {
+    if (files.has(path)) return success?.({ stats: { size: files.get(path)!.length, mtime: 1, ctime: 1, isDirectory: () => false } });
+    if (directories.has(path)) return success?.({ stats: { size: 0, mtime: 1, ctime: 1, isDirectory: () => true } });
+    return fail({ fail: onFail });
+  },
+  readdir({ dirPath, success, fail: onFail }: any) {
+    if (!directories.has(dirPath)) return fail({ fail: onFail });
+    const prefix = `${dirPath.replace(/\/$/, '')}/`;
+    const names = new Set<string>();
+    for (const path of [...files.keys(), ...directories]) {
+      if (!path.startsWith(prefix)) continue;
+      const name = path.slice(prefix.length).split('/')[0];
+      if (name) names.add(name);
     }
+    success?.({ files: [...names] });
   }
-}));
+};
+const fakeWx = {
+  env: { USER_DATA_PATH: '/wx-user' },
+  getFileSystemManager: () => fileManager,
+  arrayBufferToBase64: (data: ArrayBuffer) => Buffer.from(data).toString('base64'),
+  base64ToArrayBuffer: (data: string) => Uint8Array.from(Buffer.from(data, 'base64')).buffer
+};
+const setFile = (path: string, value: string) => {
+  const parts = path.split('/').filter(Boolean);
+  parts.pop();
+  let current = '';
+  parts.forEach((part) => { current += `/${part}`; directories.add(current); });
+  files.set(path, new Uint8Array(Buffer.from(value)));
+};
+
+vi.mock("@capacitor/core", () => ({ Capacitor: {
+  isNativePlatform: () => false,
+  getPlatform: () => platform.value
+} }));
+vi.mock("@capacitor/preferences", () => ({ Preferences: { get: async () => ({ value: null }), remove: async () => undefined } }));
+vi.mock("@capacitor/filesystem", async () => {
+  // @ts-expect-error This platform CJS module is exercised directly by the fake wx filesystem.
+  const shim = await import("../../../taro-spike-2/src/platform/filesystem.weapp.cjs");
+  return shim.default ?? shim;
+});
 vi.mock("./database", () => ({
   exportDatabase: () => exportDatabase(),
   getDatabase: () => ({ run: () => undefined }),
@@ -102,6 +154,9 @@ const installIndexedDb = () => {
 
 beforeEach(() => {
   vi.useFakeTimers();
+  directories.clear();
+  directories.add('/wx-user');
+  vi.stubGlobal('wx', fakeWx);
   vi.stubGlobal('navigator', { locks: { request: (_name: string, _options: unknown, callback: (lock: object) => unknown) => Promise.resolve(callback({})) } });
 });
 
@@ -109,7 +164,7 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
   files.clear();
-  isNative.value = false;
+  platform.value = 'web';
   applyDelta.mockReset();
   resetDeviceId.mockReset();
   Reflect.deleteProperty(globalThis as Record<string, unknown>, "indexedDB");
@@ -138,21 +193,55 @@ describe("同时保存", () => {
   });
 });
 
-describe("原生端启动", () => {
+describe("微信文件存储", () => {
   it("增量只剩 .tmp 那一份时也要回放", async () => {
-    isNative.value = true;
+    platform.value = 'wechat';
     // 写增量的顺序是 write tmp → delete delta → rename tmp→delta。
     // ⚠️ 在 delete 之后、rename 之前被杀掉,磁盘上就是这个样子:
     // **完整的新增量在 tmp 里**,而启动只认 delta 的话它就白写了。
-    files.set("masternihongo/nihongo.db", "ZmFrZQ==");
-    files.set(
-      "masternihongo/nihongo.delta.json.tmp",
+    setFile("/wx-user/masternihongo/nihongo.db", "ZmFrZQ==");
+    setFile(
+      "/wx-user/masternihongo/nihongo.delta.json.tmp",
       JSON.stringify({ from: "", to: "2099-01-01T00:00:00.000Z", rows: {}, tombstones: [] })
     );
 
     const { loadDatabase } = await import("./storage");
     expect(await loadDatabase()).toBe(true);
     expect(applyDelta).toHaveBeenCalledTimes(1);
+  });
+
+  it("串行保存时保留最后一次数据库", async () => {
+    platform.value = 'wechat';
+    const { saveDatabase } = await import("./storage");
+    exportDatabase.mockReturnValueOnce(new Uint8Array([1]));
+    const first = saveDatabase();
+    exportDatabase.mockReturnValueOnce(new Uint8Array([2]));
+    const second = saveDatabase();
+
+    await Promise.all([first, second]);
+
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString('base64')).toBe('Ag==');
+    expect(exportDatabase).toHaveBeenCalledTimes(2);
+  });
+
+  it("迁移原生小程序数据库时保留源文件", async () => {
+    platform.value = 'wechat';
+    setFile('/wx-user/shushugo/nihongo.db', 'bGVnYWN5');
+    const { loadDatabase } = await import("./storage");
+
+    expect(await loadDatabase()).toBe(true);
+    expect(Buffer.from(files.get('/wx-user/shushugo/nihongo.db')!).toString()).toBe('bGVnYWN5');
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString()).toBe('bGVnYWN5');
+  });
+
+  it("检查旧库时的 I/O 错误不能当成首次启动", async () => {
+    platform.value = 'wechat';
+    vi.spyOn(fileManager, 'stat').mockImplementationOnce(({ fail: onFail }: any) => {
+      onFail?.({ errMsg: 'operate:fail permission denied' });
+    });
+    const { LocalArchiveUnreadableError, loadDatabase } = await import("./storage");
+
+    await expect(loadDatabase()).rejects.toBeInstanceOf(LocalArchiveUnreadableError);
   });
 });
 

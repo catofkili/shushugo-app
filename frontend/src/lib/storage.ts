@@ -479,6 +479,24 @@ const loadFileDatabase = async (): Promise<boolean> => {
   return false;
 };
 
+const loadLegacyWechatDatabase = async (): Promise<boolean> => {
+  if (Capacitor.getPlatform?.() !== 'wechat') return false;
+  const path = 'shushugo/nihongo.db';
+  try {
+    await Filesystem.stat({ path, directory: DB_DIRECTORY });
+  } catch (error) {
+    if ((error as { code?: string } | null)?.code === 'ENOENT') return false;
+    throw error;
+  }
+  const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY });
+  if (typeof data !== 'string' || !data) throw new Error('原生小程序数据库为空');
+  const bytes = base64ToBytes(data);
+  await importDatabase(bytes, { validateBackup: true });
+  await saveFileDatabase(data);
+  console.log('✅ Database imported from the native Mini Program store');
+  return true;
+};
+
 /**
  * 落盘串行队列。
  *
@@ -566,6 +584,11 @@ export async function loadDatabase(): Promise<boolean> {
     if (isNativeFileStorage()) {
       if (await loadFileDatabase()) {
         await replayDeltaRecord();
+        markSnapshotLoaded();
+        return true;
+      }
+
+      if (await loadLegacyWechatDatabase()) {
         markSnapshotLoaded();
         return true;
       }
