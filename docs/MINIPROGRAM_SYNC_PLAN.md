@@ -330,3 +330,5 @@ WXSS 报错来自一个 `::highlight` 选择器，真正难的弹层 / DOM / 真
 试验提交 **`83613eebee02e4984961eeecabad4801e979109d`** 已归档到 `refs/archive/worktree/taro-spike-3`，随后移除了 worktree；需要复查可运行 `git worktree add /tmp/taro-spike-3 refs/archive/worktree/taro-spike-3`。未上传版本、未提审、未打开或刷新 5173、未读写个人学习库。
 
 **建议走路线 B**：路线 A 的关键前提——把题面内容放在独立包并由页面按需异步读取——在 Taro 4.2.1 / Webpack 5 支持的分包模型中无法实现；当前功能分包也只比 2 MiB 上限少 **79,926 B**，剩余页面没有包体余量依据。
+
+**状态说明：**本节只记录试验结果和阶段建议，尚未安排实装；建议不构成定案，可由后续资深工程师评审否决或修订。
