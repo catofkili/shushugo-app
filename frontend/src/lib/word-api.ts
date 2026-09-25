@@ -1052,7 +1052,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // 只活在当天的队列表里,所以「毕业」「顽固卡」「已掌握」在这两个方向里根本不存在。
   if (phase === "stage2" || phase === "kanji") {
     applyDirectionAnswer(directionByPhase(phase), wordId, answer);
-    import("./storage").then(({ scheduleSave }) => scheduleSave());
+    persistSoon();
     notifyProgressUpdated();
     return getWordSession(options);
   }
@@ -1192,7 +1192,7 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
   // 代价:从不打开统计页的人,画像会一直停在上次打开时的值。它不影响出题。
   pushUndoSnapshot({ ...snapshot, review_id: reviewId });
 
-  import("./storage").then(({ scheduleSave }) => scheduleSave());
+  persistSoon();
   notifyProgressUpdated();
   return getWordSession(options);
 }
@@ -1277,7 +1277,7 @@ export function undoLastWordAnswer(options: WordSessionOptions = {}): WordSessio
     if (!hasWordFilter(options)) setPhase("stage1");
   }
 
-  import("./storage").then(({ scheduleSave }) => scheduleSave());
+  persistSoon();
   notifyProgressUpdated();
 
   // 撤销的语义是「回到刚才那张」,而不是在恢复数据后再随机抽下一张。
@@ -1312,7 +1312,7 @@ export function updateWordNote(wordId: number, note: string): { wordId: number; 
     db.run("DELETE FROM word_notes WHERE word_id = ?", [wordId]);
   }
 
-  import("./storage").then(({ scheduleSave }) => scheduleSave());
+  persistSoon();
   return { wordId, note: cleaned };
 }
 
@@ -1372,7 +1372,7 @@ export function updateWordQuestionMeaning(wordId: number, text: string): {
   resetInterferenceCache();
   setTimeout(() => displayedPromptKeyOf(wordId), 0);
 
-  import("./storage").then(({ scheduleSave }) => scheduleSave());
+  persistSoon();
   // 回读生效后的题面：清空时要还原成算出来的原文，光靠调用方猜不出来。
   const row = rowsFor("SELECT id, kanji, kana, meaning FROM words WHERE id = ?", [wordId])[0];
   const label = String(row?.kanji || row?.kana || "");
@@ -1394,7 +1394,7 @@ export function addWordStudySeconds(seconds: number, atMs = Date.now()): { secon
   ensureSyncSchema();
   recordStudySeconds(today(), seconds, atMs);
 
-  import("./storage").then(({ scheduleSave }) => scheduleSave());
+  persistSoon();
   return {
     seconds,
     stats: getWordStats("stage1")
