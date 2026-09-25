@@ -1,3 +1,5 @@
+// iOS 微信没有 TextDecoder，sql.js 胶水却无条件 new 它——必须排在 sql-wasm.js 前面（见该文件头注释）。
+require('./text-decoder');
 const initSqlJs = require('../vendor/sql-wasm.js');
 
 const WASM_PATH = '/assets/sql-wasm.wasm';
