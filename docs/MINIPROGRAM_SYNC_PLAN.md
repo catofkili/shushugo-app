@@ -600,3 +600,12 @@ B：`onPointer*` 在小程序里不触发，圆环、滑杆、长按多选、批
 **首发赠送会员**（已部署 Worker）：不是永久免费，是「上线第一个月内领取、领到的人用一个月」——领取截止由 Worker 变量
 `LAUNCH_GIFT_CLAIM_UNTIL` 决定（空 = 关闭），所以最晚上线两个月后没有人还持有赠送会员。7 天计划试用在小程序隐藏、接口返回 410。
 **提审当天**要把 `LAUNCH_GIFT_CLAIM_UNTIL` 设为「上线日 + 1 个月」并重新部署 Worker（用户操作）。
+
+**上传前检查（2026-09-26，`taro/main` 的 `319f6b4`）**：`cd taro-spike-2 && npm run build:weapp && npm run check:release`，
+没过不许上传。它只看要上传的产物（`dist/` + `project.config.json`），对应原生版的 `check-source.mjs`：sourcemap 关、`urlCheck` 开、
+不是游客 appid、`DEV=false`、没有本机地址 / `workers.dev` / vConsole、**不是 `build:preview:weapp` 的计时版**、
+没有开发专用代码、没有密钥形状的字符串。自测在 `npm test` 里。
+⚠️ 构建里的 `import.meta.env` 必须按键逐个定义（`config/index.js` 的 DefinePlugin）：只定义一个对象字符串时，webpack 判断不出
+`DEV` 恒为 false，开发专用模块（往 5173 回传整库的 dev-snapshot）会被打进主包；写「`!DEV` 就提前 return」的代码也一样，
+要写成「DEV 才进块」。
+⚠️ 几条 Codex 线同时构建时机器负载到过 27，网页测试会随机超过 5 秒默认时限（和改动无关）；这时用 `--testTimeout=60000` 复核，别当成代码坏了。
