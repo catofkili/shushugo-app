@@ -5,7 +5,7 @@
  * 每日新学数和复习上限从 studyPreferences 读（kanjiDailyGoal / kanjiReviewCap …，复习 0 = 到期全出、-1 = 不出）。
  * 汉字的候选按备考目标等级过滤。
  */
-import { getStudyPreferences, PLAN_REVIEW_DISABLED } from "./studyPreferences";
+import { getEffectiveStudyPreferences, getStudyPreferences, PLAN_REVIEW_DISABLED } from "./studyPreferences";
 import { today } from "./study-core";
 import {
   createKanjiCharTasks, kanjiCharCard, kanjiCharDataLoaded, kanjiCharProgress, loadKanjiCharData,
@@ -40,7 +40,7 @@ export interface ConfusionCardSession { card: MatchingCard | null; done: number;
 
 export const getKanjiCardSession = (db: object, day = today()): KanjiCardSession => {
   materializeOnce(db);
-  const prefs = getStudyPreferences();
+  const prefs = getEffectiveStudyPreferences();
   createKanjiCharTasks({ fresh: prefs.kanjiDailyGoal, review: reviewQuota(prefs.kanjiReviewCap) }, targetLevelRank(), day);
   const next = pickKanjiCharNext(day);
   const progress = kanjiCharProgress(day);
@@ -52,7 +52,7 @@ export const undoKanjiCardAnswer = () => undoLastKanjiCharReview();
 
 export const getConfusionCardSession = (db: object, day = today()): ConfusionCardSession => {
   materializeOnce(db);
-  const prefs = getStudyPreferences();
+  const prefs = getEffectiveStudyPreferences();
   createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: reviewQuota(prefs.confusionReviewCap) }, targetLevelRank(), day);
   const next = pickConfusionNext(day);
   const progress = confusionCardProgress(day);

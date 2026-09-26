@@ -1,10 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { applyExamPreset } from "../lib/daily-plan";
+import { applyExamPreset, previewCurrentLevelPlan } from "../lib/daily-plan";
 import { examLabel, EXAM_TYPES, formatExamDate, parseExamDate, suggestedExamDate, type ExamKind } from "../lib/jlpt/exam-dates";
 import { JLPT_TARGETS, type JlptTarget } from "../lib/jlpt/plan";
-import { previewLevelPlan } from "../lib/plan/content-matrix";
 import {
   familiarityDefaults,
   getLevelPlanSettings,
@@ -64,7 +63,7 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
 
   const samePlan = existing?.startingLevel === startingLevel && existing.target === target && existing.examKind === examKind
     && existing.examDate === examDate && JSON.stringify(existing.familiarity) === JSON.stringify(familiarity);
-  const preview = examDate ? previewLevelPlan({
+  const preview = examDate ? previewCurrentLevelPlan({
     startingLevel, target, familiarity,
     examDate: parseExamDate(examDate) ?? new Date(Date.now() + 90 * 86_400_000),
     startedOn: samePlan ? parseExamDate(existing?.startedOn ?? "") ?? undefined : undefined

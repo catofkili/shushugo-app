@@ -4,6 +4,17 @@
 .page.skin-theme-night { background: #362f2b; color: #f7e5bd; }
 .page.skin-theme-night .greeting, .page.skin-theme-night .section-title { color: #f7e5bd; }
 .greeting-row { display: flex; align-items: center; padding: 12rpx 8rpx 30rpx; }
+.post-exam { padding: 32rpx; margin-bottom: 22rpx; border: 1rpx solid var(--ds-line); border-radius: 40rpx; background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink); }
+.post-exam-head { display: flex; align-items: center; gap: 20rpx; }
+.post-exam-badge { display: flex; align-items: center; justify-content: center; width: 112rpx; height: 112rpx; flex: none; border-radius: 36rpx; background: var(--ds-primary); color: #fff; font-size: 25rpx; font-weight: 900; }
+.post-exam-title, .post-exam-question, .post-exam-rule { display: block; }
+.post-exam-title { font-size: 34rpx; font-weight: 800; }
+.post-exam-question, .post-exam-rule { margin-top: 8rpx; color: var(--ds-ink-2); font-size: 26rpx; line-height: 1.5; }
+.post-exam-actions { display: flex; flex-wrap: wrap; gap: 16rpx; margin-top: 26rpx; }
+.post-exam-actions button { margin: 0; min-height: 72rpx; padding: 0 22rpx; border: 1rpx solid var(--ds-line); border-radius: 24rpx; background: var(--ds-surface); color: var(--ds-ink); font-size: 24rpx; font-weight: 700; line-height: 72rpx; }
+.post-exam-actions button::after { border: 0; }
+.post-exam-actions .primary { border-color: var(--ds-primary); background: var(--ds-primary); color: #fff; }
+.post-exam-status { margin-bottom: 22rpx; padding: 0 8rpx; color: var(--ds-ink-2); font-size: 23rpx; }
 .brand-icon { width: 94rpx; height: 94rpx; flex: 0 0 auto; }
 .greeting-copy { flex: 1; min-width: 0; margin-left: 18rpx; }
 .brand, .greeting { display: block; }

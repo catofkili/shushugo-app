@@ -20,7 +20,7 @@ vi.mock("./database", () => ({
   importDatabase: async () => undefined
 }));
 
-import { applyExamPreset, arrangedPlan, dailyPlanView, examPreset, learnedLevel, saveDailyPlan, segmentLength, PLAN_KINDS } from "./daily-plan";
+import { applyExamPreset, arrangedPlan, dailyPlanView, examPreset, learnedLevel, previewCurrentLevelPlan, saveDailyPlan, segmentLength, PLAN_KINDS } from "./daily-plan";
 import { getStudyPreferences } from "./studyPreferences";
 import { loadKanjiCharData, materializeKanjiChars } from "./kanji-char-cards";
 import { materializeConfusionCards } from "./confusion-cards";
@@ -127,6 +127,29 @@ describe("每日学习量：视图 / 写回 / 备考一键", () => {
     applyExamPreset("N2");
     expect(getStudyPreferences().jlptTarget).toBe("N2");
     expect(getStudyPreferences().dailyGoal).toBe(examPreset("N2").plan.words.fresh);
+  });
+
+  it("起点估算每天重算目标范围里的真实未学词，批量标认识也会立即扣除", () => {
+    const input = {
+      startingLevel: "N4" as const, target: "N3" as const,
+      familiarity: { words: 75, grammar: 75, kanji: 75, confusion: 75 },
+      today: new Date(2026, 8, 26), examDate: new Date(2026, 11, 6), startedOn: new Date(2026, 8, 22)
+    };
+    const before = previewCurrentLevelPlan(input);
+    const ids = testDb.exec(`
+      SELECT p.word_id FROM progress p JOIN words w ON w.id = p.word_id
+      WHERE w.jlpt_level = 'N3' AND p.seen_count = 0 AND p.known_forever = 0
+      ORDER BY p.word_id LIMIT 100
+    `)[0].values.map(([id]) => Number(id));
+    expect(ids).toHaveLength(100);
+    try {
+      testDb.run(`UPDATE progress SET known_forever = 1 WHERE word_id IN (${ids.join(",")})`);
+      const after = previewCurrentLevelPlan(input);
+      expect(after.content.words).toBe(before.content.words - ids.length);
+      expect(after.required.words).toBeLessThan(before.required.words);
+    } finally {
+      testDb.run(`UPDATE progress SET known_forever = 0 WHERE word_id IN (${ids.join(",")})`);
+    }
   });
 
   it("一键安排之后不会被自己标成「低于建议」：到期超过 500 也照数存（旧上限 500 会截）", () => {

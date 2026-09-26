@@ -17,7 +17,8 @@ export const VISIBLE_STARTS: Array<Exclude<StartingLevel, "beyond">> = ["kana-no
 const KINDS: Kind[] = ["words", "grammar", "kanji", "confusion"];
 const zero = (): ContentCounts => ({ words: 0, grammar: 0, kanji: 0, confusion: 0 });
 
-/** 进入设定页前一次生成全部 35 种起点×目标组合；点选时只查表。 */
+/** 进入设定页前一次生成全部 35 种起点×目标组合；点选时只查表。
+ * 真实账户的单词量由 daily-plan.previewCurrentLevelPlan 按当前进度覆盖；这里为纯估算和其他卡种保留静态级别差。 */
 export const CONTENT_MATRIX = Object.fromEntries(VISIBLE_STARTS.map((start) => [start,
   Object.fromEntries(JLPT_TARGETS.map((target) => {
     const startRank = JLPT_TARGETS.indexOf(start as JlptTarget);
@@ -47,6 +48,8 @@ export const previewLevelPlan = (input: {
   target: JlptTarget;
   examDate: Date;
   familiarity?: Familiarity;
+  /** 有真实学习进度时覆盖静态级别差估算。 */
+  remainingWords?: number;
   today?: Date;
   startedOn?: Date;
   kanaCompleted?: boolean;
@@ -58,7 +61,8 @@ export const previewLevelPlan = (input: {
   // 不懂五十音时先预留约一周；真正解锁由 92 张基础假名的掌握进度决定。
   const kanaDays = input.startingLevel === "kana-none" && !input.kanaCompleted ? 7 : 0;
   const intakeDays = Math.max(0, daysLeft - reviewDays - kanaDays);
-  const content = expectedContent(input.startingLevel, input.target, input.familiarity);
+  const content = { ...expectedContent(input.startingLevel, input.target, input.familiarity) };
+  if (Number.isFinite(input.remainingWords)) content.words = Math.max(0, Math.floor(input.remainingWords!));
   const required = Object.fromEntries(KINDS.map((kind) => [kind, Math.ceil(content[kind] / Math.max(1, intakeDays))])) as ContentCounts;
   const daily = Object.fromEntries(KINDS.map((kind) => [kind, Math.min(required[kind], CAPS[kind])])) as ContentCounts;
   const feasible = daysLeft > 0 && intakeDays > 0 && KINDS.every((kind) => required[kind] <= CAPS[kind]);

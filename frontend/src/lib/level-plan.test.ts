@@ -42,7 +42,11 @@ describe("起点水平计划", () => {
     const overview = getProgressOverview();
     expect(overview.words.seen).toBe(0);
     expect(overview.grammar.reduce((sum, row) => sum + row.seen, 0)).toBe(0);
-    expect(examPreset("N3").remaining.words).toBe(2144);
+    const unseenN3 = Number(one(`
+      SELECT COUNT(*) FROM words w JOIN progress p ON p.word_id = w.id
+      WHERE w.jlpt_level = 'N3' AND p.seen_count = 0 AND p.known_forever = 0
+    `));
+    expect(examPreset("N3").remaining.words).toBe(unseenN3);
   });
 
   it("重新保存完全相同的设定不会重置备考窗口", async () => {

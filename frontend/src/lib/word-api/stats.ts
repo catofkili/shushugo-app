@@ -1,5 +1,5 @@
 import type { WordStats } from "../../types/vocabulary";
-import { getDailyWordGoal, getJlptPlanPreferences } from "../studyPreferences";
+import { getDailyWordGoal, getJlptPlanPreferences, isPostExamLightActive } from "../studyPreferences";
 import { grammarPlanDone, grammarPlanRemaining } from "../grammar-quiz";
 import { getDatabase } from "../database";
 import { loadMixedCardData, mixedCardCounts, mixedCardDataLoaded } from "../mixed-cards";
@@ -268,7 +268,7 @@ export function getWordStats(
     const encoreSize = backlogChunk > 0 ? backlogChunk : Math.min(newWordChunk, unseenCount());
     const encoreLog = readEncoreLog(studyDate);
     return {
-      available: encoreSize > 0,
+      available: encoreSize > 0 && !isPostExamLightActive(),
       size: encoreSize,
       estimatedMinutes: estimatedMinutesFor(encoreSize, secondsPerWord),
       remaining: remainingBacklog,

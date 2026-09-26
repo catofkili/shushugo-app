@@ -120,8 +120,8 @@ export const computeDailyMinimum = (input: PlanInputs): DailyMinimum => {
   // 到期的分两块:今天到期的必须今天做完(不然明天就成了积压),
   // 已经过期的那堆摊到一周里还,免得开屏就是 700 个直接把人劝退。
   const backlogDays = Math.max(Math.min(BACKLOG_SPREAD_DAYS, daysLeft), 1);
-  const reviewWords = input.freshDueWords + amortize(input.overdueWords, backlogDays);
-  const reviewGrammar = input.freshDueGrammar + amortize(input.overdueGrammar, backlogDays);
+  const reviewWords = phase === "past" ? 0 : input.freshDueWords + amortize(input.overdueWords, backlogDays);
+  const reviewGrammar = phase === "past" ? 0 : input.freshDueGrammar + amortize(input.overdueGrammar, backlogDays);
 
   const daysNeeded = Math.max(
     Math.ceil(input.unseenWords / MAX_DAILY_NEW_WORDS),

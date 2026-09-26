@@ -4,7 +4,7 @@ import { saveUserQuestionMeaning } from "./models/user-question-meanings";
 import { resetSimilarMeaningCache } from "../data/similar_meaning_groups";
 import { resetInterferenceCache } from "./scheduler/interference";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
-import { getDailyWordGoal } from "./studyPreferences";
+import { getDailyWordGoal, isPostExamLightActive } from "./studyPreferences";
 import { promptMeaning, questionMeaning, rowObjectToCard } from "./models/word-card";
 import { notifyProgressUpdated } from "./progress-events";
 import { STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
@@ -451,6 +451,7 @@ export function markTodayWordCheckin(): WordStats {
  */
 export function startEncore(customSize?: number): WordSessionResponse {
   ensureProgressInitialized();
+  if (isPostExamLightActive()) return getWordSession();
   const day = today();
   ensureStage1Tasks();
   const smartSize = encoreChunkSize(encoreRemainingCount(day));

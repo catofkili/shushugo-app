@@ -49,11 +49,12 @@ Page({
     const quota = features.web.preferences.getStudyPreferences();
     const noDate = !examDates.parseExamDate(quota.jlptExamDate) && !examDates.suggestedExamDate(status.examKind);
     const access = entitlements.cachedEntitlement();
-    const planEstimate = settings ? features.web.planContent.previewLevelPlan({
+    const isPast = status.finished || status.plan.phase === 'past';
+    const planEstimate = settings && !isPast ? core.withDb(getDatabase(), () => features.web.dailyPlan.previewCurrentLevelPlan({
       startingLevel: settings.startingLevel, familiarity: settings.familiarity, target: status.target,
       examDate: status.examDate, startedOn: features.web.examDates.parseExamDate(settings.startedOn),
       kanaCompleted: settings.startingLevel === 'kana-none' && index < 0
-    }) : null;
+    })) : null;
     const shortfall = features.web.jlptPlan.availableShortfall(status.shortfall, access.active, index >= 0);
     this.setData({
       kanaPending: index >= 0,
@@ -61,6 +62,7 @@ Page({
       kanaCard: index >= 0 ? { symbol: kana.KANA[index][0], reading: kana.KANA[index][1], choices: kana.kanaQuizChoices(index), mastered: kana.kanaMasteredCount(progress), total: kana.KANA.length } : null,
       status: { ...status, examKind: status.examKind, examName: examDates.examLabel(status.examKind), examDate: dateKey(status.examDate), examDateHuman: features.web.examDates.formatExamDateHuman(status.examDate) },
       noDate,
+      isPast,
       planEstimate,
       target: status.target,
       examKind: status.examKind,
@@ -102,11 +104,11 @@ Page({
     this.updateSetupPreview();
   },
   updateSetupPreview() {
-    const value = features.web.planContent.previewLevelPlan({
+    const value = core.withDb(getDatabase(), () => features.web.dailyPlan.previewCurrentLevelPlan({
       startingLevel: this.setup.startingLevel, target: this.setup.target,
       familiarity: this.setup.familiarity,
       examDate: features.web.examDates.parseExamDate(this.setup.examDate) || new Date(Date.now() + 90 * 86400000)
-    });
+    }));
     this.setData({ setupPreview: value });
   },
   closeSetup() { if (this.data.hasPlan) this.setData({ setupOpen: false }); },

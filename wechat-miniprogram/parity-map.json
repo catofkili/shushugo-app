@@ -15,6 +15,7 @@
   "pairs": [
     { "web": "frontend/src/App.tsx", "mini": ["wechat-miniprogram/src/app.json", "wechat-miniprogram/src/pages/home/index.js", "wechat-miniprogram/src/pages/home/index.wxml"] },
     { "web": "frontend/src/components/ZooHome.tsx", "mini": ["wechat-miniprogram/src/pages/home/index.js", "wechat-miniprogram/src/pages/home/index.wxml", "wechat-miniprogram/src/pages/home/index.wxss"] },
+    { "web": "frontend/src/components/ZooHome.css", "mini": ["wechat-miniprogram/src/pages/home/index.wxss"] },
     { "web": "frontend/src/pages/AboutPage.tsx", "mini": ["wechat-miniprogram/src/features/about/index.js", "wechat-miniprogram/src/features/about/index.wxml", "wechat-miniprogram/src/features/about/index.wxss"] },
     { "web": "frontend/src/pages/AccountSecurity.tsx", "mini": ["wechat-miniprogram/src/pages/settings/index.js", "wechat-miniprogram/src/pages/settings/index.wxml", "wechat-miniprogram/src/pages/settings/index.wxss"] },
     { "web": "frontend/src/pages/AchievementsPage.tsx", "mini": ["wechat-miniprogram/src/pages/achievements/index.js", "wechat-miniprogram/src/pages/achievements/index.wxml", "wechat-miniprogram/src/pages/achievements/index.wxss"] },

@@ -82,7 +82,7 @@
       <view wx:if="{{hasPro}}" class="metric"><text class="metric-value">{{status.done.reviewGrammarDone}} / {{status.plan.reviewGrammar}}</text><text class="metric-label">语法复习</text></view>
     </view>
     <text class="muted">{{shortfallText}}</text>
-    <text wx:if="{{!noDate && !status.plan.feasible}}" class="feature-copy danger">按当前学习记录，每天做到上限仍需约 {{status.plan.daysNeeded}} 天，距考试只剩 {{status.plan.daysLeft}} 天。建议降一级目标或改考期，而不是硬塞。</text>
+    <text wx:if="{{!noDate && !isPast && !status.plan.feasible}}" class="feature-copy danger">按当前学习记录，每天做到上限仍需约 {{status.plan.daysNeeded}} 天，距考试只剩 {{status.plan.daysLeft}} 天。建议降一级目标或改考期，而不是硬塞。</text>
     <text wx:if="{{quotaWarning}}" class="feature-copy danger">按当前固定额度，{{quotaWarning}}；可以调整每日学习量或考期，系统不会自动增加额度。</text>
     <text wx:if="{{!hasPro}}" class="muted">当前只安排单词；语法、汉字和辨析额度会保留。</text>
   </view>

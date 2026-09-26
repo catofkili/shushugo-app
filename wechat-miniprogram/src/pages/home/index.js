@@ -1,6 +1,8 @@
-const { getDatabase, getStatus, restoreDatabase } = require('../../runtime/database-store');
+const { getDatabase, getStatus, restoreDatabase, saveDatabase } = require('../../runtime/database-store');
 const { getStudyHome } = require('../../runtime/learning');
 const { studySummary } = require('../../core/analytics');
+const core = require('../../core/study-core');
+const { web } = core;
 
 const greetingFor = (hour) => {
   if (hour < 6) return '夜深了，少学一点也算数';
@@ -18,7 +20,10 @@ Page({
     stats: { planned: 0, completed: 0, remaining: 0, dueTotal: 0 },
     summary: { today: 0, week: 0, due: 0, streak: 0 },
     notice: '',
-    skin: ''
+    skin: '',
+    postExam: null,
+    postExamTarget: '',
+    postExamChoice: null
   },
 
   onLoad() {
@@ -37,6 +42,8 @@ Page({
         getStudyHome(),
         Promise.resolve(studySummary(getDatabase()))
       ]);
+      const postExam = core.withDb(getDatabase(), () => web.preferences.postExamRecovery());
+      const postExamChoice = postExam ? core.withDb(getDatabase(), () => web.preferences.postExamChoice(postExam.key)) : null;
       const skin = require('../../core/study-core').getState(getDatabase(), 'yuzu_equipped:theme', '');
       const palettes = {
         'theme-matcha': { frontColor: '#000000', backgroundColor: '#E7F1D9' },
@@ -47,7 +54,7 @@ Page({
         wx.setNavigationBarColor(palettes[skin]);
         wx.setTabBarStyle({ backgroundColor: palettes[skin].backgroundColor, color: skin === 'theme-night' ? '#D7C8B5' : '#8A7764', selectedColor: skin === 'theme-night' ? '#F3C46B' : '#5F983A' });
       }
-      this.setData({ ready: true, stats: home.stats, summary, skin });
+      this.setData({ ready: true, stats: home.stats, summary, skin, postExam, postExamTarget: postExam?.target || '', postExamChoice, postExamDays: web.preferences.POST_EXAM_LIGHT_DAYS });
     } catch (error) {
       console.info('[home] 本地词库尚未就绪', error);
       this.setData({ ready: false, notice: '首次使用先到「单词」下载离线词库。' });
@@ -62,5 +69,31 @@ Page({
 
   openPage(event) {
     wx.navigateTo({ url: event.currentTarget.dataset.url });
+  },
+
+  async choosePostExam(event) {
+    const { postExam } = this.data;
+    if (!postExam) return;
+    const choice = event.currentTarget.dataset.choice;
+    if (choice !== 'light' && choice !== 'usual') return;
+    const db = getDatabase();
+    core.withDb(db, () => {
+      web.preferences.choosePostExamIntensity(postExam.key, choice);
+      if (choice === 'usual') {
+        web.wordApi.refreshTodayWordPlan();
+        web.mixedCards.refreshMixedCardTasks(db);
+      }
+    });
+    await saveDatabase();
+    await this.refresh();
+  },
+
+  async adjustPostExamGoal() {
+    const { postExam } = this.data;
+    if (postExam) {
+      core.withDb(getDatabase(), () => web.preferences.choosePostExamIntensity(postExam.key, 'light'));
+      await saveDatabase();
+    }
+    wx.navigateTo({ url: '/features/jlpt-plan/index' });
   }
 });

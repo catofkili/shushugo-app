@@ -3,8 +3,12 @@ import { useEffect, useState } from "react";
 // 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
 import { Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
-import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
-import { getStudyPreferences, kanaGatePending, PREFERENCES_EVENT } from "../lib/studyPreferences";
+import { notifyProgressUpdated, PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
+import { choosePostExamIntensity, getStudyPreferences, kanaGatePending, postExamChoice, postExamRecovery, PREFERENCES_EVENT, POST_EXAM_LIGHT_DAYS } from "../lib/studyPreferences";
+import { scheduleSave } from "../lib/storage";
+import { refreshTodayWordPlan } from "../lib/word-api";
+import { refreshMixedCardTasks } from "../lib/mixed-cards";
+import { getDatabase } from "../lib/database";
 import { computeStreak } from "../lib/zoo-streak";
 import type { WordStats } from "../types/vocabulary";
 import type { Page, StudyMode } from "../types/app";
@@ -21,6 +25,7 @@ import { Sticker, type StickerName } from "./CapybaraMascot";
 import { MomentPop } from "./MomentPop";
 import { WeeklyReportEntrance } from "./WeeklyReportEntrance";
 import { ZooProgressPanel } from "./ZooProgressPanel";
+import "./ZooHome.css";
 
 /**
  * 主页 —— 取代原来的「工具箱」页,工具箱里的每一项都在这里有入口:
@@ -88,6 +93,8 @@ export function ZooHome({
   const entitlements = useEntitlements();
   const [stats, setStats] = useState<WordStats | null>(null);
   const [jlpt, setJlpt] = useState<JlptPlanStatus | null>(null);
+  const [recovery, setRecovery] = useState<ReturnType<typeof postExamRecovery>>(null);
+  const [recoveryChoice, setRecoveryChoice] = useState<"light" | "usual" | null>(null);
   const [modeSheetOpen, setModeSheetOpen] = useState(false);
   // 每日量在设置页也能改，所以跟着 PREFERENCES_EVENT 走，别只在挂载时读一次
   const [goals, setGoals] = useState(() => getStudyPreferences());
@@ -116,8 +123,12 @@ export function ZooHome({
       try {
         const plan = getJlptPlanStatus();
         setJlpt(plan.enabled ? plan : null);
+        const nextRecovery = plan.enabled ? postExamRecovery() : null;
+        setRecovery(nextRecovery);
+        setRecoveryChoice(nextRecovery ? postExamChoice(nextRecovery.key) : null);
       } catch {
         setJlpt(null);
+        setRecovery(null);
       }
       // 必须在 stats 读完之后:当天的计划是在那里面排好的,
       // 排之前问 plan_trend 会看到「今天 0 个」,报出一句假喜讯。
@@ -147,6 +158,22 @@ export function ZooHome({
   const streak = stats ? computeStreak(stats.checkins, stats.studyDate) : 0;
   const streakCount = useCountUp(streak);
   const examDateMissing = Boolean(jlpt && !parseExamDate(goals.jlptExamDate) && !suggestedExamDate(jlpt.examKind));
+
+  const chooseRecovery = (choice: "light" | "usual") => {
+    if (!recovery) return;
+    choosePostExamIntensity(recovery.key, choice);
+    setRecoveryChoice(choice);
+    if (choice === "usual") {
+      refreshTodayWordPlan();
+      refreshMixedCardTasks(getDatabase());
+    }
+    scheduleSave(0);
+    notifyProgressUpdated();
+  };
+  const adjustRecoveryGoal = () => {
+    if (recovery) chooseRecovery("light");
+    onNavigate("jlpt-plan");
+  };
 
   // 问候语只说**别处没说过的**：剩余量顶栏的进度条和大卡已经各写了一遍。
   // 这里给的是当天的状态和连击 —— 同一屏里同一个数字出现三次，是这页显吵的主因之一。
@@ -210,6 +237,21 @@ export function ZooHome({
         )}
         <Sticker name={greetSticker(new Date().getHours(), total, done)} size={78} className="zoo-greet-mascot" />
       </div>
+
+      {recovery && !recoveryChoice && (
+        <section className="zoo-post-exam" aria-label="考后提醒">
+          <div className="zoo-post-exam-head">
+            <span className="zoo-post-exam-badge">考完啦</span>
+            <div><b>辛苦了，{recovery.target} 考试结束啦</b><p>要调整下一场的目标吗？</p></div>
+          </div>
+          <p>考后 {POST_EXAM_LIGHT_DAYS} 天先放轻松：暂停新学；每天最多复习单词 60、语法 10、汉字 10、辨析 5 条。原额度保留，期满自动恢复。</p>
+          <div className="zoo-post-exam-actions">
+            <button className="zoo-post-exam-primary" onClick={adjustRecoveryGoal}>调整目标</button>
+            <button onClick={() => chooseRecovery("light")}>先按轻量计划</button>
+            <button onClick={() => chooseRecovery("usual")}>保持原强度</button>
+          </div>
+        </section>
+      )}
 
       {/* ① 今天 —— 全页唯一的实心主色块。层级靠三件事拉开：最大、最亮、字最重。
              模式切换从旁边那张 119px 的大卡收进大卡右下角的一枚 chip：
@@ -293,7 +335,7 @@ export function ZooHome({
             <button className="zoo-duo-cell" onClick={() => onNavigate("jlpt-plan")}>
               <span className="zoo-duo-kick">{jlpt.examKind === "jlpt" ? `${jlpt.target} 备考` : examLabel(jlpt.examKind)}</span>
               <b>{examDateMissing ? "先选考试日期" : jlpt.finished ? "已考完" : `还有 ${jlpt.plan.daysLeft} 天`}</b>
-              <small>{examDateMissing ? "选择日期后生成每日计划" : kanaGatePending() ? "先学五十音，完成后开始新词" : shortfallText(availableShortfall(jlpt.shortfall, entitlements.isPro))}</small>
+              <small>{examDateMissing ? "选择日期后生成每日计划" : recovery ? recoveryChoice === "usual" ? "已恢复平时学习量，可设置新目标" : `考后轻量期还剩 ${recovery.daysLeft} 天` : jlpt.finished ? "可设置下一场目标" : kanaGatePending() ? "先学五十音，完成后开始新词" : shortfallText(availableShortfall(jlpt.shortfall, entitlements.isPro))}</small>
             </button>
           )}
           <button className="zoo-duo-cell" onClick={() => onNavigate("team")}>

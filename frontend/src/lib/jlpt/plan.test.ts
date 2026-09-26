@@ -166,6 +166,8 @@ describe("computeDailyMinimum", () => {
     const plan = computeDailyMinimum(inputs({ today: new Date(2026, 11, 7), unseenWords: 500 }));
     expect(plan.phase).toBe("past");
     expect(plan.newWords).toBe(0);
+    expect(plan.reviewWords).toBe(0);
+    expect(plan.reviewGrammar).toBe(0);
     expect(plan.intakeDaysLeft).toBe(0);
   });
 });
