@@ -1,4 +1,8 @@
 import './app-polyfills.weapp';
+// ⚠️ 标签页界面在 lazy 分包（platform/lazy-route.tsx），被它和别的分包同时用到的模块会各打一份拷贝。
+// 纯函数和出厂内容缓存无所谓；**按数据库缓存用户数据的模块必须只有一份**——在这里静态引用一次，它就进主包，
+// 异步块和各分包都用主包这份。grammarHighlights 的 dbCaches：详情页那份写了新重点，语法页那份缓存不失效就看不到。
+import '../../../frontend/src/lib/grammarHighlights';
 import { Suspense, useEffect, useState, useSyncExternalStore, type ComponentType } from 'react';
 import { Text, View } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';

@@ -87,6 +87,56 @@ module.exports = {
       [path.join(root, 'scripts/strip-weapp-css.cjs')]: {}
     },
     webpackChain(chain, webpack) {
+      // import() 出来的异步代码块：文件名由 webpackChunkName 决定（'lazy/xxx' → 落进 lazy 分包），
+      // 运行时用微信官方的分包异步化 require.async 加载，替掉 webpack 默认的 <script> 加载。
+      chain.output.chunkFilename('[name].js');
+      // 其余的 import() 一律按「立即加载」处理（和原来 babel 把它转成 require 的效果一样），
+      // 只有写了 /* webpackMode: "lazy" */ 的才生成异步块——否则语法数据等上百个 import() 全变成主包根目录的异步块。
+      chain.module.set('parser', { ...(chain.module.get('parser') || {}), javascript: { dynamicImportMode: 'eager' } });
+      // Taro 的 common / vendors / taro 三组默认 chunks: 'all'，会想把异步块里的模块提进主包 common，
+      // 和异步块的加载关系冲突（SplitChunksPlugin: Cache group "common" conflicts with existing chunk）。
+      // 只让它们管初始代码块；异步块里的模块本来就会跳过父级已有的，剩下的就该留在异步块里。
+      chain.optimization.merge({ splitChunks: { chunks: 'initial' } });
+      for (const group of ['common', 'vendors', 'taro']) {
+        const cacheGroups = chain.optimization.get('splitChunks')?.cacheGroups;
+        if (cacheGroups?.[group]) cacheGroups[group].chunks = 'initial';
+      }
+      chain.plugin('wx-require-async-chunks').use(class WxRequireAsyncChunkLoading {
+        apply(compiler) {
+          const { RuntimeGlobals, RuntimeModule, Template } = compiler.webpack;
+          class LoadScript extends RuntimeModule {
+            constructor() { super('wx require.async chunk loading', RuntimeModule.STAGE_ATTACH); }
+            generate() {
+              // ⚠️ require.async 的参数必须是字符串字面量：开发者工具 / 上传时靠静态分析它决定哪些文件进包，
+              // 拼出来的路径（'./' + url）会被当成无用文件不注入，运行时 ChunkLoadError。所以按异步块逐个写死。
+              const { compilation } = this;
+              const files = [...compilation.chunks]
+                .filter((chunk) => !chunk.canBeInitial())
+                .map((chunk) => compilation.getPath(compilation.outputOptions.chunkFilename, { chunk, contentHashType: 'javascript' }));
+              return Template.asString([
+                'var loaders = {',
+                Template.indent(files.map((file) => `${JSON.stringify(file)}: function () { return require.async(${JSON.stringify(`./${file}`)}); },`)),
+                '};',
+                `${RuntimeGlobals.loadScript} = function (url, done) {`,
+                Template.indent([
+                  "var load = loaders[String(url).replace(/^\\/+/, '')];",
+                  "if (!load) { console.error('[lazy chunk] unknown', url); done({ type: 'error', target: { src: url } }); return; }",
+                  'load().then(',
+                  "  function () { done({ type: 'load', target: { src: url } }); },",
+                  "  function (error) { console.error('[lazy chunk]', url, error && (error.errMsg || error.message) || error); done({ type: 'error', target: { src: url } }); }",
+                  ');'
+                ]),
+                '};'
+              ]);
+            }
+          }
+          compiler.hooks.thisCompilation.tap('WxRequireAsyncChunkLoading', (compilation) => {
+            compilation.hooks.runtimeRequirementInTree.for(RuntimeGlobals.loadScript).tap('WxRequireAsyncChunkLoading', (chunk) => {
+              compilation.addRuntimeModule(chunk, new LoadScript());
+            });
+          });
+        }
+      });
       chain.resolve.modules.add(path.join(root, 'node_modules'));
       chain.resolve.modules.add(path.join(frontend, 'node_modules'));
       chain.plugin('spike-local-storage').use(webpack.ProvidePlugin, [{

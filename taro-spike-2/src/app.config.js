@@ -26,8 +26,11 @@ export default {
     { root: 'content', pages: ['placeholder/index'] },
     { root: 'grammar-foundation', pages: ['placeholder/index'] },
     { root: 'grammar-advanced', pages: ['placeholder/index'] },
-    { root: 'grammar-pages', pages: ['compile/index'] }
+    { root: 'grammar-pages', pages: ['compile/index'] },
+    { root: 'lazy', pages: ['placeholder/index'] }
   ],
+  // 四个标签页一进来就预下载 lazy（里面是 import() 出来的界面代码），第一次点进去不用等下载。
+  preloadRule: Object.fromEntries(mainRoutes.map((route) => [route.path, { network: 'all', packages: ['lazy'] }])),
   window: {
     navigationBarTitleText: 'ShuShuGo · 路线 A 试验',
     navigationBarBackgroundColor: '#FBF6EC',
