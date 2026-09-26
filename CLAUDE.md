@@ -301,6 +301,28 @@ App 真正能拉起微信还差 iOS 那一半（开放平台移动应用、Unive
 这次没有合并历史账号或学习数据；历史双账号要另做用户确认与数据合并方案。
 本次只改了源码和文档，未部署 Worker、未上传小程序，也未做微信开发者工具/真机验收。
 
+### 2026-09-26 Taro 版付费链路（`taro/main` 的 `202a773`，服务端同一份在 `main` 的 `c83cb3a`，**Worker 未部署**）
+
+- **iOS 可以卖**：微信已全面支持 iOS 小程序虚拟支付（手续费 15%），并要求 2026-04-01 起各端都接虚拟支付，
+  所以 Pro 页在 iPhone 上照常显示购买，不用做「iOS 不可购买」分支。
+- **防重复扣款在服务端**：付完款、验单还没回来时再点购买，权益还没写，`PRO_ALREADY_ACTIVE` 挡不住。
+  `createWechatPayOrder` 下新单前先把这个账号近两小时 `status='created'` 的订单向微信查一遍，付了的当场结算；
+  查不通（断网 / 微信 `errcode -1` 系统繁忙）就 503 `PREVIOUS_ORDER_UNCONFIRMED`，不下新单。
+  ⚠️ 别把这件事挪到客户端：换设备、清缓存之后客户端根本不知道还有一张没结清的单。
+- **待确认订单只查一次**（`payment.js` 的 `verifyPendingPayment`）：有明确结果（付了 / 402 没付 / 其他 4xx）就清掉，
+  只有断网、5xx 才留到下次。原来取消掉的订单每次启动连查 4 次而且永远不清。真付了却漏查的那一单，
+  微信发货推送和上一条「下新单前先结算」两条路都会补上。判据在 `payment-price-smoke.cjs`。
+- **文案是期限卡，不是订阅**：月卡 / 季卡 / 年卡「到期不自动续费」，永久版一次买断。写「按月订阅」是在误导付费用户。
+  四档分价三处必须一致：`purchases.weapp.ts`、Worker `WECHAT_PAY_PRICES`、虚拟支付后台道具价。
+- **付费小窗只有一个**：删掉了 `Paywall.weapp.tsx`（整屏深色遮罩、赠送期间藏掉购买、没登录也能点买），
+  小程序用网页 `Paywall.tsx`。平台差异只有三处：期限卡说明代替 Apple 条款、领首月会员、先登录再买
+  （`PurchaseResult.needsAuth` → `onRequireAuth` → `requireAccount`）。网页 Paywall 里的 DOM 调用必须一路可选链
+  （Taro 元素没有 `querySelector` / `focus`）。
+- 首发赠送记成 `source: "trial"`，永远弱于付费：赠送期间买月卡，从付款当天起算，赠送剩余天数**不顺延**
+  （待用户决定要不要改成从赠送到期日起算）。
+- `release-config.weapp.cjs` 的 `purchase` 仍是 `false`。开之前：部署含 `c83cb3a` 的 Worker、`/api/health` 的
+  `wechatPayConfigured: true`、四档道具已发布、沙箱真机把取消 / 成功 / 重复购买 / 恢复 / 退款走一遍。
+
 详细支付路由、密钥和消息推送约定见 `wechat-miniprogram/README.md`；每次提审按
 `wechat-miniprogram/docs-submit.md` 的硬门槛逐项验收。
 
