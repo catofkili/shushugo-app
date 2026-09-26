@@ -13,6 +13,7 @@ import {
 import { MascotSay } from "../components/MascotSay";
 import { Disclosure } from "../components/Disclosure";
 import { useStudyTimer } from "../lib/useStudyTimer";
+import { useProgressiveList } from "../lib/touch-adapter";
 
 /**
  * 一字多音 —— 一个汉字的几个读音各自什么时候用。
@@ -67,6 +68,7 @@ export const KanjiReadingUsagePage = () => {
       return true;
     });
   }, [all, ready, query, level, onlySpecific]);
+  const visibleEntries = useProgressiveList(shown, shown, 64);
 
   const handWritten = all.filter((entry) => entry.hasManual).length;
   const open = openChar ? kanjiReadingUsageFor(openChar) : null;
@@ -131,7 +133,7 @@ export const KanjiReadingUsagePage = () => {
         <p className="cf-loading"><Sticker name="empty-search" size={96} />没有找到相关的字，换个关键词试试吧</p>
       ) : (
         <div className="kr-grid">
-          {shown.map((entry) => (
+          {visibleEntries.map((entry) => (
             <button key={entry.char} className="kr-card" onClick={() => setOpenChar(entry.char)}>
               <b className="jp-serif kr-card-char">{entry.char}</b>
               <span className="jp kr-card-readings">{readingLine(entry)}</span>

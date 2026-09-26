@@ -56,3 +56,6 @@ export const scrollPageToTop = () => {
 
 /** 小程序的触底（页面 onReachBottom），返回「是不是页面自己在滚」。网页返回 false：列表页自己听滚动续页。 */
 export const usePageReachBottom = (_callback: () => void) => false;
+
+/** Web keeps the full list; the WeChat adapter pages it at the native reach-bottom event. */
+export const useProgressiveList = <T,>(items: readonly T[], _resetKey: unknown, _pageSize: number) => items;

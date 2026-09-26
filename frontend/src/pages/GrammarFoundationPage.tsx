@@ -11,6 +11,7 @@ import {
 } from "../data/grammar-foundation";
 import { useStudyTimer } from "../lib/useStudyTimer";
 import type { JLPTLevel } from "../types/grammar";
+import { useProgressiveList } from "../lib/touch-adapter";
 
 const LEVELS: Array<"All" | JLPTLevel> = ["All", "N5", "N4", "N3", "N2", "N1"];
 
@@ -65,6 +66,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
       ].join(" ").toLowerCase().includes(needle);
     });
   }, [level, query, section]);
+  const visibleRules = useProgressiveList(shownRules, shownRules, 8);
 
   return (
     <div className="space-y-5">
@@ -131,7 +133,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
       {/* 小红书式瀑布流：CSS columns 一行搞定，卡片各自按内容长高，不再被 grid 拉成一样高留一大片空。
           代价是顺序按列走（先填满左列再右列）——浏览用的清单，无所谓。 */}
       <div className="columns-2 gap-3 lg:columns-3">
-        {shownRules.map((rule) => {
+        {visibleRules.map((rule) => {
           const related = rule.relatedGrammarIds
             .map((id) => points.get(id))
             .filter((point): point is NonNullable<typeof point> => Boolean(point));
