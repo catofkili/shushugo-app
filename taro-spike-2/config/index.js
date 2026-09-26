@@ -105,6 +105,12 @@ module.exports = {
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,
         (resource) => {
+          if (resource.request === 'react-dom' && !resource.contextInfo?.issuer?.endsWith('react-dom.weapp.ts')) {
+            // 网页的 createPortal(弹层, document.body) 在小程序里看不见，见 src/platform/portal-host.weapp.ts。
+            // 用模块替换而不是 alias：Taro 的 React 插件自己把 react-dom$ 别名到 @tarojs/react，替换在别名之前生效。
+            resource.request = path.join(root, 'src/platform/react-dom.weapp.ts');
+            return;
+          }
           if (resource.request === 'sql.js/dist/sql-wasm.wasm?url') {
             resource.request = path.join(root, 'src/platform/sql-wasm-url.weapp.cjs');
             return;
