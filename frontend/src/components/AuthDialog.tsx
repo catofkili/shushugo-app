@@ -247,7 +247,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
   const legalDate = mode === "terms" ? USER_AGREEMENT_EFFECTIVE_DATE : PRIVACY_POLICY_EFFECTIVE_DATE;
 
   return (
-    <div className="fixed inset-0 z-[100] grid place-items-center bg-[#101810]/70 p-3 backdrop-blur-sm" role="presentation">
+    <div className="fixed inset-0 z-[10002] grid place-items-center bg-[#101810]/70 p-3 backdrop-blur-sm" role="presentation">
       <section
         role="dialog"
         aria-modal="true"
