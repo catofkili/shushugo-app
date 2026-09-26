@@ -2,47 +2,47 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1717392,
+      "bytes": 1846882,
       "passes": true
     },
     "study": {
-      "bytes": 272021,
+      "bytes": 299862,
       "passes": true
     },
     "account": {
-      "bytes": 210601,
+      "bytes": 248849,
       "passes": true
     },
     "content-pages": {
-      "bytes": 690609,
+      "bytes": 1059131,
       "passes": true
     },
     "features": {
-      "bytes": 580407,
+      "bytes": 580408,
       "passes": true
     },
     "content": {
-      "bytes": 1619455,
+      "bytes": 1619456,
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 668450,
+      "bytes": 668451,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547378,
+      "bytes": 547379,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 354928,
+      "bytes": 354920,
       "passes": true
     },
     "core": {
-      "bytes": 279123,
+      "bytes": 279124,
       "passes": true
     },
     "lazy": {
-      "bytes": 566487,
+      "bytes": 567087,
       "passes": true
     }
   },
@@ -50,8 +50,8 @@
   "duplicateSourceModuleCount": 57,
   "duplicatedModules": [
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/vocab-test.ts",
-      "bytes": 49967,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/vocab-test.ts",
+      "bytes": 50003,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -59,8 +59,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/conjugation-explanation.ts",
-      "bytes": 42708,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/conjugation-explanation.ts",
+      "bytes": 42735,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -68,7 +68,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/data/verb-conjugation-foundation.ts",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/data/verb-conjugation-foundation.ts",
       "bytes": 35039,
       "packages": [
         "content-pages",
@@ -76,23 +76,23 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-      "bytes": 33428,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/pages/Library.tsx",
+      "bytes": 33464,
       "packages": [
         "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/analytics/weekly.ts",
-      "bytes": 32850,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/analytics/weekly.ts",
+      "bytes": 32877,
       "packages": [
         "content-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/data/grammar_title_furigana.json",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/data/grammar_title_furigana.json",
       "bytes": 30888,
       "packages": [
         "content-pages",
@@ -101,48 +101,48 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/data/grammar-foundation.ts",
-      "bytes": 20755,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/data/grammar-foundation.ts",
+      "bytes": 20764,
       "packages": [
         "content-pages",
         "grammar-pages"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 18966,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/pages/ConfusionPage.tsx",
+      "bytes": 18984,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 15963,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/pages/ImmersiveGrammar.tsx",
+      "bytes": 15972,
       "packages": [
         "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15667,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/pages/FavoritesPage.tsx",
+      "bytes": 15712,
       "packages": [
         "content-pages",
         "grammar-pages"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/analytics/weekly-reports.ts",
-      "bytes": 15635,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/analytics/weekly-reports.ts",
+      "bytes": 15653,
       "packages": [
         "content-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/speech.weapp.ts",
-      "bytes": 15524,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/speech.weapp.ts",
+      "bytes": 15560,
       "packages": [
         "account",
         "content-pages",
@@ -151,32 +151,32 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 15376,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/pages/GrammarFoundationPage.tsx",
+      "bytes": 15394,
       "packages": [
         "content-pages",
         "grammar-pages"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 15306,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/DailyPlanPanel.tsx",
+      "bytes": 15342,
       "packages": [
         "account",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/GrammarHighlightProvider.tsx",
-      "bytes": 14725,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/GrammarHighlightProvider.tsx",
+      "bytes": 14752,
       "packages": [
         "content-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13198,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/share-canvas.weapp.ts",
+      "bytes": 13207,
       "packages": [
         "content-pages",
         "lazy",
@@ -184,16 +184,16 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13049,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/DailyPlanRing.weapp.tsx",
+      "bytes": 13058,
       "packages": [
         "account",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12858,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/JapaneseRuby.tsx",
+      "bytes": 12894,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -201,8 +201,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/token-dictionary.ts",
-      "bytes": 12208,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/token-dictionary.ts",
+      "bytes": 12226,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -210,8 +210,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11588,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "bytes": 11606,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -219,8 +219,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/grammar-term-hint-data.ts",
-      "bytes": 11039,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/grammar-term-hint-data.ts",
+      "bytes": 11048,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -228,8 +228,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/features/word-study/word-study-utils.ts",
-      "bytes": 10862,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/features/word-study/word-study-utils.ts",
+      "bytes": 10871,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -237,24 +237,24 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 10093,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/FloatingDoodlePen.weapp.tsx",
+      "bytes": 10102,
       "packages": [
         "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 8886,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/pages/GrammarDetail.tsx",
+      "bytes": 8895,
       "packages": [
         "content-pages",
         "grammar-pages"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7857,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/FavoriteFolderPicker.tsx",
+      "bytes": 7875,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -263,8 +263,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/share-image.weapp.ts",
-      "bytes": 6216,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/share-image.weapp.ts",
+      "bytes": 6234,
       "packages": [
         "content-pages",
         "lazy",
@@ -272,8 +272,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/distinction-quiz.ts",
-      "bytes": 5559,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/distinction-quiz.ts",
+      "bytes": 5577,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -281,42 +281,42 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammarProgressPreferences.ts",
-      "bytes": 5110,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/grammarProgressPreferences.ts",
+      "bytes": 5128,
       "packages": [
-        "grammar-pages",
-        "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ShareImageSheet.weapp.tsx",
-      "bytes": 4911,
-      "packages": [
-        "content-pages",
-        "lazy",
-        "study"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4891,
-      "packages": [
-        "content-pages",
         "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/daily-plan-ring-geometry.ts",
-      "bytes": 3905,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/ShareImageSheet.weapp.tsx",
+      "bytes": 4938,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/GrammarPointPopover.tsx",
+      "bytes": 4900,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/daily-plan-ring-geometry.ts",
+      "bytes": 3932,
       "packages": [
         "account",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/GrammarTermHint.weapp.tsx",
-      "bytes": 3837,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/GrammarTermHint.weapp.tsx",
+      "bytes": 3846,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -324,8 +324,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/study-clock.ts",
-      "bytes": 3358,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/study-clock.ts",
+      "bytes": 3367,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -334,7 +334,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/data/kana_glossary.json",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/data/kana_glossary.json",
       "bytes": 3278,
       "packages": [
         "content-pages",
@@ -343,7 +343,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/useStudyTimer.ts",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/useStudyTimer.ts",
       "bytes": 3106,
       "packages": [
         "content-pages",
@@ -353,16 +353,16 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/hooks/useCountUp.ts",
-      "bytes": 2944,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/hooks/useCountUp.ts",
+      "bytes": 2953,
       "packages": [
         "content-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammar-form-target.ts",
-      "bytes": 2761,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/grammar-form-target.ts",
+      "bytes": 2770,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -370,7 +370,16 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ProReadingPreview.tsx",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/grammar-title-furigana.ts",
+      "bytes": 2481,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/ProReadingPreview.tsx",
       "bytes": 2476,
       "packages": [
         "lazy",
@@ -378,17 +387,17 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammar-title-furigana.ts",
-      "bytes": 2454,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/CrossPlatformImage.weapp.tsx",
+      "bytes": 2309,
       "packages": [
+        "account",
         "content-pages",
-        "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/Disclosure.weapp.tsx",
-      "bytes": 2110,
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/Disclosure.weapp.tsx",
+      "bytes": 2119,
       "packages": [
         "account",
         "content-pages",
@@ -398,7 +407,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ExampleSentence.tsx",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/ExampleSentence.tsx",
       "bytes": 1996,
       "packages": [
         "content-pages",
@@ -406,7 +415,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/use-progress-updates.weapp.ts",
+      "source": "/private/tmp/shushugo-w13-local-images/taro-spike-2/src/platform/use-progress-updates.weapp.ts",
       "bytes": 1899,
       "packages": [
         "account",
@@ -415,8 +424,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/platform-dialogs.weapp.ts",
-      "bytes": 1814,
+      "source": "/private/tmp/shushugo-w13-local-images/taro-spike-2/src/platform/platform-dialogs.weapp.ts",
+      "bytes": 1832,
       "packages": [
         "account",
         "content-pages",
@@ -425,7 +434,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammar-key-points.ts",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/grammar-key-points.ts",
       "bytes": 1805,
       "packages": [
         "content-pages",
@@ -434,7 +443,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/study-totals.ts",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/study-totals.ts",
       "bytes": 1705,
       "packages": [
         "account",
@@ -442,7 +451,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/routes/shared.tsx",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/routes/shared.tsx",
       "bytes": 1614,
       "packages": [
         "content-pages",
@@ -450,7 +459,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammar-numbering.ts",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/grammar-numbering.ts",
       "bytes": 1355,
       "packages": [
         "content-pages",
@@ -459,16 +468,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 1129,
-      "packages": [
-        "account",
-        "content-pages",
-        "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/components/JapaneseWordRuby.tsx",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/JapaneseWordRuby.tsx",
       "bytes": 1115,
       "packages": [
         "grammar-pages",
@@ -477,7 +477,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ReviewButton.tsx",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/ReviewButton.tsx",
       "bytes": 1093,
       "packages": [
         "content-pages",
@@ -485,7 +485,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/yield-to-paint.ts",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/yield-to-paint.ts",
       "bytes": 957,
       "packages": [
         "account",
@@ -494,7 +494,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammarNotes.ts",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/grammarNotes.ts",
       "bytes": 825,
       "packages": [
         "content-pages",
@@ -503,7 +503,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/DailyPlanSlider.weapp.tsx",
       "bytes": 651,
       "packages": [
         "account",
@@ -511,7 +511,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 517,
       "packages": [
         "content-pages",
@@ -521,7 +521,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/grammar-data.weapp.cjs",
+      "source": "/private/tmp/shushugo-w13-local-images/taro-spike-2/src/platform/grammar-data.weapp.cjs",
       "bytes": 458,
       "packages": [
         "content-pages",
@@ -530,7 +530,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/types/grammar.ts",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/types/grammar.ts",
       "bytes": 149,
       "packages": [
         "content-pages",
@@ -539,7 +539,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
+      "source": "/private/tmp/shushugo-w13-local-images/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
       "bytes": 60,
       "packages": [
         "content-pages",
@@ -552,7 +552,7 @@
   "duplicatedCoreModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
-      "bytes": 49967,
+      "bytes": 50003,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -562,7 +562,7 @@
     },
     {
       "source": "frontend/src/lib/conjugation-explanation.ts",
-      "bytes": 42708,
+      "bytes": 42735,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -572,7 +572,7 @@
     },
     {
       "source": "frontend/src/lib/analytics/weekly.ts",
-      "bytes": 32850,
+      "bytes": 32877,
       "packages": [
         "content-pages",
         "lazy"
@@ -581,7 +581,7 @@
     },
     {
       "source": "frontend/src/lib/analytics/weekly-reports.ts",
-      "bytes": 15635,
+      "bytes": 15653,
       "packages": [
         "content-pages",
         "lazy"
@@ -590,7 +590,7 @@
     },
     {
       "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 15524,
+      "bytes": 15560,
       "packages": [
         "account",
         "content-pages",
@@ -601,7 +601,7 @@
     },
     {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13198,
+      "bytes": 13207,
       "packages": [
         "content-pages",
         "lazy",
@@ -611,7 +611,7 @@
     },
     {
       "source": "frontend/src/lib/token-dictionary.ts",
-      "bytes": 12208,
+      "bytes": 12226,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -621,7 +621,7 @@
     },
     {
       "source": "frontend/src/lib/share-image.weapp.ts",
-      "bytes": 6216,
+      "bytes": 6234,
       "packages": [
         "content-pages",
         "lazy",
@@ -631,7 +631,7 @@
     },
     {
       "source": "frontend/src/lib/distinction-quiz.ts",
-      "bytes": 5559,
+      "bytes": 5577,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -641,7 +641,7 @@
     },
     {
       "source": "frontend/src/lib/grammarProgressPreferences.ts",
-      "bytes": 5110,
+      "bytes": 5128,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -650,7 +650,7 @@
     },
     {
       "source": "frontend/src/lib/study-clock.ts",
-      "bytes": 3358,
+      "bytes": 3367,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -672,7 +672,7 @@
     },
     {
       "source": "frontend/src/lib/grammar-form-target.ts",
-      "bytes": 2761,
+      "bytes": 2770,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -682,7 +682,7 @@
     },
     {
       "source": "frontend/src/lib/grammar-title-furigana.ts",
-      "bytes": 2454,
+      "bytes": 2481,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -770,7 +770,7 @@
   "duplicatedPageComponents": [
     {
       "source": "frontend/src/pages/Library.tsx",
-      "bytes": 33428,
+      "bytes": 33464,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -779,7 +779,7 @@
     },
     {
       "source": "frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 18966,
+      "bytes": 18984,
       "packages": [
         "grammar-pages",
         "study"
@@ -788,7 +788,7 @@
     },
     {
       "source": "frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 15963,
+      "bytes": 15972,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -797,7 +797,7 @@
     },
     {
       "source": "frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15667,
+      "bytes": 15712,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -806,7 +806,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 15376,
+      "bytes": 15394,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -815,7 +815,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 15306,
+      "bytes": 15342,
       "packages": [
         "account",
         "study"
@@ -824,7 +824,7 @@
     },
     {
       "source": "frontend/src/components/GrammarHighlightProvider.tsx",
-      "bytes": 14725,
+      "bytes": 14752,
       "packages": [
         "content-pages",
         "lazy"
@@ -833,7 +833,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13049,
+      "bytes": 13058,
       "packages": [
         "account",
         "study"
@@ -842,7 +842,7 @@
     },
     {
       "source": "frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12858,
+      "bytes": 12894,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -852,7 +852,7 @@
     },
     {
       "source": "frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11588,
+      "bytes": 11606,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -862,7 +862,7 @@
     },
     {
       "source": "frontend/src/components/grammar-term-hint-data.ts",
-      "bytes": 11039,
+      "bytes": 11048,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -872,7 +872,7 @@
     },
     {
       "source": "frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 10093,
+      "bytes": 10102,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -881,7 +881,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 8886,
+      "bytes": 8895,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -890,7 +890,7 @@
     },
     {
       "source": "frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7857,
+      "bytes": 7875,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -901,7 +901,7 @@
     },
     {
       "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
-      "bytes": 4911,
+      "bytes": 4938,
       "packages": [
         "content-pages",
         "lazy",
@@ -911,7 +911,7 @@
     },
     {
       "source": "frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4891,
+      "bytes": 4900,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -921,7 +921,7 @@
     },
     {
       "source": "frontend/src/components/daily-plan-ring-geometry.ts",
-      "bytes": 3905,
+      "bytes": 3932,
       "packages": [
         "account",
         "study"
@@ -930,7 +930,7 @@
     },
     {
       "source": "frontend/src/components/GrammarTermHint.weapp.tsx",
-      "bytes": 3837,
+      "bytes": 3846,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -948,8 +948,18 @@
       "reason": "The study and lazy tab routes each render the reading preview."
     },
     {
+      "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
+      "bytes": 2309,
+      "packages": [
+        "account",
+        "content-pages",
+        "lazy"
+      ],
+      "reason": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions."
+    },
+    {
       "source": "frontend/src/components/Disclosure.weapp.tsx",
-      "bytes": 2110,
+      "bytes": 2119,
       "packages": [
         "account",
         "content-pages",
@@ -967,16 +977,6 @@
         "grammar-pages"
       ],
       "reason": "Example sentences are rendered from both content and grammar route packages."
-    },
-    {
-      "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 1129,
-      "packages": [
-        "account",
-        "content-pages",
-        "lazy"
-      ],
-      "reason": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions."
     },
     {
       "source": "frontend/src/components/JapaneseWordRuby.tsx",
@@ -1038,15 +1038,15 @@
     "frontend/src/components/daily-plan-ring-geometry.ts": "Ring geometry shared by the Canvas ring; duplicated alongside it.",
     "frontend/src/components/GrammarTermHint.weapp.tsx": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant).",
     "frontend/src/components/ProReadingPreview.tsx": "The study and lazy tab routes each render the reading preview.",
+    "frontend/src/components/CrossPlatformImage.weapp.tsx": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.",
     "frontend/src/components/Disclosure.weapp.tsx": "Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.",
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
-    "frontend/src/components/CrossPlatformImage.weapp.tsx": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.",
     "frontend/src/components/JapaneseWordRuby.tsx": "Word ruby rendering is used in the study, grammar, and lazy tab routes.",
     "frontend/src/components/ReviewButton.tsx": "Review controls appear in the content and grammar route packages.",
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 233432,
+  "duplicatedPageComponentBytes": 234990,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1056,43 +1056,43 @@
   "webModulePolicy": "error",
   "mainTopModules": [
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-      "bytes": 159555
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/sync-api.ts",
+      "bytes": 159753
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
-      "bytes": 149592
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/word-api.ts",
+      "bytes": 149718
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/app.css",
-      "bytes": 141147
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/app.css",
+      "bytes": 141385
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/styles.css",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/styles.css",
       "bytes": 136943
     },
     {
-      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
+      "source": "/private/tmp/shushugo-w12-ios-css/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
       "bytes": 92952
     },
     {
-      "source": "/private/tmp/claude-gram/wechat-miniprogram/src/vendor/sql-wasm.js",
-      "bytes": 91182
+      "source": "/private/tmp/shushugo-w13-local-images/wechat-miniprogram/src/vendor/sql-wasm.js",
+      "bytes": 91263
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/storage.ts",
-      "bytes": 83210
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/storage.ts",
+      "bytes": 83309
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/study-core.ts",
-      "bytes": 78304
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/lib/study-core.ts",
+      "bytes": 78349
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/design.css",
+      "source": "/private/tmp/shushugo-w13-local-images/frontend/src/design.css",
       "bytes": 70028
     },
     {
-      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/ts-fsrs/dist/index.mjs",
+      "source": "/private/tmp/shushugo-w12-ios-css/taro-spike-2/node_modules/ts-fsrs/dist/index.mjs",
       "bytes": 60657
     }
   ],
