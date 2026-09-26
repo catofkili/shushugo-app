@@ -14,6 +14,8 @@ export interface StoreProduct {
 export interface PurchaseResult {
   ok: boolean;
   message: string;
+  /** 只有小程序会置：购买 / 恢复要先微信登录，调用方该打开登录框。 */
+  needsAuth?: boolean;
 }
 
 type StoreStatus = "idle" | "ready" | "unavailable" | "error";

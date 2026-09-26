@@ -13,10 +13,6 @@ module.exports = {
   "timer": [
     "study"
   ],
-  "pause": [
-    "study",
-    "content-pages"
-  ],
   "bookopentext": [
     "study"
   ],
@@ -102,6 +98,9 @@ module.exports = {
     "content-pages"
   ],
   "externallink": [
+    "content-pages"
+  ],
+  "pause": [
     "content-pages"
   ],
   "palette": [

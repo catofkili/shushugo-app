@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1701709,
-      "mib": 1.623,
+      "bytes": 1706486,
+      "mib": 1.627,
       "passes": true
     },
     "study": {
@@ -17,7 +17,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 688421,
+      "bytes": 688423,
       "mib": 0.657,
       "passes": true
     },
@@ -57,12 +57,12 @@
       "passes": true
     }
   },
-  "totalBytes": 7557513,
+  "totalBytes": 7562292,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 804010
+      "bytes": 808600
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -112,7 +112,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 254005
+      "bytes": 254192
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -810,14 +810,14 @@
       "bytes": 1956
     },
     {
+      "path": "content-pages/favorites/index.js",
+      "package": "content-pages",
+      "bytes": 1955
+    },
+    {
       "path": "assets/brand/shushugo-icon.webp",
       "package": "main",
       "bytes": 1954
-    },
-    {
-      "path": "content-pages/favorites/index.js",
-      "package": "content-pages",
-      "bytes": 1953
     },
     {
       "path": "content-pages/sub-common/8d129e9eb9c7475f1e61abffc333e589.js",

@@ -86,7 +86,7 @@ function GlobalOverlays({
   onDismissTrial,
   onViewPro
 }: Omit<AppShellProps, "context" | "children" | "className">) {
-  const { navigate } = useApp();
+  const { navigate, requireAccount } = useApp();
 
   return (
     <>
@@ -119,6 +119,7 @@ function GlobalOverlays({
             onClosePaywall();
             navigate("privacy-policy");
           }}
+          onRequireAuth={() => requireAccount()}
         />
       )}
       <AuthDialog open={authOpen} onClose={onCloseAuth} onAuthenticated={onAuthenticated} />

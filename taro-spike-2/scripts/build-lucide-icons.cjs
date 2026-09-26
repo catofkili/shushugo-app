@@ -27,7 +27,6 @@ const mainNames = new Set();
 const packageNames = new Map();
 const replacements = new Map([
   ['components/AuthDialog', 'components/AuthDialog.weapp.tsx'],
-  ['components/Paywall', 'components/Paywall.weapp.tsx'],
   ['components/ShareImageSheet', 'components/ShareImageSheet.weapp.tsx'],
   ['components/TimerRing', 'components/TimerRing.weapp.tsx'],
   ['pages/NotificationSettings', 'pages/NotificationSettings.weapp.tsx']

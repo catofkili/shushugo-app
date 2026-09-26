@@ -34,11 +34,17 @@ class FakeStatement {
     if (this.sql.startsWith("INSERT INTO auth_rate_limits")) return { request_count: 1 };
     return null;
   }
-  async all() { return { results: [] }; }
+  async all() {
+    if (this.sql.includes("FROM wechat_orders WHERE user_id = ?")) {
+      const [userId, since] = this.params;
+      return { results: Object.values(this.db.orders).filter((row) => row.user_id === userId && row.status === "created" && row.created_at > since).map((row) => ({ ...row })) };
+    }
+    return { results: [] };
+  }
   async run() {
     if (this.sql.startsWith("INSERT INTO wechat_orders")) {
-      const [out_trade_no, user_id, openid, product_id, price_cents] = this.params;
-      this.db.orders[out_trade_no] = { out_trade_no, user_id, openid, product_id, price_cents, status: "created", wx_order_id: null };
+      const [out_trade_no, user_id, openid, product_id, price_cents, created_at] = this.params;
+      this.db.orders[out_trade_no] = { out_trade_no, user_id, openid, product_id, price_cents, status: "created", wx_order_id: null, created_at };
     } else if (this.sql.startsWith("UPDATE wechat_orders SET status = 'paid'")) {
       const [wx, , no] = this.params; Object.assign(this.db.orders[no], { status: "paid", wx_order_id: wx });
     } else if (this.sql.startsWith("UPDATE wechat_orders SET status = 'delivered'")) {
@@ -81,7 +87,11 @@ globalThis.fetch = async (input, init) => {
   const url = String(input);
   wx.calls.push(url.split("?")[0]);
   if (url.includes("/cgi-bin/token")) return Response.json({ access_token: "AT", expires_in: 7200 });
-  if (url.includes("/xpay/query_order")) return Response.json({ errcode: 0, order: { status: wx.paidStatus, wx_order_id: "WX-1", paid_time: 1789000000 } });
+  if (url.includes("/xpay/query_order")) {
+    if (wx.queryDown) throw new Error("network down");
+    if (wx.queryBusy) return Response.json({ errcode: -1, errmsg: "system error" });
+    return Response.json({ errcode: 0, order: { status: wx.paidStatus, wx_order_id: "WX-1", paid_time: 1789000000 } });
+  }
   if (url.includes("/xpay/notify_provide_goods")) return Response.json({ errcode: 0 });
   throw new Error(`unexpected fetch ${url}`);
 };
@@ -172,7 +182,35 @@ try {
   assert.equal(res.status, 409);
   assert.equal((await res.json()).code, "PRO_ALREADY_ACTIVE");
 
-  console.log("OK Worker wechat pay routes: order, verify (unpaid/paid/idempotent/other-account), push handshake and refund");
+  // 付完款、客户端还没 verify 就又点购买：下新单前先向微信结算上一单，第二单在扣钱前被挡下。
+  env.DB.entitlement = null;
+  wx.paidStatus = 1;
+  res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_monthly" });
+  assert.equal(res.status, 200, await res.clone().text());
+  const unverified = await res.json();
+  wx.paidStatus = 2;
+  res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_yearly" });
+  assert.equal(res.status, 409, await res.clone().text());
+  assert.equal((await res.json()).code, "PRO_ALREADY_ACTIVE");
+  assert.equal(env.DB.entitlement.product_id, "shushugo_pro_monthly");
+  assert.equal(env.DB.orders[unverified.outTradeNo].status, "delivered");
+
+  // 上一单查不通（断网 / 微信系统繁忙）：不下新单，宁可让用户等。
+  for (const failure of ["queryDown", "queryBusy"]) {
+    env.DB.entitlement = null;
+    wx.paidStatus = 1;
+    res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_monthly" });
+    assert.equal(res.status, 200, await res.clone().text());
+    const stuck = await res.json();
+    wx[failure] = true;
+    res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_monthly" });
+    assert.equal(res.status, 503, failure);
+    assert.equal((await res.json()).code, "PREVIOUS_ORDER_UNCONFIRMED");
+    wx[failure] = false;
+    env.DB.orders[stuck.outTradeNo].status = "abandoned";
+  }
+
+  console.log("OK Worker wechat pay routes: order, verify (unpaid/paid/idempotent/other-account), push handshake and refund, settle-before-reorder");
 } finally {
   rmSync(outdir, { recursive: true, force: true });
 }

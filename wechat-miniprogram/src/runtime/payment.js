@@ -100,10 +100,28 @@ async function requestPayment(productId, expectedPriceCents) {
   return { paid: Boolean(verified?.paid), pending: Boolean(verified?.pending), outTradeNo: order.outTradeNo, entitlement: verified?.entitlement };
 }
 
+// 启动时 / 点「恢复」时补查本机那张没确认的订单：只查一次。原来走 verifyWithRetry，取消掉的订单（402）
+// 每次启动都连查 4 次、隔 2 秒多，而且永远不清——每次都是 4 次云函数 + 4 次微信查单（2026-09-26）。
+// 查到明确结果（付了 / 没付 / 不属于这个账号 / 已退款）就清掉；只有断网、5xx 才留着下次再查。
+// 真付了却没查到的那一单，微信的发货推送和 Worker「下新单前先结算上一单」两条路都还会补上。
 async function verifyPendingPayment() {
   const outTradeNo = String(wx.getStorageSync(PENDING_ORDER_KEY) || '');
   if (!outTradeNo) return { paid: false, pending: false };
-  return { ...(await verifyWithRetry(outTradeNo)), outTradeNo };
+  try {
+    const result = await verifyOrder(outTradeNo);
+    if (result?.paid) {
+      wx.removeStorageSync(PENDING_ORDER_KEY);
+      return { ...result, outTradeNo };
+    }
+    return { paid: false, pending: true, outTradeNo };
+  } catch (error) {
+    const status = Number(error?.statusCode || 0);
+    if (status && status < 500) {
+      wx.removeStorageSync(PENDING_ORDER_KEY);
+      return { paid: false, pending: false, outTradeNo };
+    }
+    return { paid: false, pending: true, outTradeNo };
+  }
 }
 
 function pendingOrderNo() {

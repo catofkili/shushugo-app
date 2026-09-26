@@ -1456,6 +1456,26 @@ const createWechatPayOrder = async (request: Request, env: Env) => {
   const session = await loadWechatSession(env, userId);
   if (!session) return json({ detail: "请重新用微信登录后再购买。", code: "WECHAT_SESSION_MISSING" }, 401);
   const body = await readJson<{ productId?: string }>(request);
+  // 付完款、验单还没回来（客户端显示「待确认」、换了台设备、断网）时再点购买：权益还没写，下面的
+  // PRO_ALREADY_ACTIVE 挡不住，同一段期限会付两次钱。下新单前先把这个账号近两小时没结清的订单向微信查一遍，
+  // 付了的当场结算。查不通就不让下新单——宁可让用户等一会儿，也不冒重复扣款的险（2026-09-26）。
+  const since = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+  const unsettled = await env.DB.prepare(`
+    SELECT * FROM wechat_orders WHERE user_id = ? AND status = 'created' AND created_at > ?
+    ORDER BY created_at DESC LIMIT 3
+  `).bind(userId, since).all<WechatOrderRow>();
+  for (const previous of unsettled.results ?? []) {
+    let unknown = false;
+    try {
+      const settled = await settleWechatOrder(env, previous, { via: "before-new-order" });
+      // -1 是微信「系统繁忙」：查了等于没查，不能当成没付。
+      unknown = !settled.paid && settled.errcode === -1;
+    } catch (error) {
+      console.warn("wechat settle before new order failed", error);
+      unknown = true;
+    }
+    if (unknown) return json({ detail: "上一笔订单还在确认中，请稍后再试。", code: "PREVIOUS_ORDER_UNCONFIRMED" }, 503);
+  }
   const outTradeNo = crypto.randomUUID().replace(/-/g, "");
   let order;
   try {
@@ -1487,7 +1507,7 @@ const settleWechatOrder = async (env: Env, order: WechatOrderRow, payload: unkno
   const now = new Date().toISOString();
   if (!result.paid) {
     await recordPurchaseEvent(env, order.user_id, order.product_id, order.out_trade_no, "unpaid", { query: result, payload }, order.out_trade_no, "wechat");
-    return { paid: false as const, detail: result.errmsg ?? "订单尚未支付。" };
+    return { paid: false as const, detail: result.errmsg ?? "订单尚未支付。", errcode: result.errcode };
   }
   const productId = order.product_id as WechatPayProduct;
   const sandbox = Number(env.WECHAT_PAY_ENV ?? "0") === 1;
