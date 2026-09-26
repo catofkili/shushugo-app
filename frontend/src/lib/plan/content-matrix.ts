@@ -9,7 +9,7 @@ export const CONTENT_BY_LEVEL: Record<JlptTarget, ContentCounts> = {
   N5: { words: 929, grammar: 127, kanji: 448, confusion: 8 },
   N4: { words: 886, grammar: 136, kanji: 362, confusion: 33 },
   N3: { words: 2144, grammar: 146, kanji: 408, confusion: 58 },
-  N2: { words: 3626, grammar: 155, kanji: 390, confusion: 92 },
+  N2: { words: 3626, grammar: 155, kanji: 390, confusion: 91 },
   N1: { words: 4216, grammar: 205, kanji: 362, confusion: 154 }
 };
 

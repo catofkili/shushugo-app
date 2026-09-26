@@ -52,7 +52,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "pair:変える / 変わる",
     level: "major",
-    summary: "看状态变化，还是有人改动对象。；変わる：季节、状况等作主体；不要求变化无人促成。；変える：对象接「を」，结果可接「に」。"
+    summary: "看状态变化，还是有人改动对象。；変わる：季节、状况等作主体；即使是人促成的变化，也可只说结果。；変える：对象接「を」，结果可接「に」。"
   },
   {
     groupKey: "pair:休む / 休める",
@@ -952,7 +952,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "pair:切らす / 切れる",
     level: "major",
-    summary: "看库存/联系用尽，还是绳/电池断了。；切らす：存货、联系接「を」，可表示断供。；切れる：断开或耗尽的东西作主体，也可表示刀锋利。"
+    summary: "看用尽/断开的东西是作「が」的主体，还是作「を」的对象。；切らす：存货、烟、关系等接「を」，常说「〜を切らしている」。；切れる：绳、电池、存货等作主体；刀作主体还表示锋利。"
   },
   {
     groupKey: "kanji-choice:さがす",
@@ -1102,7 +1102,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "stem:考",
     level: "major",
-    summary: "看思考的方式。；考える：思考内容可接「を／について」。；考え直す：对原有计划或判断重新审视。；考え込む：常表示一时陷入深入思考。"
+    summary: "看后项：「直す」是推翻重来，「込む」是陷进去停不下来。；考える：思考内容接「を／について」。；考え直す：对已定的计划、判断重新考虑。；考え込む：一个人沉思半天，常带发愁语气。"
   },
   {
     groupKey: "stem:決",
@@ -1212,7 +1212,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "stem:降",
     level: "major",
-    summary: "看是人下车/下行，还是雨雪降落；复合词后缀再看开始、持续或倾泻。；降りる：交通工具常接「を」，表示下车。；降る：雨雪作主体。；降り出す：表示雨雪刚开始下。；降り続く：表示一段时间持续降下。；降り注ぐ：强调大量落下或倾泻。"
+    summary: "人下交通工具、下台阶看「降りる」，雨雪落下看「降る」，复合词再看后项是开始、持续还是倾泻。；降りる：交通工具常接「を」，表示下车。；降る：雨雪作主体。；降り出す：表示雨雪刚开始下。；降り続く：表示一段时间持续降下。；降り注ぐ：强调大量落下或倾泻。"
   },
   {
     groupKey: "stem:乗",
@@ -1282,7 +1282,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "stem:間",
     level: "major",
-    summary: "看是把对象弄错，还是对象本身不正确；两种说法有重叠。；間違える：常把人、地点或答案等误认/选错。；間違う：路线、判断都可用，也可替换「間違える」。"
+    summary: "看句中有没有被弄错的对象「を」：有就多用「間違える」，只说判断/做法出错时两者常可互换。；間違える：人、地点、答案等接「を」，表示认错/选错。；間違う：多说「間違った答え」「計算が間違っている」，也可带「を」。"
   },
   {
     groupKey: "stem:通",
@@ -1461,8 +1461,8 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   },
   {
     groupKey: "stem:済",
-    level: "major",
-    summary: "看是自己办完，还是把事情处理完毕。；済ます：主体主动办完事情。；済ませる：可让别人办完，也可表示尽快处理。"
+    level: "interchangeable",
+    summary: "两者都表示把事情办完；「済ませる」更常用，「済ます」略口语。"
   },
   {
     groupKey: "stem:植",
@@ -1672,7 +1672,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "stem:巻",
     level: "major",
-    summary: "巻く是卷、缠绕；巻き込む是把对象卷进去，也可表示使人卷入事件。"
+    summary: "看后项「込む」：只是缠绕，还是卷进内部/把人牵连进来。；巻く：绳、布、发条等接「を」缠绕。；巻き込む：被卷入的人/物接「を」，常说「事故に巻き込まれる」。"
   },
   {
     groupKey: "stem:含",
@@ -1752,7 +1752,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "stem:膨",
     level: "major",
-    summary: "膨らむ是自己膨胀，膨らます是使其膨胀；膨れる也可指身体鼓起或闹情绪，膨れ上がる强调大幅膨胀。"
+    summary: "看鼓起的东西作「が」主体还是「を」对象，再看是否带情绪或规模剧增。；膨らむ：气球、预算、期待等作主体鼓起来。；膨らます：被吹鼓的东西接「を」。；膨れる：也可指鼓着脸闹别扭。；膨れ上がる：强调数量、规模一下子胀大。"
   },
   {
     groupKey: "stem:湧",
@@ -1777,7 +1777,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "stem:襲",
     level: "major",
-    summary: "襲う是袭击、突然侵袭；襲いかかる强调向对象猛扑、扑上去攻击。"
+    summary: "看后项「かかる」：是否强调扑向对象的那一下。；襲う：袭击对象接「を」，台风、地震等也可作主体。；襲いかかる：扑击对象接「に」，强调猛扑上去。"
   },
   {
     groupKey: "stem:傷",
@@ -2727,8 +2727,28 @@ export const distinctionNotesFor = (
   const notes = new Map<string, string[]>();
   let previousKeys: string[] = [];
 
-  cleanSummary.split("；").flatMap((clause) => clause.split(splitBeforeWord)).forEach((rawClause) => {
+  // 新写法「共同判据；词：提示；词：提示」：首段是判断要点，不挂到成员上（它常点名成员，
+  // 按包含匹配会把整条要点再抄进成员卡）；「词：」按标签精确认领（着く 不能认领
+  // たどり着く 那段）；提示里再用「；」续写的无标签短句归前一个词，而不是被丢掉。
+  const clauses = cleanSummary.split("；");
+  const labelOf = (clause: string) => clause.trim().match(/^([^：:，,。]+)[：:]/)?.[1]?.replace(/（[^）]*）/g, "");
+  const labeled = clauses.slice(1).some((clause) => {
+    const label = labelOf(clause);
+    return label !== undefined && allForms.includes(plainForm(label));
+  });
+
+  (labeled ? clauses.slice(1) : clauses).flatMap((clause) => labeled ? [clause] : clause.split(splitBeforeWord)).forEach((rawClause) => {
     const clause = rawClause.replace(/^[，,]/, "").replace(/[。；]+$/, "").trim();
+    if (labeled) {
+      const label = labelOf(clause);
+      const owners = label === undefined ? [] : targetForms.filter((target) => target.forms.includes(plainForm(label)));
+      const keys = owners.length ? owners.map((target) => target.key) : previousKeys;
+      const note = owners.length ? clause.slice(clause.search(/[：:]/) + 1).trim() : clause;
+      if (!keys.length || !note) return;
+      previousKeys = keys;
+      keys.forEach((key) => notes.set(key, [...(notes.get(key) ?? []), note]));
+      return;
+    }
     let matched = targetForms.filter((target) => target.forms.some((form) => clause.includes(form)));
     const pronoun = clause.match(/^(前者|后者)/)?.[1];
     if (!matched.length && pronoun && previousKeys.length) {

@@ -80,6 +80,15 @@ describe("辨析人工稿覆盖率", () => {
     expect(notes.get("insert")).toBe("把物品塞进容器，常用「に」");
   });
 
+  it("「词：提示」按标签认领：要点不抄进成员卡、子串词形不串、续写短句不丢", () => {
+    const notes = distinctionNotesFor(
+      "到达用「着く」，历经周折用「たどり着く」。；着く：目的地接「に」；也可说「席に着く」。；たどり着く：强调终于到达。",
+      [{ key: "tsuku", forms: ["着く"] }, { key: "tadori", forms: ["たどり着く"] }]
+    );
+    expect(notes.get("tsuku")).toBe("目的地接「に」；也可说「席に着く」");
+    expect(notes.get("tadori")).toBe("强调终于到达");
+  });
+
   it("每个不能互换的词都有自己的卡内说明", () => {
     const missing = confusionGroups().flatMap((group) => {
       const review = distinctionReviewFor(group.key);
