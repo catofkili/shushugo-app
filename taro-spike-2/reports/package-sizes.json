@@ -2,7 +2,7 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1716307,
+      "bytes": 1716323,
       "mib": 1.637,
       "passes": true
     },
@@ -17,7 +17,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 689447,
+      "bytes": 689463,
       "mib": 0.658,
       "passes": true
     },
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 565266,
+      "bytes": 565282,
       "mib": 0.539,
       "passes": true
     }
   },
-  "totalBytes": 7500414,
+  "totalBytes": 7500462,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 816073
+      "bytes": 816089
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 563517
+      "bytes": 563533
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -1002,7 +1002,7 @@
     {
       "path": "content-pages/sub-common/3b9c02e466436cb5b4b571bd94b31238.js",
       "package": "content-pages",
-      "bytes": 732
+      "bytes": 748
     },
     {
       "path": "content-pages/sub-common/6ced2bcb395a96b68bb6f83718b96144.js",

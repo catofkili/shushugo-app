@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1716307,
+      "bytes": 1716323,
       "passes": true
     },
     "study": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 689447,
+      "bytes": 689463,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 565266,
+      "bytes": 565282,
       "passes": true
     }
   },
@@ -353,19 +353,19 @@
       ]
     },
     {
+      "source": "/private/tmp/claude-gram/frontend/src/hooks/useCountUp.ts",
+      "bytes": 2944,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ]
+    },
+    {
       "source": "/private/tmp/claude-gram/frontend/src/lib/grammar-form-target.ts",
       "bytes": 2761,
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/hooks/useCountUp.ts",
-      "bytes": 2492,
-      "packages": [
-        "content-pages",
         "lazy"
       ]
     },

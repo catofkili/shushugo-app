@@ -23,8 +23,12 @@ const brandPath = (name: string) => {
   return `${packagePath}/${name}.webp`;
 };
 
+// ⚠️ 两处真机才看得出来的坑（2026-09-26 iPhone 镜像）：
+// 1. 贴纸全是 .webp，小程序 <image> 不开 webp 属性时 iOS 上不显示（开发者工具是 Chrome 内核，照常显示）；
+// 2. 原来是 mode="heightFix" 只给高度：图没加载出来时 <image> 默认宽 320px，一张看不见的空图把整行挤没，
+//    旁边的文字只剩一个字宽、竖着排（主页问候、查词汇量标题）。固定成 size×size 的框、图在框里按比例缩放。
 export function Sticker({ name, size = 56, className = '' }: { name: string; size?: number; className?: string }) {
-  return <Image className={`taro-spike-sticker ${className}`} src={stickerUrl(name)} mode="heightFix" style={{ height: size }} />;
+  return <Image className={`taro-spike-sticker ${className}`} src={stickerUrl(name)} webp mode="aspectFit" style={{ width: size, height: size }} />;
 }
 
 export const stickerUrl = (name: string) => brandPath(name);
@@ -38,7 +42,7 @@ export function CapybaraMascot({ mood = 'default', size = 56, className = '' }: 
   return <Sticker name={`mood-${mood}`} size={size} className={className} />;
 }
 export function BrandIcon({ className = '' }: { className?: string }) {
-  return <Image className={className} src={brandIconUrl()} mode="aspectFit" style={{ width: 56, height: 56 }} />;
+  return <Image className={className} src={brandIconUrl()} webp mode="aspectFit" style={{ width: 56, height: 56 }} />;
 }
 export const setMascotSkin = () => undefined;
 export const useMascotSkin = () => '';
