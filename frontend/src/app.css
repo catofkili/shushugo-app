@@ -1440,7 +1440,8 @@
 /* 走路的那只：四帧走 image + overflow 裁切，WXSS 不支持包内 background-image。 */
 .mascot-walk{display:inline-block;overflow:hidden;vertical-align:bottom}
 .mascot-walk-strip{display:block;max-width:none;animation:mascotWalk .64s steps(4,end) infinite}
-@keyframes mascotWalk{to{transform:translateX(-75%)}}
+/* steps(4,end) 停在 0/25/50/75%，所以终点必须是 -100%（整条宽 = 4 帧）；写 -75% 每帧都停在两帧中间 */
+@keyframes mascotWalk{to{transform:translateX(-100%)}}
 [data-motion="reduced"] .mascot-walk-strip{animation:none}
 /* 底部 Tab：选中那格的图标放大一点、带一点投影 */
 .app-tab-icon{transition:transform .25s ease;opacity:.78}

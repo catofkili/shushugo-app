@@ -21,4 +21,5 @@
 .vt-timer-canvas { position: absolute; inset: 0; width: 42px; height: 42px; }
 .kanji-pair-lines-canvas { position: absolute; left: calc(50% - 30px); top: 0; width: 60px; z-index: 0; pointer-events: none; }
 .jp-ruby-reading-weapp { color: #818781; font-size: .58em; }
-@keyframes taroSpikeWalk { to { transform: translateX(-75%); } }
+/* 终点 -100%：steps(4,end) 实际停在 0 / -25% / -50% / -75%，正好四帧 */
+@keyframes taroSpikeWalk { to { transform: translateX(-100%); } }
