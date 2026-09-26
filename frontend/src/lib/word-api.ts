@@ -6,8 +6,8 @@ import { resetInterferenceCache } from "./scheduler/interference";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
 import { getDailyWordGoal, isPostExamLightActive } from "./studyPreferences";
 import { promptMeaning, questionMeaning, rowObjectToCard } from "./models/word-card";
-import { notifyProgressUpdated } from "./progress-events";
-import { STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
+import { notifyProgressUpdated, withProgressEventsMuted } from "./progress-events";
+import { ENDGAME_REMAINING_RATIO, STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
 import {
   firstRow,
   firstValue,
@@ -108,6 +108,7 @@ export {
   pickDailyReviewNext,
   shouldStartDailyReview
 } from "./word-api/daily-review";
+import { shouldStartDailyReview } from "./word-api/daily-review";
 // 首页看过「比昨天少 N 个」之后回写标记,当天不再重放
 
 // 导出分析统计功能
@@ -1036,11 +1037,17 @@ export function submitKanjiUnitAnswer(unitKey: string, answer: WordAnswer): Word
 }
 
 export function submitWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions = {}): WordSessionResponse {
+  applyWordAnswer(wordId, answer, options);
+  return getWordSession(options);
+}
+
+/** 只记这一次作答（FSRS、计数、流水、重刷排队、撤销快照），不选下一张。 */
+function applyWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions): void {
   ensureProgressInitialized();
   if (!claimCurrentCard(wordId)) {
     // Stale or duplicate submission (e.g. a rapid double-tap before the card
-    // advanced). Do NOT score the word again; just re-sync with the current card.
-    return getWordSession(options);
+    // advanced). Do NOT score the word again; the caller re-syncs with the current card.
+    return;
   }
   const db = getDatabase();
   const studyDate = today();
@@ -1055,11 +1062,11 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
     applyDirectionAnswer(directionByPhase(phase), wordId, answer);
     persistSoon();
     notifyProgressUpdated();
-    return getWordSession(options);
+    return;
   }
 
   const progress = firstRow("SELECT * FROM progress WHERE word_id = ?", [wordId]);
-  if (!progress) return getWordSession(options);
+  if (!progress) return;
   const snapshot = {
     phase: "stage1",
     // 撤销要认「这是哪一场、哪一天」的快照:对不上就当作没得撤销(见 undo-stack)
@@ -1195,7 +1202,124 @@ export function submitWordAnswer(wordId: number, answer: WordAnswer, options: Wo
 
   persistSoon();
   notifyProgressUpdated();
-  return getWordSession(options);
+}
+
+/*
+ * ─── 预算下一张（2026-09-26）────────────────────────────────────────────────
+ * 点「认识」之后要做的事（记账 + 选下一张 + 统计）在 iPhone 小程序里约 300 ms：JS 和 SQLite(wasm) 都是解释执行。
+ * 用户看这张卡的那几秒里，先把「答成认识 / 忘记之后下一张是谁」算好；点下去直接换卡，记账挪到换卡之后。
+ *
+ * 怎么算：在 SAVEPOINT 里用**正式的**作答和选卡代码真的走一遍，然后整个回滚。不另写一套「模拟作答之后的状态」——
+ * 下一张依赖的东西（重刷排队、今天完成了几个、最近连错几个词、新词保底、顽固词当场接着刷）全在库里，
+ * 模拟任何一项漏掉都会让预算和真选的不一样。会话状态（当前卡、排队、上一张、撤销栈）也都在 app_state，回滚一并还原。
+ * ⚠️ 回滚管不到的只有三样：同步派发的 PROGRESS_UPDATED（压住，见 withProgressEventsMuted）、
+ * persistSoon（回滚后才排保存，存的是原样数据，无害）、内存缓存（干扰索引按当天候选集缓存，多一个少一个词都会重建，无害）。
+ *
+ * 什么时候作废：库里有任何写入（total_changes 变了）、换了库实例（云同步合并 / 恢复备份）、跨过学习日边界。
+ * 作废就走原来的同步路径，不会出错，只是那一下慢。
+ */
+export interface NextCardPreview {
+  card: WordCard | null;
+  phase: string;
+  /** 这一下「忘记」会打开当日错题回顾（UI 走同步路径，照原样处理） */
+  dailyReviewWouldStart: boolean;
+  /** 同一类答法（认识↔熟知、忘记↔模糊）能不能共用这张：不在收尾阶段、下一张也不是当前这张时才行 */
+  sharedWithinClass: boolean;
+}
+export interface AnswerPreviews {
+  wordId: number;
+  db: object;
+  day: string;
+  changes: number;
+  byAnswer: Partial<Record<WordAnswer, NextCardPreview>>;
+}
+
+const totalChanges = () => firstValue<number>("SELECT total_changes()", [], 0);
+
+export function startAnswerPreviews(wordId: number): AnswerPreviews {
+  return { wordId, db: getDatabase() as unknown as object, day: today(), changes: totalChanges(), byAnswer: {} };
+}
+
+/**
+ * 假如 previews.wordId 这张被答成 answer，下一张是谁。算完回滚，结果记进 previews。
+ * checkDailyReview：UI 那边「这一下忘记会不会打开错题回顾」的前提成立（计划模式、正向、今天还没开过）。
+ */
+export function addAnswerPreview(
+  previews: AnswerPreviews,
+  answer: WordAnswer,
+  options: WordSessionOptions = {},
+  checkDailyReview = false
+): void {
+  if (!answerPreviewsValid(previews)) return;
+  const db = getDatabase();
+  db.run("SAVEPOINT preview_next_card");
+  try {
+    previews.byAnswer[answer] = withProgressEventsMuted(() => {
+      applyWordAnswer(previews.wordId, answer, options);
+      const { card, phase } = nextCard(options);
+      const day = today();
+      const dueLeft = phase === "stage1" ? firstValue<number>(`
+        SELECT COUNT(*) FROM stage1_tasks t JOIN progress p ON p.word_id = t.word_id
+        WHERE t.reviewed_on = ? AND p.known_forever = 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+      `, [day, studyDayEnd().toISOString()], 0) : 0;
+      const total = phase === "stage1" ? firstValue<number>("SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ?", [day], 0) : 0;
+      return {
+        card,
+        phase,
+        dailyReviewWouldStart: checkDailyReview && answer === "forgot" && shouldStartDailyReview(true),
+        // 收尾阶段（剩余 ≤ 一成）允许同一张连出，那时「忘记」和「模糊」排的重刷位置不同就可能选出不同的下一张。多留两张余量。
+        sharedWithinClass: phase === "stage1" && card != null && card.id !== previews.wordId
+          && dueLeft > Math.ceil(total * ENDGAME_REMAINING_RATIO) + 2
+      };
+    });
+  } catch (error) {
+    console.warn("[preview] 预算下一张失败，这一张走同步路径", error);
+  } finally {
+    db.run("ROLLBACK TO preview_next_card");
+    db.run("RELEASE preview_next_card");
+  }
+  // 预算自己的写入已经回滚，但 total_changes 照样会涨：基准要在回滚之后重取。
+  previews.changes = totalChanges();
+}
+
+// ⚠️ sql.js 的 export()（整库落盘：网页 5 分钟一次、开发环境镜像 20 秒一次、小程序整库保存）会关掉再重开连接，
+// total_changes 随之清零，预算就判作废。这是安全的一侧（只会多走同步路径），重算交给学习页翻面那一下
+// （answerPreviewsFresh 为假就在后台重算）。
+const answerPreviewsValid = (previews: AnswerPreviews) =>
+  previews.db === (getDatabase() as unknown as object) && previews.day === today() && previews.changes === totalChanges();
+
+/** 这张卡的预算还能不能用（「认识」「忘记」两份都在、库没变）。学习页翻面时问一下，不能用就后台重算。 */
+export const answerPreviewsFresh = (previews: AnswerPreviews | null, wordId: number): boolean =>
+  Boolean(previews && previews.wordId === wordId && previews.byAnswer.know && previews.byAnswer.forgot && answerPreviewsValid(previews));
+
+const SAME_CLASS: Partial<Record<WordAnswer, WordAnswer>> = { fuzzy: "forgot", known_forever: "know" };
+
+/** 点下去那一刻：这张卡、这种答法有没有算好的下一张。没有（没算完 / 作废 / 要开错题回顾 / 今天学完了）就返回 null。 */
+export function takeAnswerPreview(previews: AnswerPreviews | null, wordId: number, answer: WordAnswer): NextCardPreview | null {
+  if (!previews || previews.wordId !== wordId || !answerPreviewsValid(previews)) return null;
+  const exact = previews.byAnswer[answer];
+  const shared = SAME_CLASS[answer] ? previews.byAnswer[SAME_CLASS[answer]!] : undefined;
+  const preview = exact ?? (shared?.sharedWithinClass ? shared : undefined);
+  // 模糊不会打开错题回顾（只有「忘记」会），借用「忘记」那份时不看这一项
+  if (!preview?.card || (exact && preview.dailyReviewWouldStart)) return null;
+  return preview;
+}
+
+/** 记这次作答，并把算好的那张直接定为当前卡（不再重选）。在界面换上那张卡之后调用。 */
+export function submitWordAnswerWithPreview(
+  wordId: number,
+  answer: WordAnswer,
+  preview: NextCardPreview,
+  options: WordSessionOptions = {}
+): WordSessionResponse {
+  applyWordAnswer(wordId, answer, options);
+  setCurrentCard(preview.card);
+  return {
+    card: preview.card,
+    phase: preview.phase,
+    stats: getWordStats(preview.phase, options),
+    canUndo: canUndoSnapshot(sessionMode(preview.phase, options))
+  };
 }
 
 /**
