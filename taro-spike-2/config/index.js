@@ -175,7 +175,9 @@ module.exports = {
         Blob: 'globalThis.Blob',
         FileReader: 'globalThis.FileReader',
         ResizeObserver: 'globalThis.ResizeObserver',
-        performance: 'globalThis.performance'
+        performance: 'globalThis.performance',
+        // 网页在 vite.config.ts 里 define 的常量，这里要同名补上，否则用到它的页面（关于）渲染时 ReferenceError 整页空白。
+        __APP_VERSION__: JSON.stringify(require(path.join(frontend, 'package.json')).version)
       }]);
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,

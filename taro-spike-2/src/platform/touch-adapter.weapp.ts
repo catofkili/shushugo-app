@@ -1,4 +1,4 @@
-import Taro from "@tarojs/taro";
+import Taro, { useReachBottom } from "@tarojs/taro";
 
 export interface TouchPoint {
   identifier: number;
@@ -49,4 +49,14 @@ export const scrollTouchPageBy = (delta: number) => {
     const top = Number((result?.[0] as { scrollTop?: number } | undefined)?.scrollTop ?? 0);
     Taro.pageScrollTo({ scrollTop: Math.max(0, top + delta), duration: 0 });
   });
+};
+
+export const scrollPageToTop = () => {
+  Taro.pageScrollTo({ scrollTop: 0, duration: 0 });
+  return true;
+};
+
+export const usePageReachBottom = (callback: () => void) => {
+  useReachBottom(callback);
+  return true;
 };

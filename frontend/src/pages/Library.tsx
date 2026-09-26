@@ -206,7 +206,8 @@ export const Library = ({
   const [selectedIdsByLevel, setSelectedIdsByLevel] = useState<Record<string, string>>({});
   const [, setPositionRevision] = useState(0);
   const [isTwoPane, setIsTwoPane] = useState(
-    () => typeof window !== "undefined" && window.matchMedia(TWO_PANE_QUERY).matches
+    // 小程序的 window 垫片没有 matchMedia：直接调用会在渲染时抛错、整页空白（2026-09-26）。那里恒为窄屏单栏。
+    () => typeof window !== "undefined" && (window.matchMedia?.(TWO_PANE_QUERY).matches ?? false)
   );
 
   const storedSelectedId = selectedIdsByLevel[selectedLevel] ?? getGrammarPosition("library", selectedLevel);
@@ -253,7 +254,8 @@ export const Library = ({
   }, []);
 
   useEffect(() => {
-    const mq = window.matchMedia(TWO_PANE_QUERY);
+    const mq = window.matchMedia?.(TWO_PANE_QUERY);
+    if (!mq) return;
     const handler = () => setIsTwoPane(mq.matches);
     handler();
     mq.addEventListener("change", handler);
