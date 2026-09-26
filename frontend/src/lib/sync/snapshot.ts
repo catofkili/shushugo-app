@@ -1,4 +1,5 @@
 import type { Database } from "sql.js";
+import { Capacitor } from "@capacitor/core";
 import { createDatabase, getDatabase } from "../database";
 import { ensureSyncSchema } from "./schema";
 import { DEVICE_LOCAL_GRAMMAR_STATE_KEYS, DEVICE_LOCAL_STATE_KEYS, syncedTablesForCloud } from "./tables";
@@ -226,6 +227,12 @@ export async function compressSyncSnapshot(data: Uint8Array): Promise<{
       + "本机数据完好，请在设置页导出本地备份并联系支持。"
     );
   }
+  if (Capacitor.getPlatform() === "wechat") {
+    // Keep the Mini Program-only UMD module out of the web runtime path.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { gzipSync } = require("../../../../wechat-miniprogram/src/vendor/fflate.umd.js");
+    return { bytes: gzipSync(data), compression: "gzip" };
+  }
   if (typeof CompressionStream === "undefined") return { bytes: data, compression: "none" };
   const stream = new Blob([bytesBuffer(data)]).stream().pipeThrough(new CompressionStream("gzip"));
   return { bytes: new Uint8Array(await new Response(stream).arrayBuffer()), compression: "gzip" };
@@ -238,6 +245,13 @@ export async function decompressSyncSnapshot(
   if (compression === "none") {
     if (data.byteLength > MAX_UNCOMPRESSED_SNAPSHOT_BYTES) throw new Error("云端学习数据超过安全大小限制。");
     return data;
+  }
+  if (Capacitor.getPlatform() === "wechat") {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { gunzipSync } = require("../../../../wechat-miniprogram/src/vendor/fflate.umd.js");
+    const bytes = gunzipSync(data) as Uint8Array;
+    if (bytes.byteLength > MAX_UNCOMPRESSED_SNAPSHOT_BYTES) throw new Error("云端学习数据解压后超过安全大小限制，已停止处理。");
+    return bytes;
   }
   if (typeof DecompressionStream === "undefined") {
     throw new Error("当前系统版本无法解压云端学习数据（需要 iOS/Safari 16.4 以上），请升级后重试。");

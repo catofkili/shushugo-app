@@ -1,6 +1,7 @@
 export default {
   pages: ['pages/index/index'],
   subPackages: [
+    { root: 'account', pages: ['login/index'] },
     { root: 'quiz', pages: ['vocab-test/index'] },
     { root: 'study', pages: ['word-study/index'] },
     { root: 'features', pages: ['placeholder/index'] },

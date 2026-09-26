@@ -1,5 +1,6 @@
 import { AlertTriangle, Check, ChevronRight, Download, Moon, RotateCcw, Smartphone, Sun, Upload, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { DailyPlanPanel } from "../components/DailyPlanPanel";
 import { KanjiUnitPlanSettings } from "../components/KanjiUnitPlanSettings";
 import { exportDatabase } from "../lib/database";
@@ -46,6 +47,7 @@ const themeOptions: { value: ThemePreference; label: string; icon: typeof Moon }
 const CLEAR_CONFIRM_TEXT = "清除所有数据";
 
 export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPageProps) {
+  const isWechatMini = Capacitor.getPlatform() === "wechat";
   const [preferences, setPreferences] = useState<StudyPreferences>(defaultStudyPreferences);
   // 有哪些声音可选要问磁盘(音频库是构建产物,可能一个都没生成)
   const [voices, setVoices] = useState<AudioVoice[]>([]);
@@ -363,7 +365,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             <div className="flex items-center gap-3 border-b border-white/10 p-4">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white">发音声音</p>
-                <p className="mt-0.5 text-xs text-white/50">系统语音不占空间，语调较平</p>
+                <p className="mt-0.5 text-xs text-white/50">{isWechatMini ? "使用云端音色播放" : "系统语音不占空间，语调较平"}</p>
               </div>
               <select
                 value={preferences.voiceId}
@@ -375,7 +377,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                   const locked = !voiceUnlocked(voice.id, defaultVoiceId());
                   return <option key={voice.id} value={voice.id} disabled={locked}>{voice.label}{locked ? "(柚子商店解锁)" : ""}</option>;
                 })}
-                <option value={SYSTEM_VOICE_ID}>系统语音</option>
+                {!isWechatMini && <option value={SYSTEM_VOICE_ID}>系统语音</option>}
               </select>
             </div>
           )}

@@ -1,4 +1,6 @@
 import { Preferences } from "@capacitor/preferences";
+import { Capacitor } from "@capacitor/core";
+import { cloudFetch } from "./cloud-fetch";
 import { getDatabase } from "./database";
 import { clearEntitlements, getEntitlements, ProductId, saveEntitlements, type EntitlementState } from "./entitlements";
 import { flushPendingSave, getLocalDataRevision, saveDatabase } from "./storage";
@@ -155,6 +157,11 @@ interface CloudEntitlements {
   updatedAt: string;
 }
 
+export interface LaunchGiftAvailability {
+  open: boolean;
+  claimUntil: string | null;
+}
+
 const API_URL = (import.meta.env.VITE_SYNC_API_URL ?? "").replace(/\/+$/g, "");
 const EMAIL_KEY = "mn_cloud_sync_email";
 const EMAIL_VERIFIED_KEY = "mn_cloud_sync_email_verified";
@@ -236,17 +243,19 @@ const bytesToArrayBuffer = (data: Uint8Array): ArrayBuffer => (
 );
 
 const requireConfigured = () => {
-  if (!API_URL) {
+  if (!API_URL && Capacitor.getPlatform() !== "wechat") {
     throw new Error("还没有配置云同步地址。请先设置 VITE_SYNC_API_URL。");
   }
 };
+
+const cloudRequestUrl = (path: string) => Capacitor.getPlatform() === "wechat" ? path : `${API_URL}${path}`;
 
 const requestJson = async <T>(path: string, init: RequestInit = {}, timeoutMs = 15_000): Promise<T> => {
   requireConfigured();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(`${API_URL}${path}`, {
+    const response = await cloudFetch(cloudRequestUrl(path), {
       ...init,
       signal: init.signal ?? controller.signal,
       headers: {
@@ -274,7 +283,7 @@ const requestCloudSnapshot = async (session: CloudSession): Promise<CloudSnapsho
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60_000);
   try {
-    const response = await fetch(`${API_URL}/api/sync/pull`, {
+    const response = await cloudFetch(cloudRequestUrl("/api/sync/pull"), {
       method: "GET",
       headers: {
         authorization: `Bearer ${session.token}`,
@@ -572,6 +581,13 @@ export interface WechatAppLoginCredential {
   consentAccepted?: boolean;
 }
 
+export interface WechatMiniLoginCredential {
+  code: string;
+  createAccount?: boolean;
+  displayName?: string;
+  consentAccepted?: boolean;
+}
+
 export async function cloudWechatAppLogin(credential: WechatAppLoginCredential): Promise<CloudSession> {
   return withSyncLock(async () => {
     const data = await requestJson<TokenResponse>("/api/auth/wechat-app", {
@@ -581,6 +597,57 @@ export async function cloudWechatAppLogin(credential: WechatAppLoginCredential):
         display_name: credential.displayName,
         terms_version: credential.consentAccepted ? USER_AGREEMENT_VERSION : undefined,
         privacy_version: credential.consentAccepted ? PRIVACY_POLICY_VERSION : undefined
+      })
+    });
+    await saveCloudSession(data);
+    requestCloudAutoSync("login");
+    return { ...(await getCloudSession()), isNewAccount: data.isNewAccount };
+  });
+}
+
+/** 微信小程序使用自己的 wx.login code；App 的 /wechat-app OAuth 路径保持独立。 */
+export async function cloudWechatMiniLogin(credential: WechatMiniLoginCredential): Promise<CloudSession> {
+  return withSyncLock(async () => {
+    const data = await requestJson<TokenResponse>("/api/auth/wechat", {
+      method: "POST",
+      body: JSON.stringify({
+        code: credential.code,
+        create_account: credential.createAccount === true,
+        display_name: credential.displayName,
+        terms_version: credential.consentAccepted ? USER_AGREEMENT_VERSION : undefined,
+        privacy_version: credential.consentAccepted ? PRIVACY_POLICY_VERSION : undefined
+      })
+    });
+    await saveCloudSession(data);
+    requestCloudAutoSync("login");
+    return { ...(await getCloudSession()), isNewAccount: data.isNewAccount };
+  });
+}
+
+/** 给已有邮箱账号发微信关联验证码；服务端对已注册和未注册邮箱返回同一结果。 */
+export async function requestCloudWechatLinkCode(email: string): Promise<void> {
+  await requestJson("/api/auth/request-wechat-link", {
+    method: "POST",
+    body: JSON.stringify({ email: email.trim() })
+  });
+}
+
+/** 邮箱验证码 + 新的一次性 wx.login code 关联；完成后按同一同步会话保存并触发同步。 */
+export async function linkCloudWechatMini(
+  email: string,
+  emailCode: string,
+  code: string,
+  consentAccepted: boolean
+): Promise<CloudSession> {
+  return withSyncLock(async () => {
+    const data = await requestJson<TokenResponse & { linked?: boolean }>("/api/auth/link-wechat", {
+      method: "POST",
+      body: JSON.stringify({
+        email: email.trim(),
+        email_code: emailCode.trim(),
+        code,
+        terms_version: consentAccepted ? USER_AGREEMENT_VERSION : undefined,
+        privacy_version: consentAccepted ? PRIVACY_POLICY_VERSION : undefined
       })
     });
     await saveCloudSession(data);
@@ -848,6 +915,27 @@ export async function refreshCloudEntitlements(): Promise<EntitlementState | und
   if (data && !data.isPro && getEntitlements().source === "storekit") {
     return undefined;
   }
+  return applyCloudEntitlements(data);
+}
+
+/** Launch Gift remains a Worker integration dependency until codex/launch-gift is merged. */
+export async function refreshLaunchGiftAvailability(): Promise<LaunchGiftAvailability | undefined> {
+  const { token } = await getCloudSession();
+  const data = await requestJson<CloudEntitlements & { launchGift?: LaunchGiftAvailability }>("/api/entitlements", {
+    method: "GET",
+    headers: token ? { authorization: `Bearer ${token}` } : undefined
+  });
+  return data.launchGift;
+}
+
+/** Claim only after an open window was shown and the user entered the login / claim flow. */
+export async function claimLaunchGift(): Promise<EntitlementState | undefined> {
+  const { token } = await getCloudSession();
+  if (!token) return undefined;
+  const data = await requestJson<CloudEntitlements>("/api/entitlements/launch-gift", {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}` }
+  });
   return applyCloudEntitlements(data);
 }
 

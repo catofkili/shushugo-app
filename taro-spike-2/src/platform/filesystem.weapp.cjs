@@ -1,3 +1,5 @@
+require('../../../wechat-miniprogram/src/runtime/text-decoder.js');
+
 const Directory = { Data: 'DATA', Library: 'LIBRARY', Documents: 'DOCUMENTS', Cache: 'CACHE' };
 const Encoding = { UTF8: 'utf8' };
 
