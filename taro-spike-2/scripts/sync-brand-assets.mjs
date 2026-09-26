@@ -12,15 +12,17 @@ const names = [
 const out = path.join(root, 'src/assets/brand');
 mkdirSync(out, { recursive: true });
 
+// 贴纸在页面上最大约 130px 宽（Sticker size 上限），按 3 倍屏取 390px；原图 440–520px 宽，全尺寸进主包白占字节。
 for (const name of names) {
   execFileSync('cwebp', [
-    '-quiet', '-q', '82',
+    '-quiet', '-q', '82', '-resize', '390', '0',
     path.join(repo, `frontend/public/brand/sheet/${name}.png`),
     '-o', path.join(out, `${name}.webp`)
   ]);
 }
 execFileSync('cwebp', [
-  '-quiet', '-q', '82',
+  // 图标最大显示约 64px。
+  '-quiet', '-q', '82', '-resize', '192', '0',
   path.join(repo, 'frontend/public/brand/shushugo-icon.png'),
   '-o', path.join(out, 'shushugo-icon.webp')
 ]);

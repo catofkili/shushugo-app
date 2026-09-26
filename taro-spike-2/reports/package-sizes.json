@@ -2,18 +2,23 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1878549,
-      "mib": 1.792,
+      "bytes": 1874283,
+      "mib": 1.787,
+      "passes": true
+    },
+    "account": {
+      "bytes": 82823,
+      "mib": 0.079,
       "passes": true
     },
     "quiz": {
-      "bytes": 75789,
-      "mib": 0.072,
+      "bytes": 73127,
+      "mib": 0.07,
       "passes": true
     },
     "study": {
-      "bytes": 381858,
-      "mib": 0.364,
+      "bytes": 386013,
+      "mib": 0.368,
       "passes": true
     },
     "features": {
@@ -27,27 +32,27 @@
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 668448,
+      "bytes": 668446,
       "mib": 0.637,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547372,
+      "bytes": 547374,
       "mib": 0.522,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 240486,
-      "mib": 0.229,
+      "bytes": 240804,
+      "mib": 0.23,
       "passes": true
     }
   },
-  "totalBytes": 6073656,
+  "totalBytes": 6154024,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 733718
+      "bytes": 761723
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -82,7 +87,7 @@
     {
       "path": "study/word-study/index.js",
       "package": "study",
-      "bytes": 294142
+      "bytes": 289789
     },
     {
       "path": "assets/sql-wasm.wasm.br",
@@ -97,7 +102,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 261888
+      "bytes": 262358
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -107,17 +112,17 @@
     {
       "path": "grammar-pages/compile/index.js",
       "package": "grammar-pages",
-      "bytes": 158225
+      "bytes": 158301
     },
     {
       "path": "vendors.js",
       "package": "main",
-      "bytes": 145466
+      "bytes": 145476
     },
     {
       "path": "taro.js",
       "package": "main",
-      "bytes": 139340
+      "bytes": 139580
     },
     {
       "path": "features/content/kanji-readings.js",
@@ -135,6 +140,11 @@
       "bytes": 46508
     },
     {
+      "path": "account/fflate.umd.js",
+      "package": "account",
+      "bytes": 32539
+    },
+    {
       "path": "assets/brand/walk-strip.webp",
       "package": "main",
       "bytes": 29090
@@ -142,182 +152,212 @@
     {
       "path": "quiz/vocab-test/index.js",
       "package": "quiz",
-      "bytes": 27934
+      "bytes": 28001
     },
     {
-      "path": "assets/brand/mood-yay.webp",
-      "package": "main",
-      "bytes": 20262
+      "path": "account/sub-common/67ed268a87f5aa89916f4454fc3a9146.js",
+      "package": "account",
+      "bytes": 19005
     },
     {
-      "path": "assets/brand/shushugo-icon.webp",
-      "package": "main",
-      "bytes": 19048
-    },
-    {
-      "path": "grammar-pages/sub-common/6ae94c5e5c831819ab2f1262f00b5802.js",
+      "path": "grammar-pages/sub-common/67ed268a87f5aa89916f4454fc3a9146.js",
       "package": "grammar-pages",
-      "bytes": 19004
+      "bytes": 19005
     },
     {
-      "path": "quiz/sub-common/6ae94c5e5c831819ab2f1262f00b5802.js",
+      "path": "quiz/sub-common/67ed268a87f5aa89916f4454fc3a9146.js",
       "package": "quiz",
-      "bytes": 19004
+      "bytes": 19005
     },
     {
-      "path": "study/sub-common/6ae94c5e5c831819ab2f1262f00b5802.js",
+      "path": "study/sub-common/67ed268a87f5aa89916f4454fc3a9146.js",
       "package": "study",
-      "bytes": 19004
+      "bytes": 19005
+    },
+    {
+      "path": "grammar-pages/sub-common/1f144711c73dcc9b38b6a9042a17b2c8.js",
+      "package": "grammar-pages",
+      "bytes": 17411
+    },
+    {
+      "path": "study/sub-common/1f144711c73dcc9b38b6a9042a17b2c8.js",
+      "package": "study",
+      "bytes": 17411
     },
     {
       "path": "assets/brand/mood-puzzled.webp",
       "package": "main",
-      "bytes": 18992
+      "bytes": 16914
     },
     {
       "path": "assets/brand/scene-laptop.webp",
       "package": "main",
-      "bytes": 18510
+      "bytes": 16386
     },
     {
-      "path": "grammar-pages/sub-common/bdd7bc43dfa2e33b1ce1cb26e3af7dab.js",
-      "package": "grammar-pages",
-      "bytes": 17410
-    },
-    {
-      "path": "study/sub-common/bdd7bc43dfa2e33b1ce1cb26e3af7dab.js",
-      "package": "study",
-      "bytes": 17410
-    },
-    {
-      "path": "assets/brand/mood-sleep.webp",
+      "path": "assets/brand/mood-yay.webp",
       "package": "main",
-      "bytes": 17014
-    },
-    {
-      "path": "assets/brand/empty-box.webp",
-      "package": "main",
-      "bytes": 16412
-    },
-    {
-      "path": "assets/brand/mood-ask.webp",
-      "package": "main",
-      "bytes": 15702
+      "bytes": 15812
     },
     {
       "path": "assets/brand/scene-book.webp",
       "package": "main",
-      "bytes": 15244
+      "bytes": 15478
     },
     {
       "path": "assets/brand/mood-dizzy.webp",
       "package": "main",
-      "bytes": 15102
+      "bytes": 15060
+    },
+    {
+      "path": "assets/brand/empty-box.webp",
+      "package": "main",
+      "bytes": 14616
+    },
+    {
+      "path": "account/sub-common/9f68f4aa6e5e480482a46e8a84b24fe8.js",
+      "package": "account",
+      "bytes": 14584
+    },
+    {
+      "path": "grammar-pages/sub-common/9f68f4aa6e5e480482a46e8a84b24fe8.js",
+      "package": "grammar-pages",
+      "bytes": 14584
+    },
+    {
+      "path": "quiz/sub-common/9f68f4aa6e5e480482a46e8a84b24fe8.js",
+      "package": "quiz",
+      "bytes": 14584
+    },
+    {
+      "path": "study/sub-common/9f68f4aa6e5e480482a46e8a84b24fe8.js",
+      "package": "study",
+      "bytes": 14584
+    },
+    {
+      "path": "assets/brand/mood-sleep.webp",
+      "package": "main",
+      "bytes": 14114
+    },
+    {
+      "path": "assets/brand/mood-ask.webp",
+      "package": "main",
+      "bytes": 13922
     },
     {
       "path": "assets/brand/mood-proud.webp",
       "package": "main",
-      "bytes": 14916
+      "bytes": 13430
     },
     {
-      "path": "grammar-pages/sub-common/042b1717e0d4e8fc9363b66f0cc8b596.js",
-      "package": "grammar-pages",
-      "bytes": 14584
+      "path": "account/sub-common/66402cfc7332c04c04094dfd29a518b4.js",
+      "package": "account",
+      "bytes": 11230
     },
     {
-      "path": "quiz/sub-common/042b1717e0d4e8fc9363b66f0cc8b596.js",
-      "package": "quiz",
-      "bytes": 14584
-    },
-    {
-      "path": "study/sub-common/042b1717e0d4e8fc9363b66f0cc8b596.js",
+      "path": "study/sub-common/66402cfc7332c04c04094dfd29a518b4.js",
       "package": "study",
-      "bytes": 14584
+      "bytes": 11230
     },
     {
-      "path": "grammar-pages/sub-common/9271c85f300988182dce81ec0248f51b.js",
+      "path": "grammar-pages/sub-common/a7009af66112b9cb6a03400961180305.js",
       "package": "grammar-pages",
-      "bytes": 8465
+      "bytes": 8466
     },
     {
-      "path": "study/sub-common/9271c85f300988182dce81ec0248f51b.js",
+      "path": "study/sub-common/a7009af66112b9cb6a03400961180305.js",
       "package": "study",
-      "bytes": 8465
+      "bytes": 8466
     },
     {
-      "path": "grammar-pages/sub-common/0d78e2bc9570f8726ef77e12dda68492.js",
+      "path": "grammar-pages/sub-common/ece2316547292d767673e361b7227ccb.js",
       "package": "grammar-pages",
       "bytes": 6617
     },
     {
-      "path": "study/sub-common/0d78e2bc9570f8726ef77e12dda68492.js",
+      "path": "study/sub-common/ece2316547292d767673e361b7227ccb.js",
       "package": "study",
       "bytes": 6617
     },
     {
-      "path": "grammar-pages/sub-common/2068fe3dc86d3709043b596ae79f9b2b.js",
+      "path": "grammar-pages/sub-common/d7af76b61ca1a578cd45bd4da945eef9.js",
       "package": "grammar-pages",
-      "bytes": 5679
+      "bytes": 5680
     },
     {
-      "path": "quiz/sub-common/2068fe3dc86d3709043b596ae79f9b2b.js",
+      "path": "quiz/sub-common/d7af76b61ca1a578cd45bd4da945eef9.js",
       "package": "quiz",
-      "bytes": 5679
+      "bytes": 5680
     },
     {
-      "path": "study/sub-common/2068fe3dc86d3709043b596ae79f9b2b.js",
+      "path": "study/sub-common/d7af76b61ca1a578cd45bd4da945eef9.js",
       "package": "study",
-      "bytes": 5679
+      "bytes": 5680
     },
     {
-      "path": "quiz/sub-common/bd304e7690c52a409b6468b1981d0560.js",
-      "package": "quiz",
-      "bytes": 5396
+      "path": "assets/brand/shushugo-icon.webp",
+      "package": "main",
+      "bytes": 4456
     },
     {
-      "path": "study/sub-common/bd304e7690c52a409b6468b1981d0560.js",
+      "path": "grammar-pages/sub-common/517f84580e22dfddf23e1e0d54d6aae3.js",
+      "package": "grammar-pages",
+      "bytes": 3792
+    },
+    {
+      "path": "study/sub-common/517f84580e22dfddf23e1e0d54d6aae3.js",
       "package": "study",
-      "bytes": 5396
+      "bytes": 3792
     },
     {
       "path": "app.js",
       "package": "main",
-      "bytes": 5172
+      "bytes": 2984
     },
     {
-      "path": "grammar-pages/sub-common/ad4b88773a5fd9639352845212e0220c.js",
+      "path": "account/login/index.js",
+      "package": "account",
+      "bytes": 2850
+    },
+    {
+      "path": "grammar-pages/sub-common/c93aac8f0421703a6431f412b17fa047.js",
       "package": "grammar-pages",
-      "bytes": 3789
+      "bytes": 2666
     },
     {
-      "path": "study/sub-common/ad4b88773a5fd9639352845212e0220c.js",
+      "path": "study/sub-common/c93aac8f0421703a6431f412b17fa047.js",
       "package": "study",
-      "bytes": 3789
+      "bytes": 2666
     },
     {
-      "path": "grammar-pages/sub-common/bbd027afcf144c690f28d0a5407f8dd1.js",
+      "path": "account/sub-common/76db11713f2982ebd529ef7ebf39e681.js",
+      "package": "account",
+      "bytes": 2494
+    },
+    {
+      "path": "grammar-pages/sub-common/76db11713f2982ebd529ef7ebf39e681.js",
       "package": "grammar-pages",
-      "bytes": 2665
+      "bytes": 2494
     },
     {
-      "path": "study/sub-common/bbd027afcf144c690f28d0a5407f8dd1.js",
-      "package": "study",
-      "bytes": 2665
-    },
-    {
-      "path": "grammar-pages/sub-common/c4d6ec0e1c643671d83ae1633c01b32e.js",
-      "package": "grammar-pages",
-      "bytes": 2495
-    },
-    {
-      "path": "quiz/sub-common/c4d6ec0e1c643671d83ae1633c01b32e.js",
+      "path": "quiz/sub-common/76db11713f2982ebd529ef7ebf39e681.js",
       "package": "quiz",
-      "bytes": 2495
+      "bytes": 2494
     },
     {
-      "path": "study/sub-common/c4d6ec0e1c643671d83ae1633c01b32e.js",
+      "path": "study/sub-common/76db11713f2982ebd529ef7ebf39e681.js",
       "package": "study",
-      "bytes": 2495
+      "bytes": 2494
+    },
+    {
+      "path": "quiz/sub-common/1ef02be2a569040b7c154aaf85308199.js",
+      "package": "quiz",
+      "bytes": 2432
+    },
+    {
+      "path": "study/sub-common/1ef02be2a569040b7c154aaf85308199.js",
+      "package": "study",
+      "bytes": 2432
     },
     {
       "path": "runtime.js",
@@ -330,14 +370,14 @@
       "bytes": 1442
     },
     {
+      "path": "pages/index/index.js",
+      "package": "main",
+      "bytes": 1051
+    },
+    {
       "path": "utils.wxs",
       "package": "main",
       "bytes": 997
-    },
-    {
-      "path": "pages/index/index.js",
-      "package": "main",
-      "bytes": 883
     },
     {
       "path": "assets/lucide/brain-ink.svg",
@@ -365,6 +405,11 @@
       "bytes": 620
     },
     {
+      "path": "app.json",
+      "package": "main",
+      "bytes": 617
+    },
+    {
       "path": "assets/lucide/star-ink.svg",
       "package": "main",
       "bytes": 592
@@ -385,19 +430,14 @@
       "bytes": 584
     },
     {
-      "path": "grammar-pages/sub-common/83acf6960d8d5dcdf2b10d1e65e69087.js",
+      "path": "grammar-pages/sub-common/c9facbeb9985414d2ce977d56c264c92.js",
       "package": "grammar-pages",
       "bytes": 577
     },
     {
-      "path": "study/sub-common/83acf6960d8d5dcdf2b10d1e65e69087.js",
+      "path": "study/sub-common/c9facbeb9985414d2ce977d56c264c92.js",
       "package": "study",
       "bytes": 577
-    },
-    {
-      "path": "app.json",
-      "package": "main",
-      "bytes": 574
     },
     {
       "path": "assets/lucide/notebookpen-ink.svg",
@@ -430,17 +470,17 @@
       "bytes": 520
     },
     {
-      "path": "grammar-pages/sub-common/b9172d7fb7558850e8c8f25122d32ec0.js",
+      "path": "grammar-pages/sub-common/3be9514b87fffcea9693e210fd0a3a0f.js",
       "package": "grammar-pages",
       "bytes": 517
     },
     {
-      "path": "quiz/sub-common/b9172d7fb7558850e8c8f25122d32ec0.js",
+      "path": "quiz/sub-common/3be9514b87fffcea9693e210fd0a3a0f.js",
       "package": "quiz",
       "bytes": 517
     },
     {
-      "path": "study/sub-common/b9172d7fb7558850e8c8f25122d32ec0.js",
+      "path": "study/sub-common/3be9514b87fffcea9693e210fd0a3a0f.js",
       "package": "study",
       "bytes": 517
     },
@@ -560,14 +600,14 @@
       "bytes": 426
     },
     {
-      "path": "grammar-foundation/placeholder/index.js",
-      "package": "grammar-foundation",
-      "bytes": 422
-    },
-    {
       "path": "grammar-advanced/placeholder/index.js",
       "package": "grammar-advanced",
-      "bytes": 418
+      "bytes": 420
+    },
+    {
+      "path": "grammar-foundation/placeholder/index.js",
+      "package": "grammar-foundation",
+      "bytes": 420
     },
     {
       "path": "assets/lucide/pencilline-ink.svg",
@@ -705,6 +745,16 @@
       "bytes": 346
     },
     {
+      "path": "grammar-pages/sub-common/af4b3185f42ee27477888d9641f2b884.js",
+      "package": "grammar-pages",
+      "bytes": 339
+    },
+    {
+      "path": "study/sub-common/af4b3185f42ee27477888d9641f2b884.js",
+      "package": "study",
+      "bytes": 339
+    },
+    {
       "path": "assets/lucide/timer-ink.svg",
       "package": "main",
       "bytes": 338
@@ -712,16 +762,6 @@
     {
       "path": "assets/lucide/timer-light.svg",
       "package": "main",
-      "bytes": 338
-    },
-    {
-      "path": "grammar-pages/sub-common/0a5e84055e64d544cc220a96f925a6f3.js",
-      "package": "grammar-pages",
-      "bytes": 338
-    },
-    {
-      "path": "study/sub-common/0a5e84055e64d544cc220a96f925a6f3.js",
-      "package": "study",
       "bytes": 338
     },
     {
@@ -955,6 +995,21 @@
       "bytes": 237
     },
     {
+      "path": "grammar-pages/sub-common/c3699c7465e319aaffbcc82388eb7093.js",
+      "package": "grammar-pages",
+      "bytes": 234
+    },
+    {
+      "path": "quiz/sub-common/c3699c7465e319aaffbcc82388eb7093.js",
+      "package": "quiz",
+      "bytes": 234
+    },
+    {
+      "path": "study/sub-common/c3699c7465e319aaffbcc82388eb7093.js",
+      "package": "study",
+      "bytes": 234
+    },
+    {
       "path": "comp.js",
       "package": "main",
       "bytes": 171
@@ -988,6 +1043,11 @@
       "path": "pages/index/index.json",
       "package": "main",
       "bytes": 84
+    },
+    {
+      "path": "account/login/index.wxml",
+      "package": "account",
+      "bytes": 80
     },
     {
       "path": "content/placeholder/index.wxml",
@@ -1030,6 +1090,11 @@
       "bytes": 80
     },
     {
+      "path": "account/login/index.json",
+      "package": "account",
+      "bytes": 41
+    },
+    {
       "path": "content/placeholder/index.json",
       "package": "content",
       "bytes": 41
@@ -1048,6 +1113,11 @@
       "path": "grammar-pages/compile/index.json",
       "package": "grammar-pages",
       "bytes": 41
+    },
+    {
+      "path": "account/login/index.wxss",
+      "package": "account",
+      "bytes": 0
     },
     {
       "path": "content/placeholder/index.wxss",

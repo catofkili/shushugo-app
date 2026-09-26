@@ -2,15 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1878549,
+      "bytes": 1874283,
+      "passes": true
+    },
+    "account": {
+      "bytes": 82823,
       "passes": true
     },
     "quiz": {
-      "bytes": 75789,
+      "bytes": 73127,
       "passes": true
     },
     "study": {
-      "bytes": 381858,
+      "bytes": 386013,
       "passes": true
     },
     "features": {
@@ -22,66 +26,76 @@
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 668448,
+      "bytes": 668446,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547372,
+      "bytes": 547374,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 240486,
+      "bytes": 240804,
       "passes": true
     }
   },
   "maxDuplicateBytes": 100000,
-  "duplicateSourceModuleCount": 13,
+  "duplicateSourceModuleCount": 14,
   "duplicatedModules": [
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/data/similar_meaning_groups.ts",
-      "bytes": 16776,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/AuthDialog.weapp.tsx",
+      "bytes": 21190,
       "packages": [
+        "account",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-integrate/frontend/src/data/similar_meaning_groups.ts",
+      "bytes": 16774,
+      "packages": [
+        "account",
         "grammar-pages",
         "quiz",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/GrammarTermHint.tsx",
-      "bytes": 16116,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/GrammarTermHint.tsx",
+      "bytes": 16114,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12646,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/JapaneseRuby.tsx",
+      "bytes": 12642,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11590,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "bytes": 11588,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/data/confusion_manual_review.ts",
+      "source": "/private/tmp/claude-integrate/frontend/src/data/confusion_manual_review.ts",
       "bytes": 11538,
       "packages": [
+        "account",
         "grammar-pages",
         "quiz",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/features/word-study/word-study-utils.ts",
-      "bytes": 10863,
+      "source": "/private/tmp/claude-integrate/frontend/src/features/word-study/word-study-utils.ts",
+      "bytes": 10862,
       "packages": [
         "grammar-pages",
         "quiz",
@@ -89,40 +103,41 @@
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/ShareImageSheet.tsx",
-      "bytes": 10817,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/FavoriteFolderPicker.tsx",
+      "bytes": 7857,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-integrate/frontend/src/components/ShareImageSheet.weapp.tsx",
+      "bytes": 4911,
       "packages": [
         "quiz",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7859,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/GrammarPointPopover.tsx",
+      "bytes": 4619,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4620,
-      "packages": [
-        "grammar-pages",
-        "study"
-      ]
-    },
-    {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/data/grammar-quiz-questions.ts",
+      "source": "/private/tmp/claude-integrate/frontend/src/data/grammar-quiz-questions.ts",
       "bytes": 2464,
       "packages": [
+        "account",
         "grammar-pages",
         "quiz",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/MascotSay.tsx",
+      "source": "/private/tmp/claude-integrate/frontend/src/components/MascotSay.tsx",
       "bytes": 1595,
       "packages": [
         "grammar-pages",
@@ -131,7 +146,7 @@
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/JapaneseWordRuby.tsx",
+      "source": "/private/tmp/claude-integrate/frontend/src/components/JapaneseWordRuby.tsx",
       "bytes": 1142,
       "packages": [
         "grammar-pages",
@@ -139,7 +154,7 @@
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "source": "/private/tmp/claude-integrate/frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 517,
       "packages": [
         "grammar-pages",
@@ -151,55 +166,63 @@
   "duplicatedCoreModules": [],
   "duplicatedPageComponents": [
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/GrammarTermHint.tsx",
-      "bytes": 16116,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/AuthDialog.weapp.tsx",
+      "bytes": 21190,
+      "packages": [
+        "account",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-integrate/frontend/src/components/GrammarTermHint.tsx",
+      "bytes": 16114,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12646,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/JapaneseRuby.tsx",
+      "bytes": 12642,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11590,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "bytes": 11588,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/ShareImageSheet.tsx",
-      "bytes": 10817,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/FavoriteFolderPicker.tsx",
+      "bytes": 7857,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-integrate/frontend/src/components/ShareImageSheet.weapp.tsx",
+      "bytes": 4911,
       "packages": [
         "quiz",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7859,
+      "source": "/private/tmp/claude-integrate/frontend/src/components/GrammarPointPopover.tsx",
+      "bytes": 4619,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4620,
-      "packages": [
-        "grammar-pages",
-        "study"
-      ]
-    },
-    {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/MascotSay.tsx",
+      "source": "/private/tmp/claude-integrate/frontend/src/components/MascotSay.tsx",
       "bytes": 1595,
       "packages": [
         "grammar-pages",
@@ -208,7 +231,7 @@
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/JapaneseWordRuby.tsx",
+      "source": "/private/tmp/claude-integrate/frontend/src/components/JapaneseWordRuby.tsx",
       "bytes": 1142,
       "packages": [
         "grammar-pages",
@@ -216,7 +239,7 @@
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "source": "/private/tmp/claude-integrate/frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 517,
       "packages": [
         "grammar-pages",
@@ -224,51 +247,51 @@
       ]
     }
   ],
-  "duplicatedPageComponentBytes": 66902,
+  "duplicatedPageComponentBytes": 82175,
   "pageComponentDuplicateBudgetPasses": true,
   "webModuleCount": 0,
   "webModules": [],
   "webModulePolicy": "error",
   "mainTopModules": [
     {
-      "source": "/private/tmp/shushugo-w1s/taro-spike-2/node_modules/ts-fsrs/dist/index.mjs",
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/ts-fsrs/dist/index.mjs",
       "bytes": 60657
     },
     {
-      "source": "/private/tmp/shushugo-w1s/taro-spike-2/node_modules/@tarojs/plugin-framework-react/dist/runtime.js",
-      "bytes": 40908
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/plugin-framework-react/dist/runtime.js",
+      "bytes": 40901
     },
     {
-      "source": "/private/tmp/shushugo-w1s/taro-spike-2/node_modules/@tarojs/react/dist/react.esm.js",
-      "bytes": 34649
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/react/dist/react.esm.js",
+      "bytes": 34644
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/lib/grammar-title-furigana.ts",
-      "bytes": 33345
+      "source": "/private/tmp/claude-integrate/frontend/src/lib/grammar-title-furigana.ts",
+      "bytes": 33342
     },
     {
-      "source": "/private/tmp/shushugo-w1s/taro-spike-2/node_modules/@tarojs/plugin-platform-weapp/dist/runtime.js",
-      "bytes": 27739
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/plugin-platform-weapp/dist/runtime.js",
+      "bytes": 27737
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/lib/speech.ts",
-      "bytes": 20389
-    },
-    {
-      "source": "/private/tmp/shushugo-w1s/taro-spike-2/node_modules/tslib/tslib.es6.mjs",
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/tslib/tslib.es6.mjs",
       "bytes": 17648
     },
     {
-      "source": "/private/tmp/shushugo-w1s/taro-spike-2/node_modules/@tarojs/plugin-html/dist/runtime.js",
-      "bytes": 14820
+      "source": "/private/tmp/claude-integrate/frontend/src/lib/speech.weapp.ts",
+      "bytes": 15524
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/lib/token-dictionary.ts",
-      "bytes": 12210
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/plugin-html/dist/runtime.js",
+      "bytes": 14818
     },
     {
-      "source": "/private/tmp/shushugo-w1s/frontend/src/lib/share-canvas.ts",
-      "bytes": 10025
+      "source": "/private/tmp/claude-integrate/frontend/src/lib/share-canvas.weapp.ts",
+      "bytes": 12695
+    },
+    {
+      "source": "/private/tmp/claude-integrate/frontend/src/lib/token-dictionary.ts",
+      "bytes": 12208
     }
   ],
   "passes": true
