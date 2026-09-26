@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 把出厂词库（原库 + gzip 压缩版）+ 内容 manifest（默认）、单词读音（--audio）或例句音频（--examples）推到云开发的云存储。
+# 把出厂词库（原库 + Brotli 压缩版）+ 内容 manifest（默认）、单词读音（--audio）或例句音频（--examples）推到云开发的云存储。
 # 每次 bake-seed-db 之后跑一次；音频只在重新合成后跑。
 # 需要先 `tcb login`（设备码登录，微信扫码）。tcb 装在哪都行：TCB=/path/to/tcb ./scripts/upload-cloud-content.sh
 #
@@ -49,12 +49,13 @@ cat > "$MANIFEST" <<JSON
 JSON
 echo "manifest: $(cat "$MANIFEST")"
 $TCB storage upload "$DB" seed/nihongo.db --times 3 -e "$ENV_ID" < /dev/null
-# 压缩版：Taro 版首装先下 seed/nihongo.db.gz（database-runtime.weapp.ts，fflate gunzip），拿不到才回退上面的原库。
-# 2026-09-26 之前从没传过——真机日志「压缩出厂库不可用，回退原库 -403003 empty download url」，首装多下好几倍的字节。
-GZ=$(mktemp).gz
-gzip -9 -c "$DB" > "$GZ"
-echo "gzip: $(stat -f %z "$GZ") bytes (原库 $BYTES)"
-$TCB storage upload "$GZ" seed/nihongo.db.gz --times 3 -e "$ENV_ID" < /dev/null
-rm -f "$GZ"
+# 压缩版：Taro 版首装先下 seed/nihongo.db.br（database-runtime.weapp.ts，微信原生 readCompressedFile 解压），拿不到才回退上面的原库。
+# ⚠️ 必须是 Brotli：官方文档 compressionAlgorithm「目前仅支持 br」。2026-09-26 传的是 .db.gz，真机上解压必定失败——
+# 每个新用户先白下 2.2 MB 的 gz，再回退下 11.5 MB 原库（用户实测首次打开干等一分钟）。Brotli 版约 1.34 MB。
+BR=$(mktemp).br
+node -e "const z=require('zlib'),fs=require('fs');const b=fs.readFileSync(process.argv[1]);fs.writeFileSync(process.argv[2],z.brotliCompressSync(b,{params:{[z.constants.BROTLI_PARAM_QUALITY]:11,[z.constants.BROTLI_PARAM_LGWIN]:24,[z.constants.BROTLI_PARAM_SIZE_HINT]:b.length}}))" "$DB" "$BR"
+echo "brotli: $(stat -f %z "$BR") bytes (原库 $BYTES)"
+$TCB storage upload "$BR" seed/nihongo.db.br --times 3 -e "$ENV_ID" < /dev/null
+rm -f "$BR"
 $TCB storage upload "$MANIFEST" seed/manifest.json --times 3 -e "$ENV_ID" < /dev/null
 rm -f "$MANIFEST"
