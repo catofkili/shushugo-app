@@ -609,3 +609,9 @@ B：`onPointer*` 在小程序里不触发，圆环、滑杆、长按多选、批
 `DEV` 恒为 false，开发专用模块（往 5173 回传整库的 dev-snapshot）会被打进主包；写「`!DEV` 就提前 return」的代码也一样，
 要写成「DEV 才进块」。
 ⚠️ 几条 Codex 线同时构建时机器负载到过 27，网页测试会随机超过 5 秒默认时限（和改动无关）；这时用 `--testTimeout=60000` 复核，别当成代码坏了。
+
+**W6 已合（2026-09-26，`taro/main` 的 `77d4cd2`）**：接口扫描闸门（`verify-weapp-apis`，接在 `build:weapp` 末尾，允许清单按精确次数比对）
++ 学习控件的触摸适配（`frontend/src/lib/touch-adapter.ts`，网页版 `touchEventsEnabled()` 恒为 false、行为不变）。
+⚠️ **小程序不支持内联 `<svg>`**：`DailyPlanRing`（每日量圆环）、`TimerRing`（查词汇量倒计时）、`KanjiPairLines`（汉字连线题）
+编到小程序里画不出来（周报星图也是，但周报 v1 隐藏）。W6 只在网页验证过，没发现；续做见 `tmp/codex-w6-continue.md`（圆环用 Canvas 2D）。
+开发者工具端口：W6 改用 9461（9460 被别的项目占着）。W1 9421 / W3 9440 / W4 9450 的项目窗口已收工，可以关掉减轻负载。
