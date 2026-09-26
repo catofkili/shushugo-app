@@ -19,6 +19,12 @@
   ],
   "pairs": [
     {
+      "web": "frontend/src/components/AppNavigation.tsx",
+      "mini": [
+        "taro-spike-2/src/platform/route-table.cjs"
+      ]
+    },
+    {
       "web": "frontend/src/App.tsx",
       "mini": [
         "wechat-miniprogram/src/app.json",

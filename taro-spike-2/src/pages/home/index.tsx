@@ -1,0 +1,1 @@
+import '../../platform/app-polyfills.weapp'; import { HomeRoute } from '../../../../frontend/src/routes/home.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="home" Route={HomeRoute} />;

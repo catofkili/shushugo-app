@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import { useApp } from "../app/AppContext";
-import { HelpPage } from "./lazy-pages";
+const HelpPage = lazy(() => import("../pages/HelpPage").then((module) => ({ default: module.HelpPage })));
 export function HelpRoute() { const { goBack } = useApp(); return <HelpPage onBack={goBack} />; }

@@ -1,0 +1,1 @@
+import { GrammarRoute } from '../../../../frontend/src/routes/grammar.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="grammar" Route={GrammarRoute} />;

@@ -1,0 +1,1 @@
+import { UserAgreementRoute } from '../../../../frontend/src/routes/user-agreement.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="user-agreement" Route={UserAgreementRoute} />;

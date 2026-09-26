@@ -46,7 +46,11 @@ module.exports = {
       { from: path.join(mini, 'src/features/content/kanji-variants.js'), to: path.join(root, 'dist/features/content/kanji-variants.js') },
       { from: path.join(mini, 'src/features/content/kanji-readings.js'), to: path.join(root, 'dist/features/content/kanji-readings.js') },
       { from: path.join(mini, 'src/features/content/grammar-key-points.js'), to: path.join(root, 'dist/features/content/grammar-key-points.js') },
-      { from: path.join(root, 'src/assets'), to: path.join(root, 'dist/assets') }
+      { from: path.join(root, 'src/assets'), to: path.join(root, 'dist/assets') },
+      ...['study', 'account', 'content-pages'].map((subpackage) => ({
+        from: path.join(root, 'src/package-assets', subpackage),
+        to: path.join(root, 'dist', subpackage, 'assets')
+      }))
     ],
     options: {}
   },
@@ -63,10 +67,17 @@ module.exports = {
   mini: {
     optimizeMainPackage: {
       enable: true,
-      exclude: [(module) => /(?:frontend\/src\/lib\/|node_modules\/ts-fsrs\/|wechat-miniprogram\/src\/(?:vendor\/sql-wasm\.js|runtime\/text-decoder\.js)$|taro-spike-2\/src\/platform\/(?:database-runtime\.weapp\.ts|sql-js\.weapp\.cjs|sql-wasm-url\.weapp\.cjs|entitlements\.weapp\.cjs)$)/.test(module.resource || '')]
+      // Let route-only data helpers move with their subpackage. Keep the DB,
+      // FSRS and native shims together because the tab pages also use them.
+      exclude: [(module) => /(?:node_modules\/ts-fsrs\/|wechat-miniprogram\/src\/(?:vendor\/sql-wasm\.js|runtime\/text-decoder\.js)$|taro-spike-2\/src\/platform\/(?:database-runtime\.weapp\.ts|sql-js\.weapp\.cjs|sql-wasm-url\.weapp\.cjs|entitlements\.weapp\.cjs)$)/.test(module.resource || '')]
     },
     compile: { include: [frontend, mini] },
-    cssLoaderOption: { url: { filter: (url) => !url.startsWith('/') } },
+    imageUrlLoaderOption: { limit: 1 },
+    cssLoaderOption: {
+      url: {
+        filter: (url) => !url.startsWith('/') && !/walk-strip\.webp(?:[?#].*)?$/.test(url)
+      }
+    },
     postcss: {
       pxtransform: { enable: true, config: {} },
       htmltransform: { enable: true, config: { removeCursorStyle: true } },
@@ -76,6 +87,9 @@ module.exports = {
     webpackChain(chain, webpack) {
       chain.resolve.modules.add(path.join(root, 'node_modules'));
       chain.resolve.modules.add(path.join(frontend, 'node_modules'));
+      chain.plugin('spike-local-storage').use(webpack.ProvidePlugin, [{
+        localStorage: [path.join(root, 'src/platform/app-polyfills.weapp.ts'), 'weappLocalStorage']
+      }]);
       chain.resolve.alias.set('worker_threads$', path.join(root, 'src/platform/worker-threads.weapp.cjs'));
       chain.module.rule('sql-source').test(/\.sql$/).type('asset/source');
       chain.plugin('spike-node-crypto').use(webpack.NormalModuleReplacementPlugin, [
@@ -186,7 +200,9 @@ module.exports = {
             fs.mkdirSync(path.dirname(output), { recursive: true });
             fs.writeFileSync(output, JSON.stringify(stats.toJson({
               all: false, assets: true, chunks: true, entrypoints: true,
-              modules: true, chunkModules: true, source: false
+              modules: true, chunkModules: true, nestedModules: true,
+              orphanModules: true, dependentModules: true, runtimeModules: true,
+              modulesSpace: 1000, nestedModulesSpace: 1000, source: false
             }), null, 2));
           });
         }

@@ -1,0 +1,1 @@
+import { DistinctionQuizRoute } from '../../../../frontend/src/routes/distinction-quiz.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="distinction-quiz" Route={DistinctionQuizRoute} />;

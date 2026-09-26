@@ -1,0 +1,1 @@
+import { SettingsRoute } from '../../../../frontend/src/routes/settings.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="settings" Route={SettingsRoute} />;

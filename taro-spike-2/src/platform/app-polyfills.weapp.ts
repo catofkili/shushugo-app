@@ -11,3 +11,5 @@ if (typeof globalThis.sessionStorage === 'undefined') {
     clear: () => { values.clear(); }
   } as Storage;
 }
+
+export const weappLocalStorage = globalThis.localStorage as Storage;

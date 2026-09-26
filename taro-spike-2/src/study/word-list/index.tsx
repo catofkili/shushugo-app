@@ -1,0 +1,1 @@
+import { WordListRoute } from '../../../../frontend/src/routes/word-list.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="word-list" Route={WordListRoute} />;

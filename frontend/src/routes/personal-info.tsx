@@ -1,5 +1,6 @@
+import { lazy } from "react";
 import { useApp } from "../app/AppContext";
-import { PersonalInfo } from "./lazy-pages";
+const PersonalInfo = lazy(() => import("../pages/PersonalInfo").then((module) => ({ default: module.PersonalInfo })));
 export function PersonalInfoRoute() {
   const { navigate, goBack } = useApp();
   return <PersonalInfo onBack={goBack} onOpenAchievements={() => navigate("achievements")} />;

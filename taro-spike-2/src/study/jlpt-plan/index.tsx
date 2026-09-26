@@ -1,0 +1,1 @@
+import { JlptPlanRoute } from '../../../../frontend/src/routes/jlpt-plan.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="jlpt-plan" Route={JlptPlanRoute} />;

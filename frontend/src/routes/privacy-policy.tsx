@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import { useApp } from "../app/AppContext";
-import { PrivacyPolicy } from "./lazy-pages";
+const PrivacyPolicy = lazy(() => import("../pages/PrivacyPolicy").then((module) => ({ default: module.PrivacyPolicy })));
 export function PrivacyPolicyRoute() { const { goBack } = useApp(); return <PrivacyPolicy onBack={goBack} />; }

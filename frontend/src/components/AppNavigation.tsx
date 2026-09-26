@@ -7,6 +7,8 @@ import type { SearchResult } from "../lib/search-api";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { JapaneseRuby } from "./JapaneseRuby";
 import { SquirrelTrail } from "./SquirrelTrail";
+import { mobileTitles } from "../app/navigation-titles.cjs";
+export { mobileTitles } from "../app/navigation-titles.cjs";
 
 // 主页取代了原来的「工具箱」：工具箱的学习模式、收藏、进度概览等入口都挪到了主页。
 // 图标是作者 2026-09-19 补的高清 Tab 图标那组（带水豚，含语法）
@@ -26,35 +28,6 @@ const isRootMobilePage = (page: Page) => ["home", "word", "grammar", "profile"].
 // 手机顶栏的标题。页面里各自那条「← 返回 | 标题」(.page-backbar) 在手机上藏掉，
 // 返回和标题只由顶栏说一次 —— 以前子页面是两个返回键、同一个标题说两三遍。
 // null = 页面自己有大标题(h1)，顶栏只留返回键，免得标题叠两层。
-const mobileTitles: Partial<Record<Page, string | null>> = {
-  grammar: "语法",
-  profile: "我的",
-  team: "组队",
-  "quick-study": "快速复习",
-  "vocab-test": null,
-  detail: "语法",
-  "grammar-foundation": null,
-  "study-modes": null,
-  favorites: null,
-  "yuzu-shop": "柚子商店",
-  confusion: null,
-  "distinction-quiz": "辨析练习",
-  "kanji-readings": null,
-  "word-list": null,
-  "jlpt-plan": "备考计划",
-  pro: "收集日 Pro",
-  account: "账号和安全",
-  "personal-info": "个人信息",
-  notifications: "通知提醒",
-  settings: "设置",
-  privacy: "隐私",
-  "privacy-policy": "隐私政策",
-  "user-agreement": "用户协议",
-  help: "帮助和支持",
-  achievements: "成就",
-  about: "关于"
-};
-
 interface AppNavigationProps {
   page: Page;
   sidebarCollapsed: boolean;

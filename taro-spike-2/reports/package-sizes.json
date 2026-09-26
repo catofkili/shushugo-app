@@ -2,57 +2,57 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1874283,
-      "mib": 1.787,
+      "bytes": 2629850,
+      "mib": 2.508,
+      "passes": false
+    },
+    "study": {
+      "bytes": 214926,
+      "mib": 0.205,
       "passes": true
     },
     "account": {
-      "bytes": 82823,
-      "mib": 0.079,
+      "bytes": 195666,
+      "mib": 0.187,
       "passes": true
     },
-    "quiz": {
-      "bytes": 73127,
-      "mib": 0.07,
-      "passes": true
-    },
-    "study": {
-      "bytes": 386013,
-      "mib": 0.368,
+    "content-pages": {
+      "bytes": 476609,
+      "mib": 0.455,
       "passes": true
     },
     "features": {
-      "bytes": 661703,
+      "bytes": 661707,
       "mib": 0.631,
       "passes": true
     },
     "content": {
-      "bytes": 1619451,
+      "bytes": 1619455,
       "mib": 1.544,
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 668446,
+      "bytes": 668450,
       "mib": 0.637,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547374,
+      "bytes": 547378,
       "mib": 0.522,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 240804,
-      "mib": 0.23,
+      "bytes": 124919,
+      "mib": 0.119,
       "passes": true
     }
   },
-  "totalBytes": 6154024,
+  "totalBytes": 7138960,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 761723
+      "bytes": 1251202
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -85,11 +85,6 @@
       "bytes": 333306
     },
     {
-      "path": "study/word-study/index.js",
-      "package": "study",
-      "bytes": 289789
-    },
-    {
       "path": "assets/sql-wasm.wasm.br",
       "package": "main",
       "bytes": 278641
@@ -102,7 +97,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 262358
+      "bytes": 268774
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -110,19 +105,14 @@
       "bytes": 162562
     },
     {
-      "path": "grammar-pages/compile/index.js",
-      "package": "grammar-pages",
-      "bytes": 158301
-    },
-    {
       "path": "vendors.js",
       "package": "main",
-      "bytes": 145476
+      "bytes": 146010
     },
     {
       "path": "taro.js",
       "package": "main",
-      "bytes": 139580
+      "bytes": 139581
     },
     {
       "path": "features/content/kanji-readings.js",
@@ -130,9 +120,34 @@
       "bytes": 115462
     },
     {
+      "path": "content-pages/weekly-report/index.js",
+      "package": "content-pages",
+      "bytes": 83966
+    },
+    {
+      "path": "content-pages/weekly-report/index.wxss",
+      "package": "content-pages",
+      "bytes": 69616
+    },
+    {
+      "path": "pages/word/index.js",
+      "package": "main",
+      "bytes": 68572
+    },
+    {
       "path": "base.wxml",
       "package": "main",
       "bytes": 64682
+    },
+    {
+      "path": "content-pages/sub-common/4ca3f698082917388b626f738af68b7d.js",
+      "package": "content-pages",
+      "bytes": 58715
+    },
+    {
+      "path": "grammar-pages/sub-common/4ca3f698082917388b626f738af68b7d.js",
+      "package": "grammar-pages",
+      "bytes": 58715
     },
     {
       "path": "features/content/grammar-key-points.js",
@@ -140,54 +155,109 @@
       "bytes": 46508
     },
     {
+      "path": "account/settings/index.js",
+      "package": "account",
+      "bytes": 37340
+    },
+    {
       "path": "account/fflate.umd.js",
       "package": "account",
       "bytes": 32539
     },
     {
+      "path": "content-pages/sub-common/63d9f55ae9c1b8447aa3b66323b4dc67.js",
+      "package": "content-pages",
+      "bytes": 32450
+    },
+    {
+      "path": "grammar-pages/sub-common/63d9f55ae9c1b8447aa3b66323b4dc67.js",
+      "package": "grammar-pages",
+      "bytes": 32450
+    },
+    {
       "path": "assets/brand/walk-strip.webp",
       "package": "main",
-      "bytes": 29090
+      "bytes": 28566
     },
     {
-      "path": "quiz/vocab-test/index.js",
-      "package": "quiz",
-      "bytes": 28001
-    },
-    {
-      "path": "account/sub-common/67ed268a87f5aa89916f4454fc3a9146.js",
+      "path": "account/account/index.js",
       "package": "account",
-      "bytes": 19005
+      "bytes": 28416
     },
     {
-      "path": "grammar-pages/sub-common/67ed268a87f5aa89916f4454fc3a9146.js",
-      "package": "grammar-pages",
-      "bytes": 19005
-    },
-    {
-      "path": "quiz/sub-common/67ed268a87f5aa89916f4454fc3a9146.js",
-      "package": "quiz",
-      "bytes": 19005
-    },
-    {
-      "path": "study/sub-common/67ed268a87f5aa89916f4454fc3a9146.js",
+      "path": "study/vocab-test/index.js",
       "package": "study",
-      "bytes": 19005
+      "bytes": 26775
     },
     {
-      "path": "grammar-pages/sub-common/1f144711c73dcc9b38b6a9042a17b2c8.js",
-      "package": "grammar-pages",
-      "bytes": 17411
+      "path": "pages/home/index.js",
+      "package": "main",
+      "bytes": 25994
     },
     {
-      "path": "study/sub-common/1f144711c73dcc9b38b6a9042a17b2c8.js",
+      "path": "study/jlpt-plan/index.js",
       "package": "study",
-      "bytes": 17411
+      "bytes": 22342
+    },
+    {
+      "path": "assets/brand/scene-team.webp",
+      "package": "main",
+      "bytes": 21586
+    },
+    {
+      "path": "content-pages/assets/brand/icon-kanji-readings.webp",
+      "package": "content-pages",
+      "bytes": 21504
+    },
+    {
+      "path": "content-pages/assets/brand/icon-favorites.webp",
+      "package": "content-pages",
+      "bytes": 20216
+    },
+    {
+      "path": "study/quick-study/index.js",
+      "package": "study",
+      "bytes": 19614
+    },
+    {
+      "path": "content-pages/assets/brand/icon-shop.webp",
+      "package": "content-pages",
+      "bytes": 19388
+    },
+    {
+      "path": "assets/brand/mood-cheer.webp",
+      "package": "main",
+      "bytes": 18834
+    },
+    {
+      "path": "content-pages/assets/brand/icon-study-modes.webp",
+      "package": "content-pages",
+      "bytes": 18764
+    },
+    {
+      "path": "study/team/index.js",
+      "package": "study",
+      "bytes": 18741
+    },
+    {
+      "path": "study/word-list/index.js",
+      "package": "study",
+      "bytes": 18439
+    },
+    {
+      "path": "assets/brand/mood-hungry.webp",
+      "package": "main",
+      "bytes": 17796
     },
     {
       "path": "assets/brand/mood-puzzled.webp",
       "package": "main",
       "bytes": 16914
+    },
+    {
+      "path": "content-pages/yuzu-shop/index.wxss",
+      "package": "content-pages",
+      "bytes": 16647
     },
     {
       "path": "assets/brand/scene-laptop.webp",
@@ -200,9 +270,19 @@
       "bytes": 15812
     },
     {
+      "path": "content-pages/assets/brand/icon-vocab.webp",
+      "package": "content-pages",
+      "bytes": 15536
+    },
+    {
       "path": "assets/brand/scene-book.webp",
       "package": "main",
       "bytes": 15478
+    },
+    {
+      "path": "assets/brand/mood-fired-up.webp",
+      "package": "main",
+      "bytes": 15348
     },
     {
       "path": "assets/brand/mood-dizzy.webp",
@@ -210,29 +290,24 @@
       "bytes": 15060
     },
     {
-      "path": "assets/brand/empty-box.webp",
-      "package": "main",
+      "path": "content-pages/assets/brand/icon-stats.webp",
+      "package": "content-pages",
+      "bytes": 14936
+    },
+    {
+      "path": "study/assets/brand/empty-box.webp",
+      "package": "study",
       "bytes": 14616
     },
     {
-      "path": "account/sub-common/9f68f4aa6e5e480482a46e8a84b24fe8.js",
-      "package": "account",
-      "bytes": 14584
+      "path": "content-pages/assets/brand/icon-practice.webp",
+      "package": "content-pages",
+      "bytes": 14582
     },
     {
-      "path": "grammar-pages/sub-common/9f68f4aa6e5e480482a46e8a84b24fe8.js",
-      "package": "grammar-pages",
-      "bytes": 14584
-    },
-    {
-      "path": "quiz/sub-common/9f68f4aa6e5e480482a46e8a84b24fe8.js",
-      "package": "quiz",
-      "bytes": 14584
-    },
-    {
-      "path": "study/sub-common/9f68f4aa6e5e480482a46e8a84b24fe8.js",
-      "package": "study",
-      "bytes": 14584
+      "path": "content-pages/assets/brand/icon-grammar.webp",
+      "package": "content-pages",
+      "bytes": 14510
     },
     {
       "path": "assets/brand/mood-sleep.webp",
@@ -240,129 +315,289 @@
       "bytes": 14114
     },
     {
-      "path": "assets/brand/mood-ask.webp",
+      "path": "assets/brand/mood-default.webp",
       "package": "main",
+      "bytes": 14070
+    },
+    {
+      "path": "study/assets/brand/mood-ask.webp",
+      "package": "study",
       "bytes": 13922
     },
     {
-      "path": "assets/brand/mood-proud.webp",
-      "package": "main",
+      "path": "account/assets/brand/mood-proud.webp",
+      "package": "account",
       "bytes": 13430
     },
     {
-      "path": "account/sub-common/66402cfc7332c04c04094dfd29a518b4.js",
+      "path": "study/assets/brand/mood-proud.webp",
+      "package": "study",
+      "bytes": 13430
+    },
+    {
+      "path": "content-pages/yuzu-shop/index.js",
+      "package": "content-pages",
+      "bytes": 13255
+    },
+    {
+      "path": "account/personal-info/index.js",
       "package": "account",
-      "bytes": 11230
+      "bytes": 12839
     },
     {
-      "path": "study/sub-common/66402cfc7332c04c04094dfd29a518b4.js",
+      "path": "study/team/index.wxss",
       "package": "study",
-      "bytes": 11230
+      "bytes": 11232
     },
     {
-      "path": "grammar-pages/sub-common/a7009af66112b9cb6a03400961180305.js",
+      "path": "assets/tabs/home.png",
+      "package": "main",
+      "bytes": 11157
+    },
+    {
+      "path": "assets/brand/scene-music.webp",
+      "package": "main",
+      "bytes": 10818
+    },
+    {
+      "path": "account/privacy/index.js",
+      "package": "account",
+      "bytes": 10494
+    },
+    {
+      "path": "assets/brand/scene-stretch.webp",
+      "package": "main",
+      "bytes": 10418
+    },
+    {
+      "path": "assets/tabs/word.png",
+      "package": "main",
+      "bytes": 10109
+    },
+    {
+      "path": "assets/tabs/grammar.png",
+      "package": "main",
+      "bytes": 9551
+    },
+    {
+      "path": "account/pro/index.js",
+      "package": "account",
+      "bytes": 9480
+    },
+    {
+      "path": "assets/tabs/profile.png",
+      "package": "main",
+      "bytes": 9410
+    },
+    {
+      "path": "content-pages/sub-common/9da557fad5f0b04181fc8b50b282e622.js",
+      "package": "content-pages",
+      "bytes": 8821
+    },
+    {
+      "path": "grammar-pages/sub-common/9da557fad5f0b04181fc8b50b282e622.js",
       "package": "grammar-pages",
-      "bytes": 8466
+      "bytes": 8821
     },
     {
-      "path": "study/sub-common/a7009af66112b9cb6a03400961180305.js",
-      "package": "study",
-      "bytes": 8466
+      "path": "pages/grammar/index.js",
+      "package": "main",
+      "bytes": 8418
     },
     {
-      "path": "grammar-pages/sub-common/ece2316547292d767673e361b7227ccb.js",
+      "path": "content-pages/about/index.js",
+      "package": "content-pages",
+      "bytes": 8298
+    },
+    {
+      "path": "grammar-pages/sub-common/f7bb49248cdbc4ace5d0d687026f653a.js",
       "package": "grammar-pages",
-      "bytes": 6617
+      "bytes": 8003
     },
     {
-      "path": "study/sub-common/ece2316547292d767673e361b7227ccb.js",
+      "path": "study/sub-common/f7bb49248cdbc4ace5d0d687026f653a.js",
       "package": "study",
-      "bytes": 6617
+      "bytes": 8003
     },
     {
-      "path": "grammar-pages/sub-common/d7af76b61ca1a578cd45bd4da945eef9.js",
+      "path": "content-pages/assets/brand/shushugo-icon.webp",
+      "package": "content-pages",
+      "bytes": 7862
+    },
+    {
+      "path": "content-pages/sub-common/208ab6650f529a75fa747c358a0905ec.js",
+      "package": "content-pages",
+      "bytes": 7635
+    },
+    {
+      "path": "grammar-pages/sub-common/208ab6650f529a75fa747c358a0905ec.js",
       "package": "grammar-pages",
-      "bytes": 5680
+      "bytes": 7635
     },
     {
-      "path": "quiz/sub-common/d7af76b61ca1a578cd45bd4da945eef9.js",
-      "package": "quiz",
-      "bytes": 5680
-    },
-    {
-      "path": "study/sub-common/d7af76b61ca1a578cd45bd4da945eef9.js",
+      "path": "study/distinction-quiz/index.js",
       "package": "study",
-      "bytes": 5680
+      "bytes": 7606
+    },
+    {
+      "path": "pages/profile/index.js",
+      "package": "main",
+      "bytes": 7112
+    },
+    {
+      "path": "study/kanji-readings/index.js",
+      "package": "study",
+      "bytes": 6907
+    },
+    {
+      "path": "account/help/index.js",
+      "package": "account",
+      "bytes": 6668
+    },
+    {
+      "path": "account/sub-common/8ab76547bb0af9bd052275261151cb16.js",
+      "package": "account",
+      "bytes": 6468
+    },
+    {
+      "path": "study/sub-common/8ab76547bb0af9bd052275261151cb16.js",
+      "package": "study",
+      "bytes": 6468
+    },
+    {
+      "path": "assets/brand/icon-favorites.webp",
+      "package": "main",
+      "bytes": 5018
+    },
+    {
+      "path": "account/notifications/index.js",
+      "package": "account",
+      "bytes": 4945
+    },
+    {
+      "path": "content-pages/sub-common/b0b517c812acd082492f53eb7f0b0f96.js",
+      "package": "content-pages",
+      "bytes": 4909
+    },
+    {
+      "path": "grammar-pages/sub-common/b0b517c812acd082492f53eb7f0b0f96.js",
+      "package": "grammar-pages",
+      "bytes": 4909
+    },
+    {
+      "path": "assets/brand/icon-study-modes.webp",
+      "package": "main",
+      "bytes": 4796
+    },
+    {
+      "path": "assets/brand/icon-kanji-readings.webp",
+      "package": "main",
+      "bytes": 4408
+    },
+    {
+      "path": "assets/brand/mood-wave.webp",
+      "package": "main",
+      "bytes": 4368
+    },
+    {
+      "path": "assets/brand/icon-shop.webp",
+      "package": "main",
+      "bytes": 4328
+    },
+    {
+      "path": "account/sub-common/333076ebafccc4c2a3a4e51de74039f8.js",
+      "package": "account",
+      "bytes": 4141
+    },
+    {
+      "path": "study/sub-common/333076ebafccc4c2a3a4e51de74039f8.js",
+      "package": "study",
+      "bytes": 4141
+    },
+    {
+      "path": "assets/brand/icon-stats.webp",
+      "package": "main",
+      "bytes": 4074
+    },
+    {
+      "path": "content-pages/achievements/index.js",
+      "package": "content-pages",
+      "bytes": 4062
+    },
+    {
+      "path": "assets/brand/icon-grammar.webp",
+      "package": "main",
+      "bytes": 4036
+    },
+    {
+      "path": "assets/brand/icon-practice.webp",
+      "package": "main",
+      "bytes": 3876
+    },
+    {
+      "path": "account/privacy-policy/index.js",
+      "package": "account",
+      "bytes": 3852
     },
     {
       "path": "assets/brand/shushugo-icon.webp",
       "package": "main",
-      "bytes": 4456
+      "bytes": 3718
     },
     {
-      "path": "grammar-pages/sub-common/517f84580e22dfddf23e1e0d54d6aae3.js",
-      "package": "grammar-pages",
-      "bytes": 3792
-    },
-    {
-      "path": "study/sub-common/517f84580e22dfddf23e1e0d54d6aae3.js",
+      "path": "study/sub-vendors.js",
       "package": "study",
-      "bytes": 3792
+      "bytes": 3716
+    },
+    {
+      "path": "account/sub-vendors.js",
+      "package": "account",
+      "bytes": 3567
+    },
+    {
+      "path": "study/study-modes/index.js",
+      "package": "study",
+      "bytes": 3411
+    },
+    {
+      "path": "study/vocab-test/index.wxss",
+      "package": "study",
+      "bytes": 3276
+    },
+    {
+      "path": "assets/brand/icon-vocab.webp",
+      "package": "main",
+      "bytes": 3236
     },
     {
       "path": "app.js",
       "package": "main",
-      "bytes": 2984
+      "bytes": 3022
     },
     {
       "path": "account/login/index.js",
       "package": "account",
-      "bytes": 2850
-    },
-    {
-      "path": "grammar-pages/sub-common/c93aac8f0421703a6431f412b17fa047.js",
-      "package": "grammar-pages",
-      "bytes": 2666
-    },
-    {
-      "path": "study/sub-common/c93aac8f0421703a6431f412b17fa047.js",
-      "package": "study",
-      "bytes": 2666
-    },
-    {
-      "path": "account/sub-common/76db11713f2982ebd529ef7ebf39e681.js",
-      "package": "account",
-      "bytes": 2494
-    },
-    {
-      "path": "grammar-pages/sub-common/76db11713f2982ebd529ef7ebf39e681.js",
-      "package": "grammar-pages",
-      "bytes": 2494
-    },
-    {
-      "path": "quiz/sub-common/76db11713f2982ebd529ef7ebf39e681.js",
-      "package": "quiz",
-      "bytes": 2494
-    },
-    {
-      "path": "study/sub-common/76db11713f2982ebd529ef7ebf39e681.js",
-      "package": "study",
-      "bytes": 2494
-    },
-    {
-      "path": "quiz/sub-common/1ef02be2a569040b7c154aaf85308199.js",
-      "package": "quiz",
-      "bytes": 2432
-    },
-    {
-      "path": "study/sub-common/1ef02be2a569040b7c154aaf85308199.js",
-      "package": "study",
-      "bytes": 2432
+      "bytes": 2626
     },
     {
       "path": "runtime.js",
       "package": "main",
-      "bytes": 2310
+      "bytes": 2311
+    },
+    {
+      "path": "account/user-agreement/index.js",
+      "package": "account",
+      "bytes": 2231
+    },
+    {
+      "path": "grammar-pages/compile/index.js",
+      "package": "grammar-pages",
+      "bytes": 2172
+    },
+    {
+      "path": "app.json",
+      "package": "main",
+      "bytes": 1751
     },
     {
       "path": "vendors.js.LICENSE.txt",
@@ -370,14 +605,69 @@
       "bytes": 1442
     },
     {
-      "path": "pages/index/index.js",
-      "package": "main",
-      "bytes": 1051
+      "path": "content-pages/sub-common/6725f29b27b041799ea776dabe681a63.js",
+      "package": "content-pages",
+      "bytes": 1234
+    },
+    {
+      "path": "grammar-pages/sub-common/6725f29b27b041799ea776dabe681a63.js",
+      "package": "grammar-pages",
+      "bytes": 1234
+    },
+    {
+      "path": "content-pages/detail/index.js",
+      "package": "content-pages",
+      "bytes": 1127
+    },
+    {
+      "path": "study/confusion/index.js",
+      "package": "study",
+      "bytes": 1121
+    },
+    {
+      "path": "content-pages/grammar-foundation/index.js",
+      "package": "content-pages",
+      "bytes": 1117
     },
     {
       "path": "utils.wxs",
       "package": "main",
       "bytes": 997
+    },
+    {
+      "path": "content-pages/favorites/index.js",
+      "package": "content-pages",
+      "bytes": 930
+    },
+    {
+      "path": "content-pages/sub-common/62ee0d6edd500256b18e9fb29631e547.js",
+      "package": "content-pages",
+      "bytes": 859
+    },
+    {
+      "path": "grammar-pages/sub-common/62ee0d6edd500256b18e9fb29631e547.js",
+      "package": "grammar-pages",
+      "bytes": 859
+    },
+    {
+      "path": "assets/lucide/settings-ink.svg",
+      "package": "main",
+      "bytes": 836
+    },
+    {
+      "path": "assets/lucide/settings-light.svg",
+      "package": "main",
+      "bytes": 836
+    },
+    {
+      "path": "content-pages/sub-common/7dab1f7b39bb3ea491d574748f34fb0c.js",
+      "package": "content-pages",
+      "bytes": 795
+    },
+    {
+      "path": "study/sub-common/7dab1f7b39bb3ea491d574748f34fb0c.js",
+      "package": "study",
+      "bytes": 795
     },
     {
       "path": "assets/lucide/brain-ink.svg",
@@ -400,12 +690,27 @@
       "bytes": 691
     },
     {
-      "path": "features/placeholder/index.js",
-      "package": "features",
-      "bytes": 620
+      "path": "content-pages/assets/lucide/palette-ink.svg",
+      "package": "content-pages",
+      "bytes": 679
     },
     {
-      "path": "app.json",
+      "path": "content-pages/assets/lucide/palette-light.svg",
+      "package": "content-pages",
+      "bytes": 679
+    },
+    {
+      "path": "features/placeholder/index.js",
+      "package": "features",
+      "bytes": 624
+    },
+    {
+      "path": "assets/lucide/slidershorizontal-ink.svg",
+      "package": "main",
+      "bytes": 617
+    },
+    {
+      "path": "assets/lucide/slidershorizontal-light.svg",
       "package": "main",
       "bytes": 617
     },
@@ -420,24 +725,24 @@
       "bytes": 592
     },
     {
-      "path": "assets/lucide/sparkles-ink.svg",
-      "package": "main",
+      "path": "account/assets/lucide/sparkles-ink.svg",
+      "package": "account",
       "bytes": 584
     },
     {
-      "path": "assets/lucide/sparkles-light.svg",
-      "package": "main",
+      "path": "account/assets/lucide/sparkles-light.svg",
+      "package": "account",
       "bytes": 584
     },
     {
-      "path": "grammar-pages/sub-common/c9facbeb9985414d2ce977d56c264c92.js",
-      "package": "grammar-pages",
-      "bytes": 577
+      "path": "content-pages/assets/lucide/sparkles-ink.svg",
+      "package": "content-pages",
+      "bytes": 584
     },
     {
-      "path": "study/sub-common/c9facbeb9985414d2ce977d56c264c92.js",
-      "package": "study",
-      "bytes": 577
+      "path": "content-pages/assets/lucide/sparkles-light.svg",
+      "package": "content-pages",
+      "bytes": 584
     },
     {
       "path": "assets/lucide/notebookpen-ink.svg",
@@ -448,6 +753,16 @@
       "path": "assets/lucide/notebookpen-light.svg",
       "package": "main",
       "bytes": 541
+    },
+    {
+      "path": "assets/lucide/trophy-ink.svg",
+      "package": "main",
+      "bytes": 530
+    },
+    {
+      "path": "assets/lucide/trophy-light.svg",
+      "package": "main",
+      "bytes": 530
     },
     {
       "path": "assets/lucide/handshake-ink.svg",
@@ -470,19 +785,14 @@
       "bytes": 520
     },
     {
-      "path": "grammar-pages/sub-common/3be9514b87fffcea9693e210fd0a3a0f.js",
-      "package": "grammar-pages",
-      "bytes": 517
-    },
-    {
-      "path": "quiz/sub-common/3be9514b87fffcea9693e210fd0a3a0f.js",
-      "package": "quiz",
-      "bytes": 517
-    },
-    {
-      "path": "study/sub-common/3be9514b87fffcea9693e210fd0a3a0f.js",
+      "path": "study/assets/lucide/layers3-ink.svg",
       "package": "study",
-      "bytes": 517
+      "bytes": 520
+    },
+    {
+      "path": "study/assets/lucide/layers3-light.svg",
+      "package": "study",
+      "bytes": 520
     },
     {
       "path": "assets/lucide/calendardays-ink.svg",
@@ -493,6 +803,36 @@
       "path": "assets/lucide/calendardays-light.svg",
       "package": "main",
       "bytes": 515
+    },
+    {
+      "path": "account/assets/lucide/sun-ink.svg",
+      "package": "account",
+      "bytes": 506
+    },
+    {
+      "path": "account/assets/lucide/sun-light.svg",
+      "package": "account",
+      "bytes": 506
+    },
+    {
+      "path": "content-pages/assets/lucide/packagecheck-ink.svg",
+      "package": "content-pages",
+      "bytes": 506
+    },
+    {
+      "path": "content-pages/assets/lucide/packagecheck-light.svg",
+      "package": "content-pages",
+      "bytes": 506
+    },
+    {
+      "path": "study/assets/lucide/bookopentext-ink.svg",
+      "package": "study",
+      "bytes": 494
+    },
+    {
+      "path": "study/assets/lucide/bookopentext-light.svg",
+      "package": "study",
+      "bytes": 494
     },
     {
       "path": "assets/lucide/sprout-ink.svg",
@@ -515,6 +855,16 @@
       "bytes": 487
     },
     {
+      "path": "study/assets/lucide/bellring-ink.svg",
+      "package": "study",
+      "bytes": 484
+    },
+    {
+      "path": "study/assets/lucide/bellring-light.svg",
+      "package": "study",
+      "bytes": 484
+    },
+    {
       "path": "assets/lucide/crown-ink.svg",
       "package": "main",
       "bytes": 471
@@ -523,6 +873,16 @@
       "path": "assets/lucide/crown-light.svg",
       "package": "main",
       "bytes": 471
+    },
+    {
+      "path": "account/assets/lucide/keyround-ink.svg",
+      "package": "account",
+      "bytes": 461
+    },
+    {
+      "path": "account/assets/lucide/keyround-light.svg",
+      "package": "account",
+      "bytes": 461
     },
     {
       "path": "assets/lucide/shuffle-ink.svg",
@@ -560,54 +920,94 @@
       "bytes": 438
     },
     {
-      "path": "assets/lucide/trash2-ink.svg",
-      "package": "main",
+      "path": "account/assets/lucide/scrolltext-ink.svg",
+      "package": "account",
+      "bytes": 436
+    },
+    {
+      "path": "account/assets/lucide/scrolltext-light.svg",
+      "package": "account",
+      "bytes": 436
+    },
+    {
+      "path": "account/assets/lucide/trash2-ink.svg",
+      "package": "account",
       "bytes": 434
     },
     {
-      "path": "assets/lucide/trash2-light.svg",
-      "package": "main",
+      "path": "account/assets/lucide/trash2-light.svg",
+      "package": "account",
       "bytes": 434
     },
     {
-      "path": "assets/lucide/bookopencheck-ink.svg",
-      "package": "main",
+      "path": "content-pages/assets/lucide/trash2-ink.svg",
+      "package": "content-pages",
+      "bytes": 434
+    },
+    {
+      "path": "content-pages/assets/lucide/trash2-light.svg",
+      "package": "content-pages",
+      "bytes": 434
+    },
+    {
+      "path": "content-pages/assets/lucide/bookopencheck-ink.svg",
+      "package": "content-pages",
       "bytes": 433
     },
     {
-      "path": "assets/lucide/bookopencheck-light.svg",
-      "package": "main",
+      "path": "content-pages/assets/lucide/bookopencheck-light.svg",
+      "package": "content-pages",
       "bytes": 433
     },
     {
-      "path": "assets/lucide/shieldcheck-ink.svg",
-      "package": "main",
+      "path": "account/assets/lucide/apple-ink.svg",
+      "package": "account",
+      "bytes": 430
+    },
+    {
+      "path": "account/assets/lucide/apple-light.svg",
+      "package": "account",
+      "bytes": 430
+    },
+    {
+      "path": "account/assets/lucide/shieldcheck-ink.svg",
+      "package": "account",
       "bytes": 429
     },
     {
-      "path": "assets/lucide/shieldcheck-light.svg",
-      "package": "main",
+      "path": "account/assets/lucide/shieldcheck-light.svg",
+      "package": "account",
       "bytes": 429
     },
     {
-      "path": "assets/lucide/imagedown-ink.svg",
-      "package": "main",
-      "bytes": 426
+      "path": "content-pages/assets/lucide/citrus-ink.svg",
+      "package": "content-pages",
+      "bytes": 429
     },
     {
-      "path": "assets/lucide/imagedown-light.svg",
-      "package": "main",
-      "bytes": 426
+      "path": "content-pages/assets/lucide/citrus-light.svg",
+      "package": "content-pages",
+      "bytes": 429
+    },
+    {
+      "path": "study/assets/lucide/shieldcheck-ink.svg",
+      "package": "study",
+      "bytes": 429
+    },
+    {
+      "path": "study/assets/lucide/shieldcheck-light.svg",
+      "package": "study",
+      "bytes": 429
     },
     {
       "path": "grammar-advanced/placeholder/index.js",
       "package": "grammar-advanced",
-      "bytes": 420
+      "bytes": 424
     },
     {
       "path": "grammar-foundation/placeholder/index.js",
       "package": "grammar-foundation",
-      "bytes": 420
+      "bytes": 424
     },
     {
       "path": "assets/lucide/pencilline-ink.svg",
@@ -622,7 +1022,47 @@
     {
       "path": "content/placeholder/index.js",
       "package": "content",
-      "bytes": 411
+      "bytes": 415
+    },
+    {
+      "path": "account/assets/lucide/ticket-ink.svg",
+      "package": "account",
+      "bytes": 408
+    },
+    {
+      "path": "account/assets/lucide/ticket-light.svg",
+      "package": "account",
+      "bytes": 408
+    },
+    {
+      "path": "assets/lucide/refreshcw-ink.svg",
+      "package": "main",
+      "bytes": 408
+    },
+    {
+      "path": "assets/lucide/refreshcw-light.svg",
+      "package": "main",
+      "bytes": 408
+    },
+    {
+      "path": "study/assets/lucide/alarmclock-ink.svg",
+      "package": "study",
+      "bytes": 407
+    },
+    {
+      "path": "study/assets/lucide/alarmclock-light.svg",
+      "package": "study",
+      "bytes": 407
+    },
+    {
+      "path": "content-pages/assets/lucide/shirt-ink.svg",
+      "package": "content-pages",
+      "bytes": 406
+    },
+    {
+      "path": "content-pages/assets/lucide/shirt-light.svg",
+      "package": "content-pages",
+      "bytes": 406
     },
     {
       "path": "assets/lucide/folderplus-ink.svg",
@@ -635,6 +1075,26 @@
       "bytes": 404
     },
     {
+      "path": "assets/lucide/bell-ink.svg",
+      "package": "main",
+      "bytes": 399
+    },
+    {
+      "path": "assets/lucide/bell-light.svg",
+      "package": "main",
+      "bytes": 399
+    },
+    {
+      "path": "study/assets/lucide/send-ink.svg",
+      "package": "study",
+      "bytes": 399
+    },
+    {
+      "path": "study/assets/lucide/send-light.svg",
+      "package": "study",
+      "bytes": 399
+    },
+    {
       "path": "assets/lucide/flame-ink.svg",
       "package": "main",
       "bytes": 398
@@ -643,6 +1103,26 @@
       "path": "assets/lucide/flame-light.svg",
       "package": "main",
       "bytes": 398
+    },
+    {
+      "path": "assets/lucide/listordered-ink.svg",
+      "package": "main",
+      "bytes": 397
+    },
+    {
+      "path": "assets/lucide/listordered-light.svg",
+      "package": "main",
+      "bytes": 397
+    },
+    {
+      "path": "assets/lucide/shield-ink.svg",
+      "package": "main",
+      "bytes": 392
+    },
+    {
+      "path": "assets/lucide/shield-light.svg",
+      "package": "main",
+      "bytes": 392
     },
     {
       "path": "assets/lucide/penline-ink.svg",
@@ -665,6 +1145,16 @@
       "bytes": 385
     },
     {
+      "path": "account/assets/lucide/receipttext-ink.svg",
+      "package": "account",
+      "bytes": 384
+    },
+    {
+      "path": "account/assets/lucide/receipttext-light.svg",
+      "package": "account",
+      "bytes": 384
+    },
+    {
       "path": "assets/lucide/calendarcheck-ink.svg",
       "package": "main",
       "bytes": 381
@@ -685,6 +1175,26 @@
       "bytes": 381
     },
     {
+      "path": "study/assets/lucide/lettertext-ink.svg",
+      "package": "study",
+      "bytes": 378
+    },
+    {
+      "path": "study/assets/lucide/lettertext-light.svg",
+      "package": "study",
+      "bytes": 378
+    },
+    {
+      "path": "content-pages/assets/lucide/mic-ink.svg",
+      "package": "content-pages",
+      "bytes": 368
+    },
+    {
+      "path": "content-pages/assets/lucide/mic-light.svg",
+      "package": "content-pages",
+      "bytes": 368
+    },
+    {
       "path": "assets/lucide/eye-ink.svg",
       "package": "main",
       "bytes": 367
@@ -693,6 +1203,76 @@
       "path": "assets/lucide/eye-light.svg",
       "package": "main",
       "bytes": 367
+    },
+    {
+      "path": "content-pages/assets/lucide/heart-ink.svg",
+      "package": "content-pages",
+      "bytes": 365
+    },
+    {
+      "path": "content-pages/assets/lucide/heart-light.svg",
+      "package": "content-pages",
+      "bytes": 365
+    },
+    {
+      "path": "account/assets/lucide/download-ink.svg",
+      "package": "account",
+      "bytes": 364
+    },
+    {
+      "path": "account/assets/lucide/download-light.svg",
+      "package": "account",
+      "bytes": 364
+    },
+    {
+      "path": "account/assets/lucide/alerttriangle-ink.svg",
+      "package": "account",
+      "bytes": 363
+    },
+    {
+      "path": "account/assets/lucide/alerttriangle-light.svg",
+      "package": "account",
+      "bytes": 363
+    },
+    {
+      "path": "content-pages/assets/lucide/alerttriangle-ink.svg",
+      "package": "content-pages",
+      "bytes": 363
+    },
+    {
+      "path": "content-pages/assets/lucide/alerttriangle-light.svg",
+      "package": "content-pages",
+      "bytes": 363
+    },
+    {
+      "path": "assets/lucide/logout-ink.svg",
+      "package": "main",
+      "bytes": 361
+    },
+    {
+      "path": "assets/lucide/logout-light.svg",
+      "package": "main",
+      "bytes": 361
+    },
+    {
+      "path": "account/assets/lucide/camera-ink.svg",
+      "package": "account",
+      "bytes": 359
+    },
+    {
+      "path": "account/assets/lucide/camera-light.svg",
+      "package": "account",
+      "bytes": 359
+    },
+    {
+      "path": "account/assets/lucide/upload-ink.svg",
+      "package": "account",
+      "bytes": 359
+    },
+    {
+      "path": "account/assets/lucide/upload-light.svg",
+      "package": "account",
+      "bytes": 359
     },
     {
       "path": "assets/lucide/repeat-ink.svg",
@@ -705,12 +1285,42 @@
       "bytes": 359
     },
     {
+      "path": "study/assets/lucide/repeat2-ink.svg",
+      "package": "study",
+      "bytes": 359
+    },
+    {
+      "path": "study/assets/lucide/repeat2-light.svg",
+      "package": "study",
+      "bytes": 359
+    },
+    {
+      "path": "account/assets/lucide/edit2-ink.svg",
+      "package": "account",
+      "bytes": 355
+    },
+    {
+      "path": "account/assets/lucide/edit2-light.svg",
+      "package": "account",
+      "bytes": 355
+    },
+    {
       "path": "assets/lucide/listchecks-ink.svg",
       "package": "main",
       "bytes": 355
     },
     {
       "path": "assets/lucide/listchecks-light.svg",
+      "package": "main",
+      "bytes": 355
+    },
+    {
+      "path": "assets/lucide/lockkeyhole-ink.svg",
+      "package": "main",
+      "bytes": 355
+    },
+    {
+      "path": "assets/lucide/lockkeyhole-light.svg",
       "package": "main",
       "bytes": 355
     },
@@ -725,13 +1335,13 @@
       "bytes": 350
     },
     {
-      "path": "assets/lucide/externallink-ink.svg",
-      "package": "main",
+      "path": "content-pages/assets/lucide/externallink-ink.svg",
+      "package": "content-pages",
       "bytes": 349
     },
     {
-      "path": "assets/lucide/externallink-light.svg",
-      "package": "main",
+      "path": "content-pages/assets/lucide/externallink-light.svg",
+      "package": "content-pages",
       "bytes": 349
     },
     {
@@ -745,23 +1355,53 @@
       "bytes": 346
     },
     {
-      "path": "grammar-pages/sub-common/af4b3185f42ee27477888d9641f2b884.js",
-      "package": "grammar-pages",
+      "path": "content-pages/assets/lucide/appwindow-ink.svg",
+      "package": "content-pages",
+      "bytes": 345
+    },
+    {
+      "path": "content-pages/assets/lucide/appwindow-light.svg",
+      "package": "content-pages",
+      "bytes": 345
+    },
+    {
+      "path": "account/assets/lucide/database-ink.svg",
+      "package": "account",
+      "bytes": 344
+    },
+    {
+      "path": "account/assets/lucide/database-light.svg",
+      "package": "account",
+      "bytes": 344
+    },
+    {
+      "path": "account/assets/lucide/helpcircle-ink.svg",
+      "package": "account",
       "bytes": 339
     },
     {
-      "path": "study/sub-common/af4b3185f42ee27477888d9641f2b884.js",
-      "package": "study",
+      "path": "account/assets/lucide/helpcircle-light.svg",
+      "package": "account",
       "bytes": 339
     },
     {
-      "path": "assets/lucide/timer-ink.svg",
+      "path": "assets/lucide/circlehelp-ink.svg",
       "package": "main",
+      "bytes": 339
+    },
+    {
+      "path": "assets/lucide/circlehelp-light.svg",
+      "package": "main",
+      "bytes": 339
+    },
+    {
+      "path": "study/assets/lucide/timer-ink.svg",
+      "package": "study",
       "bytes": 338
     },
     {
-      "path": "assets/lucide/timer-light.svg",
-      "package": "main",
+      "path": "study/assets/lucide/timer-light.svg",
+      "package": "study",
       "bytes": 338
     },
     {
@@ -815,13 +1455,43 @@
       "bytes": 330
     },
     {
-      "path": "assets/lucide/pause-ink.svg",
+      "path": "assets/lucide/merge-ink.svg",
       "package": "main",
+      "bytes": 324
+    },
+    {
+      "path": "assets/lucide/merge-light.svg",
+      "package": "main",
+      "bytes": 324
+    },
+    {
+      "path": "content-pages/assets/lucide/music-ink.svg",
+      "package": "content-pages",
+      "bytes": 321
+    },
+    {
+      "path": "content-pages/assets/lucide/music-light.svg",
+      "package": "content-pages",
+      "bytes": 321
+    },
+    {
+      "path": "content-pages/assets/lucide/pause-ink.svg",
+      "package": "content-pages",
       "bytes": 320
     },
     {
-      "path": "assets/lucide/pause-light.svg",
-      "package": "main",
+      "path": "content-pages/assets/lucide/pause-light.svg",
+      "package": "content-pages",
+      "bytes": 320
+    },
+    {
+      "path": "study/assets/lucide/pause-ink.svg",
+      "package": "study",
+      "bytes": 320
+    },
+    {
+      "path": "study/assets/lucide/pause-light.svg",
+      "package": "study",
       "bytes": 320
     },
     {
@@ -835,6 +1505,16 @@
       "bytes": 316
     },
     {
+      "path": "content-pages/assets/lucide/lock-ink.svg",
+      "package": "content-pages",
+      "bytes": 315
+    },
+    {
+      "path": "content-pages/assets/lucide/lock-light.svg",
+      "package": "content-pages",
+      "bytes": 315
+    },
+    {
       "path": "assets/lucide/rotateccw-ink.svg",
       "package": "main",
       "bytes": 309
@@ -843,6 +1523,26 @@
       "path": "assets/lucide/rotateccw-light.svg",
       "package": "main",
       "bytes": 309
+    },
+    {
+      "path": "assets/lucide/skipforward-ink.svg",
+      "package": "main",
+      "bytes": 309
+    },
+    {
+      "path": "assets/lucide/skipforward-light.svg",
+      "package": "main",
+      "bytes": 309
+    },
+    {
+      "path": "account/assets/lucide/user-ink.svg",
+      "package": "account",
+      "bytes": 307
+    },
+    {
+      "path": "account/assets/lucide/user-light.svg",
+      "package": "account",
+      "bytes": 307
     },
     {
       "path": "assets/lucide/xcircle-ink.svg",
@@ -855,6 +1555,26 @@
       "bytes": 307
     },
     {
+      "path": "account/assets/lucide/smartphone-ink.svg",
+      "package": "account",
+      "bytes": 306
+    },
+    {
+      "path": "account/assets/lucide/smartphone-light.svg",
+      "package": "account",
+      "bytes": 306
+    },
+    {
+      "path": "assets/lucide/info-ink.svg",
+      "package": "main",
+      "bytes": 304
+    },
+    {
+      "path": "assets/lucide/info-light.svg",
+      "package": "main",
+      "bytes": 304
+    },
+    {
       "path": "assets/lucide/clock3-ink.svg",
       "package": "main",
       "bytes": 301
@@ -863,6 +1583,16 @@
       "path": "assets/lucide/clock3-light.svg",
       "package": "main",
       "bytes": 301
+    },
+    {
+      "path": "assets/lucide/userround-ink.svg",
+      "package": "main",
+      "bytes": 293
+    },
+    {
+      "path": "assets/lucide/userround-light.svg",
+      "package": "main",
+      "bytes": 293
     },
     {
       "path": "assets/lucide/checkcircle2-ink.svg",
@@ -883,6 +1613,26 @@
       "path": "assets/lucide/search-light.svg",
       "package": "main",
       "bytes": 283
+    },
+    {
+      "path": "account/assets/lucide/cloud-ink.svg",
+      "package": "account",
+      "bytes": 280
+    },
+    {
+      "path": "account/assets/lucide/cloud-light.svg",
+      "package": "account",
+      "bytes": 280
+    },
+    {
+      "path": "content-pages/assets/lucide/arrowupright-ink.svg",
+      "package": "content-pages",
+      "bytes": 276
+    },
+    {
+      "path": "content-pages/assets/lucide/arrowupright-light.svg",
+      "package": "content-pages",
+      "bytes": 276
     },
     {
       "path": "assets/lucide/arrowleft-ink.svg",
@@ -915,6 +1665,16 @@
       "bytes": 264
     },
     {
+      "path": "content-pages/assets/lucide/loadercircle-ink.svg",
+      "package": "content-pages",
+      "bytes": 264
+    },
+    {
+      "path": "content-pages/assets/lucide/loadercircle-light.svg",
+      "package": "content-pages",
+      "bytes": 264
+    },
+    {
       "path": "assets/lucide/x-ink.svg",
       "package": "main",
       "bytes": 263
@@ -923,6 +1683,16 @@
       "path": "assets/lucide/x-light.svg",
       "package": "main",
       "bytes": 263
+    },
+    {
+      "path": "account/assets/lucide/moon-ink.svg",
+      "package": "account",
+      "bytes": 262
+    },
+    {
+      "path": "account/assets/lucide/moon-light.svg",
+      "package": "account",
+      "bytes": 262
     },
     {
       "path": "assets/lucide/plus-ink.svg",
@@ -935,14 +1705,34 @@
       "bytes": 262
     },
     {
-      "path": "assets/lucide/play-ink.svg",
-      "package": "main",
+      "path": "content-pages/assets/lucide/play-ink.svg",
+      "package": "content-pages",
       "bytes": 257
     },
     {
-      "path": "assets/lucide/play-light.svg",
-      "package": "main",
+      "path": "content-pages/assets/lucide/play-light.svg",
+      "package": "content-pages",
       "bytes": 257
+    },
+    {
+      "path": "study/assets/lucide/play-ink.svg",
+      "package": "study",
+      "bytes": 257
+    },
+    {
+      "path": "study/assets/lucide/play-light.svg",
+      "package": "study",
+      "bytes": 257
+    },
+    {
+      "path": "study/assets/lucide/mountain-ink.svg",
+      "package": "study",
+      "bytes": 256
+    },
+    {
+      "path": "study/assets/lucide/mountain-light.svg",
+      "package": "study",
+      "bytes": 256
     },
     {
       "path": "assets/lucide/chevronleft-ink.svg",
@@ -995,39 +1785,14 @@
       "bytes": 237
     },
     {
-      "path": "grammar-pages/sub-common/c3699c7465e319aaffbcc82388eb7093.js",
-      "package": "grammar-pages",
-      "bytes": 234
-    },
-    {
-      "path": "quiz/sub-common/c3699c7465e319aaffbcc82388eb7093.js",
-      "package": "quiz",
-      "bytes": 234
-    },
-    {
-      "path": "study/sub-common/c3699c7465e319aaffbcc82388eb7093.js",
-      "package": "study",
-      "bytes": 234
-    },
-    {
       "path": "comp.js",
       "package": "main",
-      "bytes": 171
+      "bytes": 175
     },
     {
       "path": "comp.wxml",
       "package": "main",
       "bytes": 140
-    },
-    {
-      "path": "quiz/vocab-test/index.json",
-      "package": "quiz",
-      "bytes": 100
-    },
-    {
-      "path": "study/word-study/index.json",
-      "package": "study",
-      "bytes": 100
     },
     {
       "path": "features/placeholder/index.json",
@@ -1040,9 +1805,14 @@
       "bytes": 86
     },
     {
-      "path": "pages/index/index.json",
-      "package": "main",
-      "bytes": 84
+      "path": "account/account/index.wxml",
+      "package": "account",
+      "bytes": 80
+    },
+    {
+      "path": "account/help/index.wxml",
+      "package": "account",
+      "bytes": 80
     },
     {
       "path": "account/login/index.wxml",
@@ -1050,8 +1820,78 @@
       "bytes": 80
     },
     {
+      "path": "account/notifications/index.wxml",
+      "package": "account",
+      "bytes": 80
+    },
+    {
+      "path": "account/personal-info/index.wxml",
+      "package": "account",
+      "bytes": 80
+    },
+    {
+      "path": "account/privacy/index.wxml",
+      "package": "account",
+      "bytes": 80
+    },
+    {
+      "path": "account/privacy-policy/index.wxml",
+      "package": "account",
+      "bytes": 80
+    },
+    {
+      "path": "account/pro/index.wxml",
+      "package": "account",
+      "bytes": 80
+    },
+    {
+      "path": "account/settings/index.wxml",
+      "package": "account",
+      "bytes": 80
+    },
+    {
+      "path": "account/user-agreement/index.wxml",
+      "package": "account",
+      "bytes": 80
+    },
+    {
       "path": "content/placeholder/index.wxml",
       "package": "content",
+      "bytes": 80
+    },
+    {
+      "path": "content-pages/about/index.wxml",
+      "package": "content-pages",
+      "bytes": 80
+    },
+    {
+      "path": "content-pages/achievements/index.wxml",
+      "package": "content-pages",
+      "bytes": 80
+    },
+    {
+      "path": "content-pages/detail/index.wxml",
+      "package": "content-pages",
+      "bytes": 80
+    },
+    {
+      "path": "content-pages/favorites/index.wxml",
+      "package": "content-pages",
+      "bytes": 80
+    },
+    {
+      "path": "content-pages/grammar-foundation/index.wxml",
+      "package": "content-pages",
+      "bytes": 80
+    },
+    {
+      "path": "content-pages/weekly-report/index.wxml",
+      "package": "content-pages",
+      "bytes": 80
+    },
+    {
+      "path": "content-pages/yuzu-shop/index.wxml",
+      "package": "content-pages",
       "bytes": 80
     },
     {
@@ -1075,19 +1915,79 @@
       "bytes": 80
     },
     {
-      "path": "pages/index/index.wxml",
+      "path": "pages/grammar/index.wxml",
       "package": "main",
       "bytes": 80
     },
     {
-      "path": "quiz/vocab-test/index.wxml",
-      "package": "quiz",
+      "path": "pages/home/index.wxml",
+      "package": "main",
       "bytes": 80
     },
     {
-      "path": "study/word-study/index.wxml",
+      "path": "pages/profile/index.wxml",
+      "package": "main",
+      "bytes": 80
+    },
+    {
+      "path": "pages/word/index.wxml",
+      "package": "main",
+      "bytes": 80
+    },
+    {
+      "path": "study/confusion/index.wxml",
       "package": "study",
       "bytes": 80
+    },
+    {
+      "path": "study/distinction-quiz/index.wxml",
+      "package": "study",
+      "bytes": 80
+    },
+    {
+      "path": "study/jlpt-plan/index.wxml",
+      "package": "study",
+      "bytes": 80
+    },
+    {
+      "path": "study/kanji-readings/index.wxml",
+      "package": "study",
+      "bytes": 80
+    },
+    {
+      "path": "study/quick-study/index.wxml",
+      "package": "study",
+      "bytes": 80
+    },
+    {
+      "path": "study/study-modes/index.wxml",
+      "package": "study",
+      "bytes": 80
+    },
+    {
+      "path": "study/team/index.wxml",
+      "package": "study",
+      "bytes": 80
+    },
+    {
+      "path": "study/vocab-test/index.wxml",
+      "package": "study",
+      "bytes": 80
+    },
+    {
+      "path": "study/word-list/index.wxml",
+      "package": "study",
+      "bytes": 80
+    },
+    {
+      "path": "account/account/index.json",
+      "package": "account",
+      "bytes": 41
+    },
+    {
+      "path": "account/help/index.json",
+      "package": "account",
+      "bytes": 41
     },
     {
       "path": "account/login/index.json",
@@ -1095,8 +1995,78 @@
       "bytes": 41
     },
     {
+      "path": "account/notifications/index.json",
+      "package": "account",
+      "bytes": 41
+    },
+    {
+      "path": "account/personal-info/index.json",
+      "package": "account",
+      "bytes": 41
+    },
+    {
+      "path": "account/privacy/index.json",
+      "package": "account",
+      "bytes": 41
+    },
+    {
+      "path": "account/privacy-policy/index.json",
+      "package": "account",
+      "bytes": 41
+    },
+    {
+      "path": "account/pro/index.json",
+      "package": "account",
+      "bytes": 41
+    },
+    {
+      "path": "account/settings/index.json",
+      "package": "account",
+      "bytes": 41
+    },
+    {
+      "path": "account/user-agreement/index.json",
+      "package": "account",
+      "bytes": 41
+    },
+    {
       "path": "content/placeholder/index.json",
       "package": "content",
+      "bytes": 41
+    },
+    {
+      "path": "content-pages/about/index.json",
+      "package": "content-pages",
+      "bytes": 41
+    },
+    {
+      "path": "content-pages/achievements/index.json",
+      "package": "content-pages",
+      "bytes": 41
+    },
+    {
+      "path": "content-pages/detail/index.json",
+      "package": "content-pages",
+      "bytes": 41
+    },
+    {
+      "path": "content-pages/favorites/index.json",
+      "package": "content-pages",
+      "bytes": 41
+    },
+    {
+      "path": "content-pages/grammar-foundation/index.json",
+      "package": "content-pages",
+      "bytes": 41
+    },
+    {
+      "path": "content-pages/weekly-report/index.json",
+      "package": "content-pages",
+      "bytes": 41
+    },
+    {
+      "path": "content-pages/yuzu-shop/index.json",
+      "package": "content-pages",
       "bytes": 41
     },
     {
@@ -1115,13 +2085,148 @@
       "bytes": 41
     },
     {
+      "path": "pages/grammar/index.json",
+      "package": "main",
+      "bytes": 41
+    },
+    {
+      "path": "pages/home/index.json",
+      "package": "main",
+      "bytes": 41
+    },
+    {
+      "path": "pages/profile/index.json",
+      "package": "main",
+      "bytes": 41
+    },
+    {
+      "path": "pages/word/index.json",
+      "package": "main",
+      "bytes": 41
+    },
+    {
+      "path": "study/confusion/index.json",
+      "package": "study",
+      "bytes": 41
+    },
+    {
+      "path": "study/distinction-quiz/index.json",
+      "package": "study",
+      "bytes": 41
+    },
+    {
+      "path": "study/jlpt-plan/index.json",
+      "package": "study",
+      "bytes": 41
+    },
+    {
+      "path": "study/kanji-readings/index.json",
+      "package": "study",
+      "bytes": 41
+    },
+    {
+      "path": "study/quick-study/index.json",
+      "package": "study",
+      "bytes": 41
+    },
+    {
+      "path": "study/study-modes/index.json",
+      "package": "study",
+      "bytes": 41
+    },
+    {
+      "path": "study/team/index.json",
+      "package": "study",
+      "bytes": 41
+    },
+    {
+      "path": "study/vocab-test/index.json",
+      "package": "study",
+      "bytes": 41
+    },
+    {
+      "path": "study/word-list/index.json",
+      "package": "study",
+      "bytes": 41
+    },
+    {
+      "path": "account/account/index.wxss",
+      "package": "account",
+      "bytes": 0
+    },
+    {
+      "path": "account/help/index.wxss",
+      "package": "account",
+      "bytes": 0
+    },
+    {
       "path": "account/login/index.wxss",
+      "package": "account",
+      "bytes": 0
+    },
+    {
+      "path": "account/notifications/index.wxss",
+      "package": "account",
+      "bytes": 0
+    },
+    {
+      "path": "account/personal-info/index.wxss",
+      "package": "account",
+      "bytes": 0
+    },
+    {
+      "path": "account/privacy/index.wxss",
+      "package": "account",
+      "bytes": 0
+    },
+    {
+      "path": "account/privacy-policy/index.wxss",
+      "package": "account",
+      "bytes": 0
+    },
+    {
+      "path": "account/pro/index.wxss",
+      "package": "account",
+      "bytes": 0
+    },
+    {
+      "path": "account/settings/index.wxss",
+      "package": "account",
+      "bytes": 0
+    },
+    {
+      "path": "account/user-agreement/index.wxss",
       "package": "account",
       "bytes": 0
     },
     {
       "path": "content/placeholder/index.wxss",
       "package": "content",
+      "bytes": 0
+    },
+    {
+      "path": "content-pages/about/index.wxss",
+      "package": "content-pages",
+      "bytes": 0
+    },
+    {
+      "path": "content-pages/achievements/index.wxss",
+      "package": "content-pages",
+      "bytes": 0
+    },
+    {
+      "path": "content-pages/detail/index.wxss",
+      "package": "content-pages",
+      "bytes": 0
+    },
+    {
+      "path": "content-pages/favorites/index.wxss",
+      "package": "content-pages",
+      "bytes": 0
+    },
+    {
+      "path": "content-pages/grammar-foundation/index.wxss",
+      "package": "content-pages",
       "bytes": 0
     },
     {
@@ -1145,12 +2250,37 @@
       "bytes": 0
     },
     {
-      "path": "quiz/vocab-test/index.wxss",
-      "package": "quiz",
+      "path": "study/confusion/index.wxss",
+      "package": "study",
       "bytes": 0
     },
     {
-      "path": "study/word-study/index.wxss",
+      "path": "study/distinction-quiz/index.wxss",
+      "package": "study",
+      "bytes": 0
+    },
+    {
+      "path": "study/jlpt-plan/index.wxss",
+      "package": "study",
+      "bytes": 0
+    },
+    {
+      "path": "study/kanji-readings/index.wxss",
+      "package": "study",
+      "bytes": 0
+    },
+    {
+      "path": "study/quick-study/index.wxss",
+      "package": "study",
+      "bytes": 0
+    },
+    {
+      "path": "study/study-modes/index.wxss",
+      "package": "study",
+      "bytes": 0
+    },
+    {
+      "path": "study/word-list/index.wxss",
       "package": "study",
       "bytes": 0
     }

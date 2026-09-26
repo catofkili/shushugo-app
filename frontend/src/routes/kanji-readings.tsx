@@ -1,8 +1,9 @@
+import { lazy } from "react";
 import { ProReadingPreview } from "../components/ProReadingPreview";
 import { canUseFeature } from "../lib/entitlements";
 import { useApp } from "../app/AppContext";
-import { KanjiReadingUsagePage } from "./lazy-pages";
 import { ToolSubpage } from "./shared";
+const KanjiReadingUsagePage = lazy(() => import("../pages/KanjiReadingUsagePage").then((module) => ({ default: module.KanjiReadingUsagePage })));
 export function KanjiReadingsRoute() {
   const { entitlements, requirePro } = useApp();
   const title = "一字多音";

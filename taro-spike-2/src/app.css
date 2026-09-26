@@ -15,7 +15,7 @@
 /* WXSS drops Tailwind's general-sibling space-y selectors; restore only used stacks. */
 .space-y-3 > view + view { margin-top: 12px; }
 .space-y-2\.5 > view + view { margin-top: 10px; }
-.taro-spike-walk { display: inline-block; background: url("/assets/brand/walk-strip.webp") 0 0 no-repeat; animation: taroSpikeWalk 640ms steps(4, end) infinite; }
+.taro-spike-walk { display: inline-block; background: url("assets/brand/walk-strip.webp") 0 0 no-repeat; animation: taroSpikeWalk 640ms steps(4, end) infinite; }
 .vt-timer-canvas { position: absolute; inset: 0; width: 42px; height: 42px; }
 .kanji-pair-lines-canvas { position: absolute; left: calc(50% - 30px); top: 0; width: 60px; z-index: 0; pointer-events: none; }
 .jp-ruby-reading-weapp { color: #818781; font-size: .58em; }

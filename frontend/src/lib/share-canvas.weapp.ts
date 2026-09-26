@@ -44,8 +44,12 @@ const writeDataUrl = (dataUrl: string): Promise<string> => new Promise((resolve,
 const installCanvas = () => {
   const doc = (globalThis as any).document ?? ((globalThis as any).document = {});
   doc.fonts ??= { ready: Promise.resolve() };
+  const createElement = typeof doc.createElement === 'function' ? doc.createElement.bind(doc) : null;
   doc.createElement = (tag: string) => {
-    if (tag !== "canvas") throw new Error(`小程序分享画布不支持创建 ${tag}`);
+    if (tag !== "canvas") {
+      if (createElement) return createElement(tag);
+      throw new Error(`小程序分享画布不支持创建 ${tag}`);
+    }
     if (typeof wx.createOffscreenCanvas !== "function") throw new Error("当前微信基础库不支持离屏 Canvas 2D");
     const canvas = wx.createOffscreenCanvas({ type: "2d", width: 1, height: 1 });
     currentCanvas = canvas;
