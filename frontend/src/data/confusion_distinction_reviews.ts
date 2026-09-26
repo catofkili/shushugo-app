@@ -347,7 +347,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "pair:分かれる / 分ける",
     level: "major",
-    summary: "分かれる表示整体自己分开或分成几组；分ける表示主动分配、分开或分类。"
+    summary: "先找句中被分的整体：描述它分成几部分时用「が／は」作主体，描述有施事把它分组、分类或分配时用「を」标出对象。；分かれる：不以人的意志为判据，人群也可有意分组，句子仍把人群作主体；分ける：受影响对象用「を」，分类标准常用「〜ごとに」，分配去向可用「〜に」。"
   },
   {
     groupKey: "pair:片付く / 片付ける",
