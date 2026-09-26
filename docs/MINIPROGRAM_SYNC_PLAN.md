@@ -615,3 +615,25 @@ B：`onPointer*` 在小程序里不触发，圆环、滑杆、长按多选、批
 ⚠️ **小程序不支持内联 `<svg>`**：`DailyPlanRing`（每日量圆环）、`TimerRing`（查词汇量倒计时）、`KanjiPairLines`（汉字连线题）
 编到小程序里画不出来（周报星图也是，但周报 v1 隐藏）。W6 只在网页验证过，没发现；续做见 `tmp/codex-w6-continue.md`（圆环用 Canvas 2D）。
 开发者工具端口：W6 改用 9461（9460 被别的项目占着）。W1 9421 / W3 9440 / W4 9450 的项目窗口已收工，可以关掉减轻负载。
+
+## 标签页按需加载（分包异步化，Claude 2026-09-26 试验，分支 `claude/mainpkg` 的 `3003768`，未合并）
+
+**为什么**：W5 的主包 2,628,665 B 超微信硬上限 531 KB。用 webpack 的 reasons 逐个模块往上追：`common.js` 2.09 MB 源码里
+**2.03 MB 是四个标签页静态引用的**，只被分包用的不到 70 KB——「把分包专用的模块挪出主包」没油水了。
+根因：网页靠 `import()` 懒加载页面；Taro 的 babel 预设在小程序里把 `import()` 转成 `require`（官方文档如此，官方推荐的插件有审核风险），
+依赖图又很宽（单词学习面板 → 辨析题 → 查词汇量；单词卡 → 语法卡 → 振假名组件），四个标签页把几乎整个应用拉进主包。
+
+**做法**（全在 `taro-spike-2/config/index.js`、`babel.config.js`、`src/platform/lazy-route.tsx`、`src/pages/*/index.tsx`）：
+1. babel `dynamic-import-node: false`；webpack parser 默认 `dynamicImportMode: 'eager'`——其余上百个 `import()` 行为和原来一样，
+   只有写了 `/* webpackMode: "lazy" */` 的才生成异步块（第一次没加这条，主包暴涨到 9.48 MB：语法数据等全变成根目录的异步块）。
+2. 四个标签页 `import()` 同一个 `webpackChunkName: "lazy/tabs"` → 合成一个异步块，落进新分包 `lazy`（只有一个占位页），`preloadRule` 预下载。
+3. 运行时替换 webpack 的 `loadScript`，用 `require.async` 加载。⚠️ **参数必须是字符串字面量**：开发者工具 / 上传靠静态分析决定进包的文件，
+   拼出来的路径（`'./' + url`）不会被注入，运行时 `ChunkLoadError`。所以构建时按异步块逐个写死。
+4. Taro 的 `common` / `vendors` / `taro` 三组 splitChunks 原是 `chunks: 'all'`，会想把异步块的模块提进主包，报
+   `Cache group "common" conflicts with existing chunk`；限制为 `'initial'`。
+5. 被异步块和别的分包同时用到的模块会各打一份。纯函数、出厂内容缓存无所谓；**按数据库缓存用户数据的必须唯一**：
+   在 `WeappPage.tsx` 静态引用一次就进主包（目前只有 `grammarHighlights`，其 `dbCaches` 分两份会让划线跨页面看不到）。
+
+**结果**：主包 2,628,665 → 2,073,221 B（低于 2,097,152 硬上限）；lazy 分包 559 KB。开发者工具：主页 / 单词 / 我的 正常，单词页切换 226 ms。
+**未完成**：语法页切过去 15.6 s 仍空白——W5 未改的版本同样如此（对照过），是原有问题；接口允许清单、重复模块闸门要按新产物更新；
+wasm 挪包；iPhone 真机。交接给 W5：`tmp/codex-w5-lazy.md`。
