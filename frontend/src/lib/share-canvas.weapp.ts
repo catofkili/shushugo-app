@@ -24,7 +24,7 @@ export type WeappShareBlob = Blob & { __wxFilePath: string; __wxDataUrl: string;
 let currentCanvas: WeappCanvas | null = null;
 let fileSequence = 0;
 
-const normalizeImagePath = (src: string) => String(src).replace(/^\//, "").replace(/^brand\//, "assets/brand/").replace(/^assets\/assets\//, "assets/").replace(/\.png$/, ".webp").replace(/\.svg$/, ".png");
+const normalizeImagePath = (src: string) => String(src).replace(/^\//, "").replace(/^brand\//, "assets/brand/").replace(/^assets\/assets\//, "assets/").replace(/\.svg$/, ".png");
 const writeDataUrl = (dataUrl: string): Promise<string> => new Promise((resolve, reject) => {
   const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
   const fs = wx.getFileSystemManager();

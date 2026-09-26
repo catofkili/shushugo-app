@@ -653,6 +653,8 @@ W5 修完语法数据后语法页仍是空白；开发者工具逐页扫 26 个�
 | 柚子商店崩；偏好 / 进度 / 同步 / 写盘横幅事件全坏 | TaroWindow 有 `addEventListener`，**没有 `dispatchEvent`** | `app-polyfills` 给 TaroWindow 补，派发到它自己的 Events |
 | 分享图画不出、`URL.createObjectURL` 抛 not support、导出备份不下载 | 补丁打在 `globalThis.document` / `globalThis.URL` 上，源码用的是 Taro 的 | 分享图直接 `wx.createOffscreenCanvas`；TaroURL 转给 browser-runtime 的实现；`<a>` 只补 `click()`（元素必须还是 Taro 的，否则 React 渲染 `<a>` 时 appendChild 报错） |
 | 微信登录报「偏好存储尚未初始化」；云请求静默不带登录令牌 | 裸 `localStorage` 由 ProvidePlugin 指到 `app-polyfills` 的导出，而 `app-polyfills` → fetch → payment-auth / preferences → `app-polyfills` 成环，拿到的是未赋值的导出 | 指到只依赖 polyfill 的 `local-storage.weapp.cjs` |
+| iPhone 真机上的本地贴纸和品牌图为空，开发者工具却正常 | 贴纸以 `.webp` 放进小程序包；官方 `image` 文档对 `webp` 属性的原文是「默认不解析 webP 格式，只支持网络资源」，本地 `.webp` 不适用 | 包内品牌图转为调色板 PNG；`webp` 属性只传给网络 `.webp` |
+| 加载中走路贴纸等本地 WXSS 背景在真机为空，开发者工具却正常 | WXSS 的 `background-image` 不能读取包内本地路径 | 用包内 `<Image>` 放在裁切框里，以 `transform` 翻帧；构建后扫描所有 `dist/**/*.wxss` 的 `url()`，本地路径为 0 |
 
 判据（以后写垫片、写页面都照这个）：
 - **给 `globalThis.X` 打补丁，网页源码看不到**——要补就补 `@tarojs/runtime` 导出的那个对象。
@@ -662,6 +664,7 @@ W5 修完语法数据后语法页仍是空白；开发者工具逐页扫 26 个�
 - W6 的接口闸门只扫裸全局名，`obj.member` 整个跳过——补盲交给 W9（`tmp/codex-w9-gate-tabs.md`）。
 - React 在渲染 / effect 里抛错会卸掉整页，`console.error` 里的 Error 默认序列化成 `{}`：扫页脚本 `tmp/devtools-route-sweep.cjs`
   会把 message + stack 摊开。
+- 开发者工具的 Chrome 内核能显示包内 WebP，也能显示 WXSS 本地背景；这两种模拟器现象都不能代替 iPhone 真机。验收时要查编译产物，并扫码检查图片实际显示。
 
 **`taro/main` = `84760f3`**（2026-09-26 傍晚）：W5 按需加载 + wasm 挪 core 分包 + 上面的修复 + W6 Canvas 圆环 / 计时圈 / 连线。
 主包 1.70 MB，构建、闸门、`check:release` 通过，开发者工具 26 个路由只剩一处 `reading 'words'`（交给 W8）。

@@ -1437,11 +1437,11 @@
 /* ===== 吉祥物点缀（2026-09-19 定妆稿）===== */
 /* 顶栏 logo 组合里「收集日」后面那片嫩芽 */
 .brand-sprout{display:inline-block;width:.6em;height:.6em;margin-left:.15em;vertical-align:.35em;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 19v-8' stroke='%235B8F3A' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M10 11C8 4 3 3 1 4c1 5 5 8 9 7z' fill='%238CC77A'/%3E%3Cpath d='M10 11c2-7 7-8 9-7-1 5-5 8-9 7z' fill='%23A9D88F'/%3E%3C/svg%3E")}
-/* 走路的那只：定妆总表「加载动效（帧序列）」四帧拼成 walk-strip.png，steps(4) 翻帧。
-   宽高和 background-size 由 CapybaraWalk 内联给（按高度等比），这里只管翻帧。 */
-.mascot-walk{display:inline-block;background:url("/brand/sheet/walk-strip.png") 0 0 no-repeat;animation:mascotWalk .64s steps(4,end) infinite}
-@keyframes mascotWalk{to{background-position-x:calc(-4 * var(--cell))}}
-[data-motion="reduced"] .mascot-walk{animation:none}
+/* 走路的那只：四帧走 image + overflow 裁切，WXSS 不支持包内 background-image。 */
+.mascot-walk{display:inline-block;overflow:hidden;vertical-align:bottom}
+.mascot-walk-strip{display:block;max-width:none;animation:mascotWalk .64s steps(4,end) infinite}
+@keyframes mascotWalk{to{transform:translateX(-75%)}}
+[data-motion="reduced"] .mascot-walk-strip{animation:none}
 /* 底部 Tab：选中那格的图标放大一点、带一点投影 */
 .app-tab-icon{transition:transform .25s ease;opacity:.78}
 .app-tab-icon.is-active{transform:scale(1.12);opacity:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
@@ -1449,9 +1449,12 @@
 .mascot-say{position:relative;display:inline-block;padding:6px 12px;border-radius:14px 14px 14px 4px;background:#FFF3C4;color:#5B3F2E;font-size:13px;font-weight:800;line-height:1.4}
 .mascot-farewell{display:flex;align-items:center;gap:10px;margin-top:6px;padding:10px 12px;text-align:left}
 .mascot-farewell p{margin-top:6px;font-size:12px;color:rgba(255,255,255,.6)}
-/* App 图标跟主题走：深色主题换成作者给的深色版（深底圆角）。
-   用 content:url() 换 <img> 的图，Safari / Chrome / Firefox 113+ 都认，不用在五个调用点各写一遍判断。 */
-[data-theme="dark"] img.brand-icon{content:url("/brand/shushugo-icon-dark.png")}
+/* App 图标跟主题走：两张 <img> 由 data-theme 切换，避免 WXSS 的本地 content:url()。 */
+.brand-icon-pair{position:relative;display:block;overflow:hidden;line-height:0}
+.brand-icon-pair .brand-icon-light,.brand-icon-pair .brand-icon-dark{display:block;width:100%;height:100%;object-fit:contain}
+.brand-icon-pair .brand-icon-dark{display:none}
+[data-theme="dark"] .brand-icon-pair .brand-icon-light{display:none}
+[data-theme="dark"] .brand-icon-pair .brand-icon-dark{display:block}
 
 /* ===== 柚子商店(.yz-*) =====
    骨架抄的是 Duolingo 商店(余额 + 补签和外观一起上架)、Finch 服装店(试衣台)、
