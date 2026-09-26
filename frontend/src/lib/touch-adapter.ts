@@ -43,7 +43,7 @@ export const getPageScrollRemaining = (bodyHeight: number) => bodyHeight - windo
 
 export const getElementFromPoint = (x: number, y: number) => document.elementFromPoint(x, y);
 
-export const getActiveElement = (): HTMLElement | null => document.activeElement;
+export const getActiveElement = (): HTMLElement | null => document.activeElement as HTMLElement | null;
 
 /**
  * 小程序里滚的是页面本身：window 上没有 scroll 事件，scrollTo 在 iPhone 上不存在、在开发者工具里调用会

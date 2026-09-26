@@ -96,6 +96,7 @@ export function HelpPage({ onBack }: HelpPageProps) {
             <Disclosure
               key={index}
               className="group overflow-hidden rounded-2xl border border-white/15 bg-[#464949]"
+              summaryClassName="focus-ring flex cursor-pointer items-center gap-3 p-4 hover:bg-[#4d5151]"
               weappSummaryClassName="help-faq-summary"
               weappSummary={(open) => (
                 <>

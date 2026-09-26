@@ -108,7 +108,12 @@ export default function PreviewTimingBoundary({ kind, children, startupTimings =
 export function PerfOverlay() {
   const [lines, setLines] = useState<string[]>([]);
   useEffect(() => {
+    let last = '';
     const timer = setInterval(() => {
+      // 数据没变就不 setState：浮层自己每秒重画一次，会和点击抢逻辑线程（用户怀疑过计时器本身拖慢）
+      const signature = [...perfPhases.values()].map((values) => values.length + ':' + values[values.length - 1]).join('|');
+      if (signature === last) return;
+      last = signature;
       const next: string[] = [];
       perfPhases.forEach((values, phase) => {
         if (!values.length) return;
