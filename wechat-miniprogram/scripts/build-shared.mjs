@@ -136,7 +136,7 @@ outputs.set('src/features/content/kanji-variants.js', HEADER + 'module.exports =
 outputs.set('src/features/content/kanji-readings.js', jsonModule('kanji_readings.json'));
 outputs.set('src/features/content/grammar-key-points.js', jsonModule('grammar_key_points.json'));
 outputs.set('src/content/pitch-accent.js', jsonModule('pitch_accent.json'));
-const reviews = await build({ ...common, entryPoints: [path.join(data, 'confusion_distinction_reviews.ts')] });
+const reviews = await build({ ...common, charset: 'utf8', entryPoints: [path.join(data, 'confusion_distinction_reviews.ts')] });
 outputs.set('src/features/content/distinction-reviews.js', HEADER + reviews.outputFiles[0].text);
 
 // ---- grammar_points.id == grammar.ts 的 bookOrder（verify-release-db 钉着）↔ 字符串 id ----

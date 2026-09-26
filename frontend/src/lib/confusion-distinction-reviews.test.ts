@@ -75,9 +75,9 @@ describe("辨析人工稿覆盖率", () => {
       { key: "confine", forms: ["押し込める"] }
     ]);
 
-    expect(notes.get("push")).toBe("按、推");
-    expect(notes.get("hold")).toBe("按住或控制");
-    expect(notes.get("insert")).toBe("塞入");
+    expect(notes.get("push")).toBe("按压/推动对象接「を」");
+    expect(notes.get("hold")).toBe("按住物体，也可控制局面/情绪");
+    expect(notes.get("insert")).toBe("把物品塞进容器，常用「に」");
   });
 
   it("每个不能互换的词都有自己的卡内说明", () => {

@@ -69,18 +69,16 @@ describe("疑难辨析 Anki 卡", () => {
     expect(matchingCard("homophone:根本不存在")).toBeNull();
   });
 
-  it("止系列分别说明自行停止、使对象停止、自然现象停歇和结束活动", () => {
+  it("止系列用主体、对象和句型提示区别", () => {
     const card = matchingCard("stem:止")!;
     const noteFor = (kana: string) => card.members.find((member) => member.kana === kana)?.note ?? "";
 
-    expect(card.overview).toContain("自然现象停歇和人结束自己的活动");
-    expect(noteFor("とまる")).toContain("移动中的人或物");
+    expect(card.overview).toContain("停下者作主体");
     expect(noteFor("とまる")).toContain("「が」");
-    expect(noteFor("とめる")).toContain("让交通工具");
+    expect(noteFor("とめる")).toContain("受影响对象");
     expect(noteFor("とめる")).toContain("「を」");
     expect(noteFor("やむ")).toContain("雨、风");
-    expect(noteFor("やめる")).toContain("勉強するのをやめる");
-    expect(noteFor("やめる")).toContain("今天不学习");
+    expect(noteFor("やめる")).toContain("「〜のをやめる」");
   });
 
   it("新学优先给成员学过的组；已掌握的组不进队列", () => {
