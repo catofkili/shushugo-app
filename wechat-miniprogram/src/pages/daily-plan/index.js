@@ -5,6 +5,12 @@ const { dailyPlan, studyMode, wordApi, mixedCards, preferences } = core.web;
 const KINDS = dailyPlan.PLAN_KINDS;
 const COLORS = { words: '#6FA83E', grammar: '#F3B14D', kanji: '#B9A7F2', confusion: '#F2A7C8' };
 const ACTIVE = { classic: ['words'], quick: ['words'], mixed: KINDS, mistakes: [], reverse: [], kanji: [] };
+// 和网页 DailyPlanPanel 同一句：说清是哪一项低于建议。
+const lowLabel = (value, suggest) => {
+  const fresh = value.fresh < suggest.fresh;
+  const review = value.review < suggest.review;
+  return fresh && review ? ' · 低于建议' : fresh ? ' · 新学偏少' : review ? ' · 复习偏少' : '';
+};
 const TAU = Math.PI * 2;
 const SIZE = 240;
 const CENTER = SIZE / 2;
@@ -51,7 +57,7 @@ Page({
     const rows = this.shownView.segments.map((segment) => {
       const value = this.plan[segment.kind];
       return { ...segment, ...value, count: value.fresh + value.review, color: COLORS[segment.kind],
-        active: this.data.active.includes(segment.kind), low: value.fresh < segment.suggest.fresh || value.review < segment.suggest.review };
+        active: this.data.active.includes(segment.kind), low: lowLabel(value, segment.suggest) };
     });
     const total = rows.reduce((sum, row) => sum + (row.active ? row.count : 0), 0);
     const minutes = Math.round(rows.reduce((sum, row) => sum + row.count * dailyPlan.SECONDS_PER_CARD[row.kind], 0) / 60);

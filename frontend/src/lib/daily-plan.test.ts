@@ -128,4 +128,17 @@ describe("每日学习量：视图 / 写回 / 备考一键", () => {
     expect(getStudyPreferences().jlptTarget).toBe("N2");
     expect(getStudyPreferences().dailyGoal).toBe(examPreset("N2").plan.words.fresh);
   });
+
+  it("一键安排之后不会被自己标成「低于建议」：到期超过 500 也照数存（旧上限 500 会截）", () => {
+    // 作者 09-26：到期五百多，一键安排完显示「复 511 · 低于建议」—— 存的时候被截成了 500。
+    // ⚠️ 放最后：这里把 600 个词改成已学、到期，后面的用例会被它影响。
+    testDb.run(
+      "UPDATE progress SET seen_count=3, fsrs_lapses=0, fsrs_due='2026-01-01T00:00:00.000Z' WHERE word_id IN (SELECT id FROM words ORDER BY id LIMIT 600)"
+    );
+    const view = dailyPlanView();
+    const words = () => dailyPlanView().segments.find((segment) => segment.kind === "words")!;
+    expect(words().suggest.review).toBeGreaterThan(500);
+    saveDailyPlan(arrangedPlan(view), false, view);
+    expect(words().review).toBe(words().suggest.review);
+  });
 });

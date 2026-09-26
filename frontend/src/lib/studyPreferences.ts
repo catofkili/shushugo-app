@@ -140,18 +140,25 @@ const clampSmallGoal = (value: number, max: number) => {
 export const REVIEW_CAP_UNLIMITED = -1;
 /** 分类复习额度的专用哨兵；区别于 0（到期全出），用于用户明确把该类计划调到 0。 */
 export const PLAN_REVIEW_DISABLED = -1;
+/**
+ * 复习上限能存的最大数 = 圆环「今天总量」输入框的上限（DailyPlanPanel）。
+ * ⚠️ 原来是 500（8 月滑杆时代的滑杆最大值）。圆环能填、「一键安排」会写更大的数，存下去却被截成 500：
+ * 作者 09-26 到期五百多个，一键安排完单词那段显示「复 511（500 + 减负压轴 11）· 低于建议」——
+ * 自己安排的结果被自己判成不够。存、调度（review-budget.dailyReviewCap）、四段都用这一个数。
+ */
+export const MAX_DAILY_REVIEW = 2000;
 
 const clampReviewCap = (value: number) => {
   if (!Number.isFinite(value)) return 0;
   if (value < 0) return REVIEW_CAP_UNLIMITED;
   if (value === 0) return 0;
   // 下限 1 不是 30：圆环可以把单词复习拖到很小，0 在这里是「自动」所以存 1
-  return Math.min(500, Math.max(1, Math.floor(value)));
+  return Math.min(MAX_DAILY_REVIEW, Math.max(1, Math.floor(value)));
 };
 
 const clampPlanReviewCap = (value: number) => {
   const normalized = Number.isFinite(value) ? Math.floor(value) : 0;
-  return normalized === PLAN_REVIEW_DISABLED ? PLAN_REVIEW_DISABLED : Math.min(500, Math.max(0, normalized));
+  return normalized === PLAN_REVIEW_DISABLED ? PLAN_REVIEW_DISABLED : Math.min(MAX_DAILY_REVIEW, Math.max(0, normalized));
 };
 
 export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {}): StudyPreferences => ({

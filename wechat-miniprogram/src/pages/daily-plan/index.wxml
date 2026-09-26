@@ -9,7 +9,7 @@
     <view wx:for="{{rows}}" wx:key="kind" class="row {{item.active ? '' : 'muted'}} {{focus === item.kind ? 'focused' : ''}}" data-kind="{{item.kind}}" bindtap="pickFocus">
       <view class="dot" style="background: {{item.color}}"></view>
       <text class="row-name">{{item.label}}</text><text class="row-count">{{item.count}}</text>
-      <text class="row-detail">新 {{item.fresh}} · 复 {{item.review}}{{item.low ? ' · 低于建议' : ''}}</text>
+      <text class="row-detail">新 {{item.fresh}} · 复 {{item.review}}{{item.low}}</text>
     </view>
     <view wx:if="{{focus}}" class="split">
       <text>{{focusRow.label}} · 左边新学，右边复习</text>

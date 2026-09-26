@@ -145,13 +145,17 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
           <ul className="zoo-plan-legend">
             {view.segments.map((segment) => {
               const count = plan[segment.kind].fresh + plan[segment.kind].review;
-              const below = plan[segment.kind].review < segment.suggest.review || plan[segment.kind].fresh < segment.suggest.fresh;
+              // 说清是哪一项低（和「低于建议」同样四个字，窄屏不多占一行）：只写「低于建议」时，
+              // 作者 09-26 一键安排完看见它，猜不出是新学还是复习。
+              const lowFresh = plan[segment.kind].fresh < segment.suggest.fresh;
+              const lowReview = plan[segment.kind].review < segment.suggest.review;
+              const below = lowFresh && lowReview ? " · 低于建议" : lowFresh ? " · 新学偏少" : lowReview ? " · 复习偏少" : "";
               return (
                 <li key={segment.kind} className={`${focus === segment.kind ? "on" : ""} ${active.includes(segment.kind) ? "" : "off"}`} onClick={() => setFocus(focus === segment.kind ? null : segment.kind)}>
                   <i style={{ background: RING_COLORS[segment.kind] }} />
                   <span>{segment.label}</span>
                   <b>{count}</b>
-                  <small>新 {plan[segment.kind].fresh} · 复 {plan[segment.kind].review}{below ? " · 低于建议" : ""}</small>
+                  <small>新 {plan[segment.kind].fresh} · 复 {plan[segment.kind].review}{below}</small>
                 </li>
               );
             })}

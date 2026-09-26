@@ -11,7 +11,7 @@ vi.mock("./database", () => ({ getDatabase: () => testDb, initDatabase: async ()
 vi.mock("./storage", () => ({ requestFullSnapshot: vi.fn(), scheduleSave: vi.fn() }));
 
 import { ensureUserTables } from "./study-core";
-import { applyLevelStartingPoint, effectiveStartingLevel, getLevelPlanSettings, hydrateLevelPlanPreferences, recalibrateLevelStartingPoint, saveLevelPlanSettings, stabilityFor } from "./level-plan";
+import { applyLevelStartingPoint, effectiveStartingLevel, shouldShowLevelSetup, getLevelPlanSettings, hydrateLevelPlanPreferences, recalibrateLevelStartingPoint, saveLevelPlanSettings, stabilityFor } from "./level-plan";
 import { setState } from "./database/db-utils";
 import { getStudyPreferences } from "./studyPreferences";
 import { examPreset } from "./daily-plan";
@@ -106,5 +106,17 @@ describe("起点水平计划", () => {
     expect(getLevelPlanSettings()?.startingLevel).toBe("N4");
     expect(Number(one("SELECT COUNT(*) FROM level_prior_baselines b JOIN progress p ON p.word_id=CAST(b.entity_key AS INTEGER) JOIN words w ON w.id=p.word_id WHERE b.entity='words' AND w.jlpt_level='N3'"))).toBeGreaterThan(0);
     expect(Number(one("SELECT COUNT(*) FROM level_prior_baselines WHERE entity='words' AND entity_key=?", [ids[0]]))).toBe(0);
+  });
+});
+
+describe("首次设定只弹给新用户", () => {
+  it("没有起点、也没有任何真实学习记录才弹；老用户（09-23 之前就在学、没有起点）不弹", async () => {
+    const SQL = await initSqlJs();
+    testDb = new SQL.Database(new Uint8Array(readFileSync(fileURLToPath(new URL("../../public/nihongo.db", import.meta.url)))));
+    ensureUserTables();
+    expect(shouldShowLevelSetup()).toBe(true);
+    const wordId = Number(one("SELECT id FROM words LIMIT 1"));
+    testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (?, 'know', 1, '2026-07-01')", [wordId]);
+    expect(shouldShowLevelSetup()).toBe(false);
   });
 });

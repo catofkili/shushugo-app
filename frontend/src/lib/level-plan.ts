@@ -85,8 +85,22 @@ export const getLevelPlanSettings = (): LevelPlanSettings | null => {
   };
 };
 
+/**
+ * 只有真正的新用户才弹首次设定。⚠️ 起点设定是 09-23 才有的，之前的用户全都没有 `startingLevel`：
+ * `b2b4a5e`（加非 JLPT 考试）把下面「有真实学习记录就不弹」那段顺手删了，作者用了两个多月，
+ * 09-26 打开被弹了一张新手等级表。老用户的起点由 `effectiveStartingLevel` / `learnedLevel()` 从学习数据推，
+ * 想改去备考页。判据只看真实流水和真实学过的行（自报水平的基线要先有 startingLevel 才会写，不会误挡）。
+ */
 export const shouldShowLevelSetup = (): boolean => {
-  return !getState(SETTINGS_KEYS.startingLevel, "");
+  if (getState(SETTINGS_KEYS.startingLevel, "")) return false;
+  return [
+    ["reviews", "1=1"], ["grammar_reviews", "1=1"], ["kanji_char_reviews", "1=1"], ["confusion_reviews", "1=1"], ["kana_reviews", "1=1"],
+    ["progress", "seen_count > 0 OR known_forever = 1"], ["grammar_progress", "seen_count > 0 OR known_forever = 1"],
+    ["checkins", "1=1"]
+  ].every(([table, condition]) => {
+    try { return firstValue<number>(`SELECT COUNT(*) FROM ${table} WHERE ${condition}`, [], 0) === 0; }
+    catch { return true; }
+  });
 };
 
 const hash = (value: string) => {
