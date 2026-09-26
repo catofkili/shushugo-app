@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from 'react';
 import { View } from '@tarojs/components';
 import './platform/app-polyfills.weapp';
+import './platform/html-text-template.weapp.cjs';
 import './platform/iframe-polyfill.weapp';
 import './app.css';
 // Keep native control resets below the user-agent styles but before shared page classes.

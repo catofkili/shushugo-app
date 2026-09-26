@@ -10,7 +10,7 @@
     "build:preview:weapp": "TARO_PREVIEW_TIMING=1 npm run build:weapp",
     "build:weapp:watch": "taro build --type weapp --watch",
     "check:cloud-transport": "node scripts/check-cloud-transport.mjs",
-    "test": "node scripts/verify-async-content.mjs && node scripts/browser-runtime-smoke.cjs && node scripts/cloud-fetch-smoke.cjs && node scripts/check-release-smoke.mjs && node scripts/verify-package-gates.mjs",
+    "test": "node scripts/verify-async-content.mjs && node scripts/html-text-template-smoke.cjs && node scripts/browser-runtime-smoke.cjs && node scripts/cloud-fetch-smoke.cjs && node scripts/check-release-smoke.mjs && node scripts/verify-package-gates.mjs",
     "check:release": "node scripts/check-release.mjs"
   },
   "dependencies": {
