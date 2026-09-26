@@ -99,8 +99,12 @@ module.exports = {
           path.join(root, 'node_modules/react-reconciler/cjs/react-reconciler.profiling.min.js')
         );
       }
+      // ⚠️ 必须按键逐个定义。只定义 'import.meta.env' 一个对象字符串时，webpack 建模块图那一刻
+      // 看到的是 `({…}).DEV`，判断不出它恒为 false，于是 `if (import.meta.env.DEV) import('./dev-snapshot')`
+      // 这种开发专用模块照样进包（运行时走不到，但白占主包）；Vite 是直接替换成 false 的，网页版没有这个问题。
       chain.plugin('spike-weapp-env').use(webpack.DefinePlugin, [{
-        'import.meta.env': JSON.stringify(weappEnv)
+        'import.meta.env': JSON.stringify(weappEnv),
+        ...Object.fromEntries(Object.entries(weappEnv).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)]))
       }]);
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,

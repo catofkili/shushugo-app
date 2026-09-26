@@ -822,14 +822,17 @@ export function requestFullSnapshot(): void {
 }
 
 const mirrorForDev = (): void => {
-  if (!import.meta.env.DEV || isNativeFileStorage()) return;
-  const now = Date.now();
-  // 自己先挡一道:不挡的话每写一次增量都要为了镜像整库 export 一遍。
-  if (now - devMirroredAt < DEV_MIRROR_INTERVAL_MS) return;
-  devMirroredAt = now;
-  const bytes = exportDatabase();
-  if (!bytes) return;
-  void import('./dev-snapshot').then(({ mirrorLiveSnapshot }) => mirrorLiveSnapshot(bytes)).catch(() => undefined);
+  // ⚠️ 写成「DEV 才进块」，别改回 `if (!DEV) return;`：小程序用 webpack 打包，它看不出提前 return 后面走不到，
+  // 会把 dev-snapshot 整个打进主包（Vite 看得出，网页版一直没这个问题）。
+  if (import.meta.env.DEV && !isNativeFileStorage()) {
+    const now = Date.now();
+    // 自己先挡一道:不挡的话每写一次增量都要为了镜像整库 export 一遍。
+    if (now - devMirroredAt < DEV_MIRROR_INTERVAL_MS) return;
+    devMirroredAt = now;
+    const bytes = exportDatabase();
+    if (!bytes) return;
+    void import('./dev-snapshot').then(({ mirrorLiveSnapshot }) => mirrorLiveSnapshot(bytes)).catch(() => undefined);
+  }
 };
 
 /**
