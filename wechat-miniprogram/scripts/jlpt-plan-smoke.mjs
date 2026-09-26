@@ -23,6 +23,11 @@ store.saveDatabase = async () => ({});
 await store.ensureContentLoaded();
 const core = require('../src/core/study-core.js');
 core.ensureStudySchema(db);
+const unseenInLevels = (levels) => Number(core.firstValue(db, `
+  SELECT COUNT(*) FROM words w LEFT JOIN progress p ON p.word_id = w.id
+  WHERE (w.jlpt_level IN (${levels.map((level) => `'${level}'`).join(', ')}) OR w.jlpt_level IS NULL OR w.jlpt_level = '')
+    AND COALESCE(p.seen_count, 0) = 0 AND COALESCE(p.known_forever, 0) = 0
+`, [], 0));
 const app = { globalData: {} };
 globalThis.getApp = () => app;
 let page;
@@ -42,15 +47,15 @@ await page.onShow();
 assert.equal(page.data.setupOpen, true, '全新学习用户进入首次设定');
 assert.equal(page.data.hasPlan, false);
 assert.equal(page.data.examOptions.length, 4);
-assert.equal(page.data.setupPreview.content.words, 3959, '小程序预设应包含启动后固定搭配');
+assert.equal(page.data.setupPreview.content.words, unseenInLevels(['N5', 'N4', 'N3']), '小程序预设应按词库中真实未学词计算');
 page.pickStart({ currentTarget: { dataset: { value: 'kana-none' } } });
 page.pickSetupTarget({ currentTarget: { dataset: { value: 'N4' } } });
-assert.equal(page.data.setupPreview.content.words, 1815, '起点和目标改变后查预先计算的内容表');
+assert.equal(page.data.setupPreview.content.words, unseenInLevels(['N5', 'N4']), '起点和目标改变后按真实未学记录计算');
 await page.saveSetup();
 assert.equal(page.data.error, '');
 assert.equal(page.data.setupOpen, false);
 assert.equal(page.data.hasPlan, true);
-assert.equal(page.data.planEstimate.content.words, 1815, '计划页保留起点预估和今日任务两种口径');
+assert.equal(page.data.planEstimate.content.words, unseenInLevels(['N5', 'N4']), '计划页的起点预估按真实未学记录计算');
 assert.equal(page.data.kanaPending, true);
 assert.equal(core.web.preferences.getStudyPreferences().dailyGoal, 0, '五十音未掌握时新词额度暂缓');
 assert.equal(core.web.levelPlan.getLevelPlanSettings().target, 'N4');

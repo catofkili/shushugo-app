@@ -415,6 +415,12 @@
       "mini": [
         "wechat-miniprogram/src/assets/brand/shushugo-icon.webp"
       ]
+    },
+    {
+      "web": "frontend/src/components/ZooHome.css",
+      "mini": [
+        "wechat-miniprogram/src/pages/home/index.wxss"
+      ]
     }
   ]
 }

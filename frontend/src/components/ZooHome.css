@@ -1,0 +1,9 @@
+.zoo-post-exam{padding:16px;border:1px solid var(--ds-line);border-radius:20px;background:var(--ds-surface);box-shadow:var(--ds-shadow);color:var(--ds-ink)}
+.zoo-post-exam-head{display:flex;align-items:center;gap:10px}
+.zoo-post-exam-head>div{min-width:0}
+.zoo-post-exam-badge{display:grid;place-items:center;flex:none;width:52px;height:52px;border-radius:18px;background:var(--ds-primary);color:#fff;font-size:13px;font-weight:900}
+.zoo-post-exam-head b{font-size:17px}
+.zoo-post-exam-head p,.zoo-post-exam>p{margin:4px 0 0;color:var(--ds-ink-2);font-size:13px;line-height:1.5}
+.zoo-post-exam-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.zoo-post-exam-actions button{min-height:36px;padding:7px 11px;border:1px solid var(--ds-line);border-radius:12px;background:var(--ds-surface);color:var(--ds-ink);font-size:12px;font-weight:700}
+.zoo-post-exam-actions .zoo-post-exam-primary{border-color:var(--ds-primary);background:var(--ds-primary);color:#fff}

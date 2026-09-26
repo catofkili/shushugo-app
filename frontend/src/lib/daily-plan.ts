@@ -6,7 +6,7 @@
  *
  * 复习那一半：单词走 reviewCap（0 = 自动、-1 = 不限、n = 上限）；另外三种各自一个 cap（0 = 到期全出、-1 = 不出复习）。
  */
-import { defaultStudyPreferences, getStudyPreferences, kanaGatePending, saveStudyPreferences, PLAN_REVIEW_DISABLED, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
+import { defaultStudyPreferences, getEffectiveStudyPreferences, getStudyPreferences, kanaGatePending, saveStudyPreferences, PLAN_REVIEW_DISABLED, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
 import { getJlptPlanStatus } from "./jlpt/status";
 import { levelsInScope, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { firstValue, rowsFor, studyDayEnd } from "./study-core";
@@ -21,6 +21,7 @@ import { predictLoad, type LoadKind } from "./plan/load-model";
 import { previewLevelPlan } from "./plan/content-matrix";
 import { parseExamDate } from "./jlpt/exam-dates";
 import { kanaComplete } from "./kana-progress";
+import { ensureProgressInitialized } from "./word-api/bootstrap";
 
 export type PlanKind = "words" | "grammar" | "kanji" | "confusion";
 export const PLAN_KINDS: PlanKind[] = ["words", "grammar", "kanji", "confusion"];
@@ -86,7 +87,33 @@ const wordReviewCount = (cap: number, due: number) => {
 const wordExtras = () => getDailyReliefProgress().total + getDailyTailProgress().total;
 const pick = (cap: number, due: number) => (cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? Math.min(cap, due) : due);
 
-export const dailyPlanView = (prefs: StudyPreferences = getStudyPreferences()): DailyPlanView => {
+/** 级别起点只补足旧级别的先验；目标级别以上已有的真实学习/批量认识记录必须从今日剩余量中扣掉。 */
+const remainingPlanWords = (startingLevel: string, target: JlptTarget, familiarity?: { words: number }) => {
+  if (startingLevel === "beyond") return 0;
+  const startRank = JLPT_TARGETS.indexOf(startingLevel as JlptTarget);
+  const targetRank = JLPT_TARGETS.indexOf(target);
+  const firstRank = startRank < 0 ? 0 : startRank + (familiarity?.words === 0 ? 0 : 1);
+  const levels = JLPT_TARGETS.slice(firstRank, targetRank + 1);
+  if (!levels.length) return 0;
+  ensureProgressInitialized();
+  const inLevels = levels.map((level) => `'${level}'`).join(", ");
+  const baseWords = firstRank === 0 ? " OR w.jlpt_level IS NULL OR w.jlpt_level = ''" : "";
+  return firstValue<number>(`
+    SELECT COUNT(*) FROM words w
+    LEFT JOIN progress p ON p.word_id = w.id
+    WHERE (w.jlpt_level IN (${inLevels})${baseWords})
+      AND COALESCE(p.seen_count, 0) = 0 AND COALESCE(p.known_forever, 0) = 0
+  `, [], 0);
+};
+
+/** 每次打开/更新计划都按当前真实进度估算，旧起点只决定先验覆盖到哪一级。 */
+export const previewCurrentLevelPlan = (input: Parameters<typeof previewLevelPlan>[0]) =>
+  previewLevelPlan({
+    ...input,
+    remainingWords: remainingPlanWords(input.startingLevel, input.target, input.familiarity)
+  });
+
+export const dailyPlanView = (prefs: StudyPreferences = getEffectiveStudyPreferences()): DailyPlanView => {
   const status = getJlptPlanStatus();
   const target = prefs.jlptTarget;
   const rank = LEVEL_RANK[target] ?? 2;
@@ -220,7 +247,7 @@ export const learnedLevel = (): JlptTarget | null => {
 export const examPreset = (target: JlptTarget) => {
   const status = getJlptPlanStatus();
   const settings = getLevelPlanSettings();
-  const expected = settings ? previewLevelPlan({
+  const expected = settings ? previewCurrentLevelPlan({
     startingLevel: settings.startingLevel,
     familiarity: settings.familiarity,
     target,

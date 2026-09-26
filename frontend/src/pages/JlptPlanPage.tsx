@@ -18,7 +18,7 @@ import { KanaPrimer } from "../components/KanaPrimer";
 import { ExamDatePicker } from "../components/ExamDatePicker";
 import { getLevelPlanSettings, recalibrateLevelStartingPoint } from "../lib/level-plan";
 import { kanaComplete } from "../lib/kana-progress";
-import { previewLevelPlan } from "../lib/plan/content-matrix";
+import { previewCurrentLevelPlan } from "../lib/daily-plan";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { MascotSay } from "../components/MascotSay";
 import { Sticker } from "../components/CapybaraMascot";
@@ -134,7 +134,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
   const quotas = getStudyPreferences();
   const noDate = Boolean(status && !parseExamDate(quotas.jlptExamDate) && !auto);
   const planSettings = getLevelPlanSettings();
-  const estimate = status && planSettings && !noDate ? previewLevelPlan({
+  const estimate = status && planSettings && !noDate && status.plan.phase !== "past" ? previewCurrentLevelPlan({
     startingLevel: planSettings.startingLevel,
     familiarity: planSettings.familiarity,
     target: status.target,
@@ -212,7 +212,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
                 照这个起点算，<b>这一场考前学不完全部内容</b>。换一场考期、或者把目标降一级，会轻松很多。
               </MascotSay>
             )}
-            {!noDate && !status.plan.feasible && (
+            {!noDate && status.plan.phase !== "past" && !status.plan.feasible && (
               <MascotSay sticker="mood-dizzy" tone="warn">
                 按现在的记录，每天做满也要 <b>{status.plan.daysNeeded}</b> 天，可离考试只剩 <b>{status.plan.daysLeft}</b> 天。
                 要么目标降一级，要么换到下一场 —— 不然会天天欠账。

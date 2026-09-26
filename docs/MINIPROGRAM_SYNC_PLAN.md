@@ -558,3 +558,111 @@ sql.js 本身把 `sql.js` 别名到 `wechat-miniprogram/src/vendor/sql-wasm.js`�
 
 **微信开发者工具只有一个 IDE 实例，是共享资源**：各线用各自的自动化端口（W1 9421、W5 9430、W3 9440、W4 9450），
 **不许关闭 IDE、不许操作别人的项目窗口**；同一时间最多两条线在跑模拟器。真机验收要用户扫码，统一由 Claude 转达。
+
+## iPhone 真机计时（2026-09-26，用户实测）
+
+计时版预览（`refs/archive/worktree/taro-spike-5`，`9453959`）：每个版本冷启动若干次 + 点「认识」20 次。
+⚠️ 这批 Taro 计时是 **W3 合入之前**的版本，开库还走原生那条路；Taro 包用的是 profiling 版 React（数字是上限）。
+
+| 每题 | 原生 | Taro | 差 |
+|---|---:|---:|---:|
+| 总耗时 中位 / p90 | 329 / 380 ms | 363 / 444 ms | +34 / +64 ms |
+| 其中 SQL | 181 ms | 180 ms | 0 |
+| 其中 setData / 渲染 | 4 ms | 4 ms | 0 |
+| 首页可交互 | 76 ms | 1,390 ms | Taro 运行时初始化 |
+
+**结论：路线 A 在 iPhone 上的速度过关**——每题慢约 10%（上限），时间都在 SQL，不在 Taro。
+
+两个版本共同的启动瓶颈（都要在 W3 之后的新开库路径上重测再优化）：
+
+| 阶段 | 耗时 | 优化方向 |
+|---|---:|---|
+| 下载出厂库（仅首次） | ≈ 9 s | 压缩传输（包里已有 fflate；7.8 MB 预计压到约 2 MB）+ 进度提示 |
+| `ensureStudySchema`（**每次冷启动**） | ≈ 2.5 s | 结构版本标记，版本没变就整段跳过 |
+| 内容分包 `require.async` | ≈ 2.1 s | 按页面按需装，不在启动时全拉 |
+| 每题 SQL | ≈ 180 ms | iOS 小程序 JS / wasm 都是解释执行（无 JIT）；减少每次作答的 SQL 条数（网页 09-06 已从 318 条降到 102 条），工作量最大、排最后 |
+
+## 2026-09-26 集成进度与 v1 范围（Claude）
+
+**`taro/main` = `92cf845`**：合入 W1 启动优化（结构指纹：冷启动 773 → 101 条 SQL）、W4 微信平台接口（联网全走云函数 `api`）、
+弹层修复（网页 `createPortal(…, document.body)` 在小程序里看不见 → 挂到当前页外壳节点，见 `taro-spike-2/src/platform/portal-host.weapp.ts`）。
+三者合在一起主包 1,905,297 B，超 1.9 MB 闸门 5 KB：W4 的联网代码被 account / study / quiz 三个分包共用，只能留主包。
+主包里 9 张贴纸原本按原图 440–520px 宽进包，页面最大只显示约 130px，按 3 倍屏收到 390px（`scripts/sync-brand-assets.mjs`），
+主包 → 1,874,283 B。⚠️ 改钉主包的 `exclude` 规则对这类模块**没用**：被两个以上分包共用的模块本来就进主包，要省只能省主包自己的资源或拆依赖。
+
+**新增 W6（端口 9460）**：`tmp/codex-w6-events-api-prompt.md`。A：把「iOS 小程序没有的网页接口」扫描变成构建闸门（逐处判定：已补 / 走不到 / 会崩，允许清单每条带原因）；
+B：`onPointer*` 在小程序里不触发，圆环、滑杆、长按多选、批注笔等组件的触摸适配（放 `.weapp` 变体，网页行为不变）。
+
+**v1 小程序不上周报（用户 2026-09-26 同意）**：用户原话「周报这种东西小程序可要可不要了，你查一下是不是解决不了或者要付很大代价是的话就算了」。
+查下来代价大：周报字体 5.3 MB（WXSS 也不能加载包内字体，要走 `wx.loadFontFace` + 云存储）、canvas 星空 / 胶片动画、三套分享长图、翻页手势、60 多个关键帧动画，
+估约 2–3 个 Codex 工作日。v1 隐藏周报入口；这是用户批准过的差异，之后要补回时按网页现行三套版式（或届时用户选定的那一套）做。
+
+**首发赠送会员**（已部署 Worker）：不是永久免费，是「上线第一个月内领取、领到的人用一个月」——领取截止由 Worker 变量
+`LAUNCH_GIFT_CLAIM_UNTIL` 决定（空 = 关闭），所以最晚上线两个月后没有人还持有赠送会员。7 天计划试用在小程序隐藏、接口返回 410。
+**提审当天**要把 `LAUNCH_GIFT_CLAIM_UNTIL` 设为「上线日 + 1 个月」并重新部署 Worker（用户操作）。
+
+**上传前检查（2026-09-26，`taro/main` 的 `319f6b4`）**：`cd taro-spike-2 && npm run build:weapp && npm run check:release`，
+没过不许上传。它只看要上传的产物（`dist/` + `project.config.json`），对应原生版的 `check-source.mjs`：sourcemap 关、`urlCheck` 开、
+不是游客 appid、`DEV=false`、没有本机地址 / `workers.dev` / vConsole、**不是 `build:preview:weapp` 的计时版**、
+没有开发专用代码、没有密钥形状的字符串。自测在 `npm test` 里。
+⚠️ 构建里的 `import.meta.env` 必须按键逐个定义（`config/index.js` 的 DefinePlugin）：只定义一个对象字符串时，webpack 判断不出
+`DEV` 恒为 false，开发专用模块（往 5173 回传整库的 dev-snapshot）会被打进主包；写「`!DEV` 就提前 return」的代码也一样，
+要写成「DEV 才进块」。
+⚠️ 几条 Codex 线同时构建时机器负载到过 27，网页测试会随机超过 5 秒默认时限（和改动无关）；这时用 `--testTimeout=60000` 复核，别当成代码坏了。
+
+**W6 已合（2026-09-26，`taro/main` 的 `77d4cd2`）**：接口扫描闸门（`verify-weapp-apis`，接在 `build:weapp` 末尾，允许清单按精确次数比对）
++ 学习控件的触摸适配（`frontend/src/lib/touch-adapter.ts`，网页版 `touchEventsEnabled()` 恒为 false、行为不变）。
+⚠️ **小程序不支持内联 `<svg>`**：`DailyPlanRing`（每日量圆环）、`TimerRing`（查词汇量倒计时）、`KanjiPairLines`（汉字连线题）
+编到小程序里画不出来（周报星图也是，但周报 v1 隐藏）。W6 只在网页验证过，没发现；续做见 `tmp/codex-w6-continue.md`（圆环用 Canvas 2D）。
+开发者工具端口：W6 改用 9461（9460 被别的项目占着）。W1 9421 / W3 9440 / W4 9450 的项目窗口已收工，可以关掉减轻负载。
+
+## 标签页按需加载（分包异步化，Claude 2026-09-26 试验，分支 `claude/mainpkg` 的 `3003768`，未合并）
+
+**为什么**：W5 的主包 2,628,665 B 超微信硬上限 531 KB。用 webpack 的 reasons 逐个模块往上追：`common.js` 2.09 MB 源码里
+**2.03 MB 是四个标签页静态引用的**，只被分包用的不到 70 KB——「把分包专用的模块挪出主包」没油水了。
+根因：网页靠 `import()` 懒加载页面；Taro 的 babel 预设在小程序里把 `import()` 转成 `require`（官方文档如此，官方推荐的插件有审核风险），
+依赖图又很宽（单词学习面板 → 辨析题 → 查词汇量；单词卡 → 语法卡 → 振假名组件），四个标签页把几乎整个应用拉进主包。
+
+**做法**（全在 `taro-spike-2/config/index.js`、`babel.config.js`、`src/platform/lazy-route.tsx`、`src/pages/*/index.tsx`）：
+1. babel `dynamic-import-node: false`；webpack parser 默认 `dynamicImportMode: 'eager'`——其余上百个 `import()` 行为和原来一样，
+   只有写了 `/* webpackMode: "lazy" */` 的才生成异步块（第一次没加这条，主包暴涨到 9.48 MB：语法数据等全变成根目录的异步块）。
+2. 四个标签页 `import()` 同一个 `webpackChunkName: "lazy/tabs"` → 合成一个异步块，落进新分包 `lazy`（只有一个占位页），`preloadRule` 预下载。
+3. 运行时替换 webpack 的 `loadScript`，用 `require.async` 加载。⚠️ **参数必须是字符串字面量**：开发者工具 / 上传靠静态分析决定进包的文件，
+   拼出来的路径（`'./' + url`）不会被注入，运行时 `ChunkLoadError`。所以构建时按异步块逐个写死。
+4. Taro 的 `common` / `vendors` / `taro` 三组 splitChunks 原是 `chunks: 'all'`，会想把异步块的模块提进主包，报
+   `Cache group "common" conflicts with existing chunk`；限制为 `'initial'`。
+5. 被异步块和别的分包同时用到的模块会各打一份。纯函数、出厂内容缓存无所谓；**按数据库缓存用户数据的必须唯一**：
+   在 `WeappPage.tsx` 静态引用一次就进主包（目前只有 `grammarHighlights`，其 `dbCaches` 分两份会让划线跨页面看不到）。
+
+**结果**：主包 2,628,665 → 2,073,221 B（低于 2,097,152 硬上限）；lazy 分包 559 KB。开发者工具：主页 / 单词 / 我的 正常，单词页切换 226 ms。
+**未完成**：语法页切过去 15.6 s 仍空白——W5 未改的版本同样如此（对照过），是原有问题；接口允许清单、重复模块闸门要按新产物更新；
+wasm 挪包；iPhone 真机。交接给 W5：`tmp/codex-w5-lazy.md`。
+
+## ⚠️ Taro 把裸 `window` / `document` / `URL` 换成了自己的对象（Claude 2026-09-26，`taro/main` 的 `8192657`、`f4b6441`）
+
+W5 修完语法数据后语法页仍是空白；开发者工具逐页扫 26 个路由又查出三处崩溃，用户真机上「使用微信登录」报「微信本地偏好存储尚未初始化」。
+根因是同一类：Taro 构建的 ProvidePlugin 把网页源码里的裸 `window` / `document` / `URL` / `navigator` / `location` / `history` /
+`requestAnimationFrame` 换成 `@tarojs/runtime` 的对象（清单在 `@tarojs/webpack5-runner/dist/webpack/MiniWebpackPlugin.js` 的
+`getProviderPlugin`），产物里长这样：`var v=r(9392)["window"]` … `v.dispatchEvent(…)`。
+
+| 现象 | 原因 | 修法 |
+|---|---|---|
+| 语法页空白 | `Library` 在 useState 里直接 `window.matchMedia(…)`，TaroWindow 没有 | `matchMedia?.()` |
+| 选词页崩 + 只能看到前 100 个词 | `window.scrollTo` 在开发者工具里 Illegal invocation、iPhone 上不存在；window 上也没有 scroll 事件 | `touch-adapter` 的 `scrollPageToTop` / `usePageReachBottom`（小程序走 `pageScrollTo` / `onReachBottom`） |
+| 关于页崩 | `__APP_VERSION__` 是 vite define，Taro 的 DefinePlugin 没补 | `config/index.js` 补同名 define |
+| 柚子商店崩；偏好 / 进度 / 同步 / 写盘横幅事件全坏 | TaroWindow 有 `addEventListener`，**没有 `dispatchEvent`** | `app-polyfills` 给 TaroWindow 补，派发到它自己的 Events |
+| 分享图画不出、`URL.createObjectURL` 抛 not support、导出备份不下载 | 补丁打在 `globalThis.document` / `globalThis.URL` 上，源码用的是 Taro 的 | 分享图直接 `wx.createOffscreenCanvas`；TaroURL 转给 browser-runtime 的实现；`<a>` 只补 `click()`（元素必须还是 Taro 的，否则 React 渲染 `<a>` 时 appendChild 报错） |
+| 微信登录报「偏好存储尚未初始化」；云请求静默不带登录令牌 | 裸 `localStorage` 由 ProvidePlugin 指到 `app-polyfills` 的导出，而 `app-polyfills` → fetch → payment-auth / preferences → `app-polyfills` 成环，拿到的是未赋值的导出 | 指到只依赖 polyfill 的 `local-storage.weapp.cjs` |
+
+判据（以后写垫片、写页面都照这个）：
+- **给 `globalThis.X` 打补丁，网页源码看不到**——要补就补 `@tarojs/runtime` 导出的那个对象。
+- TaroWindow 构造时把 JS 引擎全局的自有属性抄了一份：开发者工具里抄到的是浏览器原生函数（调用 Illegal invocation），
+  **iPhone 上根本没有**。开发者工具不报错不等于真机不报错；`window.X?.()` 挡得住 iPhone、挡不住开发者工具。
+- ProvidePlugin 指向的模块**不能在依赖环里**，否则被环里模块拿到的是 undefined，而且是永久的（模块初始化时就取了）。
+- W6 的接口闸门只扫裸全局名，`obj.member` 整个跳过——补盲交给 W9（`tmp/codex-w9-gate-tabs.md`）。
+- React 在渲染 / effect 里抛错会卸掉整页，`console.error` 里的 Error 默认序列化成 `{}`：扫页脚本 `tmp/devtools-route-sweep.cjs`
+  会把 message + stack 摊开。
+
+**`taro/main` = `84760f3`**（2026-09-26 傍晚）：W5 按需加载 + wasm 挪 core 分包 + 上面的修复 + W6 Canvas 圆环 / 计时圈 / 连线。
+主包 1.70 MB，构建、闸门、`check:release` 通过，开发者工具 26 个路由只剩一处 `reading 'words'`（交给 W8）。
+下一步：W8（`tmp/codex-w8-device.md`，真机阻断问题 + 真机验收）、W9（闸门补盲 + 页面验收第 1 批）。

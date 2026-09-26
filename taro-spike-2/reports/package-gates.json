@@ -2,15 +2,15 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1706486,
+      "bytes": 1713326,
       "passes": true
     },
     "study": {
-      "bytes": 270035,
+      "bytes": 270159,
       "passes": true
     },
     "account": {
-      "bytes": 207480,
+      "bytes": 207558,
       "passes": true
     },
     "content-pages": {
@@ -18,7 +18,7 @@
       "passes": true
     },
     "features": {
-      "bytes": 661707,
+      "bytes": 580496,
       "passes": true
     },
     "content": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 560132,
+      "bytes": 565011,
       "passes": true
     }
   },
@@ -144,7 +144,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 14950,
+      "bytes": 15316,
       "packages": [
         "account",
         "study"
@@ -768,7 +768,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 14950,
+      "bytes": 15316,
       "packages": [
         "account",
         "study"
@@ -992,7 +992,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 227383,
+  "duplicatedPageComponentBytes": 227749,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1007,7 +1007,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
-      "bytes": 142434
+      "bytes": 149180
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/app.css",

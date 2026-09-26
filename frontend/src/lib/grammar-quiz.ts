@@ -3,7 +3,7 @@ import { parseFurigana } from "./furigana-data";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
 import { dailyReviewCap } from "./review-budget";
-import { getDailyGrammarGoal, getReviewCapPreference, getStudyPreferences, PLAN_REVIEW_DISABLED } from "./studyPreferences";
+import { getDailyGrammarGoal, getEffectiveStudyPreferences, getReviewCapPreference, PLAN_REVIEW_DISABLED } from "./studyPreferences";
 import {
   ensureFsrsColumns,
   fsrsDueWordIds,
@@ -218,7 +218,7 @@ const planIds = (level: string, day: string): { reviewIds: number[]; newIds: num
   dropLegacyRoundState();
   // 语法自己的复习上限（圆环给的），0 = 沿用单词那个 reviewCap（一个等级最多一百来条，
   // 面向八千词设的上限在这里几乎不会咬到）。
-  const grammarCap = getStudyPreferences().grammarReviewCap;
+  const grammarCap = getEffectiveStudyPreferences().grammarReviewCap;
   const reviewLimit = Math.min(
     grammarCap === PLAN_REVIEW_DISABLED ? 0 : grammarCap > 0 ? grammarCap : dailyReviewCap(getReviewCapPreference(), day),
     levelPointCount(level)

@@ -1,5 +1,5 @@
-import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
-import { isExamKind, type ExamKind } from "./jlpt/exam-dates";
+import { daysBetween, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
+import { defaultExamDate, formatExamDate, isExamKind, parseExamDate, type ExamKind } from "./jlpt/exam-dates";
 import { getState, setState } from "./database/db-utils";
 
 export type ThemePreference = "system" | "light" | "dark";
@@ -140,18 +140,25 @@ const clampSmallGoal = (value: number, max: number) => {
 export const REVIEW_CAP_UNLIMITED = -1;
 /** 分类复习额度的专用哨兵；区别于 0（到期全出），用于用户明确把该类计划调到 0。 */
 export const PLAN_REVIEW_DISABLED = -1;
+/**
+ * 复习上限能存的最大数 = 圆环「今天总量」输入框的上限（DailyPlanPanel）。
+ * ⚠️ 原来是 500（8 月滑杆时代的滑杆最大值）。圆环能填、「一键安排」会写更大的数，存下去却被截成 500：
+ * 作者 09-26 到期五百多个，一键安排完单词那段显示「复 511（500 + 减负压轴 11）· 低于建议」——
+ * 自己安排的结果被自己判成不够。存、调度（review-budget.dailyReviewCap）、四段都用这一个数。
+ */
+export const MAX_DAILY_REVIEW = 2000;
 
 const clampReviewCap = (value: number) => {
   if (!Number.isFinite(value)) return 0;
   if (value < 0) return REVIEW_CAP_UNLIMITED;
   if (value === 0) return 0;
   // 下限 1 不是 30：圆环可以把单词复习拖到很小，0 在这里是「自动」所以存 1
-  return Math.min(500, Math.max(1, Math.floor(value)));
+  return Math.min(MAX_DAILY_REVIEW, Math.max(1, Math.floor(value)));
 };
 
 const clampPlanReviewCap = (value: number) => {
   const normalized = Number.isFinite(value) ? Math.floor(value) : 0;
-  return normalized === PLAN_REVIEW_DISABLED ? PLAN_REVIEW_DISABLED : Math.min(500, Math.max(0, normalized));
+  return normalized === PLAN_REVIEW_DISABLED ? PLAN_REVIEW_DISABLED : Math.min(MAX_DAILY_REVIEW, Math.max(0, normalized));
 };
 
 export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {}): StudyPreferences => ({
@@ -237,9 +244,62 @@ export const kanaGatePending = () => {
     return getState("starting_level", "") === "kana-none" && getState("kana_completed", "0") !== "1";
   } catch { return false; }
 };
-export const getDailyWordGoal = () => kanaGatePending() ? 0 : getStudyPreferences().dailyGoal;
-export const getDailyGrammarGoal = () => getStudyPreferences().grammarDailyGoal;
-export const getReviewCapPreference = () => getStudyPreferences().reviewCap;
+
+export const POST_EXAM_LIGHT_DAYS = 7;
+const POST_EXAM_CHOICE_KEY = "post_exam_choice";
+
+/** 只对已设 JLPT 计划的那一场考试生效；目标/考期一改，旧考期自然退出。 */
+export const postExamRecovery = (now = new Date(), prefs = getStudyPreferences()) => {
+  if (!prefs.jlptPlanEnabled || prefs.planExamKind !== "jlpt") return null;
+  const started = parseExamDate(prefs.jlptPlanStartedOn);
+  const exam = parseExamDate(prefs.jlptExamDate) ?? (started ? defaultExamDate("jlpt", started) : null);
+  if (!exam || (started && daysBetween(started, exam) < 0)) return null;
+  const elapsed = daysBetween(exam, now);
+  if (elapsed < 1 || elapsed > POST_EXAM_LIGHT_DAYS) return null;
+  try {
+    if (!prefs.jlptExamDate && !getState("starting_level", "")) return null;
+  } catch { return null; }
+  return { key: formatExamDate(exam), target: prefs.jlptTarget, daysLeft: POST_EXAM_LIGHT_DAYS - elapsed + 1 };
+};
+
+export const postExamChoice = (key: string): "light" | "usual" | null => {
+  try {
+    const [savedKey, choice] = getState(POST_EXAM_CHOICE_KEY, "").split("|");
+    return savedKey === key && (choice === "light" || choice === "usual") ? choice : null;
+  } catch { return null; }
+};
+
+export const choosePostExamIntensity = (key: string, choice: "light" | "usual") =>
+  setState(POST_EXAM_CHOICE_KEY, `${key}|${choice}`);
+
+export const isPostExamLightActive = (now = new Date()) => {
+  const recovery = postExamRecovery(now);
+  return Boolean(recovery && postExamChoice(recovery.key) !== "usual");
+};
+
+/** 只改变实际排题额度，不改用户保存的平时额度；第 8 天自动恢复。 */
+export const getEffectiveStudyPreferences = (now = new Date()): StudyPreferences => {
+  const prefs = getStudyPreferences();
+  const recovery = postExamRecovery(now, prefs);
+  if (!recovery || postExamChoice(recovery.key) === "usual") return prefs;
+  const recoveryReviewCap = (cap: number, maximum: number) => cap > 0 ? Math.min(cap, maximum) : maximum;
+  const recoveryPlanReviewCap = (cap: number, maximum: number) => cap === PLAN_REVIEW_DISABLED ? cap : recoveryReviewCap(cap, maximum);
+  return {
+    ...prefs,
+    dailyGoal: 0,
+    grammarDailyGoal: 0,
+    kanjiDailyGoal: 0,
+    confusionDailyGoal: 0,
+    reviewCap: recoveryReviewCap(prefs.reviewCap, 60),
+    grammarReviewCap: recoveryPlanReviewCap(prefs.grammarReviewCap, 10),
+    kanjiReviewCap: recoveryPlanReviewCap(prefs.kanjiReviewCap, 10),
+    confusionReviewCap: recoveryPlanReviewCap(prefs.confusionReviewCap, 5)
+  };
+};
+
+export const getDailyWordGoal = () => kanaGatePending() ? 0 : getEffectiveStudyPreferences().dailyGoal;
+export const getDailyGrammarGoal = () => getEffectiveStudyPreferences().grammarDailyGoal;
+export const getReviewCapPreference = () => getEffectiveStudyPreferences().reviewCap;
 
 /** 老存档没有计划锚点：启动时补成今天（saveStudyPreferences 见空就填）。之前的巩固期按 21 天算，补上之后才按窗口缩 */
 export const ensureJlptPlanAnchor = () => {

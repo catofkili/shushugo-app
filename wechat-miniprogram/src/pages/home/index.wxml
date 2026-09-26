@@ -8,6 +8,20 @@
     <view class="streak"><text class="streak-number">{{summary.streak || 0}}</text><text>天连续</text></view>
   </view>
 
+  <view wx:if="{{postExam && !postExamChoice}}" class="post-exam zoo-card">
+    <view class="post-exam-head">
+      <text class="post-exam-badge">考完啦</text>
+      <view><text class="post-exam-title">辛苦了，{{postExamTarget}} 考试结束啦</text><text class="post-exam-question">要调整下一场的目标吗？</text></view>
+    </view>
+    <text class="post-exam-rule">考后 {{postExamDays}} 天先放轻松：暂停新学；每天最多复习单词 60、语法 10、汉字 10、辨析 5 条。原额度保留，期满自动恢复。</text>
+    <view class="post-exam-actions">
+      <button class="primary" bindtap="adjustPostExamGoal">调整目标</button>
+      <button data-choice="light" bindtap="choosePostExam">先按轻量计划</button>
+      <button data-choice="usual" bindtap="choosePostExam">保持原强度</button>
+    </view>
+  </view>
+  <view wx:elif="{{postExam && postExamChoice != 'usual'}}" class="post-exam-status">考后轻量期还剩 {{postExam.daysLeft}} 天 · 暂停新学</view>
+
   <view class="today-card zoo-card">
     <view class="today-head">
       <view><text class="eyebrow">今日收集</text><text class="today-title">经典学习</text></view>

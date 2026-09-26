@@ -11,7 +11,7 @@
 
 import { firstValue, rowsFor, getState, setState, today } from "./database/db-utils";
 import { fsrsDueCount } from "./fsrs-store";
-import { REVIEW_CAP_UNLIMITED } from "./studyPreferences";
+import { MAX_DAILY_REVIEW, REVIEW_CAP_UNLIMITED } from "./studyPreferences";
 
 const AUTO_CAP_MIN = 60;
 const AUTO_CAP_MAX = 150;
@@ -117,7 +117,7 @@ export const reviewBacklogCount = () => fsrsDueCount();
  */
 export function dailyReviewCap(userCap: number, day = today()): number {
   if (userCap === REVIEW_CAP_UNLIMITED) return NO_REVIEW_LIMIT;
-  if (userCap > 0) return Math.min(Math.max(Math.floor(userCap), 1), 500);
+  if (userCap > 0) return Math.min(Math.max(Math.floor(userCap), 1), MAX_DAILY_REVIEW);
   return autoReviewCap(recentReviewAverages(day).avgDailyWords);
 }
 

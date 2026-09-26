@@ -2,17 +2,17 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1706486,
-      "mib": 1.627,
+      "bytes": 1713326,
+      "mib": 1.634,
       "passes": true
     },
     "study": {
-      "bytes": 270035,
+      "bytes": 270159,
       "mib": 0.258,
       "passes": true
     },
     "account": {
-      "bytes": 207480,
+      "bytes": 207558,
       "mib": 0.198,
       "passes": true
     },
@@ -22,8 +22,8 @@
       "passes": true
     },
     "features": {
-      "bytes": 661707,
-      "mib": 0.631,
+      "bytes": 580496,
+      "mib": 0.554,
       "passes": true
     },
     "content": {
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 560132,
-      "mib": 0.534,
+      "bytes": 565011,
+      "mib": 0.539,
       "passes": true
     }
   },
-  "totalBytes": 7562292,
+  "totalBytes": 7493002,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 808600
+      "bytes": 814219
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 559385
+      "bytes": 563262
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -88,11 +88,6 @@
       "path": "content/kanji-unit-runtime.js",
       "package": "content",
       "bytes": 399493
-    },
-    {
-      "path": "features/content/distinction-reviews.js",
-      "package": "features",
-      "bytes": 336384
     },
     {
       "path": "content/kanji-reading-usage.js",
@@ -108,6 +103,11 @@
       "path": "content/pitch-accent.js",
       "package": "content",
       "bytes": 272712
+    },
+    {
+      "path": "features/content/distinction-reviews.js",
+      "package": "features",
+      "bytes": 255173
     },
     {
       "path": "app.wxss",
@@ -217,7 +217,7 @@
     {
       "path": "study/jlpt-plan/index.js",
       "package": "study",
-      "bytes": 22510
+      "bytes": 22556
     },
     {
       "path": "study/quick-study/index.js",
@@ -572,12 +572,12 @@
     {
       "path": "account/sub-common/c25dae36c86dd28c1214f4da0a721276.js",
       "package": "account",
-      "bytes": 6440
+      "bytes": 6518
     },
     {
       "path": "study/sub-common/c25dae36c86dd28c1214f4da0a721276.js",
       "package": "study",
-      "bytes": 6440
+      "bytes": 6518
     },
     {
       "path": "content-pages/sub-common/d7c5c49ad7ad6a0ec32285c6c7b2a7ff.js",
@@ -625,6 +625,11 @@
       "bytes": 5637
     },
     {
+      "path": "runtime.js",
+      "package": "main",
+      "bytes": 5410
+    },
+    {
       "path": "account/notifications/index.js",
       "package": "account",
       "bytes": 4915
@@ -643,11 +648,6 @@
       "path": "grammar-pages/sub-common/badb2d6bd49181417e55db3771a6bf39.js",
       "package": "grammar-pages",
       "bytes": 4708
-    },
-    {
-      "path": "runtime.js",
-      "package": "main",
-      "bytes": 4189
     },
     {
       "path": "grammar-pages/compile/index.js",
@@ -903,6 +903,11 @@
       "path": "grammar-pages/sub-common/eb5a1b381c35eb5ac3fd9053f716ec50.js",
       "package": "grammar-pages",
       "bytes": 1234
+    },
+    {
+      "path": "lazy/tabs.wxss",
+      "package": "lazy",
+      "bytes": 1002
     },
     {
       "path": "utils.wxs",
