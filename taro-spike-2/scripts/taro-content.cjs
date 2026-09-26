@@ -89,7 +89,7 @@ function loadGrammar() {
 }
 
 function ready() {
-  return Promise.all(['questionMeanings', 'distinctionReviews', 'kanjiVariants', 'kanjiReadings', 'grammarKeyPoints', 'pitchAccent'].map(load)).then(() => undefined);
+  return Promise.all(['questionMeanings', 'distinctionReviews', 'kanjiVariants', 'kanjiReadings', 'grammar', 'grammarKeyPoints', 'pitchAccent'].map(load)).then(() => undefined);
 }
 
 function readyForKanji() {

@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 2628665,
-      "passes": false
+      "bytes": 1701416,
+      "passes": true
     },
     "study": {
-      "bytes": 219606,
+      "bytes": 267894,
       "passes": true
     },
     "account": {
-      "bytes": 196016,
+      "bytes": 205259,
       "passes": true
     },
     "content-pages": {
-      "bytes": 476320,
+      "bytes": 689110,
       "passes": true
     },
     "features": {
@@ -34,19 +34,70 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 124919,
+      "bytes": 353213,
+      "passes": true
+    },
+    "core": {
+      "bytes": 279123,
+      "passes": true
+    },
+    "lazy": {
+      "bytes": 559526,
       "passes": true
     }
   },
-  "maxDuplicateBytes": 100000,
-  "duplicateSourceModuleCount": 12,
+  "maxUnapprovedPageComponentBytes": 100000,
+  "duplicateSourceModuleCount": 52,
   "duplicatedModules": [
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/vocab-test.ts",
+      "bytes": 49967,
+      "packages": [
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/conjugation-explanation.ts",
+      "bytes": 42708,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
     {
       "source": "/private/tmp/shushugo-w5/frontend/src/data/verb-conjugation-foundation.ts",
       "bytes": 35039,
       "packages": [
         "content-pages",
         "grammar-pages"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/analytics/weekly.ts",
+      "bytes": 32850,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/pages/Library.tsx",
+      "bytes": 32671,
+      "packages": [
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/data/grammar_title_furigana.json",
+      "bytes": 30888,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
       ]
     },
     {
@@ -66,11 +117,38 @@
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15000,
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/GrammarTermHint.tsx",
+      "bytes": 16523,
       "packages": [
         "content-pages",
-        "grammar-pages"
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/pages/ImmersiveGrammar.tsx",
+      "bytes": 15963,
+      "packages": [
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/analytics/weekly-reports.ts",
+      "bytes": 15635,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/speech.weapp.ts",
+      "bytes": 15524,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy"
       ]
     },
     {
@@ -90,11 +168,80 @@
       ]
     },
     {
+      "source": "/private/tmp/shushugo-w5/frontend/src/pages/FavoritesPage.tsx",
+      "bytes": 14773,
+      "packages": [
+        "content-pages",
+        "grammar-pages"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/GrammarHighlightProvider.tsx",
+      "bytes": 14571,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ]
+    },
+    {
       "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanRing.tsx",
       "bytes": 14064,
       "packages": [
         "account",
         "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/share-canvas.weapp.ts",
+      "bytes": 13612,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/JapaneseRuby.tsx",
+      "bytes": 12642,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/token-dictionary.ts",
+      "bytes": 12208,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "bytes": 11588,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/features/word-study/word-study-utils.ts",
+      "bytes": 10862,
+      "packages": [
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/FloatingDoodlePen.weapp.tsx",
+      "bytes": 9053,
+      "packages": [
+        "grammar-pages",
+        "lazy"
       ]
     },
     {
@@ -106,11 +253,156 @@
       ]
     },
     {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/FavoriteFolderPicker.tsx",
+      "bytes": 7857,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/share-image.weapp.ts",
+      "bytes": 6216,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/distinction-quiz.ts",
+      "bytes": 5559,
+      "packages": [
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/grammarProgressPreferences.ts",
+      "bytes": 5110,
+      "packages": [
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/ShareImageSheet.weapp.tsx",
+      "bytes": 4911,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/GrammarPointPopover.tsx",
+      "bytes": 4741,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/study-clock.ts",
+      "bytes": 3358,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/data/kana_glossary.json",
+      "bytes": 3278,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/useStudyTimer.ts",
+      "bytes": 3106,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/grammar-form-target.ts",
+      "bytes": 2761,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/hooks/useCountUp.ts",
+      "bytes": 2492,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/ProReadingPreview.tsx",
+      "bytes": 2476,
+      "packages": [
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/grammar-title-furigana.ts",
+      "bytes": 2454,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
       "source": "/private/tmp/shushugo-w5/frontend/src/components/ExampleSentence.tsx",
       "bytes": 1996,
       "packages": [
         "content-pages",
         "grammar-pages"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/grammar-key-points.ts",
+      "bytes": 1805,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/study-totals.ts",
+      "bytes": 1705,
+      "packages": [
+        "account",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/taro-spike-2/src/platform/touch-adapter.weapp.ts",
+      "bytes": 1660,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
       ]
     },
     {
@@ -122,11 +414,47 @@
       ]
     },
     {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/grammar-numbering.ts",
+      "bytes": 1355,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/JapaneseWordRuby.tsx",
+      "bytes": 1142,
+      "packages": [
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "/private/tmp/shushugo-w5/frontend/src/components/ReviewButton.tsx",
       "bytes": 1093,
       "packages": [
         "content-pages",
         "grammar-pages"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/yield-to-paint.ts",
+      "bytes": 957,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/grammarNotes.ts",
+      "bytes": 825,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
       ]
     },
     {
@@ -136,97 +464,508 @@
         "account",
         "study"
       ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "bytes": 517,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/taro-spike-2/src/platform/grammar-data.weapp.cjs",
+      "bytes": 458,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/types/grammar.ts",
+      "bytes": 149,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
+      "bytes": 60,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
     }
   ],
-  "duplicatedCoreModuleCount": 0,
-  "duplicatedCoreModules": [],
+  "duplicatedCoreModuleCount": 19,
+  "duplicatedCoreModules": [
+    {
+      "source": "frontend/src/lib/vocab-test.ts",
+      "bytes": 49967,
+      "packages": [
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Question selection and scoring are calculated on demand; active sessions live in the shared database, not a module cache."
+    },
+    {
+      "source": "frontend/src/lib/conjugation-explanation.ts",
+      "bytes": 42708,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Conjugation explanations are derived from static verb-pair hints; the module keeps no user-data cache."
+    },
+    {
+      "source": "frontend/src/lib/analytics/weekly.ts",
+      "bytes": 32850,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ],
+      "reason": "Weekly metrics are calculated from query results on demand; no user records are cached in the module."
+    },
+    {
+      "source": "frontend/src/lib/analytics/weekly-reports.ts",
+      "bytes": 15635,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ],
+      "reason": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot."
+    },
+    {
+      "source": "frontend/src/lib/speech.weapp.ts",
+      "bytes": 15524,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached."
+    },
+    {
+      "source": "frontend/src/lib/share-canvas.weapp.ts",
+      "bytes": 13612,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data."
+    },
+    {
+      "source": "frontend/src/lib/token-dictionary.ts",
+      "bytes": 12208,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache."
+    },
+    {
+      "source": "frontend/src/lib/share-image.weapp.ts",
+      "bytes": 6216,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Share and save operations use the image passed to each call and retain no mutable user state."
+    },
+    {
+      "source": "frontend/src/lib/distinction-quiz.ts",
+      "bytes": 5559,
+      "packages": [
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Question groups and results are derived from the shared database on demand; there is no module-level user-data cache."
+    },
+    {
+      "source": "frontend/src/lib/grammarProgressPreferences.ts",
+      "bytes": 5110,
+      "packages": [
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "The WeakSet records only an idempotent legacy-migration marker per DB object; position values remain in the shared database."
+    },
+    {
+      "source": "frontend/src/lib/study-clock.ts",
+      "bytes": 3358,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton."
+    },
+    {
+      "source": "frontend/src/lib/useStudyTimer.ts",
+      "bytes": 3106,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Timer state and intervals belong to each mounted React hook instance; no shared module state is retained."
+    },
+    {
+      "source": "frontend/src/lib/grammar-form-target.ts",
+      "bytes": 2761,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Grammar form matching is a pure calculation over the supplied grammar point."
+    },
+    {
+      "source": "frontend/src/lib/grammar-title-furigana.ts",
+      "bytes": 2454,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Memoized values are deterministic lookups over bundled title-furigana content, not user data."
+    },
+    {
+      "source": "frontend/src/lib/grammar-key-points.ts",
+      "bytes": 1805,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "The module reads bundled grammar key-point content and retains no mutable user state."
+    },
+    {
+      "source": "frontend/src/lib/study-totals.ts",
+      "bytes": 1705,
+      "packages": [
+        "account",
+        "lazy"
+      ],
+      "reason": "Study totals are queried from the shared database on demand; query results are not cached."
+    },
+    {
+      "source": "frontend/src/lib/grammar-numbering.ts",
+      "bytes": 1355,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Ordinal maps are derived only from bundled grammar records and are safe package-local content caches."
+    },
+    {
+      "source": "frontend/src/lib/yield-to-paint.ts",
+      "bytes": 957,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ],
+      "reason": "The helper schedules a paint yield and retains no state."
+    },
+    {
+      "source": "frontend/src/lib/grammarNotes.ts",
+      "bytes": 825,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Notes are read from and written to app-wide localStorage on every call; this module has no in-memory note cache."
+    }
+  ],
+  "coreDuplicateReasons": {
+    "frontend/src/lib/vocab-test.ts": "Question selection and scoring are calculated on demand; active sessions live in the shared database, not a module cache.",
+    "frontend/src/lib/conjugation-explanation.ts": "Conjugation explanations are derived from static verb-pair hints; the module keeps no user-data cache.",
+    "frontend/src/lib/analytics/weekly.ts": "Weekly metrics are calculated from query results on demand; no user records are cached in the module.",
+    "frontend/src/lib/analytics/weekly-reports.ts": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot.",
+    "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
+    "frontend/src/lib/share-canvas.weapp.ts": "The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data.",
+    "frontend/src/lib/token-dictionary.ts": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache.",
+    "frontend/src/lib/share-image.weapp.ts": "Share and save operations use the image passed to each call and retain no mutable user state.",
+    "frontend/src/lib/distinction-quiz.ts": "Question groups and results are derived from the shared database on demand; there is no module-level user-data cache.",
+    "frontend/src/lib/grammarProgressPreferences.ts": "The WeakSet records only an idempotent legacy-migration marker per DB object; position values remain in the shared database.",
+    "frontend/src/lib/study-clock.ts": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton.",
+    "frontend/src/lib/useStudyTimer.ts": "Timer state and intervals belong to each mounted React hook instance; no shared module state is retained.",
+    "frontend/src/lib/grammar-form-target.ts": "Grammar form matching is a pure calculation over the supplied grammar point.",
+    "frontend/src/lib/grammar-title-furigana.ts": "Memoized values are deterministic lookups over bundled title-furigana content, not user data.",
+    "frontend/src/lib/grammar-key-points.ts": "The module reads bundled grammar key-point content and retains no mutable user state.",
+    "frontend/src/lib/study-totals.ts": "Study totals are queried from the shared database on demand; query results are not cached.",
+    "frontend/src/lib/grammar-numbering.ts": "Ordinal maps are derived only from bundled grammar records and are safe package-local content caches.",
+    "frontend/src/lib/yield-to-paint.ts": "The helper schedules a paint yield and retains no state.",
+    "frontend/src/lib/grammarNotes.ts": "Notes are read from and written to app-wide localStorage on every call; this module has no in-memory note cache."
+  },
+  "unapprovedCoreDuplicates": [],
+  "staleCoreAllowlist": [],
+  "grammarHighlightsPackages": [
+    "main"
+  ],
+  "grammarHighlightsPinned": true,
   "duplicatedPageComponents": [
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/pages/ConfusionPage.tsx",
+      "source": "frontend/src/pages/Library.tsx",
+      "bytes": 32671,
+      "packages": [
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "The grammar tab and grammar library subpackage each render this route from their isolated package graphs."
+    },
+    {
+      "source": "frontend/src/pages/ConfusionPage.tsx",
       "bytes": 18348,
       "packages": [
         "grammar-pages",
         "study"
-      ]
+      ],
+      "reason": "The study quiz and grammar subpackage include this route in separate package entry graphs."
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15000,
+      "source": "frontend/src/components/GrammarTermHint.tsx",
+      "bytes": 16523,
       "packages": [
         "content-pages",
-        "grammar-pages"
-      ]
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes."
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanPanel.tsx",
+      "source": "frontend/src/pages/ImmersiveGrammar.tsx",
+      "bytes": 15963,
+      "packages": [
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "The tab bundle and grammar subpackage each contain this independently reachable route."
+    },
+    {
+      "source": "frontend/src/components/DailyPlanPanel.tsx",
       "bytes": 14950,
       "packages": [
         "account",
         "study"
-      ]
+      ],
+      "reason": "The study tab and account routes render this panel from isolated package graphs."
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/pages/GrammarFoundationPage.tsx",
+      "source": "frontend/src/pages/GrammarFoundationPage.tsx",
       "bytes": 14914,
       "packages": [
         "content-pages",
         "grammar-pages"
-      ]
+      ],
+      "reason": "Grammar foundation navigation reaches this page from both content and grammar entry graphs."
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanRing.tsx",
+      "source": "frontend/src/pages/FavoritesPage.tsx",
+      "bytes": 14773,
+      "packages": [
+        "content-pages",
+        "grammar-pages"
+      ],
+      "reason": "Favorites is reachable from both the content and grammar package entry graphs."
+    },
+    {
+      "source": "frontend/src/components/GrammarHighlightProvider.tsx",
+      "bytes": 14571,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ],
+      "reason": "Each package needs a provider for its local React tree; its user-data cache is pinned once in main."
+    },
+    {
+      "source": "frontend/src/components/DailyPlanRing.tsx",
       "bytes": 14064,
       "packages": [
         "account",
         "study"
-      ]
+      ],
+      "reason": "The study and account routes each render the ring in separate package entry graphs."
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/pages/GrammarDetail.tsx",
+      "source": "frontend/src/components/JapaneseRuby.tsx",
+      "bytes": 12642,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Ruby rendering is shared by the lazy tab chunk and independently loaded content/grammar routes."
+    },
+    {
+      "source": "frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "bytes": 11588,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "The dictionary popover is used by lazy tabs and independently loaded grammar/content routes."
+    },
+    {
+      "source": "frontend/src/components/FloatingDoodlePen.weapp.tsx",
+      "bytes": 9053,
+      "packages": [
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "The annotation control is used by the grammar subpackage and lazy grammar interface."
+    },
+    {
+      "source": "frontend/src/pages/GrammarDetail.tsx",
       "bytes": 8886,
       "packages": [
         "content-pages",
         "grammar-pages"
-      ]
+      ],
+      "reason": "Grammar detail is reachable through both content and grammar route packages."
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/components/ExampleSentence.tsx",
+      "source": "frontend/src/components/FavoriteFolderPicker.tsx",
+      "bytes": 7857,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "The folder picker is shared by study, content, grammar, and lazy tab routes."
+    },
+    {
+      "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
+      "bytes": 4911,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "The share sheet is rendered by study, content, and lazy tab routes in their own package graphs."
+    },
+    {
+      "source": "frontend/src/components/GrammarPointPopover.tsx",
+      "bytes": 4741,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Grammar point previews are used by lazy tabs and content/grammar routes."
+    },
+    {
+      "source": "frontend/src/components/ProReadingPreview.tsx",
+      "bytes": 2476,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "The study and lazy tab routes each render the reading preview."
+    },
+    {
+      "source": "frontend/src/components/ExampleSentence.tsx",
       "bytes": 1996,
       "packages": [
         "content-pages",
         "grammar-pages"
-      ]
+      ],
+      "reason": "Example sentences are rendered from both content and grammar route packages."
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/components/ReviewButton.tsx",
+      "source": "frontend/src/components/JapaneseWordRuby.tsx",
+      "bytes": 1142,
+      "packages": [
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Word ruby rendering is used in the study, grammar, and lazy tab routes."
+    },
+    {
+      "source": "frontend/src/components/ReviewButton.tsx",
       "bytes": 1093,
       "packages": [
         "content-pages",
         "grammar-pages"
-      ]
+      ],
+      "reason": "Review controls appear in the content and grammar route packages."
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
       "bytes": 651,
       "packages": [
         "account",
         "study"
-      ]
+      ],
+      "reason": "The account and study routes each render their package-local slider."
+    },
+    {
+      "source": "frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "bytes": 517,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
     }
   ],
-  "duplicatedPageComponentBytes": 89902,
-  "pageComponentDuplicateBudgetPasses": true,
+  "pageComponentDuplicateReasons": {
+    "frontend/src/pages/Library.tsx": "The grammar tab and grammar library subpackage each render this route from their isolated package graphs.",
+    "frontend/src/pages/ConfusionPage.tsx": "The study quiz and grammar subpackage include this route in separate package entry graphs.",
+    "frontend/src/components/GrammarTermHint.tsx": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes.",
+    "frontend/src/pages/ImmersiveGrammar.tsx": "The tab bundle and grammar subpackage each contain this independently reachable route.",
+    "frontend/src/components/DailyPlanPanel.tsx": "The study tab and account routes render this panel from isolated package graphs.",
+    "frontend/src/pages/GrammarFoundationPage.tsx": "Grammar foundation navigation reaches this page from both content and grammar entry graphs.",
+    "frontend/src/pages/FavoritesPage.tsx": "Favorites is reachable from both the content and grammar package entry graphs.",
+    "frontend/src/components/GrammarHighlightProvider.tsx": "Each package needs a provider for its local React tree; its user-data cache is pinned once in main.",
+    "frontend/src/components/DailyPlanRing.tsx": "The study and account routes each render the ring in separate package entry graphs.",
+    "frontend/src/components/JapaneseRuby.tsx": "Ruby rendering is shared by the lazy tab chunk and independently loaded content/grammar routes.",
+    "frontend/src/components/TokenDictionaryPopover.weapp.tsx": "The dictionary popover is used by lazy tabs and independently loaded grammar/content routes.",
+    "frontend/src/components/FloatingDoodlePen.weapp.tsx": "The annotation control is used by the grammar subpackage and lazy grammar interface.",
+    "frontend/src/pages/GrammarDetail.tsx": "Grammar detail is reachable through both content and grammar route packages.",
+    "frontend/src/components/FavoriteFolderPicker.tsx": "The folder picker is shared by study, content, grammar, and lazy tab routes.",
+    "frontend/src/components/ShareImageSheet.weapp.tsx": "The share sheet is rendered by study, content, and lazy tab routes in their own package graphs.",
+    "frontend/src/components/GrammarPointPopover.tsx": "Grammar point previews are used by lazy tabs and content/grammar routes.",
+    "frontend/src/components/ProReadingPreview.tsx": "The study and lazy tab routes each render the reading preview.",
+    "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
+    "frontend/src/components/JapaneseWordRuby.tsx": "Word ruby rendering is used in the study, grammar, and lazy tab routes.",
+    "frontend/src/components/ReviewButton.tsx": "Review controls appear in the content and grammar route packages.",
+    "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
+    "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
+  },
+  "duplicatedPageComponentBytes": 224330,
+  "unapprovedPageComponents": [],
+  "stalePageComponentAllowlist": [],
+  "unapprovedPageComponentBytes": 0,
+  "pageComponentAllowlistPasses": true,
   "webModuleCount": 0,
   "webModules": [],
   "webModulePolicy": "error",
   "mainTopModules": [
     {
-      "source": "/private/tmp/shushugo-w5/taro-spike-2/src/pages/word/index.tsx",
-      "bytes": 161387
-    },
-    {
       "source": "/private/tmp/shushugo-w5/frontend/src/lib/sync-api.ts",
-      "bytes": 160513
+      "bytes": 159555
     },
     {
       "source": "/private/tmp/shushugo-w5/frontend/src/lib/word-api.ts",
@@ -241,10 +980,6 @@
       "bytes": 137372
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/pages/WordStudy.tsx",
-      "bytes": 115891
-    },
-    {
       "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
       "bytes": 92952
     },
@@ -253,13 +988,21 @@
       "bytes": 91182
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 87165
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/storage.ts",
+      "bytes": 83210
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/features/word-study/WordStudyPanels.tsx",
-      "bytes": 85028
+      "source": "/private/tmp/shushugo-w5/frontend/src/lib/study-core.ts",
+      "bytes": 78304
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/design.css",
+      "bytes": 69834
+    },
+    {
+      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/ts-fsrs/dist/index.mjs",
+      "bytes": 60657
     }
   ],
-  "passes": false
+  "passes": true
 }

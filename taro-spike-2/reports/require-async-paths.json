@@ -1,7 +1,7 @@
 {
-  "expectedTargetCount": 11,
-  "callCount": 11,
-  "resolvedTargetCount": 11,
+  "expectedTargetCount": 12,
+  "callCount": 13,
+  "resolvedTargetCount": 13,
   "calls": [
     {
       "caller": "common.js",
@@ -57,6 +57,16 @@
       "caller": "common.js",
       "request": "./grammar-advanced/grammar.js",
       "target": "grammar-advanced/grammar.js"
+    },
+    {
+      "caller": "common.js",
+      "request": "./core/index.js",
+      "target": "core/index.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./lazy/tabs.js",
+      "target": "lazy/tabs.js"
     }
   ]
 }

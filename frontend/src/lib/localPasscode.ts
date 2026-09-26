@@ -13,13 +13,18 @@ const toHex = (bytes: ArrayBuffer) => (
 
 const randomSalt = () => {
   const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
+  globalThis.crypto.getRandomValues(bytes);
   return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 };
 
 const hashPasscode = async (passcode: string, salt: string) => {
-  const data = new TextEncoder().encode(`${salt}:${passcode}`);
-  return toHex(await crypto.subtle.digest("SHA-256", data));
+  const Encoder = typeof TextEncoder === "undefined" ? null : TextEncoder;
+  const digest = globalThis.crypto?.subtle?.digest;
+  if (!Encoder || typeof digest !== "function") {
+    throw new Error("当前环境不支持本地访问口令的安全校验。");
+  }
+  const data = new Encoder().encode(`${salt}:${passcode}`);
+  return toHex(await digest.call(globalThis.crypto.subtle, "SHA-256", data));
 };
 
 const loadRecord = async (): Promise<{ salt: string; hash: string; updatedAt: string } | null> => {

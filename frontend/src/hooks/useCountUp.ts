@@ -35,7 +35,7 @@ export function useCountUp(target: number): number {
     // 一步到位也走 rAF:在 effect 里直接 setState 会引发级联渲染,
     // 交给第一帧去落值,差一帧(约 16ms)看不出来。
     const duration = jsMotionAllowed() ? durationFor(target - from) : 0;
-    const start = performance.now();
+    const start = globalThis.performance.now();
 
     const step = (now: number) => {
       const progress = duration > 0 ? Math.min((now - start) / duration, 1) : 1;

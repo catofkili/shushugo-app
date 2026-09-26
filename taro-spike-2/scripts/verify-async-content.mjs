@@ -15,7 +15,8 @@ const expected = [
   './features/content/grammar-key-points.js',
   './content/pitch-accent.js',
   './grammar-foundation/grammar.js',
-  './grammar-advanced/grammar.js'
+  './grammar-advanced/grammar.js',
+  './core/index.js'
 ];
 const calls = [];
 
@@ -63,6 +64,34 @@ const fflateApi = fflate.default ?? fflate;
 const sample = new TextEncoder().encode('snapshot gzip smoke');
 if (Buffer.compare(Buffer.from(sample), Buffer.from(fflateApi.gunzipSync(fflateApi.gzipSync(sample))))) {
   throw new Error('account/fflate.umd.js gzip round-trip failed');
+}
+if (!fs.existsSync(path.join(dist, 'core/sql-wasm.wasm.br'))) throw new Error('core/sql-wasm.wasm.br 不存在');
+
+// `ready()` gates the Grammar tab. Assert it hydrates the proxy-backed store
+// before the route mounts; otherwise Library captures an empty proxy and stays blank.
+const require = (await import('node:module')).createRequire(import.meta.url);
+const Module = require('node:module');
+const originalLoad = Module._load;
+Module._load = function (request, parent, isMain) {
+  const source = String(request).match(/\/frontend\/src\/lib\/(pitch-accent|furigana|kanji-unit-index|kanji-reading-usage)$/)?.[1];
+  if (source === 'pitch-accent') return { loadPitchAccent: async () => undefined };
+  if (source === 'furigana') return { loadKanjiReadings: async () => undefined };
+  if (source === 'kanji-unit-index') return { loadKanjiUnitIndex: async () => undefined };
+  if (source === 'kanji-reading-usage') return { loadKanjiReadingUsage: async () => undefined };
+  return originalLoad.call(this, request, parent, isMain);
+};
+let stores;
+let content;
+try {
+  stores = require('../../wechat-miniprogram/src/shared/content-store.js');
+  content = require('./taro-content.cjs');
+} finally {
+  Module._load = originalLoad;
+}
+stores.grammar = null;
+await content.ready();
+if (!Array.isArray(stores.grammar) || stores.grammar.length !== 769) {
+  throw new Error(`content.ready() 未加载完整语法记录：${stores.grammar?.length ?? 'null'}`);
 }
 
 const result = { expectedTargetCount: expected.length, callCount: calls.length, resolvedTargetCount: found.size, calls };

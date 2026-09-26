@@ -38,7 +38,7 @@ module.exports = {
   outputRoot: 'dist',
   copy: {
     patterns: [
-      { from: path.join(root, 'assets/sql-wasm.wasm.br'), to: path.join(root, 'dist/assets/sql-wasm.wasm.br') },
+      { from: path.join(root, 'assets/sql-wasm.wasm.br'), to: path.join(root, 'dist/core/sql-wasm.wasm.br') },
       { from: path.join(mini, 'src/vendor/fflate.umd.js'), to: path.join(root, 'dist/account/fflate.umd.js') },
       { from: path.join(mini, 'src/content/question-meanings.js'), to: path.join(root, 'dist/content/question-meanings.js') },
       { from: path.join(mini, 'src/content/kanji-unit-runtime.js'), to: path.join(root, 'dist/content/kanji-unit-runtime.js') },
@@ -170,7 +170,12 @@ module.exports = {
       // 这种开发专用模块照样进包（运行时走不到，但白占主包）；Vite 是直接替换成 false 的，网页版没有这个问题。
       chain.plugin('spike-weapp-env').use(webpack.DefinePlugin, [{
         'import.meta.env': JSON.stringify(weappEnv),
-        ...Object.fromEntries(Object.entries(weappEnv).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)]))
+        ...Object.fromEntries(Object.entries(weappEnv).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)])),
+        // Bind browser globals explicitly to the app-polyfills shims in the WeChat bundle.
+        Blob: 'globalThis.Blob',
+        FileReader: 'globalThis.FileReader',
+        ResizeObserver: 'globalThis.ResizeObserver',
+        performance: 'globalThis.performance'
       }]);
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,

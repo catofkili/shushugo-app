@@ -1,0 +1,225 @@
+{
+  "quality": 78,
+  "scale": 2,
+  "mainBytesBefore": 273058,
+  "mainBytesAfter": 190864,
+  "savedBytes": 82194,
+  "images": [
+    {
+      "image": "scene-laptop",
+      "maxDisplayHeightCss": 92,
+      "sourceWidth": 444,
+      "sourceHeight": 307,
+      "outputHeight": 184,
+      "beforeBytes": 16386,
+      "afterBytes": 10360
+    },
+    {
+      "image": "scene-book",
+      "maxDisplayHeightCss": 96,
+      "sourceWidth": 370,
+      "sourceHeight": 307,
+      "outputHeight": 192,
+      "beforeBytes": 15478,
+      "afterBytes": 8942
+    },
+    {
+      "image": "mood-yay",
+      "maxDisplayHeightCss": 120,
+      "sourceWidth": 520,
+      "sourceHeight": 351,
+      "outputHeight": 240,
+      "beforeBytes": 15812,
+      "afterBytes": 13436
+    },
+    {
+      "image": "mood-puzzled",
+      "maxDisplayHeightCss": 96,
+      "sourceWidth": 443,
+      "sourceHeight": 328,
+      "outputHeight": 192,
+      "beforeBytes": 16914,
+      "afterBytes": 10364
+    },
+    {
+      "image": "mood-dizzy",
+      "maxDisplayHeightCss": 120,
+      "sourceWidth": 377,
+      "sourceHeight": 353,
+      "outputHeight": 240,
+      "beforeBytes": 15060,
+      "afterBytes": 9522
+    },
+    {
+      "image": "mood-sleep",
+      "maxDisplayHeightCss": 112,
+      "sourceWidth": 462,
+      "sourceHeight": 349,
+      "outputHeight": 224,
+      "beforeBytes": 14114,
+      "afterBytes": 10240
+    },
+    {
+      "image": "mood-default",
+      "maxDisplayHeightCss": 96,
+      "sourceWidth": 314,
+      "sourceHeight": 224,
+      "outputHeight": 192,
+      "beforeBytes": 14070,
+      "afterBytes": 8548
+    },
+    {
+      "image": "mood-hungry",
+      "maxDisplayHeightCss": 110,
+      "sourceWidth": 403,
+      "sourceHeight": 386,
+      "outputHeight": 220,
+      "beforeBytes": 17796,
+      "afterBytes": 9978
+    },
+    {
+      "image": "mood-fired-up",
+      "maxDisplayHeightCss": 96,
+      "sourceWidth": 448,
+      "sourceHeight": 320,
+      "outputHeight": 192,
+      "beforeBytes": 15348,
+      "afterBytes": 9916
+    },
+    {
+      "image": "mood-cheer",
+      "maxDisplayHeightCss": 96,
+      "sourceWidth": 446,
+      "sourceHeight": 367,
+      "outputHeight": 192,
+      "beforeBytes": 18834,
+      "afterBytes": 10774
+    },
+    {
+      "image": "scene-team",
+      "maxDisplayHeightCss": 96,
+      "sourceWidth": 658,
+      "sourceHeight": 364,
+      "outputHeight": 192,
+      "beforeBytes": 21586,
+      "afterBytes": 17278
+    },
+    {
+      "image": "scene-stretch",
+      "maxDisplayHeightCss": 78,
+      "sourceWidth": 499,
+      "sourceHeight": 328,
+      "outputHeight": 156,
+      "beforeBytes": 10418,
+      "afterBytes": 9920
+    },
+    {
+      "image": "scene-music",
+      "maxDisplayHeightCss": 78,
+      "sourceWidth": 428,
+      "sourceHeight": 322,
+      "outputHeight": 156,
+      "beforeBytes": 10818,
+      "afterBytes": 8822
+    },
+    {
+      "image": "mood-wave",
+      "maxDisplayHeightCss": 84,
+      "sourceWidth": 445,
+      "sourceHeight": 318,
+      "outputHeight": 168,
+      "beforeBytes": 4368,
+      "afterBytes": 7510
+    },
+    {
+      "image": "icon-study-modes",
+      "maxDisplayHeightCss": 36,
+      "sourceWidth": 312,
+      "sourceHeight": 288,
+      "outputHeight": 72,
+      "beforeBytes": 4796,
+      "afterBytes": 2908
+    },
+    {
+      "image": "icon-grammar",
+      "maxDisplayHeightCss": 36,
+      "sourceWidth": 289,
+      "sourceHeight": 301,
+      "outputHeight": 72,
+      "beforeBytes": 4036,
+      "afterBytes": 2162
+    },
+    {
+      "image": "icon-vocab",
+      "maxDisplayHeightCss": 36,
+      "sourceWidth": 613,
+      "sourceHeight": 351,
+      "outputHeight": 72,
+      "beforeBytes": 3236,
+      "afterBytes": 3818
+    },
+    {
+      "image": "icon-practice",
+      "maxDisplayHeightCss": 36,
+      "sourceWidth": 284,
+      "sourceHeight": 308,
+      "outputHeight": 72,
+      "beforeBytes": 3876,
+      "afterBytes": 2040
+    },
+    {
+      "image": "icon-kanji-readings",
+      "maxDisplayHeightCss": 36,
+      "sourceWidth": 618,
+      "sourceHeight": 331,
+      "outputHeight": 72,
+      "beforeBytes": 4408,
+      "afterBytes": 5722
+    },
+    {
+      "image": "icon-favorites",
+      "maxDisplayHeightCss": 36,
+      "sourceWidth": 297,
+      "sourceHeight": 285,
+      "outputHeight": 72,
+      "beforeBytes": 5018,
+      "afterBytes": 2948
+    },
+    {
+      "image": "icon-stats",
+      "maxDisplayHeightCss": 36,
+      "sourceWidth": 271,
+      "sourceHeight": 285,
+      "outputHeight": 72,
+      "beforeBytes": 4074,
+      "afterBytes": 2140
+    },
+    {
+      "image": "icon-shop",
+      "maxDisplayHeightCss": 36,
+      "sourceWidth": 505,
+      "sourceHeight": 355,
+      "outputHeight": 72,
+      "beforeBytes": 4328,
+      "afterBytes": 3886
+    },
+    {
+      "image": "shushugo-icon",
+      "maxDisplayHeightCss": 56,
+      "sourceWidth": 512,
+      "sourceHeight": 512,
+      "outputHeight": 112,
+      "beforeBytes": 3718,
+      "afterBytes": 1954
+    },
+    {
+      "image": "walk-strip",
+      "maxDisplayHeightCss": 72,
+      "sourceWidth": 992,
+      "sourceHeight": 272,
+      "outputHeight": 144,
+      "beforeBytes": 28566,
+      "afterBytes": 17676
+    }
+  ]
+}
