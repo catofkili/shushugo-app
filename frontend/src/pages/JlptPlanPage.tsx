@@ -10,7 +10,7 @@ import {
   type ReminderSettings
 } from "../lib/notifications";
 import { saveReminderSettings } from "../lib/notifications";
-import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
+import { useProgressUpdates } from "../lib/use-progress-updates";
 import { DailyPlanPanel } from "../components/DailyPlanPanel";
 import { LevelSetup } from "../components/LevelSetup";
 import { LoadCurve } from "../components/LoadCurve";
@@ -86,9 +86,8 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
 
   useEffect(() => {
     refresh();
-    window.addEventListener(PROGRESS_UPDATED_EVENT, refresh);
-    return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
   }, [refresh]);
+  useProgressUpdates(refresh);
 
   useEffect(() => {
     void recalibrateLevelStartingPoint().then((changed) => { if (changed) refresh(); }).catch(() => undefined);

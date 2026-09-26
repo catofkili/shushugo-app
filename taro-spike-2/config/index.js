@@ -26,6 +26,7 @@ const platformAdapters = new Map([
   ['frontend/src/lib/purchases', path.join(frontend, 'src/lib/purchases.weapp.ts')],
   ['frontend/src/lib/apple-auth', path.join(frontend, 'src/lib/apple-auth.weapp.ts')],
   ['frontend/src/lib/touch-adapter', path.join(root, 'src/platform/touch-adapter.weapp.ts')],
+  ['frontend/src/lib/use-progress-updates', path.join(root, 'src/platform/use-progress-updates.weapp.ts')],
   ['frontend/src/components/AuthDialog', path.join(frontend, 'src/components/AuthDialog.weapp.tsx')],
   ['frontend/src/components/ShareImageSheet', path.join(frontend, 'src/components/ShareImageSheet.weapp.tsx')],
   ['frontend/src/components/DailyPlanSlider', path.join(frontend, 'src/components/DailyPlanSlider.weapp.tsx')],

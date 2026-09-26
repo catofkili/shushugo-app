@@ -396,7 +396,7 @@ export function rowObjectToCard(row: DbRow): WordCard {
   const importance = Number(row.importance ?? 3);
   const personalMistakeScore = mistakeScore(row);
 
-  return {
+  const card = {
     id,
     meaning,
     questionMeaning: questionMeaning(meaning, label, kana, id),
@@ -420,8 +420,29 @@ export function rowObjectToCard(row: DbRow): WordCard {
     },
     kanjiComponents: buildKanjiComponents(label),
     conjugations: row.verb_type ? [{ label: "动词类型", value: verbTypeLabel(String(row.verb_type)) }] : [],
-    verbPair: buildVerbPair(getDatabase(), label, kana),
-    confusions: confusionCandidates(row),
-    similarMeaning: similarMeaningCandidates(row)
-  };
+    verbPair: buildVerbPair(getDatabase(), label, kana)
+  } as WordCard;
+  // 辨析区才用这两项（word-distinctions），出题用不到：用到时再算、算完记住。
+  // ⚠️ 别改回组装时就算：两个都是第一次调用时建全词库索引（音形相近要把一万多个词整张读进内存），
+  // 桌面 128 ms、iPhone 小程序里约 1.4 秒——进背词页那一下就卡在这（2026-09-26 真机分段计时）。
+  // 学习页在第一张卡画出来之后才去算辨析（distinctionsReady），索引就挪到了卡片出现之后。
+  lazyField(card, "confusions", () => confusionCandidates(row));
+  lazyField(card, "similarMeaning", () => similarMeaningCandidates(row));
+  return card;
 }
+
+const lazyField = <K extends keyof WordCard>(card: WordCard, key: K, compute: () => WordCard[K]) => {
+  let value: WordCard[K] | undefined;
+  let computed = false;
+  Object.defineProperty(card, key, {
+    enumerable: true,
+    configurable: true,
+    get() {
+      if (!computed) {
+        value = compute();
+        computed = true;
+      }
+      return value;
+    }
+  });
+};

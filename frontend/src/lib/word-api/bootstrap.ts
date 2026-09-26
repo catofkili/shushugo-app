@@ -1,5 +1,5 @@
 import { getDatabase } from "../database";
-import { oncePerDatabase } from "../database/db-utils";
+import { firstValue, oncePerDatabase } from "../database/db-utils";
 import { withoutSyncStamp } from "../sync/schema";
 import { ensureUserTables, getState, persistSoon, setState, today } from "../study-core";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
@@ -45,7 +45,14 @@ const initProgress = () => {
    * 在 applying_remote 下跑,让这些行的 sync_updated_at 留空(= 纪元),任何一条
    * 真实记录都赢得过它。同理见 ensureGrammarProgressInitialized。
    */
-  withoutSyncStamp(() => {
+  // 先只读地问一句有没有缺行：每次启动对 11,740 个词逐个 INSERT OR IGNORE 要 59 ms（iPhone 小程序里十倍以上，
+  // 启动那几秒「很卡」的一部分），而几乎每次都一行不缺。缺的时候（新装、换库、导入词单）照旧补（2026-09-26）。
+  const missing = firstValue<number>(
+    "SELECT EXISTS (SELECT 1 FROM words w WHERE NOT EXISTS (SELECT 1 FROM progress p WHERE p.word_id = w.id))",
+    [],
+    1
+  );
+  if (missing) withoutSyncStamp(() => {
     db.run(`
       INSERT OR IGNORE INTO progress (word_id)
       SELECT id FROM words

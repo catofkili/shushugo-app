@@ -2,15 +2,15 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1716323,
+      "bytes": 1716650,
       "passes": true
     },
     "study": {
-      "bytes": 270709,
+      "bytes": 271372,
       "passes": true
     },
     "account": {
-      "bytes": 209219,
+      "bytes": 209977,
       "passes": true
     },
     "content-pages": {
@@ -42,12 +42,12 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 565282,
+      "bytes": 565993,
       "passes": true
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 55,
+  "duplicateSourceModuleCount": 56,
   "duplicatedModules": [
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/vocab-test.ts",
@@ -152,7 +152,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 15361,
+      "bytes": 15306,
       "packages": [
         "account",
         "study"
@@ -403,6 +403,15 @@
       "packages": [
         "content-pages",
         "grammar-pages"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/use-progress-updates.weapp.ts",
+      "bytes": 1899,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
       ]
     },
     {
@@ -787,7 +796,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 15361,
+      "bytes": 15306,
       "packages": [
         "account",
         "study"
@@ -1015,7 +1024,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 231508,
+  "duplicatedPageComponentBytes": 231453,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,

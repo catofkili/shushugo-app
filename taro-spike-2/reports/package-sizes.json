@@ -2,17 +2,17 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1716323,
+      "bytes": 1716650,
       "mib": 1.637,
       "passes": true
     },
     "study": {
-      "bytes": 270709,
-      "mib": 0.258,
+      "bytes": 271372,
+      "mib": 0.259,
       "passes": true
     },
     "account": {
-      "bytes": 209219,
+      "bytes": 209977,
       "mib": 0.2,
       "passes": true
     },
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 565282,
-      "mib": 0.539,
+      "bytes": 565993,
+      "mib": 0.54,
       "passes": true
     }
   },
-  "totalBytes": 7500462,
+  "totalBytes": 7502921,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 816089
+      "bytes": 816416
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 563533
+      "bytes": 564244
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -177,7 +177,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 36953
+      "bytes": 37019
     },
     {
       "path": "account/fflate.umd.js",
@@ -217,7 +217,7 @@
     {
       "path": "study/jlpt-plan/index.js",
       "package": "study",
-      "bytes": 22500
+      "bytes": 22471
     },
     {
       "path": "content-pages/assets/brand/icon-kanji-readings.webp",
@@ -577,12 +577,12 @@
     {
       "path": "account/sub-common/c25dae36c86dd28c1214f4da0a721276.js",
       "package": "account",
-      "bytes": 6435
+      "bytes": 6401
     },
     {
       "path": "study/sub-common/c25dae36c86dd28c1214f4da0a721276.js",
       "package": "study",
-      "bytes": 6435
+      "bytes": 6401
     },
     {
       "path": "account/sub-common/9eab87d2c778519be93401a860355cdf.js",
@@ -1003,6 +1003,16 @@
       "path": "content-pages/sub-common/3b9c02e466436cb5b4b571bd94b31238.js",
       "package": "content-pages",
       "bytes": 748
+    },
+    {
+      "path": "account/sub-common/9c0ce825823648fb4badf98099a91a08.js",
+      "package": "account",
+      "bytes": 726
+    },
+    {
+      "path": "study/sub-common/9c0ce825823648fb4badf98099a91a08.js",
+      "package": "study",
+      "bytes": 726
     },
     {
       "path": "content-pages/sub-common/6ced2bcb395a96b68bb6f83718b96144.js",
