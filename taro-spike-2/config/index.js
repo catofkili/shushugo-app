@@ -9,6 +9,10 @@ const repoRoot = path.resolve(root, '..');
 const frontend = path.join(repoRoot, 'frontend');
 const mini = path.join(repoRoot, 'wechat-miniprogram');
 const shims = createSharedShims(mini);
+// progress-events 用网页原版：它的裸 window 在 Taro 里是 TaroWindow（app-polyfills 补了 dispatchEvent），页面的监听器挂在那上面。
+// 原生小程序那份垫片派发到 globalThis.window——Taro 页面听不到，而且缺 withProgressEventsMuted：
+// 「预算下一张」在小程序里每次都抛 TypeError、全部退回同步路径（2026-09-26 W10 真机对比时查出）。
+shims.delete(path.join(frontend, 'src/lib/progress-events'));
 const weappEnv = require(path.join(root, 'src/platform/weapp-env.weapp.cjs'));
 const platformAdapters = new Map([
   ['frontend/src/lib/haptics', path.join(frontend, 'src/lib/haptics.weapp.ts')],

@@ -2,17 +2,17 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1713326,
+      "bytes": 1712905,
       "mib": 1.634,
       "passes": true
     },
     "study": {
-      "bytes": 270159,
+      "bytes": 270060,
       "mib": 0.258,
       "passes": true
     },
     "account": {
-      "bytes": 207558,
+      "bytes": 207461,
       "mib": 0.198,
       "passes": true
     },
@@ -22,7 +22,7 @@
       "passes": true
     },
     "features": {
-      "bytes": 580496,
+      "bytes": 580407,
       "mib": 0.554,
       "passes": true
     },
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 565011,
+      "bytes": 564952,
       "mib": 0.539,
       "passes": true
     }
   },
-  "totalBytes": 7493002,
+  "totalBytes": 7492237,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 814219
+      "bytes": 813798
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 563262
+      "bytes": 563203
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -107,7 +107,7 @@
     {
       "path": "features/content/distinction-reviews.js",
       "package": "features",
-      "bytes": 255173
+      "bytes": 255084
     },
     {
       "path": "app.wxss",
@@ -177,7 +177,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 36416
+      "bytes": 36378
     },
     {
       "path": "account/fflate.umd.js",
@@ -217,7 +217,7 @@
     {
       "path": "study/jlpt-plan/index.js",
       "package": "study",
-      "bytes": 22556
+      "bytes": 22516
     },
     {
       "path": "study/quick-study/index.js",
@@ -572,12 +572,12 @@
     {
       "path": "account/sub-common/c25dae36c86dd28c1214f4da0a721276.js",
       "package": "account",
-      "bytes": 6518
+      "bytes": 6459
     },
     {
       "path": "study/sub-common/c25dae36c86dd28c1214f4da0a721276.js",
       "package": "study",
-      "bytes": 6518
+      "bytes": 6459
     },
     {
       "path": "content-pages/sub-common/d7c5c49ad7ad6a0ec32285c6c7b2a7ff.js",

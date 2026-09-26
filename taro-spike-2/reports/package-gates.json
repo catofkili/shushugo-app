@@ -2,15 +2,15 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1713326,
+      "bytes": 1712905,
       "passes": true
     },
     "study": {
-      "bytes": 270159,
+      "bytes": 270060,
       "passes": true
     },
     "account": {
-      "bytes": 207558,
+      "bytes": 207461,
       "passes": true
     },
     "content-pages": {
@@ -18,7 +18,7 @@
       "passes": true
     },
     "features": {
-      "bytes": 580496,
+      "bytes": 580407,
       "passes": true
     },
     "content": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 565011,
+      "bytes": 564952,
       "passes": true
     }
   },
