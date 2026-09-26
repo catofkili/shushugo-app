@@ -13,6 +13,7 @@ import { getAppState, setAppState, useAppState, type AppState } from '../../../f
 import type { Page, StudyMode } from '../../../frontend/src/types/app';
 import { useStudyStore } from '../../../frontend/src/hooks/useStudyStore';
 import { useEntitlements } from '../../../frontend/src/hooks/useEntitlements';
+import { finishStartupTiming, perfTime, perfTimeAsync } from '../../../frontend/src/lib/perf-marks';
 import { canUseFeature, type FeatureId } from '../../../frontend/src/lib/entitlements';
 import { getProgressOverview } from '../../../frontend/src/lib/api';
 import { getCloudSession, CLOUD_SYNC_EVENT, CLOUD_AUTH_EVENT, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession, type CloudSyncEventDetail } from '../../../frontend/src/lib/sync-api';
@@ -27,6 +28,7 @@ import { ACHIEVEMENT_UNLOCKED_EVENT } from '../../../frontend/src/lib/userProfil
 import { ready as readyForGrammar, readyForKanji } from '../../scripts/taro-content.cjs';
 import { ensureDatabase } from './database-runtime.weapp';
 import { usePortalHost } from './portal-host.weapp';
+import { PerfOverlay } from './preview-timing.weapp';
 import { ROUTE_TABLE } from './route-table.cjs';
 import { closeAuth, closePaywall, getUiState, openAuth, openPaywall, queueAchievement, setLevelSetupOpen, setTrialEndedOpen, showNotice, subscribeUiState } from './ui-store.weapp';
 
@@ -93,12 +95,14 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     let cancelled = false;
     ensureDatabase()
       .then(() => Promise.all([
-        readyForKanji(),
+        perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
         grammarPages.has(page) ? readyForGrammar() : undefined
       ]))
       .then(async () => {
         if (cancelled) return;
-        setOverview(getProgressOverview());
+        setOverview(page === 'home'
+          ? perfTime('启动 · 今日主页数据计算', () => getProgressOverview())
+          : getProgressOverview());
         setTheme(getResolvedTheme());
         setSkin(equippedItem('theme'));
         setCloudSession(await getCloudSession());
@@ -114,6 +118,10 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       });
     return () => { cancelled = true; };
   }, [page]);
+
+  useEffect(() => {
+    if (page === 'home' && ready) finishStartupTiming('主页数据就位');
+  }, [page, ready]);
 
   useEffect(() => {
     const refreshTheme = () => {
@@ -265,6 +273,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   if (!ready) return <View className="theme-light p-4"><Text>正在载入学习数据…</Text></View>;
 
   return (
+    <>
     <AppShell
       context={context}
       className={`app-shell relative min-h-screen overflow-x-hidden bg-gradient-to-br from-[#FFFBF2] via-[#FDF1DC] to-[#F6E9D2] text-[#3A2E22]${page === 'weekly-report' ? ' is-weekly-report' : ''}`}
@@ -293,5 +302,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         </View>
       </View>
     </AppShell>
+    {page === 'home' ? <PerfOverlay /> : null}
+    </>
   );
 }

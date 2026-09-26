@@ -1,5 +1,6 @@
 import { getDatabase } from "../database";
 import { firstValue, oncePerDatabase } from "../database/db-utils";
+import { perfTime } from "../perf-marks";
 import { withoutSyncStamp } from "../sync/schema";
 import { ensureUserTables, getState, persistSoon, setState, today } from "../study-core";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
@@ -62,7 +63,7 @@ const initProgress = () => {
   if (!getState("first_study_day", "")) {
     setState("first_study_day", today());
   }
-  ensureGrammarProgressInitialized();
+  perfTime("启动 · 语法进度初始化", ensureGrammarProgressInitialized);
   // 三个阶段(单词/汉字/语法)统一由 FSRS 调度:建列 + 一次性回填历史。
   // 各自用 app_state 标记幂等,只跑一次;任一步失败都不能拖垮启动。
   try {

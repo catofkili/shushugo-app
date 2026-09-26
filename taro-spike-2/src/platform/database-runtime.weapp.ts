@@ -5,6 +5,7 @@ import { ensureUserTables } from '../../../frontend/src/lib/study-core';
 import { getDatabase, importDatabase } from '../../../frontend/src/lib/database';
 import { loadDatabase, registerPersistenceLifecycle, saveDatabase } from '../../../frontend/src/lib/storage';
 import { ensureSyncSchema } from '../../../frontend/src/lib/sync/schema';
+import { perfTime, perfTimeAsync, recordStartupMilestone } from '../../../frontend/src/lib/perf-marks';
 
 let opening: Promise<unknown> | null = null;
 type StartupObserver = {
@@ -15,16 +16,16 @@ type StartupObserver = {
 const elapsed = (started: number) => Math.max(0, Math.round(Date.now() - started));
 
 async function downloadSeed(url: string, compressed: boolean, observer?: StartupObserver) {
-  const tempPath = await downloadFile(url, {
+  const tempPath = await perfTimeAsync(`启动 · ${compressed ? '压缩出厂库云下载' : '出厂库云下载'}`, () => downloadFile(url, {
     onProgress: (event) => observer?.onDownload?.({
       compressed,
       percent: Number.isFinite(Number(event?.progress)) ? Number(event.progress) : null
     })
-  });
+  }));
   try {
-    if (!compressed) return await readFile(tempPath);
+    if (!compressed) return await perfTimeAsync('启动 · 出厂库文件读取', () => readFile(tempPath));
     const started = Date.now();
-    const decompressed = await readCompressedFile(tempPath, 'gzip');
+    const decompressed = await perfTimeAsync('启动 · 出厂库解压', () => readCompressedFile(tempPath, 'gzip'));
     observer?.onStage?.('seed-decompress', elapsed(started));
     return decompressed;
   } finally {
@@ -37,13 +38,14 @@ export async function ensureDatabase(
   observer?: StartupObserver
 ) {
   let started = Date.now();
-  await readyForPage(contentPage);
+  await perfTimeAsync('启动 · 页面内容分包就绪', () => readyForPage(contentPage));
   observer?.onStage?.('page-content', elapsed(started));
 
   if (!opening) opening = (async () => {
     started = Date.now();
-    const restored = await loadDatabase();
+    const restored = await perfTimeAsync('启动 · 本机存档检查与恢复', () => loadDatabase());
     observer?.onStage?.('local-database', elapsed(started));
+    if (restored) recordStartupMilestone('本机学习库恢复完成');
     if (!restored) {
       if (!config.seedDatabaseUrl) throw new Error('微信云存储未配置出厂数据库');
       const gzipUrl = config.seedDatabaseGzipUrl || config.seedDatabaseUrl.replace(/\.db(?=($|[?#]))/, '.db.gz');
@@ -64,21 +66,22 @@ export async function ensureDatabase(
         seed = await downloadSeed(config.seedDatabaseUrl, false, observer);
         observer?.onStage?.('seed-download', elapsed(started));
       }
+      recordStartupMilestone('出厂库字节到手');
       started = Date.now();
-      await importDatabase(seed, { validateBackup: true });
+      await perfTimeAsync('启动 · 导入出厂库', () => importDatabase(seed!, { validateBackup: true }));
       observer?.onStage?.('database-import', elapsed(started));
     }
     // Seed-content migrations import web-only catalog modules guarded out of Mini Program bundles.
     started = Date.now();
-    ensureUserTables();
+    perfTime('启动 · 用户表结构', ensureUserTables);
     observer?.onStage?.('user-schema', elapsed(started));
     started = Date.now();
-    ensureSyncSchema();
+    perfTime('启动 · 同步结构', ensureSyncSchema);
     observer?.onStage?.('sync-schema', elapsed(started));
     registerPersistenceLifecycle();
     if (!restored) {
       started = Date.now();
-      await saveDatabase({ notifyCloud: false });
+      await perfTimeAsync('启动 · 首次保存出厂库', () => saveDatabase({ notifyCloud: false }));
       observer?.onStage?.('first-save', elapsed(started));
     }
     return getDatabase();

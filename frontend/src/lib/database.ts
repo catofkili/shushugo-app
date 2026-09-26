@@ -1,5 +1,6 @@
 import initSqlJs, { Database } from 'sql.js';
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
+import { perfTime, perfTimeAsync } from './perf-marks';
 
 let db: Database | null = null;
 let initPromise: Promise<Database> | null = null;
@@ -27,7 +28,7 @@ const validateAppDatabase = (candidate: Database): void => {
 
 const loadSqlModule = () => {
   if (!sqlModulePromise) {
-    sqlModulePromise = initSqlJs({ locateFile: () => wasmUrl });
+    sqlModulePromise = perfTimeAsync('启动 · sql.js WASM 初始化', () => initSqlJs({ locateFile: () => wasmUrl }));
   }
   return sqlModulePromise;
 };
@@ -48,7 +49,7 @@ export async function initDatabase(): Promise<Database> {
       }
 
       const buffer = await response.arrayBuffer();
-      db = new SQL.Database(new Uint8Array(buffer));
+      db = perfTime('启动 · 打开 SQLite 数据库', () => new SQL.Database(new Uint8Array(buffer)));
 
       console.log('✅ Database initialized');
       return db;
@@ -68,13 +69,13 @@ export async function initDatabase(): Promise<Database> {
  */
 export async function openDatabase(data: Uint8Array): Promise<Database> {
   const SQL = await loadSqlModule();
-  return new SQL.Database(data);
+  return perfTime('启动 · 打开 SQLite 数据库', () => new SQL.Database(data));
 }
 
 /** 创建不含出厂词典的临时 SQLite，用于生成轻量云同步快照。 */
 export async function createDatabase(): Promise<Database> {
   const SQL = await loadSqlModule();
-  return new SQL.Database();
+  return perfTime('启动 · 打开 SQLite 数据库', () => new SQL.Database());
 }
 
 export function getDatabase(): Database {

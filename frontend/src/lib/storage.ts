@@ -13,6 +13,7 @@ import {
   type LocalDelta
 } from './local-delta';
 import { rebuildStudyTimeAggregate } from './sync/study-time';
+import { perfTimeAsync } from './perf-marks';
 
 // 供当前页面把“数据库写盘失败”显示出来；旧版 localStorage 配额异常曾被静默吞掉。
 export const PERSISTENCE_ERROR_EVENT = 'persistence-error';
@@ -501,7 +502,7 @@ const loadFileDatabase = async (): Promise<boolean> => {
     if (!names.has(path.split('/').pop()!)) continue;
     sawArchive = true;
     try {
-      const bytes = await readFileBytes(path);
+      const bytes = await perfTimeAsync('启动 · 本地数据库文件读取', () => readFileBytes(path));
       if (!bytes.length) throw new Error('Empty database archive');
       await importDatabase(bytes, { validateBackup: true });
       if (path !== DB_FILE_MAIN) {
@@ -644,7 +645,7 @@ export async function loadDatabase(): Promise<boolean> {
   try {
     if (isNativeFileStorage()) {
       if (await loadFileDatabase()) {
-        await replayDeltaRecord();
+        await perfTimeAsync('启动 · 增量回放', replayDeltaRecord);
         markSnapshotLoaded();
         return true;
       }
@@ -677,7 +678,7 @@ export async function loadDatabase(): Promise<boolean> {
         await stashUnreadableBrowserDatabase(browserData).catch(() => undefined);
         throw new LocalArchiveUnreadableError(browserData, error);
       }
-      await replayDeltaRecord();
+      await perfTimeAsync('启动 · 增量回放', replayDeltaRecord);
       markSnapshotLoaded();
       console.log('✅ Database loaded from IndexedDB');
       // 开着 dev server 打开页面就先落一份快照,不必等到答完第一题。
