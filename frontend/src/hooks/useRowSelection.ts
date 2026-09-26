@@ -29,6 +29,8 @@ export interface RowSelectionOptions {
   rowSelector: string;
   /** 行上存 id 的 dataset 键名（驼峰），例如 "wordId" */
   idKey: string;
+  /** 小程序 selector query 不返回 HTML 自定义节点的 data-* 时，按渲染顺序关联行 id */
+  touchIds?: readonly number[];
   /** 划选时自动滚的容器。不传就滚 window（快速学习那页是整页滚的） */
   scrollContainer?: () => HTMLElement | null;
   /** 进入/退出选择模式时页面要跟着做的事（比如关掉行内展开的小面板） */
@@ -67,6 +69,7 @@ export interface RowSelection {
 export function useRowSelection({
   rowSelector,
   idKey,
+  touchIds,
   scrollContainer,
   onEnter,
   onExit
@@ -170,9 +173,10 @@ export function useRowSelection({
     if (state.rects) {
       const minX = Math.min(fromX, x), maxX = Math.max(fromX, x);
       const minY = Math.min(fromY, y), maxY = Math.max(fromY, y);
-      const ids = state.rects.flatMap((rect) => {
+      const ids = state.rects.flatMap((rect, index) => {
         if (rect.right < minX || rect.left > maxX || rect.bottom < minY || rect.top > maxY) return [];
-        const id = Number(rect.dataset?.[idKey]);
+        // Taro's h5-* nodes omit authored data-* from selector-query datasets; quick study supplies row ids by order.
+        const id = Number(rect.dataset?.[idKey] ?? touchIds?.[index]);
         return Number.isFinite(id) ? [id] : [];
       });
       if (ids.length) setSelectedIdsState((current) => {
@@ -191,7 +195,7 @@ export function useRowSelection({
         if (touchSelectionRef.current === state) state.rects = rects;
       });
     }
-  }, [idKey, rowSelector, scrollContainer]);
+  }, [idKey, rowSelector, scrollContainer, touchIds]);
 
   const beginTouchGesture = useCallback((id: number, x: number, y: number) => {
     const state = { id, x, y, rects: null as TouchRect[] | null, lastAutoScroll: 0 };

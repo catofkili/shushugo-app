@@ -24,6 +24,8 @@ const platformAdapters = new Map([
   ['frontend/src/components/Paywall', path.join(frontend, 'src/components/Paywall.weapp.tsx')],
   ['frontend/src/components/ShareImageSheet', path.join(frontend, 'src/components/ShareImageSheet.weapp.tsx')],
   ['frontend/src/components/DailyPlanSlider', path.join(frontend, 'src/components/DailyPlanSlider.weapp.tsx')],
+  ['frontend/src/components/DailyPlanRing', path.join(frontend, 'src/components/DailyPlanRing.weapp.tsx')],
+  ['frontend/src/components/GrammarTermHint', path.join(frontend, 'src/components/GrammarTermHint.weapp.tsx')],
   ['frontend/src/pages/NotificationSettings', path.join(frontend, 'src/pages/NotificationSettings.weapp.tsx')],
   ['wechat-miniprogram/src/runtime/auth', path.join(root, 'src/platform/payment-auth.weapp.cjs')]
 ].map(([target, replacement]) => [path.join(repoRoot, target), replacement]));
