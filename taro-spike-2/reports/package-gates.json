@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 2629850,
+      "bytes": 2628665,
       "passes": false
     },
     "study": {
-      "bytes": 214926,
+      "bytes": 219606,
       "passes": true
     },
     "account": {
-      "bytes": 195666,
+      "bytes": 196016,
       "passes": true
     },
     "content-pages": {
-      "bytes": 476609,
+      "bytes": 476320,
       "passes": true
     },
     "features": {
@@ -39,7 +39,7 @@
     }
   },
   "maxDuplicateBytes": 100000,
-  "duplicateSourceModuleCount": 11,
+  "duplicateSourceModuleCount": 12,
   "duplicatedModules": [
     {
       "source": "/private/tmp/shushugo-w5/frontend/src/data/verb-conjugation-foundation.ts",
@@ -66,19 +66,19 @@
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 15073,
-      "packages": [
-        "account",
-        "study"
-      ]
-    },
-    {
       "source": "/private/tmp/shushugo-w5/frontend/src/pages/FavoritesPage.tsx",
       "bytes": 15000,
       "packages": [
         "content-pages",
         "grammar-pages"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanPanel.tsx",
+      "bytes": 14950,
+      "packages": [
+        "account",
+        "study"
       ]
     },
     {
@@ -91,7 +91,7 @@
     },
     {
       "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanRing.tsx",
-      "bytes": 11267,
+      "bytes": 14064,
       "packages": [
         "account",
         "study"
@@ -128,6 +128,14 @@
         "content-pages",
         "grammar-pages"
       ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "bytes": 651,
+      "packages": [
+        "account",
+        "study"
+      ]
     }
   ],
   "duplicatedCoreModuleCount": 0,
@@ -142,19 +150,19 @@
       ]
     },
     {
-      "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 15073,
-      "packages": [
-        "account",
-        "study"
-      ]
-    },
-    {
       "source": "/private/tmp/shushugo-w5/frontend/src/pages/FavoritesPage.tsx",
       "bytes": 15000,
       "packages": [
         "content-pages",
         "grammar-pages"
+      ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanPanel.tsx",
+      "bytes": 14950,
+      "packages": [
+        "account",
+        "study"
       ]
     },
     {
@@ -167,7 +175,7 @@
     },
     {
       "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanRing.tsx",
-      "bytes": 11267,
+      "bytes": 14064,
       "packages": [
         "account",
         "study"
@@ -196,9 +204,17 @@
         "content-pages",
         "grammar-pages"
       ]
+    },
+    {
+      "source": "/private/tmp/shushugo-w5/frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "bytes": 651,
+      "packages": [
+        "account",
+        "study"
+      ]
     }
   ],
-  "duplicatedPageComponentBytes": 86577,
+  "duplicatedPageComponentBytes": 89902,
   "pageComponentDuplicateBudgetPasses": true,
   "webModuleCount": 0,
   "webModules": [],
@@ -222,7 +238,7 @@
     },
     {
       "source": "/private/tmp/shushugo-w5/frontend/src/styles.css",
-      "bytes": 137339
+      "bytes": 137372
     },
     {
       "source": "/private/tmp/shushugo-w5/frontend/src/pages/WordStudy.tsx",
@@ -238,7 +254,7 @@
     },
     {
       "source": "/private/tmp/shushugo-w5/frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 87043
+      "bytes": 87165
     },
     {
       "source": "/private/tmp/shushugo-w5/frontend/src/features/word-study/WordStudyPanels.tsx",

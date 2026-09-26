@@ -12,4 +12,8 @@ if (typeof globalThis.sessionStorage === 'undefined') {
   } as Storage;
 }
 
+if (!globalThis.performance || typeof globalThis.performance.now !== 'function') {
+  globalThis.performance = Object.assign({}, globalThis.performance, { now: () => Date.now() }) as Performance;
+}
+
 export const weappLocalStorage = globalThis.localStorage as Storage;

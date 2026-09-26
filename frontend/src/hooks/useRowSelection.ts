@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from "react";
+import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from "react";
+import { queryTouchRects, scrollTouchPageBy, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
 
 /**
  * 列表里的「长按进选择模式 + 拖动划选」。
@@ -50,6 +51,10 @@ export interface RowSelection {
     onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
     onPointerUp: () => void;
     onPointerCancel: () => void;
+    onTouchStart?: (event: ReactTouchEvent<HTMLElement>) => void;
+    onTouchMove?: (event: ReactTouchEvent<HTMLElement>) => void;
+    onTouchEnd?: (event: ReactTouchEvent<HTMLElement>) => void;
+    onTouchCancel?: (event: ReactTouchEvent<HTMLElement>) => void;
     onContextMenu: (event: ReactMouseEvent<HTMLElement>) => void;
   };
   /**
@@ -80,6 +85,7 @@ export function useRowSelection({
   const draggedRef = useRef(false);
   const gestureRef = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const touchSelectionRef = useRef<{ id: number; x: number; y: number; rects: TouchRect[] | null; lastAutoScroll: number } | null>(null);
 
   const clearLongPress = useCallback(() => {
     if (longPressTimerRef.current !== null) {
@@ -155,6 +161,53 @@ export function useRowSelection({
     window.addEventListener("pointercancel", handleEnd, { passive: true });
   }, [scrollContainer, selectAlongPath]);
 
+  const updateTouchSelection = useCallback((state: NonNullable<typeof touchSelectionRef.current>, x: number, y: number) => {
+    const fromX = state.x;
+    const fromY = state.y;
+    state.x = x;
+    state.y = y;
+    if (Math.hypot(x - fromX, y - fromY) > DRAG_SLOP) draggedRef.current = true;
+    if (state.rects) {
+      const minX = Math.min(fromX, x), maxX = Math.max(fromX, x);
+      const minY = Math.min(fromY, y), maxY = Math.max(fromY, y);
+      const ids = state.rects.flatMap((rect) => {
+        if (rect.right < minX || rect.left > maxX || rect.bottom < minY || rect.top > maxY) return [];
+        const id = Number(rect.dataset?.[idKey]);
+        return Number.isFinite(id) ? [id] : [];
+      });
+      if (ids.length) setSelectedIdsState((current) => {
+        const next = new Set(current);
+        ids.forEach((id) => next.add(id));
+        return next.size === current.size ? current : next;
+      });
+    }
+    if ((y < EDGE || y > window.innerHeight - EDGE) && Date.now() - state.lastAutoScroll >= 100) {
+      state.lastAutoScroll = Date.now();
+      const delta = y < EDGE ? -EDGE_STEP : EDGE_STEP;
+      const scroller = scrollContainer?.() ?? null;
+      if (scroller && typeof scroller.scrollTop === "number") scroller.scrollTop += delta;
+      else scrollTouchPageBy(delta);
+      void queryTouchRects(rowSelector).then((rects) => {
+        if (touchSelectionRef.current === state) state.rects = rects;
+      });
+    }
+  }, [idKey, rowSelector, scrollContainer]);
+
+  const beginTouchGesture = useCallback((id: number, x: number, y: number) => {
+    const state = { id, x, y, rects: null as TouchRect[] | null, lastAutoScroll: 0 };
+    touchSelectionRef.current = state;
+    setSelectedIdsState((current) => new Set(current).add(id));
+    void queryTouchRects(rowSelector).then((rects) => {
+      if (touchSelectionRef.current !== state) return;
+      state.rects = rects;
+    });
+  }, [rowSelector]);
+
+  const endTouchGesture = useCallback(() => {
+    touchSelectionRef.current = null;
+    clearLongPress();
+  }, [clearLongPress]);
+
   const enterWith = useCallback((id: number) => {
     setSelectionMode(true);
     setSelectedIdsState(new Set([id]));
@@ -205,8 +258,46 @@ export function useRowSelection({
     },
     onPointerUp: () => clearLongPress(),
     onPointerCancel: () => clearLongPress(),
+    onTouchStart: touchEventsEnabled() ? (event: TouchEventLike) => {
+      if ((event.target as HTMLElement | null)?.closest?.("button")) return;
+      const point = touchPoint(event);
+      if (!point) return;
+      clearLongPress();
+      longPressTriggeredRef.current = false;
+      draggedRef.current = false;
+      longPressOriginRef.current = { x: point.clientX, y: point.clientY };
+      if (selectionMode) {
+        beginTouchGesture(id, point.clientX, point.clientY);
+        return;
+      }
+      longPressTimerRef.current = window.setTimeout(() => {
+        longPressTriggeredRef.current = true;
+        longPressTimerRef.current = null;
+        longPressOriginRef.current = null;
+        setSelectionMode(true);
+        setSelectedIdsState(new Set([id]));
+        callbacksRef.current.onEnter?.();
+        beginTouchGesture(id, point.clientX, point.clientY);
+      }, LONG_PRESS_MS);
+    } : undefined,
+    onTouchMove: touchEventsEnabled() ? (event: TouchEventLike) => {
+      const point = touchPoint(event);
+      if (!point) return;
+      const origin = longPressOriginRef.current;
+      if (origin && !touchSelectionRef.current) {
+        if (Math.hypot(point.clientX - origin.x, point.clientY - origin.y) > LONG_PRESS_SLOP) clearLongPress();
+        return;
+      }
+      const state = touchSelectionRef.current;
+      if (state) {
+        event.preventDefault?.();
+        updateTouchSelection(state, point.clientX, point.clientY);
+      }
+    } : undefined,
+    onTouchEnd: touchEventsEnabled() ? endTouchGesture : undefined,
+    onTouchCancel: touchEventsEnabled() ? endTouchGesture : undefined,
     onContextMenu: (event: ReactMouseEvent<HTMLElement>) => event.preventDefault()
-  }), [beginGesture, clearLongPress, selectionMode]);
+  }), [beginGesture, beginTouchGesture, clearLongPress, endTouchGesture, selectionMode, updateTouchSelection]);
 
   const consumedByGesture = useCallback(() => {
     if (!longPressTriggeredRef.current && !draggedRef.current) return false;

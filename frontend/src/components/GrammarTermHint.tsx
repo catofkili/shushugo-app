@@ -1,8 +1,9 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { openGrammarFoundation } from "../lib/grammar-foundation-navigation";
 import { JapaneseRuby } from "./JapaneseRuby";
 import kanaGlossary from "../data/kana_glossary.json";
+import { queryTouchRect, touchEventsEnabled } from "../lib/touch-adapter";
 
 type Hint = {
   label: string;
@@ -113,19 +114,28 @@ const foundationRuleByTitle: Record<string, string> = {
 
 const HintBubble = ({ hint, children }: { hint: Hint; children: ReactNode }) => {
   const ref = useRef<HTMLSpanElement>(null);
+  const selectorId = `grammar-hint-${useId().replace(/:/g, "")}`;
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
   // 手机上没有悬停：点一下把术语小卡钉住，再点一下或点别处才收起
   const [pinned, setPinned] = useState(false);
   const foundationRuleId = foundationRuleByTitle[hint.title];
 
-  const show = () => {
-    const rect = ref.current?.getBoundingClientRect();
+  const place = (rect: { left: number; width: number; bottom: number }) => {
     if (!rect) return;
     const width = 288;
     setPosition({
       left: Math.min(Math.max(rect.left + rect.width / 2, width / 2 + 12), window.innerWidth - width / 2 - 12),
       top: Math.min(rect.bottom + 8, window.innerHeight - 132)
     });
+  };
+
+  const show = () => {
+    if (touchEventsEnabled()) {
+      void queryTouchRect(`#${selectorId}`).then((rect) => { if (rect) place(rect); });
+      return;
+    }
+    const rect = ref.current?.getBoundingClientRect();
+    if (rect) place(rect);
   };
 
   const togglePin = () => {
@@ -154,6 +164,7 @@ const HintBubble = ({ hint, children }: { hint: Hint; children: ReactNode }) => 
     <>
       <span
         ref={ref}
+        id={selectorId}
         onMouseEnter={show}
         onMouseLeave={() => {
           if (!pinned) setPosition(null);

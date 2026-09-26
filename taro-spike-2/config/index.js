@@ -19,9 +19,11 @@ const platformAdapters = new Map([
   ['frontend/src/lib/cloud-fetch', path.join(root, 'src/platform/fetch.weapp.cjs')],
   ['frontend/src/lib/purchases', path.join(frontend, 'src/lib/purchases.weapp.ts')],
   ['frontend/src/lib/apple-auth', path.join(frontend, 'src/lib/apple-auth.weapp.ts')],
+  ['frontend/src/lib/touch-adapter', path.join(root, 'src/platform/touch-adapter.weapp.ts')],
   ['frontend/src/components/AuthDialog', path.join(frontend, 'src/components/AuthDialog.weapp.tsx')],
   ['frontend/src/components/Paywall', path.join(frontend, 'src/components/Paywall.weapp.tsx')],
   ['frontend/src/components/ShareImageSheet', path.join(frontend, 'src/components/ShareImageSheet.weapp.tsx')],
+  ['frontend/src/components/DailyPlanSlider', path.join(frontend, 'src/components/DailyPlanSlider.weapp.tsx')],
   ['frontend/src/pages/NotificationSettings', path.join(frontend, 'src/pages/NotificationSettings.weapp.tsx')],
   ['wechat-miniprogram/src/runtime/auth', path.join(root, 'src/platform/payment-auth.weapp.cjs')]
 ].map(([target, replacement]) => [path.join(repoRoot, target), replacement]));
@@ -113,8 +115,12 @@ module.exports = {
           path.join(root, 'node_modules/react-reconciler/cjs/react-reconciler.profiling.min.js')
         );
       }
+      // ⚠️ 必须按键逐个定义。只定义 'import.meta.env' 一个对象字符串时，webpack 建模块图那一刻
+      // 看到的是 `({…}).DEV`，判断不出它恒为 false，于是 `if (import.meta.env.DEV) import('./dev-snapshot')`
+      // 这种开发专用模块照样进包（运行时走不到，但白占主包）；Vite 是直接替换成 false 的，网页版没有这个问题。
       chain.plugin('spike-weapp-env').use(webpack.DefinePlugin, [{
-        'import.meta.env': JSON.stringify(weappEnv)
+        'import.meta.env': JSON.stringify(weappEnv),
+        ...Object.fromEntries(Object.entries(weappEnv).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)]))
       }]);
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,
@@ -133,6 +139,10 @@ module.exports = {
             // The web source imports react-dom/createPortal at TokenDictionaryPopover.tsx:3
             // and targets document.body at :148-199; WeChat has no DOM portal target.
             resource.request = path.join(frontend, 'src/components/TokenDictionaryPopover.weapp.tsx');
+            return;
+          }
+          if (/(^|\/)FloatingDoodlePen(?:\.[^/]*)?$/.test(resource.request)) {
+            resource.request = path.join(frontend, 'src/components/FloatingDoodlePen.weapp.tsx');
             return;
           }
           if (/(^|\/)JapaneseRubyText(?:\.[^/]*)?$/.test(resource.request)) {

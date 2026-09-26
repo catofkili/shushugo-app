@@ -2,23 +2,23 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 2629850,
-      "mib": 2.508,
+      "bytes": 2628665,
+      "mib": 2.507,
       "passes": false
     },
     "study": {
-      "bytes": 214926,
-      "mib": 0.205,
+      "bytes": 219606,
+      "mib": 0.209,
       "passes": true
     },
     "account": {
-      "bytes": 195666,
+      "bytes": 196016,
       "mib": 0.187,
       "passes": true
     },
     "content-pages": {
-      "bytes": 476609,
-      "mib": 0.455,
+      "bytes": 476320,
+      "mib": 0.454,
       "passes": true
     },
     "features": {
@@ -47,12 +47,12 @@
       "passes": true
     }
   },
-  "totalBytes": 7138960,
+  "totalBytes": 7142516,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 1251202
+      "bytes": 1249403
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -97,7 +97,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 268774
+      "bytes": 268798
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -112,7 +112,7 @@
     {
       "path": "taro.js",
       "package": "main",
-      "bytes": 139581
+      "bytes": 139616
     },
     {
       "path": "features/content/kanji-readings.js",
@@ -122,7 +122,7 @@
     {
       "path": "content-pages/weekly-report/index.js",
       "package": "content-pages",
-      "bytes": 83966
+      "bytes": 83677
     },
     {
       "path": "content-pages/weekly-report/index.wxss",
@@ -137,7 +137,7 @@
     {
       "path": "base.wxml",
       "package": "main",
-      "bytes": 64682
+      "bytes": 65237
     },
     {
       "path": "content-pages/sub-common/4ca3f698082917388b626f738af68b7d.js",
@@ -157,7 +157,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 37340
+      "bytes": 36176
     },
     {
       "path": "account/fflate.umd.js",
@@ -197,7 +197,7 @@
     {
       "path": "study/jlpt-plan/index.js",
       "package": "study",
-      "bytes": 22342
+      "bytes": 22408
     },
     {
       "path": "assets/brand/scene-team.webp",
@@ -210,14 +210,14 @@
       "bytes": 21504
     },
     {
+      "path": "study/quick-study/index.js",
+      "package": "study",
+      "bytes": 20870
+    },
+    {
       "path": "content-pages/assets/brand/icon-favorites.webp",
       "package": "content-pages",
       "bytes": 20216
-    },
-    {
-      "path": "study/quick-study/index.js",
-      "package": "study",
-      "bytes": 19614
     },
     {
       "path": "content-pages/assets/brand/icon-shop.webp",
@@ -457,12 +457,27 @@
     {
       "path": "account/sub-common/8ab76547bb0af9bd052275261151cb16.js",
       "package": "account",
-      "bytes": 6468
+      "bytes": 6400
     },
     {
       "path": "study/sub-common/8ab76547bb0af9bd052275261151cb16.js",
       "package": "study",
-      "bytes": 6468
+      "bytes": 6400
+    },
+    {
+      "path": "study/sub-vendors.js",
+      "package": "study",
+      "bytes": 5560
+    },
+    {
+      "path": "account/sub-common/333076ebafccc4c2a3a4e51de74039f8.js",
+      "package": "account",
+      "bytes": 5306
+    },
+    {
+      "path": "study/sub-common/333076ebafccc4c2a3a4e51de74039f8.js",
+      "package": "study",
+      "bytes": 5306
     },
     {
       "path": "assets/brand/icon-favorites.webp",
@@ -505,16 +520,6 @@
       "bytes": 4328
     },
     {
-      "path": "account/sub-common/333076ebafccc4c2a3a4e51de74039f8.js",
-      "package": "account",
-      "bytes": 4141
-    },
-    {
-      "path": "study/sub-common/333076ebafccc4c2a3a4e51de74039f8.js",
-      "package": "study",
-      "bytes": 4141
-    },
-    {
       "path": "assets/brand/icon-stats.webp",
       "package": "main",
       "bytes": 4074
@@ -543,11 +548,6 @@
       "path": "assets/brand/shushugo-icon.webp",
       "package": "main",
       "bytes": 3718
-    },
-    {
-      "path": "study/sub-vendors.js",
-      "package": "study",
-      "bytes": 3716
     },
     {
       "path": "account/sub-vendors.js",
@@ -1010,6 +1010,11 @@
       "bytes": 424
     },
     {
+      "path": "account/sub-common/02ea0f8be0ef5566b56e5308f5607521.js",
+      "package": "account",
+      "bytes": 417
+    },
+    {
       "path": "assets/lucide/pencilline-ink.svg",
       "package": "main",
       "bytes": 417
@@ -1017,6 +1022,11 @@
     {
       "path": "assets/lucide/pencilline-light.svg",
       "package": "main",
+      "bytes": 417
+    },
+    {
+      "path": "study/sub-common/02ea0f8be0ef5566b56e5308f5607521.js",
+      "package": "study",
       "bytes": 417
     },
     {

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { segmentLength, PLAN_KINDS, PLAN_LABELS, type PlanKind } from "../lib/daily-plan";
+import { queryTouchRect, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
 
 /**
  * 每日学习量的圆环（docs/MIXED_STUDY_PLAN.md 第 3 节）。
@@ -62,6 +63,7 @@ const anglesOf = (counts: number[]) => {
 };
 
 export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocus, size = 240 }: Props) => {
+  const touchRectId = `daily-plan-ring-${useId().replace(/:/g, "")}`;
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   // 段 0 从哪个角度起。拖顶上那颗（辨析|单词）时这个偏移跟着变，别的滑钮才不动。
@@ -77,7 +79,8 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
   angles.forEach((angle) => bounds.push(bounds[bounds.length - 1] + angle));
 
   // 拖动中的临时量：按下时量的框、最新的指针角度、待处理的 rAF。都不进 state —— 它们每帧都变。
-  const drag = useRef<{ knob: number; rect: DOMRect; angle: number; raf: number } | null>(null);
+  const drag = useRef<{ knob: number; rect: Pick<DOMRect, "left" | "top" | "width" | "height">; angle: number; raf: number } | null>(null);
+  const touchDrag = useRef<{ knob: number; rect: TouchRect | null; latest: { x: number; y: number }; ended: boolean } | null>(null);
   // rAF 里的回调可能来自上一帧的渲染，所以算数一律读这个 ref，不读闭包里的旧值
   const latest = useRef({ value, counts, angles, bounds });
   // eslint-disable-next-line react-hooks/refs -- 渲染期写 ref 正是为了让 rAF 回调拿到最新一帧
@@ -127,7 +130,7 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
     onChange(next);
   };
 
-  const pointerAngle = (rect: DOMRect, clientX: number, clientY: number) => {
+  const pointerAngle = (rect: Pick<DOMRect, "left" | "top" | "width" | "height">, clientX: number, clientY: number) => {
     const x = ((clientX - rect.left) / rect.width) * size - cx;
     const y = ((clientY - rect.top) / rect.height) * size - cy;
     return Math.atan2(y, x);
@@ -162,11 +165,54 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
     // 先让最后一帧画出来，再做落盘重排那几十条 SQL
     requestAnimationFrame(() => setTimeout(onCommit, 0));
   };
+  const onTouchStart = (k: number, event: TouchEventLike) => {
+    const point = touchPoint(event);
+    if (!point || touchDrag.current || drag.current) return;
+    event.preventDefault?.();
+    const state = { knob: k, rect: null as TouchRect | null, latest: { x: point.clientX, y: point.clientY }, ended: false };
+    touchDrag.current = state;
+    void queryTouchRect(`#${touchRectId}`).then((rect) => {
+      if (touchDrag.current !== state) return;
+      if (!rect || rect.width <= 0 || rect.height <= 0) { touchDrag.current = null; return; }
+      state.rect = rect;
+      drag.current = { knob: k, rect, angle: pointerAngle(rect, state.latest.x, state.latest.y), raf: 0 };
+      setDragging(k);
+      if (state.ended) {
+        touchDrag.current = null;
+        endDrag();
+      }
+    });
+  };
+  const onTouchMove = (event: TouchEventLike) => {
+    const state = touchDrag.current;
+    const point = touchPoint(event);
+    if (!state || !point) return;
+    event.preventDefault?.();
+    state.latest = { x: point.clientX, y: point.clientY };
+    if (!state.rect) return;
+    const active = drag.current;
+    if (!active) return;
+    active.angle = pointerAngle(state.rect, point.clientX, point.clientY);
+    if (!active.raf) active.raf = requestAnimationFrame(flush);
+  };
+  const onTouchEnd = (event: TouchEventLike) => {
+    const state = touchDrag.current;
+    if (!state) return;
+    const point = touchPoint(event, true);
+    if (point) state.latest = { x: point.clientX, y: point.clientY };
+    state.ended = true;
+    if (!state.rect) return;
+    const active = drag.current;
+    if (active) active.angle = pointerAngle(state.rect, state.latest.x, state.latest.y);
+    touchDrag.current = null;
+    endDrag();
+  };
   useEffect(() => () => { if (drag.current?.raf) cancelAnimationFrame(drag.current.raf); }, []);
 
   const stroke = 22;
   return (
     <svg
+      id={touchRectId}
       ref={svgRef}
       viewBox={`0 0 ${size} ${size}`}
       width={size}
@@ -175,6 +221,9 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      onTouchMove={touchEventsEnabled() ? (event) => onTouchMove(event as unknown as TouchEventLike) : undefined}
+      onTouchEnd={touchEventsEnabled() ? (event) => onTouchEnd(event as unknown as TouchEventLike) : undefined}
+      onTouchCancel={touchEventsEnabled() ? (event) => onTouchEnd(event as unknown as TouchEventLike) : undefined}
       role="group"
       aria-label="每日学习量"
     >
@@ -198,7 +247,7 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
       {[0, 1, 2, 3].sort((x, y) => (x === dragging ? 1 : y === dragging ? -1 : 0)).map((k) => {
         const [x, y] = polar(cx, cy, r, bounds[k + 1]);
         return (
-          <g key={k} onPointerDown={onPointerDown(k)} style={{ cursor: dragging === k ? "grabbing" : "grab", touchAction: "none" }}>
+          <g key={k} onPointerDown={onPointerDown(k)} onTouchStart={touchEventsEnabled() ? (event) => onTouchStart(k, event as unknown as TouchEventLike) : undefined} style={{ cursor: dragging === k ? "grabbing" : "grab", touchAction: "none" }}>
             <circle cx={x} cy={y} r={13} fill="#fff" stroke="rgba(0,0,0,.18)" strokeWidth={2} />
             <circle cx={x} cy={y} r={5} fill={RING_COLORS[PLAN_KINDS[(k + 1) % 4]]} />
           </g>
