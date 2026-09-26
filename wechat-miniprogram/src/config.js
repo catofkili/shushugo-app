@@ -6,8 +6,8 @@ module.exports = {
   // Worker 真实地址配在云函数 api 的环境变量 WORKER_ORIGIN 里，客户端这边只保留路径。
   cloudEnv: 'cloud1-d3g7dauie3961575b',
   seedDatabaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/seed/nihongo.db',
-  // Upload nihongo.db.gz to the matching path after generating it with Taro W1; blank uses the derived .gz path.
-  seedDatabaseGzipUrl: '',
+  // Brotli 压缩的出厂库（微信原生解压只认 br）；留空 = 按 seedDatabaseUrl 推出同目录的 .db.br。
+  seedDatabaseBrUrl: '',
   seedDatabasePath: '',
   // 内容更新 manifest 只描述版本、数据库 URL、字节数和词条数；不把大库放进代码包。
   contentManifestUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/seed/manifest.json',

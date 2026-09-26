@@ -24,7 +24,7 @@ async function downloadSeed(url: string, compressed: boolean, observer?: Startup
   try {
     if (!compressed) return await readFile(tempPath);
     const started = Date.now();
-    const decompressed = await readCompressedFile(tempPath, 'gzip');
+    const decompressed = await readCompressedFile(tempPath, 'br');
     observer?.onStage?.('seed-decompress', elapsed(started));
     return decompressed;
   } finally {
@@ -46,13 +46,16 @@ export async function ensureDatabase(
     observer?.onStage?.('local-database', elapsed(started));
     if (!restored) {
       if (!config.seedDatabaseUrl) throw new Error('微信云存储未配置出厂数据库');
-      const gzipUrl = config.seedDatabaseGzipUrl || config.seedDatabaseUrl.replace(/\.db(?=($|[?#]))/, '.db.gz');
+      // ⚠️ 必须是 Brotli：微信 FileSystemManager.readCompressedFile 的 compressionAlgorithm「目前仅支持 br」。
+      // 2026-09-27 之前下的是 .db.gz —— 真机上解压必定失败，每个新用户都是先白下 2.2 MB、再回退下 11.5 MB 原库。
+      // Brotli 版 1.34 MB，原生解压（Node 里 16 ms）。上传见 wechat-miniprogram/scripts/upload-cloud-content.sh。
+      const brUrl = config.seedDatabaseBrUrl || config.seedDatabaseUrl.replace(/\.db(?=($|[?#]))/, '.db.br');
       let seed: Uint8Array | null = null;
-      if (gzipUrl && gzipUrl !== config.seedDatabaseUrl) {
+      if (brUrl && brUrl !== config.seedDatabaseUrl) {
         started = Date.now();
         try {
           observer?.onDownload?.({ compressed: true, percent: 0 });
-          seed = await downloadSeed(gzipUrl, true, observer);
+          seed = await downloadSeed(brUrl, true, observer);
           observer?.onStage?.('seed-download', elapsed(started));
         } catch (error) {
           console.warn('[database] 压缩出厂库不可用，回退原库', error);

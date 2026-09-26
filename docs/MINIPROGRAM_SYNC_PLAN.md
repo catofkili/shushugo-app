@@ -655,6 +655,7 @@ W5 修完语法数据后语法页仍是空白；开发者工具逐页扫 26 个�
 | 微信登录报「偏好存储尚未初始化」；云请求静默不带登录令牌 | 裸 `localStorage` 由 ProvidePlugin 指到 `app-polyfills` 的导出，而 `app-polyfills` → fetch → payment-auth / preferences → `app-polyfills` 成环，拿到的是未赋值的导出 | 指到只依赖 polyfill 的 `local-storage.weapp.cjs` |
 | iPhone 真机上的本地贴纸和品牌图为空，开发者工具却正常 | 贴纸以 `.webp` 放进小程序包；官方 `image` 文档对 `webp` 属性的原文是「默认不解析 webP 格式，只支持网络资源」，本地 `.webp` 不适用 | 包内品牌图转为调色板 PNG；`webp` 属性只传给网络 `.webp` |
 | 加载中走路贴纸等本地 WXSS 背景在真机为空，开发者工具却正常 | WXSS 的 `background-image` 不能读取包内本地路径 | 用包内 `<Image>` 放在裁切框里，以 `transform` 翻帧；构建后扫描所有 `dist/**/*.wxss` 的 `url()`，本地路径为 0 |
+| 首次打开干等一分钟：新用户先下 2.2 MB 的 `seed/nihongo.db.gz`、解压失败、再回退下 11.5 MB 原库 | 微信 `FileSystemManager.readCompressedFile` 的 `compressionAlgorithm` 官方原文「目前仅支持 br」，传 `gzip` 在真机上必定失败 | 出厂库压缩版改成 Brotli（`seed/nihongo.db.br`，1.34 MB，原生解压）；`upload-cloud-content.sh` 默认模式生成并上传 |
 
 判据（以后写垫片、写页面都照这个）：
 - **给 `globalThis.X` 打补丁，网页源码看不到**——要补就补 `@tarojs/runtime` 导出的那个对象。
