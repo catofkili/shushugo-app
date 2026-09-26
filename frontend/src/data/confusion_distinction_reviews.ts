@@ -347,7 +347,7 @@ export const DISTINCTION_REVIEWS: readonly DistinctionReview[] = [
   {
     groupKey: "pair:分かれる / 分ける",
     level: "major",
-    summary: "整体作主体用「が」，分类或分配对象用「を」。；分かれる：「AとBに分かれる」列出分成项。；分ける：分类接「ごとに」，去向接「に」。"
+    summary: "分かれる表示整体自己分开或分成几组；分ける表示主动分配、分开或分类。"
   },
   {
     groupKey: "pair:片付く / 片付ける",
