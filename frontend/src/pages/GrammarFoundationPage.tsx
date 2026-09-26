@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, Search } from "lucide-react";
 import { Sticker } from "../components/CapybaraMascot";
+import { Disclosure } from "../components/Disclosure";
 import { grammarPoints } from "../data/grammar";
 import {
   FOUNDATION_SECTION_LABELS,
@@ -19,11 +20,10 @@ interface GrammarFoundationPageProps {
 }
 
 // 卡片默认收着（小红书那种只露标题和一段话），深链 / 「动词全部变形」跳过来时要先把那张展开
-const scrollToRule = (ruleId: string) => {
+const scrollToRule = (ruleId: string, revealRule: (id: string) => void) => {
+  revealRule(ruleId);
   const card = document.getElementById(ruleId);
   if (!card) return;
-  const details = card.querySelector("details");
-  if (details) details.open = true;
   card.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
@@ -32,6 +32,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
   const [level, setLevel] = useState<"All" | JLPTLevel>("All");
   const [section, setSection] = useState<GrammarFoundationSection | "all">("all");
   const [query, setQuery] = useState("");
+  const [openRuleId, setOpenRuleId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!focusRuleId) return;
@@ -40,7 +41,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
       setLevel("All");
       setSection("all");
       setQuery("");
-      scrollFrame = window.requestAnimationFrame(() => scrollToRule(focusRuleId));
+      scrollFrame = window.requestAnimationFrame(() => scrollToRule(focusRuleId, setOpenRuleId));
     });
     return () => {
       window.cancelAnimationFrame(resetFrame);
@@ -92,7 +93,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
               setLevel("All");
               setSection("all");
               setQuery("");
-              window.requestAnimationFrame(() => scrollToRule("verb-conjugation-system"));
+              window.requestAnimationFrame(() => scrollToRule("verb-conjugation-system", setOpenRuleId));
             }}
             className="focus-ring shrink-0 rounded-full bg-[#F5A623] px-3 py-1.5 text-xs font-bold !text-[#343838]"
           >
@@ -136,15 +137,22 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
             .filter((point): point is NonNullable<typeof point> => Boolean(point));
           return (
             <article id={rule.id} key={rule.id} className="dictionary-card mb-3 break-inside-avoid scroll-mt-6 rounded-2xl p-3.5 sm:p-4">
-              <details className="group">
-                <summary className="focus-ring cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                  <p className="text-[11px] font-bold tracking-[0.1em] text-[#81D8CF]">{FOUNDATION_SECTION_LABELS[rule.section]} · {rule.level}</p>
-                  <h2 className="mt-1.5 text-base font-semibold leading-snug text-[#343838] dark:text-[#f4efe4]">{rule.title}</h2>
-                  <p className="mt-2 text-[13px] leading-6 text-[#f9faf7] group-open:line-clamp-none line-clamp-5 dark:text-zinc-300">{rule.summary}</p>
-                  <p className="mt-2 truncate text-[11px] font-bold text-white/45 group-open:hidden">
-                    {rule.patterns.length} 条结构 · {rule.checkpoints.length} 个重点{rule.tables?.length ? ` · ${rule.tables.length} 张表` : ""} ▾
-                  </p>
-                </summary>
+              <Disclosure
+                className="group"
+                summaryClassName="focus-ring cursor-pointer list-none [&::-webkit-details-marker]:hidden"
+                indicator="none"
+                forceOpen={openRuleId === rule.id}
+                summary={(open) => (
+                  <>
+                    <p className="text-[11px] font-bold tracking-[0.1em] text-[#81D8CF]">{FOUNDATION_SECTION_LABELS[rule.section]} · {rule.level}</p>
+                    <h2 className="mt-1.5 text-base font-semibold leading-snug text-[#343838] dark:text-[#f4efe4]">{rule.title}</h2>
+                    <p className={`mt-2 text-[13px] leading-6 text-[#f9faf7] ${open ? "line-clamp-none" : "line-clamp-5"} dark:text-zinc-300`}>{rule.summary}</p>
+                    {!open && <p className="mt-2 truncate text-[11px] font-bold text-white/45">
+                      {rule.patterns.length} 条结构 · {rule.checkpoints.length} 个重点{rule.tables?.length ? ` · ${rule.tables.length} 张表` : ""} ▾
+                    </p>}
+                  </>
+                )}
+              >
 
               <div className="mt-3 space-y-2">
                 <div className="rounded-xl border border-white/10 bg-[#373b3b] p-2.5">
@@ -163,8 +171,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
 
               {/* 表格默认收着：一张 680px 宽的活用表摊在半屏宽的卡里只剩横向滚动条，展开再看 */}
               {rule.tables?.map((table) => (
-                <details key={table.title} className="mt-3 rounded-xl border border-white/10 bg-[#373b3b] p-2.5">
-                  <summary className="focus-ring cursor-pointer text-[13px] font-bold text-[#81D8CF]">{table.title}</summary>
+                <Disclosure key={table.title} className="mt-3 rounded-xl border border-white/10 bg-[#373b3b] p-2.5" summaryClassName="focus-ring cursor-pointer text-[13px] font-bold text-[#81D8CF]" summary={table.title}>
                   <div className="mt-2 overflow-x-auto rounded-lg border border-white/10">
                     <table className="min-w-[680px] w-full border-collapse text-left text-xs leading-5 text-white/78">
                       <thead className="bg-white/8 text-white/90">
@@ -185,13 +192,10 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
                       </tbody>
                     </table>
                   </div>
-                </details>
+                </Disclosure>
               ))}
 
-              <details className="mt-3 rounded-xl border border-white/10 bg-white/5 p-2.5">
-                <summary className="focus-ring cursor-pointer text-[13px] font-bold text-[#343838] dark:text-white/80">
-                  对应语法卡（{related.length}）
-                </summary>
+              <Disclosure className="mt-3 rounded-xl border border-white/10 bg-white/5 p-2.5" summaryClassName="focus-ring cursor-pointer text-[13px] font-bold text-[#343838] dark:text-white/80" summary={`对应语法卡（${related.length}）`}>
                 <div className="mt-2 space-y-1">
                   {related.map((point) => (
                     <button
@@ -203,8 +207,8 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
                     </button>
                   ))}
                 </div>
-              </details>
-              </details>
+              </Disclosure>
+              </Disclosure>
             </article>
           );
         })}

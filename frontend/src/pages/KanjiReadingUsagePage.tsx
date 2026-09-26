@@ -11,6 +11,7 @@ import {
   type KanjiCharUsage
 } from "../lib/kanji-reading-usage";
 import { MascotSay } from "../components/MascotSay";
+import { Disclosure } from "../components/Disclosure";
 import { useStudyTimer } from "../lib/useStudyTimer";
 
 /**
@@ -84,11 +85,12 @@ export const KanjiReadingUsagePage = () => {
       </header>
 
       {/* 通则说一次就够。145 个字的说明是同一句话，摊开重复一百多遍才是噪音。 */}
-      <details className="kr-rule">
-        <summary>
+      <Disclosure className="kr-rule" weappSummaryClassName="kr-rule-summary" summary={
+        <>
           <b>先看这条通则</b>
           <small>大半的音训分工靠它就够了</small>
-        </summary>
+        </>
+      }>
         <MascotSay sticker="mood-idea" className="mt-2">
           汉语复合词里读 <b>音读</b>（学生 がくせい・食堂 しょくどう）；单独用、带送假名，
           或在和语词里读 <b>训读</b>（生きる・近道・本屋）。
@@ -97,7 +99,7 @@ export const KanjiReadingUsagePage = () => {
             只在两三个词里出现的，以及两个音读撞在一起、只能一条条写的 {handWritten} 个。
           </span>
         </MascotSay>
-      </details>
+      </Disclosure>
 
       <div className="kr-bar">
         <input
