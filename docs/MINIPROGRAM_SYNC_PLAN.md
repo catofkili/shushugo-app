@@ -637,3 +637,32 @@ B：`onPointer*` 在小程序里不触发，圆环、滑杆、长按多选、批
 **结果**：主包 2,628,665 → 2,073,221 B（低于 2,097,152 硬上限）；lazy 分包 559 KB。开发者工具：主页 / 单词 / 我的 正常，单词页切换 226 ms。
 **未完成**：语法页切过去 15.6 s 仍空白——W5 未改的版本同样如此（对照过），是原有问题；接口允许清单、重复模块闸门要按新产物更新；
 wasm 挪包；iPhone 真机。交接给 W5：`tmp/codex-w5-lazy.md`。
+
+## ⚠️ Taro 把裸 `window` / `document` / `URL` 换成了自己的对象（Claude 2026-09-26，`taro/main` 的 `8192657`、`f4b6441`）
+
+W5 修完语法数据后语法页仍是空白；开发者工具逐页扫 26 个路由又查出三处崩溃，用户真机上「使用微信登录」报「微信本地偏好存储尚未初始化」。
+根因是同一类：Taro 构建的 ProvidePlugin 把网页源码里的裸 `window` / `document` / `URL` / `navigator` / `location` / `history` /
+`requestAnimationFrame` 换成 `@tarojs/runtime` 的对象（清单在 `@tarojs/webpack5-runner/dist/webpack/MiniWebpackPlugin.js` 的
+`getProviderPlugin`），产物里长这样：`var v=r(9392)["window"]` … `v.dispatchEvent(…)`。
+
+| 现象 | 原因 | 修法 |
+|---|---|---|
+| 语法页空白 | `Library` 在 useState 里直接 `window.matchMedia(…)`，TaroWindow 没有 | `matchMedia?.()` |
+| 选词页崩 + 只能看到前 100 个词 | `window.scrollTo` 在开发者工具里 Illegal invocation、iPhone 上不存在；window 上也没有 scroll 事件 | `touch-adapter` 的 `scrollPageToTop` / `usePageReachBottom`（小程序走 `pageScrollTo` / `onReachBottom`） |
+| 关于页崩 | `__APP_VERSION__` 是 vite define，Taro 的 DefinePlugin 没补 | `config/index.js` 补同名 define |
+| 柚子商店崩；偏好 / 进度 / 同步 / 写盘横幅事件全坏 | TaroWindow 有 `addEventListener`，**没有 `dispatchEvent`** | `app-polyfills` 给 TaroWindow 补，派发到它自己的 Events |
+| 分享图画不出、`URL.createObjectURL` 抛 not support、导出备份不下载 | 补丁打在 `globalThis.document` / `globalThis.URL` 上，源码用的是 Taro 的 | 分享图直接 `wx.createOffscreenCanvas`；TaroURL 转给 browser-runtime 的实现；`<a>` 只补 `click()`（元素必须还是 Taro 的，否则 React 渲染 `<a>` 时 appendChild 报错） |
+| 微信登录报「偏好存储尚未初始化」；云请求静默不带登录令牌 | 裸 `localStorage` 由 ProvidePlugin 指到 `app-polyfills` 的导出，而 `app-polyfills` → fetch → payment-auth / preferences → `app-polyfills` 成环，拿到的是未赋值的导出 | 指到只依赖 polyfill 的 `local-storage.weapp.cjs` |
+
+判据（以后写垫片、写页面都照这个）：
+- **给 `globalThis.X` 打补丁，网页源码看不到**——要补就补 `@tarojs/runtime` 导出的那个对象。
+- TaroWindow 构造时把 JS 引擎全局的自有属性抄了一份：开发者工具里抄到的是浏览器原生函数（调用 Illegal invocation），
+  **iPhone 上根本没有**。开发者工具不报错不等于真机不报错；`window.X?.()` 挡得住 iPhone、挡不住开发者工具。
+- ProvidePlugin 指向的模块**不能在依赖环里**，否则被环里模块拿到的是 undefined，而且是永久的（模块初始化时就取了）。
+- W6 的接口闸门只扫裸全局名，`obj.member` 整个跳过——补盲交给 W9（`tmp/codex-w9-gate-tabs.md`）。
+- React 在渲染 / effect 里抛错会卸掉整页，`console.error` 里的 Error 默认序列化成 `{}`：扫页脚本 `tmp/devtools-route-sweep.cjs`
+  会把 message + stack 摊开。
+
+**`taro/main` = `84760f3`**（2026-09-26 傍晚）：W5 按需加载 + wasm 挪 core 分包 + 上面的修复 + W6 Canvas 圆环 / 计时圈 / 连线。
+主包 1.70 MB，构建、闸门、`check:release` 通过，开发者工具 26 个路由只剩一处 `reading 'words'`（交给 W8）。
+下一步：W8（`tmp/codex-w8-device.md`，真机阻断问题 + 真机验收）、W9（闸门补盲 + 页面验收第 1 批）。
