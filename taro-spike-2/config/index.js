@@ -10,6 +10,21 @@ const frontend = path.join(repoRoot, 'frontend');
 const mini = path.join(repoRoot, 'wechat-miniprogram');
 const shims = createSharedShims(mini);
 const weappEnv = require(path.join(root, 'src/platform/weapp-env.weapp.cjs'));
+const platformAdapters = new Map([
+  ['frontend/src/lib/haptics', path.join(frontend, 'src/lib/haptics.weapp.ts')],
+  ['frontend/src/lib/notifications', path.join(frontend, 'src/lib/notifications.weapp.ts')],
+  ['frontend/src/lib/speech', path.join(frontend, 'src/lib/speech.weapp.ts')],
+  ['frontend/src/lib/share-image', path.join(frontend, 'src/lib/share-image.weapp.ts')],
+  ['frontend/src/lib/share-canvas', path.join(frontend, 'src/lib/share-canvas.weapp.ts')],
+  ['frontend/src/lib/cloud-fetch', path.join(root, 'src/platform/fetch.weapp.cjs')],
+  ['frontend/src/lib/purchases', path.join(frontend, 'src/lib/purchases.weapp.ts')],
+  ['frontend/src/lib/apple-auth', path.join(frontend, 'src/lib/apple-auth.weapp.ts')],
+  ['frontend/src/components/AuthDialog', path.join(frontend, 'src/components/AuthDialog.weapp.tsx')],
+  ['frontend/src/components/Paywall', path.join(frontend, 'src/components/Paywall.weapp.tsx')],
+  ['frontend/src/components/ShareImageSheet', path.join(frontend, 'src/components/ShareImageSheet.weapp.tsx')],
+  ['frontend/src/pages/NotificationSettings', path.join(frontend, 'src/pages/NotificationSettings.weapp.tsx')],
+  ['wechat-miniprogram/src/runtime/auth', path.join(root, 'src/platform/payment-auth.weapp.cjs')]
+].map(([target, replacement]) => [path.join(repoRoot, target), replacement]));
 const previewTimingEnabled = process.env.TARO_PREVIEW_TIMING === '1';
 
 module.exports = {
@@ -22,6 +37,7 @@ module.exports = {
   copy: {
     patterns: [
       { from: path.join(root, 'assets/sql-wasm.wasm.br'), to: path.join(root, 'dist/assets/sql-wasm.wasm.br') },
+      { from: path.join(mini, 'src/vendor/fflate.umd.js'), to: path.join(root, 'dist/account/fflate.umd.js') },
       { from: path.join(mini, 'src/content/question-meanings.js'), to: path.join(root, 'dist/content/question-meanings.js') },
       { from: path.join(mini, 'src/content/kanji-unit-runtime.js'), to: path.join(root, 'dist/content/kanji-unit-runtime.js') },
       { from: path.join(mini, 'src/content/kanji-reading-usage.js'), to: path.join(root, 'dist/content/kanji-reading-usage.js') },
@@ -60,6 +76,7 @@ module.exports = {
     webpackChain(chain, webpack) {
       chain.resolve.modules.add(path.join(root, 'node_modules'));
       chain.resolve.modules.add(path.join(frontend, 'node_modules'));
+      chain.resolve.alias.set('worker_threads$', path.join(root, 'src/platform/worker-threads.weapp.cjs'));
       chain.module.rule('sql-source').test(/\.sql$/).type('asset/source');
       chain.plugin('spike-node-crypto').use(webpack.NormalModuleReplacementPlugin, [
         /^node:crypto$/,
@@ -111,6 +128,10 @@ module.exports = {
               resource.request = path.join(root, 'src/platform/filesystem.weapp.cjs');
               return;
             }
+            if (resource.request === '@capacitor/preferences') {
+              resource.request = path.join(root, 'src/platform/preferences.weapp.cjs');
+              return;
+            }
             resource.request = path.join(root, 'scripts/native-stubs.cjs');
             return;
           }
@@ -119,6 +140,15 @@ module.exports = {
           const target = path.resolve(fromShim ? path.join(mini, 'src/shared') : resource.context, resource.request)
             .replace(/\.(tsx?|jsx?|js|json)$/, '')
             .replace(/\?raw$/, '');
+          if (target === path.join(mini, 'src/config')) {
+            resource.request = path.join(root, 'src/platform/config.weapp.cjs');
+            return;
+          }
+          const adapter = platformAdapters.get(target);
+          if (adapter) {
+            resource.request = adapter;
+            return;
+          }
           if (target === path.join(mini, 'src/shared/content')) {
             resource.request = path.join(root, 'scripts/taro-content.cjs');
             return;

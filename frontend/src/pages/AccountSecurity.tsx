@@ -4,9 +4,11 @@ import { Capacitor } from "@capacitor/core";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { productLabel } from "../lib/entitlements";
 import { clearLocalPasscode, getPasscodeState, setLocalPasscode, type PasscodeState } from "../lib/localPasscode";
-import { changeCloudPassword, deleteCloudAccount, getCloudAuthConfig, linkCloudApple, linkCloudWechatApp, type CloudSession } from "../lib/sync-api";
+import { changeCloudPassword, deleteCloudAccount, getCloudAuthConfig, linkCloudWechatMini, linkCloudApple, linkCloudWechatApp, requestCloudWechatLinkCode, type CloudSession } from "../lib/sync-api";
 import { requestAppleCredential } from "../lib/apple-auth";
 import { isWechatAppLoginAvailable, requestWechatAppCode } from "../lib/wechat-auth";
+import { PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_TITLE } from "../lib/privacy-policy-content";
+import { USER_AGREEMENT_SECTIONS, USER_AGREEMENT_TITLE } from "../lib/user-agreement-content";
 
 interface AccountSecurityProps {
   onBack: () => void;
@@ -15,6 +17,7 @@ interface AccountSecurityProps {
 
 export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) {
   const entitlements = useEntitlements();
+  const isWechatMini = Capacitor.getPlatform() === "wechat";
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -30,6 +33,12 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
   const [deletePanelOpen, setDeletePanelOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [wechatAvailable, setWechatAvailable] = useState(false);
+  const [showWechatLink, setShowWechatLink] = useState(false);
+  const [wechatEmail, setWechatEmail] = useState(cloudSession.email?.endsWith("@wechat.invalid") ? "" : cloudSession.email ?? "");
+  const [wechatCode, setWechatCode] = useState("");
+  const [wechatCodeSent, setWechatCodeSent] = useState(false);
+  const [wechatConsent, setWechatConsent] = useState(false);
+  const [legalOpen, setLegalOpen] = useState<"terms" | "privacy" | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -38,7 +47,7 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
     });
     getCloudAuthConfig()
       .then((config) => {
-        if (alive) setWechatAvailable(isWechatAppLoginAvailable(config));
+        if (alive) setWechatAvailable(isWechatMini || isWechatAppLoginAvailable(config));
       })
       .catch(() => undefined);
     return () => {
@@ -73,7 +82,9 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
     if (!window.confirm("确定永久删除账号吗？云端资料和备份将无法恢复，本机学习数据会保留。")) return;
     setSaving(true);
     try {
-      if (cloudSession.authProviders?.includes("email")) {
+      if (isWechatMini) {
+        await deleteCloudAccount("");
+      } else if (cloudSession.authProviders?.includes("email")) {
         await deleteCloudAccount(deletePassword);
       } else if (cloudSession.authProviders?.includes("apple")) {
         const config = await getCloudAuthConfig();
@@ -106,6 +117,14 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
   };
 
   const connectWechat = async () => {
+    if (isWechatMini) {
+      setWechatEmail(cloudSession.email?.endsWith("@wechat.invalid") ? "" : cloudSession.email ?? "");
+      setWechatCode("");
+      setWechatCodeSent(false);
+      setWechatConsent(false);
+      setShowWechatLink(true);
+      return;
+    }
     setSaving(true);
     setMessage("");
     try {
@@ -118,6 +137,33 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
     } finally {
       setSaving(false);
     }
+  };
+
+  const sendWechatLinkCode = async () => {
+    setSaving(true);
+    setMessage("");
+    try {
+      await requestCloudWechatLinkCode(wechatEmail);
+      setWechatCodeSent(true);
+      setMessage("如果该邮箱已注册，验证码已发送；请检查收件箱。");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "验证码发送失败，请稍后重试。");
+    } finally { setSaving(false); }
+  };
+
+  const finishWechatLink = async () => {
+    if (!wechatConsent) return setMessage("请先阅读并同意用户协议和隐私政策。");
+    setSaving(true);
+    setMessage("");
+    try {
+      const result = await new Promise<{ code?: string }>((resolve, reject) => (globalThis as any).wx.login({ success: resolve, fail: reject }));
+      if (!result.code) throw new Error("微信没有返回登录凭证，请重试。");
+      await linkCloudWechatMini(wechatEmail, wechatCode, result.code, true);
+      setShowWechatLink(false);
+      finishSuccess("微信登录已关联，云同步已启动。");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "微信关联失败，请稍后重试。");
+    } finally { setSaving(false); }
   };
 
   const finishSuccess = (text: string) => {
@@ -217,7 +263,7 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs text-white/50">购买通道</p>
-              <p className="mt-1 text-sm font-bold text-white/60">Apple App Store 内购</p>
+          <p className="mt-1 text-sm font-bold text-white/60">{isWechatMini ? "微信小程序支付" : "Apple App Store 内购"}</p>
             </div>
           </div>
         </div>
@@ -233,14 +279,14 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
               <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">账号密码</p><p className="mt-0.5 text-xs text-white/50">修改邮箱登录所使用的密码</p></div>
             </button>
           )}
-          {cloudSession.authProviders?.includes("apple") && (
+          {!isWechatMini && cloudSession.authProviders?.includes("apple") && (
             <div className="flex w-full items-center gap-3 border-b border-white/10 p-4">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white text-black"><Apple size={20} fill="currentColor" /></div>
               <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">Apple 登录</p><p className="mt-0.5 text-xs text-white/50">已关联，可使用 Face ID 或 Apple 账号登录</p></div>
               <span className="text-xs font-bold text-[#B7E38D]">已关联</span>
             </div>
           )}
-          {!cloudSession.authProviders?.includes("apple") && (
+          {!isWechatMini && !cloudSession.authProviders?.includes("apple") && (
             <button
               onClick={() => void connectApple()}
               disabled={saving}
@@ -253,7 +299,7 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
           {cloudSession.authProviders?.includes("wechat") && (
             <div className="flex w-full items-center gap-3 border-b border-white/10 p-4">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#07C160] text-white"><MessageCircle size={20} fill="currentColor" /></div>
-              <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">微信登录</p><p className="mt-0.5 text-xs text-white/50">已关联，可从 App 唤起微信登录</p></div>
+              <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">微信登录</p><p className="mt-0.5 text-xs text-white/50">{isWechatMini ? "已关联，可在小程序内使用微信登录" : "已关联，可从 App 唤起微信登录"}</p></div>
               <span className="text-xs font-bold text-[#B7E38D]">已关联</span>
             </div>
           )}
@@ -286,6 +332,19 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
           </button>
         </div>
       </div>
+
+      {showWechatLink && (
+        <div className="mb-4 space-y-3 rounded-2xl border border-white/15 bg-[#464949] p-4">
+          <h3 className="text-sm font-bold text-white">验证邮箱并关联微信</h3>
+          <p className="text-xs leading-5 text-white/55">关联已有账号不会合并其他账号或学习数据。验证码用于确认你拥有该邮箱。</p>
+          <input type="email" value={wechatEmail} onChange={(event) => { setWechatEmail(event.target.value); setWechatCodeSent(false); }} className="focus-ring w-full rounded-2xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white" placeholder="已有账号的邮箱" />
+          <div className="grid grid-cols-[1fr_auto] gap-2"><input inputMode="numeric" value={wechatCode} onChange={(event) => setWechatCode(event.target.value.replace(/\D/g, "").slice(0, 6))} className="focus-ring min-w-0 rounded-2xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white" placeholder="6 位邮箱验证码" /><button onClick={() => void sendWechatLinkCode()} disabled={saving || !wechatEmail.includes("@")} className="rounded-2xl border border-[#91C968]/35 px-3 text-xs font-bold text-[#B7E38D] disabled:opacity-50">{wechatCodeSent ? "重新发送" : "发送验证码"}</button></div>
+          <label className="flex items-start gap-2 text-xs leading-5 text-white/65"><input type="checkbox" checked={wechatConsent} onChange={(event) => setWechatConsent(event.target.checked)} /><span>我已阅读并同意 <button type="button" onClick={() => setLegalOpen("terms")} className="font-bold text-[#B7E38D]">《用户协议》</button> 和 <button type="button" onClick={() => setLegalOpen("privacy")} className="font-bold text-[#B7E38D]">《隐私政策》</button></span></label>
+          <div className="flex gap-2"><button onClick={() => setShowWechatLink(false)} className="flex-1 rounded-2xl border border-white/20 px-3 py-2 text-sm text-white">取消</button><button onClick={() => void finishWechatLink()} disabled={saving || !wechatCodeSent || wechatCode.length !== 6 || !wechatConsent} className="flex-1 rounded-2xl bg-[#07C160] px-3 py-2 text-sm font-bold text-white disabled:opacity-50">验证并关联微信</button></div>
+        </div>
+      )}
+
+      {legalOpen && <div className="fixed inset-0 z-[10002] overflow-y-auto bg-[#303730] p-5" role="dialog" aria-modal="true" aria-label={legalOpen === "terms" ? USER_AGREEMENT_TITLE : PRIVACY_POLICY_TITLE}><button onClick={() => setLegalOpen(null)} className="mb-4 rounded-xl border border-white/20 px-3 py-2 text-sm text-white">返回</button>{(legalOpen === "terms" ? USER_AGREEMENT_SECTIONS : PRIVACY_POLICY_SECTIONS).map((section) => <section key={section.title} className="mb-3 rounded-2xl border border-white/10 bg-white/5 p-4"><h3 className="text-sm font-bold text-white">{section.title}</h3>{section.body.map((line) => <p key={line} className="mt-2 text-sm leading-6 text-white/65">{line}</p>)}</section>)}</div>}
 
       {showAccountPassword && (
         <div className="mb-4 space-y-3 rounded-2xl border border-white/15 bg-[#464949] p-4">
@@ -387,7 +446,7 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white">
-                  {Capacitor.getPlatform() === "ios" ? "本机（iOS）" : "本机（浏览器）"}
+                  {isWechatMini ? "本机（微信小程序）" : Capacitor.getPlatform() === "ios" ? "本机（iOS）" : "本机（浏览器）"}
                 </p>
                 <p className="mt-0.5 text-xs text-white/50">学习数据保存在本机，可在设置中导出备份</p>
               </div>
@@ -405,7 +464,7 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
           <div className="border-t border-red-300/15 p-4">
             {cloudSession.authProviders?.includes("email") ? (
               <input type="password" value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} className="focus-ring w-full rounded-2xl border border-red-300/25 bg-[#3c3f3f] px-3 py-2 text-sm text-white" placeholder="输入账号密码确认" />
-            ) : cloudSession.authProviders?.includes("apple") ? (
+            ) : !isWechatMini && cloudSession.authProviders?.includes("apple") ? (
               <p className="text-xs leading-5 text-white/55">继续后会调用 Apple 登录重新验证身份。</p>
             ) : (
               <p className="text-xs leading-5 text-white/55">微信账号没有可再次输入的密码；继续后将使用当前有效登录会话确认删除。</p>

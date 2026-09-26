@@ -9,7 +9,8 @@
     "build:weapp": "npm run build:assets && taro build --type weapp && node scripts/restore-factory-content.mjs && node scripts/build-grammar-content.mjs && node scripts/verify-async-content.mjs && node scripts/measure-packages.mjs && node scripts/verify-package-gates.mjs",
     "build:preview:weapp": "TARO_PREVIEW_TIMING=1 npm run build:weapp",
     "build:weapp:watch": "taro build --type weapp --watch",
-    "test": "node scripts/verify-async-content.mjs && node scripts/verify-package-gates.mjs"
+    "check:cloud-transport": "node scripts/check-cloud-transport.mjs",
+    "test": "node scripts/verify-async-content.mjs && node scripts/cloud-fetch-smoke.cjs && node scripts/verify-package-gates.mjs"
   },
   "dependencies": {
     "@tarojs/components": "4.2.1",
