@@ -10,7 +10,7 @@ import type { WordAnswer, WordCard } from "../types/vocabulary";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { useRowSelection } from "../hooks/useRowSelection";
 import { useStudyTimer } from "../lib/useStudyTimer";
-import { queryTouchRect, queryTouchRects, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
+import { getElementFromPoint, queryTouchRect, queryTouchRects, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
 
 type Props = {
   onNavigate: (page: Page) => void;
@@ -242,7 +242,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   }, [selectedIds]);
 
   const applyRatingAtPoint = useCallback((clientX: number, clientY: number) => {
-    const element = document.elementFromPoint(clientX, clientY);
+    const element = getElementFromPoint(clientX, clientY);
     const button = element?.closest<HTMLElement>("[data-batch-rating]");
     const value = button?.dataset.batchRating as WordAnswer | undefined;
     if (value && answerOptions.some((option) => option.value === value)) applySelectionRating(value);

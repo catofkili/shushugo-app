@@ -16,6 +16,7 @@ const allowedCoreDuplicates = {
   'frontend/src/lib/analytics/weekly.ts': 'Weekly metrics are calculated from query results on demand; no user records are cached in the module.',
   'frontend/src/lib/analytics/weekly-reports.ts': 'Reports are read from and written to the shared database on each call; the module keeps no report snapshot.',
   'frontend/src/lib/speech.weapp.ts': 'Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.',
+  'frontend/src/lib/platform-dialogs.weapp.ts': 'Confirmation and prompt results are returned per call from wx.showModal; this wrapper retains no user data or mutable module state.',
   'frontend/src/lib/share-canvas.weapp.ts': 'The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data.',
   'frontend/src/lib/token-dictionary.ts': 'Dictionary matches are computed from the supplied database rows; results are not retained in a module cache.',
   'frontend/src/lib/share-image.weapp.ts': 'Share and save operations use the image passed to each call and retain no mutable user state.',

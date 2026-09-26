@@ -1,0 +1,2 @@
+/* WXSS does not reliably apply the hover/pointer media query used on the web. */
+.kbd-hint { display: none !important; }

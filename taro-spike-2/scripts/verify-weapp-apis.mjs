@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parse } from '@babel/parser';
+import traverseModule from '@babel/traverse';
+
+const traverse = traverseModule.default ?? traverseModule;
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist');
 const APIs = [
@@ -104,15 +108,250 @@ for (const hit of found) {
 }
 
 const countErrors = allowlist.filter((rule) => counts.get(rule) !== rule.count);
-if (unexpected.length || countErrors.length) {
+
+// These are the members declared by Taro 4.2.1's runtime classes, not the
+// incidental globals copied by TaroWindow's constructor. Additions made by our
+// WeChat adapter are listed beside their source below.
+const providedMembers = {
+  window: new Set([
+    'navigator', 'requestAnimationFrame', 'cancelAnimationFrame', 'getComputedStyle', 'Date',
+    'location', 'history', 'document', 'addEventListener', 'removeEventListener', 'setTimeout',
+    'clearTimeout', 'innerWidth', 'innerHeight', 'devicePixelRatio', 'initEvent', 'on', 'off', 'trigger',
+    // app-polyfills.weapp.ts forwards window.dispatchEvent into TaroWindow's Events.
+    'dispatchEvent',
+    // Added by app-polyfills.weapp.ts using the WeChat JS timer globals.
+    'setInterval', 'clearInterval'
+  ]),
+  // TaroDocument inherits TaroElement -> TaroNode -> TaroEventTarget.
+  // Sources: @tarojs/runtime/dist/{dom/document,element,node,event-target}.d.ts.
+  document: new Set([
+    'documentElement', 'head', 'body', 'visibilityState', 'hidden', 'createEvent', 'cookie', 'createElement', 'createElementNS',
+    'createTextNode', 'getElementById', 'querySelector', 'querySelectorAll', 'createComment', 'defaultView',
+    'ctx', 'tagName', 'props', 'style', 'dataset', 'innerHTML', 'id', 'className', 'cssText', 'classList',
+    'children', 'attributes', 'textContent', 'hasAttribute', 'hasAttributes', 'focus', 'blur', 'setAttribute',
+    'removeAttribute', 'getAttribute', 'getElementsByTagName', 'getElementsByClassName', 'dispatchEvent',
+    'addEventListener', 'removeEventListener', 'uid', 'sid', 'nodeType', 'nodeName', 'parentNode', 'childNodes',
+    '_root', '_path', 'nextSibling', 'previousSibling', 'parentElement', 'firstChild', 'lastChild',
+    'insertBefore', 'appendChild', 'replaceChild', 'removeChild', 'remove', 'hasChildNodes', 'enqueueUpdate',
+    'ownerDocument', 'extend'
+  ]),
+  // TaroURL's static create/revoke methods are replaced in app-polyfills.weapp.ts;
+  // instance properties come from @tarojs/runtime/dist/bom/URL.d.ts.
+  URL: new Set([
+    'createObjectURL', 'revokeObjectURL', 'protocol', 'host', 'hostname', 'port', 'pathname', 'search',
+    'hash', 'href', 'origin', 'searchParams', 'toString', 'toJSON', '_toRaw'
+  ]),
+  // Exact object returned by @tarojs/runtime/dist/bom/navigator.js.
+  navigator: new Set([
+    'appCodeName', 'appName', 'appVersion', 'cookieEnabled', 'mimeTypes', 'onLine', 'platform', 'plugins',
+    'product', 'productSub', 'userAgent', 'vendor', 'vendorSub'
+  ]),
+  // TaroLocation/TaroHistory declarations plus inherited @tarojs/shared Events methods.
+  location: new Set([
+    'protocol', 'host', 'hostname', 'port', 'pathname', 'search', 'hash', 'href', 'origin', 'assign', 'reload',
+    'replace', 'toString', 'cache', 'on', 'off', 'trigger'
+  ]),
+  history: new Set([
+    'length', 'state', 'go', 'back', 'forward', 'pushState', 'replaceState', 'cache', 'on', 'off', 'trigger'
+  ])
+};
+
+// Unsupported but deliberately retained accesses must have an exact count and
+// a reason tied to an unreachable or capability-guarded path. Keep this list
+// empty unless that condition is demonstrable from the source.
+const memberAllowlist = [
+  { object: 'window', member: 'prompt', file: 'common.js', count: 1, reason: 'This is SQL.js’s optional stdin fallback; generated code checks whether window.prompt exists before calling it, and ShuShuGo never reads SQLite from interactive stdin.' },
+  { object: 'document', member: 'createTreeWalker', file: /^(content-pages|grammar-pages)\/sub-common\/.*\.js$|^lazy\/tabs\.js$/, count: 6, reason: 'GrammarHighlightProvider returns before selection/highlight work when touchEventsEnabled() is true; Mini Program text selection is not implemented.' },
+  { object: 'document', member: 'createRange', file: /^(content-pages|grammar-pages)\/sub-common\/.*\.js$|^lazy\/tabs\.js$/, count: 4, reason: 'GrammarHighlightProvider returns before selection/highlight work when touchEventsEnabled() is true; Mini Program text selection is not implemented.' },
+  { object: 'window', member: 'getSelection', file: /^(content-pages|grammar-pages)\/sub-common\/.*\.js$|^lazy\/tabs\.js$/, count: 4, reason: 'GrammarHighlightProvider returns before selection/highlight work when touchEventsEnabled() is true; Mini Program text selection is not implemented.' },
+  { object: 'document', member: 'fonts', file: 'content-pages/weekly-report/index.js', count: 1, reason: 'The optional chain in weekly-report-share.ts checks whether fonts.ready exists; awaiting the missing Mini Program font set resolves immediately.' },
+  { object: 'navigator', member: 'scheduling', file: 'vendors.js', count: 1, reason: 'React Scheduler reads this optional capability and falls back to its timer yield when absent; it does not call through the missing value.' }
+];
+const membersFound = [];
+const memberCounts = new Map(memberAllowlist.map((rule) => [rule, 0]));
+const unsupportedMembers = [];
+
+function propertyName(node) {
+  if (!node.computed && node.property.type === 'Identifier') return node.property.name;
+  if (node.computed && node.property.type === 'StringLiteral') return node.property.value;
+  return null;
+}
+
+function isModuleFactory(functionPath) {
+  const { params } = functionPath.node;
+  const property = functionPath.parentPath;
+  return params.length >= 3 && params[2].type === 'Identifier'
+    && property.isObjectProperty() && property.node.key.type === 'NumericLiteral';
+}
+
+function isGuarded(memberPath, source) {
+  if (memberPath.node.optional) return true;
+  const parent = memberPath.parentPath;
+  if (parent.isOptionalMemberExpression() && parent.node.object === memberPath.node && parent.node.optional) return true;
+  if (parent.isOptionalCallExpression() && parent.node.callee === memberPath.node && parent.node.optional) return true;
+  if (parent.isUnaryExpression({ operator: 'typeof' })) return true;
+  const { start, end } = memberPath.node;
+  const nearby = source.slice(Math.max(0, start - 100), Math.min(source.length, end + 120));
+  const name = memberPath.node.property.name;
+  return typeof name === 'string' && new RegExp(`typeof\\s+[^;{}]{0,100}\\b${name}\\b`).test(nearby)
+    && /&&|\?\./.test(nearby);
+}
+
+for (const [absolute, file] of files) {
+  const source = fs.readFileSync(absolute, 'utf8');
+  let ast;
+  try {
+    ast = parse(source, { sourceType: 'unambiguous', plugins: ['optionalChaining'] });
+  } catch (error) {
+    console.error(`Cannot parse built JavaScript ${file}: ${error.message}`);
+    process.exitCode = 1;
+    continue;
+  }
+
+  traverse(ast, {
+    FunctionExpression(factory) {
+      if (!isModuleFactory(factory)) return;
+      const requireName = factory.node.params[2].name;
+      const aliases = new Map();
+      const derivedTypes = new WeakMap();
+      factory.traverse({
+        VariableDeclarator(declaration) {
+          const init = declaration.node.init;
+          if (!init || init.type !== 'MemberExpression' || declaration.node.id.type !== 'Identifier') return;
+          const object = init.object;
+          const exportedName = propertyName(init);
+          if (!providedMembers[exportedName] || object.type !== 'CallExpression'
+            || object.callee.type !== 'Identifier' || object.callee.name !== requireName
+            || object.arguments.length !== 1 || object.arguments[0].type !== 'NumericLiteral') return;
+          aliases.set(declaration.node.id.name, { type: exportedName, declaration: declaration.node });
+        }
+      });
+      if (!aliases.size) return;
+
+      factory.traverse({
+        MemberExpression(memberPath) { record(memberPath); },
+        OptionalMemberExpression(memberPath) { record(memberPath); }
+      });
+
+      function record(memberPath) {
+        const object = memberPath.node.object;
+        let objectType;
+        if (object.type === 'Identifier') {
+          const alias = aliases.get(object.name);
+          if (!alias || memberPath.scope.getBinding(object.name)?.path.node !== alias.declaration) return;
+          objectType = alias.type;
+        } else if ((object.type === 'MemberExpression' || object.type === 'OptionalMemberExpression') && derivedTypes.has(object)) {
+          objectType = derivedTypes.get(object);
+        } else return;
+
+        const member = propertyName(memberPath.node);
+        const hit = { file, object: objectType, member: member ?? '<dynamic>', guarded: isGuarded(memberPath, source) };
+        membersFound.push(hit);
+        const childType = objectType === 'window' && ['document', 'navigator', 'location', 'history'].includes(member)
+          ? member : null;
+        if (childType) derivedTypes.set(memberPath.node, childType);
+        if (member !== null && providedMembers[objectType].has(member)) return;
+        if (hit.guarded) return;
+
+        const matches = memberAllowlist.filter((rule) => rule.object === objectType && rule.member === hit.member
+          && (rule.file instanceof RegExp ? rule.file.test(file) : rule.file === file));
+        if (matches.length !== 1) {
+          unsupportedMembers.push({ ...hit, matches: matches.length });
+          return;
+        }
+        memberCounts.set(matches[0], memberCounts.get(matches[0]) + 1);
+      }
+    }
+  });
+}
+
+const staleMemberAllowlist = memberAllowlist.filter((rule) => memberCounts.get(rule) !== rule.count);
+const platformSourceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src/platform');
+const forbiddenGlobalShimWrites = [];
+const shimNames = new Set(['window', 'document', 'URL']);
+
+function* sourceFiles(directory) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) yield* sourceFiles(absolute);
+    else if (entry.isFile() && /\.(?:c?js|tsx?)$/.test(entry.name)) yield absolute;
+  }
+}
+
+function globalShimNames(value) {
+  if (!value) return [];
+  if (value.type === 'StringLiteral') return shimNames.has(value.value) ? [value.value] : [];
+  if (value.type !== 'ObjectExpression') return [];
+  return value.properties.flatMap((property) => {
+    if (property.type !== 'ObjectProperty') return [];
+    const name = propertyName({ computed: property.computed, property: property.key });
+    return name && shimNames.has(name) ? [name] : [];
+  });
+}
+
+for (const absolute of sourceFiles(platformSourceRoot)) {
+  const source = fs.readFileSync(absolute, 'utf8');
+  let ast;
+  try {
+    ast = parse(source, { sourceType: 'unambiguous', plugins: ['optionalChaining', 'typescript', 'jsx'] });
+  } catch (error) {
+    console.error(`Cannot parse platform source ${path.relative(platformSourceRoot, absolute)}: ${error.message}`);
+    process.exit(1);
+  }
+  traverse(ast, {
+    AssignmentExpression(nodePath) {
+      const left = nodePath.node.left;
+      if (left.type !== 'MemberExpression' || left.object.type !== 'Identifier' || left.object.name !== 'globalThis') return;
+      const name = propertyName(left);
+      if (name && shimNames.has(name)) forbiddenGlobalShimWrites.push({ file: path.relative(platformSourceRoot, absolute), name });
+    },
+    UpdateExpression(nodePath) {
+      const argument = nodePath.node.argument;
+      if (argument.type !== 'MemberExpression' || argument.object.type !== 'Identifier' || argument.object.name !== 'globalThis') return;
+      const name = propertyName(argument);
+      if (name && shimNames.has(name)) forbiddenGlobalShimWrites.push({ file: path.relative(platformSourceRoot, absolute), name });
+    },
+    CallExpression(nodePath) {
+      const { callee, arguments: args } = nodePath.node;
+      if (callee.type !== 'MemberExpression' || callee.object.type !== 'Identifier' || callee.object.name !== 'Object') return;
+      const method = propertyName(callee);
+      if (method === 'defineProperty' && args[0]?.type === 'Identifier' && args[0].name === 'globalThis') {
+        const name = args[1]?.type === 'StringLiteral' ? args[1].value : null;
+        if (name && shimNames.has(name)) forbiddenGlobalShimWrites.push({ file: path.relative(platformSourceRoot, absolute), name });
+      }
+      if (method === 'defineProperties' && args[0]?.type === 'Identifier' && args[0].name === 'globalThis') {
+        for (const name of globalShimNames(args[1])) forbiddenGlobalShimWrites.push({ file: path.relative(platformSourceRoot, absolute), name });
+      }
+      if (method === 'assign' && args[0]?.type === 'Identifier' && args[0].name === 'globalThis') {
+        for (const argument of args.slice(1)) {
+          for (const name of globalShimNames(argument)) forbiddenGlobalShimWrites.push({ file: path.relative(platformSourceRoot, absolute), name });
+        }
+      }
+    }
+  });
+}
+
+if (unexpected.length || countErrors.length || unsupportedMembers.length || staleMemberAllowlist.length || forbiddenGlobalShimWrites.length) {
   for (const hit of unexpected) {
     console.error(`Unexpected unguarded ${hit.api} in ${hit.file}: …${hit.before.slice(-72)}<${hit.api}>${hit.after.slice(0, 72)}… (allowlist matches: ${hit.matches})`);
   }
   for (const rule of countErrors) {
     console.error(`Allowlist count changed for ${rule.api} in ${rule.file}: expected ${rule.count}, found ${counts.get(rule)}; ${rule.reason}`);
   }
+  for (const hit of unsupportedMembers) {
+    console.error(`Unsupported Taro ${hit.object}.${hit.member} in ${hit.file}${hit.guarded ? ' (guarded)' : ''} (allowlist matches: ${hit.matches})`);
+  }
+  for (const rule of staleMemberAllowlist) {
+    console.error(`Taro member allowlist count changed for ${rule.object}.${rule.member}: expected ${rule.count}, found ${memberCounts.get(rule)}; ${rule.reason}`);
+  }
+  for (const hit of forbiddenGlobalShimWrites) {
+    console.error(`Do not patch globalThis.${hit.name} in ${hit.file}; Taro supplies a separate runtime object.`);
+  }
   process.exit(1);
 }
 
 console.log(`WeChat API gate passed: ${found.length} unguarded matches across ${files.length} JavaScript files.`);
 for (const rule of allowlist) console.log(`  ${rule.api} × ${rule.count} in ${rule.file}: ${rule.reason}`);
+console.log(`Taro object member gate passed: ${membersFound.length} accesses across ${files.length} JavaScript files.`);
+for (const rule of memberAllowlist) console.log(`  ${rule.object}.${rule.member} × ${rule.count}: ${rule.reason}`);
+console.log('Taro global shim audit passed: no globalThis.window/document/URL patches in platform sources.');

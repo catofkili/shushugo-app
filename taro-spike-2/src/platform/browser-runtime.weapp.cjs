@@ -1,27 +1,3 @@
-const listeners = new Map();
-const windowTarget = globalThis.window || globalThis.__shushugoWindow || globalThis;
-windowTarget.addEventListener ||= (type, listener) => {
-  const entries = listeners.get(type) || [];
-  entries.push(listener); listeners.set(type, entries);
-};
-windowTarget.removeEventListener ||= (type, listener) => listeners.set(type, (listeners.get(type) || []).filter((item) => item !== listener));
-windowTarget.dispatchEvent ||= (event) => {
-  (listeners.get(event.type) || []).slice().forEach((listener) => listener(event));
-  return true;
-};
-windowTarget.setTimeout ||= setTimeout.bind(globalThis);
-windowTarget.clearTimeout ||= clearTimeout.bind(globalThis);
-
-const documentTarget = globalThis.document || (globalThis.document = {});
-if (!('visibilityState' in documentTarget)) {
-  Object.defineProperty(documentTarget, 'visibilityState', { value: 'visible', configurable: true });
-}
-documentTarget.addEventListener ||= (type, listener) => {
-  const entries = listeners.get(`document:${type}`) || [];
-  entries.push(listener); listeners.set(`document:${type}`, entries);
-};
-documentTarget.removeEventListener ||= (type, listener) => listeners.set(`document:${type}`, (listeners.get(`document:${type}`) || []).filter((item) => item !== listener));
-
 if (typeof globalThis.ResizeObserver !== 'function') {
   globalThis.ResizeObserver = class ResizeObserver {
     constructor(callback) { this.callback = callback; }
@@ -86,15 +62,14 @@ if (typeof globalThis.FileReader !== 'function') {
   };
 }
 
-const urlTarget = globalThis.URL || (globalThis.URL = {});
-urlTarget.createObjectURL = (blob) => {
+const createObjectURL = (blob) => {
   // 分享图（share-canvas.weapp.ts）的 Blob 已经是写好的本地文件，直接给路径；其余（备份导出）登记成 wxblob://
   if (blob?.__wxDataUrl) return blob.__wxDataUrl;
   const url = `wxblob://${++nextObjectUrl}`;
   objectUrls.set(url, blob);
   return url;
 };
-urlTarget.revokeObjectURL = (url) => objectUrls.delete(String(url));
+const revokeObjectURL = (url) => objectUrls.delete(String(url));
 
 const createDownloadLink = () => {
   let href = '';
@@ -128,9 +103,4 @@ const createDownloadLink = () => {
     }
   };
 };
-const createElement = documentTarget.createElement?.bind(documentTarget);
-documentTarget.createElement = (name, ...args) => String(name).toLowerCase() === 'a'
-  ? createDownloadLink()
-  : createElement?.(name, ...args);
-
-module.exports = {};
+module.exports = { createObjectURL, revokeObjectURL, createDownloadLink };

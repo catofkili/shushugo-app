@@ -1,31 +1,3 @@
-/** @type {Partial<Record<import("../types/app").Page, string | null>>} */
-const mobileTitles = {
-  grammar: "语法",
-  profile: "我的",
-  team: "组队",
-  "quick-study": "快速复习",
-  "vocab-test": null,
-  detail: "语法",
-  "grammar-foundation": null,
-  "study-modes": null,
-  favorites: null,
-  "yuzu-shop": "柚子商店",
-  confusion: null,
-  "distinction-quiz": "辨析练习",
-  "kanji-readings": null,
-  "word-list": null,
-  "jlpt-plan": "备考计划",
-  pro: "收集日 Pro",
-  account: "账号和安全",
-  "personal-info": "个人信息",
-  notifications: "通知提醒",
-  settings: "设置",
-  privacy: "隐私",
-  "privacy-policy": "隐私政策",
-  "user-agreement": "用户协议",
-  help: "帮助和支持",
-  achievements: "成就",
-  about: "关于"
-};
+const mobileTitles = require('./navigation-titles.json');
 
 module.exports = { mobileTitles };

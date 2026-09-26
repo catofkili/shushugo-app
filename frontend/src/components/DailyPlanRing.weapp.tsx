@@ -5,6 +5,9 @@ import { PLAN_KINDS, PLAN_LABELS, type PlanKind } from "../lib/daily-plan";
 import { queryTouchRect, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
 import { anglesOf, moveDailyPlanBoundary, polar, RING_COLORS, RING_START, type RingValue } from "./daily-plan-ring-geometry";
 
+export { RING_COLORS };
+export type { RingValue };
+
 interface Props {
   value: Record<PlanKind, RingValue>;
   onChange: (next: Record<PlanKind, RingValue>) => void;

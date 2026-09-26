@@ -28,6 +28,7 @@ import { getAppState, setAppState, useAppState } from "./app/app-store";
 import { PageLoading } from "./routes/shared";
 import { ROUTES } from "./routes";
 import { getProgressOverview } from "./lib/api";
+import { confirmDialog } from "./lib/platform-dialogs";
 
 const accountProtectedPages = new Set<Page>(["account", "personal-info", "team"]);
 const proPages: Partial<Record<Page, FeatureId>> = { "distinction-quiz": "confusionGroups" };
@@ -375,7 +376,7 @@ export default function App() {
     navigate: navigateToPage,
     showNotice,
     setOverview,
-    confirm: (message) => window.confirm(message),
+    confirm: confirmDialog,
     markLearned: studyStore.markLearned,
     recordReview: studyStore.recordReview
   });

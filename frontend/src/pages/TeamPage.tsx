@@ -19,6 +19,8 @@ import { RefreshCw } from "lucide-react";
 import { CapybaraWalk, Sticker } from "../components/CapybaraMascot";
 import { MascotSay } from "../components/MascotSay";
 import { playKnow, playSave, playStreakChirp } from "../lib/zoo-sounds";
+import { confirmDialog, promptDialog } from "../lib/platform-dialogs";
+import { copyText, shareText } from "../lib/share-text";
 
 const EMOJIS = ["🌱", "🐿️", "🐦", "🚃", "🦉", "🍊", "📚", "⛩️"];
 const TARGETS = ["N5", "N4", "N3", "N2", "N1", "全部"];
@@ -118,7 +120,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
 
   const copyInviteCode = () => run("copy-code", async () => {
     if (!team) return;
-    await navigator.clipboard.writeText(team.inviteCode);
+    await copyText(team.inviteCode);
     playSave();
     setNotice("邀请码已复制。");
   });
@@ -126,8 +128,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   const shareInvite = () => run("share", async () => {
     if (!team) return;
     const text = "来「收集日」加入我的学习队伍「" + team.name + "」：邀请码 " + team.inviteCode;
-    if (navigator.share) await navigator.share({ title: "收集日组队邀请", text });
-    else await navigator.clipboard.writeText(text);
+    await shareText("收集日组队邀请", text);
     playSave();
     setNotice("邀请信息已准备好。");
   });
@@ -139,14 +140,14 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   });
 
   const regenerateInvite = () => run("regenerate", async () => {
-    if (!window.confirm("旧邀请码会立即失效，确定更新吗？")) return;
+    if (!await confirmDialog("旧邀请码会立即失效，确定更新吗？")) return;
     const code = await regenerateCloudTeamInvite();
     setTeam((current) => current ? { ...current, inviteCode: code } : current);
     setNotice("已生成新的邀请码。");
   });
 
   const leave = () => run("leave", async () => {
-    if (!window.confirm(team?.isOwner && team.memberCount > 1 ? "退出后会把队长移交给最早加入的队友，确定退出吗？" : "确定退出这支队伍吗？")) return;
+    if (!await confirmDialog(team?.isOwner && team.memberCount > 1 ? "退出后会把队长移交给最早加入的队友，确定退出吗？" : "确定退出这支队伍吗？")) return;
     await leaveCloudTeam();
     setTeam(null);
     await refresh();
@@ -160,12 +161,13 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   };
 
   const report = (teamId: string) => {
-    const reason = window.prompt("举报原因：广告或联系方式 / 不当内容 / 冒充或欺骗 / 其他", "不当内容");
-    if (!reason) return;
-    void run("report-" + teamId, async () => {
-      await reportCloudTeam(teamId, reason);
-      setPlaza((items) => items.filter((item) => item.id !== teamId));
-      setNotice("已收到举报，这支队伍已从你的广场隐藏。");
+    void promptDialog("举报原因：广告或联系方式 / 不当内容 / 冒充或欺骗 / 其他", "不当内容").then((reason) => {
+      if (!reason) return;
+      return run("report-" + teamId, async () => {
+        await reportCloudTeam(teamId, reason);
+        setPlaza((items) => items.filter((item) => item.id !== teamId));
+        setNotice("已收到举报，这支队伍已从你的广场隐藏。");
+      });
     });
   };
 

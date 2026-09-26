@@ -18,7 +18,7 @@ import {
   type WordLibraryRow
 } from "../lib/word-library";
 import { useRowSelection } from "../hooks/useRowSelection";
-import { scrollPageToTop, usePageReachBottom } from "../lib/touch-adapter";
+import { getPageScrollRemaining, scrollPageToTop, usePageReachBottom } from "../lib/touch-adapter";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { displayForm } from "../lib/confusion-groups";
 import { kanaToRomaji } from "../features/word-study/word-study-utils";
@@ -184,10 +184,9 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
   // 换筛选等于换了一份列表：还停在上一份的第 800 行会莫名其妙地看到「到底了」。
   // 滚动容器是外层的 <main>，不是 window。
   useEffect(() => {
-    if (scrollPageToTop()) return;
     const scroller = scrollParent(pageRef.current);
     if (scroller) scroller.scrollTop = 0;
-    else window.scrollTo(0, 0);
+    else scrollPageToTop();
   }, [filters]);
 
   const tally = useMemo(() => {
@@ -233,7 +232,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
     const check = () => {
       const remaining = scroller
         ? scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight
-        : document.body.offsetHeight - window.scrollY - window.innerHeight;
+        : getPageScrollRemaining(document.body.offsetHeight);
       // 提前一屏半开始取，让下一页在滚到底之前就位
       if (remaining < 900) loadMore();
     };
