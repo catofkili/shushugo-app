@@ -423,7 +423,8 @@
 [data-theme] .zoo-quad button:active { background: var(--ds-inset); }
 
 /* 进度概览 / 进度维护 */
-[data-theme] .zoo-fold > summary small { color: var(--ds-ink-3); }
+[data-theme] .zoo-fold > summary small,
+[data-theme] .zoo-fold > .zoo-fold-summary small { color: var(--ds-ink-3); }
 [data-theme] .zoo-prog-tabs { background: var(--ds-inset); }
 [data-theme] .zoo-prog-tabs button { color: var(--ds-ink-2); }
 [data-theme] .zoo-prog-tabs button.on { background: var(--ds-surface); color: var(--ds-ink); box-shadow: var(--ds-shadow); }
@@ -432,7 +433,8 @@
 [data-theme] .zoo-prog-bar-track { background: var(--ds-inset-2); }
 [data-theme] .zoo-prog-bar-track i { background: var(--ds-primary); }
 [data-theme] .zoo-maint { border: 1px dashed var(--ds-line-2); background: transparent; }
-[data-theme] .zoo-maint > summary { color: var(--ds-ink-3); }
+[data-theme] .zoo-maint > summary,
+[data-theme] .zoo-maint > .zoo-maint-summary { color: var(--ds-ink-3); }
 [data-theme] .zoo-maint-btn { border: 0; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
 
 /* —————————————————— 9. 每日学习量（DailyPlanPanel） —————————————————— */

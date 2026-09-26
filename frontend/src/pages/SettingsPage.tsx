@@ -2,6 +2,7 @@ import { AlertTriangle, Check, ChevronRight, Download, Moon, RotateCcw, Smartpho
 import { useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { DailyPlanPanel } from "../components/DailyPlanPanel";
+import { Disclosure } from "../components/Disclosure";
 import { KanjiUnitPlanSettings } from "../components/KanjiUnitPlanSettings";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { devForcePro, setDevForcePro } from "../lib/entitlements";
@@ -623,8 +624,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
           />
 
           {/* 需要 Mac + 跑一次 python 脚本,能用的人极少,别让它常驻这一页 */}
-          <details className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3 text-xs leading-5 text-white/58">
-            <summary className="cursor-pointer font-bold text-white/72">MOJi 复习记录迁移（需要 Mac）</summary>
+          <Disclosure className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3 text-xs leading-5 text-white/58" summaryClassName="cursor-pointer font-bold text-white/72" summary="MOJi 复习记录迁移（需要 Mac）">
             <p className="mt-2">iPhone 不允许应用直接读取另一个应用的内部数据，所以本应用只能在 iPhone 上导入导出文件，不能直接读取 MOJi 的 .realm 或缓存文件。</p>
             <ol className="mt-2 list-decimal space-y-1 pl-4">
               <li>在 Mac 的 MOJi 中登录，打开“背词/复习”页面并等待内容加载完成，然后退出 MOJi。</li>
@@ -634,7 +634,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
               <li>回到本页点“导入词单或 MOJi 复习记录”，选择该 JSON 并确认。不要选择 .realm、.db 或缓存文件。</li>
             </ol>
             <p className="mt-2 text-white/45">导入会把 Moji 的做题次数、错误次数和分数转换为本应用的复习强度，不会覆盖已有本机学习记录。Windows 或纯 iPhone 目前只能导入已经导出的 JSON，不能生成这份完整记录。</p>
-          </details>
+          </Disclosure>
 
           <button onClick={() => backupInputRef.current?.click()} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/16 text-[#81D8CF]">

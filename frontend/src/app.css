@@ -591,11 +591,11 @@
 
 /* ===== 进度维护(折叠) ===== */
 .zoo-maint{margin-top:14px;border:1.5px dashed var(--ds-line-2);border-radius:20px;background:rgba(251,245,233,.6);overflow:hidden}
-.zoo-maint>summary{display:flex;align-items:baseline;gap:8px;padding:12px 14px;cursor:pointer;font-size:13px;font-weight:800;color:var(--zoo-brown-deep);list-style:none}
+.zoo-maint>summary,.zoo-maint>.zoo-maint-summary{display:flex;align-items:baseline;gap:8px;padding:12px 14px;cursor:pointer;font-size:13px;font-weight:800;color:var(--zoo-brown-deep);list-style:none}
 .zoo-maint>summary::-webkit-details-marker{display:none}
 .zoo-maint>summary::after{content:"▾";margin-left:auto;font-size:11px;transition:transform .2s}
 .zoo-maint[open]>summary::after{transform:rotate(180deg)}
-.zoo-maint>summary small{font-weight:600;font-size:11px;color:var(--zoo-muted)}
+.zoo-maint>summary small,.zoo-maint>.zoo-maint-summary small{font-weight:600;font-size:11px;color:var(--zoo-muted)}
 .zoo-maint-body{display:grid;gap:8px;padding:0 14px 14px}
 .zoo-maint-btn{display:flex;flex-direction:column;gap:2px;border:1px solid var(--ds-line);border-radius:12px;background:var(--zoo-surface);padding:10px 12px;text-align:left;color:var(--zoo-ink)}
 .zoo-maint-btn b{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800}
@@ -1336,14 +1336,15 @@
 .zoo-quad b{font-size:12px;font-weight:700;white-space:nowrap}
 
 /* —— T5 进度概览：折叠，摘要只有一行数 —— */
-.zoo-fold summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+.zoo-fold summary,.zoo-fold>.zoo-fold-summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
   list-style:none;cursor:pointer}
 .zoo-fold summary::-webkit-details-marker{display:none}
-.zoo-fold summary .zoo-tray-title{margin:0}
-.zoo-fold summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:700;text-align:right}
+.zoo-fold summary .zoo-tray-title,.zoo-fold>.zoo-fold-summary .zoo-tray-title{margin:0}
+.zoo-fold summary small,.zoo-fold>.zoo-fold-summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:700;text-align:right}
 .zoo-fold summary::after{content:"▾";color:var(--zoo-muted,#9A8A78);font-size:11px}
 .zoo-fold[open] summary::after{content:"▴"}
 .zoo-fold[open] summary{margin-bottom:10px}
+.zoo-fold.is-open>.zoo-fold-summary{margin-bottom:10px}
 .zoo-home-v2 .zoo-prog{border:0;padding:0;background:transparent;box-shadow:none}
 
 /* 维护那一折也按盘子来：实线细边、和上面几盘同一个圆角，不再是漂在底部的虚线框。
@@ -1351,10 +1352,11 @@
 .zoo-home-v2 .zoo-maint{margin-top:0;border-style:solid;border-width:1px;
   border-color:var(--ds-line);border-radius:20px;
   background:color-mix(in srgb, var(--zoo-surface) 62%, transparent)}
-.zoo-home-v2 .zoo-maint>summary{gap:10px;padding:12px}
+.zoo-home-v2 .zoo-maint>summary,.zoo-home-v2 .zoo-maint>.zoo-maint-summary{gap:10px;padding:12px}
 .zoo-home-v2 .zoo-maint>summary>:first-child,
-.zoo-home-v2 .zoo-maint>summary{white-space:nowrap}
-.zoo-home-v2 .zoo-maint>summary small{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.zoo-home-v2 .zoo-maint>summary,
+.zoo-home-v2 .zoo-maint>.zoo-maint-summary{white-space:nowrap}
+.zoo-home-v2 .zoo-maint>summary small,.zoo-home-v2 .zoo-maint>.zoo-maint-summary small{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .zoo-home-v2 .zoo-maint-body{padding:0 12px 12px}
 
 [data-theme="dark"] .zoo-tray{border-color:rgba(167,215,125,.16)}
@@ -1370,16 +1372,22 @@
    页面自己的部分用 .kr-*。 */
 .kr-rule{border:1px solid var(--ds-line);border-radius:16px;
   background:color-mix(in srgb, var(--zoo-surface) 62%, transparent);padding:11px 13px}
-.kr-rule>summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+.kr-rule>summary,.kr-rule>.kr-rule-summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
   list-style:none;cursor:pointer}
 .kr-rule>summary::-webkit-details-marker{display:none}
 .kr-rule>summary::after{content:"▾";color:var(--zoo-muted,#9A8A78);font-size:11px}
 .kr-rule[open]>summary::after{content:"▴"}
-.kr-rule>summary b{color:var(--zoo-ink);font-size:14px;font-weight:800}
-.kr-rule>summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:700}
+.kr-rule>summary b,.kr-rule>.kr-rule-summary b{color:var(--zoo-ink);font-size:14px;font-weight:800}
+.kr-rule>summary small,.kr-rule>.kr-rule-summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:700}
 .kr-rule p{margin-top:9px;color:var(--zoo-ink);font-size:13px;font-weight:600;line-height:1.75}
 .kr-rule p b{color:var(--zoo-primary-deep);font-weight:800}
 .kr-rule-more{color:var(--zoo-muted,#9A8A78)!important}
+
+/* Taro's HTML bridge does not provide a <summary> template, so Disclosure.weapp renders a View and an explicit marker. */
+.disclosure-summary{display:flex;align-items:center;gap:8px}
+.disclosure-summary-indicator{flex:none;margin-left:auto;color:var(--zoo-muted,#9A8A78);font-size:11px}
+.help-faq-summary{display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:pointer}
+.help-faq-chevron{color:var(--ds-ink-3);font-size:17px;line-height:1}
 
 .kr-bar{display:flex;flex-direction:column;gap:8px}
 .kr-search{width:100%;border:1px solid var(--ds-line);border-radius:12px;

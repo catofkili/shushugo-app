@@ -3,6 +3,7 @@ import { KANA, getKanaProgress, kanaMasteredCount, kanaQuizChoices, recordKanaAn
 import { refreshTodayWordPlan } from "../lib/api";
 import { Sticker } from "./CapybaraMascot";
 import { MascotSay } from "./MascotSay";
+import { Disclosure } from "./Disclosure";
 
 export function KanaPrimer() {
   const [progress, setProgress] = useState(getKanaProgress);
@@ -47,11 +48,10 @@ export function KanaPrimer() {
     }}>{choice}</button>)}</div>
     {feedback && <div role="status"><MascotSay sticker={feedback.ok ? "mood-yay" : "mood-puzzled"} tone={feedback.ok ? "good" : "warn"} size={48} className="mt-3">{feedback.text}</MascotSay></div>}
 
-    <details className="kana-primer-table mt-4">
-      <summary className="cursor-pointer text-sm font-bold">查看平假名与片假名表</summary>
+    <Disclosure className="kana-primer-table mt-4" summaryClassName="cursor-pointer text-sm font-bold" summary="查看平假名与片假名表">
       <div className="mt-3 grid grid-cols-5 gap-1.5">{KANA.map(([symbol, reading]) => <div key={symbol} className="rounded-xl p-2 text-center" style={{ background: "var(--ds-surface)" }}>
         <b className="block text-xl">{symbol}</b><small style={{ color: "var(--ds-ink-3)" }}>{reading}</small>
       </div>)}</div>
-    </details>
+    </Disclosure>
   </section>;
 }

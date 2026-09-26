@@ -25,7 +25,6 @@ type RingCanvas = {
 
 const STROKE = 22;
 const HANDLE_HIT_RADIUS = 23;
-
 export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocus, size = 240 }: Props) => {
   const canvasId = `daily-plan-ring-${useId().replace(/:/g, "")}`;
   const pixelRatio = Taro.getSystemInfoSync().pixelRatio || 1;
@@ -50,16 +49,20 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
 
   useEffect(() => {
     let alive = true;
-    Taro.createSelectorQuery().select(`#${canvasId}`).fields({ node: true, size: true } as any).exec((result) => {
+    // Taro commits the Canvas WXML after the effect; querying on the same tick returns no node.
+    Taro.nextTick(() => {
       if (!alive) return;
-      const node = result?.[0]?.node as RingCanvas | undefined;
-      if (!node) return;
-      node.width = Math.round(size * pixelRatio);
-      node.height = Math.round(size * pixelRatio);
-      const context = node.getContext("2d");
-      context.scale(pixelRatio, pixelRatio);
-      canvasRef.current = { node, context };
-      setCanvasReady(true);
+      Taro.createSelectorQuery().select(`#${canvasId}`).fields({ node: true, size: true } as any).exec((result) => {
+        if (!alive) return;
+        const node = result?.[0]?.node as RingCanvas | undefined;
+        if (!node) return;
+        node.width = Math.round(size * pixelRatio);
+        node.height = Math.round(size * pixelRatio);
+        const context = node.getContext("2d");
+        context.scale(pixelRatio, pixelRatio);
+        canvasRef.current = { node, context };
+        setCanvasReady(true);
+      });
     });
     return () => {
       alive = false;

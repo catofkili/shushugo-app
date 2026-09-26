@@ -57,6 +57,7 @@ const allowedPageComponentDuplicates = {
   'frontend/src/components/JapaneseWordRuby.tsx': 'Word ruby rendering is used in the study, grammar, and lazy tab routes.',
   'frontend/src/components/ReviewButton.tsx': 'Review controls appear in the content and grammar route packages.',
   'frontend/src/components/DailyPlanSlider.weapp.tsx': 'The account and study routes each render their package-local slider.',
+  'frontend/src/components/Disclosure.weapp.tsx': 'Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.',
   'frontend/src/components/JapaneseRubyText.weapp.tsx': 'Ruby text is used by lazy tabs and independently loaded content/grammar routes.'
 };
 const packages = JSON.parse(fs.readFileSync(path.join(root, 'reports/package-sizes.json'), 'utf8'));

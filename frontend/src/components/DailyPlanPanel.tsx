@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { DailyPlanRing, RING_COLORS, type RingValue } from "./DailyPlanRing";
+import { DailyPlanRing, type RingValue } from "./DailyPlanRing";
+import { RING_COLORS } from "./daily-plan-ring-geometry";
 import {
   arrangedPlan, dailyPlanView, saveDailyPlan, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
   type DailyPlanView, type PlanKind

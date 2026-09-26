@@ -22,6 +22,7 @@ import { useEntitlements } from "../hooks/useEntitlements";
 import { useCountUp } from "../hooks/useCountUp";
 import { useMoments } from "../hooks/useMoments";
 import { Sticker, type StickerName } from "./CapybaraMascot";
+import { Disclosure } from "./Disclosure";
 import { MomentPop } from "./MomentPop";
 import { WeeklyReportEntrance } from "./WeeklyReportEntrance";
 import { ZooProgressPanel } from "./ZooProgressPanel";
@@ -394,22 +395,20 @@ export function ZooHome({
       {/* ④ 进度概览 —— 默认只给一行数，柱状图收进折叠里。
              十根柱子里七根是 0%，常驻 291px 去展示这个不划算。 */}
       <section className="zoo-tray">
-        <details className="zoo-fold">
-          <summary>
+        <Disclosure className="zoo-fold" weappSummaryClassName="zoo-fold-summary" summary={
+          <>
             <span className="zoo-tray-title">进度概览</span>
             <small>
               单词 {overview.words.seen}/{overview.words.total} · 掌握 {overview.words.completed} · 薄弱 {overview.words.low}
             </small>
-          </summary>
+          </>
+        }>
           <ZooProgressPanel overview={overview} onOpenWordList={onOpenWordList} onOpenGrammar={onOpenGrammarLevel} />
-        </details>
+        </Disclosure>
       </section>
 
       {/* ⑤ 进度维护:低频 + 有副作用,默认收起来 */}
-      <details className="zoo-maint">
-        <summary>
-          进度维护
-        </summary>
+      <Disclosure className="zoo-maint" weappSummaryClassName="zoo-maint-summary" summary="进度维护">
         <div className="zoo-maint-body">
           <button className="zoo-pop zoo-maint-btn" onClick={onRefreshOverview}>
             <b><RefreshCw size={13} aria-hidden="true" /> 刷新进度</b>
@@ -421,7 +420,7 @@ export function ZooHome({
             <b><SkipForward size={13} aria-hidden="true" /> 一键完成今日单词</b>
           </button>
         </div>
-      </details>
+      </Disclosure>
     </div>
   );
 }
