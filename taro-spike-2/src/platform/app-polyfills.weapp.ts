@@ -11,3 +11,7 @@ if (typeof globalThis.sessionStorage === 'undefined') {
     clear: () => { values.clear(); }
   } as Storage;
 }
+
+if (!globalThis.performance || typeof globalThis.performance.now !== 'function') {
+  globalThis.performance = Object.assign({}, globalThis.performance, { now: () => Date.now() }) as Performance;
+}

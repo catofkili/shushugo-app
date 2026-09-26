@@ -10,6 +10,7 @@ import type { WordAnswer, WordCard } from "../types/vocabulary";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { useRowSelection } from "../hooks/useRowSelection";
 import { useStudyTimer } from "../lib/useStudyTimer";
+import { queryTouchRect, queryTouchRects, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
 
 type Props = {
   onNavigate: (page: Page) => void;
@@ -79,6 +80,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   const submittingRef = useRef(false);
   const panelRef = useRef<HTMLElement | null>(null);
   const ratingGesturePointerRef = useRef<number | null>(null);
+  const ratingTouchRef = useRef<{ latest: { x: number; y: number }; rects: TouchRect[] | null; ended: boolean } | null>(null);
   // 打开这一轮时固定学习日。即使页面跨过凌晨 4 点，也不在用户正在评卡时强制换页；
   // 旧日期草稿在下次进入快速学习时会被丢弃。
   const draftStudyDateRef = useRef(studyDate());
@@ -245,6 +247,12 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
     if (value && answerOptions.some((option) => option.value === value)) applySelectionRating(value);
   }, [applySelectionRating]);
 
+  const applyTouchRatingAtPoint = useCallback((clientX: number, clientY: number, rects: TouchRect[]) => {
+    const button = rects.find((rect) => clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom);
+    const value = button?.dataset?.batchRating as WordAnswer | undefined;
+    if (value && answerOptions.some((option) => option.value === value)) applySelectionRating(value);
+  }, [applySelectionRating]);
+
   const startRatingGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     ratingGesturePointerRef.current = event.pointerId;
@@ -258,6 +266,34 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
 
   const endRatingGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (ratingGesturePointerRef.current === event.pointerId) ratingGesturePointerRef.current = null;
+  };
+
+  const startTouchRatingGesture = (event: TouchEventLike) => {
+    const point = touchPoint(event);
+    if (!point) return;
+    const state = { latest: { x: point.clientX, y: point.clientY }, rects: null as TouchRect[] | null, ended: false };
+    ratingTouchRef.current = state;
+    void queryTouchRects("[data-batch-rating]").then((rects) => {
+      if (ratingTouchRef.current !== state) return;
+      state.rects = rects;
+      applyTouchRatingAtPoint(state.latest.x, state.latest.y, rects);
+      if (state.ended) ratingTouchRef.current = null;
+    });
+  };
+
+  const moveTouchRatingGesture = (event: TouchEventLike) => {
+    const state = ratingTouchRef.current;
+    const point = touchPoint(event);
+    if (!state || !point) return;
+    state.latest = { x: point.clientX, y: point.clientY };
+    if (state.rects) applyTouchRatingAtPoint(point.clientX, point.clientY, state.rects);
+  };
+
+  const endTouchRatingGesture = () => {
+    const state = ratingTouchRef.current;
+    if (!state) return;
+    if (!state.rects) state.ended = true;
+    else ratingTouchRef.current = null;
   };
 
   const toggleAllAnswers = () => {
@@ -277,6 +313,16 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
     }
     // 菜单默认向上弹；如果上方会撞到 sticky 标题栏，就改为向下展开，
     // 保证最上面的词也能点到“忘记/模糊”。预留四项菜单的真实高度余量。
+    if (touchEventsEnabled()) {
+      void Promise.all([queryTouchRect(`#quick-rating-${wordId}`), queryTouchRect("#quick-study-header")]).then(([buttonRect, headerRect]) => {
+        if (!buttonRect) return;
+        const menuHeight = 176;
+        const safeTop = (headerRect?.bottom ?? 0) + 6;
+        setRatingPlacement(buttonRect.top - menuHeight < safeTop ? "down" : "up");
+        setRatingOpenId(wordId);
+      });
+      return;
+    }
     const buttonRect = event.currentTarget.getBoundingClientRect();
     const headerRect = panelRef.current?.querySelector<HTMLElement>(".quick-study-head")?.getBoundingClientRect();
     const menuHeight = 176;
@@ -439,7 +485,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
 
   return (
     <section ref={panelRef} className="quick-study-panel" aria-label="快速复习">
-      <div className={`quick-study-head${selectionMode ? " quick-study-selection-head" : ""}`}>
+      <div id="quick-study-header" className={`quick-study-head${selectionMode ? " quick-study-selection-head" : ""}`}>
         {selectionMode ? (
           <>
             <button className="quick-study-selection-cancel" onClick={exitSelectionMode}>取消</button>
@@ -450,6 +496,10 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
               onPointerMove={moveRatingGesture}
               onPointerUp={endRatingGesture}
               onPointerCancel={endRatingGesture}
+              onTouchStart={touchEventsEnabled() ? (event) => startTouchRatingGesture(event as unknown as TouchEventLike) : undefined}
+              onTouchMove={touchEventsEnabled() ? (event) => moveTouchRatingGesture(event as unknown as TouchEventLike) : undefined}
+              onTouchEnd={touchEventsEnabled() ? endTouchRatingGesture : undefined}
+              onTouchCancel={touchEventsEnabled() ? endTouchRatingGesture : undefined}
             >
               {answerOptions.map((option) => (
                 <button
@@ -549,6 +599,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                     </button>
                     <div className={`quick-study-rating-wrap${ratingOpenId === card.id ? " quick-study-rating-wrap-open" : ""}`}>
                       <button
+                        id={`quick-rating-${card.id}`}
                         className={`quick-study-rating quick-study-rating-${rating}`}
                         onClick={(event) => toggleRating(event, card.id)}
                         aria-expanded={ratingOpenId === card.id}

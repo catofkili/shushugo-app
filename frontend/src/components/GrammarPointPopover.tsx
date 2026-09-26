@@ -36,12 +36,13 @@ export const GrammarPointPopover = ({ point, targetText, children }: {
 
   const popup = open && typeof document !== "undefined" ? createPortal(
     <>
-      <div className="token-dictionary-backdrop" aria-hidden="true" />
+      <div className="token-dictionary-backdrop" aria-hidden="true" onClick={close} />
       <div
         className="token-dictionary-sheet grammar-point-sheet"
         role="dialog"
         aria-label={`${point.title} 语法解释`}
         onPointerDown={(event) => event.stopPropagation()}
+        onTouchStart={(event) => event.stopPropagation()}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="token-dictionary-sheet-grabber" />

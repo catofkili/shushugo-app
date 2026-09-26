@@ -19,9 +19,11 @@ const platformAdapters = new Map([
   ['frontend/src/lib/cloud-fetch', path.join(root, 'src/platform/fetch.weapp.cjs')],
   ['frontend/src/lib/purchases', path.join(frontend, 'src/lib/purchases.weapp.ts')],
   ['frontend/src/lib/apple-auth', path.join(frontend, 'src/lib/apple-auth.weapp.ts')],
+  ['frontend/src/lib/touch-adapter', path.join(root, 'src/platform/touch-adapter.weapp.ts')],
   ['frontend/src/components/AuthDialog', path.join(frontend, 'src/components/AuthDialog.weapp.tsx')],
   ['frontend/src/components/Paywall', path.join(frontend, 'src/components/Paywall.weapp.tsx')],
   ['frontend/src/components/ShareImageSheet', path.join(frontend, 'src/components/ShareImageSheet.weapp.tsx')],
+  ['frontend/src/components/DailyPlanSlider', path.join(frontend, 'src/components/DailyPlanSlider.weapp.tsx')],
   ['frontend/src/pages/NotificationSettings', path.join(frontend, 'src/pages/NotificationSettings.weapp.tsx')],
   ['wechat-miniprogram/src/runtime/auth', path.join(root, 'src/platform/payment-auth.weapp.cjs')]
 ].map(([target, replacement]) => [path.join(repoRoot, target), replacement]));
@@ -123,6 +125,10 @@ module.exports = {
             // The web source imports react-dom/createPortal at TokenDictionaryPopover.tsx:3
             // and targets document.body at :148-199; WeChat has no DOM portal target.
             resource.request = path.join(frontend, 'src/components/TokenDictionaryPopover.weapp.tsx');
+            return;
+          }
+          if (/(^|\/)FloatingDoodlePen(?:\.[^/]*)?$/.test(resource.request)) {
+            resource.request = path.join(frontend, 'src/components/FloatingDoodlePen.weapp.tsx');
             return;
           }
           if (/(^|\/)JapaneseRubyText(?:\.[^/]*)?$/.test(resource.request)) {
