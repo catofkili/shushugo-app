@@ -20,6 +20,7 @@ import { firstValue } from "../lib/database/db-utils";
 import { studyTotals } from "../lib/study-totals";
 import { yuzuBalance } from "../lib/yuzu";
 import { Sticker } from "../components/CapybaraMascot";
+import { CrossPlatformImage } from "../components/CrossPlatformImage";
 
 // 「我的」页以前只是一张设置列表，没有「我」。页头下面摆三个只有这里说的数：
 // 连击和今天的量主页已经说了，这里说的是累计 —— 学过多少词、学了多少天、攒了多少柚子。
@@ -89,7 +90,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
       <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
         <div className="flex items-center gap-4">
           {profile?.avatar ? (
-            <img src={profile.avatar} alt="账号头像" className="h-16 w-16 shrink-0 rounded-full border border-white/20 object-cover" />
+            <CrossPlatformImage src={profile.avatar} alt="账号头像" className="h-16 w-16 shrink-0 rounded-full border border-white/20 object-cover" weappWidth={64} weappHeight={64} />
           ) : !cloudSession.token ? (
             // 没登录时是吉祥物在招手，不是一个灰色的「空用户」剪影
             <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-white/20 bg-[#81D8CF]/12">

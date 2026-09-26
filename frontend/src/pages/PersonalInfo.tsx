@@ -13,6 +13,7 @@ import {
 import { refreshUserProfileFromCloud, saveUserProfileToCloud } from "../lib/profile-sync";
 import { studyTotals, type StudyTotals } from "../lib/study-totals";
 import { achievementSummary, type Achievement } from "../lib/achievements";
+import { CrossPlatformImage } from "../components/CrossPlatformImage";
 
 interface PersonalInfoProps {
   onBack: () => void;
@@ -168,10 +169,12 @@ export function PersonalInfo({ onBack: _onBack, onOpenAchievements }: PersonalIn
           <div className="relative">
             <label htmlFor="avatar-upload" className="cursor-pointer">
               {profile.avatar ? (
-                <img
+                <CrossPlatformImage
                   src={profile.avatar}
                   alt="头像"
                   className="h-20 w-20 shrink-0 rounded-full border-2 border-white/20 object-cover"
+                  weappWidth={80}
+                  weappHeight={80}
                 />
               ) : (
                 <div className="grid h-20 w-20 shrink-0 place-items-center rounded-full border-2 border-white/20 bg-[#81D8CF] text-[#343838]">
