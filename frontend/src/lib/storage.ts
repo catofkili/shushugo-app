@@ -151,6 +151,14 @@ export async function saveRecoverySnapshot(label: string): Promise<string> {
 
   if (isNativeFileStorage()) {
     const path = `masternihongo/recovery-${safeLabel}.db`;
+    if (isWechatFileStorage()) {
+      // 每个恢复点都是一整份库，小程序 200 MB 上限（见 saveFileDatabase）下只留最近一份。
+      const { files } = await Filesystem.readdir({ path: 'masternihongo', directory: DB_DIRECTORY })
+        .catch(() => ({ files: [] as { name: string }[] }));
+      for (const file of files) {
+        if (file.name.startsWith('recovery-')) await deleteFileIfExists(`masternihongo/${file.name}`);
+      }
+    }
     await Filesystem.writeFile({
       path,
       data: fileData(data),
@@ -451,6 +459,11 @@ const deleteFileIfExists = async (path: string): Promise<void> => {
 
 // base64 字符串只剩 iOS 从旧 Preferences 分块迁移那一处在传；其余一律传字节。
 const saveFileDatabase = async (data: Uint8Array | string): Promise<void> => {
+  // ⚠️ 小程序：本地用户文件 + 缓存文件合计最多 200 MB（微信官方「文件系统」文档），超了 writeFile 直接失败。
+  // 照下面的顺序，写 tmp 那一刻磁盘上同时有 tmp / main / prev 三整份：作者 57 MB 的库峰值 172 MB，
+  // 再长一点就每次整库快照都失败（增量从此只涨不清，写盘失败横幅常驻）。先删 prev，峰值压到两份。
+  // 代价很小：main 在写 tmp 的全程都是完整的，prev 只防 main 读不出来；浏览器端本来就只存一份。
+  if (isWechatFileStorage()) await deleteFileIfExists(DB_FILE_PREV);
   await Filesystem.writeFile({
     path: DB_FILE_TMP,
     data: typeof data === 'string' ? data : fileData(data),
@@ -505,19 +518,42 @@ const loadFileDatabase = async (): Promise<boolean> => {
   return false;
 };
 
+// 原生小程序（wechat-miniprogram/src/runtime/database-store.js）的三代文件，它自己也按这个顺序读。
+const LEGACY_WECHAT_FILES = ['shushugo/nihongo.db', 'shushugo/nihongo.db.tmp', 'shushugo/nihongo.db.prev'];
+
 const loadLegacyWechatDatabase = async (): Promise<boolean> => {
-  if (Capacitor.getPlatform?.() !== 'wechat') return false;
-  const path = 'shushugo/nihongo.db';
-  try {
-    await Filesystem.stat({ path, directory: DB_DIRECTORY });
-  } catch (error) {
-    if ((error as { code?: string } | null)?.code === 'ENOENT') return false;
-    throw error;
+  if (!isWechatFileStorage()) return false;
+  // 和 loadFileDatabase 一样用目录枚举证明「不存在」；枚举本身出错照样抛，不当成首次启动。
+  const root = await Filesystem.readdir({ path: '', directory: DB_DIRECTORY });
+  if (!root.files.some(file => file.name === 'shushugo')) return false;
+  const directory = await Filesystem.readdir({ path: 'shushugo', directory: DB_DIRECTORY });
+  const names = new Set(directory.files.map(file => file.name));
+  // ⚠️ 三代都要试：原生版写到一半被杀时主文件可能只剩 tmp / prev，只认主文件等于把这位老用户
+  // 当成新用户从出厂库开始——之后启动只看 masternihongo/，旧数据再也不会被读到。
+  let bytes: Uint8Array | null = null;
+  let sawArchive = false;
+  let lastError: unknown = null;
+  for (const path of LEGACY_WECHAT_FILES) {
+    if (!names.has(path.split('/').pop()!)) continue;
+    sawArchive = true;
+    try {
+      const candidate = await readFileBytes(path);
+      if (!candidate.length) throw new Error('原生小程序数据库为空');
+      await importDatabase(candidate, { validateBackup: true });
+      bytes = candidate;
+      break;
+    } catch (error) {
+      lastError = error;
+    }
   }
-  const bytes = await readFileBytes(path);
-  if (!bytes.length) throw new Error('原生小程序数据库为空');
-  await importDatabase(bytes, { validateBackup: true });
+  if (!bytes) {
+    if (sawArchive) throw new LocalArchiveUnreadableError(null, lastError);
+    return false;
+  }
   await saveFileDatabase(bytes);
+  // 新库落盘成功才删旧库。留着有两个坏处：白占一整份空间（200 MB 上限，见 saveFileDatabase），
+  // 以及「清除数据」只清 masternihongo/，下次启动这里又会把旧库导回来。
+  for (const path of LEGACY_WECHAT_FILES) await deleteFileIfExists(path);
   console.log('✅ Database imported from the native Mini Program store');
   return true;
 };

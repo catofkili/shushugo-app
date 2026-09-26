@@ -227,14 +227,73 @@ describe("微信文件存储", () => {
     expect(exportDatabase).toHaveBeenCalledTimes(2);
   });
 
-  it("迁移原生小程序数据库时保留源文件", async () => {
+  it("迁移原生小程序数据库：新库落盘后删掉旧的三代文件", async () => {
+    // 留着旧库的话，「清除数据」之后下次启动会把它重新导回来，还白占 200 MB 上限里的一整份。
     platform.value = 'wechat';
     setFile('/wx-user/shushugo/nihongo.db', 'bGVnYWN5');
+    setFile('/wx-user/shushugo/nihongo.db.prev', 'b2xkZXI=');
     const { loadDatabase } = await import("./storage");
 
     expect(await loadDatabase()).toBe(true);
-    expect(Buffer.from(files.get('/wx-user/shushugo/nihongo.db')!).toString()).toBe('bGVnYWN5');
     expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString()).toBe('bGVnYWN5');
+    expect([...files.keys()].filter(path => path.startsWith('/wx-user/shushugo/'))).toEqual([]);
+  });
+
+  it("原生版主文件读不出来时，从 .tmp / .prev 迁", async () => {
+    // 原生版写到一半被杀会只剩 tmp / prev。只认主文件的话这位老用户会从出厂库开始。
+    platform.value = 'wechat';
+    setFile('/wx-user/shushugo/nihongo.db', 'broken');
+    setFile('/wx-user/shushugo/nihongo.db.prev', 'good');
+    importDatabase.mockImplementation(async (data: Uint8Array) => {
+      if (Buffer.from(data).toString() === 'broken') throw new Error('file is not a database');
+    });
+    const { loadDatabase } = await import("./storage");
+
+    expect(await loadDatabase()).toBe(true);
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString()).toBe('good');
+    importDatabase.mockImplementation(async () => undefined);
+  });
+
+  it("原生版三代都读不出来：报「存档打不开」，旧文件原样留着", async () => {
+    platform.value = 'wechat';
+    setFile('/wx-user/shushugo/nihongo.db', 'broken');
+    importDatabase.mockImplementation(async () => { throw new Error('file is not a database'); });
+    const { LocalArchiveUnreadableError, loadDatabase } = await import("./storage");
+
+    await expect(loadDatabase()).rejects.toBeInstanceOf(LocalArchiveUnreadableError);
+    expect(files.has('/wx-user/shushugo/nihongo.db')).toBe(true);
+    importDatabase.mockImplementation(async () => undefined);
+  });
+
+  it("整库落盘时磁盘上最多同时两整份（200 MB 上限）", async () => {
+    platform.value = 'wechat';
+    setFile('/wx-user/masternihongo/nihongo.db', 'main');
+    setFile('/wx-user/masternihongo/nihongo.db.prev', 'prev');
+    let peak = 0;
+    const count = () => [...files.keys()].filter(path => /\/masternihongo\/nihongo\.db(\.|$)/.test(path)).length;
+    const writeFile = fileManager.writeFile.bind(fileManager);
+    vi.spyOn(fileManager, 'writeFile').mockImplementation((options: any) => {
+      writeFile(options);
+      peak = Math.max(peak, count());
+    });
+    const { saveDatabase } = await import("./storage");
+    exportDatabase.mockReturnValueOnce(new Uint8Array([9]));
+    await saveDatabase();
+
+    expect(peak).toBe(2);
+    expect(files.get('/wx-user/masternihongo/nihongo.db')).toEqual(new Uint8Array([9]));
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db.prev')!).toString()).toBe('main');
+  });
+
+  it("小程序上的整库恢复点只留最近一份", async () => {
+    platform.value = 'wechat';
+    setFile('/wx-user/masternihongo/recovery-before-biru-2480-to-775.db', 'old');
+    const { saveRecoverySnapshot } = await import("./storage");
+    exportDatabase.mockReturnValueOnce(new Uint8Array([7]));
+    await saveRecoverySnapshot('before-duplicate-merge');
+
+    expect([...files.keys()].filter(path => path.includes('/recovery-')))
+      .toEqual(['/wx-user/masternihongo/recovery-before-duplicate-merge.db']);
   });
 
   it("整库读写按二进制直通，不经过 base64", async () => {
@@ -259,8 +318,11 @@ describe("微信文件存储", () => {
 
   it("检查旧库时的 I/O 错误不能当成首次启动", async () => {
     platform.value = 'wechat';
-    vi.spyOn(fileManager, 'stat').mockImplementationOnce(({ fail: onFail }: any) => {
-      onFail?.({ errMsg: 'operate:fail permission denied' });
+    setFile('/wx-user/shushugo/nihongo.db', 'bGVnYWN5');
+    const readdir = fileManager.readdir.bind(fileManager);
+    vi.spyOn(fileManager, 'readdir').mockImplementation((options: any) => {
+      if (options.dirPath === '/wx-user/shushugo') return options.fail?.({ errMsg: 'operate:fail permission denied' });
+      readdir(options);
     });
     const { LocalArchiveUnreadableError, loadDatabase } = await import("./storage");
 

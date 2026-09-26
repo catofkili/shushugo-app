@@ -30,6 +30,13 @@ const writeDataUrl = (dataUrl: string): Promise<string> => new Promise((resolve,
   const fs = wx.getFileSystemManager();
   const dir = `${wx.env.USER_DATA_PATH}/share`;
   try { fs.mkdirSync(dir, true); } catch { /* directory already exists */ }
+  // 本地用户文件合计只有 200 MB（和数据库共用，见 storage.ts 的 saveFileDatabase），
+  // 每分享一次留一张就会一直涨。分享面板一次只展示一张，旧的在画新图之前清掉。
+  try {
+    for (const name of fs.readdirSync(dir)) {
+      try { fs.unlinkSync(`${dir}/${name}`); } catch { /* 已被删掉 */ }
+    }
+  } catch { /* 目录读不出来就不清，照常写 */ }
   const filePath = `${dir}/share-${Date.now()}-${++fileSequence}.png`;
   fs.writeFile({ filePath, data: base64, encoding: "base64", success: () => resolve(filePath), fail: reject });
 });
