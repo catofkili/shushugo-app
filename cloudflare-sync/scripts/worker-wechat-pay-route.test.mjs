@@ -28,6 +28,7 @@ class FakeStatement {
     }
     if (this.sql.includes("FROM entitlements")) return this.db.entitlement ? { ...this.db.entitlement } : null;
     if (this.sql.includes("FROM wechat_orders")) { const row = this.db.orders[this.params[0]]; return row ? { ...row } : null; }
+    if (this.sql.includes("FROM launch_gift_grants")) return this.db.giftGrant ? { ...this.db.giftGrant } : null;
     if (this.sql.includes("FROM users")) return { email_verified_at: null };
     if (this.sql.includes("FROM auth_identities")) return { 1: 1 };
     // 限速的 UPSERT … RETURNING 走 first()：返回一行 = 放行
@@ -210,7 +211,35 @@ try {
     env.DB.orders[stuck.outTradeNo].status = "abandoned";
   }
 
-  console.log("OK Worker wechat pay routes: order, verify (unpaid/paid/idempotent/other-account), push handshake and refund, settle-before-reorder");
+  // 首发赠送期间买月卡：从赠送到期日起算（paid_time 1789000000 = 北京时间 2026-09-10，赠送到 10-01 北京时间 08:00）。
+  // 同一单再结算一次（发货确认失败后收到推送），到期日不许往回缩。
+  env.DB.entitlement = null;
+  env.DB.giftGrant = { expires_at: "2026-10-01T00:00:00.000Z" };
+  wx.paidStatus = 1;
+  res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_monthly" });
+  const duringGift = await res.json();
+  wx.paidStatus = 2;
+  res = await post("/api/pay/wechat/orders/verify", "tok-a", { outTradeNo: duringGift.outTradeNo });
+  assert.equal(res.status, 200, await res.clone().text());
+  assert.equal(env.DB.entitlement.expires_at, "2026-11-01T00:00:00.000Z");
+  env.DB.orders[duringGift.outTradeNo].status = "paid";
+  res = await post(`/api/purchases/wechat-notifications?signature=${sig}&timestamp=${ts}&nonce=${nonce}`, null, {
+    Event: "xpay_goods_deliver_notify", OpenId: "openid-a", OutTradeNo: duringGift.outTradeNo
+  });
+  assert.deepEqual(await res.json(), { ErrCode: 0 });
+  assert.equal(env.DB.entitlement.expires_at, "2026-11-01T00:00:00.000Z");
+  // 赠送早就过期了：照常从付款当天起算
+  env.DB.giftGrant = { expires_at: "2026-01-01T00:00:00.000Z" };
+  env.DB.entitlement = null;
+  wx.paidStatus = 1;
+  res = await post("/api/pay/wechat/orders", "tok-a", { productId: "shushugo_pro_monthly" });
+  const afterGift = await res.json();
+  wx.paidStatus = 2;
+  res = await post("/api/pay/wechat/orders/verify", "tok-a", { outTradeNo: afterGift.outTradeNo });
+  assert.equal(env.DB.entitlement.expires_at, "2026-10-10T00:26:40.000Z");
+  env.DB.giftGrant = null;
+
+  console.log("OK Worker wechat pay routes: order, verify (unpaid/paid/idempotent/other-account), push handshake and refund, settle-before-reorder, gift carry-over");
 } finally {
   rmSync(outdir, { recursive: true, force: true });
 }

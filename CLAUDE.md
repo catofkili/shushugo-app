@@ -318,8 +318,8 @@ App 真正能拉起微信还差 iOS 那一半（开放平台移动应用、Unive
   小程序用网页 `Paywall.tsx`。平台差异只有三处：期限卡说明代替 Apple 条款、领首月会员、先登录再买
   （`PurchaseResult.needsAuth` → `onRequireAuth` → `requireAccount`）。网页 Paywall 里的 DOM 调用必须一路可选链
   （Taro 元素没有 `querySelector` / `focus`）。
-- 首发赠送记成 `source: "trial"`，永远弱于付费：赠送期间买月卡，从付款当天起算，赠送剩余天数**不顺延**
-  （待用户决定要不要改成从赠送到期日起算）。
+- 首发赠送记成 `source: "trial"`，永远弱于付费。赠送期间买期限卡**从赠送到期日起算**（用户 2026-09-26 定），
+  按 `launch_gift_grants` 的固定到期日算——同一单会结算不止一次，按「当前权益是不是赠送」算，第二次会把到期日往回缩。
 - `release-config.weapp.cjs` 的 `purchase` 仍是 `false`。开之前：部署含 `c83cb3a` 的 Worker、`/api/health` 的
   `wechatPayConfigured: true`、四档道具已发布、沙箱真机把取消 / 成功 / 重复购买 / 恢复 / 退款走一遍。
 
