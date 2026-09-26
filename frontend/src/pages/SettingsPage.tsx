@@ -11,6 +11,7 @@ import { clearStorage, restoreDatabaseBackup, saveDatabase } from "../lib/storag
 import { getPasscodeState, verifyPasscode } from "../lib/localPasscode";
 import { defaultVoiceId, loadVoices, SYSTEM_VOICE_ID, type AudioVoice } from "../lib/speech";
 import { voiceUnlocked } from "../lib/yuzu";
+import { confirmDialog } from "../lib/platform-dialogs";
 import {
   CLOUD_AUTH_EVENT,
   cloudLogout,
@@ -190,7 +191,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
         .slice(0, 3)
         .map((item) => `${item.kanji}${item.kana !== item.kanji ? `（${item.kana}）` : ""}`)
         .join("、");
-      const confirmed = window.confirm(
+      const confirmed = await confirmDialog(
         [
           `识别到 ${preview.validRows} 个词条。`,
           preview.duplicateRows ? `文件内重复 ${preview.duplicateRows} 行会自动跳过。` : "",
@@ -272,14 +273,14 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
     "邮箱已验证。"
   );
 
-  const pushCloud = () => {
-    const confirmed = window.confirm("确定要用本机学习数据覆盖云端备份吗？如果这是切换账号后的本机数据，请先确认账号无误。");
+  const pushCloud = async () => {
+    const confirmed = await confirmDialog("确定要用本机学习数据覆盖云端备份吗？如果这是切换账号后的本机数据，请先确认账号无误。");
     if (!confirmed) return;
     runCloudAction(pushCloudBackup, "云端备份已上传。");
   };
 
-  const pullCloud = () => {
-    const confirmed = window.confirm("确定要把当前账号的云端进度合并到本机吗？建议先导出一份本机备份。");
+  const pullCloud = async () => {
+    const confirmed = await confirmDialog("确定要把当前账号的云端进度合并到本机吗？建议先导出一份本机备份。");
     if (!confirmed) return;
     runCloudAction(async () => {
       const text = await pullCloudBackup();

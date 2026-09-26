@@ -7,8 +7,8 @@ import type { SearchResult } from "../lib/search-api";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { JapaneseRuby } from "./JapaneseRuby";
 import { SquirrelTrail } from "./SquirrelTrail";
-import { mobileTitles } from "../app/navigation-titles.cjs";
-export { mobileTitles } from "../app/navigation-titles.cjs";
+import { mobileTitles } from "../app/navigation-titles";
+export { mobileTitles } from "../app/navigation-titles";
 
 // 主页取代了原来的「工具箱」：工具箱的学习模式、收藏、进度概览等入口都挪到了主页。
 // 图标是作者 2026-09-19 补的高清 Tab 图标那组（带水豚，含语法）

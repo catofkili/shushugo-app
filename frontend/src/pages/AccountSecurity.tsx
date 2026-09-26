@@ -9,6 +9,7 @@ import { requestAppleCredential } from "../lib/apple-auth";
 import { isWechatAppLoginAvailable, requestWechatAppCode } from "../lib/wechat-auth";
 import { PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_TITLE } from "../lib/privacy-policy-content";
 import { USER_AGREEMENT_SECTIONS, USER_AGREEMENT_TITLE } from "../lib/user-agreement-content";
+import { confirmDialog } from "../lib/platform-dialogs";
 
 interface AccountSecurityProps {
   onBack: () => void;
@@ -79,7 +80,7 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
   };
 
   const removeAccount = async () => {
-    if (!window.confirm("确定永久删除账号吗？云端资料和备份将无法恢复，本机学习数据会保留。")) return;
+    if (!await confirmDialog("确定永久删除账号吗？云端资料和备份将无法恢复，本机学习数据会保留。")) return;
     setSaving(true);
     try {
       if (isWechatMini) {

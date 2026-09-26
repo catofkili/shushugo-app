@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from "react";
-import { queryTouchRects, scrollTouchPageBy, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
+import { queryTouchRects, scrollPageBy, scrollTouchPageBy, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
 
 /**
  * 列表里的「长按进选择模式 + 拖动划选」。
@@ -141,9 +141,9 @@ export function useRowSelection({
       const top = scroller ? scroller.getBoundingClientRect().top : 0;
       const bottom = scroller ? scroller.getBoundingClientRect().bottom : window.innerHeight;
       if (moveEvent.clientY < top + EDGE) {
-        if (scroller) scroller.scrollTop -= EDGE_STEP; else window.scrollBy(0, -EDGE_STEP);
+        if (scroller) scroller.scrollTop -= EDGE_STEP; else scrollPageBy(-EDGE_STEP);
       } else if (moveEvent.clientY > bottom - EDGE) {
-        if (scroller) scroller.scrollTop += EDGE_STEP; else window.scrollBy(0, EDGE_STEP);
+        if (scroller) scroller.scrollTop += EDGE_STEP; else scrollPageBy(EDGE_STEP);
       }
     };
     const handleEnd = (endEvent: PointerEvent) => {

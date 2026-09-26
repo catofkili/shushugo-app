@@ -6,6 +6,7 @@ import { getPurchaseRuntime, initializePurchases, purchaseProduct, restorePurcha
 import { claimLaunchGift, getCloudSession, refreshLaunchGiftAvailability } from "../lib/sync-api";
 import { Sticker } from "./CapybaraMascot";
 import { useEntitlements } from "../hooks/useEntitlements";
+import { getActiveElement } from "../lib/touch-adapter";
 
 interface PaywallProps {
   feature?: FeatureId;
@@ -92,7 +93,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
   // 这是非模态小窗，不再困住 Tab：用户可以关、可以买，也可以直接继续用背后的页面。
   useEffect(() => {
     // 可选链一路到底：Taro 的元素没有 querySelector / focus，document 上也没有 activeElement。
-    const opener = (document.activeElement ?? null) as HTMLElement | null;
+    const opener = getActiveElement();
     dialogRef.current?.querySelector?.<HTMLElement>('button, [href], input, select, textarea')?.focus?.();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;

@@ -93,6 +93,8 @@ const boundaryAtOffset = (block: HTMLElement, target: number): [Node, number] | 
 };
 
 const supportsCustomHighlight = (): HighlightRegistryLike | null => {
+  // Mini Program has no browser text selection or CSS Highlight API. Keep persisted web highlights inert there.
+  if (touchEventsEnabled()) return null;
   const css = (globalThis as typeof globalThis & {
     CSS?: { highlights?: HighlightRegistryLike };
   }).CSS;

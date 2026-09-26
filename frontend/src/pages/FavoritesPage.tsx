@@ -18,6 +18,7 @@ import type { FavoriteFolder } from "../lib/api";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { MascotSay } from "../components/MascotSay";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
+import { confirmDialog } from "../lib/platform-dialogs";
 
 type FavoriteFilter = "all" | "word" | "grammar";
 
@@ -109,8 +110,8 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
     else load();
   };
 
-  const removeCurrent = () => {
-    if (!window.confirm(`删掉收藏夹「${folder}」？里面的收藏会回到未分类，不会丢。`)) return;
+  const removeCurrent = async () => {
+    if (!await confirmDialog(`删掉收藏夹「${folder}」？里面的收藏会回到未分类，不会丢。`)) return;
     deleteFavoriteFolder(folder);
     setFolder(ALL_FOLDERS);
   };

@@ -18,16 +18,22 @@ globalThis.wx = {
   shareFileMessage: ({ filePath, fileName }) => { shared = { filePath, fileName }; }
 };
 
-require('../src/platform/browser-runtime.weapp.cjs');
+const browserURL = globalThis.URL;
+const browserDocument = globalThis.document;
+const browserWindow = globalThis.window;
+const { createDownloadLink, createObjectURL, revokeObjectURL } = require('../src/platform/browser-runtime.weapp.cjs');
+assert.equal(globalThis.URL, browserURL);
+assert.equal(globalThis.document, browserDocument);
+assert.equal(globalThis.window, browserWindow);
 
 async function main() {
   const blob = new Blob(['ShuShuGo'], { type: 'text/plain' });
   assert.equal(blob.size, 8);
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
+  const link = createDownloadLink();
+  link.href = createObjectURL(blob);
   link.download = 'export.txt';
   link.click();
-  URL.revokeObjectURL(link.href);
+  revokeObjectURL(link.href);
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(written, 'ShuShuGo');
   assert.deepEqual(shared, { filePath: '/shushugo/export.txt', fileName: 'export.txt' });

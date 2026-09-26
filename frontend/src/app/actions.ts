@@ -83,8 +83,8 @@ export function createAppActions(deps: ActionDependencies) {
     markLearnedWithNotice,
     markForgotWithNotice,
     refreshOverview,
-    completeTodayWords() {
-      if (!deps.confirm("确定要把今天的单词任务直接标记为完成吗？这会记录为今日已完成并进入完成页。")) return;
+    async completeTodayWords() {
+      if (!await deps.confirm("确定要把今天的单词任务直接标记为完成吗？这会记录为今日已完成并进入完成页。")) return;
       try {
         const result = completeTodayWordPlan();
         setAppState((state) => ({ wordStudyRevision: state.wordStudyRevision + 1 }));

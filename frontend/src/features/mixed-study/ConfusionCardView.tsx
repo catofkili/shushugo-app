@@ -81,7 +81,7 @@ export const ConfusionCardView = ({ card, revealed, onReveal, onAnswer }: Props)
       <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
         {!revealed ? (
           <button onClick={onReveal} style={{ background: "var(--quiz-accent)" }} className="focus-ring zoo-pop zoo-gloss inline-flex h-16 w-full items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333]">
-            <Eye size={18} /><span>显示辨析</span><span className="text-xs font-semibold opacity-65">（按任意键）</span>
+            <Eye size={18} /><span>显示辨析</span><span className="kbd-hint text-xs font-semibold opacity-65">（按任意键）</span>
           </button>
         ) : (
           <div className="zoo-rate-row grid h-16 grid-cols-[1.35fr_0.65fr_1.35fr_0.65fr] gap-2 sm:gap-3">

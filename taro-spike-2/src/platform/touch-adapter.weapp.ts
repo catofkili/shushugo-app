@@ -51,6 +51,15 @@ export const scrollTouchPageBy = (delta: number) => {
   });
 };
 
+export const scrollPageBy = scrollTouchPageBy;
+
+// Page reach-bottom owns pagination in the Mini Program. These browser-only fallbacks stay inert.
+export const getPageScrollRemaining = (_bodyHeight: number) => Number.POSITIVE_INFINITY;
+
+export const getElementFromPoint = (_x: number, _y: number): null => null;
+
+export const getActiveElement = (): null => null;
+
 export const scrollPageToTop = () => {
   Taro.pageScrollTo({ scrollTop: 0, duration: 0 });
   return true;

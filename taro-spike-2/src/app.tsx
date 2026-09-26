@@ -7,6 +7,7 @@ import '../../frontend/src/styles.css';
 import '../../frontend/src/app.css';
 import '../../frontend/src/design.css';
 import '../../frontend/src/skins.css';
+import './platform/mini-overrides.weapp.css';
 
 export default function App({ children }: PropsWithChildren) {
   return <View className="taro-spike-shell"><View className="taro-spike-content">{children}</View></View>;

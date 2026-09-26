@@ -176,7 +176,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
           <div className="flex h-16 gap-2">
             {Object.keys(pairs).length > 0 && <button type="button" onClick={() => { setPairs({}); setSelectedWord(null); }} className="focus-ring zoo-pop inline-flex h-16 shrink-0 items-center justify-center gap-2 rounded-2xl border border-[var(--ds-line-2)] px-4 text-sm font-bold text-[var(--ds-ink-2)]"><RotateCcw size={16} />清空</button>}
             <button onClick={onReveal} style={{ background: "var(--quiz-accent)" }} className="focus-ring zoo-pop zoo-gloss inline-flex h-16 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333]">
-              <Eye size={18} /><span>{allConnected ? "核对连线" : "显示答案"}</span><span className="hidden text-xs font-semibold opacity-65 sm:inline">（按任意键）</span>
+              <Eye size={18} /><span>{allConnected ? "核对连线" : "显示答案"}</span><span className="kbd-hint hidden text-xs font-semibold opacity-65 sm:inline">（按任意键）</span>
             </button>
           </div>
         ) : (

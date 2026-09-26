@@ -37,11 +37,22 @@ export const queryTouchRects = async (_selector: string): Promise<TouchRect[]> =
 
 export const scrollTouchPageBy = (_delta: number) => {};
 
+export const scrollPageBy = (delta: number) => window.scrollBy(0, delta);
+
+export const getPageScrollRemaining = (bodyHeight: number) => bodyHeight - window.scrollY - window.innerHeight;
+
+export const getElementFromPoint = (x: number, y: number) => document.elementFromPoint(x, y);
+
+export const getActiveElement = (): HTMLElement | null => document.activeElement;
+
 /**
  * 小程序里滚的是页面本身：window 上没有 scroll 事件，scrollTo 在 iPhone 上不存在、在开发者工具里调用会
- * Illegal invocation（Taro 的 window 把全局属性原样抄了一份，this 不对）。网页返回 false，调用方照旧滚自己的容器。
+ * Illegal invocation（Taro 的 window 把全局属性原样抄了一份，this 不对）。网页滚页面本身时再走浏览器 API。
  */
-export const scrollPageToTop = () => false;
+export const scrollPageToTop = () => {
+  window.scrollTo(0, 0);
+  return true;
+};
 
 /** 小程序的触底（页面 onReachBottom），返回「是不是页面自己在滚」。网页返回 false：列表页自己听滚动续页。 */
 export const usePageReachBottom = (_callback: () => void) => false;
