@@ -51,6 +51,7 @@ export const Puzzle = icon('puzzle');
 export const Repeat = icon('repeat');
 export const RotateCcw = icon('rotateccw');
 export const Search = icon('search');
+export const Send = icon('send');
 export const Share2 = icon('share2');
 export const ShieldCheck = icon('shieldcheck');
 export const Shuffle = icon('shuffle');

@@ -10,6 +10,7 @@ import { notifyProgressUpdated, PROGRESS_UPDATED_EVENT } from "../lib/progress-e
 import { refreshMixedCardTasks } from "../lib/mixed-cards";
 import { getDatabase } from "../lib/database";
 import { useEntitlements } from "../hooks/useEntitlements";
+import { DailyPlanSlider } from "./DailyPlanSlider";
 
 /**
  * 每日学习量的三个入口放在一起：圆环（随手拖）、数字表单（朴实无华，八个框）、备考一键。
@@ -164,19 +165,14 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
           <p className="zoo-plan-zoom-title">
             {PLAN_LABELS[focus]} · {focusedCount} 项 —— 左边新学，右边复习
           </p>
-          <input
-            type="range"
-            min={0}
-            max={focusedCount}
+          <DailyPlanSlider
             value={plan[focus].fresh}
-            onChange={(event) => {
-              const fresh = Number(event.target.value);
+            max={focusedCount}
+            color={RING_COLORS[focus]}
+            onChange={(fresh) => {
               preview({ ...plan, [focus]: { fresh, review: focusedCount - fresh } });
             }}
-            onPointerUp={commitDrag}
-            onKeyUp={commitDrag}
-            onBlur={commitDrag}
-            style={{ accentColor: RING_COLORS[focus] }}
+            onCommit={commitDrag}
           />
           <p className="zoo-plan-zoom-meta">
             新学 <b>{plan[focus].fresh}</b>（建议 ≥ {focused.suggest.fresh}，剩 {focused.pool.unseen} 没学）

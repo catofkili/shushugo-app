@@ -9,7 +9,7 @@ const names = [
   'Check', 'CheckCircle2', 'ChevronDown', 'ChevronLeft', 'ChevronRight', 'Clock3', 'Crown', 'Eye', 'ExternalLink', 'Flame',
   'FolderPlus', 'GitCompareArrows', 'Handshake', 'History', 'ImageDown', 'Languages', 'Layers', 'ListChecks',
   'Loader2', 'MessageCircle', 'Minus', 'NotebookPen', 'Pause', 'PenLine', 'Pencil', 'PencilLine', 'Play', 'Plus',
-  'Puzzle', 'Repeat', 'RotateCcw', 'Search', 'Share2', 'ShieldCheck', 'Shuffle', 'Sparkles', 'Sprout', 'Star',
+  'Puzzle', 'Repeat', 'RotateCcw', 'Search', 'Send', 'Share2', 'ShieldCheck', 'Shuffle', 'Sparkles', 'Sprout', 'Star',
   'StickyNote', 'Target', 'Timer', 'Trash2', 'Type', 'Undo2', 'Volume2', 'X', 'XCircle'
 ];
 const out = path.join(__dirname, '../src/assets/lucide');
