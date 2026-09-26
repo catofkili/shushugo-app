@@ -4,6 +4,7 @@ import type { GrammarPoint } from "../types/grammar";
 import { JapaneseRuby } from "./JapaneseRuby";
 import { GrammarTermHint } from "./GrammarTermHint";
 import { getGrammarTitleFuriganaByPattern } from "../lib/grammar-title-furigana";
+import { touchEventsEnabled } from "../lib/touch-adapter";
 
 export const GrammarPointPopover = ({ point, targetText, children }: {
   point: Pick<GrammarPoint, "title" | "meaning" | "structure" | "explanation">;
@@ -34,7 +35,7 @@ export const GrammarPointPopover = ({ point, targetText, children }: {
     };
   }, [open]);
 
-  const popup = open && typeof document !== "undefined" ? createPortal(
+  const popupContent = open && typeof document !== "undefined" ? (
     <>
       <div className="token-dictionary-backdrop" aria-hidden="true" onClick={close} />
       <div
@@ -60,9 +61,9 @@ export const GrammarPointPopover = ({ point, targetText, children }: {
           <p className="mt-2 text-xs leading-5 opacity-80">{point.explanation}</p>
         </div>
       </div>
-    </>,
-    document.body
+    </>
   ) : null;
+  const popup = popupContent && (touchEventsEnabled() ? popupContent : createPortal(popupContent, document.body));
 
   return (
     <>

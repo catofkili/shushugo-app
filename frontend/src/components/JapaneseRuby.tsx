@@ -2,7 +2,8 @@ import { parseTokenBoundaries } from "../lib/furigana-data";
 import { findGrammarFormRange, type GrammarFormRange } from "../lib/grammar-form-target";
 import type { GrammarPoint } from "../types/grammar";
 import type { FuriganaAnnotation, TokenBoundary } from "../types/furigana";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
+import { touchEventsEnabled } from "../lib/touch-adapter";
 import { GrammarPointPopover } from "./GrammarPointPopover";
 import { TokenDictionaryPopover } from "./TokenDictionaryPopover";
 import { JapaneseRubyText } from "./JapaneseRubyText";
@@ -181,7 +182,9 @@ const annotatedNodes = (text: string, annotations: readonly FuriganaAnnotation[]
 
 const renderNodes = (nodes: RubyNode[]) => nodes.map((node, nodeIndex) =>
   typeof node === "string" ? (
-    <span key={`${node}-${nodeIndex}`}>{node}</span>
+    touchEventsEnabled()
+      ? <Fragment key={`${node}-${nodeIndex}`}>{node}</Fragment>
+      : <span key={`${node}-${nodeIndex}`}>{node}</span>
   ) : (
     <JapaneseRubyText key={`${node.base}-${nodeIndex}`} base={node.base} reading={node.reading} />
   )

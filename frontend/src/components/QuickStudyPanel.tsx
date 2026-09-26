@@ -69,8 +69,9 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   // 长按进选择模式 + 拖动划选：这一套和词库的选词共用 hooks/useRowSelection，
   // 别在这儿再写一遍（手势那几个阈值每写一遍都要重踩一次坑）。
   const selection = useRowSelection({
-    rowSelector: ".quick-study-row[data-quick-word-id]",
+    rowSelector: ".quick-study-row",
     idKey: "quickWordId",
+    touchIds: cards.map((card) => card.id),
     onEnter: () => setRatingOpenId(null),
     onExit: () => setRatingOpenId(null)
   });
@@ -220,7 +221,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   const handleRowClick = (event: ReactMouseEvent<HTMLDivElement>, wordId: number) => {
     if (selection.consumedByGesture()) return;
     // 行内已有按钮保留各自行为，不能因为事件冒泡又翻一次答案。
-    if ((event.target as HTMLElement).closest("button")) return;
+    if ((event.target as HTMLElement | null)?.closest?.("button")) return;
     if (selectionMode) {
       selection.toggle(wordId);
       return;
@@ -568,6 +569,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                     className={`quick-study-select-circle${selectedIds.has(card.id) ? " selected" : ""}`}
                     aria-label={selectedIds.has(card.id) ? "取消选择" : "选择词条"}
                     aria-pressed={selectedIds.has(card.id)}
+                    onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined}
                     onClick={(event) => { event.stopPropagation(); selection.toggle(card.id); }}
                   >
                     {selectedIds.has(card.id) ? "✓" : ""}
@@ -594,14 +596,15 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                     )}
                   </div>
                   <div className="quick-study-row-actions">
-                    <button className={`quick-study-answer-button${revealed ? " on" : ""}`} onClick={() => toggleAnswer(card.id)}>
+                    <button className={`quick-study-answer-button${revealed ? " on" : ""}`} onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined} onClick={(event) => { event.stopPropagation(); toggleAnswer(card.id); }}>
                       答
                     </button>
                     <div className={`quick-study-rating-wrap${ratingOpenId === card.id ? " quick-study-rating-wrap-open" : ""}`}>
                       <button
                         id={`quick-rating-${card.id}`}
                         className={`quick-study-rating quick-study-rating-${rating}`}
-                        onClick={(event) => toggleRating(event, card.id)}
+                        onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined}
+                        onClick={(event) => { event.stopPropagation(); toggleRating(event, card.id); }}
                         aria-expanded={ratingOpenId === card.id}
                         aria-label={`${selectedOption.label}，打开学习度选项`}
                       >
@@ -614,7 +617,8 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                             <button
                               key={option.value}
                               className={rating === option.value ? "selected" : ""}
-                              onClick={() => selectRating(card.id, option.value)}
+                              onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined}
+                              onClick={(event) => { event.stopPropagation(); selectRating(card.id, option.value); }}
                               role="menuitem"
                             >
                               <span>{option.label}</span>

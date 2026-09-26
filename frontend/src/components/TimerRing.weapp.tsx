@@ -1,39 +1,57 @@
-import { useEffect } from "react";
-import { Canvas } from "@tarojs/components";
+import { useEffect, useId, useRef } from "react";
+import { Canvas, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Pause } from "lucide-react";
 
-const CANVAS_ID = "vocab-test-timer-ring";
-const SIZE = 36;
-const RADIUS = 15.5;
+const SIZE = 42;
+const RADIUS = 18.1;
 
-/** WeChat Canvas replacement for the inline SVG ring; the label and timing are shared. */
+/** WeChat Canvas 2D replacement for the inline SVG timer. */
 export const TimerRing = ({ remaining, total, paused }: { remaining: number; total: number; paused: boolean }) => {
-  const ratio = total ? Math.max(0, Math.min(1, remaining / total)) : 0;
+  const canvasId = `vocab-timer-${useId().replace(/:/g, "")}`;
   const pixelRatio = Taro.getSystemInfoSync().pixelRatio || 1;
+  const canvasRef = useRef<{ node: { width: number; height: number; getContext: (kind: "2d") => CanvasRenderingContext2D }; context: CanvasRenderingContext2D } | null>(null);
+  const ratio = total ? Math.max(0, Math.min(1, remaining / total)) : 0;
 
   useEffect(() => {
-    const context = Taro.createCanvasContext(CANVAS_ID);
-    context.scale(pixelRatio, pixelRatio);
-    context.setLineWidth(3.2);
-    context.setLineCap("round");
-    context.setStrokeStyle("#ece5d9");
-    context.beginPath();
-    context.arc(18, 18, RADIUS, 0, Math.PI * 2);
-    context.stroke();
-    if (ratio > 0) {
-      context.setStrokeStyle(remaining <= 5 && !paused ? "#E8971C" : "#6FA83E");
-      context.beginPath();
-      context.arc(18, 18, RADIUS, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * ratio);
-      context.stroke();
-    }
-    context.draw();
-  }, [pixelRatio, paused, ratio, remaining]);
+    let alive = true;
+    Taro.createSelectorQuery().select(`#${canvasId}`).fields({ node: true, size: true } as any).exec((result) => {
+      if (!alive) return;
+      const node = result?.[0]?.node;
+      if (!node) return;
+      node.width = Math.round(SIZE * pixelRatio);
+      node.height = Math.round(SIZE * pixelRatio);
+      const context = node.getContext("2d");
+      context.scale(pixelRatio, pixelRatio);
+      canvasRef.current = { node, context };
+      draw(context, ratio, remaining, paused);
+    });
+    return () => { alive = false; canvasRef.current = null; };
+  }, [canvasId, pixelRatio]);
+
+  useEffect(() => {
+    if (canvasRef.current) draw(canvasRef.current.context, ratio, remaining, paused);
+  }, [paused, ratio, remaining]);
 
   return (
     <span className={`vt-timer ${remaining <= 5 && !paused ? "is-low" : ""}`} role="timer" aria-label={paused ? "已暂停" : `剩 ${remaining} 秒`}>
-      <Canvas canvasId={CANVAS_ID} width={SIZE * pixelRatio} height={SIZE * pixelRatio} className="vt-timer-canvas" />
-      <b>{paused ? <Pause size={13} /> : remaining}</b>
+      <Canvas id={canvasId} type="2d" className="vt-timer-canvas" style={{ position: "absolute", left: 0, top: 0, width: `${SIZE}px`, height: `${SIZE}px` }} />
+      <b>{paused ? <Text style={{ fontSize: "13px" }}>Ⅱ</Text> : remaining}</b>
     </span>
   );
+};
+
+const draw = (context: CanvasRenderingContext2D, ratio: number, remaining: number, paused: boolean) => {
+  const ctx = context;
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  ctx.lineWidth = 3.75;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#ece5d9";
+  ctx.beginPath();
+  ctx.arc(SIZE / 2, SIZE / 2, RADIUS, 0, Math.PI * 2);
+  ctx.stroke();
+  if (ratio <= 0) return;
+  ctx.strokeStyle = remaining <= 5 && !paused ? "#E8971C" : "#6FA83E";
+  ctx.beginPath();
+  ctx.arc(SIZE / 2, SIZE / 2, RADIUS, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * ratio);
+  ctx.stroke();
 };
