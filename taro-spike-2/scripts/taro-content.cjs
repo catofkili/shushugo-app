@@ -40,13 +40,15 @@ const loading = {};
 // Prime the same lazy stores after we have hydrated content-store. These are
 // the source loaders used by the web app; importing the native content loader
 // here would also import its bundled web.js graph into the Taro main package.
-function primeWebLoaders() {
-  return Promise.all([
-    pitchAccent.loadPitchAccent(),
-    furigana.loadKanjiReadings(),
-    kanjiUnitIndex.loadKanjiUnitIndex(),
-    kanjiReadingUsage.loadKanjiReadingUsage()
-  ]).then(() => undefined);
+const WEB_LOADERS = {
+  pitchAccent: () => pitchAccent.loadPitchAccent(),
+  kanjiReadings: () => furigana.loadKanjiReadings(),
+  kanjiUnitIndex: () => kanjiUnitIndex.loadKanjiUnitIndex(),
+  kanjiReadingUsage: () => kanjiReadingUsage.loadKanjiReadingUsage()
+};
+
+function primeWebLoaders(names = Object.keys(WEB_LOADERS)) {
+  return Promise.all(names.map((name) => WEB_LOADERS[name]())).then(() => undefined);
 }
 
 function load(name) {
@@ -87,11 +89,33 @@ function loadGrammar() {
 }
 
 function ready() {
-  return Promise.all(['questionMeanings', 'distinctionReviews', 'kanjiVariants', 'kanjiReadings', 'grammarKeyPoints', 'pitchAccent', 'grammar'].map(load)).then(() => undefined);
+  return Promise.all(['questionMeanings', 'distinctionReviews', 'kanjiVariants', 'kanjiReadings', 'grammarKeyPoints', 'pitchAccent'].map(load)).then(() => undefined);
 }
 
 function readyForKanji() {
-  return ready().then(() => Promise.all(['kanjiUnitRuntime', 'kanjiReadingUsage'].map(load))).then(() => primeWebLoaders());
+  return Promise.all(['kanjiUnitRuntime', 'kanjiReadingUsage', 'kanjiReadings'].map(load))
+    .then(() => primeWebLoaders(['kanjiUnitIndex', 'kanjiReadingUsage', 'kanjiReadings']));
 }
 
-module.exports = { load, ready, readyForKanji, primeWebLoaders, loaded: (name) => Boolean(stores[name]) };
+const PAGE_CONTENT = {
+  'word-study': ['questionMeanings', 'distinctionReviews', 'kanjiVariants', 'kanjiReadings', 'pitchAccent'],
+  'vocab-test': ['questionMeanings', 'kanjiVariants', 'kanjiReadings'],
+  'confusion-quiz': ['questionMeanings', 'distinctionReviews', 'kanjiVariants', 'kanjiReadings'],
+  'kanji-reading': ['kanjiUnitRuntime', 'kanjiReadingUsage', 'kanjiReadings'],
+  'grammar-quiz': ['grammar', 'grammarKeyPoints', 'kanjiReadings']
+};
+const PAGE_WEB_LOADERS = {
+  'word-study': ['pitchAccent', 'kanjiReadings'],
+  'vocab-test': ['kanjiReadings'],
+  'confusion-quiz': ['kanjiReadings'],
+  'kanji-reading': ['kanjiUnitIndex', 'kanjiReadingUsage', 'kanjiReadings'],
+  'grammar-quiz': ['kanjiReadings']
+};
+
+function readyForPage(page) {
+  const names = PAGE_CONTENT[page];
+  if (!names) return Promise.reject(new Error(`未知页面内容声明 ${page}`));
+  return Promise.all(names.map(load)).then(() => primeWebLoaders(PAGE_WEB_LOADERS[page]));
+}
+
+module.exports = { load, ready, readyForKanji, readyForPage, primeWebLoaders, loaded: (name) => Boolean(stores[name]) };

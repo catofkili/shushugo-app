@@ -68,7 +68,7 @@ function readCompressedFile(filePath, compressionAlgorithm = 'gzip') {
 }
 
 async function downloadFile(url, options = {}) {
-  if (cloud.isCloudFile(url)) return cloud.downloadCloudFile(url);
+  if (cloud.isCloudFile(url)) return cloud.downloadCloudFile(url, options);
   const retries = Math.max(1, Number(options.retries ?? 3));
   let lastError;
   for (let attempt = 1; attempt <= retries; attempt += 1) {

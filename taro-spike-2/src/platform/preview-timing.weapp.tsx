@@ -4,7 +4,7 @@ import Taro from '@tarojs/taro';
 
 type Kind = 'study' | 'vocab';
 type Sample = { startedAt: number; beforeId: string; beforeText: string };
-type Props = { kind: Kind; children: ReactNode };
+type Props = { kind: Kind; children: ReactNode; startupTimings?: Record<string, number> };
 const LIMIT = 20;
 
 function stats(samples: number[]) {
@@ -41,7 +41,7 @@ function closestClass(node: any, name: string) {
   return null;
 }
 
-export default function PreviewTimingBoundary({ kind, children }: Props) {
+export default function PreviewTimingBoundary({ kind, children, startupTimings = {} }: Props) {
   const pending = useRef<Sample | null>(null);
   const samplesRef = useRef<number[]>([]);
   const [samples, setSamples] = useState<number[]>([]);
@@ -87,12 +87,14 @@ export default function PreviewTimingBoundary({ kind, children }: Props) {
   const result = samples.length ? stats(samples) : null;
   const title = kind === 'study' ? 'WordStudy' : '查词汇量';
   const label = `${title} ${samples.length}/${LIMIT} · 中位 ${result?.median ?? '—'} ms · p90 ${result?.p90 ?? '—'} ms`;
+  const startupLabel = Object.entries(startupTimings).map(([name, ms]) => `${name} ${ms}ms`).join(' · ');
 
   return (
     <View className="preview-timing-host" onClick={onClick}>
       <Profiler id={`preview-${kind}`} onRender={onRender}>{children}</Profiler>
       <View style={{ position: 'fixed', top: '12rpx', right: '12rpx', zIndex: 9999, padding: '8rpx 12rpx', borderRadius: '12rpx', backgroundColor: 'rgba(28, 35, 34, 0.88)', color: '#fff', fontSize: '20rpx', lineHeight: 1.4, pointerEvents: 'none' }}>
         <Text>{label}</Text>
+        {startupLabel ? <Text style={{ display: 'block', maxWidth: '690rpx', whiteSpace: 'normal' }}>启动 {startupLabel}</Text> : null}
       </View>
     </View>
   );

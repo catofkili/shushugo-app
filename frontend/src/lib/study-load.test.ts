@@ -22,7 +22,7 @@ vi.mock("./database", () => ({
 vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined }));
 
 import { dailyStudyLoad } from "./study-load";
-import { ensureUserTables, studyDate } from "./study-core";
+import { ensureUserTables, studyDate, USER_SCHEMA_FINGERPRINT_KEY } from "./study-core";
 import { ensureFsrsColumns, WORD_FSRS } from "./fsrs-store";
 
 const SQL = await initSqlJs();
@@ -72,6 +72,25 @@ describe("每日学习数量", () => {
     ensureUserTables();
     ensureFsrsColumns(WORD_FSRS);
     testDb.run("INSERT OR IGNORE INTO progress (word_id) SELECT id FROM words");
+  });
+
+  it("换到新的数据库实例时读取库内指纹并跳过已完成的结构 DDL", () => {
+    testDb = new SQL.Database(testDb.export());
+    const run = vi.spyOn(testDb, "run");
+    ensureUserTables();
+    expect(run.mock.calls.filter(([sql]) => /^(CREATE|ALTER|DROP)\b/i.test(String(sql)))).toHaveLength(0);
+    const marker = testDb.exec("SELECT value FROM app_state WHERE key = 'runtime_schema_user_ddl'")[0]?.values[0]?.[0];
+    expect(marker).toBeTruthy();
+    expect(USER_SCHEMA_FINGERPRINT_KEY).toBe("runtime_schema_user_ddl");
+  });
+
+  it("替换为没有指纹的数据库后重跑结构迁移", () => {
+    testDb.run("DROP INDEX IF EXISTS idx_words_pos");
+    testDb.run("DELETE FROM app_state WHERE key = ?", [USER_SCHEMA_FINGERPRINT_KEY]);
+    testDb = new SQL.Database(testDb.export());
+    ensureUserTables();
+    expect(testDb.exec("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_words_pos'")).toHaveLength(1);
+    expect(testDb.exec("SELECT value FROM app_state WHERE key = 'runtime_schema_user_ddl'")[0]?.values[0]?.[0]).toBeTruthy();
   });
 
   it("过去每天数的是「张卡」：同一天答十次同一张只算一张", () => {

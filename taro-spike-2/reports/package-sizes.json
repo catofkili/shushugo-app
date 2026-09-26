@@ -2,17 +2,17 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1868488,
-      "mib": 1.782,
+      "bytes": 1878549,
+      "mib": 1.792,
       "passes": true
     },
     "quiz": {
-      "bytes": 75266,
+      "bytes": 75789,
       "mib": 0.072,
       "passes": true
     },
     "study": {
-      "bytes": 381251,
+      "bytes": 381858,
       "mib": 0.364,
       "passes": true
     },
@@ -37,17 +37,17 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 240490,
+      "bytes": 240486,
       "mib": 0.229,
       "passes": true
     }
   },
-  "totalBytes": 6062469,
+  "totalBytes": 6073656,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 723657
+      "bytes": 733718
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -82,7 +82,7 @@
     {
       "path": "study/word-study/index.js",
       "package": "study",
-      "bytes": 293532
+      "bytes": 294142
     },
     {
       "path": "assets/sql-wasm.wasm.br",
@@ -107,7 +107,7 @@
     {
       "path": "grammar-pages/compile/index.js",
       "package": "grammar-pages",
-      "bytes": 158227
+      "bytes": 158225
     },
     {
       "path": "vendors.js",
@@ -142,7 +142,7 @@
     {
       "path": "quiz/vocab-test/index.js",
       "package": "quiz",
-      "bytes": 27410
+      "bytes": 27934
     },
     {
       "path": "assets/brand/mood-yay.webp",
@@ -155,17 +155,17 @@
       "bytes": 19048
     },
     {
-      "path": "grammar-pages/sub-common/6f47ed103877313791280ac220ca408d.js",
+      "path": "grammar-pages/sub-common/6ae94c5e5c831819ab2f1262f00b5802.js",
       "package": "grammar-pages",
       "bytes": 19004
     },
     {
-      "path": "quiz/sub-common/6f47ed103877313791280ac220ca408d.js",
+      "path": "quiz/sub-common/6ae94c5e5c831819ab2f1262f00b5802.js",
       "package": "quiz",
       "bytes": 19004
     },
     {
-      "path": "study/sub-common/6f47ed103877313791280ac220ca408d.js",
+      "path": "study/sub-common/6ae94c5e5c831819ab2f1262f00b5802.js",
       "package": "study",
       "bytes": 19004
     },
@@ -180,12 +180,12 @@
       "bytes": 18510
     },
     {
-      "path": "grammar-pages/sub-common/14f27fbdf17950820e1cd95d91c7d7bd.js",
+      "path": "grammar-pages/sub-common/bdd7bc43dfa2e33b1ce1cb26e3af7dab.js",
       "package": "grammar-pages",
       "bytes": 17410
     },
     {
-      "path": "study/sub-common/14f27fbdf17950820e1cd95d91c7d7bd.js",
+      "path": "study/sub-common/bdd7bc43dfa2e33b1ce1cb26e3af7dab.js",
       "package": "study",
       "bytes": 17410
     },
@@ -220,64 +220,64 @@
       "bytes": 14916
     },
     {
-      "path": "grammar-pages/sub-common/e2ca18bb51b298f6b3cd2d8dbadc8362.js",
+      "path": "grammar-pages/sub-common/042b1717e0d4e8fc9363b66f0cc8b596.js",
       "package": "grammar-pages",
       "bytes": 14584
     },
     {
-      "path": "quiz/sub-common/e2ca18bb51b298f6b3cd2d8dbadc8362.js",
+      "path": "quiz/sub-common/042b1717e0d4e8fc9363b66f0cc8b596.js",
       "package": "quiz",
       "bytes": 14584
     },
     {
-      "path": "study/sub-common/e2ca18bb51b298f6b3cd2d8dbadc8362.js",
+      "path": "study/sub-common/042b1717e0d4e8fc9363b66f0cc8b596.js",
       "package": "study",
       "bytes": 14584
     },
     {
-      "path": "grammar-pages/sub-common/b7110e25a05283964b3ac45421b9666e.js",
+      "path": "grammar-pages/sub-common/9271c85f300988182dce81ec0248f51b.js",
       "package": "grammar-pages",
       "bytes": 8465
     },
     {
-      "path": "study/sub-common/b7110e25a05283964b3ac45421b9666e.js",
+      "path": "study/sub-common/9271c85f300988182dce81ec0248f51b.js",
       "package": "study",
       "bytes": 8465
     },
     {
-      "path": "grammar-pages/sub-common/c20dcfb90f5aa2b00e816c26546347cd.js",
+      "path": "grammar-pages/sub-common/0d78e2bc9570f8726ef77e12dda68492.js",
       "package": "grammar-pages",
       "bytes": 6617
     },
     {
-      "path": "study/sub-common/c20dcfb90f5aa2b00e816c26546347cd.js",
+      "path": "study/sub-common/0d78e2bc9570f8726ef77e12dda68492.js",
       "package": "study",
       "bytes": 6617
     },
     {
-      "path": "grammar-pages/sub-common/405760f5b01b9abb340258a2f0ab82c4.js",
+      "path": "grammar-pages/sub-common/2068fe3dc86d3709043b596ae79f9b2b.js",
       "package": "grammar-pages",
       "bytes": 5679
     },
     {
-      "path": "quiz/sub-common/405760f5b01b9abb340258a2f0ab82c4.js",
+      "path": "quiz/sub-common/2068fe3dc86d3709043b596ae79f9b2b.js",
       "package": "quiz",
       "bytes": 5679
     },
     {
-      "path": "study/sub-common/405760f5b01b9abb340258a2f0ab82c4.js",
+      "path": "study/sub-common/2068fe3dc86d3709043b596ae79f9b2b.js",
       "package": "study",
       "bytes": 5679
     },
     {
-      "path": "quiz/sub-common/47e3c563a135bce7e1217e839d065f09.js",
+      "path": "quiz/sub-common/bd304e7690c52a409b6468b1981d0560.js",
       "package": "quiz",
-      "bytes": 5397
+      "bytes": 5396
     },
     {
-      "path": "study/sub-common/47e3c563a135bce7e1217e839d065f09.js",
+      "path": "study/sub-common/bd304e7690c52a409b6468b1981d0560.js",
       "package": "study",
-      "bytes": 5397
+      "bytes": 5396
     },
     {
       "path": "app.js",
@@ -285,37 +285,37 @@
       "bytes": 5172
     },
     {
-      "path": "grammar-pages/sub-common/02d6841cd0c12a32ec14f64872a9b194.js",
+      "path": "grammar-pages/sub-common/ad4b88773a5fd9639352845212e0220c.js",
       "package": "grammar-pages",
-      "bytes": 3791
+      "bytes": 3789
     },
     {
-      "path": "study/sub-common/02d6841cd0c12a32ec14f64872a9b194.js",
+      "path": "study/sub-common/ad4b88773a5fd9639352845212e0220c.js",
       "package": "study",
-      "bytes": 3791
+      "bytes": 3789
     },
     {
-      "path": "grammar-pages/sub-common/4823ac61b53e5919880ed346d7fdd0d8.js",
+      "path": "grammar-pages/sub-common/bbd027afcf144c690f28d0a5407f8dd1.js",
       "package": "grammar-pages",
       "bytes": 2665
     },
     {
-      "path": "study/sub-common/4823ac61b53e5919880ed346d7fdd0d8.js",
+      "path": "study/sub-common/bbd027afcf144c690f28d0a5407f8dd1.js",
       "package": "study",
       "bytes": 2665
     },
     {
-      "path": "grammar-pages/sub-common/41d60a2bcf9c6931866ed4fde106f5bd.js",
+      "path": "grammar-pages/sub-common/c4d6ec0e1c643671d83ae1633c01b32e.js",
       "package": "grammar-pages",
       "bytes": 2495
     },
     {
-      "path": "quiz/sub-common/41d60a2bcf9c6931866ed4fde106f5bd.js",
+      "path": "quiz/sub-common/c4d6ec0e1c643671d83ae1633c01b32e.js",
       "package": "quiz",
       "bytes": 2495
     },
     {
-      "path": "study/sub-common/41d60a2bcf9c6931866ed4fde106f5bd.js",
+      "path": "study/sub-common/c4d6ec0e1c643671d83ae1633c01b32e.js",
       "package": "study",
       "bytes": 2495
     },
@@ -385,12 +385,12 @@
       "bytes": 584
     },
     {
-      "path": "grammar-pages/sub-common/bafb29be7cd57d22a0b725dfb5a2c2ba.js",
+      "path": "grammar-pages/sub-common/83acf6960d8d5dcdf2b10d1e65e69087.js",
       "package": "grammar-pages",
       "bytes": 577
     },
     {
-      "path": "study/sub-common/bafb29be7cd57d22a0b725dfb5a2c2ba.js",
+      "path": "study/sub-common/83acf6960d8d5dcdf2b10d1e65e69087.js",
       "package": "study",
       "bytes": 577
     },
@@ -430,17 +430,17 @@
       "bytes": 520
     },
     {
-      "path": "grammar-pages/sub-common/27bdd46757e0c871422b02714117dd66.js",
+      "path": "grammar-pages/sub-common/b9172d7fb7558850e8c8f25122d32ec0.js",
       "package": "grammar-pages",
       "bytes": 517
     },
     {
-      "path": "quiz/sub-common/27bdd46757e0c871422b02714117dd66.js",
+      "path": "quiz/sub-common/b9172d7fb7558850e8c8f25122d32ec0.js",
       "package": "quiz",
       "bytes": 517
     },
     {
-      "path": "study/sub-common/27bdd46757e0c871422b02714117dd66.js",
+      "path": "study/sub-common/b9172d7fb7558850e8c8f25122d32ec0.js",
       "package": "study",
       "bytes": 517
     },
@@ -715,12 +715,12 @@
       "bytes": 338
     },
     {
-      "path": "grammar-pages/sub-common/843214b9a34d2706b2637bdc2f6248ea.js",
+      "path": "grammar-pages/sub-common/0a5e84055e64d544cc220a96f925a6f3.js",
       "package": "grammar-pages",
       "bytes": 338
     },
     {
-      "path": "study/sub-common/843214b9a34d2706b2637bdc2f6248ea.js",
+      "path": "study/sub-common/0a5e84055e64d544cc220a96f925a6f3.js",
       "package": "study",
       "bytes": 338
     },

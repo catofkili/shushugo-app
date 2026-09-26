@@ -1,7 +1,8 @@
 import { getDatabase } from "./database";
 import type { WordAnswer } from "../types/vocabulary";
 import type { FavoriteType, StudyAnswer } from "./study-types";
-import { ensureLocalSchema } from "./database/schema";
+import { ensureLocalSchema, LOCAL_SCHEMA_SQL, runSqlScript } from "./database/schema";
+import { hashSchemaDefinition, hasSchemaFingerprint, saveSchemaFingerprint } from "./database/schema-fingerprint";
 import { ensureLegacyBiruMigration } from "./legacy-word-migrations";
 import { ensureSyncSchema } from "./sync/schema";
 import { CONTENT_MIGRATION_STATE_KEYS } from "./sync/tables";
@@ -214,15 +215,57 @@ const loadJlptCollocationContent = async (): Promise<JlptCollocationContent> => 
   return payload.default as JlptCollocationContent;
 };
 
-// 建表/索引是幂等的,但每次调用都重跑 10+ 条 DDL + PRAGMA 很浪费——
-// isFavorite 等热路径每渲染一行都会走到这里。按 Database 实例记忆化;
-// importDatabase 换新实例后 WeakSet 查不到,自然会对新库重跑一遍。
+// 热路径按 Database 实例短路；冷启动再查 app_state 中随库保存的 SQL 指纹。
+// 导入/恢复换库后 WeakSet 不会误认新实例；指纹缺失或 SQL 变化时完整重跑结构迁移。
 const schemaReadyDbs = new WeakSet<object>();
+export const USER_SCHEMA_FINGERPRINT_KEY = "runtime_schema_user_ddl";
+
+const USER_SCHEMA_DDL = [
+  "CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
+  ...LOCAL_SCHEMA_SQL.split(";").map((sql) => sql.trim()).filter(Boolean),
+  "ALTER TABLE words ADD COLUMN jlpt_level TEXT",
+  "ALTER TABLE words ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE words ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE words ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE words ADD COLUMN sense_key TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE grammar_points ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE grammar_points ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE grammar_points ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE grammar_points_archive ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE grammar_points_archive ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE grammar_points_archive ADD COLUMN example_lemmas TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE grammar_reading_positions ADD COLUMN scroll_top REAL NOT NULL DEFAULT 0",
+  "ALTER TABLE content_favorites ADD COLUMN folder TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE vocab_test_history ADD COLUMN levels_json TEXT NOT NULL DEFAULT ''",
+  "ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'",
+  `CREATE TABLE IF NOT EXISTS study_time_by_period (
+    period_start TEXT NOT NULL, device_id TEXT NOT NULL, seconds INTEGER NOT NULL DEFAULT 0,
+    sync_updated_at TEXT, sync_origin_device TEXT, PRIMARY KEY (period_start, device_id)
+  )`,
+  "CREATE INDEX IF NOT EXISTS idx_reviews_day_direction ON reviews(reviewed_on, direction)",
+  "CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)",
+  "CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)"
+];
+
+const userSchemaFingerprint = (): string => hashSchemaDefinition([
+  USER_SCHEMA_DDL,
+  // Keep the executing routine in the fingerprint too: if its condition changes without
+  // changing a SQL template, a fresh database must still revisit the migration path.
+  ensureLocalSchema.toString(),
+  runSqlScript.toString(),
+  ensureUserTables.toString()
+]);
 
 export const ensureUserTables = () => {
   const db = getDatabase();
   if (schemaReadyDbs.has(db)) return;
+  const fingerprint = userSchemaFingerprint();
+  if (hasSchemaFingerprint(USER_SCHEMA_FINGERPRINT_KEY, fingerprint)) {
+    schemaReadyDbs.add(db);
+    return;
+  }
   ensureLocalSchema();
+  db.run("CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
   const wordColumns = rowsFor("PRAGMA table_info(words)").map((row) => String(row.name ?? ""));
   if (!wordColumns.includes("jlpt_level")) {
     db.run("ALTER TABLE words ADD COLUMN jlpt_level TEXT");
@@ -293,6 +336,7 @@ export const ensureUserTables = () => {
   `);
   db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
   db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
+  saveSchemaFingerprint(USER_SCHEMA_FINGERPRINT_KEY, userSchemaFingerprint());
   schemaReadyDbs.add(db);
 };
 
