@@ -11,7 +11,6 @@
  *   confused 疑惑 · surprised 惊讶 · working 努力中 · love 喜欢
  * 空状态 / 提示插画走 <Sticker name="empty-…">，那一排是整张画不是表情。
  */
-import type React from "react";
 import { useSyncExternalStore } from "react";
 
 export type MascotMood =
@@ -90,7 +89,10 @@ export function Sticker({ name, size = 96, className = "", alt = "" }: { name: S
 /** 品牌图标 <img>，跟着皮肤走 */
 export function BrandIcon({ className = "", alt = "" }: { className?: string; alt?: string }) {
   const current = useMascotSkin();
-  return <img src={brandIconUrl(current)} alt={alt} className={className} />;
+  return <span className={`brand-icon-pair ${className}`}>
+    <img src={brandIconUrl(current)} alt={alt} className="brand-icon-light" />
+    <img src={brandAssetUrl("shushugo-icon-dark.png")} alt={alt} className="brand-icon-dark" />
+  </span>;
 }
 
 export function CapybaraMascot({ size = 96, mood = "default", className = "" }: { size?: number; mood?: MascotMood; className?: string }) {
@@ -108,7 +110,9 @@ export function CapybaraWalk({ size = 55, className = "" }: { size?: number; cla
     <span
       className={`mascot-walk ${className}`}
       aria-hidden="true"
-      style={{ "--cell": `${w}px`, width: w, height: size, backgroundSize: `${w * 4}px ${size}px` } as React.CSSProperties}
-    />
+      style={{ width: w, height: size }}
+    >
+      <img className="mascot-walk-strip" src={brandAssetUrl("sheet/walk-strip.png")} alt="" style={{ width: w * 4, height: size }} />
+    </span>
   );
 }

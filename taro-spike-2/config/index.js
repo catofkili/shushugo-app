@@ -87,9 +87,7 @@ module.exports = {
     compile: { include: [frontend, mini] },
     imageUrlLoaderOption: { limit: 1 },
     cssLoaderOption: {
-      url: {
-        filter: (url) => !url.startsWith('/') && !/walk-strip\.webp(?:[?#].*)?$/.test(url)
-      }
+      url: { filter: (url) => !url.startsWith('/') }
     },
     postcss: {
       pxtransform: { enable: true, config: {} },

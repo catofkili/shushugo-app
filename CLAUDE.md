@@ -1766,6 +1766,9 @@ Tab 在卡片里循环、关掉还回原处）。缺了这几样，键盘和 Voi
   `shushugo-icon-dark.png`（441，作者分图里的深色版，`roundmask.mjs` 圆角蒙版裁的，半径 ≈ 98）。
   **深色主题下图标自动换深色版**：五个调用点都挂 `img.brand-icon`，
   `[data-theme="dark"] img.brand-icon{content:url(…)}` 一条 CSS 换图（2026-09-19，作者问「不是有深色模式图标吗」）。
+  ⚠️ 2026-09-27 改成**两张图按主题切显隐**（`.brand-icon-pair` 里 `brand-icon-light` / `brand-icon-dark`，`BrandIcon` 和 `CrossPlatformImage` 各一处）：
+  小程序 WXSS 不认本地 `content:url()`（真机空白、开发者工具正常），网页和小程序共用一份 CSS，所以不再用那条规则。
+  同一批：小程序包里的品牌图从 .webp 换成 PNG——`<image webp>` 官方原文「只支持网络资源」，本地 webp 在 iPhone 上一张都画不出来。
   ⚠️ cover 原图是「圆角方块贴在纯黑底上」，周报以前靠 `mix-blend-mode:screen` 藏黑角（整张图洗白），
   已改成把 PNG 的黑角抠透明。iOS 的 `AppIcon-512@2x.png` 是 cover 黑角填成卡面奶油色再缩到 1024 ——
   App 图标不能带 alpha，也不能自己画圆角。换图标时这几份一起重做（`cut-hires.sh` 末尾两行管 icon / icon-dark）。
