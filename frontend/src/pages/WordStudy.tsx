@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Star, StickyNote, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
-import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning } from "../lib/api";
+import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning, addAnswerPreview, answerPreviewsFresh, startAnswerPreviews, submitWordAnswerWithPreview, takeAnswerPreview, type AnswerPreviews } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { checkAchievements } from "../lib/userProfile";
 import { settleYuzu } from "../lib/yuzu";
@@ -141,6 +141,21 @@ const MIXED_GRAMMAR_EVERY = 5;
 /** 经典和混合是同一份今日计划（同一条取词路径、同样的减负/压轴/回顾），只是混合会插播语法。 */
 const isPlanMode = (mode: StudyMode) => mode === "classic" || mode === "mixed";
 
+/**
+ * 等这一帧画出来再做重活（记账、预算下一张）。页面藏起来时 rAF 不触发，50 ms 兜底——
+ * 不然切走的那一刻记账跟着停，页面被杀就丢一题。
+ */
+const afterPaint = () => new Promise<void>((resolve) => {
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    resolve();
+  };
+  requestAnimationFrame(() => setTimeout(finish, 0));
+  setTimeout(finish, 50);
+});
+
 const isDailyModeComplete = (mode: StudyMode, stats: WordStats) => {
   if (isPlanMode(mode)) return stats.dailyPlanDone;
   if (mode === "reverse") return stats.stage2Total > 0 && stats.stage2Completed >= stats.stage2Total;
@@ -246,6 +261,16 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const studyClockRef = useRef(initialStudyClock);
   const trackingActiveRef = useRef(false);
   const submittingRef = useRef(false);
+  // 预算下一张（word-api 的 startAnswerPreviews 那一套）：看这张卡的那几秒里先把「答成认识 / 忘记之后出谁」算好，
+  // 点下去直接换卡。记账挪到换卡之后（pendingAnswerRef），撤销、跳词、换模式、下一次评分之前先把它补上。
+  const previewsRef = useRef<AnswerPreviews | null>(null);
+  const previewRunRef = useRef(0);
+  const pendingAnswerRef = useRef<(() => void) | null>(null);
+  const flushPendingAnswer = useCallback(() => {
+    const run = pendingAnswerRef.current;
+    pendingAnswerRef.current = null;
+    run?.();
+  }, []);
   const completionReportedRef = useRef(false);
   const loadedModeRef = useRef<StudyMode | null>(null);
   const dragStartYRef = useRef<number | null>(null);
@@ -313,6 +338,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [card, unitTarget]);
 
   const loadNext = useCallback(async (mode: StudyMode = initialMode) => {
+    flushPendingAnswer();
     setLoading(true);
     setError("");
     try {
@@ -399,7 +425,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     } finally {
       setLoading(false);
     }
-  }, [grammarLevel, initialMode, onDailyModeComplete, sessionOptions]);
+  }, [flushPendingAnswer, grammarLevel, initialMode, onDailyModeComplete, sessionOptions]);
 
   /**
    * 混合模式：每答 MIXED_GRAMMAR_EVERY 个单词插一条语法。
@@ -640,6 +666,26 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 用户正在编辑的面板；submitAnswer/loadNext 已在真正换卡时显式同步下一张备注。
   }, [card?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /** 摆出下一张单词卡（快路径和同步路径共用）。统计和「能不能撤销」由调用方各自在记账之后设。 */
+  const showWordCard = useCallback((next: WordCard | null, nextPhase: string, nextUnitKey: string | null = null, nextUnitTarget: WordSessionResponse["unitTarget"] = null) => {
+    setCard(next);
+    setUnitKey(nextUnitKey);
+    setUnitTarget(nextUnitTarget);
+    setPhase(nextPhase);
+    setReliefActive(false);
+    setReliefLeaving(false);
+    setTailActive(false);
+    setRevealed(false);
+    // 同一个顽固词可能被立即再次排到。它的 id 没变，下面依赖 card.id 的
+    // effect 不会执行，所以必须在「一次作答已结束」这个轮次边界主动收起
+    // 上次翻面弹出的备注；下一次翻面时仍会照常重新弹出。
+    setNoteText(next?.note ?? "");
+    setNoteEditorOpen(false);
+    setNoteMemoryOpen(false);
+    setDistinctionOpen(false);
+    setActivePopover(null);
+  }, []);
+
   const submitAnswer = useCallback(async (answer: WordAnswer, source: "pointer" | "key" | "swipe" = "pointer") => {
     // submittingRef is synchronous, so a second tap is blocked immediately —
     // before React can re-render the `disabled`/`submitting` state — which is
@@ -649,6 +695,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 键盘不受这道闸:那条路上「显示答案」和评分是不同的键,不存在同一个位置连击的问题,
     // 拦一下只会吃掉快手用户的合法输入。甩卡也不受:它自己要先飞 240ms,早就过去了。
     if (source === "pointer" && performance.now() - revealedAtRef.current < REVEAL_INPUT_LOCK_MS) return;
+    // 上一题走了快路径、记账还没轮到的话，先补上：这一题的作答要排在它后面。
+    flushPendingAnswer();
     const answeredCardId = card.id;
     const answeredUnitKey = unitKey;
     const wasDailyReview = dailyReviewActive;
@@ -678,6 +726,39 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       window.clearTimeout(rateBurstTimerRef.current);
       rateBurstTimerRef.current = window.setTimeout(() => setRateBurst(null), RATE_BURST_MS);
     }
+    // 快路径：这一下的下一张已经算好了（见 word-api「预算下一张」）→ 先换卡，记账等这一帧画出来再做。
+    // 插播语法的这一下、压轴 / 错题回顾 / 汉字单元，以及没算好、算完之后库又变了的，都走下面的同步路径。
+    const grammarTurnDue = initialMode === "mixed" && wordsSinceGrammarRef.current + 1 >= MIXED_GRAMMAR_EVERY;
+    const preview = !answeredUnitKey && !wasDailyReview && !wasTail && !grammarTurnDue
+      ? takeAnswerPreview(previewsRef.current, answeredCardId, answer)
+      : null;
+    if (preview?.card) {
+      const answeredPhase = phase;
+      previewsRef.current = null;
+      pushUndoKind("word");
+      maybeGrammarTurn();
+      setError("");
+      showWordCard(preview.card, preview.phase);
+      pendingAnswerRef.current = () => {
+        try {
+          const data = submitWordAnswerWithPreview(answeredCardId, answer, preview, sessionOptions);
+          setStats(data.stats);
+          setCanUndo(Boolean(data.canUndo));
+          playCountdownFeedbackIfNeeded(beforeStats, data.stats);
+          // 和同步路径同一处：每答一下都要问一次，它负责在完成度进窗口时「上膛」。
+          // 这一下「忘记」会不会直接打开回顾，预算里已经判过（会的话根本不走快路径）。
+          if (isPlanMode(initialMode) && answeredPhase === "stage1" && !dailyReviewTriggeredRef.current) {
+            shouldStartDailyReview(answer === "forgot");
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "提交失败");
+        }
+      };
+      void afterPaint().then(flushPendingAnswer);
+      submittingRef.current = false;
+      return;
+    }
+
     setSubmitting(true);
     setError("");
     try {
@@ -839,24 +920,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         return;
       }
 
-      setCard(data.card);
-      setUnitKey(data.unitKey ?? null);
-      setUnitTarget(data.unitTarget ?? null);
+      showWordCard(data.card, data.phase, data.unitKey ?? null, data.unitTarget ?? null);
       setStats(nextStats);
-      setPhase(data.phase);
-      setReliefActive(false);
-      setReliefLeaving(false);
-      setTailActive(false);
       setCanUndo(Boolean(data.canUndo));
-      setRevealed(false);
-      // 同一个顽固词可能被立即再次排到。它的 id 没变，下面依赖 card.id 的
-      // effect 不会执行，所以必须在「一次作答已结束」这个轮次边界主动收起
-      // 上次翻面弹出的备注；下一次翻面时仍会照常重新弹出。
-      setNoteText(data.card?.note ?? "");
-      setNoteEditorOpen(false);
-      setNoteMemoryOpen(false);
-      setDistinctionOpen(false);
-      setActivePopover(null);
       if (!data.card) playComplete();
       if (!data.card && !completionReportedRef.current && isDailyModeComplete(initialMode, nextStats)) {
         completionReportedRef.current = true;
@@ -871,14 +937,46 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
       // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
-  }, [card, dailyReviewActive, dailyReviewIntro, elapsedStudySeconds, initialMode, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sendStudySeconds, sessionOptions, stats, submitting, tailActive, unitKey]);
+  }, [card, dailyReviewActive, dailyReviewIntro, elapsedStudySeconds, flushPendingAnswer, initialMode, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sendStudySeconds, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
 
   useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
+
+  // 预算下一张：卡（或统计）一换就排。「认识」「忘记」各占一个定时器片段，中间让出主线程，不挡翻面那一下点击。
+  // 模糊借忘记那份、熟知借认识那份（takeAnswerPreview 里判能不能借）。
+  // stats 在依赖里是当触发器用的：快路径换卡之后记账那一步会 setStats，学习时长每分钟结账也会——
+  // 那两次写入都会让已有的预算作废，得带着写入之后的状态重算。
+  const previewEligible = Boolean(card) && !loading && !submitting && !unitKey && !reliefActive && !dailyReviewActive
+    && !dailyReviewIntro && !tailActive && !grammarCard && !kanjiCard && !matchCard;
+  const runPreviews = useCallback((cardId: number) => {
+    const run = ++previewRunRef.current;
+    const checkDailyReview = isPlanMode(initialMode) && phase === "stage1" && !dailyReviewTriggeredRef.current;
+    void (async () => {
+      await afterPaint();
+      if (run !== previewRunRef.current || pendingAnswerRef.current) return;
+      const previews = startAnswerPreviews(cardId);
+      previewsRef.current = previews;
+      for (const answer of ["know", "forgot"] as const) {
+        if (answer !== "know") await new Promise((resolve) => setTimeout(resolve, 0));
+        if (run !== previewRunRef.current) return;
+        addAnswerPreview(previews, answer, sessionOptions, checkDailyReview);
+      }
+    })();
+  }, [initialMode, phase, sessionOptions]);
+  useEffect(() => {
+    previewsRef.current = null;
+    // 快路径刚换卡、记账还没落库：先不算，记账之后 setStats 会让这里带着新状态再跑一遍
+    if (pendingAnswerRef.current || !previewEligible || !card) return;
+    runPreviews(card.id);
+    return () => { previewRunRef.current += 1; };
+  }, [card, stats, previewEligible, runPreviews]);
 
   const revealAnswer = useCallback(() => {
     if (!card || loading || revealed || submitting || reliefActive || dailyReviewIntro) return;
     revealedAtRef.current = performance.now();
     setRevealed(true);
+    // 看题那几秒里可能整库落过一次盘（sql.js 重开连接）或结过一次学习时长，预算作废了：
+    // 趁用户看答案重算，点评分时就又是现成的。
+    if (previewEligible && !pendingAnswerRef.current && !answerPreviewsFresh(previewsRef.current, card.id)) runPreviews(card.id);
     playFlip();
     // 翻面在此之前只有声音没有触觉,而它是整个循环里最高频的一下。
     triggerRevealHaptic();
@@ -891,7 +989,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setActivePopover(null);
     }
     speakCard(card);
-  }, [card, dailyReviewIntro, loading, reliefActive, revealed, speakCard, submitting]);
+  }, [card, dailyReviewIntro, loading, previewEligible, reliefActive, revealed, runPreviews, speakCard, submitting]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -931,6 +1029,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [card, distinctionOpen, grammarCard, kanjiCard, matchCard, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
+    flushPendingAnswer();
     // 混合模式：栈顶那一笔是语法的话走 grammar-quiz 自己那份回滚
     // （FSRS + grammar_reviews + 重刷队列一起退）。两侧是各自独立的栈，
     // 拿单词那条去撤语法只会撤错东西 —— 见 undoKinds 上的注释。
@@ -1084,6 +1183,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
   const jumpToSimilar = (targetWordId: number) => {
     if (!card || submittingRef.current || submitting) return;
+    flushPendingAnswer();
     submittingRef.current = true;
     setSubmitting(true);
     setError("");

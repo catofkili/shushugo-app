@@ -1,7 +1,7 @@
 import { getDatabase } from "../database";
 import type { WordCard } from "../../types/vocabulary";
 import { getReviewCapPreference } from "../studyPreferences";
-import { rowObjectToCard } from "../models/word-card";
+import { rowObjectToCard as toWordCard } from "../models/word-card";
 import {
   priorityComponents,
   priorityScore,
@@ -11,6 +11,7 @@ import { allowsBackToBack, STUBBORN_MISTAKE_STREAK } from "../scheduler/requeue"
 import { INTERFERENCE_WINDOW, sessionInterference } from "../scheduler/interference";
 import { pickNextInSequence, UNKNOWN_RECALL } from "../scheduler/sequencer";
 import {
+  firstRow,
   firstValue,
   getState,
   rowsFor,
@@ -302,6 +303,37 @@ export const encoreRemainingCount = (day: string) => firstValue<number>(`
     AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
 `, [studyDayEnd().toISOString(), day], 0);
 
+/** 挑中的那一张的完整卡：和挑卡查询同一个口径，只是多了 words 的全部列和便签。 */
+const pickedCard = (day: string, wordId: number): WordCard | null => {
+  const row = firstRow(`
+    SELECT
+      w.*,
+      p.word_id,
+      p.seen_count,
+      p.known_forever,
+      p.last_seen_on,
+      p.right_count,
+      p.fuzzy_count,
+      p.forgot_count,
+      p.mistake_streak,
+      p.fsrs_stability,
+      p.fsrs_difficulty,
+      p.fsrs_last_review,
+      p.fsrs_due,
+      p.fsrs_lapses,
+      p.fsrs_state,
+      t.task_type,
+      t.order_index,
+      COALESCE(n.note, '') AS note
+    FROM stage1_tasks t
+    JOIN words w ON w.id = t.word_id
+    JOIN progress p ON p.word_id = t.word_id
+    LEFT JOIN word_notes n ON n.word_id = w.id
+    WHERE t.reviewed_on = ? AND t.word_id = ?
+  `, [day, wordId]);
+  return row ? toWordCard(row) : null;
+};
+
 export const pickStage1Next = (
   excludedIds: Set<number> = new Set(),
   options: { deterministic?: boolean } = {}
@@ -320,9 +352,13 @@ export const pickStage1Next = (
       AND p.known_forever = 0
   `, [day], 0);
 
+  // ⚠️ 挑卡只读挑卡用得到的列：优先级（priority.ts）、排片（sequencer）、干扰隔离（interference.ts 的
+  // kana/kanji/pos/verb_type）、回忆率（fsrs 那几列）。原来是 w.* + 便签整行读——今天所有到期卡几百行、
+  // 每行带例句 / 振假名 / 释义这些长文本，一题 522 行，占每题 SQL 时间一半多（2026-09-26 实测）。
+  // 挑中的那一张再按 id 取完整卡（pickedCard）。往排序 / 排片里加用到的 words 字段，要在这里补列。
   const rows = rowsFor(`
     SELECT
-      w.*,
+      w.id, w.kana, w.kanji, w.pos, w.verb_type, w.importance, w.shuffle_rank,
       p.word_id,
       p.seen_count,
       p.known_forever,
@@ -341,18 +377,17 @@ export const pickStage1Next = (
       p.fsrs_lapses,
       p.fsrs_state,
       t.task_type,
-      t.order_index,
-      COALESCE(n.note, '') AS note
+      t.order_index
     FROM stage1_tasks t
     JOIN words w ON w.id = t.word_id
     JOIN progress p ON p.word_id = t.word_id
-    LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE t.reviewed_on = ?
       AND p.known_forever = 0
       -- 凡「本学习日内仍到期」的都要出:还没答的、以及答错/新词学习中
       -- (被排到几分钟后、仍 <= 今日边界)的。毕业(due 排到明天+)才移出当天。
       AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
   `, [day, studyDayEnd().toISOString()]);
+  const rowObjectToCard = (picked: Record<string, unknown>) => pickedCard(day, Number(picked.id));
 
   // 默认规则:刚答过的那张不参与本次抽取(全场只剩它时才让步)。
   // 之前只靠优先级里的 queue 负分压制,末段所有词都在队列里时,刚答错的那张
