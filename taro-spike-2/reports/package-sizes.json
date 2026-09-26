@@ -2,22 +2,22 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1701515,
+      "bytes": 1701990,
       "mib": 1.623,
       "passes": true
     },
     "study": {
-      "bytes": 268113,
-      "mib": 0.256,
+      "bytes": 267547,
+      "mib": 0.255,
       "passes": true
     },
     "account": {
-      "bytes": 205422,
+      "bytes": 205414,
       "mib": 0.196,
       "passes": true
     },
     "content-pages": {
-      "bytes": 689268,
+      "bytes": 688698,
       "mib": 0.657,
       "passes": true
     },
@@ -42,7 +42,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 353517,
+      "bytes": 353505,
       "mib": 0.337,
       "passes": true
     },
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 559825,
-      "mib": 0.534,
+      "bytes": 559251,
+      "mib": 0.533,
       "passes": true
     }
   },
-  "totalBytes": 7553773,
+  "totalBytes": 7552518,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 803543
+      "bytes": 804018
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 559078
+      "bytes": 558504
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -137,7 +137,7 @@
     {
       "path": "content-pages/weekly-report/index.js",
       "package": "content-pages",
-      "bytes": 84110
+      "bytes": 84106
     },
     {
       "path": "content-pages/sub-common/15dffb70f5d62422e3a9621895a4ffc0.js",
@@ -177,7 +177,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 36354
+      "bytes": 36350
     },
     {
       "path": "account/fflate.umd.js",
@@ -227,7 +227,7 @@
     {
       "path": "study/quick-study/index.js",
       "package": "study",
-      "bytes": 21167
+      "bytes": 21163
     },
     {
       "path": "content-pages/assets/brand/icon-favorites.webp",
@@ -292,7 +292,7 @@
     {
       "path": "grammar-pages/sub-common/837fb9cb9c39b27ec685f17f99b5a334.js",
       "package": "grammar-pages",
-      "bytes": 16142
+      "bytes": 16138
     },
     {
       "path": "content-pages/assets/brand/icon-vocab.webp",
@@ -525,16 +525,6 @@
       "bytes": 7480
     },
     {
-      "path": "content-pages/sub-common/0a7e773c45d01c15ada664ca37531cd8.js",
-      "package": "content-pages",
-      "bytes": 7415
-    },
-    {
-      "path": "study/sub-common/0a7e773c45d01c15ada664ca37531cd8.js",
-      "package": "study",
-      "bytes": 7415
-    },
-    {
       "path": "study/kanji-readings/index.js",
       "package": "study",
       "bytes": 7071
@@ -553,6 +543,16 @@
       "path": "grammar-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
       "package": "grammar-pages",
       "bytes": 6944
+    },
+    {
+      "path": "content-pages/sub-common/0a7e773c45d01c15ada664ca37531cd8.js",
+      "package": "content-pages",
+      "bytes": 6853
+    },
+    {
+      "path": "study/sub-common/0a7e773c45d01c15ada664ca37531cd8.js",
+      "package": "study",
+      "bytes": 6853
     },
     {
       "path": "account/help/index.js",
@@ -662,7 +662,7 @@
     {
       "path": "account/sub-vendors.js",
       "package": "account",
-      "bytes": 3911
+      "bytes": 3907
     },
     {
       "path": "assets/brand/icon-shop.webp",
@@ -747,7 +747,7 @@
     {
       "path": "grammar-pages/sub-common/9ca9181576d5e8d3d23265f6fd1e1489.js",
       "package": "grammar-pages",
-      "bytes": 2596
+      "bytes": 2592
     },
     {
       "path": "content-pages/sub-common/2df14d20a5d24ee3139483c782705409.js",
@@ -1205,16 +1205,6 @@
       "bytes": 471
     },
     {
-      "path": "content-pages/sub-common/6d95813e64bc9bf3acb6f04e47d7514d.js",
-      "package": "content-pages",
-      "bytes": 465
-    },
-    {
-      "path": "grammar-pages/sub-common/6d95813e64bc9bf3acb6f04e47d7514d.js",
-      "package": "grammar-pages",
-      "bytes": 465
-    },
-    {
       "path": "account/assets/lucide/keyround-ink.svg",
       "package": "account",
       "bytes": 461
@@ -1222,6 +1212,16 @@
     {
       "path": "account/assets/lucide/keyround-light.svg",
       "package": "account",
+      "bytes": 461
+    },
+    {
+      "path": "content-pages/sub-common/6d95813e64bc9bf3acb6f04e47d7514d.js",
+      "package": "content-pages",
+      "bytes": 461
+    },
+    {
+      "path": "grammar-pages/sub-common/6d95813e64bc9bf3acb6f04e47d7514d.js",
+      "package": "grammar-pages",
       "bytes": 461
     },
     {

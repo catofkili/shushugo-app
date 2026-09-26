@@ -1,7 +1,7 @@
 import '../../../wechat-miniprogram/scripts/shared/polyfill.js';
 import './browser-runtime.weapp.cjs';
 import './fetch.weapp.cjs';
-import { window as taroWindow } from '@tarojs/runtime';
+import { document as taroDocument, URL as TaroURL, window as taroWindow } from '@tarojs/runtime';
 
 // 网页源码里的裸 window 在 Taro 里被换成 @tarojs/runtime 的 TaroWindow：addEventListener 挂在它自己的 Events 上，
 // 但它没有 dispatchEvent —— 偏好、柚子、进度、同步、写盘横幅……所有 window.dispatchEvent(new Event(…)) 都会抛
@@ -27,4 +27,23 @@ if (!globalThis.performance || typeof globalThis.performance.now !== 'function')
   globalThis.performance = Object.assign({}, globalThis.performance, { now: () => Date.now() }) as Performance;
 }
 
-export const weappLocalStorage = globalThis.localStorage as Storage;
+// 同一个坑的另外两处：源码里的裸 URL / document 也被换成 Taro 自己的。TaroURL.createObjectURL 直接抛「not support」，
+// TaroDocument.createElement('a') 是个不会下载的元素——分享图和备份导出都会坏。转给 browser-runtime.weapp.cjs 的实现。
+const taroUrl = TaroURL as unknown as { createObjectURL: (blob: Blob) => string; revokeObjectURL: (url: string) => void };
+taroUrl.createObjectURL = (blob) => globalThis.URL.createObjectURL(blob);
+taroUrl.revokeObjectURL = (url) => globalThis.URL.revokeObjectURL(url);
+// ⚠️ 元素本身必须还是 Taro 的：React 渲染 <a> 也走 createElement，换成别的对象会 appendChild is not a function。
+// 只给 <a> 补一个 click()：导出代码是 a.href = url; a.download = 名字; a.click()，从不挂进页面。
+const taroCreateElement = taroDocument.createElement.bind(taroDocument);
+(taroDocument as unknown as { createElement: (tag: string) => unknown }).createElement = (tag) => {
+  const element = taroCreateElement(tag) as unknown as { href?: string; download?: string; click?: () => void };
+  if (String(tag).toLowerCase() === 'a') {
+    element.click = () => {
+      const link = globalThis.document.createElement('a') as HTMLAnchorElement;
+      link.href = String(element.href ?? '');
+      link.download = String(element.download ?? '');
+      link.click();
+    };
+  }
+  return element;
+};

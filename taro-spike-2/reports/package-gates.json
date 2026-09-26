@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1701515,
+      "bytes": 1701990,
       "passes": true
     },
     "study": {
-      "bytes": 268113,
+      "bytes": 267547,
       "passes": true
     },
     "account": {
-      "bytes": 205422,
+      "bytes": 205414,
       "passes": true
     },
     "content-pages": {
-      "bytes": 689268,
+      "bytes": 688698,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 353517,
+      "bytes": 353505,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 559825,
+      "bytes": 559251,
       "passes": true
     }
   },
@@ -193,7 +193,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13612,
+      "bytes": 13198,
       "packages": [
         "content-pages",
         "lazy",
@@ -555,7 +555,7 @@
     },
     {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13612,
+      "bytes": 13198,
       "packages": [
         "content-pages",
         "lazy",

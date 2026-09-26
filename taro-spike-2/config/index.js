@@ -140,7 +140,7 @@ module.exports = {
       chain.resolve.modules.add(path.join(root, 'node_modules'));
       chain.resolve.modules.add(path.join(frontend, 'node_modules'));
       chain.plugin('spike-local-storage').use(webpack.ProvidePlugin, [{
-        localStorage: [path.join(root, 'src/platform/app-polyfills.weapp.ts'), 'weappLocalStorage']
+        localStorage: path.join(root, 'src/platform/local-storage.weapp.cjs')
       }]);
       chain.resolve.alias.set('worker_threads$', path.join(root, 'src/platform/worker-threads.weapp.cjs'));
       chain.module.rule('sql-source').test(/\.sql$/).type('asset/source');

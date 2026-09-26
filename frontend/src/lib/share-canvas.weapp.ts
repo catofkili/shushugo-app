@@ -41,15 +41,9 @@ const writeDataUrl = (dataUrl: string): Promise<string> => new Promise((resolve,
   fs.writeFile({ filePath, data: base64, encoding: "base64", success: () => resolve(filePath), fail: reject });
 });
 
-const installCanvas = () => {
-  const doc = (globalThis as any).document ?? ((globalThis as any).document = {});
-  doc.fonts ??= { ready: Promise.resolve() };
-  const createElement = typeof doc.createElement === 'function' ? doc.createElement.bind(doc) : null;
-  doc.createElement = (tag: string) => {
-    if (tag !== "canvas") {
-      if (createElement) return createElement(tag);
-      throw new Error(`小程序分享画布不支持创建 ${tag}`);
-    }
+// ⚠️ 不能走 document.createElement("canvas")：Taro 构建把源码里的裸 document 换成 @tarojs/runtime 的 TaroDocument，
+// 它造出来的是没有 getContext 的 TaroElement（原来给 globalThis.document 打的补丁永远轮不到，2026-09-26）。直接造离屏画布。
+const createOffscreenCanvas = () => {
     if (typeof wx.createOffscreenCanvas !== "function") throw new Error("当前微信基础库不支持离屏 Canvas 2D");
     const canvas = wx.createOffscreenCanvas({ type: "2d", width: 1, height: 1 });
     currentCanvas = canvas;
@@ -59,7 +53,9 @@ const installCanvas = () => {
       }).catch(() => callback(null));
     };
     return canvas;
-  };
+};
+
+const installCanvas = () => {
   const ImageCtor = function(this: any) {
     if (!currentCanvas) throw new Error("请先创建分享画布");
     const image = currentCanvas.createImage();
@@ -90,9 +86,7 @@ const installCanvas = () => {
     return image;
   } as any;
   (globalThis as any).Image = ImageCtor;
-  const url = (globalThis as any).URL ?? ((globalThis as any).URL = {});
-  url.createObjectURL = (blob: WeappShareBlob) => blob.__wxDataUrl;
-  url.revokeObjectURL = () => undefined;
+  // URL.createObjectURL 只有一份：browser-runtime.weapp.cjs，认 __wxDataUrl（分享图）也认备份导出的 Blob。
 };
 installCanvas();
 
@@ -147,7 +141,7 @@ export const drawFooter = (ctx: CanvasRenderingContext2D, quote: string, note: s
   const top = 1362; roundRectPath(ctx, MARGIN, top, 8, 84, 4); ctx.fillStyle = PRIMARY; ctx.fill(); ctx.textAlign = "left"; ctx.fillStyle = INK; ctx.font = `600 38px ${FONT_SERIF}`; ctx.fillText(quote, MARGIN + 34, top + 38); ctx.fillStyle = INK3; ctx.font = `600 24px ${FONT_SANS}`; ctx.fillText(note, MARGIN + 38, top + 78); ctx.textAlign = "right"; ctx.fillText(signature, WIDTH - MARGIN, top + 78);
 };
 export const createShareCanvas = (): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } => {
-  const canvas = document.createElement("canvas") as unknown as HTMLCanvasElement; canvas.width = WIDTH; canvas.height = HEIGHT;
+  const canvas = createOffscreenCanvas() as unknown as HTMLCanvasElement; canvas.width = WIDTH; canvas.height = HEIGHT;
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D | null; if (!ctx) throw new Error("无法创建微信离屏画布");
   currentCanvas = canvas; return { canvas, ctx };
 };

@@ -88,6 +88,8 @@ if (typeof globalThis.FileReader !== 'function') {
 
 const urlTarget = globalThis.URL || (globalThis.URL = {});
 urlTarget.createObjectURL = (blob) => {
+  // 分享图（share-canvas.weapp.ts）的 Blob 已经是写好的本地文件，直接给路径；其余（备份导出）登记成 wxblob://
+  if (blob?.__wxDataUrl) return blob.__wxDataUrl;
   const url = `wxblob://${++nextObjectUrl}`;
   objectUrls.set(url, blob);
   return url;
