@@ -19,6 +19,7 @@ import {
 } from "../lib/grammarProgressPreferences";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { GrammarPoint, JLPTLevel, MASTERY_LABEL, MasteryStatus } from "../types/grammar";
+import { useProgressiveList } from "../lib/touch-adapter";
 
 interface LibraryProps {
   getMastery: (id: string) => MasteryStatus;
@@ -294,6 +295,8 @@ export const Library = ({
       });
   }, [cardOrder, query, selectedLevel]);
 
+  const visiblePoints = useProgressiveList(filtered, filtered, 16);
+
   const selected = filtered.find((point) => point.id === selectedId) ?? filtered[0] ?? grammarPoints[0];
 
   const reorder = (id: string, direction: "front" | "back") => {
@@ -408,7 +411,7 @@ export const Library = ({
         </div>
 
         <div className="grid gap-3">
-          {filtered.map((point) => {
+          {visiblePoints.map((point) => {
             const mastery = getMastery(point.id);
             const active = point.id === selected.id;
             const note = grammarNote(point.id);

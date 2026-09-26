@@ -1,4 +1,5 @@
 import Taro, { useReachBottom } from "@tarojs/taro";
+import { useCallback, useState } from "react";
 
 export interface TouchPoint {
   identifier: number;
@@ -59,4 +60,19 @@ export const scrollPageToTop = () => {
 export const usePageReachBottom = (callback: () => void) => {
   useReachBottom(callback);
   return true;
+};
+
+export const useProgressiveList = <T,>(items: readonly T[], resetKey: unknown, pageSize: number) => {
+  const [page, setPage] = useState(() => ({ key: resetKey, count: pageSize }));
+  const count = Object.is(page.key, resetKey) ? page.count : pageSize;
+  const loadNext = useCallback(() => {
+    setPage((current) => {
+      const currentCount = Object.is(current.key, resetKey) ? current.count : pageSize;
+      if (currentCount >= items.length) return current;
+      return { key: resetKey, count: Math.min(items.length, currentCount + pageSize) };
+    });
+  }, [items.length, pageSize, resetKey]);
+  const pageScrolls = usePageReachBottom(loadNext);
+
+  return pageScrolls ? items.slice(0, count) : items;
 };
