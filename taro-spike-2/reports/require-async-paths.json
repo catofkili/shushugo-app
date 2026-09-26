@@ -1,8 +1,13 @@
 {
-  "expectedTargetCount": 10,
-  "callCount": 10,
-  "resolvedTargetCount": 10,
+  "expectedTargetCount": 11,
+  "callCount": 11,
+  "resolvedTargetCount": 11,
   "calls": [
+    {
+      "caller": "common.js",
+      "request": "./account/fflate.umd.js",
+      "target": "account/fflate.umd.js"
+    },
     {
       "caller": "common.js",
       "request": "./content/question-meanings.js",

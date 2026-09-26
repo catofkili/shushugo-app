@@ -37,6 +37,7 @@ module.exports = {
   copy: {
     patterns: [
       { from: path.join(root, 'assets/sql-wasm.wasm.br'), to: path.join(root, 'dist/assets/sql-wasm.wasm.br') },
+      { from: path.join(mini, 'src/vendor/fflate.umd.js'), to: path.join(root, 'dist/account/fflate.umd.js') },
       { from: path.join(mini, 'src/content/question-meanings.js'), to: path.join(root, 'dist/content/question-meanings.js') },
       { from: path.join(mini, 'src/content/kanji-unit-runtime.js'), to: path.join(root, 'dist/content/kanji-unit-runtime.js') },
       { from: path.join(mini, 'src/content/kanji-reading-usage.js'), to: path.join(root, 'dist/content/kanji-reading-usage.js') },

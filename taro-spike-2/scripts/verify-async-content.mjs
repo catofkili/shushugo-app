@@ -1,10 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const expected = [
+  './account/fflate.umd.js',
   './content/question-meanings.js',
   './content/kanji-unit-runtime.js',
   './features/content/distinction-reviews.js',
@@ -48,11 +49,20 @@ for (const call of calls) {
     ? path.join(root, '../wechat-miniprogram/src/features/content', path.basename(call.request))
     : call.request.includes('/grammar-')
       ? null
-    : path.join(root, '../wechat-miniprogram/src/content', path.basename(call.request));
+      : call.request.includes('/account/')
+        ? null
+        : path.join(root, '../wechat-miniprogram/src/content', path.basename(call.request));
   if (sourcePath && fs.existsSync(sourcePath)
     && !fs.readFileSync(path.join(dist, ...call.target.split('/'))).equals(fs.readFileSync(sourcePath))) {
     throw new Error(`${call.caller}: dist/${call.target} 与原始出厂内容不同，疑似被 Webpack 编译或改写`);
   }
+}
+
+const fflate = await import(pathToFileURL(path.join(dist, 'account/fflate.umd.js')).href);
+const fflateApi = fflate.default ?? fflate;
+const sample = new TextEncoder().encode('snapshot gzip smoke');
+if (Buffer.compare(Buffer.from(sample), Buffer.from(fflateApi.gunzipSync(fflateApi.gzipSync(sample))))) {
+  throw new Error('account/fflate.umd.js gzip round-trip failed');
 }
 
 const result = { expectedTargetCount: expected.length, callCount: calls.length, resolvedTargetCount: found.size, calls };

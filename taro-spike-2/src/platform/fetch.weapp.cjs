@@ -29,6 +29,27 @@ function failedResponse(error) {
   return response(Number(error.statusCode), error.headers || {}, error.data ?? { detail: error.message });
 }
 
+function abortError() {
+  const error = new Error('The operation was aborted.');
+  error.name = 'AbortError';
+  return error;
+}
+
+function withAbort(signal, run) {
+  if (!signal) return run();
+  if (signal.aborted) return Promise.reject(abortError());
+  let onAbort;
+  const aborted = new Promise((_, reject) => {
+    onAbort = () => reject(abortError());
+    signal.addEventListener('abort', onAbort);
+  });
+  const request = Promise.resolve().then(() => {
+    if (signal.aborted) throw abortError();
+    return run();
+  });
+  return Promise.race([request, aborted]).finally(() => signal.removeEventListener('abort', onAbort));
+}
+
 if (typeof globalThis.AbortController !== 'function') {
   globalThis.AbortController = class AbortController {
     constructor() {
@@ -49,6 +70,7 @@ if (typeof globalThis.AbortController !== 'function') {
 }
 
 async function cloudFetch(input, init = {}) {
+  if (init.signal?.aborted) throw abortError();
   if (!cloud.enabled()) throw new Error('小程序云开发尚未就绪，拒绝直接请求 Worker 域名');
   const url = typeof input === 'string' ? input : input.url;
   const headers = init.headers || {};
@@ -61,7 +83,7 @@ async function cloudFetch(input, init = {}) {
 
   if (String(headerValue(headers, 'accept') || '').includes('application/octet-stream')) {
     try {
-      const result = await requestBinary(url, options);
+      const result = await withAbort(init.signal, () => requestBinary(url, options));
       return response(200, result.header, null, result.bytes);
     } catch (error) {
       return failedResponse(error);
@@ -69,7 +91,7 @@ async function cloudFetch(input, init = {}) {
   }
 
   try {
-    return response(200, { 'content-type': 'application/json' }, await requestJson(url, options));
+    return response(200, { 'content-type': 'application/json' }, await withAbort(init.signal, () => requestJson(url, options)));
   } catch (error) {
     return failedResponse(error);
   }
