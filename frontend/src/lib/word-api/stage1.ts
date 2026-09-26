@@ -2,6 +2,7 @@ import { getDatabase } from "../database";
 import type { WordCard } from "../../types/vocabulary";
 import { getReviewCapPreference } from "../studyPreferences";
 import { rowObjectToCard as toWordCard } from "../models/word-card";
+import { perfRecord } from "../perf-marks";
 import {
   priorityComponents,
   priorityScore,
@@ -387,6 +388,7 @@ export const pickStage1Next = (
       -- (被排到几分钟后、仍 <= 今日边界)的。毕业(due 排到明天+)才移出当天。
       AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
   `, [day, studyDayEnd().toISOString()]);
+  perfRecord("候选卡数", rows.length);
   const rowObjectToCard = (picked: Record<string, unknown>) => pickedCard(day, Number(picked.id));
 
   // 默认规则:刚答过的那张不参与本次抽取(全场只剩它时才让步)。

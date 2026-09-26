@@ -1,4 +1,5 @@
-import { Profiler, useCallback, useRef, useState, type ReactNode } from 'react';
+import { Profiler, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { perfPhases } from '../../../frontend/src/lib/perf-marks';
 import { Text, View } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 
@@ -96,6 +97,32 @@ export default function PreviewTimingBoundary({ kind, children, startupTimings =
         <Text>{label}</Text>
         {startupLabel ? <Text style={{ display: 'block', maxWidth: '690rpx', whiteSpace: 'normal' }}>启动 {startupLabel}</Text> : null}
       </View>
+    </View>
+  );
+}
+
+/**
+ * 分段计时浮层（计时版预览才有；普通构建换成 preview-timing-off 里的空组件）。
+ * 每段显示最近 20 次的中位 / 最大，数据来自 frontend/src/lib/perf-marks。截图发回来就知道 iPhone 上时间花在哪。
+ */
+export function PerfOverlay() {
+  const [lines, setLines] = useState<string[]>([]);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const next: string[] = [];
+      perfPhases.forEach((values, phase) => {
+        if (!values.length) return;
+        const sorted = [...values].sort((a, b) => a - b);
+        next.push(`${phase} 中位${sorted[Math.floor(sorted.length / 2)]} 最大${sorted[sorted.length - 1]} (${values.length}次)`);
+      });
+      setLines(next);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+  if (!lines.length) return null;
+  return (
+    <View className="perf-overlay-marker" style={{ position: 'fixed', left: '12rpx', bottom: '180rpx', zIndex: 9999, padding: '8rpx 12rpx', borderRadius: '12rpx', backgroundColor: 'rgba(28, 35, 34, 0.9)', color: '#fff', fontSize: '20rpx', lineHeight: 1.45, pointerEvents: 'none', maxWidth: '700rpx' }}>
+      {lines.map((line) => <Text key={line} style={{ display: 'block' }}>{line}</Text>)}
     </View>
   );
 }

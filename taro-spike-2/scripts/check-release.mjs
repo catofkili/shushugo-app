@@ -35,6 +35,8 @@ const checks = [
   // 只拦「真的打开了调试」：Taro 运行时自带的接口名单里本来就有 setEnableDebug 这个名字。
   ['没开 vConsole / 调试', hits(/vConsole|enableDebug\s*:\s*(!0|true)/)],
   ['不是计时预览版', hits(/preview-timing-host|\[preview-timing\]/)],
+  // TARO_PERF_OVERLAY=1 出的分段计时版（React 是正式版，上面那条认不出来）
+  ['不是分段计时版', hits(/perf-overlay-marker/)],
   ['没有开发专用代码', hits(/__live-snapshot|开发环境常开 Pro/)],
   ['没有密钥', hits(new RegExp([
     /-----BEGIN [A-Z ]*PRIVATE KEY-----/.source,

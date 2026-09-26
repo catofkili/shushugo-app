@@ -33,6 +33,9 @@ const platformAdapters = new Map([
   ['wechat-miniprogram/src/runtime/auth', path.join(root, 'src/platform/payment-auth.weapp.cjs')]
 ].map(([target, replacement]) => [path.join(repoRoot, target), replacement]));
 const previewTimingEnabled = process.env.TARO_PREVIEW_TIMING === '1';
+// 分段计时浮层（PerfOverlay）但 React 用正式版：量真机体验用。计时版的性能分析版 React 本身就慢，会把「点击到换卡」量大。
+// 和计时版一样只许出预览码，check:release 会拦（产物里带 preview-timing 模块）。
+const perfOverlayEnabled = process.env.TARO_PERF_OVERLAY === '1';
 
 module.exports = {
   projectName: 'shushugo-taro-spike-2',
@@ -158,7 +161,7 @@ module.exports = {
         path.join(root, 'scripts/node-fs-stub.cjs')
       ]);
       if (!previewTimingEnabled) {
-        chain.plugin('preview-timing-off').use(webpack.NormalModuleReplacementPlugin, [
+        if (!perfOverlayEnabled) chain.plugin('preview-timing-off').use(webpack.NormalModuleReplacementPlugin, [
           /preview-timing\.weapp$/,
           path.join(root, 'src/platform/preview-timing-off.weapp.tsx')
         ]);
