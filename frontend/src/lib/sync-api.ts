@@ -2,7 +2,7 @@ import { Preferences } from "@capacitor/preferences";
 import { Capacitor } from "@capacitor/core";
 import { cloudFetch } from "./cloud-fetch";
 import { getDatabase } from "./database";
-import { clearEntitlements, getEntitlements, ProductId, saveEntitlements, type EntitlementState } from "./entitlements";
+import { clearEntitlements, getEntitlements, ProductId, saveEntitlements, type EntitlementState, type LaunchGiftAvailability } from "./entitlements";
 import { flushPendingSave, getLocalDataRevision, saveDatabase } from "./storage";
 import { notifyProgressUpdated } from "./progress-events";
 import { ensureSeedData } from "./study-core";
@@ -154,12 +154,8 @@ interface CloudEntitlements {
   source: string;
   productId?: ProductId;
   expiresAt?: string;
+  launchGift?: LaunchGiftAvailability;
   updatedAt: string;
-}
-
-export interface LaunchGiftAvailability {
-  open: boolean;
-  claimUntil: string | null;
 }
 
 const API_URL = (import.meta.env.VITE_SYNC_API_URL ?? "").replace(/\/+$/g, "");
@@ -419,7 +415,7 @@ export function requestCloudAutoSync(reason: CloudSyncTrigger = "local-change"):
 
 const applyCloudEntitlements = (data?: CloudEntitlements): EntitlementState | undefined => {
   if (!data) return undefined;
-  if (data.source === "trial" && data.expiresAt && typeof localStorage !== "undefined") {
+  if (data.productId === "shushugo_pro_trial" && data.expiresAt && typeof localStorage !== "undefined") {
     if (localStorage.getItem(LEVEL_PLAN_TRIAL_EXPIRES_KEY) !== data.expiresAt) {
       localStorage.removeItem(LEVEL_PLAN_TRIAL_NOTICE_KEY);
     }
@@ -429,7 +425,8 @@ const applyCloudEntitlements = (data?: CloudEntitlements): EntitlementState | un
     isPro: data.isPro,
     source: data.isPro && data.source === "trial" ? "trial" : data.isPro ? "cloud" : "free",
     productId: data.productId,
-    expiresAt: data.expiresAt
+    expiresAt: data.expiresAt,
+    ...(data.launchGift ? { launchGift: data.launchGift } : {})
   });
 };
 
@@ -918,25 +915,15 @@ export async function refreshCloudEntitlements(): Promise<EntitlementState | und
   return applyCloudEntitlements(data);
 }
 
-/** Launch Gift remains a Worker integration dependency until codex/launch-gift is merged. */
 export async function refreshLaunchGiftAvailability(): Promise<LaunchGiftAvailability | undefined> {
   const { token } = await getCloudSession();
-  const data = await requestJson<CloudEntitlements & { launchGift?: LaunchGiftAvailability }>("/api/entitlements", {
+  const data = await requestJson<CloudEntitlements>("/api/entitlements", {
     method: "GET",
     headers: token ? { authorization: `Bearer ${token}` } : undefined
   });
+  if (!data.launchGift) return undefined;
+  saveEntitlements({ launchGift: data.launchGift });
   return data.launchGift;
-}
-
-/** Claim only after an open window was shown and the user entered the login / claim flow. */
-export async function claimLaunchGift(): Promise<EntitlementState | undefined> {
-  const { token } = await getCloudSession();
-  if (!token) return undefined;
-  const data = await requestJson<CloudEntitlements>("/api/entitlements/launch-gift", {
-    method: "POST",
-    headers: { authorization: `Bearer ${token}` }
-  });
-  return applyCloudEntitlements(data);
 }
 
 export async function verifyCloudPurchase(productId: ProductId, transactionId: string): Promise<EntitlementState | undefined> {
@@ -950,10 +937,10 @@ export async function verifyCloudPurchase(productId: ProductId, transactionId: s
   return applyCloudEntitlements(data);
 }
 
-export async function claimLevelPlanTrial(): Promise<EntitlementState | undefined> {
+export async function claimLaunchGift(): Promise<EntitlementState | undefined> {
   const { token } = await getCloudSession();
   if (!token) return undefined;
-  const data = await requestJson<CloudEntitlements>('/api/entitlements/trial', {
+  const data = await requestJson<CloudEntitlements>("/api/entitlements/launch-gift", {
     method: 'POST',
     headers: { authorization: `Bearer ${token}` }
   });

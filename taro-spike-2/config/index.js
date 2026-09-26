@@ -36,7 +36,7 @@ module.exports = {
   outputRoot: 'dist',
   copy: {
     patterns: [
-      { from: path.join(mini, 'src/assets/sql-wasm.wasm'), to: path.join(root, 'dist/assets/sql-wasm.wasm') },
+      { from: path.join(root, 'assets/sql-wasm.wasm.br'), to: path.join(root, 'dist/assets/sql-wasm.wasm.br') },
       { from: path.join(mini, 'src/content/question-meanings.js'), to: path.join(root, 'dist/content/question-meanings.js') },
       { from: path.join(mini, 'src/content/kanji-unit-runtime.js'), to: path.join(root, 'dist/content/kanji-unit-runtime.js') },
       { from: path.join(mini, 'src/content/kanji-reading-usage.js'), to: path.join(root, 'dist/content/kanji-reading-usage.js') },
@@ -60,6 +60,10 @@ module.exports = {
     'react/jsx-dev-runtime': path.join(root, 'node_modules/react/jsx-dev-runtime.js')
   },
   mini: {
+    optimizeMainPackage: {
+      enable: true,
+      exclude: [(module) => /(?:frontend\/src\/lib\/|node_modules\/ts-fsrs\/|wechat-miniprogram\/src\/(?:vendor\/sql-wasm\.js|runtime\/text-decoder\.js)$|taro-spike-2\/src\/platform\/(?:database-runtime\.weapp\.ts|sql-js\.weapp\.cjs|sql-wasm-url\.weapp\.cjs|entitlements\.weapp\.cjs)$)/.test(module.resource || '')]
+    },
     compile: { include: [frontend, mini] },
     cssLoaderOption: { url: { filter: (url) => !url.startsWith('/') } },
     postcss: {
@@ -146,6 +150,14 @@ module.exports = {
           }
           if (target === path.join(mini, 'src/shared/content')) {
             resource.request = path.join(root, 'scripts/taro-content.cjs');
+            return;
+          }
+          if (target === path.join(mini, 'src/runtime/entitlements')) {
+            resource.request = path.join(root, 'src/platform/entitlements.weapp.cjs');
+            return;
+          }
+          if (target === path.join(frontend, 'src/data/grammar')) {
+            resource.request = path.join(root, 'src/platform/grammar-data.weapp.cjs');
             return;
           }
           // Route all frontend modules through the same live DB and durable file storage.

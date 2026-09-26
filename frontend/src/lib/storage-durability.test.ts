@@ -88,10 +88,11 @@ vi.mock("@capacitor/filesystem", async () => {
   const shim = await import("../../../taro-spike-2/src/platform/filesystem.weapp.cjs");
   return shim.default ?? shim;
 });
+const importDatabase = vi.fn(async (_data: Uint8Array) => undefined);
 vi.mock("./database", () => ({
   exportDatabase: () => exportDatabase(),
   getDatabase: () => ({ run: () => undefined }),
-  importDatabase: async () => undefined
+  importDatabase: (data: Uint8Array) => importDatabase(data)
 }));
 
 const applyDelta = vi.fn();
@@ -169,6 +170,8 @@ afterEach(() => {
   resetDeviceId.mockReset();
   Reflect.deleteProperty(globalThis as Record<string, unknown>, "indexedDB");
   exportDatabase.mockReset();
+  importDatabase.mockClear();
+  vi.restoreAllMocks();
   vi.resetModules();
 });
 
@@ -232,6 +235,26 @@ describe("微信文件存储", () => {
     expect(await loadDatabase()).toBe(true);
     expect(Buffer.from(files.get('/wx-user/shushugo/nihongo.db')!).toString()).toBe('bGVnYWN5');
     expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString()).toBe('bGVnYWN5');
+  });
+
+  it("整库读写按二进制直通，不经过 base64", async () => {
+    // 小程序没有原生 atob / btoa，iOS 又没有 JIT：55 MB 的库绕一圈 base64 读写各要好几秒、
+    // 还多占几百 MB（见 storage.ts FILE_BINARY 那段注释）。这里钉住「整库那条路上一次都不转」。
+    platform.value = 'wechat';
+    const toBase64 = vi.spyOn(fakeWx, 'arrayBufferToBase64');
+    const fromBase64 = vi.spyOn(fakeWx, 'base64ToArrayBuffer');
+    const bytes = new Uint8Array(4096).map((_, index) => (index * 31) & 255);
+    const { saveDatabase } = await import("./storage");
+    exportDatabase.mockReturnValueOnce(bytes);
+    await saveDatabase();
+    expect(files.get('/wx-user/masternihongo/nihongo.db')).toEqual(bytes);
+
+    vi.resetModules();
+    const reloaded = await import("./storage");
+    expect(await reloaded.loadDatabase()).toBe(true);
+    expect(importDatabase).toHaveBeenLastCalledWith(bytes);
+    expect(toBase64).not.toHaveBeenCalled();
+    expect(fromBase64).not.toHaveBeenCalled();
   });
 
   it("检查旧库时的 I/O 错误不能当成首次启动", async () => {

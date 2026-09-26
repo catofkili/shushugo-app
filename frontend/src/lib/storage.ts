@@ -153,7 +153,7 @@ export async function saveRecoverySnapshot(label: string): Promise<string> {
     const path = `masternihongo/recovery-${safeLabel}.db`;
     await Filesystem.writeFile({
       path,
-      data: bytesToBase64(data),
+      data: fileData(data),
       directory: DB_DIRECTORY,
       recursive: true
     });
@@ -369,6 +369,31 @@ const base64ToBytes = (base64: string): Uint8Array => {
   return data;
 };
 
+/*
+ * ⚠️ 小程序里整库文件必须按二进制读写，不能走 Capacitor 约定的 base64 字符串。
+ * 小程序没有原生 atob / btoa，补丁版要在 JS 里逐字节循环；iOS 微信又没有 JIT。
+ * 2026-09-26 实测（关 JIT 的 Node 模拟）：55 MB 的库读一次 ≈ 2.0 s、写一次 ≈ 2.2 s，
+ * 同时多出约 450 MB 的中间字符串——按 iPhone 慢约 2.5 倍折算，重度用户每次冷启动多等约 5 秒，
+ * 每次整库快照（最多 5 分钟一次）再卡约 5 秒，旧机器可能直接被系统杀掉。
+ * 所以在 wechat 平台上把字节直接交给文件垫片（taro-spike-2/src/platform/filesystem.weapp.cjs），
+ * `FILE_BINARY` 这个编码值只有那个垫片认得；网页 / iOS 仍走 base64，一个字没改。
+ */
+const FILE_BINARY = 'binary' as unknown as Encoding;
+const isWechatFileStorage = () => Capacitor.getPlatform?.() === 'wechat';
+
+const readFileBytes = async (path: string): Promise<Uint8Array> => {
+  if (isWechatFileStorage()) {
+    const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY, encoding: FILE_BINARY });
+    return data as unknown as Uint8Array;
+  }
+  const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY });
+  if (typeof data !== 'string') throw new Error('Unexpected binary file payload');
+  return base64ToBytes(data);
+};
+
+const fileData = (data: Uint8Array): string =>
+  isWechatFileStorage() ? data as unknown as string : bytesToBase64(data);
+
 const chunkKey = (index: number) => `${DB_CHUNK_KEY_PREFIX}${index}`;
 
 const removeChunkedDatabase = async (chunkCount = 80): Promise<void> => {
@@ -424,10 +449,11 @@ const deleteFileIfExists = async (path: string): Promise<void> => {
   }
 };
 
-const saveFileDatabase = async (base64: string): Promise<void> => {
+// base64 字符串只剩 iOS 从旧 Preferences 分块迁移那一处在传；其余一律传字节。
+const saveFileDatabase = async (data: Uint8Array | string): Promise<void> => {
   await Filesystem.writeFile({
     path: DB_FILE_TMP,
-    data: base64,
+    data: typeof data === 'string' ? data : fileData(data),
     directory: DB_DIRECTORY,
     recursive: true
   });
@@ -462,9 +488,9 @@ const loadFileDatabase = async (): Promise<boolean> => {
     if (!names.has(path.split('/').pop()!)) continue;
     sawArchive = true;
     try {
-      const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY });
-      if (typeof data !== 'string' || !data) throw new Error('Empty database archive');
-      await importDatabase(base64ToBytes(data), { validateBackup: true });
+      const bytes = await readFileBytes(path);
+      if (!bytes.length) throw new Error('Empty database archive');
+      await importDatabase(bytes, { validateBackup: true });
       if (path !== DB_FILE_MAIN) {
         console.warn(`[storage] 主数据库文件不可用，已从 ${path} 恢复`);
       }
@@ -488,11 +514,10 @@ const loadLegacyWechatDatabase = async (): Promise<boolean> => {
     if ((error as { code?: string } | null)?.code === 'ENOENT') return false;
     throw error;
   }
-  const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY });
-  if (typeof data !== 'string' || !data) throw new Error('原生小程序数据库为空');
-  const bytes = base64ToBytes(data);
+  const bytes = await readFileBytes(path);
+  if (!bytes.length) throw new Error('原生小程序数据库为空');
   await importDatabase(bytes, { validateBackup: true });
-  await saveFileDatabase(data);
+  await saveFileDatabase(bytes);
   console.log('✅ Database imported from the native Mini Program store');
   return true;
 };
@@ -543,7 +568,7 @@ async function saveDatabaseNowUnlocked(options: { notifyCloud?: boolean } = {}):
     }
 
     if (isNativeFileStorage()) {
-      await saveFileDatabase(bytesToBase64(data));
+      await saveFileDatabase(data);
     } else {
       await saveBrowserDatabase(data);
       // 顺手把整库镜像到 frontend/.local/live.db,好让命令行查得到今天的真实状态。

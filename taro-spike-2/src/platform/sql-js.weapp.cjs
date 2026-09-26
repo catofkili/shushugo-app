@@ -1,7 +1,7 @@
 require('../../../wechat-miniprogram/src/runtime/text-decoder.js');
 const initVendorSqlJs = require('../../../wechat-miniprogram/src/vendor/sql-wasm.js');
 
-const WASM_PATH = '/assets/sql-wasm.wasm';
+const WASM_PATH = '/assets/sql-wasm.wasm.br';
 
 function instantiateWasm(imports, done) {
   const wasm = globalThis.WXWebAssembly;

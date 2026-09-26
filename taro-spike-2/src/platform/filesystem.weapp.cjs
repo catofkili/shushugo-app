@@ -47,12 +47,16 @@ const Filesystem = {
   },
   async readFile({ path, directory, encoding }) {
     const filePath = fullPath(path, directory);
-    const result = await call('readFile', { filePath, ...(encoding ? { encoding } : {}) });
+    // storage.ts 在小程序里读整库传 encoding: 'binary'（它自己的约定，见 FILE_BINARY 的注释）：
+    // 直接返回字节，不转 base64。⚠️ 这个值不能透传给 wx——wx 的 readFile 把 'binary' 当成
+    // 「返回二进制字符串」，那又回到了在 JS 里逐字节拼串的老路。
+    const binary = encoding === 'binary';
+    const result = await call('readFile', { filePath, ...(encoding && !binary ? { encoding } : {}) });
     if (encoding === Encoding.UTF8) return { data: typeof result.data === 'string' ? result.data : new TextDecoder().decode(result.data) };
     const data = result.data instanceof ArrayBuffer ? new Uint8Array(result.data)
       : ArrayBuffer.isView(result.data) ? new Uint8Array(result.data.buffer, result.data.byteOffset, result.data.byteLength)
         : new Uint8Array(result.data);
-    return { data: toBase64(data) };
+    return { data: binary ? data : toBase64(data) };
   },
   async rename({ from, to, directory, toDirectory }) {
     const fromPath = fullPath(from, directory);
