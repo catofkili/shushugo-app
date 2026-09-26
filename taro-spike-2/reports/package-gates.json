@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1701990,
+      "bytes": 1701709,
       "passes": true
     },
     "study": {
-      "bytes": 267547,
+      "bytes": 270035,
       "passes": true
     },
     "account": {
-      "bytes": 205414,
+      "bytes": 207480,
       "passes": true
     },
     "content-pages": {
-      "bytes": 688698,
+      "bytes": 688421,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 353505,
+      "bytes": 353623,
       "passes": true
     },
     "core": {
@@ -42,12 +42,12 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 559251,
+      "bytes": 560132,
       "passes": true
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 52,
+  "duplicateSourceModuleCount": 54,
   "duplicatedModules": [
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/vocab-test.ts",
@@ -117,15 +117,6 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/GrammarTermHint.tsx",
-      "bytes": 16523,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy"
-      ]
-    },
-    {
       "source": "/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
       "bytes": 15963,
       "packages": [
@@ -184,14 +175,6 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanRing.tsx",
-      "bytes": 14064,
-      "packages": [
-        "account",
-        "study"
-      ]
-    },
-    {
       "source": "/private/tmp/claude-gram/frontend/src/lib/share-canvas.weapp.ts",
       "bytes": 13198,
       "packages": [
@@ -202,11 +185,19 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12642,
+      "bytes": 12858,
       "packages": [
         "content-pages",
         "grammar-pages",
         "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanRing.weapp.tsx",
+      "bytes": 12826,
+      "packages": [
+        "account",
+        "study"
       ]
     },
     {
@@ -228,6 +219,15 @@
       ]
     },
     {
+      "source": "/private/tmp/claude-gram/frontend/src/components/grammar-term-hint-data.ts",
+      "bytes": 11039,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
       "source": "/private/tmp/claude-gram/frontend/src/features/word-study/word-study-utils.ts",
       "bytes": 10862,
       "packages": [
@@ -238,7 +238,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 9053,
+      "bytes": 10093,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -299,7 +299,24 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4741,
+      "bytes": 4891,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-gram/frontend/src/components/daily-plan-ring-geometry.ts",
+      "bytes": 3905,
+      "packages": [
+        "account",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-gram/frontend/src/components/GrammarTermHint.weapp.tsx",
+      "bytes": 3837,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -741,16 +758,6 @@
       "reason": "The study quiz and grammar subpackage include this route in separate package entry graphs."
     },
     {
-      "source": "frontend/src/components/GrammarTermHint.tsx",
-      "bytes": 16523,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy"
-      ],
-      "reason": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes."
-    },
-    {
       "source": "frontend/src/pages/ImmersiveGrammar.tsx",
       "bytes": 15963,
       "packages": [
@@ -796,23 +803,23 @@
       "reason": "Each package needs a provider for its local React tree; its user-data cache is pinned once in main."
     },
     {
-      "source": "frontend/src/components/DailyPlanRing.tsx",
-      "bytes": 14064,
-      "packages": [
-        "account",
-        "study"
-      ],
-      "reason": "The study and account routes each render the ring in separate package entry graphs."
-    },
-    {
       "source": "frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12642,
+      "bytes": 12858,
       "packages": [
         "content-pages",
         "grammar-pages",
         "lazy"
       ],
       "reason": "Ruby rendering is shared by the lazy tab chunk and independently loaded content/grammar routes."
+    },
+    {
+      "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
+      "bytes": 12826,
+      "packages": [
+        "account",
+        "study"
+      ],
+      "reason": "The study and account routes each render the Canvas ring (W6 weapp variant) in separate package entry graphs."
     },
     {
       "source": "frontend/src/components/TokenDictionaryPopover.weapp.tsx",
@@ -825,8 +832,18 @@
       "reason": "The dictionary popover is used by lazy tabs and independently loaded grammar/content routes."
     },
     {
+      "source": "frontend/src/components/grammar-term-hint-data.ts",
+      "bytes": 11039,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Shared data for the GrammarTermHint weapp variant; duplicated alongside it."
+    },
+    {
       "source": "frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 9053,
+      "bytes": 10093,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -865,13 +882,32 @@
     },
     {
       "source": "frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4741,
+      "bytes": 4891,
       "packages": [
         "content-pages",
         "grammar-pages",
         "lazy"
       ],
       "reason": "Grammar point previews are used by lazy tabs and content/grammar routes."
+    },
+    {
+      "source": "frontend/src/components/daily-plan-ring-geometry.ts",
+      "bytes": 3905,
+      "packages": [
+        "account",
+        "study"
+      ],
+      "reason": "Ring geometry shared by the Canvas ring; duplicated alongside it."
+    },
+    {
+      "source": "frontend/src/components/GrammarTermHint.weapp.tsx",
+      "bytes": 3837,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant)."
     },
     {
       "source": "frontend/src/components/ProReadingPreview.tsx",
@@ -933,20 +969,22 @@
   "pageComponentDuplicateReasons": {
     "frontend/src/pages/Library.tsx": "The grammar tab and grammar library subpackage each render this route from their isolated package graphs.",
     "frontend/src/pages/ConfusionPage.tsx": "The study quiz and grammar subpackage include this route in separate package entry graphs.",
-    "frontend/src/components/GrammarTermHint.tsx": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes.",
     "frontend/src/pages/ImmersiveGrammar.tsx": "The tab bundle and grammar subpackage each contain this independently reachable route.",
     "frontend/src/components/DailyPlanPanel.tsx": "The study tab and account routes render this panel from isolated package graphs.",
     "frontend/src/pages/GrammarFoundationPage.tsx": "Grammar foundation navigation reaches this page from both content and grammar entry graphs.",
     "frontend/src/pages/FavoritesPage.tsx": "Favorites is reachable from both the content and grammar package entry graphs.",
     "frontend/src/components/GrammarHighlightProvider.tsx": "Each package needs a provider for its local React tree; its user-data cache is pinned once in main.",
-    "frontend/src/components/DailyPlanRing.tsx": "The study and account routes each render the ring in separate package entry graphs.",
     "frontend/src/components/JapaneseRuby.tsx": "Ruby rendering is shared by the lazy tab chunk and independently loaded content/grammar routes.",
+    "frontend/src/components/DailyPlanRing.weapp.tsx": "The study and account routes each render the Canvas ring (W6 weapp variant) in separate package entry graphs.",
     "frontend/src/components/TokenDictionaryPopover.weapp.tsx": "The dictionary popover is used by lazy tabs and independently loaded grammar/content routes.",
+    "frontend/src/components/grammar-term-hint-data.ts": "Shared data for the GrammarTermHint weapp variant; duplicated alongside it.",
     "frontend/src/components/FloatingDoodlePen.weapp.tsx": "The annotation control is used by the grammar subpackage and lazy grammar interface.",
     "frontend/src/pages/GrammarDetail.tsx": "Grammar detail is reachable through both content and grammar route packages.",
     "frontend/src/components/FavoriteFolderPicker.tsx": "The folder picker is shared by study, content, grammar, and lazy tab routes.",
     "frontend/src/components/ShareImageSheet.weapp.tsx": "The share sheet is rendered by study, content, and lazy tab routes in their own package graphs.",
     "frontend/src/components/GrammarPointPopover.tsx": "Grammar point previews are used by lazy tabs and content/grammar routes.",
+    "frontend/src/components/daily-plan-ring-geometry.ts": "Ring geometry shared by the Canvas ring; duplicated alongside it.",
+    "frontend/src/components/GrammarTermHint.weapp.tsx": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant).",
     "frontend/src/components/ProReadingPreview.tsx": "The study and lazy tab routes each render the reading preview.",
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
     "frontend/src/components/JapaneseWordRuby.tsx": "Word ruby rendering is used in the study, grammar, and lazy tab routes.",
@@ -954,7 +992,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 224957,
+  "duplicatedPageComponentBytes": 227383,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -977,7 +1015,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/styles.css",
-      "bytes": 137372
+      "bytes": 137090
     },
     {
       "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
