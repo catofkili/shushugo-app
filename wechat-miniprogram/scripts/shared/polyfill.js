@@ -4,7 +4,7 @@
  *    微信本地存储总量 10 MB、单键 1 MB；SQLite 学习库必须留在文件系统，不能放这里。
  *  - window.dispatchEvent / addEventListener → 进程内事件总线（PREFERENCES_EVENT、YUZU_EVENT）
  *  - Event / CustomEvent → 只带 type 和 detail 的普通对象
- *  - crypto.randomUUID → Math.random 版 v4（设备号只要求唯一，不要求密码学强度）
+ *  - crypto.randomUUID / getRandomValues → Math.random 兼容层：只用于设备号唯一性和 SQLite 随机排序，绝不可用于密钥、令牌或支付签名。
  *  - document.documentElement → 只有 setAttribute / removeAttribute 的空壳：applyTheme / applyMotionLevel /
  *    applyYuzuEquipment 往它上面写 data-* 属性，小程序里没人读，页面自己按 equippedItem 套皮肤。
  */
@@ -95,6 +95,15 @@
     scope.crypto = Object.assign(scope.crypto || {}, {
       randomUUID: () => `${hex(8)}-${hex(4)}-4${hex(3)}-${(8 + Math.floor(Math.random() * 4)).toString(16)}${hex(3)}-${hex(12)}`
     });
+  }
+  if (typeof scope.crypto.getRandomValues !== 'function') {
+    // sql.js 的 Emscripten random_get 需要同步 Uint8Array；它会被 SQLite RANDOM() 用于排序和非安全种子。
+    // wx.getRandomValues 是异步 API，不能满足该接口；认证与支付凭证不使用此兼容函数。
+    scope.crypto.getRandomValues = (bytes) => {
+      if (!(bytes instanceof Uint8Array)) throw new TypeError('getRandomValues 只接受 Uint8Array');
+      for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+      return bytes;
+    };
   }
   if (!scope.window || typeof wx !== 'undefined') {
     const listeners = new Map();
