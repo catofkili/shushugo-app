@@ -1,4 +1,5 @@
 import { splitFurigana, useFuriganaReady } from "../lib/furigana";
+import { JapaneseRubyText } from "./JapaneseRubyText";
 
 interface JapaneseWordRubyProps {
   surface: string;
@@ -19,12 +20,7 @@ export const JapaneseWordRuby = ({ surface, reading, className }: JapaneseWordRu
       {segments
         ? segments.map((segment, index) => (
           segment.isKanji
-            ? (
-              <ruby className="jp-ruby" key={`${segment.text}-${segment.reading}-${index}`}>
-                {segment.text}
-                <rt>{segment.reading}</rt>
-              </ruby>
-            )
+            ? <JapaneseRubyText key={`${segment.text}-${segment.reading}-${index}`} base={segment.text} reading={segment.reading} />
             : <span key={`${segment.text}-${index}`}>{segment.text}</span>
         ))
         : surface}

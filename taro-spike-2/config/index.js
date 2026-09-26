@@ -217,6 +217,10 @@ module.exports = {
             resource.request = path.join(frontend, 'src/components/JapaneseRubyText.weapp.tsx');
             return;
           }
+          if (/(^|\/)CrossPlatformImage(?:\.[^/]*)?$/.test(resource.request)) {
+            resource.request = path.join(frontend, 'src/components/CrossPlatformImage.weapp.tsx');
+            return;
+          }
           if (/^(@capacitor\/|@capacitor-community\/|@aparajita\/)/.test(resource.request)) {
             if (resource.request === '@capacitor/core') {
               resource.request = path.join(root, 'src/platform/capacitor-core.weapp.cjs');
