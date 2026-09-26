@@ -1512,7 +1512,13 @@ const settleWechatOrder = async (env: Env, order: WechatOrderRow, payload: unkno
   const productId = order.product_id as WechatPayProduct;
   const sandbox = Number(env.WECHAT_PAY_ENV ?? "0") === 1;
   const paidAtMs = result.order?.paid_time ? result.order.paid_time * 1000 : Date.now();
-  let expiresAt = wechatExpiresAtFor(productId, paidAtMs);
+  // 首发赠送期间买期限卡：从赠送到期日起算，赠送剩下的天数不作废（用户 2026-09-26 定）。
+  // ⚠️ 按 launch_gift_grants 那一行的固定到期日算，不按「当前权益是不是赠送」：同一单会结算不止一次
+  // （verify 之后发货确认失败、再收到推送），第二次时权益已经是付费的了，按当前权益算会把到期日往回缩。
+  const gift = await env.DB.prepare("SELECT expires_at FROM launch_gift_grants WHERE user_id = ?")
+    .bind(order.user_id).first<{ expires_at: string }>();
+  const giftUntilMs = gift ? Date.parse(gift.expires_at) : 0;
+  let expiresAt = wechatExpiresAtFor(productId, Math.max(paidAtMs, Number.isFinite(giftUntilMs) ? giftUntilMs : 0));
   // 沙箱同 Apple 那条：一笔沙箱的永久购买不能变成正式账号上永不过期的 Pro。
   if (sandbox) {
     const cap = new Date(Date.now() + SANDBOX_ENTITLEMENT_MAX_MS).toISOString();
