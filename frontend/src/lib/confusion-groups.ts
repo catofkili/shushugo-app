@@ -4,6 +4,7 @@ import { rowsFor } from "./database/db-utils";
 import { ensureUserTables, persistSoon } from "./study-core";
 import verbPairHints from "../data/verb_pair_hints.json";
 import { EXCLUDED_SYNONYM_GROUPS, MANUAL_VARIANT_GROUPS } from "../data/confusion_manual_review";
+import { perfTime } from "./perf-marks";
 import { ArrowLeftRight, Crown, Handshake, PenLine, Sprout, Type, Volume2, type LucideIcon } from "lucide-react";
 
 /**
@@ -561,5 +562,5 @@ export const confusionGroupsForWord = (wordId: number): ConfusionGroup[] => {
  * 所以进页面时先在 setTimeout(0) 里建好,和疑难辨析页同一个套路。
  */
 export const warmConfusionGroups = (): void => {
-  confusionGroupsForWord(0);
+  perfTime("辨析 · 分组索引", () => confusionGroupsForWord(0));
 };

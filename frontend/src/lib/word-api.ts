@@ -6,7 +6,8 @@ import { resetInterferenceCache } from "./scheduler/interference";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
 import { getDailyWordGoal, isPostExamLightActive } from "./studyPreferences";
 import { promptMeaning, questionMeaning, rowObjectToCard } from "./models/word-card";
-import { notifyProgressUpdated, withProgressEventsMuted } from "./progress-events";
+import { notifyProgressUpdated, notifyTodayWordPlanUpdated, withProgressEventsMuted } from "./progress-events";
+import { todayWordAudioPlan } from "./word-api/stage1";
 import { perfRecord, perfTime } from "./perf-marks";
 import { ENDGAME_REMAINING_RATIO, STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
 import {
@@ -89,6 +90,7 @@ import { kanjiUnitIndexLoaded, loadKanjiUnitIndex } from "./kanji-unit-index";
 export { getReviewQueue, setReviewQueue } from "./word-api/session-state";
 export { ensureProgressInitialized } from "./word-api/bootstrap";
 export { getWordStats } from "./word-api/stats";
+export { todayWordAudioPlan, warmStage1SelectionCache } from "./word-api/stage1";
 export {
   advanceDailyRelief,
   ensureDailyRelief,
@@ -379,6 +381,7 @@ export function refreshTodayWordPlan(): WordStats {
     persistSoon();
   }
   notifyProgressUpdated();
+  notifyTodayWordPlanUpdated(todayWordAudioPlan());
   return getWordStats(currentPhase());
 }
 
@@ -522,6 +525,7 @@ export function startEncore(customSize?: number): WordSessionResponse {
   setPhase("stage1");
   persistSoon();
   notifyProgressUpdated();
+  notifyTodayWordPlanUpdated(todayWordAudioPlan());
   return getWordSession();
 }
 
@@ -569,6 +573,7 @@ export function addWordToTodayEncore(wordId: number): boolean {
   setPhase("stage1");
   persistSoon();
   notifyProgressUpdated();
+  notifyTodayWordPlanUpdated(todayWordAudioPlan());
   return true;
 }
 
@@ -674,6 +679,7 @@ export function addWordsToQueue(wordIds: number[]): {
   if (queuedToday > 0) setPhase("stage1");
   persistSoon();
   notifyProgressUpdated();
+  if (queuedToday > 0) notifyTodayWordPlanUpdated(todayWordAudioPlan());
   return { added: fresh.length, today: queuedToday, alreadyLearning, known };
 }
 
