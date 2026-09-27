@@ -19,7 +19,7 @@
     "WECHAT_OFFER_ID": "1450657377",
     "WECHAT_PAY_ENV": "1",
     "WECHAT_PAY_PRICES": "{\"shushugo_pro_monthly\":1000,\"shushugo_pro_quarterly\":2400,\"shushugo_pro_yearly\":6800,\"shushugo_pro_lifetime\":29800}",
-    "LAUNCH_GIFT_CLAIM_UNTIL": ""
+    "LAUNCH_GIFT_CLAIM_UNTIL": "2026-11-08T00:00:00+08:00"
   },
   "d1_databases": [
     {
