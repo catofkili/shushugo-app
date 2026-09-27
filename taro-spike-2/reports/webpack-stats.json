@@ -338,14 +338,14 @@
     {
       "type": "asset",
       "name": "common.js",
-      "size": 822906,
+      "size": 823489,
       "emitted": true,
       "comparedForEmit": false,
       "cached": false,
       "info": {
         "javascriptModule": false,
         "minimized": true,
-        "size": 822906
+        "size": 823489
       },
       "chunkNames": [
         "common"
@@ -10624,8 +10624,8 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-          "issuerName": "../frontend/src/pages/ImmersiveGrammar.tsx",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+          "issuerName": "../frontend/src/pages/GrammarFoundationPage.tsx",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
@@ -10636,8 +10636,8 @@
               "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-              "name": "../frontend/src/pages/ImmersiveGrammar.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+              "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
             }
           ],
           "failed": false,
@@ -12302,9 +12302,9 @@
       "entry": false,
       "recorded": false,
       "reason": "split chunk (cache group: common) (name: common)",
-      "size": 1605206,
+      "size": 1608017,
       "sizes": {
-        "javascript": 1605206
+        "javascript": 1608017
       },
       "names": [
         "common"
@@ -12319,7 +12319,7 @@
         "common.js"
       ],
       "auxiliaryFiles": [],
-      "hash": "5f6d96c81a8e6af2a869",
+      "hash": "23cf738c5e8df8cf4457",
       "childrenByOrder": {},
       "modules": [
         {
@@ -12345,20 +12345,20 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/home.tsx",
-          "issuerName": "../frontend/src/routes/home.tsx",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/team.tsx",
+          "issuerName": "../frontend/src/routes/team.tsx",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
-              "name": "./src/pages/home/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/study/team/index.tsx",
+              "name": "./src/study/team/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/team/index!/private/tmp/claude-gram/taro-spike-2/src/study/team/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/team/index!./src/study/team/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/home.tsx",
-              "name": "../frontend/src/routes/home.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/team.tsx",
+              "name": "../frontend/src/routes/team.tsx"
             }
           ],
           "failed": false,
@@ -12693,24 +12693,24 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/PersonalInfo.tsx",
-          "issuerName": "../frontend/src/pages/PersonalInfo.tsx",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+          "issuerName": "../frontend/src/pages/SettingsPage.tsx",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/personal-info/index.tsx",
-              "name": "./src/account/personal-info/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+              "name": "./src/account/settings/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/personal-info/index!/private/tmp/claude-gram/taro-spike-2/src/account/personal-info/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/personal-info/index!./src/account/personal-info/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!./src/account/settings/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/personal-info.tsx",
-              "name": "../frontend/src/routes/personal-info.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/settings.tsx",
+              "name": "../frontend/src/routes/settings.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/PersonalInfo.tsx",
-              "name": "../frontend/src/pages/PersonalInfo.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+              "name": "../frontend/src/pages/SettingsPage.tsx"
             }
           ],
           "failed": false,
@@ -13266,8 +13266,8 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-cards.ts",
-          "issuerName": "../frontend/src/lib/confusion-cards.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/kanji-char-cards.ts",
+          "issuerName": "../frontend/src/lib/kanji-char-cards.ts",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
@@ -13286,8 +13286,8 @@
               "name": "../frontend/src/lib/level-plan.ts"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-cards.ts",
-              "name": "../frontend/src/lib/confusion-cards.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/kanji-char-cards.ts",
+              "name": "../frontend/src/lib/kanji-char-cards.ts"
             }
           ],
           "failed": false,
@@ -13794,28 +13794,28 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/fsrs-store.ts",
-          "issuerName": "../frontend/src/lib/fsrs-store.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "issuerName": "../frontend/src/lib/word-api.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-              "name": "../frontend/src/lib/sync-api.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+              "name": "./src/platform/WeappPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-              "name": "../frontend/src/lib/sync/merge.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+              "name": "../frontend/src/lib/api.ts"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/fsrs-store.ts",
-              "name": "../frontend/src/lib/fsrs-store.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+              "name": "../frontend/src/lib/word-api.ts"
             }
           ],
           "failed": false,
@@ -14837,28 +14837,28 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-list-import.ts",
-          "issuerName": "../frontend/src/lib/word-list-import.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/models/word-distinctions.ts",
+          "issuerName": "../frontend/src/lib/models/word-distinctions.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/word/index.tsx",
+              "name": "./src/pages/word/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/word/index!/private/tmp/claude-gram/taro-spike-2/src/pages/word/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/word/index!./src/pages/word/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-              "name": "../frontend/src/lib/sync-api.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/word.tsx",
+              "name": "../frontend/src/routes/word.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-              "name": "../frontend/src/lib/sync/merge.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/WordStudy.tsx",
+              "name": "../frontend/src/pages/WordStudy.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-list-import.ts",
-              "name": "../frontend/src/lib/word-list-import.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/models/word-distinctions.ts",
+              "name": "../frontend/src/lib/models/word-distinctions.ts"
             }
           ],
           "failed": false,
@@ -15690,8 +15690,8 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/card-log.ts",
-          "issuerName": "../frontend/src/lib/card-log.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "issuerName": "../frontend/src/lib/word-api.ts",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
@@ -15706,16 +15706,12 @@
               "name": "./src/platform/WeappPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/level-plan.ts",
-              "name": "../frontend/src/lib/level-plan.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+              "name": "../frontend/src/lib/api.ts"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-cards.ts",
-              "name": "../frontend/src/lib/confusion-cards.ts"
-            },
-            {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/card-log.ts",
-              "name": "../frontend/src/lib/card-log.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+              "name": "../frontend/src/lib/word-api.ts"
             }
           ],
           "failed": false,
@@ -15796,28 +15792,28 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-          "issuerName": "../frontend/src/lib/grammar-quiz.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api/stage1.ts",
+          "issuerName": "../frontend/src/lib/word-api/stage1.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-              "name": "./src/pages/grammar/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!./src/pages/grammar/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/grammar.tsx",
-              "name": "../frontend/src/routes/grammar.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+              "name": "./src/platform/WeappPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarQuiz.tsx",
-              "name": "../frontend/src/pages/GrammarQuiz.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/yuzu.ts",
+              "name": "../frontend/src/lib/yuzu.ts"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-              "name": "../frontend/src/lib/grammar-quiz.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api/stage1.ts",
+              "name": "../frontend/src/lib/word-api/stage1.ts"
             }
           ],
           "failed": false,
@@ -15847,28 +15843,28 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-          "issuerName": "../frontend/src/lib/grammar-quiz.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "issuerName": "../frontend/src/lib/word-api.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-              "name": "./src/pages/grammar/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!./src/pages/grammar/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/grammar.tsx",
-              "name": "../frontend/src/routes/grammar.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+              "name": "./src/platform/WeappPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarQuiz.tsx",
-              "name": "../frontend/src/pages/GrammarQuiz.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+              "name": "../frontend/src/lib/api.ts"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-              "name": "../frontend/src/lib/grammar-quiz.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+              "name": "../frontend/src/lib/word-api.ts"
             }
           ],
           "failed": false,
@@ -15930,9 +15926,9 @@
           "type": "module",
           "moduleType": "javascript/esm",
           "layer": null,
-          "size": 84546,
+          "size": 87357,
           "sizes": {
-            "javascript": 84546
+            "javascript": 87357
           },
           "built": true,
           "codeGenerated": true,
@@ -15957,9 +15953,9 @@
               "type": "module",
               "moduleType": "javascript/auto",
               "layer": null,
-              "size": 73599,
+              "size": 75352,
               "sizes": {
-                "javascript": 73599
+                "javascript": 75352
               },
               "built": true,
               "codeGenerated": false,
@@ -16000,9 +15996,9 @@
               "type": "module",
               "moduleType": "javascript/auto",
               "layer": null,
-              "size": 10947,
+              "size": 12005,
               "sizes": {
-                "javascript": 10947
+                "javascript": 12005
               },
               "built": true,
               "codeGenerated": false,
@@ -17326,28 +17322,28 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/daily-plan.ts",
-          "issuerName": "../frontend/src/lib/daily-plan.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "issuerName": "../frontend/src/lib/word-api.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/study/jlpt-plan/index.tsx",
-              "name": "./src/study/jlpt-plan/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/jlpt-plan/index!/private/tmp/claude-gram/taro-spike-2/src/study/jlpt-plan/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/jlpt-plan/index!./src/study/jlpt-plan/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/jlpt-plan.tsx",
-              "name": "../frontend/src/routes/jlpt-plan.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+              "name": "./src/platform/WeappPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/JlptPlanPage.tsx",
-              "name": "../frontend/src/pages/JlptPlanPage.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+              "name": "../frontend/src/lib/api.ts"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/daily-plan.ts",
-              "name": "../frontend/src/lib/daily-plan.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+              "name": "../frontend/src/lib/word-api.ts"
             }
           ],
           "failed": false,
@@ -17377,28 +17373,28 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/daily-plan.ts",
-          "issuerName": "../frontend/src/lib/daily-plan.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "issuerName": "../frontend/src/lib/word-api.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/study/jlpt-plan/index.tsx",
-              "name": "./src/study/jlpt-plan/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/jlpt-plan/index!/private/tmp/claude-gram/taro-spike-2/src/study/jlpt-plan/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/jlpt-plan/index!./src/study/jlpt-plan/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/jlpt-plan.tsx",
-              "name": "../frontend/src/routes/jlpt-plan.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+              "name": "./src/platform/WeappPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/JlptPlanPage.tsx",
-              "name": "../frontend/src/pages/JlptPlanPage.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+              "name": "../frontend/src/lib/api.ts"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/daily-plan.ts",
-              "name": "../frontend/src/lib/daily-plan.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+              "name": "../frontend/src/lib/word-api.ts"
             }
           ],
           "failed": false,
@@ -17479,28 +17475,28 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-          "issuerName": "../frontend/src/lib/grammar-quiz.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "issuerName": "../frontend/src/lib/word-api.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-              "name": "./src/pages/grammar/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!./src/pages/grammar/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/grammar.tsx",
-              "name": "../frontend/src/routes/grammar.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+              "name": "./src/platform/WeappPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarQuiz.tsx",
-              "name": "../frontend/src/pages/GrammarQuiz.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+              "name": "../frontend/src/lib/api.ts"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-              "name": "../frontend/src/lib/grammar-quiz.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+              "name": "../frontend/src/lib/word-api.ts"
             }
           ],
           "failed": false,
@@ -17671,24 +17667,24 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-          "issuerName": "../frontend/src/lib/sync/merge.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+          "issuerName": "../frontend/src/pages/SettingsPage.tsx",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+              "name": "./src/account/settings/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!./src/account/settings/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-              "name": "../frontend/src/lib/sync-api.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/settings.tsx",
+              "name": "../frontend/src/routes/settings.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-              "name": "../frontend/src/lib/sync/merge.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+              "name": "../frontend/src/pages/SettingsPage.tsx"
             }
           ],
           "failed": false,
@@ -18192,8 +18188,8 @@
               "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-              "name": "../frontend/src/pages/ImmersiveGrammar.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+              "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
             },
             {
               "identifier": "javascript/dynamic|/private/tmp/claude-gram/taro-spike-2/src/platform/grammar-data.weapp.cjs",
@@ -20517,8 +20513,8 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-          "issuerName": "../frontend/src/pages/Library.tsx",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+          "issuerName": "../frontend/src/pages/GrammarFoundationPage.tsx",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
@@ -20529,8 +20525,8 @@
               "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-              "name": "../frontend/src/pages/Library.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+              "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
             }
           ],
           "failed": false,
@@ -20588,8 +20584,8 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-          "issuerName": "../frontend/src/pages/ImmersiveGrammar.tsx",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+          "issuerName": "../frontend/src/pages/GrammarFoundationPage.tsx",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
@@ -20600,8 +20596,8 @@
               "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-              "name": "../frontend/src/pages/ImmersiveGrammar.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+              "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
             }
           ],
           "failed": false,
@@ -24438,28 +24434,28 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/weekly/share-images.ts",
-          "issuerName": "../frontend/src/pages/weekly/share-images.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/features/vocab-test/share-card.ts",
+          "issuerName": "../frontend/src/features/vocab-test/share-card.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/content-pages/weekly-report/index.tsx",
-              "name": "./src/content-pages/weekly-report/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/study/vocab-test/index.tsx",
+              "name": "./src/study/vocab-test/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=content-pages/weekly-report/index!/private/tmp/claude-gram/taro-spike-2/src/content-pages/weekly-report/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=content-pages/weekly-report/index!./src/content-pages/weekly-report/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/vocab-test/index!/private/tmp/claude-gram/taro-spike-2/src/study/vocab-test/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/vocab-test/index!./src/study/vocab-test/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/weekly-report.tsx",
-              "name": "../frontend/src/routes/weekly-report.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/vocab-test.tsx",
+              "name": "../frontend/src/routes/vocab-test.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/WeeklyReportPage.tsx",
-              "name": "../frontend/src/pages/WeeklyReportPage.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/VocabTestPage.tsx",
+              "name": "../frontend/src/pages/VocabTestPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/weekly/share-images.ts",
-              "name": "../frontend/src/pages/weekly/share-images.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/features/vocab-test/share-card.ts",
+              "name": "../frontend/src/features/vocab-test/share-card.ts"
             }
           ],
           "failed": false,
@@ -24732,8 +24728,8 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-          "issuerName": "../frontend/src/pages/ImmersiveGrammar.tsx",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+          "issuerName": "../frontend/src/pages/GrammarFoundationPage.tsx",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
@@ -24744,8 +24740,8 @@
               "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-              "name": "../frontend/src/pages/ImmersiveGrammar.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+              "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
             }
           ],
           "failed": false,
@@ -26223,8 +26219,8 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-          "issuerName": "../frontend/src/pages/ImmersiveGrammar.tsx",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+          "issuerName": "../frontend/src/pages/GrammarFoundationPage.tsx",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
@@ -26235,8 +26231,8 @@
               "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-              "name": "../frontend/src/pages/ImmersiveGrammar.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+              "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
             }
           ],
           "failed": false,
@@ -27433,28 +27429,28 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/weekly/share-images.ts",
-          "issuerName": "../frontend/src/pages/weekly/share-images.ts",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/features/vocab-test/share-card.ts",
+          "issuerName": "../frontend/src/features/vocab-test/share-card.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/content-pages/weekly-report/index.tsx",
-              "name": "./src/content-pages/weekly-report/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/study/vocab-test/index.tsx",
+              "name": "./src/study/vocab-test/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=content-pages/weekly-report/index!/private/tmp/claude-gram/taro-spike-2/src/content-pages/weekly-report/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=content-pages/weekly-report/index!./src/content-pages/weekly-report/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/vocab-test/index!/private/tmp/claude-gram/taro-spike-2/src/study/vocab-test/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/vocab-test/index!./src/study/vocab-test/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/weekly-report.tsx",
-              "name": "../frontend/src/routes/weekly-report.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/vocab-test.tsx",
+              "name": "../frontend/src/routes/vocab-test.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/WeeklyReportPage.tsx",
-              "name": "../frontend/src/pages/WeeklyReportPage.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/VocabTestPage.tsx",
+              "name": "../frontend/src/pages/VocabTestPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/weekly/share-images.ts",
-              "name": "../frontend/src/pages/weekly/share-images.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/features/vocab-test/share-card.ts",
+              "name": "../frontend/src/features/vocab-test/share-card.ts"
             }
           ],
           "failed": false,
@@ -28704,24 +28700,24 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/PrivacySettings.tsx",
-          "issuerName": "../frontend/src/pages/PrivacySettings.tsx",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+          "issuerName": "../frontend/src/pages/SettingsPage.tsx",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/privacy/index.tsx",
-              "name": "./src/account/privacy/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+              "name": "./src/account/settings/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/privacy/index!/private/tmp/claude-gram/taro-spike-2/src/account/privacy/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/privacy/index!./src/account/privacy/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!./src/account/settings/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/privacy.tsx",
-              "name": "../frontend/src/routes/privacy.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/settings.tsx",
+              "name": "../frontend/src/routes/settings.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/PrivacySettings.tsx",
-              "name": "../frontend/src/pages/PrivacySettings.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+              "name": "../frontend/src/pages/SettingsPage.tsx"
             }
           ],
           "failed": false,
@@ -34697,8 +34693,8 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "javascript/dynamic|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js",
-          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js",
+          "issuer": "javascript/dynamic|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js",
+          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
@@ -34721,8 +34717,8 @@
               "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/toConsumableArray.js"
             },
             {
-              "identifier": "javascript/dynamic|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js"
+              "identifier": "javascript/dynamic|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js"
             }
           ],
           "failed": false,
@@ -35576,20 +35572,20 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-          "issuerName": "../frontend/src/pages/Library.tsx",
+          "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
+          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
-              "name": "./src/grammar-pages/compile/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+              "name": "./src/app.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-              "name": "../frontend/src/pages/Library.tsx"
+              "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js"
             }
           ],
           "failed": false,
@@ -36154,8 +36150,8 @@
           "optional": false,
           "orphan": false,
           "dependent": true,
-          "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/wrapNativeSuper.js",
-          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/wrapNativeSuper.js",
+          "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/inherits.js",
+          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/inherits.js",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
@@ -36170,8 +36166,8 @@
               "name": "../frontend/src/lib/sync-api.ts"
             },
             {
-              "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/wrapNativeSuper.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/wrapNativeSuper.js"
+              "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/inherits.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/inherits.js"
             }
           ],
           "failed": false,
@@ -36320,16 +36316,12 @@
               "name": "./src/app.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js"
-            },
-            {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js"
             },
             {
               "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/superPropGet.js",
@@ -36394,24 +36386,20 @@
               "optional": false,
               "orphan": false,
               "dependent": true,
-              "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
-              "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
+              "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
+              "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
               "issuerPath": [
                 {
                   "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
                   "name": "./src/app.tsx"
                 },
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
+                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js"
                 },
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js"
-                },
-                {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js"
+                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js"
                 }
               ],
               "failed": false,
@@ -36449,16 +36437,12 @@
                   "name": "./src/app.tsx"
                 },
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
+                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js"
                 },
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js"
-                },
-                {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js"
+                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js"
                 },
                 {
                   "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/superPropGet.js",
@@ -36613,20 +36597,24 @@
           "optional": false,
           "orphan": false,
           "dependent": false,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/style.js",
-          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/style.js",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-groups.ts",
+          "issuerName": "../frontend/src/lib/confusion-groups.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
-              "name": "./src/app.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
+              "name": "./src/grammar-pages/compile/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/style.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/style.js"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ConfusionPage.tsx",
+              "name": "../frontend/src/pages/ConfusionPage.tsx"
+            },
+            {
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-groups.ts",
+              "name": "../frontend/src/lib/confusion-groups.ts"
             }
           ],
           "failed": false,
@@ -36825,24 +36813,24 @@
               "optional": false,
               "orphan": false,
               "dependent": true,
-              "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js",
-              "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js",
+              "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
+              "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
               "issuerPath": [
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-                  "name": "./src/account/login/index.tsx"
+                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+                  "name": "./src/app.tsx"
                 },
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
                 },
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-                  "name": "../frontend/src/lib/sync-api.ts"
+                  "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js"
                 },
                 {
-                  "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js"
+                  "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js"
                 }
               ],
               "failed": false,
@@ -36876,20 +36864,20 @@
               "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/toPropertyKey.js",
               "issuerPath": [
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-                  "name": "./src/account/login/index.tsx"
+                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+                  "name": "./src/app.tsx"
                 },
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
                 },
                 {
-                  "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-                  "name": "../frontend/src/lib/sync-api.ts"
+                  "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js"
                 },
                 {
-                  "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js",
-                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js"
+                  "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
+                  "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js"
                 },
                 {
                   "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/toPropertyKey.js",
@@ -38302,24 +38290,24 @@
           "issuerName": "../frontend/src/lib/fsrs-scheduler.ts",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-              "name": "../frontend/src/lib/sync-api.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+              "name": "./src/platform/WeappPage.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-              "name": "../frontend/src/lib/sync/merge.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+              "name": "../frontend/src/lib/api.ts"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/fsrs-store.ts",
-              "name": "../frontend/src/lib/fsrs-store.ts"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+              "name": "../frontend/src/lib/word-api.ts"
             },
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/fsrs-scheduler.ts",
@@ -48334,20 +48322,20 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-      "issuerName": "../frontend/src/pages/Library.tsx",
+      "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
+      "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
-          "name": "./src/grammar-pages/compile/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+          "name": "./src/app.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-          "name": "../frontend/src/pages/Library.tsx"
+          "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js"
         }
       ],
       "failed": false,
@@ -53956,24 +53944,24 @@
           "cacheable": true,
           "optional": false,
           "orphan": false,
-          "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js",
-          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js",
+          "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
+          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+              "name": "./src/app.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-              "name": "../frontend/src/lib/sync-api.ts"
+              "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js"
             },
             {
-              "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js"
+              "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js"
             }
           ],
           "failed": false,
@@ -54006,20 +53994,20 @@
           "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/toPropertyKey.js",
           "issuerPath": [
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+              "name": "./src/app.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-              "name": "../frontend/src/lib/sync-api.ts"
+              "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js"
             },
             {
-              "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js"
+              "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js"
             },
             {
               "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/toPropertyKey.js",
@@ -54792,24 +54780,20 @@
           "cacheable": true,
           "optional": false,
           "orphan": false,
-          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
-          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
+          "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
+          "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
           "issuerPath": [
             {
               "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
               "name": "./src/app.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js"
-            },
-            {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js"
             }
           ],
           "failed": false,
@@ -54846,16 +54830,12 @@
               "name": "./src/app.tsx"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js"
             },
             {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js"
-            },
-            {
-              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
-              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js"
+              "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
+              "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js"
             },
             {
               "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/superPropGet.js",
@@ -55248,20 +55228,24 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/style.js",
-      "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/style.js",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-groups.ts",
+      "issuerName": "../frontend/src/lib/confusion-groups.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
-          "name": "./src/app.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
+          "name": "./src/grammar-pages/compile/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/style.js",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/style.js"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ConfusionPage.tsx",
+          "name": "../frontend/src/pages/ConfusionPage.tsx"
+        },
+        {
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-groups.ts",
+          "name": "../frontend/src/lib/confusion-groups.ts"
         }
       ],
       "failed": false,
@@ -56980,8 +56964,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-      "issuerName": "../frontend/src/pages/Library.tsx",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+      "issuerName": "../frontend/src/pages/GrammarFoundationPage.tsx",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
@@ -56992,8 +56976,8 @@
           "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-          "name": "../frontend/src/pages/Library.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+          "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
         }
       ],
       "failed": false,
@@ -57022,20 +57006,20 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/home.tsx",
-      "issuerName": "../frontend/src/routes/home.tsx",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/team.tsx",
+      "issuerName": "../frontend/src/routes/team.tsx",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
-          "name": "./src/pages/home/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/study/team/index.tsx",
+          "name": "./src/study/team/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/team/index!/private/tmp/claude-gram/taro-spike-2/src/study/team/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/team/index!./src/study/team/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/home.tsx",
-          "name": "../frontend/src/routes/home.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/team.tsx",
+          "name": "../frontend/src/routes/team.tsx"
         }
       ],
       "failed": false,
@@ -57929,8 +57913,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-      "issuerName": "../frontend/src/pages/ImmersiveGrammar.tsx",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+      "issuerName": "../frontend/src/pages/GrammarFoundationPage.tsx",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
@@ -57941,8 +57925,8 @@
           "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-          "name": "../frontend/src/pages/ImmersiveGrammar.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+          "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
         }
       ],
       "failed": false,
@@ -59539,8 +59523,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-      "issuerName": "../frontend/src/pages/ImmersiveGrammar.tsx",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+      "issuerName": "../frontend/src/pages/GrammarFoundationPage.tsx",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/grammar-pages/compile/index.tsx",
@@ -59551,8 +59535,8 @@
           "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-          "name": "../frontend/src/pages/ImmersiveGrammar.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+          "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
         }
       ],
       "failed": false,
@@ -60779,20 +60763,20 @@
       "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/toPropertyKey.js",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+          "name": "./src/app.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-          "name": "../frontend/src/lib/sync-api.ts"
+          "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectSpread2.js"
         },
         {
-          "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/createClass.js"
+          "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/defineProperty.js"
         },
         {
           "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/toPropertyKey.js",
@@ -60963,8 +60947,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/wrapNativeSuper.js",
-      "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/wrapNativeSuper.js",
+      "issuer": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/inherits.js",
+      "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/inherits.js",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
@@ -60979,8 +60963,8 @@
           "name": "../frontend/src/lib/sync-api.ts"
         },
         {
-          "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/wrapNativeSuper.js",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/wrapNativeSuper.js"
+          "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/inherits.js",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/inherits.js"
         }
       ],
       "failed": false,
@@ -61017,16 +61001,12 @@
           "name": "./src/app.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js"
-        },
-        {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js"
         },
         {
           "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/superPropGet.js",
@@ -62409,8 +62389,8 @@
           "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=grammar-pages/compile/index!./src/grammar-pages/compile/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-          "name": "../frontend/src/pages/ImmersiveGrammar.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+          "name": "../frontend/src/pages/GrammarFoundationPage.tsx"
         },
         {
           "identifier": "javascript/dynamic|/private/tmp/claude-gram/taro-spike-2/src/platform/grammar-data.weapp.cjs",
@@ -64785,24 +64765,24 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/PrivacySettings.tsx",
-      "issuerName": "../frontend/src/pages/PrivacySettings.tsx",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+      "issuerName": "../frontend/src/pages/SettingsPage.tsx",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/privacy/index.tsx",
-          "name": "./src/account/privacy/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+          "name": "./src/account/settings/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/privacy/index!/private/tmp/claude-gram/taro-spike-2/src/account/privacy/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/privacy/index!./src/account/privacy/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!./src/account/settings/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/privacy.tsx",
-          "name": "../frontend/src/routes/privacy.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/settings.tsx",
+          "name": "../frontend/src/routes/settings.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/PrivacySettings.tsx",
-          "name": "../frontend/src/pages/PrivacySettings.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+          "name": "../frontend/src/pages/SettingsPage.tsx"
         }
       ],
       "failed": false,
@@ -66265,16 +66245,12 @@
           "name": "./src/app.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=app!./src/app.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/index.js"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/index.js"
-        },
-        {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/shared/dist/event-channel.js"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/runtime/dist/dom/element.js"
         },
         {
           "identifier": "javascript/esm|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/esm/superPropGet.js",
@@ -67113,9 +67089,9 @@
       "type": "module",
       "moduleType": "javascript/esm",
       "layer": null,
-      "size": 84546,
+      "size": 87357,
       "sizes": {
-        "javascript": 84546
+        "javascript": 87357
       },
       "built": true,
       "codeGenerated": true,
@@ -67139,9 +67115,9 @@
           "type": "module",
           "moduleType": "javascript/auto",
           "layer": null,
-          "size": 73599,
+          "size": 75352,
           "sizes": {
-            "javascript": 73599
+            "javascript": 75352
           },
           "built": true,
           "codeGenerated": false,
@@ -67181,9 +67157,9 @@
           "type": "module",
           "moduleType": "javascript/auto",
           "layer": null,
-          "size": 10947,
+          "size": 12005,
           "sizes": {
-            "javascript": 10947
+            "javascript": 12005
           },
           "built": true,
           "codeGenerated": false,
@@ -67843,28 +67819,28 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/fsrs-store.ts",
-      "issuerName": "../frontend/src/lib/fsrs-store.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+      "issuerName": "../frontend/src/lib/word-api.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-          "name": "../frontend/src/lib/sync-api.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+          "name": "./src/platform/WeappPage.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-          "name": "../frontend/src/lib/sync/merge.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+          "name": "../frontend/src/lib/api.ts"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/fsrs-store.ts",
-          "name": "../frontend/src/lib/fsrs-store.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "name": "../frontend/src/lib/word-api.ts"
         }
       ],
       "failed": false,
@@ -67939,8 +67915,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/card-log.ts",
-      "issuerName": "../frontend/src/lib/card-log.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+      "issuerName": "../frontend/src/lib/word-api.ts",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
@@ -67955,16 +67931,12 @@
           "name": "./src/platform/WeappPage.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/level-plan.ts",
-          "name": "../frontend/src/lib/level-plan.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+          "name": "../frontend/src/lib/api.ts"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-cards.ts",
-          "name": "../frontend/src/lib/confusion-cards.ts"
-        },
-        {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/card-log.ts",
-          "name": "../frontend/src/lib/card-log.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "name": "../frontend/src/lib/word-api.ts"
         }
       ],
       "failed": false,
@@ -67993,8 +67965,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-cards.ts",
-      "issuerName": "../frontend/src/lib/confusion-cards.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/kanji-char-cards.ts",
+      "issuerName": "../frontend/src/lib/kanji-char-cards.ts",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
@@ -68013,8 +67985,8 @@
           "name": "../frontend/src/lib/level-plan.ts"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/confusion-cards.ts",
-          "name": "../frontend/src/lib/confusion-cards.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/kanji-char-cards.ts",
+          "name": "../frontend/src/lib/kanji-char-cards.ts"
         }
       ],
       "failed": false,
@@ -68135,28 +68107,28 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-      "issuerName": "../frontend/src/lib/grammar-quiz.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+      "issuerName": "../frontend/src/lib/word-api.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-          "name": "./src/pages/grammar/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!./src/pages/grammar/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/grammar.tsx",
-          "name": "../frontend/src/routes/grammar.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+          "name": "./src/platform/WeappPage.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarQuiz.tsx",
-          "name": "../frontend/src/pages/GrammarQuiz.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+          "name": "../frontend/src/lib/api.ts"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-          "name": "../frontend/src/lib/grammar-quiz.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "name": "../frontend/src/lib/word-api.ts"
         }
       ],
       "failed": false,
@@ -68231,28 +68203,28 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-      "issuerName": "../frontend/src/lib/grammar-quiz.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+      "issuerName": "../frontend/src/lib/word-api.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-          "name": "./src/pages/grammar/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!./src/pages/grammar/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/grammar.tsx",
-          "name": "../frontend/src/routes/grammar.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+          "name": "./src/platform/WeappPage.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarQuiz.tsx",
-          "name": "../frontend/src/pages/GrammarQuiz.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+          "name": "../frontend/src/lib/api.ts"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-          "name": "../frontend/src/lib/grammar-quiz.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "name": "../frontend/src/lib/word-api.ts"
         }
       ],
       "failed": false,
@@ -68715,28 +68687,28 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/daily-plan.ts",
-      "issuerName": "../frontend/src/lib/daily-plan.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+      "issuerName": "../frontend/src/lib/word-api.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/study/jlpt-plan/index.tsx",
-          "name": "./src/study/jlpt-plan/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/jlpt-plan/index!/private/tmp/claude-gram/taro-spike-2/src/study/jlpt-plan/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/jlpt-plan/index!./src/study/jlpt-plan/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/jlpt-plan.tsx",
-          "name": "../frontend/src/routes/jlpt-plan.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+          "name": "./src/platform/WeappPage.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/JlptPlanPage.tsx",
-          "name": "../frontend/src/pages/JlptPlanPage.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+          "name": "../frontend/src/lib/api.ts"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/daily-plan.ts",
-          "name": "../frontend/src/lib/daily-plan.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "name": "../frontend/src/lib/word-api.ts"
         }
       ],
       "failed": false,
@@ -68765,28 +68737,28 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/daily-plan.ts",
-      "issuerName": "../frontend/src/lib/daily-plan.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+      "issuerName": "../frontend/src/lib/word-api.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/study/jlpt-plan/index.tsx",
-          "name": "./src/study/jlpt-plan/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/jlpt-plan/index!/private/tmp/claude-gram/taro-spike-2/src/study/jlpt-plan/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/jlpt-plan/index!./src/study/jlpt-plan/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/jlpt-plan.tsx",
-          "name": "../frontend/src/routes/jlpt-plan.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+          "name": "./src/platform/WeappPage.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/JlptPlanPage.tsx",
-          "name": "../frontend/src/pages/JlptPlanPage.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+          "name": "../frontend/src/lib/api.ts"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/daily-plan.ts",
-          "name": "../frontend/src/lib/daily-plan.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "name": "../frontend/src/lib/word-api.ts"
         }
       ],
       "failed": false,
@@ -69747,28 +69719,28 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/weekly/share-images.ts",
-      "issuerName": "../frontend/src/pages/weekly/share-images.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/features/vocab-test/share-card.ts",
+      "issuerName": "../frontend/src/features/vocab-test/share-card.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/content-pages/weekly-report/index.tsx",
-          "name": "./src/content-pages/weekly-report/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/study/vocab-test/index.tsx",
+          "name": "./src/study/vocab-test/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=content-pages/weekly-report/index!/private/tmp/claude-gram/taro-spike-2/src/content-pages/weekly-report/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=content-pages/weekly-report/index!./src/content-pages/weekly-report/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/vocab-test/index!/private/tmp/claude-gram/taro-spike-2/src/study/vocab-test/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=study/vocab-test/index!./src/study/vocab-test/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/weekly-report.tsx",
-          "name": "../frontend/src/routes/weekly-report.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/vocab-test.tsx",
+          "name": "../frontend/src/routes/vocab-test.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/WeeklyReportPage.tsx",
-          "name": "../frontend/src/pages/WeeklyReportPage.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/VocabTestPage.tsx",
+          "name": "../frontend/src/pages/VocabTestPage.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/weekly/share-images.ts",
-          "name": "../frontend/src/pages/weekly/share-images.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/features/vocab-test/share-card.ts",
+          "name": "../frontend/src/features/vocab-test/share-card.ts"
         }
       ],
       "failed": false,
@@ -72067,9 +72039,9 @@
       "type": "module",
       "moduleType": "javascript/auto",
       "layer": null,
-      "size": 10947,
+      "size": 12005,
       "sizes": {
-        "javascript": 10947
+        "javascript": 12005
       },
       "built": true,
       "codeGenerated": false,
@@ -72323,28 +72295,28 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-list-import.ts",
-      "issuerName": "../frontend/src/lib/word-list-import.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/models/word-distinctions.ts",
+      "issuerName": "../frontend/src/lib/models/word-distinctions.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/word/index.tsx",
+          "name": "./src/pages/word/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/word/index!/private/tmp/claude-gram/taro-spike-2/src/pages/word/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/word/index!./src/pages/word/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-          "name": "../frontend/src/lib/sync-api.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/word.tsx",
+          "name": "../frontend/src/routes/word.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-          "name": "../frontend/src/lib/sync/merge.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/WordStudy.tsx",
+          "name": "../frontend/src/pages/WordStudy.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-list-import.ts",
-          "name": "../frontend/src/lib/word-list-import.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/models/word-distinctions.ts",
+          "name": "../frontend/src/lib/models/word-distinctions.ts"
         }
       ],
       "failed": false,
@@ -72485,24 +72457,24 @@
       "issuerName": "../frontend/src/lib/fsrs-scheduler.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-          "name": "../frontend/src/lib/sync-api.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+          "name": "./src/platform/WeappPage.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-          "name": "../frontend/src/lib/sync/merge.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/api.ts",
+          "name": "../frontend/src/lib/api.ts"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/fsrs-store.ts",
-          "name": "../frontend/src/lib/fsrs-store.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+          "name": "../frontend/src/lib/word-api.ts"
         },
         {
           "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/fsrs-scheduler.ts",
@@ -72751,28 +72723,28 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-      "issuerName": "../frontend/src/lib/grammar-quiz.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api/stage1.ts",
+      "issuerName": "../frontend/src/lib/word-api/stage1.ts",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-          "name": "./src/pages/grammar/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!/private/tmp/claude-gram/taro-spike-2/src/pages/grammar/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/grammar/index!./src/pages/grammar/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!/private/tmp/claude-gram/taro-spike-2/src/pages/home/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=pages/home/index!./src/pages/home/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/grammar.tsx",
-          "name": "../frontend/src/routes/grammar.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+          "name": "./src/platform/WeappPage.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/GrammarQuiz.tsx",
-          "name": "../frontend/src/pages/GrammarQuiz.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/yuzu.ts",
+          "name": "../frontend/src/lib/yuzu.ts"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/grammar-quiz.ts",
-          "name": "../frontend/src/lib/grammar-quiz.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/word-api/stage1.ts",
+          "name": "../frontend/src/lib/word-api/stage1.ts"
         }
       ],
       "failed": false,
@@ -73097,24 +73069,24 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/PersonalInfo.tsx",
-      "issuerName": "../frontend/src/pages/PersonalInfo.tsx",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+      "issuerName": "../frontend/src/pages/SettingsPage.tsx",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/personal-info/index.tsx",
-          "name": "./src/account/personal-info/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+          "name": "./src/account/settings/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/personal-info/index!/private/tmp/claude-gram/taro-spike-2/src/account/personal-info/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/personal-info/index!./src/account/personal-info/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!./src/account/settings/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/personal-info.tsx",
-          "name": "../frontend/src/routes/personal-info.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/settings.tsx",
+          "name": "../frontend/src/routes/settings.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/PersonalInfo.tsx",
-          "name": "../frontend/src/pages/PersonalInfo.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+          "name": "../frontend/src/pages/SettingsPage.tsx"
         }
       ],
       "failed": false,
@@ -73849,8 +73821,8 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "javascript/dynamic|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js",
-      "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js",
+      "issuer": "javascript/dynamic|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js",
+      "issuerName": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js",
       "issuerPath": [
         {
           "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/app.tsx",
@@ -73873,8 +73845,8 @@
           "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/toConsumableArray.js"
         },
         {
-          "identifier": "javascript/dynamic|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js"
+          "identifier": "javascript/dynamic|/private/tmp/shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js"
         }
       ],
       "failed": false,
@@ -75601,24 +75573,24 @@
       "cacheable": true,
       "optional": false,
       "orphan": false,
-      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-      "issuerName": "../frontend/src/lib/sync/merge.ts",
+      "issuer": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+      "issuerName": "../frontend/src/pages/SettingsPage.tsx",
       "issuerPath": [
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+          "name": "./src/account/settings/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!/private/tmp/claude-gram/taro-spike-2/src/account/login/index.tsx",
-          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/login/index!./src/account/login/index.tsx"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!/private/tmp/claude-gram/taro-spike-2/src/account/settings/index.tsx",
+          "name": "../../shushugo-w1/taro-spike-2/node_modules/@tarojs/taro-loader/lib/entry-cache.js?name=account/settings/index!./src/account/settings/index.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-          "name": "../frontend/src/lib/sync-api.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/routes/settings.tsx",
+          "name": "../frontend/src/routes/settings.tsx"
         },
         {
-          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/lib/sync/merge.ts",
-          "name": "../frontend/src/lib/sync/merge.ts"
+          "identifier": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/babel-loader/lib/index.js??ruleSet[1].rules[5].use[0]!/private/tmp/claude-gram/frontend/src/pages/SettingsPage.tsx",
+          "name": "../frontend/src/pages/SettingsPage.tsx"
         }
       ],
       "failed": false,
@@ -77967,11 +77939,11 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 973812,
+      "assetsSize": 974395,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78070,7 +78042,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "app.wxss",
@@ -78082,7 +78054,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1387117,
+      "assetsSize": 1387700,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78153,7 +78125,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "pages/home/index.js",
@@ -78161,7 +78133,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1119436,
+      "assetsSize": 1120019,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78182,7 +78154,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "pages/word/index.js",
@@ -78190,7 +78162,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1119391,
+      "assetsSize": 1119974,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78211,7 +78183,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "pages/grammar/index.js",
@@ -78219,7 +78191,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1119336,
+      "assetsSize": 1119919,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78240,7 +78212,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "pages/profile/index.js",
@@ -78248,7 +78220,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1119336,
+      "assetsSize": 1119919,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78273,7 +78245,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "study/team/index.js",
@@ -78281,7 +78253,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1137604,
+      "assetsSize": 1138187,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78326,7 +78298,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "study/quick-study/index.js",
@@ -78334,7 +78306,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1145914,
+      "assetsSize": 1146497,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78387,7 +78359,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "study/vocab-test/index.js",
@@ -78395,7 +78367,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1146583,
+      "assetsSize": 1147166,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78420,7 +78392,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "study/study-modes/index.js",
@@ -78428,7 +78400,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1122197,
+      "assetsSize": 1122780,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78489,7 +78461,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "study/confusion/index.js",
@@ -78497,7 +78469,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1120422,
+      "assetsSize": 1121005,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78534,7 +78506,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "study/distinction-quiz/index.js",
@@ -78542,7 +78514,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1126586,
+      "assetsSize": 1127169,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78583,7 +78555,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "study/kanji-readings/index.js",
@@ -78591,7 +78563,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1126028,
+      "assetsSize": 1126611,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78628,7 +78600,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "study/word-list/index.js",
@@ -78636,7 +78608,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1143022,
+      "assetsSize": 1143605,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78681,7 +78653,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "study/jlpt-plan/index.js",
@@ -78689,7 +78661,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1141283,
+      "assetsSize": 1141866,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78710,7 +78682,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/login/index.js",
@@ -78718,7 +78690,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1121442,
+      "assetsSize": 1122025,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78739,7 +78711,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/pro/index.js",
@@ -78747,7 +78719,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1128268,
+      "assetsSize": 1128851,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78776,7 +78748,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/account/index.js",
@@ -78784,7 +78756,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1151223,
+      "assetsSize": 1151806,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78813,7 +78785,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/personal-info/index.js",
@@ -78821,7 +78793,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1131801,
+      "assetsSize": 1132384,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78842,7 +78814,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/notifications/index.js",
@@ -78850,7 +78822,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1123733,
+      "assetsSize": 1124316,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78911,7 +78883,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/settings/index.js",
@@ -78919,7 +78891,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1159747,
+      "assetsSize": 1160330,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78944,7 +78916,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/privacy/index.js",
@@ -78952,7 +78924,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1133200,
+      "assetsSize": 1133783,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -78973,7 +78945,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/privacy-policy/index.js",
@@ -78981,7 +78953,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1122651,
+      "assetsSize": 1123234,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79002,7 +78974,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/user-agreement/index.js",
@@ -79010,7 +78982,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1121019,
+      "assetsSize": 1121602,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79035,7 +79007,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "account/help/index.js",
@@ -79043,7 +79015,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1125847,
+      "assetsSize": 1126430,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79164,7 +79136,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "content-pages/detail/index.js",
@@ -79172,7 +79144,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1121340,
+      "assetsSize": 1121923,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79225,7 +79197,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "content-pages/grammar-foundation/index.js",
@@ -79233,7 +79205,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1120160,
+      "assetsSize": 1120743,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79326,7 +79298,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "content-pages/favorites/index.js",
@@ -79334,7 +79306,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1120755,
+      "assetsSize": 1121338,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79383,7 +79355,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "content-pages/weekly-report/index.wxss",
@@ -79395,7 +79367,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1270757,
+      "assetsSize": 1271340,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79428,7 +79400,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "content-pages/yuzu-shop/index.js",
@@ -79436,7 +79408,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1132315,
+      "assetsSize": 1132898,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79457,7 +79429,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "content-pages/achievements/index.js",
@@ -79465,7 +79437,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1122880,
+      "assetsSize": 1123463,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79490,7 +79462,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "content-pages/about/index.js",
@@ -79498,7 +79470,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1127180,
+      "assetsSize": 1127763,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },
@@ -79779,7 +79751,7 @@
         },
         {
           "name": "common.js",
-          "size": 822906
+          "size": 823489
         },
         {
           "name": "grammar-pages/compile/index.js",
@@ -79787,7 +79759,7 @@
         }
       ],
       "filteredAssets": 0,
-      "assetsSize": 1122928,
+      "assetsSize": 1123511,
       "filteredAuxiliaryAssets": 0,
       "auxiliaryAssetsSize": 0
     },

@@ -318,17 +318,18 @@ const removeDeltaRecord = async (): Promise<void> => {
  *
  * ⚠️ 坏掉的增量不许拖垮启动:解析不了就丢掉,大不了回到快照那一刻。
  */
-const replayDeltaRecord = async (): Promise<void> => {
+const replayDeltaRecord = async (): Promise<number> => {
   try {
     const raw = await readDeltaRecord();
-    if (!raw) return;
+    if (!raw) return 0;
     const delta = JSON.parse(raw) as LocalDelta;
-    if (!delta?.to || delta.to <= readSnapshotMark()) return;
+    if (!delta?.to || delta.to <= readSnapshotMark()) return 0;
     applyDelta(delta);
     // word_study_time_by_device 是同步/增量的明细表，而统计读取旧的日汇总表。
     // 增量回放也必须重建派生汇总，否则重启后明细在、统计却少算。
     rebuildStudyTimeAggregate();
     console.log('✅ 本机增量已回放');
+    return deltaRowCount(delta);
   } catch (error) {
     // 回放本身是原子的(applyDelta 自带事务),失败时库还停在快照那一刻。
     // 但那份增量里的改动就此没人认领了,所以**原样留一份**再走 —— 下一次落盘
@@ -337,6 +338,7 @@ const replayDeltaRecord = async (): Promise<void> => {
     console.error('[storage] 本机增量回放失败,已按快照那一刻启动(增量已另存):', error);
     recoveryFailed = true;
     notifyPersistenceError();
+    return 0;
   }
 };
 
@@ -645,8 +647,9 @@ export async function loadDatabase(): Promise<boolean> {
   try {
     if (isNativeFileStorage()) {
       if (await loadFileDatabase()) {
-        await perfTimeAsync('启动 · 增量回放', replayDeltaRecord);
+        const replayed = await perfTimeAsync('启动 · 增量回放', replayDeltaRecord);
         markSnapshotLoaded();
+        compactIfLarge(replayed);
         return true;
       }
 
@@ -678,8 +681,9 @@ export async function loadDatabase(): Promise<boolean> {
         await stashUnreadableBrowserDatabase(browserData).catch(() => undefined);
         throw new LocalArchiveUnreadableError(browserData, error);
       }
-      await perfTimeAsync('启动 · 增量回放', replayDeltaRecord);
+      const replayed = await perfTimeAsync('启动 · 增量回放', replayDeltaRecord);
       markSnapshotLoaded();
+      compactIfLarge(replayed);
       console.log('✅ Database loaded from IndexedDB');
       // 开着 dev server 打开页面就先落一份快照,不必等到答完第一题。
       if (import.meta.env.DEV) {
@@ -781,8 +785,28 @@ let snapshotAt = 0;
  */
 const FULL_SNAPSHOT_INTERVAL_MS = 5 * 60_000;
 
-/** 增量大到这个份上就不如直接整库(词单导入这种一次改上万行的场合)。 */
-const DELTA_ROW_LIMIT = 20_000;
+/**
+ * 增量大到这个份上就不如直接整库(词单导入这种一次改上万行的场合)。
+ * ⚠️ 小程序单独收紧到 2,000：增量每次冷启动都要整条回放，而 iPhone 小程序里 SQLite 是解释执行的，
+ * 2026-09-27 真机实测回放一份约 5000 行的增量要 13.4 秒（那时还没缓存 prepared statement）。
+ * 宁可偶尔多写一次整库（后台一两百毫秒到一秒），也不让每次冷启动都背着上千行。
+ */
+const deltaRowLimit = (): number => (Capacitor.getPlatform?.() === 'wechat' ? 2_000 : 20_000);
+
+/**
+ * 启动时回放的增量超过这么多行，就在稍后整库落盘一次，把增量清掉。
+ * 为什么需要：整库快照要「这次打开之后满 5 分钟再写盘」才会触发，而小程序每次常常只用几分钟 ——
+ * 增量从装机那天起一路累积、每次冷启动全部重放（起点水平一次就写上千行）。清掉之后下次启动只回放最近的改动。
+ */
+const REPLAY_COMPACT_ROWS = 300;
+const REPLAY_COMPACT_DELAY_MS = 8_000;
+const compactIfLarge = (replayedRows: number): void => {
+  if (replayedRows <= REPLAY_COMPACT_ROWS) return;
+  // 不算一次本地改动：不抬 revision、不通知云同步（和小程序首装那次 first-save 同一种写法）。
+  setTimeout(() => {
+    void saveDatabase({ notifyCloud: false }).catch((error) => console.warn('[storage] 启动后整库压实失败，下次启动再试:', error));
+  }, REPLAY_COMPACT_DELAY_MS);
+};
 
 /** DEV 下把整库镜像到 .local/live.db 的最小间隔(和 dev-snapshot 里那道闸同一个数)。 */
 const DEV_MIRROR_INTERVAL_MS = 20_000;
@@ -866,7 +890,7 @@ const persistNowInQueue = async (): Promise<void> => {
       await saveDatabaseNow();
       return;
     }
-    if (deltaRowCount(delta) > DELTA_ROW_LIMIT) {
+    if (deltaRowCount(delta) > deltaRowLimit()) {
       await saveDatabaseNow();
       return;
     }

@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1858940,
+      "bytes": 1859523,
       "passes": true
     },
     "study": {
@@ -1081,7 +1081,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/storage.ts",
-      "bytes": 84546
+      "bytes": 87357
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/study-core.ts",

@@ -106,7 +106,8 @@ vi.mock("./local-delta", () => ({
   applyDelta: (delta: unknown) => applyDelta(delta),
   collectDelta: () => ({ from: "", to: "", rows: {}, tombstones: [] }),
   currentMark: () => "2026-09-10T00:00:00.000Z",
-  deltaRowCount: () => 0,
+  deltaRowCount: (delta: { rows?: Record<string, unknown[]>; tombstones?: unknown[] }) =>
+    Object.values(delta?.rows ?? {}).reduce((sum, list) => sum + list.length, 0) + (delta?.tombstones?.length ?? 0),
   readSnapshotMark: () => "2026-09-10T00:00:00.000Z",
   stampSnapshotMark: () => undefined
 }));
@@ -211,6 +212,31 @@ describe("微信文件存储", () => {
     const { loadDatabase } = await import("./storage");
     expect(await loadDatabase()).toBe(true);
     expect(applyDelta).toHaveBeenCalledTimes(1);
+  });
+
+  // 小程序每次常常只用几分钟，碰不到「满 5 分钟整库」那一条，增量会从装机起一路累积、每次冷启动全部重放
+  // （2026-09-27 真机：回放 13.4 秒）。回放得多就稍后整库落一次，把增量清掉。
+  it("启动回放的增量行数多：稍后整库落盘一次并清掉增量；行数少：不动", async () => {
+    platform.value = 'wechat';
+    const delta = (rows: number) => JSON.stringify({ from: "", to: "2099-01-01T00:00:00.000Z", rows: { progress: Array.from({ length: rows }, (_, id) => ({ word_id: id })) }, tombstones: [] });
+    setFile("/wx-user/masternihongo/nihongo.db", "ZmFrZQ==");
+    setFile("/wx-user/masternihongo/nihongo.delta.json", delta(500));
+    const { loadDatabase } = await import("./storage");
+    expect(await loadDatabase()).toBe(true);
+    exportDatabase.mockReturnValue(new Uint8Array([9]));
+    expect(exportDatabase).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(exportDatabase).toHaveBeenCalledTimes(1);
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString('base64')).toBe('CQ==');
+    expect(files.has('/wx-user/masternihongo/nihongo.delta.json')).toBe(false);
+
+    vi.resetModules();
+    exportDatabase.mockClear();
+    setFile("/wx-user/masternihongo/nihongo.delta.json", delta(20));
+    const small = await import("./storage");
+    expect(await small.loadDatabase()).toBe(true);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(exportDatabase).not.toHaveBeenCalled();
   });
 
   it("串行保存时保留最后一次数据库", async () => {
