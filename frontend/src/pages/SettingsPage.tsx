@@ -36,6 +36,7 @@ import {
 import { importExternalWordList, previewExternalWordList } from "../lib/word-list-import";
 import { MascotSay } from "../components/MascotSay";
 import { yieldToPaint } from "../lib/yield-to-paint";
+import { getAutoSendErrors, setAutoSendErrors } from "../lib/feedback";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -54,6 +55,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
   const isWechatMini = Capacitor.getPlatform() === "wechat";
   const entitlements = useEntitlements();
   const [preferences, setPreferences] = useState<StudyPreferences>(defaultStudyPreferences);
+  const [autoSendErrors, setAutoSendErrorsState] = useState(getAutoSendErrors);
   // 有哪些声音可选要问磁盘(音频库是构建产物,可能一个都没生成)
   const [voices, setVoices] = useState<AudioVoice[]>([]);
   // null = 还没量出来。别拿 0 B 冒充答案 —— 用户会以为数据丢了。
@@ -345,6 +347,32 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
               })}
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">反馈与诊断</p>
+        <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
+          <label className="flex cursor-pointer items-center justify-between gap-4">
+            <span>
+              <span className="block text-sm font-bold text-white">出错时自动发送诊断信息</span>
+              <span className="mt-1 block text-xs text-white/55">关闭后，每次发送前都会询问你。</span>
+            </span>
+            <span className="relative inline-flex shrink-0 items-center">
+              <input
+                type="checkbox"
+                checked={autoSendErrors}
+                onChange={(event) => {
+                  const enabled = event.currentTarget.checked;
+                  setAutoSendErrorsState(enabled);
+                  setAutoSendErrors(enabled);
+                }}
+                className="peer sr-only"
+                aria-label="出错时自动发送诊断信息"
+              />
+              <span className="h-6 w-11 rounded-full bg-white/20 transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5" />
+            </span>
+          </label>
         </div>
       </div>
 

@@ -273,6 +273,17 @@ const requestJson = async <T>(path: string, init: RequestInit = {}, timeoutMs = 
   }
 };
 
+/** Feedback is optional-auth: token lookup or validation must never block a report. */
+export const postFeedbackReport = async (payload: object): Promise<void> => {
+  let token: string | undefined;
+  try { token = await getCloudAccessToken(); } catch { /* an anonymous report is still useful */ }
+  await requestJson("/api/feedback", {
+    method: "POST",
+    headers: token ? { authorization: `Bearer ${token}` } : undefined,
+    body: JSON.stringify(payload)
+  }, 30_000);
+};
+
 const requestCloudSnapshot = async (session: CloudSession): Promise<CloudSnapshotPayload> => {
   if (!session.token) throw new Error("请先登录云同步账号。");
   requireConfigured();

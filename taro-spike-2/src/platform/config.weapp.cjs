@@ -10,6 +10,6 @@ module.exports = Object.freeze({
   paymentUrl: '',
   authUrl: '',
   termsVersion: '2026-09-22',
-  privacyVersion: '2026-09-24',
+  privacyVersion: '2026-09-27',
   reminderTemplateId: ''
 });

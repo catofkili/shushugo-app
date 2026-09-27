@@ -46,6 +46,9 @@ export interface AppContextValue {
   requirePro(featureId: FeatureId | "general"): void;
   requireAccount(nextPage?: Page): void;
   openLevelSetup(): void;
+  openFeedbackComposer(): void;
+  closeFeedbackComposer(): void;
+  feedbackComposerOpen: boolean;
   closePaywall(): void;
   closeAuth(): void;
   handleAuthenticated(session: CloudSession): Promise<void>;

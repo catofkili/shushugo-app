@@ -6,6 +6,9 @@ import { Paywall } from "../components/Paywall";
 import { getPersistenceFailure, PERSISTENCE_ERROR_EVENT, PERSISTENCE_OK_EVENT, saveDatabase } from "../lib/storage";
 import { LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession } from "../lib/sync-api";
 import { useApp, AppContextProvider, type AppContextValue } from "./AppContext";
+import { ReportPrompt } from "../components/ReportPrompt";
+import { FeedbackComposer } from "../components/FeedbackComposer";
+import { recordDiagnosticOperation } from "../lib/diagnostics";
 import type { FeatureId } from "../lib/entitlements";
 
 interface AchievementPop {
@@ -51,7 +54,7 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <AppContextProvider value={context}>
-      <div className={className}>
+      <div className={className} onClick={() => recordDiagnosticOperation("点击页面控件")} onKeyDown={() => recordDiagnosticOperation("键盘操作")}>
         {children}
         <GlobalOverlays
           achievementPop={achievementPop}
@@ -86,7 +89,7 @@ function GlobalOverlays({
   onDismissTrial,
   onViewPro
 }: Omit<AppShellProps, "context" | "children" | "className">) {
-  const { navigate, requireAccount } = useApp();
+  const { navigate, requireAccount, feedbackComposerOpen, closeFeedbackComposer } = useApp();
 
   return (
     <>
@@ -110,6 +113,8 @@ function GlobalOverlays({
         </div>
       )}
       <PersistenceBanner />
+      <ReportPrompt />
+      {feedbackComposerOpen && <FeedbackComposer onClose={closeFeedbackComposer} />}
       {paywallTarget && (
         <Paywall
           feature={paywallTarget === "general" ? undefined : paywallTarget}

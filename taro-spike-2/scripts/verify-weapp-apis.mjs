@@ -50,7 +50,7 @@ const allowlist = [
   { api: 'Worker', file: 'account/settings/index.js', before: /VITE_SYNC_API_URL\\uff0c\\u90e8\\u7f72 Cloudflare $/, after: /^ /, count: 1, reason: 'Worker is part of a user-facing Cloudflare deployment instruction string, not a Worker reference.' },
   { api: 'Image', file: 'taro.js', before: /\(View\|$/, after: /^\|Text\)\$/, count: 1, reason: 'Image is a component name inside Taro’s element-order regex, not the browser Image constructor.' },
   { api: 'atob', file: 'common.js', before: /var e=$/, after: /^\(n\),r=new Uint8Array\(e\.length\)/, count: 2, reason: 'The base64 decoder is supplied by scripts/shared/polyfill.js using wx.base64ToArrayBuffer.' },
-  { api: 'btoa', file: 'common.js', before: /return $/, after: /^\(e\)},Sn=function/, count: 1, reason: 'The base64 encoder is supplied by scripts/shared/polyfill.js using wx.arrayBufferToBase64.' }
+  { api: 'btoa', file: 'common.js', before: /return $/, after: /^\(e\)},(?:Sn|bn)=function/, count: 1, reason: 'The base64 encoder is supplied by scripts/shared/polyfill.js using wx.arrayBufferToBase64.' }
 ];
 
 function* javascriptFiles(directory, relative = '') {

@@ -21,9 +21,11 @@ import { ensureSyncSchema } from './lib/sync/schema';
 import { flushPendingUserProfileSync } from './lib/profile-sync';
 import { hydrateLevelPlanPreferences } from './lib/level-plan';
 import { confirmDialog } from './lib/platform-dialogs';
+import { startFeedbackRuntime } from './lib/feedback-runtime';
 
 // 初始化 WebView 优化
 initWebViewOptimizer();
+startFeedbackRuntime();
 
 // 【诊断】量一下安全区到底有没有生效(打到 Xcode 控制台);只在开发构建运行。
 if (import.meta.env.DEV) {

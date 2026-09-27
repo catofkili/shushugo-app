@@ -88,6 +88,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   const [skin, setSkin] = useState('');
   const [overview, setOverview] = useState(() => ({ words: { total: 0, seen: 0, completed: 0, low: 0, unseen: 0 }, wordsByLevel: [], grammar: [] }));
   const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
+  const [feedbackComposerOpen, setFeedbackComposerOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -244,6 +245,9 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       else { setAppState({ pendingAccountPage: target ?? null }); openAuth(); }
     },
     openLevelSetup: () => setLevelSetupOpen(true),
+    openFeedbackComposer: () => setFeedbackComposerOpen(true),
+    closeFeedbackComposer: () => setFeedbackComposerOpen(false),
+    feedbackComposerOpen,
     closePaywall,
     closeAuth: () => { closeAuth(); setAppState({ pendingAccountPage: null }); },
     handleAuthenticated: async (session) => {
