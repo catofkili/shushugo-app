@@ -16,7 +16,7 @@ export interface DistinctionQuestion {
   groupKey: string;
   prompt: string;
   /** reading-register 组（明日 あした / あす）两个选项词形一样，读音才是答案，所以选项必须带 kana。 */
-  options: { id: number; surface: string; kana: string }[];
+  options: { id: number; surface: string; kana: string; exampleJp?: string; exampleMeaning?: string }[];
   answerId: number;
   summary: string;
   notes: Map<string, string>;
@@ -103,7 +103,9 @@ export function buildQuestions(
     const options = shuffle(group.members.map((member) => ({
       id: member.id,
       surface: displayForm(member),
-      kana: member.kana
+      kana: member.kana,
+      exampleJp: member.exampleJp,
+      exampleMeaning: member.exampleMeaning
     })), rng);
     for (const member of group.members) {
       const prompt = reviewedQuestionMeaning(member.kanji, member.kana);

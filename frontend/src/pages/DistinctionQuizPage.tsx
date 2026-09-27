@@ -165,10 +165,18 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
                 {feedback.correct ? "答对了" : "答错了"}
               </p>
               <p className="mt-2 text-sm leading-6 text-white/80">{question.summary}</p>
-              <div className="mt-3 space-y-1.5 border-t border-white/10 pt-3">
+              <div className="mt-3 space-y-2 border-t border-white/10 pt-3">
+                <p className="text-xs font-bold text-white/50">各词辨析与例句</p>
                 {question.options.map((option) => {
                   const note = question.notes.get(String(option.id));
-                  return note ? <p key={option.id} className="text-sm text-white/65"><b className="text-white/85">{option.surface}<span className="ml-1 font-normal text-white/45">{option.kana}</span></b>：{note}</p> : null;
+                  if (!note && !option.exampleJp && !option.exampleMeaning) return null;
+                  return (
+                    <div key={option.id} className="rounded-xl bg-black/10 px-3 py-2.5">
+                      <p className="text-sm text-white/70"><b className="text-white/90">{option.surface}<span className="ml-1 font-normal text-white/45">{option.kana}</span></b>{note ? `：${note}` : ""}</p>
+                      {option.exampleJp && <p className="mt-1.5 text-sm font-semibold leading-6 text-white/90">{option.exampleJp}</p>}
+                      {option.exampleMeaning && <p className="mt-0.5 text-sm leading-5 text-white/70">{option.exampleMeaning}</p>}
+                    </div>
+                  );
                 })}
               </div>
               <button type="button" onClick={next} className="focus-ring mt-4 w-full rounded-xl bg-white/12 px-3 py-2.5 text-sm font-bold text-white hover:bg-white/18">
