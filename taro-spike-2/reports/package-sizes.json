@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1851035,
-      "mib": 1.765,
+      "bytes": 1851785,
+      "mib": 1.766,
       "passes": true
     },
     "study": {
@@ -57,12 +57,12 @@
       "passes": true
     }
   },
-  "totalBytes": 8075708,
+  "totalBytes": 8076458,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 821545
+      "bytes": 822295
     },
     {
       "path": "grammar-foundation/grammar.js",

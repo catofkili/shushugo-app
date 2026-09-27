@@ -14,27 +14,7 @@ const shims = createSharedShims(mini);
 // 「预算下一张」在小程序里每次都抛 TypeError、全部退回同步路径（2026-09-26 W10 真机对比时查出）。
 shims.delete(path.join(frontend, 'src/lib/progress-events'));
 const weappEnv = require(path.join(root, 'src/platform/weapp-env.weapp.cjs'));
-const platformAdapters = new Map([
-  ['frontend/src/lib/haptics', path.join(frontend, 'src/lib/haptics.weapp.ts')],
-  ['frontend/src/lib/notifications', path.join(frontend, 'src/lib/notifications.weapp.ts')],
-  ['frontend/src/lib/speech', path.join(frontend, 'src/lib/speech.weapp.ts')],
-  ['frontend/src/lib/share-image', path.join(frontend, 'src/lib/share-image.weapp.ts')],
-  ['frontend/src/lib/share-canvas', path.join(frontend, 'src/lib/share-canvas.weapp.ts')],
-  ['frontend/src/lib/platform-dialogs', path.join(root, 'src/platform/platform-dialogs.weapp.ts')],
-  ['frontend/src/lib/share-text', path.join(root, 'src/platform/share-text.weapp.ts')],
-  ['frontend/src/lib/cloud-fetch', path.join(root, 'src/platform/fetch.weapp.cjs')],
-  ['frontend/src/lib/purchases', path.join(frontend, 'src/lib/purchases.weapp.ts')],
-  ['frontend/src/lib/apple-auth', path.join(frontend, 'src/lib/apple-auth.weapp.ts')],
-  ['frontend/src/lib/touch-adapter', path.join(root, 'src/platform/touch-adapter.weapp.ts')],
-  ['frontend/src/lib/use-progress-updates', path.join(root, 'src/platform/use-progress-updates.weapp.ts')],
-  ['frontend/src/components/AuthDialog', path.join(frontend, 'src/components/AuthDialog.weapp.tsx')],
-  ['frontend/src/components/ShareImageSheet', path.join(frontend, 'src/components/ShareImageSheet.weapp.tsx')],
-  ['frontend/src/components/DailyPlanSlider', path.join(frontend, 'src/components/DailyPlanSlider.weapp.tsx')],
-  ['frontend/src/components/DailyPlanRing', path.join(frontend, 'src/components/DailyPlanRing.weapp.tsx')],
-  ['frontend/src/components/GrammarTermHint', path.join(frontend, 'src/components/GrammarTermHint.weapp.tsx')],
-  ['frontend/src/pages/NotificationSettings', path.join(frontend, 'src/pages/NotificationSettings.weapp.tsx')],
-  ['wechat-miniprogram/src/runtime/auth', path.join(root, 'src/platform/payment-auth.weapp.cjs')]
-].map(([target, replacement]) => [path.join(repoRoot, target), replacement]));
+const { platformAdapters } = require('./platform-adapters.cjs');
 const previewTimingEnabled = process.env.TARO_PREVIEW_TIMING === '1';
 // 分段计时浮层（PerfOverlay）但 React 用正式版：量真机体验用。计时版的性能分析版 React 本身就慢，会把「点击到换卡」量大。
 // 和计时版一样只许出预览码，check:release 会拦（产物里带 preview-timing 模块）。

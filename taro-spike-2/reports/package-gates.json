@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1851035,
+      "bytes": 1851785,
       "passes": true
     },
     "study": {

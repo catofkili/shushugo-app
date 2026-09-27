@@ -18,7 +18,7 @@ function wave(phase) {
   return 2 / Math.PI * Math.asin(Math.sin(phase));
 }
 
-function note(freq, start, duration, gain) { return { freq, start, duration, gain }; }
+function note(freq, start, duration, gain, sine = false) { return { freq, start, duration, gain, sine }; }
 
 function shepard(step, start, duration, gain) {
   const offset = ((step % 12) + 12) % 12 / 12;
@@ -41,6 +41,9 @@ function score(name) {
   if (name === 'complete') return [note(523.25, 0, 0.2, 0.23), note(659.25, 0.12, 0.2, 0.23), note(783.99, 0.24, 0.32, 0.25)];
   if (name === 'countdown') return [note(880, 0, 0.1, 0.105), note(1046.5, 0.045, 0.13, 0.09)];
   if (name === 'relief') return [note(783.99, 0, 0.09, 0.13), note(1046.5, 0.055, 0.14, 0.11)];
+  // 网页这两声是正弦振荡器扫频 / 抖频；这里拆成几段定频正弦，听感一样短、一样轻。
+  if (name === 'save') return [note(1046.5, 0, 0.07, 0.16, true), note(880, 0.06, 0.07, 0.14, true), note(783.99, 0.12, 0.1, 0.12, true)];
+  if (name === 'chirp') return [note(880, 0, 0.05, 0.1, true), note(1046.5, 0.05, 0.05, 0.1, true), note(880, 0.1, 0.05, 0.1, true), note(1046.5, 0.15, 0.08, 0.1, true)];
   return [];
 }
 
@@ -62,7 +65,7 @@ function wav(notes) {
       if (age < 0 || age >= item.duration) continue;
       const attack = Math.min(1, age / 0.012);
       const decay = Math.exp(-5.5 * age / item.duration);
-      value += wave(TWO_PI * item.freq * age) * attack * decay * item.gain;
+      value += (item.sine ? Math.sin(TWO_PI * item.freq * age) : wave(TWO_PI * item.freq * age)) * attack * decay * item.gain;
     }
     view.setInt16(44 + i * 2, Math.max(-1, Math.min(1, value)) * 32767, true);
   }
@@ -94,5 +97,7 @@ module.exports = {
   playComplete: () => play('complete'),
   playCountdownTick: () => play('countdown'),
   playReliefDeal: () => play('relief'),
+  playSave: () => play('save'),
+  playStreakChirp: () => play('chirp'),
   previewTimbre(next) { const previous = timbre; setSoundTimbre(next); play('know-0'); timbre = previous; }
 };
