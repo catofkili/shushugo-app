@@ -1,0 +1,5 @@
+api.shushugo.com {
+	reverse_proxy 127.0.0.1:8787 {
+		header_up CF-Connecting-IP {remote_host}
+	}
+}

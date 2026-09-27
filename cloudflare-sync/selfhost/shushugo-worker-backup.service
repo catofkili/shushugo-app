@@ -1,0 +1,16 @@
+[Unit]
+Description=Back up ShuShuGo Worker SQLite database
+After=shushugo-worker.service
+
+[Service]
+Type=oneshot
+User=shushugo
+Group=shushugo
+StateDirectory=shushugo
+StateDirectoryMode=0700
+ExecStart=/opt/shushugo/cloudflare-sync/selfhost/backup.sh
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/shushugo/backups
