@@ -35,3 +35,28 @@ button::after { border: 0; }
 .yz-mini-top image { width: 18%; height: 100%; }
 .yz-mini-tray image,
 .yz-art > image { width: 100%; height: 100%; min-height: 0; }
+
+/* W15: on web the main area is fixed between the browser top and tab bars.
+   In the mini program those bars live outside the webview, so this route shell
+   must use the full webview viewport instead of collapsing to content height. */
+.taro-spike-shell { height: 100vh; min-height: 100vh; overflow: hidden; }
+.taro-spike-content { height: 100%; min-height: 0; }
+.weapp-theme-root { height: 100vh; min-height: 100vh; display: block; }
+.weapp-app-shell { height: 100%; min-height: 100%; }
+.weapp-route-root { min-height: 100%; }
+.weapp-app-main {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 16px 16px 16px;
+}
+.weapp-app-main .word-study-shell { height: calc(100vh - 2rem); min-height: 0; }
+
+/* W15: mini-program webviews already exclude the native bars. The shared preview
+   formula subtracts those browser bars a second time, leaving only 451px here. */
+.weapp-app-main .pro-reading-preview { height: calc(100vh - 2rem); min-height: 0; }
+
+/* WXSS reports nowrap for this flex row; a grid keeps every filter on screen. */
+.weapp-app-main .cf-types { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.weapp-app-main .cf-type-chip { width: 100%; flex: none; padding: 5px 6px; }
