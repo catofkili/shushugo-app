@@ -286,6 +286,17 @@ export async function playExample(sentence: string, preferred?: string | null): 
   await loadIndex("examples");
   await playFile(exampleAudioUrl(text, preferred), "examples", sequence);
 }
+const previewAudioUrl = (voice: AudioVoice): string | null => bases.words.base
+  ? `${bases.words.base.replace(/\/$/, "")}/${encodeURIComponent(voice.id)}/${pronunciationAudioName("勉強", "べんきょう")}${voice.ext}`
+  : null;
+/** 进柚子商店就把每个声音的试听音频下到本地：点「试听」时直接放本地文件，不再现换临时地址、现下载。 */
+export async function prefetchVoicePreviews(): Promise<void> {
+  await loadIndex("words");
+  for (const voice of indexes.words?.voices ?? []) {
+    const url = previewAudioUrl(voice);
+    if (url) await cacheAudioUrl(url).catch(() => undefined);
+  }
+}
 export async function previewVoice(voiceId: string): Promise<void> {
   // 试听不过购买那道门：resolveVoice / pronunciationAudioUrl 会把没买的声音退回默认声，
   // 真机上「男声试听放出女声」就是这么来的（2026-09-27）。这里按 voiceId 直接拼地址，和网页 previewVoice 一样。
@@ -294,9 +305,9 @@ export async function previewVoice(voiceId: string): Promise<void> {
   interruptPlayback("examples");
   await loadIndex("words");
   const voice = indexes.words?.voices.find((item) => item.id === voiceId);
-  const base = bases.words.base;
-  if (!voice || !base) throw new Error("云端音色暂不可用。");
-  return playFile(`${base.replace(/\/$/, "")}/${encodeURIComponent(voice.id)}/${pronunciationAudioName("勉強", "べんきょう")}${voice.ext}`, "words", sequence);
+  const url = voice && previewAudioUrl(voice);
+  if (!url) throw new Error("云端音色暂不可用。");
+  return playFile(url, "words", sequence);
 }
 const prepared = new Set<string>();
 export async function prepareVoice(voiceId: string): Promise<void> {

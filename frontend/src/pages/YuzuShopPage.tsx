@@ -4,7 +4,7 @@ import { CATEGORY_LABEL, EQUIPPABLE, VOICE_ITEM_PREFIX, YUZU_ITEMS, type YuzuCat
 import { brandIconUrl, Sticker, stickerUrl, useMascotSkin } from "../components/CapybaraMascot";
 import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences } from "../lib/studyPreferences";
-import { prepareVoice, previewVoice, voiceDeliveryMode } from "../lib/speech";
+import { prefetchVoicePreviews, prepareVoice, previewVoice, voiceDeliveryMode } from "../lib/speech";
 import { previewTimbre, type SoundTimbre } from "../lib/zoo-sounds";
 
 import {
@@ -83,6 +83,8 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
   const [checkout, setCheckout] = useState<{ itemId: string; status: CheckoutStatus } | null>(null);
   const mounted = useRef(true);
 
+  // 加载要比用户快一步：一进商店就把几个声音的试听音频下好（小程序；网页是空操作）
+  useEffect(() => { void prefetchVoicePreviews().catch(() => undefined); }, []);
   useEffect(() => {
     mounted.current = true;
     settleYuzu();

@@ -186,6 +186,9 @@ export function exampleAudioUrl(sentence: string, preferredVoice?: string | null
  * 商店试听:直接按 voice id 播一个词,**不过购买那道门**(没买的当然要能试听)。
  * 用例句库那句听得出语调,单词库一个词太短;例句库只做了一个声音时退回单词。
  */
+/** 网页的读音是随包 / 同源的静态文件，试听本来就快；小程序版在这里预下载（speech.weapp.ts）。 */
+export async function prefetchVoicePreviews(): Promise<void> {}
+
 export async function previewVoice(voiceId: string): Promise<void> {
   await Promise.all([loadAudioIndex("words"), loadAudioIndex("examples")]);
   const ex = audioIndex.examples?.voices.find((v) => v.id === voiceId);

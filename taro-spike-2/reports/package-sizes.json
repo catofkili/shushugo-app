@@ -12,12 +12,12 @@
       "passes": true
     },
     "account": {
-      "bytes": 257644,
+      "bytes": 258312,
       "mib": 0.246,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1059632,
+      "bytes": 1060363,
       "mib": 1.011,
       "passes": true
     },
@@ -42,8 +42,8 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 358504,
-      "mib": 0.342,
+      "bytes": 359172,
+      "mib": 0.343,
       "passes": true
     },
     "core": {
@@ -52,12 +52,12 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 573553,
-      "mib": 0.547,
+      "bytes": 574221,
+      "mib": 0.548,
       "passes": true
     }
   },
-  "totalBytes": 8113795,
+  "totalBytes": 8116530,
   "files": [
     {
       "path": "common.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 571803
+      "bytes": 572471
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -437,7 +437,22 @@
     {
       "path": "content-pages/yuzu-shop/index.js",
       "package": "content-pages",
-      "bytes": 13116
+      "bytes": 13179
+    },
+    {
+      "path": "account/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
+      "package": "account",
+      "bytes": 12421
+    },
+    {
+      "path": "content-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
+      "package": "content-pages",
+      "bytes": 12421
+    },
+    {
+      "path": "grammar-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
+      "package": "grammar-pages",
+      "bytes": 12421
     },
     {
       "path": "account/pro/index.js",
@@ -448,21 +463,6 @@
       "path": "assets/brand/scene-stretch.png",
       "package": "main",
       "bytes": 11927
-    },
-    {
-      "path": "account/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
-      "package": "account",
-      "bytes": 11753
-    },
-    {
-      "path": "content-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
-      "package": "content-pages",
-      "bytes": 11753
-    },
-    {
-      "path": "grammar-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
-      "package": "grammar-pages",
-      "bytes": 11753
     },
     {
       "path": "study/team/index.wxss",
