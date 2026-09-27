@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the ShuShuGo Worker cron at 03:17 UTC
+
+[Timer]
+OnCalendar=*-*-* 03:17:00 UTC
+Persistent=true
+Unit=shushugo-worker-scheduled.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,22 @@
+[Unit]
+Description=Run ShuShuGo Worker scheduled() handler
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=shushugo
+Group=shushugo
+StateDirectory=shushugo
+StateDirectoryMode=0700
+WorkingDirectory=/opt/shushugo/cloudflare-sync
+Environment=SHUSHUGO_CREDENTIAL_FILE=%d/worker.env
+LoadCredential=worker.env:/etc/shushugo/worker.env
+ExecStart=/usr/bin/node /opt/shushugo/cloudflare-sync/selfhost/server.mjs --scheduled
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryMax=1200M
+TasksMax=64

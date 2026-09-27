@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily ShuShuGo Worker SQLite backup at 03:25 UTC
+
+[Timer]
+OnCalendar=*-*-* 03:25:00 UTC
+Persistent=true
+Unit=shushugo-worker-backup.service
+
+[Install]
+WantedBy=timers.target
