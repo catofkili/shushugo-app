@@ -78,12 +78,13 @@
 | wx.cloud.getTempFileURL、wx.cloud.downloadFile、wx.downloadFile、wx.cloud.CDN | 下载词库/清单/音频与同步二进制；快照上传通过 CloudBase CDN 中转 | 说明用户主动开启云同步时学习记录会离开本机；词库、音频下载本身是内容分发。核对数据存储区域、期限、删除规则。 |
 | 昵称、队名、学习数量、OpenID | 保留组队时，前端会调用 /api/teams/*；提审文档要求 Worker 做微信内容安全检测 | 若保留组队，隐私指引必须覆盖昵称、队伍、学习数量，以及内容安全检测涉及的 OpenID；并完成真实账号审核与举报处理。 |
 | 邮箱地址 | 用户主动绑定已有邮箱账号时发送验证码与关联请求 | 声明仅在用户选用邮箱关联时收集邮箱及用途；确认验证码和账号删除流程。 |
-| getFileSystemManager、createOffscreenCanvas、getSetting、authorize、saveImageToPhotosAlbum、shareFileMessage | 本机文件读写与离屏生成分享图；保存相册前读取 scope.writePhotosAlbum 状态并按需请求授权，用户主动保存/分享时才调用 | 声明用户触发的生成、保存或分享行为及其中可能显示的学习统计；本包未发现 chooseImage、chooseMedia、chooseMessageFile 或读取相册接口。 |
+| wx.chooseMedia | 用户主动点击「更换头像」或「从相册选择」后选取一张相册图片，也可用相机拍摄；用于设置个人头像，登录后随个人资料同步到云端，仅本人可见 | 声明相册/相机选图与头像云同步的用途和范围；头像不向其他用户展示。 |
+| getFileSystemManager、createOffscreenCanvas、getSetting、authorize、saveImageToPhotosAlbum、shareFileMessage | 本机文件读写与离屏生成分享图；保存相册前读取 scope.writePhotosAlbum 状态并按需请求授权，用户主动保存/分享时才调用 | 声明用户触发的生成、保存或分享行为及其中可能显示的学习统计。 |
 | setClipboardData | 用户点复制时写入邀请文本/代码 | 只写剪贴板；未发现 getClipboardData 读取剪贴板。无需把它写成读取用户剪贴板内容。 |
 | createInnerAudioContext | 播放词语与提示音频 | 如后台表单要求接口用途，写音频播放；未发现麦克风采集。 |
 | requestSubscribeMessage | 适配器含该调用，但 release.reminders=false 且 reminderTemplateId 为空，当前配置不会开放请求 | 当前不是已启用提醒功能；若日后开启，先申请模板、配置 ID 与云函数，再更新隐私说明和订阅说明。 |
 | requestVirtualPayment | 支付 runtime 中存在该能力，但 release.purchase=false，产品为空且购买函数先行拒绝；当前没有可执行支付 | 当前不应申报成已开放购买。若用户批准开放支付，须先走 docs-submit.md 全套虚拟支付、价格、Worker 通知与退款验收，并补充订单/交易数据声明。 |
-| 位置、相机、麦克风、联系人、读取剪贴板、选图/选文件 | 未发现相关调用 | 当前不需为这些未使用能力虚构声明；每次改开关/加功能时重新扫描。 |
+| 位置、麦克风、联系人、读取剪贴板、选文件 | 未发现相关调用 | 当前不需为这些未使用能力虚构声明；每次改开关/加功能时重新扫描。选图与拍摄由上面的 wx.chooseMedia 行覆盖。 |
 
 隐私参考：微信官方小程序隐私接口说明：[用户隐私保护指引与隐私接口](https://developers.weixin.qq.com/miniprogram/dev/framework/user-privacy/PrivacyAuthorize.html)。后台入口：[微信公众平台](https://mp.weixin.qq.com/) → 小程序 → 设置 → 服务类目 / 用户隐私保护指引。若政策页面与后台能力清单更新，以账号后台当前表单为准。
 
@@ -177,7 +178,7 @@ Taro 页面采用 shared frontend TSX 与若干 .weapp 适配器。由于本轮�
 
 ## 用户要在微信后台做的事
 
-1. **备案、认证、隐私指引**：在小程序后台确认三项当前为通过。依据上面的 API 表，逐项填写登录/OpenID、可选云同步的学习记录、用户选用邮箱关联时的邮箱、（若保留组队）昵称/队伍/学习数量及内容安全检测所需 OpenID；注明系统信息只用于本地显示适配（若后台表单要求申报）；说明用户主动生成/保存/分享的学习统计图或备份文件。不要声明本包没有的选图、定位、摄像头、录音或读取剪贴板能力。团队/支付/订阅开关如日后改变，同步更新声明。
+1. **备案、认证、隐私指引**：在小程序后台确认三项当前为通过。依据上面的 API 表，逐项填写登录/OpenID、可选云同步的学习记录、用户选用邮箱关联时的邮箱、（若保留组队）昵称/队伍/学习数量及内容安全检测所需 OpenID，以及用户主动选图/拍摄并在登录后同步个人头像的用途；注明系统信息只用于本地显示适配（若后台表单要求申报）；说明用户主动生成/保存/分享的学习统计图或备份文件。不要声明本包没有的定位、录音或读取剪贴板能力。团队/支付/订阅开关如日后改变，同步更新声明。
 2. **决定是否保留组队**：若保留，确认线上已执行 0014、五张表齐全，Worker health 的组队/内容安全字段为真，用两个真实账号走通创建/加入/邀请/同步/加油去重/退出/移交/解散/举报；若停用，请批准对应 UI/路由改动后再准备上传。
 3. **决定 Pro 入口和首月赠送**：当前购买不可用，但 Pro CTA 和领取赠送流程仍可见/触发。确认展示策略与赠送资格规则；若要隐藏，请批准 Taro 页面调整。若要开放购买，逐条完成 docs-submit.md 虚拟支付的正式闸门。
 4. **确认账号删除**：后台/Worker 侧核实注销能处理账号、同步记录及其他关联数据，且成功后无法用旧会话恢复；使用受控测试账号走完整删除流程。

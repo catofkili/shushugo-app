@@ -8,6 +8,7 @@ const frontend = path.join(repoRoot, 'frontend');
 
 const platformAdapters = new Map([
   ['frontend/src/lib/haptics', path.join(frontend, 'src/lib/haptics.weapp.ts')],
+  ['frontend/src/lib/pick-image', path.join(frontend, 'src/lib/pick-image.weapp.ts')],
   ['frontend/src/lib/notifications', path.join(frontend, 'src/lib/notifications.weapp.ts')],
   ['frontend/src/lib/speech', path.join(frontend, 'src/lib/speech.weapp.ts')],
   ['frontend/src/lib/share-image', path.join(frontend, 'src/lib/share-image.weapp.ts')],

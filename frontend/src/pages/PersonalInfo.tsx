@@ -15,6 +15,7 @@ import { studyTotals, type StudyTotals } from "../lib/study-totals";
 import { achievementSummary, type Achievement } from "../lib/achievements";
 import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { SelectField } from "../components/SelectField";
+import { pickImageDataUrl } from "../lib/pick-image";
 
 interface PersonalInfoProps {
   onBack: () => void;
@@ -115,36 +116,31 @@ export function PersonalInfo({ onBack: _onBack, onOpenAchievements }: PersonalIn
     setIsEditingTarget(false);
   };
 
-  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !profile) return;
-
-    // 检查文件大小（限制 2MB）
-    if (file.size > 2 * 1024 * 1024) {
-      alert("图片大小不能超过 2MB");
-      return;
-    }
-
-    // 读取并转换为 Base64
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const base64 = e.target?.result as string;
-      try {
-        await updateAvatar(base64);
-        const local = await loadUserProfile();
-        setProfile(local);
-        try {
-          setProfile(await saveUserProfileToCloud(local));
-          setSyncMessage("头像已同步");
-        } catch {
-          setSyncMessage("头像已保存到本机；联网后会继续同步");
-        }
-      } catch (error) {
-        console.error("Failed to update avatar:", error);
-        alert("头像更新失败，请重试");
+  const handleAvatarChange = async () => {
+    if (!profile) return;
+    try {
+      const avatar = await pickImageDataUrl();
+      if (!avatar) return;
+      const base64 = avatar.slice(avatar.indexOf(",") + 1);
+      const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
+      if (Math.floor(base64.length * 3 / 4) - padding > 2 * 1024 * 1024) {
+        alert("图片大小不能超过 2MB");
+        return;
       }
-    };
-    reader.readAsDataURL(file);
+
+      await updateAvatar(avatar);
+      const local = await loadUserProfile();
+      setProfile(local);
+      try {
+        setProfile(await saveUserProfileToCloud(local));
+        setSyncMessage("头像已同步");
+      } catch {
+        setSyncMessage("头像已保存到本机；联网后会继续同步");
+      }
+    } catch (error) {
+      console.error("Failed to update avatar:", error);
+      alert("头像更新失败，请重试");
+    }
   };
 
   if (!profile) {
@@ -168,7 +164,7 @@ export function PersonalInfo({ onBack: _onBack, onOpenAchievements }: PersonalIn
       <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <label htmlFor="avatar-upload" className="cursor-pointer">
+            <button type="button" onClick={handleAvatarChange} className="relative block cursor-pointer border-0 bg-transparent p-0 text-left leading-none">
               {profile.avatar ? (
                 <CrossPlatformImage
                   src={profile.avatar}
@@ -185,21 +181,14 @@ export function PersonalInfo({ onBack: _onBack, onOpenAchievements }: PersonalIn
               <div className="absolute bottom-0 right-0 grid h-7 w-7 place-items-center rounded-full border border-white/20 bg-[#3c3f3f] text-white hover:bg-[#4d5151]">
                 <Camera size={14} />
               </div>
-            </label>
-            <input
-              id="avatar-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              className="hidden"
-            />
+            </button>
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-white">更换头像</p>
             <p className="mt-1 text-xs text-white/50">点击头像或相机图标选择新头像</p>
-            <label htmlFor="avatar-upload" className="mt-2 inline-block cursor-pointer text-xs font-bold text-[#81D8CF] hover:text-white">
+            <button type="button" onClick={handleAvatarChange} className="mt-2 inline-block cursor-pointer border-0 bg-transparent p-0 text-left text-xs font-bold text-[#81D8CF] hover:text-white">
               从相册选择
-            </label>
+            </button>
           </div>
         </div>
       </div>
