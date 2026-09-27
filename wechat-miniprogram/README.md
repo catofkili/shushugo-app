@@ -53,7 +53,16 @@ Worker、iOS 端、同步协议一行都不用动；小程序这侧只换了传�
    npx @cloudbase/cli config update fn api
    ```
 
-   代码本身照旧走开发者工具上传（或 `tcb fn deploy api`，两条路等价）。
+   代码本身照旧走开发者工具上传（或 `tcb fn deploy api`，两条路等价）。`api` 的 4 分钟保活触发器也在
+   `cloudbaserc.json` 中；CLI 读取触发器配置部署，更新时用：
+
+   ```bash
+   cd wechat-miniprogram
+   tcb fn deploy api --force
+   ```
+
+   官方 CLI 文档说明 `--force` 会覆盖函数配置和触发器。部署后在云开发控制台确认 `keep-worker-warm` 已出现；
+   若使用的 CLI 版本没有自动创建且控制台确认触发器缺失，再单独运行 `tcb fn trigger create api`。
 4. 词库 + manifest 传云存储：`TCB=<tcb 路径> ./scripts/upload-cloud-content.sh`。
    每次 `bake-seed-db` 之后跑一次；它按 `config.js` 里的 fileID 前缀生成 manifest，
    `expectedBytes / expectedWords / version` 从库里现读。云存储权限用默认的「所有用户可读，仅创建者可读写」。

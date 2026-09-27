@@ -3,8 +3,7 @@ import {
   cheerCloudTeamMember,
   createCloudTeam,
   getCloudSession,
-  getCloudTeam,
-  getCloudTeamPlaza,
+  getCloudTeamOverview,
   joinCloudTeam,
   leaveCloudTeam,
   regenerateCloudTeamInvite,
@@ -84,20 +83,11 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   const ownerRef = useRef<string | undefined>(undefined);
 
   const refresh = useCallback(async () => {
-    const [current, available] = await Promise.all([
-      getCloudTeam(activity.studyDay),
-      getCloudTeamPlaza(activity.studyDay)
-    ]);
-    const others = available.filter((item) => item.id !== current?.id);
-    setTeam(current);
-    setPlaza(others);
+    const overview = await getCloudTeamOverview(activity);
+    setTeam(overview.team);
+    setPlaza(overview.plaza);
     setLoading(false);
-    writeTeamCache(ownerRef.current, current, others);
-    if (!current) return;
-    // 上报今天的学习量是第二轮云请求：先按拉到的队伍显示，上报回来再换成带今天进度的那份。
-    const synced = await reportCloudTeamActivity({ ...activity });
-    setTeam(synced);
-    writeTeamCache(ownerRef.current, synced, others);
+    writeTeamCache(ownerRef.current, overview.team, overview.plaza);
   }, [activity]);
 
   useEffect(() => {

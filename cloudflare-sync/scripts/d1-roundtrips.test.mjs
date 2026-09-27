@@ -165,6 +165,9 @@ try {
   results.push(await measure("/api/feedback", jsonPost("/api/feedback", {
     kind: "feedback", message: "test", contact: "", platform: "web", app_version: "test", route: "profile"
   }, false)));
+  results.push(await measure("/api/teams/overview", jsonPost("/api/teams/overview", {
+    studyDay: "2026-09-27", studyCount: 11, completed: false
+  })));
   results.push(await measure("/api/health", new Request("https://worker.test/api/health")));
   results.push(await measure("/api/entitlements/launch-gift", jsonPost("/api/entitlements/launch-gift", {})));
 
@@ -172,6 +175,7 @@ try {
     ["/api/teams/me", 3],
     ["/api/teams/plaza", 3],
     ["/api/teams/activity", 5],
+    ["/api/teams/overview", 6],
     ["/api/teams/cheers", 5],
     ["/api/entitlements", 1],
     ["/api/sync/status", 3],
@@ -192,8 +196,11 @@ try {
   assert.equal(results[5].payload.byte_length, 1234);
   assert.deepEqual(results[6].payload.authProviders, ["wechat"]);
   assert.equal(results[7].payload.accepted, true);
-  assert.equal(results[8].payload.migrationsApplied, true);
-  assert.equal(results[9].payload.isPro, true);
+  assert.equal(results[8].payload.team.members.find((member) => member.isMe).studyCount, 12);
+  assert.equal(results[8].payload.team.members.find((member) => member.isMe).completed, true);
+  assert.deepEqual(results[8].payload.plaza.map((team) => team.id), ["team-2"]);
+  assert.equal(results[9].payload.migrationsApplied, true);
+  assert.equal(results[10].payload.isPro, true);
   assert.equal((await worker.fetch(authed("/api/teams/me?day=2026-09-27"), env, {})).status, 200);
   const activity = db.prepare("SELECT study_count, completed FROM team_daily_activity WHERE team_id = 'team-1' AND user_id = 'u1' AND study_day = '2026-09-27'").get();
   assert.deepEqual({ ...activity }, { study_count: 12, completed: 1 });
