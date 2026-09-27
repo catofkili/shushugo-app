@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
 // 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
 import { Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal } from "lucide-react";
@@ -239,7 +240,7 @@ export function ZooHome({
         : activeInfo.subtitle;
   const heroCta = activeCount > 0 ? (done > 0 ? "继续" : "开始") : isPlanMode ? "再来一批" : "去看看";
 
-  const weeklyEntryEnabled = goals.weeklyReportEnabled;
+  const weeklyEntryEnabled = Capacitor.getPlatform() !== "wechat" && goals.weeklyReportEnabled;
 
   return (
     <div className={`zoo-page zoo-home-v2${weeklyEntryEnabled ? " has-weekly-cord" : ""}`}>
