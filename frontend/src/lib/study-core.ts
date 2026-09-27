@@ -6,6 +6,7 @@ import { hashSchemaDefinition, hasSchemaFingerprint, saveSchemaFingerprint } fro
 import { ensureLegacyBiruMigration } from "./legacy-word-migrations";
 import { ensureSyncSchema } from "./sync/schema";
 import { CONTENT_MIGRATION_STATE_KEYS } from "./sync/tables";
+import { perfTime, perfTimeAsync } from "./perf-marks";
 import {
   firstValue,
   getState,
@@ -367,17 +368,17 @@ const repairSyncedContentMarkers = () => {
 };
 
 export const ensureSeedData = async () => {
-  ensureUserTables();
+  perfTime("启动 · 用户表结构", ensureUserTables);
   // 先建同步触发器：旧 id 的删除必须留下墓碑，否则另一台设备会把重复词复活。
-  ensureSyncSchema();
-  repairSyncedContentMarkers();
-  await ensureLegacyBiruMigration();
-  await ensureDictionarySupplementSeed();
-  await ensureJlptCollocationContent();
-  await ensureGrammarSeed();
-  await ensureJlptWordSeed();
-  await ensureJlptLevelOverrides();
-  await ensureFuriganaAnnotations();
+  perfTime("启动 · 同步结构", ensureSyncSchema);
+  perfTime("启动 · 内容迁移 / 标记修复", repairSyncedContentMarkers);
+  await perfTimeAsync("启动 · 内容迁移 / 旧词表", ensureLegacyBiruMigration);
+  await perfTimeAsync("启动 · 内容迁移 / 词典补充", ensureDictionarySupplementSeed);
+  await perfTimeAsync("启动 · 内容迁移 / 固定搭配", ensureJlptCollocationContent);
+  await perfTimeAsync("启动 · 内容迁移 / 语法", ensureGrammarSeed);
+  await perfTimeAsync("启动 · 内容迁移 / JLPT 词库", ensureJlptWordSeed);
+  await perfTimeAsync("启动 · 内容迁移 / 级别覆盖", ensureJlptLevelOverrides);
+  await perfTimeAsync("启动 · 内容迁移 / 振假名", ensureFuriganaAnnotations);
 };
 
 // 固定搭配是 JLPT 主词库之后的第二层种子。它独立于 10k JLPT seed 版本，

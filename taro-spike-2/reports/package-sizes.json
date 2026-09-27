@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1846822,
-      "mib": 1.761,
+      "bytes": 1851035,
+      "mib": 1.765,
       "passes": true
     },
     "study": {
@@ -12,7 +12,7 @@
       "passes": true
     },
     "account": {
-      "bytes": 248857,
+      "bytes": 248855,
       "mib": 0.237,
       "passes": true
     },
@@ -57,12 +57,12 @@
       "passes": true
     }
   },
-  "totalBytes": 8071497,
+  "totalBytes": 8075708,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 817471
+      "bytes": 821545
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -805,14 +805,14 @@
       "bytes": 3621
     },
     {
+      "path": "app.js",
+      "package": "main",
+      "bytes": 3410
+    },
+    {
       "path": "study/study-modes/index.js",
       "package": "study",
       "bytes": 3380
-    },
-    {
-      "path": "app.js",
-      "package": "main",
-      "bytes": 3354
     },
     {
       "path": "study/vocab-test/index.wxss",
@@ -872,7 +872,7 @@
     {
       "path": "account/login/index.js",
       "package": "account",
-      "bytes": 2626
+      "bytes": 2624
     },
     {
       "path": "grammar-pages/sub-common/9ca9181576d5e8d3d23265f6fd1e1489.js",
@@ -1170,6 +1170,11 @@
       "bytes": 624
     },
     {
+      "path": "pages/home/index.js",
+      "package": "main",
+      "bytes": 618
+    },
+    {
       "path": "assets/lucide/slidershorizontal-ink.svg",
       "package": "main",
       "bytes": 617
@@ -1188,11 +1193,6 @@
       "path": "assets/lucide/star-light.svg",
       "package": "main",
       "bytes": 592
-    },
-    {
-      "path": "pages/word/index.js",
-      "package": "main",
-      "bytes": 590
     },
     {
       "path": "account/assets/lucide/sparkles-ink.svg",
@@ -1218,6 +1218,11 @@
       "path": "lazy/placeholder/index.js",
       "package": "lazy",
       "bytes": 580
+    },
+    {
+      "path": "pages/word/index.js",
+      "package": "main",
+      "bytes": 573
     },
     {
       "path": "assets/lucide/notebookpen-ink.svg",
@@ -1286,11 +1291,6 @@
     },
     {
       "path": "pages/grammar/index.js",
-      "package": "main",
-      "bytes": 518
-    },
-    {
-      "path": "pages/home/index.js",
       "package": "main",
       "bytes": 518
     },

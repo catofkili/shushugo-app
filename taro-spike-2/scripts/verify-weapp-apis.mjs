@@ -39,7 +39,7 @@ const allowlist = [
   { api: 'CompressionStream', file: 'common.js', before: /pipeThrough\(new $/, after: /^\("gzip"\)\),o=Uint8Array,n\.n=5,new Response/, count: 1, reason: 'sync/snapshot.ts exits through its Capacitor wechat branch before using browser compression APIs.' },
   { api: 'DecompressionStream', file: 'common.js', before: /pipeThrough\(new $/, after: /^\("gzip"\)\),s=u\.getReader\(/, count: 1, reason: 'sync/snapshot.ts exits through its Capacitor wechat branch before using browser decompression APIs.' },
   { api: 'Response', file: 'common.js', before: /n\.n=5,new $/, after: /^\(i\)\.arrayBuffer\(/, count: 1, reason: 'sync/snapshot.ts exits through its Capacitor wechat branch before constructing a browser Response.' },
-  { api: 'indexedDB', file: 'common.js', before: /var r=$/, after: /^\.open\(nn,1\)/, count: 1, reason: 'storage.ts reaches openBrowserDatabase only when isNativeFileStorage is false; Capacitor platform wechat makes it true.' },
+  { api: 'indexedDB', file: 'common.js', before: /var r=$/, after: /^\.open\(\w+,1\)/, count: 1, reason: 'storage.ts reaches openBrowserDatabase only when isNativeFileStorage is false; Capacitor platform wechat makes it true.' },
   { api: 'performance', file: 'common.js', before: /Ze\(n,$/, after: /^\.now\(\)/, count: 0, reason: 'Webpack binds SQL.js timer references to the Date.now-backed globalThis.performance shim.' },
   { api: 'performance', file: 'common.js', before: /return $/, after: /^\.now\(\)/, count: 0, reason: 'Webpack binds SQL.js timer references to the Date.now-backed globalThis.performance shim.' },
   { api: 'crypto', file: 'common.js', before: /=$/, after: /^\.randomUUID\(/, count: 3, reason: 'These sync/schema.ts device identifiers use the randomUUID shim installed by scripts/shared/polyfill.js.' },
@@ -50,7 +50,7 @@ const allowlist = [
   { api: 'Worker', file: 'account/settings/index.js', before: /VITE_SYNC_API_URL\\uff0c\\u90e8\\u7f72 Cloudflare $/, after: /^ /, count: 1, reason: 'Worker is part of a user-facing Cloudflare deployment instruction string, not a Worker reference.' },
   { api: 'Image', file: 'taro.js', before: /\(View\|$/, after: /^\|Text\)\$/, count: 1, reason: 'Image is a component name inside Taro’s element-order regex, not the browser Image constructor.' },
   { api: 'atob', file: 'common.js', before: /var e=$/, after: /^\(n\),r=new Uint8Array\(e\.length\)/, count: 2, reason: 'The base64 decoder is supplied by scripts/shared/polyfill.js using wx.base64ToArrayBuffer.' },
-  { api: 'btoa', file: 'common.js', before: /return $/, after: /^\(e\)},Sn=function/, count: 1, reason: 'The base64 encoder is supplied by scripts/shared/polyfill.js using wx.arrayBufferToBase64.' }
+  { api: 'btoa', file: 'common.js', before: /return $/, after: /^\(e\)},\w+=function/, count: 1, reason: 'The base64 encoder is supplied by scripts/shared/polyfill.js using wx.arrayBufferToBase64.' }
 ];
 
 function* javascriptFiles(directory, relative = '') {

@@ -115,19 +115,49 @@ export function PerfOverlay() {
       if (signature === last) return;
       last = signature;
       const next: string[] = [];
+      let startup: string[] = [];
+      let other: string[] = [];
       perfPhases.forEach((values, phase) => {
         if (!values.length) return;
+        if (phase.startsWith('启动 · ')) {
+          const labels: Record<string, string> = {
+            '页面内容分包就绪': '内容包',
+            '主页第一帧': '主页帧',
+            '本地数据库文件读取': '本地库',
+            'sql.js WASM 初始化': 'WASM',
+            '打开 SQLite 数据库': 'SQLite',
+            '本机存档检查与恢复': '本机恢复',
+            '本机学习库恢复完成': '恢复完成',
+            '用户表结构': '用户表',
+            '同步结构': '同步表',
+            '今日主页数据计算': '首页算',
+            '主页数据就位': '首页就绪',
+            '出厂库字节到手': '出厂库到手',
+            '导入出厂库': '导入',
+            '首次保存出厂库': '首次存档',
+            '单词进度初始化': '单词进度',
+            '语法进度初始化': '语法进度',
+            '汉字和辨析内容就绪': '汉字/辨析'
+          };
+          const label = phase.slice(5);
+          startup.push(`${labels[label] ?? label} ${values[values.length - 1]}ms`);
+          return;
+        }
         const sorted = [...values].sort((a, b) => a - b);
-        next.push(`${phase} 中位${sorted[Math.floor(sorted.length / 2)]} 最大${sorted[sorted.length - 1]} (${values.length}次)`);
+        other.push(`${phase} 中位${sorted[Math.floor(sorted.length / 2)]} 最大${sorted[sorted.length - 1]} (${values.length}次)`);
       });
+      if (startup.length) next.push('启动（onLaunch 起）', ...startup);
+      if (other.length) next.push('作答分段', ...other);
       setLines(next);
     }, 1000);
     return () => clearInterval(timer);
   }, []);
   if (!lines.length) return null;
   return (
-    <View className="perf-overlay-marker" style={{ position: 'fixed', left: '12rpx', bottom: '180rpx', zIndex: 9999, padding: '8rpx 12rpx', borderRadius: '12rpx', backgroundColor: 'rgba(28, 35, 34, 0.9)', color: '#fff', fontSize: '20rpx', lineHeight: 1.45, pointerEvents: 'none', maxWidth: '700rpx' }}>
-      {lines.map((line) => <Text key={line} style={{ display: 'block' }}>{line}</Text>)}
+    <View className="perf-overlay-marker" style={{ position: 'fixed', top: '0', left: '48%', right: '12rpx', zIndex: 9999, padding: '4rpx 6rpx', borderRadius: '12rpx', backgroundColor: 'rgba(28, 35, 34, 0.88)', color: '#fff', fontSize: '16rpx', lineHeight: 1.1, pointerEvents: 'none' }}>
+      {lines.map((line, index) => index === 0 || line === '作答分段'
+        ? <Text key={line} style={{ display: 'block', paddingBottom: '2rpx' }}>{line}</Text>
+        : <Text key={line} style={{ display: 'inline-block', width: '50%', whiteSpace: 'nowrap' }}>{line}</Text>)}
     </View>
   );
 }

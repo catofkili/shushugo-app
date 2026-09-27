@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1846822,
+      "bytes": 1851035,
       "passes": true
     },
     "study": {
@@ -10,7 +10,7 @@
       "passes": true
     },
     "account": {
-      "bytes": 248857,
+      "bytes": 248855,
       "passes": true
     },
     "content-pages": {
@@ -1081,19 +1081,19 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/storage.ts",
-      "bytes": 83210
+      "bytes": 84546
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/study-core.ts",
-      "bytes": 78304
+      "bytes": 78845
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/design.css",
       "bytes": 70028
     },
     {
-      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/ts-fsrs/dist/index.mjs",
-      "bytes": 60657
+      "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
+      "bytes": 61103
     }
   ],
   "passes": true

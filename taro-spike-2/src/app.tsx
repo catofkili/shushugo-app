@@ -1,5 +1,7 @@
 import type { PropsWithChildren } from 'react';
 import { View } from '@tarojs/components';
+import { useLaunch } from '@tarojs/taro';
+import { startStartupTiming } from '../../frontend/src/lib/perf-marks';
 import './platform/app-polyfills.weapp';
 import './platform/iframe-polyfill.weapp';
 import './app.css';
@@ -11,5 +13,6 @@ import '../../frontend/src/design.css';
 import '../../frontend/src/skins.css';
 
 export default function App({ children }: PropsWithChildren) {
+  useLaunch(() => startStartupTiming());
   return <View className="taro-spike-shell"><View className="taro-spike-content">{children}</View></View>;
 }
