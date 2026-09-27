@@ -1,7 +1,12 @@
 const cloud = require('../../../wechat-miniprogram/src/runtime/cloud');
 const { requestBinary, requestJson } = require('../../../wechat-miniprogram/src/runtime/wx-promise');
 // 计时版里显示每类云请求（云函数 api → Worker）花多久；普通构建里 perfTimeAsync 直接执行原操作。
-const { perfTimeAsync } = require('../../../frontend/src/lib/perf-marks');
+let perfTimeAsync = (_label, run) => run();
+try {
+  ({ perfTimeAsync } = require('../../../frontend/src/lib/perf-marks'));
+} catch {
+  // scripts/cloud-fetch-smoke.cjs 在纯 Node 里直接 require 本文件，Node 加载不了 TS；打包后这条 require 一定在。
+}
 const requestLabel = (url) => `云请求 · ${String(url).replace(/^https?:\/\/[^/]+/, '').split('?')[0].replace(/\/[0-9a-f-]{8,}/gi, '/:id')}`;
 
 function headerValue(headers, name) {
