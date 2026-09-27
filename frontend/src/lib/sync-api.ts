@@ -5,7 +5,8 @@ import { getDatabase } from "./database";
 import { clearEntitlements, getEntitlements, ProductId, saveEntitlements, type EntitlementState, type LaunchGiftAvailability } from "./entitlements";
 import { flushPendingSave, getLocalDataRevision, saveDatabase } from "./storage";
 import { notifyProgressUpdated } from "./progress-events";
-import { ensureSeedData } from "./study-core";
+import { ensureSeedData, ensureUserTables } from "./study-core";
+import { perfTimeAsync } from "./perf-marks";
 import { ensureSyncSchema, getDeviceId } from "./sync/schema";
 import { mergeDatabaseBytes } from "./sync/merge";
 import {
@@ -244,6 +245,23 @@ const requireConfigured = () => {
   }
 };
 
+/**
+ * 合并云端快照之后补表结构。
+ * ⚠️ 小程序上不许调 `ensureSeedData`：那是网页 / App 的内容迁移，要读出厂种子 JSON，而小程序包里那些模块是
+ * `seed-guard` 替身，一碰就抛。更糟的是它第一步 `repairSyncedContentMarkers` 会把内容迁移标记全清空
+ * （出厂库里没有 content_marker_repair 标记）。2026-09-27 查出：小程序每次从云端拉取，合并已经落进本机库，
+ * 随后在这里抛错 → 这次同步被记成失败 → 下次再整套拉取合并一遍。小程序启动时只做 ensureUserTables +
+ * ensureSyncSchema（taro-spike-2/src/platform/database-runtime.weapp.ts），合并后同样只做这两步。
+ */
+const ensureStructureAfterMerge = async (): Promise<void> => {
+  if (Capacitor.getPlatform() === "wechat") {
+    ensureUserTables();
+    ensureSyncSchema();
+    return;
+  }
+  await ensureSeedData();
+};
+
 const cloudRequestUrl = (path: string) => Capacitor.getPlatform() === "wechat" ? path : `${API_URL}${path}`;
 
 const requestJson = async <T>(path: string, init: RequestInit = {}, timeoutMs = 15_000): Promise<T> => {
@@ -319,7 +337,7 @@ const requestCloudSnapshot = async (session: CloudSession): Promise<CloudSnapsho
     const generationHeader = response.headers.get("x-sync-generation");
     const parsedGeneration = generationHeader === null ? NaN : Number(generationHeader);
     return {
-      bytes: await decompressSyncSnapshot(compressed, compression),
+      bytes: await perfTimeAsync("同步 · 解压云端快照", () => decompressSyncSnapshot(compressed, compression)),
       lastModified,
       generation: Number.isFinite(parsedGeneration) ? parsedGeneration : undefined,
       format: response.headers.get("x-sync-format") ?? "legacy-full-sqlite",
@@ -998,8 +1016,8 @@ const pushCloudDatabase = async (
   if (!session.token || !session.email) throw new Error("请先登录云同步账号。");
   ensureSyncSchema();
   const localRevisionAtUpload = getLocalDataRevision();
-  const snapshot = await exportSyncSnapshot();
-  const { bytes, compression } = await compressSyncSnapshot(snapshot);
+  const snapshot = await perfTimeAsync("同步 · 导出本机快照", () => exportSyncSnapshot());
+  const { bytes, compression } = await perfTimeAsync("同步 · 压缩快照", () => compressSyncSnapshot(snapshot));
 
   const operationId = crypto.randomUUID();
   const headers: Record<string, string> = {
@@ -1065,8 +1083,8 @@ const pullCloudDatabase = async (
   }
   // 新格式只含用户表；旧格式虽然是整库，也只取其中用户表合并，永不再用
   // 云端快照覆盖本机随 App 版本发布的 words / grammar_points 等内容。
-  await mergeDatabaseBytes(data.bytes);
-  await ensureSeedData();
+  await perfTimeAsync("同步 · 合并云端快照", () => mergeDatabaseBytes(data.bytes));
+  await ensureStructureAfterMerge();
   ensureSyncSchema();
   (await import("./level-plan")).hydrateLevelPlanPreferences();
   await saveDatabase({ notifyCloud: false });
@@ -1126,8 +1144,8 @@ const mergeCloudDatabase = async (
   if (expectedLocalRevision !== undefined && getLocalDataRevision() !== expectedLocalRevision) {
     throw new Error("同步期间本机产生了新学习记录，已保留本机数据，稍后会自动重试。");
   }
-  await mergeDatabaseBytes(data.bytes);
-  await ensureSeedData();
+  await perfTimeAsync("同步 · 合并云端快照", () => mergeDatabaseBytes(data.bytes));
+  await ensureStructureAfterMerge();
   ensureSyncSchema();
   (await import("./level-plan")).hydrateLevelPlanPreferences();
   await saveDatabase({ notifyCloud: false });

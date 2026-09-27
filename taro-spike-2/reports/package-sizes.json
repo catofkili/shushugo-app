@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1859523,
-      "mib": 1.773,
+      "bytes": 1861204,
+      "mib": 1.775,
       "passes": true
     },
     "study": {
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 567064,
+      "bytes": 567080,
       "mib": 0.541,
       "passes": true
     }
   },
-  "totalBytes": 8082869,
+  "totalBytes": 8084566,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 823489
+      "bytes": 825134
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 565315
+      "bytes": 565331
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -765,14 +765,14 @@
       "bytes": 4062
     },
     {
+      "path": "app.js",
+      "package": "main",
+      "bytes": 4023
+    },
+    {
       "path": "assets/brand/shushugo-icon.png",
       "package": "main",
       "bytes": 4011
-    },
-    {
-      "path": "app.js",
-      "package": "main",
-      "bytes": 4007
     },
     {
       "path": "account/sub-vendors.js",
@@ -1165,14 +1165,14 @@
       "bytes": 679
     },
     {
+      "path": "pages/home/index.js",
+      "package": "main",
+      "bytes": 638
+    },
+    {
       "path": "features/placeholder/index.js",
       "package": "features",
       "bytes": 624
-    },
-    {
-      "path": "pages/home/index.js",
-      "package": "main",
-      "bytes": 618
     },
     {
       "path": "assets/lucide/slidershorizontal-ink.svg",

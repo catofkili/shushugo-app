@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1859523,
+      "bytes": 1861204,
       "passes": true
     },
     "study": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 567064,
+      "bytes": 567080,
       "passes": true
     }
   },
@@ -1057,7 +1057,7 @@
   "mainTopModules": [
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-      "bytes": 159555
+      "bytes": 161895
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
@@ -1081,7 +1081,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/storage.ts",
-      "bytes": 87357
+      "bytes": 86506
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/study-core.ts",

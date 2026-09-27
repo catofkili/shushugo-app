@@ -1,5 +1,8 @@
 const cloud = require('../../../wechat-miniprogram/src/runtime/cloud');
 const { requestBinary, requestJson } = require('../../../wechat-miniprogram/src/runtime/wx-promise');
+// 计时版里显示每类云请求（云函数 api → Worker）花多久；普通构建里 perfTimeAsync 直接执行原操作。
+const { perfTimeAsync } = require('../../../frontend/src/lib/perf-marks');
+const requestLabel = (url) => `云请求 · ${String(url).replace(/^https?:\/\/[^/]+/, '').split('?')[0].replace(/\/[0-9a-f-]{8,}/gi, '/:id')}`;
 
 function headerValue(headers, name) {
   const key = Object.keys(headers || {}).find((item) => item.toLowerCase() === name.toLowerCase());
@@ -83,7 +86,7 @@ async function cloudFetch(input, init = {}) {
 
   if (String(headerValue(headers, 'accept') || '').includes('application/octet-stream')) {
     try {
-      const result = await withAbort(init.signal, () => requestBinary(url, options));
+      const result = await perfTimeAsync(requestLabel(url), () => withAbort(init.signal, () => requestBinary(url, options)));
       return response(200, result.header, null, result.bytes);
     } catch (error) {
       return failedResponse(error);
@@ -91,7 +94,7 @@ async function cloudFetch(input, init = {}) {
   }
 
   try {
-    return response(200, { 'content-type': 'application/json' }, await withAbort(init.signal, () => requestJson(url, options)));
+    return response(200, { 'content-type': 'application/json' }, await perfTimeAsync(requestLabel(url), () => withAbort(init.signal, () => requestJson(url, options))));
   } catch (error) {
     return failedResponse(error);
   }
