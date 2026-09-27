@@ -637,16 +637,27 @@ const identityProviders = async (env: Env, userId: string) => {
   return (rows.results ?? []).map((row) => row.provider);
 };
 
-const sessionPayload = async (env: Env, user: UserRow, token: string) => ({
-  access_token: token,
-  token_type: "bearer",
-  user_id: user.id,
-  email: user.email,
-  displayName: user.display_name ?? undefined,
-  authProviders: await identityProviders(env, user.id),
-  ...verificationPayload(env, user),
-  entitlements: entitlementPayload(await getEntitlementRow(env, user.id))
-});
+const sessionPayload = async (env: Env, user: UserRow, token: string) => {
+  const [providers, entitlement] = await env.DB.batch([
+    env.DB.prepare("SELECT DISTINCT provider FROM auth_identities WHERE user_id = ? ORDER BY provider").bind(user.id),
+    env.DB.prepare(`
+      SELECT is_pro, product_id, source, original_transaction_id, transaction_id, environment, expires_at, updated_at
+      FROM entitlements WHERE user_id = ?
+    `).bind(user.id)
+  ]);
+  const providerRows = (providers.results ?? []) as Array<{ provider: "email" | "apple" | "wechat" }>;
+  const entitlementRow = ((entitlement.results ?? []) as EntitlementRow[])[0] ?? null;
+  return {
+    access_token: token,
+    token_type: "bearer",
+    user_id: user.id,
+    email: user.email,
+    displayName: user.display_name ?? undefined,
+    authProviders: providerRows.map((row) => row.provider),
+    ...verificationPayload(env, user),
+    entitlements: entitlementPayload(entitlementRow)
+  };
+};
 
 const createToken = async (env: Env, userId: string) => {
   const token = randomToken();
@@ -971,18 +982,28 @@ const requireUser = async (request: Request, env: Env) => {
 // 也保证找回密码通道可用后才托管用户数据。邮件服务未配置时不强制,
 // 否则用户永远无法通过验证。
 const requireVerifiedUser = async (request: Request, env: Env) => {
-  const userId = await requireUser(request, env);
-  if (!env.RESEND_API_KEY) return userId;
-  const user = await env.DB.prepare("SELECT email_verified_at FROM users WHERE id = ?")
-    .bind(userId)
-    .first<{ email_verified_at: string | null }>();
-  const wechatIdentity = await env.DB.prepare(
-    "SELECT 1 FROM auth_identities WHERE user_id = ? AND provider = 'wechat' LIMIT 1"
-  ).bind(userId).first();
-  if (!user?.email_verified_at && !wechatIdentity) {
+  const tokenHash = await bearerTokenHash(request);
+  if (!tokenHash) throw json({ detail: "Invalid or expired token" }, 401);
+  const session = await env.DB.prepare(`
+    SELECT s.user_id, s.expires_at, u.email_verified_at,
+           EXISTS (
+             SELECT 1 FROM auth_identities ai
+             WHERE ai.user_id = s.user_id AND ai.provider = 'wechat'
+           ) AS has_wechat_identity
+    FROM sessions s
+    LEFT JOIN users u ON u.id = s.user_id
+    WHERE s.token_hash = ?
+  `).bind(tokenHash).first<SessionRow & {
+    email_verified_at: string | null;
+    has_wechat_identity: number;
+  }>();
+  if (!session || new Date(session.expires_at).getTime() <= Date.now()) {
+    throw json({ detail: "Invalid or expired token" }, 401);
+  }
+  if (env.RESEND_API_KEY && !session.email_verified_at && !session.has_wechat_identity) {
     throw json({ detail: "请先在设置中完成邮箱验证，再使用云同步。" }, 403);
   }
-  return userId;
+  return session.user_id;
 };
 
 const requireProUser = async (request: Request, env: Env): Promise<string> => {
@@ -1276,13 +1297,43 @@ const wechatLogin = async (request: Request, env: Env) => {
     JSON.stringify({ openid, sessionKey: result.session_key ?? "" } satisfies WechatSession),
     { expirationTtl: 30 * 24 * 60 * 60 }
   );
-  const identity = await findWechatIdentity(env, subjects);
+  const linkedRows = await env.DB.prepare(`
+    SELECT ai.provider, ai.provider_subject, ai.user_id, ai.email,
+           u.id AS account_id, u.email AS account_email, u.password_hash AS account_password_hash,
+           u.password_salt AS account_password_salt, u.display_name AS account_display_name,
+           u.email_verified_at AS account_email_verified_at
+    FROM auth_identities ai
+    LEFT JOIN users u ON u.id = ai.user_id
+    WHERE ai.provider = 'wechat' AND ai.provider_subject IN (${subjects.map(() => "?").join(", ")})
+  `).bind(...subjects).all<AuthIdentityRow & {
+    account_id: string | null;
+    account_email: string | null;
+    account_password_hash: string | null;
+    account_password_salt: string | null;
+    account_display_name: string | null;
+    account_email_verified_at: string | null;
+  }>();
+  const identities = linkedRows.results ?? [];
+  if (new Set(identities.map((row) => row.user_id)).size > 1) {
+    throw json({
+      detail: "这个微信身份关联到了多个收集日账号，请联系客服处理，系统不会自动合并学习数据。",
+      code: "WECHAT_IDENTITY_CONFLICT"
+    }, 409);
+  }
+  const identity = identities[0];
   if (identity) {
-    const user = await env.DB.prepare(`
-      SELECT id, email, password_hash, password_salt, display_name, email_verified_at
-      FROM users WHERE id = ?
-    `).bind(identity.user_id).first<UserRow>();
-    if (!user) return json({ detail: "微信账号关联的用户不存在。" }, 404);
+    if (identity.account_id === null || identity.account_email === null
+      || identity.account_password_hash === null || identity.account_password_salt === null) {
+      return json({ detail: "微信账号关联的用户不存在。" }, 404);
+    }
+    const user: UserRow = {
+      id: identity.account_id,
+      email: identity.account_email,
+      password_hash: identity.account_password_hash,
+      password_salt: identity.account_password_salt,
+      display_name: identity.account_display_name,
+      email_verified_at: identity.account_email_verified_at
+    };
     await env.DB.prepare("UPDATE users SET last_login = ? WHERE id = ?")
       .bind(new Date().toISOString(), user.id).run();
     // 旧账号可能只有小程序 openid；绑定开放平台后第一次拿到 unionid 时补上别名，
@@ -1871,10 +1922,11 @@ const saveTeamNickname = async (env: Env, userId: string, value: unknown) => {
   return displayName;
 };
 
-const teamSnapshot = async (env: Env, userId: string, day: string) => {
-  const team = await teamMembership(env, userId);
+const teamSnapshot = async (env: Env, userId: string, day: string, knownTeam?: TeamRow) => {
+  const team = knownTeam ?? await teamMembership(env, userId);
   if (!team) return null;
-  const members = await env.DB.prepare(`
+  const [members, activityDays] = await env.DB.batch([
+    env.DB.prepare(`
     SELECT tm.id AS member_id, tm.user_id, tm.role, u.display_name,
            COALESCE(a.study_count, 0) AS study_count,
            COALESCE(a.completed, 0) AS completed,
@@ -1893,7 +1945,14 @@ const teamSnapshot = async (env: Env, userId: string, day: string) => {
      AND sent.sender_user_id = ? AND sent.receiver_user_id = tm.user_id
     WHERE tm.team_id = ?
     ORDER BY CASE tm.role WHEN 'owner' THEN 0 ELSE 1 END, tm.joined_at ASC
-  `).bind(day, team.id, day, day, userId, team.id).all<{
+  `).bind(day, team.id, day, day, userId, team.id),
+    env.DB.prepare(`
+    SELECT DISTINCT study_day FROM team_daily_activity
+    WHERE team_id = ? AND (study_count > 0 OR completed = 1) AND study_day <= ?
+    ORDER BY study_day DESC LIMIT 3660
+  `).bind(team.id, day)
+  ]);
+  const rows = (members.results ?? []) as Array<{
     member_id: string;
     user_id: string;
     role: "owner" | "member";
@@ -1902,13 +1961,8 @@ const teamSnapshot = async (env: Env, userId: string, day: string) => {
     completed: number;
     cheers_received: number;
     cheered_by_me: number;
-  }>();
-  const activityDays = await env.DB.prepare(`
-    SELECT DISTINCT study_day FROM team_daily_activity
-    WHERE team_id = ? AND (study_count > 0 OR completed = 1) AND study_day <= ?
-    ORDER BY study_day DESC LIMIT 3660
-  `).bind(team.id, day).all<{ study_day: string }>();
-  const rows = members.results ?? [];
+  }>;
+  const days = (activityDays.results ?? []) as Array<{ study_day: string }>;
   return {
     id: team.id,
     name: team.name,
@@ -1921,7 +1975,7 @@ const teamSnapshot = async (env: Env, userId: string, day: string) => {
     memberCount: rows.length,
     activeCount: rows.filter((row) => Number(row.study_count) > 0 || Number(row.completed) === 1).length,
     totalStudyCount: rows.reduce((sum, row) => sum + Number(row.study_count), 0),
-    streak: teamStreak((activityDays.results ?? []).map((row) => row.study_day), day),
+    streak: teamStreak(days.map((row) => row.study_day), day),
     members: rows.map((row) => ({
       memberId: row.member_id,
       name: row.display_name || "学习伙伴",
@@ -1969,12 +2023,31 @@ const listTeamPlaza = async (request: Request, env: Env) => {
     id: string; name: string; target_level: string; emoji: string;
     max_members: number; member_count: number; active_count: number;
   }>();
-  const teams = await Promise.all((rows.results ?? []).map(async (team) => {
-    const days = await env.DB.prepare(`
-      SELECT DISTINCT study_day FROM team_daily_activity
-      WHERE team_id = ? AND (study_count > 0 OR completed = 1) AND study_day <= ?
-      ORDER BY study_day DESC LIMIT 3660
-    `).bind(team.id, day).all<{ study_day: string }>();
+  const plazaRows = rows.results ?? [];
+  const daysByTeam = new Map<string, string[]>();
+  if (plazaRows.length) {
+    const ids = plazaRows.map((team) => team.id);
+    const streakRows = await env.DB.prepare(`
+      WITH days AS (
+        SELECT DISTINCT team_id, study_day FROM team_daily_activity
+        WHERE team_id IN (${ids.map(() => "?").join(", ")})
+          AND (study_count > 0 OR completed = 1) AND study_day <= ?
+      )
+      SELECT team_id, study_day FROM (
+        SELECT team_id, study_day,
+               ROW_NUMBER() OVER (PARTITION BY team_id ORDER BY study_day DESC) AS position
+        FROM days
+      )
+      WHERE position <= 3660
+      ORDER BY team_id, study_day DESC
+    `).bind(...ids, day).all<{ team_id: string; study_day: string }>();
+    for (const row of streakRows.results ?? []) {
+      const days = daysByTeam.get(row.team_id) ?? [];
+      days.push(row.study_day);
+      daysByTeam.set(row.team_id, days);
+    }
+  }
+  const teams = plazaRows.map((team) => {
     return {
       id: team.id,
       name: team.name,
@@ -1983,9 +2056,9 @@ const listTeamPlaza = async (request: Request, env: Env) => {
       maxMembers: Number(team.max_members),
       memberCount: Number(team.member_count),
       activeCount: Number(team.active_count),
-      streak: teamStreak((days.results ?? []).map((row) => row.study_day), day)
+      streak: teamStreak(daysByTeam.get(team.id) ?? [], day)
     };
-  }));
+  });
   return json({ teams });
 };
 
@@ -2085,26 +2158,31 @@ const reportTeamActivity = async (request: Request, env: Env) => {
       completed = MAX(team_daily_activity.completed, excluded.completed),
       updated_at = excluded.updated_at
   `).bind(team.id, userId, day, count, body.completed ? 1 : 0, new Date().toISOString()).run();
-  return json({ team: await teamSnapshot(env, userId, day) });
+  return json({ team: await teamSnapshot(env, userId, day, team) });
 };
 
 const cheerTeamMember = async (request: Request, env: Env) => {
   const userId = await requireVerifiedUser(request, env);
   await rateLimitSubject(env, "team-cheer", `user:${userId}`, 60, 3600);
-  const team = await teamMembership(env, userId);
-  if (!team) return json({ detail: "你还没有加入队伍。" }, 404);
   const body = await readJson<{ memberId?: string; studyDay?: string }>(request);
   const day = validStudyDay(body.studyDay);
   if (!day) return json({ detail: "学习日期无效。" }, 400);
-  const receiver = await env.DB.prepare("SELECT user_id FROM team_members WHERE id = ? AND team_id = ?")
-    .bind(String(body.memberId ?? ""), team.id).first<{ user_id: string }>();
-  if (!receiver) return json({ detail: "队友不存在。" }, 404);
-  if (receiver.user_id === userId) return json({ detail: "不能给自己加油。" }, 400);
+  const membership = await env.DB.prepare(`
+    SELECT t.id, t.name, t.target_level, t.emoji, t.visibility, t.max_members,
+           t.owner_user_id, t.invite_code, receiver.user_id AS receiver_user_id
+    FROM team_members mine
+    JOIN teams t ON t.id = mine.team_id
+    LEFT JOIN team_members receiver ON receiver.id = ? AND receiver.team_id = t.id
+    WHERE mine.user_id = ?
+  `).bind(String(body.memberId ?? ""), userId).first<TeamRow & { receiver_user_id: string | null }>();
+  if (!membership) return json({ detail: "你还没有加入队伍。" }, 404);
+  if (!membership.receiver_user_id) return json({ detail: "队友不存在。" }, 404);
+  if (membership.receiver_user_id === userId) return json({ detail: "不能给自己加油。" }, 400);
   await env.DB.prepare(`
     INSERT OR IGNORE INTO team_cheers (team_id, sender_user_id, receiver_user_id, study_day, created_at)
     VALUES (?, ?, ?, ?, ?)
-  `).bind(team.id, userId, receiver.user_id, day, new Date().toISOString()).run();
-  return json({ team: await teamSnapshot(env, userId, day) });
+  `).bind(membership.id, userId, membership.receiver_user_id, day, new Date().toISOString()).run();
+  return json({ team: await teamSnapshot(env, userId, day, membership) });
 };
 
 const leaveTeamForUser = async (env: Env, userId: string) => {
@@ -2523,13 +2601,12 @@ const claimLaunchGift = async (request: Request, env: Env) => {
   const now = new Date();
   const grantedAt = now.toISOString();
   const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
-  await env.DB.prepare(`
-    INSERT OR IGNORE INTO launch_gift_grants (user_id, granted_at, expires_at)
+  const grant = await env.DB.prepare(`
+    INSERT INTO launch_gift_grants (user_id, granted_at, expires_at)
     VALUES (?, ?, ?)
-  `).bind(userId, grantedAt, expiresAt).run();
-  const grant = await env.DB.prepare(
-    "SELECT granted_at, expires_at FROM launch_gift_grants WHERE user_id = ?"
-  ).bind(userId).first<{ granted_at: string; expires_at: string }>();
+    ON CONFLICT(user_id) DO UPDATE SET granted_at = launch_gift_grants.granted_at
+    RETURNING granted_at, expires_at
+  `).bind(userId, grantedAt, expiresAt).first<{ granted_at: string; expires_at: string }>();
   if (!grant) return json({ detail: "首月赠送领取记录写入失败。" }, 500);
 
   // INSERT 和权益写入之间如果中断，重试读回第一次固定的到期日补齐权益，不会续送。
@@ -2665,16 +2742,47 @@ const launchGiftAvailability = (env: Env) => {
 };
 
 const getEntitlements = async (request: Request, env: Env) => {
-  const userId = await currentUser(request, env);
   const launchGift = launchGiftAvailability(env);
   // 领取窗口是公开信息，匿名设备也要能决定是否提示登录领取；权益行仍只对账号本人可读。
   // ⚠️ 只有「没带令牌」才按匿名答。带了令牌却无效 = 会话过期，必须照旧 401：
   // 当成匿名回一个「不是会员」的 200，客户端会用它覆盖本地缓存，登录过期的付费用户就被静默降级了。
-  if (!userId) {
-    if (await bearerTokenHash(request)) return json({ detail: "Invalid or expired token" }, 401);
+  const tokenHash = await bearerTokenHash(request);
+  if (!tokenHash) {
     return json({ ...entitlementPayload(null), launchGift });
   }
-  const row = await getEntitlementRow(env, userId);
+  const session = await env.DB.prepare(`
+    SELECT s.user_id AS session_user_id, s.expires_at AS session_expires_at,
+           e.is_pro, e.product_id, e.source, e.original_transaction_id, e.transaction_id,
+           e.environment, e.expires_at, e.updated_at
+    FROM sessions s
+    LEFT JOIN entitlements e ON e.user_id = s.user_id
+    WHERE s.token_hash = ?
+  `).bind(tokenHash).first<{
+    session_user_id: string;
+    session_expires_at: string;
+    is_pro: number | null;
+    product_id: string | null;
+    source: string | null;
+    original_transaction_id: string | null;
+    transaction_id: string | null;
+    environment: string | null;
+    expires_at: string | null;
+    updated_at: string | null;
+  }>();
+  if (!session || new Date(session.session_expires_at).getTime() <= Date.now()) {
+    return json({ detail: "Invalid or expired token" }, 401);
+  }
+  const userId = session.session_user_id;
+  const row: EntitlementRow | null = session.is_pro === null ? null : {
+    is_pro: session.is_pro,
+    product_id: session.product_id,
+    source: session.source ?? "free",
+    original_transaction_id: session.original_transaction_id,
+    transaction_id: session.transaction_id,
+    environment: session.environment,
+    expires_at: session.expires_at,
+    updated_at: session.updated_at ?? new Date().toISOString()
+  };
   const stale = row?.is_pro
     && row.source === "app_store"
     && row.transaction_id
@@ -2926,24 +3034,26 @@ const syncStatus = async (request: Request, env: Env) => {
   const userId = await requireVerifiedUser(request, env);
   await enforceSyncRateLimit(env, request, userId, env.SYNC_STATUS_LIMITER, "status", 120);
   const head = await env.DB.prepare(`
-    SELECT generation, object_key, last_modified
-    FROM sync_heads
-    WHERE user_id = ?
-  `).bind(userId).first<Pick<SyncHead, "generation" | "object_key" | "last_modified">>();
+    SELECT h.generation, h.object_key, h.last_modified,
+           o.id AS object_id, o.byte_length
+    FROM sync_heads h
+    LEFT JOIN sync_objects o ON o.user_id = h.user_id AND o.object_key = h.object_key
+    WHERE h.user_id = ?
+  `).bind(userId).first<{
+    generation: number;
+    object_key: string | null;
+    last_modified: string | null;
+    object_id: string | null;
+    byte_length: number | null;
+  }>();
 
   if (!head?.object_key || !head.last_modified) {
     return json({ available: false, last_modified: null, byte_length: 0, generation: head?.generation ?? 0 });
   }
-  const row = await env.DB.prepare(`
-    SELECT byte_length
-    FROM sync_objects
-    WHERE user_id = ? AND object_key = ?
-    LIMIT 1
-  `).bind(userId, head.object_key).first<{ byte_length: number }>();
   return json({
-    available: Boolean(row),
+    available: Boolean(head.object_id),
     last_modified: head.last_modified,
-    byte_length: row?.byte_length ?? 0,
+    byte_length: head.byte_length ?? 0,
     generation: head.generation
   });
 };
@@ -3233,17 +3343,21 @@ const health = async (env: Env) => {
     "launch_gift_grants",      // 0016
     "feedback_reports"         // 0017
   ];
-  const found = await env.DB.prepare(
-    `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${required.map(() => "?").join(", ")})`
-  ).bind(...required).all<{ name: string }>();
-  const present = new Set((found.results ?? []).map((row) => row.name));
-  // 0011 换的是索引不是表，单独看。
-  const purchaseIndex = await env.DB.prepare(
-    "SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_purchase_events_transaction_status'"
-  ).first<{ name: string }>();
+  const found = await env.DB.prepare(`
+    SELECT type, name FROM sqlite_master
+    WHERE (type = 'table' AND name IN (${required.map(() => "?").join(", ")}))
+       OR (type = 'index' AND name = ?)
+  `).bind(...required, "idx_purchase_events_transaction_status").all<{
+    type: "table" | "index";
+    name: string;
+  }>();
+  const rows = found.results ?? [];
+  const present = new Set(rows.filter((row) => row.type === "table").map((row) => row.name));
 
   const migrations = Object.fromEntries(required.map((table) => [table, present.has(table)]));
-  migrations.idx_purchase_events_transaction_status = Boolean(purchaseIndex);
+  migrations.idx_purchase_events_transaction_status = rows.some(
+    (row) => row.type === "index" && row.name === "idx_purchase_events_transaction_status"
+  );
   const migrationsApplied = Object.values(migrations).every(Boolean);
   const authHardening = env.REQUIRE_AUTH_HARDENING === "1";
   const turnstile = turnstileEnabled(env);

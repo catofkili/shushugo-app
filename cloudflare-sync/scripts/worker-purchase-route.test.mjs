@@ -31,6 +31,9 @@ class FakeStatement {
   }
 
   async first() {
+    if (this.sql.includes("FROM sessions") && this.sql.includes("session_user_id")) {
+      return { session_user_id: "user-1", session_expires_at: futureDate, ...this.database.entitlement };
+    }
     if (this.sql.includes("FROM sessions")) return { user_id: "user-1", expires_at: futureDate };
     if (this.sql.includes("FROM entitlements")) return { ...this.database.entitlement };
     if (this.sql.includes("FROM apple_transaction_owners")) return { user_id: "user-1" };

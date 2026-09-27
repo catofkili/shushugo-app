@@ -15,10 +15,31 @@ class Statement {
   constructor(db, sql) { this.db = db; this.sql = sql.replace(/\s+/g, " ").trim(); this.params = []; }
   bind(...params) { this.params = params; return this; }
   async first() {
+    if (this.sql.includes("FROM sessions") && this.sql.includes("session_user_id")) return {
+      session_user_id: "user-1",
+      session_expires_at: this.db.sessionExpired ? "2000-01-01T00:00:00.000Z" : farFuture,
+      ...(this.db.entitlement ?? { is_pro: null })
+    };
     if (this.sql.includes("FROM sessions")) return { user_id: "user-1", expires_at: this.db.sessionExpired ? "2000-01-01T00:00:00.000Z" : farFuture };
     if (this.sql.startsWith("INSERT INTO auth_rate_limits")) return { request_count: 1 };
     if (this.sql.includes("FROM launch_gift_grants")) return this.db.grant;
     if (this.sql.includes("FROM entitlements")) return this.db.entitlement;
+    if (this.sql.startsWith("INSERT INTO launch_gift_grants")) {
+      if (!this.db.grant) {
+        const [user_id, granted_at, expires_at] = this.params;
+        this.db.grant = { user_id, granted_at, expires_at };
+      }
+      return this.db.grant;
+    }
+    if (this.sql.startsWith("INSERT INTO entitlements")) {
+      const [user_id, product_id, source, original_transaction_id, transaction_id, environment, expires_at, updated_at] = this.params;
+      this.db.entitlement = { user_id, is_pro: 1, product_id, source, original_transaction_id, transaction_id, environment, expires_at, updated_at };
+      return this.db.entitlement;
+    }
+    if (this.sql.startsWith("UPDATE entitlements SET updated_at") && this.db.entitlement) {
+      this.db.entitlement.updated_at = this.params[0];
+      return this.db.entitlement;
+    }
     return null;
   }
   async run() {
