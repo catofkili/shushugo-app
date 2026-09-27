@@ -73,6 +73,7 @@ module.exports = {
       pxtransform: { enable: true, config: {} },
       htmltransform: { enable: true, config: { removeCursorStyle: true } },
       [path.join(root, 'scripts/weapp-theme-selectors.cjs')]: {},
+      [path.join(root, 'scripts/weapp-press-feedback.cjs')]: {},
       [path.join(root, 'scripts/strip-weapp-css.cjs')]: {}
     },
     webpackChain(chain, webpack) {
@@ -172,6 +173,11 @@ module.exports = {
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,
         (resource) => {
+          if (resource.request === 'react/jsx-runtime' || resource.request === 'react/jsx-dev-runtime') {
+            // The broad `react` alias shadows subpaths, so replace the JSX runtime before alias resolution.
+            resource.request = path.join(root, 'src/platform/press-feedback-jsx-runtime.weapp.cjs');
+            return;
+          }
           if (resource.request === 'react-dom' && !resource.contextInfo?.issuer?.endsWith('react-dom.weapp.ts')) {
             // 网页的 createPortal(弹层, document.body) 在小程序里看不见，见 src/platform/portal-host.weapp.ts。
             // 用模块替换而不是 alias：Taro 的 React 插件自己把 react-dom$ 别名到 @tarojs/react，替换在别名之前生效。
