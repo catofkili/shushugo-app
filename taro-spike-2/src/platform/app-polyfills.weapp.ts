@@ -71,6 +71,91 @@ if (!globalThis.performance || typeof globalThis.performance.now !== 'function')
 const taroUrl = TaroURL as unknown as { createObjectURL: (blob: Blob) => string; revokeObjectURL: (url: string) => void };
 taroUrl.createObjectURL = createObjectURL;
 taroUrl.revokeObjectURL = revokeObjectURL;
+
+// WXML omits aria-* and nearly all data-* attributes. CSS selectors based on
+// those attributes therefore need equivalent runtime classes on TaroElement.
+type AttributeSelector = {
+  attribute: string;
+  operator: string;
+  value: string;
+  insensitive: boolean;
+  className: string;
+};
+const attributeSelectors = JSON.parse(process.env.TARO_ATTRIBUTE_SELECTORS || '[]') as AttributeSelector[];
+if (attributeSelectors.length) {
+  const sample = taroDocument.createElement('view') as unknown as object;
+  const elementPrototype = Object.getPrototypeOf(sample) as {
+    setAttribute: (name: string, value: unknown) => void;
+    removeAttribute: (name: string) => void;
+    getAttribute: (name: string) => unknown;
+    hasAttribute: (name: string) => boolean;
+  };
+  const setAttribute = elementPrototype.setAttribute;
+  const removeAttribute = elementPrototype.removeAttribute;
+  const selectorsByAttribute = new Map<string, AttributeSelector[]>();
+  for (const selector of attributeSelectors) {
+    const group = selectorsByAttribute.get(selector.attribute) ?? [];
+    group.push(selector);
+    selectorsByAttribute.set(selector.attribute, group);
+  }
+  const previousClasses = new WeakMap<object, Map<string, Set<string>>>();
+  const matchesAttribute = (element: typeof sample, selector: AttributeSelector) => {
+    if (!elementPrototype.hasAttribute.call(element, selector.attribute)) return false;
+    const raw = selector.attribute === 'class'
+      ? String(elementPrototype.getAttribute.call(element, 'class') || '').split(/\s+/)
+        .filter((name) => ![...(previousClasses.get(element)?.values() ?? [])].some((group) => group.has(name))).join(' ')
+      : String(elementPrototype.getAttribute.call(element, selector.attribute));
+    const value = selector.insensitive ? raw.toLowerCase() : raw;
+    const expected = selector.insensitive ? selector.value.toLowerCase() : selector.value;
+    switch (selector.operator) {
+      case '=': return value === expected;
+      case '!=': return value !== expected;
+      case '~=': return value.split(/\s+/).includes(expected);
+      case '|=': return value === expected || value.startsWith(`${expected}-`);
+      case '^=': return value.startsWith(expected);
+      case '$=': return value.endsWith(expected);
+      case '*=': return value.includes(expected);
+      default: return true;
+    }
+  };
+  const syncSelectorClasses = (element: typeof sample, changedAttribute: string) => {
+    const previous = previousClasses.get(element) ?? new Map<string, Set<string>>();
+    const classes = String(elementPrototype.getAttribute.call(element, 'class') || '')
+      .split(/\s+/).filter(Boolean).filter((name) => ![...previous.values()].some((group) => group.has(name)));
+    const next = new Map(previous);
+    const affected = changedAttribute === 'class' ? ['class']
+      : changedAttribute === 'style' || changedAttribute === '__hmStyle' ? ['style']
+      : [changedAttribute];
+    for (const name of affected) {
+      const group = new Set<string>();
+      for (const selector of selectorsByAttribute.get(name) ?? []) {
+        if (matchesAttribute(element, selector)) group.add(selector.className);
+      }
+      next.set(name, group);
+    }
+    const derived = new Set<string>();
+    next.forEach((group) => group.forEach((name) => derived.add(name)));
+    classes.push(...derived);
+    const className = [...new Set(classes)].join(' ');
+    if (String(elementPrototype.getAttribute.call(element, 'class') || '') !== className) {
+      setAttribute.call(element, 'class', className);
+    }
+    previousClasses.set(element, next);
+  };
+  elementPrototype.setAttribute = function (name, value) {
+    setAttribute.call(this, name, value);
+    if (name === 'class' || name === 'style' || name === '__hmStyle' || selectorsByAttribute.has(name)) {
+      syncSelectorClasses(this as typeof sample, name);
+    }
+  };
+  elementPrototype.removeAttribute = function (name) {
+    removeAttribute.call(this, name);
+    if (name === 'class' || name === 'style' || name === '__hmStyle' || selectorsByAttribute.has(name)) {
+      syncSelectorClasses(this as typeof sample, name);
+    }
+  };
+}
+
 // ⚠️ 元素本身必须还是 Taro 的：React 渲染 <a> 也走 createElement，换成别的对象会 appendChild is not a function。
 // 只给 <a> 补一个 click()：导出代码是 a.href = url; a.download = 名字; a.click()，从不挂进页面。
 const taroCreateElement = taroDocument.createElement.bind(taroDocument);

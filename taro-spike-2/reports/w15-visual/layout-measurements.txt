@@ -1,0 +1,8 @@
+W15 最终 DevTools 几何测量（模拟器 390 x 844；根 tab webview 390 x 671；子页 webview 390 x 753）
+
+- confusion / kanji: `.weapp-app-main` 390 x 753; `.pro-reading-preview` 358 x 720, offset (16,16). 此前高度 451px。
+- word study: tab viewport main 671px; `.word-study-shell` 638px；内容卡区剩余内距各 16px。
+- word list: ScrollView viewport 753px, scrollHeight 10207px。scrollTo(0,400) 后首行 top 从 383.4 到 -16.6，确认滚动有效。
+- confusion filters: `.cf-types` 358 x 114px，9 个按钮在 3 列网格中；列宽约 107.3px。WXSS 对 flex-wrap 的 computed value 是 nowrap，因此改用 grid。
+- selector interactions: LevelSetup 的 aria-pressed 类从“会五十音”迁移到 N5；学习模式类从“经典模式”迁移到“学习错题本”；记忆档选择后 `wl-dist-seg on`；checkbox tap 后状态变更；省电设置后根类出现 `attr-data-motion-reduced`。
+- DevTools 页面覆盖：route-sweep.txt 26/26 OK，无 BAD/ERR。

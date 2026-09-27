@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1886912,
-      "mib": 1.799,
+      "bytes": 1892260,
+      "mib": 1.805,
       "passes": true
     },
     "study": {
@@ -17,8 +17,8 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1057438,
-      "mib": 1.008,
+      "bytes": 1055674,
+      "mib": 1.007,
       "passes": true
     },
     "features": {
@@ -57,12 +57,12 @@
       "passes": true
     }
   },
-  "totalBytes": 8112104,
+  "totalBytes": 8115688,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 845324
+      "bytes": 855161
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -112,7 +112,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 233958
+      "bytes": 229429
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -127,7 +127,7 @@
     {
       "path": "taro.js",
       "package": "main",
-      "bytes": 145006
+      "bytes": 145046
     },
     {
       "path": "features/content/kanji-readings.js",
@@ -152,7 +152,7 @@
     {
       "path": "content-pages/weekly-report/index.wxss",
       "package": "content-pages",
-      "bytes": 69616
+      "bytes": 68929
     },
     {
       "path": "base.wxml",
@@ -345,11 +345,6 @@
       "bytes": 17394
     },
     {
-      "path": "content-pages/yuzu-shop/index.wxss",
-      "package": "content-pages",
-      "bytes": 16715
-    },
-    {
       "path": "content-pages/assets/brand/shushugo-icon-dark.png",
       "package": "content-pages",
       "bytes": 16521
@@ -393,6 +388,11 @@
       "path": "study/assets/brand/mood-proud.png",
       "package": "study",
       "bytes": 15801
+    },
+    {
+      "path": "content-pages/yuzu-shop/index.wxss",
+      "package": "content-pages",
+      "bytes": 15638
     },
     {
       "path": "content-pages/assets/brand/empty-box.png",

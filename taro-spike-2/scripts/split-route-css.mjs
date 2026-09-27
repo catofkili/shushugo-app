@@ -25,7 +25,8 @@ function targetPackage(selector) {
   for (const name of classes) {
     if (name.startsWith('yz-')) owners.add(routes.yuzuShop);
     else if (name.startsWith('zoo-tm-')) owners.add(routes.team);
-    else if (name.startsWith('weekly-report') || name.startsWith('wr-')) owners.add(routes.weeklyReport);
+    // The curtain is portaled from the home tab as well as the weekly-report route.
+    else if (name.startsWith('weekly-report') || (name.startsWith('wr-') && name !== 'wr-entrance-veil')) owners.add(routes.weeklyReport);
     else if (name.startsWith('vt-') && !name.startsWith('vt-timer')) owners.add(routes.vocabTest);
   }
   return owners.size === 1 ? [...owners][0] : null;

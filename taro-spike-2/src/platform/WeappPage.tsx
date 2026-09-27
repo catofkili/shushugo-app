@@ -4,7 +4,7 @@ import './app-polyfills.weapp';
 // 异步块和各分包都用主包这份。grammarHighlights 的 dbCaches：详情页那份写了新重点，语法页那份缓存不失效就看不到。
 import '../../../frontend/src/lib/grammarHighlights';
 import { Suspense, useEffect, useState, useSyncExternalStore, type ComponentType } from 'react';
-import { Text, View } from '@tarojs/components';
+import { ScrollView, Text, View } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import type { AppContextValue, AppNavigationParams } from '../../../frontend/src/app/AppContext';
 import { AppShell, markTrialNoticeRead } from '../../../frontend/src/app/AppShell';
@@ -19,7 +19,7 @@ import { getProgressOverview } from '../../../frontend/src/lib/api';
 import { getCloudSession, CLOUD_SYNC_EVENT, CLOUD_AUTH_EVENT, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession, type CloudSyncEventDetail } from '../../../frontend/src/lib/sync-api';
 import { syncUserProfileAfterLogin } from '../../../frontend/src/lib/profile-sync';
 import { defaultStudyMode, getStudyMode, saveStudyMode } from '../../../frontend/src/lib/studyMode';
-import { getResolvedTheme, PREFERENCES_EVENT } from '../../../frontend/src/lib/studyPreferences';
+import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT } from '../../../frontend/src/lib/studyPreferences';
 import { equippedItem, YUZU_EVENT } from '../../../frontend/src/lib/yuzu';
 import { shouldShowLevelSetup } from '../../../frontend/src/lib/level-plan';
 import { OPEN_GRAMMAR_FOUNDATION_EVENT } from '../../../frontend/src/lib/grammar-foundation-navigation';
@@ -30,6 +30,7 @@ import { ensureDatabase } from './database-runtime.weapp';
 import { usePortalHost } from './portal-host.weapp';
 import { PerfOverlay } from './preview-timing.weapp';
 import { ROUTE_TABLE } from './route-table.cjs';
+import { notifyMainScrollReachBottom } from './touch-adapter.weapp';
 import { closeAuth, closePaywall, getUiState, openAuth, openPaywall, queueAchievement, setLevelSetupOpen, setTrialEndedOpen, showNotice, subscribeUiState } from './ui-store.weapp';
 
 type RouteItem = (typeof ROUTE_TABLE)[number];
@@ -88,6 +89,8 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   const [error, setError] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [skin, setSkin] = useState('');
+  const [motionLevel, setMotionLevel] = useState(() => getStudyPreferences().motionLevel);
+  const [pagePath] = useState(() => Taro.getCurrentInstance().router?.$taroPath ?? '');
   const [overview, setOverview] = useState(() => ({ words: { total: 0, seen: 0, completed: 0, low: 0, unseen: 0 }, wordsByLevel: [], grammar: [] }));
   const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
   const [feedbackComposerOpen, setFeedbackComposerOpen] = useState(false);
@@ -130,6 +133,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   useEffect(() => {
     const refreshTheme = () => {
       setTheme(getResolvedTheme());
+      setMotionLevel(getStudyPreferences().motionLevel);
       try { setSkin(equippedItem('theme')); } catch { /* database is still opening */ }
     };
     window.addEventListener(PREFERENCES_EVENT, refreshTheme);
@@ -280,10 +284,13 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   if (!ready) return <View className="theme-light p-4"><Text>正在载入学习数据…</Text></View>;
 
   return (
-    <>
+    // Web theme/skin rules are rooted at html[data-theme]/html[data-skin].
+    // htmltransform emits those anchors as .h5-html, so the mini app needs a
+    // matching ancestor around AppShell (including its global overlays).
+    <View className={`h5-html weapp-theme-root theme-${theme} attr-data-theme attr-data-motion attr-data-motion-${motionLevel}${skin ? ` skin-${skin} attr-data-skin` : ''}`}>
     <AppShell
       context={context}
-      className={`app-shell relative min-h-screen overflow-x-hidden bg-gradient-to-br from-[#FFFBF2] via-[#FDF1DC] to-[#F6E9D2] text-[#3A2E22]${page === 'weekly-report' ? ' is-weekly-report' : ''}`}
+      className={`app-shell weapp-app-shell relative min-h-screen overflow-x-hidden bg-gradient-to-br from-[#FFFBF2] via-[#FDF1DC] to-[#F6E9D2] text-[#3A2E22]${page === 'weekly-report' ? ' is-weekly-report' : ''}`}
       achievementPop={ui.achievementPop}
       notice={ui.notice}
       paywallTarget={ui.paywallTarget}
@@ -302,14 +309,23 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       onViewPro={() => { markTrialNoticeRead(); setTrialEndedOpen(false); navigatePage('pro'); }}
     >
       <View ref={portalHost} className={`weapp-route-root theme-${theme}${skin ? ` skin-${skin}` : ''}`}>
-        <View className="app-landscape-main min-w-0 px-4 pb-8 pt-4">
+        {/* Native page scrolling is disabled by the full-screen shell. A View with
+            overflow-y:auto does not become a mini-program scroll container. */}
+        <ScrollView
+          id="weapp-main-scroll"
+          scrollY
+          enhanced
+          lowerThreshold={240}
+          onScrollToLower={() => notifyMainScrollReachBottom(pagePath)}
+          className="app-landscape-main weapp-app-main min-w-0 px-4 pb-4 pt-4"
+        >
           <Suspense fallback={<View className="theme-light p-4"><Text>正在加载…</Text></View>}>
             <Route />
           </Suspense>
-        </View>
+        </ScrollView>
       </View>
     </AppShell>
     {page === 'home' ? <PerfOverlay /> : null}
-    </>
+    </View>
   );
 }

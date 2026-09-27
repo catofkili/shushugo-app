@@ -9,6 +9,11 @@ const repoRoot = path.resolve(root, '..');
 const frontend = path.join(repoRoot, 'frontend');
 const mini = path.join(repoRoot, 'wechat-miniprogram');
 const shims = createSharedShims(mini);
+const attributeSelectorPlugin = require(path.join(root, 'scripts/weapp-theme-selectors.cjs'));
+const attributeSelectors = attributeSelectorPlugin.collectAttributeSelectors([
+  path.join(frontend, 'src'),
+  path.join(root, 'src')
+]);
 // progress-events 用网页原版：它的裸 window 在 Taro 里是 TaroWindow（app-polyfills 补了 dispatchEvent），页面的监听器挂在那上面。
 // 原生小程序那份垫片派发到 globalThis.window——Taro 页面听不到，而且缺 withProgressEventsMuted：
 // 「预算下一张」在小程序里每次都抛 TypeError、全部退回同步路径（2026-09-26 W10 真机对比时查出）。
@@ -167,7 +172,8 @@ module.exports = {
         performance: 'globalThis.performance',
         // 网页在 vite.config.ts 里 define 的常量，这里要同名补上，否则用到它的页面（关于）渲染时 ReferenceError 整页空白。
         __APP_VERSION__: JSON.stringify(require(path.join(frontend, 'package.json')).version),
-        __TARO_PERF_OVERLAY__: JSON.stringify(perfOverlayEnabled)
+        __TARO_PERF_OVERLAY__: JSON.stringify(perfOverlayEnabled),
+        'process.env.TARO_ATTRIBUTE_SELECTORS': JSON.stringify(JSON.stringify(attributeSelectors))
       }]);
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,
