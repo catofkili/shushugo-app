@@ -12,12 +12,12 @@
       "passes": true
     },
     "account": {
-      "bytes": 257656,
+      "bytes": 257644,
       "mib": 0.246,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1059644,
+      "bytes": 1059632,
       "mib": 1.011,
       "passes": true
     },
@@ -42,7 +42,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 358516,
+      "bytes": 358504,
       "mib": 0.342,
       "passes": true
     },
@@ -52,12 +52,12 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 573565,
+      "bytes": 573553,
       "mib": 0.547,
       "passes": true
     }
   },
-  "totalBytes": 8113843,
+  "totalBytes": 8113795,
   "files": [
     {
       "path": "common.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 571815
+      "bytes": 571803
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -452,17 +452,17 @@
     {
       "path": "account/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
       "package": "account",
-      "bytes": 11765
+      "bytes": 11753
     },
     {
       "path": "content-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
       "package": "content-pages",
-      "bytes": 11765
+      "bytes": 11753
     },
     {
       "path": "grammar-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
       "package": "grammar-pages",
-      "bytes": 11765
+      "bytes": 11753
     },
     {
       "path": "study/team/index.wxss",

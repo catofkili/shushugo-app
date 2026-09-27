@@ -10,11 +10,11 @@
       "passes": true
     },
     "account": {
-      "bytes": 257656,
+      "bytes": 257644,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1059644,
+      "bytes": 1059632,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 358516,
+      "bytes": 358504,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 573565,
+      "bytes": 573553,
       "passes": true
     }
   },
@@ -102,7 +102,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/speech.weapp.ts",
-      "bytes": 28346,
+      "bytes": 28672,
       "packages": [
         "account",
         "content-pages",
@@ -572,7 +572,7 @@
     },
     {
       "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 28346,
+      "bytes": 28672,
       "packages": [
         "account",
         "content-pages",

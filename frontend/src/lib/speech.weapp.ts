@@ -287,13 +287,16 @@ export async function playExample(sentence: string, preferred?: string | null): 
   await playFile(exampleAudioUrl(text, preferred), "examples", sequence);
 }
 export async function previewVoice(voiceId: string): Promise<void> {
-  const wordSequence = interruptPlayback("words");
-  const exampleSequence = interruptPlayback("examples");
-  await Promise.all([loadIndex("words"), loadIndex("examples")]);
-  const sentence = "毎日少しずつ、日本語を勉強しています。";
-  const examples = indexes.examples?.voices.find((voice) => voice.id === voiceId);
-  if (examples) return playFile(exampleAudioUrl(sentence, voiceId), "examples", exampleSequence);
-  return playFile(pronunciationAudioUrl("勉強", "べんきょう", voiceId), "words", wordSequence);
+  // 试听不过购买那道门：resolveVoice / pronunciationAudioUrl 会把没买的声音退回默认声，
+  // 真机上「男声试听放出女声」就是这么来的（2026-09-27）。这里按 voiceId 直接拼地址，和网页 previewVoice 一样。
+  // 只放单词「勉強」：例句库只有默认声，那句也不保证在例句库里（不在就是 404，「听不了」）。
+  const sequence = interruptPlayback("words");
+  interruptPlayback("examples");
+  await loadIndex("words");
+  const voice = indexes.words?.voices.find((item) => item.id === voiceId);
+  const base = bases.words.base;
+  if (!voice || !base) throw new Error("云端音色暂不可用。");
+  return playFile(`${base.replace(/\/$/, "")}/${encodeURIComponent(voice.id)}/${pronunciationAudioName("勉強", "べんきょう")}${voice.ext}`, "words", sequence);
 }
 const prepared = new Set<string>();
 export async function prepareVoice(voiceId: string): Promise<void> {

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./studyPreferences", () => ({ getStudyPreferences: () => ({ voiceId: "voicevox-8" }) }));
-vi.mock("./yuzu", () => ({ voiceUnlocked: () => true }));
+vi.mock("./yuzu", () => ({ voiceUnlocked: (id: string) => id !== "voicevox-11" }));
 
 const runtime = vi.hoisted(() => {
   const files = new Set<string>();
@@ -79,7 +79,7 @@ beforeEach(() => {
       runtime.downloadedIds.push(fileID);
       const path = `/wx-user/tmp-${runtime.downloadedIds.length}`;
       const content = fileID.endsWith("/words/index.json")
-        ? JSON.stringify({ voices: [{ id: "voicevox-8", label: "声", ext: ".aac" }], default: "voicevox-8" })
+        ? JSON.stringify({ voices: [{ id: "voicevox-8", label: "声", ext: ".aac" }, { id: "voicevox-11", label: "男声", ext: ".aac" }], default: "voicevox-8" })
         : fileID.endsWith("/examples/index.json")
           ? JSON.stringify({ voices: [{ id: "voicevox-8", label: "声", ext: ".aac" }], default: "voicevox-8" })
           : new Uint8Array([1, 2, 3]);
@@ -129,18 +129,18 @@ describe("小程序当天音频缓存", () => {
     await currentRejection;
   });
 
-  it("试听音色时先中断当前读音，再等待音频索引", async () => {
+  it("试听音色时先中断当前读音；没买的声音也放它自己（不退回默认声）", async () => {
     const speech = await import("./speech.weapp");
     const current = speech.playPronunciation("灰皿", "はいざら");
     await new Promise((resolve) => setTimeout(resolve, 0));
     const stopCount = runtime.context.stop.mock.calls.length;
 
-    const preview = speech.previewVoice("voicevox-8");
+    const preview = speech.previewVoice("voicevox-11");
     expect(runtime.context.stop).toHaveBeenCalledTimes(stopCount + 1);
     await expect(current).resolves.toBeUndefined();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(runtime.context.play).toHaveBeenCalledTimes(2);
-    expect(runtime.context.src).toContain("/examples/voicevox-8/");
+    expect(runtime.context.src).toContain("/words/voicevox-11/");
     runtime.context.listeners.canplay?.();
     await preview;
   });
