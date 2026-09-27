@@ -2,15 +2,15 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1851786,
+      "bytes": 1858940,
       "passes": true
     },
     "study": {
-      "bytes": 299843,
+      "bytes": 299835,
       "passes": true
     },
     "account": {
-      "bytes": 248855,
+      "bytes": 248857,
       "passes": true
     },
     "content-pages": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 354928,
+      "bytes": 354924,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 567072,
+      "bytes": 567064,
       "passes": true
     }
   },
@@ -185,7 +185,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13049,
+      "bytes": 13045,
       "packages": [
         "account",
         "study"
@@ -238,7 +238,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 10093,
+      "bytes": 10089,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -833,7 +833,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13049,
+      "bytes": 13045,
       "packages": [
         "account",
         "study"
@@ -872,7 +872,7 @@
     },
     {
       "source": "frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 10093,
+      "bytes": 10089,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -1046,7 +1046,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 234594,
+  "duplicatedPageComponentBytes": 234586,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,

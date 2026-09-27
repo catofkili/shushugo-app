@@ -30,7 +30,7 @@ const STROKE = 22;
 const HANDLE_HIT_RADIUS = 23;
 export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocus, size = 240 }: Props) => {
   const canvasId = `daily-plan-ring-${useId().replace(/:/g, "")}`;
-  const pixelRatio = Taro.getSystemInfoSync().pixelRatio || 1;
+  const pixelRatio = Taro.getWindowInfo().pixelRatio || 1;
   const [canvasReady, setCanvasReady] = useState(false);
   const [dragging, setDragging] = useState<number | null>(null);
   const [offset, setOffset] = useState(RING_START);

@@ -8,7 +8,7 @@ const RADIUS = 18.1;
 /** WeChat Canvas 2D replacement for the inline SVG timer. */
 export const TimerRing = ({ remaining, total, paused }: { remaining: number; total: number; paused: boolean }) => {
   const canvasId = `vocab-timer-${useId().replace(/:/g, "")}`;
-  const pixelRatio = Taro.getSystemInfoSync().pixelRatio || 1;
+  const pixelRatio = Taro.getWindowInfo().pixelRatio || 1;
   const canvasRef = useRef<{ node: { width: number; height: number; getContext: (kind: "2d") => CanvasRenderingContext2D }; context: CanvasRenderingContext2D } | null>(null);
   const ratio = total ? Math.max(0, Math.min(1, remaining / total)) : 0;
 
