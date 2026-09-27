@@ -23,6 +23,7 @@ import { renderWeeklyReportShareImage } from "../lib/weekly-report-share";
 import { renderFilmShare, renderStarShare } from "./weekly/share-images";
 import { ShareImageSheet } from "../components/ShareImageSheet";
 import { brandAssetUrl } from "../components/CapybaraMascot";
+import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { canUseFeature, getEntitlements } from "../lib/entitlements";
 import type { FeatureId } from "../lib/entitlements";
 import { CLOUD_AUTH_EVENT, getCloudSession, getLocalSyncOwnerEmail, listCloudWeeklyReports, getCloudWeeklyReport } from "../lib/sync-api";
@@ -426,7 +427,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
           <button className="weekly-report-back" onClick={onBack}><ArrowLeft size={17} />主页</button>
         </div>
         <div className="weekly-report-empty">
-          <img className="weekly-report-empty-brand" src={brandAssetUrl("shushugo-cover.png")} alt="收集日封面" />
+          <CrossPlatformImage className="weekly-report-empty-brand" src={brandAssetUrl("shushugo-cover.png")} alt="收集日封面" weappWidth={180} weappHeight={180} />
           <Sparkles size={28} aria-hidden="true" />
           <h1>学习回顾</h1>
           <p>周日午后，来收下这一周的日语时光。</p>
@@ -446,7 +447,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
         <button ref={weekPickerRef} className="wr-week-picker" aria-haspopup="dialog" aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)} onPointerDown={(event) => startDrag(event,"week")} onPointerMove={dragMove} onPointerUp={endDrag} onPointerCancel={resetDrag}>
           <span>{floorNumber}F <i> / </i> {reportWindowLabelCompact(report.window)}</span><ChevronDown size={13}/>
         </button>
-        {mock && <span className="wr-mock-badge">模拟数据 · 仅开发预览</span>}
+        {import.meta.env.DEV && mock && <span className="wr-mock-badge">模拟数据 · 仅开发预览</span>}
         <div className="wr-header-tools">
           {/* 三套版式并排比较用；用户选定之后连同另外两套一起删掉 */}
           <button className="wr-variant-switch" onClick={cycleVariant} aria-label={`切换周报版式，当前：${WEEKLY_VARIANTS.find((item) => item.id === variant)?.label}`}><Palette size={14}/>{WEEKLY_VARIANTS.find((item) => item.id === variant)?.label}</button>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, Search } from "lucide-react";
 import { Sticker } from "../components/CapybaraMascot";
+import { Disclosure } from "../components/Disclosure";
 import { grammarPoints } from "../data/grammar";
 import {
   FOUNDATION_SECTION_LABELS,
@@ -10,6 +11,7 @@ import {
 } from "../data/grammar-foundation";
 import { useStudyTimer } from "../lib/useStudyTimer";
 import type { JLPTLevel } from "../types/grammar";
+import { useProgressiveList } from "../lib/touch-adapter";
 
 const LEVELS: Array<"All" | JLPTLevel> = ["All", "N5", "N4", "N3", "N2", "N1"];
 
@@ -19,11 +21,10 @@ interface GrammarFoundationPageProps {
 }
 
 // 卡片默认收着（小红书那种只露标题和一段话），深链 / 「动词全部变形」跳过来时要先把那张展开
-const scrollToRule = (ruleId: string) => {
+const scrollToRule = (ruleId: string, revealRule: (id: string) => void) => {
+  revealRule(ruleId);
   const card = document.getElementById(ruleId);
   if (!card) return;
-  const details = card.querySelector("details");
-  if (details) details.open = true;
   card.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
@@ -32,6 +33,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
   const [level, setLevel] = useState<"All" | JLPTLevel>("All");
   const [section, setSection] = useState<GrammarFoundationSection | "all">("all");
   const [query, setQuery] = useState("");
+  const [openRuleId, setOpenRuleId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!focusRuleId) return;
@@ -40,7 +42,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
       setLevel("All");
       setSection("all");
       setQuery("");
-      scrollFrame = window.requestAnimationFrame(() => scrollToRule(focusRuleId));
+      scrollFrame = window.requestAnimationFrame(() => scrollToRule(focusRuleId, setOpenRuleId));
     });
     return () => {
       window.cancelAnimationFrame(resetFrame);
@@ -64,6 +66,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
       ].join(" ").toLowerCase().includes(needle);
     });
   }, [level, query, section]);
+  const visibleRules = useProgressiveList(shownRules, shownRules, 8);
 
   return (
     <div className="space-y-5">
@@ -86,13 +89,13 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
             inputMode="search"
           />
         </label>
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]" aria-label="按等级筛选">
+        <div className="flex flex-wrap gap-2 pb-0.5" aria-label="按等级筛选">
           <button
             onClick={() => {
               setLevel("All");
               setSection("all");
               setQuery("");
-              window.requestAnimationFrame(() => scrollToRule("verb-conjugation-system"));
+              window.requestAnimationFrame(() => scrollToRule("verb-conjugation-system", setOpenRuleId));
             }}
             className="focus-ring shrink-0 rounded-full bg-[#F5A623] px-3 py-1.5 text-xs font-bold !text-[#343838]"
           >
@@ -108,7 +111,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
             </button>
           ))}
         </div>
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]" aria-label="按主题筛选">
+        <div className="flex flex-wrap gap-2 pb-0.5" aria-label="按主题筛选">
           <button
             onClick={() => setSection("all")}
             className={`focus-ring shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition ${section === "all" ? "border-[#F5A623] bg-[#F5A623] !text-[#343838]" : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"}`}
@@ -130,21 +133,28 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
       {/* 小红书式瀑布流：CSS columns 一行搞定，卡片各自按内容长高，不再被 grid 拉成一样高留一大片空。
           代价是顺序按列走（先填满左列再右列）——浏览用的清单，无所谓。 */}
       <div className="columns-2 gap-3 lg:columns-3">
-        {shownRules.map((rule) => {
+        {visibleRules.map((rule) => {
           const related = rule.relatedGrammarIds
             .map((id) => points.get(id))
             .filter((point): point is NonNullable<typeof point> => Boolean(point));
           return (
             <article id={rule.id} key={rule.id} className="dictionary-card mb-3 break-inside-avoid scroll-mt-6 rounded-2xl p-3.5 sm:p-4">
-              <details className="group">
-                <summary className="focus-ring cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                  <p className="text-[11px] font-bold tracking-[0.1em] text-[#81D8CF]">{FOUNDATION_SECTION_LABELS[rule.section]} · {rule.level}</p>
-                  <h2 className="mt-1.5 text-base font-semibold leading-snug text-[#343838] dark:text-[#f4efe4]">{rule.title}</h2>
-                  <p className="mt-2 text-[13px] leading-6 text-[#f9faf7] group-open:line-clamp-none line-clamp-5 dark:text-zinc-300">{rule.summary}</p>
-                  <p className="mt-2 truncate text-[11px] font-bold text-white/45 group-open:hidden">
-                    {rule.patterns.length} 条结构 · {rule.checkpoints.length} 个重点{rule.tables?.length ? ` · ${rule.tables.length} 张表` : ""} ▾
-                  </p>
-                </summary>
+              <Disclosure
+                className="group"
+                summaryClassName="focus-ring cursor-pointer list-none [&::-webkit-details-marker]:hidden"
+                indicator="none"
+                forceOpen={openRuleId === rule.id}
+                summary={(open) => (
+                  <>
+                    <p className="text-[11px] font-bold tracking-[0.1em] text-[#81D8CF]">{FOUNDATION_SECTION_LABELS[rule.section]} · {rule.level}</p>
+                    <h2 className="mt-1.5 text-base font-semibold leading-snug text-[#343838] dark:text-[#f4efe4]">{rule.title}</h2>
+                    <p className={`mt-2 text-[13px] leading-6 text-[#f9faf7] ${open ? "line-clamp-none" : "line-clamp-5"} dark:text-zinc-300`}>{rule.summary}</p>
+                    {!open && <p className="mt-2 truncate text-[11px] font-bold text-white/45">
+                      {rule.patterns.length} 条结构 · {rule.checkpoints.length} 个重点{rule.tables?.length ? ` · ${rule.tables.length} 张表` : ""} ▾
+                    </p>}
+                  </>
+                )}
+              >
 
               <div className="mt-3 space-y-2">
                 <div className="rounded-xl border border-white/10 bg-[#373b3b] p-2.5">
@@ -161,37 +171,27 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
                 </div>
               </div>
 
-              {/* 表格默认收着：一张 680px 宽的活用表摊在半屏宽的卡里只剩横向滚动条，展开再看 */}
+              {/* 表格默认收着，展开是竖排：每一行一小块，第一格当标题，其余写成「表头：内容」。
+                  原来是一张 min-w 680px 的 <table> 摊在半屏宽的卡里横向滚动；用户 2026-09-27 定全应用只许上下滑。
+                  ⚠️ 别用 <table> / <dl>：小程序的 Taro 模板没有这些标签（W14 查过 tmpl_0_* not found），也别用 space-y（WXSS 丢兄弟选择器）。 */}
               {rule.tables?.map((table) => (
-                <details key={table.title} className="mt-3 rounded-xl border border-white/10 bg-[#373b3b] p-2.5">
-                  <summary className="focus-ring cursor-pointer text-[13px] font-bold text-[#81D8CF]">{table.title}</summary>
-                  <div className="mt-2 overflow-x-auto rounded-lg border border-white/10">
-                    <table className="min-w-[680px] w-full border-collapse text-left text-xs leading-5 text-white/78">
-                      <thead className="bg-white/8 text-white/90">
-                        <tr>
-                          {table.headers.map((header) => (
-                            <th key={header} className="border-b border-white/10 px-3 py-2 font-bold">{header}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {table.rows.map((row, rowIndex) => (
-                          <tr key={`${table.title}-${rowIndex}`} className="align-top odd:bg-white/[0.03]">
-                            {row.map((cell, cellIndex) => (
-                              <td key={`${rowIndex}-${cellIndex}`} className="border-b border-white/8 px-3 py-2 last:border-b-0">{cell}</td>
-                            ))}
-                          </tr>
+                <Disclosure key={table.title} className="mt-3 rounded-xl border border-white/10 bg-[#373b3b] p-2.5" summaryClassName="focus-ring cursor-pointer text-[13px] font-bold text-[#81D8CF]" summary={table.title}>
+                  <div className="mt-2 flex flex-col gap-2">
+                    {table.rows.map((row, rowIndex) => (
+                      <div key={`${table.title}-${rowIndex}`} className="rounded-lg border border-white/10 px-3 py-2 text-xs leading-5 text-white/78">
+                        <p className="font-bold text-white/90">{row[0]}</p>
+                        {row.slice(1).map((cell, cellIndex) => (
+                          <p key={cellIndex} className="mt-0.5">
+                            <span className="text-white/50">{table.headers[cellIndex + 1]}：</span>{cell}
+                          </p>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    ))}
                   </div>
-                </details>
+                </Disclosure>
               ))}
 
-              <details className="mt-3 rounded-xl border border-white/10 bg-white/5 p-2.5">
-                <summary className="focus-ring cursor-pointer text-[13px] font-bold text-[#343838] dark:text-white/80">
-                  对应语法卡（{related.length}）
-                </summary>
+              <Disclosure className="mt-3 rounded-xl border border-white/10 bg-white/5 p-2.5" summaryClassName="focus-ring cursor-pointer text-[13px] font-bold text-[#343838] dark:text-white/80" summary={`对应语法卡（${related.length}）`}>
                 <div className="mt-2 space-y-1">
                   {related.map((point) => (
                     <button
@@ -203,8 +203,8 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
                     </button>
                   ))}
                 </div>
-              </details>
-              </details>
+              </Disclosure>
+              </Disclosure>
             </article>
           );
         })}

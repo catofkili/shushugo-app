@@ -1,0 +1,1 @@
+import { ConfusionRoute } from '../../../../frontend/src/routes/confusion.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="confusion" Route={ConfusionRoute} />;

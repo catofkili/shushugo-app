@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Sticker, brandAssetUrl, type StickerName } from "../components/CapybaraMascot";
 import type { WeeklyReport } from "../lib/analytics/weekly";
 import { useCountUp } from "../hooks/useCountUp";
+import { CrossPlatformImage } from "../components/CrossPlatformImage";
 
 export const weeklyChapters = (report: WeeklyReport | null) => [
   { id: "cover", label: "这一周" }, { id: "effort", label: "时间的形状" }, { id: "content", label: "字间相遇" },
@@ -73,7 +74,7 @@ export function WeeklyReportStory({ report, chapter, onBack, onReviewWords, onSh
         {report.keyword && <span className="wr-keyword-stamp"><small>本周的你</small><b>{report.keyword.keyword}</b></span>}
       </div>
       <div className="wr-cover-installation" aria-hidden="true">
-        <img className="wr-cover-brand-art" src={brandAssetUrl("shushugo-cover.png")} alt="" />
+        <CrossPlatformImage className="wr-cover-brand-art" src={brandAssetUrl("shushugo-cover.png")} alt="" weappWidth="78%" weappHeight="78%" />
         <div className="wr-cover-ticket"><span>学习的日子</span><b>{String(metrics.days).padStart(2,"0")}</b></div>
         <span className="wr-paper-sprig"><i/><i/><i/></span><span className="wr-floating-glyph">あ</span>
       </div>

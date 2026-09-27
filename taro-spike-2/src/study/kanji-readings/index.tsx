@@ -1,0 +1,1 @@
+import { KanjiReadingsRoute } from '../../../../frontend/src/routes/kanji-readings.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="kanji-readings" Route={KanjiReadingsRoute} />;

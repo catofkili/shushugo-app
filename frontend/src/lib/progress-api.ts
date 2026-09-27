@@ -2,6 +2,7 @@ import { firstRow, rowsFor, studyDayEnd } from "./study-core";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { ensureProgressInitialized } from "./word-api";
 import { MASTERED_SQL } from "./fsrs-store";
+import { perfTime } from "./perf-marks";
 import type { ProgressOverview } from "./study-types";
 
 // 自报水平写入的基线会让 seen_count=1 以进入复习队列，但它不是一次真实学习。
@@ -12,7 +13,7 @@ const REAL_GRAMMAR = `(p.known_forever = 1 OR EXISTS (SELECT 1 FROM grammar_revi
   OR (p.seen_count > 0 AND NOT EXISTS (SELECT 1 FROM level_prior_baselines b WHERE b.entity='grammar' AND b.entity_key=CAST(p.grammar_id AS TEXT))))`;
 
 export function getProgressOverview(): ProgressOverview {
-  ensureProgressInitialized();
+  perfTime("启动 · 单词进度初始化", ensureProgressInitialized);
   ensureGrammarProgressInitialized();
   // 「薄弱」= FSRS 认为本学习日内该复习的,和首页的今日任务量同一把尺子
   const dayEnd = studyDayEnd().toISOString();

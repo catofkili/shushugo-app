@@ -7,6 +7,7 @@ import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/v
 import { getDailyWordGoal, isPostExamLightActive } from "./studyPreferences";
 import { promptMeaning, questionMeaning, rowObjectToCard } from "./models/word-card";
 import { notifyProgressUpdated, withProgressEventsMuted } from "./progress-events";
+import { perfRecord, perfTime } from "./perf-marks";
 import { ENDGAME_REMAINING_RATIO, STUBBORN_MISTAKE_STREAK } from "./scheduler/requeue";
 import {
   firstRow,
@@ -848,11 +849,11 @@ export function getWordSession(options: WordSessionOptions = {}): WordSessionRes
   if (!options.focus && isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded() && currentPhase() === "kanji") {
     return getKanjiUnitSession();
   }
-  const { card, phase } = nextCard(options);
+  const { card, phase } = perfTime("选卡", () => nextCard(options));
   return {
     card,
     phase,
-    stats: getWordStats(phase, options),
+    stats: perfTime("统计", () => getWordStats(phase, options)),
     canUndo: canUndoSnapshot(sessionMode(phase, options))
   };
 }
@@ -1037,7 +1038,7 @@ export function submitKanjiUnitAnswer(unitKey: string, answer: WordAnswer): Word
 }
 
 export function submitWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions = {}): WordSessionResponse {
-  applyWordAnswer(wordId, answer, options);
+  perfTime("记账", () => applyWordAnswer(wordId, answer, options));
   return getWordSession(options);
 }
 
@@ -1251,6 +1252,7 @@ export function addAnswerPreview(
   checkDailyReview = false
 ): void {
   if (!answerPreviewsValid(previews)) return;
+  const started = performance.now();
   const db = getDatabase();
   db.run("SAVEPOINT preview_next_card");
   try {
@@ -1280,6 +1282,7 @@ export function addAnswerPreview(
   }
   // 预算自己的写入已经回滚，但 total_changes 照样会涨：基准要在回滚之后重取。
   previews.changes = totalChanges();
+  perfRecord("后台预算一次", performance.now() - started);
 }
 
 // ⚠️ sql.js 的 export()（整库落盘：网页 5 分钟一次、开发环境镜像 20 秒一次、小程序整库保存）会关掉再重开连接，
@@ -1312,12 +1315,12 @@ export function submitWordAnswerWithPreview(
   preview: NextCardPreview,
   options: WordSessionOptions = {}
 ): WordSessionResponse {
-  applyWordAnswer(wordId, answer, options);
+  perfTime("记账", () => applyWordAnswer(wordId, answer, options));
   setCurrentCard(preview.card);
   return {
     card: preview.card,
     phase: preview.phase,
-    stats: getWordStats(preview.phase, options),
+    stats: perfTime("统计", () => getWordStats(preview.phase, options)),
     canUndo: canUndoSnapshot(sessionMode(preview.phase, options))
   };
 }

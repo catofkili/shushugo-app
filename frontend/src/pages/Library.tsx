@@ -19,6 +19,7 @@ import {
 } from "../lib/grammarProgressPreferences";
 import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { GrammarPoint, JLPTLevel, MASTERY_LABEL, MasteryStatus } from "../types/grammar";
+import { useProgressiveList } from "../lib/touch-adapter";
 
 interface LibraryProps {
   getMastery: (id: string) => MasteryStatus;
@@ -206,7 +207,8 @@ export const Library = ({
   const [selectedIdsByLevel, setSelectedIdsByLevel] = useState<Record<string, string>>({});
   const [, setPositionRevision] = useState(0);
   const [isTwoPane, setIsTwoPane] = useState(
-    () => typeof window !== "undefined" && window.matchMedia(TWO_PANE_QUERY).matches
+    // 小程序的 window 垫片没有 matchMedia：直接调用会在渲染时抛错、整页空白（2026-09-26）。那里恒为窄屏单栏。
+    () => typeof window !== "undefined" && (window.matchMedia?.(TWO_PANE_QUERY).matches ?? false)
   );
 
   const storedSelectedId = selectedIdsByLevel[selectedLevel] ?? getGrammarPosition("library", selectedLevel);
@@ -253,7 +255,8 @@ export const Library = ({
   }, []);
 
   useEffect(() => {
-    const mq = window.matchMedia(TWO_PANE_QUERY);
+    const mq = window.matchMedia?.(TWO_PANE_QUERY);
+    if (!mq) return;
     const handler = () => setIsTwoPane(mq.matches);
     handler();
     mq.addEventListener("change", handler);
@@ -291,6 +294,8 @@ export const Library = ({
         return leftRank - rightRank;
       });
   }, [cardOrder, query, selectedLevel]);
+
+  const visiblePoints = useProgressiveList(filtered, filtered, 16);
 
   const selected = filtered.find((point) => point.id === selectedId) ?? filtered[0] ?? grammarPoints[0];
 
@@ -406,7 +411,7 @@ export const Library = ({
         </div>
 
         <div className="grid gap-3">
-          {filtered.map((point) => {
+          {visiblePoints.map((point) => {
             const mastery = getMastery(point.id);
             const active = point.id === selected.id;
             const note = grammarNote(point.id);

@@ -7,7 +7,9 @@ import { getWeekWindow, windowDays, type WeeklyReport } from "../../lib/analytic
  * ⚠️ 不写库、不标已读、不记埋点、不给「再练这个词」入口（词 id 是假的）。页面顶栏会挂一枚「模拟数据」。
  * 生产构建里这个模块只在 `import.meta.env.DEV` 分支里动态 import，会被整段裁掉。
  */
-export const mockWeeklyReport = (): WeeklyReport => {
+const DEV_ONLY_FIXTURE_MARKER = "__SHUSHUGO_DEV_ONLY_FIXTURE__";
+
+export const mockWeeklyReport = (): WeeklyReport & { __devOnlyFixture: string } => {
   const window = getWeekWindow(new Date(), 0);
   const reviews = [420, 512, 388, 1021, 655, 297, 734];
   const newWords = [22, 30, 18, 41, 25, 12, 28];
@@ -30,6 +32,7 @@ export const mockWeeklyReport = (): WeeklyReport => {
     speedBand: null,
     eta: null,
     references: [],
+    __devOnlyFixture: DEV_ONLY_FIXTURE_MARKER,
     highlight: { date: daily[3].date, text: `${daily[3].date} 完成了 ${reviews[3]} 次学习记录` },
     revisitWords: words.map((text, i) => ({ wordId: -(i + 1), text, count: [6, 5, 4, 4, 3, 3, 2, 2][i] }))
   };

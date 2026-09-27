@@ -49,9 +49,10 @@ function writeFile(filePath, data) {
   });
 }
 
-function readCompressedFile(filePath, compressionAlgorithm = 'gzip') {
+// 微信原生解压「目前仅支持 br」（官方 readCompressedFile 文档）；传 gzip 在真机上必定失败。
+function readCompressedFile(filePath, compressionAlgorithm = 'br') {
   if (typeof fileSystem.readCompressedFile !== 'function') {
-    return Promise.reject(new Error('当前微信基础库不支持 gzip 解压，请升级微信后重试'));
+    return Promise.reject(new Error('当前微信基础库不支持解压，请升级微信后重试'));
   }
   return new Promise((resolve, reject) => {
     fileSystem.readCompressedFile({
@@ -60,7 +61,7 @@ function readCompressedFile(filePath, compressionAlgorithm = 'gzip') {
       success: (result) => {
         if (result?.data instanceof ArrayBuffer) return resolve(new Uint8Array(result.data));
         if (result?.data instanceof Uint8Array) return resolve(result.data);
-        reject(new Error('微信 gzip 解压结果不是二进制数据'));
+        reject(new Error('微信解压结果不是二进制数据'));
       },
       fail: reject
     });
@@ -68,7 +69,7 @@ function readCompressedFile(filePath, compressionAlgorithm = 'gzip') {
 }
 
 async function downloadFile(url, options = {}) {
-  if (cloud.isCloudFile(url)) return cloud.downloadCloudFile(url);
+  if (cloud.isCloudFile(url)) return cloud.downloadCloudFile(url, options);
   const retries = Math.max(1, Number(options.retries ?? 3));
   let lastError;
   for (let attempt = 1; attempt <= retries; attempt += 1) {

@@ -1,0 +1,1 @@
+import { PersonalInfoRoute } from '../../../../frontend/src/routes/personal-info.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="personal-info" Route={PersonalInfoRoute} />;

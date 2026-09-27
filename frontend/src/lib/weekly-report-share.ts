@@ -112,7 +112,7 @@ const windowEndDate = (report: WeeklyReport): string => {
 
 /** 基于已保存的同一份快照出图，不重新查库；按所有实际文字量高度，长高光不能截断。 */
 export async function renderWeeklyReportShareImage(report: WeeklyReport): Promise<WeeklyReportShareImage> {
-  await document.fonts.ready;
+  await document.fonts?.ready;
   const canvas = document.createElement("canvas");
   canvas.width = WIDTH;
   canvas.height = 100;

@@ -33,7 +33,7 @@
  */
 
 import { getDatabase } from "./database";
-import { rowsFor, type DbRow, type SqlValue } from "./database/db-utils";
+import { rowsFor, statementCache, type DbRow, type SqlValue } from "./database/db-utils";
 import { SYNCED_TABLES, type SyncedTable } from "./sync/tables";
 import { beginSyncApply, endSyncApply, ensureSyncSchema, SYNC_UPDATED_COL } from "./sync/schema";
 
@@ -110,7 +110,10 @@ export const collectDelta = (since: string): LocalDelta => {
 export const deltaRowCount = (delta: LocalDelta): number =>
   Object.values(delta.rows).reduce((sum, list) => sum + list.length, 0) + delta.tombstones.length;
 
-const upsert = (entry: SyncedTable, row: DbRow, columns: Set<string>): void => {
+// 回放里同一条 SQL 会跑成千上万次（一张表的每一行都是同一句 INSERT OR REPLACE），用 statementCache 复用。
+type StatementCache = ReturnType<typeof statementCache>;
+
+const upsert = (cache: StatementCache, entry: SyncedTable, row: DbRow, columns: Set<string>): void => {
   // 旧版增量可能在 sync_uid 列加入前生成。回放时触发器被压住，不能指望
   // SQLite 替它补身份；用旧行 id 加来源造稳定键，避免留下 NULL 事件。
   if (entry.strategy === "append" && !String(row.sync_uid ?? "")) {
@@ -121,7 +124,7 @@ const upsert = (entry: SyncedTable, row: DbRow, columns: Set<string>): void => {
   }
   const names = Object.keys(row).filter((name) => columns.has(name));
   if (!names.length) return;
-  getDatabase().run(
+  cache.run(
     `INSERT OR REPLACE INTO ${quote(entry.table)} (${names.map(quote).join(", ")})
      VALUES (${names.map(() => "?").join(", ")})`,
     names.map((name) => row[name]) as SqlValue[]
@@ -129,10 +132,7 @@ const upsert = (entry: SyncedTable, row: DbRow, columns: Set<string>): void => {
   // 这一行又活过来了,对应的墓碑就不能留 —— 平时靠 insert 触发器删,
   // 而回放全程 applying_remote 开着,触发器不跑,得自己来。
   const key = entry.keys.map((name) => String(row[name] ?? "")).join(KEY_SEPARATOR);
-  getDatabase().run(
-    "DELETE FROM sync_tombstones WHERE table_name = ? AND row_key = ?",
-    [entry.table, key]
-  );
+  cache.run("DELETE FROM sync_tombstones WHERE table_name = ? AND row_key = ?", [entry.table, key]);
 };
 
 const applyTombstone = (stone: DbRow, tables: Set<string>): void => {
@@ -169,6 +169,7 @@ export const applyDelta = (delta: LocalDelta): void => {
   ensureSyncSchema();
   beginSyncApply();
   const db = getDatabase();
+  const cache = statementCache(db);
   db.run("BEGIN TRANSACTION");
   try {
     const tables = tableNames();
@@ -177,13 +178,14 @@ export const applyDelta = (delta: LocalDelta): void => {
       const incoming = delta.rows[entry.table];
       if (!incoming?.length || !tables.has(entry.table)) continue;
       const columns = columnsOf(entry.table);
-      for (const row of incoming) upsert(entry, row, columns);
+      for (const row of incoming) upsert(cache, entry, row, columns);
     }
     db.run("COMMIT");
   } catch (error) {
     db.run("ROLLBACK");
     throw error;
   } finally {
+    cache.free();
     endSyncApply();
   }
 };

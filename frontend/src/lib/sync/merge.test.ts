@@ -94,6 +94,8 @@ describe("database snapshot merge", () => {
     testDb.run("INSERT OR REPLACE INTO progress (word_id, score, seen_count) VALUES (1, 10, 1)");
     testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (1, 'know', 10, '2026-08-03')");
     testDb.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('sync_cursor', 'device-only')");
+    setState("runtime_schema_sync_ddl", "local-fingerprint");
+    setState("runtime_schema_user_ddl", "local-fingerprint");
 
     const fullBytes = testDb.export();
     const snapshotBytes = await exportSyncSnapshot();
@@ -110,8 +112,20 @@ describe("database snapshot merge", () => {
     expect(tables.has("words")).toBe(false);
     expect(tables.has("grammar_points")).toBe(false);
     expect(rows(snapshot, "SELECT key FROM app_state WHERE key = 'sync_cursor'")).toHaveLength(0);
+    expect(rows(snapshot, "SELECT key FROM app_state WHERE key LIKE 'runtime_schema_%_ddl'")).toHaveLength(0);
     expect(snapshotBytes.byteLength).toBeLessThan(fullBytes.byteLength / 4);
     snapshot.close();
+  });
+
+  it("合并不能用对端的结构指纹让本机跳过迁移", async () => {
+    setState("runtime_schema_sync_ddl", "local-fingerprint");
+    const remote = new SQL.Database(await exportSyncSnapshot());
+    remote.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('runtime_schema_sync_ddl', 'remote-fingerprint')");
+    await mergeDatabaseBytes(remote.export());
+    expect(rows(testDb, "SELECT value FROM app_state WHERE key = 'runtime_schema_sync_ddl'")).toEqual([
+      { value: "local-fingerprint" }
+    ]);
+    remote.close();
   });
 
   it("当日任务表只上传最近 14 天,而且不会因此删掉对端的历史行", async () => {

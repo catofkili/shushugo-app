@@ -28,6 +28,8 @@ import { getAppState, setAppState, useAppState } from "./app/app-store";
 import { PageLoading } from "./routes/shared";
 import { ROUTES } from "./routes";
 import { getProgressOverview } from "./lib/api";
+import { confirmDialog } from "./lib/platform-dialogs";
+import { recordDiagnosticRoute } from "./lib/diagnostics";
 
 const accountProtectedPages = new Set<Page>(["account", "personal-info", "team"]);
 const proPages: Partial<Record<Page, FeatureId>> = { "distinction-quiz": "confusionGroups" };
@@ -53,6 +55,7 @@ export default function App() {
   const readingPreviewLocked = Boolean(readingPreviewFeature && !canUseFeature(readingPreviewFeature, entitlements));
   const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
   const [authOpen, setAuthOpen] = useState(false);
+  const [feedbackComposerOpen, setFeedbackComposerOpen] = useState(false);
   const [levelSetupOpen, setLevelSetupOpen] = useState(() => {
     try { return shouldShowLevelSetup(); } catch { return false; }
   });
@@ -62,6 +65,8 @@ export default function App() {
   const uploadedWeeklyReportStartRef = useRef<string | null>(null);
   const weeklyNotificationKeyRef = useRef<string | null>(null);
   const syncConflictNoticeRef = useRef("");
+
+  useEffect(() => { recordDiagnosticRoute(page); }, [page]);
 
   useEffect(() => {
     if (!readingPreviewLocked) return;
@@ -375,7 +380,7 @@ export default function App() {
     navigate: navigateToPage,
     showNotice,
     setOverview,
-    confirm: (message) => window.confirm(message),
+    confirm: confirmDialog,
     markLearned: studyStore.markLearned,
     recordReview: studyStore.recordReview
   });
@@ -388,6 +393,9 @@ export default function App() {
     requirePro: (featureId) => setPaywallTarget(featureId),
     requireAccount,
     openLevelSetup: () => setLevelSetupOpen(true),
+    openFeedbackComposer: () => setFeedbackComposerOpen(true),
+    closeFeedbackComposer: () => setFeedbackComposerOpen(false),
+    feedbackComposerOpen,
     closePaywall: () => setPaywallTarget(undefined),
     closeAuth: () => {
       setAuthOpen(false);

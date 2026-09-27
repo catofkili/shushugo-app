@@ -436,7 +436,7 @@
 .quick-study-selection-cancel{flex:none;border:0;background:transparent;padding:6px 2px;color:var(--zoo-muted);font-size:11px;font-weight:800;white-space:nowrap}
 .quick-study-selection-cancel:hover{color:var(--zoo-ink)}
 .quick-study-selection-count{flex:none;color:var(--zoo-ink);font-size:12px;white-space:nowrap}
-.quick-study-selection-rates{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-left:auto;overflow-x:auto;touch-action:none;user-select:none}
+.quick-study-selection-rates{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:4px;margin-left:auto;touch-action:none;user-select:none}
 .quick-study-selection-rate{flex:none;border:1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);border-radius:8px;background:var(--zoo-primary-soft);padding:6px 8px;color:var(--zoo-primary-deep);font-size:11px;font-weight:800;line-height:1;white-space:nowrap;touch-action:none}
 .quick-study-selection-rate:hover:not(:disabled),.quick-study-selection-rate:active:not(:disabled){filter:brightness(.96);transform:translateY(-1px)}
 .quick-study-selection-rate.quick-study-rating-fuzzy{border-color:rgba(232,151,28,.5);background:rgba(247,220,172,.72);color:#98610B}
@@ -591,11 +591,11 @@
 
 /* ===== 进度维护(折叠) ===== */
 .zoo-maint{margin-top:14px;border:1.5px dashed var(--ds-line-2);border-radius:20px;background:rgba(251,245,233,.6);overflow:hidden}
-.zoo-maint>summary{display:flex;align-items:baseline;gap:8px;padding:12px 14px;cursor:pointer;font-size:13px;font-weight:800;color:var(--zoo-brown-deep);list-style:none}
+.zoo-maint>summary,.zoo-maint>.zoo-maint-summary{display:flex;align-items:baseline;gap:8px;padding:12px 14px;cursor:pointer;font-size:13px;font-weight:800;color:var(--zoo-brown-deep);list-style:none}
 .zoo-maint>summary::-webkit-details-marker{display:none}
 .zoo-maint>summary::after{content:"▾";margin-left:auto;font-size:11px;transition:transform .2s}
 .zoo-maint[open]>summary::after{transform:rotate(180deg)}
-.zoo-maint>summary small{font-weight:600;font-size:11px;color:var(--zoo-muted)}
+.zoo-maint>summary small,.zoo-maint>.zoo-maint-summary small{font-weight:600;font-size:11px;color:var(--zoo-muted)}
 .zoo-maint-body{display:grid;gap:8px;padding:0 14px 14px}
 .zoo-maint-btn{display:flex;flex-direction:column;gap:2px;border:1px solid var(--ds-line);border-radius:12px;background:var(--zoo-surface);padding:10px 12px;text-align:left;color:var(--zoo-ink)}
 .zoo-maint-btn b{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800}
@@ -853,10 +853,16 @@
 .paywall-popover-head>span{display:inline-flex;align-items:center;gap:5px;color:#81d8cf;font-size:11px;font-weight:800}
 .paywall-popover-head>button{display:grid;width:24px;height:24px;place-items:center;border:0;border-radius:50%;
   background:rgba(255,255,255,.08);color:rgba(255,255,255,.78)}
+.paywall-popover-intro{display:flex;align-items:center;gap:8px;min-width:0}
+.paywall-popover-mascot{flex:none;width:40px;height:40px}
+.paywall-popover-intro>.min-w-0{flex:1;min-width:0}
 .paywall-popover-intro h2{font-size:14px;font-weight:800;line-height:1.25}
 .paywall-popover-intro p{margin-top:2px;overflow:hidden;color:rgba(255,255,255,.62);font-size:10.5px;font-weight:600;
   line-height:1.35;white-space:nowrap;text-overflow:ellipsis}
-.paywall-popover-products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+/* 按商品个数分列：网页（App Store）三档，小程序（微信期限卡）四档 */
+.paywall-popover-products{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:5px}
+.paywall-popover-gift{display:block;width:100%;margin:0 0 6px;border:0;border-radius:10px;padding:8px;background:#07c160;color:#fff;font-size:12px;font-weight:800}
+.paywall-popover-gift:disabled{opacity:.58}
 .paywall-popover-products button{min-width:0;border:1px solid rgba(255,255,255,.14);border-radius:10px;
   background:#494d4d;padding:6px 4px;color:#fff;text-align:center}
 .paywall-popover-products button.is-recommended{border-color:#81d8cf;background:rgba(129,216,207,.12)}
@@ -1097,11 +1103,11 @@
   border:1.5px solid rgba(126,190,79,.4);border-radius:20px;padding:8px 10px;
   background:var(--zoo-surface,#FBF5E9);box-shadow:0 10px 30px rgba(40,30,18,.24)}
 /* 上面一排是「怎么选」，下面一排是「选完干什么」 */
-.wl-bar-picks{display:flex;align-items:center;gap:5px;overflow-x:auto}
+.wl-bar-picks{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
 .wl-bar-pick{flex:none;border:1px solid var(--ds-line);border-radius:12px;background:transparent;
   padding:4px 9px;color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:800;white-space:nowrap}
 .wl-bar-pick:disabled{opacity:.4}
-.wl-bar-acts{display:flex;align-items:center;gap:6px;overflow-x:auto}
+.wl-bar-acts{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .wl-bar-count{flex:none;color:var(--zoo-primary-deep);font-size:13px;font-weight:800;white-space:nowrap}
 .wl-bar-btn{flex:none;border:1px solid var(--ds-line-2);border-radius:12px;background:transparent;
   padding:7px 11px;color:var(--zoo-ink);font-size:13px;font-weight:800;white-space:nowrap}
@@ -1333,14 +1339,15 @@
 .zoo-quad b{font-size:12px;font-weight:700;white-space:nowrap}
 
 /* —— T5 进度概览：折叠，摘要只有一行数 —— */
-.zoo-fold summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+.zoo-fold summary,.zoo-fold>.zoo-fold-summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
   list-style:none;cursor:pointer}
 .zoo-fold summary::-webkit-details-marker{display:none}
-.zoo-fold summary .zoo-tray-title{margin:0}
-.zoo-fold summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:700;text-align:right}
+.zoo-fold summary .zoo-tray-title,.zoo-fold>.zoo-fold-summary .zoo-tray-title{margin:0}
+.zoo-fold summary small,.zoo-fold>.zoo-fold-summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:700;text-align:right}
 .zoo-fold summary::after{content:"▾";color:var(--zoo-muted,#9A8A78);font-size:11px}
 .zoo-fold[open] summary::after{content:"▴"}
 .zoo-fold[open] summary{margin-bottom:10px}
+.zoo-fold.is-open>.zoo-fold-summary{margin-bottom:10px}
 .zoo-home-v2 .zoo-prog{border:0;padding:0;background:transparent;box-shadow:none}
 
 /* 维护那一折也按盘子来：实线细边、和上面几盘同一个圆角，不再是漂在底部的虚线框。
@@ -1348,10 +1355,11 @@
 .zoo-home-v2 .zoo-maint{margin-top:0;border-style:solid;border-width:1px;
   border-color:var(--ds-line);border-radius:20px;
   background:color-mix(in srgb, var(--zoo-surface) 62%, transparent)}
-.zoo-home-v2 .zoo-maint>summary{gap:10px;padding:12px}
+.zoo-home-v2 .zoo-maint>summary,.zoo-home-v2 .zoo-maint>.zoo-maint-summary{gap:10px;padding:12px}
 .zoo-home-v2 .zoo-maint>summary>:first-child,
-.zoo-home-v2 .zoo-maint>summary{white-space:nowrap}
-.zoo-home-v2 .zoo-maint>summary small{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.zoo-home-v2 .zoo-maint>summary,
+.zoo-home-v2 .zoo-maint>.zoo-maint-summary{white-space:nowrap}
+.zoo-home-v2 .zoo-maint>summary small,.zoo-home-v2 .zoo-maint>.zoo-maint-summary small{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .zoo-home-v2 .zoo-maint-body{padding:0 12px 12px}
 
 [data-theme="dark"] .zoo-tray{border-color:rgba(167,215,125,.16)}
@@ -1367,16 +1375,22 @@
    页面自己的部分用 .kr-*。 */
 .kr-rule{border:1px solid var(--ds-line);border-radius:16px;
   background:color-mix(in srgb, var(--zoo-surface) 62%, transparent);padding:11px 13px}
-.kr-rule>summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+.kr-rule>summary,.kr-rule>.kr-rule-summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
   list-style:none;cursor:pointer}
 .kr-rule>summary::-webkit-details-marker{display:none}
 .kr-rule>summary::after{content:"▾";color:var(--zoo-muted,#9A8A78);font-size:11px}
 .kr-rule[open]>summary::after{content:"▴"}
-.kr-rule>summary b{color:var(--zoo-ink);font-size:14px;font-weight:800}
-.kr-rule>summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:700}
+.kr-rule>summary b,.kr-rule>.kr-rule-summary b{color:var(--zoo-ink);font-size:14px;font-weight:800}
+.kr-rule>summary small,.kr-rule>.kr-rule-summary small{color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:700}
 .kr-rule p{margin-top:9px;color:var(--zoo-ink);font-size:13px;font-weight:600;line-height:1.75}
 .kr-rule p b{color:var(--zoo-primary-deep);font-weight:800}
 .kr-rule-more{color:var(--zoo-muted,#9A8A78)!important}
+
+/* Taro's HTML bridge does not provide a <summary> template, so Disclosure.weapp renders a View and an explicit marker. */
+.disclosure-summary{display:flex;align-items:center;gap:8px}
+.disclosure-summary-indicator{flex:none;margin-left:auto;color:var(--zoo-muted,#9A8A78);font-size:11px}
+.help-faq-summary{display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:pointer}
+.help-faq-chevron{color:var(--ds-ink-3);font-size:17px;line-height:1}
 
 .kr-bar{display:flex;flex-direction:column;gap:8px}
 .kr-search{width:100%;border:1px solid var(--ds-line);border-radius:12px;
@@ -1423,11 +1437,12 @@
 /* ===== 吉祥物点缀（2026-09-19 定妆稿）===== */
 /* 顶栏 logo 组合里「收集日」后面那片嫩芽 */
 .brand-sprout{display:inline-block;width:.6em;height:.6em;margin-left:.15em;vertical-align:.35em;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 19v-8' stroke='%235B8F3A' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M10 11C8 4 3 3 1 4c1 5 5 8 9 7z' fill='%238CC77A'/%3E%3Cpath d='M10 11c2-7 7-8 9-7-1 5-5 8-9 7z' fill='%23A9D88F'/%3E%3C/svg%3E")}
-/* 走路的那只：定妆总表「加载动效（帧序列）」四帧拼成 walk-strip.png，steps(4) 翻帧。
-   宽高和 background-size 由 CapybaraWalk 内联给（按高度等比），这里只管翻帧。 */
-.mascot-walk{display:inline-block;background:url("/brand/sheet/walk-strip.png") 0 0 no-repeat;animation:mascotWalk .64s steps(4,end) infinite}
-@keyframes mascotWalk{to{background-position-x:calc(-4 * var(--cell))}}
-[data-motion="reduced"] .mascot-walk{animation:none}
+/* 走路的那只：四帧走 image + overflow 裁切，WXSS 不支持包内 background-image。 */
+.mascot-walk{display:inline-block;overflow:hidden;vertical-align:bottom}
+.mascot-walk-strip{display:block;max-width:none;animation:mascotWalk .64s steps(4,end) infinite}
+/* steps(4,end) 停在 0/25/50/75%，所以终点必须是 -100%（整条宽 = 4 帧）；写 -75% 每帧都停在两帧中间 */
+@keyframes mascotWalk{to{transform:translateX(-100%)}}
+[data-motion="reduced"] .mascot-walk-strip{animation:none}
 /* 底部 Tab：选中那格的图标放大一点、带一点投影 */
 .app-tab-icon{transition:transform .25s ease;opacity:.78}
 .app-tab-icon.is-active{transform:scale(1.12);opacity:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
@@ -1435,9 +1450,12 @@
 .mascot-say{position:relative;display:inline-block;padding:6px 12px;border-radius:14px 14px 14px 4px;background:#FFF3C4;color:#5B3F2E;font-size:13px;font-weight:800;line-height:1.4}
 .mascot-farewell{display:flex;align-items:center;gap:10px;margin-top:6px;padding:10px 12px;text-align:left}
 .mascot-farewell p{margin-top:6px;font-size:12px;color:rgba(255,255,255,.6)}
-/* App 图标跟主题走：深色主题换成作者给的深色版（深底圆角）。
-   用 content:url() 换 <img> 的图，Safari / Chrome / Firefox 113+ 都认，不用在五个调用点各写一遍判断。 */
-[data-theme="dark"] img.brand-icon{content:url("/brand/shushugo-icon-dark.png")}
+/* App 图标跟主题走：两张 <img> 由 data-theme 切换，避免 WXSS 的本地 content:url()。 */
+.brand-icon-pair{position:relative;display:block;overflow:hidden;line-height:0}
+.brand-icon-pair .brand-icon-light,.brand-icon-pair .brand-icon-dark{display:block;width:100%;height:100%;object-fit:contain}
+.brand-icon-pair .brand-icon-dark{display:none}
+[data-theme="dark"] .brand-icon-pair .brand-icon-light{display:none}
+[data-theme="dark"] .brand-icon-pair .brand-icon-dark{display:block}
 
 /* ===== 柚子商店(.yz-*) =====
    骨架抄的是 Duolingo 商店(余额 + 补签和外观一起上架)、Finch 服装店(试衣台)、
@@ -1487,7 +1505,7 @@
 @keyframes yzSpin{to{transform:rotate(360deg)}}
 [data-motion="off"] .yz-spin{animation:none}
 /* 补签:横向小按钮,不再把操作条撑成一张大卡 */
-.yz-repair-days{grid-column:1/-1;display:flex;gap:6px;overflow-x:auto;padding-bottom:1px;scrollbar-width:none}
+.yz-repair-days{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;padding-bottom:1px}
 .yz-repair-days::-webkit-scrollbar{display:none}
 .yz-repair-days .yz-cta{grid-column:auto;grid-row:auto;flex:none;min-height:32px;font-size:12px}
 /* 试听:声音 / 音效商品在 CTA 上面一行 */
@@ -1518,7 +1536,7 @@
 .yz-art-s .yz-mini-hero b{font-size:2.2em}
 
 /* 分类 chip:一字多音页那排同款,横向滚 */
-.yz-tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.yz-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:2px 2px 4px}
 .yz-tabs::-webkit-scrollbar{display:none}
 .yz-tabs button{flex:none;border:1px solid var(--ds-line);border-radius:999px;padding:5px 12px;background:transparent;
   color:var(--zoo-muted,#9A8A78);font-size:12px;font-weight:800;white-space:nowrap}
@@ -1638,11 +1656,10 @@
 .dictionary-card .word-answer{border:0!important;background:none!important;border-radius:0!important}
 .dictionary-card .word-prompt:not(.is-bare){border-bottom:1px solid var(--color-border-light)!important}
 
-/* —— 筛选条一律一行、横滑 —— 以前折成两三行：词库第一个词之前要先读完 6 个等级 + 4 个图例，
-   疑难辨析 9 个分类折三行。末端用渐隐提示「还能往右滑」，不然截断看着像没排好。 */
-.wl-chips,.wl-legend,.cf-types{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;
-  -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);padding-right:24px}
-.wl-chips::-webkit-scrollbar,.wl-legend::-webkit-scrollbar,.cf-types::-webkit-scrollbar{display:none}
+/* —— 筛选条：放不下就换行，不横滑（用户 2026-09-27 定：「我们是完全按竖着适配的，左右滑动完全是多此一举」，
+   全应用一律只有上下滑）。之前（2026-09-23 UI 收口）是「一律一行、横滑 + 末端渐隐」，理由是折成两三行时
+   词库第一个词之前要先读完 6 个等级 + 4 个图例；用户选了换行，这个代价接受。别再改回横滑。 */
+.wl-chips,.wl-legend,.cf-types{flex-wrap:wrap!important}
 .wl-chips>*,.wl-legend>*,.cf-types>*{flex:none;white-space:nowrap}
 
 /* —— 登录弹窗：组件里写死的是一套绿调深色（#303730 / #242a24），浅色主题的翻译层没收录，

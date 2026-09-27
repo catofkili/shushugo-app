@@ -3,8 +3,8 @@
 // 内容变更时记得更新生效日期。
 
 export const PRIVACY_POLICY_TITLE = "收集日隐私政策";
-export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 9 月 24 日";
-export const PRIVACY_POLICY_VERSION = "2026-09-24";
+export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 9 月 27 日";
+export const PRIVACY_POLICY_VERSION = "2026-09-27";
 export const PRIVACY_POLICY_CONTACT = "请通过 App Store 的应用支持入口联系开发者";
 
 export interface PrivacyPolicySection {
@@ -26,6 +26,14 @@ export const PRIVACY_POLICY_SECTIONS: PrivacyPolicySection[] = [
     body: [
       "本地学习数据用于统计学习进度、恢复学习状态、显示收藏，并根据你的设置安排本地通知提醒。",
       "通知提醒通过 iOS 本地通知实现。提醒时间和开关保存在设备上，用于每天按你设定的时间提醒学习或复习。"
+    ]
+  },
+  {
+    title: "意见反馈与诊断信息",
+    body: [
+      "你可以不登录直接提交意见或问题，并自愿留下微信号或手机号供开发者回复。提交内容只供开发者处理，不会公开展示。",
+      "勾选附带诊断信息后，应用会发送应用版本、平台、系统及版本、小程序基础库版本（仅小程序）、当前页面、最近 20 条错误、最近的计时记录和最近 10 次页面切换，用于定位故障。诊断信息不包含学习内容、便签、邮箱、OpenID 或设备唯一标识。登录状态下，服务器会从有效令牌识别账号；客户端不会另行提交账号标识。为防止滥用，服务器会对连接 IP 计算哈希用于限速，不保存明文 IP。",
+      "意见、联系方式、诊断信息及相关哈希最多保存 180 天，之后由定时任务清理。普通意见默认附带诊断信息，你可以在提交时取消；错误报告只有在你确认发送或开启自动发送后才会上报。"
     ]
   },
   {

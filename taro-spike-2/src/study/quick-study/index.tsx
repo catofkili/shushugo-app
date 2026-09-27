@@ -1,0 +1,1 @@
+import { QuickStudyRoute } from '../../../../frontend/src/routes/quick-study.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="quick-study" Route={QuickStudyRoute} />;

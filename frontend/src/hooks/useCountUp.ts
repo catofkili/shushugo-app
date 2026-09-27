@@ -35,10 +35,14 @@ export function useCountUp(target: number): number {
     // 一步到位也走 rAF:在 effect 里直接 setState 会引发级联渲染,
     // 交给第一帧去落值,差一帧(约 16ms)看不出来。
     const duration = jsMotionAllowed() ? durationFor(target - from) : 0;
-    const start = performance.now();
+    // ⚠️ 起点取第一帧的时间戳，不取 performance.now()：小程序里 rAF 是 Taro 拿定时器模拟的，时间戳是它自己的钟，
+    // 和 iPhone 的 performance.now() 对不上——相减得出极端的进度，缓动一放大就溢出，主页大数字显示成「-Infinity」
+    // （2026-09-26 真机）。进度也夹到 [0, 1]，哪个平台都不会再算飞。
+    let start: number | null = null;
 
     const step = (now: number) => {
-      const progress = duration > 0 ? Math.min((now - start) / duration, 1) : 1;
+      start ??= now;
+      const progress = duration > 0 ? Math.min(Math.max((now - start) / duration, 0), 1) : 1;
       const value = Math.round(from + (target - from) * easeOutCubic(progress));
       displayRef.current = value;
       setDisplay(value);

@@ -1,0 +1,1 @@
+import { PrivacyPolicyRoute } from '../../../../frontend/src/routes/privacy-policy.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="privacy-policy" Route={PrivacyPolicyRoute} />;

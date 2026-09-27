@@ -285,8 +285,8 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
     if (phase !== "done" && !isStage1Complete) return;
     const key = `mn-zoo-celebrated-${studyDate}`;
     try {
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, "1");
+      if (globalThis.sessionStorage.getItem(key)) return;
+      globalThis.sessionStorage.setItem(key, "1");
     } catch {
       // 隐私模式下 sessionStorage 可能不可用,那就每次都放,不影响功能
     }

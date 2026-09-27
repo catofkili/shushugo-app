@@ -1,0 +1,66 @@
+/* WXSS does not reliably apply the hover/pointer media query used on the web. */
+.kbd-hint { display: none !important; }
+
+/* wx button has browser defaults that do not match the shared HTML button styles. */
+button {
+  display: inline-block;
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-sizing: border-box;
+}
+button::after { border: 0; }
+
+/* In the home tool grid, shared CSS's `height:auto !important` defeats the
+   explicit dimensions on Taro Image and leaves the native image unconstrained. */
+.zoo-quad .taro-spike-sticker {
+  display: block;
+  flex: none;
+  width: 36px !important;
+  height: 36px !important;
+  max-width: 36px;
+  max-height: 36px;
+}
+
+/* Bound native image boxes even while a brand asset is still loading. */
+.yz-mini-top { flex: none; height: 18%; }
+.yz-mini-top image { width: 18%; height: 100%; }
+.yz-mini-tray image,
+.yz-art > image { width: 100%; height: 100%; min-height: 0; }
+
+/* 只做竖屏：整页不许左右滑，边缘回弹一下回原位即可（用户 2026-09-27）。横向溢出直接裁掉。
+   （W15 之后页面本身不滚，内容在 .weapp-app-main 这个 ScrollView 里滚，它也锁了 overflow-x。） */
+page { overflow-x: hidden; }
+
+/* W15: on web the main area is fixed between the browser top and tab bars.
+   In the mini program those bars live outside the webview, so this route shell
+   must use the full webview viewport instead of collapsing to content height. */
+.taro-spike-shell { height: 100vh; min-height: 100vh; overflow: hidden; }
+.taro-spike-content { height: 100%; min-height: 0; }
+.weapp-theme-root { height: 100vh; min-height: 100vh; display: block; }
+.weapp-app-shell { height: 100%; min-height: 100%; }
+.weapp-route-root { min-height: 100%; }
+.weapp-app-main {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 16px 16px;
+}
+.weapp-app-main .word-study-shell { height: calc(100vh - 2rem); min-height: 0; }
+
+/* W15: mini-program webviews already exclude the native bars. The shared preview
+   formula subtracts those browser bars a second time, leaving only 451px here. */
+.weapp-app-main .pro-reading-preview { height: calc(100vh - 2rem); min-height: 0; }
+
+/* （W15 曾在这里把疑难辨析类别改成 3 列网格：当时 app.css 里是「一行横滑 + !important nowrap」。
+   2026-09-27 用户定全应用只许上下滑、筛选标签一律换行，那条已改成 wrap，这里不再单独覆盖。） */

@@ -1004,6 +1004,18 @@ Worker 把每次上传当完整备份。本机静默忽略一张新表或一列�
 新用户起步约 15–20 MB。两份的峰值撞 200 MB 大约在库长到 95 MB 时；到那一步之前要么裁
 `grammar_points_archive` 的旧代，要么把出厂词库移出用户库文件。
 
+### ⑧ 增量不能无限攒：小程序冷启动曾在回放上花 13.4 秒（2026-09-27）
+
+iPhone 小程序真机计时：冷启动 14 秒，其中「增量回放」13.4 秒，其余各段加起来不到半秒。两层原因：
+- **整库快照要「这次打开之后满 5 分钟再写盘」才触发**，小程序每次常只用几分钟 → 增量从装机起一路累积（起点水平一次写上千行），
+  每次冷启动全部重放。现在 `loadDatabase` 回放超过 300 行就在 8 秒后整库落一次（`compactIfLarge`，`notifyCloud: false`，
+  不算本地改动、不触发云同步），把增量清掉；小程序的 `deltaRowLimit()` 也从 20,000 收到 2,000。
+- **回放每行两句 `db.run(sql, params)`，每次都重新 prepare**，解析 SQL 在解释执行的 wasm 里是毫秒级。`applyDelta` 改成按 SQL 文本
+  缓存 prepared statement（Node：3000 行 158 → 27 ms，8000 行 484 → 69 ms），语句、顺序、事务边界都没变。
+- ⚠️ 别把压实改成 `requestFullSnapshot()` + `scheduleSave()`：`markSnapshotLoaded()` 紧接着会把 `snapshotDb` 设回来，请求就丢了；
+  而且那样会抬 revision、触发一次云同步。判据在 `storage-durability.test.ts`「启动回放的增量行数多」。
+- 同类问题还可能在云同步合并（`sync/merge.ts`）里：它也是逐行 `db.run`。真机上登录后第一次同步很慢时先查这里。
+
 ### ⚠️ 内容迁移必须喊 `persistContentSoon()`，不是 `persistSoon()`
 
 内容迁移改的是 `words` / `grammar_points` / `dictionary_entries` 这些
@@ -1766,6 +1778,9 @@ Tab 在卡片里循环、关掉还回原处）。缺了这几样，键盘和 Voi
   `shushugo-icon-dark.png`（441，作者分图里的深色版，`roundmask.mjs` 圆角蒙版裁的，半径 ≈ 98）。
   **深色主题下图标自动换深色版**：五个调用点都挂 `img.brand-icon`，
   `[data-theme="dark"] img.brand-icon{content:url(…)}` 一条 CSS 换图（2026-09-19，作者问「不是有深色模式图标吗」）。
+  ⚠️ 2026-09-27 改成**两张图按主题切显隐**（`.brand-icon-pair` 里 `brand-icon-light` / `brand-icon-dark`，`BrandIcon` 和 `CrossPlatformImage` 各一处）：
+  小程序 WXSS 不认本地 `content:url()`（真机空白、开发者工具正常），网页和小程序共用一份 CSS，所以不再用那条规则。
+  同一批：小程序包里的品牌图从 .webp 换成 PNG——`<image webp>` 官方原文「只支持网络资源」，本地 webp 在 iPhone 上一张都画不出来。
   ⚠️ cover 原图是「圆角方块贴在纯黑底上」，周报以前靠 `mix-blend-mode:screen` 藏黑角（整张图洗白），
   已改成把 PNG 的黑角抠透明。iOS 的 `AppIcon-512@2x.png` 是 cover 黑角填成卡面奶油色再缩到 1024 ——
   App 图标不能带 alpha，也不能自己画圆角。换图标时这几份一起重做（`cut-hires.sh` 末尾两行管 icon / icon-dark）。

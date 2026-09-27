@@ -1,0 +1,1 @@
+import { AchievementsRoute } from '../../../../frontend/src/routes/achievements.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="achievements" Route={AchievementsRoute} />;

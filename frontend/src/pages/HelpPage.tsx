@@ -1,5 +1,6 @@
 import { ArrowLeft, ChevronRight, HelpCircle, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import { Disclosure } from "../components/Disclosure";
 
 interface HelpPageProps {
   onBack: () => void;
@@ -92,21 +93,32 @@ export function HelpPage({ onBack }: HelpPageProps) {
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">常见问题</p>
         <div className="space-y-3">
           {faqs.map((faq, index) => (
-            <details
+            <Disclosure
               key={index}
               className="group overflow-hidden rounded-2xl border border-white/15 bg-[#464949]"
+              summaryClassName="focus-ring flex cursor-pointer items-center gap-3 p-4 hover:bg-[#4d5151]"
+              weappSummaryClassName="help-faq-summary"
+              weappSummary={(open) => (
+                <>
+                  <span className="flex-1 text-sm font-bold text-white">{faq.q}</span>
+                  <span className="help-faq-chevron">{open ? "⌄" : "›"}</span>
+                </>
+              )}
+              indicator="none"
+              summary={(open) => (
+                <>
+                  <span className="flex-1 text-sm font-bold text-white">{faq.q}</span>
+                  <ChevronRight
+                    size={17}
+                    className={`text-white/40 transition-transform ${open ? "rotate-90" : ""}`}
+                  />
+                </>
+              )}
             >
-              <summary className="focus-ring flex cursor-pointer items-center gap-3 p-4 hover:bg-[#4d5151]">
-                <span className="flex-1 text-sm font-bold text-white">{faq.q}</span>
-                <ChevronRight
-                  size={17}
-                  className="text-white/40 transition-transform group-open:rotate-90"
-                />
-              </summary>
               <div className="border-t border-white/10 bg-[#3c3f3f] p-4">
                 <p className="text-sm text-white/70">{faq.a}</p>
               </div>
-            </details>
+            </Disclosure>
           ))}
         </div>
       </div>

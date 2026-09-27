@@ -1,8 +1,26 @@
 import type { Database } from "sql.js";
+import { Capacitor } from "@capacitor/core";
 import { createDatabase, getDatabase } from "../database";
 import { ensureSyncSchema } from "./schema";
 import { DEVICE_LOCAL_GRAMMAR_STATE_KEYS, DEVICE_LOCAL_STATE_KEYS, syncedTablesForCloud } from "./tables";
 import { canUseFeature, getEntitlements } from "../entitlements";
+
+type WechatFflate = {
+  gzipSync(data: Uint8Array): Uint8Array;
+  gunzipSync(data: Uint8Array): Uint8Array;
+};
+
+declare const __non_webpack_require__: ((path: string) => unknown) & {
+  async(path: string): Promise<unknown>;
+};
+
+async function loadWechatFflate(): Promise<WechatFflate> {
+  if (typeof __non_webpack_require__ === "undefined" || typeof __non_webpack_require__.async !== "function") {
+    throw new Error("当前微信基础库不支持异步加载同步压缩模块。");
+  }
+  const loaded = await __non_webpack_require__.async("./account/fflate.umd.js") as { default?: unknown };
+  return (loaded.default ?? loaded) as WechatFflate;
+}
 
 export const SYNC_SNAPSHOT_FORMAT = "master-nihongo-user-sqlite-v1";
 /** 同步协议版本独立于 SQLite schema，便于将来切换增量协议而不误读旧快照。 */
@@ -226,6 +244,10 @@ export async function compressSyncSnapshot(data: Uint8Array): Promise<{
       + "本机数据完好，请在设置页导出本地备份并联系支持。"
     );
   }
+  if (Capacitor.getPlatform() === "wechat") {
+    const { gzipSync } = await loadWechatFflate();
+    return { bytes: gzipSync(data), compression: "gzip" };
+  }
   if (typeof CompressionStream === "undefined") return { bytes: data, compression: "none" };
   const stream = new Blob([bytesBuffer(data)]).stream().pipeThrough(new CompressionStream("gzip"));
   return { bytes: new Uint8Array(await new Response(stream).arrayBuffer()), compression: "gzip" };
@@ -238,6 +260,12 @@ export async function decompressSyncSnapshot(
   if (compression === "none") {
     if (data.byteLength > MAX_UNCOMPRESSED_SNAPSHOT_BYTES) throw new Error("云端学习数据超过安全大小限制。");
     return data;
+  }
+  if (Capacitor.getPlatform() === "wechat") {
+    const { gunzipSync } = await loadWechatFflate();
+    const bytes = gunzipSync(data) as Uint8Array;
+    if (bytes.byteLength > MAX_UNCOMPRESSED_SNAPSHOT_BYTES) throw new Error("云端学习数据解压后超过安全大小限制，已停止处理。");
+    return bytes;
   }
   if (typeof DecompressionStream === "undefined") {
     throw new Error("当前系统版本无法解压云端学习数据（需要 iOS/Safari 16.4 以上），请升级后重试。");

@@ -6,6 +6,8 @@ module.exports = {
   // Worker 真实地址配在云函数 api 的环境变量 WORKER_ORIGIN 里，客户端这边只保留路径。
   cloudEnv: 'cloud1-d3g7dauie3961575b',
   seedDatabaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/seed/nihongo.db',
+  // Brotli 压缩的出厂库（微信原生解压只认 br）；留空 = 按 seedDatabaseUrl 推出同目录的 .db.br。
+  seedDatabaseBrUrl: '',
   seedDatabasePath: '',
   // 内容更新 manifest 只描述版本、数据库 URL、字节数和词条数；不把大库放进代码包。
   contentManifestUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/seed/manifest.json',
@@ -20,7 +22,7 @@ module.exports = {
   // 与 cloudflare-sync Worker 发布的协议版本保持一致；新微信账号首次登录
   // 必须明确同意当前协议，服务端不会接受缺失版本的注册。
   termsVersion: '2026-09-22',
-  privacyVersion: '2026-09-24',
+  privacyVersion: '2026-09-27',
   // 学习提醒的订阅消息模板 id（mp.weixin.qq.com → 订阅消息 → 我的模板）。留空 = 不要提醒。
   // 云函数 reminder 的环境变量 REMINDER_TEMPLATE_ID 要是同一个（cloudbaserc.json）。
   reminderTemplateId: ''

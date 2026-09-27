@@ -23,17 +23,40 @@ function isCloudFile(url) {
 
 async function callApi(payload) {
   ensureInit();
+  const startedAt = Date.now();
   const response = await wx.cloud.callFunction({ name: 'api', data: payload });
   const result = response?.result;
   if (!result || typeof result.statusCode !== 'number') throw new Error('云函数 api 没有返回状态码');
+  // 计时版（Taro 的 fetch 适配器）挂这个钩子：分开「云函数里等 Worker」和「云函数调用本身」各花多久。
+  const upstreamMs = Number(result.header?.['x-proxy-upstream-ms']);
+  if (Number.isFinite(upstreamMs)) globalThis.__shushugoProxyTiming?.(payload?.path, upstreamMs, Date.now() - startedAt);
   return result;
 }
 
-async function downloadCloudFile(fileID) {
+async function downloadCloudFile(fileID, options = {}) {
   ensureInit();
-  const result = await wx.cloud.downloadFile({ fileID });
-  if (!result?.tempFilePath) throw new Error('云存储下载没有返回临时文件');
-  return result.tempFilePath;
+  try {
+    // cloud.downloadFile returns only a Promise, so it cannot report byte progress.
+    // A short-lived URL lets wx.downloadFile expose the normal progress task instead.
+    const response = await wx.cloud.getTempFileURL({ fileList: [fileID] });
+    const url = response?.fileList?.[0]?.tempFileURL;
+    if (!url) throw new Error('云存储没有返回临时下载地址');
+    const result = await new Promise((resolve, reject) => {
+      const task = wx.downloadFile({ url, success: resolve, fail: reject });
+      task?.onProgressUpdate?.((progress) => options.onProgress?.(progress));
+    });
+    if (!result?.tempFilePath) throw new Error('云存储下载没有返回临时文件');
+    if (result.statusCode < 200 || result.statusCode >= 300) {
+      throw new Error(`云存储下载失败（HTTP ${result.statusCode}）`);
+    }
+    return result.tempFilePath;
+  } catch (progressError) {
+    // Preserve the SDK's direct path on older base libraries or when URL signing is unavailable.
+    console.warn('[cloud] 带进度的下载不可用，回退云存储 SDK', progressError);
+    const result = await wx.cloud.downloadFile({ fileID });
+    if (!result?.tempFilePath) throw new Error('云存储下载没有返回临时文件');
+    return result.tempFilePath;
+  }
 }
 
 // 云函数入参上限 5 MB；二进制请求体（快照）交给临时 CDN，云函数收到的是一个 URL。

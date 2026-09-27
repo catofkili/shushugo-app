@@ -1,5 +1,11 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { segmentLength, PLAN_KINDS, PLAN_LABELS, type PlanKind } from "../lib/daily-plan";
+import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { PLAN_KINDS, PLAN_LABELS, type PlanKind } from "../lib/daily-plan";
+import { queryTouchRect, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
+import { anglesOf, arcPath, moveDailyPlanBoundary, polar, RING_COLORS, RING_START } from "./daily-plan-ring-geometry";
+import type { RingValue } from "./daily-plan-ring-geometry";
+
+export { RING_COLORS } from "./daily-plan-ring-geometry";
+export type { RingValue } from "./daily-plan-ring-geometry";
 
 /**
  * 每日学习量的圆环（docs/MIXED_STUDY_PLAN.md 第 3 节）。
@@ -15,11 +21,6 @@ import { segmentLength, PLAN_KINDS, PLAN_LABELS, type PlanKind } from "../lib/da
  * ③ 整数没变就不 setState（binary search 落在同一个数上时什么都不发生）。
  * 松手那一下 onCommit 才落盘重排 —— 那是几十条 SQL，放在 rAF 之后的 setTimeout 里，先让最后一帧画出来。
  */
-export interface RingValue {
-  fresh: number;
-  review: number;
-}
-
 interface Props {
   value: Record<PlanKind, RingValue>;
   /** 拖动过程中每一帧调：只改状态、只重绘，别在这里写盘或重排计划 —— 那是掉帧的来源 */
@@ -34,38 +35,12 @@ interface Props {
   size?: number;
 }
 
-export const RING_COLORS: Record<PlanKind, string> = {
-  words: "#6FA83E",
-  grammar: "#F3B14D",
-  kanji: "#B9A7F2",
-  confusion: "#F2A7C8"
-};
-
-const TAU = Math.PI * 2;
-const START = -Math.PI / 2;
-
-const polar = (cx: number, cy: number, r: number, angle: number) => [cx + r * Math.cos(angle), cy + r * Math.sin(angle)] as const;
-
-const arcPath = (cx: number, cy: number, r: number, from: number, to: number) => {
-  if (to - from <= 0.0001) return "";
-  if (to - from >= TAU - 0.0001) to = from + TAU - 0.0001;
-  const [x1, y1] = polar(cx, cy, r, from);
-  const [x2, y2] = polar(cx, cy, r, to);
-  return `M ${x1} ${y1} A ${r} ${r} 0 ${to - from > Math.PI ? 1 : 0} 1 ${x2} ${y2}`;
-};
-
-/** 四段的角度：log(1 + 数量) 归一到整圈；全 0 时四段等分（否则没东西可拖）。 */
-const anglesOf = (counts: number[]) => {
-  const lengths = counts.map(segmentLength);
-  const sum = lengths.reduce((total, length) => total + length, 0);
-  return sum > 0 ? lengths.map((length) => (length / sum) * TAU) : counts.map(() => TAU / 4);
-};
-
 export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocus, size = 240 }: Props) => {
+  const touchRectId = `daily-plan-ring-${useId().replace(/:/g, "")}`;
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   // 段 0 从哪个角度起。拖顶上那颗（辨析|单词）时这个偏移跟着变，别的滑钮才不动。
-  const [offset, setOffset] = useState(START);
+  const [offset, setOffset] = useState(RING_START);
   const cx = size / 2;
   const cy = size / 2;
   const r = size / 2 - 18;
@@ -77,11 +52,12 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
   angles.forEach((angle) => bounds.push(bounds[bounds.length - 1] + angle));
 
   // 拖动中的临时量：按下时量的框、最新的指针角度、待处理的 rAF。都不进 state —— 它们每帧都变。
-  const drag = useRef<{ knob: number; rect: DOMRect; angle: number; raf: number } | null>(null);
+  const drag = useRef<{ knob: number; rect: Pick<DOMRect, "left" | "top" | "width" | "height">; angle: number; processedAngle: number; raf: number } | null>(null);
+  const touchDrag = useRef<{ knob: number; rect: TouchRect | null; start: { x: number; y: number }; latest: { x: number; y: number }; ended: boolean } | null>(null);
   // rAF 里的回调可能来自上一帧的渲染，所以算数一律读这个 ref，不读闭包里的旧值
-  const latest = useRef({ value, counts, angles, bounds });
+  const latest = useRef({ value, counts, angles, bounds, offset });
   // eslint-disable-next-line react-hooks/refs -- 渲染期写 ref 正是为了让 rAF 回调拿到最新一帧
-  latest.current = { value, counts, angles, bounds };
+  latest.current = { value, counts, angles, bounds, offset };
 
   /**
    * 拖第 k 个滑钮 = 在第 k 段和第 k+1 段（k=3 时是第 0 段）之间搬数量。两段的数量之和 T
@@ -89,45 +65,16 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
    * 左边随 a 单调递增，整数上二分。
    */
   const moveKnob = (k: number, angle: number) => {
-    const { value: current, counts: cur, angles: ang, bounds: bnd } = latest.current;
-    const a = k;
-    const b = (k + 1) % 4;
-    const T = cur[a] + cur[b];
-    if (T === 0) return;
-    const from = bnd[a];
-    const A = ang[a] + ang[b];
-    let theta = angle - from;
-    while (theta < 0) theta += TAU;
-    while (theta >= TAU) theta -= TAU;
-    theta = Math.max(0, Math.min(A, theta));
-    const target = A > 0 ? theta / A : 0.5;
-    const share = (x: number) => { const l = segmentLength(x) + segmentLength(T - x); return l > 0 ? segmentLength(x) / l : 0.5; };
-    let lo = 0;
-    let hi = T;
-    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (share(mid) < target) lo = mid; else hi = mid; }
-    const nextA = Math.abs(share(lo) - target) <= Math.abs(share(hi) - target) ? lo : hi;
-    const nextB = T - nextA;
-    if (nextA === cur[a]) return;
-    // 搬数量时按各段现在的新学/复习比例分；旧段全 0 时先把新增部分记作新学。
-    const split = (kind: PlanKind, count: number) => {
-      const item = current[kind];
-      const itemTotal = item.fresh + item.review;
-      const fresh = itemTotal > 0 ? Math.round((count * item.fresh) / itemTotal) : count;
-      return { fresh, review: count - fresh };
-    };
-    const next = { ...current, [PLAN_KINDS[a]]: split(PLAN_KINDS[a], nextA), [PLAN_KINDS[b]]: split(PLAN_KINDS[b], nextB) };
-    if (k === 3) {
-      // 顶上那颗：让第 3 段的起点（它左边那条界）不动，段 0 的起点跟着新长度挪
-      const nextCounts = cur.slice();
-      nextCounts[3] = nextA;
-      nextCounts[0] = nextB;
-      const nextAngles = anglesOf(nextCounts);
-      setOffset(from - (nextAngles[0] + nextAngles[1] + nextAngles[2]));
-    }
-    onChange(next);
+    const { value: current, offset: currentOffset } = latest.current;
+    const next = moveDailyPlanBoundary(current, k, angle, currentOffset);
+    if (!next) return;
+    latest.current.value = next.value;
+    latest.current.offset = next.offset;
+    if (k === 3) setOffset(next.offset);
+    onChange(next.value);
   };
 
-  const pointerAngle = (rect: DOMRect, clientX: number, clientY: number) => {
+  const pointerAngle = (rect: Pick<DOMRect, "left" | "top" | "width" | "height">, clientX: number, clientY: number) => {
     const x = ((clientX - rect.left) / rect.width) * size - cx;
     const y = ((clientY - rect.top) / rect.height) * size - cy;
     return Math.atan2(y, x);
@@ -137,13 +84,16 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
     const state = drag.current;
     if (!state) return;
     state.raf = 0;
+    if (state.angle === state.processedAngle) return;
+    state.processedAngle = state.angle;
     moveKnob(state.knob, state.angle);
   };
 
   const onPointerDown = (k: number) => (event: ReactPointerEvent) => {
     event.currentTarget.setPointerCapture?.(event.pointerId);
     const rect = svgRef.current!.getBoundingClientRect();
-    drag.current = { knob: k, rect, angle: pointerAngle(rect, event.clientX, event.clientY), raf: 0 };
+    const angle = pointerAngle(rect, event.clientX, event.clientY);
+    drag.current = { knob: k, rect, angle, processedAngle: angle, raf: 0 };
     setDragging(k);
   };
   const onPointerMove = (event: ReactPointerEvent) => {
@@ -156,17 +106,64 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
     const state = drag.current;
     if (!state) return;
     if (state.raf) cancelAnimationFrame(state.raf);
-    flush();
+    if (state.angle !== state.processedAngle) flush();
     drag.current = null;
     setDragging(null);
     // 先让最后一帧画出来，再做落盘重排那几十条 SQL
     requestAnimationFrame(() => setTimeout(onCommit, 0));
+  };
+  const onTouchStart = (k: number, event: TouchEventLike) => {
+    const point = touchPoint(event);
+    if (!point || touchDrag.current || drag.current) return;
+    event.preventDefault?.();
+    const pointAtStart = { x: point.clientX, y: point.clientY };
+    const state = { knob: k, rect: null as TouchRect | null, start: pointAtStart, latest: pointAtStart, ended: false };
+    touchDrag.current = state;
+    void queryTouchRect(`#${touchRectId}`).then((rect) => {
+      if (touchDrag.current !== state) return;
+      if (!rect || rect.width <= 0 || rect.height <= 0) { touchDrag.current = null; return; }
+      state.rect = rect;
+      const startAngle = pointerAngle(rect, state.start.x, state.start.y);
+      const angle = pointerAngle(rect, state.latest.x, state.latest.y);
+      drag.current = { knob: k, rect, angle, processedAngle: startAngle, raf: 0 };
+      setDragging(k);
+      if (!state.ended && angle !== startAngle && !drag.current.raf) drag.current.raf = requestAnimationFrame(flush);
+      if (state.ended) {
+        touchDrag.current = null;
+        endDrag();
+      }
+    });
+  };
+  const onTouchMove = (event: TouchEventLike) => {
+    const state = touchDrag.current;
+    const point = touchPoint(event);
+    if (!state || !point) return;
+    event.preventDefault?.();
+    state.latest = { x: point.clientX, y: point.clientY };
+    if (!state.rect) return;
+    const active = drag.current;
+    if (!active) return;
+    active.angle = pointerAngle(state.rect, point.clientX, point.clientY);
+    if (!active.raf) active.raf = requestAnimationFrame(flush);
+  };
+  const onTouchEnd = (event: TouchEventLike) => {
+    const state = touchDrag.current;
+    if (!state) return;
+    const point = touchPoint(event, true);
+    if (point) state.latest = { x: point.clientX, y: point.clientY };
+    state.ended = true;
+    if (!state.rect) return;
+    const active = drag.current;
+    if (active) active.angle = pointerAngle(state.rect, state.latest.x, state.latest.y);
+    touchDrag.current = null;
+    endDrag();
   };
   useEffect(() => () => { if (drag.current?.raf) cancelAnimationFrame(drag.current.raf); }, []);
 
   const stroke = 22;
   return (
     <svg
+      id={touchRectId}
       ref={svgRef}
       viewBox={`0 0 ${size} ${size}`}
       width={size}
@@ -175,6 +172,9 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      onTouchMove={touchEventsEnabled() ? (event) => onTouchMove(event as unknown as TouchEventLike) : undefined}
+      onTouchEnd={touchEventsEnabled() ? (event) => onTouchEnd(event as unknown as TouchEventLike) : undefined}
+      onTouchCancel={touchEventsEnabled() ? (event) => onTouchEnd(event as unknown as TouchEventLike) : undefined}
       role="group"
       aria-label="每日学习量"
     >
@@ -198,7 +198,7 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
       {[0, 1, 2, 3].sort((x, y) => (x === dragging ? 1 : y === dragging ? -1 : 0)).map((k) => {
         const [x, y] = polar(cx, cy, r, bounds[k + 1]);
         return (
-          <g key={k} onPointerDown={onPointerDown(k)} style={{ cursor: dragging === k ? "grabbing" : "grab", touchAction: "none" }}>
+          <g key={k} onPointerDown={onPointerDown(k)} onTouchStart={touchEventsEnabled() ? (event) => onTouchStart(k, event as unknown as TouchEventLike) : undefined} style={{ cursor: dragging === k ? "grabbing" : "grab", touchAction: "none" }}>
             <circle cx={x} cy={y} r={13} fill="#fff" stroke="rgba(0,0,0,.18)" strokeWidth={2} />
             <circle cx={x} cy={y} r={5} fill={RING_COLORS[PLAN_KINDS[(k + 1) % 4]]} />
           </g>

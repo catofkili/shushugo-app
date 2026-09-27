@@ -17,6 +17,7 @@ import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_dis
 import { JapaneseWordRuby } from "../components/JapaneseWordRuby";
 import { Sticker } from "../components/CapybaraMascot";
 import { useStudyTimer } from "../lib/useStudyTimer";
+import { useProgressiveList } from "../lib/touch-adapter";
 
 /**
  * 疑难辨析。
@@ -155,6 +156,10 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
     .filter((section) => section.groups.length > 0),
   [matched, activeType]);
 
+  const sectionGroups = useMemo(() => sections.flatMap((section) => section.groups), [sections]);
+  const visibleGroups = useProgressiveList(sectionGroups, sections, 48);
+  const visibleKeys = useMemo(() => new Set(visibleGroups.map((group) => group.key)), [visibleGroups]);
+
   const open = ordered.find((group) => group.key === openKey) ?? null;
   const openReview = open ? distinctionReviewFor(open.key) : null;
   const openNotes = open && openReview?.level === "major"
@@ -241,6 +246,8 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
 
       {sections.map((section) => {
         const meta = TYPE_META[section.type];
+        const visibleSectionGroups = section.groups.filter((group) => visibleKeys.has(group.key));
+        if (!visibleSectionGroups.length) return null;
         return (
           <section key={section.type} className="cf-section">
             {/* 一类一节。选中某一类时这里只剩一节，标题照旧留着 ——
@@ -251,7 +258,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
               <small>{section.groups.length} 组</small>
             </p>
             <div className="cf-grid">
-              {section.groups.map((group) => {
+              {visibleSectionGroups.map((group) => {
                 const done = mastered.has(group.key);
                 return (
                   <button

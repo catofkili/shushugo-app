@@ -28,48 +28,20 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
+import { createSharedShims } from './shared/shims-map.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.resolve(import.meta.dirname, '..');
 const frontend = path.resolve(root, '../frontend');
-const lib = path.join(frontend, 'src/lib');
-const data = path.join(frontend, 'src/data');
 const shims = path.join(root, 'scripts/shared/shims');
+const shim = (name) => path.join(shims, name);
+const data = path.join(frontend, 'src/data');
 const { build } = require(path.join(frontend, 'node_modules/esbuild/lib/main.js'));
 const checkOnly = process.argv.includes('--check');
 
 const HEADER = '/* 由 scripts/build-shared.mjs 从 frontend/src 生成，别手改；改网页那份再重跑。 */\n';
-const shim = (name) => path.join(shims, name);
-
-// 网页模块路径（不带扩展名）→ shim 文件
-const SHIMS = {
-  [`${lib}/database`]: shim('database.js'),
-  [`${lib}/storage`]: shim('storage.js'),
-  [`${lib}/entitlements`]: shim('entitlements.js'),
-  [`${lib}/progress-events`]: shim('progress-events.js'),
-  [`${lib}/zoo-sounds`]: shim('zoo-sounds.js'),
-  [`${lib}/models/question-meaning-overrides`]: shim('question-meaning-overrides.js'),
-  [`${path.join(frontend, 'src/components/CapybaraMascot')}`]: shim('mascot.js'),
-  // 出厂内容数据：小程序已有同名数据模块的换过去；大的进分包按需灌；只给卡面用的小份直接打进来。
-  [`${data}/verb_pair_hints`]: shim('verb-pair-hints.js'),
-  [`${data}/confusion_distinction_reviews`]: shim('distinction-reviews.js'),
-  [`${data}/kanji_reading_unit_runtime`]: shim('kanji-unit-runtime.js'),
-  [`${data}/kanji_reading_usage`]: shim('kanji-reading-usage.js'),
-  [`${data}/pitch_accent`]: shim('pitch-accent-data.js'),
-  [`${data}/kanji_variants`]: shim('kanji-variants.js'),
-  [`${data}/kanji_readings`]: shim('kanji-readings.js'),
-  [`${data}/grammar_key_points`]: shim('grammar-key-points.js'),
-  // 出厂种子只给迁移用，小程序不迁移。
-  [`${data}/jlpt_words_seed`]: shim('seed-guard.js'),
-  [`${data}/grammar_seed`]: shim('seed-guard.js'),
-  [`${data}/jlpt_meaning_overrides`]: shim('seed-guard.js'),
-  [`${data}/jlpt_example_overrides`]: shim('seed-guard.js'),
-  [`${data}/jlpt_collocation_content`]: shim('seed-guard.js'),
-  [`${data}/jlpt_level_overrides`]: shim('seed-guard.js'),
-  [`${data}/kana_reading_fixes`]: shim('seed-guard.js'),
-  [`${data}/dictionary_supplement_seed`]: shim('seed-guard.js'),
-  [`${data}/word_sense_keys`]: shim('seed-guard.js')
-};
+// The same platform replacements are consumed by the Taro spike's Webpack config.
+const SHIMS = createSharedShims(root);
 // 允许直接打进主包的 src/data JSON（都不大）
 const INLINE_DATA = new Set(['english_origins.json', 'kanji_orthography.json']);
 
@@ -78,7 +50,7 @@ const plugin = {
   setup(api) {
     api.onResolve({ filter: /^\.\.?\// }, (args) => {
       const target = path.resolve(args.resolveDir, args.path).replace(/\.(ts|tsx|js|json)$/, '').replace(/\?raw$/, '');
-      return SHIMS[target] ? { path: SHIMS[target] } : null;
+      return SHIMS.has(target) ? { path: SHIMS.get(target) } : null;
     });
     // shim 里对小程序自身模块的引用保持原样，运行时从 src/shared/ 相对解析
     api.onResolve({ filter: /^\.\.\/(runtime|core|data|vendor|shared)\// }, (args) => (

@@ -1,0 +1,19 @@
+{
+  "description": "ShuShuGo Taro 小程序（提审候选，待外部验收）",
+  "miniprogramRoot": "dist/",
+  "compileType": "miniprogram",
+  "libVersion": "2.32.3",
+  "projectname": "shushugo-taro-spike-2",
+  "appid": "wxfbdb3cd03f09fa7d",
+  "setting": {
+    "es6": true,
+    "minified": true,
+    "urlCheck": true,
+    "postcss": true,
+    "minifyWXML": true,
+    "minifyWXSS": true,
+    "uploadWithSourceMap": false
+  },
+  "condition": {},
+  "packOptions": { "ignore": [] }
+}

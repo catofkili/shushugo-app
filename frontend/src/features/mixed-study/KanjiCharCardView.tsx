@@ -4,6 +4,7 @@ import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-util
 import type { KanjiCharCard } from "../../lib/kanji-char-cards";
 import { assignKanjiReadingPair, shuffleKanjiReadingOptions } from "../../lib/kanji-reading-usage";
 import type { WordAnswer } from "../../types/vocabulary";
+import { KanjiPairLines } from "./KanjiPairLines";
 
 export const KANJI_ACCENT: CSSProperties = {
   "--quiz-accent": "#B9A7F2",
@@ -26,7 +27,6 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
   const items = card.question?.items ?? [];
   const readings = useMemo(() => shuffleKanjiReadingOptions(items.map((item) => item.targetReading)), [card.char, card.question]);
   const diagramHeight = items.length * ROW_HEIGHT + Math.max(0, items.length - 1) * ROW_GAP;
-  const rowCenter = (index: number) => ((index * (ROW_HEIGHT + ROW_GAP) + ROW_HEIGHT / 2) / diagramHeight) * 100;
   const [pairs, setPairs] = useState<Record<number, number>>({});
   const [selectedWord, setSelectedWord] = useState<number | null>(null);
 
@@ -77,31 +77,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
               className="relative grid grid-cols-[minmax(0,1fr)_60px_minmax(0,1fr)]"
               style={{ height: diagramHeight }}
             >
-              <svg
-                aria-hidden="true"
-                className="pointer-events-none absolute left-[calc(50%-30px)] top-0 z-0 h-full w-[60px] overflow-visible"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                {items.map((item, wordIndex) => {
-                  const centerY = rowCenter(wordIndex);
-                  const assignedReading = pairs[wordIndex];
-                  const correctReading = readings.indexOf(item.targetReading);
-                  if (!revealed) {
-                    return assignedReading === undefined ? null : (
-                      <line key={`attempt-${wordIndex}`} x1="0" y1={centerY} x2="100" y2={rowCenter(assignedReading)} stroke="var(--quiz-accent)" strokeWidth="2.6" strokeLinecap="round" opacity="0.8" />
-                    );
-                  }
-                  return (
-                    <g key={`answer-${wordIndex}`}>
-                      {assignedReading !== undefined && assignedReading !== correctReading && (
-                        <line x1="0" y1={centerY} x2="100" y2={rowCenter(assignedReading)} stroke="var(--ds-danger)" strokeWidth="2.4" strokeLinecap="round" opacity="0.78" />
-                      )}
-                      <line x1="0" y1={centerY} x2="100" y2={rowCenter(correctReading)} stroke="var(--ds-primary)" strokeWidth="2.8" strokeLinecap="round" opacity="0.92" />
-                    </g>
-                  );
-                })}
-              </svg>
+              <KanjiPairLines items={items} pairs={pairs} readings={readings} revealed={revealed} height={diagramHeight} rowHeight={ROW_HEIGHT} rowGap={ROW_GAP} />
 
               <div className="relative z-10 grid grid-cols-1" style={{ gridTemplateRows: `repeat(${items.length}, ${ROW_HEIGHT}px)`, rowGap: ROW_GAP }}>
                 {items.map((item, wordIndex) => {
@@ -200,7 +176,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
           <div className="flex h-16 gap-2">
             {Object.keys(pairs).length > 0 && <button type="button" onClick={() => { setPairs({}); setSelectedWord(null); }} className="focus-ring zoo-pop inline-flex h-16 shrink-0 items-center justify-center gap-2 rounded-2xl border border-[var(--ds-line-2)] px-4 text-sm font-bold text-[var(--ds-ink-2)]"><RotateCcw size={16} />清空</button>}
             <button onClick={onReveal} style={{ background: "var(--quiz-accent)" }} className="focus-ring zoo-pop zoo-gloss inline-flex h-16 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333]">
-              <Eye size={18} /><span>{allConnected ? "核对连线" : "显示答案"}</span><span className="hidden text-xs font-semibold opacity-65 sm:inline">（按任意键）</span>
+              <Eye size={18} /><span>{allConnected ? "核对连线" : "显示答案"}</span><span className="kbd-hint hidden text-xs font-semibold opacity-65 sm:inline">（按任意键）</span>
             </button>
           </div>
         ) : (

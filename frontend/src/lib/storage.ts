@@ -13,6 +13,7 @@ import {
   type LocalDelta
 } from './local-delta';
 import { rebuildStudyTimeAggregate } from './sync/study-time';
+import { perfTimeAsync } from './perf-marks';
 
 // 供当前页面把“数据库写盘失败”显示出来；旧版 localStorage 配额异常曾被静默吞掉。
 export const PERSISTENCE_ERROR_EVENT = 'persistence-error';
@@ -151,9 +152,17 @@ export async function saveRecoverySnapshot(label: string): Promise<string> {
 
   if (isNativeFileStorage()) {
     const path = `masternihongo/recovery-${safeLabel}.db`;
+    if (isWechatFileStorage()) {
+      // 每个恢复点都是一整份库，小程序 200 MB 上限（见 saveFileDatabase）下只留最近一份。
+      const { files } = await Filesystem.readdir({ path: 'masternihongo', directory: DB_DIRECTORY })
+        .catch(() => ({ files: [] as { name: string }[] }));
+      for (const file of files) {
+        if (file.name.startsWith('recovery-')) await deleteFileIfExists(`masternihongo/${file.name}`);
+      }
+    }
     await Filesystem.writeFile({
       path,
-      data: bytesToBase64(data),
+      data: fileData(data),
       directory: DB_DIRECTORY,
       recursive: true
     });
@@ -309,17 +318,18 @@ const removeDeltaRecord = async (): Promise<void> => {
  *
  * ⚠️ 坏掉的增量不许拖垮启动:解析不了就丢掉,大不了回到快照那一刻。
  */
-const replayDeltaRecord = async (): Promise<void> => {
+const replayDeltaRecord = async (): Promise<number> => {
   try {
     const raw = await readDeltaRecord();
-    if (!raw) return;
+    if (!raw) return 0;
     const delta = JSON.parse(raw) as LocalDelta;
-    if (!delta?.to || delta.to <= readSnapshotMark()) return;
+    if (!delta?.to || delta.to <= readSnapshotMark()) return 0;
     applyDelta(delta);
     // word_study_time_by_device 是同步/增量的明细表，而统计读取旧的日汇总表。
     // 增量回放也必须重建派生汇总，否则重启后明细在、统计却少算。
     rebuildStudyTimeAggregate();
     console.log('✅ 本机增量已回放');
+    return deltaRowCount(delta);
   } catch (error) {
     // 回放本身是原子的(applyDelta 自带事务),失败时库还停在快照那一刻。
     // 但那份增量里的改动就此没人认领了,所以**原样留一份**再走 —— 下一次落盘
@@ -328,6 +338,7 @@ const replayDeltaRecord = async (): Promise<void> => {
     console.error('[storage] 本机增量回放失败,已按快照那一刻启动(增量已另存):', error);
     recoveryFailed = true;
     notifyPersistenceError();
+    return 0;
   }
 };
 
@@ -368,6 +379,31 @@ const base64ToBytes = (base64: string): Uint8Array => {
   }
   return data;
 };
+
+/*
+ * ⚠️ 小程序里整库文件必须按二进制读写，不能走 Capacitor 约定的 base64 字符串。
+ * 小程序没有原生 atob / btoa，补丁版要在 JS 里逐字节循环；iOS 微信又没有 JIT。
+ * 2026-09-26 实测（关 JIT 的 Node 模拟）：55 MB 的库读一次 ≈ 2.0 s、写一次 ≈ 2.2 s，
+ * 同时多出约 450 MB 的中间字符串——按 iPhone 慢约 2.5 倍折算，重度用户每次冷启动多等约 5 秒，
+ * 每次整库快照（最多 5 分钟一次）再卡约 5 秒，旧机器可能直接被系统杀掉。
+ * 所以在 wechat 平台上把字节直接交给文件垫片（taro-spike-2/src/platform/filesystem.weapp.cjs），
+ * `FILE_BINARY` 这个编码值只有那个垫片认得；网页 / iOS 仍走 base64，一个字没改。
+ */
+const FILE_BINARY = 'binary' as unknown as Encoding;
+const isWechatFileStorage = () => Capacitor.getPlatform?.() === 'wechat';
+
+const readFileBytes = async (path: string): Promise<Uint8Array> => {
+  if (isWechatFileStorage()) {
+    const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY, encoding: FILE_BINARY });
+    return data as unknown as Uint8Array;
+  }
+  const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY });
+  if (typeof data !== 'string') throw new Error('Unexpected binary file payload');
+  return base64ToBytes(data);
+};
+
+const fileData = (data: Uint8Array): string =>
+  isWechatFileStorage() ? data as unknown as string : bytesToBase64(data);
 
 const chunkKey = (index: number) => `${DB_CHUNK_KEY_PREFIX}${index}`;
 
@@ -424,10 +460,16 @@ const deleteFileIfExists = async (path: string): Promise<void> => {
   }
 };
 
-const saveFileDatabase = async (base64: string): Promise<void> => {
+// base64 字符串只剩 iOS 从旧 Preferences 分块迁移那一处在传；其余一律传字节。
+const saveFileDatabase = async (data: Uint8Array | string): Promise<void> => {
+  // ⚠️ 小程序：本地用户文件 + 缓存文件合计最多 200 MB（微信官方「文件系统」文档），超了 writeFile 直接失败。
+  // 照下面的顺序，写 tmp 那一刻磁盘上同时有 tmp / main / prev 三整份：作者 57 MB 的库峰值 172 MB，
+  // 再长一点就每次整库快照都失败（增量从此只涨不清，写盘失败横幅常驻）。先删 prev，峰值压到两份。
+  // 代价很小：main 在写 tmp 的全程都是完整的，prev 只防 main 读不出来；浏览器端本来就只存一份。
+  if (isWechatFileStorage()) await deleteFileIfExists(DB_FILE_PREV);
   await Filesystem.writeFile({
     path: DB_FILE_TMP,
-    data: base64,
+    data: typeof data === 'string' ? data : fileData(data),
     directory: DB_DIRECTORY,
     recursive: true
   });
@@ -462,9 +504,9 @@ const loadFileDatabase = async (): Promise<boolean> => {
     if (!names.has(path.split('/').pop()!)) continue;
     sawArchive = true;
     try {
-      const { data } = await Filesystem.readFile({ path, directory: DB_DIRECTORY });
-      if (typeof data !== 'string' || !data) throw new Error('Empty database archive');
-      await importDatabase(base64ToBytes(data), { validateBackup: true });
+      const bytes = await perfTimeAsync('启动 · 本地数据库文件读取', () => readFileBytes(path));
+      if (!bytes.length) throw new Error('Empty database archive');
+      await importDatabase(bytes, { validateBackup: true });
       if (path !== DB_FILE_MAIN) {
         console.warn(`[storage] 主数据库文件不可用，已从 ${path} 恢复`);
       }
@@ -477,6 +519,46 @@ const loadFileDatabase = async (): Promise<boolean> => {
   // 三代都在、三代都打不开 ≠ 首次安装。文件原样留在磁盘上,不许自动重建。
   if (sawArchive) throw new LocalArchiveUnreadableError(null, lastError);
   return false;
+};
+
+// 原生小程序（wechat-miniprogram/src/runtime/database-store.js）的三代文件，它自己也按这个顺序读。
+const LEGACY_WECHAT_FILES = ['shushugo/nihongo.db', 'shushugo/nihongo.db.tmp', 'shushugo/nihongo.db.prev'];
+
+const loadLegacyWechatDatabase = async (): Promise<boolean> => {
+  if (!isWechatFileStorage()) return false;
+  // 和 loadFileDatabase 一样用目录枚举证明「不存在」；枚举本身出错照样抛，不当成首次启动。
+  const root = await Filesystem.readdir({ path: '', directory: DB_DIRECTORY });
+  if (!root.files.some(file => file.name === 'shushugo')) return false;
+  const directory = await Filesystem.readdir({ path: 'shushugo', directory: DB_DIRECTORY });
+  const names = new Set(directory.files.map(file => file.name));
+  // ⚠️ 三代都要试：原生版写到一半被杀时主文件可能只剩 tmp / prev，只认主文件等于把这位老用户
+  // 当成新用户从出厂库开始——之后启动只看 masternihongo/，旧数据再也不会被读到。
+  let bytes: Uint8Array | null = null;
+  let sawArchive = false;
+  let lastError: unknown = null;
+  for (const path of LEGACY_WECHAT_FILES) {
+    if (!names.has(path.split('/').pop()!)) continue;
+    sawArchive = true;
+    try {
+      const candidate = await readFileBytes(path);
+      if (!candidate.length) throw new Error('原生小程序数据库为空');
+      await importDatabase(candidate, { validateBackup: true });
+      bytes = candidate;
+      break;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  if (!bytes) {
+    if (sawArchive) throw new LocalArchiveUnreadableError(null, lastError);
+    return false;
+  }
+  await saveFileDatabase(bytes);
+  // 新库落盘成功才删旧库。留着有两个坏处：白占一整份空间（200 MB 上限，见 saveFileDatabase），
+  // 以及「清除数据」只清 masternihongo/，下次启动这里又会把旧库导回来。
+  for (const path of LEGACY_WECHAT_FILES) await deleteFileIfExists(path);
+  console.log('✅ Database imported from the native Mini Program store');
+  return true;
 };
 
 /**
@@ -525,7 +607,7 @@ async function saveDatabaseNowUnlocked(options: { notifyCloud?: boolean } = {}):
     }
 
     if (isNativeFileStorage()) {
-      await saveFileDatabase(bytesToBase64(data));
+      await saveFileDatabase(data);
     } else {
       await saveBrowserDatabase(data);
       // 顺手把整库镜像到 frontend/.local/live.db,好让命令行查得到今天的真实状态。
@@ -565,7 +647,13 @@ export async function loadDatabase(): Promise<boolean> {
   try {
     if (isNativeFileStorage()) {
       if (await loadFileDatabase()) {
-        await replayDeltaRecord();
+        const replayed = await perfTimeAsync('启动 · 增量回放', replayDeltaRecord);
+        markSnapshotLoaded();
+        compactIfLarge(replayed);
+        return true;
+      }
+
+      if (await loadLegacyWechatDatabase()) {
         markSnapshotLoaded();
         return true;
       }
@@ -593,8 +681,9 @@ export async function loadDatabase(): Promise<boolean> {
         await stashUnreadableBrowserDatabase(browserData).catch(() => undefined);
         throw new LocalArchiveUnreadableError(browserData, error);
       }
-      await replayDeltaRecord();
+      const replayed = await perfTimeAsync('启动 · 增量回放', replayDeltaRecord);
       markSnapshotLoaded();
+      compactIfLarge(replayed);
       console.log('✅ Database loaded from IndexedDB');
       // 开着 dev server 打开页面就先落一份快照,不必等到答完第一题。
       if (import.meta.env.DEV) {
@@ -696,8 +785,28 @@ let snapshotAt = 0;
  */
 const FULL_SNAPSHOT_INTERVAL_MS = 5 * 60_000;
 
-/** 增量大到这个份上就不如直接整库(词单导入这种一次改上万行的场合)。 */
-const DELTA_ROW_LIMIT = 20_000;
+/**
+ * 增量大到这个份上就不如直接整库(词单导入这种一次改上万行的场合)。
+ * ⚠️ 小程序单独收紧到 2,000：增量每次冷启动都要整条回放，而 iPhone 小程序里 SQLite 是解释执行的，
+ * 2026-09-27 真机实测回放一份约 5000 行的增量要 13.4 秒（那时还没缓存 prepared statement）。
+ * 宁可偶尔多写一次整库（后台一两百毫秒到一秒），也不让每次冷启动都背着上千行。
+ */
+const deltaRowLimit = (): number => (Capacitor.getPlatform?.() === 'wechat' ? 2_000 : 20_000);
+
+/**
+ * 启动时回放的增量超过这么多行，就在稍后整库落盘一次，把增量清掉。
+ * 为什么需要：整库快照要「这次打开之后满 5 分钟再写盘」才会触发，而小程序每次常常只用几分钟 ——
+ * 增量从装机那天起一路累积、每次冷启动全部重放（起点水平一次就写上千行）。清掉之后下次启动只回放最近的改动。
+ */
+const REPLAY_COMPACT_ROWS = 300;
+const REPLAY_COMPACT_DELAY_MS = 8_000;
+const compactIfLarge = (replayedRows: number): void => {
+  if (replayedRows <= REPLAY_COMPACT_ROWS) return;
+  // 不算一次本地改动：不抬 revision、不通知云同步（和小程序首装那次 first-save 同一种写法）。
+  setTimeout(() => {
+    void saveDatabase({ notifyCloud: false }).catch((error) => console.warn('[storage] 启动后整库压实失败，下次启动再试:', error));
+  }, REPLAY_COMPACT_DELAY_MS);
+};
 
 /** DEV 下把整库镜像到 .local/live.db 的最小间隔(和 dev-snapshot 里那道闸同一个数)。 */
 const DEV_MIRROR_INTERVAL_MS = 20_000;
@@ -738,14 +847,17 @@ export function requestFullSnapshot(): void {
 }
 
 const mirrorForDev = (): void => {
-  if (!import.meta.env.DEV || isNativeFileStorage()) return;
-  const now = Date.now();
-  // 自己先挡一道:不挡的话每写一次增量都要为了镜像整库 export 一遍。
-  if (now - devMirroredAt < DEV_MIRROR_INTERVAL_MS) return;
-  devMirroredAt = now;
-  const bytes = exportDatabase();
-  if (!bytes) return;
-  void import('./dev-snapshot').then(({ mirrorLiveSnapshot }) => mirrorLiveSnapshot(bytes)).catch(() => undefined);
+  // ⚠️ 写成「DEV 才进块」，别改回 `if (!DEV) return;`：小程序用 webpack 打包，它看不出提前 return 后面走不到，
+  // 会把 dev-snapshot 整个打进主包（Vite 看得出，网页版一直没这个问题）。
+  if (import.meta.env.DEV && !isNativeFileStorage()) {
+    const now = Date.now();
+    // 自己先挡一道:不挡的话每写一次增量都要为了镜像整库 export 一遍。
+    if (now - devMirroredAt < DEV_MIRROR_INTERVAL_MS) return;
+    devMirroredAt = now;
+    const bytes = exportDatabase();
+    if (!bytes) return;
+    void import('./dev-snapshot').then(({ mirrorLiveSnapshot }) => mirrorLiveSnapshot(bytes)).catch(() => undefined);
+  }
 };
 
 /**
@@ -778,7 +890,7 @@ const persistNowInQueue = async (): Promise<void> => {
       await saveDatabaseNow();
       return;
     }
-    if (deltaRowCount(delta) > DELTA_ROW_LIMIT) {
+    if (deltaRowCount(delta) > deltaRowLimit()) {
       await saveDatabaseNow();
       return;
     }

@@ -1,0 +1,1 @@
+import { NotificationsRoute } from '../../../../frontend/src/routes/notifications.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="notifications" Route={NotificationsRoute} />;

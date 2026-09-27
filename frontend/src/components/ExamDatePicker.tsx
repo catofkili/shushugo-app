@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { announcedExamDates, examLabel, formatExamDate, formatExamDateHuman, nextGaokaoDate, parseExamDate, upcomingExamDates, type ExamKind } from "../lib/jlpt/exam-dates";
+import { SelectField } from "./SelectField";
 
 interface Props {
   kind: ExamKind;
@@ -31,7 +32,7 @@ export function ExamDatePicker({ kind, value, onChange }: Props) {
       <span className="shrink-0 rounded-full bg-[#e8f2dc] px-3 py-1 text-xs font-bold text-[#497333]">{open ? "收起 ↑" : "修改日期 ↓"}</span>
     </button>
     {open && <div className="border-t border-[#e6dcca] p-3">
-      {presets.length > 0 && <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+      {presets.length > 0 && <div className="mb-3 flex flex-wrap gap-2 pb-1">
         {presets.map((date) => <button key={formatExamDate(date)} type="button" className="ls-option shrink-0 px-3 py-2 text-xs" onClick={() => choose(date)}>
           {formatExamDateHuman(date)}{kind === "jlpt" && date.getFullYear() > 2026 ? " · 预计" : " · 已公布"}
         </button>)}
@@ -43,9 +44,13 @@ export function ExamDatePicker({ kind, value, onChange }: Props) {
         {years.map((entry) => <button key={entry} type="button" aria-pressed={visibleYear === entry} onClick={() => setYear(entry)} className="ls-option min-h-9 flex-1 px-1 text-xs">{entry}</button>)}
       </div>
       {kind !== "gaokao" && <label className="mb-3 flex items-center gap-2 text-xs font-bold text-[#62584b]">月份
-        <select value={visibleMonth} onChange={(event) => setMonth(Number(event.target.value))} className="rounded-lg border border-[#d5c9b7] bg-white px-2 py-1 text-sm">
-          {Array.from({ length: 12 }, (_, index) => <option key={index} value={index + 1}>{index + 1} 月</option>)}
-        </select>
+        <SelectField
+          ariaLabel="月份"
+          value={String(visibleMonth)}
+          onChange={(month) => setMonth(Number(month))}
+          className="rounded-lg border border-[#d5c9b7] bg-white px-2 py-1 text-sm"
+          options={Array.from({ length: 12 }, (_, index) => ({ value: String(index + 1), label: `${index + 1} 月` }))}
+        />
       </label>}
       <div className="grid grid-cols-7 gap-1" role="group" aria-label={`${visibleYear} 年 ${visibleMonth} 月日期`}>
         {WEEKDAYS.map((day) => <span key={day} className="py-1 text-center text-xs font-bold text-[#8b8173]">{day}</span>)}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   cheerCloudTeamMember,
   createCloudTeam,
@@ -19,6 +19,8 @@ import { RefreshCw } from "lucide-react";
 import { CapybaraWalk, Sticker } from "../components/CapybaraMascot";
 import { MascotSay } from "../components/MascotSay";
 import { playKnow, playSave, playStreakChirp } from "../lib/zoo-sounds";
+import { confirmDialog, promptDialog } from "../lib/platform-dialogs";
+import { copyText, shareText } from "../lib/share-text";
 
 const EMOJIS = ["🌱", "🐿️", "🐦", "🚃", "🦉", "🍊", "📚", "⛩️"];
 const TARGETS = ["N5", "N4", "N3", "N2", "N1", "全部"];
@@ -48,6 +50,25 @@ const localActivity = () => {
 
 const messageFor = (error: unknown) => error instanceof Error ? error.message : "操作失败，请稍后再试。";
 
+
+// 进组队页先摆上次的样子，后台再刷新：小程序里一次云请求（云函数 → Cloudflare）要 1–5 秒，
+// 2026-09-27 真机进组队页等了 15 秒。按账号存，换号不会看到别人的队伍。
+const TEAM_CACHE_KEY = "mn-team-page-cache";
+type TeamCache = { owner: string; team: CloudTeam | null; plaza: CloudTeamPlazaItem[] };
+const readTeamCache = (owner: string | undefined): TeamCache | null => {
+  if (!owner) return null;
+  try {
+    const cached = JSON.parse(localStorage.getItem(TEAM_CACHE_KEY) ?? "null") as TeamCache | null;
+    return cached?.owner === owner ? cached : null;
+  } catch {
+    return null;
+  }
+};
+const writeTeamCache = (owner: string | undefined, team: CloudTeam | null, plaza: CloudTeamPlazaItem[]) => {
+  if (!owner) return;
+  try { localStorage.setItem(TEAM_CACHE_KEY, JSON.stringify({ owner, team, plaza })); } catch { /* 缓存只是提速 */ }
+};
+
 export function TeamPage({ onBack }: { onBack: () => void }) {
   const [team, setTeam] = useState<CloudTeam | null>(null);
   const [plaza, setPlaza] = useState<CloudTeamPlazaItem[]>([]);
@@ -60,14 +81,23 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   const [notice, setNotice] = useState("");
   const activity = useMemo(() => localActivity(), []);
 
+  const ownerRef = useRef<string | undefined>(undefined);
+
   const refresh = useCallback(async () => {
     const [current, available] = await Promise.all([
       getCloudTeam(activity.studyDay),
       getCloudTeamPlaza(activity.studyDay)
     ]);
-    const synced = current ? await reportCloudTeamActivity({ ...activity }) : null;
+    const others = available.filter((item) => item.id !== current?.id);
+    setTeam(current);
+    setPlaza(others);
+    setLoading(false);
+    writeTeamCache(ownerRef.current, current, others);
+    if (!current) return;
+    // 上报今天的学习量是第二轮云请求：先按拉到的队伍显示，上报回来再换成带今天进度的那份。
+    const synced = await reportCloudTeamActivity({ ...activity });
     setTeam(synced);
-    setPlaza(available.filter((item) => item.id !== synced?.id));
+    writeTeamCache(ownerRef.current, synced, others);
   }, [activity]);
 
   useEffect(() => {
@@ -75,7 +105,15 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
     void (async () => {
       try {
         const session = await getCloudSession();
-        if (active) setNickname(session.displayName ?? "");
+        if (!active) return;
+        setNickname(session.displayName ?? "");
+        ownerRef.current = session.email;
+        const cached = readTeamCache(session.email);
+        if (cached) {
+          setTeam(cached.team);
+          setPlaza(cached.plaza);
+          setLoading(false);
+        }
         await refresh();
       } catch (error) {
         if (active) setNotice(messageFor(error));
@@ -118,7 +156,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
 
   const copyInviteCode = () => run("copy-code", async () => {
     if (!team) return;
-    await navigator.clipboard.writeText(team.inviteCode);
+    await copyText(team.inviteCode);
     playSave();
     setNotice("邀请码已复制。");
   });
@@ -126,8 +164,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   const shareInvite = () => run("share", async () => {
     if (!team) return;
     const text = "来「收集日」加入我的学习队伍「" + team.name + "」：邀请码 " + team.inviteCode;
-    if (navigator.share) await navigator.share({ title: "收集日组队邀请", text });
-    else await navigator.clipboard.writeText(text);
+    await shareText("收集日组队邀请", text);
     playSave();
     setNotice("邀请信息已准备好。");
   });
@@ -139,14 +176,14 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   });
 
   const regenerateInvite = () => run("regenerate", async () => {
-    if (!window.confirm("旧邀请码会立即失效，确定更新吗？")) return;
+    if (!await confirmDialog("旧邀请码会立即失效，确定更新吗？")) return;
     const code = await regenerateCloudTeamInvite();
     setTeam((current) => current ? { ...current, inviteCode: code } : current);
     setNotice("已生成新的邀请码。");
   });
 
   const leave = () => run("leave", async () => {
-    if (!window.confirm(team?.isOwner && team.memberCount > 1 ? "退出后会把队长移交给最早加入的队友，确定退出吗？" : "确定退出这支队伍吗？")) return;
+    if (!await confirmDialog(team?.isOwner && team.memberCount > 1 ? "退出后会把队长移交给最早加入的队友，确定退出吗？" : "确定退出这支队伍吗？")) return;
     await leaveCloudTeam();
     setTeam(null);
     await refresh();
@@ -160,12 +197,13 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   };
 
   const report = (teamId: string) => {
-    const reason = window.prompt("举报原因：广告或联系方式 / 不当内容 / 冒充或欺骗 / 其他", "不当内容");
-    if (!reason) return;
-    void run("report-" + teamId, async () => {
-      await reportCloudTeam(teamId, reason);
-      setPlaza((items) => items.filter((item) => item.id !== teamId));
-      setNotice("已收到举报，这支队伍已从你的广场隐藏。");
+    void promptDialog("举报原因：广告或联系方式 / 不当内容 / 冒充或欺骗 / 其他", "不当内容").then((reason) => {
+      if (!reason) return;
+      return run("report-" + teamId, async () => {
+        await reportCloudTeam(teamId, reason);
+        setPlaza((items) => items.filter((item) => item.id !== teamId));
+        setNotice("已收到举报，这支队伍已从你的广场隐藏。");
+      });
     });
   };
 

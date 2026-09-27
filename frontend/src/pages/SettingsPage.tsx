@@ -1,6 +1,9 @@
 import { AlertTriangle, Check, ChevronRight, Download, Moon, RotateCcw, Smartphone, Sun, Upload, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { DailyPlanPanel } from "../components/DailyPlanPanel";
+import { SelectField } from "../components/SelectField";
+import { Disclosure } from "../components/Disclosure";
 import { KanjiUnitPlanSettings } from "../components/KanjiUnitPlanSettings";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { devForcePro, setDevForcePro } from "../lib/entitlements";
@@ -10,6 +13,7 @@ import { clearStorage, restoreDatabaseBackup, saveDatabase } from "../lib/storag
 import { getPasscodeState, verifyPasscode } from "../lib/localPasscode";
 import { defaultVoiceId, loadVoices, SYSTEM_VOICE_ID, type AudioVoice } from "../lib/speech";
 import { voiceUnlocked } from "../lib/yuzu";
+import { confirmDialog } from "../lib/platform-dialogs";
 import {
   CLOUD_AUTH_EVENT,
   cloudLogout,
@@ -33,6 +37,7 @@ import {
 import { importExternalWordList, previewExternalWordList } from "../lib/word-list-import";
 import { MascotSay } from "../components/MascotSay";
 import { yieldToPaint } from "../lib/yield-to-paint";
+import { getAutoSendErrors, setAutoSendErrors } from "../lib/feedback";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -48,8 +53,10 @@ const themeOptions: { value: ThemePreference; label: string; icon: typeof Moon }
 const CLEAR_CONFIRM_TEXT = "清除所有数据";
 
 export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPageProps) {
+  const isWechatMini = Capacitor.getPlatform() === "wechat";
   const entitlements = useEntitlements();
   const [preferences, setPreferences] = useState<StudyPreferences>(defaultStudyPreferences);
+  const [autoSendErrors, setAutoSendErrorsState] = useState(getAutoSendErrors);
   // 有哪些声音可选要问磁盘(音频库是构建产物,可能一个都没生成)
   const [voices, setVoices] = useState<AudioVoice[]>([]);
   // null = 还没量出来。别拿 0 B 冒充答案 —— 用户会以为数据丢了。
@@ -188,7 +195,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
         .slice(0, 3)
         .map((item) => `${item.kanji}${item.kana !== item.kanji ? `（${item.kana}）` : ""}`)
         .join("、");
-      const confirmed = window.confirm(
+      const confirmed = await confirmDialog(
         [
           `识别到 ${preview.validRows} 个词条。`,
           preview.duplicateRows ? `文件内重复 ${preview.duplicateRows} 行会自动跳过。` : "",
@@ -270,14 +277,14 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
     "邮箱已验证。"
   );
 
-  const pushCloud = () => {
-    const confirmed = window.confirm("确定要用本机学习数据覆盖云端备份吗？如果这是切换账号后的本机数据，请先确认账号无误。");
+  const pushCloud = async () => {
+    const confirmed = await confirmDialog("确定要用本机学习数据覆盖云端备份吗？如果这是切换账号后的本机数据，请先确认账号无误。");
     if (!confirmed) return;
     runCloudAction(pushCloudBackup, "云端备份已上传。");
   };
 
-  const pullCloud = () => {
-    const confirmed = window.confirm("确定要把当前账号的云端进度合并到本机吗？建议先导出一份本机备份。");
+  const pullCloud = async () => {
+    const confirmed = await confirmDialog("确定要把当前账号的云端进度合并到本机吗？建议先导出一份本机备份。");
     if (!confirmed) return;
     runCloudAction(async () => {
       const text = await pullCloudBackup();
@@ -345,6 +352,32 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
       </div>
 
       <div className="mb-4">
+        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">反馈与诊断</p>
+        <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
+          <label className="flex cursor-pointer items-center justify-between gap-4">
+            <span>
+              <span className="block text-sm font-bold text-white">出错时自动发送诊断信息</span>
+              <span className="mt-1 block text-xs text-white/55">关闭后，每次发送前都会询问你。</span>
+            </span>
+            <span className="relative inline-flex shrink-0 items-center">
+              <input
+                type="checkbox"
+                checked={autoSendErrors}
+                onChange={(event) => {
+                  const enabled = event.currentTarget.checked;
+                  setAutoSendErrorsState(enabled);
+                  setAutoSendErrors(enabled);
+                }}
+                className="peer sr-only"
+                aria-label="出错时自动发送诊断信息"
+              />
+              <span className="h-6 w-11 rounded-full bg-white/20 transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5" />
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div className="mb-4">
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">每日学习量</p>
         {/* 圆环 / 数字表单 / 备考一键都在 DailyPlanPanel 里，和主页是同一个组件、同一份状态。
             别再往这一节插开关：它只装「今天给我多少题」这一类的量。 */}
@@ -384,20 +417,22 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             <div className="flex items-center gap-3 border-b border-white/10 p-4">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white">发音声音</p>
-                <p className="mt-0.5 text-xs text-white/50">系统语音不占空间，语调较平</p>
+                <p className="mt-0.5 text-xs text-white/50">{isWechatMini ? "使用云端音色播放" : "系统语音不占空间，语调较平"}</p>
               </div>
-              <select
+              <SelectField
+                ariaLabel="发音声音"
                 value={preferences.voiceId}
-                onChange={(event) => updatePreference({ voiceId: event.target.value })}
+                onChange={(voiceId) => updatePreference({ voiceId })}
                 className="focus-ring control-cyan h-10 max-w-40 shrink-0 rounded-xl border px-2 text-xs font-bold"
-              >
-                <option value="">默认</option>
-                {voices.map((voice) => {
-                  const locked = !voiceUnlocked(voice.id, defaultVoiceId());
-                  return <option key={voice.id} value={voice.id} disabled={locked}>{voice.label}{locked ? "(柚子商店解锁)" : ""}</option>;
-                })}
-                <option value={SYSTEM_VOICE_ID}>系统语音</option>
-              </select>
+                options={[
+                  { value: "", label: "默认" },
+                  ...voices.map((voice) => {
+                    const locked = !voiceUnlocked(voice.id, defaultVoiceId());
+                    return { value: voice.id, label: `${voice.label}${locked ? "(柚子商店解锁)" : ""}`, disabled: locked };
+                  }),
+                  ...(!isWechatMini ? [{ value: SYSTEM_VOICE_ID, label: "系统语音" }] : [])
+                ]}
+              />
             </div>
           )}
 
@@ -621,8 +656,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
           />
 
           {/* 需要 Mac + 跑一次 python 脚本,能用的人极少,别让它常驻这一页 */}
-          <details className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3 text-xs leading-5 text-white/58">
-            <summary className="cursor-pointer font-bold text-white/72">MOJi 复习记录迁移（需要 Mac）</summary>
+          <Disclosure className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3 text-xs leading-5 text-white/58" summaryClassName="cursor-pointer font-bold text-white/72" summary="MOJi 复习记录迁移（需要 Mac）">
             <p className="mt-2">iPhone 不允许应用直接读取另一个应用的内部数据，所以本应用只能在 iPhone 上导入导出文件，不能直接读取 MOJi 的 .realm 或缓存文件。</p>
             <ol className="mt-2 list-decimal space-y-1 pl-4">
               <li>在 Mac 的 MOJi 中登录，打开“背词/复习”页面并等待内容加载完成，然后退出 MOJi。</li>
@@ -632,7 +666,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
               <li>回到本页点“导入词单或 MOJi 复习记录”，选择该 JSON 并确认。不要选择 .realm、.db 或缓存文件。</li>
             </ol>
             <p className="mt-2 text-white/45">导入会把 Moji 的做题次数、错误次数和分数转换为本应用的复习强度，不会覆盖已有本机学习记录。Windows 或纯 iPhone 目前只能导入已经导出的 JSON，不能生成这份完整记录。</p>
-          </details>
+          </Disclosure>
 
           <button onClick={() => backupInputRef.current?.click()} className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/16 text-[#81D8CF]">

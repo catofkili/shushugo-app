@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, Crown, RotateCcw, ShieldCheck, Sparkles, Ticket } from "lucide-react";
 import { EntitlementState, productLabel } from "../lib/entitlements";
 import { MascotSay } from "../components/MascotSay";
@@ -35,7 +36,8 @@ const rows = [
 ];
 
 export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: ProPageProps) {
-  const [message, setMessage] = useState("正在准备 App Store 商品信息...");
+  const isWechatMini = Capacitor.getPlatform() === "wechat";
+  const [message, setMessage] = useState(() => isWechatMini ? "微信支付尚未开放。" : "正在准备 App Store 商品信息...");
   const [restoring, setRestoring] = useState(false);
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
             <h1 className="mt-2 text-2xl font-black text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</h1>
             <p className="mt-2 text-sm leading-6 text-white/66">
               {entitlements.isPro
-                ? `${productLabel(entitlements.productId)} · ${entitlements.source === "development" ? "本地开发解锁" : "App Store 权益"}`
+                ? `${productLabel(entitlements.productId)} · ${isWechatMini ? "服务端会员权益" : entitlements.source === "development" ? "本地开发解锁" : "App Store 权益"}`
                 : "当前为免费版。开通后下面标 ✓ 的功能立即可用。"}
             </p>
           </div>
@@ -107,12 +109,12 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold text-white">{entitlements.isPro ? "查看 Pro 方案" : "选择 Pro 方案"}</span>
-            <span className="mt-0.5 block text-xs text-white/50">月度、年度或永久买断</span>
+          <span className="mt-0.5 block text-xs text-white/50">{isWechatMini ? "微信支付尚未开放时不会显示购买入口" : "月度、年度或永久买断"}</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
         </button>
 
-        <button
+        {!isWechatMini && <button
           onClick={restore}
           disabled={restoring}
           className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151] disabled:opacity-60"
@@ -125,9 +127,9 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
             <span className="mt-0.5 block text-xs text-white/50">换机或重装后从 App Store 恢复权益</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
-        </button>
+        </button>}
 
-        <button
+        {!isWechatMini && <button
           onClick={async () => setMessage((await redeemOfferCode()).message)}
           className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]"
         >
@@ -139,7 +141,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
             <span className="mt-0.5 block text-xs text-white/50">在 App Store 兑换页输入活动或赠送的兑换码</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
-        </button>
+        </button>}
 
         <button
           onClick={onOpenPrivacy}
@@ -158,7 +160,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
 
       <MascotSay sticker="scene-laptop" size={52} className="ds-say-onbg mt-4">{message}</MascotSay>
 
-      <div className="mt-4 rounded-2xl border border-white/12 bg-[#464949] p-3 text-xs leading-6 text-white/50">
+      {!isWechatMini && <div className="mt-4 rounded-2xl border border-white/12 bg-[#464949] p-3 text-xs leading-6 text-white/50">
         <p>
           月度 / 年度 Pro 为自动续订订阅：除非在当前订阅期结束前至少 24 小时关闭自动续订，
           订阅会自动续订并从 Apple 账户扣费。可随时在系统「设置 → Apple 账户 → 订阅」中管理或取消。
@@ -173,7 +175,7 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
           </a>
           条款。
         </p>
-      </div>
+      </div>}
     </div>
   );
 }

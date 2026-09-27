@@ -1,0 +1,1 @@
+import { AccountRoute } from '../../../../frontend/src/routes/account.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="account" Route={AccountRoute} />;

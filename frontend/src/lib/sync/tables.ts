@@ -143,6 +143,10 @@ export const DEVICE_LOCAL_STATE_KEYS = new Set([
   "sync_last_pushed_at",
   "sync_generation",
   "sync_last_modified",
+  // schema DDL fingerprints are local to this device/database. Sharing one can make
+  // a recipient skip migrations that its own database has never run.
+  "runtime_schema_user_ddl",
+  "runtime_schema_sync_ddl",
   "auth_access_token",
   "auth_user_id",
   "entitlement_cache",

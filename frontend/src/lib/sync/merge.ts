@@ -10,6 +10,7 @@ import {
 } from "./schema";
 import { isDeviceLocalStateKey, SYNCED_TABLES, syncedTablesForCloud, type SyncedTable } from "./tables";
 import { isUserSyncSnapshot } from "./snapshot";
+import { statementCache, type SqlValue } from "../database/db-utils";
 import { canUseFeature, getEntitlements } from "../entitlements";
 import { rebuildStudyTimeAggregate } from "./study-time";
 import { GRAMMAR_HIGHLIGHTS_UPDATED_EVENT, GRAMMAR_POSITIONS_UPDATED_EVENT } from "../grammar-events";
@@ -245,10 +246,12 @@ const rowsEqual = (left: Row | undefined, right: Row | undefined, columns: Set<s
   return true;
 };
 
-const deleteRowByKey = (db: Database, entry: SyncedTable, key: string): void => {
+type StatementCache = ReturnType<typeof statementCache>;
+
+const deleteRowByKey = (cache: StatementCache, entry: SyncedTable, key: string): void => {
   const values = key.split(ROW_SEPARATOR);
   const where = entry.keys.map((column) => `${quoteIdentifier(column)} = ?`).join(" AND ");
-  db.run(`DELETE FROM ${quoteIdentifier(entry.table)} WHERE ${where}`, values as never);
+  cache.run(`DELETE FROM ${quoteIdentifier(entry.table)} WHERE ${where}`, values);
 };
 
 /**
@@ -277,6 +280,7 @@ const foreignKeyedPrimaryColumns = (db: Database, entry: SyncedTable): string[] 
 
 const applyTable = (
   db: Database,
+  cache: StatementCache,
   entry: SyncedTable,
   selected: Map<string, VersionedItem>
 ): void => {
@@ -293,7 +297,7 @@ const applyTable = (
     const current = localByKey.get(key);
     const row = mergedRow(item, current);
     if (!row) {
-      if (current) changes.push(() => deleteRowByKey(db, entry, key));
+      if (current) changes.push(() => deleteRowByKey(cache, entry, key));
       continue;
     }
     // v1 快照可能没有 sync_uid。stateOf 已用「来源 + 原表 id」给它造了
@@ -311,9 +315,9 @@ const applyTable = (
     if (!rowColumns.length) continue;
     const names = rowColumns.map(quoteIdentifier).join(", ");
     const placeholders = rowColumns.map(() => "?").join(", ");
-    changes.push(() => db.run(
+    changes.push(() => cache.run(
       `INSERT OR REPLACE INTO ${quoteIdentifier(entry.table)} (${names}) VALUES (${placeholders})`,
-      rowColumns.map((column) => row[column]) as never
+      rowColumns.map((column) => row[column]) as SqlValue[]
     ));
   }
 
@@ -322,6 +326,7 @@ const applyTable = (
 
 const applyTombstones = (
   db: Database,
+  cache: StatementCache,
   merged: Map<string, Map<string, VersionedItem>>
 ): void => {
   if (!tableExists(db, "sync_tombstones")) return;
@@ -339,10 +344,10 @@ const applyTombstones = (
         origin_device: item.originDevice
       };
       const writableColumns = Object.keys(values).filter((column) => columns.has(column));
-      db.run(
+      cache.run(
         `INSERT OR REPLACE INTO sync_tombstones (${writableColumns.map(quoteIdentifier).join(", ")})
          VALUES (${writableColumns.map(() => "?").join(", ")})`,
-        writableColumns.map((column) => values[column]) as never
+        writableColumns.map((column) => values[column]) as SqlValue[]
       );
     }
   }
@@ -397,14 +402,17 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
     const merged = new Map<string, Map<string, VersionedItem>>();
 
     beginSyncApply();
+    const cache = statementCache(localDb);
     localDb.run("BEGIN TRANSACTION");
     try {
       for (const entry of syncedTables) {
         const items = mergeItems(entry, localState, remoteState);
         merged.set(entry.table, items);
-        applyTable(localDb, entry, items);
+        applyTable(localDb, cache, entry, items);
       }
-      applyTombstones(localDb, merged);
+      applyTombstones(localDb, cache, merged);
+      // 下面的重放 / 物化自己跑 SQL，先把缓存的语句释放掉，避免它们和未 finalize 的语句交错
+      cache.free();
       replayKanjiUnitReviews?.();
       replayKanjiCharReviews?.();
       replayConfusionReviews?.();
@@ -413,6 +421,7 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
       materializeCustomWords?.();
       localDb.run("COMMIT");
     } catch (error) {
+      cache.free();
       localDb.run("ROLLBACK");
       throw error;
     } finally {

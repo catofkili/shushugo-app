@@ -1,0 +1,1 @@
+import { VocabTestRoute } from '../../../../frontend/src/routes/vocab-test.tsx'; import { WeappPage } from '../../platform/WeappPage'; export default () => <WeappPage page="vocab-test" Route={VocabTestRoute} />;

@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { DailyPlanRing, RING_COLORS, type RingValue } from "./DailyPlanRing";
+import { DailyPlanRing, type RingValue } from "./DailyPlanRing";
+import { RING_COLORS } from "./daily-plan-ring-geometry";
 import {
   arrangedPlan, dailyPlanView, saveDailyPlan, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
   type DailyPlanView, type PlanKind
 } from "../lib/daily-plan";
 import { PREFERENCES_EVENT } from "../lib/studyPreferences";
 import { refreshTodayWordPlan } from "../lib/api";
-import { notifyProgressUpdated, PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
+import { notifyProgressUpdated } from "../lib/progress-events";
+import { useProgressUpdates } from "../lib/use-progress-updates";
 import { refreshMixedCardTasks } from "../lib/mixed-cards";
 import { getDatabase } from "../lib/database";
 import { useEntitlements } from "../hooks/useEntitlements";
+import { DailyPlanSlider } from "./DailyPlanSlider";
 
 /**
  * 每日学习量的三个入口放在一起：圆环（随手拖）、数字表单（朴实无华，八个框）、备考一键。
@@ -58,12 +61,11 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
   useEffect(() => {
     reload();
     window.addEventListener(PREFERENCES_EVENT, reload);
-    window.addEventListener(PROGRESS_UPDATED_EVENT, reload);
     return () => {
       window.removeEventListener(PREFERENCES_EVENT, reload);
-      window.removeEventListener(PROGRESS_UPDATED_EVENT, reload);
     };
   }, []);
+  useProgressUpdates(reload);
 
   if (!view || !plan) return null;
 
@@ -168,19 +170,14 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
           <p className="zoo-plan-zoom-title">
             {PLAN_LABELS[focus]} · {focusedCount} 项 —— 左边新学，右边复习
           </p>
-          <input
-            type="range"
-            min={0}
-            max={focusedCount}
+          <DailyPlanSlider
             value={plan[focus].fresh}
-            onChange={(event) => {
-              const fresh = Number(event.target.value);
+            max={focusedCount}
+            color={RING_COLORS[focus]}
+            onChange={(fresh) => {
               preview({ ...plan, [focus]: { fresh, review: focusedCount - fresh } });
             }}
-            onPointerUp={commitDrag}
-            onKeyUp={commitDrag}
-            onBlur={commitDrag}
-            style={{ accentColor: RING_COLORS[focus] }}
+            onCommit={commitDrag}
           />
           <p className="zoo-plan-zoom-meta">
             新学 <b>{plan[focus].fresh}</b>（建议 ≥ {focused.suggest.fresh}，剩 {focused.pool.unseen} 没学）

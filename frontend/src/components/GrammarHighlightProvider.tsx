@@ -10,6 +10,7 @@ import {
   type GrammarHighlight
 } from "../lib/grammarHighlights";
 import { PERSISTENCE_ERROR_EVENT } from "../lib/storage";
+import { touchEventsEnabled } from "../lib/touch-adapter";
 
 type SelectionDraft = Omit<GrammarHighlight, "text" | "datasetVersion"> & {
   text: string;
@@ -92,6 +93,8 @@ const boundaryAtOffset = (block: HTMLElement, target: number): [Node, number] | 
 };
 
 const supportsCustomHighlight = (): HighlightRegistryLike | null => {
+  // Mini Program has no browser text selection or CSS Highlight API. Keep persisted web highlights inert there.
+  if (touchEventsEnabled()) return null;
   const css = (globalThis as typeof globalThis & {
     CSS?: { highlights?: HighlightRegistryLike };
   }).CSS;
@@ -291,6 +294,7 @@ export const GrammarHighlightProvider = ({ children }: { children: ReactNode }) 
           className="grammar-highlight-bubble"
           style={{ left: menu.left, top: menu.top }}
           onPointerDown={(event) => event.preventDefault()}
+          onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined}
         >
           <button type="button" onClick={markSelection} aria-label={menu.highlighted ? "取消这段划重点" : "给选中文字划重点"}>
             {menu.highlighted ? "取消划重点" : "划重点"}

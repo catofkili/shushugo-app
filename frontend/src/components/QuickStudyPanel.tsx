@@ -10,6 +10,7 @@ import type { WordAnswer, WordCard } from "../types/vocabulary";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { useRowSelection } from "../hooks/useRowSelection";
 import { useStudyTimer } from "../lib/useStudyTimer";
+import { getElementFromPoint, queryTouchRect, queryTouchRects, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
 
 type Props = {
   onNavigate: (page: Page) => void;
@@ -68,8 +69,9 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   // 长按进选择模式 + 拖动划选：这一套和词库的选词共用 hooks/useRowSelection，
   // 别在这儿再写一遍（手势那几个阈值每写一遍都要重踩一次坑）。
   const selection = useRowSelection({
-    rowSelector: ".quick-study-row[data-quick-word-id]",
+    rowSelector: ".quick-study-row",
     idKey: "quickWordId",
+    touchIds: cards.map((card) => card.id),
     onEnter: () => setRatingOpenId(null),
     onExit: () => setRatingOpenId(null)
   });
@@ -79,6 +81,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   const submittingRef = useRef(false);
   const panelRef = useRef<HTMLElement | null>(null);
   const ratingGesturePointerRef = useRef<number | null>(null);
+  const ratingTouchRef = useRef<{ latest: { x: number; y: number }; rects: TouchRect[] | null; ended: boolean } | null>(null);
   // 打开这一轮时固定学习日。即使页面跨过凌晨 4 点，也不在用户正在评卡时强制换页；
   // 旧日期草稿在下次进入快速学习时会被丢弃。
   const draftStudyDateRef = useRef(studyDate());
@@ -218,7 +221,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   const handleRowClick = (event: ReactMouseEvent<HTMLDivElement>, wordId: number) => {
     if (selection.consumedByGesture()) return;
     // 行内已有按钮保留各自行为，不能因为事件冒泡又翻一次答案。
-    if ((event.target as HTMLElement).closest("button")) return;
+    if ((event.target as HTMLElement | null)?.closest?.("button")) return;
     if (selectionMode) {
       selection.toggle(wordId);
       return;
@@ -239,9 +242,15 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   }, [selectedIds]);
 
   const applyRatingAtPoint = useCallback((clientX: number, clientY: number) => {
-    const element = document.elementFromPoint(clientX, clientY);
+    const element = getElementFromPoint(clientX, clientY);
     const button = element?.closest<HTMLElement>("[data-batch-rating]");
     const value = button?.dataset.batchRating as WordAnswer | undefined;
+    if (value && answerOptions.some((option) => option.value === value)) applySelectionRating(value);
+  }, [applySelectionRating]);
+
+  const applyTouchRatingAtPoint = useCallback((clientX: number, clientY: number, rects: TouchRect[]) => {
+    const button = rects.find((rect) => clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom);
+    const value = button?.dataset?.batchRating as WordAnswer | undefined;
     if (value && answerOptions.some((option) => option.value === value)) applySelectionRating(value);
   }, [applySelectionRating]);
 
@@ -258,6 +267,34 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
 
   const endRatingGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (ratingGesturePointerRef.current === event.pointerId) ratingGesturePointerRef.current = null;
+  };
+
+  const startTouchRatingGesture = (event: TouchEventLike) => {
+    const point = touchPoint(event);
+    if (!point) return;
+    const state = { latest: { x: point.clientX, y: point.clientY }, rects: null as TouchRect[] | null, ended: false };
+    ratingTouchRef.current = state;
+    void queryTouchRects("[data-batch-rating]").then((rects) => {
+      if (ratingTouchRef.current !== state) return;
+      state.rects = rects;
+      applyTouchRatingAtPoint(state.latest.x, state.latest.y, rects);
+      if (state.ended) ratingTouchRef.current = null;
+    });
+  };
+
+  const moveTouchRatingGesture = (event: TouchEventLike) => {
+    const state = ratingTouchRef.current;
+    const point = touchPoint(event);
+    if (!state || !point) return;
+    state.latest = { x: point.clientX, y: point.clientY };
+    if (state.rects) applyTouchRatingAtPoint(point.clientX, point.clientY, state.rects);
+  };
+
+  const endTouchRatingGesture = () => {
+    const state = ratingTouchRef.current;
+    if (!state) return;
+    if (!state.rects) state.ended = true;
+    else ratingTouchRef.current = null;
   };
 
   const toggleAllAnswers = () => {
@@ -277,6 +314,16 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
     }
     // 菜单默认向上弹；如果上方会撞到 sticky 标题栏，就改为向下展开，
     // 保证最上面的词也能点到“忘记/模糊”。预留四项菜单的真实高度余量。
+    if (touchEventsEnabled()) {
+      void Promise.all([queryTouchRect(`#quick-rating-${wordId}`), queryTouchRect("#quick-study-header")]).then(([buttonRect, headerRect]) => {
+        if (!buttonRect) return;
+        const menuHeight = 176;
+        const safeTop = (headerRect?.bottom ?? 0) + 6;
+        setRatingPlacement(buttonRect.top - menuHeight < safeTop ? "down" : "up");
+        setRatingOpenId(wordId);
+      });
+      return;
+    }
     const buttonRect = event.currentTarget.getBoundingClientRect();
     const headerRect = panelRef.current?.querySelector<HTMLElement>(".quick-study-head")?.getBoundingClientRect();
     const menuHeight = 176;
@@ -439,7 +486,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
 
   return (
     <section ref={panelRef} className="quick-study-panel" aria-label="快速复习">
-      <div className={`quick-study-head${selectionMode ? " quick-study-selection-head" : ""}`}>
+      <div id="quick-study-header" className={`quick-study-head${selectionMode ? " quick-study-selection-head" : ""}`}>
         {selectionMode ? (
           <>
             <button className="quick-study-selection-cancel" onClick={exitSelectionMode}>取消</button>
@@ -450,6 +497,10 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
               onPointerMove={moveRatingGesture}
               onPointerUp={endRatingGesture}
               onPointerCancel={endRatingGesture}
+              onTouchStart={touchEventsEnabled() ? (event) => startTouchRatingGesture(event as unknown as TouchEventLike) : undefined}
+              onTouchMove={touchEventsEnabled() ? (event) => moveTouchRatingGesture(event as unknown as TouchEventLike) : undefined}
+              onTouchEnd={touchEventsEnabled() ? endTouchRatingGesture : undefined}
+              onTouchCancel={touchEventsEnabled() ? endTouchRatingGesture : undefined}
             >
               {answerOptions.map((option) => (
                 <button
@@ -518,6 +569,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                     className={`quick-study-select-circle${selectedIds.has(card.id) ? " selected" : ""}`}
                     aria-label={selectedIds.has(card.id) ? "取消选择" : "选择词条"}
                     aria-pressed={selectedIds.has(card.id)}
+                    onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined}
                     onClick={(event) => { event.stopPropagation(); selection.toggle(card.id); }}
                   >
                     {selectedIds.has(card.id) ? "✓" : ""}
@@ -544,13 +596,15 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                     )}
                   </div>
                   <div className="quick-study-row-actions">
-                    <button className={`quick-study-answer-button${revealed ? " on" : ""}`} onClick={() => toggleAnswer(card.id)}>
+                    <button className={`quick-study-answer-button${revealed ? " on" : ""}`} onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined} onClick={(event) => { event.stopPropagation(); toggleAnswer(card.id); }}>
                       答
                     </button>
                     <div className={`quick-study-rating-wrap${ratingOpenId === card.id ? " quick-study-rating-wrap-open" : ""}`}>
                       <button
+                        id={`quick-rating-${card.id}`}
                         className={`quick-study-rating quick-study-rating-${rating}`}
-                        onClick={(event) => toggleRating(event, card.id)}
+                        onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined}
+                        onClick={(event) => { event.stopPropagation(); toggleRating(event, card.id); }}
                         aria-expanded={ratingOpenId === card.id}
                         aria-label={`${selectedOption.label}，打开学习度选项`}
                       >
@@ -563,7 +617,8 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                             <button
                               key={option.value}
                               className={rating === option.value ? "selected" : ""}
-                              onClick={() => selectRating(card.id, option.value)}
+                              onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined}
+                              onClick={(event) => { event.stopPropagation(); selectRating(card.id, option.value); }}
                               role="menuitem"
                             >
                               <span>{option.label}</span>

@@ -14,7 +14,7 @@ vi.mock("../database", () => ({
   importDatabase: async () => undefined
 }));
 
-import { ensureSyncSchema, getDeviceId, resetDeviceId, SYNC_UPDATED_COL } from "./schema";
+import { ensureSyncSchema, getDeviceId, resetDeviceId, SYNC_SCHEMA_FINGERPRINT_KEY, SYNC_UPDATED_COL } from "./schema";
 
 const seedPath = fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url));
 
@@ -55,19 +55,47 @@ describe("ensureSyncSchema", () => {
     // 复现路径:云端合并全程开着 applying_remote,insert 触发器不跑,
     // 对端快照里没带 uid 的行就永远是 NULL。实测用户库 36,759 条里中了 1 条,
     // 「合并重复词条」每次都在它上面回滚。
+    testDb.run("INSERT OR REPLACE INTO sync_context (key, value) VALUES ('applying_remote', '1')");
     testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on) VALUES (1, 'know', 0, '2026-08-02')");
-    testDb.run("UPDATE reviews SET sync_uid = NULL WHERE word_id = 1");
+    testDb.run("UPDATE reviews SET sync_uid = NULL, sync_origin_device = NULL WHERE word_id = 1");
+    testDb.run("DELETE FROM sync_context WHERE key = 'applying_remote'");
     expect(rows("SELECT COUNT(*) AS n FROM reviews WHERE sync_uid IS NULL")[0].n).toBe(1);
+    expect(rows("SELECT COUNT(*) AS n FROM reviews WHERE sync_origin_device IS NULL")[0].n).toBe(1);
 
     // 下一次启动(新的 db 实例才会重跑 ensureSyncSchema)
     const carried = testDb.export();
     testDb = new SQL.Database(carried);
     ensureSyncSchema();
     expect(rows("SELECT COUNT(*) AS n FROM reviews WHERE sync_uid IS NULL")[0].n).toBe(0);
+    expect(rows("SELECT COUNT(*) AS n FROM reviews WHERE sync_origin_device IS NULL")[0].n).toBe(0);
 
     // 补上之后删行留得下墓碑
     testDb.run("DELETE FROM reviews WHERE word_id = 1");
     expect(tombstones().filter((row) => row.table_name === "reviews")).toHaveLength(1);
+  });
+
+  it("DDL 指纹跟随数据库保存，换库后仍可检测版本并重跑结构迁移", () => {
+    expect(rows("SELECT value FROM app_state WHERE key = 'runtime_schema_sync_ddl'")).toHaveLength(1);
+    testDb.run("DELETE FROM app_state WHERE key = ?", [SYNC_SCHEMA_FINGERPRINT_KEY]);
+    testDb = new SQL.Database(testDb.export());
+    ensureSyncSchema();
+    expect(rows("SELECT value FROM app_state WHERE key = ?", [SYNC_SCHEMA_FINGERPRINT_KEY])).toHaveLength(1);
+    expect(rows("SELECT name FROM sqlite_master WHERE type='trigger' AND name='trg_reviews_sync_insert'")).toHaveLength(1);
+  });
+
+  it("新数据库实例命中库内指纹时跳过 DDL，但仍执行启动恢复与缺失项探测", () => {
+    testDb = new SQL.Database(testDb.export());
+    const run = vi.spyOn(testDb, "run");
+    ensureSyncSchema();
+    expect(run.mock.calls.filter(([sql]) => /^(CREATE|ALTER|DROP)\b/i.test(String(sql)))).toHaveLength(0);
+    expect(run.mock.calls.some(([sql]) => String(sql) === "DELETE FROM sync_context WHERE key = 'applying_remote'")).toBe(true);
+  });
+
+  it("缺失元数据探测可走对应索引", () => {
+    const uidPlan = rows("EXPLAIN QUERY PLAN SELECT 1 FROM reviews WHERE sync_uid IS NULL LIMIT 1");
+    const originPlan = rows("EXPLAIN QUERY PLAN SELECT 1 FROM reviews WHERE sync_origin_device IS NULL OR sync_origin_device = '' LIMIT 1");
+    expect(uidPlan.some((row) => String(Object.values(row).join(" ")).includes("idx_reviews_sync_uid"))).toBe(true);
+    expect(originPlan.some((row) => String(Object.values(row).join(" ")).includes("idx_reviews_sync_origin_missing"))).toBe(true);
   });
 
   it("算不出 row_key 的行被删时跳过墓碑,而不是抛错", () => {

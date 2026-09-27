@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
 // 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
 import { Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
-import { notifyProgressUpdated, PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
+import { notifyProgressUpdated } from "../lib/progress-events";
+import { useProgressUpdates } from "../lib/use-progress-updates";
 import { choosePostExamIntensity, getStudyPreferences, kanaGatePending, postExamChoice, postExamRecovery, PREFERENCES_EVENT, POST_EXAM_LIGHT_DAYS } from "../lib/studyPreferences";
 import { scheduleSave } from "../lib/storage";
 import { refreshTodayWordPlan } from "../lib/word-api";
@@ -22,6 +23,7 @@ import { useEntitlements } from "../hooks/useEntitlements";
 import { useCountUp } from "../hooks/useCountUp";
 import { useMoments } from "../hooks/useMoments";
 import { Sticker, type StickerName } from "./CapybaraMascot";
+import { Disclosure } from "./Disclosure";
 import { MomentPop } from "./MomentPop";
 import { WeeklyReportEntrance } from "./WeeklyReportEntrance";
 import { ZooProgressPanel } from "./ZooProgressPanel";
@@ -101,6 +103,7 @@ export function ZooHome({
   // 更新日的新报告提示。只在这一份报告未读、且还在发布窗口内时为真。
   const [weeklyNotice, setWeeklyNotice] = useState<"new" | "read" | "expired" | "none">("none");
   const { moment, leaving: momentLeaving, collect: collectMoments } = useMoments();
+  const refreshRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     const refreshWeeklyNotice = () => {
@@ -135,15 +138,16 @@ export function ZooHome({
       collectMoments();
     };
     refresh();
+    refreshRef.current = refresh;
     const timer = window.setInterval(refreshWeeklyNotice, 60_000);
-    window.addEventListener(PROGRESS_UPDATED_EVENT, refresh);
     window.addEventListener(WEEKLY_REPORT_UPDATED_EVENT, refresh);
     return () => {
       window.clearInterval(timer);
-      window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
       window.removeEventListener(WEEKLY_REPORT_UPDATED_EVENT, refresh);
     };
   }, [collectMoments]);
+  // 进度事件走 useProgressUpdates：小程序里主页挂在后台时，每答一题不再同步重算一遍（见那个 hook 的注释）
+  useProgressUpdates(() => refreshRef.current());
 
   useEffect(() => {
     const sync = () => setGoals(getStudyPreferences());
@@ -394,22 +398,20 @@ export function ZooHome({
       {/* ④ 进度概览 —— 默认只给一行数，柱状图收进折叠里。
              十根柱子里七根是 0%，常驻 291px 去展示这个不划算。 */}
       <section className="zoo-tray">
-        <details className="zoo-fold">
-          <summary>
+        <Disclosure className="zoo-fold" weappSummaryClassName="zoo-fold-summary" summary={
+          <>
             <span className="zoo-tray-title">进度概览</span>
             <small>
               单词 {overview.words.seen}/{overview.words.total} · 掌握 {overview.words.completed} · 薄弱 {overview.words.low}
             </small>
-          </summary>
+          </>
+        }>
           <ZooProgressPanel overview={overview} onOpenWordList={onOpenWordList} onOpenGrammar={onOpenGrammarLevel} />
-        </details>
+        </Disclosure>
       </section>
 
       {/* ⑤ 进度维护:低频 + 有副作用,默认收起来 */}
-      <details className="zoo-maint">
-        <summary>
-          进度维护
-        </summary>
+      <Disclosure className="zoo-maint" weappSummaryClassName="zoo-maint-summary" summary="进度维护">
         <div className="zoo-maint-body">
           <button className="zoo-pop zoo-maint-btn" onClick={onRefreshOverview}>
             <b><RefreshCw size={13} aria-hidden="true" /> 刷新进度</b>
@@ -421,7 +423,7 @@ export function ZooHome({
             <b><SkipForward size={13} aria-hidden="true" /> 一键完成今日单词</b>
           </button>
         </div>
-      </details>
+      </Disclosure>
     </div>
   );
 }

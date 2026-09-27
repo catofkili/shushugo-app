@@ -20,9 +20,12 @@ import { autoSyncCloudDatabase, CLOUD_AUTH_EVENT, registerCloudAutoSyncLifecycle
 import { ensureSyncSchema } from './lib/sync/schema';
 import { flushPendingUserProfileSync } from './lib/profile-sync';
 import { hydrateLevelPlanPreferences } from './lib/level-plan';
+import { confirmDialog } from './lib/platform-dialogs';
+import { startFeedbackRuntime } from './lib/feedback-runtime';
 
 // 初始化 WebView 优化
 initWebViewOptimizer();
+startFeedbackRuntime();
 
 // 【诊断】量一下安全区到底有没有生效(打到 Xcode 控制台);只在开发构建运行。
 if (import.meta.env.DEV) {
@@ -84,8 +87,8 @@ const renderArchiveRecovery = (error: LocalArchiveUnreadableError) => {
     link.click();
     URL.revokeObjectURL(url);
   };
-  const rebuild = () => {
-    if (!error.archive || !window.confirm('请先导出并保管这份存档。重建后这台设备会从出厂词库重新开始，旧进度不会自动恢复。确定吗？')) return;
+  const rebuild = async () => {
+    if (!error.archive || !await confirmDialog('请先导出并保管这份存档。重建后这台设备会从出厂词库重新开始，旧进度不会自动恢复。确定吗？')) return;
     void initDatabase().then(bootWithDatabase).catch((cause) => renderBootFailure(cause));
   };
   const button = 'focus-ring rounded-2xl border border-white/20 px-4 py-2 text-sm font-bold text-white/85';

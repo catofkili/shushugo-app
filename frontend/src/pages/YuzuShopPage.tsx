@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
 import { AppWindow, Check, ChevronDown, Citrus, LoaderCircle, Mic, Music, PackageCheck, Palette, Play, Shirt, Sparkles, type LucideProps } from "lucide-react";
 import { CATEGORY_LABEL, EQUIPPABLE, VOICE_ITEM_PREFIX, YUZU_ITEMS, type YuzuCategory, type YuzuItem } from "../lib/yuzu-catalog";
 import { brandIconUrl, Sticker, stickerUrl, useMascotSkin } from "../components/CapybaraMascot";
+import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences } from "../lib/studyPreferences";
 import { prepareVoice, previewVoice, voiceDeliveryMode } from "../lib/speech";
 import { previewTimbre, type SoundTimbre } from "../lib/zoo-sounds";
@@ -44,11 +45,11 @@ type CheckoutStatus = "paying" | "preparing" | "done" | "deferred" | "failed";
  */
 const MiniHome = ({ skinId = "", mascotId = "" }: { skinId?: string; mascotId?: string }) => (
   <div className="yz-mini" data-skin={skinId || undefined} data-theme={getResolvedTheme()}>
-    <div className="yz-mini-top"><img src={brandIconUrl(mascotId)} alt="" /><i /><i /></div>
+    <div className="yz-mini-top"><CrossPlatformImage src={brandIconUrl(mascotId)} alt="" weappWidth="18%" weappHeight="100%" /><i /><i /></div>
     <div className="yz-mini-hero"><b>15 词</b><i /></div>
     <div className="yz-mini-row"><i /><i /></div>
     <div className="yz-mini-tray">
-      {(["icon-study-modes", "icon-vocab", "icon-practice", "icon-favorites"] as const).map((n) => <img key={n} src={stickerUrl(n, mascotId)} alt="" />)}
+      {(["icon-study-modes", "icon-vocab", "icon-practice", "icon-favorites"] as const).map((n) => <CrossPlatformImage key={n} src={stickerUrl(n, mascotId)} alt="" weappWidth="100%" weappHeight="100%" />)}
     </div>
   </div>
 );
@@ -67,7 +68,7 @@ const Art = ({ item, size }: { item: YuzuItem; size: "s" | "l" }) => {
   return (
     <div className={`yz-art yz-art-${size}`} data-cat={item.category}>
       {src
-        ? <img key={src} src={src} alt="" />
+        ? <CrossPlatformImage key={src} src={src} alt="" weappWidth="100%" weappHeight="100%" />
         : <Icon size={size === "l" ? 44 : 26} aria-hidden="true" />}
     </div>
   );

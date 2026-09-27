@@ -18,6 +18,7 @@ import {
   type WordLibraryRow
 } from "../lib/word-library";
 import { useRowSelection } from "../hooks/useRowSelection";
+import { getPageScrollRemaining, scrollPageToTop, usePageReachBottom } from "../lib/touch-adapter";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { displayForm } from "../lib/confusion-groups";
 import { kanaToRomaji } from "../features/word-study/word-study-utils";
@@ -185,7 +186,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
   useEffect(() => {
     const scroller = scrollParent(pageRef.current);
     if (scroller) scroller.scrollTop = 0;
-    else window.scrollTo(0, 0);
+    else scrollPageToTop();
   }, [filters]);
 
   const tally = useMemo(() => {
@@ -223,13 +224,15 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
   //
   // 用滚动事件而不是 IntersectionObserver：IO 在页面不可见时一律报「没相交」，
   // 后台标签页/WebView 挂起回来就再也不续了。
+  // 小程序：页面自己滚，续页走 onReachBottom；下面那套滚动监听在那里量出来的是垫片的假尺寸，整段跳过。
+  const pageScrolls = usePageReachBottom(() => { if (hasMore) loadMore(); });
   useEffect(() => {
-    if (!hasMore) return;
+    if (!hasMore || pageScrolls) return;
     const scroller = scrollParent(pageRef.current);
     const check = () => {
       const remaining = scroller
         ? scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight
-        : document.body.offsetHeight - window.scrollY - window.innerHeight;
+        : getPageScrollRemaining(document.body.offsetHeight);
       // 提前一屏半开始取，让下一页在滚到底之前就位
       if (remaining < 900) loadMore();
     };
@@ -240,7 +243,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
     target.addEventListener("scroll", check, { passive: true });
     return () => target.removeEventListener("scroll", check);
     // rows.length 进依赖：刚续上的一页还没填满屏幕时，要再查一次
-  }, [hasMore, loadMore, rows.length]);
+  }, [hasMore, loadMore, rows.length, pageScrolls]);
 
   useEffect(() => {
     if (!notice) return;

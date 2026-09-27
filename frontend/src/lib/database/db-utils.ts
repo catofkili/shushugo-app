@@ -171,3 +171,26 @@ export function persistContentSoon(): void {
     scheduleSave();
   });
 }
+
+/**
+ * 同一条 SQL 要跑成百上千次时用：按 SQL 文本缓存 prepared statement，用完 `free()`。
+ * `db.run(sql, params)` 每次都重新 prepare，解析 SQL 在 iPhone 小程序（wasm 解释执行）里是毫秒级 ——
+ * 2026-09-27 真机冷启动「增量回放」13.4 秒几乎全花在这上面。只换执行方式，语句和顺序不变。
+ */
+export const statementCache = (db: { prepare: (sql: string) => { run: (params?: SqlValue[]) => void; free: () => void } }) => {
+  const cache = new Map<string, { run: (params?: SqlValue[]) => void; free: () => void }>();
+  return {
+    run(sql: string, params: SqlValue[]): void {
+      let statement = cache.get(sql);
+      if (!statement) {
+        statement = db.prepare(sql);
+        cache.set(sql, statement);
+      }
+      statement.run(params);
+    },
+    free(): void {
+      for (const statement of cache.values()) statement.free();
+      cache.clear();
+    }
+  };
+};

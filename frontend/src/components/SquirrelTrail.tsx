@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getWordStats } from "../lib/api";
-import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
+import { useProgressUpdates } from "../lib/use-progress-updates";
 import type { WordStats } from "../types/vocabulary";
 import type { StudyMode } from "../types/app";
 import { CapybaraWalk } from "./CapybaraMascot";
@@ -25,18 +25,15 @@ type Props = {
 export function SquirrelTrail({ mode = null }: Props) {
   const [stats, setStats] = useState<WordStats | null>(null);
 
-  useEffect(() => {
-    const refresh = () => {
-      try {
-        setStats(getWordStats());
-      } catch {
-        // 词库还没加载好时先不画,进度事件会再触发一次
-      }
-    };
-    refresh();
-    window.addEventListener(PROGRESS_UPDATED_EVENT, refresh);
-    return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
+  const refresh = useCallback(() => {
+    try {
+      setStats(getWordStats());
+    } catch {
+      // 词库还没加载好时先不画,进度事件会再触发一次
+    }
   }, []);
+  useEffect(refresh, [refresh]);
+  useProgressUpdates(refresh);
 
   // 小路画的必须是**当前模式**的进度。以前一律画今日计划,于是在错题本里答一天,
   // 顶上还是「1/985」纹丝不动,看着就像评分没生效。

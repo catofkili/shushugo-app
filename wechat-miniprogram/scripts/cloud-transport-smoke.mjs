@@ -19,6 +19,7 @@ global.wx = {
   cloud: {
     init: (options) => calls.push(['init', options]),
     CDN: (bytes) => ({ cdn: bytes.byteLength }),
+    getTempFileURL: async ({ fileList }) => ({ fileList: [{ tempFileURL: `https://download.example/${encodeURIComponent(fileList[0])}` }] }),
     callFunction: async ({ name, data }) => {
       calls.push([name, data]);
       if (data.binary) return { result: { statusCode: 200, header: { 'x-sync-compression': 'gzip' }, fileID: 'cloud://env.x/sync/o/pull.bin' } };
@@ -29,6 +30,14 @@ global.wx = {
       fs.tmp[tempFilePath] = files[fileID] ?? Buffer.from('binary-body');
       return { tempFilePath };
     }
+  },
+  downloadFile: ({ url, success }) => {
+    const fileID = decodeURIComponent(url.slice('https://download.example/'.length));
+    const tempFilePath = `/tmp/${Object.keys(fs.tmp).length}`;
+    fs.tmp[tempFilePath] = files[fileID] ?? Buffer.from('binary-body');
+    const task = { onProgressUpdate: (callback) => callback({ progress: 47, totalBytesWritten: 47, totalBytesExpectedToWrite: 100 }) };
+    success({ tempFilePath, statusCode: 200 });
+    return task;
   }
 };
 
@@ -54,7 +63,9 @@ assert.equal(Buffer.from(pulled.bytes).toString(), 'binary-body');
 assert.equal(pulled.header['x-sync-compression'], 'gzip');
 
 // 4. cloud:// 地址直接走云存储：种子库下载和 manifest 读取。
-assert.ok((await downloadFile('cloud://env.x/seed/nihongo.db')).startsWith('/tmp/'));
+const cloudProgress = [];
+assert.ok((await downloadFile('cloud://env.x/seed/nihongo.db', { onProgress: (progress) => cloudProgress.push(progress.progress) })).startsWith('/tmp/'));
+assert.deepEqual(cloudProgress, [47]);
 assert.equal((await requestJson('cloud://env.x/seed/nihongo.db')).version, 'v9');
 
 // 5. 云函数：只转发到 WORKER_ORIGIN 下的 /api/ 路径，客户端给的域名不看。
@@ -67,7 +78,7 @@ Module._load = function (request, ...rest) {
 };
 process.env.WORKER_ORIGIN = 'https://worker.example/';
 const fetched = [];
-global.fetch = async (url, init) => {
+global.__apiProxyFetch = async (url, init) => {
   fetched.push([url, init]);
   if (url === 'http://vweixinf.tc.qq.com/blob') return { ok: true, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer };
   const headers = new Map([['x-sync-generation', '7'], ['set-cookie', 'nope']]);
@@ -85,6 +96,7 @@ assert.equal(pushed.header['set-cookie'], undefined);
 const pull = await main({ path: '/api/sync/pull', binary: true, headers: {} });
 assert.equal(pull.fileID, 'cloud://x/sync/o1/pull.bin');
 assert.equal(pull.header['x-sync-generation'], '7');
+assert.match(pull.header['x-proxy-upstream-ms'], /^\d+$/, '云函数要把等 Worker 的毫秒数带回客户端');
 assert.equal((await main({ path: '/api/x', bodyIsCdn: true, body: 'https://evil.example/blob' })).statusCode, 400);
 
 console.log(JSON.stringify({ ok: true, calls: calls.length, fetched: fetched.length }));

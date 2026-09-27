@@ -21,6 +21,7 @@ import { isWechatAppLoginAvailable, requestWechatAppCode } from "../lib/wechat-a
 import { PRIVACY_POLICY_EFFECTIVE_DATE, PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_TITLE } from "../lib/privacy-policy-content";
 import { USER_AGREEMENT_EFFECTIVE_DATE, USER_AGREEMENT_SECTIONS, USER_AGREEMENT_TITLE } from "../lib/user-agreement-content";
 import { Sticker, brandAssetUrl } from "./CapybaraMascot";
+import { CrossPlatformImage } from "./CrossPlatformImage";
 
 type AuthMode = "login" | "register" | "reset" | "apple-consent" | "wechat-consent" | "terms" | "privacy" | "success";
 type TurnstileAction = "register" | "login" | "password_reset";
@@ -246,7 +247,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
   const legalDate = mode === "terms" ? USER_AGREEMENT_EFFECTIVE_DATE : PRIVACY_POLICY_EFFECTIVE_DATE;
 
   return (
-    <div className="fixed inset-0 z-[100] grid place-items-center bg-[#101810]/70 p-3 backdrop-blur-sm" role="presentation">
+    <div className="fixed inset-0 z-[10002] grid place-items-center bg-[#101810]/70 p-3 backdrop-blur-sm" role="presentation">
       <section
         role="dialog"
         aria-modal="true"
@@ -259,7 +260,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
               <ArrowLeft size={19} />
             </button>
           )}
-          <img src={brandAssetUrl("shushugo-icon.png")} alt="" className="brand-icon h-10 w-10 shrink-0 rounded-xl" />
+          <CrossPlatformImage src={brandAssetUrl("shushugo-icon.png")} alt="" className="brand-icon h-10 w-10 shrink-0 rounded-xl" weappWidth={40} weappHeight={40} />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[.18em] text-[#B7E38D]">收集日</p>
             <h2 id="auth-dialog-title" className="mt-0.5 truncate text-lg font-bold text-white">{title}</h2>

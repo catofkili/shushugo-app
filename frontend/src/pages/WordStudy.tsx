@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import { perfRecord } from "../lib/perf-marks";
 import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Star, StickyNote, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
 import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning, addAnswerPreview, answerPreviewsFresh, startAnswerPreviews, submitWordAnswerWithPreview, takeAnswerPreview, type AnswerPreviews } from "../lib/api";
@@ -264,6 +265,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   // 预算下一张（word-api 的 startAnswerPreviews 那一套）：看这张卡的那几秒里先把「答成认识 / 忘记之后出谁」算好，
   // 点下去直接换卡。记账挪到换卡之后（pendingAnswerRef），撤销、跳词、换模式、下一次评分之前先把它补上。
   const previewsRef = useRef<AnswerPreviews | null>(null);
+  // 分段计时（perf-marks）：点评分 / 点翻面 → React 提交这一帧，各用了多久
+  const answerTappedAtRef = useRef(0);
+  const revealTappedAtRef = useRef(0);
   const previewRunRef = useRef(0);
   const pendingAnswerRef = useRef<(() => void) | null>(null);
   const flushPendingAnswer = useCallback(() => {
@@ -695,6 +699,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 键盘不受这道闸:那条路上「显示答案」和评分是不同的键,不存在同一个位置连击的问题,
     // 拦一下只会吃掉快手用户的合法输入。甩卡也不受:它自己要先飞 240ms,早就过去了。
     if (source === "pointer" && performance.now() - revealedAtRef.current < REVEAL_INPUT_LOCK_MS) return;
+    answerTappedAtRef.current = performance.now();
     // 上一题走了快路径、记账还没轮到的话，先补上：这一题的作答要排在它后面。
     flushPendingAnswer();
     const answeredCardId = card.id;
@@ -945,6 +950,17 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   // 模糊借忘记那份、熟知借认识那份（takeAnswerPreview 里判能不能借）。
   // stats 在依赖里是当触发器用的：快路径换卡之后记账那一步会 setStats，学习时长每分钟结账也会——
   // 那两次写入都会让已有的预算作废，得带着写入之后的状态重算。
+  useLayoutEffect(() => {
+    if (!answerTappedAtRef.current) return;
+    perfRecord("点评分→换卡", performance.now() - answerTappedAtRef.current);
+    answerTappedAtRef.current = 0;
+  }, [card]);
+  useLayoutEffect(() => {
+    if (!revealed || !revealTappedAtRef.current) return;
+    perfRecord("点翻面→答案", performance.now() - revealTappedAtRef.current);
+    revealTappedAtRef.current = 0;
+  }, [revealed]);
+
   const previewEligible = Boolean(card) && !loading && !submitting && !unitKey && !reliefActive && !dailyReviewActive
     && !dailyReviewIntro && !tailActive && !grammarCard && !kanjiCard && !matchCard;
   const runPreviews = useCallback((cardId: number) => {
@@ -973,6 +989,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const revealAnswer = useCallback(() => {
     if (!card || loading || revealed || submitting || reliefActive || dailyReviewIntro) return;
     revealedAtRef.current = performance.now();
+    revealTappedAtRef.current = revealedAtRef.current;
     setRevealed(true);
     // 看题那几秒里可能整库落过一次盘（sql.js 重开连接）或结过一次学习时长，预算作废了：
     // 趁用户看答案重算，点评分时就又是现成的。

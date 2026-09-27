@@ -8,38 +8,91 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const exportDatabase = vi.fn<() => Uint8Array | null>();
-const files = new Map<string, string>();
-const isNative = { value: false };
+const files = new Map<string, Uint8Array>();
+const directories = new Set(['/wx-user']);
+const platform = { value: 'web' };
 
-vi.mock("@capacitor/core", () => ({ Capacitor: { isNativePlatform: () => isNative.value } }));
-vi.mock("@capacitor/preferences", () => ({ Preferences: { get: async () => ({ value: null }), remove: async () => undefined } }));
-vi.mock("@capacitor/filesystem", () => ({
-  Directory: { Library: "LIBRARY" },
-  Encoding: { UTF8: "utf8" },
-  Filesystem: {
-    readdir: async ({ path }: { path: string }) => ({ files: path === ''
-      ? (files.size ? [{ name: 'masternihongo' }] : [])
-      : [...files.keys()].map(key => ({ name: key.split('/').pop() })) }),
-    readFile: async ({ path }: { path: string }) => {
-      if (!files.has(path)) throw new Error(`ENOENT ${path}`);
-      return { data: files.get(path) };
-    },
-    writeFile: async ({ path, data }: { path: string; data: string }) => { files.set(path, data); },
-    deleteFile: async ({ path }: { path: string }) => { files.delete(path); },
-    rename: async ({ from, to }: { from: string; to: string }) => {
-      files.set(to, files.get(from)!);
-      files.delete(from);
-    },
-    stat: async ({ path }: { path: string }) => {
-      if (!files.has(path)) throw new Error(`ENOENT ${path}`);
-      return { size: 0 };
+const fail = (options: { fail?: (error: { errMsg: string }) => void }, message = 'no such file or directory') =>
+  options.fail?.({ errMsg: `operate:fail ${message}` });
+const fileManager = {
+  mkdir({ dirPath, recursive, success, fail: onFail }: any) {
+    if (recursive) {
+      let current = '';
+      dirPath.split('/').filter(Boolean).forEach((part: string) => {
+        current += `/${part}`;
+        directories.add(current);
+      });
+    } else if (directories.has(dirPath)) return fail({ fail: onFail }, 'file already exists');
+    else directories.add(dirPath);
+    success?.();
+  },
+  writeFile({ filePath, data, encoding, success }: any) {
+    if (typeof data === 'string') files.set(filePath, new Uint8Array(Buffer.from(data, encoding || 'binary')));
+    else files.set(filePath, new Uint8Array(data.slice(0)));
+    success?.();
+  },
+  readFile({ filePath, encoding, success, fail: onFail }: any) {
+    const data = files.get(filePath);
+    if (!data) return fail({ fail: onFail });
+    success?.({ data: encoding === 'utf8' ? Buffer.from(data).toString('utf8') : data.slice().buffer });
+  },
+  unlink({ filePath, success, fail: onFail }: any) {
+    if (!files.delete(filePath)) return fail({ fail: onFail });
+    success?.();
+  },
+  rename({ oldPath, newPath, success, fail: onFail }: any) {
+    const data = files.get(oldPath);
+    if (!data) return fail({ fail: onFail });
+    files.set(newPath, data);
+    files.delete(oldPath);
+    success?.();
+  },
+  stat({ path, success, fail: onFail }: any) {
+    if (files.has(path)) return success?.({ stats: { size: files.get(path)!.length, mtime: 1, ctime: 1, isDirectory: () => false } });
+    if (directories.has(path)) return success?.({ stats: { size: 0, mtime: 1, ctime: 1, isDirectory: () => true } });
+    return fail({ fail: onFail });
+  },
+  readdir({ dirPath, success, fail: onFail }: any) {
+    if (!directories.has(dirPath)) return fail({ fail: onFail });
+    const prefix = `${dirPath.replace(/\/$/, '')}/`;
+    const names = new Set<string>();
+    for (const path of [...files.keys(), ...directories]) {
+      if (!path.startsWith(prefix)) continue;
+      const name = path.slice(prefix.length).split('/')[0];
+      if (name) names.add(name);
     }
+    success?.({ files: [...names] });
   }
-}));
+};
+const fakeWx = {
+  env: { USER_DATA_PATH: '/wx-user' },
+  getFileSystemManager: () => fileManager,
+  arrayBufferToBase64: (data: ArrayBuffer) => Buffer.from(data).toString('base64'),
+  base64ToArrayBuffer: (data: string) => Uint8Array.from(Buffer.from(data, 'base64')).buffer
+};
+const setFile = (path: string, value: string) => {
+  const parts = path.split('/').filter(Boolean);
+  parts.pop();
+  let current = '';
+  parts.forEach((part) => { current += `/${part}`; directories.add(current); });
+  files.set(path, new Uint8Array(Buffer.from(value)));
+};
+
+vi.mock("@capacitor/core", () => ({ Capacitor: {
+  isNativePlatform: () => false,
+  getPlatform: () => platform.value
+} }));
+vi.mock("@capacitor/preferences", () => ({ Preferences: { get: async () => ({ value: null }), remove: async () => undefined } }));
+vi.mock("@capacitor/filesystem", async () => {
+  // @ts-expect-error This platform CJS module is exercised directly by the fake wx filesystem.
+  const shim = await import("../../../taro-spike-2/src/platform/filesystem.weapp.cjs");
+  return shim.default ?? shim;
+});
+const importDatabase = vi.fn(async (_data: Uint8Array) => undefined);
 vi.mock("./database", () => ({
   exportDatabase: () => exportDatabase(),
   getDatabase: () => ({ run: () => undefined }),
-  importDatabase: async () => undefined
+  importDatabase: (data: Uint8Array) => importDatabase(data)
 }));
 
 const applyDelta = vi.fn();
@@ -53,7 +106,8 @@ vi.mock("./local-delta", () => ({
   applyDelta: (delta: unknown) => applyDelta(delta),
   collectDelta: () => ({ from: "", to: "", rows: {}, tombstones: [] }),
   currentMark: () => "2026-09-10T00:00:00.000Z",
-  deltaRowCount: () => 0,
+  deltaRowCount: (delta: { rows?: Record<string, unknown[]>; tombstones?: unknown[] }) =>
+    Object.values(delta?.rows ?? {}).reduce((sum, list) => sum + list.length, 0) + (delta?.tombstones?.length ?? 0),
   readSnapshotMark: () => "2026-09-10T00:00:00.000Z",
   stampSnapshotMark: () => undefined
 }));
@@ -102,6 +156,9 @@ const installIndexedDb = () => {
 
 beforeEach(() => {
   vi.useFakeTimers();
+  directories.clear();
+  directories.add('/wx-user');
+  vi.stubGlobal('wx', fakeWx);
   vi.stubGlobal('navigator', { locks: { request: (_name: string, _options: unknown, callback: (lock: object) => unknown) => Promise.resolve(callback({})) } });
 });
 
@@ -109,11 +166,13 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
   files.clear();
-  isNative.value = false;
+  platform.value = 'web';
   applyDelta.mockReset();
   resetDeviceId.mockReset();
   Reflect.deleteProperty(globalThis as Record<string, unknown>, "indexedDB");
   exportDatabase.mockReset();
+  importDatabase.mockClear();
+  vi.restoreAllMocks();
   vi.resetModules();
 });
 
@@ -138,21 +197,162 @@ describe("同时保存", () => {
   });
 });
 
-describe("原生端启动", () => {
+describe("微信文件存储", () => {
   it("增量只剩 .tmp 那一份时也要回放", async () => {
-    isNative.value = true;
+    platform.value = 'wechat';
     // 写增量的顺序是 write tmp → delete delta → rename tmp→delta。
     // ⚠️ 在 delete 之后、rename 之前被杀掉,磁盘上就是这个样子:
     // **完整的新增量在 tmp 里**,而启动只认 delta 的话它就白写了。
-    files.set("masternihongo/nihongo.db", "ZmFrZQ==");
-    files.set(
-      "masternihongo/nihongo.delta.json.tmp",
+    setFile("/wx-user/masternihongo/nihongo.db", "ZmFrZQ==");
+    setFile(
+      "/wx-user/masternihongo/nihongo.delta.json.tmp",
       JSON.stringify({ from: "", to: "2099-01-01T00:00:00.000Z", rows: {}, tombstones: [] })
     );
 
     const { loadDatabase } = await import("./storage");
     expect(await loadDatabase()).toBe(true);
     expect(applyDelta).toHaveBeenCalledTimes(1);
+  });
+
+  // 小程序每次常常只用几分钟，碰不到「满 5 分钟整库」那一条，增量会从装机起一路累积、每次冷启动全部重放
+  // （2026-09-27 真机：回放 13.4 秒）。回放得多就稍后整库落一次，把增量清掉。
+  it("启动回放的增量行数多：稍后整库落盘一次并清掉增量；行数少：不动", async () => {
+    platform.value = 'wechat';
+    const delta = (rows: number) => JSON.stringify({ from: "", to: "2099-01-01T00:00:00.000Z", rows: { progress: Array.from({ length: rows }, (_, id) => ({ word_id: id })) }, tombstones: [] });
+    setFile("/wx-user/masternihongo/nihongo.db", "ZmFrZQ==");
+    setFile("/wx-user/masternihongo/nihongo.delta.json", delta(500));
+    const { loadDatabase } = await import("./storage");
+    expect(await loadDatabase()).toBe(true);
+    exportDatabase.mockReturnValue(new Uint8Array([9]));
+    expect(exportDatabase).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(exportDatabase).toHaveBeenCalledTimes(1);
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString('base64')).toBe('CQ==');
+    expect(files.has('/wx-user/masternihongo/nihongo.delta.json')).toBe(false);
+
+    vi.resetModules();
+    exportDatabase.mockClear();
+    setFile("/wx-user/masternihongo/nihongo.delta.json", delta(20));
+    const small = await import("./storage");
+    expect(await small.loadDatabase()).toBe(true);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(exportDatabase).not.toHaveBeenCalled();
+  });
+
+  it("串行保存时保留最后一次数据库", async () => {
+    platform.value = 'wechat';
+    const { saveDatabase } = await import("./storage");
+    exportDatabase.mockReturnValueOnce(new Uint8Array([1]));
+    const first = saveDatabase();
+    exportDatabase.mockReturnValueOnce(new Uint8Array([2]));
+    const second = saveDatabase();
+
+    await Promise.all([first, second]);
+
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString('base64')).toBe('Ag==');
+    expect(exportDatabase).toHaveBeenCalledTimes(2);
+  });
+
+  it("迁移原生小程序数据库：新库落盘后删掉旧的三代文件", async () => {
+    // 留着旧库的话，「清除数据」之后下次启动会把它重新导回来，还白占 200 MB 上限里的一整份。
+    platform.value = 'wechat';
+    setFile('/wx-user/shushugo/nihongo.db', 'bGVnYWN5');
+    setFile('/wx-user/shushugo/nihongo.db.prev', 'b2xkZXI=');
+    const { loadDatabase } = await import("./storage");
+
+    expect(await loadDatabase()).toBe(true);
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString()).toBe('bGVnYWN5');
+    expect([...files.keys()].filter(path => path.startsWith('/wx-user/shushugo/'))).toEqual([]);
+  });
+
+  it("原生版主文件读不出来时，从 .tmp / .prev 迁", async () => {
+    // 原生版写到一半被杀会只剩 tmp / prev。只认主文件的话这位老用户会从出厂库开始。
+    platform.value = 'wechat';
+    setFile('/wx-user/shushugo/nihongo.db', 'broken');
+    setFile('/wx-user/shushugo/nihongo.db.prev', 'good');
+    importDatabase.mockImplementation(async (data: Uint8Array) => {
+      if (Buffer.from(data).toString() === 'broken') throw new Error('file is not a database');
+    });
+    const { loadDatabase } = await import("./storage");
+
+    expect(await loadDatabase()).toBe(true);
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db')!).toString()).toBe('good');
+    importDatabase.mockImplementation(async () => undefined);
+  });
+
+  it("原生版三代都读不出来：报「存档打不开」，旧文件原样留着", async () => {
+    platform.value = 'wechat';
+    setFile('/wx-user/shushugo/nihongo.db', 'broken');
+    importDatabase.mockImplementation(async () => { throw new Error('file is not a database'); });
+    const { LocalArchiveUnreadableError, loadDatabase } = await import("./storage");
+
+    await expect(loadDatabase()).rejects.toBeInstanceOf(LocalArchiveUnreadableError);
+    expect(files.has('/wx-user/shushugo/nihongo.db')).toBe(true);
+    importDatabase.mockImplementation(async () => undefined);
+  });
+
+  it("整库落盘时磁盘上最多同时两整份（200 MB 上限）", async () => {
+    platform.value = 'wechat';
+    setFile('/wx-user/masternihongo/nihongo.db', 'main');
+    setFile('/wx-user/masternihongo/nihongo.db.prev', 'prev');
+    let peak = 0;
+    const count = () => [...files.keys()].filter(path => /\/masternihongo\/nihongo\.db(\.|$)/.test(path)).length;
+    const writeFile = fileManager.writeFile.bind(fileManager);
+    vi.spyOn(fileManager, 'writeFile').mockImplementation((options: any) => {
+      writeFile(options);
+      peak = Math.max(peak, count());
+    });
+    const { saveDatabase } = await import("./storage");
+    exportDatabase.mockReturnValueOnce(new Uint8Array([9]));
+    await saveDatabase();
+
+    expect(peak).toBe(2);
+    expect(files.get('/wx-user/masternihongo/nihongo.db')).toEqual(new Uint8Array([9]));
+    expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db.prev')!).toString()).toBe('main');
+  });
+
+  it("小程序上的整库恢复点只留最近一份", async () => {
+    platform.value = 'wechat';
+    setFile('/wx-user/masternihongo/recovery-before-biru-2480-to-775.db', 'old');
+    const { saveRecoverySnapshot } = await import("./storage");
+    exportDatabase.mockReturnValueOnce(new Uint8Array([7]));
+    await saveRecoverySnapshot('before-duplicate-merge');
+
+    expect([...files.keys()].filter(path => path.includes('/recovery-')))
+      .toEqual(['/wx-user/masternihongo/recovery-before-duplicate-merge.db']);
+  });
+
+  it("整库读写按二进制直通，不经过 base64", async () => {
+    // 小程序没有原生 atob / btoa，iOS 又没有 JIT：55 MB 的库绕一圈 base64 读写各要好几秒、
+    // 还多占几百 MB（见 storage.ts FILE_BINARY 那段注释）。这里钉住「整库那条路上一次都不转」。
+    platform.value = 'wechat';
+    const toBase64 = vi.spyOn(fakeWx, 'arrayBufferToBase64');
+    const fromBase64 = vi.spyOn(fakeWx, 'base64ToArrayBuffer');
+    const bytes = new Uint8Array(4096).map((_, index) => (index * 31) & 255);
+    const { saveDatabase } = await import("./storage");
+    exportDatabase.mockReturnValueOnce(bytes);
+    await saveDatabase();
+    expect(files.get('/wx-user/masternihongo/nihongo.db')).toEqual(bytes);
+
+    vi.resetModules();
+    const reloaded = await import("./storage");
+    expect(await reloaded.loadDatabase()).toBe(true);
+    expect(importDatabase).toHaveBeenLastCalledWith(bytes);
+    expect(toBase64).not.toHaveBeenCalled();
+    expect(fromBase64).not.toHaveBeenCalled();
+  });
+
+  it("检查旧库时的 I/O 错误不能当成首次启动", async () => {
+    platform.value = 'wechat';
+    setFile('/wx-user/shushugo/nihongo.db', 'bGVnYWN5');
+    const readdir = fileManager.readdir.bind(fileManager);
+    vi.spyOn(fileManager, 'readdir').mockImplementation((options: any) => {
+      if (options.dirPath === '/wx-user/shushugo') return options.fail?.({ errMsg: 'operate:fail permission denied' });
+      readdir(options);
+    });
+    const { LocalArchiveUnreadableError, loadDatabase } = await import("./storage");
+
+    await expect(loadDatabase()).rejects.toBeInstanceOf(LocalArchiveUnreadableError);
   });
 });
 

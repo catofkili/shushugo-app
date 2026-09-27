@@ -7,13 +7,13 @@ import type { WeeklyReportEntry } from "../lib/analytics/weekly-report-events";
 import type { LibraryLevel } from "../lib/word-library";
 import type { GrammarMode, Page, StudyMode } from "../types/app";
 import type { JLPTLevel } from "../types/grammar";
-import { getAppState, setAppState } from "./app-store";
+import { setAppState } from "./app-store";
 
 interface ActionDependencies {
   navigate(page: Page, studyMode?: StudyMode): void;
   showNotice(text: string, timeout?: number): void;
   setOverview(overview: ReturnType<typeof getProgressOverview>): void;
-  confirm(message: string): boolean;
+  confirm(message: string): boolean | Promise<boolean>;
   markLearned(id: string): void;
   recordReview(id: string, isCorrect: boolean): void;
 }
@@ -57,7 +57,8 @@ export function createAppActions(deps: ActionDependencies) {
       if (!wordIds.length) return;
       // 和加餐记同一笔账。
       recordStubbornQuickStudy(wordIds.length);
-      setAppState({ stubbornQuickIds: wordIds, page: "quick-study" });
+      setAppState({ stubbornQuickIds: wordIds });
+      deps.navigate("quick-study");
     },
     startDistinctionQuiz(scope: QuizScope) {
       setAppState({ distinctionQuizScope: scope });
@@ -65,8 +66,8 @@ export function createAppActions(deps: ActionDependencies) {
     },
     startWeeklyReview(wordIds: number[]) {
       if (!wordIds.length) return;
-      const { page, pageHistory } = getAppState();
-      setAppState({ stubbornQuickIds: wordIds, page: "quick-study", pageHistory: [...pageHistory, page] });
+      setAppState({ stubbornQuickIds: wordIds });
+      deps.navigate("quick-study");
     },
     openGrammar(id: string) {
       setAppState({ selectedGrammarId: id });
@@ -82,8 +83,8 @@ export function createAppActions(deps: ActionDependencies) {
     markLearnedWithNotice,
     markForgotWithNotice,
     refreshOverview,
-    completeTodayWords() {
-      if (!deps.confirm("确定要把今天的单词任务直接标记为完成吗？这会记录为今日已完成并进入完成页。")) return;
+    async completeTodayWords() {
+      if (!await deps.confirm("确定要把今天的单词任务直接标记为完成吗？这会记录为今日已完成并进入完成页。")) return;
       try {
         const result = completeTodayWordPlan();
         setAppState((state) => ({ wordStudyRevision: state.wordStudyRevision + 1 }));
@@ -104,7 +105,7 @@ export function createAppActions(deps: ActionDependencies) {
         deps.showNotice("没有找到重复录入的词条。", 2600);
         return;
       }
-      const confirmed = deps.confirm(
+      const confirmed = await deps.confirm(
         `发现 ${plan.pairs.length} 行重复录入的词条（其中 ${plan.bothStudied} 组你两边都学过）。\n\n`
         + `合并会把这些行上的 ${plan.reviews} 条作答记录搬到保留的那行上，然后删掉重复行。\n`
         + "学习记录一条都不会丢，但删行不可逆。合并前会自动存一份整库恢复点。\n\n继续吗？"
