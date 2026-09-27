@@ -6,6 +6,7 @@ import { startStartupTiming } from '../../frontend/src/lib/perf-marks';
 import './platform/app-polyfills.weapp';
 import './platform/html-text-template.weapp.cjs';
 import './platform/iframe-polyfill.weapp';
+import { startFeedbackRuntime } from './platform/feedback-runtime.weapp';
 import './app.css';
 // Keep native control resets below the user-agent styles but before shared page classes.
 import './platform/mini-overrides.weapp.css';
@@ -21,6 +22,8 @@ hooks.tap('getMiniLifecycle', (lifecycle) => {
   page[5] = page[5].filter((name) => name !== 'onPageScroll');
   return { ...lifecycle, page };
 });
+
+startFeedbackRuntime();
 
 export default function App({ children }: PropsWithChildren) {
   useLaunch(() => startStartupTiming());

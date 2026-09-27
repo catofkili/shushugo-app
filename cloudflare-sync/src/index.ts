@@ -443,6 +443,50 @@ const readJson = async <T>(request: Request, limit = JSON_BODY_LIMIT): Promise<T
   }
 };
 
+const MAX_FEEDBACK_DIAGNOSTICS_BYTES = 32 * 1024;
+const truncateFeedbackDiagnostics = (value: Record<string, unknown>): string => {
+  const raw = JSON.stringify(value);
+  if (encoder.encode(raw).byteLength <= MAX_FEEDBACK_DIAGNOSTICS_BYTES) return raw;
+
+  let preview = Array.from(raw).slice(0, 24_000).join("");
+  let truncated = JSON.stringify({ truncated: true, preview });
+  while (encoder.encode(truncated).byteLength > MAX_FEEDBACK_DIAGNOSTICS_BYTES) {
+    preview = Array.from(preview).slice(0, Math.floor(preview.length * 0.7)).join("");
+    truncated = JSON.stringify({ truncated: true, preview });
+  }
+  return truncated;
+};
+
+const submitFeedbackReport = async (request: Request, env: Env) => {
+  const body = await readJson<Record<string, unknown>>(request);
+  const kinds = new Set(["feedback", "error", "hang", "crash"]);
+  if (typeof body.kind !== "string" || !kinds.has(body.kind)
+    || typeof body.message !== "string" || typeof body.platform !== "string"
+    || typeof body.app_version !== "string" || typeof body.route !== "string"
+    || (body.contact !== undefined && typeof body.contact !== "string")
+    || (body.diagnostics !== undefined && (!body.diagnostics || typeof body.diagnostics !== "object" || Array.isArray(body.diagnostics)))) {
+    return json({ detail: "Feedback fields have invalid types" }, 400);
+  }
+
+  const ipHash = await sha256(clientIp(request));
+  await rateLimitSubject(env, "feedback-hour", `ip:${ipHash}`, 10, 60 * 60);
+  await rateLimitSubject(env, "feedback-day", `ip:${ipHash}`, 30, 24 * 60 * 60);
+  const userId = await currentUser(request, env);
+  const diagnosticsJson = body.diagnostics === undefined ? null : truncateFeedbackDiagnostics(body.diagnostics as Record<string, unknown>);
+  const message = Array.from(body.message).slice(0, 2_000).join("");
+  const contact = Array.from((body.contact as string | undefined) ?? "").slice(0, 100).join("");
+  await env.DB.prepare(`
+    INSERT INTO feedback_reports (
+      id, created_at, kind, message, contact, user_id, platform, app_version, route, diagnostics_json, client_hash
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    crypto.randomUUID(), Math.floor(Date.now() / 1000), body.kind, message, contact, userId,
+    Array.from(body.platform).slice(0, 100).join(""), Array.from(body.app_version).slice(0, 100).join(""),
+    Array.from(body.route).slice(0, 100).join(""), diagnosticsJson, ipHash
+  ).run();
+  return json({ accepted: true });
+};
+
 const turnstileEnabled = (env: Env) => Boolean(env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET_KEY);
 
 /**
@@ -3186,7 +3230,8 @@ const health = async (env: Env) => {
     "wechat_orders",            // 0013
     "teams", "team_members", "team_daily_activity", "team_cheers", "team_reports", // 0014
     "trial_grants",            // 0015
-    "launch_gift_grants"       // 0016
+    "launch_gift_grants",      // 0016
+    "feedback_reports"         // 0017
   ];
   const found = await env.DB.prepare(
     `SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (${required.map(() => "?").join(", ")})`
@@ -3244,6 +3289,7 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "GET" && url.pathname === "/terms") return userAgreementPage();
   if (request.method === "GET" && url.pathname === "/auth/challenge") return turnstileChallengePage(request, env);
   if (request.method === "GET" && url.pathname === "/api/health") return health(env);
+  if (request.method === "POST" && url.pathname === "/api/feedback") return submitFeedbackReport(request, env);
   if (request.method === "GET" && url.pathname === "/api/auth/config") return json({
     appleEnabled: Boolean(env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID),
     appleClientId: env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID ?? null,
@@ -3322,7 +3368,10 @@ export default {
       env.DB.prepare("DELETE FROM sessions WHERE expires_at < ?").bind(iso(now)),
       // 验证码用过或过期就没用了。
       env.DB.prepare("DELETE FROM auth_email_tokens WHERE expires_at < ? OR used_at IS NOT NULL")
-        .bind(iso(now - 24 * 60 * 60 * 1000))
+        .bind(iso(now - 24 * 60 * 60 * 1000)),
+      // 反馈里可能有联系方式和诊断上下文，按隐私政策最多保留 180 天。
+      env.DB.prepare("DELETE FROM feedback_reports WHERE created_at < ?")
+        .bind(Math.floor(now / 1000) - 180 * 24 * 60 * 60)
     ]);
 
     // 退款不会自己找上门:通知可能没配、可能投递失败,而**永久购买永远不会过期**,

@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1861240,
-      "mib": 1.775,
+      "bytes": 1885782,
+      "mib": 1.798,
       "passes": true
     },
     "study": {
@@ -12,8 +12,8 @@
       "passes": true
     },
     "account": {
-      "bytes": 248857,
-      "mib": 0.237,
+      "bytes": 250247,
+      "mib": 0.239,
       "passes": true
     },
     "content-pages": {
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 567080,
+      "bytes": 567803,
       "mib": 0.541,
       "passes": true
     }
   },
-  "totalBytes": 8084602,
+  "totalBytes": 8111257,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 825170
+      "bytes": 844170
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 565331
+      "bytes": 566054
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -112,7 +112,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 232481
+      "bytes": 234345
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -207,7 +207,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 37031
+      "bytes": 38421
     },
     {
       "path": "content-pages/assets/brand/item-sound-marimba-2.png",
@@ -575,6 +575,11 @@
       "bytes": 7706
     },
     {
+      "path": "app.js",
+      "package": "main",
+      "bytes": 7701
+    },
+    {
       "path": "content-pages/sub-common/95faf04fa3193caa9f9ed8d02d4a8ace.js",
       "package": "content-pages",
       "bytes": 7480
@@ -763,11 +768,6 @@
       "path": "content-pages/achievements/index.js",
       "package": "content-pages",
       "bytes": 4062
-    },
-    {
-      "path": "app.js",
-      "package": "main",
-      "bytes": 4023
     },
     {
       "path": "assets/brand/shushugo-icon.png",
