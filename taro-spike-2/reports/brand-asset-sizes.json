@@ -4,7 +4,7 @@
   "packages": {
     "main": {
       "beforeBytes": 190864,
-      "afterBytes": 342738
+      "afterBytes": 299293
     },
     "study": {
       "beforeBytes": 41968,
@@ -32,21 +32,21 @@
       "beforeFormat": "webp",
       "beforeBytes": 10360,
       "afterFormat": "png",
-      "afterBytes": 19290
+      "afterBytes": 16346
     },
     {
       "subpackage": "main",
       "image": "scene-book",
       "sourceWidth": 370,
       "sourceHeight": 307,
-      "maxDisplayHeightCss": 96,
+      "maxDisplayHeightCss": 56,
       "scale": 2,
-      "outputWidth": 231,
-      "outputHeight": 192,
+      "outputWidth": 135,
+      "outputHeight": 112,
       "beforeFormat": "webp",
       "beforeBytes": 8942,
       "afterFormat": "png",
-      "afterBytes": 16299
+      "afterBytes": 6313
     },
     {
       "subpackage": "main",
@@ -60,21 +60,21 @@
       "beforeFormat": "webp",
       "beforeBytes": 13436,
       "afterFormat": "png",
-      "afterBytes": 21645
+      "afterBytes": 17892
     },
     {
       "subpackage": "main",
       "image": "mood-puzzled",
       "sourceWidth": 443,
       "sourceHeight": 328,
-      "maxDisplayHeightCss": 96,
+      "maxDisplayHeightCss": 52,
       "scale": 2,
-      "outputWidth": 259,
-      "outputHeight": 192,
+      "outputWidth": 140,
+      "outputHeight": 104,
       "beforeFormat": "webp",
       "beforeBytes": 10364,
       "afterFormat": "png",
-      "afterBytes": 16020
+      "afterBytes": 5117
     },
     {
       "subpackage": "main",
@@ -88,7 +88,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 9522,
       "afterFormat": "png",
-      "afterBytes": 21478
+      "afterBytes": 17657
     },
     {
       "subpackage": "main",
@@ -102,7 +102,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 10240,
       "afterFormat": "png",
-      "afterBytes": 19848
+      "afterBytes": 15154
     },
     {
       "subpackage": "main",
@@ -116,7 +116,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 8548,
       "afterFormat": "png",
-      "afterBytes": 19270
+      "afterBytes": 15491
     },
     {
       "subpackage": "main",
@@ -130,7 +130,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 9978,
       "afterFormat": "png",
-      "afterBytes": 18487
+      "afterBytes": 16118
     },
     {
       "subpackage": "main",
@@ -144,21 +144,21 @@
       "beforeFormat": "webp",
       "beforeBytes": 9916,
       "afterFormat": "png",
-      "afterBytes": 18565
+      "afterBytes": 15367
     },
     {
       "subpackage": "main",
       "image": "mood-cheer",
       "sourceWidth": 446,
       "sourceHeight": 367,
-      "maxDisplayHeightCss": 96,
+      "maxDisplayHeightCss": 68,
       "scale": 2,
-      "outputWidth": 233,
-      "outputHeight": 192,
+      "outputWidth": 165,
+      "outputHeight": 136,
       "beforeFormat": "webp",
       "beforeBytes": 10774,
       "afterFormat": "png",
-      "afterBytes": 17394
+      "afterBytes": 8620
     },
     {
       "subpackage": "main",
@@ -186,7 +186,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 9920,
       "afterFormat": "png",
-      "afterBytes": 14271
+      "afterBytes": 11927
     },
     {
       "subpackage": "main",
@@ -200,7 +200,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 8822,
       "afterFormat": "png",
-      "afterBytes": 14068
+      "afterBytes": 13653
     },
     {
       "subpackage": "main",
@@ -214,7 +214,63 @@
       "beforeFormat": "webp",
       "beforeBytes": 7510,
       "afterFormat": "png",
-      "afterBytes": 15083
+      "afterBytes": 13282
+    },
+    {
+      "subpackage": "main",
+      "image": "mood-ask",
+      "sourceWidth": 427,
+      "sourceHeight": 360,
+      "maxDisplayHeightCss": 48,
+      "scale": 1,
+      "outputWidth": 57,
+      "outputHeight": 48,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 1464
+    },
+    {
+      "subpackage": "main",
+      "image": "mood-shy",
+      "sourceWidth": 401,
+      "sourceHeight": 283,
+      "maxDisplayHeightCss": 64,
+      "scale": 2,
+      "outputWidth": 181,
+      "outputHeight": 128,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 7429
+    },
+    {
+      "subpackage": "main",
+      "image": "mood-surprised",
+      "sourceWidth": 298,
+      "sourceHeight": 276,
+      "maxDisplayHeightCss": 34,
+      "scale": 1,
+      "outputWidth": 37,
+      "outputHeight": 34,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 1197
+    },
+    {
+      "subpackage": "main",
+      "image": "empty-box",
+      "sourceWidth": 433,
+      "sourceHeight": 320,
+      "maxDisplayHeightCss": 72,
+      "scale": 2,
+      "outputWidth": 195,
+      "outputHeight": 144,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 10348
     },
     {
       "subpackage": "main",
@@ -228,7 +284,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 2908,
       "afterFormat": "png",
-      "afterBytes": 4068
+      "afterBytes": 3874
     },
     {
       "subpackage": "main",
@@ -242,7 +298,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 2162,
       "afterFormat": "png",
-      "afterBytes": 2723
+      "afterBytes": 2394
     },
     {
       "subpackage": "main",
@@ -270,7 +326,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 2040,
       "afterFormat": "png",
-      "afterBytes": 2716
+      "afterBytes": 2362
     },
     {
       "subpackage": "main",
@@ -298,7 +354,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 2948,
       "afterFormat": "png",
-      "afterBytes": 3621
+      "afterBytes": 3244
     },
     {
       "subpackage": "main",
@@ -312,7 +368,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 2140,
       "afterFormat": "png",
-      "afterBytes": 2640
+      "afterBytes": 2541
     },
     {
       "subpackage": "main",
@@ -340,7 +396,7 @@
       "beforeFormat": "none",
       "beforeBytes": 0,
       "afterFormat": "png",
-      "afterBytes": 10832
+      "afterBytes": 9946
     },
     {
       "subpackage": "main",
@@ -354,7 +410,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 1954,
       "afterFormat": "png",
-      "afterBytes": 4011
+      "afterBytes": 3671
     },
     {
       "subpackage": "main",
@@ -368,7 +424,7 @@
       "beforeFormat": "none",
       "beforeBytes": 0,
       "afterFormat": "png",
-      "afterBytes": 7146
+      "afterBytes": 6168
     },
     {
       "subpackage": "main",
@@ -382,7 +438,7 @@
       "beforeFormat": "webp",
       "beforeBytes": 17676,
       "afterFormat": "png",
-      "afterBytes": 29479
+      "afterBytes": 27934
     },
     {
       "subpackage": "study",

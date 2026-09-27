@@ -2,23 +2,23 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1897766,
-      "mib": 1.81,
+      "bytes": 1861700,
+      "mib": 1.775,
       "passes": true
     },
     "study": {
-      "bytes": 300142,
-      "mib": 0.286,
+      "bytes": 299354,
+      "mib": 0.285,
       "passes": true
     },
     "account": {
-      "bytes": 251805,
-      "mib": 0.24,
+      "bytes": 255795,
+      "mib": 0.244,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1053872,
-      "mib": 1.005,
+      "bytes": 1058648,
+      "mib": 1.01,
       "passes": true
     },
     "features": {
@@ -42,8 +42,8 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 353554,
-      "mib": 0.337,
+      "bytes": 358330,
+      "mib": 0.342,
       "passes": true
     },
     "core": {
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 567937,
-      "mib": 0.542,
+      "bytes": 572747,
+      "mib": 0.546,
       "passes": true
     }
   },
-  "totalBytes": 8119899,
+  "totalBytes": 8101397,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 857943
+      "bytes": 864055
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 566187
+      "bytes": 570997
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -112,7 +112,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 231799
+      "bytes": 232867
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -207,7 +207,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 38029
+      "bytes": 37963
     },
     {
       "path": "content-pages/assets/brand/item-sound-marimba-2.png",
@@ -255,14 +255,14 @@
       "bytes": 30165
     },
     {
-      "path": "assets/brand/walk-strip.png",
-      "package": "main",
-      "bytes": 29479
-    },
-    {
       "path": "account/account/index.js",
       "package": "account",
       "bytes": 28217
+    },
+    {
+      "path": "assets/brand/walk-strip.png",
+      "package": "main",
+      "bytes": 27934
     },
     {
       "path": "study/vocab-test/index.js",
@@ -282,17 +282,7 @@
     {
       "path": "study/jlpt-plan/index.js",
       "package": "study",
-      "bytes": 22171
-    },
-    {
-      "path": "assets/brand/mood-yay.png",
-      "package": "main",
-      "bytes": 21645
-    },
-    {
-      "path": "assets/brand/mood-dizzy.png",
-      "package": "main",
-      "bytes": 21478
+      "bytes": 22105
     },
     {
       "path": "study/quick-study/index.js",
@@ -300,34 +290,9 @@
       "bytes": 21322
     },
     {
-      "path": "assets/brand/mood-sleep.png",
-      "package": "main",
-      "bytes": 19848
-    },
-    {
-      "path": "assets/brand/scene-laptop.png",
-      "package": "main",
-      "bytes": 19290
-    },
-    {
-      "path": "assets/brand/mood-default.png",
-      "package": "main",
-      "bytes": 19270
-    },
-    {
       "path": "study/team/index.js",
       "package": "study",
       "bytes": 18727
-    },
-    {
-      "path": "assets/brand/mood-fired-up.png",
-      "package": "main",
-      "bytes": 18565
-    },
-    {
-      "path": "assets/brand/mood-hungry.png",
-      "package": "main",
-      "bytes": 18487
     },
     {
       "path": "study/word-list/index.js",
@@ -335,14 +300,19 @@
       "bytes": 18334
     },
     {
+      "path": "assets/brand/mood-yay.png",
+      "package": "main",
+      "bytes": 17892
+    },
+    {
       "path": "study/assets/brand/empty-box.png",
       "package": "study",
       "bytes": 17872
     },
     {
-      "path": "assets/brand/mood-cheer.png",
+      "path": "assets/brand/mood-dizzy.png",
       "package": "main",
-      "bytes": 17394
+      "bytes": 17657
     },
     {
       "path": "content-pages/assets/brand/shushugo-icon-dark.png",
@@ -360,9 +330,9 @@
       "bytes": 16417
     },
     {
-      "path": "assets/brand/scene-book.png",
+      "path": "assets/brand/scene-laptop.png",
       "package": "main",
-      "bytes": 16299
+      "bytes": 16346
     },
     {
       "path": "account/assets/brand/mood-heart.png",
@@ -370,9 +340,9 @@
       "bytes": 16290
     },
     {
-      "path": "assets/brand/mood-puzzled.png",
+      "path": "assets/brand/mood-hungry.png",
       "package": "main",
-      "bytes": 16020
+      "bytes": 16118
     },
     {
       "path": "grammar-pages/sub-common/837fb9cb9c39b27ec685f17f99b5a334.js",
@@ -400,6 +370,16 @@
       "bytes": 15607
     },
     {
+      "path": "assets/brand/mood-default.png",
+      "package": "main",
+      "bytes": 15491
+    },
+    {
+      "path": "assets/brand/mood-fired-up.png",
+      "package": "main",
+      "bytes": 15367
+    },
+    {
       "path": "content-pages/assets/brand/empty-search.png",
       "package": "content-pages",
       "bytes": 15306
@@ -408,6 +388,11 @@
       "path": "study/assets/brand/empty-search.png",
       "package": "study",
       "bytes": 15306
+    },
+    {
+      "path": "assets/brand/mood-sleep.png",
+      "package": "main",
+      "bytes": 15154
     },
     {
       "path": "content-pages/sub-common/a7a51c9d0586c5ee3cbfb1ee120b7a68.js",
@@ -420,19 +405,9 @@
       "bytes": 15093
     },
     {
-      "path": "assets/brand/mood-wave.png",
-      "package": "main",
-      "bytes": 15083
-    },
-    {
-      "path": "assets/brand/scene-stretch.png",
-      "package": "main",
-      "bytes": 14271
-    },
-    {
       "path": "assets/brand/scene-music.png",
       "package": "main",
-      "bytes": 14068
+      "bytes": 13653
     },
     {
       "path": "account/assets/brand/mood-ask.png",
@@ -450,6 +425,11 @@
       "bytes": 13366
     },
     {
+      "path": "assets/brand/mood-wave.png",
+      "package": "main",
+      "bytes": 13282
+    },
+    {
       "path": "content-pages/yuzu-shop/index.js",
       "package": "content-pages",
       "bytes": 13238
@@ -465,6 +445,26 @@
       "bytes": 12312
     },
     {
+      "path": "assets/brand/scene-stretch.png",
+      "package": "main",
+      "bytes": 11927
+    },
+    {
+      "path": "account/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
+      "package": "account",
+      "bytes": 11726
+    },
+    {
+      "path": "content-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
+      "package": "content-pages",
+      "bytes": 11726
+    },
+    {
+      "path": "grammar-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
+      "package": "grammar-pages",
+      "bytes": 11726
+    },
+    {
       "path": "study/team/index.wxss",
       "package": "study",
       "bytes": 11454
@@ -475,9 +475,9 @@
       "bytes": 11157
     },
     {
-      "path": "assets/brand/empty-bye.png",
+      "path": "assets/brand/empty-box.png",
       "package": "main",
-      "bytes": 10832
+      "bytes": 10348
     },
     {
       "path": "account/privacy/index.js",
@@ -488,6 +488,11 @@
       "path": "assets/tabs/word.png",
       "package": "main",
       "bytes": 10109
+    },
+    {
+      "path": "assets/brand/empty-bye.png",
+      "package": "main",
+      "bytes": 9946
     },
     {
       "path": "content-pages/sub-common/c7c379ee0ec6251bb4f577857a5e5421.js",
@@ -508,6 +513,11 @@
       "path": "assets/tabs/profile.png",
       "package": "main",
       "bytes": 9410
+    },
+    {
+      "path": "assets/brand/mood-cheer.png",
+      "package": "main",
+      "bytes": 8620
     },
     {
       "path": "grammar-pages/sub-common/4b83b97179b91c47bbd4458e67fe7adb.js",
@@ -535,6 +545,11 @@
       "bytes": 8447
     },
     {
+      "path": "app.js",
+      "package": "main",
+      "bytes": 8261
+    },
+    {
       "path": "content-pages/about/index.js",
       "package": "content-pages",
       "bytes": 8237
@@ -553,11 +568,6 @@
       "path": "study/sub-common/f2898d7ce5013dccb0bd343dbc906bc1.js",
       "package": "study",
       "bytes": 8139
-    },
-    {
-      "path": "app.js",
-      "package": "main",
-      "bytes": 8060
     },
     {
       "path": "content-pages/sub-common/fb02c483f17f7447c1f19c294fe921bf.js",
@@ -585,34 +595,19 @@
       "bytes": 7480
     },
     {
+      "path": "assets/brand/mood-shy.png",
+      "package": "main",
+      "bytes": 7429
+    },
+    {
       "path": "study/assets/brand/mood-idea.png",
       "package": "study",
       "bytes": 7372
     },
     {
-      "path": "assets/brand/shushugo-icon-dark.png",
-      "package": "main",
-      "bytes": 7146
-    },
-    {
       "path": "study/kanji-readings/index.js",
       "package": "study",
       "bytes": 7095
-    },
-    {
-      "path": "account/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
-      "package": "account",
-      "bytes": 6944
-    },
-    {
-      "path": "content-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
-      "package": "content-pages",
-      "bytes": 6944
-    },
-    {
-      "path": "grammar-pages/sub-common/508d88ad7bd49122e66fe7216b554a54.js",
-      "package": "grammar-pages",
-      "bytes": 6944
     },
     {
       "path": "account/help/index.js",
@@ -632,12 +627,12 @@
     {
       "path": "content-pages/sub-common/93a7b7b512c60343756d3b2d2fbb29f1.js",
       "package": "content-pages",
-      "bytes": 6492
+      "bytes": 6507
     },
     {
       "path": "grammar-pages/sub-common/93a7b7b512c60343756d3b2d2fbb29f1.js",
       "package": "grammar-pages",
-      "bytes": 6492
+      "bytes": 6507
     },
     {
       "path": "content-pages/sub-common/d7c5c49ad7ad6a0ec32285c6c7b2a7ff.js",
@@ -655,6 +650,11 @@
       "bytes": 6317
     },
     {
+      "path": "assets/brand/scene-book.png",
+      "package": "main",
+      "bytes": 6313
+    },
+    {
       "path": "assets/brand/icon-kanji-readings.png",
       "package": "main",
       "bytes": 6224
@@ -663,6 +663,11 @@
       "path": "content-pages/assets/brand/icon-kanji-readings.png",
       "package": "content-pages",
       "bytes": 6224
+    },
+    {
+      "path": "assets/brand/shushugo-icon-dark.png",
+      "package": "main",
+      "bytes": 6168
     },
     {
       "path": "account/sub-common/9eab87d2c778519be93401a860355cdf.js",
@@ -730,6 +735,11 @@
       "bytes": 5380
     },
     {
+      "path": "assets/brand/mood-puzzled.png",
+      "package": "main",
+      "bytes": 5117
+    },
+    {
       "path": "account/notifications/index.js",
       "package": "account",
       "bytes": 4881
@@ -755,19 +765,9 @@
       "bytes": 4148
     },
     {
-      "path": "assets/brand/icon-study-modes.png",
-      "package": "main",
-      "bytes": 4068
-    },
-    {
       "path": "content-pages/assets/brand/icon-study-modes.png",
       "package": "content-pages",
       "bytes": 4068
-    },
-    {
-      "path": "assets/brand/shushugo-icon.png",
-      "package": "main",
-      "bytes": 4011
     },
     {
       "path": "content-pages/achievements/index.js",
@@ -778,6 +778,11 @@
       "path": "account/sub-vendors.js",
       "package": "account",
       "bytes": 3907
+    },
+    {
+      "path": "assets/brand/icon-study-modes.png",
+      "package": "main",
+      "bytes": 3874
     },
     {
       "path": "account/privacy-policy/index.js",
@@ -800,9 +805,9 @@
       "bytes": 3757
     },
     {
-      "path": "assets/brand/icon-favorites.png",
+      "path": "assets/brand/shushugo-icon.png",
       "package": "main",
-      "bytes": 3621
+      "bytes": 3671
     },
     {
       "path": "content-pages/assets/brand/icon-favorites.png",
@@ -820,6 +825,11 @@
       "bytes": 3276
     },
     {
+      "path": "assets/brand/icon-favorites.png",
+      "package": "main",
+      "bytes": 3244
+    },
+    {
       "path": "study/sub-common/359e4bb7fe7ba0ab05a21268542f0d38.js",
       "package": "study",
       "bytes": 3159
@@ -835,19 +845,9 @@
       "bytes": 2855
     },
     {
-      "path": "assets/brand/icon-grammar.png",
-      "package": "main",
-      "bytes": 2723
-    },
-    {
       "path": "content-pages/assets/brand/icon-grammar.png",
       "package": "content-pages",
       "bytes": 2723
-    },
-    {
-      "path": "assets/brand/icon-practice.png",
-      "package": "main",
-      "bytes": 2716
     },
     {
       "path": "content-pages/assets/brand/icon-practice.png",
@@ -863,11 +863,6 @@
       "path": "grammar-pages/sub-common/e989c3b9e55478379e0db65019e4eba5.js",
       "package": "grammar-pages",
       "bytes": 2713
-    },
-    {
-      "path": "assets/brand/icon-stats.png",
-      "package": "main",
-      "bytes": 2640
     },
     {
       "path": "content-pages/assets/brand/icon-stats.png",
@@ -895,6 +890,11 @@
       "bytes": 2556
     },
     {
+      "path": "assets/brand/icon-stats.png",
+      "package": "main",
+      "bytes": 2541
+    },
+    {
       "path": "content-pages/detail/index.js",
       "package": "content-pages",
       "bytes": 2539
@@ -908,6 +908,16 @@
       "path": "study/sub-common/c20ab7acaf0755e837d4eecc00573deb.js",
       "package": "study",
       "bytes": 2409
+    },
+    {
+      "path": "assets/brand/icon-grammar.png",
+      "package": "main",
+      "bytes": 2394
+    },
+    {
+      "path": "assets/brand/icon-practice.png",
+      "package": "main",
+      "bytes": 2362
     },
     {
       "path": "account/user-agreement/index.js",
@@ -927,12 +937,12 @@
     {
       "path": "content-pages/sub-common/797e28e2bc0a431a7ce89cbace0037c6.js",
       "package": "content-pages",
-      "bytes": 1918
+      "bytes": 1893
     },
     {
       "path": "grammar-pages/sub-common/797e28e2bc0a431a7ce89cbace0037c6.js",
       "package": "grammar-pages",
-      "bytes": 1918
+      "bytes": 1893
     },
     {
       "path": "vendors.js.LICENSE.txt",
@@ -953,6 +963,11 @@
       "path": "study/confusion/index.js",
       "package": "study",
       "bytes": 1606
+    },
+    {
+      "path": "assets/brand/mood-ask.png",
+      "package": "main",
+      "bytes": 1464
     },
     {
       "path": "account/sub-common/d5ceecdcf1ee2cd2fd05f7fe59825914.js",
@@ -993,6 +1008,11 @@
       "path": "grammar-pages/sub-common/eb5a1b381c35eb5ac3fd9053f716ec50.js",
       "package": "grammar-pages",
       "bytes": 1218
+    },
+    {
+      "path": "assets/brand/mood-surprised.png",
+      "package": "main",
+      "bytes": 1197
     },
     {
       "path": "account/sub-common/9afeea0fba34dc2ee9b759af3232b27a.js",
@@ -1125,16 +1145,6 @@
       "bytes": 748
     },
     {
-      "path": "account/sub-common/9c0ce825823648fb4badf98099a91a08.js",
-      "package": "account",
-      "bytes": 726
-    },
-    {
-      "path": "study/sub-common/9c0ce825823648fb4badf98099a91a08.js",
-      "package": "study",
-      "bytes": 726
-    },
-    {
       "path": "content-pages/sub-common/6ced2bcb395a96b68bb6f83718b96144.js",
       "package": "content-pages",
       "bytes": 718
@@ -1222,7 +1232,7 @@
     {
       "path": "pages/word/index.js",
       "package": "main",
-      "bytes": 561
+      "bytes": 559
     },
     {
       "path": "assets/lucide/notebookpen-ink.svg",
@@ -1905,6 +1915,21 @@
       "bytes": 344
     },
     {
+      "path": "content-pages/sub-common/0d5f7d3a6a1e8c094b33c464dfe9a84b.js",
+      "package": "content-pages",
+      "bytes": 340
+    },
+    {
+      "path": "grammar-pages/sub-common/0d5f7d3a6a1e8c094b33c464dfe9a84b.js",
+      "package": "grammar-pages",
+      "bytes": 340
+    },
+    {
+      "path": "study/sub-common/0d5f7d3a6a1e8c094b33c464dfe9a84b.js",
+      "package": "study",
+      "bytes": 340
+    },
+    {
       "path": "account/assets/lucide/helpcircle-ink.svg",
       "package": "account",
       "bytes": 339
@@ -1933,21 +1958,6 @@
       "path": "study/assets/lucide/timer-light.svg",
       "package": "study",
       "bytes": 338
-    },
-    {
-      "path": "content-pages/sub-common/0d5f7d3a6a1e8c094b33c464dfe9a84b.js",
-      "package": "content-pages",
-      "bytes": 336
-    },
-    {
-      "path": "grammar-pages/sub-common/0d5f7d3a6a1e8c094b33c464dfe9a84b.js",
-      "package": "grammar-pages",
-      "bytes": 336
-    },
-    {
-      "path": "study/sub-common/0d5f7d3a6a1e8c094b33c464dfe9a84b.js",
-      "package": "study",
-      "bytes": 336
     },
     {
       "path": "assets/lucide/arrowleftright-ink.svg",

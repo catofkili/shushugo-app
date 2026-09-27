@@ -31,6 +31,7 @@ import { UNDO_LIMIT } from "../lib/word-api/undo-stack";
 import type { WordSessionOptions } from "../lib/study-types";
 import { DistinctionSheet } from "../components/DistinctionSheet";
 import { Paywall } from "../components/Paywall";
+import { WordStudyScrollArea } from "../components/WordStudyScrollArea";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { canUseFeature } from "../lib/entitlements";
 import { GrammarCard, QUIZ_ACCENT_AMBER } from "../features/grammar-quiz/GrammarCard";
@@ -1834,7 +1835,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                     </span>
                   )}
                 </div>
-                <div data-word-scrollable="true" className="max-h-24 w-full overflow-y-auto px-1 sm:max-h-28">
+                <WordStudyScrollArea className="max-h-24 w-full overflow-y-auto px-1 sm:max-h-28">
                   {isUnitKanji ? (
                     <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{unitTarget?.text}</p>
                   ) : isReversePhase ? (
@@ -1847,11 +1848,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                       {card.questionMeaning || card.meaning}
                     </p>
                   )}
-                </div>
+                </WordStudyScrollArea>
               </div>
             </div>
 
-            <div data-word-scrollable="true" className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(1040px,100%)] lg:p-10">
+            <WordStudyScrollArea centerContent className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(1040px,100%)] lg:p-10">
               {revealed ? (
                 <div className="zoo-reveal-in w-full min-w-0">
                   {isReversePhase ? (
@@ -2042,7 +2043,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                   <p className="mt-3 text-sm text-white/55">{isReversePhase ? "先回忆中文释义" : "先回忆假名和汉字"}</p>
                 </div>
               )}
-            </div>
+            </WordStudyScrollArea>
 
             <div className="relative h-16 lg:mx-auto lg:w-[min(900px,100%)]">
               {reliefActive ? (

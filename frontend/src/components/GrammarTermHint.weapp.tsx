@@ -33,7 +33,7 @@ const HintBubble = ({ hint, children }: { hint: Hint; children: ReactNode }) => 
   };
 
   return <>
-    <Text id={id} className="relative inline-flex items-center border-b border-dotted border-[#81D8CF]" onClick={toggle}>{children}</Text>
+    <View id={id} className="relative inline-flex items-center border-b border-dotted border-[#81D8CF]" onClick={toggle}>{children}</View>
     {position && <>
       <View className="fixed inset-0 z-[2147483646]" style={{ background: "transparent" }} onClick={() => setPosition(null)} />
       <View
@@ -53,5 +53,5 @@ export const GrammarTermHint = ({ text }: { text: string }) => text.split(gramma
   const hint = grammarHintByLabel.get(part);
   return hint
     ? <HintBubble key={`${part}-${index}`} hint={hint}><JapaneseRuby text={part} /></HintBubble>
-    : <Text key={`${part}-${index}`}><JapaneseRuby text={part} /></Text>;
+    : <JapaneseRuby key={`${part}-${index}`} text={part} />;
 });

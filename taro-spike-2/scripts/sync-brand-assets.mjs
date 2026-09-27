@@ -7,15 +7,17 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repo = path.resolve(root, '..');
 const mainNames = {
-  'scene-laptop': 92, 'scene-book': 96, 'mood-yay': 120, 'mood-puzzled': 96,
+  'scene-laptop': 92, 'scene-book': 56, 'mood-yay': 120, 'mood-puzzled': 52,
   'mood-dizzy': 120, 'mood-sleep': 112, 'mood-default': 96, 'mood-hungry': 110,
-  'mood-fired-up': 96, 'mood-cheer': 96, 'scene-team': 96,
-  'scene-stretch': 78, 'scene-music': 78, 'mood-wave': 84,
+  'mood-fired-up': 96, 'mood-cheer': 68, 'scene-team': 96,
+  'scene-stretch': 78, 'scene-music': 78, 'mood-wave': 84, 'mood-ask': 48,
+  'mood-shy': 64, 'mood-surprised': 34, 'empty-box': 72,
   'icon-study-modes': 36, 'icon-grammar': 36, 'icon-vocab': 36,
   'icon-practice': 36, 'icon-kanji-readings': 36, 'icon-favorites': 36,
   'icon-stats': 36, 'icon-shop': 36, 'empty-bye': 64,
   'shushugo-icon': 56, 'shushugo-icon-dark': 56, 'walk-strip': 72
 };
+const mainOneX = new Set(['mood-ask', 'mood-surprised']);
 const packageNames = {
   study: {
     'empty-box': 96, 'empty-search': 96, 'mood-ask': 96, 'mood-idea': 64, 'mood-proud': 96
@@ -43,9 +45,9 @@ const previousSizes = new Map((previousReport?.formatVersion === 2 ? previousRep
   .map((image) => [`${image.subpackage ?? 'main'}/${image.image}`, image]));
 const tempDir = mkdtempSync(path.join(os.tmpdir(), 'shushugo-brand-assets-'));
 const targets = [
-  ...Object.entries(mainNames).map(([image, maxDisplayHeightCss]) => ({ image, maxDisplayHeightCss, subpackage: null })),
+  ...Object.entries(mainNames).map(([image, maxDisplayHeightCss]) => ({ image, maxDisplayHeightCss, subpackage: null, scale: mainOneX.has(image) ? 1 : 2 })),
   ...Object.entries(packageNames).flatMap(([subpackage, images]) => Object.entries(images)
-    .map(([image, maxDisplayHeightCss]) => ({ image, maxDisplayHeightCss, subpackage })))
+    .map(([image, maxDisplayHeightCss]) => ({ image, maxDisplayHeightCss, subpackage, scale: 2 })))
 ];
 const sourcePath = (image) => ['shushugo-icon', 'shushugo-icon-dark', 'shushugo-cover'].includes(image)
   ? path.join(repo, `frontend/public/brand/${image}.png`)
@@ -82,14 +84,16 @@ try {
     const source = sourcePath(target.image);
     const original = readFileSync(source);
     const { width: sourceWidth, height: sourceHeight } = pngDimensions(original);
-    const outputHeight = target.maxDisplayHeightCss * 2;
+    const outputHeight = target.maxDisplayHeightCss * target.scale;
     const outputWidth = Math.round(sourceWidth * outputHeight / sourceHeight);
     const destination = targetPath(target);
     mkdirSync(path.dirname(destination), { recursive: true });
     const resized = path.join(tempDir, `${target.subpackage ?? 'main'}-${target.image}.png`);
     execFileSync('sips', ['--resampleHeightWidth', String(outputHeight), String(outputWidth), source, '--out', resized], { stdio: 'ignore' });
     // pngquant applies a 256-color RGBA palette; it keeps the output as PNG, which iOS Mini Program <image> can load locally.
-    execFileSync('pngquant', ['256', '--quality', '65-90', '--speed', '1', '--force', '--output', destination, resized], { stdio: 'ignore' });
+    // 主包贴纸压到 60-85：主包离 1.9 MB 闸门只剩几 KB（2026-09-27 合 W24+W26 时超了 3 KB），小尺寸贴纸看不出差别。
+    const quality = target.subpackage ? '65-90' : '60-85';
+    execFileSync('pngquant', ['256', '--quality', quality, '--speed', '1', '--force', '--output', destination, resized], { stdio: 'ignore' });
     const prior = before.get(`${target.subpackage ?? 'main'}/${target.image}`);
     measurements.push({
       subpackage: target.subpackage ?? 'main',
@@ -97,7 +101,7 @@ try {
       sourceWidth,
       sourceHeight,
       maxDisplayHeightCss: target.maxDisplayHeightCss,
-      scale: 2,
+      scale: target.scale,
       outputWidth,
       outputHeight,
       beforeFormat: prior.format,

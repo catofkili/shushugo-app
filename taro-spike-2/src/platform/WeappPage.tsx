@@ -30,6 +30,7 @@ import { ready as readyForGrammar, readyForKanji } from '../../scripts/taro-cont
 import { ensureDatabase } from './database-runtime.weapp';
 import { usePortalHost } from './portal-host.weapp';
 import { PerfOverlay } from './preview-timing.weapp';
+import { SquirrelTrail } from '../../../frontend/src/components/SquirrelTrail';
 import { ROUTE_TABLE } from './route-table.cjs';
 import { notifyMainScrollReachBottom } from './touch-adapter.weapp';
 import { closeAuth, closePaywall, getUiState, openAuth, openPaywall, queueAchievement, setLevelSetupOpen, setTrialEndedOpen, showNotice, subscribeUiState } from './ui-store.weapp';
@@ -316,11 +317,13 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         <ScrollView
           id="weapp-main-scroll"
           scrollY
+          showScrollbar={false}
           enhanced
           lowerThreshold={240}
           onScrollToLower={() => notifyMainScrollReachBottom(pagePath)}
-          className="app-landscape-main weapp-app-main min-w-0 px-4 pb-4 pt-4"
+          className={`app-landscape-main weapp-app-main min-w-0 px-4 pb-4 pt-4${page === 'word' ? ' weapp-has-study-progress' : ''}`}
         >
+          {page === 'word' && <View className="weapp-study-progress"><SquirrelTrail mode={state.selectedStudyMode} /></View>}
           <Suspense fallback={<View className="theme-light p-4"><Text>正在加载…</Text></View>}>
             <Route />
           </Suspense>
