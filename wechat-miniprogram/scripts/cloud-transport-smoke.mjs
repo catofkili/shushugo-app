@@ -78,7 +78,7 @@ Module._load = function (request, ...rest) {
 };
 process.env.WORKER_ORIGIN = 'https://worker.example/';
 const fetched = [];
-global.fetch = async (url, init) => {
+global.__apiProxyFetch = async (url, init) => {
   fetched.push([url, init]);
   if (url === 'http://vweixinf.tc.qq.com/blob') return { ok: true, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer };
   const headers = new Map([['x-sync-generation', '7'], ['set-cookie', 'nope']]);
@@ -96,6 +96,7 @@ assert.equal(pushed.header['set-cookie'], undefined);
 const pull = await main({ path: '/api/sync/pull', binary: true, headers: {} });
 assert.equal(pull.fileID, 'cloud://x/sync/o1/pull.bin');
 assert.equal(pull.header['x-sync-generation'], '7');
+assert.match(pull.header['x-proxy-upstream-ms'], /^\d+$/, '云函数要把等 Worker 的毫秒数带回客户端');
 assert.equal((await main({ path: '/api/x', bodyIsCdn: true, body: 'https://evil.example/blob' })).statusCode, 400);
 
 console.log(JSON.stringify({ ok: true, calls: calls.length, fetched: fetched.length }));

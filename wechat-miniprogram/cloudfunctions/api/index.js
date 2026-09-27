@@ -13,9 +13,23 @@ const DEFAULT_ORIGIN = 'https://api.shushugo.com';
 const ORIGIN = String(process.env.WORKER_ORIGIN || DEFAULT_ORIGIN).replace(/\/$/, '');
 
 // 只实现这里用到的子集：method / headers / body(Buffer|string)，响应给 ok / status / headers / text / arrayBuffer。
-const fetch = globalThis.fetch || ((url, init = {}) => new Promise((resolve, reject) => {
+//
+// ⚠️ 连接必须复用（2026-09-27）：从上海机房出海到 Cloudflare，TLS 握手实测 0.4–2.5 秒、整次请求 0.7–5 秒，
+// 不复用就是每个请求都重新握手——组队页三个请求攒到 15 秒。keepAlive 的 Agent 放在模块作用域：
+// 云函数实例被唤醒后会保留一段时间，同一实例上的后续请求共用这条连接。
+// 不用 Node 18 自带的 fetch：它底下 undici 的空闲连接 4 秒就关，用户两次操作之间早断了。
+const agents = {
+  https: new https.Agent({ keepAlive: true, keepAliveMsecs: 30_000, maxSockets: 16 }),
+  http: new http.Agent({ keepAlive: true, maxSockets: 4 })
+};
+const keepAliveFetch = (url, init = {}) => new Promise((resolve, reject) => {
   // 临时 CDN 是 http://，Worker 是 https://，按协议选模块。
-  const request = (String(url).startsWith('http://') ? http : https).request(url, { method: init.method || 'GET', headers: init.headers || {} }, (response) => {
+  const secure = !String(url).startsWith('http://');
+  const request = (secure ? https : http).request(url, {
+    method: init.method || 'GET',
+    headers: init.headers || {},
+    agent: secure ? agents.https : agents.http
+  }, (response) => {
     const chunks = [];
     response.on('data', (chunk) => chunks.push(chunk));
     response.on('end', () => {
@@ -29,11 +43,14 @@ const fetch = globalThis.fetch || ((url, init = {}) => new Promise((resolve, rej
         arrayBuffer: async () => buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
       });
     });
+    response.on('error', reject);
   });
   request.on('error', reject);
   if (init.body != null) request.write(init.body);
   request.end();
-}));
+});
+// scripts/cloud-transport-smoke.mjs 用 __apiProxyFetch 换成假的上游。
+const fetch = (url, init) => (globalThis.__apiProxyFetch ?? keepAliveFetch)(url, init);
 const FORWARD_HEADERS = new Set([
   'authorization', 'content-type', 'accept',
   'x-sync-format', 'x-sync-protocol-version', 'x-sync-compression', 'x-sync-operation-id',
@@ -41,7 +58,9 @@ const FORWARD_HEADERS = new Set([
 ]);
 const RETURN_HEADERS = new Set([
   'content-type', 'x-sync-format', 'x-sync-compression', 'x-sync-generation',
-  'x-sync-last-modified', 'x-sync-byte-length', 'retry-after'
+  'x-sync-last-modified', 'x-sync-byte-length', 'retry-after',
+  // 云函数里等 Worker 花了多久：客户端总耗时减去它，就是云函数调用本身（含冷启动）的开销。
+  'x-proxy-upstream-ms'
 ]);
 
 const reply = (statusCode, header, extra) => ({ statusCode, header, ...extra });
@@ -74,7 +93,9 @@ exports.main = async (event) => {
     headers['content-type'] ||= 'application/json';
   }
 
+  const upstreamStarted = Date.now();
   const response = await fetch(ORIGIN + path, { method: String(event.method || 'GET').toUpperCase(), headers, body });
+  response.headers.set('x-proxy-upstream-ms', String(Date.now() - upstreamStarted));
   const header = {};
   response.headers.forEach((value, key) => { if (RETURN_HEADERS.has(key)) header[key] = value; });
 

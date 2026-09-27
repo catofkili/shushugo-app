@@ -7,6 +7,14 @@ try {
 } catch {
   // scripts/cloud-fetch-smoke.cjs 在纯 Node 里直接 require 本文件，Node 加载不了 TS；打包后这条 require 一定在。
 }
+try {
+  const { perfRecord } = require('../../../frontend/src/lib/perf-marks');
+  globalThis.__shushugoProxyTiming = (path, upstreamMs, totalMs) => {
+    const label = String(path || '').split('?')[0].replace(/\/[0-9a-f-]{8,}/gi, '/:id');
+    perfRecord(`云函数等后端 · ${label}`, upstreamMs);
+    perfRecord(`云函数调用开销 · ${label}`, totalMs - upstreamMs);
+  };
+} catch { /* 纯 Node 冒烟测试里没有 TS 加载器 */ }
 const requestLabel = (url) => `云请求 · ${String(url).replace(/^https?:\/\/[^/]+/, '').split('?')[0].replace(/\/[0-9a-f-]{8,}/gi, '/:id')}`;
 
 function headerValue(headers, name) {

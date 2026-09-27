@@ -2,12 +2,12 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1886037,
+      "bytes": 1886912,
       "mib": 1.799,
       "passes": true
     },
     "study": {
-      "bytes": 299835,
+      "bytes": 300305,
       "mib": 0.286,
       "passes": true
     },
@@ -57,12 +57,12 @@
       "passes": true
     }
   },
-  "totalBytes": 8110759,
+  "totalBytes": 8112104,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 844449
+      "bytes": 845324
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -317,7 +317,7 @@
     {
       "path": "study/team/index.js",
       "package": "study",
-      "bytes": 18787
+      "bytes": 19257
     },
     {
       "path": "study/word-list/index.js",

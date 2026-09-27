@@ -25,14 +25,29 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("feedback retry queue", () => {
-  it("keeps a failed send locally and retries it on the next flush", async () => {
+  it("answers immediately, keeps a failed send locally and retries it on the next flush", async () => {
     api.mockRejectedValueOnce(new Error("offline"));
-    expect(await submitFeedback({ kind: "feedback", message: "这个按钮不好用", includeDiagnostics: false })).toBe("queued");
+    expect(await submitFeedback({ kind: "feedback", message: "这个按钮不好用", includeDiagnostics: false })).toBe("sent");
+    await flushPendingFeedback();
     expect(JSON.parse(localStorage.getItem("mn-pending-feedback-reports") ?? "[]")).toHaveLength(1);
 
     api.mockResolvedValue(undefined);
     await flushPendingFeedback();
     expect(api).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(localStorage.getItem("mn-pending-feedback-reports") ?? "[]")).toEqual([]);
+  });
+
+  it("does not lose a report submitted while an earlier one is still being sent", async () => {
+    let release!: () => void;
+    api.mockImplementationOnce(() => new Promise<void>((resolve) => { release = resolve; }));
+    api.mockResolvedValue(undefined);
+    await submitFeedback({ kind: "feedback", message: "第一条", includeDiagnostics: false });
+    await submitFeedback({ kind: "feedback", message: "第二条", includeDiagnostics: false });
+    release();
+    await flushPendingFeedback();
+    await flushPendingFeedback();
+    const sentMessages = api.mock.calls.map(([payload]) => (payload as { message: string }).message);
+    expect(sentMessages).toEqual(["第一条", "第二条"]);
     expect(JSON.parse(localStorage.getItem("mn-pending-feedback-reports") ?? "[]")).toEqual([]);
   });
 

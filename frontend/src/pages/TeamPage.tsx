@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   cheerCloudTeamMember,
   createCloudTeam,
@@ -50,6 +50,25 @@ const localActivity = () => {
 
 const messageFor = (error: unknown) => error instanceof Error ? error.message : "操作失败，请稍后再试。";
 
+
+// 进组队页先摆上次的样子，后台再刷新：小程序里一次云请求（云函数 → Cloudflare）要 1–5 秒，
+// 2026-09-27 真机进组队页等了 15 秒。按账号存，换号不会看到别人的队伍。
+const TEAM_CACHE_KEY = "mn-team-page-cache";
+type TeamCache = { owner: string; team: CloudTeam | null; plaza: CloudTeamPlazaItem[] };
+const readTeamCache = (owner: string | undefined): TeamCache | null => {
+  if (!owner) return null;
+  try {
+    const cached = JSON.parse(localStorage.getItem(TEAM_CACHE_KEY) ?? "null") as TeamCache | null;
+    return cached?.owner === owner ? cached : null;
+  } catch {
+    return null;
+  }
+};
+const writeTeamCache = (owner: string | undefined, team: CloudTeam | null, plaza: CloudTeamPlazaItem[]) => {
+  if (!owner) return;
+  try { localStorage.setItem(TEAM_CACHE_KEY, JSON.stringify({ owner, team, plaza })); } catch { /* 缓存只是提速 */ }
+};
+
 export function TeamPage({ onBack }: { onBack: () => void }) {
   const [team, setTeam] = useState<CloudTeam | null>(null);
   const [plaza, setPlaza] = useState<CloudTeamPlazaItem[]>([]);
@@ -62,14 +81,23 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   const [notice, setNotice] = useState("");
   const activity = useMemo(() => localActivity(), []);
 
+  const ownerRef = useRef<string | undefined>(undefined);
+
   const refresh = useCallback(async () => {
     const [current, available] = await Promise.all([
       getCloudTeam(activity.studyDay),
       getCloudTeamPlaza(activity.studyDay)
     ]);
-    const synced = current ? await reportCloudTeamActivity({ ...activity }) : null;
+    const others = available.filter((item) => item.id !== current?.id);
+    setTeam(current);
+    setPlaza(others);
+    setLoading(false);
+    writeTeamCache(ownerRef.current, current, others);
+    if (!current) return;
+    // 上报今天的学习量是第二轮云请求：先按拉到的队伍显示，上报回来再换成带今天进度的那份。
+    const synced = await reportCloudTeamActivity({ ...activity });
     setTeam(synced);
-    setPlaza(available.filter((item) => item.id !== synced?.id));
+    writeTeamCache(ownerRef.current, synced, others);
   }, [activity]);
 
   useEffect(() => {
@@ -77,7 +105,15 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
     void (async () => {
       try {
         const session = await getCloudSession();
-        if (active) setNickname(session.displayName ?? "");
+        if (!active) return;
+        setNickname(session.displayName ?? "");
+        ownerRef.current = session.email;
+        const cached = readTeamCache(session.email);
+        if (cached) {
+          setTeam(cached.team);
+          setPlaza(cached.plaza);
+          setLoading(false);
+        }
         await refresh();
       } catch (error) {
         if (active) setNotice(messageFor(error));

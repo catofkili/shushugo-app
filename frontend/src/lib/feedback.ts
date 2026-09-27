@@ -118,27 +118,40 @@ const remember = (payload: FeedbackPayload): boolean => writePending([
 
 export type FeedbackDelivery = "sent" | "queued";
 
+/**
+ * 先落本地再发：小程序里一次云请求（云函数 → Cloudflare）要 1–5 秒，2026-09-27 真机「点发送到成功五秒」。
+ * 落进待发队列就算收下了，界面立刻说「收到啦」，后台发；发不出去留在队列里，下次启动 / 联网再补。
+ * 只有本机连队列都存不下时才当场发送、等结果。
+ */
 export const submitFeedback = async (input: SubmitFeedbackInput): Promise<FeedbackDelivery> => {
   const payload = makePayload(input);
+  if (remember(payload)) {
+    void flushPendingFeedback();
+    return "sent";
+  }
   try {
     await postFeedbackReport(payload);
     return "sent";
   } catch {
-    if (!remember(payload)) throw new Error("暂时无法发送，且本机没有足够空间保存这条意见。");
-    return "queued";
+    throw new Error("暂时无法发送，且本机没有足够空间保存这条意见。");
   }
 };
 
+/**
+ * 每发完一条就按 id 从**当前**队列里删掉它、再读下一条。
+ * ⚠️ 别改回「开头读一份快照、发完写回快照剩下的」：补发途中新提交的那条会被旧快照整个盖掉。
+ */
 let flushInFlight: Promise<void> | null = null;
 export const flushPendingFeedback = (): Promise<void> => {
   if (flushInFlight) return flushInFlight;
   flushInFlight = (async () => {
-    const pending = readPending();
-    for (let index = 0; index < pending.length; index += 1) {
+    for (let sent = 0; sent < 20; sent += 1) {
+      const [next] = readPending();
+      if (!next) return;
       try {
-        await postFeedbackReport(pending[index].payload);
-        if (!writePending(pending.slice(index + 1))) return;
+        await postFeedbackReport(next.payload);
       } catch { return; }
+      if (!writePending(readPending().filter((entry) => entry.id !== next.id))) return;
     }
   })().finally(() => { flushInFlight = null; });
   return flushInFlight;

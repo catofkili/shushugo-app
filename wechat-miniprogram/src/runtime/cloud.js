@@ -23,9 +23,13 @@ function isCloudFile(url) {
 
 async function callApi(payload) {
   ensureInit();
+  const startedAt = Date.now();
   const response = await wx.cloud.callFunction({ name: 'api', data: payload });
   const result = response?.result;
   if (!result || typeof result.statusCode !== 'number') throw new Error('云函数 api 没有返回状态码');
+  // 计时版（Taro 的 fetch 适配器）挂这个钩子：分开「云函数里等 Worker」和「云函数调用本身」各花多久。
+  const upstreamMs = Number(result.header?.['x-proxy-upstream-ms']);
+  if (Number.isFinite(upstreamMs)) globalThis.__shushugoProxyTiming?.(payload?.path, upstreamMs, Date.now() - startedAt);
   return result;
 }
 

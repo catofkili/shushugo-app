@@ -3,6 +3,9 @@
   "name": "master-nihongo-sync",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-02",
+  // Smart Placement：让 Worker 跑在离 D1（APAC）近的机房。国内请求常落到美西节点，
+  // 不放置的话一个接口里每条 SQL 都要横跨太平洋一趟（组队页一次请求好几条查询）。2026-09-27
+  "placement": { "mode": "smart" },
   "workers_dev": true,
   "preview_urls": false,
   // api.shushugo.com：小程序的云函数从大陆连不上 workers.dev（被墙），走自己的域名就通。
