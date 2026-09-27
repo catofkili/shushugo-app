@@ -84,7 +84,7 @@ export function SquirrelTrail({ mode = null }: Props) {
 
   return (
     <div className="zoo-trail" title={`${trail.label} ${done} / ${total}`}>
-      <div className="zoo-trail-line" />
+      <div className="zoo-trail-line"><div className="zoo-trail-fill" style={{ width: `${pct}%` }} /></div>
       {nodes && (
         <div className="zoo-trail-stations">
           {nodes.map((i) => (

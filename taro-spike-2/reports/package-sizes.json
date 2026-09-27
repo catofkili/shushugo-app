@@ -2,7 +2,7 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1863581,
+      "bytes": 1863662,
       "mib": 1.777,
       "passes": true
     },
@@ -57,12 +57,12 @@
       "passes": true
     }
   },
-  "totalBytes": 8106002,
+  "totalBytes": 8106083,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 864777
+      "bytes": 864861
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -112,7 +112,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 233360
+      "bytes": 233357
     },
     {
       "path": "features/content/kanji-variants.js",

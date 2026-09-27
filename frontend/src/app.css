@@ -264,15 +264,17 @@
    顶栏中间本来就空着,白捡。所以这里所有尺寸都按「一条 26px 的细带」设计。 */
 .zoo-trail{
   --zoo-trail-tail:56px;              /* 右端留给计数的宽度,松鼠不会跑进去和数字糊在一起 */
-  position:relative;flex:1;min-width:0;height:26px;border-radius:8px;
-  background:linear-gradient(180deg,#F3FAE7,#E7F4D4);border:1px solid var(--ds-line)
+  position:relative;flex:1;min-width:0;height:26px
 }
-.zoo-trail-line{position:absolute;left:10px;right:var(--zoo-trail-tail);top:16px;height:2px;border-radius:4px;
-  background:repeating-linear-gradient(90deg,rgba(156,107,63,.35) 0 6px,transparent 6px 12px)}
+/* 不画外框（用户 2026-09-27：绿框多余）：一条圆角细轨道，走过的那段填主色，和水豚的位置用同一个比例 */
+.zoo-trail-line{position:absolute;left:10px;right:var(--zoo-trail-tail);top:17px;height:4px;border-radius:999px;
+  background:var(--ds-inset);overflow:hidden}
+.zoo-trail-fill{position:absolute;left:0;top:0;bottom:0;border-radius:inherit;background:var(--ds-primary);
+  transition:width .38s cubic-bezier(.34,1.4,.6,1)}
 .zoo-trail-stations{position:absolute;left:10px;right:var(--zoo-trail-tail);top:10px;display:flex;justify-content:space-between}
 .zoo-trail-node{font-size:9px;line-height:1;transition:transform .2s}
 .zoo-trail-node.got{transform:scale(1.05)}
-.zoo-trail-node.pending{color:rgba(156,107,63,.4)}
+.zoo-trail-node.pending{color:var(--ds-ink-3)}
 .zoo-trail-node.cur{color:var(--zoo-primary-deep);transform:scale(1.6)}
 .zoo-trail-squirrel{position:absolute;top:1px;transform:translateX(-50%);font-size:16px;z-index:2;
   transition:left .38s cubic-bezier(.34,1.4,.6,1);animation:zooHopSmall .38s ease}
