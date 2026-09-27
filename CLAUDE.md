@@ -1682,6 +1682,9 @@ reading-register 说的是**词**（月(つき) 和 月(げつ) 是词库里两�
 - 改这个口径会连带 `achievements/stats.ts` 的 maxMinutesInDay / minutesTotal 和
   `review-budget.ts` 的疲劳检测 —— 历史那段是老口径，曲线上会有台阶。
 
+背词十分钟后台观测、倒计时状态、柚子档位和基线对比口径见
+[`docs/STUDY_FOCUS.md`](docs/STUDY_FOCUS.md)。它同样只累计 `study-clock` 判定的有效学习时间；不要把自评汇总称作长期记忆保持率。
+
 ## 交互上的三条（2026-09-10 审查）
 
 ⚠️ **别再往 document 上挂「300ms 内的第二次 touchend 一律 preventDefault」。**

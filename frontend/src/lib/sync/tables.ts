@@ -80,6 +80,7 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "vocab_test_history", keys: ["run_id"], strategy: "union" },
   // 柚子账本。每一行是一笔不可变的账,身份是 (kind, key),两端取并集。
   { table: "yuzu_ledger", keys: ["kind", "key"], strategy: "union" },
+  { table: "study_focus_windows", keys: ["id"], strategy: "union" },
 
   // 复习流水按触发器分配的设备:本机 id 去重。created_at 只有秒级精度，
   // 同一秒的两次作答会撞自然键；sync_uid 才是稳定事件身份。
@@ -158,6 +159,8 @@ export const DEVICE_LOCAL_STATE_KEYS = new Set([
   // 上发生过什么」的诊断记录，不是账号数据：同步过去只会让对端的计数被顶掉，
   // 而且计划明确要求这类采集先只留本地、不默认上传。
   "weekly_report_events",
+  // 尚未满十分钟的窗口只属于当前设备，不能让另一台设备接着重复累计。
+  "study_focus_partial_windows",
   // 到期弹窗是设备本地的已读状态；同步后不能让另一台设备错过提醒。
   "level_trial_expiry_noticed",
   ...CONTENT_MIGRATION_STATE_KEYS

@@ -33,6 +33,7 @@ import { PerfOverlay } from './preview-timing.weapp';
 import { SquirrelTrail } from '../../../frontend/src/components/SquirrelTrail';
 import { ROUTE_TABLE } from './route-table.cjs';
 import { notifyMainScrollReachBottom } from './touch-adapter.weapp';
+import { notifyStudyInteraction } from './use-study-activity.weapp';
 import { closeAuth, closePaywall, getUiState, openAuth, openPaywall, queueAchievement, setLevelSetupOpen, setTrialEndedOpen, showNotice, subscribeUiState } from './ui-store.weapp';
 
 type RouteItem = (typeof ROUTE_TABLE)[number];
@@ -311,7 +312,10 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       onDismissTrial={() => { markTrialNoticeRead(); setTrialEndedOpen(false); }}
       onViewPro={() => { markTrialNoticeRead(); setTrialEndedOpen(false); navigatePage('pro'); }}
     >
-      <View ref={portalHost} className={`weapp-route-root theme-${theme}${skin ? ` skin-${skin}` : ''}`}>
+      <View ref={portalHost} className={`weapp-route-root theme-${theme}${skin ? ` skin-${skin}` : ''}`}
+        onTouchStart={() => notifyStudyInteraction(pagePath)}
+        onTouchMove={() => notifyStudyInteraction(pagePath)}
+        onClick={() => notifyStudyInteraction(pagePath)}>
         {/* Native page scrolling is disabled by the full-screen shell. A View with
             overflow-y:auto does not become a mini-program scroll container. */}
         <ScrollView
@@ -320,6 +324,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
           showScrollbar={false}
           enhanced
           lowerThreshold={240}
+          onScroll={() => notifyStudyInteraction(pagePath)}
           onScrollToLower={() => notifyMainScrollReachBottom(pagePath)}
           className={`app-landscape-main weapp-app-main min-w-0 px-4 pb-4 pt-4${page === 'word' ? ' weapp-has-study-progress' : ''}`}
         >

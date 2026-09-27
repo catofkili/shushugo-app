@@ -17,7 +17,7 @@
 export const USER_DATA_TABLES = [
   // 词
   "progress", "reviews", "checkins", "critical_reviews", "word_notes",
-  "word_study_time", "word_study_time_by_device", "study_time_by_period", "weekly_reports", "word_question_meanings",
+  "word_study_time", "word_study_time_by_device", "study_time_by_period", "study_focus_windows", "weekly_reports", "word_question_meanings",
   "stage1_tasks", "stage2_progress", "reverse_memory", "confusion_mastered",
   "dictionary_discovered_words", "moji_migrated_reviews", "custom_words",
   "level_prior_baselines", "kana_memory", "kana_reviews",

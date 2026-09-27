@@ -33,7 +33,7 @@ const CATEGORY_ICON: Record<YuzuCategory, ComponentType<LucideProps>> = {
   theme: Palette, mascot: Shirt, icon: AppWindow, voice: Mic, sound: Music, misc: Sparkles
 };
 const KIND_LABEL: Record<string, string> = {
-  study: "今天学了 100 词", plan: "清完今日计划", streak: "连击满 7 天", encore: "加餐", achievement: "成就", buy: "购买", repair: "补签",
+  study: "今天学了 100 词", plan: "清完今日计划", streak: "连击满 7 天", encore: "加餐", achievement: "成就", focus: "倒计时学习", buy: "购买", repair: "补签",
   card: "获得补签卡", card_buy: "购买补签卡", card_overflow: "补签卡折算", repair_card: "用补签卡"
 };
 type CheckoutStatus = "paying" | "preparing" | "done" | "deferred" | "failed";
@@ -200,6 +200,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
               <li><span>连击每满 7 天</span><b>+{formatYuzu(YUZU.streak7)}</b></li>
               <li><span>加餐(每天一次)</span><b>+{formatYuzu(YUZU.encore)}</b></li>
               <li><span>解锁一个成就</span><b>+{formatYuzu(YUZU.achievement)}</b></li>
+              <li><span>专注倒计时（每天九段递减）</span><b>+{formatYuzu(YUZU.focus.reduce((sum, amount) => sum + amount, 0))}</b></li>
               {todayRows.length > 0 && <li className="yz-rules-today">今天:{todayRows.map((r) => `${KIND_LABEL[r.kind] ?? r.kind}${r.amount ? ` ${r.amount > 0 ? "+" : ""}${formatYuzu(r.amount)}` : ""}`).join(" · ")}</li>}
             </ul>
           )}

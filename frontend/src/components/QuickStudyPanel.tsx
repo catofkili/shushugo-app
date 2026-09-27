@@ -10,6 +10,7 @@ import type { WordAnswer, WordCard } from "../types/vocabulary";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { useRowSelection } from "../hooks/useRowSelection";
 import { useStudyTimer } from "../lib/useStudyTimer";
+import { recordStudyFocusAnswer } from "../lib/study-focus";
 import { getElementFromPoint, queryTouchRect, queryTouchRects, touchEventsEnabled, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
 
 type Props = {
@@ -76,7 +77,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
     onExit: () => setRatingOpenId(null)
   });
   const { selectionMode, selectedIds, exit: exitSelection, restore: restoreSelection } = selection;
-  useStudyTimer(variant === "page" && !loading && cards.length > 0);
+  useStudyTimer(variant === "page" && !loading && cards.length > 0, variant === "page" && cards.length > 0 ? "quick-study" : undefined);
 
   const submittingRef = useRef(false);
   const panelRef = useRef<HTMLElement | null>(null);
@@ -356,6 +357,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
         cards.map((card) => ({ wordId: card.id, answer: ratings[card.id] ?? DEFAULT_QUICK_RATING })),
         phase
       );
+      cards.forEach((card) => recordStudyFocusAnswer(card.id, ratings[card.id] ?? DEFAULT_QUICK_RATING));
 
       setSubmitSummary(null);
       const nextPageNumber = pageNumber + 1;

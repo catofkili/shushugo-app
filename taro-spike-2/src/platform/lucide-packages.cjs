@@ -10,9 +10,6 @@ module.exports = {
     "study",
     "account"
   ],
-  "timer": [
-    "study"
-  ],
   "bookopentext": [
     "study"
   ],

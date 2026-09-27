@@ -415,6 +415,23 @@ CREATE TABLE IF NOT EXISTS yuzu_ledger (
   PRIMARY KEY (kind, key)
 );
 
+-- 十分钟词汇学习窗口。baseline 无论是否开启倒计时都记，focus 只记完整倒计时。
+-- 窗口一经完成就不再修改，按 id 取并集。未完成的本机窗口放设备本地 app_state。
+-- remembered/fuzzy/forgotten 是窗口内每个词最后一次自评，不代表长期记忆测验。
+CREATE TABLE IF NOT EXISTS study_focus_windows (
+  id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL,
+  source TEXT NOT NULL,
+  started_at INTEGER NOT NULL,
+  completed_at INTEGER NOT NULL,
+  active_ms INTEGER NOT NULL,
+  words INTEGER NOT NULL,
+  remembered INTEGER NOT NULL,
+  fuzzy INTEGER NOT NULL,
+  forgotten INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_study_focus_baseline ON study_focus_windows(kind, source, completed_at);
+
 CREATE TABLE IF NOT EXISTS confusion_mastered (
   group_key TEXT PRIMARY KEY,
   mastered_on TEXT NOT NULL
