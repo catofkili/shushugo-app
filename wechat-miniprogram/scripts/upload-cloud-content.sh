@@ -27,14 +27,21 @@ if [ "${1:-}" = "--examples" ]; then
 fi
 
 if [ "${1:-}" = "--audio" ]; then
-  # 只传默认声音（voicevox-8 春日部つむぎ，约 45 MB / 10,919 个文件）；index.json 也只列这一个，
-  # 免得设置页给人选一个云端没有的声音。
+  # VOICES = index.json 里列出的声音（云端必须真有，否则设置页 / 柚子商店会给人一个云端没有的声音），第一个是默认；
+  # UPLOAD = 这次要传的目录（默认同 VOICES，已传过的可以省掉，一个声音约 45 MB / 11,053 个文件、十来分钟）。
+  # 2026-09-27：柚子商店卖 voicevox-10 / 11，而云端一直只有 voicevox-8，小程序里试听没声、买了也用不上。补传：
+  #   VOICES="voicevox-8 voicevox-10 voicevox-11" UPLOAD="voicevox-10 voicevox-11" ./scripts/upload-cloud-content.sh --audio
   AUDIO=../frontend/public/audio/words
-  VOICE=${VOICE:-voicevox-8}
+  VOICES=${VOICES:-${VOICE:-voicevox-8}}
+  UPLOAD=${UPLOAD:-$VOICES}
+  DEFAULT_VOICE=${VOICES%% *}
   INDEX=$(mktemp)
-  node -e "const d=require('$PWD/$AUDIO/index.json');d.voices=d.voices.filter(v=>v.id==='$VOICE');d.default='$VOICE';process.stdout.write(JSON.stringify(d))" > "$INDEX"
+  node -e "const d=require('$PWD/$AUDIO/index.json');const want='$VOICES'.split(' ');d.voices=d.voices.filter(v=>want.includes(v.id));if(d.voices.length!==want.length)throw new Error('index.json 里缺声音：'+want);d.default='$DEFAULT_VOICE';process.stdout.write(JSON.stringify(d))" > "$INDEX"
+  for voice in $UPLOAD; do
+    $TCB storage upload "$AUDIO/$voice" "audio/words/$voice" -e "$ENV_ID" --times 3 < /dev/null
+  done
+  # index 放在目录之后传：先列出声音、文件还没到齐的那几分钟里，选了新声音的人会一直 404。
   $TCB storage upload "$INDEX" audio/words/index.json -e "$ENV_ID" < /dev/null
-  $TCB storage upload "$AUDIO/$VOICE" "audio/words/$VOICE" -e "$ENV_ID" --times 3 < /dev/null
   rm -f "$INDEX"
   exit 0
 fi
