@@ -2,11 +2,11 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1895002,
+      "bytes": 1895311,
       "passes": true
     },
     "study": {
-      "bytes": 298621,
+      "bytes": 298343,
       "passes": true
     },
     "account": {
@@ -1057,7 +1057,7 @@
   "mainTopModules": [
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-      "bytes": 163038
+      "bytes": 163516
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/word-api.ts",

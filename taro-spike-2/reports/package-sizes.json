@@ -2,12 +2,12 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1895002,
-      "mib": 1.807,
+      "bytes": 1895311,
+      "mib": 1.808,
       "passes": true
     },
     "study": {
-      "bytes": 298621,
+      "bytes": 298343,
       "mib": 0.285,
       "passes": true
     },
@@ -57,12 +57,12 @@
       "passes": true
     }
   },
-  "totalBytes": 8110035,
+  "totalBytes": 8110066,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 855151
+      "bytes": 855460
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -317,7 +317,7 @@
     {
       "path": "study/team/index.js",
       "package": "study",
-      "bytes": 19005
+      "bytes": 18727
     },
     {
       "path": "assets/brand/mood-fired-up.png",
