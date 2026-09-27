@@ -26,11 +26,6 @@
       <text class="feature-title">按作答安排复习</text>
       <text class="feature-copy">根据答题记录回顾学过的内容，错过的知识也能再遇见。</text>
     </view>
-    <view class="feature">
-      <text class="feature-number">04 / 随时</text>
-      <text class="feature-title">离线保存基础学习</text>
-      <text class="feature-copy">基础词库和进度留在设备上；没有网络，也能继续积累。</text>
-    </view>
   </view>
 
   <view class="status">
