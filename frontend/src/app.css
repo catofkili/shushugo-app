@@ -1703,7 +1703,7 @@
 .study-focus-lead b{font-size:21px;color:var(--ds-primary-deep,#7a4a20)}
 .study-focus-comparison{border-radius:16px;padding:13px 15px;background:color-mix(in srgb,var(--ds-primary) 10%,var(--ds-surface));font-weight:700}
 .study-focus-actions{display:flex;gap:10px;margin-top:22px}
-.study-focus-actions button{min-height:48px;flex:1;border-radius:15px;padding:10px 13px;font-size:14px;font-weight:800;line-height:1.35}
+.study-focus-actions button{min-height:48px;flex:1;border-radius:15px;padding:10px 13px;font-size:14px;font-weight:800;line-height:1.35;text-wrap:balance}
 .study-focus-secondary{border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}
 .study-focus-primary{background:var(--ds-primary);color:var(--ds-on-primary,#fff);box-shadow:0 6px 16px color-mix(in srgb,var(--ds-primary) 22%,transparent)}
 .study-focus-exit{display:block;margin:13px auto 0;padding:8px;color:var(--ds-muted,var(--ds-ink));font-size:12px;text-decoration:underline;text-underline-offset:3px;opacity:.8}

@@ -25,6 +25,13 @@
 - 档位只由成功到账记录推进。完成窗口本身不是奖励；退出、刷新或重进不能补领。窗口 ID 的 `focus_claim` 幂等凭据和“学习日 + 档位”唯一账本键共同阻止重复领取及多设备重复发放。
 - 这些奖励只奖励完整专注窗口，不按答对、答错或记忆自评发柚子；不得把奖励与 FSRS 调度结果挂钩。
 
+## 2026-09-28 复查修掉的四处（Claude）
+
+- **交互会吃掉计时**：`noteStudyInteraction` 先把「上次结账以来」的有效时间并进零头，而倒计时只收「结账那一刻新增」的部分，交互那一段从没报给 `recordStudyFocusTime`。实测每秒点一下，倒计时只走一半；滚动一秒几十个事件，几乎停住，后台基线同样少记（快速复习页 15 秒才结一次账，漏得更多）。现在背词页和 `useStudyTimer` 都把交互并进来的毫秒记在 `unreportedFocusMsRef`，下次结账一起报。
+- **小程序切回 Tab 页之后整套停掉**：Tab 页切走时 `onLeave` 把 `source` 清成 null，页面不卸载，切回来没人再 `enterStudyFocus`，于是后台记录停了、「倒计时学习」点了也没反应。现在页面重新可见时接上；`leaveStudyFocus(source)` / `recordStudyFocusTime(…, source)` 只认自己的入口，别的页卸载或它挂着的计时器不会清掉、记进当前会话。被切走但未卸载的页面也不再按 `document.visibilityState`（整个小程序仍是 visible）续记无操作尾巴。
+- **每秒重渲整页 + 每秒查账本**：1 秒一次的结账每次都 `setFocusSnapshot(新对象)`，没开倒计时的人背词页也每秒重渲一次（小程序即每秒一次 setData）；快照里的下一档柚子每秒 `COUNT` 一次 `yuzu_ledger`。现在页面只在状态 / 档位 / 总结变化时更新（`sameStudyFocusState`），剩余秒数由 `StudyFocusChip` 自己读；档位按学习日缓存，领取后才重算。
+- 作答路径的结账不再顺带落账（落账会跑 `settleYuzu` / 成就），开场说明打开时键盘不再在底下翻面、评分。
+
 ## 改动位置与验证
 
 - 共用统计和状态机：`frontend/src/lib/study-focus.ts`；柚子账本：`frontend/src/lib/yuzu.ts`。

@@ -11,7 +11,7 @@ vi.mock("./database/db-utils", async (original) => ({
 
 import {
   continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, leaveStudyFocus,
-  recordStudyFocusAnswer, recordStudyFocusTime, startStudyFocus, stopStudyFocus,
+  recordStudyFocusAnswer, recordStudyFocusTime, sameStudyFocusState, startStudyFocus, stopStudyFocus,
   STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
 } from "./study-focus";
 import { LOCAL_SCHEMA_SQL } from "./database/schema";
@@ -147,6 +147,54 @@ describe("独立十分钟记录与可选倒计时", () => {
     expect(getStudyFocusSnapshot(now).summary).toMatchObject({ words: 1, fuzzy: 1, remembered: 0 });
     expect(rowsFor("SELECT words, forgotten, fuzzy FROM study_focus_windows WHERE kind='baseline'"))
       .toEqual([{ words: 2, forgotten: 1, fuzzy: 1 }]);
+  });
+});
+
+describe("多个学习页同时挂着（小程序 Tab 页不卸载）", () => {
+  it("别的入口离开不清掉当前会话，别的入口的时间也不记进来", () => {
+    startStudyFocus(now); answer(1); advance(60_000);
+    leaveStudyFocus("quick-study");
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "running", remainingSeconds: 540 });
+    recordStudyFocusTime(30_000, now, "quick-study");
+    expect(getStudyFocusSnapshot(now).remainingSeconds).toBe(540);
+    recordStudyFocusTime(30_000, now, "word");
+    expect(getStudyFocusSnapshot(now).remainingSeconds).toBe(510);
+    leaveStudyFocus("word");
+    expect(getStudyFocusSnapshot(now).status).toBe("off");
+  });
+
+  it("离开后重新进入同一入口，观测接着记、倒计时能再开", () => {
+    answer(1); advance(120_000); leaveStudyFocus("word");
+    advance(60_000); // 离开期间不记
+    enterStudyFocus("word", now); startStudyFocus(now);
+    expect(getStudyFocusSnapshot(now).status).toBe("running");
+    advance(480_000);
+    expect(rowsFor("SELECT kind, words FROM study_focus_windows")).toEqual([{ kind: "baseline", words: 1 }]);
+  });
+});
+
+describe("每秒调用的代价", () => {
+  it("快照不每秒查账本；领取之后才重算档位", () => {
+    startStudyFocus(now);
+    const prepare = db.prepare.bind(db);
+    let statements = 0;
+    db.prepare = ((sql: string) => { statements++; return prepare(sql); }) as typeof db.prepare;
+    getStudyFocusSnapshot(now);
+    for (let second = 0; second < 30; second++) advance(1000);
+    expect(statements).toBe(0);
+    complete();
+    expect(continueStudyFocus(now)).toBe(100);
+    expect(getStudyFocusSnapshot(now).nextReward).toBe(50);
+    db.prepare = prepare;
+  });
+
+  it("只有剩余秒数变了不算状态变化，背词页据此不重渲", () => {
+    startStudyFocus(now);
+    const before = getStudyFocusSnapshot(now);
+    const after = advance(5000);
+    expect(after.remainingSeconds).not.toBe(before.remainingSeconds);
+    expect(sameStudyFocusState(before, after)).toBe(true);
+    expect(sameStudyFocusState(before, complete())).toBe(false);
   });
 });
 

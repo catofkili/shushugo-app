@@ -48,6 +48,8 @@ interface Runtime {
   completedAt: number | null;
   summary: StudyFocusSummary | null;
   unsavedMs: number;
+  /** 下一段的柚子档位按学习日缓存：快照每秒都读，不能每秒查一次账本。领取后清掉。 */
+  reward: { day: string; value: number } | null;
   answerHistory: {
     wordId: number;
     baselineId: string;
@@ -84,7 +86,7 @@ const runtime = (): Runtime => {
         baselines = Object.fromEntries(Object.entries(saved).filter(([, value]) => validWindow(value)));
       }
     } catch { /* 只丢损坏的未满窗口；历史记录和奖励账本不受影响。 */ }
-    current = { source: null, baselines, focus: null, completedAt: null, summary: null, unsavedMs: 0, answerHistory: [] };
+    current = { source: null, baselines, focus: null, completedAt: null, summary: null, unsavedMs: 0, reward: null, answerHistory: [] };
     runtimes.set(db, current);
   }
   return current;
@@ -129,15 +131,27 @@ const saveWindow = (window: StudyWindow, kind: "baseline" | "focus", source: str
     counts.words, counts.remembered, counts.fuzzy, counts.forgotten]);
 };
 
+const cachedNextReward = (current: Runtime, day: string): number => {
+  if (current.reward?.day !== day) current.reward = { day, value: nextStudyFocusYuzu(day) };
+  return current.reward.value;
+};
+
 export const getStudyFocusSnapshot = (nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
   return {
     status: current.summary ? "break" : current.focus ? "running" : "off",
     remainingSeconds: Math.max(0, Math.ceil((STUDY_FOCUS_WINDOW_MS - (current.focus?.activeMs ?? 0)) / 1000)),
     summary: current.summary,
-    nextReward: nextStudyFocusYuzu(studyDate(new Date(current.completedAt ?? nowMs)))
+    nextReward: cachedNextReward(current, studyDate(new Date(current.completedAt ?? nowMs)))
   };
 };
+
+/**
+ * 页面状态只需要跟着这几项变。剩余秒数每秒都变，交给倒计时胶囊自己读 ——
+ * 不然整个背词页（连同小程序的 setData）每秒重渲一次，没开倒计时的人也一样。
+ */
+export const sameStudyFocusState = (a: StudyFocusSnapshot, b: StudyFocusSnapshot): boolean =>
+  a.status === b.status && a.nextReward === b.nextReward && a.summary === b.summary;
 
 export const enterStudyFocus = (source: string, nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
@@ -152,10 +166,14 @@ export const enterStudyFocus = (source: string, nowMs = Date.now()): StudyFocusS
   return getStudyFocusSnapshot(nowMs);
 };
 
-/** 可每秒调用；休息时忽略所有传入时间，超过倒计时终点的余量也不记入休息。 */
-export const recordStudyFocusTime = (activeMs: number, nowMs = Date.now()): StudyFocusSnapshot => {
+/**
+ * 可每秒调用；休息时忽略所有传入时间，超过倒计时终点的余量也不记入休息。
+ * 带 source 时只收当前入口的时间：小程序里被切走的页面仍挂着、计时器还在跑，
+ * 它那点无操作尾巴不能记到别的入口头上。
+ */
+export const recordStudyFocusTime = (activeMs: number, nowMs = Date.now(), source?: string): StudyFocusSnapshot => {
   const current = runtime();
-  if (!current.source || current.summary || !Number.isFinite(activeMs) || activeMs <= 0) return getStudyFocusSnapshot(nowMs);
+  if (!current.source || (source !== undefined && source !== current.source) || current.summary || !Number.isFinite(activeMs) || activeMs <= 0) return getStudyFocusSnapshot(nowMs);
   const acceptedMs = Math.min(activeMs, current.focus ? STUDY_FOCUS_WINDOW_MS - current.focus.activeMs : activeMs);
   let remaining = acceptedMs;
   while (remaining > 0) {
@@ -233,6 +251,7 @@ export const continueStudyFocus = (nowMs = Date.now()): number => {
   const current = runtime();
   if (!current.source || !current.focus || !current.summary) return 0;
   const earned = claimStudyFocusYuzu(current.focus.id);
+  current.reward = null;
   current.focus = newWindow(nowMs);
   current.summary = null;
   current.completedAt = null;
@@ -248,8 +267,13 @@ export const stopStudyFocus = (nowMs = Date.now()): StudyFocusSnapshot => {
   return getStudyFocusSnapshot(nowMs);
 };
 
-/** 回主页/离开学习页必须调用：保留无感观测，丢弃当前倒计时和待领奖励。 */
-export const leaveStudyFocus = (): void => {
+/**
+ * 回主页/离开学习页必须调用：保留无感观测，丢弃当前倒计时和待领奖励。
+ * 带 source 时只离开自己：小程序里 A 页的 onShow 可能先于 B 页的卸载，
+ * B 离开时不能把 A 刚接上的会话一起清掉。
+ */
+export const leaveStudyFocus = (source?: string): void => {
+  if (source !== undefined && runtime().source !== source) return;
   stopStudyFocus();
   runtime().source = null;
 };
