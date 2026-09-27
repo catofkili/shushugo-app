@@ -878,6 +878,14 @@ export const getCloudTeamPlaza = async (studyDay: string): Promise<CloudTeamPlaz
   (await teamRequest<{ teams: CloudTeamPlazaItem[] }>(`/api/teams/plaza?day=${encodeURIComponent(studyDay)}`)).teams
 );
 
+export const getCloudTeamOverview = async (input: {
+  studyDay: string;
+  studyCount: number;
+  completed: boolean;
+}): Promise<{ team: CloudTeam | null; plaza: CloudTeamPlazaItem[] }> => (
+  teamRequest("/api/teams/overview", "POST", input)
+);
+
 export const createCloudTeam = async (input: {
   name: string;
   targetLevel: string;

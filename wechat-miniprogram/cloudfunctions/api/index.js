@@ -68,6 +68,14 @@ const fail = (statusCode, detail) => reply(statusCode, { 'content-type': 'applic
 
 exports.main = async (event) => {
   if (!ORIGIN) return fail(500, '云函数没有配置 WORKER_ORIGIN');
+  if (event?.Type === 'Timer') {
+    try {
+      await fetch(ORIGIN + '/api/auth/config');
+    } catch (error) {
+      console.warn('Worker keep-alive request failed', error);
+    }
+    return reply(200, { 'content-type': 'application/json' }, { body: '{"warmed":true}' });
+  }
   const path = String(event?.path || '');
   if (!path.startsWith('/api/')) return fail(400, '只转发 /api/ 下的路径');
 

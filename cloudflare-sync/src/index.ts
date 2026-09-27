@@ -1922,10 +1922,17 @@ const saveTeamNickname = async (env: Env, userId: string, value: unknown) => {
   return displayName;
 };
 
-const teamSnapshot = async (env: Env, userId: string, day: string, knownTeam?: TeamRow) => {
+const teamSnapshot = async (
+  env: Env,
+  userId: string,
+  day: string,
+  knownTeam?: TeamRow,
+  beforeSnapshot?: D1PreparedStatement
+) => {
   const team = knownTeam ?? await teamMembership(env, userId);
   if (!team) return null;
-  const [members, activityDays] = await env.DB.batch([
+  const statements: D1PreparedStatement[] = beforeSnapshot ? [beforeSnapshot] : [];
+  statements.push(
     env.DB.prepare(`
     SELECT tm.id AS member_id, tm.user_id, tm.role, u.display_name,
            COALESCE(a.study_count, 0) AS study_count,
@@ -1951,8 +1958,10 @@ const teamSnapshot = async (env: Env, userId: string, day: string, knownTeam?: T
     WHERE team_id = ? AND (study_count > 0 OR completed = 1) AND study_day <= ?
     ORDER BY study_day DESC LIMIT 3660
   `).bind(team.id, day)
-  ]);
-  const rows = (members.results ?? []) as Array<{
+  );
+  const results = await env.DB.batch(statements);
+  const offset = beforeSnapshot ? 1 : 0;
+  const rows = (results[offset].results ?? []) as Array<{
     member_id: string;
     user_id: string;
     role: "owner" | "member";
@@ -1962,7 +1971,7 @@ const teamSnapshot = async (env: Env, userId: string, day: string, knownTeam?: T
     cheers_received: number;
     cheered_by_me: number;
   }>;
-  const days = (activityDays.results ?? []) as Array<{ study_day: string }>;
+  const days = (results[offset + 1].results ?? []) as Array<{ study_day: string }>;
   return {
     id: team.id,
     name: team.name,
@@ -1998,11 +2007,7 @@ const getMyTeam = async (request: Request, env: Env) => {
   return json({ team: await teamSnapshot(env, userId, day) });
 };
 
-const listTeamPlaza = async (request: Request, env: Env) => {
-  const userId = await requireVerifiedUser(request, env);
-  const url = new URL(request.url);
-  const day = validStudyDay(url.searchParams.get("day"));
-  if (!day) return json({ detail: "学习日期无效。" }, 400);
+const teamPlaza = async (env: Env, userId: string, day: string, excludedTeamId?: string) => {
   const rows = await env.DB.prepare(`
     SELECT t.id, t.name, t.target_level, t.emoji, t.max_members,
            COUNT(tm.id) AS member_count,
@@ -2012,6 +2017,7 @@ const listTeamPlaza = async (request: Request, env: Env) => {
     LEFT JOIN team_daily_activity a
       ON a.team_id = t.id AND a.user_id = tm.user_id AND a.study_day = ?
     WHERE t.visibility = 'public'
+      AND (? IS NULL OR t.id <> ?)
       AND NOT EXISTS (
         SELECT 1 FROM team_reports tr WHERE tr.team_id = t.id AND tr.reporter_user_id = ?
       )
@@ -2019,7 +2025,7 @@ const listTeamPlaza = async (request: Request, env: Env) => {
     HAVING COUNT(tm.id) < t.max_members
     ORDER BY active_count DESC, t.updated_at DESC
     LIMIT 20
-  `).bind(day, userId).all<{
+  `).bind(day, excludedTeamId ?? null, excludedTeamId ?? null, userId).all<{
     id: string; name: string; target_level: string; emoji: string;
     max_members: number; member_count: number; active_count: number;
   }>();
@@ -2059,7 +2065,15 @@ const listTeamPlaza = async (request: Request, env: Env) => {
       streak: teamStreak(daysByTeam.get(team.id) ?? [], day)
     };
   });
-  return json({ teams });
+  return teams;
+};
+
+const listTeamPlaza = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  const url = new URL(request.url);
+  const day = validStudyDay(url.searchParams.get("day"));
+  if (!day) return json({ detail: "学习日期无效。" }, 400);
+  return json({ teams: await teamPlaza(env, userId, day) });
 };
 
 const createTeam = async (request: Request, env: Env) => {
@@ -2141,24 +2155,49 @@ const updateTeam = async (request: Request, env: Env) => {
   return json({ team: await teamSnapshot(env, userId, new Date().toISOString().slice(0, 10)) });
 };
 
+const teamActivityWrite = (env: Env, team: TeamRow, userId: string, body: {
+  studyDay?: string;
+  studyCount?: number;
+  completed?: boolean;
+}) => {
+  const day = validStudyDay(body.studyDay);
+  const count = Math.floor(Number(body.studyCount));
+  if (!day || !Number.isFinite(count) || count < 0 || count > 5000) throw json({ detail: "学习进度无效。" }, 400);
+  return {
+    day,
+    statement: env.DB.prepare(`
+      INSERT INTO team_daily_activity (team_id, user_id, study_day, study_count, completed, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(team_id, user_id, study_day) DO UPDATE SET
+        study_count = MAX(team_daily_activity.study_count, excluded.study_count),
+        completed = MAX(team_daily_activity.completed, excluded.completed),
+        updated_at = excluded.updated_at
+    `).bind(team.id, userId, day, count, body.completed ? 1 : 0, new Date().toISOString())
+  };
+};
+
 const reportTeamActivity = async (request: Request, env: Env) => {
   const userId = await requireVerifiedUser(request, env);
   await rateLimitSubject(env, "team-activity", `user:${userId}`, 120, 3600);
   const team = await teamMembership(env, userId);
   if (!team) return json({ detail: "你还没有加入队伍。" }, 404);
   const body = await readJson<{ studyDay?: string; studyCount?: number; completed?: boolean }>(request);
+  const { day, statement } = teamActivityWrite(env, team, userId, body);
+  return json({ team: await teamSnapshot(env, userId, day, team, statement) });
+};
+
+const teamOverview = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  const team = await teamMembership(env, userId);
+  if (team) await rateLimitSubject(env, "team-activity", `user:${userId}`, 120, 3600);
+  const body = await readJson<{ studyDay?: string; studyCount?: number; completed?: boolean }>(request);
   const day = validStudyDay(body.studyDay);
-  const count = Math.floor(Number(body.studyCount));
-  if (!day || !Number.isFinite(count) || count < 0 || count > 5000) return json({ detail: "学习进度无效。" }, 400);
-  await env.DB.prepare(`
-    INSERT INTO team_daily_activity (team_id, user_id, study_day, study_count, completed, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-    ON CONFLICT(team_id, user_id, study_day) DO UPDATE SET
-      study_count = MAX(team_daily_activity.study_count, excluded.study_count),
-      completed = MAX(team_daily_activity.completed, excluded.completed),
-      updated_at = excluded.updated_at
-  `).bind(team.id, userId, day, count, body.completed ? 1 : 0, new Date().toISOString()).run();
-  return json({ team: await teamSnapshot(env, userId, day, team) });
+  if (!day) return json({ detail: "学习日期无效。" }, 400);
+  const current = team
+    ? await teamSnapshot(env, userId, day, team, teamActivityWrite(env, team, userId, body).statement)
+    : null;
+  const plaza = await teamPlaza(env, userId, day, team?.id);
+  return json({ team: current, plaza });
 };
 
 const cheerTeamMember = async (request: Request, env: Env) => {
@@ -3430,6 +3469,7 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/user/profile") return updateProfile(request, env);
   if (request.method === "GET" && url.pathname === "/api/teams/me") return getMyTeam(request, env);
   if (request.method === "GET" && url.pathname === "/api/teams/plaza") return listTeamPlaza(request, env);
+  if (request.method === "POST" && url.pathname === "/api/teams/overview") return teamOverview(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams") return createTeam(request, env);
   if (request.method === "PUT" && url.pathname === "/api/teams/me") return updateTeam(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams/join") return joinTeam(request, env);

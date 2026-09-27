@@ -1,6 +1,7 @@
 // 云开发传输层：用假的 wx.cloud / wx-server-sdk / fetch 走一遍客户端和云函数两端。
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import Module from 'node:module';
 import path from 'node:path';
 
@@ -86,6 +87,24 @@ global.__apiProxyFetch = async (url, init) => {
 };
 const { main } = require(path.join(root, 'cloudfunctions/api/index.js'));
 assert.equal((await main({ path: '/other' })).statusCode, 400);
+const apiFunction = JSON.parse(readFileSync(path.join(root, 'cloudbaserc.json'), 'utf8')).functions.find((fn) => fn.name === 'api');
+assert.deepEqual(apiFunction.triggers, [{ name: 'keep-worker-warm', type: 'timer', config: '0 */4 * * * * *' }]);
+const beforeTimer = fetched.length;
+const timer = await main({ Type: 'Timer', TriggerName: 'keep-worker-warm', path: '/api/should-not-forward', method: 'DELETE' });
+assert.equal(timer.statusCode, 200);
+assert.equal(fetched.length, beforeTimer + 1);
+assert.equal(fetched.at(-1)[0], 'https://worker.example/api/auth/config');
+assert.equal(fetched.at(-1)[1], undefined, 'the timer only makes a fixed, lightweight GET');
+const originalProxyFetch = global.__apiProxyFetch;
+const originalWarn = console.warn;
+global.__apiProxyFetch = async () => { throw new Error('Worker unavailable'); };
+console.warn = () => {};
+try {
+  assert.equal((await main({ Type: 'Timer', path: '/api/should-not-forward' })).statusCode, 200, 'timer failures must not reject the invocation');
+} finally {
+  global.__apiProxyFetch = originalProxyFetch;
+  console.warn = originalWarn;
+}
 const pushed = await main({ path: '/api/sync/push', method: 'POST', headers: { Authorization: 'Bearer t', 'x-evil': '1', 'x-sync-compression': 'gzip' }, body: 'http://vweixinf.tc.qq.com/blob', bodyIsCdn: true });
 assert.equal(pushed.statusCode, 200);
 assert.equal(fetched.at(-1)[0], 'https://worker.example/api/sync/push');

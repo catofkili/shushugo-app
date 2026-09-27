@@ -11,6 +11,7 @@ const migration = readFileSync(join(root, 'migrations/0014_teams.sql'), 'utf8');
 for (const contract of [
   'GET" && url.pathname === "/api/teams/me',
   'GET" && url.pathname === "/api/teams/plaza',
+  'POST" && url.pathname === "/api/teams/overview',
   'POST" && url.pathname === "/api/teams"',
   'PUT" && url.pathname === "/api/teams/me',
   'POST" && url.pathname === "/api/teams/join',

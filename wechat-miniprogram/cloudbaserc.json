@@ -12,7 +12,14 @@
       "installDependency": true,
       "envVariables": {
         "WORKER_ORIGIN": "https://api.shushugo.com"
-      }
+      },
+      "triggers": [
+        {
+          "name": "keep-worker-warm",
+          "type": "timer",
+          "config": "0 */4 * * * * *"
+        }
+      ]
     },
     {
       "name": "reminder",
