@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1885782,
+      "bytes": 1886430,
       "passes": true
     },
     "study": {
@@ -1089,7 +1089,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 77407
+      "bytes": 77969
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/design.css",

@@ -5,6 +5,7 @@ import { hooks } from '@tarojs/shared';
 import { startStartupTiming } from '../../frontend/src/lib/perf-marks';
 import './platform/app-polyfills.weapp';
 import './platform/html-text-template.weapp.cjs';
+import './platform/html-textarea-events.weapp.cjs';
 import './platform/iframe-polyfill.weapp';
 import { startFeedbackRuntime } from './platform/feedback-runtime.weapp';
 import './app.css';

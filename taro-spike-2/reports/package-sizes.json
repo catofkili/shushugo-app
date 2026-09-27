@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1885782,
-      "mib": 1.798,
+      "bytes": 1886430,
+      "mib": 1.799,
       "passes": true
     },
     "study": {
@@ -57,12 +57,12 @@
       "passes": true
     }
   },
-  "totalBytes": 8111257,
+  "totalBytes": 8111905,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 844170
+      "bytes": 844455
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -555,6 +555,11 @@
       "bytes": 8179
     },
     {
+      "path": "app.js",
+      "package": "main",
+      "bytes": 8064
+    },
+    {
       "path": "content-pages/sub-common/fb02c483f17f7447c1f19c294fe921bf.js",
       "package": "content-pages",
       "bytes": 7853
@@ -573,11 +578,6 @@
       "path": "content-pages/assets/brand/mood-proud.png",
       "package": "content-pages",
       "bytes": 7706
-    },
-    {
-      "path": "app.js",
-      "package": "main",
-      "bytes": 7701
     },
     {
       "path": "content-pages/sub-common/95faf04fa3193caa9f9ed8d02d4a8ace.js",

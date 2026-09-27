@@ -13,7 +13,7 @@ import { getAppState, setAppState, useAppState, type AppState } from '../../../f
 import type { Page, StudyMode } from '../../../frontend/src/types/app';
 import { useStudyStore } from '../../../frontend/src/hooks/useStudyStore';
 import { useEntitlements } from '../../../frontend/src/hooks/useEntitlements';
-import { finishStartupTiming, perfTime, perfTimeAsync } from '../../../frontend/src/lib/perf-marks';
+import { finishStartupTiming, perfRecord, perfTime, perfTimeAsync } from '../../../frontend/src/lib/perf-marks';
 import { canUseFeature, type FeatureId } from '../../../frontend/src/lib/entitlements';
 import { getProgressOverview } from '../../../frontend/src/lib/api';
 import { getCloudSession, CLOUD_SYNC_EVENT, CLOUD_AUTH_EVENT, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession, type CloudSyncEventDetail } from '../../../frontend/src/lib/sync-api';
@@ -94,21 +94,24 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
 
   useEffect(() => {
     let cancelled = false;
+    // 计时版里记每个页面从挂载到能用花多久（用户报「单词和语法加载几秒」「进组队页十秒」）；普通构建里 perfRecord 是空操作。
+    const openedAt = Date.now();
     ensureDatabase()
       .then(() => Promise.all([
         perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
-        grammarPages.has(page) ? readyForGrammar() : undefined
+        grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : undefined
       ]))
       .then(async () => {
         if (cancelled) return;
         setOverview(page === 'home'
           ? perfTime('启动 · 今日主页数据计算', () => getProgressOverview())
-          : getProgressOverview());
+          : perfTime(`页面 · ${page} 概览计算`, () => getProgressOverview()));
         setTheme(getResolvedTheme());
         setSkin(equippedItem('theme'));
         setCloudSession(await getCloudSession());
         if (cancelled) return;
         setReady(true);
+        perfRecord(`页面 · ${page} 就绪`, Date.now() - openedAt);
         if (!levelSetupChecked) {
           levelSetupChecked = true;
           try { setLevelSetupOpen(shouldShowLevelSetup()); } catch { /* 旧库可能尚无计划设置 */ }
