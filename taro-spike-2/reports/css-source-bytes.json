@@ -1,12 +1,12 @@
 {
-  "frontend/src/app.css": 141284,
+  "frontend/src/app.css": 143085,
   "frontend/src/components/ZooHome.css": 1011,
-  "frontend/src/design.css": 62452,
-  "frontend/src/pages/weekly-report.css": 39664,
-  "frontend/src/pages/weekly/film.css": 20707,
-  "frontend/src/pages/weekly/star-atlas.css": 16110,
-  "frontend/src/skins.css": 10803,
-  "frontend/src/styles.css": 139279,
+  "frontend/src/design.css": 62809,
+  "frontend/src/pages/weekly-report.css": 39886,
+  "frontend/src/pages/weekly/film.css": 20749,
+  "frontend/src/pages/weekly/star-atlas.css": 16152,
+  "frontend/src/skins.css": 11333,
+  "frontend/src/styles.css": 140779,
   "taro-spike-2/src/app.css": 1113,
-  "taro-spike-2/src/platform/mini-overrides.weapp.css": 2633
+  "taro-spike-2/src/platform/mini-overrides.weapp.css": 3081
 }

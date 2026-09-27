@@ -64,3 +64,12 @@ page { overflow-x: hidden; }
 
 /* （W15 曾在这里把疑难辨析类别改成 3 列网格：当时 app.css 里是「一行横滑 + !important nowrap」。
    2026-09-27 用户定全应用只许上下滑、筛选标签一律换行，那条已改成 wrap，这里不再单独覆盖。） */
+
+/* Taro buttons and clickable views use hover-class because Mini Program :active does not fire. */
+.is-pressed { opacity: .7 !important; }
+
+/* The web Tailwind reset makes min-height include padding; Mini Program CSS has no global box-sizing reset. */
+.zoo-tm-hero { box-sizing: border-box; }
+
+/* Inline width:auto is square in Mini Program; override it to match the 658:364 source art at 96px high. */
+.zoo-tm-hero-art { width: 174px !important; }

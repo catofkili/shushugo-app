@@ -78,6 +78,7 @@ module.exports = {
       pxtransform: { enable: true, config: {} },
       htmltransform: { enable: true, config: { removeCursorStyle: true } },
       [path.join(root, 'scripts/weapp-theme-selectors.cjs')]: {},
+      [path.join(root, 'scripts/weapp-press-feedback.cjs')]: {},
       [path.join(root, 'scripts/strip-weapp-css.cjs')]: {}
     },
     webpackChain(chain, webpack) {
@@ -178,6 +179,11 @@ module.exports = {
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,
         (resource) => {
+          if (resource.request === 'react/jsx-runtime' || resource.request === 'react/jsx-dev-runtime') {
+            // The broad `react` alias shadows subpaths, so replace the JSX runtime before alias resolution.
+            resource.request = path.join(root, 'src/platform/press-feedback-jsx-runtime.weapp.cjs');
+            return;
+          }
           // Taro 4 keeps dynamic-import modules in release chunks even when DEV is false.
           // Replace the weekly preview fixture so sample study data cannot ship in the upload package.
           if (!weappEnv.DEV
