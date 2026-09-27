@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Taro from "@tarojs/taro";
 import { Check, Loader2, MessageCircle, X } from "lucide-react";
 import { claimLaunchGift, cloudWechatMiniLogin, isCloudErrorCode, linkCloudWechatMini, refreshLaunchGiftAvailability, requestCloudWechatLinkCode, type CloudSession } from "../lib/sync-api";
 import { PRIVACY_POLICY_EFFECTIVE_DATE, PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_TITLE } from "../lib/privacy-policy-content";
@@ -29,6 +30,15 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
   const [busy, setBusy] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [message, setMessage] = useState("");
+
+  // 微信原生 tabBar 在页面渲染树之外，页面层级无法盖住它；登录弹窗打开时临时隐藏。
+  useEffect(() => {
+    if (!open) return;
+    const route = Taro.getCurrentPages().at(-1)?.route;
+    if (!route || !/^pages\/(home|word|grammar|profile)\/index$/.test(route)) return;
+    void Taro.hideTabBar({ animation: false });
+    return () => { void Taro.showTabBar({ animation: false }); };
+  }, [open]);
 
   if (!open) return null;
 
@@ -101,7 +111,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
   const title = mode === "terms" ? USER_AGREEMENT_TITLE : mode === "privacy" ? PRIVACY_POLICY_TITLE : "收集日账号";
 
   return (
-    <div className="fixed inset-0 z-[100] grid place-items-center bg-[#101810]/70 p-3" role="presentation">
+    <div className="fixed inset-0 z-[10002] grid place-items-center bg-[#101810]/70 p-3" role="presentation">
       <section role="dialog" aria-modal="true" aria-label={title} className="auth-dialog flex max-h-[82dvh] w-[92vw] flex-col overflow-hidden rounded-[28px] border border-[#B7E38D]/35 bg-[#303730] shadow-[0_28px_90px_rgba(0,0,0,.5)]">
         <header className="flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-3">
           {mode === "terms" || mode === "privacy" ? <button onClick={() => setMode(returnMode)} className="text-white/70">返回</button> : null}
