@@ -43,10 +43,6 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <div className="space-y-2 rounded-2xl border border-white/15 bg-[#464949] p-4">
           <div className="flex items-start gap-2">
             <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
-            <p className="text-sm text-white/70">完全离线使用，无需网络连接</p>
-          </div>
-          <div className="flex items-start gap-2">
-            <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
             <p className="text-sm text-white/70">10,919 个 N5-N1 JLPT 词条，条条带例句</p>
           </div>
           <div className="flex items-start gap-2">
