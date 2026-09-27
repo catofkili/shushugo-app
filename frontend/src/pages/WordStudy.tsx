@@ -7,7 +7,7 @@ import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib
 import { checkAchievements } from "../lib/userProfile";
 import { settleYuzu } from "../lib/yuzu";
 import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic, triggerRevealHaptic, triggerSwipeArmHaptic } from "../lib/haptics";
-import { playPronunciation } from "../lib/speech";
+import { playPronunciation, prefetchPronunciation } from "../lib/speech";
 import { playComplete, playCountdownTick, playDontKnow, playFlip, playKnow, playReliefDeal } from "../lib/zoo-sounds";
 import {
   ExampleBlock,
@@ -975,9 +975,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         if (answer !== "know") await new Promise((resolve) => setTimeout(resolve, 0));
         if (run !== previewRunRef.current) return;
         addAnswerPreview(previews, answer, sessionOptions, checkDailyReview);
+        const nextCard = previews.byAnswer[answer]?.card;
+        if (nextCard) void prefetchPronunciation(nextCard.kanji, nextCard.kana, preferences.voiceId);
       }
     })();
-  }, [initialMode, phase, sessionOptions]);
+  }, [initialMode, phase, preferences.voiceId, sessionOptions]);
   useEffect(() => {
     previewsRef.current = null;
     // 快路径刚换卡、记账还没落库：先不算，记账之后 setStats 会让这里带着新状态再跑一遍

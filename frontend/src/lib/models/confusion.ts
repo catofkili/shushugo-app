@@ -5,7 +5,8 @@
 import { WordCard } from "../../types/vocabulary";
 import { DbRow, rowsFor } from "../database/db-utils";
 import { duplicateWordIds } from "../confusion-groups";
-import { worthComparing } from "./familiarity";
+import { studiedWordIds, worthComparing } from "./familiarity";
+import { perfTime } from "../perf-marks";
 
 /**
  * 计算编辑距离（Levenshtein Distance）
@@ -126,28 +127,36 @@ let wordsByKanaLength: Map<number, ConfusionWord[]> | null = null;
 
 const loadWords = (): Map<number, ConfusionWord[]> => {
   if (wordsByKanaLength) return wordsByKanaLength;
-  const buckets = new Map<number, ConfusionWord[]>();
-  for (const candidate of rowsFor("SELECT id, meaning, kana, kanji, pos, verb_type, importance, jlpt_level FROM words")) {
-    const kana = String(candidate.kana ?? "");
-    if (!kana) continue;
-    const length = Array.from(kana).length;
-    const entry: ConfusionWord = {
-      id: Number(candidate.id ?? 0),
-      meaning: String(candidate.meaning ?? ""),
-      kana,
-      kanji: String(candidate.kanji ?? ""),
-      pos: String(candidate.pos ?? ""),
-      verbType: candidate.verb_type,
-      importance: Number(candidate.importance ?? 0),
-      jlptLevel: String(candidate.jlpt_level ?? ""),
-      length
-    };
-    const bucket = buckets.get(length);
-    if (bucket) bucket.push(entry);
-    else buckets.set(length, [entry]);
-  }
-  wordsByKanaLength = buckets;
-  return buckets;
+  return perfTime("辨析 · 候选词索引", () => {
+    const buckets = new Map<number, ConfusionWord[]>();
+    for (const candidate of rowsFor("SELECT id, meaning, kana, kanji, pos, verb_type, importance, jlpt_level FROM words")) {
+      const kana = String(candidate.kana ?? "");
+      if (!kana) continue;
+      const length = Array.from(kana).length;
+      const entry: ConfusionWord = {
+        id: Number(candidate.id ?? 0),
+        meaning: String(candidate.meaning ?? ""),
+        kana,
+        kanji: String(candidate.kanji ?? ""),
+        pos: String(candidate.pos ?? ""),
+        verbType: candidate.verb_type,
+        importance: Number(candidate.importance ?? 0),
+        jlptLevel: String(candidate.jlpt_level ?? ""),
+        length
+      };
+      const bucket = buckets.get(length);
+      if (bucket) bucket.push(entry);
+      else buckets.set(length, [entry]);
+    }
+    wordsByKanaLength = buckets;
+    return buckets;
+  });
+};
+
+export const warmConfusionCandidateIndexes = (): void => {
+  loadWords();
+  studiedWordIds();
+  duplicateWordIds();
 };
 
 /**

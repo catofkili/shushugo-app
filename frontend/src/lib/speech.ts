@@ -283,3 +283,8 @@ export async function prefetchExample(sentence: string, preferredVoice?: string 
   if (!url || missingAudio.has(url)) return;
   await fetch(url, { mode: "no-cors" }).then((response) => response.arrayBuffer()).catch(() => undefined);
 }
+
+export type WordAudioPlanItem = { kanji: string; kana: string; example: string };
+// 网页音频已在本地包或浏览器缓存中，只有小程序需要 USER_DATA_PATH 预下载。
+export const prefetchWordPlanAudio = (_items: readonly WordAudioPlanItem[]): void => {};
+export const prefetchPronunciation = async (_kanji: string, _kana: string, _preferred?: string | null): Promise<void> => {};

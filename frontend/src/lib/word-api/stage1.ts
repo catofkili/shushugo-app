@@ -2,7 +2,7 @@ import { getDatabase } from "../database";
 import type { WordCard } from "../../types/vocabulary";
 import { getReviewCapPreference } from "../studyPreferences";
 import { rowObjectToCard as toWordCard } from "../models/word-card";
-import { perfRecord } from "../perf-marks";
+import { perfRecord, perfTime } from "../perf-marks";
 import {
   priorityComponents,
   priorityScore,
@@ -252,6 +252,36 @@ export const ensureStage1Tasks = () => {
   reconcileStage1NewQuota(day);
 };
 
+export const todayWordAudioPlan = (): { kanji: string; kana: string; example: string }[] => rowsFor(`
+  SELECT w.kanji, w.kana, w.example_jp AS example
+  FROM stage1_tasks t
+  JOIN words w ON w.id = t.word_id
+  JOIN progress p ON p.word_id = t.word_id
+  WHERE t.reviewed_on = ?
+    AND p.known_forever = 0
+    AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+  ORDER BY t.order_index ASC, t.word_id ASC
+`, [today(), studyDayEnd().toISOString()]).map((row) => ({
+  kanji: String(row.kanji ?? ""),
+  kana: String(row.kana ?? ""),
+  example: String(row.example ?? "")
+}));
+
+/** 首页空闲时提前建当天候选集的只读干扰缓存，不创建计划行或改库。 */
+export const warmStage1SelectionCache = (): void => {
+  const day = today();
+  const rows = rowsFor(`
+    SELECT w.id, w.kana, w.kanji, w.pos, w.verb_type
+    FROM stage1_tasks t
+    JOIN words w ON w.id = t.word_id
+    JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ?
+      AND p.known_forever = 0
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+  `, [day, studyDayEnd().toISOString()]);
+  if (rows.length) perfTime("首页空闲 · 干扰索引", () => sessionInterference(day, rows));
+};
+
 export const stage1ProgressCounts = () => {
   const day = today();
   ensureStage1Tasks();
@@ -341,7 +371,7 @@ export const pickStage1Next = (
 ): WordCard | null => {
   const deterministic = options.deterministic === true;
   const day = today();
-  ensureStage1Tasks();
+  perfTime("选卡 · 今日计划检查", ensureStage1Tasks);
   const queueById = new Map(getReviewQueue().map((item) => [item.word_id, item.due_after]));
   const newQuotaLeft = firstValue<number>(`
     SELECT COUNT(*)
@@ -357,7 +387,7 @@ export const pickStage1Next = (
   // kana/kanji/pos/verb_type）、回忆率（fsrs 那几列）。原来是 w.* + 便签整行读——今天所有到期卡几百行、
   // 每行带例句 / 振假名 / 释义这些长文本，一题 522 行，占每题 SQL 时间一半多（2026-09-26 实测）。
   // 挑中的那一张再按 id 取完整卡（pickedCard）。往排序 / 排片里加用到的 words 字段，要在这里补列。
-  const rows = rowsFor(`
+  const rows = perfTime("选卡 · 候选查询", () => rowsFor(`
     SELECT
       w.id, w.kana, w.kanji, w.pos, w.verb_type, w.importance, w.shuffle_rank,
       p.word_id,
@@ -387,9 +417,12 @@ export const pickStage1Next = (
       -- 凡「本学习日内仍到期」的都要出:还没答的、以及答错/新词学习中
       -- (被排到几分钟后、仍 <= 今日边界)的。毕业(due 排到明天+)才移出当天。
       AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
-  `, [day, studyDayEnd().toISOString()]);
+  `, [day, studyDayEnd().toISOString()]));
   perfRecord("候选卡数", rows.length);
-  const rowObjectToCard = (picked: Record<string, unknown>) => pickedCard(day, Number(picked.id));
+  const rowObjectToCard = (picked: Record<string, unknown>) => perfTime(
+    "选卡 · 卡片组装",
+    () => pickedCard(day, Number(picked.id))
+  );
 
   // 默认规则:刚答过的那张不参与本次抽取(全场只剩它时才让步)。
   // 之前只靠优先级里的 queue 负分压制,末段所有词都在队列里时,刚答错的那张
@@ -424,7 +457,7 @@ export const pickStage1Next = (
     WHERE t.reviewed_on = ?
   `, [day], 0);
   const recent = recentAnswersToday(day, INTERFERENCE_WINDOW);
-  const interference = sessionInterference(day, rows);
+  const interference = perfTime("选卡 · 干扰索引", () => sessionInterference(day, rows));
   const wantNew = shouldPickStage1NewWord(
     reviewRows.length,
     newRows.length,

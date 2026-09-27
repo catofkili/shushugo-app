@@ -30,7 +30,7 @@ vi.mock("./database", () => ({
   exportDatabase: () => null, importDatabase: async () => undefined
 }));
 vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined, persistSoon: () => undefined }));
-vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
+vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined, notifyTodayWordPlanUpdated: () => undefined }));
 vi.mock("./database/db-utils", async (importOriginal) => ({
   ...await importOriginal<typeof import("./database/db-utils")>(),
   // 生产代码的 persistSoon 用动态 import；该文件频繁作答，测试结束后迟到的导入会被 Vitest 拒绝。

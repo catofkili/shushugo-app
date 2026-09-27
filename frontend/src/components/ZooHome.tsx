@@ -5,6 +5,10 @@ import { Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal } from "lucide-
 import { getWordStats, type ProgressOverview } from "../lib/api";
 import { notifyProgressUpdated } from "../lib/progress-events";
 import { useProgressUpdates } from "../lib/use-progress-updates";
+import { todayWordAudioPlan, warmStage1SelectionCache } from "../lib/word-api";
+import { prefetchWordPlanAudio } from "../lib/speech";
+import { warmConfusionGroups } from "../lib/confusion-groups";
+import { warmConfusionCandidateIndexes } from "../lib/models/confusion";
 import { choosePostExamIntensity, getStudyPreferences, kanaGatePending, postExamChoice, postExamRecovery, PREFERENCES_EVENT, POST_EXAM_LIGHT_DAYS } from "../lib/studyPreferences";
 import { scheduleSave } from "../lib/storage";
 import { refreshTodayWordPlan } from "../lib/word-api";
@@ -146,6 +150,19 @@ export function ZooHome({
       window.removeEventListener(WEEKLY_REPORT_UPDATED_EVENT, refresh);
     };
   }, [collectMoments]);
+
+  useEffect(() => {
+    // 主页先完成首屏和统计渲染，空闲几秒后只构建只读缓存，再开始后台音频队列。
+    const timer = window.setTimeout(() => {
+      try {
+        warmStage1SelectionCache();
+        warmConfusionGroups();
+        warmConfusionCandidateIndexes();
+        prefetchWordPlanAudio(todayWordAudioPlan());
+      } catch { /* 只预热缓存，失败不能影响学习 */ }
+    }, 2_500);
+    return () => window.clearTimeout(timer);
+  }, []);
   // 进度事件走 useProgressUpdates：小程序里主页挂在后台时，每答一题不再同步重算一遍（见那个 hook 的注释）
   useProgressUpdates(() => refreshRef.current());
 

@@ -1,4 +1,5 @@
 import { rowsFor } from "../database/db-utils";
+import { perfTime } from "../perf-marks";
 
 /**
  * 「这个词值不值得拿来当易混词」。
@@ -31,11 +32,11 @@ export const resetFamiliarityCache = (): void => {
 export const studiedWordIds = (): Set<number> => {
   if (studiedCache) return studiedCache;
   try {
-    studiedCache = new Set(
+    studiedCache = perfTime("辨析 · 熟悉度索引", () => new Set(
       rowsFor("SELECT word_id FROM progress WHERE fsrs_last_review IS NOT NULL OR fsrs_due IS NOT NULL")
         .map((row) => Number(row.word_id ?? 0))
         .filter((id) => id > 0)
-    );
+    ));
   } catch {
     // 种子库/测试库里可能根本没有 progress 表 —— 那就只按级别判
     studiedCache = new Set();
