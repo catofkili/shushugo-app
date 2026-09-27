@@ -1,14 +1,14 @@
 {
-  "appWxssBytesBefore": 259367,
-  "appWxssBytesAfter": 229429,
+  "appWxssBytesBefore": 262122,
+  "appWxssBytesAfter": 231799,
   "movedRuleBytesByRoute": {
-    "content-pages/yuzu-shop/index.wxss": 15637,
-    "study/team/index.wxss": 11231,
+    "content-pages/yuzu-shop/index.wxss": 15800,
+    "study/team/index.wxss": 11453,
     "study/vocab-test/index.wxss": 3275
   },
   "movedRuleCountByRoute": {
-    "content-pages/yuzu-shop/index.wxss": 138,
-    "study/team/index.wxss": 112,
+    "content-pages/yuzu-shop/index.wxss": 141,
+    "study/team/index.wxss": 115,
     "study/vocab-test/index.wxss": 35
   },
   "routes": {

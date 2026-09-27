@@ -2,39 +2,39 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1892260,
+      "bytes": 1895002,
       "passes": true
     },
     "study": {
-      "bytes": 300305,
+      "bytes": 298621,
       "passes": true
     },
     "account": {
-      "bytes": 250247,
+      "bytes": 248831,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1055674,
+      "bytes": 1053872,
       "passes": true
     },
     "features": {
-      "bytes": 580407,
+      "bytes": 580408,
       "passes": true
     },
     "content": {
-      "bytes": 1619455,
+      "bytes": 1619458,
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 668450,
+      "bytes": 668453,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547378,
+      "bytes": 547381,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 354586,
+      "bytes": 353554,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 567803,
+      "bytes": 565332,
       "passes": true
     }
   },
@@ -1065,11 +1065,11 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/app.css",
-      "bytes": 141324
+      "bytes": 143125
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/styles.css",
-      "bytes": 139279
+      "bytes": 140779
     },
     {
       "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
@@ -1093,7 +1093,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/design.css",
-      "bytes": 62452
+      "bytes": 62809
     }
   ],
   "passes": true
