@@ -27,7 +27,7 @@ const windowApis = taroWindow as unknown as {
   setInterval?: typeof setInterval;
   clearInterval?: typeof clearInterval;
 };
-const systemInfo = wx.getSystemInfoSync();
+const systemInfo = typeof wx.getWindowInfo === 'function' ? wx.getWindowInfo() : wx.getSystemInfoSync();
 windowApis.innerWidth ??= systemInfo.windowWidth;
 windowApis.innerHeight ??= systemInfo.windowHeight;
 windowApis.devicePixelRatio ??= systemInfo.pixelRatio;

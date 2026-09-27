@@ -2,6 +2,7 @@ import { AlertTriangle, Check, ChevronRight, Download, Moon, RotateCcw, Smartpho
 import { useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { DailyPlanPanel } from "../components/DailyPlanPanel";
+import { SelectField } from "../components/SelectField";
 import { Disclosure } from "../components/Disclosure";
 import { KanjiUnitPlanSettings } from "../components/KanjiUnitPlanSettings";
 import { useEntitlements } from "../hooks/useEntitlements";
@@ -390,18 +391,20 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                 <p className="text-sm font-bold text-white">发音声音</p>
                 <p className="mt-0.5 text-xs text-white/50">{isWechatMini ? "使用云端音色播放" : "系统语音不占空间，语调较平"}</p>
               </div>
-              <select
+              <SelectField
+                ariaLabel="发音声音"
                 value={preferences.voiceId}
-                onChange={(event) => updatePreference({ voiceId: event.target.value })}
+                onChange={(voiceId) => updatePreference({ voiceId })}
                 className="focus-ring control-cyan h-10 max-w-40 shrink-0 rounded-xl border px-2 text-xs font-bold"
-              >
-                <option value="">默认</option>
-                {voices.map((voice) => {
-                  const locked = !voiceUnlocked(voice.id, defaultVoiceId());
-                  return <option key={voice.id} value={voice.id} disabled={locked}>{voice.label}{locked ? "(柚子商店解锁)" : ""}</option>;
-                })}
-                {!isWechatMini && <option value={SYSTEM_VOICE_ID}>系统语音</option>}
-              </select>
+                options={[
+                  { value: "", label: "默认" },
+                  ...voices.map((voice) => {
+                    const locked = !voiceUnlocked(voice.id, defaultVoiceId());
+                    return { value: voice.id, label: `${voice.label}${locked ? "(柚子商店解锁)" : ""}`, disabled: locked };
+                  }),
+                  ...(!isWechatMini ? [{ value: SYSTEM_VOICE_ID, label: "系统语音" }] : [])
+                ]}
+              />
             </div>
           )}
 

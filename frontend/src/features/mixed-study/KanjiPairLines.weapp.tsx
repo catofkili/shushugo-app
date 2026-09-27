@@ -27,7 +27,7 @@ export const KanjiPairLines = ({
   rowGap: number;
 }) => {
   const canvasId = `kanji-reading-pair-lines-${useId().replace(/:/g, "")}`;
-  const pixelRatio = Taro.getSystemInfoSync().pixelRatio || 1;
+  const pixelRatio = Taro.getWindowInfo().pixelRatio || 1;
   const canvasRef = useRef<{ context: CanvasRenderingContext2D; node: CanvasNode } | null>(null);
   const latest = useRef({ items, pairs, readings, revealed, height, rowHeight, rowGap });
   latest.current = { items, pairs, readings, revealed, height, rowHeight, rowGap };

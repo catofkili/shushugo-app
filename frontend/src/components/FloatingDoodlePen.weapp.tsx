@@ -10,7 +10,7 @@ type CanvasNode = { width: number; height: number; getContext: (kind: "2d") => C
 
 /** Native Canvas and touch implementation; the web component relies on DOM portals and pointer capture. */
 export function FloatingDoodlePen({ resetKey, surfaceSelector }: { resetKey?: string | number; surfaceSelector?: string }) {
-  const info = Taro.getSystemInfoSync();
+  const info = Taro.getWindowInfo();
   const width = info.windowWidth;
   const height = info.windowHeight;
   const pixelRatio = info.pixelRatio || 1;

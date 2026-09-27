@@ -14,6 +14,7 @@ import { refreshUserProfileFromCloud, saveUserProfileToCloud } from "../lib/prof
 import { studyTotals, type StudyTotals } from "../lib/study-totals";
 import { achievementSummary, type Achievement } from "../lib/achievements";
 import { CrossPlatformImage } from "../components/CrossPlatformImage";
+import { SelectField } from "../components/SelectField";
 
 interface PersonalInfoProps {
   onBack: () => void;
@@ -294,15 +295,13 @@ export function PersonalInfo({ onBack: _onBack, onOpenAchievements }: PersonalIn
             ) : (
               <div className="space-y-3">
                 <label className="block text-xs text-white/60">日语学习目标</label>
-                <select
+                <SelectField
+                  ariaLabel="日语学习目标"
                   value={tempTargetLevel}
-                  onChange={(e) => setTempTargetLevel(e.target.value)}
+                  onChange={setTempTargetLevel}
                   className="focus-ring w-full rounded-2xl border border-white/20 bg-[#3c3f3f] px-3 py-2 text-sm text-white placeholder:text-white/40"
-                >
-                  {TARGET_LEVEL_OPTIONS.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
+                  options={TARGET_LEVEL_OPTIONS.map((option) => ({ value: option, label: option }))}
+                />
                 <div className="flex gap-2">
                   <button
                     onClick={handleSaveTarget}
