@@ -7,7 +7,7 @@
 // 依赖 SQLite 默认关闭 recursive_triggers:触发器内部的 UPDATE 不会再次触发自己。
 
 import { getDatabase } from "../database";
-import { firstRow, firstValue, rowsFor } from "../database/db-utils";
+import { firstRow, firstValue, rowsFor, setState } from "../database/db-utils";
 import { hashSchemaDefinition, hasSchemaFingerprint, saveSchemaFingerprint } from "../database/schema-fingerprint";
 import { backfillStudyTimeByDevice } from "./study-time";
 import { SYNCED_TABLES, STUDY_TIME_TABLE, type SyncedTable } from "./tables";
@@ -21,6 +21,13 @@ const NOW_EXPR = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
 
 const schemaReadyDbs = new WeakSet<object>();
 export const SYNC_SCHEMA_FINGERPRINT_KEY = "runtime_schema_sync_ddl";
+
+/** A user-table migration can add a synced table after delta replay initialized this schema. */
+export function invalidateSyncSchema(): void {
+  const db = getDatabase();
+  schemaReadyDbs.delete(db);
+  setState(SYNC_SCHEMA_FINGERPRINT_KEY, "");
+}
 
 const columnsOf = (table: string): Set<string> =>
   new Set(rowsFor(`PRAGMA table_info(${table})`).map((row) => String(row.name ?? "")));
@@ -62,8 +69,7 @@ const legacyMemoryColumnStatements = (table: string, knownColumns?: Set<string>)
 export function ensureSyncSchema(): void {
   const db = getDatabase();
   if (schemaReadyDbs.has(db)) return;
-  const ddl = syncSchemaDdlStatements();
-  const fingerprint = hashSchemaDefinition(ddl);
+  const fingerprint = syncSchemaFingerprint();
   const schemaMatches = hasSchemaFingerprint(SYNC_SCHEMA_FINGERPRINT_KEY, fingerprint);
 
   if (!schemaMatches) {
@@ -77,7 +83,7 @@ export function ensureSyncSchema(): void {
   // 每次冷启动仍探测一次，但先查索引中的缺失项，整表 UPDATE 只在确有缺口时执行。
   backfillMissingSyncMetadata();
   if (!schemaMatches) {
-    saveSchemaFingerprint(SYNC_SCHEMA_FINGERPRINT_KEY, hashSchemaDefinition(syncSchemaDdlStatements()));
+    saveSchemaFingerprint(SYNC_SCHEMA_FINGERPRINT_KEY, syncSchemaFingerprint());
   }
   schemaReadyDbs.add(db);
 
@@ -85,6 +91,14 @@ export function ensureSyncSchema(): void {
   // 必须放在 schemaReadyDbs 之后:它内部会再进 ensureSyncSchema,不然会死循环。
   if (tableExists("word_study_time")) backfillStudyTimeByDevice();
 }
+
+const syncSchemaFingerprint = (): string => {
+  const tables = new Set(rowsFor("SELECT name FROM sqlite_master WHERE type = 'table'").map((row) => String(row.name)));
+  return hashSchemaDefinition([
+    syncSchemaDdlStatements(),
+    SYNCED_TABLES.filter((entry) => tables.has(entry.table)).map((entry) => entry.table)
+  ]);
+};
 
 /**
  * Runtime-built DDL is the cache key. Trigger bodies, indexes, and compatibility ALTERs

@@ -4,7 +4,7 @@ import type { FavoriteType, StudyAnswer } from "./study-types";
 import { ensureLocalSchema, LOCAL_SCHEMA_SQL, runSqlScript } from "./database/schema";
 import { hashSchemaDefinition, hasSchemaFingerprint, saveSchemaFingerprint } from "./database/schema-fingerprint";
 import { ensureLegacyBiruMigration } from "./legacy-word-migrations";
-import { ensureSyncSchema } from "./sync/schema";
+import { ensureSyncSchema, invalidateSyncSchema } from "./sync/schema";
 import { CONTENT_MIGRATION_STATE_KEYS } from "./sync/tables";
 import { perfTime, perfTimeAsync } from "./perf-marks";
 import {
@@ -337,6 +337,8 @@ export const ensureUserTables = () => {
   `);
   db.run("CREATE INDEX IF NOT EXISTS idx_words_jlpt_level ON words(jlpt_level)");
   db.run("CREATE INDEX IF NOT EXISTS idx_words_pos ON words(pos)");
+  // loadDatabase may replay a delta before this migration creates newly synced tables.
+  invalidateSyncSchema();
   saveSchemaFingerprint(USER_SCHEMA_FINGERPRINT_KEY, userSchemaFingerprint());
   schemaReadyDbs.add(db);
 };

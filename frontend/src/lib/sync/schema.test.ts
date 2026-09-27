@@ -15,6 +15,8 @@ vi.mock("../database", () => ({
 }));
 
 import { ensureSyncSchema, getDeviceId, resetDeviceId, SYNC_SCHEMA_FINGERPRINT_KEY, SYNC_UPDATED_COL } from "./schema";
+import { ensureLocalSchema } from "../database/schema";
+import { ensureUserTables } from "../study-core";
 
 const seedPath = fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url));
 
@@ -123,6 +125,29 @@ describe("ensureSyncSchema", () => {
 
     testDb.run("INSERT INTO weekly_reports (week_start, week_end, generated_at, content_json) VALUES ('2026-09-06', '2026-09-12', 1, '{}')");
     expect(stampOf("weekly_reports", "week_start = '2026-09-06'")).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it("增量回放先初始化同步结构时，用户表迁移后会为新同步表补追踪列", () => {
+    expect(rows("SELECT name FROM sqlite_master WHERE type='table' AND name='study_focus_windows'")).toHaveLength(0);
+
+    ensureUserTables();
+    ensureSyncSchema();
+
+    const columns = rows("PRAGMA table_info(study_focus_windows)").map((row) => String(row.name));
+    expect(columns).toContain(SYNC_UPDATED_COL);
+    expect(columns).toContain("sync_origin_device");
+  });
+
+  it("下次启动也会识别先前漏掉同步列的新用户表", () => {
+    expect(rows("SELECT name FROM sqlite_master WHERE type='table' AND name='study_focus_windows'")).toHaveLength(0);
+
+    ensureLocalSchema();
+    testDb = new SQL.Database(testDb.export());
+    ensureSyncSchema();
+
+    const columns = rows("PRAGMA table_info(study_focus_windows)").map((row) => String(row.name));
+    expect(columns).toContain(SYNC_UPDATED_COL);
+    expect(columns).toContain("sync_origin_device");
   });
 });
 

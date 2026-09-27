@@ -29,5 +29,6 @@
 
 - 共用统计和状态机：`frontend/src/lib/study-focus.ts`；柚子账本：`frontend/src/lib/yuzu.ts`。
 - 新表必须一起登记于本地 schema、`frontend/src/lib/sync/tables.ts`、用户数据表清单和合并测试。它是设备学习记录，不得放入出厂词库或种子数据。
+- 恢复本地增量时，同步 schema 可能先于用户表迁移执行；用户表迁移后失效当前同步缓存，让后续同步初始化补列。同步 DDL 指纹也记录当时已存在的同步表，避免旧库在下次启动时保留漏掉的列。回归覆盖见 `frontend/src/lib/sync/schema.test.ts`。
 - 网页与 Taro 的活动适配：`frontend/src/hooks/useStudyActivity.ts`、`taro-spike-2/src/platform/use-study-activity.weapp.ts`、`taro-spike-2/src/platform/WeappPage.tsx`。离开、切后台、空闲时必须停表；平台不应另造一份计时状态。
 - 关键回归覆盖窗口切分、独立基线、奖励领取和合并去重：`frontend/src/lib/study-focus.test.ts`、`frontend/src/lib/yuzu.test.ts`、`frontend/src/lib/sync/merge.test.ts`、`taro-spike-2/scripts/study-activity-smoke.cjs`。
