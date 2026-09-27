@@ -128,4 +128,20 @@ describe("小程序当天音频缓存", () => {
     runtime.context.listeners.error?.();
     await currentRejection;
   });
+
+  it("试听音色时先中断当前读音，再等待音频索引", async () => {
+    const speech = await import("./speech.weapp");
+    const current = speech.playPronunciation("灰皿", "はいざら");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const stopCount = runtime.context.stop.mock.calls.length;
+
+    const preview = speech.previewVoice("voicevox-8");
+    expect(runtime.context.stop).toHaveBeenCalledTimes(stopCount + 1);
+    await expect(current).resolves.toBeUndefined();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(runtime.context.play).toHaveBeenCalledTimes(2);
+    expect(runtime.context.src).toContain("/examples/voicevox-8/");
+    runtime.context.listeners.canplay?.();
+    await preview;
+  });
 });

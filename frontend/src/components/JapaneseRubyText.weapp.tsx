@@ -1,9 +1,9 @@
 import { Text, View } from "@tarojs/components";
 
-/** WXML has no ruby/rt element; stack the reading above the base like the web ruby. */
+/** Keep the base in the text line; only the reading floats above it like web ruby. */
 export const JapaneseRubyText = ({ base, reading }: { base: string; reading: string }) => (
   <View className="jp-ruby-weapp">
     <Text className="jp-ruby-reading-weapp">{reading}</Text>
-    <Text>{base}</Text>
+    <Text className="jp-ruby-base-weapp">{base}</Text>
   </View>
 );

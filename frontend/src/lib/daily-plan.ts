@@ -25,6 +25,9 @@ import { ensureProgressInitialized } from "./word-api/bootstrap";
 
 export type PlanKind = "words" | "grammar" | "kanji" | "confusion";
 export const PLAN_KINDS: PlanKind[] = ["words", "grammar", "kanji", "confusion"];
+export const hasPendingPlanTotal = (draft: string | null, total: number): boolean => (
+  draft !== null && Number(draft) !== total
+);
 export const PLAN_LABELS: Record<PlanKind, string> = { words: "单词", grammar: "语法", kanji: "汉字", confusion: "辨析" };
 
 /** 每张卡按标准节奏要多少秒。⚠️ 不拿用户自己的数据算 —— 作者边看视频边学，效率不代表标准。 */

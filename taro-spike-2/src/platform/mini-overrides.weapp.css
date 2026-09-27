@@ -3,7 +3,9 @@
 
 /* wx button has browser defaults that do not match the shared HTML button styles. */
 button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: auto;
   min-height: 0;
   margin: 0;
@@ -11,13 +13,20 @@ button {
   color: inherit;
   font-size: inherit;
   line-height: inherit;
-  text-align: inherit;
+  text-align: center;
   background: transparent;
   border: 0;
   border-radius: 0;
   box-sizing: border-box;
 }
 button::after { border: 0; }
+
+/* Mini Program WXSS drops Tailwind's universal box-sizing reset. Width:100% plus horizontal padding then overflows its parent. */
+view, scroll-view, text, button, input, textarea, image,
+.h5-view, .h5-div, .h5-span, .h5-small, .h5-em, .h5-b, .h5-strong, .h5-i, .h5-label,
+.h5-button, .h5-input, .h5-textarea, .h5-select, .h5-ul, .h5-li, .h5-p {
+  box-sizing: border-box;
+}
 
 /* In the home tool grid, shared CSS's `height:auto !important` defeats the
    explicit dimensions on Taro Image and leaves the native image unconstrained. */
@@ -72,9 +81,15 @@ page { overflow-x: hidden; }
 }
 .profile-pro-link.is-pressed { background-color: rgba(129, 216, 207, .18) !important; }
 
-/* WXML has no ruby/rt tags; keep furigana above the glyph at the same scale and color. */
-.jp-ruby-weapp { display: inline-flex; flex-direction: column; align-items: center; vertical-align: bottom; line-height: 1; }
+/* The base stays in the normal line for a shared baseline; only the furigana floats above it. */
+.jp-ruby-weapp { position: relative; display: inline-block; vertical-align: baseline; line-height: 2; white-space: nowrap; }
+.jp-ruby-base-weapp { display: inline; line-height: 1; }
 .jp-ruby-reading-weapp {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  white-space: nowrap;
   color: #6FA83E;
   font-family: "Inter", "Noto Sans JP", system-ui, sans-serif;
   font-size: .42em;

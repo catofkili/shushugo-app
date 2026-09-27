@@ -20,12 +20,19 @@ vi.mock("./database", () => ({
   importDatabase: async () => undefined
 }));
 
-import { applyExamPreset, arrangedPlan, dailyPlanView, examPreset, learnedLevel, previewCurrentLevelPlan, saveDailyPlan, segmentLength, PLAN_KINDS } from "./daily-plan";
+import { applyExamPreset, arrangedPlan, dailyPlanView, examPreset, hasPendingPlanTotal, learnedLevel, previewCurrentLevelPlan, saveDailyPlan, segmentLength, PLAN_KINDS } from "./daily-plan";
 import { getStudyPreferences } from "./studyPreferences";
 import { loadKanjiCharData, materializeKanjiChars } from "./kanji-char-cards";
 import { materializeConfusionCards } from "./confusion-cards";
 
 describe("每日学习量：视图 / 写回 / 备考一键", () => {
+  it("只在每日总量数字和当前值不同时显示保存入口", () => {
+    expect(hasPendingPlanTotal(null, 44)).toBe(false);
+    expect(hasPendingPlanTotal("44", 44)).toBe(false);
+    expect(hasPendingPlanTotal("45", 44)).toBe(true);
+    expect(hasPendingPlanTotal("", 44)).toBe(true);
+  });
+
   beforeAll(async () => {
     const SQL = await initSqlJs();
     testDb = new SQL.Database(new Uint8Array(readFileSync(fileURLToPath(new URL("../../public/nihongo.db", import.meta.url)))));

@@ -21,25 +21,38 @@ interface RuntimeBindings {
 
 let started = false;
 let startupCrashChecked = false;
+let promptedKinds = new Set<"error" | "hang">();
+
+const RECOVERABLE_ERROR = /failed to f[a-z]tch|network(?:error| request failed)|load failed|request (?:failed|timed out)|audio|speech|voice|playback|abort(?:ed)?|cancel(?:led|ed)?|interrupt(?:ed)?|resource|asset|资源加载|加载失败|音频|读音|播放|音色|云端|网络请求|打断/i;
+
+export const isRecoverableRuntimeError = (error: unknown): boolean => {
+  if (error instanceof Error && error.name === "AbortError") return true;
+  const message = error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  return RECOVERABLE_ERROR.test(message);
+};
 
 const issueReport = (kind: Exclude<FeedbackKind, "feedback">, message: string): void => {
+  const autoSend = getAutoSendErrors();
+  if (!autoSend && (kind === "error" || kind === "hang") && promptedKinds.has(kind)) return;
   const diagnostics = collectDiagnostics();
   if (!claimErrorReport(kind, message, diagnostics.route)) return;
-  if (getAutoSendErrors()) {
+  if (autoSend) {
     void submitFeedback({ kind, message, includeDiagnostics: true, diagnosticsSnapshot: diagnostics }).catch(() => undefined);
   } else {
+    if (kind === "error" || kind === "hang") promptedKinds.add(kind);
     emitReportCandidate({ kind, message, diagnostics });
   }
 };
 
 export const captureRuntimeError = (error: unknown): void => {
   const saved = recordDiagnosticError(error);
-  issueReport("error", saved.message);
+  if (!isRecoverableRuntimeError(error)) issueReport("error", saved.message);
 };
 
 export const startFeedbackRuntimeCore = (bindings: RuntimeBindings): (() => void) => {
   if (started) return () => undefined;
   started = true;
+  promptedKinds = new Set();
   const now = bindings.now ?? Date.now;
   let lastHeartbeatAt = now();
   let sessionStartedAt = lastHeartbeatAt;
@@ -56,7 +69,7 @@ export const startFeedbackRuntimeCore = (bindings: RuntimeBindings): (() => void
     const previous = readRunningMarker();
     if (previous) {
       restoreDiagnosticActivity(previous);
-      issueReport("crash", `上次运行未正常结束（最后心跳距今 ${Math.max(1, Math.round((now() - previous.lastHeartbeatAt) / 1_000))} 秒）。`);
+      recordDiagnosticError(new Error(`上次运行未正常结束（最后心跳距今 ${Math.max(1, Math.round((now() - previous.lastHeartbeatAt) / 1_000))} 秒）；中断原因无法确认。`));
     }
   }
   if (bindings.isVisible()) beginSession();
