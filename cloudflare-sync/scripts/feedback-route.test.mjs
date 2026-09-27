@@ -34,13 +34,20 @@ const makeEnv = (validHash) => {
             if (sql.includes("sqlite_master") && sql.includes("type = 'index'")) return { name: "idx_purchase_events_transaction_status" };
             return null;
           },
-          async all() { return { results: values.filter((name) => tables.includes(name)).map((name) => ({ name })) }; },
+          async all() {
+            if (sql.includes("type = 'index'")) return { results: [
+              ...values.slice(0, -1).filter((name) => tables.includes(name)).map((name) => ({ type: "table", name })),
+              { type: "index", name: values.at(-1) }
+            ] };
+            return { results: values.filter((name) => tables.includes(name)).map((name) => ({ name })) };
+          },
           async run() {
             if (sql.includes("INSERT INTO feedback_reports")) reports.push(values);
             return { success: true };
           }
         };
-      }
+      },
+      async batch(statements) { return Promise.all(statements.map((statement) => statement.all())); }
     }
   };
   return { env, reports, rateLimits };

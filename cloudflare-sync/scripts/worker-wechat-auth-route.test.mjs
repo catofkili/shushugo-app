@@ -34,7 +34,20 @@ class FakeStatement {
 
   async all() {
     if (this.sql.includes("FROM auth_identities") && this.sql.includes("provider_subject IN")) {
-      return { results: this.params.map((subject) => this.db.identities.get(subject)).filter(Boolean) };
+      const identities = this.params.map((subject) => this.db.identities.get(subject)).filter(Boolean);
+      if (!this.sql.includes("LEFT JOIN users u")) return { results: identities };
+      return { results: identities.map((identity) => {
+        const user = this.db.users.get(identity.user_id);
+        return {
+          ...identity,
+          account_id: user?.id ?? null,
+          account_email: user?.email ?? null,
+          account_password_hash: user?.password_hash ?? null,
+          account_password_salt: user?.password_salt ?? null,
+          account_display_name: user?.display_name ?? null,
+          account_email_verified_at: user?.email_verified_at ?? null
+        };
+      }) };
     }
     if (this.sql.startsWith("SELECT DISTINCT provider FROM auth_identities")) {
       const providers = new Set([...this.db.identities.values()]
@@ -42,7 +55,13 @@ class FakeStatement {
         .map((identity) => identity.provider));
       return { results: [...providers].sort().map((provider) => ({ provider })) };
     }
+    if (this.sql.includes("FROM entitlements")) return { results: [] };
     return { results: [] };
+  }
+
+  async execute() {
+    if (/^SELECT\b/i.test(this.sql)) return { success: true, ...(await this.all()) };
+    return this.run();
   }
 
   async run() {
@@ -72,7 +91,7 @@ class FakeD1 {
     for (const subject of subjects) this.identities.set(subject, { provider: "wechat", provider_subject: subject, user_id: id, email });
   }
   prepare(sql) { return new FakeStatement(this, sql); }
-  async batch(statements) { return Promise.all(statements.map((statement) => statement.run())); }
+  async batch(statements) { return Promise.all(statements.map((statement) => statement.execute())); }
 }
 
 const db = new FakeD1();
