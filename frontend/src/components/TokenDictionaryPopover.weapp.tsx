@@ -60,7 +60,7 @@ export const TokenDictionaryPopover = ({
   };
 
   return <>
-    <Text className={`jp-token${open ? " jp-token-open" : ""}`} onClick={openDictionary}>{children}</Text>
+    <View className={`jp-token jp-token-weapp${open ? " jp-token-open" : ""}`} onClick={openDictionary}>{children}</View>
     {open && <>
       <View className="token-dictionary-backdrop" onClick={close} />
       <View className="token-dictionary-sheet" onClick={(event) => event.stopPropagation()} catchMove>

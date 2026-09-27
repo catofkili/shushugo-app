@@ -48,15 +48,42 @@ page { overflow-x: hidden; }
 .weapp-theme-root { height: 100vh; min-height: 100vh; display: block; }
 .weapp-app-shell { height: 100%; min-height: 100%; }
 .weapp-route-root { min-height: 100%; }
+/* Inline tags containing components hydrate as Views; restore their browser inline flow. */
+.h5-span, .h5-small, .h5-em, .h5-b, .h5-strong, .h5-i, .h5-label { display: inline; }
 .weapp-app-main {
   position: fixed;
   inset: 0;
   box-sizing: border-box;
-  overflow-y: auto;
   overflow-x: hidden;
   padding: 16px 16px 16px;
 }
 .weapp-app-main .word-study-shell { height: calc(100vh - 2rem); min-height: 0; }
+.weapp-has-study-progress .word-study-shell { height: calc(100vh - 66px); }
+.weapp-study-progress { margin-bottom: 8px; }
+.word-study-scroll-area { display: block !important; overflow: hidden !important; }
+.word-study-scroll-area-content { box-sizing: border-box; min-height: 100%; }
+.word-study-scroll-area-centered { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* Match the web profile colors where WXSS drops Tailwind's slash opacity. */
+.profile-avatar-placeholder { background-color: rgba(129, 216, 207, .12) !important; }
+.profile-pro-link {
+  background-color: rgba(129, 216, 207, .12) !important;
+  border-color: rgba(129, 216, 207, .25) !important;
+}
+.profile-pro-link.is-pressed { background-color: rgba(129, 216, 207, .18) !important; }
+
+/* WXML has no ruby/rt tags; keep furigana above the glyph at the same scale and color. */
+.jp-ruby-weapp { display: inline-flex; flex-direction: column; align-items: center; vertical-align: bottom; line-height: 1; }
+.jp-ruby-reading-weapp {
+  color: #6FA83E;
+  font-family: "Inter", "Noto Sans JP", system-ui, sans-serif;
+  font-size: .42em;
+  font-weight: 700;
+  letter-spacing: .02em;
+  line-height: 1;
+}
+.theme-light .jp-ruby-reading-weapp { color: #5C8F32; }
+.jp-token-weapp { display: inline-flex; align-items: baseline; }
 
 /* W15: mini-program webviews already exclude the native bars. The shared preview
    formula subtracts those browser bars a second time, leaving only 451px here. */

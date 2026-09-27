@@ -4,7 +4,7 @@
   "packages": {
     "main": {
       "beforeBytes": 190864,
-      "afterBytes": 342738
+      "afterBytes": 340705
     },
     "study": {
       "beforeBytes": 41968,
@@ -39,14 +39,14 @@
       "image": "scene-book",
       "sourceWidth": 370,
       "sourceHeight": 307,
-      "maxDisplayHeightCss": 96,
+      "maxDisplayHeightCss": 56,
       "scale": 2,
-      "outputWidth": 231,
-      "outputHeight": 192,
+      "outputWidth": 135,
+      "outputHeight": 112,
       "beforeFormat": "webp",
       "beforeBytes": 8942,
       "afterFormat": "png",
-      "afterBytes": 16299
+      "afterBytes": 7792
     },
     {
       "subpackage": "main",
@@ -67,14 +67,14 @@
       "image": "mood-puzzled",
       "sourceWidth": 443,
       "sourceHeight": 328,
-      "maxDisplayHeightCss": 96,
+      "maxDisplayHeightCss": 52,
       "scale": 2,
-      "outputWidth": 259,
-      "outputHeight": 192,
+      "outputWidth": 140,
+      "outputHeight": 104,
       "beforeFormat": "webp",
       "beforeBytes": 10364,
       "afterFormat": "png",
-      "afterBytes": 16020
+      "afterBytes": 5712
     },
     {
       "subpackage": "main",
@@ -151,14 +151,14 @@
       "image": "mood-cheer",
       "sourceWidth": 446,
       "sourceHeight": 367,
-      "maxDisplayHeightCss": 96,
+      "maxDisplayHeightCss": 68,
       "scale": 2,
-      "outputWidth": 233,
-      "outputHeight": 192,
+      "outputWidth": 165,
+      "outputHeight": 136,
       "beforeFormat": "webp",
       "beforeBytes": 10774,
       "afterFormat": "png",
-      "afterBytes": 17394
+      "afterBytes": 9979
     },
     {
       "subpackage": "main",
@@ -215,6 +215,62 @@
       "beforeBytes": 7510,
       "afterFormat": "png",
       "afterBytes": 15083
+    },
+    {
+      "subpackage": "main",
+      "image": "mood-ask",
+      "sourceWidth": 427,
+      "sourceHeight": 360,
+      "maxDisplayHeightCss": 48,
+      "scale": 1,
+      "outputWidth": 57,
+      "outputHeight": 48,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 1632
+    },
+    {
+      "subpackage": "main",
+      "image": "mood-shy",
+      "sourceWidth": 401,
+      "sourceHeight": 283,
+      "maxDisplayHeightCss": 64,
+      "scale": 2,
+      "outputWidth": 181,
+      "outputHeight": 128,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 9874
+    },
+    {
+      "subpackage": "main",
+      "image": "mood-surprised",
+      "sourceWidth": 298,
+      "sourceHeight": 276,
+      "maxDisplayHeightCss": 34,
+      "scale": 1,
+      "outputWidth": 37,
+      "outputHeight": 34,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 1313
+    },
+    {
+      "subpackage": "main",
+      "image": "empty-box",
+      "sourceWidth": 433,
+      "sourceHeight": 320,
+      "maxDisplayHeightCss": 72,
+      "scale": 2,
+      "outputWidth": 195,
+      "outputHeight": 144,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 11378
     },
     {
       "subpackage": "main",

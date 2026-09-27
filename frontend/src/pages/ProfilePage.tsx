@@ -94,7 +94,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
             <CrossPlatformImage src={profile.avatar} alt="账号头像" className="h-16 w-16 shrink-0 rounded-full border border-white/20 object-cover" weappWidth={64} weappHeight={64} />
           ) : !cloudSession.token ? (
             // 没登录时是吉祥物在招手，不是一个灰色的「空用户」剪影
-            <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-white/20 bg-[#81D8CF]/12">
+            <div className="profile-avatar-placeholder grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-white/20 bg-[#81D8CF]/12">
               <Sticker name="mood-wave" size={46} />
             </div>
           ) : (
@@ -151,7 +151,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
 
       <button
         onClick={() => onNavigate("pro")}
-        className="focus-ring mt-4 flex w-full items-center gap-3 rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/12 p-4 text-left hover:bg-[#81D8CF]/18"
+        className="profile-pro-link focus-ring mt-4 flex w-full items-center gap-3 rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/12 p-4 text-left hover:bg-[#81D8CF]/18"
       >
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#81D8CF] text-[#343838]">
           <Crown size={23} />
