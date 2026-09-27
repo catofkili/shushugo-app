@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1851785,
+      "bytes": 1851786,
       "passes": true
     },
     "study": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1059138,
+      "bytes": 1057853,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 567096,
+      "bytes": 567072,
       "passes": true
     }
   },

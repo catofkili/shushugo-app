@@ -2,7 +2,7 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1851785,
+      "bytes": 1851786,
       "mib": 1.766,
       "passes": true
     },
@@ -17,8 +17,8 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1059138,
-      "mib": 1.01,
+      "bytes": 1057853,
+      "mib": 1.009,
       "passes": true
     },
     "features": {
@@ -52,12 +52,12 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 567096,
+      "bytes": 567072,
       "mib": 0.541,
       "passes": true
     }
   },
-  "totalBytes": 8076458,
+  "totalBytes": 8075150,
   "files": [
     {
       "path": "common.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 565347
+      "bytes": 565323
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -137,7 +137,7 @@
     {
       "path": "content-pages/weekly-report/index.js",
       "package": "content-pages",
-      "bytes": 84312
+      "bytes": 83051
     },
     {
       "path": "content-pages/sub-common/15dffb70f5d62422e3a9621895a4ffc0.js",
@@ -452,7 +452,7 @@
     {
       "path": "content-pages/sub-common/033c6a88130ea138956bd52e056e5c46.js",
       "package": "content-pages",
-      "bytes": 13390
+      "bytes": 13366
     },
     {
       "path": "account/personal-info/index.js",
@@ -807,7 +807,7 @@
     {
       "path": "app.js",
       "package": "main",
-      "bytes": 3410
+      "bytes": 3387
     },
     {
       "path": "study/study-modes/index.js",
@@ -912,7 +912,7 @@
     {
       "path": "app.json",
       "package": "main",
-      "bytes": 2109
+      "bytes": 2091
     },
     {
       "path": "content-pages/sub-common/797e28e2bc0a431a7ce89cbace0037c6.js",
@@ -1360,6 +1360,11 @@
       "bytes": 487
     },
     {
+      "path": "project.config.json",
+      "package": "main",
+      "bytes": 485
+    },
+    {
       "path": "study/assets/lucide/bellring-ink.svg",
       "package": "study",
       "bytes": 484
@@ -1418,11 +1423,6 @@
       "path": "assets/lucide/gitcomparearrows-light.svg",
       "package": "main",
       "bytes": 445
-    },
-    {
-      "path": "project.config.json",
-      "package": "main",
-      "bytes": 443
     },
     {
       "path": "assets/lucide/share2-ink.svg",

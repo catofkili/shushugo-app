@@ -1,1 +1,1 @@
-export default { navigationBarTitleText: '路线 A 试验' };
+export default { navigationBarTitleText: '收集日' };

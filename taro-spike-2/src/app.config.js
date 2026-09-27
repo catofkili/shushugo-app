@@ -33,7 +33,7 @@ export default {
   // 四个标签页一进来就预下载 lazy 界面代码和 SQL.js WASM。
   preloadRule: Object.fromEntries(mainRoutes.map((route) => [route.path, { network: 'all', packages: ['lazy', 'core'] }])),
   window: {
-    navigationBarTitleText: 'ShuShuGo · 路线 A 试验',
+    navigationBarTitleText: '收集日',
     navigationBarBackgroundColor: '#FBF6EC',
     navigationBarTextStyle: 'black',
     backgroundColor: '#FBF6EC'
