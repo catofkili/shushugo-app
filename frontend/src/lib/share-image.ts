@@ -125,6 +125,8 @@ export const shareText = async (text: string, title: string): Promise<ShareTextR
  */
 export const isNativeApp = (): boolean => Capacitor.isNativePlatform();
 
+/** 系统分享面板里是否已经含「发朋友圈」（小程序的分享图片弹窗是；App / 网页不是，朋友圈要另走一步）。 */
+export const shareMenuCoversMoments = () => false;
 export const prepareWechatMomentsPost = async (blob: Blob, fileName: string): Promise<SaveImageResult> => {
   const saved = await saveImageToGallery(blob, fileName);
   if (saved === "gallery") window.location.href = "weixin://";

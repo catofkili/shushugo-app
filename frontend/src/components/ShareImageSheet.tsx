@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ImageDown, Loader2, MessageCircle, Share2, Sparkles, X } from "lucide-react";
 import { Sticker } from "./CapybaraMascot";
-import { isNativeApp, prepareWechatMomentsPost, saveImageToGallery, shareImage } from "../lib/share-image";
+import { isNativeApp, prepareWechatMomentsPost, saveImageToGallery, shareImage, shareMenuCoversMoments } from "../lib/share-image";
 
 /**
  * 分享图预览：打卡图、词汇量结果图和周报长图共用；保存 / 分享 / 提示语都在这里，调用方只负责生成图片。
@@ -100,18 +100,22 @@ export function ShareImageSheet({ title, url, alt, blob, fileName, shareTitle, o
         {notice && <p className="share-sheet-notice" role="status">{notice}</p>}
         {native ? (
           <>
-            <div className="share-sheet-wechat">
+            {shareMenuCoversMoments() ? (
+              <button type="button" onClick={() => void run("share")} disabled={busy !== null} className="ds-btn focus-ring w-full disabled:opacity-60">
+                {busy === "share" ? <Loader2 size={16} className="animate-spin" /> : <MessageCircle size={16} />}分享给好友或朋友圈
+              </button>
+            ) : <div className="share-sheet-wechat">
               <button type="button" onClick={() => void run("share")} disabled={busy !== null} className="ds-btn focus-ring disabled:opacity-60">
                 {busy === "share" ? <Loader2 size={16} className="animate-spin" /> : <MessageCircle size={16} />}发给微信好友
               </button>
               <button type="button" onClick={() => void run("moments")} disabled={busy !== null} className="ds-btn focus-ring disabled:opacity-60">
                 {busy === "moments" ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}去朋友圈发布
               </button>
-            </div>
+            </div>}
             <button type="button" onClick={() => void run("save")} disabled={busy !== null} className="ds-btn-soft focus-ring mt-2 w-full disabled:opacity-60">
               {busy === "save" ? <Loader2 size={16} className="animate-spin" /> : <ImageDown size={16} />}保存到相册
             </button>
-            <p className="share-sheet-hint">发给好友：微信已安装时可在分享面板里选择。朋友圈：先保存图片，再在微信里选图发布。</p>
+            <p className="share-sheet-hint">{shareMenuCoversMoments() ? "点分享后选「发送给朋友」或「分享到朋友圈」。" : "发给好友：微信已安装时可在分享面板里选择。朋友圈：先保存图片，再在微信里选图发布。"}</p>
           </>
         ) : (
           <div className="mt-3 grid grid-cols-2 gap-2">

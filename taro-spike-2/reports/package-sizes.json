@@ -7,8 +7,8 @@
       "passes": true
     },
     "study": {
-      "bytes": 300370,
-      "mib": 0.286,
+      "bytes": 300644,
+      "mib": 0.287,
       "passes": true
     },
     "account": {
@@ -17,7 +17,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1058718,
+      "bytes": 1058992,
       "mib": 1.01,
       "passes": true
     },
@@ -52,12 +52,12 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 572871,
-      "mib": 0.546,
+      "bytes": 573201,
+      "mib": 0.547,
       "passes": true
     }
   },
-  "totalBytes": 8105124,
+  "totalBytes": 8106002,
   "files": [
     {
       "path": "common.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 571121
+      "bytes": 571451
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -845,6 +845,16 @@
       "bytes": 2909
     },
     {
+      "path": "content-pages/sub-common/2df14d20a5d24ee3139483c782705409.js",
+      "package": "content-pages",
+      "bytes": 2830
+    },
+    {
+      "path": "study/sub-common/2df14d20a5d24ee3139483c782705409.js",
+      "package": "study",
+      "bytes": 2830
+    },
+    {
       "path": "content-pages/assets/brand/icon-grammar.png",
       "package": "content-pages",
       "bytes": 2723
@@ -878,16 +888,6 @@
       "path": "grammar-pages/sub-common/9ca9181576d5e8d3d23265f6fd1e1489.js",
       "package": "grammar-pages",
       "bytes": 2592
-    },
-    {
-      "path": "content-pages/sub-common/2df14d20a5d24ee3139483c782705409.js",
-      "package": "content-pages",
-      "bytes": 2556
-    },
-    {
-      "path": "study/sub-common/2df14d20a5d24ee3139483c782705409.js",
-      "package": "study",
-      "bytes": 2556
     },
     {
       "path": "assets/brand/icon-stats.png",

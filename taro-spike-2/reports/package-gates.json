@@ -6,7 +6,7 @@
       "passes": true
     },
     "study": {
-      "bytes": 300370,
+      "bytes": 300644,
       "passes": true
     },
     "account": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1058718,
+      "bytes": 1058992,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 572871,
+      "bytes": 573201,
       "passes": true
     }
   },
@@ -263,18 +263,18 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ProReadingPreview.tsx",
-      "bytes": 6337,
+      "source": "/private/tmp/claude-gram/frontend/src/lib/share-image.weapp.ts",
+      "bytes": 7394,
       "packages": [
+        "content-pages",
         "lazy",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/share-image.weapp.ts",
-      "bytes": 6216,
+      "source": "/private/tmp/claude-gram/frontend/src/components/ProReadingPreview.tsx",
+      "bytes": 6337,
       "packages": [
-        "content-pages",
         "lazy",
         "study"
       ]
@@ -612,7 +612,7 @@
     },
     {
       "source": "frontend/src/lib/share-image.weapp.ts",
-      "bytes": 6216,
+      "bytes": 7394,
       "packages": [
         "content-pages",
         "lazy",
