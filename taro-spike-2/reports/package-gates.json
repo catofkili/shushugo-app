@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1861700,
+      "bytes": 1863581,
       "passes": true
     },
     "study": {
-      "bytes": 299354,
+      "bytes": 300370,
       "passes": true
     },
     "account": {
-      "bytes": 255795,
+      "bytes": 256307,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1058648,
+      "bytes": 1058718,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 358330,
+      "bytes": 358454,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 572747,
+      "bytes": 572871,
       "passes": true
     }
   },
@@ -102,7 +102,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/speech.weapp.ts",
-      "bytes": 28172,
+      "bytes": 28346,
       "packages": [
         "account",
         "content-pages",
@@ -123,6 +123,14 @@
       "bytes": 18966,
       "packages": [
         "grammar-pages",
+        "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanPanel.tsx",
+      "bytes": 16513,
+      "packages": [
+        "account",
         "study"
       ]
     },
@@ -148,14 +156,6 @@
       "packages": [
         "content-pages",
         "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 15306,
-      "packages": [
-        "account",
-        "study"
       ]
     },
     {
@@ -281,7 +281,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/distinction-quiz.ts",
-      "bytes": 5559,
+      "bytes": 5647,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -503,7 +503,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/JapaneseRubyText.weapp.tsx",
-      "bytes": 564,
+      "bytes": 602,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -572,7 +572,7 @@
     },
     {
       "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 28172,
+      "bytes": 28346,
       "packages": [
         "account",
         "content-pages",
@@ -622,7 +622,7 @@
     },
     {
       "source": "frontend/src/lib/distinction-quiz.ts",
-      "bytes": 5559,
+      "bytes": 5647,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -778,6 +778,15 @@
       "reason": "The study quiz and grammar subpackage include this route in separate package entry graphs."
     },
     {
+      "source": "frontend/src/components/DailyPlanPanel.tsx",
+      "bytes": 16513,
+      "packages": [
+        "account",
+        "study"
+      ],
+      "reason": "The study tab and account routes render this panel from isolated package graphs."
+    },
+    {
       "source": "frontend/src/pages/ImmersiveGrammar.tsx",
       "bytes": 15963,
       "packages": [
@@ -794,15 +803,6 @@
         "grammar-pages"
       ],
       "reason": "Favorites is reachable from both the content and grammar package entry graphs."
-    },
-    {
-      "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 15306,
-      "packages": [
-        "account",
-        "study"
-      ],
-      "reason": "The study tab and account routes render this panel from isolated package graphs."
     },
     {
       "source": "frontend/src/pages/GrammarFoundationPage.tsx",
@@ -999,7 +999,7 @@
     },
     {
       "source": "frontend/src/components/JapaneseRubyText.weapp.tsx",
-      "bytes": 564,
+      "bytes": 602,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1012,9 +1012,9 @@
   "pageComponentDuplicateReasons": {
     "frontend/src/pages/Library.tsx": "The grammar tab and grammar library subpackage each render this route from their isolated package graphs.",
     "frontend/src/pages/ConfusionPage.tsx": "The study quiz and grammar subpackage include this route in separate package entry graphs.",
+    "frontend/src/components/DailyPlanPanel.tsx": "The study tab and account routes render this panel from isolated package graphs.",
     "frontend/src/pages/ImmersiveGrammar.tsx": "The tab bundle and grammar subpackage each contain this independently reachable route.",
     "frontend/src/pages/FavoritesPage.tsx": "Favorites is reachable from both the content and grammar package entry graphs.",
-    "frontend/src/components/DailyPlanPanel.tsx": "The study tab and account routes render this panel from isolated package graphs.",
     "frontend/src/pages/GrammarFoundationPage.tsx": "Grammar foundation navigation reaches this page from both content and grammar entry graphs.",
     "frontend/src/components/GrammarHighlightProvider.tsx": "Each package needs a provider for its local React tree; its user-data cache is pinned once in main.",
     "frontend/src/components/DailyPlanRing.weapp.tsx": "The study and account routes each render the Canvas ring (W6 weapp variant) in separate package entry graphs.",
@@ -1037,7 +1037,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 237834,
+  "duplicatedPageComponentBytes": 239079,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1060,7 +1060,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/styles.css",
-      "bytes": 140779
+      "bytes": 140835
     },
     {
       "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
@@ -1072,7 +1072,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 88623
+      "bytes": 90519
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/storage.ts",
@@ -1084,7 +1084,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/design.css",
-      "bytes": 62809
+      "bytes": 62906
     }
   ],
   "passes": true
