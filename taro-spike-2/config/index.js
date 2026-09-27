@@ -191,6 +191,14 @@ module.exports = {
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [
         /.*/,
         (resource) => {
+          // Taro 4 keeps dynamic-import modules in release chunks even when DEV is false.
+          // Replace the weekly preview fixture so sample study data cannot ship in the upload package.
+          if (!weappEnv.DEV
+            && resource.context === path.join(frontend, 'src/pages')
+            && resource.request === './weekly/mock-report') {
+            resource.request = path.join(root, 'src/platform/no-weekly-mock.weapp.ts');
+            return;
+          }
           if (resource.request === 'react-dom' && !resource.contextInfo?.issuer?.endsWith('react-dom.weapp.ts')) {
             // 网页的 createPortal(弹层, document.body) 在小程序里看不见，见 src/platform/portal-host.weapp.ts。
             // 用模块替换而不是 alias：Taro 的 React 插件自己把 react-dom$ 别名到 @tarojs/react，替换在别名之前生效。
