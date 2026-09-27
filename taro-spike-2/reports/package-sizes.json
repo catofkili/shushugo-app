@@ -2,7 +2,7 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1886523,
+      "bytes": 1886037,
       "mib": 1.799,
       "passes": true
     },
@@ -17,8 +17,8 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1057853,
-      "mib": 1.009,
+      "bytes": 1057438,
+      "mib": 1.008,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 354924,
+      "bytes": 354586,
       "mib": 0.338,
       "passes": true
     },
@@ -57,12 +57,12 @@
       "passes": true
     }
   },
-  "totalBytes": 8111998,
+  "totalBytes": 8110759,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 844455
+      "bytes": 844449
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -112,7 +112,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 234438
+      "bytes": 233958
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -347,7 +347,7 @@
     {
       "path": "content-pages/yuzu-shop/index.wxss",
       "package": "content-pages",
-      "bytes": 16792
+      "bytes": 16715
     },
     {
       "path": "content-pages/assets/brand/shushugo-icon-dark.png",
@@ -510,16 +510,6 @@
       "bytes": 9410
     },
     {
-      "path": "content-pages/sub-common/1a151c5e7165576eea7fca3be3f5f775.js",
-      "package": "content-pages",
-      "bytes": 8885
-    },
-    {
-      "path": "grammar-pages/sub-common/1a151c5e7165576eea7fca3be3f5f775.js",
-      "package": "grammar-pages",
-      "bytes": 8885
-    },
-    {
       "path": "grammar-pages/sub-common/4b83b97179b91c47bbd4458e67fe7adb.js",
       "package": "grammar-pages",
       "bytes": 8705
@@ -533,6 +523,16 @@
       "path": "grammar-pages/sub-common/1e2009faaac97f2ba2fc4528f4f90cd8.js",
       "package": "grammar-pages",
       "bytes": 8559
+    },
+    {
+      "path": "content-pages/sub-common/1a151c5e7165576eea7fca3be3f5f775.js",
+      "package": "content-pages",
+      "bytes": 8547
+    },
+    {
+      "path": "grammar-pages/sub-common/1a151c5e7165576eea7fca3be3f5f775.js",
+      "package": "grammar-pages",
+      "bytes": 8547
     },
     {
       "path": "content-pages/about/index.js",

@@ -1,12 +1,12 @@
 {
-  "frontend/src/app.css": 141345,
+  "frontend/src/app.css": 141266,
   "frontend/src/components/ZooHome.css": 1011,
   "frontend/src/design.css": 70028,
   "frontend/src/pages/weekly-report.css": 39650,
   "frontend/src/pages/weekly/film.css": 20691,
   "frontend/src/pages/weekly/star-atlas.css": 16106,
   "frontend/src/skins.css": 10803,
-  "frontend/src/styles.css": 139518,
+  "frontend/src/styles.css": 139138,
   "taro-spike-2/src/app.css": 1111,
   "taro-spike-2/src/platform/mini-overrides.weapp.css": 1509
 }

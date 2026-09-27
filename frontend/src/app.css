@@ -436,7 +436,7 @@
 .quick-study-selection-cancel{flex:none;border:0;background:transparent;padding:6px 2px;color:var(--zoo-muted);font-size:11px;font-weight:800;white-space:nowrap}
 .quick-study-selection-cancel:hover{color:var(--zoo-ink)}
 .quick-study-selection-count{flex:none;color:var(--zoo-ink);font-size:12px;white-space:nowrap}
-.quick-study-selection-rates{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-left:auto;overflow-x:auto;touch-action:none;user-select:none}
+.quick-study-selection-rates{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:4px;margin-left:auto;touch-action:none;user-select:none}
 .quick-study-selection-rate{flex:none;border:1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);border-radius:8px;background:var(--zoo-primary-soft);padding:6px 8px;color:var(--zoo-primary-deep);font-size:11px;font-weight:800;line-height:1;white-space:nowrap;touch-action:none}
 .quick-study-selection-rate:hover:not(:disabled),.quick-study-selection-rate:active:not(:disabled){filter:brightness(.96);transform:translateY(-1px)}
 .quick-study-selection-rate.quick-study-rating-fuzzy{border-color:rgba(232,151,28,.5);background:rgba(247,220,172,.72);color:#98610B}
@@ -1103,11 +1103,11 @@
   border:1.5px solid rgba(126,190,79,.4);border-radius:20px;padding:8px 10px;
   background:var(--zoo-surface,#FBF5E9);box-shadow:0 10px 30px rgba(40,30,18,.24)}
 /* 上面一排是「怎么选」，下面一排是「选完干什么」 */
-.wl-bar-picks{display:flex;align-items:center;gap:5px;overflow-x:auto}
+.wl-bar-picks{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
 .wl-bar-pick{flex:none;border:1px solid var(--ds-line);border-radius:12px;background:transparent;
   padding:4px 9px;color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:800;white-space:nowrap}
 .wl-bar-pick:disabled{opacity:.4}
-.wl-bar-acts{display:flex;align-items:center;gap:6px;overflow-x:auto}
+.wl-bar-acts{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .wl-bar-count{flex:none;color:var(--zoo-primary-deep);font-size:13px;font-weight:800;white-space:nowrap}
 .wl-bar-btn{flex:none;border:1px solid var(--ds-line-2);border-radius:12px;background:transparent;
   padding:7px 11px;color:var(--zoo-ink);font-size:13px;font-weight:800;white-space:nowrap}
@@ -1505,7 +1505,7 @@
 @keyframes yzSpin{to{transform:rotate(360deg)}}
 [data-motion="off"] .yz-spin{animation:none}
 /* 补签:横向小按钮,不再把操作条撑成一张大卡 */
-.yz-repair-days{grid-column:1/-1;display:flex;gap:6px;overflow-x:auto;padding-bottom:1px;scrollbar-width:none}
+.yz-repair-days{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;padding-bottom:1px}
 .yz-repair-days::-webkit-scrollbar{display:none}
 .yz-repair-days .yz-cta{grid-column:auto;grid-row:auto;flex:none;min-height:32px;font-size:12px}
 /* 试听:声音 / 音效商品在 CTA 上面一行 */
@@ -1536,7 +1536,7 @@
 .yz-art-s .yz-mini-hero b{font-size:2.2em}
 
 /* 分类 chip:一字多音页那排同款,横向滚 */
-.yz-tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.yz-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:2px 2px 4px}
 .yz-tabs::-webkit-scrollbar{display:none}
 .yz-tabs button{flex:none;border:1px solid var(--ds-line);border-radius:999px;padding:5px 12px;background:transparent;
   color:var(--zoo-muted,#9A8A78);font-size:12px;font-weight:800;white-space:nowrap}
@@ -1656,11 +1656,10 @@
 .dictionary-card .word-answer{border:0!important;background:none!important;border-radius:0!important}
 .dictionary-card .word-prompt:not(.is-bare){border-bottom:1px solid var(--color-border-light)!important}
 
-/* —— 筛选条一律一行、横滑 —— 以前折成两三行：词库第一个词之前要先读完 6 个等级 + 4 个图例，
-   疑难辨析 9 个分类折三行。末端用渐隐提示「还能往右滑」，不然截断看着像没排好。 */
-.wl-chips,.wl-legend,.cf-types{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;
-  -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);padding-right:24px}
-.wl-chips::-webkit-scrollbar,.wl-legend::-webkit-scrollbar,.cf-types::-webkit-scrollbar{display:none}
+/* —— 筛选条：放不下就换行，不横滑（用户 2026-09-27 定：「我们是完全按竖着适配的，左右滑动完全是多此一举」，
+   全应用一律只有上下滑）。之前（2026-09-23 UI 收口）是「一律一行、横滑 + 末端渐隐」，理由是折成两三行时
+   词库第一个词之前要先读完 6 个等级 + 4 个图例；用户选了换行，这个代价接受。别再改回横滑。 */
+.wl-chips,.wl-legend,.cf-types{flex-wrap:wrap!important}
 .wl-chips>*,.wl-legend>*,.cf-types>*{flex:none;white-space:nowrap}
 
 /* —— 登录弹窗：组件里写死的是一套绿调深色（#303730 / #242a24），浅色主题的翻译层没收录，

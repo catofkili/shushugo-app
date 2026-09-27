@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1886523,
+      "bytes": 1886037,
       "passes": true
     },
     "study": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1057853,
+      "bytes": 1057438,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 354924,
+      "bytes": 354586,
       "passes": true
     },
     "core": {
@@ -151,19 +151,19 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 15376,
-      "packages": [
-        "content-pages",
-        "grammar-pages"
-      ]
-    },
-    {
       "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanPanel.tsx",
       "bytes": 15306,
       "packages": [
         "account",
         "study"
+      ]
+    },
+    {
+      "source": "/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
+      "bytes": 14754,
+      "packages": [
+        "content-pages",
+        "grammar-pages"
       ]
     },
     {
@@ -805,15 +805,6 @@
       "reason": "Favorites is reachable from both the content and grammar package entry graphs."
     },
     {
-      "source": "frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 15376,
-      "packages": [
-        "content-pages",
-        "grammar-pages"
-      ],
-      "reason": "Grammar foundation navigation reaches this page from both content and grammar entry graphs."
-    },
-    {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
       "bytes": 15306,
       "packages": [
@@ -821,6 +812,15 @@
         "study"
       ],
       "reason": "The study tab and account routes render this panel from isolated package graphs."
+    },
+    {
+      "source": "frontend/src/pages/GrammarFoundationPage.tsx",
+      "bytes": 14754,
+      "packages": [
+        "content-pages",
+        "grammar-pages"
+      ],
+      "reason": "Grammar foundation navigation reaches this page from both content and grammar entry graphs."
     },
     {
       "source": "frontend/src/components/GrammarHighlightProvider.tsx",
@@ -1023,8 +1023,8 @@
     "frontend/src/pages/ConfusionPage.tsx": "The study quiz and grammar subpackage include this route in separate package entry graphs.",
     "frontend/src/pages/ImmersiveGrammar.tsx": "The tab bundle and grammar subpackage each contain this independently reachable route.",
     "frontend/src/pages/FavoritesPage.tsx": "Favorites is reachable from both the content and grammar package entry graphs.",
-    "frontend/src/pages/GrammarFoundationPage.tsx": "Grammar foundation navigation reaches this page from both content and grammar entry graphs.",
     "frontend/src/components/DailyPlanPanel.tsx": "The study tab and account routes render this panel from isolated package graphs.",
+    "frontend/src/pages/GrammarFoundationPage.tsx": "Grammar foundation navigation reaches this page from both content and grammar entry graphs.",
     "frontend/src/components/GrammarHighlightProvider.tsx": "Each package needs a provider for its local React tree; its user-data cache is pinned once in main.",
     "frontend/src/components/DailyPlanRing.weapp.tsx": "The study and account routes each render the Canvas ring (W6 weapp variant) in separate package entry graphs.",
     "frontend/src/components/JapaneseRuby.tsx": "Ruby rendering is shared by the lazy tab chunk and independently loaded content/grammar routes.",
@@ -1046,7 +1046,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 234586,
+  "duplicatedPageComponentBytes": 233964,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1065,11 +1065,11 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/app.css",
-      "bytes": 141385
+      "bytes": 141306
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/styles.css",
-      "bytes": 139518
+      "bytes": 139138
     },
     {
       "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",

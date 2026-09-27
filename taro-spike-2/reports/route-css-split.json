@@ -1,9 +1,9 @@
 {
-  "appWxssBytesBefore": 266249,
-  "appWxssBytesAfter": 234438,
+  "appWxssBytesBefore": 265692,
+  "appWxssBytesAfter": 233958,
   "movedRuleBytesByRoute": {
     "content-pages/weekly-report/index.wxss": 719,
-    "content-pages/yuzu-shop/index.wxss": 16791,
+    "content-pages/yuzu-shop/index.wxss": 16714,
     "study/team/index.wxss": 11231,
     "study/vocab-test/index.wxss": 3275
   },

@@ -32,7 +32,7 @@ export function ExamDatePicker({ kind, value, onChange }: Props) {
       <span className="shrink-0 rounded-full bg-[#e8f2dc] px-3 py-1 text-xs font-bold text-[#497333]">{open ? "收起 ↑" : "修改日期 ↓"}</span>
     </button>
     {open && <div className="border-t border-[#e6dcca] p-3">
-      {presets.length > 0 && <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+      {presets.length > 0 && <div className="mb-3 flex flex-wrap gap-2 pb-1">
         {presets.map((date) => <button key={formatExamDate(date)} type="button" className="ls-option shrink-0 px-3 py-2 text-xs" onClick={() => choose(date)}>
           {formatExamDateHuman(date)}{kind === "jlpt" && date.getFullYear() > 2026 ? " · 预计" : " · 已公布"}
         </button>)}

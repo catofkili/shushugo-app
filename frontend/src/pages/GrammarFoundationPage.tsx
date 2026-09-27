@@ -89,7 +89,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
             inputMode="search"
           />
         </label>
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]" aria-label="按等级筛选">
+        <div className="flex flex-wrap gap-2 pb-0.5" aria-label="按等级筛选">
           <button
             onClick={() => {
               setLevel("All");
@@ -111,7 +111,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
             </button>
           ))}
         </div>
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]" aria-label="按主题筛选">
+        <div className="flex flex-wrap gap-2 pb-0.5" aria-label="按主题筛选">
           <button
             onClick={() => setSection("all")}
             className={`focus-ring shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition ${section === "all" ? "border-[#F5A623] bg-[#F5A623] !text-[#343838]" : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"}`}
@@ -171,28 +171,22 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
                 </div>
               </div>
 
-              {/* 表格默认收着：一张 680px 宽的活用表摊在半屏宽的卡里只剩横向滚动条，展开再看 */}
+              {/* 表格默认收着，展开是竖排：每一行一小块，第一格当标题，其余写成「表头：内容」。
+                  原来是一张 min-w 680px 的 <table> 摊在半屏宽的卡里横向滚动；用户 2026-09-27 定全应用只许上下滑。
+                  ⚠️ 别用 <table> / <dl>：小程序的 Taro 模板没有这些标签（W14 查过 tmpl_0_* not found），也别用 space-y（WXSS 丢兄弟选择器）。 */}
               {rule.tables?.map((table) => (
                 <Disclosure key={table.title} className="mt-3 rounded-xl border border-white/10 bg-[#373b3b] p-2.5" summaryClassName="focus-ring cursor-pointer text-[13px] font-bold text-[#81D8CF]" summary={table.title}>
-                  <div className="mt-2 overflow-x-auto rounded-lg border border-white/10">
-                    <table className="min-w-[680px] w-full border-collapse text-left text-xs leading-5 text-white/78">
-                      <thead className="bg-white/8 text-white/90">
-                        <tr>
-                          {table.headers.map((header) => (
-                            <th key={header} className="border-b border-white/10 px-3 py-2 font-bold">{header}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {table.rows.map((row, rowIndex) => (
-                          <tr key={`${table.title}-${rowIndex}`} className="align-top odd:bg-white/[0.03]">
-                            {row.map((cell, cellIndex) => (
-                              <td key={`${rowIndex}-${cellIndex}`} className="border-b border-white/8 px-3 py-2 last:border-b-0">{cell}</td>
-                            ))}
-                          </tr>
+                  <div className="mt-2 flex flex-col gap-2">
+                    {table.rows.map((row, rowIndex) => (
+                      <div key={`${table.title}-${rowIndex}`} className="rounded-lg border border-white/10 px-3 py-2 text-xs leading-5 text-white/78">
+                        <p className="font-bold text-white/90">{row[0]}</p>
+                        {row.slice(1).map((cell, cellIndex) => (
+                          <p key={cellIndex} className="mt-0.5">
+                            <span className="text-white/50">{table.headers[cellIndex + 1]}：</span>{cell}
+                          </p>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    ))}
                   </div>
                 </Disclosure>
               ))}
