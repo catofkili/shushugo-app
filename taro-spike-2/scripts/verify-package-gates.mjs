@@ -29,7 +29,8 @@ const allowedCoreDuplicates = {
   'frontend/src/lib/study-totals.ts': 'Study totals are queried from the shared database on demand; query results are not cached.',
   'frontend/src/lib/grammar-numbering.ts': 'Ordinal maps are derived only from bundled grammar records and are safe package-local content caches.',
   'frontend/src/lib/yield-to-paint.ts': 'The helper schedules a paint yield and retains no state.',
-  'frontend/src/lib/grammarNotes.ts': 'Notes are read from and written to app-wide localStorage on every call; this module has no in-memory note cache.'
+  'frontend/src/lib/grammarNotes.ts': 'Notes are read from and written to app-wide localStorage on every call; this module has no in-memory note cache.',
+  'frontend/src/lib/study-focus.ts': 'Each isolated route package mounts only its own study source; partial baseline windows are persisted on page exit, countdown state is deliberately discarded, and rewards are guarded by unique database ledger keys.'
 };
 // Route components can appear in lazy tabs and route subpackages after splitting;
 // accept only this reviewed file set and fail on new or stale duplicate entries.

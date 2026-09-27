@@ -6,7 +6,7 @@
  * 奖励和商店价格同时乘 10，保持攒到首件主题所需的学习时间不变。
  */
 import { getDatabase } from "./database";
-import { firstValue, persistSoon, rowsFor, getState, setState, today } from "./database/db-utils";
+import { firstValue, persistSoon, rowsFor, getState, setState, studyDate, today } from "./database/db-utils";
 import { stage1ProgressCounts } from "./word-api/stage1";
 import { readEncoreLog } from "./review-budget";
 import { computeStreak, shiftDay } from "./zoo-streak";
@@ -26,6 +26,8 @@ export const YUZU = {
   /** 加餐,一天一次 */
   encore: 50,
   achievement: 200,
+  /** 每个学习日的十分钟倒计时档位。退出、换学习入口不能重置。 */
+  focus: [100, 50, 25, 23, 12, 6, 3, 2, 1],
   /** 补签:30 天内第 1/2/3 张,再往后按最后一档 */
   repair: [500, 1000, 2000],
   /** 只补 7 天以内的洞 */
@@ -86,8 +88,43 @@ export const yuzuBalance = (): number => {
 /** 今天记了哪几笔,商店页头部列出来 */
 export const yuzuToday = () => {
   ensureYuzuScale();
-  return rowsFor("SELECT kind, key, amount FROM yuzu_ledger WHERE day = ? ORDER BY rowid", [today()])
+  return rowsFor("SELECT kind, key, amount FROM yuzu_ledger WHERE day = ? AND kind != 'focus_claim' ORDER BY rowid", [today()])
     .map((row) => ({ kind: String(row.kind), key: String(row.key), amount: Number(row.amount) }));
+};
+
+/** 档位由已到账账本决定，凌晨四点换学习日。零值的 claim 只用于幂等。 */
+export const nextStudyFocusYuzu = (day = today()): number => {
+  const count = firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'focus' AND day = ?", [day], 0);
+  return YUZU.focus[count] ?? 0;
+};
+
+/** 仅休息页的「继续」调用。完整窗口只是凭据，本身不会自动结算奖励。 */
+export const claimStudyFocusYuzu = (windowId: string): number => {
+  ensureYuzuScale();
+  const window = rowsFor("SELECT completed_at FROM study_focus_windows WHERE id = ? AND kind = 'focus' AND active_ms = 600000", [windowId])[0];
+  if (!window || firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'focus_claim' AND key = ?", [windowId], 0)) return 0;
+  const day = studyDate(new Date(Number(window.completed_at)));
+  const db = getDatabase();
+  let reward = 0;
+  db.run("SAVEPOINT claim_study_focus");
+  try {
+    const tier = firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'focus' AND day = ?", [day], 0);
+    const amount = YUZU.focus[tier] ?? 0;
+    if (amount > 0) {
+      // 日 + 档位是稳定身份。两台设备同时领同一档时同步取并集，不会翻倍。
+      db.run("INSERT OR IGNORE INTO yuzu_ledger(kind, key, amount, day) VALUES ('focus', ?, ?, ?)", [`${day}:${tier + 1}`, amount, day]);
+      if (firstValue<number>("SELECT changes()", [], 0)) reward = amount;
+    }
+    db.run("INSERT OR IGNORE INTO yuzu_ledger(kind, key, amount, day) VALUES ('focus_claim', ?, 0, ?)", [windowId, day]);
+    db.run("RELEASE claim_study_focus");
+  } catch (error) {
+    db.run("ROLLBACK TO claim_study_focus");
+    db.run("RELEASE claim_study_focus");
+    throw error;
+  }
+  persistSoon();
+  if (reward) emit();
+  return reward;
 };
 
 /**

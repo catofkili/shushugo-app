@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { addWordStudySeconds } from "./word-api";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction } from "./study-clock";
+import { enterStudyFocus, leaveStudyFocus, recordStudyFocusTime } from "./study-focus";
+import { useStudyActivity } from "../hooks/useStudyActivity";
 
 const visible = () => typeof document === "undefined" || document.visibilityState === "visible";
 
@@ -9,17 +11,22 @@ const visible = () => typeof document === "undefined" || document.visibilityStat
  * WordStudy 自己已有同一规则，这个 hook 用在语法考题和快速学习页，避免
  * “都是学习但只有某个页面有时长”的断层。
  */
-export function useStudyTimer(enabled: boolean): void {
-  const clockRef = useRef(createStudyClock(Date.now()) as ReturnType<typeof createStudyClock> & { enabled?: boolean });
+export function useStudyTimer(enabled: boolean, focusSource?: string): void {
+  const clockRef = useRef<(ReturnType<typeof createStudyClock> & { enabled?: boolean }) | null>(null);
 
   const noteInteraction = useCallback(() => {
-    clockRef.current = noteStudyInteraction(clockRef.current, Date.now(), { visible: visible() });
+    const now = Date.now();
+    clockRef.current = noteStudyInteraction(clockRef.current ?? createStudyClock(now), now, { visible: visible() });
   }, []);
 
   const flush = useCallback((visibleOverride?: boolean) => {
     if (!enabled) return;
     const now = Date.now();
-    const accrued = accrueStudyTime(clockRef.current, now, { visible: visibleOverride ?? visible() });
+    const clock = clockRef.current ?? createStudyClock(now);
+    const previousPendingMs = clock.pendingMs;
+    const accrued = accrueStudyTime(clock, now, { visible: visibleOverride ?? visible() });
+    const activeMs = Math.max(0, accrued.pendingMs - previousPendingMs);
+    if (focusSource && activeMs > 0) recordStudyFocusTime(activeMs, now);
     if (accrued.pendingMs < 1000) {
       clockRef.current = accrued;
       return;
@@ -33,7 +40,19 @@ export function useStudyTimer(enabled: boolean): void {
       // interval retries the same seconds and any newly accrued time.
       clockRef.current = accrued;
     }
-  }, [enabled]);
+  }, [enabled, focusSource]);
+
+  useStudyActivity({
+    onInteraction: noteInteraction,
+    onVisibilityChange: (isVisible) => {
+      flush(isVisible ? undefined : true);
+      if (isVisible) noteInteraction();
+    },
+    onLeave: () => {
+      flush();
+      if (focusSource) leaveStudyFocus();
+    }
+  });
 
   useEffect(() => {
     if (!enabled) {
@@ -43,24 +62,15 @@ export function useStudyTimer(enabled: boolean): void {
       clockRef.current.enabled = false;
       return undefined;
     }
-    if (!clockRef.current.enabled) clockRef.current = createStudyClock(Date.now());
-    clockRef.current.enabled = true;
+    if (focusSource) enterStudyFocus(focusSource);
+    if (!clockRef.current?.enabled) clockRef.current = createStudyClock(Date.now());
+    clockRef.current!.enabled = true;
     noteInteraction();
-    const events = ["pointerdown", "keydown", "wheel", "scroll", "touchmove"] as const;
-    events.forEach((name) => document.addEventListener(name, noteInteraction, { capture: true, passive: true }));
     const interval = window.setInterval(flush, 15_000);
-    const handleVisibility = () => {
-      // visibilityState is already "hidden" when this event fires. Force the
-      // transition's previous foreground tail to be accrued before pausing.
-      flush(document.visibilityState === "hidden" ? true : undefined);
-      if (document.visibilityState === "visible") noteInteraction();
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
     return () => {
       window.clearInterval(interval);
-      events.forEach((name) => document.removeEventListener(name, noteInteraction, { capture: true }));
-      document.removeEventListener("visibilitychange", handleVisibility);
       flush();
+      if (focusSource) leaveStudyFocus();
     };
-  }, [enabled, flush, noteInteraction]);
+  }, [enabled, flush, noteInteraction, focusSource]);
 }

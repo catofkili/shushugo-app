@@ -1686,3 +1686,26 @@
 .zoo-pro-tag{display:inline-block;margin-left:6px;padding:0 6px;border:1px solid color-mix(in srgb,var(--zoo-primary) 45%,transparent);border-radius:999px;font-size:11px;font-weight:700;line-height:16px;color:var(--zoo-primary-deep);vertical-align:2px}
 /* 快速复习整页：序号 / 词性 / 敬语标原来 8~9px，是正文不是微缩件，拉回最小档 11px */
 .quick-study-page-shell .quick-study-index,.quick-study-page-shell .quick-study-meaning small,.quick-study-page-shell .quick-study-honorific{font-size:11px}
+
+/* 十分钟倒计时：入口留在学习工具行，休息和开场说明覆盖整页，避免误触下一张。 */
+.study-focus-start,.study-focus-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:none;border:1px solid color-mix(in srgb,var(--ds-primary) 40%,transparent);border-radius:999px;padding:7px 10px;background:color-mix(in srgb,var(--ds-primary) 12%,transparent);color:var(--ds-ink);font-size:12px;font-weight:750;white-space:nowrap}
+.study-focus-start:disabled{opacity:.45}
+.study-focus-chip{color:var(--ds-primary-deep,#7a4a20);font-variant-numeric:tabular-nums}
+.study-focus-chip small{font-size:10px}
+.study-focus-veil{position:fixed;z-index:10000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(22,27,25,.76);backdrop-filter:blur(8px)}
+.study-focus-dialog{width:min(100%,520px);max-height:min(90dvh,760px);overflow:visible;border:1px solid var(--ds-line);border-radius:26px;padding:clamp(22px,6vw,34px);background:var(--ds-surface);color:var(--ds-ink);box-shadow:0 24px 90px rgba(0,0,0,.35)}
+.study-focus-kicker{display:flex;align-items:center;gap:7px;color:var(--ds-primary-deep,#7a4a20);font-size:12px;font-weight:800;letter-spacing:.06em}
+.study-focus-dialog h2{margin:14px 0 10px;font-size:clamp(25px,7vw,34px);line-height:1.15;font-weight:850}
+.study-focus-dialog p{margin:10px 0;color:var(--ds-muted,var(--ds-ink));font-size:14px;line-height:1.7}
+.study-focus-reward-note{font-size:20px!important;font-weight:850;color:var(--ds-primary-deep,#7a4a20)!important}
+.study-focus-tiers,.study-focus-method,.study-focus-next{font-size:11px!important;opacity:.72}
+.study-focus-lead{font-size:17px!important;line-height:1.8!important}
+.study-focus-lead b{font-size:21px;color:var(--ds-primary-deep,#7a4a20)}
+.study-focus-comparison{border-radius:16px;padding:13px 15px;background:color-mix(in srgb,var(--ds-primary) 10%,var(--ds-surface));font-weight:700}
+.study-focus-actions{display:flex;gap:10px;margin-top:22px}
+.study-focus-actions button{min-height:48px;flex:1;border-radius:15px;padding:10px 13px;font-size:14px;font-weight:800;line-height:1.35}
+.study-focus-secondary{border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}
+.study-focus-primary{background:var(--ds-primary);color:var(--ds-on-primary,#fff);box-shadow:0 6px 16px color-mix(in srgb,var(--ds-primary) 22%,transparent)}
+.study-focus-exit{display:block;margin:13px auto 0;padding:8px;color:var(--ds-muted,var(--ds-ink));font-size:12px;text-decoration:underline;text-underline-offset:3px;opacity:.8}
+.study-focus-next{display:block;margin-top:13px;text-align:center}
+@media(max-width:380px){.study-focus-actions{flex-direction:column}.study-focus-actions button{flex:auto}}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import { createPortal } from "react-dom";
 import { perfRecord } from "../lib/perf-marks";
-import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Star, StickyNote, X } from "lucide-react";
+import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Star, StickyNote, Timer, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
 import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning, addAnswerPreview, answerPreviewsFresh, startAnswerPreviews, submitWordAnswerWithPreview, takeAnswerPreview, type AnswerPreviews } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
@@ -51,6 +52,8 @@ import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
+import { continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, startStudyFocus, stopStudyFocus, STUDY_FOCUS_REWARDS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
+import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -58,6 +61,7 @@ interface WordStudyProps {
   /** 完成页：今天顽固词太多时，把这批词交给快速学习过一遍（代替加餐）。 */
   onStubbornQuickStudy?: (wordIds: number[]) => void;
   onOpenDistinctionQuiz?: () => void;
+  onExitToHome?: () => void;
 }
 
 /* ——— 甩卡评分:左=忘记(Again) / 右=认识(Good) ——— */
@@ -193,7 +197,7 @@ const pageVisible = () => document.visibilityState === "visible";
 const RELIEF_DWELL_MS = 210;
 const RELIEF_LEAVE_MS = 120;
 
-export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStubbornQuickStudy, onOpenDistinctionQuiz }: WordStudyProps) => {
+export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStubbornQuickStudy, onOpenDistinctionQuiz, onExitToHome }: WordStudyProps) => {
   const { pickFolder, picker } = useFavoriteFolderPicker();
   const [card, setCard] = useState<WordCard | null>(null);
   const [unitKey, setUnitKey] = useState<string | null>(null);
@@ -257,6 +261,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [promptSaving, setPromptSaving] = useState(false);
   const [localStudySeconds, setLocalStudySeconds] = useState(0);
   const pendingStudySecondsRef = useRef(0);
+  const queuedStudySecondsRef = useRef(0);
+  const [focusSnapshot, setFocusSnapshot] = useState<StudyFocusSnapshot>(() => getStudyFocusSnapshot());
+  const focusBreakRef = useRef(false);
+  const [focusIntroOpen, setFocusIntroOpen] = useState(false);
+  useStudyBreakTabBar(focusSnapshot.status === "break" || focusIntroOpen);
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
   const [initialStudyClock] = useState(() => createStudyClock(Date.now()));
@@ -610,55 +619,107 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const studyIdleLimitMs = kanjiCard ? STUDY_IDLE_LIMIT_MS * 2 : STUDY_IDLE_LIMIT_MS;
 
   /** 结上一段的账，把攒够的整秒取出来落库(零头留着，见 study-clock.ts) */
-  const elapsedStudySeconds = useCallback((visibleOverride?: boolean) => {
-    const accrued = accrueStudyTime(studyClockRef.current, Date.now(), { visible: visibleOverride ?? pageVisible(), idleLimitMs: studyIdleLimitMs });
+  const flushActiveStudyTime = useCallback(async (visibleOverride?: boolean, forceSave = false) => {
+    if (!trackingActiveRef.current || focusBreakRef.current) return null;
+    const now = Date.now();
+    const previousPendingMs = studyClockRef.current.pendingMs;
+    const accrued = accrueStudyTime(studyClockRef.current, now, { visible: visibleOverride ?? pageVisible(), idleLimitMs: studyIdleLimitMs });
+    const activeMs = Math.max(0, accrued.pendingMs - previousPendingMs);
     const { seconds, state } = drainStudySeconds(accrued);
     studyClockRef.current = state;
-    return seconds;
-  }, [studyIdleLimitMs]);
+    queuedStudySecondsRef.current += seconds;
+    if (activeMs > 0) {
+      const next = recordStudyFocusTime(activeMs, now);
+      setFocusSnapshot(next);
+      if (next.status === "break") {
+        focusBreakRef.current = true;
+        trackingActiveRef.current = false;
+        studyClockRef.current = createStudyClock(now);
+        const saved = await sendStudySeconds(queuedStudySecondsRef.current, now);
+        queuedStudySecondsRef.current = 0;
+        return saved;
+      }
+    }
+    if (forceSave || queuedStudySecondsRef.current >= 15) {
+      const queued = queuedStudySecondsRef.current;
+      queuedStudySecondsRef.current = 0;
+      return sendStudySeconds(queued, now);
+    }
+    return null;
+  }, [sendStudySeconds, studyIdleLimitMs]);
+  const flushActiveStudyTimeRef = useRef(flushActiveStudyTime);
+  useEffect(() => { flushActiveStudyTimeRef.current = flushActiveStudyTime; }, [flushActiveStudyTime]);
 
   useEffect(() => {
     trackingActiveRef.current = Boolean(card?.id || kanjiCard);
+    if (focusSnapshot.status !== "break") focusBreakRef.current = false;
     // 换卡本身就是一次交互(刚点过评分)，顺手把上一段结掉。
-    studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible(), idleLimitMs: studyIdleLimitMs });
-  }, [card?.id, kanjiCard, studyIdleLimitMs, unitKey]);
+    if (trackingActiveRef.current && !focusBreakRef.current) studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible(), idleLimitMs: studyIdleLimitMs });
+  }, [card?.id, kanjiCard, studyIdleLimitMs, unitKey, focusSnapshot.status]);
 
   useEffect(() => {
-    const flushStudyTime = async () => {
-      if (!trackingActiveRef.current) return;
-      await sendStudySeconds(elapsedStudySeconds());
-    };
-
-    // 「有没有在操作」的口径:点、按键、滚、划都算,**鼠标移动不算** ——
-    // 鼠标扫过、页面轻微抖一下都会误判成还在学。
-    const handleInteraction = () => {
-      studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible(), idleLimitMs: studyIdleLimitMs });
-    };
-    const interactionEvents = ["pointerdown", "keydown", "wheel", "scroll", "touchmove"] as const;
-    interactionEvents.forEach((name) => {
-      // scroll 只在实际滚动的那个容器上冒不上来，得用捕获;全部 passive,不挡手势。
-      document.addEventListener(name, handleInteraction, { capture: true, passive: true });
-    });
-
-    const interval = window.setInterval(flushStudyTime, 15000);
-    const handleVisibility = () => {
-      if (document.visibilityState === "hidden") {
-        void sendStudySeconds(elapsedStudySeconds(true));
-      } else {
-        // 切回来的那一刻算一次交互:人刚回到这张卡上。
-        handleInteraction();
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
+    enterStudyFocus("word-study");
+    const interval = window.setInterval(() => { void flushActiveStudyTimeRef.current(); }, 1000);
     return () => {
       window.clearInterval(interval);
-      interactionEvents.forEach((name) => {
-        document.removeEventListener(name, handleInteraction, { capture: true });
-      });
-      document.removeEventListener("visibilitychange", handleVisibility);
-      flushStudyTime();
+      void flushActiveStudyTimeRef.current(undefined, true);
+      leaveStudyFocus();
     };
-  }, [elapsedStudySeconds, sendStudySeconds, studyIdleLimitMs]);
+  }, []);
+
+  useStudyActivity({
+    onInteraction: () => {
+      if (trackingActiveRef.current && !focusBreakRef.current) studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: pageVisible(), idleLimitMs: studyIdleLimitMs });
+    },
+    onVisibilityChange: (visible) => {
+      if (!visible) void flushActiveStudyTimeRef.current(true, true);
+      else if (trackingActiveRef.current && !focusBreakRef.current) studyClockRef.current = noteStudyInteraction(studyClockRef.current, Date.now(), { visible: true, idleLimitMs: studyIdleLimitMs });
+    },
+    onLeave: () => {
+      void flushActiveStudyTimeRef.current(undefined, true);
+      leaveStudyFocus();
+    }
+  });
+
+  const answerFocusedWord = useCallback((wordId: number, answer: WordAnswer) => {
+    const next = recordStudyFocusAnswer(wordId, answer);
+    setFocusSnapshot(next);
+  }, []);
+
+  const beginFocusCountdown = () => {
+    const next = startStudyFocus();
+    focusBreakRef.current = false;
+    studyClockRef.current = createStudyClock(Date.now());
+    setFocusSnapshot(next);
+    setFocusIntroOpen(false);
+    if (card?.id || kanjiCard) trackingActiveRef.current = true;
+  };
+
+  const continueFocusCountdown = () => {
+    const earned = continueStudyFocus();
+    focusBreakRef.current = false;
+    studyClockRef.current = createStudyClock(Date.now());
+    const next = getStudyFocusSnapshot();
+    setFocusSnapshot(next);
+    if (card?.id || kanjiCard) trackingActiveRef.current = true;
+    if (earned > 0) {
+      try { settleYuzu(); } catch { /* 奖励已经入账，刷新余额失败不能拦学习 */ }
+    }
+  };
+
+  const stopFocusCountdown = () => {
+    focusBreakRef.current = false;
+    const next = stopStudyFocus();
+    setFocusSnapshot(next);
+    studyClockRef.current = createStudyClock(Date.now());
+    if (card?.id || kanjiCard) trackingActiveRef.current = true;
+  };
+
+  const exitDuringFocusBreak = () => {
+    leaveStudyFocus();
+    focusBreakRef.current = false;
+    onExitToHome?.();
+  };
 
   useEffect(() => {
     setNoteText(card?.note ?? "");
@@ -695,7 +756,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // submittingRef is synchronous, so a second tap is blocked immediately —
     // before React can re-render the `disabled`/`submitting` state — which is
     // what the `submitting` state alone could miss on a fast double-tap.
-    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewIntro) return;
+    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewIntro || focusBreakRef.current) return;
+    await flushActiveStudyTime();
+    if (focusBreakRef.current) return;
     // 刚翻面的那几十毫秒不收**手指**评分 —— 见 REVEAL_INPUT_LOCK_MS。
     // 键盘不受这道闸:那条路上「显示答案」和评分是不同的键,不存在同一个位置连击的问题,
     // 拦一下只会吃掉快手用户的合法输入。甩卡也不受:它自己要先飞 240ms,早就过去了。
@@ -748,6 +811,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       pendingAnswerRef.current = () => {
         try {
           const data = submitWordAnswerWithPreview(answeredCardId, answer, preview, sessionOptions);
+          answerFocusedWord(answeredCardId, answer);
           setStats(data.stats);
           setCanUndo(Boolean(data.canUndo));
           playCountdownFeedbackIfNeeded(beforeStats, data.stats);
@@ -771,13 +835,14 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       const data = answeredUnitKey && phase === "kanji"
         ? submitKanjiUnitAnswer(answeredUnitKey, answer)
         : submitWordAnswer(answeredCardId, answer, sessionOptions);
+      answerFocusedWord(answeredCardId, answer);
       pushUndoKind("word");
       // 这一下算数了才谈得上插播；下面各条分支照常把下一张单词卡排好摆在语法卡底下。
       maybeGrammarTurn();
       let nextStats = data.stats;
       if (!data.card && trackingActiveRef.current) {
+        const trackedStats = await flushActiveStudyTime(undefined, true);
         trackingActiveRef.current = false;
-        const trackedStats = await sendStudySeconds(elapsedStudySeconds());
         if (trackedStats) nextStats = trackedStats;
       }
 
@@ -943,7 +1008,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
       // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
-  }, [card, dailyReviewActive, dailyReviewIntro, elapsedStudySeconds, flushPendingAnswer, initialMode, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sendStudySeconds, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
+  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, flushActiveStudyTime, flushPendingAnswer, initialMode, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
 
   useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
 
@@ -1016,6 +1081,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // Keep browser/app shortcuts and text editing untouched.
       if (
         event.defaultPrevented
+        || focusBreakRef.current
         || event.repeat
         || event.ctrlKey
         || event.metaKey
@@ -1084,6 +1150,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setError("");
     try {
       const data = undoLastWordAnswer(sessionOptions);
+      if (data.card) setFocusSnapshot(undoStudyFocusAnswer(data.card.id));
       popUndoKind();
       // ⚠️ 语法插播是「刚才那个单词」带出来的（submitAnswer 里先压栈再 maybeGrammarTurn），
       // 所以语法卡摆在屏幕上时，栈顶那一笔一定是单词。不把插播收回去的话，撤销撤的是
@@ -1441,6 +1508,56 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     && isPlanMode(initialMode);
 
   // 混合学习的汉字 / 辨析插播，和语法卡同一个位置、同一颗撤销按钮，只有颜色和内容不同。
+  if (focusSnapshot.status === "break" || focusIntroOpen) {
+    const summary = focusSnapshot.summary;
+    const baseline = summary?.baselineRemembered;
+    const remembered = summary?.remembered ?? 0;
+    const reward = focusSnapshot.nextReward;
+    return createPortal(
+      <ScrollArea className="study-focus-veil">
+        <section className="study-focus-dialog" role="dialog" aria-modal="true" aria-labelledby="study-focus-title">
+          <span className="study-focus-kicker"><Timer size={16} /> 十分钟专注</span>
+          <h2 id="study-focus-title">{focusIntroOpen ? "开启倒计时学习？" : "休息一下"}</h2>
+          {focusIntroOpen ? (
+            <>
+              <p>每专注 10 分钟会暂停一次。离开背词页，本轮额外柚子作废；只有完成后点“继续”才会领取。</p>
+              <p className="study-focus-reward-note">全程倒计时可得超过 200 柚子</p>
+              <p className="study-focus-tiers">奖励依次为：{STUDY_FOCUS_REWARDS.join("、")}，每天最多九段。</p>
+              <div className="study-focus-actions">
+                <button className="study-focus-secondary" onClick={() => setFocusIntroOpen(false)}>暂不</button>
+                <button className="study-focus-primary" onClick={beginFocusCountdown}>开始倒计时</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="study-focus-lead">这 10 分钟背了 <b>{summary?.words ?? 0}</b> 个词，记住 <b>{remembered}</b> 个，模糊 <b>{summary?.fuzzy ?? 0}</b> 个，没记住 <b>{summary?.forgotten ?? 0}</b> 个。</p>
+              {summary?.baselineWindows ? (
+                <p className="study-focus-comparison">
+                  之前 {summary.baselineWindows} 个完整十分钟窗口平均记住 {baseline?.toFixed(1)} 个词；
+                  {summary.rememberedDelta! > 0
+                    ? `这次多记 ${summary.rememberedDelta!.toFixed(1)} 个${summary.efficiencyChangePercent === null ? "。之前平均是 0，无法计算百分比。" : `，效率提升 ${summary.efficiencyChangePercent.toFixed(0)}%。`}`
+                    : summary.rememberedDelta === 0
+                      ? "这次和之前持平，继续加油！"
+                      : `这次少记 ${Math.abs(summary.rememberedDelta ?? 0).toFixed(1)} 个，继续加油！`}
+                </p>
+              ) : <p className="study-focus-comparison">这是第一次完整记录，下一次就能和这次比较。</p>}
+              <p className="study-focus-method">记忆情况按每个词本轮最后一次自评统计，不代表长期保持率。</p>
+              <div className="study-focus-actions">
+                <button className="study-focus-secondary" onClick={stopFocusCountdown}>之后不要倒计时</button>
+                <button className="study-focus-primary" onClick={continueFocusCountdown}>
+                  继续{reward > 0 ? `，领取 ${reward} 柚子` : "，今天奖励已领完"}
+                </button>
+              </div>
+              <button className="study-focus-exit" onClick={exitDuringFocusBreak}>回主页，本段奖励作废</button>
+              <span className="study-focus-next">继续后开始下一段 10:00</span>
+            </>
+          )}
+        </section>
+      </ScrollArea>,
+      document.body
+    );
+  }
+
   if (kanjiCard || matchCard) {
     const accent = kanjiCard ? KANJI_ACCENT : MATCH_ACCENT;
     return (
@@ -1571,6 +1688,17 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             <span className="shrink-0 rounded-lg bg-[#81D8CF]/20 px-2 py-1 text-xs font-bold lg:hidden">
               {shortMode}
             </span>
+          )}
+          {focusSnapshot.status === "running" ? (
+            <span className="study-focus-chip" aria-live="polite">
+              <Timer size={14} />
+              {Math.floor(focusSnapshot.remainingSeconds / 60)}:{String(focusSnapshot.remainingSeconds % 60).padStart(2, "0")}
+              {focusSnapshot.nextReward > 0 && <small> +{focusSnapshot.nextReward} 柚子</small>}
+            </span>
+          ) : (
+            <button className="study-focus-start" onClick={() => setFocusIntroOpen(true)} disabled={!card}>
+              <Timer size={14} /> 倒计时学习
+            </button>
           )}
           <button
             onClick={toggleCardFavorite}

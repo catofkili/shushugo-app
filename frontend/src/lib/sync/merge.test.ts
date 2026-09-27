@@ -60,6 +60,35 @@ beforeEach(() => {
 });
 
 describe("database snapshot merge", () => {
+  it("十分钟窗口跨设备保留，未满窗口留本机，同一天奖励档位不会合并翻倍", async () => {
+    testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    ensureUserTables();
+    ensureSyncSchema();
+    setState("study_focus_partial_windows", '{"word":{"device":"first"}}');
+    testDb.run(`INSERT INTO study_focus_windows
+      (id,kind,source,started_at,completed_at,active_ms,words,remembered,fuzzy,forgotten)
+      VALUES ('window-first','baseline','word',1000,601000,600000,10,6,1,3)`);
+    testDb.run("INSERT INTO yuzu_ledger(kind,key,amount,day) VALUES('focus','2026-09-28:1',100,'2026-09-28')");
+    const snapshot = await exportSyncSnapshot();
+    const firstDevice = testDb;
+
+    testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    ensureUserTables();
+    ensureSyncSchema();
+    setState("study_focus_partial_windows", '{"word":{"device":"second"}}');
+    testDb.run(`INSERT INTO study_focus_windows
+      (id,kind,source,started_at,completed_at,active_ms,words,remembered,fuzzy,forgotten)
+      VALUES ('window-second','baseline','word',2000,602000,600000,8,5,1,2)`);
+    testDb.run("INSERT INTO yuzu_ledger(kind,key,amount,day) VALUES('focus','2026-09-28:1',100,'2026-09-28')");
+    await mergeDatabaseBytes(snapshot);
+    await mergeDatabaseBytes(snapshot);
+    expect(rows(testDb, "SELECT id FROM study_focus_windows ORDER BY id")).toEqual([{ id: "window-first" }, { id: "window-second" }]);
+    expect(rows(testDb, "SELECT value FROM app_state WHERE key='study_focus_partial_windows'"))
+      .toEqual([{ value: '{"word":{"device":"second"}}' }]);
+    expect(rows(testDb, "SELECT SUM(amount) total FROM yuzu_ledger WHERE kind='focus'")).toEqual([{ total: 100 }]);
+    firstDevice.close();
+  });
+
   it("起点、计划额度和 FSRS 基线随账号同步到另一台设备", async () => {
     const firstDevice = testDb;
     ensureUserTables();
