@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ImageDown, Loader2, MessageCircle, Share2, Sparkles, X } from "lucide-react";
 import { Sticker } from "./CapybaraMascot";
+import { ScrollArea } from "./ScrollArea";
 import { isNativeApp, prepareWechatMomentsPost, saveImageToGallery, shareImage } from "../lib/share-image";
 
 /**
@@ -87,7 +88,7 @@ export function ShareImageSheet({ title, url, alt, blob, fileName, shareTitle, o
   };
 
   return createPortal(
-    <div className="share-sheet-backdrop" role="dialog" aria-modal="true" aria-label={title} onClick={onClose}>
+    <ScrollArea className="share-sheet-backdrop" contentClassName="share-sheet-backdrop-content" role="dialog" aria-modal="true" aria-label={title} onClick={onClose}>
       <div ref={dialogRef} className="share-sheet ds-card" onClick={(event) => event.stopPropagation()}>
         <div className="flex items-center gap-2">
           <Sticker name="mood-happy" size={44} className="-my-1 shrink-0" />
@@ -124,7 +125,7 @@ export function ShareImageSheet({ title, url, alt, blob, fileName, shareTitle, o
           </div>
         )}
       </div>
-    </div>,
+    </ScrollArea>,
     document.body
   );
 }

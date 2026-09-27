@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Eye, RotateCcw } from "lucide-react";
+import { ScrollArea } from "../../components/ScrollArea";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
 import type { KanjiCharCard } from "../../lib/kanji-char-cards";
 import { assignKanjiReadingPair, shuffleKanjiReadingOptions } from "../../lib/kanji-reading-usage";
@@ -61,7 +62,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
 
   return (
     <div key={card.char} style={KANJI_ACCENT} className="kanji-match-card zoo-enter dictionary-card flex h-full min-h-0 flex-col gap-2 rounded-2xl px-3 pb-2 pt-3 sm:gap-3 sm:p-6">
-      <div data-word-scrollable="true" className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-[var(--ds-line)] bg-[var(--ds-inset)] p-3 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
+      <ScrollArea className="min-h-0 flex-1 rounded-2xl border border-[var(--ds-line)] bg-[var(--ds-inset)] p-3 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
         {items.length > 0 && (
           <div className="mx-auto grid min-h-full max-w-2xl content-center">
             <div className="mb-2 flex items-center justify-between gap-3">
@@ -169,7 +170,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
             <div><p className="text-base font-bold text-[var(--ds-ink)]">先想这个字的读音</p><p className="mt-1 text-xs text-[var(--ds-ink-2)]">回想音读、训读和你认识的例词</p></div>
           </div>
         ) : null}
-      </div>
+      </ScrollArea>
 
       <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
         {!revealed ? (

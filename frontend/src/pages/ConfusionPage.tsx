@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, Search, X } from "lucide-react";
+import { ScrollArea } from "../components/ScrollArea";
 import {
   confusionGroups,
   CONFUSION_TYPES,
@@ -294,7 +295,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
           整个容器(z:auto)都排在 tabbar(z:9999)下面,「已掌握」按钮点不到。 */}
       {open && createPortal(
         <div className="cf-overlay" onClick={() => setOpenKey(null)}>
-          <div className="cf-sheet" onClick={(event) => event.stopPropagation()}>
+          <ScrollArea className="cf-sheet" contentClassName="cf-sheet-content" onClick={(event) => event.stopPropagation()}>
             <div className="cf-sheet-head">
               <span className="cf-sheet-type">
                 {(() => { const SheetIcon = TYPE_META[open.type].Icon; return <SheetIcon size={13} aria-hidden="true" />; })()}
@@ -358,7 +359,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
                 练这组
               </button>
             )}
-          </div>
+          </ScrollArea>
         </div>,
         document.body
       )}

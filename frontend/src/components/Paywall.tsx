@@ -7,6 +7,7 @@ import { claimLaunchGift, getCloudSession, refreshLaunchGiftAvailability } from 
 import { Sticker } from "./CapybaraMascot";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { getActiveElement } from "../lib/touch-adapter";
+import { ScrollArea } from "./ScrollArea";
 
 interface PaywallProps {
   feature?: FeatureId;
@@ -71,7 +72,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
   const [gift, setGift] = useState<LaunchGiftAvailability>();
   const [giftChecked, setGiftChecked] = useState(false);
   const [claiming, setClaiming] = useState(false);
-  const dialogRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [products, setProducts] = useState<StoreProduct[]>(() => getPurchaseRuntime().products);
   const [status, setStatus] = useState(getPurchaseRuntime().message);
   const [busyProduct, setBusyProduct] = useState<ProductId | null>(null);
@@ -106,7 +107,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
   useEffect(() => {
     // 可选链一路到底：Taro 的元素没有 querySelector / focus，document 上也没有 activeElement。
     const opener = getActiveElement();
-    dialogRef.current?.querySelector?.<HTMLElement>('button, [href], input, select, textarea')?.focus?.();
+    closeButtonRef.current?.focus?.();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       event.stopPropagation();
@@ -156,8 +157,8 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
 
   return (
     <div className="paywall-popover-host">
-      <section
-        ref={dialogRef}
+      <ScrollArea
+        contentClassName="paywall-popover-content"
         role="dialog"
         aria-label={copy.title}
         className="paywall-popover"
@@ -167,7 +168,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
             <Crown size={13} />
             {giftOnly ? "首月赠送会员" : "收集日 Pro"}
           </span>
-          <button type="button" onClick={onClose} aria-label="关闭会员提示"><X size={16} /></button>
+          <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="关闭会员提示"><X size={16} /></button>
         </div>
 
         {/* 小窗里也让吉祥物开口：拦你的是一只在求你的水豚，不是一行冷冰冰的「是 Pro 功能」 */}
@@ -242,7 +243,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
             <a href={APPLE_STANDARD_EULA_URL} target="_blank" rel="noreferrer">EULA</a>
           </p>
         )}
-      </section>
+      </ScrollArea>
     </div>
   );
 }

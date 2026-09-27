@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Star, StickyNote, X } from "lucide-react";
 import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
+import { ScrollArea } from "../components/ScrollArea";
 import { GrammarTermHint } from "../components/GrammarTermHint";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarKeyPointFor } from "../lib/grammar-key-points";
@@ -35,7 +36,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
   const [noteDraft, setNoteDraft] = useState("");
   const [, setNoteVersion] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
-  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [scrollToTopSignal, setScrollToTopSignal] = useState(0);
   const savedIndex = points.findIndex((item) => item.id === pointId);
   const index = savedIndex >= 0 ? savedIndex : 0;
   const point = points[index];
@@ -55,7 +56,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
 
   const scrollToCardTop = () => {
     requestAnimationFrame(() => {
-      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      setScrollToTopSignal((signal) => signal + 1);
       sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
@@ -143,7 +144,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
           </button>
         </div>
 
-        <div ref={contentRef} data-doodle-surface="immersive-card" className="relative min-h-0 flex-1 overflow-y-auto py-5">
+        <ScrollArea scrollToTopSignal={scrollToTopSignal} data-doodle-surface="immersive-card" className="relative min-h-0 flex-1 py-5">
           {(note || noteEditorOpen) && (
             <div className="mb-5 rounded-2xl border border-white/15 bg-[#373b3b] p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
@@ -201,7 +202,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
               </div>
             ))}
           </div>
-        </div>
+        </ScrollArea>
 
         <div className="grid grid-cols-[52px_1fr_52px] gap-3">
           <button onClick={() => move(-1)} disabled={index === 0} className="focus-ring grid h-14 place-items-center rounded-2xl border border-white/20 bg-[#81D8CF]/10 disabled:opacity-40">

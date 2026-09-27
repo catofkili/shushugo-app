@@ -31,7 +31,7 @@ import { UNDO_LIMIT } from "../lib/word-api/undo-stack";
 import type { WordSessionOptions } from "../lib/study-types";
 import { DistinctionSheet } from "../components/DistinctionSheet";
 import { Paywall } from "../components/Paywall";
-import { WordStudyScrollArea } from "../components/WordStudyScrollArea";
+import { ScrollArea } from "../components/ScrollArea";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { canUseFeature } from "../lib/entitlements";
 import { GrammarCard, QUIZ_ACCENT_AMBER } from "../features/grammar-quiz/GrammarCard";
@@ -1617,8 +1617,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         </div>}
 
         {noteMemoryOpen && card?.note && (
-          <div
-            className="word-note-popover note-memory-card word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-2xl backdrop-blur-md"
+          <ScrollArea
+            className="word-note-popover note-memory-card word-note-float rounded-2xl border p-4 text-left shadow-2xl backdrop-blur-md"
             style={{ zIndex: activePopover === "noteMemory" ? 50 : 35 }}
           >
             <div className="mb-3 flex items-start justify-between gap-3">
@@ -1638,12 +1638,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               </button>
             </div>
             <p className="whitespace-pre-wrap text-sm leading-7 text-white/88">{card.note}</p>
-          </div>
+          </ScrollArea>
         )}
 
         {noteEditorOpen && card && (
-          <div
-            className="word-note-popover word-note-float overflow-y-auto rounded-2xl border p-4 text-left shadow-lg"
+          <ScrollArea
+            className="word-note-popover word-note-float rounded-2xl border p-4 text-left shadow-lg"
             style={{ zIndex: activePopover === "note" ? 50 : 35 }}
           >
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -1678,12 +1678,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 {noteSaving ? "保存中" : "保存"}
               </button>
             </div>
-          </div>
+          </ScrollArea>
         )}
 
         {promptEditorOpen && card && (
-          <div
-            className="word-note-popover word-note-float prompt-edit-card overflow-y-auto rounded-2xl border p-4 text-left shadow-lg"
+          <ScrollArea
+            className="word-note-popover word-note-float prompt-edit-card rounded-2xl border p-4 text-left shadow-lg"
             style={{ zIndex: activePopover === "prompt" ? 50 : 35 }}
           >
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -1738,7 +1738,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 {promptSaving ? "保存中" : "保存"}
               </button>
             </div>
-          </div>
+          </ScrollArea>
         )}
 
         </div>
@@ -1835,7 +1835,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                     </span>
                   )}
                 </div>
-                <WordStudyScrollArea className="max-h-24 w-full overflow-y-auto px-1 sm:max-h-28">
+                <ScrollArea className="max-h-24 w-full px-1 sm:max-h-28">
                   {isUnitKanji ? (
                     <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{unitTarget?.text}</p>
                   ) : isReversePhase ? (
@@ -1848,11 +1848,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                       {card.questionMeaning || card.meaning}
                     </p>
                   )}
-                </WordStudyScrollArea>
+                </ScrollArea>
               </div>
             </div>
 
-            <WordStudyScrollArea centerContent className="grid min-h-0 flex-1 place-items-center overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(1040px,100%)] lg:p-10">
+            <ScrollArea centerContent className="grid min-h-0 flex-1 place-items-center rounded-2xl border border-white/15 bg-[#424545] p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(1040px,100%)] lg:p-10">
               {revealed ? (
                 <div className="zoo-reveal-in w-full min-w-0">
                   {isReversePhase ? (
@@ -2043,7 +2043,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                   <p className="mt-3 text-sm text-white/55">{isReversePhase ? "先回忆中文释义" : "先回忆假名和汉字"}</p>
                 </div>
               )}
-            </WordStudyScrollArea>
+            </ScrollArea>
 
             <div className="relative h-16 lg:mx-auto lg:w-[min(900px,100%)]">
               {reliefActive ? (

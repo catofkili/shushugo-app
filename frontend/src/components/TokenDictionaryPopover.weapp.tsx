@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Text, View } from "@tarojs/components";
+import { ScrollArea } from "./ScrollArea";
 import { lookupTokenEntries, type TokenDictionaryEntry } from "../lib/token-dictionary";
 import { describeConjugation, type ConjugationExplanation } from "../lib/conjugation-explanation";
 import { addWordToTodayEncore } from "../lib/word-api";
@@ -63,7 +64,7 @@ export const TokenDictionaryPopover = ({
     <View className={`jp-token jp-token-weapp${open ? " jp-token-open" : ""}`} onClick={openDictionary}>{children}</View>
     {open && <>
       <View className="token-dictionary-backdrop" onClick={close} />
-      <View className="token-dictionary-sheet" onClick={(event) => event.stopPropagation()} catchMove>
+      <ScrollArea className="token-dictionary-sheet" onClick={(event) => event.stopPropagation()} catchMove>
         <View className="token-dictionary-sheet-grabber" />
         <View className="token-dictionary-heading">
           <View className="min-w-0">
@@ -116,7 +117,7 @@ export const TokenDictionaryPopover = ({
           </View>
           {lookupTokenEntries(boundary.text, reading, 4, boundary.lemma, safeMorphs(boundary.morphs)).length > 1 && <Text className="mt-2 block text-[11px] font-semibold opacity-65">另有多条同形词，可在词典搜索中查看。</Text>}
         </>}
-      </View>
+      </ScrollArea>
     </>}
   </>;
 };

@@ -1,5 +1,6 @@
 import { useEffect, type CSSProperties } from "react";
 import { Eye } from "lucide-react";
+import { ScrollArea } from "../../components/ScrollArea";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
 import type { MatchingCard } from "../../lib/confusion-cards";
 import type { WordAnswer } from "../../types/vocabulary";
@@ -43,7 +44,7 @@ export const ConfusionCardView = ({ card, revealed, onReveal, onAnswer }: Props)
         <p className="mt-1 text-sm text-white/60">{revealed ? "按刚才回想的准确程度评分" : "先回想这组词的区别，再翻面核对"}</p>
       </div>
 
-      <div data-word-scrollable="true" className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/15 bg-[#424545] p-4 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
+      <ScrollArea className="min-h-0 flex-1 rounded-2xl border border-white/15 bg-[#424545] p-4 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
         {!revealed ? (
           <div className="mx-auto flex min-h-full max-w-2xl flex-col justify-center py-4 text-center">
             <p className="text-xs font-bold tracking-[0.16em] text-white/45">先回想，再翻面</p>
@@ -76,7 +77,7 @@ export const ConfusionCardView = ({ card, revealed, onReveal, onAnswer }: Props)
             </div>
           </div>
         )}
-      </div>
+      </ScrollArea>
 
       <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
         {!revealed ? (

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MascotSay } from "./MascotSay";
+import { ScrollArea } from "./ScrollArea";
 import { submitFeedback } from "../lib/feedback";
 
 export function FeedbackComposer({ onClose }: { onClose: () => void }) {
@@ -23,11 +24,11 @@ export function FeedbackComposer({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[10003] flex items-end bg-black/55" role="presentation" onClick={onClose}>
-      <section
+      <ScrollArea
         role="dialog"
         aria-modal="true"
         aria-labelledby="feedback-title"
-        className="max-h-[88vh] w-full overflow-y-auto rounded-t-[1.75rem] bg-[var(--ds-surface)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-5 text-[var(--ds-ink)] shadow-2xl sm:mx-auto sm:max-w-xl sm:rounded-[1.75rem] sm:mb-5"
+        className="max-h-[88vh] w-full rounded-t-[1.75rem] bg-[var(--ds-surface)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-5 text-[var(--ds-ink)] shadow-2xl sm:mx-auto sm:max-w-xl sm:rounded-[1.75rem] sm:mb-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--ds-line)] sm:hidden" />
@@ -77,7 +78,7 @@ export function FeedbackComposer({ onClose }: { onClose: () => void }) {
             </button>
           </>
         )}
-      </section>
+      </ScrollArea>
     </div>
   );
 }

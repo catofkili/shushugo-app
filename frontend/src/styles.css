@@ -58,7 +58,6 @@
   width: min(640px, calc(100vw - 24px));
   max-height: min(72vh, 520px);
   transform: translateX(-50%);
-  overflow-y: auto;
   border: 1px solid var(--ds-line);
   border-radius: 20px;
   padding: 12px 16px 16px;
@@ -2487,7 +2486,7 @@ select {
   color: rgba(255, 255, 255, 0.8);
 }
 
-.wd-body { display: flex; flex: 1; flex-direction: column; gap: 14px; overflow-y: auto }
+.wd-body { display: flex; flex: 1; flex-direction: column; gap: 14px }
 .wd-section { display: flex; flex-direction: column; gap: 7px }
 .wd-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px }
 .wd-type { color: #81D8CF; font-size: 12px; font-weight: 800 }
@@ -2828,4 +2827,3 @@ select {
 .quiz-accent-btn:hover {
   background: var(--quiz-accent-strong);
 }
-

@@ -1,6 +1,7 @@
 import { Volume2 } from "lucide-react";
 import { useEffect, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { ScrollArea } from "./ScrollArea";
 import { lookupTokenEntries, type TokenDictionaryEntry } from "../lib/token-dictionary";
 import { describeConjugation, type ConjugationExplanation } from "../lib/conjugation-explanation";
 import { addWordToTodayEncore } from "../lib/word-api";
@@ -148,7 +149,7 @@ export const TokenDictionaryPopover = ({ boundary, reading, children }: TokenDic
   const popup = open && typeof document !== "undefined" ? createPortal(
     <>
       <div className="token-dictionary-backdrop" aria-hidden="true" />
-        <div
+        <ScrollArea
         className="token-dictionary-sheet"
         role="dialog"
         aria-label={`${lookupText} 词典解释`}
@@ -193,7 +194,7 @@ export const TokenDictionaryPopover = ({ boundary, reading, children }: TokenDic
         {entries.length > 1 && (
           <p className="mt-2 text-[11px] font-semibold opacity-65">另有 {entries.length - 1} 条同形词，可在词典搜索中查看。</p>
         )}
-      </div>
+      </ScrollArea>
     </>,
     document.body
   ) : null;

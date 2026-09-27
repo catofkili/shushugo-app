@@ -1,5 +1,6 @@
 import { useEffect, type CSSProperties } from "react";
 import { Eye } from "lucide-react";
+import { ScrollArea } from "../../components/ScrollArea";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { GrammarTermHint } from "../../components/GrammarTermHint";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
@@ -146,9 +147,9 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
       </div>
 
       {revealed && (
-      <div
-        data-word-scrollable="true"
-        className="grid min-h-0 flex-1 place-items-center overflow-y-auto p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]"
+      <ScrollArea
+        contentClassName="grid min-h-full place-items-center"
+        className="min-h-0 flex-1 p-4 text-center sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]"
       >
           <div className="zoo-reveal-in w-full min-w-0">
             {/* 答案上半：接续（题面 `～` 上标的只是它的头一段） */}
@@ -192,7 +193,7 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
               <p className="mt-4 text-xs text-white/40">这条你答错过 {card.forgotCount} 次</p>
             )}
           </div>
-      </div>
+      </ScrollArea>
       )}
 
       <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">

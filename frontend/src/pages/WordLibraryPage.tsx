@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { ScrollArea } from "../components/ScrollArea";
 import { AlarmClock, Check, ChevronDown, Mountain, Search, Star, X } from "lucide-react";
 import {
   DEFAULT_LIBRARY_FILTERS,
@@ -725,7 +726,7 @@ const WordDetailSheet = ({
 
   return createPortal(
     <div className="wl-overlay" onClick={onClose}>
-      <div className="wl-sheet" onClick={(event) => event.stopPropagation()}>
+      <ScrollArea className="wl-sheet" contentClassName="wl-sheet-content" onClick={(event) => event.stopPropagation()}>
         <div className="wl-sheet-head">
           <span className="wl-sheet-level">{detail.level} · {detail.pos}</span>
           <div className="wl-sheet-actions">
@@ -813,7 +814,7 @@ const WordDetailSheet = ({
         {/* 放在 wl-sheet 里面：portal 的事件仍按 React 树冒泡，
             挂在外面的话点收藏夹会撞上 wl-overlay 的 onClose 把详情关掉。 */}
         {picker}
-      </div>
+      </ScrollArea>
     </div>,
     document.body
   );

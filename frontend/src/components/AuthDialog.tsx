@@ -1,5 +1,6 @@
 import { Apple, ArrowLeft, Check, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, MessageCircle, ShieldCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { ScrollArea } from "./ScrollArea";
 import { requestAppleCredential } from "../lib/apple-auth";
 import { Capacitor } from "@capacitor/core";
 import {
@@ -270,7 +271,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6">
+        <ScrollArea className="min-h-0 flex-1 overscroll-contain px-4 py-4 sm:px-6">
           {(mode === "terms" || mode === "privacy") ? (
             <div className="space-y-4 pb-2">
               <p className="text-xs font-bold text-[#B7E38D]">生效日期：{legalDate}</p>
@@ -382,7 +383,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
               </div>
             </div>
           )}
-        </div>
+        </ScrollArea>
       </section>
     </div>
   );

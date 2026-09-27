@@ -4,6 +4,7 @@ import type { JLPTLevel } from "../types/grammar";
 import { GrammarCard } from "../features/grammar-quiz/GrammarCard";
 import { useStudyTimer } from "../lib/useStudyTimer";
 import { Sticker } from "../components/CapybaraMascot";
+import { ScrollArea } from "../components/ScrollArea";
 import {
   extendGrammarQuizPlan,
   getGrammarQuizSession,
@@ -143,7 +144,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
           <p className="mt-1 text-xs text-white/45">
             错得最多的排最前，没答过的排最后。
           </p>
-          <div data-word-scrollable="true" className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto">
+          <ScrollArea contentClassName="space-y-2" className="mt-3 min-h-0 flex-1 space-y-2">
             {ranking.map((row) => (
               <div
                 key={row.id}
@@ -165,7 +166,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
                 </div>
               </div>
             ))}
-          </div>
+          </ScrollArea>
         </div>
       ) : card ? (
         <GrammarCard

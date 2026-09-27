@@ -9,6 +9,7 @@ import { requestAppleCredential } from "../lib/apple-auth";
 import { isWechatAppLoginAvailable, requestWechatAppCode } from "../lib/wechat-auth";
 import { PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_TITLE } from "../lib/privacy-policy-content";
 import { USER_AGREEMENT_SECTIONS, USER_AGREEMENT_TITLE } from "../lib/user-agreement-content";
+import { ScrollArea } from "../components/ScrollArea";
 import { confirmDialog } from "../lib/platform-dialogs";
 
 interface AccountSecurityProps {
@@ -345,7 +346,7 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
         </div>
       )}
 
-      {legalOpen && <div className="fixed inset-0 z-[10002] overflow-y-auto bg-[#303730] p-5" role="dialog" aria-modal="true" aria-label={legalOpen === "terms" ? USER_AGREEMENT_TITLE : PRIVACY_POLICY_TITLE}><button onClick={() => setLegalOpen(null)} className="mb-4 rounded-xl border border-white/20 px-3 py-2 text-sm text-white">返回</button>{(legalOpen === "terms" ? USER_AGREEMENT_SECTIONS : PRIVACY_POLICY_SECTIONS).map((section) => <section key={section.title} className="mb-3 rounded-2xl border border-white/10 bg-white/5 p-4"><h3 className="text-sm font-bold text-white">{section.title}</h3>{section.body.map((line) => <p key={line} className="mt-2 text-sm leading-6 text-white/65">{line}</p>)}</section>)}</div>}
+      {legalOpen && <ScrollArea className="weapp-account-legal fixed inset-0 z-[10002] bg-[#303730] p-5" role="dialog" aria-modal="true" aria-label={legalOpen === "terms" ? USER_AGREEMENT_TITLE : PRIVACY_POLICY_TITLE}><button onClick={() => setLegalOpen(null)} className="mb-4 rounded-xl border border-white/20 px-3 py-2 text-sm text-white">返回</button>{(legalOpen === "terms" ? USER_AGREEMENT_SECTIONS : PRIVACY_POLICY_SECTIONS).map((section) => <section key={section.title} className="mb-3 rounded-2xl border border-white/10 bg-white/5 p-4"><h3 className="text-sm font-bold text-white">{section.title}</h3>{section.body.map((line) => <p key={line} className="mt-2 text-sm leading-6 text-white/65">{line}</p>)}</section>)}</ScrollArea>}
 
       {showAccountPassword && (
         <div className="mb-4 space-y-3 rounded-2xl border border-white/15 bg-[#464949] p-4">
