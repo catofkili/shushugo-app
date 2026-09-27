@@ -29,5 +29,7 @@ describe("diagnostics allowlist", () => {
     expect(snapshot).not.toContain("openid-secret-123");
     expect(snapshot).not.toContain("unique-device-456");
     expect(snapshot).toContain("[email]");
+    expect(collectDiagnostics().appVersion).toBe(__APP_VERSION__);
+    expect(collectDiagnostics().route).toBe("profile");
   });
 });

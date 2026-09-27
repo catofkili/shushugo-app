@@ -141,6 +141,24 @@ README 的 CloudBase 部署说明不能替代对目标环境的核验。上线�
 | 原生源码保留 | Taro 直接复用 wechat-miniprogram/src/config.js、runtime/cloud.js、runtime/wx-promise.js、runtime/text-decoder.js、vendor/sql-wasm.js 与 vendor/fflate.umd.js；也复用 scripts/shared/shims-map、polyfill、部分 content/features 数据、CloudBase api 云函数。配置路径见 frontend/src/lib/{speech,notifications}.weapp.ts、taro-spike-2/src/platform/{fetch,sql-js}.weapp.cjs 与 taro-spike-2/config/index.js。runtime/sqlite.js 本轮静态依赖搜索未发现 Taro 引用；仍属于原生运行时代码，本次不删除。 |
 | 可停用部分 | 可在 Taro 切换稳定且验收后评估原生 pages 与 WXML/WXSS 的维护/发布，但不是本次任务；不删除、不改名，也不影响原生测试。 |
 
+### W23 启动模式补充与上传步骤（2026-09-27）
+
+本节补充 W23 的代码与静态配置结果；上面的 W19 审计记录保留为当时的观察快照。这里没有查询线上 Worker / CloudBase，没有上传或提审；普通预览码生成情况见上传步骤第 5 项。
+
+- `taro-spike-2/src/platform/release-config.weapp.cjs` 保留 `purchase=false` 与 `reminders=false`。原 `team=false` 没有运行时消费者，W23 已删除这个无效字段；组队页面和 Worker 调用仍存在，不能据此声称组队已下线或后端已验收。
+- `purchase=false` 的 Taro 微信版现在只呈现首月赠送流程：活动开放时未登录按钮进入现有微信登录，登录后自动尝试领取；已启用会员显示到期日；Worker 明确返回 `open=false`（包括未配置或过期领取截止时间）时显示“首月赠送活动已结束”。购买方案、购买恢复、兑换码入口在此启动模式下隐藏。网页和 iOS 的购买判断仍为关闭状态，不读取此微信专用开关。
+- 项目静态配置为 `projectname=shushugo`、`description=收集日（ShuShuGo）日语学习小程序`、`miniprogramRoot=dist/`。开发者工具尚未通过重新登录门槛，因此没有确认这些字段在 IDE 中的显示，也没有进行模拟器运行验收。
+- W23 最终 `npm run build:weapp` 的 11 个包均通过 1,900,000 B 闸门；主包 1,897,481 B，仅余 2,519 B。每次更改后都必须重建并复核包体，不能把本次数字当成后续版本的余量保证。
+- 上次记录和 W23 任务简报中的最近开发版号是 `0.2.2`，但必须在上传前重新查看当前小程序后台 / 开发者工具版本历史。只有确认当前最近开发版仍为 `0.2.2` 时才使用 `0.2.3`；`taro-spike-2/package.json` 的 `0.0.0` 不是上传版本号依据。
+
+#### 上传步骤（本轮未执行）
+
+1. 先让微信开发者工具恢复登录。只打开当前分支的 `/private/tmp/shushugo-w23-launch-mode/taro-spike-2/project.config.json` 项目，不关闭或切换用户现有的 IDE 项目窗口；确认项目根配置中的 `miniprogramRoot=dist/`。
+2. 上传前按顺序执行完整本地闸门：`frontend/` 下 `npm run check`、`npm run lint`、`npm test`；`taro-spike-2/` 下 `npm run build:weapp`、`npm test`、`npm run check:release`；`wechat-miniprogram/` 下 `npm run build-shared`、`npm run build-data`，再用已批准原因 `PARITY_EXEMPT_REASON='用户 2026-09-25 决定走路线 A（Taro，页面只保留网页一份源码），原生小程序页面停止维护、将整体替换，不再逐页配对' npm test`。Taro 构建必须在当前同一 worktree 完成；检查 build 输出与 `taro-spike-2/reports/package-gates.json`，确认上传目标是本次构建的 `taro-spike-2/dist/`，且每个包都低于 1,900,000 B。
+3. 在开发者工具的版本历史核对最近开发版号。若仍是 `0.2.2`，本次才填 `0.2.3`；版本描述按最终包含的功能写“首月会员赠送与登录领取流程优化”一类准确文字，不写已开放购买、已完成组队验收或已上线等未经证实的状态。
+4. 从这个项目窗口点“上传”，上传目录由项目配置指向的 `taro-spike-2/dist/` 决定；确认版本号、描述和备注后只上传开发版。本步骤不包含提交审核、发布或部署；本轮没有执行任何上传操作。
+5. 上传前仍需在开发者工具 / 模拟器完成 W23 的 Pro、功能触发 Paywall、“我的”三页及赠送开放、已领取、已结束三状态截图，并运行 26 页路由巡检。W23 的普通预览码已生成在 `/private/tmp/shushugo-w23-evidence/preview-qr.png`，包信息在同目录 `preview-info.json`；这只是预览，不是版本上传或提审。模拟器与自动化仍因 DevTools 要求重新登录而没有截图或 26 页零错误证据。
+
 Taro 页面采用 shared frontend TSX 与若干 .weapp 适配器。由于本轮无法运行开发者工具，没有可交付的 375×812 实机/模拟器截图，也不能证明页面在微信容器中的视觉 parity。除已知的导航栏“路线 A 试验”标题外，其余平台差异须在开发者工具恢复到指定 9591 后逐页查看；不得把本地编译通过表述成视觉验收。
 
 ## 5. 本轮实际验证与未完成项

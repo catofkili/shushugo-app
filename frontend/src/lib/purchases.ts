@@ -60,6 +60,8 @@ export const STORE_PRODUCTS: StoreProduct[] = [
   }
 ];
 
+export const isLaunchGiftOnlyRelease = (): boolean => false;
+
 let runtime: PurchaseRuntime = {
   status: "idle",
   message: "内购尚未初始化。",

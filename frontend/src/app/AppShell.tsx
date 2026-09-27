@@ -89,7 +89,7 @@ function GlobalOverlays({
   onDismissTrial,
   onViewPro
 }: Omit<AppShellProps, "context" | "children" | "className">) {
-  const { navigate, requireAccount, feedbackComposerOpen, closeFeedbackComposer } = useApp();
+  const { navigate, requireAccount, cloudSession, feedbackComposerOpen, closeFeedbackComposer } = useApp();
 
   return (
     <>
@@ -125,6 +125,7 @@ function GlobalOverlays({
             navigate("privacy-policy");
           }}
           onRequireAuth={() => requireAccount()}
+          isAuthenticated={Boolean(cloudSession.token)}
         />
       )}
       <AuthDialog open={authOpen} onClose={onCloseAuth} onAuthenticated={onAuthenticated} />

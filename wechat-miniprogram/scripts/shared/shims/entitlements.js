@@ -14,9 +14,17 @@ const PRODUCT_LABELS = {
   pro_trial: '计划试用', pro_launch_gift: '首月赠送会员'
 };
 const productLabel = (productId) => PRODUCT_LABELS[String(productId || '').replace(/^shushugo_/, '')] || '免费版';
+const entitlementExpiryLabel = ({ productId, expiresAt }) => {
+  if (!expiresAt) return String(productId || '').replace(/^shushugo_/, '') === 'pro_lifetime' ? '长期有效' : '到期日待确认';
+  const date = new Date(expiresAt);
+  return Number.isNaN(date.getTime())
+    ? '到期日待确认'
+    : `到期日 ${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
 
 module.exports = {
   productLabel,
+  entitlementExpiryLabel,
   // 开发者强制 Pro 只在网页 dev server 里有；小程序里恒为关。
   devForcePro: () => false,
   setDevForcePro: () => undefined,

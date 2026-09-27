@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, Crown, RotateCcw, ShieldCheck, Sparkles, Ticket } from "lucide-react";
-import { EntitlementState, productLabel } from "../lib/entitlements";
+import { entitlementExpiryLabel, EntitlementState, productLabel, type LaunchGiftAvailability } from "../lib/entitlements";
 import { MascotSay } from "../components/MascotSay";
 import { Sticker } from "../components/CapybaraMascot";
-import { initializePurchases, redeemOfferCode, restorePurchases } from "../lib/purchases";
+import { initializePurchases, isLaunchGiftOnlyRelease, redeemOfferCode, restorePurchases } from "../lib/purchases";
+import { claimLaunchGift, refreshLaunchGiftAvailability } from "../lib/sync-api";
 
 interface ProPageProps {
   entitlements: EntitlementState;
+  isAuthenticated: boolean;
+  onRequireAuth: () => void;
   onBack: () => void;
   onOpenPaywall: () => void;
   onOpenPrivacy: () => void;
@@ -35,20 +38,54 @@ const rows = [
   { label: "高级专项能力", detail: "专项训练和 AI 讲解", live: false }
 ];
 
-export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: ProPageProps) {
+export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, onOpenPaywall, onOpenPrivacy }: ProPageProps) {
   const isWechatMini = Capacitor.getPlatform() === "wechat";
-  const [message, setMessage] = useState(() => isWechatMini ? "微信支付尚未开放。" : "正在准备 App Store 商品信息...");
+  const giftOnly = isWechatMini && isLaunchGiftOnlyRelease();
+  const [message, setMessage] = useState(() => giftOnly ? "登录领取首月会员。" : isWechatMini ? "微信支付尚未开放。" : "正在准备 App Store 商品信息...");
   const [restoring, setRestoring] = useState(false);
+  const [gift, setGift] = useState<LaunchGiftAvailability | undefined>(entitlements.launchGift);
+  const [giftLoading, setGiftLoading] = useState(giftOnly);
+  const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
-    initializePurchases().then((runtime) => setMessage(runtime.message));
-  }, []);
+    if (giftOnly) {
+      void refreshLaunchGiftAvailability().then((availability) => {
+        setGift(availability);
+        setGiftLoading(false);
+        if (!availability) setMessage("暂时无法查询首月赠送活动，请稍后重试。");
+      }).catch(() => {
+        setGift(undefined);
+        setGiftLoading(false);
+        setMessage("暂时无法查询首月赠送活动，请稍后重试。");
+      });
+    } else {
+      initializePurchases().then((runtime) => setMessage(runtime.message));
+    }
+  }, [giftOnly]);
 
   const restore = async () => {
     setRestoring(true);
     const result = await restorePurchases();
     setMessage(result.message);
     setRestoring(false);
+  };
+
+  const claimGift = async () => {
+    if (!isAuthenticated) {
+      onRequireAuth();
+      return;
+    }
+    setClaiming(true);
+    try {
+      const updated = await claimLaunchGift();
+      setMessage(updated ? `首月会员已领取 · ${entitlementExpiryLabel(updated)}` : "登录后即可领取首月会员。");
+    } catch (error) {
+      const availability = await refreshLaunchGiftAvailability().catch(() => undefined);
+      if (availability) setGift(availability);
+      setMessage(availability?.open === false ? "首月赠送活动已结束。" : error instanceof Error ? error.message : "领取失败，请稍后重试。");
+    } finally {
+      setClaiming(false);
+    }
   };
 
   return (
@@ -58,17 +95,21 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
           <ArrowLeft size={17} />
           返回
         </button>
-        <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">收集日 Pro</p>
+        <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">{giftOnly ? "首月赠送会员" : "收集日 Pro"}</p>
       </div>
 
       <section className="ds-card p-5">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
             <span className="ds-pill ds-pill-primary"><Crown size={13} /> 会员</span>
-            <h1 className="mt-2 text-2xl font-black text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</h1>
+            <h1 className="mt-2 text-2xl font-black text-white">{giftOnly ? entitlements.isPro ? "首月会员已启用" : "首月赠送会员" : entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</h1>
             <p className="mt-2 text-sm leading-6 text-white/66">
-              {entitlements.isPro
+              {giftOnly && entitlements.isPro
+                ? `${productLabel(entitlements.productId)} · ${entitlementExpiryLabel(entitlements)}`
+                : entitlements.isPro
                 ? `${productLabel(entitlements.productId)} · ${isWechatMini ? "服务端会员权益" : entitlements.source === "development" ? "本地开发解锁" : "App Store 权益"}`
+                : giftOnly
+                ? "领取首月赠送会员，解锁下面列出的学习功能。"
                 : "当前为免费版。开通后下面标 ✓ 的功能立即可用。"}
             </p>
           </div>
@@ -100,7 +141,19 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
       </section>
 
       <div className="mt-4 overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
-        <button
+        {giftOnly ? (
+          <div className="border-b border-white/10 p-4">
+            {entitlements.isPro ? (
+              <p className="text-sm font-bold text-white">{entitlements.productId === "shushugo_pro_launch_gift" ? "首月会员已领取" : "会员权益已启用"} · {entitlementExpiryLabel(entitlements)}</p>
+            ) : gift?.open ? (
+              <button className="ds-btn w-full" onClick={() => void claimGift()} disabled={claiming}>
+                {claiming ? "领取中…" : isAuthenticated ? "领取首月会员" : "登录领取首月会员"}
+              </button>
+            ) : (
+              <p className="text-sm font-bold text-white">{gift?.open === false ? "首月赠送活动已结束" : giftLoading ? "正在查询首月赠送活动…" : "暂时无法查询首月赠送活动，请稍后重试。"}</p>
+            )}
+          </div>
+        ) : <button
           onClick={onOpenPaywall}
           className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]"
         >
@@ -109,10 +162,10 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold text-white">{entitlements.isPro ? "查看 Pro 方案" : "选择 Pro 方案"}</span>
-          <span className="mt-0.5 block text-xs text-white/50">{isWechatMini ? "微信支付尚未开放时不会显示购买入口" : "月度、年度或永久买断"}</span>
+            <span className="mt-0.5 block text-xs text-white/50">{isWechatMini ? "微信支付尚未开放时不会显示购买入口" : "月度、年度或永久买断"}</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
-        </button>
+        </button>}
 
         {!isWechatMini && <button
           onClick={restore}
@@ -151,8 +204,8 @@ export function ProPage({ entitlements, onBack, onOpenPaywall, onOpenPrivacy }: 
             <ShieldCheck size={20} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-bold text-white">隐私政策和购买说明</span>
-            <span className="mt-0.5 block text-xs text-white/50">数据收集、订阅与退款说明</span>
+            <span className="block text-sm font-bold text-white">{giftOnly ? "隐私政策" : "隐私政策和购买说明"}</span>
+            <span className="mt-0.5 block text-xs text-white/50">{giftOnly ? "数据收集与账号权益说明" : "数据收集、订阅与退款说明"}</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
         </button>
