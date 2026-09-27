@@ -30,7 +30,6 @@ interface PendingFeedback {
 const PENDING_KEY = "mn-pending-feedback-reports";
 const AUTO_SEND_KEY = "mn-feedback-auto-send-errors";
 const ERROR_SEEN_KEY = "mn-feedback-error-signatures";
-const LAST_PROMPT_KEY = "mn-feedback-last-prompt-at";
 const RETENTION_MS = 180 * 24 * 60 * 60_000;
 export interface ReportCandidate {
   kind: Exclude<FeedbackKind, "feedback">;
@@ -76,24 +75,16 @@ export const setAutoSendErrors = (enabled: boolean): void => {
   try { localStorage.setItem(AUTO_SEND_KEY, String(enabled)); } catch { /* keep the current session usable */ }
 }
 
-const hashSignature = (value: string): string => {
-  let hash = 2166136261;
-  for (let index = 0; index < value.length; index += 1) hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
-  return (hash >>> 0).toString(16);
-};
-
-/** Once per matching error each day, and at most one prompt in any ten-minute window. */
+/** At most one prompt per serious error class every 24 hours. */
 export const claimErrorReport = (kind: FeedbackKind, message: string, route: string, now = Date.now()): boolean => {
+  void message;
+  void route;
+  if (kind === "feedback" || kind === "crash") return false;
   try {
-    const stableMessage = kind === "hang" ? message.replace(/\d+(?:\.\d+)? 秒/g, "<duration>") : message;
-    const signature = hashSignature(`${kind}\n${route}\n${stableMessage.slice(0, 500)}`);
-    const seen = JSON.parse(localStorage.getItem(ERROR_SEEN_KEY) ?? "{}") as Record<string, number>;
-    const lastAt = Number(seen[signature] ?? 0);
-    if (now - lastAt < 24 * 60 * 60_000) return false;
-    const lastPrompt = Number(localStorage.getItem(LAST_PROMPT_KEY) ?? 0);
-    if (now - lastPrompt < 10 * 60_000) return false;
-    localStorage.setItem(ERROR_SEEN_KEY, JSON.stringify({ ...seen, [signature]: now }));
-    localStorage.setItem(LAST_PROMPT_KEY, String(now));
+    const seen = JSON.parse(localStorage.getItem(ERROR_SEEN_KEY) ?? "{}") as Partial<Record<"error" | "hang", number>>;
+    const lastAt = Number(seen[kind] ?? 0);
+    if (lastAt > 0 && now - lastAt < 24 * 60 * 60_000) return false;
+    localStorage.setItem(ERROR_SEEN_KEY, JSON.stringify({ ...seen, [kind]: now }));
     return true;
   } catch { return true; }
 };

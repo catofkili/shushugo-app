@@ -9,8 +9,9 @@ describe("hang watchdog classifier", () => {
     ])).toBeNull();
   });
 
-  it("reports a six-second visible stall", () => {
-    expect(detectHang(0, 6_000)).toEqual({ durationMs: 6_000 });
+  it("reports a visible stall at eight seconds and ignores shorter pauses", () => {
+    expect(detectHang(0, 7_999)).toBeNull();
+    expect(detectHang(0, 8_000)).toEqual({ durationMs: 8_000 });
   });
 
   it("ignores the first interval just after returning to the foreground", () => {

@@ -447,6 +447,7 @@
 .zoo-plan-headline label { display: inline-flex; align-items: baseline; gap: 6px; color: var(--ds-ink-3); font-size: 13px; font-weight: 700; }
 [data-theme] .zoo-plan-headline input[type="number"] { width: 3.6em; min-width: 0; padding: 0; border: 0; border-bottom: 2px dashed var(--ds-line-2); border-radius: 0; background: transparent; color: var(--ds-ink); font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; box-shadow: none; }
 [data-theme] .zoo-plan-headline input[type="number"]:focus { border-bottom-color: var(--ds-primary); box-shadow: none; }
+.zoo-plan-save { min-height: 32px; padding: 0 10px; border-radius: 10px; font-size: 12px; }
 [data-theme] .zoo-plan-legend { gap: 2px; }
 [data-theme] .zoo-plan-legend li { padding: 6px 8px; border-radius: 12px; font-size: 13px; }
 [data-theme] .zoo-plan-legend li.on { background: var(--ds-inset); }

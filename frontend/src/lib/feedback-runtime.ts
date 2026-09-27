@@ -3,7 +3,7 @@ import { foregroundEvent, startFeedbackRuntimeCore } from "./feedback-runtime-co
 export const startFeedbackRuntime = (): (() => void) => startFeedbackRuntimeCore({
   bindErrors(onError) {
     const onWindowError = (event: ErrorEvent) => onError(
-      event.error instanceof Error ? event.error : new Error(event.message || "页面脚本运行错误")
+      event.error instanceof Error ? event.error : new Error(event.message || (event.target === window ? "页面脚本运行错误" : "页面资源加载失败"))
     );
     const onUnhandledRejection = (event: PromiseRejectionEvent) => onError(
       event.reason instanceof Error ? event.reason : new Error("未处理的异步错误")

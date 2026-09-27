@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { DailyPlanRing, type RingValue } from "./DailyPlanRing";
 import { RING_COLORS } from "./daily-plan-ring-geometry";
 import {
-  arrangedPlan, dailyPlanView, saveDailyPlan, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
+  arrangedPlan, dailyPlanView, hasPendingPlanTotal, saveDailyPlan, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
   type DailyPlanView, type PlanKind
 } from "../lib/daily-plan";
 import { PREFERENCES_EVENT } from "../lib/studyPreferences";
@@ -40,6 +40,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
   const entitlements = useEntitlements();
   const [view, setView] = useState<DailyPlanView | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
+  const [totalDraft, setTotalDraft] = useState<string | null>(null);
   const planRef = useRef<Plan | null>(null);
   planRef.current = plan;
   const [focus, setFocus] = useState<PlanKind | null>(null);
@@ -124,6 +125,11 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
     next[first] = { ...next[first], review: Math.max(0, next[first].review + drift) };
     commit(next);
   };
+  const saveTotalDraft = () => {
+    if (totalDraft === null) return;
+    if (hasPendingPlanTotal(totalDraft, total)) setTotal(Number(totalDraft) || 0);
+    setTotalDraft(null);
+  };
 
   const focused = focus ? view.segments.find((segment) => segment.kind === focus)! : null;
   const focusedCount = focus ? plan[focus].fresh + plan[focus].review : 0;
@@ -139,9 +145,29 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
           <div className="zoo-plan-headline">
             <label>
               今天
-              <input type="number" min={0} max={2000} value={total} disabled={!active.length} onChange={(event) => setTotal(Number(event.target.value))} aria-label="今天总量" />
+              <input
+                type="number"
+                min={0}
+                max={2000}
+                value={totalDraft ?? total}
+                disabled={!active.length}
+                onFocus={() => { if (totalDraft === null) setTotalDraft(String(total)); }}
+                onChange={(event) => setTotalDraft(event.target.value)}
+                onBlur={saveTotalDraft}
+                aria-label="今天总量"
+              />
               项
             </label>
+            {hasPendingPlanTotal(totalDraft, total) && (
+              <button
+                type="button"
+                className="ds-btn zoo-plan-save"
+                onMouseDown={(event) => event.preventDefault()}
+                onTouchStart={(event) => event.preventDefault()}
+                onTouchEnd={(event) => { event.preventDefault(); saveTotalDraft(); }}
+                onClick={saveTotalDraft}
+              >保存</button>
+            )}
             <span className="ds-pill" title="按标准答题节奏估算，不看个人历史">约 {minutesFor(plan, active)} 分钟</span>
           </div>
           <ul className="zoo-plan-legend">

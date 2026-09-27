@@ -287,11 +287,13 @@ export async function playExample(sentence: string, preferred?: string | null): 
   await playFile(exampleAudioUrl(text, preferred), "examples", sequence);
 }
 export async function previewVoice(voiceId: string): Promise<void> {
+  const wordSequence = interruptPlayback("words");
+  const exampleSequence = interruptPlayback("examples");
   await Promise.all([loadIndex("words"), loadIndex("examples")]);
   const sentence = "毎日少しずつ、日本語を勉強しています。";
   const examples = indexes.examples?.voices.find((voice) => voice.id === voiceId);
-  if (examples) return playFile(exampleAudioUrl(sentence, voiceId), "examples");
-  return playFile(pronunciationAudioUrl("勉強", "べんきょう", voiceId), "words");
+  if (examples) return playFile(exampleAudioUrl(sentence, voiceId), "examples", exampleSequence);
+  return playFile(pronunciationAudioUrl("勉強", "べんきょう", voiceId), "words", wordSequence);
 }
 const prepared = new Set<string>();
 export async function prepareVoice(voiceId: string): Promise<void> {

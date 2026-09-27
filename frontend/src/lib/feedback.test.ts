@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("./sync-api", () => ({ postFeedbackReport: vi.fn() }));
 
 import { postFeedbackReport } from "./sync-api";
-import { flushPendingFeedback, submitFeedback } from "./feedback";
+import { claimErrorReport, flushPendingFeedback, submitFeedback } from "./feedback";
 
 class MemoryStorage implements Storage {
   private values = new Map<string, string>();
@@ -60,5 +60,14 @@ describe("feedback retry queue", () => {
     await flushPendingFeedback();
     expect(api).not.toHaveBeenCalled();
     expect(JSON.parse(localStorage.getItem("mn-pending-feedback-reports") ?? "[]")).toEqual([]);
+  });
+});
+
+describe("serious error prompt threshold", () => {
+  it("prompts once per error class for 24 hours, regardless of message text", () => {
+    expect(claimErrorReport("error", "TypeError A", "word", 10_000)).toBe(true);
+    expect(claimErrorReport("error", "TypeError B", "settings", 10_001)).toBe(false);
+    expect(claimErrorReport("hang", "卡住了 8 秒", "word", 10_002)).toBe(true);
+    expect(claimErrorReport("error", "TypeError B", "settings", 10_000 + 24 * 60 * 60_000)).toBe(true);
   });
 });

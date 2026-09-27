@@ -14,7 +14,7 @@ export const detectHang = (
   visibilityEvents: readonly VisibilityEvent[] = []
 ): HangEvent | null => {
   const durationMs = currentAt - previousAt;
-  if (durationMs < 4_000) return null;
+  if (durationMs < 8_000) return null;
   if (visibilityEvents.some((event) => event.at > previousAt && event.at <= currentAt && !event.visible)) return null;
   const foregroundAt = visibilityEvents.reduce<number | null>((latest, event) => (
     event.visible && event.at <= currentAt ? Math.max(latest ?? event.at, event.at) : latest
