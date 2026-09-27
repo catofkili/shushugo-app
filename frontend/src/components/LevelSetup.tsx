@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Capacitor } from "@capacitor/core";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { applyExamPreset, previewCurrentLevelPlan } from "../lib/daily-plan";
@@ -12,16 +13,15 @@ import {
   type StartingLevel
 } from "../lib/level-plan";
 import { getEntitlements } from "../lib/entitlements";
-import { saveStudyMode } from "../lib/studyMode";
-import { refreshTodayWordPlan } from "../lib/api";
-import { refreshMixedCardTasks } from "../lib/mixed-cards";
-import { getDatabase } from "../lib/database";
-import { notifyProgressUpdated } from "../lib/progress-events";
+import { claimLaunchGift, refreshLaunchGiftAvailability } from "../lib/sync-api";
+import { isLaunchGiftOnlyRelease } from "../lib/purchases";
+import { shouldOfferOnboardingGift, completeLevelSetup } from "../lib/level-setup-flow";
 import { deferWordPlanUntilKanaComplete } from "../lib/kana-progress";
 import { MascotSay } from "./MascotSay";
 import { Sticker } from "./CapybaraMascot";
 import { ExamDatePicker } from "./ExamDatePicker";
 import { ScrollArea } from "./ScrollArea";
+import { useEntitlements } from "../hooks/useEntitlements";
 
 const KANA_STARTS: Array<{ value: StartingLevel; label: string; hint: string }> = [
   { value: "kana-none", label: "不懂五十音", hint: "从假名开始，约一周" },
@@ -44,11 +44,19 @@ const Step = ({ n, title, hint, children }: { n: number; title: string; hint?: s
 interface Props {
   open: boolean;
   dismissible?: boolean;
+  isAuthenticated?: boolean;
+  onRequireAuth?: () => void;
   onComplete: (message: string) => void;
   onClose?: () => void;
 }
 
-export function LevelSetup({ open, dismissible = false, onComplete, onClose }: Props) {
+const dateLabel = (value?: string | null) => {
+  const timestamp = value ? Date.parse(value) : NaN;
+  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString().slice(0, 10) : "待确认";
+};
+
+export function LevelSetup({ open, dismissible = false, isAuthenticated = false, onRequireAuth, onComplete, onClose }: Props) {
+  const entitlement = useEntitlements();
   const existing = getLevelPlanSettings();
   const [startingLevel, setStartingLevel] = useState<StartingLevel>(existing?.startingLevel ?? "kana");
   const [target, setTarget] = useState<JlptTarget>(existing?.target ?? "N3");
@@ -60,6 +68,10 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
   const [familiarity, setFamiliarity] = useState<Familiarity>(existing?.familiarity ?? familiarityDefaults("kana"));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [giftPage, setGiftPage] = useState(false);
+  const [gift, setGift] = useState<{ open: boolean; claimUntil: string | null }>();
+  const [giftError, setGiftError] = useState("");
+  const [claiming, setClaiming] = useState(false);
   if (!open) return null;
 
   const samePlan = existing?.startingLevel === startingLevel && existing.target === target && existing.examKind === examKind
@@ -86,13 +98,24 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
       await saveLevelPlanSettings({ startingLevel, familiarity, target, examKind, examDate });
       const preset = applyExamPreset(target);
       if (startingLevel === "kana-none") deferWordPlanUntilKanaComplete(preset.plan.words.fresh);
-      const entitlement = getEntitlements();
-      saveStudyMode(entitlement?.isPro ? "mixed" : "classic");
-      refreshTodayWordPlan();
-      refreshMixedCardTasks(getDatabase());
-      notifyProgressUpdated();
-      const accessText = entitlement.isPro ? "完整计划已启用。" : "计划已创建；当前先安排单词。";
-      onComplete(`${accessText} 先完成今天的任务。`);
+      const currentEntitlement = getEntitlements();
+      const giftOnly = isLaunchGiftOnlyRelease();
+      if (!currentEntitlement.isPro && !dismissible && Capacitor.getPlatform() === "wechat" && giftOnly) {
+        const availability = await refreshLaunchGiftAvailability().catch(() => undefined);
+        if (shouldOfferOnboardingGift({
+          firstSetup: !dismissible,
+          platform: Capacitor.getPlatform(),
+          purchaseEnabled: !giftOnly,
+          isPro: getEntitlements().isPro,
+          gift: availability
+        })) {
+          setGift(availability);
+          setGiftError("");
+          setGiftPage(true);
+          return;
+        }
+      }
+      completeLevelSetup(onComplete);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "计划创建失败，请稍后重试。");
     } finally {
@@ -100,20 +123,55 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
     }
   };
 
+  const claimGift = async () => {
+    if (!isAuthenticated) {
+      onRequireAuth?.();
+      return;
+    }
+    setClaiming(true);
+    setGiftError("");
+    try {
+      const updated = await claimLaunchGift();
+      if (!updated?.isPro) throw new Error("暂时无法确认领取结果，请重试。");
+    } catch (cause) {
+      setGiftError(cause instanceof Error ? cause.message : "领取失败，请稍后重试。");
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  const giftClaimed = giftPage && entitlement.isPro;
+  const finish = () => completeLevelSetup(onComplete);
+
   return createPortal(
     <div className="ls-backdrop" role="dialog" aria-modal="true" aria-label="设定学习计划">
       <div className="ls-sheet">
-        <ScrollArea className="ls-scroll">
+        <ScrollArea className="ls-scroll" scrollToTopSignal={giftPage ? 1 : 0}>
           <header className="ls-head">
-            <Sticker name="mood-wave" size={84} className="ls-head-mascot" />
+            <Sticker name={giftPage ? "mood-yay" : "mood-wave"} size={84} className="ls-head-mascot" />
             <div className="min-w-0 flex-1">
-              <p className="ds-kicker">{dismissible ? "调整学习计划" : "欢迎来到收集日"}</p>
-              <h2 className="ls-title">先定个小目标</h2>
-              <p className="ls-sub">四件事，选完就排好每天学什么。之后随时能改。</p>
+              <p className="ds-kicker">{giftPage ? "首次设定完成" : dismissible ? "调整学习计划" : "欢迎来到收集日"}</p>
+              <h2 className="ls-title">{giftClaimed ? "首月会员已领取" : giftPage ? "送你一个月会员" : "先定个小目标"}</h2>
+              <p className="ls-sub">{giftPage
+                ? giftClaimed ? "领取成功，现在可以开始学习。" : `疑难辨析、一字多音、混合学习。领取截止日：${dateLabel(gift?.claimUntil)}。`
+                : "四件事，选完就排好每天学什么。之后随时能改。"}</p>
             </div>
             {dismissible && <button className="ds-icon-btn focus-ring grid h-10 w-10 shrink-0 place-items-center rounded-full" onClick={onClose} aria-label="关闭"><X size={18} /></button>}
           </header>
 
+          {giftPage ? giftClaimed ? (
+            <MascotSay sticker="mood-yay" tone="good" size={64} className="ds-say-onbg mt-5">
+              已领取，会员到 {dateLabel(entitlement.expiresAt)}。
+            </MascotSay>
+          ) : (
+            <section className="ds-card p-4">
+              <p className="text-sm leading-6">免费领取，无需绑定支付方式。</p>
+              <p className="mt-2 text-sm leading-6">现在跳过也没关系，之后可以在「我的」或会员页领取。</p>
+              <MascotSay sticker="mood-yay" className="ds-say-onbg mt-4">
+                {giftError || "免费解锁疑难辨析、一字多音、混合学习等会员功能。"}
+              </MascotSay>
+            </section>
+          ) : <>
           <Step n={1} title="你现在学到哪里？">
             <div className="grid grid-cols-2 gap-2">
               {KANA_STARTS.map((item) => <button key={item.value} aria-pressed={startingLevel === item.value} onClick={() => chooseStart(item.value)} className="ls-option ls-option-tall focus-ring">
@@ -159,8 +217,13 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
             {startingLevel === "kana-none" && <><br />五十音按真的学会了多少来算，没学完就往后顺延。</>}
           </MascotSay> : <p className="mt-5 text-sm jp-muted">选择考试日期后，会估算每天的学习量和这场考试前是否来得及。</p>}
           {error && <div role="alert"><MascotSay sticker="mood-dizzy" tone="warn" className="mt-3">{error}</MascotSay></div>}
+          </>}
         </ScrollArea>
         <div className="ls-foot">
+          {giftPage ? giftClaimed ? <button onClick={finish} className="ds-btn focus-ring w-full">开始学习 →</button> : <div className="grid gap-2 sm:grid-cols-2">
+            <button disabled={claiming} onClick={() => void claimGift()} className="ds-btn focus-ring w-full disabled:opacity-50">{claiming ? "领取中…" : isAuthenticated ? "领取首月会员" : "微信登录领取"}</button>
+            <button onClick={finish} className="ds-btn-soft focus-ring w-full">先不领，开始学习</button>
+          </div> : <>
           {/* 估算那段在最底下，选项在上面：底栏常驻一行结果，点哪个都能立刻看到变化 */}
           <p className="ls-foot-sum" aria-live="polite">
             {preview ? <>按这个计划：每天 <b>{preview.required.words}</b> 个新词
@@ -168,6 +231,7 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
               : "选好考试日期后显示每日计划估算"}
           </p>
           <button disabled={saving || !examDate} onClick={submit} className="ds-btn focus-ring w-full disabled:opacity-50">{saving ? "正在建立计划…" : "保存并查看今天怎么学 →"}</button>
+          </>}
         </div>
       </div>
     </div>,

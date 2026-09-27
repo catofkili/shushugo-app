@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1865271,
+      "bytes": 1869159,
       "passes": true
     },
     "study": {
@@ -10,11 +10,11 @@
       "passes": true
     },
     "account": {
-      "bytes": 256323,
+      "bytes": 258183,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1058993,
+      "bytes": 1059778,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 572704,
+      "bytes": 573912,
       "passes": true
     }
   },
@@ -315,6 +315,15 @@
       ]
     },
     {
+      "source": "/private/tmp/claude-gram/frontend/src/components/CrossPlatformImage.weapp.tsx",
+      "bytes": 4630,
+      "packages": [
+        "account",
+        "content-pages",
+        "lazy"
+      ]
+    },
+    {
       "source": "/private/tmp/claude-gram/frontend/src/components/daily-plan-ring-geometry.ts",
       "bytes": 3905,
       "packages": [
@@ -383,15 +392,6 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 2291,
-      "packages": [
-        "account",
-        "content-pages",
         "lazy"
       ]
     },
@@ -920,6 +920,16 @@
       "reason": "Grammar point previews are used by lazy tabs and content/grammar routes."
     },
     {
+      "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
+      "bytes": 4630,
+      "packages": [
+        "account",
+        "content-pages",
+        "lazy"
+      ],
+      "reason": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions."
+    },
+    {
       "source": "frontend/src/components/daily-plan-ring-geometry.ts",
       "bytes": 3905,
       "packages": [
@@ -937,16 +947,6 @@
         "lazy"
       ],
       "reason": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant)."
-    },
-    {
-      "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 2291,
-      "packages": [
-        "account",
-        "content-pages",
-        "lazy"
-      ],
-      "reason": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions."
     },
     {
       "source": "frontend/src/components/Disclosure.weapp.tsx",
@@ -1027,9 +1027,9 @@
     "frontend/src/components/ProReadingPreview.tsx": "The study and lazy tab routes each render the reading preview.",
     "frontend/src/components/ShareImageSheet.weapp.tsx": "The share sheet is rendered by study, content, and lazy tab routes in their own package graphs.",
     "frontend/src/components/GrammarPointPopover.tsx": "Grammar point previews are used by lazy tabs and content/grammar routes.",
+    "frontend/src/components/CrossPlatformImage.weapp.tsx": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.",
     "frontend/src/components/daily-plan-ring-geometry.ts": "Ring geometry shared by the Canvas ring; duplicated alongside it.",
     "frontend/src/components/GrammarTermHint.weapp.tsx": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant).",
-    "frontend/src/components/CrossPlatformImage.weapp.tsx": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.",
     "frontend/src/components/Disclosure.weapp.tsx": "Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.",
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
     "frontend/src/components/JapaneseWordRuby.tsx": "Word ruby rendering is used in the study, grammar, and lazy tab routes.",
@@ -1037,7 +1037,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 239346,
+  "duplicatedPageComponentBytes": 241685,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1072,7 +1072,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 90733
+      "bytes": 90875
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/storage.ts",

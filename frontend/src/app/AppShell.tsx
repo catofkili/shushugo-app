@@ -130,7 +130,7 @@ function GlobalOverlays({
       )}
       <AuthDialog open={authOpen} onClose={onCloseAuth} onAuthenticated={onAuthenticated} />
       {levelSetupOpen && (
-        <LevelSetup open onComplete={onLevelSetupComplete} />
+        <LevelSetup open isAuthenticated={Boolean(cloudSession.token)} onRequireAuth={() => requireAccount()} onComplete={onLevelSetupComplete} />
       )}
       {/* 原来是写死的奶油底 + jp-ink：深色主题下浅底浅字；z-85 也压不过手机底栏（9999） */}
       {trialEndedOpen && <TrialEndedDialog onDismiss={onDismissTrial} onViewPro={onViewPro} />}

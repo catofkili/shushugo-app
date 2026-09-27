@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1865271,
-      "mib": 1.779,
+      "bytes": 1869159,
+      "mib": 1.783,
       "passes": true
     },
     "study": {
@@ -12,13 +12,13 @@
       "passes": true
     },
     "account": {
-      "bytes": 256323,
-      "mib": 0.244,
+      "bytes": 258183,
+      "mib": 0.246,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1058993,
-      "mib": 1.01,
+      "bytes": 1059778,
+      "mib": 1.011,
       "passes": true
     },
     "features": {
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 572704,
-      "mib": 0.546,
+      "bytes": 573912,
+      "mib": 0.547,
       "passes": true
     }
   },
-  "totalBytes": 8107402,
+  "totalBytes": 8115143,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 865763
+      "bytes": 869651
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 570954
+      "bytes": 572162
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -420,6 +420,11 @@
       "bytes": 13465
     },
     {
+      "path": "account/personal-info/index.js",
+      "package": "account",
+      "bytes": 13430
+    },
+    {
       "path": "content-pages/sub-common/033c6a88130ea138956bd52e056e5c46.js",
       "package": "content-pages",
       "bytes": 13366
@@ -435,14 +440,9 @@
       "bytes": 13238
     },
     {
-      "path": "account/personal-info/index.js",
-      "package": "account",
-      "bytes": 12815
-    },
-    {
       "path": "account/pro/index.js",
       "package": "account",
-      "bytes": 12312
+      "bytes": 12502
     },
     {
       "path": "assets/brand/scene-stretch.png",
@@ -550,11 +550,6 @@
       "bytes": 8447
     },
     {
-      "path": "content-pages/about/index.js",
-      "package": "content-pages",
-      "bytes": 8237
-    },
-    {
       "path": "grammar-pages/sub-common/f2898d7ce5013dccb0bd343dbc906bc1.js",
       "package": "grammar-pages",
       "bytes": 8187
@@ -573,6 +568,11 @@
       "path": "study/distinction-quiz/index.js",
       "package": "study",
       "bytes": 8124
+    },
+    {
+      "path": "content-pages/about/index.js",
+      "package": "content-pages",
+      "bytes": 7967
     },
     {
       "path": "content-pages/sub-common/fb02c483f17f7447c1f19c294fe921bf.js",
@@ -920,6 +920,16 @@
       "bytes": 2362
     },
     {
+      "path": "account/sub-common/9afeea0fba34dc2ee9b759af3232b27a.js",
+      "package": "account",
+      "bytes": 2201
+    },
+    {
+      "path": "content-pages/sub-common/9afeea0fba34dc2ee9b759af3232b27a.js",
+      "package": "content-pages",
+      "bytes": 2201
+    },
+    {
       "path": "account/user-agreement/index.js",
       "package": "account",
       "bytes": 2167
@@ -1013,16 +1023,6 @@
       "path": "assets/brand/mood-surprised.png",
       "package": "main",
       "bytes": 1197
-    },
-    {
-      "path": "account/sub-common/9afeea0fba34dc2ee9b759af3232b27a.js",
-      "package": "account",
-      "bytes": 1146
-    },
-    {
-      "path": "content-pages/sub-common/9afeea0fba34dc2ee9b759af3232b27a.js",
-      "package": "content-pages",
-      "bytes": 1146
     },
     {
       "path": "account/sub-common/52a64d978bb579d7c0b4fc4aff49f179.js",

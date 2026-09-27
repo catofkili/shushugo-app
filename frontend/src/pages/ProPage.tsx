@@ -146,9 +146,12 @@ export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, 
             {entitlements.isPro ? (
               <p className="text-sm font-bold text-white">{entitlements.productId === "shushugo_pro_launch_gift" ? "首月会员已领取" : "会员权益已启用"} · {entitlementExpiryLabel(entitlements)}</p>
             ) : gift?.open ? (
-              <button className="ds-btn w-full" onClick={() => void claimGift()} disabled={claiming}>
-                {claiming ? "领取中…" : isAuthenticated ? "领取首月会员" : "登录领取首月会员"}
-              </button>
+              <>
+                <button className="ds-btn w-full" onClick={() => void claimGift()} disabled={claiming}>
+                  {claiming ? "领取中…" : isAuthenticated ? "领取首月会员" : "登录领取首月会员"}
+                </button>
+                <p className="mt-2 text-center text-xs text-white/55">免费领取，无需绑定支付方式。</p>
+              </>
             ) : (
               <p className="text-sm font-bold text-white">{gift?.open === false ? "首月赠送活动已结束" : giftLoading ? "正在查询首月赠送活动…" : "暂时无法查询首月赠送活动，请稍后重试。"}</p>
             )}

@@ -166,7 +166,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-base font-bold text-white">{giftOnly ? entitlements.isPro ? "首月会员已启用" : giftOpen === false ? "首月赠送活动已结束" : "首月赠送会员" : entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</span>
-          {giftOnly && <span className="mt-0.5 block text-xs text-white/50">{entitlements.isPro ? entitlementExpiryLabel(entitlements) : giftOpen ? cloudSession.token ? "领取首月会员" : "登录领取首月会员" : giftOpen === false ? "赠送窗口已关闭" : "查看首月赠送状态"}</span>}
+          {giftOnly && <span className="mt-0.5 block text-xs text-white/50">{entitlements.isPro ? entitlementExpiryLabel(entitlements) : giftOpen ? cloudSession.token ? "领取首月会员" : "登录领取首月会员" : giftOpen === false ? "赠送窗口已关闭" : "查看首月赠送状态"}{giftOpen && !entitlements.isPro && <span className="mt-1 block">免费领取，无需绑定支付方式。</span>}</span>}
         </span>
         <ChevronRight size={18} className="text-white/45" />
       </button>
