@@ -198,6 +198,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
             {claiming ? "领取中…" : "登录领取首月会员"}
           </button>
         )}
+        {gift?.open && !entitlements.isPro && <p className="mt-2 text-center text-xs text-white/55">免费领取，无需绑定支付方式。</p>}
 
         {!giftOnly && <div className="paywall-popover-products" aria-label="会员方案">
           {products.map((product) => (
