@@ -447,7 +447,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
         <button ref={weekPickerRef} className="wr-week-picker" aria-haspopup="dialog" aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)} onPointerDown={(event) => startDrag(event,"week")} onPointerMove={dragMove} onPointerUp={endDrag} onPointerCancel={resetDrag}>
           <span>{floorNumber}F <i> / </i> {reportWindowLabelCompact(report.window)}</span><ChevronDown size={13}/>
         </button>
-        {mock && <span className="wr-mock-badge">模拟数据 · 仅开发预览</span>}
+        {import.meta.env.DEV && mock && <span className="wr-mock-badge">模拟数据 · 仅开发预览</span>}
         <div className="wr-header-tools">
           {/* 三套版式并排比较用；用户选定之后连同另外两套一起删掉 */}
           <button className="wr-variant-switch" onClick={cycleVariant} aria-label={`切换周报版式，当前：${WEEKLY_VARIANTS.find((item) => item.id === variant)?.label}`}><Palette size={14}/>{WEEKLY_VARIANTS.find((item) => item.id === variant)?.label}</button>
