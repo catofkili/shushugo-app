@@ -5,6 +5,7 @@
 
 import { Brain, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { ScrollArea } from "./ScrollArea";
 import { getStudyAnalytics, StudyAnalytics } from "../lib/analytics/stats";
 
 interface AnalyticsDashboardProps {
@@ -53,15 +54,17 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
   }, [analytics]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 grid overflow-y-auto place-items-center bg-black/30 p-5 backdrop-blur-[2px]"
+    <ScrollArea
+      contentClassName="analytics-overlay-content"
+      className="fixed inset-0 z-50 place-items-center bg-black/30 p-5 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
       aria-label="学习记忆程度"
       onClick={onClose}
     >
-      <div
-        className="memory-bubble relative max-h-[calc(100dvh-2.5rem)] w-full max-w-[360px] overflow-y-auto rounded-[42px] border border-[#81D8CF]/35 bg-[#f8fdfb] p-6 text-left text-[#163f35] shadow-2xl"
+      <ScrollArea
+        contentClassName="memory-bubble-content"
+        className="memory-bubble relative max-h-[calc(100dvh-2.5rem)] w-full max-w-[360px] rounded-[42px] border border-[#81D8CF]/35 bg-[#f8fdfb] p-6 text-left text-[#163f35] shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <button
@@ -125,7 +128,7 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
             </div>
           </>
         )}
-      </div>
-    </div>
+      </ScrollArea>
+    </ScrollArea>
   );
 }

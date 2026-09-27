@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1863662,
+      "bytes": 1865271,
       "passes": true
     },
     "study": {
-      "bytes": 300644,
+      "bytes": 300772,
       "passes": true
     },
     "account": {
-      "bytes": 256307,
+      "bytes": 256323,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1058992,
+      "bytes": 1058993,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 358454,
+      "bytes": 358516,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 573201,
+      "bytes": 572704,
       "passes": true
     }
   },
@@ -120,7 +120,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 18966,
+      "bytes": 19072,
       "packages": [
         "grammar-pages",
         "study"
@@ -136,7 +136,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 15963,
+      "bytes": 16043,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -211,7 +211,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11603,
+      "bytes": 11652,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -254,7 +254,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7857,
+      "bytes": 7889,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -770,7 +770,7 @@
     },
     {
       "source": "frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 18966,
+      "bytes": 19072,
       "packages": [
         "grammar-pages",
         "study"
@@ -788,7 +788,7 @@
     },
     {
       "source": "frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 15963,
+      "bytes": 16043,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -843,7 +843,7 @@
     },
     {
       "source": "frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11603,
+      "bytes": 11652,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -881,7 +881,7 @@
     },
     {
       "source": "frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7857,
+      "bytes": 7889,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1037,7 +1037,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 239079,
+  "duplicatedPageComponentBytes": 239346,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1056,11 +1056,11 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/app.css",
-      "bytes": 143270
+      "bytes": 143421
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/styles.css",
-      "bytes": 140835
+      "bytes": 140796
     },
     {
       "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
@@ -1072,7 +1072,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 90673
+      "bytes": 90733
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/storage.ts",
@@ -1084,7 +1084,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/design.css",
-      "bytes": 62906
+      "bytes": 62870
     }
   ],
   "passes": true

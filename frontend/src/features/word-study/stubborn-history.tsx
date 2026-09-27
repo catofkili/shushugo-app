@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Flame, ListChecks, Star, X } from "lucide-react";
+import { ScrollArea } from "../../components/ScrollArea";
 import {
   addFavorite,
   addFavorites,
@@ -158,7 +159,7 @@ export const StubbornHistorySheet = ({
                 </button>
               )}
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
+            <ScrollArea className="min-h-0 flex-1 p-3 sm:p-4">
               {words.map((word) => (
                 <StubbornWordRow
                   key={word.id}
@@ -173,10 +174,10 @@ export const StubbornHistorySheet = ({
                 />
               ))}
               {grammar.map((point) => <StubbornGrammarRow key={`g-${point.id}`} point={point} />)}
-            </div>
+            </ScrollArea>
           </>
         ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
+          <ScrollArea className="min-h-0 flex-1 p-3 sm:p-4">
             {days.length === 0 && (
               <p className="py-6 text-center text-xs text-white/45"><Sticker name="empty-box" size={72} className="mx-auto mb-2" />还没有更早的顽固词记录。</p>
             )}
@@ -197,7 +198,7 @@ export const StubbornHistorySheet = ({
                 <ChevronRight size={16} className="shrink-0 text-white/35" />
               </button>
             ))}
-          </div>
+          </ScrollArea>
         )}
         <p className="border-t border-white/10 px-3 py-2 text-[11px] text-white/40 sm:px-4">
           忘过 8 次以上、当天又错 3 次的词

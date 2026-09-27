@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Taro from "@tarojs/taro";
 import { Check, Loader2, MessageCircle, X } from "lucide-react";
+import { ScrollArea } from "./ScrollArea";
 import { claimLaunchGift, cloudWechatMiniLogin, isCloudErrorCode, linkCloudWechatMini, refreshLaunchGiftAvailability, requestCloudWechatLinkCode, type CloudSession } from "../lib/sync-api";
 import { PRIVACY_POLICY_EFFECTIVE_DATE, PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_TITLE } from "../lib/privacy-policy-content";
 import { USER_AGREEMENT_EFFECTIVE_DATE, USER_AGREEMENT_SECTIONS, USER_AGREEMENT_TITLE } from "../lib/user-agreement-content";
@@ -122,7 +123,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
           <button onClick={onClose} className="grid h-10 w-10 place-items-center text-white/70" aria-label="关闭登录窗口"><X size={20} /></button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+        <ScrollArea className="min-h-0 flex-1 px-4 py-4">
           {(mode === "terms" || mode === "privacy") ? (
             <div className="space-y-3">
               <p className="text-xs text-[#B7E38D]">生效日期：{mode === "terms" ? USER_AGREEMENT_EFFECTIVE_DATE : PRIVACY_POLICY_EFFECTIVE_DATE}</p>
@@ -151,7 +152,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
               {mode === "login" && <div className="flex justify-center gap-4 text-xs font-bold text-white/55"><button onClick={() => openLegal("terms")}>用户协议</button><button onClick={() => openLegal("privacy")}>隐私政策</button></div>}
             </div>
           )}
-        </div>
+        </ScrollArea>
       </section>
     </div>
   );

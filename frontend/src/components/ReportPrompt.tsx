@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MascotSay } from "./MascotSay";
+import { ScrollArea } from "./ScrollArea";
 import { getAutoSendErrors, setAutoSendErrors, submitFeedback, subscribeReportCandidates, type ReportCandidate } from "../lib/feedback";
 
 const reportMessage = (candidate: ReportCandidate, addition: string) => (
@@ -62,7 +63,7 @@ export function ReportPrompt() {
             <button type="button" onClick={dismiss} aria-label="关闭问题提示" title="关闭" className="ds-btn-soft shrink-0 rounded-full text-2xl leading-none" style={{ width: 36, height: 36, minHeight: 36, padding: 0 }}>×</button>
           </div>
         ) : (
-          <div className="overflow-y-auto p-3" style={{ maxHeight: "calc(100vh - var(--app-main-top) - var(--app-main-bottom) - 1.5rem)" }}>
+          <ScrollArea className="p-3" style={{ maxHeight: "calc(100vh - var(--app-main-top) - var(--app-main-bottom) - 1.5rem)" }}>
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
                 {result ? (
@@ -98,7 +99,7 @@ export function ReportPrompt() {
                 </div>
               </>
             )}
-          </div>
+          </ScrollArea>
         )}
       </section>
     </div>

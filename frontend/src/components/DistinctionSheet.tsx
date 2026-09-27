@@ -5,6 +5,7 @@ import { masteredConfusionKeys, setConfusionMastered } from "../lib/confusion-gr
 import type { DistinctionSection } from "../lib/models/word-distinctions";
 import { JapaneseWordRuby } from "./JapaneseWordRuby";
 import { ProReadingGate } from "./ProReadingPreview";
+import { ScrollArea } from "./ScrollArea";
 
 /**
  * 学习页的辨析气泡 —— 卡中卡：盖住六成屏幕，学习卡还在后面。
@@ -70,7 +71,7 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
           </button>
         </div>
 
-        <div className="wd-body" inert={locked}>
+        <ScrollArea className="wd-body" contentClassName="wd-body-content" inert={locked}>
           {sections.map((section) => (
             <section key={section.key} className="wd-section">
               <div className="wd-section-head">
@@ -137,7 +138,7 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
               </div>
             </section>
           ))}
-        </div>
+        </ScrollArea>
         {locked && onUpgrade && <ProReadingGate title="辨析资料" onUpgrade={onUpgrade} />}
       </div>
     </div>,

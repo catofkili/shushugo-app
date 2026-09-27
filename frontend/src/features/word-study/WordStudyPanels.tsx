@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Brain, CalendarDays, CheckCircle2, ChevronRight, Clock3, Flame, History, Languages, ListChecks, Minus, Pencil, Plus, Puzzle, Repeat, Share2, Star, Volume2 } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
+import { ScrollArea } from "../../components/ScrollArea";
 import { addFavorite, addFavorites, getStubbornGrammarToday, getStubbornWordsToday, type StubbornGrammarToday, type StubbornWordToday } from "../../lib/api";
 import { ZooConfetti } from "../../components/ZooConfetti";
 import { Sticker } from "../../components/CapybaraMascot";
@@ -408,7 +409,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   return (
     <>
       {celebrate && <ZooConfetti />}
-      <div className="fin-scroll min-h-0 flex-1 overflow-y-auto">
+      <ScrollArea className="fin-scroll min-h-0 flex-1">
         <div className="fin-page mx-auto flex min-h-full w-full max-w-2xl flex-col">
           {/* 标题只说一次：原来右上还挂一枚「全部完成」，和「今日单词完成」是同一句话。
               阶段胶囊只在它真有别的信息时才出现（第一阶段 / 错题本 / 自选清单）。 */}
@@ -636,7 +637,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                   </button>
                 )}
               </div>
-              <div className="fin-list max-h-56 overflow-y-auto">
+              <ScrollArea className="fin-list max-h-56">
                 {stubborn.map((word) => (
                   <StubbornWordRow key={word.id} word={word} onFavorite={toggleStubbornFavorite} />
                 ))}
@@ -647,7 +648,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 {stubbornGrammar.map((point) => (
                   <StubbornGrammarRow key={`g-${point.id}`} point={point} />
                 ))}
-              </div>
+              </ScrollArea>
               <p className="fin-note">
                 一共忘过 8 次以上、今天又错了 {STUBBORN_DAILY_MISTAKES} 次的词。集中攻坚走错题本模式；
                 语法同一条判据，收藏和攻坚在语法列表页。
@@ -706,7 +707,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             再见～明天也要加油！<br />每天收集一点点，未来会不一样。
           </MascotSay>
         </div>
-      </div>
+      </ScrollArea>
 
       {shareCard && (
         <ShareImageSheet

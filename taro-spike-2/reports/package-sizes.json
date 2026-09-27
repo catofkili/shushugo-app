@@ -2,22 +2,22 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1863662,
-      "mib": 1.777,
+      "bytes": 1865271,
+      "mib": 1.779,
       "passes": true
     },
     "study": {
-      "bytes": 300644,
+      "bytes": 300772,
       "mib": 0.287,
       "passes": true
     },
     "account": {
-      "bytes": 256307,
+      "bytes": 256323,
       "mib": 0.244,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1058992,
+      "bytes": 1058993,
       "mib": 1.01,
       "passes": true
     },
@@ -42,7 +42,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 358454,
+      "bytes": 358516,
       "mib": 0.342,
       "passes": true
     },
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 573201,
-      "mib": 0.547,
+      "bytes": 572704,
+      "mib": 0.546,
       "passes": true
     }
   },
-  "totalBytes": 8106083,
+  "totalBytes": 8107402,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 864861
+      "bytes": 865763
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 571451
+      "bytes": 570954
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -112,7 +112,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 233357
+      "bytes": 234062
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -257,7 +257,7 @@
     {
       "path": "account/account/index.js",
       "package": "account",
-      "bytes": 28217
+      "bytes": 28233
     },
     {
       "path": "assets/brand/walk-strip.png",
@@ -297,7 +297,7 @@
     {
       "path": "study/word-list/index.js",
       "package": "study",
-      "bytes": 18334
+      "bytes": 18378
     },
     {
       "path": "assets/brand/mood-yay.png",
@@ -527,7 +527,7 @@
     {
       "path": "grammar-pages/sub-common/4b83b97179b91c47bbd4458e67fe7adb.js",
       "package": "grammar-pages",
-      "bytes": 8599
+      "bytes": 8612
     },
     {
       "path": "content-pages/sub-common/1e2009faaac97f2ba2fc4528f4f90cd8.js",
@@ -555,19 +555,19 @@
       "bytes": 8237
     },
     {
-      "path": "content-pages/assets/brand/shushugo-icon.png",
-      "package": "content-pages",
-      "bytes": 8179
-    },
-    {
       "path": "grammar-pages/sub-common/f2898d7ce5013dccb0bd343dbc906bc1.js",
       "package": "grammar-pages",
-      "bytes": 8139
+      "bytes": 8187
     },
     {
       "path": "study/sub-common/f2898d7ce5013dccb0bd343dbc906bc1.js",
       "package": "study",
-      "bytes": 8139
+      "bytes": 8187
+    },
+    {
+      "path": "content-pages/assets/brand/shushugo-icon.png",
+      "package": "content-pages",
+      "bytes": 8179
     },
     {
       "path": "study/distinction-quiz/index.js",
@@ -607,7 +607,7 @@
     {
       "path": "study/kanji-readings/index.js",
       "package": "study",
-      "bytes": 7095
+      "bytes": 7139
     },
     {
       "path": "account/help/index.js",
@@ -637,12 +637,12 @@
     {
       "path": "content-pages/sub-common/93a7b7b512c60343756d3b2d2fbb29f1.js",
       "package": "content-pages",
-      "bytes": 6507
+      "bytes": 6516
     },
     {
       "path": "grammar-pages/sub-common/93a7b7b512c60343756d3b2d2fbb29f1.js",
       "package": "grammar-pages",
-      "bytes": 6507
+      "bytes": 6516
     },
     {
       "path": "content-pages/sub-common/d7c5c49ad7ad6a0ec32285c6c7b2a7ff.js",
@@ -792,17 +792,17 @@
     {
       "path": "content-pages/sub-common/d38d0f125f8b9afadca177e5e4c86b78.js",
       "package": "content-pages",
-      "bytes": 3757
+      "bytes": 3749
     },
     {
       "path": "grammar-pages/sub-common/d38d0f125f8b9afadca177e5e4c86b78.js",
       "package": "grammar-pages",
-      "bytes": 3757
+      "bytes": 3749
     },
     {
       "path": "study/sub-common/d38d0f125f8b9afadca177e5e4c86b78.js",
       "package": "study",
-      "bytes": 3757
+      "bytes": 3749
     },
     {
       "path": "assets/brand/shushugo-icon.png",
@@ -1232,7 +1232,7 @@
     {
       "path": "pages/word/index.js",
       "package": "main",
-      "bytes": 559
+      "bytes": 561
     },
     {
       "path": "assets/lucide/notebookpen-ink.svg",

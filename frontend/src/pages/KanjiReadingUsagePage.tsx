@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, PenLine } from "lucide-react";
+import { ScrollArea } from "../components/ScrollArea";
 import { Sticker } from "../components/CapybaraMascot";
 import {
   allKanjiReadingUsage,
@@ -148,7 +149,7 @@ export const KanjiReadingUsagePage = () => {
           留在原地整个容器都排在 tabbar 下面，遮罩点不动。 */}
       {open && createPortal(
         <div className="cf-overlay" onClick={() => setOpenChar(null)}>
-          <div className="cf-sheet" onClick={(event) => event.stopPropagation()}>
+          <ScrollArea className="cf-sheet" contentClassName="cf-sheet-content" onClick={(event) => event.stopPropagation()}>
             <div className="cf-sheet-head">
               <span className="cf-sheet-type">
                 <b className="jp-serif kr-sheet-char">{open.char}</b>
@@ -185,7 +186,7 @@ export const KanjiReadingUsagePage = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </ScrollArea>
         </div>,
         document.body
       )}

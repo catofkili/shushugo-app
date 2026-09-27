@@ -886,7 +886,8 @@
       面积上限不变，放不下就在小窗里滚；
    ③ 8.5~10.5px 的字低于全应用最小档 11px（见 app.css 末尾「设计尺度」），条款那行放到 10px。 */
 @media(max-width:1023px){.paywall-popover-host{padding-bottom:calc(85px + env(safe-area-inset-bottom,0px))}}
-.paywall-popover{overflow-y:auto;overscroll-behavior:contain}
+.paywall-popover{overscroll-behavior:contain}
+.paywall-popover-content{display:flex;flex-direction:column;gap:5px}
 .paywall-popover-intro p,.paywall-popover-products b,.paywall-popover-products small,
 .paywall-popover-actions p,.paywall-popover-actions button{font-size:11px}
 .paywall-popover-legal{font-size:10px;line-height:1.35}
@@ -945,7 +946,7 @@
    这个主操作)会被导航条盖住。模态期间盖住全局导航是常规做法。 */
 .cf-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:flex-end;justify-content:center;
   background:rgba(30,24,16,.45);backdrop-filter:blur(3px);animation:cf-fade .18s ease}
-.cf-sheet{width:min(560px,100%);height:60vh;display:flex;flex-direction:column;gap:10px;overflow-y:auto;
+.cf-sheet{width:min(560px,100%);height:60vh;display:flex;flex-direction:column;gap:10px;
   border:1.5px solid rgba(126,190,79,.3);border-radius:26px 26px 0 0;
   padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));
   background:linear-gradient(160deg,var(--zoo-surface,#FBF5E9),#F3E7CE);
@@ -956,6 +957,7 @@
   .cf-overlay,.cf-sheet{animation:none}
   .cf-card{transition:none}
 }
+.cf-sheet-content{display:flex;flex-direction:column;gap:10px}
 .cf-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .cf-sheet-type{color:var(--zoo-primary-deep);font-size:12px;font-weight:800}
 .cf-close{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
@@ -1127,7 +1129,7 @@
 /* 详情：只读,和疑难辨析的大卡同一套形制 */
 .wl-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:flex-end;justify-content:center;
   background:rgba(30,24,16,.45);backdrop-filter:blur(3px);animation:cf-fade .18s ease}
-.wl-sheet{width:min(560px,100%);max-height:78vh;display:flex;flex-direction:column;gap:9px;overflow-y:auto;
+.wl-sheet{width:min(560px,100%);max-height:78vh;display:flex;flex-direction:column;gap:9px;
   border:1.5px solid rgba(126,190,79,.3);border-radius:26px 26px 0 0;
   padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));
   background:linear-gradient(160deg,var(--zoo-surface,#FBF5E9),#F3E7CE);
@@ -1580,6 +1582,7 @@
   .yz-stage{left:calc(50% + 134px);bottom:16px;width:min(calc(100vw - 300px),720px)}
   .app-shell.is-sidebar-collapsed .yz-stage{left:calc(50% + 39px);width:min(calc(100vw - 110px),720px)}
 }
+.wl-sheet-content{display:flex;flex-direction:column;gap:9px}
 /* 手机横屏的导航已经挪到左边，底栏可以贴回屏幕底部并给左轨让位。 */
 @media (orientation:landscape) and (max-height:600px) and (max-width:1023px){
   .yz-stage{left:calc(50% + 36px);bottom:8px;width:min(calc(100vw - 96px),720px)}

@@ -21,6 +21,7 @@ import { deferWordPlanUntilKanaComplete } from "../lib/kana-progress";
 import { MascotSay } from "./MascotSay";
 import { Sticker } from "./CapybaraMascot";
 import { ExamDatePicker } from "./ExamDatePicker";
+import { ScrollArea } from "./ScrollArea";
 
 const KANA_STARTS: Array<{ value: StartingLevel; label: string; hint: string }> = [
   { value: "kana-none", label: "不懂五十音", hint: "从假名开始，约一周" },
@@ -102,7 +103,7 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
   return createPortal(
     <div className="ls-backdrop" role="dialog" aria-modal="true" aria-label="设定学习计划">
       <div className="ls-sheet">
-        <div className="ls-scroll">
+        <ScrollArea className="ls-scroll">
           <header className="ls-head">
             <Sticker name="mood-wave" size={84} className="ls-head-mascot" />
             <div className="min-w-0 flex-1">
@@ -158,7 +159,7 @@ export function LevelSetup({ open, dismissible = false, onComplete, onClose }: P
             {startingLevel === "kana-none" && <><br />五十音按真的学会了多少来算，没学完就往后顺延。</>}
           </MascotSay> : <p className="mt-5 text-sm jp-muted">选择考试日期后，会估算每天的学习量和这场考试前是否来得及。</p>}
           {error && <div role="alert"><MascotSay sticker="mood-dizzy" tone="warn" className="mt-3">{error}</MascotSay></div>}
-        </div>
+        </ScrollArea>
         <div className="ls-foot">
           {/* 估算那段在最底下，选项在上面：底栏常驻一行结果，点哪个都能立刻看到变化 */}
           <p className="ls-foot-sum" aria-live="polite">

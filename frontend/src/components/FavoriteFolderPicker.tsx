@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { FolderPlus, X } from "lucide-react";
+import { ScrollArea } from "./ScrollArea";
 import { createFavoriteFolder, lastFavoriteFolder, listFavoriteFolders, UNFILED_FOLDER } from "../lib/api";
 import type { FavoriteFolder } from "../lib/api";
 
@@ -94,8 +95,8 @@ export const FavoriteFolderSheet = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[60] grid place-items-end bg-black/60 p-0 sm:place-items-center sm:p-4" onClick={onClose}>
-      <div
-        className="max-h-[72vh] w-full overflow-y-auto rounded-t-2xl border border-white/15 bg-[#2f3333] p-4 shadow-2xl sm:max-w-sm sm:rounded-2xl"
+      <ScrollArea
+        className="max-h-[72vh] w-full rounded-t-2xl border border-white/15 bg-[#2f3333] p-4 shadow-2xl sm:max-w-sm sm:rounded-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between gap-3">
@@ -157,7 +158,7 @@ export const FavoriteFolderSheet = ({
             新建收藏夹
           </button>
         )}
-      </div>
+      </ScrollArea>
     </div>,
     document.body
   );
