@@ -114,7 +114,7 @@ export const StubbornHistorySheet = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/55 px-3 pb-3 pt-10 backdrop-blur-sm sm:items-center sm:p-6">
-      <section className="flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#3f4343] shadow-2xl">
+      <section className="stubborn-sheet flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#3f4343] shadow-2xl">
         <header className="flex items-center gap-2 border-b border-white/10 p-3 sm:p-4">
           {day ? (
             <button onClick={() => setDay(null)} className="focus-ring grid h-8 w-8 place-items-center rounded-xl border border-white/15 bg-white/6 text-white/70">

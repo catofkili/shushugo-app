@@ -113,7 +113,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
 
   return (
     <div className="fixed inset-0 z-[10002] grid place-items-center bg-[#101810]/70 p-3" role="presentation">
-      <section role="dialog" aria-modal="true" aria-label={title} className="auth-dialog flex max-h-[82dvh] w-[92vw] flex-col overflow-hidden rounded-[28px] border border-[#B7E38D]/35 bg-[#303730] shadow-[0_28px_90px_rgba(0,0,0,.5)]">
+      <section role="dialog" aria-modal="true" aria-label={title} className={`auth-dialog${mode === "terms" || mode === "privacy" ? " auth-dialog-long" : ""} flex max-h-[82dvh] w-[92vw] flex-col overflow-hidden rounded-[28px] border border-[#B7E38D]/35 bg-[#303730] shadow-[0_28px_90px_rgba(0,0,0,.5)]`}>
         <header className="flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-3">
           {mode === "terms" || mode === "privacy" ? <button onClick={() => setMode(returnMode)} className="text-white/70">返回</button> : null}
           <div className="min-w-0 flex-1">

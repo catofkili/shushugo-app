@@ -74,6 +74,12 @@ page { overflow-x: hidden; }
 .scroll-area-content { box-sizing: border-box; min-height: 100%; }
 .scroll-area-centered { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .scroll-area.flex-1 { height: 0; min-height: 0; flex: 1 1 0%; }
+/* ⚠️ 上面这条只在父容器有确定高度时成立。父容器只有 max-height（弹窗按内容长高）时，flex:1 1 0% 会把滚动区压成 0 高——
+   2026-09-27 真机：登录弹窗只剩标题、登录按钮全没了。这类弹窗要么给确定高度（长列表 / 协议全文），要么让滚动区按内容高（短内容）。 */
+.auth-dialog .scroll-area.flex-1 { flex: none; height: auto; }
+.auth-dialog-long { height: 82vh; }
+.auth-dialog-long .scroll-area.flex-1 { flex: 1 1 0%; height: 0; }
+.stubborn-sheet { height: 88vh; }
 .ls-scroll { height: calc(100vh - 210px); min-height: 0; flex: none; }
 .level-exam-wheel-scroll { height: 168px !important; }
 .wd-body { height: 0; min-height: 0; flex: 1 1 0%; }
