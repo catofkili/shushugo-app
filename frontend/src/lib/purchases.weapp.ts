@@ -36,6 +36,7 @@ const errorMessage = (error: unknown, fallback: string) => {
 const hasSession = async () => Boolean((await getCloudSession()).token);
 
 export const STORE_PRODUCTS = products;
+export const isLaunchGiftOnlyRelease = (): boolean => release.release.purchase === false;
 export async function initializePurchases(): Promise<PurchaseRuntime> {
   runtime = release.release.purchase === true
     ? { status: "ready", message: "期限卡到期即停，不会自动续费。", products }

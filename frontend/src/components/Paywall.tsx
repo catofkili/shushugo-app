@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Crown, RotateCcw, X } from "lucide-react";
-import { FeatureId, ProductId, type LaunchGiftAvailability } from "../lib/entitlements";
-import { getPurchaseRuntime, initializePurchases, purchaseProduct, restorePurchases, StoreProduct } from "../lib/purchases";
+import { entitlementExpiryLabel, FeatureId, ProductId, type LaunchGiftAvailability } from "../lib/entitlements";
+import { getPurchaseRuntime, initializePurchases, isLaunchGiftOnlyRelease, purchaseProduct, restorePurchases, StoreProduct } from "../lib/purchases";
 import { claimLaunchGift, getCloudSession, refreshLaunchGiftAvailability } from "../lib/sync-api";
 import { Sticker } from "./CapybaraMascot";
 import { useEntitlements } from "../hooks/useEntitlements";
@@ -15,6 +15,7 @@ interface PaywallProps {
   onOpenPrivacy?: () => void;
   /** 小程序：购买 / 领赠送 / 恢复都要先微信登录，由调用方打开登录框。 */
   onRequireAuth?: () => void;
+  isAuthenticated?: boolean;
 }
 
 // Apple 标准 EULA(App Store Connect 未配置自定义 EULA 时即适用此条款)
@@ -63,10 +64,12 @@ const featureCopy: Record<FeatureId, { title: string; body: string }> = {
 
 // 小程序和网页共用这一个小窗（2026-09-26 删掉了另写的 Paywall.weapp.tsx：整屏深色遮罩、赠送期间藏掉购买、没登录也能点买）。
 // 平台差异只有三处，都是微信虚拟支付本身带来的：期限卡说明代替 Apple 自动续订条款、首发赠送、先登录再买。
-export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequireAuth }: PaywallProps) {
+export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequireAuth, isAuthenticated = false }: PaywallProps) {
   const isWechatMini = Capacitor.getPlatform() === "wechat";
+  const giftOnly = isWechatMini && isLaunchGiftOnlyRelease();
   const entitlements = useEntitlements();
   const [gift, setGift] = useState<LaunchGiftAvailability>();
+  const [giftChecked, setGiftChecked] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
   const [products, setProducts] = useState<StoreProduct[]>(() => getPurchaseRuntime().products);
@@ -77,18 +80,27 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
     title: "升级收集日 Pro",
     body: "解锁更完整的学习节奏、统计和训练入口。"
   };
+  const title = giftOnly
+    ? feature ? `${copy.title.replace("是 Pro 功能", "")}可由首月会员解锁` : "首月会员赠送"
+    : copy.title;
 
   useEffect(() => {
-    initializePurchases().then((runtime) => {
+    if (!giftOnly) initializePurchases().then((runtime) => {
       setProducts(runtime.products);
       setStatus(runtime.message);
     });
-    if (isWechatMini) void refreshLaunchGiftAvailability().then(setGift).catch(() => setGift(undefined));
-  }, [isWechatMini]);
+    if (isWechatMini) void refreshLaunchGiftAvailability().then((availability) => {
+      setGift(availability);
+      setGiftChecked(true);
+    }).catch(() => {
+      setGift(undefined);
+      setGiftChecked(true);
+    });
+  }, [giftOnly, isWechatMini]);
 
   useEffect(() => {
-    if (entitlements.isPro) onUnlocked?.();
-  }, [entitlements.isPro, onUnlocked]);
+    if (entitlements.isPro && !giftOnly) onUnlocked?.();
+  }, [entitlements.isPro, giftOnly, onUnlocked]);
 
   // 这是非模态小窗，不再困住 Tab：用户可以关、可以买，也可以直接继续用背后的页面。
   useEffect(() => {
@@ -124,7 +136,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
   };
 
   const claimGift = async () => {
-    if (!(await getCloudSession()).token) {
+    if (!isAuthenticated || !(await getCloudSession()).token) {
       setStatus("微信登录后就能领取。");
       onRequireAuth?.();
       return;
@@ -134,7 +146,9 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
       await claimLaunchGift();
       setStatus("首月会员已领取。");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "领取失败，请稍后重试。");
+      const latest = await refreshLaunchGiftAvailability().catch(() => undefined);
+      if (latest) setGift(latest);
+      setStatus(latest?.open === false ? "首月赠送活动已结束。" : error instanceof Error ? error.message : "领取失败，请稍后重试。");
     } finally {
       setClaiming(false);
     }
@@ -151,7 +165,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
         <div className="paywall-popover-head">
           <span>
             <Crown size={13} />
-            收集日 Pro
+            {giftOnly ? "首月赠送会员" : "收集日 Pro"}
           </span>
           <button type="button" onClick={onClose} aria-label="关闭会员提示"><X size={16} /></button>
         </div>
@@ -160,18 +174,32 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
         <div className="paywall-popover-intro">
           <Sticker name="mood-shy" size={40} className="paywall-popover-mascot" />
           <div className="min-w-0">
-            <h2>{copy.title}</h2>
+            <h2>{title}</h2>
             <p>{copy.body}</p>
           </div>
         </div>
 
-        {gift?.open && !entitlements.isPro && (
+        {giftOnly ? (
+          entitlements.isPro ? (
+            <p className="paywall-popover-gift" role="status">
+              {entitlements.productId === "shushugo_pro_launch_gift" ? "首月会员已领取" : "会员权益已启用"} · {entitlementExpiryLabel(entitlements)}
+            </p>
+          ) : gift?.open ? (
+            <button className="paywall-popover-gift" onClick={claimGift} disabled={claiming}>
+              {claiming ? "领取中…" : isAuthenticated ? "领取首月会员" : "登录领取首月会员"}
+            </button>
+          ) : (
+            <p className="paywall-popover-gift" role="status">
+              {gift?.open === false ? "首月赠送活动已结束" : giftChecked ? "暂时无法查询首月赠送活动" : "正在查询首月赠送活动…"}
+            </p>
+          )
+        ) : gift?.open && !entitlements.isPro && (
           <button className="paywall-popover-gift" onClick={claimGift} disabled={claiming || busyProduct !== null}>
             {claiming ? "领取中…" : "登录领取首月会员"}
           </button>
         )}
 
-        <div className="paywall-popover-products" aria-label="会员方案">
+        {!giftOnly && <div className="paywall-popover-products" aria-label="会员方案">
           {products.map((product) => (
             <button
               key={product.id}
@@ -184,9 +212,9 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
               <small>{busyProduct === product.id ? "处理中…" : product.price}</small>
             </button>
           ))}
-        </div>
+        </div>}
 
-        <div className="paywall-popover-actions">
+        {!giftOnly && <div className="paywall-popover-actions">
           <p title={status}>{status}</p>
           <button
             onClick={restore}
@@ -195,9 +223,14 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
           >
             <RotateCcw size={13} />{restoring ? "恢复中" : "恢复"}
           </button>
-        </div>
+        </div>}
 
-        {isWechatMini ? (
+        {giftOnly ? (
+          <p className="paywall-popover-legal">
+            首月会员赠送与账号权益说明。
+            {onOpenPrivacy && <button onClick={onOpenPrivacy}>隐私</button>}
+          </p>
+        ) : isWechatMini ? (
           <p className="paywall-popover-legal">
             月卡、季卡、年卡一次付款，到期即停，不会自动续费；永久版一次买断。
             {onOpenPrivacy && <button onClick={onOpenPrivacy}>隐私</button>}

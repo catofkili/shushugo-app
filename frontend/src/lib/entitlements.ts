@@ -28,6 +28,14 @@ export interface EntitlementState {
   updatedAt: string;
 }
 
+export function entitlementExpiryLabel(state: Pick<EntitlementState, "productId" | "expiresAt">): string {
+  if (!state.expiresAt) return state.productId === "shushugo_pro_lifetime" ? "长期有效" : "到期日待确认";
+  const date = new Date(state.expiresAt);
+  return Number.isNaN(date.getTime())
+    ? "到期日待确认"
+    : `到期日 ${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 const KEY = "mn-entitlements";
 /**
  * 本地 StoreKit 授权(没经过云端校验)的最长离线有效期。

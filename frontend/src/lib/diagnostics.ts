@@ -141,7 +141,7 @@ const systemInfo = (): { name: string; version: string; baseLibraryVersion?: str
 export const collectDiagnostics = (): DiagnosticsSnapshot => {
   const platform = Capacitor.getPlatform();
   const system = systemInfo();
-  const version = (globalThis as typeof globalThis & { __APP_VERSION__?: string }).__APP_VERSION__;
+  const version = typeof __APP_VERSION__ === "string" ? __APP_VERSION__ : undefined;
   const recentErrors = readStoredErrors();
   safeStorage.set(ERROR_KEY, JSON.stringify(recentErrors));
   const recentRoutes = readRecentRoutes();

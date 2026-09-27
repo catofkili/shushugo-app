@@ -13,6 +13,7 @@ import { getAppState, setAppState, useAppState, type AppState } from '../../../f
 import type { Page, StudyMode } from '../../../frontend/src/types/app';
 import { useStudyStore } from '../../../frontend/src/hooks/useStudyStore';
 import { useEntitlements } from '../../../frontend/src/hooks/useEntitlements';
+import { recordDiagnosticRoute } from '../../../frontend/src/lib/diagnostics';
 import { finishStartupTiming, perfRecord, perfTime, perfTimeAsync } from '../../../frontend/src/lib/perf-marks';
 import { canUseFeature, type FeatureId } from '../../../frontend/src/lib/entitlements';
 import { getProgressOverview } from '../../../frontend/src/lib/api';
@@ -205,6 +206,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   };
 
   useDidShow(() => {
+    recordDiagnosticRoute(page);
     activeNavigate = (target, params) => navigatePage(target, params);
     activeRefreshOverview = () => { try { setOverview(getProgressOverview()); } catch { /* database opening */ } };
     const pendingWeek = consumePendingWeeklyReportWeekStart();

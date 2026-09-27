@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   canUseFeature,
   clearEntitlements,
+  entitlementExpiryLabel,
   getEntitlements,
   grantPro,
   productLabel,
@@ -112,5 +113,19 @@ describe("productLabel", () => {
     expect(productLabel("shushugo_pro_yearly")).toBe("年度 Pro");
     expect(productLabel("shushugo_pro_lifetime")).toBe("永久 Pro");
     expect(productLabel(undefined)).toBe("免费版");
+  });
+});
+
+describe("entitlementExpiryLabel", () => {
+  it("formats the entitlement date without implying an unknown lifetime", () => {
+    const date = new Date("2026-09-27T12:00:00");
+    const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    expect(entitlementExpiryLabel({ productId: "shushugo_pro_launch_gift", expiresAt: date.toISOString() })).toBe(`到期日 ${formatted}`);
+    expect(entitlementExpiryLabel({ productId: "shushugo_pro_launch_gift" })).toBe("到期日待确认");
+  });
+
+  it("recognizes lifetime membership and rejects invalid dates", () => {
+    expect(entitlementExpiryLabel({ productId: "shushugo_pro_lifetime" })).toBe("长期有效");
+    expect(entitlementExpiryLabel({ productId: "shushugo_pro_monthly", expiresAt: "invalid" })).toBe("到期日待确认");
   });
 });

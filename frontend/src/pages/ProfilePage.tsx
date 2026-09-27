@@ -11,8 +11,9 @@ import {
   Trophy,
   UserRound
 } from "lucide-react";
-import { EntitlementState, productLabel } from "../lib/entitlements";
-import { cloudLogout, type CloudSession } from "../lib/sync-api";
+import { entitlementExpiryLabel, EntitlementState, productLabel } from "../lib/entitlements";
+import { cloudLogout, refreshLaunchGiftAvailability, type CloudSession } from "../lib/sync-api";
+import { isLaunchGiftOnlyRelease } from "../lib/purchases";
 import { loadUserProfile, type UserProfile } from "../lib/userProfile";
 import { Page } from "../types/app";
 import { useEffect, useMemo, useState } from "react";
@@ -70,6 +71,8 @@ const profileSections = [
 
 export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireAuth, onNotice, onFeedback }: ProfilePageProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [giftOpen, setGiftOpen] = useState<boolean | undefined>(entitlements.launchGift?.open);
+  const giftOnly = isLaunchGiftOnlyRelease();
 
   useEffect(() => {
     let alive = true;
@@ -78,6 +81,11 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
     });
     return () => { alive = false; };
   }, [cloudSession.displayName]);
+
+  useEffect(() => {
+    if (!giftOnly) return;
+    void refreshLaunchGiftAvailability().then((gift) => setGiftOpen(gift?.open)).catch(() => setGiftOpen(undefined));
+  }, [giftOnly]);
 
   const stats = useMemo(() => readProfileStats(), []);
 
@@ -150,14 +158,15 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
       )}
 
       <button
-        onClick={() => onNavigate("pro")}
+        onClick={() => giftOnly && !entitlements.isPro && giftOpen && !cloudSession.token ? onRequireAuth() : onNavigate("pro")}
         className="focus-ring mt-4 flex w-full items-center gap-3 rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/12 p-4 text-left hover:bg-[#81D8CF]/18"
       >
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#81D8CF] text-[#343838]">
           <Crown size={23} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-base font-bold text-white">{entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</span>
+          <span className="block text-base font-bold text-white">{giftOnly ? entitlements.isPro ? "首月会员已启用" : giftOpen === false ? "首月赠送活动已结束" : "首月赠送会员" : entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</span>
+          {giftOnly && <span className="mt-0.5 block text-xs text-white/50">{entitlements.isPro ? entitlementExpiryLabel(entitlements) : giftOpen ? cloudSession.token ? "领取首月会员" : "登录领取首月会员" : giftOpen === false ? "赠送窗口已关闭" : "查看首月赠送状态"}</span>}
         </span>
         <ChevronRight size={18} className="text-white/45" />
       </button>

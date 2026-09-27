@@ -2,15 +2,15 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1895311,
+      "bytes": 1897766,
       "passes": true
     },
     "study": {
-      "bytes": 298343,
+      "bytes": 300142,
       "passes": true
     },
     "account": {
-      "bytes": 248831,
+      "bytes": 251805,
       "passes": true
     },
     "content-pages": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 565332,
+      "bytes": 567937,
       "passes": true
     }
   },
@@ -263,6 +263,14 @@
       ]
     },
     {
+      "source": "/private/tmp/claude-gram/frontend/src/components/ProReadingPreview.tsx",
+      "bytes": 6337,
+      "packages": [
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "/private/tmp/claude-gram/frontend/src/lib/share-image.weapp.ts",
       "bytes": 6216,
       "packages": [
@@ -367,14 +375,6 @@
         "content-pages",
         "grammar-pages",
         "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ProReadingPreview.tsx",
-      "bytes": 2476,
-      "packages": [
-        "lazy",
-        "study"
       ]
     },
     {
@@ -900,6 +900,15 @@
       "reason": "The folder picker is shared by study, content, grammar, and lazy tab routes."
     },
     {
+      "source": "frontend/src/components/ProReadingPreview.tsx",
+      "bytes": 6337,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "The study and lazy tab routes each render the reading preview."
+    },
+    {
       "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
       "bytes": 4911,
       "packages": [
@@ -937,15 +946,6 @@
         "lazy"
       ],
       "reason": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant)."
-    },
-    {
-      "source": "frontend/src/components/ProReadingPreview.tsx",
-      "bytes": 2476,
-      "packages": [
-        "lazy",
-        "study"
-      ],
-      "reason": "The study and lazy tab routes each render the reading preview."
     },
     {
       "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
@@ -1033,11 +1033,11 @@
     "frontend/src/components/FloatingDoodlePen.weapp.tsx": "The annotation control is used by the grammar subpackage and lazy grammar interface.",
     "frontend/src/pages/GrammarDetail.tsx": "Grammar detail is reachable through both content and grammar route packages.",
     "frontend/src/components/FavoriteFolderPicker.tsx": "The folder picker is shared by study, content, grammar, and lazy tab routes.",
+    "frontend/src/components/ProReadingPreview.tsx": "The study and lazy tab routes each render the reading preview.",
     "frontend/src/components/ShareImageSheet.weapp.tsx": "The share sheet is rendered by study, content, and lazy tab routes in their own package graphs.",
     "frontend/src/components/GrammarPointPopover.tsx": "Grammar point previews are used by lazy tabs and content/grammar routes.",
     "frontend/src/components/daily-plan-ring-geometry.ts": "Ring geometry shared by the Canvas ring; duplicated alongside it.",
     "frontend/src/components/GrammarTermHint.weapp.tsx": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant).",
-    "frontend/src/components/ProReadingPreview.tsx": "The study and lazy tab routes each render the reading preview.",
     "frontend/src/components/CrossPlatformImage.weapp.tsx": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.",
     "frontend/src/components/Disclosure.weapp.tsx": "Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.",
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
@@ -1046,7 +1046,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 233964,
+  "duplicatedPageComponentBytes": 237825,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1085,7 +1085,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 79605
+      "bytes": 79810
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/lib/study-core.ts",
