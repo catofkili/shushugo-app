@@ -53,8 +53,8 @@ const profileSections = [
       { label: "账号和安全", detail: "登录、密码与设备", icon: Shield, page: "account" as Page },
       // 「收集日 Pro」不在这张表里:上面那张会随已购状态换文案的横幅指的是同一个页面,
       // 同一屏里把同一个入口摆两遍,只会让人以为它们通向不同的地方。
-      { label: "个人信息", detail: "头像、昵称、学习身份", icon: UserRound, page: "personal-info" as Page },
-      { label: "成就", detail: "47 个成就，含隐藏成就", icon: Trophy, page: "achievements" as Page },
+      { label: "个人信息", detail: "头像、昵称、学习目标", icon: UserRound, page: "personal-info" as Page },
+      { label: "成就", detail: "共 47 个，有些是隐藏的", icon: Trophy, page: "achievements" as Page },
       { label: "通知提醒", detail: "学习提醒和复习通知", icon: Bell, page: "notifications" as Page }
     ]
   },
@@ -63,7 +63,7 @@ const profileSections = [
     items: [
       { label: "设置", detail: "显示、声音和学习偏好", icon: Settings, page: "settings" as Page },
       { label: "隐私", detail: "本地数据与同步权限", icon: LockKeyhole, page: "privacy" as Page },
-      { label: "帮助和支持", detail: "使用教程、反馈与常见问题", icon: CircleHelp, page: "help" as Page },
+      { label: "帮助和支持", detail: "常见问题和反馈", icon: CircleHelp, page: "help" as Page },
       { label: "关于收集日", detail: "内容来源和应用信息", icon: Info, page: "about" as Page }
     ]
   }
@@ -91,7 +91,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
 
   const logout = async () => {
     await cloudLogout();
-    onNotice("已退出账号；本机学习数据仍可离线使用。", 2600);
+    onNotice("已退出。本机的学习记录还在。", 2600);
   };
 
   return (
@@ -117,9 +117,10 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
             <p className="mt-1 truncate text-sm text-white/58">
               {cloudSession.token ? cloudSession.email : "登录后多设备同步"}
             </p>
-            <p className="mt-2 inline-flex rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/62">
-              {entitlements.isPro ? productLabel(entitlements.productId) : cloudSession.token ? "免费账号" : "离线学习可用"}
-            </p>
+            {/* 没登录时上面一行已经说了「登录后多设备同步」，不再挂标签（原来是「离线学习可用」，关于页也已去掉离线的说法） */}
+            {(entitlements.isPro || cloudSession.token) && <p className="mt-2 inline-flex rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/62">
+              {entitlements.isPro ? productLabel(entitlements.productId) : "免费账号"}
+            </p>}
           </div>
           {!cloudSession.token && (
             <button onClick={onRequireAuth} className="focus-ring shrink-0 rounded-2xl bg-[#91C968] px-4 py-2 text-sm font-bold text-[#172112]">
@@ -137,7 +138,7 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
         <Sticker name="mood-ask" size={48} className="shrink-0" />
         <span className="min-w-0 flex-1">
           <span className="block text-base font-bold">提意见 / 报问题</span>
-          <span className="mt-0.5 block text-sm opacity-80">哪里不好用、想要什么功能，直接告诉我们</span>
+          <span className="mt-0.5 block text-sm opacity-80">哪里不好用、缺什么，直接说</span>
         </span>
         <ChevronRight size={19} />
       </button>

@@ -268,7 +268,7 @@
 }
 /* 不画外框（用户 2026-09-27：绿框多余）：一条圆角细轨道，走过的那段填主色，和水豚的位置用同一个比例 */
 .zoo-trail-line{position:absolute;left:10px;right:var(--zoo-trail-tail);top:17px;height:4px;border-radius:999px;
-  background:var(--ds-inset);overflow:hidden}
+  background:rgba(128,128,128,.2);overflow:hidden}
 .zoo-trail-fill{position:absolute;left:0;top:0;bottom:0;border-radius:inherit;background:var(--ds-primary);
   transition:width .38s cubic-bezier(.34,1.4,.6,1)}
 .zoo-trail-stations{position:absolute;left:10px;right:var(--zoo-trail-tail);top:10px;display:flex;justify-content:space-between}

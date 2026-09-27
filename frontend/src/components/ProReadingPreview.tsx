@@ -58,7 +58,7 @@ export const ProReadingGate = ({ title, onUpgrade, onRequireAuth }: {
         {/* 三角里坐一只害羞的水豚：这块是「请你开通」，不是一面冷冰冰的墙 */}
         <Sticker name="mood-shy" size={64} className="pro-reading-preview-mascot" />
         <span><Crown size={14} aria-hidden="true" />{giftOnly ? "首月赠送会员" : "收集日 Pro"}</span>
-        <h2>{giftOnly ? `领取首月赠送以解锁完整${title}` : `解锁完整${title}`}</h2>
+        <h2>{giftOnly ? `领首月会员，看完整${title}` : `解锁完整${title}`}</h2>
         <button type="button" onClick={() => void activate()} disabled={claiming || giftOnly && !launchGiftOpen}>{claiming ? "领取中…" : buttonText}</button>
       </div>
     </div>

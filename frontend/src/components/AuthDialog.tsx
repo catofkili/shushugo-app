@@ -294,7 +294,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
             <div className="mx-auto max-w-[480px] space-y-4">
               {mode === "login" && (
                 <>
-                  <p className="text-sm leading-6 text-white/58">不登录也能离线学习。</p>
+                  <p className="text-sm leading-6 text-white/58">不登录也能学，记录存在本机。</p>
                   {wechatLoginAvailable && (
                     <button
                       onClick={() => void wechatLogin()}

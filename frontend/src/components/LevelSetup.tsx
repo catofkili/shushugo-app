@@ -150,26 +150,22 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
           <header className="ls-head">
             <Sticker name={giftPage ? "mood-yay" : "mood-wave"} size={84} className="ls-head-mascot" />
             <div className="min-w-0 flex-1">
-              <p className="ds-kicker">{giftPage ? "首次设定完成" : dismissible ? "调整学习计划" : "欢迎来到收集日"}</p>
+              <p className="ds-kicker">{giftPage ? "计划排好了" : dismissible ? "调整学习计划" : "欢迎来到收集日"}</p>
               <h2 className="ls-title">{giftClaimed ? "首月会员已领取" : giftPage ? "送你一个月会员" : "先定个小目标"}</h2>
               <p className="ls-sub">{giftPage
-                ? giftClaimed ? "领取成功，现在可以开始学习。" : `疑难辨析、一字多音、混合学习。领取截止日：${dateLabel(gift?.claimUntil)}。`
+                ? giftClaimed ? `会员到 ${dateLabel(entitlement.expiresAt)}` : `免费领取，无需绑定支付方式。${dateLabel(gift?.claimUntil)} 前有效`
                 : "四件事，选完就排好每天学什么。之后随时能改。"}</p>
             </div>
             {dismissible && <button className="ds-icon-btn focus-ring grid h-10 w-10 shrink-0 place-items-center rounded-full" onClick={onClose} aria-label="关闭"><X size={18} /></button>}
           </header>
 
-          {giftPage ? giftClaimed ? (
-            <MascotSay sticker="mood-yay" tone="good" size={64} className="ds-say-onbg mt-5">
-              已领取，会员到 {dateLabel(entitlement.expiresAt)}。
-            </MascotSay>
-          ) : (
-            <section className="ds-card p-4">
-              <p className="text-sm leading-6">免费领取，无需绑定支付方式。</p>
-              <p className="mt-2 text-sm leading-6">现在跳过也没关系，之后可以在「我的」或会员页领取。</p>
-              <MascotSay sticker="mood-yay" className="ds-say-onbg mt-4">
-                {giftError || "免费解锁疑难辨析、一字多音、混合学习等会员功能。"}
-              </MascotSay>
+          {/* 一屏一只吉祥物：头部那只已经在笑了，正文只列会员多了什么；领取失败才让吉祥物出来说原因 */}
+          {giftPage ? giftClaimed ? null : (
+            <section className="ds-card mt-2 p-4">
+              <p className="text-sm font-bold">会员能用</p>
+              <p className="mt-1 text-sm leading-6">疑难辨析、一字多音、混合学习等全部会员功能。</p>
+              <p className="mt-3 text-xs jp-muted">不领也能先学，之后在「我的」里领。</p>
+              {giftError && <MascotSay sticker="mood-puzzled" tone="warn" size={48} className="mt-3">{giftError}</MascotSay>}
             </section>
           ) : <>
           <Step n={1} title="你现在学到哪里？">

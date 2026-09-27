@@ -2039,8 +2039,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 </div>
               ) : (
                 <div>
-                  <p className="text-2xl font-semibold text-white/70">答案已隐藏</p>
-                  <p className="mt-3 text-sm text-white/55">{isReversePhase ? "先回忆中文释义" : "先回忆假名和汉字"}</p>
+                  {/* 翻面前这一屏最大的字必须是题面（在卡片上方），这里只留一句小提示；「答案已隐藏」大字是废话 */}
+                  <p className="text-sm text-white/55">{isReversePhase ? "想一想中文意思" : "想一想怎么读、怎么写"}</p>
                 </div>
               )}
             </ScrollArea>

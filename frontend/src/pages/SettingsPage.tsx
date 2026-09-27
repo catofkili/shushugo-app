@@ -201,7 +201,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
           preview.duplicateRows ? `文件内重复 ${preview.duplicateRows} 行会自动跳过。` : "",
           preview.skippedRows ? `另有 ${preview.skippedRows} 行未识别。` : "",
           sampleText ? `示例：${sampleText}` : "",
-          "导入会追加新词，并把带记忆信息的生词分批放入复习，不会覆盖整份数据库。"
+          "导入只追加新词，不覆盖现有数据；带记忆记录的词会分批进复习。"
         ].filter(Boolean).join("\n")
       );
       if (!confirmed) return;
@@ -439,7 +439,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">答题音效</p>
-              <p className="mt-0.5 text-xs text-white/50">评分 / 翻卡 / 完成时的木质提示音</p>
+              <p className="mt-0.5 text-xs text-white/50">评分、翻卡、完成时的提示音</p>
             </div>
             <label className="relative inline-flex cursor-pointer items-center">
               <input

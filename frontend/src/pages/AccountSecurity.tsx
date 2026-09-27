@@ -478,9 +478,9 @@ export function AccountSecurity({ onBack, cloudSession }: AccountSecurityProps) 
 
       {/* 提示信息 */}
       <div className="mt-4 rounded-2xl border border-[#91C968]/20 bg-[#91C968]/12 p-3 text-xs text-[#B7E38D]">
-        <p className="font-bold">账号与离线学习</p>
+        <p className="font-bold">退出之后</p>
         <p className="mt-1 text-white/55">
-          退出账号后仍可离线学习；重新登录后会继续同步本机产生的新进度。
+          本机的学习记录还在，照样能学；重新登录后接着同步。
         </p>
       </div>
     </div>

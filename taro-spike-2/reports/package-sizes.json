@@ -2,22 +2,22 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1869159,
-      "mib": 1.783,
+      "bytes": 1868879,
+      "mib": 1.782,
       "passes": true
     },
     "study": {
-      "bytes": 300772,
+      "bytes": 300760,
       "mib": 0.287,
       "passes": true
     },
     "account": {
-      "bytes": 258183,
+      "bytes": 257656,
       "mib": 0.246,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1059778,
+      "bytes": 1059644,
       "mib": 1.011,
       "passes": true
     },
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 573912,
+      "bytes": 573565,
       "mib": 0.547,
       "passes": true
     }
   },
-  "totalBytes": 8115143,
+  "totalBytes": 8113843,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 869651
+      "bytes": 869369
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 572162
+      "bytes": 571815
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -112,7 +112,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 234062
+      "bytes": 234064
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -207,7 +207,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 37963
+      "bytes": 37927
     },
     {
       "path": "content-pages/assets/brand/item-sound-marimba-2.png",
@@ -257,7 +257,7 @@
     {
       "path": "account/account/index.js",
       "package": "account",
-      "bytes": 28233
+      "bytes": 28179
     },
     {
       "path": "assets/brand/walk-strip.png",
@@ -437,12 +437,12 @@
     {
       "path": "content-pages/yuzu-shop/index.js",
       "package": "content-pages",
-      "bytes": 13238
+      "bytes": 13116
     },
     {
       "path": "account/pro/index.js",
       "package": "account",
-      "bytes": 12502
+      "bytes": 12065
     },
     {
       "path": "assets/brand/scene-stretch.png",
@@ -572,7 +572,7 @@
     {
       "path": "content-pages/about/index.js",
       "package": "content-pages",
-      "bytes": 7967
+      "bytes": 7955
     },
     {
       "path": "content-pages/sub-common/fb02c483f17f7447c1f19c294fe921bf.js",
@@ -832,7 +832,7 @@
     {
       "path": "study/sub-common/359e4bb7fe7ba0ab05a21268542f0d38.js",
       "package": "study",
-      "bytes": 3159
+      "bytes": 3147
     },
     {
       "path": "grammar-pages/sub-common/919ce1ff01ebe0526587e3e1af0a2261.js",

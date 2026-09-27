@@ -200,14 +200,14 @@ export function ZooHome({
   // 问候语只说**别处没说过的**：剩余量顶栏的进度条和大卡已经各写了一遍。
   // 这里给的是当天的状态和连击 —— 同一屏里同一个数字出现三次，是这页显吵的主因之一。
   const greetLine = !stats
-    ? "正在读取今天的计划…"
+    ? "正在读取…"
     : total === 0
       ? "今天还没排计划"
       : remaining === 0
-        ? "今天的路走完了 🎉"
+        ? "今天学完了，歇会儿吧"
         : streak > 0
-          ? `连着 ${streak} 天没断，今天接着走`
-          : "今天的路已经排好了";
+          ? "今天也接着来" // 连续天数右边火苗那枚已经写着，这里不再说一遍
+          : "今天的计划排好了";
 
   // 大按钮说的是「当前有效模式现在有多少题」,而不是永远播报今日计划 ——
   // 正常模式完成后,当前有效模式会在当天临时变成错题本。
@@ -236,7 +236,7 @@ export function ZooHome({
     : activeMode === "mistakes"
       ? `今天攻掉 ${stats.mistakes.answeredToday} 个`
       : isPlanMode
-        ? (activeCount > 0 ? "走一趟今天的路" : `今天走了 ${done} 站`)
+        ? (activeCount > 0 ? (done > 0 ? "今天还剩" : "今天要学") : `今天学了 ${done} 个`)
         : activeInfo.subtitle;
   const heroCta = activeCount > 0 ? (done > 0 ? "继续" : "开始") : isPlanMode ? "再来一批" : "去看看";
 
@@ -366,7 +366,7 @@ export function ZooHome({
             {/* 原来是 🙂🐿️🐼🐧 四个 emoji 排成一排，换成作者画的组队头图（和组队页头图同一张） */}
             <small className="zoo-duo-avatars">
               <Sticker name="scene-team" size={34} className="zoo-duo-team" />
-              <em>创建、加入或邀请学习队伍</em>
+              <em>建队，或凭邀请码加入</em>
             </small>
           </button>
         </div>

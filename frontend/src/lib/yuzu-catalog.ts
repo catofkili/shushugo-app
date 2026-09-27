@@ -34,7 +34,7 @@ export const CATEGORY_LABEL: Record<YuzuCategory, string> = {
   icon: "App 图标",
   voice: "发音声音",
   sound: "答题音效",
-  misc: "其它"
+  misc: "其他"
 };
 
 /** 买了要「使用」才生效的槽位 */

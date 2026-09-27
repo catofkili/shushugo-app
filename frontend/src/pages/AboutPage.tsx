@@ -32,7 +32,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4">
         <h2 className="mb-3 text-sm font-bold text-white">应用介绍</h2>
         <p className="text-sm leading-relaxed text-white/70">
-          收集日是一款离线日语学习应用，内置 10,919 个 JLPT 词条、882 个固定搭配与固定表达，以及 769 个语法点。
+          收集日是一款日语学习应用，内置 10,919 个 JLPT 词条、882 个固定搭配与固定表达，以及 769 个语法点。
           单词、汉字读音和语法三条线都由同一套 FSRS 记忆算法排复习。
         </p>
       </div>

@@ -495,7 +495,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 <Flame size={18} />
                 快速复习这 {stubborn.length} 个顽固词
               </button>
-              <p className="fin-note">一页一页过，只挑没记住的</p>
+              <p className="fin-note">一页页翻，只挑没记住的</p>
             </section>
           )}
 
@@ -503,7 +503,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             <section className="fin-block">
               {encore.fatigued ? (
                 <>
-                  <MascotSay sticker="mood-sleep" size={52}>正确率在往下掉了。剩下的明天清，更高效。</MascotSay>
+                  <MascotSay sticker="mood-sleep" size={52}>正确率在往下掉，剩下的明天再清吧。</MascotSay>
                   <button onClick={() => onEncore?.(encoreCount)} className="focus-ring ds-btn-soft mt-3 w-full">
                     仍要再来 {encoreCount} 个 · 约 {encoreMinutes} 分钟
                   </button>
@@ -584,8 +584,8 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                   )}
                   <p className="fin-note">
                     {encore.remaining > 0
-                      ? `待清积压还剩 ${encore.remaining} 个，优先复习`
-                      : `积压已清空，这批是新词 · 库存 ${encore.unseenRemaining} 个`}
+                      ? `先复习积压的 ${encore.remaining} 个`
+                      : `积压清完了，这批是新词（还剩 ${encore.unseenRemaining} 个没学）`}
                   </p>
                 </>
               )}

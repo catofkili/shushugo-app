@@ -82,7 +82,7 @@ export function Paywall({ feature, onClose, onUnlocked, onOpenPrivacy, onRequire
     body: "解锁更完整的学习节奏、统计和训练入口。"
   };
   const title = giftOnly
-    ? feature ? `${copy.title.replace("是 Pro 功能", "")}可由首月会员解锁` : "首月会员赠送"
+    ? feature ? `领首月会员就能用${copy.title.replace("是 Pro 功能", "")}` : "首月会员赠送"
     : copy.title;
 
   useEffect(() => {

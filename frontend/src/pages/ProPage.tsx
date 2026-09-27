@@ -32,10 +32,9 @@ const rows = [
   { label: "一字多音", detail: "520 个多音字，什么时候读哪个音", live: true },
   { label: "混合学习", detail: "单词、语法、汉字、辨析进同一条队列", live: true },
   { label: "沉浸式语法学习", detail: "低干扰阅读卡片，适合集中推进", live: true },
-  { label: "往日顽固词", detail: "翻回任意一天跟你打过架的词", live: true },
-  { label: "高级学习总览", detail: "整合单词、语法和等级进度", live: false },
-  { label: "完整 JLPT 规划", detail: "按 N1-N5 组织未来学习路线", live: false },
-  { label: "高级专项能力", detail: "专项训练和 AI 讲解", live: false }
+  { label: "往日顽固词", detail: "翻回任意一天跟你打过架的词", live: true }
+  // 2026-09-27 删了三行「开发中」（高级学习总览 / 完整 JLPT 规划 / 专项训练和 AI 讲解）：
+  // 会员页上摆没做出来的权益，审核按虚假宣传算，用户也会当成已经买到的东西。做出来再加回。
 ];
 
 export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, onOpenPaywall, onOpenPrivacy }: ProPageProps) {
@@ -107,10 +106,10 @@ export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, 
               {giftOnly && entitlements.isPro
                 ? `${productLabel(entitlements.productId)} · ${entitlementExpiryLabel(entitlements)}`
                 : entitlements.isPro
-                ? `${productLabel(entitlements.productId)} · ${isWechatMini ? "服务端会员权益" : entitlements.source === "development" ? "本地开发解锁" : "App Store 权益"}`
+                ? `${productLabel(entitlements.productId)} · ${isWechatMini ? entitlementExpiryLabel(entitlements) : entitlements.source === "development" ? "本地开发解锁" : "App Store 权益"}`
                 : giftOnly
-                ? "领取首月赠送会员，解锁下面列出的学习功能。"
-                : "当前为免费版。开通后下面标 ✓ 的功能立即可用。"}
+                ? "免费领取，无需绑定支付方式。下面这些都能用。"
+                : "开通后下面这些立即可用。"}
             </p>
           </div>
           <Sticker name={entitlements.isPro ? "mood-proud" : "mood-heart"} size={92} className="-mr-2 shrink-0" />
