@@ -42,7 +42,7 @@
 
 ## 来源和发布数据说明
 
-发布库中 `受験` 当前保存为 `报考`，例句为“来年、資格試験を受験するつもりです。”。历史导入库也保存为“报考”，说明该释义来自历史词库导入链，而不是本次全库人工查证的结论。后续审校会把来源追溯和语义判定分开，避免把“来源可追溯”误写成“释义正确”。
+发布库中 `受験` 原保存为 `报考`，例句为“来年、資格試験を受験するつもりです。”；历史导入库同样保存为“报考”，可追溯到历史词库导入链。更正：该词随后确实进入本次全库逐词审校（见 id 2926），此前“不是本次全库人工查证的结论”表述不准确。原审校记录引用 JMdict 的 “taking an examination”，却仍判为“通过”，与上方“单一语境译法不能替代常用核心义”的判据冲突；2026-09-28 复核已补正为“参加考试；应试；报考”，并同步修改例句译文。
 
 ## 逐条记录（按任务要求顺序）
 
@@ -2736,7 +2736,7 @@
 | 2923 | 手術（しゅじゅつ） | 手术 | JMdict 1327790；核心义=名词、する、他动: surgery；operation；procedure；词性=する/他动/名词；自他=他动；语域=废语；例句「父は来週、目の手術を受ける予定です。」；译文「父亲计划下周接受眼部手术。」；人工核对：词典surgery/operation，与释义一致 | 通过 |
 | 2924 | 手段（しゅだん） | 手段 | JMdict 1328110；核心义=名词: means；way；measure；词性=名词；例句「目的地までの交通手段を調べました。」；译文「我查了到目的地的交通手段。」；人工核对：词典means/way，与释义一致 | 通过 |
 | 2925 | 首都（しゅと） | 首都 | JMdict 1329340；核心义=名词: (national) capital (city)；metropolis；词性=名词；例句「首都には国内外から多くの人が集まります。」；译文「国内外很多人聚集在首都。」；人工核对：词典capital city，与释义一致 | 通过 |
-| 2926 | 受験（じゅけん） | 报考 | JMdict 1329740；核心义=名词、する、他动: taking an examination (esp. for entrance to a school or university)；词性=する/他动/名词；自他=他动；例句「来年、資格試験を受験するつもりです。」；译文「我打算明年报考资格考试。」；人工核对：词典taking an examination，与释义一致 | 通过 |
+| 2926 | 受験（じゅけん） | 报考（2026-09-28 复核后：参加考试；应试；报考） | JMdict 1329740；核心义=名词、する、他动: taking an examination (esp. for entrance to a school or university)；词性=する/他动/名词；自他=他动；原审校判“通过”；2026-09-28 复核：仅“报考”偏向报名手续，不能覆盖参加考试/应考核心义；例句译文由“我打算明年报考资格考试”修订为“我打算明年参加资格考试” | 原审校通过；后续复核补义 |
 | 2927 | 終了（しゅうりょう） | 结束 | JMdict 1333040；核心义=名词、する、他动、自动: end；close；conclusion；termination；词性=する/他动/名词/自动；自他=自动・他动；例句「作業が終了したら、電源を切ってください。」；译文「工作结束后请关闭电源。」；人工核对：词典end/conclusion，与释义一致 | 通过 |
 | 2928 | 集中（しゅうちゅう） | 集中 | JMdict 1333750；核心义=名词、する、他动、自动: concentration (on a task)；focusing one's attention；名词、する、他动、自动: concentration (of population, buildings, power, etc.)；centralization；convergence；focus (of a debate, questions, etc.)；名词: within a collection of works；词性=する/他动/名词/自动；自他=自动・他动；例句「静かな部屋でないと、勉強に集中できません。」；译文「不是安静的房间就无法集中学习。」；人工核对：词典concentration等义，与释义一致 | 通过 |
 | 2929 | 従う（したがう） | 遵从；跟随 | JMdict 1335210；核心义=五段、自动: to obey (an order, law, etc.)；to abide by (a rule, custom, etc.)；to follow；to observe；to conform to；to yield to；五段、自动: to follow (a person)；to accompany；to go with；五段、自动: to go alongside (e.g. a river)；to follow (e.g. a sign)；词性=五段/自动；自他=自动；例句「案内板に従って、会場へ向かいました。」；译文「我按照指示牌前往会场。」；人工核对：词典obey/follow等义，与释义一致 | 通过 |
