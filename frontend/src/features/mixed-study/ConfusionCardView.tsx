@@ -70,8 +70,13 @@ export const ConfusionCardView = ({ card, revealed, onReveal, onAnswer }: Props)
                   <div className="min-w-0">
                     <p className="jp break-words text-lg font-bold leading-6 text-white">{member.surface}</p>
                     <p className="jp mt-0.5 break-words text-xs leading-5 text-white/50">{member.kana}</p>
+                    {member.pairRole && <span className="mt-1 inline-flex rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/70">{member.pairRole}</span>}
                   </div>
-                  <p className="min-w-0 self-center text-sm leading-6 text-white/78">{member.note || "此组词的用法见总述。"}</p>
+                  <div className="min-w-0 self-center">
+                    <p className="text-sm leading-6 text-white/78">{member.note || "此组词的用法见总述。"}</p>
+                    {member.exampleJp && <p className="jp mt-2 break-words text-sm font-semibold leading-6 text-white/90"><span className="mr-1 text-[10px] font-normal text-white/45">例句</span>{member.exampleJp}</p>}
+                    {member.exampleMeaning && <p className="mt-0.5 break-words text-xs leading-5 text-white/65"><span className="mr-1 text-[10px] text-white/40">译文</span>{member.exampleMeaning}</p>}
+                  </div>
                 </div>
               ))}
             </div>
