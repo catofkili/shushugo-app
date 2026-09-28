@@ -98,7 +98,7 @@ export const nextStudyFocusYuzu = (day = today()): number => {
   return YUZU.focus[count] ?? 0;
 };
 
-/** 仅休息页的「继续」调用。完整窗口只是凭据，本身不会自动结算奖励。 */
+/** 仅休息页的宝箱领取操作调用。完整窗口只是凭据，本身不会自动结算奖励。 */
 export const claimStudyFocusYuzu = (windowId: string): number => {
   ensureYuzuScale();
   const window = rowsFor("SELECT completed_at FROM study_focus_windows WHERE id = ? AND kind = 'focus' AND active_ms = 600000", [windowId])[0];

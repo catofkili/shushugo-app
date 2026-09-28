@@ -52,7 +52,7 @@ import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
-import { continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
+import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
 interface WordStudyProps {
@@ -61,7 +61,6 @@ interface WordStudyProps {
   /** 完成页：今天顽固词太多时，把这批词交给快速学习过一遍（代替加餐）。 */
   onStubbornQuickStudy?: (wordIds: number[]) => void;
   onOpenDistinctionQuiz?: () => void;
-  onExitToHome?: () => void;
 }
 
 /* ——— 甩卡评分:左=忘记(Again) / 右=认识(Good) ——— */
@@ -218,7 +217,7 @@ const StudyFocusChip = ({ nextReward }: { nextReward: number }) => {
   );
 };
 
-export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStubbornQuickStudy, onOpenDistinctionQuiz, onExitToHome }: WordStudyProps) => {
+export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStubbornQuickStudy, onOpenDistinctionQuiz }: WordStudyProps) => {
   const { pickFolder, picker } = useFavoriteFolderPicker();
   const [card, setCard] = useState<WordCard | null>(null);
   const [unitKey, setUnitKey] = useState<string | null>(null);
@@ -744,17 +743,22 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     updateFocusSnapshot(recordStudyFocusAnswer(wordId, answer));
   }, [updateFocusSnapshot]);
 
+  const claimFocusReward = () => {
+    const earned = claimStudyFocusReward();
+    updateFocusSnapshot(getStudyFocusSnapshot());
+    if (earned > 0) {
+      try { settleYuzu(); } catch { /* 奖励已经入账，刷新余额失败不能拦领取 */ }
+    }
+  };
+
   const continueFocusCountdown = () => {
-    const earned = continueStudyFocus();
+    if (!continueStudyFocus()) return;
     focusBreakRef.current = false;
     studyClockRef.current = createStudyClock(Date.now());
     unreportedFocusMsRef.current = 0;
     const next = getStudyFocusSnapshot();
     setFocusSnapshot(next);
     if (card?.id || kanjiCard) trackingActiveRef.current = true;
-    if (earned > 0) {
-      try { settleYuzu(); } catch { /* 奖励已经入账，刷新余额失败不能拦学习 */ }
-    }
   };
 
   const stopFocusCountdown = () => {
@@ -765,12 +769,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setFocusSnapshot(next);
     studyClockRef.current = createStudyClock(Date.now());
     if (card?.id || kanjiCard) trackingActiveRef.current = true;
-  };
-
-  const exitDuringFocusBreak = () => {
-    leaveStudyFocus(FOCUS_SOURCE);
-    focusBreakRef.current = false;
-    onExitToHome?.();
   };
 
   useEffect(() => {
@@ -1577,7 +1575,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 </p>
               ) : summary?.baselineWindows ? (
                 <p className="study-focus-comparison">
-                  最近 {STUDY_FOCUS_BASELINE_DAYS} 天里 {summary.baselineWindows} 段十分钟平均记住 {baseline?.toFixed(1)} 个词；
+                  最近 {STUDY_FOCUS_BASELINE_DAYS} 天里平均每十分钟记住 {baseline?.toFixed(1)} 个词；
                   {summary.rememberedDelta! > 0
                     ? `这次多记 ${summary.rememberedDelta!.toFixed(1)} 个${summary.efficiencyChangePercent === null ? "。之前平均是 0，无法计算百分比。" : `，效率提升 ${summary.efficiencyChangePercent.toFixed(0)}%。`}`
                     : summary.rememberedDelta === 0
@@ -1586,13 +1584,43 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 </p>
               ) : <p className="study-focus-comparison">这是第一次完整记录，下一次就能和这次比较。</p>}
               <p className="study-focus-method">记忆情况按每个词本轮最后一次自评统计，不代表长期保持率。</p>
+              {summary?.qualified && reward > 0 && (
+                <div className={`study-focus-chest-claim${focusSnapshot.rewardClaimed ? " is-claimed" : ""}`}>
+                  <button
+                    className="study-focus-chest"
+                    type="button"
+                    onClick={claimFocusReward}
+                    disabled={focusSnapshot.rewardClaimed}
+                    aria-label={focusSnapshot.rewardClaimed ? `已领取 ${reward} 柚子` : `点击宝箱领取 ${reward} 柚子`}
+                  >
+                    <span className="study-focus-chest-art" aria-hidden="true">
+                      <i className="study-focus-chest-aura" />
+                      <i className="study-focus-chest-spark spark-one">✦</i>
+                      <i className="study-focus-chest-spark spark-two">✧</i>
+                      <i className="study-focus-chest-spark spark-three">✦</i>
+                      <i className="study-focus-chest-lid" />
+                      <i className="study-focus-chest-band chest-band-lid" />
+                      <i className="study-focus-chest-base" />
+                      <i className="study-focus-chest-band chest-band-base" />
+                      <i className="study-focus-chest-lock"><i /></i>
+                      <i className="study-focus-chest-prize">+{reward}</i>
+                    </span>
+                  </button>
+                  <span className="study-focus-chest-caption" aria-live="polite">
+                    {focusSnapshot.rewardClaimed ? `已领取 ${reward} 柚子` : `点击宝箱领取 ${reward} 柚子`}
+                  </span>
+                </div>
+              )}
+              {summary?.qualified && reward === 0 && <p className="study-focus-comparison">今天的九档柚子奖励已领完。</p>}
+              {summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed && (
+                <p className="study-focus-chest-hint">先领取本段奖励，再选择之后的学习方式。</p>
+              )}
               <div className="study-focus-actions">
-                <button className="study-focus-secondary" onClick={stopFocusCountdown}>之后不要倒计时</button>
-                <button className="study-focus-primary" onClick={continueFocusCountdown}>
-                  继续{reward > 0 ? `，领取 ${reward} 柚子` : summary && !summary.qualified ? "" : "，今天奖励已领完"}
+                <button className="study-focus-secondary" onClick={stopFocusCountdown} disabled={summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed}>之后不要倒计时</button>
+                <button className="study-focus-primary" onClick={continueFocusCountdown} disabled={summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed}>
+                  继续倒计时
                 </button>
               </div>
-              <button className="study-focus-exit" onClick={exitDuringFocusBreak}>{summary?.qualified && reward > 0 ? "回主页，本段奖励作废" : "回主页"}</button>
               <span className="study-focus-next">继续后开始下一段 10:00</span>
         </section>
       </ScrollArea>,

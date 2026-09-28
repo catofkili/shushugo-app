@@ -62,6 +62,7 @@ export interface StudyFocusSnapshot {
   remainingSeconds: number;
   summary: StudyFocusSummary | null;
   nextReward: number;
+  rewardClaimed: boolean;
 }
 interface Runtime {
   source: string | null;
@@ -70,8 +71,9 @@ interface Runtime {
   completedAt: number | null;
   summary: StudyFocusSummary | null;
   unsavedMs: number;
-  /** 下一段的柚子档位按学习日缓存：快照每秒都读，不能每秒查一次账本。领取后清掉。 */
+  /** 当前可领取档位按学习日缓存；领取后保留到开始下一段。 */
   reward: { day: string; value: number } | null;
+  rewardClaimed: boolean;
   answerHistory: {
     wordId: number;
     baselineId: string;
@@ -108,7 +110,7 @@ const runtime = (): Runtime => {
         baselines = Object.fromEntries(Object.entries(saved).filter(([, value]) => validWindow(value)));
       }
     } catch { /* 只丢损坏的未满窗口；历史记录和奖励账本不受影响。 */ }
-    current = { source: null, baselines, focus: null, completedAt: null, summary: null, unsavedMs: 0, reward: null, answerHistory: [] };
+    current = { source: null, baselines, focus: null, completedAt: null, summary: null, unsavedMs: 0, reward: null, rewardClaimed: false, answerHistory: [] };
     runtimes.set(db, current);
   }
   return current;
@@ -169,7 +171,8 @@ export const getStudyFocusSnapshot = (nowMs = Date.now()): StudyFocusSnapshot =>
     remainingSeconds: Math.max(0, Math.ceil((STUDY_FOCUS_WINDOW_MS - (current.focus?.activeMs ?? 0)) / 1000)),
     summary: current.summary,
     nextReward: current.summary && !current.summary.qualified
-      ? 0 : cachedNextReward(current, studyDate(new Date(current.completedAt ?? nowMs)))
+      ? 0 : cachedNextReward(current, studyDate(new Date(current.completedAt ?? nowMs))),
+    rewardClaimed: current.rewardClaimed
   };
 };
 
@@ -178,7 +181,7 @@ export const getStudyFocusSnapshot = (nowMs = Date.now()): StudyFocusSnapshot =>
  * 不然整个背词页（连同小程序的 setData）每秒重渲一次，没开倒计时的人也一样。
  */
 export const sameStudyFocusState = (a: StudyFocusSnapshot, b: StudyFocusSnapshot): boolean =>
-  a.status === b.status && a.nextReward === b.nextReward && a.summary === b.summary;
+  a.status === b.status && a.nextReward === b.nextReward && a.summary === b.summary && a.rewardClaimed === b.rewardClaimed;
 
 export const enterStudyFocus = (source: string, nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
@@ -186,6 +189,8 @@ export const enterStudyFocus = (source: string, nowMs = Date.now()): StudyFocusS
     current.focus = null;
     current.summary = null;
     current.completedAt = null;
+    current.reward = null;
+    current.rewardClaimed = false;
     current.source = source;
     current.answerHistory = [];
   }
@@ -270,20 +275,35 @@ export const undoStudyFocusAnswer = (wordId: number, nowMs = Date.now()): StudyF
 
 export const startStudyFocus = (nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
-  if (current.source && !current.focus) current.focus = newWindow(nowMs);
+  if (current.source && !current.focus) {
+    current.focus = newWindow(nowMs);
+    current.rewardClaimed = false;
+  }
   return getStudyFocusSnapshot(nowMs);
 };
 
-/** 先幂等入账，再开始下一段；持久化失败时保留休息状态，调用方可重试。 */
-export const continueStudyFocus = (nowMs = Date.now()): number => {
+/** 领取只结算本段奖励；保留休息页状态，点击宝箱失败时可重试。 */
+export const claimStudyFocusReward = (): number => {
   const current = runtime();
-  if (!current.source || !current.focus || !current.summary) return 0;
-  const earned = current.summary.qualified ? claimStudyFocusYuzu(current.focus.id) : 0;
+  if (!current.source || !current.focus || !current.summary?.qualified || current.rewardClaimed) return 0;
+  const now = getStudyFocusSnapshot().nextReward;
+  if (now <= 0) return 0;
+  const earned = claimStudyFocusYuzu(current.focus.id);
+  current.rewardClaimed = true;
+  return earned;
+};
+
+/** 奖励通过宝箱单独领取；未领取时保留休息页，让用户不会无意丢掉奖励。 */
+export const continueStudyFocus = (nowMs = Date.now()): boolean => {
+  const current = runtime();
+  if (!current.source || !current.focus || !current.summary) return false;
+  if (current.summary.qualified && getStudyFocusSnapshot(nowMs).nextReward > 0 && !current.rewardClaimed) return false;
   current.reward = null;
+  current.rewardClaimed = false;
   current.focus = newWindow(nowMs);
   current.summary = null;
   current.completedAt = null;
-  return earned;
+  return true;
 };
 
 export const stopStudyFocus = (nowMs = Date.now()): StudyFocusSnapshot => {
@@ -291,6 +311,8 @@ export const stopStudyFocus = (nowMs = Date.now()): StudyFocusSnapshot => {
   current.focus = null;
   current.summary = null;
   current.completedAt = null;
+  current.reward = null;
+  current.rewardClaimed = false;
   persistPartial(current);
   return getStudyFocusSnapshot(nowMs);
 };
