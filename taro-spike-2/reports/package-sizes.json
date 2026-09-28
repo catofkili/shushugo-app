@@ -2,12 +2,12 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1877806,
-      "mib": 1.791,
+      "bytes": 1882775,
+      "mib": 1.796,
       "passes": true
     },
     "study": {
-      "bytes": 307758,
+      "bytes": 308188,
       "mib": 0.294,
       "passes": true
     },
@@ -17,7 +17,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1067468,
+      "bytes": 1067898,
       "mib": 1.018,
       "passes": true
     },
@@ -42,8 +42,8 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 366173,
-      "mib": 0.349,
+      "bytes": 366603,
+      "mib": 0.35,
       "passes": true
     },
     "core": {
@@ -52,17 +52,17 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 589158,
-      "mib": 0.562,
+      "bytes": 592018,
+      "mib": 0.565,
       "passes": true
     }
   },
-  "totalBytes": 8161498,
+  "totalBytes": 8170617,
   "files": [
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 874118
+      "bytes": 874318
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -77,7 +77,7 @@
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 587408
+      "bytes": 590268
     },
     {
       "path": "grammar-advanced/grammar.js",
@@ -112,7 +112,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 237566
+      "bytes": 242335
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -610,6 +610,21 @@
       "bytes": 7205
     },
     {
+      "path": "content-pages/sub-common/0ed9a97056267107e93f5e3beb3b859d.js",
+      "package": "content-pages",
+      "bytes": 6984
+    },
+    {
+      "path": "grammar-pages/sub-common/0ed9a97056267107e93f5e3beb3b859d.js",
+      "package": "grammar-pages",
+      "bytes": 6984
+    },
+    {
+      "path": "study/sub-common/0ed9a97056267107e93f5e3beb3b859d.js",
+      "package": "study",
+      "bytes": 6984
+    },
+    {
       "path": "account/help/index.js",
       "package": "account",
       "bytes": 6938
@@ -633,21 +648,6 @@
       "path": "study/sub-common/c25dae36c86dd28c1214f4da0a721276.js",
       "package": "study",
       "bytes": 6790
-    },
-    {
-      "path": "content-pages/sub-common/0ed9a97056267107e93f5e3beb3b859d.js",
-      "package": "content-pages",
-      "bytes": 6554
-    },
-    {
-      "path": "grammar-pages/sub-common/0ed9a97056267107e93f5e3beb3b859d.js",
-      "package": "grammar-pages",
-      "bytes": 6554
-    },
-    {
-      "path": "study/sub-common/0ed9a97056267107e93f5e3beb3b859d.js",
-      "package": "study",
-      "bytes": 6554
     },
     {
       "path": "content-pages/sub-common/93a7b7b512c60343756d3b2d2fbb29f1.js",

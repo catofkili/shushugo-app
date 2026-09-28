@@ -2,11 +2,11 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1877806,
+      "bytes": 1882775,
       "passes": true
     },
     "study": {
-      "bytes": 307758,
+      "bytes": 308188,
       "passes": true
     },
     "account": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1067468,
+      "bytes": 1067898,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 366173,
+      "bytes": 366603,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 589158,
+      "bytes": 592018,
       "passes": true
     }
   },
@@ -127,6 +127,16 @@
       ]
     },
     {
+      "source": "/private/tmp/claude-gram/frontend/src/lib/study-focus.ts",
+      "bytes": 16564,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanPanel.tsx",
       "bytes": 16513,
       "packages": [
@@ -156,16 +166,6 @@
       "packages": [
         "content-pages",
         "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/study-focus.ts",
-      "bytes": 15635,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy",
-        "study"
       ]
     },
     {
@@ -592,17 +592,8 @@
       "reason": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached."
     },
     {
-      "source": "frontend/src/lib/analytics/weekly-reports.ts",
-      "bytes": 15635,
-      "packages": [
-        "content-pages",
-        "lazy"
-      ],
-      "reason": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot."
-    },
-    {
       "source": "frontend/src/lib/study-focus.ts",
-      "bytes": 15635,
+      "bytes": 16564,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -610,6 +601,15 @@
         "study"
       ],
       "reason": "Each isolated route package mounts only its own study source; partial baseline windows are persisted on page exit, countdown state is deliberately discarded, and rewards are guarded by unique database ledger keys."
+    },
+    {
+      "source": "frontend/src/lib/analytics/weekly-reports.ts",
+      "bytes": 15635,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ],
+      "reason": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot."
     },
     {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
@@ -757,8 +757,8 @@
     "frontend/src/lib/conjugation-explanation.ts": "Conjugation explanations are derived from static verb-pair hints; the module keeps no user-data cache.",
     "frontend/src/lib/analytics/weekly.ts": "Weekly metrics are calculated from query results on demand; no user records are cached in the module.",
     "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
-    "frontend/src/lib/analytics/weekly-reports.ts": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot.",
     "frontend/src/lib/study-focus.ts": "Each isolated route package mounts only its own study source; partial baseline windows are persisted on page exit, countdown state is deliberately discarded, and rewards are guarded by unique database ledger keys.",
+    "frontend/src/lib/analytics/weekly-reports.ts": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot.",
     "frontend/src/lib/share-canvas.weapp.ts": "The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data.",
     "frontend/src/lib/token-dictionary.ts": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache.",
     "frontend/src/lib/share-image.weapp.ts": "Share and save operations use the image passed to each call and retain no mutable user state.",
@@ -1073,12 +1073,12 @@
       "bytes": 163516
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
-      "bytes": 149987
+      "source": "/private/tmp/claude-gram/frontend/src/app.css",
+      "bytes": 150745
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/app.css",
-      "bytes": 146180
+      "source": "/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
+      "bytes": 149987
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/styles.css",
@@ -1106,7 +1106,7 @@
     },
     {
       "source": "/private/tmp/claude-gram/frontend/src/design.css",
-      "bytes": 63733
+      "bytes": 64184
     }
   ],
   "passes": true

@@ -32,6 +32,7 @@
   ".space-y-4 > :not([hidden]) ~ :not([hidden])",
   ".space-y-5 > :not([hidden]) ~ :not([hidden])",
   ".space-y-6 > :not([hidden]) ~ :not([hidden])",
+  ".study-focus-chest:focus-visible",
   ".weekly-report-page button:focus-visible",
   ".weekly-report-reader::-webkit-scrollbar",
   ".weekly-report-reader:focus-visible",
