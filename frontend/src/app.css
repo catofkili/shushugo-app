@@ -1692,7 +1692,7 @@
 .study-focus-chip{color:var(--ds-primary-deep,#7a4a20);font-variant-numeric:tabular-nums}
 .study-focus-chip small{font-size:10px}
 .study-focus-veil{position:fixed;z-index:10000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(22,27,25,.76);backdrop-filter:blur(8px)}
-.study-focus-dialog{width:min(100%,520px);max-height:min(90dvh,760px);overflow:visible;border:1px solid var(--ds-line);border-radius:26px;padding:clamp(22px,6vw,34px);background:var(--ds-surface);color:var(--ds-ink);box-shadow:0 24px 90px rgba(0,0,0,.35)}
+.study-focus-dialog{box-sizing:border-box;width:min(100%,520px);max-height:min(90dvh,760px);overflow:visible;border:1px solid var(--ds-line);border-radius:26px;padding:clamp(22px,6vw,34px);background:var(--ds-surface);color:var(--ds-ink);box-shadow:0 24px 90px rgba(0,0,0,.35)}
 .study-focus-kicker{display:flex;align-items:center;gap:7px;color:var(--ds-primary-deep,#7a4a20);font-size:12px;font-weight:800;letter-spacing:.06em}
 .study-focus-dialog h2{margin:14px 0 10px;font-size:clamp(25px,7vw,34px);line-height:1.15;font-weight:850}
 .study-focus-dialog p{margin:10px 0;color:var(--ds-muted,var(--ds-ink));font-size:14px;line-height:1.7}
@@ -1705,6 +1705,37 @@
 .study-focus-actions button{min-height:48px;flex:1;border-radius:15px;padding:10px 13px;font-size:14px;font-weight:800;line-height:1.35;text-wrap:balance}
 .study-focus-secondary{border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink)}
 .study-focus-primary{background:var(--ds-primary);color:var(--ds-on-primary,#fff);box-shadow:0 6px 16px color-mix(in srgb,var(--ds-primary) 22%,transparent)}
-.study-focus-exit{display:block;margin:13px auto 0;padding:8px;color:var(--ds-muted,var(--ds-ink));font-size:12px;text-decoration:underline;text-underline-offset:3px;opacity:.8}
 .study-focus-next{display:block;margin-top:13px;text-align:center}
-@media(max-width:380px){.study-focus-actions{flex-direction:column}.study-focus-actions button{flex:auto}}
+.study-focus-chest-claim{display:flex;flex-direction:column;align-items:center;margin:0 0 2px}
+.study-focus-chest{position:relative;display:grid;place-items:center;width:164px;height:122px;border:0;padding:0;background:transparent;cursor:pointer;transition:transform .18s ease}
+.study-focus-chest:hover:not(:disabled){transform:translateY(-3px) scale(1.04)}
+.study-focus-chest:active:not(:disabled){transform:translateY(2px) scale(.97)}
+.study-focus-chest:focus-visible{outline:3px solid var(--ds-primary);outline-offset:2px;border-radius:22px}
+.study-focus-chest-art{position:relative;display:block;width:132px;height:108px;perspective:520px;animation:study-chest-float 2.1s ease-in-out infinite}
+.study-focus-chest-aura{position:absolute;inset:20px 8px 4px;border-radius:50%;background:radial-gradient(ellipse,color-mix(in srgb,#ffc85a 42%,transparent),transparent 70%);filter:blur(4px);animation:study-chest-glow 1.7s ease-in-out infinite alternate}
+.study-focus-chest-lid,.study-focus-chest-base{position:absolute;display:block;border:2px solid #6a3b1e;background:linear-gradient(135deg,#d18a3c,#945220 58%,#713d20);box-shadow:inset 0 3px 3px #f3c17a80,inset 0 -5px 6px #4d291c65,0 7px 10px #4a2d1f35}
+.study-focus-chest-lid{z-index:2;top:18px;left:17px;width:98px;height:39px;border-radius:48px 48px 9px 9px;transform-origin:50% 100%;transition:transform .72s cubic-bezier(.2,.82,.25,1.18)}
+.study-focus-chest-lid:after{position:absolute;inset:7px 13px auto;height:7px;border-top:2px solid #f6c87999;border-radius:50%;content:""}
+.study-focus-chest-base{z-index:1;left:15px;bottom:7px;width:102px;height:51px;border-radius:8px 8px 14px 14px;background:linear-gradient(100deg,#985421,#c07831 24%,#a86327 72%,#80451f)}
+.study-focus-chest-band{position:absolute;z-index:3;display:block;left:50%;width:14px;transform:translateX(-50%);border-right:2px solid #9c631f;border-left:2px solid #9c631f;background:linear-gradient(90deg,#f3c960,#fff0a5 45%,#d49a36)}
+.chest-band-lid{top:19px;height:37px;border-radius:40% 40% 4px 4px}
+.chest-band-base{top:56px;bottom:8px}
+.study-focus-chest-lock{position:absolute;z-index:4;top:54px;left:calc(50% - 12px);display:grid;place-items:center;width:24px;height:25px;border:2px solid #a76b22;border-radius:6px;background:linear-gradient(135deg,#fff0a0,#e3a638);box-shadow:0 2px 3px #542c1b50}
+.study-focus-chest-lock:before{position:absolute;top:-9px;width:10px;height:11px;border:2px solid #f3ce65;border-bottom:0;border-radius:8px 8px 0 0;content:""}
+.study-focus-chest-lock i{z-index:1;width:3px;height:7px;border-radius:3px;background:#795022}
+.study-focus-chest-spark{position:absolute;z-index:4;color:#e5a627;font-size:19px;font-style:normal;text-shadow:0 1px 8px #ffc34f;animation:study-chest-spark 1.4s ease-in-out infinite}
+.spark-one{top:28px;left:2px}.spark-two{top:5px;right:8px;animation-delay:.35s}.spark-three{top:65px;right:1px;font-size:14px;animation-delay:.7s}
+.study-focus-chest-prize{position:absolute;z-index:5;top:10px;left:50%;color:#8c5518;font-size:24px;font-style:normal;font-weight:950;text-shadow:0 1px #fff4bf,0 3px 8px #ffd268;opacity:0;transform:translate(-50%,18px) scale(.55)}
+.study-focus-chest-caption{margin-top:-1px;color:var(--ds-primary-deep,#7a4a20);font-size:13px;font-weight:850}
+.study-focus-chest-hint{margin:1px 0!important;text-align:center;font-size:11px!important;opacity:.76}
+.is-claimed .study-focus-chest-art{filter:grayscale(1) brightness(1.08);opacity:.84;animation:none}
+.is-claimed .study-focus-chest-lid{transform:rotateX(72deg) translateY(-7px)}
+.is-claimed .study-focus-chest-prize{animation:study-chest-prize .95s .08s cubic-bezier(.18,.8,.28,1.2) both}
+.is-claimed .study-focus-chest-spark{opacity:0;animation:none}
+.is-claimed .study-focus-chest-caption{color:var(--ds-muted,var(--ds-ink));opacity:.74}
+.study-focus-actions button:disabled{cursor:not-allowed;opacity:.48;box-shadow:none}
+@keyframes study-chest-float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-5px) rotate(1deg)}}
+@keyframes study-chest-glow{from{opacity:.55;transform:scale(.9)}to{opacity:1;transform:scale(1.08)}}
+@keyframes study-chest-spark{0%,100%{opacity:.24;transform:scale(.65) rotate(-15deg)}50%{opacity:1;transform:scale(1.12) rotate(15deg)}}
+@keyframes study-chest-prize{0%{opacity:0;transform:translate(-50%,18px) scale(.55)}35%{opacity:1;transform:translate(-50%,-9px) scale(1.16)}70%{transform:translate(-50%,-17px) scale(1)}100%{opacity:0;transform:translate(-50%,-27px) scale(.92)}}
+@media(max-width:380px){.study-focus-chest{height:112px}.study-focus-chest-art{transform:scale(.92)}.study-focus-actions{flex-direction:column}.study-focus-actions button{flex:auto}}

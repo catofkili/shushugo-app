@@ -319,20 +319,21 @@ export function ZooHome({
         </button>
 
         <div className="zoo-now-foot">
-          {/* 倒计时的勾放在大卡左下：它是「这一趟怎么学」的设置，和右边的学习方式是一对。
-              勾上之前先看说明（离开作废奖励必须开始前说）；取消直接取消。 */}
-          <button
-            className={`zoo-focus-toggle${focusArmed ? " on" : ""}`}
-            role="checkbox"
-            aria-checked={focusArmed}
-            onClick={() => {
-              if (focusArmed) { setStudyFocusArmed(false); setFocusArmed(false); }
-              else setFocusIntroOpen(true);
-            }}
-          >
-            <span className="zoo-focus-box" aria-hidden="true">{focusArmed && <Check size={11} strokeWidth={3.2} />}</span>
-            <Timer size={12} aria-hidden="true" /> 倒计时
-          </button>
+          <div className={`zoo-focus-toggle${focusArmed ? " on" : ""}`}>
+            <button
+              className="zoo-focus-check"
+              type="button"
+              role="checkbox"
+              aria-label="启用倒计时学习"
+              aria-checked={focusArmed}
+              onClick={() => { setStudyFocusArmed(!focusArmed); setFocusArmed(!focusArmed); }}
+            >
+              <span className="zoo-focus-box" aria-hidden="true">{focusArmed && <Check size={11} strokeWidth={3.2} />}</span>
+            </button>
+            <button className="zoo-focus-label" type="button" onClick={() => setFocusIntroOpen(true)}>
+              <Timer size={12} aria-hidden="true" /> 倒计时学习
+            </button>
+          </div>
           <button
             className="zoo-mode-chip"
             onClick={() => setModeSheetOpen((open) => !open)}

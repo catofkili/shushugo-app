@@ -10,7 +10,7 @@ vi.mock("./database/db-utils", async (original) => ({
 }));
 
 import {
-  continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, leaveStudyFocus,
+  claimStudyFocusReward, continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, leaveStudyFocus,
   recordStudyFocusAnswer, recordStudyFocusTime, sameStudyFocusState, startStudyFocus, stopStudyFocus,
   STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
 } from "./study-focus";
@@ -79,18 +79,26 @@ describe("独立十分钟记录与可选倒计时", () => {
     advance(300_000); answer(2);
     expect(rowsFor("SELECT value FROM app_state WHERE key = ?", [STUDY_FOCUS_PARTIAL_KEY])).toEqual(before);
     expect(getStudyFocusSnapshot(now).summary?.words).toBe(10);
-    expect(continueStudyFocus(now)).toBe(100);
+    expect(continueStudyFocus(now)).toBe(false);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "break", rewardClaimed: false, nextReward: 100 });
+    expect(claimStudyFocusReward()).toBe(100);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "break", rewardClaimed: true, nextReward: 100 });
+    expect(claimStudyFocusReward()).toBe(0);
+    expect(continueStudyFocus(now)).toBe(true);
     expect(getStudyFocusSnapshot(now).remainingSeconds).toBe(600);
-    expect(continueStudyFocus(now)).toBe(0);
+    expect(getStudyFocusSnapshot(now).nextReward).toBe(50);
+    expect(continueStudyFocus(now)).toBe(false);
   });
 
-  it("只有继续发奖；停止、回主页和未完成退出都作废待领奖励", () => {
+  it("宝箱领取前不能开始下一段；停止、回主页和未完成退出都不会自动发奖", () => {
     startStudyFocus(now); answer(1); advance(599_999); leaveStudyFocus();
-    expect(continueStudyFocus(now)).toBe(0);
-    enterStudyFocus("word", now); startStudyFocus(now); answer(2); complete(); stopStudyFocus(now);
-    expect(continueStudyFocus(now)).toBe(0);
-    startStudyFocus(now); answer(3); complete(); leaveStudyFocus();
-    expect(continueStudyFocus(now)).toBe(0);
+    expect(continueStudyFocus(now)).toBe(false);
+    enterStudyFocus("word", now); startStudyFocus(now); answer(2); fill(9); complete();
+    expect(continueStudyFocus(now)).toBe(false);
+    stopStudyFocus(now);
+    expect(continueStudyFocus(now)).toBe(false);
+    startStudyFocus(now); answer(3); fill(9); complete(); leaveStudyFocus();
+    expect(continueStudyFocus(now)).toBe(false);
     expect(yuzuBalance()).toBe(0);
     enterStudyFocus("word", now);
     expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "off", remainingSeconds: 600, nextReward: 100 });
@@ -101,7 +109,7 @@ describe("独立十分钟记录与可选倒计时", () => {
     const bytes = db.export(); db.close(); db = new SQL.Database(bytes);
     enterStudyFocus("word", now);
     expect(getStudyFocusSnapshot(now).status).toBe("off");
-    expect(continueStudyFocus(now)).toBe(0);
+    expect(continueStudyFocus(now)).toBe(false);
     advance(240_000);
     expect(rowsFor("SELECT kind, words, remembered, forgotten FROM study_focus_windows"))
       .toEqual([{ kind: "baseline", words: 10, remembered: 1, forgotten: 1 }]);
@@ -189,7 +197,9 @@ describe("每秒调用的代价", () => {
     expect(statements).toBe(0);
     fill(10);
     complete();
-    expect(continueStudyFocus(now)).toBe(100);
+    expect(claimStudyFocusReward()).toBe(100);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ nextReward: 100, rewardClaimed: true });
+    expect(continueStudyFocus(now)).toBe(true);
     expect(getStudyFocusSnapshot(now).nextReward).toBe(50);
     db.prepare = prepare;
   });
@@ -201,6 +211,7 @@ describe("每秒调用的代价", () => {
     expect(after.remainingSeconds).not.toBe(before.remainingSeconds);
     expect(sameStudyFocusState(before, after)).toBe(true);
     expect(sameStudyFocusState(before, complete())).toBe(false);
+    expect(sameStudyFocusState(complete(), { ...complete(), rewardClaimed: true })).toBe(false);
   });
 });
 
@@ -212,10 +223,11 @@ describe("不到十个词的十分钟不算数（2026-09-28）", () => {
     const snapshot = complete();
     expect(snapshot.summary).toMatchObject({ words: 9, qualified: false });
     expect(snapshot.nextReward).toBe(0);
-    expect(continueStudyFocus(now)).toBe(0);
+    expect(continueStudyFocus(now)).toBe(true);
     expect(yuzuBalance()).toBe(0);
     fill(STUDY_FOCUS_MIN_WORDS, "know", 800); complete();
-    expect(continueStudyFocus(now)).toBe(STUDY_FOCUS_REWARDS[0]);
+    expect(claimStudyFocusReward()).toBe(STUDY_FOCUS_REWARDS[0]);
+    expect(continueStudyFocus(now)).toBe(true);
   });
 
   it("对比只看最近 30 天、够数的同入口基线", () => {
@@ -233,7 +245,7 @@ describe("倒计时的递减奖励", () => {
     const earned: number[] = [];
     for (let index = 0; index < 10; index++) {
       enterStudyFocus("word", now); startStudyFocus(now); answer(1, index % 2 ? "forgot" : "know"); fill(9);
-      complete(); earned.push(continueStudyFocus(now)); leaveStudyFocus();
+      complete(); earned.push(claimStudyFocusReward()); expect(continueStudyFocus(now)).toBe(true); leaveStudyFocus();
     }
     expect(earned).toEqual([...STUDY_FOCUS_REWARDS, 0]);
     expect(yuzuBalance()).toBe(222);
@@ -249,8 +261,9 @@ describe("倒计时的递减奖励", () => {
     now = new Date("2026-09-29T03:40:00").getTime(); vi.setSystemTime(now);
     startStudyFocus(now); answer(1); fill(9); complete(); // 03:50 belongs to Sep 28
     now = new Date("2026-09-29T04:01:00").getTime(); vi.setSystemTime(now);
-    expect(continueStudyFocus(now)).toBe(100);
-    answer(1); fill(9); complete(); expect(continueStudyFocus(now)).toBe(100);
+    expect(claimStudyFocusReward()).toBe(100);
+    expect(continueStudyFocus(now)).toBe(true);
+    answer(1); fill(9); complete(); expect(claimStudyFocusReward()).toBe(100);
     expect(rowsFor("SELECT key FROM yuzu_ledger WHERE kind='focus' ORDER BY key"))
       .toEqual([{ key: "2026-09-28:1" }, { key: "2026-09-29:1" }]);
   });

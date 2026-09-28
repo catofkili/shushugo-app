@@ -17,6 +17,7 @@ import { createCardLog, type StepMode } from "./card-log";
 import { withoutSyncStamp } from "./sync/schema";
 import { confusionGroups, displayForm, type ConfusionGroup } from "./confusion-groups";
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
+import verbPairHints from "../data/verb_pair_hints.json";
 
 export const CONFUSION_FSRS: FsrsEntity = {
   table: "confusion_progress",
@@ -134,6 +135,9 @@ export interface ConfusionCardMember {
   surface: string;
   kana: string;
   note?: string;
+  exampleJp?: string;
+  exampleMeaning?: string;
+  pairRole?: "自动词" | "他动词";
 }
 
 export interface MatchingCard {
@@ -156,6 +160,7 @@ export const matchingCard = (groupKey: string): MatchingCard | null => {
     key: String(member.id),
     forms: [displayForm(member), member.kanji, member.kana]
   })));
+  const pairs = verbPairHints as unknown as Record<string, ["自动词" | "他动词", string, string, string]>;
   return {
     groupKey: group.key,
     type: group.type,
@@ -165,7 +170,10 @@ export const matchingCard = (groupKey: string): MatchingCard | null => {
       id: member.id,
       surface: displayForm(member),
       kana: member.kana,
-      note: notes.get(String(member.id))
+      note: notes.get(String(member.id)),
+      exampleJp: member.exampleJp,
+      exampleMeaning: member.exampleMeaning,
+      pairRole: group.type === "pair" ? (pairs[member.kanji] ?? pairs[member.kana])?.[0] : undefined
     })),
     summary: review.summary,
     notes
