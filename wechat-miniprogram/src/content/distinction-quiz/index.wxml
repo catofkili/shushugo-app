@@ -14,11 +14,23 @@
   <view wx:elif="{{state === 'quiz'}}" class="panel">
     <text class="counter">{{index + 1}} / {{questions.length}}</text>
     <view class="prompt"><text class="prompt-word">{{question.prompt}}</text></view>
+    <view wx:if="{{revealed}}" class="answer-panel">
+      <text class="answer-summary">{{note}}</text>
+      <text class="answer-section-title">各词辨析与例句</text>
+      <view wx:for="{{question.options}}" wx:key="id" class="answer-option">
+        <view class="answer-word-line">
+          <text class="answer-word">{{item.surface}}<text class="answer-kana"> {{item.kana}}</text></text>
+          <text wx:if="{{item.pairRole}}" class="answer-role">{{item.pairRole}}</text>
+        </view>
+        <text wx:if="{{item.note}}" class="answer-note">{{item.note}}</text>
+        <view wx:if="{{item.exampleJp}}" class="answer-example"><text class="answer-label">例句</text><text>{{item.exampleJp}}</text></view>
+        <view wx:if="{{item.exampleMeaning}}" class="answer-meaning"><text class="answer-label">译文</text><text>{{item.exampleMeaning}}</text></view>
+      </view>
+    </view>
     <view wx:for="{{question.options}}" wx:key="id" class="option {{revealed && item.id === question.answerId ? 'correct' : ''}} {{revealed && selected === item.id && item.id !== question.answerId ? 'wrong' : ''}}" data-id="{{item.id}}" bindtap="answer">
       <text class="list-title">{{item.surface}}</text>
-      <text class="list-sub">{{item.kana}}{{revealed && item.note ? ' · ' + item.note : ''}}</text>
+      <text class="list-sub">{{item.kana}}</text>
     </view>
-    <view wx:if="{{revealed && note}}" class="feedback"><text>{{note}}</text></view>
     <button wx:if="{{revealed}}" class="primary" bindtap="next">{{index + 1 === questions.length ? '查看结果' : '下一题'}}</button>
   </view>
   <view wx:elif="{{state === 'result'}}" class="panel">

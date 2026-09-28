@@ -142,6 +142,32 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">中文线索</p>
             <p className="mt-3 text-2xl font-extrabold text-white">{question.prompt}</p>
           </div>
+          {feedback && (
+            <div className={`mt-4 rounded-2xl border p-4 ${feedback.correct ? "border-emerald-300/35 bg-emerald-400/10" : "border-rose-300/35 bg-rose-400/10"}`}>
+              <p className="flex items-center gap-2 font-extrabold text-white">
+                {feedback.correct ? <Check size={17} /> : <X size={17} />}
+                {feedback.correct ? "答对了" : "答错了"}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-white/80">{question.summary}</p>
+              <div className="mt-3 space-y-2 border-t border-white/10 pt-3">
+                <p className="text-xs font-bold text-white/50">各词辨析与例句</p>
+                {question.options.map((option) => {
+                  const note = question.notes.get(String(option.id));
+                  if (!note && !option.exampleJp && !option.exampleMeaning && !option.pairRole) return null;
+                  return (
+                    <div key={option.id} className="rounded-xl bg-black/10 px-3 py-2.5">
+                      <p className="text-sm text-white/70"><b className="text-white/90">{option.surface}<span className="ml-1 font-normal text-white/45">{option.kana}</span></b>{option.pairRole && <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold text-white/75">{option.pairRole}</span>}{note ? `：${note}` : ""}</p>
+                      {option.exampleJp && <p className="mt-1.5 text-sm font-semibold leading-6 text-white/90"><span className="mr-1 text-xs font-normal text-white/45">例句</span>{option.exampleJp}</p>}
+                      {option.exampleMeaning && <p className="mt-0.5 text-sm leading-5 text-white/70"><span className="mr-1 text-xs text-white/45">译文</span>{option.exampleMeaning}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+              <button type="button" onClick={next} className="focus-ring mt-4 w-full rounded-xl bg-white/12 px-3 py-2.5 text-sm font-bold text-white hover:bg-white/18">
+                {index + 1 >= questions.length ? "查看结果" : "下一题"}
+              </button>
+            </div>
+          )}
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {question.options.map((option, optionIndex) => (
               <button
@@ -158,32 +184,6 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
               </button>
             ))}
           </div>
-          {feedback && (
-            <div className={`mt-4 rounded-2xl border p-4 ${feedback.correct ? "border-emerald-300/35 bg-emerald-400/10" : "border-rose-300/35 bg-rose-400/10"}`}>
-              <p className="flex items-center gap-2 font-extrabold text-white">
-                {feedback.correct ? <Check size={17} /> : <X size={17} />}
-                {feedback.correct ? "答对了" : "答错了"}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/80">{question.summary}</p>
-              <div className="mt-3 space-y-2 border-t border-white/10 pt-3">
-                <p className="text-xs font-bold text-white/50">各词辨析与例句</p>
-                {question.options.map((option) => {
-                  const note = question.notes.get(String(option.id));
-                  if (!note && !option.exampleJp && !option.exampleMeaning) return null;
-                  return (
-                    <div key={option.id} className="rounded-xl bg-black/10 px-3 py-2.5">
-                      <p className="text-sm text-white/70"><b className="text-white/90">{option.surface}<span className="ml-1 font-normal text-white/45">{option.kana}</span></b>{note ? `：${note}` : ""}</p>
-                      {option.exampleJp && <p className="mt-1.5 text-sm font-semibold leading-6 text-white/90">{option.exampleJp}</p>}
-                      {option.exampleMeaning && <p className="mt-0.5 text-sm leading-5 text-white/70">{option.exampleMeaning}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-              <button type="button" onClick={next} className="focus-ring mt-4 w-full rounded-xl bg-white/12 px-3 py-2.5 text-sm font-bold text-white hover:bg-white/18">
-                {index + 1 >= questions.length ? "查看结果" : "下一题"}
-              </button>
-            </div>
-          )}
         </>
       )}
     </section>

@@ -7,6 +7,7 @@ import {
   type ConfusionType
 } from "./confusion-groups";
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
+import verbPairHints from "../data/verb_pair_hints.json";
 import { matchable } from "./confusion-cards";
 import { reviewedQuestionMeaning } from "./models/question-meaning-overrides";
 import { firstValue, rowsFor, today } from "./database/db-utils";
@@ -16,7 +17,7 @@ export interface DistinctionQuestion {
   groupKey: string;
   prompt: string;
   /** reading-register 组（明日 あした / あす）两个选项词形一样，读音才是答案，所以选项必须带 kana。 */
-  options: { id: number; surface: string; kana: string; exampleJp?: string; exampleMeaning?: string }[];
+  options: { id: number; surface: string; kana: string; exampleJp?: string; exampleMeaning?: string; pairRole?: "自动词" | "他动词" }[];
   answerId: number;
   summary: string;
   notes: Map<string, string>;
@@ -92,6 +93,7 @@ export function buildQuestions(
   rng: () => number = Math.random
 ): DistinctionQuestion[] {
   const questions: DistinctionQuestion[] = [];
+  const pairs = verbPairHints as unknown as Record<string, ["自动词" | "他动词", string, string, string]>;
   for (const group of shuffle(groups, rng)) {
     const review = distinctionReviewFor(group.key);
     if (!reviewable(group) || !review) continue;
@@ -105,7 +107,8 @@ export function buildQuestions(
       surface: displayForm(member),
       kana: member.kana,
       exampleJp: member.exampleJp,
-      exampleMeaning: member.exampleMeaning
+      exampleMeaning: member.exampleMeaning,
+      pairRole: group.type === "pair" ? (pairs[member.kanji] ?? pairs[member.kana])?.[0] : undefined
     })), rng);
     for (const member of group.members) {
       const prompt = reviewedQuestionMeaning(member.kanji, member.kana);
