@@ -2,11 +2,11 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1882775,
+      "bytes": 1883837,
       "passes": true
     },
     "study": {
-      "bytes": 308188,
+      "bytes": 308824,
       "passes": true
     },
     "account": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1067898,
+      "bytes": 1068526,
       "passes": true
     },
     "features": {
@@ -22,27 +22,27 @@
       "passes": true
     },
     "content": {
-      "bytes": 1619458,
+      "bytes": 1619464,
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 668453,
+      "bytes": 668455,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547381,
+      "bytes": 547379,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 366603,
+      "bytes": 367223,
       "passes": true
     },
     "core": {
-      "bytes": 279123,
+      "bytes": 279124,
       "passes": true
     },
     "lazy": {
-      "bytes": 592018,
+      "bytes": 595256,
       "passes": true
     }
   },
@@ -50,8 +50,8 @@
   "duplicateSourceModuleCount": 57,
   "duplicatedModules": [
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/vocab-test.ts",
-      "bytes": 49967,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/vocab-test.ts",
+      "bytes": 50127,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -59,8 +59,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/conjugation-explanation.ts",
-      "bytes": 42708,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/conjugation-explanation.ts",
+      "bytes": 42828,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -68,7 +68,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/data/verb-conjugation-foundation.ts",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/data/verb-conjugation-foundation.ts",
       "bytes": 35039,
       "packages": [
         "content-pages",
@@ -76,23 +76,23 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/Library.tsx",
-      "bytes": 33428,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/pages/Library.tsx",
+      "bytes": 33588,
       "packages": [
         "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/analytics/weekly.ts",
-      "bytes": 32850,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/analytics/weekly.ts",
+      "bytes": 32970,
       "packages": [
         "content-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/data/grammar_title_furigana.json",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/data/grammar_title_furigana.json",
       "bytes": 30888,
       "packages": [
         "content-pages",
@@ -101,8 +101,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/speech.weapp.ts",
-      "bytes": 30672,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/speech.weapp.ts",
+      "bytes": 30832,
       "packages": [
         "account",
         "content-pages",
@@ -111,24 +111,24 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/data/grammar-foundation.ts",
-      "bytes": 20755,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/data/grammar-foundation.ts",
+      "bytes": 20795,
       "packages": [
         "content-pages",
         "grammar-pages"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 19072,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/pages/ConfusionPage.tsx",
+      "bytes": 19152,
       "packages": [
         "grammar-pages",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/study-focus.ts",
-      "bytes": 16564,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/study-focus.ts",
+      "bytes": 18194,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -137,56 +137,56 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 16513,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/DailyPlanPanel.tsx",
+      "bytes": 16673,
       "packages": [
         "account",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 16043,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/pages/ImmersiveGrammar.tsx",
+      "bytes": 16083,
       "packages": [
         "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15667,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/pages/FavoritesPage.tsx",
+      "bytes": 15867,
       "packages": [
         "content-pages",
         "grammar-pages"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/analytics/weekly-reports.ts",
-      "bytes": 15635,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/analytics/weekly-reports.ts",
+      "bytes": 15715,
       "packages": [
         "content-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 14754,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/GrammarHighlightProvider.tsx",
+      "bytes": 14845,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/pages/GrammarFoundationPage.tsx",
+      "bytes": 14834,
       "packages": [
         "content-pages",
         "grammar-pages"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/GrammarHighlightProvider.tsx",
-      "bytes": 14725,
-      "packages": [
-        "content-pages",
-        "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13171,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/share-canvas.weapp.ts",
+      "bytes": 13331,
       "packages": [
         "content-pages",
         "lazy",
@@ -194,16 +194,16 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13045,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/DailyPlanRing.weapp.tsx",
+      "bytes": 13085,
       "packages": [
         "account",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12858,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/JapaneseRuby.tsx",
+      "bytes": 13018,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -211,8 +211,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/token-dictionary.ts",
-      "bytes": 12208,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/token-dictionary.ts",
+      "bytes": 12288,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -220,8 +220,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11652,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "bytes": 11732,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -229,8 +229,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/grammar-term-hint-data.ts",
-      "bytes": 11039,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/grammar-term-hint-data.ts",
+      "bytes": 11079,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -238,8 +238,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/features/word-study/word-study-utils.ts",
-      "bytes": 10862,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/features/word-study/word-study-utils.ts",
+      "bytes": 10902,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -247,24 +247,24 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 10089,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/FloatingDoodlePen.weapp.tsx",
+      "bytes": 10129,
       "packages": [
         "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 8886,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/pages/GrammarDetail.tsx",
+      "bytes": 8926,
       "packages": [
         "content-pages",
         "grammar-pages"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7889,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/FavoriteFolderPicker.tsx",
+      "bytes": 7969,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -273,8 +273,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/share-image.weapp.ts",
-      "bytes": 7394,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/share-image.weapp.ts",
+      "bytes": 7474,
       "packages": [
         "content-pages",
         "lazy",
@@ -282,16 +282,16 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ProReadingPreview.tsx",
-      "bytes": 6325,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/ProReadingPreview.tsx",
+      "bytes": 6445,
       "packages": [
         "lazy",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/distinction-quiz.ts",
-      "bytes": 6292,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/distinction-quiz.ts",
+      "bytes": 6372,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -299,34 +299,34 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammarProgressPreferences.ts",
-      "bytes": 5110,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/grammarProgressPreferences.ts",
+      "bytes": 5190,
       "packages": [
-        "grammar-pages",
-        "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ShareImageSheet.weapp.tsx",
-      "bytes": 4911,
-      "packages": [
-        "content-pages",
-        "lazy",
-        "study"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4891,
-      "packages": [
-        "content-pages",
         "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 4630,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/ShareImageSheet.weapp.tsx",
+      "bytes": 5031,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/GrammarPointPopover.tsx",
+      "bytes": 4931,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/CrossPlatformImage.weapp.tsx",
+      "bytes": 4750,
       "packages": [
         "account",
         "content-pages",
@@ -334,7 +334,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/useStudyTimer.ts",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/useStudyTimer.ts",
       "bytes": 4326,
       "packages": [
         "content-pages",
@@ -344,16 +344,16 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/daily-plan-ring-geometry.ts",
-      "bytes": 3905,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/daily-plan-ring-geometry.ts",
+      "bytes": 4025,
       "packages": [
         "account",
         "study"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/GrammarTermHint.weapp.tsx",
-      "bytes": 3784,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/GrammarTermHint.weapp.tsx",
+      "bytes": 3824,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -361,8 +361,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/study-clock.ts",
-      "bytes": 3358,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/study-clock.ts",
+      "bytes": 3398,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -371,7 +371,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/data/kana_glossary.json",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/data/kana_glossary.json",
       "bytes": 3278,
       "packages": [
         "content-pages",
@@ -380,25 +380,16 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/hooks/useCountUp.ts",
-      "bytes": 2944,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/hooks/useCountUp.ts",
+      "bytes": 2984,
       "packages": [
         "content-pages",
         "lazy"
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammar-form-target.ts",
-      "bytes": 2761,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy"
-      ]
-    },
-    {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammar-title-furigana.ts",
-      "bytes": 2454,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/grammar-form-target.ts",
+      "bytes": 2801,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -406,8 +397,17 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/Disclosure.weapp.tsx",
-      "bytes": 2110,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/grammar-title-furigana.ts",
+      "bytes": 2574,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/Disclosure.weapp.tsx",
+      "bytes": 2150,
       "packages": [
         "account",
         "content-pages",
@@ -417,7 +417,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ExampleSentence.tsx",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/ExampleSentence.tsx",
       "bytes": 1996,
       "packages": [
         "content-pages",
@@ -425,8 +425,8 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/platform-dialogs.weapp.ts",
-      "bytes": 1814,
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/taro-spike-2/src/platform/platform-dialogs.weapp.ts",
+      "bytes": 1894,
       "packages": [
         "account",
         "content-pages",
@@ -435,7 +435,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammar-key-points.ts",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/grammar-key-points.ts",
       "bytes": 1805,
       "packages": [
         "content-pages",
@@ -444,7 +444,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/study-totals.ts",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/study-totals.ts",
       "bytes": 1705,
       "packages": [
         "account",
@@ -452,7 +452,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/routes/shared.tsx",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/routes/shared.tsx",
       "bytes": 1614,
       "packages": [
         "content-pages",
@@ -460,7 +460,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammar-numbering.ts",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/grammar-numbering.ts",
       "bytes": 1355,
       "packages": [
         "content-pages",
@@ -469,7 +469,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/JapaneseWordRuby.tsx",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/JapaneseWordRuby.tsx",
       "bytes": 1115,
       "packages": [
         "grammar-pages",
@@ -478,7 +478,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/ReviewButton.tsx",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/ReviewButton.tsx",
       "bytes": 1093,
       "packages": [
         "content-pages",
@@ -486,7 +486,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/yield-to-paint.ts",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/yield-to-paint.ts",
       "bytes": 957,
       "packages": [
         "account",
@@ -495,7 +495,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/grammarNotes.ts",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/grammarNotes.ts",
       "bytes": 825,
       "packages": [
         "content-pages",
@@ -504,7 +504,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/DailyPlanSlider.weapp.tsx",
       "bytes": 651,
       "packages": [
         "account",
@@ -512,7 +512,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 602,
       "packages": [
         "content-pages",
@@ -522,7 +522,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/grammar-data.weapp.cjs",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/taro-spike-2/src/platform/grammar-data.weapp.cjs",
       "bytes": 458,
       "packages": [
         "content-pages",
@@ -531,7 +531,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/types/grammar.ts",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/types/grammar.ts",
       "bytes": 149,
       "packages": [
         "content-pages",
@@ -540,7 +540,7 @@
       ]
     },
     {
-      "source": "/private/tmp/claude-gram/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
       "bytes": 60,
       "packages": [
         "content-pages",
@@ -553,7 +553,7 @@
   "duplicatedCoreModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
-      "bytes": 49967,
+      "bytes": 50127,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -563,7 +563,7 @@
     },
     {
       "source": "frontend/src/lib/conjugation-explanation.ts",
-      "bytes": 42708,
+      "bytes": 42828,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -573,7 +573,7 @@
     },
     {
       "source": "frontend/src/lib/analytics/weekly.ts",
-      "bytes": 32850,
+      "bytes": 32970,
       "packages": [
         "content-pages",
         "lazy"
@@ -582,7 +582,7 @@
     },
     {
       "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 30672,
+      "bytes": 30832,
       "packages": [
         "account",
         "content-pages",
@@ -593,7 +593,7 @@
     },
     {
       "source": "frontend/src/lib/study-focus.ts",
-      "bytes": 16564,
+      "bytes": 18194,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -604,7 +604,7 @@
     },
     {
       "source": "frontend/src/lib/analytics/weekly-reports.ts",
-      "bytes": 15635,
+      "bytes": 15715,
       "packages": [
         "content-pages",
         "lazy"
@@ -613,7 +613,7 @@
     },
     {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13171,
+      "bytes": 13331,
       "packages": [
         "content-pages",
         "lazy",
@@ -623,7 +623,7 @@
     },
     {
       "source": "frontend/src/lib/token-dictionary.ts",
-      "bytes": 12208,
+      "bytes": 12288,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -633,7 +633,7 @@
     },
     {
       "source": "frontend/src/lib/share-image.weapp.ts",
-      "bytes": 7394,
+      "bytes": 7474,
       "packages": [
         "content-pages",
         "lazy",
@@ -643,7 +643,7 @@
     },
     {
       "source": "frontend/src/lib/distinction-quiz.ts",
-      "bytes": 6292,
+      "bytes": 6372,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -653,7 +653,7 @@
     },
     {
       "source": "frontend/src/lib/grammarProgressPreferences.ts",
-      "bytes": 5110,
+      "bytes": 5190,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -673,7 +673,7 @@
     },
     {
       "source": "frontend/src/lib/study-clock.ts",
-      "bytes": 3358,
+      "bytes": 3398,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -684,7 +684,7 @@
     },
     {
       "source": "frontend/src/lib/grammar-form-target.ts",
-      "bytes": 2761,
+      "bytes": 2801,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -694,7 +694,7 @@
     },
     {
       "source": "frontend/src/lib/grammar-title-furigana.ts",
-      "bytes": 2454,
+      "bytes": 2574,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -783,7 +783,7 @@
   "duplicatedPageComponents": [
     {
       "source": "frontend/src/pages/Library.tsx",
-      "bytes": 33428,
+      "bytes": 33588,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -792,7 +792,7 @@
     },
     {
       "source": "frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 19072,
+      "bytes": 19152,
       "packages": [
         "grammar-pages",
         "study"
@@ -801,7 +801,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 16513,
+      "bytes": 16673,
       "packages": [
         "account",
         "study"
@@ -810,7 +810,7 @@
     },
     {
       "source": "frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 16043,
+      "bytes": 16083,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -819,7 +819,7 @@
     },
     {
       "source": "frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15667,
+      "bytes": 15867,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -827,17 +827,8 @@
       "reason": "Favorites is reachable from both the content and grammar package entry graphs."
     },
     {
-      "source": "frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 14754,
-      "packages": [
-        "content-pages",
-        "grammar-pages"
-      ],
-      "reason": "Grammar foundation navigation reaches this page from both content and grammar entry graphs."
-    },
-    {
       "source": "frontend/src/components/GrammarHighlightProvider.tsx",
-      "bytes": 14725,
+      "bytes": 14845,
       "packages": [
         "content-pages",
         "lazy"
@@ -845,8 +836,17 @@
       "reason": "Each package needs a provider for its local React tree; its user-data cache is pinned once in main."
     },
     {
+      "source": "frontend/src/pages/GrammarFoundationPage.tsx",
+      "bytes": 14834,
+      "packages": [
+        "content-pages",
+        "grammar-pages"
+      ],
+      "reason": "Grammar foundation navigation reaches this page from both content and grammar entry graphs."
+    },
+    {
       "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13045,
+      "bytes": 13085,
       "packages": [
         "account",
         "study"
@@ -855,7 +855,7 @@
     },
     {
       "source": "frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12858,
+      "bytes": 13018,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -865,7 +865,7 @@
     },
     {
       "source": "frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11652,
+      "bytes": 11732,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -875,7 +875,7 @@
     },
     {
       "source": "frontend/src/components/grammar-term-hint-data.ts",
-      "bytes": 11039,
+      "bytes": 11079,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -885,7 +885,7 @@
     },
     {
       "source": "frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 10089,
+      "bytes": 10129,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -894,7 +894,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 8886,
+      "bytes": 8926,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -903,7 +903,7 @@
     },
     {
       "source": "frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7889,
+      "bytes": 7969,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -914,7 +914,7 @@
     },
     {
       "source": "frontend/src/components/ProReadingPreview.tsx",
-      "bytes": 6325,
+      "bytes": 6445,
       "packages": [
         "lazy",
         "study"
@@ -923,7 +923,7 @@
     },
     {
       "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
-      "bytes": 4911,
+      "bytes": 5031,
       "packages": [
         "content-pages",
         "lazy",
@@ -933,7 +933,7 @@
     },
     {
       "source": "frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4891,
+      "bytes": 4931,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -943,7 +943,7 @@
     },
     {
       "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 4630,
+      "bytes": 4750,
       "packages": [
         "account",
         "content-pages",
@@ -953,7 +953,7 @@
     },
     {
       "source": "frontend/src/components/daily-plan-ring-geometry.ts",
-      "bytes": 3905,
+      "bytes": 4025,
       "packages": [
         "account",
         "study"
@@ -962,7 +962,7 @@
     },
     {
       "source": "frontend/src/components/GrammarTermHint.weapp.tsx",
-      "bytes": 3784,
+      "bytes": 3824,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -972,7 +972,7 @@
     },
     {
       "source": "frontend/src/components/Disclosure.weapp.tsx",
-      "bytes": 2110,
+      "bytes": 2150,
       "packages": [
         "account",
         "content-pages",
@@ -1037,8 +1037,8 @@
     "frontend/src/components/DailyPlanPanel.tsx": "The study tab and account routes render this panel from isolated package graphs.",
     "frontend/src/pages/ImmersiveGrammar.tsx": "The tab bundle and grammar subpackage each contain this independently reachable route.",
     "frontend/src/pages/FavoritesPage.tsx": "Favorites is reachable from both the content and grammar package entry graphs.",
-    "frontend/src/pages/GrammarFoundationPage.tsx": "Grammar foundation navigation reaches this page from both content and grammar entry graphs.",
     "frontend/src/components/GrammarHighlightProvider.tsx": "Each package needs a provider for its local React tree; its user-data cache is pinned once in main.",
+    "frontend/src/pages/GrammarFoundationPage.tsx": "Grammar foundation navigation reaches this page from both content and grammar entry graphs.",
     "frontend/src/components/DailyPlanRing.weapp.tsx": "The study and account routes each render the Canvas ring (W6 weapp variant) in separate package entry graphs.",
     "frontend/src/components/JapaneseRuby.tsx": "Ruby rendering is shared by the lazy tab chunk and independently loaded content/grammar routes.",
     "frontend/src/components/TokenDictionaryPopover.weapp.tsx": "The dictionary popover is used by lazy tabs and independently loaded grammar/content routes.",
@@ -1059,7 +1059,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 241673,
+  "duplicatedPageComponentBytes": 243593,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1069,44 +1069,44 @@
   "webModulePolicy": "error",
   "mainTopModules": [
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/sync-api.ts",
-      "bytes": 163516
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/sync-api.ts",
+      "bytes": 164396
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/app.css",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/app.css",
       "bytes": 150745
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/word-api.ts",
-      "bytes": 149987
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/word-api.ts",
+      "bytes": 150547
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/styles.css",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/styles.css",
       "bytes": 140880
     },
     {
-      "source": "/private/tmp/shushugo-w1/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
       "bytes": 92952
     },
     {
-      "source": "/private/tmp/claude-gram/taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 91394
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/taro-spike-2/src/platform/WeappPage.tsx",
+      "bytes": 92354
     },
     {
-      "source": "/private/tmp/claude-gram/wechat-miniprogram/src/vendor/sql-wasm.js",
-      "bytes": 91182
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/wechat-miniprogram/src/vendor/sql-wasm.js",
+      "bytes": 91542
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/storage.ts",
-      "bytes": 86506
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/storage.ts",
+      "bytes": 86986
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/lib/study-core.ts",
-      "bytes": 79736
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/lib/study-core.ts",
+      "bytes": 79862
     },
     {
-      "source": "/private/tmp/claude-gram/frontend/src/design.css",
-      "bytes": 64184
+      "source": "/Users/lsc/.codex/worktrees/countdown-reward-chest-taro/shushugo/frontend/src/design.css",
+      "bytes": 65258
     }
   ],
   "passes": true
