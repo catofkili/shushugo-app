@@ -768,6 +768,17 @@
 .fin-stats span { display: flex; align-items: center; gap: 4px; margin-top: 3px; color: var(--ds-ink-3); font-size: 12px; font-weight: 600; white-space: nowrap; }
 
 .fin-block { padding: 14px; border: 0; border-radius: 18px; background: var(--ds-inset); color: var(--ds-ink); text-align: left; }
+.fin-reward-block { margin-top: 12px; }
+.fin-reward-layout { display: grid; grid-template-columns: 164px minmax(0, 1fr); align-items: center; gap: 8px; margin-top: 8px; }
+.fin-reward-layout .study-focus-chest-claim { margin: 0; }
+.fin-reward-details { min-width: 0; }
+.fin-reward-heading { margin: 0 0 6px; color: var(--ds-ink-2); font-size: 12px; font-weight: 800; }
+.fin-reward-sources { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.fin-reward-sources li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 2px 8px; font-size: 13px; }
+.fin-reward-sources li span { min-width: 0; font-weight: 700; }
+.fin-reward-sources li b { color: var(--ds-primary-ink); white-space: nowrap; }
+.fin-reward-sources li small { grid-column: 1 / -1; color: var(--ds-ink-3); font-size: 10px; }
+.fin-reward-note { margin: 8px 0 0; color: var(--ds-ink-3); font-size: 10px; line-height: 1.5; }
 .fin-block-title { margin: 0; color: var(--ds-ink); font-size: 15px; font-weight: 800; }
 .fin-row { display: flex; align-items: center; gap: 10px; width: 100%; color: var(--ds-ink-2); font-size: 14px; font-weight: 700; }
 button.fin-row:hover { background: var(--ds-inset-2); }
@@ -776,6 +787,7 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 .fin-chip { min-height: 32px; font-size: 12px; }
 [data-theme] .fin-block .ds-chip { background: var(--ds-surface); }
 [data-theme] .fin-block .ds-chip[aria-pressed="true"] { background: var(--ds-primary); color: var(--ds-on-primary); }
+@media (max-width: 390px) { .fin-reward-layout { grid-template-columns: 1fr; } }
 .fin-list { margin: 0 -4px; }
 
 /* 日历：打卡的日子主色浅底、今天主色实心；学过但没打卡的只给一层浅底。不再有绿圈和光晕 */

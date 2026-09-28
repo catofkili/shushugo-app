@@ -6,7 +6,7 @@ import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/v
 import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning, addAnswerPreview, answerPreviewsFresh, startAnswerPreviews, submitWordAnswerWithPreview, takeAnswerPreview, type AnswerPreviews } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { checkAchievements } from "../lib/userProfile";
-import { settleYuzu } from "../lib/yuzu";
+import { claimDailyPlanYuzu, settleYuzu } from "../lib/yuzu";
 import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic, triggerRevealHaptic, triggerSwipeArmHaptic } from "../lib/haptics";
 import { playPronunciation, prefetchPronunciation } from "../lib/speech";
 import { playComplete, playCountdownTick, playDontKnow, playFlip, playKnow, playReliefDeal } from "../lib/zoo-sounds";
@@ -31,6 +31,7 @@ import { studyModeInfo } from "../lib/studyMode";
 import { UNDO_LIMIT } from "../lib/word-api/undo-stack";
 import type { WordSessionOptions } from "../lib/study-types";
 import { DistinctionSheet } from "../components/DistinctionSheet";
+import { StudyFocusChest } from "../components/StudyFocusChest";
 import { Paywall } from "../components/Paywall";
 import { ScrollArea } from "../components/ScrollArea";
 import { useEntitlements } from "../hooks/useEntitlements";
@@ -52,7 +53,7 @@ import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
-import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
+import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
 interface WordStudyProps {
@@ -298,7 +299,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const updateFocusSnapshot = useCallback((next: StudyFocusSnapshot) => {
     setFocusSnapshot((previous) => sameStudyFocusState(previous, next) ? previous : next);
   }, []);
-  useStudyBreakTabBar(focusSnapshot.status === "break");
+  const dailyPlanFinished = !loading && (phase === "stage1" || phase === "done") && isPlanMode(initialMode) && Boolean(stats?.dailyPlanDone)
+    && !card && !grammarCard && !kanjiCard && !matchCard;
+  useStudyBreakTabBar(focusSnapshot.status === "break" && !dailyPlanFinished);
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
   const [initialStudyClock] = useState(() => createStudyClock(Date.now()));
@@ -769,6 +772,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setFocusSnapshot(next);
     studyClockRef.current = createStudyClock(Date.now());
     if (card?.id || kanjiCard) trackingActiveRef.current = true;
+  };
+
+  const claimDailyCompletionRewards = () => {
+    const earned = claimStudyFocusReward() + claimDailyPlanYuzu();
+    updateFocusSnapshot(getStudyFocusSnapshot());
+    return earned;
   };
 
   useEffect(() => {
@@ -1535,6 +1544,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const cardRotate = Math.max(-SWIPE_MAX_ROTATE, Math.min(SWIPE_MAX_ROTATE, cardShift / 40));
   const swipeProgress = Math.min(Math.abs(swipeX) / SWIPE_COMMIT_PX, 1);
   const countdownRemaining = remainingPlanWords(stats);
+  useEffect(() => {
+    if (dailyPlanFinished && focusSnapshot.status === "running") {
+      // 持久化结束时的有效专注段后，立刻同步完成页要展示的结算快照。
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      updateFocusSnapshot(finishStudyFocusAtDailyCompletion());
+    }
+  }, [dailyPlanFinished, focusSnapshot.status, updateFocusSnapshot]);
   // 「上一个」撤哪一边、亮不亮：按作答顺序的栈顶走。
   const undoKind = undoKinds[undoKinds.length - 1] ?? "word";
   /**
@@ -1558,7 +1574,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     && isPlanMode(initialMode);
 
   // 混合学习的汉字 / 辨析插播，和语法卡同一个位置、同一颗撤销按钮，只有颜色和内容不同。
-  if (focusSnapshot.status === "break") {
+  if (focusSnapshot.status === "break" && !dailyPlanFinished) {
     const summary = focusSnapshot.summary;
     const baseline = summary?.baselineRemembered;
     const remembered = summary?.remembered ?? 0;
@@ -1585,31 +1601,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               ) : <p className="study-focus-comparison">这是第一次完整记录，下一次就能和这次比较。</p>}
               <p className="study-focus-method">记忆情况按每个词本轮最后一次自评统计，不代表长期保持率。</p>
               {summary?.qualified && reward > 0 && (
-                <div className={`study-focus-chest-claim${focusSnapshot.rewardClaimed ? " is-claimed" : ""}`}>
-                  <button
-                    className="study-focus-chest"
-                    type="button"
-                    onClick={claimFocusReward}
-                    disabled={focusSnapshot.rewardClaimed}
-                    aria-label={focusSnapshot.rewardClaimed ? `已领取 ${reward} 柚子` : `点击宝箱领取 ${reward} 柚子`}
-                  >
-                    <span className="study-focus-chest-art" aria-hidden="true">
-                      <i className="study-focus-chest-aura" />
-                      <i className="study-focus-chest-spark spark-one">✦</i>
-                      <i className="study-focus-chest-spark spark-two">✧</i>
-                      <i className="study-focus-chest-spark spark-three">✦</i>
-                      <i className="study-focus-chest-lid" />
-                      <i className="study-focus-chest-band chest-band-lid" />
-                      <i className="study-focus-chest-base" />
-                      <i className="study-focus-chest-band chest-band-base" />
-                      <i className="study-focus-chest-lock"><i /></i>
-                      <i className="study-focus-chest-prize">+{reward}</i>
-                    </span>
-                  </button>
-                  <span className="study-focus-chest-caption" aria-live="polite">
-                    {focusSnapshot.rewardClaimed ? `已领取 ${reward} 柚子` : `点击宝箱领取 ${reward} 柚子`}
-                  </span>
-                </div>
+                <StudyFocusChest
+                  amount={reward}
+                  claimed={focusSnapshot.rewardClaimed}
+                  onClaim={claimFocusReward}
+                  caption={focusSnapshot.rewardClaimed ? `已领取 ${reward} 柚子` : `点击宝箱领取 ${reward} 柚子`}
+                />
               )}
               {summary?.qualified && reward === 0 && <p className="study-focus-comparison">今天的九档柚子奖励已领完。</p>}
               {summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed && (
@@ -2286,6 +2283,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             stats={stats}
             phase={phase}
             localSeconds={localStudySeconds}
+            focusSnapshot={focusSnapshot}
+            onClaimDailyRewards={claimDailyCompletionRewards}
             onCheckIn={checkInToday}
             onContinueStage2={() => startExtraPhase("stage2")}
             onContinueKanji={() => startExtraPhase("kanji")}

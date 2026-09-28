@@ -19,15 +19,17 @@ export const YUZU = {
   /** 今天学了 ≥ 100 个词。计划排得太大清不完的日子(作者 7~8 月有 25 天)也该有份 */
   study: 50,
   studyWords: 100,
-  /** 今日计划清完,叠在 study 之上 → 一天 100 */
+  /** 今日计划清完；在完成页和末段专注奖励一起领取。 */
   plan: 50,
   /** 连击每满 7 天 */
   streak7: 300,
   /** 加餐,一天一次 */
   encore: 50,
   achievement: 200,
-  /** 每个学习日的十分钟倒计时档位。退出、换学习入口不能重置。 */
+  /** 每个学习日的专注奖励档位；最后一段可在计划完成时满五分钟领取。 */
   focus: [100, 50, 25, 23, 12, 6, 3, 2, 1],
+  focusMinimumMs: 5 * 60 * 1000,
+  focusMinimumWords: 10,
   /** 补签:30 天内第 1/2/3 张,再往后按最后一档 */
   repair: [500, 1000, 2000],
   /** 只补 7 天以内的洞 */
@@ -98,10 +100,12 @@ export const nextStudyFocusYuzu = (day = today()): number => {
   return YUZU.focus[count] ?? 0;
 };
 
-/** 仅休息页的宝箱领取操作调用。完整窗口只是凭据，本身不会自动结算奖励。 */
+/** 专注窗口至少 5 分钟且背过 10 个词，才能从休息页或每日完成宝箱领取。 */
 export const claimStudyFocusYuzu = (windowId: string): number => {
   ensureYuzuScale();
-  const window = rowsFor("SELECT completed_at FROM study_focus_windows WHERE id = ? AND kind = 'focus' AND active_ms = 600000", [windowId])[0];
+  const window = rowsFor(`SELECT completed_at FROM study_focus_windows
+    WHERE id = ? AND kind = 'focus' AND active_ms >= ? AND words >= ?`,
+  [windowId, YUZU.focusMinimumMs, YUZU.focusMinimumWords])[0];
   if (!window || firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'focus_claim' AND key = ?", [windowId], 0)) return 0;
   const day = studyDate(new Date(Number(window.completed_at)));
   const db = getDatabase();
@@ -127,8 +131,18 @@ export const claimStudyFocusYuzu = (windowId: string): number => {
   return reward;
 };
 
+/** 每日计划完成奖励由完成页宝箱领取，避免和专注奖励分开到账。 */
+export const claimDailyPlanYuzu = (): number => {
+  ensureYuzuScale();
+  const plan = stage1ProgressCounts();
+  if (plan.total <= 0 || plan.completed < plan.total || !book("plan", today(), YUZU.plan)) return 0;
+  persistSoon();
+  emit();
+  return YUZU.plan;
+};
+
 /**
- * 结算今天的收入。幂等,学习页每次 flush 都可以叫。
+ * 结算自动到账的收入。清完计划的奖励由完成页宝箱领取；这里幂等,学习页每次 flush 都可以叫。
  * 成就那一笔不挂在解锁事件上,而是对着 achievements 表补差 —— 补发的老成就也拿得到。
  */
 export const settleYuzu = (): number => {
@@ -138,8 +152,6 @@ export const settleYuzu = (): number => {
   const words = firstValue<number>(
     "SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ? AND direction = 'forward'", [day], 0);
   if (words >= YUZU.studyWords && book("study", day, YUZU.study)) earned += YUZU.study;
-  const plan = stage1ProgressCounts();
-  if (plan.total > 0 && plan.completed >= plan.total && book("plan", day, YUZU.plan)) earned += YUZU.plan;
   const checkins = rowsFor("SELECT checked_on FROM checkins").map((row) => String(row.checked_on));
   const streak = computeStreak(checkins, day);
   if (checkins.includes(day) && streak > 0 && streak % 7 === 0 && book("streak", day, YUZU.streak7)) earned += YUZU.streak7;
