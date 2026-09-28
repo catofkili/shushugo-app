@@ -52,7 +52,7 @@ import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
-import { continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, sameStudyFocusState, startStudyFocus, stopStudyFocus, STUDY_FOCUS_REWARDS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
+import { continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
 interface WordStudyProps {
@@ -283,17 +283,23 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [localStudySeconds, setLocalStudySeconds] = useState(0);
   const pendingStudySecondsRef = useRef(0);
   const queuedStudySecondsRef = useRef(0);
-  const [focusSnapshot, setFocusSnapshot] = useState<StudyFocusSnapshot>(() => getStudyFocusSnapshot());
+  // 主页勾了「倒计时」时，挂载那一刻就是一段刚开始的倒计时（真正的 startStudyFocus 在挂载 effect 里，
+  // 那之前还没 enterStudyFocus）；初值直接写成它，免得 effect 里再 setState 重渲一次。
+  const [focusSnapshot, setFocusSnapshot] = useState<StudyFocusSnapshot>(() => {
+    const snapshot = getStudyFocusSnapshot();
+    return isStudyFocusArmed() && snapshot.status === "off"
+      ? { ...snapshot, status: "running", remainingSeconds: STUDY_FOCUS_WINDOW_MS / 1000 }
+      : snapshot;
+  });
   const focusBreakRef = useRef(false);
   /** 小程序里切走的页面仍挂着，document 却还是 visible；页面自己的显隐另记一份。 */
   const pageShownRef = useRef(true);
   /** 交互时并进零头、还没报给倒计时 / 后台观测的有效毫秒，下次结账一起报。 */
   const unreportedFocusMsRef = useRef(0);
-  const [focusIntroOpen, setFocusIntroOpen] = useState(false);
   const updateFocusSnapshot = useCallback((next: StudyFocusSnapshot) => {
     setFocusSnapshot((previous) => sameStudyFocusState(previous, next) ? previous : next);
   }, []);
-  useStudyBreakTabBar(focusSnapshot.status === "break" || focusIntroOpen);
+  useStudyBreakTabBar(focusSnapshot.status === "break");
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
   const [initialStudyClock] = useState(() => createStudyClock(Date.now()));
@@ -703,6 +709,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
   useEffect(() => {
     enterStudyFocus(FOCUS_SOURCE);
+    // 主页勾了「倒计时」就进门即开；离开时 leaveStudyFocus 作废这一段，下次进来重新计。
+    if (isStudyFocusArmed()) startStudyFocus();
     const interval = window.setInterval(() => { void flushActiveStudyTimeRef.current(); }, 1000);
     return () => {
       window.clearInterval(interval);
@@ -736,15 +744,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     updateFocusSnapshot(recordStudyFocusAnswer(wordId, answer));
   }, [updateFocusSnapshot]);
 
-  const beginFocusCountdown = () => {
-    const next = startStudyFocus();
-    focusBreakRef.current = false;
-    studyClockRef.current = createStudyClock(Date.now());
-    setFocusSnapshot(next);
-    setFocusIntroOpen(false);
-    if (card?.id || kanjiCard) trackingActiveRef.current = true;
-  };
-
   const continueFocusCountdown = () => {
     const earned = continueStudyFocus();
     focusBreakRef.current = false;
@@ -759,6 +758,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   };
 
   const stopFocusCountdown = () => {
+    // 「之后不要倒计时」= 把主页那个勾也取消，不然下次进来又自动开了。
+    setStudyFocusArmed(false);
     focusBreakRef.current = false;
     const next = stopStudyFocus();
     setFocusSnapshot(next);
@@ -1133,8 +1134,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       if (
         event.defaultPrevented
         || focusBreakRef.current
-        // 开场说明盖住了卡片，按键不能在底下翻面、评分
-        || focusIntroOpen
         || event.repeat
         || event.ctrlKey
         || event.metaKey
@@ -1165,7 +1164,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [card, distinctionOpen, focusIntroOpen, grammarCard, kanjiCard, matchCard, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
+  }, [card, distinctionOpen, grammarCard, kanjiCard, matchCard, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
     flushPendingAnswer();
@@ -1561,7 +1560,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     && isPlanMode(initialMode);
 
   // 混合学习的汉字 / 辨析插播，和语法卡同一个位置、同一颗撤销按钮，只有颜色和内容不同。
-  if (focusSnapshot.status === "break" || focusIntroOpen) {
+  if (focusSnapshot.status === "break") {
     const summary = focusSnapshot.summary;
     const baseline = summary?.baselineRemembered;
     const remembered = summary?.remembered ?? 0;
@@ -1570,23 +1569,15 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       <ScrollArea className="study-focus-veil">
         <section className="study-focus-dialog" role="dialog" aria-modal="true" aria-labelledby="study-focus-title">
           <span className="study-focus-kicker"><Timer size={16} /> 十分钟专注</span>
-          <h2 id="study-focus-title">{focusIntroOpen ? "开启倒计时学习？" : "休息一下"}</h2>
-          {focusIntroOpen ? (
-            <>
-              <p>每专注 10 分钟会暂停一次。离开背词页，本轮额外柚子作废；只有完成后点“继续”才会领取。</p>
-              <p className="study-focus-reward-note">全程倒计时可得超过 200 柚子</p>
-              <p className="study-focus-tiers">奖励依次为：{STUDY_FOCUS_REWARDS.join("、")}，每天最多九段。</p>
-              <div className="study-focus-actions">
-                <button className="study-focus-secondary" onClick={() => setFocusIntroOpen(false)}>暂不</button>
-                <button className="study-focus-primary" onClick={beginFocusCountdown}>开始倒计时</button>
-              </div>
-            </>
-          ) : (
-            <>
+          <h2 id="study-focus-title">休息一下</h2>
               <p className="study-focus-lead">这 10 分钟背了 <b>{summary?.words ?? 0}</b> 个词，记住 <b>{remembered}</b> 个，模糊 <b>{summary?.fuzzy ?? 0}</b> 个，没记住 <b>{summary?.forgotten ?? 0}</b> 个。</p>
-              {summary?.baselineWindows ? (
+              {summary && !summary.qualified ? (
                 <p className="study-focus-comparison">
-                  之前 {summary.baselineWindows} 个完整十分钟窗口平均记住 {baseline?.toFixed(1)} 个词；
+                  这段不到 {STUDY_FOCUS_MIN_WORDS} 个词，不算进对比，也不发柚子。下一段多背几个吧！
+                </p>
+              ) : summary?.baselineWindows ? (
+                <p className="study-focus-comparison">
+                  最近 {STUDY_FOCUS_BASELINE_DAYS} 天里 {summary.baselineWindows} 段十分钟平均记住 {baseline?.toFixed(1)} 个词；
                   {summary.rememberedDelta! > 0
                     ? `这次多记 ${summary.rememberedDelta!.toFixed(1)} 个${summary.efficiencyChangePercent === null ? "。之前平均是 0，无法计算百分比。" : `，效率提升 ${summary.efficiencyChangePercent.toFixed(0)}%。`}`
                     : summary.rememberedDelta === 0
@@ -1598,13 +1589,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               <div className="study-focus-actions">
                 <button className="study-focus-secondary" onClick={stopFocusCountdown}>之后不要倒计时</button>
                 <button className="study-focus-primary" onClick={continueFocusCountdown}>
-                  继续{reward > 0 ? `，领取 ${reward} 柚子` : "，今天奖励已领完"}
+                  继续{reward > 0 ? `，领取 ${reward} 柚子` : summary && !summary.qualified ? "" : "，今天奖励已领完"}
                 </button>
               </div>
-              <button className="study-focus-exit" onClick={exitDuringFocusBreak}>回主页，本段奖励作废</button>
+              <button className="study-focus-exit" onClick={exitDuringFocusBreak}>{summary?.qualified && reward > 0 ? "回主页，本段奖励作废" : "回主页"}</button>
               <span className="study-focus-next">继续后开始下一段 10:00</span>
-            </>
-          )}
         </section>
       </ScrollArea>,
       document.body
@@ -1742,13 +1731,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               {shortMode}
             </span>
           )}
-          {focusSnapshot.status === "running" ? (
-            <StudyFocusChip nextReward={focusSnapshot.nextReward} />
-          ) : (
-            <button className="study-focus-start" onClick={() => setFocusIntroOpen(true)} disabled={!card}>
-              <Timer size={14} /> 倒计时学习
-            </button>
-          )}
+          {focusSnapshot.status === "running" && <StudyFocusChip nextReward={focusSnapshot.nextReward} />}
           <button
             onClick={toggleCardFavorite}
             disabled={!card}

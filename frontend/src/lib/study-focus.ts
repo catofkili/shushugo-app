@@ -12,6 +12,26 @@ import { claimStudyFocusYuzu, nextStudyFocusYuzu, YUZU } from "./yuzu";
 export const STUDY_FOCUS_WINDOW_MS = 10 * 60 * 1000;
 export const STUDY_FOCUS_REWARDS = YUZU.focus;
 export const STUDY_FOCUS_PARTIAL_KEY = "study_focus_partial_windows";
+/**
+ * 十分钟里背不到这么多个词的窗口不算数据（用户 2026-09-28 定的）：挂着翻翻例句、
+ * 刷了几下就走神的十分钟，拿来当「平时的水平」只会把平均拉低、让对比虚高；
+ * 倒计时那段不满这个数也不发柚子 —— 只滚页面不背词就能领奖，奖的就不是专注了。
+ */
+export const STUDY_FOCUS_MIN_WORDS = 10;
+/** 对比只看最近这么多天的基线：半年前的自己不是「平时」。 */
+export const STUDY_FOCUS_BASELINE_DAYS = 30;
+const ARMED_KEY = "mn-study-focus-armed";
+
+/** 主页那个勾：这台设备上进背词页时要不要自动开倒计时。设备偏好，不同步。 */
+export const isStudyFocusArmed = (): boolean => {
+  try { return localStorage.getItem(ARMED_KEY) === "1"; } catch { return false; }
+};
+export const setStudyFocusArmed = (armed: boolean): void => {
+  try {
+    if (armed) localStorage.setItem(ARMED_KEY, "1");
+    else localStorage.removeItem(ARMED_KEY);
+  } catch { /* 存不下就只在这一次生效 */ }
+};
 
 type Answers = Record<string, WordAnswer>;
 interface StudyWindow {
@@ -29,6 +49,8 @@ export interface StudyFocusCounts {
 export interface StudyFocusSummary extends StudyFocusCounts {
   /** 0–100；没有作答时为 null。只是本轮自评，不能称为长期保持率。 */
   rememberedRate: number | null;
+  /** 这段背够 STUDY_FOCUS_MIN_WORDS 个词才算数：不够的不发柚子。 */
+  qualified: boolean;
   baselineWindows: number;
   baselineRemembered: number | null;
   rememberedDelta: number | null;
@@ -114,6 +136,7 @@ export const summarizeStudyFocus = (answers: Answers, previous: StudyFocusCounts
   return {
     ...counts,
     rememberedRate: counts.words ? counts.remembered / counts.words * 100 : null,
+    qualified: counts.words >= STUDY_FOCUS_MIN_WORDS,
     baselineWindows: previous.length,
     baselineRemembered,
     rememberedDelta: baselineRemembered === null ? null : counts.remembered - baselineRemembered,
@@ -124,6 +147,9 @@ export const summarizeStudyFocus = (answers: Answers, previous: StudyFocusCounts
 
 const saveWindow = (window: StudyWindow, kind: "baseline" | "focus", source: string, nowMs: number): void => {
   const counts = studyFocusCounts(window.answers);
+  // 不够数的基线直接不存：它不参与任何对比，存下来只是白占同步快照。
+  // 倒计时那段照存 —— 领奖要按它的 id 查这一行。
+  if (kind === "baseline" && counts.words < STUDY_FOCUS_MIN_WORDS) return;
   getDatabase().run(`INSERT OR IGNORE INTO study_focus_windows
     (id, kind, source, started_at, completed_at, active_ms, words, remembered, fuzzy, forgotten)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -142,7 +168,8 @@ export const getStudyFocusSnapshot = (nowMs = Date.now()): StudyFocusSnapshot =>
     status: current.summary ? "break" : current.focus ? "running" : "off",
     remainingSeconds: Math.max(0, Math.ceil((STUDY_FOCUS_WINDOW_MS - (current.focus?.activeMs ?? 0)) / 1000)),
     summary: current.summary,
-    nextReward: cachedNextReward(current, studyDate(new Date(current.completedAt ?? nowMs)))
+    nextReward: current.summary && !current.summary.qualified
+      ? 0 : cachedNextReward(current, studyDate(new Date(current.completedAt ?? nowMs)))
   };
 };
 
@@ -192,7 +219,8 @@ export const recordStudyFocusTime = (activeMs: number, nowMs = Date.now(), sourc
       saveWindow(current.focus, "focus", current.source, nowMs);
       // 使用启用之前已完整记录的同入口窗口。当前这轮与重叠窗口不能充当自己的基线。
       const previous = rowsFor(`SELECT words, remembered, fuzzy, forgotten FROM study_focus_windows
-        WHERE kind = 'baseline' AND source = ? AND completed_at <= ?`, [current.source, current.focus.startedAt])
+        WHERE kind = 'baseline' AND source = ? AND completed_at <= ? AND completed_at >= ? AND words >= ?`,
+      [current.source, current.focus.startedAt, current.focus.startedAt - STUDY_FOCUS_BASELINE_DAYS * 86_400_000, STUDY_FOCUS_MIN_WORDS])
         .map((row) => ({ words: Number(row.words), remembered: Number(row.remembered), fuzzy: Number(row.fuzzy), forgotten: Number(row.forgotten) }));
       current.summary = summarizeStudyFocus(current.focus.answers, previous);
       current.completedAt = nowMs;
@@ -250,7 +278,7 @@ export const startStudyFocus = (nowMs = Date.now()): StudyFocusSnapshot => {
 export const continueStudyFocus = (nowMs = Date.now()): number => {
   const current = runtime();
   if (!current.source || !current.focus || !current.summary) return 0;
-  const earned = claimStudyFocusYuzu(current.focus.id);
+  const earned = current.summary.qualified ? claimStudyFocusYuzu(current.focus.id) : 0;
   current.reward = null;
   current.focus = newWindow(nowMs);
   current.summary = null;

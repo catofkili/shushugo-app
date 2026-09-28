@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
 // 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
-import { Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal } from "lucide-react";
+import { Check, Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal, Timer } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
 import { notifyProgressUpdated } from "../lib/progress-events";
 import { useProgressUpdates } from "../lib/use-progress-updates";
@@ -32,6 +32,8 @@ import { Disclosure } from "./Disclosure";
 import { MomentPop } from "./MomentPop";
 import { WeeklyReportEntrance } from "./WeeklyReportEntrance";
 import { ZooProgressPanel } from "./ZooProgressPanel";
+import { StudyFocusIntro } from "./StudyFocusIntro";
+import { isStudyFocusArmed, setStudyFocusArmed } from "../lib/study-focus";
 import "./ZooHome.css";
 
 /**
@@ -103,6 +105,8 @@ export function ZooHome({
   const [recovery, setRecovery] = useState<ReturnType<typeof postExamRecovery>>(null);
   const [recoveryChoice, setRecoveryChoice] = useState<"light" | "usual" | null>(null);
   const [modeSheetOpen, setModeSheetOpen] = useState(false);
+  const [focusArmed, setFocusArmed] = useState(isStudyFocusArmed);
+  const [focusIntroOpen, setFocusIntroOpen] = useState(false);
   // 每日量在设置页也能改，所以跟着 PREFERENCES_EVENT 走，别只在挂载时读一次
   const [goals, setGoals] = useState(() => getStudyPreferences());
   // 更新日的新报告提示。只在这一份报告未读、且还在发布窗口内时为真。
@@ -315,6 +319,20 @@ export function ZooHome({
         </button>
 
         <div className="zoo-now-foot">
+          {/* 倒计时的勾放在大卡左下：它是「这一趟怎么学」的设置，和右边的学习方式是一对。
+              勾上之前先看说明（离开作废奖励必须开始前说）；取消直接取消。 */}
+          <button
+            className={`zoo-focus-toggle${focusArmed ? " on" : ""}`}
+            role="checkbox"
+            aria-checked={focusArmed}
+            onClick={() => {
+              if (focusArmed) { setStudyFocusArmed(false); setFocusArmed(false); }
+              else setFocusIntroOpen(true);
+            }}
+          >
+            <span className="zoo-focus-box" aria-hidden="true">{focusArmed && <Check size={11} strokeWidth={3.2} />}</span>
+            <Timer size={12} aria-hidden="true" /> 倒计时
+          </button>
           <button
             className="zoo-mode-chip"
             onClick={() => setModeSheetOpen((open) => !open)}
@@ -323,6 +341,13 @@ export function ZooHome({
             <SlidersHorizontal size={12} aria-hidden="true" /> 学习方式 · <b>{activeInfo.short}</b> {modeSheetOpen ? "▴" : "▾"}
           </button>
         </div>
+
+        {focusIntroOpen && (
+          <StudyFocusIntro
+            onCancel={() => setFocusIntroOpen(false)}
+            onConfirm={() => { setStudyFocusArmed(true); setFocusArmed(true); setFocusIntroOpen(false); }}
+          />
+        )}
 
         {modeSheetOpen && (
           <div className="zoo-modes-sheet" role="menu">

@@ -12,7 +12,7 @@ vi.mock("./database/db-utils", async (original) => ({
 import {
   continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, leaveStudyFocus,
   recordStudyFocusAnswer, recordStudyFocusTime, sameStudyFocusState, startStudyFocus, stopStudyFocus,
-  STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
+  STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
 } from "./study-focus";
 import { LOCAL_SCHEMA_SQL } from "./database/schema";
 import { rowsFor } from "./database/db-utils";
@@ -27,6 +27,10 @@ const advance = (ms: number) => {
 };
 const answer = (id: number, rating: "know" | "fuzzy" | "forgot" | "known_forever" = "know") => recordStudyFocusAnswer(id, rating, now);
 const complete = () => advance(STUDY_FOCUS_WINDOW_MS);
+/** 凑够一段算数的词数（id 从 base 起，不和各测试自己的词撞）。 */
+const fill = (count: number, rating: "know" | "fuzzy" | "forgot" = "fuzzy", base = 500) => {
+  for (let index = 0; index < count; index++) answer(base + index, rating);
+};
 
 beforeAll(async () => { SQL = await initSqlJs(); });
 beforeEach(() => {
@@ -46,34 +50,35 @@ afterEach(() => { db.close(); vi.useRealTimers(); });
 describe("独立十分钟记录与可选倒计时", () => {
   it("未开启倒计时也留完整窗口；重复词按最后自评去重", () => {
     answer(1, "forgot"); answer(1, "know"); answer(2, "fuzzy"); answer(3, "forgot"); answer(4, "known_forever");
+    fill(6, "forgot");
     expect(complete().status).toBe("off");
     expect(rowsFor("SELECT kind, words, remembered, fuzzy, forgotten FROM study_focus_windows"))
-      .toEqual([{ kind: "baseline", words: 4, remembered: 2, fuzzy: 1, forgotten: 1 }]);
+      .toEqual([{ kind: "baseline", words: 10, remembered: 2, fuzzy: 1, forgotten: 7 }]);
     expect(yuzuBalance()).toBe(0);
   });
 
   it("Start 不重置已有观测；对比只用开始前完成的同入口窗口", () => {
-    answer(1); answer(2); complete(); // prior baseline remembers 2
+    answer(1); answer(2); fill(8); complete(); // prior baseline remembers 2
     answer(10); advance(300_000); // independent baseline is halfway through
     startStudyFocus(now);
-    answer(20); answer(21); answer(22); answer(23, "forgot");
+    answer(20); answer(21); answer(22); answer(23, "forgot"); fill(6, "fuzzy", 600);
     const snapshot = complete();
     expect(rowsFor("SELECT COUNT(*) AS n FROM study_focus_windows WHERE kind='baseline'")[0].n).toBe(2);
     expect(snapshot.status).toBe("break");
     expect(snapshot.remainingSeconds).toBe(0);
-    expect(snapshot.summary).toMatchObject({ words: 4, remembered: 3, forgotten: 1, rememberedRate: 75,
+    expect(snapshot.summary).toMatchObject({ words: 10, remembered: 3, forgotten: 1, rememberedRate: 30, qualified: true,
       baselineWindows: 1, baselineRemembered: 2, rememberedDelta: 1, efficiencyChangePercent: 50 });
     expect(yuzuBalance()).toBe(0);
   });
 
   it("休息时间、休息页点击与倒计时终点后的余量都不记学习", () => {
-    startStudyFocus(now); answer(1);
+    startStudyFocus(now); answer(1); fill(9);
     advance(599_500);
     expect(advance(5_000).status).toBe("break");
     const before = rowsFor("SELECT value FROM app_state WHERE key = ?", [STUDY_FOCUS_PARTIAL_KEY]);
     advance(300_000); answer(2);
     expect(rowsFor("SELECT value FROM app_state WHERE key = ?", [STUDY_FOCUS_PARTIAL_KEY])).toEqual(before);
-    expect(getStudyFocusSnapshot(now).summary?.words).toBe(1);
+    expect(getStudyFocusSnapshot(now).summary?.words).toBe(10);
     expect(continueStudyFocus(now)).toBe(100);
     expect(getStudyFocusSnapshot(now).remainingSeconds).toBe(600);
     expect(continueStudyFocus(now)).toBe(0);
@@ -92,21 +97,21 @@ describe("独立十分钟记录与可选倒计时", () => {
   });
 
   it("数据库重载只恢复观测的未满窗口，不恢复倒计时或奖励入口", () => {
-    answer(1, "forgot"); advance(240_000); startStudyFocus(now); answer(2); advance(120_000);
+    answer(1, "forgot"); fill(8); advance(240_000); startStudyFocus(now); answer(2); advance(120_000);
     const bytes = db.export(); db.close(); db = new SQL.Database(bytes);
     enterStudyFocus("word", now);
     expect(getStudyFocusSnapshot(now).status).toBe("off");
     expect(continueStudyFocus(now)).toBe(0);
     advance(240_000);
     expect(rowsFor("SELECT kind, words, remembered, forgotten FROM study_focus_windows"))
-      .toEqual([{ kind: "baseline", words: 2, remembered: 1, forgotten: 1 }]);
+      .toEqual([{ kind: "baseline", words: 10, remembered: 1, forgotten: 1 }]);
   });
 
   it("换学习入口作废倒计时，基线按入口分开，回主页后时间不累计", () => {
-    answer(1); complete(); startStudyFocus(now); advance(300_000);
+    answer(1); fill(9); complete(); startStudyFocus(now); advance(300_000);
     enterStudyFocus("quick-study", now);
     expect(getStudyFocusSnapshot(now).status).toBe("off");
-    startStudyFocus(now); answer(1); complete();
+    startStudyFocus(now); answer(1); fill(9); complete();
     expect(getStudyFocusSnapshot(now).summary?.baselineWindows).toBe(0);
     leaveStudyFocus(); advance(600_000);
     expect(rowsFor("SELECT COUNT(*) AS n FROM study_focus_windows")[0].n).toBe(3);
@@ -138,7 +143,7 @@ describe("独立十分钟记录与可选倒计时", () => {
   });
 
   it("撤销恢复同词上次自评，跨窗口不会删掉旧窗口的词", () => {
-    answer(1, "forgot"); advance(300_000); startStudyFocus(now);
+    fill(8); answer(1, "forgot"); advance(300_000); startStudyFocus(now);
     answer(1, "know"); undoStudyFocusAnswer(1, now);
     answer(2, "fuzzy"); answer(2, "know"); undoStudyFocusAnswer(2, now);
     advance(300_000); // baseline completed, focus still halfway
@@ -146,7 +151,7 @@ describe("独立十分钟记录与可选倒计时", () => {
     advance(300_000);
     expect(getStudyFocusSnapshot(now).summary).toMatchObject({ words: 1, fuzzy: 1, remembered: 0 });
     expect(rowsFor("SELECT words, forgotten, fuzzy FROM study_focus_windows WHERE kind='baseline'"))
-      .toEqual([{ words: 2, forgotten: 1, fuzzy: 1 }]);
+      .toEqual([{ words: 10, forgotten: 1, fuzzy: 9 }]);
   });
 });
 
@@ -164,12 +169,12 @@ describe("多个学习页同时挂着（小程序 Tab 页不卸载）", () => {
   });
 
   it("离开后重新进入同一入口，观测接着记、倒计时能再开", () => {
-    answer(1); advance(120_000); leaveStudyFocus("word");
+    answer(1); fill(9); advance(120_000); leaveStudyFocus("word");
     advance(60_000); // 离开期间不记
     enterStudyFocus("word", now); startStudyFocus(now);
     expect(getStudyFocusSnapshot(now).status).toBe("running");
     advance(480_000);
-    expect(rowsFor("SELECT kind, words FROM study_focus_windows")).toEqual([{ kind: "baseline", words: 1 }]);
+    expect(rowsFor("SELECT kind, words FROM study_focus_windows")).toEqual([{ kind: "baseline", words: 10 }]);
   });
 });
 
@@ -182,6 +187,7 @@ describe("每秒调用的代价", () => {
     getStudyFocusSnapshot(now);
     for (let second = 0; second < 30; second++) advance(1000);
     expect(statements).toBe(0);
+    fill(10);
     complete();
     expect(continueStudyFocus(now)).toBe(100);
     expect(getStudyFocusSnapshot(now).nextReward).toBe(50);
@@ -198,11 +204,35 @@ describe("每秒调用的代价", () => {
   });
 });
 
+describe("不到十个词的十分钟不算数（2026-09-28）", () => {
+  it("基线不够数就不存；倒计时那段不够数不发柚子也不推进档位", () => {
+    fill(STUDY_FOCUS_MIN_WORDS - 1); complete();
+    expect(rowsFor("SELECT COUNT(*) AS n FROM study_focus_windows")[0].n).toBe(0);
+    startStudyFocus(now); fill(STUDY_FOCUS_MIN_WORDS - 1, "know", 700);
+    const snapshot = complete();
+    expect(snapshot.summary).toMatchObject({ words: 9, qualified: false });
+    expect(snapshot.nextReward).toBe(0);
+    expect(continueStudyFocus(now)).toBe(0);
+    expect(yuzuBalance()).toBe(0);
+    fill(STUDY_FOCUS_MIN_WORDS, "know", 800); complete();
+    expect(continueStudyFocus(now)).toBe(STUDY_FOCUS_REWARDS[0]);
+  });
+
+  it("对比只看最近 30 天、够数的同入口基线", () => {
+    fill(10, "know"); complete(); // 很久以前：记住 10
+    now += 31 * 86_400_000; vi.setSystemTime(now);
+    fill(10, "know", 600); answer(1, "forgot"); answer(2, "forgot"); fill(0); complete(); // 最近：12 词记住 10
+    fill(5, "know", 700); complete(); // 不够数，不存
+    startStudyFocus(now); fill(10, "know", 900);
+    expect(complete().summary).toMatchObject({ baselineWindows: 1, baselineRemembered: 10 });
+  });
+});
+
 describe("倒计时的递减奖励", () => {
   it("九档合计 222，第十段为 0；重进页面也不会重拿第一档，重复领同一段无效", () => {
     const earned: number[] = [];
     for (let index = 0; index < 10; index++) {
-      enterStudyFocus("word", now); startStudyFocus(now); answer(1, index % 2 ? "forgot" : "know");
+      enterStudyFocus("word", now); startStudyFocus(now); answer(1, index % 2 ? "forgot" : "know"); fill(9);
       complete(); earned.push(continueStudyFocus(now)); leaveStudyFocus();
     }
     expect(earned).toEqual([...STUDY_FOCUS_REWARDS, 0]);
@@ -217,10 +247,10 @@ describe("倒计时的递减奖励", () => {
 
   it("跨凌晨四点才重置档位，休息后才点击也归属于完成窗口的学习日", () => {
     now = new Date("2026-09-29T03:40:00").getTime(); vi.setSystemTime(now);
-    startStudyFocus(now); answer(1); complete(); // 03:50 belongs to Sep 28
+    startStudyFocus(now); answer(1); fill(9); complete(); // 03:50 belongs to Sep 28
     now = new Date("2026-09-29T04:01:00").getTime(); vi.setSystemTime(now);
     expect(continueStudyFocus(now)).toBe(100);
-    answer(1); complete(); expect(continueStudyFocus(now)).toBe(100);
+    answer(1); fill(9); complete(); expect(continueStudyFocus(now)).toBe(100);
     expect(rowsFor("SELECT key FROM yuzu_ledger WHERE kind='focus' ORDER BY key"))
       .toEqual([{ key: "2026-09-28:1" }, { key: "2026-09-29:1" }]);
   });

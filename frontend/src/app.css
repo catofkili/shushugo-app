@@ -1688,8 +1688,7 @@
 .quick-study-page-shell .quick-study-index,.quick-study-page-shell .quick-study-meaning small,.quick-study-page-shell .quick-study-honorific{font-size:11px}
 
 /* 十分钟倒计时：入口留在学习工具行，休息和开场说明覆盖整页，避免误触下一张。 */
-.study-focus-start,.study-focus-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:none;border:1px solid color-mix(in srgb,var(--ds-primary) 40%,transparent);border-radius:999px;padding:7px 10px;background:color-mix(in srgb,var(--ds-primary) 12%,transparent);color:var(--ds-ink);font-size:12px;font-weight:750;white-space:nowrap}
-.study-focus-start:disabled{opacity:.45}
+.study-focus-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:none;border:1px solid color-mix(in srgb,var(--ds-primary) 40%,transparent);border-radius:999px;padding:7px 10px;background:color-mix(in srgb,var(--ds-primary) 12%,transparent);color:var(--ds-ink);font-size:12px;font-weight:750;white-space:nowrap}
 .study-focus-chip{color:var(--ds-primary-deep,#7a4a20);font-variant-numeric:tabular-nums}
 .study-focus-chip small{font-size:10px}
 .study-focus-veil{position:fixed;z-index:10000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(22,27,25,.76);backdrop-filter:blur(8px)}
