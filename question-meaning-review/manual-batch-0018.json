@@ -212,9 +212,9 @@
   {
     "kanji": "受験",
     "kana": "じゅけん",
-    "questionMeaning": "报考",
+    "questionMeaning": "参加考试",
     "classification": "manual_translation",
-    "reason": "日语常用义不宜直接照搬汉字，题面采用精简中文义。"
+    "reason": "核心义是参加考试；“报考”偏向报名手续，不能单独覆盖受験。"
   },
   {
     "kanji": "受講",
