@@ -15,7 +15,7 @@ vi.mock("./database/db-utils", async (importOriginal) => ({
 vi.mock("./word-api/stage1", () => ({ stage1ProgressCounts: () => plan }));
 vi.mock("./review-budget", () => ({ readEncoreLog: () => ({ dayWords: encoreWords }) }));
 
-import { buyItem, equippedItem, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
+import { buyItem, claimDailyPlanYuzu, equippedItem, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
 import { computeStreak } from "./zoo-streak";
 import { itemById } from "./yuzu-catalog";
 
@@ -49,14 +49,21 @@ describe("收入", () => {
     expect(yuzuBalance()).toBe(YUZU.study);
   });
 
-  it("清完计划、连击、成就都按新版倍率入账", () => {
+  it("每日计划奖励等到完成页领取；其他收入仍由结算自动入账", () => {
     answers(120);
     plan = { total: 300, completed: 300 };
     checkin("2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", TODAY);
     db.run("INSERT INTO achievements VALUES ('first-know', '2026-06-06'), ('streak-7', '2026-06-12')");
     encoreWords = 20;
-    expect(settleYuzu()).toBe(YUZU.study + YUZU.plan + YUZU.streak7 + YUZU.encore + 2 * YUZU.achievement);
+    expect(settleYuzu()).toBe(YUZU.study + YUZU.streak7 + YUZU.encore + 2 * YUZU.achievement);
     expect(settleYuzu()).toBe(0);
+    expect(claimDailyPlanYuzu()).toBe(YUZU.plan);
+    expect(claimDailyPlanYuzu()).toBe(0);
+  });
+
+  it("每日计划未完成时不能领取计划奖励", () => {
+    plan = { total: 10, completed: 9 };
+    expect(claimDailyPlanYuzu()).toBe(0);
   });
 
   it("连击 8 天不发;今天还没打卡也不发(streak 数的是昨天的)", () => {

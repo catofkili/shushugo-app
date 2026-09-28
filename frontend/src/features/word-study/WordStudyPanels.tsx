@@ -21,6 +21,7 @@ import type { WordCard, WordStats } from "../../types/vocabulary";
 import { ENCORE_DEFAULT_COLOR, encoreLimitedColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
 import { ShareImageSheet } from "../../components/ShareImageSheet";
+import { StudyFocusChest } from "../../components/StudyFocusChest";
 import {
   answerReadingText,
   concealedReadingParts,
@@ -34,6 +35,8 @@ import { Paywall } from "../../components/Paywall";
 import { canUseFeature } from "../../lib/entitlements";
 import { useEntitlements } from "../../hooks/useEntitlements";
 import { quizGroups } from "../../lib/distinction-quiz";
+import { STUDY_FOCUS_REWARD_MIN_MS, type StudyFocusSnapshot } from "../../lib/study-focus";
+import { YUZU, yuzuToday } from "../../lib/yuzu";
 
 /** 自他标注。直接挂在词自己身上(不是只在配对面板里提),自/他 那个字放大加色,
  *  一眼扫得到 —— 中文「开」一个字通吃 開く/開ける,这一栏是最容易翻车的地方。 */
@@ -245,9 +248,11 @@ interface FinishPanelProps {
   onEncore?: (size?: number) => void;
   onStubbornQuickStudy?: (wordIds: number[]) => void;
   onOpenDistinctionQuiz?: () => void;
+  focusSnapshot?: StudyFocusSnapshot;
+  onClaimDailyRewards?: () => number;
 }
 
-export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji, onEncore, onStubbornQuickStudy, onOpenDistinctionQuiz }: FinishPanelProps) => {
+export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji, onEncore, onStubbornQuickStudy, onOpenDistinctionQuiz, focusSnapshot, onClaimDailyRewards }: FinishPanelProps) => {
   const { pickFolder, picker } = useFavoriteFolderPicker();
   const entitlements = useEntitlements();
   // 往日顽固词是 Pro：这一张 Paywall 由完成页自己弹，不用把 requirePro 从 App
@@ -258,6 +263,8 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const [stubbornGrammar, setStubbornGrammar] = useState<StubbornGrammarToday[]>([]);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [shareCard, setShareCard] = useState<{ url: string; blob: Blob } | null>(null);
+  const [dailyRewardsClaimed, setDailyRewardsClaimed] = useState(false);
+  const [dailyRewardsClaimedAmount, setDailyRewardsClaimedAmount] = useState(0);
   const studyDate = stats?.studyDate ?? currentStudyDate();
   const calendar = monthDays(studyDate);
   const checkins = new Set(stats?.checkins ?? []);
@@ -271,7 +278,22 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const distinctionGroupCount = useMemo(() => quizGroups({ kind: "today" }).length, []);
   const checkedToday = checkins.has(studyDate);
   const checkinDays = checkins.size;
-  const isStage1Complete = phase === "stage1" && stats?.dailyPlanDone;
+  const isDailyPlanComplete = (phase === "stage1" || phase === "done") && stats?.dailyPlanDone;
+  const planRewardClaimed = isDailyPlanComplete && yuzuToday().some((row) => row.kind === "plan" && row.key === studyDate);
+  const planReward = isDailyPlanComplete ? YUZU.plan : 0;
+  const focusReward = focusSnapshot?.summary?.qualified
+    && focusSnapshot.activeMs >= STUDY_FOCUS_REWARD_MIN_MS
+    && focusSnapshot.nextReward > 0 ? focusSnapshot.nextReward : 0;
+  const focusRewardClaimed = Boolean(focusSnapshot?.rewardClaimed);
+  const pendingPlanReward = planRewardClaimed || dailyRewardsClaimed ? 0 : planReward;
+  const pendingFocusReward = focusRewardClaimed || dailyRewardsClaimed ? 0 : focusReward;
+  const pendingDailyRewards = pendingPlanReward + pendingFocusReward;
+  const shownDailyRewards = dailyRewardsClaimed
+    ? dailyRewardsClaimedAmount || planReward + focusReward
+    : pendingDailyRewards || (planRewardClaimed ? planReward : 0) + (focusRewardClaimed ? focusReward : 0);
+  const dailyChestCaption = dailyRewardsClaimed
+    ? dailyRewardsClaimedAmount > 0 ? `已领取 ${dailyRewardsClaimedAmount} 柚子` : `今日奖励已到账 ${shownDailyRewards} 柚子`
+    : pendingDailyRewards > 0 ? `点击宝箱领取 ${pendingDailyRewards} 柚子` : "今日奖励已到账";
   const compactPhaseLabel = phase === "done" ? "全部完成"
     : phase === "stage1" ? "第一阶段"
       : phase === "mistakes" ? "错题本"
@@ -283,7 +305,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   // 记在 sessionStorage 而不是数据库 —— 这只是个视觉彩头,丢了也无所谓。
   const [celebrate, setCelebrate] = useState(false);
   useEffect(() => {
-    if (phase !== "done" && !isStage1Complete) return;
+    if (phase !== "done" && !isDailyPlanComplete) return;
     const key = `mn-zoo-celebrated-${studyDate}`;
     try {
       if (globalThis.sessionStorage.getItem(key)) return;
@@ -292,7 +314,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
       // 隐私模式下 sessionStorage 可能不可用,那就每次都放,不影响功能
     }
     setCelebrate(true);
-  }, [phase, isStage1Complete, studyDate]);
+  }, [phase, isDailyPlanComplete, studyDate]);
 
   // 「继续学习」按钮的每日装扮与数量。默认数量由算法给:积压递减批或强度的一半。
   // 铅笔改的是**这一次加餐要学几个**,不是每日新词配额 —— 那个旋钮在设置页,
@@ -432,6 +454,35 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             <div><b>{formatDuration(totalSeconds).split(/(\d+)/).filter(Boolean).map((part, i) => (/^\d+$/.test(part) ? part : <small key={i}>{part}</small>))}</b><span><Clock3 size={13} aria-hidden="true" />用时</span></div>
             <div><b>{shownCheckinDays}<small>天</small></b><span><CheckCircle2 size={13} aria-hidden="true" />累计打卡</span></div>
           </div>
+
+          {isDailyPlanComplete && (
+            <section className="fin-block fin-reward-block">
+              <p className="fin-block-title">今日奖励</p>
+              <div className="fin-reward-layout">
+                <StudyFocusChest
+                  amount={shownDailyRewards}
+                  claimed={dailyRewardsClaimed || pendingDailyRewards === 0}
+                  onClaim={() => {
+                    if (!pendingDailyRewards) return;
+                    const earned = onClaimDailyRewards?.() ?? 0;
+                    setDailyRewardsClaimedAmount(earned);
+                    setDailyRewardsClaimed(true);
+                  }}
+                  caption={dailyChestCaption}
+                />
+                <div className="fin-reward-details">
+                  <p className="fin-reward-heading">奖励来源</p>
+                  <ul className="fin-reward-sources">
+                    <li><span>完成今日计划</span><b>+{YUZU.plan}</b><small>{planRewardClaimed || dailyRewardsClaimed ? "已到账" : "待领取"}</small></li>
+                    {focusReward > 0 && (
+                      <li><span>本轮专注（满 5 分钟）</span><b>+{focusReward}</b><small>{focusRewardClaimed || dailyRewardsClaimed ? "已到账" : "待领取"}</small></li>
+                    )}
+                  </ul>
+                  <p className="fin-reward-note">专注奖励还需本轮至少背 10 个词；每日计划奖励与专注奖励在此一起领取。</p>
+                </div>
+              </div>
+            </section>
+          )}
 
           <section className="fin-block">
             <div className="fin-cal-head">
@@ -667,7 +718,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
           )}
 
           <div className="fin-tiles">
-            {isStage1Complete && (
+            {isDailyPlanComplete && (
               <>
                 <button
                   onClick={onContinueStage2}

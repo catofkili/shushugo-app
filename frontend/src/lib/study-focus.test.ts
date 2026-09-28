@@ -11,8 +11,8 @@ vi.mock("./database/db-utils", async (original) => ({
 
 import {
   claimStudyFocusReward, continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, leaveStudyFocus,
-  recordStudyFocusAnswer, recordStudyFocusTime, sameStudyFocusState, startStudyFocus, stopStudyFocus,
-  STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
+  finishStudyFocusAtDailyCompletion, recordStudyFocusAnswer, recordStudyFocusTime, sameStudyFocusState, startStudyFocus, stopStudyFocus,
+  STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARD_MIN_MS, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
 } from "./study-focus";
 import { LOCAL_SCHEMA_SQL } from "./database/schema";
 import { rowsFor } from "./database/db-utils";
@@ -102,6 +102,25 @@ describe("独立十分钟记录与可选倒计时", () => {
     expect(yuzuBalance()).toBe(0);
     enterStudyFocus("word", now);
     expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "off", remainingSeconds: 600, nextReward: 100 });
+  });
+
+  it("每日计划收尾时满五分钟且背够十词，可领取本轮档位奖励", () => {
+    startStudyFocus(now); answer(1); fill(9);
+    advance(STUDY_FOCUS_REWARD_MIN_MS);
+    const snapshot = finishStudyFocusAtDailyCompletion(now);
+    expect(snapshot).toMatchObject({ status: "break", activeMs: STUDY_FOCUS_REWARD_MIN_MS, summary: { words: 10, qualified: true } });
+    expect(rowsFor("SELECT kind, active_ms, words FROM study_focus_windows"))
+      .toEqual([{ kind: "focus", active_ms: STUDY_FOCUS_REWARD_MIN_MS, words: 10 }]);
+    expect(claimStudyFocusReward()).toBe(100);
+    expect(claimStudyFocusReward()).toBe(0);
+  });
+
+  it("每日计划不足五分钟就丢掉当前专注段", () => {
+    startStudyFocus(now); answer(1); fill(9);
+    advance(STUDY_FOCUS_REWARD_MIN_MS - 1);
+    expect(finishStudyFocusAtDailyCompletion(now)).toMatchObject({ status: "off", activeMs: 0, summary: null });
+    expect(rowsFor("SELECT id FROM study_focus_windows WHERE kind='focus'")).toEqual([]);
+    expect(yuzuBalance()).toBe(0);
   });
 
   it("数据库重载只恢复观测的未满窗口，不恢复倒计时或奖励入口", () => {
