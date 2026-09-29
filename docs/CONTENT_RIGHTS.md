@@ -31,7 +31,7 @@ Apple 的 App Review Guidelines 要求开发者只提交自己创建或已获许
 | 英文词源 | `frontend/src/data/english_origins.json` | 当前文件没有逐项来源和许可证元数据 | 逐项补来源/授权，或移除无权利证明的条目 |
 | 汉字读音 | `frontend/src/data/kanji_readings.json` | 元数据记录 KANJIDIC2，CC BY-SA 4.0 | 保留 KANJIDIC2 署名、许可链接及适用义务；核对衍生数据是否需要相同方式共享 |
 | 汉字变体 | `frontend/src/data/kanji_variants.json` | 使用 OpenCC 字典、Unicode Unihan 等上游资料 | 保存各上游许可证和 NOTICE，并按其要求署名/分发 |
-| 单词音频 | `frontend/public/audio/words/` | 当前包含 VOICEVOX 春日部つむぎ、雨晴はう、玄野武宏的预生成 AAC，各 11,051 条 | 保留准确署名 `VOICEVOX:春日部つむぎ`、`VOICEVOX:雨晴はう`、`VOICEVOX:玄野武宏(CV:ガロ)`；不要把原始 AAC 作为独立素材包或用于训练/制作音声模型 |
+| 单词音频 | `frontend/public/audio/words/` | VOICEVOX 春日部つむぎ、雨晴はう、玄野武宏的索引各收录 11,801 条预生成 AAC；包括 882 条 `jlpt_collocation_content.json` 运行时固定表达 | 保留准确署名 `VOICEVOX:春日部つむぎ`、`VOICEVOX:雨晴はう`、`VOICEVOX:玄野武宏(CV:ガロ)`；不要把原始 AAC 作为独立素材包或用于训练/制作音声模型 |
 | 例句音频 | `frontend/public/audio/examples/`（不入库；计划放 R2） | 2026-09-18 生成，VOICEVOX 春日部つむぎ 11,655 条 AAC。⚠️ 生成时用 macOS 自带 Kyoko 念一遍当**语调参考**（只提取音高曲线写进 VOICEVOX 查询，Kyoko 的音频一个字节都不发布，见 `scripts/prosody-transfer.mjs`）。macOS SLA 对系统语音的**输出**限定个人非商用；音高曲线是否算「输出」没有先例，风险低但是灰的 | 署名同单词音频。要彻底去掉灰区就把参考引擎换成 AivisSpeech（ACML 1.0，商用允许、署名自愿），只改 `referenceWav` 一个函数，重跑约 6 小时 |
 | 第三方依赖 | `frontend/package-lock.json`、`frontend/node_modules/`、`frontend/ios/App/Pods/` | 依赖自身带有许可证文件，但尚未形成发行版 NOTICE 汇总 | 发布前生成并检查第三方许可证/NOTICE 清单 |
 | 图片、图标、字体、宣传素材 | `frontend/ios/`、`frontend/public/`、App Store 素材 | 本清单未证明全部拥有权利 | 逐项登记来源和许可；删除无法证明的素材 |

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 把整个词库的读音批量合成成音频文件。
+// 把出厂词库和运行时固定搭配内容的读音批量合成成音频文件。
 //
 // 为什么要预生成:设备自带的语音引擎会自己做形态分析,读音不可控 —— だいたい 被切成
 // だ|いたい 读成「da itai」、はいざら 被切成 は|いざら 读成「wa izara」。喂片假名能
@@ -38,7 +38,7 @@ import {
   pronunciationAudioName,
   pronunciationReading,
   speechText
-} from "../src/lib/speech.ts";
+} from "../src/lib/speech-audio.ts";
 import { splitMorae } from "../src/lib/pitch-accent.ts";
 // 同元音连着两拍时,引擎会把第二拍压到 40~90ms。长音该压,语素边界(湖 = 水+海)不该。
 // 判定表和撑开逻辑在这里,审计脚本 audit-vowel-sequences.mjs 读同一份。
@@ -102,7 +102,11 @@ if (!dryRun && engine === "google" && !googleKey && !googleToken) {
 // —— 收集要合成的文本 ——
 const SQL = await initSqlJs();
 const db = new SQL.Database(new Uint8Array(readFileSync(dbPath)));
-const rows = db.exec("SELECT kanji, kana FROM words")[0].values;
+const rows = [
+  ...db.exec("SELECT kanji, kana FROM words")[0].values,
+  ...JSON.parse(readFileSync(join(here, "..", "src", "data", "jlpt_collocation_content.json"), "utf8"))
+    .entries.map(({ surface, kana }) => [surface, kana])
+];
 const accentTable = JSON.parse(readFileSync(accentPath, "utf8")).accents ?? {};
 const vowelDecisions = loadDecisions();
 
