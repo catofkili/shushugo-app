@@ -206,8 +206,8 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
           {/* 估算：吉祥物说出来。来得及是攥拳，来不及是吓一跳 + 琥珀底 */}
           {preview ? <MascotSay sticker={preview.feasible ? "mood-fired-up" : "mood-shocked"} tone={preview.feasible ? "good" : "warn"} size={68} className="mt-6">
             <span className="ls-say-head">每天 <b>{preview.required.words}</b> 个新词</span>
-            考前约 {preview.intakeDays} 天能进新，一共 {preview.content.words} 个词（每天最多排 {preview.daily.words} 个）。
-            另有语法 {preview.content.grammar} 条、汉字 {preview.content.kanji} 张、辨析 {preview.content.confusion} 组。
+            考前约 {preview.intakeDays} 天能进新，每天最多排 {preview.daily.words} 个。
+            语法 {preview.content.grammar} 条、汉字 {preview.content.kanji} 张、辨析 {preview.content.confusion} 组。
             {examKind !== "jlpt" && <><br />按 {examLabel(examKind)} 备考时，这里仍按本站 N 级素材估算，不代表该考试考纲覆盖率。</>}
             {!preview.feasible && <><br /><b>照每天的上限，这场考前学不完。</b>换一场考期或者降一级目标吧。</>}
             {startingLevel === "kana-none" && <><br />五十音按真的学会了多少来算，没学完就往后顺延。</>}
