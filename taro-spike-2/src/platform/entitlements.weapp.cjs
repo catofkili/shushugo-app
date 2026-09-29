@@ -1,4 +1,4 @@
-const { getState } = require('../../../frontend/src/lib/database/db-utils');
+const { getState, setState, persistSoon } = require('../../../frontend/src/lib/database/db-utils');
 const { normalizeEntitlement } = require('../../../wechat-miniprogram/src/core/entitlements');
 
 const KEY = 'entitlement_cache';
@@ -10,4 +10,10 @@ function cachedEntitlement() {
   catch { return normalizeEntitlement({ active: false, source: 'cache-invalid' }); }
 }
 
-module.exports = { cachedEntitlement };
+/** 共享替身的 saveEntitlements 调它：云端下发的权益落进 app_state，界面才认得出会员。 */
+function storeEntitlement(payload) {
+  setState(KEY, JSON.stringify(normalizeEntitlement(payload)));
+  persistSoon();
+}
+
+module.exports = { cachedEntitlement, storeEntitlement };

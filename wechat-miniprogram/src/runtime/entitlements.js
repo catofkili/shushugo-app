@@ -13,6 +13,12 @@ function cachedEntitlement() {
   try { return normalizeEntitlement(JSON.parse(raw)); } catch { return normalizeEntitlement({ active: false, source: 'cache-invalid' }); }
 }
 
+/** 云端下发的权益落地（共享替身的 saveEntitlements 调它）。不 await 落盘：调用方是同步的。 */
+function storeEntitlement(payload) {
+  core.setState(getDatabase(), KEY, JSON.stringify(normalizeEntitlement(payload)));
+  saveDatabase().catch(() => undefined);
+}
+
 async function fetchEntitlement() {
   if (!config.entitlementUrl) return cachedEntitlement();
   const payload = await requestJson(config.entitlementUrl, { header: authHeaders() });
@@ -46,4 +52,4 @@ function notifyTrialExpiry() {
   return true;
 }
 
-module.exports = { cachedEntitlement, fetchEntitlement, claimLevelPlanTrial, notifyTrialExpiry };
+module.exports = { cachedEntitlement, storeEntitlement, fetchEntitlement, claimLevelPlanTrial, notifyTrialExpiry };
