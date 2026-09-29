@@ -50,6 +50,7 @@ export * as syncMerge from "../../../frontend/src/lib/sync/merge";
 export * as syncTables from "../../../frontend/src/lib/sync/tables";
 export * as vocabTest from "../../../frontend/src/lib/vocab-test";
 export * as yuzu from "../../../frontend/src/lib/yuzu";
+export * as studyFocus from "../../../frontend/src/lib/study-focus";
 export * as yuzuCatalog from "../../../frontend/src/lib/yuzu-catalog";
 export * as favorites from "../../../frontend/src/lib/favorites-api";
 export * as weekly from "../../../frontend/src/lib/analytics/weekly";

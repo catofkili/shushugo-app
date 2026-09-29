@@ -11,7 +11,7 @@ vi.mock("./database/db-utils", async (original) => ({
 
 import {
   claimStudyFocusReward, continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, leaveStudyFocus,
-  finishStudyFocusAtDailyCompletion, recordStudyFocusAnswer, recordStudyFocusTime, sameStudyFocusState, startStudyFocus, stopStudyFocus,
+  finishStudyFocusAtDailyCompletion, recordStudyFocusAnswer, recordStudyFocusTime, resumeStudyFocus, sameStudyFocusState, startStudyFocus, stopStudyFocus,
   STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARD_MIN_MS, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
 } from "./study-focus";
 import { LOCAL_SCHEMA_SQL } from "./database/schema";
@@ -285,6 +285,17 @@ describe("倒计时的递减奖励", () => {
     answer(1); fill(9); complete(); expect(claimStudyFocusReward()).toBe(100);
     expect(rowsFor("SELECT key FROM yuzu_ledger WHERE kind='focus' ORDER BY key"))
       .toEqual([{ key: "2026-09-28:1" }, { key: "2026-09-29:1" }]);
+  });
+
+  it("同一入口重新进入也读下一档，切回可见状态则续上当前段", () => {
+    startStudyFocus(now); fill(10, "know"); complete();
+    expect(claimStudyFocusReward()).toBe(100);
+
+    expect(enterStudyFocus("word", now)).toMatchObject({ status: "off", nextReward: 50, rewardClaimed: false });
+    startStudyFocus(now); advance(120_000);
+    expect(resumeStudyFocus("word", now)).toMatchObject({ status: "running", remainingSeconds: 480, nextReward: 50 });
+    fill(10, "know", 900); complete();
+    expect(claimStudyFocusReward()).toBe(50);
   });
 
   it("历史表同步取并集，设备自己的未满窗口不会进入账号同步", () => {

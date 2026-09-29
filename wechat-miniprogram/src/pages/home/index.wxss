@@ -32,6 +32,12 @@
 .remaining { font-size: 70rpx; line-height: 1; font-weight: 900; }
 .remaining-label { margin-left: 10rpx; color: #7d6b59; font-size: 24rpx; }
 .today-breakdown { display: flex; flex-direction: column; gap: 8rpx; color: #806c58; text-align: right; font-size: 22rpx; }
+.focus-toggle { display: flex; align-items: center; gap: 15rpx; margin-top: 24rpx; padding: 16rpx 18rpx; border: 2rpx solid rgba(105,168,64,.18); border-radius: 18rpx; background: rgba(255,255,255,.62); }
+.focus-check { display: flex; align-items: center; justify-content: center; width: 34rpx; height: 34rpx; flex: none; border: 3rpx solid #c8b9a5; border-radius: 10rpx; color: #fff; font-size: 23rpx; font-weight: 900; }
+.focus-check.checked { border-color: #69a840; background: #69a840; }
+.focus-toggle-copy { display: flex; min-width: 0; flex-direction: column; gap: 4rpx; }
+.focus-toggle-title { color: #55483c; font-size: 23rpx; font-weight: 800; }
+.focus-toggle-detail { color: #8a7764; font-size: 19rpx; }
 .not-ready { margin-top: 28rpx; color: #806c58; font-size: 23rpx; line-height: 1.6; }
 .start { margin: 30rpx 0 0; border-radius: 22rpx; font-size: 28rpx; line-height: 88rpx; font-weight: 800; }
 .feature-row { display: flex; gap: 18rpx; margin-top: 22rpx; }

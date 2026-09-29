@@ -1,0 +1,5 @@
+.focus-chip{display:flex;align-items:center;justify-content:space-between;margin:0 0 20rpx;padding:16rpx 22rpx;border:2rpx solid rgba(105,168,64,.18);border-radius:22rpx;background:linear-gradient(135deg,#f0f7e9,#fbf5e9);box-shadow:0 6rpx 18rpx rgba(91,67,42,.06)}
+.focus-chip-time{display:flex;align-items:center;gap:15rpx}
+.focus-chip-kicker{color:#5f843e;font-size:22rpx;font-weight:800}
+.focus-chip-count{color:#3a2e22;font-size:34rpx;font-variant-numeric:tabular-nums;font-weight:900}
+.focus-chip-reward{padding:9rpx 14rpx;border-radius:999rpx;color:#8a6122;background:#fff0ce;font-size:21rpx;font-weight:900}

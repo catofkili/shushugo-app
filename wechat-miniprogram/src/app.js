@@ -1,8 +1,15 @@
 const content = require('./shared/content');
 
+function activeStudyPage() {
+  if (typeof getCurrentPages !== 'function') return null;
+  const page = getCurrentPages().slice(-1)[0];
+  return page?.route === 'pages/index/index' ? page : null;
+}
+
 App({
   globalData: {
-    databaseReady: false
+    databaseReady: false,
+    appBackgrounded: false
   },
 
   /*
@@ -13,5 +20,15 @@ App({
    */
   onLaunch() {
     content.readyForKanji().catch((error) => console.warn('[app] 内容分包稍后重试', error));
+  },
+
+  onShow() {
+    this.globalData.appBackgrounded = false;
+    activeStudyPage()?.resumeStudyFocusForApp();
+  },
+
+  onHide() {
+    this.globalData.appBackgrounded = true;
+    activeStudyPage()?.pauseStudyFocusForApp();
   }
 });

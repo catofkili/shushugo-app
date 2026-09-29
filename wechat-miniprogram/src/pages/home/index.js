@@ -23,7 +23,8 @@ Page({
     skin: '',
     postExam: null,
     postExamTarget: '',
-    postExamChoice: null
+    postExamChoice: null,
+    focusArmed: false
   },
 
   onLoad() {
@@ -54,7 +55,7 @@ Page({
         wx.setNavigationBarColor(palettes[skin]);
         wx.setTabBarStyle({ backgroundColor: palettes[skin].backgroundColor, color: skin === 'theme-night' ? '#D7C8B5' : '#8A7764', selectedColor: skin === 'theme-night' ? '#F3C46B' : '#5F983A' });
       }
-      this.setData({ ready: true, stats: home.stats, summary, skin, postExam, postExamTarget: postExam?.target || '', postExamChoice, postExamDays: web.preferences.POST_EXAM_LIGHT_DAYS });
+      this.setData({ ready: true, stats: home.stats, summary, skin, postExam, postExamTarget: postExam?.target || '', postExamChoice, postExamDays: web.preferences.POST_EXAM_LIGHT_DAYS, focusArmed: web.studyFocus.isStudyFocusArmed() });
     } catch (error) {
       console.info('[home] 本地词库尚未就绪', error);
       this.setData({ ready: false, notice: '首次使用先到「单词」下载离线词库。' });
@@ -69,6 +70,25 @@ Page({
 
   openPage(event) {
     wx.navigateTo({ url: event.currentTarget.dataset.url });
+  },
+
+  toggleStudyFocus() {
+    if (this.data.focusArmed) {
+      web.studyFocus.setStudyFocusArmed(false);
+      this.setData({ focusArmed: false });
+      return;
+    }
+    wx.showModal({
+      title: '开启倒计时学习？',
+      content: '进背词页就开始计时，每专注 10 分钟休息一次。每段至少背 10 个词，完成后点宝箱领柚子。离开背词页，本段额外奖励作废。每天奖励依次为 100、50、25、23、12、6、3、2、1。',
+      confirmText: '开启倒计时',
+      cancelText: '暂不',
+      success: ({ confirm }) => {
+        if (!confirm) return;
+        web.studyFocus.setStudyFocusArmed(true);
+        this.setData({ focusArmed: true });
+      }
+    });
   },
 
   async choosePostExam(event) {

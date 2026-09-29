@@ -1,11 +1,12 @@
 # 背词十分钟观测与倒计时
 
-背词页始终按 `study-clock` 的有效学习时间累积十分钟窗口。用户是否开启倒计时不会改变这份后台观测；倒计时只是额外的专注窗口和奖励入口。网页与 Taro 小程序共用 `frontend/src/lib/study-focus.ts`，平台适配层负责交互事件、可见状态与页面离开。
+背词页始终按 `study-clock` 的有效学习时间累积十分钟窗口。用户是否开启倒计时不会改变这份后台观测；倒计时只是额外的专注窗口和奖励入口。网页与 Taro 小程序直接共用 `frontend/src/lib/study-focus.ts`；原生小程序经生成的 `src/shared/web.js` 调用同一状态机，平台适配层负责交互事件、可见状态与页面离开。
 
 ## 时间和窗口
 
 - 一个窗口是 600,000 毫秒有效学习时间，不是墙上时间。沿用学习时长的 60 秒无交互阈值；隐藏、后台、休息页和走神时间不计入。
 - 页面进入学习流程时，自动观测从上次未满的本机窗口继续。每满十分钟就保存一个 `baseline` 窗口并开始下一个。启用、停止或退出倒计时都不清空这份观测。
+- 每次重新进入背词页都会开一段新的倒计时，即使入口名称没变；切回前台只恢复当前段。两者必须走不同的状态入口，避免复用上次页面的奖励档位。
 - 未满的观测窗口及逐词自评保存在本机 `app_state.study_focus_partial_windows`，避免每秒写同步表；满十分钟的统计写入 `study_focus_windows` 并参与同步。切换数据库时，完整行随用户数据合并，未满窗口继续属于产生它的设备。
 - 自动基线按入口 `source` 分开。总结只比较倒计时开始前已经完成、同入口的完整基线窗口；重叠窗口、部分窗口、别的学习入口都不能充当自己的历史基线。
 - 学习日按现有 `studyDate` 的凌晨 4 点边界计算。凌晨 4 点切换奖励档位，不会切断正在进行的十分钟。
@@ -52,4 +53,5 @@
 - 新表必须一起登记于本地 schema、`frontend/src/lib/sync/tables.ts`、用户数据表清单和合并测试。它是设备学习记录，不得放入出厂词库或种子数据。
 - 恢复本地增量时，同步 schema 可能先于用户表迁移执行；用户表迁移后失效当前同步缓存，让后续同步初始化补列。同步 DDL 指纹也记录当时已存在的同步表，避免旧库在下次启动时保留漏掉的列。回归覆盖见 `frontend/src/lib/sync/schema.test.ts`。
 - 网页与 Taro 的活动适配：`frontend/src/hooks/useStudyActivity.ts`、`taro-spike-2/src/platform/use-study-activity.weapp.ts`、`taro-spike-2/src/platform/WeappPage.tsx`。离开、切后台、空闲时必须停表；平台不应另造一份计时状态。
+- 原生小程序主页开关在 `wechat-miniprogram/src/pages/home/index.*`，背词页计时与休息层在 `wechat-miniprogram/src/pages/index/index.*`；`study-focus-chip` 单独读快照，避免每秒更新整页。切主页会作废本段，切到后台则暂停并在回前台后续上。
 - 关键回归覆盖窗口切分、独立基线、奖励领取和合并去重：`frontend/src/lib/study-focus.test.ts`、`frontend/src/lib/yuzu.test.ts`、`frontend/src/lib/sync/merge.test.ts`、`taro-spike-2/scripts/study-activity-smoke.cjs`。
