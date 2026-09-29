@@ -32,7 +32,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4">
         <h2 className="mb-3 text-sm font-bold text-white">应用介绍</h2>
         <p className="text-sm leading-relaxed text-white/70">
-          收集日是一款日语学习应用，内置 10,919 个 JLPT 词条、882 个固定搭配与固定表达，以及 769 个语法点。
+          收集日是一款日语学习应用，内置 N5–N1 的 JLPT 词条、固定搭配与固定表达，以及语法点。
           单词、汉字读音和语法三条线都由同一套 FSRS 记忆算法排复习。
         </p>
       </div>
@@ -43,15 +43,15 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <div className="space-y-2 rounded-2xl border border-white/15 bg-[#464949] p-4">
           <div className="flex items-start gap-2">
             <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
-            <p className="text-sm text-white/70">10,919 个 N5-N1 JLPT 词条，条条带例句</p>
+            <p className="text-sm text-white/70">N5-N1 JLPT 词条，条条带例句</p>
           </div>
           <div className="flex items-start gap-2">
             <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
-            <p className="text-sm text-white/70">882 个 N5-N1 固定搭配与固定表达，附简体中文释义</p>
+            <p className="text-sm text-white/70">N5-N1 固定搭配与固定表达，附简体中文释义</p>
           </div>
           <div className="flex items-start gap-2">
             <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />
-            <p className="text-sm text-white/70">769 个语法点详解（N5 127 · N4 136 · N3 146 · N2 155 · N1 205）</p>
+            <p className="text-sm text-white/70">N5–N1 语法点详解</p>
           </div>
           <div className="flex items-start gap-2">
             <Check size={15} className="mt-0.5 shrink-0 text-[#81D8CF]" />

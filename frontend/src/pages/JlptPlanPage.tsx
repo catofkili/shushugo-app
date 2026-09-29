@@ -202,7 +202,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
           <div className="mb-2 space-y-3">
             {estimate && (
               <MascotSay sticker="mood-ask" className="ds-say-onbg">
-                按你选的起点，一共要学 <b>{estimate.content.words}</b> 个词。还剩约 {estimate.intakeDays} 天可以进新，
+                按你选的起点，还剩约 {estimate.intakeDays} 天可以进新，
                 平均每天 <b>{estimate.required.words}</b> 个；现在每天最多排 {estimate.daily.words} 个。
               </MascotSay>
             )}
@@ -265,7 +265,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
                   <p className="ds-kicker">{label}</p>
                   <p className="ds-num mt-1 text-3xl font-black jp-ink">{pct}<span className="text-base">%</span></p>
                   <div className="ds-bar mt-2"><i style={{ width: `${pct}%` }} /></div>
-                  <p className="ds-num mt-2 text-xs jp-muted">{data.seen} / {data.total}</p>
+                  <p className="ds-num mt-2 text-xs jp-muted">已学 {data.seen}</p>
                 </div>
               );
             })}

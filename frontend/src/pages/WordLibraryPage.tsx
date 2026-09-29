@@ -396,7 +396,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
           </h1>
         </div>
         <p className="wl-count">
-          <b>{tally.total}</b> 词 · 到期 {tally.due} · 顽固 {tally.leech}
+          {filters.band !== "all" || filters.pos !== "all" || filters.search ? <><b>{tally.total}</b> 词 · </> : null}到期 {tally.due} · 顽固 {tally.leech}
         </p>
       </header>
 
@@ -430,7 +430,6 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
       {/* 分布带：当前筛选下各记忆档的比例，点色块=只看这一档 */}
       <p className="wl-dist-cap">
         已学 <b>{studiedTotal}</b> 词的记忆分布
-        {tally.bands.unseen > 0 ? ` · 另有 ${tally.bands.unseen} 词未学` : ""}
       </p>
       <div className="wl-dist" role="group" aria-label="记忆程度分布">
         {studiedLegend.map((item) => (
@@ -599,7 +598,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
       <div className="wl-sentinel">
         {hasMore && (
           <button className="wl-sentinel-more" onClick={loadMore}>
-            正在加载… {rows.length} / {tally.total}
+            正在加载…
           </button>
         )}
         {!hasMore && rows.length > 0 && <span>到底了 · 共 {rows.length} 条</span>}

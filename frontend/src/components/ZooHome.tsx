@@ -446,7 +446,7 @@ export function ZooHome({
           <>
             <span className="zoo-tray-title">进度概览</span>
             <small>
-              单词 {overview.words.seen}/{overview.words.total} · 掌握 {overview.words.completed} · 薄弱 {overview.words.low}
+              单词 {overview.words.seen} · 掌握 {overview.words.completed} · 薄弱 {overview.words.low}
             </small>
           </>
         }>

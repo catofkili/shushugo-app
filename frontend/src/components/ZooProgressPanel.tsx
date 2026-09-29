@@ -174,7 +174,7 @@ export function ZooProgressPanel({ overview, onOpenWordList, onOpenGrammar }: Pr
                 key={item.level}
                 className="zoo-prog-bar"
                 onClick={() => (target === "words" ? onOpenWordList(item.level) : onOpenGrammar(item.level as JLPTLevel))}
-                aria-label={`${item.level} ${title} ${item.seen}/${item.total}，点开看全部`}
+                aria-label={`${item.level} ${title} 已学 ${item.seen}，点开看全部`}
               >
                 <span className="zoo-prog-bar-track">
                   {/* 已有进度但不足 8% 时给个最小高度,不然柱子看不见 */}
@@ -215,7 +215,7 @@ export function ZooProgressPanel({ overview, onOpenWordList, onOpenGrammar }: Pr
         {focus === "words" &&
           renderColumn(
             "单词",
-            `学过 ${overview.words.seen}/${overview.words.total} · 掌握 ${overview.words.completed} · 薄弱 ${overview.words.low} · 未学 ${overview.words.unseen}`,
+            `学过 ${overview.words.seen} · 掌握 ${overview.words.completed} · 薄弱 ${overview.words.low}`,
             overview.wordsByLevel,
             "words"
           )}
