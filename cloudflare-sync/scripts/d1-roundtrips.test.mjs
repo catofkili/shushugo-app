@@ -79,7 +79,11 @@ const env = {
 const token = "roundtrip-token";
 const tokenHash = createHash("sha256").update(token).digest("base64url");
 const future = "2099-01-01T00:00:00.000Z";
-const now = "2026-09-27T00:00:00.000Z";
+const now = new Date().toISOString();
+const studyDayDate = new Date();
+const studyDay = studyDayDate.toISOString().slice(0, 10);
+studyDayDate.setUTCDate(studyDayDate.getUTCDate() - 1);
+const previousStudyDay = studyDayDate.toISOString().slice(0, 10);
 const addUser = db.prepare(`
   INSERT INTO users (id, email, password_hash, password_salt, display_name, created_at)
   VALUES (?, ?, 'hash', 'salt', ?, ?)
@@ -108,10 +112,10 @@ for (const [teamId, owner, member, code] of [["team-1", "u1", "u2", "TEAM0001"],
 }
 const addActivity = db.prepare(`
   INSERT INTO team_daily_activity (team_id, user_id, study_day, study_count, completed, updated_at)
-  VALUES (?, ?, '2026-09-26', ?, 0, ?)
+  VALUES (?, ?, ?, ?, 0, ?)
 `);
-addActivity.run("team-1", "u1", 4, now);
-addActivity.run("team-2", "u3", 8, now);
+addActivity.run("team-1", "u1", previousStudyDay, 4, now);
+addActivity.run("team-2", "u3", previousStudyDay, 8, now);
 
 const objectKey = "r2/u1/generation-1";
 db.prepare(`
@@ -151,13 +155,13 @@ const jsonPost = (path, body, authenticated = true) => new Request(`https://work
 
 try {
   const results = [];
-  results.push(await measure("/api/teams/me", authed(`/api/teams/me?day=2026-09-27`)));
-  results.push(await measure("/api/teams/plaza", authed(`/api/teams/plaza?day=2026-09-27`)));
+  results.push(await measure("/api/teams/me", authed(`/api/teams/me?day=${studyDay}`)));
+  results.push(await measure("/api/teams/plaza", authed(`/api/teams/plaza?day=${studyDay}`)));
   results.push(await measure("/api/teams/activity", jsonPost("/api/teams/activity", {
-    studyDay: "2026-09-27", studyCount: 12, completed: true
+    studyDay, studyCount: 12, completed: true
   })));
   results.push(await measure("/api/teams/cheers", jsonPost("/api/teams/cheers", {
-    memberId: "team-1-member", studyDay: "2026-09-27"
+    memberId: "team-1-member", studyDay
   })));
   results.push(await measure("/api/entitlements", authed("/api/entitlements")));
   results.push(await measure("/api/sync/status", authed("/api/sync/status")));
@@ -166,7 +170,7 @@ try {
     kind: "feedback", message: "test", contact: "", platform: "web", app_version: "test", route: "profile"
   }, false)));
   results.push(await measure("/api/teams/overview", jsonPost("/api/teams/overview", {
-    studyDay: "2026-09-27", studyCount: 11, completed: false
+    studyDay, studyCount: 11, completed: false
   })));
   results.push(await measure("/api/health", new Request("https://worker.test/api/health")));
   results.push(await measure("/api/entitlements/launch-gift", jsonPost("/api/entitlements/launch-gift", {})));
@@ -201,8 +205,8 @@ try {
   assert.deepEqual(results[8].payload.plaza.map((team) => team.id), ["team-2"]);
   assert.equal(results[9].payload.migrationsApplied, true);
   assert.equal(results[10].payload.isPro, true);
-  assert.equal((await worker.fetch(authed("/api/teams/me?day=2026-09-27"), env, {})).status, 200);
-  const activity = db.prepare("SELECT study_count, completed FROM team_daily_activity WHERE team_id = 'team-1' AND user_id = 'u1' AND study_day = '2026-09-27'").get();
+  assert.equal((await worker.fetch(authed(`/api/teams/me?day=${studyDay}`), env, {})).status, 200);
+  const activity = db.prepare("SELECT study_count, completed FROM team_daily_activity WHERE team_id = 'team-1' AND user_id = 'u1' AND study_day = ?").get(studyDay);
   assert.deepEqual({ ...activity }, { study_count: 12, completed: 1 });
   assert.equal(db.prepare("SELECT COUNT(*) AS count FROM team_cheers WHERE team_id = 'team-1'").get().count, 1);
   assert.equal((await (await worker.fetch(authed("/api/entitlements"), env, {})).json()).isPro, true);

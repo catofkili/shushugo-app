@@ -60,6 +60,9 @@ export interface Env {
   WECHAT_PAY_ENV?: string;
   WECHAT_PAY_PRICES?: string;
   LAUNCH_GIFT_CLAIM_UNTIL?: string;
+  /** 审核员专用登录：密码（secret）和截止时间（var）都配了才开。见 reviewLogin。 */
+  REVIEW_LOGIN_PASSWORD?: string;
+  REVIEW_LOGIN_UNTIL?: string;
   /** 小程序后台「消息推送」配的 Token，校验 xpay_* 推送用 */
   WECHAT_MSG_TOKEN?: string;
   /** "1" = 生产模式:Turnstile 和邮件服务必须配好,否则认证路由直接 503。 */
@@ -1113,6 +1116,64 @@ const login = async (request: Request, env: Env) => {
   await clearLoginFailures(env, request, email);
   await env.DB.prepare("UPDATE users SET last_login = ? WHERE id = ?").bind(new Date().toISOString(), user.id).run();
   const token = await createToken(env, user.id);
+  return json({ ...(await sessionPayload(env, user, token)), isNewAccount: false });
+};
+
+/**
+ * 审核员专用登录（2026-09-30）。
+ *
+ * 为什么有它：小程序只有微信登录，而微信审核规范要求「存在账号关系或付费内容需提供测试账号和密码」，
+ * 网页那套邮箱密码登录在小程序里用不了（要 Turnstile 人机验证，小程序里没有）。
+ *
+ * 怎么把风险压小：
+ * - 只有 REVIEW_LOGIN_PASSWORD（secret）和 REVIEW_LOGIN_UNTIL（截止时间）同时配了才开，过了截止时间路由 404、
+ *   `/api/auth/config` 的 reviewLoginOpen 变 false，小程序登录页的入口随之消失；
+ * - 登进去的是一个专用账号（review@shushugo.com），没有任何真实用户数据，权益只给到截止时间，
+ *   会话也不超过截止时间；这个账号的邮箱密码登录走不通（密码哈希是随机的）；
+ * - 按 IP 限速，密码比的是 SHA-256 摘要。
+ * 撤销：删掉两个配置，或等它自己到期。
+ */
+const REVIEW_ACCOUNT_EMAIL = "review@shushugo.com";
+const reviewLoginWindow = (env: Env) => {
+  const until = Date.parse(env.REVIEW_LOGIN_UNTIL ?? "");
+  return { open: Boolean(env.REVIEW_LOGIN_PASSWORD) && Number.isFinite(until) && Date.now() < until, until };
+};
+
+const reviewLogin = async (request: Request, env: Env) => {
+  const window = reviewLoginWindow(env);
+  if (!window.open) return json({ detail: "Not found" }, 404);
+  await rateLimit(env, request, "review-login", 10, 3600);
+  const body = await readJson<{ account?: string; password?: string }>(request);
+  const accountOk = normalizeEmail(body.account) === REVIEW_ACCOUNT_EMAIL;
+  const passwordOk = (await sha256(String(body.password ?? ""))) === (await sha256(env.REVIEW_LOGIN_PASSWORD!));
+  if (!accountOk || !passwordOk) return json({ detail: "账号或密码不正确。" }, 401);
+
+  const until = new Date(window.until).toISOString();
+  const now = new Date().toISOString();
+  let user = await env.DB.prepare(`
+    SELECT id, email, password_hash, password_salt, display_name, email_verified_at FROM users WHERE email = ?
+  `).bind(REVIEW_ACCOUNT_EMAIL).first<UserRow>();
+  if (!user) {
+    const id = crypto.randomUUID();
+    const salt = randomToken(16);
+    await env.DB.prepare(`
+      INSERT INTO users (
+        id, email, password_hash, password_salt, display_name, email_verified_at, created_at, last_login,
+        profile_updated_at, terms_version, privacy_version, consented_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id, REVIEW_ACCOUNT_EMAIL, await hashPassword(randomToken(32), salt), salt, "审核账号", now, now, now,
+      now, USER_AGREEMENT_VERSION, PRIVACY_POLICY_VERSION, now
+    ).run();
+    user = { id, email: REVIEW_ACCOUNT_EMAIL, password_hash: "", password_salt: salt, display_name: "审核账号", email_verified_at: now };
+  }
+  await env.DB.prepare("UPDATE users SET last_login = ? WHERE id = ?").bind(now, user.id).run();
+  // 权益和会话都不超过截止时间；每次登录重写一遍，来回登录也不会把到期日往后推。
+  await saveEntitlement(env, user.id, { productId: "shushugo_pro_launch_gift", source: "trial", expiresAt: until });
+  const token = await createToken(env, user.id);
+  await env.DB.prepare("UPDATE sessions SET expires_at = ? WHERE token_hash = ? AND expires_at > ?")
+    .bind(until, await sha256(token), until).run();
   return json({ ...(await sessionPayload(env, user, token)), isNewAccount: false });
 };
 
@@ -3447,10 +3508,12 @@ const route = async (request: Request, env: Env) => {
     appleEnabled: Boolean(env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID),
     appleClientId: env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID ?? null,
     wechatAppEnabled: Boolean(env.WECHAT_MOBILE_APP_ID && env.WECHAT_MOBILE_APP_SECRET),
-    turnstileEnabled: turnstileEnabled(env)
+    turnstileEnabled: turnstileEnabled(env),
+    reviewLoginOpen: reviewLoginWindow(env).open
   });
   if (request.method === "POST" && url.pathname === "/api/auth/register") return register(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/login") return login(request, env);
+  if (request.method === "POST" && url.pathname === "/api/auth/review-login") return reviewLogin(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/apple") return appleLogin(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/wechat") return wechatLogin(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/request-wechat-link") return requestWechatLinkCode(request, env);

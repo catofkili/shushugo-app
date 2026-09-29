@@ -49,6 +49,7 @@ export interface CloudAuthConfig {
   appleClientId?: string | null;
   wechatAppEnabled: boolean;
   turnstileEnabled: boolean;
+  reviewLoginOpen?: boolean;
 }
 
 export interface CloudUserProfile {
@@ -553,7 +554,7 @@ export async function deleteCloudWeeklyReport(weekStart: string): Promise<void> 
 }
 
 export async function getCloudAuthConfig(): Promise<CloudAuthConfig> {
-  if (!API_URL) return { appleEnabled: false, wechatAppEnabled: false, turnstileEnabled: false };
+  if (!API_URL) return { appleEnabled: false, wechatAppEnabled: false, turnstileEnabled: false, reviewLoginOpen: false };
   return requestJson<CloudAuthConfig>("/api/auth/config", { method: "GET" });
 }
 
@@ -648,6 +649,16 @@ export async function cloudWechatMiniLogin(credential: WechatMiniLoginCredential
     requestCloudAutoSync("login");
     return { ...(await getCloudSession()), isNewAccount: data.isNewAccount };
   });
+}
+
+export function cloudReviewLogin(account: string, password: string): Promise<CloudSession> {
+  return withSyncLock(() => requestJson<TokenResponse>("/api/auth/review-login", {
+      method: "POST",
+      body: JSON.stringify({ account, password })
+    }).then((data) => saveCloudSession(data).then(() => {
+      requestCloudAutoSync("login");
+      return getCloudSession().then((session) => ({ ...session, isNewAccount: data.isNewAccount }));
+    })));
 }
 
 /** 给已有邮箱账号发微信关联验证码；服务端对已注册和未注册邮箱返回同一结果。 */

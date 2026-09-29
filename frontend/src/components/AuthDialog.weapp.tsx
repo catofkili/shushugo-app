@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import Taro from "@tarojs/taro";
 import { Check, Loader2, MessageCircle, X } from "lucide-react";
 import { ScrollArea } from "./ScrollArea";
-import { claimLaunchGift, cloudWechatMiniLogin, isCloudErrorCode, linkCloudWechatMini, refreshLaunchGiftAvailability, requestCloudWechatLinkCode, type CloudSession } from "../lib/sync-api";
+import { claimLaunchGift, cloudReviewLogin, cloudWechatMiniLogin, getCloudAuthConfig, isCloudErrorCode, linkCloudWechatMini, refreshLaunchGiftAvailability, requestCloudWechatLinkCode, type CloudSession } from "../lib/sync-api";
 import { PRIVACY_POLICY_EFFECTIVE_DATE, PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_TITLE } from "../lib/privacy-policy-content";
 import { USER_AGREEMENT_EFFECTIVE_DATE, USER_AGREEMENT_SECTIONS, USER_AGREEMENT_TITLE } from "../lib/user-agreement-content";
 
-type Mode = "login" | "choice" | "create" | "link" | "terms" | "privacy" | "success";
+type Mode = "login" | "review" | "choice" | "create" | "link" | "terms" | "privacy" | "success";
 
 interface AuthDialogProps {
   open: boolean;
@@ -21,16 +21,33 @@ const miniCode = (): Promise<string> => new Promise((resolve, reject) => {
   });
 });
 
+const credentialLabelClass = "block text-xs font-bold text-white/65";
+const credentialInputClass = "mt-2 w-full rounded-2xl border border-white/15 bg-[#242a24] px-3 py-3 text-sm text-white";
+
 export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) {
   const [mode, setMode] = useState<Mode>("login");
   const [returnMode, setReturnMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [emailCode, setEmailCode] = useState("");
+  const [reviewPassword, setReviewPassword] = useState("");
+  const [reviewLoginOpen, setReviewLoginOpen] = useState(false);
   const [nickname, setNickname] = useState("");
   const [consented, setConsented] = useState(false);
   const [busy, setBusy] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (!open) {
+      setReviewLoginOpen(false);
+      setMode("login");
+      return;
+    }
+    let active = true;
+    void getCloudAuthConfig()
+      .then((config) => { if (active) setReviewLoginOpen(config.reviewLoginOpen === true); }, () => undefined);
+    return () => { active = false; };
+  }, [open]);
 
   // 微信原生 tabBar 在页面渲染树之外，页面层级无法盖住它；登录弹窗打开时临时隐藏。
   useEffect(() => {
@@ -46,11 +63,13 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
   const finish = async (session: CloudSession) => {
     await onAuthenticated(session);
     let giftClaimed = false;
-    try {
-      if ((await refreshLaunchGiftAvailability())?.open) {
-        giftClaimed = Boolean(await claimLaunchGift());
-      }
-    } catch { /* login succeeds even if the optional launch gift service is unavailable */ }
+    if (session.email !== "review@shushugo.com") {
+      try {
+        if ((await refreshLaunchGiftAvailability())?.open) {
+          giftClaimed = Boolean(await claimLaunchGift());
+        }
+      } catch { /* login succeeds even if the optional launch gift service is unavailable */ }
+    }
     setMode("success");
     setMessage(giftClaimed ? "已登录并领取首月会员，正在同步账号资料和学习进度。" : "已登录，正在同步账号资料和学习进度。");
     setTimeout(onClose, 900);
@@ -77,6 +96,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
   };
 
   const signIn = () => run(async () => cloudWechatMiniLogin({ code: await miniCode() }));
+  const reviewSignIn = () => run(() => cloudReviewLogin("review@shushugo.com", reviewPassword));
   const createAccount = () => {
     if (!consented) return setMessage("请先阅读并同意用户协议和隐私政策。");
     return run(async () => cloudWechatMiniLogin({
@@ -133,8 +153,13 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
             <div className="grid min-h-[220px] place-items-center text-center"><div><p className="text-lg font-bold text-white">登录成功</p><p className="mt-2 text-sm text-white/60">{message}</p></div></div>
           ) : (
             <div className="mx-auto max-w-[480px] space-y-4">
-              <p className="text-sm leading-6 text-white/65">小程序使用微信登录。邮箱密码登录和注册暂不可用。</p>
               {mode === "login" && <button onClick={() => void signIn()} disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#07C160] px-4 py-3 text-sm font-bold text-white disabled:opacity-50"><MessageCircle size={19} fill="currentColor" />{busy ? "登录中…" : "使用微信登录"}</button>}
+              {mode === "login" && reviewLoginOpen && <button onClick={() => { setReviewPassword(""); setMode("review"); setMessage(""); }} className="mx-auto block py-1 text-xs font-bold text-white/45">审核账号登录</button>}
+              {mode === "review" && reviewLoginOpen && <>
+                <label className={credentialLabelClass}>账号<input value="review@shushugo.com" disabled className={credentialInputClass} /></label>
+                <label className={credentialLabelClass}>密码<input type="password" value={reviewPassword} onChange={(event) => setReviewPassword(event.target.value)} className={credentialInputClass} /></label>
+                <button onClick={reviewSignIn} disabled={busy} className="w-full rounded-2xl bg-[#07C160] px-4 py-3 text-sm font-bold text-white disabled:opacity-50">登录</button>
+              </>}
               {mode === "choice" && <div className="space-y-3"><button onClick={() => { setMode("create"); setConsented(false); setMessage(""); }} disabled={busy} className="w-full rounded-2xl bg-[#91C968] px-4 py-3 text-sm font-bold text-[#172112]">创建新账号</button><button onClick={() => { setMode("link"); setMessage(""); }} disabled={busy} className="w-full rounded-2xl border border-white/20 px-4 py-3 text-sm font-bold text-white">关联已有邮箱账号</button></div>}
               {mode === "create" && <>
                 <label className="block text-xs font-bold text-white/65">昵称（可选）<input value={nickname} maxLength={20} onChange={(event) => setNickname(event.target.value)} className="mt-2 w-full rounded-2xl border border-white/15 bg-[#242a24] px-3 py-3 text-sm text-white" /></label>
