@@ -12,6 +12,10 @@ const REAL_WORD = `(p.known_forever = 1 OR EXISTS (SELECT 1 FROM reviews r WHERE
 const REAL_GRAMMAR = `(p.known_forever = 1 OR EXISTS (SELECT 1 FROM grammar_reviews r WHERE r.grammar_id = p.grammar_id)
   OR (p.seen_count > 0 AND NOT EXISTS (SELECT 1 FROM level_prior_baselines b WHERE b.entity='grammar' AND b.entity_key=CAST(p.grammar_id AS TEXT))))`;
 
+/** 「学过多少词」的唯一口径：只有自报水平先验、没真答过的词不算。「我的」页和主页进度概览共用。 */
+export const seenWordCount = (): number =>
+  firstRow(`SELECT COUNT(*) AS n FROM progress p WHERE ${REAL_WORD}`)?.n as number ?? 0;
+
 export function getProgressOverview(): ProgressOverview {
   perfTime("启动 · 单词进度初始化", ensureProgressInitialized);
   ensureGrammarProgressInitialized();

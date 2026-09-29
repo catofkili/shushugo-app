@@ -17,7 +17,7 @@ import { isLaunchGiftOnlyRelease } from "../lib/purchases";
 import { loadUserProfile, type UserProfile } from "../lib/userProfile";
 import { Page } from "../types/app";
 import { useEffect, useMemo, useState } from "react";
-import { firstValue } from "../lib/database/db-utils";
+import { seenWordCount } from "../lib/progress-api";
 import { ACHIEVEMENT_TOTAL } from "../lib/achievements/count";
 import { studyTotals } from "../lib/study-totals";
 import { yuzuBalance } from "../lib/yuzu";
@@ -29,7 +29,7 @@ import { CrossPlatformImage } from "../components/CrossPlatformImage";
 const readProfileStats = () => {
   try {
     return {
-      words: firstValue<number>("SELECT COUNT(*) FROM progress WHERE seen_count > 0", [], 0) ?? 0,
+      words: seenWordCount(),
       days: studyTotals().days,
       yuzu: yuzuBalance()
     };
