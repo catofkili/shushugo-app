@@ -20,6 +20,8 @@ vi.mock("../study-core", () => ({ ensureUserTables: () => undefined, persistSoon
 
 import { achievementStats } from "./stats";
 import { ACHIEVEMENTS } from "./catalog";
+import { ACHIEVEMENT_TOTAL } from "./count";
+import { ACHIEVEMENT_ICONS } from "./icons";
 import { achievementBoard, evaluateAchievements, unlockedAchievementIds } from "./index";
 
 /** answers 按顺序写成 reviews；day 用来分「学习日」 */
@@ -46,9 +48,19 @@ describe("成就目录", () => {
     ACHIEVEMENTS.forEach((item) => {
       expect(item.name.length, item.id).toBeGreaterThan(0);
       expect(item.description.length, item.id).toBeGreaterThan(0);
-      expect(item.emoji.length, item.id).toBeGreaterThan(0);
       expect(item.goal, item.id).toBeGreaterThanOrEqual(1);
     });
+  });
+
+  it("「我的」页写的总数和目录一致", () => {
+    expect(ACHIEVEMENT_TOTAL).toBe(ACHIEVEMENTS.length);
+  });
+
+  it("每个成就都有自己的图标，图标表里没有多余的键", () => {
+    const ids = ACHIEVEMENTS.map((item) => item.id);
+    expect(Object.keys(ACHIEVEMENT_ICONS).sort()).toEqual([...ids].sort());
+    // 两个成就共用一个图标，成就页上就分不出谁是谁
+    expect(new Set(Object.values(ACHIEVEMENT_ICONS)).size).toBe(ids.length);
   });
 
   it("隐藏成就不能太多 —— 一眼望去全是问号就没意思了", () => {

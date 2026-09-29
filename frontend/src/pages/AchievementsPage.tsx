@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, Star } from "lucide-react";
 import { achievementBoard, CATEGORY_ORDER, TIER_LABEL, type AchievementView } from "../lib/achievements";
+import { ACHIEVEMENT_ICONS } from "../lib/achievements/icons";
 import { Sticker } from "../components/CapybaraMascot";
 
 interface AchievementsPageProps {
@@ -84,12 +85,13 @@ export const AchievementsPage = ({ onBack }: AchievementsPageProps) => {
               <div className="ach-grid">
                 {group.items.map((item) => {
                   const secret = item.hidden && !item.unlocked;
+                  const Icon = ACHIEVEMENT_ICONS[item.id] ?? Star;
                   return (
                     <div
                       key={item.id}
                       className={`ach-card ${item.unlocked ? TIER_CLASS[item.tier] : "is-locked"}`}
                     >
-                      <span className="ach-emoji">{secret ? <Lock size={20} /> : item.emoji}</span>
+                      <span className="ach-emoji">{secret ? <Lock size={20} /> : <Icon size={20} />}</span>
                       <div className="min-w-0 flex-1">
                         <p className="ach-name">
                           {secret ? "???" : item.name}

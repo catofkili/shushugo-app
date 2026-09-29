@@ -338,7 +338,7 @@ export function PersonalInfo({ onBack: _onBack, onOpenAchievements }: PersonalIn
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-bold text-white">已解锁 {board.unlocked} / {board.total}</span>
               <span className="mt-0.5 block text-xs text-white/50">
-                {board.recent.length ? `最近：${board.recent.map((item) => `${item.emoji} ${item.name}`).join(" · ")}` : "还没有解锁的成就，去学两个词"}
+                {board.recent.length ? `最近：${board.recent.map((item) => item.name).join(" · ")}` : "还没有解锁的成就，去学两个词"}
               </span>
             </span>
             <ChevronRight size={17} className="text-white/40" />

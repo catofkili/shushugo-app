@@ -1367,6 +1367,22 @@ R2 的操作步骤在 `scripts/upload-audio.sh` 头部；密钥只能作者自�
 - 作弊面：把 dailyGoal 调到 5 或在词库批量标熟知就能「清完计划」—— 单机外观币，骗的是自己，不加闸。
 - 判据在 `yuzu.test.ts`：不重复记账、连击第 7 天才发、补签窗口和阶梯价、补完连击接上。
 
+### 2026-09-29 逐件核查：网页六类商品全部能用，小程序有三类是「买了没效果」
+
+用户还没挨个点过，所以在独立端口（5210，灌了柚子余额）对 `yuzu-catalog.ts` 的每一件真买、真装、真读了运行结果：
+
+| 商品 | 网页 | 小程序（Taro，**静态读代码得出，未在开发者工具 / 真机里点过**） |
+|---|---|---|
+| 5 个配色 / 风格主题 | ✅ 浅色 + 深色下 `data-skin` 都换、`--zoo-primary` 各不相同（圆圆主色和默认相同，靠质感区分，不是 bug） | ✅ `WeappPage` 把 `skin-<id>` 挂在页面根节点 |
+| 鳄鱼吉祥物 | ✅ 表情 / 空状态 / 图标全走 `sheet-croc/`，缺的表情退回鳄鱼默认表情 | ❌ `mascot.weapp.tsx` 里 `setMascotSkin = () => undefined`、`useMascotSkin = () => ''`，`dist` 里也没有任何 croc 文件：**买了 3,000 柚子什么都不变** |
+| 声音 雨晴はう / 玄野武宏 | ✅ 索引三个声音、文件 200（本机 `public/audio` 在，线上网页没有，见下） | ❌ `wechat-miniprogram/README.md` 写明云存储只传了默认声音 `voicevox-8`，`index.json` 也只列它。`prepareVoice` 找不到声音会抛错，商店把它当成「联网后自动下载」——**永远下不到，界面还说买好了** |
+| 音效 木琴 / 电钢 | ✅ 音色变量正确、`previewTimbre` 不报错 | ❌ `zoo-sounds.ts` 用 `window.AudioContext`，`taro-spike-2` 里没有任何 polyfill（没搜到 `AudioContext` / `createWebAudioContext`）。`guard()` 把异常吞了，所以不报错——**答题音效整个是静音的，默认卡林巴也一样**，两件音效商品无从谈起 |
+| `soon` 五件 | ✅ `buyItem` 返回 false | 同左 |
+
+⚠️ 网页线上版没有预生成音频（那 137 MB 不在仓库里，见「网页版默认没有预生成读音音频」），所以线上网页的两个付费声音同样选不出来，直到 `AUDIO_ARTIFACT_URL` 发布。
+⚠️ 「先买、再说会下载」的文案是给弱网设计的，前提是**云端真有这个文件**；商品上架前要有一道「这个声音在当前平台的索引里」的检查，不能只靠 catalog。
+处理方式待用户定：要么小程序这三类先标 `soon`（差异需用户同意），要么补齐（croc 进分包 + 皮肤 hook；云端传 10 / 11 两个声音；用 `wx.createWebAudioContext` 给 zoo-sounds 做适配）。修之前小程序不该卖这三类。
+
 ## 成就：判据现算，不攒计数器
 
 `lib/achievements/` — 47 个成就。**判据全部从 reviews/progress 现算**（`stats.ts`），
@@ -1378,6 +1394,15 @@ R2 的操作步骤在 `scripts/upload-audio.sh` 头部；密钥只能作者自�
   连击查询就再也不会跑了
 - 缺表要返回 0 而不是抛错（老库没有 word_notes / content_favorites）
 - 成就页打开时会当场结算，否则会出现「进度条 8/1 却还锁着」
+- **图标是 lucide，不是 emoji**（2026-09-29，用户认为 emoji 不合适）。按 id 查的表在 `achievements/icons.ts`，
+  **不放进 catalog**：catalog 是纯数据、会被打进原生小程序的 `web.js`，那边不能出现 lucide-react。
+  `achievements.test.ts` 那条钉着「每个 id 都有图标、没有两个成就共用一个图标」。
+  ⚠️ **只给成就页用，全局弹窗（`AppShell`）只放一个 `Trophy`**：Taro 的 lucide 是按路由预生成的 SVG，
+  被 tab 路由 / AppShell 引到的会全进主包，而主包离 1.9 MB 上限只有十几 KB（2026-09-29 实测 15 KB）。
+  成就页在 `content-pages` 分包里，47 个图标只让它涨了约 29 KB，主包只多了 0.9 KB（导出表和分包清单）。
+  加新成就图标要在**三处**登记：`icons.ts`、`taro-spike-2/scripts/build-lucide-icons.cjs` 的 `names`、
+  `taro-spike-2/src/platform/lucide.weapp.tsx` 的导出，然后重跑 `node scripts/build-lucide-icons.cjs`。
+  「我的」页那句「共 N 个」用 `count.ts` 的常量而不是 `ACHIEVEMENTS.length`（后者会把整份 catalog 拖进主包），一致性由测试钉住。
 
 **前车之鉴：`userProfile` 里那份 `studyTimeMinutes` 自攒计数器从来没涨过** ——
 它收秒、每 15 秒 flush 一次、`Math.floor(seconds/60)` 恒为 0。学习时长和天数现在一律

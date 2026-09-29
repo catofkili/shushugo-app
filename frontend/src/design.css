@@ -471,6 +471,13 @@
 [data-theme] .wl-row,
 [data-theme] .cf-card { border-color: var(--ds-line) !important; }
 [data-theme] .ach-summary { border: 0; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
+/* 成就图标是 lucide（继承 currentColor），不再是自带颜色的 emoji：拿到的按稀有度上色，锁着的留淡灰 */
+[data-theme] .ach-card:not(.is-locked) .ach-emoji { background: var(--ds-primary-tint-2); color: var(--ds-primary-ink); }
+[data-theme] .ach-card.ach-tier-rare .ach-emoji { background: rgba(126, 178, 255, 0.2); color: #4a7fd0; }
+[data-theme] .ach-card.ach-tier-epic .ach-emoji { background: rgba(214, 154, 255, 0.24); color: #9a56cc; }
+[data-theme="dark"] .ach-card.ach-tier-rare .ach-emoji { color: #9fc6ff; }
+[data-theme="dark"] .ach-card.ach-tier-epic .ach-emoji { color: #dcaeff; }
+[data-theme] .ach-card.is-locked .ach-emoji { background: var(--ds-inset); color: var(--ds-ink-3); }
 
 /* 浮层 / 气泡类：浅色翻译层给的是绿描边 + 暖渐变 */
 [data-theme] .memory-bubble,
