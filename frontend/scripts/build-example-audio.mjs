@@ -26,7 +26,7 @@ import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import initSqlJs from "sql.js";
-import { exampleAudioName } from "../src/lib/speech.ts";
+import { exampleAudioName } from "../src/lib/speech-audio.ts";
 import { queryMoras, pronunciationMismatch, explicitKanaNotation, intendedReading, kanaSubstituted } from "./voicevox-reading.mjs";
 // 句调借参考引擎的,重音型仍是词典的。为什么、怎么比出来的见文件头。
 import { referenceWav, trackF0, transferPhraseContour } from "./prosody-transfer.mjs";

@@ -17,7 +17,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import initSqlJs from "sql.js";
-import { pronunciationAudioName } from "../src/lib/speech.ts";
+import { pronunciationAudioName } from "../src/lib/speech-audio.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dbPath = join(here, "..", "public", "nihongo.db");

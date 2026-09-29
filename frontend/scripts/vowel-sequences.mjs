@@ -15,7 +15,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { pronunciationReading } from "../src/lib/speech.ts";
+import { pronunciationReading } from "../src/lib/speech-audio.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const reviewPath = join(here, "vowel-sequence-manual-review.json");
