@@ -258,3 +258,5 @@ export const playStreakChirp = () =>
     osc.start(t);
     osc.stop(t + 0.24);
   });
+
+export const soundAvailable = (): boolean => typeof window !== "undefined" && !!(window.AudioContext || (window as unknown as { webkitAudioContext?: unknown }).webkitAudioContext);

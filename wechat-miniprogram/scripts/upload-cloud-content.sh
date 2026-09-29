@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 把出厂词库（原库 + Brotli 压缩版）+ 内容 manifest（默认）、单词读音（--audio）或例句音频（--examples）推到云开发的云存储。
+# 把出厂词库（原库 + Brotli 压缩版）+ 内容 manifest（默认）、单词读音（--audio）、例句音频（--examples）或吉祥物皮肤（--skins）推到云开发的云存储。
 # 每次 bake-seed-db 之后跑一次；音频只在重新合成后跑。
-# 需要先 `tcb login`（设备码登录，微信扫码）。tcb 装在哪都行：TCB=/path/to/tcb ./scripts/upload-cloud-content.sh
+# 需要先 `tcb login`（设备码登录，微信扫码）。皮肤生成后执行 `./scripts/upload-cloud-content.sh --skins`；tcb 装在哪都行：TCB=/path/to/tcb ./scripts/upload-cloud-content.sh
 #
 # ⚠️ 本机的 HTTP 代理（127.0.0.1:1082）会让 COS 上传 503（tunneling socket could not be established），
 # 这里一律把代理环境变量摘掉再调 tcb。2026-09-20 实测：带代理 11,053 个文件一个都传不上去。
@@ -43,6 +43,20 @@ if [ "${1:-}" = "--audio" ]; then
   # index 放在目录之后传：先列出声音、文件还没到齐的那几分钟里，选了新声音的人会一直 404。
   $TCB storage upload "$INDEX" audio/words/index.json -e "$ENV_ID" < /dev/null
   rm -f "$INDEX"
+  exit 0
+fi
+
+if [ "${1:-}" = "--skins" ]; then
+  SKIN_DIST=../taro-spike-2/skin-dist
+  node ../taro-spike-2/scripts/build-skin-assets.mjs
+  [ -f "$SKIN_DIST/manifest.json" ] || { echo "皮肤 manifest 未生成：$SKIN_DIST/manifest.json"; exit 1; }
+  for skin_dir in "$SKIN_DIST"/*; do
+    [ -d "$skin_dir" ] || continue
+    skin_id=${skin_dir##*/}
+    $TCB storage upload "$skin_dir" "skins/$skin_id" -e "$ENV_ID" --times 3 < /dev/null
+  done
+  # manifest 最后传，避免云端先公布皮肤、客户端随即下载到尚未上传的图。
+  $TCB storage upload "$SKIN_DIST/manifest.json" skins/manifest.json -e "$ENV_ID" --times 3 < /dev/null
   exit 0
 fi
 

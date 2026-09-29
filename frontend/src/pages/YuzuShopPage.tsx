@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { AppWindow, Check, ChevronDown, Citrus, LoaderCircle, Mic, Music, PackageCheck, Palette, Play, Shirt, Sparkles, type LucideProps } from "lucide-react";
 import { CATEGORY_LABEL, EQUIPPABLE, VOICE_ITEM_PREFIX, YUZU_ITEMS, type YuzuCategory, type YuzuItem } from "../lib/yuzu-catalog";
-import { brandIconUrl, Sticker, stickerUrl, useMascotSkin } from "../components/CapybaraMascot";
+import { brandIconUrl, prepareMascotSkins, Sticker, stickerUrl, useMascotSkin } from "../components/CapybaraMascot";
 import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences } from "../lib/studyPreferences";
-import { prefetchVoicePreviews, prepareVoice, previewVoice, voiceDeliveryMode } from "../lib/speech";
+import { loadVoices, prefetchVoicePreviews, prepareVoice, previewVoice, voiceDeliveryMode } from "../lib/speech";
 import { previewTimbre, type SoundTimbre } from "../lib/zoo-sounds";
+import { itemAvailable } from "../lib/shop-availability";
 
 import {
   buyItem, buyRepairCard, equipItem, equippedItem, ownsItem, proGiftEligible, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice,
@@ -86,6 +87,16 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
   // 加载要比用户快一步：一进商店就把几个声音的试听音频下好（小程序；网页是空操作）
   useEffect(() => { void prefetchVoicePreviews().catch(() => undefined); }, []);
   useEffect(() => {
+    let active = true;
+    void loadVoices().then(() => { if (active) bump((n) => n + 1); });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    let active = true;
+    void prepareMascotSkins().then(() => { if (active) bump((n) => n + 1); });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
     mounted.current = true;
     settleYuzu();
     const refresh = () => bump((n) => n + 1);
@@ -114,6 +125,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
         : YUZU_ITEMS.filter((i) => i.category === tab);
   const item = picked === REPAIR_ID ? repair : YUZU_ITEMS.find((i) => i.id === picked) ?? repair;
   const isRepair = item.id === REPAIR_ID;
+  const available = itemAvailable(item);
   // 只说用户要做的决定：补哪天。价格阶梯不讲公式，只在涨价时说一声。
   const repairDescription = gaps.length
     ? `点日期把断掉的那天补上${price > YUZU.repair[0] && cards === 0 ? "。近 30 天补得多，价格上调了" : ""}`
@@ -122,7 +134,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
   const itemInUse = (target: YuzuItem) => target.category === "voice"
     ? getStudyPreferences().voiceId === target.id.replace(VOICE_ITEM_PREFIX, "")
     : EQUIPPABLE.has(target.category) && equippedItem(target.category) === target.id;
-  const inUse = owned && itemInUse(item);
+  const inUse = owned && available && itemInUse(item);
   const ownedCount = ownedItems.length;
   const activeCheckout = checkout?.itemId === item.id ? checkout.status : null;
   const busy = activeCheckout === "paying";
@@ -142,6 +154,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
 
   const purchase = async () => {
     const target = item;
+    if (!itemAvailable(target)) return;
     const voiceId = target.category === "voice" ? target.id.replace(VOICE_ITEM_PREFIX, "") : "";
     let prepared: "done" | "deferred" | undefined;
     const preparation = voiceId
@@ -167,6 +180,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
   };
 
   const act = () => {
+    if (!itemAvailable(item)) return;
     if (inUse) {
       if (item.category === "voice") chooseVoice("");
       else unequip(item.category);
@@ -233,7 +247,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
           <p className="yz-stage-name">{item.name}</p>
           <p className="yz-stage-desc" role={activeCheckout ? "status" : undefined} aria-live={activeCheckout ? "polite" : undefined}>{stageDescription}</p>
         </div>
-        {(item.category === "voice" || item.category === "sound") && (
+        {available && (item.category === "voice" || item.category === "sound") && (
           <button
             className="yz-listen"
             onClick={() => { if (item.category === "voice") void previewVoice(item.id.replace(VOICE_ITEM_PREFIX, "")); else previewTimbre(item.id.replace("sound-", "") as SoundTimbre); }}
@@ -268,11 +282,11 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
         ) : (
           <button
             className={`yz-cta ${inUse ? "is-on" : owned ? "is-owned" : confirming ? "is-confirm" : ""}`}
-            disabled={busy || item.soon || (!owned && balance < item.price)}
+            disabled={busy || !available || (!owned && balance < item.price)}
             onClick={act}
           >
             {busy ? <><LoaderCircle className="yz-spin" size={15} /> 正在结账…</>
-              : item.soon ? "即将上架"
+              : !available ? owned ? "此设备暂不可用" : "即将上架"
               : inUse ? <><Check size={15} /> 使用中 · 点击换回</>
                 : owned ? (item.category === "voice" || EQUIPPABLE.has(item.category) ? "使用" : <><Check size={15} /> 已拥有</>)
                   : confirming ? `确认花 ${formatYuzu(item.price)} 买下` : <><Citrus size={15} /> {formatYuzu(item.price)}{balance < item.price ? ` · 还差 ${formatYuzu(item.price - balance)}` : ""}</>}
@@ -286,7 +300,8 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
         {items.map((it) => {
           const rep = it.id === REPAIR_ID;
           const has = !rep && ownsItem(it.id);
-          const on = has && itemInUse(it);
+          const itemIsAvailable = itemAvailable(it);
+          const on = itemIsAvailable && has && itemInUse(it);
           if (rep) return (
             <div key={it.id} className={`yz-card yz-card-wide${picked === it.id ? " is-picked" : ""}`}>
               <button type="button" className="yz-card-select" onClick={() => pick(it.id)} aria-pressed={picked === it.id}>
@@ -306,7 +321,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
             <button key={it.id} className={`yz-card${picked === it.id ? " is-picked" : ""}${has ? " is-owned" : ""}`} onClick={() => pick(it.id)} aria-pressed={picked === it.id}>
               <Art item={it} size="s" />
               <b>{it.name}</b>
-              {it.soon ? <span className="yz-tag is-soon">即将上架</span>
+              {!itemIsAvailable && !has ? <span className="yz-tag is-soon">即将上架</span>
                 : on ? <span className="yz-tag is-on"><Check size={11} /> 使用中</span>
                 : has ? <span className="yz-tag"><Check size={11} /> 已拥有</span>
                   : <span className="yz-price"><Citrus size={11} aria-hidden="true" />{formatYuzu(it.price)}</span>}

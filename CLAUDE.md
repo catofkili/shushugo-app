@@ -1009,6 +1009,8 @@ Worker 把每次上传当完整备份。本机静默忽略一张新表或一列�
 每日计划重排和加餐会补入新增词。学习日切换时删除旧日期目录，所以这份缓存始终只占当天的磁盘空间；按单词约 3 KB、例句约 14 KB 估算，
 100 词约 1.7 MB，按约 2 MB 计入本地 200 MB 上限。网页端音频仍使用现有包内文件 / 浏览器缓存，不执行这份小程序预下载队列。
 
+吉祥物皮肤按需缓存在 `USER_DATA_PATH/skins/`，整套压缩图约 1 MB，也计入本地 200 MB 上限。
+
 ### ⑧ 增量不能无限攒：小程序冷启动曾在回放上花 13.4 秒（2026-09-27）
 
 iPhone 小程序真机计时：冷启动 14 秒，其中「增量回放」13.4 秒，其余各段加起来不到半秒。两层原因：
@@ -1367,21 +1369,49 @@ R2 的操作步骤在 `scripts/upload-audio.sh` 头部；密钥只能作者自�
 - 作弊面：把 dailyGoal 调到 5 或在词库批量标熟知就能「清完计划」—— 单机外观币，骗的是自己，不加闸。
 - 判据在 `yuzu.test.ts`：不重复记账、连击第 7 天才发、补签窗口和阶梯价、补完连击接上。
 
-### 2026-09-29 逐件核查：网页六类商品全部能用，小程序有三类是「买了没效果」
+### 2026-09-29 逐件核查：网页六类商品全部能用；小程序的三类「买了没效果」已改成「资源没就绪就不卖」
 
-用户还没挨个点过，所以在独立端口（5210，灌了柚子余额）对 `yuzu-catalog.ts` 的每一件真买、真装、真读了运行结果：
+用户还没挨个点过，所以在独立端口（灌了柚子余额）对 `yuzu-catalog.ts` 的每一件真买、真装、真读了运行结果。小程序那一列是**读代码得出，没在开发者工具 / 真机里点过**：
 
-| 商品 | 网页 | 小程序（Taro，**静态读代码得出，未在开发者工具 / 真机里点过**） |
+| 商品 | 网页 | 小程序（Taro） |
 |---|---|---|
 | 5 个配色 / 风格主题 | ✅ 浅色 + 深色下 `data-skin` 都换、`--zoo-primary` 各不相同（圆圆主色和默认相同，靠质感区分，不是 bug） | ✅ `WeappPage` 把 `skin-<id>` 挂在页面根节点 |
-| 鳄鱼吉祥物 | ✅ 表情 / 空状态 / 图标全走 `sheet-croc/`，缺的表情退回鳄鱼默认表情 | ❌ `mascot.weapp.tsx` 里 `setMascotSkin = () => undefined`、`useMascotSkin = () => ''`，`dist` 里也没有任何 croc 文件：**买了 3,000 柚子什么都不变** |
-| 声音 雨晴はう / 玄野武宏 | ✅ 索引三个声音、文件 200（本机 `public/audio` 在，线上网页没有，见下） | ❌ `wechat-miniprogram/README.md` 写明云存储只传了默认声音 `voicevox-8`，`index.json` 也只列它。`prepareVoice` 找不到声音会抛错，商店把它当成「联网后自动下载」——**永远下不到，界面还说买好了** |
-| 音效 木琴 / 电钢 | ✅ 音色变量正确、`previewTimbre` 不报错 | ❌ `zoo-sounds.ts` 用 `window.AudioContext`，`taro-spike-2` 里没有任何 polyfill（没搜到 `AudioContext` / `createWebAudioContext`）。`guard()` 把异常吞了，所以不报错——**答题音效整个是静音的，默认卡林巴也一样**，两件音效商品无从谈起 |
+| 鳄鱼吉祥物 | ✅ 表情 / 空状态 / 图标全走 `sheet-croc/`，缺的表情退回鳄鱼默认表情 | 原来 ❌（`setMascotSkin` 是空函数，包里没有鳄鱼图，买了什么都不变）。现已实现，见下「小程序皮肤」，**云端上传前商店里是「即将上架」** |
+| 声音 雨晴はう / 玄野武宏 | ✅ 索引三个声音、文件 200（本机 `public/audio` 在，线上网页没有，见下） | 云存储只传过默认声音 `voicevox-8`（`wechat-miniprogram/README.md`）。商店现在按声音索引判断，索引里没有就是「即将上架」；补传后自动变成可买 |
+| 音效 木琴 / 电钢 | ✅ 音色变量正确、`previewTimbre` 不报错 | ✅ **有替身**：`wechat-miniprogram/scripts/shared/shims/zoo-sounds.js` 把音合成 WAV 交给 `InnerAudioContext`，三种音色都支持 |
 | `soon` 五件 | ✅ `buyItem` 返回 false | 同左 |
 
-⚠️ 网页线上版没有预生成音频（那 137 MB 不在仓库里，见「网页版默认没有预生成读音音频」），所以线上网页的两个付费声音同样选不出来，直到 `AUDIO_ARTIFACT_URL` 发布。
-⚠️ 「先买、再说会下载」的文案是给弱网设计的，前提是**云端真有这个文件**；商品上架前要有一道「这个声音在当前平台的索引里」的检查，不能只靠 catalog。
-处理方式待用户定：要么小程序这三类先标 `soon`（差异需用户同意），要么补齐（croc 进分包 + 皮肤 hook；云端传 10 / 11 两个声音；用 `wx.createWebAudioContext` 给 zoo-sounds 做适配）。修之前小程序不该卖这三类。
+⚠️ **更正（同一天）**：这张表第一版写的是「小程序答题音效整个是静音的」，是错的——只搜了 `taro-spike-2` 和 `runtime/`，漏了 `scripts/shared/shims/`。
+据此还白让 Codex 做了一份 `wx.createWebAudioContext` 适配，整份丢弃。**判断小程序有没有某项平台能力，先查 `scripts/shared/shims-map.mjs`**：
+`frontend/src/lib` 里好几个模块（zoo-sounds、speech 以外的存储 / 触感 / 分享）在小程序里都是被替身换掉的，直接读 `lib/` 源码会得出错误结论。
+
+⚠️ 网页线上版没有预生成音频（那 137 MB 不在仓库里，见「网页版默认没有预生成读音音频」），所以线上网页的两个付费声音同样是「即将上架」，直到 `AUDIO_ARTIFACT_URL` 发布。
+
+#### 商店可用性闸门（`lib/shop-availability.ts`）
+
+**商品在当前平台资源没就绪，就当 `soon` 处理：不能买、不能装备、不出试听；已拥有但本设备不可用时按钮写「此设备暂不可用」。**
+全部用能力检测，不按平台名分支：声音 = `speech.availableVoices()` 里有没有这个 id；音效 = `zoo-sounds.soundAvailable()`
+（网页看 `AudioContext`，小程序替身自己回答）；皮肤 = `mascotSkinReady(id)`。购买和装备入口再各查一次。
+以前的问题是「先买、再说会下载」——那句文案是给弱网设计的，前提是**云端真有这个文件**，而 catalog 不知道云端有什么。
+⚠️ **以后新加要靠外部资源的商品，必须接进 `itemAvailable`，不能只往 catalog 里加一行。**
+
+#### 小程序皮肤（鳄鱼）：图放云存储，装备时下载
+
+主包只剩十来 KB，皮肤图进不了主包，也不能进分包（主包页面用不了分包里的图），所以：
+
+- 名单只有一份：`frontend/src/lib/mascot-skins.ts`（纯数据），网页和小程序共用，网页 `CapybaraMascot.tsx` 从它派生，行为不变。
+- `taro-spike-2/scripts/build-skin-assets.mjs` 把 32 张原图按「被渲染的最大高度 × 2」缩小 + pngquant，整套约 1.2 MB，
+  输出到 `taro-spike-2/skin-dist/`（生成物，gitignore）和 `manifest.json`（版本 = 内容哈希前 8 位）。
+- 上传：`cd wechat-miniprogram && TCB=<tcb 路径> ./scripts/upload-cloud-content.sh --skins`（要先 `tcb login`，本机 tcb 不在 PATH 里）。
+  manifest **最后**传，文件没到齐时不会有人下到 404。云端地址 `config.js` 的 `skinBaseUrl`。
+- 客户端：`mascot.weapp.tsx`（主包，只做同步选路径）+ 懒加载的 `mascot-skin-cache.weapp.ts`（取 manifest、逐张下载到
+  `USER_DATA_PATH/skins/<id>/<版本>/`、换版本删旧目录、失败不留半成品）。冷启动先同步看本地缓存，齐了不等网络。
+  没下完之前用水豚，下完派发 `MASCOT_SKIN_EVENT` 全部贴纸一起重画。
+- 判据：`taro-spike-2/scripts/mascot-skins-smoke.mjs`（假 `wx`：manifest 拿不到不抛错、下载路径、冷启动、回退三规则、换版本、中途失败）。
+- 主包增量 2.8 KB（1,885,349 → 1,888,115），此后主包只剩约 12 KB。
+
+**补传声音**（云端还没有时）：`cd wechat-miniprogram && VOICES="voicevox-8 voicevox-10 voicevox-11" UPLOAD="voicevox-10 voicevox-11" TCB=<tcb> ./scripts/upload-cloud-content.sh --audio`，
+每个声音约 45 MB。传完商店里两个声音自动变成可买，不用发版。
 
 ## 成就：判据现算，不攒计数器
 

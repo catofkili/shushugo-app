@@ -12,6 +12,8 @@
  * 空状态 / 提示插画走 <Sticker name="empty-…">，那一排是整张画不是表情。
  */
 import { useSyncExternalStore } from "react";
+import { MASCOT_SKIN_EVENT, MASCOT_SKINS } from "../lib/mascot-skins";
+export { MASCOT_SKIN_EVENT };
 
 export type MascotMood =
   | "default" | "happy" | "content" | "study" | "idea" | "fight" | "confused" | "surprised" | "working" | "love"
@@ -45,20 +47,12 @@ export type StickerName =
  * 皮肤没有的那一格退回默认那套（工具盘小图标、气泡、走路帧鳄鱼那套没有 —— 小路上走的仍是水豚）；
  * 表情缺的退回**这套皮肤的默认表情**，不能退回水豚：一屏里两种动物比少一个表情糟得多。
  */
-const SKIN_SHEETS: Record<string, { dir: string; names: ReadonlySet<string> }> = {
-  "mascot-croc": {
-    dir: "sheet-croc",
-    names: new Set([
-      "mood-default", "mood-happy", "mood-study", "mood-idea", "mood-confused", "mood-surprised", "mood-working", "mood-love",
-      "empty-box", "empty-search", "empty-network", "empty-newuser", "empty-done", "empty-bye",
-      "icon-home", "icon-vocab", "icon-grammar", "icon-practice", "icon-stats", "icon-favorites", "icon-me", "icon-study-modes", "icon-kanji-readings",
-      "tab-home", "tab-study", "tab-grammar", "tab-practice", "tab-stats", "tab-me",
-      "logo-lockup", "scene-reading", "app-icon"
-    ])
-  }
-};
+const SKIN_SHEETS: Record<string, { dir: string; names: ReadonlySet<string> }> = Object.fromEntries(
+  Object.entries(MASCOT_SKINS).map(([id, sheet]) => [id, { dir: sheet.dir, names: new Set<string>(sheet.names) }])
+);
+export const prepareMascotSkins = async (): Promise<void> => {};
+export const mascotSkinReady = (id: string): boolean => id in SKIN_SHEETS;
 let skin = "";
-export const MASCOT_SKIN_EVENT = "shushugo:mascot-skin";
 /** yuzu.applyYuzuEquipment 调：装备哪个 mascot 商品（'' = 默认水豚） */
 export const setMascotSkin = (itemId: string) => {
   if (skin === itemId) return;
