@@ -82,3 +82,30 @@ button { margin: 16rpx 0; border-radius: 20rpx; font-size: 27rpx; line-height: 8
 .swipe-stamp{position:absolute;right:30rpx;top:85rpx;z-index:2;padding:10rpx 22rpx;border:4rpx solid currentColor;border-radius:14rpx;font-size:36rpx;font-weight:900;transform:rotate(9deg);pointer-events:none}
 .swipe-stamp.good{color:#6fa83e}.swipe-stamp.bad{color:#bb7972}
 @keyframes wordReveal{from{opacity:0;transform:rotateY(-12deg) translateY(10rpx)}to{opacity:1;transform:rotateY(0) translateY(0)}}
+
+.focus-mask{position:fixed;z-index:999;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;padding:28rpx;box-sizing:border-box;background:rgba(43,34,25,.56)}
+.focus-dialog{width:100%;height:82vh;max-height:1100rpx;box-sizing:border-box;padding:34rpx;border:2rpx solid rgba(114,84,52,.1);border-radius:34rpx;background:#fbf5e9;color:#3a2e22;box-shadow:0 20rpx 70rpx rgba(43,34,25,.24)}
+.focus-kicker,.focus-title,.focus-comparison,.focus-method,.focus-next{display:block;text-align:center}
+.focus-kicker{color:#69a840;font-size:22rpx;font-weight:900;letter-spacing:2rpx}
+.focus-title{margin-top:10rpx;font-size:43rpx;font-weight:900}
+.focus-summary-grid{display:flex;justify-content:space-around;margin-top:25rpx;padding:20rpx 8rpx;border-radius:22rpx;background:#f2eadc}
+.focus-summary-grid>view{display:flex;min-width:0;flex-direction:column;align-items:center;gap:5rpx}
+.focus-stat{color:#3a2e22;font-size:34rpx;font-weight:900}
+.focus-stat-label{color:#8a7764;font-size:19rpx}
+.focus-comparison{margin-top:22rpx;color:#675747;font-size:24rpx;line-height:1.55}
+.focus-method{margin-top:12rpx;color:#9b8875;font-size:19rpx;line-height:1.45}
+.focus-reward-card{display:flex;align-items:center;justify-content:center;gap:15rpx;margin-top:23rpx;padding:18rpx;border:2rpx solid rgba(213,174,67,.3);border-radius:22rpx;background:#fff4d8}
+.focus-reward-card.claimed{background:#eee9dd;opacity:.8}
+.focus-chest{font-size:44rpx}
+.focus-reward-value{color:#926b21;font-size:27rpx;font-weight:900}
+.focus-claim{margin:0;padding:0 20rpx;border-radius:18rpx;color:#fff;background:#d89543;font-size:22rpx;font-weight:800;line-height:66rpx}
+.focus-claim[disabled]{color:#7e715f;background:#dfd6c8}
+.focus-claim::after,.focus-actions button::after{border:0}
+.focus-no-reward,.focus-claim-hint{display:block;margin-top:17rpx;color:#8a7764;text-align:center;font-size:21rpx;line-height:1.45}
+.focus-no-reward{color:#a06b2e;font-weight:800}
+.focus-actions{display:flex;gap:14rpx;margin-top:24rpx}
+.focus-actions button{flex:1;margin:0;padding:0 10rpx;border-radius:19rpx;font-size:22rpx;font-weight:800;line-height:76rpx}
+.focus-stop{color:#685b4d;background:#eee6da}
+.focus-continue{color:#fff;background:#69a840}
+.focus-actions button[disabled]{color:#9a8e7d;background:#e5dfd4}
+.focus-next{margin-top:14rpx;color:#9b8875;font-size:20rpx}

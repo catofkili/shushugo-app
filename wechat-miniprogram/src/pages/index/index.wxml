@@ -10,12 +10,14 @@
   </view>
 </view>
 
-<scroll-view wx:else class="page" scroll-y>
+<scroll-view wx:else class="page" scroll-y bindtouchstart="noteStudyFocusInteraction" bindtouchmove="noteStudyFocusInteraction" bindtap="noteStudyFocusInteraction">
   <view class="hero">
     <text class="eyebrow">WORD STUDY · 离线可用</text>
     <text class="title">今天学一点</text>
     <text class="subtitle">按自己的节奏收集，答题后自动保存在本机</text>
   </view>
+
+  <study-focus-chip wx:if="{{focusStatus === 'running' && focusChipActive}}" active="{{focusChipActive}}" />
 
   <view class="card status-card">
     <view class="status-row">
@@ -221,5 +223,32 @@
 
   <view class="note">
     <text>学习记录默认保存在本机，绑定账号后可按你的操作同步。</text>
+  </view>
+
+  <view wx:if="{{focusStatus === 'break'}}" class="focus-mask" catchtap="ignoreStudyFocusTap" catchtouchmove="ignoreStudyFocusTap">
+    <scroll-view class="focus-dialog" scroll-y catchtap="ignoreStudyFocusTap" catchtouchmove="ignoreStudyFocusTap">
+      <text class="focus-kicker">十分钟专注</text>
+      <text class="focus-title">休息一下</text>
+      <view class="focus-summary-grid">
+        <view><text class="focus-stat">{{focusSummary.words}}</text><text class="focus-stat-label">个词</text></view>
+        <view><text class="focus-stat">{{focusSummary.remembered}}</text><text class="focus-stat-label">记住</text></view>
+        <view><text class="focus-stat">{{focusSummary.fuzzy}}</text><text class="focus-stat-label">模糊</text></view>
+        <view><text class="focus-stat">{{focusSummary.forgotten}}</text><text class="focus-stat-label">没记住</text></view>
+      </view>
+      <text class="focus-comparison">{{focusComparison}}</text>
+      <text class="focus-method">记忆情况按这段里每个词最后一次自评统计，不代表长期保持率。</text>
+      <view wx:if="{{focusRewardVisible}}" class="focus-reward-card {{focusRewardClaimed ? 'claimed' : ''}}">
+        <text class="focus-chest">🎁</text>
+        <text class="focus-reward-value">+{{focusReward}} 柚子</text>
+        <button class="focus-claim" disabled="{{focusRewardClaimed}}" bindtap="claimStudyFocusReward">{{focusRewardClaimed ? '已领取' : '点击领取'}}</button>
+      </view>
+      <text wx:if="{{focusNoRewards}}" class="focus-no-reward">今天的九档柚子奖励已领完。</text>
+      <text wx:if="{{focusRewardVisible && !focusRewardClaimed}}" class="focus-claim-hint">领取本段奖励后，再选择接下来的学习方式。</text>
+      <view class="focus-actions">
+        <button class="focus-stop" disabled="{{!focusCanContinue}}" bindtap="stopStudyFocus">之后不要倒计时</button>
+        <button class="focus-continue" disabled="{{!focusCanContinue}}" bindtap="continueStudyFocus">继续倒计时</button>
+      </view>
+      <text class="focus-next">继续后开始下一段 10:00</text>
+    </scroll-view>
   </view>
 </scroll-view>

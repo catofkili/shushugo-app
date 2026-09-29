@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "单词学习"
+  "navigationBarTitleText": "单词学习",
+  "usingComponents": {
+    "study-focus-chip": "/components/study-focus-chip/index"
+  }
 }

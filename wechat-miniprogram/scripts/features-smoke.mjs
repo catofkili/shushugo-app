@@ -114,6 +114,25 @@ assert.equal(await features.buyYuzuItem('icon-happy'), false, 'soon 的商品不
 assert.equal(await features.buyYuzuItem('voice-voicevox-10'), false, '余额比商品价格少 1，买不起');
 assert.equal(features.yuzuBalance(), balanceAfterMatcha);
 
+/* ---- 倒计时：原生小程序从生成共享层读同一状态机，领取后当天档位递减 ---- */
+const focus = web.studyFocus;
+const focusSource = 'word-study';
+const focusStart = Date.UTC(2026, 8, 24, 4, 0, 0);
+focus.enterStudyFocus(focusSource, focusStart);
+focus.startStudyFocus(focusStart);
+for (let id = 1; id <= 10; id += 1) focus.recordStudyFocusAnswer(id, 'know', focusStart + id);
+let focusSnapshot = focus.recordStudyFocusTime(600_000, focusStart + 600_000, focusSource);
+assert.equal(focusSnapshot.status, 'break');
+assert.equal(focusSnapshot.summary.qualified, true);
+assert.equal(focusSnapshot.nextReward, 100);
+assert.equal(focus.claimStudyFocusReward(), 100);
+assert.equal(focus.continueStudyFocus(focusStart + 600_000), true);
+for (let id = 11; id <= 20; id += 1) focus.recordStudyFocusAnswer(id, 'know', focusStart + 600_000 + id);
+focusSnapshot = focus.recordStudyFocusTime(600_000, focusStart + 1_200_000, focusSource);
+assert.equal(focusSnapshot.nextReward, 50, '同一学习日第二段必须读 50 柚子，不复用 100');
+assert.equal(focus.claimStudyFocusReward(), 50);
+focus.leaveStudyFocus(focusSource);
+
 /* ---- 周报：content_json 必须是网页 analytics/weekly 的形状（window.endAt、metrics.days、keyword…） ---- */
 const now = new Date('2026-09-22T10:00:00+08:00');
 // 周报要的是「那一周里有作答」，而作答时间由网页的 submitWordAnswer 用当前时间写，

@@ -37,6 +37,10 @@
     <view wx:else class="not-ready">
       <text>{{loading ? '正在读取本地学习记录…' : notice}}</text>
     </view>
+    <view class="focus-toggle" bindtap="toggleStudyFocus">
+      <view class="focus-check {{focusArmed ? 'checked' : ''}}"><text wx:if="{{focusArmed}}">✓</text></view>
+      <view class="focus-toggle-copy"><text class="focus-toggle-title">十分钟倒计时学习</text><text class="focus-toggle-detail">完成一段后领取每日递减柚子</text></view>
+    </view>
     <button class="start zoo-primary" data-url="/pages/index/index" bindtap="openTab">{{ready ? '开始今天的学习' : '打开单词学习'}}</button>
   </view>
 

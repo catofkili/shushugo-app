@@ -1,0 +1,4 @@
+<view class="focus-chip">
+  <view class="focus-chip-time"><text class="focus-chip-kicker">十分钟专注</text><text class="focus-chip-count">{{time}}</text></view>
+  <text class="focus-chip-reward">{{rewardText}}</text>
+</view>

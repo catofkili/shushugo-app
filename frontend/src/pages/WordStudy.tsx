@@ -53,7 +53,7 @@ import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
-import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
+import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
 interface WordStudyProps {
@@ -710,16 +710,17 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [card?.id, kanjiCard, noteActiveInteraction, unitKey, focusSnapshot.status]);
 
   useEffect(() => {
-    enterStudyFocus(FOCUS_SOURCE);
+    const entered = enterStudyFocus(FOCUS_SOURCE);
     // 主页勾了「倒计时」就进门即开；离开时 leaveStudyFocus 作废这一段，下次进来重新计。
-    if (isStudyFocusArmed()) startStudyFocus();
+    const initial = isStudyFocusArmed() ? startStudyFocus() : entered;
+    updateFocusSnapshot(initial);
     const interval = window.setInterval(() => { void flushActiveStudyTimeRef.current(); }, 1000);
     return () => {
       window.clearInterval(interval);
       void flushActiveStudyTimeRef.current(undefined, "force");
       leaveStudyFocus(FOCUS_SOURCE);
     };
-  }, []);
+  }, [updateFocusSnapshot]);
 
   useStudyActivity({
     onInteraction: () => noteActiveInteraction(),
@@ -732,8 +733,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       pageShownRef.current = true;
       // 小程序的 Tab 页切走时会 onLeave，但页面不卸载；切回来要重新接上观测，
       // 否则后台记录停掉、「倒计时学习」按钮也点不动（startStudyFocus 要求有 source）。
-      enterStudyFocus(FOCUS_SOURCE);
-      updateFocusSnapshot(getStudyFocusSnapshot());
+      const resumed = resumeStudyFocus(FOCUS_SOURCE);
+      const current = isStudyFocusArmed() && resumed.status === "off" ? startStudyFocus() : resumed;
+      updateFocusSnapshot(current);
       noteActiveInteraction(true);
     },
     onLeave: () => {

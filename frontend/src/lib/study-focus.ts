@@ -195,17 +195,23 @@ export const sameStudyFocusState = (a: StudyFocusSnapshot, b: StudyFocusSnapshot
 
 export const enterStudyFocus = (source: string, nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
-  if (current.source !== source) {
-    current.focus = null;
-    current.summary = null;
-    current.completedAt = null;
-    current.reward = null;
-    current.rewardClaimed = false;
-    current.source = source;
-    current.answerHistory = [];
-  }
+  // A page entry is a new session even when it uses the same source. Visibility resumes
+  // use resumeStudyFocus instead, so an app background does not discard this window.
+  current.focus = null;
+  current.summary = null;
+  current.completedAt = null;
+  current.reward = null;
+  current.rewardClaimed = false;
+  current.source = source;
+  current.answerHistory = [];
   current.baselines[source] ??= newWindow(nowMs);
   return getStudyFocusSnapshot(nowMs);
+};
+
+/** Resume the existing session after app visibility changes; a new page visit uses enterStudyFocus. */
+export const resumeStudyFocus = (source: string, nowMs = Date.now()): StudyFocusSnapshot => {
+  const current = runtime();
+  return current.source === source ? getStudyFocusSnapshot(nowMs) : enterStudyFocus(source, nowMs);
 };
 
 /**

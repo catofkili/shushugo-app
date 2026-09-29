@@ -21,6 +21,25 @@ const { cachedEntitlement, notifyTrialExpiry } = require('../../runtime/entitlem
 const { canUse } = require('../../core/entitlements');
 const core = require('../../core/study-core');
 const { web } = core;
+const FOCUS_SOURCE = 'word-study';
+const FOCUS_IDLE_LIMIT_MS = 60_000;
+const FOCUS_TICK_MS = 1_000;
+
+function focusComparison(summary) {
+  if (!summary) return '';
+  if (!summary.qualified) return `这段不到 10 个词，不算进对比，也不发柚子。下一段多背几个吧！`;
+  if (!summary.baselineWindows) return '这是第一次完整记录，下一次就能和这次比较。';
+  const baseline = Number(summary.baselineRemembered || 0).toFixed(1);
+  const delta = Number(summary.rememberedDelta || 0);
+  if (delta > 0) {
+    const percent = summary.efficiencyChangePercent === null
+      ? '之前平均是 0，无法计算百分比。'
+      : `效率提升 ${Number(summary.efficiencyChangePercent).toFixed(0)}%。`;
+    return `最近 30 天里平均每十分钟记住 ${baseline} 个词；这次多记 ${delta.toFixed(1)} 个，${percent}`;
+  }
+  if (delta === 0) return `最近 30 天里平均每十分钟记住 ${baseline} 个词；这次和之前持平。`;
+  return `最近 30 天里平均每十分钟记住 ${baseline} 个词；这次少记 ${Math.abs(delta).toFixed(1)} 个，继续加油！`;
+}
 
 const KANJI_ROW_PITCH = 164;
 const KANJI_GUTTER = 64;
@@ -96,7 +115,17 @@ Page({
     // 跟网页的 UNDO_LIMIT=2 对齐；只记本次进入页面后的作答顺序。
     undoKinds: [],
     swipeStyle: '', swipeStamp: '',
-    sharedDaily: null
+    sharedDaily: null,
+    undoFocusWordIds: [],
+    focusStatus: 'off',
+    focusSummary: null,
+    focusComparison: '',
+    focusReward: 0,
+    focusRewardVisible: false,
+    focusRewardClaimed: false,
+    focusNoRewards: false,
+    focusCanContinue: true,
+    focusChipActive: false
   },
 
   onLoad(options = {}) {
@@ -145,12 +174,14 @@ Page({
 
   onShow() {
     if (this.data.sharedDaily) return;
+    this.focusPageShown = true;
+    if (this.focusAppPaused) this.resumeStudyFocusForApp();
     const selected = getApp().globalData.pendingStudyMode;
     if (selected) {
       delete getApp().globalData.pendingStudyMode;
       const direction = selected === 'reverse' || selected === 'kanji' ? selected : 'forward';
       const mode = direction === 'forward' ? selected : 'classic';
-      this.setData({ mode, modeLabel: web.studyMode.studyModeInfo(selected).title, direction, directionIndex: ['forward', 'reverse', 'kanji'].indexOf(direction), undoKinds: [] });
+      this.setData({ mode, modeLabel: web.studyMode.studyModeInfo(selected).title, direction, directionIndex: ['forward', 'reverse', 'kanji'].indexOf(direction), undoKinds: [], undoFocusWordIds: [] });
     }
     this.refreshStatus();
     if (getStatus().ready) {
@@ -204,6 +235,8 @@ Page({
       // ⚠️ 屏幕上已经有插播卡时不许动它：插播卡作答前要留在屏幕上显示答案和评分，
       // 而 refreshHome 是在那次记账里被调用的 —— 覆盖掉的话卡片当场消失，连错次数也被清零。
       if (!this.data.interleave) this.showInterleave(home.interleave || null);
+      this.ensureStudyFocusEntry();
+      if (home.card) this.noteStudyFocusInteraction();
       const app = getApp();
       if (!app.globalData.levelSetupPrompted && core.withDb(getDatabase(), () => web.levelPlan.shouldShowLevelSetup())) {
         app.globalData.levelSetupPrompted = true;
@@ -214,6 +247,135 @@ Page({
       this.setData({ result: '读取今日任务失败，请稍后重试' });
     }
   },
+
+  ensureStudyFocusEntry() {
+    if (!this.focusPageShown || this.focusSessionEntered || !getStatus().ready || this.data.sharedDaily) return;
+    this.focusSessionEntered = true;
+    const now = Date.now();
+    const entered = web.studyFocus.enterStudyFocus(FOCUS_SOURCE, now);
+    const snapshot = web.studyFocus.isStudyFocusArmed() ? web.studyFocus.startStudyFocus(now) : entered;
+    this.focusLastTickAt = now;
+    this.focusLastInteractionAt = now;
+    this.applyStudyFocusSnapshot(snapshot);
+    this.startStudyFocusTicker();
+  },
+
+  startStudyFocusTicker() {
+    if (this.focusInterval || !this.focusSessionEntered) return;
+    this.focusLastTickAt = Date.now();
+    this.focusInterval = setInterval(() => this.flushStudyFocus(), FOCUS_TICK_MS);
+  },
+
+  flushStudyFocus(now = Date.now()) {
+    const previous = this.focusLastTickAt ?? now;
+    const lastInteraction = this.focusLastInteractionAt ?? now;
+    const activeUntil = Math.min(now, lastInteraction + FOCUS_IDLE_LIMIT_MS);
+    const activeMs = Math.max(0, activeUntil - previous);
+    this.focusLastTickAt = now;
+    if (!activeMs || !this.focusPageShown || !this.focusSessionEntered || !this.data.card || this.data.focusStatus === 'break') return;
+    const snapshot = web.studyFocus.recordStudyFocusTime(activeMs, now, FOCUS_SOURCE);
+    this.applyStudyFocusSnapshot(snapshot);
+  },
+
+  noteStudyFocusInteraction() {
+    if (!this.focusPageShown || !this.focusSessionEntered || this.data.focusStatus === 'break') return;
+    const now = Date.now();
+    const lastInteraction = this.focusLastInteractionAt ?? now;
+    const idleUntil = lastInteraction + FOCUS_IDLE_LIMIT_MS;
+    if (now > idleUntil) {
+      if ((this.focusLastTickAt ?? now) < idleUntil) this.flushStudyFocus(idleUntil);
+      // The gap after the idle timeout is not learning time.
+      this.focusLastTickAt = now;
+    }
+    this.focusLastInteractionAt = now;
+  },
+
+  applyStudyFocusSnapshot(snapshot) {
+    const previous = this.focusSnapshot;
+    this.focusSnapshot = snapshot;
+    const active = snapshot.status === 'running' && Boolean(this.focusPageShown);
+    if (snapshot.status === 'break' && this.focusInterval) {
+      clearInterval(this.focusInterval);
+      this.focusInterval = null;
+    }
+    if (previous && web.studyFocus.sameStudyFocusState(previous, snapshot)
+      && this.data.focusChipActive === active) return;
+    const summary = snapshot.summary;
+    this.setData({
+      focusStatus: snapshot.status,
+      focusSummary: summary,
+      focusComparison: focusComparison(summary),
+      focusReward: snapshot.nextReward,
+      focusRewardVisible: Boolean(summary?.qualified && snapshot.nextReward > 0),
+      focusRewardClaimed: snapshot.rewardClaimed,
+      focusNoRewards: Boolean(summary?.qualified && snapshot.nextReward === 0),
+      focusCanContinue: !summary?.qualified || snapshot.nextReward === 0 || snapshot.rewardClaimed,
+      focusChipActive: active
+    });
+  },
+
+  claimStudyFocusReward() {
+    const earned = web.studyFocus.claimStudyFocusReward();
+    if (earned > 0) {
+      try { web.yuzu.settleYuzu(); } catch { /* 奖励已记账，其他柚子结算失败不影响领取 */ }
+      wx.showToast({ title: `已领取 ${earned} 柚子`, icon: 'success' });
+    }
+    this.applyStudyFocusSnapshot(web.studyFocus.getStudyFocusSnapshot());
+  },
+
+  continueStudyFocus() {
+    if (!web.studyFocus.continueStudyFocus()) return;
+    const now = Date.now();
+    this.focusLastTickAt = now;
+    this.focusLastInteractionAt = now;
+    this.applyStudyFocusSnapshot(web.studyFocus.getStudyFocusSnapshot(now));
+    this.startStudyFocusTicker();
+  },
+
+  stopStudyFocus() {
+    web.studyFocus.setStudyFocusArmed(false);
+    const now = Date.now();
+    this.focusLastTickAt = now;
+    this.focusLastInteractionAt = now;
+    this.applyStudyFocusSnapshot(web.studyFocus.stopStudyFocus(now));
+    this.startStudyFocusTicker();
+  },
+
+  pauseStudyFocusForApp() {
+    if (!this.focusSessionEntered || this.focusAppPaused) return;
+    this.flushStudyFocus();
+    this.focusPageShown = false;
+    this.focusAppPaused = true;
+    if (this.focusInterval) clearInterval(this.focusInterval);
+    this.focusInterval = null;
+    this.setData({ focusChipActive: false });
+  },
+
+  resumeStudyFocusForApp() {
+    if (!this.focusSessionEntered || !this.focusAppPaused) return;
+    this.focusAppPaused = false;
+    this.focusPageShown = true;
+    const now = Date.now();
+    this.focusLastTickAt = now;
+    this.focusLastInteractionAt = now;
+    this.applyStudyFocusSnapshot(web.studyFocus.getStudyFocusSnapshot(now));
+    this.startStudyFocusTicker();
+  },
+
+  leaveStudyFocusPage() {
+    this.flushStudyFocus();
+    this.focusPageShown = false;
+    this.focusAppPaused = false;
+    if (this.focusInterval) clearInterval(this.focusInterval);
+    this.focusInterval = null;
+    this.focusChipActive = false;
+    if (!this.focusSessionEntered) return;
+    web.studyFocus.leaveStudyFocus(FOCUS_SOURCE);
+    this.focusSessionEntered = false;
+    this.applyStudyFocusSnapshot(web.studyFocus.getStudyFocusSnapshot());
+  },
+
+  ignoreStudyFocusTap() {},
 
   async run(label, task) {
     if (this.data.busy) return;
@@ -241,6 +403,7 @@ Page({
   },
 
   handleReveal() {
+    this.noteStudyFocusInteraction();
     bankReminder();
     if (this.data.card && !this.data.answerVisible) {
       this.setData({ answerVisible: true });
@@ -258,12 +421,14 @@ Page({
   },
 
   handleAnswer(event) {
+    this.noteStudyFocusInteraction();
     bankReminder();
     const answer = event.currentTarget.dataset.answer;
     const card = this.data.card;
     if (!card || !answer || this.data.busy || this.flinging) return;
     this.run('记录作答', async () => {
       const result = await answerCard(card.id, answer, { direction: this.data.direction, mode: this.data.mode, relief: Boolean(card.relief), tail: Boolean(card.tail) });
+      this.applyStudyFocusSnapshot(web.studyFocus.recordStudyFocusAnswer(Number(card.id), answer));
       if (web.preferences.getStudyPreferences().zooSounds) {
         if (card.relief) web.sounds.playReliefDeal();
         else if (answer === 'know' || answer === 'known_forever') web.sounds.playKnow(this.correctStreak || 0);
@@ -273,7 +438,7 @@ Page({
       // 先刷新（把下一张单词卡摆好），再把插播卡盖上去。
       await this.refreshHome();
       if (result && result.interleave) this.showInterleave(result.interleave);
-      if (!card.relief) this.pushUndo('word');
+      if (!card.relief) this.pushUndo('word', Number(card.id));
       if (!this.data.card && !this.data.interleave && web.preferences.getStudyPreferences().zooSounds) web.sounds.playComplete();
       return card.relief ? '减负卡已看完（不改记忆数据）' : answer === 'forgot' ? '已安排稍后重学' : '已保存到本地库';
     });
@@ -318,18 +483,33 @@ Page({
   },
 
   onHide() {
+    if (this.focusSessionEntered) {
+      clearTimeout(this.focusLeaveTimer);
+      // Page.onHide also fires when WeChat backgrounds the app. Let App.onHide mark
+      // that case before deciding whether to pause or forfeit this session.
+      this.focusLeaveTimer = setTimeout(() => {
+        this.focusLeaveTimer = null;
+        if (getApp().globalData.appBackgrounded) this.pauseStudyFocusForApp();
+        else this.leaveStudyFocusPage();
+      }, 0);
+    } else {
+      this.focusPageShown = false;
+    }
     if (this.flingTimer) clearTimeout(this.flingTimer);
     this.flinging = false;
     this.swipeGesture = null;
     this.setData({ swipeStyle: '', swipeStamp: '' });
   },
 
-  pushUndo(kind) {
-    this.setData({ undoKinds: [...this.data.undoKinds, kind].slice(-2) });
+  pushUndo(kind, focusWordId = null) {
+    this.setData({
+      undoKinds: [...this.data.undoKinds, kind].slice(-2),
+      undoFocusWordIds: [...this.data.undoFocusWordIds, focusWordId].slice(-2)
+    });
   },
 
   popUndo() {
-    this.setData({ undoKinds: this.data.undoKinds.slice(0, -1) });
+    this.setData({ undoKinds: this.data.undoKinds.slice(0, -1), undoFocusWordIds: this.data.undoFocusWordIds.slice(0, -1) });
     this.correctStreak = 0;
   },
 
@@ -339,6 +519,7 @@ Page({
    * 作答、单词丢掉一次该留的，一次误操作造两笔假数据，而按钮还亮着。
    */
   handleUndo() {
+    this.noteStudyFocusInteraction();
     if (this.data.mode === 'mixed' && !this.data.undoKinds.length) return;
     const kind = this.data.undoKinds[this.data.undoKinds.length - 1] || 'word';
     this.run('撤销上一张', async () => {
@@ -352,6 +533,8 @@ Page({
       const wasInterleaved = Boolean(this.data.interleave);
       const result = await undoAnswer({ mode: this.data.mode });
       if (!result.undone) return result.reason;
+      const focusWordId = this.data.undoFocusWordIds[this.data.undoFocusWordIds.length - 1];
+      if (focusWordId) this.applyStudyFocusSnapshot(web.studyFocus.undoStudyFocusAnswer(focusWordId));
       if (wasInterleaved) rewindInterleave();
       // 插播是「刚才那个单词」带出来的：撤销那次作答，插播也不该被它提前用掉。
       this.showInterleave(null);
@@ -381,6 +564,7 @@ Page({
   },
 
   revealInterleave() {
+    this.noteStudyFocusInteraction();
     bankReminder();
     if (this.data.interleave) {
       const question = this.data.interleave.kind === 'kanji' ? this.data.interleave.card.question : null;
@@ -425,6 +609,7 @@ Page({
   },
 
   answerInterleaveCard(event) {
+    this.noteStudyFocusInteraction();
     bankReminder();
     const answer = event.currentTarget.dataset.answer;
     const interleave = this.data.interleave;
@@ -446,6 +631,7 @@ Page({
   },
 
   handleLevelChange(event) {
+    this.noteStudyFocusInteraction();
     const levelIndex = Number(event.detail.value);
     const selectedLevel = this.data.levels[levelIndex] || '';
     this.setData({ selectedLevel, levelIndex });
@@ -453,6 +639,7 @@ Page({
   },
 
   handleDirectionChange(event) {
+    this.noteStudyFocusInteraction();
     const directionIndex = Number(event.detail.value);
     const direction = ['forward', 'reverse', 'kanji'][directionIndex] || 'forward';
     this.setData({ directionIndex, direction, mode: 'classic', modeLabel: '经典模式' });
@@ -464,6 +651,7 @@ Page({
   },
 
   handleSaveNote() {
+    this.noteStudyFocusInteraction();
     const card = this.data.card;
     if (!card) return;
     this.run('保存笔记', async () => {
