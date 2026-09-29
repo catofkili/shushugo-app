@@ -5,7 +5,6 @@ const { web } = require('../../runtime/extended-features');
 // 隐藏成就在拿到之前只显示 ???（同网页 AchievementsPage），免得剧透，也免得有人对着刷。
 const toRow = (item) => ({
   id: item.id,
-  emoji: item.hidden && !item.unlocked ? '❓' : item.emoji,
   name: item.hidden && !item.unlocked ? '???' : item.name,
   description: item.hidden && !item.unlocked ? '隐藏成就，拿到之后揭晓' : item.description,
   category: item.category,

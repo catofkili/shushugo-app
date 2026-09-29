@@ -18,6 +18,7 @@ import { loadUserProfile, type UserProfile } from "../lib/userProfile";
 import { Page } from "../types/app";
 import { useEffect, useMemo, useState } from "react";
 import { firstValue } from "../lib/database/db-utils";
+import { ACHIEVEMENT_TOTAL } from "../lib/achievements/count";
 import { studyTotals } from "../lib/study-totals";
 import { yuzuBalance } from "../lib/yuzu";
 import { Sticker } from "../components/CapybaraMascot";
@@ -54,7 +55,7 @@ const profileSections = [
       // 「收集日 Pro」不在这张表里:上面那张会随已购状态换文案的横幅指的是同一个页面,
       // 同一屏里把同一个入口摆两遍,只会让人以为它们通向不同的地方。
       { label: "个人信息", detail: "头像、昵称、学习目标", icon: UserRound, page: "personal-info" as Page },
-      { label: "成就", detail: "共 47 个，有些是隐藏的", icon: Trophy, page: "achievements" as Page },
+      { label: "成就", detail: `共 ${ACHIEVEMENT_TOTAL} 个，有些是隐藏的`, icon: Trophy, page: "achievements" as Page },
       { label: "通知提醒", detail: "学习提醒和复习通知", icon: Bell, page: "notifications" as Page }
     ]
   },

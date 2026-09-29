@@ -2700,7 +2700,7 @@ select {
   padding: 12px 14px;
 }
 .ach-card.is-locked { background: rgba(70, 73, 73, 0.55); border-color: rgba(255, 255, 255, 0.08) }
-.ach-card.is-locked .ach-emoji { opacity: 0.35 }
+.ach-card.is-locked .ach-emoji { opacity: 0.6 }
 .ach-card.is-locked .ach-name { color: rgba(255, 255, 255, 0.55) }
 /* 稀有度只在拿到之后才显形 —— 锁着的时候一片灰，拿到才亮 */
 .ach-tier-common { border-color: var(--ds-line) }

@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { Trophy } from "lucide-react";
 import { AuthDialog } from "../components/AuthDialog";
 import { CapybaraMascot } from "../components/CapybaraMascot";
 import { LevelSetup } from "../components/LevelSetup";
@@ -12,7 +13,7 @@ import { recordDiagnosticOperation } from "../lib/diagnostics";
 import type { FeatureId } from "../lib/entitlements";
 
 interface AchievementPop {
-  item: { emoji: string; name: string };
+  item: { name: string };
   rest: number;
   leaving: boolean;
 }
@@ -99,7 +100,7 @@ function GlobalOverlays({
           role="status"
           aria-live="polite"
         >
-          <span className="zoo-achv-emoji" aria-hidden="true">{achievementPop.item.emoji}</span>
+          <span className="zoo-achv-emoji" aria-hidden="true"><Trophy size={20} /></span>
           <span className="zoo-achv-copy">
             <span className="zoo-achv-kick">成就解锁</span>
             <span className="zoo-achv-name">{achievementPop.item.name}</span>

@@ -17,7 +17,9 @@ const names = [
   'FolderPlus', 'GitCompareArrows', 'Handshake', 'History', 'ImageDown', 'Languages', 'Layers', 'ListChecks',
   'Loader2', 'MessageCircle', 'Minus', 'NotebookPen', 'Pause', 'PenLine', 'Pencil', 'PencilLine', 'Play', 'Plus',
   'Puzzle', 'Repeat', 'RotateCcw', 'Search', 'Share2', 'ShieldCheck', 'Shuffle', 'Sparkles', 'Sprout', 'Star',
-  'StickyNote', 'Target', 'Timer', 'Trash2', 'Type', 'Undo2', 'Volume2', 'X', 'XCircle', 'RefreshCw'
+  'StickyNote', 'Target', 'Timer', 'Trash2', 'Type', 'Undo2', 'Volume2', 'X', 'XCircle', 'RefreshCw',
+  // 成就页（lib/achievements/icons.ts）
+  'Angry', 'Award', 'Bird', 'Boxes', 'Cake', 'CalendarPlus', 'Castle', 'CloudFog', 'EyeOff', 'Footprints', 'Ghost', 'GraduationCap', 'Hash', 'Hourglass', 'Landmark', 'MoonStar', 'MousePointerClick', 'PartyPopper', 'Scissors', 'Snowflake', 'SunMoon', 'Sword', 'Swords', 'ThermometerSnowflake', 'TreePalm', 'TrendingUp', 'Zap'
 ];
 const root = path.resolve(__dirname, '..');
 const repo = path.resolve(root, '..');

@@ -116,7 +116,7 @@ export function formatStudyTime(minutes: number): string {
 export async function checkAchievements(options: { force?: boolean } = {}): Promise<Achievement[]> {
   const earned = evaluateAchievements(options);
   earned.forEach((achievement) => {
-    notifyAchievement(`${achievement.emoji} ${achievement.name}`).catch(() => undefined);
+    notifyAchievement(achievement.name).catch(() => undefined);
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent(ACHIEVEMENT_UNLOCKED_EVENT, { detail: achievement }));
     }

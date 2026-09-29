@@ -216,9 +216,9 @@ export default function App() {
     };
   }, [page]);
 
-  const achievementQueueRef = useRef<{ emoji: string; name: string }[]>([]);
+  const achievementQueueRef = useRef<{ name: string }[]>([]);
   const [achievementPop, setAchievementPop] = useState<{
-    item: { emoji: string; name: string };
+    item: { name: string };
     rest: number;
     leaving: boolean;
   } | null>(null);
@@ -242,9 +242,9 @@ export default function App() {
       }, ACHIEVEMENT_POP_HOLD_MS);
     };
     const onUnlock = (event: Event) => {
-      const achievement = (event as CustomEvent<{ emoji: string; name: string }>).detail;
+      const achievement = (event as CustomEvent<{ name: string }>).detail;
       if (!achievement) return;
-      achievementQueueRef.current.push({ emoji: achievement.emoji, name: achievement.name });
+      achievementQueueRef.current.push({ name: achievement.name });
       if (playing) return;
       playing = true;
       // 同一批解锁事件同步发出；延一拍后才能统计队列里还剩几条。

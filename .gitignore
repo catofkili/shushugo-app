@@ -9,6 +9,7 @@ yarn-error.log*
 dist/
 build/
 static/
+/taro-spike-2/skin-dist/
 *.log
 *.tsbuildinfo
 

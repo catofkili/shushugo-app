@@ -13,6 +13,7 @@ module.exports = {
   contentManifestUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/seed/manifest.json',
   audioBaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/audio/words',
   audioIndexUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/audio/words/index.json',
+  skinBaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/skins',
   // 同步接口必须使用已备案 HTTPS 域名，留空时客户端保持纯离线。
   syncUrl: 'https://api.shushugo.com',
   entitlementUrl: 'https://api.shushugo.com/api/entitlements',

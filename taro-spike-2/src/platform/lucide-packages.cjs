@@ -20,13 +20,15 @@ module.exports = {
     "study"
   ],
   "repeat2": [
-    "study"
+    "study",
+    "content-pages"
   ],
   "alarmclock": [
     "study"
   ],
   "mountain": [
-    "study"
+    "study",
+    "content-pages"
   ],
   "bellring": [
     "study"
@@ -71,7 +73,8 @@ module.exports = {
     "account"
   ],
   "moon": [
-    "account"
+    "account",
+    "content-pages"
   ],
   "sun": [
     "account"
@@ -86,7 +89,8 @@ module.exports = {
     "account"
   ],
   "scrolltext": [
-    "account"
+    "account",
+    "content-pages"
   ],
   "helpcircle": [
     "account"
@@ -128,6 +132,87 @@ module.exports = {
     "content-pages"
   ],
   "lock": [
+    "content-pages"
+  ],
+  "angry": [
+    "content-pages"
+  ],
+  "award": [
+    "content-pages"
+  ],
+  "bird": [
+    "content-pages"
+  ],
+  "boxes": [
+    "content-pages"
+  ],
+  "calendarplus": [
+    "content-pages"
+  ],
+  "cake": [
+    "content-pages"
+  ],
+  "castle": [
+    "content-pages"
+  ],
+  "cloudfog": [
+    "content-pages"
+  ],
+  "eyeoff": [
+    "content-pages"
+  ],
+  "footprints": [
+    "content-pages"
+  ],
+  "ghost": [
+    "content-pages"
+  ],
+  "graduationcap": [
+    "content-pages"
+  ],
+  "hash": [
+    "content-pages"
+  ],
+  "hourglass": [
+    "content-pages"
+  ],
+  "landmark": [
+    "content-pages"
+  ],
+  "mousepointerclick": [
+    "content-pages"
+  ],
+  "moonstar": [
+    "content-pages"
+  ],
+  "partypopper": [
+    "content-pages"
+  ],
+  "scissors": [
+    "content-pages"
+  ],
+  "snowflake": [
+    "content-pages"
+  ],
+  "sunmoon": [
+    "content-pages"
+  ],
+  "sword": [
+    "content-pages"
+  ],
+  "swords": [
+    "content-pages"
+  ],
+  "thermometersnowflake": [
+    "content-pages"
+  ],
+  "treepalm": [
+    "content-pages"
+  ],
+  "trendingup": [
+    "content-pages"
+  ],
+  "zap": [
     "content-pages"
   ],
   "heart": [

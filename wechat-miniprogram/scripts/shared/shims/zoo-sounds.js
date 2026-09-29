@@ -99,5 +99,6 @@ module.exports = {
   playReliefDeal: () => play('relief'),
   playSave: () => play('save'),
   playStreakChirp: () => play('chirp'),
+  soundAvailable: () => typeof wx !== 'undefined' && !!(wx.createInnerAudioContext && wx.getFileSystemManager && wx.env?.USER_DATA_PATH),
   previewTimbre(next) { const previous = timbre; setSoundTimbre(next); play('know-0'); timbre = previous; }
 };
