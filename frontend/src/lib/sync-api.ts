@@ -554,7 +554,8 @@ export async function deleteCloudWeeklyReport(weekStart: string): Promise<void> 
 }
 
 export async function getCloudAuthConfig(): Promise<CloudAuthConfig> {
-  if (!API_URL) return { appleEnabled: false, wechatAppEnabled: false, turnstileEnabled: false, reviewLoginOpen: false };
+  // 小程序没有 API_URL（请求走云函数转发），不能按它判断「没配云同步」，否则审核登录入口永远不出现。
+  if (!API_URL && Capacitor.getPlatform() !== "wechat") return { appleEnabled: false, wechatAppEnabled: false, turnstileEnabled: false, reviewLoginOpen: false };
   return requestJson<CloudAuthConfig>("/api/auth/config", { method: "GET" });
 }
 
