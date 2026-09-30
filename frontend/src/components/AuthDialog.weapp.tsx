@@ -21,8 +21,6 @@ const miniCode = (): Promise<string> => new Promise((resolve, reject) => {
   });
 });
 
-const credentialLabelClass = "block text-xs font-bold text-white/65";
-const credentialInputClass = "mt-2 w-full rounded-2xl border border-white/15 bg-[#242a24] px-3 py-3 text-sm text-white";
 
 export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) {
   const [mode, setMode] = useState<Mode>("login");
@@ -129,7 +127,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
   };
 
   const legal = mode === "terms" ? USER_AGREEMENT_SECTIONS : PRIVACY_POLICY_SECTIONS;
-  const title = mode === "terms" ? USER_AGREEMENT_TITLE : mode === "privacy" ? PRIVACY_POLICY_TITLE : "收集日账号";
+  const title = mode === "terms" ? USER_AGREEMENT_TITLE : mode === "privacy" ? PRIVACY_POLICY_TITLE : mode === "review" ? "审核账号登录" : "收集日账号";
 
   return (
     <div className="fixed inset-0 z-[10002] grid place-items-center bg-[#101810]/70 p-3" role="presentation">
@@ -154,12 +152,13 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
           ) : (
             <div className="mx-auto max-w-[480px] space-y-4">
               {mode === "login" && <button onClick={() => void signIn()} disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#07C160] px-4 py-3 text-sm font-bold text-white disabled:opacity-50"><MessageCircle size={19} fill="currentColor" />{busy ? "登录中…" : "使用微信登录"}</button>}
-              {mode === "login" && reviewLoginOpen && <button onClick={() => { setReviewPassword(""); setMode("review"); setMessage(""); }} className="mx-auto block py-1 text-xs font-bold text-white/45">审核账号登录</button>}
-              {mode === "review" && reviewLoginOpen && <>
-                <label className={credentialLabelClass}>账号<input value="review@shushugo.com" disabled className={credentialInputClass} /></label>
-                <label className={credentialLabelClass}>密码<input type="password" value={reviewPassword} onChange={(event) => setReviewPassword(event.target.value)} className={credentialInputClass} /></label>
-                <button onClick={reviewSignIn} disabled={busy} className="w-full rounded-2xl bg-[#07C160] px-4 py-3 text-sm font-bold text-white disabled:opacity-50">登录</button>
-              </>}
+              {mode === "login" && reviewLoginOpen && <button onClick={() => { setReviewPassword(""); setMode("review"); setMessage(""); }} className="auth-review-link">审核账号登录</button>}
+              {mode === "review" && reviewLoginOpen && <div className="auth-review">
+                <div className="auth-review-account"><span>账号</span><strong>review@shushugo.com</strong></div>
+                <input type="password" value={reviewPassword} onChange={(event) => setReviewPassword(event.target.value)} placeholder="密码" className="auth-review-input" />
+                <button onClick={reviewSignIn} disabled={busy || !reviewPassword} className="ds-btn w-full">{busy ? "登录中…" : "登录"}</button>
+                <button onClick={() => { setMode("login"); setMessage(""); }} className="auth-review-link">返回微信登录</button>
+              </div>}
               {mode === "choice" && <div className="space-y-3"><button onClick={() => { setMode("create"); setConsented(false); setMessage(""); }} disabled={busy} className="w-full rounded-2xl bg-[#91C968] px-4 py-3 text-sm font-bold text-[#172112]">创建新账号</button><button onClick={() => { setMode("link"); setMessage(""); }} disabled={busy} className="w-full rounded-2xl border border-white/20 px-4 py-3 text-sm font-bold text-white">关联已有邮箱账号</button></div>}
               {mode === "create" && <>
                 <label className="block text-xs font-bold text-white/65">昵称（可选）<input value={nickname} maxLength={20} onChange={(event) => setNickname(event.target.value)} className="mt-2 w-full rounded-2xl border border-white/15 bg-[#242a24] px-3 py-3 text-sm text-white" /></label>

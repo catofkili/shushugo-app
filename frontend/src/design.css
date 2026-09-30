@@ -846,3 +846,12 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 [data-theme] .zoo-focus-box { display: inline-grid; place-items: center; width: 19px; height: 19px; border: 1.5px solid var(--ds-line); border-radius: 50%; background: var(--ds-inset); color: var(--ds-on-primary, #fff); }
 [data-theme] .zoo-focus-toggle.on .zoo-focus-box { background: var(--ds-primary); }
 [data-theme] .zoo-focus-label { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; border: 0; padding: 0 1px; background: transparent; color: inherit; font: inherit; white-space: nowrap; }
+
+/* 19. 小程序审核账号登录（AuthDialog.weapp）：账号是只读的一行，不做成灰掉的输入框 */
+.auth-review { display: flex; flex-direction: column; gap: 12px; }
+.auth-review-account { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 0 16px; border-radius: 16px; background: var(--ds-inset); font-size: 14px; }
+.auth-review-account span { color: var(--ds-ink-3); }
+.auth-review-account strong { color: var(--ds-ink); font-weight: 700; }
+.auth-review-input { width: 100%; min-height: 48px; padding: 0 16px; border: 0 !important; border-radius: 16px; background: var(--ds-inset) !important; color: var(--ds-ink); font-size: 16px; }
+.auth-review-link { display: block; margin: 0 auto; padding: 8px 12px; border: 0; background: none; color: var(--ds-ink-3); font-size: 13px; font-weight: 700; }
+.auth-review .ds-btn:disabled { background: var(--ds-inset); color: var(--ds-ink-3); }
