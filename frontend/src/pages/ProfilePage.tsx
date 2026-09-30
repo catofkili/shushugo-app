@@ -123,7 +123,12 @@ export function ProfilePage({ entitlements, cloudSession, onNavigate, onRequireA
               {entitlements.isPro ? productLabel(entitlements.productId) : "免费账号"}
             </p>}
           </div>
-          {!cloudSession.token && (
+          {/* 登录 / 退出是同一个位置：退出只放页面最底下时，手机上要翻到底、还可能被底栏压住，用户会以为没有退出 */}
+          {cloudSession.token ? (
+            <button onClick={() => void logout()} className="focus-ring shrink-0 rounded-2xl border border-white/20 px-4 py-2 text-sm font-bold text-white/80">
+              退出
+            </button>
+          ) : (
             <button onClick={onRequireAuth} className="focus-ring shrink-0 rounded-2xl bg-[#91C968] px-4 py-2 text-sm font-bold text-[#172112]">
               登录
             </button>
