@@ -12,6 +12,7 @@ import {
   type Familiarity,
   type StartingLevel
 } from "../lib/level-plan";
+import { previewLevelPlan } from "../lib/plan/content-matrix";
 import { getEntitlements } from "../lib/entitlements";
 import { claimLaunchGift, refreshLaunchGiftAvailability } from "../lib/sync-api";
 import { isLaunchGiftOnlyRelease } from "../lib/purchases";
@@ -44,6 +45,9 @@ const Step = ({ n, title, hint, children }: { n: number; title: string; hint?: s
 interface Props {
   open: boolean;
   dismissible?: boolean;
+  databaseReady?: boolean;
+  prepareDatabase?: () => Promise<unknown>;
+  databaseError?: string;
   isAuthenticated?: boolean;
   onRequireAuth?: () => void;
   onComplete: (message: string) => void;
@@ -55,9 +59,9 @@ const dateLabel = (value?: string | null) => {
   return Number.isFinite(timestamp) ? new Date(timestamp).toISOString().slice(0, 10) : "待确认";
 };
 
-export function LevelSetup({ open, dismissible = false, isAuthenticated = false, onRequireAuth, onComplete, onClose }: Props) {
+export function LevelSetup({ open, dismissible = false, isAuthenticated = false, onRequireAuth, onComplete, onClose, databaseReady = true, prepareDatabase, databaseError = "" }: Props) {
   const entitlement = useEntitlements();
-  const existing = getLevelPlanSettings();
+  const existing = databaseReady ? getLevelPlanSettings() : null;
   const [startingLevel, setStartingLevel] = useState<StartingLevel>(existing?.startingLevel ?? "kana");
   const [target, setTarget] = useState<JlptTarget>(existing?.target ?? "N3");
   const [examKind, setExamKind] = useState<ExamKind>(existing?.examKind ?? "jlpt");
@@ -67,6 +71,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
     ? formatExamDate(savedDate) : suggestedDate ? formatExamDate(suggestedDate) : "");
   const [familiarity, setFamiliarity] = useState<Familiarity>(existing?.familiarity ?? familiarityDefaults("kana"));
   const [saving, setSaving] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState("");
   const [giftPage, setGiftPage] = useState(false);
   const [gift, setGift] = useState<{ open: boolean; claimUntil: string | null }>();
@@ -76,7 +81,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
 
   const samePlan = existing?.startingLevel === startingLevel && existing.target === target && existing.examKind === examKind
     && existing.examDate === examDate && JSON.stringify(existing.familiarity) === JSON.stringify(familiarity);
-  const preview = examDate ? previewCurrentLevelPlan({
+  const preview = examDate ? (databaseReady ? previewCurrentLevelPlan : previewLevelPlan)({
     startingLevel, target, familiarity,
     examDate: parseExamDate(examDate) ?? new Date(Date.now() + 90 * 86_400_000),
     startedOn: samePlan ? parseExamDate(existing?.startedOn ?? "") ?? undefined : undefined
@@ -95,6 +100,13 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
     setSaving(true);
     setError("");
     try {
+      if (prepareDatabase) {
+        setPreparing(true);
+        await prepareDatabase();
+        setPreparing(false);
+      } else if (!databaseReady) {
+        throw new Error("数据库尚未就绪，请稍后重试。");
+      }
       await saveLevelPlanSettings({ startingLevel, familiarity, target, examKind, examDate });
       const preset = applyExamPreset(target);
       if (startingLevel === "kana-none") deferWordPlanUntilKanaComplete(preset.plan.words.fresh);
@@ -119,6 +131,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "计划创建失败，请稍后重试。");
     } finally {
+      setPreparing(false);
       setSaving(false);
     }
   };
@@ -212,7 +225,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
             {!preview.feasible && <><br /><b>照每天的上限，这场考前学不完。</b>换一场考期或者降一级目标吧。</>}
             {startingLevel === "kana-none" && <><br />五十音按真的学会了多少来算，没学完就往后顺延。</>}
           </MascotSay> : <p className="mt-5 text-sm jp-muted">选择考试日期后，会估算每天的学习量和这场考试前是否来得及。</p>}
-          {error && <div role="alert"><MascotSay sticker="mood-dizzy" tone="warn" className="mt-3">{error}</MascotSay></div>}
+          {(error || databaseError) && <div role="alert"><MascotSay sticker="mood-dizzy" tone="warn" className="mt-3">{error || databaseError}</MascotSay></div>}
           </>}
         </ScrollArea>
         <div className="ls-foot">
@@ -226,7 +239,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
               {preview.feasible ? <span className="ds-pill ds-pill-primary">来得及</span> : <span className="ds-pill ds-pill-warn">照上限学不完</span>}</>
               : "选好考试日期后显示每日计划估算"}
           </p>
-          <button disabled={saving || !examDate} onClick={submit} className="ds-btn focus-ring w-full disabled:opacity-50">{saving ? "正在建立计划…" : "保存并查看今天怎么学 →"}</button>
+          <button disabled={saving || !examDate} onClick={submit} className="ds-btn focus-ring w-full disabled:opacity-50">{preparing ? "正在准备…" : saving ? "正在建立计划…" : "保存并查看今天怎么学 →"}</button>
           </>}
         </div>
       </div>

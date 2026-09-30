@@ -9,6 +9,7 @@ import { perfTime, perfTimeAsync, recordStartupMilestone } from '../../../fronte
 
 let opening: Promise<unknown> | null = null;
 type StartupObserver = {
+  onLocalArchive?: (restored: boolean) => void;
   onStage?: (name: string, elapsedMs: number) => void;
   onDownload?: (progress: { compressed: boolean; percent: number | null; fallback?: boolean }) => void;
 };
@@ -46,6 +47,7 @@ export async function ensureDatabase(
   if (!opening) opening = (async () => {
     let started = Date.now();
     const restored = await perfTimeAsync('启动 · 本机存档检查与恢复', () => loadDatabase());
+    observer?.onLocalArchive?.(restored);
     observer?.onStage?.('local-database', elapsed(started));
     if (restored) recordStartupMilestone('本机学习库恢复完成');
     if (!restored) {

@@ -54,7 +54,9 @@ page { overflow-x: hidden; }
    must use the full webview viewport instead of collapsing to content height. */
 .taro-spike-shell { height: 100vh; min-height: 100vh; overflow: hidden; }
 .taro-spike-content { height: 100%; min-height: 0; }
-.weapp-theme-root { height: 100vh; min-height: 100vh; display: block; }
+/* 弹层（createPortal）挂在这一层、在 .app-shell 外面：首装时首次设定要在 AppShell 挂上之前就弹出，
+   库就绪后又不能换挂载点（换了弹层会整个重挂）。所以 .app-shell 给的文字色这里也得有一份。 */
+.weapp-theme-root { height: 100vh; min-height: 100vh; display: block; color: var(--ds-ink); }
 .weapp-app-shell { height: 100%; min-height: 100%; }
 .weapp-route-root { min-height: 100%; }
 /* Inline tags containing components hydrate as Views; restore their browser inline flow. */

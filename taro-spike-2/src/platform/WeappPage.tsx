@@ -3,7 +3,7 @@ import './app-polyfills.weapp';
 // 纯函数和出厂内容缓存无所谓；**按数据库缓存用户数据的模块必须只有一份**——在这里静态引用一次，它就进主包，
 // 异步块和各分包都用主包这份。grammarHighlights 的 dbCaches：详情页那份写了新重点，语法页那份缓存不失效就看不到。
 import '../../../frontend/src/lib/grammarHighlights';
-import { Suspense, useEffect, useState, useSyncExternalStore, type ComponentType } from 'react';
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore, type ComponentType } from 'react';
 import { ScrollView, Text, View } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import type { AppContextValue, AppNavigationParams } from '../../../frontend/src/app/AppContext';
@@ -28,6 +28,7 @@ import { consumePendingWeeklyReportWeekStart, WEEKLY_REPORT_NOTIFICATION_EVENT }
 import { ACHIEVEMENT_UNLOCKED_EVENT } from '../../../frontend/src/lib/userProfile';
 import { ready as readyForGrammar, readyForKanji } from '../../scripts/taro-content.cjs';
 import { ensureDatabase } from './database-runtime.weapp';
+import { LevelSetup } from '../../../frontend/src/components/LevelSetup';
 import { StartupLoading } from './StartupLoading';
 import { usePortalHost } from './portal-host.weapp';
 import { PerfOverlay } from './preview-timing.weapp';
@@ -90,6 +91,10 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   const entitlements = useEntitlements();
   const ui = useSyncExternalStore(subscribeUiState, getUiState, getUiState);
   const [ready, setReady] = useState(false);
+  const [databaseReady, setDatabaseReady] = useState(false);
+  const [firstSetupOpen, setFirstSetupOpen] = useState(false);
+  const startup = useRef<Promise<void> | null>(null);
+  const retryStartup = useRef<() => Promise<void>>(() => Promise.reject(new Error('正在准备…')));
   const [error, setError] = useState('');
   const [downloadPercent, setDownloadPercent] = useState<number | null | undefined>(undefined);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -104,30 +109,49 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     let cancelled = false;
     // 计时版里记每个页面从挂载到能用花多久（用户报「单词和语法加载几秒」「进组队页十秒」）；普通构建里 perfRecord 是空操作。
     const openedAt = Date.now();
-    Promise.all([
-      ensureDatabase('word-study', { onDownload: ({ percent }) => setDownloadPercent(percent) }),
-      perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
-      grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : Promise.resolve()
-    ])
-      .then(async () => {
-        if (cancelled) return;
-        setOverview(page === 'home'
-          ? perfTime('启动 · 今日主页数据计算', () => getProgressOverview())
-          : perfTime(`页面 · ${page} 概览计算`, () => getProgressOverview()));
-        setTheme(getResolvedTheme());
-        setSkin(equippedItem('theme'));
-        setCloudSession(await getCloudSession());
-        if (cancelled) return;
-        setReady(true);
-        perfRecord(`页面 · ${page} 就绪`, Date.now() - openedAt);
-        if (!levelSetupChecked) {
-          levelSetupChecked = true;
-          try { setLevelSetupOpen(shouldShowLevelSetup()); } catch { /* 旧库可能尚无计划设置 */ }
-        }
-      })
-      .catch((cause) => {
-        if (!cancelled) setError(String(cause?.message || cause?.errMsg || JSON.stringify(cause)));
-      });
+    const start = () => {
+      setError('');
+      const pending = Promise.all([
+        ensureDatabase('word-study', {
+          onDownload: ({ percent }) => { if (!cancelled) setDownloadPercent(percent); },
+          onLocalArchive: (restored) => {
+            if (!cancelled && page === 'home' && !restored) {
+              // 首装只挂这一份设定；首页就绪时不能交给 AppShell 重挂，用户的选择会丢。
+              levelSetupChecked = true;
+              setFirstSetupOpen(true);
+            }
+          }
+        }).then(() => { if (!cancelled) setDatabaseReady(true); }),
+        perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
+        grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : Promise.resolve()
+      ])
+        .then(async () => {
+          if (cancelled) return;
+          setOverview(page === 'home'
+            ? perfTime('启动 · 今日主页数据计算', () => getProgressOverview())
+            : perfTime(`页面 · ${page} 概览计算`, () => getProgressOverview()));
+          setTheme(getResolvedTheme());
+          setSkin(equippedItem('theme'));
+          setCloudSession(await getCloudSession());
+          if (cancelled) return;
+          setReady(true);
+          perfRecord(`页面 · ${page} 就绪`, Date.now() - openedAt);
+          if (!levelSetupChecked) {
+            levelSetupChecked = true;
+            try { setLevelSetupOpen(shouldShowLevelSetup()); } catch { /* 旧库可能尚无计划设置 */ }
+          }
+        })
+        .catch((cause) => {
+          const message = String(cause?.message || cause?.errMsg || JSON.stringify(cause));
+          if (!cancelled) setError(message);
+          throw new Error(message);
+        });
+      startup.current = pending;
+      void pending.catch(() => { if (startup.current === pending) startup.current = null; });
+      return pending;
+    };
+    retryStartup.current = start;
+    void start().catch(() => undefined);
     return () => { cancelled = true; };
   }, [page]);
 
@@ -286,35 +310,37 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     overview,
     actions
   };
-  if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
-  if (!ready) return <StartupLoading downloadPercent={downloadPercent} />;
+  const completeSetup = (message: string) => {
+    setFirstSetupOpen(false);
+    setLevelSetupOpen(false);
+    showNotice(message, 5200);
+    navigatePage('jlpt-plan');
+  };
 
   return (
     // Web theme/skin rules are rooted at html[data-theme]/html[data-skin].
     // htmltransform emits those anchors as .h5-html, so the mini app needs a
     // matching ancestor around AppShell (including its global overlays).
-    <View className={`h5-html weapp-theme-root theme-${theme} attr-data-theme attr-data-motion attr-data-motion-${motionLevel}${skin ? ` skin-${skin} attr-data-skin` : ''}`}>
-    <AppShell
+    <View ref={portalHost} className={`h5-html weapp-theme-root theme-${theme} attr-data-theme attr-data-motion attr-data-motion-${motionLevel}${skin ? ` skin-${skin} attr-data-skin` : ''}`}>
+    {!ready ? error && !firstSetupOpen
+      ? <View className="theme-light p-4"><Text>{error}</Text></View>
+      : <StartupLoading downloadPercent={downloadPercent} /> : <AppShell
       context={context}
       className={`app-shell weapp-app-shell relative min-h-screen overflow-x-hidden bg-gradient-to-br from-[#FFFBF2] via-[#FDF1DC] to-[#F6E9D2] text-[#3A2E22]${page === 'weekly-report' ? ' is-weekly-report' : ''}`}
       achievementPop={ui.achievementPop}
       notice={ui.notice}
       paywallTarget={ui.paywallTarget}
       authOpen={ui.authOpen}
-      levelSetupOpen={ui.levelSetupOpen}
+      levelSetupOpen={!firstSetupOpen && ui.levelSetupOpen}
       trialEndedOpen={ui.trialEndedOpen}
       onAuthenticated={(session: CloudSession) => context.handleAuthenticated(session)}
       onClosePaywall={closePaywall}
       onCloseAuth={context.closeAuth}
-      onLevelSetupComplete={(message) => {
-        setLevelSetupOpen(false);
-        showNotice(message, 5200);
-        navigatePage('jlpt-plan');
-      }}
+      onLevelSetupComplete={completeSetup}
       onDismissTrial={() => { markTrialNoticeRead(); setTrialEndedOpen(false); }}
       onViewPro={() => { markTrialNoticeRead(); setTrialEndedOpen(false); navigatePage('pro'); }}
     >
-      <View ref={portalHost} className={`weapp-route-root theme-${theme}${skin ? ` skin-${skin}` : ''}`}
+      <View className={`weapp-route-root theme-${theme}${skin ? ` skin-${skin}` : ''}`}
         onTouchStart={() => notifyStudyInteraction(pagePath)}
         onTouchMove={() => notifyStudyInteraction(pagePath)}
         onClick={() => notifyStudyInteraction(pagePath)}>
@@ -336,8 +362,18 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
           </Suspense>
         </ScrollView>
       </View>
-    </AppShell>
-    {page === 'home' ? <PerfOverlay /> : null}
+    </AppShell>}
+    {firstSetupOpen && <LevelSetup
+      open
+      databaseReady={databaseReady}
+      databaseError={error}
+      // 不只等数据库：首页数据、AppShell（登录弹窗）也必须就绪后才保存和进入赠送页。
+      prepareDatabase={() => startup.current ?? retryStartup.current()}
+      isAuthenticated={Boolean(cloudSession.token)}
+      onRequireAuth={() => context.requireAccount()}
+      onComplete={completeSetup}
+    />}
+    {ready && page === 'home' ? <PerfOverlay /> : null}
     </View>
   );
 }
