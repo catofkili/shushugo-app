@@ -28,6 +28,7 @@ import { consumePendingWeeklyReportWeekStart, WEEKLY_REPORT_NOTIFICATION_EVENT }
 import { ACHIEVEMENT_UNLOCKED_EVENT } from '../../../frontend/src/lib/userProfile';
 import { ready as readyForGrammar, readyForKanji } from '../../scripts/taro-content.cjs';
 import { ensureDatabase } from './database-runtime.weapp';
+import { StartupLoading } from './StartupLoading';
 import { usePortalHost } from './portal-host.weapp';
 import { PerfOverlay } from './preview-timing.weapp';
 import { SquirrelTrail } from '../../../frontend/src/components/SquirrelTrail';
@@ -90,6 +91,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   const ui = useSyncExternalStore(subscribeUiState, getUiState, getUiState);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
+  const [downloadPercent, setDownloadPercent] = useState<number | null | undefined>(undefined);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [skin, setSkin] = useState('');
   const [motionLevel, setMotionLevel] = useState(() => getStudyPreferences().motionLevel);
@@ -102,11 +104,11 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     let cancelled = false;
     // 计时版里记每个页面从挂载到能用花多久（用户报「单词和语法加载几秒」「进组队页十秒」）；普通构建里 perfRecord 是空操作。
     const openedAt = Date.now();
-    ensureDatabase()
-      .then(() => Promise.all([
-        perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
-        grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : undefined
-      ]))
+    Promise.all([
+      ensureDatabase('word-study', { onDownload: ({ percent }) => setDownloadPercent(percent) }),
+      perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
+      grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : Promise.resolve()
+    ])
       .then(async () => {
         if (cancelled) return;
         setOverview(page === 'home'
@@ -285,7 +287,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     actions
   };
   if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
-  if (!ready) return <View className="theme-light p-4"><Text>正在载入学习数据…</Text></View>;
+  if (!ready) return <StartupLoading downloadPercent={downloadPercent} />;
 
   return (
     // Web theme/skin rules are rooted at html[data-theme]/html[data-skin].

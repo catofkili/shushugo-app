@@ -37,12 +37,14 @@ export async function ensureDatabase(
   contentPage: 'word-study' | 'vocab-test' | 'confusion-quiz' | 'kanji-reading' | 'grammar-quiz' = 'word-study',
   observer?: StartupObserver
 ) {
-  let started = Date.now();
-  await perfTimeAsync('启动 · 页面内容分包就绪', () => readyForPage(contentPage));
-  observer?.onStage?.('page-content', elapsed(started));
+  const pageContentReady = (async () => {
+    const started = Date.now();
+    await perfTimeAsync('启动 · 页面内容分包就绪', () => readyForPage(contentPage));
+    observer?.onStage?.('page-content', elapsed(started));
+  })();
 
   if (!opening) opening = (async () => {
-    started = Date.now();
+    let started = Date.now();
     const restored = await perfTimeAsync('启动 · 本机存档检查与恢复', () => loadDatabase());
     observer?.onStage?.('local-database', elapsed(started));
     if (restored) recordStartupMilestone('本机学习库恢复完成');
@@ -83,14 +85,24 @@ export async function ensureDatabase(
     observer?.onStage?.('sync-schema', elapsed(started));
     registerPersistenceLifecycle();
     if (!restored) {
-      started = Date.now();
-      await perfTimeAsync('启动 · 首次保存出厂库', () => saveDatabase({ notifyCloud: false }));
-      observer?.onStage?.('first-save', elapsed(started));
+      // 出厂库丢了可重新下载；这份首次快照没存下来只会让下次启动再拉一次。
+      setTimeout(() => {
+        void (async () => {
+          started = Date.now();
+          try {
+            await perfTimeAsync('启动 · 首次保存出厂库', () => saveDatabase({ notifyCloud: false }));
+            observer?.onStage?.('first-save', elapsed(started));
+          } catch (error) {
+            console.error('[database] 首次保存出厂库失败', error);
+          }
+        })();
+      }, 3000);
     }
     return getDatabase();
   })().catch((error) => {
     opening = null;
     throw error;
   });
-  return opening;
+  const [, database] = await Promise.all([pageContentReady, opening]);
+  return database;
 }
