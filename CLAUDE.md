@@ -12,6 +12,23 @@
 
 **只要改了前端，就要主动做视觉检查**：在独立端口打开实际页面并查看运行画面或截图，至少检查目标页面和窄屏布局，确认没有遮挡、溢出、裁切、错位或不可见/不可点的控件；小程序界面有改动时也要在微信开发者工具里检查对应页面。按检查结果修正后再看一次。5173 是用户正在学习的页面，不得用它验证、刷新或触发热更新；遵守上面的同提交双端要求，并参照 [`docs/MINIPROGRAM_SYNC_PLAN.md`](docs/MINIPROGRAM_SYNC_PLAN.md) 做小程序运行和两端截图检查。
 
+## ⚠️ 开口练习（日常会话）是实验功能，不许进任何发布包（2026-09-30）
+
+用户原话：「这个功能初期肯定上不了，要备注好，不要把断头工作上传到要发布的小程序 / App 上」。
+规格和上线清单在 [`docs/DAILY_TALK_SPEC.md`](docs/DAILY_TALK_SPEC.md)，内容源是 `docs/DAILY_CONVERSATION_CORPUS.md`。
+
+- **唯一开关是编译期常量 `__EXP_TALK__`**：vite dev / vitest 为 true；`vite build`（网页、iOS）和 `taro build` 默认 false，
+  只有 `SHUSHUGO_EXP_TALK=1` 才开（只给自测 / 小程序预览码）。小程序页面登记在 `route-table.cjs` 里也挂着同一个开关。
+- **`lib/talk/` 只许被三个入口引用**（路由表、主页入口、小程序 route-table），每处包在 `__EXP_TALK__` 里；
+  `lib/talk/isolation.test.ts` 钉着。别的模块一 import，关着开关也摇不掉。
+- 三道拦截：`taro-spike-2` 的 `check:release` 拦 app.json 里的 talk 页和 `__SHUSHUGO_EXP_TALK__` 指纹；
+  `scripts/build-ios.sh` 见到 `SHUSHUGO_EXP_TALK` 就退出、构建完再搜指纹。**带开关构建的小程序包永远不许上传。**
+- ⚠️ **`talk_*` 三张表是 `cloud: false`（只在本机）**：合并前 `assertSnapshotWritable` 见到不认识的表会整次拒绝同步，
+  作者的 5173 开发版打开了这个功能，只要把 `talk_*` 推上云，作者手机上的已发布版本就再也同步不了。
+  `cloud: false` = 照常盖章 / 留墓碑 / 进本地增量，但不进云快照（墓碑也不带）、合并不碰、收到带它的快照整次拒绝。
+  上线时先发「认得但仍 false」的版本给所有端，全部更新后再改成上云（规格 §7）。
+- 上线前谁也不许把 `__EXP_TALK__` 的默认值改成 true。
+
 ## ⚠️ 查我的真实学习数据：`cd frontend && npm run db -- <词>`
 
 **每次新开聊天先看这里，不要再去仓库里翻 .db 文件，也别一上来就连真实 Chrome。**
