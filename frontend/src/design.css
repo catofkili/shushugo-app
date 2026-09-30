@@ -849,7 +849,7 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 
 /* 19. 小程序审核账号登录（AuthDialog.weapp）：账号是只读的一行，不做成灰掉的输入框 */
 .auth-review { display: flex; flex-direction: column; gap: 12px; }
-.auth-review-account { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 0 16px; border-radius: 16px; background: var(--ds-inset); font-size: 14px; }
+.auth-review-account { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 16px; border-radius: 16px; background: var(--ds-inset); font-size: 14px; }
 .auth-review-account span { color: var(--ds-ink-3); }
 .auth-review-account strong { color: var(--ds-ink); font-weight: 700; }
 .auth-review-input { width: 100%; min-height: 48px; padding: 0 16px; border: 0 !important; border-radius: 16px; background: var(--ds-inset) !important; color: var(--ds-ink); font-size: 16px; }
