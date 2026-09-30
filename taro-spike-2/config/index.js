@@ -51,7 +51,13 @@ module.exports = {
       ...['study', 'account', 'content-pages'].map((subpackage) => ({
         from: path.join(root, 'src/package-assets', subpackage),
         to: path.join(root, 'dist', subpackage, 'assets')
-      }))
+      })),
+      // 场景图只进实验页所在 study 分包；内容任务还没放图时也能编译预览版。
+      ...(expTalkEnabled ? [{
+        from: path.join(frontend, 'public/talk/scenes/*.jpg'),
+        to: path.join(root, 'dist/study/talk/scenes/[name][ext]'),
+        noErrorOnMissing: true
+      }] : [])
     ],
     options: {}
   },

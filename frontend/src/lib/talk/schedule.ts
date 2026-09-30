@@ -1,7 +1,7 @@
 import type { WordAnswer } from "../../types/vocabulary";
 import { createCardLog } from "../card-log";
 import { getDatabase } from "../database";
-import { oncePerDatabase } from "../database/db-utils";
+import { oncePerDatabase, persistSoon } from "../database/db-utils";
 import { rowsFor, studyDayEnd, today } from "../study-core";
 import { withoutSyncStamp } from "../sync/schema";
 import { allCardKeys, newCardOrder } from "./cards";
@@ -111,10 +111,18 @@ const withTalkWrite = <T>(write: () => T): T => {
   }
 };
 
-export const recordTalkAnswer = (key: string, hintsUsed: number, gaveUp: boolean, filler?: string) =>
-  withTalkWrite(() => log.record(key, answerForHints(hintsUsed, gaveUp), new Date(), undefined, { hints: hintsUsed, filler: filler ?? null }));
+// 记账和撤销之后排一次落盘（增量里带着 talk_*，见 sync/tables.ts 的 cloud: false）。
+export const recordTalkAnswer = (key: string, hintsUsed: number, gaveUp: boolean, filler?: string) => {
+  const next = withTalkWrite(() => log.record(key, answerForHints(hintsUsed, gaveUp), new Date(), undefined, { hints: hintsUsed, filler: filler ?? null }));
+  persistSoon();
+  return next;
+};
 
-export const undoLastTalkAnswer = () => withTalkWrite(() => log.undoLast());
+export const undoLastTalkAnswer = () => {
+  const key = withTalkWrite(() => log.undoLast());
+  if (key) persistSoon();
+  return key;
+};
 
 export const replayTalkReviews = (onlyKeys?: Iterable<string>) => withTalkWrite(() => log.replay(onlyKeys, (key) => {
   withoutSyncStamp(() => getDatabase().run("INSERT OR IGNORE INTO talk_memory (card_key) VALUES (?)", [key]));

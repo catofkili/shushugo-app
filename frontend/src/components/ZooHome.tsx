@@ -437,6 +437,15 @@ export function ZooHome({
             <b>柚子商店</b>
           </button>
         </div>
+        {__EXP_TALK__ && (
+          // 样式写成内联：开关关着时整段摇掉，不在主包里留一份用不上的 CSS（小程序主包没有余量）。
+          <button className="ds-btn-soft" onClick={() => onNavigate("talk")}
+            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", marginTop: 12, padding: "10px 14px", textAlign: "left" }}>
+            <span aria-hidden="true"><Sticker name="icon-practice" size={28} /></span>
+            <span style={{ flex: 1 }}>开口练习</span>
+            <span style={{ padding: "2px 8px", borderRadius: 999, background: "var(--ds-surface)", color: "var(--ds-ink-3)", fontSize: 12, fontWeight: 700 }}>实验</span>
+          </button>
+        )}
       </section>
 
       {/* ④ 进度概览 —— 默认只给一行数，柱状图收进折叠里。

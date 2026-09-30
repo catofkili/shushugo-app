@@ -1,0 +1,31 @@
+/* 开口练习（实验功能，docs/DAILY_TALK_SPEC.md）。只被 TalkPage 引用：开关关着时整份不进包。
+   小程序里 split-route-css 按 talk- 前缀把它挪进 study/talk 分包。 */
+.talk-page { width: 100%; max-width: 640px; margin: 0 auto; color: var(--ds-ink); }
+.talk-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.talk-count, .talk-instruction, .talk-keyboard { color: var(--ds-ink-3); font-size: var(--ds-font-size-kicker); }
+.talk-card { overflow: hidden; }
+.talk-image { position: relative; width: 100%; padding-top: 75%; overflow: hidden; border-radius: var(--ds-radius-card); }
+.talk-scene-image { position: absolute; inset: 0; display: block; }
+.talk-body { padding: 20px; }
+.talk-title { margin: 0; color: var(--ds-ink); font-size: 20px; font-weight: 800; line-height: 1.5; overflow-wrap: anywhere; }
+.talk-prompt { margin: 12px 0; color: var(--ds-ink); font-size: 24px; font-weight: 800; line-height: 1.5; overflow-wrap: anywhere; }
+.talk-prompt-small { color: var(--ds-ink-2); font-size: 16px; font-weight: 600; }
+.talk-instruction { margin: 8px 0 16px; line-height: 1.6; }
+.talk-line { margin: 16px 0; overflow-wrap: anywhere; }
+.talk-line-partner { max-width: 90%; padding: 14px; border-radius: var(--ds-radius-inset); background: var(--ds-inset); }
+.talk-line-self { margin-left: auto; max-width: 90%; text-align: right; }
+.talk-speaker { margin: 0 0 4px; color: var(--ds-ink-3); font-size: var(--ds-font-size-kicker); }
+.talk-japanese { margin: 0; color: var(--ds-ink); font-size: 18px; font-weight: 700; line-height: 1.6; }
+.talk-answer { margin: 0; color: var(--ds-ink); font-size: 28px; font-weight: 800; line-height: 1.5; }
+.talk-translation { margin: 6px 0 0; color: var(--ds-ink-2); font-size: var(--ds-font-size-body); line-height: 1.7; }
+.talk-line .ds-chip { margin-top: 10px; }
+.talk-hints { margin-top: 16px; color: var(--ds-ink-2); font-size: var(--ds-font-size-body); line-height: 1.7; }
+.talk-hints p { margin: 8px 0 0; white-space: pre-line; overflow-wrap: anywhere; }
+.talk-note { margin: 16px 0 0; color: var(--ds-ink-2); font-size: var(--ds-font-size-body); line-height: 1.7; overflow-wrap: anywhere; }
+.talk-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 8px; margin-top: 24px; }
+.talk-hint-dots { font-size: var(--ds-font-size-kicker); color: var(--ds-ink-3); white-space: nowrap; }
+.talk-keyboard { margin: 12px 0 0; text-align: center; }
+.talk-loading { min-height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--ds-ink-3); font-size: var(--ds-font-size-body); }
+.talk-done { padding: 40px 0; }
+.talk-error { margin-bottom: 16px; }
+.talk-error > button { margin-top: 12px; }

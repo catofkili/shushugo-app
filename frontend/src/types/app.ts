@@ -4,6 +4,7 @@ export type Page =
   | "team"
   | "quick-study"
   | "vocab-test"
+  | "talk"
   | "weekly-report"
   | "grammar"
   | "grammar-foundation"
