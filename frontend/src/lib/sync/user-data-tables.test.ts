@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import initSqlJs from "sql.js";
 import { SYNCED_TABLES, STUDY_TIME_TABLE } from "./tables";
 import {
   USER_DATA_TABLES,
@@ -36,6 +38,21 @@ describe("出厂词库泄漏守卫", () => {
   it("清单里没有重复项", () => {
     const all = [...USER_DATA_TABLES, ...STATE_TABLES, ...SYNC_INFRA_TABLES, ...FACTORY_CONTENT_TABLES];
     expect(all.length).toBe(new Set(all).size);
+  });
+
+  it("开口练习三表同时登记在 schema、同步清单和泄漏守卫", async () => {
+    const SQL = await initSqlJs();
+    const db = new SQL.Database(new Uint8Array(readFileSync(new URL("../../../public/nihongo.db", import.meta.url))));
+    try {
+      db.run(readFileSync(new URL("../database/local-schema.sql", import.meta.url), "utf8"));
+      for (const table of ["talk_memory", "talk_reviews", "talk_tasks"]) {
+        expect(guarded.has(table)).toBe(true);
+        expect(SYNCED_TABLES.find((entry) => entry.table === table)?.cloud).toBe(false);
+        expect(db.exec(`PRAGMA table_info(${table})`)[0]?.values.length).toBeGreaterThan(0);
+      }
+    } finally {
+      db.close();
+    }
   });
 
   // ⚠️ 「守卫 ⊇ 同步表」漏得掉同步机制自己的表:`sync_tombstones` 活库里有 4,741 行
