@@ -16,6 +16,16 @@ export interface SyncedTable {
   /** 组成一行身份的列;绝不能使用业务表的自增 id。 */
   keys: string[];
   strategy: MergeStrategy;
+  /**
+   * false = 只在本机：照常挂触发器、进本地增量（重启后改动还在），但**不进云快照、合并不碰、
+   * 收到带它的云快照整次拒绝**。给还没上线的实验功能用（开口练习 talk_*，见 docs/DAILY_TALK_SPEC.md §3）。
+   *
+   * ⚠️ 为什么不能直接上云：assertSnapshotWritable 见到不认识的表就整次拒绝同步。开发版把新表推上云，
+   * 同一账号下已发布的旧版本（作者手机上的 1.0.0）从此同步不了。
+   * 上线时要先发「认得这张表、仍是 false」的版本给所有端（它们收到带它的快照会拒绝、不会削掉数据），
+   * 全部更新之后再改成 true。
+   */
+  cloud?: false;
 }
 
 // 只列用户数据表。words / grammar_points 这类出厂内容两端一致,不参与同步。
@@ -105,9 +115,12 @@ export const SYNCED_TABLES: SyncedTable[] = [
 
 /** 通用云同步的表清单。免费账号保留本机周报，但不把快照正文上传到云端。 */
 export const syncedTablesForCloud = (includeWeeklyReports: boolean): SyncedTable[] => (
-  includeWeeklyReports
-    ? SYNCED_TABLES
-    : SYNCED_TABLES.filter((entry) => entry.table !== "weekly_reports")
+  SYNCED_TABLES.filter((entry) => entry.cloud !== false && (includeWeeklyReports || entry.table !== "weekly_reports"))
+);
+
+/** 只在本机的表（cloud: false）。导出时连它们的墓碑也不带。 */
+export const localOnlyTables = (): string[] => (
+  SYNCED_TABLES.filter((entry) => entry.cloud === false).map((entry) => entry.table)
 );
 
 /**

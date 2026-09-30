@@ -77,6 +77,9 @@ export default defineConfig(({ command }) => ({
   ],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
+    // 实验功能「开口练习」的编译期开关（docs/DAILY_TALK_SPEC.md §0）：开发服务器和 vitest 默认开，
+    // 正式构建（网页 / iOS）默认关、整段摇掉。⚠️ 上线前谁也不许把 build 的默认值改成 true。
+    __EXP_TALK__: JSON.stringify(command === "serve" || process.env.SHUSHUGO_EXP_TALK === "1"),
   },
   build: {
     outDir: "dist",

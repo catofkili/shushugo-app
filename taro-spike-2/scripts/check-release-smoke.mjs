@@ -37,6 +37,7 @@ for (const [label, text] of Object.entries({
   timing: 'console.log("[preview-timing] Taro study")',
   devOnly: 'var o="/__live-snapshot"',
   mockFixture: 'var o="__SHUSHUGO_DEV_ONLY_FIXTURE__"',
+  expTalk: 'var m="__SHUSHUGO_EXP_TALK__"',
   devEnv: 'var e={"DEV":true}',
   privateKey: '"-----BEGIN PRIVATE KEY-----"',
   appSecret: 'var c={appSecret:"0123456789abcdef0123456789abcdef"}',
@@ -44,6 +45,7 @@ for (const [label, text] of Object.entries({
   accessToken: 'var c={accessToken:"0123456789abcdef"}'
 })) assert.equal(run({ 'common.js': `${clean};${text}` }), false, `${label} 要被拦住`);
 assert.equal(run({ 'common.js': clean, 'common.js.map': '{}' }), false, 'sourcemap 文件要被拦住');
+assert.equal(run({ 'common.js': clean, 'app.json': '{"pages":["pages/index/index"],"subPackages":[{"root":"study","pages":["talk/index"]}]}' }), false, '实验页面（开口练习）要被拦住');
 assert.equal(run({ 'common.js': clean }, { uploadWithSourceMap: true, urlCheck: true }), false, 'uploadWithSourceMap 要关');
 assert.equal(run({ 'common.js': clean }, { uploadWithSourceMap: false, urlCheck: false }), false, 'urlCheck 要开');
 assert.equal(run({ 'common.js': clean }, { uploadWithSourceMap: false, urlCheck: true }, '2.31.0'), false, '基础库版本要对齐');

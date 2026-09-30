@@ -32,6 +32,7 @@ import { createKanjiUnitTasks, materializeKanjiUnitIndex, recordKanjiUnitReview 
 import { loadKanjiUnitIndex } from "../kanji-unit-index";
 import { customWordId, importExternalWordList } from "../word-list-import";
 import { setState } from "../database/db-utils";
+import { SYNCED_TABLES } from "./tables";
 
 const seedPath = fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url));
 
@@ -485,6 +486,37 @@ describe("database snapshot merge", () => {
       .rejects.toThrow(/无法保留.*表/);
     expect(rows(testDb, "SELECT score FROM progress WHERE word_id = 1")).toEqual([{ score: 13 }]);
     remote.close();
+  });
+
+  it("cloud: false 的表只在本机：本地照常盖章留墓碑，不进快照、合并不碰，收到带它的快照整次拒绝", async () => {
+    const entry = { table: "x_local_only", keys: ["k"], strategy: "lww" as const, cloud: false as const };
+    SYNCED_TABLES.push(entry);
+    try {
+      testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+      testDb.run("CREATE TABLE x_local_only (k TEXT PRIMARY KEY, v TEXT)");
+      ensureSyncSchema();
+      testDb.run("INSERT INTO x_local_only (k, v) VALUES ('keep', 'a'), ('gone', 'b')");
+      testDb.run("DELETE FROM x_local_only WHERE k = 'gone'");
+      // 本地增量靠 sync_updated_at 和墓碑，这两样必须有
+      expect(rows(testDb, "SELECT sync_updated_at IS NOT NULL AS stamped FROM x_local_only")).toEqual([{ stamped: 1 }]);
+      expect(rows(testDb, "SELECT row_key FROM sync_tombstones WHERE table_name = 'x_local_only'")).toEqual([{ row_key: "gone" }]);
+
+      const snapshot = new SQL.Database(await exportSyncSnapshot());
+      expect(rows(snapshot, "SELECT name FROM sqlite_master WHERE name = 'x_local_only'")).toHaveLength(0);
+      expect(rows(snapshot, "SELECT row_key FROM sync_tombstones WHERE table_name = 'x_local_only'")).toHaveLength(0);
+
+      // 对端的普通快照合进来，本机那张表一行不动、墓碑还在
+      await mergeDatabaseBytes(snapshot.export());
+      expect(rows(testDb, "SELECT k, v FROM x_local_only")).toEqual([{ k: "keep", v: "a" }]);
+      expect(rows(testDb, "SELECT row_key FROM sync_tombstones WHERE table_name = 'x_local_only'")).toEqual([{ row_key: "gone" }]);
+
+      // 云端要是真带了这张表（上线后的新版本推的），本版本拒绝，而不是收下再在下一次上传时削掉
+      snapshot.run("CREATE TABLE x_local_only (k TEXT PRIMARY KEY, v TEXT, sync_updated_at TEXT, sync_origin_device TEXT)");
+      await expect(mergeDatabaseBytes(snapshot.export())).rejects.toThrow(/无法保留.*x_local_only/);
+      snapshot.close();
+    } finally {
+      SYNCED_TABLES.splice(SYNCED_TABLES.indexOf(entry), 1);
+    }
   });
 });
 
