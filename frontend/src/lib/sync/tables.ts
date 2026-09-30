@@ -46,6 +46,10 @@ export const SYNCED_TABLES: SyncedTable[] = [
   // 疑难连线卡（confusion-cards.ts），同一套：progress 检查点、reviews 事实、tasks 当天投影。
   { table: "confusion_progress", keys: ["group_key"], strategy: "lww" },
   { table: "confusion_tasks", keys: ["reviewed_on", "group_key"], strategy: "lww" },
+  // 实验开口练习只进本机增量，不进云快照（含撤销留下的墓碑）。
+  { table: "talk_memory", keys: ["card_key"], strategy: "lww", cloud: false },
+  { table: "talk_tasks", keys: ["reviewed_on", "card_key"], strategy: "lww", cloud: false },
+  { table: "talk_reviews", keys: ["sync_uid"], strategy: "append", cloud: false },
   // 反向卡的长期记忆。和 kanji_memory 同构:每个词一行,逐行 LWW。
   { table: "reverse_memory", keys: ["word_id"], strategy: "lww" },
   { table: "grammar_progress", keys: ["grammar_id"], strategy: "lww" },

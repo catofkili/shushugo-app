@@ -7,6 +7,7 @@
  */
 import type { WordAnswer } from "../types/vocabulary";
 import { getDatabase } from "./database";
+import type { SqlValue } from "./database/db-utils";
 import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
 import { ensureFsrsColumns, recordFsrsReview, type FsrsEntity } from "./fsrs-store";
 import { STUBBORN_DAILY_MISTAKES } from "./fsrs-scheduler";
@@ -20,6 +21,8 @@ export interface CardLogConfig {
   tasksTable: string;
   /** 除 known_forever 之外还要排掉的（比如「已掌握」的辨析组），写成 SQL 片段 */
   extraExclude?: string | (() => string);
+  /** 可按传入学习日取截止时间；旧卡默认仍取当前学习日，保持既有调度行为。 */
+  dayEnd?: (day: string) => Date;
 }
 
 export const createCardLog = (config: CardLogConfig) => {
@@ -86,7 +89,14 @@ export const createCardLog = (config: CardLogConfig) => {
     return wrongToday >= STUBBORN_DAILY_MISTAKES ? "stubborn" : "normal";
   };
 
-  const record = (key: string, answer: WordAnswer, now = new Date(), mode?: StepMode) => {
+  /** 额外业务列随同一条 INSERT 写入，不能另查「最后一条」再补写。旧调用不传时保持原行为。 */
+  const record = (key: string, answer: WordAnswer, now = new Date(), mode?: StepMode, extraColumns: Record<string, SqlValue> = {}) => {
+    const extra = Object.entries(extraColumns);
+    const baseColumns = [id, "answer", "reviewed_on", "reviewed_at", "scheduler_mode", "fsrs_params_version"];
+    if (extra.some(([column]) => !/^[a-z][a-z0-9_]*$/u.test(column) || baseColumns.includes(column) || column === "id" || column.startsWith("sync_"))) {
+      throw new Error("Invalid extra review column");
+    }
+    const columns = [...baseColumns, ...extra.map(([column]) => column)];
     ensure();
     if (!firstValue<number>(`SELECT COUNT(*) FROM ${memory} WHERE ${id} = ?`, [key], 0)) throw new Error(`Unknown ${memory} row: ${key}`);
     mode ??= stepMode(key, answer);
@@ -96,9 +106,9 @@ export const createCardLog = (config: CardLogConfig) => {
     updateCounters(key, fsrsAnswer, seenOn);
     if (answer === "known_forever") getDatabase().run(`UPDATE ${memory} SET known_forever = 1 WHERE ${id} = ?`, [key]);
     getDatabase().run(`
-      INSERT INTO ${reviewsTable} (${id}, answer, reviewed_on, reviewed_at, scheduler_mode, fsrs_params_version)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [key, answer, seenOn, now.getTime(), mode, FSRS_PARAMS_VERSION]);
+      INSERT INTO ${reviewsTable} (${columns.join(", ")})
+      VALUES (${columns.map(() => "?").join(", ")})
+    `, [key, answer, seenOn, now.getTime(), mode, FSRS_PARAMS_VERSION, ...extra.map(([, value]) => value)]);
     return next;
   };
 
@@ -143,7 +153,7 @@ export const createCardLog = (config: CardLogConfig) => {
       );
       return { review: count("m.seen_count > 0"), fresh: count("m.seen_count = 0") };
     }
-    const dayEnd = studyDayEnd().toISOString();
+    const dayEnd = (config.dayEnd?.(day) ?? studyDayEnd()).toISOString();
     const due = rowsFor(`
       SELECT ${id} FROM ${memory}
       WHERE ${exclude()} AND seen_count > 0 AND fsrs_due IS NOT NULL AND fsrs_due <= ?
@@ -172,7 +182,7 @@ export const createCardLog = (config: CardLogConfig) => {
   /** 当天还没毕业的下一张。Learning / Relearning 一律不算毕业（同 isGraduatedForDay）。 */
   const pickNext = (day = today(), excluded = new Set<string>()): string | null => {
     ensure();
-    const dayEnd = studyDayEnd().toISOString();
+    const dayEnd = (config.dayEnd?.(day) ?? studyDayEnd()).toISOString();
     const rows = rowsFor(`
       SELECT t.${id} AS k, m.fsrs_due, m.fsrs_state
       FROM ${tasksTable} t JOIN ${memory} m ON m.${id} = t.${id}
@@ -191,7 +201,7 @@ export const createCardLog = (config: CardLogConfig) => {
 
   const progress = (day = today()) => {
     ensure();
-    const dayEnd = studyDayEnd().toISOString();
+    const dayEnd = (config.dayEnd?.(day) ?? studyDayEnd()).toISOString();
     const total = firstValue<number>(`SELECT COUNT(*) FROM ${tasksTable} WHERE reviewed_on = ?`, [day], 0);
     const done = firstValue<number>(`
       SELECT COUNT(*) FROM ${tasksTable} t JOIN ${memory} m ON m.${id} = t.${id}
