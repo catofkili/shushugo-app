@@ -555,6 +555,32 @@ describe("占位行不参与 LWW", () => {
     expect(Number(rows(testDb, `SELECT seen_count FROM progress WHERE word_id = ${wordId}`)[0].seen_count)).toBe(9);
   });
 
+  it("重启之后的回填也不给占位行盖「现在」（新设备装完没当场同步、第二天才登录）", async () => {
+    const wordId = Number(rows(testDb, "SELECT MIN(id) AS id FROM words")[0].id);
+    const initPlaceholders = () => withoutSyncStamp(() => {
+      testDb.run("INSERT OR IGNORE INTO progress (word_id) SELECT id FROM words");
+    });
+
+    ensureUserTables();
+    initPlaceholders();
+    testDb.run("UPDATE progress SET seen_count = 9 WHERE word_id = ?", [wordId]);
+    testDb.run("UPDATE progress SET sync_updated_at = '2026-01-01T00:00:00.000Z' WHERE word_id = ?", [wordId]);
+    const snapshot = await exportSyncSnapshot();
+
+    testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
+    ensureSyncSchema();
+    ensureUserTables();
+    initPlaceholders();
+    // 冷启动：同一份库换一个实例重新打开，ensureSyncSchema 按实例再跑一遍（含元数据回填）
+    testDb = new SQL.Database(testDb.export());
+    ensureSyncSchema();
+    const stamped = rows(testDb, `SELECT sync_updated_at FROM progress WHERE word_id = ${wordId}`)[0].sync_updated_at;
+    expect(stamped === null || stamped === "1970-01-01T00:00:00.000Z").toBe(true);
+
+    await mergeDatabaseBytes(snapshot);
+    expect(Number(rows(testDb, `SELECT seen_count FROM progress WHERE word_id = ${wordId}`)[0].seen_count)).toBe(9);
+  });
+
   it("混合学习那两张表的占位行也不盖时间戳", async () => {
     const { materializeKanjiChars } = await import("../kanji-char-cards");
     const { materializeConfusionCards } = await import("../confusion-cards");
