@@ -1,6 +1,6 @@
 import type { WeeklyReport } from "../../lib/analytics/weekly";
 import { brandIconUrl, stickerUrl } from "../../components/CapybaraMascot";
-import { FONT_SANS, loadImage, roundRectPath, toPngBlob } from "../../lib/share-canvas";
+import { FONT_SANS, createShareCanvas, loadImage, roundRectPath, toPngBlob } from "../../lib/share-canvas";
 import { KEYWORD_NOTES, dottedRange, shortDate } from "./variants";
 
 /**
@@ -36,11 +36,11 @@ const hash = (text: string) => {
   return h >>> 0;
 };
 
+// 画布走 share-canvas 的 createShareCanvas（网页 / 小程序各一份）：小程序里 document.createElement("canvas")
+// 造出来的是没有 getContext 的 TaroElement，长图一张都出不来；那边的 loadImage 也要先有这张画布才能 createImage。
 const makeCanvas = () => {
-  const canvas = document.createElement("canvas");
+  const { canvas, ctx } = createShareCanvas();
   canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("canvas 不可用");
   ctx.textBaseline = "alphabetic";
   return { canvas, ctx };
 };
