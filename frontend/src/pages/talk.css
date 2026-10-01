@@ -57,7 +57,9 @@
 .talk-undo { display: flex; justify-content: center; margin-top: 12px; }
 .talk-done-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
 .talk-transcript { padding: 14px; margin-top: 16px; border-radius: var(--ds-radius-inset); background: var(--ds-inset); overflow-wrap: anywhere; }
-.talk-actions-mic { grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1.35fr); }
+/* 三颗时「提示 ○○○」要放得下（只听模式有 3 条提示）：提示和翻面一样宽，按钮里不折行 */
+.talk-actions-mic { grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1fr); }
+.talk-actions > button { padding-left: 12px; padding-right: 12px; white-space: nowrap; }
 .talk-mic { position: relative; padding: 0; }
 .talk-mic[aria-pressed="true"] { background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
 /* 微信禁用按钮的默认白字在浅底上看不清；识别中的状态仍要可读。 */
