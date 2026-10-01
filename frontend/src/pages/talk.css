@@ -57,10 +57,12 @@
 .talk-undo { display: flex; justify-content: center; margin-top: 12px; }
 .talk-done-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
 .talk-transcript { padding: 14px; margin-top: 16px; border-radius: var(--ds-radius-inset); background: var(--ds-inset); overflow-wrap: anywhere; }
-.talk-mic { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; }
+.talk-actions-mic { grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1.35fr); }
+.talk-mic { position: relative; padding: 0; }
+.talk-mic[aria-pressed="true"] { background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
 /* 微信禁用按钮的默认白字在浅底上看不清；识别中的状态仍要可读。 */
 .talk-mic.talk-recognizing { color: var(--ds-ink-3); }
-.talk-listening-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ds-primary); animation: talk-pulse 1s ease-in-out infinite; }
+.talk-listening-dot { position: absolute; top: 9px; right: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--ds-primary); animation: talk-pulse 1s ease-in-out infinite; }
 @keyframes talk-pulse { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .talk-listening-dot { animation: none; } }
 @media (min-width: 600px) { .talk-collection-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -76,3 +78,5 @@
 .talk-card .talk-image { padding-top: 56.25%; }
 .talk-group + .talk-group { margin-top: 24px; }
 .talk-group-title { margin: 0 0 10px; color: var(--ds-ink-2); font-size: var(--ds-font-size-section); font-weight: 800; }
+/* 矮屏（iPhone SE 375×667）：练习卡上的场景图再压扁，接话卡的「翻面」才留在一屏里 */
+@media (max-height: 700px) { .talk-card .talk-image { padding-top: 42%; } .talk-body { padding-top: 14px; } .talk-actions { margin-top: 16px; } }

@@ -236,16 +236,18 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
           {card.note && <p className="talk-note"><TalkNote text={card.note} /></p>}
         </>}
 
-        {!flipped && inputAvailable && <button type="button" className={`ds-btn-soft focus-ring talk-mic${recognizing ? " talk-recognizing" : ""}`} onClick={speak} aria-pressed={listening} disabled={recognizing}>
-          <Mic size={18} aria-hidden="true" />{recognizing ? "识别中…" : listening ? "在听…" : transcript ? "再说一次" : "说一句"}
-          {listening && !recognizing && <span className="talk-listening-dot" aria-hidden="true" />}
-        </button>}
         {!flipped && speechNote && <p className="talk-instruction talk-speech-note" role="status">{speechNote}</p>}
-        <div className="talk-actions">
+        {/* 「说一句」收进按钮行：单独占一行时 375×667 上接话卡的「翻面」会掉到底栏下面 */}
+        <div className={`talk-actions${!flipped && inputAvailable ? " talk-actions-mic" : ""}`}>
           {flipped ? <>
             <button type="button" className="ds-btn-soft focus-ring" onClick={() => answer(true)}>没说对</button>
             <button type="button" className="ds-btn focus-ring" onClick={() => answer(false)}>下一张</button>
           </> : <>
+            {inputAvailable && <button type="button" className={`ds-btn-soft focus-ring talk-mic${recognizing ? " talk-recognizing" : ""}`} onClick={speak}
+              aria-pressed={listening} disabled={recognizing} aria-label={recognizing ? "识别中" : listening ? "在听，点一下停" : "说一句"} title="说一句">
+              <Mic size={20} aria-hidden="true" />
+              {(listening || recognizing) && <span className="talk-listening-dot" aria-hidden="true" />}
+            </button>}
             <button type="button" className="ds-btn-soft focus-ring" onClick={hint}>
               提示 <span className="talk-hint-dots" aria-label={`已用 ${hintsUsed} 条提示，共 ${totalHints} 条`}>
                 {Array.from({ length: totalHints }, (_, index) => index < hintsUsed ? "●" : "○").join("")}
