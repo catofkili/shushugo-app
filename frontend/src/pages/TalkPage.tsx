@@ -4,7 +4,6 @@ import { JapaneseRubyText } from "../components/JapaneseRubyText";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { MascotSay } from "../components/MascotSay";
-import * as speech from "../lib/speech";
 import { today } from "../lib/study-core";
 import {
   TALK_MARKER, createTalkTasks, loadTalkContent, pickTalkNext, recordTalkAnswer,
@@ -12,7 +11,7 @@ import {
   canExtendTalkTasks, extendTalkTasks, undoLastTalkAnswer, talkEverAnswered, type TalkCard
 } from "../lib/talk";
 import { talkDoneImage, talkHeroImage, talkImageSrc } from "../lib/talk/image-src";
-import { canPlayTalkAudio } from "../lib/talk/audio";
+import { canPlayTalkAudio, playTalkAudio, stopTalkAudio } from "../lib/talk/audio";
 import "./talk.css";
 
 function TalkRuby({ sentence }: { sentence: string }) {
@@ -103,20 +102,24 @@ function PracticeCard({ card, firstToday, paused, onAnswer }: {
     if (!text) return;
     audioGeneration.current += 1;
     let active = true;
-    void canPlayTalkAudio().then(async (available) => {
+    void canPlayTalkAudio(text).then(async (available) => {
       if (!active) return;
       setAudio({ text, available });
-      if (available) await speech.playExample(text);
+      if (available) await playTalkAudio(text);
     }).catch(() => {
       if (active) setAudio({ text, available: false });
     });
-    return () => { active = false; audioGeneration.current += 1; };
+    return () => {
+      active = false;
+      audioGeneration.current += 1;
+      stopTalkAudio();
+    };
   }, [text, flipped]);
 
   const listen = () => {
     if (!canListen) return;
     const generation = audioGeneration.current;
-    void speech.playExample(text).catch(() => {
+    void playTalkAudio(text).catch(() => {
       if (generation === audioGeneration.current) setAudio({ text, available: false });
     });
   };
