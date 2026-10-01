@@ -390,7 +390,8 @@ export function TalkPage() {
         {due.length > 0 && <button type="button" className="ds-btn-soft focus-ring talk-review" onClick={() => start(null)}>复习 {due.length} 张</button>}
         <div className="talk-collection-grid">
           {scenes.map((scene) => <button type="button" key={scene.id} className="ds-btn-soft focus-ring talk-collection-item" onClick={() => start(scene.id)}>
-            <div className="talk-image"><CrossPlatformImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image"
+            {/* 30 张约 2 MB：网页上滚到了再下（小程序里图在包内，忽略这两个属性） */}
+            <div className="talk-image"><CrossPlatformImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image" loading="lazy" decoding="async"
               weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
             <p className="talk-collection-title">{scene.title}</p>
             <p className="talk-collection-remaining">
