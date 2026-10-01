@@ -6,7 +6,7 @@ import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { MascotSay } from "../components/MascotSay";
 import { today } from "../lib/study-core";
 import {
-  TALK_MARKER, loadTalkContent, materializeTalkCards, recordTalkAnswer,
+  TALK_MARKER, loadTalkContent, talkContent, materializeTalkCards, recordTalkAnswer,
   talkCard, talkFurigana, canUndoTalk, talkSceneSets, talkDueKeys, sceneSessionKeys,
   createTalkSession, advanceTalkSession, talkSessionProgress,
   undoLastTalkAnswer, talkEverAnswered, type TalkCard, type TalkSession
@@ -362,6 +362,11 @@ export function TalkPage() {
   };
 
   const progress = session ? talkSessionProgress(session) : null;
+  // 30 个场景平铺要滚十几行：按内容里的分组出小标题（吃喝 / 购物 / 出行……），组内按内容顺序。
+  const groups = talkContent()?.groups ?? [];
+  const sceneSections = groups.length
+    ? groups.map((group) => ({ ...group, scenes: scenes.filter((scene) => scene.group === group.id) })).filter((section) => section.scenes.length > 0)
+    : [{ id: "all", title: "", scenes }];
   const newScenes = scenes.filter((scene) => scene.collected && !initialCollection.has(scene.id));
   const inputAvailable = speechInputAvailable() && !micBlocked;
   const retry = () => { setError(""); setLoading(true); setAttempt((value) => value + 1); };
@@ -388,18 +393,21 @@ export function TalkPage() {
           </div>
         </section>}
         {due.length > 0 && <button type="button" className="ds-btn-soft focus-ring talk-review" onClick={() => start(null)}>复习 {due.length} 张</button>}
-        <div className="talk-collection-grid">
-          {scenes.map((scene) => <button type="button" key={scene.id} className="ds-btn-soft focus-ring talk-collection-item" onClick={() => start(scene.id)}>
-            {/* 30 张约 2 MB：网页上滚到了再下（小程序里图在包内，忽略这两个属性） */}
-            <div className="talk-image"><CrossPlatformImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image" loading="lazy" decoding="async"
-              weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
-            <p className="talk-collection-title">{scene.title}</p>
-            <p className="talk-collection-remaining">
-              {scene.collected ? <span className="talk-collected">已收集</span> : scene.seen > 0 ? `练过 ${scene.seen} / ${scene.total} 句` : `${scene.total} 句`}
-              {scene.due > 0 && <span> · 待复习 {scene.due}</span>}
-            </p>
-          </button>)}
-        </div>
+        {sceneSections.map((section) => <section key={section.id} className="talk-group">
+          {section.title && <h2 className="talk-group-title">{section.title}</h2>}
+          <div className="talk-collection-grid">
+            {section.scenes.map((scene) => <button type="button" key={scene.id} className="ds-btn-soft focus-ring talk-collection-item" onClick={() => start(scene.id)}>
+              {/* 30 张约 2 MB：网页上滚到了再下（小程序里图在包内，忽略这两个属性） */}
+              <div className="talk-image"><CrossPlatformImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image" loading="lazy" decoding="async"
+                weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
+              <p className="talk-collection-title">{scene.title}</p>
+              <p className="talk-collection-remaining">
+                {scene.collected ? <span className="talk-collected">已收集</span> : scene.seen > 0 ? `练过 ${scene.seen} / ${scene.total} 句` : `${scene.total} 句`}
+                {scene.due > 0 && <span> · 待复习 {scene.due}</span>}
+              </p>
+            </button>)}
+          </div>
+        </section>)}
       </> : <>
         {card ? <PracticeCard key={`${card.key}:${turn}`} card={card} firstToday={session.cursor === 0} showSceneTitle={!sceneId}
           inputAvailable={inputAvailable} onMicBlocked={() => setMicBlocked(true)}

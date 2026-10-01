@@ -70,7 +70,7 @@ export const talkSceneSets = (day = today()) => {
   return (talkContent()?.scenes ?? []).map((scene) => {
     const keys = scene.lines.flatMap((line, index) => line.self ? [`r:${scene.id}:${index}`] : []);
     const seen = keys.filter((key) => seenKeys.has(key)).length;
-    return { id: scene.id, title: scene.title, image: `/talk/scenes/${scene.id}.jpg`, due: keys.filter((key) => dueKeys.has(key)).length, collected: keys.length > 0 && seen === keys.length, seen, total: keys.length };
+    return { id: scene.id, title: scene.title, group: scene.group, image: `/talk/scenes/${scene.id}.jpg`, due: keys.filter((key) => dueKeys.has(key)).length, collected: keys.length > 0 && seen === keys.length, seen, total: keys.length };
   });
 };
 

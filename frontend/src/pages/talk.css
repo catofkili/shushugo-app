@@ -72,3 +72,5 @@
 .talk-replay { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: var(--ds-surface); color: var(--ds-ink-2); }
 /* 场景图在练习卡上裁成 16:9：接话卡在 375×812 上要把对方的话、提示、「翻面」都放进一屏。场景格子里仍是 4:3。 */
 .talk-card .talk-image { padding-top: 56.25%; }
+.talk-group + .talk-group { margin-top: 24px; }
+.talk-group-title { margin: 0 0 10px; color: var(--ds-ink-2); font-size: var(--ds-font-size-section); font-weight: 800; }

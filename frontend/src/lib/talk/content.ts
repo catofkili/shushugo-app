@@ -20,6 +20,8 @@ export interface TalkFormula {
 export interface TalkScene {
   id: string;
   title: string;
+  /** 首页场景格子按它分组（TalkContent.groups 里的 id）。 */
+  group?: string;
   note?: string;
   lines: Array<{
     speaker: string;
@@ -32,6 +34,8 @@ export interface TalkScene {
 
 export interface TalkContent {
   version: string;
+  /** 场景分组，按这个顺序在首页出小标题；组内按 scenes 的顺序。 */
+  groups?: Array<{ id: string; title: string }>;
   formulas: TalkFormula[];
   scenes: TalkScene[];
 }

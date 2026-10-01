@@ -160,6 +160,7 @@
 ```ts
 interface TalkContent {
   version: string;                // 内容版本，改内容就改
+  groups?: Array<{ id: string; title: string }>;  // 2026-10-02：首页场景格子的分组小标题（吃喝 / 购物 / 出行……），按这个顺序
   formulas: TalkFormula[];
   scenes: TalkScene[];
 }
@@ -177,6 +178,7 @@ interface TalkFormula {
 interface TalkScene {
   id: string;                     // "S01"
   title: string;                  // 「便利店：便当加热」
+  group?: string;                 // 属于哪个 groups[].id；verify 要求每个场景都有、每组都不空
   note?: string;                  // 场景下面那段提醒
   lines: Array<{
     speaker: string;              // 「店员」「顾客」……

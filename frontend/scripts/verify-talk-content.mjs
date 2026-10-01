@@ -124,6 +124,10 @@ for (const scene of content.scenes) {
     for (const id of line.formulas) assert.ok(formulaIdSet.has(id), scene.id + " references missing " + id);
   }
 }
+const groupIds = (content.groups ?? []).map((group) => group.id);
+assert.ok(groupIds.length > 0 && new Set(groupIds).size === groupIds.length, "groups must be non-empty and unique");
+for (const scene of content.scenes) assert.ok(groupIds.includes(scene.group), scene.id + " has unknown group " + scene.group);
+for (const id of groupIds) assert.ok(content.scenes.some((scene) => scene.group === id), "empty group " + id);
 assert.equal(sceneLineCount, 168, "the 30 scenes must contain all 168 corpus lines");
 // 语料文档是内容源：每个场景的表格和 JSON 逐句对得上（说话人、日文、中文），改一边忘了另一边就红。
 const corpus = readFileSync(path.join(here, "../../docs/DAILY_CONVERSATION_CORPUS.md"), "utf8");
