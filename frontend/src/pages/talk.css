@@ -61,3 +61,8 @@
 .talk-welcome-art { display: block; margin: 0 auto 12px; }
 .talk-welcome .talk-translation { margin: 8px 0 0; }
 .talk-welcome-start { width: 100%; margin-top: 24px; }
+/* 320 宽（iPhone SE 一代）上欢迎卡的「开始」要在一屏里 */
+@media (max-width: 360px) {
+  .talk-welcome { padding: 20px 16px; }
+  .talk-welcome-art { width: 112px !important; height: 112px !important; }
+}
