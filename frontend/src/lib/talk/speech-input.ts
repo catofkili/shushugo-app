@@ -23,7 +23,7 @@ const recognitionType = () => {
 
 export const speechInputAvailable = (): boolean => Boolean(recognitionType());
 
-export const listen = (onText: (text: string) => void, onEnd: () => void, onError: (error: string) => void): (() => void) => {
+export const listen = (onText: (text: string) => void, onEnd: () => void, onError: (error: string) => void, _onStatus?: (status: "recognizing") => void): (() => void) => {
   const Constructor = recognitionType();
   if (!Constructor) { onEnd(); return () => {}; }
   let recognition: Recognition | undefined;

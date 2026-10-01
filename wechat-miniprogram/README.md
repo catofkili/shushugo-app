@@ -72,6 +72,55 @@ Worker、iOS 端、同步协议一行都不用动；小程序这侧只换了传�
 5. `syncUrl` / `authUrl` / `entitlementUrl` 照旧填 Worker 地址 —— 客户端只用它取路径，
    **云函数只认自己的 `WORKER_ORIGIN`**，所以配错也不会把请求发去别处（不然它就是个开放代理）。
 
+### 开口练习的语音识别（talk-asr，实验功能）
+
+小程序走「15 秒内 MP3 录音 → `talk-asr` 云函数 → 腾讯云一句话识别 → 显示文字」，用户自己判断对错，
+不按识别准确度评分。网页仍用浏览器识别。微信同声传译插件不支持日语，因此这里用腾讯云官方
+`tencentcloud-sdk-nodejs-asr` SDK（云端安装依赖），由 SDK 处理 TC3-HMAC-SHA256 签名和 HTTPS，
+兼容没有全局 `fetch` 的 Node 16。固定上海地域、`16k_ja` 日语、直接传 base64；解码后的录音上限 600 KB。
+接口依据：[腾讯云一句话识别](https://cloud.tencent.com/document/api/1093/35646)。
+
+**以下步骤由作者手动执行；本任务不部署、不改云端配置、不上传小程序。**
+
+1. 在腾讯云控制台开通「语音识别」。计费：按次计费，有免费额度，以腾讯云价格页为准。
+2. 在「访问管理（CAM）」新建专用子账号，只授予 `QcloudASRFullAccess`，为该子账号生成 SecretId / SecretKey。
+   不使用主账号密钥，不写进源码、`config.json`、`cloudbaserc.json`、日志、截图或测试快照。
+3. 从 `wechat-miniprogram` 目录部署，明确指定现有环境。`cloudbaserc.json` 已登记这个函数的
+   Nodejs18.15 / 60 秒 / 256 MB / 云端安装依赖；没有密钥和触发器。沿用上面 `api` 的 CLI 方式：
+
+   ```bash
+   cd wechat-miniprogram
+   npx @cloudbase/cli login
+   tcb fn deploy talk-asr -e cloud1-d3g7dauie3961575b
+   ```
+
+4. 与 `api` 一样，**环境变量必须用 tcb 推送**，不要以为开发者工具上传 `config.json` 就配好了。
+   在本机终端交互输入密钥，关闭命令回显；下面用 zsh 的隐藏输入，不在仓库里生成密钥文件：
+
+   ```zsh
+   set +x
+   read -rs 'TALK_ASR_SECRET_ID?SecretId: '; print
+   read -rs 'TALK_ASR_SECRET_KEY?SecretKey: '; print
+   tcb config update fn talk-asr -e cloud1-d3g7dauie3961575b \
+     --env "TALK_ASR_SECRET_ID=$TALK_ASR_SECRET_ID" \
+     --env "TALK_ASR_SECRET_KEY=$TALK_ASR_SECRET_KEY" --env-mode merge
+   unset TALK_ASR_SECRET_ID TALK_ASR_SECRET_KEY
+   ```
+
+   这是现有 `tcb config update fn api` 的同一命令格式，两个 `--env` 从 shell 变量取值；
+   `merge` 保留其它环境变量。请在自己的终端执行，不开录屏或收集完整 CLI 输出（参数中含密钥）。
+   [CLI 配置命令说明](https://docs.cloudbase.net/cli-v1/config/manage)。
+   未配任一变量时函数直接返回 `not_configured`，不调用腾讯云；函数未部署也显示「语音识别还没开通」，
+   并在本次进程内隐藏识别按钮。之后部署或补好密钥需重新启动小程序才能恢复入口。
+5. 上线前在小程序后台「用户隐私保护指引」补上「录音」用途：用于日语开口练习的语音转文字，
+   音频发送给云函数及腾讯云语音识别，仅向用户展示识别文字，不用于准确度评分。
+   按微信当前要求完成录音权限及隐私授权的真机验收。
+
+本地只用 `SHUSHUGO_EXP_TALK=1 npm run build:weapp` 自测；带开关的包会被 `check:release` 拦住，
+**不许上传、提审**。部署函数也不等于开放发布闸门。先用模拟器 / 真机确认允许录音、主动停止、
+「识别中…」、日语文字和错误提示，再按 `docs/DAILY_TALK_SPEC.md` 的上线清单处理。
+录音或识别失败可继续直接开口，不影响翻面和自行判断。函数只返回文字或错误码，不记录音频和密钥。
+
 ### ⚠️ `workers.dev` 从大陆被墙，Worker 必须绑自己的域名
 
 用探针云函数实测（2026-09-19，上海地域）：`https://…workers.dev/…` **8 秒超时**，同一时刻

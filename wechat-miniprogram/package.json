@@ -35,7 +35,8 @@
     "build-data": "node scripts/build-data-modules.mjs",
     "lint-undef": "node scripts/lint-undef.mjs",
     "text-decoder-smoke": "node scripts/text-decoder-smoke.mjs",
-    "lazy-json-proxy-smoke": "node scripts/lazy-json-proxy-smoke.cjs"
+    "lazy-json-proxy-smoke": "node scripts/lazy-json-proxy-smoke.cjs",
+    "talk-asr-smoke": "node scripts/talk-asr-smoke.mjs"
   },
   "devDependencies": {
     "miniprogram-automator": "^0.12.1"

@@ -38,6 +38,13 @@
           "config": "0 0 20 * * * *"
         }
       ]
+    },
+    {
+      "name": "talk-asr",
+      "runtime": "Nodejs18.15",
+      "timeout": 60,
+      "memorySize": 256,
+      "installDependency": true
     }
   ]
 }

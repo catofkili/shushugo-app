@@ -58,6 +58,8 @@
 .talk-done-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
 .talk-transcript { padding: 14px; margin-top: 16px; border-radius: var(--ds-radius-inset); background: var(--ds-inset); overflow-wrap: anywhere; }
 .talk-mic { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; }
+/* 微信禁用按钮的默认白字在浅底上看不清；识别中的状态仍要可读。 */
+.talk-mic.talk-recognizing { color: var(--ds-ink-3); }
 .talk-listening-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ds-primary); animation: talk-pulse 1s ease-in-out infinite; }
 @keyframes talk-pulse { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .talk-listening-dot { animation: none; } }

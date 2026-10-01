@@ -59,6 +59,7 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
   const audioGeneration = useRef(0);
   const [transcript, setTranscript] = useState("");
   const [listening, setListening] = useState(false);
+  const [recognizing, setRecognizing] = useState(false);
   const [speechNote, setSpeechNote] = useState("");
   const stopInput = useRef<(() => void) | null>(null);
   const inputGeneration = useRef(0);
@@ -69,6 +70,7 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
     stopInput.current = null;
     speaking.current = false;
     setListening(false);
+    setRecognizing(false);
   };
   useEffect(() => () => {
     inputGeneration.current += 1;
@@ -76,7 +78,7 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
     stopTalkAudio();
   }, []);
   const speak = () => {
-    if (flipped || !inputAvailable) return;
+    if (flipped || !inputAvailable || recognizing) return;
     if (speaking.current) { stopInput.current?.(); return; }
     stopTalkAudio();
     audioGeneration.current += 1;
@@ -91,6 +93,7 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
       if (generation !== inputGeneration.current) return;
       speaking.current = false;
       setListening(false);
+      setRecognizing(false);
       stopInput.current = null;
     }, (error) => {
       if (generation !== inputGeneration.current) return;
@@ -99,6 +102,13 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
         setSpeechNote("没有麦克风权限，直接出声说也可以");
         onMicBlocked();
       } else if (error === "no-speech") setSpeechNote("没听到，再说一次");
+      else if (error === "not-configured") {
+        setSpeechNote("语音识别还没开通");
+        onMicBlocked();
+      } else if (error === "too-long") setSpeechNote("说得太长了，分开说");
+      else setSpeechNote("没识别出来，再说一次");
+    }, () => {
+      if (generation === inputGeneration.current) setRecognizing(true);
     });
   };
   const flip = () => { stopSpeaking(); setFlipped(true); };
@@ -226,9 +236,9 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
           {card.note && <p className="talk-note"><TalkNote text={card.note} /></p>}
         </>}
 
-        {!flipped && inputAvailable && <button type="button" className="ds-btn-soft focus-ring talk-mic" onClick={speak} aria-pressed={listening}>
-          <Mic size={18} aria-hidden="true" />{listening ? "在听…" : transcript ? "再说一次" : "说一句"}
-          {listening && <span className="talk-listening-dot" aria-hidden="true" />}
+        {!flipped && inputAvailable && <button type="button" className={`ds-btn-soft focus-ring talk-mic${recognizing ? " talk-recognizing" : ""}`} onClick={speak} aria-pressed={listening} disabled={recognizing}>
+          <Mic size={18} aria-hidden="true" />{recognizing ? "识别中…" : listening ? "在听…" : transcript ? "再说一次" : "说一句"}
+          {listening && !recognizing && <span className="talk-listening-dot" aria-hidden="true" />}
         </button>}
         {!flipped && speechNote && <p className="talk-instruction talk-speech-note" role="status">{speechNote}</p>}
         <div className="talk-actions">

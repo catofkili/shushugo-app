@@ -1,0 +1,11 @@
+{
+  "name": "talk-asr",
+  "version": "1.0.0",
+  "private": true,
+  "description": "实验功能：日语录音转文字，不评分",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "tencentcloud-sdk-nodejs-asr": "4.1.315"
+  }
+}
