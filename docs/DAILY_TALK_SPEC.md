@@ -300,3 +300,5 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
    会把原生代码带进发布包，所以和第 5 条一起做。
 8. （2026-10-02 加）**小程序录音**：小程序后台「用户隐私保护指引」补「录音」用途；云函数 `talk-asr` 部署 + 腾讯云子账号密钥只放云函数环境变量；
    上线前把 480×360 的预览图换成云存储的原图（同第 3 条），删 `talk-scenes-weapp.cjs`。
+   ⚠️ `talk-asr` 现在**没有按用户限次**：只要有 OPENID 就能反复调，腾讯云按次计费。上线前加每个 OPENID 每天的上限
+   （云数据库计数，或者挪到 Worker 走现有的 D1 限速），超了返回 `too_many`、页面说「今天说得够多了」。
