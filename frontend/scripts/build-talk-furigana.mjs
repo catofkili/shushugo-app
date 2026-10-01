@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // 只读内容 JSON，不碰出厂库或学习库；分词词典只在构建期使用。
 import assert from 'node:assert/strict';
-import { talkAudioSentences } from '../src/lib/talk/sentences.ts';
+import { hintEnd, skeletonRevealed, talkAudioSentences } from '../src/lib/talk/sentences.ts';
 import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -81,13 +81,16 @@ for (const note of [...content.formulas.map(f => f.note), ...content.scenes.map(
   for (const match of note.matchAll(/「([^」]+)」/gu)) if (/[ぁ-んァ-ヶ]/u.test(match[1])) sentences.add(match[1]);
 }
 const table = Object.fromEntries([...sentences].map(sentence => [sentence, annotate(sentence)]));
-for (const sentence of answers) {
-  const chars = [...sentence];
-  let end = chars.slice(0, Math.max(2, Math.ceil(chars.length * 0.4))).join('').length;
-  // 提示不能把一块汉字截半截（領収書 → 領収），否则无法保留正确的读音。
-  const crossing = table[sentence].find(a => a.start < end && a.start + a.length > end);
-  if (crossing) end = crossing.start + crossing.length;
+// 「开头几个字」提示的前缀也要有注音；切点和卡片共用 hintEnd（不把一块汉字截半截，領収書 → 領収）。
+const addPrefix = (sentence, after) => {
+  const end = hintEnd(sentence, table[sentence], after);
   table[sentence.slice(0, end) + '…'] = table[sentence].filter(a => a.start + a.length <= end);
+};
+for (const sentence of answers) addPrefix(sentence, 0);
+for (const formula of content.formulas) for (const group of formula.fillers) {
+  const fill = text => text.replace(/\[([^\]]+)\]/gu, (_, slot) => group[slot].ja);
+  const answer = fill(formula.pattern);
+  addPrefix(answer, skeletonRevealed(fill(formula.skeleton), answer));
 }
 for (const sentence of Object.keys(overrides)) assert.ok(sentence in table, `过期覆盖句：${sentence}`);
 if (process.argv.includes('--check')) {

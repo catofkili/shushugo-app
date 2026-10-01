@@ -1,4 +1,5 @@
 import { firstValue, rowsFor } from "../study-core";
+import { hintEnd, skeletonRevealed } from "./sentences";
 import { talkFurigana, talkContent, type TalkFormula, type TalkFiller, type TalkContent } from "./content";
 
 export type TalkHintLevel = 0 | 1 | 2 | 3;
@@ -48,13 +49,7 @@ export const sceneSessionKeys = (sceneId: string, content: TalkContent | null = 
 
 const slotNames = (formula: TalkFormula): string[] => [...new Set([...formula.pattern.matchAll(/\[([^\]]+)\]/gu)].map((match) => match[1]))];
 const fillerText = (formula: TalkFormula, group: Record<string, TalkFiller>): string => slotNames(formula).map((slot) => group[slot].ja).join("/");
-const answerStart = (answer: string): string => {
-  const chars = [...answer];
-  let end = chars.slice(0, Math.max(2, Math.ceil(chars.length * 0.4))).join("").length;
-  const crossing = talkFurigana(answer).find((a) => a.start < end && a.start + a.length > end);
-  if (crossing) end = crossing.start + crossing.length;
-  return `${answer.slice(0, end)}…`;
-};
+const answerStart = (answer: string, after = 0): string => `${answer.slice(0, hintEnd(answer, talkFurigana(answer), after))}…`;
 
 const pickFillers = (formula: TalkFormula, key: string, random: () => number): Record<string, TalkFiller> | null => {
   if (!formula.fillers.length) return null;
@@ -105,7 +100,7 @@ export const talkCard = (key: string, options: TalkCardOptions = {}): TalkCard |
       kind: "formula",
       ...(scene ? { sceneId: scene.id, sceneTitle: scene.title, image: `/talk/scenes/${scene.id}.jpg` } : {}),
       prompt,
-      hints: [fillJa(formula.skeleton), answerStart(answer)],
+      hints: [fillJa(formula.skeleton), answerStart(answer, skeletonRevealed(fillJa(formula.skeleton), answer))],
       answer: { ja: answer, zh: prompt },
       note: formula.note,
       filler: fillerText(formula, group)

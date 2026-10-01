@@ -133,7 +133,8 @@ describe("开口练习内容（独立 fixture，正式内容另一个任务负�
     expect(card.filler).toBe("お茶/塩");
     expect(card.prompt).toBe("比较：茶和盐");
     expect(card.answer).toEqual({ ja: "お茶と塩は、どう違いますか。", zh: "比较：茶和盐" });
-    expect(card.hints).toEqual(["お茶と塩は ……", "お茶と塩は、…"]);
+    // 第 2 条提示在骨架露出的「お茶と塩は」之后再露剩下的一半，不能只多一个「、」
+    expect(card.hints).toEqual(["お茶と塩は ……", "お茶と塩は、どう違い…"]);
     expect(card.image).toBeUndefined();
     expect(talkCard("f:F02", { random: () => 0 })?.image).toBe("/talk/scenes/S01.jpg");
   });
@@ -173,5 +174,19 @@ describe("开口练习内容（独立 fixture，正式内容另一个任务负�
     testDb.run("CREATE TABLE talk_reviews (id INTEGER PRIMARY KEY, card_key TEXT, reviewed_at INTEGER, filler TEXT)");
     testDb.run("INSERT INTO talk_reviews VALUES (1, 'f:F11', 1, 'お茶/塩')");
     expect(talkCard("f:F11", { random: () => 0 })?.filler).toBe("お茶/塩");
+  });
+});
+
+describe("「开头几个字」提示的切点（卡片和注音表共用）", () => {
+  it("骨架露了开头时至少再露 2 个字，且永远不把整句露光", async () => {
+    const { hintEnd, skeletonRevealed } = await import("./sentences");
+    expect(skeletonRevealed("お水を ……", "お水をお願いします。")).toBe(3);
+    expect(skeletonRevealed("……たいんですが。", "席を変えたいんですが。")).toBe(0);
+    expect(skeletonRevealed("別の …", "お水をお願いします。")).toBe(0);
+    expect("お水をお願いします。".slice(0, hintEnd("お水をお願いします。", [], 3))).toBe("お水をお願いし");
+    expect("はい。".slice(0, hintEnd("はい。", [], 2))).toBe("はい");
+    expect(hintEnd("駅", [], 0)).toBe(1);
+    // 不把一块注音汉字切成两半
+    expect(hintEnd("領収書。", [{ start: 0, length: 3 }], 0)).toBe(3);
   });
 });
