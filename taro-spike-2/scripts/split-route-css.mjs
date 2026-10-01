@@ -16,23 +16,39 @@ const routes = {
   team: 'study/team/index.wxss',
   yuzuShop: 'content-pages/yuzu-shop/index.wxss',
   weeklyReport: 'content-pages/weekly-report/index.wxss',
+  wordList: 'study/word-list/index.wxss',
+  quickStudy: 'study/quick-study/index.wxss',
+  confusion: 'study/confusion/index.wxss',
+  kanjiReadings: 'study/kanji-readings/index.wxss',
   // 实验功能「开口练习」：只有 SHUSHUGO_EXP_TALK=1 的预览构建里才有 talk- 类（docs/DAILY_TALK_SPEC.md §0）
   talk: 'study/talk/index.wxss'
 };
 
-function targetPackage(selector) {
+const prefixRoutes = [
+  [['yz-'], [routes.yuzuShop]],
+  [['zoo-tm-'], [routes.team]],
+  [['weekly-report', 'wr-'], [routes.weeklyReport]],
+  [['vt-'], [routes.vocabTest]],
+  [['talk-'], [routes.talk]],
+  [['wl-'], [routes.wordList]],
+  [['quick-'], [routes.quickStudy]],
+  [['cf-'], [routes.confusion, routes.kanjiReadings]],
+  [['kr-'], [routes.kanjiReadings]]
+];
+
+function targetPackages(selector) {
   const classes = [];
   selectorParser((tree) => tree.walkClasses((node) => classes.push(node.value))).processSync(selector);
   const owners = new Set();
   for (const name of classes) {
-    if (name.startsWith('yz-')) owners.add(routes.yuzuShop);
-    else if (name.startsWith('zoo-tm-')) owners.add(routes.team);
     // The curtain is portaled from the home tab as well as the weekly-report route.
-    else if (name.startsWith('weekly-report') || (name.startsWith('wr-') && name !== 'wr-entrance-veil')) owners.add(routes.weeklyReport);
-    else if (name.startsWith('vt-') && !name.startsWith('vt-timer')) owners.add(routes.vocabTest);
-    else if (name.startsWith('talk-')) owners.add(routes.talk);
+    if (name === 'wr-entrance-veil' || name.startsWith('vt-timer')) continue;
+    const match = prefixRoutes.find(([prefixes]) => prefixes.some((prefix) => name.startsWith(prefix)));
+    if (match) owners.add(match[1]);
   }
-  return owners.size === 1 ? [...owners][0] : null;
+  // Keep selectors spanning different prefix families global, as before.
+  // A single family can be shared by several pages (cf-); each gets a clone.
+  return owners.size === 1 ? [...owners][0] : [];
 }
 
 function appendWrappedRule(sourceRule, rule, route) {
@@ -54,9 +70,9 @@ appCss.walkRules((rule) => {
   selectorParser((tree) => {
     tree.each((selector) => {
       const text = selector.toString();
-      const packageName = targetPackage(text);
-      if (!packageName) keep.push(text);
-      else {
+      const packageNames = targetPackages(text);
+      if (!packageNames.length) keep.push(text);
+      for (const packageName of packageNames) {
         const selectors = groups.get(packageName) ?? [];
         selectors.push(text);
         groups.set(packageName, selectors);
