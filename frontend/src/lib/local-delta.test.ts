@@ -71,6 +71,41 @@ beforeEach(() => {
 });
 
 describe("collectDelta / applyDelta", () => {
+  it("结构指纹不进增量：旧快照 + 增量回放出来的新指纹会让启动跳过建表（2026-09-30 修）", () => {
+    const { restored, delta } = roundTrip(() => {
+      origin.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('runtime_schema_user_ddl', 'new-fp')");
+      origin.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('runtime_schema_sync_ddl', 'new-fp')");
+      origin.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('ordinary_state', 'kept')");
+    });
+    const keys = (delta.rows.app_state ?? []).map((row) => String(row.key));
+    expect(keys).toContain("ordinary_state");
+    expect(keys.filter((key) => key.startsWith("runtime_schema_"))).toEqual([]);
+    expect(rows(restored, "SELECT value FROM app_state WHERE key = 'runtime_schema_user_ddl'").map((row) => row.value)).not.toContain("new-fp");
+  });
+
+  it("快照之后运行时加的列（fsrs_* 这种）回放时补上列、值不丢（2026-10-01 修）", () => {
+    const { restored } = roundTrip(() => {
+      origin.run("ALTER TABLE progress ADD COLUMN x_runtime_col TEXT");
+      origin.run("UPDATE progress SET x_runtime_col = 'kept' WHERE word_id = 1");
+    });
+    expect(rows(restored, "SELECT x_runtime_col FROM progress WHERE word_id = 1")).toEqual([{ x_runtime_col: "kept" }]);
+  });
+
+  it("指纹对上了、但有同步表缺同步列时，重建结构而不是在回填里抛错打不开", () => {
+    testDb = origin;
+    // 用出厂库里就有的表：表的集合不变，同步指纹才会「对上」（换成新表的话指纹本来就对不上，测不到）
+    origin.run("DROP TABLE checkins");
+    origin.run("CREATE TABLE checkins (checked_on TEXT PRIMARY KEY)");
+    origin.run("INSERT INTO checkins VALUES ('2026-09-30')");
+    const reopened = new SQL.Database(origin.export());
+    testDb = reopened;
+    expect(() => ensureSyncSchema()).not.toThrow();
+    expect(rows(reopened, "SELECT COUNT(*) AS n FROM pragma_table_info('checkins') WHERE name = ?", [SYNC_UPDATED_COL])[0].n).toBe(1);
+    const again = new SQL.Database(reopened.export());
+    testDb = again;
+    expect(() => ensureSyncSchema()).not.toThrow();
+  });
+
   it("快照自带水位线,回放前读得回来", () => {
     const restored = new SQL.Database(snapshot);
     testDb = restored;

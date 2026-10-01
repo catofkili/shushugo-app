@@ -19,6 +19,22 @@
   ],
   "pairs": [
     {
+      "web": "frontend/src/pages/TalkPage.tsx",
+      "mini": [
+        "frontend/src/pages/TalkPage.tsx",
+        "taro-spike-2/src/study/talk/index.tsx"
+      ],
+      "reason": "开口练习仅在 Taro 实验预览版登记；小程序直接编译同一份 TalkPage.tsx，不维护第二份页面。运行验收见 docs/DAILY_TALK_WEAPP_PREVIEW.md。"
+    },
+    {
+      "web": "frontend/src/pages/talk.css",
+      "mini": [
+        "frontend/src/pages/talk.css",
+        "taro-spike-2/scripts/split-route-css.mjs"
+      ],
+      "reason": "同一份 talk.css 经 Taro/PostCSS 编译，talk- 规则由 split-route-css 移入 study/talk/index.wxss；无独立原生样式副本。"
+    },
+    {
       "web": "frontend/src/components/AppNavigation.tsx",
       "mini": [
         "taro-spike-2/src/platform/route-table.cjs"

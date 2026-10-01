@@ -29,7 +29,12 @@ const definitions = [
   ['weekly-report', 'content-pages/weekly-report/index', false, 'content-pages'],
   ['yuzu-shop', 'content-pages/yuzu-shop/index', false, 'content-pages'],
   ['achievements', 'content-pages/achievements/index', false, 'content-pages'],
-  ['about', 'content-pages/about/index', false, 'content-pages']
+  ['about', 'content-pages/about/index', false, 'content-pages'],
+  // 实验功能「开口练习」：只有 SHUSHUGO_EXP_TALK=1 的构建才登记这一页，发布包里没有（docs/DAILY_TALK_SPEC.md §0）。
+  // app.config.js 在 node 里读这份时看环境变量；打进包里的这份由 DefinePlugin 把 __EXP_TALK__ 换成字面量。
+  ...((typeof __EXP_TALK__ !== 'undefined' ? __EXP_TALK__ : process.env.SHUSHUGO_EXP_TALK === '1')
+    ? [['talk', 'study/talk/index', false, 'study']]
+    : [])
 ];
 
 module.exports = definitions.map(([page, path, tab, subpackage]) => ({

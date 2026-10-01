@@ -12,6 +12,28 @@
 
 **只要改了前端，就要主动做视觉检查**：在独立端口打开实际页面并查看运行画面或截图，至少检查目标页面和窄屏布局，确认没有遮挡、溢出、裁切、错位或不可见/不可点的控件；小程序界面有改动时也要在微信开发者工具里检查对应页面。按检查结果修正后再看一次。5173 是用户正在学习的页面，不得用它验证、刷新或触发热更新；遵守上面的同提交双端要求，并参照 [`docs/MINIPROGRAM_SYNC_PLAN.md`](docs/MINIPROGRAM_SYNC_PLAN.md) 做小程序运行和两端截图检查。
 
+## ⚠️ 开口练习（日常会话）是实验功能，不许进任何发布包（2026-09-30）
+
+用户原话：「这个功能初期肯定上不了，要备注好，不要把断头工作上传到要发布的小程序 / App 上」。
+规格和上线清单在 [`docs/DAILY_TALK_SPEC.md`](docs/DAILY_TALK_SPEC.md)，内容源是 `docs/DAILY_CONVERSATION_CORPUS.md`。
+
+- **唯一开关是编译期常量 `__EXP_TALK__`**：vite dev / vitest 为 true；`vite build`（网页、iOS）和 `taro build` 默认 false，
+  只有 `SHUSHUGO_EXP_TALK=1` 才开（只给自测 / 小程序预览码）。小程序页面登记在 `route-table.cjs` 里也挂着同一个开关。
+- **`lib/talk/` 只许被三个入口引用**（路由表、主页入口、小程序 route-table），每处包在 `__EXP_TALK__` 里；
+  `lib/talk/isolation.test.ts` 钉着。别的模块一 import，关着开关也摇不掉。
+- 三道拦截：`taro-spike-2` 的 `check:release` 拦 app.json 里的 talk 页和 `__SHUSHUGO_EXP_TALK__` 指纹；
+  `scripts/build-ios.sh` 见到 `SHUSHUGO_EXP_TALK` 就退出、构建完再搜指纹。**带开关构建的小程序包永远不许上传。**
+- ⚠️ **`talk_*` 三张表是 `cloud: false`（只在本机）**：合并前 `assertSnapshotWritable` 见到不认识的表会整次拒绝同步，
+  作者的 5173 开发版打开了这个功能，只要把 `talk_*` 推上云，作者手机上的已发布版本就再也同步不了。
+  `cloud: false` = 照常盖章 / 留墓碑 / 进本地增量，但不进云快照（墓碑也不带）、合并不碰、收到带它的快照整次拒绝。
+  上线时先发「认得但仍 false」的版本给所有端，全部更新后再改成上云（规格 §7）。
+- 上线前谁也不许把 `__EXP_TALK__` 的默认值改成 true。
+- **现状（2026-10-01，作者旅行期间 Claude 全权做完）**：网页 / iOS 开发版和小程序预览版都能完整走通——
+  欢迎卡、公式卡（每次换词，新用户只挑 N5/N4 的词）、接话卡（先听对方再接话）、提示折算评分、注音（541 句，读音人工核过）、
+  VOICEVOX 音频（329 句，网页 / iOS；小程序预览版没有声音、直接显示原文）、场景图鉴（15 张水豚 × 鳄鱼场景图）、再练 5 张。
+  上线还差的列在规格 §7（音频上云、`cloud: false` 改上云的发版顺序、去掉开关和三道拦截、Pro / 成就是否挂钩问作者）。
+  小程序预览版的验收记录：`docs/DAILY_TALK_WEAPP_PREVIEW.md`。
+
 ## ⚠️ 查我的真实学习数据：`cd frontend && npm run db -- <词>`
 
 **每次新开聊天先看这里，不要再去仓库里翻 .db 文件，也别一上来就连真实 Chrome。**
@@ -1022,6 +1044,25 @@ iPhone 小程序真机计时：冷启动 14 秒，其中「增量回放」13.4 �
 - ⚠️ 别把压实改成 `requestFullSnapshot()` + `scheduleSave()`：`markSnapshotLoaded()` 紧接着会把 `snapshotDb` 设回来，请求就丢了；
   而且那样会抬 revision、触发一次云同步。判据在 `storage-durability.test.ts`「启动回放的增量行数多」。
 - 同类问题还可能在云同步合并（`sync/merge.ts`）里：它也是逐行 `db.run`。真机上登录后第一次同步很慢时先查这里。
+
+### ⑨ 结构指纹不进增量；指纹对上了也要确认同步列真在（2026-09-30）
+
+`runtime_schema_user_ddl` / `runtime_schema_sync_ddl` 是「这份库已经跑过哪一版建表」的指纹，存在 `app_state`。
+它们原来会跟着每 2 秒一次的增量走，而建表 / 加列只有整库快照（最多 5 分钟一次）带得走。于是：
+带新表的版本第一次启动后 5 分钟内关页面 → 下次 = 旧快照（没有新表）+ 增量回放出来的**新指纹** → 指纹说「已是最新」、建表被跳过 →
+新表之后被模块自己懒建出来、没有同步列 → 同步指纹也被存下 → 再下一次启动 `backfillMissingSyncMetadata` 撞上
+`no such column: sync_updated_at`，**整个 App 停在「本地词库读取失败」**（开口练习预览里实测到，作者 5173 每次合并带新表的代码都可能碰上）。
+
+- `collectDelta` 不收 `runtime_schema_*`（`SCHEMA_FINGERPRINT_FILTER`）：指纹只跟整库快照走。
+- `ensureSyncSchema` 指纹对上了也用一条查询确认同步表都有 `sync_updated_at`，缺了重跑结构，不在回填里抛错。
+- ⚠️ **同步表别在模块里自己 `CREATE TABLE`**，只写进 `local-schema.sql`（`ensureKanjiCharTables` / `ensureConfusionCardTables`
+  还留着那种兜底 DDL，有上面两条护着不会再出事，但别照抄）。
+- 判据在 `local-delta.test.ts` 那两条（去掉修复都会红）。
+- 代价：带新表的版本第一次启动后、整库快照写下去之前，新表里的改动在增量回放时会被跳过（回放早于建表），最多丢一次启动后几分钟的那几行。
+- **运行时加的列同理**（2026-10-01）：`ensureFsrsColumns` 给 talk / 汉字卡 / 连线卡补的 `fsrs_*` 列只有整库快照带得走，
+  回放增量时原来按「快照里有的列」过滤，加列之后写的值被静默丢掉（实测：开口练习答对的卡重启后 FSRS 清零）。
+  现在 `applyDelta` 先把增量里出现、快照里没有的列 `ALTER TABLE ADD COLUMN` 补上（增量只可能是本机写的，列名可信）。
+  判据在 `local-delta.test.ts`「快照之后运行时加的列」。
 
 ### ⚠️ 内容迁移必须喊 `persistContentSoon()`，不是 `persistSoon()`
 

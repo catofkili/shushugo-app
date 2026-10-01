@@ -388,6 +388,38 @@ CREATE TABLE IF NOT EXISTS confusion_tasks (
   PRIMARY KEY (reviewed_on, group_key)
 );
 
+-- 实验开口练习：流水是事实、memory 是检查点、tasks 是当天投影。
+-- 只在本机持久化，cloud: false 阻止开发版把新表推给尚不认识它们的发布版。
+CREATE TABLE IF NOT EXISTS talk_memory (
+  card_key TEXT PRIMARY KEY,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  mistake_streak INTEGER NOT NULL DEFAULT 0,
+  known_forever INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT
+);
+CREATE TABLE IF NOT EXISTS talk_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  card_key TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  reviewed_at INTEGER NOT NULL,
+  hints INTEGER NOT NULL DEFAULT 0,
+  filler TEXT,
+  scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+  fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_talk_reviews_card_on ON talk_reviews (card_key, reviewed_on);
+CREATE TABLE IF NOT EXISTS talk_tasks (
+  reviewed_on TEXT NOT NULL,
+  card_key TEXT NOT NULL,
+  order_index INTEGER NOT NULL,
+  PRIMARY KEY (reviewed_on, card_key)
+);
+
 -- 「疑难辨析」里标记为已掌握的词组。
 --
 -- 主键是词组的稳定标识（type:锚点，如 homophone:こうえん），刻意不用 word_id：

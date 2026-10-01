@@ -87,7 +87,8 @@ const assertSnapshotWritable = (
     "direction_tasks",
     "mode_tasks",
     "achievement_unlocked",
-    ...entries.map((entry) => entry.table)
+    // cloud: false 的表不算认得：本版本收下它也只会在下一次上传时把它从云端削掉（见 tables.ts）。
+    ...entries.filter((entry) => entry.cloud !== false).map((entry) => entry.table)
   ]);
   const statement = remote.prepare("SELECT name FROM sqlite_master WHERE type = 'table'");
   const tables: string[] = [];

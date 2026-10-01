@@ -2,7 +2,7 @@ import type { Database } from "sql.js";
 import { Capacitor } from "@capacitor/core";
 import { createDatabase, getDatabase } from "../database";
 import { ensureSyncSchema } from "./schema";
-import { DEVICE_LOCAL_GRAMMAR_STATE_KEYS, DEVICE_LOCAL_STATE_KEYS, syncedTablesForCloud } from "./tables";
+import { DEVICE_LOCAL_GRAMMAR_STATE_KEYS, DEVICE_LOCAL_STATE_KEYS, localOnlyTables, syncedTablesForCloud } from "./tables";
 import { canUseFeature, getEntitlements } from "../entitlements";
 
 type WechatFflate = {
@@ -205,13 +205,12 @@ export async function exportSyncSnapshot(): Promise<Uint8Array> {
     snapshot.run(`INSERT INTO ${META_TABLE} (format, protocol_version) VALUES (?, ?)`, [SYNC_SNAPSHOT_FORMAT, SYNC_PROTOCOL_VERSION]);
     const includeWeeklyReports = canUseFeature("weeklyReportCloudHistory", getEntitlements());
     const tables = new Set([...syncedTablesForCloud(includeWeeklyReports).map((entry) => entry.table), ...EXTRA_TABLES]);
-    for (const table of tables) {
-      // 删除墓碑里也可能带有旧周报键；免费快照连这类历史索引都不带走。
-      const extraWhere = table === "sync_tombstones" && !includeWeeklyReports
-        ? "table_name <> 'weekly_reports'"
-        : "";
-      copyTable(source, snapshot, table, extraWhere);
-    }
+    // 墓碑只带导出的那些表的：免费快照不带周报的、谁都不带只在本机的表（cloud: false）的。
+    const withheld = [...localOnlyTables(), ...(includeWeeklyReports ? [] : ["weekly_reports"])];
+    const tombstoneWhere = withheld.length
+      ? `table_name NOT IN (${withheld.map((table) => `'${table.replace(/'/g, "''")}'`).join(", ")})`
+      : "";
+    for (const table of tables) copyTable(source, snapshot, table, table === "sync_tombstones" ? tombstoneWhere : "");
     const bytes = new Uint8Array(snapshot.export());
     lastSnapshotBytes = bytes.byteLength;
     return bytes;

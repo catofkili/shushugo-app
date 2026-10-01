@@ -435,7 +435,7 @@ export default function App() {
   }, [navigateToPage]);
 
   const handleSearchResult = (result: SearchResult) => actions.handleSearchResult(result);
-  const CurrentRoute = ROUTES[page];
+  const CurrentRoute = ROUTES[page] ?? ROUTES.home;
 
   return (
     <AppShell

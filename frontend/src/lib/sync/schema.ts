@@ -70,7 +70,9 @@ export function ensureSyncSchema(): void {
   const db = getDatabase();
   if (schemaReadyDbs.has(db)) return;
   const fingerprint = syncSchemaFingerprint();
-  const schemaMatches = hasSchemaFingerprint(SYNC_SCHEMA_FINGERPRINT_KEY, fingerprint);
+  // 指纹对上了也要确认同步表真的都有同步列：缺一列的话下面的回填直接抛错、整个 App 打不开。
+  // 一条查询、不逐表问；只有真缺了才重跑结构（见 local-delta.ts 的 SCHEMA_FINGERPRINT_FILTER）。
+  const schemaMatches = hasSchemaFingerprint(SYNC_SCHEMA_FINGERPRINT_KEY, fingerprint) && !syncedTableMissingColumns();
 
   if (!schemaMatches) {
     ensureSyncStructure();
@@ -81,7 +83,19 @@ export function ensureSyncSchema(): void {
 
   // 云端合并在 applying_remote 下进行，插入触发器不会给新行补 uid / 来源。
   // 每次冷启动仍探测一次，但先查索引中的缺失项，整表 UPDATE 只在确有缺口时执行。
-  backfillMissingSyncMetadata();
+  //
+  // ⚠️ 回填本身也必须在 applying_remote 下跑（2026-09-30 修）。它不是本地改动，而补来源那一句
+  // UPDATE 不动 sync_updated_at，正好满足更新触发器的条件 —— 于是每一行占位行（progress 的空行、
+  // 汉字卡 / 连线卡的物化行，都是在 withoutSyncStamp 下插的、来源为空）在**下一次冷启动**
+  // 被盖上「现在」。新设备装完没当场登录同步、重启后才登录的话，这几千行空记录会在 LWW 里
+  // 赢过云端真学过的那一行（「换台设备打开，学过的词变回未学」）。判据在 merge.test.ts
+  // 「重启之后的回填也不给占位行盖『现在』」。
+  db.run("INSERT OR REPLACE INTO sync_context (key, value) VALUES ('applying_remote', '1')");
+  try {
+    backfillMissingSyncMetadata();
+  } finally {
+    db.run("DELETE FROM sync_context WHERE key = 'applying_remote'");
+  }
   if (!schemaMatches) {
     saveSchemaFingerprint(SYNC_SCHEMA_FINGERPRINT_KEY, syncSchemaFingerprint());
   }
@@ -91,6 +105,13 @@ export function ensureSyncSchema(): void {
   // 必须放在 schemaReadyDbs 之后:它内部会再进 ensureSyncSchema,不然会死循环。
   if (tableExists("word_study_time")) backfillStudyTimeByDevice();
 }
+
+const syncedTableMissingColumns = (): boolean => rowsFor(`
+  SELECT 1 FROM sqlite_master m
+  WHERE m.type = 'table' AND m.name IN (${SYNCED_TABLES.map((entry) => `'${entry.table}'`).join(", ")})
+    AND NOT EXISTS (SELECT 1 FROM pragma_table_info(m.name) WHERE name = '${SYNC_UPDATED_COL}')
+  LIMIT 1
+`).length > 0;
 
 const syncSchemaFingerprint = (): string => {
   const tables = new Set(rowsFor("SELECT name FROM sqlite_master WHERE type = 'table'").map((row) => String(row.name)));

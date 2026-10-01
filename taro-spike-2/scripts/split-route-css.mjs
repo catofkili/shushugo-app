@@ -15,7 +15,9 @@ const routes = {
   vocabTest: 'study/vocab-test/index.wxss',
   team: 'study/team/index.wxss',
   yuzuShop: 'content-pages/yuzu-shop/index.wxss',
-  weeklyReport: 'content-pages/weekly-report/index.wxss'
+  weeklyReport: 'content-pages/weekly-report/index.wxss',
+  // 实验功能「开口练习」：只有 SHUSHUGO_EXP_TALK=1 的预览构建里才有 talk- 类（docs/DAILY_TALK_SPEC.md §0）
+  talk: 'study/talk/index.wxss'
 };
 
 function targetPackage(selector) {
@@ -28,6 +30,7 @@ function targetPackage(selector) {
     // The curtain is portaled from the home tab as well as the weekly-report route.
     else if (name.startsWith('weekly-report') || (name.startsWith('wr-') && name !== 'wr-entrance-veil')) owners.add(routes.weeklyReport);
     else if (name.startsWith('vt-') && !name.startsWith('vt-timer')) owners.add(routes.vocabTest);
+    else if (name.startsWith('talk-')) owners.add(routes.talk);
   }
   return owners.size === 1 ? [...owners][0] : null;
 }

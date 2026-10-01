@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Image, View } from "@tarojs/components";
+import { Image, View, type ImageProps } from "@tarojs/components";
 import type { CrossPlatformImageProps } from "./CrossPlatformImage";
 
 declare const wx: any;
@@ -33,7 +33,7 @@ function localAvatarPath(dataUrl: string): Promise<string> {
   return write;
 }
 
-export const CrossPlatformImage = ({ src, alt: _alt, className, style, draggable: _draggable, weappWidth, weappHeight }: CrossPlatformImageProps) => {
+export const CrossPlatformImage = ({ src, alt: _alt, className, style, draggable: _draggable, weappWidth, weappHeight, onError }: CrossPlatformImageProps) => {
   const [resolvedAvatar, setResolvedAvatar] = useState({ source: "", path: "" });
   const isDataUrl = src.startsWith("data:image/");
   useEffect(() => {
@@ -46,13 +46,14 @@ export const CrossPlatformImage = ({ src, alt: _alt, className, style, draggable
   }, [isDataUrl, src]);
 
   const { objectFit, ...imageStyle } = style ?? {};
+  const imageError = onError as unknown as ImageProps["onError"];
   const isBrandIcon = className?.split(/\s+/).includes("brand-icon") && /shushugo-icon\.png(?:[?#].*)?$/i.test(src);
   if (isBrandIcon) {
     const darkSrc = src.replace(/shushugo-icon\.png(?=[?#]|$)/i, "shushugo-icon-dark.png");
     const pairStyle = { ...imageStyle, width: weappWidth, height: weappHeight };
     return <View className={`brand-icon-pair ${className ?? ""}`} style={pairStyle}>
-      <Image className="brand-icon-light" src={src} mode="aspectFit" style={{ width: "100%", height: "100%" }} />
-      <Image className="brand-icon-dark" src={darkSrc} mode="aspectFit" style={{ width: "100%", height: "100%" }} />
+      <Image className="brand-icon-light" src={src} mode="aspectFit" style={{ width: "100%", height: "100%" }} onError={imageError} />
+      <Image className="brand-icon-dark" src={darkSrc} mode="aspectFit" style={{ width: "100%", height: "100%" }} onError={imageError} />
     </View>;
   }
 
@@ -62,6 +63,7 @@ export const CrossPlatformImage = ({ src, alt: _alt, className, style, draggable
     src={isDataUrl ? (resolvedAvatar.source === src ? resolvedAvatar.path : "") : src}
     {...(networkWebp ? { webp: true } : {})}
     mode={objectFit === "cover" ? "aspectFill" : "aspectFit"}
+    onError={imageError}
     style={{ ...imageStyle, width: weappWidth, height: weappHeight }}
   />;
 };

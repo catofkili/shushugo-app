@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import { lazy, type ComponentType } from "react";
 import type { Page } from "../types/app";
 import { AboutRoute } from "./about";
 import { AccountRoute } from "./account";
@@ -30,12 +30,13 @@ import { WordListRoute } from "./word-list";
 import { WordRoute } from "./word";
 import { YuzuShopRoute } from "./yuzu-shop";
 
-export const ROUTES: Record<Page, ComponentType> = {
+export const ROUTES: Record<Exclude<Page, "talk">, ComponentType> & Partial<Record<"talk", ComponentType>> = {
   home: HomeRoute,
   word: WordRoute,
   team: TeamRoute,
   "quick-study": QuickStudyRoute,
   "vocab-test": VocabTestRoute,
+  ...(__EXP_TALK__ ? { talk: lazy(() => import("./talk").then((module) => ({ default: module.TalkRoute }))) } : {}),
   "weekly-report": WeeklyReportRoute,
   grammar: GrammarRoute,
   "grammar-foundation": GrammarFoundationRoute,
