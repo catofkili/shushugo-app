@@ -64,7 +64,9 @@
 
 - 每条公式在内容里带一组候选词（8–12 个，日文 + 中文，能在词库里查到的带 `wordId`）。
 - 出卡时从候选里挑一个：**优先挑用户学过的词**（`progress.seen_count > 0`），同一张卡尽量不和上次用同一个词
-  （上次用的词记在 `talk_reviews.filler` 里）；学过的一个都没有就在全部候选里随机。
+  （上次用的词记在 `talk_reviews.filler` 里）。
+- 学过的一组都没有时，**只在最容易的那一档里挑**：一组的难度 = 组内 wordId 里最难的 JLPT 等级（没有 wordId 的组算 N3）。
+  2026-10-01 以新用户身份实测，原来「全部随机」让第一张卡就抽到 N2 的 領収書。
 - FSRS 按公式记忆（key 是 `f:F02`，不按「公式 + 词」），所以每次练的都是新句子，但调度的是公式本身。
 - 有的公式有两个槽位（F11 `[A]と[B]は、どう違いますか`）——候选按组给（`fillers` 里一项就是一组完整替换）。
 
@@ -74,15 +76,45 @@
 ⚠️ **不放 `public/`**：Vite 会把 `public/` 整个拷进产物，开关关着也会带上这 1.2 MB；由 `lib/talk/image-src.ts` 引用，
 只有开口练习的代码块用到它们。小程序预览版由 Taro 的 copy 规则（只在开关打开时）拷进 `study/talk/scenes/`。
 **图里不许有任何文字**（生成的日文是乱码，而且会把答案露出来）。风格跟品牌贴纸（`frontend/public/brand/sheet/`）走：
-暖色、奶油底、扁平插画，「我」是那只水豚。公式卡如果能挂到某个场景就显示那张图，挂不上就只有中文。
+暖色、奶油底、扁平插画，「我」是那只水豚，**对方（店员、厨师、站务员、医生、朋友）全是鳄鱼**（作者 2026-10-01 定的：角色围绕鳄鱼和水豚；
+鳄鱼和柚子商店的鳄鱼皮肤是同一个形象）。打电话的场景用画面一角的圆形小窗画对方。公式卡如果能挂到某个场景就显示那张图，挂不上就只有中文。
+另有两张透明底插画 `frontend/src/assets/talk-art/`：`talk-hero.png`（聊天，欢迎卡用）、`talk-done.png`（击掌，完成页用）。
+翻面后场景图收起：答案和「下一张」要在 375×812 的一屏里。
 
 ### 1.5 隔离
 
 - 不进每日计划、圆环、混合学习、自动选词、备考额度、成就、柚子、周报。只有自己一个入口（主页「学习工具」里一格，同样包在 `__EXP_TALK__` 里）。
 - 每天新卡 `TALK_NEW_PER_DAY = 5`（常量，实验期不做设置项），复习到期全出。
   新卡顺序按场景走：场景 1 里自己要说的话用到的公式先出公式卡、再出这个场景的接话卡，然后场景 2……
-- 音频：对方那句和翻面后的标准说法都走 `speech.playExample(text)`（没有预生成音频时退回系统语音；
-  小程序里没有系统语音，所以小程序预览版暂时可能没声音，见 §7）。
+- 音频见 §1.8。
+
+### 1.6 欢迎卡、场景图鉴、再练 5 张
+
+- **欢迎卡**：从没答过任何一张（`talkEverAnswered()`）时，先给一张卡：聊天插画 + 「看场景，开口说一句」+ 两行说明 + 开始。只出现这一次。
+- **场景图鉴**（「收集日」的收集）：一个场景里所有接话卡都至少答过一次 = 收集到。全部从 `talk_memory` 现算（`talkSceneCollection()`），不建表。
+  页头「图鉴 n/15」打开底部弹层：3 列缩略图，没收集到的灰度 + 「还差 n 句」。完成页把这一场新收集到的场景排成横卡放在最下面。
+- **再练 5 张**：完成页的次要按钮。`extendTalkTasks(day, 5)` 先补没见过的（按新卡顺序），不够再补到期最早的；分母跟着任务表变。
+  加餐的旧卡可能还没到期——判「今天做完」的口径是**今天答过且已毕业**（`talkTaskStates`），不改共享 card-log 的判据。
+- 「上一张」只在今天有可撤的作答时出现（`canUndoTalk(day)`）。
+
+### 1.7 注音
+
+- 构建期生成：`frontend/scripts/build-talk-furigana.mjs` 用 kuromoji 给所有会出现在界面上的句子（场景 60 句 + 公式×候选，去重 541 句，
+  句子清单在 `lib/talk/sentences.ts`，音频脚本共用）预先算 `FuriganaAnnotation`，写 `frontend/src/data/talk_furigana.json`（`{ 句子: annotations }`），运行时查表。
+- ⚠️ kuromoji 在**数字 + 量词**和复合词上几乎一定错（十分 → じゅうぶん、一日 → いちにち、替え玉、素泊まり、試着…），
+  人工覆盖表 `frontend/scripts/talk-furigana-overrides.json` 先于 kuromoji 生效（2026-10-01 共 38 处，282 种读音 Claude 逐条核过）。
+  改了内容一定要重跑脚本：`furigana.test.ts` 和 `verify-talk-content.mjs` 会因为句子对不上而红。
+- 渲染：页面里一个小的 `TalkRuby`，按 annotations 切成文字 / `JapaneseRubyText`。**不用 `JapaneseRuby`**（那个带语法弹层，太重）。
+
+### 1.8 音频
+
+- 预生成：`frontend/scripts/build-talk-audio.mjs`，句子清单同 §1.7（329 句会出声的），**照搬例句管线**（`voicevox-synth.mjs` 是从
+  `build-example-audio.mjs` 抽出来的共享部分）：读音按 `talk_furigana` 校对、拍数一致锁回明确假名、句调迁移、speaker 8（春日部つむぎ，
+  和单词 / 例句同一个声音）、ADTS AAC-LC 24 kbps。字母（M サイズ、ATM、A/B セット）注音盖不住，人判过的放
+  `talk-audio-review.json` 的 `accepted`。
+- 放 `frontend/src/assets/talk-audio/voicevox-8/`（2.5 MB，**不放 public/**，理由同场景图），`lib/talk/audio.ts` 用 glob 引用；
+  一次只播一句，换卡 / 离页停掉，文件放不出来退回系统语音。
+- 小程序：分包放不下（每包 2 MB），`audio.weapp.ts` 一律「放不出来」，接话卡直接显示对方原文。上线前要把音频传云端（§7）。
 
 ## 2. 内容格式（`frontend/src/data/talk_content.json`，懒加载）
 
@@ -196,6 +228,12 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
 - 闸门：`__EXP_TALK__ = false` 时 `vite build` 产物里搜不到 `__SHUSHUGO_EXP_TALK__`；
   `taro build`（不带环境变量）后 `check:release` 通过、`app.json` 没有 talk 页；带环境变量时 `check:release` 失败。
 - 页面：独立端口（≥ 5200）375×812 浅色 / 深色各截一张，公式卡、接话卡、翻面、完成页；**不许打开 / 刷新 5173**。
+
+## 5.5 已知限制（2026-10-01）
+
+- 落盘：答完一张不到 2 秒就关页面，最后那张可能没存下（增量 2 秒一次，CLAUDE.md 落盘那节写过这是有意接受的窗口）。
+- 小程序预览版没有声音（见 §1.8）。
+- 每天新卡数是常量 5，没有设置项；想多练用「再练 5 张」。
 
 ## 6. 暂时不做
 
