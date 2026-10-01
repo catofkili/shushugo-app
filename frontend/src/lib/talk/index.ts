@@ -10,6 +10,7 @@ export {
   materializeTalkCards,
   createTalkTasks,
   canUndoTalk,
+  talkEverAnswered,
   talkSceneCollection,
   canExtendTalkTasks,
   extendTalkTasks,

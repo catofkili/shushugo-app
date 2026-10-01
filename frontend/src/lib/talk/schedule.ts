@@ -75,6 +75,12 @@ export const talkProgress = (day = today()) => {
   return { total: tasks.length, done, remaining: tasks.length - done };
 };
 
+/** 从来没答过任何一张：页面先给一张欢迎卡。 */
+export const talkEverAnswered = (): boolean => {
+  ensureTalkTables();
+  return firstValue<number>("SELECT EXISTS(SELECT 1 FROM talk_reviews)", [], 0) === 1;
+};
+
 export const canUndoTalk = (day = today()): boolean => {
   ensureTalkTables();
   return firstValue<number>("SELECT EXISTS(SELECT 1 FROM talk_reviews WHERE reviewed_on = ?)", [day], 0) === 1;

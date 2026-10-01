@@ -26,7 +26,7 @@
 .talk-hint-dots { font-size: var(--ds-font-size-kicker); color: var(--ds-ink-3); white-space: nowrap; }
 .talk-keyboard { margin: 12px 0 0; text-align: center; }
 .talk-loading { min-height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--ds-ink-3); font-size: var(--ds-font-size-body); }
-.talk-done { padding: 40px 0; }
+.talk-done { padding: 24px 0; text-align: center; }
 .talk-error { margin-bottom: 16px; }
 .talk-error > button { margin-top: 12px; }
 .talk-line-self .talk-answer { font-size: 20px; }
@@ -43,9 +43,17 @@
 .talk-uncollected { filter: grayscale(1); opacity: .45; }
 .talk-collection-title { margin: 8px 0 0; color: var(--ds-ink); font-size: var(--ds-font-size-section); font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
 .talk-collection-remaining { margin: 4px 0 0; color: var(--ds-ink-3); font-size: var(--ds-font-size-kicker); }
-.talk-new-scene { overflow: hidden; margin-bottom: 20px; }
-.talk-new-scene > .talk-title { padding: 16px; }
-.talk-done-art { display: block; margin: 0 auto 16px; }
-.talk-done-with-art > .ds-say-mascot { display: none; }
-.talk-extend { display: flex; margin: 24px auto 0; }
 @media (max-width: 400px) { .talk-body { padding: 16px; } .talk-answer { font-size: 22px; } }
+.talk-done-art { display: block; margin: 0 auto 8px; }
+.talk-done-fallback { text-align: left; margin-bottom: 12px; }
+.talk-done-title { margin: 0; color: var(--ds-ink); font-size: 22px; font-weight: 800; }
+.talk-done-sub { margin: 4px 0 0; color: var(--ds-ink-3); font-size: var(--ds-font-size-body); }
+.talk-extend { display: inline-flex; margin: 20px auto 0; padding-left: 28px; padding-right: 28px; }
+.talk-new-scene { display: flex; align-items: center; gap: 12px; margin-top: 24px; padding: 12px; text-align: left; }
+.talk-new-scene-thumb { position: relative; flex: 0 0 112px; height: 84px; overflow: hidden; border-radius: var(--ds-radius-inset); }
+.talk-kicker { margin: 0; color: var(--ds-primary); font-size: var(--ds-font-size-kicker); font-weight: 700; }
+.talk-new-scene-title { margin: 4px 0 0; color: var(--ds-ink); font-size: 16px; font-weight: 800; line-height: 1.5; }
+.talk-welcome { padding: 28px 20px 24px; text-align: center; }
+.talk-welcome-art { display: block; margin: 0 auto 12px; }
+.talk-welcome .talk-translation { margin: 8px 0 0; }
+.talk-welcome-start { width: 100%; margin-top: 24px; }

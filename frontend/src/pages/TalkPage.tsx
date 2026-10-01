@@ -9,9 +9,9 @@ import { today } from "../lib/study-core";
 import {
   TALK_MARKER, createTalkTasks, loadTalkContent, pickTalkNext, recordTalkAnswer,
   talkCard, talkProgress, talkFurigana, canUndoTalk, talkSceneCollection,
-  canExtendTalkTasks, extendTalkTasks, undoLastTalkAnswer, type TalkCard
+  canExtendTalkTasks, extendTalkTasks, undoLastTalkAnswer, talkEverAnswered, type TalkCard
 } from "../lib/talk";
-import { talkDoneImage, talkImageSrc } from "../lib/talk/image-src";
+import { talkDoneImage, talkHeroImage, talkImageSrc } from "../lib/talk/image-src";
 import { canPlayTalkAudio } from "../lib/talk/audio";
 import "./talk.css";
 
@@ -218,6 +218,9 @@ export function TalkPage() {
   const closeCollection = useCallback(() => setShowCollection(false), []);
   const [newScenes, setNewScenes] = useState<SceneCollection>([]);
   const [doneArtFailed, setDoneArtFailed] = useState(false);
+  // 从没答过任何一张的人先看一张欢迎卡（只这一次，答过一张之后不会再出现）
+  const [welcome, setWelcome] = useState(false);
+  const [welcomeSeen, setWelcomeSeen] = useState(false);
   const initialCollection = useRef<Set<string> | null>(null);
   const refresh = useCallback(() => {
     const collection = talkSceneCollection();
@@ -246,6 +249,7 @@ export function TalkPage() {
       const next = key ? talkCard(key) : null;
       if (key && !next) throw new Error("卡片内容不可用");
       setCard(next);
+      setWelcome(!talkEverAnswered());
       refresh();
     }).catch(() => {
       if (active) setError("开口练习加载失败，请重试。");
@@ -326,20 +330,31 @@ export function TalkPage() {
     </div>}
     {loading ? <div className="talk-loading" aria-busy="true">
       <CapybaraWalk size={72} /><p>正在加载…</p>
-    </div> : card ? <PracticeCard key={`${card.key}:${turn}`} card={card} firstToday={firstToday && turn === 0} paused={showCollection} onAnswer={record} />
+    </div> : welcome && card ? <section className="ds-card talk-welcome">
+      {talkHeroImage && <CrossPlatformImage src={talkHeroImage} alt="" className="talk-welcome-art"
+        weappWidth={168} weappHeight={168} style={{ width: 168, height: 168, objectFit: "contain" }} />}
+      <h2 className="talk-title">看场景，开口说一句</h2>
+      <p className="talk-translation">出声说出来，再翻面对照</p>
+      <p className="talk-translation">想不起来就点提示</p>
+      <button type="button" className="ds-btn focus-ring talk-welcome-start" onClick={() => { setWelcome(false); setWelcomeSeen(true); }}>开始</button>
+    </section> : card ? <PracticeCard key={`${card.key}:${turn}`} card={card} firstToday={firstToday && turn === 0 && !welcomeSeen} paused={showCollection} onAnswer={record} />
+      // 最要紧的（今天做了几张、再练）在一屏里；新收集的场景缩成一行横卡放在下面。
       : !error && <div className="talk-done">
-        {newScenes.map((scene) => <section key={scene.id} className="ds-card talk-new-scene">
-          <div className="talk-image"><CrossPlatformImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image"
-            weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
-          <p className="talk-title">新收集：{scene.title}</p>
-        </section>)}
-        {talkDoneImage && !doneArtFailed && <CrossPlatformImage src={talkDoneImage} alt="" className="talk-done-art"
-          weappWidth={160} weappHeight={160} style={{ width: 160, height: 160, objectFit: "contain" }} onError={() => setDoneArtFailed(true)} />}
-        <MascotSay sticker="empty-done" tone="good" size={96} className={`ds-say-onbg ${talkDoneImage && !doneArtFailed ? "talk-done-with-art" : ""}`}>
-          <p className="talk-title">今天做了 {progress.done} 张</p>
-          <p className="talk-translation">明天再来</p>
-        </MascotSay>
+        {talkDoneImage && !doneArtFailed
+          ? <CrossPlatformImage src={talkDoneImage} alt="" className="talk-done-art"
+            weappWidth={140} weappHeight={140} style={{ width: 140, height: 140, objectFit: "contain" }} onError={() => setDoneArtFailed(true)} />
+          : <MascotSay sticker="empty-done" tone="good" size={96} className="ds-say-onbg talk-done-fallback">今天练完了</MascotSay>}
+        <p className="talk-done-title">今天做了 {progress.done} 张</p>
+        <p className="talk-done-sub">明天再来</p>
         {extendAvailable && <button type="button" className="ds-btn-soft talk-extend focus-ring" onClick={extend}>再练 5 张</button>}
+        {newScenes.map((scene) => <section key={scene.id} className="ds-card talk-new-scene">
+          <div className="talk-new-scene-thumb"><CrossPlatformImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image"
+            weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
+          <div>
+            <p className="talk-kicker">收集到新场景</p>
+            <p className="talk-new-scene-title">{scene.title}</p>
+          </div>
+        </section>)}
       </div>}
     {showCollection && <SceneSheet scenes={scenes} onClose={closeCollection} />}
   </div>;

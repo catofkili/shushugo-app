@@ -56,6 +56,9 @@ module.exports = {
       ...(expTalkEnabled ? [{
         from: path.join(frontend, 'src/assets/talk-scenes'),
         to: path.join(root, 'dist/study/talk/scenes')
+      }, {
+        from: path.join(frontend, 'src/assets/talk-art'),
+        to: path.join(root, 'dist/study/talk/art')
       }] : [])
     ],
     options: {}

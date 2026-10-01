@@ -5,5 +5,6 @@ const scenes = import.meta.glob("../../assets/talk-scenes/*.jpg", { eager: true,
 export const talkImageSrc = (src: string): string =>
   scenes[`../../assets/talk-scenes/${src.split("/").pop()}`] ?? src;
 
-const doneArt = import.meta.glob("../../assets/talk-art/talk-done.png", { eager: true, query: "?url", import: "default" }) as Record<string, string>;
-export const talkDoneImage = doneArt["../../assets/talk-art/talk-done.png"];
+const art = import.meta.glob("../../assets/talk-art/*.png", { eager: true, query: "?url", import: "default" }) as Record<string, string>;
+export const talkDoneImage: string | undefined = art["../../assets/talk-art/talk-done.png"];
+export const talkHeroImage: string | undefined = art["../../assets/talk-art/talk-hero.png"];
