@@ -233,7 +233,8 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
   }, [outgoing]);
   useEffect(() => {
     const dialog = historyDialogRef.current;
-    if (historyOpen && dialog && !dialog.open) dialog.showModal();
+    // 小程序里 <dialog> 只是个 view，没有 showModal / open；显隐靠 is-open 类（mini-overrides.weapp.css）。
+    if (historyOpen && dialog && !dialog.open && typeof dialog.showModal === "function") dialog.showModal();
     else if (!historyOpen && dialog?.open) { dialog.close(); weekPickerRef.current?.focus(); }
   }, [historyOpen]);
 
@@ -473,7 +474,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
       </footer>
       {/* 视觉上收掉翻页按钮；键盘聚焦时才出现，保留读屏和开关控制的可操作入口。 */}
       <nav className="wr-access-nav" aria-label="辅助翻页"><button disabled={page===0} onClick={()=>movePage(-1)}>上一篇</button><button disabled={page===chapters.length-1} onClick={()=>movePage(1)}>下一篇</button></nav>
-      <dialog ref={historyDialogRef} className="wr-history-dialog" aria-label="选择往期回顾" onCancel={()=>setHistoryOpen(false)} onClose={()=>setHistoryOpen(false)} onClick={(event)=>{if(event.target===event.currentTarget)setHistoryOpen(false);}}>
+      <dialog ref={historyDialogRef} className={`wr-history-dialog${historyOpen ? " is-open" : ""}`} aria-label="选择往期回顾" onCancel={()=>setHistoryOpen(false)} onClose={()=>setHistoryOpen(false)} onClick={(event)=>{if(event.target===event.currentTarget)setHistoryOpen(false);}}>
         <div className="wr-history-sheet"><div className="wr-history-heading"><div><p>TIME ARCHIVE</p><h2>往期的日子</h2></div><button className="wr-icon-control" aria-label="关闭往期回顾" onClick={()=>setHistoryOpen(false)}><X size={20}/></button></div>
           <p className="wr-history-range">{reportWindowLabel(report.window)}</p>
           <div className="weekly-report-history">

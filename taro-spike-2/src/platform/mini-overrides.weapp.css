@@ -135,3 +135,8 @@ page { overflow-x: hidden; }
 
 /* Inline width:auto is square in Mini Program; override it to match the 658:364 source art at 96px high. */
 .zoo-tm-hero-art { width: 174px !important; }
+
+/* 周报「往期」用的是网页原生 <dialog>：网页里没打开时浏览器自己藏起来，小程序没有这层默认样式，一进周报就盖在上面。
+   显隐跟着 WeeklyReportPage 给的 is-open 类走；::backdrop 小程序也没有，用一圈大阴影代替。 */
+.wr-history-dialog { display: none !important; }
+.wr-history-dialog.is-open { display: block !important; box-shadow: 0 0 0 100vmax rgba(23, 16, 32, 0.73) !important; z-index: 10003; }
