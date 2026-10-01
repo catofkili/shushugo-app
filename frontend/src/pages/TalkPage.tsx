@@ -438,7 +438,8 @@ export function TalkPage() {
               <button type="button" className="ds-btn-soft focus-ring" onClick={home}>{sceneId ? "换个场景" : "回到场景"}</button>
             </div>
           </div>}
-        {undoAvailable && <button type="button" className="ds-chip focus-ring talk-undo" onClick={undo}>上一张</button>}
+        {/* 外面包一层居中：小程序里按钮自己 display:flex 会被撑成整行宽 */}
+        {undoAvailable && <div className="talk-undo"><button type="button" className="ds-chip focus-ring" onClick={undo}>上一张</button></div>}
       </>}
   </div>;
 }

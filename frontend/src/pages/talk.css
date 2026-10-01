@@ -54,7 +54,7 @@
 .talk-session-title { flex: 1; min-width: 0; color: var(--ds-ink); font-size: var(--ds-font-size-body); font-weight: 700; text-align: center; overflow-wrap: anywhere; }
 .talk-back, .talk-count { flex-shrink: 0; }
 .talk-collected { color: var(--ds-primary); font-weight: 700; }
-.talk-undo { display: flex; margin: 12px auto 0; }
+.talk-undo { display: flex; justify-content: center; margin-top: 12px; }
 .talk-done-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
 .talk-transcript { padding: 14px; margin-top: 16px; border-radius: var(--ds-radius-inset); background: var(--ds-inset); overflow-wrap: anywhere; }
 .talk-mic { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; }
