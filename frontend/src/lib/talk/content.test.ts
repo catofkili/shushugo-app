@@ -143,7 +143,7 @@ describe("开口练习内容（独立 fixture，正式内容另一个任务负�
     const card = talkCard("r:S01:1")!;
     expect(card.partnerLine).toEqual({ speaker: "店员", ja: "何になさいますか。", zh: "您要什么？" });
     expect(card.hints).toEqual(["何になさいますか。\n您要什么？", "请给我水。", "水をお願…"]);
-    expect(card.prompt).toBe("接着对方的话回答。");
+    expect(card.prompt).toBe("接着对方的话回答");
     expect(card.answer).toEqual({ ja: "水をお願いします。", zh: "请给我水。" });
     expect(card.image).toBe("/talk/scenes/S01.jpg");
     expect(card.note).toBe("场景提醒");

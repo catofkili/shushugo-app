@@ -1,6 +1,6 @@
 export const TALK_MARKER = "__SHUSHUGO_EXP_TALK__";
 
-export { loadTalkContent, talkContentLoaded, talkContent } from "./content";
+export { loadTalkContent, talkContentLoaded, talkContent, talkFurigana } from "./content";
 export type { TalkContent, TalkFormula, TalkScene, TalkFiller } from "./content";
 export { allCardKeys, newCardOrder, talkCard } from "./cards";
 export type { TalkCard, TalkHintLevel, TalkCardOptions } from "./cards";
@@ -9,6 +9,10 @@ export {
   ensureTalkTables,
   materializeTalkCards,
   createTalkTasks,
+  canUndoTalk,
+  talkSceneCollection,
+  canExtendTalkTasks,
+  extendTalkTasks,
   pickTalkNext,
   talkProgress,
   answerForHints,

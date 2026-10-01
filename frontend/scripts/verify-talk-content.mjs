@@ -129,6 +129,27 @@ for (const text of [...content.scenes.map((scene) => scene.note ?? ""), ...conte
   assert.ok(!/\bF\d{2}\b/u.test(text), "internal formula id shown to users: " + text);
 }
 
+const furigana = JSON.parse(readFileSync(path.join(here, "../src/data/talk_furigana.json"), "utf8"));
+const sentences = new Set(content.scenes.flatMap((scene) => scene.lines.map((line) => line.ja)));
+for (const formula of content.formulas) for (const group of formula.fillers) {
+  for (const template of [formula.pattern, formula.skeleton]) sentences.add(template.replace(/\[([^\]]+)\]/gu, (_, slot) => group[slot].ja));
+}
+for (const sentence of sentences) {
+  assert.ok(Object.hasOwn(furigana, sentence), "missing talk furigana: " + sentence);
+  const annotations = furigana[sentence];
+  let end = 0;
+  for (const annotation of annotations) {
+    assert.ok(annotation.start >= end && annotation.length > 0 && annotation.start + annotation.length <= sentence.length, "invalid UTF-16 span: " + sentence);
+    assert.match(sentence.slice(annotation.start, annotation.start + annotation.length), /^[\u3400-\u9fff々〇]+$/u, "kana must not have ruby: " + sentence);
+    assert.ok(annotation.reading.length > 0, "empty reading: " + sentence);
+    end = annotation.start + annotation.length;
+  }
+  for (let index = 0; index < sentence.length; index++) if (/[\u3400-\u9fff々〇]/u.test(sentence[index])) {
+    assert.ok(annotations.some((a) => index >= a.start && index < a.start + a.length), "unannotated kanji: " + sentence);
+  }
+}
+console.log(`Talk furigana coverage passed: ${sentences.size} sentences.`);
+
 db.close();
 console.log(
   "Talk content verification passed: " + content.formulas.length + " formulas, " +

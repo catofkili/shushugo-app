@@ -1,3 +1,5 @@
+import type { FuriganaAnnotation } from "../../types/furigana";
+
 export interface TalkFiller {
   ja: string;
   zh: string;
@@ -36,11 +38,13 @@ export interface TalkContent {
 
 let loaded: TalkContent | null = null;
 let loading: Promise<void> | null = null;
+let furigana: Record<string, FuriganaAnnotation[]> = {};
 
 export const loadTalkContent = (): Promise<void> => {
   if (loaded) return Promise.resolve();
-  loading ??= import("../../data/talk_content.json").then((module) => {
-    loaded = module.default as TalkContent;
+  loading ??= Promise.all([import("../../data/talk_content.json"), import("../../data/talk_furigana.json")]).then(([content, ruby]) => {
+    furigana = ruby.default;
+    loaded = content.default as TalkContent;
   }).catch((error: unknown) => {
     loading = null;
     throw error;
@@ -48,11 +52,14 @@ export const loadTalkContent = (): Promise<void> => {
   return loading;
 };
 
+export const talkFurigana = (sentence: string): FuriganaAnnotation[] => furigana[sentence] ?? [];
+
 export const talkContentLoaded = (): boolean => loaded !== null;
 export const talkContent = (): TalkContent | null => loaded;
 
 /** 测试只注入 fixture，不依赖与内容任务合并时会替换的 stub。 */
 export const setTalkContentForTest = (content: TalkContent | null): void => {
+  furigana = {};
   loaded = content;
   loading = null;
 };

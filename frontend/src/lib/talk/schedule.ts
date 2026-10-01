@@ -2,10 +2,10 @@ import type { WordAnswer } from "../../types/vocabulary";
 import { createCardLog } from "../card-log";
 import { getDatabase } from "../database";
 import { oncePerDatabase, persistSoon } from "../database/db-utils";
-import { rowsFor, studyDayEnd, today } from "../study-core";
+import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
 import { withoutSyncStamp } from "../sync/schema";
 import { allCardKeys, newCardOrder } from "./cards";
-import { talkContentLoaded } from "./content";
+import { talkContent, talkContentLoaded } from "./content";
 
 export const TALK_NEW_PER_DAY = 5;
 
@@ -52,12 +52,69 @@ export const createTalkTasks = (day = today()) => {
   }, day);
 };
 
-export const pickTalkNext = (day = today(), excluded = new Set<string>()) => {
+// 加餐可以包含尚未到期的旧卡：必须今天答过、且已毕业，才能计为完成。
+// 不改共享 card-log 的毕业判据，也不为加餐另建表或改 FSRS 到期日。
+const talkTaskStates = (day: string) => {
   ensureTalkTables();
-  return log.pickNext(day, excluded);
+  const end = studyDayEnd(new Date(`${day}T12:00:00`)).toISOString();
+  return rowsFor(`SELECT t.card_key, m.known_forever, m.fsrs_state, m.fsrs_due,
+    EXISTS(SELECT 1 FROM talk_reviews r WHERE r.card_key = t.card_key AND r.reviewed_on = t.reviewed_on) AS answered
+    FROM talk_tasks t JOIN talk_memory m ON m.card_key = t.card_key
+    WHERE t.reviewed_on = ? ORDER BY t.order_index`, [day]).map((row) => ({
+    key: String(row.card_key),
+    done: Number(row.known_forever) === 1 || (Number(row.answered) === 1 && Number(row.fsrs_state) === 2 && row.fsrs_due != null && String(row.fsrs_due) > end)
+  }));
 };
 
-export const talkProgress = (day = today()) => { ensureTalkTables(); return log.progress(day); };
+export const pickTalkNext = (day = today(), excluded = new Set<string>()): string | null =>
+  talkTaskStates(day).find((task) => !task.done && !excluded.has(task.key))?.key ?? null;
+
+export const talkProgress = (day = today()) => {
+  const tasks = talkTaskStates(day);
+  const done = tasks.filter((task) => task.done).length;
+  return { total: tasks.length, done, remaining: tasks.length - done };
+};
+
+export const canUndoTalk = (day = today()): boolean => {
+  ensureTalkTables();
+  return firstValue<number>("SELECT EXISTS(SELECT 1 FROM talk_reviews WHERE reviewed_on = ?)", [day], 0) === 1;
+};
+
+export const talkSceneCollection = () => {
+  ensureTalkTables();
+  const seenKeys = new Set(rowsFor("SELECT card_key FROM talk_memory WHERE seen_count > 0").map((row) => String(row.card_key)));
+  return (talkContent()?.scenes ?? []).map((scene) => {
+    const keys = scene.lines.flatMap((line, index) => line.self ? [`r:${scene.id}:${index}`] : []);
+    const seen = keys.filter((key) => seenKeys.has(key)).length;
+    return { id: scene.id, title: scene.title, image: `/talk/scenes/${scene.id}.jpg`, collected: keys.length > 0 && seen === keys.length, seen, total: keys.length };
+  });
+};
+
+const extraCandidates = (day: string): string[] => {
+  materializeTalkCards();
+  const available = rowsFor(`SELECT m.card_key, m.seen_count FROM talk_memory m WHERE ${log.exclude}
+    AND NOT EXISTS(SELECT 1 FROM talk_tasks t WHERE t.reviewed_on = ? AND t.card_key = m.card_key)
+    ORDER BY m.fsrs_due, m.card_key`, [day]);
+  const unseen = new Set(available.filter((row) => Number(row.seen_count) === 0).map((row) => String(row.card_key)));
+  const valid = new Set(allCardKeys());
+  return [...newCardOrder().filter((key) => unseen.has(key)),
+    ...available.filter((row) => Number(row.seen_count) > 0 && valid.has(String(row.card_key))).map((row) => String(row.card_key))];
+};
+
+export const canExtendTalkTasks = (day = today()): boolean => extraCandidates(day).length > 0;
+
+export const extendTalkTasks = (day = today(), count = 5): number => {
+  const keys = extraCandidates(day).slice(0, Math.max(0, Math.floor(count)));
+  if (!keys.length) return 0;
+  withTalkWrite(() => {
+    const offset = firstValue<number>("SELECT COALESCE(MAX(order_index), -1) + 1 FROM talk_tasks WHERE reviewed_on = ?", [day], 0);
+    keys.forEach((key, index) => getDatabase().run(
+      "INSERT INTO talk_tasks (reviewed_on, card_key, order_index) VALUES (?, ?, ?)", [day, key, offset + index]
+    ));
+  });
+  persistSoon();
+  return keys.length;
+};
 
 export const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
   gaveUp || hintsUsed >= 2 ? "forgot" : hintsUsed === 1 ? "fuzzy" : "know";
@@ -85,8 +142,8 @@ export const recordTalkAnswer = (key: string, hintsUsed: number, gaveUp: boolean
   return next;
 };
 
-export const undoLastTalkAnswer = () => {
-  const key = withTalkWrite(() => log.undoLast());
+export const undoLastTalkAnswer = (day = today()) => {
+  const key = withTalkWrite(() => log.undoLast(day));
   if (key) persistSoon();
   return key;
 };

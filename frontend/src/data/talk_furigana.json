@@ -1,0 +1,9190 @@
+{
+  "お弁当、温めますか。": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "べんとう"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "あたた"
+    }
+  ],
+  "はい、お願いします。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "お箸はおつけしますか。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はし"
+    }
+  ],
+  "一膳お願いします。袋は大丈夫です。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "いちぜん"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ねが"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ふくろ"
+    },
+    {
+      "start": 11,
+      "length": 3,
+      "reading": "だいじょうぶ"
+    }
+  ],
+  "塩ラーメンはありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "しお"
+    }
+  ],
+  "はい、あります。味の濃さも選べます。": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "あじ"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "こ"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "えら"
+    }
+  ],
+  "では、塩ラーメンを一つ。味は薄めでお願いします。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "しお"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ひと"
+    },
+    {
+      "start": 12,
+      "length": 1,
+      "reading": "あじ"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "うす"
+    },
+    {
+      "start": 18,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "麺の硬さはどうしますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "めん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "かた"
+    }
+  ],
+  "すみません、この料理に卵は入っていますか。": [
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "りょうり"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "たまご"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "ソースに少し使っています。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "つか"
+    }
+  ],
+  "卵アレルギーがあるので、卵を使っていない料理はありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "たまご"
+    },
+    {
+      "start": 12,
+      "length": 1,
+      "reading": "たまご"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "つか"
+    },
+    {
+      "start": 20,
+      "length": 2,
+      "reading": "りょうり"
+    }
+  ],
+  "厨房に確認しますので、少々お待ちください。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうぼう"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    },
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "しょうしょう"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "店内でお召し上がりですか、お持ち帰りですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "てんない"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "め"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "あ"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "持ち帰りでお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "かえ"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "お飲み物は何になさいますか。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "もの"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "なに"
+    }
+  ],
+  "アイスコーヒーを一つ。氷は少なめでお願いします。": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ひと"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "こおり"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 18,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、このシャツのMサイズはありますか。": [],
+  "在庫を確認します。少々お待ちください。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ざいこ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    },
+    {
+      "start": 9,
+      "length": 2,
+      "reading": "しょうしょう"
+    },
+    {
+      "start": 12,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "試着してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しちゃく"
+    }
+  ],
+  "はい。試着室はこちらです。": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "しちゃく"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "しつ"
+    }
+  ],
+  "クレジットカードで払えますか。": [
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "はら"
+    }
+  ],
+  "はい。こちらにカードをかざしてください。": [],
+  "すみません、もう一度お願いします。": [
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "この端末にカードをかざしてください。": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "たんまつ"
+    }
+  ],
+  "すみません、新宿へ行きたいんですが、何番線ですか。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "しんじゅく"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "い"
+    },
+    {
+      "start": 18,
+      "length": 3,
+      "reading": "なんばんせん"
+    }
+  ],
+  "三番線です。次の電車に乗ってください。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "さんばんせん"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "つぎ"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "でんしゃ"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "の"
+    }
+  ],
+  "乗り換えは必要ですか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "か"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "はい、途中で一回乗り換えます。": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "とちゅう"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "いっかい"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "初診の予約をしたいんですが、金曜日の午後は空いていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しょしん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 14,
+      "length": 3,
+      "reading": "きんようび"
+    },
+    {
+      "start": 18,
+      "length": 2,
+      "reading": "ごご"
+    },
+    {
+      "start": 21,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "金曜日はいっぱいですが、土曜日の十時なら空いています。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "きんようび"
+    },
+    {
+      "start": 12,
+      "length": 3,
+      "reading": "どようび"
+    },
+    {
+      "start": 16,
+      "length": 2,
+      "reading": "じゅうじ"
+    },
+    {
+      "start": 20,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "では、土曜日の十時でお願いします。保険証は必要ですか。": [
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "どようび"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "じゅうじ"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "ねが"
+    },
+    {
+      "start": 17,
+      "length": 2,
+      "reading": "ほけん"
+    },
+    {
+      "start": 19,
+      "length": 1,
+      "reading": "しょう"
+    },
+    {
+      "start": 21,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "はい、お持ちください。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "も"
+    }
+  ],
+  "今日はどうされましたか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きょう"
+    }
+  ],
+  "昨日からのどが痛くて、熱もあります。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きのう"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "いた"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "ねつ"
+    }
+  ],
+  "咳は出ますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "せき"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "で"
+    }
+  ],
+  "少し出ます。今朝は三十八度でした。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "で"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "けさ"
+    },
+    {
+      "start": 9,
+      "length": 4,
+      "reading": "さんじゅうはちど"
+    }
+  ],
+  "すみません、部屋のエアコンが動かないんです。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "へや"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "うご"
+    }
+  ],
+  "いつからですか。": [],
+  "昨日の夜からです。見に来ていただけますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きのう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "よる"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "み"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "き"
+    }
+  ],
+  "明日の午前中に伺います。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "あした"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ごぜん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "ちゅう"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "うかが"
+    }
+  ],
+  "配達完了になっていますが、荷物が見つからないんです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "はいたつ"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "かんりょう"
+    },
+    {
+      "start": 13,
+      "length": 2,
+      "reading": "にもつ"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "お届け先の住所を確認してもよろしいですか。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "とど"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "さき"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "じゅうしょ"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "はい。追跡番号もお伝えします。": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ついせき"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "ばんごう"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "つた"
+    }
+  ],
+  "ありがとうございます。配達状況を調べます。": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "はいたつ"
+    },
+    {
+      "start": 13,
+      "length": 2,
+      "reading": "じょうきょう"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "しら"
+    }
+  ],
+  "すみません、提出方法がよく分からなかったんですが。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ていしゅつ"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "ほうほう"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "このフォームから送ってください。": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "締め切りは金曜日ということで合っていますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "し"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "き"
+    },
+    {
+      "start": 5,
+      "length": 3,
+      "reading": "きんようび"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "はい、金曜日の午後五時までです。": [
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "きんようび"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "ごご"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ご"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "じ"
+    }
+  ],
+  "土曜日、一緒に映画を見に行かない？": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "どようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "いっしょ"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "えいが"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "み"
+    },
+    {
+      "start": 12,
+      "length": 1,
+      "reading": "い"
+    }
+  ],
+  "誘ってくれてありがとう。その日は予定があるんだ。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "さそ"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "ひ"
+    },
+    {
+      "start": 16,
+      "length": 2,
+      "reading": "よてい"
+    }
+  ],
+  "そっか。また今度行こう。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "こんど"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "い"
+    }
+  ],
+  "うん、また誘ってね。": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "さそ"
+    }
+  ],
+  "すみません、電車が遅れていて、十分ほど遅れそうです。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "でんしゃ"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "おく"
+    },
+    {
+      "start": 15,
+      "length": 2,
+      "reading": "じゅっぷん"
+    },
+    {
+      "start": 19,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "分かりました。改札の前で待っています。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "わ"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "かいさつ"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "まえ"
+    },
+    {
+      "start": 12,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "着いたら連絡します。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "つ"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "れんらく"
+    }
+  ],
+  "はい、気をつけて来てください。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "き"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "き"
+    }
+  ],
+  "替え玉は百五十円です。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "か"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "だま"
+    },
+    {
+      "start": 4,
+      "length": 4,
+      "reading": "ひゃくごじゅうえん"
+    }
+  ],
+  "すみません、「替え玉」はどういう意味ですか。": [
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "か"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "だま"
+    },
+    {
+      "start": 16,
+      "length": 2,
+      "reading": "いみ"
+    }
+  ],
+  "麺のおかわりです。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "めん"
+    }
+  ],
+  "なるほど。では、一つお願いします。": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ひと"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、ちょっといいですか。": [],
+  "すみません、ちょっといいですか……": [],
+  "すみません、お聞きしたいんですが。": [
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "き"
+    }
+  ],
+  "すみません、お聞きしたいんですが……": [
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "き"
+    }
+  ],
+  "すみません、少し伺いたいことがあるんですが。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "うかが"
+    }
+  ],
+  "すみません、少し伺いたいことがあるんですが……": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "うかが"
+    }
+  ],
+  "すみません、道を教えてください。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "みち"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "おし"
+    }
+  ],
+  "すみません、道を教えてください……": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "みち"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "おし"
+    }
+  ],
+  "すみません、この近くの駅について聞きたいんですが。": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ちか"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "き"
+    }
+  ],
+  "すみません、この近くの駅について聞きたいんですが……": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ちか"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "き"
+    }
+  ],
+  "すみません、注文について確認したいんですが。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ちゅうもん"
+    },
+    {
+      "start": 12,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "すみません、注文について確認したいんですが……": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ちゅうもん"
+    },
+    {
+      "start": 12,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "すみません、少し相談したいんですが。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "そうだん"
+    }
+  ],
+  "すみません、少し相談したいんですが……": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "そうだん"
+    }
+  ],
+  "すみません、近くに郵便局はありますか。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ちか"
+    },
+    {
+      "start": 9,
+      "length": 2,
+      "reading": "ゆうびん"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "きょく"
+    }
+  ],
+  "すみません、近くに郵便局はありますか……": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ちか"
+    },
+    {
+      "start": 9,
+      "length": 2,
+      "reading": "ゆうびん"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "きょく"
+    }
+  ],
+  "お水をお願いします。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "みず"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "お水を……": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "みず"
+    }
+  ],
+  "レシートをお願いします。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "レシートを……": [],
+  "お箸をお願いします。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はし"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "お箸を……": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はし"
+    }
+  ],
+  "袋をお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "ふくろ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "袋を……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "ふくろ"
+    }
+  ],
+  "メニューをお願いします。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "メニューを……": [],
+  "お茶をお願いします。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "ちゃ"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "お茶を……": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "ちゃ"
+    }
+  ],
+  "コーヒーをお願いします。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "コーヒーを……": [],
+  "おしぼりをお願いします。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "おしぼりを……": [],
+  "領収書をお願いします。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "りょうしゅう"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "領収書を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "りょうしゅう"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょ"
+    }
+  ],
+  "おかわりをお願いします。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "おかわりを……": [],
+  "塩ラーメンは……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "しお"
+    }
+  ],
+  "英語のメニューはありますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "えいご"
+    }
+  ],
+  "英語のメニューは……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "えいご"
+    }
+  ],
+  "Mサイズはありますか。": [],
+  "Mサイズは……": [],
+  "空いている席はありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "せき"
+    }
+  ],
+  "空いている席は……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "せき"
+    }
+  ],
+  "子ども用の椅子はありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "よう"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "いす"
+    }
+  ],
+  "子ども用の椅子は……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "よう"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "いす"
+    }
+  ],
+  "駐車場はありますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうしゃ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "じょう"
+    }
+  ],
+  "駐車場は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうしゃ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "じょう"
+    }
+  ],
+  "温かいお茶はありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あたた"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ちゃ"
+    }
+  ],
+  "温かいお茶は……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あたた"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ちゃ"
+    }
+  ],
+  "電池はありますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんち"
+    }
+  ],
+  "電池は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんち"
+    }
+  ],
+  "お手洗いはどこですか。": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "てあら"
+    }
+  ],
+  "お手洗いは……": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "てあら"
+    }
+  ],
+  "改札はどこですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かいさつ"
+    }
+  ],
+  "改札は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かいさつ"
+    }
+  ],
+  "駅の出口はどこですか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "でぐち"
+    }
+  ],
+  "駅の出口は……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "でぐち"
+    }
+  ],
+  "入口はどこですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "いりぐち"
+    }
+  ],
+  "入口は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "いりぐち"
+    }
+  ],
+  "出口はどこですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でぐち"
+    }
+  ],
+  "出口は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でぐち"
+    }
+  ],
+  "駐車場はどこですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうしゃ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "じょう"
+    }
+  ],
+  "バス停はどこですか。": [
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "てい"
+    }
+  ],
+  "バス停は……": [
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "てい"
+    }
+  ],
+  "ATMはどこですか。": [],
+  "ATMは……": [],
+  "エレベーターはどこですか。": [],
+  "エレベーターは……": [],
+  "予約できますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    }
+  ],
+  "予約……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    }
+  ],
+  "試着できますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しちゃく"
+    }
+  ],
+  "試着……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しちゃく"
+    }
+  ],
+  "変更できますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "へんこう"
+    }
+  ],
+  "変更……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "へんこう"
+    }
+  ],
+  "キャンセルできますか。": [],
+  "キャンセル……": [],
+  "返品できますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "へんぴん"
+    }
+  ],
+  "返品……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "へんぴん"
+    }
+  ],
+  "延長できますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "えんちょう"
+    }
+  ],
+  "延長……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "えんちょう"
+    }
+  ],
+  "持ち帰りできますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "持ち帰り……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "注文できますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうもん"
+    }
+  ],
+  "注文……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうもん"
+    }
+  ],
+  "もう一度言っていただけますか。": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "い"
+    }
+  ],
+  "もう一度言って……": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "い"
+    }
+  ],
+  "こちらを見ていただけますか。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "こちらを見て……": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "確認していただけますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "確認して……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "少し待っていただけますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "少し待って……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "名前を書いていただけますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "なまえ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "名前を書いて……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "なまえ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "説明していただけますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "説明して……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "メールで送っていただけますか。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "メールで送って……": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "教えていただけますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "おし"
+    }
+  ],
+  "教えて……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "おし"
+    }
+  ],
+  "ゆっくり話していただけますか。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "はな"
+    }
+  ],
+  "ゆっくり話して……": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "はな"
+    }
+  ],
+  "見せていただけますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "見せて……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "ここに座ってもいいですか。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すわ"
+    }
+  ],
+  "ここに座っても……": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すわ"
+    }
+  ],
+  "写真を撮ってもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しゃしん"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "と"
+    }
+  ],
+  "写真を撮っても……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しゃしん"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "と"
+    }
+  ],
+  "見てもいいですか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "見ても……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "ここに書いてもいいですか。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "ここに書いても……": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "試着しても……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しちゃく"
+    }
+  ],
+  "休んでもいいですか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "やす"
+    }
+  ],
+  "休んでも……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "やす"
+    }
+  ],
+  "荷物を置いてもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "にもつ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "お"
+    }
+  ],
+  "荷物を置いても……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "にもつ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "お"
+    }
+  ],
+  "ボタンを押してもいいですか。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "お"
+    }
+  ],
+  "ボタンを押しても……": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "お"
+    }
+  ],
+  "水を飲んでもいいですか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "みず"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "の"
+    }
+  ],
+  "水を飲んでも……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "みず"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "の"
+    }
+  ],
+  "ここで待ってもいいですか。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "ここで待っても……": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "持ち帰りにしたいんですが。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "……たいんですが。": [],
+  "明日に変更したいんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "あした"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "へんこう"
+    }
+  ],
+  "予約を取り直したいんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "と"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "なお"
+    }
+  ],
+  "席を変えたいんですが。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "せき"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "量を減らしたいんですが。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "りょう"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "へ"
+    }
+  ],
+  "早い時間に変えたいんですが。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "はや"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "じかん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "午後に変更したいんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ごご"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "へんこう"
+    }
+  ],
+  "一人分追加したいんですが。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "ひとりぶん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ついか"
+    }
+  ],
+  "部屋を見せてもらいたいんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "へや"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "予約をキャンセルしたいんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    }
+  ],
+  "ネギ抜きでお願いします。": [
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "ネギ……": [],
+  "わさび抜きでお願いします。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "わさび……": [],
+  "砂糖抜きでお願いします。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さとう"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "砂糖……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さとう"
+    }
+  ],
+  "ミルク抜きでお願いします。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "ミルク……": [],
+  "氷抜きでお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こおり"
+    },
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "氷……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こおり"
+    }
+  ],
+  "玉ねぎ抜きでお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "たま"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "玉ねぎ……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "たま"
+    }
+  ],
+  "マヨネーズ抜きでお願いします。": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "マヨネーズ……": [],
+  "からし抜きでお願いします。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "からし……": [],
+  "チーズ抜きでお願いします。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "チーズ……": [],
+  "しょうが抜きでお願いします。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ぬ"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "しょうが……": [],
+  "ご飯は少なめでお願いします。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はん"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "ご飯は少なめで……": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はん"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "味は薄めでお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あじ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "うす"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "味は薄めで……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あじ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "うす"
+    }
+  ],
+  "氷は少なめでお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こおり"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "氷は少なめで……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こおり"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "砂糖は少なめでお願いします。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さとう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "砂糖は少なめで……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さとう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "ソースは少なめでお願いします。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "ソースは少なめで……": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "麺は少なめでお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "めん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "麺は少なめで……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "めん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "油は少なめでお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あぶら"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "油は少なめで……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あぶら"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "塩は少なめでお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "しお"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "塩は少なめで……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "しお"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "辛さは控えめでお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "から"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ひか"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "辛さは控えめで……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "から"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ひか"
+    }
+  ],
+  "ミルクは少なめでお願いします。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "ミルクは少なめで……": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "普通と大盛りは、どう違いますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ふつう"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "おおも"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "普通と大盛りは……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ふつう"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "おおも"
+    }
+  ],
+  "アイスコーヒーとホットコーヒーは、どう違いますか。": [
+    {
+      "start": 19,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "アイスコーヒーとホットコーヒーは……": [],
+  "各駅停車と急行は、どう違いますか。": [
+    {
+      "start": 0,
+      "length": 4,
+      "reading": "かくえきていしゃ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "きゅうこう"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "各駅停車と急行は……": [
+    {
+      "start": 0,
+      "length": 4,
+      "reading": "かくえきていしゃ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "きゅうこう"
+    }
+  ],
+  "指定席と自由席は、どう違いますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "してい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "せき"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "じゆう"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "せき"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "指定席と自由席は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "してい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "せき"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "じゆう"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "せき"
+    }
+  ],
+  "片道切符と往復切符は、どう違いますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かたみち"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "きっぷ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "おうふく"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "きっぷ"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "片道切符と往復切符は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かたみち"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "きっぷ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "おうふく"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "きっぷ"
+    }
+  ],
+  "この商品とあの商品は、どう違いますか。": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "しょうひん"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "しょうひん"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "この商品とあの商品は……": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "しょうひん"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "しょうひん"
+    }
+  ],
+  "朝食付きと素泊まりは、どう違いますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちょうしょく"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "つ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "すど"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "朝食付きと素泊まりは……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちょうしょく"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "つ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "すど"
+    }
+  ],
+  "セットと単品は、どう違いますか。": [
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "たんぴん"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "セットと単品は……": [
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "たんぴん"
+    }
+  ],
+  "普通車とグリーン車は、どう違いますか。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "ふつうしゃ"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "しゃ"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "普通車とグリーン車は……": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "ふつうしゃ"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "しゃ"
+    }
+  ],
+  "AセットとBセットは、どう違いますか。": [
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "ちが"
+    }
+  ],
+  "AセットとBセットは……": [],
+  "卵は入っていますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "たまご"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "卵は……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "たまご"
+    }
+  ],
+  "送料は入っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "そうりょう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "送料は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "そうりょう"
+    }
+  ],
+  "砂糖は入っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さとう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "砂糖は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さとう"
+    }
+  ],
+  "牛乳は入っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ぎゅうにゅう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "牛乳は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ぎゅうにゅう"
+    }
+  ],
+  "肉は入っていますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "にく"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "肉は……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "にく"
+    }
+  ],
+  "小麦粉は入っていますか。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "こむぎこ"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "小麦粉は……": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "こむぎこ"
+    }
+  ],
+  "サービス料は入っていますか。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "りょう"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "サービス料は……": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "りょう"
+    }
+  ],
+  "駐車料金は入っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうしゃ"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "りょうきん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "駐車料金は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうしゃ"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "りょうきん"
+    }
+  ],
+  "野菜は入っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "やさい"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "野菜は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "やさい"
+    }
+  ],
+  "バターは入っていますか。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "バターは……": [],
+  "……ので、……。": [],
+  "急いでいるので、先に会計したいです。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "いそ"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "さき"
+    },
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "かいけい"
+    }
+  ],
+  "辛いものが苦手なので、辛くない料理をお願いします。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "から"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "にがて"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "から"
+    },
+    {
+      "start": 15,
+      "length": 2,
+      "reading": "りょうり"
+    },
+    {
+      "start": 19,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "日本語がまだ上手ではないので、ゆっくり話していただけますか。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "にほんご"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "じょうず"
+    },
+    {
+      "start": 19,
+      "length": 1,
+      "reading": "はな"
+    }
+  ],
+  "薬を飲んでいるので、お酒は飲めません。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "くすり"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "さけ"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "の"
+    }
+  ],
+  "時間がないので、先に注文したいです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じかん"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "さき"
+    },
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "ちゅうもん"
+    }
+  ],
+  "乳製品を避けているので、乳製品を使っていないものをお願いします。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "にゅうせいひん"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "さ"
+    },
+    {
+      "start": 12,
+      "length": 3,
+      "reading": "にゅうせいひん"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "つか"
+    },
+    {
+      "start": 26,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "体調がよくないので、今日は早く帰りたいです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "たいちょう"
+    },
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "きょう"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "はや"
+    },
+    {
+      "start": 15,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "どこで払えばいいですか。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はら"
+    }
+  ],
+  "……いいですか。": [],
+  "次は何をすればいいですか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "つぎ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "なに"
+    }
+  ],
+  "ここに名前を書けばいいですか。": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "なまえ"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "何番線に行けばいいですか。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "なんばんせん"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "い"
+    }
+  ],
+  "どの窓口で聞けばいいですか。": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "まどぐち"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "き"
+    }
+  ],
+  "いつまでに出せばいいですか。": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "だ"
+    }
+  ],
+  "何を持っていけばいいですか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "なに"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "も"
+    }
+  ],
+  "どうやって予約すればいいですか。": [
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "よやく"
+    }
+  ],
+  "予約は来週の火曜日ということで合っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "らいしゅう"
+    },
+    {
+      "start": 6,
+      "length": 3,
+      "reading": "かようび"
+    },
+    {
+      "start": 15,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "……ということで合っていますか。": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "追加料金はないということで合っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ついか"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "りょうきん"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "集合場所は駅の前ということで合っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しゅうごう"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ばしょ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "まえ"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "受付は十時からということで合っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "うけつけ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "じゅうじ"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "この書類を出せばいいということで合っていますか。": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "しょるい"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "だ"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "支払いは現金のみということで合っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しはら"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "げんきん"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "予約の変更は電話でするということで合っていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "へんこう"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "でんわ"
+    },
+    {
+      "start": 17,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "身分証は必要ですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "みぶん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょう"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "身分証は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "みぶん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょう"
+    }
+  ],
+  "予約は必要ですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "予約は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    }
+  ],
+  "パスポートは必要ですか。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "パスポートは……": [],
+  "保険証は必要ですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ほけん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょう"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "保険証は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ほけん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょう"
+    }
+  ],
+  "チケットは必要ですか。": [
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "チケットは……": [],
+  "印鑑は必要ですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "いんかん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "印鑑は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "いんかん"
+    }
+  ],
+  "紹介状は必要ですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しょうかい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "じょう"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "紹介状は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しょうかい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "じょう"
+    }
+  ],
+  "現金は必要ですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "げんきん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "現金は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "げんきん"
+    }
+  ],
+  "申込書は必要ですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "もうしこみ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょ"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "申込書は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "もうしこみ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょ"
+    }
+  ],
+  "学生証は必要ですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "がくせい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょう"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "学生証は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "がくせい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょう"
+    }
+  ],
+  "すみません、……お願いします。": [
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、もう一度、ゆっくりお願いします。": [
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、最後のところをもう一度お願いします。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "さいご"
+    },
+    {
+      "start": 15,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 18,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、今の説明をもう一度お願いします。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "いま"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "せつめい"
+    },
+    {
+      "start": 13,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、数字をもう一度お願いします。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "すうじ"
+    },
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、駅の名前をもう一度お願いします。": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "なまえ"
+    },
+    {
+      "start": 13,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、住所をもう一度お願いします。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "じゅうしょ"
+    },
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、予約日をもう一度お願いします。": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "び"
+    },
+    {
+      "start": 12,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 15,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "「替え玉」はどういう意味ですか。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "か"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "だま"
+    },
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "いみ"
+    }
+  ],
+  "「替え玉」は……": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "か"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "だま"
+    }
+  ],
+  "「普通盛り」はどういう意味ですか。": [
+    {
+      "start": 1,
+      "length": 3,
+      "reading": "ふつうも"
+    },
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "いみ"
+    }
+  ],
+  "「普通盛り」は……": [
+    {
+      "start": 1,
+      "length": 3,
+      "reading": "ふつうも"
+    }
+  ],
+  "「乗り換え」はどういう意味ですか。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "か"
+    },
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "いみ"
+    }
+  ],
+  "「乗り換え」は……": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "「改札」はどういう意味ですか。": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "かいさつ"
+    },
+    {
+      "start": 9,
+      "length": 2,
+      "reading": "いみ"
+    }
+  ],
+  "「改札」は……": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "かいさつ"
+    }
+  ],
+  "「領収書」はどういう意味ですか。": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "りょうしゅう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "しょ"
+    },
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "いみ"
+    }
+  ],
+  "「領収書」は……": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "りょうしゅう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "しょ"
+    }
+  ],
+  "「初診」はどういう意味ですか。": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "しょしん"
+    },
+    {
+      "start": 9,
+      "length": 2,
+      "reading": "いみ"
+    }
+  ],
+  "「初診」は……": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "しょしん"
+    }
+  ],
+  "「試着」はどういう意味ですか。": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "しちゃく"
+    },
+    {
+      "start": 9,
+      "length": 2,
+      "reading": "いみ"
+    }
+  ],
+  "「試着」は……": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "しちゃく"
+    }
+  ],
+  "「追跡番号」はどういう意味ですか。": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "ついせき"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ばんごう"
+    },
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "いみ"
+    }
+  ],
+  "「追跡番号」は……": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "ついせき"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ばんごう"
+    }
+  ],
+  "別の言い方で説明していただけますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "べつ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "い"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "かた"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "……説明していただけますか。": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "簡単な言葉で説明していただけますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かんたん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ことば"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "例を挙げて説明していただけますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "れい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "あ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "もう少し詳しく説明していただけますか。": [
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "くわ"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "順番に説明していただけますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅんばん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "ゆっくり説明していただけますか。": [
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "英語で説明していただけますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "えいご"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "もう一度最初から説明していただけますか。": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "さいしょ"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "金額がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きんがく"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "金額が……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きんがく"
+    }
+  ],
+  "最後の一言がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さいご"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ひとこと"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "最後の一言が……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さいご"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ひとこと"
+    }
+  ],
+  "数字がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "すうじ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "数字が……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "すうじ"
+    }
+  ],
+  "時間がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じかん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "時間が……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じかん"
+    }
+  ],
+  "駅の名前がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "なまえ"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "駅の名前が……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "なまえ"
+    }
+  ],
+  "条件がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じょうけん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "条件が……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じょうけん"
+    }
+  ],
+  "最初の説明がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さいしょ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "せつめい"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "最初の説明が……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さいしょ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "料金がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "りょうきん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "料金が……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "りょうきん"
+    }
+  ],
+  "住所がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅうしょ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "住所が……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅうしょ"
+    }
+  ],
+  "期限がよく分からなかったんですが。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きげん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "期限が……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きげん"
+    }
+  ],
+  "では、こちらでお願いします。": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、こちらで……": [],
+  "では、普通でお願いします。": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ふつう"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、普通で……": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ふつう"
+    }
+  ],
+  "では、持ち帰りでお願いします。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "かえ"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、持ち帰りで……": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "では、アイスコーヒーでお願いします。": [
+    {
+      "start": 12,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、アイスコーヒーで……": [],
+  "では、土曜日の十時でお願いします。": [
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "どようび"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "じゅうじ"
+    },
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、土曜日の十時で……": [
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "どようび"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "じゅうじ"
+    }
+  ],
+  "では、一つでお願いします。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ひと"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、一つで……": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ひと"
+    }
+  ],
+  "では、現金でお願いします。": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "げんきん"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、現金で……": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "げんきん"
+    }
+  ],
+  "では、Mサイズでお願いします。": [
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、Mサイズで……": [],
+  "では、禁煙席でお願いします。": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "きんえん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "せき"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、禁煙席で……": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "きんえん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "せき"
+    }
+  ],
+  "では、大盛りでお願いします。": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "おおも"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "では、大盛りで……": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "おおも"
+    }
+  ],
+  "いいえ、袋は大丈夫です。": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ふくろ"
+    },
+    {
+      "start": 6,
+      "length": 3,
+      "reading": "だいじょうぶ"
+    }
+  ],
+  "いいえ、袋は……": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ふくろ"
+    }
+  ],
+  "いいえ、レシートは大丈夫です。": [
+    {
+      "start": 9,
+      "length": 3,
+      "reading": "だいじょうぶ"
+    }
+  ],
+  "いいえ、レシートは……": [],
+  "いいえ、お箸は大丈夫です。": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "はし"
+    },
+    {
+      "start": 7,
+      "length": 3,
+      "reading": "だいじょうぶ"
+    }
+  ],
+  "いいえ、お箸は……": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "はし"
+    }
+  ],
+  "いいえ、スプーンは大丈夫です。": [
+    {
+      "start": 9,
+      "length": 3,
+      "reading": "だいじょうぶ"
+    }
+  ],
+  "いいえ、スプーンは……": [],
+  "いいえ、ストローは大丈夫です。": [
+    {
+      "start": 9,
+      "length": 3,
+      "reading": "だいじょうぶ"
+    }
+  ],
+  "いいえ、ストローは……": [],
+  "いいえ、おしぼりは大丈夫です。": [
+    {
+      "start": 9,
+      "length": 3,
+      "reading": "だいじょうぶ"
+    }
+  ],
+  "いいえ、おしぼりは……": [],
+  "いいえ、ポイントカードは大丈夫です。": [
+    {
+      "start": 12,
+      "length": 3,
+      "reading": "だいじょうぶ"
+    }
+  ],
+  "いいえ、ポイントカードは……": [],
+  "いいえ、おかわりは大丈夫です。": [
+    {
+      "start": 9,
+      "length": 3,
+      "reading": "だいじょうぶ"
+    }
+  ],
+  "いいえ、おかわりは……": [],
+  "すみません、やっぱり持ち帰りでお願いします。": [
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 12,
+      "length": 1,
+      "reading": "かえ"
+    },
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、やっぱり持ち帰りで……": [
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 12,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "すみません、やっぱり一つでお願いします。": [
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "ひと"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、やっぱり一つで……": [
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "ひと"
+    }
+  ],
+  "すみません、やっぱり二つでお願いします。": [
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "ふた"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、やっぱり二つで……": [
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "ふた"
+    }
+  ],
+  "すみません、やっぱりMサイズでお願いします。": [
+    {
+      "start": 16,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、やっぱりMサイズで……": [],
+  "すみません、やっぱりアイスコーヒーでお願いします。": [
+    {
+      "start": 19,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、やっぱりアイスコーヒーで……": [],
+  "すみません、やっぱり土曜日でお願いします。": [
+    {
+      "start": 10,
+      "length": 3,
+      "reading": "どようび"
+    },
+    {
+      "start": 15,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、やっぱり土曜日で……": [
+    {
+      "start": 10,
+      "length": 3,
+      "reading": "どようび"
+    }
+  ],
+  "すみません、やっぱり現金でお願いします。": [
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "げんきん"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、やっぱり現金で……": [
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "げんきん"
+    }
+  ],
+  "すみません、やっぱりこちらでお願いします。": [
+    {
+      "start": 15,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、やっぱりこちらで……": [],
+  "すみません、やっぱり普通でお願いします。": [
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "ふつう"
+    },
+    {
+      "start": 14,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "すみません、やっぱり普通で……": [
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "ふつう"
+    }
+  ],
+  "金曜日の午後は空いていますか。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "きんようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ごご"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "金曜日の午後は……": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "きんようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ごご"
+    }
+  ],
+  "明日の十時は空いていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "あした"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "じゅうじ"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "明日の十時は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "あした"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "じゅうじ"
+    }
+  ],
+  "水曜日の午前は空いていますか。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "すいようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ごぜん"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "水曜日の午前は……": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "すいようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ごぜん"
+    }
+  ],
+  "来週の月曜日は空いていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "らいしゅう"
+    },
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "げつようび"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "来週の月曜日は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "らいしゅう"
+    },
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "げつようび"
+    }
+  ],
+  "来月の一日は空いていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "らいげつ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ついたち"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "来月の一日は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "らいげつ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ついたち"
+    }
+  ],
+  "今週の土曜日は空いていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "こんしゅう"
+    },
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "どようび"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "今週の土曜日は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "こんしゅう"
+    },
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "どようび"
+    }
+  ],
+  "午後三時は空いていますか。": [
+    {
+      "start": 0,
+      "length": 4,
+      "reading": "ごごさんじ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "午後三時は……": [
+    {
+      "start": 0,
+      "length": 4,
+      "reading": "ごごさんじ"
+    }
+  ],
+  "夕方は空いていますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ゆうがた"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "夕方は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ゆうがた"
+    }
+  ],
+  "木曜日の夕方は空いていますか。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "もくようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ゆうがた"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "木曜日の夕方は……": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "もくようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ゆうがた"
+    }
+  ],
+  "十分ほど遅れそうです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅっぷん"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "……遅れそうです。": [
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "到着が少し遅れそうです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "とうちゃく"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "二十分ほど遅れそうです。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "にじゅっぷん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "三十分ほど遅れそうです。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "さんじゅっぷん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "一時間ほど遅れそうです。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "いちじかん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "予定より少し遅れそうです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よてい"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "電車が遅れていて、十分ほど遅れそうです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんしゃ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "おく"
+    },
+    {
+      "start": 9,
+      "length": 2,
+      "reading": "じゅっぷん"
+    },
+    {
+      "start": 13,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "道が混んでいて、少し遅れそうです。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "みち"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "こ"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "あと五分ほど遅れそうです。": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ごふん"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "到着が十五分ほど遅れそうです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "とうちゃく"
+    },
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "じゅうごふん"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "エアコンが動かないんです。": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "うご"
+    }
+  ],
+  "エアコンが動かない……": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "うご"
+    }
+  ],
+  "のどが痛いんです。": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "のどが痛い……": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "頭が痛いんです。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あたま"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "頭が痛い……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あたま"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "鼻がつまっているんです。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "はな"
+    }
+  ],
+  "鼻がつまっている……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "はな"
+    }
+  ],
+  "荷物が見つからないんです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "にもつ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "荷物が見つからない……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "にもつ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "電車が遅れているんです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんしゃ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "電車が遅れている……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんしゃ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "パソコンが使えないんです。": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "つか"
+    }
+  ],
+  "パソコンが使えない……": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "つか"
+    }
+  ],
+  "水が出ないんです。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "みず"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "で"
+    }
+  ],
+  "水が出ない……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "みず"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "で"
+    }
+  ],
+  "電話がつながらないんです。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんわ"
+    }
+  ],
+  "電話がつながらない……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんわ"
+    }
+  ],
+  "お腹が痛いんです。": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "なか"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "お腹が痛い……": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "なか"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "辛くないもので、おすすめはありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "から"
+    }
+  ],
+  "……で、おすすめはありますか。": [],
+  "一人でも入りやすいお店で、おすすめはありますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ひとり"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "はい"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "みせ"
+    }
+  ],
+  "子どもでも食べやすい料理で、おすすめはありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "た"
+    },
+    {
+      "start": 10,
+      "length": 2,
+      "reading": "りょうり"
+    }
+  ],
+  "静かなカフェで、おすすめはありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "しず"
+    }
+  ],
+  "駅に近いホテルで、おすすめはありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "ちか"
+    }
+  ],
+  "朝早くから開いている店で、おすすめはありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あさ"
+    },
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はや"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "あ"
+    },
+    {
+      "start": 10,
+      "length": 1,
+      "reading": "みせ"
+    }
+  ],
+  "野菜が多いメニューで、おすすめはありますか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "やさい"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "おお"
+    }
+  ],
+  "量が少なめの料理で、おすすめはありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "りょう"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "りょうり"
+    }
+  ],
+  "甘い飲み物で、おすすめはありますか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あま"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "もの"
+    }
+  ],
+  "これは全部でいくらですか。": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "これは……": [],
+  "診察料は全部でいくらですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しんさつ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "りょう"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "診察料は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しんさつ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "りょう"
+    }
+  ],
+  "商品と送料は全部でいくらですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しょうひん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "そうりょう"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "商品と送料は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しょうひん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "そうりょう"
+    }
+  ],
+  "大人二人の入場料は全部でいくらですか。": [
+    {
+      "start": 0,
+      "length": 4,
+      "reading": "おとなふたり"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "にゅうじょう"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "りょう"
+    },
+    {
+      "start": 9,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "大人二人の入場料は……": [
+    {
+      "start": 0,
+      "length": 4,
+      "reading": "おとなふたり"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "にゅうじょう"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "りょう"
+    }
+  ],
+  "二人分は全部でいくらですか。": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "ふたりぶん"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "二人分は……": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "ふたりぶん"
+    }
+  ],
+  "ランチセットは全部でいくらですか。": [
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "ランチセットは……": [],
+  "往復の切符は全部でいくらですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "おうふく"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "きっぷ"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "往復の切符は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "おうふく"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "きっぷ"
+    }
+  ],
+  "薬代と診察料は全部でいくらですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "くすりだい"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "しんさつ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "りょう"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "薬代と診察料は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "くすりだい"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "しんさつ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "りょう"
+    }
+  ],
+  "部品代と修理代は全部でいくらですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ぶひん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "だい"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "しゅうり"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "だい"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "部品代と修理代は……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ぶひん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "だい"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "しゅうり"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "だい"
+    }
+  ],
+  "このシャツ二枚は全部でいくらですか。": [
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "にまい"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "このシャツ二枚は……": [
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "にまい"
+    }
+  ],
+  "ありがとうございます。教えていただいて、助かりました。": [
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "おし"
+    },
+    {
+      "start": 20,
+      "length": 1,
+      "reading": "たす"
+    }
+  ],
+  "ありがとうございます。教えて……": [
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "おし"
+    }
+  ],
+  "ありがとうございます。対応していただいて、助かりました。": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "たいおう"
+    },
+    {
+      "start": 21,
+      "length": 1,
+      "reading": "たす"
+    }
+  ],
+  "ありがとうございます。対応して……": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "たいおう"
+    }
+  ],
+  "ありがとうございます。案内していただいて、助かりました。": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "あんない"
+    },
+    {
+      "start": 21,
+      "length": 1,
+      "reading": "たす"
+    }
+  ],
+  "ありがとうございます。案内して……": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "あんない"
+    }
+  ],
+  "ありがとうございます。確認していただいて、助かりました。": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "かくにん"
+    },
+    {
+      "start": 21,
+      "length": 1,
+      "reading": "たす"
+    }
+  ],
+  "ありがとうございます。確認して……": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "ありがとうございます。説明していただいて、助かりました。": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "せつめい"
+    },
+    {
+      "start": 21,
+      "length": 1,
+      "reading": "たす"
+    }
+  ],
+  "ありがとうございます。説明して……": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "ありがとうございます。手伝っていただいて、助かりました。": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "てつだ"
+    },
+    {
+      "start": 21,
+      "length": 1,
+      "reading": "たす"
+    }
+  ],
+  "ありがとうございます。手伝って……": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "てつだ"
+    }
+  ],
+  "ありがとうございます。待っていただいて、助かりました。": [
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "ま"
+    },
+    {
+      "start": 20,
+      "length": 1,
+      "reading": "たす"
+    }
+  ],
+  "ありがとうございます。待って……": [
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "ありがとうございます。送っていただいて、助かりました。": [
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "おく"
+    },
+    {
+      "start": 20,
+      "length": 1,
+      "reading": "たす"
+    }
+  ],
+  "ありがとうございます。送って……": [
+    {
+      "start": 11,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "予定を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よてい"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "予定を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よてい"
+    }
+  ],
+  "注文を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうもん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "注文を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうもん"
+    }
+  ],
+  "予約内容を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ないよう"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "予約内容を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ないよう"
+    }
+  ],
+  "時間を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じかん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "時間を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じかん"
+    }
+  ],
+  "住所を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅうしょ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "住所を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅうしょ"
+    }
+  ],
+  "料金を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "りょうきん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "料金を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "りょうきん"
+    }
+  ],
+  "名前を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "なまえ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "名前を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "なまえ"
+    }
+  ],
+  "提出方法を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ていしゅつ"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ほうほう"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "提出方法を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ていしゅつ"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ほうほう"
+    }
+  ],
+  "持ち物を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "もの"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "持ち物を……": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "もの"
+    }
+  ],
+  "日時を確認してもいいですか。": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "にちじ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "日時を……": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "にちじ"
+    }
+  ],
+  "[物]はどこにありますか": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "もの"
+    }
+  ],
+  "～てもらえますか": [],
+  "～てください": [],
+  "んですが": [],
+  "できますか": [],
+  "少なめ": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "薄め": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "うす"
+    }
+  ],
+  "ぐらい": [],
+  "すみません、これ、温めてもらえますか。": [
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "あたた"
+    }
+  ],
+  "一つ": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "ひと"
+    }
+  ],
+  "塩ラーメン": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "しお"
+    }
+  ],
+  "味は薄めにできますか": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あじ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "うす"
+    }
+  ],
+  "普通でお願いします": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ふつう"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "アレルギー": [],
+  "卵抜き": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "たまご"
+    },
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "です／ます": [],
+  "お弁当、…": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "べんとう"
+    }
+  ],
+  "はい、お…": [],
+  "お箸はおつ…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はし"
+    }
+  ],
+  "一膳お願いしま…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "いちぜん"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "塩ラーメン…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "しお"
+    }
+  ],
+  "はい、あります。…": [],
+  "では、塩ラーメンを一…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "しお"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "ひと"
+    }
+  ],
+  "麺の硬さは…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "めん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "かた"
+    }
+  ],
+  "すみません、この料理…": [
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "りょうり"
+    }
+  ],
+  "ソースに少し…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すこ"
+    }
+  ],
+  "卵アレルギーがあるので、…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "たまご"
+    }
+  ],
+  "厨房に確認しますの…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうぼう"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "店内でお召し上がり…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "てんない"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "め"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "持ち帰りで…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "お飲み物は何…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "もの"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "なに"
+    }
+  ],
+  "アイスコーヒーを一つ…": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ひと"
+    }
+  ],
+  "すみません、このシャ…": [],
+  "在庫を確認します…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ざいこ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "試着しても…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しちゃく"
+    }
+  ],
+  "はい。試着室…": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "しちゃく"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "しつ"
+    }
+  ],
+  "クレジットカ…": [],
+  "はい。こちらにカ…": [],
+  "すみません、も…": [],
+  "この端末にカード…": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "たんまつ"
+    }
+  ],
+  "すみません、新宿へ行…": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "しんじゅく"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "い"
+    }
+  ],
+  "三番線です。次の…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "さんばんせん"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "つぎ"
+    }
+  ],
+  "乗り換えは…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "はい、途中で…": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "とちゅう"
+    }
+  ],
+  "初診の予約をしたいんです…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しょしん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "よやく"
+    }
+  ],
+  "金曜日はいっぱいですが…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "きんようび"
+    }
+  ],
+  "では、土曜日の十時でお…": [
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "どようび"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "じゅうじ"
+    }
+  ],
+  "はい、お持…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "も"
+    }
+  ],
+  "今日はどう…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きょう"
+    }
+  ],
+  "昨日からのどが痛…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きのう"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "咳は出…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "せき"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "で"
+    }
+  ],
+  "少し出ます。今朝…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "で"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "けさ"
+    }
+  ],
+  "すみません、部屋の…": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "へや"
+    }
+  ],
+  "いつから…": [],
+  "昨日の夜からです。…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きのう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "よる"
+    }
+  ],
+  "明日の午前…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "あした"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ごぜん"
+    }
+  ],
+  "配達完了になっています…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "はいたつ"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "かんりょう"
+    }
+  ],
+  "お届け先の住所を確認…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "とど"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "さき"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "じゅうしょ"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "はい。追跡番号…": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ついせき"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "ばんごう"
+    }
+  ],
+  "ありがとうございま…": [],
+  "すみません、提出方法…": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ていしゅつ"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "ほうほう"
+    }
+  ],
+  "このフォームか…": [],
+  "締め切りは金曜日と…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "し"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "き"
+    },
+    {
+      "start": 5,
+      "length": 3,
+      "reading": "きんようび"
+    }
+  ],
+  "はい、金曜日の…": [
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "きんようび"
+    }
+  ],
+  "土曜日、一緒に…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "どようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "いっしょ"
+    }
+  ],
+  "誘ってくれてありがと…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "さそ"
+    }
+  ],
+  "そっか。ま…": [],
+  "うん、ま…": [],
+  "すみません、電車が遅れ…": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "でんしゃ"
+    },
+    {
+      "start": 9,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "分かりました。改札…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "わ"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "かいさつ"
+    }
+  ],
+  "着いたら…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "つ"
+    }
+  ],
+  "はい、気をつ…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "き"
+    }
+  ],
+  "替え玉は百五十円…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "か"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "だま"
+    },
+    {
+      "start": 4,
+      "length": 4,
+      "reading": "ひゃくごじゅうえん"
+    }
+  ],
+  "すみません、「替え…": [
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "麺のおか…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "めん"
+    }
+  ],
+  "なるほど。では…": [],
+  "すみません、ち…": [],
+  "すみません、お…": [],
+  "すみません、少し伺…": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "うかが"
+    }
+  ],
+  "すみません、道…": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "みち"
+    }
+  ],
+  "すみません、この近く…": [
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "ちか"
+    }
+  ],
+  "すみません、注文に…": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ちゅうもん"
+    }
+  ],
+  "すみません、少し…": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "すこ"
+    }
+  ],
+  "すみません、近く…": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "ちか"
+    }
+  ],
+  "お水をお…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "みず"
+    }
+  ],
+  "レシートを…": [],
+  "お箸をお…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はし"
+    }
+  ],
+  "袋をお願…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "ふくろ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ねが"
+    }
+  ],
+  "メニューを…": [],
+  "お茶をお…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "ちゃ"
+    }
+  ],
+  "コーヒーを…": [],
+  "おしぼりを…": [],
+  "領収書をお…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "りょうしゅう"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょ"
+    }
+  ],
+  "おかわりを…": [],
+  "英語のメニュ…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "えいご"
+    }
+  ],
+  "Mサイズは…": [],
+  "空いている席…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "せき"
+    }
+  ],
+  "子ども用の椅子…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "よう"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "いす"
+    }
+  ],
+  "駐車場は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうしゃ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "じょう"
+    }
+  ],
+  "温かいお茶…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あたた"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ちゃ"
+    }
+  ],
+  "電池はあ…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんち"
+    }
+  ],
+  "お手洗いは…": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "てあら"
+    }
+  ],
+  "改札はど…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かいさつ"
+    }
+  ],
+  "駅の出口は…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "でぐち"
+    }
+  ],
+  "入口はど…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "いりぐち"
+    }
+  ],
+  "出口はど…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でぐち"
+    }
+  ],
+  "バス停は…": [
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "てい"
+    }
+  ],
+  "ATMは…": [],
+  "エレベーター…": [],
+  "予約でき…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    }
+  ],
+  "試着でき…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しちゃく"
+    }
+  ],
+  "変更でき…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "へんこう"
+    }
+  ],
+  "キャンセル…": [],
+  "返品でき…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "へんぴん"
+    }
+  ],
+  "延長でき…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "えんちょう"
+    }
+  ],
+  "持ち帰り…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "注文でき…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうもん"
+    }
+  ],
+  "もう一度言っ…": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "い"
+    }
+  ],
+  "こちらを見て…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "確認してい…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "少し待ってい…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "名前を書いて…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "なまえ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "説明してい…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "メールで送っ…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "教えていた…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "おし"
+    }
+  ],
+  "ゆっくり話し…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "はな"
+    }
+  ],
+  "見せていた…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "ここに座って…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すわ"
+    }
+  ],
+  "写真を撮って…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しゃしん"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "と"
+    }
+  ],
+  "見てもい…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "ここに書いて…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "休んでも…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "やす"
+    }
+  ],
+  "荷物を置いて…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "にもつ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "お"
+    }
+  ],
+  "ボタンを押し…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "お"
+    }
+  ],
+  "水を飲んで…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "みず"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "の"
+    }
+  ],
+  "ここで待って…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ま"
+    }
+  ],
+  "持ち帰りにし…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "明日に変更し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "あした"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "へんこう"
+    }
+  ],
+  "予約を取り直…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "と"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "なお"
+    }
+  ],
+  "席を変えた…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "せき"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "量を減らし…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "りょう"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "へ"
+    }
+  ],
+  "早い時間に変…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "はや"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "じかん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "午後に変更し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ごご"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "へんこう"
+    }
+  ],
+  "一人分追加し…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "ひとりぶん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ついか"
+    }
+  ],
+  "部屋を見せても…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "へや"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "予約をキャンセ…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    }
+  ],
+  "ネギ抜きで…": [
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "わさび抜きで…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "砂糖抜きで…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さとう"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "ミルク抜きで…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "氷抜きでお…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こおり"
+    },
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "玉ねぎ抜きで…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "たま"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "マヨネーズ抜…": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "からし抜きで…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "チーズ抜きで…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "しょうが抜き…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ぬ"
+    }
+  ],
+  "ご飯は少なめ…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はん"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "味は薄めで…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あじ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "うす"
+    }
+  ],
+  "氷は少なめで…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こおり"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "砂糖は少なめ…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さとう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "ソースは少な…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "麺は少なめで…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "めん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "油は少なめで…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あぶら"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "塩は少なめで…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "しお"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "辛さは控えめ…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "から"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ひか"
+    }
+  ],
+  "ミルクは少な…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すく"
+    }
+  ],
+  "普通と大盛りは…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ふつう"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "おおも"
+    }
+  ],
+  "アイスコーヒーとホッ…": [],
+  "各駅停車と急行…": [
+    {
+      "start": 0,
+      "length": 4,
+      "reading": "かくえきていしゃ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "きゅうこう"
+    }
+  ],
+  "指定席と自由席…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "してい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "せき"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "じゆう"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "せき"
+    }
+  ],
+  "片道切符と往復切符…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かたみち"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "きっぷ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "おうふく"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "きっぷ"
+    }
+  ],
+  "この商品とあの商品…": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "しょうひん"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "しょうひん"
+    }
+  ],
+  "朝食付きと素泊ま…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちょうしょく"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "つ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "すど"
+    }
+  ],
+  "セットと単品は…": [
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "たんぴん"
+    }
+  ],
+  "普通車とグリーン…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "ふつうしゃ"
+    }
+  ],
+  "AセットとBセッ…": [],
+  "卵は入っ…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "たまご"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "送料は入っ…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "そうりょう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "砂糖は入っ…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さとう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "牛乳は入っ…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ぎゅうにゅう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "肉は入っ…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "にく"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "小麦粉は入…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "こむぎこ"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "サービス料は…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "りょう"
+    }
+  ],
+  "駐車料金は入…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうしゃ"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "りょうきん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "野菜は入っ…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "やさい"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "バターは入…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "急いでいるので、…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "いそ"
+    }
+  ],
+  "辛いものが苦手なので…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "から"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "にがて"
+    }
+  ],
+  "日本語がまだ上手ではない…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "にほんご"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "じょうず"
+    }
+  ],
+  "薬を飲んでいるの…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "くすり"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "の"
+    }
+  ],
+  "時間がないので、…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じかん"
+    }
+  ],
+  "乳製品を避けているので、乳製品…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "にゅうせいひん"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "さ"
+    },
+    {
+      "start": 12,
+      "length": 3,
+      "reading": "にゅうせいひん"
+    }
+  ],
+  "体調がよくないので…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "たいちょう"
+    }
+  ],
+  "どこで払え…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "はら"
+    }
+  ],
+  "次は何をすれ…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "つぎ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "なに"
+    }
+  ],
+  "ここに名前を…": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "なまえ"
+    }
+  ],
+  "何番線に行け…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "なんばんせん"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "い"
+    }
+  ],
+  "どの窓口で聞…": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "まどぐち"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "き"
+    }
+  ],
+  "いつまでに出…": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "だ"
+    }
+  ],
+  "何を持ってい…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "なに"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "も"
+    }
+  ],
+  "どうやって予約…": [
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "よやく"
+    }
+  ],
+  "予約は来週の火曜日と…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "らいしゅう"
+    },
+    {
+      "start": 6,
+      "length": 3,
+      "reading": "かようび"
+    }
+  ],
+  "追加料金はないとい…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ついか"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "りょうきん"
+    }
+  ],
+  "集合場所は駅の前と…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しゅうごう"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ばしょ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "まえ"
+    }
+  ],
+  "受付は十時からとい…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "うけつけ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "じゅうじ"
+    }
+  ],
+  "この書類を出せばいい…": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "しょるい"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "だ"
+    }
+  ],
+  "支払いは現金のみと…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しはら"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "げんきん"
+    }
+  ],
+  "予約の変更は電話です…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "へんこう"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "でんわ"
+    }
+  ],
+  "身分証は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "みぶん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょう"
+    }
+  ],
+  "予約は必要…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "パスポート…": [],
+  "保険証は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ほけん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょう"
+    }
+  ],
+  "チケットは…": [],
+  "印鑑は必要…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "いんかん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "紹介状は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しょうかい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "じょう"
+    }
+  ],
+  "現金は必要…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "げんきん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ひつよう"
+    }
+  ],
+  "申込書は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "もうしこみ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょ"
+    }
+  ],
+  "学生証は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "がくせい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "しょう"
+    }
+  ],
+  "すみません、もう一度…": [
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "いちど"
+    }
+  ],
+  "すみません、最後のと…": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "さいご"
+    }
+  ],
+  "すみません、今の説明…": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "いま"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "すみません、数字…": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "すうじ"
+    }
+  ],
+  "すみません、駅の名前…": [
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 8,
+      "length": 2,
+      "reading": "なまえ"
+    }
+  ],
+  "すみません、住所…": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "じゅうしょ"
+    }
+  ],
+  "すみません、予約日…": [
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 8,
+      "length": 1,
+      "reading": "び"
+    }
+  ],
+  "「替え玉」はど…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "か"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "だま"
+    }
+  ],
+  "「普通盛り」は…": [
+    {
+      "start": 1,
+      "length": 3,
+      "reading": "ふつうも"
+    }
+  ],
+  "「乗り換え」は…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "か"
+    }
+  ],
+  "「改札」はど…": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "かいさつ"
+    }
+  ],
+  "「領収書」はど…": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "りょうしゅう"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "しょ"
+    }
+  ],
+  "「初診」はど…": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "しょしん"
+    }
+  ],
+  "「試着」はど…": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "しちゃく"
+    }
+  ],
+  "「追跡番号」は…": [
+    {
+      "start": 1,
+      "length": 2,
+      "reading": "ついせき"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ばんごう"
+    }
+  ],
+  "別の言い方で説明…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "べつ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "い"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "かた"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "簡単な言葉で説明…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "かんたん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ことば"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "例を挙げて説明…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "れい"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "あ"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "もう少し詳しく説明…": [
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すこ"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "くわ"
+    },
+    {
+      "start": 7,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "順番に説明し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅんばん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "ゆっくり説明し…": [
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "英語で説明し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "えいご"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "もう一度最初から…": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "いちど"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "さいしょ"
+    }
+  ],
+  "金額がよく分か…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きんがく"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "最後の一言がよく…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さいご"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ひとこと"
+    }
+  ],
+  "数字がよく分か…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "すうじ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "時間がよく分か…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じかん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "駅の名前がよく分…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "なまえ"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "条件がよく分か…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じょうけん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "最初の説明がよく…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "さいしょ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "料金がよく分か…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "りょうきん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "住所がよく分か…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅうしょ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "期限がよく分か…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "きげん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "わ"
+    }
+  ],
+  "では、こちら…": [],
+  "では、普通で…": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ふつう"
+    }
+  ],
+  "では、持ち帰…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "かえ"
+    }
+  ],
+  "では、アイスコー…": [],
+  "では、土曜日の…": [
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "どようび"
+    }
+  ],
+  "では、一つで…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "ひと"
+    }
+  ],
+  "では、現金で…": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "げんきん"
+    }
+  ],
+  "では、Mサイ…": [],
+  "では、禁煙席…": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "きんえん"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "せき"
+    }
+  ],
+  "では、大盛り…": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "おおも"
+    }
+  ],
+  "いいえ、袋…": [
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "ふくろ"
+    }
+  ],
+  "いいえ、レシ…": [],
+  "いいえ、お箸…": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "はし"
+    }
+  ],
+  "いいえ、スプ…": [],
+  "いいえ、スト…": [],
+  "いいえ、おし…": [],
+  "いいえ、ポイント…": [],
+  "いいえ、おか…": [],
+  "すみません、やっぱ…": [],
+  "すみません、やっ…": [],
+  "すみません、やっぱり…": [],
+  "金曜日の午後…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "きんようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ごご"
+    }
+  ],
+  "明日の十時は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "あした"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "じゅうじ"
+    }
+  ],
+  "水曜日の午前…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "すいようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ごぜん"
+    }
+  ],
+  "来週の月曜日…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "らいしゅう"
+    },
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "げつようび"
+    }
+  ],
+  "来月の一日は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "らいげつ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ついたち"
+    }
+  ],
+  "今週の土曜日…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "こんしゅう"
+    },
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "どようび"
+    }
+  ],
+  "午後三時は空…": [
+    {
+      "start": 0,
+      "length": 4,
+      "reading": "ごごさんじ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "夕方は空い…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ゆうがた"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "木曜日の夕方…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "もくようび"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ゆうがた"
+    }
+  ],
+  "十分ほど遅…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅっぷん"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "到着が少し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "とうちゃく"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "すこ"
+    }
+  ],
+  "二十分ほど…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "にじゅっぷん"
+    }
+  ],
+  "三十分ほど…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "さんじゅっぷん"
+    }
+  ],
+  "一時間ほど…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "いちじかん"
+    }
+  ],
+  "予定より少し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よてい"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "すこ"
+    }
+  ],
+  "電車が遅れていて…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんしゃ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "道が混んでいて…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "みち"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "こ"
+    }
+  ],
+  "あと五分ほど…": [
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ごふん"
+    }
+  ],
+  "到着が十五分…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "とうちゃく"
+    },
+    {
+      "start": 3,
+      "length": 3,
+      "reading": "じゅうごふん"
+    }
+  ],
+  "エアコンが動…": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "うご"
+    }
+  ],
+  "のどが痛…": [
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "頭が痛い…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あたま"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "鼻がつまっ…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "はな"
+    }
+  ],
+  "荷物が見つか…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "にもつ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "み"
+    }
+  ],
+  "電車が遅れ…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんしゃ"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "おく"
+    }
+  ],
+  "パソコンが使…": [
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "つか"
+    }
+  ],
+  "水が出な…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "みず"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "で"
+    }
+  ],
+  "電話がつなが…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "でんわ"
+    }
+  ],
+  "お腹が痛…": [
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "なか"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "いた"
+    }
+  ],
+  "辛くないもので、…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "から"
+    }
+  ],
+  "一人でも入りやすいお…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ひとり"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "はい"
+    }
+  ],
+  "子どもでも食べやすい…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "こ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "た"
+    }
+  ],
+  "静かなカフェで、…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "しず"
+    }
+  ],
+  "駅に近いホテルで…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "えき"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "ちか"
+    }
+  ],
+  "朝早くから開いている…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あさ"
+    },
+    {
+      "start": 1,
+      "length": 1,
+      "reading": "はや"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "あ"
+    }
+  ],
+  "野菜が多いメニュー…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "やさい"
+    },
+    {
+      "start": 3,
+      "length": 1,
+      "reading": "おお"
+    }
+  ],
+  "量が少なめの料理で…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "りょう"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "すく"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "りょうり"
+    }
+  ],
+  "甘い飲み物で、お…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "あま"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "の"
+    },
+    {
+      "start": 4,
+      "length": 1,
+      "reading": "もの"
+    }
+  ],
+  "これは全部で…": [
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "診察料は全部…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しんさつ"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "りょう"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "商品と送料は全部…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "しょうひん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "そうりょう"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "大人二人の入場料…": [
+    {
+      "start": 0,
+      "length": 4,
+      "reading": "おとなふたり"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "にゅうじょう"
+    },
+    {
+      "start": 7,
+      "length": 1,
+      "reading": "りょう"
+    }
+  ],
+  "二人分は全部…": [
+    {
+      "start": 0,
+      "length": 3,
+      "reading": "ふたりぶん"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "ランチセットは…": [],
+  "往復の切符は全部…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "おうふく"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "きっぷ"
+    },
+    {
+      "start": 6,
+      "length": 2,
+      "reading": "ぜんぶ"
+    }
+  ],
+  "薬代と診察料は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "くすりだい"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "しんさつ"
+    },
+    {
+      "start": 5,
+      "length": 1,
+      "reading": "りょう"
+    }
+  ],
+  "部品代と修理代は…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ぶひん"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "だい"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "しゅうり"
+    },
+    {
+      "start": 6,
+      "length": 1,
+      "reading": "だい"
+    }
+  ],
+  "このシャツ二枚は…": [
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "にまい"
+    }
+  ],
+  "ありがとうございます。…": [],
+  "ありがとうございます。対応…": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "たいおう"
+    }
+  ],
+  "ありがとうございます。案内…": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "あんない"
+    }
+  ],
+  "ありがとうございます。確認…": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "ありがとうございます。説明…": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "せつめい"
+    }
+  ],
+  "ありがとうございます。手伝…": [
+    {
+      "start": 11,
+      "length": 2,
+      "reading": "てつだ"
+    }
+  ],
+  "予定を確認し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よてい"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "注文を確認し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ちゅうもん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "予約内容を確認…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "よやく"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ないよう"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "時間を確認し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じかん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "住所を確認し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "じゅうしょ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "料金を確認し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "りょうきん"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "名前を確認し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "なまえ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "提出方法を確認…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "ていしゅつ"
+    },
+    {
+      "start": 2,
+      "length": 2,
+      "reading": "ほうほう"
+    },
+    {
+      "start": 5,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "持ち物を確認…": [
+    {
+      "start": 0,
+      "length": 1,
+      "reading": "も"
+    },
+    {
+      "start": 2,
+      "length": 1,
+      "reading": "もの"
+    },
+    {
+      "start": 4,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ],
+  "日時を確認し…": [
+    {
+      "start": 0,
+      "length": 2,
+      "reading": "にちじ"
+    },
+    {
+      "start": 3,
+      "length": 2,
+      "reading": "かくにん"
+    }
+  ]
+}

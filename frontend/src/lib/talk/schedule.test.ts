@@ -20,6 +20,10 @@ import { setTalkContentForTest, type TalkContent } from "./content";
 import { allCardKeys, newCardOrder } from "./cards";
 import {
   answerForHints,
+  canUndoTalk,
+  talkSceneCollection,
+  canExtendTalkTasks,
+  extendTalkTasks,
   createTalkTasks,
   ensureTalkTables,
   materializeTalkCards,
@@ -187,8 +191,90 @@ describe("开口练习的卡片流水与当天清单", () => {
     expect(pickTalkNext("2026-10-01")).toBe("f:F02");
     expect(talkProgress("2026-10-01")).toEqual({ total: 6, done: 0, remaining: 6 });
     testDb.run("UPDATE talk_memory SET fsrs_due = '2099-01-01T00:00:00.000Z' WHERE card_key = 'f:F02'");
-    expect(pickTalkNext("2026-10-01")).toBe("f:F01");
-    expect(talkProgress("2026-10-01")).toEqual({ total: 6, done: 1, remaining: 5 });
+    // 任务里即使到期日已推后，今天没答过也不能直接跳过（加餐会追加这类旧卡）。
+    expect(pickTalkNext("2026-10-01")).toBe("f:F02");
+    expect(talkProgress("2026-10-01")).toEqual({ total: 6, done: 0, remaining: 6 });
+  });
+
+  it("上一张只看指定学习日的流水，撤完即消失；昨天的作答不能撤", () => {
+    createTalkTasks();
+    expect(canUndoTalk()).toBe(false);
+    recordTalkAnswer("f:F02", 0, false);
+    expect(canUndoTalk()).toBe(true);
+    expect(canUndoTalk("2026-10-01")).toBe(false);
+    expect(undoLastTalkAnswer("2026-10-01")).toBeNull();
+    expect(undoLastTalkAnswer()).toBe("f:F02");
+    expect(canUndoTalk()).toBe(false);
+  });
+
+  it("图鉴只数 self 接话卡，公式和对方不算；答错也算见过，撤销后现场重算", () => {
+    createTalkTasks();
+    recordTalkAnswer("f:F02", 0, false);
+    expect(talkSceneCollection()[0]).toMatchObject({ id: "S02", seen: 0, total: 2, collected: false });
+    recordTalkAnswer("r:S02:1", 2, false);
+    expect(talkSceneCollection()[0]).toMatchObject({ seen: 1, collected: false });
+    recordTalkAnswer("r:S02:2", 0, false);
+    expect(talkSceneCollection()[0]).toMatchObject({ title: "便利店", image: "/talk/scenes/S02.jpg", seen: 2, total: 2, collected: true });
+    expect(talkSceneCollection()[1]).toMatchObject({ seen: 0, total: 2, collected: false });
+    undoLastTalkAnswer();
+    expect(talkSceneCollection()[0]).toMatchObject({ seen: 1, collected: false });
+  });
+
+  it("加餐接在原任务后，优先未见卡、再按到期日取旧卡；未来到期卡仍实际练习", () => {
+    materializeTalkCards();
+    const old = expectedOrder.slice(7);
+    old.forEach((key, index) => testDb.run(
+      "UPDATE talk_memory SET seen_count = 1, fsrs_due = ?, fsrs_state = 2 WHERE card_key = ?",
+      [`2099-01-0${3 - index}T00:00:00.000Z`, key]
+    ));
+    createTalkTasks();
+    const original = tasks();
+    for (const key of original) { recordTalkAnswer(key, 0, false); advance(); }
+    expect(pickTalkNext()).toBeNull();
+    expect(canExtendTalkTasks()).toBe(true);
+    expect(extendTalkTasks(today(), 5)).toBe(5);
+    expect(tasks()).toEqual([...original, ...expectedOrder.slice(5, 7), ...[...old].reverse()]);
+    expect(talkProgress()).toEqual({ total: 10, done: 5, remaining: 5 });
+    expect(pickTalkNext()).toBe(expectedOrder[5]);
+    for (const key of tasks().slice(5)) { expect(pickTalkNext()).toBe(key); recordTalkAnswer(key, 0, false); advance(); }
+    expect(talkProgress()).toEqual({ total: 10, done: 10, remaining: 0 });
+    expect(pickTalkNext()).toBeNull();
+    expect(canExtendTalkTasks()).toBe(false);
+    expect(extendTalkTasks(today(), 5)).toBe(0);
+    createTalkTasks();
+    expect(tasks()).toHaveLength(10);
+  });
+
+  it("不够五张只追加剩余数，已掌握/不在内容的旧卡不能追加，追加失败整批回滚", () => {
+    createTalkTasks();
+    testDb.run("UPDATE talk_memory SET known_forever = 1 WHERE card_key IN ('f:F00', 'f:F99')");
+    testDb.run("INSERT INTO talk_memory (card_key, seen_count) VALUES ('f:removed', 1)");
+    testDb.run("CREATE TRIGGER reject_extra BEFORE INSERT ON talk_tasks WHEN NEW.order_index = 6 BEGIN SELECT RAISE(ABORT, 'reject extra'); END");
+    expect(() => extendTalkTasks(today(), 5)).toThrow("reject extra");
+    expect(tasks()).toEqual(expectedOrder.slice(0, 5));
+    testDb.run("DROP TRIGGER reject_extra");
+    expect(extendTalkTasks(today(), 5)).toBe(3);
+    expect(tasks()).toEqual(expectedOrder.slice(0, 8));
+    expect(canExtendTalkTasks()).toBe(false);
+  });
+
+  it("追加任务进入本地增量，快照加增量重启仍保留清单和未作答旧卡", () => {
+    createTalkTasks();
+    advance();
+    const mark = currentMark();
+    const checkpoint = testDb.export();
+    extendTalkTasks(today(), 5);
+    const expectedTasks = tasks();
+    const expectedProgress = talkProgress();
+    const delta = collectDelta(mark);
+    expect(delta.rows.talk_tasks).toHaveLength(5);
+    const original = testDb;
+    testDb = new SQL.Database(checkpoint);
+    try {
+      applyDelta(delta);
+      expect(tasks()).toEqual(expectedTasks);
+      expect(talkProgress()).toEqual(expectedProgress);
+    } finally { original.close(); }
   });
 
   it.each([

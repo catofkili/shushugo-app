@@ -1,5 +1,5 @@
 import { firstValue, rowsFor } from "../study-core";
-import { talkContent, type TalkFormula, type TalkFiller } from "./content";
+import { talkFurigana, talkContent, type TalkFormula, type TalkFiller } from "./content";
 
 export type TalkHintLevel = 0 | 1 | 2 | 3;
 
@@ -52,7 +52,10 @@ const slotNames = (formula: TalkFormula): string[] => [...new Set([...formula.pa
 const fillerText = (formula: TalkFormula, group: Record<string, TalkFiller>): string => slotNames(formula).map((slot) => group[slot].ja).join("/");
 const answerStart = (answer: string): string => {
   const chars = [...answer];
-  return `${chars.slice(0, Math.max(2, Math.ceil(chars.length * 0.4))).join("")}…`;
+  let end = chars.slice(0, Math.max(2, Math.ceil(chars.length * 0.4))).join("").length;
+  const crossing = talkFurigana(answer).find((a) => a.start < end && a.start + a.length > end);
+  if (crossing) end = crossing.start + crossing.length;
+  return `${answer.slice(0, end)}…`;
 };
 
 const pickFillers = (formula: TalkFormula, key: string, random: () => number): Record<string, TalkFiller> | null => {
@@ -66,12 +69,22 @@ const pickFillers = (formula: TalkFormula, key: string, random: () => number): R
   const previous = firstValue<number>("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'talk_reviews'", [], 0)
     ? firstValue<string | null>("SELECT filler FROM talk_reviews WHERE card_key = ? ORDER BY reviewed_at DESC, id DESC LIMIT 1", [key], null)
     : null;
-  let candidates = learnedGroups.length ? learnedGroups : formula.fillers;
+  const levels = new Map(wordIds.length ? rowsFor(`SELECT id, jlpt_level FROM words WHERE id IN (${wordIds.map(() => "?").join(",")})`, wordIds)
+    .map((row) => [Number(row.id), Number(String(row.jlpt_level).replace(/^N/u, ""))]) : []);
+  const easiest = (groups: typeof formula.fillers) => {
+    const difficulty = (group: Record<string, TalkFiller>) => {
+      const ids = Object.values(group).flatMap((word) => word.wordId === undefined ? [] : [word.wordId]);
+      return ids.length ? Math.min(...ids.map((id) => levels.get(id) || 3)) : 3;
+    };
+    const level = Math.max(...groups.map(difficulty));
+    return groups.filter((group) => difficulty(group) === level);
+  };
+  let candidates = learnedGroups.length ? learnedGroups : easiest(formula.fillers);
   if (formula.fillers.length > 1 && previous !== null) {
     // 仅有的一组熟词刚用过时，回退到其它组，避免把同一张公式背成固定句子。
     const unused = candidates.filter((group) => fillerText(formula, group) !== previous);
     const alternatives = formula.fillers.filter((group) => fillerText(formula, group) !== previous);
-    candidates = unused.length ? unused : alternatives.length ? alternatives : candidates;
+    candidates = unused.length ? unused : alternatives.length ? easiest(alternatives) : candidates;
   }
   return candidates[Math.min(candidates.length - 1, Math.floor(random() * candidates.length))];
 };
@@ -113,7 +126,7 @@ export const talkCard = (key: string, options: TalkCardOptions = {}): TalkCard |
     sceneId: scene.id,
     sceneTitle: scene.title,
     image: `/talk/scenes/${scene.id}.jpg`,
-    prompt: partnerLine ? "接着对方的话回答。" : line.zh,
+    prompt: partnerLine ? "接着对方的话回答" : line.zh,
     ...(partnerLine ? { partnerLine } : {}),
     hints: [...(partnerLine ? [`${partnerLine.ja}\n${partnerLine.zh}`] : []), line.zh, answerStart(line.ja)],
     answer: { ja: line.ja, zh: line.zh },

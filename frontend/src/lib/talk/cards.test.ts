@@ -9,6 +9,7 @@ let SQL: SqlJsStatic;
 const seed = new Uint8Array(readFileSync(fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url))));
 vi.mock("../database", () => ({ getDatabase: () => testDb, initDatabase: async () => testDb }));
 
+import currentContent from "../../data/talk_content.json";
 import { setTalkContentForTest } from "./content";
 import { newCardOrder, talkCard } from "./cards";
 
@@ -73,12 +74,43 @@ describe("开口练习卡片候选与顺序", () => {
     expect(newCardOrder()).toEqual(["f:F02", "f:F11", "r:S02:1", "r:S02:2", "f:F03", "r:S01:0", "f:F01", "f:F99"]);
   });
 
-  it("每次随机挑整组，学过的词优先；没有学过的词时用全部候选", () => {
+  it("每次随机挑整组，学过的词优先；没有学过的词时用最易候选", () => {
     expect(talkCard("f:F02", { random: () => 0 })?.filler).toBe("水");
     expect(talkCard("f:F02", { random: () => 0.99 })?.filler).toBe("牛乳");
     learn(259);
     expect(talkCard("f:F02", { random: () => 0 })?.filler).toBe("お茶");
     expect(talkCard("f:F02", { random: () => 0.99 })?.filler).toBe("お茶");
+  });
+
+  it("真实新库 F02 抽 50 次始终在 N5 档，不抽到領収書；避重仍在最易档", () => {
+    setTalkContentForTest(currentContent);
+    const formula = currentContent.formulas.find((f) => f.id === "F02")!;
+    const easiest = new Set(formula.fillers.filter((group) => {
+      const ids = Object.values(group).flatMap((word) => "wordId" in word ? [word.wordId as number] : []);
+      return ids.length > 0 && ids.every((id) => testDb.exec(`SELECT jlpt_level FROM words WHERE id = ${id}`)[0].values[0][0] === "N5");
+    }).map((group) => Object.values(group).map((word) => word.ja).join("/")));
+    expect(easiest.size).toBeGreaterThan(1);
+    for (let index = 0; index < 50; index++) {
+      const card = talkCard("f:F02", { random: () => index / 50 })!;
+      expect(easiest.has(card.filler!)).toBe(true);
+      expect(card.filler).not.toBe("領収書");
+      previous(card.key, card.filler!, index + 1);
+      expect(talkCard(card.key, { random: () => index / 50 })?.filler).not.toBe(card.filler);
+    }
+  });
+
+  it("取组内最难等级；无 wordId 的组算 N3；唯一熟组用过后仍按难度回退", () => {
+    testDb.run("UPDATE words SET jlpt_level = 'N2' WHERE id = 449");
+    testDb.run("UPDATE words SET jlpt_level = 'N4' WHERE id = 505");
+    const content = structuredClone(fixture);
+    content.formulas[4].fillers.push({ A: { ja: "レシート", zh: "收据" }, B: { ja: "セット", zh: "套餐" } });
+    setTalkContentForTest(content);
+    expect(talkCard("f:F11", { random: () => .99 })?.filler).toBe("水/お茶");
+    learn(449);
+    previous("f:F02", "牛乳");
+    expect(talkCard("f:F02", { random: () => .99 })?.filler).toBe("お茶");
+    testDb.run("UPDATE words SET jlpt_level = 'N2' WHERE id IN (578, 259)");
+    expect(talkCard("f:F11", { random: () => 0 })?.filler).toBe("レシート/セット");
   });
 
   it("双槽位中所有带 wordId 的词都学过才优先，学过一个不足以优先", () => {
