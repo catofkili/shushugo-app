@@ -4,6 +4,8 @@ import { JapaneseRubyText } from "../components/JapaneseRubyText";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { MascotSay } from "../components/MascotSay";
+import { ScrollArea } from "../components/ScrollArea";
+import { getActiveElement, touchEventsEnabled } from "../lib/touch-adapter";
 import { today } from "../lib/study-core";
 import {
   TALK_MARKER, createTalkTasks, loadTalkContent, pickTalkNext, recordTalkAnswer,
@@ -38,10 +40,12 @@ type SceneCollection = ReturnType<typeof talkSceneCollection>;
 function SceneSheet({ scenes, onClose }: { scenes: SceneCollection; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null;
+    // 微信没有 DOM 焦点 / body 滚动锁；弹层交给 portal-host 和原生 ScrollArea。
+    if (touchEventsEnabled()) return;
+    const opener = getActiveElement();
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => closeRef.current?.focus());
+    const frame = requestAnimationFrame(() => closeRef.current?.focus?.());
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -50,7 +54,7 @@ function SceneSheet({ scenes, onClose }: { scenes: SceneCollection; onClose: () 
       } else if (event.key === "Tab") {
         // 弹层只有关闭按钮可聚焦；把 Tab 留在弹层，关闭后还给入口。
         event.preventDefault();
-        closeRef.current?.focus();
+        closeRef.current?.focus?.();
       }
     };
     document.addEventListener("keydown", onKey, true);
@@ -62,7 +66,7 @@ function SceneSheet({ scenes, onClose }: { scenes: SceneCollection; onClose: () 
     };
   }, [onClose]);
   return createPortal(<div className="talk-sheet-backdrop" onClick={onClose}>
-    <section className="ds-card talk-sheet" role="dialog" aria-modal="true" aria-labelledby="talk-collection-title"
+    <ScrollArea className="ds-card talk-sheet" contentClassName="talk-sheet-content" catchMove role="dialog" aria-modal="true" aria-labelledby="talk-collection-title"
       onClick={(event) => event.stopPropagation()}>
       <div className="talk-sheet-top">
         <h2 className="talk-title" id="talk-collection-title">收集了 {scenes.filter((scene) => scene.collected).length} / {scenes.length} 个场景</h2>
@@ -78,7 +82,7 @@ function SceneSheet({ scenes, onClose }: { scenes: SceneCollection; onClose: () 
           {!scene.collected && <p className="talk-collection-remaining">还差 {scene.total - scene.seen} 句</p>}
         </div>)}
       </div>
-    </section>
+    </ScrollArea>
   </div>, document.body);
 }
 
@@ -96,7 +100,8 @@ function PracticeCard({ card, firstToday, paused, onAnswer }: {
   const audioGeneration = useRef(0);
   const text = flipped ? card.answer.ja : card.partnerLine?.ja ?? "";
   const canListen = audio.text === text && audio.available === true;
-  const showPartner = Boolean(card.partnerLine && (flipped || (audio.text === text && audio.available === false)));
+  // 无音频时先显示对方台词；提示 1 已包含同一句，展开后不再重复一块。
+  const showPartner = Boolean(card.partnerLine && (flipped || (hintsUsed === 0 && audio.text === text && audio.available === false)));
 
   useEffect(() => {
     if (!text) return;

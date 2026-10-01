@@ -110,6 +110,8 @@ frontend/public/audio/
 # 这两个要入库;_ 开头的都是过程文件,换台机器重跑就有。
 frontend/scripts/_*
 tmp/
+# 开口练习开发者工具验收截图、运行日志；不覆盖发布构建报告，也不入库。
+/taro-spike-2/reports/talk-weapp/
 __pycache__/
 .workbuddy-ai/
 wechat-miniprogram/project.private.config.json
