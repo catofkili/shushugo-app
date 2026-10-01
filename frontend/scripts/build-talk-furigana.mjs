@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // 只读内容 JSON，不碰出厂库或学习库；分词词典只在构建期使用。
 import assert from 'node:assert/strict';
+import { talkAudioSentences } from '../src/lib/talk/sentences.ts';
 import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -69,13 +70,10 @@ function annotate(sentence) {
   return result;
 }
 
-const sentences = new Set(content.scenes.flatMap(scene => scene.lines.map(line => line.ja)));
+const sentences = new Set(talkAudioSentences(content));
 const answers = new Set(sentences);
 for (const formula of content.formulas) for (const group of formula.fillers) {
   const fill = text => text.replace(/\[([^\]]+)\]/gu, (_, slot) => group[slot].ja);
-  const answer = fill(formula.pattern);
-  sentences.add(answer);
-  answers.add(answer);
   sentences.add(fill(formula.skeleton));
 }
 // 使用提醒里的日文引语也会上屏；中文说明本身不能交给日语分词器。
