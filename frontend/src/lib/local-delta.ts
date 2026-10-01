@@ -188,7 +188,13 @@ export const applyDelta = (delta: LocalDelta): void => {
     for (const entry of SYNCED_TABLES) {
       const incoming = delta.rows[entry.table];
       if (!incoming?.length || !tables.has(entry.table)) continue;
-      const columns = columnsOf(entry.table);
+      // ⚠️ 运行时才加的列（ensureFsrsColumns 给 talk / 汉字卡 / 连线卡补的 fsrs_*）只有整库快照带得走，
+      // 而增量是加列之后写的：照「快照里有的列」过滤会把这些值静默丢掉（2026-10-01 实测：
+      // 开口练习答对的卡重启后 FSRS 状态清零、进度回到 0）。增量只可能是本机自己写的，列名可信，缺的先补上。
+      const known = columnsOf(entry.table);
+      const missing = [...new Set(incoming.flatMap((row) => Object.keys(row)))].filter((name) => !known.has(name));
+      for (const name of missing) db.run(`ALTER TABLE ${quote(entry.table)} ADD COLUMN ${quote(name)}`);
+      const columns = missing.length ? columnsOf(entry.table) : known;
       for (const row of incoming) upsert(cache, entry, row, columns);
     }
     db.run("COMMIT");

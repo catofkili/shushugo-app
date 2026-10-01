@@ -83,6 +83,14 @@ describe("collectDelta / applyDelta", () => {
     expect(rows(restored, "SELECT value FROM app_state WHERE key = 'runtime_schema_user_ddl'").map((row) => row.value)).not.toContain("new-fp");
   });
 
+  it("快照之后运行时加的列（fsrs_* 这种）回放时补上列、值不丢（2026-10-01 修）", () => {
+    const { restored } = roundTrip(() => {
+      origin.run("ALTER TABLE progress ADD COLUMN x_runtime_col TEXT");
+      origin.run("UPDATE progress SET x_runtime_col = 'kept' WHERE word_id = 1");
+    });
+    expect(rows(restored, "SELECT x_runtime_col FROM progress WHERE word_id = 1")).toEqual([{ x_runtime_col: "kept" }]);
+  });
+
   it("指纹对上了、但有同步表缺同步列时，重建结构而不是在回填里抛错打不开", () => {
     testDb = origin;
     // 用出厂库里就有的表：表的集合不变，同步指纹才会「对上」（换成新表的话指纹本来就对不上，测不到）
