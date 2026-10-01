@@ -40,6 +40,17 @@ import { beginSyncApply, endSyncApply, ensureSyncSchema, SYNC_UPDATED_COL } from
 /** 墓碑里多列主键的分隔符,和 sync/schema.ts 的 rowKeyExpr 一致(char(31))。 */
 const KEY_SEPARATOR = String.fromCharCode(31);
 
+/**
+ * ⚠️ 结构指纹（runtime_schema_*）不许进增量（2026-09-30 修）。
+ *
+ * 建表 / 加列只有整库快照带得走，而指纹是 app_state 里的一行、会进每 2 秒一次的增量。
+ * 一次带新表的更新之后 5 分钟内关掉页面，下次启动 = 旧快照（没有新表）+ 增量回放出来的
+ * 新指纹 —— 指纹说「结构已是最新」，建表被跳过；新表之后被懒建出来却没挂同步列，
+ * 再下一次启动同步层回填撞上缺列的表，整个 App 打不开（开口练习上线前在预览里实测到）。
+ * 指纹只跟着整库快照走，就永远和它描述的结构在同一份文件里。
+ */
+const SCHEMA_FINGERPRINT_FILTER = " AND key NOT LIKE 'runtime\\_schema\\_%' ESCAPE '\\'";
+
 /** 快照自带的水位线:写在库里,所以它和快照天然是原子的,不用另存一个 mark 文件。 */
 export const SNAPSHOT_MARK_KEY = "local_snapshot_mark";
 
@@ -96,7 +107,7 @@ export const collectDelta = (since: string): LocalDelta => {
   for (const entry of SYNCED_TABLES) {
     if (!tables.has(entry.table)) continue;
     const changed = rowsFor(
-      `SELECT * FROM ${quote(entry.table)} WHERE ${SYNC_UPDATED_COL} >= ?`,
+      `SELECT * FROM ${quote(entry.table)} WHERE ${SYNC_UPDATED_COL} >= ?${entry.table === "app_state" ? SCHEMA_FINGERPRINT_FILTER : ""}`,
       [since]
     );
     if (changed.length) rows[entry.table] = changed;

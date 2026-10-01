@@ -70,7 +70,9 @@ export function ensureSyncSchema(): void {
   const db = getDatabase();
   if (schemaReadyDbs.has(db)) return;
   const fingerprint = syncSchemaFingerprint();
-  const schemaMatches = hasSchemaFingerprint(SYNC_SCHEMA_FINGERPRINT_KEY, fingerprint);
+  // 指纹对上了也要确认同步表真的都有同步列：缺一列的话下面的回填直接抛错、整个 App 打不开。
+  // 一条查询、不逐表问；只有真缺了才重跑结构（见 local-delta.ts 的 SCHEMA_FINGERPRINT_FILTER）。
+  const schemaMatches = hasSchemaFingerprint(SYNC_SCHEMA_FINGERPRINT_KEY, fingerprint) && !syncedTableMissingColumns();
 
   if (!schemaMatches) {
     ensureSyncStructure();
@@ -103,6 +105,13 @@ export function ensureSyncSchema(): void {
   // 必须放在 schemaReadyDbs 之后:它内部会再进 ensureSyncSchema,不然会死循环。
   if (tableExists("word_study_time")) backfillStudyTimeByDevice();
 }
+
+const syncedTableMissingColumns = (): boolean => rowsFor(`
+  SELECT 1 FROM sqlite_master m
+  WHERE m.type = 'table' AND m.name IN (${SYNCED_TABLES.map((entry) => `'${entry.table}'`).join(", ")})
+    AND NOT EXISTS (SELECT 1 FROM pragma_table_info(m.name) WHERE name = '${SYNC_UPDATED_COL}')
+  LIMIT 1
+`).length > 0;
 
 const syncSchemaFingerprint = (): string => {
   const tables = new Set(rowsFor("SELECT name FROM sqlite_master WHERE type = 'table'").map((row) => String(row.name)));

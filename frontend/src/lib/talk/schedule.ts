@@ -16,44 +16,11 @@ const log = createCardLog({
   dayEnd: (day) => studyDayEnd(new Date(`${day}T12:00:00`))
 });
 
+// 三张表只由 local-schema.sql 在启动时建（那之后 ensureSyncSchema 才给它们挂同步列和触发器）。
+// ⚠️ 这里别再写 CREATE TABLE：懒建出来的同步表没有同步列，下一次启动同步层回填会撞上它、整个 App 打不开
+// （2026-09-30 预览里实测过，根因和另一半修法见 local-delta.ts 的 SCHEMA_FINGERPRINT_FILTER）。
 export const ensureTalkTables = (): void => {
-  oncePerDatabase("talk-tables", () => {
-    const db = getDatabase();
-    db.run(`
-      CREATE TABLE IF NOT EXISTS talk_memory (
-        card_key TEXT PRIMARY KEY,
-        seen_count INTEGER NOT NULL DEFAULT 0,
-        right_count INTEGER NOT NULL DEFAULT 0,
-        fuzzy_count INTEGER NOT NULL DEFAULT 0,
-        forgot_count INTEGER NOT NULL DEFAULT 0,
-        mistake_streak INTEGER NOT NULL DEFAULT 0,
-        known_forever INTEGER NOT NULL DEFAULT 0,
-        last_seen_on TEXT
-      );
-      CREATE TABLE IF NOT EXISTS talk_reviews (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        card_key TEXT NOT NULL,
-        answer TEXT NOT NULL,
-        reviewed_on TEXT NOT NULL,
-        reviewed_at INTEGER NOT NULL,
-        hints INTEGER NOT NULL DEFAULT 0,
-        filler TEXT,
-        scheduler_mode TEXT NOT NULL DEFAULT 'normal',
-        fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-      );
-      CREATE INDEX IF NOT EXISTS idx_talk_reviews_card_on ON talk_reviews (card_key, reviewed_on);
-      CREATE TABLE IF NOT EXISTS talk_tasks (
-        reviewed_on TEXT NOT NULL,
-        card_key TEXT NOT NULL,
-        order_index INTEGER NOT NULL,
-        PRIMARY KEY (reviewed_on, card_key)
-      )
-    `);
-    log.ensure();
-    // 启动必须先跑 local-schema 再初始化同步（同另两种卡），这里不能重跑全库同步初始化。
-    // origin 回填会给既有空占位盖「现在」章，破坏占位行不参与 LWW 的约定。
-  });
+  oncePerDatabase("talk-tables", () => log.ensure());
 };
 
 export const materializeTalkCards = (): number => {
