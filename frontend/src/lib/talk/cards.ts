@@ -127,7 +127,8 @@ export const talkCard = (key: string, options: TalkCardOptions = {}): TalkCard |
     image: `/talk/scenes/${scene.id}.jpg`,
     prompt: partnerLine ? "接着对方的话回答" : line.zh,
     ...(partnerLine ? { partnerLine } : {}),
-    hints: [...(partnerLine ? [`${partnerLine.ja}\n${partnerLine.zh}`] : []), line.zh, answerStart(line.ja)],
+    // 自己先开口的那句题面就是这句的中文，提示里再给一遍等于白扣一档：只剩「开头几个字」。
+    hints: partnerLine ? [`${partnerLine.ja}\n${partnerLine.zh}`, line.zh, answerStart(line.ja)] : [answerStart(line.ja)],
     answer: { ja: line.ja, zh: line.zh },
     note: scene.note
   };

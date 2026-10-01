@@ -164,7 +164,8 @@ describe("开口练习卡片候选与顺序", () => {
     const card = talkCard("r:S02:2")!;
     expect(card).not.toHaveProperty("partnerLine");
     expect(card.prompt).toBe("有茶吗？");
-    expect(card.hints).toEqual(["有茶吗？", "お茶はあ…"]);
+    // 题面已经是这句的中文，提示里不再重复它（重复的话点一下提示白扣一档评分）
+    expect(card.hints).toEqual(["お茶はあ…"]);
   });
 
   it("场景练习里公式卡配这一场的图，不用公式自己挂的场景", () => {

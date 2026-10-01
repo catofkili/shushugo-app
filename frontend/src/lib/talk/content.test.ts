@@ -149,21 +149,21 @@ describe("开口练习内容（独立 fixture，正式内容另一个任务负�
     expect(card.note).toBe("场景提醒");
   });
 
-  it("开场白没有 partnerLine，题面用自己中文，只保留两条提示", () => {
+  it("开场白没有 partnerLine，题面用自己中文，提示只剩开头几个字（不重复题面）", () => {
     setTalkContentForTest(fixture);
     const card = talkCard("r:S02:0")!;
     expect(card).not.toHaveProperty("partnerLine");
     expect(card.prompt).toBe("水和茶有什么不同？");
-    expect(card.hints).toEqual(["水和茶有什么不同？", "水とお茶は、…"]);
+    expect(card.hints).toEqual(["水とお茶は、…"]);
   });
 
   it("答案开头向上取整、至少两字符，不截断 Unicode 字符", () => {
     const content = structuredClone(fixture);
     content.scenes[1].lines[0].ja = "はい。";
     setTalkContentForTest(content);
-    expect(talkCard("r:S02:0")?.hints[1]).toBe("はい…");
+    expect(talkCard("r:S02:0")?.hints[0]).toBe("はい…");
     content.scenes[1].lines[0].ja = "𠮷野家へ。";
-    expect(talkCard("r:S02:0")?.hints[1]).toBe("𠮷野…");
+    expect(talkCard("r:S02:0")?.hints[0]).toBe("𠮷野…");
   });
 
   it("只有一组候选时允许重复，不会把卡过滤掉", () => {
