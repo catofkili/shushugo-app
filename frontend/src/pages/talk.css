@@ -30,39 +30,45 @@
 .talk-error { margin-bottom: 16px; }
 .talk-error > button { margin-top: 12px; }
 .talk-line-self .talk-answer { font-size: 20px; }
-.talk-top-status { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-left: auto; }
 .talk-japanese, .talk-answer, .talk-hints { line-height: 2; }
-.talk-sheet-backdrop { position: fixed; inset: 0; z-index: 10002; display: flex; align-items: flex-end; justify-content: center; background: rgba(43, 36, 28, .35); }
-[data-theme="dark"] .talk-sheet-backdrop { background: rgba(242, 239, 232, .35); }
-.talk-sheet { width: 100%; max-width: 640px; max-height: 80vh; overscroll-behavior: contain; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-/* ScrollView 要有确定高度；内边距放内容层，避免小程序的原生滚动区越过屏幕。网页仍由同一个 ScrollArea 滚动。 */
-.talk-sheet.scroll-area { height: 80vh; padding: 0; }
-.talk-sheet-content { padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); }
-.talk-sheet-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
-.talk-sheet-top .talk-title { font-size: 18px; }
-.talk-sheet-top button { flex-shrink: 0; }
-.talk-collection-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; }
-.talk-collection-item { min-width: 0; }
+.talk-collection-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 10px; }
+.talk-collection-item { display: block; min-width: 0; padding: 10px; text-align: left; white-space: normal; }
 .talk-collection-item .talk-image { border-radius: var(--ds-radius-inset); background: var(--ds-inset); }
-.talk-uncollected { filter: grayscale(1); opacity: .45; }
 .talk-collection-title { margin: 8px 0 0; color: var(--ds-ink); font-size: var(--ds-font-size-section); font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
 .talk-collection-remaining { margin: 4px 0 0; color: var(--ds-ink-3); font-size: var(--ds-font-size-kicker); }
 @media (max-width: 400px) { .talk-body { padding: 16px; } .talk-answer { font-size: 22px; } }
 .talk-done-art { display: block; margin: 0 auto 8px; }
 .talk-done-fallback { text-align: left; margin-bottom: 12px; }
 .talk-done-title { margin: 0; color: var(--ds-ink); font-size: 22px; font-weight: 800; }
-.talk-done-sub { margin: 4px 0 0; color: var(--ds-ink-3); font-size: var(--ds-font-size-body); }
-.talk-extend { display: inline-flex; margin: 20px auto 0; padding-left: 28px; padding-right: 28px; }
 .talk-new-scene { display: flex; align-items: center; gap: 12px; margin-top: 24px; padding: 12px; text-align: left; }
 .talk-new-scene-thumb { position: relative; flex: 0 0 112px; height: 84px; overflow: hidden; border-radius: var(--ds-radius-inset); }
 .talk-kicker { margin: 0; color: var(--ds-primary); font-size: var(--ds-font-size-kicker); font-weight: 700; }
 .talk-new-scene-title { margin: 4px 0 0; color: var(--ds-ink); font-size: 16px; font-weight: 800; line-height: 1.5; }
-.talk-welcome { padding: 28px 20px 24px; text-align: center; }
-.talk-welcome-art { display: block; margin: 0 auto 12px; }
-.talk-welcome .talk-translation { margin: 8px 0 0; }
-.talk-welcome-start { width: 100%; margin-top: 24px; }
-/* 320 宽（iPhone SE 一代）上欢迎卡的「开始」要在一屏里 */
-@media (max-width: 360px) {
-  .talk-welcome { padding: 20px 16px; }
-  .talk-welcome-art { width: 112px !important; height: 112px !important; }
-}
+.talk-welcome { display: flex; align-items: center; gap: 16px; padding: 16px 20px; text-align: left; }
+.talk-welcome-art { flex: 0 0 auto; display: block; }
+.talk-welcome .talk-title { font-size: 18px; }
+.talk-welcome .talk-translation { margin: 4px 0 0; }
+
+.talk-welcome { margin-bottom: 16px; }
+.talk-review { width: 100%; margin-bottom: 16px; }
+.talk-session-title { flex: 1; min-width: 0; color: var(--ds-ink); font-size: var(--ds-font-size-body); font-weight: 700; text-align: center; overflow-wrap: anywhere; }
+.talk-back, .talk-count { flex-shrink: 0; }
+.talk-collected { color: var(--ds-primary); font-weight: 700; }
+.talk-undo { display: flex; margin: 12px auto 0; }
+.talk-done-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
+.talk-transcript { padding: 14px; margin-top: 16px; border-radius: var(--ds-radius-inset); background: var(--ds-inset); overflow-wrap: anywhere; }
+.talk-mic { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; }
+.talk-listening-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ds-primary); animation: talk-pulse 1s ease-in-out infinite; }
+@keyframes talk-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .talk-listening-dot { animation: none; } }
+@media (min-width: 600px) { .talk-collection-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.talk-partner-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.talk-partner-head .talk-speaker { margin: 0 auto 0 0; }
+.talk-mode { display: inline-flex; flex-shrink: 0; padding: 2px; border-radius: var(--ds-radius-pill); background: var(--ds-surface); }
+.talk-mode-option { min-height: 28px; padding: 0 12px; border: 0; border-radius: var(--ds-radius-pill); background: transparent; color: var(--ds-ink-3); font-size: var(--ds-font-size-kicker); font-weight: 700; }
+.talk-mode-option[aria-pressed="true"] { background: var(--ds-primary); color: var(--ds-on-primary); }
+.talk-listen-only { margin: 0; color: var(--ds-ink-3); font-size: var(--ds-font-size-body); line-height: 1.7; }
+.talk-speech-note { margin: 8px 0 0; }
+.talk-replay { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: var(--ds-surface); color: var(--ds-ink-2); }
+/* 场景图在练习卡上裁成 16:9：接话卡在 375×812 上要把对方的话、提示、「翻面」都放进一屏。场景格子里仍是 4:3。 */
+.talk-card .talk-image { padding-top: 56.25%; }

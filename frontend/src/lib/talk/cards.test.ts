@@ -11,7 +11,7 @@ vi.mock("../database", () => ({ getDatabase: () => testDb, initDatabase: async (
 
 import currentContent from "../../data/talk_content.json";
 import { setTalkContentForTest } from "./content";
-import { newCardOrder, talkCard } from "./cards";
+import { sceneSessionKeys, talkCard } from "./cards";
 
 const fixture: TalkContent = {
   version: "cards-fixture",
@@ -70,8 +70,14 @@ describe("开口练习卡片候选与顺序", () => {
   });
   afterEach(() => { testDb.close(); });
 
-  it("新卡按场景原顺序，self 用到的公式先出且不重复，对方引用不排，未使用公式按 id 排最后", () => {
-    expect(newCardOrder()).toEqual(["f:F02", "f:F11", "r:S02:1", "r:S02:2", "f:F03", "r:S01:0", "f:F01", "f:F99"]);
+  it("逐句先放公式再接话，self 引用去重，对方引用忽略，末尾补挂图公式", () => {
+    const content = structuredClone(fixture);
+    content.formulas[0].scene = "S02";
+    content.formulas[1].scene = "S02";
+    content.scenes[0].lines[2].formulas = ["F02", "F03", "F03"];
+    expect(sceneSessionKeys("S02", content)).toEqual(["f:F02", "f:F11", "r:S02:1", "f:F03", "r:S02:2", "f:F99"]);
+    expect(sceneSessionKeys("S01", content)).toEqual(["f:F03", "f:F02", "r:S01:0"]);
+    expect(sceneSessionKeys("missing", content)).toEqual([]);
   });
 
   it("每次随机挑整组，学过的词优先；没有学过的词时用最易候选", () => {
@@ -159,5 +165,12 @@ describe("开口练习卡片候选与顺序", () => {
     expect(card).not.toHaveProperty("partnerLine");
     expect(card.prompt).toBe("有茶吗？");
     expect(card.hints).toEqual(["有茶吗？", "お茶はあ…"]);
+  });
+
+  it("场景练习里公式卡配这一场的图，不用公式自己挂的场景", () => {
+    expect(talkCard("f:F02", { random: () => 0 })).not.toHaveProperty("image");
+    const card = talkCard("f:F02", { random: () => 0, sceneId: "S01" })!;
+    expect(card.image).toBe("/talk/scenes/S01.jpg");
+    expect(card.sceneTitle).toBe("排在后的场景");
   });
 });

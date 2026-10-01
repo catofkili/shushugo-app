@@ -4,14 +4,13 @@ import { getDatabase } from "../database";
 import { oncePerDatabase, persistSoon } from "../database/db-utils";
 import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
 import { withoutSyncStamp } from "../sync/schema";
-import { allCardKeys, newCardOrder } from "./cards";
+import { allCardKeys } from "./cards";
 import { talkContent, talkContentLoaded } from "./content";
-
-export const TALK_NEW_PER_DAY = 5;
 
 const log = createCardLog({
   entity: { table: "talk_memory", idColumn: "card_key", eligible: "known_forever = 0" },
   reviewsTable: "talk_reviews",
+  // 改版后不再写入；保留旧表及本地同步登记，兼容 card-log 的必填配置和旧数据。
   tasksTable: "talk_tasks",
   dayEnd: (day) => studyDayEnd(new Date(`${day}T12:00:00`))
 });
@@ -44,35 +43,13 @@ export const materializeTalkCards = (): number => {
   return missing.length;
 };
 
-export const createTalkTasks = (day = today()) => {
-  materializeTalkCards();
-  return log.createTasks({ fresh: TALK_NEW_PER_DAY, review: Number.MAX_SAFE_INTEGER }, () => {
-    const unseen = new Set(rowsFor(`SELECT card_key FROM talk_memory WHERE ${log.exclude} AND seen_count = 0`).map((row) => String(row.card_key)));
-    return newCardOrder().filter((key) => unseen.has(key));
-  }, day);
-};
-
-// 加餐可以包含尚未到期的旧卡：必须今天答过、且已毕业，才能计为完成。
-// 不改共享 card-log 的毕业判据，也不为加餐另建表或改 FSRS 到期日。
-const talkTaskStates = (day: string) => {
+export const talkDueKeys = (day = today()): string[] => {
   ensureTalkTables();
+  const valid = new Set(allCardKeys());
   const end = studyDayEnd(new Date(`${day}T12:00:00`)).toISOString();
-  return rowsFor(`SELECT t.card_key, m.known_forever, m.fsrs_state, m.fsrs_due,
-    EXISTS(SELECT 1 FROM talk_reviews r WHERE r.card_key = t.card_key AND r.reviewed_on = t.reviewed_on) AS answered
-    FROM talk_tasks t JOIN talk_memory m ON m.card_key = t.card_key
-    WHERE t.reviewed_on = ? ORDER BY t.order_index`, [day]).map((row) => ({
-    key: String(row.card_key),
-    done: Number(row.known_forever) === 1 || (Number(row.answered) === 1 && Number(row.fsrs_state) === 2 && row.fsrs_due != null && String(row.fsrs_due) > end)
-  }));
-};
-
-export const pickTalkNext = (day = today(), excluded = new Set<string>()): string | null =>
-  talkTaskStates(day).find((task) => !task.done && !excluded.has(task.key))?.key ?? null;
-
-export const talkProgress = (day = today()) => {
-  const tasks = talkTaskStates(day);
-  const done = tasks.filter((task) => task.done).length;
-  return { total: tasks.length, done, remaining: tasks.length - done };
+  return rowsFor(`SELECT card_key FROM talk_memory
+    WHERE seen_count > 0 AND known_forever = 0 AND fsrs_due <= ?
+    ORDER BY fsrs_due, card_key`, [end]).map((row) => String(row.card_key)).filter((key) => valid.has(key));
 };
 
 /** 从来没答过任何一张：页面先给一张欢迎卡。 */
@@ -86,40 +63,15 @@ export const canUndoTalk = (day = today()): boolean => {
   return firstValue<number>("SELECT EXISTS(SELECT 1 FROM talk_reviews WHERE reviewed_on = ?)", [day], 0) === 1;
 };
 
-export const talkSceneCollection = () => {
+export const talkSceneSets = (day = today()) => {
   ensureTalkTables();
   const seenKeys = new Set(rowsFor("SELECT card_key FROM talk_memory WHERE seen_count > 0").map((row) => String(row.card_key)));
+  const dueKeys = new Set(talkDueKeys(day));
   return (talkContent()?.scenes ?? []).map((scene) => {
     const keys = scene.lines.flatMap((line, index) => line.self ? [`r:${scene.id}:${index}`] : []);
     const seen = keys.filter((key) => seenKeys.has(key)).length;
-    return { id: scene.id, title: scene.title, image: `/talk/scenes/${scene.id}.jpg`, collected: keys.length > 0 && seen === keys.length, seen, total: keys.length };
+    return { id: scene.id, title: scene.title, image: `/talk/scenes/${scene.id}.jpg`, due: keys.filter((key) => dueKeys.has(key)).length, collected: keys.length > 0 && seen === keys.length, seen, total: keys.length };
   });
-};
-
-const extraCandidates = (day: string): string[] => {
-  materializeTalkCards();
-  const available = rowsFor(`SELECT m.card_key, m.seen_count FROM talk_memory m WHERE ${log.exclude}
-    AND NOT EXISTS(SELECT 1 FROM talk_tasks t WHERE t.reviewed_on = ? AND t.card_key = m.card_key)
-    ORDER BY m.fsrs_due, m.card_key`, [day]);
-  const unseen = new Set(available.filter((row) => Number(row.seen_count) === 0).map((row) => String(row.card_key)));
-  const valid = new Set(allCardKeys());
-  return [...newCardOrder().filter((key) => unseen.has(key)),
-    ...available.filter((row) => Number(row.seen_count) > 0 && valid.has(String(row.card_key))).map((row) => String(row.card_key))];
-};
-
-export const canExtendTalkTasks = (day = today()): boolean => extraCandidates(day).length > 0;
-
-export const extendTalkTasks = (day = today(), count = 5): number => {
-  const keys = extraCandidates(day).slice(0, Math.max(0, Math.floor(count)));
-  if (!keys.length) return 0;
-  withTalkWrite(() => {
-    const offset = firstValue<number>("SELECT COALESCE(MAX(order_index), -1) + 1 FROM talk_tasks WHERE reviewed_on = ?", [day], 0);
-    keys.forEach((key, index) => getDatabase().run(
-      "INSERT INTO talk_tasks (reviewed_on, card_key, order_index) VALUES (?, ?, ?)", [day, key, offset + index]
-    ));
-  });
-  persistSoon();
-  return keys.length;
 };
 
 export const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>

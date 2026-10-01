@@ -1,5 +1,5 @@
 import { firstValue, rowsFor } from "../study-core";
-import { talkFurigana, talkContent, type TalkFormula, type TalkFiller } from "./content";
+import { talkFurigana, talkContent, type TalkFormula, type TalkFiller, type TalkContent } from "./content";
 
 export type TalkHintLevel = 0 | 1 | 2 | 3;
 
@@ -19,6 +19,8 @@ export interface TalkCard {
 
 export interface TalkCardOptions {
   random?: () => number;
+  /** 场景练习里公式卡也配这一场的图，不配公式自己挂的那张（练拉面店时冒出便利店的图会出戏）。 */
+  sceneId?: string;
 }
 
 export const allCardKeys = (): string[] => {
@@ -30,22 +32,18 @@ export const allCardKeys = (): string[] => {
   ];
 };
 
-export const newCardOrder = (): string[] => {
-  const content = talkContent();
-  if (!content) return [];
-  const remaining = new Set(content.formulas.map((formula) => formula.id));
-  const keys: string[] = [];
-  for (const scene of content.scenes) {
-    for (const line of scene.lines.filter((line) => line.self)) {
-      for (const id of line.formulas) {
-        if (remaining.delete(id)) keys.push(`f:${id}`);
-      }
-    }
-    scene.lines.forEach((line, index) => {
-      if (line.self) keys.push(`r:${scene.id}:${index}`);
-    });
-  }
-  return [...keys, ...[...remaining].sort().map((id) => `f:${id}`)];
+/** 一场按对话顺序展开：每句之前放未出现的公式，最后补本场挂图公式。 */
+export const sceneSessionKeys = (sceneId: string, content: TalkContent | null = talkContent()): string[] => {
+  const scene = content?.scenes.find((scene) => scene.id === sceneId);
+  if (!scene || !content) return [];
+  const keys = new Set<string>();
+  scene.lines.forEach((line, index) => {
+    if (!line.self) return;
+    line.formulas.forEach((id) => keys.add(`f:${id}`));
+    keys.add(`r:${scene.id}:${index}`);
+  });
+  content.formulas.filter((formula) => formula.scene === sceneId).forEach((formula) => keys.add(`f:${formula.id}`));
+  return [...keys];
 };
 
 const slotNames = (formula: TalkFormula): string[] => [...new Set([...formula.pattern.matchAll(/\[([^\]]+)\]/gu)].map((match) => match[1]))];
@@ -100,11 +98,12 @@ export const talkCard = (key: string, options: TalkCardOptions = {}): TalkCard |
     const fillJa = (text: string) => text.replace(/\[([^\]]+)\]/gu, (_match, slot: string) => group[slot].ja);
     const prompt = formula.prompt.replace(/\{([^}]+)\}/gu, (_match, slot: string) => group[slot].zh);
     const answer = fillJa(formula.pattern);
-    const scene = content.scenes.find((scene) => scene.id === formula.scene);
+    const sceneId = options.sceneId ?? formula.scene;
+    const scene = content.scenes.find((scene) => scene.id === sceneId);
     return {
       key,
       kind: "formula",
-      ...(formula.scene ? { sceneId: formula.scene, sceneTitle: scene?.title, image: `/talk/scenes/${formula.scene}.jpg` } : {}),
+      ...(scene ? { sceneId: scene.id, sceneTitle: scene.title, image: `/talk/scenes/${scene.id}.jpg` } : {}),
       prompt,
       hints: [fillJa(formula.skeleton), answerStart(answer)],
       answer: { ja: answer, zh: prompt },
