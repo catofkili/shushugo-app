@@ -1040,6 +1040,21 @@ iPhone 小程序真机计时：冷启动 14 秒，其中「增量回放」13.4 �
   而且那样会抬 revision、触发一次云同步。判据在 `storage-durability.test.ts`「启动回放的增量行数多」。
 - 同类问题还可能在云同步合并（`sync/merge.ts`）里：它也是逐行 `db.run`。真机上登录后第一次同步很慢时先查这里。
 
+### ⑨ 结构指纹不进增量；指纹对上了也要确认同步列真在（2026-09-30）
+
+`runtime_schema_user_ddl` / `runtime_schema_sync_ddl` 是「这份库已经跑过哪一版建表」的指纹，存在 `app_state`。
+它们原来会跟着每 2 秒一次的增量走，而建表 / 加列只有整库快照（最多 5 分钟一次）带得走。于是：
+带新表的版本第一次启动后 5 分钟内关页面 → 下次 = 旧快照（没有新表）+ 增量回放出来的**新指纹** → 指纹说「已是最新」、建表被跳过 →
+新表之后被模块自己懒建出来、没有同步列 → 同步指纹也被存下 → 再下一次启动 `backfillMissingSyncMetadata` 撞上
+`no such column: sync_updated_at`，**整个 App 停在「本地词库读取失败」**（开口练习预览里实测到，作者 5173 每次合并带新表的代码都可能碰上）。
+
+- `collectDelta` 不收 `runtime_schema_*`（`SCHEMA_FINGERPRINT_FILTER`）：指纹只跟整库快照走。
+- `ensureSyncSchema` 指纹对上了也用一条查询确认同步表都有 `sync_updated_at`，缺了重跑结构，不在回填里抛错。
+- ⚠️ **同步表别在模块里自己 `CREATE TABLE`**，只写进 `local-schema.sql`（`ensureKanjiCharTables` / `ensureConfusionCardTables`
+  还留着那种兜底 DDL，有上面两条护着不会再出事，但别照抄）。
+- 判据在 `local-delta.test.ts` 那两条（去掉修复都会红）。
+- 代价：带新表的版本第一次启动后、整库快照写下去之前，新表里的改动在增量回放时会被跳过（回放早于建表），最多丢一次启动后几分钟的那几行。
+
 ### ⚠️ 内容迁移必须喊 `persistContentSoon()`，不是 `persistSoon()`
 
 内容迁移改的是 `words` / `grammar_points` / `dictionary_entries` 这些
