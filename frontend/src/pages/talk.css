@@ -82,3 +82,6 @@
 .talk-group-title { margin: 0 0 10px; color: var(--ds-ink-2); font-size: var(--ds-font-size-section); font-weight: 800; }
 /* 矮屏（iPhone SE 375×667）：练习卡上的场景图再压扁，接话卡的「翻面」才留在一屏里 */
 @media (max-height: 700px) { .talk-card .talk-image { padding-top: 42%; } .talk-body { padding-top: 14px; } .talk-actions { margin-top: 16px; } }
+.talk-self-head { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 8px; }
+.talk-self-head .talk-speaker { margin: 0; }
+.talk-self-head .talk-replay { background: var(--ds-inset); }

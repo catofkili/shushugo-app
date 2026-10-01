@@ -198,7 +198,8 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
       </div>}
       <div className="talk-body">
         {showSceneTitle && card.kind === "reply" && card.sceneTitle && <h2 className="talk-title">{card.sceneTitle}</h2>}
-        <p className={flipped || partner ? "talk-prompt talk-prompt-small" : "talk-prompt"}>{card.prompt}</p>
+        {/* 接话卡翻面后不再说「接着对方的话回答」：对方那块就是上下文，省下的一行让「下一张」留在一屏里 */}
+        {!(flipped && partner) && <p className={flipped || partner ? "talk-prompt talk-prompt-small" : "talk-prompt"}>{card.prompt}</p>}
         {!flipped && firstToday && <p className="talk-instruction">出声说一遍，说完翻面对照</p>}
 
         {partner && <div className="talk-line talk-line-partner">
@@ -228,10 +229,13 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
         </div>}
         {flipped && <>
           <div className={`talk-line ${partner ? "talk-line-self" : ""}`}>
-            {partner && <p className="talk-speaker">我</p>}
+            {partner && <div className="talk-self-head">
+              {canListen && <button type="button" className="talk-replay focus-ring" onClick={replayAudio} aria-label="再听一遍"><Volume2 size={16} aria-hidden="true" /></button>}
+              <p className="talk-speaker">我</p>
+            </div>}
             <p className="talk-answer" lang="ja"><TalkRuby sentence={card.answer.ja} /></p>
             {card.answer.zh !== card.prompt && <p className="talk-translation">{card.answer.zh}</p>}
-            {canListen && <button type="button" className="ds-chip focus-ring" onClick={replayAudio}>再听一遍</button>}
+            {!partner && canListen && <button type="button" className="ds-chip focus-ring" onClick={replayAudio}>再听一遍</button>}
           </div>
           {card.note && <p className="talk-note"><TalkNote text={card.note} /></p>}
         </>}
