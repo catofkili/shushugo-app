@@ -35,15 +35,15 @@ function teForm(surface, verbType) {
   return endings[last] ? [...surface].slice(0, -1).join("") + endings[last] : null;
 }
 
-assert.equal(content.version, "2026-09-30");
-const expectedFormulaIds = Array.from({ length: 30 }, (_, i) => "F" + String(i + 1).padStart(2, "0"));
-const expectedSceneIds = Array.from({ length: 15 }, (_, i) => "S" + String(i + 1).padStart(2, "0"));
+assert.equal(content.version, "2026-10-02");
+const expectedFormulaIds = Array.from({ length: 32 }, (_, i) => "F" + String(i + 1).padStart(2, "0"));
+const expectedSceneIds = Array.from({ length: 30 }, (_, i) => "S" + String(i + 1).padStart(2, "0"));
 const formulaIds = content.formulas.map((formula) => formula.id);
 const sceneIds = content.scenes.map((scene) => scene.id);
 assert.equal(new Set(formulaIds).size, formulaIds.length, "formula IDs must be unique");
 assert.equal(new Set(sceneIds).size, sceneIds.length, "scene IDs must be unique");
-assert.deepEqual([...formulaIds].sort(), expectedFormulaIds, "must contain exactly F01-F30");
-assert.deepEqual([...sceneIds].sort(), expectedSceneIds, "must contain exactly S01-S15");
+assert.deepEqual([...formulaIds].sort(), expectedFormulaIds, "must contain exactly F01-F32");
+assert.deepEqual([...sceneIds].sort(), expectedSceneIds, "must contain exactly S01-S30");
 
 const formulaIdSet = new Set(formulaIds);
 const sceneIdSet = new Set(sceneIds);
@@ -115,6 +115,7 @@ let sceneLineCount = 0;
 for (const scene of content.scenes) {
   assert.ok(scene.lines.length > 0, scene.id + " has no lines");
   assert.ok(scene.lines.some((line) => line.self === true), scene.id + " needs at least one self line");
+  assert.ok(scene.lines.filter((line) => line.self === true).length >= 3, scene.id + " needs at least three self lines");
   for (const line of scene.lines) {
     sceneLineCount++;
     assert.equal(typeof line.self, "boolean", scene.id + " self must be boolean");
@@ -123,7 +124,18 @@ for (const scene of content.scenes) {
     for (const id of line.formulas) assert.ok(formulaIdSet.has(id), scene.id + " references missing " + id);
   }
 }
-assert.equal(sceneLineCount, 60, "the 15 scenes must contain all 60 corpus lines");
+assert.equal(sceneLineCount, 168, "the 30 scenes must contain all 168 corpus lines");
+// 语料文档是内容源：每个场景的表格和 JSON 逐句对得上（说话人、日文、中文），改一边忘了另一边就红。
+const corpus = readFileSync(path.join(here, "../../docs/DAILY_CONVERSATION_CORPUS.md"), "utf8");
+content.scenes.forEach((scene, index) => {
+  const start = corpus.indexOf(`### ${index + 1}. ${scene.title}\n`);
+  assert.ok(start >= 0, scene.id + " missing from corpus: " + scene.title);
+  const next = corpus.slice(start + 1).search(/\n##/u);
+  const rows = corpus.slice(start, next < 0 ? undefined : start + 1 + next).split("\n")
+    .filter((line) => line.startsWith("| ") && !line.startsWith("| 说话人") && !line.startsWith("| ---"))
+    .map((line) => line.split("|").slice(1, 4).map((cell) => cell.trim()));
+  assert.deepEqual(rows, scene.lines.map((line) => [line.speaker, line.ja, line.zh]), scene.id + " corpus table differs from talk_content.json");
+});
 // 面向用户的文字里不许出现内部公式编号（F01 这种），用户看不懂。
 for (const text of [...content.scenes.map((scene) => scene.note ?? ""), ...content.formulas.flatMap((formula) => [formula.note, formula.prompt, formula.intent])]) {
   assert.ok(!/\bF\d{2}\b/u.test(text), "internal formula id shown to users: " + text);

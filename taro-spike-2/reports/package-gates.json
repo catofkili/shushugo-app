@@ -6,15 +6,15 @@
       "passes": true
     },
     "study": {
-      "bytes": 308853,
+      "bytes": 308846,
       "passes": true
     },
     "account": {
-      "bytes": 258362,
+      "bytes": 258360,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1098057,
+      "bytes": 1098047,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 367406,
+      "bytes": 367404,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 599731,
+      "bytes": 599727,
       "passes": true
     }
   },
@@ -50,7 +50,7 @@
   "duplicateSourceModuleCount": 57,
   "duplicatedModules": [
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/vocab-test.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/vocab-test.ts",
       "bytes": 49987,
       "packages": [
         "grammar-pages",
@@ -59,7 +59,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/conjugation-explanation.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/conjugation-explanation.ts",
       "bytes": 42723,
       "packages": [
         "content-pages",
@@ -68,7 +68,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/data/verb-conjugation-foundation.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/data/verb-conjugation-foundation.ts",
       "bytes": 35039,
       "packages": [
         "content-pages",
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/pages/Library.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/pages/Library.tsx",
       "bytes": 33448,
       "packages": [
         "grammar-pages",
@@ -84,7 +84,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/analytics/weekly.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/analytics/weekly.ts",
       "bytes": 32865,
       "packages": [
         "content-pages",
@@ -92,7 +92,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/data/grammar_title_furigana.json",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/data/grammar_title_furigana.json",
       "bytes": 30888,
       "packages": [
         "content-pages",
@@ -101,7 +101,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/speech.weapp.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/speech.weapp.ts",
       "bytes": 30692,
       "packages": [
         "account",
@@ -111,7 +111,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/data/grammar-foundation.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/data/grammar-foundation.ts",
       "bytes": 20760,
       "packages": [
         "content-pages",
@@ -119,7 +119,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/pages/ConfusionPage.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/pages/ConfusionPage.tsx",
       "bytes": 19082,
       "packages": [
         "grammar-pages",
@@ -127,7 +127,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/study-focus.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/study-focus.ts",
       "bytes": 18606,
       "packages": [
         "content-pages",
@@ -137,7 +137,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/DailyPlanPanel.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/DailyPlanPanel.tsx",
       "bytes": 16533,
       "packages": [
         "account",
@@ -145,7 +145,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/pages/ImmersiveGrammar.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/pages/ImmersiveGrammar.tsx",
       "bytes": 16048,
       "packages": [
         "grammar-pages",
@@ -153,7 +153,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/pages/FavoritesPage.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/pages/FavoritesPage.tsx",
       "bytes": 15692,
       "packages": [
         "content-pages",
@@ -161,7 +161,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/analytics/weekly-reports.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/analytics/weekly-reports.ts",
       "bytes": 15645,
       "packages": [
         "content-pages",
@@ -169,7 +169,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/pages/GrammarFoundationPage.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/pages/GrammarFoundationPage.tsx",
       "bytes": 14764,
       "packages": [
         "content-pages",
@@ -177,7 +177,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/GrammarHighlightProvider.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/GrammarHighlightProvider.tsx",
       "bytes": 14740,
       "packages": [
         "content-pages",
@@ -185,7 +185,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/share-canvas.weapp.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/share-canvas.weapp.ts",
       "bytes": 13191,
       "packages": [
         "content-pages",
@@ -194,7 +194,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/DailyPlanRing.weapp.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/DailyPlanRing.weapp.tsx",
       "bytes": 13050,
       "packages": [
         "account",
@@ -202,7 +202,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/JapaneseRuby.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/JapaneseRuby.tsx",
       "bytes": 12878,
       "packages": [
         "content-pages",
@@ -211,7 +211,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/token-dictionary.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/token-dictionary.ts",
       "bytes": 12218,
       "packages": [
         "content-pages",
@@ -220,7 +220,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
       "bytes": 11662,
       "packages": [
         "content-pages",
@@ -229,7 +229,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/grammar-term-hint-data.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/grammar-term-hint-data.ts",
       "bytes": 11044,
       "packages": [
         "content-pages",
@@ -238,7 +238,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/features/word-study/word-study-utils.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/features/word-study/word-study-utils.ts",
       "bytes": 10867,
       "packages": [
         "grammar-pages",
@@ -247,7 +247,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/FloatingDoodlePen.weapp.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/FloatingDoodlePen.weapp.tsx",
       "bytes": 10094,
       "packages": [
         "grammar-pages",
@@ -255,7 +255,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/pages/GrammarDetail.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/pages/GrammarDetail.tsx",
       "bytes": 8891,
       "packages": [
         "content-pages",
@@ -263,7 +263,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/FavoriteFolderPicker.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/FavoriteFolderPicker.tsx",
       "bytes": 7899,
       "packages": [
         "content-pages",
@@ -273,7 +273,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/share-image.weapp.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/share-image.weapp.ts",
       "bytes": 7404,
       "packages": [
         "content-pages",
@@ -282,7 +282,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/ProReadingPreview.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/ProReadingPreview.tsx",
       "bytes": 6340,
       "packages": [
         "lazy",
@@ -290,7 +290,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/distinction-quiz.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/distinction-quiz.ts",
       "bytes": 6302,
       "packages": [
         "grammar-pages",
@@ -299,7 +299,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/grammarProgressPreferences.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/grammarProgressPreferences.ts",
       "bytes": 5120,
       "packages": [
         "grammar-pages",
@@ -307,7 +307,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/ShareImageSheet.weapp.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/ShareImageSheet.weapp.tsx",
       "bytes": 4926,
       "packages": [
         "content-pages",
@@ -316,7 +316,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/GrammarPointPopover.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/GrammarPointPopover.tsx",
       "bytes": 4896,
       "packages": [
         "content-pages",
@@ -325,7 +325,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/CrossPlatformImage.weapp.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/CrossPlatformImage.weapp.tsx",
       "bytes": 4784,
       "packages": [
         "account",
@@ -334,7 +334,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/useStudyTimer.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/useStudyTimer.ts",
       "bytes": 4326,
       "packages": [
         "content-pages",
@@ -344,7 +344,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/daily-plan-ring-geometry.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/daily-plan-ring-geometry.ts",
       "bytes": 3920,
       "packages": [
         "account",
@@ -352,7 +352,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/GrammarTermHint.weapp.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/GrammarTermHint.weapp.tsx",
       "bytes": 3789,
       "packages": [
         "content-pages",
@@ -361,7 +361,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/study-clock.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/study-clock.ts",
       "bytes": 3363,
       "packages": [
         "content-pages",
@@ -371,7 +371,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/data/kana_glossary.json",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/data/kana_glossary.json",
       "bytes": 3278,
       "packages": [
         "content-pages",
@@ -380,7 +380,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/hooks/useCountUp.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/hooks/useCountUp.ts",
       "bytes": 2949,
       "packages": [
         "content-pages",
@@ -388,7 +388,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/grammar-form-target.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/grammar-form-target.ts",
       "bytes": 2766,
       "packages": [
         "content-pages",
@@ -397,7 +397,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/grammar-title-furigana.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/grammar-title-furigana.ts",
       "bytes": 2469,
       "packages": [
         "content-pages",
@@ -406,7 +406,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/Disclosure.weapp.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/Disclosure.weapp.tsx",
       "bytes": 2115,
       "packages": [
         "account",
@@ -417,7 +417,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/ExampleSentence.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/ExampleSentence.tsx",
       "bytes": 1996,
       "packages": [
         "content-pages",
@@ -425,7 +425,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/taro-spike-2/src/platform/platform-dialogs.weapp.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/taro-spike-2/src/platform/platform-dialogs.weapp.ts",
       "bytes": 1824,
       "packages": [
         "account",
@@ -435,7 +435,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/grammar-key-points.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/grammar-key-points.ts",
       "bytes": 1805,
       "packages": [
         "content-pages",
@@ -444,7 +444,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/study-totals.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/study-totals.ts",
       "bytes": 1705,
       "packages": [
         "account",
@@ -452,7 +452,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/routes/shared.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/routes/shared.tsx",
       "bytes": 1614,
       "packages": [
         "content-pages",
@@ -460,7 +460,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/grammar-numbering.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/grammar-numbering.ts",
       "bytes": 1355,
       "packages": [
         "content-pages",
@@ -469,7 +469,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/JapaneseWordRuby.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/JapaneseWordRuby.tsx",
       "bytes": 1115,
       "packages": [
         "grammar-pages",
@@ -478,7 +478,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/ReviewButton.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/ReviewButton.tsx",
       "bytes": 1093,
       "packages": [
         "content-pages",
@@ -486,7 +486,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/yield-to-paint.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/yield-to-paint.ts",
       "bytes": 957,
       "packages": [
         "account",
@@ -495,7 +495,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/grammarNotes.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/grammarNotes.ts",
       "bytes": 825,
       "packages": [
         "content-pages",
@@ -504,7 +504,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/DailyPlanSlider.weapp.tsx",
       "bytes": 651,
       "packages": [
         "account",
@@ -512,7 +512,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 602,
       "packages": [
         "content-pages",
@@ -522,7 +522,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/taro-spike-2/src/platform/grammar-data.weapp.cjs",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/taro-spike-2/src/platform/grammar-data.weapp.cjs",
       "bytes": 458,
       "packages": [
         "content-pages",
@@ -531,7 +531,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/types/grammar.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/types/grammar.ts",
       "bytes": 149,
       "packages": [
         "content-pages",
@@ -540,7 +540,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
       "bytes": 60,
       "packages": [
         "content-pages",
@@ -1069,19 +1069,19 @@
   "webModulePolicy": "error",
   "mainTopModules": [
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/sync-api.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/sync-api.ts",
       "bytes": 164675
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/app.css",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/app.css",
       "bytes": 150745
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/word-api.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/word-api.ts",
       "bytes": 150057
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/styles.css",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/styles.css",
       "bytes": 140879
     },
     {
@@ -1089,23 +1089,23 @@
       "bytes": 92952
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/taro-spike-2/src/platform/WeappPage.tsx",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/taro-spike-2/src/platform/WeappPage.tsx",
       "bytes": 91585
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/wechat-miniprogram/src/vendor/sql-wasm.js",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/wechat-miniprogram/src/vendor/sql-wasm.js",
       "bytes": 91227
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/storage.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/storage.ts",
       "bytes": 88749
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/lib/study-core.ts",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/lib/study-core.ts",
       "bytes": 80896
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/talk2/frontend/src/design.css",
+      "source": "/Users/lsc/Documents/shushugo-wt/talk-content2/frontend/src/design.css",
       "bytes": 66944
     }
   ],

@@ -54,7 +54,7 @@ module.exports = {
       })),
       // 场景图只进实验页所在 study 分包；内容任务还没放图时也能编译预览版。
       ...(expTalkEnabled ? [{
-        from: path.join(frontend, 'src/assets/talk-scenes'),
+        from: require('../scripts/talk-scenes-weapp.cjs')(path.join(frontend, 'src/assets/talk-scenes'), path.join(root, '.talk-scenes-weapp')),
         to: path.join(root, 'dist/study/talk/scenes')
       }, {
         from: path.join(frontend, 'src/assets/talk-art'),
