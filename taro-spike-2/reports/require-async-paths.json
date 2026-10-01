@@ -1,7 +1,7 @@
 {
   "expectedTargetCount": 12,
-  "callCount": 13,
-  "resolvedTargetCount": 13,
+  "callCount": 14,
+  "resolvedTargetCount": 14,
   "calls": [
     {
       "caller": "common.js",
@@ -67,6 +67,11 @@
       "caller": "runtime.js",
       "request": "./lazy/tabs.js",
       "target": "lazy/tabs.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./lazy/mascot-skins.js",
+      "target": "lazy/mascot-skins.js"
     }
   ]
 }
