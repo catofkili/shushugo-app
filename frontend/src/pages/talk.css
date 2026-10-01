@@ -32,8 +32,12 @@
 .talk-line-self .talk-answer { font-size: 20px; }
 .talk-top-status { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-left: auto; }
 .talk-japanese, .talk-answer, .talk-hints { line-height: 2; }
-.talk-sheet-backdrop { position: fixed; inset: 0; z-index: 10002; display: flex; align-items: flex-end; justify-content: center; background: color-mix(in srgb, var(--ds-ink) 35%, transparent); }
-.talk-sheet { width: 100%; max-width: 640px; max-height: 80vh; overflow-y: auto; overscroll-behavior: contain; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.talk-sheet-backdrop { position: fixed; inset: 0; z-index: 10002; display: flex; align-items: flex-end; justify-content: center; background: rgba(43, 36, 28, .35); }
+[data-theme="dark"] .talk-sheet-backdrop { background: rgba(242, 239, 232, .35); }
+.talk-sheet { width: 100%; max-width: 640px; max-height: 80vh; overscroll-behavior: contain; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+/* ScrollView 要有确定高度；内边距放内容层，避免小程序的原生滚动区越过屏幕。网页仍由同一个 ScrollArea 滚动。 */
+.talk-sheet.scroll-area { height: 80vh; padding: 0; }
+.talk-sheet-content { padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); }
 .talk-sheet-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
 .talk-sheet-top .talk-title { font-size: 18px; }
 .talk-sheet-top button { flex-shrink: 0; }
