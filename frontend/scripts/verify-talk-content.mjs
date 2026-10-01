@@ -124,6 +124,10 @@ for (const scene of content.scenes) {
   }
 }
 assert.equal(sceneLineCount, 60, "the 15 scenes must contain all 60 corpus lines");
+// 面向用户的文字里不许出现内部公式编号（F01 这种），用户看不懂。
+for (const text of [...content.scenes.map((scene) => scene.note ?? ""), ...content.formulas.flatMap((formula) => [formula.note, formula.prompt, formula.intent])]) {
+  assert.ok(!/\bF\d{2}\b/u.test(text), "internal formula id shown to users: " + text);
+}
 
 db.close();
 console.log(

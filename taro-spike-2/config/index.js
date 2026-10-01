@@ -54,7 +54,7 @@ module.exports = {
       })),
       // 场景图只进实验页所在 study 分包；内容任务还没放图时也能编译预览版。
       ...(expTalkEnabled ? [{
-        from: path.join(frontend, 'public/talk/scenes/*.jpg'),
+        from: path.join(frontend, 'src/assets/talk-scenes/*.jpg'),
         to: path.join(root, 'dist/study/talk/scenes/[name][ext]'),
         noErrorOnMissing: true
       }] : [])

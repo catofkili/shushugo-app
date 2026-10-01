@@ -77,7 +77,8 @@ function PracticeCard({ card, firstToday, onAnswer }: {
 
   return <>
     <section className="ds-card talk-card">
-      {card.image && !imageFailed && <div className="talk-image">
+      {/* 翻面后收起图：答案和「下一张」要在一屏里，不能每张都往下滚 */}
+      {card.image && !imageFailed && !flipped && <div className="talk-image">
         <CrossPlatformImage src={talkImageSrc(card.image)} alt="" className="talk-scene-image"
           weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={() => setImageFailed(true)} />
@@ -101,7 +102,7 @@ function PracticeCard({ card, firstToday, onAnswer }: {
           <div className={`talk-line ${card.partnerLine ? "talk-line-self" : ""}`}>
             {card.partnerLine && <p className="talk-speaker">我</p>}
             <p className="talk-answer" lang="ja">{card.answer.ja}</p>
-            <p className="talk-translation">{card.answer.zh}</p>
+            {card.answer.zh !== card.prompt && <p className="talk-translation">{card.answer.zh}</p>}
             {canListen && <button type="button" className="ds-chip focus-ring" onClick={listen}>再听一遍</button>}
           </div>
           {card.note && <p className="talk-note">{card.note}</p>}
@@ -176,7 +177,10 @@ export function TalkPage() {
     history.current.push(card);
     setError("");
     const key = pickTalkNext(day, new Set([card.key])) ?? pickTalkNext(day);
-    setCard(key ? talkCard(key) : null);
+    const next = key ? talkCard(key) : null;
+    // 有下一张却拿不到内容（内容没加载上）不能当成「今天做完了」
+    if (key && !next) setError("下一张没能加载，请重试。");
+    setCard(next);
     setProgress(talkProgress(day));
     setTurn((value) => value + 1);
     return true;

@@ -70,7 +70,9 @@
 
 ### 1.4 场景图
 
-15 个场景各一张（`frontend/public/talk/scenes/S01.jpg` … `S15.jpg`），由 Codex 用图像生成（image2.5）出。
+15 个场景各一张（`frontend/src/assets/talk-scenes/S01.jpg` … `S15.jpg`），由 Codex 用图像生成（image2.5）出。
+⚠️ **不放 `public/`**：Vite 会把 `public/` 整个拷进产物，开关关着也会带上这 1.2 MB；由 `lib/talk/image-src.ts` 引用，
+只有开口练习的代码块用到它们。小程序预览版由 Taro 的 copy 规则（只在开关打开时）拷进 `study/talk/scenes/`。
 **图里不许有任何文字**（生成的日文是乱码，而且会把答案露出来）。风格跟品牌贴纸（`frontend/public/brand/sheet/`）走：
 暖色、奶油底、扁平插画，「我」是那只水豚。公式卡如果能挂到某个场景就显示那张图，挂不上就只有中文。
 

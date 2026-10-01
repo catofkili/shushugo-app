@@ -16,7 +16,7 @@
 .talk-line-self { margin-left: auto; max-width: 90%; text-align: right; }
 .talk-speaker { margin: 0 0 4px; color: var(--ds-ink-3); font-size: var(--ds-font-size-kicker); }
 .talk-japanese { margin: 0; color: var(--ds-ink); font-size: 18px; font-weight: 700; line-height: 1.6; }
-.talk-answer { margin: 0; color: var(--ds-ink); font-size: 28px; font-weight: 800; line-height: 1.5; }
+.talk-answer { margin: 0; color: var(--ds-ink); font-size: 24px; font-weight: 800; line-height: 1.5; }
 .talk-translation { margin: 6px 0 0; color: var(--ds-ink-2); font-size: var(--ds-font-size-body); line-height: 1.7; }
 .talk-line .ds-chip { margin-top: 10px; }
 .talk-hints { margin-top: 16px; color: var(--ds-ink-2); font-size: var(--ds-font-size-body); line-height: 1.7; }
@@ -29,3 +29,4 @@
 .talk-done { padding: 40px 0; }
 .talk-error { margin-bottom: 16px; }
 .talk-error > button { margin-top: 12px; }
+.talk-line-self .talk-answer { font-size: 20px; }
