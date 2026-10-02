@@ -20,7 +20,9 @@ const mainNames = {
 const mainOneX = new Set(['mood-ask', 'mood-surprised']);
 const packageNames = {
   study: {
-    'empty-box': 96, 'empty-search': 96, 'mood-ask': 96, 'mood-idea': 64, 'mood-proud': 96
+    'empty-box': 96, 'empty-search': 96, 'mood-ask': 96, 'mood-idea': 64, 'mood-proud': 96,
+    // 备考页倒计时那只按状态拼名（来得及 / 来不及 / 考完），来不及那张 mood-shocked 只登记在 account 分包时，备考页是一张空图。
+    'mood-shocked': 108
   },
   account: {
     'mood-ask': 96, 'mood-heart': 92, 'mood-proud': 96, 'mood-shocked': 48
@@ -29,6 +31,8 @@ const packageNames = {
     'empty-box': 88, 'empty-search': 96, 'mood-proud': 64,
     // WeeklyReportStory's chapter lookup is dynamic; all three must be in this package.
     'mood-idea': 84, 'mood-love': 84, 'mood-fight': 84,
+    // 收藏页页头。
+    'mood-heart': 60,
     'icon-study-modes': 36, 'icon-grammar': 36, 'icon-vocab': 36,
     'icon-practice': 36, 'icon-kanji-readings': 36, 'icon-favorites': 36,
     'icon-stats': 36, 'icon-shop': 36,

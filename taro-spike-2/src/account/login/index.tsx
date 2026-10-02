@@ -1,5 +1,6 @@
+import { LoginShell } from './LoginShell.weapp';
 import { useEffect, useState } from 'react';
-import { Button, Text, View } from '@tarojs/components';
+import { Button, Text } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { AuthDialog } from '../../../../frontend/src/components/AuthDialog';
 import {
@@ -38,7 +39,7 @@ export default function CloudAccountPage() {
   };
 
   return (
-    <View className="p-4">
+    <LoginShell>
       <Text className="block text-lg font-bold">微信登录与云同步</Text>
       <Text className="mt-3 block">{session.email || (session.token ? '微信账号已登录' : '尚未登录')}</Text>
       <Text className="mt-2 block text-sm">{message}</Text>
@@ -57,6 +58,6 @@ export default function CloudAccountPage() {
           setAuthOpen(false);
         }}
       />
-    </View>
+    </LoginShell>
   );
 }

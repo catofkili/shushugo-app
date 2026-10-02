@@ -8,7 +8,7 @@
     },
     "study": {
       "beforeBytes": 41968,
-      "afterBytes": 69816
+      "afterBytes": 88898
     },
     "account": {
       "beforeBytes": 13430,
@@ -16,7 +16,7 @@
     },
     "content-pages": {
       "beforeBytes": 147298,
-      "afterBytes": 553628
+      "afterBytes": 562928
     }
   },
   "images": [
@@ -511,6 +511,20 @@
       "afterBytes": 15801
     },
     {
+      "subpackage": "study",
+      "image": "mood-shocked",
+      "sourceWidth": 414,
+      "sourceHeight": 332,
+      "maxDisplayHeightCss": 108,
+      "scale": 2,
+      "outputWidth": 269,
+      "outputHeight": 216,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 19082
+    },
+    {
       "subpackage": "account",
       "image": "mood-ask",
       "sourceWidth": 427,
@@ -649,6 +663,20 @@
       "beforeBytes": 0,
       "afterFormat": "png",
       "afterBytes": 11219
+    },
+    {
+      "subpackage": "content-pages",
+      "image": "mood-heart",
+      "sourceWidth": 398,
+      "sourceHeight": 319,
+      "maxDisplayHeightCss": 60,
+      "scale": 2,
+      "outputWidth": 150,
+      "outputHeight": 120,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 9300
     },
     {
       "subpackage": "content-pages",

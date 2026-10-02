@@ -1,0 +1,3 @@
+/* 「成就」那颗整宽按钮：网页按钮默认 inline-block，里面那行（文字 + 右箭头）撑满宽度；
+   小程序全局把 button 重置成居中的 inline-flex，那一行会缩成内容宽、箭头离开右边。 */
+.h5-button.w-full.p-4.text-left { display: block; text-align: left; }

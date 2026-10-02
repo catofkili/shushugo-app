@@ -1,0 +1,3 @@
+/* The route CSS splitter appends shared rules after this file; the theme root keeps this override in force.
+   Web offsets this tray above its tab bar. Mini Program subpages have no tab bar inside the viewport. */
+.weapp-theme-root .yz-stage { bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }

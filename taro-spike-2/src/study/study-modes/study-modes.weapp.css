@@ -1,0 +1,19 @@
+/* Runtime JSX leaves some slash-opacity classes literal while WXSS uses escaped names.
+   Restore the shared design.css values by the unchanged page structure. */
+.h5-section.max-w-4xl > .grid > .h5-button[aria-pressed="true"] {
+  background: var(--ds-primary-tint) !important;
+}
+.h5-section.max-w-4xl > .grid .h5-span.grid {
+  background: var(--ds-primary-tint) !important;
+  border-color: transparent !important;
+}
+.theme-light .h5-section.max-w-4xl .h5-p,
+.theme-light .h5-section.max-w-4xl .h5-span.leading-6 {
+  color: var(--ds-ink-3) !important;
+}
+.h5-section.max-w-4xl > .grid image {
+  filter: brightness(0) saturate(100%) invert(40.482%) sepia(100%) saturate(258.242%) hue-rotate(49.89deg);
+}
+/* Native ScrollView clips the image's -12px margin inside its padding edge.
+   Keep the shared header's row height while bringing the complete sticker into view. */
+.h5-section.max-w-4xl > .mb-5 .taro-spike-sticker { transform: translateY(12px); }

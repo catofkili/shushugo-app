@@ -1,0 +1,5 @@
+/* Native buttons supply a white face even without a bg class; web tabs show the parent tint through. */
+.dictionary-card > .grid-cols-3 > .h5-button:not(.bg-\[\#81D8CF\]) { background: transparent; }
+/* 收藏卡左边那颗按钮装着词形 / 读音词性 / 释义三行。小程序全局把 button 重置成居中的 inline-flex，
+   三行被排成一行还居中（「吸殻すいがら · 名烟头」，左边空一块）；网页按钮默认 inline-block，子元素照常一行一个。 */
+.dictionary-card .h5-button.min-w-0.flex-1 { display: block; text-align: left; }

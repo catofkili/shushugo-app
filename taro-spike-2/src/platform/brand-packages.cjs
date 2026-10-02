@@ -21,11 +21,13 @@ module.exports = {
     "account",
     contentPackage
   ],
-  "mood-heart": [
+  "mood-shocked": [
+    "study",
     "account"
   ],
-  "mood-shocked": [
-    "account"
+  "mood-heart": [
+    "account",
+    contentPackage
   ],
   "mood-love": [
     contentPackage

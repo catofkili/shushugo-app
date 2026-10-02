@@ -123,3 +123,6 @@ wechat-miniprogram/project.private.config.json
 
 # 周报三套版式逐章验收截图与日志。
 /taro-spike-2/reports/weekly-sweep/
+
+# 全路由网页 / 小程序对照截图与运行日志。
+/taro-spike-2/reports/route-parity/

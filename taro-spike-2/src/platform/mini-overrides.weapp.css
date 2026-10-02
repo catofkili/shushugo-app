@@ -140,3 +140,33 @@ page { overflow-x: hidden; }
    显隐跟着 WeeklyReportPage 给的 is-open 类走；::backdrop 小程序也没有，用一圈大阴影代替。 */
 .wr-history-dialog { display: none !important; }
 .wr-history-dialog.is-open { display: block !important; box-shadow: 0 0 0 100vmax rgba(23, 16, 32, 0.73) !important; z-index: 10003; }
+
+/* Native button clips the furigana above the first grammar title line; web buttons do not. */
+.grammar-anki-card > .h5-button { overflow: visible; }
+
+/* WXSS drops the universal border-style reset. Width utilities alone leave borders invisible. */
+.border { border-style: solid; }
+.border-t { border-style: solid; border-width: 1px 0 0; }
+.border-b { border-style: solid; border-width: 0 0 1px; }
+
+/* wx button::after brings left/bottom/scale defaults to the web's decorative circle. */
+.zoo-now::after { left: auto; bottom: auto; transform: none; transform-origin: center; }
+
+/* Lucide light SVGs cannot inherit the light theme's muted ink color. */
+.theme-light image.text-whites40,
+.theme-light image.text-whites45,
+.theme-light image.text-whites60,
+.theme-light image.text-whites70 {
+  filter: brightness(0) saturate(100%) invert(45.603%) sepia(100%) saturate(50.338%) hue-rotate(353.75deg);
+}
+
+/* Runtime JSX can leave slash utilities literal while WXSS escapes their names.
+   design.css maps opacity 10–18 to primary-tint, text 50–58 to ink-3, and 60–78 to ink-2. */
+.attr-data-theme [class*="bg-[#81D8CF]/1"] { background: var(--ds-primary-tint) !important; }
+.theme-light [class*="text-white/5"] { color: var(--ds-ink-3) !important; }
+.theme-light [class*="text-white/6"],
+.theme-light [class*="text-white/7"] { color: var(--ds-ink-2) !important; }
+/* The same literal classes also lose design.css's line color / tint-block no-border rule. */
+.attr-data-theme [class*="border-white"] { border-color: var(--ds-line) !important; }
+.attr-data-theme .bg-\[\#81D8CF\]\/10[class*="border-white"],
+.attr-data-theme [class*="bg-[#81D8CF]/1"][class*="border-white"] { border-color: transparent !important; }
