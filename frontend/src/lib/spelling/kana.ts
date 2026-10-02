@@ -44,9 +44,9 @@ const VOWEL_ROWS: Array<[string, string]> = [
   ["えけせてねへめれげぜでべぺぇ", "e"],
   ["おこそとのほもよろをごぞどぼぽぉょ", "o"]
 ];
-const VOWEL_OF = new Map<string, string>(VOWEL_ROWS.flatMap(([chars, vowel]) =>
-  [...chars].map((c) => [c, vowel] as [string, string])
-));
+// 不用 flatMap：模块初始化时就跑，旧 JSCore 没有它整个页面都起不来
+const VOWEL_OF = new Map<string, string>();
+for (const [chars, vowel] of VOWEL_ROWS) for (const c of chars) VOWEL_OF.set(c, vowel);
 const VOWEL_KANA: Record<string, string> = { a: "あ", i: "い", u: "う", e: "え", o: "お" };
 
 /** 一拍的母音（看它最后一个字符：しゃ → a、てぃ → i）。っ ん ー 和非假名返回 ""。 */
