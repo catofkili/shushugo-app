@@ -31,6 +31,12 @@
 | 汉字和假名都有 | mixed | §1.5 |
 | 其它（罗马音夹假名、数字标点…） | other | problem `mixed_scripts` |
 
+**输入归一的两处有意取舍**（2026-10-03 A10 审查提出，作者睡觉期间 Claude 定）：
+- 假名 / 汉字路径去掉**全部**空白（宽松）：「し んぶん」「食 べ る」按没有空格算。用户不会故意在假名里敲空格，严格拒绝只会让人莫名其妙地「差一点」。
+- NFKC 会把 CJK 兼容汉字（神 U+FA19 → 神）归一成标准字形，所以这类旧字形输入判对、不报 `traditional_form`。
+  兼容汉字几乎只能靠复制粘贴或特殊输入法得到，不是学习者的常见错误；要严格区分得放弃 NFKC，而 NFKC 对全角字母 / 半角片假名 / 全角数字（２日）更有用。
+- 输入超过 `MAX_INPUT_LENGTH`（120 字符）直接报 `too_long`，不进匹配（罗马音 DP 对分隔符逐个递归，万级长度会栈溢出）。
+
 ### 1.2 三条判据的共同原则
 
 1. **三类写法都算对，对错只看「是不是这个词的合法写法」**，不看用户选了哪一类；
@@ -84,9 +90,9 @@
 | 行う ← 行なう | ✓ variant（许容的送り仮名；提示首选写法） |
 | 申し込み ← 申込み / 申込 | ✓ variant（送り仮名省略，JMdict 都列了） |
 | 明後日（词库写 あさって）← 明後日 | ✓ variant（词库选了假名，但汉字写法是合法的，只在 JMdict 里**唯一**对上该读音时收，见下） |
-| 食べ物 ← たべ物 | ✗ `partial_kana`（nearMiss：汉字被换成了假名，不是标准写法）；← 食べもの ✗ 同 |
-| 食べる ← 食る / 食べ | ✗ `okurigana` |
-| 食べる ← 食べた | ✗ `conjugated` |
+| 食べ物 ← たべ物 | ✗ `partial_kana`（nearMiss：汉字被换成了假名，不是标准写法）；← 食べもの ✗ 同。换进来的假名必须是这个词读音里的假名（子序列），「食べカ」是普通错误 `wrong_kanji` |
+| 食べる ← 食る | ✗ `okurigana` |
+| 食べる ← 食べ / 食べた / 食べるな | ✗ `conjugated`（词尾被截短、替换、延长都算活用形问题，不猜是哪种活用） |
 | 経済 ← 经济 | ✗ `chinese_form`（nearMiss，带上 expectedChar 経） |
 | 経済 ← 經濟 / 旧字体 | ✗ `traditional_form`（nearMiss） |
 | 経済 ← 軽済 | ✗ `wrong_kanji` |
@@ -112,7 +118,7 @@
 ### 1.6 其它
 
 - 目标是外来语（片假名词，kanji 列是英文等原词）：`source_language` = 输入等于原词（忽略大小写和空格），
-  而不是它的罗马音（camera ✗，kamera ✓）。
+  而不是它的罗马音（camera ✗，kamera ✓）。比较时只忽略大小写和空白，连字符等标点保留（cam-era 不算原词）。
 - 汉字输入用不着读音，所以 `readingOk = null`。
 - `homophone` / `peer_word` 要查词库，由调用方传 `SpellingLookup`；不传就不报这两条（退成 `wrong_kanji`）。
 
@@ -164,7 +170,7 @@
 ```ts
 export const SPELLING_FSRS: FsrsEntity;
 export const ensureSpellingTables(): void;              // 只确认表在 + 补 fsrs 列，不建表
-export const seedSpellingCards(limit: number): number;  // 给「正向学过、拼写还没卡」的词建卡，稳定度取正向的一半，返回新建数
+export const seedSpellingCards(limit: number): number;  // 给「正向学过、拼写还没卡」的词建卡，稳定度取正向的一半，返回新建数。**顽固词（lapses ≥ LEECH_LAPSE_THRESHOLD）不播种**，同 ensureDirectionCardIds：连「认」都认不下来的卡，不拿来考拼写
 export const createSpellingTasks(quota: { fresh: number; review: number }, day?: string): { review: number; fresh: number };
 export const pickSpellingNext(day?: string, excluded?: Set<string>): number | null;
 export const spellingProgress(day?: string): { total: number; done: number; remaining: number };

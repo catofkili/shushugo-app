@@ -218,3 +218,24 @@ describe("拼写判定：汉字 / 混合写法", () => {
     expect(order).toContain("long_vowel");
   });
 });
+
+
+describe("A10 审查后的补丁", () => {
+  it("partial_kana 只认读音里的假名；无关假名是普通错误", () => {
+    const food = target({ kana: "たべもの", surface: "食べ物" });
+    expect(first(food, "食べもの")).toBe("partial_kana");
+    expect(first(food, "食べカ")).toBe("wrong_kanji");
+  });
+
+  it("超长输入直接 too_long，不进匹配（不栈溢出）", () => {
+    const input = `a${" ".repeat(10000)}x`;
+    expect(first(taberu, input)).toBe("too_long");
+    expect(first(taberu, "た".repeat(500))).toBe("too_long");
+  });
+
+  it("原词诊断只忽略大小写和空白", () => {
+    const camera = target({ kana: "カメラ", surface: "カメラ", isLoanword: true, sourceText: "camera" });
+    expect(first(camera, "CAMERA")).toBe("source_language");
+    expect(first(camera, "cam-era")).not.toBe("source_language");
+  });
+});

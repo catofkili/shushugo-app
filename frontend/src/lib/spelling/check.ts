@@ -60,7 +60,7 @@ const kanaSequence = (text: string): string => [...text].filter((char) => /[ぁ-
 /** 被接受写法和输入走同一套归一（NFKC：JMdict 里的「２日」全角数字，和用户输入的「2日」是同一个写法）。 */
 const written = (surface: string) => normalizeInput(surface).replace(/\s+/gu, "");
 
-const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/gu, "");
+const squash = (s: string) => s.toLowerCase().replace(/\s+/gu, "");
 
 type Peer = ReturnType<SpellingLookup["peers"]>[number];
 
@@ -134,7 +134,9 @@ const checkWritten = (target: SpellingTarget, text: string, form: SpellingInputF
   const partial = alreadyWrittenKana ? undefined : comparableForms.find(({ japanese: surface }) => {
     const formKanji = kanjiOf(surface);
     return inputKanji.length < formKanji.length && isSubsequence(inputKanji, formKanji) &&
-      kanaCount(candidate) > kanaCount(surface);
+      kanaCount(candidate) > kanaCount(surface) &&
+      // 换进来的假名得是这个词读音里的假名，「食べカ」这种无关假名不是交ぜ書き，是写错了
+      isSubsequence([...kanaSequence(candidate)], [...toHiragana(target.kana)]);
   });
   const firstKanji = [...candidate].findIndex((char) => KANJI_CHAR.test(char));
   const kanaBeforeKanji = firstKanji > 0 && /[ぁ-ゖ゙゚ァ-ヺ]/u.test([...candidate].slice(0, firstKanji).join(""));
@@ -185,8 +187,12 @@ const readingVerdict = (
   return verdict(form, match.readingOk, problems);
 };
 
+/** 没有哪个词的写法比这长；再长的输入不进匹配（罗马音 DP 对分隔符逐个递归，万级长度会栈溢出）。 */
+export const MAX_INPUT_LENGTH = 120;
+
 export const checkSpelling = (target: SpellingTarget, input: string, lookup?: SpellingLookup): SpellingVerdict => {
   const { form, text } = classifyInput(input);
+  if (form !== "empty" && text.length > MAX_INPUT_LENGTH) return verdict(form, null, [{ code: "too_long" }]);
   if (form === "empty") return verdict("empty", null, [{ code: "empty" }]);
   if (form === "other") {
     const exact = target.forms.find((accepted) => written(accepted.surface) === text);

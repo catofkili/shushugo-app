@@ -4,7 +4,10 @@
  */
 import type { SpellingProblem, SpellingTarget } from "./types";
 
-export const problemMessage = (problem: SpellingProblem, target: Pick<SpellingTarget, "isLoanword">): string => {
+/** 目标读音写的是片假名（词库里 74 个片假名词没有英文词源，isLoanword 为 false，不能靠它判断文字种类）。 */
+const isKatakana = (kana: string) => /[\u30a1-\u30fa]/u.test(kana) && !/[\u3041-\u3096]/u.test(kana);
+
+export const problemMessage = (problem: SpellingProblem, target: Pick<SpellingTarget, "isLoanword" | "kana">): string => {
   const at = problem.moraIndex !== undefined ? `第 ${problem.moraIndex + 1} 拍` : "";
   switch (problem.code) {
     case "empty": return "还没写";
@@ -13,7 +16,7 @@ export const problemMessage = (problem: SpellingProblem, target: Pick<SpellingTa
     case "long_vowel": return "长音的写法不一样";
     case "sokuon": return "促音「っ」不对";
     case "hatsuon": return "「ん」不对";
-    case "script": return target.isLoanword ? "外来语要写片假名" : "这个词写平假名";
+    case "script": return target.isLoanword ? "外来语要写片假名" : isKatakana(target.kana) ? "这个词写片假名" : "这个词写平假名";
     case "other_reading": return "这个读法也对，但这张卡要写另一个";
     case "chinese_form": return `「${problem.typedChar}」是中文写法，日语写「${problem.expectedChar}」`;
     case "traditional_form": return `「${problem.typedChar}」是繁体，日语写「${problem.expectedChar}」`;

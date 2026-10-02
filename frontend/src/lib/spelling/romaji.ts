@@ -325,6 +325,8 @@ export const matchRomaji = (targetKana: string, input: string): ReadingMatch => 
   const target = toHiragana(normalizeInput(targetKana).replace(/\s+/gu, ""));
   const answer = normalizeInput(input).toLowerCase();
   if (!answer) return { ok: false, readingOk: false, problems: [{ code: "empty" }] };
+  // DP 对分隔符逐个递归，输入长到万级会栈溢出；没有哪个词的罗马音超过这个长度
+  if (answer.length > 200) return { ok: false, readingOk: false, problems: [{ code: "too_long", moraIndex: 0 }] };
 
   const { tokens, moras } = buildTokens(target);
   const strict = runMatch(tokens, answer);
