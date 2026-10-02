@@ -249,11 +249,16 @@ const runMatch = (tokens: RomajiToken[], input: string, options: MatchOptions = 
       for (const spelling of ["xtu", "ltu", "xtsu", "ltsu"]) tryEnds(spelling);
       const nextToken = tokens[tokenIndex + 1];
       if (nextToken?.kind === "mora") {
-        for (const spelling of nextToken.alts) {
-          for (const doubled of geminated(spelling)) {
-            for (const end of literalEnds(input, inputIndex, doubled)) {
-              const matched = visit(tokenIndex + 2, end, firstWrongLong);
-              if (matched !== null && (result === null || matched < result)) result = matched;
+        // 促音后的长音写错（gakkoo）也要能被识别成 long_vowel，所以 wrongLongAlts 同样参与重复辅音
+        const choices: Array<[string[], boolean]> = [[nextToken.alts, false], [options.allowWrongLong ? nextToken.wrongLongAlts : [], true]];
+        for (const [spellings, wrongLong] of choices) {
+          const nextWrong = wrongLong && firstWrongLong < 0 ? (nextToken.longIndex ?? nextToken.moraIndex) : firstWrongLong;
+          for (const spelling of spellings) {
+            for (const doubled of geminated(spelling)) {
+              for (const end of literalEnds(input, inputIndex, doubled)) {
+                const matched = visit(tokenIndex + 2, end, nextWrong);
+                if (matched !== null && (result === null || matched < result)) result = matched;
+              }
             }
           }
         }
@@ -334,6 +339,13 @@ export const matchRomaji = (targetKana: string, input: string): ReadingMatch => 
   if (missingSokuon !== null) return problem("sokuon", missingSokuon);
   const missingHatsuon = missingKindIndex(tokens, answer, "hat");
   if (missingHatsuon !== null) return problem("hatsuon", missingHatsuon);
+  // 漏写长音（kyo / okii）：把某个长音 token 换成只有基础拍的短写法能对上 → 长音问题（音长不对，不是别的音）
+  for (let i = 0; i < tokens.length; i += 1) {
+    const token = tokens[i];
+    if (token.kind !== "mora" || token.longIndex === undefined) continue;
+    const short = { ...token, alts: token.baseAlts, wrongLongAlts: [], longIndex: undefined };
+    if (runMatch([...tokens.slice(0, i), short, ...tokens.slice(i + 1)], answer).matched) return problem("long_vowel", token.longIndex);
+  }
   const failureToken = tokens[strict.furthestToken];
   const failureIndex = failureToken?.moraIndex ?? moras.length;
   if (hasExtraSokuon(tokens, answer)) return problem("sokuon", failureIndex);

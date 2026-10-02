@@ -292,3 +292,17 @@ describe("词库整库覆盖", () => {
     console.info(`变异分类：${stats.join("；")}；long_vowel 4/4`);
   });
 });
+
+describe("长音写错 / 漏写的诊断（促音后、整个漏掉）", () => {
+  it("促音后的长音写错、漏写都报 long_vowel", () => {
+    expect(matchRomaji("がっこう", "gakkoo").problems).toEqual([{ code: "long_vowel", moraIndex: 3 }]);
+    expect(matchRomaji("がっこう", "gakko").problems).toEqual([{ code: "long_vowel", moraIndex: 3 }]);
+    expect(matchRomaji("きょう", "kyo").problems).toEqual([{ code: "long_vowel", moraIndex: 1 }]);
+    expect(matchRomaji("おおきい", "okii").problems).toEqual([{ code: "long_vowel", moraIndex: 1 }]);
+    expect(matchRomaji("せんせい", "sense").problems[0].code).toBe("long_vowel");
+  });
+
+  it("多写一个母音仍是 too_long，不当成长音问题", () => {
+    expect(matchRomaji("たべる", "taberuu").problems[0].code).toBe("too_long");
+  });
+});
