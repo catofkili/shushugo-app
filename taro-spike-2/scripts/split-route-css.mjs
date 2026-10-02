@@ -20,6 +20,7 @@ const routes = {
   quickStudy: 'study/quick-study/index.wxss',
   confusion: 'study/confusion/index.wxss',
   kanjiReadings: 'study/kanji-readings/index.wxss',
+  spelling: 'study/spelling/index.wxss',
   // 实验功能「开口练习」：只有 SHUSHUGO_EXP_TALK=1 的预览构建里才有 talk- 类（docs/DAILY_TALK_SPEC.md §0）
   talk: 'study/talk/index.wxss'
 };
@@ -30,6 +31,7 @@ const prefixRoutes = [
   [['weekly-report', 'wr-'], [routes.weeklyReport]],
   [['vt-'], [routes.vocabTest]],
   [['talk-'], [routes.talk]],
+  [['sp-'], [routes.spelling]],
   [['wl-'], [routes.wordList]],
   [['quick-'], [routes.quickStudy]],
   [['cf-'], [routes.confusion, routes.kanjiReadings]],

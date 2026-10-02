@@ -61,10 +61,18 @@ if [ -n "${SHUSHUGO_EXP_TALK:-}" ]; then
     echo -e "${RED}❌ SHUSHUGO_EXP_TALK 是实验功能开关，发版构建不许带${NC}"
     exit 1
 fi
+if [ -n "${SHUSHUGO_EXP_SPELLING:-}" ]; then
+    echo -e "${RED}❌ SHUSHUGO_EXP_SPELLING 是实验功能开关，发版构建不许带${NC}"
+    exit 1
+fi
 echo -e "${YELLOW}🔨 构建前端项目...${NC}"
 npm run build
 if grep -rq "__SHUSHUGO_EXP_TALK__" dist; then
     echo -e "${RED}❌ 构建产物里有实验功能（开口练习）的代码${NC}"
+    exit 1
+fi
+if grep -rq "__SHUSHUGO_EXP_SPELLING__" dist; then
+    echo -e "${RED}❌ 构建产物里有实验功能（单词拼写）的代码${NC}"
     exit 1
 fi
 

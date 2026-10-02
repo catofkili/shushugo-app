@@ -30,13 +30,14 @@ import { WordListRoute } from "./word-list";
 import { WordRoute } from "./word";
 import { YuzuShopRoute } from "./yuzu-shop";
 
-export const ROUTES: Record<Exclude<Page, "talk">, ComponentType> & Partial<Record<"talk", ComponentType>> = {
+export const ROUTES: Record<Exclude<Page, "talk" | "spelling">, ComponentType> & Partial<Record<"talk" | "spelling", ComponentType>> = {
   home: HomeRoute,
   word: WordRoute,
   team: TeamRoute,
   "quick-study": QuickStudyRoute,
   "vocab-test": VocabTestRoute,
   ...(__EXP_TALK__ ? { talk: lazy(() => import("./talk").then((module) => ({ default: module.TalkRoute }))) } : {}),
+  ...(__EXP_SPELLING__ ? { spelling: lazy(() => import("./spelling").then((module) => ({ default: module.SpellingRoute }))) } : {}),
   "weekly-report": WeeklyReportRoute,
   grammar: GrammarRoute,
   "grammar-foundation": GrammarFoundationRoute,
