@@ -1,7 +1,8 @@
 {
-  "appWxssBytesBefore": 274865,
-  "appWxssBytesAfter": 208038,
+  "appWxssBytesBefore": 275314,
+  "appWxssBytesAfter": 208326,
   "movedRuleBytesByRoute": {
+    "content-pages/weekly-report/index.wxss": 161,
     "content-pages/yuzu-shop/index.wxss": 15800,
     "study/confusion/index.wxss": 8458,
     "study/kanji-readings/index.wxss": 12031,
@@ -14,6 +15,7 @@
     "content-pages/yuzu-shop/index.wxss": 141,
     "study/word-list/index.wxss": 125,
     "study/team/index.wxss": 115,
+    "content-pages/weekly-report/index.wxss": 2,
     "study/quick-study/index.wxss": 90,
     "study/confusion/index.wxss": 78,
     "study/kanji-readings/index.wxss": 112,

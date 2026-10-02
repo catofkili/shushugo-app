@@ -1,4 +1,4 @@
-import { useEffect, useId } from "react";
+import { useEffect, useId, useState } from "react";
 import { Canvas } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { jsMotionAllowed } from "../../lib/studyPreferences";
@@ -18,7 +18,15 @@ type CanvasNode = {
 export function StarCanvas({ seed, animate, burst = 0, comet = false }: { seed: string; animate: boolean; burst?: number; comet?: boolean }) {
   const canvasId = `sa-canvas-${useId().replace(/:/g, "")}`;
 
+  const [ready, setReady] = useState(false);
   useEffect(() => {
+    // 原生 Canvas 在 wr-stage / sa-orbit-wrap 的 transform 入场中挂载会缓存偏移；
+    // 重画不能修正，要等最长 .5s 延迟 + 1s 入场结束再挂载（与 star-figures.weapp 一致）。
+    const timer = setTimeout(() => setReady(true), 1600);
+    return () => clearTimeout(timer);
+  }, []);
+  useEffect(() => {
+    if (!ready) return;
     let alive = true;
     let node: CanvasNode | null = null;
     let frame = 0;
@@ -41,7 +49,7 @@ export function StarCanvas({ seed, animate, burst = 0, comet = false }: { seed: 
       if (motion) loop(); else painter.draw(0);
     });
     return () => { alive = false; if (node && frame) node.cancelAnimationFrame(frame); };
-  }, [canvasId, seed, animate, burst, comet]);
+  }, [canvasId, seed, animate, burst, comet, ready]);
 
-  return <Canvas type="2d" id={canvasId} className="sa-canvas" />;
+  return ready ? <Canvas type="2d" id={canvasId} className="sa-canvas" /> : null;
 }
