@@ -34,6 +34,10 @@ const definitions = [
   // app.config.js 在 node 里读这份时看环境变量；打进包里的这份由 DefinePlugin 把 __EXP_TALK__ 换成字面量。
   ...((typeof __EXP_TALK__ !== 'undefined' ? __EXP_TALK__ : process.env.SHUSHUGO_EXP_TALK === '1')
     ? [['talk', 'study/talk/index', false, 'study']]
+    : []),
+  // 拼写只读自己的编译常量或环境变量，开口练习的上线状态不会改变这页登记。
+  ...((typeof __EXP_SPELLING__ !== 'undefined' ? __EXP_SPELLING__ : process.env.SHUSHUGO_EXP_SPELLING === '1')
+    ? [['spelling', 'study/spelling/index', false, 'study']]
     : [])
 ];
 

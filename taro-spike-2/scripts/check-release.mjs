@@ -44,6 +44,9 @@ const checks = [
   // 实验功能「开口练习」只许出预览码（SHUSHUGO_EXP_TALK=1），见 docs/DAILY_TALK_SPEC.md §0。上线时删掉这两条。
   ['没有实验功能的页面（开口练习）', JSON.stringify(app).includes('talk/index') ? ['app.json'] : []],
   ['没有实验功能的代码（开口练习）', hits(/__SHUSHUGO_EXP_TALK__/)],
+  // 单词拼写同样不许进发布包；它用独立指纹，便于单独解除拦截。
+  ['没有实验功能的页面（单词拼写）', JSON.stringify(app).includes('spelling/index') ? ['app.json'] : []],
+  ['没有实验功能的代码（单词拼写）', hits(/__SHUSHUGO_EXP_SPELLING__/)],
   ['没有密钥', hits(new RegExp([
     /-----BEGIN [A-Z ]*PRIVATE KEY-----/.source,
     /(app_?secret|private_?key|api_?key|secret_?key|wechat_?(?:pay_?)?app_?key|(?:access|refresh|auth)_?token)["']?\s*[:=]\s*["'][A-Za-z0-9+/=_-]{16,}["']/.source,

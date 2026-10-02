@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
 // 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
-import { Check, Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal, Timer } from "lucide-react";
+import { Check, Flame, Merge, PenLine, RefreshCw, SkipForward, SlidersHorizontal, Timer } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
 import { notifyProgressUpdated } from "../lib/progress-events";
 import { useProgressUpdates } from "../lib/use-progress-updates";
@@ -443,6 +443,14 @@ export function ZooHome({
             style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", marginTop: 12, padding: "10px 14px", textAlign: "left" }}>
             <span aria-hidden="true"><Sticker name="icon-practice" size={28} /></span>
             <span style={{ flex: 1 }}>开口练习</span>
+            <span style={{ padding: "2px 8px", borderRadius: 999, background: "var(--ds-surface)", color: "var(--ds-ink-3)", fontSize: 12, fontWeight: 700 }}>实验</span>
+          </button>
+        )}
+        {__EXP_SPELLING__ && (
+          <button className="ds-btn-soft" onClick={() => onNavigate("spelling")}
+            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", marginTop: 12, padding: "10px 14px", textAlign: "left" }}>
+            <span aria-hidden="true"><PenLine size={28} /></span>
+            <span style={{ flex: 1 }}>单词拼写</span>
             <span style={{ padding: "2px 8px", borderRadius: 999, background: "var(--ds-surface)", color: "var(--ds-ink-3)", fontSize: 12, fontWeight: 700 }}>实验</span>
           </button>
         )}

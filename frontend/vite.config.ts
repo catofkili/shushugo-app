@@ -80,6 +80,8 @@ export default defineConfig(({ command }) => ({
     // 实验功能「开口练习」的编译期开关（docs/DAILY_TALK_SPEC.md §0）：开发服务器和 vitest 默认开，
     // 正式构建（网页 / iOS）默认关、整段摇掉。⚠️ 上线前谁也不许把 build 的默认值改成 true。
     __EXP_TALK__: JSON.stringify(command === "serve" || process.env.SHUSHUGO_EXP_TALK === "1"),
+    // 拼写实验独立开关；正式构建默认关闭，只有自测和小程序预览显式打开。
+    __EXP_SPELLING__: JSON.stringify(command === "serve" || process.env.SHUSHUGO_EXP_SPELLING === "1"),
   },
   build: {
     outDir: "dist",
