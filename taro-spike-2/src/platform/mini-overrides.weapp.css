@@ -140,3 +140,6 @@ page { overflow-x: hidden; }
    显隐跟着 WeeklyReportPage 给的 is-open 类走；::backdrop 小程序也没有，用一圈大阴影代替。 */
 .wr-history-dialog { display: none !important; }
 .wr-history-dialog.is-open { display: block !important; box-shadow: 0 0 0 100vmax rgba(23, 16, 32, 0.73) !important; z-index: 10003; }
+/* 周报星图版的三张 Canvas（背景星空、北斗、七道光）在开发者工具里画在弹层上面（分享面板、往期里全是星点）。
+   真机 Canvas 2D 走同层渲染、z-index 应该管用，但没在真机上确认过；弹层开着时先把它们藏掉，两种情况都对。 */
+.wr-covered .sa-canvas, .wr-covered .sa-rays, .wr-covered .sa-dipper canvas { display: none !important; }

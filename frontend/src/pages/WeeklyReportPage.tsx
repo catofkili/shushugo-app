@@ -442,7 +442,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
   const Story = STORIES[variant];
   const OutgoingStory = outgoing ? STORIES[outgoing.variant] : null;
   return (
-    <div className={`weekly-report-page wr-experience wr-variant-${variant} wr-theme-${chapter}`} data-paused={paused || hidden ? "true" : "false"} onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); suppressClickRef.current = false; } }}>
+    <div className={`weekly-report-page wr-experience wr-variant-${variant} wr-theme-${chapter}${shareCard || historyOpen ? " wr-covered" : ""}`} data-paused={paused || hidden ? "true" : "false"} onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); suppressClickRef.current = false; } }}>
       <header className="wr-experience-header">
         <button className="wr-icon-control" onClick={onBack} aria-label="关闭回顾，回到主页"><X size={20}/></button>
         <button ref={weekPickerRef} className="wr-week-picker" aria-haspopup="dialog" aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)} onPointerDown={(event) => startDrag(event,"week")} onPointerMove={dragMove} onPointerUp={endDrag} onPointerCancel={resetDrag}>
