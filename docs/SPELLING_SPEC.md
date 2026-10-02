@@ -99,7 +99,7 @@
   先把输入映回日文字形再去命中集合：命中 → 报 `chinese_form` / `traditional_form`（nearMiss，**不算对**）。
 - **JMdict 取数规则（`scripts/build-spelling-forms.mjs`，数据 `src/data/spelling_forms.json`）**：
   - 词库词（汉字 + 读音）去注音 / 空白后，在 JMdict 里找 **keb 与读音都对得上**的条目；
-  - 纳入该条目的 k_ele，排除 `sK`（搜索用）、`iK`（不规范汉字）、`oK`（过时汉字）；
+  - 纳入该条目的 k_ele，排除 `sK`（搜索用）、`iK`（不规范汉字）、`oK`（过时汉字）、`io`（不规则送り仮名：引受る、日変り…，不是「正确的混合形式」）、`ik`；
     标 `rK` → tag `rare`；标 `ateji` → tag `ateji`；其余 → `variant`；
   - 纳入 r_ele 里能配该 keb（尊重 re_restr）、且不带 `ok ik sk` 的其它读音 → `altReadings`；
   - 词库里只有假名 / 外来语（没有汉字）的词：只在**读音在 JMdict 里恰好对上一个条目**时才收它的 k_ele

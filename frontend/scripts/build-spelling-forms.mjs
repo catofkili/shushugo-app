@@ -25,7 +25,8 @@ const reportPath = join(repo, "docs/audits/2026-10-02-spelling-forms.md");
 const VERSION = "2026-10-02";
 const TAG_ORDER = ["variant", "rare", "ateji"];
 const TAG_RANK = new Map(TAG_ORDER.map((tag, index) => [tag, index]));
-const EXCLUDED_KANJI_INFO = new Set(["sK", "iK", "oK"]);
+// io = 不规则送り仮名（引受る、日変り…）不是「正确的混合形式」，和 sK / iK / oK 一样不收（2026-10-02 拍板，见 docs/SPELLING_SPEC.md §1.5）
+const EXCLUDED_KANJI_INFO = new Set(["sK", "iK", "oK", "io", "ik"]);
 const EXCLUDED_READING_INFO = new Set(["ok", "ik", "sk"]);
 const HAN = /\p{Script=Han}/u;
 const NON_WORD_MARKS = /[〜～~・\s]/gu;
@@ -386,7 +387,7 @@ function createReport(words, index, result) {
     "",
     "- 输入仅为 frontend/.local/JMdict_e.gz 与只读内存打开的 frontend/public/nihongo.db；词库清理去 [注音] 和空白，匹配键再去 〜、～、~、・。片假名读音转平假名参与 JMdict 匹配，输出键保留词库原读音。",
     "- 含汉字词按清理后的表记+读音匹配，并尊重 re_restr。一个精确键对应多个 ent_seq 时丢弃该键的 JMdict 写法和其它读音；纯假名/外来语只在读音唯一对应一个条目时取其可配表记。",
-    "- 排除 ke_inf 的 sK/iK/oK；rK 归 rare，ateji 归 ateji，其它未排除标签归 variant。同一写法重复出现时采用更常规的标签顺序 variant → rare → ateji。",
+    "- 排除 ke_inf 的 sK/iK/oK/io/ik；rK 归 rare，ateji 归 ateji，其它未排除标签归 variant。同一写法重复出现时采用更常规的标签顺序 variant → rare → ateji。",
     "- 排除 re_inf 的 ok/ik/sk；其它且能配该汉字表记的平假名读音才进入 r。假名表记无法由 re_restr 证明是同一字形，故不推导 altReadings；片假名读音也始终为空。",
     "- kanji_orthography.json 的 alternate/kana/low 首选表记若含汉字，也按 variant 并入；纯假名首选表记不放入 f。",
     "",
