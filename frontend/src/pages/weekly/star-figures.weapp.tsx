@@ -1,8 +1,9 @@
-import { useEffect, useId, useState } from "react";
+import { useContext, useEffect, useId, useState } from "react";
 import { Canvas, View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import type { WeeklyReport } from "../../lib/analytics/weekly";
 import { weekday } from "../WeeklyReportStory";
+import { WeeklyCoveredContext } from "./covered";
 
 type Props = { daily: WeeklyReport["metrics"]["daily"] };
 type CanvasNode = { width: number; height: number; getContext: (kind: "2d") => CanvasRenderingContext2D };
@@ -20,7 +21,10 @@ const DIPPER_LINKS = [[0, 1], [1, 2], [2, 3], [3, 0], [3, 4], [4, 5], [5, 6]] as
 // 对齐 SVG 默认的 xMidYMid meet；只画终态，暂停 / 减弱动效时也是这一帧。
 function useFigure(daily: Props["daily"], height: number, draw: (ctx: CanvasRenderingContext2D, daily: Props["daily"], pixelScale: number) => void) {
   const id = `sa-figure-${useId().replace(/:/g, "")}`;
-  const [ready, setReady] = useState(false);
+  const [mounted, setReady] = useState(false);
+  // 弹层开着时不渲染（同 StarCanvas.weapp）：原生 Canvas 会画在分享面板 / 往期上面。
+  const covered = useContext(WeeklyCoveredContext);
+  const ready = mounted && !covered;
   useEffect(() => {
     // Canvas 2D 在祖先 transform 入场时挂载，会把当时的偏移缓存到原生绘图层；
     // 单纯重画 / 改尺寸不能修正，模拟器已复现。等 wr-stage 的 1s 和

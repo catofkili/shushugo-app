@@ -14,6 +14,7 @@ import {
 import { recordWeeklyReportEvent, type WeeklyReportEntry } from "../lib/analytics/weekly-report-events";
 // ⚠️ 旧版样式要先于两个新版式的 css 引入：同优先级时后引入的赢，新版的配色得压过旧版。
 import "./weekly-report.css";
+import { WeeklyCoveredContext } from "./weekly/covered";
 import { WeeklyReportStory } from "./WeeklyReportStory";
 import { StarAtlasStory } from "./weekly/StarAtlasStory";
 import { FilmStory } from "./weekly/FilmStory";
@@ -442,7 +443,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
   const Story = STORIES[variant];
   const OutgoingStory = outgoing ? STORIES[outgoing.variant] : null;
   return (
-    <div className={`weekly-report-page wr-experience wr-variant-${variant} wr-theme-${chapter}${shareCard || historyOpen ? " wr-covered" : ""}`} data-paused={paused || hidden ? "true" : "false"} onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); suppressClickRef.current = false; } }}>
+    <div className={`weekly-report-page wr-experience wr-variant-${variant} wr-theme-${chapter}`} data-paused={paused || hidden ? "true" : "false"} onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); suppressClickRef.current = false; } }}>
       <header className="wr-experience-header">
         <button className="wr-icon-control" onClick={onBack} aria-label="关闭回顾，回到主页"><X size={20}/></button>
         <button ref={weekPickerRef} className="wr-week-picker" aria-haspopup="dialog" aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)} onPointerDown={(event) => startDrag(event,"week")} onPointerMove={dragMove} onPointerUp={endDrag} onPointerCancel={resetDrag}>
@@ -460,10 +461,12 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
         <div className="wr-drag-layer">
           {outgoing && OutgoingStory && <div className={`wr-outgoing wr-theme-${outgoing.chapter}`} aria-hidden="true" inert><OutgoingStory report={outgoing.report} chapter={outgoing.chapter} onBack={()=>{}} onShare={()=>{}} animate={false}/></div>}
           <div className={`wr-stage wr-theme-${chapter}`} key={`${variant}:${report.window.start}:${page}`}>
+<WeeklyCoveredContext.Provider value={Boolean(shareCard) || historyOpen}>
             <Story report={report} chapter={chapter} animate={!paused && !hidden} onBack={onBack} onShare={createSharePreview} onReviewWords={onReviewWords && !mock ? (ids) => {
               recordWeeklyReportEvent({kind:"review_added",weekStart:report.window.start,at:Date.now()});
               onReviewWords(ids);
             } : undefined}/>
+            </WeeklyCoveredContext.Provider>
           </div>
         </div>
       </section>

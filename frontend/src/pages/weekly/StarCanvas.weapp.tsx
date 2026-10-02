@@ -1,8 +1,9 @@
-import { useEffect, useId, useState } from "react";
+import { useContext, useEffect, useId, useState } from "react";
 import { Canvas } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { jsMotionAllowed } from "../../lib/studyPreferences";
 import { starPainter } from "./star-painter";
+import { WeeklyCoveredContext } from "./covered";
 
 type CanvasNode = {
   width: number; height: number;
@@ -19,6 +20,9 @@ export function StarCanvas({ seed, animate, burst = 0, comet = false }: { seed: 
   const canvasId = `sa-canvas-${useId().replace(/:/g, "")}`;
 
   const [ready, setReady] = useState(false);
+  // 弹层开着时不渲染：原生 Canvas 在开发者工具里会画在弹层上面，display:none 也藏不掉。
+  const covered = useContext(WeeklyCoveredContext);
+  const show = ready && !covered;
   useEffect(() => {
     // 原生 Canvas 在 wr-stage / sa-orbit-wrap 的 transform 入场中挂载会缓存偏移；
     // 重画不能修正，要等最长 .5s 延迟 + 1s 入场结束再挂载（与 star-figures.weapp 一致）。
@@ -26,7 +30,7 @@ export function StarCanvas({ seed, animate, burst = 0, comet = false }: { seed: 
     return () => clearTimeout(timer);
   }, []);
   useEffect(() => {
-    if (!ready) return;
+    if (!show) return;
     let alive = true;
     let node: CanvasNode | null = null;
     let frame = 0;
@@ -49,7 +53,7 @@ export function StarCanvas({ seed, animate, burst = 0, comet = false }: { seed: 
       if (motion) loop(); else painter.draw(0);
     });
     return () => { alive = false; if (node && frame) node.cancelAnimationFrame(frame); };
-  }, [canvasId, seed, animate, burst, comet, ready]);
+  }, [canvasId, seed, animate, burst, comet, show]);
 
-  return ready ? <Canvas type="2d" id={canvasId} className="sa-canvas" /> : null;
+  return show ? <Canvas type="2d" id={canvasId} className="sa-canvas" /> : null;
 }
