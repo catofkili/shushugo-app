@@ -109,7 +109,8 @@ function readSources(options) {
     rows.sort((a, b) => a.no - b.no);
 
     const passageRows = rows.filter((row) => row.kind === "passage");
-    const passageSources = rows.filter((row) => Object.hasOwn(row.source, "passage"));
+    // passage: null 等于没有这个字段（审校会把其它文章题上的 passage 写成 null）
+    const passageSources = rows.filter((row) => row.source.passage != null);
     const passageId = `${level.toLowerCase()}-${options.setId}-p1`;
     if (passageSources.length > 1) inputErrors.push(`${level}-${section}: 只允许一篇文章，passage 字段出现了 ${passageSources.length} 次`);
     if (passageSources.length && !passageRows.includes(passageSources[0])) {
