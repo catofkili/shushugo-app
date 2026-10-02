@@ -106,7 +106,7 @@ describe("单词拼写发布隔离", () => {
     expect(forbidden.some((file) => allowed(resolve(root, file)))).toBe(false);
   });
 
-  it("Taro 的拼写页面只由拼写开关控制", () => {
+  it("Taro 的三个实验页面各只由自己的开关控制", () => {
     for (const talk of ["0", "1"]) for (const jlpt of ["0", "1"]) for (const spelling of ["0", "1"]) {
       const output = execFileSync(process.execPath, ["-e", `
         const { ROUTE_TABLE } = require('./taro-spike-2/src/platform/route-table.cjs');
@@ -123,7 +123,7 @@ describe("单词拼写发布隔离", () => {
       });
       const pages: string[] = JSON.parse(output);
       expect(pages.includes("talk")).toBe(talk === "1");
-      expect(pages.includes("jlpt-practice")).toBe(false);
+      expect(pages.includes("jlpt-practice")).toBe(jlpt === "1");
       expect(pages.includes("spelling")).toBe(spelling === "1");
     }
   });

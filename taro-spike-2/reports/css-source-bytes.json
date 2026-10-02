@@ -1,7 +1,9 @@
 {
   "frontend/src/app.css": 150705,
   "frontend/src/components/ZooHome.css": 1011,
-  "frontend/src/design.css": 73250,
+  "frontend/src/design.css": 73549,
+  "frontend/src/pages/spelling.css": 3647,
+  "frontend/src/pages/talk.css": 8265,
   "frontend/src/pages/weekly-report.css": 39886,
   "frontend/src/pages/weekly/film.css": 20749,
   "frontend/src/pages/weekly/star-atlas.css": 16152,

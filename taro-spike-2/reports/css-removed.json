@@ -25,6 +25,7 @@
   ".peer:checked ~ .peer-checked\\:bg-\\[\\#81D8CF\\]",
   ".peer:checked ~ .peer-checked\\:bg-\\[\\#91C968\\]",
   ".sa-body.is-center:has(.sa-keyword)",
+  ".sp-button:focus-visible",
   ".space-y-1 > :not([hidden]) ~ :not([hidden])",
   ".space-y-2 > :not([hidden]) ~ :not([hidden])",
   ".space-y-2\\.5 > :not([hidden]) ~ :not([hidden])",
