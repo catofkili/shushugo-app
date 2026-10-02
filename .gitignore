@@ -126,3 +126,6 @@ wechat-miniprogram/project.private.config.json
 
 # 全路由网页 / 小程序对照截图与运行日志。
 /taro-spike-2/reports/route-parity/
+
+# 小程序预览码（二维码能打开开发版，不进仓库）
+preview-*.png

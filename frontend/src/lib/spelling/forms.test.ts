@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import initSqlJs from "sql.js";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -134,20 +134,25 @@ describe("spellingTargetForWord", () => {
       }
     }
 
+    // 构建脚本读 frontend/.local/JMdict_e.gz（gitignore，CI 的干净 checkout 里没有），没有就只验上面的数据不变量。
+    // 脚本会改写 spelling_forms.json 和审计文档，跑完无论成败都还原，免得每次跑测试都弄脏工作区。
     const frontend = fileURLToPath(new URL("../../../", import.meta.url));
+    if (!existsSync(new URL("../../../.local/JMdict_e.gz", import.meta.url))) return;
     const builder = fileURLToPath(new URL("../../../scripts/build-spelling-forms.mjs", import.meta.url));
-    execFileSync(process.execPath, [builder], { cwd: frontend, stdio: "pipe" });
-    const firstJson = readFileSync(new URL("../../data/spelling_forms.json", import.meta.url), "utf8");
-    const firstReport = readFileSync(
-      new URL("../../../../docs/audits/2026-10-02-spelling-forms.md", import.meta.url),
-      "utf8"
-    );
-    execFileSync(process.execPath, [builder], { cwd: frontend, stdio: "pipe" });
-    expect(readFileSync(new URL("../../data/spelling_forms.json", import.meta.url), "utf8"))
-      .toBe(firstJson);
-    expect(readFileSync(new URL("../../../../docs/audits/2026-10-02-spelling-forms.md", import.meta.url), "utf8"))
-      .toBe(firstReport);
-    expect(firstJson).toBe(originalJson);
-    expect(firstReport).toBe(originalReport);
+    const jsonUrl = new URL("../../data/spelling_forms.json", import.meta.url);
+    const reportUrl = new URL("../../../../docs/audits/2026-10-02-spelling-forms.md", import.meta.url);
+    try {
+      execFileSync(process.execPath, [builder], { cwd: frontend, stdio: "pipe" });
+      const firstJson = readFileSync(jsonUrl, "utf8");
+      const firstReport = readFileSync(reportUrl, "utf8");
+      execFileSync(process.execPath, [builder], { cwd: frontend, stdio: "pipe" });
+      expect(readFileSync(jsonUrl, "utf8")).toBe(firstJson);
+      expect(readFileSync(reportUrl, "utf8")).toBe(firstReport);
+      expect(firstJson).toBe(originalJson);
+      expect(firstReport).toBe(originalReport);
+    } finally {
+      writeFileSync(jsonUrl, originalJson);
+      writeFileSync(reportUrl, originalReport);
+    }
   }, 30000);
 });
