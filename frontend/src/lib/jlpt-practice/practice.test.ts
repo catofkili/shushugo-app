@@ -58,6 +58,10 @@ describe("JLPT 数据层", () => {
       { type: "blank" }, { type: "blank" }, { type: "slot", star: false }, { type: "slot", star: true },
       { type: "ref", n: 12 }, { type: "text", text: "後( )（ ）" }
     ]);
+    // 手写题的实际写法：★ 自己占一个空，前后用半角或全角空格隔开
+    expect(parseStem("店で ＿＿ ★ ＿＿　＿＿、買う。").filter((part) => part.type === "slot")).toEqual([
+      { type: "slot", star: false }, { type: "slot", star: true }, { type: "slot", star: false }, { type: "slot", star: false }
+    ]);
     expect(parseStem("")).toEqual([]);
     expect(parseStem("普通文字")).toEqual([{ type: "text", text: "普通文字" }]);
     expect(parseStem("[[改\n行]][1][2]")).toEqual([

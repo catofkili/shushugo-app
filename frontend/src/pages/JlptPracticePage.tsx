@@ -5,6 +5,7 @@ import { MascotSay } from "../components/MascotSay";
 import { DrillSession, MockSession } from "../features/jlpt-practice/Sessions";
 import { PracticeResult } from "../features/jlpt-practice/Result";
 import { getStudyPreferences } from "../lib/studyPreferences";
+import { scrollPageToTop } from "../lib/touch-adapter";
 import {
   JLPT_LEVELS, JLPT_PRACTICE_MARKER, KIND_LABEL, jlptKindStats, loadJlptBank,
   mistakeQuestions, mockParts, pickDrillQuestions,
@@ -40,6 +41,9 @@ export function JlptPracticePage() {
     void load();
     return () => { cancelled = true; };
   }, [level, reload]);
+
+  // 开始练习、出结果、回到列表都从顶上看起（否则停在列表滚到的位置）
+  useEffect(() => { scrollPageToTop(); }, [session?.id, result]);
 
   const changeLevel = (next: JlptLevel) => {
     if (next === level) return;

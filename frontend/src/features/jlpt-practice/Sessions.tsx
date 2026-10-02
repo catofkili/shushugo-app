@@ -5,6 +5,7 @@ import {
   KIND_LABEL, SECTION_LABEL, recordJlptAnswers,
   type JlptAnswer, type JlptBank, type JlptMockPart, type JlptQuestion, type OptionNo
 } from "../../lib/jlpt-practice";
+import { scrollPageToTop } from "../../lib/touch-adapter";
 import { Explanation, Question } from "./Question";
 
 export function DrillSession({ bank, questions, mode, sessionId, onDone, onBack }: {
@@ -21,6 +22,7 @@ export function DrillSession({ bank, questions, mode, sessionId, onDone, onBack 
   const answers = useRef<JlptAnswer[]>([]);
   const locked = useRef(false);
   const question = questions[index];
+  useEffect(() => { scrollPageToTop(); }, [index]);
 
   const save = (choice: OptionNo) => {
     try {
@@ -59,11 +61,12 @@ export function DrillSession({ bank, questions, mode, sessionId, onDone, onBack 
       <div className="jq-progress-fill" style={{ width: `${(index + 1) / questions.length * 100}%` }} />
     </div>
     <Question key={question.id} bank={bank} question={question} chosen={chosen} reveal={chosen !== 0} showKind={mode === "mistakes"} onChoose={choose} />
-    {error ? <MascotSay sticker="mood-puzzled" tone="warn" className="ds-say-onbg">作答没存好。再试一次。</MascotSay>
-      : chosen !== 0 && <Explanation question={question} chosen={chosen} />}
+    {/* 按钮紧跟在选项下面：解析放在后面，答完不用滚屏就能点下一题 */}
     {chosen !== 0 && <button type="button" className="ds-btn jq-wide focus-ring" onClick={error ? () => save(chosen) : next}>
       {error ? "重试保存" : index === questions.length - 1 ? "看小结" : "下一题"}
     </button>}
+    {error ? <MascotSay sticker="mood-puzzled" tone="warn" className="ds-say-onbg">作答没存好。再试一次。</MascotSay>
+      : chosen !== 0 && <Explanation question={question} chosen={chosen} />}
   </>;
 }
 
@@ -86,6 +89,7 @@ export function MockSession({ bank, parts, sessionId, onDone, onBack }: {
   const part = parts[partIndex];
   const question = part.questions[index];
   const answered = part.questions.filter(item => choices[item.id]).length;
+  useEffect(() => { scrollPageToTop(); }, [index, partIndex]);
 
   const submitPart = useCallback(() => {
     if (submittedPart.current === partIndex) return;
@@ -140,32 +144,38 @@ export function MockSession({ bank, parts, sessionId, onDone, onBack }: {
       <span className={`jq-timer ${seconds <= 60 ? "jq-timer-warn" : ""}`}><Timer size={16} />{time}</span>
       <button type="button" className="ds-btn-soft jq-small-button focus-ring" onClick={() => setConfirm("exit")} disabled={error}><X size={14} />退出</button>
     </div>
+    {/* 退出确认紧挨着顶上的「退出」：放在页面底下的话，点了退出屏幕上什么都不变 */}
+    {confirm === "exit" && <>
+      <MascotSay sticker="mood-ask" tone="warn" className="ds-say-onbg">退出后，这份卷不会留下记录。</MascotSay>
+      <div className="jq-actions">
+        <button type="button" className="ds-btn-soft jq-grow focus-ring" onClick={() => setConfirm(null)}>继续答题</button>
+        <button type="button" className="ds-btn jq-grow focus-ring" onClick={onBack}>退出</button>
+      </div>
+    </>}
     <div className="jq-meta"><span>第 {index + 1} 题</span><span>已答 {answered} / 共 {part.questions.length}</span></div>
     <Question key={question.id} bank={bank} question={question} chosen={choices[question.id] ?? 0} disabled={error} onChoose={choose} />
     <div className="ds-card jq-card jq-stack">
+      <div className="jq-actions">
+        <button type="button" className="ds-btn-soft jq-grow focus-ring" disabled={index === 0 || error} onClick={() => setIndex(index - 1)}>上一题</button>
+        <button type="button" className="ds-btn-soft jq-grow focus-ring" disabled={index === part.questions.length - 1 || error} onClick={() => setIndex(index + 1)}>下一题</button>
+      </div>
       <div className="jq-question-grid" aria-label="题号">
         {part.questions.map((q, number) => <button type="button" key={q.id} disabled={error}
           aria-current={number === index ? "step" : undefined} aria-label={`第 ${number + 1} 题，${choices[q.id] ? "已答" : "未答"}`}
           className={`jq-number focus-ring ${choices[q.id] ? "jq-number-answered" : ""} ${number === index ? "jq-number-current" : ""}`}
           onClick={() => setIndex(number)}>{number + 1}</button>)}
       </div>
-      <div className="jq-actions">
-        <button type="button" className="ds-btn-soft jq-grow focus-ring" disabled={index === 0 || error} onClick={() => setIndex(index - 1)}>上一题</button>
-        <button type="button" className="ds-btn-soft jq-grow focus-ring" disabled={index === part.questions.length - 1 || error} onClick={() => setIndex(index + 1)}>下一题</button>
-      </div>
     </div>
     {error ? <>
       <MascotSay sticker="mood-puzzled" tone="warn" className="ds-say-onbg">作答没存好。再试一次。</MascotSay>
       <button type="button" className="ds-btn jq-wide focus-ring" onClick={retry}>重试保存</button>
-    </> : confirm ? <>
-      <MascotSay sticker="mood-ask" tone="warn" className="ds-say-onbg">
-        {confirm === "exit" ? "退出后，这份卷不会留下记录。" : `还有 ${part.questions.length - answered} 题没答。交这一部分？`}
-      </MascotSay>
+    </> : confirm === "submit" ? <>
+      <MascotSay sticker="mood-ask" tone="warn" className="ds-say-onbg">{answered < part.questions.length ? `还有 ${part.questions.length - answered} 题没答。交这一部分？` : "交这一部分？"}</MascotSay>
       <div className="jq-actions">
         <button type="button" className="ds-btn-soft jq-grow focus-ring" onClick={() => setConfirm(null)}>继续答题</button>
-        <button type="button" className="ds-btn jq-grow focus-ring" onClick={confirm === "exit" ? onBack : submitPart}>{confirm === "exit" ? "退出" : "确认交卷"}</button>
+        <button type="button" className="ds-btn jq-grow focus-ring" onClick={submitPart}>确认交卷</button>
       </div>
-    </> : <button type="button" className="ds-btn jq-wide focus-ring" onClick={() => {
+    </> : confirm === "exit" ? null : <button type="button" className="ds-btn jq-wide focus-ring" onClick={() => {
       if (Date.now() >= deadline) submitPart();
       else setConfirm("submit");
     }}>交这一部分</button>}

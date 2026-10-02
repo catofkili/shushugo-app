@@ -50,6 +50,8 @@ export const getActiveElement = (): HTMLElement | null => document.activeElement
  * Illegal invocation（Taro 的 window 把全局属性原样抄了一份，this 不对）。网页滚页面本身时再走浏览器 API。
  */
 export const scrollPageToTop = () => {
+  // 网页的滚动容器是外层 <main class="app-landscape-main">（fixed inset-0），只滚 window 什么都不会动
+  document.querySelector<HTMLElement>("main.app-landscape-main")?.scrollTo({ top: 0 });
   window.scrollTo(0, 0);
   return true;
 };

@@ -6,10 +6,10 @@ import type {
   JlptAnswer, JlptBank, JlptKind, JlptKindStats, JlptLevel, JlptMockPart, JlptMode, JlptQuestion, StemPart
 } from "./types";
 
-/** 不吞普通文字；★＿＿ 必须先于普通槽匹配。 */
+/** 不吞普通文字；★＿＿ 必须先于普通槽匹配。手写题里 ★ 常常自己占一个空（`＿＿ ＿＿ ★ ＿＿`），也算带星的空。 */
 export const parseStem = (stem: string): StemPart[] => {
   const parts: StemPart[] = [];
-  const markers = /\[\[([^]*?)\]\]|（　+）|★＿＿|＿＿|\[(\d+)\]/gu;
+  const markers = /\[\[([^]*?)\]\]|（　+）|★＿＿|★|＿＿|\[(\d+)\]/gu;
   let offset = 0;
   for (const match of stem.matchAll(markers)) {
     if (match.index > offset) parts.push({ type: "text", text: stem.slice(offset, match.index) });
