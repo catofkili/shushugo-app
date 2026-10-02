@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { kanjiFormOf, toJapaneseForms } from "./kanji-form";
+import { kanjiFormOf, simplifiedChangesFor, toJapaneseForms } from "./kanji-form";
 
 describe("kanjiFormOf", () => {
   it("优先保留日文也合法的常用汉字", () => {
@@ -35,5 +35,15 @@ describe("toJapaneseForms", () => {
       ]
     });
     expect(toJapaneseForms("漢字、かな").changes).toEqual([]);
+  });
+});
+
+describe("simplifiedChangesFor", () => {
+  it("逐条按接受写法识别多对一简体字形", () => {
+    expect(simplifiedChangesFor("運動", "运动")).toMatchObject([
+      { typed: "运", expected: "運" }, { typed: "动", expected: "動" }
+    ]);
+    expect(simplifiedChangesFor("働く", "动く")).toMatchObject([{ typed: "动", expected: "働" }]);
+    expect(simplifiedChangesFor("弁当", "辨当")).toMatchObject([{ typed: "辨", expected: "弁" }]);
   });
 });
