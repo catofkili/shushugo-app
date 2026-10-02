@@ -1,4 +1,5 @@
 import payload from "../../data/spelling_kanji_forms.json";
+import variantPayload from "../../data/kanji_variants.json";
 
 export type KanjiFormKind = "japanese" | "simplified" | "traditional" | "unknown";
 
@@ -13,6 +14,7 @@ const data = payload as {
   simplifiedToJapanese: Record<string, string>;
   traditionalToJapanese: Record<string, string>;
 };
+const japaneseToSimplified = (variantPayload as { japanese_to_simplified: Record<string, string> }).japanese_to_simplified;
 const japaneseCharacters = new Set([...data.japaneseCharacters]);
 const hanPattern = /\p{Script=Han}/u;
 
@@ -59,4 +61,23 @@ export const toJapaneseForms = (text: string): {
   }
 
   return { text: result, changes };
+};
+
+export const simplifiedChangesFor = (expected: string, typed: string): Array<{ index: number; typed: string; expected: string }> | null => {
+  const expectedChars = [...expected];
+  const typedChars = [...typed];
+  if (expectedChars.length !== typedChars.length) return null;
+  const changes: Array<{ index: number; typed: string; expected: string }> = [];
+  let index = 0;
+  for (let i = 0; i < expectedChars.length; i += 1) {
+    const expectedChar = expectedChars[i];
+    const typedChar = typedChars[i];
+    if (typedChar !== expectedChar) {
+      const alternatives = japaneseToSimplified[expectedChar]?.split("/") ?? [];
+      if (!alternatives.includes(typedChar)) return null;
+      changes.push({ index, typed: typedChar, expected: expectedChar });
+    }
+    index += expectedChar.length;
+  }
+  return changes.length ? changes : null;
 };

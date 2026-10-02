@@ -3,7 +3,7 @@
  * 罗马音 / 假名交给 romaji.ts / kana.ts；这里负责分流、书写（汉字 / 混合）判据、诊断排序。
  */
 import { classifyInput, compareKana, hasKanji, normalizeInput, toHiragana, type ReadingMatch } from "./kana";
-import { toJapaneseForms } from "./kanji-form";
+import { simplifiedChangesFor, toJapaneseForms } from "./kanji-form";
 import { matchRomaji } from "./romaji";
 import {
   NEAR_MISS_CODES,
@@ -54,6 +54,8 @@ const isSubsequence = (small: string[], big: string[]): boolean => {
   return at === small.length;
 };
 const sameList = (a: string[], b: string[]) => a.length === b.length && a.every((c, i) => c === b[i]);
+const kanaCount = (text: string): number => [...text].filter((char) => /[ぁ-ゖ゙゚ァ-ヺー]/u.test(char)).length;
+const kanaSequence = (text: string): string => [...text].filter((char) => /[ぁ-ゖ゙゚ァ-ヺー]/u.test(char)).map(toHiragana).join("");
 
 /** 被接受写法和输入走同一套归一（NFKC：JMdict 里的「２日」全角数字，和用户输入的「2日」是同一个写法）。 */
 const written = (surface: string) => normalizeInput(surface).replace(/\s+/gu, "");
@@ -73,10 +75,32 @@ const peerHit = (form: SpellingInputForm, text: string, lookup?: SpellingLookup)
 
 const withOther = (code: SpellingProblemCode, other: Peer): SpellingProblem => ({ code, other });
 
+const simplifiedMatch = (target: SpellingTarget, text: string) => {
+  for (const accepted of target.forms) {
+    const changes = simplifiedChangesFor(written(accepted.surface), text);
+    if (changes) return { accepted, changes };
+  }
+  return undefined;
+};
+
 /** 书写（汉字 / 混合）判据。text 已归一、去空白。 */
 const checkWritten = (target: SpellingTarget, text: string, form: SpellingInputForm, lookup?: SpellingLookup): SpellingVerdict => {
-  // 中文简体 / 繁体字形：先映回日文字形再去命中。放在精确命中之前——JMdict 里偶有把简体字形
-  // 当作罕用写法收录的（烟草），那是中文字形，对学习者不能算对。
+  const exact = target.forms.find((f) => written(f.surface) === text);
+  const matchedForm = (accepted: NonNullable<typeof exact>) =>
+    verdict(form, null, [], { kind: "form", text: accepted.surface, tag: accepted.tag, preferred: accepted.tag === "standard" });
+  // 词库表记 / 常规变体 / 当て字的精确命中直接算对：「着る」同时是「著る」的简体字形，但它本身就是标准写法。
+  if (exact && exact.tag !== "rare") return matchedForm(exact);
+
+  // 中文简体 / 繁体字形：先于「罕用写法」的精确命中判。JMdict 里偶有把简体字形当作罕用写法收录的
+  // （烟草、无），那是中文字形，对学习者不能算对。
+  // 单字反查无法表达「动」对应 動 / 働 等多对一映射；按目标写法正向匹配可保留上下文。
+  const simplifiedHit = simplifiedMatch(target, text);
+  if (simplifiedHit) {
+    const first = simplifiedHit.changes[0];
+    return verdict(form, null, [{
+      code: "chinese_form", typedChar: first.typed, expectedChar: first.expected, suggestion: simplifiedHit.accepted.surface
+    }]);
+  }
   const { text: japanese, changes } = toJapaneseForms(text);
   if (changes.length) {
     const hit = target.forms.find((f) => written(f.surface) === japanese);
@@ -88,27 +112,43 @@ const checkWritten = (target: SpellingTarget, text: string, form: SpellingInputF
       }]);
     }
   }
-
-  const exact = target.forms.find((f) => written(f.surface) === text);
-  if (exact) return verdict(form, null, [], { kind: "form", text: exact.surface, tag: exact.tag, preferred: exact.tag === "standard" });
+  if (exact) return matchedForm(exact);
 
   const peer = peerHit(form, text, lookup);
   if (peer) return verdict(form, null, [withOther("peer_word", peer)]);
 
   const problems: SpellingProblem[] = [];
   const candidate = japanese;
+  const comparableForms = target.forms.map((accepted) => ({
+    accepted,
+    japanese: toJapaneseForms(written(accepted.surface)).text
+  }));
 
   // 假名种类用错：食ベる → 食べる
-  const scriptHit = target.forms.find((f) => f.surface !== candidate && toHiragana(f.surface) === toHiragana(candidate));
-  if (scriptHit) return verdict(form, null, [{ code: "script", suggestion: scriptHit.surface }]);
+  const scriptHit = comparableForms.find(({ japanese: surface }) => surface !== candidate && toHiragana(surface) === toHiragana(candidate));
+  if (scriptHit) return verdict(form, null, [{ code: "script", suggestion: scriptHit.accepted.surface }]);
 
   const inputKanji = kanjiOf(candidate);
+  // 少写一个汉字不能算交ぜ書き；假名数量必须增加，才表示用假名替代了汉字。
+  const alreadyWrittenKana = comparableForms.some(({ japanese: surface }) => kanaSequence(surface) === kanaSequence(candidate));
+  const partial = alreadyWrittenKana ? undefined : comparableForms.find(({ japanese: surface }) => {
+    const formKanji = kanjiOf(surface);
+    return inputKanji.length < formKanji.length && isSubsequence(inputKanji, formKanji) &&
+      kanaCount(candidate) > kanaCount(surface);
+  });
+  const firstKanji = [...candidate].findIndex((char) => KANJI_CHAR.test(char));
+  const kanaBeforeKanji = firstKanji > 0 && /[ぁ-ゖ゙゚ァ-ヺ]/u.test([...candidate].slice(0, firstKanji).join(""));
+
   // 汉字序列相同的写法里挑最像的：先看词尾（送り仮名）
-  const sameKanji = target.forms.filter((f) => sameList(kanjiOf(f.surface), inputKanji));
+  const sameKanji = comparableForms.filter(({ japanese: surface }) => sameList(kanjiOf(surface), inputKanji));
   if (sameKanji.length) {
     const inputTail = tailOf(candidate);
-    const best = sameKanji[0];
-    const formTail = tailOf(best.surface);
+    // 规格把送り仮名诊断排在交ぜ書き之前；但「ヤマ山」一类只有词首替代假名时，尾部相同仍应判 partial_kana。
+    if (partial && kanaBeforeKanji && sameKanji.every(({ japanese: surface }) => tailOf(surface) === inputTail)) {
+      return verdict(form, null, [{ code: "partial_kana", suggestion: partial.accepted.surface }]);
+    }
+    const best = sameKanji[0].accepted;
+    const formTail = tailOf(sameKanji[0].japanese);
     if (formTail) {
       const diverges = inputTail && formTail[0] === inputTail[0] && inputTail !== formTail;
       const stemOnly = inputTail && formTail.startsWith(inputTail);
@@ -119,13 +159,7 @@ const checkWritten = (target: SpellingTarget, text: string, form: SpellingInputF
     }
     return verdict(form, null, problems);
   }
-
-  // 一部分汉字被写成了假名（交ぜ書き）：输入的汉字是某条被接受写法的汉字的真子序列
-  const partial = target.forms.find((f) => {
-    const formKanji = kanjiOf(f.surface);
-    return inputKanji.length < formKanji.length && isSubsequence(inputKanji, formKanji);
-  });
-  if (partial) return verdict(form, null, [{ code: "partial_kana", suggestion: partial.surface }]);
+  if (partial) return verdict(form, null, [{ code: "partial_kana", suggestion: partial.accepted.surface }]);
 
   // 外来语写成了别的汉字 / 原词以外：先看是不是同音词，否则就是汉字不对
   const found = lookup?.bySurface(candidate).find((w) => w.wordId !== target.wordId);
@@ -154,7 +188,18 @@ const readingVerdict = (
 export const checkSpelling = (target: SpellingTarget, input: string, lookup?: SpellingLookup): SpellingVerdict => {
   const { form, text } = classifyInput(input);
   if (form === "empty") return verdict("empty", null, [{ code: "empty" }]);
-  if (form === "other") return verdict("other", null, [{ code: "mixed_scripts" }]);
+  if (form === "other") {
+    const exact = target.forms.find((accepted) => written(accepted.surface) === text);
+    if (exact) return verdict(form, null, [], { kind: "form", text: exact.surface, tag: exact.tag, preferred: exact.tag === "standard" });
+    const simplified = simplifiedMatch(target, text);
+    if (simplified) {
+      const first = simplified.changes[0];
+      return verdict(form, null, [{
+        code: "chinese_form", typedChar: first.typed, expectedChar: first.expected, suggestion: simplified.accepted.surface
+      }]);
+    }
+    return verdict("other", null, [{ code: "mixed_scripts" }]);
+  }
   if (form === "romaji") {
     const main = matchRomaji(target.kana, text);
     if (!main.ok) {

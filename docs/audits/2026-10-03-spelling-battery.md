@@ -1,0 +1,7777 @@
+# 单词拼写真实词库全量压测
+
+> 生成命令：`cd frontend && SPELLING_BATTERY_REPORT=1 npx vitest run src/lib/spelling/battery.test.ts`。样例段落列出全部失败、例外和未能安全造例的写法。
+
+- 数据源：`frontend/public/nihongo.db`，10,919 条 words。
+- 罗马音由测试内独立转写器生成；简体变体由 `kanji_variants.json` 的 `japanese_to_simplified` 生成。汉字替换按运行时字音索引的 JLPT 级别挑字，并按真实词库表记频次排序。
+
+## 各类统计
+
+| 类别 | 生成数 | 硬断言数 | 通过 | 失败 | 例外 | 未生成 | 通过率 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 目标读音假名 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| hepburn 罗马音 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| nihon 罗马音 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| ime 罗马音 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| target.forms 全部书写 | 13009 | 12953 | 12953 | 0 | 56 | 0 | 100.00% |
+| cleanWordSurface(kanji) | 10919 | 10097 | 10097 | 0 | 822 | 0 | 100.00% |
+| 平假名词写片假名 | 10010 | 10010 | 10010 | 0 | 0 | 0 | 100.00% |
+| 假名读音换一拍 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| 罗马音读音换一拍 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| 假名读音删一拍 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| 罗马音读音删一拍 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| 假名读音加一拍 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| 罗马音读音加一拍 | 10919 | 10919 | 10919 | 0 | 0 | 0 | 100.00% |
+| 外来语罗马音 | 2505 | 2505 | 2505 | 0 | 0 | 0 | 100.00% |
+| 外来语片假名 | 835 | 835 | 835 | 0 | 0 | 0 | 100.00% |
+| 外来语写平假名 | 835 | 835 | 835 | 0 | 0 | 0 | 100.00% |
+| 同音词标准表记互斥 | 2876 | 2479 | 2479 | 0 | 397 | 0 | 100.00% |
+| 汉字换成同级常用字 | 13007 | 13006 | 13006 | 0 | 1 | 0 | 100.00% |
+| 汉字按本词读音换成假名 | 11763 | 6082 | 6082 | 0 | 2284 | 3397 | 100.00% |
+| 多加一个送り仮名 | 13006 | 12878 | 12878 | 0 | 128 | 0 | 100.00% |
+| 简体字形变体 | 5709 | 5637 | 5637 | 0 | 72 | 0 | 100.00% |
+| 删除一个送り仮名 | 4935 | 4805 | 4805 | 0 | 130 | 0 | 100.00% |
+
+## 失败样例（完整）
+
+无。
+
+## 规格 / 数据口径例外
+
+### target.forms 全部书写
+
+- #76 連絡（れんらく），输入 `聯絡`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #140 翻訳（ほんやく），输入 `飜訳`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #479 午後（ごご），输入 `午后`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #949 (ポ)tabaco（タバコ），输入 `烟草`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #1056 涼しい（すずしい），输入 `凉しい`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #1057 涙（なみだ），输入 `泪`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #1109 びっくり（びっくり），输入 `吃驚`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #1467 唇（くちびる），输入 `脣`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #1475 戦う（たたかう），输入 `斗う`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #1583 無（む），输入 `无`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #1819 禁煙（きんえん），输入 `禁烟`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #2284 煙突（えんとつ），输入 `烟突`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #3943 麺（めん），输入 `麪`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #3980 祈る（いのる），输入 `祷る`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #3981 喫煙（きつえん），输入 `喫烟`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #4133 煙（けむり），输入 `烟`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #4530 巻き込む（まきこむ），输入 `捲き込む`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #4973 関連（かんれん），输入 `関聯`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #5135 障害（しょうがい），输入 `障碍`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #5181 遡る（さかのぼる），输入 `泝る`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #5181 遡る（さかのぼる），输入 `溯る`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #5334 湧く（わく），输入 `涌く`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #5838 はまる（はまる），输入 `填まる`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #6163 脈（みゃく），输入 `脉`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #6199 練る（ねる），输入 `煉る`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #6249 なぞらえる（なぞらえる），输入 `准える`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #6623 洗練（せんれん），输入 `洗煉`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #6714 裏面（りめん），输入 `裡面`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #7395 跡（あと），输入 `迹`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #7464 飢える（うえる），输入 `饑える`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #7597 連想（れんそう），输入 `聯想`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #7633 淵（ふち），输入 `渊`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #7760 昇進（しょうしん），输入 `陞進`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #8054 委託（いたく），输入 `委托`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #8060 遺跡（いせき），输入 `遺蹟`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #8202 経路（けいろ），输入 `径路`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #8383 制御（せいぎょ），输入 `制禦`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #8541 脳裏（のうり），输入 `脳裡`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #8564 氾濫（はんらん），输入 `汎濫`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #8627 妨害（ぼうがい），输入 `妨碍`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #8908 鑑みる（かんがみる），输入 `鑒みる`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #9050 試練（しれん），输入 `試煉`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #9209 託す（たくす），输入 `托す`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #9357 翻す（ひるがえす），输入 `飜す`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #9452 防御（ぼうぎょ），输入 `防禦`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #9535 遊泳（ゆうえい），输入 `游泳`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #9539 連動（れんどう），输入 `聯動`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #9572 驚嘆（きょうたん），输入 `驚歎`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #9585 漏洩（ろうえい），输入 `漏泄`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #9588 感嘆（かんたん），输入 `感歎`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #9614 店舗（てんぽ），输入 `店鋪`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #10119 干からびる（ひからびる），输入 `干涸びる`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #10346 生息（せいそく），输入 `栖息`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #10455 飢餓（きが），输入 `饑餓`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+- #10990 屈託（くったく），输入 `屈托`：期望 correct/rare，实际 chinese_form; nearMiss=true; readingOk=null
+- #11049 連関（れんかん），输入 `聯関`：期望 correct/rare，实际 traditional_form; nearMiss=true; readingOk=null
+
+### cleanWordSurface(kanji)
+
+- #202 gram；(法)gramme（グラム），输入 `gram；(法)gramme`：期望 multiple / labelled dictionary surfaces，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #228 apartmenthouse（アパート），输入 `apartmenthouse`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #244 airconditioner（エアコン），输入 `airconditioner`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #262 cup（カップ），输入 `cup`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #264 camera（カメラ），输入 `camera`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #265 curry（カレー），输入 `curry`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #267 guitar（ギター），输入 `guitar`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #271 class（クラス），输入 `class`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #272 cake（ケーキ），输入 `cake`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #273 coat（コート），输入 `coat`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #274 coffee（コーヒー），输入 `coffee`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #278 (オ)kop（コップ），输入 `(オ)kop`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #280 copy（コピー），输入 `copy`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #284 soccer（サッカー），输入 `soccer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #287 shirt（シャツ），输入 `shirt`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #288 shower（シャワー），输入 `shower`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #289 juice（ジュース），输入 `juice`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #292 skirt（スカート），输入 `skirt`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #293 ski（スキー），输入 `ski`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #295 stove（ストーブ），输入 `stove`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #296 sport（スポーツ），输入 `sport`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #297 (フ)jupon（ズボン），输入 `(フ)jupon`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #298 sweater（セーター），输入 `sweater`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #311 taxi（タクシー），输入 `taxi`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #315 dance（ダンス），输入 `dance`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #317 ticket（チケット），输入 `ticket`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #319 chocolate（チョコレート），输入 `chocolate`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #322 table（テーブル），输入 `table`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #323 text（テキスト），输入 `text`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #325 test（テスト），输入 `test`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #327 departmentstore（デパート），输入 `departmentstore`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #329 television（テレビ），输入 `television`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #330 door（ドア），输入 `door`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #331 toilet（トイレ），输入 `toilet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #347 knife（ナイフ），输入 `knife`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #352 news（ニュース），输入 `news`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #355 note（ノート），输入 `note`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #356 party（パーティー），输入 `party`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #358 bus（バス），输入 `bus`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #360 (ポ)pão（パン），输入 `(ポ)pão`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #361 pool（プール），输入 `pool`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #362 page（ページ），输入 `page`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #363 bed（ベッド），输入 `bed`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #365 ballpen（ボールペン），输入 `ballpen`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #366 hotel（ホテル），输入 `hotel`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #373 metre（メートル），输入 `metre`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #374 mail（メール），输入 `mail`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #381 radio（ラジオ），输入 `radio`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #383 (フ)restaurant（レストラン），输入 `(フ)restaurant`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #384 whiteshirt（ワイシャツ），输入 `whiteshirt`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #762 cookie（クッキー），输入 `cookie`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #771 tennis（テニス），输入 `tennis`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #774 basketball（バスケットボール），输入 `basketball`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #775 building（ビル），输入 `building`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #776 present（プレゼント），输入 `present`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #777 ball（ボール），输入 `ball`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #834 elevator（エレベーター），输入 `elevator`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #836 sofa（ソファー），输入 `sofa`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #838 (イ)pizza（ピザ），输入 `(イ)pizza`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #841 ribbon（リボン），输入 `ribbon`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #918 super（スーパー），输入 `super`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #934 icecream（アイスクリーム），输入 `icecream`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #937 internet（インターネット），输入 `internet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #940 conveniencestore（コンビニ），输入 `conveniencestore`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #943 slipper（スリッパ），输入 `slipper`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #945 (フ)centimètre（センチ），输入 `(フ)centimètre`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #949 (ポ)tabaco（タバコ），输入 `(ポ)tabaco`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #951 cheese（チーズ），输入 `cheese`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #954 necktie（ネクタイ），输入 `necktie`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #956 handkerchief（ハンカチ），输入 `handkerchief`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #957 post（ポスト），输入 `post`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #958 button（ボタン），输入 `button`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #960 milk（ミルク），输入 `milk`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #961 (ポ)Europa（ヨーロッパ），输入 `(ポ)Europa`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1063 announcer（アナウンサー），输入 `announcer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1065 (ド)Arbeit（アルバイト），输入 `(ド)Arbeit`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1069 (和)auto＋bicycle（オートバイ），输入 `(和)auto＋bicycle`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1071 office（オフィス），输入 `office`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1073 card（カード），输入 `card`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1074 gum（ガム），输入 `gum`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1076 club（クラブ），输入 `club`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1077 game（ゲーム），输入 `game`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1081 concert（コンサート），输入 `concert`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1082 computer（コンピューター），输入 `computer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1083 salad（サラダ），输入 `salad`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1086 jam（ジャム），输入 `jam`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1087 suit（スーツ），输入 `suit`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1088 suitcase（スーツケース），输入 `suitcase`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1089 supermarket（スーパーマーケット），输入 `supermarket`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1098 check（チェック），输入 `check`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1105 personalcomputer（パソコン），输入 `personalcomputer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1107 hamburgsteak（ハンバーグ），输入 `hamburgsteak`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1110 video（ビデオ），输入 `video`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1116 menu（メニュー），输入 `menu`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1117 melon（メロン），输入 `melon`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1123 register（レジ），输入 `register`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1385 escalator（エスカレーター），输入 `escalator`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1387 group（グループ），输入 `group`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1388 creditcard（クレジットカード），输入 `creditcard`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1390 service（サービス），输入 `service`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1391 sign（サイン），输入 `sign`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1392 season（シーズン），输入 `season`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1394 jogging（ジョギング），输入 `jogging`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1395 switch（スイッチ），输入 `switch`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1396 sauce（ソース），输入 `sauce`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1397 towel（タオル），输入 `towel`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1399 chance（チャンス），输入 `chance`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1401 date（デート），输入 `date`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1402 drive（ドライブ），输入 `drive`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1404 necklace（ネックレス），输入 `necklace`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1405 pet（ペット），输入 `pet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1406 home（ホーム），输入 `home`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1407 homepage（ホームページ），输入 `homepage`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1408 poster（ポスター），输入 `poster`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1410 manner（マナー），输入 `manner`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1411 rule（ルール），输入 `rule`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1412 level（レベル），输入 `level`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1413 robot（ロボット），输入 `robot`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1525 idea（アイデア），输入 `idea`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1560 tip（チップ），输入 `tip`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1561 pants（パンツ），输入 `pants`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1562 market（マーケット），输入 `market`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1563 raincoat（レインコート），输入 `raincoat`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1586 open（オープン），输入 `open`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1587 patrolcar（パトカー），输入 `patrolcar`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1589 engineer（エンジニア），输入 `engineer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1604 fax（ファクス），输入 `fax`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1606 platform（ホーム），输入 `platform`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1609 kilogram；(フ)kilogramme（キログラム），输入 `kilogram；(フ)kilogramme`：期望 multiple / labelled dictionary surfaces，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1610 (フ)kilomètre（キロメートル），输入 `(フ)kilomètre`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1614 America（アメリカ），输入 `America`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1615 album（アルバム），输入 `album`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1617 (フ)kilo（キロ），输入 `(フ)kilo`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1618 cola（コーラ），输入 `cola`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1621 golf（ゴルフ），输入 `golf`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1622 shopping（ショッピング），输入 `shopping`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1623 soup（スープ），输入 `soup`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1625 spoon（スプーン），输入 `spoon`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1626 team（チーム），输入 `team`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1627 tape（テープ），输入 `tape`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1628 drink（ドリンク），输入 `drink`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1630 bike（バイク），输入 `bike`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1631 fork（フォーク），输入 `fork`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1634 pocket（ポケット），输入 `pocket`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1635 potato（ポテト），输入 `potato`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1636 mansion（マンション），输入 `mansion`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1637 mailaddress（メールアドレス），输入 `mailaddress`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1638 (和)radio＋cassette（ラジカセ），输入 `(和)radio＋cassette`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1695 Asia（アジア），输入 `Asia`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1699 address（アドレス），输入 `address`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1700 animation（アニメ），输入 `animation`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1702 (ポ)Italia（イタリア），输入 `(ポ)Italia`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1704 India（インド），输入 `India`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1705 (ド)Energie（エネルギー），输入 `(ド)Energie`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1707 engine（エンジン），输入 `engine`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1710 Olympic（オリンピック），输入 `Olympic`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1711 orange（オレンジ），输入 `orange`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1715 curtain（カーテン），输入 `curtain`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1716 (オ)gas（ガス），输入 `(オ)gas`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1717 gasoline（ガソリン），输入 `gasoline`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1718 (和)gasoline＋stand（ガソリンスタンド），输入 `(和)gasoline＋stand`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1721 (オ)glas（ガラス），输入 `(オ)glas`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1723 kitchen（キッチン），输入 `kitchen`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1725 glass（グラス），输入 `glass`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1726 classmate（クラスメート），输入 `classmate`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1733 size（サイズ），输入 `size`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1736 sandal（サンダル），输入 `sandal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1739 steak（ステーキ），输入 `steak`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1740 stress（ストレス），输入 `stress`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1743 center（センター），输入 `center`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1748 diet（ダイエット），输入 `diet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1750 type（タイプ），输入 `type`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1751 checkin（チェックイン），输入 `checkin`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1756 (ド)Deutschland（ドイツ），输入 `(ド)Deutschland`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #1764 passport（パスポート），输入 `passport`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1765 butter（バター），输入 `butter`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1766 bag（バッグ），输入 `bag`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1768 pink（ピンク），输入 `pink`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1770 report（レポート），输入 `report`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1771 lemon（レモン），输入 `lemon`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #1773 wine（ワイン），输入 `wine`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2010 advice（アドバイス），输入 `advice`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2011 announce（アナウンス），输入 `announce`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2015 image（イメージ），输入 `image`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2016 ink（インク），输入 `ink`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2276 Ｔシャツ（てぃーシャツ），输入 `Ｔシャツ`：期望 mixed Latin / kana is other per §1.1，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #2631 interview（インタビュー），输入 `interview`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2633 apron（エプロン），输入 `apron`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2635 over（オーバー），输入 `over`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2637 curve（カーブ），输入 `curve`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2638 guide（ガイド），输入 `guide`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2639 cassettetape（カセットテープ），输入 `cassettetape`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2640 catalog（カタログ），输入 `catalog`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2642 cut（カット），输入 `cut`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2643 cover（カバー），输入 `cover`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2645 cameraman（カメラマン），输入 `cameraman`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2646 calorie（カロリー），输入 `calorie`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2647 keyboard（キーボード），输入 `keyboard`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2649 cabbage（キャベツ），输入 `cabbage`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2650 cancel（キャンセル），输入 `cancel`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2653 ground（グラウンド），输入 `ground`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2654 classic（クラシック），输入 `classic`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2655 graph（グラフ），输入 `graph`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2656 cleaning（クリーニング），输入 `cleaning`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2657 case（ケース），输入 `case`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2659 coin（コイン），输入 `coin`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2661 course（コース），输入 `course`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2662 goal（ゴール），输入 `goal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2663 commercial（コマーシャル），输入 `commercial`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2666 (和)salary＋man・salariedman（サラリーマン），输入 `(和)salary＋man・salariedman`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #2667 sunglasses（サングラス），输入 `sunglasses`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2668 sample（サンプル），输入 `sample`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2669 sheet（シーツ），输入 `sheet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2670 jeans（ジーンズ），输入 `jeans`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2672 start（スタート），输入 `start`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2673 stop（ストップ），输入 `stop`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2674 speech（スピーチ），输入 `speech`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2675 speed（スピード），输入 `speed`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2676 sale（セール），输入 `sale`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2678 set（セット），输入 `set`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2687 (ド)thema（テーマ），输入 `(ド)thema`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #2688 design（デザイン），输入 `design`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2689 digital（デジタル），输入 `digital`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2694 truck（トラック），输入 `truck`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2695 drama（ドラマ），输入 `drama`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2696 dollar（ドル），输入 `dollar`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2699 knock（ノック），输入 `knock`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2700 percent（パーセント），输入 `percent`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2701 violin（バイオリン），输入 `violin`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2702 bucket（バケツ），输入 `bucket`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2703 handle（ハンドル），输入 `handle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2704 pamphlet（パンフレット），输入 `pamphlet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2705 business（ビジネス），输入 `business`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2706 vitamin（ビタミン），输入 `vitamin`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2708 videocamera（ビデオカメラ），输入 `videocamera`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2709 fashion（ファッション），输入 `fashion`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2713 frypan（フライパン），输入 `frypan`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2714 brush（ブラシ），输入 `brush`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2715 plus（プラス），输入 `plus`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2716 plastic（プラスチック），输入 `plastic`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2717 France（フランス），输入 `France`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2718 print（プリント），输入 `print`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2719 brake（ブレーキ），输入 `brake`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2720 program（プログラム），输入 `program`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2721 veranda（ベランダ），输入 `veranda`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2722 mark（マーク），输入 `mark`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2726 muffler（マフラー），输入 `muffler`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2727 mamma・mama（ママ），输入 `mamma・mama`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2730 member（メンバー），输入 `member`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2732 humor（ユーモア），输入 `humor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2735 rushhour（ラッシュアワー），输入 `rushhour`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2736 lunch（ランチ），输入 `lunch`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2737 recycle（リサイクル），输入 `recycle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2738 list（リスト），输入 `list`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2739 locker（ロッカー），输入 `locker`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2740 lobby（ロビー），输入 `lobby`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #2741 one-piece（ワンピース），输入 `one-piece`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3169 order（オーダー），输入 `order`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3174 (フ)café（カフェ），输入 `(フ)café`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3179 cream（クリーム），输入 `cream`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3182 circle（サークル），输入 `circle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3184 schedule（スケジュール），输入 `schedule`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3192 dressing（ドレッシング），输入 `dressing`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3195 (フ)piment（ピーマン），输入 `(フ)piment`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3196 hint（ヒント），输入 `hint`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3198 bench（ベンチ），输入 `bench`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3199 homestay（ホームステイ），输入 `homestay`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3200 marathon（マラソン），输入 `marathon`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3203 receipt（レシート），输入 `receipt`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3204 recipe（レシピ），输入 `recipe`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3380 professional（プロ），输入 `professional`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3413 (ド)allergie（アレルギー），输入 `(ド)allergie`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3414 guidebook（ガイドブック），输入 `guidebook`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3415 culture（カルチャー），输入 `culture`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3416 quiz（クイズ），输入 `quiz`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3417 grand（グランド），输入 `grand`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3418 corner（コーナー），输入 `corner`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3419 communication（コミュニケーション），输入 `communication`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3420 (オ)gom（ゴム），输入 `(オ)gom`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3424 stand（スタンド），输入 `stand`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3425 speaker（スピーカー），输入 `speaker`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3428 challenge（チャレンジ），输入 `challenge`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3429 training（トレーニング），输入 `training`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3430 hiking（ハイキング），输入 `hiking`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3431 (フ)ballet（バレエ），输入 `(フ)ballet`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3432 heater（ヒーター），输入 `heater`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3433 picnic（ピクニック），输入 `picnic`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3434 fastener（ファスナー），输入 `fastener`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3435 boots（ブーツ），输入 `boots`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3436 PETbottle（ペットボトル），输入 `PETbottle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3437 (オ)pek（ペンキ），输入 `(オ)pek`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3438 microphone（マイク），输入 `microphone`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3440 racket（ラケット），输入 `racket`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3441 lens（レンズ），输入 `lens`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3442 rocket（ロケット），输入 `rocket`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3589 (フ)enquete（アンケート），输入 `(フ)enquete`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3594 title（タイトル），输入 `title`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3596 data（データ），输入 `data`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3605 rush（ラッシュ），输入 `rush`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3606 leader（リーダー），输入 `leader`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3670 idol（アイドル），输入 `idol`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3671 up（アップ），输入 `up`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3673 (ラ)virus（ウイルス），输入 `(ラ)virus`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3674 orientation（オリエンテーション），输入 `orientation`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3676 jazz（ジャズ），输入 `jazz`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3678 change（チェンジ），输入 `change`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3679 dessert（デザート），输入 `dessert`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3683 front（フロント），输入 `front`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3685 best（ベスト），输入 `best`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3686 message（メッセージ），输入 `message`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3687 lesson（レッスン），输入 `lesson`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3688 range（レンジ），输入 `range`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3689 rope（ロープ），输入 `rope`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3735 access（アクセス），输入 `access`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3736 information（インフォメーション），输入 `information`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3738 counselor（カウンセラー），输入 `counselor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3739 site（サイト），输入 `site`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3741 dubbing（ダビング），输入 `dubbing`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3744 businessman（ビジネスマン），输入 `businessman`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3745 play（プレー），输入 `play`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3746 player（プレーヤー），输入 `player`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3747 host（ホスト），输入 `host`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3748 (フ)milli（ミリ），输入 `(フ)milli`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3751 room（ルーム），输入 `room`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3809 ice（アイス），输入 `ice`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3817 mat（マット），输入 `mat`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3821 counseling（カウンセリング），输入 `counseling`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3823 (ド)Rucksack（リュックサック），输入 `(ド)Rucksack`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3844 living（リビング），输入 `living`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3847 lock（ロック），输入 `lock`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3848 jacket（ジャケット），输入 `jacket`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3849 story（ストーリー），输入 `story`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3853 lion（ライオン），输入 `lion`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3863 doughnut（ドーナツ），输入 `doughnut`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3864 toast（トースト），输入 `toast`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3867 sausage（ソーセージ），输入 `sausage`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3869 fry（フライ），输入 `fry`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3870 lettuce（レタス），输入 `lettuce`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3878 clip（クリップ），输入 `clip`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3882 (イ)spaghetti（スパゲッティ），输入 `(イ)spaghetti`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3883 sherbet（シャーベット），输入 `sherbet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3886 book（ブック），输入 `book`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3888 cycling（サイクリング），输入 `cycling`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3889 Hotchkiss（ホチキス），输入 `Hotchkiss`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3897 rock（ロック），输入 `rock`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3928 Christmas・Xmas（クリスマス），输入 `Christmas・Xmas`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3931 notebookpersonalcomputer（ノートパソコン），输入 `notebookpersonalcomputer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3933 (オ)bier（ビール），输入 `(オ)bier`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #3946 Africa（アフリカ），输入 `Africa`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3950 curryrice（カレーライス），输入 `curryrice`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3954 screen（スクリーン），输入 `screen`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3955 soft（ソフト），输入 `soft`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3956 tenniscourt（テニスコート），输入 `tenniscourt`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3957 tunnel（トンネル），输入 `tunnel`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3958 volleyball（バレーボール），输入 `volleyball`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3959 hamburger（ハンバーガー），输入 `hamburger`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3961 fruit（フルーツ），输入 `fruit`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #3966 (フ)litre（リットル），输入 `(フ)litre`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #4034 action（アクション），输入 `action`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4035 accessory（アクセサリー），输入 `accessory`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4043 influenza（インフルエンザ），输入 `influenza`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4045 off（オフ），输入 `off`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4048 color（カラー），输入 `color`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4050 campus（キャンパス），输入 `campus`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4051 camp（キャンプ），输入 `camp`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4054 coach（コーチ），输入 `coach`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4055 cost（コスト），输入 `cost`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4056 contest（コンテスト），输入 `contest`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4065 shutter（シャッター），输入 `shutter`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4066 show（ショー），输入 `show`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4067 shop（ショップ），输入 `shop`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4068 series（シリーズ），输入 `series`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4069 school（スクール），输入 `school`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4070 skate（スケート），输入 `skate`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4071 style（スタイル），输入 `style`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4073 station（ステーション），输入 `station`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4078 tire（タイヤ），输入 `tire`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4079 download（ダウンロード），输入 `download`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4082 tour（ツアー），输入 `tour`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4086 designer（デザイナー），输入 `designer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4087 (イ)tempo（テンポ），输入 `(イ)tempo`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #4088 top（トップ），输入 `top`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4089 dress（ドレス），输入 `dress`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4091 net（ネット），输入 `net`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4093 pattern（パターン），输入 `pattern`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4095 balance（バランス），输入 `balance`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4096 file（ファイル），输入 `file`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4097 plan（プラン），输入 `plan`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4098 free（フリー），输入 `free`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4100 hall（ホール），输入 `hall`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4101 pot（ポット），输入 `pot`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4102 minus（マイナス），输入 `minus`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4105 mask（マスク），输入 `mask`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4108 meeting（ミーティング），输入 `meeting`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4109 miss（ミス），输入 `miss`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4111 model（モデル），输入 `model`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4112 rice（ライス），输入 `rice`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4113 light（ライト），输入 `light`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4114 wrap（ラップ），输入 `wrap`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4478 event（イベント），输入 `event`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4479 guard（ガード），输入 `guard`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4480 couple（カップル），输入 `couple`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4486 simple（シンプル），输入 `simple`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4487 staff（スタッフ），输入 `staff`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4488 time（タイム），输入 `time`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4490 tissue（ティッシュ），输入 `tissue`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4495 barbecue（バーベキュー），输入 `barbecue`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4496 power（パワー），输入 `power`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4497 Hawaii（ハワイ），输入 `Hawaii`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4501 mystery（ミステリー），输入 `mystery`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4505 life（ライフ），输入 `life`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4506 reporter（レポーター），输入 `reporter`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4788 smooth（スムーズ），输入 `smooth`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4801 unique（ユニーク），输入 `unique`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4854 iron（アイロン），输入 `iron`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4855 out（アウト），输入 `out`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4856 antenna（アンテナ），输入 `antenna`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4857 install（インストール），输入 `install`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4860 oil（オイル），输入 `oil`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4861 orchestra（オーケストラ），输入 `orchestra`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4862 curriculum（カリキュラム），输入 `curriculum`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4863 calcium（カルシウム），输入 `calcium`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4865 captain（キャプテン），输入 `captain`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4867 clear（クリア），输入 `clear`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4869 chorus（コーラス），输入 `chorus`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4870 (オ)kok（コック），输入 `(オ)kok`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #4872 collection（コレクション），输入 `collection`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4874 (和)concentricplug（コンセント），输入 `(和)concentricplug`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #4875 seal（シール），输入 `seal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4876 system（システム），输入 `system`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4878 stage（ステージ），输入 `stage`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4886 dam（ダム），输入 `dam`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4887 technic（テクニック），输入 `technic`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4895 pajamas（パジャマ），输入 `pajamas`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4898 vinyl（ビニール），输入 `vinyl`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4899 boom（ブーム），输入 `boom`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4901 fresh（フレッシュ），输入 `fresh`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4902 projector（プロジェクター），输入 `projector`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4903 veteran（ベテラン），输入 `veteran`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4904 helicopter（ヘリコプター），输入 `helicopter`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4905 volunteer（ボランティア），输入 `volunteer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4908 (和)my＋pace（マイペース），输入 `(和)my＋pace`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #4909 masscommunication（マスコミ），输入 `masscommunication`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4911 rival（ライバル），输入 `rival`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4912 label（ラベル），输入 `label`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4913 running（ランニング），输入 `running`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4914 rhythm（リズム），输入 `rhythm`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4915 relax（リラックス），输入 `relax`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #4916 recreation（レクリエーション），输入 `recreation`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5398 appeal（アピール），输入 `appeal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5399 appointment（アポイントメント），输入 `appointment`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5400 amateur（アマチュア），输入 `amateur`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5406 original（オリジナル），输入 `original`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5407 organ（オルガン），输入 `organ`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5416 (和)catchball（キャッチボール），输入 `(和)catchball`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #5428 contents（コンテンツ），输入 `contents`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5435 (フ)genre（ジャンル），输入 `(フ)genre`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #5441 trouble（トラブル），输入 `trouble`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5443 needs（ニーズ），输入 `needs`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5447 fleamarket（フリーマーケット），输入 `fleamarket`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5450 bottle（ボトル），输入 `bottle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5452 manual（マニュアル），输入 `manual`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5456 merit（メリット），输入 `merit`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5461 rental（レンタル），输入 `rental`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5794 accelerator（アクセル），输入 `accelerator`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5795 approach（アプローチ），输入 `approach`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5798 arrange（アレンジ），输入 `arrange`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5801 impact（インパクト），输入 `impact`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5805 online（オンライン），输入 `online`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5807 catch（キャッチ），输入 `catch`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5808 guest（ゲスト），输入 `guest`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5809 comment（コメント），输入 `comment`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5810 column（コラム），输入 `column`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5811 control（コントロール），输入 `control`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5812 seat（シート），输入 `seat`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5813 scene（シーン），输入 `scene`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5815 shock（ショック），输入 `shock`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5817 symposium（シンポジウム），输入 `symposium`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5818 strike（ストライキ），输入 `strike`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5819 space（スペース），输入 `space`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5820 sales（セールス），输入 `sales`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5821 sense（センス），输入 `sense`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5822 timer（タイマー），输入 `timer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5823 timing（タイミング），输入 `timing`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5824 down（ダウン），输入 `down`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5828 talent（タレント），输入 `talent`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5835 (和)night＋er（ナイター），输入 `(和)night＋er`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #5837 nonsense（ナンセンス），输入 `nonsense`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5839 puncture（パンク），输入 `puncture`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5842 form（フォーム），输入 `form`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5844 privacy（プライバシー），输入 `privacy`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5845 pace（ペース），输入 `pace`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5846 bestseller（ベストセラー），输入 `bestseller`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5847 point（ポイント），输入 `point`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5849 maker（メーカー），输入 `maker`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5850 medal（メダル），输入 `medal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #5854 race（レース），输入 `race`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6213 alpha（アルファ），输入 `alpha`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6214 alphabet（アルファベット），输入 `alphabet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6216 illustration（イラスト），输入 `illustration`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6217 eco（エコ），输入 `eco`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6223 gap（ギャップ），输入 `gap`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6228 connection（コネ），输入 `connection`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6229 (フ)concours（コンクール），输入 `(フ)concours`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #6230 complex（コンプレックス），输入 `complex`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6231 support（サポート），输入 `support`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6236 showwindow（ショーウインドー），输入 `showwindow`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6237 cellotape（セロテープ），输入 `cellotape`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6243 charge（チャージ），输入 `charge`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6245 chimpanzee（チンパンジー），输入 `chimpanzee`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6246 demerit（デメリット），输入 `demerit`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6247 total（トータル），输入 `total`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6252 (ロ)norma（ノルマ），输入 `(ロ)norma`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #6253 hurdle（ハードル），输入 `hurdle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6254 peak（ピーク），输入 `peak`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6255 vision（ビジョン），输入 `vision`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6257 brand（ブランド），输入 `brand`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6258 presentation（プレゼンテーション），输入 `presentation`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6259 pressure（プレッシャー），输入 `pressure`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6261 hairstyle（ヘアスタイル），输入 `hairstyle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6263 Miss（ミス），输入 `Miss`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6267 lifestyle（ライフスタイル），输入 `lifestyle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6268 request（リクエスト），输入 `request`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6269 rail（レール），输入 `rail`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6531 step（ステップ），输入 `step`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6534 floor（フロア），输入 `floor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6537 gorilla（ゴリラ），输入 `gorilla`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6539 motivation（モチベーション），输入 `motivation`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6551 damage（ダメージ），输入 `damage`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6555 counter（カウンター），输入 `counter`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6569 target（ターゲット），输入 `target`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6578 private（プライベート），输入 `private`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6588 boss（ボス），输入 `boss`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6600 shift（シフト），输入 `shift`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6612 real（リアル），输入 `real`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6633 manager（マネージャー），输入 `manager`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6650 goods（グッズ），输入 `goods`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6661 panel（パネル），输入 `panel`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6667 fair（フェア），输入 `fair`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6691 stamp（スタンプ），输入 `stamp`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6710 rehearsal（リハーサル），输入 `rehearsal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6736 (フ)gourment（グルメ），输入 `(フ)gourment`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #6744 dynamic（ダイナミック），输入 `dynamic`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6750 input（インプット），输入 `input`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6758 documentary（ドキュメンタリー），输入 `documentary`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6768 (フ)crayon（クレヨン），输入 `(フ)crayon`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #6780 reality（リアリティー），输入 `reality`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6783 instructor（インストラクター），输入 `instructor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6789 gardening（ガーデニング），输入 `gardening`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6799 economy（エコノミー），输入 `economy`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6820 cushion（クッション），输入 `cushion`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6833 (イ)pasta（パスタ），输入 `(イ)pasta`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #6834 pendant（ペンダント），输入 `pendant`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6836 NewYork（ニューヨーク），输入 `NewYork`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6848 piercedearrings（ピアス），输入 `piercedearrings`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6852 box（ボックス），输入 `box`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6857 sneakers（スニーカー），输入 `sneakers`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6863 (フ)croquette（コロッケ），输入 `(フ)croquette`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #6864 penguin（ペンギン），输入 `penguin`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6870 database（データベース），输入 `database`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6886 hot（ホット），输入 `hot`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6905 lightup（ライトアップ），输入 `lightup`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6906 shuttle（シャトル），输入 `shuttle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6913 pineapple（パイナップル），输入 `pineapple`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6925 signal（シグナル），输入 `signal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6937 intern（インターン），输入 `intern`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6945 output（アウトプット），输入 `output`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6946 condor（コンドル），输入 `condor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #6990 process（プロセス），输入 `process`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7018 artist（アーティスト），输入 `artist`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7019 element（エレメント），输入 `element`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7020 aura（オーラ），输入 `aura`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7023 crash（クラッシュ），输入 `crash`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7025 shredder（シュレッダー），输入 `shredder`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7026 smartphone（スマホ），输入 `smartphone`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7027 tablet（タブレット），输入 `tablet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7028 niche（ニッチ），输入 `niche`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7029 factor（ファクター），输入 `factor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7030 wiper（ワイパー），输入 `wiper`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7067 (ポ)inglez（イギリス），输入 `(ポ)inglez`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #7068 Australia（オーストラリア），输入 `Australia`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7071 record（レコード），输入 `record`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7077 gray（グレー），输入 `gray`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7078 gate（ゲート），输入 `gate`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7079 sandwich（サンドイッチ），输入 `sandwich`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7080 tent（テント），输入 `tent`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7083 boyfriend（ボーイフレンド），输入 `boyfriend`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7120 equal（イコール），输入 `equal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7122 earring（イヤリング），输入 `earring`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7125 smart（スマート），输入 `smart`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7126 (ド)seminar（ゼミナール），输入 `(ド)seminar`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #7127 double（ダブル），输入 `double`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7130 chime（チャイム），输入 `chime`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7131 dryer（ドライヤー），输入 `dryer`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7132 pack（パック），输入 `pack`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7135 bonus（ボーナス），输入 `bonus`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7217 window（ウィンドー），输入 `window`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7221 science（サイエンス），输入 `science`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7226 band（バンド），输入 `band`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7227 blouse（ブラウス），输入 `blouse`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7229 (和)babycar（ベビーカー），输入 `(和)babycar`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #7375 claim（クレーム），输入 `claim`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7414 care（ケア），输入 `care`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7415 concrete（コンクリート），输入 `concrete`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7416 symbol（シンボル），输入 `symbol`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7418 slide（スライド），输入 `slide`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7419 nurse（ナース），输入 `nurse`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7420 Network（ネットワーク），输入 `Network`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7421 personal（パーソナル），输入 `personal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7422 performance（パフォーマンス），输入 `performance`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7424 (和)free＋Arbeiter（フリーター），输入 `(和)free＋Arbeiter`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #7427 master（マスター），输入 `master`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7428 massage（マッサージ），输入 `massage`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7431 motor（モーター），输入 `motor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7432 modern（モダン），输入 `modern`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7433 yacht（ヨット），输入 `yacht`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7434 random（ランダム），输入 `random`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7435 risk（リスク），输入 `risk`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7436 restructuring（リストラ），输入 `restructuring`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7437 leisure（レジャー），输入 `leisure`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7438 loan（ローン），输入 `loan`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7611 auction（オークション），输入 `auction`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7613 carnavigationsystem（カーナビ），输入 `carnavigationsystem`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7621 sketch（スケッチ），输入 `sketch`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7625 taboo（タブー），输入 `taboo`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7627 travel（トラベル），输入 `travel`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7635 project（プロジェクト），输入 `project`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7636 match（マッチ），输入 `match`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7640 leadership（リーダーシップ），输入 `leadership`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7927 elegant（エレガント），输入 `elegant`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7936 keyword（キーワード），输入 `keyword`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7939 character（キャラクター），输入 `character`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7942 crane（クレーン），输入 `crane`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7947 contactlens（コンタクトレンズ），输入 `contactlens`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7948 contrast（コントラスト），输入 `contrast`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7949 cycle（サイクル），输入 `cycle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7952 share（シェア），输入 `share`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7955 scenario（シナリオ），输入 `scenario`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7957 severe（シビア），输入 `severe`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7961 scandal（スキャンダル），输入 `scandal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7962 studio（スタジオ），输入 `studio`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7963 stamina（スタミナ），输入 `stamina`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7965 spotlight（スポットライト），输入 `spotlight`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7967 jelly（ゼリー），输入 `jelly`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7973 teamwork（チームワーク），输入 `teamwork`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7978 tone（トーン），输入 `tone`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7980 driver（ドライバー），输入 `driver`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7983 napkin（ナプキン），输入 `napkin`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7987 (フ)nuance（ニュアンス），输入 `(フ)nuance`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #7990 knowhow（ノウハウ），输入 `knowhow`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7995 badge（バッジ），输入 `badge`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7997 bubble（バブル），输入 `bubble`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #7999 hanger（ハンガー），输入 `hanger`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8001 hit（ヒット），输入 `hit`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8004 filter（フィルター），输入 `filter`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8005 pair（ペア），输入 `pair`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8009 position（ポジション），输入 `position`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8017 melody（メロディー），输入 `melody`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8021 monitor（モニター），输入 `monitor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8028 user（ユーザー），输入 `user`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8035 rank（ランク），输入 `rank`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8036 lamp（ランプ），输入 `lamp`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8037 lead（リード），输入 `lead`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8038 loose（ルーズ），输入 `loose`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8039 route（ルート），输入 `route`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8040 layout（レイアウト），输入 `layout`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8041 lever（レバー），输入 `lever`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8727 inspiration（インスピレーション），输入 `inspiration`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8731 essay（エッセー），输入 `essay`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8732 episode（エピソード），输入 `episode`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8733 (フ)élite（エリート），输入 `(フ)élite`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #8734 entry（エントリー），输入 `entry`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8745 keep（キープ），输入 `keep`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8746 career（キャリア），输入 `career`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8747 coupon（クーポン），输入 `coupon`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8748 cool（クール），输入 `cool`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8752 global（グローバル），输入 `global`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8753 coordinate（コーディネート），输入 `coordinate`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8755 comma（コンマ），输入 `comma`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8756 surfing（サーフィン），输入 `surfing`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8761 journalist（ジャーナリスト），输入 `journalist`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8762 journalism（ジャーナリズム），输入 `journalism`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8763 dilemma（ジレンマ），输入 `dilemma`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8765 scooter（スクーター），输入 `scooter`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8766 scale（スケール），输入 `scale`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8769 status（ステータス），输入 `status`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8770 stock（ストック），输入 `stock`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8772 spot（スポット），输入 `spot`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8773 sponsor（スポンサー），输入 `sponsor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8775 slogan（スローガン），输入 `slogan`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8776 salesman（セールスマン），输入 `salesman`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8777 self（セルフ），输入 `self`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8781 terminal（ターミナル），输入 `terminal`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8782 tough（タフ），输入 `tough`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8786 tank（タンク），输入 `tank`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8787 charming（チャーミング），输入 `charming`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8789 (フ)début（デビュー），输入 `(フ)début`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #8790 (ド)Demagogie（デマ），输入 `(ド)Demagogie`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #8792 topic（トピック），输入 `topic`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8798 backup（バックアップ），输入 `backup`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8799 package（パッケージ），输入 `package`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8809 pinch（ピンチ），输入 `pinch`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8810 (オ)brandpunt（ピント），输入 `(オ)brandpunt`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #8812 follow（フォロー），输入 `follow`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8813 blank（ブランク），输入 `blank`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8814 programming（プログラミング），输入 `programming`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8815 base（ベース），输入 `base`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8817 (オ)hoos（ホース），输入 `(オ)hoos`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #8818 boxing（ボクシング），输入 `boxing`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8827 musical（ミュージカル），输入 `musical`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8828 musician（ミュージシャン），输入 `musician`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8830 mechanism（メカニズム），输入 `mechanism`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8835 rugby（ラグビー），输入 `rugby`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8836 research（リサーチ），输入 `research`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8837 (和)list＋up（リストアップ），输入 `(和)list＋up`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #8838 rehabilitation（リハビリ），输入 `rehabilitation`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8839 relay（リレー），输入 `relay`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8840 rate（レート），输入 `rate`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8841 regular（レギュラー），输入 `regular`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #8842 loss（ロス），输入 `loss`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9406 (和)remote+control（リモコン），输入 `(和)remote+control`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #9429 retire（リタイア），输入 `retire`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9431 discussion（ディスカッション），输入 `discussion`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9458 link（リンク），输入 `link`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9532 diving（ダイビング），输入 `diving`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9575 slice（スライス），输入 `slice`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9620 linen（リネン），输入 `linen`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9639 slump（スランプ），输入 `slump`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9651 guideline（ガイドライン），输入 `guideline`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9653 senior（シニア），输入 `senior`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9660 massmedia（マスメディア），输入 `massmedia`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9672 assistant（アシスタント），输入 `assistant`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9686 savanna（サバンナ），输入 `savanna`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9695 tenant（テナント），输入 `tenant`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9702 reset（リセット），输入 `reset`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9703 wear（ウエア），输入 `wear`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9717 analog・analogue（アナログ），输入 `analog・analogue`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9724 big（ビッグ），输入 `big`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9728 maintenance（メンテナンス），输入 `maintenance`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9785 essence（エッセンス），输入 `essence`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9786 highlight（ハイライト），输入 `highlight`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9792 angle（アングル），输入 `angle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9813 ranking（ランキング），输入 `ranking`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9839 cabinet（キャビネット），输入 `cabinet`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9842 condition（コンディション），输入 `condition`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9853 flash（フラッシュ），输入 `flash`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9871 (和)plus＋alpha（プラスアルファ），输入 `(和)plus＋alpha`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #9898 (ド)Bombe（ボンベ），输入 `(ド)Bombe`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #9920 oasis（オアシス），输入 `oasis`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9942 score（スコア），输入 `score`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9943 stance（スタンス），输入 `stance`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9950 deflation（デフレ），输入 `deflation`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9964 constant（コンスタント），输入 `constant`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9976 thrill（スリル），输入 `thrill`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #9990 ham（ハム），输入 `ham`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10037 white（ホワイト），输入 `white`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10057 main（メイン），输入 `main`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10070 compact（コンパクト），输入 `compact`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10090 casual（カジュアル），输入 `casual`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10249 line（ライン），输入 `line`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10281 live（ライブ），输入 `live`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10282 punch（パンチ），输入 `punch`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10333 fantasy（ファンタジー），输入 `fantasy`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10335 noise（ノイズ），输入 `noise`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10359 touch（タッチ），输入 `touch`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10363 sensor（センサー），输入 `sensor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10379 (フ)motif（モチーフ），输入 `(フ)motif`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #10386 (フ)chef（シェフ），输入 `(フ)chef`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #10391 gallery（ギャラリー），输入 `gallery`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10392 colorful（カラフル），输入 `colorful`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10393 puzzle（パズル），输入 `puzzle`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10395 spice（スパイス），输入 `spice`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10400 gesture（ジェスチャー），输入 `gesture`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10409 save（セーブ），输入 `save`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10439 canvas（キャンバス），输入 `canvas`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10463 headlight（ヘッドライト），输入 `headlight`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10466 instant（インスタント），输入 `instant`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10474 expert（エキスパート），输入 `expert`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10483 spare（スペア），输入 `spare`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10490 pitch（ピッチ），输入 `pitch`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10523 catchphrase（キャッチフレーズ），输入 `catchphrase`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10526 circuit（サーキット），输入 `circuit`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10551 straight（ストレート），输入 `straight`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10557 heroine（ヒロイン），输入 `heroine`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10573 asphalt（アスファルト），输入 `asphalt`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10574 black（ブラック），输入 `black`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10594 doctor（ドクター），输入 `doctor`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10596 frame（フレーム），输入 `frame`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10599 radar（レーダー），输入 `radar`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10612 cap（キャップ），输入 `cap`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10637 house（ハウス），输入 `house`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10690 intonation（イントネーション），输入 `intonation`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10695 koala（コアラ），输入 `koala`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10753 democracy（デモクラシー），输入 `democracy`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10758 software（ソフトウエア），输入 `software`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10766 (ド)Methangas（メタンガス），输入 `(ド)Methangas`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #10831 default（デフォルト），输入 `default`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10832 negative（ネガティブ），输入 `negative`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10854 multitask（マルチタスク），输入 `multitask`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10855 consensus（コンセンサス），输入 `consensus`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10910 weight（ウエイト），输入 `weight`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10923 narcist（ナルシスト），输入 `narcist`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10940 blog（ブログ），输入 `blog`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10945 (ド)Ideologie（イデオロギー），输入 `(ド)Ideologie`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #10946 illustrator（イラストレーター），输入 `illustrator`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10947 incentive（インセンティブ），输入 `incentive`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10948 qualia（クオリア），输入 `qualia`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10949 commentator（コメンテーター），输入 `commentator`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10950 compliance（コンプライアンス），输入 `compliance`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10951 gender（ジェンダー），输入 `gender`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10952 synergy（シナジー），输入 `synergy`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10954 stereotype（ステレオタイプ），输入 `stereotype`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10955 stole（ストール），输入 `stole`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10956 speedy（スピーディー），输入 `speedy`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10958 naming（ネーミング），输入 `naming`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10959 (フ)nostalgie（ノスタルジー），输入 `(フ)nostalgie`：期望 source_language per §1.6，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #10960 hyena（ハイエナ），输入 `hyena`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10961 freelance（フリーランス），输入 `freelance`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10962 venture（ベンチャー），输入 `venture`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10963 method（メソッド），输入 `method`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10965 league（リーグ），输入 `league`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+- #10966 repeater（リピーター），输入 `repeater`：期望 source_language per §1.6，实际 source_language; nearMiss=false; readingOk=false
+
+### 同音词标准表记互斥
+
+- #9 入口（いりぐち），输入 `入り口`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1317 入り口（いりぐち），输入 `入口`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #27 故障（こしょう），输入 `こしょう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #28 答え（こたえ），输入 `応え`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3972 応え（こたえ），输入 `答え`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #79 開ける（あける），输入 `明ける`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3120 明ける（あける），输入 `開ける`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #84 出す（だす），输入 `〜出す`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1060 〜出す（だす），输入 `出す`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #90 貸す（かす），输入 `かす`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #104 作る（つくる），输入 `造る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4012 造る（つくる），输入 `作る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7806 絶つ（たつ），输入 `断つ`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #8454 断つ（たつ），输入 `絶つ`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #113 飛ぶ（とぶ），输入 `跳ぶ`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3654 跳ぶ（とぶ），输入 `飛ぶ`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2492 効く（きく），输入 `利く`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4727 利く（きく），输入 `効く`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #142 開く（あく），输入 `空く`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1175 空く（あく），输入 `開く`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #143 閉まる（しまる），输入 `締まる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3323 締まる（しまる），输入 `閉まる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #144 止まる（とまる），输入 `留まる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4457 留まる（とまる），输入 `止まる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #145 止める（とめる），输入 `留める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4458 留める（とめる），输入 `止める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #152 探す（さがす），输入 `捜す`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3830 捜す（さがす），输入 `探す`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #159 着る（きる），输入 `きる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #590 切る（きる），输入 `きる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #160 履く（はく），输入 `はく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2996 掃く（はく），输入 `はく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3043 吐く（はく），输入 `はく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3161 〜泊（はく），输入 `はく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #161 被る（かぶる），输入 `かぶる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1680 かぶる（かぶる），输入 `被る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #169 降りる（おりる），输入 `下りる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1793 下りる（おりる），输入 `降りる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #172 繋がる（つながる），输入 `つながる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4084 つながる（つながる），输入 `繋がる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #203 〜さん（さん），输入 `さん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #871 三（さん），输入 `〜さん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #871 三（さん），输入 `さん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2399 さん（さん），输入 `〜さん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3154 産（さん），输入 `〜さん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3154 産（さん），输入 `さん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #204 〜ちゃん（ちゃん），输入 `ちゃん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2446 ちゃん（ちゃん），输入 `〜ちゃん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #205 〜回（かい），输入 `かい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #206 〜階（かい），输入 `かい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1059 会（かい），输入 `かい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3923 貝（かい），输入 `かい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6286 下位（かい），输入 `かい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6515 〜界（かい），输入 `かい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #207 〜君（くん），输入 `～君`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2582 ～君（くん），输入 `〜君`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1212 子（こ），输入 `～子`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2580 ～子（こ），输入 `子`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #215 〜番（ばん），输入 `番`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1582 番（ばん），输入 `〜番`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #218 〜本（ほん），输入 `本`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #706 本（ほん），输入 `〜本`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #221 あさって（あさって），输入 `明後日`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2094 明後日（あさって），输入 `あさって`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #222 あそこ（あそこ），输入 `彼処`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2576 彼処（あそこ），输入 `あそこ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #223 あちら（あちら），输入 `彼方`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2577 彼方（あちら），输入 `あちら`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2474 貴方（あなた），输入 `あなた`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #229 あまり（あまり），输入 `余り`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2320 余り（あまり），输入 `あまり`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #230 ある（ある），输入 `ある〜`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1064 ある〜（ある），输入 `ある`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2451 良い（いい），输入 `いい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2472 幾ら（いくら），输入 `いくら`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2452 何時（いつ），输入 `いつ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #238 いつも（いつも），输入 `何時も`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2453 何時も（いつも），输入 `いつも`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #831 要る（いる），输入 `いる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #240 いろいろ（いろいろ），输入 `色々`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2524 色々（いろいろ），输入 `いろいろ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #242 うるさい（うるさい），输入 `煩い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2552 煩い（うるさい），输入 `うるさい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4131 運（うん），输入 `うん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #246 おいしい（おいしい），输入 `美味しい`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2565 美味しい（おいしい），输入 `おいしい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2621 叔父（おじ），输入 `おじ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #248 おじいさん（おじいさん），输入 `お爺さん`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2315 お爺さん（おじいさん），输入 `おじいさん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #250 おととい（おととい），输入 `一昨日`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2140 一昨日（おととい），输入 `おととい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #252 おなか（おなか），输入 `お腹`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2312 お腹（おなか），输入 `おなか`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #255 おばあさん（おばあさん），输入 `お祖母さん`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2297 お祖母さん（おばあさん），输入 `おばあさん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #266 かわいい（かわいい），输入 `可愛い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2456 可愛い（かわいい），输入 `かわいい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #269 きれい（きれい），输入 `綺麗`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2588 綺麗（きれい），输入 `きれい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6335 個々（ここ），输入 `ここ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2038 然し（しかし），输入 `しかし`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2239 直ぐ（すぐ），输入 `すぐ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4132 沿う（そう），输入 `そう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6210 層（そう），输入 `そう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6562 総（そう），输入 `そう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1938 底（そこ），输入 `そこ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #302 そちら（そちら），输入 `其方`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2548 其方（そちら），输入 `そちら`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #948 蕎麦（そば），输入 `そば`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #948 蕎麦（そば），输入 `蕎麦`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2045 側（そば），输入 `そば`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2481 蕎麦（そば），输入 `そば`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2481 蕎麦（そば），输入 `蕎麦`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #314 ただ今（ただいま），输入 `只今`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2554 只今（ただいま），输入 `ただ今`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2444 段段（だんだん），输入 `だんだん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2236 丁度（ちょうど），输入 `ちょうど`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #321 つまらない（つまらない），输入 `詰まらない`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2475 詰まらない（つまらない），输入 `つまらない`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2203 出来る（できる），输入 `できる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2459 如何（どう），输入 `どう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7317 同（どう），输入 `どう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7320 銅（どう），输入 `どう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #9263 胴（どう），输入 `どう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #333 どうして（どうして），输入 `如何して`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2574 如何して（どうして），输入 `どうして`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #337 どこ（どこ），输入 `何処`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2454 何処（どこ），输入 `どこ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #338 どちら（どちら），输入 `何方`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2455 何方（どちら），输入 `どちら`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #341 どなた（どなた），输入 `何方`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2055 何方（どなた），输入 `どなた`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7214 〜殿（どの），输入 `どの`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #343 どれ（どれ），输入 `何れ`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2581 何れ（どれ），输入 `どれ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #351 にぎやか（にぎやか），输入 `賑やか`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2249 賑やか（にぎやか），输入 `にぎやか`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #930 〜杯（はい），输入 `はい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6211 敗（はい），输入 `はい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2221 先ず（まず），输入 `まず`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #368 まずい（まずい），输入 `不味い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2135 不味い（まずい），输入 `まずい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2311 又（また），输入 `また`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2422 未だ（まだ），输入 `まだ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #371 まっすぐ（まっすぐ），输入 `真っ直ぐ`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2214 真っ直ぐ（まっすぐ），输入 `まっすぐ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #372 みんな（みんな），输入 `皆`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2333 皆（みんな），输入 `みんな`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #9369 猛（もう），输入 `もう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2500 昨夜（ゆうべ），输入 `ゆうべ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #385 安い（やすい），输入 `〜やすい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #416 家（いえ），输入 `いえ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #824 内（うち），输入 `うち`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #424 会う（あう），输入 `遭う`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1199 合う（あう），输入 `〜合う`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3151 〜合う（あう），输入 `合う`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #6519 遭う（あう），输入 `会う`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #478 五日（いつか），输入 `いつか`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #481 後（あと），输入 `あと`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7395 跡（あと），输入 `あと`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #486 口（くち），输入 `〜口`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #844 〜口（くち），输入 `口`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #543 すし（すし），输入 `寿司`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2509 寿司（すし），输入 `すし`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1037 貼る（はる），输入 `張る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1672 張る（はる），输入 `貼る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #567 上げる（あげる），输入 `あげる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2164 挙げる（あげる），输入 `あげる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4449 揚げる（あげる），输入 `あげる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #602 前（まえ），输入 `〜前`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5384 〜前（まえ），输入 `前`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #604 早い（はやい），输入 `速い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #883 速い（はやい），输入 `早い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #632 町（まち），输入 `街`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #981 街（まち），输入 `町`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #682 晩ご飯（ばんごはん），输入 `晩御飯`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2262 晩御飯（ばんごはん），输入 `晩ご飯`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #724 木（き），输入 `樹`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2026 樹（き），输入 `木`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #726 目（め），输入 `〜目`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #754 〜目（め），输入 `目`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #728 夜（よる），输入 `よる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1430 寄る（よる），输入 `よる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #752 後（ご），输入 `ご〜`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #870 五（ご），输入 `ご〜`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1651 語（ご），输入 `ご〜`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5037 碁（ご），输入 `ご〜`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #757 いかが（いかが），输入 `如何`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2271 如何（いかが），输入 `いかが`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7204 暮れる（くれる），输入 `くれる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2377 斯う（こう），输入 `こう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4558 高（こう），输入 `こう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #765 これから（これから），输入 `此れから`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2497 此れから（これから），输入 `これから`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #766 すごい（すごい），输入 `凄い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2532 凄い（すごい），输入 `すごい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #781 もらう（もらう），输入 `貰う`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2098 貰う（もらう），输入 `もらう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2323 良く（よく），输入 `よく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3667 翌〜（よく），输入 `よく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6179 欲（よく），输入 `よく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #792 おもちゃ（おもちゃ），输入 `玩具`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2570 玩具（おもちゃ），输入 `おもちゃ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #793 うれしい（うれしい），输入 `嬉しい`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2471 嬉しい（うれしい），输入 `うれしい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #796 たまに（たまに），输入 `偶に`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2485 偶に（たまに），输入 `たまに`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3786 付き（つき），输入 `〜付き`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4475 〜付き（つき），输入 `付き`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #799 固い（かたい），输入 `硬い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #799 固い（かたい），输入 `堅い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1197 硬い（かたい），输入 `固い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1197 硬い（かたい），输入 `堅い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7092 堅い（かたい），输入 `固い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7092 堅い（かたい），输入 `硬い`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #807 初め（はじめ），输入 `始め`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1860 始め（はじめ），输入 `初め`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #816 足（あし），输入 `脚`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2476 脚（あし），输入 `足`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1690 〜製（せい），输入 `せい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3159 性（せい），输入 `せい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3645 正（せい），输入 `せい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #9469 同化（どうか），输入 `どうか`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #858 最も（もっとも），输入 `もっとも`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #860 ほか（ほか），输入 `他`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2228 他（ほか），输入 `ほか`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #867 より（より），输入 `より(副)`：期望 exception: dictionary label，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #4504 より(副)（より），输入 `より`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5374 寄り（より），输入 `より`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5374 寄り（より），输入 `より(副)`：期望 exception: dictionary label，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #928 〜中（じゅう），输入 `～中`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2583 ～中（じゅう），输入 `〜中`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #907 おはよう（おはよう），输入 `お早う`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2575 お早う（おはよう），输入 `おはよう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4628 憎い（にくい），输入 `〜にくい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #927 〜達（たち），输入 `達`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2362 達（たち），输入 `〜達`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #991 嫌（いや），输入 `いや`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1987 鳴る（なる），输入 `なる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2462 成る（なる），输入 `なる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #973 温かい（あたたかい），输入 `暖かい`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1034 暖かい（あたたかい），输入 `温かい`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1030 だめ（だめ），输入 `駄目`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2364 駄目（だめ），输入 `だめ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1039 登る（のぼる），输入 `上る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1039 登る（のぼる），输入 `昇る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3639 上る（のぼる），输入 `登る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3639 上る（のぼる），输入 `昇る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7287 昇る（のぼる），输入 `登る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7287 昇る（のぼる），输入 `上る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1048 方（かた），输入 `〜方`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1062 〜方（かた），输入 `方`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1070 おかしい（おかしい），输入 `可笑しい`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2457 可笑しい（おかしい），输入 `おかしい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1902 折る（おる），输入 `おる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #8358 織る（おる），输入 `おる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1078 けが（けが），输入 `怪我`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2150 怪我（けが），输入 `けが`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1084 しっかり（しっかり），输入 `確り`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2152 確り（しっかり），输入 `しっかり`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1085 しまう（しまう），输入 `仕舞う`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2196 仕舞う（しまう），输入 `しまう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1102 なかなか（なかなか），输入 `中々`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2558 中々（なかなか），输入 `なかなか`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1113 ほとんど（ほとんど），输入 `殆ど`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2091 殆ど（ほとんど），输入 `ほとんど`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2491 若し（もし），输入 `もし`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1120 やはり（やはり），输入 `矢張り`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2317 矢張り（やはり），输入 `やはり`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1535 辞める（やめる），输入 `やめる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2503 止める（やめる），输入 `やめる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1258 尋ねる（たずねる），输入 `尋ねる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3845 訊ねる（たずねる），输入 `尋ねる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1261 ぜひ（ぜひ），输入 `是非`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2531 是非（ぜひ），输入 `ぜひ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1295 通り（とおり），输入 `〜通り`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2008 〜通り（とおり），输入 `通り`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1349 片付ける（かたづける），输入 `片付ける`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2086 片づける（かたづける），输入 `片付ける`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1406 home（ホーム），输入 `ホーム`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1606 platform（ホーム），输入 `ホーム`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1446 差（さ），输入 `〜さ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1469 身（み），输入 `〜み`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2908 実（み），输入 `〜み`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3662 未〜（み），输入 `〜み`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #8717 味（み），输入 `〜み`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1490 痛み（いたみ），输入 `傷み`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5615 傷み（いたみ），输入 `痛み`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4256 姉妹（しまい），输入 `しまい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2801 勧める（すすめる），输入 `薦める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7810 薦める（すすめる），输入 `勧める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1574 いろんな（いろんな），输入 `色んな`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2624 色んな（いろんな），输入 `いろんな`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1581 大〜（おお），输入 `おお`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1607 やっぱり（やっぱり），输入 `矢っ張り`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2316 矢っ張り（やっぱり），输入 `やっぱり`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1624 すばらしい（すばらしい），输入 `素晴らしい`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2540 素晴らしい（すばらしい），输入 `すばらしい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1762 海苔（のり），输入 `のり`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4938 沖（おき），输入 `〜おき`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1728 ごちそう（ごちそう），输入 `ご馳走`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2127 ご馳走（ごちそう），输入 `ごちそう`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1738 しばらく（しばらく），输入 `暫く`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2194 暫く（しばらく），输入 `しばらく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1754 できるだけ（できるだけ），输入 `出来るだけ`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2204 出来るだけ（できるだけ），输入 `できるだけ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1789 温める（あたためる），输入 `暖める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7110 暖める（あたためる），输入 `温める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1810 気を付ける（きをつける），输入 `気をつける`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2473 気をつける（きをつける），输入 `気を付ける`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1824 喧嘩（けんか），输入 `喧嘩`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2171 喧嘩（けんか），输入 `喧嘩`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1871 臭い（くさい），输入 `くさい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1936 超える（こえる），输入 `越える`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3214 越える（こえる），输入 `超える`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1963 表す（あらわす），输入 `現す`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4212 現す（あらわす），输入 `表す`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2634 甥（おい），输入 `おい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7598 老い（おい），输入 `おい`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2047 但し（ただし），输入 `ただし`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4080 ただし（ただし），输入 `但し`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2097 勿体ない（もったいない），输入 `もったいない`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3201 もったいない（もったいない），输入 `勿体ない`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2132 向日葵（ひまわり），输入 `ひまわり`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6525 ひまわり（ひまわり），输入 `向日葵`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2186 更に（さらに），输入 `さらに`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4227 さらに（さらに），输入 `更に`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2231 大分（だいぶ），输入 `だいぶ`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2235 貯める（ためる），输入 `ためる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2283 噂（うわさ），输入 `噂`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2632 噂（うわさ），输入 `噂`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2438 ロック（ロック），输入 `ロック`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2438 ロック（ロック），输入 `ロック`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3847 lock（ロック），输入 `ロック`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3847 lock（ロック），输入 `ロック`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3897 rock（ロック），输入 `ロック`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3897 rock（ロック），输入 `ロック`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2464 間もなく（まもなく），输入 `まもなく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4107 まもなく（まもなく），输入 `間もなく`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2484 空く（すく），输入 `すく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2507 若しかしたら（もしかしたら），输入 `もしかしたら`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3439 もしかしたら（もしかしたら），输入 `若しかしたら`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2508 取り敢えず（とりあえず），输入 `とりあえず`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5442 とりあえず（とりあえず），输入 `取り敢えず`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2549 饂飩（うどん），输入 `うどん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3927 うどん（うどん），输入 `饂飩`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2555 叩く（たたく），输入 `叩く`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2683 叩く（たたく），输入 `叩く`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5785 要約（ようやく），输入 `ようやく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2766 延ばす（のばす），输入 `伸ばす`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2962 伸ばす（のばす），输入 `延ばす`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2776 加える（くわえる），输入 `くわえる`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3365 溶ける（とける），输入 `解ける`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2856 現れる（あらわれる），输入 `表れる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4407 表れる（あらわれる），输入 `現れる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2882 載せる（のせる），输入 `乗せる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2952 乗せる（のせる），输入 `載せる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2963 伸びる（のびる），输入 `延びる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7239 延びる（のびる），输入 `伸びる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3023 痛む（いたむ），输入 `傷む`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5616 傷む（いたむ），输入 `痛む`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3301 早める（はやめる），输入 `速める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4629 速める（はやめる），输入 `早める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3304 測る（はかる），输入 `計る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3986 計る（はかる），输入 `測る`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3326 登り（のぼり），输入 `上り`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7388 上り（のぼり），输入 `登り`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3377 越す（こす），输入 `超す`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7832 超す（こす），输入 `越す`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3472 勤め（つとめ），输入 `務め`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5774 務め（つとめ），输入 `勤め`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3496 次第（しだい），输入 `〜次第`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7016 〜次第（しだい），输入 `次第`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #6083 痛める（いためる），输入 `傷める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7171 傷める（いためる），输入 `痛める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3936 縦（たて），输入 `〜たて`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4020 桃（もも），输入 `もも`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4160 巻く（まく），输入 `まく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5310 幕（まく），输入 `まく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4109 miss（ミス），输入 `ミス`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6263 Miss（ミス），输入 `ミス`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4450 溶かす（とかす），输入 `解かす`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4706 保証（ほしょう），输入 `保障`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5759 保障（ほしょう），输入 `保証`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #6153 放棄（ほうき），输入 `ほうき`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #10518 一端（いったん），输入 `いったん`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5099 収まる（おさまる），输入 `納まる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7561 納まる（おさまる），输入 `収まる`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5100 収める（おさめる），输入 `納める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5253 納める（おさめる），输入 `収める`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #8007 呆然（ぼうぜん），输入 `茫然`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #8196 愚か（おろか），输入 `おろか`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #8272 裁く（さばく），输入 `さばく`：期望 exception: indistinguishable valid reading，实际 correct; nearMiss=false; readingOk=true
+- #8325 趣旨（しゅし），输入 `主旨`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #9071 主旨（しゅし），输入 `趣旨`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #8476 直感（ちょっかん），输入 `直観`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #10484 直観（ちょっかん），输入 `直感`：期望 exception: in A.forms，实际 correct; nearMiss=false; readingOk=null
+
+### 汉字换成同级常用字
+
+- #6053 損なう（そこなう），输入 `害なう`：期望 wrong_kanji，实际 okurigana; nearMiss=true; readingOk=null
+
+### 汉字按本词读音换成假名
+
+- #28 答え（こたえ），输入 `こたえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #28 答え（こたえ），输入 `こたえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #77 始める（はじめる），输入 `はじめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #78 終わる（おわる），输入 `おわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #79 開ける（あける），输入 `あける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #79 開ける（あける），输入 `あける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #79 開ける（あける），输入 `あける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #80 閉める（しめる），输入 `しめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #81 入る（はいる），输入 `はいる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #82 出る（でる），输入 `でる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #83 入れる（いれる），输入 `いれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #84 出す（だす），输入 `だす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #85 変える（かえる），输入 `かえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #86 変わる（かわる），输入 `かわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #87 覚える（おぼえる），输入 `おぼえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #88 忘れる（わすれる），输入 `わすれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #89 借りる（かりる），输入 `かりる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #90 貸す（かす），输入 `かす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #91 手伝う（てつだう），输入 `てつだう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #92 働く（はたらく），输入 `はたらく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #93 休む（やすむ），输入 `やすむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #94 学ぶ（まなぶ），输入 `まなぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #95 習う（ならう），输入 `ならう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #96 教える（おしえる），输入 `おしえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #97 調べる（しらべる），输入 `しらべる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #98 考える（かんがえる），输入 `かんがえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #99 決める（きめる），输入 `きめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #100 決まる（きまる），输入 `きまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #101 送る（おくる），输入 `おくる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #102 受ける（うける），输入 `うける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #102 受ける（うける），输入 `うける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #103 使う（つかう），输入 `つかう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #103 使う（つかう），输入 `つかう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #104 作る（つくる），输入 `つくる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #104 作る（つくる），输入 `つくる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #105 買う（かう），输入 `かう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #106 売る（うる），输入 `うる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #107 待つ（まつ），输入 `まつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #108 持つ（もつ），输入 `もつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #109 立つ（たつ），输入 `たつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #110 座る（すわる），输入 `すわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #111 走る（はしる），输入 `はしる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #112 歩く（あるく），输入 `あるく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #113 飛ぶ（とぶ），输入 `とぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #113 飛ぶ（とぶ），输入 `とぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #114 泳ぐ（およぐ），输入 `およぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #115 急ぐ（いそぐ），输入 `いそぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #116 死ぬ（しぬ），输入 `しぬ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #117 遊ぶ（あそぶ），输入 `あそぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #118 飲む（のむ），输入 `のむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #118 飲む（のむ），输入 `のむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #119 読む（よむ），输入 `よむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #120 話す（はなす），输入 `はなす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #121 書く（かく），输入 `かく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #122 聞く（きく），输入 `きく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #123 行く（いく），输入 `いく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #124 来る（くる），输入 `くる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #142 開く（あく），输入 `あく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #142 開く（あく），输入 `あく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #142 開く（あく），输入 `あく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #143 閉まる（しまる），输入 `しまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #143 閉まる（しまる），输入 `しまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #144 止まる（とまる），输入 `とまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #144 止まる（とまる），输入 `とまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #145 止める（とめる），输入 `とめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #145 止める（とめる），输入 `とめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #146 無くす（なくす），输入 `なくす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #147 無くなる（なくなる），输入 `なくなる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #148 疲れる（つかれる），输入 `つかれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #149 困る（こまる），输入 `こまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #150 知る（しる），输入 `しる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #151 思う（おもう），输入 `おもう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #152 探す（さがす），输入 `さがす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #152 探す（さがす），输入 `さがす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #153 選ぶ（えらぶ），输入 `えらぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #154 運ぶ（はこぶ），输入 `はこぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #155 直す（なおす），输入 `なおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #156 直る（なおる），输入 `なおる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #157 持って行く（もっていく），输入 `もっていく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #158 持って来る（もってくる），输入 `もってくる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #159 着る（きる），输入 `きる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #160 履く（はく），输入 `はく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #161 被る（かぶる），输入 `かぶる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #162 脱ぐ（ぬぐ），输入 `ぬぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #163 置く（おく），输入 `おく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #164 並ぶ（ならぶ），输入 `ならぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #165 並べる（ならべる），输入 `ならべる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #166 付ける（つける），输入 `つける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #166 付ける（つける），输入 `つける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #167 付く（つく），输入 `つく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #168 足りる（たりる），输入 `たりる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #169 降りる（おりる），输入 `おりる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #169 降りる（おりる），输入 `おりる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #170 乗る（のる），输入 `のる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #172 繋がる（つながる），输入 `つながる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #201 〜か月（かげつ），输入 `か月`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #229 あまり（あまり），输入 `あまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #234 いくつ（いくつ），输入 `いくつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #242 うるさい（うるさい），输入 `うるさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #248 おじいさん（おじいさん），输入 `おじいさん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #253 おにぎり（おにぎり），输入 `おにぎり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #270 くださる（くださる），输入 `くださる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #283 ご飯（ごはん），输入 `ご飯`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #314 ただ今（ただいま），输入 `ただ今`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #321 つまらない（つまらない），输入 `つまらない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #351 にぎやか（にぎやか），输入 `にぎやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #385 安い（やすい），输入 `やすい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #386 暗い（くらい），输入 `くらい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #388 一つ（ひとつ），输入 `ひとつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #390 一人（ひとり），输入 `ひとり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #402 遠い（とおい），输入 `とおい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #405 汚い（きたない），输入 `きたない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #406 奥さん（おくさん），输入 `おくさん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #413 何か（なにか），输入 `なにか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #420 歌う（うたう），输入 `うたう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #424 会う（あう），输入 `あう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #424 会う（あう），输入 `あう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #427 皆さん（みなさん），输入 `みなさん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #434 楽しい（たのしい），输入 `たのしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #435 掛かる（かかる），输入 `かかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #436 掛ける（かける），输入 `かける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #437 寒い（さむい），输入 `さむい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #439 甘い（あまい），输入 `あまい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #440 丸い（まるい），输入 `まるい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #443 危ない（あぶない），输入 `あぶない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #445 帰り（かえり），输入 `かえり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #446 帰る（かえる），输入 `かえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #447 起きる（おきる），输入 `おきる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #452 強い（つよい），输入 `つよい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #454 狭い（せまい），输入 `せまい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #455 近い（ちかい），输入 `ちかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #456 近く（ちかく），输入 `ちかく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #460 九つ（ここのつ），输入 `ここのつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #466 軽い（かるい），输入 `かるい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #470 見る（みる），输入 `みる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #473 言う（いう），输入 `いう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #475 古い（ふるい），输入 `ふるい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #476 呼ぶ（よぶ），输入 `よぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #477 五つ（いつつ），输入 `いつつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #482 後ろ（うしろ），输入 `うしろ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #485 厚い（あつい），输入 `あつい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #487 向こう（むこう），输入 `むこう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #488 好き（すき），输入 `すき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #489 広い（ひろい），输入 `ひろい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #491 降る（ふる），输入 `ふる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #492 高い（たかい），输入 `たかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #495 黒い（くろい），输入 `くろい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #507 細い（ほそい），输入 `ほそい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #512 三つ（みっつ），输入 `みっつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #517 四つ（よっつ），输入 `よっつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #519 始まる（はじまる），输入 `はじまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #520 子供（こども），输入 `こども`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #534 七つ（ななつ），输入 `ななつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #539 若い（わかい），输入 `わかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #540 取る（とる），输入 `とる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #546 住む（すむ），输入 `すむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #548 重い（おもい），输入 `おもい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #552 初めて（はじめて），输入 `はじめて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #552 初めて（はじめて），输入 `はじめて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #554 暑い（あつい），输入 `あつい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #558 小さい（ちいさい），输入 `ちいさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #559 小さな（ちいさな），输入 `ちいさな`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #562 少し（すこし），输入 `すこし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #563 少ない（すくない），输入 `すくない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #564 消す（けす），输入 `けす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #565 笑う（わらう），输入 `わらう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #567 上げる（あげる），输入 `あげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #570 食べる（たべる），输入 `たべる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #573 寝る（ねる），输入 `ねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #574 新しい（あたらしい），输入 `あたらしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #576 辛い（からい），输入 `からい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #580 晴れ（はれ），输入 `はれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #581 晴れる（はれる），输入 `はれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #582 生まれる（うまれる），输入 `うまれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #586 青い（あおい），输入 `あおい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #587 静か（しずか），输入 `しずか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #589 赤い（あかい），输入 `あかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #590 切る（きる），输入 `きる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #599 洗う（あらう），输入 `あらう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #604 早い（はやい），输入 `はやい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #604 早い（はやい），输入 `はやい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #606 多い（おおい），输入 `おおい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #607 太い（ふとい），输入 `ふとい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #609 大きい（おおきい），输入 `おおきい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #613 大変（たいへん），输入 `たいへん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #615 短い（みじかい），输入 `みじかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #621 遅い（おそい），输入 `おそい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #623 着く（つく），输入 `つく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #629 昼ご飯（ひるごはん），输入 `ひるごはん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #631 朝ご飯（あさごはん），输入 `あさごはん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #633 長い（ながい），输入 `ながい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #635 痛い（いたい），输入 `いたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #636 低い（ひくい），输入 `ひくい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #643 渡す（わたす），输入 `わたす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #644 渡る（わたる），输入 `わたる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #649 答える（こたえる），输入 `こたえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #652 同じ（おなじ），输入 `おなじ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #654 曇り（くもり），输入 `くもり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #655 曇る（くもる），输入 `くもる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #657 難しい（むずかしい），输入 `むずかしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #658 二つ（ふたつ），输入 `ふたつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #669 熱い（あつい），输入 `あつい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #673 白い（しろい），输入 `しろい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #674 薄い（うすい），输入 `うすい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #676 八つ（やっつ），输入 `やっつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #682 晩ご飯（ばんごはん），输入 `ばんごはん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #696 分かる（わかる），输入 `わかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #702 忙しい（いそがしい），输入 `いそがしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #710 磨く（みがく），输入 `みがく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #721 明るい（あかるい），输入 `あかるい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #734 夕方（ゆうがた），输入 `ゆうがた`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #737 欲しい（ほしい），输入 `ほしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #742 良い（よい），输入 `よい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #742 良い（よい），输入 `よい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #745 冷たい（つめたい），输入 `つめたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #747 六つ（むっつ），输入 `むっつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #758 頂く（いただく），输入 `いただく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #766 すごい（すごい），输入 `すごい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #773 何で（なんで），输入 `なんで`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #779 もうすぐ（もうすぐ），输入 `もうすぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #780 もう少し（もうすこし），输入 `もうすこし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #781 もらう（もらう），输入 `もらう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #786 遠く（とおく），输入 `とおく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #788 開く（ひらく），输入 `ひらく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #789 感じ（かんじ），输入 `かんじ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #793 うれしい（うれしい），输入 `うれしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #794 休み（やすみ），输入 `やすみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #795 曲がる（まがる），输入 `まがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #796 たまに（たまに），输入 `たまに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #798 見せる（みせる），输入 `みせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #799 固い（かたい），输入 `かたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #799 固い（かたい），输入 `かたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #799 固い（かたい），输入 `かたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #800 考え（かんがえ），输入 `かんがえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #805 終わり（おわり），输入 `おわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #807 初め（はじめ），输入 `はじめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #807 初め（はじめ），输入 `はじめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #808 消しゴム（けしゴム），输入 `けしゴム`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #809 上がる（あがる），输入 `あがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #813 正しい（ただしい），输入 `ただしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #817 大きな（おおきな），输入 `おおきな`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #822 通う（かよう），输入 `かよう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #829 優しい（やさしい），输入 `やさしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #831 要る（いる），输入 `いる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #832 浴びる（あびる），输入 `あびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #840 もしも（もしも），输入 `もしも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #850 お子さん（おこさん），输入 `おこさん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #852 こういう（こういう），输入 `こういう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #858 最も（もっとも），输入 `もっとも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #863 行き（ゆき），输入 `ゆき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #864 借り（かり），输入 `かり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #866 下さい（ください），输入 `ください`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #883 速い（はやい），输入 `はやい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #883 速い（はやい），输入 `はやい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #895 どういう（どういう），输入 `どういう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #896 何も（なにも），输入 `なにも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #897 ごめんなさい（ごめんなさい），输入 `ごめんなさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #897 ごめんなさい（ごめんなさい），输入 `ご免なさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #901 すみません（すみません），输入 `すみません`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #902 お願い（おねがい），输入 `おねがい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #911 初めまして（はじめまして），输入 `はじめまして`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #911 初めまして（はじめまして），输入 `はじめまして`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #919 どういたしまして（どういたしまして），输入 `どういたしまして`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #924 〜過ぎ（すぎ），输入 `すぎ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #952 天ぷら（てんぷら），输入 `てんぷら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #962 悪い（わるい），输入 `わるい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #966 易しい（やさしい），输入 `やさしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #967 違う（ちがう），输入 `ちがう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #968 引く（ひく），输入 `ひく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #972 押す（おす），输入 `おす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #973 温かい（あたたかい），输入 `あたたかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #973 温かい（あたたかい），输入 `あたたかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #986 吸う（すう），输入 `すう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #987 泣く（なく），输入 `なく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #992 嫌い（きらい），输入 `きらい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #993 厳しい（きびしい），输入 `きびしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #994 込む（こむ），输入 `こむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #995 差す（さす），输入 `さす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #996 祭り（まつり），输入 `まつり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #997 撮る（とる），输入 `とる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1000 次に（つぎに），输入 `つぎに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1001 寂しい（さびしい），输入 `さびしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1002 弱い（よわい），输入 `よわい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1003 守る（まもる），输入 `まもる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1009 出かける（でかける），输入 `でかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1011 書き方（かきかた），输入 `かきかた`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1012 消える（きえる），输入 `きえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1014 信じる（しんじる），输入 `しんじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1016 申す（もうす），输入 `もうす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1021 吹く（ふく），输入 `ふく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1025 先に（さきに），输入 `さきに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1032 誰か（だれか），输入 `だれか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1033 弾く（ひく），输入 `ひく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1034 暖かい（あたたかい），输入 `あたたかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1034 暖かい（あたたかい），输入 `あたたかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1037 貼る（はる），输入 `はる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1037 貼る（はる），输入 `はる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1038 伝える（つたえる），输入 `つたえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1039 登る（のぼる），输入 `のぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1039 登る（のぼる），输入 `のぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1039 登る（のぼる），输入 `のぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1042 濃い（こい），输入 `こい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1045 負ける（まける），输入 `まける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1047 返す（かえす），输入 `かえす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1053 頼む（たのむ），输入 `たのむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1054 立てる（たてる），输入 `たてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1056 涼しい（すずしい），输入 `すずしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1060 〜出す（だす），输入 `だす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1103 なさる（なさる），输入 `なさる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1104 濡れる（ぬれる），输入 `ぬれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1113 ほとんど（ほとんど），输入 `ほとんど`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1127 違い（ちがい），输入 `ちがい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1128 育てる（そだてる），输入 `そだてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1137 汚れる（よごれる），输入 `よごれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1138 下がる（さがる），输入 `さがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1140 過ぎる（すぎる），输入 `すぎる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1141 回る（まわる），输入 `まわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1142 壊れる（こわれる），输入 `こわれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1144 楽しみ（たのしみ），输入 `たのしみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1145 楽しむ（たのしむ），输入 `たのしむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1146 感じる（かんじる），输入 `かんじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1147 慣れる（なれる），输入 `なれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1147 慣れる（なれる），输入 `なれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1150 間に合う（まにあう），输入 `まにあう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1156 喜ぶ（よろこぶ），输入 `よろこぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1162 起こす（おこす），输入 `おこす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1163 起こる（おこる），输入 `おこる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1167 久しぶり（ひさしぶり），输入 `ひさしぶり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1171 驚く（おどろく），输入 `おどろく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1173 苦い（にがい），输入 `にがい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1175 空く（あく），输入 `あく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1175 空く（あく），输入 `あく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1175 空く（あく），输入 `あく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1180 迎える（むかえる），输入 `むかえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1184 建てる（たてる），输入 `たてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1186 見える（みえる），输入 `みえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1187 見つかる（みつかる），输入 `みつかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1188 見つける（みつける），输入 `みつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1195 幸せ（しあわせ），输入 `しあわせ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1197 硬い（かたい），输入 `かたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1197 硬い（かたい），输入 `かたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1197 硬い（かたい），输入 `かたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1198 行う（おこなう），输入 `おこなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1199 合う（あう），输入 `あう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1206 細かい（こまかい），输入 `こまかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1209 残り（のこり），输入 `のこり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1210 残る（のこる），输入 `のこる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1222 似る（にる），输入 `にる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1225 治る（なおる），输入 `なおる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1230 写す（うつす），输入 `うつす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1231 捨てる（すてる），输入 `すてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1232 手袋（てぶくろ），输入 `てぶくろ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1234 周り（まわり），输入 `まわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1235 拾う（ひろう），输入 `ひろう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1236 集まる（あつまる），输入 `あつまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1237 集める（あつめる），输入 `あつめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1238 助ける（たすける），输入 `たすける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1240 勝つ（かつ），输入 `かつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1243 焼く（やく），输入 `やく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1248 飾る（かざる），输入 `かざる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1252 深い（ふかい），输入 `ふかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1255 進む（すすむ），输入 `すすむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1256 人々（ひとびと），输入 `ひとびと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1258 尋ねる（たずねる），输入 `たずねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1258 尋ねる（たずねる），输入 `たずねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1266 生きる（いきる），输入 `いきる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1272 全て（すべて），输入 `すべて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1274 増える（ふえる），输入 `ふえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1276 続く（つづく），输入 `つづく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1277 続ける（つづける），输入 `つづける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1278 多く（おおく），输入 `おおく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1279 打つ（うつ），输入 `うつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1280 代わる（かわる），输入 `かわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1280 代わる（かわる），输入 `かわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1280 代わる（かわる），输入 `かわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1285 知らせ（しらせ），输入 `しらせ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1286 知らせる（しらせる），输入 `しらせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1288 恥ずかしい（はずかしい），输入 `はずかしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1289 遅れる（おくれる），输入 `おくれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1289 遅れる（おくれる），输入 `おくれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1295 通り（とおり），输入 `とおり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1296 通る（とおる），输入 `とおる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1301 怒る（おこる），输入 `おこる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1302 倒れる（たおれる），输入 `たおれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1304 投げる（なげる），输入 `なげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1305 盗む（ぬすむ），输入 `ぬすむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1307 当たる（あたる），输入 `あたる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1308 当てる（あてる），输入 `あてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1309 逃げる（にげる），输入 `にげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1310 動く（うごく），输入 `うごく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1312 特に（とくに），输入 `とくに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1314 届ける（とどける），输入 `とどける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1315 匂い（におい），输入 `におい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1323 売れる（うれる），输入 `うれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1324 泊まる（とまる），输入 `とまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1326 悲しい（かなしい），输入 `かなしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1327 比べる（くらべる），输入 `くらべる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1328 美しい（うつくしい），输入 `うつくしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1330 必ず（かならず），输入 `かならず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1335 怖い（こわい），输入 `こわい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1339 払う（はらう），输入 `はらう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1340 分ける（わける），输入 `わける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1343 聞こえる（きこえる），输入 `きこえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1347 別れる（わかれる），输入 `わかれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1349 片付ける（かたづける），输入 `かたづける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1350 辺り（あたり），输入 `あたり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1351 暮らす（くらす），输入 `くらす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1352 包む（つつむ），输入 `つつむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1355 訪ねる（たずねる），输入 `たずねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1356 亡くなる（なくなる），输入 `なくなる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1359 眠い（ねむい），输入 `ねむい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1360 眠る（ねむる），输入 `ねむる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1363 迷う（まよう），输入 `まよう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1364 戻る（もどる），输入 `もどる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1370 落ちる（おちる），输入 `おちる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1371 落とす（おとす），输入 `おとす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1374 流れる（ながれる），输入 `ながれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1381 例えば（たとえば），输入 `たとえば`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1409 全く（まったく），输入 `まったく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1414 握る（にぎる），输入 `にぎる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1420 映る（うつる），输入 `うつる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1422 何でも（なんでも），输入 `なんでも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1426 外す（はずす），输入 `はずす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1430 寄る（よる），输入 `よる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1432 気づく（きづく），输入 `きづく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1439 苦しい（くるしい），输入 `くるしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1445 合わせる（あわせる），输入 `あわせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1449 残す（のこす），输入 `のこす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1457 謝る（あやまる），输入 `あやまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1459 終える（おえる），输入 `おえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1462 詳しい（くわしい），输入 `くわしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1464 触る（さわる），输入 `さわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1470 数える（かぞえる），输入 `かぞえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1475 戦う（たたかう），输入 `たたかう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1477 組む（くむ），输入 `くむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1489 珍しい（めずらしい），输入 `めずらしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1490 痛み（いたみ），输入 `いたみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1490 痛み（いたみ），输入 `いたみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1495 動かす（うごかす），输入 `うごかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1497 届く（とどく），输入 `とどく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1506 閉じる（とじる），输入 `とじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1514 誘う（さそう），输入 `さそう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1515 流す（ながす），输入 `ながす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1520 組（くみ），输入 `くみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1528 宛先（あてさき），输入 `あて先`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #1528 宛先（あてさき），输入 `あて先`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #1530 過ごす（すごす），输入 `すごす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1533 減る（へる），输入 `へる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1535 辞める（やめる），输入 `やめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1536 実は（じつは），输入 `じつは`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1539 進める（すすめる），输入 `すすめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1541 切れる（きれる），输入 `きれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1547 断る（ことわる），输入 `ことわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1549 通す（とおす），输入 `とおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1551 動き（うごき），输入 `うごき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1554 別に（べつに），输入 `べつに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1556 戻す（もどす），输入 `もどす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1564 愛する（あいする），输入 `あいする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1565 確か（たしか），输入 `たしか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1566 恐ろしい（おそろしい），输入 `おそろしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1567 取れる（とれる），输入 `とれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1572 葉っぱ（はっぱ），输入 `はっぱ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1574 いろんな（いろんな），输入 `いろんな`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1578 生む（うむ），输入 `うむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1593 気に入る（きにいる），输入 `きにいる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1598 役に立つ（やくにたつ），输入 `やくにたつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1605 首になる（くびになる），输入 `くびになる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1645 滑る（すべる），输入 `すべる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1653 今まで（いままで），输入 `いままで`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1654 咲く（さく），输入 `さく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1669 代わり（かわり），输入 `かわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1669 代わり（かわり），输入 `かわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1670 茶碗（ちゃわん），输入 `ちゃわん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1672 張る（はる），输入 `はる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1672 張る（はる），输入 `はる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1680 かぶる（かぶる），输入 `かぶる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1701 いくつか（いくつか），输入 `いくつか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1713 お釣り（おつり），输入 `おつり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1714 お目にかかる（おめにかかる），输入 `おめにかかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1720 嚙む（かむ），输入 `かむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1728 ごちそう（ごちそう），输入 `ご馳走`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #1732 ご覧になる（ごらんになる），输入 `ごらんになる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1738 しばらく（しばらく），输入 `しばらく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1753 つまり（つまり），输入 `つまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1758 ところで（ところで），输入 `ところで`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1760 なるべく（なるべく），输入 `なるべく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1774 偉い（えらい），输入 `えらい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1775 移す（うつす），输入 `うつす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1776 移る（うつる），输入 `うつる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1783 汚れ（よごれ），输入 `よごれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1784 奥様（おくさま），输入 `おくさま`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1787 殴る（なぐる），输入 `なぐる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1789 温める（あたためる），输入 `あたためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1789 温める（あたためる），输入 `あたためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1792 下げる（さげる），输入 `さげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1793 下りる（おりる），输入 `おりる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1793 下りる（おりる），输入 `おりる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1799 壊す（こわす），输入 `こわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1803 割る（わる），输入 `わる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1804 乾く（かわく），输入 `かわく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1810 気を付ける（きをつける），输入 `きをつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1813 急に（きゅうに），输入 `きゅうに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1815 許す（ゆるす），输入 `ゆるす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1818 勤める（つとめる），输入 `つとめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1825 建つ（たつ），输入 `たつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1833 光る（ひかる），输入 `ひかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1835 向かう（むかう），输入 `むかう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1837 広さ（ひろさ），输入 `ひろさ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1841 香り（かおり），输入 `かおり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1848 済む（すむ），输入 `すむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1850 参る（まいる），输入 `まいる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1854 酸っぱい（すっぱい），输入 `すっぱい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1855 伺う（うかがう），输入 `うかがう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1860 始め（はじめ），输入 `はじめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1860 始め（はじめ），输入 `はじめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1862 止む（やむ），输入 `やむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1865 叱る（しかる），输入 `しかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1867 写る（うつる），输入 `うつる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1871 臭い（くさい），输入 `くさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1874 柔らかい（やわらかい），输入 `やわらかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1882 焼ける（やける），输入 `やける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1883 笑わせる（わらわせる），输入 `わらわせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1888 植える（うえる），输入 `うえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1890 申し上げる（もうしあげる），输入 `もうしあげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1892 親しい（したしい），输入 `したしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1901 赤ちゃん（あかちゃん），输入 `あかちゃん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1902 折る（おる），输入 `おる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1903 折れる（おれる），输入 `おれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1905 浅い（あさい），输入 `あさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1909 痩せる（やせる），输入 `やせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1912 騒ぐ（さわぐ），输入 `さわぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1913 贈る（おくる），输入 `おくる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1914 太る（ふとる），输入 `ふとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1929 致す（いたす），输入 `いたす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1936 超える（こえる），输入 `こえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1936 超える（こえる），输入 `こえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1941 伝わる（つたわる），输入 `つたわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1943 塗る（ぬる），输入 `ぬる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1945 踏む（ふむ），输入 `ふむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1946 憧れ（あこがれ），输入 `あこがれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1950 燃える（もえる），输入 `もえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1954 配る（くばる），输入 `くばる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1962 疲れ（つかれ），输入 `つかれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1963 表す（あらわす），输入 `あらわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1963 表す（あらわす），输入 `あらわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1966 分かれる（わかれる），输入 `わかれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1971 聞かせる（きかせる），输入 `きかせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1973 片付く（かたづく），输入 `かたづく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1974 編む（あむ），输入 `あむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1975 捕まえる（つかまえる），输入 `つかまえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1976 暮らし（くらし），输入 `くらし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1979 褒める（ほめる），输入 `ほめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1986 鳴く（なく），输入 `なく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1987 鳴る（なる），输入 `なる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1989 黙る（だまる），输入 `だまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #1999 踊り（おどり），输入 `おどり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2000 踊る（おどる），输入 `おどる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2001 冷える（ひえる），输入 `ひえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2004 連れる（つれる），输入 `つれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2008 〜通り（とおり），输入 `とおり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2014 いつの間にか（いつのまにか），输入 `いつのまにか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2030 下り（くだり），输入 `くだり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2038 然し（しかし），输入 `しかし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2047 但し（ただし），输入 `ただし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2076 回す（まわす），输入 `まわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2078 破る（やぶる），输入 `やぶる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2082 〜について（について），输入 `について`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2084 唐揚げ（からあげ），输入 `から揚げ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #2084 唐揚げ（からあげ），输入 `からあげ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2084 唐揚げ（からあげ），输入 `から揚げ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #2086 片づける（かたづける），输入 `かたづける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2089 防ぐ（ふせぐ），输入 `ふせぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2091 殆ど（ほとんど），输入 `ほとんど`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2093 お別れ（おわかれ），输入 `おわかれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2098 貰う（もらう），输入 `もらう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2101 訳す（やくす），输入 `やくす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2103 預ける（あずける），输入 `あずける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2122 あいさつ回り（あいさつまわり），输入 `あいさつまわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2127 ご馳走（ごちそう），输入 `ご馳走`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #2145 下ろす（おろす），输入 `おろす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2145 下ろす（おろす），输入 `おろす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2154 渇く（かわく），输入 `かわく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2159 気が付く（きがつく），输入 `きがつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2160 気さく（きさく），输入 `きさく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2164 挙げる（あげる），输入 `あげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2169 結ぶ（むすぶ），输入 `むすぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2185 慌てる（あわてる），输入 `あわてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2186 更に（さらに），输入 `さらに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2194 暫く（しばらく），输入 `しばらく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2198 旨く（うまく），输入 `うまく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2201 手作り（てづくり），输入 `てづくり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2221 先ず（まず），输入 `まず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2235 貯める（ためる），输入 `ためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2238 眺め（ながめ），输入 `ながめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2239 直ぐ（すぐ），输入 `すぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2240 直ぐに（すぐに），输入 `すぐに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2245 転ぶ（ころぶ），输入 `ころぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2249 賑やか（にぎやか），输入 `にぎやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2250 肉じゃが（にくじゃが），输入 `にくじゃが`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2255 年寄り（としより），输入 `としより`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2262 晩御飯（ばんごはん），输入 `ばんごはん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2274 豊か（ゆたか），输入 `ゆたか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2285 汚す（よごす），输入 `よごす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2286 稼ぐ（かせぐ），输入 `かせぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2287 割れる（われる），输入 `われる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2295 飼う（かう），输入 `かう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2301 腐る（くさる），输入 `くさる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2304 分かり（わかり），输入 `わかり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2308 宝くじ（たからくじ），输入 `たからくじ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2315 お爺さん（おじいさん），输入 `おじいさん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2320 余り（あまり），输入 `あまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2323 良く（よく），输入 `よく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2323 良く（よく），输入 `よく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2385 ご主人（ごしゅじん），输入 `ご主人`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #2422 未だ（まだ），输入 `まだ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2423 すき焼き（すきやき），输入 `すきやき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2435 そう言えば（そういえば），输入 `そういえば`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2451 良い（いい），输入 `いい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2460 確かめる（たしかめる），输入 `たしかめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2462 成る（なる），输入 `なる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2462 成る（なる），输入 `なる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2464 間もなく（まもなく），输入 `まもなく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2471 嬉しい（うれしい），输入 `うれしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2472 幾ら（いくら），输入 `いくら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2473 気をつける（きをつける），输入 `きをつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2475 詰まらない（つまらない），输入 `つまらない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2484 空く（すく），输入 `すく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2485 偶に（たまに），输入 `たまに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2488 後で（あとで），输入 `あとで`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2490 御免（ごめん），输入 `ご免`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #2491 若し（もし），输入 `もし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2492 効く（きく），输入 `きく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2492 効く（きく），输入 `きく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2494 行ってらっしゃい（いってらっしゃい），输入 `いってらっしゃい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2495 よろしくお願いします（よろしくおねがいします），输入 `よろしくおねがいします`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2503 止める（やめる），输入 `やめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2507 若しかしたら（もしかしたら），输入 `もしかしたら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2508 取り敢えず（とりあえず），输入 `とりあえず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2513 祝う（いわう），输入 `いわう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2526 行き（いき），输入 `いき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2532 凄い（すごい），输入 `すごい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2534 生ビール（なまビール），输入 `なまビール`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2538 前に（まえに），输入 `まえに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2542 早く（はやく），输入 `はやく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2542 早く（はやく），输入 `はやく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2543 お帰りなさい（おかえりなさい），输入 `おかえりなさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2544 お客さん（おきゃくさん），输入 `おきゃくさん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2546 お客様（おきゃくさま），输入 `おきゃくさま`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2552 煩い（うるさい），输入 `うるさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2554 只今（ただいま），输入 `ただ今`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #2555 叩く（たたく），输入 `たたく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2560 釣り（つり），输入 `つり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2567 頭がいい（あたまがいい），输入 `あたまがいい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2571 お嬢さん（おじょうさん），输入 `おじょうさん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2585 いただきます（いただきます），输入 `いただきます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2590 いってきます（いってきます），输入 `いってきます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2595 お願いします（おねがいします），输入 `おねがいします`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2624 色んな（いろんな），输入 `いろんな`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2664 御覧（ごらん），输入 `ご覧`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #2683 叩く（たたく），输入 `たたく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2698 撫でる（なでる），输入 `なでる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2723 または（または），输入 `または`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2728 まるで（まるで），输入 `まるで`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2729 めでたい（めでたい），输入 `めでたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2744 囲む（かこむ），输入 `かこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2751 育つ（そだつ），输入 `そだつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2758 引き受ける（ひきうける），输入 `ひきうける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2761 隠す（かくす），输入 `かくす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2766 延ばす（のばす），输入 `のばす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2766 延ばす（のばす），输入 `のばす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2771 押さえる（おさえる），输入 `おさえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2774 何とか（なんとか），输入 `なんとか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2776 加える（くわえる），输入 `くわえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2783 解く（とく），输入 `とく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2784 解ける（とける），输入 `とける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2785 怪しい（あやしい），输入 `あやしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2786 悔しい（くやしい），输入 `くやしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2787 懐かしい（なつかしい），输入 `なつかしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2789 絵葉書（えはがき），输入 `えはがき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2801 勧める（すすめる），输入 `すすめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2801 勧める（すすめる），输入 `すすめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2804 干す（ほす），输入 `ほす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2810 緩い（ゆるい），输入 `ゆるい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2813 関する（かんする），输入 `かんする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2814 関わる（かかわる），输入 `かかわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2817 願う（ねがう），输入 `ねがう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2826 輝く（かがやく），输入 `かがやく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2827 疑う（うたがう），输入 `うたがう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2834 掘る（ほる），输入 `ほる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2835 経つ（たつ），输入 `たつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2838 決まり（きまり），输入 `きまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2845 嫌がる（いやがる），输入 `いやがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2850 見つめる（みつめる），输入 `みつめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2854 減らす（へらす），输入 `へらす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2856 現れる（あらわれる），输入 `あらわれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2856 現れる（あらわれる），输入 `あらわれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2860 固まる（かたまる），输入 `かたまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2861 枯れる（かれる），输入 `かれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2862 互い（たがい），输入 `たがい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2863 語る（かたる），输入 `かたる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2866 向かい（むかい），输入 `むかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2867 向く（むく），输入 `むく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2868 向ける（むける），输入 `むける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2869 広がる（ひろがる），输入 `ひろがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2870 広げる（ひろげる），输入 `ひろげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2871 絞る（しぼる），输入 `しぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2882 載せる（のせる），输入 `のせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2882 載せる（のせる），输入 `のせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2883 載る（のる），输入 `のる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2884 削る（けずる），输入 `けずる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2907 示す（しめす），输入 `しめす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2909 実に（じつに），输入 `じつに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2916 煮る（にる），输入 `にる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2929 従う（したがう），输入 `したがう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2930 重なる（かさなる），输入 `かさなる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2931 重ねる（かさねる），输入 `かさねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2933 祝い（いわい），输入 `いわい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2947 少しも（すこしも），输入 `すこしも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2952 乗せる（のせる），输入 `のせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2952 乗せる（のせる），输入 `のせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2954 常に（つねに），输入 `つねに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2955 畳む（たたむ），输入 `たたむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2956 飾り（かざり），输入 `かざり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2957 拭く（ふく），输入 `ふく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2958 触れる（ふれる），输入 `ふれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2962 伸ばす（のばす），输入 `のばす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2962 伸ばす（のばす），输入 `のばす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2963 伸びる（のびる），输入 `のびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2963 伸びる（のびる），输入 `のびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2965 振る（ふる），输入 `ふる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2968 申し訳ない（もうしわけない），输入 `もうしわけない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2984 生まれ（うまれ），输入 `うまれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2987 惜しい（おしい），输入 `おしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2991 羨ましい（うらやましい），输入 `うらやましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2996 掃く（はく），输入 `はく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2997 増やす（ふやす），输入 `ふやす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #2999 憎らしい（にくらしい），输入 `にくらしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3005 対する（たいする），输入 `たいする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3017 注ぐ（そそぐ），输入 `そそぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3019 眺める（ながめる），输入 `ながめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3021 沈む（しずむ），输入 `しずむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3022 追う（おう），输入 `おう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3023 痛む（いたむ），输入 `いたむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3023 痛む（いたむ），输入 `いたむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3032 締める（しめる），输入 `しめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3034 諦める（あきらめる），输入 `あきらめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3039 点く（つく），输入 `つく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3043 吐く（はく），输入 `はく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3047 凍る（こおる），输入 `こおる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3052 憧れる（あこがれる），输入 `あこがれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3053 得る（える），输入 `える`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3053 得る（える），输入 `える`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3062 悩む（なやむ），输入 `なやむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3066 破れる（やぶれる），输入 `やぶれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3069 剝く（むく），输入 `むく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3070 泊める（とめる），输入 `とめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3074 抜ける（ぬける），输入 `ぬける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3074 抜ける（ぬける），输入 `ぬける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3079 必ずしも（かならずしも），输入 `かならずしも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3082 氷（こおり），输入 `こおり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3084 描く（えがく），输入 `えがく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3085 描く（かく），输入 `かく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3088 貧しい（まずしい），输入 `まずしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3103 別れ（わかれ），输入 `わかれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3107 包み（つつみ），输入 `つつみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3109 抱く（いだく），输入 `いだく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3110 抱く（だく），输入 `だく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3111 放る（ほうる），输入 `ほうる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3112 飽きる（あきる），输入 `あきる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3114 埋める（うめる），输入 `うめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3120 明ける（あける），输入 `あける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3120 明ける（あける），输入 `あける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3120 明ける（あける），输入 `あける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3129 与える（あたえる），输入 `あたえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3131 頼る（たよる），输入 `たよる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3132 落ち着く（おちつく），输入 `おちつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3135 離す（はなす），输入 `はなす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3136 流れ（ながれ），输入 `ながれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3141 冷ます（さます），输入 `さます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3142 冷める（さめる），输入 `さめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3143 冷やす（ひやす），输入 `ひやす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3144 話しかける（はなしかける），输入 `はなしかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3145 話し合う（はなしあう），输入 `はなしあう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3146 嗅ぐ（かぐ），输入 `かぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3148 箇所（かしょ），输入 `か所`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #3149 向き（むき），输入 `むき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3150 〜向け（むけ），输入 `むけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3151 〜合う（あう），输入 `あう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3152 込み（こみ），输入 `こみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3153 作り（つくり），输入 `つくり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3153 作り（つくり），输入 `つくり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3165 いくらでも（いくらでも），输入 `いくらでも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3172 罹る（かかる），输入 `かかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3173 搔く（かく），输入 `かく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3191 ところが（ところが），输入 `ところが`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3202 やり直す（やりなおす），输入 `やりなおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3210 一晩（ひとばん），输入 `ひと晩`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #3214 越える（こえる），输入 `こえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3214 越える（こえる），输入 `こえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3223 回り（まわり），输入 `まわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3227 乾かす（かわかす），输入 `かわかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3233 曲げる（まげる），输入 `まげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3234 空き（あき），输入 `あき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3234 空き（あき），输入 `あき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3247 混ぜる（まぜる），输入 `まぜる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3247 混ぜる（まぜる），输入 `まぜる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3253 思える（おもえる），输入 `おもえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3260 治す（なおす），输入 `なおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3267 受かる（うかる），输入 `うかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3276 笑い（わらい），输入 `わらい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3280 振り（ふり），输入 `ふり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3285 進んで（すすんで），输入 `すすんで`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3289 酔う（よう），输入 `よう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3294 盛ん（さかん），输入 `さかん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3297 染み（しみ），输入 `しみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3300 早め（はやめ），输入 `はやめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3300 早め（はやめ），输入 `はやめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3301 早める（はやめる），输入 `はやめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3301 早める（はやめる），输入 `はやめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3304 測る（はかる），输入 `はかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3304 測る（はかる），输入 `はかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3304 測る（はかる），输入 `はかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3310 奪う（うばう），输入 `うばう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3311 単に（たんに），输入 `たんに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3319 通りかかる（とおりかかる），输入 `とおりかかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3320 通り過ぎる（とおりすぎる），输入 `とおりすぎる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3323 締まる（しまる），输入 `しまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3323 締まる（しまる），输入 `しまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3326 登り（のぼり），输入 `のぼり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3326 登り（のぼり），输入 `のぼり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3326 登り（のぼり），输入 `のぼり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3337 縛る（しばる），输入 `しばる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3353 歩き回る（あるきまわる），输入 `あるきまわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3362 余る（あまる），输入 `あまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3365 溶ける（とける），输入 `とける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3365 溶ける（とける），输入 `とける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3373 働き（はたらき），输入 `はたらき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3374 切れ（きれ），输入 `きれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3376 詰める（つめる），输入 `つめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3377 越す（こす），输入 `こす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3377 越す（こす），输入 `こす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3378 浮く（うく），输入 `うく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3379 勢い（いきおい），输入 `いきおい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3384 嫌う（きらう），输入 `きらう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3403 あふれる（あふれる），输入 `あふれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3412 あらゆる（あらゆる），输入 `あらゆる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3421 御無沙汰（ごぶさた），输入 `ご無沙汰`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #3439 もしかしたら（もしかしたら），输入 `もしかしたら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3443 扱う（あつかう），输入 `あつかう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3445 慰める（なぐさめる），输入 `なぐさめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3448 引っ掛ける（ひっかける），输入 `ひっかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3461 覚める（さめる），输入 `さめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3466 基づく（もとづく），输入 `もとづく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3468 詰まる（つまる），输入 `つまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3470 教わる（おそわる），输入 `おそわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3471 響く（ひびく），输入 `ひびく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3472 勤め（つとめ），输入 `つとめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3472 勤め（つとめ），输入 `つとめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3479 現れ（あらわれ），输入 `あらわれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3479 現れ（あらわれ），输入 `あらわれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3480 呼びかける（よびかける），输入 `よびかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3484 構わない（かまわない），输入 `かまわない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3486 今にも（いまにも），输入 `いまにも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3488 採る（とる），输入 `とる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3492 思いつく（おもいつく），输入 `おもいつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3500 斜め（ななめ），输入 `ななめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3504 したがって（したがって），输入 `したがって`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3506 勝ち（かち），输入 `かち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3511 申し訳（もうしわけ），输入 `もうしわけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3518 生える（はえる），输入 `はえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3522 足跡（あしあと），输入 `あしあと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3523 続き（つづき），输入 `つづき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3534 追いつく（おいつく），输入 `おいつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3538 溺れる（おぼれる），输入 `おぼれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3540 点ける（つける），输入 `つける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3541 逃がす（にがす），输入 `にがす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3547 飛ばす（とばす），输入 `とばす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3550 付き合い（つきあい），输入 `つき合い`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #3550 付き合い（つきあい），输入 `つきあい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3551 負け（まけ），输入 `まけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3552 沸く（わく），输入 `わく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3556 吠える（ほえる），输入 `ほえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3560 明かり（あかり），输入 `あかり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3562 鳴らす（ならす），输入 `ならす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3564 目覚まし（めざまし），输入 `めざまし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3569 預かる（あずかる），输入 `あずかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3571 揺れる（ゆれる），输入 `ゆれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3573 抑える（おさえる），输入 `おさえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3575 恋しい（こいしい），输入 `こいしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3576 連れ（つれ），输入 `つれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3585 持ち（もち），输入 `もち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3587 届け（とどけ），输入 `とどけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3590 炒める（いためる），输入 `いためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3591 お決まり（おきまり），输入 `おきまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3602 まして（まして），输入 `まして`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3603 もしかすると（もしかすると），输入 `もしかすると`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3608 育ち（そだち），输入 `そだち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3611 運び（はこび），输入 `はこび`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3613 押し込む（おしこむ），输入 `おしこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3617 驚き（おどろき），输入 `おどろき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3633 受け付ける（うけつける），输入 `うけつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3634 重ねて（かさねて），输入 `かさねて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3635 助け（たすけ），输入 `たすけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3638 焦げる（こげる），输入 `こげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3639 上る（のぼる），输入 `のぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3639 上る（のぼる），输入 `のぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3639 上る（のぼる），输入 `のぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3640 情けない（なさけない），输入 `なさけない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3641 進み（すすみ），输入 `すすみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3654 跳ぶ（とぶ），输入 `とぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3654 跳ぶ（とぶ），输入 `とぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3660 返る（かえる），输入 `かえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3666 要は（ようは），输入 `ようは`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3694 何かと（なにかと），输入 `なにかと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3697 久しい（ひさしい），输入 `ひさしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3698 休める（やすめる），输入 `やすめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3699 駆ける（かける），输入 `かける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3702 経る（へる），输入 `へる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3703 建て直す（たてなおす），输入 `たてなおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3705 行い（おこない），输入 `おこない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3720 当たり（あたり），输入 `あたり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3732 合わせ（あわせ），输入 `あわせ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3734 止め（とめ），输入 `とめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3734 止め（とめ），输入 `とめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3737 お返し（おかえし），输入 `おかえし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3749 もしかして（もしかして），输入 `もしかして`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3755 慣れ（なれ），输入 `なれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3755 慣れ（なれ），输入 `なれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3758 蛍光（けいこう），输入 `けい光`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #3759 決まって（きまって），输入 `きまって`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3760 結び（むすび），输入 `むすび`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3763 合わせて（あわせて），输入 `あわせて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3781 気になる（きになる），输入 `きになる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3786 付き（つき），输入 `つき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3787 ついては（ついては），输入 `ついては`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3797 身につける（みにつける），输入 `みにつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3798 伝う（つたう），输入 `つたう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3800 同じく（おなじく），输入 `おなじく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3802 中でも（なかでも），输入 `なかでも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3804 誘い（さそい），输入 `さそい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3805 眠り（ねむり），输入 `ねむり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3808 多め（おおめ），输入 `おおめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3812 木の実（このみ），输入 `このみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3820 来す（きたす），输入 `きたす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3830 捜す（さがす），输入 `さがす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3830 捜す（さがす），输入 `さがす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3839 急ぎ（いそぎ），输入 `いそぎ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3845 訊ねる（たずねる），输入 `たずねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3845 訊ねる（たずねる），输入 `たずねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3856 かき混ぜる（かきまぜる），输入 `かきまぜる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3860 焼きそば（やきそば），输入 `やきそば`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3861 段ボール（だんボール），输入 `だんボール`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3862 車椅子（くるまいす），输入 `くるまいす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3880 孵る（かえる），输入 `かえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3881 呼びかけ（よびかけ），输入 `よびかけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3895 散らし（ちらし），输入 `ちらし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3896 気にする（きにする），输入 `きにする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3902 遅れ（おくれ），输入 `おくれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3902 遅れ（おくれ），输入 `おくれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3903 諦め（あきらめ），输入 `あきらめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3906 ついている（ついている），输入 `ついている`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3908 仲良く（なかよく），输入 `なかよく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3909 思われる（おもわれる），输入 `おもわれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3911 中には（なかには），输入 `なかには`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3915 調べ物（しらべもの），输入 `しらべもの`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3924 甘み（あまみ），输入 `あまみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3925 落ちこぼれ（おちこぼれ），输入 `おちこぼれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3964 やってくる（やってくる），输入 `やってくる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3967 わがまま（わがまま），输入 `わがまま`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3972 応え（こたえ），输入 `こたえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3972 応え（こたえ），输入 `こたえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3975 割に（わりに），输入 `わりに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3975 割に（わりに），输入 `わりに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3976 喜び（よろこび），输入 `よろこび`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3980 祈る（いのる），输入 `いのる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3982 近頃（ちかごろ），输入 `ちかごろ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3986 計る（はかる），输入 `はかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3986 計る（はかる），输入 `はかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3986 計る（はかる），输入 `はかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3993 済ます（すます），输入 `すます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3994 始まり（はじまり），输入 `はじまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3994 始まり（はじまり），输入 `はじまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #3996 指す（さす），输入 `さす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4002 出会う（であう），输入 `であう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4003 少なくとも（すくなくとも），输入 `すくなくとも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4010 誠に（まことに），输入 `まことに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4012 造る（つくる），输入 `つくる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4012 造る（つくる），输入 `つくる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4014 漬ける（つける），输入 `つける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4016 釣る（つる），输入 `つる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4019 倒す（たおす），输入 `たおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4022 難くない（かたくない），输入 `かたくない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4023 任せる（まかせる），输入 `まかせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4024 認める（みとめる），输入 `みとめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4026 彼ら（かれら），输入 `かれら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4030 離れる（はなれる），输入 `はなれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4036 あっという間（あっというま），输入 `あっという間`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4062 しかも（しかも），输入 `しかも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4077 たいした〜（たいした），输入 `たいした`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4080 ただし（ただし），输入 `ただし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4083 注ぐ（つぐ），输入 `つぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4084 つながる（つながる），输入 `つながる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4107 まもなく（まもなく），输入 `まもなく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4123 一言（ひとこと），输入 `ひと言`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4129 隠れる（かくれる），输入 `かくれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4132 沿う（そう），输入 `そう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4136 穏やか（おだやか），输入 `おだやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4138 何しろ（なにしろ），输入 `なにしろ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4139 何となく（なんとなく），输入 `なんとなく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4146 回り道（まわりみち），输入 `まわり道`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4148 悔やむ（くやむ），输入 `くやむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4148 悔やむ（くやむ），输入 `くやむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4152 外れる（はずれる），输入 `はずれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4160 巻く（まく），输入 `まく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4163 含む（ふくむ），输入 `ふくむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4164 含める（ふくめる），输入 `ふくめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4165 寄せる（よせる），输入 `よせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4178 求める（もとめる），输入 `もとめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4184 恐れる（おそれる），输入 `おそれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4186 挟まる（はさまる），输入 `はさまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4187 挟む（はさむ），输入 `はさむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4189 近づく（ちかづく），输入 `ちかづく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4190 近づける（ちかづける），输入 `ちかづける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4195 苦しむ（くるしむ），输入 `くるしむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4201 激しい（はげしい），输入 `はげしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4202 隙間（すきま），输入 `すき間`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4202 隙間（すきま），输入 `すき間`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4203 欠ける（かける），输入 `かける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4205 見下ろす（みおろす），输入 `みおろす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4206 見上げる（みあげる），输入 `みあげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4207 見直す（みなおす），输入 `みなおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4211 賢い（かしこい），输入 `かしこい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4212 現す（あらわす），输入 `あらわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4212 現す（あらわす），输入 `あらわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4218 限り（かぎり），输入 `かぎり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4219 雇う（やとう），输入 `やとう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4224 幸い（さいわい），输入 `さいわい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4226 広まる（ひろまる），输入 `ひろまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4227 さらに（さらに），输入 `さらに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4233 高める（たかめる），输入 `たかめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4234 刻む（きざむ），输入 `きざむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4239 腰掛ける（こしかける），输入 `こしかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4240 込める（こめる），输入 `こめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4252 散らかす（ちらかす），输入 `ちらかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4253 散る（ちる），输入 `ちる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4255 刺す（さす），输入 `さす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4257 思わず（おもわず），输入 `おもわず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4258 支える（ささえる），输入 `ささえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4262 失う（うしなう），输入 `うしなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4272 就く（つく），输入 `つく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4273 就ける（つける），输入 `つける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4274 集まり（あつまり），输入 `あつまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4279 縮む（ちぢむ），输入 `ちぢむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4280 縮める（ちぢめる），输入 `ちぢめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4284 述べる（のべる），输入 `のべる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4290 助かる（たすかる），输入 `たすかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4293 省く（はぶく），输入 `はぶく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4300 蒸し暑い（むしあつい），输入 `むし暑い`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4300 蒸し暑い（むしあつい），输入 `むしあつい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4301 譲る（ゆずる），输入 `ゆずる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4304 食う（くう），输入 `くう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4310 新た（あらた），输入 `あらた`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4311 深まる（ふかまる），输入 `ふかまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4313 真っ白（まっしろ），输入 `まっ白`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4317 震える（ふるえる），输入 `ふるえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4324 正に（まさに），输入 `まさに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4327 生じる（しょうじる），输入 `しょうじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4331 積む（つむ），输入 `つむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4332 積もる（つもる），输入 `つもる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4336 絶えず（たえず），输入 `たえず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4337 先ほど（さきほど），输入 `さきほど`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4339 尖る（とがる），输入 `とがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4345 爽やか（さわやか），输入 `さわやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4346 争う（あらそう），输入 `あらそう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4369 潰す（つぶす），输入 `つぶす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4396 抜く（ぬく），输入 `ぬく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4397 伴う（ともなう），输入 `ともなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4407 表れる（あらわれる），输入 `あらわれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4407 表れる（あらわれる），输入 `あらわれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4411 敷く（しく），输入 `しく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4413 浮かぶ（うかぶ），输入 `うかぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4414 浮かべる（うかべる），输入 `うかべる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4418 覆う（おおう），输入 `おおう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4420 平ら（たいら），输入 `たいら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4423 暮れ（くれ），输入 `くれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4424 崩す（くずす），输入 `くずす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4425 放す（はなす），输入 `はなす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4427 望む（のぞむ），输入 `のぞむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4428 ほんの（ほんの），输入 `ほんの`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4431 無し（なし），输入 `なし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4436 命じる（めいじる），输入 `めいじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4437 明らか（あきらか），输入 `あきらか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4441 役立つ（やくだつ），输入 `やくだつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4448 幼い（おさない），输入 `おさない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4449 揚げる（あげる），输入 `あげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4450 溶かす（とかす），输入 `とかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4450 溶かす（とかす），输入 `とかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4457 留まる（とまる），输入 `とまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4457 留まる（とまる），输入 `とまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4458 留める（とめる），输入 `とめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4458 留める（とめる），输入 `とめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4465 曖昧（あいまい），输入 `あい昧`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4473 換える（かえる），输入 `かえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4473 換える（かえる），输入 `かえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4473 換える（かえる），输入 `かえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4475 〜付き（つき），输入 `つき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4502 やりとり（やりとり），输入 `やりとり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4510 引かれる（ひかれる），输入 `ひかれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4512 映す（うつす），输入 `うつす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4515 下す（くだす），输入 `くだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4516 何だか（なんだか），输入 `なんだか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4517 何事（なにごと），输入 `なにごと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4520 我が（わが），输入 `わが`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4543 欠かす（かかす），输入 `かかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4552 好み（このみ），输入 `このみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4553 慌ただしい（あわただしい），输入 `あわただしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4554 考え直す（かんがえなおす），输入 `かんがえなおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4559 高まる（たかまる），输入 `たかまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4570 残らず（のこらず），输入 `のこらず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4571 使い分ける（つかいわける），输入 `つかいわける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4577 試し（ためし），输入 `ためし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4583 写し（うつし），输入 `うつし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4586 手元（てもと），输入 `てもと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4596 順に（じゅんに），输入 `じゅんに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4607 深める（ふかめる），输入 `ふかめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4609 神様（かみさま），输入 `かみさま`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4610 親しむ（したしむ），输入 `したしむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4611 人前（ひとまえ），输入 `ひとまえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4612 図る（はかる），输入 `はかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4615 整える（ととのえる），输入 `ととのえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4622 染める（そめる），输入 `そめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4628 憎い（にくい），输入 `にくい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4629 速める（はやめる），输入 `はやめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4629 速める（はやめる），输入 `はやめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4642 探し出す（さがしだす），输入 `さがし出す`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4642 探し出す（さがしだす），输入 `さがしだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4642 探し出す（さがしだす），输入 `さがしだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4642 探し出す（さがしだす），输入 `さがし出す`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4642 探し出す（さがしだす），输入 `さがしだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4645 築く（きずく），输入 `きずく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4664 二度と（にどと），输入 `にどと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4666 日にち（ひにち），输入 `ひにち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4670 入り込む（はいりこむ），输入 `はいりこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4675 悩み（なやみ），输入 `なやみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4688 鼻水（はなみず），输入 `はな水`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4696 怖がる（こわがる），输入 `こわがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4703 聞き直す（ききなおす），输入 `ききなおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4709 方々（かたがた），输入 `かたがた`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4713 夢見る（ゆめみる），输入 `ゆめみる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4725 欲張り（よくばり），输入 `よくばり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4727 利く（きく），输入 `きく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4727 利く（きく），输入 `きく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4735 話し言葉（はなしことば），输入 `はなしことば`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4740 攻める（せめる），输入 `せめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4754 荒れる（あれる），输入 `あれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4755 憎む（にくむ），输入 `にくむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4756 至る（いたる），输入 `いたる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4757 潰れる（つぶれる），输入 `つぶれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4765 劣る（おとる），输入 `おとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4779 ひとりでに（ひとりでに），输入 `ひとりでに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4782 なにもかも（なにもかも），输入 `なにもかも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4793 再び（ふたたび），输入 `ふたたび`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4794 人混み（ひとごみ），输入 `ひとごみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4797 強み（つよみ），输入 `つよみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4799 厚かましい（あつかましい），输入 `あつかましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4802 妨げる（さまたげる），输入 `さまたげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4805 狙い（ねらい），输入 `ねらい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4809 実る（みのる），输入 `みのる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4811 くっつく（くっつく），输入 `くっつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4811 くっつく（くっつく），输入 `くっ付く`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #4812 後ほど（のちほど），输入 `のちほど`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4814 くだらない（くだらない），输入 `くだらない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4816 つながり（つながり），输入 `つながり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4817 つなげる（つなげる），输入 `つなげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4821 塊（かたまり），输入 `かたまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4822 混ざる（まざる），输入 `まざる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4822 混ざる（まざる），输入 `まざる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4823 混じる（まじる），输入 `まじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4823 混じる（まじる），输入 `まじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4827 思いがけない（おもいがけない），输入 `おもいがけない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4834 蓄える（たくわえる），输入 `たくわえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4835 整う（ととのう），输入 `ととのう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4837 当てはまる（あてはまる），输入 `あてはまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4839 濡らす（ぬらす），输入 `ぬらす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4842 偏る（かたよる），输入 `かたよる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4843 あくまで（あくまで），输入 `あくまで`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4900 ぶら下げる（ぶらさげる），输入 `ぶらさげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4923 異なる（ことなる），输入 `ことなる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4930 引き止める（ひきとめる），输入 `ひきとめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4932 引っ込む（ひっこむ），输入 `ひっこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4943 加わる（くわわる），输入 `くわわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4953 改めて（あらためて），输入 `あらためて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4954 改める（あらためる），输入 `あらためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4959 隔てる（へだてる），输入 `へだてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4960 割と（わりと），输入 `わりと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4960 割と（わりと），输入 `わりと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4969 甘やかす（あまやかす），输入 `あまやかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4992 救う（すくう），输入 `すくう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4994 去る（さる），输入 `さる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4994 去る（さる），输入 `さる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4996 共に（ともに），输入 `ともに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #4999 恐らく（おそらく），输入 `おそらく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5008 群れ（むれ），输入 `むれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5009 傾く（かたむく），输入 `かたむく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5011 恵まれる（めぐまれる），输入 `めぐまれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5012 敬う（うやまう），输入 `うやまう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5020 兼ねる（かねる），输入 `かねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5027 険しい（けわしい），输入 `けわしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5030 言いつける（いいつける），输入 `いいつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5031 限る（かぎる），输入 `かぎる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5034 誇り（ほこり），输入 `ほこり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5038 誤り（あやまり），输入 `あやまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5044 好む（このむ），输入 `このむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5049 耕す（たがやす），输入 `たがやす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5058 催し（もよおし），输入 `もよおし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5061 塞ぐ（ふさぐ），输入 `ふさぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5062 済ませる（すませる），输入 `すませる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5068 擦れ違う（すれちがう），输入 `すれ違う`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5068 擦れ違う（すれちがう），输入 `すれちがう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5075 思い込む（おもいこむ），输入 `おもいこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5076 思い切り（おもいきり），输入 `おもいきり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5085 次ぐ（つぐ），输入 `つぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5086 自ら（みずから），输入 `みずから`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5087 湿る（しめる），输入 `しめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5099 収まる（おさまる），输入 `おさまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5099 収まる（おさまる），输入 `おさまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5100 収める（おさめる），输入 `おさめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5100 収める（おさめる），输入 `おさめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5106 住まい（すまい），输入 `すまい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5113 巡る（めぐる），输入 `めぐる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5121 除く（のぞく），输入 `のぞく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5125 承る（うけたまわる），输入 `うけたまわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5127 招く（まねく），输入 `まねく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5131 照らす（てらす），输入 `てらす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5133 省エネ（しょうエネ），输入 `しょうエネ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5135 障害（しょうがい），输入 `しょうがい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5145 真っ先（まっさき），输入 `まっ先`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5163 正す（ただす），输入 `ただす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5170 占う（うらなう），输入 `うらなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5171 占める（しめる），输入 `しめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5176 狙う（ねらう），输入 `ねらう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5180 訴える（うったえる），输入 `うったえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5181 遡る（さかのぼる），输入 `さかのぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5191 騒がしい（さわがしい），输入 `さわがしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5193 増す（ます），输入 `ます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5207 濁る（にごる），输入 `にごる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5208 単なる（たんなる），输入 `たんなる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5209 探る（さぐる），输入 `さぐる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5220 長引く（ながびく），输入 `ながびく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5222 追いかける（おいかける），输入 `おいかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5236 努める（つとめる），输入 `つとめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5239 等しい（ひとしい），输入 `ひとしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5243 独り言（ひとりごと），输入 `ひとりごと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5253 納める（おさめる），输入 `おさめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5253 納める（おさめる），输入 `おさめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5256 敗れる（やぶれる），输入 `やぶれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5257 薄める（うすめる），输入 `うすめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5258 迫る（せまる），输入 `せまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5265 半ば（なかば），输入 `なかば`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5266 反する（はんする），输入 `はんする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5271 避ける（さける），输入 `さける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5272 備える（そなえる），输入 `そなえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5293 便箋（びんせん），输入 `びんせん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5294 捕らえる（とらえる），输入 `とらえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5295 補う（おぎなう），输入 `おぎなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5296 崩れる（くずれる），输入 `くずれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5297 抱える（かかえる），输入 `かかえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5301 暴れる（あばれる），输入 `あばれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5302 望み（のぞみ），输入 `のぞみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5303 膨らます（ふくらます），输入 `ふくらます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5304 膨らむ（ふくらむ），输入 `ふくらむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5311 満ちる（みちる），输入 `みちる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5312 味わう（あじわう），输入 `あじわう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5314 務める（つとめる），输入 `つとめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5323 目印（めじるし），输入 `めじるし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5326 問う（とう），输入 `とう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5330 優れる（すぐれる），输入 `すぐれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5332 勇ましい（いさましい），输入 `いさましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5334 湧く（わく），输入 `わく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5343 用いる（もちいる），输入 `もちいる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5347 要するに（ようするに），输入 `ようするに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5350 頼り（たより），输入 `たより`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5351 乱れる（みだれる），输入 `みだれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5357 略す（りゃくす），输入 `りゃくす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5360 涼む（すずむ），输入 `すずむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5374 寄り（より），输入 `より`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5375 割り（わり），输入 `わり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5387 知らず（しらず），输入 `しらず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5391 〜避け（よけ），输入 `よけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5393 並み（なみ），输入 `なみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5402 ありがち（ありがち），输入 `ありがち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5412 叶う（かなう），输入 `かなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5413 叶える（かなえる），输入 `かなえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5421 くみ取る（くみとる），输入 `くみとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5436 掬う（すくう），输入 `すくう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5442 とりあえず（とりあえず），输入 `とりあえず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5445 にもかかわらず（にもかかわらず），输入 `にもかかわらず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5453 剝ける（むける），输入 `むける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5458 もとより（もとより），输入 `もとより`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5459 やむを得ない（やむをえない），输入 `やむをえない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5459 やむを得ない（やむをえない），输入 `やむを得ない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5460 よくも（よくも），输入 `よくも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5471 鋭い（するどい），输入 `するどい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5473 応える（こたえる），输入 `こたえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5477 果たす（はたす），输入 `はたす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5481 快い（こころよい），输入 `こころよい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5482 改まる（あらたまる），输入 `あらたまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5490 勧め（すすめ），输入 `すすめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5490 勧め（すすめ），输入 `すすめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5499 疑い（うたがい），输入 `うたがい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5502 及ぶ（およぶ），输入 `およぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5504 供える（そなえる），输入 `そなえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5505 競う（きそう），输入 `きそう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5507 強める（つよめる），输入 `つよめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5508 恐れ（おそれ），输入 `おそれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5509 恐れ多い（おそれおおい），输入 `おそれ多い`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5509 恐れ多い（おそれおおい），输入 `おそれおおい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5513 禁じる（きんじる），输入 `きんじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5515 傾ける（かたむける），输入 `かたむける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5522 決めつける（きめつける），输入 `きめつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5526 結びつく（むすびつく），输入 `むすびつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5527 結びつける（むすびつける），输入 `むすびつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5532 見渡す（みわたす），输入 `みわたす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5533 見抜く（みぬく），输入 `みぬく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5534 見分ける（みわける），输入 `みわける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5541 限りない（かぎりない），输入 `かぎりない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5545 固める（かためる），输入 `かためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5547 誤る（あやまる），输入 `あやまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5554 構え（かまえ），输入 `かまえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5560 今のところ（いまのところ），输入 `いまのところ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5561 今時（いまどき），输入 `いまどき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5564 催す（もよおす），输入 `もよおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5566 擦れ違い（すれちがい），输入 `すれ違い`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5566 擦れ違い（すれちがい），输入 `すれちがい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5574 思い立つ（おもいたつ），输入 `おもいたつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5575 指差す（ゆびさす），输入 `ゆびさす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5579 試す（ためす），输入 `ためす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5583 持ち込む（もちこむ），输入 `もちこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5593 取りかかる（とりかかる），输入 `とりかかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5597 手頃（てごろ），输入 `てごろ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5599 手放す（てばなす），输入 `てばなす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5601 襲う（おそう），输入 `おそう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5611 書き込む（かきこむ），输入 `かきこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5614 傷つける（きずつける），输入 `きずつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5615 傷み（いたみ），输入 `いたみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5615 傷み（いたみ），输入 `いたみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5616 傷む（いたむ），输入 `いたむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5616 傷む（いたむ），输入 `いたむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5617 傷つく（きずつく），输入 `きずつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5634 尽きる（つきる），输入 `つきる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5635 尽くす（つくす），输入 `つくす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5637 水っぽい（みずっぽい），输入 `みずっぽい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5642 生かす（いかす），输入 `いかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5643 生きがい（いきがい），输入 `いきがい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5646 盛り上がる（もりあがる），输入 `もりあがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5648 積み重ねる（つみかさねる），输入 `つみ重ねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5648 積み重ねる（つみかさねる），输入 `つみかさねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5654 絶える（たえる），输入 `たえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5658 戦い（たたかい），输入 `たたかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5660 染まる（そまる），输入 `そまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5661 染みる（しみる），输入 `しみる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5666 訴え（うったえ），输入 `うったえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5668 早まる（はやまる），输入 `はやまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5668 早まる（はやまる），输入 `はやまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5670 争い（あらそい），输入 `あらそい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5677 憎しみ（にくしみ），输入 `にくしみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5690 大まか（おおまか），输入 `おおまか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5695 誰しも（だれしも），输入 `だれしも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5696 誰一人（だれひとり），输入 `だれひとり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5704 遅くとも（おそくとも），输入 `おそくとも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5708 頂（いただき），输入 `いただき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5710 釣り合う（つりあう），输入 `つり合う`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5710 釣り合う（つりあう），输入 `つりあう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5715 怒り（いかり），输入 `いかり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5722 導く（みちびく），输入 `みちびく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5724 道端（みちばた），输入 `みちばた`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5725 読み取る（よみとる），输入 `よみとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5727 日頃（ひごろ），输入 `ひごろ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5732 悩ます（なやます），输入 `なやます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5739 薄れる（うすれる），输入 `うすれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5742 悲しみ（かなしみ），输入 `かなしみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5745 飛び出る（とびでる），输入 `とび出る`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5745 飛び出る（とびでる），输入 `とびでる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5745 飛び出る（とびでる），输入 `とび出る`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5752 負かす（まかす），输入 `まかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5757 保つ（たもつ），输入 `たもつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5762 抱っこ（だっこ），输入 `だっこ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5763 放っておく（ほうっておく），输入 `ほうっておく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5767 訪れる（おとずれる），输入 `おとずれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5769 望ましい（のぞましい），输入 `のぞましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5771 埋まる（うまる），输入 `うまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5772 満たす（みたす），输入 `みたす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5774 務め（つとめ），输入 `つとめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5774 務め（つとめ），输入 `つとめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5778 名付ける（なづける），输入 `なづける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5787 乱れ（みだれ），输入 `みだれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5790 力づける（ちからづける），输入 `ちからづける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5791 漏れる（もれる），输入 `もれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5793 あえて（あえて），输入 `あえて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5797 ありのまま（ありのまま），输入 `ありのまま`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5804 自ずから（おのずから），输入 `おのずから`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5806 かねて（かねて），输入 `かねて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5826 たどり着く（たどりつく），输入 `たどりつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5851 もしくは（もしくは），输入 `もしくは`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5855 詫び（わび），输入 `わび`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5876 演じる（えんじる），输入 `えんじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5877 遠ざかる（とおざかる），输入 `とおざかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5881 仮に（かりに），输入 `かりに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5882 何より（なにより），输入 `なにより`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5896 滑らか（なめらか），输入 `なめらか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5903 緩やか（ゆるやか），输入 `ゆるやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5906 丸める（まるめる），输入 `まるめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5908 寄り掛かる（よりかかる），输入 `よりかかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5912 記す（しるす），输入 `しるす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5919 仰向け（あおむけ），输入 `あお向け`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #5919 仰向け（あおむけ），输入 `あおむけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5919 仰向け（あおむけ），输入 `あおむけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5920 凝る（こる），输入 `こる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5921 極めて（きわめて），输入 `きわめて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5922 極める（きわめる），输入 `きわめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5931 継ぐ（つぐ），输入 `つぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5935 見なす（みなす），输入 `みなす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5943 交わす（かわす），输入 `かわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5949 荒らす（あらす），输入 `あらす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5966 思いつき（おもいつき），输入 `おもいつき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5972 施す（ほどこす），输入 `ほどこす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5973 至って（いたって），输入 `いたって`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5977 賜る（たまわる），输入 `たまわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5983 弱まる（よわまる），输入 `よわまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5984 弱る（よわる），输入 `よわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5996 腫れる（はれる），输入 `はれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #5997 受け止める（うけとめる），输入 `うけとめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6004 渋い（しぶい），输入 `しぶい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6008 小柄（こがら），输入 `こがら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6009 焦る（あせる），输入 `あせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6013 触れ合い（ふれあい），输入 `ふれ合い`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6013 触れ合い（ふれあい），输入 `ふれあい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6017 浸す（ひたす），输入 `ひたす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6020 身の回り（みのまわり），输入 `みのまわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6025 衰える（おとろえる），输入 `おとろえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6030 生まれつき（うまれつき），输入 `うまれつき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6034 惜しむ（おしむ），输入 `おしむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6035 設ける（もうける），输入 `もうける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6039 鮮やか（あざやか），输入 `あざやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6040 前もって（まえもって），输入 `まえもって`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6049 促す（うながす），输入 `うながす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6051 束ねる（たばねる），输入 `たばねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6052 尊い（とうとい），输入 `とうとい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6053 損なう（そこなう），输入 `そこなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6060 耐える（たえる），输入 `たえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6062 台無し（だいなし），输入 `だいなし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6063 大げさ（おおげさ），输入 `おおげさ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6068 嘆く（なげく），输入 `なげく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6069 鍛える（きたえる），输入 `きたえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6077 著しい（いちじるしい），输入 `いちじるしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6083 痛める（いためる），输入 `いためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6083 痛める（いためる），输入 `いためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6085 定まる（さだまる），输入 `さだまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6086 定める（さだめる），输入 `さだめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6092 添える（そえる），输入 `そえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6093 転じる（てんじる），输入 `てんじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6096 努めて（つとめて），输入 `つとめて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6101 逃す（のがす），输入 `のがす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6102 逃れる（のがれる），输入 `のがれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6113 日陰（ひかげ），输入 `ひかげ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6130 費やす（ついやす），输入 `ついやす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6134 備わる（そなわる），输入 `そなわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6140 負う（おう），输入 `おう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6148 歩み（あゆみ），输入 `あゆみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6149 歩む（あゆむ），输入 `あゆむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6155 蜂蜜（はちみつ），输入 `はち蜜`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6156 乏しい（とぼしい），输入 `とぼしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6168 目当て（めあて），输入 `めあて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6177 養う（やしなう），输入 `やしなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6181 絡む（からむ），输入 `からむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6187 離れ離れ（はなればなれ），输入 `はなればなれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6199 練る（ねる），输入 `ねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6201 和やか（なごやか），输入 `なごやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6202 惑わす（まどわす），输入 `まどわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6204 外れ（はずれ），输入 `はずれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6219 お越し（おこし），输入 `おこし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6221 かなわない（かなわない），输入 `かなわない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6221 かなわない（かなわない），输入 `かなわない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6222 嚙み合う（かみあう），输入 `かみあう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6222 嚙み合う（かみあう），输入 `かみ合う`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6251 にじみ出る（にじみでる），输入 `にじみでる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6265 やり抜く（やりぬく），输入 `やりぬく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6274 〜宛て（あて），输入 `あて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6274 〜宛て（あて），输入 `あて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6281 引き込む（ひきこむ），输入 `ひき込む`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6281 引き込む（ひきこむ），输入 `ひきこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6281 引き込む（ひきこむ），输入 `ひきこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6285 押し付ける（おしつける），输入 `おしつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6287 何ら（なんら），输入 `なんら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6288 何らか（なんらか），输入 `なんらか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6290 箇条（かじょう），输入 `か条`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6293 芽生える（めばえる），输入 `めばえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6294 回りくどい（まわりくどい），输入 `まわりくどい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6302 感じ取る（かんじとる），输入 `かんじとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6304 含み（ふくみ），输入 `ふくみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6312 輝かしい（かがやかしい），输入 `かがやかしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6313 逆らう（さからう），输入 `さからう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6319 極まりない（きわまりない），输入 `きわまりない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6320 駆られる（かられる），输入 `かられる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6322 恵み（めぐみ），输入 `めぐみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6324 決まり文句（きまりもんく），输入 `きまり文句`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6329 見張る（みはる），输入 `みはる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6340 語りかける（かたりかける），输入 `かたりかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6343 控えめ（ひかえめ），输入 `ひかえめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6344 攻め（せめ），输入 `せめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6347 考え込む（かんがえこむ），输入 `かんがえこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6348 考え出す（かんがえだす），输入 `かんがえだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6350 高み（たかみ），输入 `たかみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6354 今や（いまや），输入 `いまや`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6371 使いこなす（つかいこなす），输入 `つかいこなす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6373 思いやり（おもいやり），输入 `おもいやり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6376 試み（こころみ），输入 `こころみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6379 似せる（にせる），输入 `にせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6388 手応え（てごたえ），输入 `てごたえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6390 狩り（かり），输入 `かり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6394 重み（おもみ），输入 `おもみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6400 照れくさい（てれくさい），输入 `てれくさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6402 触れ合う（ふれあう），输入 `ふれあう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6404 深み（ふかみ），输入 `ふかみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6410 責める（せめる），输入 `せめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6411 折り畳む（おりたたむ），输入 `おりたたむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6428 待ち伏せ（まちぶせ），输入 `まちぶせ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6433 蓄え（たくわえ），输入 `たくわえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6437 追い詰める（おいつめる），输入 `おいつめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6438 追い立てる（おいたてる），输入 `おいたてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6439 痛ましい（いたましい），输入 `いたましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6439 痛ましい（いたましい），输入 `いたましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6442 締めくくる（しめくくる），输入 `しめくくる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6443 敵う（かなう），输入 `かなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6444 適う（かなう），输入 `かなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6452 頭ごなし（あたまごなし），输入 `あたまごなし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6454 突き詰める（つきつめる），输入 `つきつめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6460 任す（まかす），输入 `まかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6472 肥える（こえる），输入 `こえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6473 備え付ける（そなえつける），输入 `そなえつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6481 偏り（かたより），输入 `かたより`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6485 捕らわれる（とらわれる），输入 `とらわれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6491 味わい（あじわい），输入 `あじわい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6498 遊び心（あそびごころ），输入 `あそびごころ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6500 要する（ようする），输入 `ようする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6502 頼もしい（たのもしい），输入 `たのもしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6506 臨む（のぞむ），输入 `のぞむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6510 鈍い（にぶい），输入 `にぶい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6512 拝む（おがむ），输入 `おがむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6516 好ましい（このましい），输入 `このましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6519 遭う（あう），输入 `あう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6519 遭う（あう），输入 `あう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6520 鎮める（しずめる），输入 `しずめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6520 鎮める（しずめる），输入 `しずめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6528 関わり（かかわり），输入 `かかわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6541 課する（かする），输入 `かする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6552 果たして（はたして），输入 `はたして`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6554 言い聞かせる（いいきかせる），输入 `いいきかせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6557 済み（すみ），输入 `すみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6576 考え事（かんがえごと），输入 `かんがえごと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6587 親しみ（したしみ），输入 `したしみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6590 我が国（わがくに），输入 `わが国`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6598 行き着く（いきつく），输入 `いきつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6609 歩み寄る（あゆみよる），输入 `あゆみよる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6611 潜る（もぐる），输入 `もぐる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6613 駆け抜ける（かけぬける），输入 `かけぬける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6618 手早い（てばやい），输入 `てばやい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6619 山ほど（やまほど），输入 `やまほど`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6629 絡まる（からまる），输入 `からまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6630 吸い取る（すいとる），输入 `すいとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6640 結う（ゆう），输入 `ゆう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6664 読み返す（よみかえす），输入 `よみかえす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6679 入り交じる（いりまじる），输入 `いりまじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6682 訪れ（おとずれ），输入 `おとずれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6707 問いかける（といかける），输入 `といかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6720 衰え（おとろえ），输入 `おとろえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6746 手振り（てぶり），输入 `てぶり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6764 飛びつく（とびつく），输入 `とびつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6774 下がり（さがり），输入 `さがり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6809 焦り（あせり），输入 `あせり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6815 思い通り（おもいどおり），输入 `おもいどおり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6822 張り詰める（はりつめる），输入 `はりつめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6829 稼ぎ（かせぎ），输入 `かせぎ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6832 近しい（ちかしい），输入 `ちかしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6838 根っこ（ねっこ），输入 `ねっこ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6842 備え（そなえ），输入 `そなえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6849 力む（りきむ），输入 `りきむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6862 付き物（つきもの），输入 `つき物`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6872 実り（みのり），输入 `みのり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6875 脇道（わきみち），输入 `わき道`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6884 有り得る（ありうる），输入 `あり得る`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6884 有り得る（ありうる），输入 `ありうる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6892 うろ覚え（うろおぼえ），输入 `うろおぼえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6896 染み付く（しみつく），输入 `しみつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6898 得難い（えがたい），输入 `えがたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6901 取り組み（とりくみ），输入 `とり組み`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6901 取り組み（とりくみ），输入 `とりくみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6909 えてして（えてして），输入 `えてして`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6924 行きずり（ゆきずり），输入 `ゆきずり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6931 関わり合う（かかわりあう），输入 `かかわり合う`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #6931 関わり合う（かかわりあう），输入 `かかわりあう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6931 関わり合う（かかわりあう），输入 `かかわりあう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6936 迷わす（まよわす），输入 `まよわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6956 不ぞろい（ふぞろい），输入 `ふぞろい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6960 書き言葉（かきことば），输入 `かきことば`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6984 今一つ（いまひとつ），输入 `いまひとつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #6998 腹が立つ（はらがたつ），输入 `はらがたつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7011 昼過ぎ（ひるすぎ），输入 `ひるすぎ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7021 落ち（おち），输入 `おち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7031 あふれ出す（あふれだす），输入 `あふれだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7031 あふれ出す（あふれだす），输入 `あふれだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7031 あふれ出す（あふれだす），输入 `あふれ出す`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7035 呼び込む（よびこむ），输入 `よびこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7041 うまみ（うまみ），输入 `うまみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7046 生まれ持つ（うまれもつ），输入 `うまれ持つ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7046 生まれ持つ（うまれもつ），输入 `うまれもつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7046 生まれ持つ（うまれもつ），输入 `うまれもつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7047 洗い出す（あらいだす），输入 `あらいだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7048 打ち直す（うちなおす），输入 `うちなおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7052 読み込む（よみこむ），输入 `よみこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7059 流れ着く（ながれつく），输入 `ながれつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7091 叫ぶ（さけぶ），输入 `さけぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7092 堅い（かたい），输入 `かたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7092 堅い（かたい），输入 `かたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7092 堅い（かたい），输入 `かたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7098 紙くず（かみくず），输入 `かみくず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7109 淡い（あわい），输入 `あわい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7110 暖める（あたためる），输入 `あたためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7110 暖める（あたためる），输入 `あたためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7112 長ねぎ（ながねぎ），输入 `ながねぎ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7113 通じる（つうじる），输入 `つうじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7114 島々（しまじま），输入 `しまじま`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7138 宛名（あてな），输入 `あて名`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7138 宛名（あてな），输入 `あて名`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7148 刈る（かる），输入 `かる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7150 及ぼす（およぼす），输入 `およぼす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7151 近寄る（ちかよる），输入 `ちかよる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7152 隙（すき），输入 `すき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7154 見かけ（みかけ），输入 `みかけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7158 口癖（くちぐせ），输入 `くちぐせ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7159 広める（ひろめる），输入 `ひろめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7161 砕ける（くだける），输入 `くだける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7163 殺す（ころす），输入 `ころす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7164 惨め（みじめ），输入 `みじめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7171 傷める（いためる），输入 `いためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7171 傷める（いためる），输入 `いためる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7183 怠ける（なまける），输入 `なまける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7191 転がる（ころがる），输入 `ころがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7194 燃やす（もやす），输入 `もやす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7197 犯す（おかす），输入 `おかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7202 沸かす（わかす），输入 `わかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7203 捕まる（つかまる），输入 `つかまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7204 暮れる（くれる），输入 `くれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7205 坊ちゃん（ぼっちゃん），输入 `ぼっちゃん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7212 朗らか（ほがらか），输入 `ほがらか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7239 延びる（のびる），输入 `のびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7239 延びる（のびる），输入 `のびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7251 喜ばしい（よろこばしい），输入 `よろこばしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7253 気がかり（きがかり），输入 `きがかり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7257 驚かす（おどろかす），输入 `おどろかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7261 空っぽ（からっぽ），输入 `からっぽ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7264 見かける（みかける），输入 `みかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7267 恨む（うらむ），输入 `うらむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7272 刺さる（ささる），输入 `ささる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7274 歯ブラシ（はブラシ），输入 `はブラシ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7280 弱み（よわみ），输入 `よわみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7281 弱める（よわめる），输入 `よわめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7284 修める（おさめる），输入 `おさめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7285 重たい（おもたい），输入 `おもたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7287 昇る（のぼる），输入 `のぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7287 昇る（のぼる），输入 `のぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7287 昇る（のぼる），输入 `のぼる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7297 清い（きよい），输入 `きよい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7302 粗い（あらい），输入 `あらい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7304 大いに（おおいに），输入 `おおいに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7315 怒りっぽい（おこりっぽい），输入 `おこりっぽい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7324 かぶせる（かぶせる），输入 `かぶせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7334 聞き出す（ききだす），输入 `ききだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7352 頼りない（たよりない），输入 `たよりない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7355 例える（たとえる），输入 `たとえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7357 解かす（とかす），输入 `とかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7359 論じる（ろんじる），输入 `ろんじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7364 為す（なす），输入 `なす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7364 為す（なす），输入 `なす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7376 詫びる（わびる），输入 `わびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7388 上り（のぼり），输入 `のぼり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7388 上り（のぼり），输入 `のぼり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7388 上り（のぼり），输入 `のぼり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7391 ひとまず（ひとまず），输入 `ひとまず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7391 ひとまず（ひとまず），输入 `ひとまず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7391 ひとまず（ひとまず），输入 `ひと先ず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7399 甚だしい（はなはだしい），输入 `はなはだしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7400 澄む（すむ），输入 `すむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7402 相槌（あいづち），输入 `あいづち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7404 大ざっぱ（おおざっぱ），输入 `おおざっぱ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7405 ほどよい（ほどよい），输入 `ほどよい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7406 田んぼ（たんぼ），输入 `たんぼ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7407 当てはめる（あてはめる），输入 `あてはめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7429 みっともない（みっともない），输入 `みっともない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7443 引っ掛かる（ひっかかる），输入 `ひっかかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7448 応じる（おうじる），输入 `おうじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7459 危うい（あやうい），输入 `あやうい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7464 飢える（うえる），输入 `うえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7469 響き（ひびき），输入 `ひびき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7477 欠く（かく），输入 `かく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7496 治まる（おさまる），输入 `おさまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7512 色づく（いろづく），输入 `いろづく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7515 診る（みる），输入 `みる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7527 誓う（ちかう），输入 `ちかう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7533 大層（たいそう），输入 `たいそう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7542 彫る（ほる），输入 `ほる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7544 跳ねる（はねる），输入 `はねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7558 突っ込む（つっこむ），输入 `つっこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7561 納まる（おさまる），输入 `おさまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7561 納まる（おさまる），输入 `おさまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7564 剝がす（はがす），输入 `はがす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7582 呆れる（あきれる），输入 `あきれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7584 坊や（ぼうや），输入 `ぼうや`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7598 老い（おい），输入 `おい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7600 交う（かう），输入 `かう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7603 触り（さわり），输入 `さわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7607 いざという時（いざというとき），输入 `いざという時`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7609 嘘つき（うそつき），输入 `うそつき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7612 おまけ（おまけ），输入 `おまけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7617 くみ上げる（くみあげる），输入 `くみあげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7638 やり遂げる（やりとげる），输入 `やりとげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7639 やり通す（やりとおす），输入 `やりとおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7642 安らか（やすらか），输入 `やすらか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7649 音色（ねいろ），输入 `ねいろ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7650 何とも（なんとも），输入 `なんとも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7651 架け橋（かけはし），输入 `かけ橋`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7651 架け橋（かけはし），输入 `かけ橋`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7654 懐かしむ（なつかしむ），输入 `なつかしむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7666 丸ごと（まるごと），输入 `まるごと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7668 気まま（きまま），输入 `きまま`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7677 叫び（さけび），输入 `さけび`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7678 強まる（つよまる），输入 `つよまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7681 駆けつける（かけつける），输入 `かけつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7684 携わる（たずさわる），输入 `たずさわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7685 軽やか（かろやか），输入 `かろやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7692 見捨てる（みすてる），输入 `みすてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7703 誇る（ほこる），输入 `ほこる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7719 災い（わざわい），输入 `わざわい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7725 思いもよらない（おもいもよらない），输入 `おもいもよらない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7727 思わしくない（おもわしくない），输入 `おもわしくない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7744 住み着く（すみつく），输入 `すみつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7748 縮まる（ちぢまる），输入 `ちぢまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7753 書き留める（かきとめる），输入 `かきとめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7759 少なからず（すくなからず），输入 `すくなからず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7765 乗り切る（のりきる），输入 `のりきる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7769 心遣い（こころづかい），输入 `こころづかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7770 心構え（こころがまえ），输入 `こころがまえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7773 心ない（こころない），输入 `こころない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7775 振るう（ふるう），输入 `ふるう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7776 振る舞い（ふるまい），输入 `ふるまい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7789 遂げる（とげる），输入 `とげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7803 切り開く（きりひらく），输入 `きりひらく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7806 絶つ（たつ），输入 `たつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7806 絶つ（たつ），输入 `たつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7810 薦める（すすめる），输入 `すすめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7810 薦める（すすめる），输入 `すすめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7815 速やか（すみやか），输入 `すみやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7816 打ち出す（うちだす），输入 `うちだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7832 超す（こす），输入 `こす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7832 超す（こす），输入 `こす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7837 程遠い（ほどとおい），输入 `ほど遠い`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7837 程遠い（ほどとおい），输入 `ほどとおい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7838 ほど近い（ほどちかい），输入 `ほどちかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7838 ほど近い（ほどちかい），输入 `ほど近い`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7852 念のため（ねんのため），输入 `ねんのため`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7858 剝がれる（はがれる），输入 `はがれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7859 薄っぺら（うすっぺら），输入 `うすっぺら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7861 縛り付ける（しばりつける），输入 `しばりつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7863 抜き出す（ぬきだす），输入 `ぬき出す`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #7863 抜き出す（ぬきだす），输入 `ぬきだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7869 漂う（ただよう），输入 `ただよう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7894 膨れる（ふくれる），输入 `ふくれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7901 癒やす（いやす），输入 `いやす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7907 立ち直る（たちなおる），输入 `たちなおる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7912 励ます（はげます），输入 `はげます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7913 励み（はげみ），输入 `はげみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7914 恋する（こいする），输入 `こいする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7931 お手上げ（おてあげ），输入 `おてあげ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7932 かき回す（かきまわす），输入 `かきまわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7934 かさむ（かさむ），输入 `かさむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7950 冴える（さえる），输入 `さえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7975 綴る（つづる），输入 `つづる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7985 にぎわう（にぎわう），输入 `にぎわう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #7994 馳せる（はせる），输入 `はせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8002 日なた（ひなた），输入 `ひなた`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8003 ひんやり（ひんやり），输入 `ひんやり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8026 やりくり（やりくり），输入 `やりくり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8031 横ばい（よこばい），输入 `よこばい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8048 安っぽい（やすっぽい），输入 `やすっぽい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8050 案じる（あんじる），输入 `あんじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8053 委ねる（ゆだねる），输入 `ゆだねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8063 一筋（ひとすじ），输入 `ひと筋`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #8063 一筋（ひとすじ），输入 `ひとすじ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8064 一昔（ひとむかし），输入 `ひと昔`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #8065 一息（ひといき），输入 `ひと息`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #8072 引きずる（ひきずる），输入 `ひきずる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8073 引き付ける（ひきつける），输入 `ひきつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8078 営む（いとなむ），输入 `いとなむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8079 映える（はえる），输入 `はえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8079 映える（はえる），输入 `はえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8080 栄える（さかえる），输入 `さかえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8084 押し切る（おしきる），输入 `おしきる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8089 化ける（ばける），输入 `ばける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8092 何げない（なにげない），输入 `なにげない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8093 何とぞ（なにとぞ），输入 `なにとぞ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8096 果て（はて），输入 `はて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8097 果てる（はてる），输入 `はてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8100 花びら（はなびら），输入 `はなびら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8101 荷造り（にづくり），输入 `にづくり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8102 華やか（はなやか），输入 `はなやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8102 華やか（はなやか），输入 `はなやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8103 過ち（あやまち），输入 `あやまち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8103 過ち（あやまち），输入 `あやまち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8108 懐く（なつく），输入 `なつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8126 慣らす（ならす），输入 `ならす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8126 慣らす（ならす），输入 `ならす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8128 甘える（あまえる），输入 `あまえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8130 緩む（ゆるむ），输入 `ゆるむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8131 緩める（ゆるめる），输入 `ゆるめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8134 貫く（つらぬく），输入 `つらぬく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8137 間柄（あいだがら），输入 `あいだがら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8138 陥る（おちいる），输入 `おちいる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8140 危ぶむ（あやぶむ），输入 `あやぶむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8146 気まぐれ（きまぐれ），输入 `きまぐれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8160 欺く（あざむく），输入 `あざむく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8165 吸い上げる（すいあげる），输入 `すいあげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8176 強いて（しいて），输入 `しいて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8177 強いる（しいる），输入 `しいる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8181 脅す（おどす），输入 `おどす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8184 仰ぐ（あおぐ），输入 `あおぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8185 凝らす（こらす），输入 `こらす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8188 極まる（きわまる），输入 `きわまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8189 勤まる（つとまる），输入 `つとまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8189 勤まる（つとまる），输入 `つとまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8194 金槌（かなづち），输入 `かなづち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8196 愚か（おろか），输入 `おろか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8200 掲げる（かかげる），输入 `かかげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8211 潔い（いさぎよい），输入 `いさぎよい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8219 研ぐ（とぐ），输入 `とぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8222 見どころ（みどころ），输入 `みどころ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8224 見当たる（みあたる），输入 `みあたる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8230 厳か（おごそか），输入 `おごそか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8238 悟る（さとる），输入 `さとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8240 交える（まじえる），输入 `まじえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8244 口コミ（くちコミ），输入 `くちコミ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8246 巧み（たくみ），输入 `たくみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8250 控える（ひかえる），输入 `ひかえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8251 構える（かまえる），输入 `かまえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8252 荒っぽい（あらっぽい），输入 `あらっぽい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8252 荒っぽい（あらっぽい），输入 `あらっぽい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8260 告げる（つげる），输入 `つげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8262 今更（いまさら），输入 `いまさら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8270 細やか（こまやか），输入 `こまやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8272 裁く（さばく），输入 `さばく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8280 仕える（つかえる），输入 `つかえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8283 司る（つかさどる），输入 `つかさどる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8286 志す（こころざす），输入 `こころざす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8288 思いやる（おもいやる），输入 `おもいやる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8291 試みる（こころみる），输入 `こころみる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8293 似通う（にかよう），输入 `にかよう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8295 時折（ときおり），输入 `ときおり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8311 遮る（さえぎる），输入 `さえぎる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8318 手のひら（てのひら），输入 `てのひら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8319 手がかり（てがかり），输入 `てがかり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8320 手際（てぎわ），输入 `てぎわ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8327 受け継ぐ（うけつぐ），输入 `うけつぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8328 授ける（さずける），输入 `さずける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8336 出くわす（でくわす），输入 `でくわす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8339 潤う（うるおう），输入 `うるおう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8346 唱える（となえる），输入 `となえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8349 省みる（かえりみる），输入 `かえりみる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8352 障る（さわる），输入 `さわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8358 織る（おる），输入 `おる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8363 侵す（おかす），输入 `おかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8364 寝かせる（ねかせる），输入 `ねかせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8365 心がける（こころがける），输入 `こころがける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8380 据える（すえる），输入 `すえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8381 澄ます（すます），输入 `すます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8387 清らか（きよらか），输入 `きよらか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8388 生やす（はやす），输入 `はやす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8399 切ない（せつない），输入 `せつない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8408 潜む（ひそむ），输入 `ひそむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8412 繕う（つくろう），输入 `つくろう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8416 阻む（はばむ），输入 `はばむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8420 操る（あやつる），输入 `あやつる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8422 装う（よそおう），输入 `よそおう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8425 即する（そくする），输入 `そくする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8425 即する（そくする），输入 `そくする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8436 帯びる（おびる），输入 `おびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8437 怠る（おこたる），输入 `おこたる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8438 滞る（とどこおる），输入 `とどこおる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8445 奪い取る（うばいとる），输入 `うばいとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8449 担う（になう），输入 `になう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8452 弾む（はずむ），输入 `はずむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8454 断つ（たつ），输入 `たつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8454 断つ（たつ），输入 `たつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8456 値する（あたいする），输入 `あたいする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8458 恥じらう（はじらう），输入 `はじらう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8468 兆し（きざし），输入 `きざし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8470 懲りる（こりる），输入 `こりる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8471 挑む（いどむ），输入 `いどむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8498 投じる（とうじる），输入 `とうじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8502 盗み（ぬすみ），输入 `ぬすみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8508 踏まえる（ふまえる），输入 `ふまえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8524 鈍る（にぶる），输入 `にぶる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8537 粘り（ねばり），输入 `ねばり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8538 粘る（ねばる），输入 `ねばる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8539 悩ましい（なやましい），输入 `なやましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8545 廃れる（すたれる），输入 `すたれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8555 漠然（ばくぜん），输入 `ばく然`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #8564 氾濫（はんらん），输入 `はん濫`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #8566 煩わしい（わずらわしい），输入 `わずらわしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8580 富む（とむ），输入 `とむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8584 赴く（おもむく），输入 `おもむく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8590 覆す（くつがえす），输入 `くつがえす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8594 憤る（いきどおる），输入 `いきどおる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8597 紛れる（まぎれる），输入 `まぎれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8613 募る（つのる），输入 `つのる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8614 慕う（したう），输入 `したう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8616 報じる（ほうじる），输入 `ほうじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8620 捧げる（ささげる），输入 `ささげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8626 傍ら（かたわら），输入 `かたわら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8652 滅びる（ほろびる），输入 `ほろびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8653 滅ぼす（ほろぼす），输入 `ほろぼす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8674 揺さぶる（ゆさぶる），输入 `ゆさぶる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8675 揺らぐ（ゆらぐ），输入 `ゆらぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8684 率いる（ひきいる），输入 `ひきいる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8686 流暢（りゅうちょう），输入 `りゅうちょう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8691 冷やかす（ひやかす），输入 `ひやかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8693 励む（はげむ），输入 `はげむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8694 連なる（つらなる），输入 `つらなる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8701 老いる（おいる），输入 `おいる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8703 和らげる（やわらげる），输入 `やわらげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8704 賄う（まかなう），输入 `まかなう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8705 惑う（まどう），输入 `まどう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8718 身だしなみ（みだしなみ），输入 `みだしなみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8720 相まって（あいまって），输入 `あいまって`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8723 ありとあらゆる（ありとあらゆる），输入 `ありとあらゆる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8724 在り方（ありかた），输入 `あり方`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #8726 いたたまれない（いたたまれない），输入 `いたたまれない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8735 幼なじみ（おさななじみ），输入 `おさななじみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8737 自ずと（おのずと），输入 `おのずと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8754 こまめ（こまめ），输入 `こまめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8757 さらけ出す（さらけだす），输入 `さらけだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8759 しがみつく（しがみつく），输入 `しがみつく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8771 ずぶぬれ（ずぶぬれ），输入 `ずぶぬれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8778 そぎ落とす（そぎおとす），输入 `そぎおとす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8785 たわいない（たわいない），输入 `たわいない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8788 てこ入れ（てこいれ），输入 `てこいれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8801 羽ばたく（はばたく），输入 `はばたく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8819 まだしも（まだしも），输入 `まだしも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8824 水たまり（みずたまり），输入 `みずたまり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8832 愛でる（めでる），输入 `めでる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8833 もてなし（もてなし），输入 `もてなし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8843 扱い（あつかい），输入 `あつかい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8845 安らぐ（やすらぐ），输入 `やすらぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8846 囲う（かこう），输入 `かこう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8855 育む（はぐくむ），输入 `はぐくむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8857 一苦労（ひとくろう），输入 `ひと苦労`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #8859 一人ぼっち（ひとりぼっち），输入 `ひとりぼっち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8872 遠ざける（とおざける），输入 `とおざける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8887 悔いる（くいる），输入 `くいる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8888 戒める（いましめる），输入 `いましめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8908 鑑みる（かんがみる），输入 `かんがみる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8913 気まずい（きまずい），输入 `きまずい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8915 気遣う（きづかう），输入 `きづかう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8918 偽る（いつわる），输入 `いつわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8919 戯れる（たわむれる），输入 `たわむれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8920 疑わしい（うたがわしい），输入 `うたがわしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8923 急遽（きゅうきょ），输入 `きゅうきょ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8929 拒む（こばむ），输入 `こばむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8938 狭める（せばめる），输入 `せばめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8951 憩い（いこい），输入 `いこい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8955 結び付き（むすびつき），输入 `むすびつき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8961 見とれる（みとれる），输入 `みとれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8967 見受ける（みうける），输入 `みうける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8985 古めかしい（ふるめかしい），输入 `ふるめかしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8986 呼び寄せる（よびよせる），输入 `よびよせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #8991 後ろめたい（うしろめたい），输入 `うしろめたい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9018 彩り（いろどり），输入 `いろどり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9018 彩り（いろどり），输入 `いろどり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9037 思い詰める（おもいつめる），输入 `おもいつめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9038 思い上がる（おもいあがる），输入 `おもいあがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9039 思い入れ（おもいいれ），输入 `おもいいれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9053 似たり寄ったり（にたりよったり），输入 `にたりよったり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9055 持ちかける（もちかける），输入 `もちかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9056 持て余す（もてあます），输入 `もて余す`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #9056 持て余す（もてあます），输入 `もてあます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9056 持て余す（もてあます），输入 `もてあます`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9064 煮詰める（につめる），输入 `につめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9073 取りやめる（とりやめる），输入 `とりやめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9076 手がける（てがける），输入 `てがける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9089 集い（つどい），输入 `つどい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9094 渋み（しぶみ），输入 `しぶみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9115 拭き取る（ふきとる），输入 `ふき取る`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #9115 拭き取る（ふきとる），输入 `ふきとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9117 色とりどり（いろとりどり），输入 `いろとりどり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9121 食い止める（くいとめる），输入 `くい止める`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #9121 食い止める（くいとめる），输入 `くいとめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9125 浸る（ひたる），输入 `ひたる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9149 晴らす（はらす），输入 `はらす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9150 晴れ渡る（はれわたる），输入 `はれわたる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9153 盛り付け（もりつけ），输入 `もりつけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9166 折（おり），输入 `おり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9167 説く（とく），输入 `とく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9170 先だって（せんだって），输入 `せんだって`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9176 浅はか（あさはか），输入 `あさはか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9181 総じて（そうじて），输入 `そうじて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9184 則る（のっとる），输入 `のっとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9186 足取り（あしどり），输入 `あしどり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9188 損ねる（そこねる），输入 `そこねる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9195 うってつけ（うってつけ），输入 `うってつけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9202 大がかり（おおがかり），输入 `おおがかり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9209 託す（たくす），输入 `たくす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9238 定か（さだか），输入 `さだか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9243 ほどほど（ほどほど），输入 `ほどほど`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9244 締めつける（しめつける），输入 `しめつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9260 踏み入れる（ふみいれる），输入 `ふみいれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9264 道のり（みちのり），输入 `みちのり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9274 忍ぶ（しのぶ），输入 `しのぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9285 破綻（はたん），输入 `はたん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9289 培う（つちかう），输入 `つちかう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9291 薄まる（うすまる），输入 `うすまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9297 抜きん出る（ぬきんでる），输入 `ぬきんでる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9304 否めない（いなめない），输入 `いなめない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9305 秘める（ひめる），输入 `ひめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9329 伏せる（ふせる），输入 `ふせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9335 憤り（いきどおり），输入 `いきどおり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9337 聞きつける（ききつける），输入 `ききつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9342 閉じ込める（とじこめる），输入 `とじこめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9344 片隅（かたすみ），输入 `かたすみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9352 芳しい（かんばしい），输入 `かんばしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9353 褒めたたえる（ほめたたえる），输入 `ほめたたえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9354 紡ぐ（つむぐ），输入 `つむぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9357 翻す（ひるがえす），输入 `ひるがえす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9360 満たない（みたない），输入 `みたない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9371 目まぐるしい（めまぐるしい），输入 `めまぐるしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9373 問い詰める（といつめる），输入 `といつめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9374 諭す（さとす），输入 `さとす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9375 ありよう（ありよう），输入 `あり様`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #9378 揺るがす（ゆるがす），输入 `ゆるがす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9390 類い（たぐい），输入 `たぐい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9396 弄ぶ（もてあそぶ），输入 `もてあそぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9399 和む（なごむ），输入 `なごむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9400 和らぐ（やわらぐ），输入 `やわらぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9404 眉を顰める（まゆをひそめる），输入 `まゆをひそめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9405 退く（しりぞく），输入 `しりぞく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9407 脅かす（おびやかす），输入 `おびやかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9408 健やか（すこやか），输入 `すこやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9413 脅かす（おどかす），输入 `おどかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9455 攪乱（かくらん），输入 `かく乱`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #9524 濾過（ろか），输入 `ろ過`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #9527 てんてこ舞い（てんてこまい），输入 `てんてこまい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9558 編纂（へんさん），输入 `へんさん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9565 先取り（さきどり），输入 `さきどり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9576 手立て（てだて），输入 `てだて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9585 漏洩（ろうえい），输入 `ろうえい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9618 営み（いとなみ），输入 `いとなみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9627 渡り（わたり），输入 `わたり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9643 断じて（だんじて），输入 `だんじて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9657 すかさず（すかさず），输入 `すかさず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9658 我が身（わがみ），输入 `わが身`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #9681 店先（みせさき），输入 `みせさき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9682 潤い（うるおい），输入 `うるおい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9704 肌触り（はだざわり），输入 `はだざわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9705 ぽい捨て（ぽいすて），输入 `ぽいすて`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9706 惜しくも（おしくも），输入 `おしくも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9708 風通し（かぜとおし），输入 `かぜとおし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9756 絵描き（えかき），输入 `えかき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9765 用足し（ようたし），输入 `ようたし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9779 何にも（なんにも），输入 `なんにも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9788 歯ぎしり（はぎしり），输入 `はぎしり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9789 太もも（ふともも），输入 `ふともも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9791 むき出し（むきだし），输入 `むきだし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9794 夢にも（ゆめにも），输入 `ゆめにも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9800 物おじ（ものおじ），输入 `ものおじ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9817 豚カツ（とんカツ），输入 `とんカツ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9821 草むら（くさむら），输入 `くさむら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9824 辛くも（からくも），输入 `からくも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9872 話しぶり（はなしぶり），输入 `はなしぶり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9915 品ぞろえ（しなぞろえ），输入 `しなぞろえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9946 汗だく（あせだく），输入 `あせだく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9954 思うに（おもうに），输入 `おもうに`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9963 手探り（てさぐり），输入 `てさぐり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9983 初恋（はつこい），输入 `はつ恋`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #9985 すぐさま（すぐさま），输入 `すぐさま`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #9985 すぐさま（すぐさま），输入 `すぐ様`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10012 手付かず（てつかず），输入 `てつかず`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10019 的外れ（まとはずれ），输入 `まとはずれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10027 一まとめ（ひとまとめ），输入 `ひとまとめ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10040 物真似（ものまね），输入 `ものまね`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10042 曲がりなりにも（まがりなりにも），输入 `まがりなりにも`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10067 独りよがり（ひとりよがり），输入 `ひとりよがり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10085 筋違い（すじちがい），输入 `すじ違い`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10085 筋違い（すじちがい），输入 `すじちがい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10099 伸びやか（のびやか），输入 `のびやか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10102 生き抜く（いきぬく），输入 `いきぬく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10105 閉ざす（とざす），输入 `とざす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10107 抱え込む（かかえこむ），输入 `かかえ込む`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10107 抱え込む（かかえこむ），输入 `かかえこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10107 抱え込む（かかえこむ），输入 `かかえこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10108 講じる（こうじる），输入 `こうじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10109 この上ない（このうえない），输入 `このうえない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10110 包み込む（つつみこむ），输入 `つつみこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10117 狭まる（せばまる），输入 `せばまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10119 干からびる（ひからびる），输入 `ひからびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10120 出しゃばる（でしゃばる），输入 `でしゃばる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10121 押しやる（おしやる），输入 `おしやる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10122 育て上げる（そだてあげる），输入 `そだてあげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10123 見据える（みすえる），输入 `みすえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10125 動じる（どうじる），输入 `どうじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10126 働かす（はたらかす），输入 `はたらかす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10127 群れる（むれる），输入 `むれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10129 かけ離れる（かけはなれる），输入 `かけはなれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10129 かけ離れる（かけはなれる），输入 `かけ離れる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10131 付け込む（つけこむ），输入 `つけ込む`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10131 付け込む（つけこむ），输入 `つけこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10132 埋もれる（うもれる），输入 `うもれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10133 探し回る（さがしまわる），输入 `さがしまわる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10136 すごむ（すごむ），输入 `すごむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10139 青臭い（あおくさい），输入 `あおくさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10141 揺るぎない（ゆるぎない），输入 `ゆるぎない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10142 畳み込む（たたみこむ），输入 `たたみ込む`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10142 畳み込む（たたみこむ），输入 `たたみこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10143 植え付ける（うえつける），输入 `うえつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10144 練り上げる（ねりあげる），输入 `ねりあげる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10145 ちりばめる（ちりばめる），输入 `ちりばめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10147 古びる（ふるびる），输入 `ふるびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10149 挙がる（あがる），输入 `あがる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10152 失せる（うせる），输入 `うせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10156 切らす（きらす），输入 `きらす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10157 はみ出す（はみだす），输入 `はみだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10165 黒ずむ（くろずむ），输入 `くろずむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10167 念じる（ねんじる），输入 `ねんじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10174 襲いかかる（おそいかかる），输入 `おそいかかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10175 宿す（やどす），输入 `やどす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10176 浮かれる（うかれる），输入 `うかれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10179 見せかける（みせかける），输入 `みせかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10180 やり切れない（やりきれない），输入 `やりきれない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10182 しょい込む（しょいこむ），输入 `しょいこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10184 見せつける（みせつける），输入 `みせつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10185 胡散臭い（うさんくさい），输入 `うさんくさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10186 見て取る（みてとる），输入 `みてとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10188 潤す（うるおす），输入 `うるおす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10189 興す（おこす），输入 `おこす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10190 耐え抜く（たえぬく），输入 `たえぬく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10192 見立てる（みたてる），输入 `みたてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10195 疎ましい（うとましい），输入 `うとましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10196 投げかける（なげかける），输入 `なげかける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10198 根差す（ねざす），输入 `ねざす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10200 細める（ほそめる），输入 `ほそめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10203 てこずる（てこずる），输入 `てこずる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10204 渋る（しぶる），输入 `しぶる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10205 切り立つ（きりたつ），输入 `きり立つ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10205 切り立つ（きりたつ），输入 `きりたつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10205 切り立つ（きりたつ），输入 `きりたつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10207 織り成す（おりなす），输入 `おりなす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10208 語り継ぐ（かたりつぐ），输入 `かたりつぐ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10210 すり減らす（すりへらす），输入 `すりへらす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10210 すり減らす（すりへらす），输入 `すり減らす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10211 打ち付ける（うちつける），输入 `うちつける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10212 ずれ込む（ずれこむ），输入 `ずれこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10214 降りかかる（ふりかかる），输入 `ふりかかる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10216 かき集める（かきあつめる），输入 `かきあつめる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10220 行き交う（ゆきかう），输入 `ゆきかう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10221 痩せ衰える（やせおとろえる），输入 `やせ衰える`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10221 痩せ衰える（やせおとろえる），输入 `やせおとろえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10222 忍びない（しのびない），输入 `しのびない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10232 何かしら（なにかしら），输入 `なにかしら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10234 根こそぎ（ねこそぎ），输入 `ねこそぎ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10238 何物（なにもの），输入 `なにもの`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10239 苦しみ（くるしみ），输入 `くるしみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10257 大して（たいして），输入 `たいして`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10260 我が家（わがや），输入 `わが家`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10298 勝ち取る（かちとる），输入 `かちとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10302 背筋（せすじ），输入 `せすじ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10311 浴びせる（あびせる），输入 `あびせる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10314 ともあれ（ともあれ），输入 `ともあれ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10316 集う（つどう），输入 `つどう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10320 透ける（すける），输入 `すける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10330 静けさ（しずけさ），输入 `しずけさ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10331 駆け巡る（かけめぐる），输入 `かけめぐる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10350 装い（よそおい），输入 `よそおい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10374 命がけ（いのちがけ），输入 `いのちがけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10397 口笛（くちぶえ），输入 `くちぶえ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10399 思いとどまる（おもいとどまる），输入 `おもいとどまる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10430 使い込む（つかいこむ），输入 `つかいこむ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10432 事足りる（ことたりる），输入 `こと足りる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10432 事足りる（ことたりる），输入 `ことたりる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10481 明るみ（あかるみ），输入 `あかるみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10485 これ見よがし（これみよがし），输入 `これみよがし`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10531 継ぎ（つぎ），输入 `つぎ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10537 上の空（うわのそら），输入 `うわの空`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10539 生物（なまもの），输入 `なまもの`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10540 適える（かなえる），输入 `かなえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10546 誇らしい（ほこらしい），输入 `ほこらしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10547 欲する（ほっする），输入 `ほっする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10548 言うまでもない（いうまでもない），输入 `いうまでもない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10549 賭け（かけ），输入 `かけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10550 他人事（ひとごと），输入 `ひとごと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10553 偽り（いつわり），输入 `いつわり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10555 侮る（あなどる），输入 `あなどる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10556 やり過ごす（やりすごす），输入 `やりすごす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10560 携える（たずさえる），输入 `たずさえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10561 足手まとい（あしでまとい），输入 `あしでまとい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10565 躍る（おどる），输入 `おどる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10575 見いだす（みいだす），输入 `みいだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10577 いち早く（いちはやく），输入 `いちはやく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10582 謳う（うたう），输入 `うたう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10585 報い（むくい），输入 `むくい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10589 生まれながら（うまれながら），输入 `うまれながら`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10597 見くびる（みくびる），输入 `みくびる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10601 負けず嫌い（まけずぎらい），输入 `まけずぎらい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10602 住処（すみか），输入 `すみか`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10605 先んじる（さきんじる），输入 `さきんじる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10607 表立つ（おもてだつ），输入 `おもてだつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10615 咲き誇る（さきほこる），输入 `さきほこる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10617 寂れる（さびれる），输入 `さびれる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10625 心もとない（こころもとない），输入 `こころもとない`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10633 めぼしい（めぼしい），输入 `めぼしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10636 挿絵（さしえ），输入 `さし絵`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10639 長靴（ながぐつ），输入 `ながぐつ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10647 擦り寄る（すりよる），输入 `すり寄る`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10647 擦り寄る（すりよる），输入 `すりよる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10667 長持ち（ながもち），输入 `ながもち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10672 博する（はくする），输入 `はくする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10678 手なずける（てなずける），输入 `てなずける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10680 焦げ臭い（こげくさい），输入 `こげ臭い`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10680 焦げ臭い（こげくさい），输入 `こげくさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10680 焦げ臭い（こげくさい），输入 `こげくさい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10681 ひねり出す（ひねりだす），输入 `ひねりだす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10683 覆い（おおい），输入 `おおい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10696 親元（おやもと），输入 `おやもと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10705 ぬか喜び（ぬかよろこび），输入 `ぬかよろこび`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10721 知ったかぶり（しったかぶり），输入 `しったかぶり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10730 種まき（たねまき），输入 `たねまき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10734 濾す（こす），输入 `こす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10735 伸べる（のべる），输入 `のべる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10735 伸べる（のべる），输入 `のべる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10736 憩う（いこう），输入 `いこう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10756 孵す（かえす），输入 `かえす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10772 口やかましい（くちやかましい），输入 `くちやかましい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10817 充てる（あてる），输入 `あてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10828 補塡（ほてん），输入 `ほてん`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10830 習い事（ならいごと），输入 `ならいごと`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10861 独り歩き（ひとりあるき），输入 `ひとり歩き`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10861 独り歩き（ひとりあるき），输入 `ひとりあるき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10869 取り結ぶ（とりむすぶ），输入 `とり結ぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10869 取り結ぶ（とりむすぶ），输入 `とりむすぶ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10871 揺れ動く（ゆれうごく），输入 `ゆれ動く`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10871 揺れ動く（ゆれうごく），输入 `ゆれうごく`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10873 型どおり（かたどおり），输入 `かたどおり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10877 絶え間（たえま），输入 `たえま`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10893 報う（むくう），输入 `むくう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10897 身になる（みになる），输入 `みになる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10912 棲み分け（すみわけ），输入 `すみ分け`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10912 棲み分け（すみわけ），输入 `すみわけ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10912 棲み分け（すみわけ），输入 `すみ分け`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10914 最たる（さいたる），输入 `さいたる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10920 すっ飛ばす（すっとばす），输入 `すっとばす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10920 すっ飛ばす（すっとばす），输入 `すっ飛ばす`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10924 呆れ果てる（あきれはてる），输入 `あきれ果てる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10924 呆れ果てる（あきれはてる），输入 `あきれはてる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10925 全き（まったき），输入 `まったき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10930 おぼしい（おぼしい），输入 `おぼしい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10968 移ろい（うつろい），输入 `うつろい`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10972 溢れ返る（あふれかえる），输入 `あふれかえる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10974 引きこもり（ひきこもり），输入 `ひきこもり`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10993 厚み（あつみ），输入 `あつみ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10996 裁き（さばき），输入 `さばき`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10997 擦り抜ける（すりぬける），输入 `すりぬける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #10997 擦り抜ける（すりぬける），输入 `すり抜ける`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #10999 姿形（すがたかたち），输入 `すがたかたち`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #11010 譲り合う（ゆずりあう），输入 `ゆずりあう`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #11016 選び取る（えらびとる），输入 `えらびとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #11043 黙する（もくする），输入 `もくする`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #11047 落とし所（おとしどころ），输入 `おとしどころ`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+- #11051 嗅ぎ取る（かぎとる），输入 `かぎ取る`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=null
+- #11051 嗅ぎ取る（かぎとる），输入 `かぎとる`：期望 partial_kana，实际 correct; nearMiss=false; readingOk=true
+
+### 多加一个送り仮名
+
+- #28 答え（こたえ），输入 `答え`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #580 晴れ（はれ），输入 `晴れ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #654 曇り（くもり），输入 `曇り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #736 葉書（はがき），输入 `葉書き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #736 葉書（はがき），输入 `端書き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #996 祭り（まつり），输入 `祭り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1004 手洗い（てあらい），输入 `手洗い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1160 気持ち（きもち），输入 `気持ち`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1177 係（かかり），输入 `係り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1189 見舞い（みまい），输入 `見舞い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1453 時間割（じかんわり），输入 `時間割り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1520 組（くみ），输入 `組み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1713 お釣り（おつり），输入 `お釣り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1785 押し入れ（おしいれ），输入 `押入れ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1820 金持ち（かねもち），输入 `金持ち`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1885 乗り換え（のりかえ），输入 `乗換え`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #1921 大通り（おおどおり），输入 `大通り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #2084 唐揚げ（からあげ），输入 `空揚げ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #2084 唐揚げ（からあげ），输入 `唐揚げ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #2153 割引（わりびき），输入 `割引き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #2205 初詣（はつもうで），输入 `初詣で`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #2255 年寄り（としより），输入 `年寄り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #2423 すき焼き（すきやき），输入 `すき焼き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #2423 すき焼き（すきやき），输入 `鋤焼き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #2560 釣り（つり），输入 `釣り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #2933 祝い（いわい），输入 `祝い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3033 締め切り（しめきり），输入 `締切り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3398 申し込み（もうしこみ），输入 `申込み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3399 受け取り（うけとり），输入 `受取り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3493 支払い（しはらい），输入 `支払い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3544 売り切れ（うりきれ），输入 `売切れ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3587 届け（とどけ），输入 `届け`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3701 うつろ（うつろ），输入 `洞ろ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3713 振り込み（ふりこみ），输入 `振込み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3786 付き（つき），输入 `付き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3926 大盛り（おおもり），输入 `大盛り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #3972 応え（こたえ），输入 `答え`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4268 手続き（てつづき），输入 `手続き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4377 踏み切り（ふみきり），输入 `踏切り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4377 踏み切り（ふみきり），输入 `踏み切り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4475 〜付き（つき），输入 `付き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4520 我が（わが），输入 `我が`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4595 出会い（であい），输入 `出会い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4595 出会い（であい），输入 `出合い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4636 大喜び（おおよろこび），输入 `大喜び`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4833 おおよそ（おおよそ），输入 `凡そ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4841 物差し（ものさし），输入 `物差し`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #4841 物差し（ものさし），输入 `物指し`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #5375 割り（わり），输入 `割り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #5393 並み（なみ），输入 `並み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #5419 くじ引き（くじびき），输入 `籤引き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #5431 錆（さび），输入 `錆び`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #5567 仕組み（しくみ），输入 `仕組み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #5598 手当て（てあて），输入 `手当て`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #5699 値引き（ねびき），输入 `値引き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #5708 頂（いただき），输入 `頂き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #5987 取り扱い（とりあつかい），输入 `取扱い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6007 小売り（こうり），输入 `小売り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6042 前売り（まえうり），输入 `前売り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6274 〜宛て（あて），输入 `宛て`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6370 仕入れ（しいれ），输入 `仕入れ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6390 狩り（かり），输入 `狩り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6685 町並み（まちなみ），输入 `町並み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6685 町並み（まちなみ），输入 `街並み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6759 押し売り（おしうり），输入 `押売り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6876 引き換え（ひきかえ），输入 `引換え`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6901 取り組み（とりくみ），输入 `取り組み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6901 取り組み（とりくみ），输入 `取組み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6938 引き合い（ひきあい），输入 `引合い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6955 見返し（みかえし），输入 `見返し`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #6991 枠組み（わくぐみ），输入 `枠組み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #7250 缶詰（かんづめ），输入 `缶詰め`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #7391 ひとまず（ひとまず），输入 `一先ず`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #7549 田植え（たうえ），输入 `田植え`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #7688 肩書き（かたがき），输入 `肩書き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #7691 見合い（みあい），输入 `見合い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #7736 取り締まり（とりしまり），输入 `取締り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #7776 振る舞い（ふるまい），输入 `振舞い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #7908 立ち入り（たちいり），输入 `立入り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8099 箇条書き（かじょうがき），输入 `箇条書き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8139 眼差し（まなざし），输入 `目差し`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8295 時折（ときおり），输入 `時折り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8367 振り出し（ふりだし），输入 `振り出し`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8367 振り出し（ふりだし），输入 `振出し`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8457 値打ち（ねうち），输入 `値打ち`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8721 顕わ（あらわ），输入 `露わ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8721 顕わ（あらわ），输入 `顕わ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8735 幼なじみ（おさななじみ），输入 `幼馴染み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8741 かたくな（かたくな），输入 `頑な`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8806 ひたむき（ひたむき），输入 `直向き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8865 稲刈り（いねかり），输入 `稲刈り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8875 下請け（したうけ），输入 `下請け`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8901 割り当て（わりあて），输入 `割当て`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8916 気合（きあい），输入 `気合い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #8951 憩い（いこい），输入 `憩い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9030 仕掛け（しかけ），输入 `仕掛け`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9033 仕分け（しわけ），输入 `仕分け`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9110 上書き（うわがき），输入 `上書き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9119 色合い（いろあい），输入 `色合い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9135 人並み（ひとなみ），输入 `人並み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9166 折（おり），输入 `折り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9322 浮き彫り（うきぼり），输入 `浮き彫り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9322 浮き彫り（うきぼり），输入 `浮彫り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9327 風合い（ふうあい），输入 `風合い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9379 落書き（らくがき），输入 `楽書き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9379 落書き（らくがき），输入 `落書き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9390 類い（たぐい），输入 `類い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9390 類い（たぐい），输入 `比い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9527 てんてこ舞い（てんてこまい），输入 `てんてこ舞い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9527 てんてこ舞い（てんてこまい），输入 `天手古舞い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9624 盆踊り（ぼんおどり），输入 `盆踊り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9652 間取り（まどり），输入 `間取り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9693 度合い（どあい），输入 `度合い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9756 絵描き（えかき），输入 `絵描き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9862 奥行き（おくゆき），输入 `奥行き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9892 手持ち（てもち），输入 `手持ち`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #9931 後書き（あとがき），输入 `後書き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10027 一まとめ（ひとまとめ），输入 `一纏め`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10045 通行止め（つうこうどめ），输入 `通行止め`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10482 立ち会い（たちあい），输入 `立会い`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10525 山並み（やまなみ），输入 `山並み`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10549 賭け（かけ），输入 `賭け`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10558 足止め（あしどめ），输入 `足留め`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10632 お好み焼き（おこのみやき），输入 `お好み焼き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10667 長持ち（ながもち），输入 `長持ち`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10730 種まき（たねまき），输入 `種蒔き`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10740 冬枯れ（ふゆがれ），输入 `冬枯れ`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+- #10770 色刷り（いろずり），输入 `色刷り`：期望 okurigana / conjugated / too_long，实际 correct; nearMiss=false; readingOk=null
+
+### 简体字形变体
+
+- #159 着る（きる），输入 `着る`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #386 暗い（くらい），输入 `暗い`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #479 午後（ごご），输入 `午后`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #930 〜杯（はい），输入 `杯`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #949 (ポ)tabaco（タバコ），输入 `烟草`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #1056 涼しい（すずしい），输入 `凉しい`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #1057 涙（なみだ），输入 `泪`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #1066 嘘（うそ），输入 `嘘`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #1195 幸せ（しあわせ），输入 `幸せ`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #1241 床（ゆか），输入 `床`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #1467 唇（くちびる），输入 `唇`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #1475 戦う（たたかう），输入 `斗う`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #1583 無（む），输入 `无`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #1819 禁煙（きんえん），输入 `禁烟`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #1849 坂（さか），输入 `坂`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #2284 煙突（えんとつ），输入 `烟突`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #2686 つかむ（つかむ），输入 `掴む`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #2804 干す（ほす），输入 `干す`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #2816 岩（いわ），输入 `岩`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #2961 食欲（しょくよく），输入 `食欲`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #3018 注文（ちゅうもん），输入 `注文`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #3069 剝く（むく），输入 `剥く`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #3173 搔く（かく），输入 `搔く`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #3653 注（ちゅう），输入 `注`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #3752 牡蠣（かき），输入 `牡蛎`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #3980 祈る（いのる），输入 `祷る`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #4133 煙（けむり），输入 `烟`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #4644 恥（はじ），输入 `耻`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #4708 宝（たから），输入 `宝`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #5037 碁（ご），输入 `棋`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #5122 将棋（しょうぎ），输入 `将棋`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #5135 障害（しょうがい），输入 `障碍`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #5181 遡る（さかのぼる），输入 `溯る`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #5181 遡る（さかのぼる），输入 `溯る`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #5334 湧く（わく），输入 `涌く`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #5453 剝ける（むける），输入 `剥ける`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #5861 意欲（いよく），输入 `意欲`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #6163 脈（みゃく），输入 `脉`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #6179 欲（よく），输入 `欲`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #6249 なぞらえる（なぞらえる），输入 `准える`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #6844 湧き出る（わきでる），输入 `涌き出る`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #7351 欲望（よくぼう），输入 `欲望`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #7395 跡（あと），输入 `迹`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #7470 琴（こと），输入 `筝`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #7564 剝がす（はがす），输入 `剥がす`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #7633 淵（ふち），输入 `渊`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #7858 剝がれる（はがれる），输入 `剥がれる`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #8054 委託（いたく），输入 `委托`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #8057 意向（いこう），输入 `意向`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #8202 経路（けいろ），输入 `径路`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #8383 制御（せいぎょ），输入 `制御`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #8414 素朴（そぼく），输入 `素朴`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #8591 仏像（ぶつぞう），输入 `佛像`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #8627 妨害（ぼうがい），输入 `妨碍`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #8934 凶器（きょうき），输入 `凶器`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #9080 受注（じゅちゅう），输入 `受注`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #9209 託す（たくす），输入 `托す`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #9396 弄ぶ（もてあそぶ），输入 `玩ぶ`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #9452 防御（ぼうぎょ），输入 `防御`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #9535 遊泳（ゆうえい），输入 `游泳`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #9585 漏洩（ろうえい），输入 `漏泄`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #9754 いわんや（いわんや），输入 `况や`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #9843 元凶（げんきょう），输入 `元凶`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #9848 糧（かて），输入 `粮`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #9855 檜（ひのき），输入 `桧`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #9855 檜（ひのき），输入 `桧木`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #9903 狸（たぬき），输入 `狸`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #10119 干からびる（ひからびる），输入 `干涸びる`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #10346 生息（せいそく），输入 `栖息`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+- #10792 浮遊（ふゆう），输入 `浮游`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #10859 暗然（あんぜん），输入 `暗然`：期望 chinese_form + nearMiss，实际 correct; nearMiss=false; readingOk=null
+- #10990 屈託（くったく），输入 `屈托`：期望 chinese_form + nearMiss，实际 chinese_form; nearMiss=true; readingOk=null
+
+### 删除一个送り仮名
+
+- #28 答え（こたえ），输入 `答`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #580 晴れ（はれ），输入 `晴`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #654 曇り（くもり），输入 `曇`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #736 葉書（はがき），输入 `葉書`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #736 葉書（はがき），输入 `端書`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #996 祭り（まつり），输入 `祭`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1004 手洗い（てあらい），输入 `手洗`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1160 気持ち（きもち），输入 `気持`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1177 係（かかり），输入 `係`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1189 見舞い（みまい），输入 `見舞`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1453 時間割（じかんわり），输入 `時間割`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1520 組（くみ），输入 `組`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1713 お釣り（おつり），输入 `お釣`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1785 押し入れ（おしいれ），输入 `押入`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1820 金持ち（かねもち），输入 `金持`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1885 乗り換え（のりかえ），输入 `乗換`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #1921 大通り（おおどおり），输入 `大通`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #2084 唐揚げ（からあげ），输入 `唐揚`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #2084 唐揚げ（からあげ），输入 `空揚`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #2153 割引（わりびき），输入 `割引`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #2205 初詣（はつもうで），输入 `初詣`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #2255 年寄り（としより），输入 `年寄`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #2423 すき焼き（すきやき），输入 `すき焼`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #2423 すき焼き（すきやき），输入 `鋤焼`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #2560 釣り（つり），输入 `釣`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #2933 祝い（いわい），输入 `祝`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3033 締め切り（しめきり），输入 `締切`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3398 申し込み（もうしこみ），输入 `申込`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3399 受け取り（うけとり），输入 `受取`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3493 支払い（しはらい），输入 `支払`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3544 売り切れ（うりきれ），输入 `売切`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3587 届け（とどけ），输入 `届`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3701 うつろ（うつろ），输入 `洞`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3713 振り込み（ふりこみ），输入 `振込`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3786 付き（つき），输入 `付`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3926 大盛り（おおもり），输入 `大盛`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #3972 応え（こたえ），输入 `答`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4268 手続き（てつづき），输入 `手続`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4377 踏み切り（ふみきり），输入 `踏み切`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4377 踏み切り（ふみきり），输入 `踏切`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4475 〜付き（つき），输入 `〜付`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4475 〜付き（つき），输入 `付`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4520 我が（わが），输入 `我`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4595 出会い（であい），输入 `出会`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4595 出会い（であい），输入 `出合`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4636 大喜び（おおよろこび），输入 `大喜`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4833 おおよそ（おおよそ），输入 `凡`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4841 物差し（ものさし），输入 `物差`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #4841 物差し（ものさし），输入 `物指`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #5375 割り（わり），输入 `割`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #5393 並み（なみ），输入 `並`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #5419 くじ引き（くじびき），输入 `籤引`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #5431 錆（さび），输入 `錆`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #5567 仕組み（しくみ），输入 `仕組`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #5598 手当て（てあて），输入 `手当`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #5699 値引き（ねびき），输入 `値引`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #5708 頂（いただき），输入 `頂`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #5987 取り扱い（とりあつかい），输入 `取扱`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6007 小売り（こうり），输入 `小売`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6042 前売り（まえうり），输入 `前売`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6274 〜宛て（あて），输入 `〜宛`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6274 〜宛て（あて），输入 `宛`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6370 仕入れ（しいれ），输入 `仕入`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6390 狩り（かり），输入 `狩`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6685 町並み（まちなみ），输入 `町並`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6685 町並み（まちなみ），输入 `街並`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6759 押し売り（おしうり），输入 `押売`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6876 引き換え（ひきかえ），输入 `引換`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6901 取り組み（とりくみ），输入 `取り組`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6901 取り組み（とりくみ），输入 `取組`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6938 引き合い（ひきあい），输入 `引合`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6955 見返し（みかえし），输入 `見返`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #6991 枠組み（わくぐみ），输入 `枠組`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #7250 缶詰（かんづめ），输入 `缶詰`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #7391 ひとまず（ひとまず），输入 `一先`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #7549 田植え（たうえ），输入 `田植`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #7688 肩書き（かたがき），输入 `肩書`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #7691 見合い（みあい），输入 `見合`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #7736 取り締まり（とりしまり），输入 `取締`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #7776 振る舞い（ふるまい），输入 `振舞`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #7908 立ち入り（たちいり），输入 `立入`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8099 箇条書き（かじょうがき），输入 `箇条書`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8139 眼差し（まなざし），输入 `目差`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8295 時折（ときおり），输入 `時折`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8367 振り出し（ふりだし），输入 `振り出`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8367 振り出し（ふりだし），输入 `振出`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8457 値打ち（ねうち），输入 `値打`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8721 顕わ（あらわ），输入 `顕`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8721 顕わ（あらわ），输入 `露`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8735 幼なじみ（おさななじみ），输入 `幼馴染`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8741 かたくな（かたくな），输入 `頑`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8806 ひたむき（ひたむき），输入 `直向`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8865 稲刈り（いねかり），输入 `稲刈`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8875 下請け（したうけ），输入 `下請`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8901 割り当て（わりあて），输入 `割当`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8916 気合（きあい），输入 `気合`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #8951 憩い（いこい），输入 `憩`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9030 仕掛け（しかけ），输入 `仕掛`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9033 仕分け（しわけ），输入 `仕分`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9110 上書き（うわがき），输入 `上書`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9119 色合い（いろあい），输入 `色合`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9135 人並み（ひとなみ），输入 `人並`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9166 折（おり），输入 `折`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9322 浮き彫り（うきぼり），输入 `浮き彫`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9322 浮き彫り（うきぼり），输入 `浮彫`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9327 風合い（ふうあい），输入 `風合`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9379 落書き（らくがき），输入 `落書`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9379 落書き（らくがき），输入 `楽書`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9390 類い（たぐい），输入 `類`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9390 類い（たぐい），输入 `比`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9527 てんてこ舞い（てんてこまい），输入 `てんてこ舞`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9527 てんてこ舞い（てんてこまい），输入 `天手古舞`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9624 盆踊り（ぼんおどり），输入 `盆踊`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9652 間取り（まどり），输入 `間取`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9693 度合い（どあい），输入 `度合`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9756 絵描き（えかき），输入 `絵描`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9862 奥行き（おくゆき），输入 `奥行`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9892 手持ち（てもち），输入 `手持`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #9931 後書き（あとがき），输入 `後書`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10027 一まとめ（ひとまとめ），输入 `一纏`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10045 通行止め（つうこうどめ），输入 `通行止`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10482 立ち会い（たちあい），输入 `立会`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10525 山並み（やまなみ），输入 `山並`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10549 賭け（かけ），输入 `賭`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10558 足止め（あしどめ），输入 `足留`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10632 お好み焼き（おこのみやき），输入 `お好み焼`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10667 長持ち（ながもち），输入 `長持`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10730 種まき（たねまき），输入 `種蒔`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10740 冬枯れ（ふゆがれ），输入 `冬枯`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+- #10770 色刷り（いろずり），输入 `色刷`：期望 okurigana / conjugated，实际 correct; nearMiss=false; readingOk=null
+
+## 暂未安全生成的变异
+
+### 汉字按本词读音换成假名
+
+- #6 以後（いご），输入 `已後`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7 以前（いぜん），输入 `已前`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9 入口（いりぐち），输入 `入口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9 入口（いりぐち），输入 `入り口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10 受付（うけつけ），输入 `受付`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #14 経済（けいざい），输入 `経済`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #28 答え（こたえ），输入 `報え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #34 散歩（さんぽ），输入 `散歩`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #43 招待（しょうたい），输入 `請待`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #59 台所（だいどころ），输入 `台所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #76 連絡（れんらく），输入 `聯絡`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #77 始める（はじめる），输入 `創める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #78 終わる（おわる），输入 `終る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #78 終わる（おわる），输入 `了る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #78 終わる（おわる），输入 `卒る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #78 終わる（おわる），输入 `畢る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #78 終わる（おわる），输入 `竟る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #81 入る（はいる），输入 `這入る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #83 入れる（いれる），输入 `容れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #86 変わる（かわる），输入 `変る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #87 覚える（おぼえる），输入 `憶える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #90 貸す（かす），输入 `藉す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #98 考える（かんがえる），输入 `勘える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #98 考える（かんがえる），输入 `稽える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #99 決める（きめる），输入 `極める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #100 決まる（きまる），输入 `極る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #102 受ける（うける），输入 `享ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #102 受ける（うける），输入 `承ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #104 作る（つくる），输入 `創る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #107 待つ（まつ），输入 `俟つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #110 座る（すわる），输入 `坐る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #111 走る（はしる），输入 `奔る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #111 走る（はしる），输入 `疾る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #111 走る（はしる），输入 `趨る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #114 泳ぐ（およぐ），输入 `游ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #120 話す（はなす），输入 `咄す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #122 聞く（きく），输入 `聴く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #123 行く（いく），输入 `往く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #126 結婚（けっこん），输入 `結婚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #127 出席（しゅっせき），输入 `出席`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #129 出発（しゅっぱつ），输入 `出発`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #140 翻訳（ほんやく），输入 `飜訳`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #143 閉まる（しまる），输入 `緊まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #144 止まる（とまる），输入 `停まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #144 止まる（とまる），输入 `駐まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #145 止める（とめる），输入 `停める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #150 知る（しる），输入 `識る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #151 思う（おもう），输入 `想う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #151 思う（おもう），输入 `念う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #151 思う（おもう），输入 `憶う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #153 選ぶ（えらぶ），输入 `択ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #153 選ぶ（えらぶ），输入 `撰ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #159 着る（きる），输入 `著る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #160 履く（はく），输入 `穿く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #160 履く（はく），输入 `佩く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #160 履く（はく），输入 `帯く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #160 履く（はく），输入 `着く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #161 被る（かぶる），输入 `冠る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #164 並ぶ（ならぶ），输入 `列ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #164 並ぶ（ならぶ），输入 `双ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #165 並べる（ならべる），输入 `双べる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #166 付ける（つける），输入 `附ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #167 付く（つく），输入 `附く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #192 夫（おっと），输入 `良人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #195 息子（むすこ），输入 `息子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #197 お土産（おみやげ），输入 `お土産`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #201 〜か月（かげつ），输入 `個月`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #221 あさって（あさって），输入 `明後日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #222 あそこ（あそこ），输入 `彼処`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #222 あそこ（あそこ），输入 `彼所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #223 あちら（あちら），输入 `彼方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #224 あっち（あっち），输入 `彼方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #238 いつも（いつも），输入 `何時も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #240 いろいろ（いろいろ），输入 `色々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #242 うるさい（うるさい），输入 `五月蠅い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #242 うるさい（うるさい），输入 `五月蝿い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #246 おいしい（おいしい），输入 `美味しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #248 おじいさん（おじいさん），输入 `お祖父さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #249 おじさん（おじさん），输入 `伯父さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #249 おじさん（おじさん），输入 `叔父さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #249 おじさん（おじさん），输入 `小父さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #250 おととい（おととい），输入 `一昨日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #251 おととし（おととし），输入 `一昨年`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #255 おばあさん（おばあさん），输入 `お婆さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #255 おばあさん（おばあさん），输入 `お祖母さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #257 お兄さん（おにいさん），输入 `お兄さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #258 お姉さん（おねえさん），输入 `お姉さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #258 お姉さん（おねえさん），输入 `お姐さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #260 お父さん（おとうさん），输入 `お父さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #261 お母さん（おかあさん），输入 `お母さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #266 かわいい（かわいい），输入 `可愛い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #268 昨日（きのう），输入 `昨日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #274 coffee（コーヒー），输入 `珈琲`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #276 こちら（こちら），输入 `此方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #290 しょうゆ（しょうゆ），输入 `醤油`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #290 しょうゆ（しょうゆ），输入 `醬油`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #301 そして（そして），输入 `然して`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #301 そして（そして），输入 `而して`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #302 そちら（そちら），输入 `其方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #303 そっち（そっち），输入 `其方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #314 ただ今（ただいま），输入 `唯今`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #320 ちょっと（ちょっと），输入 `一寸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #320 ちょっと（ちょっと），输入 `鳥渡`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #321 つまらない（つまらない），输入 `詰らない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #333 どうして（どうして），输入 `如何して`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #337 どこ（どこ），输入 `何処`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #337 どこ（どこ），输入 `何所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #338 どちら（どちら），输入 `何方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #339 どっち（どっち），输入 `何方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #340 とても（とても），输入 `迚も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #341 どなた（どなた），输入 `何方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #343 どれ（どれ），输入 `何れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #348 ながら（ながら），输入 `乍ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #349 なぜ（なぜ），输入 `何故`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #353 ぬるい（ぬるい），输入 `温い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #368 まずい（まずい），输入 `不味い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #373 metre（メートル），输入 `米突`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #385 安い（やすい），输入 `廉い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #386 暗い（くらい），输入 `冥い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #386 暗い（くらい），输入 `昏い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #386 暗い（くらい），输入 `闇い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #387 椅子（いす），输入 `倚子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #389 一緒（いっしょ），输入 `一緒`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #390 一人（ひとり），输入 `一人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #392 一日（ついたち），输入 `一日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #392 一日（ついたち），输入 `朔日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #394 飲み物（のみもの），输入 `飲物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #403 鉛筆（えんぴつ），输入 `鉛筆`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #405 汚い（きたない），输入 `穢い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #418 果物（くだもの），输入 `果物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #418 果物（くだもの），输入 `菓物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #420 歌う（うたう），输入 `唄う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #420 歌う（うたう），输入 `詠う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #420 歌う（うたう），输入 `唱う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #421 火曜日（かようび），输入 `火曜日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #424 会う（あう），输入 `逢う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #424 会う（あう），输入 `遇う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #433 学校（がっこう），输入 `学校`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #434 楽しい（たのしい），输入 `愉しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #435 掛かる（かかる），输入 `掛る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #435 掛かる（かかる），输入 `懸かる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #435 掛かる（かかる），输入 `懸る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #436 掛ける（かける），输入 `懸ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #440 丸い（まるい），输入 `円い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #441 眼鏡（めがね），输入 `眼鏡`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #445 帰り（かえり），输入 `還り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #446 帰る（かえる），输入 `還る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #448 喫茶店（きっさてん），输入 `喫茶店`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #458 金曜日（きんようび），输入 `金曜日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #464 靴下（くつした），输入 `沓下`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #467 月曜日（げつようび），输入 `月曜日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #468 建物（たてもの），输入 `建物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #470 見る（みる），输入 `視る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #470 見る（みる），输入 `観る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #473 言う（いう），输入 `云う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #473 言う（いう），输入 `謂う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #474 言葉（ことば），输入 `言葉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #475 古い（ふるい），输入 `故い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #475 古い（ふるい），输入 `旧い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #476 呼ぶ（よぶ），输入 `喚ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #479 午後（ごご），输入 `午后`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #483 交差点（こうさてん），输入 `交叉点`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #485 厚い（あつい），输入 `篤い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #499 今朝（けさ），输入 `今朝`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #500 今日（きょう），输入 `今日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #501 今年（ことし），输入 `今年`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #510 雑誌（ざっし），输入 `雑誌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #516 仕事（しごと），输入 `仕事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #520 子供（こども），输入 `子供`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #526 時々（ときどき），输入 `時々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #526 時々（ときどき），输入 `時時`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #528 時計（とけい），输入 `時計`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #528 時計（とけい），输入 `土圭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #542 手紙（てがみ），输入 `手紙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #547 十日（とおか），输入 `一〇日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #550 出口（でぐち），输入 `出口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #552 初めて（はじめて），输入 `甫めて`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #560 小学校（しょうがっこう），输入 `小学校`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #562 少し（すこし），输入 `些し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #562 少し（すこし），输入 `寡し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #563 少ない（すくない），输入 `寡い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #563 少ない（すくない），输入 `尠い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #565 笑う（わらう），输入 `嗤う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #568 上手（じょうず），输入 `上手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #573 寝る（ねる），输入 `寐る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #579 水曜日（すいようび），输入 `水曜日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #580 晴れ（はれ），输入 `霽れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #581 晴れる（はれる），输入 `霽れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #582 生まれる（うまれる），输入 `産まれる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #586 青い（あおい），输入 `蒼い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #586 青い（あおい），输入 `碧い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #587 静か（しずか），输入 `閑か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #589 赤い（あかい），输入 `紅い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #589 赤い（あかい），输入 `朱い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #591 切手（きって），输入 `切手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #592 切符（きっぷ），输入 `切符`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #604 早い（はやい），输入 `捷い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #604 早い（はやい），输入 `疾い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #608 体（からだ），输入 `身体`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #611 大丈夫（だいじょうぶ），输入 `大丈夫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #612 大人（おとな），输入 `大人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #616 誕生日（たんじょうび），输入 `誕生日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #625 中学校（ちゅうがっこう），输入 `中学校`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #627 中国（ちゅうごく），输入 `中国`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #633 長い（ながい），输入 `永い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #635 痛い（いたい），输入 `甚い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #645 土曜日（どようび），输入 `土曜日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #659 二十（にじゅう），输入 `二〇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #659 二十（にじゅう），输入 `弐拾`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #660 二十日（はつか），输入 `二十日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #660 二十日（はつか），输入 `二〇日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #660 二十日（はつか），输入 `廿日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #661 二人（ふたり），输入 `二人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #662 二日（ふつか），输入 `二日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #664 日本（にほん），输入 `日本`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #665 日本語（にほんご），输入 `日本語`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #666 日本人（にほんじん），输入 `日本人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #667 日曜日（にちようび），输入 `日曜日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #671 買い物（かいもの），输入 `買物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #688 百（ひゃく），输入 `一〇〇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #690 部屋（へや），输入 `部屋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #692 風邪（かぜ），输入 `風邪`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #696 分かる（わかる），输入 `分る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #696 分かる（わかる），输入 `判る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #696 分かる（わかる），输入 `解る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #697 平仮名（ひらがな），输入 `平仮名`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #704 北側（きたがわ），输入 `北側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #708 本棚（ほんだな），输入 `本棚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #710 磨く（みがく），输入 `琢く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #710 磨く（みがく），输入 `研く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #722 明日（あした），输入 `明日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #725 木曜日（もくようび），输入 `木曜日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #731 友達（ともだち），输入 `友達`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #731 友達（ともだち），输入 `友だち`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #734 夕方（ゆうがた），输入 `夕方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #736 葉書（はがき），输入 `葉書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #736 葉書（はがき），输入 `端書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #741 卵（たまご），输入 `玉子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #742 良い（よい），输入 `好い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #742 良い（よい），输入 `佳い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #742 良い（よい），输入 `吉い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #742 良い（よい），输入 `宜い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #757 いかが（いかが），输入 `如何`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #758 頂く（いただく），输入 `戴く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #759 いつでも（いつでも），输入 `何時でも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #765 これから（これから），输入 `是から`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #765 これから（これから），输入 `此れから`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #772 どこか（どこか），输入 `何処か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #782 やっと（やっと），输入 `漸と`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #792 おもちゃ（おもちゃ），输入 `玩具`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #795 曲がる（まがる），输入 `曲る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #796 たまに（たまに），输入 `適に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #805 終わり（おわり），输入 `終り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #809 上がる（あがる），输入 `騰がる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #810 上着（うわぎ），输入 `上着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #810 上着（うわぎ），输入 `上衣`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #810 上着（うわぎ），输入 `表着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #820 中国語（ちゅうごくご），输入 `中国語`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #842 八百屋（やおや），输入 `八百屋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #843 曜日（ようび），输入 `曜日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #855 右側（みぎがわ），输入 `右側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #857 左側（ひだりがわ），输入 `左側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #858 最も（もっとも），输入 `尤も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #861 南側（みなみがわ），输入 `南側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #863 行き（ゆき），输入 `往き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #874 十（じゅう），输入 `一〇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #883 速い（はやい），输入 `捷い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #883 速い（はやい），输入 `疾い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #892 十月（じゅうがつ），输入 `一〇月`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #893 十一月（じゅういちがつ），输入 `一一月`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #894 十二月（じゅうにがつ），输入 `一二月`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #899 ありがとう（ありがとう），输入 `有り難う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #899 ありがとう（ありがとう），输入 `有難う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #907 おはよう（おはよう），输入 `お早う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #908 さようなら（さようなら），输入 `然様なら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #919 どういたしまして（どういたしまして），输入 `如何致しまして`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #924 〜過ぎ（すぎ），输入 `〜過ぎ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #931 〜番目（ばんめ），输入 `〜番目`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #939 ごみ箱（ごみばこ），输入 `塵箱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #939 ごみ箱（ごみばこ），输入 `芥箱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #939 ごみ箱（ごみばこ），输入 `護美箱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #947 その後（そのご），输入 `其の後`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #948 蕎麦（そば），输入 `蕎麦`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #949 (ポ)tabaco（タバコ），输入 `煙草`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #949 (ポ)tabaco（タバコ），输入 `烟草`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #952 天ぷら（てんぷら），输入 `天婦羅`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #952 天ぷら（てんぷら），输入 `天麩羅`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #959 みそ汁（みそしる），输入 `味噌汁`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #961 (ポ)Europa（ヨーロッパ），输入 `欧羅巴`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #964 以上（いじょう），输入 `已上`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #968 引く（ひく），输入 `曳く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #968 引く（ひく），输入 `牽く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #976 下手（へた），输入 `下手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #986 吸う（すう），输入 `喫う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #990 結構（けっこう），输入 `結構`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #993 厳しい（きびしい），输入 `酷しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #997 撮る（とる），输入 `録る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1001 寂しい（さびしい），输入 `淋しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1003 守る（まもる），输入 `護る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1004 手洗い（てあらい），输入 `手洗`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1017 真面目（まじめ），输入 `真面目`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1018 つらい（つらい），输入 `辛い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1019 人間（にんげん），输入 `人間`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1025 先に（さきに），输入 `曩に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1026 先輩（せんぱい），输入 `先輩`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1031 卓球（たっきゅう），输入 `卓球`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1036 丁寧（ていねい），输入 `叮嚀`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1047 返す（かえす），输入 `反す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1053 頼む（たのむ），输入 `恃む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1053 頼む（たのむ），输入 `憑む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1055 立派（りっぱ），输入 `立派`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1056 涼しい（すずしい），输入 `凉しい`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #1060 〜出す（だす），输入 `〜出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1070 おかしい（おかしい），输入 `可笑しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1084 しっかり（しっかり），输入 `確り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1084 しっかり（しっかり），输入 `聢り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1085 しまう（しまう），输入 `了う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1085 しまう（しまう），输入 `終う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1085 しまう（しまう），输入 `蔵う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1091 そのまま（そのまま），输入 `其のまま`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1091 そのまま（そのまま），输入 `其の儘`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1092 それぞれ（それぞれ），输入 `其れ其れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1092 それぞれ（それぞれ），输入 `夫れ夫れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1093 それで（それで），输入 `其れで`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1094 それとも（それとも），输入 `其れとも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1095 それなら（それなら），输入 `其れなら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1096 それに（それに），输入 `其れに`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1102 なかなか（なかなか），输入 `中々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1102 なかなか（なかなか），输入 `仲々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1102 なかなか（なかなか），输入 `却々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1102 なかなか（なかなか），输入 `却却`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1109 びっくり（びっくり），输入 `吃驚`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #1109 びっくり（びっくり），输入 `喫驚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1111 ひどい（ひどい），输入 `酷い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1111 ひどい（ひどい），输入 `非道い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1113 ほとんど（ほとんど），输入 `幾ど`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1121 やり方（やりかた），输入 `遣り方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1122 よろしい（よろしい），输入 `宜しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1126 以下（いか），输入 `已下`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1129 引き出し（ひきだし），输入 `引出し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1129 引き出し（ひきだし），输入 `抽き出し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1129 引き出し（ひきだし），输入 `抽斗`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1130 引っ越し（ひっこし），输入 `引越し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1141 回る（まわる），输入 `廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1142 壊れる（こわれる），输入 `毀れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1143 格好（かっこう），输入 `格好`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1143 格好（かっこう），输入 `恰好`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1144 楽しみ（たのしみ），输入 `愉しみ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1145 楽しむ（たのしむ），输入 `愉しむ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1154 頑張る（がんばる），输入 `頑張る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1156 喜ぶ（よろこぶ），输入 `悦ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1156 喜ぶ（よろこぶ），输入 `慶ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1156 喜ぶ（よろこぶ），输入 `歓ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1157 希望（きぼう），输入 `冀望`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1160 気持ち（きもち），输入 `気持`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1162 起こす（おこす），输入 `起す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1163 起こる（おこる），输入 `起る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1167 久しぶり（ひさしぶり），输入 `久し振り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1171 驚く（おどろく），输入 `愕く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1171 驚く（おどろく），输入 `駭く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1172 近所（きんじょ），输入 `近所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1174 具合（ぐあい），输入 `具合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1174 具合（ぐあい），输入 `工合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1177 係（かかり），输入 `係り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1180 迎える（むかえる），输入 `邀える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1181 決して（けっして），输入 `決して`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1182 結果（けっか），输入 `結果`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1190 現在（げんざい），输入 `見在`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1195 幸せ（しあわせ），输入 `仕合せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1195 幸せ（しあわせ），输入 `倖せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1198 行う（おこなう），输入 `行なう`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1200 黒板（こくばん），输入 `黒板`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1210 残る（のこる），输入 `遺る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1218 試合（しあい），输入 `試合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1218 試合（しあい），输入 `仕合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1228 失敗（しっぱい），输入 `失敗`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1231 捨てる（すてる），输入 `棄てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1232 手袋（てぶくろ），输入 `手袋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1238 助ける（たすける），输入 `佐ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1238 助ける（たすける），输入 `佑ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1238 助ける（たすける），输入 `扶ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1238 助ける（たすける），输入 `援ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1238 助ける（たすける），输入 `救ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1238 助ける（たすける），输入 `輔ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1240 勝つ（かつ），输入 `克つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1240 勝つ（かつ），输入 `贏つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1245 場合（ばあい），输入 `場合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1251 心配（しんぱい），输入 `心配`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1253 神社（じんじゃ），输入 `神社`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1256 人々（ひとびと），输入 `人々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1256 人々（ひとびと），输入 `人人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1266 生きる（いきる），输入 `活きる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1272 全て（すべて），输入 `凡て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1272 全て（すべて），输入 `惣て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1272 全て（すべて），输入 `渾て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1272 全て（すべて），输入 `総て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1274 増える（ふえる），输入 `殖える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1275 贈り物（おくりもの），输入 `贈物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1279 打つ（うつ），输入 `拍つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1279 打つ（うつ），输入 `搏つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1279 打つ（うつ），输入 `撲つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1279 打つ（うつ），输入 `擣つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1280 代わる（かわる），输入 `代る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1280 代わる（かわる），输入 `換る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1280 代わる（かわる），输入 `替る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1282 大人しい（おとなしい），输入 `大人しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1282 大人しい（おとなしい），输入 `温和しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1284 値段（ねだん），输入 `直段`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1285 知らせ（しらせ），输入 `報せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1286 知らせる（しらせる），输入 `報せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1296 通る（とおる），输入 `徹る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1296 通る（とおる），输入 `透る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1300 土産（みやげ），输入 `土産`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1302 倒れる（たおれる），输入 `仆れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1302 倒れる（たおれる），输入 `斃れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1305 盗む（ぬすむ），输入 `偸む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1307 当たる（あたる），输入 `中たる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1307 当たる（あたる），输入 `中る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1307 当たる（あたる），输入 `当る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1309 逃げる（にげる），输入 `遁げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1313 特急（とっきゅう），输入 `特急`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1315 匂い（におい），输入 `臭い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1316 日記（にっき），输入 `日記`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1317 入り口（いりぐち），输入 `入り口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1317 入り口（いりぐち），输入 `入口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1321 熱心（ねっしん），输入 `熱心`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1322 売り場（うりば），输入 `売場`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1324 泊まる（とまる），输入 `泊る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1326 悲しい（かなしい），输入 `哀しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1326 悲しい（かなしい），输入 `愛しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1327 比べる（くらべる），输入 `較べる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1328 美しい（うつくしい），输入 `愛しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1335 怖い（こわい），输入 `恐い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1339 払う（はらう），输入 `掃う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1340 分ける（わける），输入 `別ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1343 聞こえる（きこえる），输入 `聞える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1351 暮らす（くらす），输入 `暮す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1352 包む（つつむ），输入 `裹む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1359 眠い（ねむい），输入 `睡い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1360 眠る（ねむる），输入 `睡る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1363 迷う（まよう），输入 `紕う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1370 落ちる（おちる），输入 `墜ちる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1371 落とす（おとす），输入 `落す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1375 留守（るす），输入 `留主`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1386 おしゃべり（おしゃべり），输入 `お喋り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1389 これまで（これまで），输入 `是迄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1389 これまで（これまで），输入 `此れまで`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1389 これまで（これまで），输入 `此れ迄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1415 以来（いらい），输入 `已来`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1417 一生（いっしょう），输入 `一生`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1419 一方（いっぽう），输入 `一方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1441 景色（けしき），输入 `景色`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1442 決定（けってい），输入 `決定`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1445 合わせる（あわせる），输入 `併せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1445 合わせる（あわせる），输入 `合せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1450 思い出（おもいで），输入 `想い出`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1458 手帳（てちょう），输入 `手帖`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1462 詳しい（くわしい），输入 `委しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1462 詳しい（くわしい），输入 `精しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1470 数える（かぞえる），输入 `算える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1473 生年月日（せいねんがっぴ），输入 `生年月日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1474 絶対（ぜったい），输入 `絶対`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1475 戦う（たたかう），输入 `闘う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1475 戦う（たたかう），输入 `斗う`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #1482 大勢（おおぜい），输入 `大勢`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1483 第一（だいいち），输入 `第１`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1494 当たり前（あたりまえ），输入 `当り前`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1499 発見（はっけん），输入 `発見`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1526 かっこいい（かっこいい），输入 `格好いい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1526 かっこいい（かっこいい），输入 `格好良い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1529 仮名（かな），输入 `仮字`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1530 過ごす（すごす），输入 `過す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1535 辞める（やめる），输入 `罷める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1538 笑顔（えがお），输入 `笑顔`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1540 にんじん（にんじん），输入 `人参`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1542 接待（せったい），输入 `接待`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1542 接待（せったい），输入 `摂待`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1543 全〜（ぜん），输入 `全〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1547 断る（ことわる），输入 `断わる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1549 通す（とおす），输入 `徹す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1549 通す（とおす），输入 `透す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1565 確か（たしか），输入 `慥か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1566 恐ろしい（おそろしい），输入 `怖ろしい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1569 誕生（たんじょう），输入 `誕生`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1578 生む（うむ），输入 `産む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1581 大〜（おお），输入 `大〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1594 第〜（だい），输入 `第〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1596 腕時計（うでどけい），输入 `腕時計`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1602 空き缶（あきかん），输入 `空缶`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1603 折り紙（おりがみ），输入 `折り紙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1603 折り紙（おりがみ），输入 `折紙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1607 やっぱり（やっぱり），输入 `矢っ張り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1614 America（アメリカ），输入 `亜墨利加`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1614 America（アメリカ），输入 `亜米利加`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1616 おっしゃる（おっしゃる），输入 `仰る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1616 おっしゃる（おっしゃる），输入 `仰有る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1619 この前（このまえ），输入 `此の前`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1620 この辺（このへん），输入 `此の辺`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1624 すばらしい（すばらしい），输入 `素晴らしい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1633 ふるさと（ふるさと），输入 `故郷`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1633 ふるさと（ふるさと），输入 `故里`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1645 滑る（すべる），输入 `辷る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1653 今まで（いままで），输入 `今迄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1655 作家（さっか），输入 `作家`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1659 出張（しゅっちょう），输入 `出張`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1661 小〜（こ），输入 `小〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1662 丈夫（じょうぶ），输入 `丈夫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1669 代わり（かわり），输入 `代り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1669 代わり（かわり），输入 `替り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1673 田舎（いなか），输入 `田舎`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1676 二十歳（はたち），输入 `二十歳`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1676 二十歳（はたち），输入 `二十`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1677 梅雨（つゆ），输入 `梅雨`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1677 梅雨（つゆ），输入 `黴雨`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1680 かぶる（かぶる），输入 `冠る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1683 浴衣（ゆかた），输入 `浴衣`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1687 〜建て（だて），输入 `〜建て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1687 〜建て（だて），输入 `建て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1695 Asia（アジア），输入 `亜細亜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1696 あちこち（あちこち），输入 `彼方此方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1697 あちらこちら（あちらこちら），输入 `彼方此方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1698 あっちこっち（あっちこっち），输入 `彼方此方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1702 (ポ)Italia（イタリア），输入 `伊太利`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1702 (ポ)Italia（イタリア），输入 `伊太利亜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1703 いつまでも（いつまでも），输入 `何時までも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1708 おいでになる（おいでになる），输入 `お出でになる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1719 かなり（かなり），输入 `可也`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1720 嚙む（かむ），输入 `噛む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1720 嚙む（かむ），输入 `咬む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1720 嚙む（かむ），输入 `嚼む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1721 (オ)glas（ガラス），输入 `硝子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1722 かわいそう（かわいそう），输入 `可愛そう`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1722 かわいそう（かわいそう），输入 `可哀そう`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1722 かわいそう（かわいそう），输入 `可哀想`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1722 かわいそう（かわいそう），输入 `可哀相`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1729 この間（このあいだ），输入 `此の間`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1731 ご存じ（ごぞんじ），输入 `ご存じ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1731 ご存じ（ごぞんじ），输入 `御存じ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1731 ご存じ（ごぞんじ），输入 `ご存知`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1731 ご存じ（ごぞんじ），输入 `御存知`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1735 さまざま（さまざま），输入 `様々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1735 さまざま（さまざま），输入 `様様`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1738 しばらく（しばらく），输入 `姑く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1738 しばらく（しばらく），输入 `須臾`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1744 そこで（そこで），输入 `其処で`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1745 そのため（そのため），输入 `其のため`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1745 そのため（そのため），输入 `其の為`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1747 それほど（それほど），输入 `其れ程`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1747 それほど（それほど），输入 `其程`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1752 ちっとも（ちっとも），输入 `些とも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1753 つまり（つまり），输入 `詰り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1754 できるだけ（できるだけ），输入 `出来る丈`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1759 どのよう（どのよう），输入 `何の様`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1760 なるべく（なるべく），输入 `成る可く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1762 海苔（のり），输入 `海苔`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1771 lemon（レモン），输入 `檸檬`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1774 偉い（えらい），输入 `豪い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1775 移す（うつす），输入 `遷す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1776 移る（うつる），输入 `遷る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1777 一昨日（いっさくじつ），输入 `一昨日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1778 一生懸命（いっしょうけんめい），输入 `一生懸命`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1785 押し入れ（おしいれ），输入 `押入`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1785 押し入れ（おしいれ），输入 `押入れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1787 殴る（なぐる），输入 `撲る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1787 殴る（なぐる），输入 `擲る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1799 壊す（こわす），输入 `毀す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1805 患者（かんじゃ），输入 `患者`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1807 看板（かんばん），输入 `看板`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1819 禁煙（きんえん），输入 `禁烟`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #1820 金持ち（かねもち），输入 `金持`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1823 欠席（けっせき），输入 `欠席`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1824 喧嘩（けんか），输入 `諠譁`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1828 研究所（けんきゅうじょ），输入 `研究所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1835 向かう（むかう），输入 `向う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1835 向かう（むかう），输入 `対う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1841 香り（かおり），输入 `薫り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1841 香り（かおり），输入 `馨り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1846 差し上げる（さしあげる），输入 `差上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1850 参る（まいる），输入 `詣る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1856 刺身（さしみ），输入 `刺身`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1861 指輪（ゆびわ），输入 `指環`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1862 止む（やむ），输入 `已む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1862 止む（やむ），输入 `歇む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1862 止む（やむ），输入 `熄む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1862 止む（やむ），输入 `罷む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1865 叱る（しかる），输入 `𠮟る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1865 叱る（しかる），输入 `呵る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1866 実際（じっさい），输入 `実際`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1874 柔らかい（やわらかい），输入 `軟らかい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1878 出入り口（でいりぐち），输入 `出入り口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1878 出入り口（でいりぐち），输入 `出入口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1881 少々（しょうしょう），输入 `少々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1881 少々（しょうしょう），输入 `小々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1882 焼ける（やける），输入 `妬ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1882 焼ける（やける），输入 `灼ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1882 焼ける（やける），输入 `嫉ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1885 乗り換え（のりかえ），输入 `乗換`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1885 乗り換え（のりかえ），输入 `乗換え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1886 乗り物（のりもの），输入 `乗物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1890 申し上げる（もうしあげる），输入 `申上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1900 青空（あおぞら），输入 `青空`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1909 痩せる（やせる），输入 `瘠せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1910 窓口（まどぐち），输入 `窓口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1911 窓側（まどがわ），输入 `窓側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1914 太る（ふとる），输入 `肥る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1917 台風（たいふう），输入 `颱風`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1919 大型（おおがた），输入 `大型`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1919 大型（おおがた），输入 `大形`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1920 大声（おおごえ），输入 `大声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1921 大通り（おおどおり），输入 `大通り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1921 大通り（おおどおり），输入 `大通`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1925 暖房（だんぼう），输入 `煖房`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1944 唐辛子（とうがらし），输入 `唐辛子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1944 唐辛子（とうがらし），输入 `唐芥子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1944 唐辛子（とうがらし），输入 `蕃椒`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1945 踏む（ふむ），输入 `履む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1945 踏む（ふむ），输入 `践む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1946 憧れ（あこがれ），输入 `憬れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1948 内側（うちがわ），输入 `内側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1954 配る（くばる），输入 `賦る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1957 発展（はってん），输入 `発展`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1960 番組（ばんぐみ），输入 `番組`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1963 表す（あらわす），输入 `現わす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1963 表す（あらわす），输入 `表わす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1963 表す（あらわす），输入 `顕す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1964 布団（ふとん），输入 `蒲団`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1966 分かれる（わかれる），输入 `岐れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1968 文字（もじ），输入 `文字`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1969 文法（ぶんぽう），输入 `文法`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1975 捕まえる（つかまえる），输入 `掴まえる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1975 捕まえる（つかまえる），输入 `捉まえる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1976 暮らし（くらし），输入 `暮し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1979 褒める（ほめる），输入 `誉める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1979 褒める（ほめる），输入 `称める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1979 褒める（ほめる），输入 `讃める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1979 褒める（ほめる），输入 `賞める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1981 満足（まんぞく），输入 `満足`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1983 明日（あす），输入 `明日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1984 迷子（まいご），输入 `迷子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #1986 鳴く（なく），输入 `啼く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2003 列車（れっしゃ），输入 `列車`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2008 〜通り（とおり），输入 `〜通り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2009 〜通り（どおり），输入 `〜通り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2009 〜通り（どおり），输入 `通り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2012 あれこれ（あれこれ），输入 `彼是`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2012 あれこれ（あれこれ），输入 `彼此`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2013 あんまり（あんまり），输入 `余り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2014 いつの間にか（いつのまにか），输入 `何時の間にか`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2017 以降（いこう），输入 `已降`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2021 お手洗い（おてあらい），输入 `御手洗`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2023 風邪を引く（かぜをひく），输入 `風邪を引く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2023 風邪を引く（かぜをひく），输入 `風邪をひく`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2024 変わり者（かわりもの），输入 `変り者`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2030 下り（くだり），输入 `降り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2038 然し（しかし），输入 `併し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2044 吸殻（すいがら），输入 `吸い殻`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2044 吸殻（すいがら），输入 `吸殻`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2055 何方（どなた），输入 `何方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2058 灰皿（はいざら），输入 `灰皿`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2075 待合室（まちあいしつ），输入 `待合室`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2076 回す（まわす），输入 `廻す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2084 唐揚げ（からあげ），输入 `空揚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2084 唐揚げ（からあげ），输入 `唐揚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2085 別荘（べっそう），输入 `別荘`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2087 編み物（あみもの），输入 `編物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2089 防ぐ（ふせぐ），输入 `拒ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2089 防ぐ（ふせぐ），输入 `禦ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2090 北海道（ほっかいどう），输入 `北海道`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2091 殆ど（ほとんど），输入 `幾ど`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2094 明後日（あさって），输入 `明後日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2097 勿体ない（もったいない），输入 `勿体ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2097 勿体ない（もったいない），输入 `勿体無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2100 薬局（やっきょく），输入 `薬局`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2105 卵焼き（たまごやき），输入 `玉子焼き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2107 立入禁止（たちいりきんし），输入 `立入禁止`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2108 旅行会社（りょこうがいしゃ），输入 `旅行会社`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2110 恋人（こいびと），输入 `恋人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2132 向日葵（ひまわり），输入 `向日葵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2135 不味い（まずい），输入 `不味い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2140 一昨日（おととい），输入 `一昨日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2141 一人暮らし（ひとりぐらし），输入 `一人暮らし`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2141 一人暮らし（ひとりぐらし），输入 `１人暮らし`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2141 一人暮らし（ひとりぐらし），输入 `独り暮らし`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2147 歌舞伎（かぶき），输入 `歌舞妓`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2152 確り（しっかり），输入 `確り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2152 確り（しっかり），输入 `聢り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2153 割引（わりびき），输入 `割引`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2153 割引（わりびき），输入 `割り引き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2153 割引（わりびき），输入 `割引き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2163 居酒屋（いざかや），输入 `居酒屋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2170 結婚式（けっこんしき），输入 `結婚式`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2171 喧嘩（けんか），输入 `諠譁`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2185 慌てる（あわてる），输入 `周章てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2187 紅葉（もみじ），输入 `紅葉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2187 紅葉（もみじ），输入 `黄葉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2188 航空会社（こうくうがいしゃ），输入 `航空会社`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2194 暫く（しばらく），输入 `姑く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2194 暫く（しばらく），输入 `須臾`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2196 仕舞う（しまう），输入 `了う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2196 仕舞う（しまう），输入 `終う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2196 仕舞う（しまう），输入 `蔵う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2198 旨く（うまく），输入 `上手く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2198 旨く（うまく），输入 `巧く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2198 旨く（うまく），输入 `甘く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2199 紙飛行機（かみひこうき），输入 `紙ヒコーキ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2201 手作り（てづくり），输入 `手作り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2201 手作り（てづくり），输入 `手造り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2204 出来るだけ（できるだけ），输入 `出来る丈`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2205 初詣（はつもうで），输入 `初詣`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2211 色鉛筆（いろえんぴつ），输入 `色鉛筆`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2213 申込書（もうしこみしょ），输入 `申込書`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2215 親子丼（おやこどん），输入 `親子丼`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2218 生地（きじ），输入 `素地`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2220 設計（せっけい），输入 `設計`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2225 相変わらず（あいかわらず），输入 `相変らず`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2229 打ち合わせ（うちあわせ），输入 `打合せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2236 丁度（ちょうど），输入 `恰度`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2243 お辞儀（おじぎ），输入 `御辞儀`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2252 日本酒（にほんしゅ），输入 `日本酒`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2255 年寄り（としより），输入 `年寄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2257 派手（はで），输入 `派手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2271 如何（いかが），输入 `如何`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2277 餃子（ぎょうざ），输入 `餃子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2284 煙突（えんとつ），输入 `烟突`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #2287 割れる（われる），输入 `破れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2289 出身（しゅっしん），输入 `出身`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2290 新型（しんがた），输入 `新型`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2290 新型（しんがた），输入 `新形`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2296 発表会（はっぴょうかい），输入 `発表会`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2297 お祖母さん（おばあさん），输入 `お祖母さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2297 お祖母さん（おばあさん），输入 `お婆さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2299 富士山（ふじさん），输入 `富士山`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2299 富士山（ふじさん），输入 `不二山`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2299 富士山（ふじさん），输入 `不尽山`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2304 分かり（わかり），输入 `分り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2304 分かり（わかり），输入 `判り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2304 分かり（わかり），输入 `解り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2308 宝くじ（たからくじ），输入 `宝籤`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2310 北京ダック（ぺきんダック），输入 `北京ダック`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2315 お爺さん（おじいさん），输入 `お祖父さん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2316 矢っ張り（やっぱり），输入 `矢っ張り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2321 梨（なし），输入 `梨子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2323 良く（よく），输入 `克く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2323 良く（よく），输入 `好く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2323 良く（よく），输入 `能く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2361 凧（たこ），输入 `紙凧`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2361 凧（たこ），输入 `紙鳶`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2377 斯う（こう），输入 `斯う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2379 こどもの日（こどものひ），输入 `子供の日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2415 ホンコン（ホンコン），输入 `香港`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2420 あの人（あのひと），输入 `彼の人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2423 すき焼き（すきやき），输入 `寿喜焼`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2423 すき焼き（すきやき），输入 `鋤焼`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2423 すき焼き（すきやき），输入 `鋤焼き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2439 そば屋（そばや），输入 `蕎麦屋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2444 段段（だんだん），输入 `段々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2445 一緒に（いっしょに），输入 `一緒に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2450 塩辛い（しおからい），输入 `鹹い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2452 何時（いつ），输入 `何時`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2453 何時も（いつも），输入 `何時も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2454 何処（どこ），输入 `何処`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2454 何処（どこ），输入 `何所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2455 何方（どちら），输入 `何方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2456 可愛い（かわいい），输入 `可愛い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2457 可笑しい（おかしい），输入 `可笑しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2459 如何（どう），输入 `如何`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2460 確かめる（たしかめる），输入 `慥かめる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2463 乾杯（かんぱい），输入 `乾杯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2463 乾杯（かんぱい），输入 `乾盃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2469 企画（きかく），输入 `企劃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2474 貴方（あなた），输入 `貴方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2474 貴方（あなた），输入 `貴女`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2474 貴方（あなた），输入 `貴男`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2475 詰まらない（つまらない），输入 `詰らない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2481 蕎麦（そば），输入 `蕎麦`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2485 偶に（たまに），输入 `適に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2495 よろしくお願いします（よろしくおねがいします），输入 `宜しくお願いします`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2496 此の儘（このまま），输入 `此の儘`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2497 此れから（これから），输入 `此れから`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2497 此れから（これから），输入 `是から`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2500 昨夜（ゆうべ），输入 `昨夜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2500 昨夜（ゆうべ），输入 `昨夕`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2503 止める（やめる），输入 `已める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2503 止める（やめる），输入 `廃める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2513 祝う（いわう），输入 `斎う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2520 焼き鳥（やきとり），输入 `焼鳥`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2523 シャンハイ（シャンハイ），输入 `上海`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2524 色々（いろいろ），输入 `色々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2525 神戸（こうべ），输入 `神戸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2526 行き（いき），输入 `往き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2533 清水（しみず），输入 `清水`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2536 絶対に（ぜったいに），输入 `絶対に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2537 ウーロン茶（ウーロンちゃ），输入 `烏竜茶`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2537 ウーロン茶（ウーロンちゃ），输入 `烏龍茶`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2540 素晴らしい（すばらしい），输入 `素晴らしい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2547 お金（おかね），输入 `御金`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2548 其方（そちら），输入 `其方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2549 饂飩（うどん），输入 `饂飩`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2552 煩い（うるさい），输入 `五月蠅い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2552 煩い（うるさい），输入 `五月蝿い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2554 只今（ただいま），输入 `唯今`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2555 叩く（たたく），输入 `敲く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2557 中国人（ちゅうごくじん），输入 `中国人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2558 中々（なかなか），输入 `中々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2558 中々（なかなか），输入 `仲々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2558 中々（なかなか），输入 `却々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2558 中々（なかなか），输入 `却却`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2563 天井（てんじょう），输入 `天井`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2565 美味しい（おいしい），输入 `美味しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2566 東京（とうきょう），输入 `東亰`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2570 玩具（おもちゃ），输入 `玩具`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2572 日本料理（にほんりょうり），输入 `日本料理`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2574 如何して（どうして），输入 `如何して`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2575 お早う（おはよう），输入 `お早う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2576 彼処（あそこ），输入 `彼処`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2576 彼処（あそこ），输入 `彼所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2577 彼方（あちら），输入 `彼方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2579 〜によって（によって），输入 `に依って`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2579 〜によって（によって），输入 `に因って`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2581 何れ（どれ），输入 `何れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2618 持ち帰り（もちかえり），输入 `持帰り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2621 叔父（おじ），输入 `叔父`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2621 叔父（おじ），输入 `伯父`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2622 出発時刻（しゅっぱつじこく），输入 `出発時刻`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2630 かしこまりました（かしこまりました），输入 `畏まりました`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2636 おしゃれ（おしゃれ），输入 `お洒落`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2640 catalog（カタログ），输入 `型録`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2660 こうして（こうして），输入 `斯うして`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2671 しゃっくり（しゃっくり），输入 `吃逆`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2680 そのうえ（そのうえ），输入 `其の上`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2683 叩く（たたく），输入 `敲く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2684 ついでに（ついでに），输入 `序でに`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2684 ついでに（ついでに），输入 `序に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2685 ついに（ついに），输入 `遂に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2685 ついに（ついに），输入 `竟に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2685 ついに（ついに），输入 `終に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2686 つかむ（つかむ），输入 `掴む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2686 つかむ（つかむ），输入 `摑む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2686 つかむ（つかむ），输入 `攫む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2690 どうしても（どうしても），输入 `如何しても`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2693 とにかく（とにかく），输入 `兎に角`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2693 とにかく（とにかく），输入 `左右`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2702 bucket（バケツ），输入 `馬尻`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2702 bucket（バケツ），输入 `馬穴`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2712 ぶつける（ぶつける），输入 `打付ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2717 France（フランス），输入 `仏蘭西`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2724 まとめる（まとめる），输入 `纏める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2725 まぶしい（まぶしい），输入 `眩しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2729 めでたい（めでたい），输入 `芽出度い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2729 めでたい（めでたい），输入 `目出度い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2731 もともと（もともと），输入 `元々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2731 もともと（もともと），输入 `本々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2731 もともと（もともと），输入 `本本`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2742 暗記（あんき），输入 `諳記`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2752 一人一人（ひとりひとり），输入 `一人一人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2752 一人一人（ひとりひとり），输入 `一人ひとり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2752 一人一人（ひとりひとり），输入 `１人１人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2754 一般（いっぱん），输入 `一般`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2758 引き受ける（ひきうける），输入 `引受ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2759 引っ張る（ひっぱる），输入 `引っ張る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2761 隠す（かくす），输入 `匿す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2771 押さえる（おさえる），输入 `押える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2773 化粧（けしょう），输入 `仮粧`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2780 花火（はなび），输入 `花火`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2780 花火（はなび），输入 `煙火`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2786 悔しい（くやしい），输入 `口惜しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2788 改札口（かいさつぐち），输入 `改札口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2792 各国（かっこく），输入 `各国`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2795 学科（がっか），输入 `学科`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2796 学期（がっき），输入 `学期`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2798 楽器（がっき），输入 `楽器`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2799 割合（わりあい），输入 `割合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2801 勧める（すすめる），输入 `奨める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2804 干す（ほす），输入 `乾す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2814 関わる（かかわる），输入 `係わる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2814 関わる（かかわる），输入 `拘る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2826 輝く（かがやく），输入 `耀く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2826 輝く（かがやく），输入 `赫く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2838 決まり（きまり），输入 `極まり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2839 決心（けっしん），输入 `決心`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2841 結局（けっきょく），输入 `結局`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2845 嫌がる（いやがる），输入 `厭がる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2856 現れる（あらわれる），输入 `現われる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2856 現れる（あらわれる），输入 `顕れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2866 向かい（むかい），输入 `向い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2866 向かい（むかい），输入 `対い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2869 広がる（ひろがる），输入 `拡がる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2870 広げる（ひろげる），输入 `拡げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2871 絞る（しぼる），输入 `搾る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2873 合図（あいず），输入 `合図`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2876 骨折（こっせつ），输入 `骨折`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2892 市場（いちば），输入 `市庭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2904 持ち帰る（もちかえる），输入 `持帰る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2905 時刻（じこく），输入 `時剋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2906 次々（つぎつぎ），输入 `次々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2910 実験（じっけん），输入 `実験`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2911 実行（じっこう），输入 `実行`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2912 実習（じっしゅう），输入 `実習`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2915 芝生（しばふ），输入 `芝生`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2916 煮る（にる），输入 `烹る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2921 取り消す（とりけす），输入 `取消す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2929 従う（したがう），输入 `遵う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2929 従う（したがう），输入 `随う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2929 従う（したがう），输入 `順う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2935 出勤（しゅっきん），输入 `出勤`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2943 小型（こがた），输入 `小型`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2943 小型（こがた），输入 `小形`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2944 小遣い（こづかい），输入 `小遣い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2959 食器（しょっき），输入 `食器`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2961 食欲（しょくよく），输入 `食慾`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2967 申し込む（もうしこむ），输入 `申込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2974 進歩（しんぽ），输入 `進歩`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2983 生け花（いけばな），输入 `生け花`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2983 生け花（いけばな），输入 `生花`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2983 生け花（いけばな），输入 `活け花`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2983 生け花（いけばな），输入 `活花`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2984 生まれ（うまれ），输入 `生れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #2997 増やす（ふやす），输入 `殖やす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3014 知識（ちしき），输入 `智識`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3015 着替え（きがえ），输入 `着替え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3015 着替え（きがえ），输入 `着換え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3017 注ぐ（そそぐ），输入 `漑ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3017 注ぐ（そそぐ），输入 `潅ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3017 注ぐ（そそぐ），输入 `濺ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3017 注ぐ（そそぐ），输入 `灌ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3018 注文（ちゅうもん），输入 `註文`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3022 追う（おう），输入 `逐う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3033 締め切り（しめきり），输入 `締切`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3033 締め切り（しめきり），输入 `締切り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3044 登山（とざん），输入 `登山`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3046 怒鳴る（どなる），输入 `呶鳴る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3047 凍る（こおる），输入 `氷る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3052 憧れる（あこがれる），输入 `憬れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3057 日帰り（ひがえり），输入 `日帰り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3059 日程（にってい），输入 `日程`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3068 売り切れる（うりきれる），输入 `売切れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3069 剝く（むく），输入 `剥く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3073 発表（はっぴょう），输入 `発表`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3080 筆者（ひっしゃ），输入 `筆者`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3084 描く（えがく），输入 `画く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3085 描く（かく），输入 `画く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3093 物価（ぶっか），输入 `物価`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3099 平等（びょうどう），输入 `平等`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3102 別々（べつべつ），输入 `別々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3108 包丁（ほうちょう），输入 `庖丁`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3109 抱く（いだく），输入 `懐く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3111 放る（ほうる），输入 `抛る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3112 飽きる（あきる），输入 `倦きる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3112 飽きる（あきる），输入 `厭きる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3123 面倒（めんどう），输入 `面倒`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3131 頼る（たよる），输入 `便る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3132 落ち着く（おちつく），输入 `落着く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3139 両替（りょうがえ），输入 `両替`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3143 冷やす（ひやす），输入 `冷す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3147 かゆい（かゆい），输入 `痒い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3148 箇所（かしょ），输入 `個所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3150 〜向け（むけ），输入 `〜向け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3151 〜合う（あう），输入 `〜合う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3170 おむつ（おむつ），输入 `お襁褓`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3171 お年玉（おとしだま），输入 `お年玉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3173 搔く（かく），输入 `掻く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3177 かわいらしい（かわいらしい），输入 `可愛らしい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3180 こぼす（こぼす），输入 `溢す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3180 こぼす（こぼす），输入 `零す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3180 こぼす（こぼす），输入 `翻す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3185 ずるい（ずるい），输入 `狡い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3186 その場（そのば），输入 `其の場`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3187 それでも（それでも），输入 `其れでも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3189 だるい（だるい），输入 `怠い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3189 だるい（だるい），输入 `懈い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3193 なぜか（なぜか），输入 `何故か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3201 もったいない（もったいない），输入 `勿体ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3201 もったいない（もったいない），输入 `勿体無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3202 やり直す（やりなおす），输入 `遣り直す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3223 回り（まわり），输入 `廻り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3226 各〜（かく），输入 `各〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3231 丘（おか），输入 `陸符`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3233 曲げる（まげる），输入 `枉げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3236 掲示板（けいじばん），输入 `掲示板`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3243 行き先（いきさき），输入 `行先`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3246 今頃（いまごろ），输入 `今頃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3251 作り出す（つくりだす），输入 `創り出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3256 持ち物（もちもの），输入 `持物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3257 持ち歩く（もちあるく），输入 `持歩く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3263 実家（じっか），输入 `実家`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3265 借金（しゃっきん），输入 `借金`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3268 受け取る（うけとる），输入 `受取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3269 受け入れる（うけいれる），输入 `受け容れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3273 出国（しゅっこく），输入 `出国`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3276 笑い（わらい），输入 `嗤い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3281 振り込む（ふりこむ），输入 `振込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3288 人数（にんずう），输入 `人数`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3294 盛ん（さかん），输入 `壮ん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3294 盛ん（さかん），输入 `旺ん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3302 走り回る（はしりまわる），输入 `走り廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3305 足音（あしおと），输入 `跫音`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3323 締まる（しまる），输入 `緊まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3329 東側（ひがしがわ），输入 `東側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3336 売り上げ（うりあげ），输入 `売上`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3338 発生（はっせい），输入 `発生`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3339 半々（はんはん），输入 `半々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3340 反〜（はん），输入 `反〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3344 不〜（ふ），输入 `不〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3350 物語（ものがたり），输入 `物語`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3353 歩き回る（あるきまわる），输入 `歩き廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3365 溶ける（とける），输入 `融ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3371 和菓子（わがし），输入 `和菓子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3398 申し込み（もうしこみ），输入 `申込`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3398 申し込み（もうしこみ），输入 `申込み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3399 受け取り（うけとり），输入 `受取`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3399 受け取り（うけとり），输入 `受取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3399 受け取り（うけとり），输入 `請取`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3400 くたびれる（くたびれる），输入 `草臥れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3404 おやつ（おやつ），输入 `お八つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3408 ろうそく（ろうそく），输入 `蝋燭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3409 ゆでる（ゆでる），输入 `茹でる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3409 ゆでる（ゆでる），输入 `煠でる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3411 かじる（かじる），输入 `噛る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3411 かじる（かじる），输入 `囓る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3411 かじる（かじる），输入 `齧る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3412 あらゆる（あらゆる），输入 `凡ゆる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3420 (オ)gom（ゴム），输入 `護謨`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3423 しつこい（しつこい），输入 `執拗い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3448 引っ掛ける（ひっかける），输入 `引っ懸ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3457 絵の具（えのぐ），输入 `絵具`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3461 覚める（さめる），输入 `醒める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3476 欠点（けってん），输入 `欠点`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3479 現れ（あらわれ），输入 `現われ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3479 現れ（あらわれ），输入 `表われ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3479 現れ（あらわれ），输入 `顕れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3482 工夫（くふう），输入 `功夫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3493 支払い（しはらい），输入 `支払`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3498 湿気（しっけ），输入 `湿気`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3502 取っ手（とって），输入 `把っ手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3502 取っ手（とって），输入 `把手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3511 申し訳（もうしわけ），输入 `申分け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3511 申し訳（もうしわけ），输入 `申訳`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3519 双子（ふたご），输入 `双子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3519 双子（ふたご），输入 `二子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3525 達する（たっする），输入 `達する`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3529 虫歯（むしば），输入 `虫歯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3529 虫歯（むしば），输入 `齲歯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3537 定休日（ていきゅうび），输入 `定休日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3544 売り切れ（うりきれ），输入 `売切`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3544 売り切れ（うりきれ），输入 `売切れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3550 付き合い（つきあい），输入 `付合い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3554 方角（ほうがく），输入 `方角`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3556 吠える（ほえる），输入 `吼える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3556 吠える（ほえる），输入 `咆える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3559 名字（みょうじ），输入 `苗字`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3560 明かり（あかり），输入 `灯り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3564 目覚まし（めざまし），输入 `目覚まし`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3564 目覚まし（めざまし），输入 `目覚し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3565 問い合わせ（といあわせ），输入 `問い合せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3565 問い合わせ（といあわせ），输入 `問合せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3565 問い合わせ（といあわせ），输入 `問合わせ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3568 夕日（ゆうひ），输入 `夕陽`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3581 沿い（ぞい），输入 `沿い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3581 沿い（ぞい），输入 `添い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3590 炒める（いためる），输入 `煠める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3591 お決まり（おきまり），输入 `お決り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3597 どれだけ（どれだけ），输入 `何れ丈`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3598 なめる（なめる），输入 `舐める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3598 なめる（なめる），输入 `嘗める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3598 なめる（なめる），输入 `甞める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3602 まして（まして），输入 `況して`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3609 一〜（ひと），输入 `一〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3615 割り引く（わりびく），输入 `割り引く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3615 割り引く（わりびく），输入 `割引く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3619 近道（ちかみち），输入 `近路`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3621 月間（げっかん），输入 `月間`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3631 取り付ける（とりつける），输入 `取付ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3632 受け入れ（うけいれ），输入 `受入れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3633 受け付ける（うけつける），输入 `受付ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3636 小声（こごえ），输入 `小声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3643 人間関係（にんげんかんけい），输入 `人間関係`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3644 数〜（すう），输入 `数〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3646 生み出す（うみだす），输入 `産み出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3648 待ち合わせ（まちあわせ），输入 `待ち合せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3649 貸し出す（かしだす），输入 `貸出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3655 発券（はっけん），输入 `発券`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3656 沸騰（ふっとう），输入 `沸騰`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3657 聞き取り（ききとり），输入 `聞取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3657 聞き取り（ききとり），输入 `聴き取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3657 聞き取り（ききとり），输入 `聴取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3658 聞き上手（ききじょうず），输入 `聞き上手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3658 聞き上手（ききじょうず），输入 `聴き上手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3660 返る（かえる），输入 `反る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3661 〜放題（ほうだい），输入 `〜放題`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3662 未〜（み），输入 `未〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3663 目覚める（めざめる），输入 `目覚める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3663 目覚める（めざめる），输入 `目醒める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3667 翌〜（よく），输入 `翌〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3668 来〜（らい），输入 `来〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3669 裏側（うらがわ），输入 `裏側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3681 はるか（はるか），输入 `遥か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3692 引き落とす（ひきおとす），输入 `引き落す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3692 引き落とす（ひきおとす），输入 `引落す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3692 引き落とす（ひきおとす），输入 `引落とす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3693 円高（えんだか），输入 `円高`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3694 何かと（なにかと），输入 `何彼と`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3701 うつろ（うつろ），输入 `空ろ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3701 うつろ（うつろ），输入 `虚ろ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3701 うつろ（うつろ），输入 `洞ろ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3702 経る（へる），输入 `歴る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3703 建て直す（たてなおす），输入 `建直す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3705 行い（おこない），输入 `行ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3708 察する（さっする），输入 `察する`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3712 取り囲む（とりかこむ），输入 `取囲む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3713 振り込み（ふりこみ），输入 `振込`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3713 振り込み（ふりこみ），输入 `振込み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3714 身近（みぢか），输入 `身近`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3717 大空（おおぞら），输入 `大空`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3720 当たり（あたり），输入 `当り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3720 当たり（あたり），输入 `中たり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3720 当たり（あたり），输入 `中り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3721 内緒（ないしょ），输入 `内証`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3724 貧乏（びんぼう），输入 `貧乏`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3737 お返し（おかえし），输入 `御返し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3740 したたか（したたか），输入 `強か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3740 したたか（したたか），输入 `健か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3742 ちなみに（ちなみに），输入 `因に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3742 ちなみに（ちなみに），输入 `因みに`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3750 所以（ゆえん），输入 `所以`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3752 牡蠣（かき），输入 `牡蠣`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3752 牡蠣（かき），输入 `牡蛎`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3758 蛍光（けいこう），输入 `螢光`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3759 決まって（きまって），输入 `極まって`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3763 合わせて（あわせて），输入 `併せて`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3763 合わせて（あわせて），输入 `合せて`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3771 前方（ぜんぽう），输入 `前方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3774 投げ捨てる（なげすてる），输入 `投げ棄てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3774 投げ捨てる（なげすてる），输入 `投捨てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3788 察し（さっし），输入 `察し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3792 たんす（たんす），输入 `箪笥`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3796 チャーハン（チャーハン），输入 `炒飯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3799 掛け合う（かけあう），输入 `懸け合う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3805 眠り（ねむり），输入 `睡り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3822 組み立て（くみたて），输入 `組立`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3828 網棚（あみだな），输入 `網棚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3833 積極的（せっきょくてき），输入 `積極的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3834 一般的（いっぱんてき），输入 `一般的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3836 なぜなら（なぜなら），输入 `何故なら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3850 飼い主（かいぬし），输入 `飼主`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3855 それだけ（それだけ），输入 `其れだけ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3855 それだけ（それだけ），输入 `其れ丈`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3856 かき混ぜる（かきまぜる），输入 `掻き混ぜる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3856 かき混ぜる（かきまぜる），输入 `掻き雑ぜる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3859 一泊（いっぱく），输入 `一泊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3860 焼きそば（やきそば），输入 `焼き蕎麦`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3868 結集（けっしゅう），输入 `結集`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3871 空き家（あきや），输入 `空家`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3874 洋菓子（ようがし），输入 `洋菓子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3876 言葉遊び（ことばあそび），输入 `言葉遊び`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3891 話し上手（はなしじょうず），输入 `話し上手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3891 話し上手（はなしじょうず），输入 `話上手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3899 実際的（じっさいてき），输入 `実際的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3900 経済的（けいざいてき），输入 `経済的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3905 持ち運び（もちはこび），输入 `持運び`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3908 仲良く（なかよく），输入 `仲好く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3912 ぶらんこ（ぶらんこ），输入 `鞦韆`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3914 古着（ふるぎ），输入 `古着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3917 話し声（はなしごえ），输入 `話し声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3917 話し声（はなしごえ），输入 `話声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3925 落ちこぼれ（おちこぼれ），输入 `落ち零れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3926 大盛り（おおもり），输入 `大盛`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3927 うどん（うどん），输入 `饂飩`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3929 石鹸（せっけん），输入 `石鹸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3929 石鹸（せっけん），输入 `石けん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3938 数々（かずかず），输入 `数々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3939 相撲（すもう），输入 `相撲`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3939 相撲（すもう），输入 `角力`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3946 Africa（アフリカ），输入 `阿弗利加`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3948 お前（おまえ），输入 `御前`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3949 かしこまる（かしこまる），输入 `畏まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3962 ほうれん草（ほうれんそう），输入 `菠薐草`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3964 やってくる（やってくる），输入 `遣って来る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3965 やりがい（やりがい），输入 `遣り甲斐`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3967 わがまま（わがまま），输入 `我が侭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3967 わがまま（わがまま），输入 `我が儘`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3967 わがまま（わがまま），输入 `我侭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3967 わがまま（わがまま），输入 `我儘`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3971 一昨年（いっさくねん），输入 `一昨年`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3972 応え（こたえ），输入 `報え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3976 喜び（よろこび），输入 `悦び`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3976 喜び（よろこび），输入 `慶び`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3976 喜び（よろこび），输入 `歓び`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3980 祈る（いのる），输入 `祷る`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #3980 祈る（いのる），输入 `禱る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3981 喫煙（きつえん），输入 `喫烟`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #3982 近頃（ちかごろ），输入 `近頃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3987 言葉遣い（ことばづかい），输入 `言葉遣い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #3987 言葉遣い（ことばづかい），输入 `言葉使い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4002 出会う（であう），输入 `出逢う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4003 少なくとも（すくなくとも），输入 `尠くとも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4010 誠に（まことに），输入 `真に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4010 誠に（まことに），输入 `実に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4010 誠に（まことに），输入 `寔に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4010 誠に（まことに），输入 `洵に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4011 昔話（むかしばなし），输入 `昔話`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4012 造る（つくる），输入 `創る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4014 漬ける（つける），输入 `浸ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4015 漬物（つけもの），输入 `漬物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4023 任せる（まかせる），输入 `委せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4026 彼ら（かれら），输入 `彼等`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4033 あいにく（あいにく），输入 `生憎`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4037 あるいは（あるいは），输入 `或いは`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4039 いずれ（いずれ），输入 `何れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4039 いずれ（いずれ），输入 `孰れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4040 いちいち（いちいち），输入 `一々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4041 いよいよ（いよいよ），输入 `弥々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4041 いよいよ（いよいよ），输入 `愈々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4042 いらいら（いらいら），输入 `苛々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4042 いらいら（いらいら），输入 `苛苛`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4046 およそ（およそ），输入 `凡そ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4047 かえって（かえって），输入 `却って`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4047 かえって（かえって），输入 `反って`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4053 くどい（くどい），输入 `諄い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4062 しかも（しかも），输入 `而も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4063 じっと（じっと），输入 `凝乎と`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4074 すなわち（すなわち），输入 `即ち`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4074 すなわち（すなわち），输入 `乃ち`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4074 すなわち（すなわち），输入 `則ち`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4076 そのうち（そのうち），输入 `其の内`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4090 にらむ（にらむ），输入 `睨む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4094 流行り（はやり），输入 `流行り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4106 ますます（ますます），输入 `益々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4106 ますます（ますます），输入 `増々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4115 わざと（わざと），输入 `態と`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4125 一瞬（いっしゅん），输入 `一瞬`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4126 一体（いったい），输入 `一体`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4140 やけど（やけど），输入 `火傷`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4141 我々（われわれ），输入 `我々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4141 我々（われわれ），输入 `吾々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4146 回り道（まわりみち），输入 `回り路`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4146 回り道（まわりみち），输入 `廻り路`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4146 回り道（まわりみち），输入 `廻り道`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4147 回復（かいふく），输入 `恢復`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4159 株式会社（かぶしきがいしゃ），输入 `株式会社`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4160 巻く（まく），输入 `捲く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4163 含む（ふくむ），输入 `銜む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4167 すでに（すでに），输入 `既に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4167 すでに（すでに），输入 `已に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4169 機嫌（きげん），输入 `機嫌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4169 機嫌（きげん），输入 `譏嫌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4179 居眠り（いねむり），输入 `居睡り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4184 恐れる（おそれる），输入 `怖れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4184 恐れる（おそれる），输入 `懼れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4184 恐れる（おそれる），输入 `畏れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4187 挟む（はさむ），输入 `挿む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4201 激しい（はげしい），输入 `劇しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4201 激しい（はげしい），输入 `烈しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4203 欠ける（かける），输入 `缺ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4203 欠ける（かける），输入 `闕ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4211 賢い（かしこい），输入 `畏い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4212 現す（あらわす），输入 `現わす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4212 現す（あらわす），输入 `表わす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4212 現す（あらわす），输入 `顕す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4219 雇う（やとう），输入 `傭う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4226 広まる（ひろまる），输入 `弘まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4235 国々（くにぐに），输入 `国々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4236 国家（こっか），输入 `国家`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4237 国会（こっかい），输入 `国会`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4240 込める（こめる），输入 `籠める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4262 失う（うしなう），输入 `喪う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4265 実感（じっかん），输入 `実感`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4267 実績（じっせき），输入 `実績`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4268 手続き（てつづき），输入 `手続`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4272 就く（つく），输入 `即く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4273 就ける（つける），输入 `即ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4281 出版（しゅっぱん），输入 `出版`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4281 出版（しゅっぱん），输入 `出板`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4282 出来事（できごと），输入 `出来事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4284 述べる（のべる），输入 `宣べる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4284 述べる（のべる），输入 `陳べる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4291 勝手（かって），输入 `勝手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4300 蒸し暑い（むしあつい），输入 `蒸暑い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4304 食う（くう），输入 `喰う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4304 食う（くう），输入 `啖う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4309 振る舞う（ふるまう），输入 `振舞う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4313 真っ白（まっしろ），输入 `真白`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4314 真似（まね），输入 `真似`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4315 真似る（まねる），输入 `真似る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4326 生き生き（いきいき），输入 `活き活き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4328 生存（せいぞん），输入 `生存`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4332 積もる（つもる），输入 `積る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4349 足下（あしもと），输入 `足許`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4354 大臣（だいじん），输入 `大臣`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4372 締め切る（しめきる），输入 `〆切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4372 締め切る（しめきる），输入 `締切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4372 締め切る（しめきる），输入 `閉切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4377 踏み切り（ふみきり），输入 `踏切`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4377 踏み切り（ふみきり），输入 `踏み切`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4377 踏み切り（ふみきり），输入 `踏切り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4381 日当たり（ひあたり），输入 `日当り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4381 日当たり（ひあたり），输入 `陽当り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4382 日付（ひづけ），输入 `日付`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4382 日付（ひづけ），输入 `日附`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4394 発達（はったつ），输入 `発達`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4406 必死（ひっし），输入 `必死`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4407 表れる（あらわれる），输入 `現われる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4407 表れる（あらわれる），输入 `顕れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4410 付近（ふきん），输入 `附近`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4413 浮かぶ（うかぶ），输入 `泛ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4414 浮かべる（うかべる），输入 `泛かべる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4414 浮かべる（うかべる），输入 `浮べる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4418 覆う（おおう），输入 `掩う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4418 覆う（おおう），输入 `蓋う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4418 覆う（おおう），输入 `蔽う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4418 覆う（おおう），输入 `被う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4419 物事（ものごと），输入 `物事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4422 保存（ほぞん），输入 `保存`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4438 目立つ（めだつ），输入 `目立つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4441 役立つ（やくだつ），输入 `役立つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4444 有り難い（ありがたい），输入 `有り難い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4444 有り難い（ありがたい），输入 `有難い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4450 溶かす（とかす），输入 `融かす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4454 利口（りこう），输入 `悧口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4454 利口（りこう），输入 `悧巧`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4456 立場（たちば），输入 `立場`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4457 留まる（とまる），输入 `停まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4457 留まる（とまる），输入 `駐まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4458 留める（とめる），输入 `停める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4466 洒落（しゃれ），输入 `洒落`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4469 づらい（づらい），输入 `辛い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4475 〜付き（つき），输入 `〜付き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4483 この頃（このごろ），输入 `此の頃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4491 どこまでも（どこまでも），输入 `何処までも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4491 どこまでも（どこまでも），输入 `何処迄も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4493 どれほど（どれほど），输入 `何れ程`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4493 どれほど（どれほど），输入 `何程`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4494 なぜならば（なぜならば），输入 `何故ならば`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4497 Hawaii（ハワイ），输入 `布哇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4502 やりとり（やりとり），输入 `遣り取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4503 やる気（やるき），输入 `遣る気`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4504 より(副)（より），输入 `より(副)`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4510 引かれる（ひかれる），输入 `惹かれる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4515 下す（くだす），输入 `降す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4517 何事（なにごと），输入 `何事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4520 我が（わが），输入 `吾が`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4524 外側（そとがわ），输入 `外側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4530 巻き込む（まきこむ），输入 `捲き込む`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #4538 興味深い（きょうみぶかい），输入 `興味深い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4540 区切る（くぎる），输入 `区切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4540 区切る（くぎる），输入 `句切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4541 隅々（すみずみ），输入 `隅々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4541 隅々（すみずみ），输入 `隅隅`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4553 慌ただしい（あわただしい），输入 `慌しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4553 慌ただしい（あわただしい），输入 `遽しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4562 差出人（さしだしにん），输入 `差出人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4569 作り上げる（つくりあげる），输入 `創り上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4577 試し（ためし），输入 `験し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4579 持ち主（もちぬし），输入 `持主`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4585 車両（しゃりょう），输入 `車輌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4585 車両（しゃりょう），输入 `車輛`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4586 手元（てもと），输入 `手許`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4595 出会い（であい），输入 `出会`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4595 出会い（であい），输入 `出合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4595 出会い（であい），输入 `出逢い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4597 勝負（しょうぶ），输入 `勝負`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4612 図る（はかる），输入 `謀る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4615 整える（ととのえる），输入 `調える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4615 整える（ととのえる），输入 `斉える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4619 先々（さきざき），输入 `先々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4619 先々（さきざき），输入 `先先`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4624 組み合わせ（くみあわせ），输入 `組み合せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4624 組み合わせ（くみあわせ），输入 `組合せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4625 組み合わせる（くみあわせる），输入 `組み合せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4625 組み合わせる（くみあわせる），输入 `組合せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4628 憎い（にくい），输入 `悪い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4636 大喜び（おおよろこび），输入 `大喜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4649 長年（ながねん），输入 `永年`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4652 停留所（ていりゅうじょ），输入 `停留所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4656 添付（てんぷ），输入 `添付`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4656 添付（てんぷ），输入 `添附`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4660 吐き気（はきけ），输入 `吐気`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4660 吐き気（はきけ），输入 `嘔き気`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4663 読解（どっかい），输入 `読解`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4664 二度と（にどと），输入 `２度と`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4665 日々（ひび），输入 `日々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4665 日々（ひび），输入 `日日`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4667 日課（にっか），输入 `日課`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4668 日差し（ひざし），输入 `日差し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4668 日差し（ひざし），输入 `日射し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4668 日差し（ひざし），输入 `陽射し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4668 日差し（ひざし），输入 `陽差し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4670 入り込む（はいりこむ），输入 `這入り込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4671 入れ替わる（いれかわる），输入 `入れ代る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4671 入れ替わる（いれかわる），输入 `入れ替る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4672 年々（ねんねん），输入 `年々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4678 売り手（うりて），输入 `売手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4679 売り物（うりもの），输入 `売物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4681 発車（はっしゃ），输入 `発車`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4682 髪型（かみがた），输入 `髪型`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4682 髪型（かみがた），输入 `髪形`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4688 鼻水（はなみず），输入 `洟水`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4696 怖がる（こわがる），输入 `恐がる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4701 聞き取る（ききとる），输入 `聴き取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4702 聞き手（ききて），输入 `聴き手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4709 方々（かたがた），输入 `方々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4709 方々（かたがた），输入 `方方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4712 眠気（ねむけ），输入 `睡気`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4715 鳴き声（なきごえ），输入 `鳴き声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4715 鳴き声（なきごえ），输入 `鳴声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4719 問い合わせる（といあわせる），输入 `問い合せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4719 問い合わせる（といあわせる），输入 `問合せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4719 問い合わせる（といあわせる），输入 `問合わせる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4720 夜空（よぞら），输入 `夜空`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4723 夕立（ゆうだち），输入 `夕立`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4725 欲張り（よくばり），输入 `欲張り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4726 落ち葉（おちば），输入 `落ち葉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4726 落ち葉（おちば），输入 `落葉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4730 了解（りょうかい），输入 `諒解`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4732 力強い（ちからづよい），输入 `力強い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4735 話し言葉（はなしことば），输入 `話し言葉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4735 話し言葉（はなしことば），输入 `話言葉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4749 ねじ（ねじ），输入 `捩子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4749 ねじ（ねじ），输入 `捻子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4749 ねじ（ねじ），输入 `螺子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4749 ねじ（ねじ），输入 `螺旋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4755 憎む（にくむ），输入 `悪む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4756 至る（いたる），输入 `到る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4775 日光（にっこう），输入 `日光`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4778 質素（しっそ），输入 `質素`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4782 なにもかも（なにもかも），输入 `何も彼も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4785 手品（てじな），输入 `手品`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4791 差し引く（さしひく），输入 `差引く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4792 一層（いっそう），输入 `一層`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4794 人混み（ひとごみ），输入 `人混み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4794 人混み（ひとごみ），输入 `人込み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4803 落とし物（おとしもの），输入 `落し物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4807 東西（とうざい），输入 `東西`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4808 一種（いっしゅ），输入 `一種`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4809 実る（みのる），输入 `稔る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4815 わずか（わずか），输入 `僅か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4815 わずか（わずか），输入 `纔か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4818 やかましい（やかましい），输入 `喧しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4823 混じる（まじる），输入 `雑じる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4825 たちまち（たちまち），输入 `忽ち`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4826 さびる（さびる），输入 `錆びる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4827 思いがけない（おもいがけない），输入 `思い掛けない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4828 でたらめ（でたらめ），输入 `出鱈目`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4829 いわゆる（いわゆる），输入 `所謂`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4831 続々（ぞくぞく），输入 `続々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4832 そろえる（そろえる），输入 `揃える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4833 おおよそ（おおよそ），输入 `凡そ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4833 おおよそ（おおよそ），输入 `大凡`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4834 蓄える（たくわえる），输入 `貯える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4835 整う（ととのう），输入 `斉う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4835 整う（ととのう），输入 `調う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4836 度々（たびたび），输入 `度々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4837 当てはまる（あてはまる），输入 `当て嵌まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4841 物差し（ものさし），输入 `物差`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4841 物差し（ものさし），输入 `物指`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4843 あくまで（あくまで），输入 `飽く迄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4844 無理やり（むりやり），输入 `無理遣り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4845 もうかる（もうかる），输入 `儲かる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4846 厄介（やっかい），输入 `厄介`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4847 流行る（はやる），输入 `流行る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4848 もたれる（もたれる），输入 `凭れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4848 もたれる（もたれる），输入 `靠れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4849 ささやく（ささやく），输入 `囁く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4849 ささやく（ささやく），输入 `私語く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4850 しびれる（しびれる），输入 `痺れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4852 やがて（やがて），输入 `軈て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4852 やがて（やがて），输入 `頓て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4853 うなずく（うなずく），输入 `頷く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4853 うなずく（うなずく），输入 `点頭く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4853 うなずく（うなずく），输入 `肯く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4853 うなずく（うなずく），输入 `首肯く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4889 とっくに（とっくに），输入 `疾っくに`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4890 ともかく（ともかく），输入 `兎も角`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4921 威張る（いばる），输入 `威張る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4927 一致（いっち），输入 `一致`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4929 一定（いってい），输入 `一定`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4930 引き止める（ひきとめる），输入 `引止める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4930 引き止める（ひきとめる），输入 `引留める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4942 下書き（したがき），输入 `下書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4950 回転（かいてん），输入 `廻転`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4959 隔てる（へだてる），输入 `距てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4961 活気（かっき），输入 `活気`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4966 葛藤（かっとう），输入 `葛藤`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4973 関連（かんれん），输入 `関聯`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #4992 救う（すくう），输入 `済う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4996 共に（ともに），输入 `倶に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #4997 境界（きょうかい），输入 `疆界`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5018 欠陥（けっかん），输入 `欠陥`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5021 憲法（けんぽう），输入 `憲法`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5023 見回る（みまわる），输入 `見廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5025 見事（みごと），输入 `見事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5025 見事（みごと），输入 `美事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5027 険しい（けわしい），输入 `嶮しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5038 誤り（あやまり），输入 `謬り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5045 広々（ひろびろ），输入 `広々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5045 広々（ひろびろ），输入 `広広`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5052 行方（ゆくえ），输入 `行方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5052 行方（ゆくえ），输入 `行衛`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5057 差し伸べる（さしのべる），输入 `差伸べる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5057 差し伸べる（さしのべる），输入 `差延べる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5065 作曲（さっきょく），输入 `作曲`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5069 雑草（ざっそう），输入 `雑草`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5073 刺激（しげき），输入 `刺戟`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5079 糸口（いとぐち），输入 `糸口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5082 歯車（はぐるま），输入 `歯車`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5085 次ぐ（つぐ），输入 `亜ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5088 実施（じっし），输入 `実施`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5090 若々しい（わかわかしい），输入 `若々しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5106 住まい（すまい），输入 `住い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5106 住まい（すまい），输入 `住居`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5110 出世（しゅっせ），输入 `出世`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5113 巡る（めぐる），输入 `回る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5113 巡る（めぐる），输入 `廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5113 巡る（めぐる），输入 `繞る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5114 順々（じゅんじゅん），输入 `順々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5120 徐々に（じょじょに），输入 `徐々に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5122 将棋（しょうぎ），输入 `将棋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5122 将棋（しょうぎ），输入 `将棊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5122 将棋（しょうぎ），输入 `象戯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5122 将棋（しょうぎ），输入 `象棋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5135 障害（しょうがい），输入 `障碍`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #5135 障害（しょうがい），输入 `障礙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5139 審判（しんぱん），输入 `審判`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5150 人通り（ひとどおり），输入 `人通り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5152 ずうずうしい（ずうずうしい），输入 `図々しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5152 ずうずうしい（ずうずうしい），输入 `図図しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5165 接する（せっする），输入 `接する`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5169 先端（せんたん），输入 `尖端`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5170 占う（うらなう），输入 `卜う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5175 全般（ぜんぱん），输入 `全般`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5178 素人（しろうと），输入 `素人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5181 遡る（さかのぼる），输入 `泝る`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #5181 遡る（さかのぼる），输入 `溯る`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #5190 騒々しい（そうぞうしい），输入 `騒々しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5190 騒々しい（そうぞうしい），输入 `騒騒しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5193 増す（ます），输入 `益す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5199 打ち消す（うちけす），输入 `打消す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5204 台詞（せりふ），输入 `台詞`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5204 台詞（せりふ），输入 `科白`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5210 知らず知らず（しらずしらず），输入 `不知不識`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5210 知らず知らず（しらずしらず），输入 `知らず識らず`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5211 知恵（ちえ），输入 `智恵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5211 知恵（ちえ），输入 `智慧`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5212 知能（ちのう），输入 `智能`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5216 着々（ちゃくちゃく），输入 `着々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5220 長引く（ながびく），输入 `長引く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5221 直径（ちょっけい），输入 `直径`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5231 徹底（てってい），输入 `徹底`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5234 電波（でんぱ），输入 `電波`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5236 努める（つとめる），输入 `力める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5236 努める（つとめる），输入 `勉める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5239 等しい（ひとしい），输入 `均しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5239 等しい（ひとしい），输入 `斉しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5243 独り言（ひとりごと），输入 `独り言`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5243 独り言（ひとりごと），输入 `一人ごと`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5243 独り言（ひとりごと），输入 `一人言`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5245 凸凹（でこぼこ），输入 `凸凹`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5246 突き当たる（つきあたる），输入 `衝き当たる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5249 熱する（ねっする），输入 `熱する`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5250 熱帯（ねったい），输入 `熱帯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5251 熱中（ねっちゅう），输入 `熱中`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5258 迫る（せまる），输入 `逼る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5261 発揮（はっき），输入 `発揮`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5262 発行（はっこう），输入 `発行`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5263 発想（はっそう），输入 `発想`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5272 備える（そなえる），输入 `具える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5273 筆記（ひっき），输入 `筆記`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5276 評判（ひょうばん），输入 `評判`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5280 付属（ふぞく），输入 `附属`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5283 物質（ぶっしつ），输入 `物質`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5284 物騒（ぶっそう），输入 `物騒`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5292 編集（へんしゅう），输入 `編輯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5294 捕らえる（とらえる），输入 `捉える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5294 捕らえる（とらえる），输入 `捕える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5304 膨らむ（ふくらむ），输入 `脹らむ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5305 膨大（ぼうだい），输入 `厖大`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5305 膨大（ぼうだい），输入 `尨大`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5311 満ちる（みちる），输入 `充ちる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5318 矛盾（むじゅん），输入 `矛楯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5323 目印（めじるし），输入 `目印`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5323 目印（めじるし），输入 `目標`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5324 目指す（めざす），输入 `目指す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5324 目指す（めざす），输入 `目差す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5326 問う（とう），输入 `訪う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5330 優れる（すぐれる），输入 `勝れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5334 湧く（わく），输入 `涌く`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #5336 予備（よび），输入 `預備`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5337 予防（よぼう），输入 `預防`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5342 溶け込む（とけこむ），输入 `融け込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5345 用心（ようじん），输入 `用心`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5345 用心（ようじん），输入 `要心`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5351 乱れる（みだれる），输入 `紊れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5353 裏切る（うらぎる），输入 `裏切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5354 率直（そっちょく），输入 `率直`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5354 率直（そっちょく），输入 `卒直`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5355 立ち止まる（たちどまる），输入 `立ち止まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5376 〜気味（ぎみ），输入 `〜気味`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5376 〜気味（ぎみ），输入 `気味`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5378 〜遣い（づかい），输入 `〜遣い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5387 知らず（しらず），输入 `不知`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5391 〜避け（よけ），输入 `〜避け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5391 〜避け（よけ），输入 `除け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5396 〜離れ（ばなれ），输入 `〜離れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5396 〜離れ（ばなれ），输入 `離れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5397 〜連れ（づれ），输入 `〜連れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5397 〜連れ（づれ），输入 `連れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5402 ありがち（ありがち），输入 `有り勝ち`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5404 うっすら（うっすら），输入 `薄ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5405 うつむく（うつむく），输入 `俯く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5410 かすか（かすか），输入 `幽か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5410 かすか（かすか），输入 `微か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5411 かつて（かつて），输入 `嘗て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5411 かつて（かつて），输入 `曽て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5411 かつて（かつて），输入 `都て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5414 かばう（かばう），输入 `庇う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5419 くじ引き（くじびき），输入 `くじ引き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5419 くじ引き（くじびき），输入 `籤引`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5419 くじ引き（くじびき），输入 `籤引き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5421 くみ取る（くみとる），输入 `汲み取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5421 くみ取る（くみとる），输入 `酌み取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5423 こだわり（こだわり），输入 `拘り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5424 こだわる（こだわる），输入 `拘る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5424 こだわる（こだわる），输入 `拘わる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5427 この度（このたび），输入 `此の度`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5427 この度（このたび），输入 `此度`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5429 ささやか（ささやか），输入 `細やか`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5431 錆（さび），输入 `錆び`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5436 掬う（すくう），输入 `抄う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5437 そもそも（そもそも），输入 `抑々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5437 そもそも（そもそも），输入 `抑抑`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5438 それとなく（それとなく），输入 `其れと無く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5439 どうにも（どうにも），输入 `如何にも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5440 とやかく（とやかく），输入 `兎や角`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5445 にもかかわらず（にもかかわらず），输入 `にも拘らず`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5453 剝ける（むける），输入 `剥ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5454 めくる（めくる），输入 `捲る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5455 めったに（めったに），输入 `滅多に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5457 もたらす（もたらす），输入 `齎す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5458 もとより（もとより），输入 `固より`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5458 もとより（もとより），输入 `素より`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5459 やむを得ない（やむをえない），输入 `已むを得ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5462 わざわざ（わざわざ），输入 `態々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5462 わざわざ（わざわざ），输入 `態態`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5463 悪化（あっか），输入 `悪化`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5466 一気に（いっきに），输入 `一気に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5467 一転（いってん），输入 `一転`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5468 引き続き（ひきつづき），输入 `引続き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5474 下回る（したまわる），输入 `下廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5477 果たす（はたす），输入 `果す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5482 改まる（あらたまる），输入 `革まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5490 勧め（すすめ），输入 `奨め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5493 間近（まぢか），输入 `間近`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5493 間近（まぢか），输入 `真近`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5497 気軽（きがる），输入 `気軽`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5500 客観的（きゃっかんてき），输入 `客観的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5506 共働き（ともばたらき），输入 `共働き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5508 恐れ（おそれ），输入 `怖れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5508 恐れ（おそれ），输入 `畏れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5509 恐れ多い（おそれおおい），输入 `畏れ多い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5510 興奮（こうふん），输入 `亢奮`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5510 興奮（こうふん），输入 `昂奮`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5514 区切り（くぎり），输入 `区切り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5514 区切り（くぎり），输入 `句切り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5519 軽々（かるがる），输入 `軽々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5519 軽々（かるがる），输入 `軽軽`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5524 決勝（けっしょう），输入 `決勝`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5531 見積もり（みつもり），输入 `見積り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5537 玄人（くろうと），输入 `玄人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5537 玄人（くろうと），输入 `黒人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5543 個別（こべつ），输入 `箇別`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5547 誤る（あやまる），输入 `謬る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5561 今時（いまどき），输入 `今時`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5563 差し支える（さしつかえる），输入 `差し支える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5563 差し支える（さしつかえる），输入 `差支える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5565 錯覚（さっかく），输入 `錯覚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5568 使い果たす（つかいはたす），输入 `使い果す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5568 使い果たす（つかいはたす），输入 `遣い果す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5579 試す（ためす），输入 `験す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5583 持ち込む（もちこむ），输入 `持込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5588 実践（じっせん），输入 `実践`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5589 実態（じったい），输入 `実態`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5590 弱々しい（よわよわしい），输入 `弱々しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5594 取り組む（とりくむ），输入 `取組む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5596 手軽（てがる），输入 `手軽`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5597 手頃（てごろ），输入 `手頃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5598 手当て（てあて），输入 `手当`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5599 手放す（てばなす），输入 `手放す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5599 手放す（てばなす），输入 `手離す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5606 出生（しゅっしょう），输入 `出生`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5607 準〜（じゅん），输入 `準〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5613 諸〜（しょ），输入 `諸〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5617 傷つく（きずつく），输入 `疵付く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5623 上回る（うわまわる），输入 `上廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5628 心強い（こころづよい），输入 `心強い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5630 真〜（ま），输入 `真〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5641 成り立つ（なりたつ），输入 `成立つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5642 生かす（いかす），输入 `活かす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5643 生きがい（いきがい），输入 `生き甲斐`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5647 精一杯（せいいっぱい），输入 `精一杯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5648 積み重ねる（つみかさねる），输入 `積重ねる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5649 切り捨てる（きりすてる），输入 `切捨てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5649 切り捨てる（きりすてる），输入 `斬り捨てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5650 設置（せっち），输入 `設置`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5651 設定（せってい），输入 `設定`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5652 説得（せっとく），输入 `説得`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5653 説得力（せっとくりょく），输入 `説得力`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5656 先立つ（さきだつ），输入 `先立つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5658 戦い（たたかい），输入 `闘い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5661 染みる（しみる），输入 `沁みる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5661 染みる（しみる），输入 `泌みる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5661 染みる（しみる），输入 `浸みる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5661 染みる（しみる），输入 `滲みる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5662 選考（せんこう），输入 `銓衡`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5671 ふさわしい（ふさわしい），输入 `相応しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5673 相性（あいしょう），输入 `合性`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5675 総合（そうごう），输入 `綜合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5676 草花（くさばな），输入 `草花`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5684 打ち上げ（うちあげ），输入 `打上げ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5684 打ち上げ（うちあげ），输入 `打揚げ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5686 打ち明ける（うちあける），输入 `打明ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5692 大幅（おおはば），输入 `大巾`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5694 達成（たっせい），输入 `達成`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5696 誰一人（だれひとり），输入 `誰一人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5696 誰一人（だれひとり），输入 `だれ一人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5699 値引き（ねびき），输入 `値引き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5699 値引き（ねびき），输入 `値引`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5700 値上がり（ねあがり），输入 `値上り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5708 頂（いただき），输入 `戴き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5710 釣り合う（つりあう），输入 `釣合う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5724 道端（みちばた），输入 `道端`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5725 読み取る（よみとる），输入 `読取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5727 日頃（ひごろ），输入 `日頃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5736 買い求める（かいもとめる），输入 `買求める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5737 買い上げ（かいあげ），输入 `買上げ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5738 売り出す（うりだす），输入 `売出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5740 薄型（うすがた），输入 `薄型`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5741 発送（はっそう），输入 `発送`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5742 悲しみ（かなしみ），输入 `哀しみ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5742 悲しみ（かなしみ），输入 `愛しみ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5755 分配（ぶんぱい），输入 `分配`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5756 返品（へんぴん），输入 `返品`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5761 くるむ（くるむ），输入 `包む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5772 満たす（みたす），输入 `充たす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5773 密接（みっせつ），输入 `密接`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5781 憂鬱（ゆううつ），输入 `幽鬱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5781 憂鬱（ゆううつ），输入 `悒鬱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5787 乱れ（みだれ），输入 `紊れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5789 旅立つ（たびだつ），输入 `旅立つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5791 漏れる（もれる），输入 `洩れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5796 あらかじめ（あらかじめ），输入 `予め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5797 ありのまま（ありのまま），输入 `有りの儘`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5799 いかに（いかに），输入 `如何に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5803 おだてる（おだてる），输入 `煽てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5804 自ずから（おのずから），输入 `自ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5806 かねて（かねて），输入 `予て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5814 しきたり（しきたり），输入 `為来たり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5814 しきたり（しきたり），输入 `為来り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5825 たくましい（たくましい），输入 `逞しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5826 たどり着く（たどりつく），输入 `辿り着く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5827 たどる（たどる），输入 `辿る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5829 たんぱく質（たんぱくしつ），输入 `蛋白質`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5830 つくづく（つくづく），输入 `熟々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5830 つくづく（つくづく），输入 `熟熟`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5831 つぶやく（つぶやく），输入 `呟く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5833 とどめる（とどめる），输入 `停める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5833 とどめる（とどめる），输入 `止める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5833 とどめる（とどめる），输入 `留める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5834 とりわけ（とりわけ），输入 `取分け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5836 なじむ（なじむ），输入 `馴染む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5838 はまる（はまる），输入 `嵌まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5838 はまる（はまる），输入 `塡まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5838 はまる（はまる），输入 `填まる`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #5840 ひいては（ひいては），输入 `延いては`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5841 ひたすら（ひたすら），输入 `一向`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5841 ひたすら（ひたすら），输入 `只管`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5852 もはや（もはや），输入 `最早`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5856 圧勝（あっしょう），输入 `圧勝`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5857 圧倒（あっとう），输入 `圧倒`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5861 意欲（いよく），输入 `意慾`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5866 一括（いっかつ），输入 `一括`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5867 一見（いっけん），输入 `一見`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5868 一切（いっさい），输入 `一切`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5869 一変（いっぺん），输入 `一変`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5879 遠方（えんぽう），输入 `遠方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5885 回覧（かいらん），输入 `廻覧`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5893 楽観的（らっかんてき），输入 `楽観的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5895 活発（かっぱつ），输入 `活発`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5895 活発（かっぱつ），输入 `活溌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5895 活発（かっぱつ），输入 `活潑`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5897 完璧（かんぺき），输入 `完璧`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5904 肝心（かんじん），输入 `肝心`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5904 肝心（かんじん），输入 `肝腎`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5908 寄り掛かる（よりかかる），输入 `倚り懸かる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5908 寄り掛かる（よりかかる），输入 `凭り掛かる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5910 気兼ね（きがね），输入 `気兼ね`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5912 記す（しるす），输入 `誌す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5912 記す（しるす），输入 `識す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5913 居心地（いごこち），输入 `居心地`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5922 極める（きわめる），输入 `窮める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5931 継ぐ（つぐ），输入 `嗣ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5931 継ぐ（つぐ），输入 `続ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5931 継ぐ（つぐ），输入 `襲ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5935 見なす（みなす），输入 `看做す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5935 見なす（みなす），输入 `見做す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5936 見過ごす（みすごす），输入 `見過す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5937 見積もる（みつもる），输入 `見積る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5938 見通し（みとおし），输入 `見透し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5939 見逃す（みのがす），输入 `見遁す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5950 行き来（いきき），输入 `往き来`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5950 行き来（いきき），输入 `行来`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5951 合間（あいま），输入 `合間`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5954 根本（こんぽん），输入 `根本`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5957 最寄り（もより），输入 `最寄り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5964 残高（ざんだか），输入 `残高`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5968 指図（さしず），输入 `指図`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5977 賜る（たまわる），输入 `給わる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5977 賜る（たまわる），输入 `賜わる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5982 実質（じっしつ），输入 `実質`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5987 取り扱い（とりあつかい），输入 `取扱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5987 取り扱い（とりあつかい），输入 `取扱い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5990 取り寄せる（とりよせる），输入 `取寄せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5993 手近（てぢか），输入 `手近`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5996 腫れる（はれる），输入 `脹れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #5998 受け身（うけみ），输入 `受身`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6000 収集（しゅうしゅう），输入 `蒐集`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6006 出回る（でまわる），输入 `出廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6007 小売り（こうり），输入 `小売`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6013 触れ合い（ふれあい），输入 `触合い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6014 心地（ここち），输入 `心地`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6017 浸す（ひたす），输入 `漬す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6018 申し出る（もうしでる），输入 `申出る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6020 身の回り（みのまわり），输入 `身の廻り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6021 身振り（みぶり），输入 `身振り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6038 染み込む（しみこむ），输入 `沁み込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6038 染み込む（しみこむ），输入 `浸み込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6038 染み込む（しみこむ），输入 `滲み込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6040 前もって（まえもって），输入 `前以て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6042 前売り（まえうり），输入 `前売`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6052 尊い（とうとい），输入 `貴い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6053 損なう（そこなう），输入 `害う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6060 耐える（たえる），输入 `堪える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6063 大げさ（おおげさ），输入 `大袈裟`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6067 脱出（だっしゅつ），输入 `脱出`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6068 嘆く（なげく），输入 `歎く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6072 段取り（だんどり），输入 `段取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6076 抽選（ちゅうせん），输入 `抽籤`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6078 貼り紙（はりがみ），输入 `張り紙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6078 貼り紙（はりがみ），输入 `貼り紙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6078 貼り紙（はりがみ），输入 `貼紙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6080 長編（ちょうへん），输入 `長篇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6092 添える（そえる），输入 `副える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6096 努めて（つとめて），输入 `力めて`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6096 努めて（つとめて），输入 `勉めて`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6101 逃す（のがす），输入 `遁す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6102 逃れる（のがれる），输入 `遁れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6110 読み上げる（よみあげる），输入 `読上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6113 日陰（ひかげ），输入 `日蔭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6126 反発（はんぱつ），输入 `反発`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6126 反発（はんぱつ），输入 `反撥`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6133 飛び散る（とびちる），输入 `飛散る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6134 備わる（そなわる），输入 `具わる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6142 物資（ぶっし），输入 `物資`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6144 物体（ぶったい），输入 `物体`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6150 補助（ほじょ），输入 `輔助`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6153 放棄（ほうき），输入 `抛棄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6161 いまだに（いまだに），输入 `未だに`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6162 密着（みっちゃく），输入 `密着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6166 明瞭（めいりょう），输入 `明亮`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6167 模索（もさく），输入 `摸索`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6181 絡む（からむ），输入 `搦む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6184 理屈（りくつ），输入 `理窟`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6187 離れ離れ（はなればなれ），输入 `離れ離れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6189 立て替える（たてかえる），输入 `立替える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6190 了承（りょうしょう），输入 `諒承`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6199 練る（ねる），输入 `煉る`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #6199 練る（ねる），输入 `邌る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6199 練る（ねる），输入 `錬る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6212 あいつ（あいつ），输入 `彼奴`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6215 いかにも（いかにも），输入 `如何にも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6219 お越し（おこし），输入 `御越し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6220 駆け引き（かけひき），输入 `懸け引き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6222 嚙み合う（かみあう），输入 `噛み合う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6227 こなす（こなす），输入 `熟す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6233 しかしながら（しかしながら），输入 `併し乍ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6233 しかしながら（しかしながら），输入 `然し乍ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6235 しばし（しばし），输入 `暫し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6238 そこら（そこら），输入 `其処ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6240 そのもの（そのもの），输入 `其の物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6241 それなり（それなり），输入 `其れなり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6249 なぞらえる（なぞらえる），输入 `擬える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6249 なぞらえる（なぞらえる），输入 `準える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6249 なぞらえる（なぞらえる），输入 `准える`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #6251 にじみ出る（にじみでる），输入 `滲み出る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6256 ふさふさ（ふさふさ），输入 `房々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6256 ふさふさ（ふさふさ），输入 `総々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6262 まんざら（まんざら），输入 `満更`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6265 やり抜く（やりぬく），输入 `遣り抜く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6266 ゆえに（ゆえに），输入 `故に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6271 わきまえる（わきまえる），输入 `弁える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6273 圧倒的（あっとうてき），输入 `圧倒的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6274 〜宛て（あて），输入 `〜宛て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6279 一角（いっかく），输入 `一角`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6283 隠れ家（かくれが），输入 `隠れ家`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6283 隠れ家（かくれが），输入 `隠れ処`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6287 何ら（なんら），输入 `何等`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6288 何らか（なんらか），输入 `何等か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6290 箇条（かじょう），输入 `個条`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6292 過酷（かこく），输入 `苛酷`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6293 芽生える（めばえる），输入 `芽生える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6294 回りくどい（まわりくどい），输入 `回り諄い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6300 たまらない（たまらない），输入 `堪らない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6306 寄り道（よりみち），输入 `寄道`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6307 寄付（きふ），输入 `寄附`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6312 輝かしい（かがやかしい），输入 `耀かしい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6312 輝かしい（かがやかしい），输入 `赫かしい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6319 極まりない（きわまりない），输入 `窮まりない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6321 かがむ（かがむ），输入 `屈む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6324 決まり文句（きまりもんく），输入 `決り文句`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6326 決着（けっちゃく），输入 `決着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6326 決着（けっちゃく），输入 `結着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6329 見張る（みはる），输入 `瞠る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6333 めりはり（めりはり），输入 `乙張り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6333 めりはり（めりはり），输入 `減り張り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6335 個々（ここ），输入 `個々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6335 個々（ここ），输入 `箇々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6335 個々（ここ），输入 `箇箇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6346 江戸（えど），输入 `江戸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6349 行き詰まる（いきづまる），输入 `行き詰る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6353 込み入る（こみいる），输入 `込入る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6355 根強い（ねづよい），输入 `根強い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6356 根性（こんじょう），输入 `根性`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6357 根本的（こんぽんてき），输入 `根本的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6358 梱包（こんぽう），输入 `梱包`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6366 昨今（さっこん），输入 `昨今`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6367 冊子（さっし），输入 `冊子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6368 察知（さっち），输入 `察知`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6369 仕草（しぐさ），输入 `仕草`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6369 仕草（しぐさ），输入 `仕種`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6369 仕草（しぐさ），输入 `為種`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6370 仕入れ（しいれ），输入 `仕入`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6371 使いこなす（つかいこなす），输入 `使い熟す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6373 思いやり（おもいやり），输入 `思い遣り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6374 思う存分（おもうぞんぶん），输入 `思う存分`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6386 取り返す（とりかえす），输入 `取返す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6388 手応え（てごたえ），输入 `手応え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6389 手助け（てだすけ），输入 `手助け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6396 出社（しゅっしゃ），输入 `出社`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6397 出店（しゅってん），输入 `出店`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6399 少人数（しょうにんずう），输入 `少人数`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6403 新品（しんぴん），输入 `新品`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6408 正座（せいざ），输入 `正坐`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6409 積み重なる（つみかさなる），输入 `積重なる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6413 説教（せっきょう），输入 `説教`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6418 惣菜（そうざい），输入 `惣菜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6418 惣菜（そうざい），输入 `総菜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6428 待ち伏せ（まちぶせ），输入 `待ち伏せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6428 待ち伏せ（まちぶせ），输入 `待伏せ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6429 代々（だいだい），输入 `代々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6433 蓄え（たくわえ），输入 `貯え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6438 追い立てる（おいたてる），输入 `追立てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6442 締めくくる（しめくくる），输入 `締め括る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6447 伝票（でんぴょう），输入 `伝票`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6454 突き詰める（つきつめる），输入 `突詰める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6456 突拍子もない（とっぴょうしもない），输入 `突拍子もない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6456 突拍子もない（とっぴょうしもない），输入 `突拍子も無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6460 任す（まかす），输入 `委す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6468 発散（はっさん），输入 `発散`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6474 百科（ひゃっか），输入 `百科`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6476 不具合（ふぐあい），输入 `不具合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6483 片〜（かた），输入 `片〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6485 捕らわれる（とらわれる），输入 `囚われる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6485 捕らわれる（とらわれる），输入 `捉われる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6485 捕らわれる（とらわれる），输入 `捕われる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6498 遊び心（あそびごころ），输入 `遊び心`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6501 欲求（よっきゅう），输入 `欲求`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6504 立ち並ぶ（たちならぶ），输入 `立並ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6511 一斉に（いっせいに），输入 `一斉に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6519 遭う（あう），输入 `逢う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6519 遭う（あう），输入 `遇う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6522 接客（せっきゃく），输入 `接客`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6523 衰退（すいたい），输入 `衰頽`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6525 ひまわり（ひまわり），输入 `向日葵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6528 関わり（かかわり），输入 `係わり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6530 賛否（さんぴ），输入 `賛否`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6532 買い手（かいて），输入 `買手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6540 思い描く（おもいえがく），输入 `想い描く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6544 薄々（うすうす），输入 `薄々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6546 こいつ（こいつ），输入 `此奴`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6547 一歩（いっぽ），输入 `一歩`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6548 この世（このよ），输入 `此の世`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6552 果たして（はたして），输入 `果して`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6554 言い聞かせる（いいきかせる），输入 `言聞かせる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6567 根元（ねもと），输入 `根本`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6574 駆け込む（かけこむ），输入 `駈け込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6576 考え事（かんがえごと），输入 `考え事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6580 窓際（まどぎわ），输入 `窓際`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6585 呼び名（よびな），输入 `呼名`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6589 ぬいぐるみ（ぬいぐるみ），输入 `縫いぐるみ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6589 ぬいぐるみ（ぬいぐるみ），输入 `縫い包み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6598 行き着く（いきつく），输入 `行着く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6599 続行（ぞっこう），输入 `続行`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6605 衣装（いしょう），输入 `衣裳`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6610 帰還（きかん），输入 `饋還`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6613 駆け抜ける（かけぬける），输入 `駆抜ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6613 駆け抜ける（かけぬける），输入 `駈け抜ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6614 繰り広げる（くりひろげる），输入 `繰広げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6615 引き離す（ひきはなす），输入 `引離す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6618 手早い（てばやい），输入 `手早い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6623 洗練（せんれん），输入 `洗煉`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #6626 引き渡す（ひきわたす），输入 `引渡す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6630 吸い取る（すいとる），输入 `吸取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6648 直結（ちょっけつ），输入 `直結`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6649 突起（とっき），输入 `突起`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6649 突起（とっき），输入 `凸起`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6654 別室（べっしつ），输入 `別室`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6663 背骨（せぼね），输入 `背骨`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6663 背骨（せぼね），输入 `脊骨`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6664 読み返す（よみかえす），输入 `読返す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6669 声高（こわだか），输入 `声高`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6671 一石二鳥（いっせきにちょう），输入 `一石二鳥`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6675 役立てる（やくだてる），输入 `役立てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6694 積み込む（つみこむ），输入 `積込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6699 絶景（ぜっけい），输入 `絶景`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6700 尻込み（しりごみ），输入 `尻込み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6700 尻込み（しりごみ），输入 `しり込み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6700 尻込み（しりごみ），输入 `後込み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6702 密閉（みっぺい），输入 `密閉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6713 鉄則（てっそく），输入 `鉄則`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6714 裏面（りめん），输入 `裡面`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #6721 実地（じっち），输入 `実地`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6725 取り壊す（とりこわす），输入 `取り毀す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6732 直下（ちょっか），输入 `直下`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6737 特効薬（とっこうやく），输入 `特効薬`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6741 列挙（れっきょ），输入 `列挙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6743 色紙（いろがみ），输入 `色紙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6746 手振り（てぶり），输入 `手振り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6759 押し売り（おしうり），输入 `押売`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6759 押し売り（おしうり），输入 `押売り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6767 割高（わりだか），输入 `割高`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6767 割高（わりだか），输入 `割り高`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6773 たんぽぽ（たんぽぽ），输入 `蒲公英`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6777 読み手（よみて），输入 `読手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6784 繰り上げる（くりあげる），输入 `繰上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6792 巣箱（すばこ），输入 `巣箱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6800 どころか（どころか），输入 `所か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6802 一方的（いっぽうてき），输入 `一方的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6805 それどころか（それどころか），输入 `それ処か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6805 それどころか（それどころか），输入 `其れ処か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6814 寝不足（ねぶそく），输入 `寝不足`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6815 思い通り（おもいどおり），输入 `思い通り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6816 第一歩（だいいっぽ），输入 `第一歩`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6818 迂闊（うかつ），输入 `迂濶`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6826 賢者（けんじゃ），输入 `賢者`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6828 さみしい（さみしい），输入 `寂しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6828 さみしい（さみしい），输入 `淋しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6832 近しい（ちかしい），输入 `親しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6836 NewYork（ニューヨーク），输入 `新約克`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6836 NewYork（ニューヨーク），输入 `紐約`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6836 NewYork（ニューヨーク），输入 `紐育`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6839 横取り（よこどり），输入 `横取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6844 湧き出る（わきでる），输入 `涌き出る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6845 躍起（やっき），输入 `躍起`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6858 やぎ（やぎ），输入 `山羊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6858 やぎ（やぎ），输入 `野羊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6871 熱血（ねっけつ），输入 `熱血`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6872 実り（みのり），输入 `稔り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6875 脇道（わきみち），输入 `脇路`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6876 引き換え（ひきかえ），输入 `引換`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6876 引き換え（ひきかえ），输入 `引換え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6876 引き換え（ひきかえ），输入 `引替え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6879 枯れ木（かれき），输入 `枯木`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6882 なりふり（なりふり），输入 `形振り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6889 書き残す（かきのこす），输入 `書残す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6890 梟（ふくろう），输入 `福来朗`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6892 うろ覚え（うろおぼえ），输入 `うろ憶え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6896 染み付く（しみつく），输入 `沁み付く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6896 染み付く（しみつく），输入 `沁み着く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6897 ぬるま湯（ぬるまゆ），输入 `微温湯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6898 得難い（えがたい），输入 `得難い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6901 取り組み（とりくみ），输入 `取組`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6901 取り組み（とりくみ），输入 `取組み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6907 一句（いっく），输入 `一句`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6910 寝苦しい（ねぐるしい），输入 `寝苦しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6917 道草（みちくさ），输入 `路草`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6920 綿毛（わたげ），输入 `綿毛`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6921 舵取り（かじとり），输入 `楫取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6924 行きずり（ゆきずり），输入 `行き摩り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6924 行きずり（ゆきずり），输入 `行き摺り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6930 早足（はやあし），输入 `速歩`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6931 関わり合う（かかわりあう），输入 `係わり合う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6938 引き合い（ひきあい），输入 `引合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6938 引き合い（ひきあい），输入 `引合い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6941 粉薬（こなぐすり），输入 `粉薬`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6942 芽生え（めばえ），输入 `芽生え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6943 覚え書き（おぼえがき），输入 `覚え書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6943 覚え書き（おぼえがき），输入 `覚書`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6948 冊数（さっすう），输入 `冊数`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6950 打ち水（うちみず），输入 `打水`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6951 編者（へんじゃ），输入 `編者`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6953 海豚（いるか），输入 `海豚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6955 見返し（みかえし），输入 `見返`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6956 不ぞろい（ふぞろい），输入 `不揃い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6960 書き言葉（かきことば），输入 `書き言葉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6961 書き表す（かきあらわす），输入 `書き表わす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6962 旧跡（きゅうせき），输入 `旧蹟`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6963 強火（つよび），输入 `強火`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6970 手書き（てがき），输入 `手書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6978 戦法（せんぽう），输入 `戦法`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6986 ひらめく（ひらめく），输入 `閃く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6991 枠組み（わくぐみ），输入 `枠組み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6991 枠組み（わくぐみ），输入 `枠組`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6995 絞り込む（しぼりこむ），输入 `搾り込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #6997 追い求める（おいもとめる），输入 `追求める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7010 向こう側（むこうがわ），输入 `向こう側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7010 向こう側（むこうがわ），输入 `向う側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7012 書き手（かきて），输入 `書手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7013 かなた（かなた），输入 `彼方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7016 〜次第（しだい），输入 `〜次第`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7017 前〜（ぜん），输入 `前〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7035 呼び込む（よびこむ），输入 `呼込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7037 好き勝手（すきかって），输入 `好き勝手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7040 作り声（つくりごえ），输入 `作り声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7046 生まれ持つ（うまれもつ），输入 `生れもつ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7046 生まれ持つ（うまれもつ），输入 `生れ持つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7048 打ち直す（うちなおす），输入 `打直す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7052 読み込む（よみこむ），输入 `読込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7053 突き動かす（つきうごかす），输入 `衝き動かす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7063 うやむや（うやむや），输入 `有耶無耶`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7065 頻発（ひんぱつ），输入 `頻発`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7067 (ポ)inglez（イギリス），输入 `英吉利`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7068 Australia（オーストラリア），输入 `濠太剌利`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7068 Australia（オーストラリア），输入 `豪太剌利`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7074 先々週（せんせんしゅう），输入 `先々週`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7084 わさび（わさび），输入 `山葵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7084 わさび（わさび），输入 `和佐比`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7087 下着（したぎ），输入 `下着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7098 紙くず（かみくず），输入 `紙屑`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7103 焼肉（やきにく），输入 `焼肉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7106 扇風機（せんぷうき），输入 `扇風機`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7107 存じる（ぞんじる），输入 `存じる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7112 長ねぎ（ながねぎ），输入 `長葱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7114 島々（しまじま），输入 `島々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7114 島々（しまじま），输入 `島島`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7123 かわいがる（かわいがる），输入 `可愛がる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7128 だます（だます），输入 `騙す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7128 だます（だます），输入 `欺す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7128 だます（だます），输入 `瞞す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7133 はめる（はめる），输入 `嵌める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7133 はめる（はめる），输入 `填める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7136 まとまる（まとまる），输入 `纏まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7142 火山（かざん），输入 `火山`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7143 いじめる（いじめる），输入 `苛める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7143 いじめる（いじめる），输入 `虐める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7148 刈る（かる），输入 `苅る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7153 欠勤（けっきん），输入 `欠勤`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7158 口癖（くちぐせ），输入 `口癖`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7159 広める（ひろめる），输入 `弘める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7161 砕ける（くだける），输入 `摧ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7174 尻尾（しっぽ），输入 `尻尾`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7175 真っ赤（まっか），输入 `真っ赤`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7179 組合（くみあい），输入 `組合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7181 足首（あしくび），输入 `足頸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7183 怠ける（なまける），输入 `懶ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7188 頂戴（ちょうだい），输入 `頂戴`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7194 燃やす（もやす），输入 `燃す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7203 捕まる（つかまる），输入 `掴まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7203 捕まる（つかまる），输入 `捉まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7204 暮れる（くれる），输入 `昏れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7204 暮れる（くれる），输入 `暗れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7204 暮れる（くれる），输入 `眩れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7205 坊ちゃん（ぼっちゃん），输入 `坊っちゃん`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7211 列島（れっとう），输入 `列島`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7216 いじめ（いじめ），输入 `苛め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7216 いじめ（いじめ），输入 `虐め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7220 こたつ（こたつ），输入 `炬燵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7220 こたつ（こたつ），输入 `火燵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7225 ため息（ためいき），输入 `溜め息`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7225 ため息（ためいき），输入 `溜息`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7231 もむ（もむ），输入 `揉む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7234 一周（いっしゅう），输入 `一周`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7235 一方通行（いっぽうつうこう），输入 `一方通行`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7250 缶詰（かんづめ），输入 `缶詰`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7251 喜ばしい（よろこばしい），输入 `悦ばしい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7253 気がかり（きがかり），输入 `気掛かり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7253 気がかり（きがかり），输入 `気懸かり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7255 偽物（にせもの），输入 `贋物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7256 叫び声（さけびごえ），输入 `叫び声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7260 近々（ちかぢか），输入 `近々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7260 近々（ちかぢか），输入 `近近`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7268 差し込む（さしこむ），输入 `差込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7271 使い道（つかいみち），输入 `使い途`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7274 歯ブラシ（はブラシ），输入 `歯刷子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7276 持ち運ぶ（もちはこぶ），输入 `持運ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7278 実生活（じっせいかつ），输入 `実生活`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7288 笑い声（わらいごえ），输入 `笑い声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7290 親父（おやじ），输入 `親父`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7290 親父（おやじ），输入 `親仁`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7290 親父（おやじ），输入 `親爺`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7291 人手（ひとで），输入 `人手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7294 水着（みずぎ），输入 `水着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7296 星空（ほしぞら），输入 `星空`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7297 清い（きよい），输入 `浄い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7298 生まれ育つ（うまれそだつ），输入 `生れ育つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7309 着替える（きがえる），输入 `着替える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7309 着替える（きがえる），输入 `着換える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7310 注意深い（ちゅういぶかい），输入 `注意深い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7321 読み物（よみもの），输入 `読物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7322 入れ物（いれもの），输入 `容れ物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7323 ばかばかしい（ばかばかしい），输入 `馬鹿馬鹿しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7327 微笑む（ほほえむ），输入 `微笑む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7327 微笑む（ほほえむ），输入 `頬笑む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7340 無駄遣い（むだづかい），输入 `無駄遣い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7340 無駄遣い（むだづかい），输入 `徒遣い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7341 面倒臭い（めんどうくさい），输入 `面倒くさい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7341 面倒臭い（めんどうくさい），输入 `面倒臭い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7347 油絵（あぶらえ），输入 `油画`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7349 夕暮れ（ゆうぐれ），输入 `夕暮れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7351 欲望（よくぼう），输入 `慾望`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7355 例える（たとえる），输入 `喩える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7355 例える（たとえる），输入 `譬える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7374 しきりに（しきりに），输入 `頻りに`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7380 先祖（せんぞ），输入 `先祖`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7383 物置（ものおき），输入 `物置`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7385 傑作（けっさく），输入 `傑作`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7390 ねばねば（ねばねば），输入 `粘々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7391 ひとまず（ひとまず），输入 `一と先ず`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7391 ひとまず（ひとまず），输入 `一先`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7392 くつろぐ（くつろぐ），输入 `寛ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7394 よこす（よこす），输入 `遣す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7396 くじける（くじける），输入 `挫ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7397 散々（さんざん），输入 `散々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7397 散々（さんざん），输入 `散散`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7400 澄む（すむ），输入 `清む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7401 せいぜい（せいぜい），输入 `精々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7401 せいぜい（せいぜい），输入 `精精`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7402 相槌（あいづち），输入 `相槌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7402 相槌（あいづち），输入 `相鎚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7403 どける（どける），输入 `退ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7404 大ざっぱ（おおざっぱ），输入 `大雑把`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7405 ほどよい（ほどよい），输入 `程好い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7406 田んぼ（たんぼ），输入 `田圃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7407 当てはめる（あてはめる），输入 `当て嵌める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7408 ばね（ばね），输入 `弾機`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7408 ばね（ばね），输入 `撥条`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7408 ばね（ばね），输入 `発条`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7409 かねがね（かねがね），输入 `予々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7409 かねがね（かねがね），输入 `予予`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7409 かねがね（かねがね），输入 `兼々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7409 かねがね（かねがね），输入 `兼ね兼ね`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7409 かねがね（かねがね），输入 `兼兼`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7411 つまずく（つまずく），输入 `躓く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7415 concrete（コンクリート），输入 `混凝土`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7423 ふざける（ふざける），输入 `巫山戯る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7439 圧縮（あっしゅく），输入 `圧縮`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7440 為替（かわせ），输入 `為替`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7442 一家（いっか），输入 `一家`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7443 引っ掛かる（ひっかかる），输入 `引っ掛る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7447 演説（えんぜつ），输入 `演説`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7447 演説（えんぜつ），输入 `演舌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7462 希薄（きはく），输入 `稀薄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7464 飢える（うえる），输入 `餓える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7464 飢える（うえる），输入 `饑える`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #7477 欠く（かく），输入 `闕く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7487 最先端（さいせんたん），输入 `最尖端`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7488 裁判（さいばん），输入 `裁判`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7489 三日月（みかづき），输入 `三日月`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7493 持ち出す（もちだす），输入 `持出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7497 執筆（しっぴつ），输入 `執筆`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7508 障子（しょうじ），输入 `障子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7511 植木（うえき），输入 `植木`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7524 寸法（すんぽう），输入 `寸法`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7527 誓う（ちかう），输入 `盟う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7529 接近（せっきん），输入 `接近`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7535 短編（たんぺん），输入 `短編`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7535 短編（たんぺん），输入 `短篇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7546 定規（じょうぎ），输入 `定規`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7546 定規（じょうぎ），输入 `定木`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7549 田植え（たうえ），输入 `田植`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7558 突っ込む（つっこむ），输入 `突込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7564 剝がす（はがす），输入 `剥がす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7565 博士（はかせ），输入 `博士`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7567 発射（はっしゃ），输入 `発射`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7575 風呂敷（ふろしき），输入 `風呂敷`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7576 物語る（ものがたる），输入 `物語る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7582 呆れる（あきれる），输入 `惘れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7591 矢印（やじるし），输入 `矢印`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7595 裏口（うらぐち），输入 `裏口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7597 連想（れんそう），输入 `聯想`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #7606 いささか（いささか），输入 `些か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7606 いささか（いささか），输入 `聊か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7608 いじる（いじる），输入 `弄る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7609 嘘つき（うそつき），输入 `嘘吐き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7612 おまけ（おまけ），输入 `御負け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7617 くみ上げる（くみあげる），输入 `汲み上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7617 くみ上げる（くみあげる），输入 `汲上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7618 さえずる（さえずる），输入 `囀る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7626 とかく（とかく），输入 `兎角`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7626 とかく（とかく），输入 `左右`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7629 ばか（ばか），输入 `莫迦`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7629 ばか（ばか），输入 `馬鹿`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7637 やられる（やられる），输入 `遣られる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7638 やり遂げる（やりとげる），输入 `遣り遂げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7639 やり通す（やりとおす），输入 `遣り通す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7644 引き裂く（ひきさく），输入 `引裂く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7646 押し出す（おしだす），输入 `押出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7651 架け橋（かけはし），输入 `懸け橋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7651 架け橋（かけはし），输入 `懸橋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7651 架け橋（かけはし），输入 `掛橋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7660 活性（かっせい），输入 `活性`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7667 奇跡（きせき），输入 `奇蹟`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7668 気まま（きまま），输入 `気侭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7668 気まま（きまま），输入 `気儘`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7679 恐れ入る（おそれいる），输入 `畏れ入る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7680 教え子（おしえご），输入 `教え子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7681 駆けつける（かけつける），输入 `駈け付ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7686 月刊（げっかん），输入 `月刊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7687 建て前（たてまえ），输入 `建前`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7687 建て前（たてまえ），输入 `立前`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7688 肩書き（かたがき），输入 `肩書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7690 見回す（みまわす），输入 `見廻す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7691 見合い（みあい），输入 `見合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7692 見捨てる（みすてる），输入 `見棄てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7693 見通す（みとおす），输入 `見透す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7699 言い合う（いいあう），输入 `言合う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7701 古〜（ふる），输入 `古〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7704 雇用（こよう），输入 `雇傭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7713 鉱山（こうざん），输入 `鉱山`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7723 山腹（さんぷく），输入 `山腹`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7731 実体（じったい），输入 `実体`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7732 若干（じゃっかん），输入 `若干`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7736 取り締まり（とりしまり），输入 `取締`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7736 取り締まり（とりしまり），输入 `取締り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7744 住み着く（すみつく），输入 `住着く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7749 出品（しゅっぴん），输入 `出品`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7752 書き取る（かきとる），输入 `書取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7753 書き留める（かきとめる），输入 `書留める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7755 勝ち抜く（かちぬく），输入 `勝抜く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7757 勝利（しょうり），输入 `捷利`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7759 少なからず（すくなからず），输入 `尠からず`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7760 昇進（しょうしん），输入 `陞進`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #7769 心遣い（こころづかい），输入 `心遣い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7769 心遣い（こころづかい），输入 `心使い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7770 心構え（こころがまえ），输入 `心構え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7771 心細い（こころぼそい），输入 `心細い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7775 振るう（ふるう），输入 `揮う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7776 振る舞い（ふるまい），输入 `振舞`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7776 振る舞い（ふるまい），输入 `振舞い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7782 辛抱（しんぼう），输入 `辛抱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7785 人目（ひとめ），输入 `人眼`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7792 世論（よろん），输入 `輿論`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7794 整然（せいぜん），输入 `井然`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7798 盛り込む（もりこむ），输入 `盛込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7803 切り開く（きりひらく），输入 `切り拓く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7805 接触（せっしょく），输入 `接触`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7807 千切れる（ちぎれる），输入 `千切れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7808 洗面所（せんめんじょ），输入 `洗面所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7810 薦める（すすめる），输入 `奨める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7811 素早い（すばやい），输入 `素早い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7811 素早い（すばやい），输入 `素速い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7814 息苦しい（いきぐるしい），输入 `息苦しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7816 打ち出す（うちだす），输入 `打出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7823 大人げない（おとなげない），输入 `大人げない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7823 大人げない（おとなげない），输入 `大人気ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7823 大人げない（おとなげない），输入 `大人気無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7829 中途半端（ちゅうとはんぱ），输入 `中途半端`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7831 超〜（ちょう），输入 `超〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7834 長続き（ながつづき），输入 `永続き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7835 直〜（じか），输入 `直〜`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7843 踏み切る（ふみきる），输入 `踏切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7851 年配（ねんぱい），输入 `年配`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7851 年配（ねんぱい），输入 `年輩`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7852 念のため（ねんのため），输入 `念の為`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7853 粘り強い（ねばりづよい），输入 `粘り強い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7853 粘り強い（ねばりづよい），输入 `ねばり強い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7858 剝がれる（はがれる），输入 `剥がれる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7862 発信（はっしん），输入 `発信`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7866 繁殖（はんしょく），输入 `蕃殖`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7881 復旧（ふっきゅう），输入 `復旧`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7884 紛争（ふんそう），输入 `紛諍`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7889 片側（かたがわ），输入 `片側`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7894 膨れる（ふくれる），输入 `脹れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7895 膨れ上がる（ふくれあがる），输入 `脹れ上がる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7901 癒やす（いやす），输入 `癒す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7906 立ち去る（たちさる），输入 `立去る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7907 立ち直る（たちなおる），输入 `立直る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7908 立ち入り（たちいり），输入 `立入`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7908 立ち入り（たちいり），输入 `立入り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7917 老舗（しにせ），输入 `老舗`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7918 とどまる（とどまる），输入 `止まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7918 とどまる（とどまる），输入 `留まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7918 とどまる（とどまる），输入 `停まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7919 あたかも（あたかも），输入 `恰も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7919 あたかも（あたかも），输入 `宛も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7920 あっけない（あっけない），输入 `呆気ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7922 斡旋（あっせん），输入 `斡旋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7924 いたわる（いたわる），输入 `労る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7925 うっとうしい（うっとうしい），输入 `鬱陶しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7928 おびえる（おびえる），输入 `怯える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7928 おびえる（おびえる），输入 `脅える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7929 おびただしい（おびただしい），输入 `夥しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7930 おろそか（おろそか），输入 `疎か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7932 かき回す（かきまわす），输入 `掻き回す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7933 嵩張る（かさばる），输入 `嵩張る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7933 嵩張る（かさばる），输入 `かさ張る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7940 くくる（くくる），输入 `括る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7943 けなす（けなす），输入 `貶す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7944 こじれる（こじれる），输入 `拗れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7945 ことごとく（ことごとく），输入 `尽く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7945 ことごとく（ことごとく），输入 `悉く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7946 ごまかす（ごまかす），输入 `胡麻化す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7946 ごまかす（ごまかす），输入 `誤摩化す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7950 冴える（さえる），输入 `冱える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7951 さほど（さほど），输入 `然程`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7956 しのぐ（しのぐ），输入 `凌ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7960 すがすがしい（すがすがしい），输入 `清々しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7960 すがすがしい（すがすがしい），输入 `清清しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7968 そびえる（そびえる），输入 `聳える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7969 それゆえ（それゆえ），输入 `其れ故`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7972 たやすい（たやすい），输入 `容易い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7979 とっさ（とっさ），输入 `咄嗟`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7981 なおさら（なおさら），输入 `尚更`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7981 なおさら（なおさら），输入 `猶更`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7982 なだめる（なだめる），输入 `宥める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7984 なれなれしい（なれなれしい），输入 `狎れ狎れしい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7986 にじむ（にじむ），输入 `滲む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7989 ねだる（ねだる），输入 `強請る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7991 のどか（のどか），输入 `長閑`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7992 はかない（はかない），输入 `儚い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7992 はかない（はかない），输入 `果敢無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7992 はかない（はかない），输入 `果無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #7993 はしゃぐ（はしゃぐ），输入 `燥ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8000 ひそか（ひそか），输入 `密か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8000 ひそか（ひそか），输入 `秘か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8000 ひそか（ひそか），输入 `私か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8000 ひそか（ひそか），输入 `窃か`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8002 日なた（ひなた），输入 `日向`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8002 日なた（ひなた），输入 `日南`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8007 呆然（ぼうぜん），输入 `呆然`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8007 呆然（ぼうぜん），输入 `惘然`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8013 まばら（まばら），输入 `疎ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8013 まばら（まばら），输入 `疏ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8014 むなしい（むなしい），输入 `空しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8014 むなしい（むなしい），输入 `虚しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8018 もがく（もがく），输入 `藻掻く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8018 もがく（もがく），输入 `踠く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8019 もくろむ（もくろむ），输入 `目論む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8022 もめる（もめる），输入 `揉める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8023 もろい（もろい），输入 `脆い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8024 やたら（やたら），输入 `矢鱈`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8026 やりくり（やりくり），输入 `遣り繰り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8029 ゆがめる（ゆがめる），输入 `歪める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8031 横ばい（よこばい），输入 `横這い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8033 よそ見（よそみ），输入 `余所見`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8034 よみがえる（よみがえる），输入 `甦る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8034 よみがえる（よみがえる），输入 `蘇る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8042 ろくに（ろくに），输入 `碌に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8042 ろくに（ろくに），输入 `陸に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8046 圧迫（あっぱく），输入 `圧迫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8050 案じる（あんじる），输入 `按じる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8054 委託（いたく），输入 `委托`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #8056 意気込む（いきごむ），输入 `意気込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8057 意向（いこう），输入 `意嚮`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8060 遺跡（いせき），输入 `遺蹟`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #8062 一貫（いっかん），输入 `一貫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8063 一筋（ひとすじ），输入 `一条`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8066 一途（いちず），输入 `一途`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8070 一連（いちれん），输入 `一嗹`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8072 引きずる（ひきずる），输入 `引き摺る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8076 運搬（うんぱん），输入 `運搬`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8084 押し切る（おしきる），输入 `押切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8085 横顔（よこがお），输入 `横顔`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8086 屋敷（やしき），输入 `屋敷`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8092 何げない（なにげない），输入 `何気ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8092 何げない（なにげない），输入 `何気無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8093 何とぞ（なにとぞ），输入 `何卒`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8099 箇条書き（かじょうがき），输入 `箇条書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8099 箇条書き（かじょうがき），输入 `個条書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8100 花びら（はなびら），输入 `花弁`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8100 花びら（はなびら），输入 `花片`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8101 荷造り（にづくり），输入 `荷造り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8101 荷造り（にづくり），输入 `荷作り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8105 画期的（かっきてき），输入 `画期的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8105 画期的（かっきてき），输入 `劃期的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8120 活性化（かっせいか），输入 `活性化`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8121 滑稽（こっけい），输入 `滑稽`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8130 緩む（ゆるむ），输入 `弛む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8131 緩める（ゆるめる），输入 `弛める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8136 間際（まぎわ），输入 `間際`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8136 間際（まぎわ），输入 `真際`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8139 眼差し（まなざし），输入 `眼差し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8139 眼差し（まなざし），输入 `目差`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8139 眼差し（まなざし），输入 `目差し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8139 眼差し（まなざし），输入 `眼指`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8146 気まぐれ（きまぐれ），输入 `気紛れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8165 吸い上げる（すいあげる），输入 `吸上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8166 せかす（せかす），输入 `急かす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8181 脅す（おどす），输入 `嚇す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8181 脅す（おどす），输入 `威す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8188 極まる（きわまる），输入 `窮まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8194 金槌（かなづち），输入 `金槌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8194 金槌（かなづち），输入 `鉄鎚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8202 経路（けいろ），输入 `逕路`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8210 決算（けっさん），输入 `決算`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8213 結成（けっせい），输入 `結成`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8214 結束（けっそく），输入 `結束`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8215 月謝（げっしゃ），输入 `月謝`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8219 研ぐ（とぐ），输入 `砥ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8219 研ぐ（とぐ），输入 `磨ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8220 見合わせる（みあわせる），输入 `見合せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8221 見習う（みならう），输入 `見倣う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8222 見どころ（みどころ），输入 `見所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8222 見どころ（みどころ），输入 `見処`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8224 見当たる（みあたる），输入 `見当る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8225 見落とす（みおとす），输入 `見落す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8233 呼び起こす（よびおこす），输入 `喚び起こす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8238 悟る（さとる），输入 `覚る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8248 広報（こうほう），输入 `弘報`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8250 控える（ひかえる），输入 `扣える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8259 合併（がっぺい），输入 `合併`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8263 根底（こんてい），输入 `根柢`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8266 砂利（じゃり），输入 `砂利`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8270 細やか（こまやか），输入 `濃やか`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8271 細胞（さいぼう），输入 `細胞`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8275 殺到（さっとう），输入 `殺到`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8278 賛美（さんび），输入 `讃美`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8280 仕える（つかえる），输入 `事える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8281 仕上がり（しあがり），输入 `仕上り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8283 司る（つかさどる），输入 `掌る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8288 思いやる（おもいやる），输入 `思い遣る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8289 指揮（しき），输入 `指麾`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8302 執着（しゅうちゃく），输入 `執著`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8303 失格（しっかく），输入 `失格`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8304 失脚（しっきゃく），输入 `失脚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8305 嫉妬（しっと），输入 `嫉妬`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8316 取り次ぐ（とりつぐ），输入 `取次ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8317 取り締まる（とりしまる），输入 `取締まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8317 取り締まる（とりしまる），输入 `取締る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8319 手がかり（てがかり），输入 `手掛かり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8319 手がかり（てがかり），输入 `手懸かり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8320 手際（てぎわ），输入 `手際`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8336 出くわす（でくわす），输入 `出交す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8336 出くわす（でくわす），输入 `出会す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8336 出くわす（でくわす），输入 `出喰わす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8337 出産（しゅっさん），输入 `出産`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8338 出費（しゅっぴ），输入 `出費`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8339 潤う（うるおう），输入 `霑う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8359 色眼鏡（いろめがね），输入 `色眼鏡`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8361 食い違う（くいちがう），输入 `食違う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8365 心がける（こころがける），输入 `心掛ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8365 心がける（こころがける），输入 `心懸ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8367 振り出し（ふりだし），输入 `振り出`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8367 振り出し（ふりだし），输入 `振出`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8367 振り出し（ふりだし），输入 `振出し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8369 真心（まごころ），输入 `真心`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8381 澄ます（すます），输入 `清ます`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8383 制御（せいぎょ），输入 `制禦`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #8383 制御（せいぎょ），输入 `制馭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8403 絶版（ぜっぱん），输入 `絶版`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8407 もっぱら（もっぱら），输入 `専ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8414 素朴（そぼく），输入 `素樸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8416 阻む（はばむ），输入 `沮む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8422 装う（よそおう），输入 `粧う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8432 打ち切る（うちきる），输入 `打切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8439 滞納（たいのう），输入 `怠納`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8444 達者（たっしゃ），输入 `達者`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8446 脱退（だったい），输入 `脱退`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8449 担う（になう），输入 `荷う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8451 はじく（はじく），输入 `弾く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8452 弾む（はずむ），输入 `勢む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8456 値する（あたいする），输入 `価する`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8457 値打ち（ねうち），输入 `値打`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8458 恥じらう（はじらう），输入 `羞じらう`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8467 貯蓄（ちょちく），输入 `儲蓄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8468 兆し（きざし），输入 `萌し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8475 はかどる（はかどる），输入 `捗る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8476 直感（ちょっかん），输入 `直感`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8476 直感（ちょっかん），输入 `直観`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8479 賃金（ちんぎん），输入 `賃金`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8494 田園（でんえん），输入 `田苑`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8495 渡り鳥（わたりどり），输入 `渡り鳥`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8496 途切れる（とぎれる），输入 `途切れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8496 途切れる（とぎれる），输入 `跡切れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8510 踏襲（とうしゅう），输入 `蹈襲`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8515 堂々（どうどう），输入 `堂々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8517 特許（とっきょ），输入 `特許`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8518 特権（とっけん），输入 `特権`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8519 特集（とくしゅう），输入 `特輯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8521 突っ張る（つっぱる），输入 `突っ張る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8523 突破（とっぱ），输入 `突破`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8529 日焼け（ひやけ），输入 `陽焼け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8541 脳裏（のうり），输入 `脳裡`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #8545 廃れる（すたれる），输入 `頽れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8547 敗北（はいぼく），输入 `敗北`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8556 発掘（はっくつ），输入 `発掘`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8557 発足（ほっそく），输入 `発足`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8558 発端（ほったん），输入 `発端`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8560 伴奏（ばんそう），输入 `伴奏`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8562 半端（はんぱ），输入 `半端`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8564 氾濫（はんらん），输入 `汎濫`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #8565 繁盛（はんじょう），输入 `繁昌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8573 頻繁（ひんぱん），输入 `頻繁`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8579 不平等（ふびょうどう），输入 `不平等`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8584 赴く（おもむく），输入 `趣く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8584 赴く（おもむく），输入 `趨く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8588 復活（ふっかつ），输入 `復活`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8589 復興（ふっこう），输入 `復興`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8591 仏像（ぶつぞう），输入 `佛像`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8619 崩壊（ほうかい），输入 `崩潰`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8620 捧げる（ささげる），输入 `献げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8627 妨害（ぼうがい），输入 `妨碍`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #8627 妨害（ぼうがい），输入 `妨礙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8628 暴露（ばくろ），输入 `曝露`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8631 没頭（ぼっとう），输入 `没頭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8634 末期（まっき），输入 `末期`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8640 密集（みっしゅう），输入 `密集`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8643 無闇（むやみ），输入 `無暗`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8644 無知（むち），输入 `無智`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8652 滅びる（ほろびる），输入 `亡びる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8653 滅ぼす（ほろぼす），输入 `亡ぼす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8657 模擬（もぎ），输入 `摸擬`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8658 模倣（もほう），输入 `摸倣`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8660 目覚ましい（めざましい），输入 `目覚ましい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8660 目覚ましい（めざましい），输入 `目覚しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8665 勇敢（ゆうかん），输入 `勇悍`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8671 融通（ゆうずう），输入 `融通`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8674 揺さぶる（ゆさぶる），输入 `揺さ振る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8681 落下（らっか），输入 `落下`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8685 立ち会う（たちあう），输入 `立会う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8691 冷やかす（ひやかす），输入 `素見す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8694 連なる（つらなる），输入 `列なる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8708 〜がらみ（がらみ），输入 `搦み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8708 〜がらみ（がらみ），输入 `絡み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8709 〜ぐるみ（ぐるみ），输入 `包み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8710 〜ずくめ（ずくめ），输入 `尽くめ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8711 〜まみれ（まみれ），输入 `塗れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8712 〜越し（ごし），输入 `〜越し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8712 〜越し（ごし），输入 `越し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8718 身だしなみ（みだしなみ），输入 `身嗜み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8719 愛嬌（あいきょう），输入 `愛敬`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8720 相まって（あいまって），输入 `相俟って`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8721 顕わ（あらわ），输入 `顕わ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8721 顕わ（あらわ），输入 `露わ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8725 いかなる（いかなる），输入 `如何なる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8726 いたたまれない（いたたまれない），输入 `居た堪れない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8728 うなだれる（うなだれる），输入 `うな垂れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8728 うなだれる（うなだれる），输入 `項垂れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8730 うろたえる（うろたえる），输入 `狼狽える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8735 幼なじみ（おさななじみ），输入 `幼馴染`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8735 幼なじみ（おさななじみ），输入 `幼馴染み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8736 億劫（おっくう），输入 `億劫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8737 自ずと（おのずと），输入 `自と`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8738 おぼろげ（おぼろげ），输入 `朧げ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8738 おぼろげ（おぼろげ），输入 `朧気`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8741 かたくな（かたくな），输入 `頑な`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8749 くじく（くじく），输入 `挫く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8751 くまなく（くまなく），输入 `隈なく`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8754 こまめ（こまめ），输入 `小忠実`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8757 さらけ出す（さらけだす），输入 `曝け出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8760 しとやか（しとやか），输入 `淑やか`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8767 すこぶる（すこぶる），输入 `頗る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8768 すさまじい（すさまじい），输入 `凄まじい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8778 そぎ落とす（そぎおとす），输入 `削ぎ落とす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8778 そぎ落とす（そぎおとす），输入 `殺ぎ落とす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8779 そそる（そそる），输入 `唆る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8780 そっちのけ（そっちのけ），输入 `そっち退け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8780 そっちのけ（そっちのけ），输入 `其方退け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8783 ためらう（ためらう），输入 `躊躇う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8785 たわいない（たわいない），输入 `他愛ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8785 たわいない（たわいない），输入 `他愛無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8788 てこ入れ（てこいれ），输入 `梃入れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8788 てこ入れ（てこいれ），输入 `梃子入れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8794 ないがしろ（ないがしろ），输入 `蔑ろ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8795 馴染み（なじみ），输入 `馴染み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8797 はじける（はじける），输入 `弾ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8800 はばかる（はばかる），输入 `憚る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8801 羽ばたく（はばたく），输入 `羽搏く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8801 羽ばたく（はばたく），输入 `羽撃く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8802 はびこる（はびこる），输入 `蔓延る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8802 はびこる（はびこる），输入 `蔓る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8804 贔屓（ひいき），输入 `贔屓`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8804 贔屓（ひいき），输入 `贔負`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8805 ひずみ（ひずみ），输入 `歪み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8806 ひたむき（ひたむき），输入 `直向`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8806 ひたむき（ひたむき），输入 `直向き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8808 ひらめき（ひらめき），输入 `閃き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8820 まとまり（まとまり），输入 `纏まり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8821 まとめ（まとめ），输入 `纏め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8822 まとも（まとも），输入 `正面`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8822 まとも（まとも），输入 `真正面`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8822 まとも（まとも），输入 `真面`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8823 まんじゅう（まんじゅう），输入 `饅頭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8824 水たまり（みずたまり），输入 `水溜り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8825 みずみずしい（みずみずしい），输入 `瑞々しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8825 みずみずしい（みずみずしい），输入 `水々しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8832 愛でる（めでる），输入 `賞でる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8834 やつれる（やつれる），输入 `窶れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8844 安堵（あんど），输入 `安堵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8847 意気込み（いきごみ），输入 `意気込み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8850 移り変わり（うつりかわり），输入 `移り変り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8856 一環（いっかん），输入 `一環`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8858 一刻（いっこく），输入 `一刻`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8859 一人ぼっち（ひとりぼっち），输入 `一人ぼっち`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8859 一人ぼっち（ひとりぼっち），输入 `独り法師`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8860 一掃（いっそう），输入 `一掃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8861 一直線（いっちょくせん），输入 `一直線`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8865 稲刈り（いねかり），输入 `稲刈`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8866 引き寄せる（ひきよせる），输入 `惹き寄せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8870 雨雲（あまぐも），输入 `雨雲`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8875 下請け（したうけ），输入 `下請`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8888 戒める（いましめる），输入 `誡める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8888 戒める（いましめる），输入 `警める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8901 割り当て（わりあて），输入 `割当`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8908 鑑みる（かんがみる），输入 `鑒みる`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #8911 危惧（きぐ），输入 `危惧`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8913 気まずい（きまずい），输入 `気不味い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8915 気遣う（きづかう），输入 `気遣う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8916 気合（きあい），输入 `気合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8917 気心（きごころ），输入 `気心`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8918 偽る（いつわる），输入 `詐る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8922 逆行（ぎゃっこう），输入 `逆行`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8930 挙句の果て（あげくのはて），输入 `挙句の果て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8934 凶器（きょうき），输入 `兇器`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8936 恐竜（きょうりゅう），输入 `恐龍`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8945 緊迫（きんぱく），输入 `緊迫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8948 駆け寄る（かけよる），输入 `駈け寄る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8954 欠航（けっこう），输入 `欠航`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8957 血行（けっこう），输入 `血行`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8961 見とれる（みとれる），输入 `見惚れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8961 見とれる（みとれる），输入 `見蕩れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8962 見栄え（みばえ），输入 `見栄え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8962 見栄え（みばえ），输入 `見映え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8971 元手（もとで），输入 `元手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8980 言い残す（いいのこす），输入 `言残す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8981 言い渡す（いいわたす），输入 `言渡す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #8986 呼び寄せる（よびよせる），输入 `呼寄せる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9000 広大（こうだい），输入 `宏大`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9000 広大（こうだい），输入 `弘大`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9002 控え室（ひかえしつ），输入 `控室`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9003 更生（こうせい），输入 `甦生`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9004 校正（こうせい），输入 `較正`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9007 行き届く（いきとどく），输入 `行届く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9010 高々（たかだか），输入 `高々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9010 高々（たかだか），输入 `高高`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9012 高揚（こうよう），输入 `昂揚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9018 彩り（いろどり），输入 `色取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9025 擦り切れる（すりきれる），输入 `摩り切れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9025 擦り切れる（すりきれる），输入 `摺り切れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9026 雑貨（ざっか），输入 `雑貨`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9027 雑踏（ざっとう），输入 `雑踏`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9027 雑踏（ざっとう），输入 `雑沓`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9027 雑踏（ざっとう），输入 `雑鬧`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9030 仕掛け（しかけ），输入 `仕掛`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9031 仕業（しわざ），输入 `為業`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9033 仕分け（しわけ），输入 `仕分`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9039 思い入れ（おもいいれ），输入 `想い入れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9050 試練（しれん），输入 `試煉`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #9051 歯止め（はどめ），输入 `歯止め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9055 持ちかける（もちかける），输入 `持掛ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9062 実況（じっきょう），输入 `実況`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9075 取り立てる（とりたてる），输入 `取立てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9076 手がける（てがける），输入 `手掛ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9076 手がける（てがける），输入 `手懸ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9080 受注（じゅちゅう），输入 `受註`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9088 終息（しゅうそく），输入 `終熄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9103 もろもろ（もろもろ），输入 `諸々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9103 もろもろ（もろもろ），输入 `諸諸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9106 小路（こうじ），输入 `小路`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9110 上書き（うわがき），输入 `上書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9112 乗り気（のりき），输入 `乗気`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9114 場当たり（ばあたり），输入 `場当り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9116 植木鉢（うえきばち），输入 `植木鉢`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9117 色とりどり（いろとりどり），输入 `色取り取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9119 色合い（いろあい），输入 `色合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9123 心地よい（ここちよい），输入 `心地よい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9123 心地よい（ここちよい），输入 `心地良い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9123 心地よい（ここちよい），输入 `心地好い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9125 浸る（ひたる），输入 `漬る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9132 親心（おやごころ），输入 `親心`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9142 据え置き（すえおき），输入 `据置き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9145 成り行き（なりゆき），输入 `成行き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9149 晴らす（はらす），输入 `霽らす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9151 生々しい（なまなましい），输入 `生々しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9153 盛り付け（もりつけ），输入 `盛付け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9158 積み木（つみき），输入 `積木`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9159 積み立てる（つみたてる），输入 `積立てる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9161 切り抜ける（きりぬける），输入 `切抜ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9164 接点（せってん），输入 `接点`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9164 接点（せってん），输入 `切点`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9165 摂取（せっしゅ），输入 `摂取`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9170 先だって（せんだって），输入 `先達て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9172 先走る（さきばしる），输入 `先走る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9174 先方（せんぽう），输入 `先方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9176 浅はか（あさはか），输入 `浅墓`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9178 素振り（そぶり），输入 `素振り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9180 相手取る（あいてどる），输入 `相手取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9184 則る（のっとる），输入 `法る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9185 即刻（そっこく），输入 `即刻`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9186 足取り（あしどり），输入 `足取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9198 待ち受ける（まちうける），输入 `待受ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9202 大がかり（おおがかり），输入 `大掛かり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9203 大口（おおぐち），输入 `大口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9209 託す（たくす），输入 `托す`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #9218 断ち切る（たちきる），输入 `截ち切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9218 断ち切る（たちきる），输入 `裁ち切る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9220 知覚（ちかく），输入 `智覚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9223 置き去り（おきざり），输入 `置き去り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9223 置き去り（おきざり），输入 `置去り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9227 虫食い（むしくい），输入 `虫喰い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9233 痛手（いたで），输入 `痛手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9233 痛手（いたで），输入 `傷手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9243 ほどほど（ほどほど），输入 `程々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9244 締めつける（しめつける），输入 `締付ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9246 摘出（てきしゅつ），输入 `剔出`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9249 撤廃（てっぱい），输入 `撤廃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9264 道のり（みちのり），输入 `道程`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9271 日和（ひより），输入 `日和`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9276 熱湯（ねっとう），输入 `熱湯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9278 年俸（ねんぽう），输入 `年俸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9280 捻出（ねんしゅつ），输入 `拈出`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9293 発酵（はっこう），输入 `発酵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9293 発酵（はっこう），输入 `醗酵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9293 発酵（はっこう），输入 `醱酵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9294 発注（はっちゅう），输入 `発注`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9294 発注（はっちゅう），输入 `発註`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9297 抜きん出る（ぬきんでる），输入 `抽んでる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9297 抜きん出る（ぬきんでる），输入 `擢んでる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9298 抜き打ち（ぬきうち），输入 `抜打ち`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9300 抜粋（ばっすい），输入 `抜粋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9300 抜粋（ばっすい），输入 `抜萃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9309 必須（ひっす），输入 `必須`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9312 貧富（ひんぷ），输入 `貧富`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9322 浮き彫り（うきぼり），输入 `浮き彫り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9322 浮き彫り（うきぼり），输入 `浮き彫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9322 浮き彫り（うきぼり），输入 `浮彫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9322 浮き彫り（うきぼり），输入 `浮彫り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9325 付加（ふか），输入 `附加`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9327 風合い（ふうあい），输入 `風合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9332 払拭（ふっしょく），输入 `払拭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9332 払拭（ふっしょく），输入 `払しょく`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9333 物件（ぶっけん），输入 `物件`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9337 聞きつける（ききつける），输入 `聞付ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9352 芳しい（かんばしい），输入 `香しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9352 芳しい（かんばしい），输入 `馨しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9353 褒めたたえる（ほめたたえる），输入 `褒め称える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9353 褒めたたえる（ほめたたえる），输入 `誉め称える`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9357 翻す（ひるがえす），输入 `飜す`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #9364 無残（むざん），输入 `無惨`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9364 無残（むざん），输入 `無慙`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9364 無残（むざん），输入 `無慚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9371 目まぐるしい（めまぐるしい），输入 `目紛しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9372 目先（めさき），输入 `目前`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9375 ありよう（ありよう），输入 `有様`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9379 落書き（らくがき），输入 `落書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9379 落書き（らくがき），输入 `楽書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9384 率先（そっせん），输入 `率先`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9384 率先（そっせん），输入 `帥先`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9385 立ち退く（たちのく），输入 `立ち退く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9387 立体（りったい），输入 `立体`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9388 かすれる（かすれる），输入 `掠れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9388 かすれる（かすれる），输入 `擦れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9389 輪郭（りんかく），输入 `輪廓`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9390 類い（たぐい），输入 `比い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9396 弄ぶ（もてあそぶ），输入 `玩ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9396 弄ぶ（もてあそぶ），输入 `翫ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9402 つぶる（つぶる），输入 `瞑る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9403 貪欲（どんよく），输入 `貪慾`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9405 退く（しりぞく），输入 `斥く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9407 脅かす（おびやかす），输入 `劫かす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9409 つまむ（つまむ），输入 `摘まむ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9409 つまむ（つまむ），输入 `摘む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9409 つまむ（つまむ），输入 `抓む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9409 つまむ（つまむ），输入 `撮む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9411 ゆがむ（ゆがむ），输入 `歪む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9413 脅かす（おどかす），输入 `嚇かす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9413 脅かす（おどかす），输入 `威かす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9424 出荷（しゅっか），输入 `出荷`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9426 取引（とりひき），输入 `取引`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9427 実証（じっしょう），输入 `実証`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9436 殺菌（さっきん），输入 `殺菌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9442 拮抗（きっこう），输入 `拮抗`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9442 拮抗（きっこう），输入 `頡頏`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9452 防御（ぼうぎょ），输入 `防禦`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #9455 攪乱（かくらん），输入 `撹乱`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9460 復帰（ふっき），输入 `復帰`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9461 撤去（てっきょ），输入 `撤去`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9466 考案（こうあん），输入 `考按`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9467 撤退（てったい），输入 `撤退`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9478 浸透（しんとう），输入 `滲透`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9482 満腹（まんぷく），输入 `満腹`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9485 発覚（はっかく），输入 `発覚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9491 千変万化（せんぺんばんか），输入 `千変万化`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9511 決裁（けっさい），输入 `決裁`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9528 伐採（ばっさい），输入 `伐採`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9535 遊泳（ゆうえい），输入 `游泳`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #9539 連動（れんどう），输入 `聯動`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #9545 付着（ふちゃく），输入 `附着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9547 必着（ひっちゃく），输入 `必着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9557 一戦（いっせん），输入 `一戦`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9560 立候補（りっこうほ），输入 `立候補`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9565 先取り（さきどり），输入 `先取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9567 撤回（てっかい），输入 `撤回`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9569 発着（はっちゃく），输入 `発着`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9572 驚嘆（きょうたん），输入 `驚歎`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #9576 手立て（てだて），输入 `手立て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9577 恩返し（おんがえし），输入 `恩返し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9580 熟考（じゅっこう），输入 `熟考`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9582 突出（とっしゅつ），输入 `突出`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9585 漏洩（ろうえい），输入 `漏泄`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #9588 感嘆（かんたん），输入 `感歎`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #9592 却下（きゃっか），输入 `却下`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9595 巡回（じゅんかい），输入 `巡廻`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9596 枯渇（こかつ），输入 `涸渇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9597 絶賛（ぜっさん），输入 `絶賛`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9597 絶賛（ぜっさん），输入 `絶讃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9603 すべすべ（すべすべ），输入 `滑々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9608 潜伏（せんぷく），输入 `潜伏`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9614 店舗（てんぽ），输入 `店舗`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9614 店舗（てんぽ），输入 `店鋪`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #9615 人里（ひとざと），输入 `人里`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9621 しいたけ（しいたけ），输入 `椎茸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9621 しいたけ（しいたけ），输入 `香蕈`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9624 盆踊り（ぼんおどり），输入 `盆踊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9630 断片（だんぺん），输入 `断片`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9633 互角（ごかく），输入 `牛角`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9637 鋳型（いがた），输入 `鋳型`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9647 人間ドック（にんげんドック），输入 `人間ドック`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9652 間取り（まどり），输入 `間取り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9652 間取り（まどり），输入 `間取`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9659 別個（べっこ），输入 `別個`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9659 別個（べっこ），输入 `別箇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9675 亡者（もうじゃ），输入 `亡者`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9676 風情（ふぜい），输入 `風情`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9679 河原（かわら），输入 `河原`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9679 河原（かわら），输入 `川原`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9688 里帰り（さとがえり），输入 `里帰り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9691 細切れ（こまぎれ），输入 `細切れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9691 細切れ（こまぎれ），输入 `こま切れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9691 細切れ（こまぎれ），输入 `小間切れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9693 度合い（どあい），输入 `度合`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9704 肌触り（はだざわり），输入 `肌触り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9704 肌触り（はだざわり），输入 `膚触り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9707 兼ね合い（かねあい），输入 `兼合い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9729 若木（わかぎ），输入 `若木`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9731 劣勢（れっせい），输入 `劣勢`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9736 仙人（せんにん），输入 `僊人`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9737 化け物（ばけもの），输入 `化物`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9740 混沌（こんとん），输入 `渾沌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9744 あぐら（あぐら），输入 `胡坐`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9744 あぐら（あぐら），输入 `胡座`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9744 あぐら（あぐら），输入 `胡床`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9744 あぐら（あぐら），输入 `趺坐`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9750 石垣（いしがき），输入 `石垣`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9753 田畑（たはた），输入 `田畠`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9754 いわんや（いわんや），输入 `况や`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9754 いわんや（いわんや），输入 `況や`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9754 いわんや（いわんや），输入 `況んや`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9756 絵描き（えかき），输入 `絵描`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9758 背丈（せたけ），输入 `脊丈`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9763 成り立ち（なりたち），输入 `成立ち`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9764 一足飛び（いっそくとび），输入 `一足飛び`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9764 一足飛び（いっそくとび），输入 `一足跳び`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9765 用足し（ようたし），输入 `用達`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9767 沽券（こけん），输入 `估券`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9781 寄る辺（よるべ），输入 `寄る方`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9788 歯ぎしり（はぎしり），输入 `歯軋り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9789 太もも（ふともも），输入 `太股`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9789 太もも（ふともも），输入 `太腿`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9791 むき出し（むきだし），输入 `剥き出し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9796 ざわめき（ざわめき），输入 `騒めき`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9799 脚光を浴びる（きゃっこうをあびる），输入 `脚光を浴びる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9800 物おじ（ものおじ），输入 `物怖じ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9801 冬至（とうじ），输入 `冬至`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9806 日替わり（ひがわり），输入 `日替わり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9806 日替わり（ひがわり），输入 `日変り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9806 日替わり（ひがわり），输入 `日変わり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9806 日替わり（ひがわり），输入 `日替り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9816 片っ端から（かたっぱしから），输入 `片っ端から`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9818 裏話（うらばなし），输入 `裏話`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9821 草むら（くさむら），输入 `草叢`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9822 差し当たり（さしあたり），输入 `差当り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9829 切り口（きりくち），输入 `切口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9829 切り口（きりくち），输入 `截り口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9830 渋々（しぶしぶ），输入 `渋々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9832 消印（けしいん），输入 `消印`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9833 ゆかり（ゆかり），输入 `所縁`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9841 物産（ぶっさん），输入 `物産`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9843 元凶（げんきょう），输入 `元兇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9851 山肌（やまはだ），输入 `山膚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9855 檜（ひのき），输入 `桧木`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9855 檜（ひのき），输入 `檜木`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9857 取り決め（とりきめ），输入 `取決め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9857 取り決め（とりきめ），输入 `取り極め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9861 物品（ぶっぴん），输入 `物品`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9862 奥行き（おくゆき），输入 `奥行`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9867 渓谷（けいこく），输入 `谿谷`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9870 師走（しわす），输入 `師走`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9872 話しぶり（はなしぶり），输入 `話し振り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9875 ありがたみ（ありがたみ），输入 `有り難み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9875 ありがたみ（ありがたみ），输入 `有り難味`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9875 ありがたみ（ありがたみ），输入 `有難み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9875 ありがたみ（ありがたみ），输入 `有難味`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9881 仏閣（ぶっかく），输入 `仏閣`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9883 甲斐性（かいしょう），输入 `甲斐性`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9884 敷地（しきち），输入 `敷地`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9886 実権（じっけん），输入 `実権`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9890 和歌（わか），输入 `倭歌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9892 手持ち（てもち），输入 `手持`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9900 書棚（しょだな），输入 `書棚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9905 物陰（ものかげ），输入 `物蔭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9908 振幅（しんぷく），输入 `振幅`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9915 品ぞろえ（しなぞろえ），输入 `品揃え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9918 放し飼い（はなしがい），输入 `放し飼い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9925 さぞかし（さぞかし），输入 `嘸かし`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9931 後書き（あとがき），输入 `後書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9954 思うに（おもうに），输入 `惟うに`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9958 一体全体（いったいぜんたい），输入 `一体全体`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9962 木陰（こかげ），输入 `木蔭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9965 持ち前（もちまえ），输入 `持前`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9969 寝床（ねどこ），输入 `寝床`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9970 骨董（こっとう），输入 `骨董`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9974 一辺倒（いっぺんとう），输入 `一辺倒`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9987 おなじみ（おなじみ），输入 `お馴染み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9987 おなじみ（おなじみ），输入 `御馴染み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9988 掛け声（かけごえ），输入 `掛け声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #9988 掛け声（かけごえ），输入 `掛声`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10005 かもしか（かもしか），输入 `羚羊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10005 かもしか（かもしか），输入 `氈鹿`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10006 山里（やまざと），输入 `山里`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10014 つぶさに（つぶさに），输入 `備に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10014 つぶさに（つぶさに），输入 `具に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10014 つぶさに（つぶさに），输入 `悉に`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10027 一まとめ（ひとまとめ），输入 `一纏`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10027 一まとめ（ひとまとめ），输入 `一纏め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10036 厚手（あつで），输入 `厚手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10039 単行本（たんこうぼん），输入 `単行本`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10040 物真似（ものまね），输入 `物真似`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10041 一身（いっしん），输入 `一身`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10042 曲がりなりにも（まがりなりにも），输入 `曲り形にも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10045 通行止め（つうこうどめ），输入 `通行止め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10045 通行止め（つうこうどめ），输入 `通行止`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10048 受け皿（うけざら），输入 `受け皿`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10048 受け皿（うけざら），输入 `受皿`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10054 些細（ささい），输入 `瑣細`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10060 必至（ひっし），输入 `必至`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10062 身勝手（みがって），输入 `身勝手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10063 不器用（ぶきよう），输入 `不器用`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10069 ぼろくそ（ぼろくそ），输入 `襤褸糞`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10077 不機嫌（ふきげん），输入 `不機嫌`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10081 あからさま（あからさま），输入 `偸閑`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10081 あからさま（あからさま），输入 `明白`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10081 あからさま（あからさま），输入 `白地`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10082 逃げ腰（にげごし），输入 `逃げ腰`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10082 逃げ腰（にげごし），输入 `逃腰`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10100 突っ走る（つっぱしる），输入 `突っ走る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10101 ほどける（ほどける），输入 `解ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10105 閉ざす（とざす），输入 `鎖す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10110 包み込む（つつみこむ），输入 `包込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10111 踏ん張る（ふんばる），输入 `踏ん張る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10113 振り向ける（ふりむける），输入 `振向ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10114 指し示す（さししめす），输入 `指示す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10115 てらう（てらう），输入 `衒う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10118 ほぐす（ほぐす），输入 `解す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10119 干からびる（ひからびる），输入 `乾涸びる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10119 干からびる（ひからびる），输入 `干涸びる`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #10121 押しやる（おしやる），输入 `押し遣る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10128 世知辛い（せちがらい），输入 `世知辛い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10129 かけ離れる（かけはなれる），输入 `懸け離れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10130 立ち戻る（たちもどる），输入 `立戻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10133 探し回る（さがしまわる），输入 `捜し廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10133 探し回る（さがしまわる），输入 `探し廻る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10134 そぐ（そぐ），输入 `削ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10134 そぐ（そぐ），输入 `殺ぐ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10135 せわしない（せわしない），输入 `忙しない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10138 没する（ぼっする），输入 `没する`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10138 没する（ぼっする），输入 `歿する`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10144 練り上げる（ねりあげる），输入 `煉り上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10144 練り上げる（ねりあげる），输入 `練上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10144 練り上げる（ねりあげる），输入 `錬り上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10145 ちりばめる（ちりばめる），输入 `鏤める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10153 際立つ（きわだつ），输入 `際立つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10155 くびれる（くびれる），输入 `括れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10157 はみ出す（はみだす），输入 `食み出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10161 買い占める（かいしめる），输入 `買占める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10162 手間取る（てまどる），输入 `手間取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10166 うろつく（うろつく），输入 `彷徨く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10171 罪深い（つみぶかい），输入 `罪深い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10180 やり切れない（やりきれない），输入 `遣り切れない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10182 しょい込む（しょいこむ），输入 `背負い込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10191 押し込める（おしこめる），输入 `押込める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10197 ほほえましい（ほほえましい），输入 `微笑ましい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10197 ほほえましい（ほほえましい），输入 `頬笑ましい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10198 根差す（ねざす），输入 `根差す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10203 てこずる（てこずる），输入 `手古摺る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10203 てこずる（てこずる），输入 `手子摺る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10203 てこずる（てこずる），输入 `梃子摺る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10203 てこずる（てこずる），输入 `梃摺る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10205 切り立つ（きりたつ），输入 `切立つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10206 かたどる（かたどる），输入 `形取る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10206 かたどる（かたどる），输入 `模る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10206 かたどる（かたどる），输入 `象る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10209 継ぎ足す（つぎたす），输入 `継足す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10210 すり減らす（すりへらす），输入 `磨り減らす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10211 打ち付ける（うちつける），输入 `打付ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10214 降りかかる（ふりかかる），输入 `降り懸かる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10216 かき集める（かきあつめる），输入 `掻き集める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10217 取り決める（とりきめる），输入 `取り極める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10217 取り決める（とりきめる），输入 `取極める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10217 取り決める（とりきめる），输入 `取決める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10220 行き交う（ゆきかう），输入 `行交う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10223 ほぐれる（ほぐれる），输入 `解れる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10226 別途（べっと），输入 `別途`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10229 ひしひし（ひしひし），输入 `犇々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10229 ひしひし（ひしひし），输入 `犇犇`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10229 ひしひし（ひしひし），输入 `緊々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10229 ひしひし（ひしひし），输入 `緊緊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10234 根こそぎ（ねこそぎ），输入 `根刮ぎ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10252 後ろ姿（うしろすがた），输入 `後姿`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10266 見比べる（みくらべる），输入 `見較べる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10269 絶好（ぜっこう），输入 `絶好`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10271 立ち入る（たちいる），输入 `立入る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10273 強固（きょうこ），输入 `鞏固`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10274 過ぎ去る（すぎさる），输入 `過去る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10283 目玉（めだま），输入 `目玉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10291 山々（やまやま），输入 `山々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10293 後々（のちのち），输入 `後々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10297 転倒（てんとう），输入 `顛倒`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10308 さりげない（さりげない），输入 `さり気ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10308 さりげない（さりげない），输入 `然りげ無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10314 ともあれ（ともあれ），输入 `兎もあれ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10314 ともあれ（ともあれ），输入 `兎も有れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10317 食い込む（くいこむ），输入 `食込む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10327 集落（しゅうらく），输入 `聚落`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10331 駆け巡る（かけめぐる），输入 `駆巡る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10334 切り落とす（きりおとす），输入 `切り落す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10334 切り落とす（きりおとす），输入 `切落す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10334 切り落とす（きりおとす），输入 `切落とす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10336 引き金（ひきがね），输入 `引き金`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10336 引き金（ひきがね），输入 `引金`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10336 引き金（ひきがね），输入 `引鉄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10336 引き金（ひきがね），输入 `銃爪`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10337 技量（ぎりょう），输入 `伎倆`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10337 技量（ぎりょう），输入 `伎量`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10337 技量（ぎりょう），输入 `技倆`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10338 素顔（すがお），输入 `素顔`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10339 疾走（しっそう），输入 `疾走`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10346 生息（せいそく），输入 `棲息`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10346 生息（せいそく），输入 `栖息`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #10349 近辺（きんぺん），输入 `近辺`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10350 装い（よそおい），输入 `粧い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10360 希少（きしょう），输入 `稀少`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10364 目下（もっか），输入 `目下`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10369 うずめる（うずめる），输入 `埋める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10369 うずめる（うずめる），输入 `填める`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10370 人間性（にんげんせい），输入 `人間性`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10374 命がけ（いのちがけ），输入 `命懸け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10383 安否（あんぴ），输入 `安否`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10384 残虐（ざんぎゃく），输入 `惨虐`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10397 口笛（くちぶえ），输入 `口笛`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10399 思いとどまる（おもいとどまる），输入 `思い止まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10399 思いとどまる（おもいとどまる），输入 `思い留まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10402 決め手（きめて），输入 `極め手`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10417 奔放（ほんぽう），输入 `奔放`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10420 蒸し返す（むしかえす），输入 `蒸返す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10421 あさる（あさる），输入 `漁る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10426 演算（えんざん），输入 `演算`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10427 物知り（ものしり），输入 `物識り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10441 すごすご（すごすご），输入 `悄悄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10451 並々ならぬ（なみなみならぬ），输入 `並々ならぬ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10454 欲張る（よくばる），输入 `欲張る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10455 飢餓（きが），输入 `饑餓`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #10456 下り坂（くだりざか），输入 `下り坂`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10459 乗り心地（のりごこち），输入 `乗り心地`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10459 乗り心地（のりごこち），输入 `乗心地`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10471 山小屋（やまごや），输入 `山小屋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10478 高騰（こうとう），输入 `昂騰`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10482 立ち会い（たちあい），输入 `立会`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10482 立ち会い（たちあい），输入 `立会い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10484 直観（ちょっかん），输入 `直観`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10484 直観（ちょっかん），输入 `直感`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10485 これ見よがし（これみよがし），输入 `是見よがし`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10485 これ見よがし（これみよがし），输入 `此れ見よがし`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10485 これ見よがし（これみよがし），输入 `此見よがし`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10488 共生（きょうせい），输入 `共棲`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10498 座禅（ざぜん），输入 `坐禅`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10499 滑走（かっそう），输入 `滑走`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10509 寄席（よせ），输入 `寄席`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10518 一端（いったん），输入 `一端`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10522 屏風（びょうぶ），输入 `屏風`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10522 屏風（びょうぶ），输入 `屛風`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10525 山並み（やまなみ），输入 `山脈`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10530 くれぐれも（くれぐれも），输入 `呉々も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10530 くれぐれも（くれぐれも），输入 `呉れ呉れも`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10530 くれぐれも（くれぐれも），输入 `呉呉も`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10531 継ぎ（つぎ），输入 `接ぎ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10532 石器（せっき），输入 `石器`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10543 絶叫（ぜっきょう），输入 `絶叫`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10548 言うまでもない（いうまでもない），输入 `言う迄もない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10548 言うまでもない（いうまでもない），输入 `言う迄も無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10550 他人事（ひとごと），输入 `他人事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10550 他人事（ひとごと），输入 `人事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10550 他人事（ひとごと），输入 `他人ごと`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10553 偽り（いつわり），输入 `詐り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10554 あったかい（あったかい），输入 `暖かい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10554 あったかい（あったかい），输入 `温かい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10556 やり過ごす（やりすごす），输入 `遣り過ごす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10558 足止め（あしどめ），输入 `足止め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10558 足止め（あしどめ），输入 `足留`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10558 足止め（あしどめ），输入 `足留め`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10561 足手まとい（あしでまとい），输入 `足手まとい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10561 足手まとい（あしでまとい），输入 `足手纏い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10561 足手まとい（あしでまとい），输入 `足手纒い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10563 世間話（せけんばなし），输入 `世間話`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10568 さいなむ（さいなむ），输入 `苛む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10568 さいなむ（さいなむ），输入 `嘖む`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10575 見いだす（みいだす），输入 `見出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10575 見いだす（みいだす），输入 `見出だす`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10577 いち早く（いちはやく），输入 `逸早く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10577 いち早く（いちはやく），输入 `逸速く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10580 気迫（きはく），输入 `気魄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10581 一片（いっぺん），输入 `一片`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10583 切羽詰まる（せっぱつまる），输入 `切羽詰まる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10583 切羽詰まる（せっぱつまる），输入 `切羽詰る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10585 報い（むくい），输入 `酬い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10587 確固（かっこ），输入 `確固`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10587 確固（かっこ），输入 `確乎`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10589 生まれながら（うまれながら），输入 `生まれ乍ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10589 生まれながら（うまれながら），输入 `生れながら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10589 生まれながら（うまれながら），输入 `生れ乍ら`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10593 劣化（れっか），输入 `劣化`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10597 見くびる（みくびる），输入 `見縊る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10601 負けず嫌い（まけずぎらい），输入 `負けず嫌い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10602 住処（すみか），输入 `住処`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10602 住処（すみか），输入 `住家`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10602 住処（すみか），输入 `棲家`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10602 住処（すみか），输入 `棲み処`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10603 一軒家（いっけんや），输入 `一軒家`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10603 一軒家（いっけんや），输入 `一軒屋`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10604 うねり（うねり），输入 `畝り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10606 江戸時代（えどじだい），输入 `江戸時代`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10607 表立つ（おもてだつ），输入 `表立つ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10608 筋書き（すじがき），输入 `筋書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10614 力仕事（ちからしごと），输入 `力仕事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10615 咲き誇る（さきほこる），输入 `咲誇る`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10616 一存（いちぞん），输入 `一存`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10617 寂れる（さびれる），输入 `荒びれる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10620 子細（しさい），输入 `仔細`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10623 嚙み付く（かみつく），输入 `噛み付く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10623 嚙み付く（かみつく），输入 `噛みつく`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10625 心もとない（こころもとない），输入 `心許ない`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10625 心もとない（こころもとない），输入 `心許無い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10628 流れ星（ながれぼし），输入 `流れ星`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10632 お好み焼き（おこのみやき），输入 `お好み焼`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10634 長話（ながばなし），输入 `長話`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10635 付随（ふずい），输入 `附随`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10636 挿絵（さしえ），输入 `挿絵`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10638 陰影（いんえい），输入 `陰翳`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10639 長靴（ながぐつ），输入 `長靴`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10642 圧巻（あっかん），输入 `圧巻`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10648 せんべい（せんべい），输入 `煎餅`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10649 珊瑚（さんご），输入 `珊瑚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10650 出来栄え（できばえ），输入 `出来栄え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10650 出来栄え（できばえ），输入 `出来映え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10652 いそしむ（いそしむ），输入 `勤しむ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10653 腐食（ふしょく），输入 `腐蝕`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10657 絹糸（きぬいと），输入 `繭糸`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10658 及び腰（およびごし），输入 `及び腰`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10663 わしづかみ（わしづかみ），输入 `鷲掴み`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10664 疑り深い（うたぐりぶかい），输入 `疑り深い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10667 長持ち（ながもち），输入 `長持`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10668 自画自賛（じがじさん），输入 `自画自讃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10671 一新（いっしん），输入 `一新`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10674 銀杏（いちょう），输入 `銀杏`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10674 銀杏（いちょう），输入 `公孫樹`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10674 銀杏（いちょう），输入 `鴨脚樹`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10677 底力（そこぢから），输入 `底力`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10678 手なずける（てなずける），输入 `手懐ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10680 焦げ臭い（こげくさい），输入 `焦臭い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10681 ひねり出す（ひねりだす），输入 `捻り出す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10683 覆い（おおい），输入 `掩い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10683 覆い（おおい），输入 `蔽い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10683 覆い（おおい），输入 `被い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10686 血気（けっき），输入 `血気`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10689 風当たり（かぜあたり），输入 `風当り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10691 雪景色（ゆきげしき），输入 `雪景色`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10694 聞き分け（ききわけ），输入 `聞分け`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10696 親元（おやもと），输入 `親許`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10702 はけ口（はけぐち），输入 `捌け口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10702 はけ口（はけぐち），输入 `吐け口`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10705 ぬか喜び（ぬかよろこび），输入 `糠喜び`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10708 湿地（しっち），输入 `湿地`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10721 知ったかぶり（しったかぶり），输入 `知ったか振り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10730 種まき（たねまき），输入 `種蒔`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10730 種まき（たねまき），输入 `種蒔き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10732 天の邪鬼（あまのじゃく），输入 `天の邪鬼`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10732 天の邪鬼（あまのじゃく），输入 `天邪鬼`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10732 天の邪鬼（あまのじゃく），输入 `天之邪鬼`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10732 天の邪鬼（あまのじゃく），输入 `天邪久`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10734 濾す（こす），输入 `漉す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10735 伸べる（のべる），输入 `展べる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10736 憩う（いこう），输入 `息う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10737 のけ者（のけもの），输入 `除け者`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10738 氷山の一角（ひょうざんのいっかく），输入 `氷山の一角`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10740 冬枯れ（ふゆがれ），输入 `冬枯れ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10740 冬枯れ（ふゆがれ），输入 `冬枯`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10746 もっともらしい（もっともらしい），输入 `尤もらしい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10747 一本調子（いっぽんぢょうし），输入 `一本調子`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10748 文筆（ぶんぴつ），输入 `文筆`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10751 筋立て（すじだて），输入 `筋立て`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10759 筆遣い（ふでづかい），输入 `筆遣い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10759 筆遣い（ふでづかい），输入 `筆使い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10770 色刷り（いろずり），输入 `色刷り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10770 色刷り（いろずり），输入 `色刷`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10770 色刷り（いろずり），输入 `色摺り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10772 口やかましい（くちやかましい），输入 `口喧しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10774 繰り越す（くりこす），输入 `繰越す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10775 緑陰（りょくいん），输入 `緑蔭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10785 偏狭（へんきょう），输入 `褊狭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10789 叢生（そうせい），输入 `簇生`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10792 浮遊（ふゆう），输入 `浮游`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10794 手跡（しゅせき），输入 `手蹟`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10812 発症（はっしょう），输入 `発症`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10827 雑食（ざっしょく），输入 `雑食`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10828 補塡（ほてん），输入 `補填`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10830 習い事（ならいごと），输入 `習い事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10833 出展（しゅってん），输入 `出展`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10841 駆け出し（かけだし），输入 `駈け出し`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10847 野放図（のほうず），输入 `野放途`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10850 乗り上げる（のりあげる），输入 `乗上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10851 生存権（せいぞんけん），输入 `生存権`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10853 ゆりかご（ゆりかご），输入 `揺り籃`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10859 暗然（あんぜん），输入 `闇然`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10859 暗然（あんぜん），输入 `黯然`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10861 独り歩き（ひとりあるき），输入 `一人歩き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10865 しらじら（しらじら），输入 `白々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10865 しらじら（しらじら），输入 `白白`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10867 欲求不満（よっきゅうふまん），输入 `欲求不満`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10869 取り結ぶ（とりむすぶ），输入 `取結ぶ`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10870 拙著（せっちょ），输入 `拙著`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10873 型どおり（かたどおり），输入 `型通り`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10879 善玉（ぜんだま），输入 `善玉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10880 悪玉（あくだま），输入 `悪玉`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10893 報う（むくう），输入 `酬う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10895 積極性（せっきょくせい），输入 `積極性`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10898 実質的（じっしつてき），输入 `実質的`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10900 客観性（きゃっかんせい），输入 `客観性`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10908 衝動買い（しょうどうがい），输入 `衝動買い`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10917 頑迷（がんめい），输入 `頑冥`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10928 すけべ（すけべ），输入 `助平`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10928 すけべ（すけべ），输入 `助兵衛`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10930 おぼしい（おぼしい），输入 `思しい`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10932 押し殺す（おしころす），输入 `圧し殺す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10935 脱却（だっきゃく），输入 `脱却`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10936 まろやか（まろやか），输入 `円やか`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10942 前々（まえまえ），输入 `前々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10943 あめんぼ（あめんぼ），输入 `水馬`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10943 あめんぼ（あめんぼ），输入 `水黽`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10943 あめんぼ（あめんぼ），输入 `飴坊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10944 いたずら書き（いたずらがき），输入 `いたずら書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10944 いたずら書き（いたずらがき），输入 `徒書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10944 いたずら書き（いたずらがき），输入 `悪戯書き`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10971 一矢（いっし），输入 `一矢`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10974 引きこもり（ひきこもり），输入 `引き篭もり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10974 引きこもり（ひきこもり），输入 `引き籠もり`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10979 怪訝（けげん），输入 `怪訝`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10982 願い事（ねがいごと），输入 `願い事`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10983 嬉々（きき），输入 `嬉々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10983 嬉々（きき），输入 `喜々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10983 嬉々（きき），输入 `嘻々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10983 嬉々（きき），输入 `嘻嘻`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10984 忌み嫌う（いみきらう），输入 `忌嫌う`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10990 屈託（くったく），输入 `屈託`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10990 屈託（くったく），输入 `屈托`：期望 aligned character reading，实际 chinese_form; nearMiss=true; readingOk=null
+- #10991 研鑽（けんさん），输入 `研鑚`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10992 見開く（みひらく），输入 `瞠く`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10997 擦り抜ける（すりぬける），输入 `摺り抜ける`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #10998 仕事柄（しごとがら），输入 `仕事柄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11000 実相（じっそう），输入 `実相`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11007 書き足す（かきたす），输入 `書足す`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11011 食感（しょっかん），输入 `食感`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11012 生まれ落ちる（うまれおちる），输入 `生れ落ちる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11013 切り替え（きりかえ），输入 `切換え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11013 切り替え（きりかえ），输入 `切替え`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11015 戦隊（せんたい），输入 `戰隊`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11017 疎通（そつう），输入 `疏通`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11019 存じ上げる（ぞんじあげる），输入 `存じ上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11019 存じ上げる（ぞんじあげる），输入 `存じあげる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11019 存じ上げる（ぞんじあげる），输入 `存知上げる`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11021 統御（とうぎょ），输入 `統馭`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11022 特化（とっか），输入 `特化`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11027 微々（びび），输入 `微々`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11031 復権（ふっけん），输入 `復権`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11033 分かれ道（わかれみち），输入 `別れ路`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11047 落とし所（おとしどころ），输入 `落とし所`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11048 流し目（ながしめ），输入 `流眄`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11049 連関（れんかん），输入 `聯関`：期望 aligned character reading，实际 traditional_form; nearMiss=true; readingOk=null
+- #11053 籠城（ろうじょう），输入 `篭城`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11056 闊達（かったつ），输入 `闊達`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+- #11056 闊達（かったつ），输入 `豁達`：期望 aligned character reading，实际 correct; nearMiss=false; readingOk=null
+
+## 同音词互斥检查
+
+### 已在 A.forms 中的同音词标准表记（207）
+
+- #9 入口（いりぐち），输入 `入り口`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1317 入り口（いりぐち），输入 `入口`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #28 答え（こたえ），输入 `応え`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3972 応え（こたえ），输入 `答え`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #79 開ける（あける），输入 `明ける`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3120 明ける（あける），输入 `開ける`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #84 出す（だす），输入 `〜出す`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1060 〜出す（だす），输入 `出す`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #104 作る（つくる），输入 `造る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4012 造る（つくる），输入 `作る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7806 絶つ（たつ），输入 `断つ`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #8454 断つ（たつ），输入 `絶つ`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #113 飛ぶ（とぶ），输入 `跳ぶ`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3654 跳ぶ（とぶ），输入 `飛ぶ`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2492 効く（きく），输入 `利く`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4727 利く（きく），输入 `効く`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #142 開く（あく），输入 `空く`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1175 空く（あく），输入 `開く`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #143 閉まる（しまる），输入 `締まる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3323 締まる（しまる），输入 `閉まる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #144 止まる（とまる），输入 `留まる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4457 留まる（とまる），输入 `止まる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #145 止める（とめる），输入 `留める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4458 留める（とめる），输入 `止める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #152 探す（さがす），输入 `捜す`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3830 捜す（さがす），输入 `探す`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1680 かぶる（かぶる），输入 `被る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #169 降りる（おりる），输入 `下りる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1793 下りる（おりる），输入 `降りる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4084 つながる（つながる），输入 `繋がる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #207 〜君（くん），输入 `～君`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2582 ～君（くん），输入 `〜君`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1212 子（こ），输入 `～子`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2580 ～子（こ），输入 `子`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #215 〜番（ばん），输入 `番`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1582 番（ばん），输入 `〜番`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #218 〜本（ほん），输入 `本`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #706 本（ほん），输入 `〜本`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #221 あさって（あさって），输入 `明後日`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #222 あそこ（あそこ），输入 `彼処`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #223 あちら（あちら），输入 `彼方`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #229 あまり（あまり），输入 `余り`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #238 いつも（いつも），输入 `何時も`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #240 いろいろ（いろいろ），输入 `色々`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #242 うるさい（うるさい），输入 `煩い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #246 おいしい（おいしい），输入 `美味しい`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #248 おじいさん（おじいさん），输入 `お爺さん`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #250 おととい（おととい），输入 `一昨日`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #252 おなか（おなか），输入 `お腹`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #255 おばあさん（おばあさん），输入 `お祖母さん`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #266 かわいい（かわいい），输入 `可愛い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #269 きれい（きれい），输入 `綺麗`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #302 そちら（そちら），输入 `其方`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #948 蕎麦（そば），输入 `蕎麦`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2481 蕎麦（そば），输入 `蕎麦`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #314 ただ今（ただいま），输入 `只今`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2554 只今（ただいま），输入 `ただ今`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #321 つまらない（つまらない），输入 `詰まらない`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #333 どうして（どうして），输入 `如何して`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #337 どこ（どこ），输入 `何処`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #338 どちら（どちら），输入 `何方`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #341 どなた（どなた），输入 `何方`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #343 どれ（どれ），输入 `何れ`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #351 にぎやか（にぎやか），输入 `賑やか`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #368 まずい（まずい），输入 `不味い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #371 まっすぐ（まっすぐ），输入 `真っ直ぐ`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #372 みんな（みんな），输入 `皆`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #424 会う（あう），输入 `遭う`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1199 合う（あう），输入 `〜合う`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3151 〜合う（あう），输入 `合う`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #6519 遭う（あう），输入 `会う`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #486 口（くち），输入 `〜口`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #844 〜口（くち），输入 `口`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #543 すし（すし），输入 `寿司`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1037 貼る（はる），输入 `張る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1672 張る（はる），输入 `貼る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #602 前（まえ），输入 `〜前`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5384 〜前（まえ），输入 `前`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #604 早い（はやい），输入 `速い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #883 速い（はやい），输入 `早い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #632 町（まち），输入 `街`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #981 街（まち），输入 `町`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #682 晩ご飯（ばんごはん），输入 `晩御飯`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2262 晩御飯（ばんごはん），输入 `晩ご飯`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #724 木（き），输入 `樹`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2026 樹（き），输入 `木`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #726 目（め），输入 `〜目`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #754 〜目（め），输入 `目`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #757 いかが（いかが），输入 `如何`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #765 これから（これから），输入 `此れから`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #766 すごい（すごい），输入 `凄い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #781 もらう（もらう），输入 `貰う`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #792 おもちゃ（おもちゃ），输入 `玩具`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #793 うれしい（うれしい），输入 `嬉しい`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #796 たまに（たまに），输入 `偶に`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3786 付き（つき），输入 `〜付き`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4475 〜付き（つき），输入 `付き`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #799 固い（かたい），输入 `硬い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #799 固い（かたい），输入 `堅い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1197 硬い（かたい），输入 `固い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1197 硬い（かたい），输入 `堅い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7092 堅い（かたい），输入 `固い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7092 堅い（かたい），输入 `硬い`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #807 初め（はじめ），输入 `始め`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1860 始め（はじめ），输入 `初め`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #816 足（あし），输入 `脚`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2476 脚（あし），输入 `足`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #860 ほか（ほか），输入 `他`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #928 〜中（じゅう），输入 `～中`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2583 ～中（じゅう），输入 `〜中`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #907 おはよう（おはよう），输入 `お早う`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #927 〜達（たち），输入 `達`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2362 達（たち），输入 `〜達`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #973 温かい（あたたかい），输入 `暖かい`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1034 暖かい（あたたかい），输入 `温かい`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1030 だめ（だめ），输入 `駄目`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1039 登る（のぼる），输入 `上る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1039 登る（のぼる），输入 `昇る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3639 上る（のぼる），输入 `登る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3639 上る（のぼる），输入 `昇る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7287 昇る（のぼる），输入 `登る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7287 昇る（のぼる），输入 `上る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1048 方（かた），输入 `〜方`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1062 〜方（かた），输入 `方`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1070 おかしい（おかしい），输入 `可笑しい`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1078 けが（けが），输入 `怪我`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1084 しっかり（しっかり），输入 `確り`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1085 しまう（しまう），输入 `仕舞う`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1102 なかなか（なかなか），输入 `中々`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1113 ほとんど（ほとんど），输入 `殆ど`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1120 やはり（やはり），输入 `矢張り`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1258 尋ねる（たずねる），输入 `尋ねる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3845 訊ねる（たずねる），输入 `尋ねる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1261 ぜひ（ぜひ），输入 `是非`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1295 通り（とおり），输入 `〜通り`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2008 〜通り（とおり），输入 `通り`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1349 片付ける（かたづける），输入 `片付ける`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2086 片づける（かたづける），输入 `片付ける`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1490 痛み（いたみ），输入 `傷み`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5615 傷み（いたみ），输入 `痛み`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2801 勧める（すすめる），输入 `薦める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7810 薦める（すすめる），输入 `勧める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1574 いろんな（いろんな），输入 `色んな`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1607 やっぱり（やっぱり），输入 `矢っ張り`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1624 すばらしい（すばらしい），输入 `素晴らしい`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1728 ごちそう（ごちそう），输入 `ご馳走`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1738 しばらく（しばらく），输入 `暫く`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1754 できるだけ（できるだけ），输入 `出来るだけ`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1789 温める（あたためる），输入 `暖める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7110 暖める（あたためる），输入 `温める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1810 気を付ける（きをつける），输入 `気をつける`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2473 気をつける（きをつける），输入 `気を付ける`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1824 喧嘩（けんか），输入 `喧嘩`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2171 喧嘩（けんか），输入 `喧嘩`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1936 超える（こえる），输入 `越える`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3214 越える（こえる），输入 `超える`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #1963 表す（あらわす），输入 `現す`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4212 現す（あらわす），输入 `表す`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4080 ただし（ただし），输入 `但し`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3201 もったいない（もったいない），输入 `勿体ない`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #6525 ひまわり（ひまわり），输入 `向日葵`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4227 さらに（さらに），输入 `更に`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2283 噂（うわさ），输入 `噂`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2632 噂（うわさ），输入 `噂`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4107 まもなく（まもなく），输入 `間もなく`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3439 もしかしたら（もしかしたら），输入 `若しかしたら`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5442 とりあえず（とりあえず），输入 `取り敢えず`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3927 うどん（うどん），输入 `饂飩`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2555 叩く（たたく），输入 `叩く`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2683 叩く（たたく），输入 `叩く`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2766 延ばす（のばす），输入 `伸ばす`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2962 伸ばす（のばす），输入 `延ばす`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3365 溶ける（とける），输入 `解ける`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2856 現れる（あらわれる），输入 `表れる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4407 表れる（あらわれる），输入 `現れる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2882 載せる（のせる），输入 `乗せる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2952 乗せる（のせる），输入 `載せる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #2963 伸びる（のびる），输入 `延びる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7239 延びる（のびる），输入 `伸びる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3023 痛む（いたむ），输入 `傷む`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5616 傷む（いたむ），输入 `痛む`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3301 早める（はやめる），输入 `速める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4629 速める（はやめる），输入 `早める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3304 測る（はかる），输入 `計る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3986 計る（はかる），输入 `測る`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3326 登り（のぼり），输入 `上り`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7388 上り（のぼり），输入 `登り`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3377 越す（こす），输入 `超す`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7832 超す（こす），输入 `越す`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3472 勤め（つとめ），输入 `務め`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5774 務め（つとめ），输入 `勤め`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #3496 次第（しだい），输入 `〜次第`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7016 〜次第（しだい），输入 `次第`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #6083 痛める（いためる），输入 `傷める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7171 傷める（いためる），输入 `痛める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4450 溶かす（とかす），输入 `解かす`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #4706 保証（ほしょう），输入 `保障`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5759 保障（ほしょう），输入 `保証`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5099 収まる（おさまる），输入 `納まる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #7561 納まる（おさまる），输入 `収まる`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5100 収める（おさめる），输入 `納める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #5253 納める（おさめる），输入 `収める`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #8007 呆然（ぼうぜん），输入 `茫然`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #8325 趣旨（しゅし），输入 `主旨`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #9071 主旨（しゅし），输入 `趣旨`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #8476 直感（ちょっかん），输入 `直観`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+- #10484 直観（ちょっかん），输入 `直感`：期望 allowed overlap: in A.forms，实际 correct; nearMiss=false; readingOk=null
+
+### 与 A 读音相同、只能按合法假名读音接受的 B 表记（188）
+
+- #27 故障（こしょう），输入 `こしょう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #90 貸す（かす），输入 `かす`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #159 着る（きる），输入 `きる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #590 切る（きる），输入 `きる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #160 履く（はく），输入 `はく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2996 掃く（はく），输入 `はく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3043 吐く（はく），输入 `はく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3161 〜泊（はく），输入 `はく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #161 被る（かぶる），输入 `かぶる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #172 繋がる（つながる），输入 `つながる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #203 〜さん（さん），输入 `さん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #871 三（さん），输入 `〜さん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #871 三（さん），输入 `さん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2399 さん（さん），输入 `〜さん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3154 産（さん），输入 `〜さん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3154 産（さん），输入 `さん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #204 〜ちゃん（ちゃん），输入 `ちゃん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2446 ちゃん（ちゃん），输入 `〜ちゃん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #205 〜回（かい），输入 `かい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #206 〜階（かい），输入 `かい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1059 会（かい），输入 `かい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3923 貝（かい），输入 `かい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6286 下位（かい），输入 `かい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6515 〜界（かい），输入 `かい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2094 明後日（あさって），输入 `あさって`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2576 彼処（あそこ），输入 `あそこ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2577 彼方（あちら），输入 `あちら`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2474 貴方（あなた），输入 `あなた`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2320 余り（あまり），输入 `あまり`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #230 ある（ある），输入 `ある〜`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1064 ある〜（ある），输入 `ある`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2451 良い（いい），输入 `いい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2472 幾ら（いくら），输入 `いくら`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2452 何時（いつ），输入 `いつ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2453 何時も（いつも），输入 `いつも`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #831 要る（いる），输入 `いる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2524 色々（いろいろ），输入 `いろいろ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2552 煩い（うるさい），输入 `うるさい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4131 運（うん），输入 `うん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2565 美味しい（おいしい），输入 `おいしい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2621 叔父（おじ），输入 `おじ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2315 お爺さん（おじいさん），输入 `おじいさん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2140 一昨日（おととい），输入 `おととい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2312 お腹（おなか），输入 `おなか`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2297 お祖母さん（おばあさん），输入 `おばあさん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2456 可愛い（かわいい），输入 `かわいい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2588 綺麗（きれい），输入 `きれい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6335 個々（ここ），输入 `ここ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2038 然し（しかし），输入 `しかし`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2239 直ぐ（すぐ），输入 `すぐ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4132 沿う（そう），输入 `そう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6210 層（そう），输入 `そう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6562 総（そう），输入 `そう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1938 底（そこ），输入 `そこ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2548 其方（そちら），输入 `そちら`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #948 蕎麦（そば），输入 `そば`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2045 側（そば），输入 `そば`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2481 蕎麦（そば），输入 `そば`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2444 段段（だんだん），输入 `だんだん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2236 丁度（ちょうど），输入 `ちょうど`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2475 詰まらない（つまらない），输入 `つまらない`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2203 出来る（できる），输入 `できる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2459 如何（どう），输入 `どう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7317 同（どう），输入 `どう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7320 銅（どう），输入 `どう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #9263 胴（どう），输入 `どう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2574 如何して（どうして），输入 `どうして`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2454 何処（どこ），输入 `どこ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2455 何方（どちら），输入 `どちら`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2055 何方（どなた），输入 `どなた`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7214 〜殿（どの），输入 `どの`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2581 何れ（どれ），输入 `どれ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2249 賑やか（にぎやか），输入 `にぎやか`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #930 〜杯（はい），输入 `はい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6211 敗（はい），输入 `はい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2221 先ず（まず），输入 `まず`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2135 不味い（まずい），输入 `まずい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2311 又（また），输入 `また`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2422 未だ（まだ），输入 `まだ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2214 真っ直ぐ（まっすぐ），输入 `まっすぐ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2333 皆（みんな），输入 `みんな`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #9369 猛（もう），输入 `もう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2500 昨夜（ゆうべ），输入 `ゆうべ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #385 安い（やすい），输入 `〜やすい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #416 家（いえ），输入 `いえ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #824 内（うち），输入 `うち`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #478 五日（いつか），输入 `いつか`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #481 後（あと），输入 `あと`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7395 跡（あと），输入 `あと`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2509 寿司（すし），输入 `すし`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #567 上げる（あげる），输入 `あげる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2164 挙げる（あげる），输入 `あげる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4449 揚げる（あげる），输入 `あげる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #728 夜（よる），输入 `よる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1430 寄る（よる），输入 `よる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #752 後（ご），输入 `ご〜`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #870 五（ご），输入 `ご〜`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1651 語（ご），输入 `ご〜`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5037 碁（ご），输入 `ご〜`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2271 如何（いかが），输入 `いかが`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7204 暮れる（くれる），输入 `くれる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2377 斯う（こう），输入 `こう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4558 高（こう），输入 `こう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2497 此れから（これから），输入 `これから`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2532 凄い（すごい），输入 `すごい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2098 貰う（もらう），输入 `もらう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2323 良く（よく），输入 `よく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3667 翌〜（よく），输入 `よく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6179 欲（よく），输入 `よく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2570 玩具（おもちゃ），输入 `おもちゃ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2471 嬉しい（うれしい），输入 `うれしい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2485 偶に（たまに），输入 `たまに`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1690 〜製（せい），输入 `せい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3159 性（せい），输入 `せい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3645 正（せい），输入 `せい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #9469 同化（どうか），输入 `どうか`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #858 最も（もっとも），输入 `もっとも`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2228 他（ほか），输入 `ほか`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4504 より(副)（より），输入 `より`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5374 寄り（より），输入 `より`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2575 お早う（おはよう），输入 `おはよう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4628 憎い（にくい），输入 `〜にくい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #991 嫌（いや），输入 `いや`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1987 鳴る（なる），输入 `なる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2462 成る（なる），输入 `なる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2364 駄目（だめ），输入 `だめ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2457 可笑しい（おかしい），输入 `おかしい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1902 折る（おる），输入 `おる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #8358 織る（おる），输入 `おる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2150 怪我（けが），输入 `けが`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2152 確り（しっかり），输入 `しっかり`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2196 仕舞う（しまう），输入 `しまう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2558 中々（なかなか），输入 `なかなか`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2091 殆ど（ほとんど），输入 `ほとんど`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2491 若し（もし），输入 `もし`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2317 矢張り（やはり），输入 `やはり`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1535 辞める（やめる），输入 `やめる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2503 止める（やめる），输入 `やめる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2531 是非（ぜひ），输入 `ぜひ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1406 home（ホーム），输入 `ホーム`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1606 platform（ホーム），输入 `ホーム`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1446 差（さ），输入 `〜さ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1469 身（み），输入 `〜み`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2908 実（み），输入 `〜み`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3662 未〜（み），输入 `〜み`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #8717 味（み），输入 `〜み`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4256 姉妹（しまい），输入 `しまい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2624 色んな（いろんな），输入 `いろんな`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1581 大〜（おお），输入 `おお`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2316 矢っ張り（やっぱり），输入 `やっぱり`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2540 素晴らしい（すばらしい），输入 `すばらしい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1762 海苔（のり），输入 `のり`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4938 沖（おき），输入 `〜おき`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2127 ご馳走（ごちそう），输入 `ごちそう`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2194 暫く（しばらく），输入 `しばらく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2204 出来るだけ（できるだけ），输入 `できるだけ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #1871 臭い（くさい），输入 `くさい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2634 甥（おい），输入 `おい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #7598 老い（おい），输入 `おい`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2047 但し（ただし），输入 `ただし`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2097 勿体ない（もったいない），输入 `もったいない`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2132 向日葵（ひまわり），输入 `ひまわり`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2186 更に（さらに），输入 `さらに`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2231 大分（だいぶ），输入 `だいぶ`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2235 貯める（ためる），输入 `ためる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2438 ロック（ロック），输入 `ロック`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2438 ロック（ロック），输入 `ロック`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3847 lock（ロック），输入 `ロック`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3847 lock（ロック），输入 `ロック`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3897 rock（ロック），输入 `ロック`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3897 rock（ロック），输入 `ロック`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2464 間もなく（まもなく），输入 `まもなく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2484 空く（すく），输入 `すく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2507 若しかしたら（もしかしたら），输入 `もしかしたら`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2508 取り敢えず（とりあえず），输入 `とりあえず`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2549 饂飩（うどん），输入 `うどん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5785 要約（ようやく），输入 `ようやく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #2776 加える（くわえる），输入 `くわえる`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #3936 縦（たて），输入 `〜たて`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4020 桃（もも），输入 `もも`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4160 巻く（まく），输入 `まく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #5310 幕（まく），输入 `まく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #4109 miss（ミス），输入 `ミス`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6263 Miss（ミス），输入 `ミス`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #6153 放棄（ほうき），输入 `ほうき`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #10518 一端（いったん），输入 `いったん`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #8196 愚か（おろか），输入 `おろか`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+- #8272 裁く（さばく），输入 `さばく`：期望 same-reading kana is also A's valid reading，实际 correct; nearMiss=false; readingOk=true
+
+### 带词性注记、不能作为标准输入的 B 表记（2）
+
+- #867 より（より），输入 `より(副)`：期望 dictionary label, not a spelling，实际 mixed_scripts; nearMiss=false; readingOk=null
+- #5374 寄り（より），输入 `より(副)`：期望 dictionary label, not a spelling，实际 mixed_scripts; nearMiss=false; readingOk=null
+
+## 取舍与待拍板
+
+- §1.6 明确禁止把外来语词源当正确拼写，故 `cleanWordSurface(kanji)` 若是词源或包含多条以分号 / 圆括号标出的词典别名，不作为正确答案断言；具体词条列在例外中。其它单一清理表记仍要求命中。
+- §1.2 接受目标读音的假名，故同音词 B 的标准表记若本身就是与 A 同音的纯假名，无法同时拒绝它；这类冲突列为可辨识性例外。B 的汉字表记仍要求拒绝并诊断为 `homophone`。
+- 逐字汉字读音从运行时 `kanji_reading_unit_runtime.json` 的读音片段对齐。多汉字词若该索引没有唯一可对齐的读音片段，记录为未生成；不猜读音，避免把错误的交ぜ書き当成规格失败。
+- `okurigana` 变异若恰好命中同词另一条已收录写法，按 §1.5 接受集合优先，列为例外而不记 false accept。
+- 汉字替换 `損なう` → `害なう` 对应同词 `rare` 写法 `害う`，故它按 §2 优先诊断为 `okurigana`，不是误把替换字判对；该项列在例外中。
+
+## 修复记录
+
+- `frontend/src/lib/spelling/check.ts:187`：`classifyInput` 把含数字 / 标注的合法字面写法分到 `other`，原先直接报 `mixed_scripts`；现先匹配本词 `target.forms`，再做目标上下文简体诊断。回归例：`１日` / `1日`。
+- `frontend/src/lib/spelling/kanji-form.ts:66`、`frontend/src/lib/spelling/check.ts:78`：单字反查对「动」这类一简对多日字缺少上下文；现对每条接受写法逐字验证简体变体，再报对应的日文字形。回归例：`運動` / `働く`。
+- `frontend/src/lib/spelling/check.ts:138`：首轮删除 / 增加送り仮名变异分别有 52 / 102 例被前置的 `partial_kana` 抢先诊断；现先检查相同汉字序列的送り仮名，再判交ぜ書き。回归覆盖前置假名词形与变长词尾。
