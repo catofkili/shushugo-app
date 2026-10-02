@@ -3371,3 +3371,18 @@ App 里没有接微信 OpenSDK（没有开放平台移动应用 AppID、Universa
 - **开发者工具里 Canvas 画在分享面板和「往期」上面**，而且 `display:none` 也藏不掉（类和规则都确认生效了，星点照样在）。
   改成 `weekly/covered.ts` 的 `WeeklyCoveredContext`：弹层开着时小程序版三个 Canvas 组件直接不渲染。网页组件不读它。
   ⚠️ 真机 Canvas 2D 是同层渲染、z-index 也许本来就管用，但没在真机上确认过。
+
+同一天又逐章对了三套版式 20 章（网页 / 小程序同一份模拟数据并排截图，记录和图在提交 `b4b48bd` 的说明里），
+修掉的里面有几条是**小程序通用的坑**，改别的页面也会碰上：
+
+- **可用高度**：小程序有原生导航栏，375×812 的机器上页面只有 721 px。`svh` 模拟器里认（算出来就是 721），
+  问题是按 812 排的版面在 721 里放不下。适配只写在小程序侧（周报是 `content-pages/weekly-report/weekly-layout.weapp.css`），网页版面不动。
+- **普通 View 的 `overflow:auto` 不是原生滚动**，长页后半截根本滚不到；Taro 节点也没有 `closest` / pointer capture，
+  网页那套 Pointer 手势不触发。周报的办法是 `weekly/WeeklyReader(.weapp).tsx`：网页原样输出 `<section>`，
+  小程序是 `ScrollView` + 原生 touch（阈值照网页）。⚠️ 页面里有原生 Canvas 时，多出来的纯留白滚动会让 Canvas 和正文错位，
+  一屏放得下的就别开纵向滚动。
+- **Taro 编译复合选择器只换最后一个标签**：`p > b` 编出来是 `p > .h5-b`，`p` 匹配不到任何 WXML 节点，整条规则失效。
+  在小程序侧补一条 `.h5-p > .h5-b` 等价写法。`:has()` 则被构建器整条删掉。
+- **微信 `button` 默认裁切子节点**（网页 button 是 `overflow: visible`），伸出按钮框的装饰会被切掉。
+- **lucide 在小程序里是 Image**，继承不了 `currentColor`：深色页面上的图标会是默认深色。只能按场景加 `filter`。
+- **动态拼出来的贴纸名不会自动进分包**（`sync-brand-assets.mjs` 只认得静态写出来的），要手动登记到用到它的分包。
