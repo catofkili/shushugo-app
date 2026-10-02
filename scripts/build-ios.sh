@@ -61,10 +61,20 @@ if [ -n "${SHUSHUGO_EXP_TALK:-}" ]; then
     echo -e "${RED}❌ SHUSHUGO_EXP_TALK 是实验功能开关，发版构建不许带${NC}"
     exit 1
 fi
+# JLPT 开关独立拦截，不能随开口练习上线一起解除（docs/JLPT_PRACTICE_SPEC.md §0）。
+if [ -n "${SHUSHUGO_EXP_JLPT:-}" ]; then
+    echo -e "${RED}❌ SHUSHUGO_EXP_JLPT 是实验功能开关，发版构建不许带${NC}"
+    exit 1
+fi
 echo -e "${YELLOW}🔨 构建前端项目...${NC}"
 npm run build
 if grep -rq "__SHUSHUGO_EXP_TALK__" dist; then
     echo -e "${RED}❌ 构建产物里有实验功能（开口练习）的代码${NC}"
+    exit 1
+fi
+
+if grep -rq "__SHUSHUGO_EXP_JLPT__" dist; then
+    echo -e "${RED}❌ 构建产物里有实验功能（JLPT 刷题）的代码${NC}"
     exit 1
 fi
 

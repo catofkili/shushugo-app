@@ -34,6 +34,10 @@ const definitions = [
   // app.config.js 在 node 里读这份时看环境变量；打进包里的这份由 DefinePlugin 把 __EXP_TALK__ 换成字面量。
   ...((typeof __EXP_TALK__ !== 'undefined' ? __EXP_TALK__ : process.env.SHUSHUGO_EXP_TALK === '1')
     ? [['talk', 'study/talk/index', false, 'study']]
+    : []),
+  // 刷题的实验开关独立，Node 登记和包内 DefinePlugin 必须同值。
+  ...((typeof __EXP_JLPT__ !== 'undefined' ? __EXP_JLPT__ : process.env.SHUSHUGO_EXP_JLPT === '1')
+    ? [['jlpt-practice', 'study/jlpt-practice/index', false, 'study']]
     : [])
 ];
 

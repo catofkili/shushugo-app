@@ -50,6 +50,8 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "talk_memory", keys: ["card_key"], strategy: "lww", cloud: false },
   { table: "talk_tasks", keys: ["reviewed_on", "card_key"], strategy: "lww", cloud: false },
   { table: "talk_reviews", keys: ["sync_uid"], strategy: "append", cloud: false },
+  // 实验刷题也只在本机，不能把新表推给不认识它的已发布客户端。
+  { table: "jlpt_answers", keys: ["sync_uid"], strategy: "append", cloud: false },
   // 反向卡的长期记忆。和 kanji_memory 同构:每个词一行,逐行 LWW。
   { table: "reverse_memory", keys: ["word_id"], strategy: "lww" },
   { table: "grammar_progress", keys: ["grammar_id"], strategy: "lww" },
