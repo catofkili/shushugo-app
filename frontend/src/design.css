@@ -894,8 +894,10 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 .jq-choice { min-width: 0; }
 .jq-option { flex: 1; min-width: 0; font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
 .jq-icon { flex: none; }
-.jq-choice-selected { background: var(--ds-primary-tint-2); color: var(--ds-primary-ink); }
-.jq-choice-selected:not(:disabled):hover { background: var(--ds-primary-tint-2); }
+/* 模拟卷里「选了这个」：像答题卡涂格子，中性色。不能用主色浅底——那是练习里「答对」的颜色，考试途中会误以为自己答对了 */
+.jq-choice-selected { background: var(--ds-inset-2); color: var(--ds-ink); box-shadow: inset 0 0 0 2px var(--ds-ink-2); }
+.jq-choice-selected:not(:disabled):hover { background: var(--ds-inset-2); }
+.jq-choice-selected .ds-choice-key { background: var(--ds-ink); color: var(--ds-surface); }
 .jq-feedback-title { margin: 0 0 4px; font-size: 14px; font-weight: 800; }
 .jq-explanation { margin: 4px 0 0; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
 .jq-actions { display: flex; flex-wrap: wrap; gap: 8px; }
