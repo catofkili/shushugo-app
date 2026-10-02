@@ -128,7 +128,8 @@ const buildTokens = (targetKana: string): { tokens: RomajiToken[]; moras: string
     if (continuation && previousToken?.kind === "mora" && previousToken.longIndex === undefined) {
       const vowel = vowelOfMora(previous);
       const forms = longForms(previousToken.baseAlts, vowel, continuation);
-      const canonical = markVowel(previousToken.baseAlts[0], MACRON);
+      // 展示用的写法按假名如实写（きょう → kyou、とおり → toori）：「怎么敲」比「标准 Hepburn」更有用；ー 没有假名可依，才用长音符
+      const canonical = continuation === "bar" ? markVowel(previousToken.baseAlts[0], MACRON) : (forms.alts[0] ?? markVowel(previousToken.baseAlts[0], MACRON));
       previousToken.canonical = canonical;
       previousToken.alts = unique([canonical, ...forms.alts]);
       previousToken.wrongLongAlts = forms.wrong.filter((alt) => !previousToken.alts.includes(alt));

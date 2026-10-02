@@ -59,7 +59,7 @@
   A1 先扫词库把这类词列全，只对列出的词开 は→wa、へ→e，不做通用规则。
 - **失败要给位置和分类**：第一处对不上的拍下标；整体去掉长音标记后若相同 → `long_vowel`；
   去掉促音相同 → `sokuon`；ん 的有无 → `hatsuon`；其它 `wrong_reading`；前缀对但输入短 / 长 → `too_short` / `too_long`。
-- `kanaToRomaji(kana)`：给 UI 的「看答案」和提示用，输出标准 Hepburn（长音用 ō ū 这类、ー 用 ō，促音重复辅音，ん 一律 n，ん 后接母音 / や行时写 n'）。
+- `kanaToRomaji(kana)`：给 UI 的「看答案」和提示用。**按假名如实写**（きょう → kyou、とおり → toori、がっこう → gakkou），因为展示的目的是告诉用户「怎么敲」；ー 没有假名可依，才用长音符（ラーメン → rāmen）；ん 后接母音 / や行时写 n'，促音重复辅音。
 
 ### 1.4 假名（`kana.ts` 的 `compareKana`）
 

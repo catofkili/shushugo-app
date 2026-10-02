@@ -203,8 +203,8 @@ describe("罗马音逐拍匹配", () => {
   });
 
   it("看答案输出 Hepburn 长音、促音和拨音形式", () => {
-    expect(kanaToRomaji("きょう")).toBe("kyō");
-    expect(kanaToRomaji("がっこう")).toBe("gakkō");
+    expect(kanaToRomaji("きょう")).toBe("kyou");
+    expect(kanaToRomaji("がっこう")).toBe("gakkou");
     expect(kanaToRomaji("しんあい")).toBe("shin'ai");
     expect(kanaToRomaji("ほんやく")).toBe("hon'yaku");
     expect(kanaToRomaji("しんぶん")).toBe("shinbun");
