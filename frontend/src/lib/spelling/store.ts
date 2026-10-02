@@ -178,7 +178,7 @@ export const clearSpellingTasks = (day = today()): void => {
 
 export const lastEncounterToday = (wordId: number, day = today()): boolean => {
   if (!firstValue<number>(
-    "SELECT EXISTS(SELECT 1 FROM reviews WHERE word_id = ? AND reviewed_on = ?)", [wordId, day], 0
+    "SELECT EXISTS(SELECT 1 FROM reviews WHERE word_id = ? AND reviewed_on = ? AND direction = 'forward')", [wordId, day], 0
   )) return false;
   return isGraduatedForDay(
     readFsrsState(wordId, WORD_FSRS),
