@@ -1,23 +1,25 @@
+const contentPackage = 'content-pages';
 module.exports = {
   "empty-box": [
     "study",
-    "content-pages"
+    contentPackage
   ],
   "empty-search": [
     "study",
-    "content-pages"
+    contentPackage
   ],
   "mood-ask": [
     "study",
     "account"
   ],
   "mood-idea": [
-    "study"
+    "study",
+    contentPackage
   ],
   "mood-proud": [
     "study",
     "account",
-    "content-pages"
+    contentPackage
   ],
   "mood-heart": [
     "account"
@@ -25,67 +27,73 @@ module.exports = {
   "mood-shocked": [
     "account"
   ],
+  "mood-love": [
+    contentPackage
+  ],
+  "mood-fight": [
+    contentPackage
+  ],
   "icon-study-modes": [
-    "content-pages"
+    contentPackage
   ],
   "icon-grammar": [
-    "content-pages"
+    contentPackage
   ],
   "icon-vocab": [
-    "content-pages"
+    contentPackage
   ],
   "icon-practice": [
-    "content-pages"
+    contentPackage
   ],
   "icon-kanji-readings": [
-    "content-pages"
+    contentPackage
   ],
   "icon-favorites": [
-    "content-pages"
+    contentPackage
   ],
   "icon-stats": [
-    "content-pages"
+    contentPackage
   ],
   "icon-shop": [
-    "content-pages"
+    contentPackage
   ],
   "shushugo-icon": [
-    "content-pages"
+    contentPackage
   ],
   "shushugo-icon-dark": [
-    "content-pages"
+    contentPackage
   ],
   "shushugo-cover": [
-    "content-pages"
+    contentPackage
   ],
   "mood-happy": [
-    "content-pages"
+    contentPackage
   ],
   "mood-study": [
-    "content-pages"
+    contentPackage
   ],
   "item-repair": [
-    "content-pages"
+    contentPackage
   ],
   "item-voice-female-2": [
-    "content-pages"
+    contentPackage
   ],
   "item-voice-male": [
-    "content-pages"
+    contentPackage
   ],
   "item-sound-marimba-2": [
-    "content-pages"
+    contentPackage
   ],
   "item-sound-epiano-2": [
-    "content-pages"
+    contentPackage
   ],
   "roll-frame": [
-    "content-pages"
+    contentPackage
   ],
   "card-daily": [
-    "content-pages"
+    contentPackage
   ],
   "decor-set": [
-    "content-pages"
+    contentPackage
   ]
 };

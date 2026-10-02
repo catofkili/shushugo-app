@@ -120,3 +120,6 @@ wechat-miniprogram/project.private.config.json
 
 # 周报 SVG / Canvas 双端验收截图与日志。
 /taro-spike-2/reports/weekly-svg/
+
+# 周报三套版式逐章验收截图与日志。
+/taro-spike-2/reports/weekly-sweep/

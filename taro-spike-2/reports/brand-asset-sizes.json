@@ -16,7 +16,7 @@
     },
     "content-pages": {
       "beforeBytes": 147298,
-      "afterBytes": 515218
+      "afterBytes": 553628
     }
   },
   "images": [
@@ -607,6 +607,48 @@
       "beforeBytes": 0,
       "afterFormat": "png",
       "afterBytes": 7706
+    },
+    {
+      "subpackage": "content-pages",
+      "image": "mood-idea",
+      "sourceWidth": 291,
+      "sourceHeight": 314,
+      "maxDisplayHeightCss": 84,
+      "scale": 2,
+      "outputWidth": 156,
+      "outputHeight": 168,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 11243
+    },
+    {
+      "subpackage": "content-pages",
+      "image": "mood-love",
+      "sourceWidth": 296,
+      "sourceHeight": 270,
+      "maxDisplayHeightCss": 84,
+      "scale": 2,
+      "outputWidth": 184,
+      "outputHeight": 168,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 15948
+    },
+    {
+      "subpackage": "content-pages",
+      "image": "mood-fight",
+      "sourceWidth": 318,
+      "sourceHeight": 276,
+      "maxDisplayHeightCss": 84,
+      "scale": 2,
+      "outputWidth": 194,
+      "outputHeight": 168,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 11219
     },
     {
       "subpackage": "content-pages",

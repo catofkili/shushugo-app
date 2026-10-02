@@ -15,6 +15,7 @@ import { recordWeeklyReportEvent, type WeeklyReportEntry } from "../lib/analytic
 // ⚠️ 旧版样式要先于两个新版式的 css 引入：同优先级时后引入的赢，新版的配色得压过旧版。
 import "./weekly-report.css";
 import { WeeklyCoveredContext } from "./weekly/covered";
+import { WeeklyReader } from "./weekly/WeeklyReader";
 import { WeeklyReportStory } from "./WeeklyReportStory";
 import { StarAtlasStory } from "./weekly/StarAtlasStory";
 import { FilmStory } from "./weekly/FilmStory";
@@ -71,10 +72,10 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
 
   const onBack = useCallback(() => {
     const reader = readerRef.current;
-    const page = reader?.closest<HTMLElement>(".weekly-report-page");
+    const page = reader?.closest?.<HTMLElement>(".weekly-report-page");
     if (!page || !jsMotionAllowed() || typeof page.animate !== "function") {
       goHome();
-      window.requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(".zoo-weekly-cord")?.focus({preventScroll:true}));
+      window.requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(".zoo-weekly-cord")?.focus?.({preventScroll:true}));
       return;
     }
     // 旧方案等 520 ms 才挂载主页，退场下方只有空白纸色。
@@ -96,7 +97,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
         {transform:"translateY(-100%)", opacity:.9}
       ], {duration:320, easing:"cubic-bezier(.22,1,.36,1)", fill:"forwards"});
       void animation.finished.then(clean, clean);
-      window.requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(".zoo-weekly-cord")?.focus({preventScroll:true}));
+      window.requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(".zoo-weekly-cord")?.focus?.({preventScroll:true}));
     } catch (error) { clean(); throw error; }
   }, [goHome]);
 
@@ -456,7 +457,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
           <button className="wr-icon-control" onClick={() => setPaused(!paused)} aria-label={paused ? "播放场景动效" : "暂停场景动效"} aria-pressed={paused}>{paused ? <Play size={16}/> : <Pause size={16}/>}</button>
         </div>
       </header>
-      <section ref={readerRef} className="weekly-report-reader" data-dir={direction} data-floor-dir={floorDirection} key={report.window.start} tabIndex={-1} aria-label="学习回顾，左右滑动翻篇，日期区域上下滑动切周" onPointerDown={(event)=>startDrag(event)} onPointerMove={dragMove} onPointerUp={endDrag} onPointerCancel={resetDrag}>
+      <WeeklyReader onTurn={movePage} resetKey={`${variant}:${report.window.start}:${page}`} ref={readerRef} className="weekly-report-reader" data-dir={direction} data-floor-dir={floorDirection} key={report.window.start} tabIndex={-1} aria-label="学习回顾，左右滑动翻篇，日期区域上下滑动切周" onPointerDown={(event)=>startDrag(event)} onPointerMove={dragMove} onPointerUp={endDrag} onPointerCancel={resetDrag}>
         <p className="wr-sr-only" role="status">第 {page+1} 篇，共 {chapters.length} 篇：{chapters[page]?.label}</p>
         <div className="wr-drag-layer">
           {outgoing && OutgoingStory && <div className={`wr-outgoing wr-theme-${outgoing.chapter}`} aria-hidden="true" inert><OutgoingStory report={outgoing.report} chapter={outgoing.chapter} onBack={()=>{}} onShare={()=>{}} animate={false}/></div>}
@@ -469,7 +470,7 @@ export function WeeklyReportPage({ onBack: goHome, initialWeekStart = null, onRe
             </WeeklyCoveredContext.Provider>
           </div>
         </div>
-      </section>
+      </WeeklyReader>
       <footer className="wr-gesture-footer">
         <div className="wr-progress" aria-label={`第 ${page+1} 篇，共 ${chapters.length} 篇`}>{chapters.map((item,index)=><i key={item.id} className={index===page ? "is-current" : index<page ? "is-past" : ""}/>)}</div>
         <span className="wr-gesture-hint">{page===chapters.length-1 ? "这一页，替你收好" : "←  左右滑动，翻看这一周  →"}</span>

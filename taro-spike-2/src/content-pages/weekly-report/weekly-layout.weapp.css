@@ -1,0 +1,49 @@
+/* Weekly-only rules live in the content subpackage. The simulator accepts svh
+   (721px on 375×812), but vh also works on older WebViews and measures the
+   usable viewport below the native navigation bar. Web remains the spec. */
+.wr-experience { height: 100vh; }
+.wr-stage, .wr-outgoing, .sa-story, .fm-story { min-height: 100vh; }
+/* Native ScrollView must have a height. Reserve the existing footer's 71px,
+   so text and the last row of buttons can scroll clear of its gradient. */
+.wr-experience .weekly-report-reader { height: calc(100vh - 71px); bottom: 71px; }
+.sa-cover .sa-body, .sa-highlight .sa-body,
+.sa-story.sa-keyword .sa-body,
+.fm-titlecard, .fm-keyword .fm-body, .fm-highlight .fm-body { min-height: calc(100vh - 216px); }
+.sa-story.sa-keyword .sa-body { justify-content: center; }
+/* Seven rays need both a width bound (flex auto margins differ in Taro) and a
+   height budget: 104px top + 248px copy/gaps + 98px footer clearance. */
+.sa-effort .sa-orbit-wrap { width: min(100%, calc(100vh - 450px), 380px); }
+.sa-content .sa-mega { margin-top: max(0px, calc(18vh - 71px)); }
+.fm-content .fm-mega { margin-top: max(0px, calc(14vh - 71px)); }
+/* WeChat button clips descendants by default; the raised clapper is outside
+   its box. The web button is overflow:visible. */
+.fm-clap-hit { overflow: visible; }
+/* Taro turns the title's inline brackets into Views; the parent's clipped
+   background no longer paints their transparent text. Repeat that gradient. */
+.fm-title > .h5-span { background: inherit; -webkit-background-clip: text; background-clip: text; }
+/* Lucide is an Image in WeChat, so it cannot inherit the dark scene's light
+   currentColor. Restore contrast only on the scenes with light web controls. */
+.wr-variant-stars .wr-experience-header image,
+.wr-variant-film .wr-experience-header image,
+.wr-variant-garden.wr-theme-cover .wr-experience-header image,
+.wr-variant-garden.wr-theme-highlight .wr-experience-header image,
+.wr-variant-garden.wr-theme-end .wr-experience-header image,
+.wr-variant-garden .wr-ending-actions image { filter: brightness(0) invert(1); }
+/* Star scenes fit in one usable screen. Avoid a padding-only scroll range:
+   native Canvas caches its position while ScrollView moves the surrounding DOM. */
+.wr-variant-stars .weekly-report-reader { height: 100vh; bottom: 0; }
+.wr-variant-stars .sa-story { padding-bottom: 96px; }
+.wr-variant-stars .sa-story.sa-keyword { margin: 0; }
+.wr-variant-stars .sa-end .sa-sleep,
+.wr-variant-stars .sa-end .sa-mega,
+.wr-variant-stars .sa-end .sa-actions { margin-top: 0; }
+.wr-variant-stars .sa-end .sa-body { gap: 8px; }
+/* htmltransform only replaced the final tag in these compound selectors;
+   the remaining p/div matches no WXML node. These are the web declarations. */
+.fm-billing .h5-p > .h5-small { color: var(--wr-muted); font-size: 12px; letter-spacing: .3em; }
+.fm-billing .h5-p > .h5-b { font-family: var(--fm-serif); font-size: 30px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.wr-mode-collage > .h5-div > .h5-span:nth-child(2) { flex: 1; font: 13px var(--wr-hand); }
+.wr-ending-book > .h5-div > .h5-span:first-child { font: 16px var(--wr-hand); letter-spacing: .3em; }
+/* The moon extends 26px above its box; keep a gap from the preceding sentence. */
+.wr-variant-stars .sa-end .sa-sleep { margin-top: 24px; }
+.wr-variant-stars .sa-end { padding-bottom: 90px; }

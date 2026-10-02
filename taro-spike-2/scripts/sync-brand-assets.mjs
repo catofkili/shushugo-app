@@ -27,6 +27,8 @@ const packageNames = {
   },
   'content-pages': {
     'empty-box': 88, 'empty-search': 96, 'mood-proud': 64,
+    // WeeklyReportStory's chapter lookup is dynamic; all three must be in this package.
+    'mood-idea': 84, 'mood-love': 84, 'mood-fight': 84,
     'icon-study-modes': 36, 'icon-grammar': 36, 'icon-vocab': 36,
     'icon-practice': 36, 'icon-kanji-readings': 36, 'icon-favorites': 36,
     'icon-stats': 36, 'icon-shop': 36,
@@ -122,7 +124,8 @@ try {
   for (const [subpackage, images] of Object.entries(packageNames)) {
     for (const image of Object.keys(images)) (brandPackages[image] ??= []).push(subpackage);
   }
-  writeFileSync(path.join(root, 'src/platform/brand-packages.cjs'), `module.exports = ${JSON.stringify(brandPackages, null, 2)};\n`);
+  // Reuse the repeated package name so adding weekly assets does not grow the main package.
+  writeFileSync(path.join(root, 'src/platform/brand-packages.cjs'), `const contentPackage = 'content-pages';\nmodule.exports = ${JSON.stringify(brandPackages, null, 2).replaceAll('"content-pages"', 'contentPackage')};\n`);
   writeFileSync(reportPath, `${JSON.stringify({
     formatVersion: 2,
     compression: 'pngquant 256-color palette, quality 65-90',
