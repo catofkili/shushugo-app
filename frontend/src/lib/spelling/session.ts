@@ -3,15 +3,17 @@
  * UI 只和这里说话（经 index.ts）。依赖词库、题面口径和 FSRS 存储，所以是最后一层。
  */
 import { moraCount } from "../../features/word-study/word-study-utils";
+import { getDatabase } from "../database";
 import { rowsFor } from "../database/db-utils";
 import { displayedPromptPeers } from "../models/question-meaning-index";
 import { questionMeaning } from "../models/word-card";
 import { preferredWordSurface } from "../orthography";
+import { today } from "../study-core";
 import type { WordAnswer } from "../../types/vocabulary";
 import { checkSpelling } from "./check";
 import { spellingTargetForWord } from "./forms";
-import { gradeRound, roundOutcome } from "./grade";
-import { recordSpellingAnswer } from "./store";
+import { gradeRound, REVEAL_HINT_LEVEL, roundOutcome } from "./grade";
+import { ensureSpellingTables, recordSpellingAnswer, undoLastSpelling } from "./store";
 import type { SpellingCard, SpellingLookup, SpellingRound, SpellingVerdict } from "./types";
 
 const wordRow = (wordId: number) =>
@@ -70,4 +72,34 @@ export const recordSpellingRound = (wordId: number, round: SpellingRound, now = 
     override: outcome.overridden ? round.override : ""
   }, now);
   return answer;
+};
+
+/** 改已结算的裁决；只允许撤回本学习日最后一条拼写流水，避免撤掉另一张卡。 */
+export const amendSpellingRound = (wordId: number, round: SpellingRound, now = new Date()): void => {
+  const outcome = roundOutcome(round);
+  if (round.override && (!outcome.overridden || (round.override === "correct" && round.hintsUsed >= REVEAL_HINT_LEVEL))) {
+    throw new Error("这次裁决不适用");
+  }
+
+  ensureSpellingTables();
+  const db = getDatabase();
+  db.run("SAVEPOINT amend_spelling_round");
+  try {
+    const latest = rowsFor(`
+      SELECT word_id FROM spelling_reviews
+      WHERE reviewed_on = ?
+      ORDER BY reviewed_at DESC, id DESC
+      LIMIT 1
+    `, [today()])[0];
+    if (Number(latest?.word_id) !== wordId) throw new Error("这张卡已不是最后一条拼写记录");
+
+    if (undoLastSpelling() !== wordId) throw new Error("没有可撤销的拼写记录");
+    // 第一次错答时可先裁决为对；改回后这一轮还没结束，撤掉旧结算，等用户继续作答。
+    if (outcome.done) recordSpellingRound(wordId, round, now);
+    db.run("RELEASE amend_spelling_round");
+  } catch (error) {
+    db.run("ROLLBACK TO amend_spelling_round");
+    db.run("RELEASE amend_spelling_round");
+    throw error;
+  }
 };

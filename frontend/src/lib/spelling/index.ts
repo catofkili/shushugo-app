@@ -13,8 +13,8 @@ export { checkSpelling } from "./check";
 export { gradeRound, roundOutcome, MAX_TRIES, REVEAL_HINT_LEVEL, type RoundOutcome } from "./grade";
 export { spellingHints, type SpellingHint } from "./hints";
 export { problemMessage } from "./messages";
-export { spellingCard, spellingLookup, checkCardInput, recordSpellingRound } from "./session";
+export { spellingCard, spellingLookup, checkCardInput, recordSpellingRound, amendSpellingRound } from "./session";
 export {
   ensureSpellingTables, seedSpellingCards, createSpellingTasks, pickSpellingNext, spellingProgress,
-  undoLastSpelling, clearSpellingTasks, lastEncounterToday
+  undoLastSpelling, clearSpellingTasks, lastEncounterToday, spellingOverrideStats
 } from "./store";

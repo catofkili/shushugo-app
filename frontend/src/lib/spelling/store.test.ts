@@ -22,6 +22,7 @@ import { ensureSyncSchema } from "../sync/schema";
 import { localOnlyTables, SYNCED_TABLES } from "../sync/tables";
 import { exportSyncSnapshot } from "../sync/snapshot";
 import { SEEDED_STABILITY_RATIO } from "../word-api/directions";
+import { amendSpellingRound, recordSpellingRound } from "./session";
 import {
   clearSpellingTasks,
   createSpellingTasks,
@@ -30,9 +31,11 @@ import {
   pickSpellingNext,
   recordSpellingAnswer,
   seedSpellingCards,
+  spellingOverrideStats,
   spellingProgress,
   undoLastSpelling
 } from "./store";
+import type { SpellingRound, SpellingVerdict } from "./types";
 
 const seedPath = fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url));
 const localSchemaPath = fileURLToPath(new URL("../database/local-schema.sql", import.meta.url));
@@ -77,6 +80,23 @@ const businessFields = (row: DbRow): DbRow => Object.fromEntries(
 
 const taskRows = (day = today()): DbRow[] => rowsFor(
   "SELECT word_id, order_index FROM spelling_tasks WHERE reviewed_on = ? ORDER BY order_index", [day]
+);
+
+const wrongVerdict: SpellingVerdict = {
+  correct: false, form: "kana", readingOk: false, nearMiss: false,
+  problems: [{ code: "wrong_reading", moraIndex: 0 }]
+};
+const rightVerdict: SpellingVerdict = {
+  correct: true, form: "kana", readingOk: true, nearMiss: false,
+  matched: { kind: "reading", text: "たべる", preferred: true }, problems: []
+};
+const spellingRound = (attempts: SpellingRound["attempts"], extra: Partial<SpellingRound> = {}): SpellingRound => ({
+  attempts, hintsUsed: 0, gaveUp: false, elapsedMs: 1000, ...extra
+});
+const wrongAttempt = (typed: string) => ({ typed, verdict: wrongVerdict });
+const rightAttempt = { typed: "たべる", verdict: rightVerdict };
+const comparableMemory = (row: DbRow): DbRow => Object.fromEntries(
+  Object.entries(row).filter(([column]) => column !== "word_id" && !column.startsWith("sync_"))
 );
 
 beforeAll(async () => { SQL = await initSqlJs(); });
@@ -202,6 +222,109 @@ describe("拼写卡任务与作答", () => {
     expect(undoLastSpelling()).toBe(wordId);
     expect(businessFields(spellingMemory(wordId))).toEqual(before);
     expect(rowsFor("SELECT id FROM spelling_reviews")).toEqual([]);
+  });
+});
+
+describe("用户裁决与翻案", () => {
+  it("算我错把 know 改成 forgot，FSRS 每个业务字段与直接 forgotten 一致", () => {
+    const [amendedId, directId] = wordIds(2);
+    setForward(amendedId);
+    setForward(directId);
+    expect(seedSpellingCards(2)).toBe(2);
+    const now = new Date("2026-10-02T10:00:00.000Z");
+    const forgotten = spellingRound([wrongAttempt("たべろ"), wrongAttempt("たべれ")]);
+    recordSpellingRound(directId, forgotten, now);
+    recordSpellingRound(amendedId, spellingRound([rightAttempt]), new Date(now.getTime() + 1));
+
+    amendSpellingRound(amendedId, spellingRound([rightAttempt], { override: "wrong" }), now);
+
+    expect(comparableMemory(spellingMemory(amendedId))).toEqual(comparableMemory(spellingMemory(directId)));
+    expect(rowsFor("SELECT answer, override FROM spelling_reviews WHERE word_id = ?", [amendedId]))
+      .toEqual([{ answer: "forgot", override: "wrong" }]);
+  });
+
+  it("forgot 可改为 fuzzy 再改回；也支持首次错答撤销裁决后继续作答", () => {
+    const [wordId, earlyId] = wordIds(2);
+    setForward(wordId);
+    setForward(earlyId);
+    expect(seedSpellingCards(2)).toBe(2);
+    const now = new Date("2026-10-02T10:00:00.000Z");
+    const forgotten = spellingRound([wrongAttempt("たべろ"), wrongAttempt("たべれ")]);
+    recordSpellingRound(wordId, forgotten, now);
+    const originalMemory = comparableMemory(spellingMemory(wordId));
+
+    amendSpellingRound(wordId, spellingRound(forgotten.attempts, { override: "correct" }), now);
+    expect(rowsFor("SELECT answer, override FROM spelling_reviews WHERE word_id = ?", [wordId]))
+      .toEqual([{ answer: "fuzzy", override: "correct" }]);
+    amendSpellingRound(wordId, forgotten, now);
+    expect(comparableMemory(spellingMemory(wordId))).toEqual(originalMemory);
+    expect(rowsFor("SELECT answer, override FROM spelling_reviews WHERE word_id = ?", [wordId]))
+      .toEqual([{ answer: "forgot", override: "" }]);
+    amendSpellingRound(wordId, spellingRound(forgotten.attempts, { override: "correct" }), now);
+    expect(rowsFor("SELECT answer FROM spelling_reviews WHERE word_id = ?", [wordId]))
+      .toEqual([{ answer: "fuzzy" }]);
+
+    const earlyWrong = spellingRound([wrongAttempt("たべろ")]);
+    const earlyJudged = spellingRound(earlyWrong.attempts, { override: "correct" });
+    const earlySeededMemory = comparableMemory(spellingMemory(earlyId));
+    recordSpellingRound(earlyId, earlyJudged, now);
+    amendSpellingRound(earlyId, earlyWrong, now);
+    expect(rowsFor("SELECT id FROM spelling_reviews WHERE word_id = ?", [earlyId])).toEqual([]);
+    expect(comparableMemory(spellingMemory(earlyId))).toEqual(earlySeededMemory);
+    expect(spellingMemory(earlyId)).toMatchObject({ seen_count: 0, right_count: 0, fuzzy_count: 0, forgot_count: 0 });
+  });
+
+  it("最后一条不是该词时拒绝翻案且数据库不变", () => {
+    const [targetId, lastId] = wordIds(2);
+    setForward(targetId);
+    setForward(lastId);
+    seedSpellingCards(2);
+    const now = new Date("2026-10-02T10:00:00.000Z");
+    recordSpellingRound(targetId, spellingRound([rightAttempt]), now);
+    recordSpellingRound(lastId, spellingRound([rightAttempt]), new Date(now.getTime() + 1));
+    const beforeReviews = rowsFor("SELECT * FROM spelling_reviews ORDER BY id");
+    const beforeMemory = [targetId, lastId].map(spellingMemory).map(comparableMemory);
+
+    expect(() => amendSpellingRound(targetId, spellingRound([rightAttempt], { override: "wrong" }), now))
+      .toThrow("这张卡已不是最后一条拼写记录");
+
+    expect(rowsFor("SELECT * FROM spelling_reviews ORDER BY id")).toEqual(beforeReviews);
+    expect([targetId, lastId].map(spellingMemory).map(comparableMemory)).toEqual(beforeMemory);
+  });
+
+  it("重写失败时 SAVEPOINT 恢复原流水和 FSRS", () => {
+    const [wordId] = wordIds(1);
+    setForward(wordId);
+    seedSpellingCards(1);
+    const now = new Date("2026-10-02T10:00:00.000Z");
+    const forgotten = spellingRound([wrongAttempt("たべろ"), wrongAttempt("たべれ")]);
+    recordSpellingRound(wordId, forgotten, now);
+    const beforeReviews = rowsFor("SELECT * FROM spelling_reviews ORDER BY id");
+    const beforeMemory = businessFields(spellingMemory(wordId));
+    testDb.run(`CREATE TRIGGER reject_spelling_amend BEFORE INSERT ON spelling_reviews
+      WHEN NEW.word_id = ${wordId} BEGIN SELECT RAISE(ABORT, 'blocked amend'); END`);
+
+    expect(() => amendSpellingRound(wordId, spellingRound(forgotten.attempts, { override: "correct" }), now)).toThrow();
+
+    expect(rowsFor("SELECT * FROM spelling_reviews ORDER BY id")).toEqual(beforeReviews);
+    expect(businessFields(spellingMemory(wordId))).toEqual(beforeMemory);
+  });
+});
+
+describe("拼写裁决统计", () => {
+  it("统计含今天在内最近 N 个学习日的两种裁决", () => {
+    const [wordId] = wordIds(1);
+    ensureSpellingTables();
+    const boundary = String(firstValue("SELECT date(?, '-13 days')", [today()], ""));
+    const older = String(firstValue("SELECT date(?, '-14 days')", [today()], ""));
+    testDb.run(`INSERT INTO spelling_reviews (word_id, answer, reviewed_on, reviewed_at, typed, form, override)
+      VALUES (?, 'know', ?, 1, 'a', 'kana', 'correct'), (?, 'forgot', ?, 2, 'b', 'kana', 'wrong'),
+             (?, 'fuzzy', ?, 3, 'c', 'kana', 'correct'), (?, 'forgot', ?, 4, 'd', 'kana', 'wrong'),
+             (?, 'know', ?, 5, 'e', 'kana', '')`, [wordId, today(), wordId, today(), wordId, boundary, wordId, older, wordId, today()]);
+
+    expect(spellingOverrideStats()).toEqual({ toCorrect: 2, toWrong: 1 });
+    expect(spellingOverrideStats(1)).toEqual({ toCorrect: 1, toWrong: 1 });
+    expect(spellingOverrideStats(0)).toEqual({ toCorrect: 0, toWrong: 0 });
   });
 });
 

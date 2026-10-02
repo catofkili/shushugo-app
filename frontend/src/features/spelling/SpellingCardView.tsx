@@ -5,12 +5,16 @@ import {
 } from "../../lib/spelling";
 import { playPronunciation } from "../../lib/speech";
 import { scrollPageToTop, touchEventsEnabled } from "../../lib/touch-adapter";
-import { confirmsInput, createRoundState, giveUp, lastVerdict, submit, toRound, useHint as addHint, visibleHintCount, type RoundState } from "./round-state";
+import {
+  canOverrideCorrect, canOverrideWrong, confirmsInput, createRoundState, giveUp, lastVerdict,
+  overrideCorrect, overrideWrong, submit, toRound, useHint as addHint, visibleHintCount, type RoundState
+} from "./round-state";
 import "../../pages/spelling.css";
 
 interface Props {
   card: SpellingCard;
   onFinish: (round: SpellingRound) => void;
+  onAmend: (round: SpellingRound) => void;
   onNext: () => void;
   autoFocus?: boolean;
   checkInput?: (typed: string) => SpellingVerdict;
@@ -23,7 +27,7 @@ const INPUT_LABEL: Record<SpellingInputForm, string> = {
   empty: "", romaji: "罗马音", kana: "假名", kanji: "汉字", mixed: "汉字", other: "混着写了"
 };
 
-function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput, autoPlay = false, voiceId }: Props) {
+function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, checkInput, autoPlay = false, voiceId }: Props) {
   const [state, setState] = useState(() => createRoundState(Date.now()));
   const [typed, setTyped] = useState("");
   const [error, setError] = useState("");
@@ -32,6 +36,7 @@ function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput,
   const composing = useRef(false);
   const busy = useRef(false);
   const advancing = useRef(false);
+  const persisted = useRef(false);
   const input = useRef<HTMLInputElement>(null);
   const article = useRef<HTMLDivElement>(null);
   const nextButton = useRef<HTMLButtonElement>(null);
@@ -39,7 +44,7 @@ function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput,
   const verdict = lastVerdict(state);
   const hints = spellingHints(card.target).slice(0, visibleHintCount(state));
   const form = classifyInput(typed).form;
-  const correct = outcome.done && !state.gaveUp && verdict?.correct;
+  const correct = outcome.done && (state.override === "correct" || (!state.override && !state.gaveUp && verdict?.correct));
   const surface = correct && verdict?.matched?.kind === "form" ? verdict.matched.text : card.target.surface;
 
   const keepPromptVisible = () => {
@@ -72,13 +77,38 @@ function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput,
     const finished = roundOutcome(toRound(next, next.startedAt)).done;
     try {
       // 结算和换卡分开；不放进 effect / setState updater，避免 StrictMode 重放写两遍。
-      if (finished) onFinish(toRound(next, Date.now()));
+      if (finished && !persisted.current) {
+        onFinish(toRound(next, Date.now()));
+        persisted.current = true;
+      }
       current.current = next;
       setState(next);
       setError("");
       if (finished && !next.gaveUp && lastVerdict(next)?.correct && autoPlay) {
         void playPronunciation(card.target.surface, card.target.kana, voiceId).catch(() => undefined);
       }
+    } catch {
+      setError("这次没能保存，请重试");
+    } finally {
+      busy.current = false;
+    }
+  };
+
+  const adjudicate = (kind: "correct" | "wrong") => {
+    if (busy.current) return;
+    const previous = current.current;
+    const next = kind === "correct" ? overrideCorrect(previous) : overrideWrong(previous);
+    if (next === previous) return;
+    busy.current = true;
+    const finished = roundOutcome(toRound(next, next.startedAt)).done;
+    try {
+      const round = toRound(next, Date.now());
+      if (persisted.current) onAmend(round);
+      else if (finished) onFinish(round);
+      persisted.current = finished;
+      current.current = next;
+      setState(next);
+      setError("");
     } catch {
       setError("这次没能保存，请重试");
     } finally {
@@ -114,6 +144,16 @@ function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput,
   };
 
   const problem = verdict?.problems[0];
+  const resultAction = state.override ? "revert"
+    : canOverrideCorrect(state) ? "correct"
+      : canOverrideWrong(state) ? "wrong"
+        : null;
+  const runResultAction = () => {
+    if (state.override === "correct") adjudicate("correct");
+    else if (state.override === "wrong") adjudicate("wrong");
+    else if (resultAction === "correct") adjudicate("correct");
+    else if (resultAction === "wrong") adjudicate("wrong");
+  };
   return (
     <div ref={article} className="ds-card sp-card">
       <div className="sp-question">
@@ -135,9 +175,13 @@ function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput,
           <p className="sp-answer-title">{correct ? "答对了" : "答案"}</p>
           <p className="sp-answer-surface" lang="ja">{surface}</p>
           <p className="sp-reading" lang="ja">{card.target.kana} · {kanaToRomaji(card.target.kana)}</p>
+          {state.override === "correct" && <p className="sp-preferred">按你说的算</p>}
           {correct && verdict?.matched?.preferred === false && <p className="sp-preferred">
             更常见的写法：<span lang="ja">{card.target.surface}</span>
           </p>}
+          {resultAction && <button type="button" className="ds-chip focus-ring mt-3 opacity-65"
+            aria-label={resultAction === "revert" ? "改回原来的判定" : resultAction === "correct" ? "把这次算作答对" : "把这次算作答错"}
+            onClick={runResultAction}>{resultAction === "revert" ? "改回" : resultAction === "correct" ? "算我对" : "算我错"}</button>}
         </div> : <>
           <div className="sp-input-row">
             {state.attempts.length > 0 && <span className="sp-tries">还有 {outcome.triesLeft} 次</span>}
@@ -172,6 +216,8 @@ function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput,
             className={`ds-inset sp-feedback ${verdict?.nearMiss ? "sp-feedback-near" : ""}`}>
             {verdict?.nearMiss && <span className="sp-near-label">差一点</span>}
             <span>{problemMessage(problem, card.target)}</span>
+            {canOverrideCorrect(state) && <button type="button" className="ds-chip focus-ring ml-auto shrink-0"
+              aria-label="把这次算作答对" onClick={() => adjudicate("correct")}>算我对</button>}
           </div>}
         </>}
         {error && <p className="sp-error" role="status">{error}</p>}

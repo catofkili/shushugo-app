@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { roundOutcome } from "../../lib/spelling/grade";
 import type { SpellingVerdict } from "../../lib/spelling";
-import { confirmsInput, createRoundState, giveUp, lastVerdict, submit, toRound, useHint as addHint, visibleHintCount } from "./round-state";
+import {
+  canOverrideCorrect, canOverrideWrong, confirmsInput, createRoundState, giveUp, lastVerdict,
+  overrideCorrect, overrideWrong, submit, toRound, useHint as addHint, visibleHintCount
+} from "./round-state";
 
 const right: SpellingVerdict = {
   correct: true, form: "romaji", readingOk: true, nearMiss: false, problems: [],
@@ -84,6 +87,51 @@ describe("拼写一轮状态机", () => {
     const abandoned = giveUp(addHint(start));
     expect(abandoned.attempts).toEqual([]);
     expect(roundOutcome(toRound(abandoned, 10))).toMatchObject({ done: true, answer: "forgot", tries: 0 });
+  });
+
+  it("一次错答可以直接裁决为对；改回后恢复原来的未结束状态", () => {
+    const wrongOnce = submit(createRoundState(0), "たべろ", wrong);
+    expect(canOverrideCorrect(wrongOnce)).toBe(true);
+    const judged = overrideCorrect(wrongOnce);
+    expect(judged.override).toBe("correct");
+    expect(roundOutcome(toRound(judged, 10))).toMatchObject({ done: true, answer: "know", overridden: true });
+
+    const reverted = overrideCorrect(judged);
+    expect(reverted).toMatchObject({ attempts: wrongOnce.attempts, reopenedAtTries: 1 });
+    expect(roundOutcome(toRound(reverted, 10))).toMatchObject({ done: false, triesLeft: 1 });
+    expect(canOverrideCorrect(reverted)).toBe(false);
+    const secondMiss = submit(reverted, "たべれ", wrong);
+    expect(canOverrideCorrect(secondMiss)).toBe(true);
+    expect(roundOutcome(toRound(overrideCorrect(secondMiss), 20))).toMatchObject({ answer: "fuzzy", overridden: true });
+  });
+
+  it("忘记评分可以被推翻为 fuzzy，再改回忘记，也能重新裁决", () => {
+    const forgotten = submit(submit(createRoundState(0), "たべろ", wrong), "たべれ", wrong);
+    expect(roundOutcome(toRound(forgotten, 10)).answer).toBe("forgot");
+    const judged = overrideCorrect(forgotten);
+    expect(roundOutcome(toRound(judged, 10))).toMatchObject({ answer: "fuzzy", overridden: true });
+    const reverted = overrideCorrect(judged);
+    expect(roundOutcome(toRound(reverted, 10))).toMatchObject({ answer: "forgot" });
+    expect(roundOutcome(toRound(overrideCorrect(reverted), 10))).toMatchObject({ answer: "fuzzy", overridden: true });
+  });
+
+  it("答对可以裁决为错；改回恢复原评分", () => {
+    const correct = submit(createRoundState(0), "たべる", right);
+    expect(canOverrideWrong(correct)).toBe(true);
+    const judged = overrideWrong(correct);
+    expect(roundOutcome(toRound(judged, 10))).toMatchObject({ answer: "forgot", overridden: true });
+    expect(roundOutcome(toRound(overrideWrong(judged), 10))).toMatchObject({ answer: "know" });
+  });
+
+  it("放弃或看过揭晓提示后不能裁决为对", () => {
+    const wrongOnce = submit(createRoundState(0), "たべろ", wrong);
+    const abandoned = giveUp(wrongOnce);
+    expect(canOverrideCorrect(abandoned)).toBe(false);
+    expect(overrideCorrect(abandoned)).toBe(abandoned);
+    let revealed = wrongOnce;
+    for (let i = 0; i < 3; i += 1) revealed = addHint(revealed);
+    expect(canOverrideCorrect(revealed)).toBe(false);
+    expect(overrideCorrect(revealed)).toBe(revealed);
   });
 
   it("计时用传入的时钟；时钟回拨不能产生负用时，转换不共享数组", () => {

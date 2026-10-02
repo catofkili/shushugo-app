@@ -190,6 +190,26 @@ export const undoLastSpelling = (): number | null => {
   return Number(wordId);
 };
 
+export const spellingOverrideStats = (days = 14): { toCorrect: number; toWrong: number } => {
+  ensureSpellingTables();
+  const count = Math.max(0, Math.floor(Number.isFinite(days) ? days : 0));
+  if (!count) return { toCorrect: 0, toWrong: 0 };
+  const day = today();
+  const oldest = `-${count - 1} days`;
+  const stats = { toCorrect: 0, toWrong: 0 };
+  rowsFor(`
+    SELECT override, COUNT(*) AS count
+    FROM spelling_reviews
+    WHERE reviewed_on >= date(?, ?) AND reviewed_on <= ?
+      AND override IN ('correct', 'wrong')
+    GROUP BY override
+  `, [day, oldest, day]).forEach((row) => {
+    if (row.override === "correct") stats.toCorrect = Number(row.count);
+    if (row.override === "wrong") stats.toWrong = Number(row.count);
+  });
+  return stats;
+};
+
 export const clearSpellingTasks = (day = today()): void => {
   ensureSpellingTables();
   log.clearTasks(day);

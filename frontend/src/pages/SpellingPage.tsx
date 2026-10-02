@@ -3,7 +3,7 @@ import { Sticker } from "../components/CapybaraMascot";
 import { SpellingCardView } from "../features/spelling/SpellingCardView";
 import { nextSpellingCard } from "../features/spelling/queue";
 import {
-  SPELLING_MARKER, checkCardInput, clearSpellingTasks, createSpellingTasks, ensureSpellingTables,
+  SPELLING_MARKER, amendSpellingRound, checkCardInput, clearSpellingTasks, createSpellingTasks, ensureSpellingTables,
   pickSpellingNext, recordSpellingRound, seedSpellingCards, spellingCard, spellingLookup,
   spellingProgress, undoLastSpelling, type SpellingCard, type SpellingLookup, type SpellingRound
 } from "../lib/spelling";
@@ -137,6 +137,16 @@ export function SpellingPage() {
         key={page.instance}
         card={page.card}
         onFinish={finish}
+        onAmend={(round) => {
+          if (!page.card) return;
+          amendSpellingRound(page.card.wordId, round);
+          try {
+            const progress = spellingProgress();
+            setPage((current) => ({ ...current, progress, error: "" }));
+          } catch {
+            setPage((current) => ({ ...current, error: "进度暂时没能更新" }));
+          }
+        }}
         onNext={showNext}
         checkInput={(typed) => checkCardInput(page.card!, typed, page.lookup ?? undefined)}
         autoPlay={page.autoPlay}
