@@ -60,7 +60,7 @@ export const ensureSpellingTables = (): void => {
 };
 
 /** 给已学过的正向卡播种一个保守的拼写起点；cloud:false 仍需本地增量保存它。 */
-export const seedSpellingCards = (limit: number): number => {
+const seedCards = (limit: number, options?: { minStabilityDays?: number }, onlyWordId?: number): number => {
   const count = Math.max(0, Math.floor(limit));
   if (!count) return 0;
   ensureSpellingTables();
@@ -74,10 +74,12 @@ export const seedSpellingCards = (limit: number): number => {
       AND COALESCE(p.fsrs_lapses, 0) < ?
       AND p.fsrs_stability IS NOT NULL
       AND p.fsrs_due IS NOT NULL
+      AND (? = 0 OR p.fsrs_stability >= ?)
+      AND (? IS NULL OR p.word_id = ?)
       AND NOT EXISTS (SELECT 1 FROM spelling_memory m WHERE m.word_id = p.word_id)
     ORDER BY p.fsrs_due ASC, p.word_id ASC
     LIMIT ?
-  `, [LEECH_LAPSE_THRESHOLD, count]);
+  `, [LEECH_LAPSE_THRESHOLD, options?.minStabilityDays ?? 0, options?.minStabilityDays ?? 0, onlyWordId ?? null, onlyWordId ?? null, count]);
   const now = new Date().toISOString();
   const db = getDatabase();
   let created = 0;
@@ -111,15 +113,35 @@ export const seedSpellingCards = (limit: number): number => {
   return created;
 };
 
-export const createSpellingTasks = (quota: { fresh: number; review: number }, day = today()) => {
+export const seedSpellingCards = (limit: number, options?: { minStabilityDays?: number }): number =>
+  seedCards(limit, options);
+
+export const seedSpellingCardFor = (wordId: number, options?: { minStabilityDays?: number }): boolean => {
+  ensureSpellingTables();
+  if (firstValue<number>("SELECT EXISTS(SELECT 1 FROM spelling_memory WHERE word_id = ?)", [wordId], 0)) return true;
+  return seedCards(1, options, wordId) > 0;
+};
+
+export const createSpellingTasks = (quota: { fresh: number; review: number }, day = today(), options?: { minStabilityDays?: number }) => {
   ensureSpellingTables();
   return log.createTasks(quota, () => rowsFor(`
     SELECT m.word_id
     FROM spelling_memory m
     JOIN progress p ON p.word_id = m.word_id
     WHERE m.seen_count = 0 AND m.known_forever = 0
+      AND (? = 0 OR p.fsrs_stability >= ?)
     ORDER BY p.fsrs_stability DESC, m.word_id ASC
-  `).map((row) => String(row.word_id)), day);
+  `, [options?.minStabilityDays ?? 0, options?.minStabilityDays ?? 0]).map((row) => String(row.word_id)), day);
+};
+
+export const spellingDoneToday = (day = today()): number => {
+  ensureSpellingTables();
+  return firstValue<number>("SELECT COUNT(DISTINCT word_id) FROM spelling_reviews WHERE reviewed_on = ?", [day], 0);
+};
+
+export const spellingInlineToday = (day = today()): number => {
+  ensureSpellingTables();
+  return firstValue<number>("SELECT COUNT(DISTINCT word_id) FROM spelling_reviews WHERE reviewed_on = ? AND source = 'inline'", [day], 0);
 };
 
 export const pickSpellingNext = (day = today(), excluded = new Set<string>()): number | null => {

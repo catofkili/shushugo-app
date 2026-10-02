@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { createPortal } from "react-dom";
 import { perfRecord } from "../lib/perf-marks";
 import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Star, StickyNote, Timer, X } from "lucide-react";
@@ -55,6 +55,8 @@ import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
 import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
+
+const SpellingInline = __EXP_SPELLING__ ? lazy(() => import("../features/spelling/SpellingInline")) : null;
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -242,6 +244,25 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
    * 答完这条清掉就接着背词，所以插播不需要动单词那边的任何状态。
    */
   const [grammarCard, setGrammarCard] = useState<GrammarQuizCard | null>(null);
+  const [inlineWordId, setInlineWordId] = useState<number | null>(null);
+  const inlineApi = useRef<{
+    getSpellingPrefs: typeof import("../lib/spelling").getSpellingPrefs;
+    shouldInlineSpelling: typeof import("../features/spelling/SpellingInline").shouldInlineSpelling;
+  } | null>(null);
+  useEffect(() => {
+    if (!__EXP_SPELLING__) return;
+    let active = true;
+    let cleanup = () => {};
+    void Promise.all([import("../lib/spelling"), import("../features/spelling/SpellingInline")]).then(([spelling, inline]) => {
+      if (!active) return;
+      let prefs = spelling.getSpellingPrefs();
+      const refresh = (event: Event) => { prefs = (event as CustomEvent<import("../lib/spelling").SpellingPrefs>).detail ?? spelling.getSpellingPrefs(); };
+      inlineApi.current = { getSpellingPrefs: () => prefs, shouldInlineSpelling: inline.shouldInlineSpelling };
+      window.addEventListener(spelling.SPELLING_PREFS_EVENT, refresh);
+      cleanup = () => window.removeEventListener(spelling.SPELLING_PREFS_EVENT, refresh);
+    }).catch(() => undefined);
+    return () => { active = false; cleanup(); inlineApi.current = null; };
+  }, []);
   const [grammarRevealed, setGrammarRevealed] = useState(false);
   const wordsSinceGrammarRef = useRef(0);
   /**
@@ -300,7 +321,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setFocusSnapshot((previous) => sameStudyFocusState(previous, next) ? previous : next);
   }, []);
   const dailyPlanFinished = !loading && (phase === "stage1" || phase === "done") && isPlanMode(initialMode) && Boolean(stats?.dailyPlanDone)
-    && !card && !grammarCard && !kanjiCard && !matchCard;
+    && !card && !grammarCard && !kanjiCard && !matchCard && (!__EXP_SPELLING__ || inlineWordId === null);
   useStudyBreakTabBar(focusSnapshot.status === "break" && !dailyPlanFinished);
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
@@ -817,7 +838,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // submittingRef is synchronous, so a second tap is blocked immediately —
     // before React can re-render the `disabled`/`submitting` state — which is
     // what the `submitting` state alone could miss on a fast double-tap.
-    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewIntro || focusBreakRef.current) return;
+    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewIntro || focusBreakRef.current
+      || (__EXP_SPELLING__ && inlineWordId !== null)) return;
     await flushActiveStudyTime(undefined, "never");
     if (focusBreakRef.current) return;
     // 刚翻面的那几十毫秒不收**手指**评分 —— 见 REVEAL_INPUT_LOCK_MS。
@@ -859,7 +881,10 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 快路径：这一下的下一张已经算好了（见 word-api「预算下一张」）→ 先换卡，记账等这一帧画出来再做。
     // 插播语法的这一下、压轴 / 错题回顾 / 汉字单元，以及没算好、算完之后库又变了的，都走下面的同步路径。
     const grammarTurnDue = initialMode === "mixed" && wordsSinceGrammarRef.current + 1 >= MIXED_GRAMMAR_EVERY;
-    const preview = !answeredUnitKey && !wasDailyReview && !wasTail && !grammarTurnDue
+    // 毕业判断读入库后的正向状态；默认关闭时仍走原来的延后记账快路径。
+    const inlineCandidate = __EXP_SPELLING__ && phase === "stage1" && !answeredUnitKey && !wasDailyReview && !wasTail
+      && !!inlineApi.current?.getSpellingPrefs().inlineAfterGraduation;
+    const preview = !answeredUnitKey && !wasDailyReview && !wasTail && !grammarTurnDue && !inlineCandidate
       ? takeAnswerPreview(previewsRef.current, answeredCardId, answer)
       : null;
     if (preview?.card) {
@@ -901,6 +926,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 这一下算数了才谈得上插播；下面各条分支照常把下一张单词卡排好摆在语法卡底下。
       maybeGrammarTurn();
       let nextStats = data.stats;
+      if (__EXP_SPELLING__ && inlineCandidate && inlineApi.current) {
+        try {
+          if (inlineApi.current.shouldInlineSpelling(answeredCardId, inlineApi.current.getSpellingPrefs())) setInlineWordId(answeredCardId);
+        } catch { /* 拼写实验的读库失败不能把已入库的单词作答变成提交失败。 */ }
+      }
       if (!data.card && trackingActiveRef.current) {
         const trackedStats = await flushActiveStudyTime(undefined, "force");
         trackingActiveRef.current = false;
@@ -1069,7 +1099,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
       // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
-  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, flushActiveStudyTime, flushPendingAnswer, initialMode, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
+  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, flushActiveStudyTime, flushPendingAnswer, initialMode, inlineWordId, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
 
   useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
 
@@ -1150,6 +1180,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         || distinctionOpen
         // 语法卡盖在上面时键位归它（GrammarCard 自己挂了一套一模一样的）；汉字卡、辨析卡同理
         || grammarCard || kanjiCard || matchCard
+        || (__EXP_SPELLING__ && inlineWordId !== null)
         || isEditableTarget(event.target)
       ) return;
 
@@ -1173,9 +1204,10 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [card, distinctionOpen, grammarCard, kanjiCard, matchCard, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
+  }, [card, distinctionOpen, grammarCard, kanjiCard, matchCard, inlineWordId, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
+    if (__EXP_SPELLING__ && inlineWordId !== null) return;
     flushPendingAnswer();
     // 混合模式：栈顶那一笔是语法的话走 grammar-quiz 自己那份回滚
     // （FSRS + grammar_reviews + 重刷队列一起退）。两侧是各自独立的栈，
@@ -1625,6 +1657,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       </ScrollArea>,
       document.body
     );
+  }
+
+  if (__EXP_SPELLING__ && inlineWordId !== null && SpellingInline) {
+    return <Suspense fallback={<p className="sp-loading" role="status">正在准备</p>}>
+      <SpellingInline key={inlineWordId} wordId={inlineWordId} onClose={() => setInlineWordId(null)} />
+    </Suspense>;
   }
 
   if (kanjiCard || matchCard) {

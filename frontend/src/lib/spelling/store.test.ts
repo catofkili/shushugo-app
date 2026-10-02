@@ -32,6 +32,9 @@ import {
   recordSpellingAnswer,
   seedSpellingCards,
   spellingOverrideStats,
+  seedSpellingCardFor,
+  spellingDoneToday,
+  spellingInlineToday,
   spellingProgress,
   undoLastSpelling
 } from "./store";
@@ -114,6 +117,18 @@ afterEach(() => {
 });
 
 describe("拼写卡播种", () => {
+  it("度读正向稳定度，单词播种不依赖 due 排序；已有卡幂等", () => {
+    const [low, high, unseen, leech] = wordIds(4);
+    setForward(low, { stability: 20 }); setForward(high, { stability: 21, due: "2099-01-01T00:00:00.000Z" });
+    setForward(unseen, { seen: 0, stability: 60 }); setForward(leech, { lapses: LEECH_LAPSE_THRESHOLD, stability: 60 });
+    expect(seedSpellingCardFor(low, { minStabilityDays: 21 })).toBe(false);
+    expect(seedSpellingCardFor(unseen)).toBe(false); expect(seedSpellingCardFor(leech)).toBe(false);
+    expect(seedSpellingCardFor(high, { minStabilityDays: 21 })).toBe(true);
+    expect(seedSpellingCardFor(high, { minStabilityDays: 60 })).toBe(true);
+    expect(spellingMemory(high).fsrs_stability).toBe(21 * SEEDED_STABILITY_RATIO);
+    expect(seedSpellingCards(10, { minStabilityDays: 21 })).toBe(0);
+    expect(seedSpellingCards(10)).toBe(1);
+  });
   it("只给学过、非顽固且没有拼写卡的词按正向 due 播种，折半并保持幂等", () => {
     const [first, second, unseen, known, leech] = wordIds(5);
     setForward(first, { stability: 10, due: "2026-09-01T00:00:00.000Z" });
@@ -151,6 +166,24 @@ describe("拼写卡播种", () => {
 });
 
 describe("拼写卡任务与作答", () => {
+  it("度只过滤新卡，不阻止到期复习", () => {
+    const [low, high, review] = wordIds(3);
+    setForward(low, { stability: 6 }); setForward(high, { stability: 21 }); setForward(review, { stability: 1 });
+    seedSpellingCards(3);
+    testDb.run("UPDATE spelling_memory SET seen_count = 1, fsrs_due = '2026-10-01T00:00:00.000Z' WHERE word_id = ?", [review]);
+    expect(createSpellingTasks({ fresh: 10, review: 10 }, today(), { minStabilityDays: 21 })).toEqual({ fresh: 1, review: 1 });
+    expect(taskRows().map((row) => Number(row.word_id))).toEqual([review, high]);
+  });
+  it("每日数量按不同词去重，插播仅计 inline 来源，遵守指定学习日", () => {
+    const [first, second] = wordIds(2);
+    seedSpellingCards(1);
+    ensureSpellingTables();
+    for (const [id, day, source] of [[first, today(), "page"], [first, today(), "inline"], [first, today(), "inline"], [second, today(), "page"], [second, "2026-10-01", "inline"]]) {
+      testDb.run("INSERT INTO spelling_reviews (word_id, answer, reviewed_on, reviewed_at, typed, form, source) VALUES (?, 'know', ?, 0, '', 'empty', ?)", [id, day, source]);
+    }
+    expect(spellingDoneToday()).toBe(2); expect(spellingInlineToday()).toBe(1);
+    expect(spellingDoneToday("2026-10-01")).toBe(1); expect(spellingInlineToday("2026-10-01")).toBe(1);
+  });
   it("按额度建到期和新学清单，同日不重排，清除后按新额度重排", () => {
     const ids = wordIds(5);
     [2, 8, 6, 4, 10].forEach((stability, index) => setForward(ids[index], { stability, due: `2026-09-0${index + 1}T00:00:00.000Z` }));

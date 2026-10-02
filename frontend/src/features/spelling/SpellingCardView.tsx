@@ -20,6 +20,10 @@ interface Props {
   checkInput?: (typed: string) => SpellingVerdict;
   autoPlay?: boolean;
   voiceId?: string;
+  showMeaning?: boolean;
+  showTranslation?: boolean;
+  /** 插播时按钮写「继续」而不是「下一个」。 */
+  nextLabel?: string;
 }
 
 const EMPTY_LOOKUP: SpellingLookup = { bySurface: () => [], peers: () => [] };
@@ -27,7 +31,7 @@ const INPUT_LABEL: Record<SpellingInputForm, string> = {
   empty: "", romaji: "罗马音", kana: "假名", kanji: "汉字", mixed: "汉字", other: "混着写了"
 };
 
-function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, checkInput, autoPlay = false, voiceId }: Props) {
+function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, checkInput, autoPlay = false, voiceId, nextLabel = "下一个" }: Props) {
   const [state, setState] = useState(() => createRoundState(Date.now()));
   const [typed, setTyped] = useState("");
   const [error, setError] = useState("");
@@ -232,7 +236,7 @@ function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, ch
             onClick={() => changeRound(giveUp(current.current))}>不会</button>
         </div>
         {outcome.done ? <button ref={nextButton} type="button" className="ds-btn sp-button sp-primary"
-          onClick={advance} onKeyDown={handleEnter}>下一个</button>
+          onClick={advance} onKeyDown={handleEnter}>{nextLabel}</button>
           : <button type="button" className="ds-btn sp-button sp-primary" disabled={form === "empty"}
             onClick={submitInput}>提交</button>}
       </div>

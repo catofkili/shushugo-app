@@ -12,9 +12,24 @@ export { spellingTargetForWord } from "./forms";
 export { checkSpelling } from "./check";
 export { gradeRound, roundOutcome, MAX_TRIES, REVEAL_HINT_LEVEL, type RoundOutcome } from "./grade";
 export { spellingHints, type SpellingHint } from "./hints";
-export { problemMessage } from "./messages";
-export { spellingCard, spellingLookup, checkCardInput, recordSpellingRound, amendSpellingRound } from "./session";
+export { problemMessage, problemLabel } from "./messages";
+export { spellingLookup, checkCardInput, recordSpellingRound, amendSpellingRound } from "./session";
 export {
   ensureSpellingTables, seedSpellingCards, createSpellingTasks, pickSpellingNext, spellingProgress,
-  undoLastSpelling, clearSpellingTasks, lastEncounterToday, spellingOverrideStats
+  undoLastSpelling, clearSpellingTasks, lastEncounterToday, seedSpellingCardFor,
+  spellingDoneToday, spellingInlineToday, recordSpellingAnswer, spellingOverrideStats
 } from "./store";
+
+export { getSpellingPrefs, saveSpellingPrefs, DEFAULT_SPELLING_PREFS, SPELLING_PREFS_EVENT, type SpellingPrefs } from "./prefs";
+export { spellingErrorStats } from "./stats";
+export { inlineSpellingDecision, askedToday, markAskedToday } from "./inline";
+
+// B2（题面形式）合并时丢弃以下临时桩，换成它的真实导出。
+import { spellingCard as meaningCard } from "./session";
+import type { SpellingMode } from "./types";
+export const spellingCard = (wordId: number, _mode: SpellingMode = "meaning") => meaningCard(wordId);
+export const chooseSpellingMode = (
+  _wordId: number, _prefs: { modes: SpellingMode[]; modeStrategy: "random" | "rotate" },
+  _available?: SpellingMode[], _rng?: () => number
+): SpellingMode => "meaning";
+export const availableSpellingModes = (_wordId: number): SpellingMode[] => ["meaning"];
