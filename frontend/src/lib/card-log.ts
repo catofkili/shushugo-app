@@ -9,8 +9,8 @@ import type { WordAnswer } from "../types/vocabulary";
 import { getDatabase } from "./database";
 import type { SqlValue } from "./database/db-utils";
 import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
-import { ensureFsrsColumns, recordFsrsReview, type FsrsEntity } from "./fsrs-store";
-import { STUBBORN_DAILY_MISTAKES } from "./fsrs-scheduler";
+import { ensureFsrsColumns, recordFsrsReview, writeFsrsState, type FsrsEntity } from "./fsrs-store";
+import { STUBBORN_DAILY_MISTAKES, type FsrsState } from "./fsrs-scheduler";
 import { FSRS_PARAMS_VERSION } from "./reviews";
 
 export type StepMode = "normal" | "stubborn" | "known";
@@ -23,6 +23,8 @@ export interface CardLogConfig {
   extraExclude?: string | (() => string);
   /** 可按传入学习日取截止时间；旧卡默认仍取当前学习日，保持既有调度行为。 */
   dayEnd?: (day: string) => Date;
+  /** 撤销重放有借来的 FSRS 起点时必须恢复它，不能把首次作答当成全新卡。 */
+  startingState?: (key: string) => FsrsState | null;
 }
 
 export const createCardLog = (config: CardLogConfig) => {
@@ -57,6 +59,17 @@ export const createCardLog = (config: CardLogConfig) => {
             fsrs_state = ?, fsrs_steps = ?, fsrs_reps = ?, fsrs_lapses = ?
         WHERE ${id} = ?
       `, [baseline.stability, baseline.difficulty, baseline.due, baseline.last_review, baseline.state, baseline.steps, baseline.reps, baseline.lapses, key]);
+      return;
+    }
+    const startingState = config.startingState?.(key);
+    if (startingState) {
+      getDatabase().run(`
+        UPDATE ${memory}
+        SET seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_count = 0,
+            mistake_streak = 0, known_forever = 0, last_seen_on = NULL
+        WHERE ${id} = ?
+      `, [key]);
+      writeFsrsState(key, startingState, entity);
       return;
     }
     getDatabase().run(`

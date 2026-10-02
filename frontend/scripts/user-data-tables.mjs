@@ -28,6 +28,7 @@ export const USER_DATA_TABLES = [
   "kanji_char_memory", "kanji_char_tasks", "kanji_char_reviews",
   "confusion_progress", "confusion_tasks", "confusion_reviews",
   "talk_memory", "talk_tasks", "talk_reviews",
+  "spelling_memory", "spelling_tasks", "spelling_reviews",
   // 语法
   "grammar_progress", "grammar_reviews", "grammar_activity_events", "grammar_mistakes",
   "grammar_points_archive", "grammar_highlights", "grammar_reading_positions",
