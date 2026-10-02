@@ -75,15 +75,8 @@ const withOther = (code: SpellingProblemCode, other: Peer): SpellingProblem => (
 
 /** 书写（汉字 / 混合）判据。text 已归一、去空白。 */
 const checkWritten = (target: SpellingTarget, text: string, form: SpellingInputForm, lookup?: SpellingLookup): SpellingVerdict => {
-  const exact = target.forms.find((f) => written(f.surface) === text);
-  if (exact) return verdict(form, null, [], { kind: "form", text: exact.surface, tag: exact.tag, preferred: exact.tag === "standard" });
-
-  const peer = peerHit(form, text, lookup);
-  if (peer) return verdict(form, null, [withOther("peer_word", peer)]);
-
-  const problems: SpellingProblem[] = [];
-
-  // 中文简体 / 繁体字形：先映回日文字形再去命中
+  // 中文简体 / 繁体字形：先映回日文字形再去命中。放在精确命中之前——JMdict 里偶有把简体字形
+  // 当作罕用写法收录的（烟草），那是中文字形，对学习者不能算对。
   const { text: japanese, changes } = toJapaneseForms(text);
   if (changes.length) {
     const hit = target.forms.find((f) => written(f.surface) === japanese);
@@ -95,6 +88,14 @@ const checkWritten = (target: SpellingTarget, text: string, form: SpellingInputF
       }]);
     }
   }
+
+  const exact = target.forms.find((f) => written(f.surface) === text);
+  if (exact) return verdict(form, null, [], { kind: "form", text: exact.surface, tag: exact.tag, preferred: exact.tag === "standard" });
+
+  const peer = peerHit(form, text, lookup);
+  if (peer) return verdict(form, null, [withOther("peer_word", peer)]);
+
+  const problems: SpellingProblem[] = [];
   const candidate = japanese;
 
   // 假名种类用错：食ベる → 食べる

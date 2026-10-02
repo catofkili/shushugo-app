@@ -130,6 +130,19 @@ describe("拼写判定：汉字 / 混合写法", () => {
     expect(first(economy, "軽済")).toBe("wrong_kanji");
   });
 
+  it("词库里被当作罕用写法收录的简体字形（烟草）不能算对；全角数字写法归一后能对上", () => {
+    const tobacco = target({
+      kana: "タバコ", surface: "タバコ", isLoanword: true,
+      forms: [{ surface: "煙草", tag: "variant" }, { surface: "烟草", tag: "rare" }]
+    });
+    expect(checkSpelling(tobacco, "煙草").correct).toBe(true);
+    const simplified = checkSpelling(tobacco, "烟草");
+    expect(simplified).toMatchObject({ correct: false, nearMiss: true });
+    expect(simplified.problems[0]).toMatchObject({ code: "chinese_form", typedChar: "烟", expectedChar: "煙" });
+    const second = target({ kana: "ふつか", surface: "二日", forms: [{ surface: "二日", tag: "standard" }, { surface: "２日", tag: "variant" }] });
+    for (const input of ["二日", "2日", "２日"]) expect(checkSpelling(second, input).correct, input).toBe(true);
+  });
+
   it("同音词 / 同题面词（需要词库查询）", () => {
     const bridge = target({ kana: "はし", surface: "橋" });
     const chopsticks = { wordId: 2, surface: "箸", kana: "はし", meaning: "筷子" };

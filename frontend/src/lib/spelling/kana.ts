@@ -78,7 +78,8 @@ export const longContinuation = (previousMora: string, mora: string): LongKind |
 const ROMAJI_CHARS = /^[A-Za-zĀĪŪĒŌÂÎÛÊÔāīūēōâîûêô'’`\- ]+$/u;
 const KANA_CHARS = /^[ぁ-ゖァ-ヺー]+$/u;
 const KANJI_CHAR = /[㐀-䶿一-鿿豈-﫿々〆\u{20000}-\u{2fa1f}]/u;
-const KANJI_MIX_CHARS = /^[ぁ-ゖァ-ヺー㐀-䶿一-鿿豈-﫿々〆\u{20000}-\u{2fa1f}]+$/u;
+// 数字也算书写的一部分：JMdict 里「二日」有「２日」的写法，NFKC 之后是 2日
+const KANJI_MIX_CHARS = /^[0-9ぁ-ゖァ-ヺー㐀-䶿一-鿿豈-﫿々〆\u{20000}-\u{2fa1f}]+$/u;
 
 /** 规格 §1.1 的分流。text = normalizeInput 之后的文本；罗马音保留内部空白，其余路径去掉全部空白。 */
 export const classifyInput = (raw: string): { form: SpellingInputForm; text: string } => {
@@ -88,8 +89,8 @@ export const classifyInput = (raw: string): { form: SpellingInputForm; text: str
 
   const compact = normalized.replace(/\s+/gu, "");
   if (KANA_CHARS.test(compact)) return { form: "kana", text: compact };
-  if (KANJI_MIX_CHARS.test(compact)) {
-    return { form: KANJI_CHAR.test(compact) && /[ぁ-ゖァ-ヺー]/u.test(compact) ? "mixed" : "kanji", text: compact };
+  if (KANJI_MIX_CHARS.test(compact) && KANJI_CHAR.test(compact)) {
+    return { form: /[ぁ-ゖァ-ヺー]/u.test(compact) ? "mixed" : "kanji", text: compact };
   }
   return { form: "other", text: compact };
 };
