@@ -1,4 +1,5 @@
 import type { WeeklyReport } from "./analytics/weekly";
+import { createShareCanvas } from "./share-canvas";
 
 /**
  * 周报分享长图。
@@ -113,11 +114,11 @@ const windowEndDate = (report: WeeklyReport): string => {
 /** 基于已保存的同一份快照出图，不重新查库；按所有实际文字量高度，长高光不能截断。 */
 export async function renderWeeklyReportShareImage(report: WeeklyReport): Promise<WeeklyReportShareImage> {
   await document.fonts?.ready;
-  const canvas = document.createElement("canvas");
+  // 画布走 share-canvas 的 createShareCanvas（网页 / 小程序各一份）：小程序里 document.createElement("canvas")
+  // 是没有 getContext 的 TaroElement；那边的离屏画布也补好了下面用到的 toBlob。
+  const { canvas, ctx } = createShareCanvas();
   canvas.width = WIDTH;
   canvas.height = 100;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("当前设备不支持周报长图");
 
   const { metrics, highlight } = report;
   const headline = "一页一日，慢慢成林。";
