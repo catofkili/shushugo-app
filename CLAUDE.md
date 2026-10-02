@@ -140,6 +140,14 @@ db.exec("SELECT reviewed_on, COUNT(DISTINCT word_id) FROM reviews GROUP BY revie
 
 注意：IndexedDB 里是**上次保存的快照**，当天的量可能还没落盘。
 
+## ⚠️ 推 main 之前先跑 `scripts/ci-local.sh`（2026-10-03）
+
+仓库是**公开**的，`git push origin main` 同时触发 CI（frontend / worker / miniprogram 三个任务）和 Pages 部署。
+`scripts/ci-local.sh` 在本机跑一遍同样的闸门。那天一次推送连踩三个红灯：改了 `local-schema.sql` 没重新生成 `wechat-miniprogram/src/shared/web.js`；
+出厂词库改了没跑 `npm run build:kanji-unit-index`（prebuild 校验会让 CI / 部署失败）；推送范围里的旧提交没有 `Parity-Exempt`（`check-parity` 对整段范围逐个提交检查，
+路线 A 之后的处理是在 `parity-map.json` 给这些 web 文件登记自身；这条检查是否整体退休留给作者定）。
+**合并冲突别用「两边取并集」脚本一把梭**：那天这样合并 `scripts/build-ios.sh` 弄丢了一个 `exit 1` / `fi`，整个发版脚本语法错误，是只读审查才发现的；shell 脚本合完要 `bash -n`。
+
 ## 仓库速记
 
 - 主应用：`frontend/`（React 19 + TS + Vite + Tailwind，SQLite 走 sql.js/WASM，Capacitor 打 iOS）
