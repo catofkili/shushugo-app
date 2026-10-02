@@ -11,6 +11,7 @@ const spellingDirectory = resolve(root, "frontend/src/lib/spelling");
 const allowed = (file: string): boolean => (
   file.startsWith(`${spellingDirectory}${sep}`)
   || file === resolve(root, "frontend/src/pages/SpellingPage.tsx")
+  || file === resolve(root, "frontend/src/pages/WordStudy.tsx")
   || file === resolve(root, "frontend/src/routes/spelling.tsx")
   || file.startsWith(`${resolve(root, "frontend/src/features/spelling")}${sep}`)
   || file.startsWith(`${resolve(root, "taro-spike-2/src/study/spelling")}${sep}`)
@@ -94,12 +95,13 @@ describe("单词拼写发布隔离", () => {
 
   it("允许名单只放行指定路径", () => {
     const permitted = [
-      "frontend/src/lib/spelling/check.ts", "frontend/src/pages/SpellingPage.tsx",
+      "frontend/src/lib/spelling/check.ts", "frontend/src/pages/SpellingPage.tsx", "frontend/src/pages/WordStudy.tsx",
       "frontend/src/routes/spelling.tsx", "frontend/src/features/spelling/card.tsx",
       "taro-spike-2/src/study/spelling/index.tsx"
     ];
     const forbidden = [
       "frontend/src/lib/check.ts", "frontend/src/pages/SpellingPage.test.tsx",
+      "frontend/src/pages/WordStudy.test.tsx",
       "frontend/src/routes/index.ts", "taro-spike-2/src/study/spelling-extra/index.tsx"
     ];
     expect(permitted.every((file) => allowed(resolve(root, file)))).toBe(true);

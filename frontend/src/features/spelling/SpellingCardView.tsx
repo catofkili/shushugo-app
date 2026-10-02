@@ -16,6 +16,10 @@ interface Props {
   checkInput?: (typed: string) => SpellingVerdict;
   autoPlay?: boolean;
   voiceId?: string;
+  showMeaning?: boolean;
+  showTranslation?: boolean;
+  onAmend?: (round: SpellingRound) => void;
+  nextLabel?: string;
 }
 
 const EMPTY_LOOKUP: SpellingLookup = { bySurface: () => [], peers: () => [] };

@@ -2,7 +2,18 @@
  * 判定问题 → 一句话（界面文案）。每句只说一件事，不解释机制（见 CLAUDE.md 的文案纪律）。
  * 数据（哪一拍、哪个字、哪个词）由 SpellingProblem 带来，这里只拼句子。
  */
-import type { SpellingProblem, SpellingTarget } from "./types";
+import type { SpellingProblem, SpellingProblemCode, SpellingTarget } from "./types";
+
+const LABELS: Record<SpellingProblemCode, string> = {
+  empty: "未写", mixed_scripts: "混写", wrong_reading: "读音", long_vowel: "长音",
+  sokuon: "促音", hatsuon: "拨音", script: "假名", other_reading: "异读",
+  chinese_form: "中文字形", traditional_form: "旧字形", okurigana: "送假名",
+  partial_kana: "交写", wrong_kanji: "汉字", homophone: "同音词", peer_word: "同义词",
+  conjugated: "活用", source_language: "原词", too_short: "少字", too_long: "多字"
+};
+
+export const problemLabel = (code: string): string =>
+  Object.prototype.hasOwnProperty.call(LABELS, code) ? LABELS[code as SpellingProblemCode] : code;
 
 /** 目标读音写的是片假名（词库里 74 个片假名词没有英文词源，isLoanword 为 false，不能靠它判断文字种类）。 */
 const isKatakana = (kana: string) => /[\u30a1-\u30fa]/u.test(kana) && !/[\u3041-\u3096]/u.test(kana);
