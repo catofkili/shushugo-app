@@ -1,6 +1,6 @@
 import type { Database } from "sql.js";
 import { getDatabase } from "./database";
-import { firstRow, firstValue, getState, persistContentSoon, rowsFor, setState } from "./database/db-utils";
+import { firstRow, firstValue, getState, persistContentSoon, rowsFor, setState, type SqlValue } from "./database/db-utils";
 
 const LEGACY_BIRU_ID = 2480;
 const CANONICAL_BIRU_ID = 775;
@@ -80,6 +80,30 @@ export const migrateDatedRows = (
   });
 };
 
+/** 追加流水换 word_id 时先留墓碑删旧身份，再插入一条新同步身份。 */
+const migrateAppendRows = (db: Database, table: string, fromId: number, intoId: number): number => {
+  if (!tableExists(table)) return 0;
+  const columns = columnsOf(table).filter((column) => (
+    column !== "id" && column !== "sync_updated_at" && column !== "sync_origin_device" && column !== "sync_uid"
+  ));
+  if (!columns.includes("word_id")) return 0;
+  const events = rowsFor(
+    `SELECT ${columns.map(quoteIdentifier).join(", ")} FROM ${quoteIdentifier(table)} WHERE word_id = ?`,
+    [fromId]
+  );
+  if (!events.length) return 0;
+  db.run(`DELETE FROM ${quoteIdentifier(table)} WHERE word_id = ?`, [fromId]);
+  const insert = `INSERT INTO ${quoteIdentifier(table)} (${columns.map(quoteIdentifier).join(", ")}) `
+    + `VALUES (${columns.map(() => "?").join(", ")})`;
+  for (const event of events) {
+    const values = columns.map((column) => (
+      column === "word_id" ? intoId : event[column]
+    )) as SqlValue[];
+    db.run(insert, values);
+  }
+  return events.length;
+};
+
 type Remap = (wordId: number) => number;
 
 const rewriteQueue = (raw: string, remap: Remap): string => {
@@ -156,12 +180,14 @@ export const mergeWordInto = (db: Database, fromId: number, intoId: number): num
   const fromSeen = firstValue<number>("SELECT seen_count FROM progress WHERE word_id = ?", [fromId], 0);
   const intoSeen = firstValue<number>("SELECT seen_count FROM progress WHERE word_id = ?", [intoId], 0);
   const preferFrom = fromSeen > intoSeen;
-  const movedReviews = tableExists("reviews")
-    ? firstValue<number>("SELECT COUNT(*) FROM reviews WHERE word_id = ?", [fromId], 0)
-    : 0;
+  const movedReviews = ["reviews", "spelling_reviews"].reduce((total, table) => (
+    total + (tableExists(table)
+      ? firstValue<number>(`SELECT COUNT(*) FROM ${quoteIdentifier(table)} WHERE word_id = ?`, [fromId], 0)
+      : 0)
+  ), 0);
 
   replaceSingleRow(db, "progress", fromId, intoId, preferFrom);
-  ["reverse_memory", "kanji_memory", "kanji_reading_memory"].forEach((table) => {
+  ["reverse_memory", "kanji_memory", "kanji_reading_memory", "spelling_memory"].forEach((table) => {
     if (!tableExists(table)) return;
     const keepClicks = firstValue<number>(
       `SELECT COALESCE(seen_count, 0) FROM ${quoteIdentifier(table)} WHERE word_id = ?`,
@@ -176,7 +202,7 @@ export const mergeWordInto = (db: Database, fromId: number, intoId: number): num
     replaceSingleRow(db, table, fromId, intoId, dropClicks > keepClicks);
   });
 
-  ["stage1_tasks", "stage2_progress", "kanji_progress", "kanji_reading_progress", "critical_reviews"].forEach((table) => {
+  ["stage1_tasks", "stage2_progress", "kanji_progress", "kanji_reading_progress", "critical_reviews", "spelling_tasks"].forEach((table) => {
     migrateDatedRows(db, table, fromId, intoId, preferFrom);
   });
   replaceSingleRow(db, "word_notes", fromId, intoId, preferFrom || !wordRowExists("word_notes", intoId));
@@ -191,21 +217,9 @@ export const mergeWordInto = (db: Database, fromId: number, intoId: number): num
     db.run("DELETE FROM dictionary_discovered_words WHERE word_id = ?", [fromId]);
   }
 
-  // 流水改挂到存活的那行。reviews 的同步身份是 sync_uid；直接 UPDATE 会让
-  // 旧身份在别的设备上留着不动（更新不写墓碑），所以先删后插：
-  // 删触发墓碑杀掉旧身份，插进来的是新身份。
-  if (tableExists("reviews")) {
-    const columns = columnsOf("reviews").filter((column) => (
-      column !== "id" && column !== "sync_updated_at" && column !== "sync_origin_device" && column !== "sync_uid"
-    ));
-    const selectColumns = columns.map((column) => (column === "word_id" ? "?" : quoteIdentifier(column)));
-    db.run(
-      `INSERT INTO reviews (${columns.map(quoteIdentifier).join(", ")})
-       SELECT ${selectColumns.join(", ")} FROM reviews WHERE word_id = ?`,
-      [intoId, fromId]
-    );
-    db.run("DELETE FROM reviews WHERE word_id = ?", [fromId]);
-  }
+  // Reviews 的同步身份是 sync_uid；UPDATE word_id 不写墓碑，必须先删旧身份再插新行。
+  migrateAppendRows(db, "reviews", fromId, intoId);
+  migrateAppendRows(db, "spelling_reviews", fromId, intoId);
 
   if (tableExists("content_favorites")) {
     db.run(`

@@ -116,7 +116,9 @@ const DATED_TABLE_RETENTION_DAYS: Record<string, number> = {
   kanji_reading_progress: 14,
   kanji_unit_tasks: 14,
   kanji_char_tasks: 14,
-  confusion_tasks: 14
+  confusion_tasks: 14,
+  // 目前 cloud:false，仍保留同一条按学习日裁剪规则，单表开放云同步前不带入快照。
+  spelling_tasks: 14
 };
 
 const retentionCutoff = (days: number): string => {

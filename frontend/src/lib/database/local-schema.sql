@@ -420,6 +420,44 @@ CREATE TABLE IF NOT EXISTS talk_tasks (
   PRIMARY KEY (reviewed_on, card_key)
 );
 
+-- 实验单词拼写：从正向状态播种独立 FSRS 卡。只在本机增量保存，不进云快照。
+-- fsrs_* 列由 ensureFsrsColumns 补；三张表必须先在本文件存在，不能由运行模块懒建。
+CREATE TABLE IF NOT EXISTS spelling_memory (
+  word_id INTEGER PRIMARY KEY,
+  seen_count INTEGER NOT NULL DEFAULT 0,
+  right_count INTEGER NOT NULL DEFAULT 0,
+  fuzzy_count INTEGER NOT NULL DEFAULT 0,
+  forgot_count INTEGER NOT NULL DEFAULT 0,
+  mistake_streak INTEGER NOT NULL DEFAULT 0,
+  known_forever INTEGER NOT NULL DEFAULT 0,
+  last_seen_on TEXT,
+  seed_fsrs_state TEXT,
+  FOREIGN KEY(word_id) REFERENCES words(id)
+);
+CREATE TABLE IF NOT EXISTS spelling_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  word_id INTEGER NOT NULL,
+  answer TEXT NOT NULL,
+  reviewed_on TEXT NOT NULL,
+  reviewed_at INTEGER NOT NULL,
+  scheduler_mode TEXT NOT NULL DEFAULT 'normal',
+  fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  typed TEXT NOT NULL,
+  form TEXT NOT NULL,
+  hints INTEGER NOT NULL DEFAULT 0,
+  tries INTEGER NOT NULL DEFAULT 0,
+  ms INTEGER NOT NULL DEFAULT 0,
+  problem TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_spelling_reviews_word_on ON spelling_reviews (word_id, reviewed_on);
+CREATE TABLE IF NOT EXISTS spelling_tasks (
+  reviewed_on TEXT NOT NULL,
+  word_id INTEGER NOT NULL,
+  order_index INTEGER NOT NULL,
+  PRIMARY KEY (reviewed_on, word_id)
+);
+
 -- 「疑难辨析」里标记为已掌握的词组。
 --
 -- 主键是词组的稳定标识（type:锚点，如 homophone:こうえん），刻意不用 word_id：
