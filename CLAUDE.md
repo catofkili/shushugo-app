@@ -1476,6 +1476,8 @@ R2 的操作步骤在 `scripts/upload-audio.sh` 头部；密钥只能作者自�
   ⚠️ **只给成就页用，全局弹窗（`AppShell`）只放一个 `Trophy`**：Taro 的 lucide 是按路由预生成的 SVG，
   被 tab 路由 / AppShell 引到的会全进主包，而主包离 1.9 MB 上限只有十几 KB（2026-09-29 实测 15 KB）。
   成就页在 `content-pages` 分包里，47 个图标只让它涨了约 29 KB，主包只多了 0.9 KB（导出表和分包清单）。
+  （2026-10-02：词库 / 快速复习 / 疑难辨析 / 一字多音四页的样式（`wl-` / `quick-` / `cf-` / `kr-`）由 `split-route-css.mjs` 挪进 study 分包，
+  主包 1,894,988 → 1,858,484 B，腾出约 36 KB。`cf-` 两页都用，各放一份；`ach-`「我的」页也用，没动。判据在 `split-route-css.test.mjs`。）
   加新成就图标要在**三处**登记：`icons.ts`、`taro-spike-2/scripts/build-lucide-icons.cjs` 的 `names`、
   `taro-spike-2/src/platform/lucide.weapp.tsx` 的导出，然后重跑 `node scripts/build-lucide-icons.cjs`。
   「我的」页那句「共 N 个」用 `count.ts` 的常量而不是 `ACHIEVEMENTS.length`（后者会把整份 catalog 拖进主包），一致性由测试钉住。
@@ -3350,3 +3352,22 @@ App 里没有接微信 OpenSDK（没有开放平台移动应用 AppID、Universa
 - ⚠️ **走法那 8 帧裁好了但商品还是 `soon`**：要卖得先让小路（`SquirrelTrail` / `CapybaraWalk`）
   按装备换 sprite，并在 yuzu 的装备槽里加这一类。现在只把商品图换成了 `roll-frame`。
 - 小程序的周报和分享**没跟着改**。
+
+### 2026-10-02：小程序周报补齐（主包瘦身那次全路由扫描查出来的）
+
+上面「小程序的周报没跟着改」那句在路线 A（Taro 编译同一份 TSX）之后指的是这几处平台差异，都修了：
+
+- **星图版一进周报就 TypeError（`e.getContext is not a function`）**：Taro 的 `<canvas>` 元素没有 `getContext`。
+  星空的画法抽成 `weekly/star-painter.ts`，网页 `StarCanvas.tsx` 和 `StarCanvas.weapp.tsx`（Canvas 2D + SelectorQuery，
+  帧循环用节点自己的 `requestAnimationFrame`）共用。
+- **北斗七星和七道光是空的**：内联 `<svg>` 小程序不渲染。`Dipper` / `Rays` 挪进 `weekly/star-figures.tsx`（网页原样），
+  `star-figures.weapp.tsx` 用 Canvas 画同样的终态；颜色照 `star-atlas.css` 两章的 `--wr-*` 写成常量（canvas 读不到 CSS 变量）。
+  ⚠️ **原生 Canvas 在祖先 transform 入场动画中挂载，会把当时的偏移缓存进原生绘图层，重画改不掉**（模拟器复现）——
+  所以小程序里这三张 Canvas 都等入场结束（1.6 s）再挂载。别把这个延迟当成多余的删掉。
+- **「往期的日子」一进页面就盖在上面**：网页原生 `<dialog>` 没打开时由浏览器默认样式藏起来，小程序里它只是个 view；
+  `showModal` 也不存在。显隐改跟 `is-open` 类（`mini-overrides.weapp.css`），`showModal` 有才调，`::backdrop` 用大阴影代替。
+- **星图 / 放映厅分享长图画不出来**：`share-images.ts` 用的是 `document.createElement("canvas")`，改用 `share-canvas` 的
+  `createShareCanvas()`（网页 / 小程序各一份）再改尺寸；小程序的 `loadImage` 也要先有这张画布才能 `createImage`。
+- **开发者工具里 Canvas 画在分享面板和「往期」上面**，而且 `display:none` 也藏不掉（类和规则都确认生效了，星点照样在）。
+  改成 `weekly/covered.ts` 的 `WeeklyCoveredContext`：弹层开着时小程序版三个 Canvas 组件直接不渲染。网页组件不读它。
+  ⚠️ 真机 Canvas 2D 是同层渲染、z-index 也许本来就管用，但没在真机上确认过。
