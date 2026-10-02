@@ -159,21 +159,24 @@
 全部 `cloud: false`（照 `talk_*`：开发版不许把新表推上云，否则作者手机上已发布的版本同步会被拒）。
 实现用 `card-log.ts` 的 `createCardLog`（`entity.idColumn = "word_id"`），不另写调度。
 
-`store.ts` 对外：
+`store.ts` 对外（只管存取，不依赖 forms / check / grade；评分由调用方先算好）：
 
 ```ts
 export const SPELLING_FSRS: FsrsEntity;
 export const ensureSpellingTables(): void;              // 只确认表在 + 补 fsrs 列，不建表
 export const seedSpellingCards(limit: number): number;  // 给「正向学过、拼写还没卡」的词建卡，稳定度取正向的一半，返回新建数
-export const spellingCard(wordId: number): SpellingCard | null;
 export const createSpellingTasks(quota: { fresh: number; review: number }, day?: string): { review: number; fresh: number };
 export const pickSpellingNext(day?: string, excluded?: Set<string>): number | null;
 export const spellingProgress(day?: string): { total: number; done: number; remaining: number };
-export const recordSpellingRound(wordId: number, round: SpellingRound, now?: Date): WordAnswer;  // 评分 + 写流水（带 typed/form/hints/tries/ms/problem）
+export interface SpellingAnswerDetail { typed: string; form: string; hints: number; tries: number; ms: number; problem: string }
+export const recordSpellingAnswer(wordId: number, answer: WordAnswer, detail: SpellingAnswerDetail, now?: Date): void;  // FSRS + 写流水（带 detail）
 export const undoLastSpelling(): number | null;
 export const clearSpellingTasks(day?: string): void;
 export const lastEncounterToday(wordId: number, day?: string): boolean;  // 这个词的正向卡今天是否已毕业（= 今天最后一次见到它）。落地方式之一「当天最后一次见到时出拼写」要用
 ```
+
+`session.ts`（依赖 forms / check / grade / store，最后写）对外：`spellingCard(wordId): SpellingCard | null`、
+`recordSpellingRound(wordId, round: SpellingRound, now?): WordAnswer`（`gradeRound` → `recordSpellingAnswer`）。
 
 ## 6. 落地方式：开放问题（作者说之后再定，引擎对任一种都成立）
 
