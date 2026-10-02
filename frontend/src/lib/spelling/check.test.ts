@@ -130,11 +130,12 @@ describe("拼写判定：汉字 / 混合写法", () => {
     expect(first(study, "勉強する")).toBe("too_long");
   });
 
-  it("中文简体 / 繁体字形：映回日文字形，nearMiss 不算对", () => {
+  it("中文简体字形直接判错、繁体 / 旧字体是 nearMiss：都映回日文字形给参考", () => {
     const economy = target({ kana: "けいざい", surface: "経済" });
     expect(checkSpelling(economy, "経済").correct).toBe(true);
     const simplified = checkSpelling(economy, "经济");
-    expect(simplified).toMatchObject({ correct: false, nearMiss: true });
+    // 作者 2026-10-03：写成简体中文直接判错（不给「差一点」），但只是参考意见，用户可以裁决推翻
+    expect(simplified).toMatchObject({ correct: false, nearMiss: false });
     expect(simplified.problems[0]).toMatchObject({ code: "chinese_form", typedChar: "经", expectedChar: "経" });
     const traditional = checkSpelling(economy, "經濟");
     expect(traditional.problems[0]).toMatchObject({ code: "traditional_form", typedChar: "經", expectedChar: "経" });
@@ -148,7 +149,7 @@ describe("拼写判定：汉字 / 混合写法", () => {
     });
     expect(checkSpelling(tobacco, "煙草").correct).toBe(true);
     const simplified = checkSpelling(tobacco, "烟草");
-    expect(simplified).toMatchObject({ correct: false, nearMiss: true });
+    expect(simplified).toMatchObject({ correct: false, nearMiss: false });
     expect(simplified.problems[0]).toMatchObject({ code: "chinese_form", typedChar: "烟", expectedChar: "煙" });
     const second = target({ kana: "ふつか", surface: "二日", forms: [{ surface: "二日", tag: "standard" }, { surface: "２日", tag: "variant" }] });
     for (const input of ["二日", "2日", "２日"]) expect(checkSpelling(second, input).correct, input).toBe(true);
@@ -157,16 +158,16 @@ describe("拼写判定：汉字 / 混合写法", () => {
   it("目标驱动地识别多对一简体字形；少写汉字不误报为交ぜ書き", () => {
     const movement = target({ kana: "うんどう", surface: "運動" });
     expect(checkSpelling(movement, "运动")).toMatchObject({
-      correct: false, nearMiss: true, problems: [{ code: "chinese_form", typedChar: "运", expectedChar: "運" }]
+      correct: false, nearMiss: false, problems: [{ code: "chinese_form", typedChar: "运", expectedChar: "運" }]
     });
 
     const work = target({ kana: "はたらく", surface: "働く" });
     expect(checkSpelling(work, "动く")).toMatchObject({
-      correct: false, nearMiss: true, problems: [{ code: "chinese_form", typedChar: "动", expectedChar: "働" }]
+      correct: false, nearMiss: false, problems: [{ code: "chinese_form", typedChar: "动", expectedChar: "働" }]
     });
     const bento = target({ kana: "べんとう", surface: "弁当" });
     expect(checkSpelling(bento, "辨当")).toMatchObject({
-      correct: false, nearMiss: true, problems: [{ code: "chinese_form", typedChar: "辨", expectedChar: "弁" }]
+      correct: false, nearMiss: false, problems: [{ code: "chinese_form", typedChar: "辨", expectedChar: "弁" }]
     });
 
     const numberedDay = target({ kana: "ついたち", surface: "一日", forms: [

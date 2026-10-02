@@ -20,6 +20,11 @@ export const SPELLING_FSRS: FsrsEntity = {
 };
 
 const TABLES = ["spelling_memory", "spelling_reviews", "spelling_tasks"] as const;
+const REVIEW_EXTRA_COLUMNS: Array<[string, string]> = [
+  ["override", "TEXT NOT NULL DEFAULT ''"],
+  ["mode", "TEXT NOT NULL DEFAULT 'meaning'"],
+  ["source", "TEXT NOT NULL DEFAULT 'page'"]
+];
 
 const log = createCardLog({
   entity: SPELLING_FSRS,
@@ -45,6 +50,11 @@ export const ensureSpellingTables = (): void => {
       "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", [table], 0
     ) === 0);
     if (missing.length) throw new Error(`Missing spelling tables: ${missing.join(", ")}`);
+    // 表建在 local-schema.sql，但老库上它已经存在、CREATE IF NOT EXISTS 不会加列：缺的列在这里补
+    const existing = new Set(rowsFor("PRAGMA table_info(spelling_reviews)").map((row) => String(row.name)));
+    for (const [column, ddl] of REVIEW_EXTRA_COLUMNS) {
+      if (!existing.has(column)) getDatabase().run(`ALTER TABLE spelling_reviews ADD COLUMN ${column} ${ddl}`);
+    }
     log.ensure();
   });
 };
@@ -130,6 +140,12 @@ export interface SpellingAnswerDetail {
   tries: number;
   ms: number;
   problem: string;
+  /** 用户裁决：'' / 'correct' / 'wrong'（SpellingRound.override）。 */
+  override?: string;
+  /** 题面形式 SpellingMode，默认 'meaning'。 */
+  mode?: string;
+  /** 'page' 独立页面（默认）/ 'inline' 学习流程里插播。 */
+  source?: string;
 }
 
 const withSpellingWrite = <T>(write: () => T): T => {
@@ -159,7 +175,10 @@ export const recordSpellingAnswer = (
     hints: detail.hints,
     tries: detail.tries,
     ms: detail.ms,
-    problem: detail.problem
+    problem: detail.problem,
+    override: detail.override ?? "",
+    mode: detail.mode ?? "meaning",
+    source: detail.source ?? "page"
   }));
   persistSoon();
 };

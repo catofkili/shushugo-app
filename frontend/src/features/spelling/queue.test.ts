@@ -3,7 +3,7 @@ import type { SpellingCard } from "../../lib/spelling";
 import { nextSpellingCard } from "./queue";
 
 const card: SpellingCard = {
-  wordId: 2, meaning: "吃", pos: "动词", moraCount: 3, jlptLevel: "N5",
+  wordId: 2, meaning: "吃", pos: "动词", moraCount: 3, jlptLevel: "N5", mode: "meaning",
   target: { surface: "食べる", kana: "たべる", forms: [{ surface: "食べる", tag: "standard" }], altReadings: [], isLoanword: false }
 };
 

@@ -277,3 +277,34 @@ describe("正向毕业钩子和同步登记", () => {
     expect(firstValue<number>("SELECT COUNT(*) FROM spelling_tasks WHERE word_id = ?", [intoId], 0)).toBe(1);
   });
 });
+
+
+describe("老库补列", () => {
+  it("已存在的 spelling_reviews 缺 override / mode / source 三列时，ensureSpellingTables 补上，已有流水保留并取默认值", () => {
+    testDb.run("DROP TABLE spelling_reviews");
+    testDb.run(`CREATE TABLE spelling_reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, word_id INTEGER NOT NULL, answer TEXT NOT NULL, reviewed_on TEXT NOT NULL,
+      reviewed_at INTEGER NOT NULL, scheduler_mode TEXT NOT NULL DEFAULT 'normal', fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, typed TEXT NOT NULL, form TEXT NOT NULL,
+      hints INTEGER NOT NULL DEFAULT 0, tries INTEGER NOT NULL DEFAULT 0, ms INTEGER NOT NULL DEFAULT 0, problem TEXT NOT NULL DEFAULT ''
+    )`);
+    testDb.run("INSERT INTO spelling_reviews (word_id, answer, reviewed_on, reviewed_at, typed, form) VALUES (1, 'know', '2026-10-01', 1, 'あ', 'kana')");
+    ensureSpellingTables();
+    ensureSpellingTables();
+    const columns = rowsFor("PRAGMA table_info(spelling_reviews)").map((row) => String(row.name));
+    expect(columns).toEqual(expect.arrayContaining(["override", "mode", "source"]));
+    expect(rowsFor("SELECT override, mode, source FROM spelling_reviews")[0]).toEqual({ override: "", mode: "meaning", source: "page" });
+  });
+
+  it("recordSpellingAnswer 把裁决 / 题面形式 / 来源写进流水，不传时取默认值", () => {
+    const [wordId] = wordIds(1);
+    setForward(wordId);
+    expect(seedSpellingCards(1)).toBe(1);
+    recordSpellingAnswer(wordId, "fuzzy", { typed: "a", form: "romaji", hints: 0, tries: 1, ms: 1, problem: "wrong_reading", override: "correct", mode: "cloze", source: "inline" });
+    recordSpellingAnswer(wordId, "know", { typed: "b", form: "kana", hints: 0, tries: 1, ms: 1, problem: "" });
+    const rows = rowsFor("SELECT override, mode, source FROM spelling_reviews ORDER BY id");
+    expect(rows[0]).toEqual({ override: "correct", mode: "cloze", source: "inline" });
+    expect(rows[1]).toEqual({ override: "", mode: "meaning", source: "page" });
+  });
+
+});

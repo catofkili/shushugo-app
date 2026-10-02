@@ -448,7 +448,12 @@ CREATE TABLE IF NOT EXISTS spelling_reviews (
   hints INTEGER NOT NULL DEFAULT 0,
   tries INTEGER NOT NULL DEFAULT 0,
   ms INTEGER NOT NULL DEFAULT 0,
-  problem TEXT NOT NULL DEFAULT ''
+  problem TEXT NOT NULL DEFAULT '',
+  -- 用户对判定的裁决（'' / 'correct' / 'wrong'）、题面形式、来源（'page' 独立页面 / 'inline' 学习流程里插播）。
+  -- 老库上这三列由 store.ts 的 ensureSpellingTables 补（表已存在时 CREATE IF NOT EXISTS 不会加列）。
+  override TEXT NOT NULL DEFAULT '',
+  mode TEXT NOT NULL DEFAULT 'meaning',
+  source TEXT NOT NULL DEFAULT 'page'
 );
 CREATE INDEX IF NOT EXISTS idx_spelling_reviews_word_on ON spelling_reviews (word_id, reviewed_on);
 CREATE TABLE IF NOT EXISTS spelling_tasks (

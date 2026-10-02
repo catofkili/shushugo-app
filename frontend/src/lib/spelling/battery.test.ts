@@ -400,9 +400,9 @@ describe("拼写判定真实词库全量电池", () => {
 
       for (const form of target.forms) {
         const result = checkSpelling(target, form.surface);
-        // 规格 §1.5：罕用写法若本身就是中文简体 / 繁体字形（烟草、无、聯絡），报 chinese_form / traditional_form（nearMiss），
+        // 规格 §1.5：罕用写法若本身就是中文简体 / 繁体字形（烟草、无、聯絡），报 chinese_form（直接判错）/ traditional_form（nearMiss），
         // 对学习者不算对。记成例外，报告里列全，不算硬断言失败。
-        const chineseRare = form.tag === "rare" && !result.correct && result.nearMiss &&
+        const chineseRare = form.tag === "rare" && !result.correct &&
           ["chinese_form", "traditional_form"].includes(result.problems[0]?.code ?? "");
         record(categories, "target.forms 全部书写", entry, form.surface, `correct/${form.tag}`, result, result.correct, chineseRare ? "exception" : "checked");
       }
@@ -586,8 +586,8 @@ describe("拼写判定真实词库全量电池", () => {
         for (const simplified of simplifiedVariants(form.surface, simplifiedForms)) {
           const simplifiedResult = checkSpelling(target, simplified);
           const overlap = target.forms.some((accepted) => normalizedWriting(accepted.surface) === normalizedWriting(simplified));
-          record(categories, "简体字形变体", entry, simplified, "chinese_form + nearMiss", simplifiedResult,
-            overlap || (!simplifiedResult.correct && codeOf(simplifiedResult) === "chinese_form" && simplifiedResult.nearMiss),
+          record(categories, "简体字形变体", entry, simplified, "chinese_form（直接判错，非 nearMiss）", simplifiedResult,
+            overlap || (!simplifiedResult.correct && codeOf(simplifiedResult) === "chinese_form" && !simplifiedResult.nearMiss),
             overlap ? "exception" : "checked");
         }
       }

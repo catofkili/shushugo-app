@@ -77,9 +77,13 @@ export interface SpellingProblem {
   other?: { wordId: number; surface: string; kana: string; meaning: string };
 }
 
-/** 读音对但写法有瑕疵、或词认对了只差一步：UI 可以让用户改一次而不算忘记。 */
+/**
+ * 读音对但写法有瑕疵、或词认对了只差一步：UI 可以让用户改一次而不算忘记。
+ * ⚠️ `chinese_form`（中文简体字形）**不在**这里：作者 2026-10-03 定「写成简体中文直接判错」。
+ * 判错只是我们的参考意见——最终对不对由用户自己说了算（`SpellingRound.override`，规格 §1.0）。
+ */
 export const NEAR_MISS_CODES: ReadonlySet<SpellingProblemCode> = new Set<SpellingProblemCode>([
-  "long_vowel", "script", "other_reading", "chinese_form", "traditional_form",
+  "long_vowel", "script", "other_reading", "traditional_form",
   "okurigana", "partial_kana", "peer_word"
 ]);
 
@@ -108,14 +112,33 @@ export interface SpellingLookup {
   peers(): Array<{ wordId: number; surface: string; kana: string; meaning: string }>;
 }
 
+/** 题面形式：看释义写（默认）、听读音写（听写）、看挖空例句写（规格 §8）。 */
+export type SpellingMode = "meaning" | "audio" | "cloze";
+
+/** 挖空例句题的句子：目标词在句中的实际写法（可能是活用形）被挖掉，用户要写的就是它。 */
+export interface SpellingCloze {
+  /** 挖空之前 / 之后的原文（含标点，原样）。 */
+  before: string;
+  after: string;
+  /** 例句中文译文（words.example_meaning）。 */
+  translation: string;
+  /** 目标词在句中的实际写法与读音（食べた / たべた）；`SpellingCard.target` 就是按它构造的。 */
+  surface: string;
+  reading: string;
+}
+
 /** 一张拼写卡给 UI 的全部内容。 */
 export interface SpellingCard {
   wordId: number;
-  /** 题面中文：questionMeaning 口径（含人工题面、用户改写）。 */
+  /** 题面中文：questionMeaning 口径（含人工题面、用户改写）。audio / cloze 模式下 UI 默认不展示它（作提示用）。 */
   meaning: string;
   pos: string;
   moraCount: number;
   jlptLevel: string;
+  /** 默认 "meaning"。 */
+  mode: SpellingMode;
+  /** 仅 mode === "cloze"。此时 target 是句中活用后的形态，不是词典形。 */
+  cloze?: SpellingCloze;
   target: SpellingTarget;
 }
 
@@ -132,6 +155,13 @@ export interface SpellingRound {
   hintsUsed: number;
   /** 点了「不会 / 看答案」。 */
   gaveUp: boolean;
+  /**
+   * 用户对我们判定的最终裁决（规格 §1.0：我们只指出错误，对错用户自己说了算）。
+   * "correct"：最后一次提交我们判错了（或差一点），用户说他是对的 → 按那一次提交答对来评分；
+   * "wrong"：我们判对了，但用户说其实不会（蒙的 / 手滑）→ 记 forgot。
+   * 对「不会」放弃的轮次和用了揭晓级提示的轮次无效。
+   */
+  override?: "correct" | "wrong";
   /** 从出题到结束的毫秒数。 */
   elapsedMs: number;
 }

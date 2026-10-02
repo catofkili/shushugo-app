@@ -12,8 +12,10 @@ export const MAX_TRIES = 2;
 export const REVEAL_HINT_LEVEL = 3;
 
 export interface RoundOutcome {
-  /** 这一轮是否已经结束（对了、放弃、或次数用完）。没结束时 UI 继续让用户答。 */
+  /** 这一轮是否已经结束（对了、放弃、或次数用完、或用户做了裁决）。没结束时 UI 继续让用户答。 */
   done: boolean;
+  /** 结束是因为用户推翻了我们的判定（SpellingRound.override 生效）。 */
+  overridden?: boolean;
   /** done 时才有。 */
   answer: WordAnswer | null;
   /** 还能再提交几次（done 时为 0）。 */
@@ -39,8 +41,17 @@ export const roundOutcome = (round: SpellingRound, maxTries = MAX_TRIES): RoundO
   const counted = countedAttempts(round);
   const tries = counted.length;
   const firstCorrect = counted.findIndex((attempt) => attempt.verdict.correct);
+  const revealed = round.hintsUsed >= REVEAL_HINT_LEVEL;
+  // 用户裁决（规格 §1.0）：我们只给参考意见，对错用户自己说了算。放弃的轮次、看过答案的轮次不接受「我对了」。
+  if (round.override === "wrong" && firstCorrect >= 0 && !round.gaveUp) {
+    return { done: true, overridden: true, answer: "forgot", triesLeft: 0, tries: firstCorrect + 1 };
+  }
+  if (round.override === "correct" && firstCorrect < 0 && tries > 0 && !round.gaveUp) {
+    // 把最后一次有效提交当作答对：第一次提交且没用提示 → know，其余 → fuzzy；看过答案就仍是 forgot
+    const answer: WordAnswer = revealed ? "forgot" : tries === 1 && round.hintsUsed === 0 ? "know" : "fuzzy";
+    return { done: true, overridden: true, answer, triesLeft: 0, tries };
+  }
   if (firstCorrect >= 0) {
-    const revealed = round.hintsUsed >= REVEAL_HINT_LEVEL;
     const answer: WordAnswer = revealed ? "forgot" : firstCorrect === 0 && round.hintsUsed === 0 ? "know" : "fuzzy";
     return { done: true, answer, triesLeft: 0, tries: firstCorrect + 1 };
   }

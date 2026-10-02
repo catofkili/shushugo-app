@@ -51,4 +51,23 @@ describe("拼写评分", () => {
     expect(roundOutcome(round([wrong, wrong]), 3).done).toBe(false);
     expect(gradeRound(round([wrong, wrong, right]), 3)).toBe("fuzzy");
   });
+
+  it("用户裁决：说我们判错的那次其实是对的 → 按答对评分", () => {
+    expect(roundOutcome(round([wrong], { override: "correct" }))).toMatchObject({ done: true, overridden: true, answer: "know", tries: 1 });
+    expect(gradeRound(round([wrong], { override: "correct", hintsUsed: 1 }))).toBe("fuzzy");
+    expect(gradeRound(round([wrong, wrong], { override: "correct" }))).toBe("fuzzy");
+    // 看过答案（揭晓级提示）或点了「不会」之后的「我对了」不算数
+    expect(gradeRound(round([wrong], { override: "correct", hintsUsed: 3 }))).toBe("forgot");
+    expect(gradeRound(round([wrong], { override: "correct", gaveUp: true }))).toBe("forgot");
+    // 一次都没提交，裁决无意义，轮子没结束
+    expect(roundOutcome(round([], { override: "correct" })).done).toBe(false);
+  });
+
+  it("用户裁决：说我们判对的其实不会（蒙的 / 手滑）→ forgot", () => {
+    expect(roundOutcome(round([right], { override: "wrong" }))).toMatchObject({ done: true, overridden: true, answer: "forgot" });
+    expect(gradeRound(round([wrong, right], { override: "wrong" }))).toBe("forgot");
+    // 没有对的提交，「我错了」是废话：照常评分
+    expect(roundOutcome(round([wrong], { override: "wrong" })).done).toBe(false);
+  });
+
 });

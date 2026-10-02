@@ -34,6 +34,7 @@ export const spellingCard = (wordId: number): SpellingCard | null => {
     pos: String(row.pos ?? ""),
     moraCount: moraCount(target.kana),
     jlptLevel: String(row.jlpt_level ?? ""),
+    mode: "meaning",
     target
   };
 };
@@ -56,7 +57,8 @@ export const checkCardInput = (card: SpellingCard, input: string, lookup = spell
 /** 结算一轮：评分 → 写 FSRS 和流水。轮没结束会抛错（gradeRound）。返回这一轮的评分。 */
 export const recordSpellingRound = (wordId: number, round: SpellingRound, now = new Date()): WordAnswer => {
   const answer = gradeRound(round);
-  const { tries } = roundOutcome(round);
+  const outcome = roundOutcome(round);
+  const { tries } = outcome;
   const last = round.attempts[round.attempts.length - 1];
   recordSpellingAnswer(wordId, answer, {
     typed: last?.typed ?? "",
@@ -64,7 +66,8 @@ export const recordSpellingRound = (wordId: number, round: SpellingRound, now = 
     hints: round.hintsUsed,
     tries,
     ms: Math.max(0, Math.round(round.elapsedMs)),
-    problem: round.gaveUp ? "gave_up" : last && !last.verdict.correct ? (last.verdict.problems[0]?.code ?? "") : ""
+    problem: round.gaveUp ? "gave_up" : last && !last.verdict.correct ? (last.verdict.problems[0]?.code ?? "") : "",
+    override: outcome.overridden ? round.override : ""
   }, now);
   return answer;
 };

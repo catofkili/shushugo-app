@@ -18,6 +18,16 @@
 
 ## 1. 什么算对
 
+### 1.0 总原则：我们只指出错误，对错用户自己说了算（2026-10-03 作者定）
+
+- 我们的判定只是**参考意见**。任何一次判定之后，用户都能**裁决**：
+  - 我们判错 / 差一点，用户说「算我对」→ 按「那一次提交答对」评分（第一次提交且没用提示 → know，否则 fuzzy）；
+  - 我们判对，用户说「算我错」（蒙的 / 手滑）→ forgot。
+  - 放弃（「不会」）的轮次、看过揭晓级提示的轮次，「算我对」无效。
+- 裁决写进流水（`spelling_reviews.override`）；统计里单独数「用户推翻了几次」，**不静默吞掉**。
+- **写成简体中文字形直接判错**（`chinese_form` 不在 `NEAR_MISS_CODES` 里，没有「差一点」）；仍给参考（「经」是中文写法，日语写「経」），用户仍可裁决推翻。
+  繁体 / 旧字体仍是 nearMiss（旧字体在日语里有时是合法的人名 / 固有写法）。
+
 ### 1.1 输入先分流（`classifyInput`）
 
 先 NFKC 归一（全角字母 / 假名半角片假名都收进来）、去首尾空白；目标和输入里的 `〜 ～ ~ ・` 一律去掉（词库有 130 个〜开头的词缀 / 量词）。
@@ -93,14 +103,14 @@
 | 食べ物 ← たべ物 | ✗ `partial_kana`（nearMiss：汉字被换成了假名，不是标准写法）；← 食べもの ✗ 同。换进来的假名必须是这个词读音里的假名（子序列），「食べカ」是普通错误 `wrong_kanji` |
 | 食べる ← 食る | ✗ `okurigana` |
 | 食べる ← 食べ / 食べた / 食べるな | ✗ `conjugated`（词尾被截短、替换、延长都算活用形问题，不猜是哪种活用） |
-| 経済 ← 经济 | ✗ `chinese_form`（nearMiss，带上 expectedChar 経） |
+| 経済 ← 经济 | ✗ `chinese_form`（**直接判错，不是 nearMiss**；带上 expectedChar 経） |
 | 経済 ← 經濟 / 旧字体 | ✗ `traditional_form`（nearMiss） |
 | 経済 ← 軽済 | ✗ `wrong_kanji` |
 | 橋 ← 箸 | ✗ `homophone`（词库里有 箸 的话带上 other） |
 | カメラ ← camera | ✗ `source_language` |
 | 警察 ← 警察官（词库里另有这个词，题面也相同） | `peer_word`（nearMiss，不算一次作答） |
 
-- **和式汉字**：用户是中文母语者，最常见的错是中文字形。`kanji-form.ts` 把输入里的每个字分成
+- **和式汉字**：用户是中文母语者，最常见的错是中文字形，**简体直接判错**（§1.0）。`kanji-form.ts` 把输入里的每个字分成
   日文字形 / 中文简体 / 繁体·旧字体，简体和繁体各自映回日文字形（用 `kanji_variants.json`，同 `lib` 里现有的那份）。
   先把输入映回日文字形再去命中集合：命中 → 报 `chinese_form` / `traditional_form`（nearMiss，**不算对**）。
 - **JMdict 取数规则（`scripts/build-spelling-forms.mjs`，数据 `src/data/spelling_forms.json`）**：
@@ -190,6 +200,36 @@ export const lastEncounterToday(wordId: number, day?: string): boolean;  // 这�
 - 「每个词都拼」太累：可选的度——只拼已熟的词（stability ≥ N 天）、每天最多 N 个、每词每 N 天最多一次。
 - 引擎提供：`seedSpellingCards`（建卡）、`createSpellingTasks`（带额度的当天清单）、`lastEncounterToday`（毕业钩子）。
   度的选择是调用方的事，别写进引擎。
+
+## 8. 题面形式（`SpellingMode`）
+
+一张拼写卡有三种题面，判定（§1）和评分（§3）完全一样，只换「用户看到什么」：
+
+| mode | 题面 | 备注 |
+|---|---|---|
+| `meaning`（默认） | 中文释义 + 词性 + 拍数 | 已实现 |
+| `audio`（听写） | 进卡**自动播读音**（`speech.playPronunciation`，不看「自动播放」偏好），有「再听一次」按钮；释义默认隐藏 | 提示阶梯变成 0 级「意思」→ 1 级拍数和首拍 → 2 级读音 → 3 级书写；偏好 `showMeaningInAudio` 为真时释义直接显示。**同音词**：听写时用户不可能知道是哪个词，所以 `homophone` 在 audio 模式按 nearMiss 处理（文案：「读音一样，这张卡是「X」」） |
+| `cloze`（挖空例句） | 例句里目标词被挖掉（`____`），下面是例句中文译文 | 用户要写的是目标词**在句中的实际写法**（可能是活用形：食べた），所以 `SpellingCard.target` 是按句中形态构造的（`cloze.surface` / `cloze.reading`），不是词典形 |
+
+- **挖空**：`cloze.ts` 的 `clozeFor(word)`：在 `words.example_jp` 里找目标词出现的位置。优先用 `example_tokens` / `example_lemmas`（词典形匹配 → 取该 token 的实际表层），再退到按词形 / 读音的字符串匹配；找不到唯一位置就返回 null（该词没有挖空题，调用方退回 meaning）。
+  句中读音从 `example_furigana` 取（汉字部分的注音 + 句中原样的假名）。**活用形的 target 没有 JMdict 变体**：`forms = [{ surface: 句中写法, tag: "standard" }]`，`altReadings = []`；句中形态恰好等于词典形时，直接用词典形的 `spellingTargetForWord`（带 JMdict 变体）。
+- **选哪种**：偏好 `modes`（默认 `["meaning"]`）里开了几种就在这几种里选；`modeStrategy` = `"random"`（默认）或 `"rotate"`（按词 id 轮换，同一天同一个词总是同一种）；选中的形式对这个词不可用（没有可挖空的例句）就退回 `meaning`。
+- 流水 `spelling_reviews.mode` 记实际用的形式。
+
+## 9. 偏好、插播、错误统计
+
+- **偏好**：设备本地（localStorage，键 `shushugo-spelling-prefs`，try/catch 包裹，读不到取默认；**不进 `app_state`**，免得实验开关的字段推给旧版本）。字段：
+  `modes`、`modeStrategy`、`dailyCap`（独立页面 + 插播合计每天最多几张新拼写，默认 30，0 = 不限）、`minStabilityDays`（「度」：只拼正向稳定度 ≥ N 天的词，默认 0）、
+  `inlineAfterGraduation`（默认 **false**）、`inlineDailyCap`（插播每天最多几张，默认 5）、`showMeaningInAudio`（默认 false）、`clozeShowTranslation`（默认 true）。
+- **插播（落地方式之一）**：单词学习里，一个词的**正向卡今天毕业**（`lastEncounterToday(wordId)`，也就是「今天最后一次见到它」）、且开了 `inlineAfterGraduation`、
+  今天的插播数没到 `inlineDailyCap`、这个词过得了 `minStabilityDays`、今天没为它插播过 → 弹出一张拼写卡（`SpellingCardView`，流水 `source = 'inline'`）。
+  **答对就放走**：答对 → 关；没对但还有次数 → 让用户改；次数用完 → 揭晓答案、用户点「继续」。用户可随时「跳过」：跳过不写任何流水，但记下「今天问过这个词」不再催。
+  这个词还没有拼写卡就当场播种（`seedSpellingCardFor(wordId)`，规则同 `seedSpellingCards`，但不要求 due 排序）。
+  插播不改正向卡的任何状态，也不进今日计划的数字。
+- **独立页面**：保留（`SpellingPage`），多一个设置面板（上面的偏好）和「最近常错的类型」。
+- **错误统计**：`spellingErrorStats(days = 14)` → `[{ code, count }]`（按 `spelling_reviews.problem` 聚合，排除 `''` 和 `gave_up`，按次数降序），
+  `spellingOverrideStats(days = 14)` → `{ toCorrect, toWrong }`。页面上列前 5 个，每个用 `problemLabel(code)`（一两个字的短标签，`messages.ts`）。
+- **不做**：把拼写塞进每日量圆环（四个滑钮的圆环是单词 / 语法 / 汉字 / 辨析的容量分配，拼写是「毕业后的确认」，不占额度）。
 
 ## 7. 实验开关与上线清单
 
