@@ -107,7 +107,8 @@ export function SpellingPage() {
   };
 
   const practiceMore = () => {
-    const nextQuota = freshQuota.current + EXTRA_FRESH;
+    // 已练完的卡不再算新卡，所以「再练」就是再要 10 张没练过的，不是在原额度上累加
+    const nextQuota = EXTRA_FRESH;
     try {
       clearSpellingTasks();
       freshQuota.current = nextQuota;
