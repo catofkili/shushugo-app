@@ -39,6 +39,31 @@
   细节和判据见规格 §1.0 / §1.9。
   小程序预览版的验收记录：`docs/DAILY_TALK_WEAPP_PREVIEW.md`。
 
+## ⚠️ 单词拼写（Spelling）是实验功能，不进任何发布包（2026-10-02 起，作者睡觉期间 Claude 全权做完）
+
+作者原话：「给我开发一个单词拼写学法，我还没想好怎么落地（混在里面还是用户自行打开……每个词都拼写吗那也太累了，设一个度，或者每天最后一次见到这个词的时候出拼写，对了就离开？），先把完整技术功能做好」「罗马音、日语假名、或者假名混合和式汉字都可以是正确答案，但必须是正确的混合形式」。
+**规格和全部判定口径在 [`docs/SPELLING_SPEC.md`](docs/SPELLING_SPEC.md)，类型契约在 `frontend/src/lib/spelling/types.ts`；改判据先改规格。**
+
+- **开关**：编译期常量 `__EXP_SPELLING__`（`SHUSHUGO_EXP_SPELLING=1` 才在 build 里打开，dev / vitest 默认开），和 `__EXP_TALK__` / `__EXP_JLPT__` **互相独立**；
+  `check:release`（taro）和 `scripts/build-ios.sh` 各拦页面和指纹 `__SHUSHUGO_EXP_SPELLING__`；`lib/spelling/isolation.test.ts` 钉着只有页面 / `features/spelling/` / 路由 / Taro 页面能引用它。**落地方式没定之前，谁也不许把默认值改成 true。**
+- **三张表 `spelling_memory / spelling_reviews / spelling_tasks` 都是 `cloud: false`**（理由同 `talk_*`：开发版把新表推上云，作者手机上已发布的版本同步会被整次拒绝）。上线先发「认得但仍 false」的版本，全部更新后再改上云。
+- **落地方式是开放的**，引擎对任一种都成立：`seedSpellingCards`（给正向学过的词建拼写卡，稳定度取正向的一半）、`createSpellingTasks`（带额度的当天清单）、`lastEncounterToday(wordId)`（正向卡今天是否已毕业 = 「当天最后一次见到它」的钩子）。度的选择是调用方的事，别写进引擎。
+- **什么算对**（`check.ts`，纯函数 `checkSpelling(target, input, lookup?)`）：罗马音 / 假名 / 汉字假名混合三类都算对，**评分不区分用了哪种**，只在流水里记 `form`。
+  - 罗马音：`romaji.ts` 目标驱动 DP 逐拍匹配（不把输入反解成假名——ō 是おう还是おお、づ / ず 都会有歧义），Hepburn / 日本式 / 输入法式都收；おう 不收 oo、おお 不收 ou（那是考点，报 `long_vowel`，nearMiss）；ー 对 o 列 oo / ou 都收。
+  - 假名：严格逐拍；平 / 片假名用错（外来语写平假名）是 `script`（nearMiss，**不算对**）；ー 在判文字种类时不算任何一种。
+  - **混合 / 汉字写法：唯一权威 = 词库表记 + JMdict 同条目的合法 k_ele**（`scripts/build-spelling-forms.mjs` → `src/data/spelling_forms.json`，只读 `frontend/.local/JMdict_e.gz`）。排除 JMdict 标 `sK iK oK io ik` 的写法（`io` = 不规则送り仮名，不是「正确的混合形式」）；`rK` 罕用写法和 `ateji` 收下（标非首选）。
+    **交ぜ書き（把一部分汉字换成假名，食べ物 → たべ物）不收**，报 `partial_kana`（nearMiss）；`出きる` 这类 JMdict 只当搜索用的写法同样不收。
+  - **中文简体 / 繁体 / 旧字体不算对**，但映回日文字形报 `chinese_form` / `traditional_form`（nearMiss）。⚠️ **这一步必须排在「精确命中」之前**：JMdict 里偶有把简体字形当罕用写法收录的（烟草），先精确命中就把中文字形判对了。
+  - 书写比较走 NFKC（JMdict 有「２日」，用户输入 2日 是同一写法）；`classifyInput` 认数字。
+  - 同音词 / 同题面词要查词库：调用方传 `SpellingLookup`（`session.ts` 的 `spellingLookup(wordId)`）；不传就退成 `wrong_kanji`。`peer_word`（写成题面完全相同的另一个词）不占提交次数。
+- **评分**（`grade.ts`）：第一次提交就对且没用提示 → know；用过提示或第二次才对 → fuzzy；放弃 / 两次都错 / 揭晓级提示后才对 → forgot（`MAX_TRIES = 2`）。nearMiss 那一次也占一次提交。
+- **存储**：`store.ts` 用 `card-log.ts` 的 `createCardLog`（流水为事实、memory 是检查点、tasks 是当天投影），**不另写调度**；`reviews` 主表**不**写入，所以不影响每日统计 / 柚子 / 成就。
+  `card-log` 为此加了可选的 `startingState` 钩子：播种卡的 FSRS 起点存在 `spelling_memory.seed_fsrs_state`，撤销重放时要先恢复它，否则撤销会把播种卡变成全新卡。`mergeWordInto` 合并重复词条时也搬 `spelling_*`（流水先删后插，留墓碑）。
+- **数据口径的取舍记录在 `docs/audits/2026-10-02-spelling-forms.md`**（取数规则、统计、各标签样本）；构建脚本两次运行产物 diff 为空，改规则后重跑并提交产物。
+- **页面**：`pages/SpellingPage.tsx`（队列：seed → 清单 → 逐张）+ `features/spelling/SpellingCardView.tsx`（一张卡的完整交互，不知道队列、不碰库，将来能嵌进学习流程）+ `round-state.ts`（纯函数的一轮状态机）。同一份 TSX 经 Taro 编译成小程序。
+  独立端口预览要往 IndexedDB 灌学习库副本（见下「往预览里灌库」的姿势），空库里没有学过的词，`seedSpellingCards` 返回 0、页面只显示「先去背几个词」。
+- **还没做 / 上线前清单**：落地方式（作者定）；每日上限和「度」；`cloud:false` 改上云的发版顺序；去掉开关和拦截；小程序在微信开发者工具里的真机运行验收；听写（音频 → 写）和挖空例句两种题面（规格 §0 说明了为什么先不做）。
+
 ## ⚠️ 查我的真实学习数据：`cd frontend && npm run db -- <词>`
 
 **每次新开聊天先看这里，不要再去仓库里翻 .db 文件，也别一上来就连真实 Chrome。**
