@@ -77,8 +77,10 @@
       "mini": [
         "wechat-miniprogram/src/pages/home/index.js",
         "wechat-miniprogram/src/pages/home/index.wxml",
-        "wechat-miniprogram/src/pages/home/index.wxss"
-      ]
+        "wechat-miniprogram/src/pages/home/index.wxss",
+        "frontend/src/components/ZooHome.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译这份 ZooHome.tsx（主页入口随实验开关出现），原生 pages/home 已停止维护，见头部 2026-09-25 决定。"
     },
     {
       "web": "frontend/src/pages/AboutPage.tsx",
@@ -189,8 +191,10 @@
       "mini": [
         "wechat-miniprogram/src/features/jlpt-plan/index.js",
         "wechat-miniprogram/src/features/jlpt-plan/index.wxml",
-        "wechat-miniprogram/src/features/jlpt-plan/index.wxss"
-      ]
+        "wechat-miniprogram/src/features/jlpt-plan/index.wxss",
+        "frontend/src/pages/JlptPlanPage.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译这份 JlptPlanPage.tsx（备考页的刷题入口），原生 features/jlpt-plan 已停止维护，见头部 2026-09-25 决定。"
     },
     {
       "web": "frontend/src/pages/KanjiReadingUsagePage.tsx",
@@ -426,8 +430,10 @@
     {
       "web": "frontend/src/design.css",
       "mini": [
-        "wechat-miniprogram/src/styles/tokens.wxss"
-      ]
+        "wechat-miniprogram/src/styles/tokens.wxss",
+        "frontend/src/design.css"
+      ],
+      "reason": "路线 A：Taro 直接编译 design.css；tokens.wxss 只服务已停止维护的原生页面（仍由 sync-design-tokens + check-design-tokens 保持同步）。"
     },
     {
       "web": "frontend/src/styles.css",
