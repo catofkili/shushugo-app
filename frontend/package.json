@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "prebuild": "node scripts/verify-release-db.mjs && node scripts/verify-kanji-reading-unit-index.mjs && node scripts/verify-kana-cards.mjs",
+    "prebuild": "node scripts/verify-release-db.mjs && node scripts/verify-kanji-reading-unit-index.mjs && node scripts/verify-kana-cards.mjs && node --no-warnings scripts/verify-jlpt-bank.mjs",
     "dev": "vite",
     "db": "node --no-warnings scripts/live-db.mjs",
+    "verify:jlpt-bank": "node --no-warnings scripts/verify-jlpt-bank.mjs",
     "zoo": "vite --config zoo-lab/vite.config.ts --host",
     "build": "vite build",
     "build:furigana": "node scripts/build-furigana.mjs",
