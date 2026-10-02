@@ -57,7 +57,7 @@ describe("假名拼写判定", () => {
   it("仅当目标有 ー 时才允许用前一拍母音假名替代", () => {
     expect(compareKana("ラーメン", "ラアメン")).toEqual({ ok: true, readingOk: true, problems: [] });
     expect(compareKana("おとうさん", "おとーさん")).toMatchObject({
-      ok: false, readingOk: true, problems: [{ code: "script" }, { code: "long_vowel", moraIndex: 2 }]
+      ok: false, readingOk: true, problems: [{ code: "long_vowel", moraIndex: 2 }]
     });
   });
 

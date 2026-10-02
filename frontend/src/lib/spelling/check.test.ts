@@ -158,10 +158,11 @@ describe("拼写判定：汉字 / 混合写法", () => {
     expect(checkSpelling(withForm, "明後日")).toMatchObject({ correct: true, matched: { preferred: false } });
   });
 
-  it("problems 按规格 §2 的顺序排", () => {
-    const camera = target({ kana: "カメラ", surface: "カメラ", isLoanword: true });
-    const verdict = checkSpelling(camera, "かめーら");
-    const order = verdict.problems.map((p) => p.code);
-    expect(order).toEqual([...order].sort((a, b) => order.indexOf(a) - order.indexOf(b)));
+  it("problems 按规格 §2 的顺序排（script 先于 long_vowel）", () => {
+    // コーヒー 写成平假名且长音写法不同：两个问题同时存在，主要说文字种类
+    const coffee = target({ kana: "コーヒー", surface: "コーヒー", isLoanword: true });
+    const order = checkSpelling(coffee, "こうひい").problems.map((p) => p.code);
+    expect(order[0]).toBe("script");
+    expect(order).toContain("long_vowel");
   });
 });

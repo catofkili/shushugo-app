@@ -139,21 +139,34 @@ const readingForm = (kana: string, expandBars: boolean): string => {
 };
 
 type KanaScript = "hira" | "kata" | "neutral";
+/** ー 两种文字都用，不算任何一种（おとーさん 的 ー 不能让平假名词被判成「写了片假名」）。 */
 const scriptOf = (char: string): KanaScript => {
   if (/[ぁ-ゖ]/u.test(char)) return "hira";
-  if (/[ァ-ヺー]/u.test(char)) return "kata";
+  if (/[ァ-ヺ]/u.test(char)) return "kata";
   return "neutral";
 };
 
-/** 混写词逐字符比脚本；ー 对应的长音假名也占同一位置。 */
+/**
+ * 文字种类用对没有：纯平假名词不许出现片假名、纯片假名词（外来语）不许出现平假名；
+ * 词库里偶有平片混写的读音（てぃーシャツ），这类才逐字符比。逐字符比的前提是两边对得上位置，
+ * 所以只在混写目标上用——长音写法不同时（おとうさん / おとーさん）两边长度本来就不一样。
+ */
 const scriptMatches = (target: string, typed: string): boolean => {
-  const expected = [...target];
-  const actual = [...typed];
-  for (let i = 0; i < Math.min(expected.length, actual.length); i += 1) {
-    const a = scriptOf(expected[i]);
-    const b = scriptOf(actual[i]);
-    if (a !== "neutral" && b !== "neutral" && a !== b) return false;
+  const has = (s: string, script: KanaScript) => [...s].some((c) => scriptOf(c) === script);
+  const targetHira = has(target, "hira");
+  const targetKata = has(target, "kata");
+  if (targetHira && targetKata) {
+    const expected = [...target];
+    const actual = [...typed];
+    for (let i = 0; i < Math.min(expected.length, actual.length); i += 1) {
+      const a = scriptOf(expected[i]);
+      const b = scriptOf(actual[i]);
+      if (a !== "neutral" && b !== "neutral" && a !== b) return false;
+    }
+    return true;
   }
+  if (targetKata) return !has(typed, "hira");
+  if (targetHira) return !has(typed, "kata");
   return true;
 };
 

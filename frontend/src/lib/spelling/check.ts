@@ -2,7 +2,7 @@
  * 拼写判定：输入 → SpellingVerdict（docs/SPELLING_SPEC.md §1、§2）。纯函数。
  * 罗马音 / 假名交给 romaji.ts / kana.ts；这里负责分流、书写（汉字 / 混合）判据、诊断排序。
  */
-import { classifyInput, compareKana, hasKanji, toHiragana, type ReadingMatch } from "./kana";
+import { classifyInput, compareKana, hasKanji, normalizeInput, toHiragana, type ReadingMatch } from "./kana";
 import { toJapaneseForms } from "./kanji-form";
 import { matchRomaji } from "./romaji";
 import {
@@ -55,6 +55,9 @@ const isSubsequence = (small: string[], big: string[]): boolean => {
 };
 const sameList = (a: string[], b: string[]) => a.length === b.length && a.every((c, i) => c === b[i]);
 
+/** 被接受写法和输入走同一套归一（NFKC：JMdict 里的「２日」全角数字，和用户输入的「2日」是同一个写法）。 */
+const written = (surface: string) => normalizeInput(surface).replace(/\s+/gu, "");
+
 const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/gu, "");
 
 type Peer = ReturnType<SpellingLookup["peers"]>[number];
@@ -72,7 +75,7 @@ const withOther = (code: SpellingProblemCode, other: Peer): SpellingProblem => (
 
 /** 书写（汉字 / 混合）判据。text 已归一、去空白。 */
 const checkWritten = (target: SpellingTarget, text: string, form: SpellingInputForm, lookup?: SpellingLookup): SpellingVerdict => {
-  const exact = target.forms.find((f) => f.surface === text);
+  const exact = target.forms.find((f) => written(f.surface) === text);
   if (exact) return verdict(form, null, [], { kind: "form", text: exact.surface, tag: exact.tag, preferred: exact.tag === "standard" });
 
   const peer = peerHit(form, text, lookup);
@@ -83,7 +86,7 @@ const checkWritten = (target: SpellingTarget, text: string, form: SpellingInputF
   // 中文简体 / 繁体字形：先映回日文字形再去命中
   const { text: japanese, changes } = toJapaneseForms(text);
   if (changes.length) {
-    const hit = target.forms.find((f) => f.surface === japanese);
+    const hit = target.forms.find((f) => written(f.surface) === japanese);
     const first = changes[0];
     if (hit) {
       return verdict(form, null, [{
