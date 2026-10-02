@@ -457,6 +457,22 @@ CREATE TABLE IF NOT EXISTS spelling_tasks (
   order_index INTEGER NOT NULL,
   PRIMARY KEY (reviewed_on, word_id)
 );
+-- 实验 JLPT 刷题：只追加作答事实，不写 FSRS / 今日计划；cloud: false 只进本机增量。
+-- 必须随启动 schema 建表，不能由功能模块懒建，后续同步列和触发器才会完整。
+CREATE TABLE IF NOT EXISTS jlpt_answers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  question_id TEXT NOT NULL,
+  level TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  chosen INTEGER NOT NULL,
+  correct INTEGER NOT NULL,
+  mode TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  answered_on TEXT NOT NULL,
+  answered_at INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_jlpt_answers_question ON jlpt_answers (question_id, answered_at);
 
 -- 「疑难辨析」里标记为已掌握的词组。
 --

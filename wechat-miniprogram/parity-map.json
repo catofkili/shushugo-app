@@ -35,6 +35,14 @@
       "reason": "同一份 spelling.css 经 Taro/PostCSS 编译，sp- 规则由 split-route-css 移入 study/spelling/index.wxss。"
     },
     {
+      "web": "frontend/src/pages/JlptPracticePage.tsx",
+      "mini": [
+        "frontend/src/pages/JlptPracticePage.tsx",
+        "taro-spike-2/src/study/jlpt-practice/index.tsx"
+      ],
+      "reason": "JLPT 刷题仅在 Taro 实验预览版登记；小程序直接编译同一份 JlptPracticePage.tsx。开关和发布隔离见 docs/JLPT_PRACTICE_SPEC.md §0。"
+    },
+    {
       "web": "frontend/src/pages/TalkPage.tsx",
       "mini": [
         "frontend/src/pages/TalkPage.tsx",

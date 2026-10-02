@@ -38,6 +38,10 @@ const definitions = [
   // 拼写只读自己的编译常量或环境变量，开口练习的上线状态不会改变这页登记。
   ...((typeof __EXP_SPELLING__ !== 'undefined' ? __EXP_SPELLING__ : process.env.SHUSHUGO_EXP_SPELLING === '1')
     ? [['spelling', 'study/spelling/index', false, 'study']]
+    : []),
+  // 刷题的实验开关独立，Node 登记和包内 DefinePlugin 必须同值。
+  ...((typeof __EXP_JLPT__ !== 'undefined' ? __EXP_JLPT__ : process.env.SHUSHUGO_EXP_JLPT === '1')
+    ? [['jlpt-practice', 'study/jlpt-practice/index', false, 'study']]
     : [])
 ];
 

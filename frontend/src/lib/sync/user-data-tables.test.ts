@@ -40,12 +40,12 @@ describe("出厂词库泄漏守卫", () => {
     expect(all.length).toBe(new Set(all).size);
   });
 
-  it("开口练习三表同时登记在 schema、同步清单和泄漏守卫", async () => {
+  it("实验功能表同时登记在 schema、同步清单和泄漏守卫", async () => {
     const SQL = await initSqlJs();
     const db = new SQL.Database(new Uint8Array(readFileSync(new URL("../../../public/nihongo.db", import.meta.url))));
     try {
       db.run(readFileSync(new URL("../database/local-schema.sql", import.meta.url), "utf8"));
-      for (const table of ["talk_memory", "talk_reviews", "talk_tasks"]) {
+      for (const table of ["talk_memory", "talk_reviews", "talk_tasks", "jlpt_answers"]) {
         expect(guarded.has(table)).toBe(true);
         expect(SYNCED_TABLES.find((entry) => entry.table === table)?.cloud).toBe(false);
         expect(db.exec(`PRAGMA table_info(${table})`)[0]?.values.length).toBeGreaterThan(0);

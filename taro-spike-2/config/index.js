@@ -29,6 +29,8 @@ const perfOverlayEnabled = process.env.TARO_PERF_OVERLAY === '1';
 const expTalkEnabled = process.env.SHUSHUGO_EXP_TALK === '1';
 // 单词拼写的实验开关独立于其它功能，开启后只用于小程序预览。
 const expSpellingEnabled = process.env.SHUSHUGO_EXP_SPELLING === '1';
+// 刷题实验开关独立于开口练习，带开关只许预览。
+const expJlptEnabled = process.env.SHUSHUGO_EXP_JLPT === '1';
 
 module.exports = {
   projectName: 'shushugo-taro-spike-2',
@@ -189,6 +191,7 @@ module.exports = {
         __TARO_PERF_OVERLAY__: JSON.stringify(perfOverlayEnabled),
         __EXP_TALK__: JSON.stringify(expTalkEnabled),
         __EXP_SPELLING__: JSON.stringify(expSpellingEnabled),
+        __EXP_JLPT__: JSON.stringify(expJlptEnabled),
         'process.env.TARO_ATTRIBUTE_SELECTORS': JSON.stringify(JSON.stringify(attributeSelectors))
       }]);
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [

@@ -82,6 +82,8 @@ export default defineConfig(({ command }) => ({
     __EXP_TALK__: JSON.stringify(command === "serve" || process.env.SHUSHUGO_EXP_TALK === "1"),
     // 拼写实验独立开关；正式构建默认关闭，只有自测和小程序预览显式打开。
     __EXP_SPELLING__: JSON.stringify(command === "serve" || process.env.SHUSHUGO_EXP_SPELLING === "1"),
+    // JLPT 独立开关；开口练习上线时不能把刷题一起带进发布包。
+    __EXP_JLPT__: JSON.stringify(command === "serve" || process.env.SHUSHUGO_EXP_JLPT === "1"),
   },
   build: {
     outDir: "dist",

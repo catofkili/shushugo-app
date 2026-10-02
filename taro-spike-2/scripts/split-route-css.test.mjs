@@ -16,6 +16,7 @@ try {
 .theme-dark .cf-sheet { color:white }
 .kr-card { padding:2px }
 .sp-root { min-width:0 }
+.jq-card { padding:3px }
 .quick-study-row { margin:1px }
 .weekly-report-page .wr-title { color:blue }
 .wr-entrance-veil,.vt-timer { display:block }
@@ -29,6 +30,7 @@ try {
   assert.deepEqual(selectors(read('study/word-list/index.wxss')), ['.wl-row']);
   assert.deepEqual(selectors(read('study/quick-study/index.wxss')), ['.quick-study-row']);
   assert.deepEqual(selectors(read('study/spelling/index.wxss')), ['.sp-root']);
+  assert.deepEqual(selectors(read('study/jlpt-practice/index.wxss')), ['.jq-card']);
   const confusion = read('study/confusion/index.wxss');
   const kanji = read('study/kanji-readings/index.wxss');
   assert.deepEqual(selectors(confusion), ['.cf-sheet', '.theme-dark .cf-sheet']);

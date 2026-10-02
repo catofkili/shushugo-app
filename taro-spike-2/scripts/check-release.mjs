@@ -47,6 +47,9 @@ const checks = [
   // 单词拼写同样不许进发布包；它用独立指纹，便于单独解除拦截。
   ['没有实验功能的页面（单词拼写）', JSON.stringify(app).includes('spelling/index') ? ['app.json'] : []],
   ['没有实验功能的代码（单词拼写）', hits(/__SHUSHUGO_EXP_SPELLING__/)],
+  // 刷题用独立开关和指纹，开口练习上线时不能一起放行（docs/JLPT_PRACTICE_SPEC.md §0）。
+  ['没有实验功能的页面（JLPT 刷题）', JSON.stringify(app).includes('jlpt-practice/index') ? ['app.json'] : []],
+  ['没有实验功能的代码（JLPT 刷题）', hits(/__SHUSHUGO_EXP_JLPT__/)],
   ['没有密钥', hits(new RegExp([
     /-----BEGIN [A-Z ]*PRIVATE KEY-----/.source,
     /(app_?secret|private_?key|api_?key|secret_?key|wechat_?(?:pay_?)?app_?key|(?:access|refresh|auth)_?token)["']?\s*[:=]\s*["'][A-Za-z0-9+/=_-]{16,}["']/.source,

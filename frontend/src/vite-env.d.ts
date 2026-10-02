@@ -6,3 +6,4 @@ declare const __APP_VERSION__: string;
 declare const __EXP_TALK__: boolean;
 // 单词拼写实验开关，见 docs/SPELLING_SPEC.md §7
 declare const __EXP_SPELLING__: boolean;
+declare const __EXP_JLPT__: boolean;

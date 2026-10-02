@@ -6,6 +6,7 @@ export type Page =
   | "vocab-test"
   | "talk"
   | "spelling"
+  | "jlpt-practice"
   | "weekly-report"
   | "grammar"
   | "grammar-foundation"

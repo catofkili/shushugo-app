@@ -22,7 +22,7 @@ const navItems: { page: Page; label: string; icon: StickerName }[] = [
 const isGrammarPage = (page: Page) => page === "grammar" || page === "detail";
 // 组队/学习模式/收藏都是从主页的格子进去的，导航上仍高亮「主页」。
 const isHomePage = (page: Page) =>
-  (__EXP_TALK__ && page === "talk") || (__EXP_SPELLING__ && page === "spelling") || ["home", "team", "quick-study", "vocab-test", "study-modes", "grammar-foundation", "favorites", "distinction-quiz", "yuzu-shop"].includes(page);
+  (__EXP_TALK__ && page === "talk") || (__EXP_SPELLING__ && page === "spelling") || (__EXP_JLPT__ && page === "jlpt-practice") || ["home", "team", "quick-study", "vocab-test", "study-modes", "grammar-foundation", "favorites", "distinction-quiz", "yuzu-shop"].includes(page);
 const isRootMobilePage = (page: Page) => ["home", "word", "grammar", "profile"].includes(page);
 
 // 手机顶栏的标题。页面里各自那条「← 返回 | 标题」(.page-backbar) 在手机上藏掉，

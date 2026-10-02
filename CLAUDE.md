@@ -63,6 +63,27 @@
 - **页面**：`pages/SpellingPage.tsx`（队列：seed → 清单 → 逐张）+ `features/spelling/SpellingCardView.tsx`（一张卡的完整交互，不知道队列、不碰库，将来能嵌进学习流程）+ `round-state.ts`（纯函数的一轮状态机）。同一份 TSX 经 Taro 编译成小程序。
   独立端口预览要往 IndexedDB 灌学习库副本（见下「往预览里灌库」的姿势），空库里没有学过的词，`seedSpellingCards` 返回 0、页面只显示「先去背几个词」。
 - **还没做 / 上线前清单**：落地方式（作者定）；每日上限和「度」；`cloud:false` 改上云的发版顺序；去掉开关和拦截；小程序在微信开发者工具里的真机运行验收；听写（音频 → 写）和挖空例句两种题面（规格 §0 说明了为什么先不做）。
+## ⚠️ JLPT 刷题也是实验功能，开关单独一个（2026-10-02）
+
+规格 `docs/JLPT_PRACTICE_SPEC.md`。作者原话「我要做一个 jlpt 刷题功能」；题库还在攒（每级至少 3 套卷再考虑上线），照开口练习的规矩不进任何发布包。
+
+- **开关 `__EXP_JLPT__`，和 `__EXP_TALK__` 互相独立**：开口练习上线那天会去掉它自己的开关和拦截，刷题挂在同一个开关上就会被一起带上线。
+  拦截照开口练习各有一份：`check:release` 拦 `jlpt-practice` 页面和 `__SHUSHUGO_EXP_JLPT__` 指纹，`build-ios.sh` 见到 `SHUSHUGO_EXP_JLPT` 退出。
+  `lib/jlpt-practice/` 只许被路由、页面、`features/jlpt-practice/`、小程序页面文件引用（`isolation.test.ts`）；备考计划页的入口只做 `navigate`。
+- **作答表 `jlpt_answers` 是 `cloud: false`**，理由和 `talk_*` 一样（已发布的版本见到不认识的表会整次拒绝同步）。
+- **不写 FSRS、不进今日计划、不出「预计得分」**：四选一能蒙对；JLPT 分数是等化分，复刻不了，只给各大题正确率。
+- ⚠️ **真题不能用**：新 JLPT 不公开真题，北京日本文化中心声明不授权任何人用；市面上 2010 年以后的「历年真题」（华侨出版社等）查不到授权，
+  多半是回忆版。**题目全部原创**：Codex 照规则手写 → 另开 Codex 会话盲做审校 → Claude 逐题验收。作者原话「不要脚本，规则给 luna max，它手写」——
+  试过从词库自动出题，言い換え和文法两类的干扰项经常不通，别再回到自动出题。
+  作者手里的红蓝宝书只给 Claude 看来总结题型和干扰项套路，**原题一道都不给 Codex**（和语法说明重写「不读原书」同一个口径）。
+- 出题流水线在 `~/Documents/shushugo-wt/_codex/jlpt-trial/`：`rules.md`（出题规则）、`review.md`（审校规则，含卷 1 验收时改掉 20 题的那几类毛病）、
+  `run-job.sh`（一份题：出题 → 审校；`OUT=…/setN` 写第 N 套，提示里自动列出前几套用过的考点）、`gen-sets.sh`（按批出卷）。
+  题库导入 `frontend/scripts/build-jlpt-bank.mjs --src <setN 目录> --set trialN --title "试做卷 N"`，校验 `npm run verify:jlpt-bank`（挂在 prebuild）。
+- ⚠️ **并行的 Codex 一次别超过 5 个左右**：2026-10-02 一口气开了 13 个（max 推理 + fast），25 分钟把整个账号额度用光、要等一天半，审校一份都没跑成。
+- ⚠️ **审校压缩题干时会删掉空后面的词**（卷 1 的语形成「（　）可能」「（　）関係」），排序题会有第二种排法让 ★ 位置的答案变掉——验收时专门看这两类。
+- ⚠️ 小程序里题库在 `lazy` 分包：卷 1（241 题）占 312 KB，lazy 分包合计 916 KB，上限 2 MB；约 1,000 题以上要给题库单独开分包。
+- 网页的滚动容器是外层 `<main class="app-landscape-main">`，不是 window：`lib/touch-adapter` 的 `scrollPageToTop` 原来只滚 window，
+  在网页上什么都不动（2026-10-02 修，刷题页是第一个真正依赖它的页面）。
 
 ## ⚠️ 查我的真实学习数据：`cd frontend && npm run db -- <词>`
 
