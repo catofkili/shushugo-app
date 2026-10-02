@@ -14,7 +14,7 @@ const loading = new Map<JlptLevel, Promise<JlptBank>>();
 export const loadJlptBank = (level: JlptLevel): Promise<JlptBank> => {
   const existing = loading.get(level);
   if (existing) return existing;
-  const request = imports[level]().then((module) => module.default as JlptBank).catch((error: unknown) => {
+  const request = imports[level]().then((module) => module.default as unknown as JlptBank).catch((error: unknown) => {
     loading.delete(level);
     throw error;
   });
