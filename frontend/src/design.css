@@ -657,6 +657,9 @@
 .ds-choice:not(:disabled):hover { background: var(--ds-inset-2); }
 .ds-choice:not(:disabled):active { transform: scale(.985); }
 .ds-choice:disabled { cursor: default; }
+/* 小程序原生 button[disabled] 会把字变成 30% 灰，优先级压过 .ds-choice：答完后没选的那几项几乎看不见（查词汇量、JLPT 刷题都中）。
+   写成属性选择器才压得过；必须排在 .is-correct / .is-wrong 前面，让它们的颜色照样赢。网页上本来就是这个颜色。 */
+.ds-choice[disabled] { color: var(--ds-ink); }
 .ds-choice-key { display: grid; flex: none; width: 26px; height: 26px; place-items: center; border-radius: 8px; background: var(--ds-surface); color: var(--ds-ink-3); font-size: 12px; font-weight: 800; }
 /* 对的那项只用主色浅底：实心主色留给底下那颗「下一题」，一屏只有一个实心按钮 */
 .ds-choice.is-correct { background: var(--ds-primary-tint-2); color: var(--ds-primary-ink); }
@@ -866,7 +869,8 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 .jq-levels { display: flex; flex-wrap: wrap; gap: 8px; }
 .jq-card { min-width: 0; padding: 16px; }
 .jq-stack { display: flex; flex-direction: column; gap: 12px; }
-.jq-list-row { display: flex; flex-direction: column; gap: 6px; width: 100%; min-height: 64px; padding: 12px 14px; border: 0; border-radius: var(--ds-radius-inset); background: var(--ds-inset); color: var(--ds-ink); text-align: left; }
+/* align-items 要写明：小程序给所有 button 设了 align-items:center，纵向 flex 会把标题和统计挤到中间 */
+.jq-list-row { display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 100%; min-height: 64px; padding: 12px 14px; border: 0; border-radius: var(--ds-radius-inset); background: var(--ds-inset); color: var(--ds-ink); text-align: left; }
 .jq-list-row:disabled { opacity: .55; }
 .jq-row-title { font-size: 16px; font-weight: 800; overflow-wrap: anywhere; }
 .jq-row-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; color: var(--ds-ink-2); font-size: 12px; font-weight: 600; }
