@@ -11,10 +11,11 @@ import { preferredWordSurface } from "../orthography";
 import { today } from "../study-core";
 import type { WordAnswer } from "../../types/vocabulary";
 import { checkSpelling } from "./check";
+import { spellingClozeForWordId } from "./modes";
 import { spellingTargetForWord } from "./forms";
 import { gradeRound, REVEAL_HINT_LEVEL, roundOutcome } from "./grade";
 import { ensureSpellingTables, recordSpellingAnswer, undoLastSpelling } from "./store";
-import type { SpellingCard, SpellingLookup, SpellingRound, SpellingVerdict } from "./types";
+import type { SpellingCard, SpellingLookup, SpellingMode, SpellingRound, SpellingVerdict } from "./types";
 
 const wordRow = (wordId: number) =>
   rowsFor("SELECT id, kanji, kana, meaning, pos, jlpt_level FROM words WHERE id = ?", [wordId])[0];
@@ -24,19 +25,22 @@ const hit = (row: Record<string, unknown>) => {
   return { wordId: Number(row.id), surface: preferredWordSurface(word), kana: word.kana, meaning: questionMeaning(String(row.meaning ?? ""), word.kanji, word.kana, Number(row.id)) };
 };
 
-export const spellingCard = (wordId: number): SpellingCard | null => {
+export const spellingCard = (wordId: number, mode: SpellingMode = "meaning"): SpellingCard | null => {
   const row = wordRow(wordId);
   if (!row) return null;
   const kanji = String(row.kanji ?? "");
   const kana = String(row.kana ?? "");
-  const target = spellingTargetForWord({ id: wordId, kanji, kana });
+  const cloze = mode === "cloze" ? spellingClozeForWordId(wordId) : null;
+  if (mode === "cloze" && !cloze) throw new Error("这个词没有可用的挖空例句");
+  const target = cloze?.target ?? spellingTargetForWord({ id: wordId, kanji, kana });
   return {
     wordId,
     meaning: questionMeaning(String(row.meaning ?? ""), kanji, kana, wordId),
     pos: String(row.pos ?? ""),
     moraCount: moraCount(target.kana),
     jlptLevel: String(row.jlpt_level ?? ""),
-    mode: "meaning",
+    mode,
+    ...(cloze ? { cloze: cloze.cloze } : {}),
     target
   };
 };
@@ -53,8 +57,12 @@ export const spellingLookup = (wordId: number): SpellingLookup => ({
   }
 });
 
-export const checkCardInput = (card: SpellingCard, input: string, lookup = spellingLookup(card.wordId)): SpellingVerdict =>
-  checkSpelling(card.target, input, lookup);
+export const checkCardInput = (card: SpellingCard, input: string, lookup = spellingLookup(card.wordId)): SpellingVerdict => {
+  const verdict = checkSpelling(card.target, input, lookup);
+  return card.mode === "audio" && !verdict.correct && verdict.problems.some((problem) => problem.code === "homophone")
+    ? { ...verdict, nearMiss: true }
+    : verdict;
+};
 
 /** 结算一轮：评分 → 写 FSRS 和流水。轮没结束会抛错（gradeRound）。返回这一轮的评分。 */
 export const recordSpellingRound = (wordId: number, round: SpellingRound, now = new Date()): WordAnswer => {
@@ -69,7 +77,8 @@ export const recordSpellingRound = (wordId: number, round: SpellingRound, now = 
     tries,
     ms: Math.max(0, Math.round(round.elapsedMs)),
     problem: round.gaveUp ? "gave_up" : last && !last.verdict.correct ? (last.verdict.problems[0]?.code ?? "") : "",
-    override: outcome.overridden ? round.override : ""
+    override: outcome.overridden ? round.override : "",
+    mode: round.mode ?? "meaning"
   }, now);
   return answer;
 };

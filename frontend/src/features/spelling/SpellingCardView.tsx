@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import {
   checkCardInput, classifyInput, kanaToRomaji, problemMessage, roundOutcome, spellingHints,
   type SpellingCard, type SpellingInputForm, type SpellingLookup, type SpellingRound, type SpellingVerdict
@@ -9,6 +9,7 @@ import {
   canOverrideCorrect, canOverrideWrong, confirmsInput, createRoundState, giveUp, lastVerdict,
   overrideCorrect, overrideWrong, submit, toRound, useHint as addHint, visibleHintCount, type RoundState
 } from "./round-state";
+import { SpellingPrompt } from "./SpellingPrompt";
 import "../../pages/spelling.css";
 
 interface Props {
@@ -31,7 +32,7 @@ const INPUT_LABEL: Record<SpellingInputForm, string> = {
   empty: "", romaji: "罗马音", kana: "假名", kanji: "汉字", mixed: "汉字", other: "混着写了"
 };
 
-function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, checkInput, autoPlay = false, voiceId, nextLabel = "下一个" }: Props) {
+function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, checkInput, autoPlay = false, voiceId, nextLabel = "下一个", showMeaning = false, showTranslation = true }: Props) {
   const [state, setState] = useState(() => createRoundState(Date.now()));
   const [typed, setTyped] = useState("");
   const [error, setError] = useState("");
@@ -44,12 +45,28 @@ function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, ch
   const input = useRef<HTMLInputElement>(null);
   const article = useRef<HTMLDivElement>(null);
   const nextButton = useRef<HTMLButtonElement>(null);
+  const autoPlayed = useRef(false);
+  const playbackAttempt = useRef(0);
+  const [playbackError, setPlaybackError] = useState("");
   const outcome = roundOutcome(toRound(state, state.startedAt));
   const verdict = lastVerdict(state);
-  const hints = spellingHints(card.target).slice(0, visibleHintCount(state));
+  const hints = spellingHints(card.target, card.mode, card.meaning).slice(0, visibleHintCount(state));
   const form = classifyInput(typed).form;
   const correct = outcome.done && (state.override === "correct" || (!state.override && !state.gaveUp && verdict?.correct));
   const surface = correct && verdict?.matched?.kind === "form" ? verdict.matched.text : card.target.surface;
+  const playAudio = useCallback(() => {
+    const attempt = ++playbackAttempt.current;
+    setPlaybackError("");
+    void playPronunciation(card.target.surface, card.target.kana, voiceId).catch(() => {
+      if (attempt === playbackAttempt.current) setPlaybackError("播放失败，请重试");
+    });
+  }, [card.target.kana, card.target.surface, voiceId]);
+
+  useEffect(() => {
+    if (card.mode !== "audio" || autoPlayed.current) return;
+    autoPlayed.current = true;
+    playAudio();
+  }, [card.mode, playAudio]);
 
   const keepPromptVisible = () => {
     if (touchEventsEnabled()) scrollPageToTop();
@@ -82,13 +99,13 @@ function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, ch
     try {
       // 结算和换卡分开；不放进 effect / setState updater，避免 StrictMode 重放写两遍。
       if (finished && !persisted.current) {
-        onFinish(toRound(next, Date.now()));
+        onFinish({ ...toRound(next, Date.now()), mode: card.mode });
         persisted.current = true;
       }
       current.current = next;
       setState(next);
       setError("");
-      if (finished && !next.gaveUp && lastVerdict(next)?.correct && autoPlay) {
+      if (finished && !next.gaveUp && lastVerdict(next)?.correct && autoPlay && card.mode !== "audio") {
         void playPronunciation(card.target.surface, card.target.kana, voiceId).catch(() => undefined);
       }
     } catch {
@@ -106,7 +123,7 @@ function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, ch
     busy.current = true;
     const finished = roundOutcome(toRound(next, next.startedAt)).done;
     try {
-      const round = toRound(next, Date.now());
+      const round = { ...toRound(next, Date.now()), mode: card.mode };
       if (persisted.current) onAmend(round);
       else if (finished) onFinish(round);
       persisted.current = finished;
@@ -160,17 +177,11 @@ function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, ch
   };
   return (
     <div ref={article} className="ds-card sp-card">
-      <div className="sp-question">
-        <p className="sp-meaning">{card.meaning}</p>
-        <div className="sp-tags">
-          {card.pos && <span className="ds-pill">{card.pos}</span>}
-          {card.jlptLevel && <span className="ds-pill">{card.jlptLevel}</span>}
-          <span className="ds-pill">{card.moraCount} 拍</span>
-        </div>
-      </div>
+      <SpellingPrompt card={card} showMeaning={showMeaning} showTranslation={showTranslation}
+        playbackError={playbackError} onReplay={playAudio} />
       {hints.length > 0 && <div className="ds-inset sp-hints" aria-live="polite" lang="ja">
-        {hints.map((hint) => <p key={hint.level} className="sp-hint">
-          {hint.level === 1 ? `${hint.moraCount} 拍 · ${hint.first}`
+        {hints.map((hint) => <p key={hint.level} className="sp-hint" lang="ja">
+          {hint.level === 1 ? `${hint.moraCount} 拍 · ${hint.first}${hint.meaning ? ` · ${hint.meaning}` : ""}`
             : hint.level === 2 ? `${hint.kana} · ${hint.romaji}` : hint.surface}
         </p>)}
       </div>}

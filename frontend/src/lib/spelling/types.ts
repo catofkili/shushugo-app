@@ -151,6 +151,8 @@ export interface SpellingAttempt {
 /** 一张卡的作答过程（可多次提交 + 提示 + 放弃），评分的输入。 */
 export interface SpellingRound {
   attempts: SpellingAttempt[];
+  /** 这一轮实际展示的题面形式，写入 spelling_reviews.mode。 */
+  mode?: SpellingMode;
   /** 用过几级提示（规格 §4）。 */
   hintsUsed: number;
   /** 点了「不会 / 看答案」。 */
