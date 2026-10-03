@@ -12,6 +12,8 @@ export { spellingTargetForWord } from "./forms";
 export { checkSpelling } from "./check";
 export { gradeRound, roundOutcome, MAX_TRIES, REVEAL_HINT_LEVEL, type RoundOutcome } from "./grade";
 export { spellingHints, type SpellingHint } from "./hints";
+export { clozeFor, type ClozeWord } from "./cloze";
+export { availableSpellingModes, chooseSpellingMode } from "./modes";
 export { problemMessage } from "./messages";
 export { spellingCard, spellingLookup, checkCardInput, recordSpellingRound } from "./session";
 export {

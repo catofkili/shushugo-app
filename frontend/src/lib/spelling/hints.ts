@@ -4,18 +4,24 @@
  */
 import { splitMoras } from "./kana";
 import { kanaToRomaji } from "./romaji";
-import type { SpellingTarget } from "./types";
+import type { SpellingMode, SpellingTarget } from "./types";
 
 export type SpellingHint =
+  | { level: 0; meaning: string }
   | { level: 1; moraCount: number; first: string }
   | { level: 2; kana: string; romaji: string }
   | { level: 3; surface: string };
 
-export const spellingHints = (target: SpellingTarget): [SpellingHint, SpellingHint, SpellingHint] => {
+export const spellingHints = (
+  target: SpellingTarget,
+  mode: SpellingMode = "meaning",
+  meaning = ""
+): SpellingHint[] => {
   const moras = splitMoras(target.kana);
-  return [
+  const hints: SpellingHint[] = [
     { level: 1, moraCount: moras.length, first: moras[0] ?? "" },
     { level: 2, kana: target.kana, romaji: kanaToRomaji(target.kana) },
     { level: 3, surface: target.surface }
   ];
+  return mode === "audio" ? [{ level: 0, meaning }, ...hints] : hints;
 };
