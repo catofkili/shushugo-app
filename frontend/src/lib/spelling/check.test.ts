@@ -30,27 +30,26 @@ describe("拼写判定：罗马音 / 假名", () => {
     const wrong = checkSpelling(taberu, "たべろ");
     expect(wrong.correct).toBe(false);
     expect(wrong.problems[0]).toMatchObject({ code: "wrong_reading", moraIndex: 2 });
-    expect(wrong.nearMiss).toBe(false);
     expect(first(taberu, "tabe")).toBe("too_short");
     expect(first(taberu, "taberuu")).toBe("too_long");
   });
 
-  it("长音写法：音一样但写法不同是 nearMiss，读音算对", () => {
+  it("长音写法：音一样但写法不同不算对，读音是对的", () => {
     const father = target({ kana: "おとうさん", surface: "お父さん" });
     expect(checkSpelling(father, "otousan").correct).toBe(true);
     expect(checkSpelling(father, "otōsan").correct).toBe(true);
     const verdict = checkSpelling(father, "otoosan");
-    expect(verdict).toMatchObject({ correct: false, nearMiss: true, readingOk: true });
+    expect(verdict).toMatchObject({ correct: false, readingOk: true });
     expect(verdict.problems[0].code).toBe("long_vowel");
     expect(first(father, "おとーさん")).toBe("long_vowel");
     expect(first(father, "おとおさん")).toBe("long_vowel");
   });
 
-  it("假名种类：外来语写平假名、平假名词写片假名都不算对，但是 nearMiss", () => {
+  it("假名种类：外来语写平假名、平假名词写片假名都不算对", () => {
     const camera = target({ kana: "カメラ", surface: "カメラ", isLoanword: true, sourceText: "camera" });
     expect(checkSpelling(camera, "カメラ").correct).toBe(true);
     expect(checkSpelling(camera, "kamera").correct).toBe(true);
-    expect(checkSpelling(camera, "かめら")).toMatchObject({ correct: false, nearMiss: true, readingOk: true });
+    expect(checkSpelling(camera, "かめら")).toMatchObject({ correct: false, readingOk: true });
     expect(first(camera, "かめら")).toBe("script");
     expect(first(taberu, "タベル")).toBe("script");
   });
@@ -64,11 +63,11 @@ describe("拼写判定：罗马音 / 假名", () => {
     expect(checkSpelling(pen, "pen").correct).toBe(true);
   });
 
-  it("另一个合法读音 → other_reading（nearMiss）", () => {
+  it("另一个合法读音 → other_reading", () => {
     const tomorrow = target({ kana: "あした", surface: "明日", altReadings: ["あす"] });
     for (const input of ["asu", "あす"]) {
       const verdict = checkSpelling(tomorrow, input);
-      expect(verdict).toMatchObject({ correct: false, nearMiss: true });
+      expect(verdict).toMatchObject({ correct: false });
       expect(verdict.problems[0].code).toBe("other_reading");
     }
   });
@@ -106,7 +105,7 @@ describe("拼写判定：汉字 / 混合写法", () => {
     expect(first(food, "食べもの")).toBe("partial_kana");
     expect(checkSpelling(food, "食べ物").correct).toBe(true);
     expect(checkSpelling(food, "たべもの").correct).toBe(true);
-    expect(checkSpelling(food, "たべ物").nearMiss).toBe(true);
+    expect(checkSpelling(food, "たべ物").correct).toBe(false);
   });
 
   it("送り仮名 / 活用形", () => {
@@ -130,12 +129,12 @@ describe("拼写判定：汉字 / 混合写法", () => {
     expect(first(study, "勉強する")).toBe("too_long");
   });
 
-  it("中文简体字形直接判错、繁体 / 旧字体是 nearMiss：都映回日文字形给参考", () => {
+  it("中文简体 / 繁体 / 旧字体都不算对，映回日文字形做诊断", () => {
     const economy = target({ kana: "けいざい", surface: "経済" });
     expect(checkSpelling(economy, "経済").correct).toBe(true);
     const simplified = checkSpelling(economy, "经济");
     // 作者 2026-10-03：写成简体中文直接判错（不给「差一点」），但只是参考意见，用户可以裁决推翻
-    expect(simplified).toMatchObject({ correct: false, nearMiss: false });
+    expect(simplified).toMatchObject({ correct: false });
     expect(simplified.problems[0]).toMatchObject({ code: "chinese_form", typedChar: "经", expectedChar: "経" });
     const traditional = checkSpelling(economy, "經濟");
     expect(traditional.problems[0]).toMatchObject({ code: "traditional_form", typedChar: "經", expectedChar: "経" });
@@ -149,7 +148,7 @@ describe("拼写判定：汉字 / 混合写法", () => {
     });
     expect(checkSpelling(tobacco, "煙草").correct).toBe(true);
     const simplified = checkSpelling(tobacco, "烟草");
-    expect(simplified).toMatchObject({ correct: false, nearMiss: false });
+    expect(simplified).toMatchObject({ correct: false });
     expect(simplified.problems[0]).toMatchObject({ code: "chinese_form", typedChar: "烟", expectedChar: "煙" });
     const second = target({ kana: "ふつか", surface: "二日", forms: [{ surface: "二日", tag: "standard" }, { surface: "２日", tag: "variant" }] });
     for (const input of ["二日", "2日", "２日"]) expect(checkSpelling(second, input).correct, input).toBe(true);
@@ -158,16 +157,16 @@ describe("拼写判定：汉字 / 混合写法", () => {
   it("目标驱动地识别多对一简体字形；少写汉字不误报为交ぜ書き", () => {
     const movement = target({ kana: "うんどう", surface: "運動" });
     expect(checkSpelling(movement, "运动")).toMatchObject({
-      correct: false, nearMiss: false, problems: [{ code: "chinese_form", typedChar: "运", expectedChar: "運" }]
+      correct: false, problems: [{ code: "chinese_form", typedChar: "运", expectedChar: "運" }]
     });
 
     const work = target({ kana: "はたらく", surface: "働く" });
     expect(checkSpelling(work, "动く")).toMatchObject({
-      correct: false, nearMiss: false, problems: [{ code: "chinese_form", typedChar: "动", expectedChar: "働" }]
+      correct: false, problems: [{ code: "chinese_form", typedChar: "动", expectedChar: "働" }]
     });
     const bento = target({ kana: "べんとう", surface: "弁当" });
     expect(checkSpelling(bento, "辨当")).toMatchObject({
-      correct: false, nearMiss: false, problems: [{ code: "chinese_form", typedChar: "辨", expectedChar: "弁" }]
+      correct: false, problems: [{ code: "chinese_form", typedChar: "辨", expectedChar: "弁" }]
     });
 
     const numberedDay = target({ kana: "ついたち", surface: "一日", forms: [
@@ -189,7 +188,6 @@ describe("拼写判定：汉字 / 混合写法", () => {
     const lookup: SpellingLookup = { bySurface: (surface) => surface === "箸" ? [chopsticks] : [], peers: () => [] };
     const verdict = checkSpelling(bridge, "箸", lookup);
     expect(verdict.problems[0]).toMatchObject({ code: "homophone", other: chopsticks });
-    expect(verdict.nearMiss).toBe(false);
     // 不传 lookup 退成 wrong_kanji
     expect(first(bridge, "箸")).toBe("wrong_kanji");
 
@@ -199,7 +197,6 @@ describe("拼写判定：汉字 / 混合写法", () => {
     for (const input of ["警察官", "keisatsukan", "けいさつかん"]) {
       const verdict = checkSpelling(police, input, peers);
       expect(verdict.problems[0], input).toMatchObject({ code: "peer_word", other: officer });
-      expect(verdict.nearMiss).toBe(true);
     }
     expect(checkSpelling(police, "keisatsu", peers).correct).toBe(true);
   });

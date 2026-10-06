@@ -44,7 +44,7 @@ describe("拼写会话", () => {
     });
   });
 
-  it("只有 audio 把同音词判作 nearMiss", () => {
+  it("听写和释义题对同音词的诊断一样（都是 homophone，对错档位由用户选）", () => {
     const target: SpellingTarget = {
       wordId: 7, kana: "はし", surface: "橋", forms: [{ surface: "橋", tag: "standard" }], altReadings: [], isLoanword: false
     };
@@ -55,32 +55,23 @@ describe("拼写会话", () => {
       bySurface: (surface) => surface === "箸" ? [{ wordId: 8, surface: "箸", kana: "はし", meaning: "筷子" }] : [],
       peers: () => []
     };
-    expect(checkCardInput(card("audio"), "箸", lookup)).toMatchObject({
-      correct: false, nearMiss: true, problems: [{ code: "homophone" }]
-    });
-    expect(checkCardInput(card("meaning"), "箸", lookup)).toMatchObject({
-      correct: false, nearMiss: false, problems: [{ code: "homophone" }]
-    });
+    for (const mode of ["audio", "meaning"] as const) {
+      expect(checkCardInput(card(mode), "箸", lookup)).toMatchObject({ correct: false, problems: [{ code: "homophone" }] });
+    }
   });
 
-  it("流水保存本轮实际题面形式", () => {
+  it("流水保存用户选的档位、本轮题面形式和来源；引擎诊断只是附带", () => {
     const verdict: SpellingVerdict = {
-      correct: true,
+      correct: false,
       form: "kana",
-      matched: { kind: "reading", text: "たべる", preferred: true },
-      readingOk: true,
-      nearMiss: false,
-      problems: []
+      readingOk: false,
+      problems: [{ code: "wrong_reading", moraIndex: 1 }]
     };
-    const round: SpellingRound = {
-      attempts: [{ typed: "たべる", verdict }],
-      hintsUsed: 0,
-      gaveUp: false,
-      mode: "audio",
-      elapsedMs: 125
-    };
+    const round: SpellingRound = { typed: "たびる", verdict, hintsUsed: 1, grade: "know", mode: "audio", elapsedMs: 125.4 };
 
-    recordSpellingRound(fixtures.id, round, new Date("2026-10-03T00:00:00.000Z"));
-    expect(fixtures.record).toHaveBeenCalledWith(fixtures.id, expect.anything(), expect.objectContaining({ mode: "audio" }), expect.any(Date));
+    recordSpellingRound(fixtures.id, round, "inline", new Date("2026-10-03T00:00:00.000Z"));
+    expect(fixtures.record).toHaveBeenCalledWith(fixtures.id, "know", {
+      typed: "たびる", form: "kana", hints: 1, ms: 125, problem: "wrong_reading", mode: "audio", source: "inline"
+    }, expect.any(Date));
   });
 });

@@ -1,9 +1,11 @@
 /**
  * 单词拼写（docs/SPELLING_SPEC.md）的公共契约：只有类型，没有实现。
- * 各模块（kana / romaji / forms / check / grade / store）都对着这份写，改这里要同步改规格。
+ * 各模块（kana / romaji / forms / check / diff / store）都对着这份写，改这里要同步改规格。
  *
  * ⚠️ 实验功能：不进发布包。除 `lib/spelling/index.ts` 外，别处不许 import 本目录（规格 §7）。
  */
+
+import type { WordAnswer } from "../../types/vocabulary";
 
 /** 输入属于哪一类：由字符构成决定，和对错无关（规格 §1.2）。 */
 export type SpellingInputForm =
@@ -57,13 +59,13 @@ export type SpellingProblemCode =
   | "partial_kana"       // 一部分汉字被写成了假名（交ぜ書き），不是被接受的写法
   | "wrong_kanji"        // 汉字不对（不是这个词）
   | "homophone"          // 写成了另一个同音词（lookup 命中）
-  | "peer_word"          // 写成了题面完全相同的另一个词（不算作一次作答）
+  | "peer_word"          // 写成了题面完全相同的另一个词
   | "conjugated"         // 写成了活用形 / 词尾不对
   | "source_language"    // 外来语写成了英语等原词拼写
   | "too_short"          // 前面都对，但少了字符
   | "too_long";          // 前面都对，但多了字符
 
-/** 一个问题。UI 文案由 messages 另配（Claude 写），这里只带数据。 */
+/** 一个问题。只进流水当诊断用，界面不对用户说（规格 §1.0：我们只标红不同的字，对错档位由用户自己选）。 */
 export interface SpellingProblem {
   code: SpellingProblemCode;
   /** wrong_reading / sokuon / hatsuon / long_vowel：第一处对不上的拍（0 起，按 splitMoras(target.kana)） */
@@ -77,16 +79,6 @@ export interface SpellingProblem {
   other?: { wordId: number; surface: string; kana: string; meaning: string };
 }
 
-/**
- * 读音对但写法有瑕疵、或词认对了只差一步：UI 可以让用户改一次而不算忘记。
- * ⚠️ `chinese_form`（中文简体字形）**不在**这里：作者 2026-10-03 定「写成简体中文直接判错」。
- * 判错只是我们的参考意见——最终对不对由用户自己说了算（`SpellingRound.override`，规格 §1.0）。
- */
-export const NEAR_MISS_CODES: ReadonlySet<SpellingProblemCode> = new Set<SpellingProblemCode>([
-  "long_vowel", "script", "other_reading", "traditional_form",
-  "okurigana", "partial_kana", "peer_word"
-]);
-
 export interface SpellingVerdict {
   correct: boolean;
   form: SpellingInputForm;
@@ -98,8 +90,6 @@ export interface SpellingVerdict {
   matched?: { kind: "reading" | "form"; text: string; tag?: WrittenFormTag; preferred: boolean };
   /** 读音有没有对上：罗马音 / 假名输入给确切的 true / false；汉字输入判不了读音，给 null。 */
   readingOk: boolean | null;
-  /** 不对时：所有 problems 都在 NEAR_MISS_CODES 里。correct 时恒为 false。 */
-  nearMiss: boolean;
   /** correct 时为空。按重要程度排，第一个是 UI 主要说的那个。 */
   problems: SpellingProblem[];
 }
@@ -142,28 +132,21 @@ export interface SpellingCard {
   target: SpellingTarget;
 }
 
-/** 一次作答的记录：落库、统计、评分都读它。 */
-export interface SpellingAttempt {
-  typed: string;
-  verdict: SpellingVerdict;
-}
-
-/** 一张卡的作答过程（可多次提交 + 提示 + 放弃），评分的输入。 */
+/**
+ * 一张卡的作答，评分的输入（规格 §1.0、§3）。
+ * 评分由用户自己选（忘记 / 模糊 / 认识 / 熟知，和单词学习同一副档位），引擎的判定只用来决定标红哪些字、写进流水做诊断，不影响评分。
+ */
 export interface SpellingRound {
-  attempts: SpellingAttempt[];
+  /** 用户写的，没写（直接看了答案）是 ""。 */
+  typed: string;
+  /** typed 的引擎判定；没写时为 null。只进流水，不展示。 */
+  verdict: SpellingVerdict | null;
   /** 这一轮实际展示的题面形式，写入 spelling_reviews.mode。 */
   mode?: SpellingMode;
-  /** 用过几级提示（规格 §4）。 */
+  /** 用过几级提示（规格 §4），只记流水。 */
   hintsUsed: number;
-  /** 点了「不会 / 看答案」。 */
-  gaveUp: boolean;
-  /**
-   * 用户对我们判定的最终裁决（规格 §1.0：我们只指出错误，对错用户自己说了算）。
-   * "correct"：最后一次提交我们判错了（或差一点），用户说他是对的 → 按那一次提交答对来评分；
-   * "wrong"：我们判对了，但用户说其实不会（蒙的 / 手滑）→ 记 forgot。
-   * 对「不会」放弃的轮次和用了揭晓级提示的轮次无效。
-   */
-  override?: "correct" | "wrong";
-  /** 从出题到结束的毫秒数。 */
+  /** 用户自己选的档位。 */
+  grade: WordAnswer;
+  /** 从出题到选档位的毫秒数。 */
   elapsedMs: number;
 }

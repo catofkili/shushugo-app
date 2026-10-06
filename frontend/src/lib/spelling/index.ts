@@ -10,18 +10,16 @@ export { classifyInput, splitMoras } from "./kana";
 export { kanaToRomaji, matchRomaji } from "./romaji";
 export { spellingTargetForWord } from "./forms";
 export { checkSpelling } from "./check";
-export { gradeRound, roundOutcome, MAX_TRIES, REVEAL_HINT_LEVEL, type RoundOutcome } from "./grade";
+export { markDifferences, type MarkedText, type SpellingDiff } from "./diff";
 export { spellingHints, type SpellingHint } from "./hints";
 export { clozeFor, type ClozeWord } from "./cloze";
 export { availableSpellingModes, chooseSpellingMode } from "./modes";
-export { problemMessage, problemLabel } from "./messages";
-export { spellingCard, spellingLookup, checkCardInput, recordSpellingRound, amendSpellingRound } from "./session";
+export { spellingCard, spellingLookup, checkCardInput, recordSpellingRound } from "./session";
 export {
   ensureSpellingTables, seedSpellingCards, createSpellingTasks, pickSpellingNext, spellingProgress,
   undoLastSpelling, clearSpellingTasks, lastEncounterToday, seedSpellingCardFor,
-  spellingDoneToday, spellingInlineToday, recordSpellingAnswer, spellingOverrideStats
+  spellingDoneToday, spellingInlineToday, recordSpellingAnswer
 } from "./store";
 
 export { getSpellingPrefs, saveSpellingPrefs, DEFAULT_SPELLING_PREFS, SPELLING_PREFS_EVENT, type SpellingPrefs } from "./prefs";
-export { spellingErrorStats } from "./stats";
 export { inlineSpellingDecision, askedToday, markAskedToday } from "./inline";

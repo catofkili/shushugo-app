@@ -6,7 +6,6 @@ import { classifyInput, compareKana, hasKanji, normalizeInput, toHiragana, type 
 import { simplifiedChangesFor, toJapaneseForms } from "./kanji-form";
 import { matchRomaji } from "./romaji";
 import {
-  NEAR_MISS_CODES,
   type SpellingInputForm, type SpellingLookup, type SpellingProblem, type SpellingProblemCode,
   type SpellingTarget, type SpellingVerdict
 } from "./types";
@@ -32,7 +31,6 @@ const verdict = (
     form,
     matched: correct ? matched : undefined,
     readingOk,
-    nearMiss: !correct && sorted.length > 0 && sorted.every((p) => NEAR_MISS_CODES.has(p.code)),
     problems: sorted
   };
 };

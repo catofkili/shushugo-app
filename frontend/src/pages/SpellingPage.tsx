@@ -4,11 +4,10 @@ import { Sticker } from "../components/CapybaraMascot";
 import { SpellingCardView } from "../features/spelling/SpellingCardView";
 import { nextSpellingCard } from "../features/spelling/queue";
 import { SpellingSettings } from "../features/spelling/SpellingSettings";
-import { SpellingStats } from "../features/spelling/SpellingStats";
 import {
   SPELLING_MARKER, checkCardInput, clearSpellingTasks, createSpellingTasks, ensureSpellingTables,
-  pickSpellingNext, recordSpellingAnswer, gradeRound, roundOutcome, seedSpellingCards, spellingCard, spellingLookup,
-  spellingProgress, undoLastSpelling, amendSpellingRound, availableSpellingModes, chooseSpellingMode,
+  pickSpellingNext, recordSpellingRound, seedSpellingCards, spellingCard, spellingLookup,
+  spellingProgress, undoLastSpelling, availableSpellingModes, chooseSpellingMode,
   getSpellingPrefs, SPELLING_PREFS_EVENT, spellingDoneToday,
   type SpellingCard, type SpellingLookup, type SpellingRound, type SpellingPrefs
 } from "../lib/spelling";
@@ -123,14 +122,7 @@ export function SpellingPage() {
 
   const finish = (round: SpellingRound) => {
     if (!page.card) return;
-    const outcome = roundOutcome(round);
-    const last = round.attempts[round.attempts.length - 1];
-    recordSpellingAnswer(page.card.wordId, gradeRound(round), {
-      typed: last?.typed ?? "", form: last?.verdict.form ?? "empty", hints: round.hintsUsed,
-      tries: outcome.tries, ms: Math.max(0, Math.round(round.elapsedMs)),
-      problem: round.gaveUp ? "gave_up" : last && !last.verdict.correct ? last.verdict.problems[0]?.code ?? "" : "",
-      override: outcome.overridden ? round.override : "", mode: page.card.mode, source: "page"
-    });
+    recordSpellingRound(page.card.wordId, round, "page");
     // 读进度失败也不能把已写入的作答重新提交；结算异常才交给卡片重试。
     try {
       const progress = spellingProgress();
@@ -200,16 +192,6 @@ export function SpellingPage() {
         key={page.instance}
         card={page.card}
         onFinish={finish}
-        onAmend={(round) => {
-          if (!page.card) return;
-          amendSpellingRound(page.card.wordId, round);
-          try {
-            const progress = spellingProgress();
-            setPage((current) => ({ ...current, progress, error: "" }));
-          } catch {
-            setPage((current) => ({ ...current, error: "进度暂时没能更新" }));
-          }
-        }}
         onNext={showNext}
         checkInput={(typed) => checkCardInput(page.card!, typed, page.lookup ?? undefined)}
         autoPlay={page.autoPlay}
@@ -222,7 +204,6 @@ export function SpellingPage() {
           <p className="sp-empty-title">{capReached ? "今天的拼写额度用完了" : empty ? "先去背几个词，再来拼写" : `今天练完了 ${page.progress.done} 个`}</p>
           {!empty && !capReached && <button type="button" className="ds-btn sp-button" onClick={practiceMore}>再练 10 个</button>}
         </div>}
-      {page.ready && <SpellingStats />}
     </section>
   );
 }

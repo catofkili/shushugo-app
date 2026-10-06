@@ -50,17 +50,18 @@
 - **落地方式是开放的**，引擎对任一种都成立：`seedSpellingCards`（给正向学过的词建拼写卡，稳定度取正向的一半）、`createSpellingTasks`（带额度的当天清单）、`lastEncounterToday(wordId)`（正向卡今天是否已毕业 = 「当天最后一次见到它」的钩子）。度的选择是调用方的事，别写进引擎。
 - **什么算对**（`check.ts`，纯函数 `checkSpelling(target, input, lookup?)`）：罗马音 / 假名 / 汉字假名混合三类都算对，**评分不区分用了哪种**，只在流水里记 `form`。
   - 罗马音：`romaji.ts` 目标驱动 DP 逐拍匹配（不把输入反解成假名——ō 是おう还是おお、づ / ず 都会有歧义），Hepburn / 日本式 / 输入法式都收；おう 不收 oo、おお 不收 ou（那是考点，报 `long_vowel`，nearMiss）；ー 对 o 列 oo / ou 都收。
-  - 假名：严格逐拍；平 / 片假名用错（外来语写平假名）是 `script`（nearMiss，**不算对**）；ー 在判文字种类时不算任何一种。
+  - 假名：严格逐拍；平 / 片假名用错（外来语写平假名）是 `script`（**不算对**，会标红）；ー 在判文字种类时不算任何一种。
   - **混合 / 汉字写法：唯一权威 = 词库表记 + JMdict 同条目的合法 k_ele**（`scripts/build-spelling-forms.mjs` → `src/data/spelling_forms.json`，只读 `frontend/.local/JMdict_e.gz`）。排除 JMdict 标 `sK iK oK io ik` 的写法（`io` = 不规则送り仮名，不是「正确的混合形式」）；`rK` 罕用写法和 `ateji` 收下（标非首选）。
-    **交ぜ書き（把一部分汉字换成假名，食べ物 → たべ物）不收**，报 `partial_kana`（nearMiss）；`出きる` 这类 JMdict 只当搜索用的写法同样不收。
-  - **中文简体 / 繁体 / 旧字体不算对**，但映回日文字形报 `chinese_form` / `traditional_form`。**简体（`chinese_form`）是直接判错、不算 nearMiss**（作者 2026-10-03 定：写成简体中文就是错的，但仍可被用户「算我对」推翻）；繁体 / 旧字体（`traditional_form`）仍是 nearMiss。简体映射是目标驱动的（`kanji_variants.json`，只看目标里的字）。⚠️ **这一步必须排在「词库表记 / 非罕用写法精确命中」之后、「罕用写法精确命中」之前**：JMdict 里偶有把简体字形当罕用写法收录的（烟草），先精确命中就把中文字形判对了；反过来若排在最前，又会把本来就合法的标准写法（着る、暗い）误报成简体。
+    **交ぜ書き（把一部分汉字换成假名，食べ物 → たべ物）不收**，报 `partial_kana`（会标红）；`出きる` 这类 JMdict 只当搜索用的写法同样不收。
+  - **中文简体 / 繁体 / 旧字体不算对**，映回日文字形报 `chinese_form` / `traditional_form`（只进流水做诊断，界面只会把不同的字标红）。⚠️ **这一步必须排在「词库表记 / 非罕用写法精确命中」之后、「罕用写法精确命中」之前**：JMdict 里偶有把简体字形当罕用写法收录的（烟草），先精确命中就把中文字形判对了；反过来若排在最前，又会把本来就合法的标准写法（着る、暗い）误报成简体。简体映射是目标驱动的（`kanji_variants.json`，只看目标里的字）。
   - 书写比较走 NFKC（JMdict 有「２日」，用户输入 2日 是同一写法）；`classifyInput` 认数字。
   - 同音词 / 同题面词要查词库：调用方传 `SpellingLookup`（`session.ts` 的 `spellingLookup(wordId)`）；不传就退成 `wrong_kanji`。`peer_word`（写成题面完全相同的另一个词）不占提交次数。
-- **评分**（`grade.ts`）：第一次提交就对且没用提示 → know；用过提示或第二次才对 → fuzzy；放弃 / 两次都错 / 揭晓级提示后才对 → forgot（`MAX_TRIES = 2`）。nearMiss 那一次也占一次提交。
-- **用户裁决（`override`）：我们只指出错误，对不对最后由用户说了算**（作者 2026-10-03 原话：「我们只指出错误，正确度交给用户自己」）。反馈区有「算我对 / 算我错 / 改回」三个按钮，`SpellingRound.override` 进评分：`wrong` + 有过正确答案 → forgot；`correct` + 没有正确答案、提交过、没放弃 → 一次就提交且没提示算 know、否则 fuzzy，揭晓过的仍算 forgot。
-  裁决写进 `spelling_reviews.override`；已落库的一轮被改判时走 `amendSpellingRound`（SAVEPOINT 里先 `undoLastSpelling` 再重记，校验最后一条流水就是这个词）。页面上会显示「你推翻过我们 N 次判定」（`spellingOverrideStats`）；流水里有 `override` 和 problem code，要调判据口径时可以按 code 统计被推翻的比例。
-- **题面形式（`modes.ts`）**：`meaning`（中文释义 → 写）/ `audio`（听写）/ `cloze`（挖空例句，94.2% 的词能出；挖掉的就是目标词，不能挖的词退回释义）。**三种都是 3 级提示**；听写把「意思」并进第 1 级而不是多加一级（`REVEAL_HINT_LEVEL = 3`，按钮上限 3）。听写时同音词判 nearMiss 而不是错（`checkCardInput`）。挖空题面的译文是否显示、听写是否显示释义由偏好决定。
-- **偏好与统计**：`prefs.ts`（localStorage `shushugo-spelling-prefs`，设备偏好、不同步；默认：只出释义题、随机、每天 30、度不限、插播关、插播每天 5）：题面形式多选、选择方式（随机 / 轮换）、每天上限、度（稳定度下限，`minStabilityDays`）、学习时插播、两个题面提示开关。`stats.ts` 只读流水算。
+- **界面只标红、评分用户自己选**（作者 2026-10-06 原话：「我希望的就是很简单的和答案不同的标红，然后用户自己选 FSRS 这几个档位，没有什么可反馈的，不要给用户一个差一点的答案，用户自己判断」）。
+  提交一次（或点「看答案」）后，`diff.ts` 的 `markDifferences` 把用户写的和答案逐字对照、不同的字标红（引擎认为写对了就一个字都不标），然后摆出和单词学习同一副档位（忘记 / 模糊 / 认识 / 熟知，V B N M），**没有默认档位、没有推荐、没有「答对了 / 差一点 / 读音不对」这类话**，也没有重试次数、提示扣分、「算我对 / 算我错」。
+  `SpellingRound` 就是 `{ typed, verdict, hintsUsed, grade, mode, elapsedMs }`，评分就是 `grade`；引擎判定（`checkSpelling` 的 `problems`）只进流水 `spelling_reviews.problem` 当诊断，**界面不说**。⚠️ 别再加回 nearMiss / override / amend / problemMessage / 错误统计面板：它们都做过（10-03），作者看不懂、要求拆掉（10-06）。
+  选档位 = 结算（写流水 + 换卡），改错了走页面「撤销」。`spelling_reviews.tries` 列不再写，`override` 列已删（开发期才有过）。
+- **题面形式（`modes.ts`）**：`meaning`（中文释义 → 写）/ `audio`（听写）/ `cloze`（挖空例句，94.2% 的词能出；挖掉的就是目标词，不能挖的词退回释义）。**三种都是 3 级提示**；听写把「意思」并进第 1 级而不是多加一级（`MAX_HINTS = 3`，按钮上限 3）。听写时同音异字的汉字照常标红，用户自己选档位。挖空题面的译文是否显示、听写是否显示释义由偏好决定。
+- **偏好**：`prefs.ts`（localStorage `shushugo-spelling-prefs`，设备偏好、不同步；默认：只出释义题、随机、每天 30、度不限、插播关、插播每天 5）：题面形式多选、选择方式（随机 / 轮换）、每天上限、度（稳定度下限，`minStabilityDays`）、学习时插播、两个题面提示开关。没有统计页（拆了，见上）。
 - **学习时插播（`features/spelling/SpellingInline.tsx`，默认关）**：对应作者提的「每天最后一次见到这个词时拼一次，对了就离开」。`WordStudy.tsx` 里 7 处接入，**全部包在 `__EXP_SPELLING__` 里**；钩子是 `lastEncounterToday`（正向卡今天已毕业）+ `spellingInlineToday` / `spellingDoneToday` 防止同一个词一天插两次。没有拼写卡的词用 `seedSpellingCardFor` 当场补一张（顽固词不补）。
 - **存储**：`store.ts` 用 `card-log.ts` 的 `createCardLog`（流水为事实、memory 是检查点、tasks 是当天投影），**不另写调度**；`reviews` 主表**不**写入，所以不影响每日统计 / 柚子 / 成就。
   `card-log` 为此加了可选的 `startingState` 钩子：播种卡的 FSRS 起点存在 `spelling_memory.seed_fsrs_state`，撤销重放时要先恢复它，否则撤销会把播种卡变成全新卡。`mergeWordInto` 合并重复词条时也搬 `spelling_*`（流水先删后插，留墓碑）。
