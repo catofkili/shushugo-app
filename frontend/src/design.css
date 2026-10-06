@@ -892,7 +892,8 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 .jq-slot-line { display: block; width: 100%; border-bottom: 2px solid var(--ds-ink-2); }
 .jq-ref { display: inline-flex; align-items: center; justify-content: center; min-width: 1.8em; height: 1.6em; margin: 0 .25em; padding: 0 .2em; border: 1px solid var(--ds-line-2); border-radius: 4px; font-size: 14px; font-weight: 800; line-height: 1; vertical-align: middle; }
 .jq-ref-active { border-color: var(--ds-primary); background: var(--ds-primary-tint-2); color: var(--ds-primary-ink); }
-.jq-passage { height: 240px; overflow-y: auto; margin-top: 12px; border-radius: var(--ds-radius-inset); background: var(--ds-inset); color: var(--ds-ink); font-size: 16px; line-height: 2; white-space: pre-wrap; overflow-wrap: anywhere; }
+/* 滚动由 ScrollArea 负责（网页 overflowY 内联、小程序原生 ScrollView），这里写 overflow 会被 check-inner-scroll 拦下 */
+.jq-passage { height: 240px; margin-top: 12px; border-radius: var(--ds-radius-inset); background: var(--ds-inset); color: var(--ds-ink); font-size: 16px; line-height: 2; white-space: pre-wrap; overflow-wrap: anywhere; }
 .jq-passage-content { padding: 14px; }
 .jq-choices-long { grid-template-columns: minmax(0, 1fr); }
 .jq-choice { min-width: 0; }

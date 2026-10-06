@@ -40,6 +40,7 @@ for (const [label, text] of Object.entries({
   expTalk: 'var m="__SHUSHUGO_EXP_TALK__"',
   expSpelling: 'var m="__SHUSHUGO_EXP_SPELLING__"',
   expJlpt: 'var m="__SHUSHUGO_EXP_JLPT__"',
+  expJlptBank: 'var q={id:"n3-v-trial2-01",setId:"trial2"}',
   devEnv: 'var e={"DEV":true}',
   privateKey: '"-----BEGIN PRIVATE KEY-----"',
   appSecret: 'var c={appSecret:"0123456789abcdef0123456789abcdef"}',
@@ -50,6 +51,7 @@ assert.equal(run({ 'common.js': clean, 'common.js.map': '{}' }), false, 'sourcem
 assert.equal(run({ 'common.js': clean, 'app.json': '{"pages":["pages/index/index"],"subPackages":[{"root":"study","pages":["talk/index"]}]}' }), false, '实验页面（开口练习）要被拦住');
 assert.equal(run({ 'common.js': clean, 'app.json': '{"pages":["pages/index/index"],"subPackages":[{"root":"study","pages":["spelling/index"]}]}' }), false, '实验页面（单词拼写）要被拦住');
 assert.equal(run({ 'common.js': clean, 'app.json': '{"pages":["pages/index/index"],"subPackages":[{"root":"study","pages":["jlpt-practice/index"]}]}' }), false, '实验页面（JLPT 刷题）要被拦住');
+assert.equal(run({ 'common.js': clean, 'app.json': '{"pages":["pages/index/index"],"subPackages":[{"root":"jlpt-bank","pages":["placeholder/index"]}]}' }), false, '实验分包（JLPT 题库）要被拦住');
 assert.equal(run({ 'common.js': clean }, { uploadWithSourceMap: true, urlCheck: true }), false, 'uploadWithSourceMap 要关');
 assert.equal(run({ 'common.js': clean }, { uploadWithSourceMap: false, urlCheck: false }), false, 'urlCheck 要开');
 assert.equal(run({ 'common.js': clean }, { uploadWithSourceMap: false, urlCheck: true }, '2.31.0'), false, '基础库版本要对齐');

@@ -136,20 +136,22 @@ export function MockSession({ bank, parts, sessionId, onDone, onBack }: {
     submittedPart.current = -1;
     submitPart();
   };
+  // 和 choose 同一个理由：从后台回来、时钟回调还没跑，过了截止时间点「退出」不能把到时的卷整份丢掉。
+  const exit = () => { if (Date.now() >= deadline) submitPart(); else onBack(); };
   const time = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
   return <>
     <div className="jq-top">
       <span className="jq-top-label">{SECTION_LABEL[part.section]}</span>
       <span className={`jq-timer ${seconds <= 60 ? "jq-timer-warn" : ""}`}><Timer size={16} />{time}</span>
-      <button type="button" className="ds-btn-soft jq-small-button focus-ring" onClick={() => setConfirm("exit")} disabled={error}><X size={14} />退出</button>
+      <button type="button" className="ds-btn-soft jq-small-button focus-ring" onClick={() => Date.now() >= deadline ? submitPart() : setConfirm("exit")} disabled={error}><X size={14} />退出</button>
     </div>
     {/* 退出确认紧挨着顶上的「退出」：放在页面底下的话，点了退出屏幕上什么都不变 */}
     {confirm === "exit" && <>
       <MascotSay sticker="mood-ask" tone="warn" className="ds-say-onbg">退出后，这份卷不会留下记录。</MascotSay>
       <div className="jq-actions">
         <button type="button" className="ds-btn-soft jq-grow focus-ring" onClick={() => setConfirm(null)}>继续答题</button>
-        <button type="button" className="ds-btn jq-grow focus-ring" onClick={onBack}>退出</button>
+        <button type="button" className="ds-btn jq-grow focus-ring" onClick={exit}>退出</button>
       </div>
     </>}
     <div className="jq-meta"><span>第 {index + 1} 题</span><span>已答 {answered} / 共 {part.questions.length}</span></div>
