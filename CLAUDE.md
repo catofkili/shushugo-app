@@ -89,7 +89,8 @@
   题库导入 `frontend/scripts/build-jlpt-bank.mjs --src <setN 目录> --set trialN --title "试做卷 N"`，校验 `npm run verify:jlpt-bank`（挂在 prebuild）。
 - ⚠️ **并行的 Codex 一次别超过 5 个左右**：2026-10-02 一口气开了 13 个（max 推理 + fast），25 分钟把整个账号额度用光、要等一天半，审校一份都没跑成。
 - ⚠️ **审校压缩题干时会删掉空后面的词**（卷 1 的语形成「（　）可能」「（　）関係」），排序题会有第二种排法让 ★ 位置的答案变掉——验收时专门看这两类。
-- ⚠️ 小程序里题库在 `lazy` 分包：卷 1（241 题）占 312 KB，lazy 分包合计 916 KB，上限 2 MB；约 1,000 题以上要给题库单独开分包。
+- ⚠️ 小程序里题库在单独的 `jlpt-bank` 分包（10-06 从 `lazy` 挪出来：lazy 里 tabs.js 已经 989 KB，第四套卷就会顶到 2 MB）。
+  两套卷 561 KB，上限 2 MB，还能放五套多；分包只在开关开着时登记，`check:release` 见到它也拦。
 - 现状（2026-10-06）：卷 1、卷 2 定稿共 482 题；卷 3 在重出。导入器先校验后写盘，半套卷 / 跨套重复考点 / 正解位置偏都拒绝。
 - 网页的滚动容器是外层 `<main class="app-landscape-main">`，不是 window：`lib/touch-adapter` 的 `scrollPageToTop` 原来只滚 window，
   在网页上什么都不动（2026-10-02 修，刷题页是第一个真正依赖它的页面）。
