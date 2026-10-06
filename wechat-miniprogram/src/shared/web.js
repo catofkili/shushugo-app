@@ -577,7 +577,12 @@ CREATE TABLE IF NOT EXISTS spelling_reviews (
   hints INTEGER NOT NULL DEFAULT 0,
   tries INTEGER NOT NULL DEFAULT 0,
   ms INTEGER NOT NULL DEFAULT 0,
-  problem TEXT NOT NULL DEFAULT ''
+  problem TEXT NOT NULL DEFAULT '',
+  -- \u7528\u6237\u5BF9\u5224\u5B9A\u7684\u88C1\u51B3\uFF08'' / 'correct' / 'wrong'\uFF09\u3001\u9898\u9762\u5F62\u5F0F\u3001\u6765\u6E90\uFF08'page' \u72EC\u7ACB\u9875\u9762 / 'inline' \u5B66\u4E60\u6D41\u7A0B\u91CC\u63D2\u64AD\uFF09\u3002
+  -- \u8001\u5E93\u4E0A\u8FD9\u4E09\u5217\u7531 store.ts \u7684 ensureSpellingTables \u8865\uFF08\u8868\u5DF2\u5B58\u5728\u65F6 CREATE IF NOT EXISTS \u4E0D\u4F1A\u52A0\u5217\uFF09\u3002
+  override TEXT NOT NULL DEFAULT '',
+  mode TEXT NOT NULL DEFAULT 'meaning',
+  source TEXT NOT NULL DEFAULT 'page'
 );
 CREATE INDEX IF NOT EXISTS idx_spelling_reviews_word_on ON spelling_reviews (word_id, reviewed_on);
 CREATE TABLE IF NOT EXISTS spelling_tasks (
