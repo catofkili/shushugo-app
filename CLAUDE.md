@@ -53,16 +53,21 @@
   - 假名：严格逐拍；平 / 片假名用错（外来语写平假名）是 `script`（nearMiss，**不算对**）；ー 在判文字种类时不算任何一种。
   - **混合 / 汉字写法：唯一权威 = 词库表记 + JMdict 同条目的合法 k_ele**（`scripts/build-spelling-forms.mjs` → `src/data/spelling_forms.json`，只读 `frontend/.local/JMdict_e.gz`）。排除 JMdict 标 `sK iK oK io ik` 的写法（`io` = 不规则送り仮名，不是「正确的混合形式」）；`rK` 罕用写法和 `ateji` 收下（标非首选）。
     **交ぜ書き（把一部分汉字换成假名，食べ物 → たべ物）不收**，报 `partial_kana`（nearMiss）；`出きる` 这类 JMdict 只当搜索用的写法同样不收。
-  - **中文简体 / 繁体 / 旧字体不算对**，但映回日文字形报 `chinese_form` / `traditional_form`（nearMiss）。⚠️ **这一步必须排在「精确命中」之前**：JMdict 里偶有把简体字形当罕用写法收录的（烟草），先精确命中就把中文字形判对了。
+  - **中文简体 / 繁体 / 旧字体不算对**，但映回日文字形报 `chinese_form` / `traditional_form`。**简体（`chinese_form`）是直接判错、不算 nearMiss**（作者 2026-10-03 定：写成简体中文就是错的，但仍可被用户「算我对」推翻）；繁体 / 旧字体（`traditional_form`）仍是 nearMiss。简体映射是目标驱动的（`kanji_variants.json`，只看目标里的字）。⚠️ **这一步必须排在「词库表记 / 非罕用写法精确命中」之后、「罕用写法精确命中」之前**：JMdict 里偶有把简体字形当罕用写法收录的（烟草），先精确命中就把中文字形判对了；反过来若排在最前，又会把本来就合法的标准写法（着る、暗い）误报成简体。
   - 书写比较走 NFKC（JMdict 有「２日」，用户输入 2日 是同一写法）；`classifyInput` 认数字。
   - 同音词 / 同题面词要查词库：调用方传 `SpellingLookup`（`session.ts` 的 `spellingLookup(wordId)`）；不传就退成 `wrong_kanji`。`peer_word`（写成题面完全相同的另一个词）不占提交次数。
 - **评分**（`grade.ts`）：第一次提交就对且没用提示 → know；用过提示或第二次才对 → fuzzy；放弃 / 两次都错 / 揭晓级提示后才对 → forgot（`MAX_TRIES = 2`）。nearMiss 那一次也占一次提交。
+- **用户裁决（`override`）：我们只指出错误，对不对最后由用户说了算**（作者 2026-10-03 原话：「我们只指出错误，正确度交给用户自己」）。反馈区有「算我对 / 算我错 / 改回」三个按钮，`SpellingRound.override` 进评分：`wrong` + 有过正确答案 → forgot；`correct` + 没有正确答案、提交过、没放弃 → 一次就提交且没提示算 know、否则 fuzzy，揭晓过的仍算 forgot。
+  裁决写进 `spelling_reviews.override`；已落库的一轮被改判时走 `amendSpellingRound`（SAVEPOINT 里先 `undoLastSpelling` 再重记，校验最后一条流水就是这个词）。页面上会显示「你推翻过我们 N 次判定」（`spellingOverrideStats`）；流水里有 `override` 和 problem code，要调判据口径时可以按 code 统计被推翻的比例。
+- **题面形式（`modes.ts`）**：`meaning`（中文释义 → 写）/ `audio`（听写）/ `cloze`（挖空例句，94.2% 的词能出；挖掉的就是目标词，不能挖的词退回释义）。**三种都是 3 级提示**；听写把「意思」并进第 1 级而不是多加一级（`REVEAL_HINT_LEVEL = 3`，按钮上限 3）。听写时同音词判 nearMiss 而不是错（`checkCardInput`）。挖空题面的译文是否显示、听写是否显示释义由偏好决定。
+- **偏好与统计**：`prefs.ts`（localStorage `shushugo-spelling-prefs`，设备偏好、不同步；默认：只出释义题、随机、每天 30、度不限、插播关、插播每天 5）：题面形式多选、选择方式（随机 / 轮换）、每天上限、度（稳定度下限，`minStabilityDays`）、学习时插播、两个题面提示开关。`stats.ts` 只读流水算。
+- **学习时插播（`features/spelling/SpellingInline.tsx`，默认关）**：对应作者提的「每天最后一次见到这个词时拼一次，对了就离开」。`WordStudy.tsx` 里 7 处接入，**全部包在 `__EXP_SPELLING__` 里**；钩子是 `lastEncounterToday`（正向卡今天已毕业）+ `spellingInlineToday` / `spellingDoneToday` 防止同一个词一天插两次。没有拼写卡的词用 `seedSpellingCardFor` 当场补一张（顽固词不补）。
 - **存储**：`store.ts` 用 `card-log.ts` 的 `createCardLog`（流水为事实、memory 是检查点、tasks 是当天投影），**不另写调度**；`reviews` 主表**不**写入，所以不影响每日统计 / 柚子 / 成就。
   `card-log` 为此加了可选的 `startingState` 钩子：播种卡的 FSRS 起点存在 `spelling_memory.seed_fsrs_state`，撤销重放时要先恢复它，否则撤销会把播种卡变成全新卡。`mergeWordInto` 合并重复词条时也搬 `spelling_*`（流水先删后插，留墓碑）。
 - **数据口径的取舍记录在 `docs/audits/2026-10-02-spelling-forms.md`**（取数规则、统计、各标签样本）；构建脚本两次运行产物 diff 为空，改规则后重跑并提交产物。
 - **页面**：`pages/SpellingPage.tsx`（队列：seed → 清单 → 逐张）+ `features/spelling/SpellingCardView.tsx`（一张卡的完整交互，不知道队列、不碰库，将来能嵌进学习流程）+ `round-state.ts`（纯函数的一轮状态机）。同一份 TSX 经 Taro 编译成小程序。
   独立端口预览要往 IndexedDB 灌学习库副本（见下「往预览里灌库」的姿势），空库里没有学过的词，`seedSpellingCards` 返回 0、页面只显示「先去背几个词」。
-- **还没做 / 上线前清单**：落地方式（作者定）；每日上限和「度」；`cloud:false` 改上云的发版顺序；去掉开关和拦截；小程序在微信开发者工具里的真机运行验收；听写（音频 → 写）和挖空例句两种题面（规格 §0 说明了为什么先不做）。
+- **还没做 / 上线前清单**（2026-10-03 更新：听写、挖空、每日上限、度、插播都已做完并默认可配；剩下的是作者拍板和真机验收）：落地方式的默认值（插播默认关，度默认不限）；`cloud:false` 改上云的发版顺序；去掉开关和拦截；小程序在微信开发者工具里的真机运行验收（只在网页独立端口看过视觉，没跑过小程序）。下面是改版前的旧清单，保留作历史：落地方式（作者定）；每日上限和「度」；`cloud:false` 改上云的发版顺序；去掉开关和拦截；小程序在微信开发者工具里的真机运行验收；听写（音频 → 写）和挖空例句两种题面（规格 §0 说明了为什么先不做）。
 ## ⚠️ JLPT 刷题也是实验功能，开关单独一个（2026-10-02）
 
 规格 `docs/JLPT_PRACTICE_SPEC.md`。作者原话「我要做一个 jlpt 刷题功能」；题库还在攒（每级至少 3 套卷再考虑上线），照开口练习的规矩不进任何发布包。
