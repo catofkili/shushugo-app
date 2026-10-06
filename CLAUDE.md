@@ -81,12 +81,16 @@
   多半是回忆版。**题目全部原创**：Codex 照规则手写 → 另开 Codex 会话盲做审校 → Claude 逐题验收。作者原话「不要脚本，规则给 luna max，它手写」——
   试过从词库自动出题，言い換え和文法两类的干扰项经常不通，别再回到自动出题。
   作者手里的红蓝宝书只给 Claude 看来总结题型和干扰项套路，**原题一道都不给 Codex**（和语法说明重写「不读原书」同一个口径）。
-- 出题流水线在 `~/Documents/shushugo-wt/_codex/jlpt-trial/`：`rules.md`（出题规则）、`review.md`（审校规则，含卷 1 验收时改掉 20 题的那几类毛病）、
-  `run-job.sh`（一份题：出题 → 审校；`OUT=…/setN` 写第 N 套，提示里自动列出前几套用过的考点）、`gen-sets.sh`（按批出卷）。
+- 出题流水线的规则和脚本在仓库 [`docs/jlpt-authoring/`](docs/jlpt-authoring/README.md)：`rules.md`（出题规则）、`review.md`（审校规则，含卷 1、卷 2 验收时改掉的那几类毛病）、
+  `run-job.sh`（一份题：出题 → 审校；`OUT=…/setN` 写第 N 套，提示里自动列出前几套用过的考点）、`gen-set3.sh`（按批出一整套）。
+  实际干活的目录是 `~/Documents/shushugo-wt/_codex/jlpt-trial/`（题稿、日志在那里，不进仓库），两边的规则一起改。
+- ⚠️ **`SETN-DONE` 只说明流水线跑完了**：旧 `gen-sets.sh` 不看退出码，卷 3 第一次全撞额度也写了 `SET3-DONE`（10-06 修了）。最后一道关永远是 Claude 逐题验收。
+  **Codex 的工作目录也别放 `/private/tmp`**：10-04 一个 Codex 会话在那里重出卷 3、改了一批代码，撞额度停下后机器重启全没了。
   题库导入 `frontend/scripts/build-jlpt-bank.mjs --src <setN 目录> --set trialN --title "试做卷 N"`，校验 `npm run verify:jlpt-bank`（挂在 prebuild）。
 - ⚠️ **并行的 Codex 一次别超过 5 个左右**：2026-10-02 一口气开了 13 个（max 推理 + fast），25 分钟把整个账号额度用光、要等一天半，审校一份都没跑成。
 - ⚠️ **审校压缩题干时会删掉空后面的词**（卷 1 的语形成「（　）可能」「（　）関係」），排序题会有第二种排法让 ★ 位置的答案变掉——验收时专门看这两类。
 - ⚠️ 小程序里题库在 `lazy` 分包：卷 1（241 题）占 312 KB，lazy 分包合计 916 KB，上限 2 MB；约 1,000 题以上要给题库单独开分包。
+- 现状（2026-10-06）：卷 1、卷 2 定稿共 482 题；卷 3 在重出。导入器先校验后写盘，半套卷 / 跨套重复考点 / 正解位置偏都拒绝。
 - 网页的滚动容器是外层 `<main class="app-landscape-main">`，不是 window：`lib/touch-adapter` 的 `scrollPageToTop` 原来只滚 window，
   在网页上什么都不动（2026-10-02 修，刷题页是第一个真正依赖它的页面）。
 
