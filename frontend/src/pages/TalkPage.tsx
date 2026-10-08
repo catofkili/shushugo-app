@@ -318,6 +318,17 @@ export function TalkPage() {
     return () => { active = false; stopTalkAudio(); };
   }, [attempt, refresh]);
 
+  useEffect(() => {
+    if (!card || !session) return;
+    // 答案在进卡时就预取，翻面 / 再听时只播本地。下一张接话卡台词固定，可以一起预取；
+    // 不提前抽下一张公式的 filler，保留原来的换词时机。
+    const key = session.queue[session.cursor + 1];
+    const next = key?.startsWith("r:") ? talkCard(key) : null;
+    for (const text of [card.answer.ja, next?.partnerLine?.ja, next?.answer.ja]) {
+      if (text) void canPlayTalkAudio(text);
+    }
+  }, [card, session]);
+
   const start = (id: string | null) => {
     try {
       const nextSession = createTalkSession(id ? sceneSessionKeys(id) : talkDueKeys(day));

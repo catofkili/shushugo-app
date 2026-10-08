@@ -7,6 +7,8 @@ module.exports = Object.freeze({
   audioIndexUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/audio/words/index.json',
   // Taro 会替换原生 config.js；与其中的开口练习场景图目录保持一致。
   talkSceneBaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/talk/scenes',
+  // Taro 会替换原生 config.js；与其中的开口练习云存储目录保持一致。
+  talkAudioBaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/audio/talk/voicevox-8',
   syncUrl: '',
   entitlementUrl: '',
   paymentUrl: '',

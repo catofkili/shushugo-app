@@ -5,6 +5,11 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const sourceRoot = join(root, "frontend/src");
 const pattern = /\boverflow-y-auto\b|\boverflow-auto\b|\boverflow-y\s*:\s*(?:auto|scroll)\b|\boverflow\s*:\s*(?:auto|scroll)\b/g;
+// The shared JLPT reader already uses the native adapter. Keep checking that JSX
+// so replacing it with a plain div cannot silently inherit this CSS exception.
+const jlptPassageUsesScrollArea = /<ScrollArea\b[^>]*\bclassName="jq-passage"/.test(
+  await readFile(join(sourceRoot, "features/jlpt-practice/Question.tsx"), "utf8")
+);
 const exceptions = [
   {
     path: "frontend/src/App.tsx",
@@ -29,6 +34,12 @@ const exceptions = [
     count: 1,
     accepts: (line) => line.trim() === "overflow-y: auto;",
     reason: "This is the landscape-only navigation rail, not a page content pane."
+  },
+  {
+    path: "frontend/src/design.css",
+    count: 1,
+    accepts: (line) => jlptPassageUsesScrollArea && line.trim().startsWith(".jq-passage {"),
+    reason: "The shared JLPT passage uses ScrollArea, which renders a native scrollY ScrollView."
   },
   {
     path: "frontend/src/pages/weekly-report.css",

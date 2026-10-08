@@ -68,6 +68,10 @@ Worker、iOS 端、同步协议一行都不用动；小程序这侧只换了传�
    `expectedBytes / expectedWords / version` 从库里现读。云存储权限用默认的「所有用户可读，仅创建者可读写」。
    读音音频加 `--audio`（只传默认声音 voicevox-8，index.json 也只列它）；`config.js` 的
    `audioBaseUrl` / `audioIndexUrl` 填对应 fileID，`InnerAudioContext.src` 直接吃 `cloud://`。
+   开口练习音频另由作者把 `frontend/src/assets/talk-audio/voicevox-8/` 整个目录原样上传到
+   云存储 `audio/talk/voicevox-8/`（文件名不变，`config.js` 的 `talkAudioBaseUrl` 已指向此目录）；
+   `--audio` 不上传这一项。小程序进卡按需下载，常驻本地 `talk-audio/`（全量约 4.3 MB，不按天清理）。
+   上传前或下载失败仍显示对方原文；上传后还需联网真机验收接话、翻面、再听和换卡停止。
    ⚠️ **本机 HTTP 代理会让 COS 上传 503**，脚本里把代理变量摘掉了；手动跑 tcb 也要 `env -u HTTPS_PROXY`。
 5. `syncUrl` / `authUrl` / `entitlementUrl` 照旧填 Worker 地址 —— 客户端只用它取路径，
    **云函数只认自己的 `WORKER_ORIGIN`**，所以配错也不会把请求发去别处（不然它就是个开放代理）。
