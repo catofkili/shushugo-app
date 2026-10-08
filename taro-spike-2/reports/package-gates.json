@@ -2,47 +2,47 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1860233,
+      "bytes": 1865366,
       "passes": true
     },
     "study": {
-      "bytes": 374176,
+      "bytes": 379549,
       "passes": true
     },
     "account": {
-      "bytes": 258572,
+      "bytes": 258617,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1150791,
+      "bytes": 1150832,
       "passes": true
     },
     "features": {
-      "bytes": 580408,
+      "bytes": 580409,
       "passes": true
     },
     "content": {
-      "bytes": 1619464,
+      "bytes": 1619465,
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 668455,
+      "bytes": 668456,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547381,
+      "bytes": 547382,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 367400,
+      "bytes": 367413,
       "passes": true
     },
     "core": {
-      "bytes": 279123,
+      "bytes": 279124,
       "passes": true
     },
     "lazy": {
-      "bytes": 599727,
+      "bytes": 989761,
       "passes": true
     }
   },
@@ -50,7 +50,7 @@
   "duplicateSourceModuleCount": 57,
   "duplicatedModules": [
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/vocab-test.ts",
+      "source": "frontend/src/lib/vocab-test.ts",
       "bytes": 49987,
       "packages": [
         "grammar-pages",
@@ -59,7 +59,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/conjugation-explanation.ts",
+      "source": "frontend/src/lib/conjugation-explanation.ts",
       "bytes": 42723,
       "packages": [
         "content-pages",
@@ -68,7 +68,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/data/verb-conjugation-foundation.ts",
+      "source": "frontend/src/data/verb-conjugation-foundation.ts",
       "bytes": 35039,
       "packages": [
         "content-pages",
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/pages/Library.tsx",
+      "source": "frontend/src/pages/Library.tsx",
       "bytes": 33448,
       "packages": [
         "grammar-pages",
@@ -84,7 +84,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/analytics/weekly.ts",
+      "source": "frontend/src/lib/analytics/weekly.ts",
       "bytes": 32865,
       "packages": [
         "content-pages",
@@ -92,7 +92,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/data/grammar_title_furigana.json",
+      "source": "frontend/src/data/grammar_title_furigana.json",
       "bytes": 30888,
       "packages": [
         "content-pages",
@@ -101,7 +101,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/speech.weapp.ts",
+      "source": "frontend/src/lib/speech.weapp.ts",
       "bytes": 30692,
       "packages": [
         "account",
@@ -111,7 +111,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/data/grammar-foundation.ts",
+      "source": "frontend/src/data/grammar-foundation.ts",
       "bytes": 20760,
       "packages": [
         "content-pages",
@@ -119,7 +119,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/pages/ConfusionPage.tsx",
+      "source": "frontend/src/pages/ConfusionPage.tsx",
       "bytes": 19082,
       "packages": [
         "grammar-pages",
@@ -127,7 +127,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/study-focus.ts",
+      "source": "frontend/src/lib/study-focus.ts",
       "bytes": 18606,
       "packages": [
         "content-pages",
@@ -137,7 +137,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/DailyPlanPanel.tsx",
+      "source": "frontend/src/components/DailyPlanPanel.tsx",
       "bytes": 16533,
       "packages": [
         "account",
@@ -145,7 +145,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/pages/ImmersiveGrammar.tsx",
+      "source": "frontend/src/pages/ImmersiveGrammar.tsx",
       "bytes": 16048,
       "packages": [
         "grammar-pages",
@@ -153,7 +153,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/pages/FavoritesPage.tsx",
+      "source": "frontend/src/pages/FavoritesPage.tsx",
       "bytes": 15692,
       "packages": [
         "content-pages",
@@ -161,7 +161,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/analytics/weekly-reports.ts",
+      "source": "frontend/src/lib/analytics/weekly-reports.ts",
       "bytes": 15645,
       "packages": [
         "content-pages",
@@ -169,7 +169,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/pages/GrammarFoundationPage.tsx",
+      "source": "frontend/src/pages/GrammarFoundationPage.tsx",
       "bytes": 14764,
       "packages": [
         "content-pages",
@@ -177,7 +177,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/GrammarHighlightProvider.tsx",
+      "source": "frontend/src/components/GrammarHighlightProvider.tsx",
       "bytes": 14740,
       "packages": [
         "content-pages",
@@ -185,7 +185,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/share-canvas.weapp.ts",
+      "source": "frontend/src/lib/share-canvas.weapp.ts",
       "bytes": 13191,
       "packages": [
         "content-pages",
@@ -194,7 +194,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/DailyPlanRing.weapp.tsx",
+      "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
       "bytes": 13050,
       "packages": [
         "account",
@@ -202,7 +202,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/JapaneseRuby.tsx",
+      "source": "frontend/src/components/JapaneseRuby.tsx",
       "bytes": 12878,
       "packages": [
         "content-pages",
@@ -211,7 +211,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/token-dictionary.ts",
+      "source": "frontend/src/lib/token-dictionary.ts",
       "bytes": 12218,
       "packages": [
         "content-pages",
@@ -220,7 +220,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/TokenDictionaryPopover.weapp.tsx",
+      "source": "frontend/src/components/TokenDictionaryPopover.weapp.tsx",
       "bytes": 11662,
       "packages": [
         "content-pages",
@@ -229,7 +229,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/grammar-term-hint-data.ts",
+      "source": "frontend/src/components/grammar-term-hint-data.ts",
       "bytes": 11044,
       "packages": [
         "content-pages",
@@ -238,7 +238,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/features/word-study/word-study-utils.ts",
+      "source": "frontend/src/features/word-study/word-study-utils.ts",
       "bytes": 10867,
       "packages": [
         "grammar-pages",
@@ -247,7 +247,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/FloatingDoodlePen.weapp.tsx",
+      "source": "frontend/src/components/FloatingDoodlePen.weapp.tsx",
       "bytes": 10094,
       "packages": [
         "grammar-pages",
@@ -255,7 +255,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/pages/GrammarDetail.tsx",
+      "source": "frontend/src/pages/GrammarDetail.tsx",
       "bytes": 8891,
       "packages": [
         "content-pages",
@@ -263,7 +263,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/FavoriteFolderPicker.tsx",
+      "source": "frontend/src/components/FavoriteFolderPicker.tsx",
       "bytes": 7899,
       "packages": [
         "content-pages",
@@ -273,7 +273,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/share-image.weapp.ts",
+      "source": "frontend/src/lib/share-image.weapp.ts",
       "bytes": 7404,
       "packages": [
         "content-pages",
@@ -282,7 +282,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/ProReadingPreview.tsx",
+      "source": "frontend/src/components/ProReadingPreview.tsx",
       "bytes": 6340,
       "packages": [
         "lazy",
@@ -290,7 +290,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/distinction-quiz.ts",
+      "source": "frontend/src/lib/distinction-quiz.ts",
       "bytes": 6302,
       "packages": [
         "grammar-pages",
@@ -299,7 +299,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/grammarProgressPreferences.ts",
+      "source": "frontend/src/lib/grammarProgressPreferences.ts",
       "bytes": 5120,
       "packages": [
         "grammar-pages",
@@ -307,7 +307,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/ShareImageSheet.weapp.tsx",
+      "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
       "bytes": 4926,
       "packages": [
         "content-pages",
@@ -316,7 +316,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/GrammarPointPopover.tsx",
+      "source": "frontend/src/components/GrammarPointPopover.tsx",
       "bytes": 4896,
       "packages": [
         "content-pages",
@@ -325,8 +325,8 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 4784,
+      "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
+      "bytes": 4846,
       "packages": [
         "account",
         "content-pages",
@@ -334,7 +334,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/useStudyTimer.ts",
+      "source": "frontend/src/lib/useStudyTimer.ts",
       "bytes": 4326,
       "packages": [
         "content-pages",
@@ -344,7 +344,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/daily-plan-ring-geometry.ts",
+      "source": "frontend/src/components/daily-plan-ring-geometry.ts",
       "bytes": 3920,
       "packages": [
         "account",
@@ -352,7 +352,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/GrammarTermHint.weapp.tsx",
+      "source": "frontend/src/components/GrammarTermHint.weapp.tsx",
       "bytes": 3789,
       "packages": [
         "content-pages",
@@ -361,7 +361,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/study-clock.ts",
+      "source": "frontend/src/lib/study-clock.ts",
       "bytes": 3363,
       "packages": [
         "content-pages",
@@ -371,7 +371,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/data/kana_glossary.json",
+      "source": "frontend/src/data/kana_glossary.json",
       "bytes": 3278,
       "packages": [
         "content-pages",
@@ -380,7 +380,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/hooks/useCountUp.ts",
+      "source": "frontend/src/hooks/useCountUp.ts",
       "bytes": 2949,
       "packages": [
         "content-pages",
@@ -388,7 +388,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/grammar-form-target.ts",
+      "source": "frontend/src/lib/grammar-form-target.ts",
       "bytes": 2766,
       "packages": [
         "content-pages",
@@ -397,7 +397,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/grammar-title-furigana.ts",
+      "source": "frontend/src/lib/grammar-title-furigana.ts",
       "bytes": 2469,
       "packages": [
         "content-pages",
@@ -406,7 +406,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/Disclosure.weapp.tsx",
+      "source": "frontend/src/components/Disclosure.weapp.tsx",
       "bytes": 2115,
       "packages": [
         "account",
@@ -417,7 +417,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/ExampleSentence.tsx",
+      "source": "frontend/src/components/ExampleSentence.tsx",
       "bytes": 1996,
       "packages": [
         "content-pages",
@@ -425,7 +425,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/taro-spike-2/src/platform/platform-dialogs.weapp.ts",
+      "source": "taro-spike-2/src/platform/platform-dialogs.weapp.ts",
       "bytes": 1824,
       "packages": [
         "account",
@@ -435,7 +435,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/grammar-key-points.ts",
+      "source": "frontend/src/lib/grammar-key-points.ts",
       "bytes": 1805,
       "packages": [
         "content-pages",
@@ -444,7 +444,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/study-totals.ts",
+      "source": "frontend/src/lib/study-totals.ts",
       "bytes": 1705,
       "packages": [
         "account",
@@ -452,7 +452,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/routes/shared.tsx",
+      "source": "frontend/src/routes/shared.tsx",
       "bytes": 1614,
       "packages": [
         "content-pages",
@@ -460,7 +460,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/grammar-numbering.ts",
+      "source": "frontend/src/lib/grammar-numbering.ts",
       "bytes": 1355,
       "packages": [
         "content-pages",
@@ -469,7 +469,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/JapaneseWordRuby.tsx",
+      "source": "frontend/src/components/JapaneseWordRuby.tsx",
       "bytes": 1115,
       "packages": [
         "grammar-pages",
@@ -478,7 +478,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/ReviewButton.tsx",
+      "source": "frontend/src/components/ReviewButton.tsx",
       "bytes": 1093,
       "packages": [
         "content-pages",
@@ -486,7 +486,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/yield-to-paint.ts",
+      "source": "frontend/src/lib/yield-to-paint.ts",
       "bytes": 957,
       "packages": [
         "account",
@@ -495,7 +495,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/grammarNotes.ts",
+      "source": "frontend/src/lib/grammarNotes.ts",
       "bytes": 825,
       "packages": [
         "content-pages",
@@ -504,7 +504,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
       "bytes": 651,
       "packages": [
         "account",
@@ -512,7 +512,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/components/JapaneseRubyText.weapp.tsx",
+      "source": "frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 602,
       "packages": [
         "content-pages",
@@ -522,7 +522,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/taro-spike-2/src/platform/grammar-data.weapp.cjs",
+      "source": "taro-spike-2/src/platform/grammar-data.weapp.cjs",
       "bytes": 458,
       "packages": [
         "content-pages",
@@ -531,7 +531,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/types/grammar.ts",
+      "source": "frontend/src/types/grammar.ts",
       "bytes": 149,
       "packages": [
         "content-pages",
@@ -540,7 +540,7 @@
       ]
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
+      "source": "wechat-miniprogram/scripts/shared/shims/grammar-key-points.js",
       "bytes": 60,
       "packages": [
         "content-pages",
@@ -943,7 +943,7 @@
     },
     {
       "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 4784,
+      "bytes": 4846,
       "packages": [
         "account",
         "content-pages",
@@ -1059,7 +1059,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 242052,
+  "duplicatedPageComponentBytes": 242114,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1069,44 +1069,44 @@
   "webModulePolicy": "error",
   "mainTopModules": [
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/sync-api.ts",
-      "bytes": 164675
+      "source": "frontend/src/lib/sync-api.ts",
+      "bytes": 164811
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/app.css",
+      "source": "frontend/src/app.css",
       "bytes": 150745
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/word-api.ts",
-      "bytes": 150057
-    },
-    {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/styles.css",
+      "source": "frontend/src/styles.css",
       "bytes": 141183
     },
     {
-      "source": "/Users/lsc/Documents/shushugo/taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
+      "source": "frontend/src/lib/word-api.ts",
+      "bytes": 140950
+    },
+    {
+      "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
       "bytes": 92952
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/taro-spike-2/src/platform/WeappPage.tsx",
+      "source": "taro-spike-2/src/platform/WeappPage.tsx",
       "bytes": 91585
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/wechat-miniprogram/src/vendor/sql-wasm.js",
+      "source": "wechat-miniprogram/src/vendor/sql-wasm.js",
       "bytes": 91227
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/storage.ts",
+      "source": "frontend/src/lib/storage.ts",
       "bytes": 88749
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/lib/study-core.ts",
-      "bytes": 80896
+      "source": "frontend/src/lib/study-core.ts",
+      "bytes": 83501
     },
     {
-      "source": "/Users/lsc/Documents/shushugo-wt/route-parity/frontend/src/design.css",
-      "bytes": 66944
+      "source": "frontend/src/design.css",
+      "bytes": 73549
     }
   ],
   "passes": true

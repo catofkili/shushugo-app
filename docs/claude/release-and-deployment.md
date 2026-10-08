@@ -70,3 +70,25 @@ check / lint / test，应急才用 `SKIP_RELEASE_GATES=1`。
 它们从此没在任何一次提交上跑过。`npm test` 走 `scripts/run-all.mjs`，
 **枚举 package.json 里的全部脚本** —— 新加 smoke 不用改 CI。
 
+
+### ⚠️ Taro 小程序的分包闸门读的是**提交进 git 的构建产物**（2026-10-09 修）
+
+`taro-spike-2/npm test` 最后一步 `verify-package-gates.mjs` **不重新构建**，读的是提交在
+`taro-spike-2/reports/` 里的 `webpack-stats.json` + `package-sizes.json`（由 `npm run build:weapp`
+的 stats 插件和 `measure-packages.mjs` 写出），再写出 `package-gates.json`。
+
+- **stats 里是构建那台 checkout 的绝对路径，而且一份里混着两个前缀**：源码在构建所在的 worktree
+  （当时是 `~/Documents/shushugo-wt/integrate`），node_modules 是软链到主目录、被 webpack 解析成主目录路径。
+  旧脚本拿「当前 checkout」做 `path.relative` 基准，换个目录跑就得到 `../integrate/frontend/...`，
+  20 条核心模块允许清单同时变成「未允许」+「已过期」。拿「构建根目录」做基准也不行（node_modules 那半对不上）。
+  现在 `sourceName()` 按仓库顶层目录名（frontend / taro-spike-2 / wechat-miniprogram）截成仓库相对路径，
+  `package-gates.json` 里不再有绝对路径，同一份 stats 在任何目录跑出的报告逐字节相同 —— **跑测试不再产生 diff**。
+- **改了允许清单（或改了会影响分包的源码）要重新 `npm run build:weapp`，把 `webpack-stats.json`、
+  `package-sizes.json`、`package-gates.json` 三份一起提交。** 只改清单不重建，闸门比的是旧构建：
+  10-08 那次除了路径问题，提交的 stats 还落后于 main，页面组件清单报 10 条「已过期」，在 main 上重建一次就全绿。
+  别为了让测试过去去删允许清单条目。
+- 构建没开实验开关时，`build:lucide-assets` 会把只给实验页用的图标（如开口练习的 `mic`）从 study 分包挪走、
+  改写 `src/platform/lucide-packages.cjs` 和 `src/package-assets/**`。这些是开关相关的产物，
+  **只为刷新闸门报告而构建时，把 `src/` 下的这类改动还原，别顺手提交。**
+- `webpack-stats.json` 本身仍带绝对路径（每次从不同 worktree 构建都是几千行 diff）；
+  要消掉这份噪音得在 `config/index.js` 的 stats 插件里落盘前改写路径，还没做。
