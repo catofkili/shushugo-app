@@ -272,6 +272,14 @@ export function TalkPage() {
   const [attempt, setAttempt] = useState(0);
   const [error, setError] = useState("");
   const [micBlocked, setMicBlocked] = useState(false);
+  const [speechAvailable, setSpeechAvailable] = useState(false);
+  useEffect(() => {
+    let active = true;
+    void Promise.resolve(speechInputAvailable()).then((available) => {
+      if (active) setSpeechAvailable(available);
+    });
+    return () => { active = false; };
+  }, []);
   const [listenOnly, setListenOnly] = useState(() => {
     try { return localStorage.getItem(LISTEN_ONLY_KEY) === "1"; } catch { return false; }
   });
@@ -384,7 +392,7 @@ export function TalkPage() {
     ? groups.map((group) => ({ ...group, scenes: scenes.filter((scene) => scene.group === group.id) })).filter((section) => section.scenes.length > 0)
     : [{ id: "all", title: "", scenes }];
   const newScenes = scenes.filter((scene) => scene.collected && !initialCollection.has(scene.id));
-  const inputAvailable = speechInputAvailable() && !micBlocked;
+  const inputAvailable = speechAvailable && !micBlocked;
   const retry = () => { setError(""); setLoading(true); setAttempt((value) => value + 1); };
 
   return <div className="talk-page" data-exp={TALK_MARKER}>

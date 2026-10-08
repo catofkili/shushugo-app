@@ -152,7 +152,16 @@
   错误码和文案在 `TalkPage` 的 `PracticeCard` 里一处：`not-allowed`「没有麦克风权限，直接出声说也可以」（**这一页里按钮不再出现**——
   拒了权限之后每点必败）、`no-speech`「没听到，再说一次」，其它静默结束。
 - 网页：浏览器自带的 `SpeechRecognition` / `webkitSpeechRecognition`，`ja-JP`、`interimResults`。
+  **历史记录（2026-10-02，原句保留；iOS 原生现状见下一条）**：
   ⚠️ **iOS App（Capacitor）里一律不显示**：WKWebView 暴露了这个对象但权限框永远不弹（WebKit bug 225298），要原生插件，留到上线（§7）。
+- **iOS App 原生现状（2026-10-08 起，代码已做、待真机验证）**：改走 `@capacitor-community/speech-recognition@6.0.1`，
+  只有 Capacitor 原生 iOS 才动态加载插件；网页和 Android 行为不变，小程序仍用自己的适配文件。
+  `speechInputAvailable()` 在原生 iOS 返回插件 `available()` 的异步结果，页面兼容 `boolean | Promise<boolean>`；不可用或查询失败时隐藏按钮。
+  先查 / 请求权限：6.0.1 的 iOS `checkPermissions()` 实际只查语音识别，所以即使返回 `granted` 仍调用 `requestPermissions()` 检查 / 请求麦克风。
+  任一拒绝都报 `not-allowed`，不启动录音。`start` 配 `ja-JP`、`partialResults: true`、`popup: false`，部分结果只显示第一条候选。
+  `listeningState: stopped` 结束；插件的 `start()` 在部分结果模式下是**开始录音就 resolve**，所以 promise 返回后还查 `isListening()`，确认已停才结束。
+  正常结束或手动停止时，从头到尾没有文字就报 `no-speech`；结束 / 停止移除自己的监听，重复停止无副作用，取消后晚到的权限或启动确认不会留下录音。
+  和网页版一样，没有录完后等待云识别的 `onStatus("recognizing")` 阶段。文字仍只在卡片状态里给用户自己对照，不打分、不存库。
 - 小程序：微信「同声传译」插件**不支持日语**，作者选了**腾讯云一句话识别**（`16k_ja`）：录音 → 云函数 `talk-asr` → 文字，
   停止后有「识别中…」。云函数部署和密钥要作者自己做（`wechat-miniprogram/README.md` 那一节）；没部署时报「语音识别还没开通」并隐藏按钮。
 
@@ -299,6 +308,16 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
 6. Pro 与否、成就 / 柚子挂不挂，发之前问作者。
 7. （2026-10-02 加）**iOS 的语音转文字要原生插件**（WKWebView 里网页识别用不了，见 §1.9）：选型、麦克风 / 语音识别两条 `Info.plist` 权限说明，
    会把原生代码带进发布包，所以和第 5 条一起做。
+   **2026-10-08 增补：代码已做，待真机验证。** 上面「和第 5 条一起做」保留作历史；当前按作者要求先接入
+   `@capacitor-community/speech-recognition@6.0.1` 和 `NSMicrophoneUsageDescription` / `NSSpeechRecognitionUsageDescription`，
+   不改 `__EXP_TALK__` 默认值，也不改 `check-release` / `build-ios.sh` 拦截。这里没有执行 `cap sync` / `pod install`，由作者完成原生同步与安装。
+   **这个原生插件会进 iOS 发布包**：它作为 Capacitor 原生依赖被同步 / 链接，不能靠 JavaScript 摇树排除；只是实验开关关着时没有任何入口会调到它，
+   JS 侧整个 `lib/talk/` 被摇掉。**Info.plist 两条权限说明也在发布包里**；仅包含原生代码 / 权限说明不等于发生录音或弹出权限框。
+   **音频会话源码核实（6.0.1）**：启动时设 `AVAudioSession.category = .playAndRecord`、options 为 `.defaultToSpeaker`、mode 为 `.default`，并 `setActive(true)`；
+   最终结果、识别错误和 `stop()` 都没有恢复 category，也没有 `setActive(false)`。默认输出指定扬声器，源码没有主动切到听筒；
+   录音会话保留是否影响随后 VOICEVOX 的 `<audio>` 播放音量 / 路由，仍要真机核实。插件 JS API 没有设置 / 停用 AVAudioSession 的方法，
+   `<audio>` / Web Audio 也不能直接恢复原生会话，当前 JS 侧不能可靠补救；不修改 node_modules，也不加依赖。
+   真机验收须覆盖：首次双权限弹窗、分别拒绝权限、日语部分文字、无声结束、停止 / 换卡 / 离页清理，以及识别结束后 VOICEVOX 扬声器音量与路由。
 8. （2026-10-02 加）**小程序录音**：小程序后台「用户隐私保护指引」补「录音」用途；云函数 `talk-asr` 部署 + 腾讯云子账号密钥只放云函数环境变量；
    上线前把 480×360 的预览图换成云存储的原图（同第 3 条），删 `talk-scenes-weapp.cjs`。
    ⚠️ `talk-asr` 现在**没有按用户限次**：只要有 OPENID 就能反复调，腾讯云按次计费。上线前加每个 OPENID 每天的上限

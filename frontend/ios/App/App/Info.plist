@@ -22,6 +22,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>开口练习时听你说的日语，转成文字给你自己对照。</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>把你说的日语转成文字，只给你自己看，不打分也不保存。</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>用于把学习打卡、词汇量、周报的分享图保存到你的相册。</string>
 	<key>NSPhotoLibraryUsageDescription</key>
