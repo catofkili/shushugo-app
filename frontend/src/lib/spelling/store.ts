@@ -21,7 +21,6 @@ export const SPELLING_FSRS: FsrsEntity = {
 
 const TABLES = ["spelling_memory", "spelling_reviews", "spelling_tasks"] as const;
 const REVIEW_EXTRA_COLUMNS: Array<[string, string]> = [
-  ["override", "TEXT NOT NULL DEFAULT ''"],
   ["mode", "TEXT NOT NULL DEFAULT 'meaning'"],
   ["source", "TEXT NOT NULL DEFAULT 'page'"]
 ];
@@ -159,11 +158,9 @@ export interface SpellingAnswerDetail {
   typed: string;
   form: string;
   hints: number;
-  tries: number;
   ms: number;
+  /** 引擎对这次输入的诊断码（SpellingProblemCode）；没写 / 引擎认为对是 ''。 */
   problem: string;
-  /** 用户裁决：'' / 'correct' / 'wrong'（SpellingRound.override）。 */
-  override?: string;
   /** 题面形式 SpellingMode，默认 'meaning'。 */
   mode?: string;
   /** 'page' 独立页面（默认）/ 'inline' 学习流程里插播。 */
@@ -195,10 +192,8 @@ export const recordSpellingAnswer = (
     typed: detail.typed,
     form: detail.form,
     hints: detail.hints,
-    tries: detail.tries,
     ms: detail.ms,
     problem: detail.problem,
-    override: detail.override ?? "",
     mode: detail.mode ?? "meaning",
     source: detail.source ?? "page"
   }));
@@ -210,26 +205,6 @@ export const undoLastSpelling = (): number | null => {
   if (wordId === null) return null;
   persistSoon();
   return Number(wordId);
-};
-
-export const spellingOverrideStats = (days = 14): { toCorrect: number; toWrong: number } => {
-  ensureSpellingTables();
-  const count = Math.max(0, Math.floor(Number.isFinite(days) ? days : 0));
-  if (!count) return { toCorrect: 0, toWrong: 0 };
-  const day = today();
-  const oldest = `-${count - 1} days`;
-  const stats = { toCorrect: 0, toWrong: 0 };
-  rowsFor(`
-    SELECT override, COUNT(*) AS count
-    FROM spelling_reviews
-    WHERE reviewed_on >= date(?, ?) AND reviewed_on <= ?
-      AND override IN ('correct', 'wrong')
-    GROUP BY override
-  `, [day, oldest, day]).forEach((row) => {
-    if (row.override === "correct") stats.toCorrect = Number(row.count);
-    if (row.override === "wrong") stats.toWrong = Number(row.count);
-  });
-  return stats;
 };
 
 export const clearSpellingTasks = (day = today()): void => {

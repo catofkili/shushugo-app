@@ -1,81 +1,40 @@
-import { REVEAL_HINT_LEVEL, roundOutcome, type SpellingAttempt, type SpellingRound, type SpellingVerdict } from "../../lib/spelling";
+import type { SpellingRound, SpellingVerdict } from "../../lib/spelling";
+import type { WordAnswer } from "../../types/vocabulary";
 
+/** 一张卡的过程：答题中 → 提交（或看答案）后露出答案 → 用户选档位结束。 */
 export interface RoundState {
-  attempts: SpellingAttempt[];
-  hintsUsed: number;
-  gaveUp: boolean;
   startedAt: number;
-  override?: SpellingRound["override"];
-  reopenedAtTries?: number;
+  hintsUsed: number;
+  revealed: boolean;
+  /** 提交的内容；直接看答案是 ""。 */
+  typed: string;
+  verdict: SpellingVerdict | null;
 }
 
+export const MAX_HINTS = 3;
+
 export const createRoundState = (startedAt: number): RoundState => ({
-  attempts: [], hintsUsed: 0, gaveUp: false, startedAt
+  startedAt, hintsUsed: 0, revealed: false, typed: "", verdict: null
 });
 
-export const toRound = (state: RoundState, now: number): SpellingRound => ({
-  attempts: [...state.attempts],
+/** 提交一次：露出答案，之后不再改。 */
+export const submit = (state: RoundState, typed: string, verdict: SpellingVerdict): RoundState =>
+  state.revealed ? state : { ...state, revealed: true, typed, verdict };
+
+/** 不写、直接看答案。 */
+export const reveal = (state: RoundState): RoundState =>
+  state.revealed ? state : { ...state, revealed: true };
+
+export const addHint = (state: RoundState): RoundState =>
+  state.revealed || state.hintsUsed >= MAX_HINTS ? state : { ...state, hintsUsed: state.hintsUsed + 1 };
+
+export const toRound = (state: RoundState, grade: WordAnswer, now: number): SpellingRound => ({
+  typed: state.typed,
+  verdict: state.verdict,
   hintsUsed: state.hintsUsed,
-  gaveUp: state.gaveUp,
-  elapsedMs: Math.max(0, now - state.startedAt),
-  ...(state.override ? { override: state.override } : {})
+  grade,
+  elapsedMs: Math.max(0, now - state.startedAt)
 });
-
-const ended = (state: RoundState) => roundOutcome(toRound(state, state.startedAt)).done;
-
-export const submit = (state: RoundState, typed: string, verdict: SpellingVerdict): RoundState => {
-  if (ended(state)) return state;
-  const next = { ...state, attempts: [...state.attempts, { typed, verdict }] };
-  if (next.reopenedAtTries !== undefined && roundOutcome(toRound(next, next.startedAt)).tries > next.reopenedAtTries) {
-    delete next.reopenedAtTries;
-  }
-  return next;
-};
-
-export const useHint = (state: RoundState): RoundState =>
-  ended(state) || state.hintsUsed >= 3 ? state : { ...state, hintsUsed: state.hintsUsed + 1 };
-
-export const giveUp = (state: RoundState): RoundState => ended(state) ? state : { ...state, gaveUp: true };
-
-const withoutOverride = (state: RoundState): RoundState => {
-  const next = { ...state };
-  delete next.override;
-  return next;
-};
-
-export const canOverrideCorrect = (state: RoundState): boolean => {
-  if (state.override === "correct") return true;
-  if (state.override || state.hintsUsed >= REVEAL_HINT_LEVEL) return false;
-  const round = toRound(state, state.startedAt);
-  if (state.reopenedAtTries !== undefined && roundOutcome(round).tries <= state.reopenedAtTries) return false;
-  return roundOutcome({ ...round, override: "correct" }).overridden === true;
-};
-
-export const canOverrideWrong = (state: RoundState): boolean => {
-  if (state.override === "wrong") return true;
-  if (state.override) return false;
-  return roundOutcome({ ...toRound(state, state.startedAt), override: "wrong" }).overridden === true;
-};
-
-/** 再点同一裁决就是改回；另一种裁决先回到原判，再由用户重新选择。 */
-export const overrideCorrect = (state: RoundState): RoundState => {
-  if (state.override === "correct") {
-    const next = withoutOverride(state);
-    const baseOutcome = roundOutcome(toRound(next, next.startedAt));
-    if (!baseOutcome.done) next.reopenedAtTries = baseOutcome.tries;
-    return next;
-  }
-  return canOverrideCorrect(state) ? { ...state, override: "correct" } : state;
-};
-
-export const overrideWrong = (state: RoundState): RoundState => {
-  if (state.override === "wrong") return withoutOverride(state);
-  return canOverrideWrong(state) ? { ...state, override: "wrong" } : state;
-};
-
-export const visibleHintCount = (state: RoundState): number => state.hintsUsed;
-export const lastVerdict = (state: RoundState): SpellingVerdict | null =>
-  state.attempts[state.attempts.length - 1]?.verdict ?? null;
 
 /** 网页 IME 的确认键不是提交；Taro HTML 插件把 input 的 keypress 映成 confirm，没有 nativeEvent。 */
 export const confirmsInput = (event: {

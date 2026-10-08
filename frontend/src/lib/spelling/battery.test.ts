@@ -242,7 +242,7 @@ const independentRomaji = (raw: string, style: GeneratorStyle): string => {
 
 const codeOf = (result: SpellingVerdict): SpellingProblemCode | undefined => result.problems[0]?.code;
 const actualOf = (result: SpellingVerdict): string =>
-  `${result.correct ? "correct" : codeOf(result) ?? "no_problem"}; nearMiss=${result.nearMiss}; readingOk=${result.readingOk}`;
+  `${result.correct ? "correct" : codeOf(result) ?? "no_problem"}; readingOk=${result.readingOk}`;
 const sampleOf = (entry: CorpusEntry, input: string, expected: string, actual: string): Sample => ({
   id: entry.word.id,
   word: cleanWordSurface(entry.word.kanji),
@@ -400,7 +400,7 @@ describe("拼写判定真实词库全量电池", () => {
 
       for (const form of target.forms) {
         const result = checkSpelling(target, form.surface);
-        // 规格 §1.5：罕用写法若本身就是中文简体 / 繁体字形（烟草、无、聯絡），报 chinese_form（直接判错）/ traditional_form（nearMiss），
+        // 规格 §1.5：罕用写法若本身就是中文简体 / 繁体字形（烟草、无、聯絡），报 chinese_form / traditional_form，
         // 对学习者不算对。记成例外，报告里列全，不算硬断言失败。
         const chineseRare = form.tag === "rare" && !result.correct &&
           ["chinese_form", "traditional_form"].includes(result.problems[0]?.code ?? "");
@@ -425,12 +425,12 @@ describe("拼写判定真实词库全量电池", () => {
         record(categories, "外来语片假名", entry, target.kana, "correct", kanaResult, kanaResult.correct);
         const hiragana = independentHiragana(target.kana);
         const hiraResult = checkSpelling(target, hiragana);
-        record(categories, "外来语写平假名", entry, hiragana, "script", hiraResult, !hiraResult.correct && codeOf(hiraResult) === "script" && hiraResult.nearMiss);
+        record(categories, "外来语写平假名", entry, hiragana, "script", hiraResult, !hiraResult.correct && codeOf(hiraResult) === "script");
       }
       if (!target.isLoanword && /^[ぁ-ゖ゙゚ー]+$/u.test(target.kana)) {
         const katakana = independentKatakana(target.kana);
         const kataResult = checkSpelling(target, katakana);
-        record(categories, "平假名词写片假名", entry, katakana, "script", kataResult, !kataResult.correct && codeOf(kataResult) === "script" && kataResult.nearMiss);
+        record(categories, "平假名词写片假名", entry, katakana, "script", kataResult, !kataResult.correct && codeOf(kataResult) === "script");
       }
 
       const moras = independentMoras(target.kana);
@@ -586,8 +586,8 @@ describe("拼写判定真实词库全量电池", () => {
         for (const simplified of simplifiedVariants(form.surface, simplifiedForms)) {
           const simplifiedResult = checkSpelling(target, simplified);
           const overlap = target.forms.some((accepted) => normalizedWriting(accepted.surface) === normalizedWriting(simplified));
-          record(categories, "简体字形变体", entry, simplified, "chinese_form（直接判错，非 nearMiss）", simplifiedResult,
-            overlap || (!simplifiedResult.correct && codeOf(simplifiedResult) === "chinese_form" && !simplifiedResult.nearMiss),
+          record(categories, "简体字形变体", entry, simplified, "chinese_form", simplifiedResult,
+            overlap || (!simplifiedResult.correct && codeOf(simplifiedResult) === "chinese_form"),
             overlap ? "exception" : "checked");
         }
       }

@@ -1,21 +1,23 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import {
-  checkCardInput, classifyInput, kanaToRomaji, problemMessage, roundOutcome, spellingHints,
-  type SpellingCard, type SpellingInputForm, type SpellingLookup, type SpellingRound, type SpellingVerdict
+  checkCardInput, classifyInput, kanaToRomaji, markDifferences, spellingHints,
+  type MarkedText, type SpellingCard, type SpellingLookup, type SpellingRound, type SpellingVerdict
 } from "../../lib/spelling";
 import { playPronunciation } from "../../lib/speech";
 import { scrollPageToTop, touchEventsEnabled } from "../../lib/touch-adapter";
+import type { WordAnswer } from "../../types/vocabulary";
+import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
 import {
-  canOverrideCorrect, canOverrideWrong, confirmsInput, createRoundState, giveUp, lastVerdict,
-  overrideCorrect, overrideWrong, submit, toRound, useHint as addHint, visibleHintCount, type RoundState
+  addHint, confirmsInput, createRoundState, MAX_HINTS, reveal, submit, toRound, type RoundState
 } from "./round-state";
 import { SpellingPrompt } from "./SpellingPrompt";
 import "../../pages/spelling.css";
 
 interface Props {
   card: SpellingCard;
+  /** 用户选了档位：写流水和 FSRS。抛错时卡片留在原地让用户重试。 */
   onFinish: (round: SpellingRound) => void;
-  onAmend: (round: SpellingRound) => void;
+  /** 写完之后换下一张（页面）/ 关掉插播。 */
   onNext: () => void;
   autoFocus?: boolean;
   checkInput?: (typed: string) => SpellingVerdict;
@@ -23,16 +25,19 @@ interface Props {
   voiceId?: string;
   showMeaning?: boolean;
   showTranslation?: boolean;
-  /** 插播时按钮写「继续」而不是「下一个」。 */
-  nextLabel?: string;
 }
 
+const clock = () => Date.now();
 const EMPTY_LOOKUP: SpellingLookup = { bySurface: () => [], peers: () => [] };
-const INPUT_LABEL: Record<SpellingInputForm, string> = {
-  empty: "", romaji: "罗马音", kana: "假名", kanji: "汉字", mixed: "汉字", other: "混着写了"
-};
 
-function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, checkInput, autoPlay = false, voiceId, nextLabel = "下一个", showMeaning = false, showTranslation = true }: Props) {
+/** 不一样的字标红（规格 §1.0）；颜色之外加下划线，不靠颜色一种线索。 */
+const Marked = ({ parts }: { parts: MarkedText[] }) => <>
+  {parts.map((part, index) => part.wrong
+    ? <span key={index} className="sp-diff">{part.text}</span>
+    : <span key={index}>{part.text}</span>)}
+</>;
+
+function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput, autoPlay = false, voiceId, showMeaning = false, showTranslation = true }: Props) {
   const [state, setState] = useState(() => createRoundState(Date.now()));
   const [typed, setTyped] = useState("");
   const [error, setError] = useState("");
@@ -40,20 +45,15 @@ function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, ch
   const inputValue = useRef("");
   const composing = useRef(false);
   const busy = useRef(false);
-  const advancing = useRef(false);
-  const persisted = useRef(false);
   const input = useRef<HTMLInputElement>(null);
   const article = useRef<HTMLDivElement>(null);
-  const nextButton = useRef<HTMLButtonElement>(null);
   const autoPlayed = useRef(false);
+  const revealPlayed = useRef(false);
   const playbackAttempt = useRef(0);
   const [playbackError, setPlaybackError] = useState("");
-  const outcome = roundOutcome(toRound(state, state.startedAt));
-  const verdict = lastVerdict(state);
-  const hints = spellingHints(card.target, card.mode, card.meaning).slice(0, visibleHintCount(state));
-  const form = classifyInput(typed).form;
-  const correct = outcome.done && (state.override === "correct" || (!state.override && !state.gaveUp && verdict?.correct));
-  const surface = correct && verdict?.matched?.kind === "form" ? verdict.matched.text : card.target.surface;
+  const hints = spellingHints(card.target, card.mode, card.meaning).slice(0, state.hintsUsed);
+  const empty = classifyInput(typed).form === "empty";
+  const diff = state.revealed && state.typed ? markDifferences(card.target, state.typed, state.verdict?.correct === true) : null;
   const playAudio = useCallback(() => {
     const attempt = ++playbackAttempt.current;
     setPlaybackError("");
@@ -82,175 +82,130 @@ function CardInteraction({ card, onFinish, onAmend, onNext, autoFocus = true, ch
   }, [autoFocus]);
 
   useEffect(() => {
-    if (outcome.done) nextButton.current?.focus?.({ preventScroll: true });
-    else if (state.attempts.length) {
-      input.current?.focus?.({ preventScroll: true });
-      if (touchEventsEnabled()) {
-        input.current?.setAttribute("selection-start", "0");
-        input.current?.setAttribute("selection-end", String(inputValue.current.length));
-      } else input.current?.select?.();
-    }
-  }, [outcome.done, state.attempts.length]);
+    // 输入框没了，焦点交给卡片本身：V / B / N / M 选档位；Enter 不选，免得按住回车连着给档位。
+    if (state.revealed) article.current?.focus?.({ preventScroll: true });
+  }, [state.revealed]);
 
-  const changeRound = (next: RoundState) => {
-    if (busy.current || next === current.current) return;
-    busy.current = true;
-    const finished = roundOutcome(toRound(next, next.startedAt)).done;
-    try {
-      // 结算和换卡分开；不放进 effect / setState updater，避免 StrictMode 重放写两遍。
-      if (finished && !persisted.current) {
-        onFinish({ ...toRound(next, Date.now()), mode: card.mode });
-        persisted.current = true;
-      }
-      current.current = next;
-      setState(next);
-      setError("");
-      if (finished && !next.gaveUp && lastVerdict(next)?.correct && autoPlay && card.mode !== "audio") {
-        void playPronunciation(card.target.surface, card.target.kana, voiceId).catch(() => undefined);
-      }
-    } catch {
-      setError("这次没能保存，请重试");
-    } finally {
-      busy.current = false;
-    }
-  };
+  useEffect(() => {
+    if (!state.revealed || revealPlayed.current || !autoPlay || card.mode === "audio") return;
+    revealPlayed.current = true;
+    void playPronunciation(card.target.surface, card.target.kana, voiceId).catch(() => undefined);
+  }, [state.revealed, autoPlay, card.mode, card.target.kana, card.target.surface, voiceId]);
 
-  const adjudicate = (kind: "correct" | "wrong") => {
-    if (busy.current) return;
-    const previous = current.current;
-    const next = kind === "correct" ? overrideCorrect(previous) : overrideWrong(previous);
-    if (next === previous) return;
-    busy.current = true;
-    const finished = roundOutcome(toRound(next, next.startedAt)).done;
-    try {
-      const round = { ...toRound(next, Date.now()), mode: card.mode };
-      if (persisted.current) onAmend(round);
-      else if (finished) onFinish(round);
-      persisted.current = finished;
-      current.current = next;
-      setState(next);
-      setError("");
-    } catch {
-      setError("这次没能保存，请重试");
-    } finally {
-      busy.current = false;
-    }
-  };
+  const change = (next: RoundState) => { current.current = next; setState(next); setError(""); };
 
   const submitInput = () => {
-    if (busy.current || composing.current || roundOutcome(toRound(current.current, current.current.startedAt)).done) return;
+    if (busy.current || composing.current || current.current.revealed) return;
     const value = inputValue.current;
     if (classifyInput(value).form === "empty") return;
     try {
       // 默认也显式给空 lookup，免得嵌入卡片时 checkCardInput 的默认参数偷偷查库。
-      const checked = checkInput ? checkInput(value) : checkCardInput(card, value, EMPTY_LOOKUP);
-      changeRound(submit(current.current, value, checked));
+      change(submit(current.current, value, checkInput ? checkInput(value) : checkCardInput(card, value, EMPTY_LOOKUP)));
     } catch {
       setError("暂时没法核对，请重试");
     }
   };
 
-  const advance = () => {
-    if (advancing.current) return;
-    advancing.current = true;
+  const choose = (grade: WordAnswer) => {
+    if (busy.current || !current.current.revealed) return;
+    busy.current = true;
+    try {
+      // 结算和换卡分开；不放进 effect / setState updater，避免 StrictMode 重放写两遍。
+      onFinish(toRound(current.current, grade, clock()));
+    } catch {
+      busy.current = false;
+      setError("这次没能保存，请重试");
+      return;
+    }
     try { onNext(); }
-    catch { advancing.current = false; setError("下一张暂时打不开，请重试"); }
+    catch { busy.current = false; setError("下一张暂时打不开，请重试"); }
   };
 
   const handleEnter = (event: KeyboardEvent<HTMLElement>) => {
     if (!confirmsInput(event, composing.current)) return;
     event.preventDefault?.();
-    if (outcome.done) advance();
-    else submitInput();
+    submitInput();
   };
 
-  const problem = verdict?.problems[0];
-  const resultAction = state.override ? "revert"
-    : canOverrideCorrect(state) ? "correct"
-      : canOverrideWrong(state) ? "wrong"
-        : null;
-  const runResultAction = () => {
-    if (state.override === "correct") adjudicate("correct");
-    else if (state.override === "wrong") adjudicate("wrong");
-    else if (resultAction === "correct") adjudicate("correct");
-    else if (resultAction === "wrong") adjudicate("wrong");
+  const handleGradeKey = (event: KeyboardEvent<HTMLElement>) => {
+    if (!state.revealed || event.target !== event.currentTarget) return;
+    const hit = answerOptions.find((option) => answerHotkeyLabels[option.value].toLowerCase() === event.key.toLowerCase());
+    if (!hit) return;
+    event.preventDefault?.();
+    choose(hit.value);
   };
+
+  const reading = diff?.answer.length ? diff : null;
   return (
-    <div ref={article} className="ds-card sp-card">
+    <div ref={article} tabIndex={-1} onKeyDown={handleGradeKey} className="ds-card sp-card">
       <SpellingPrompt card={card} showMeaning={showMeaning} showTranslation={showTranslation}
         playbackError={playbackError} onReplay={playAudio} />
-      {hints.length > 0 && <div className="ds-inset sp-hints" aria-live="polite" lang="ja">
+      {hints.length > 0 && !state.revealed && <div className="ds-inset sp-hints" aria-live="polite" lang="ja">
         {hints.map((hint) => <p key={hint.level} className="sp-hint" lang="ja">
           {hint.level === 1 ? `${hint.moraCount} 拍 · ${hint.first}${hint.meaning ? ` · ${hint.meaning}` : ""}`
             : hint.level === 2 ? `${hint.kana} · ${hint.romaji}` : hint.surface}
         </p>)}
       </div>}
       <div className="sp-response">
-        {outcome.done ? <div aria-live="polite" className={`ds-inset sp-answer ${correct ? "sp-answer-correct" : ""}`}>
-          <p className="sp-answer-title">{correct ? "答对了" : "答案"}</p>
-          <p className="sp-answer-surface" lang="ja">{surface}</p>
-          <p className="sp-reading" lang="ja">{card.target.kana} · {kanaToRomaji(card.target.kana)}</p>
-          {state.override === "correct" && <p className="sp-preferred">按你说的算</p>}
-          {correct && verdict?.matched?.preferred === false && <p className="sp-preferred">
-            更常见的写法：<span lang="ja">{card.target.surface}</span>
-          </p>}
-          {resultAction && <button type="button" className="ds-chip focus-ring mt-3 opacity-65"
-            aria-label={resultAction === "revert" ? "改回原来的判定" : resultAction === "correct" ? "把这次算作答对" : "把这次算作答错"}
-            onClick={runResultAction}>{resultAction === "revert" ? "改回" : resultAction === "correct" ? "算我对" : "算我错"}</button>}
-        </div> : <>
-          <div className="sp-input-row">
-            {state.attempts.length > 0 && <span className="sp-tries">还有 {outcome.triesLeft} 次</span>}
-            <input
-              ref={input}
-              type="text"
-              lang="ja"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              autoComplete="off"
-              enterKeyHint="done"
-              maxLength={-1}
-              value={typed}
-              onChange={(event) => { inputValue.current = event.target.value; setTyped(event.target.value); }}
-              onCompositionStart={() => { composing.current = true; }}
-              onCompositionEnd={() => { composing.current = false; }}
-              onFocus={keepPromptVisible}
-              onKeyDown={handleEnter}
-              // plugin-html 映射 keypress → confirm；网页已经在 keydown 提交，不能再提交一次。
-              onKeyPress={(event) => { if (event.type === "confirm") handleEnter(event); }}
-              placeholder="罗马音 / 假名 / 汉字都行"
-              aria-label="单词拼写答案"
-              aria-invalid={Boolean(problem)}
-              aria-describedby={problem ? `sp-feedback-${card.wordId}` : undefined}
-              className={`ds-inset sp-input ${state.attempts.length ? "sp-input-shake" : ""}`}
-              key={state.attempts.length}
-            />
-          </div>
-          {form !== "empty" && <p className="sp-recognition">{form === "other" ? "混着写了" : `识别为：${INPUT_LABEL[form]}`}</p>}
-          {problem && <div aria-live="polite" id={`sp-feedback-${card.wordId}`} key={state.attempts.length}
-            className={`ds-inset sp-feedback ${verdict?.nearMiss ? "sp-feedback-near" : ""}`}>
-            {verdict?.nearMiss && <span className="sp-near-label">差一点</span>}
-            <span>{problemMessage(problem, card.target)}</span>
-            {canOverrideCorrect(state) && <button type="button" className="ds-chip focus-ring ml-auto shrink-0"
-              aria-label="把这次算作答对" onClick={() => adjudicate("correct")}>算我对</button>}
-          </div>}
-        </>}
+        {state.revealed ? <div aria-live="polite" className="ds-inset sp-answer">
+          {diff && <>
+            <p className="sp-answer-title">你写的</p>
+            <p className="sp-typed" lang="ja"><Marked parts={diff.typed} /></p>
+          </>}
+          <p className="sp-answer-title">答案</p>
+          <p className="sp-answer-surface" lang="ja">
+            {reading?.against === "surface" ? <Marked parts={reading.answer} /> : card.target.surface}
+          </p>
+          <p className="sp-reading" lang="ja">
+            {reading?.against === "kana" ? <Marked parts={reading.answer} /> : card.target.kana}
+            {" · "}
+            {reading?.against === "romaji" ? <Marked parts={reading.answer} /> : kanaToRomaji(card.target.kana)}
+          </p>
+        </div> : <input
+          ref={input}
+          type="text"
+          lang="ja"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          autoComplete="off"
+          enterKeyHint="done"
+          maxLength={-1}
+          value={typed}
+          onChange={(event) => { inputValue.current = event.target.value; setTyped(event.target.value); }}
+          onCompositionStart={() => { composing.current = true; }}
+          onCompositionEnd={() => { composing.current = false; }}
+          onFocus={keepPromptVisible}
+          onKeyDown={handleEnter}
+          // plugin-html 映射 keypress → confirm；网页已经在 keydown 提交，不能再提交一次。
+          onKeyPress={(event) => { if (event.type === "confirm") handleEnter(event); }}
+          placeholder="罗马音 / 假名 / 汉字都行"
+          aria-label="单词拼写答案"
+          className="ds-inset sp-input"
+        />}
         {error && <p className="sp-error" role="status">{error}</p>}
       </div>
-      <div className="sp-actions">
-        <div className="sp-soft-actions">
-          <button type="button" className="ds-btn-soft sp-button" disabled={outcome.done || state.hintsUsed >= 3}
-            aria-label={`提示 ${state.hintsUsed}/3`} onClick={() => changeRound(addHint(current.current))}>
-            提示 {state.hintsUsed}/3
-          </button>
-          <button type="button" className="ds-btn-soft sp-button" disabled={outcome.done}
-            onClick={() => changeRound(giveUp(current.current))}>不会</button>
+      {state.revealed
+        // 档位和单词学习是同一副：忘记 / 认识是主键，模糊 / 熟知摆一半宽。选哪个由用户定，我们不给建议。
+        ? <div className="sp-grades" role="group" aria-label="这个词你记得怎么样">
+          {answerOptions.map((option) => <button key={option.value} type="button"
+            aria-keyshortcuts={answerHotkeyLabels[option.value]}
+            className={`focus-ring sp-grade ${option.value === "know" ? "ds-btn" : "ds-btn-soft"} ${option.secondary ? "sp-grade-secondary" : ""}`}
+            onClick={() => choose(option.value)}>
+            <span className="sp-grade-key kbd-hint">{answerHotkeyLabels[option.value]}</span>
+            <span>{option.label}</span>
+          </button>)}
         </div>
-        {outcome.done ? <button ref={nextButton} type="button" className="ds-btn sp-button sp-primary"
-          onClick={advance} onKeyDown={handleEnter}>{nextLabel}</button>
-          : <button type="button" className="ds-btn sp-button sp-primary" disabled={form === "empty"}
-            onClick={submitInput}>提交</button>}
-      </div>
+        : <div className="sp-actions">
+          <div className="sp-soft-actions">
+            <button type="button" className="ds-btn-soft sp-button" disabled={state.hintsUsed >= MAX_HINTS}
+              aria-label={`提示 ${state.hintsUsed}/${MAX_HINTS}`} onClick={() => change(addHint(current.current))}>
+              提示 {state.hintsUsed}/{MAX_HINTS}
+            </button>
+            <button type="button" className="ds-btn-soft sp-button" onClick={() => change(reveal(current.current))}>看答案</button>
+          </div>
+          <button type="button" className="ds-btn sp-button sp-primary" disabled={empty} onClick={submitInput}>提交</button>
+        </div>}
     </div>
   );
 }

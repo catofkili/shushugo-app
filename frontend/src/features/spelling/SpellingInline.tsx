@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {
-  amendSpellingRound, askedToday, availableSpellingModes, checkCardInput, chooseSpellingMode,
-  getSpellingPrefs, gradeRound, inlineSpellingDecision, lastEncounterToday, markAskedToday,
-  recordSpellingAnswer, roundOutcome, seedSpellingCardFor, spellingCard, spellingDoneToday,
+  askedToday, availableSpellingModes, checkCardInput, chooseSpellingMode,
+  getSpellingPrefs, inlineSpellingDecision, lastEncounterToday, markAskedToday,
+  recordSpellingRound, seedSpellingCardFor, spellingCard, spellingDoneToday,
   spellingInlineToday, spellingLookup, type SpellingPrefs, type SpellingRound
 } from "../../lib/spelling";
 import { firstValue } from "../../lib/study-core";
@@ -30,16 +30,8 @@ export default function SpellingInline({ wordId, onClose }: { wordId: number; on
   });
   const close = () => { markAskedToday(wordId); onClose(); };
   const finish = (round: SpellingRound) => {
-    const outcome = roundOutcome(round);
-    const last = round.attempts[round.attempts.length - 1];
-    recordSpellingAnswer(wordId, gradeRound(round), {
-      typed: last?.typed ?? "", form: last?.verdict.form ?? "empty", hints: round.hintsUsed,
-      tries: outcome.tries, ms: Math.max(0, Math.round(round.elapsedMs)),
-      problem: round.gaveUp ? "gave_up" : last && !last.verdict.correct ? last.verdict.problems[0]?.code ?? "" : "",
-      override: outcome.overridden ? round.override : "", mode: session.card?.mode, source: "inline"
-    });
+    recordSpellingRound(wordId, round, "inline");
     markAskedToday(wordId);
-    if (!round.gaveUp && (outcome.overridden ? round.override === "correct" : last?.verdict.correct)) onClose();
   };
   return <section className="sp-page" aria-label="单词拼写插播">
     <header className="sp-header"><p className="sp-progress">拼写</p>
@@ -47,10 +39,7 @@ export default function SpellingInline({ wordId, onClose }: { wordId: number; on
         <button type="button" className="ds-btn-soft sp-button" onClick={close}>跳过</button></div></header>
     {session.card ? <SpellingCardView card={session.card}
       checkInput={(typed) => checkCardInput(session.card!, typed, session.lookup)}
-      onFinish={finish} onAmend={(round) => {
-        amendSpellingRound(wordId, round);
-        if (roundOutcome(round).answer !== "forgot") close();
-      }} onNext={close} nextLabel="继续"
+      onFinish={finish} onNext={onClose}
       showMeaning={session.prefs.showMeaningInAudio} showTranslation={session.prefs.clozeShowTranslation}
       autoPlay={session.study.autoPlay} voiceId={session.study.voiceId} />
       : <button type="button" className="ds-btn sp-button" onClick={close}>继续</button>}

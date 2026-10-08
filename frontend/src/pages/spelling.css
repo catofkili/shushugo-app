@@ -28,6 +28,8 @@
   scroll-margin-top: 12px;
 }
 
+.sp-card:focus { outline: none; } /* 露出答案后焦点交给卡片本身（接 V / B / N / M），不画焦点框 */
+
 .sp-meaning {
   margin: 0;
   font-size: 28px;
@@ -77,8 +79,6 @@
 }
 
 .sp-response { margin-top: 20px; }
-.sp-input-row { position: relative; }
-
 .sp-input {
   display: block;
   width: 100%;
@@ -96,44 +96,21 @@
 }
 
 .sp-input::placeholder { color: var(--ds-ink-3); font-size: 16px; }
-.sp-input-shake { animation: sp-shake 180ms ease-in-out; }
-
-.sp-tries {
-  display: block;
-  margin-bottom: 6px;
-  text-align: right;
-  font-size: 11px;
-  color: var(--ds-ink-3);
-}
-
-.sp-recognition {
-  margin: 6px 2px 0;
-  font-size: 11px;
-  color: var(--ds-ink-3);
-}
-
-.sp-feedback {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  margin-top: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--ds-ink-2);
-  overflow-wrap: anywhere;
-}
-
-.sp-feedback-near { background: var(--ds-warn-tint); color: var(--ds-warn-ink); }
-.sp-near-label { font-weight: 800; }
 
 .sp-answer { padding: 16px; border-radius: 16px; }
-.sp-answer-correct { background: var(--ds-primary-tint); }
 .sp-answer-title { margin: 0 0 8px; font-size: 12px; color: var(--ds-ink-2); }
 .sp-answer-surface { margin: 0; font-size: 28px; line-height: 1.4; font-weight: 800; overflow-wrap: anywhere; }
 .sp-reading { margin: 8px 0 0; font-size: 16px; line-height: 1.6; color: var(--ds-ink-2); overflow-wrap: anywhere; }
-.sp-preferred { margin: 12px 0 0; font-size: 12px; line-height: 1.6; color: var(--ds-ink-2); }
+.sp-typed { margin: 0 0 14px; font-size: 24px; line-height: 1.5; font-weight: 700; overflow-wrap: anywhere; }
+/* 和答案不一样的字：红字 + 浅红底 + 下划线（不只靠颜色）。--ds-danger 在浅 / 深色主题下各有一档。 */
+.sp-diff {
+  color: var(--ds-danger);
+  background: color-mix(in srgb, var(--ds-danger) 14%, transparent);
+  border-radius: 4px;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
 
 .sp-actions {
   display: flex;
@@ -149,19 +126,22 @@
 .sp-button:focus-visible { outline: 2px solid var(--ds-primary); outline-offset: 3px; }
 .sp-primary { flex-shrink: 0; min-width: 80px; }
 
+/* 档位和单词学习同一副骨架：忘记 / 认识宽，模糊 / 熟知窄。 */
+.sp-grades { display: grid; grid-template-columns: 1.35fr 0.65fr 1.35fr 0.65fr; gap: 8px; margin-top: 20px; }
+.sp-grade {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 0; min-height: 60px; padding: 0 4px; border-radius: 14px; font-size: 16px; font-weight: 800;
+}
+.sp-grade-secondary { font-size: 14px; font-weight: 600; color: var(--ds-ink-2); }
+.sp-grade-key { font-size: 11px; font-weight: 800; opacity: .55; }
+.sp-grade:focus-visible { outline: 2px solid var(--ds-primary); outline-offset: 3px; }
+
 .sp-empty { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 48px 12px; text-align: center; }
 .sp-empty-title { margin: 0; font-size: 18px; line-height: 1.6; }
 .sp-loading { padding: 48px 0; text-align: center; font-size: 14px; color: var(--ds-ink-2); }
 .sp-page-error { margin-bottom: 16px; font-size: 13px; line-height: 1.6; color: var(--ds-ink-2); }
 .sp-error { margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--ds-ink-2); }
 
-@keyframes sp-shake {
-  0%, 100% { transform: translateX(0); }
-  25%, 75% { transform: translateX(-3px); }
-  50% { transform: translateX(3px); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .sp-input-shake { animation: none; }
   .sp-button { transition: none; }
 }
