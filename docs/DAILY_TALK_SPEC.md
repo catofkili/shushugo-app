@@ -291,6 +291,7 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
 1. 内容终稿过一遍人审（日文由 Claude / 作者核，不接受外部 AI 自己说「核对过」）。
 2. 预生成音频：对方的话、每句标准说法、每条公式 × 每组候选的填好句子（VOICEVOX，走例句管线）。
    小程序没有系统语音，没音频的话接话卡在小程序里是哑的。
+   （2026-10-08 小程序按需拉的代码已做；待作者把 voicevox-8 目录上传到云存储 audio/talk/voicevox-8/）
 3. 场景图压缩后确认小程序分包体积（每包 2 MiB）。
 4. 同步：先发一版「认得 `talk_*`、但仍 `cloud: false`」的所有端（它们收到带 talk 的快照会拒绝，不会削数据）→
    等所有端都更新 → 再发 `cloud: true` 的版本，并在 `sync/merge.ts` 的重放那段接上 `replayTalkReviews`
