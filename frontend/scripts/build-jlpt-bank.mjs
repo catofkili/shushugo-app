@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { DatabaseSync } from "node:sqlite";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -52,6 +53,40 @@ function printHelp() {
   console.log(`用法: node scripts/build-jlpt-bank.mjs [--src <目录>] [--set trial1 --title "试做卷 1"] [--allow-undone] [--allow-doubt]
 
 一套卷必须 N1–N5 两科共 10 个目录齐全、都有审校完成标记 DONE。--allow-undone 和 --allow-doubt 仅供本地试跑。`);
+}
+
+// Codex 照「正解位置要均匀」写出来的常是 1234 1234 循环（卷 1、卷 2 十科里有七科），审校也没拦住，
+// 背下规律就能蒙对，盲做审校也会被规律带着走。所以正解位置不靠出题人：run-job.sh 在审校前洗一遍，
+// 导入时再按「套卷-等级-科目」洗一遍。每科正解位置各占四分之一；种子固定，重导同一份源结果不变。
+// 格式不对的题（不是四个选项、answer 不在 1–4）原样返回，交给 verify 报错。
+export function shuffleAnswers(questions, seed) {
+  let draws = 0;
+  const random = () => createHash("sha256").update(`${seed}-${draws++}`).digest().readUInt32LE(0) / 2 ** 32;
+  const shuffle = (items) => {
+    for (let i = items.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    return items;
+  };
+  const slots = shuffle(questions.map((_, index) => index % 4 + 1));
+  return questions.map((question, index) => {
+    if (!Array.isArray(question?.options) || question.options.length !== 4 || ![1, 2, 3, 4].includes(question.answer)) return question;
+    const moved = new Map([[question.answer, slots[index]]]);
+    const rest = shuffle([1, 2, 3, 4].filter((n) => n !== slots[index]));
+    for (const old of [1, 2, 3, 4]) if (old !== question.answer) moved.set(old, rest.pop());
+    const options = [];
+    for (const [old, to] of moved) options[to - 1] = question.options[old - 1];
+    return {
+      ...question,
+      options,
+      answer: moved.get(question.answer),
+      distractors: question.distractors && typeof question.distractors === "object" && !Array.isArray(question.distractors)
+        ? Object.fromEntries(Object.entries(question.distractors).map(([key, value]) => [String(moved.get(Number(key)) ?? key), value]))
+        : question.distractors,
+      order: Array.isArray(question.order) ? question.order.map((n) => moved.get(n) ?? n) : question.order
+    };
+  });
 }
 
 function readSources(options) {
@@ -126,7 +161,9 @@ function readSources(options) {
       else passages.set(passageId, passage);
     }
 
-    for (const { source, kind, no } of rows) {
+    const shuffledSources = shuffleAnswers(rows.map((row) => row.source), `${options.setId}-${level}-${section}`);
+    for (const [index, { kind, no }] of rows.entries()) {
+      const source = shuffledSources[index];
       const letter = section === "vocab" ? "v" : "g";
       const question = {
         id: `${level.toLowerCase()}-${letter}-${options.setId}-${String(no).padStart(2, "0")}`,
@@ -140,7 +177,9 @@ function readSources(options) {
         distractors: source.distractors,
         target: source.target
       };
-      if (source.order !== null && source.order !== undefined) question.order = source.order;
+      if (source.order !== null && source.order !== undefined) {
+        question.order = source.order;
+      }
       if (kind === "passage") question.passageId = passageId;
       imported.push({ level, section, no, question });
     }

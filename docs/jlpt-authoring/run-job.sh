@@ -48,6 +48,14 @@ fi
 [ -s questions.json ] || { echo "出题阶段没有产出 questions.json" > FAILED; exit 1; }
 # 补跑审校时以出题稿为准：上一次审校中途停下可能已经改了一半
 [ "${REVIEW_ONLY:-}" = 1 ] && [ -s questions.draft.json ] && cp questions.draft.json questions.json
+# 出题稿的正解位置常是 1234 循环，盲做会被规律带着走：审校前先洗一遍（和导入用同一个函数）。
+# JLPT_REPO 指向带 frontend/scripts/build-jlpt-bank.mjs 的仓库目录（还没合进 main 时指向 worktree）
+node --input-type=module -e '
+const [, file, seed, script] = process.argv; const fs = await import("node:fs");
+const { shuffleAnswers } = await import(script);
+fs.writeFileSync(file, JSON.stringify(shuffleAnswers(JSON.parse(fs.readFileSync(file, "utf8")), seed), null, 2) + "\n");
+' questions.json "review-$LV-$SEC" "${JLPT_REPO:-$HOME/Documents/shushugo}/frontend/scripts/build-jlpt-bank.mjs" \
+  || { echo "审校前打乱正解位置失败" > FAILED; exit 1; }
 
 { header 审校; cat "$ROOT/review.md"; echo; cat "$ROOT/rules.md"; } > review.prompt.md
 # 旧 review.md 留着的话，审校这次撞额度失败也会被当成审完（卷 3 第一次就是这样被误标完成的）
