@@ -41,7 +41,7 @@
 .talk-done-fallback { text-align: left; margin-bottom: 12px; }
 .talk-done-title { margin: 0; color: var(--ds-ink); font-size: 22px; font-weight: 800; }
 .talk-new-scene { display: flex; align-items: center; gap: 12px; margin-top: 24px; padding: 12px; text-align: left; }
-.talk-new-scene-thumb { position: relative; flex: 0 0 112px; height: 84px; overflow: hidden; border-radius: var(--ds-radius-inset); }
+.talk-new-scene-thumb { position: relative; flex: 0 0 112px; height: 84px; overflow: hidden; border-radius: var(--ds-radius-inset); background: var(--ds-inset); }
 .talk-kicker { margin: 0; color: var(--ds-primary); font-size: var(--ds-font-size-kicker); font-weight: 700; }
 .talk-new-scene-title { margin: 4px 0 0; color: var(--ds-ink); font-size: 16px; font-weight: 800; line-height: 1.5; }
 .talk-welcome { display: flex; align-items: center; gap: 16px; padding: 16px 20px; text-align: left; }

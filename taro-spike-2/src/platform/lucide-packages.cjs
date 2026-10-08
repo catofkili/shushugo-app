@@ -33,6 +33,10 @@ module.exports = {
   "bellring": [
     "study"
   ],
+  "mic": [
+    "study",
+    "content-pages"
+  ],
   "sparkles": [
     "account",
     "content-pages"
@@ -117,9 +121,6 @@ module.exports = {
     "content-pages"
   ],
   "loadercircle": [
-    "content-pages"
-  ],
-  "mic": [
     "content-pages"
   ],
   "music": [

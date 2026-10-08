@@ -51,6 +51,7 @@ it.each([
   [{ text: " はい。 " }, undefined, "はい。"],
   [{ error: "not_configured" }, "not-configured", undefined],
   [{ error: "too_long" }, "too-long", undefined],
+  [{ error: "too_many" }, "too-many", undefined],
   [{ error: "asr_failed", code: "FailedOperation" }, "no-match", undefined],
   [{ text: "   " }, "no-speech", undefined]
 ])("云函数 %j：状态先于结果、结束后清空回调", async (result, code, text) => {

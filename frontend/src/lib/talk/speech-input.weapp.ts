@@ -68,7 +68,7 @@ export const listen = (onText: (text: string) => void, onEnd: () => void, onErro
             const { result: response } = await wx.cloud.callFunction({ name: "talk-asr", data: { audio: data, format: "mp3" } });
             if (ended) return;
             if (response?.error) {
-              finish(response.error === "not_configured" ? "not-configured" : response.error === "too_long" ? "too-long" : "no-match");
+              finish(response.error === "not_configured" ? "not-configured" : response.error === "too_long" ? "too-long" : response.error === "too_many" ? "too-many" : "no-match");
               return;
             }
             const text = typeof response?.text === "string" ? response.text.trim() : "";

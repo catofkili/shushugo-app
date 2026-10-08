@@ -44,7 +44,10 @@
       "runtime": "Nodejs18.15",
       "timeout": 60,
       "memorySize": 256,
-      "installDependency": true
+      "installDependency": true,
+      "envVariables": {
+        "TALK_ASR_DAILY_LIMIT": "100"
+      }
     }
   ]
 }

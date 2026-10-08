@@ -150,7 +150,7 @@
   开始听之前先停掉对方的音频（不然把音箱的声音录进去）。键盘 `M`。
 - 接口：`lib/talk/speech-input(.weapp).ts` 导出 `speechInputAvailable()` 和 `listen(onText, onEnd, onError[, onStatus]) → stop()`。
   错误码和文案在 `TalkPage` 的 `PracticeCard` 里一处：`not-allowed`「没有麦克风权限，直接出声说也可以」（**这一页里按钮不再出现**——
-  拒了权限之后每点必败）、`no-speech`「没听到，再说一次」，其它静默结束。
+  拒了权限之后每点必败）、`too-many`「今天说得够多了，明天再来」（达到每日上限后本页隐藏按钮）、`no-speech`「没听到，再说一次」，其它静默结束。
 - 网页：浏览器自带的 `SpeechRecognition` / `webkitSpeechRecognition`，`ja-JP`、`interimResults`。
   ⚠️ **iOS App（Capacitor）里一律不显示**：WKWebView 暴露了这个对象但权限框永远不弹（WebKit bug 225298），要原生插件，留到上线（§7）。
 - 小程序：微信「同声传译」插件**不支持日语**，作者选了**腾讯云一句话识别**（`16k_ja`）：录音 → 云函数 `talk-asr` → 文字，
@@ -276,8 +276,8 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
 - 落盘：答完一张不到 2 秒就关页面，最后那张可能没存下（增量 2 秒一次，CLAUDE.md 落盘那节写过这是有意接受的窗口）。
 - 小程序预览版没有声音（见 §1.8）。
 - ~~每天新卡数是常量 5，没有设置项；想多练用「再练 5 张」。~~（2026-10-02 起改成自己挑场景，见 §1.0）
-- 小程序预览版的场景图是构建时压的 480×360（`taro-spike-2/scripts/talk-scenes-weapp.cjs`，用 macOS 的 `sips`）：study 分包上限 2 MiB，
-  30 张 800×600 原图自己就 2.2 MB。网页仍用原图。没有 `sips` 的机器原样拷，超了由 `verify-package-gates` 拦。
+- 小程序场景图曾在构建时压成 480×360；30 张 800×600 原图自己就 2.2 MB，study 分包上限 2 MiB。
+  2026-10-08 已改为从云存储读取原图、不打进分包；待作者上传原图到 `talk/scenes/` 并做真机加载验收。
 - 网页语音转文字靠浏览器：Chrome / Edge / Safari 有，Firefox 没有（按钮不出现）。Chrome 的识别把声音送到 Google 的服务，没网就报错（静默结束）。
 
 ## 6. 暂时不做
@@ -291,7 +291,7 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
 1. 内容终稿过一遍人审（日文由 Claude / 作者核，不接受外部 AI 自己说「核对过」）。
 2. 预生成音频：对方的话、每句标准说法、每条公式 × 每组候选的填好句子（VOICEVOX，走例句管线）。
    小程序没有系统语音，没音频的话接话卡在小程序里是哑的。
-3. 场景图压缩后确认小程序分包体积（每包 2 MiB）。
+3. 场景图改从云存储读取原图（2026-10-08 代码已做；待作者：上传原图到云存储 `talk/scenes/`）。上传后在小程序真机验收加载；原图不再进入分包。
 4. 同步：先发一版「认得 `talk_*`、但仍 `cloud: false`」的所有端（它们收到带 talk 的快照会拒绝，不会削数据）→
    等所有端都更新 → 再发 `cloud: true` 的版本，并在 `sync/merge.ts` 的重放那段接上 `replayTalkReviews`
    （和 `replayConfusionReviews` 同一处，动态 import）。
@@ -299,7 +299,7 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
 6. Pro 与否、成就 / 柚子挂不挂，发之前问作者。
 7. （2026-10-02 加）**iOS 的语音转文字要原生插件**（WKWebView 里网页识别用不了，见 §1.9）：选型、麦克风 / 语音识别两条 `Info.plist` 权限说明，
    会把原生代码带进发布包，所以和第 5 条一起做。
-8. （2026-10-02 加）**小程序录音**：小程序后台「用户隐私保护指引」补「录音」用途；云函数 `talk-asr` 部署 + 腾讯云子账号密钥只放云函数环境变量；
-   上线前把 480×360 的预览图换成云存储的原图（同第 3 条），删 `talk-scenes-weapp.cjs`。
-   ⚠️ `talk-asr` 现在**没有按用户限次**：只要有 OPENID 就能反复调，腾讯云按次计费。上线前加每个 OPENID 每天的上限
-   （云数据库计数，或者挪到 Worker 走现有的 D1 限速），超了返回 `too_many`、页面说「今天说得够多了」。
+8. （2026-10-02 加）**小程序录音**：小程序后台「用户隐私保护指引」补「录音」用途；云函数 `talk-asr` 部署 + 腾讯云子账号密钥只放云函数环境变量。
+   场景图切换与计数集合自动创建代码已做（2026-10-08；待作者：上传原图到云存储 `talk/scenes/`；集合可预建或由首次有效调用自动建）。
+   ⚠️ `talk-asr` 每个 OPENID 每天最多识别 100 次（腾讯云按次计费，原先只要有 OPENID 就能反复调），按北京时间计数；默认值 100，可用 `TALK_ASR_DAILY_LIMIT` 调整（已做，2026-10-08）。
+   计数集合为 `talk_asr_usage`；集合不存在时首次有效请求自动创建，也可提前建集合。达到上限返回 `too_many`，页面提示「今天说得够多了，明天再来」。

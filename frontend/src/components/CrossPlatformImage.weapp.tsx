@@ -33,7 +33,7 @@ function localAvatarPath(dataUrl: string): Promise<string> {
   return write;
 }
 
-export const CrossPlatformImage = ({ src, alt: _alt, className, style, draggable: _draggable, weappWidth, weappHeight, onError }: CrossPlatformImageProps) => {
+export const CrossPlatformImage = ({ src, alt: _alt, className, style, draggable: _draggable, loading, weappWidth, weappHeight, onError }: CrossPlatformImageProps) => {
   const [resolvedAvatar, setResolvedAvatar] = useState({ source: "", path: "" });
   const isDataUrl = src.startsWith("data:image/");
   useEffect(() => {
@@ -62,6 +62,7 @@ export const CrossPlatformImage = ({ src, alt: _alt, className, style, draggable
     className={className}
     src={isDataUrl ? (resolvedAvatar.source === src ? resolvedAvatar.path : "") : src}
     {...(networkWebp ? { webp: true } : {})}
+    lazyLoad={loading === "lazy"}
     mode={objectFit === "cover" ? "aspectFill" : "aspectFit"}
     onError={imageError}
     style={{ ...imageStyle, width: weappWidth, height: weappHeight }}

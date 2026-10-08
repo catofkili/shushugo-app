@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
 import { Mic, Volume2 } from "lucide-react";
 import { JapaneseRubyText } from "../components/JapaneseRubyText";
 import { CapybaraWalk } from "../components/CapybaraMascot";
@@ -37,6 +37,11 @@ function TalkNote({ text }: { text: string }) {
 type SceneSet = ReturnType<typeof talkSceneSets>;
 
 const LISTEN_ONLY_KEY = "shushugo-talk-listen-only";
+
+function SafeSceneImage(props: ComponentProps<typeof CrossPlatformImage>) {
+  const [failed, setFailed] = useState(false);
+  return failed ? null : <CrossPlatformImage {...props} onError={() => setFailed(true)} />;
+}
 
 function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listenOnly, onListenOnlyChange, onMicBlocked, onAnswer }: {
   card: TalkCard;
@@ -104,6 +109,9 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
       } else if (error === "no-speech") setSpeechNote("没听到，再说一次");
       else if (error === "not-configured") {
         setSpeechNote("语音识别还没开通");
+        onMicBlocked();
+      } else if (error === "too-many") {
+        setSpeechNote("今天说得够多了，明天再来");
         onMicBlocked();
       } else if (error === "too-long") setSpeechNote("说得太长了，分开说");
       else setSpeechNote("没识别出来，再说一次");
@@ -413,8 +421,8 @@ export function TalkPage() {
           {section.title && <h2 className="talk-group-title">{section.title}</h2>}
           <div className="talk-collection-grid">
             {section.scenes.map((scene) => <button type="button" key={scene.id} className="ds-btn-soft focus-ring talk-collection-item" onClick={() => start(scene.id)}>
-              {/* 30 张约 2 MB：网页上滚到了再下（小程序里图在包内，忽略这两个属性） */}
-              <div className="talk-image"><CrossPlatformImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image" loading="lazy" decoding="async"
+              {/* 网页滚到后懒加载；小程序直接从云存储读取，原生 <image> 忽略 loading / decoding。 */}
+              <div className="talk-image"><SafeSceneImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image" loading="lazy" decoding="async"
                 weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
               <p className="talk-collection-title">{scene.title}</p>
               <p className="talk-collection-remaining">
@@ -435,7 +443,7 @@ export function TalkPage() {
               : <MascotSay sticker="empty-done" tone="good" size={96} className="ds-say-onbg talk-done-fallback">练完了</MascotSay>}
             <p className="talk-done-title">{sceneId ? "这个场景练完了" : "今天的复习做完了"}</p>
             {newScenes.map((scene) => <section key={scene.id} className="ds-card talk-new-scene">
-              <div className="talk-new-scene-thumb"><CrossPlatformImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image"
+              <div className="talk-new-scene-thumb"><SafeSceneImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image"
                 weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
               <div><p className="talk-kicker">收集到新场景</p><p className="talk-new-scene-title">{scene.title}</p></div>
             </section>)}

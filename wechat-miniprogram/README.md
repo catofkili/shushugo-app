@@ -80,6 +80,12 @@ Worker、iOS 端、同步协议一行都不用动；小程序这侧只换了传�
 兼容没有全局 `fetch` 的 Node 16。固定上海地域、`16k_ja` 日语、直接传 base64；解码后的录音上限 600 KB。
 接口依据：[腾讯云一句话识别](https://cloud.tencent.com/document/api/1093/35646)。
 
+每个 OPENID 按北京时间每天最多识别 100 次，默认上限可用云函数环境变量 `TALK_ASR_DAILY_LIMIT` 调整；
+只对非空且参数有效的音频计数，识别失败也计一次。计数存于云开发集合 `talk_asr_usage`，文档 id 为
+`<OPENID>_<YYYY-MM-DD>`；集合不存在时首次有效请求会自动创建。数据库计数失败会关闭识别请求，不会放行。
+小程序场景原图从 `cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/talk/scenes/`
+读取，文件名与 `frontend/src/assets/talk-scenes/` 一致（如 `S01.jpg`）；上线前由作者上传原图。
+
 **以下步骤由作者手动执行；本任务不部署、不改云端配置、不上传小程序。**
 
 1. 在腾讯云控制台开通「语音识别」。计费：按次计费，有免费额度，以腾讯云价格页为准。
@@ -103,7 +109,8 @@ Worker、iOS 端、同步协议一行都不用动；小程序这侧只换了传�
    read -rs 'TALK_ASR_SECRET_KEY?SecretKey: '; print
    tcb config update fn talk-asr -e cloud1-d3g7dauie3961575b \
      --env "TALK_ASR_SECRET_ID=$TALK_ASR_SECRET_ID" \
-     --env "TALK_ASR_SECRET_KEY=$TALK_ASR_SECRET_KEY" --env-mode merge
+     --env "TALK_ASR_SECRET_KEY=$TALK_ASR_SECRET_KEY" \
+     --env "TALK_ASR_DAILY_LIMIT=100" --env-mode merge
    unset TALK_ASR_SECRET_ID TALK_ASR_SECRET_KEY
    ```
 
