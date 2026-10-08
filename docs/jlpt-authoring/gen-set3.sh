@@ -25,6 +25,6 @@ if [ -n "${1:-}" ]; then
 fi
 rm -f SET3-DONE
 printf '%s\n' N1-grammar N2-grammar N3-grammar N1-vocab N2-vocab N3-vocab N4-vocab N5-vocab N4-grammar N5-grammar |
-  xargs -P 5 -n 1 "$PWD/gen-set3.sh"
+  xargs -P 4 -n 1 "$PWD/gen-set3.sh"
 for d in set3/*/; do [ -f "$d/DONE" ] || { echo "未完成: $d"; exit 1; }; done
 touch SET3-DONE
