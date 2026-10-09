@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import content from "../../data/talk_content.json";
@@ -14,6 +14,10 @@ const sentences = talkAudioSentences(content);
 
 describe("开口练习音频内容闸门", () => {
   it("manifest 与完整句子清单一一对应，哈希、实际文件都吻合，且没有孤儿", () => {
+    // TalkPage 播 card.partnerLine.ja / card.answer.ja；清单含场景全部台词和全部公式候选，覆盖两者。
+    const missing = sentences.filter((text) => !existsSync(`${directory}${exampleAudioName(text)}.aac`))
+      .map((text) => `${exampleAudioName(text)}.aac ${text}`);
+    expect(missing, `缺少 ${missing.length} 条开口练习音频：\n${missing.join("\n")}`).toEqual([]);
     const manifest = JSON.parse(readFileSync(`${directory}manifest.json`, "utf8")) as Record<string, string>;
     expect(Object.values(manifest).sort()).toEqual([...sentences].sort());
     for (const [name, text] of Object.entries(manifest)) {
@@ -49,7 +53,7 @@ describe("开口练习播放器", () => {
     vi.unstubAllGlobals();
   });
 
-  it("本地有文件就可播，无文件时只在系统语音可用时可播；小程序仍不可播", async () => {
+  it("本地有文件就可播，无文件时只在系统语音可用时可播；没有 wx 时小程序不可播", async () => {
     vi.stubGlobal("window", {});
     expect(await canPlayTalkAudio(sentences[0])).toBe(true);
     expect(await canPlayTalkAudio("未知句子")).toBe(false);

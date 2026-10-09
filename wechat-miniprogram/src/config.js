@@ -13,7 +13,11 @@ module.exports = {
   contentManifestUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/seed/manifest.json',
   audioBaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/audio/words',
   audioIndexUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/audio/words/index.json',
+  // 作者把本地 frontend/src/assets/talk-audio/voicevox-8/ 整个目录原样上传到云存储 audio/talk/voicevox-8/。
+  talkAudioBaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/audio/talk/voicevox-8',
   skinBaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/skins',
+  // 场景原图对应 frontend/src/assets/talk-scenes/，上线前需上传到此目录。
+  talkSceneBaseUrl: 'cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/talk/scenes',
   // 同步接口必须使用已备案 HTTPS 域名，留空时客户端保持纯离线。
   syncUrl: 'https://api.shushugo.com',
   entitlementUrl: 'https://api.shushugo.com/api/entitlements',

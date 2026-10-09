@@ -51,6 +51,13 @@
       "reason": "开口练习仅在 Taro 实验预览版登记；小程序直接编译同一份 TalkPage.tsx，不维护第二份页面。运行验收见 docs/DAILY_TALK_WEAPP_PREVIEW.md。"
     },
     {
+      "web": "frontend/src/components/CrossPlatformImage.weapp.tsx",
+      "mini": [
+        "frontend/src/pages/TalkPage.tsx"
+      ],
+      "reason": "TalkPage 的同一份 loading=lazy 图片属性由 Taro 平台适配器映射为原生 Image.lazyLoad；场景图片仍只维护一份页面源码。"
+    },
+    {
       "web": "frontend/src/pages/talk.css",
       "mini": [
         "frontend/src/pages/talk.css",

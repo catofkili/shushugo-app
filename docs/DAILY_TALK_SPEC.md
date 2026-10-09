@@ -150,9 +150,18 @@
   开始听之前先停掉对方的音频（不然把音箱的声音录进去）。键盘 `M`。
 - 接口：`lib/talk/speech-input(.weapp).ts` 导出 `speechInputAvailable()` 和 `listen(onText, onEnd, onError[, onStatus]) → stop()`。
   错误码和文案在 `TalkPage` 的 `PracticeCard` 里一处：`not-allowed`「没有麦克风权限，直接出声说也可以」（**这一页里按钮不再出现**——
-  拒了权限之后每点必败）、`no-speech`「没听到，再说一次」，其它静默结束。
+  拒了权限之后每点必败）、`too-many`「今天说得够多了，明天再来」（达到每日上限后本页隐藏按钮）、`no-speech`「没听到，再说一次」，其它静默结束。
 - 网页：浏览器自带的 `SpeechRecognition` / `webkitSpeechRecognition`，`ja-JP`、`interimResults`。
+  **历史记录（2026-10-02，原句保留；iOS 原生现状见下一条）**：
   ⚠️ **iOS App（Capacitor）里一律不显示**：WKWebView 暴露了这个对象但权限框永远不弹（WebKit bug 225298），要原生插件，留到上线（§7）。
+- **iOS App 原生现状（2026-10-08 起，代码已做、待真机验证）**：改走 `@capacitor-community/speech-recognition@6.0.1`，
+  只有 Capacitor 原生 iOS 才动态加载插件；网页和 Android 行为不变，小程序仍用自己的适配文件。
+  `speechInputAvailable()` 在原生 iOS 返回插件 `available()` 的异步结果，页面兼容 `boolean | Promise<boolean>`；不可用或查询失败时隐藏按钮。
+  先查 / 请求权限：6.0.1 的 iOS `checkPermissions()` 实际只查语音识别，所以即使返回 `granted` 仍调用 `requestPermissions()` 检查 / 请求麦克风。
+  任一拒绝都报 `not-allowed`，不启动录音。`start` 配 `ja-JP`、`partialResults: true`、`popup: false`，部分结果只显示第一条候选。
+  `listeningState: stopped` 结束；插件的 `start()` 在部分结果模式下是**开始录音就 resolve**，所以 promise 返回后还查 `isListening()`，确认已停才结束。
+  正常结束或手动停止时，从头到尾没有文字就报 `no-speech`；结束 / 停止移除自己的监听，重复停止无副作用，取消后晚到的权限或启动确认不会留下录音。
+  和网页版一样，没有录完后等待云识别的 `onStatus("recognizing")` 阶段。文字仍只在卡片状态里给用户自己对照，不打分、不存库。
 - 小程序：微信「同声传译」插件**不支持日语**，作者选了**腾讯云一句话识别**（`16k_ja`）：录音 → 云函数 `talk-asr` → 文字，
   停止后有「识别中…」。云函数部署和密钥要作者自己做（`wechat-miniprogram/README.md` 那一节）；没部署时报「语音识别还没开通」并隐藏按钮。
 
@@ -276,8 +285,8 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
 - 落盘：答完一张不到 2 秒就关页面，最后那张可能没存下（增量 2 秒一次，CLAUDE.md 落盘那节写过这是有意接受的窗口）。
 - 小程序预览版没有声音（见 §1.8）。
 - ~~每天新卡数是常量 5，没有设置项；想多练用「再练 5 张」。~~（2026-10-02 起改成自己挑场景，见 §1.0）
-- 小程序预览版的场景图是构建时压的 480×360（`taro-spike-2/scripts/talk-scenes-weapp.cjs`，用 macOS 的 `sips`）：study 分包上限 2 MiB，
-  30 张 800×600 原图自己就 2.2 MB。网页仍用原图。没有 `sips` 的机器原样拷，超了由 `verify-package-gates` 拦。
+- 小程序场景图曾在构建时压成 480×360；30 张 800×600 原图自己就 2.2 MB，study 分包上限 2 MiB。
+  2026-10-08 已改为从云存储读取原图、不打进分包；待作者上传原图到 `talk/scenes/` 并做真机加载验收。
 - 网页语音转文字靠浏览器：Chrome / Edge / Safari 有，Firefox 没有（按钮不出现）。Chrome 的识别把声音送到 Google 的服务，没网就报错（静默结束）。
 
 ## 6. 暂时不做
@@ -289,9 +298,14 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
 ## 7. 上线清单（真要发布时按顺序做，缺一条都别发）
 
 1. 内容终稿过一遍人审（日文由 Claude / 作者核，不接受外部 AI 自己说「核对过」）。
+   （2026-10-08 Claude 逐句核过：30 个场景全部台词 + 中文、32 条公式 × 全部候选填好的句子，未发现错句或不自然的说法，无改动。
+   读音注音 10-01 已人工核过。内容再改就要重核改动的部分。）
 2. 预生成音频：对方的话、每句标准说法、每条公式 × 每组候选的填好句子（VOICEVOX，走例句管线）。
    小程序没有系统语音，没音频的话接话卡在小程序里是哑的。
-3. 场景图压缩后确认小程序分包体积（每包 2 MiB）。
+   （2026-10-08 小程序按需拉的代码已做；待作者把 voicevox-8 目录上传到云存储 audio/talk/voicevox-8/）
+   （2026-10-09 已上传：454 个文件（453 段 aac + manifest.json），tcb storage list 核对过数量。内容改了要重传改动的文件。）
+3. 场景图改从云存储读取原图（2026-10-08 代码已做；待作者：上传原图到云存储 `talk/scenes/`）。上传后在小程序真机验收加载；原图不再进入分包。
+   （2026-10-09 已上传 30 张到 `talk/scenes/`；真机加载还没验收。）
 4. 同步：先发一版「认得 `talk_*`、但仍 `cloud: false`」的所有端（它们收到带 talk 的快照会拒绝，不会削数据）→
    等所有端都更新 → 再发 `cloud: true` 的版本，并在 `sync/merge.ts` 的重放那段接上 `replayTalkReviews`
    （和 `replayConfusionReviews` 同一处，动态 import）。
@@ -299,7 +313,24 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
 6. Pro 与否、成就 / 柚子挂不挂，发之前问作者。
 7. （2026-10-02 加）**iOS 的语音转文字要原生插件**（WKWebView 里网页识别用不了，见 §1.9）：选型、麦克风 / 语音识别两条 `Info.plist` 权限说明，
    会把原生代码带进发布包，所以和第 5 条一起做。
+   **2026-10-08 增补：代码已做，待真机验证。** 上面「和第 5 条一起做」保留作历史；当前按作者要求先接入
+   `@capacitor-community/speech-recognition@6.0.1` 和 `NSMicrophoneUsageDescription` / `NSSpeechRecognitionUsageDescription`，
+   不改 `__EXP_TALK__` 默认值，也不改 `check-release` / `build-ios.sh` 拦截。`cap sync ios` + `pod install` 已跑（Podfile / Podfile.lock 已提交），模拟器 Debug 编译通过（2026-10-08）。
+   **这个原生插件会进 iOS 发布包**：它作为 Capacitor 原生依赖被同步 / 链接，不能靠 JavaScript 摇树排除；只是实验开关关着时没有任何入口会调到它，
+   JS 侧整个 `lib/talk/` 被摇掉。**Info.plist 两条权限说明也在发布包里**；仅包含原生代码 / 权限说明不等于发生录音或弹出权限框。
+   **音频会话源码核实（6.0.1）**：启动时设 `AVAudioSession.category = .playAndRecord`、options 为 `.defaultToSpeaker`、mode 为 `.default`，并 `setActive(true)`；
+   最终结果、识别错误和 `stop()` 都没有恢复 category，也没有 `setActive(false)`。默认输出指定扬声器，源码没有主动切到听筒；
+   录音会话保留是否影响随后 VOICEVOX 的 `<audio>` 播放音量 / 路由，仍要真机核实。插件 JS API 没有设置 / 停用 AVAudioSession 的方法，
+   `<audio>` / Web Audio 也不能直接恢复原生会话，当前 JS 侧不能可靠补救；不修改 node_modules，也不加依赖。
+   真机验收须覆盖：首次双权限弹窗、分别拒绝权限、日语部分文字、无声结束、停止 / 换卡 / 离页清理，以及识别结束后 VOICEVOX 扬声器音量与路由。
 8. （2026-10-02 加）**小程序录音**：小程序后台「用户隐私保护指引」补「录音」用途；云函数 `talk-asr` 部署 + 腾讯云子账号密钥只放云函数环境变量；
    上线前把 480×360 的预览图换成云存储的原图（同第 3 条），删 `talk-scenes-weapp.cjs`。
    ⚠️ `talk-asr` 现在**没有按用户限次**：只要有 OPENID 就能反复调，腾讯云按次计费。上线前加每个 OPENID 每天的上限
    （云数据库计数，或者挪到 Worker 走现有的 D1 限速），超了返回 `too_many`、页面说「今天说得够多了」。
+8. （2026-10-02 加）**小程序录音**：小程序后台「用户隐私保护指引」补「录音」用途；云函数 `talk-asr` 部署 + 腾讯云子账号密钥只放云函数环境变量。
+   场景图切换与计数集合自动创建代码已做（2026-10-08；待作者：上传原图到云存储 `talk/scenes/`；集合可预建或由首次有效调用自动建）。
+   ⚠️ `talk-asr` 每个 OPENID 每天最多识别 100 次（腾讯云按次计费，原先只要有 OPENID 就能反复调），按北京时间计数；默认值 100，可用 `TALK_ASR_DAILY_LIMIT` 调整（已做，2026-10-08）。
+   （2026-10-09 已用 `tcb fn deploy talk-asr` 部署：Nodejs18.15、超时 60 秒、`TALK_ASR_DAILY_LIMIT=100`；命令行调用返回 Unauthorized 符合预期。
+   **腾讯云密钥 `TALK_ASR_SECRET_ID` / `TALK_ASR_SECRET_KEY` 还没配**，此前小程序里会报「语音识别还没开通」并隐藏按钮。
+   ⚠️ 以后用 `tcb fn deploy` 重新部署会按 cloudbaserc.json 覆盖环境变量——配了密钥后要么只在控制台改、要么部署后补回，别让部署把密钥冲掉。）
+   计数集合为 `talk_asr_usage`；集合不存在时首次有效请求自动创建，也可提前建集合。达到上限返回 `too_many`，页面提示「今天说得够多了，明天再来」。

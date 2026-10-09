@@ -68,6 +68,10 @@ Worker、iOS 端、同步协议一行都不用动；小程序这侧只换了传�
    `expectedBytes / expectedWords / version` 从库里现读。云存储权限用默认的「所有用户可读，仅创建者可读写」。
    读音音频加 `--audio`（只传默认声音 voicevox-8，index.json 也只列它）；`config.js` 的
    `audioBaseUrl` / `audioIndexUrl` 填对应 fileID，`InnerAudioContext.src` 直接吃 `cloud://`。
+   开口练习音频另由作者把 `frontend/src/assets/talk-audio/voicevox-8/` 整个目录原样上传到
+   云存储 `audio/talk/voicevox-8/`（文件名不变，`config.js` 的 `talkAudioBaseUrl` 已指向此目录）；
+   `--audio` 不上传这一项。小程序进卡按需下载，常驻本地 `talk-audio/`（全量约 4.3 MB，不按天清理）。
+   上传前或下载失败仍显示对方原文；上传后还需联网真机验收接话、翻面、再听和换卡停止。
    ⚠️ **本机 HTTP 代理会让 COS 上传 503**，脚本里把代理变量摘掉了；手动跑 tcb 也要 `env -u HTTPS_PROXY`。
 5. `syncUrl` / `authUrl` / `entitlementUrl` 照旧填 Worker 地址 —— 客户端只用它取路径，
    **云函数只认自己的 `WORKER_ORIGIN`**，所以配错也不会把请求发去别处（不然它就是个开放代理）。
@@ -79,6 +83,12 @@ Worker、iOS 端、同步协议一行都不用动；小程序这侧只换了传�
 `tencentcloud-sdk-nodejs-asr` SDK（云端安装依赖），由 SDK 处理 TC3-HMAC-SHA256 签名和 HTTPS，
 兼容没有全局 `fetch` 的 Node 16。固定上海地域、`16k_ja` 日语、直接传 base64；解码后的录音上限 600 KB。
 接口依据：[腾讯云一句话识别](https://cloud.tencent.com/document/api/1093/35646)。
+
+每个 OPENID 按北京时间每天最多识别 100 次，默认上限可用云函数环境变量 `TALK_ASR_DAILY_LIMIT` 调整；
+只对非空且参数有效的音频计数，识别失败也计一次。计数存于云开发集合 `talk_asr_usage`，文档 id 为
+`<OPENID>_<YYYY-MM-DD>`；集合不存在时首次有效请求会自动创建。数据库计数失败会关闭识别请求，不会放行。
+小程序场景原图从 `cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/talk/scenes/`
+读取，文件名与 `frontend/src/assets/talk-scenes/` 一致（如 `S01.jpg`）；上线前由作者上传原图。
 
 **以下步骤由作者手动执行；本任务不部署、不改云端配置、不上传小程序。**
 
@@ -103,7 +113,8 @@ Worker、iOS 端、同步协议一行都不用动；小程序这侧只换了传�
    read -rs 'TALK_ASR_SECRET_KEY?SecretKey: '; print
    tcb config update fn talk-asr -e cloud1-d3g7dauie3961575b \
      --env "TALK_ASR_SECRET_ID=$TALK_ASR_SECRET_ID" \
-     --env "TALK_ASR_SECRET_KEY=$TALK_ASR_SECRET_KEY" --env-mode merge
+     --env "TALK_ASR_SECRET_KEY=$TALK_ASR_SECRET_KEY" \
+     --env "TALK_ASR_DAILY_LIMIT=100" --env-mode merge
    unset TALK_ASR_SECRET_ID TALK_ASR_SECRET_KEY
    ```
 

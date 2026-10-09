@@ -3,13 +3,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const repoRoot = path.resolve(root, '..');
 const dist = path.join(root, 'dist');
 const maxBytes = 1_900_000;
 const maxUnapprovedPageComponentBytes = 100_000;
-const coreModule = (source) => /(?:\/frontend\/src\/lib\/|\/node_modules\/ts-fsrs\/)/.test(source);
-const pageComponent = (source) => /\/frontend\/src\/(?:components|pages)\//.test(source);
-const relativeSource = (source) => path.relative(repoRoot, source).split(path.sep).join('/');
+const coreModule = (source) => /(?:^frontend\/src\/lib\/|\/node_modules\/ts-fsrs\/)/.test(source);
+const pageComponent = (source) => /^frontend\/src\/(?:components|pages)\//.test(source);
 const allowedCoreDuplicates = {
   'frontend/src/lib/vocab-test.ts': 'Question selection and scoring are calculated on demand; active sessions live in the shared database, not a module cache.',
   'frontend/src/lib/conjugation-explanation.ts': 'Conjugation explanations are derived from static verb-pair hints; the module keeps no user-data cache.',
@@ -70,9 +68,14 @@ const modulePackages = new Map();
 const moduleSizes = new Map();
 const webModules = new Set();
 
+// reports/webpack-stats.json 是提交进 git 的构建产物，里面是「构建那台 checkout」的绝对路径，
+// 而且一份里就混着两个前缀（2026-10-08 那份：源码在 shushugo-wt/integrate，node_modules 解析到主目录）。
+// npm test 不重新构建，所以不能拿当前 checkout 做 path.relative 的基准（会得到 ../integrate/...，
+// 允许清单全部对不上）；也不能拿构建根目录。按仓库顶层目录名截成仓库相对路径。
 function sourceName(module) {
   return typeof module.nameForCondition === 'string'
     ? module.nameForCondition.replaceAll('\\', '/').replace(/\?.*$/, '')
+      .replace(/^.*?\/(?=(?:frontend|taro-spike-2|wechat-miniprogram)\/)/, '')
     : null;
 }
 
@@ -127,21 +130,21 @@ const duplicatedModules = [...modulePackages]
 const duplicatedCoreModules = duplicatedModules.filter(({ source }) => coreModule(source));
 const duplicatedPageComponents = duplicatedModules.filter(({ source }) => pageComponent(source));
 const duplicatedPageComponentBytes = duplicatedPageComponents.reduce((sum, item) => sum + item.bytes, 0);
-const currentCorePaths = new Set(duplicatedCoreModules.map(({ source }) => relativeSource(source)));
-const currentPagePaths = new Set(duplicatedPageComponents.map(({ source }) => relativeSource(source)));
-const unapprovedCoreDuplicates = duplicatedCoreModules.filter(({ source }) => !allowedCoreDuplicates[relativeSource(source)]);
+const currentCorePaths = new Set(duplicatedCoreModules.map(({ source }) => source));
+const currentPagePaths = new Set(duplicatedPageComponents.map(({ source }) => source));
+const unapprovedCoreDuplicates = duplicatedCoreModules.filter(({ source }) => !allowedCoreDuplicates[source]);
 const staleCoreAllowlist = Object.keys(allowedCoreDuplicates).filter((source) => !currentCorePaths.has(source));
-const unapprovedPageComponents = duplicatedPageComponents.filter(({ source }) => !allowedPageComponentDuplicates[relativeSource(source)]);
+const unapprovedPageComponents = duplicatedPageComponents.filter(({ source }) => !allowedPageComponentDuplicates[source]);
 const stalePageComponentAllowlist = Object.keys(allowedPageComponentDuplicates).filter((source) => !currentPagePaths.has(source));
 const unapprovedPageComponentBytes = unapprovedPageComponents.reduce((sum, item) => sum + item.bytes, 0);
-const grammarHighlights = [...modulePackages].find(([source]) => /\/frontend\/src\/lib\/grammarHighlights\.ts$/.test(source));
+const grammarHighlights = [...modulePackages].find(([source]) => /^frontend\/src\/lib\/grammarHighlights\.ts$/.test(source));
 const grammarHighlightsPackages = grammarHighlights ? [...grammarHighlights[1]].sort() : [];
 const grammarHighlightsPinned = grammarHighlightsPackages.length === 1 && grammarHighlightsPackages[0] === 'main';
 const coreDuplicateReasons = Object.fromEntries(duplicatedCoreModules.map((item) => [
-  relativeSource(item.source), allowedCoreDuplicates[relativeSource(item.source)] ?? 'UNAPPROVED: add a source-specific reason only after verifying its module state.'
+  item.source, allowedCoreDuplicates[item.source] ?? 'UNAPPROVED: add a source-specific reason only after verifying its module state.'
 ]));
 const pageComponentDuplicateReasons = Object.fromEntries(duplicatedPageComponents.map((item) => [
-  relativeSource(item.source), allowedPageComponentDuplicates[relativeSource(item.source)] ?? 'UNAPPROVED: add a source-specific reason only after verifying its package use.'
+  item.source, allowedPageComponentDuplicates[item.source] ?? 'UNAPPROVED: add a source-specific reason only after verifying its package use.'
 ]));
 const mainTopModules = [...modulePackages]
   .filter(([, moduleOwners]) => moduleOwners.has('main'))
@@ -158,16 +161,16 @@ const gate = {
   duplicateSourceModuleCount: duplicatedModules.length,
   duplicatedModules,
   duplicatedCoreModuleCount: duplicatedCoreModules.length,
-  duplicatedCoreModules: duplicatedCoreModules.map((item) => ({ ...item, source: relativeSource(item.source), reason: coreDuplicateReasons[relativeSource(item.source)] })),
+  duplicatedCoreModules: duplicatedCoreModules.map((item) => ({ ...item, source: item.source, reason: coreDuplicateReasons[item.source] })),
   coreDuplicateReasons,
-  unapprovedCoreDuplicates: unapprovedCoreDuplicates.map((item) => relativeSource(item.source)),
+  unapprovedCoreDuplicates: unapprovedCoreDuplicates.map((item) => item.source),
   staleCoreAllowlist,
   grammarHighlightsPackages,
   grammarHighlightsPinned,
-  duplicatedPageComponents: duplicatedPageComponents.map((item) => ({ ...item, source: relativeSource(item.source), reason: pageComponentDuplicateReasons[relativeSource(item.source)] })),
+  duplicatedPageComponents: duplicatedPageComponents.map((item) => ({ ...item, source: item.source, reason: pageComponentDuplicateReasons[item.source] })),
   pageComponentDuplicateReasons,
   duplicatedPageComponentBytes,
-  unapprovedPageComponents: unapprovedPageComponents.map((item) => relativeSource(item.source)),
+  unapprovedPageComponents: unapprovedPageComponents.map((item) => item.source),
   stalePageComponentAllowlist,
   unapprovedPageComponentBytes,
   pageComponentAllowlistPasses: !unapprovedPageComponents.length && !stalePageComponentAllowlist.length
@@ -203,7 +206,7 @@ console.log(JSON.stringify({
 
 const reportOnly = process.argv.includes('--report-only');
 if (!reportOnly && overBudget.length) throw new Error(`分包超出 ${maxBytes} B 上限：${JSON.stringify(overBudget)}`);
-if (!reportOnly && (unapprovedCoreDuplicates.length || staleCoreAllowlist.length)) throw new Error(`核心模块重复允许清单不匹配：未允许 ${JSON.stringify(unapprovedCoreDuplicates.map(({ source }) => relativeSource(source)))}；已过期 ${JSON.stringify(staleCoreAllowlist)}`);
+if (!reportOnly && (unapprovedCoreDuplicates.length || staleCoreAllowlist.length)) throw new Error(`核心模块重复允许清单不匹配：未允许 ${JSON.stringify(unapprovedCoreDuplicates.map(({ source }) => source))}；已过期 ${JSON.stringify(staleCoreAllowlist)}`);
 if (!reportOnly && !grammarHighlightsPinned) throw new Error(`grammarHighlights 必须只存在于主包，当前包：${JSON.stringify(grammarHighlightsPackages)}`);
-if (!reportOnly && (unapprovedPageComponents.length || stalePageComponentAllowlist.length || unapprovedPageComponentBytes > maxUnapprovedPageComponentBytes)) throw new Error(`页面组件重复清单不匹配：未允许 ${JSON.stringify(unapprovedPageComponents.map(({ source }) => relativeSource(source)))}；已过期 ${JSON.stringify(stalePageComponentAllowlist)}；未允许重复 ${unapprovedPageComponentBytes} B / ${maxUnapprovedPageComponentBytes} B`);
+if (!reportOnly && (unapprovedPageComponents.length || stalePageComponentAllowlist.length || unapprovedPageComponentBytes > maxUnapprovedPageComponentBytes)) throw new Error(`页面组件重复清单不匹配：未允许 ${JSON.stringify(unapprovedPageComponents.map(({ source }) => source))}；已过期 ${JSON.stringify(stalePageComponentAllowlist)}；未允许重复 ${unapprovedPageComponentBytes} B / ${maxUnapprovedPageComponentBytes} B`);
 if (!reportOnly && webModules.size) throw new Error(`产物包含禁止的 shared/web.js：${[...webModules].join(', ')}`);
