@@ -199,6 +199,21 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level, { complete
       if (!Array.isArray(question.order) || !question.order.every(optionNo)) error(where, "order 必须省略或为选项号数组");
     }
 
+    // 解析正文里写的「第N句／第N项」「[a,b,c,d]」必须和现在的 answer / order 对得上：
+    // shuffleAnswers 打乱选项时不改解析正文，写了编号就会指错（2026-10-10 普查，卷 1–3 共 11 题）。规则里已禁止写编号，这里兜底。
+    if (typeof question.explanation === "string" && optionNo(question.answer)) {
+      const orderLike = [...question.explanation.matchAll(/[\[［]\s*(\d)\s*[,，、]\s*(\d)\s*[,，、]\s*(\d)\s*[,，、]\s*(\d)\s*[\]］]/g)];
+      for (const m of orderLike) {
+        if (!Array.isArray(question.order) || question.order.join() !== m.slice(1).join()) error(where, `解析里的顺序 ${m[0]} 与 order 对不上`);
+      }
+      const nth = [...question.explanation.matchAll(/第([一二三四1-4１-４])[句项]/g)];
+      const digit = { 一: 1, 二: 2, 三: 3, 四: 4, "１": 1, "２": 2, "３": 3, "４": 4 };
+      if (question.kind === "usage" && nth.length === 1 && (question.explanation.match(/第/g) ?? []).length === 1) {
+        const n = digit[nth[0][1]] ?? Number(nth[0][1]);
+        if (n !== question.answer) error(where, `解析里的「${nth[0][0]}」与 answer ${question.answer} 对不上`);
+      }
+    }
+
     if (question.kind === "passage") {
       const stemMatch = typeof question.stem === "string" ? question.stem.match(/^\[(\d+)\]$/) : null;
       if (!stemMatch) error(where, "文章题 stem 必须是 [n]");
@@ -343,6 +358,8 @@ function runSelfTest() {
   bad("answer range", (b) => { q(b).answer = 5; }, "answer 必须是 1–4");
   bad("distractor key", (b) => { q(b).distractors["5"] = "错"; }, "键 5");
   bad("answer distractor", (b) => { q(b).distractors["1"] = "错"; }, "不能包含 answer");
+  bad("explanation position drift", (b) => { q(b).kind = "usage"; q(b).stem = "[[読む]]の使い方として正しい文はどれですか。"; q(b).explanation = "第三句が正しい。"; }, "与 answer 1 对不上");
+  bad("explanation order drift", (b) => { q(b).explanation = "正しい順序は[3,4,1,2]。"; }, "与 order 对不上");
   bad("distractors type", (b) => { q(b).distractors = []; }, "distractors 必须是对象");
   bad("underline marker", (b) => { q(b).kind = "kanji-reading"; q(b).id = "n3-v-trial1-01"; q(b).stem = "普通题干"; }, "[[…]]");
   bad("blank marker", (b) => { q(b).stem = "这里没有空。"; }, "（　…）");
