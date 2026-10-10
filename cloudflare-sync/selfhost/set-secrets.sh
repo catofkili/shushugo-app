@@ -15,6 +15,8 @@ keys=(
   RESEND_API_KEY EMAIL_FROM TURNSTILE_SITE_KEY TURNSTILE_SECRET_KEY
   WECHAT_APP_ID WECHAT_APP_SECRET WECHAT_MOBILE_APP_ID WECHAT_MOBILE_APP_SECRET
   WECHAT_MSG_TOKEN WECHAT_PAY_APP_KEY WECHAT_PAY_SANDBOX_APP_KEY WECHAT_PAY_PRODUCTION_APP_KEY
+  REVIEW_LOGIN_PASSWORD REVIEW_LOGIN_UNTIL REQUIRE_AUTH_HARDENING
+  WEEKLY_REPORT_RETENTION_DAYS APP_STORE_ENVIRONMENT
 )
 for key in "${keys[@]}"; do prompt_keys["$key"]=1; done
 
@@ -26,6 +28,10 @@ required_for() {
     WECHAT_MOBILE_APP_ID|WECHAT_MOBILE_APP_SECRET) echo "required for WeChat mobile-app login" ;;
     WECHAT_MSG_TOKEN) echo "required for WeChat payment notifications" ;;
     WECHAT_PAY_APP_KEY|WECHAT_PAY_SANDBOX_APP_KEY|WECHAT_PAY_PRODUCTION_APP_KEY) echo "configure the key matching WECHAT_PAY_ENV" ;;
+    REVIEW_LOGIN_PASSWORD|REVIEW_LOGIN_UNTIL) echo "both required for review login; UNTIL is an ISO timestamp" ;;
+    REQUIRE_AUTH_HARDENING) echo "production auth hardening: 1 (default); 0 disables it" ;;
+    WEEKLY_REPORT_RETENTION_DAYS) echo "optional positive retention days; leave blank to keep reports indefinitely" ;;
+    APP_STORE_ENVIRONMENT) echo "optional Sandbox or Production; default Production" ;;
     *) echo optional ;;
   esac
 }

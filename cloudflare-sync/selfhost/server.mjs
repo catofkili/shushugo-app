@@ -7,15 +7,7 @@ import { openDatabase, createBindings } from "./adapters.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const defaults = {
-  APP_BUNDLE_ID: "com.shushugo.app",
-  APPLE_SIGN_IN_CLIENT_ID: "com.shushugo.app",
-  WECHAT_OFFER_ID: "1450657377",
-  WECHAT_PAY_ENV: "1",
-  WECHAT_PAY_PRICES: JSON.stringify({ shushugo_pro_monthly: 1000, shushugo_pro_quarterly: 2400, shushugo_pro_yearly: 6800, shushugo_pro_lifetime: 29800 }),
-  LAUNCH_GIFT_CLAIM_UNTIL: "",
-  REQUIRE_AUTH_HARDENING: "1"
-};
+const defaults = { REQUIRE_AUTH_HARDENING: "1" };
 
 export const parseEnv = (text) => Object.fromEntries(text.split(/\r?\n/).flatMap((line) => {
   const match = line.match(/^\s*([A-Z][A-Z0-9_]*)=(.*)$/);
@@ -23,8 +15,9 @@ export const parseEnv = (text) => Object.fromEntries(text.split(/\r?\n/).flatMap
 }));
 
 export const createRuntime = async ({ dataDir = process.env.SHUSHUGO_DATA_DIR ?? "/var/lib/shushugo", envFile = process.env.SHUSHUGO_CREDENTIAL_FILE ?? "/etc/shushugo/worker.env", bundlePath = process.env.SHUSHUGO_WORKER_BUNDLE ?? path.join(here, "dist/index.js") } = {}) => {
+  const config = JSON.parse((await readFile(path.join(root, "wrangler.jsonc"), "utf8")).replace(/^\s*\/\/.*$/gm, ""));
   const fileEnv = await readFile(envFile, "utf8").then(parseEnv).catch((error) => error.code === "ENOENT" ? {} : Promise.reject(error));
-  const env = { ...defaults, ...fileEnv };
+  const env = { ...config.vars, ...defaults, ...fileEnv };
   if (env.APP_STORE_PRIVATE_KEY) env.APP_STORE_PRIVATE_KEY = env.APP_STORE_PRIVATE_KEY.replaceAll("\\n", "\n");
   const db = openDatabase(path.join(dataDir, "worker.sqlite"), path.join(root, "migrations"));
   const bindings = createBindings(db, path.join(dataDir, "r2"));
@@ -41,16 +34,22 @@ export const setClientIpHeader = (request, remoteAddress) => {
 
 const hopByHop = new Set(["connection", "keep-alive", "proxy-authenticate", "proxy-authorization", "te", "trailer", "transfer-encoding", "upgrade", "host"]);
 
+// Attach rejection handling immediately: a task may fail before fetch/scheduled returns.
+const waitUntil = (pending, promise) => {
+  pending.push(Promise.resolve(promise).catch((error) => {
+    console.error("[selfhost] waitUntil task failed:", error?.message ?? error);
+  }));
+};
+
 export const dispatch = async (worker, request, env) => {
   const pending = [];
-  const context = { waitUntil: (promise) => pending.push(Promise.resolve(promise)) };
+  const context = { waitUntil: (promise) => waitUntil(pending, promise) };
   let response;
   let failure;
   try { response = await worker.fetch(request, env, context); }
   catch (error) { failure = error; }
   for (let index = 0; index < pending.length; index += 1) {
-    const [result] = await Promise.allSettled([pending[index]]);
-    if (result.status === "rejected") console.error("[selfhost] waitUntil task failed:", result.reason?.message ?? result.reason);
+    await pending[index];
   }
   if (failure) throw failure;
   return response;
@@ -118,8 +117,11 @@ const runScheduled = async () => {
   const runtime = await createRuntime();
   try {
     const pending = [];
-    await runtime.worker.scheduled({ cron: "17 3 * * *", scheduledTime: Date.now() }, runtime.env, { waitUntil: (promise) => pending.push(Promise.resolve(promise)) });
-    for (const promise of pending) await promise;
+    try {
+      await runtime.worker.scheduled({ cron: "17 3 * * *", scheduledTime: Date.now() }, runtime.env, { waitUntil: (promise) => waitUntil(pending, promise) });
+    } finally {
+      for (const promise of pending) await promise;
+    }
     console.log("ShuShuGo scheduled Worker completed (03:17 UTC)");
   } finally {
     runtime.db.close();

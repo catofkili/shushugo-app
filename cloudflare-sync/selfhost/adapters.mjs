@@ -5,7 +5,7 @@ import { link, mkdir, readFile, readdir, rename, rm, stat, utimes, writeFile } f
 import path from "node:path";
 import { Readable } from "node:stream";
 
-const meta = (changes = 0, rowsRead = 0, lastRowId = 0) => ({
+const meta = (changes, rowsRead, lastRowId) => ({
   served_by: "node:sqlite",
   duration: 0,
   changes,
@@ -16,35 +16,46 @@ const meta = (changes = 0, rowsRead = 0, lastRowId = 0) => ({
   rows_written: changes
 });
 
+const d1Value = (value) => value instanceof Uint8Array ? Array.from(value) : value;
+const d1Row = (row) => Object.fromEntries(Object.entries(row).map(([key, value]) => [key, d1Value(value)]));
+
 class D1Statement {
   constructor(db, sql, params = []) { Object.assign(this, { db, sql, params }); }
-  bind(...params) { return new D1Statement(this.db, this.sql, params.map((value) => typeof value === "boolean" ? Number(value) : value)); }
+  bind(...params) {
+    return new D1Statement(this.db, this.sql, params.map((value) => {
+      if (typeof value === "boolean") return Number(value);
+      if (value === null || typeof value === "string" || typeof value === "number") return value;
+      if (value instanceof ArrayBuffer) return new Uint8Array(value);
+      if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+      if (Array.isArray(value) && value.every((byte) => Number.isInteger(byte) && byte >= 0 && byte <= 255)) return new Uint8Array(value);
+      throw new Error(`D1_TYPE_ERROR: Type '${typeof value}' not supported for value '${String(value)}'`);
+    }));
+  }
   async first(columnName) {
-    const statement = this.db.prepare(this.sql);
-    const row = statement.get(...this.params) ?? null;
-    return columnName && row ? row[columnName] ?? null : row;
+    const row = this.execute().results[0] ?? null;
+    if (row === null || columnName === undefined) return row;
+    if (!Object.hasOwn(row, columnName)) throw new Error(`D1_COLUMN_NOTFOUND: Column not found: ${columnName}`);
+    return row[columnName];
   }
-  async all() {
-    const statement = this.db.prepare(this.sql);
-    const results = statement.all(...this.params);
-    return { results, success: true, meta: meta(0, results.length) };
-  }
+  async all() { return this.execute(); }
   async run() { return this.execute(); }
   execute() {
     const statement = this.db.prepare(this.sql);
+    const counters = this.db.prepare("SELECT total_changes() AS changes, last_insert_rowid() AS lastRowId");
+    const before = counters.get();
+    let results = [];
     if (statement.columns().length) {
-      const results = statement.all(...this.params);
-      const changes = Number(this.db.prepare("SELECT changes() AS n").get().n);
-      const lastRowId = /^\s*(INSERT|REPLACE)\b/i.test(this.sql) ? Number(this.db.prepare("SELECT last_insert_rowid() AS n").get().n) : 0;
-      return { results, success: true, meta: meta(changes, results.length, lastRowId) };
-    }
-    const result = statement.run(...this.params);
-    return { success: true, meta: meta(Number(result.changes), 0, Number(result.lastInsertRowid ?? 0)) };
+      // Drain RETURNING completely, even when first() will expose just one row.
+      results = statement.all(...this.params).map(d1Row);
+    } else statement.run(...this.params);
+    // changes() survives SELECTs; total_changes() deltas also include trigger/cascade writes.
+    const after = counters.get();
+    return { results, success: true, meta: meta(Number(after.changes - before.changes), results.length, Number(after.lastRowId)) };
   }
   async raw(options = {}) {
     const statement = this.db.prepare(this.sql);
     statement.setReturnArrays(true);
-    const rows = statement.all(...this.params);
+    const rows = statement.all(...this.params).map((row) => row.map(d1Value));
     return options.columnNames ? [statement.columns().map((column) => column.name), ...rows] : rows;
   }
 }
@@ -64,22 +75,17 @@ export const putKvEntries = (db, entries) => {
   }
 };
 
-export const importD1Dump = (dbPath, sql, migrationsDir) => {
+export const importD1Dump = (dbPath, sql) => {
   const db = new DatabaseSync(dbPath);
   try {
     db.exec("PRAGMA foreign_keys = OFF");
     db.exec(sql);
     db.exec("PRAGMA foreign_keys = ON");
+    // ⚠️ 迁移记录原样保留，绝不替它补记。2026-10-10 演练实测：线上 D1 停在 0017，仓库已有 0018，
+    // 旧写法把仓库里所有迁移都补记成「已应用」，0018 的 duels 等表于是静默缺失。
+    // 没执行过的迁移留给 openDatabase 启动时真正跑一遍。
     const migrations = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'd1_migrations'").get();
-    if (!migrations) {
-      db.exec("CREATE TABLE d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)");
-    }
-    const names = db.prepare("SELECT name FROM d1_migrations").all().map(({ name }) => name);
-    const known = readdirSync(migrationsDir).filter((name) => name.endsWith(".sql")).sort();
-    if (known.some((name) => !names.includes(name))) {
-      const insert = db.prepare("INSERT OR IGNORE INTO d1_migrations(name) VALUES (?)");
-      for (const name of known) insert.run(name);
-    }
+    if (!migrations) throw new Error("D1 export has no d1_migrations table; refusing to guess migration state");
     const integrity = db.prepare("PRAGMA integrity_check").get().integrity_check;
     if (integrity !== "ok") throw new Error(`D1 import integrity_check: ${integrity}`);
   } finally {
@@ -165,22 +171,21 @@ export const createBindings = (db, r2Root) => {
 
   const r2 = {
     async put(key, value, options = {}) {
-      const bytes = typeof value === "string" ? Buffer.from(value) : Buffer.from(value instanceof ArrayBuffer ? new Uint8Array(value) : value);
-      const hash = createHash("sha256").update(bytes).digest("hex");
+      const bytes = Buffer.from(await new Response(value).arrayBuffer());
+      const hash = createHash("md5").update(bytes).digest("hex");
       const created = await writeR2Object(r2Root, { key, body: bytes, etag: hash, ...options });
       if (!created) return null;
       return await this.head(key);
     },
     async get(key) {
-      const file = keyPath(r2Root, key);
-      let info;
-      try { info = await stat(file); } catch (error) { if (error.code === "ENOENT") return null; throw error; }
-      const saved = await readFile(metadataPath(r2Root, key), "utf8").then(JSON.parse).catch(() => ({}));
+      const object = await this.head(key);
+      if (!object) return null;
+      const response = new Response(Readable.toWeb(createReadStream(keyPath(r2Root, key))));
       return {
-        key, size: info.size, etag: saved.etag ?? "", uploaded: info.mtime,
-        httpMetadata: saved.httpMetadata ?? {}, customMetadata: saved.customMetadata ?? {},
-        body: Readable.toWeb(createReadStream(file)),
-        async arrayBuffer() { const bytes = await readFile(file); return Uint8Array.from(bytes).buffer; }
+        ...object,
+        body: response.body,
+        arrayBuffer: () => response.arrayBuffer(),
+        text: () => response.text()
       };
     },
     async head(key) {
@@ -277,7 +282,7 @@ export const openDatabase = (dbPath, migrationsDir) => {
   }
   db.exec("CREATE TABLE IF NOT EXISTS d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)");
   const applied = new Set(db.prepare("SELECT name FROM d1_migrations").all().map(({ name }) => name));
-  for (const name of readdirSync(migrationsDir).filter((file) => file.endsWith(".sql")).sort()) {
+  for (const name of readdirSync(migrationsDir).filter((file) => file.endsWith(".sql") && !file.startsWith(".")).sort()) {
     if (applied.has(name)) continue;
     const sql = readFileSync(path.join(migrationsDir, name), "utf8");
     db.exec("BEGIN IMMEDIATE");

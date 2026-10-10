@@ -37,7 +37,9 @@ Worker 用到的运行时能力：
 
 源码没有用 `caches`、`HTMLRewriter`、`request.cf` 或 `scheduler.wait`，所以没有为它们加模拟层。客户端 IP 由反代写入 `CF-Connecting-IP`；待启用的 Caddy 配置会覆盖该请求头。应用层 IP 限速在公网反代启用后才有真实客户端地址。
 
-适配层语义测试会覆盖 D1 事务回滚、R2 条件创建、KV 过期、Worker 健康/认证/同步路由及 `waitUntil`。它是本代码当前使用范围的兼容测试，不代表 Cloudflare 全套 D1/R2/KV API。
+适配层语义测试会覆盖 D1 事务回滚、R2 条件创建、KV 过期、Worker 健康/认证/同步路由及 `waitUntil`，并通过真实适配器运行组队连续学习、决斗、反馈、审核登录和定时清理。逐项调用、源码行号、修复和未使用的 API 见 [ADAPTER_AUDIT.md](ADAPTER_AUDIT.md)。它是本代码当前使用范围的兼容测试，不代表 Cloudflare 全套 D1/R2/KV API。
+
+非密钥配置由 `server.mjs` 每次启动读取 `cloudflare-sync/wrangler.jsonc` 的 `vars`，只去掉整行 `//` 注释后解析 JSON；不能在运行时另抄一份配置。覆盖顺序是 `wrangler.jsonc` 的 `vars` → 唯一的硬编码默认值 `REQUIRE_AUTH_HARDENING=1` → `/etc/shushugo/worker.env`（systemd 使用 credential 路径）。修改后重启服务生效；部署 tarball 必须包含 `wrangler.jsonc`。
 
 ## 构建与本机运行
 
@@ -86,7 +88,7 @@ node --version
 cd cloudflare-sync
 npm ci && npm test && npm run check && npm run selfhost:build
 cd ..
-tar -czf /tmp/shushugo-w25.tar.gz cloudflare-sync/selfhost cloudflare-sync/migrations
+tar -czf /tmp/shushugo-w25.tar.gz cloudflare-sync/selfhost cloudflare-sync/migrations cloudflare-sync/wrangler.jsonc
 scp /tmp/shushugo-w25.tar.gz admin@8.148.68.155:/tmp/
 ssh admin@8.148.68.155 'sudo install -d -o root -g root -m 0755 /opt/shushugo && sudo tar -xzf /tmp/shushugo-w25.tar.gz -C /opt/shushugo --no-same-owner --no-same-permissions'
 ```
@@ -141,6 +143,10 @@ curl -sS -w '\nHTTP %{http_code} total=%{time_total}s\n' http://127.0.0.1:8787/a
 | `WECHAT_MOBILE_APP_ID`、`WECHAT_MOBILE_APP_SECRET` | 微信开放平台移动应用；微信移动端登录用，与小程序凭据不同 |
 | `WECHAT_PAY_SANDBOX_APP_KEY` 或 `WECHAT_PAY_PRODUCTION_APP_KEY` | 微信小程序虚拟支付后台，填写与 `WECHAT_PAY_ENV` 对应的一项 |
 | `WECHAT_MSG_TOKEN` | 微信小程序消息推送配置；微信支付通知校验用 |
+| `REVIEW_LOGIN_PASSWORD`、`REVIEW_LOGIN_UNTIL` | 审核登录专用密码及 ISO 截止时间；两项同时配置且未到期才开放 |
+| `REQUIRE_AUTH_HARDENING` | 生产认证强化，默认 `1`；填写 `0` 会关闭强化 |
+| `WEEKLY_REPORT_RETENTION_DAYS` | 可选周报保留天数；不填则不清理，期限须由产品明确确认 |
+| `APP_STORE_ENVIRONMENT` | 可选 `Sandbox` / `Production`；默认 `Production` |
 
 `WECHAT_PAY_ENV` 默认是 `1`（沙箱）；在确认支付环境前不要填写/启用生产 AppKey。`APP_STORE_PRIVATE_KEY`、支付密钥等只由用户本人输入，不能放 Git、命令行参数或部署包中。`/api/health` 的 `productionReady` 只要求认证用 Turnstile、Resend 和 `REQUIRE_AUTH_HARDENING=1`；其它渠道会分别显示配置布尔值。
 

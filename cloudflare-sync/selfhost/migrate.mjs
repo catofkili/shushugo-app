@@ -18,7 +18,7 @@ const d1Database = "eb7ebca5-8026-41c2-8662-1dbc76eef5d7";
 
 const api = async (url, init) => {
   const response = await fetch(url, { ...init, headers: { authorization: `Bearer ${token}`, ...init?.headers } });
-  if (!response.ok) throw new Error(`Cloudflare API returned HTTP ${response.status} for ${new URL(url).pathname}`);
+  if (!response.ok) throw new Error(`Cloudflare API returned HTTP ${response.status} for ${new URL(url).pathname}: ${(await response.text()).slice(0, 500)}`);
   return response;
 };
 
@@ -69,14 +69,16 @@ const remoteRowCounts = async (tableNames) => {
   const listed = await api(endpoint, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ sql: "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name <> 'd1_migrations' ORDER BY name" })
+    body: JSON.stringify({ sql: "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name <> 'd1_migrations' AND substr(name, 1, 4) <> '_cf_' ORDER BY name" })
   });
   const listPayload = await listed.json();
   if (!listPayload.success || !Array.isArray(listPayload.result?.[0]?.results)) throw new Error("Could not read the remote D1 table list");
   const remoteNames = listPayload.result[0].results.map(({ name }) => name).sort();
   if (JSON.stringify(remoteNames) !== JSON.stringify([...tableNames].sort())) throw new Error("D1 export table list differs from remote D1");
   if (!tableNames.length) return {};
-  const sql = tableNames.map((name) => `SELECT '${name.replaceAll("'", "''")}' AS table_name, COUNT(*) AS row_count FROM "${name.replaceAll('"', '""')}"`).join(" UNION ALL ");
+  // D1 限制复合 SELECT 的段数（22 段 UNION ALL 就报 too many terms），所以用一行多列的标量子查询。
+  const quote = (name) => `"${name.replaceAll('"', '""')}"`;
+  const sql = `SELECT ${tableNames.map((name) => `(SELECT COUNT(*) FROM ${quote(name)}) AS ${quote(name)}`).join(", ")}`;
   const response = await api(endpoint, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -84,7 +86,8 @@ const remoteRowCounts = async (tableNames) => {
   });
   const payload = await response.json();
   if (!payload.success || !Array.isArray(payload.result?.[0]?.results)) throw new Error("Cloudflare D1 row-count query failed");
-  return Object.fromEntries(payload.result[0].results.map(({ table_name, row_count }) => [table_name, Number(row_count)]));
+  const [row] = payload.result[0].results;
+  return Object.fromEntries(tableNames.map((name) => [name, Number(row[name])]));
 };
 
 export const importR2Page = async (objects, bucketName, r2Root, downloadObject = downloadR2Object) => {
@@ -163,7 +166,7 @@ const main = async () => {
     const packageDir = await mkdtemp(path.join(process.env.TMPDIR ?? "/tmp", "shushugo-package-"));
     try {
       const dbPath = path.join(packageDir, "worker.sqlite");
-      importD1Dump(dbPath, d1Sql, path.join(workerRoot, "migrations"));
+      importD1Dump(dbPath, d1Sql);
       const sqlite = new DatabaseSync(dbPath);
       const sourceRowCounts = countTables(sqlite, { exclude: ["d1_migrations"] });
       const countsFromCloudflare = await remoteRowCounts(Object.keys(sourceRowCounts));
@@ -185,7 +188,8 @@ const main = async () => {
         console.log(`D1 row counts match remote: ${Object.keys(sourceRowCounts).length} tables, ${totalRows} rows; migration records: ${missing}; R2 objects: ${r2Objects.length}; KV keys: ${kvCount}`);
       } finally { integrityDb.close(); }
       await writeFile(path.join(packageDir, "manifest.json"), JSON.stringify({ createdAt: new Date().toISOString(), sourceRowCounts, rowCounts, r2Objects: r2Objects.length, kvKeys: kvCount }, null, 2), { mode: 0o600 });
-      const tar = spawnSync("tar", ["-czf", archive, "-C", packageDir, "worker.sqlite", "r2", "manifest.json"], { encoding: "utf8" });
+      // COPYFILE_DISABLE：macOS 的 tar 默认给每个文件塞一个 ._ 扩展属性文件，安装器会当成可疑条目拒收。
+      const tar = spawnSync("tar", ["-czf", archive, "-C", packageDir, "worker.sqlite", "r2", "manifest.json"], { encoding: "utf8", env: { ...process.env, COPYFILE_DISABLE: "1" } });
       if (tar.status !== 0) throw new Error(tar.stderr || "Could not create migration archive");
       await chmod(archive, 0o600);
       keepArchive = true;
