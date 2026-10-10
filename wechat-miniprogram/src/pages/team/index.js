@@ -17,7 +17,13 @@ function activity() {
     ? Number(core.firstValue(db, 'SELECT COUNT(*) FROM kanji_unit_reviews WHERE reviewed_on = ?', [summary.day], 0))
     : 0;
   const completed = Number(core.firstValue(db, 'SELECT COUNT(*) FROM checkins WHERE checked_on = ?', [summary.day], 0)) > 0;
-  return { studyDay: summary.day, studyCount: Number(summary.today) + grammar + kanji, completed };
+  // 和网页 team-activity.ts 的 localActivity 同一口径：过关看词数和分钟，漏了就永远 0 词。
+  const hasStudyTime = Number(core.firstValue(db, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'word_study_time'", [], 0)) > 0;
+  const wordCount = Math.min(5000, Number(core.firstValue(db, 'SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ?', [summary.day], 0)));
+  const activeMinutes = hasStudyTime
+    ? Math.min(1440, Math.floor(Number(core.firstValue(db, 'SELECT seconds FROM word_study_time WHERE studied_on = ?', [summary.day], 0)) / 60))
+    : 0;
+  return { studyDay: summary.day, studyCount: Math.min(5000, Number(summary.today) + grammar + kanji), completed, wordCount, activeMinutes };
 }
 
 function errorText(error) {
