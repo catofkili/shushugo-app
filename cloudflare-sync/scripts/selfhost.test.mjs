@@ -121,7 +121,7 @@ try {
     assert.equal(healthJson.authHardening, true);
     assert.equal(healthJson.productionReady, false);
     const config = await runtime.worker.fetch(new Request("http://127.0.0.1:8787/api/auth/config"), runtime.env, { waitUntil() {} });
-    assert.deepEqual(await config.json(), { appleEnabled: true, appleClientId: "com.shushugo.app", wechatAppEnabled: false, turnstileEnabled: false });
+    assert.deepEqual(await config.json(), { appleEnabled: true, appleClientId: "com.shushugo.app", wechatAppEnabled: false, turnstileEnabled: false, reviewLoginOpen: false });
 
     const { createHash } = await import("node:crypto");
     const token = "adapter-route-token";
