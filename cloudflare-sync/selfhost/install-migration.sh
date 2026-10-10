@@ -99,7 +99,7 @@ systemctl start "$service"
 
 healthy=0
 for _ in {1..30}; do
-  if curl -fsS http://127.0.0.1:8787/api/health -o "$stage/health.json" && grep -q '"migrationsApplied":true' "$stage/health.json"; then
+  if curl -fsS --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:8787/api/health -o "$stage/health.json" && grep -q '"migrationsApplied":true' "$stage/health.json"; then
     healthy=1
     break
   fi
