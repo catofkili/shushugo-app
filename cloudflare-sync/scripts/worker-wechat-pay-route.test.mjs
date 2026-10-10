@@ -83,7 +83,9 @@ const env = {
   WECHAT_PAY_ENV: "0", WECHAT_PAY_PRICES: JSON.stringify({ shushugo_pro_monthly: 1000, shushugo_pro_quarterly: 2400, shushugo_pro_yearly: 6800, shushugo_pro_lifetime: 29800 }), WECHAT_MSG_TOKEN: "pushtoken"
 };
 
-const wx = { paidStatus: 2, calls: [] };
+// paid_time 默认取「现在」：写死成某一天，月卡从那天起算一个月后就过期，「已有 Pro 不许再买」那几条会在那天之后
+// 无声变红（2026-10-10 就这样红过，以为是线上回归）。只有要核对具体到期日的那段才临时钉成固定时间。
+const wx = { paidStatus: 2, paidTime: null, calls: [] };
 globalThis.fetch = async (input, init) => {
   const url = String(input);
   wx.calls.push(url.split("?")[0]);
@@ -91,7 +93,7 @@ globalThis.fetch = async (input, init) => {
   if (url.includes("/xpay/query_order")) {
     if (wx.queryDown) throw new Error("network down");
     if (wx.queryBusy) return Response.json({ errcode: -1, errmsg: "system error" });
-    return Response.json({ errcode: 0, order: { status: wx.paidStatus, wx_order_id: "WX-1", paid_time: 1789000000 } });
+    return Response.json({ errcode: 0, order: { status: wx.paidStatus, wx_order_id: "WX-1", paid_time: wx.paidTime ?? Math.floor(Date.now() / 1000) } });
   }
   if (url.includes("/xpay/notify_provide_goods")) return Response.json({ errcode: 0 });
   throw new Error(`unexpected fetch ${url}`);
@@ -213,6 +215,7 @@ try {
 
   // 首发赠送期间买月卡：从赠送到期日起算（paid_time 1789000000 = 北京时间 2026-09-10，赠送到 10-01 北京时间 08:00）。
   // 同一单再结算一次（发货确认失败后收到推送），到期日不许往回缩。
+  wx.paidTime = 1789000000;
   env.DB.entitlement = null;
   env.DB.giftGrant = { expires_at: "2026-10-01T00:00:00.000Z" };
   wx.paidStatus = 1;
@@ -238,6 +241,7 @@ try {
   res = await post("/api/pay/wechat/orders/verify", "tok-a", { outTradeNo: afterGift.outTradeNo });
   assert.equal(env.DB.entitlement.expires_at, "2026-10-10T00:26:40.000Z");
   env.DB.giftGrant = null;
+  wx.paidTime = null;
 
   console.log("OK Worker wechat pay routes: order, verify (unpaid/paid/idempotent/other-account), push handshake and refund, settle-before-reorder, gift carry-over");
 } finally {
