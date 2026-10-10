@@ -4,7 +4,7 @@
  * 一张卡对应一组人工写明、标为不可互换的词：正面给词组，先回想核心差异；反面展示辨析稿。
  * 同义词组和可互换组不进队列，题面也不写情景提示。
  *
- * 哪些组能出：非 synonym 组、review level=major、词形唯一且有完整辨析稿。
+ * 哪些组能出：非 synonym / near-synonym 组、review level=major、词形唯一且有完整辨析稿。
  * 「已掌握」（confusion_mastered，用户手动标的）的组不进队列 —— 等于手动毕业，保留那张表。
  *
  * 存储同 kanji-char-cards：confusion_reviews 是事实，confusion_progress 是检查点，confusion_tasks 是当天投影。
@@ -86,7 +86,7 @@ export const ensureConfusionCardTables = (): void => {
 /** 仅收录核心用法确实不同的非同义组，词形重复或只是语气差别的组不出卡。 */
 export const matchable = (group: ConfusionGroup): boolean => {
   const review = distinctionReviewFor(group.key);
-  if (!review || review.level !== "major" || group.type === "synonym" || group.members.length < 2 || !review.summary.trim()) return false;
+  if (!review || review.level !== "major" || group.type === "synonym" || group.type === "near-synonym" || group.members.length < 2 || !review.summary.trim()) return false;
   const forms = new Set(group.members.map((member) => `${displayForm(member)}\u0000${member.kana}`));
   return forms.size === group.members.length;
 };

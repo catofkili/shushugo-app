@@ -1,7 +1,7 @@
 /**
  * 单独汉字卡：一个字一张卡，进 FSRS（docs/MIXED_STUDY_PLAN.md 第 1 节）。
  *
- * 正面给一个字和含它的词，连每个词里实际使用的读音；只调度有手写且唯一配对题的多音字。
+ * 正面考词里这个字的实际读音：手写且唯一配对的多音字出连线，其余可出题的字出读音 / 音变选择题。
  * 翻面再看音读 / 训读（KANJIDIC）、读音判据与例词。中文母语者认字不认音，所以考读音，不考写法。
  *
  * ⚠️ 和 `kanji-unit-scheduler.ts`（按「一个字的一种读音」为单位、在旗子后面）不是一回事，
@@ -21,6 +21,7 @@ import { withoutSyncStamp } from "./sync/schema";
 import { allKanjiUnits, kanjiUnitIndexLoaded, kanjiUnitWordIds, loadKanjiUnitIndex } from "./kanji-unit-index";
 import { allKanjiReadingQuestionChars, kanjiReadingQuestionFor, kanjiReadingUsageFor, kanjiReadingUsageLoaded, loadKanjiReadingUsage, clauseText, type KanjiReadingQuestion } from "./kanji-reading-usage";
 import readingsPayload from "../data/kanji_readings.json";
+import { kanjiChoiceQuestion, type KanjiChoiceQuestion } from "./kanji-choice";
 
 export const KANJI_CHAR_FSRS: FsrsEntity = {
   table: "kanji_char_memory",
@@ -125,6 +126,8 @@ export interface KanjiCharCard {
   examples: KanjiCharExample[];
   /** 人工编写的一个具体词语读音题；未审校的字不显示泛化题面。 */
   question?: KanjiReadingQuestion;
+  /** 没有手写连线题时，使用索引中的例词出读音 / 音变选择题。 */
+  choice?: KanjiChoiceQuestion;
 }
 
 const EXAMPLE_CAP = 6;
@@ -165,7 +168,8 @@ export const kanjiCharCard = (char: string): KanjiCharCard | null => {
     kun: dict.kun ?? [],
     usage,
     examples,
-    question: kanjiReadingQuestionFor(char) ?? undefined
+    question: kanjiReadingQuestionFor(char) ?? undefined,
+    choice: kanjiReadingQuestionFor(char) ? undefined : kanjiChoiceQuestion(char) ?? undefined
   };
 };
 
@@ -177,8 +181,23 @@ const occurrenceByChar = () => {
   return occurrence;
 };
 
+const eligibleByDatabase = new WeakMap<object, Set<string>>();
+const eligibleQuestionChars = (): Set<string> => {
+  const db = getDatabase();
+  const cached = eligibleByDatabase.get(db);
+  if (cached) return cached;
+  const chars = new Set(allKanjiReadingQuestionChars());
+  // 首页可能在内容装好前查池子；不能永久缓存那一刻的空资格集。
+  if (!kanjiCharDataLoaded()) return chars;
+  for (const char of new Set(allKanjiUnits().filter((unit) => unit.unitType === "char").map((unit) => unit.char))) {
+    if (!chars.has(char) && kanjiChoiceQuestion(char)) chars.add(char);
+  }
+  eligibleByDatabase.set(db, chars);
+  return chars;
+};
+
 const questionCharSql = (): string => {
-  const chars = allKanjiReadingQuestionChars();
+  const chars = [...eligibleQuestionChars()];
   return chars.length ? `char IN (${chars.map((char) => `'${char.replace(/'/gu, "''")}'`).join(",")})` : "0";
 };
 const log = createCardLog({
@@ -194,10 +213,10 @@ const log = createCardLog({
  */
 export const createKanjiCharTasks = (quota: { fresh: number; review: number }, targetLevelRank: number, day = today()) => {
   ensureKanjiCharTables();
-  const eligible = new Set(allKanjiReadingQuestionChars());
-  if (!eligible.size) throw new Error("汉字连线题尚未加载，不能生成汉字卡清单");
+  const eligible = eligibleQuestionChars();
+  if (!eligible.size) throw new Error("汉字题尚未加载，不能生成汉字卡清单");
   if (rowsFor("SELECT char FROM kanji_char_tasks WHERE reviewed_on = ?", [day]).some((row) => !eligible.has(String(row.char)))) {
-    // 旧版本的当日投影可能包含没有连线题的单音字。只重建任务投影，保留复习历史和进度。
+    // 旧版本的当日投影可能包含两种题都不能出的字。只重建任务投影，保留复习历史和进度。
     getDatabase().run("DELETE FROM kanji_char_tasks WHERE reviewed_on = ?", [day]);
   }
   return log.createTasks(quota, () => {
@@ -210,7 +229,7 @@ export const createKanjiCharTasks = (quota: { fresh: number; review: number }, t
 
 export const pickKanjiCharNext = (day = today(), excluded = new Set<string>()) => {
   ensureKanjiCharTables();
-  const eligible = new Set(allKanjiReadingQuestionChars());
+  const eligible = eligibleQuestionChars();
   const skip = new Set(excluded);
   for (let attempts = 0; attempts < 1000; attempts += 1) {
     const char = log.pickNext(day, skip);

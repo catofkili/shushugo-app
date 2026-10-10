@@ -44,6 +44,32 @@ function focusComparison(summary) {
 const KANJI_ROW_PITCH = 164;
 const KANJI_GUTTER = 64;
 
+const KANJI_SOUND_CHANGES = { rendaku: '连浊', sokuon: '促音化', handaku: '半浊音化', 'rendaku-handaku': '半浊音化', 'on-drop': '省音' };
+
+// 单音字 / 音变选择题：和网页 KanjiChoiceItems 同一份题（web.kanjiCharCards 出的 card.choice）。
+const kanjiChoiceView = (choice, choices, revealed) => {
+  const items = choice?.items || [];
+  return {
+    kanjiChoiceRows: items.map((item, index) => ({
+      index,
+      before: item.word.slice(0, item.start),
+      target: item.word.slice(item.start, item.start + item.length),
+      after: item.word.slice(item.start + item.length),
+      kana: item.kana,
+      meaning: item.meaning,
+      change: KANJI_SOUND_CHANGES[item.variant] ? `${item.base} → ${item.answer} · ${KANJI_SOUND_CHANGES[item.variant]}` : '',
+      options: item.options.map((option, optionIndex) => ({
+        text: option,
+        number: optionIndex + 1,
+        state: revealed && option === item.answer ? 'correct'
+          : revealed && choices[index] === option ? 'wrong'
+            : choices[index] === option ? 'picked' : ''
+      }))
+    })),
+    kanjiChoiceComplete: items.length > 0 && items.every((_, index) => choices[index] !== undefined)
+  };
+};
+
 const kanjiMatchView = (question, readings, pairs, selectedWord, revealed) => {
   const items = question?.items || [];
   const lines = [];
@@ -107,6 +133,9 @@ Page({
     interleaveRevealed: false,
     kanjiReadings: [],
     kanjiPairs: {},
+    kanjiChoices: {},
+    kanjiChoiceRows: [],
+    kanjiChoiceComplete: false,
     selectedKanjiWord: null,
     kanjiWordRows: [],
     kanjiReadingRows: [],
@@ -548,6 +577,7 @@ Page({
 
   showInterleave(interleave) {
     const question = interleave?.kind === 'kanji' ? interleave.card.question : null;
+    const choice = interleave?.kind === 'kanji' ? interleave.card.choice : null;
     const readings = question
       ? web.kanjiReadingUsage.shuffleKanjiReadingOptions(question.items.map(item => item.targetReading))
       : [];
@@ -559,7 +589,9 @@ Page({
       kanjiReadings: readings,
       kanjiPairs: pairs,
       selectedKanjiWord: selectedWord,
-      ...kanjiMatchView(question, readings, pairs, selectedWord, false)
+      kanjiChoices: {},
+      ...kanjiMatchView(question, readings, pairs, selectedWord, false),
+      ...kanjiChoiceView(choice, {}, false)
     });
   },
 
@@ -570,10 +602,20 @@ Page({
       const question = this.data.interleave.kind === 'kanji' ? this.data.interleave.card.question : null;
       this.setData({
         interleaveRevealed: true,
-        ...kanjiMatchView(question, this.data.kanjiReadings, this.data.kanjiPairs, this.data.selectedKanjiWord, true)
+        ...kanjiMatchView(question, this.data.kanjiReadings, this.data.kanjiPairs, this.data.selectedKanjiWord, true),
+        ...kanjiChoiceView(this.data.interleave.kind === 'kanji' ? this.data.interleave.card.choice : null, this.data.kanjiChoices, true)
       });
       if (web.preferences.getStudyPreferences().zooSounds) web.sounds.playFlip();
     }
+  },
+
+  selectKanjiChoice(event) {
+    const choice = this.data.interleave?.card.choice;
+    if (this.data.interleaveRevealed || !choice) return;
+    const { item, option } = event.currentTarget.dataset;
+    if (!choice.items[item]?.options.includes(option)) return;
+    const choices = { ...this.data.kanjiChoices, [item]: option };
+    this.setData({ kanjiChoices: choices, ...kanjiChoiceView(choice, choices, false) });
   },
 
   selectKanjiWord(event) {

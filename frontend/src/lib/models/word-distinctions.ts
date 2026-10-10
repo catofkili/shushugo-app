@@ -12,8 +12,8 @@ import { Eye, NotebookPen, type LucideIcon } from "lucide-react";
  * similar_meaning_groups 仍保留少量高价值敬语和用法组，但只把它的人工成员和摘要接入这里；
  * 题面首义撞车继续只服务排片，不伪装成词义辨析。
  *
- * 这里把需要展示的人工辨析和七类分组合成一串 section，顺序 = 说法从具体到笼统：
- * 手写辨析 → 七类分组 → 同词根派生 → 音形相近。读音相似只展示事实，不额外编造区别。
+ * 这里把需要展示的人工辨析和八类分组合成一串 section，顺序 = 说法从具体到笼统：
+ * 手写辨析 → 八类分组 → 同词根派生 → 音形相近。读音相似只展示事实，不额外编造区别。
  *
  * **刻意不接 FSRS。** 气泡里答案是全露着的，此时给评分等于告诉 FSRS「这词记住了」，
  * 正是排片规则把同组词隔开 12 张要防的那件事（见 CLAUDE.md）。能留下的状态只有
@@ -161,7 +161,7 @@ export function wordDistinctions(card: WordCard): DistinctionSection[] {
   const nearItems = card.confusions.filter((item) => item.kind === "sound" && !listedIds.has(item.id));
 
   // 同词干的派生形（手伝う / 手伝い）先分出来：它们不是「音形相近」，见 confusion.sameStemForms。
-  // 名字和图标借 confusion-groups 那七类里的 stem，全应用「同词根」只有一个说法。
+  // 名字和图标借 confusion-groups 那八类里的 stem，全应用「同词根」只有一个说法。
   const stemItems = nearItems.filter((item) => sameStemForms(card, item));
   if (stemItems.length) {
     push({

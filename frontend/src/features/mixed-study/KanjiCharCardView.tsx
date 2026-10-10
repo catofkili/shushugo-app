@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Eye, RotateCcw } from "lucide-react";
 import { ScrollArea } from "../../components/ScrollArea";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
@@ -6,6 +6,7 @@ import type { KanjiCharCard } from "../../lib/kanji-char-cards";
 import { assignKanjiReadingPair, shuffleKanjiReadingOptions } from "../../lib/kanji-reading-usage";
 import type { WordAnswer } from "../../types/vocabulary";
 import { KanjiPairLines } from "./KanjiPairLines";
+import { KanjiChoiceItems } from "./KanjiChoiceItems";
 
 export const KANJI_ACCENT: CSSProperties = {
   "--quiz-accent": "#B9A7F2",
@@ -30,16 +31,36 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
   const diagramHeight = items.length * ROW_HEIGHT + Math.max(0, items.length - 1) * ROW_GAP;
   const [pairs, setPairs] = useState<Record<number, number>>({});
   const [selectedWord, setSelectedWord] = useState<number | null>(null);
+  const [choices, setChoices] = useState<Record<number, string>>({});
+  const [activeChoice, setActiveChoice] = useState(0);
+  const choiceItems = card.choice?.items;
+  const allChosen = Boolean(choiceItems?.length && choiceItems.every((_, index) => choices[index] !== undefined));
+  const selectChoice = useCallback((itemIndex: number, option: string) => {
+    if (revealed || !choiceItems || !choiceItems[itemIndex]?.options.includes(option)) return;
+    const next = { ...choices, [itemIndex]: option };
+    setChoices(next);
+    const unanswered = choiceItems.findIndex((_, index) => next[index] === undefined);
+    setActiveChoice(unanswered >= 0 ? unanswered : itemIndex);
+  }, [choiceItems, choices, revealed]);
 
   useEffect(() => {
     setPairs({});
     setSelectedWord(null);
+    setChoices({});
+    setActiveChoice(0);
   }, [card.char]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
+      if (!revealed && choiceItems) {
+        if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+        const option = /^[1-4]$/u.test(event.key) ? choiceItems[activeChoice]?.options[Number(event.key) - 1] : undefined;
+        if (option) { event.preventDefault(); selectChoice(activeChoice, option); }
+        else if ((event.key === "Enter" || event.key === " ") && allChosen) { event.preventDefault(); onReveal(); }
+        return;
+      }
       if (target?.closest("button, input, textarea, select, [contenteditable='true']")) return;
       if (!revealed) {
         if (event.key.length === 1 || event.key === "Enter" || event.key === " ") { event.preventDefault(); onReveal(); }
@@ -50,7 +71,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onAnswer, onReveal, revealed]);
+  }, [activeChoice, allChosen, choiceItems, onAnswer, onReveal, revealed, selectChoice]);
 
   const selectReading = (readingIndex: number) => {
     if (revealed || selectedWord === null) return;
@@ -63,6 +84,10 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
   return (
     <div key={card.char} style={KANJI_ACCENT} className="kanji-match-card zoo-enter dictionary-card flex h-full min-h-0 flex-col gap-2 rounded-2xl px-3 pb-2 pt-3 sm:gap-3 sm:p-6">
       <ScrollArea className="min-h-0 flex-1 rounded-2xl border border-[var(--ds-line)] bg-[var(--ds-inset)] p-3 sm:p-6 lg:mx-auto lg:w-[min(900px,100%)]">
+        {card.choice ? (
+          <KanjiChoiceItems char={card.char} question={card.choice} choices={choices} activeItem={activeChoice} revealed={revealed} onSelect={selectChoice} />
+        ) : (
+          <>
         {items.length > 0 && (
           <div className="mx-auto grid min-h-full max-w-2xl content-center">
             <div className="mb-2 flex items-center justify-between gap-3">
@@ -170,14 +195,16 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
             <div><p className="text-base font-bold text-[var(--ds-ink)]">先想这个字的读音</p><p className="mt-1 text-xs text-[var(--ds-ink-2)]">回想音读、训读和你认识的例词</p></div>
           </div>
         ) : null}
+          </>
+        )}
       </ScrollArea>
 
       <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
         {!revealed ? (
           <div className="flex h-16 gap-2">
             {Object.keys(pairs).length > 0 && <button type="button" onClick={() => { setPairs({}); setSelectedWord(null); }} className="focus-ring zoo-pop inline-flex h-16 shrink-0 items-center justify-center gap-2 rounded-2xl border border-[var(--ds-line-2)] px-4 text-sm font-bold text-[var(--ds-ink-2)]"><RotateCcw size={16} />清空</button>}
-            <button onClick={onReveal} style={{ background: "var(--quiz-accent)" }} className="focus-ring zoo-pop zoo-gloss inline-flex h-16 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333]">
-              <Eye size={18} /><span>{allConnected ? "核对连线" : "显示答案"}</span><span className="kbd-hint hidden text-xs font-semibold opacity-65 sm:inline">（按任意键）</span>
+            <button onClick={onReveal} disabled={Boolean(card.choice) && !allChosen} style={{ background: "var(--quiz-accent)" }} className="focus-ring zoo-pop zoo-gloss inline-flex h-16 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333] disabled:cursor-not-allowed disabled:opacity-40">
+              <Eye size={18} /><span>{card.choice ? "看答案" : allConnected ? "核对连线" : "显示答案"}</span><span className="kbd-hint hidden text-xs font-semibold opacity-65 sm:inline">{card.choice ? "（Enter / 空格）" : "（按任意键）"}</span>
             </button>
           </div>
         ) : (

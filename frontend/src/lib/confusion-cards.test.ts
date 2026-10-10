@@ -43,8 +43,8 @@ describe("疑难辨析 Anki 卡", () => {
     const groups = confusionGroups();
     const eligible = groups.filter(matchable);
     expect(eligible.length).toBeGreaterThan(0);
-    expect(eligible.every((group) => group.type !== "synonym" && distinctionReviewFor(group.key)?.level === "major")).toBe(true);
-    expect(groups.filter((group) => group.type === "synonym" || distinctionReviewFor(group.key)?.level === "interchangeable").every((group) => !matchable(group))).toBe(true);
+    expect(eligible.every((group) => group.type !== "synonym" && group.type !== "near-synonym" && distinctionReviewFor(group.key)?.level === "major")).toBe(true);
+    expect(groups.filter((group) => group.type === "synonym" || group.type === "near-synonym" || distinctionReviewFor(group.key)?.level === "interchangeable").every((group) => !matchable(group))).toBe(true);
     expect(eligible.every((group) => new Set(group.members.map((member) => `${displayForm(member)}\u0000${member.kana}`)).size === group.members.length)).toBe(true);
   });
 

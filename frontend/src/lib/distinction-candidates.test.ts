@@ -52,11 +52,11 @@ describe.skipIf(!process.env.CANDIDATES_OUT)("导出辨析组题面候选", () =
         }))
       }];
     });
-    const out = exportGroups((type) => type !== "synonym");
+    const out = exportGroups((type) => type !== "synonym" && type !== "near-synonym");
     writeFileSync(process.env.CANDIDATES_OUT!, JSON.stringify(out, null, 2));
     expect(out.length).toBeGreaterThan(300);
     // synonym 组（814 组，有人工稿）第一轮没做，单独一份清单：形状同上。
-    const synonym = exportGroups((type) => type === "synonym");
+    const synonym = exportGroups((type) => type === "synonym" || type === "near-synonym");
     writeFileSync(process.env.CANDIDATES_OUT!.replace(/\.json$/, "-synonym.json"), JSON.stringify(synonym, null, 2));
     expect(synonym.length).toBeGreaterThan(700);
   });

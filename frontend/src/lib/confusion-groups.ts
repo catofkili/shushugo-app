@@ -10,7 +10,7 @@ import { ArrowLeftRight, Crown, Handshake, PenLine, Sprout, Type, Volume2, type 
 /**
  * 疑难辨析的词组。
  *
- * 「易混」不是一件事，是六件互不重叠的事 —— 混淆的原因不同，看的地方就不同：
+ * 「易混」分成八类 —— 混淆的原因不同，看的地方就不同：
  * 自他对看助词、同音组看语境、同词根族看格框架、纯近义则根本没有区别可看。
  * 所以每组都带 type，界面按 type 说该看哪里，而不是笼统地说「这几个词像」。
  *
@@ -32,8 +32,10 @@ export type ConfusionType =
   | "reading-sense"
   /** 同词根动词族：下がる / 下げる / 下ろす */
   | "stem"
-  /** 中文提示相同的近义词：晩ご飯 / 夕食 / 夕飯 —— 多半可互换 */
-  | "synonym";
+  /** 现行首义相同的近义词：晩ご飯 / 夕食 / 夕飯 —— 多半可互换 */
+  | "synonym"
+  /** 冻结首义相同，但现行首义已分叉；保留原组身份和手写稿 */
+  | "near-synonym";
 
 export interface ConfusionMember {
   id: number;
@@ -81,11 +83,19 @@ interface Row {
   senseKey: string;
 }
 
-const firstSense = (meaning: string): string =>
-  meaning.split(/[；;，,、]/)[0].trim();
+export const firstSense = (meaning: string): string => {
+  let depth = 0;
+  for (let index = 0; index < meaning.length; index += 1) {
+    const char = meaning[index];
+    if (char === "（" || char === "(") depth += 1;
+    else if (char === "）" || char === ")") depth = Math.max(0, depth - 1);
+    else if (depth === 0 && /[；;，,、]/.test(char)) return meaning.slice(0, index).trim();
+  }
+  return meaning.trim();
+};
 
 /**
- * 分组只看冻结的词典首义,不看 words.meaning 当前写的是什么。
+ * 冻结分组只看词典首义,不看 words.meaning 当前写的是什么；现行首义补组另走 firstSense。
  * 释义审校正是要把「医生 / 医生」写成「医生 / 医师（执照…）」—— 分组要是跟着 meaning 走,
  * 审校做得越好近义组散得越多,手写辨析稿全成幽灵 key(2026-09-16 踩到,测试当场红了 90 组)。
  */
@@ -104,7 +114,7 @@ const toMember = (row: Row): ConfusionMember => ({
 
 /** 越靠前越具体：同一批词同时命中多个类型时，保留信息量最大的那个说法 */
 export const TYPE_PRIORITY: ConfusionType[] = [
-  "pair", "kanji-choice", "reading-register", "reading-sense", "homophone", "stem", "synonym"
+  "pair", "kanji-choice", "reading-register", "reading-sense", "homophone", "stem", "synonym", "near-synonym"
 ];
 
 const groupBy = <T>(items: T[], keyOf: (item: T) => string): Map<string, T[]> => {
@@ -265,7 +275,7 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
   const suppressed = duplicateWordIds();
   const rows = allRows.filter((row) => !suppressed.has(row.id));
   const found: ConfusionGroup[] = [];
-  const add = (type: ConfusionType, label: string, members: Row[]) => {
+  const add = (type: ConfusionType, label: string, members: Row[], key = `${type}:${label}`) => {
     // 卡面写法一样的成员只留一个：老库里同一个词录了两遍(貴方/あなた + あなた/あなた)、
     // 或两行是同一个词的异体写法(片づける + 片付ける)，两种都会让这一组显示成
     // 「あなた / あなた」——自己跟自己辨析。duplicateWordIds 只挡得住释义首义也一样的那些，
@@ -278,7 +288,10 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
     });
     const unique = [...byForm.values()];
     if (unique.length < 2 || unique.length > MAX_MEMBERS) return;
-    found.push({ key: `${type}:${label}`, type, label, members: unique.map(toMember) });
+    // 只改展示类型，冻结组的 synonym:<label> 仍挂着「已掌握」和手写稿，不能随 type 改键。
+    const currentType = type === "synonym" && new Set(unique.map((row) => firstSense(row.meaning))).size > 1
+      ? "near-synonym" : type;
+    found.push({ key, type: currentType, label, members: unique.map(toMember) });
   };
 
   // ① 自他动词对。368 对现成数据，是最干净的一类：が/を 就能分开。
@@ -334,19 +347,27 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
     add("stem", stem, cohesive);
   });
 
-  // ⑤ 中文首义完全相同。词性也一致的才收 —— 词性不同的那批（「运动」名词 vs
-  //    する动词）多半只是题面给的信息不够，属于要修的题面 bug，不是易混词。
-  groupBy(rows, (row) => senseOf(row)).forEach((members, sense) => {
-    if (members.length < 2) return;
-    if (new Set(members.map((row) => row.pos)).size > 1) return;
-    const memberKeys = new Set(members.map((row) => `${row.kanji}\u0000${row.kana}`));
-    const excluded = EXCLUDED_SYNONYM_GROUPS.some((group) => (
-      group.members.length === members.length
-      && group.members.every(([kanji, kana]) => memberKeys.has(`${kanji}\u0000${kana}`))
-    ));
-    if (excluded) return;
-    add("synonym", sense, members);
-  });
+  // 两轮首义分组共用成员、词性和人工排除判据。词性不同的那批（「运动」名词 vs
+  // する动词）多半只是题面给的信息不够，属于要修的题面 bug，不是易混词。
+  const addSynonyms = (current: boolean) => {
+    groupBy(rows, current ? (row) => firstSense(row.meaning) : senseOf).forEach((members, sense) => {
+      if (members.length < 2) return;
+      if (new Set(members.map((row) => row.pos)).size > 1) return;
+      const memberKeys = new Set(members.map((row) => `${row.kanji}\u0000${row.kana}`));
+      const excluded = EXCLUDED_SYNONYM_GROUPS.some((group) => (
+        group.members.length === members.length
+        && group.members.every(([kanji, kana]) => memberKeys.has(`${kanji}\u0000${kana}`))
+      ));
+      if (excluded) return;
+      // 已有任何类型的组把这些词完整放在一起，就不再补一个子组。
+      if (current && found.some((group) => members.every((row) => group.members.some((member) => member.id === row.id)))) return;
+      add("synonym", sense, members, `${current ? "synonym-now" : "synonym"}:${sense}`);
+    });
+  };
+  // ⑤ 冻结首义成组，现行首义分叉时展示为释义相近，key 和 label 不变。
+  addSynonyms(false);
+  // ⑥ 按现行首义补组；独立键空间不覆盖冻结组的掌握状态和手写稿。
+  addSynonyms(true);
 
   // 成员完全相同的组只留最具体的那个说法：上がる/上げる 既是自他对也是「上」族，
   // 说成自他对信息量更大。
@@ -445,9 +466,9 @@ export const setConfusionMastered = (key: string, mastered: boolean): void => {
  * 放在这里而不是页面组件里：疑难辨析页和单词卡的辨析气泡是同一份说法，
  * 各留一份的话改了一处另一处会悄悄说另一套话。
  */
-/** 七类的顺序：从「机制清楚」到「说法笼统」，和 word-distinctions 里的排法同向。 */
+/** 八类的顺序：从「机制清楚」到「说法笼统」，和 word-distinctions 里的排法同向。 */
 export const CONFUSION_TYPES: ConfusionType[] = [
-  "pair", "homophone", "kanji-choice", "reading-sense", "reading-register", "stem", "synonym"
+  "pair", "homophone", "kanji-choice", "reading-sense", "reading-register", "stem", "synonym", "near-synonym"
 ];
 
 export const TYPE_META: Record<ConfusionType, { name: string; Icon: LucideIcon }> = {
@@ -476,7 +497,11 @@ export const TYPE_META: Record<ConfusionType, { name: string; Icon: LucideIcon }
     Icon: Sprout
   },
   synonym: {
-    name: "中文提示相同",
+    name: "首义相同",
+    Icon: Handshake
+  },
+  "near-synonym": {
+    name: "释义相近",
     Icon: Handshake
   }
 };

@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1865317,
+      "bytes": 1872247,
       "passes": true
     },
     "study": {
-      "bytes": 379513,
+      "bytes": 379528,
       "passes": true
     },
     "account": {
-      "bytes": 258597,
+      "bytes": 258604,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1150793,
+      "bytes": 1150828,
       "passes": true
     },
     "features": {
@@ -30,19 +30,19 @@
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547379,
+      "bytes": 547381,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 367369,
+      "bytes": 367404,
       "passes": true
     },
     "core": {
-      "bytes": 279124,
+      "bytes": 279123,
       "passes": true
     },
     "lazy": {
-      "bytes": 989778,
+      "bytes": 993284,
       "passes": true
     }
   },
@@ -1078,7 +1078,7 @@
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 141183
+      "bytes": 141446
     },
     {
       "source": "frontend/src/lib/word-api.ts",

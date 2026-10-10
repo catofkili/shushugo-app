@@ -21,6 +21,7 @@ import {
   replayKanjiCharReviews
 } from "./kanji-char-cards";
 import { allKanjiReadingQuestionChars, assignKanjiReadingPair, shuffleKanjiReadingOptions } from "./kanji-reading-usage";
+import { kanjiChoiceQuestion } from "./kanji-choice";
 import { rowsFor, firstValue, today } from "./study-core";
 
 describe("单独汉字卡", () => {
@@ -58,11 +59,17 @@ describe("单独汉字卡", () => {
     // 单音字没有 usage 也照样有读音
     const single = kanjiCharCard("犬");
     expect(single!.on.length + single!.kun.length).toBeGreaterThan(0);
+    expect(single!.question).toBeUndefined();
+    expect(single!.choice?.items.length).toBeGreaterThan(0);
+    expect(card!.choice).toBeUndefined();
   });
 
   it("当天清单：新学按额度、目标等级内、出现多的先；同一天不重排", () => {
-    const eligible = new Set(allKanjiReadingQuestionChars());
-    expect(eligible.size).toBe(520);
+    const lineChars = new Set(allKanjiReadingQuestionChars());
+    expect(lineChars.size).toBe(520);
+    const eligible = new Set(rowsFor("SELECT char FROM kanji_char_memory").map((row) => String(row.char))
+      .filter((char) => lineChars.has(char) || kanjiChoiceQuestion(char)));
+    expect(eligible.size - lineChars.size).toBeGreaterThan(900);
     const unsupported = rowsFor("SELECT char FROM kanji_char_memory").map((row) => String(row.char)).find((char) => !eligible.has(char));
     expect(unsupported).toBeTruthy();
     testDb.run("INSERT INTO kanji_char_tasks (reviewed_on, char, order_index) VALUES (?, ?, 0)", [today(), unsupported!]);
@@ -75,6 +82,9 @@ describe("单独汉字卡", () => {
     expect(createKanjiCharTasks({ fresh: 50, review: 50 }, 4)).toEqual({ fresh: 5, review: 0 });
     expect(kanjiCharProgress()).toEqual({ total: 5, done: 0, remaining: 5 });
     expect(kanjiCharPool(0).unseen).toBeGreaterThan(5);
+    const eligibleAtN5 = rowsFor("SELECT char FROM kanji_char_memory WHERE level_rank = 0")
+      .filter((row) => eligible.has(String(row.char))).length;
+    expect(kanjiCharPool(0)).toEqual({ due: 0, unseen: eligibleAtN5 });
   });
 
   it("读音选项打乱后仍各不相同，重配时每个读音只连一词", () => {

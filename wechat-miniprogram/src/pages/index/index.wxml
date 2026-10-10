@@ -101,8 +101,25 @@
           <text wx:if="{{!interleaveRevealed}}" class="kanji-question-cue">已连好的词可以重新选择</text>
           <text wx:else class="kanji-question-cue">绿色线是正确答案，红色线是你原来的错误连线</text>
         </block>
+        <block wx:elif="{{interleave.card.choice}}">
+          <view wx:for="{{kanjiChoiceRows}}" wx:key="index" wx:for-item="row" class="kanji-choice">
+            <text class="kanji-choice-word">{{row.before}}<text class="kanji-choice-target">{{row.target}}</text>{{row.after}}</text>
+            <text class="kanji-choice-cue">「{{interleave.card.char}}」在这里读？</text>
+            <view class="kanji-choice-options">
+              <view wx:for="{{row.options}}" wx:key="text" class="kanji-choice-option {{item.state}}" data-item="{{row.index}}" data-option="{{item.text}}" catchtap="selectKanjiChoice">
+                <text class="kanji-choice-number">{{item.number}}</text><text class="kanji-choice-text">{{item.text}}</text>
+              </view>
+            </view>
+            <view wx:if="{{interleaveRevealed}}" class="kanji-choice-answer">
+              <text class="kanji-choice-kana">{{row.kana}}</text>
+              <text>{{row.meaning}}</text>
+              <text wx:if="{{row.change}}">{{row.change}}</text>
+            </view>
+          </view>
+        </block>
         <text wx:else class="kanji-char">{{interleave.card.char}}</text>
-        <view wx:if="{{!interleaveRevealed && interleave.card.question}}" class="kanji-match-actions">
+        <button wx:if="{{!interleaveRevealed && interleave.card.choice && !interleave.card.question}}" class="reveal {{kanjiChoiceComplete ? '' : 'disabled'}}" disabled="{{!kanjiChoiceComplete}}" bindtap="revealInterleave">看答案</button>
+        <view wx:elif="{{!interleaveRevealed && interleave.card.question}}" class="kanji-match-actions">
           <button wx:if="{{kanjiMatchCount}}" class="kanji-clear" bindtap="clearKanjiConnections">清空</button>
           <button class="reveal" bindtap="revealInterleave">{{kanjiMatchComplete ? '核对连线' : '显示答案'}}</button>
         </view>

@@ -1,5 +1,6 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import initSqlJs, { type Database } from "sql.js";
 
@@ -14,11 +15,19 @@ vi.mock("./database", () => ({
 
 import {
   confusionGroups,
+  CONFUSION_TYPES,
   duplicateMergeTargets,
+  firstSense,
   groupWords,
+  masteredConfusionKeys,
   resetConfusionGroups,
+  TYPE_META,
+  TYPE_PRIORITY,
   type ConfusionGroup
 } from "./confusion-groups";
+import { matchable } from "./confusion-cards";
+import { quizGroups } from "./distinction-quiz";
+import { distinctionReviewFor } from "../data/confusion_distinction_reviews";
 import {
   EXCLUDED_SYNONYM_GROUPS,
   MANUAL_VARIANT_GROUPS,
@@ -38,13 +47,17 @@ describe("疑难辨析分组", () => {
     groups = confusionGroups();
   });
 
-  it("六类都分得出来,组数在合理量级", () => {
+  it("八类都分得出来,组数在合理量级", () => {
     const byType = new Map<string, number>();
     groups.forEach((group) => byType.set(group.type, (byType.get(group.type) ?? 0) + 1));
     // 每一类都必须有货 —— 少了任何一类都说明判据写错了
-    ["pair", "homophone", "kanji-choice", "reading-register", "reading-sense", "stem", "synonym"]
-      .forEach((type) => expect(byType.get(type) ?? 0).toBeGreaterThan(0));
+    CONFUSION_TYPES.forEach((type) => expect(byType.get(type) ?? 0).toBeGreaterThan(0));
     expect(groups.length).toBeGreaterThan(500);
+    expect(CONFUSION_TYPES.slice(-2)).toEqual(["synonym", "near-synonym"]);
+    expect(TYPE_PRIORITY.slice(-2)).toEqual(["synonym", "near-synonym"]);
+    expect(TYPE_META.synonym.name).toBe("首义相同");
+    expect(TYPE_META["near-synonym"].name).toBe("释义相近");
+    expect(TYPE_META["near-synonym"].Icon).toBe(TYPE_META.synonym.Icon);
   });
 
   it("同音异义按假名成组,首义必须互不相同", () => {
@@ -92,7 +105,11 @@ describe("疑难辨析分组", () => {
 
   it("key 用词形不用 word_id —— id 被去重和外来語合并动过", () => {
     groups.forEach((group) => {
-      expect(group.key).toBe(`${group.type}:${group.label}`);
+      if (group.type === "near-synonym") expect(group.key).toBe(`synonym:${group.label}`);
+      else if (group.key.startsWith("synonym-now:")) {
+        expect(group.type).toBe("synonym");
+        expect(group.key).toBe(`synonym-now:${group.label}`);
+      } else expect(group.key).toBe(`${group.type}:${group.label}`);
       expect(group.key).not.toMatch(/:\d+$/);
     });
     expect(new Set(groups.map((group) => group.key)).size).toBe(groups.length);
@@ -185,8 +202,8 @@ describe("疑难辨析分组", () => {
     });
   });
 
-  it("人工排除的中文同形组不再作为中文提示相同辨析", () => {
-    const synonymGroups = confusionGroups().filter((group) => group.type === "synonym");
+  it("人工排除的中文同形组不再作为首义相同或释义相近辨析", () => {
+    const synonymGroups = confusionGroups().filter((group) => group.type === "synonym" || group.type === "near-synonym");
     EXCLUDED_SYNONYM_GROUPS.forEach((review) => {
       const expected = new Set(review.members.map(([kanji, kana]) => `${kanji}\u0000${kana}`));
       expect(synonymGroups.some((group) => {
@@ -194,5 +211,131 @@ describe("疑难辨析分组", () => {
         return actual.size === expected.size && [...expected].every((key) => actual.has(key));
       }), `${review.id} 仍然出现在 synonym 分组`).toBe(false);
     });
+  });
+
+  it("出厂库重新分类和补组不改变 Anki 卡组、quizGroups 的基线数量及成员", () => {
+    // 2026-10-10 从 HEAD 原函数独立复跑的数量与 key/成员指纹，不能只比总数。
+    const cards = groups.filter(matchable);
+    const quiz = CONFUSION_TYPES.flatMap((type) => quizGroups({ kind: "type", type }));
+    const signature = (items: ConfusionGroup[]) => createHash("sha256").update(JSON.stringify(items
+      .map((group) => [group.key, group.members.map((member) => member.id).sort((a, b) => a - b)])
+      .sort((a, b) => String(a[0]) < String(b[0]) ? -1 : String(a[0]) > String(b[0]) ? 1 : 0))).digest("hex");
+    const baselineSignature = "a5888349fc7933cd30442644d8fe6de4c36ff083d644db55df9abde41506f7e7";
+    expect(cards).toHaveLength(344);
+    expect(quiz).toHaveLength(344);
+    expect(signature(cards)).toBe(baselineSignature);
+    expect(signature(quiz)).toBe(baselineSignature);
+    const frozen = groups.filter((group) => group.key.startsWith("synonym:"));
+    expect(frozen).toHaveLength(814);
+    expect(signature(frozen)).toBe("aaa68396d29946a0701b7c39ed128711a7abf628bb8735d29a8f39fcb5e3c1f7");
+    expect(groups.filter((group) => group.type === "near-synonym")).toHaveLength(315);
+    expect(groups.filter((group) => group.key.startsWith("synonym-now:"))).toHaveLength(72);
+    expect(groups.filter((group) => group.type === "synonym")).toHaveLength(571);
+  });
+});
+
+describe("括号感知的首义", () => {
+  it.each(["；", ";", "，", ",", "、"])("只在括号外的 %s 切分并 trim", (separator) => {
+    expect(firstSense(`  （工作${separator}任务(长期${separator}短期)）结束 ${separator}完  `))
+      .toBe(`（工作${separator}任务(长期${separator}短期)）结束`);
+    expect(firstSense(`  (工作（长期${separator}短期）${separator}任务)结束 ${separator}完  `))
+      .toBe(`(工作（长期${separator}短期）${separator}任务)结束`);
+    expect(firstSense(`  结束 ${separator}完  `)).toBe("结束");
+  });
+
+  it("没有括号外分隔符时保留完整释义，空串仍为空", () => {
+    expect(firstSense("（工作）结束，完")).toBe("（工作）结束");
+    expect(firstSense("  （工作，任务）结束  ")).toBe("（工作，任务）结束");
+    expect(firstSense("  (工作;任务)结束  ")).toBe("(工作;任务)结束");
+    expect(firstSense("  ")).toBe("");
+  });
+});
+
+describe("冻结首义与现行首义的分组", () => {
+  beforeEach(async () => {
+    const SQL = await initSqlJs();
+    testDb = new SQL.Database();
+    testDb.run(`CREATE TABLE words (
+      id INTEGER PRIMARY KEY, kanji TEXT, kana TEXT, meaning TEXT, sense_key TEXT DEFAULT '',
+      pos TEXT DEFAULT '名词', verb_type TEXT DEFAULT '', example_jp TEXT DEFAULT '',
+      example_meaning TEXT DEFAULT '', jlpt_level TEXT DEFAULT 'N5'
+    )`);
+    resetConfusionGroups();
+  });
+
+  afterEach(() => {
+    testDb.close();
+    resetConfusionGroups();
+  });
+
+  it("冻结组的现行首义分叉后只变类型，key、label、掌握标记与人工稿不丢", () => {
+    testDb.run(`INSERT INTO words (id, kanji, kana, meaning, sense_key) VALUES
+      (1, '医者', 'いしゃ', '医生', '医生'), (2, '医師', 'いし', '医生', '医生')`);
+    testDb.run("CREATE TABLE confusion_mastered (group_key TEXT PRIMARY KEY, mastered_on TEXT)");
+    testDb.run("INSERT INTO confusion_mastered VALUES ('synonym:医生', '2026-10-09')");
+    const before = findGroup(confusionGroups(), "synonym:医生")!;
+    expect(before.type).toBe("synonym");
+    const review = distinctionReviewFor(before.key);
+    expect(review).not.toBeNull();
+    testDb.run("UPDATE words SET meaning = '医师（有执照）' WHERE id = 2");
+    resetConfusionGroups();
+    const after = findGroup(confusionGroups(), before.key)!;
+    expect(after.type).toBe("near-synonym");
+    expect(after.label).toBe(before.label);
+    expect(after.members.map((member) => member.id)).toEqual(before.members.map((member) => member.id));
+    expect(masteredConfusionKeys().has(after.key)).toBe(true);
+    expect(distinctionReviewFor(after.key)).toBe(review);
+    expect(matchable(after)).toBe(false);
+    expect(quizGroups({ kind: "group", key: after.key })).toEqual([]);
+  });
+
+  it("sense_key 不同但现行首义相同时以 synonym-now 补组", () => {
+    testDb.run(`INSERT INTO words (id, kanji, kana, meaning, sense_key) VALUES
+      (1, '答え', 'こたえ', '答案；回答', '回答'), (2, '答案', 'とうあん', '答案；试卷', '试卷')`);
+    const group = findGroup(confusionGroups(), "synonym-now:答案")!;
+    expect(group.type).toBe("synonym");
+    expect(group.label).toBe("答案");
+    expect(group.members.map((member) => member.id)).toEqual([1, 2]);
+    expect(group.members.map((member) => member.senseKey)).toEqual(["回答", "试卷"]);
+    expect(matchable(group)).toBe(false);
+    expect(quizGroups({ kind: "group", key: group.key })).toEqual([]);
+  });
+
+  it("没有冻结键或旧表没有 sense_key 时，退回括号感知的首义", () => {
+    testDb.run(`INSERT INTO words (id, kanji, kana, meaning) VALUES
+      (1, '甲', 'こう', '（工作，任务）结束；完'), (2, '乙', 'おつ', '（工作，任务）结束、完毕')`);
+    const key = "synonym:（工作，任务）结束";
+    expect(findGroup(confusionGroups(), key)?.members.map((member) => member.senseKey))
+      .toEqual(["（工作，任务）结束", "（工作，任务）结束"]);
+    testDb.run("ALTER TABLE words DROP COLUMN sense_key");
+    resetConfusionGroups();
+    expect(findGroup(confusionGroups(), key)?.type).toBe("synonym");
+  });
+
+  it("成员已同在冻结 synonym 组时不重复补组", () => {
+    testDb.run(`INSERT INTO words (id, kanji, kana, meaning, sense_key) VALUES
+      (1, '牛乳', 'ぎゅうにゅう', '牛奶', '奶'), (2, 'milk', 'ミルク', '牛奶；乳汁', '奶')`);
+    expect(confusionGroups().map((group) => group.key)).toEqual(["synonym:奶"]);
+  });
+
+  it("成员是其它类型已有组的子集时也不重复补组", () => {
+    testDb.run(`INSERT INTO words (id, kanji, kana, meaning, sense_key) VALUES
+      (1, '公園', 'こうえん', '测试首义', '公园'), (2, '講演', 'こうえん', '测试首义', '演讲'),
+      (3, '公演', 'こうえん', '演出', '演出')`);
+    expect(confusionGroups().map((group) => group.key)).toEqual(["homophone:こうえん"]);
+  });
+
+  it("现行首义补组仍要求词性唯一，并沿用人工排除名单", () => {
+    testDb.run(`INSERT INTO words (id, kanji, kana, meaning, sense_key, pos) VALUES
+      (1, '甲', 'こう', '测试首义', '甲义', '名词'), (2, '乙', 'おつ', '测试首义', '乙义', '动词')`);
+    expect(confusionGroups()).toEqual([]);
+    testDb.run("DELETE FROM words");
+    const excluded = EXCLUDED_SYNONYM_GROUPS[0];
+    excluded.members.forEach(([kanji, kana], index) => testDb.run(
+      "INSERT INTO words (id, kanji, kana, meaning, sense_key) VALUES (?, ?, ?, ?, ?)",
+      [index + 1, kanji, kana, "测试首义", `独立冻结义${index}`]
+    ));
+    resetConfusionGroups();
+    expect(findGroup(confusionGroups(), "synonym-now:测试首义")).toBeUndefined();
   });
 });

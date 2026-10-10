@@ -14,6 +14,8 @@ vi.mock("../database", () => ({
 }));
 
 import { wordDistinctions } from "./word-distinctions";
+import { confusionGroups, TYPE_META } from "../confusion-groups";
+import { distinctionReviewFor } from "../../data/confusion_distinction_reviews";
 
 /** 只填辨析用得到的字段，其余给空壳 —— 这个函数不碰调度、不碰 FSRS */
 const cardOf = (over: Partial<WordCard>): WordCard => ({
@@ -52,6 +54,20 @@ describe("单词卡的辨析 section", () => {
     // 换成 id 拼的 key 会让用户在疑难辨析页标过的状态在这里对不上。
     expect(homophone!.masterable).toBe(true);
     expect(homophone!.members.map((member) => member.word)).toContain("講演");
+  });
+
+  it("释义相近沿用冻结组身份与人工稿，现行补组显示首义相同", () => {
+    for (const [key, name] of [["synonym:医生", "释义相近"], ["synonym-now:答案", "首义相同"]]) {
+      const group = confusionGroups().find((item) => item.key === key)!;
+      const member = group.members[0];
+      const section = wordDistinctions(cardOf({
+        id: member.id, kanji: member.kanji, kana: member.kana, meaning: member.meaning
+      })).find((item) => item.key === key)!;
+      expect(section.name).toBe(name);
+      expect(section.Icon).toBe(TYPE_META.synonym.Icon);
+      expect(section.summary).toBe(distinctionReviewFor(key)?.summary ?? "");
+      expect(section.masterable).toBe(true);
+    }
   });
 
   it("当前这张留在成员里并标出来 —— 没有参照物的对照等于没对照", () => {
