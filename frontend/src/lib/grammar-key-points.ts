@@ -19,7 +19,12 @@ const points = data.points as Record<string, string>;
 const aliases = data.aliases as Record<string, string>;
 
 /** 按 grammar_points 的 pattern 取抓手（语法考题卡走这条）。 */
-export const grammarKeyPoint = (pattern: string): string => points[pattern] ?? "";
+// typeof 守门：小程序里这份 JSON 是懒代理，没加载时取到的是代理对象而不是 undefined，
+// 交给 JSX 渲染会整页崩掉（2026-10-09 真机，混合学习语法插播翻面没反应）。
+export const grammarKeyPoint = (pattern: string): string => {
+  const point = points[pattern];
+  return typeof point === "string" ? point : "";
+};
 
 /** 按 grammar.ts 的语法点取抓手（辞典、语法库、沉浸阅读走这条）。 */
 export const grammarKeyPointFor = (point: { id: string; title: string }): string =>

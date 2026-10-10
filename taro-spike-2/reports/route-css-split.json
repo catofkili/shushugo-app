@@ -1,10 +1,11 @@
 {
-  "appWxssBytesBefore": 276426,
+  "appWxssBytesBefore": 281727,
   "appWxssBytesAfter": 209438,
   "movedRuleBytesByRoute": {
     "content-pages/weekly-report/index.wxss": 161,
     "content-pages/yuzu-shop/index.wxss": 15800,
     "study/confusion/index.wxss": 8458,
+    "study/jlpt-practice/index.wxss": 5301,
     "study/kanji-readings/index.wxss": 12031,
     "study/quick-study/index.wxss": 11132,
     "study/team/index.wxss": 11453,
@@ -19,7 +20,8 @@
     "study/quick-study/index.wxss": 90,
     "study/confusion/index.wxss": 78,
     "study/kanji-readings/index.wxss": 112,
-    "study/vocab-test/index.wxss": 35
+    "study/vocab-test/index.wxss": 35,
+    "study/jlpt-practice/index.wxss": 61
   },
   "routes": {
     "vocabTest": "study/vocab-test/index.wxss",
@@ -30,6 +32,8 @@
     "quickStudy": "study/quick-study/index.wxss",
     "confusion": "study/confusion/index.wxss",
     "kanjiReadings": "study/kanji-readings/index.wxss",
-    "talk": "study/talk/index.wxss"
+    "spelling": "study/spelling/index.wxss",
+    "talk": "study/talk/index.wxss",
+    "jlptPractice": "study/jlpt-practice/index.wxss"
   }
 }

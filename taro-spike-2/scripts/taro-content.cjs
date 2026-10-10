@@ -98,7 +98,9 @@ function readyForKanji() {
 }
 
 const PAGE_CONTENT = {
-  'word-study': ['questionMeanings', 'distinctionReviews', 'kanjiVariants', 'kanjiReadings', 'pitchAccent'],
+  // grammarKeyPoints：混合学习的语法插播用同一张 GrammarCard，翻面要读抓手。2026-10-09 真机漏了它，
+  // 没进过语法页就翻插播卡，抓手拿到的是未加载的懒代理，渲染直接崩、整页按钮失灵。
+  'word-study': ['questionMeanings', 'distinctionReviews', 'kanjiVariants', 'kanjiReadings', 'grammarKeyPoints', 'pitchAccent'],
   'vocab-test': ['questionMeanings', 'kanjiVariants', 'kanjiReadings'],
   'confusion-quiz': ['questionMeanings', 'distinctionReviews', 'kanjiVariants', 'kanjiReadings'],
   'kanji-reading': ['kanjiUnitRuntime', 'kanjiReadingUsage', 'kanjiReadings'],

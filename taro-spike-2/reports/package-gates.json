@@ -2,39 +2,39 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1865366,
+      "bytes": 1865317,
       "passes": true
     },
     "study": {
-      "bytes": 379549,
+      "bytes": 379513,
       "passes": true
     },
     "account": {
-      "bytes": 258617,
+      "bytes": 258597,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1150832,
+      "bytes": 1150793,
       "passes": true
     },
     "features": {
-      "bytes": 580409,
+      "bytes": 580408,
       "passes": true
     },
     "content": {
-      "bytes": 1619465,
+      "bytes": 1619464,
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 668456,
+      "bytes": 668455,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547382,
+      "bytes": 547379,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 367413,
+      "bytes": 367369,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 989761,
+      "bytes": 989778,
       "passes": true
     }
   },
@@ -425,6 +425,15 @@
       ]
     },
     {
+      "source": "frontend/src/lib/grammar-key-points.ts",
+      "bytes": 1975,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
       "source": "taro-spike-2/src/platform/platform-dialogs.weapp.ts",
       "bytes": 1824,
       "packages": [
@@ -432,15 +441,6 @@
         "content-pages",
         "grammar-pages",
         "study"
-      ]
-    },
-    {
-      "source": "frontend/src/lib/grammar-key-points.ts",
-      "bytes": 1805,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy"
       ]
     },
     {
@@ -704,7 +704,7 @@
     },
     {
       "source": "frontend/src/lib/grammar-key-points.ts",
-      "bytes": 1805,
+      "bytes": 1975,
       "packages": [
         "content-pages",
         "grammar-pages",

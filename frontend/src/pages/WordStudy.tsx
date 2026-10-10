@@ -584,6 +584,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 真正需要重新开局的边界只有学习模式改变。
     if (loadedModeRef.current === initialMode) return;
     loadedModeRef.current = initialMode;
+    // 切模式不换组件实例（key 只跟 wordStudyRevision 走），混合模式摆着的插播卡和作答顺序
+    // 必须在这里清掉 —— 2026-10-09 真机：从混合切到经典，屏幕仍停在那张语法插播上。
+    setGrammarCard(null);
+    setKanjiCard(null);
+    setMatchCard(null);
+    setUndoKinds([]);
+    wordsSinceGrammarRef.current = 0;
     void loadNext(initialMode);
   }, [initialMode, loadNext]);
 
