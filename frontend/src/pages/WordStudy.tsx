@@ -996,6 +996,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           playComplete();
           return;
         }
+        // 混合模式：单词取空了不等于今天完成 —— 剩下的语法 / 汉字 / 辨析由 loadNext 接着上
+        // （四种都空了它才报完成）。2026-10-10 作者报：答完最后一个单词（普通作答、压轴、错题回顾三条出口都是）直接进了完成页，
+        // 顶上停在 612/645，33 条语法要重新进页面才出来。
+        if (initialMode === "mixed" && !data.card) {
+          void loadNext(initialMode);
+          return;
+        }
         setCard(data.card);
         setUnitKey(data.unitKey ?? null);
         setUnitTarget(data.unitTarget ?? null);
@@ -1031,6 +1038,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           setTailActive(true);
           setCanUndo(Boolean(data.canUndo));
           setRevealed(false);
+          return;
+        }
+        // 混合模式：压轴答完还有语法 / 汉字 / 辨析没出，同错题回顾出口那段注释。
+        if (initialMode === "mixed") {
+          setTailActive(false);
+          void loadNext(initialMode);
           return;
         }
         setTailActive(false);
@@ -1091,6 +1104,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         return;
       }
 
+      // 混合模式：同错题回顾出口那段注释。
+      if (initialMode === "mixed" && !data.card) {
+        void loadNext(initialMode);
+        return;
+      }
       showWordCard(data.card, data.phase, data.unitKey ?? null, data.unitTarget ?? null);
       setStats(nextStats);
       setCanUndo(Boolean(data.canUndo));
@@ -1108,7 +1126,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
       // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
-  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, flushActiveStudyTime, flushPendingAnswer, initialMode, inlineWordId, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
+  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, flushActiveStudyTime, flushPendingAnswer, initialMode, inlineWordId, loadNext, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
 
   useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
 
