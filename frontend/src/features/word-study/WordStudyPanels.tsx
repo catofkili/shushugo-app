@@ -21,6 +21,7 @@ import type { WordCard, WordStats } from "../../types/vocabulary";
 import { ENCORE_DEFAULT_COLOR, encoreLimitedColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
 import { ShareImageSheet } from "../../components/ShareImageSheet";
+import { usePageShare } from "../../lib/page-share";
 import { StudyFocusChest } from "../../components/StudyFocusChest";
 import {
   answerReadingText,
@@ -277,6 +278,8 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   // 面板和日历上摆的是「减负 + 单词 + 语法」的合计,和小路同一口径;
   // 分享图和里程碑仍按单词算(那张图上写的是「词」,累计里程碑也是词的累计)。
   const todayTotal = todayStats?.total ?? todayWordCount;
+  // 小程序右上角转发：和分享图一样按单词算。
+  usePageShare(todayWordCount > 0 ? { title: `我今天完成了 ${todayWordCount} 个单词，一起学日语！`, path: "/pages/home/index" } : null);
   const distinctionGroupCount = useMemo(() => quizGroups({ kind: "today" }).length, []);
   const checkedToday = checkins.has(studyDate);
   const checkinDays = checkins.size;

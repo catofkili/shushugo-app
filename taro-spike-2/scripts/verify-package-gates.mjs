@@ -16,6 +16,7 @@ const allowedCoreDuplicates = {
   'frontend/src/lib/speech.weapp.ts': 'Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.',
   'frontend/src/lib/share-canvas.weapp.ts': 'The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data.',
   'frontend/src/lib/token-dictionary.ts': 'Dictionary matches are computed from the supplied database rows; results are not retained in a module cache.',
+  'frontend/src/lib/page-share.weapp.ts': 'Share cards are stored on the native page instance, not in module state, so the main-package and lazy copies see the same card.',
   'frontend/src/lib/share-image.weapp.ts': 'Share and save operations use the image passed to each call and retain no mutable user state.',
   'frontend/src/lib/distinction-quiz.ts': 'Question groups and results are derived from the shared database on demand; there is no module-level user-data cache.',
   'frontend/src/lib/grammarProgressPreferences.ts': 'The WeakSet records only an idempotent legacy-migration marker per DB object; position values remain in the shared database.',

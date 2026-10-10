@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1875261,
+      "bytes": 1876511,
       "passes": true
     },
     "study": {
-      "bytes": 419726,
+      "bytes": 419305,
       "passes": true
     },
     "account": {
-      "bytes": 258604,
+      "bytes": 258597,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1150953,
+      "bytes": 1150920,
       "passes": true
     },
     "features": {
@@ -30,24 +30,24 @@
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547381,
+      "bytes": 547379,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 367428,
+      "bytes": 367393,
       "passes": true
     },
     "core": {
-      "bytes": 279123,
+      "bytes": 279124,
       "passes": true
     },
     "lazy": {
-      "bytes": 998956,
+      "bytes": 1000251,
       "passes": true
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 61,
+  "duplicateSourceModuleCount": 62,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -404,6 +404,14 @@
       ]
     },
     {
+      "source": "frontend/src/lib/page-share.weapp.ts",
+      "bytes": 2770,
+      "packages": [
+        "lazy",
+        "main"
+      ]
+    },
+    {
       "source": "frontend/src/lib/grammar-form-target.ts",
       "bytes": 2766,
       "packages": [
@@ -581,7 +589,7 @@
       ]
     }
   ],
-  "duplicatedCoreModuleCount": 23,
+  "duplicatedCoreModuleCount": 24,
   "duplicatedCoreModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -733,6 +741,15 @@
       "reason": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton."
     },
     {
+      "source": "frontend/src/lib/page-share.weapp.ts",
+      "bytes": 2770,
+      "packages": [
+        "lazy",
+        "main"
+      ],
+      "reason": "Share cards are stored on the native page instance, not in module state, so the main-package and lazy copies see the same card."
+    },
+    {
       "source": "frontend/src/lib/grammar-form-target.ts",
       "bytes": 2766,
       "packages": [
@@ -827,6 +844,7 @@
     "frontend/src/lib/team-rules.ts": "Team periods, check-in eligibility, and duel scores are pure calculations over supplied values; the module keeps no mutable state.",
     "frontend/src/lib/useStudyTimer.ts": "Timer state and intervals belong to each mounted React hook instance; no shared module state is retained.",
     "frontend/src/lib/study-clock.ts": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton.",
+    "frontend/src/lib/page-share.weapp.ts": "Share cards are stored on the native page instance, not in module state, so the main-package and lazy copies see the same card.",
     "frontend/src/lib/grammar-form-target.ts": "Grammar form matching is a pure calculation over the supplied grammar point.",
     "frontend/src/lib/grammar-title-furigana.ts": "Memoized values are deterministic lookups over bundled title-furigana content, not user data.",
     "frontend/src/lib/grammar-key-points.ts": "The module reads bundled grammar key-point content and retains no mutable user state.",

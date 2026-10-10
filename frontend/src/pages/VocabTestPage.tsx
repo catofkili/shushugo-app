@@ -21,6 +21,7 @@ import {
 import { renderVocabShareCard } from "../features/vocab-test/share-card";
 import { MascotSay } from "../components/MascotSay";
 import { ShareImageSheet } from "../components/ShareImageSheet";
+import { usePageShare } from "../lib/page-share";
 import { useStudyTimer } from "../lib/useStudyTimer";
 import { TimerRing } from "../components/TimerRing";
 import { QuestionCard } from "../features/vocab-test/QuestionCard";
@@ -543,6 +544,11 @@ export function VocabTestPage() {
 
   const vocabShare = useVocabShare();
   const shareBusy = vocabShare.busy !== null;
+  // 小程序右上角转发：标题带这次成绩，对方点开是测验页自己测（不做「看朋友成绩」的落地页）。题太少不出数，和结果页同一口径。
+  usePageShare(view === "result" && result ? {
+    title: result.answered < MIN_ANSWERS_FOR_ESTIMATE ? `我测了日语词汇量，答了 ${result.answered} 题` : `我的日语词汇量约 ${result.estimated} 词，可信度 ${result.confidence}%`,
+    path: "/study/vocab-test/index"
+  } : null);
 
   if (view === "result" && result) {
     return (
