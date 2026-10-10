@@ -28,7 +28,10 @@ const allowedCoreDuplicates = {
   'frontend/src/lib/grammar-numbering.ts': 'Ordinal maps are derived only from bundled grammar records and are safe package-local content caches.',
   'frontend/src/lib/yield-to-paint.ts': 'The helper schedules a paint yield and retains no state.',
   'frontend/src/lib/grammarNotes.ts': 'Notes are read from and written to app-wide localStorage on every call; this module has no in-memory note cache.',
-  'frontend/src/lib/study-focus.ts': 'Each isolated route package mounts only its own study source; partial baseline windows are persisted on page exit, countdown state is deliberately discarded, and rewards are guarded by unique database ledger keys.'
+  'frontend/src/lib/study-focus.ts': 'Each isolated route package mounts only its own study source; partial baseline windows are persisted on page exit, countdown state is deliberately discarded, and rewards are guarded by unique database ledger keys.',
+  'frontend/src/lib/team-activity.ts': 'Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker.',
+  'frontend/src/lib/team-rules.ts': 'Team periods, check-in eligibility, and duel scores are pure calculations over supplied values; the module keeps no mutable state.',
+  'frontend/src/lib/haptics.weapp.ts': 'Haptics call the Mini Program vibration API per invocation and keep no module state.'
 };
 // Route components can appear in lazy tabs and route subpackages after splitting;
 // accept only this reviewed file set and fail on new or stale duplicate entries.
@@ -58,7 +61,8 @@ const allowedPageComponentDuplicates = {
   'frontend/src/components/DailyPlanSlider.weapp.tsx': 'The account and study routes each render their package-local slider.',
   'frontend/src/components/Disclosure.weapp.tsx': 'Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.',
   'frontend/src/components/JapaneseRubyText.weapp.tsx': 'Ruby text is used by lazy tabs and independently loaded content/grammar routes.',
-  'frontend/src/components/CrossPlatformImage.weapp.tsx': 'Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.'
+  'frontend/src/components/CrossPlatformImage.weapp.tsx': 'Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.',
+  'frontend/src/components/ZooConfetti.tsx': 'Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state.'
 };
 const packages = JSON.parse(fs.readFileSync(path.join(root, 'reports/package-sizes.json'), 'utf8'));
 const stats = JSON.parse(fs.readFileSync(path.join(root, 'reports/webpack-stats.json'), 'utf8'));

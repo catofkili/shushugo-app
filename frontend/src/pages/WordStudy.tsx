@@ -7,6 +7,7 @@ import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail,
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
 import { checkAchievements } from "../lib/userProfile";
 import { claimDailyPlanYuzu, settleYuzu } from "../lib/yuzu";
+import { reportTeamActivity } from "../lib/team-activity";
 import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic, triggerRevealHaptic, triggerSwipeArmHaptic } from "../lib/haptics";
 import { playPronunciation, prefetchPronunciation } from "../lib/speech";
 import { playComplete, playCountdownTick, playDontKnow, playFlip, playKnow, playReliefDeal } from "../lib/zoo-sounds";
@@ -671,6 +672,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 个人信息页常年「累计 0 小时 0 分钟」。整段删掉,不再攒第二份。
       void checkAchievements().catch(() => undefined);
       try { settleYuzu(); } catch { /* 记账失败不该打断学习 */ }
+      void reportTeamActivity();
       return data.stats;
     } catch {
       // Time tracking should never interrupt review.

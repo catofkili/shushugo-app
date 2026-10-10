@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   cheerCloudTeamMember,
   createCloudTeam,
@@ -10,16 +10,25 @@ import {
   reportCloudTeam,
   reportCloudTeamActivity,
   updateCloudTeam,
+  takeCloudTeamLeave,
   type CloudTeam,
   type CloudTeamPlazaItem
 } from "../lib/sync-api";
-import { firstValue, today } from "../lib/study-core";
 import { RefreshCw } from "lucide-react";
 import { CapybaraWalk, Sticker } from "../components/CapybaraMascot";
 import { MascotSay } from "../components/MascotSay";
 import { playKnow, playSave, playStreakChirp } from "../lib/zoo-sounds";
 import { confirmDialog, promptDialog } from "../lib/platform-dialogs";
 import { copyText, shareText } from "../lib/share-text";
+import { pageShareButtonProps, usePageShare } from "../lib/page-share";
+import { claimTeamCheckin, collectTeamRewards, localActivity, readTeamCache, rememberTeamActivity, teamCheckedIn, writeTeamCache } from "../lib/team-activity";
+import { shiftTeamDay, teamDayPassed, type TeamDayStatus } from "../lib/team-rules";
+import { triggerTeamCheckinHaptic } from "../lib/haptics";
+import { jsMotionAllowed } from "../lib/studyPreferences";
+import { YUZU_EVENT } from "../lib/yuzu";
+import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
+import { ZooConfetti } from "../components/ZooConfetti";
+import "./team-duel.css";
 
 const EMOJIS = ["🌱", "🐿️", "🐦", "🚃", "🦉", "🍊", "📚", "⛩️"];
 const TARGETS = ["N5", "N4", "N3", "N2", "N1", "全部"];
@@ -33,62 +42,86 @@ type TeamDraft = {
 
 const defaultDraft: TeamDraft = { name: "", targetLevel: "N3", emoji: "🌱", visibility: "public" };
 
-const countIfTableExists = (table: string, day: string) => {
-  const exists = Number(firstValue("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", [table], 0)) > 0;
-  return exists ? Number(firstValue("SELECT COUNT(*) FROM " + table + " WHERE reviewed_on = ?", [day], 0)) : 0;
-};
-
-const localActivity = () => {
-  const studyDay = today();
-  const studyCount = countIfTableExists("reviews", studyDay)
-    + countIfTableExists("grammar_reviews", studyDay)
-    + countIfTableExists("kanji_unit_reviews", studyDay);
-  const completed = Number(firstValue("SELECT COUNT(*) FROM checkins WHERE checked_on = ?", [studyDay], 0)) > 0;
-  return { studyDay, studyCount, completed };
-};
-
 const messageFor = (error: unknown) => error instanceof Error ? error.message : "操作失败，请稍后再试。";
+const CELL_LABELS: Record<TeamDayStatus, string> = { passed: "过关", leave: "请假", failed: "没过关", today: "进行中", future: "未开始", "not-joined": "未入队" };
 
-
-// 进组队页先摆上次的样子，后台再刷新：小程序里一次云请求（云函数 → Cloudflare）要 1–5 秒，
-// 2026-09-27 真机进组队页等了 15 秒。按账号存，换号不会看到别人的队伍。
-const TEAM_CACHE_KEY = "mn-team-page-cache";
-type TeamCache = { owner: string; team: CloudTeam | null; plaza: CloudTeamPlazaItem[] };
-const readTeamCache = (owner: string | undefined): TeamCache | null => {
-  if (!owner) return null;
-  try {
-    const cached = JSON.parse(localStorage.getItem(TEAM_CACHE_KEY) ?? "null") as TeamCache | null;
-    return cached?.owner === owner ? cached : null;
-  } catch {
-    return null;
-  }
-};
-const writeTeamCache = (owner: string | undefined, team: CloudTeam | null, plaza: CloudTeamPlazaItem[]) => {
-  if (!owner) return;
-  try { localStorage.setItem(TEAM_CACHE_KEY, JSON.stringify({ owner, team, plaza })); } catch { /* 缓存只是提速 */ }
-};
-
-export function TeamPage({ onBack }: { onBack: () => void }) {
+export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBack: () => void; onOpenDuel: () => void; initialInviteCode?: string }) {
   const [team, setTeam] = useState<CloudTeam | null>(null);
   const [plaza, setPlaza] = useState<CloudTeamPlazaItem[]>([]);
   const [draft, setDraft] = useState<TeamDraft>(defaultDraft);
   const [nickname, setNickname] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
+  const [inviteCode, setInviteCode] = useState(() => initialInviteCode.toUpperCase().replace(/[^A-Z2-9]/g, "").slice(0, 8));
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState("");
-  const activity = useMemo(() => localActivity(), []);
+  const [activity, setActivity] = useState(localActivity);
+  const [checkedIn, setCheckedIn] = useState(teamCheckedIn);
+  const [celebrating, setCelebrating] = useState(false);
+  const [checkinLeaving, setCheckinLeaving] = useState(false);
+  const [checkinCount, setCheckinCount] = useState(0);
 
   const ownerRef = useRef<string | undefined>(undefined);
+  const progressCard = { title: `我们队本期第 ${team?.period?.dayNumber ?? 0} 天全员过关`, path: "/study/team/index" };
+  const inviteCard = { title: `来「收集日」加入我的学习队伍「${team?.name ?? ""}」`, path: `/study/team/index?invite=${encodeURIComponent(team?.inviteCode ?? "")}` };
+  usePageShare(team?.period?.dayNumber && team.members.every((member) => teamDayPassed(member.wordCount, member.activeMinutes)) ? progressCard : null);
 
   const refresh = useCallback(async () => {
-    const overview = await getCloudTeamOverview(activity);
+    const currentActivity = localActivity();
+    setActivity(currentActivity);
+    const overview = await getCloudTeamOverview(currentActivity);
     setTeam(overview.team);
     setPlaza(overview.plaza);
     setLoading(false);
     writeTeamCache(ownerRef.current, overview.team, overview.plaza);
-  }, [activity]);
+    if (overview.team) rememberTeamActivity(ownerRef.current, currentActivity);
+    void collectTeamRewards().catch(() => undefined);
+  }, []);
+
+  const acceptTeam = (next: CloudTeam | null) => {
+    setTeam(next);
+    writeTeamCache(ownerRef.current, next, plaza);
+  };
+
+  useEffect(() => {
+    const update = () => { setActivity(localActivity()); setCheckedIn(teamCheckedIn()); };
+    window.addEventListener(YUZU_EVENT, update);
+    window.addEventListener(PROGRESS_UPDATED_EVENT, update);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      window.removeEventListener(YUZU_EVENT, update);
+      window.removeEventListener(PROGRESS_UPDATED_EVENT, update);
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!celebrating) return;
+    const timer = window.setTimeout(() => setCheckinLeaving(true), 2200);
+    return () => window.clearTimeout(timer);
+  }, [celebrating]);
+
+  useEffect(() => {
+    if (!checkinLeaving) return;
+    const timer = window.setTimeout(() => {
+      setCelebrating(false);
+      setCheckinLeaving(false);
+    }, 240);
+    return () => window.clearTimeout(timer);
+  }, [checkinLeaving]);
+
+  useEffect(() => {
+    if (!celebrating || !jsMotionAllowed()) return;
+    const startedAt = Date.now();
+    let frame = 0;
+    const tick = () => {
+      const progress = Math.min((Date.now() - startedAt) / 600, 1);
+      setCheckinCount(Math.round(progress * 20));
+      if (progress < 1) frame = window.requestAnimationFrame(tick);
+    };
+    frame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frame);
+  }, [celebrating]);
 
   useEffect(() => {
     let active = true;
@@ -125,23 +158,49 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
 
   const create = () => run("create", async () => {
     const created = await createCloudTeam({ ...draft, displayName: nickname });
-    setTeam(await reportCloudTeamActivity({ ...activity }));
+    acceptTeam(created);
+    const currentActivity = localActivity();
+    acceptTeam(await reportCloudTeamActivity(currentActivity));
+    rememberTeamActivity(ownerRef.current, currentActivity);
     setPlaza((items) => items.filter((item) => item.id !== created.id));
     playStreakChirp();
     setNotice("队伍创建好了，邀请队友一起学习吧。");
   });
 
   const join = (input: { teamId?: string; inviteCode?: string }) => run("join-" + (input.teamId ?? "invite"), async () => {
-    await joinCloudTeam({ ...input, displayName: nickname });
-    setTeam(await reportCloudTeamActivity({ ...activity }));
+    acceptTeam(await joinCloudTeam({ ...input, displayName: nickname }));
+    const currentActivity = localActivity();
+    acceptTeam(await reportCloudTeamActivity(currentActivity));
+    rememberTeamActivity(ownerRef.current, currentActivity);
     setInviteCode("");
     playStreakChirp();
     setNotice("加入成功，今天的学习进度已经同步到队伍。");
   });
 
   const cheer = (memberId: string) => run("cheer-" + memberId, async () => {
-    setTeam(await cheerCloudTeamMember(memberId, activity.studyDay));
+    acceptTeam(await cheerCloudTeamMember(memberId, localActivity().studyDay));
     playKnow();
+  });
+
+  const checkin = () => run("checkin", async () => {
+    if (!team || !await claimTeamCheckin()) return;
+    setCheckedIn(true);
+    setCheckinCount(0);
+    setCelebrating(true);
+    triggerTeamCheckinHaptic();
+    playStreakChirp();
+  });
+
+  const takeLeave = () => run("take-leave", async () => {
+    if (!team?.leaveOpportunity || team.leaveOpportunity.used) return;
+    acceptTeam(await takeCloudTeamLeave(team.leaveOpportunity.studyDay));
+    playSave();
+    setNotice("请假已补上。");
+  });
+
+  const shareProgress = () => run("share-progress", async () => {
+    if (!team?.period) return;
+    await shareText("收集日组队进度", `我们队本期第 ${team.period.dayNumber} 天全员过关 · ${team.name}`);
   });
 
   const copyInviteCode = () => run("copy-code", async () => {
@@ -160,7 +219,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   });
 
   const saveSettings = () => run("edit", async () => {
-    setTeam(await updateCloudTeam(draft));
+    acceptTeam(await updateCloudTeam(draft));
     setEditing(false);
     setNotice("队伍设置已保存。");
   });
@@ -175,7 +234,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   const leave = () => run("leave", async () => {
     if (!await confirmDialog(team?.isOwner && team.memberCount > 1 ? "退出后会把队长移交给最早加入的队友，确定退出吗？" : "确定退出这支队伍吗？")) return;
     await leaveCloudTeam();
-    setTeam(null);
+    acceptTeam(null);
     await refresh();
     setNotice("已经退出队伍。");
   });
@@ -203,6 +262,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
   });
 
   return (
+    <>
     <div className="zoo-page zoo-tm-page">
       {/* 头图和主页今日大卡同一块主色（跟皮肤走）。原来是写死的森林绿 + 三个 emoji 动物，
           换了樱 / 抹茶皮肤、切深色都不跟。英文加宽的小标题（STUDY TOGETHER / TEAM）一起删了 */}
@@ -221,6 +281,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
       </header>
 
       <div className="zoo-tm-content">
+        <button className="ds-btn-soft team-duel-entry" onClick={onOpenDuel}>发起对战 →</button>
         {notice && (
           <div role="status">
             <MascotSay sticker="mood-default" size={44} className="ds-say-onbg">{notice}</MascotSay>
@@ -243,20 +304,34 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
                 </div>
                 {team.isOwner && <span className="zoo-tm-owner-badge">队长</span>}
               </div>
-              <div className="zoo-tm-stats">
-                <div><b>{team.activeCount}/{team.memberCount}</b><span>今天学习</span></div>
-                <div><b>{team.totalStudyCount}</b><span>学习项</span></div>
-                <div><b>{team.streak}</b><span>连续活跃</span></div>
+              {team.period && <>
+                <div className="zoo-tm-stats">
+                  <div><b>{team.period.dayNumber}/14</b><span>{team.period.dayNumber ? "本期第几天" : "明天开始"}</span></div>
+                  <div><b>{team.period.accruedAmount}</b><span>本期已攒柚子</span></div>
+                  <div><b>{team.members.filter((member) => teamDayPassed(member.wordCount, member.activeMinutes)).length}/{team.memberCount}</b><span>今天过关</span></div>
+                </div>
+                <div className="zoo-tm-summary-progress" role="progressbar" aria-label="本期进度" aria-valuemin={0} aria-valuemax={14} aria-valuenow={team.period.dayNumber}>
+                  <span style={{ width: `${team.period.dayNumber / 14 * 100}%` }} />
+                </div>
+                {team.period.broken && <MascotSay sticker="mood-puzzled" tone="warn" size={44}>本期断了 · {team.members.filter((member) => team.period.culprits.includes(member.memberId)).map((member) => member.name).join("、")}</MascotSay>}
+                {team.period.dayNumber > 0 && team.members.every((member) => teamDayPassed(member.wordCount, member.activeMinutes)) && (
+                  <button className="ds-btn-soft team-progress-share" disabled={Boolean(busy)} {...pageShareButtonProps(progressCard, shareProgress)}>我们队本期第 {team.period.dayNumber} 天全员过关 ↗</button>
+                )}
+              </>}
+              <div className="team-checkin-area">
+                <button className="zoo-tm-primary" disabled={Boolean(busy) || checkedIn || !teamDayPassed(activity.wordCount, activity.activeMinutes)} onClick={checkin}>
+                  {checkedIn ? "今天已打卡 ✓" : "组队打卡 · +20 柚子"}
+                </button>
+                {!checkedIn && !teamDayPassed(activity.wordCount, activity.activeMinutes) && <p className="zoo-tm-progress-note">今天 {activity.wordCount}/30 词 · {activity.activeMinutes}/10 分钟</p>}
+                {team.leaveOpportunity && <button className="ds-btn-soft team-leave-button" disabled={Boolean(busy) || team.leaveOpportunity.used} onClick={takeLeave}>
+                  {team.leaveOpportunity.used ? "本期请假已用过" : "我昨天没完成 · 请假"}
+                </button>}
               </div>
-              <div className="zoo-tm-summary-progress" role="progressbar" aria-label="今日队友学习进度" aria-valuemin={0} aria-valuemax={team.memberCount} aria-valuenow={team.activeCount}>
-                <span style={{ width: String(team.memberCount ? team.activeCount / team.memberCount * 100 : 0) + "%" }} />
-              </div>
-              <p className="zoo-tm-progress-note">今天已有 {team.activeCount} 位队友留下学习脚步</p>
             </section>
 
             <section className="zoo-tm-card-shell zoo-tm-members-card">
               <div className="zoo-tm-section-head">
-                <h2>今天的队友</h2>
+                <h2>本期的队友</h2>
                 <span className="zoo-tm-member-count">{team.memberCount} 人</span>
               </div>
               <ul className="zoo-tm-members">
@@ -269,15 +344,20 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
                         {member.isMe && <span className="zoo-tm-you-badge">你</span>}
                         {member.isOwner && <span className="zoo-tm-captain-badge">队长</span>}
                       </div>
-                      <p>今天 {member.studyCount} 项{member.cheersReceived ? " · 收到 " + member.cheersReceived + " 次加油" : ""}</p>
+                      <p>今天 {member.wordCount ?? 0} 词 · {member.activeMinutes ?? 0} 分钟{member.cheersReceived ? " · 收到 " + member.cheersReceived + " 次加油" : ""}</p>
                     </div>
                     {member.isMe ? (
-                      <span className={"zoo-tm-member-state" + (member.completed ? " done" : "")}>{member.completed ? "完成 ✓" : "学习中"}</span>
+                      <span className={"zoo-tm-member-state" + (teamDayPassed(member.wordCount, member.activeMinutes) ? " done" : "")}>{teamDayPassed(member.wordCount, member.activeMinutes) ? "过关 ✓" : "学习中"}</span>
                     ) : (
                       <button className={"zoo-tm-cheer" + (member.cheeredByMe ? " sent" : "")} disabled={member.cheeredByMe || Boolean(busy)} onClick={() => cheer(member.memberId)}>
                         {member.cheeredByMe ? "已加油" : "加油"}
                       </button>
                     )}
+                    {team.period && <div className="team-period-grid" aria-label={`${member.name}的14天进度`}>
+                      {(member.cells ?? []).map((status, index) => <span key={index} className={`team-period-cell ${status}`} title={`${shiftTeamDay(team.period.start, index)} · ${CELL_LABELS[status]}`} aria-label={`第${index + 1}天：${CELL_LABELS[status]}`}>
+                        {status === "leave" ? "请假" : status === "passed" ? "✓" : status === "failed" ? "×" : status === "not-joined" ? "—" : index + 1}
+                      </span>)}
+                    </div>}
                   </li>
                 ))}
               </ul>
@@ -291,7 +371,7 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
               </div>
               <div className="zoo-tm-invite-actions">
                 <button className="zoo-tm-ghost" disabled={Boolean(busy)} onClick={copyInviteCode}>复制</button>
-                <button className="zoo-tm-primary compact" disabled={Boolean(busy)} onClick={shareInvite}>分享邀请</button>
+                <button className="zoo-tm-primary compact" disabled={Boolean(busy)} {...pageShareButtonProps(inviteCard, shareInvite)}>分享邀请</button>
               </div>
             </section>
 
@@ -358,6 +438,25 @@ export function TeamPage({ onBack }: { onBack: () => void }) {
         )}
       </div>
     </div>
+    {celebrating && <div
+      className={`team-checkin-burst${checkinLeaving ? " is-leaving" : ""}`}
+      role="status"
+      aria-live="polite"
+      onClick={() => { setCelebrating(false); setCheckinLeaving(false); }}
+    >
+      {jsMotionAllowed() && <>
+        <div className="team-checkin-glow" aria-hidden="true" />
+        <div className="team-checkin-rings" aria-hidden="true"><i /><i /><i /></div>
+        <ZooConfetti count={60} />
+      </>}
+      <div className="team-checkin-center" aria-hidden="true">
+        <Sticker name="mood-yay" size={160} className="team-checkin-sticker" />
+        <b>打卡完成</b>
+        <span>+{jsMotionAllowed() ? checkinCount : 20} 柚子</span>
+      </div>
+      <span className="sr-only">打卡完成。+20 柚子</span>
+    </div>}
+    </>
   );
 }
 

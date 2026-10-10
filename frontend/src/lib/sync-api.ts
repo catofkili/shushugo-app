@@ -21,6 +21,7 @@ export { exportSyncSnapshot, getSnapshotCapacity } from "./sync/snapshot";
 import { PRIVACY_POLICY_VERSION } from "./privacy-policy-content";
 import { USER_AGREEMENT_VERSION } from "./user-agreement-content";
 import { getCloudAccessToken, removeCloudAccessToken, setCloudAccessToken } from "./secure-token";
+import type { DuelAnswer, DuelQuestion, DuelScore, DuelWinner, TeamDayStatus } from "./team-rules";
 
 export interface CloudSession {
   configured: boolean;
@@ -120,6 +121,10 @@ export interface CloudTeamMember {
   completed: boolean;
   cheersReceived: number;
   cheeredByMe: boolean;
+  wordCount: number;
+  activeMinutes: number;
+  cells: TeamDayStatus[];
+  daysPassed: number;
 }
 
 export interface CloudTeam {
@@ -136,6 +141,37 @@ export interface CloudTeam {
   totalStudyCount: number;
   streak: number;
   members: CloudTeamMember[];
+  period: { start: string; end: string; dayNumber: number; broken: boolean; culprits: string[]; accruedAmount: number };
+  leaveOpportunity: { studyDay: string; periodStart: string; used: boolean } | null;
+}
+
+export interface CloudTeamActivity {
+  studyDay: string;
+  studyCount: number;
+  completed: boolean;
+  wordCount: number;
+  activeMinutes: number;
+}
+
+export interface CloudTeamRewards {
+  periods: Array<{ team_id: string; period_start: string; amount: number }>;
+  wins: Array<{ iso_week: string; duel_id: string }>;
+}
+
+export interface CloudDuel {
+  id: string;
+  creatorName: string;
+  levels: string[];
+  questionCount: number;
+  questions: DuelQuestion[];
+  creatorScore: DuelScore;
+  opponentScore: DuelScore | null;
+  winner: DuelWinner | null;
+  decidedAt: string | null;
+  createdAt: string;
+  role: "creator" | "opponent" | "spectator";
+  available: boolean;
+  opponentLinked: boolean;
 }
 
 export interface CloudTeamPlazaItem {
@@ -890,11 +926,7 @@ export const getCloudTeamPlaza = async (studyDay: string): Promise<CloudTeamPlaz
   (await teamRequest<{ teams: CloudTeamPlazaItem[] }>(`/api/teams/plaza?day=${encodeURIComponent(studyDay)}`)).teams
 );
 
-export const getCloudTeamOverview = async (input: {
-  studyDay: string;
-  studyCount: number;
-  completed: boolean;
-}): Promise<{ team: CloudTeam | null; plaza: CloudTeamPlazaItem[] }> => (
+export const getCloudTeamOverview = async (input: CloudTeamActivity): Promise<{ team: CloudTeam | null; plaza: CloudTeamPlazaItem[] }> => (
   teamRequest("/api/teams/overview", "POST", input)
 );
 
@@ -919,11 +951,34 @@ export const updateCloudTeam = async (input: {
   visibility: "public" | "invite";
 }): Promise<CloudTeam> => (await teamRequest<{ team: CloudTeam }>("/api/teams/me", "PUT", input)).team;
 
-export const reportCloudTeamActivity = async (input: {
-  studyDay: string;
-  studyCount: number;
-  completed: boolean;
-}): Promise<CloudTeam> => (await teamRequest<{ team: CloudTeam }>("/api/teams/activity", "POST", input)).team;
+export const reportCloudTeamActivity = async (input: CloudTeamActivity): Promise<CloudTeam> => (
+  (await teamRequest<{ team: CloudTeam }>("/api/teams/activity", "POST", input)).team
+);
+
+export const takeCloudTeamLeave = async (studyDay: string): Promise<CloudTeam> => (
+  (await teamRequest<{ team: CloudTeam }>("/api/teams/leaves", "POST", { studyDay })).team
+);
+
+export const getCloudTeamRewards = (): Promise<CloudTeamRewards> => teamRequest("/api/teams/rewards");
+
+export const createCloudDuel = async (input: { levels: string[]; questionCount: number; questions: DuelQuestion[]; answers: DuelAnswer[] }): Promise<CloudDuel> => (
+  (await teamRequest<{ duel: CloudDuel }>("/api/duels", "POST", input)).duel
+);
+
+const duelRequest = async (id: string, action?: "submit" | "claim", body?: unknown, opponentToken?: string): Promise<CloudDuel> => {
+  const { token } = await getCloudSession();
+  const result = await requestJson<{ duel: CloudDuel }>(`/api/duels/${encodeURIComponent(id)}${action ? `/${action}` : ""}`, {
+    method: action ? "POST" : "GET",
+    headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), ...(opponentToken ? { "x-duel-token": opponentToken } : {}) },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) })
+  });
+  return result.duel;
+};
+
+export const getCloudDuel = (id: string, token?: string): Promise<CloudDuel> => duelRequest(id, undefined, undefined, token);
+export const submitCloudDuel = (id: string, answers: DuelAnswer[], token: string): Promise<CloudDuel> => duelRequest(id, "submit", { answers, token });
+export const claimCloudDuel = (id: string, token: string): Promise<CloudDuel> => duelRequest(id, "claim", { token });
+export const getMyCloudDuels = async (): Promise<CloudDuel[]> => (await teamRequest<{ duels: CloudDuel[] }>("/api/duels/me")).duels;
 
 export const cheerCloudTeamMember = async (memberId: string, studyDay: string): Promise<CloudTeam> => (
   (await teamRequest<{ team: CloudTeam }>("/api/teams/cheers", "POST", { memberId, studyDay })).team

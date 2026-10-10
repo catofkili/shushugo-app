@@ -23,6 +23,7 @@ import { QuickStudyRoute } from "./quick-study";
 import { SettingsRoute } from "./settings";
 import { StudyModesRoute } from "./study-modes";
 import { TeamRoute } from "./team";
+import { DuelRoute } from "./duel";
 import { UserAgreementRoute } from "./user-agreement";
 import { VocabTestRoute } from "./vocab-test";
 import { WeeklyReportRoute } from "./weekly-report";
@@ -34,6 +35,7 @@ export const ROUTES: Record<Exclude<Page, "talk" | "spelling" | "jlpt-practice">
   home: HomeRoute,
   word: WordRoute,
   team: TeamRoute,
+  duel: DuelRoute,
   "quick-study": QuickStudyRoute,
   "vocab-test": VocabTestRoute,
   ...(__EXP_TALK__ ? { talk: lazy(() => import("./talk").then((module) => ({ default: module.TalkRoute }))) } : {}),

@@ -2,11 +2,11 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1872247,
+      "bytes": 1875261,
       "passes": true
     },
     "study": {
-      "bytes": 379528,
+      "bytes": 419726,
       "passes": true
     },
     "account": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1150828,
+      "bytes": 1150953,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 367404,
+      "bytes": 367428,
       "passes": true
     },
     "core": {
@@ -42,12 +42,12 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 993284,
+      "bytes": 998956,
       "passes": true
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 57,
+  "duplicateSourceModuleCount": 61,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -238,6 +238,14 @@
       ]
     },
     {
+      "source": "frontend/src/lib/team-activity.ts",
+      "bytes": 10954,
+      "packages": [
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/features/word-study/word-study-utils.ts",
       "bytes": 10867,
       "packages": [
@@ -311,6 +319,14 @@
       "bytes": 4926,
       "packages": [
         "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/team-rules.ts",
+      "bytes": 4899,
+      "packages": [
         "lazy",
         "study"
       ]
@@ -397,6 +413,14 @@
       ]
     },
     {
+      "source": "frontend/src/components/ZooConfetti.tsx",
+      "bytes": 2552,
+      "packages": [
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/grammar-title-furigana.ts",
       "bytes": 2469,
       "packages": [
@@ -466,6 +490,14 @@
         "content-pages",
         "grammar-pages",
         "lazy"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/haptics.weapp.ts",
+      "bytes": 1213,
+      "packages": [
+        "lazy",
+        "study"
       ]
     },
     {
@@ -549,7 +581,7 @@
       ]
     }
   ],
-  "duplicatedCoreModuleCount": 20,
+  "duplicatedCoreModuleCount": 23,
   "duplicatedCoreModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -632,6 +664,15 @@
       "reason": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache."
     },
     {
+      "source": "frontend/src/lib/team-activity.ts",
+      "bytes": 10954,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker."
+    },
+    {
       "source": "frontend/src/lib/share-image.weapp.ts",
       "bytes": 7404,
       "packages": [
@@ -659,6 +700,15 @@
         "lazy"
       ],
       "reason": "The WeakSet records only an idempotent legacy-migration marker per DB object; position values remain in the shared database."
+    },
+    {
+      "source": "frontend/src/lib/team-rules.ts",
+      "bytes": 4899,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "Team periods, check-in eligibility, and duel scores are pure calculations over supplied values; the module keeps no mutable state."
     },
     {
       "source": "frontend/src/lib/useStudyTimer.ts",
@@ -732,6 +782,15 @@
       "reason": "Ordinal maps are derived only from bundled grammar records and are safe package-local content caches."
     },
     {
+      "source": "frontend/src/lib/haptics.weapp.ts",
+      "bytes": 1213,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "Haptics call the Mini Program vibration API per invocation and keep no module state."
+    },
+    {
       "source": "frontend/src/lib/yield-to-paint.ts",
       "bytes": 957,
       "packages": [
@@ -761,9 +820,11 @@
     "frontend/src/lib/analytics/weekly-reports.ts": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot.",
     "frontend/src/lib/share-canvas.weapp.ts": "The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data.",
     "frontend/src/lib/token-dictionary.ts": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache.",
+    "frontend/src/lib/team-activity.ts": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker.",
     "frontend/src/lib/share-image.weapp.ts": "Share and save operations use the image passed to each call and retain no mutable user state.",
     "frontend/src/lib/distinction-quiz.ts": "Question groups and results are derived from the shared database on demand; there is no module-level user-data cache.",
     "frontend/src/lib/grammarProgressPreferences.ts": "The WeakSet records only an idempotent legacy-migration marker per DB object; position values remain in the shared database.",
+    "frontend/src/lib/team-rules.ts": "Team periods, check-in eligibility, and duel scores are pure calculations over supplied values; the module keeps no mutable state.",
     "frontend/src/lib/useStudyTimer.ts": "Timer state and intervals belong to each mounted React hook instance; no shared module state is retained.",
     "frontend/src/lib/study-clock.ts": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton.",
     "frontend/src/lib/grammar-form-target.ts": "Grammar form matching is a pure calculation over the supplied grammar point.",
@@ -771,6 +832,7 @@
     "frontend/src/lib/grammar-key-points.ts": "The module reads bundled grammar key-point content and retains no mutable user state.",
     "frontend/src/lib/study-totals.ts": "Study totals are queried from the shared database on demand; query results are not cached.",
     "frontend/src/lib/grammar-numbering.ts": "Ordinal maps are derived only from bundled grammar records and are safe package-local content caches.",
+    "frontend/src/lib/haptics.weapp.ts": "Haptics call the Mini Program vibration API per invocation and keep no module state.",
     "frontend/src/lib/yield-to-paint.ts": "The helper schedules a paint yield and retains no state.",
     "frontend/src/lib/grammarNotes.ts": "Notes are read from and written to app-wide localStorage on every call; this module has no in-memory note cache."
   },
@@ -971,6 +1033,15 @@
       "reason": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant)."
     },
     {
+      "source": "frontend/src/components/ZooConfetti.tsx",
+      "bytes": 2552,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state."
+    },
+    {
       "source": "frontend/src/components/Disclosure.weapp.tsx",
       "bytes": 2115,
       "packages": [
@@ -1052,6 +1123,7 @@
     "frontend/src/components/CrossPlatformImage.weapp.tsx": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.",
     "frontend/src/components/daily-plan-ring-geometry.ts": "Ring geometry shared by the Canvas ring; duplicated alongside it.",
     "frontend/src/components/GrammarTermHint.weapp.tsx": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant).",
+    "frontend/src/components/ZooConfetti.tsx": "Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state.",
     "frontend/src/components/Disclosure.weapp.tsx": "Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.",
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
     "frontend/src/components/JapaneseWordRuby.tsx": "Word ruby rendering is used in the study, grammar, and lazy tab routes.",
@@ -1059,7 +1131,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 242114,
+  "duplicatedPageComponentBytes": 244666,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1070,7 +1142,7 @@
   "mainTopModules": [
     {
       "source": "frontend/src/lib/sync-api.ts",
-      "bytes": 164811
+      "bytes": 168237
     },
     {
       "source": "frontend/src/app.css",
@@ -1089,12 +1161,12 @@
       "bytes": 92952
     },
     {
-      "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 91585
-    },
-    {
       "source": "wechat-miniprogram/src/vendor/sql-wasm.js",
       "bytes": 91227
+    },
+    {
+      "source": "taro-spike-2/src/platform/WeappPage.tsx",
+      "bytes": 89479
     },
     {
       "source": "frontend/src/lib/storage.ts",

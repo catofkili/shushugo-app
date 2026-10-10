@@ -8,6 +8,7 @@ const definitions = [
   ['team', 'study/team/index', false, 'study'],
   ['quick-study', 'study/quick-study/index', false, 'study'],
   ['vocab-test', 'study/vocab-test/index', false, 'study'],
+  ['duel', 'study/duel/index', false, 'study'],
   ['study-modes', 'study/study-modes/index', false, 'study'],
   ['confusion', 'study/confusion/index', false, 'study'],
   ['distinction-quiz', 'study/distinction-quiz/index', false, 'study'],

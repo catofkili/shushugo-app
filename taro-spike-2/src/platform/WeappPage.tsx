@@ -118,7 +118,8 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         if (cancelled) return;
         setReady(true);
         perfRecord(`页面 · ${page} 就绪`, Date.now() - openedAt);
-        if (!levelSetupChecked) {
+        // 对战直达先应战，和网页一致；不标记已检查，之后回首页仍走首次设定。
+        if (!levelSetupChecked && !(page === 'duel' && getAppState().duelId)) {
           levelSetupChecked = true;
           try { setLevelSetupOpen(shouldShowLevelSetup()); } catch { /* 旧库可能尚无计划设置 */ }
         }

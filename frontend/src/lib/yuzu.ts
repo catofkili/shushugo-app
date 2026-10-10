@@ -1,6 +1,8 @@
 /**
  * 柚子:免费货币。只奖「做完了」,绝不奖「答得好」——
  * 和答对/答错挂钩的那一刻,用户就会为了钱点「认识」,喂给 FSRS 的全是假数据。
+ * 组队内战的每周首胜是作者明确批准的例外：作答只存独立对战记录，
+ * 不进入学习记录或 FSRS，避免把这个奖励带进日常学习的判断。
  *
  * 数字是拿作者 102 天真实流水回放定的(见 CLAUDE.md「柚子」一节):
  * 奖励和商店价格同时乘 10，保持攒到首件主题所需的学习时间不变。
@@ -80,6 +82,16 @@ export const voiceUnlocked = (voiceId: string, defaultId: string | null): boolea
 const book = (kind: string, key: string, amount: number): boolean => {
   getDatabase().run("INSERT OR IGNORE INTO yuzu_ledger (kind, key, amount, day) VALUES (?, ?, ?, ?)", [kind, key, amount, today()]);
   return firstValue<number>("SELECT changes()", [], 0) > 0;
+};
+
+/** 组队奖励沿用同一账本身份，重复领取、跨设备合并都只记一次。 */
+export const bookTeamReward = (kind: "team_checkin" | "team_period" | "duel_win", key: string, amount: number): boolean => {
+  if (!key || !Number.isSafeInteger(amount) || amount <= 0) return false;
+  ensureYuzuScale();
+  if (!book(kind, key, amount)) return false;
+  persistSoon();
+  emit();
+  return true;
 };
 
 export const yuzuBalance = (): number => {

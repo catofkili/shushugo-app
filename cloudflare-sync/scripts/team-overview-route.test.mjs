@@ -105,8 +105,8 @@ try {
   const windowSeconds = 3600;
   const windowStart = Math.floor(Date.now() / 1000 / windowSeconds) * windowSeconds;
   db.prepare(`INSERT INTO auth_rate_limits (subject, scope, window_start, request_count, updated_at)
-    VALUES ('user:u1', 'team-activity', ?, 120, ?)
-    ON CONFLICT(subject, scope, window_start) DO UPDATE SET request_count = 120, updated_at = excluded.updated_at`)
+    VALUES ('user:u1', 'team-activity', ?, 360, ?)
+    ON CONFLICT(subject, scope, window_start) DO UPDATE SET request_count = 360, updated_at = excluded.updated_at`)
     .run(windowStart, now);
   assert.equal((await postOverview({ studyDay, studyCount: 0, completed: false })).status, 429);
 

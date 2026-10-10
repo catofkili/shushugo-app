@@ -6,6 +6,7 @@ import { defaultStudyMode, getStudyMode } from "../lib/studyMode";
 import type { WeeklyReportEntry } from "../lib/analytics/weekly-report-events";
 import type { LibraryLevel } from "../lib/word-library";
 import type { GrammarMode, Page, StudyMode } from "../types/app";
+import { duelIdFromUrl } from "../lib/duel-links";
 
 export interface AppState {
   page: Page;
@@ -23,11 +24,13 @@ export interface AppState {
   weeklyReportStart: string | null;
   weeklyReportEntry: WeeklyReportEntry;
   pendingAccountPage: Page | null;
+  duelId: string | null;
 }
 
 const initialMode = getStudyMode() || defaultStudyMode;
+const initialDuelId = typeof window === "undefined" ? null : duelIdFromUrl(window.location.href);
 let state: AppState = {
-  page: "home",
+  page: initialDuelId ? "duel" : "home",
   pageHistory: [],
   grammarMode: "learn",
   selectedGrammarId: "wa",
@@ -41,7 +44,8 @@ let state: AppState = {
   wordStudyRevision: 0,
   weeklyReportStart: null,
   weeklyReportEntry: "button",
-  pendingAccountPage: null
+  pendingAccountPage: null,
+  duelId: initialDuelId
 };
 
 const listeners = new Set<() => void>();

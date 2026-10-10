@@ -110,6 +110,11 @@ for (const [teamId, owner, member, code] of [["team-1", "u1", "u2", "TEAM0001"],
   addMember.run(`${teamId}-owner`, teamId, owner, "owner", now);
   addMember.run(`${teamId}-member`, teamId, member, "member", now);
 }
+// Legacy NULL anchors have a one-time initialization read; keep these ceilings on the normal path.
+// The cold-anchor path is exercised separately in team-streak-route.test.mjs.
+const anchor = new Date(Date.now() + 4 * 60 * 60 * 1000 + 86400000).toISOString().slice(0, 10);
+db.prepare("UPDATE teams SET streak_start = ?").run(anchor);
+
 const addActivity = db.prepare(`
   INSERT INTO team_daily_activity (team_id, user_id, study_day, study_count, completed, updated_at)
   VALUES (?, ?, ?, ?, 0, ?)

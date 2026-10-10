@@ -17,3 +17,8 @@ export const triggerReliefHaptic = () => vibrate("long");
 export const triggerRevealHaptic = () => vibrate("short");
 export const triggerSwipeArmHaptic = () => vibrate("short");
 export const triggerAchievementHaptic = () => vibrate("long");
+export const triggerTeamCheckinHaptic = () => {
+  vibrate("long");
+  setTimeout(() => vibrate("short"), 150);
+  setTimeout(() => vibrate("short"), 300);
+};

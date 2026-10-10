@@ -156,6 +156,14 @@
       ]
     },
     {
+      "web": "frontend/src/pages/DuelPage.tsx",
+      "mini": [
+        "frontend/src/pages/DuelPage.tsx",
+        "taro-spike-2/src/study/duel/index.tsx"
+      ],
+      "reason": "Taro 小程序直接编译同一份 DuelPage.tsx；taro-spike-2/src/study/duel/index.tsx 是组队对战的小程序入口，不维护第二份页面。"
+    },
+    {
       "web": "frontend/src/pages/FavoritesPage.tsx",
       "mini": [
         "wechat-miniprogram/src/features/favorites/index.js",
@@ -310,8 +318,10 @@
       "mini": [
         "wechat-miniprogram/src/pages/team/index.js",
         "wechat-miniprogram/src/pages/team/index.wxml",
-        "wechat-miniprogram/src/pages/team/index.wxss"
-      ]
+        "wechat-miniprogram/src/pages/team/index.wxss",
+        "frontend/src/pages/TeamPage.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译 frontend/src 这份源码，原生小程序页面已停止维护（见头部 2026-09-25 决定）；登记自身是为了推送范围内的历史提交过配对检查，不代表原生页面要同步。"
     },
     {
       "web": "frontend/src/pages/UserAgreement.tsx",
@@ -326,8 +336,10 @@
       "mini": [
         "wechat-miniprogram/src/features/vocab-test/index.js",
         "wechat-miniprogram/src/features/vocab-test/index.wxml",
-        "wechat-miniprogram/src/features/vocab-test/index.wxss"
-      ]
+        "wechat-miniprogram/src/features/vocab-test/index.wxss",
+        "frontend/src/pages/VocabTestPage.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译 frontend/src 这份源码，原生小程序页面已停止维护（见头部 2026-09-25 决定）；登记自身是为了推送范围内的历史提交过配对检查，不代表原生页面要同步。"
     },
     {
       "web": "frontend/src/pages/WeeklyReportPage.tsx",
@@ -435,12 +447,22 @@
       "reason": "路线 A：Taro 直接编译 frontend/src 这份源码，原生小程序页面已停止维护（见头部 2026-09-25 决定）；登记自身是为了推送范围内的历史提交过配对检查，不代表原生页面要同步。"
     },
     {
+      "web": "frontend/src/pages/team-duel.css",
+      "mini": [
+        "frontend/src/pages/team-duel.css",
+        "taro-spike-2/src/study/duel/index.tsx"
+      ],
+      "reason": "DuelPage.tsx 导入同一份组队对战样式，由 Taro 编译进小程序；taro-spike-2/src/study/duel/index.tsx 提供对应页面入口。"
+    },
+    {
       "web": "frontend/src/pages/YuzuShopPage.tsx",
       "mini": [
         "wechat-miniprogram/src/features/yuzu-shop/index.js",
         "wechat-miniprogram/src/features/yuzu-shop/index.wxml",
-        "wechat-miniprogram/src/features/yuzu-shop/index.wxss"
-      ]
+        "wechat-miniprogram/src/features/yuzu-shop/index.wxss",
+        "frontend/src/pages/YuzuShopPage.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译 frontend/src 这份源码，原生小程序页面已停止维护（见头部 2026-09-25 决定）；登记自身是为了推送范围内的历史提交过配对检查，不代表原生页面要同步。"
     },
     {
       "web": "frontend/src/design.css",
@@ -500,6 +522,33 @@
         "frontend/src/components/AuthDialog.weapp.tsx"
       ],
       "reason": "路线 A：Taro 直接编译 frontend/src 这份源码，原生小程序页面已停止维护（见头部 2026-09-25 决定）；登记自身是为了推送范围内的历史提交过配对检查，不代表原生页面要同步。"
+    },
+    {
+      "web": "frontend/src/lib/duel-links.ts",
+      "mini": [
+        "frontend/src/lib/duel-links.ts",
+        "taro-spike-2/src/study/duel/index.tsx"
+      ],
+      "reason": "路线 A：网页 URL 和 Taro 页面的 query 共用同一份对战 id 校验；小程序入口把 router.params 交给共用函数。"
+    },
+    {
+      "web": "frontend/src/lib/page-share.ts",
+      "mini": [
+        "frontend/src/lib/page-share.ts",
+        "frontend/src/lib/page-share.weapp.ts",
+        "taro-spike-2/src/study/duel/index.tsx",
+        "taro-spike-2/src/study/team/index.tsx"
+      ],
+      "reason": "路线 A：同一份 TeamPage / DuelPage 经平台变体交付 title/path；网页保留系统分享或复制，小程序入口注册页面分享回调、按钮触发原生分享。"
+    },
+    {
+      "web": "frontend/src/lib/page-share.weapp.ts",
+      "mini": [
+        "frontend/src/lib/page-share.weapp.ts",
+        "taro-spike-2/src/study/duel/index.tsx",
+        "taro-spike-2/src/study/team/index.tsx"
+      ],
+      "reason": "Taro 平台适配器只处理页面级分享上下文和原生按钮数据，不改网页交互、组队规则或奖励。"
     }
   ]
 }

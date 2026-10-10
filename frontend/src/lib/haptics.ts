@@ -53,3 +53,9 @@ export function triggerSwipeArmHaptic(): void {
 export function triggerAchievementHaptic(): void {
   Haptics.impact({ style: ImpactStyle.Medium }).catch(ignoreHapticError);
 }
+
+export function triggerTeamCheckinHaptic(): void {
+  Haptics.impact({ style: ImpactStyle.Heavy }).catch(ignoreHapticError);
+  setTimeout(() => Haptics.impact({ style: ImpactStyle.Heavy }).catch(ignoreHapticError), 120);
+  setTimeout(() => Haptics.impact({ style: ImpactStyle.Heavy }).catch(ignoreHapticError), 240);
+}

@@ -30,6 +30,7 @@ import { ROUTES } from "./routes";
 import { getProgressOverview } from "./lib/api";
 import { confirmDialog } from "./lib/platform-dialogs";
 import { recordDiagnosticRoute } from "./lib/diagnostics";
+import { reportTeamActivity } from "./lib/team-activity";
 
 const accountProtectedPages = new Set<Page>(["account", "personal-info", "team"]);
 const proPages: Partial<Record<Page, FeatureId>> = { "distinction-quiz": "confusionGroups" };
@@ -57,6 +58,7 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [feedbackComposerOpen, setFeedbackComposerOpen] = useState(false);
   const [levelSetupOpen, setLevelSetupOpen] = useState(() => {
+    if (state.page === "duel") return false;
     try { return shouldShowLevelSetup(); } catch { return false; }
   });
   const [trialEndedOpen, setTrialEndedOpen] = useState(false);
@@ -67,6 +69,18 @@ export default function App() {
   const syncConflictNoticeRef = useRef("");
 
   useEffect(() => { recordDiagnosticRoute(page); }, [page]);
+
+  useEffect(() => {
+    const foreground = () => {
+      if (document.visibilityState === "visible") void reportTeamActivity();
+    };
+    document.addEventListener("visibilitychange", foreground);
+    window.addEventListener("pageshow", foreground);
+    return () => {
+      document.removeEventListener("visibilitychange", foreground);
+      window.removeEventListener("pageshow", foreground);
+    };
+  }, []);
 
   useEffect(() => {
     if (!readingPreviewLocked) return;

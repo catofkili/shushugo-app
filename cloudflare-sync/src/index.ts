@@ -1,3 +1,4 @@
+import { canTakeTeamLeave, compareDuelScores, deriveTeamPeriod, scoreDuel, shiftTeamDay, teamDayPassed, teamIsoWeek, teamPeriod, teamStudyDay, type DuelAnswer, type DuelQuestion, type DuelScore, type TeamPeriodMember } from "../../frontend/src/lib/team-rules";
 import {
   PRIVACY_POLICY_EFFECTIVE_DATE,
   PRIVACY_POLICY_SECTIONS,
@@ -205,7 +206,7 @@ const json = (body: unknown, status = 200) => (
 const corsHeaders = () => ({
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET,POST,PUT,DELETE,OPTIONS",
-  "access-control-allow-headers": "authorization,content-type,x-sync-format,x-sync-protocol-version,x-sync-compression,x-sync-operation-id,x-sync-device-id,x-sync-base-generation,x-sync-base-modified",
+  "access-control-allow-headers": "authorization,content-type,x-duel-token,x-sync-format,x-sync-protocol-version,x-sync-compression,x-sync-operation-id,x-sync-device-id,x-sync-base-generation,x-sync-base-modified",
   "access-control-expose-headers": "x-sync-format,x-sync-compression,x-sync-generation,x-sync-last-modified,x-sync-byte-length",
   "access-control-max-age": "86400"
 });
@@ -1872,6 +1873,8 @@ const TEAM_TARGETS = new Set(["N5", "N4", "N3", "N2", "N1", "全部"]);
 const TEAM_EMOJIS = new Set(["🌱", "🐿️", "🐦", "🚃", "🦉", "🍊", "📚", "⛩️"]);
 const TEAM_INVITE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const TEAM_REPORT_REASONS = new Set(["广告或联系方式", "不当内容", "冒充或欺骗", "其他"]);
+// 学习页每 15 秒 flush，持续学习最多 240 次/小时，给前台恢复和组队页留余量。
+const TEAM_ACTIVITY_LIMIT = 360;
 
 const teamPublicTextAllowed = (value: string) => {
   if (/[\u0000-\u001f\u007f]/u.test(value)) return false;
@@ -1919,6 +1922,7 @@ interface TeamRow {
   max_members: number;
   owner_user_id: string;
   invite_code: string;
+  streak_start: string | null;
 }
 
 const validStudyDay = (value: unknown): string | null => {
@@ -1961,7 +1965,7 @@ const teamAvatar = (memberId: string) => {
 
 const teamMembership = async (env: Env, userId: string) => env.DB.prepare(`
   SELECT t.id, t.name, t.target_level, t.emoji, t.visibility, t.max_members,
-         t.owner_user_id, t.invite_code
+         t.owner_user_id, t.invite_code, t.streak_start
   FROM team_members tm JOIN teams t ON t.id = tm.team_id
   WHERE tm.user_id = ?
 `).bind(userId).first<TeamRow>();
@@ -1992,12 +1996,20 @@ const teamSnapshot = async (
 ) => {
   const team = knownTeam ?? await teamMembership(env, userId);
   if (!team) return null;
-  const statements: D1PreparedStatement[] = beforeSnapshot ? [beforeSnapshot] : [];
+  await ensureTeamAnchor(env, team);
+  const nowDay = teamStudyDay();
+  const period = teamPeriod(team.streak_start!, nowDay);
+  const yesterday = shiftTeamDay(nowDay, -1);
+  const previousPeriod = teamPeriod(team.streak_start!, yesterday);
+  const statements: D1PreparedStatement[] = [];
+  if (beforeSnapshot) statements.push(beforeSnapshot);
   statements.push(
     env.DB.prepare(`
-    SELECT tm.id AS member_id, tm.user_id, tm.role, u.display_name,
+    SELECT tm.id AS member_id, tm.user_id, tm.role, tm.joined_at, u.display_name,
            COALESCE(a.study_count, 0) AS study_count,
            COALESCE(a.completed, 0) AS completed,
+           COALESCE(a.word_count, 0) AS word_count,
+           COALESCE(a.active_minutes, 0) AS active_minutes,
            COALESCE(received.cheers, 0) AS cheers_received,
            CASE WHEN sent.sender_user_id IS NULL THEN 0 ELSE 1 END AS cheered_by_me
     FROM team_members tm
@@ -2018,13 +2030,23 @@ const teamSnapshot = async (
     SELECT DISTINCT study_day FROM team_daily_activity
     WHERE team_id = ? AND (study_count > 0 OR completed = 1) AND study_day <= ?
     ORDER BY study_day DESC LIMIT 3660
-  `).bind(team.id, day)
+  `).bind(team.id, day),
+    env.DB.prepare(`SELECT user_id, study_day, word_count, active_minutes FROM team_daily_activity
+      WHERE team_id = ? AND study_day BETWEEN ? AND ?`).bind(team.id, previousPeriod.start, period.end),
+    env.DB.prepare(`SELECT user_id, period_start, study_day FROM team_leaves
+      WHERE team_id = ? AND period_start IN (?, ?)`).bind(team.id, previousPeriod.start, period.start)
   );
   const results = await env.DB.batch(statements);
+  // Keep the normal path to one batch: these same rows drive the grid and yesterday's leave.
+  // Activity writes precede settlement so a last-day report inside the grace window is included.
+  await settleTeamPeriods(env, team);
   const offset = beforeSnapshot ? 1 : 0;
   const rows = (results[offset].results ?? []) as Array<{
     member_id: string;
     user_id: string;
+    joined_at: string;
+    word_count: number;
+    active_minutes: number;
     role: "owner" | "member";
     display_name: string | null;
     study_count: number;
@@ -2033,6 +2055,17 @@ const teamSnapshot = async (
     cheered_by_me: number;
   }>;
   const days = (results[offset + 1].results ?? []) as Array<{ study_day: string }>;
+  const activity = (results[offset + 2].results ?? []) as TeamActivityRow[];
+  const leaves = (results[offset + 3].results ?? []) as TeamLeaveRow[];
+  const periodState = teamPeriodFromRows(period.start, nowDay, rows, activity, leaves);
+  const myPeriod = periodState.members.find((member) => member.userId === userId);
+  const myJoin = rows.find((row) => row.user_id === userId);
+  const leaveRows = leaves.filter((row) => row.user_id === userId && row.period_start === previousPeriod.start);
+  const yesterdayActivity = activity.find((row) => row.user_id === userId && row.study_day === yesterday);
+  const leaveOpportunity = yesterday >= team.streak_start! && myJoin && teamStudyDay(Date.parse(myJoin.joined_at)) <= yesterday
+    && !teamDayPassed(yesterdayActivity?.word_count ?? 0, yesterdayActivity?.active_minutes ?? 0)
+    && !leaveRows.some((leave) => leave.study_day === yesterday)
+    ? { studyDay: yesterday, periodStart: previousPeriod.start, used: leaveRows.length > 0 } : null;
   return {
     id: team.id,
     name: team.name,
@@ -2046,18 +2079,265 @@ const teamSnapshot = async (
     activeCount: rows.filter((row) => Number(row.study_count) > 0 || Number(row.completed) === 1).length,
     totalStudyCount: rows.reduce((sum, row) => sum + Number(row.study_count), 0),
     streak: teamStreak(days.map((row) => row.study_day), day),
+    period: { start: period.start, end: period.end, dayNumber: period.day, broken: periodState.broken,
+      culprits: periodState.culprits.map((id) => rows.find((row) => row.user_id === id)?.member_id).filter(Boolean),
+      accruedAmount: myPeriod?.amount ?? 0 },
+    leaveOpportunity,
     members: rows.map((row) => ({
       memberId: row.member_id,
       name: row.display_name || "学习伙伴",
       avatar: teamAvatar(row.member_id),
       isMe: row.user_id === userId,
       isOwner: row.role === "owner",
+      wordCount: Number(row.word_count),
+      activeMinutes: Number(row.active_minutes),
+      cells: periodState.members.find((member) => member.userId === row.user_id)?.cells ?? [],
+      daysPassed: periodState.members.find((member) => member.userId === row.user_id)?.daysPassed ?? 0,
       studyCount: Number(row.study_count),
       completed: Number(row.completed) === 1,
       cheersReceived: Number(row.cheers_received),
       cheeredByMe: Number(row.cheered_by_me) === 1
     }))
   };
+};
+
+const ensureTeamAnchor = async (env: Env, team: TeamRow) => {
+  if (team.streak_start) return;
+  await env.DB.prepare("UPDATE teams SET streak_start = ? WHERE id = ? AND streak_start IS NULL")
+    .bind(shiftTeamDay(teamStudyDay(), 1), team.id).run();
+  team.streak_start = (await env.DB.prepare("SELECT streak_start FROM teams WHERE id = ?")
+    .bind(team.id).first<{ streak_start: string }>())!.streak_start;
+};
+
+type TeamActivityRow = { user_id: string; study_day: string; word_count: number; active_minutes: number };
+type TeamLeaveRow = { user_id: string; period_start: string; study_day: string };
+const teamPeriodFromRows = (
+  start: string, nowDay: string, members: Array<{ user_id: string; joined_at: string }>,
+  activity: TeamActivityRow[], leaves: TeamLeaveRow[]
+) => {
+  const end = shiftTeamDay(start, 13);
+  const inputs: TeamPeriodMember[] = members.filter((member) => teamStudyDay(Date.parse(member.joined_at)) <= end).map((member) => ({
+    userId: member.user_id,
+    joinedDay: teamStudyDay(Date.parse(member.joined_at)),
+    activity: activity.filter((row) => row.user_id === member.user_id).map((row) => ({ studyDay: row.study_day, wordCount: row.word_count, activeMinutes: row.active_minutes })),
+    leaves: leaves.filter((row) => row.user_id === member.user_id && row.period_start === start).map((row) => row.study_day)
+  }));
+  return deriveTeamPeriod(start, nowDay, inputs);
+};
+
+const readTeamPeriod = async (env: Env, teamId: string, start: string, nowDay: string) => {
+  const end = shiftTeamDay(start, 13);
+  const results = await env.DB.batch([
+    env.DB.prepare("SELECT user_id, joined_at FROM team_members WHERE team_id = ?").bind(teamId),
+    env.DB.prepare("SELECT user_id, study_day, word_count, active_minutes FROM team_daily_activity WHERE team_id = ? AND study_day BETWEEN ? AND ?")
+      .bind(teamId, start, end),
+    env.DB.prepare("SELECT user_id, period_start, study_day FROM team_leaves WHERE team_id = ? AND period_start = ?").bind(teamId, start)
+  ]);
+  const members = (results[0].results ?? []) as Array<{ user_id: string; joined_at: string }>;
+  return teamPeriodFromRows(start, nowDay, members, (results[1].results ?? []) as TeamActivityRow[], (results[2].results ?? []) as TeamLeaveRow[]);
+};
+
+const settleTeamPeriods = async (env: Env, team: TeamRow) => {
+  await ensureTeamAnchor(env, team);
+  const nowDay = teamStudyDay();
+  if (shiftTeamDay(team.streak_start!, 13) >= nowDay) return;
+  const settled = await env.DB.prepare("SELECT DISTINCT period_start FROM team_period_results WHERE team_id = ?")
+    .bind(team.id).all<{ period_start: string }>();
+  const done = new Set((settled.results ?? []).map((row) => row.period_start));
+  for (let start = team.streak_start!; shiftTeamDay(start, 13) < nowDay; start = shiftTeamDay(start, 14)) {
+    if (done.has(start)) continue;
+    const period = await readTeamPeriod(env, team.id, start, nowDay);
+    if (!period.settleable || !period.members.length) continue;
+    const now = new Date().toISOString();
+    // One INSERT freezes the entire roster atomically. Two readers cannot settle different halves
+    // of a period, and later departures/rejoins cannot alter an already settled team's rewards.
+    await env.DB.prepare(`INSERT OR IGNORE INTO team_period_results
+      (team_id, user_id, period_start, days_passed, amount, broken, culprit, settled_at)
+      SELECT * FROM (${period.members.map(() => "SELECT ? AS team_id, ? AS user_id, ? AS period_start, ? AS days_passed, ? AS amount, ? AS broken, ? AS culprit, ? AS settled_at").join(" UNION ALL ")})
+      WHERE NOT EXISTS (SELECT 1 FROM team_period_results WHERE team_id = ? AND period_start = ?)`)
+      .bind(...period.members.flatMap((member) => [team.id, member.userId, start, member.daysPassed, member.amount, period.broken ? 1 : 0, member.culprit ? 1 : 0, now]), team.id, start).run();
+  }
+};
+
+const takeTeamLeave = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-leave", `user:${userId}`, 30, 3600);
+  const team = await teamMembership(env, userId);
+  if (!team) return json({ detail: "你还没有加入队伍。" }, 404);
+  await ensureTeamAnchor(env, team);
+  const body = await readJson<{ studyDay?: string }>(request);
+  const day = validStudyDay(body.studyDay);
+  if (!day || day < team.streak_start! || !canTakeTeamLeave(day, teamStudyDay(), false)) return json({ detail: "已过请假时限。" }, 400);
+  const start = teamPeriod(team.streak_start!, day).start;
+  const joined = await env.DB.prepare("SELECT joined_at FROM team_members WHERE team_id = ? AND user_id = ?").bind(team.id, userId).first<{ joined_at: string }>();
+  if (!joined || teamStudyDay(Date.parse(joined.joined_at)) > day) return json({ detail: "这天还没有入队。" }, 400);
+  const activity = await env.DB.prepare("SELECT word_count, active_minutes FROM team_daily_activity WHERE team_id = ? AND user_id = ? AND study_day = ?")
+    .bind(team.id, userId, day).first<{ word_count: number; active_minutes: number }>();
+  if (teamDayPassed(activity?.word_count ?? 0, activity?.active_minutes ?? 0)) return json({ detail: "这天已经过关。" }, 400);
+  const result = await env.DB.prepare(`INSERT OR IGNORE INTO team_leaves (team_id, user_id, period_start, study_day, created_at)
+    SELECT ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM team_period_results WHERE team_id = ? AND period_start = ?)`)
+    .bind(team.id, userId, start, day, new Date().toISOString(), team.id, start).run();
+  if (!result.meta.changes) return json({ detail: "本期请假已用过。" }, 409);
+  return json({ team: await teamSnapshot(env, userId, teamStudyDay(), team) });
+};
+
+const teamRewards = async (request: Request, env: Env) => {
+  const userId = await requireUser(request, env);
+  const team = await teamMembership(env, userId);
+  if (team) await settleTeamPeriods(env, team);
+  const results = await env.DB.batch([
+    env.DB.prepare("SELECT team_id, period_start, amount FROM team_period_results WHERE user_id = ? AND amount > 0 ORDER BY period_start").bind(userId),
+    env.DB.prepare("SELECT iso_week, duel_id FROM duel_weekly_wins WHERE user_id = ? ORDER BY iso_week").bind(userId)
+  ]);
+  return json({ periods: results[0].results ?? [], wins: results[1].results ?? [] });
+};
+
+interface DuelRow {
+  id: string;
+  creator_user_id: string;
+  creator_name: string | null;
+  levels: string;
+  question_count: number;
+  questions_json: string;
+  creator_answers_json: string;
+  creator_score: string;
+  opponent_user_id: string | null;
+  opponent_token_hash: string | null;
+  opponent_answers_json: string | null;
+  opponent_score: string | null;
+  winner: "creator" | "opponent" | "draw" | null;
+  decided_at: string | null;
+  created_at: string;
+}
+
+const findDuel = (env: Env, id: string) => env.DB.prepare(`SELECT d.*, u.display_name AS creator_name
+  FROM duels d JOIN users u ON u.id = d.creator_user_id WHERE d.id = ?`).bind(id).first<DuelRow>();
+const validDuelToken = (value: unknown): value is string => typeof value === "string" && /^[a-zA-Z0-9_-]{32,128}$/.test(value);
+const duelPayload = (row: DuelRow, userId: string | null, tokenHash: string | null = null) => ({
+  id: row.id, creatorName: row.creator_name || "学习伙伴", levels: JSON.parse(row.levels) as string[],
+  questionCount: row.question_count, questions: JSON.parse(row.questions_json) as DuelQuestion[],
+  creatorScore: JSON.parse(row.creator_score) as DuelScore,
+  opponentScore: row.opponent_score ? JSON.parse(row.opponent_score) as DuelScore : null,
+  winner: row.winner, decidedAt: row.decided_at, createdAt: row.created_at,
+  role: userId === row.creator_user_id ? "creator" as const
+    : (userId && userId === row.opponent_user_id) || (tokenHash && tokenHash === row.opponent_token_hash && (!row.opponent_user_id || !userId))
+      ? "opponent" as const : "spectator" as const,
+  available: row.opponent_answers_json === null,
+  opponentLinked: row.opponent_user_id !== null
+});
+
+const validateDuelQuestions = (value: unknown, levels: string[], count: number): DuelQuestion[] => {
+  if (!Array.isArray(value) || value.length !== count) throw json({ detail: "题目快照无效。" }, 400);
+  const ids = new Set<number>();
+  for (const question of value) {
+    if (!question || !Number.isSafeInteger(question.id) || question.id < 1 || ids.has(question.id)
+      || !levels.includes(question.level) || !["reading", "meaning"].includes(question.kind)
+      || typeof question.prompt !== "string" || !question.prompt.trim() || question.prompt.length > 500
+      || (question.readingScope !== undefined && (typeof question.readingScope !== "string" || question.readingScope.length > 100))
+      || !Array.isArray(question.options) || question.options.length !== 4 || new Set(question.options).size !== 4
+      || question.options.some((option: unknown) => typeof option !== "string" || !option.trim() || option.length > 500)
+      || !Number.isInteger(question.answerIndex) || question.answerIndex < 0 || question.answerIndex > 3
+      || question.answer !== question.options[question.answerIndex]
+      || question.limitMs !== (question.kind === "reading" ? 15000 : 10000)) throw json({ detail: "题目快照无效。" }, 400);
+    ids.add(question.id);
+  }
+  return value.map((q) => ({ id: q.id, level: q.level, kind: q.kind, prompt: q.prompt, ...(q.readingScope ? { readingScope: q.readingScope } : {}), options: q.options, answerIndex: q.answerIndex, answer: q.answer, limitMs: q.limitMs }));
+};
+
+const validateDuelAnswers = (value: unknown, questions: DuelQuestion[]): DuelAnswer[] => {
+  if (!Array.isArray(value) || value.length > questions.length) throw json({ detail: "作答记录无效。" }, 400);
+  return value.map((answer, index) => {
+    if (!answer || !(answer.selected === "unknown" || answer.selected === "timeout"
+      || (Number.isInteger(answer.selected) && answer.selected >= 0 && answer.selected < questions[index].options.length))
+      || typeof answer.responseMs !== "number" || !Number.isFinite(answer.responseMs)) throw json({ detail: "作答记录无效。" }, 400);
+    return { selected: answer.selected, responseMs: Math.floor(Math.max(0, Math.min(questions[index].limitMs, answer.responseMs))) };
+  });
+};
+
+const createDuel = async (request: Request, env: Env) => {
+  const userId = await requireUser(request, env);
+  await rateLimitSubject(env, "duel-create", `user:${userId}`, 30, 3600);
+  const body = await readJson<{ levels?: unknown; questionCount?: number; questions?: unknown; answers?: unknown }>(request);
+  if (!Array.isArray(body.levels) || !body.levels.length || body.levels.length > 5 || new Set(body.levels).size !== body.levels.length
+    || body.levels.some((level) => !["N5", "N4", "N3", "N2", "N1"].includes(level)) || ![10, 20, 30].includes(body.questionCount ?? 0)) return json({ detail: "请选择级别和题数。" }, 400);
+  const questions = validateDuelQuestions(body.questions, body.levels, body.questionCount!);
+  const answers = validateDuelAnswers(body.answers, questions);
+  const id = crypto.randomUUID();
+  await env.DB.prepare(`INSERT INTO duels (id, creator_user_id, levels, question_count, questions_json, creator_answers_json, creator_score, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(id, userId, JSON.stringify(body.levels), questions.length, JSON.stringify(questions), JSON.stringify(answers), JSON.stringify(scoreDuel(questions, answers)), new Date().toISOString()).run();
+  return json({ duel: duelPayload((await findDuel(env, id))!, userId) }, 201);
+};
+
+const getDuel = async (request: Request, env: Env, id: string) => {
+  const row = await findDuel(env, id);
+  if (!row) return json({ detail: "这场对战不存在。" }, 404);
+  const userId = await currentUser(request, env);
+  const token = request.headers.get("x-duel-token");
+  return json({ duel: duelPayload(row, userId, validDuelToken(token) ? await sha256(token) : null) });
+};
+
+const decideDuel = async (env: Env, id: string) => {
+  const row = (await findDuel(env, id))!;
+  if (row.winner || !row.opponent_user_id || !row.opponent_score) return;
+  const winner = compareDuelScores(JSON.parse(row.creator_score) as DuelScore, JSON.parse(row.opponent_score) as DuelScore);
+  const now = new Date().toISOString();
+  await env.DB.batch([
+    env.DB.prepare("UPDATE duels SET winner = ?, decided_at = ? WHERE id = ? AND winner IS NULL AND opponent_user_id IS NOT NULL")
+      .bind(winner, now, id),
+    env.DB.prepare(`INSERT OR IGNORE INTO duel_weekly_wins (user_id, iso_week, duel_id, decided_at)
+      SELECT CASE winner WHEN 'creator' THEN creator_user_id ELSE opponent_user_id END, ?, id, decided_at
+      FROM duels WHERE id = ? AND winner IN ('creator', 'opponent') AND decided_at = ?`)
+      .bind(teamIsoWeek(teamStudyDay(Date.parse(now))), id, now)
+  ]);
+};
+
+const submitDuel = async (request: Request, env: Env, id: string) => {
+  await rateLimitSubject(env, "duel-submit", await sha256(clientIp(request)), 120, 3600);
+  const row = await findDuel(env, id);
+  if (!row) return json({ detail: "这场对战不存在。" }, 404);
+  const userId = await currentUser(request, env);
+  if (userId === row.creator_user_id) return json({ detail: "不能应战自己的挑战。" }, 400);
+  const body = await readJson<{ answers?: unknown; token?: unknown }>(request);
+  if (!userId && !validDuelToken(body.token)) return json({ detail: "应战令牌无效。" }, 400);
+  const tokenHash = validDuelToken(body.token) ? await sha256(body.token) : null;
+  const questions = JSON.parse(row.questions_json) as DuelQuestion[];
+  const answers = validateDuelAnswers(body.answers, questions);
+  const answersJson = JSON.stringify(answers);
+  if (row.opponent_answers_json !== null) {
+    if (duelPayload(row, userId, tokenHash).role !== "opponent" || row.opponent_answers_json !== answersJson) return json({ detail: "这局已经有人应战了。" }, 409);
+  } else {
+    const write = await env.DB.prepare(`UPDATE duels SET opponent_user_id = ?, opponent_token_hash = ?, opponent_answers_json = ?, opponent_score = ?
+      WHERE id = ? AND opponent_answers_json IS NULL`).bind(userId, tokenHash, answersJson, JSON.stringify(scoreDuel(questions, answers)), id).run();
+    if (!write.meta.changes) return json({ detail: "这局已经有人应战了。" }, 409);
+  }
+  await decideDuel(env, id);
+  return json({ duel: duelPayload((await findDuel(env, id))!, userId, tokenHash) });
+};
+
+const claimDuel = async (request: Request, env: Env, id: string) => {
+  const userId = await requireUser(request, env);
+  await rateLimitSubject(env, "duel-claim", `user:${userId}`, 30, 3600);
+  const body = await readJson<{ token?: unknown }>(request);
+  if (!validDuelToken(body.token)) return json({ detail: "应战令牌无效。" }, 400);
+  const row = await findDuel(env, id);
+  if (!row) return json({ detail: "这场对战不存在。" }, 404);
+  if (row.creator_user_id === userId) return json({ detail: "不能认领自己的挑战。" }, 400);
+  const tokenHash = await sha256(body.token);
+  if (row.opponent_token_hash !== tokenHash || row.opponent_answers_json === null) return json({ detail: "应战令牌无效。" }, 403);
+  const result = await env.DB.prepare(`UPDATE duels SET opponent_user_id = ? WHERE id = ? AND opponent_token_hash = ?
+    AND (opponent_user_id IS NULL OR opponent_user_id = ?)`)
+    .bind(userId, id, tokenHash, userId).run();
+  if (!result.meta.changes) return json({ detail: "这局已经关联其他账号。" }, 409);
+  await decideDuel(env, id);
+  return json({ duel: duelPayload((await findDuel(env, id))!, userId, tokenHash) });
+};
+
+const myDuels = async (request: Request, env: Env) => {
+  const userId = await requireUser(request, env);
+  const rows = await env.DB.prepare(`SELECT d.*, u.display_name AS creator_name FROM duels d JOIN users u ON u.id = d.creator_user_id
+    WHERE d.creator_user_id = ? OR d.opponent_user_id = ? ORDER BY d.created_at DESC LIMIT 30`).bind(userId, userId).all<DuelRow>();
+  return json({ duels: (rows.results ?? []).map((row) => duelPayload(row, userId)) });
 };
 
 const getMyTeam = async (request: Request, env: Env) => {
@@ -2163,14 +2443,14 @@ const createTeam = async (request: Request, env: Env) => {
   }
   await env.DB.batch([
     env.DB.prepare(`
-      INSERT INTO teams (id, name, target_level, emoji, visibility, max_members, owner_user_id, invite_code, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 6, ?, ?, ?, ?)
-    `).bind(teamId, name, targetLevel, emoji, visibility, userId, inviteCode, now, now),
+      INSERT INTO teams (id, name, target_level, emoji, visibility, max_members, owner_user_id, invite_code, created_at, updated_at, streak_start)
+      VALUES (?, ?, ?, ?, ?, 6, ?, ?, ?, ?, ?)
+    `).bind(teamId, name, targetLevel, emoji, visibility, userId, inviteCode, now, now, shiftTeamDay(teamStudyDay(), 1)),
     env.DB.prepare(`
       INSERT INTO team_members (id, team_id, user_id, role, joined_at) VALUES (?, ?, ?, 'owner', ?)
     `).bind(memberId, teamId, userId, now)
   ]);
-  return json({ team: await teamSnapshot(env, userId, now.slice(0, 10)) }, 201);
+  return json({ team: await teamSnapshot(env, userId, teamStudyDay()) }, 201);
 };
 
 const joinTeam = async (request: Request, env: Env) => {
@@ -2180,9 +2460,11 @@ const joinTeam = async (request: Request, env: Env) => {
   const body = await readJson<{ teamId?: string; inviteCode?: string; displayName?: string }>(request);
   const inviteCode = String(body.inviteCode ?? "").trim().toUpperCase();
   const team = inviteCode
-    ? await env.DB.prepare(`SELECT id, name, target_level, emoji, visibility, max_members, owner_user_id, invite_code FROM teams WHERE invite_code = ?`).bind(inviteCode).first<TeamRow>()
-    : await env.DB.prepare(`SELECT id, name, target_level, emoji, visibility, max_members, owner_user_id, invite_code FROM teams WHERE id = ? AND visibility = 'public'`).bind(String(body.teamId ?? "")).first<TeamRow>();
+    ? await env.DB.prepare(`SELECT id, name, target_level, emoji, visibility, max_members, owner_user_id, invite_code, streak_start FROM teams WHERE invite_code = ?`).bind(inviteCode).first<TeamRow>()
+    : await env.DB.prepare(`SELECT id, name, target_level, emoji, visibility, max_members, owner_user_id, invite_code, streak_start FROM teams WHERE id = ? AND visibility = 'public'`).bind(String(body.teamId ?? "")).first<TeamRow>();
   if (!team) return json({ detail: inviteCode ? "邀请码无效。" : "队伍不存在或不公开。" }, 404);
+  await ensureTeamAnchor(env, team);
+  await settleTeamPeriods(env, team);
   await saveTeamNickname(env, userId, body.displayName);
   try {
     await env.DB.prepare(`INSERT INTO team_members (id, team_id, user_id, role, joined_at) VALUES (?, ?, ?, 'member', ?)`).bind(
@@ -2193,7 +2475,7 @@ const joinTeam = async (request: Request, env: Env) => {
     throw error;
   }
   await env.DB.prepare("UPDATE teams SET updated_at = ? WHERE id = ?").bind(new Date().toISOString(), team.id).run();
-  return json({ team: await teamSnapshot(env, userId, new Date().toISOString().slice(0, 10)) });
+  return json({ team: await teamSnapshot(env, userId, teamStudyDay()) });
 };
 
 const updateTeam = async (request: Request, env: Env) => {
@@ -2213,36 +2495,44 @@ const updateTeam = async (request: Request, env: Env) => {
   if (!TEAM_TARGETS.has(targetLevel) || !TEAM_EMOJIS.has(emoji)) return json({ detail: "队伍设置无效。" }, 400);
   await env.DB.prepare("UPDATE teams SET name = ?, target_level = ?, emoji = ?, visibility = ?, updated_at = ? WHERE id = ?")
     .bind(name, targetLevel, emoji, visibility, new Date().toISOString(), team.id).run();
-  return json({ team: await teamSnapshot(env, userId, new Date().toISOString().slice(0, 10)) });
+  return json({ team: await teamSnapshot(env, userId, teamStudyDay()) });
 };
 
 const teamActivityWrite = (env: Env, team: TeamRow, userId: string, body: {
   studyDay?: string;
   studyCount?: number;
   completed?: boolean;
+  wordCount?: number;
+  activeMinutes?: number;
 }) => {
   const day = validStudyDay(body.studyDay);
-  const count = Math.floor(Number(body.studyCount));
-  if (!day || !Number.isFinite(count) || count < 0 || count > 5000) throw json({ detail: "学习进度无效。" }, 400);
+  const count = Number(body.studyCount);
+  const wordCount = Number(body.wordCount ?? 0);
+  const activeMinutes = Number(body.activeMinutes ?? 0);
+  if (!day || !Number.isInteger(count) || count < 0 || count > 5000
+    || !Number.isInteger(wordCount) || wordCount < 0 || wordCount > 5000
+    || !Number.isInteger(activeMinutes) || activeMinutes < 0 || activeMinutes > 1440) throw json({ detail: "学习进度无效。" }, 400);
   return {
     day,
     statement: env.DB.prepare(`
-      INSERT INTO team_daily_activity (team_id, user_id, study_day, study_count, completed, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO team_daily_activity (team_id, user_id, study_day, study_count, completed, updated_at, word_count, active_minutes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(team_id, user_id, study_day) DO UPDATE SET
         study_count = MAX(team_daily_activity.study_count, excluded.study_count),
         completed = MAX(team_daily_activity.completed, excluded.completed),
+        word_count = MAX(team_daily_activity.word_count, excluded.word_count),
+        active_minutes = MAX(team_daily_activity.active_minutes, excluded.active_minutes),
         updated_at = excluded.updated_at
-    `).bind(team.id, userId, day, count, body.completed ? 1 : 0, new Date().toISOString())
+    `).bind(team.id, userId, day, count, body.completed ? 1 : 0, new Date().toISOString(), wordCount, activeMinutes)
   };
 };
 
 const reportTeamActivity = async (request: Request, env: Env) => {
   const userId = await requireVerifiedUser(request, env);
-  await rateLimitSubject(env, "team-activity", `user:${userId}`, 120, 3600);
+  await rateLimitSubject(env, "team-activity", `user:${userId}`, TEAM_ACTIVITY_LIMIT, 3600);
   const team = await teamMembership(env, userId);
   if (!team) return json({ detail: "你还没有加入队伍。" }, 404);
-  const body = await readJson<{ studyDay?: string; studyCount?: number; completed?: boolean }>(request);
+  const body = await readJson<{ studyDay?: string; studyCount?: number; completed?: boolean; wordCount?: number; activeMinutes?: number }>(request);
   const { day, statement } = teamActivityWrite(env, team, userId, body);
   return json({ team: await teamSnapshot(env, userId, day, team, statement) });
 };
@@ -2250,8 +2540,8 @@ const reportTeamActivity = async (request: Request, env: Env) => {
 const teamOverview = async (request: Request, env: Env) => {
   const userId = await requireVerifiedUser(request, env);
   const team = await teamMembership(env, userId);
-  if (team) await rateLimitSubject(env, "team-activity", `user:${userId}`, 120, 3600);
-  const body = await readJson<{ studyDay?: string; studyCount?: number; completed?: boolean }>(request);
+  if (team) await rateLimitSubject(env, "team-activity", `user:${userId}`, TEAM_ACTIVITY_LIMIT, 3600);
+  const body = await readJson<{ studyDay?: string; studyCount?: number; completed?: boolean; wordCount?: number; activeMinutes?: number }>(request);
   const day = validStudyDay(body.studyDay);
   if (!day) return json({ detail: "学习日期无效。" }, 400);
   const current = team
@@ -2269,7 +2559,7 @@ const cheerTeamMember = async (request: Request, env: Env) => {
   if (!day) return json({ detail: "学习日期无效。" }, 400);
   const membership = await env.DB.prepare(`
     SELECT t.id, t.name, t.target_level, t.emoji, t.visibility, t.max_members,
-           t.owner_user_id, t.invite_code, receiver.user_id AS receiver_user_id
+           t.owner_user_id, t.invite_code, t.streak_start, receiver.user_id AS receiver_user_id
     FROM team_members mine
     JOIN teams t ON t.id = mine.team_id
     LEFT JOIN team_members receiver ON receiver.id = ? AND receiver.team_id = t.id
@@ -3530,6 +3820,14 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "POST" && url.pathname === "/api/auth/delete-account") return deleteAccount(request, env);
   if (request.method === "GET" && url.pathname === "/api/user/profile") return profile(request, env);
   if (request.method === "POST" && url.pathname === "/api/user/profile") return updateProfile(request, env);
+  if (request.method === "GET" && url.pathname === "/api/teams/rewards") return teamRewards(request, env);
+  if (request.method === "POST" && url.pathname === "/api/teams/leaves") return takeTeamLeave(request, env);
+  if (request.method === "POST" && url.pathname === "/api/duels") return createDuel(request, env);
+  if (request.method === "GET" && url.pathname === "/api/duels/me") return myDuels(request, env);
+  const duelPath = url.pathname.match(/^\/api\/duels\/([a-zA-Z0-9-]+)(?:\/(submit|claim))?$/);
+  if (duelPath && request.method === "GET" && !duelPath[2]) return getDuel(request, env, duelPath[1]);
+  if (duelPath && request.method === "POST" && duelPath[2] === "submit") return submitDuel(request, env, duelPath[1]);
+  if (duelPath && request.method === "POST" && duelPath[2] === "claim") return claimDuel(request, env, duelPath[1]);
   if (request.method === "GET" && url.pathname === "/api/teams/me") return getMyTeam(request, env);
   if (request.method === "GET" && url.pathname === "/api/teams/plaza") return listTeamPlaza(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams/overview") return teamOverview(request, env);

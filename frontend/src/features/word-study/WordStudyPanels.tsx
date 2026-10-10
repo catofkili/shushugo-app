@@ -37,6 +37,7 @@ import { useEntitlements } from "../../hooks/useEntitlements";
 import { quizGroups } from "../../lib/distinction-quiz";
 import { STUDY_FOCUS_REWARD_MIN_MS, type StudyFocusSnapshot } from "../../lib/study-focus";
 import { YUZU, yuzuToday } from "../../lib/yuzu";
+import { reportTeamActivity } from "../../lib/team-activity";
 
 /** 自他标注。直接挂在词自己身上(不是只在配对面板里提),自/他 那个字放大加色,
  *  一眼扫得到 —— 中文「开」一个字通吃 開く/開ける,这一栏是最容易翻车的地方。 */
@@ -253,6 +254,7 @@ interface FinishPanelProps {
 }
 
 export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueStage2, onContinueKanji, onEncore, onStubbornQuickStudy, onOpenDistinctionQuiz, focusSnapshot, onClaimDailyRewards }: FinishPanelProps) => {
+  useEffect(() => { void reportTeamActivity(); }, []);
   const { pickFolder, picker } = useFavoriteFolderPicker();
   const entitlements = useEntitlements();
   // 往日顽固词是 Pro：这一张 Paywall 由完成页自己弹，不用把 requirePro 从 App

@@ -15,6 +15,7 @@ const platformAdapters = new Map([
   ['frontend/src/lib/share-canvas', path.join(frontend, 'src/lib/share-canvas.weapp.ts')],
   ['frontend/src/lib/platform-dialogs', path.join(root, 'src/platform/platform-dialogs.weapp.ts')],
   ['frontend/src/lib/share-text', path.join(root, 'src/platform/share-text.weapp.ts')],
+  ['frontend/src/lib/page-share', path.join(frontend, 'src/lib/page-share.weapp.ts')],
   ['frontend/src/lib/cloud-fetch', path.join(root, 'src/platform/fetch.weapp.cjs')],
   ['frontend/src/lib/purchases', path.join(frontend, 'src/lib/purchases.weapp.ts')],
   ['frontend/src/lib/apple-auth', path.join(frontend, 'src/lib/apple-auth.weapp.ts')],

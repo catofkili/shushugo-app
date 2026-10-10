@@ -35,7 +35,8 @@ const CATEGORY_ICON: Record<YuzuCategory, ComponentType<LucideProps>> = {
 };
 const KIND_LABEL: Record<string, string> = {
   study: "今天学了 100 词", plan: "清完今日计划", streak: "连击满 7 天", encore: "加餐", achievement: "成就", focus: "倒计时学习", buy: "购买", repair: "补签",
-  card: "获得补签卡", card_buy: "购买补签卡", card_overflow: "补签卡折算", repair_card: "用补签卡"
+  card: "获得补签卡", card_buy: "购买补签卡", card_overflow: "补签卡折算", repair_card: "用补签卡",
+  team_checkin: "组队打卡", team_period: "组队周期", duel_win: "本周对战首胜"
 };
 type CheckoutStatus = "paying" | "preparing" | "done" | "deferred" | "failed";
 
