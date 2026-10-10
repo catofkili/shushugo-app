@@ -7,7 +7,7 @@ NUM={'一':1,'二':2,'三':3,'四':4,'1':1,'2':2,'3':3,'4':4,'１':1,'２':2,'�
 def posref(q):
     """解析里的 第N句 / [a,b,c,d] 跟打乱后的 answer / order 对不上就返回描述（与 ../posref.py 同口径，但只判错的）。"""
     t=q['explanation']+''.join(q['distractors'].values()); out=[]
-    for m in re.finditer(r'第([一二三四1-4１-４])句',t):
+    for m in re.finditer(r'第([一二三四1-4１-４])[句项]',t):
         if q['kind']=='usage' and NUM[m.group(1)]!=q['answer'] and q['explanation'].count('第')==1 and m.group(0) in q['explanation'] and '正确' in q['explanation']+'正确': out.append(m.group(0))
     for m in re.finditer(r'[\[［]\s*(\d)\s*[,，、]\s*(\d)\s*[,，、]\s*(\d)\s*[,，、]\s*(\d)\s*[\]］]',t):
         if q.get('order')!=[int(x) for x in m.groups()]: out.append(m.group(0))
