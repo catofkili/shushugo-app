@@ -63,21 +63,21 @@ describe("起点×目标预期学习量", () => {
     expect(cases).toBe(140);
   });
 
-  it("会五十音→2026-12-06 考 N3：3959 词只剩 56 天，至少 71/天；50 上限明确报不可行", () => {
+  it("会五十音→2026-12-06 考 N3：3878 词只剩 56 天，至少 70/天；50 上限明确报不可行", () => {
     const input = { startingLevel: "kana" as const, target: "N3" as const, examDate: new Date(2026, 11, 6), today: new Date(2026, 8, 23) };
     const plan = previewLevelPlan(input);
-    expect(plan.content.words).toBe(3959);
+    expect(plan.content.words).toBe(3878);
     expect(plan.intakeDays).toBe(56);
-    expect(plan.required.words).toBe(71);
+    expect(plan.required.words).toBe(70);
     expect(plan.daily.words).toBe(50);
     expect(plan.feasible).toBe(false);
-    expect(previewLevelPlan({ ...input, today: new Date(2026, 8, 24) }).required.words).toBe(72);
+    expect(previewLevelPlan({ ...input, today: new Date(2026, 8, 24) }).required.words).toBe(71);
     expect(previewLevelPlan({ ...input, examDate: new Date(2027, 11, 5) }).required.words).toBe(10);
   });
 
   it("熟悉度设为 0 把起点本级也纳入新学；不会五十音额外预留假名时间", () => {
-    expect(expectedContent("N4", "N3", { words: 0, grammar: 75, kanji: 75, confusion: 75 }).words).toBe(3030);
-    expect(expectedContent("N4", "N3").words).toBe(2144);
+    expect(expectedContent("N4", "N3", { words: 0, grammar: 75, kanji: 75, confusion: 75 }).words).toBe(2958);
+    expect(expectedContent("N4", "N3").words).toBe(2096);
     const base = { target: "N3" as const, examDate: new Date(2026, 11, 6), today: new Date(2026, 8, 23) };
     expect(previewLevelPlan({ ...base, startingLevel: "kana-none" }).intakeDays).toBe(49);
     expect(previewLevelPlan({ ...base, startingLevel: "kana" }).intakeDays).toBe(56);

@@ -9,9 +9,11 @@ const frontendDir = path.resolve(scriptDir, '..')
 const candidatePath = path.join(frontendDir, 'src/data/jlpt_collocation_candidates.json')
 const reviewPath = path.join(scriptDir, 'jlpt-collocation-translation-review.json')
 const outputPath = path.join(frontendDir, 'src/data/jlpt_collocation_content.json')
+const selectionPath = path.join(scriptDir, 'jlpt-collocation-manual-review.json')
 
 const candidate = JSON.parse(await readFile(candidatePath, 'utf8'))
 const review = JSON.parse(await readFile(reviewPath, 'utf8'))
+const selection = JSON.parse(await readFile(selectionPath, 'utf8'))
 
 if (review.status !== 'complete' || review.pending.length !== 0) {
   throw new Error('translation review is incomplete')
@@ -57,6 +59,12 @@ const product = {
   translation_policy: review.translation_policy,
   reviewed_at: review.reviewed_at,
   entries,
+  // 曾经发过、后来删掉的条目。运行时迁移靠它把老用户库里没学过的这些行删掉；
+  // 只记表记＋读音，和插入时的去重键一致。
+  removed: (selection.pruned_obvious?.entries ?? []).map(({ surface, kana }) => ({ surface, kana })),
+}
+if (product.removed.some(({ surface, kana }) => entries.some((entry) => entry.surface === surface && entry.kana === kana))) {
+  throw new Error('removed entry is still in content')
 }
 
 await writeFile(outputPath, `${JSON.stringify(product, null, 2)}\n`)

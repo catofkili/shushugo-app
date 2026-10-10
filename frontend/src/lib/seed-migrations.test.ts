@@ -67,9 +67,9 @@ describe("冷启动：所有版本门控的迁移都要能真的跑一遍", () =
     // 跑完之后词库和语法都还在（迁移炸掉时事务回滚，这两个数会塌）
     expect(one("SELECT COUNT(*) FROM words")).toBeGreaterThanOrEqual(10000);
     expect(one("SELECT COUNT(*) FROM grammar_points")).toBeGreaterThan(700);
-    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配'")).toBe(882);
-    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配' AND TRIM(meaning) <> ''")).toBe(882);
-    expect(one("SELECT COUNT(*) FROM progress p JOIN words w ON w.id = p.word_id WHERE w.pos = '固定搭配'")).toBe(882);
+    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配'")).toBe(790);
+    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配' AND TRIM(meaning) <> ''")).toBe(790);
+    expect(one("SELECT COUNT(*) FROM progress p JOIN words w ON w.id = p.word_id WHERE w.pos = '固定搭配'")).toBe(790);
     // 版本戳被重新写回去了 = 迁移确实执行到了收尾，不是提前 return
     expect(one("SELECT COUNT(*) FROM app_state")).toBeGreaterThan(0);
   });
@@ -81,7 +81,7 @@ describe("冷启动：所有版本门控的迁移都要能真的跑一遍", () =
     const after = one("SELECT COUNT(*) FROM grammar_points");
     await expect(ensureSeedData()).resolves.not.toThrow();
     expect(one("SELECT COUNT(*) FROM grammar_points")).toBe(after);
-    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配'")).toBe(882);
+    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配'")).toBe(790);
   });
 
   it("内容迁移必须要求整库落盘 —— 版本号进增量,内容不进", async () => {
@@ -95,5 +95,32 @@ describe("冷启动：所有版本门控的迁移都要能真的跑一遍", () =
     // scheduleSave 的话,离下一次整库还有几分钟时重启 = 旧内容 + 新版本号,
     // 而版本门控会让迁移再也不重跑。见 db-utils 的 persistContentSoon。
     expect(requestFullSnapshot).toHaveBeenCalled();
+  });
+
+  it("v1 → v2：删掉的搭配没碰过的删行，碰过的标熟知", async () => {
+    // 模拟 v1 装过的老库：两条已删的搭配都在，其中一条学过。
+    const add = (kanji: string, kana: string) => {
+      testDb.run("INSERT INTO words (meaning, kana, kanji, pos, importance, jlpt_level) VALUES ('x', ?, ?, '固定搭配', 3, 'N4')", [kana, kanji]);
+      const id = one("SELECT last_insert_rowid()");
+      testDb.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [id]);
+      return id;
+    };
+    testDb.run("DELETE FROM app_state");
+    testDb.run("DELETE FROM grammar_state WHERE key = 'dataset_version'");
+    await ensureSeedData();
+    const untouched = add("写真を撮る", "しゃしんをとる");
+    const studied = add("時間がかかる", "じかんがかかる");
+    const marked = add("約束を守る", "やくそくをまもる");
+    testDb.run("UPDATE progress SET seen_count = 3 WHERE word_id = ?", [studied]);
+    testDb.run("UPDATE progress SET known_forever = 1 WHERE word_id = ?", [marked]);
+    testDb.run("UPDATE app_state SET value = 'v1' WHERE key = 'jlpt_collocation_content_version'");
+
+    await ensureSeedData();
+
+    expect(one(`SELECT COUNT(*) FROM words WHERE id = ${untouched}`)).toBe(0);
+    expect(one(`SELECT COUNT(*) FROM progress WHERE word_id = ${untouched}`)).toBe(0);
+    expect(one(`SELECT COUNT(*) FROM words WHERE id IN (${studied}, ${marked})`)).toBe(2);
+    expect(one(`SELECT known_forever FROM progress WHERE word_id = ${studied}`)).toBe(1);
+    expect(one("SELECT COUNT(*) FROM words WHERE pos = '固定搭配'")).toBe(792);
   });
 });

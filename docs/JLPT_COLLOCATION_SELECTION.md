@@ -6,7 +6,7 @@
 - `frontend/src/data/jlpt_collocation_candidates.json` 是从决定源生成的独立候选产物。
 - `frontend/scripts/jlpt-collocation-translation-review.json` 是中文释义的逐条决定源，`status=complete` 且 `pending=[]`。
 - `frontend/src/data/jlpt_collocation_content.json` 是运行时内容产物，只保留表记、读音、等级、类型、`ent_seq`、中文释义和来源标记；选择审计字段留在候选决定源，不进入首屏 bundle。
-- 中文释义已经接入运行时迁移：下次正常启动时将把这 882 条作为 `pos=固定搭配` 写入本地种子库。迁移按“表记＋读音”去重，不覆盖已有条目，也只为本次新插入的行建立 `progress`。
+- 中文释义已经接入运行时迁移：下次正常启动时将把这些条目（v1 为 882 条，2026-10-10 的 v2 为 790 条，见文末「删减」一节）作为 `pos=固定搭配` 写入本地种子库。迁移按“表记＋读音”去重，不覆盖已有条目，也只为本次新插入的行建立 `progress`。
 - N5–N1 是面向中国学习者的教学分级，不代表 JLPT 官方词表。
 
 ## 来源与许可证
@@ -48,7 +48,7 @@ node frontend/scripts/verify-jlpt-collocation-content.mjs
 
 排除自由组合、孤立普通词、仅仅是活用后的语法片段、古语、方言、低俗语、仅专业领域表达和过冷表达。同一 JMdict `ent_seq` 的异写只保留一个现代教学表记；语义相同的异写或近重复族也只保留一个代表项。
 
-## 为什么最终是 882 条
+## 为什么最终是 882 条（v1，2026-08-28；v2 又删了 92 条，见文末）
 
 最初按精确配额形成的 1,200 条草稿未通过独立质量审计，原因包括冷僻表达、自由组合、错误低分级、普通四字名词误分类、重复族和模板式审核理由。它没有作为最终清单保留。
 
@@ -88,3 +88,30 @@ node frontend/scripts/verify-jlpt-collocation-candidates.mjs
 - 来源许可证正确，候选层不存在中文释义、例句或 MOJi 来源字段；中文内容层另由 `verify-jlpt-collocation-content.mjs` 验证。
 
 脚本只读取 `frontend/public/nihongo.db`，并拒绝名字指向 live/local 的数据库路径；不会访问浏览器、学习端口或个人学习数据。
+
+## 2026-10-10 删减：「拼起来就懂」的 92 条（v2，882 → 790）
+
+作者试用后反馈「太多显然的了」：N5/N4 推下来的新词里有一串 写真を撮る、時間がかかる、約束を守る、
+手を挙げる 这样**认识每个组成词就能直接读懂整体意思**的条目，单独成卡没有学习价值。
+
+- **只删这一类（字面相加）。** 作者明确要求**和中文同形同义的保留**：四字熟語（半信半疑、四面楚歌）、
+  谚语（覆水盆に返らず）、比喻（警鐘を鳴らす、終止符を打つ、火に油を注ぐ）这类，虽然中国学习者一看就懂，
+  也不删。第一版提案把这类 135 条也列进去了，被作者否掉 —— 以后再删减别再把它们算进「显然」。
+- 意思猜不到的留（気がする、口にする、腕がいい、鼻が高い）；意思一看就懂、但动词选择是日语特有的
+  也暂时留（電話をかける、電話に出る、心配をかける）—— 这条边界作者没表态，下次删减可以问。
+- 删掉的条目从 `jlpt-collocation-manual-review.json` 的 `accepted[]` 移进 `pruned_obvious.entries`（带理由），
+  翻译决定源同步删行；`build-jlpt-collocation-translations.mjs` 把它们写进运行时内容的 `removed[]`。
+- 等级分布变为 N5 8、N4 16、N3 190、N2 380、N1 196；类型只动了 collocation（313 → 221）。
+
+**老库怎么处理**（`study-core.ts` 的 `retireRemovedCollocations`，内容版本升到 `…-zh-v2`）：
+
+- 从没碰过的行（progress 没见过，且除 progress 外没有任何带 `word_id` 的表指着它）→ 删 progress 和词条行。
+  progress 删除走同步触发器留墓碑。
+- 碰过的行（作答、当天新词任务 `stage1_tasks`、便签、收藏……）→ **不删，所有带 `known_forever` 列的记忆表都标熟知**，
+  退出排期。开机自动迁移不许连带删学习记录（同 `docs/claude/storage-and-persistence.md`「老库重复词条」）。
+- 作者实测库演练：92 条里 59 条删行、33 条标熟知 —— N5/N4 那 33 条全都已经作为新词推过
+  （`stage1_tasks` + `seen_count=1`），正是作者嫌显然的那批，所以「碰过就原样留着照常排期」不算解决。
+- 判据不能只看 `seen_count`：「标记熟知」不经作答也会写 progress。`fsrs_*` 列在这一步还不一定存在
+  （迁移顺序早于 FSRS 加列），不要写进判据，否则新装库上迁移直接报错 —— 回归测试在 `seed-migrations.test.ts`。
+- 小程序不跑这条迁移：它的内容来自云端下载的 `nihongo.db`，本来就没有这批搭配。
+

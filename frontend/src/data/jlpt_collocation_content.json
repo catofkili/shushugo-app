@@ -31,39 +31,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2826774,
-      "surface": "音がする",
-      "kana": "おとがする",
-      "level": "N5",
-      "kind": "collocation",
-      "meaning": "发出声音；产生声响",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2021520,
-      "surface": "お腹が空く",
-      "kana": "おなかがすく",
-      "level": "N5",
-      "kind": "collocation",
-      "meaning": "肚子饿；感到饥饿",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2222180,
       "surface": "お久しぶり",
       "kana": "おひさしぶり",
       "level": "N5",
       "kind": "routine_expression",
       "meaning": "好久不见；许久未见",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1002600,
-      "surface": "お風呂に入る",
-      "kana": "おふろにはいる",
-      "level": "N5",
-      "kind": "collocation",
-      "meaning": "洗澡；沐浴",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -121,60 +94,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 1881690,
-      "surface": "写真を撮る",
-      "kana": "しゃしんをとる",
-      "level": "N5",
-      "kind": "collocation",
-      "meaning": "拍照；拍照片",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1472660,
-      "surface": "背が高い",
-      "kana": "せがたかい",
-      "level": "N5",
-      "kind": "collocation",
-      "meaning": "身材高；个子高",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1327220,
-      "surface": "手に入る",
-      "kana": "てにはいる",
-      "level": "N5",
-      "kind": "collocation",
-      "meaning": "获得；得到；得以拥有；弄到手",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1896610,
-      "surface": "電話をかける",
-      "kana": "でんわをかける",
-      "level": "N5",
-      "kind": "collocation",
-      "meaning": "打电话；拨电话；给……打电话",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2847376,
-      "surface": "人気がある",
-      "kana": "にんきがある",
-      "level": "N5",
-      "kind": "collocation",
-      "meaning": "受欢迎；有人气；很受欢迎",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2143090,
-      "surface": "目が覚める",
-      "kana": "めがさめる",
-      "level": "N5",
-      "kind": "collocation",
-      "meaning": "睡醒；醒来；精神焕发；清醒过来",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1401020,
       "surface": "相手をする",
       "kana": "あいてをする",
@@ -190,33 +109,6 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "新年快乐；恭贺新禧",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1856530,
-      "surface": "頭が悪い",
-      "kana": "あたまがわるい",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "反应迟钝；智力低下；愚笨",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2151890,
-      "surface": "頭を使う",
-      "kana": "あたまをつかう",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "动脑；用脑子；费脑筋",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2805710,
-      "surface": "嫌になる",
-      "kana": "いやになる",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "厌烦；厌倦；厌恶",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -292,15 +184,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 1275670,
-      "surface": "口が悪い",
-      "kana": "くちがわるい",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "言辞尖刻；说话刻薄；嘴毒",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1275750,
       "surface": "口にする",
       "kana": "くちにする",
@@ -319,39 +202,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2101410,
-      "surface": "元気を出す",
-      "kana": "げんきをだす",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "振作精神；打起精神",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2836367,
-      "surface": "声がする",
-      "kana": "こえがする",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "说话；讲话",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1593080,
       "surface": "声をかける",
       "kana": "こえをかける",
       "level": "N4",
       "kind": "collocation",
       "meaning": "问候；喊；与……开始谈话",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2855733,
-      "surface": "言葉にする",
-      "kana": "ことばにする",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "用言语表达；表述；陈述",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -364,78 +220,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 1884400,
-      "surface": "時間がかかる",
-      "kana": "じかんがかかる",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "耗时；需要时间",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1382260,
-      "surface": "席に着く",
-      "kana": "せきにつく",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "坐在座位上；就坐",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2104360,
-      "surface": "責任を持つ",
-      "kana": "せきにんをもつ",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "承担责任；负责",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1207260,
-      "surface": "楽しみにする",
-      "kana": "たのしみにする",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "期待；盼望；引颈以待",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2837822,
-      "surface": "大事にする",
-      "kana": "だいじにする",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "珍视；重视；爱惜；看重",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2134530,
-      "surface": "力になる",
-      "kana": "ちからになる",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "有帮助；可靠；支持（某人）",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2620870,
-      "surface": "調子がいい",
-      "kana": "ちょうしがいい",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "状况良好；身体健康；工作正常；进行顺利",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2788310,
-      "surface": "調子が悪い",
-      "kana": "ちょうしがわるい",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "状态不好；进展不顺；身体欠佳；表现不佳",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2229770,
       "surface": "電話に出る",
       "kana": "でんわにでる",
@@ -445,93 +229,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2846054,
-      "surface": "得をする",
-      "kana": "とくをする",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "获利；获益；盈利",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1905290,
-      "surface": "病気にかかる",
-      "kana": "びょうきにかかる",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "患病；得病；生病",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2132030,
-      "surface": "道に迷う",
-      "kana": "みちにまよう",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "迷路；走错路；偏离正道",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2838589,
-      "surface": "無理をする",
-      "kana": "むりをする",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "过度用力；勉强自己；强行做；过分",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2100680,
-      "surface": "約束を守る",
-      "kana": "やくそくをまもる",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "遵守约定；信守承诺",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2100690,
-      "surface": "約束を破る",
-      "kana": "やくそくをやぶる",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "违反约定；食言；违背承诺",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2853389,
-      "surface": "様子を見る",
-      "kana": "ようすをみる",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "观察情况；静观其变；等待局势发展",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2850623,
       "surface": "よくできました",
       "kana": "よくできました",
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "做得很好；干得不错",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2859604,
-      "surface": "予約を入れる",
-      "kana": "よやくをいれる",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "预约；订位；预订",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1916810,
-      "surface": "連絡を取る",
-      "kana": "れんらくをとる",
-      "level": "N4",
-      "kind": "collocation",
-      "meaning": "取得联系；联系；沟通",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -562,57 +265,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 1450700,
-      "surface": "頭がおかしい",
-      "kana": "あたまがおかしい",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "疯癫；发疯；神经不正常；精神失常",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2720070,
-      "surface": "頭が古い",
-      "kana": "あたまがふるい",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "思想陈旧；观念老旧；思维方式过时",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2039170,
-      "surface": "頭が変になる",
-      "kana": "あたまがへんになる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "疯掉；失去理智；精神错乱",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1856540,
-      "surface": "頭に入れる",
-      "kana": "あたまにいれる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "铭记；牢记；记住",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1450720,
       "surface": "頭にくる",
       "kana": "あたまにくる",
       "level": "N3",
       "kind": "idiom",
       "meaning": "生气；发怒；发火；大发脾气",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2864523,
-      "surface": "頭に入る",
-      "kana": "あたまにはいる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "理解；明白；进入脑子里",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -706,15 +364,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2033700,
-      "surface": "言うことを聞く",
-      "kana": "いうことをきく",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "听从；接受建议；言听计从",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2546050,
       "surface": "いかがお過ごしですか",
       "kana": "いかがおすごしですか",
@@ -757,24 +406,6 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "再见；我走了；回见",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1859340,
-      "surface": "意味を取る",
-      "kana": "いみをとる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "理解意思；领会含义",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2839228,
-      "surface": "嫌な思いをする",
-      "kana": "いやなおもいをする",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "感到不适；被冒犯；度过不愉快的时光",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -1165,15 +796,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2849101,
-      "surface": "許可が出る",
-      "kana": "きょかがでる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "获得许可；获得批准；获得同意",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2057110,
       "surface": "気を入れる",
       "kana": "きをいれる",
@@ -1273,15 +895,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2128560,
-      "surface": "口に出す",
-      "kana": "くちにだす",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "说出来；用言语表达；出声说出",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2724370,
       "surface": "口ほどにも無い",
       "kana": "くちほどにもない",
@@ -1306,24 +919,6 @@
       "level": "N3",
       "kind": "collocation",
       "meaning": "脱口而出；无意中说出",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2788810,
-      "surface": "元気が出る",
-      "kana": "げんきがでる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "精神振奋；受到鼓舞；获得勇气；受到启发；充满活力",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1874550,
-      "surface": "元気をつける",
-      "kana": "げんきをつける",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "鼓励；增添勇气",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -1354,33 +949,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 1983000,
-      "surface": "心に描く",
-      "kana": "こころにえがく",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "想象；设想",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2668990,
-      "surface": "心に残る",
-      "kana": "こころにのこる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "留在心中；难以忘怀；令人难忘",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2669020,
-      "surface": "心を決める",
-      "kana": "こころをきめる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "下定决心；决意；立志；铁了心",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2845217,
       "surface": "心を開く",
       "kana": "こころをひらく",
@@ -1390,39 +958,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2835842,
-      "surface": "心を読む",
-      "kana": "こころをよむ",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "看透心思；猜测想法；读懂心意",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2654960,
-      "surface": "答えを出す",
-      "kana": "こたえをだす",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "给出答案；找到问题的答案；想出解决方案",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1640290,
       "surface": "異にする",
       "kana": "ことにする",
       "level": "N3",
       "kind": "collocation",
       "meaning": "与……不同；在……方面不同",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2840821,
-      "surface": "言葉を選ぶ",
-      "kana": "ことばをえらぶ",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "措辞谨慎；斟酌言辞；选择措词",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -1516,39 +1057,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2453600,
-      "surface": "時間を守る",
-      "kana": "じかんをまもる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "守时；准时",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2762530,
-      "surface": "時間を無駄にする",
-      "kana": "じかんをむだにする",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "浪费时间；虚度光阴",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2836237,
       "surface": "自分を持つ",
       "kana": "じぶんをもつ",
       "level": "N3",
       "kind": "collocation",
       "meaning": "坚持己见；不为他人所左右；对自己有信心",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1307720,
-      "surface": "姿を消す",
-      "kana": "すがたをけす",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "消失；失踪；不见踪影",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -1669,30 +1183,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2670990,
-      "surface": "力が入る",
-      "kana": "ちからがはいる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "充满力量；用力；承受压力；紧张",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1554860,
       "surface": "力を入れる",
       "kana": "ちからをいれる",
       "level": "N3",
       "kind": "collocation",
       "meaning": "用力；用劲；费力；投入力量",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2856008,
-      "surface": "力を出す",
-      "kana": "ちからをだす",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "出力；发挥力量；奋力",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -1813,39 +1309,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2266810,
-      "surface": "手にする",
-      "kana": "てにする",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "拿在手里；握在手中",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1895840,
-      "surface": "手に取る",
-      "kana": "てにとる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "拿在手里；拿起；获得",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1895890,
       "surface": "手の込んだ",
       "kana": "てのこんだ",
       "level": "N3",
       "kind": "collocation",
       "meaning": "精巧的；复杂的；讲究的",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2210610,
-      "surface": "手を挙げる",
-      "kana": "てをあげる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "举手",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -1885,48 +1354,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2126990,
-      "surface": "手を貸す",
-      "kana": "てをかす",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "伸出援手；帮忙；帮助",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2759410,
-      "surface": "手を借りる",
-      "kana": "てをかりる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "借助某人的帮助；请求帮助",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2222160,
       "surface": "手をつける",
       "kana": "てをつける",
       "level": "N3",
       "kind": "collocation",
       "meaning": "动手；着手；开始做",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2402970,
-      "surface": "手を取る",
-      "kana": "てをとる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "牵（某人的）手",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2848742,
-      "surface": "手を伸ばす",
-      "kana": "てをのばす",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "伸出手；伸手；够到",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -2047,30 +1480,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2782970,
-      "surface": "匂いがする",
-      "kana": "においがする",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "有气味；散发气味；带有…的气味",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2419270,
       "surface": "二度あることは三度ある",
       "kana": "にどあることはさんどある",
       "level": "N3",
       "kind": "proverb",
       "meaning": "有二必有三；两次之后必有第三次",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2842212,
-      "surface": "人気が出る",
-      "kana": "にんきがでる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "变得受欢迎；增长人气；流行起来",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -2128,15 +1543,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2818950,
-      "surface": "話が合う",
-      "kana": "はなしがあう",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "话说得来；意见一致；志趣相投",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2843206,
       "surface": "話に乗る",
       "kana": "はなしにのる",
@@ -2191,15 +1597,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2139640,
-      "surface": "必要とする",
-      "kana": "ひつようとする",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "需要；要求",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2119230,
       "surface": "人のことを言う",
       "kana": "ひとのことをいう",
@@ -2218,30 +1615,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2202160,
-      "surface": "火をつける",
-      "kana": "ひをつける",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "点燃；引燃",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2624590,
       "surface": "勉強になる",
       "kana": "べんきょうになる",
       "level": "N3",
       "kind": "collocation",
       "meaning": "获得知识；开阔眼界；增长见识",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1908230,
-      "surface": "法を守る",
-      "kana": "ほうをまもる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "遵守法律；守法",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -2281,15 +1660,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2221000,
-      "surface": "本気を出す",
-      "kana": "ほんきをだす",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "认真努力；全力以赴；发挥全力",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2839960,
       "surface": "ほんの気持ち",
       "kana": "ほんのきもち",
@@ -2323,15 +1693,6 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "天哪；算了；真是的",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2838833,
-      "surface": "周りの目",
-      "kana": "まわりのめ",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "他人的看法；他人的眼光",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -2380,57 +1741,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2399890,
-      "surface": "耳に入る",
-      "kana": "みみにはいる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "传入耳中；听说；获悉",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2556750,
       "surface": "耳の痛い",
       "kana": "みみのいたい",
       "level": "N3",
       "kind": "collocation",
       "meaning": "刺耳的；令人难堪的；切中要害的；言中肯綮的",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1855750,
-      "surface": "身を守る",
-      "kana": "みをまもる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "自卫；自我保护",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2785400,
-      "surface": "難しい顔をする",
-      "kana": "むずかしいかおをする",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "皱着眉头；板着脸；看起来不悦；显得严肃",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1012380,
-      "surface": "無駄にする",
-      "kana": "むだにする",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "浪费；使落空；使归于无效；不善加利用",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2796260,
-      "surface": "無駄になる",
-      "kana": "むだになる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "化为乌有；徒劳；无果而终",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -2470,15 +1786,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2840180,
-      "surface": "目が合う",
-      "kana": "めがあう",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "两人的目光相接；对上某人的眼睛；四目相对；目光接触",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2452770,
       "surface": "目が高い",
       "kana": "めがたかい",
@@ -2515,15 +1822,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 1911830,
-      "surface": "目が悪い",
-      "kana": "めがわるい",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "视力差；眼睛不好",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2751030,
       "surface": "目で物を言う",
       "kana": "めでものをいう",
@@ -2539,15 +1837,6 @@
       "level": "N3",
       "kind": "collocation",
       "meaning": "看到；目睹；目击；瞥见；邂逅",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2396170,
-      "surface": "目に入る",
-      "kana": "めにはいる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "映入眼帘；进入视野；碰巧看到",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -2638,24 +1927,6 @@
       "level": "N3",
       "kind": "collocation",
       "meaning": "取得联系；联系上",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2845822,
-      "surface": "連絡を入れる",
-      "kana": "れんらくをいれる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "联系；取得联系；报到",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2151370,
-      "surface": "話題になる",
-      "kana": "わだいになる",
-      "level": "N3",
-      "kind": "collocation",
-      "meaning": "成为新闻话题；被谈论；成为流行的谈话话题；成为街谈巷议的话题；成为热点问题",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -3079,15 +2350,6 @@
       "level": "N2",
       "kind": "collocation",
       "meaning": "越界；过分；超出底线",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2863316,
-      "surface": "一線を退く",
-      "kana": "いっせんをしりぞく",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "退出第一线；隐退；退休",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -3622,15 +2884,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2545650,
-      "surface": "過去の物になる",
-      "kana": "かこのものになる",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "成为过去；成为历史；一去不复返",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2179320,
       "surface": "籠の鳥",
       "kana": "かごのとり",
@@ -3856,15 +3109,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2630300,
-      "surface": "関係を持つ",
-      "kana": "かんけいをもつ",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "有关系；有来往",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2557390,
       "surface": "感情に走る",
       "kana": "かんじょうにはしる",
@@ -3982,15 +3226,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2844131,
-      "surface": "苦境に立つ",
-      "kana": "くきょうにたつ",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "陷入困境；处于困难处境；陷入窘境",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2833934,
       "surface": "臭い物に蓋をする",
       "kana": "くさいものにふたをする",
@@ -4099,30 +3334,12 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2845282,
-      "surface": "結果を出す",
-      "kana": "けっかをだす",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "取得成果；成功",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1258340,
       "surface": "犬猿の仲",
       "kana": "けんえんのなか",
       "level": "N2",
       "kind": "idiom",
       "meaning": "像猫狗一样不和；水火不容；犬猿之仲",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2779520,
-      "surface": "行動をとる",
-      "kana": "こうどうをとる",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "采取行动；实施行动",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -4486,15 +3703,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2836244,
-      "surface": "地獄を見る",
-      "kana": "じごくをみる",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "经历地狱般的痛苦；九死一生；历尽艰辛",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 2233720,
       "surface": "自腹を切る",
       "kana": "じばらをきる",
@@ -4549,15 +3757,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 2838067,
-      "surface": "救いの手",
-      "kana": "すくいのて",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "援手；帮助；支援；救助",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1373570,
       "surface": "雀の涙",
       "kana": "すずめのなみだ",
@@ -4591,15 +3790,6 @@
       "level": "N2",
       "kind": "collocation",
       "meaning": "出生；来到人世",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 1888240,
-      "surface": "責任を取る",
-      "kana": "せきにんをとる",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "承担责任；接受指责；认错",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -5440,15 +4630,6 @@
       "translation_source": "tomoshi_zh_defs"
     },
     {
-      "jmdict_ent_seq": 1484360,
-      "surface": "被害を受ける",
-      "kana": "ひがいをうける",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "遭受损害；受到伤害",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
       "jmdict_ent_seq": 1626690,
       "surface": "火がつく",
       "kana": "ひがつく",
@@ -6040,15 +5221,6 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "解开（线团等）；弄散",
-      "translation_source": "tomoshi_zh_defs"
-    },
-    {
-      "jmdict_ent_seq": 2841725,
-      "surface": "理解を得る",
-      "kana": "りかいをえる",
-      "level": "N2",
-      "kind": "collocation",
-      "meaning": "获得理解；取得同意",
       "translation_source": "tomoshi_zh_defs"
     },
     {
@@ -7958,6 +7130,376 @@
       "kind": "collocation",
       "meaning": "张弛结合；劳逸结合；把握节奏",
       "translation_source": "tomoshi_zh_defs"
+    }
+  ],
+  "removed": [
+    {
+      "surface": "音がする",
+      "kana": "おとがする"
+    },
+    {
+      "surface": "お腹が空く",
+      "kana": "おなかがすく"
+    },
+    {
+      "surface": "お風呂に入る",
+      "kana": "おふろにはいる"
+    },
+    {
+      "surface": "写真を撮る",
+      "kana": "しゃしんをとる"
+    },
+    {
+      "surface": "背が高い",
+      "kana": "せがたかい"
+    },
+    {
+      "surface": "手に入る",
+      "kana": "てにはいる"
+    },
+    {
+      "surface": "電話をかける",
+      "kana": "でんわをかける"
+    },
+    {
+      "surface": "人気がある",
+      "kana": "にんきがある"
+    },
+    {
+      "surface": "目が覚める",
+      "kana": "めがさめる"
+    },
+    {
+      "surface": "頭が悪い",
+      "kana": "あたまがわるい"
+    },
+    {
+      "surface": "頭を使う",
+      "kana": "あたまをつかう"
+    },
+    {
+      "surface": "嫌になる",
+      "kana": "いやになる"
+    },
+    {
+      "surface": "口が悪い",
+      "kana": "くちがわるい"
+    },
+    {
+      "surface": "元気を出す",
+      "kana": "げんきをだす"
+    },
+    {
+      "surface": "声がする",
+      "kana": "こえがする"
+    },
+    {
+      "surface": "言葉にする",
+      "kana": "ことばにする"
+    },
+    {
+      "surface": "時間がかかる",
+      "kana": "じかんがかかる"
+    },
+    {
+      "surface": "席に着く",
+      "kana": "せきにつく"
+    },
+    {
+      "surface": "責任を持つ",
+      "kana": "せきにんをもつ"
+    },
+    {
+      "surface": "楽しみにする",
+      "kana": "たのしみにする"
+    },
+    {
+      "surface": "大事にする",
+      "kana": "だいじにする"
+    },
+    {
+      "surface": "力になる",
+      "kana": "ちからになる"
+    },
+    {
+      "surface": "調子がいい",
+      "kana": "ちょうしがいい"
+    },
+    {
+      "surface": "調子が悪い",
+      "kana": "ちょうしがわるい"
+    },
+    {
+      "surface": "得をする",
+      "kana": "とくをする"
+    },
+    {
+      "surface": "病気にかかる",
+      "kana": "びょうきにかかる"
+    },
+    {
+      "surface": "道に迷う",
+      "kana": "みちにまよう"
+    },
+    {
+      "surface": "無理をする",
+      "kana": "むりをする"
+    },
+    {
+      "surface": "約束を守る",
+      "kana": "やくそくをまもる"
+    },
+    {
+      "surface": "約束を破る",
+      "kana": "やくそくをやぶる"
+    },
+    {
+      "surface": "様子を見る",
+      "kana": "ようすをみる"
+    },
+    {
+      "surface": "予約を入れる",
+      "kana": "よやくをいれる"
+    },
+    {
+      "surface": "連絡を取る",
+      "kana": "れんらくをとる"
+    },
+    {
+      "surface": "頭がおかしい",
+      "kana": "あたまがおかしい"
+    },
+    {
+      "surface": "頭が古い",
+      "kana": "あたまがふるい"
+    },
+    {
+      "surface": "頭が変になる",
+      "kana": "あたまがへんになる"
+    },
+    {
+      "surface": "頭に入れる",
+      "kana": "あたまにいれる"
+    },
+    {
+      "surface": "頭に入る",
+      "kana": "あたまにはいる"
+    },
+    {
+      "surface": "言うことを聞く",
+      "kana": "いうことをきく"
+    },
+    {
+      "surface": "意味を取る",
+      "kana": "いみをとる"
+    },
+    {
+      "surface": "嫌な思いをする",
+      "kana": "いやなおもいをする"
+    },
+    {
+      "surface": "許可が出る",
+      "kana": "きょかがでる"
+    },
+    {
+      "surface": "口に出す",
+      "kana": "くちにだす"
+    },
+    {
+      "surface": "元気が出る",
+      "kana": "げんきがでる"
+    },
+    {
+      "surface": "元気をつける",
+      "kana": "げんきをつける"
+    },
+    {
+      "surface": "心に描く",
+      "kana": "こころにえがく"
+    },
+    {
+      "surface": "心に残る",
+      "kana": "こころにのこる"
+    },
+    {
+      "surface": "心を決める",
+      "kana": "こころをきめる"
+    },
+    {
+      "surface": "心を読む",
+      "kana": "こころをよむ"
+    },
+    {
+      "surface": "答えを出す",
+      "kana": "こたえをだす"
+    },
+    {
+      "surface": "言葉を選ぶ",
+      "kana": "ことばをえらぶ"
+    },
+    {
+      "surface": "時間を守る",
+      "kana": "じかんをまもる"
+    },
+    {
+      "surface": "時間を無駄にする",
+      "kana": "じかんをむだにする"
+    },
+    {
+      "surface": "姿を消す",
+      "kana": "すがたをけす"
+    },
+    {
+      "surface": "力が入る",
+      "kana": "ちからがはいる"
+    },
+    {
+      "surface": "力を出す",
+      "kana": "ちからをだす"
+    },
+    {
+      "surface": "手にする",
+      "kana": "てにする"
+    },
+    {
+      "surface": "手に取る",
+      "kana": "てにとる"
+    },
+    {
+      "surface": "手を挙げる",
+      "kana": "てをあげる"
+    },
+    {
+      "surface": "手を貸す",
+      "kana": "てをかす"
+    },
+    {
+      "surface": "手を借りる",
+      "kana": "てをかりる"
+    },
+    {
+      "surface": "手を取る",
+      "kana": "てをとる"
+    },
+    {
+      "surface": "手を伸ばす",
+      "kana": "てをのばす"
+    },
+    {
+      "surface": "匂いがする",
+      "kana": "においがする"
+    },
+    {
+      "surface": "人気が出る",
+      "kana": "にんきがでる"
+    },
+    {
+      "surface": "話が合う",
+      "kana": "はなしがあう"
+    },
+    {
+      "surface": "必要とする",
+      "kana": "ひつようとする"
+    },
+    {
+      "surface": "火をつける",
+      "kana": "ひをつける"
+    },
+    {
+      "surface": "法を守る",
+      "kana": "ほうをまもる"
+    },
+    {
+      "surface": "本気を出す",
+      "kana": "ほんきをだす"
+    },
+    {
+      "surface": "周りの目",
+      "kana": "まわりのめ"
+    },
+    {
+      "surface": "耳に入る",
+      "kana": "みみにはいる"
+    },
+    {
+      "surface": "身を守る",
+      "kana": "みをまもる"
+    },
+    {
+      "surface": "難しい顔をする",
+      "kana": "むずかしいかおをする"
+    },
+    {
+      "surface": "無駄にする",
+      "kana": "むだにする"
+    },
+    {
+      "surface": "無駄になる",
+      "kana": "むだになる"
+    },
+    {
+      "surface": "目が合う",
+      "kana": "めがあう"
+    },
+    {
+      "surface": "目が悪い",
+      "kana": "めがわるい"
+    },
+    {
+      "surface": "目に入る",
+      "kana": "めにはいる"
+    },
+    {
+      "surface": "連絡を入れる",
+      "kana": "れんらくをいれる"
+    },
+    {
+      "surface": "話題になる",
+      "kana": "わだいになる"
+    },
+    {
+      "surface": "一線を退く",
+      "kana": "いっせんをしりぞく"
+    },
+    {
+      "surface": "過去の物になる",
+      "kana": "かこのものになる"
+    },
+    {
+      "surface": "関係を持つ",
+      "kana": "かんけいをもつ"
+    },
+    {
+      "surface": "苦境に立つ",
+      "kana": "くきょうにたつ"
+    },
+    {
+      "surface": "結果を出す",
+      "kana": "けっかをだす"
+    },
+    {
+      "surface": "行動をとる",
+      "kana": "こうどうをとる"
+    },
+    {
+      "surface": "地獄を見る",
+      "kana": "じごくをみる"
+    },
+    {
+      "surface": "救いの手",
+      "kana": "すくいのて"
+    },
+    {
+      "surface": "責任を取る",
+      "kana": "せきにんをとる"
+    },
+    {
+      "surface": "被害を受ける",
+      "kana": "ひがいをうける"
+    },
+    {
+      "surface": "理解を得る",
+      "kana": "りかいをえる"
     }
   ]
 }
