@@ -19,6 +19,7 @@ assert.equal(calls[0].init.method, "POST");
 assert.equal(calls[0].body, "payload");
 assert.equal(calls[0].init.headers.get("x-shushugo-client-ip"), "1.2.3.4");
 assert.equal(calls[0].init.headers.get("x-shushugo-proxy-key"), "k");
+assert.equal(calls[0].init.headers.get("x-shushugo-host"), "master-nihongo-sync.example.workers.dev");
 assert.equal(calls[0].init.headers.get("authorization"), "Bearer t");
 
 const frozen = await proxy.fetch(new Request("https://x.workers.dev/api/health"), { ...env, MAINTENANCE: "1" });

@@ -9,6 +9,8 @@
 	handle @proxied {
 		reverse_proxy 127.0.0.1:8787 {
 			header_up CF-Connecting-IP {header.X-Shushugo-Client-Ip}
+			header_up Host {header.X-Shushugo-Host}
+			header_up -X-Shushugo-Host
 			header_up -X-Shushugo-Proxy-Key
 			header_up -X-Shushugo-Client-Ip
 		}
@@ -17,6 +19,7 @@
 		# 直连的请求：客户端自己带的 CF-Connecting-IP 一律覆盖掉，不然谁都能伪造 IP 绕过限速。
 		reverse_proxy 127.0.0.1:8787 {
 			header_up CF-Connecting-IP {remote_host}
+			header_up -X-Shushugo-Host
 			header_up -X-Shushugo-Proxy-Key
 			header_up -X-Shushugo-Client-Ip
 		}

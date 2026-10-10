@@ -20,6 +20,9 @@ export default {
     const forwarded = new Headers(request.headers);
     forwarded.set("x-shushugo-client-ip", request.headers.get("cf-connecting-ip") ?? "");
     forwarded.set("x-shushugo-proxy-key", env.PROXY_KEY ?? "");
+    // 人机验证（Turnstile）要求「验证发生的域名 = 请求到达的域名」，旧客户端的验证小窗是在 workers.dev 上
+    // 渲染的，所以服务器那边必须还原成这个 Host，否则旧 iOS 的注册/登录/找回密码全部 403。
+    forwarded.set("x-shushugo-host", url.host);
     return fetch(new URL(url.pathname + url.search, env.UPSTREAM), {
       method: request.method,
       headers: forwarded,
